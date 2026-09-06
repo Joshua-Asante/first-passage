@@ -25,6 +25,6 @@ The ECR
 
 **Ratified:** 2026-08-19 (GSUB-2 Phase 3, operator direct instruction)
 **Source:** [`GSUB-2 inventory + panel review`](../briefs/programs/GSUB-2-park-cohort-early-review.md) ·
-[`closure`](../briefs/closures/GSUB-2-closure-resolved-loadbearing.md) ·
-[`Q-XMEM-1 closure`](../briefs/closures/Q-XMEM-1-closure-subtract.md) · originally PARKed
-[`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row c1 (2026-08-09)
+[`closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md) ·
+[`Q-XMEM-1 closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-XMEM-1-closure-subtract.md) · originally PARKed
+[`GSUB-1 inventory`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) row c1 (2026-08-09)

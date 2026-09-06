@@ -8,7 +8,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Authors:** Joshua (operator GO) + Cursor Cloud Agent
-**Related:** [`2026-08-23-strategy-coldstore-phase-b.md`](2026-08-23-strategy-coldstore-phase-b.md) (authorization axis unchanged) · [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 · [`2026-05-23-allocation-refresh-2.md`](2026-05-23-allocation-refresh-2.md) (lock lineage of the frozen percents) · [Phase C plan](../superpowers/plans/2026-08-23-coldstore-phase-c-implementation.md)
+**Related:** [`2026-08-23-strategy-coldstore-phase-b.md`](2026-08-23-strategy-coldstore-phase-b.md) (authorization axis unchanged) · [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 · [`2026-05-23-allocation-refresh-2.md`](2026-05-23-allocation-refresh-2.md) (lock lineage of the frozen percents) · [Phase C plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-coldstore-phase-c-implementation.md)
 **Layer:** live-sizing constants (LOCKED risk% key set). **No** `DD_TRIGGER` / `DD_SCALE` / `LEG_MAP` / Pine-parameter edit.
 **Tier:** full — live-risk + LOCKED surface.
 

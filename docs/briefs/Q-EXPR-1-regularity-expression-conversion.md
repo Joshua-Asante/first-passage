@@ -1,6 +1,6 @@
 # Q-EXPR-1 — What measurable property of the regularity→expression conversion accounts for the orphaning?
 
-**Status:** `CLOSED-RESOLVED 2026-08-18` — H1 4/4; H2 1/5 misses; H3 cannot fire. Closure: [`closures/Q-EXPR-1-closure-resolved.md`](closures/Q-EXPR-1-closure-resolved.md).
+**Status:** `CLOSED-RESOLVED 2026-08-18` — H1 4/4; H2 1/5 misses; H3 cannot fire. Closure: [`closures/Q-EXPR-1-closure-resolved.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-EXPR-1-closure-resolved.md).
 **Authored:** 2026-08-18
 **Closed:** 2026-08-18
 **Authors:** Joshua (operator GO: "move on to GO Q-EXPR-1") + Cursor (execution)
@@ -8,7 +8,7 @@
 **Sub-questions opened:** none
 **Loop:** Inquire-phase Pre-Q — closure gated on whether any of three pre-declared conversion readings meets a 0.50 share of its own class
 **Artifact path:** `docs/briefs/Q-EXPR-1-regularity-expression-conversion.md`
-**Pre-registration:** [`pre-registration/Q-EXPR-1-verdict-preregistration.md`](pre-registration/Q-EXPR-1-verdict-preregistration.md)
+**Pre-registration:** [`pre-registration/Q-EXPR-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-EXPR-1-verdict-preregistration.md)
 
 **D-S-A domain:** data (already-committed closures / ledgers → one conversion-step table)
 **Pre-Q gate:**
@@ -221,7 +221,7 @@ or class must move, close this brief and open a fresh one.
 
 ## §8 — Verdict pre-registration
 
-File: [`pre-registration/Q-EXPR-1-verdict-preregistration.md`](pre-registration/Q-EXPR-1-verdict-preregistration.md)
+File: [`pre-registration/Q-EXPR-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-EXPR-1-verdict-preregistration.md)
 
 Pre-registration commit hash: *(same-session freeze; sha256 `27c366f4f7e7a924a8e91ba549c8ade25eadd2024add1e827d70a31828e6441a` recorded by the scorer before `TABLE.json` was opened; git hash lands at operator commit)*
 Pre-registration date: 2026-08-18

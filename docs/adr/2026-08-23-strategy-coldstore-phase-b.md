@@ -7,7 +7,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Authors:** Joshua (operator GO) + Cursor Cloud Agent
-**Related:** [`2026-08-04-strategy-coldstore-phase-a.md`](2026-08-04-strategy-coldstore-phase-a.md) (filesystem only) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (Striker stays `AUTHORIZED · MECHANISM @ 1.00×`) · [`2026-08-05-strategy-venue-binding-axis.md`](2026-08-05-strategy-venue-binding-axis.md) (edition `WITHDRAWN` ≠ book `RETIRED`) · [Phase B plan](../superpowers/plans/2026-08-23-coldstore-phase-b-implementation.md) · [retrieve note](../notes/2026-08-23-coldstore-phase-b-prego-blocked.md)
+**Related:** [`2026-08-04-strategy-coldstore-phase-a.md`](2026-08-04-strategy-coldstore-phase-a.md) (filesystem only) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (Striker stays `AUTHORIZED · MECHANISM @ 1.00×`) · [`2026-08-05-strategy-venue-binding-axis.md`](2026-08-05-strategy-venue-binding-axis.md) (edition `WITHDRAWN` ≠ book `RETIRED`) · [Phase B plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-coldstore-phase-b-implementation.md) · [retrieve note](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-23-coldstore-phase-b-prego-blocked.md)
 **Layer:** authorization axis (lifecycle disposition). **No** `BASE_RISK`, `LEG_MAP`, Pine-parameter, or `lifecycle_state.json` write.
 **Tier:** full — doctrine limb (catalog disposition ≠ authorization write).
 

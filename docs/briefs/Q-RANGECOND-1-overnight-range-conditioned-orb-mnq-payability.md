@@ -207,10 +207,10 @@ worth testing cheaply, not a settled explanation.
 - [`Q-RANGEXFER-1`](Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md) — closed
   `MIXED (AMBIGUOUS-DESIGN` on the MNQ parent)`, owner of the conditioner definition and its own
   presence-verification. Cited, not reopened.
-- `ORB-MNQ-1`'s own pipeline: [`ADMISSION.md`](../../lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md)
+- `ORB-MNQ-1`'s own pipeline: [`ADMISSION.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md)
   (G8 intake) · [`b3-orb-mnq-payability-line.md`](../pursuits/b3-orb-mnq-payability-line.md)
-  (PARK, re-entry clause) · [`RESULTS_stage7.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_stage7.md)
-  (firm×slip realism) · [`RESULTS_bulenox_blusky_payability.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_bulenox_blusky_payability.md)
+  (PARK, re-entry clause) · [`RESULTS_stage7.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_stage7.md)
+  (firm×slip realism) · [`RESULTS_bulenox_blusky_payability.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_bulenox_blusky_payability.md)
   (4-firm FAIL) · [`aegis_orbmnq_combined_book_2026-08-26/RESULTS.md`](../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md)
   (combined-overlay evidence, reversed at §10).
 - `ops/instruments/MNQ.md` F2 GUARD — governs the class of move this brief must NOT repeat
@@ -395,7 +395,7 @@ new bars, not a re-test date), or a design that pools across a coarser condition
 
 ## §8 — Verdict pre-registration (mandatory before Phase 1)
 
-Filed at [`docs/briefs/pre-registration/Q-RANGECOND-1-verdict-preregistration.md`](pre-registration/Q-RANGECOND-1-verdict-preregistration.md),
+Filed at [`docs/briefs/pre-registration/Q-RANGECOND-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-RANGECOND-1-verdict-preregistration.md),
 committed in the same commit as this brief (Phase 1 has not run; no analysis-order violation).
 
 Pre-registration date: 2026-08-30.
@@ -478,7 +478,7 @@ $ git log --oneline docs/briefs/pre-registration/Q-RANGECOND-1-verdict-preregist
 
 **2026-08-30 — Phase 1-3 executed same day as the Route ① ruling. Verdict: `RESOLVED`, with one
 disclosed panel-vintage caveat.** Full record:
-[`rangecond_1_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md).
+[`rangecond_1_2026-08-30/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md).
 Reused `orb_lib.orb_backtest`/`session_panel` and the exact `ORB-MNQ-1` `Instrument` construction
 verbatim, and the frozen `bias_overnight` conditioner verbatim, joined on `trading_day`/`day` (no
 adjustment needed — `orb_lib`'s own plain ET calendar date and `data_lib.py`'s own Globex-cutover
@@ -523,7 +523,7 @@ re-run against the corrected conditioner, unmodified otherwise (same script, sam
 pre-registration gate, same hash-verified panel). **Result: the entire effect vanishes.** WR diff
 +24.75pp → **+0.75pp** (CI now includes 0); mean-win diff +0.711R → **-0.058R** (sign-flipped, CI
 includes 0). L2, L3, and L4 all fail under the corrected data. Per pre-reg §C: `FALSIFIED`. Full
-corrected numbers: [`rangecond_1_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md)'s
+corrected numbers: [`rangecond_1_2026-08-30/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md)'s
 own "CORRECTED RESULTS" section. New closure filed:
 [`Q-RANGECOND-1-closure-falsified.md`](closures/Q-RANGECOND-1-closure-falsified.md) (supersedes,
 does not replace, `Q-RANGECOND-1-closure-resolved.md`, which is retracted at its own top and

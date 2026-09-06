@@ -12,10 +12,10 @@ to any successor — a fresh derivation starts its own K accounting
 the missing re-entry+expiry fields
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
-**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row b5
+**Source:** [`GSUB-1 inventory`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) row b5
 
 > **RENEWED 2026-08-16 (once)** — elected with the state-policy packet's P2 mark (the packet's
-> §7 conditional; [closure §2.4](../briefs/closures/STATE-POLICY-closure-resolved-p2.md)).
+> §7 conditional; [closure §2.4](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/STATE-POLICY-closure-resolved-p2.md)).
 > **Corrected wake condition** (replaces the stale F3-successor clause, which S1's no-migration
 > ruling made unreachable): re-enter when **Q-POLFRONT-1 reads positive on funded-relevant
 > cells** OR **a candidate reaches funded-phase modeling**. Re-entry still requires the fresh
@@ -29,7 +29,7 @@ the missing re-entry+expiry fields
 > scores synthetic constant-R edge geometry against the **eval-phase** gate only (bust ≤3.0% /
 > pass ≥50%) — zero funded-phase dimension. The brief's sole "funded" occurrence is its own §7,
 > which names funded-phase policy inheritance as a fork explicitly **not** opened there and
-> points back to this pursuit; [its closure](../briefs/closures/Q-POLFRONT-1-closure-resolved-quantified.md)
+> points back to this pursuit; [its closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-POLFRONT-1-closure-resolved-quantified.md)
 > carries zero "funded" mentions at all. So the first disjunct above — "Q-POLFRONT-1 reads
 > positive on funded-relevant cells" — cannot fire as written; there is no funded-relevant cell
 > for it to read. **Read the wake condition going forward as governed solely by the second,

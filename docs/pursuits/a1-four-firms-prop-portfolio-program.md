@@ -11,4 +11,4 @@
 [`withdrawal ADR`](../adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md) ·
 [`de-scope ADR`](../adr/2026-08-04-tradeify-venue-descope-eval-included.md)
 
-**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row a1
+**Source:** [`GSUB-1 inventory`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) row a1

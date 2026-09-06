@@ -3,7 +3,7 @@
 **Audit ID:** AUDIT-2026-08-23-bulenox-lock-scope-resolution
 **Date:** 2026-08-23
 **Triggered by:** external observation — Task R2 of the [§4 firm-model parallel repair
-plan](../../superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md), the named
+plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md), the named
 (not opened) successor to
 [`Q-FIRMEOD-1`](../../briefs/closures/Q-FIRMEOD-1-closure-falsified.md), operator-GO'd this
 session

@@ -16,17 +16,17 @@
 > **(2) Repaired:** step **1a** below now requires the executed profile consult with every `BINDING BAR`
 > answered by route — an unanswered bar blocks the G0 freeze.
 > Evidence + the $0 falsifier that surfaced both:
-> [`_cheap_falsifier_cost_geometry_2026-08-10_LOG.md`](../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_cost_geometry_2026-08-10_LOG.md).
+> [`_cheap_falsifier_cost_geometry_2026-08-10_LOG.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_cost_geometry_2026-08-10_LOG.md).
 >
 > ⚠ **READER-INTERCEPT 2026-08-16 — step 6's lane stop-rule counted only literal `FALSIFIED`, and four
 > consecutive `AMBIGUOUS-HOLD` closures (CON-2 → CON-5, 2026-08-10 → 2026-08-12) ran through it uncounted.**
-> ✅ **RULED / REPAIRED 2026-08-16** — [`ADR`](../adr/2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md).
+> ✅ **RULED / REPAIRED 2026-08-16** — [`ADR`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md).
 > Step 6 below now reads **"3 consecutive FALSIFIED-or-zero-yield mechanisms"** (zero-yield =
 > `AMBIGUOUS-HOLD`/`VOID`/`NULL`/`SCREEN-FAIL`/`INTAKE-DRY`/`OPERATOR-STOPPED`/`ABORT`/capability-only
 > `RESOLVED`, per that ADR's §2). A close resets the streak only if it yields an admitted candidate.
 > Tightening only — the ≥3 threshold and the "never a 4th campaign by default" consequence are unchanged.
 
-Status: PROPOSED · 2026-08-09 · authorizes nothing ($0 · K=0) · depends: [TNEC-1](2026-08-08-tnec-1-tradeify-necessary-conditions.md) `RATIFIED` · Q-MNQSEL-2 `RESOLVED` · Q-MNQDTL-CON-1 `FALSIFIED` STOP
+Status: PROPOSED · 2026-08-09 · authorizes nothing ($0 · K=0) · depends: [TNEC-1](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-08-tnec-1-tradeify-necessary-conditions.md) `RATIFIED` · Q-MNQSEL-2 `RESOLVED` · Q-MNQDTL-CON-1 `FALSIFIED` STOP
 Objective: iterate named entry mechanisms, one per campaign, on the dense-1m G=10 universe — the estate's only measured non-phantom headroom (oracle S3 ≈ 0.858 both arms vs the 0.40R inversion floor, inside the K-wall's 5–20 pt viable band) — until one clears TNEC N-EDGE+N-SHAPE or the lane stop-rule fires.
 
 Steps:
@@ -52,6 +52,6 @@ Steps:
 
 Gate: RESOLVED if a campaign emits ≥1 candidate clearing N-EDGE + N-SHAPE at pre-registered explore→confirm discipline (routes to operator GO; admits and arms nothing). FALSIFIED per-campaign as each PREREG pre-registers; the lane itself carries **no calendar clock** — 2026-11-08 belongs to [four-firms §4](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md) alone.
 Boundary: no retune of G / lookback / θ-window and **no sign-invert** (CON-1 STOP; own-instrument momentum → C5/D5-RECOST-1) · no C1–C11 reopen without new *mechanism* evidence · MNQDTL D1/D2/μ are recorded preferences, never gates · no deploy, no Pine, no arming, no `LEG_MAP` claim.
-Reads: [TNEC-1](2026-08-08-tnec-1-tradeify-necessary-conditions.md) §N-limbs · [Q-MNQSEL-2 RESULTS](../../lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/RESULTS.md) · [CON-1 closure](../briefs/closures/Q-MNQDTL-CON-1-closure-falsified.md) (STOP scope) · [MNQ ledger](../../ops/instruments/MNQ.md) C1–C11 + DEAD · [K-wall](../../lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) · [Route B checklist](../methodology/avenue_a_generate_confirm.md)
+Reads: [TNEC-1](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-08-tnec-1-tradeify-necessary-conditions.md) §N-limbs · [Q-MNQSEL-2 RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/RESULTS.md) · [CON-1 closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-MNQDTL-CON-1-closure-falsified.md) (STOP scope) · [MNQ ledger](../../ops/instruments/MNQ.md) C1–C11 + DEAD · [K-wall](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) · [Route B checklist](../methodology/avenue_a_generate_confirm.md)
 Verify (Phase-0, Cursor runs before authoring): `ls lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/_mnq_1m.parquet` · `rg -n "N-EDGE" docs/spec/2026-08-08-tnec-1-tradeify-necessary-conditions.md` · `rg -n "new entry mechanism" docs/briefs/closures/Q-MNQDTL-CON-1-closure-falsified.md`
 Owner: TNEC-1 §2 intake (this spec is its L4 construct lane); campaigns dock under fresh Q-IDs.

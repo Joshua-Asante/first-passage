@@ -367,12 +367,12 @@ paragraph, that is a violation of this addendum's own terms, not a permitted con
 Use-count only, so the §4 trigger schedule stays evaluable.
 
 - **Use 1** (production): DL-2 prereg, 2026-08-22 — objections survived reconciliation (axis-coverage imbalance; mechanism-id reuse). Recorded on that prereg, not here.
-- **Use 2** (this note): sanitized copy of `.claude/skills/futures-anomaly-discovery` sent to `stealth/ox-alpha` via OpenRouter chat-completions. Reconciliation owner: [`N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md`](../notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md). Several objections survived, so revert trigger (b) (three consecutive zero-value uses) does not tick. Third-use review still owed.
+- **Use 2** (this note): sanitized copy of `.claude/skills/futures-anomaly-discovery` sent to `stealth/ox-alpha` via OpenRouter chat-completions. Reconciliation owner: [`N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-23-ox-alpha-futures-anomaly-discovery-skill-review.md). Several objections survived, so revert trigger (b) (three consecutive zero-value uses) does not tick. Third-use review still owed.
 
 No transcript is stored in-repo (reasoning-channel dump; sanitization bar). The notice holds the objection table.
 
-- **Use 3** (2026-08-23, this row): sanitized MSL WHO-sourcing-methodology critique, sent under §2 base scope (adversarial lens on the WHO-track sweep + Req 1a admission bar, not the bounded-extension candidate-generation carve-out). Reconciliation owner: [`N-2026-08-23-ox-alpha-msl-who-sourcing-methodology-review.md`](../notes/notice/N-2026-08-23-ox-alpha-msl-who-sourcing-methodology-review.md). Every objection concrete enough to name a specific already-tried mechanism (macro-print-on-index, index-roll/reconstitution, gamma-sign-from-OI, crude margin-call substitution) did **not** survive reconciliation — each was already tested and killed internally, several on sharper grounds than the objection assumed. Five more abstract/methodological threads (SPAN+COT-signed liquidation cascades, compelled-abstention mechanisms, an impact-persistence reframing of the size screen, bounded-duration-compulsion as a payoff-shape selection heuristic, a pre-G0 rule-feasibility Monte-Carlo simulator) remain open and unrefuted. Revert trigger (b) (three consecutive zero-value uses) does not tick — real objections survived.
-- **Use 4** (2026-08-23): sanitized mechanism-supply **candidate-generation** ask — the second invocation of the bounded-extension pattern, made under a **fresh, explicit operator authorization given in chat this date** (*"offer the mechanism supply question to ox-alpha. Sanitize while giving it the context it needs"*), recorded here citing the second addendum's own Bound paragraph as that paragraph requires. Prompt carried the Use-3 reconciliation outcomes (dead classes + actual kill reasons) so dead ground was not re-suggested. Output: 11 candidates drafted, 7 self-refuted by the model before answering, 4 returned with self-refutations + $0 kill scripts; the Use-3 SPAN+COT cascade thread **conceded dead by its own proposer** ("nothing converts it — demote to filter"). Reconciliation owner: [`N-2026-08-23-ox-alpha-mechanism-supply-candidates.md`](../notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md) — one candidate (MOC-imbalance wake) converges with the estate's own named free supply route, one (buyback-blackout abstention) is genuinely novel, one confirms existing registry kills, one dies against F3's cost precedent at micro sizing. Revert trigger (b) does not tick. A third candidate-generation ask needs its own fresh authorization, same as this one did.
+- **Use 3** (2026-08-23, this row): sanitized MSL WHO-sourcing-methodology critique, sent under §2 base scope (adversarial lens on the WHO-track sweep + Req 1a admission bar, not the bounded-extension candidate-generation carve-out). Reconciliation owner: [`N-2026-08-23-ox-alpha-msl-who-sourcing-methodology-review.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-23-ox-alpha-msl-who-sourcing-methodology-review.md). Every objection concrete enough to name a specific already-tried mechanism (macro-print-on-index, index-roll/reconstitution, gamma-sign-from-OI, crude margin-call substitution) did **not** survive reconciliation — each was already tested and killed internally, several on sharper grounds than the objection assumed. Five more abstract/methodological threads (SPAN+COT-signed liquidation cascades, compelled-abstention mechanisms, an impact-persistence reframing of the size screen, bounded-duration-compulsion as a payoff-shape selection heuristic, a pre-G0 rule-feasibility Monte-Carlo simulator) remain open and unrefuted. Revert trigger (b) (three consecutive zero-value uses) does not tick — real objections survived.
+- **Use 4** (2026-08-23): sanitized mechanism-supply **candidate-generation** ask — the second invocation of the bounded-extension pattern, made under a **fresh, explicit operator authorization given in chat this date** (*"offer the mechanism supply question to ox-alpha. Sanitize while giving it the context it needs"*), recorded here citing the second addendum's own Bound paragraph as that paragraph requires. Prompt carried the Use-3 reconciliation outcomes (dead classes + actual kill reasons) so dead ground was not re-suggested. Output: 11 candidates drafted, 7 self-refuted by the model before answering, 4 returned with self-refutations + $0 kill scripts; the Use-3 SPAN+COT cascade thread **conceded dead by its own proposer** ("nothing converts it — demote to filter"). Reconciliation owner: [`N-2026-08-23-ox-alpha-mechanism-supply-candidates.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md) — one candidate (MOC-imbalance wake) converges with the estate's own named free supply route, one (buyback-blackout abstention) is genuinely novel, one confirms existing registry kills, one dies against F3's cost precedent at micro sizing. Revert trigger (b) does not tick. A third candidate-generation ask needs its own fresh authorization, same as this one did.
 
 **Concurrent-session note (added at merge, 2026-08-23):** this "Use N" ledger and the second
 addendum above were authored independently by separate sessions with no cross-visibility until
@@ -392,7 +392,7 @@ Use-count only, so the §4 trigger schedule stays evaluable.
 One sanitized governance question (when an external-framework analog should become a standing
 pin versus remaining disposable inspiration) was sent to `stealth/ox-alpha` via OpenRouter
 chat-completions. No vendor, product, repo, or operator identifiers. Reconciliation owner:
-[`N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md`](../notes/notice/N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md).
+[`N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md).
 Several objections survived, so revert trigger (b) (three consecutive zero-value uses) does
 not tick.
 
@@ -413,7 +413,7 @@ candidate-generation extension) at operator direction ("send the hardest decisio
 ox-alpha, generalized with enough context to be useful"). Three scenarios genericized past
 recognition — no firm name, instrument, dollar figure, percentage, or internal naming. Full
 sanitization statement, reconciliation table, and audit hooks:
-[`N-2026-08-23-ox-alpha-phase-a-firm-repair-hard-decisions-review.md`](../notes/notice/N-2026-08-23-ox-alpha-phase-a-firm-repair-hard-decisions-review.md).
+[`N-2026-08-23-ox-alpha-phase-a-firm-repair-hard-decisions-review.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-23-ox-alpha-phase-a-firm-repair-hard-decisions-review.md).
 
 Notable: one high-value, concrete objection (a possible day-1 scorer-semantics bug in a
 consistency-rule check) was independently checked directly against the real production engine
@@ -436,7 +436,7 @@ One sanitized adversarial review of the Q-TRADECAP-2 election geometry
 `stealth/ox-alpha` via OpenRouter chat-completions under §2 base scope
 (decision-authoring artifact — not the bounded-extension candidate-generation
 carve-out). Reconciliation owner:
-[`N-2026-08-24-ox-alpha-per-trade-bound-election.md`](../notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md).
+[`N-2026-08-24-ox-alpha-per-trade-bound-election.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md).
 Several objections survived, so revert trigger (b) (three consecutive
 zero-value uses) does not tick.
 
@@ -458,7 +458,7 @@ One sanitized adversarial design review of the deep-iteration lane (what its imp
 missed or overlooked, judged against its two-abandonment record), sent under §2 base scope at
 explicit operator direction ("judge it yourself, and pose this question to ox-alpha"). Fully
 genericized — no campaign codenames, instruments, firms, or repo constants. Reconciliation owner:
-[`N-2026-08-24-ox-alpha-deep-lane-design-review.md`](../notes/notice/N-2026-08-24-ox-alpha-deep-lane-design-review.md).
+[`N-2026-08-24-ox-alpha-deep-lane-design-review.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-24-ox-alpha-deep-lane-design-review.md).
 
 Notable both ways: **two genuinely new findings survived** (the POWER_MIN-0.50 ×
 two-strike-falsifier coupling implies up to a ~25% false-falsification rate at the admissible

@@ -11,10 +11,10 @@ the quality of the questions") + Claude Code
 **Q-CONDVAL-1 GO'd and `FALSIFIED` 2026-08-18**
 ([closure](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md)) — S1b
 conditioner-engineering branch parked; O2 discharged. **Q-EXPR-1 GO'd and `RESOLVED` (H1)
-2026-08-18** ([closure](../../briefs/closures/Q-EXPR-1-closure-resolved.md)) — next slate
+2026-08-18** ([closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-EXPR-1-closure-resolved.md)) — next slate
 admission screens claim horizon vs the E1 flat-by-16:00 envelope. **Q-TRAINKILL-1 GO'd and
 `AMBIGUOUS-HOLD` 2026-08-18**
-([closure](../../briefs/closures/Q-TRAINKILL-1-closure-ambiguous-hold.md)) — no named
+([closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TRAINKILL-1-closure-ambiguous-hold.md)) — no named
 power finding; no gate number moves. Action/Forward/Closed routing below.
 **D-S-A domain:** data (the I/N corpus). Two routed Action rows touch meta-process; they are
 routed, not gated here.
@@ -53,7 +53,7 @@ reading SESSIONS.md/STATE.md/CATALOG.md/closures fresh with line cites), plus th
 artifacts ([slate](../../briefs/programs/2026-08-18-step0-daily-geometry-mechanism-slate.md) ·
 [corrected-battery spec + ADDENDUM-1](../../spec/2026-08-18-magnitude-persistence-corrected-null-battery.md) ·
 [audit note](../audits/2026-08-18-block-shuffle-placebo-does-not-control-for-tr-autocorrelation.md) ·
-[RESULTS_CORRECTED](../../../lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md)) ·
+[RESULTS_CORRECTED](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md)) ·
 [deep-lane charter counters](../../adr/2026-08-16-deep-iteration-lane-charter.md) ·
 [TNEC-1](../../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md).
 
@@ -134,16 +134,16 @@ envelope (in which case the branch closes cleanly, cheap).
 
 | Observation | Route | Detail |
 |---|---|---|
-| A + C | **CLOSED** | Q-EXPR-1 **CLOSED `RESOLVED` (H1) 2026-08-18** ([closure](../../briefs/closures/Q-EXPR-1-closure-resolved.md)). Q-TRAINKILL-1 **CLOSED `AMBIGUOUS-HOLD` 2026-08-18** ([closure](../../briefs/closures/Q-TRAINKILL-1-closure-ambiguous-hold.md)) — BOUNDED extremes disagree; scored core MISCALIBRATED; no named power finding |
+| A + C | **CLOSED** | Q-EXPR-1 **CLOSED `RESOLVED` (H1) 2026-08-18** ([closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-EXPR-1-closure-resolved.md)). Q-TRAINKILL-1 **CLOSED `AMBIGUOUS-HOLD` 2026-08-18** ([closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TRAINKILL-1-closure-ambiguous-hold.md)) — BOUNDED extremes disagree; scored core MISCALIBRATED; no named power finding |
 | D | **CLOSED** | Q-CONDVAL-1 GO'd → `FALSIFIED` 2026-08-18 ([closure](../../briefs/closures/Q-CONDVAL-1-closure-falsified.md)) — S1b conditioner-engineering parked; O2 discharged |
 | B1 — admissibility-side supply ($0) | **FORWARD, no dependency** | OpenAlex sourcing continuation + Req-1a admissibility screening of the six Koijen screen-leads proceeds IN PARALLEL with the two questions — admissibility deaths are orthogonal to both outputs by observation B's own decomposition; making them wait would re-run the one-bottleneck conflation this notice dissolves |
 | B2 — priced spends (Databento extension on harvest survivors; lane campaign #2 prereg freeze) | **FORWARD, unblocked** | Q-EXPR-1's horizon screen is in: weekly/daily-native claims are not priced until a session-horizon expression is named. Q-TRAINKILL-1/2/3 all closed `AMBIGUOUS-HOLD` — census STOP; no singleton power finding to consume for campaign #2 n/panel. Elects on existing evidence + the H1 screen, holds disclosed. Re-proposal is a new panel or an operator election, not Q-TRAINKILL-4 |
 | S2 stage-1 cheap falsifier · S3 matched-day redesign | **FORWARD** | Standing chartered obligations carried for completeness (slate/spec-resident, not corpus observations); unchanged by this notice |
-| E(i) valence-blind null-validity | **CLOSED** | Discharged 2026-08-20 (`3c6745a`, PR #69, dispatched via [`2026-08-20-cursor-handoff-notice-e1-e3-action-rows.md`](../../briefs/handoffs/2026-08-20-cursor-handoff-notice-e1-e3-action-rows.md)) — `.claude/skills/futures-anomaly-discovery/SKILL.md` now carries the valence-blind null-fitness bullet (~line 270) |
+| E(i) valence-blind null-validity | **CLOSED** | Discharged 2026-08-20 (`3c6745a`, PR #69, dispatched via [`2026-08-20-cursor-handoff-notice-e1-e3-action-rows.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/handoffs/2026-08-20-cursor-handoff-notice-e1-e3-action-rows.md)) — `.claude/skills/futures-anomaly-discovery/SKILL.md` now carries the valence-blind null-fitness bullet (~line 270) |
 | E(ii) design-time doctrine read | **CLOSED** | Same edit as E(i), same commit — the §0 citation IS the design-time read, made mechanical |
 | E(iii) belt pruning | **CLOSED** | Discharged 2026-08-20 (`3c6745a`, PR #69) — `docs/spec/2026-08-18-magnitude-persistence-corrected-null-battery.md` now carries the Retention-review 2026-11-08 line (~line 15) |
 | E(iv) W5 drift · lane charter §7 steps 2–4 owed · base-case line to STATE | **ACTION** | Hygiene; the base-case line lands on the STATE board where next-session reads begin |
-| Two-eights disambiguation · CATALOG closed-date caveat · POLFRONT 5.1× superseded | **CLOSED** | Two-eights: the charter's "8 consecutive zero-yield closes" (the Q-R2VBUCK-1…Q-TNEC-CON-5 chain, STATE.md decision index) and the MSL methodology audit's "8 consecutive null/dead" (C2·C3·C3-K2·C1·S2A·S2B·slate-3·WHO-track, [2026-08-14 audit](../audits/programme-audit/2026-08-14-msl-methodology-audit.md)) are two DIFFERENT lists — never conflate them when quoting either. Closed-date caveat and 5.1× supersession are the gate's D(ii)/D(i) records. No further act |
+| Two-eights disambiguation · CATALOG closed-date caveat · POLFRONT 5.1× superseded | **CLOSED** | Two-eights: the charter's "8 consecutive zero-yield closes" (the Q-R2VBUCK-1…Q-TNEC-CON-5 chain, STATE.md decision index) and the MSL methodology audit's "8 consecutive null/dead" (C2·C3·C3-K2·C1·S2A·S2B·slate-3·WHO-track, [2026-08-14 audit](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-14-msl-methodology-audit.md)) are two DIFFERENT lists — never conflate them when quoting either. Closed-date caveat and 5.1× supersession are the gate's D(ii)/D(i) records. No further act |
 
 ## §5 — Entry packets (GRADUATE candidates — named, not opened unless marked CLOSED)
 

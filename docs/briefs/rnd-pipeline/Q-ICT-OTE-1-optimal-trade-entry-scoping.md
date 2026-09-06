@@ -1,7 +1,7 @@
 # `Q-ICT-OTE-1` — Optimal Trade Entry (Fibonacci retracement off a confirmed sweep-impulse leg) on native MNQ
 
 **Status:** `STOP — cheap falsifier FALSIFIED 2026-08-20. Never reached PREREG_G0. $0.00 spent, K=0.`
-**Cheap falsifier:** [`_cheap_falsifier_ict_ote_1_2026-08-20_LOG.md`](../../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_ict_ote_1_2026-08-20_LOG.md)
+**Cheap falsifier:** [`_cheap_falsifier_ict_ote_1_2026-08-20_LOG.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_ict_ote_1_2026-08-20_LOG.md)
 — both arms n≥100, session-block CI entirely below 0 (long −0.525R, short −0.518R), mean stop_dist
 13.16pt confirming the §2.4 CON-5-shaped risk prediction exactly. Licensed by
 [`the override ADR`](../../adr/2026-08-20-analogue-modality-override-ict-ote-1-admit.md) §7 Phase 1;
@@ -43,17 +43,17 @@ cost-geometry grounds.
   separate construct-type test above, and that ADR's own Boundary clause is explicit that
   entry-geometry constructs "stay paused on their own terms" regardless of timeframe. Moving OTE to
   5m/15m would not change the verdict below.
-- [`docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md`](../closures/Q-TNEC-CON-5-closure-ambiguous-hold.md)
-  and [`docs/briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md`](../closures/Q-TNEC-CON-4-closure-ambiguous-hold.md)
+- [`docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md)
+  and [`docs/briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md)
   — the pause's own origin (9 consecutive zero-yield closes as of 2026-08-20, after CON-4's CONFIRM
   reconfirmed dead) and the precedent for how a construct of this shape actually gets admitted: parent
   cheap falsifier → `PREREG_G0` freeze → operator explore GO → EXPLORATION score → typed closure.
-- [`docs/adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md`](../../adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md)
+- [`docs/adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md)
   (`Accepted`) — the only precedent in this repo for admitting a paused-class construct: a full,
   named, scoped operator override ADR, spent same-day on a single already-frozen exception. Reusable
   as a template if the operator elects to override again for OTE (see §9).
 - [`lab/analysis/_inbox/ict_mnq_2026-08/run_1m_diag.py`](../../../lab/analysis/_inbox/ict_mnq_2026-08/run_1m_diag.py)
-  and [`PREREG_EXP.md`](../../../lab/analysis/_inbox/ict_mnq_2026-08/PREREG_EXP.md) — the raid-scan
+  and [`PREREG_EXP.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/ict_mnq_2026-08/PREREG_EXP.md) — the raid-scan
   (`pvLen=2`, `raidWin=8`, heap-based, 42 unit tests) and DOL-target (`h1High`/`h1Low`, 1H
   range-extreme, `lookN=60`) machinery this construct reuses verbatim (§2 below) rather than
   re-deriving. `Q-ICTEXP-1`'s own construct is `AMBIGUOUS` (null, `SUBTRACT` — [`b7
@@ -199,7 +199,7 @@ manifest opens, not $0/K=0 throughout.
 **Two paths exist. Nothing below is authorized by this document alone.**
 
 1. **Operator override (fast, has direct precedent today).** File a fresh ADR — same shape as
-   [`2026-08-20-dense1m-u1-operator-override-con4-reopen.md`](../../adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md)
+   [`2026-08-20-dense1m-u1-operator-override-con4-reopen.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md)
    — marking a bounded, named exception for `Q-ICT-OTE-1` specifically, on authority alone, no new
    modality claimed. **What you'd be approving:** admitting a construct whose own stop-geometry
    analysis (§2.4) already flags it as CON-5-shaped risk, immediately after CON-4's CONFIRM

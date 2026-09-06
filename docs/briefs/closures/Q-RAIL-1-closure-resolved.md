@@ -2,8 +2,8 @@
 
 **Closed:** 2026-07-17
 **Parent brief:** [`../Q-RAIL-1-c1-execution-rail-go-live-scoping.md`](../Q-RAIL-1-c1-execution-rail-go-live-scoping.md)
-**Pre-registration:** [`../pre-registration/Q-RAIL-1-verdict-preregistration.md`](../pre-registration/Q-RAIL-1-verdict-preregistration.md) (mechanism followed: ceiling deferred to Phase 4, then re-requested fresh)
-**Annex (the packet — the recommendation artifact per §9):** [`lab/analysis/c1/q_rail_1_2026-07/PHASE4.md`](../../../lab/analysis/c1/q_rail_1_2026-07/PHASE4.md) · full evidence chain [`RESULTS.md`](../../../lab/analysis/c1/q_rail_1_2026-07/RESULTS.md)
+**Pre-registration:** [`../pre-registration/Q-RAIL-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-RAIL-1-verdict-preregistration.md) (mechanism followed: ceiling deferred to Phase 4, then re-requested fresh)
+**Annex (the packet — the recommendation artifact per §9):** [`lab/analysis/c1/q_rail_1_2026-07/PHASE4.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/PHASE4.md) · full evidence chain [`RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/RESULTS.md)
 
 ## Verdict
 

@@ -3,10 +3,10 @@
 **Verdict:** `FALSIFIED` — both fade arms mean net R negative with session-block 95% CI entirely below 0
 **Closed:** 2026-08-13
 **Lane:** MSL · card MSL-C2 · mechanism `london-range-failed-extension-fade` × MGC
-**Pre-registration:** [`PREREG_G0.md`](../../../lab/archive/msl_c2_mgc_2026-08/PREREG_G0.md) (FROZEN 2026-08-12) · [`EXPLORE_GO.DRAFT.md`](../../../lab/archive/msl_c2_mgc_2026-08/EXPLORE_GO.DRAFT.md) (promoted → gitignored `EXPLORE_GO.md` ISSUED 2026-08-13)
+**Pre-registration:** [`PREREG_G0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/msl_c2_mgc_2026-08/PREREG_G0.md) (FROZEN 2026-08-12) · [`EXPLORE_GO.DRAFT.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/msl_c2_mgc_2026-08/EXPLORE_GO.DRAFT.md) (promoted → gitignored `EXPLORE_GO.md` ISSUED 2026-08-13)
 **Spend / K:** $0.00 · `K_intrinsic=1` disclosure only · Cap **not claimed**
 **Live effect:** none — CONFIRM (2025-09-01→2026-08-12) reserved **unread**; no Pine / TV / arming
-**Artifacts:** [`RESULTS_g2.md`](../../../lab/archive/msl_c2_mgc_2026-08/RESULTS_g2.md) · [`RESULTS.json`](../../../lab/archive/msl_c2_mgc_2026-08/RESULTS.json) · [explore-GO card](../handoffs/2026-08-13-msl-c2-explore-go-card.md)
+**Artifacts:** [`RESULTS_g2.md`](../../../lab/archive/msl_c2_mgc_2026-08/RESULTS_g2.md) · [`RESULTS.json`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/msl_c2_mgc_2026-08/RESULTS.json) · [explore-GO card](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/handoffs/2026-08-13-msl-c2-explore-go-card.md)
 
 ---
 
@@ -44,7 +44,7 @@ Below two-incident bar — watch: Stage-1 design-point arithmetic can PASS while
 - **Routing:** STOP this catalogue / G0. Serialized slate hands slot to **P3.2 MSL-C3 (M2K)** — Stage-0 L3 one-shot + WSTRUCT sequencing before flight (not opened here).
 - **Entry packet:** n/a
 - **Stop rule / re-proposal bar:** new mechanism evidence (different reference class / direction / TF), not stop-buffer or window retune on this G0. Re-proposal ≠ C3.
-- **Board write:** Open/next → P3.2 C3 Stage-0 (L3 + WSTRUCT read) — owner [`msl-first-slate`](../programs/2026-08-12-msl-first-slate.md) §MSL-C3 · [`msl-program-plan`](../programs/2026-08-12-msl-program-plan.md) §6.
+- **Board write:** Open/next → P3.2 C3 Stage-0 (L3 + WSTRUCT read) — owner [`msl-first-slate`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-12-msl-first-slate.md) §MSL-C3 · [`msl-program-plan`](../programs/2026-08-12-msl-program-plan.md) §6.
 
 - **Registry:** rejected_candidates.md — ### MSL-C2 London-range failed-extension fade × MGC — FALSIFIED (explore IS)
 

@@ -3,10 +3,10 @@
 **Verdict:** `FALSIFIED` — both fade arms mean net R negative with session-block 95% CI entirely below 0
 **Closed:** 2026-08-13
 **Lane:** MSL · card MSL-C1 · mechanism `pdh-pdl-failed-break-reclaim` × **MYM**
-**Pre-registration:** [`PREREG_G0.md`](../../../lab/archive/msl_c1_mym_2026-08/PREREG_G0.md) (FROZEN 2026-08-13) · [`EXPLORE_GO.DRAFT.md`](../../../lab/archive/msl_c1_mym_2026-08/EXPLORE_GO.DRAFT.md) (promoted → gitignored `EXPLORE_GO.md` ISSUED 2026-08-13)
+**Pre-registration:** [`PREREG_G0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/msl_c1_mym_2026-08/PREREG_G0.md) (FROZEN 2026-08-13) · [`EXPLORE_GO.DRAFT.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/msl_c1_mym_2026-08/EXPLORE_GO.DRAFT.md) (promoted → gitignored `EXPLORE_GO.md` ISSUED 2026-08-13)
 **Spend / K:** $0.00 · `K_intrinsic=1` disclosure only · Cap **not claimed**
 **Live effect:** none — CONFIRM (2025-09-01→2026-08-13) reserved **unread**; no Pine / TV / arming
-**Artifacts:** [`RESULTS_g2.md`](../../../lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md) · [`RESULTS.json`](../../../lab/archive/msl_c1_mym_2026-08/RESULTS.json)
+**Artifacts:** [`RESULTS_g2.md`](../../../lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md) · [`RESULTS.json`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/msl_c1_mym_2026-08/RESULTS.json)
 
 ---
 

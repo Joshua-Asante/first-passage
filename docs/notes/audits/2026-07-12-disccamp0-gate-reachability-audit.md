@@ -32,7 +32,7 @@
 > unconditional `V=1/n` pin, empirically validated against the live module; the
 > `var_trials` override landed in `universe_gate.py`, 12/12 tests green). The
 > Stage-2/4 runner is delegated to Cursor
-> ([`2026-07-12-cursor-handoff-stage-2-4-runner.md`](../../briefs/rnd-pipeline/2026-07-12-cursor-handoff-stage-2-4-runner.md),
+> ([`2026-07-12-cursor-handoff-stage-2-4-runner.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/2026-07-12-cursor-handoff-stage-2-4-runner.md),
 > dispatched 2026-07-12, not yet landed).
 > **FREEZE-BLOCKED still holds** pending the runner landing + a Stage-7 realism engine;
 > see `STATE.md` and `[[project_disccamp0_gate_reachability_audit]]`.

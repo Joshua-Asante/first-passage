@@ -2,7 +2,7 @@
 
 > **For agentic workers:** This is a **portfolio**, not one implementation. Each packet below needs its own later plan (or is already owned). Do not scaffold packet work from this file. REQUIRED when a packet is GO’d: writing-plans → a dated `docs/superpowers/plans/YYYY-MM-DD-<packet>-implementation.md`.
 
-**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23**; bind row 3 then **closed** (Lane A scoped decline; last pre-G0 slot unspent). P2 Approach A **GO landed 2026-08-23** ([plan](2026-08-23-p2-memory-demote-implementation.md)). P3 **GO landed 2026-08-23** ([plan](2026-08-23-p3-docs-runtime-inventory-implementation.md)). P4 **GO landed 2026-08-23** ([plan](2026-08-23-p4-museum-rules-implementation.md)). P5 **GO landed 2026-08-23** ([plan](2026-08-23-p5-repo-map-layers-implementation.md)). Keep-20 roll + W5 CI-from-`gates.yml` (H6) **GO landed 2026-08-23**. Buildable packets P0–P5 and those two parked GOs are closed. **P6–P10 GO landed 2026-08-23** ([plan](2026-08-23-p6-p10-residuals-implementation.md)). Not a queue row.
+**AUTHORIZATION:** Plans only. No packet in this file is GO’d by committing it. Bind ([`2026-08-23-bind-operator-queue-implementation.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-bind-operator-queue-implementation.md)) **GO landed 2026-08-23**; bind row 3 then **closed** (Lane A scoped decline; last pre-G0 slot unspent). P2 Approach A **GO landed 2026-08-23** ([plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-p2-memory-demote-implementation.md)). P3 **GO landed 2026-08-23** ([plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-p3-docs-runtime-inventory-implementation.md)). P4 **GO landed 2026-08-23** ([plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-p4-museum-rules-implementation.md)). P5 **GO landed 2026-08-23** ([plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-p5-repo-map-layers-implementation.md)). Keep-20 roll + W5 CI-from-`gates.yml` (H6) **GO landed 2026-08-23**. Buildable packets P0–P5 and those two parked GOs are closed. **P6–P10 GO landed 2026-08-23** ([plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-p6-p10-residuals-implementation.md)). Not a queue row.
 
 **Goal:** Name the first-look / second-look pain points that the bind plan explicitly left open, group them into independent packets, and sequence them so we do not open a new control-plane campaign that recreates the defect. Second wave: split leftover first-look claims into packets that do not duplicate P0–P5, keep-20, W5 H6, or the [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md).
 
@@ -76,7 +76,7 @@ P2–P5 are closed. P6–P10 landed 2026-08-23 (same PR; README + STATE diet + t
 
 ### P0 — Bind the operator queue
 
-**Owner plan:** [`2026-08-23-bind-operator-queue-implementation.md`](2026-08-23-bind-operator-queue-implementation.md)
+**Owner plan:** [`2026-08-23-bind-operator-queue-implementation.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-bind-operator-queue-implementation.md)
 
 **Start when:** done — row 3 named (Lane A). Remaining bind work is this land, not a second GO.
 
@@ -113,7 +113,7 @@ Do not reopen P1 as a packet.
 
 ### P2 — MEMORY.md reach (assumptions-sweep D1)
 
-**Problem:** Rule 7 names `MEMORY.md` + memory files as the owner of durable atomic facts ([`docs/operational_rules.md`](../../operational_rules.md) §7). That path is `C:\Users\joshu\.claude\projects\C--Users-joshu-multi-firm-operations\memory\MEMORY.md` — outside the worktree. No retention test, no gate. A stale line re-enters every session as settled fact. Recorded as D1 in [`docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md`](../../notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md).
+**Problem:** Rule 7 names `MEMORY.md` + memory files as the owner of durable atomic facts ([`docs/operational_rules.md`](../../operational_rules.md) §7). That path is `C:\Users\joshu\.claude\projects\C--Users-joshu-multi-firm-operations\memory\MEMORY.md` — outside the worktree. No retention test, no gate. A stale line re-enters every session as settled fact. Recorded as D1 in [`docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md).
 
 **Approaches (pick at packet GO; recommended = A):**
 
@@ -314,7 +314,7 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 
 | Item | Why parked | Owner |
 |---|---|---|
-| W5 CI-from-`gates.yml` (H6) | **Landed 2026-08-23** | [`2026-08-23-w5-ci-from-gates-yml-implementation.md`](2026-08-23-w5-ci-from-gates-yml-implementation.md) · [W5 addendum](../../adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--h6-hold-lifted-ci-composition-from-gatesyml) |
+| W5 CI-from-`gates.yml` (H6) | **Landed 2026-08-23** | [`2026-08-23-w5-ci-from-gates-yml-implementation.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md) · [W5 addendum](../../adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--h6-hold-lifted-ci-composition-from-gatesyml) |
 | SESSIONS keep-20 roll | **Landed 2026-08-23** | [`scripts/roll_sessions.py`](../../../scripts/roll_sessions.py) · archive `docs/ltm/notes/archive/sessions/` |
 | Generation dryness | bind row 3 closed; object-layer sequence already authored | [channel ADR addendum](../../adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell) · [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md) |
 | Mass CATALOG Verdict / `--slug` | catalog ADR forbids without its own GO | [`2026-08-22-catalog-hot-vs-disposition.md`](../../adr/2026-08-22-catalog-hot-vs-disposition.md) |

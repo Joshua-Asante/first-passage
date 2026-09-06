@@ -7,7 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** this session's own two incidents (below); [`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) §2 (the narrowly-scoped precedent this generalizes); `docs/notes/notice/N-2026-07-26-forced-flow-census.md` (pruned at the Great Prune; retrieve via `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`; source of the "paste the output" language lifted below); [`docs/briefs/pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md`](../briefs/pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md) / Q-XMEM-1 (a heavier, still-unbuilt adjacent fix — not superseded, not required by this ADR)
+**Related:** this session's own two incidents (below); [`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) §2 (the narrowly-scoped precedent this generalizes); `docs/notes/notice/N-2026-07-26-forced-flow-census.md` (pruned at the Great Prune; retrieve via `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`; source of the "paste the output" language lifted below); [`docs/briefs/pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/2026-07-27-fts5-delete-falsifier-prereg.md) / Q-XMEM-1 (a heavier, still-unbuilt adjacent fix — not superseded, not required by this ADR)
 **Layer:** methodology
 
 ---

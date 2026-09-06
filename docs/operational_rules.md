@@ -466,8 +466,8 @@ venue (the venue/cost add-back condition,
 [`docs/adr/2026-06-14-rejected-candidate-patterns.md`](adr/2026-06-14-rejected-candidate-patterns.md)
 §A). A **PASS is necessary-not-sufficient** — the pre-registered backtest still
 runs. This makes the L-COST-GEOMETRY lesson (the USOIL spike-fader kill,
-[`lab/archive/usoil_rdm/RESULTS.md`](../lab/archive/usoil_rdm/RESULTS.md) (stub:
-[`lab/analysis/usoil_rdm/CARD.md`](../lab/analysis/usoil_rdm/CARD.md)); the
+[`lab/archive/usoil_rdm/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/usoil_rdm/RESULTS.md) (stub:
+[`lab/analysis/usoil_rdm/CARD.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/usoil_rdm/CARD.md)); the
 USDCAD durable finding #1) a mechanical pre-flight rather than a post-hoc finding.
 
 **Origin:** 2026-06-11 USDCAD parallel-session collision — two same-day sessions

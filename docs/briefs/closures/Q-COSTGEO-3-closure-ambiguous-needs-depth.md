@@ -2,7 +2,7 @@
 
 **Verdict:** `AMBIGUOUS-NEEDS-DEPTH` — the pre-registered gate fired cleanly (D1 = 0.0% ≪ 90%). The instrument executed end-to-end; the level-1 schema cannot bound the cost because **the live order is far larger than the displayed book**, which is itself the finding.
 **Closed:** 2026-07-24
-**Pre-registration:** [`Q-COSTGEO-3-verdict-preregistration.md`](../pre-registration/Q-COSTGEO-3-verdict-preregistration.md) — `FROZEN`, signed 2026-07-23 / JA, freeze commit **`4aa9971`**
+**Pre-registration:** [`Q-COSTGEO-3-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-COSTGEO-3-verdict-preregistration.md) — `FROZEN`, signed 2026-07-23 / JA, freeze commit **`4aa9971`**
 **Spend:** **$3.5767** (`tbbo`, 34 MYM event-days, exactly the verified estimate; budget gate passed at ceiling $4.00). **First paid databento pull in the cost-geometry line.**
 **Live effect:** **none.** c1 rung stays WATCH-1 0.50× / disarmed; no cost constant changed; lock HELD. But this produces a **pre-B7 safety flag** — see §4.
 **Artifacts:** [`lab/analysis/c1/c1_cost_geometry_mym_add_2026-07-24/measured.json`](../../../lab/analysis/c1/c1_cost_geometry_mym_add_2026-07-24/measured.json).

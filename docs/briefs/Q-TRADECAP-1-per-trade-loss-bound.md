@@ -1,6 +1,6 @@
 # Q-TRADECAP-1 — Is there any bound on a single trade's realized dollar loss?
 
-**Status:** `CLOSED-RESOLVED 2026-08-23` — all four checks confirm no per-trade dollar-loss bound exists anywhere in the live sizing/arming path. Closure: [`closures/Q-TRADECAP-1-closure-resolved.md`](closures/Q-TRADECAP-1-closure-resolved.md).
+**Status:** `CLOSED-RESOLVED 2026-08-23` — all four checks confirm no per-trade dollar-loss bound exists anywhere in the live sizing/arming path. Closure: [`closures/Q-TRADECAP-1-closure-resolved.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TRADECAP-1-closure-resolved.md).
 **Authored:** 2026-08-18
 **Closed:** 2026-08-23
 **Authors:** Joshua + Claude Code
@@ -163,4 +163,4 @@ grep -n "71.2%" docs/methodology/1r_estimation.md
 - [x] Section 6 triggers specific
 - [x] Section 8 pre-registration committed 2026-08-23, before Phase 1 ran
 - [x] Section 10 hooks runnable
-- [x] Operator GO given 2026-08-23 ("GO on Q-TRADECAP-1"); Phase 1 executed same session — see [`closures/Q-TRADECAP-1-closure-resolved.md`](closures/Q-TRADECAP-1-closure-resolved.md)
+- [x] Operator GO given 2026-08-23 ("GO on Q-TRADECAP-1"); Phase 1 executed same session — see [`closures/Q-TRADECAP-1-closure-resolved.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TRADECAP-1-closure-resolved.md)

@@ -1,10 +1,10 @@
 # 08 — Audit hooks (runnable)
 
-**What this file is.** Every runnable check the two-round audit produced: round 1's **H1–H25** ported and **re-executed at HEAD** (not carried forward on trust), **R1–R21** for the round-2 surfaces, and two structural hooks — **X1** re-derives the combined finding counts, **X2** verifies this section set is intact. Each hook names the finding it binds, in [`02-blockers.md`](02-blockers.md) / [`03-agent-facing.md`](03-agent-facing.md) / [`04-misleading.md`](04-misleading.md) / [`05-cosmetic.md`](05-cosmetic.md) / [`06-operator-judgement.md`](06-operator-judgement.md) / [`07-followups.md`](07-followups.md). **No hook here targets a finding that does not appear in those files.**
+**What this file is.** Every runnable check the two-round audit produced: round 1's **H1–H25** ported and **re-executed at HEAD** (not carried forward on trust), **R1–R21** for the round-2 surfaces, and two structural hooks — **X1** re-derives the combined finding counts, **X2** verifies this section set is intact. Each hook names the finding it binds, in [`02-blockers.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/02-blockers.md) / [`03-agent-facing.md`](03-agent-facing.md) / [`04-misleading.md`](04-misleading.md) / [`05-cosmetic.md`](05-cosmetic.md) / [`06-operator-judgement.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/06-operator-judgement.md) / [`07-followups.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/07-followups.md). **No hook here targets a finding that does not appear in those files.**
 
 **Anchor.** Round 1 recorded its hooks at `e031225`, **before** any fix. **Everything below was executed at HEAD `0af62ec`** (post-B1/B2/B3/FU-1, post-`0af62ec` proposed ADR) during the 2026-08-05→06 session, in this worktree, and **the recorded output is what it actually printed.** A hook asserting a fix is worth only what its last execution is worth.
 
-**Why this discipline is not ceremony.** A hook written against a *mental model* of a file rather than its **literal bytes** is a named recurring trap in this repo, and [`01-diagnostics.md`](01-diagnostics.md) §3.3 records the estate's own instance: the 08-04 de-scope's §10 sweep hook certified itself against a pattern that returns **0 hits** on the artifact it most needed to reach. This pass found three more of exactly that shape — **H9** flipped green on a still-open finding, **R12** returns 17 where its own ADR says *"Expected: empty"*, and **R13** raises an IO error where it was written to print a PASS.
+**Why this discipline is not ceremony.** A hook written against a *mental model* of a file rather than its **literal bytes** is a named recurring trap in this repo, and [`01-diagnostics.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/01-diagnostics.md) §3.3 records the estate's own instance: the 08-04 de-scope's §10 sweep hook certified itself against a pattern that returns **0 hits** on the artifact it most needed to reach. This pass found three more of exactly that shape — **H9** flipped green on a still-open finding, **R12** returns 17 where its own ADR says *"Expected: empty"*, and **R13** raises an IO error where it was written to print a PASS.
 
 **Conventions.** `rg` exit code **1** with no output means **zero matches** and is recorded as such. Line numbers are as of `0af62ec`. Hooks that assert *absence* are the fragile class — re-read the file if one flips. Commands are POSIX shell (Git Bash on this machine); `rg` is ripgrep 14.1.1.
 
@@ -46,11 +46,11 @@
 | **R6** | Measured whole-file, `.claude/commands/post-merge.md` looks **4** gates short; `archive_lab_analysis` appears at L40–41 in a *different* step. | Restricted to the L27–34 fallback block → **5**, matching A13 exactly. Pattern-sensitive; run the hook, do not quote a remembered number. |
 | **R8** | First method was to *run* `scripts/pine_check_audit.sh`. It **POSTs to the live TradingView Guest endpoint** (its own header says so). | Replaced with a static form that reproduces the vacuity without touching the network. |
 | **R12** | The ADR's own §10 command returns **17** against *"Expected: empty"*. My first diagnosis — `--all` unions with `--branches` — is **wrong**: dropping `--all` still returns 17. | Correct cause is that `--branches=cursor/*` scopes by **reachability**, and all five `cursor/*` branches have `main` merged in. Verified the prescribed `--not main` repair returns empty. |
-| **R21** | The naive "unwired script" measure returns **16**, not the **22** cited in [`01-diagnostics.md`](01-diagnostics.md) §3.2 and [`07-followups.md`](07-followups.md) FU-17. | Neither number is wrong: 22 = unwired **∪ mis-scoped**, and mis-scoped is not mechanically derivable. Shipped explicitly as a **floor**. |
+| **R21** | The naive "unwired script" measure returns **16**, not the **22** cited in [`01-diagnostics.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/01-diagnostics.md) §3.2 and [`07-followups.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/07-followups.md) FU-17. | Neither number is wrong: 22 = unwired **∪ mis-scoped**, and mis-scoped is not mechanically derivable. Shipped explicitly as a **floor**. |
 
 **Nothing was shipped aspirationally.** Every fence below was pasted from a terminal.
 
-**One tree-state note, because it is the exact side effect D2 exists to avoid.** At the start of this pass the worktree carried an **uncommitted 60-line `## Run 2026-08-08` block** in `docs/notes/sentinel/queue.md`, left by an earlier measuring run. No section file cites its output, and [`02-blockers.md`](02-blockers.md) explicitly declines to re-run that command for this reason. It was reverted (`git checkout -- docs/notes/sentinel/queue.md`); `git status` is clean apart from this section directory. **A future-dated sentinel run block, planted three days before the gate it feeds, is a record defect — not a measurement.**
+**One tree-state note, because it is the exact side effect D2 exists to avoid.** At the start of this pass the worktree carried an **uncommitted 60-line `## Run 2026-08-08` block** in `docs/notes/sentinel/queue.md`, left by an earlier measuring run. No section file cites its output, and [`02-blockers.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/02-blockers.md) explicitly declines to re-run that command for this reason. It was reverted (`git checkout -- docs/notes/sentinel/queue.md`); `git status` is clean apart from this section directory. **A future-dated sentinel run block, planted three days before the gate it feeds, is a record defect — not a measurement.**
 
 ---
 
@@ -80,7 +80,7 @@ Executed at 0af62ec:
   check_adr_graph: OK (enabled=['A1', 'A2', 'A3', 'A4', 'A6'])
 ```
 
-**Read the L7 wording, not just the count.** The edge is scoped to the deployment limb and enumerates what still stands — which is what makes B1 closed rather than merely papered. `Superseded-by: none` at L4 is **correct and must stay**: the ADR is not wholly superseded. Residues **R-B1a** / **R-B1b** ([`07-followups.md`](07-followups.md)) are open and are *not* asserted by this hook.
+**Read the L7 wording, not just the count.** The edge is scoped to the deployment limb and enumerates what still stands — which is what makes B1 closed rather than merely papered. `Superseded-by: none` at L4 is **correct and must stay**: the ADR is not wholly superseded. Residues **R-B1a** / **R-B1b** ([`07-followups.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/07-followups.md)) are open and are *not* asserted by this hook.
 
 ## H2 — B2: the 08-08 rider enumeration. ✅ FIXED (`a818b3f`)
 
@@ -120,7 +120,7 @@ Executed:
   L278-282  all five P-gates named individually in the hand-check table, with their prose quoted
 ```
 
-**Round 1 said four P-gates. It is five.** `2026-07-03-hardcore-p5-source-truth-rail-gate.md` carries the same prose-only shape. Corrected in [`01-diagnostics.md`](01-diagnostics.md) §3.1 rather than quietly restated.
+**Round 1 said four P-gates. It is five.** `2026-07-03-hardcore-p5-source-truth-rail-gate.md` carries the same prose-only shape. Corrected in [`01-diagnostics.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/01-diagnostics.md) §3.1 rather than quietly restated.
 
 **The counts are not constants** — 34 / 56 moved from 33 / 54 in three commits. That is the board's own rule (*enumerate, never cite from memory*) demonstrating itself, and it is why **R-B2a** (the durable additive fix) is still owed.
 
@@ -262,7 +262,7 @@ The single hit is **L4**, added by B1's fix:
   target **evaluation included** and withdrew both Striker ...
 ```
 
-**One correct banner at the top of a 400-line desk document turned a whole-file absence hook green while every finding it was written for is untouched.** That is a fail-open, and it is the same shape [`01-diagnostics.md`](01-diagnostics.md) §3.3 diagnoses in the de-scope's own §10 sweep. **Replacement, keyed to the literal text rather than to a count:**
+**One correct banner at the top of a 400-line desk document turned a whole-file absence hook green while every finding it was written for is untouched.** That is a fail-open, and it is the same shape [`01-diagnostics.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/01-diagnostics.md) §3.3 diagnoses in the de-scope's own §10 sweep. **Replacement, keyed to the literal text rather than to a count:**
 
 ```bash
 rg -n 'whenever attended time is available' docs/notes/rail_build/RUNBOOK.md
@@ -424,7 +424,7 @@ Executed at 0af62ec:
   4                                   <- four dry_run references
 ```
 
-**B6 PASSED 2026-07-20**, so by L5's own terms its restraint reads **discharged**, and the four numbered steps then read live. Round 1's highest-priority §5.10 row; round 2 confirmed it as **A1** (7 findings, one file) and it is **FU-14**, the highest open consequence in [`07-followups.md`](07-followups.md). **R1** carries the full round-2 form.
+**B6 PASSED 2026-07-20**, so by L5's own terms its restraint reads **discharged**, and the four numbered steps then read live. Round 1's highest-priority §5.10 row; round 2 confirmed it as **A1** (7 findings, one file) and it is **FU-14**, the highest open consequence in [`07-followups.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/07-followups.md). **R1** carries the full round-2 form.
 
 ## H17 — falsifier coverage is a minority and eroding (C17). ❌ Open, and it drifted
 
@@ -566,7 +566,7 @@ The guard `if needle not in claude: continue` then skips the only registered che
 
 ## H24 — the frozen set, as a post-remediation guard. ✅ Baseline re-pinned at HEAD
 
-Run this **after** any commit executing a row in `03` / `04` / `05`. It asserts the surfaces [`06-operator-judgement.md`](06-operator-judgement.md) §6 and the round-1 §6.1 freeze. **A failure means the remediation exceeded its mandate.**
+Run this **after** any commit executing a row in `03` / `04` / `05`. It asserts the surfaces [`06-operator-judgement.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/06-operator-judgement.md) §6 and the round-1 §6.1 freeze. **A failure means the remediation exceeded its mandate.**
 
 ```bash
 rg -n '^DD_TRIGGER|^DD_SCALE' core/dd_protection.py
@@ -588,7 +588,7 @@ Executed at 0af62ec — IDENTICAL to the e031225 baseline. Every later run must 
   11 occurrences of 3.0% ;  5x "≥ 50%" ;  5x "1.0%"
 ```
 
-**Four fix commits and a proposed ADR landed between the two runs and this hook did not move a byte.** That is the audit's own boundary claim ([`01-diagnostics.md`](01-diagnostics.md) §3.5), measured rather than asserted.
+**Four fix commits and a proposed ADR landed between the two runs and this hook did not move a byte.** That is the audit's own boundary claim ([`01-diagnostics.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/01-diagnostics.md) §3.5), measured rather than asserted.
 
 ## H25 ⚠ REPAIRED — the pre-decision vocabulary sweep, as a baseline to diff against (M44 / FU-8)
 
@@ -1170,7 +1170,7 @@ Executed at 0af62ec:
     retire_adr · sync_pine_to_worktree · validate_c1_monitoring_acceptance
 ```
 
-⚠ **This returns 16, and [`01-diagnostics.md`](01-diagnostics.md) §3.2 / FU-17 say 22. Neither is wrong.** 22 = **unwired ∪ mis-scoped**, and *mis-scoped* — a script that is wired but reads the wrong tree — **cannot be derived by any pattern**; it is exactly what **R8** and **R16** had to establish by hand, one script at a time. **16 is a mechanically reproducible floor. The gap of 6 is the part that needs eyes**, and that is FU-17's actual deliverable.
+⚠ **This returns 16, and [`01-diagnostics.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/01-diagnostics.md) §3.2 / FU-17 say 22. Neither is wrong.** 22 = **unwired ∪ mis-scoped**, and *mis-scoped* — a script that is wired but reads the wrong tree — **cannot be derived by any pattern**; it is exactly what **R8** and **R16** had to establish by hand, one script at a time. **16 is a mechanically reproducible floor. The gap of 6 is the part that needs eyes**, and that is FU-17's actual deliverable.
 
 **Do not read the 16 as 16 defects, either.** Several are legitimately operator-run tools (`pine_check`, `repo_hygiene`, `retire_adr`). The census is the *input* to the wire-or-retire ruling, not the ruling.
 
@@ -1328,7 +1328,7 @@ Run 2 — re-executed immediately after this file was written, over 01-08:
 
 **The same ADR is linked at three different depths inside this set, and none of the three resolves.** **Verified**: the correct form from `docs/notes/audits/programme-audit/2026-08-05-claim-alignment/` is `../../../../adr/…` — four `..` reach `docs/`, and `01-diagnostics.md:28` already uses exactly that and resolves. Fix them mechanically from this hook's output; do not hand-verify 30 links.
 
-3. **⚠ One dangling *section-file* reference, and it is the exact failure this hook was built for.** `05-cosmetic.md` cites **`09-unadjudicated.md`** — a section file that **does not exist**. The two unadjudicated items (**U1**, **U2**) live in [`06-operator-judgement.md`](06-operator-judgement.md) §3. **A reader following that pointer concludes two findings were lost in the split.** They were not; the pointer is wrong. **FIXED when** the backticked-ref limb returns exactly one hit — this file's, below.
+3. **⚠ One dangling *section-file* reference, and it is the exact failure this hook was built for.** `05-cosmetic.md` cites **`09-unadjudicated.md`** — a section file that **does not exist**. The two unadjudicated items (**U1**, **U2**) live in [`06-operator-judgement.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/06-operator-judgement.md) §3. **A reader following that pointer concludes two findings were lost in the split.** They were not; the pointer is wrong. **FIXED when** the backticked-ref limb returns exactly one hit — this file's, below.
 
    ⚠ **This file is the second hit, and it is a self-match, not a defect.** Run 2's `delta` is `08-hooks.md → 09-unadjudicated.md`: the hook flags this section *because it quotes the dangling name in order to report it*. Round 1 hit the identical shape at **H15**, where the naive `KEEP-AS-IS` pattern matched its own printed command line. **A grep run over the document that contains it is self-referential.** Do not "fix" this file; after `05-cosmetic.md` is repaired the correct expected output is **one** section-ref hit, here.
 
@@ -1380,7 +1380,7 @@ git checkout -- docs/notes/sentinel/queue.md
 git status --short                                # now:  ?? <this section directory> only
 ```
 
-**The field-form figure at HEAD is therefore stated as DERIVED, never measured** — [`02-blockers.md`](02-blockers.md) B2.2 does exactly this (55 ADR mentions − 18 prose-only residue = 37) and labels it. **Re-measure at the 08-08 gate, where the write is the point.** Only the `--help` invocation is safe to run for verification, and **H2**'s companion in `02` does exactly that.
+**The field-form figure at HEAD is therefore stated as DERIVED, never measured** — [`02-blockers.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/02-blockers.md) B2.2 does exactly this (55 ADR mentions − 18 prose-only residue = 37) and labels it. **Re-measure at the 08-08 gate, where the write is the point.** Only the `--help` invocation is safe to run for verification, and **H2**'s companion in `02` does exactly that.
 
 ## D3 — that the deployed pin matches the deployed image (A1(e) / H22 / M20) — **NEW**
 
@@ -1403,4 +1403,4 @@ Executed at 0af62ec (tail):
 
 ---
 
-**Section ends.** Every hook above was executed at `0af62ec` and its recorded output is what it printed. **Six hooks were repaired** (H9, H25, R6, R8, R12, R21) and **three discarded** (D1, D2, D3); none was shipped aspirationally. Findings remain **recommendations pending operator ruling** except the four marked FIXED/RULED in [`02-blockers.md`](02-blockers.md) and [`07-followups.md`](07-followups.md). No edit was applied by this file; the only tree change made during its authoring was reverting the spurious `docs/notes/sentinel/queue.md` write recorded under **D2**.
+**Section ends.** Every hook above was executed at `0af62ec` and its recorded output is what it printed. **Six hooks were repaired** (H9, H25, R6, R8, R12, R21) and **three discarded** (D1, D2, D3); none was shipped aspirationally. Findings remain **recommendations pending operator ruling** except the four marked FIXED/RULED in [`02-blockers.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/02-blockers.md) and [`07-followups.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-05-claim-alignment/07-followups.md). No edit was applied by this file; the only tree change made during its authoring was reverting the spurious `docs/notes/sentinel/queue.md` write recorded under **D2**.

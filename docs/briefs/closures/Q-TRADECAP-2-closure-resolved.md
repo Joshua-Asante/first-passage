@@ -3,10 +3,10 @@
 **Verdict:** `RESOLVED`
 **Closed:** 2026-08-24
 **Lane:** `UNASSIGNED`
-**Pre-registration:** [`Q-TRADECAP-2-verdict-preregistration.md`](../pre-registration/Q-TRADECAP-2-verdict-preregistration.md) — frozen at `4d6761b`
+**Pre-registration:** [`Q-TRADECAP-2-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-TRADECAP-2-verdict-preregistration.md) — frozen at `4d6761b`
 **Spend / K:** $0.00 · K consumed: 0
 **Live effect:** none — election record only; no tripwire, cap, `dd_protection`, arming, or `sl=` wire
-**Artifacts:** [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) (`Accepted`) · [consult](../../notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md)
+**Artifacts:** [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) (`Accepted`) · [consult](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md)
 
 ---
 

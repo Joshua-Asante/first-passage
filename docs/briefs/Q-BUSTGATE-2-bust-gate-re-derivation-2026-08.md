@@ -1,6 +1,6 @@
 # Q-BUSTGATE-2 — Does the 2026-08-13 external population data or the updated Tradeify fee schedule move the Part-A eval bust ceiling?
 
-**Status:** `CLOSED-RESOLVED 2026-08-15` — H-BUSTGATE-2's constrained decision rule fires `RESOLVED`: the incumbent **3.0%** ceiling is unchanged. Closure: [`closures/Q-BUSTGATE-2-closure-resolved.md`](closures/Q-BUSTGATE-2-closure-resolved.md).
+**Status:** `CLOSED-RESOLVED 2026-08-15` — H-BUSTGATE-2's constrained decision rule fires `RESOLVED`: the incumbent **3.0%** ceiling is unchanged. Closure: [`closures/Q-BUSTGATE-2-closure-resolved.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-BUSTGATE-2-closure-resolved.md).
 **Authored:** 2026-08-15
 **Closed:** 2026-08-15
 **Authors:** Joshua (operator directive — "re-derive the N-SURV bust ceiling") + Claude Code (22-agent adversarial workflow: recon → pre-registration → 2-round stress test → execution → independent arithmetic re-check).
@@ -8,7 +8,7 @@
 **Sub-questions opened:** none.
 **Loop:** Inquire-phase Pre-Q — closure gated on the frozen §D decision rule in the pre-registration.
 **Artifact path:** `docs/briefs/Q-BUSTGATE-2-bust-gate-re-derivation-2026-08.md`
-**Pre-registration (frozen, post-adversarial-stress-test, committed before Phase 3 read any candidate-specific number):** [`pre-registration/Q-BUSTGATE-2-verdict-preregistration.md`](pre-registration/Q-BUSTGATE-2-verdict-preregistration.md)
+**Pre-registration (frozen, post-adversarial-stress-test, committed before Phase 3 read any candidate-specific number):** [`pre-registration/Q-BUSTGATE-2-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-BUSTGATE-2-verdict-preregistration.md)
 
 ---
 
@@ -45,7 +45,7 @@ Standing doctrine tested: the `concept-not-constant` change-control chain (any r
 - **`2026-07-23-c1-rung-selection-ev-objective.md`** (`Accepted`) — the fork-B ADR. Its regime-robustness precondition (§2) is inherited wholesale here, not re-derived — re-deriving it would itself be the forbidden "re-scoping into rung-selection" move (pre-reg §F.4).
 - **`N-2026-08-13-external-eval-population-data.md`** — Notice-phase observation log, records only; rules on nothing. Supplies the credibility-margin input and the explicit governing caveat against gate-shopping on population data.
 - **`2026-07-13-prop-survivor-scoring-prereg.md`** — the frozen object under (non-)re-derivation. Byte-unedited by both Q-BUSTGATE-1 and this brief (Trap #12).
-- **Programme-audit precedent** — [`2026-08-15-msl-wall-scope-audit.md`](../notes/audits/programme-audit/2026-08-15-msl-wall-scope-audit.md), landed the same session, independently confirmed the domain-bar / ratification-and-wiring discipline this brief also relies on (D2/D3, `docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md`) is functioning correctly, not ceremonially.
+- **Programme-audit precedent** — [`2026-08-15-msl-wall-scope-audit.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-08-15-msl-wall-scope-audit.md), landed the same session, independently confirmed the domain-bar / ratification-and-wiring discipline this brief also relies on (D2/D3, `docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md`) is functioning correctly, not ceremonially.
 
 ---
 
@@ -124,7 +124,7 @@ Not a self-executing closed-artifact read like Q-BUSTGATE-1 (no new numbers were
 
 ## §8 — Verdict pre-registration
 
-Frozen method + decision rule: [`pre-registration/Q-BUSTGATE-2-verdict-preregistration.md`](pre-registration/Q-BUSTGATE-2-verdict-preregistration.md), frozen 2026-08-15 after two adversarial stress-test rounds and before Phase 2/3 touched any candidate-specific arithmetic.
+Frozen method + decision rule: [`pre-registration/Q-BUSTGATE-2-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-BUSTGATE-2-verdict-preregistration.md), frozen 2026-08-15 after two adversarial stress-test rounds and before Phase 2/3 touched any candidate-specific arithmetic.
 
 Pre-registration commit hash: *(populated at commit time — authored same session as this brief; the freeze-before-read property is evidenced by the workflow's own phase ordering — "Ceiling pre-registration" completed and stress-tested before "Ceiling execution" began — not by a preceding calendar day, since both are read-only research completed in one continuous session. If committed, the pre-registration file is committed first, in its own commit, ahead of this brief + closure, to preserve the same ordering Q-BUSTGATE-1 modeled.)*
 Pre-registration date: 2026-08-15
@@ -133,7 +133,7 @@ Pre-registration date: 2026-08-15
 
 ## §9 — Closure record format
 
-Landed verdict: `RESOLVED`. Closure at [`closures/Q-BUSTGATE-2-closure-resolved.md`](closures/Q-BUSTGATE-2-closure-resolved.md), recording the Thread 1/Thread 2 split, the four minor sourcing/rounding defects the adversarial final check found (none verdict-affecting), and the mandatory Iterate block.
+Landed verdict: `RESOLVED`. Closure at [`closures/Q-BUSTGATE-2-closure-resolved.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-BUSTGATE-2-closure-resolved.md), recording the Thread 1/Thread 2 split, the four minor sourcing/rounding defects the adversarial final check found (none verdict-affecting), and the mandatory Iterate block.
 
 ---
 

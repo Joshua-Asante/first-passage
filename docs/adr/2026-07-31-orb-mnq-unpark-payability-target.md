@@ -15,7 +15,7 @@ itself doubly stale as a current figure.
 **Superseded-in-part-by:** [`2026-08-03-orb-mnq-repark-payability-falsified.md`](2026-08-03-orb-mnq-repark-payability-falsified.md) — the **§2 unpark decision**, the **payable-`Tradeify_Select_100K`-leg target**, and the **§4 trigger table** only. T2 was ruled FIRED on the Part A bust reading; ORB-MNQ-1 returns to `PARKED` and the target is recorded FALSIFIED. §3's evidence, Addendum 2026-07-31b (both rulings), Addendum 2026-07-31c (T1 `PASS`), and Addendum 2026-08-02 (T2 measurement) are **retained as `Accepted` record**.
 **Retain-until:** none
 **Authors:** Cursor (measurement + recorder); operator GO in chat 2026-07-31
-**Related:** [`lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md`](../../lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md) (lifecycle admission, unchanged) · [`Q-COMPOSE-1 closure`](../briefs/closures/Q-COMPOSE-1-closure-falsified.md) (kills the book-leg role, not the candidate) · [`2026-07-30-tradeify-native-fade-program-design.md`](../superpowers/specs/2026-07-30-tradeify-native-fade-program-design.md) (payability arithmetic this ADR corrects for ORB's shape)
+**Related:** [`lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md) (lifecycle admission, unchanged) · [`Q-COMPOSE-1 closure`](../briefs/closures/Q-COMPOSE-1-closure-falsified.md) (kills the book-leg role, not the candidate) · [`2026-07-30-tradeify-native-fade-program-design.md`](../superpowers/specs/2026-07-30-tradeify-native-fade-program-design.md) (payability arithmetic this ADR corrects for ORB's shape)
 **Layer:** research-authorization status. **No locked parameter, allocation, `dd_protection` constant, `ACTIVE_FIRM`, rail, `LEG_MAP`, or Pine construct is touched.**
 
 ---
@@ -23,11 +23,11 @@ itself doubly stale as a current figure.
 ## §0 — Rule 0 reads (production source, verified this session at `308fd62`)
 
 - [`docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) §Addendum 2026-07-24 — the clause this ADR partially supersedes. Verbatim: *"MYM and MNQ are terminal, and we are still open to improving execution (better fills and exits)"*; and *"a reconstruction re-open requires a fresh operator GO + pre-registration, not a revert of this addendum."*
-- [`lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md`](../../lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md) — lifecycle `CANDIDATE @ 1.00×` with four standing caveats; **no `core/lifecycle.py` write**.
+- [`lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md) — lifecycle `CANDIDATE @ 1.00×` with four standing caveats; **no `core/lifecycle.py` write**.
 - [`docs/briefs/pre-registration/2026-07-16-orb-nas100-mnq-reconstruction-preregistration.md`](../briefs/pre-registration/2026-07-16-orb-nas100-mnq-reconstruction-preregistration.md) §2/§3/§5 — frozen construct, `K_intrinsic=1 / K_eff=2`, DSR floor ladder (K=1→0.65 · 2→0.85 · 3→0.98 · 4→1.06 FAIL), and the forbidden-moves list (no conditioning gates).
 - [`core/strategies/orb/orb_mnq_v0_2_CANDIDATE.md`](../../core/strategies/orb/orb_mnq_v0_2_CANDIDATE.md) — v0.2 D1–D5 venue-conformance amendment; D5 pins full-session `sessOpen`/`sessClose` as constants (landed `66c2a14`, PR #574).
-- [`lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md) — the TV-export scorecard on the **defective 15:30 clock**; its §3 forbids freezing a k policy until a 16:00 re-export is scored.
-- [`lab/analysis/orb/orb_mnq_2026-07/RESULTS_stage7.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_stage7.md) — full-window Tradeify DSR **FAIL** at $0.91/side; 2021+ passes all four FRIENDLY firms to 3 ticks.
+- [`lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md) — the TV-export scorecard on the **defective 15:30 clock**; its §3 forbids freezing a k policy until a 16:00 re-export is scored.
+- [`lab/analysis/orb/orb_mnq_2026-07/RESULTS_stage7.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_stage7.md) — full-window Tradeify DSR **FAIL** at $0.91/side; 2021+ passes all four FRIENDLY firms to 3 ticks.
 - [`docs/briefs/closures/Q-COMPOSE-1-closure-falsified.md`](../briefs/closures/Q-COMPOSE-1-closure-falsified.md) §Dispositions — *"A failed composed candidate closes; it does not iterate weight (§5)."*
 - [`docs/notes/2026-07-24-tradeify-rulepin-verification.md`](../notes/2026-07-24-tradeify-rulepin-verification.md) — pin 1 **VERIFIED**: *"Winning Day Threshold: … 100K Account: $200 minimum profit per day."*
 - [`STATE.md`](../../STATE.md) pointer log 2026-07-30 — Tradeify enforces the drawdown breach **in real time**, so every bust figure in the repo is a **lower bound**.
@@ -122,7 +122,7 @@ by an unresolved engine/Pine disagreement (T1), which is a halt condition, not a
 
 ## §5 — Forbidden moves (under this ADR)
 
-- **Adopting the 15:30 exit because it backtests better.** Genuinely tempting — it is worth **+$5,832** on the full window, and the "defect" is more profitable than the fix. Ruled out: choosing an exit time on backtest P&L is exit-time tuning, it sits inside the space already pre-killed in [`RESULTS_tv_export_realism.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_tv_export_realism.md) §2b/2c, and it would constitute a new candidate at `K_eff = 3` (DSR floor **0.98**) which the construct's own full-window annSR of **0.890** does not clear. **D5 stands.** The edge loss is the price of conformance, recorded rather than harvested.
+- **Adopting the 15:30 exit because it backtests better.** Genuinely tempting — it is worth **+$5,832** on the full window, and the "defect" is more profitable than the fix. Ruled out: choosing an exit time on backtest P&L is exit-time tuning, it sits inside the space already pre-killed in [`RESULTS_tv_export_realism.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_tv_export_realism.md) §2b/2c, and it would constitute a new candidate at `K_eff = 3` (DSR floor **0.98**) which the construct's own full-window annSR of **0.890** does not clear. **D5 stands.** The edge loss is the price of conformance, recorded rather than harvested.
 - **Freezing any k policy on the defective 15:30 panel**, or quoting `RESULTS_v02_clock_kgrid.md` dollar paths as current. They are superseded by the correct-clock table in §3.
 - **Re-adding conditioning gates to ORB-MNQ itself.** Four attempts (overnight-path / gap / GEX / T10Y3M) and two selection cuts (Friday, DOW) are FALSIFIED and registered; pre-reg §5 forbids it outright, and any gate makes it a new candidate at floor 0.98.
 - **Iterating the Q-COMPOSE-1 book weight.** That closure's §5 forbids weight iteration explicitly; a failed composed candidate closes.
@@ -157,7 +157,7 @@ FALSIFIED today. This ADR authorizes the work that decides it; it does not pre-j
 - [`CLAUDE.md`](../../CLAUDE.md) §Live-execution posture — the pointer line currently reads ORB-MNQ "admitted then PARKED"; add one line, never a retelling.
 - [`STATE.md`](../../STATE.md) — pointer log entry; carry into the operator queue only if it earns operator hours (it does not today).
 - [`docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) — gains `Superseded-in-part-by` for this slug.
-- [`lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md) — add a pointer to the correct-clock supersession.
+- [`lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md) — add a pointer to the correct-clock supersession.
 - [`docs/adr/INDEX.md`](INDEX.md) — regenerate.
 - [`docs/SESSIONS.md`](../SESSIONS.md) — session entry.
 
@@ -168,7 +168,7 @@ FALSIFIED today. This ADR authorizes the work that decides it; it does not pre-j
 - **Phase 0** — ✅ **DONE 2026-07-31.** Cheap falsifier run PARENT-side before authoring ([`RESULTS_v02_native_clock.md`](../../lab/analysis/orb_mnq_2026-07/RESULTS_v02_native_clock.md), harness `run_v02_native_clock_kgrid.py`). $0.00, no pull, no K spend.
 - **Phase 1** — ✅ **DONE 2026-07-31 (Stage-0 kill of the harvest-lane sibling as framed).** See Addendum 2026-07-31b. Residual sibling work is operator-owned (K-bank adjudication + fade-program route), **not** a gate on accepting this reopen.
 - **Phase 2** — ✅ **DONE 2026-07-31.** Downstream pointer sync per §6; reverse `Superseded-in-part-by` edge added to the 2026-07-16 ADR; `docs/adr/INDEX.md` regenerated; SESSIONS entry appended.
-- **Phase 3** — ✅ **DONE 2026-07-31 (same day).** Operator pasted the reconstructed D5 source (`e3b37857…`) and re-exported after the B7 window closed at 13:00 ET; export `…_2026-07-31_6ce33.csv` prints full-session EOD at **16:00** on 274 fills. **T1 evaluated: PASS** (§Addendum 2026-07-31c). Scorecard regenerated on the correct clock — [`RESULTS_v02_clock_kgrid.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md).
+- **Phase 3** — ✅ **DONE 2026-07-31 (same day).** Operator pasted the reconstructed D5 source (`e3b37857…`) and re-exported after the B7 window closed at 13:00 ET; export `…_2026-07-31_6ce33.csv` prints full-session EOD at **16:00** on 274 fills. **T1 evaluated: PASS** (§Addendum 2026-07-31c). Scorecard regenerated on the correct clock — [`RESULTS_v02_clock_kgrid.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md).
   - *Blocker found and cleared same day:* restoring the gitignored `.pine` at wrap-up exposed that the D5 source pinned as the active working edition (`bad8068d…`) exists on no disk and in no transcript — `.pine` is gitignored and the pinning commit `66c2a14` (PR #574) was authored by a **Cursor cloud agent** on an ephemeral VM, so the bytes died with it. A recurrence of `fd91f37b…` one block above it in the same manifest. The only survivor was the **pre-D5** `f60104eb…`, whose session bounds are chart-overridable `input.int`s — precisely the defect class D5 closed, and the mechanism behind the 15:30 export.
   - *Resolution (operator ruling):* D5 **reconstructed** from `f60104eb…` and re-pinned as `e3b37857…` — the four full-session bounds become constants; early-close bounds stay inputs (calendar, not clock). Values are byte-identical to the pre-D5 defaults (9/30/16/0), so **no parameter or construct moved**; only chart-overridability is removed. Reproducible via [`reconstruct_d5.py`](../../lab/analysis/orb_mnq_2026-07/reconstruct_d5.py) (asserts the base hash first); `pine_check.py` clean. This is a **reconstruction, not a recovery** — it does not reproduce `bad8068d…` byte-for-byte and claims not to.
   - *§3 evidence unaffected:* every number in this ADR comes from the native Python harness, which implements the clock itself and never reads the `.pine`.
@@ -240,7 +240,7 @@ Sourcing tier is the worst available (rank-6 practitioner blog × Tier-C intrada
 
 **Ruling 2 — sibling residual route = (a), scope under the existing fade program.** Operator: *"a"*.
 
-- ORB-complement fade work is routed as a **K=0 Stage-0 δ-extraction under the already-ACTIVE** [`lab/analysis/c1/tradeify_fade_stage0_2026-07-30/`](../../lab/analysis/c1/tradeify_fade_stage0_2026-07-30/) program ($0 spend, K=0, no mechanism scored, MNQ cost pins already held).
+- ORB-complement fade work is routed as a **K=0 Stage-0 δ-extraction under the already-ACTIVE** [`lab/analysis/c1/tradeify_fade_stage0_2026-07-30/`](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_fade_stage0_2026-07-30/) program ($0 spend, K=0, no mechanism scored, MNQ cost pins already held).
 - **No `register_search` open, no new discovery manifest, no K spend** is authorized by this routing. The MNQ Cap seat identified in Ruling 1 stays **unspent**.
 - The catalog's trapped-trader story is **not** carried across — it failed harvest Req 1 and remains failed. Any mechanism scored under the fade program must satisfy that program's own Stage-0 discipline on its own terms.
 - The fade program's two standing operator rulings (roll-window disposition; governing cost-law multiple) are **unchanged and still owed** — this routing does not resolve or bypass them.
@@ -270,7 +270,7 @@ chart-override class it pins shut is closed in practice and not only in source.
 
 Full predicted-vs-observed comparison (direction, per-day Δ, total Δ at k=1, share of days moved,
 worst/best single-day Δ) — table moved to
-[`RESULTS_v02_clock_kgrid.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md),
+[`RESULTS_v02_clock_kgrid.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md),
 the canonical owner. Measured **both** ways and identical to the cent: per-common-day pairing
 against the surviving pre-D5 export, and the published-totals fallback. **The early-close control
 cohort is byte-stable** — all 18 rows unchanged — so the delta is *attributable* to the session
@@ -284,9 +284,9 @@ falsifies it, and no k policy is frozen.
 
 The corrected panel is worse than §3's percentage prediction implied. Full net/PF/maxDD/RF/days≥$200/
 2026-YTD comparison (15:30 published vs 16:00 correct) — see
-[`RESULTS_v02_clock_kgrid.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md),
+[`RESULTS_v02_clock_kgrid.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_v02_clock_kgrid.md),
 the canonical owner. Two figures from that table are cited elsewhere in this repo as owned by this
-ADR (e.g. [`Q-SESSCONF-1`](../briefs/rnd-pipeline/Q-SESSCONF-1-mnq-session-confluence-longer-hold-scoping.md)):
+ADR (e.g. [`Q-SESSCONF-1`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/Q-SESSCONF-1-mnq-session-confluence-longer-hold-scoping.md)):
 corrected-clock **RF 0.93** (was 1.52 published) and **2026 YTD net −$2,431**, n=147 (was −$672
 published). **RF falls below 1** — max drawdown now exceeds net profit over the window, with net
 down *and* drawdown up. **2026 is a material loser, not roughly flat** — this is the regime that
@@ -314,7 +314,7 @@ The k band is **unchanged**: worst day is still −$784, so k ∈ {1,2,3} retain
 
 ## Addendum 2026-08-02 — §4 **T2 measured**. The `intraday_low=` limb is fed for the first time; the trigger's two readings disagree, and the intraday correction decides neither. **Disposition owed — not self-taken.**
 
-**Record:** [`RESULTS_t2_intraday_bust.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md) ·
+**Record:** [`RESULTS_t2_intraday_bust.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md) ·
 harness [`run_t2_intraday_bust.py`](../../lab/analysis/orb_mnq_2026-07/run_t2_intraday_bust.py) ·
 controls [`test_t2_intraday_bust.py`](../../lab/analysis/orb_mnq_2026-07/test_t2_intraday_bust.py) (7 passed).
 **$0** — no databento pull, no cost dry-run, no TV export, no K spend, no manifest, nothing armed.
@@ -342,7 +342,7 @@ traded extreme within it; only the *timestamp* of a crossing is lost, and nothin
 **Monte-Carlo rate** ceiling. Both readings, measured — the literal single-day-bust reading is
 **NOT met** (0 days reach the $3,000 trail at any k ∈ {1,2,3}; k=2 keeps $1,432 headroom), the
 Part-A-bust-MC ceiling reading **IS met** (k=2 intraday-honest 77.01% vs 3.0% — 26× over) — full
-table moved to [`RESULTS_t2_intraday_bust.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md).
+table moved to [`RESULTS_t2_intraday_bust.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md).
 
 ### The intraday correction is not what fires it
 
@@ -352,7 +352,7 @@ bust ≤ 3.0% ∧ P(pass) ≥ 50%, Run-2 (consistency 40%), `Tradeify_Select_100
 1,878 business days. Headline bust via `preflight.summarize_outcomes` (daily+static+**trailing**).
 
 Full k=1/2/3 EOD-arm vs intraday-honest vs P(pass) table — moved to
-[`RESULTS_t2_intraday_bust.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md),
+[`RESULTS_t2_intraday_bust.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md),
 the canonical owner (headline cell: k=2 intraday-honest **77.01%**, P(pass) **22.99%**).
 
 **The ceiling was not crossed *by* intraday honesty; it was already crossed by 71pp.** And **T2's
@@ -386,7 +386,7 @@ measure the re-implementation rather than the barrier clock. Full control batter
 reproduction of production `run_seed`; B: day-loop mirror of `orb_lib.orb_backtest`; G: correct-clock
 anchor reproduction; non-vacuity; adversarial planted-defect tests) plus the one defect the controls
 caught and fixed (a NaN→0.00 excursion clamp on certain early-close days, never affecting the
-headline arm) — see [`RESULTS_t2_intraday_bust.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md)
+headline arm) — see [`RESULTS_t2_intraday_bust.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md)
 and [`test_t2_intraday_bust.py`](../../lab/analysis/orb_mnq_2026-07/test_t2_intraday_bust.py) (7
 passed), the canonical owners.
 
@@ -404,7 +404,7 @@ passed), the canonical owners.
 
   Both venue facts this measurement rests on are recorded in [Rule 13](../operational_rules.md) form
   (verbatim quote, source, date read, scope) in
-  [`RESULTS_t2_intraday_bust.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md),
+  [`RESULTS_t2_intraday_bust.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md),
   the canonical owner: eval accounts carry no drawdown *lock* (help.tradeify.co art. 10495897,
   read 2026-07-22, scoped EVALUATION-ONLY by the source itself), and the real-time breach
   *enforcement* clause carries no phase qualifier, read BROAD per Rule 13's scope rule (same

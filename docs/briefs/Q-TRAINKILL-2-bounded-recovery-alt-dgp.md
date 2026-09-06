@@ -4,11 +4,11 @@
 **Authored:** 2026-08-18
 **Closed:** 2026-08-18
 **Authors:** Joshua (operator GO: "commit and continue with Q-TRAINKILL-2") + Cursor (execution)
-**Parent question:** [`Q-TRAINKILL-1-train-gate-power.md`](Q-TRAINKILL-1-train-gate-power.md) / [`closure`](closures/Q-TRAINKILL-1-closure-ambiguous-hold.md) Iterate entry packet
+**Parent question:** [`Q-TRAINKILL-1-train-gate-power.md`](Q-TRAINKILL-1-train-gate-power.md) / [`closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TRAINKILL-1-closure-ambiguous-hold.md) Iterate entry packet
 **Sub-questions opened:** none
 **Loop:** Inquire-phase Pre-Q — closure gated on Limb 1 (recovery) or Limb 2 (named alternates)
 **Artifact path:** `docs/briefs/Q-TRAINKILL-2-bounded-recovery-alt-dgp.md`
-**Pre-registration:** [`pre-registration/Q-TRAINKILL-2-verdict-preregistration.md`](pre-registration/Q-TRAINKILL-2-verdict-preregistration.md)
+**Pre-registration:** [`pre-registration/Q-TRAINKILL-2-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-TRAINKILL-2-verdict-preregistration.md)
 
 **D-S-A domain:** data (committed closure CIs → recovery census + two named g's)
 **Pre-Q gate:**
@@ -168,7 +168,7 @@ and open a fresh brief.
 
 ## §8 — Verdict pre-registration
 
-File: [`pre-registration/Q-TRAINKILL-2-verdict-preregistration.md`](pre-registration/Q-TRAINKILL-2-verdict-preregistration.md)
+File: [`pre-registration/Q-TRAINKILL-2-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-TRAINKILL-2-verdict-preregistration.md)
 
 Pre-registration sha256 (printed before recovery):
 `86049b89b413b33430e7dfe31d9fc5de5cc46b81c0f23f3ea7877d78c7605b5d`

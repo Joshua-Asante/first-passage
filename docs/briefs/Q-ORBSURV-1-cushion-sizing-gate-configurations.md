@@ -1,6 +1,6 @@
 # Q-ORBSURV-1 — Does cushion-proportional sizing clear the frozen survivor-scoring gate on the ORB-MNQ-1/Tradeify configurations today's informal probes didn't already check?
 
-**Status:** `CLOSED-FALSIFIED 2026-08-20` — full-panel k=2 misses the pass floor (41.51% < 50%); cushion sizing's gate-clear is k-dependent, not a robust property. Closure: [`closures/Q-ORBSURV-1-closure-falsified.md`](closures/Q-ORBSURV-1-closure-falsified.md).
+**Status:** `CLOSED-FALSIFIED 2026-08-20` — full-panel k=2 misses the pass floor (41.51% < 50%); cushion sizing's gate-clear is k-dependent, not a robust property. Closure: [`closures/Q-ORBSURV-1-closure-falsified.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-ORBSURV-1-closure-falsified.md).
 **Authored:** 2026-08-20
 **Closed:** 2026-08-20
 **Authors:** Joshua (operator election: "go bigger — open formal Pre-Qs") + Claude Code (Sonnet 5)
@@ -136,4 +136,4 @@ git log --oneline docs/briefs/pre-registration/Q-ORBSURV-1-verdict-preregistrati
 - [x] §6 gates have specific numerical triggers
 - [x] §8 pre-registration committed BEFORE Phase 1 runs — frozen at `97f301f`, same day as Phase 1/2 execution, operator GO ("execute them now")
 - [x] §10 audit hooks are runnable commands
-- [x] Verification block executed and passing — see [`closures/Q-ORBSURV-1-closure-falsified.md`](closures/Q-ORBSURV-1-closure-falsified.md) §10 audit-hook discharge
+- [x] Verification block executed and passing — see [`closures/Q-ORBSURV-1-closure-falsified.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-ORBSURV-1-closure-falsified.md) §10 audit-hook discharge

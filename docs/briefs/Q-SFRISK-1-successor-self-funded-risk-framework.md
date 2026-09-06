@@ -8,7 +8,7 @@
 **Sub-questions opened:** none yet (D2 / D3 may now fork from this closed Pre-Q — §6 has fired)
 **Loop:** Inquire-phase Pre-Q — gates the first self-funded risk question set before any successor-semantics MC number is produced
 **Artifact path:** `docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md`
-**Verdict pre-registration:** [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](pre-registration/Q-SFRISK-1-verdict-preregistration.md)
+**Verdict pre-registration:** [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md)
 
 > **Numbers discipline (binding):** this Pre-Q freezes the **question architecture** (what replaces P(pass)). It does **not** invent operator risk-tolerance numbers (max-DD %, TUW days, withdrawal rate). Those are declared in a Phase-0 amendment to the §8 pre-registration **before any successor-semantics MC run** — inventing them here would violate rescope ADR §5 ("numbers before question").
 
@@ -36,8 +36,8 @@ Standing doctrine: rescope ADR §5 forbids running successor-semantics MC number
 ## §2 — Prior art / lineage
 
 - [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](../adr/2026-07-11-challenge-era-claims-rescope.md) — `Accepted`; owns the completion falsifier + forbidden "numbers before question"; **this Pre-Q is its D1 discharge**
-- [`docs/notes/audits/programme-audit/2026-07-11-core-fxify-anchoring-audit.md`](../notes/audits/programme-audit/2026-07-11-core-fxify-anchoring-audit.md) — Class D / D1 + §5.2 spawn; D2 and D3 feed *from* a frozen D1
-- [`docs/adr/2026-06-07-decompound-remc-hold.md`](../adr/2026-06-07-decompound-remc-hold.md) + [`lab/analysis/regime/decompound_remc_2026-06-07/`](../../lab/analysis/regime/decompound_remc_2026-06-07/) — closest instrument; HOLD, not a successor framework
+- [`docs/notes/audits/programme-audit/2026-07-11-core-fxify-anchoring-audit.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-07-11-core-fxify-anchoring-audit.md) — Class D / D1 + §5.2 spawn; D2 and D3 feed *from* a frozen D1
+- [`docs/adr/2026-06-07-decompound-remc-hold.md`](../adr/2026-06-07-decompound-remc-hold.md) + [`lab/analysis/regime/decompound_remc_2026-06-07/`](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/regime/decompound_remc_2026-06-07/) — closest instrument; HOLD, not a successor framework
 - [`docs/adr/2026-07-13-dd-protection-concept-not-constant.md`](../adr/2026-07-13-dd-protection-concept-not-constant.md) — D2 *frame*; does not define the self-funded risk *question*
 - [`docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md`](../adr/2026-07-10-r6-nogo-futures-residual-disposition.md) — futures-prop NO-GO; Aegis→M6J go-live separately gated (blocked by incomplete D1 per rescope §4 until this Pre-Q is pre-registered)
 - No prior Q-SFRISK-* brief — genuinely novel Pre-Q ID
@@ -122,7 +122,7 @@ Standing doctrine: rescope ADR §5 forbids running successor-semantics MC number
 
 ## §8 — Verdict pre-registration (mandatory before Phase 1)
 
-**Architecture freeze:** [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](pre-registration/Q-SFRISK-1-verdict-preregistration.md)
+**Architecture freeze:** [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md)
 
 Pre-registration commit hash: `9b219ab` (numeric Phase-0 freeze)
 Pre-registration date: 2026-07-14 (architecture); numeric Phase-0 amendment: **FROZEN 2026-07-14** — single triple T1 (F1 max-DD ≤10%/half + F3 ADOPT decompound withdrawal model + F4 impracticality >252bd; F2 TUW explicitly deferred, out of scope for this freeze). All halves of the rescope ADR §4 completion falsifier now discharged (existence, numeric, analysis, and verdict) — see [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](Q-SFRISK-1-closure-resolved.md).

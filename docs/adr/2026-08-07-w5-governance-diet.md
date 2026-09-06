@@ -7,7 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [SPEC S7](../spec/2026-08-07-loop-s7-repo-alignment-spec.md) · [alignment manifest](../notes/2026-08-07-posture-a-alignment-manifest.md) · [`scripts/gates.yml`](../../scripts/gates.yml) · [`scripts/gate_manifest.py`](../../scripts/gate_manifest.py) · [root-doc charter](2026-07-16-root-doc-charter-dedup.md)
+**Related:** [SPEC S7](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s7-repo-alignment-spec.md) · [alignment manifest](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-07-posture-a-alignment-manifest.md) · [`scripts/gates.yml`](../../scripts/gates.yml) · [`scripts/gate_manifest.py`](../../scripts/gate_manifest.py) · [root-doc charter](2026-07-16-root-doc-charter-dedup.md)
 **Layer:** governance tooling + doc diet. **$0 / K=0** — no gate dropped; CI re-enable separately owed.
 
 ---
@@ -144,7 +144,7 @@ Lead line: `STATE queue: #1 … · #2 … · #3 …` (titles + owner links). Def
 - `pine-pin-provenance --base` — stronger CI-only form stays in `manifest-check.yml`; the runner still runs the no-`--base` argv from `gates.yml`.
 - `data-manifests` — forced in `--tier check`; CI absent-tree WARN-skip is the existing public-clone soft-degrade.
 
-Owner plan: [`docs/superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md`](../superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md). Coherence leftover C-P5-04 / H6 discharged.
+Owner plan: [`docs/superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md). Coherence leftover C-P5-04 / H6 discharged.
 
 **Stale forward-pointers (2026-08-31 ADR-corpus audit, confirmed 2026-09-01):** the front-matter `**Layer:**` line and §2's "Explicitly owed" list and §6's Gate line all predate this addendum and still read "CI re-enable ... owed" / "separately owed" — for the CI-re-enable item specifically, that phrase is **discharged by this addendum**, not still open. Live confirmation: `.github/workflows/gate-manifest.yml:45` runs `python scripts/gate_manifest.py --tier check`. The `check_brief.py` collapse named in the same §2 bullet is unaffected by this note — `scripts/check_brief.py` and `~/.claude/skills/brief-authoring/scripts/check_brief.py` remain two separate tools and stay genuinely owed.
 

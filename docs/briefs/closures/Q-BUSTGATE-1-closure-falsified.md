@@ -2,7 +2,7 @@
 
 **Closed:** 2026-07-23
 **Parent brief:** [`../Q-BUSTGATE-1-bust-gate-re-derivation.md`](../Q-BUSTGATE-1-bust-gate-re-derivation.md) (anchor `a3a7d71`) — now `CLOSED-FALSIFIED`
-**Pre-registration (FROZEN before the derivation was read):** [`../pre-registration/Q-BUSTGATE-1-verdict-preregistration.md`](../pre-registration/Q-BUSTGATE-1-verdict-preregistration.md) — commit `98d0fa6`
+**Pre-registration (FROZEN before the derivation was read):** [`../pre-registration/Q-BUSTGATE-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-BUSTGATE-1-verdict-preregistration.md) — commit `98d0fa6`
 **Fork-B artifact:** [`../../adr/2026-07-23-c1-rung-selection-ev-objective.md`](../../adr/2026-07-23-c1-rung-selection-ev-objective.md) (`Proposed`)
 **Directive:** 08-08 packet §0.5 directive (1) / §3 P0 (operator, 2026-07-23)
 **Execution invariants held:** zero `core/` edits; zero live-sizing / rail / lifecycle change; the incumbent 3.0% survivor-scoring pre-reg (`be6dda6`) byte-unedited (Trap #12); K = 0 (locational read of closed artifacts, no new run).

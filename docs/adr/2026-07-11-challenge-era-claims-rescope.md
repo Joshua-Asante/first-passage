@@ -7,7 +7,7 @@
 **Decision date:** 2026-07-11
 **Authors:** Joshua (decision) + Claude Code (recorder)
 **Supersedes:** none in-place. **Re-scopes** the *claim status* of: the CLAUDE.md MC-anchor framing ("current canonical" → historical challenge-era calibration), the lock-gate framing (bust <1% / p99 DD <5% as live acceptance criteria), the C2→C0 quarterly revert-criterion *semantics*, and the repo §Purpose statement. No ADR is superseded: 2026-05-23 (allocation), 2026-05-08 (C2), 2026-06-07 (decompound HOLD), 2026-07-10 (R6 NO-GO) all stand — this ADR changes what their headline numbers are *claims about*, not the numbers, constants, or decisions.
-**Related:** AUDIT-2026-07-11-core-fxify-anchoring ([`docs/notes/audits/programme-audit/2026-07-11-core-fxify-anchoring-audit.md`](../notes/audits/programme-audit/2026-07-11-core-fxify-anchoring-audit.md) — the motivating audit; this ADR executes its §5.1 + §5.3 + §5.5); [`2026-06-30-no-manual-trading-cfd-retirement.md`](2026-06-30-no-manual-trading-cfd-retirement.md) (+07-10 Addendum, FXIFY formally closed); [`2026-07-10-r6-nogo-futures-residual-disposition.md`](2026-07-10-r6-nogo-futures-residual-disposition.md); [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) (the axis separation this ADR leans on).
+**Related:** AUDIT-2026-07-11-core-fxify-anchoring ([`docs/notes/audits/programme-audit/2026-07-11-core-fxify-anchoring-audit.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-07-11-core-fxify-anchoring-audit.md) — the motivating audit; this ADR executes its §5.1 + §5.3 + §5.5); [`2026-06-30-no-manual-trading-cfd-retirement.md`](2026-06-30-no-manual-trading-cfd-retirement.md) (+07-10 Addendum, FXIFY formally closed); [`2026-07-10-r6-nogo-futures-residual-disposition.md`](2026-07-10-r6-nogo-futures-residual-disposition.md); [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) (the axis separation this ADR leans on).
 **Layer:** portfolio / governance (claim scope + documentation + provenance labels) — **no** locked parameter, allocation, `dd_protection` constant, test pin, or Pine byte is touched.
 
 ---
@@ -126,7 +126,7 @@ FXIFY formally closed 2026-07-10; the futures-prop path closed NO-GO the same da
 - **Phase 2** — comment/docstring provenance labels in `firm_rules.py`, `dd_protection.py`, `csv_parser.py` (no executable change).
 - **Phase 3** — verification block executes (`validate_params.py` 0 HARD, `verify_lock_anchors.py` Closed, `check_brief.py --type adr`, dd_protection import self-check); STATE.md/SESSIONS.md/audit-note/memory sweep; status `Accepted`.
 - **Deferred (owned elsewhere):** D2 calibration re-derivation (2026-08-08 review).
-  **Update 2026-07-15:** D1 discharged — see the §4 completion-falsifier Addendum below (Q-SFRISK-1 `RESOLVED`, admitting ADR `Accepted`). §5.4 gate-denominated-closure annotation sweep **DONE** — [`docs/notes/audits/programme-audit/2026-07-15-gate-denominated-closure-annotation-sweep.md`](../notes/audits/programme-audit/2026-07-15-gate-denominated-closure-annotation-sweep.md) (6 closures annotated; rejection registry zero re-opens).
+  **Update 2026-07-15:** D1 discharged — see the §4 completion-falsifier Addendum below (Q-SFRISK-1 `RESOLVED`, admitting ADR `Accepted`). §5.4 gate-denominated-closure annotation sweep **DONE** — [`docs/notes/audits/programme-audit/2026-07-15-gate-denominated-closure-annotation-sweep.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-07-15-gate-denominated-closure-annotation-sweep.md) (6 closures annotated; rejection registry zero re-opens).
 
 ---
 
@@ -272,7 +272,7 @@ is likewise gone.
 
 That retirement happened via two later, ratified decisions: the
 PARK→RETIRE operator override in
-[`2026-07-11-fxify-ops-surface-retirement.md`](2026-07-11-fxify-ops-surface-retirement.md)
+[`2026-07-11-fxify-ops-surface-retirement.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-07-11-fxify-ops-surface-retirement.md)
 §2 (same day as this ADR — excised `fxify_rule_validator.py` and
 `accounts.py`'s FXIFY path), and
 [`2026-07-22-challenge-era-substrate-retirement.md`](2026-07-22-challenge-era-substrate-retirement.md)

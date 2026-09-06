@@ -1,8 +1,8 @@
 # H-ZNAUC-1 — CLOSURE: `SCREEN-FAIL (cost-wall)` (ZN post-auction δ ≈ 1 bp vs ~6–10 bp hurdle)
 
 **Closed:** 2026-07-20 (same session as scoping + GO; own-cohort δ-extraction authorized by operator, resolving the earlier `NEEDS_CONTEXT`)
-**Parent brief:** [`../rnd-pipeline/H-ZNAUC-1-zn-auction-unwind-scoping.md`](../rnd-pipeline/H-ZNAUC-1-zn-auction-unwind-scoping.md) (now `CLOSED — SCREEN-FAIL`)
-**Run artifacts:** [`lab/archive/q_znauc_1_2026-07/`](../../../lab/archive/q_znauc_1_2026-07/) — `extract_delta.py`, `delta_results.json`, `primary_15m_events.csv`, `auctions_is.json`
+**Parent brief:** [`../rnd-pipeline/H-ZNAUC-1-zn-auction-unwind-scoping.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/H-ZNAUC-1-zn-auction-unwind-scoping.md) (now `CLOSED — SCREEN-FAIL`)
+**Run artifacts:** [`lab/archive/q_znauc_1_2026-07/`](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_znauc_1_2026-07/) — `extract_delta.py`, `delta_results.json`, `primary_15m_events.csv`, `auctions_is.json`
 **Data:** ZN.c.0 ohlcv-1m, GLBX.MDP3, 2010-06-06→2018-12-31 (Databento, **est + billed $0.00**, 2.19M bars cached); auction dates from fiscaldata.treasury.gov (free). K consumed **0**; ZN family bank stays **0**; no `register_search open`; no manifest opened.
 
 ## Verdict (§3 gate asserted against measured numbers)

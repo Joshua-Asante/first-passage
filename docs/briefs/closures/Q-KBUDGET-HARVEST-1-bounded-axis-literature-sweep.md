@@ -1,7 +1,7 @@
 # Closure record — Q-KBUDGET-HARVEST-1 bounded literature harvest — **RESOLVED** (2026-07-16)
 
 **Verdict:** `RESOLVED` per frozen harvest pre-reg §B — ≥1 harvested row operator-ratified (H1 + H2) **and** `floor_scan.py` extended + run (also via `axis_screen` + manifest); zero pulls / zero K.
-**Parent:** [`Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md`](../Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md) · pre-reg [`Q-KBUDGET-HARVEST-1-verdict-preregistration.md`](../pre-registration/Q-KBUDGET-HARVEST-1-verdict-preregistration.md) (`FROZEN` @ `c79bfe6`) · Phase-1/2/3 artifacts [`lab/analysis/harvest/q_kbudget_harvest_1_2026-07/`](../../../lab/analysis/harvest/q_kbudget_harvest_1_2026-07/README.md)
+**Parent:** [`Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md`](../Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md) · pre-reg [`Q-KBUDGET-HARVEST-1-verdict-preregistration.md`](../pre-registration/Q-KBUDGET-HARVEST-1-verdict-preregistration.md) (`FROZEN` @ `c79bfe6`) · Phase-1/2/3 artifacts [`lab/analysis/harvest/q_kbudget_harvest_1_2026-07/`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/q_kbudget_harvest_1_2026-07/README.md)
 **Does not reopen** parent [`Q-KBUDGET-1`](../Q-KBUDGET-1-axis-reachability-screen.md) (`RESOLVED` 2026-07-15 on D5).
 **Loop accounting:** OUTER inventory expansion; zero pulls; zero K; D5 `register_search open` remains independently unblocked.
 
@@ -22,7 +22,7 @@
 | H1 `H-OD-1` (ES overnight-drift) | 2–3 | 0.85–0.98 | 0.837 @ N=1000, δ/σ=0.093 | **PASS** |
 | H2 `H-TSMOM-1` (ES 12m/1m TSMOM) | 2 | 0.85 | 0.638 @ N=192, δ/σ=0.167 | **PASS** |
 
-Full tables: [`PHASE3_RESULTS.md`](../../../lab/analysis/harvest/q_kbudget_harvest_1_2026-07/PHASE3_RESULTS.md) · machine [`phase3_results.json`](../../../lab/analysis/harvest/q_kbudget_harvest_1_2026-07/phase3_results.json).
+Full tables: [`PHASE3_RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/q_kbudget_harvest_1_2026-07/PHASE3_RESULTS.md) · machine [`phase3_results.json`](../../../lab/analysis/harvest/q_kbudget_harvest_1_2026-07/phase3_results.json).
 
 ---
 
@@ -40,7 +40,7 @@ Screen PASS never blesses a candidate and never authorizes a Databento pull. Ran
 
 ## §3 — Explicit non-claims
 
-- Parent Q-KBUDGET-1 historical RESULTS table (6 FAIL / 1 PASS) is preserved; Phase-3 is an **addendum** ([`RESULTS.md` harvest pointer](../../../lab/archive/q_kbudget_1_2026-07/RESULTS.md)).
+- Parent Q-KBUDGET-1 historical RESULTS table (6 FAIL / 1 PASS) is preserved; Phase-3 is an **addendum** ([`RESULTS.md` harvest pointer](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_kbudget_1_2026-07/RESULTS.md)).
 - Does **not** block or replace D5 execution.
 - Does **not** admit NQ expressions of H1/H2 without a fresh cohort δ.
 - Class-S route untouched.

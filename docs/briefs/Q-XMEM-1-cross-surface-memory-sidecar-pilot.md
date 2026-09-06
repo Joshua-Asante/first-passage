@@ -1,6 +1,6 @@
 # [Q-XMEM-1] — Cross-surface agent-memory sidecar pilot
 
-**Status:** `CLOSED — SUBTRACT 2026-08-19` — GRAND-tier pursuit-layer SUBTRACT (GSUB-2 Phase 3); architecture retained as a ready-to-run design, not deleted; re-entry requires a genuine dated cross-surface-memory-invisibility incident. Closure: [`closures/Q-XMEM-1-closure-subtract.md`](closures/Q-XMEM-1-closure-subtract.md).
+**Status:** `CLOSED — SUBTRACT 2026-08-19` — GRAND-tier pursuit-layer SUBTRACT (GSUB-2 Phase 3); architecture retained as a ready-to-run design, not deleted; re-entry requires a genuine dated cross-surface-memory-invisibility incident. Closure: [`closures/Q-XMEM-1-closure-subtract.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-XMEM-1-closure-subtract.md).
 **Authored:** 2026-07-16
 **Amended:** 2026-07-16 (v1.1, pre-T0) — critical review (`claude/q-xmem-1-briefs-review`): ledger-skip gate hole closed (=1 was verdict-less); locked strategy parameters added to denylist; contamination audit upgraded from token-grep to full-export read (Trap M-AHF); hosting limb restated around the extraction-LLM boundary + explicit-add-only frozen; benefit limb tightened to operator-confirmed; Phase-3/§6 verdict-date conflict fixed. **No T0, no install, no memories existed at amendment time — this is a pre-registration revision, not Known Trap #12.** **Amended again:** 2026-08-15 (v1.2, still pre-T0) — Limb B repo-local FTS addendum below. §4 / §6 / Mem0 Phase 0–4 unchanged. Still no memories. **Amended again (later same day):** Limb B re-measured `ASSISTIVE-ONLY` under a fresh frozen pre-registration after a governance-belt audit found the original "Landed" claim didn't match measured recall — see the second 2026-08-15 addendum below.
 **Closed:** 2026-08-19 (GSUB-2 Phase 3; PARKED 2026-08-09 GSUB-1 Phase 3 preceded it).
@@ -9,7 +9,7 @@
 **Sub-questions opened:** none
 **Loop:** Inquire-phase Pre-Q — gates whether a scoped external memory sidecar earns a keep/abort after a time-boxed pilot, without becoming a Rule-7 owner
 **Artifact path:** `docs/briefs/Q-XMEM-1-cross-surface-memory-sidecar-pilot.md`
-**Verdict pre-registration:** [`docs/briefs/pre-registration/Q-XMEM-1-verdict-preregistration.md`](pre-registration/Q-XMEM-1-verdict-preregistration.md)
+**Verdict pre-registration:** [`docs/briefs/pre-registration/Q-XMEM-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-XMEM-1-verdict-preregistration.md)
 **Fit canvas (non-canonical):** Cursor canvas `mem0-repo-fit.canvas.tsx` (IDE canvases dir, outside git) — research only; this brief owns the gates
 
 > **Scope discipline (binding):** this Pre-Q freezes the **pilot architecture** (what may be stored, what is forbidden, how §6 fires). It does **not** install Mem0, wire MCP, or start the clock. T0 = first successful cross-surface memory write under the allowlist below.
@@ -134,7 +134,7 @@ Self-executing / operator-gated; no CC handoff required for Phase 0–1. Optiona
 
 ## §8 — Verdict pre-registration
 
-See [`docs/briefs/pre-registration/Q-XMEM-1-verdict-preregistration.md`](pre-registration/Q-XMEM-1-verdict-preregistration.md).
+See [`docs/briefs/pre-registration/Q-XMEM-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-XMEM-1-verdict-preregistration.md).
 
 Pre-registration lineage (all pre-T0):
 - v1.0 freeze: `fd71074` (2026-07-16), pinned by `501f60c` — v1.0 §8 line was left as a placeholder; corrected here

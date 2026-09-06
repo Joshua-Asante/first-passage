@@ -1,7 +1,7 @@
 # Q-MCLTAS-1 — MCL TAS settlement-window δ-extraction probe (scoping)
 
 **Status:** `CLOSED-FALSIFIED` (2026-08-11) — Stage 0a+0b run on operator authorization; **Wall B fires**.
-[`closure`](closures/Q-MCLTAS-1-closure-falsified.md) · [`Stage 0 RESULTS`](../../lab/analysis/c1/cheap_falsifiers_2026-08/_probe_stage0_RESULTS_2026-08-11.md).
+[`closure`](closures/Q-MCLTAS-1-closure-falsified.md) · [`Stage 0 RESULTS`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/cheap_falsifiers_2026-08/_probe_stage0_RESULTS_2026-08-11.md).
 Probe **never run** — the two free pre-stages establish it is unfundable before design. $0 / K=0.
 ⚠ **§7 Stage 0b's premise was wrong** (it assumed a committed 2023 MCL cache that is not on disk);
 repaired at execution by substituting the committed *measured* σ surface — see closure §4.
@@ -9,7 +9,7 @@ repaired at execution by substituting the committed *measured* σ surface — se
 **Authors:** Joshua + Claude Code
 **Parent:** [`Q-TNEC-ENV-1` closure](closures/Q-TNEC-ENV-1-closure.md) item (b), RULED 2026-08-11/JA — *"the direction re-opens **only** through a completed δ-extraction probe"*
 **Prior:** [`R8` gold-fix δ-extraction](../../lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md) `SCREEN-FAIL` (the shape-analogous completed probe) · `BE3`/`SFX-1` fade-scoped kills · [`F1`/MOC](2026-07-27-f1-moc-imbalance-mym-ruling.md) circular-probe precedent
-**Parent cheap falsifier:** [`_cheap_falsifier_mcl_tas_probe_2026-08-11_LOG.md`](../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_mcl_tas_probe_2026-08-11_LOG.md) → **`KILL-PENDING-σ`**
+**Parent cheap falsifier:** [`_cheap_falsifier_mcl_tas_probe_2026-08-11_LOG.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_mcl_tas_probe_2026-08-11_LOG.md) → **`KILL-PENDING-σ`**
 **Loop:** Inquire — scoping frozen; **operator decision unpaid**
 **Spend:** $0 · K=0 · Cap not claimed
 
@@ -21,7 +21,7 @@ repaired at execution by substituting the committed *measured* σ surface — se
 |---|---|---|
 | [`Q-TNEC-ENV-1` closure](closures/Q-TNEC-ENV-1-closure.md) | `f949b81` 2026-08-11 | the ruling that re-opened the direction; the "full intake chain" sequencing note |
 | [`N-2026-08-11-daily-auction-settlement-MCL.md`](../notes/notice/N-2026-08-11-daily-auction-settlement-MCL.md) | census entry, PREREG F6 | the four 1a clauses; the δ=`null` finding; the sign-laundering caveat |
-| [envelope `PREREG.md`](../../lab/archive/tnec_envelope_compile_2026-08/PREREG.md) §F3/F4/F5 | FROZEN 2026-08-10 | RT $2.90 PRIMARY; `COST_LAW_MULTIPLE` 4.0; MCL committed `N=251` |
+| [envelope `PREREG.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/tnec_envelope_compile_2026-08/PREREG.md) §F3/F4/F5 | FROZEN 2026-08-10 | RT $2.90 PRIMARY; `COST_LAW_MULTIPLE` 4.0; MCL committed `N=251` |
 | [`DELTA_EXTRACTION_R8.md`](../../lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md) | 2026-08-10 `SCREEN-FAIL` | the probe template **and** the adverse prior — admissibility split, informed-flow signature |
 | [`strategy_harvest.md`](../methodology/strategy_harvest.md) §1 Req 2/4/5 | canonical procedure | δ-extraction probe is the Req-2 relief valve, and it **costs data spend + K** |
 | [`rejected_candidates.md`](../rejected_candidates.md) F1/MOC entry | rejected 2026-07-27 | what makes a probe route *circular*, and that circularity is a bar |

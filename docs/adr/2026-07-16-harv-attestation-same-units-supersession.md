@@ -25,7 +25,7 @@ worlds**, and in both cases the frozen §R reachability simulation failed to fla
 
 "RESOLVED was unreachable *before data arrived*, again — and the simulation failed to flag
 the clause": both conjuncts of the parent §4 falsifier, satisfied twice. Full arithmetic:
-[`h_od_1 RESULTS.md`](../../lab/analysis/harvest/h_od_1_es_overnight_drift_2026-07/RESULTS.md).
+[`h_od_1 RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/h_od_1_es_overnight_drift_2026-07/RESULTS.md).
 
 **Load-bearing nuance:** the mechanisms *transferred*. H-OD-1 reproduced the SR917 effect
 almost exactly (+1.444 vs +1.5 bp, t≈5.0, positive all 9 IS years); D5's footprint was present

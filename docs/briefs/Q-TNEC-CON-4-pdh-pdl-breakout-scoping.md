@@ -1,12 +1,12 @@
 # Q-TNEC-CON-4 — PDH/PDL RTH with-break (structural stop; first/session)
 
-**Status:** `AMBIGUOUS-HOLD` — explore scored; [`closure`](closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) ITERATE; **Branch B elected** → CON-5 G0 frozen
-**Stage-0 PREREG:** [`lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/PREREG_G0.md`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/PREREG_G0.md)
+**Status:** `AMBIGUOUS-HOLD` — explore scored; [`closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) ITERATE; **Branch B elected** → CON-5 G0 frozen
+**Stage-0 PREREG:** [`lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/PREREG_G0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/PREREG_G0.md)
 **Explore RESULTS:** [`RESULTS.md`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/RESULTS.md)
 **Authored:** 2026-08-10
 **Authors:** Joshua + Cursor
 **Parent:** [dense-1m entry-mechanism lane](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) · TNEC-1 intake L4
-**Prior:** [`Q-TNEC-CON-3` Branch B](closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) · CON-2 AMBIGUOUS-HOLD · HTF-bias→LTF `FALSIFIED`
+**Prior:** [`Q-TNEC-CON-3` Branch B](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) · CON-2 AMBIGUOUS-HOLD · HTF-bias→LTF `FALSIFIED`
 **Loop:** Inquire — Branch B → CON-5 opened; Cap unclaimed
 **Spend:** $0 · K_intrinsic=1 · Cap not claimed
 
@@ -17,7 +17,7 @@
 | Path | Anchor | What it grounds |
 |---|---|---|
 | [`_mnq_1m.parquet`](../../lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/_mnq_1m.parquet) | present on disk 2026-08-10 | panel ($0 reuse) |
-| [`CON-3` closure](closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) | Branch B elected | lane continue → CON-4 |
+| [`CON-3` closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) | Branch B elected | lane continue → CON-4 |
 | [`ADR 2026-08-10` temporal selectivity](../adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) | Accepted | route ① open; hold-time mapped |
 | Parent cheap falsifier | `CHEAP_FALSIFIER_OK` | licenses this freeze |
 | [`admission_schema.py`](../../lab/discovery/admission_schema.py) | S6 ADMIT 2026-08-10 | catalogue_k=1 |
@@ -90,7 +90,7 @@ Does a pre-registered **PDH/PDL RTH with-break** entry (structural stop at oppos
 | Entry | close beyond PDH/PDL → with-break at next 1m open |
 | Selectivity | First valid signal per session |
 | K | `K_intrinsic=1` |
-| S6 | ADMIT ([`ADMISSION.md`](../../lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/ADMISSION.md)) |
+| S6 | ADMIT ([`ADMISSION.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_tnec_con4_pdh_pdl_break_2026-08/ADMISSION.md)) |
 | Cheap falsifier | `CHEAP_FALSIFIER_OK` (long −0.005 / short −0.003; CIs straddle; stop ≈279 pt) |
 
 ---

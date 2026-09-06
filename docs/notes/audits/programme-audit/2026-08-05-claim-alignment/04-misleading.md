@@ -228,7 +228,7 @@ Banner text — `lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESUL
 > All figures below are **optimistic**. Corrected values at the deployed WATCH-1 0.50× rung:
 > full-panel 0.08% → **0.11%**, H1 0.14% → **0.22%**, bootstrap-95th 0.77% → **1.20%**; at 1.00×,
 > H1 4.37% → **6.78%**. Both verdicts survive correction (0.50× PASS, 1.00× FAIL).
-> Corrected sources: [`CORRECTED_FULLPANEL.md`](../../../../../lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/CORRECTED_FULLPANEL.md) (same directory) and
+> Corrected sources: [`CORRECTED_FULLPANEL.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/CORRECTED_FULLPANEL.md) (same directory) and
 > `lab/analysis/c1/eval_shape_diagnostics_2026-07-28/RESULTS.md:130`.
 >
 > **(2) §4 is NOT discharged.** L71–72 ("The mechanical Part A **DISCHARGED** (four-firms §4
@@ -259,7 +259,7 @@ Banner text — `lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS_G
 > `C1_ALLOCS` to reach the 0.50× rung is forbidden by the engine's §5 / Trap #11, and the no-6J
 > baseline (H1 4.37%, boot-95th 10.37%) already exceeds the 3.0% ceiling. The two admissible
 > replacements are named in
-> [`Q-6JCOMPOSE-2` closure](../../../../briefs/closures/Q-6JCOMPOSE-2-closure-void-c2-red-gate-unreachable.md) §4;
+> [`Q-6JCOMPOSE-2` closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-6JCOMPOSE-2-closure-void-c2-red-gate-unreachable.md) §4;
 > each needs a fresh pre-registration + operator GO. The composed question is "re-openable but
 > not re-opened" — this engine and this framing are barred, composition itself is not.
 > **Separately**, this file's composition target is gone: both Striker legs were withdrawn from

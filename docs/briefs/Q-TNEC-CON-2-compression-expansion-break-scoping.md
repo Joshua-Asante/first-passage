@@ -1,11 +1,11 @@
 # Q-TNEC-CON-2 — compression→expansion break on dense RTH 1m opens (G=10)
 
-**Status:** `CLOSED — AMBIGUOUS-HOLD (non-promotable)` 2026-08-10 — explore GO paid (operator in-session); EXPLORATION scored; CONFIRM reserved+unread. [closure](closures/Q-TNEC-CON-2-closure-ambiguous-hold.md)
-**Stage-0 PREREG:** [`lab/analysis/c1/mnq_tnec_con2_compression_break_2026-08/PREREG_G0.md`](../../lab/analysis/c1/mnq_tnec_con2_compression_break_2026-08/PREREG_G0.md)
+**Status:** `CLOSED — AMBIGUOUS-HOLD (non-promotable)` 2026-08-10 — explore GO paid (operator in-session); EXPLORATION scored; CONFIRM reserved+unread. [closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-2-closure-ambiguous-hold.md)
+**Stage-0 PREREG:** [`lab/analysis/c1/mnq_tnec_con2_compression_break_2026-08/PREREG_G0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_tnec_con2_compression_break_2026-08/PREREG_G0.md)
 **Authored:** 2026-08-09
 **Authors:** Joshua + Cursor
 **Parent:** [dense-1m entry-mechanism lane](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) · TNEC-1 intake L4
-**Prior kill:** [`Q-MNQDTL-CON-1` FALSIFIED](closures/Q-MNQDTL-CON-1-closure-falsified.md) (ES/NQ divergence) · Family A displacement fade cheap-falsifier kill (no Q-ID)
+**Prior kill:** [`Q-MNQDTL-CON-1` FALSIFIED](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-MNQDTL-CON-1-closure-falsified.md) (ES/NQ divergence) · Family A displacement fade cheap-falsifier kill (no Q-ID)
 **Loop:** Inquire — freeze named entry family before EXPLORATION path score
 **Spend:** $0 · K_intrinsic=1 · Cap not claimed
 
@@ -16,10 +16,10 @@
 | Path | Anchor | What it grounds |
 |---|---|---|
 | [`_mnq_1m.parquet`](../../lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/_mnq_1m.parquet) | present on disk 2026-08-09 | dense-1m panel |
-| [`Q-MNQSEL-2` RESULTS](../../lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/RESULTS.md) | RESOLVED C4 | S3 ≈ 0.858; licenses construct universe |
-| [`CON-1` closure](closures/Q-MNQDTL-CON-1-closure-falsified.md) | FALSIFIED 2026-08-09 | STOP scope = new entry mechanism; no sign invert |
+| [`Q-MNQSEL-2` RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/RESULTS.md) | RESOLVED C4 | S3 ≈ 0.858; licenses construct universe |
+| [`CON-1` closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-MNQDTL-CON-1-closure-falsified.md) | FALSIFIED 2026-08-09 | STOP scope = new entry mechanism; no sign invert |
 | [`MNQDTL-1` §3.1](../spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md) | C1–C11 | closed doors |
-| [`MNQSR-1` RESULTS](../../lab/archive/mnq_sr_structure_2026-08-06/RESULTS.md) | 0/14 | C10 level families — not this entry class |
+| [`MNQSR-1` RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/mnq_sr_structure_2026-08-06/RESULTS.md) | 0/14 | C10 level families — not this entry class |
 | [`TNEC-1` body](../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) | `N-EDGE` @ L10 | intake limbs |
 | [`lane spec`](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) | `b262a81` | step 1–6 + stop-rule |
 | [`admission_schema.py`](../../lab/discovery/admission_schema.py) | S6 ADMIT dry-run 2026-08-09 | catalogue_k=1 |
@@ -77,7 +77,7 @@ Does a pre-registered **compression→expansion with-break** entry on dense RTH 
 | Stop / exit / cost | G=10 · session-flat · RT 1.41 |
 | Entry | 2 narrow bars (≤1.0× med20 range) → close beyond quiet range → **with-break** at next open |
 | K | `K_intrinsic=1` |
-| S6 | ADMIT ([`ADMISSION.md`](../../lab/analysis/c1/mnq_tnec_con2_compression_break_2026-08/ADMISSION.md)) |
+| S6 | ADMIT ([`ADMISSION.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_tnec_con2_compression_break_2026-08/ADMISSION.md)) |
 | Cheap falsifier | `CHEAP_FALSIFIER_OK` — means negative, CI straddles (not conclusive kill) |
 
 ---

@@ -2,7 +2,7 @@
 
 **Verdict:** `RESOLVED-NO-GO` — ratified by the operator 2026-07-27 (chat directive: "ratify the NO-GO")
 **Parent brief:** [`2026-07-27-hermes-agent-adoption-ruling.md`](../programs/2026-07-27-hermes-agent-adoption-ruling.md)
-**Decision record (canonical):** [`docs/adr/2026-07-27-hermes-agent-adoption-nogo.md`](../../adr/2026-07-27-hermes-agent-adoption-nogo.md) (`Accepted`)
+**Decision record (canonical):** [`docs/adr/2026-07-27-hermes-agent-adoption-nogo.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-07-27-hermes-agent-adoption-nogo.md) (`Accepted`)
 
 ---
 
@@ -42,7 +42,7 @@ Closing a brief must enumerate what it was carrying, or the obligations die with
 | Limb B1 — promote the quarterly Sentinel run to a committed named workflow | `STATE.md` forward board |
 | `Q-XMEM-1` `MOOT`-eligibility (operator confirmation) | `Q-XMEM-1` stays OPEN on the Q-roster; unchanged |
 | Import Hermes's fail-closed cron semantics | Rides limb B1 |
-| Re-measurement gate on any further retrieval tuning | [FTS5 RESULTS](../../../lab/analysis/harvest/fts5_delete_falsifier_2026-07-27/RESULTS.md) + v2 pre-registration forbidden-moves |
+| Re-measurement gate on any further retrieval tuning | [FTS5 RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/fts5_delete_falsifier_2026-07-27/RESULTS.md) + v2 pre-registration forbidden-moves |
 
 ## Lesson candidates
 

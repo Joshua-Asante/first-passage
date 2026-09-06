@@ -11,10 +11,12 @@ Reproduce charts: `python docs/analytics/mc_anchor_evolution/plot.py`
 
 ## Charts
 
-- ![Pass-rate trajectory](pass_trajectory.png)
-- ![Bust-rate trajectory](bust_trajectory.png) — dashed red gate at `bust < 1.00%`
-- ![p99 DD trajectory](p99_dd_trajectory.png) — dashed red gate at `p99 DD < 5.00%`
-- ![Bust attribution by strategy](bust_attribution.png)
+The four PNGs left this tree in the [2026-09-06 reduction](../../adr/2026-09-06-tracked-file-reduction-prune.md) and are preserved at the archive commit below. **Links, not embeds:** a GitHub `/blob/` URL serves the file-view HTML rather than the PNG bytes, so the images never rendered inline; the archive is private, so a `raw`/`?raw=1` URL would not embed either. `data.csv` and `plot.py` are still here — `python docs/analytics/mc_anchor_evolution/plot.py` regenerates all four locally.
+
+- [Pass-rate trajectory](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/analytics/mc_anchor_evolution/pass_trajectory.png)
+- [Bust-rate trajectory](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/analytics/mc_anchor_evolution/bust_trajectory.png) — dashed red gate at `bust < 1.00%`
+- [p99 DD trajectory](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/analytics/mc_anchor_evolution/p99_dd_trajectory.png) — dashed red gate at `p99 DD < 5.00%`
+- [Bust attribution by strategy](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/analytics/mc_anchor_evolution/bust_attribution.png)
 
 ## Event table
 

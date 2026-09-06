@@ -2,15 +2,15 @@
 
 **Status:** **PRE-ASSEMBLED** for the 2026-08-08 Class-A **A1** decision. This packet assembles the two *closed* analyses into one page so 08-08 is a decision, not a re-read. **It is not the decision** — the accept-beta call is operator GO/NO-GO at the gate, taken together with A5's live regime re-MC.
 **Date:** 2026-07-14
-**Owned by:** [`docs/adr/2026-06-07-decompound-remc-hold.md`](../../adr/2026-06-07-decompound-remc-hold.md) §4 (regime trigger + accept-beta fork) · 08-08 pre-triage [`2026-07-12-08-08-packet-pretriage.md`](2026-07-12-08-08-packet-pretriage.md) A1
+**Owned by:** [`docs/adr/2026-06-07-decompound-remc-hold.md`](../../adr/2026-06-07-decompound-remc-hold.md) §4 (regime trigger + accept-beta fork) · 08-08 pre-triage [`2026-07-12-08-08-packet-pretriage.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-07-12-08-08-packet-pretriage.md) A1
 **Pairs with:** **A5** (decompound-HOLD §4 limb-2 live regime re-MC — the current-regime input this fork reads)
 
 ---
 
 ## §0 — Reads (source-verified 2026-07-14)
 
-- [`docs/briefs/closures/Q-DECAY-1-closure-scope-split.md`](../closures/Q-DECAY-1-closure-scope-split.md) — the **cost** input (bust-before-signal; common-mode uncovered).
-- [`docs/briefs/closures/Q-PERSIST-1-closure-moot.md`](../closures/Q-PERSIST-1-closure-moot.md) — the **probability** input (MC understates the tail).
+- [`docs/briefs/closures/Q-DECAY-1-closure-scope-split.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-DECAY-1-closure-scope-split.md) — the **cost** input (bust-before-signal; common-mode uncovered).
+- [`docs/briefs/closures/Q-PERSIST-1-closure-moot.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-PERSIST-1-closure-moot.md) — the **probability** input (MC understates the tail).
 - [`docs/adr/2026-06-07-decompound-remc-hold.md`](../../adr/2026-06-07-decompound-remc-hold.md) §4 — the standing HOLD + the k≈0.55 interim mitigation + the regime trigger.
 - `CLAUDE.md` §Regime caveat — no static de-risk is regime-robust without breaking the (now-retired) challenge; both candidates fail the regime-robustness gate on the 2020-23 half.
 - Family basis: `project_q_mech_1_family_synthesis` (0/4 external mechanism ⇒ one shared beta) + `project_strategy_lifecycle_governance` (4 legs `AUTHORIZED @ 1.00×`, off all live venues).

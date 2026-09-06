@@ -8,7 +8,7 @@
 **Retain-until:** none
 **Tier:** light
 **Authors:** Joshua (ruling) + Cursor (recorder)
-**Related:** [MSL ratification](2026-08-12-msl-sourcing-channel-ratification.md) · [S1](2026-08-07-loop-s1-environment-ratification.md) · [de-scope](2026-08-04-tradeify-venue-descope-eval-included.md) · [MSL-C1 slate](../briefs/programs/2026-08-12-msl-first-slate.md) · `ops/instruments/{MYM,MNQ,MES,M2K,MCL}.md`
+**Related:** [MSL ratification](2026-08-12-msl-sourcing-channel-ratification.md) · [S1](2026-08-07-loop-s1-environment-ratification.md) · [de-scope](2026-08-04-tradeify-venue-descope-eval-included.md) · [MSL-C1 slate](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-12-msl-first-slate.md) · `ops/instruments/{MYM,MNQ,MES,M2K,MCL}.md`
 **Layer:** instrument-occupancy posture only. **$0 / K=0.** No arming, no Pine, no `core/`, no `LEG_MAP` code edit.
 
 ## Decision

@@ -19,7 +19,7 @@
 **Verdict:** `RESOLVED`
 **Closed:** 2026-08-30
 **Lane:** UNASSIGNED
-**Pre-registration:** [`Q-RANGECOND-1-verdict-preregistration.md`](../pre-registration/Q-RANGECOND-1-verdict-preregistration.md) — frozen 2026-08-30, before Phase 1 ran
+**Pre-registration:** [`Q-RANGECOND-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-RANGECOND-1-verdict-preregistration.md) — frozen 2026-08-30, before Phase 1 ran
 **Live effect:** none — conditioner-role/filter research only; no entry, sizing, or timing construct is licensed by this closure alone (§5); no `core/`, Pine, allocation, `dd_protection`, or rail change
 **Spend / K:** $0.00 · `K_intrinsic=1` (disclosure only, per §8) · Cap seat not claimed
 **Artifacts:** [`rangecond_1_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md) · [`phase1_2_3_conditioned_orb.py`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/phase1_2_3_conditioned_orb.py) · [`RESULTS.json`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.json)

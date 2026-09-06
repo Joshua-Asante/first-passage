@@ -15,7 +15,7 @@ facts remain with the linked owners; this page does not restate locked values.
   parameter lock versus revocable capital authorization.
 - [`systematic-trading-lifecycle.md`](systematic-trading-lifecycle.md) —
   end-to-end research, execution, telemetry, and feedback map.
-- [`deletion_ledger.md`](deletion_ledger.md) — C1–C4 deletion/attic criteria and
+- [`deletion_ledger.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/governance/deletion_ledger.md) — C1–C4 deletion/attic criteria and
   restore provenance.
 - [`../briefs/INDEX.md`](../briefs/INDEX.md) — open/dormant question roster.
 - [`../../lab/CATALOG.md`](../../lab/CATALOG.md) — lab campaign registry (open first).

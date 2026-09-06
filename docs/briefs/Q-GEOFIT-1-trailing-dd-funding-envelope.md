@@ -2,7 +2,7 @@
 
 **Status:** `CLOSED — AMBIGUOUS-PARAMETERIZATION` 2026-07-25 (signed and closed same day).
 Closure: [`closures/Q-GEOFIT-1-closure-ambiguous-parameterization.md`](closures/Q-GEOFIT-1-closure-ambiguous-parameterization.md) ·
-RESULTS: [`lab/archive/q_geofit_1_2026-07/RESULTS.md`](../../lab/archive/q_geofit_1_2026-07/RESULTS.md).
+RESULTS: [`lab/archive/q_geofit_1_2026-07/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_geofit_1_2026-07/RESULTS.md).
 **A1 engine reproduction PASSED both arms** (4.74% / 0.11%, Δ 0.003pp); **A2 profile
 sufficiency MISSED by 23.63pp at an exact parameter match** — the `(σ_d, μ/σ, shape, z)`
 family omits **skew**, which is the load-bearing property for surviving a fixed-$ trailing

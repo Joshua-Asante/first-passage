@@ -2,7 +2,7 @@
 
 **Status:** `CLOSED` `RESOLVED-LOADBEARING` 2026-08-19 — all phases executed same day → both
 nominations (b2, c1) ratified by Joshua →
-[`closure`](../closures/GSUB-2-closure-resolved-loadbearing.md) · records at
+[`closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/GSUB-2-closure-resolved-loadbearing.md) · records at
 [`b2`](../../pursuits/b2-striker-mym-reconstruction.md) / [`c1`](../../pursuits/c1-q-xmem-1.md)
 **Authored:** 2026-08-19
 **Closed:** N/A
@@ -76,7 +76,7 @@ pass does **not** exist because that mechanism is broken; it exists for two inde
 
 ## §2 — Prior art / lineage
 
-- [GSUB-1 inventory + dispositions](GSUB-1-inventory-and-dispositions.md) — the eight PARK rows this
+- [GSUB-1 inventory + dispositions](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) — the eight PARK rows this
   pass re-examines, and the permitted/forbidden subtract-test list (§7 Phase 2) this pass inherits
   verbatim.
 - [GRAND-tier ADR](../../adr/2026-08-09-grand-tier-quintessentials-binding.md) — pursuit lifecycle

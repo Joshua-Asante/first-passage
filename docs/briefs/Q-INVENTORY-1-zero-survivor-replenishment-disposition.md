@@ -1,6 +1,6 @@
 # Q-INVENTORY-1 — fundable-inventory zero: replenishment disposition (bounded burst-2 vs accept-idle)
 
-**Status:** `CLOSED — FALSIFIED 2026-07-17` — ratified, §8 frozen ([`pre-registration/Q-INVENTORY-1-verdict-preregistration.md`](pre-registration/Q-INVENTORY-1-verdict-preregistration.md)), and burst executed same session; **0 admissible seeds** → **accept-idle recorded as the default**; closure: [`closures/Q-INVENTORY-1-closure-falsified.md`](closures/Q-INVENTORY-1-closure-falsified.md); evidence: [`lab/archive/q_inventory_1_2026-07/`](../../lab/archive/q_inventory_1_2026-07/RESULTS.md)
+**Status:** `CLOSED — FALSIFIED 2026-07-17` — ratified, §8 frozen ([`pre-registration/Q-INVENTORY-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-INVENTORY-1-verdict-preregistration.md)), and burst executed same session; **0 admissible seeds** → **accept-idle recorded as the default**; closure: [`closures/Q-INVENTORY-1-closure-falsified.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-INVENTORY-1-closure-falsified.md); evidence: [`lab/archive/q_inventory_1_2026-07/`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_inventory_1_2026-07/RESULTS.md)
 **Authored:** 2026-07-17
 **Closed:** 2026-07-17 (`FALSIFIED`)
 **Authors:** Joshua + Claude Code
@@ -134,4 +134,4 @@ git log -1 --format='%h %cs' -- docs/methodology/strategy_harvest.md STATE.md
 
 ## Ratification record
 
-Ratified 2026-07-17 (operator chat directive: "proceed with Q-RAIL 1 Phase 4 and Q-INVENTORY 1" — the brief's sole pending gate; §8 carries no operator-set numbers). §8 pre-registration frozen before Phase 1 the same session. Phase 0 dedup + bank re-read: [`lab/archive/q_inventory_1_2026-07/PHASE0.md`](../../lab/archive/q_inventory_1_2026-07/PHASE0.md).
+Ratified 2026-07-17 (operator chat directive: "proceed with Q-RAIL 1 Phase 4 and Q-INVENTORY 1" — the brief's sole pending gate; §8 carries no operator-set numbers). §8 pre-registration frozen before Phase 1 the same session. Phase 0 dedup + bank re-read: [`lab/archive/q_inventory_1_2026-07/PHASE0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_inventory_1_2026-07/PHASE0.md).

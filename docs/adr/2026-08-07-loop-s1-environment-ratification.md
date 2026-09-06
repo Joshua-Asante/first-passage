@@ -102,4 +102,4 @@ Q-VENUEGEO-1 remains valuable evidence (Bulenox/BluSky/MFFU geometry) but is **n
 
 ## §7 — Propagation (S7 S1-ADR section)
 
-Discharged in the same commit as Accept — see [alignment manifest](../notes/2026-08-07-posture-a-alignment-manifest.md) §S1-ADR.
+Discharged in the same commit as Accept — see [alignment manifest](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-07-posture-a-alignment-manifest.md) §S1-ADR.

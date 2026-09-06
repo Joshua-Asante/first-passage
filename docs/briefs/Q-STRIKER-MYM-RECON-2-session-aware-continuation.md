@@ -17,7 +17,7 @@
 Read before authoring on 2026-07-16:
 
 - [`docs/briefs/Q-STRIKER-MYM-RECON-1-venue-native-continuation.md`](Q-STRIKER-MYM-RECON-1-venue-native-continuation.md) — latest source anchor `812f68d`, verified 2026-07-16; supplies the original question, forbidden moves, and binary verdict structure.
-- [`docs/briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-1-prereg.md`](pre-registration/2026-07-16-striker-mym-reconstruction-candidate-1-prereg.md) — latest source anchor `812f68d`, verified 2026-07-16; candidate #1 semantics and D0–D9/H0–H9 are the frozen baseline.
+- [`docs/briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-1-prereg.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-1-prereg.md) — latest source anchor `812f68d`, verified 2026-07-16; candidate #1 semantics and D0–D9/H0–H9 are the frozen baseline.
 - [`lab/analysis/striker/striker_mym_reconstruction_candidate1_2026-07/candidate_offline.py`](../../lab/analysis/striker/striker_mym_reconstruction_candidate1_2026-07/candidate_offline.py) — lines 307–312 read 2026-07-16; verifies the hard requirement for a 16:00 bar and the exact exception that aborted the run.
 - [`docs/superpowers/plans/2026-07-16-striker-mym-orc-development-harness.md`](../superpowers/plans/2026-07-16-striker-mym-orc-development-harness.md) — working-tree implementation plan read 2026-07-16; runner exit 2 is the registered `AMBIGUOUS-HOLD` path and result artifacts are written only after valid computation.
 - [`docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md`](../adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md) — latest source anchor `812f68d`, §2.3 read 2026-07-16; canonical DSR variance rule is unconditional `V=1/n`.
@@ -83,7 +83,7 @@ This names the measurement symptom—undefined force-flat on valid short session
 ## §6 — Gate criteria (closure verdict)
 
 Exact semantics and thresholds live in:
-[`pre-registration/2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md`](pre-registration/2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md).
+[`pre-registration/2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md).
 
 | Verdict | Trigger condition | Disposition |
 | --- | --- | --- |
@@ -107,7 +107,7 @@ No criterion moves after this successor pre-registration is frozen.
 ## §8 — Verdict pre-registration
 
 Companion:
-[`docs/briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md`](pre-registration/2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md).
+[`docs/briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md).
 
 Pre-registration authority: operator choice “Close AMBIGUOUS and re-register session-aware force-flat semantics”
 

@@ -33,7 +33,7 @@
   itself — existence, threshold, enforcement hardness, and reset semantics. This is the exact axis
   that killed the Tradeify deployment (`inactivity_max_idle_days: 5` priced at 92.6–97.6% path death
   once the rolling-absorbing engine barrier was modeled; separately, the [activity-rule disposition
-  spec](../spec/2026-08-02-tradeify-activity-rule-disposition-spec.md) found the *enforcement
+  spec](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-02-tradeify-activity-rule-disposition-spec.md) found the *enforcement
   hardness* itself was originally mis-read — "soft warnings" corrected to "irreversible account
   deletion" from a second help-centre article the first pass never consulted). Scoring three
   candidate firms without independently verifying each one's own idle-rule shape and enforcement
@@ -55,7 +55,7 @@ BluSky's unsourced field), and [ADR 2026-08-05b](../adr/2026-08-05b-blusky-inact
 `feedback_check_origin_main_before_multistep_build` — re-fetch before any multi-step build, not just
 at start). What they discharge, and what they do not:
 
-**DP1 (cadence axis) is DISCHARGED.** [`RESULTS`](../../lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md)
+**DP1 (cadence axis) is DISCHARGED.** [`RESULTS`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md)
 measured all three firms against the locked book on the same engine/panel as the Tradeify sibling
 study, control-pinned to Δ0.003pp before any F3 cell was read. **Bulenox 90.85–97.54%** and **MFFU
 91.77–97.54%** unmitigated inactivity death (idle=5, venue-invariant, same fatal class as Tradeify's
@@ -77,7 +77,7 @@ cheapest cadence instrument at every venue measured."* This is exactly the book-
 would… relocate the exact Tradeify activity failure to a new address under the appearance of a fresh
 decision"*) — and it is exactly the shape of Tradeify's own arc, whose unmitigated 96.9% account-
 deletion rate became a 99.4% pass once the compliance-instrument was priced in
-([`seed-target spec`](../../lab/analysis/c1/tradeify_seed_target_spec_2026-08-04/RESULTS.md)). **This
+([`seed-target spec`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_seed_target_spec_2026-08-04/RESULTS.md)). **This
 is not a claim that Bulenox/MFFU survive instrumented** — it may turn out the compliance instrument
 is barred at one or both firms (automation posture, minimum-hold, or scalping clauses could rule it
 out), in which case ELIMINATED stands confirmed rather than overridden. It is a claim that the test
@@ -242,7 +242,7 @@ git log -1 --format="%h" -- docs/adr/2026-07-12-prop-portfolio-four-friendly-fir
 - [x] Compliance-instrument legality verified **per firm, all three**, primary sources only — DONE 2026-08-05, [`verification note`](../notes/2026-08-05-f3-compliance-instrument-legality-verification.md). **Bulenox facially open** (no minimum-hold, no genuine-intent clause found — pending 2 non-public docs); **MFFU** plausible-but-discretionary, plus a confirmed standing CME 2%-price-limit risk naming MNQ/MYM directly; **BluSky** a genuine gray zone (no mechanical bar, no safe harbor)
 - [x] BluSky consistency %, cost, payout cadence, automation clause, auto-liquidation independently re-verified — DONE 2026-08-05. **Two discrepancies found**: `cost_per_side_usd: 0.95` contradicts BluSky's published $0.50/side (micro, Evaluation); `micro_contract_cap: 100` is Evaluation-phase only — funded/live stage is ~50. Flagged for operator-directed correction (ADR precedent: 2026-08-05→2026-08-05b), **not applied here**
 - [x] MFFU 2%-of-CME-limit clause verified — CONFIRMED real (upgraded from unverified research-sourced claim), names MNQ/MYM explicitly
-- [x] Book shape pinned to current book + instrument; bare-book rows labelled contrast-only — DONE 2026-08-05 for the bust-ceiling half, [`DP3 RESULTS`](../../lab/analysis/c1/venuegeo_dp3_bustceiling_2026-08-05/RESULTS.md)
+- [x] Book shape pinned to current book + instrument; bare-book rows labelled contrast-only — DONE 2026-08-05 for the bust-ceiling half, [`DP3 RESULTS`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/venuegeo_dp3_bustceiling_2026-08-05/RESULTS.md)
 - [ ] EV/$ floor + ceilings frozen at §8 — owed, Phase 2 (blocked on eval-price sourcing per firm)
 - [x] DP3 bust-ceiling half — MEASURED 2026-08-05, reusing existing control-pin-verified simulation output (caught and worked around a data-staleness trap in the process — see RESULTS §0). **Bulenox and BluSky tied at 2.96% instrumented bust, statistically indistinguishable from the 3.0% ceiling given simulation noise (±0.19pp 95% CI); MFFU fails at 3.54% on DD geometry alone, independent of the token-trade question.** Bare-book bust without the instrument: Bulenox/MFFU ~97.5%, BluSky 15.48% (corrected) — no firm viable unmitigated.
 - [ ] DP3 EV/$ half (pass-EV per eval-dollar) — owed. Needs each firm's $100K evaluation-account purchase price (unsourced for all three; Tradeify's own $328/$258-promo pin is the only comparable figure in the estate)

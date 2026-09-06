@@ -19,12 +19,12 @@
 | Path | Anchor | What was read |
 |---|---|---|
 | [`docs/superpowers/specs/2026-08-11-transfer-expression-grid-design.md`](../superpowers/specs/2026-08-11-transfer-expression-grid-design.md) | `5fe755e` | §3 H_A / H_B · §6 two-FALSIFIED→re-argue-H_A · §7 forbidden moves |
-| [`docs/briefs/closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md`](closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md) | `a66fce4` | cell #1 DEAD(cost); dual-dead → H_A re-argument owed; silent third election barred |
+| [`docs/briefs/closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md) | `a66fce4` | cell #1 DEAD(cost); dual-dead → H_A re-argument owed; silent third election barred |
 | [`docs/briefs/closures/2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md`](closures/2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md) | `9856a39` | cell #2 DEAD(N-SURV); cost PASS; bust ~98%/97%/99% |
 | [`docs/briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md`](closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md) | `42e27a1` | Guardian→MGC DEAD(N-SURV) 42.2/72.4/16.5; b8 SUBTRACT |
 | [`ops/instruments/6J.md`](../../ops/instruments/6J.md) | `45e3cea` (file) · J4b + J14 body | Aegis→6J +$39,056 / PF 2.318 / +0.218R; J4b trail fail; J14 both-layers CLOSED |
-| [`lab/archive/transfer_expression_grid_2026-08/GRID_RESULTS.md`](../../lab/archive/transfer_expression_grid_2026-08/GRID_RESULTS.md) | `7821be0` | 28-cell table · H_A OPEN n=25 · `port_must_beat` · 23/25 UNSCREENABLE |
-| [`docs/spec/2026-08-11-tnec-application-unit-book-admission.md`](../spec/2026-08-11-tnec-application-unit-book-admission.md) | `d692c2c` (merged #759) | PROPOSED · BOOK-CONDITIONAL cadence-only · margin-decisive kills stay dead · bust never book-only |
+| [`lab/archive/transfer_expression_grid_2026-08/GRID_RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/transfer_expression_grid_2026-08/GRID_RESULTS.md) | `7821be0` | 28-cell table · H_A OPEN n=25 · `port_must_beat` · 23/25 UNSCREENABLE |
+| [`docs/spec/2026-08-11-tnec-application-unit-book-admission.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-11-tnec-application-unit-book-admission.md) | `d692c2c` (merged #759) | PROPOSED · BOOK-CONDITIONAL cadence-only · margin-decisive kills stay dead · bust never book-only |
 | [`docs/briefs/pre-registration/2026-08-12-q-txg-1-striker-nas100-mym-cell-prereg.md`](pre-registration/2026-08-12-q-txg-1-striker-nas100-mym-cell-prereg.md) | `60597a1` | §6 lane rule frozen before results |
 | [`docs/briefs/pre-registration/2026-08-12-q-txg-1-striker-mnq-cell-prereg.md`](pre-registration/2026-08-12-q-txg-1-striker-mnq-cell-prereg.md) | `60597a1` | §6 lane rule frozen before results |
 | [`STATE.md`](../../STATE.md) forward-trigger 2026-08-12 | tip `2a342fe` | dual-dead → H_A re-argument owed; third election barred |
@@ -52,7 +52,7 @@ Standing doctrine that binds: locked-parameter immutability (design §7); frozen
 |---|---|---|---|---|
 | **Aegis→6J** (2026-07; outside ENV-1 pool; lane precedent) | Net **+$39,056.10** · PF **2.318** · n=129 · expectancy **+0.218R** (J1) | passed (+0.218R venue residual; frictionless +0.342R) | J4b best cell **3.88%** bust vs ≤3.0% (1.3×); matrix arms through **~9–18%**; J14 composed 3-leg **0/3 tiers** (10.96 / 3.78 / 3.54) + **cap-infeasible** (6J=10 micro-eq; M6J at no FRIENDLY) → **CLOSED both layers** | instrument ledger J4b + J14 |
 | **Guardian→MGC** (2026-08-11) | exploratory panel (N=329 / daily n=276) | not reached as gate | bust **42.2 / 72.4 / 16.5** full/H1/H2 — **5.5–24×** over ≤3.0% → **DEAD(N-SURV)**; b8 **SUBTRACT** | [closure](closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md) |
-| **striker_nas100×MYM** (2026-08-12, election #1) | Net **+$4,356.40** · PF **1.110** · N=190 | **FAILED:** mean_net_r **0.0129** < required_net_r **0.06** (~4.6×) | not reached | [closure](closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md) · PANEL_SCORE |
+| **striker_nas100×MYM** (2026-08-12, election #1) | Net **+$4,356.40** · PF **1.110** · N=190 | **FAILED:** mean_net_r **0.0129** < required_net_r **0.06** (~4.6×) | not reached | [closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md) · PANEL_SCORE |
 | **striker×MNQ** (2026-08-12, election #2) | Net **+$22,789.58** | **PASSED:** mean_net_r **0.0419** > required_net_r **0.03** | bust **98.13 / 96.76 / 99.37** full/H1/H2 — **~32–33×** over ≤3.0% → **DEAD(N-SURV)** | [closure](closures/2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md) · PANEL_SCORE |
 
 All four cells showed **positive net dollars** (Guardian exploratory panel was not cost-gated as a kill, but was not a net≤0 kill either). Edge *transfer* — positive expectancy after venue mapping — was never the falsifier.
@@ -142,7 +142,7 @@ Cite: **`lesson_trailing_dd_survival_is_skew_governed`** — survival against a 
 
 ## §8 — Boundary notes (TNEC-AU-1)
 
-[`docs/spec/2026-08-11-tnec-application-unit-book-admission.md`](../spec/2026-08-11-tnec-application-unit-book-admission.md) is **PROPOSED** (merged #759). On its own terms it **rescues none of these four**:
+[`docs/spec/2026-08-11-tnec-application-unit-book-admission.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-11-tnec-application-unit-book-admission.md) is **PROPOSED** (merged #759). On its own terms it **rescues none of these four**:
 
 - **Margin-decisive N-SURV kills stay dead** — Guardian→MGC is the calibration case named in the spec boundary; striker×MNQ (~33×) and Aegis→6J are the same class.
 - **The bust ceiling never becomes book-only** — composed/book admission does not waive standalone trail failure of this magnitude.

@@ -1,7 +1,7 @@
 # Q-TNEC-ENV-1 — closure: `NULL` (H_B = 0, STOP per PREREG F7)
 
 **Verdict:** `NULL` (H_B = 0) · 2026-08-11 · $0 · K=0
-**Pre-registration:** [`PREREG.md`](../../../lab/archive/tnec_envelope_compile_2026-08/PREREG.md) (FROZEN 2026-08-10)
+**Pre-registration:** [`PREREG.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/tnec_envelope_compile_2026-08/PREREG.md) (FROZEN 2026-08-10)
 **H_A:** overall **NON-EMPTY** — MYM / M2K / MCL / M6A **NON-EMPTY** (full); MNQ / MES / MGC
 **NON-EMPTY-CONDITIONAL(power)** (UNSCREENABLE-INPUT(panel_N), admitted under F5's generous falsifier)
 **H_B:** **0 SEED-GRADE** — 2 authored census entries + 17 prior-census re-scores (19 scored), one taxonomy pass
@@ -10,13 +10,13 @@ over the full 8-class × 7-instrument = 56-cell grid (stop rule: taxonomy exhaus
 committed constants; Phase B: published literature and market-structure facts only)
 **Live effect:** none — no candidate proposed, admitted, scored, or licensed; harvest Req 1–5, DSR-at-K, N-SURV
 MC, and the regime gate are untouched and unweakened
-**Artifacts:** [`RESULTS.md`](../../../lab/archive/tnec_envelope_compile_2026-08/RESULTS.md) ·
-[`RESULTS.json`](../../../lab/archive/tnec_envelope_compile_2026-08/RESULTS.json) ·
-[`entries/`](../../../lab/archive/tnec_envelope_compile_2026-08/entries/)
+**Artifacts:** [`RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/tnec_envelope_compile_2026-08/RESULTS.md) ·
+[`RESULTS.json`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/tnec_envelope_compile_2026-08/RESULTS.json) ·
+[`entries/`](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/tnec_envelope_compile_2026-08/entries/)
 
 **What survives regardless (documentation, not a candidate — none of this is admitted, proposed, or licensed):**
 
-1. The compiled per-instrument envelope ([RESULTS.md](../../../lab/archive/tnec_envelope_compile_2026-08/RESULTS.md) §2) and its per-instrument "G0 must defend" numbers (required δ, cost tax, qty@frontier, power floor) across the full 7-micro pool.
+1. The compiled per-instrument envelope ([RESULTS.md](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/tnec_envelope_compile_2026-08/RESULTS.md) §2) and its per-instrument "G0 must defend" numbers (required δ, cost tax, qty@frontier, power floor) across the full 7-micro pool.
 2. The runner (`run_envelope_compile.py`) and the census entry scorer (`--entry` mode) — reusable at $0 for any future draft's intake screen.
 3. The **outright/spread mismatch** finding (RESULTS.md §6.4.1): most mandated flows this taxonomy can name express in **spread** space (front-vs-deferred, cash-vs-futures, hedged-vs-unhedged), while this envelope is **outright single-instrument** framed. It fired on 5 cells across 3 classes and is not a δ question — no citation work fixes it. Any spread-framed envelope is a **new campaign**, not a re-run of this one.
 4. The **δ-blindness** finding (RESULTS.md §6.2): the 2026-07-26 forced-flow census (`N-2026-07-26-forced-flow-census.md`, pruned at the Great Prune; retrieve via `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`) forbade quoting δ by construction ("No entry quotes PnL, δ, or any edge number"), so all 17 of its re-scored entries return `UNSCREENABLE(δ)` here by construction — a property of that census's own zero-δ discipline, not a new mechanism finding about those 17 cells.
@@ -24,8 +24,8 @@ MC, and the regime gate are untouched and unweakened
 
 **Flagged for operator ruling — unresolved, not adjudicated by this closure:**
 
-(a) The MGC entry ([`mgc-benchmark-fix-window-r8-rescore`](../../../lab/archive/tnec_envelope_compile_2026-08/entries/mgc-benchmark-fix-window-r8-rescore.json)) re-scores the one-day-old, independently-closed R8 SCREEN-FAIL (2026-08-10) — labeled calibration/known-answer in the entry itself (RESULTS.md §6.4.2: "a known-answer anchor for the `--entry` path"). The operator may rule this row **dropped** if it reads as re-litigation of an already-closed finding rather than an independent cross-check. H_B is 0 either way — the row scored `FAIL`, not `SEED-GRADE`.
-(b) The MCL re-open ([`mcl-tas-settlement-window-replication`](../../../lab/archive/tnec_envelope_compile_2026-08/entries/mcl-tas-settlement-window-replication.json)) rests on an inference from the 2026-08-10 L2 scope ruling that the ≥2-independent-events/day law which killed BE3/SFX-1 is a **fade-program** screening law, not a TNEC limb — quoted verbatim in [`N-2026-08-11-daily-auction-settlement-MCL.md`](../../notes/notice/N-2026-08-11-daily-auction-settlement-MCL.md) ("*No ≥N-trades/day floor — that law was fade-scoped; TNEC N-ACT is weekly*"). The operator confirms or vacates that re-open basis; the entry scored `UNSCREENABLE`, not `SEED-GRADE`, regardless.
+(a) The MGC entry ([`mgc-benchmark-fix-window-r8-rescore`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/tnec_envelope_compile_2026-08/entries/mgc-benchmark-fix-window-r8-rescore.json)) re-scores the one-day-old, independently-closed R8 SCREEN-FAIL (2026-08-10) — labeled calibration/known-answer in the entry itself (RESULTS.md §6.4.2: "a known-answer anchor for the `--entry` path"). The operator may rule this row **dropped** if it reads as re-litigation of an already-closed finding rather than an independent cross-check. H_B is 0 either way — the row scored `FAIL`, not `SEED-GRADE`.
+(b) The MCL re-open ([`mcl-tas-settlement-window-replication`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/tnec_envelope_compile_2026-08/entries/mcl-tas-settlement-window-replication.json)) rests on an inference from the 2026-08-10 L2 scope ruling that the ≥2-independent-events/day law which killed BE3/SFX-1 is a **fade-program** screening law, not a TNEC limb — quoted verbatim in [`N-2026-08-11-daily-auction-settlement-MCL.md`](../../notes/notice/N-2026-08-11-daily-auction-settlement-MCL.md) ("*No ≥N-trades/day floor — that law was fade-scoped; TNEC N-ACT is weekly*"). The operator confirms or vacates that re-open basis; the entry scored `UNSCREENABLE`, not `SEED-GRADE`, regardless.
    > ⚠ this notice was dropped by the 2026-08-14 public-transition seed-cut's `docs/notes/**`
    > exclusion (`docs/adr/2026-08-14-repo-public-visibility-transition.md` §6) and was not among
    > the files restored by 1f3a2bb; not retrievable in this public clone — the quoted line cannot

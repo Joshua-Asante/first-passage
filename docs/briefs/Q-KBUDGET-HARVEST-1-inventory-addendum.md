@@ -2,8 +2,8 @@
 
 **Status:** **RATIFIED 2026-07-16 (operator)** — both harvested rows **ACCEPT**; **Phase-3 SCREENED PASS** (both). **H2's PASS superseded same day — see §4 post-ratification correction** (campaign scoping pinned the OOS event-count fork to the ratified default's strict reading; H2 now **FAILs Clause N**).  
 **Parent Pre-Q:** [`Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md`](Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md) (`CLOSED-RESOLVED` 2026-07-16)  
-**Phase-3 RESULTS:** [`lab/analysis/harvest/q_kbudget_harvest_1_2026-07/PHASE3_RESULTS.md`](../../lab/analysis/harvest/q_kbudget_harvest_1_2026-07/PHASE3_RESULTS.md)  
-**Phase-2 record:** [`lab/analysis/harvest/q_kbudget_harvest_1_2026-07/PHASE2_RATIFICATION.md`](../../lab/analysis/harvest/q_kbudget_harvest_1_2026-07/PHASE2_RATIFICATION.md)  
+**Phase-3 RESULTS:** [`lab/analysis/harvest/q_kbudget_harvest_1_2026-07/PHASE3_RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/q_kbudget_harvest_1_2026-07/PHASE3_RESULTS.md)  
+**Phase-2 record:** [`lab/analysis/harvest/q_kbudget_harvest_1_2026-07/PHASE2_RATIFICATION.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/q_kbudget_harvest_1_2026-07/PHASE2_RATIFICATION.md)  
 **Does not rewrite** [`Q-KBUDGET-1-phase1-inventory.md`](Q-KBUDGET-1-phase1-inventory.md) D1–D7 (addendum only).  
 **Screen extension:** **DONE** — append-only in `floor_scan.py` + `phase3_screen_manifest.json` via `axis_screen`.
 
@@ -14,7 +14,7 @@
 | Source | Anchor | Supplies |
 |---|---|---|
 | Parent harvest Pre-Q + frozen pre-reg | Phase-1 tip on `cursor/kbudget-harvest-phase1-5808` | §C four fields; Path 1a/1b pre-check; §B verdict needs Phase-3 for RESOLVED |
-| Phase-1 candidate rows | [`CANDIDATE_ROWS.md`](../../lab/analysis/harvest/q_kbudget_harvest_1_2026-07/CANDIDATE_ROWS.md) | H-OD-1 + H-TSMOM-1 declarations |
+| Phase-1 candidate rows | [`CANDIDATE_ROWS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/q_kbudget_harvest_1_2026-07/CANDIDATE_ROWS.md) | H-OD-1 + H-TSMOM-1 declarations |
 | Parent floor scan (pre-extension) | `python3 lab/archive/q_kbudget_1_2026-07/floor_scan.py` → **RESOLVED**, PASS 1 (D5) | Harvest must not reopen parent; extension is additive |
 
 ---
@@ -26,7 +26,7 @@ Declarations per harvest pre-reg §C. **No screen verdict here** — Phase 3 fil
 | # | Axis | Family → K_banked | Design → K_intrinsic | Era → N | δ/σ (cohort) | Path 1 | Pre-screen posture |
 |---|---|---|---|---|---|---|---|
 | **H1** | `H-OD-1` overnight-drift inventory-risk (02:00–03:00 ET) | **ES → 1** | mechanism-first confirm; H1 unconditional OD hour; optional H2 BtD (RSV\<0) → **(1, 2)** | daily OD events, ~6.5y OOS → **N = 1000** | **0.093** (Boyarchenko/Larsen/Whelan FRBNY SR917 Table I, t-scaled) | **1a** | **PASS** — Clause K (K_eff 2–3, floor 0.85–0.98); Clause N power=0.837 |
-| **H2** | `H-TSMOM-1` Moskowitz–Ooi–Pedersen 12m/1m TSMOM confirm (S&P 500 / ES) | **ES → 1** | mechanism-first confirm of frozen 12m/1m vol-scaled sign → **(1, 1)** | monthly events, post-pub OOS ≈2010–2025 → **N = 192** | **0.167** (Fig. 2 S&P 500 gross SR=0.58 → SR/√12; [`H_TSMOM_1_fig2_scrape.md`](../../lab/analysis/harvest/q_kbudget_harvest_1_2026-07/H_TSMOM_1_fig2_scrape.md)) | **1b PASS** (see Phase-2 record) | **PASS** — Clause K (K_eff=2, floor 0.85); Clause N power=0.638 @ N=192 |
+| **H2** | `H-TSMOM-1` Moskowitz–Ooi–Pedersen 12m/1m TSMOM confirm (S&P 500 / ES) | **ES → 1** | mechanism-first confirm of frozen 12m/1m vol-scaled sign → **(1, 1)** | monthly events, post-pub OOS ≈2010–2025 → **N = 192** | **0.167** (Fig. 2 S&P 500 gross SR=0.58 → SR/√12; [`H_TSMOM_1_fig2_scrape.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/q_kbudget_harvest_1_2026-07/H_TSMOM_1_fig2_scrape.md)) | **1b PASS** (see Phase-2 record) | **PASS** — Clause K (K_eff=2, floor 0.85); Clause N power=0.638 @ N=192 |
 
 **Family pin:** both rows are **ES**. NQ / MNQ re-expression requires a separate axis with its own cohort δ (Moskowitz has no NQ; OD cross-contract notes are not δ transplants).
 
@@ -43,7 +43,7 @@ Operator (Joshua) **2026-07-16**, in-session directive **"accept both"**:
 1. **H-OD-1 → ACCEPT** into inventory addendum as **H1** (Path 1a; N=1000; family ES).
 2. **H-TSMOM-1 → ACCEPT** into inventory addendum as **H2** (Path 1b scored PASS; **N=192**; family ES).
 
-**Done:** Phase 3 — floor scan extended; [`PHASE3_RESULTS.md`](../../lab/analysis/harvest/q_kbudget_harvest_1_2026-07/PHASE3_RESULTS.md); harvest §6 **RESOLVED**.
+**Done:** Phase 3 — floor scan extended; [`PHASE3_RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/q_kbudget_harvest_1_2026-07/PHASE3_RESULTS.md); harvest §6 **RESOLVED**.
 
 ---
 

@@ -29,4 +29,4 @@ back-transcribed**; and the audit's "both stopping rules non-operative" is **hal
 domain bar is operative and blocking at a tier=always gate, while the per-direction feed has no
 enforcement instrument (D4, dispatched). This pursuit stays KEEP.
 
-**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row a3
+**Source:** [`GSUB-1 inventory`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) row a3

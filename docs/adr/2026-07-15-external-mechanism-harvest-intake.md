@@ -111,7 +111,7 @@ The intake's four **admission requirements** (all mandatory before screening; re
 | This ADR §4 revert trigger | `aa2e4be6` | Limb 1 unedited; gate-geometry failures still route to HARV ADR §4 |
 | [08-03 gate-stack audit](../notes/audits/programme-audit/2026-08-03-gate-stack-audit.md) R10 / §3.7 | `aa2e4be6` | Observed miss: D5 + H-OD-1 reclassified as gate-geometry; five-plus dead campaigns never reach limb-1 strike one |
 | [D5 scoping](../briefs/rnd-pipeline/D5-NQ-intraday-momentum-scoping.md) | `027a7295` 2026-08-14 | `CLOSED — Stage-2 cost-law KILL 2026-07-16` |
-| [H-OD-1 scoping](../briefs/rnd-pipeline/H-OD-1-ES-overnight-drift-scoping.md) | `027a7295` 2026-08-14 | `CLOSED — Stage-2 cost-law KILL 2026-07-16` (mechanism CONFIRMED-IS) |
+| [H-OD-1 scoping](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/H-OD-1-ES-overnight-drift-scoping.md) | `027a7295` 2026-08-14 | `CLOSED — Stage-2 cost-law KILL 2026-07-16` (mechanism CONFIRMED-IS) |
 | [H-TSMOM-1 scoping](../briefs/rnd-pipeline/H-TSMOM-1-ES-tsmom-scoping.md) | `027a7295` 2026-08-14 | `CLOSED — Clause-N FAIL 2026-07-16` (P1=c, N≈86, power 0.34) |
 
 **Amendment-first (sub-rules 8/10, ratification):** `rg` on `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/rejected_candidates.md` for `second §4 limb|fundability-transfer|R10` — empty. Owner is this file. `check_advisor_dedup.py --keywords "harvest intake limb 2 R10 fundability-transfer"` — no slug; keyword overlap only.
@@ -131,7 +131,7 @@ rg -n "CLOSED — Clause-N FAIL 2026-07-16" docs/briefs/rnd-pipeline/H-TSMOM-1-E
 |---|---|---|
 | This addendum as Accepted | `ce91a995` (PR #17 merge of `27cb2101`) | Status `Accepted`; pin unmarked; "Canonical count is unset" |
 | [D5 scoping](../briefs/rnd-pipeline/D5-NQ-intraday-momentum-scoping.md) | `027a7295` 2026-08-14 | already-closed Stage-2 cost-law KILL — excluded by this mark |
-| [H-OD-1 scoping](../briefs/rnd-pipeline/H-OD-1-ES-overnight-drift-scoping.md) | `027a7295` 2026-08-14 | already-closed Stage-2 cost-law KILL — excluded by this mark |
+| [H-OD-1 scoping](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/H-OD-1-ES-overnight-drift-scoping.md) | `027a7295` 2026-08-14 | already-closed Stage-2 cost-law KILL — excluded by this mark |
 | [H-TSMOM-1 scoping](../briefs/rnd-pipeline/H-TSMOM-1-ES-tsmom-scoping.md) | `027a7295` 2026-08-14 | already-closed Clause-N FAIL — excluded by this mark |
 
 **Amendment-first (sub-rules 8/10, this pin-mark):** `rg` on `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/rejected_candidates.md` for `R10 pin|historical-kill pin|post-mark` — empty. Owner is this file. `check_advisor_dedup.py --keywords "R10 pin historical-kill post-mark"` — no slug; keyword overlap only.
@@ -178,8 +178,8 @@ of the machinery itself.
 | Source | Anchor | Supplies |
 |---|---|---|
 | This ADR as it stood before this ruling | `73a77f7` 2026-08-16 | Counting machinery (a)–(d), admission definition (§2), running count 0/2 |
-| [Six-lead pursuit plan](../briefs/programs/2026-08-17-six-lead-pursuit-plan.md) | `18d68f9` 2026-08-17 | §1 channel election (routes through harvest intake); §3/§4 Phase 0/Phase 1 framing — explicitly pre-admission |
-| [P1-CF/P2-CF LOG](../../lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md) | `18d68f9` 2026-08-17 | FAIL result on all four legs; "What this does NOT license" — no manifest, no `register_search open`, no Cap claim |
+| [Six-lead pursuit plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md) | `18d68f9` 2026-08-17 | §1 channel election (routes through harvest intake); §3/§4 Phase 0/Phase 1 framing — explicitly pre-admission |
+| [P1-CF/P2-CF LOG](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/six_lead_cf_2026-08-17/LOG.md) | `18d68f9` 2026-08-17 | FAIL result on all four legs; "What this does NOT license" — no manifest, no `register_search open`, no Cap claim |
 
 **Amendment-first (sub-rules 8/10):** `rg` on `lab/CATALOG.md`, `docs/briefs/INDEX.md`,
 `docs/rejected_candidates.md` for `six-lead|P1-CF|P2-CF|limb.2.*increment` — one hit, the
@@ -230,7 +230,7 @@ grep -n "Running count (canonical): 0 / 2" docs/adr/2026-07-15-external-mechanis
 # present pre-ruling at 73a77f7 — this ruling adds a table row and explanation, count unchanged
 ```
 
-**Reachability while intake is idle — the compensating control (added 2026-08-16, no decision change):** post-mark, limb 2 can only increment on *new* intake-class constructs, and intake is parked — [`Q-INVENTORY-1`](../briefs/closures/Q-INVENTORY-1-closure-falsified.md) closed `FALSIFIED` 2026-07-17 (band empty; accept-idle recorded as the default). So 0/2 is expected to **stand** at 2026-11-08, not to move. That is not this limb going decorative, and the idle case is not unguarded: it is carried by **limb 1's own idle guard** in §4 above — "zero screen-PASS seeds beyond D5" by 2026-11-08 ⇒ name the intake idle — which this addendum leaves byte-unedited and which ranges over the same population as limb 2 (§Scope: "all externally-sourced strategy/anomaly seeds"; Gen-2 internally-mined candidates are out of scope for both). Division of labour: **the idle guard is the operative limb while nothing flows; limb 2 binds only once intake resumes and post-mark kills accumulate.** A standing 0/2 with the idle guard live is a covered state.
+**Reachability while intake is idle — the compensating control (added 2026-08-16, no decision change):** post-mark, limb 2 can only increment on *new* intake-class constructs, and intake is parked — [`Q-INVENTORY-1`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-INVENTORY-1-closure-falsified.md) closed `FALSIFIED` 2026-07-17 (band empty; accept-idle recorded as the default). So 0/2 is expected to **stand** at 2026-11-08, not to move. That is not this limb going decorative, and the idle case is not unguarded: it is carried by **limb 1's own idle guard** in §4 above — "zero screen-PASS seeds beyond D5" by 2026-11-08 ⇒ name the intake idle — which this addendum leaves byte-unedited and which ranges over the same population as limb 2 (§Scope: "all externally-sourced strategy/anomaly seeds"; Gen-2 internally-mined candidates are out of scope for both). Division of labour: **the idle guard is the operative limb while nothing flows; limb 2 binds only once intake resumes and post-mark kills accumulate.** A standing 0/2 with the idle guard live is a covered state.
 
 The decorative-threshold finding the falsifier below names is therefore sharper than "0/2 did not move": it fires if intake **resumes** — screen-PASS seeds admitted beyond D5, so the idle guard is no longer the operative limb — and post-mark kills still fail to register on a dated surface. Read the two limbs together at the 11-08 reading; neither disposition is legible alone.
 
@@ -273,7 +273,7 @@ The decorative-threshold finding the falsifier below names is therefore sharper 
 
 **Downstream artifacts (on acceptance):**
 - [`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) — becomes canonical procedure owner (lands with this ADR as companion; carries the sourcing tiers, manifest template, and worked example).
-- `lab/research_utils/axis_screen.py` — promote `floor_scan.py`'s arithmetic to a manifest-consuming reusable module; Cursor handoff drafted at [`docs/briefs/handoffs/2026-07-15-cursor-handoff-axis-screen-module.md`](../briefs/handoffs/2026-07-15-cursor-handoff-axis-screen-module.md) (HELD until acceptance).
+- `lab/research_utils/axis_screen.py` — promote `floor_scan.py`'s arithmetic to a manifest-consuming reusable module; Cursor handoff drafted at [`docs/briefs/handoffs/2026-07-15-cursor-handoff-axis-screen-module.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/handoffs/2026-07-15-cursor-handoff-axis-screen-module.md) (HELD until acceptance).
 - `.claude/skills/futures-anomaly-discovery/SKILL.md` — add the Harvest-intake section + trigger phrases ("harvest", "public strategy", "port a published strategy", "seed discovery"); text specified in §7 Phase 2.
 - `STATE.md` forward board — intake registered; §4 checks ride 08-08 / 11-08.
 - `CLAUDE.md` Methodology references — one pointer line to the methodology doc.
@@ -285,7 +285,7 @@ The decorative-threshold finding the falsifier below names is therefore sharper 
 - **Phase 0** — DONE (Rule-0 reads above, this session).
 - **Phase 1** — DONE: ADR drafted + companion methodology doc + Cursor handoff draft (HELD).
 - **Phase 1.5** — DONE, same session: operator pushback on requirement bar + mechanism-light evidence-robustness class incorporated (§1/§2/§5 amended pre-acceptance — this is authoring, not a post-acceptance edit).
-- **Phase 2** — DONE, same session (acceptance sweep): `docs/methodology/strategy_harvest.md` updated (relief-valve note + Path 1a/1b + manifest field); Cursor handoff released (HELD → RELEASED) at [`2026-07-15-cursor-handoff-axis-screen-module.md`](../briefs/handoffs/2026-07-15-cursor-handoff-axis-screen-module.md); skill amendment landed in `.claude/skills/futures-anomaly-discovery/SKILL.md` (Harvest-intake section + trigger phrases + hand-off line); `STATE.md` forward-board entry added (2026-07-15 section); `CLAUDE.md` Methodology-references pointer line added.
+- **Phase 2** — DONE, same session (acceptance sweep): `docs/methodology/strategy_harvest.md` updated (relief-valve note + Path 1a/1b + manifest field); Cursor handoff released (HELD → RELEASED) at [`2026-07-15-cursor-handoff-axis-screen-module.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/handoffs/2026-07-15-cursor-handoff-axis-screen-module.md); skill amendment landed in `.claude/skills/futures-anomaly-discovery/SKILL.md` (Harvest-intake section + trigger phrases + hand-off line); `STATE.md` forward-board entry added (2026-07-15 section); `CLAUDE.md` Methodology-references pointer line added.
 - **Phase 3** — DONE: verification block passes (below); status flips `Accepted`; no `core/` / locked-parameter / MC-anchor touch at any phase (confirmed by §10 hook).
 
 ---
@@ -350,7 +350,7 @@ grep -n "Running count (canonical): 0 / 2" docs/adr/2026-07-15-external-mechanis
 
 ## Addendum 2026-08-16 — §4 verdict vocabulary gains a fourth branch (AMBIGUOUS-HOLD among the first two)
 
-**Status:** ratified via governance-holes closing pass (operator direction: "close the governance holes that hide the drought"), 2026-08-16. **Tightening/completeness only** — nothing in §4 is withdrawn or loosened; this addendum names a branch the original vocabulary left uncovered. No live-risk surface touched. $0 / K=0. Companion to [`2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md`](2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md) (the standing doctrine this addendum implements for this ADR specifically).
+**Status:** ratified via governance-holes closing pass (operator direction: "close the governance holes that hide the drought"), 2026-08-16. **Tightening/completeness only** — nothing in §4 is withdrawn or loosened; this addendum names a branch the original vocabulary left uncovered. No live-risk surface touched. $0 / K=0. Companion to [`2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md) (the standing doctrine this addendum implements for this ADR specifically).
 
 ### The gap this closes
 
@@ -358,7 +358,7 @@ grep -n "Running count (canonical): 0 / 2" docs/adr/2026-07-15-external-mechanis
 
 ### Ruling
 
-**Fourth branch, added to §4's verdict vocabulary:** if either or both of the first two intake-class closures resolve `AMBIGUOUS-HOLD` (or any disposition other than RESOLVED/FALSIFIED) — per the zero-yield definition in [`2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md`](2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md) §2 — the revert trigger does **not** fire, RESOLVED does **not** fire, and the seed slot is held open pending a decisive third closure within the same 2026-11-08 window. If neither slot resolves decisively (RESOLVED or FALSIFIED) by that date, the existing **AMBIGUOUS** branch applies ("no intake-class campaign closes" is read as "no intake-class campaign closes *decisively*").
+**Fourth branch, added to §4's verdict vocabulary:** if either or both of the first two intake-class closures resolve `AMBIGUOUS-HOLD` (or any disposition other than RESOLVED/FALSIFIED) — per the zero-yield definition in [`2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md) §2 — the revert trigger does **not** fire, RESOLVED does **not** fire, and the seed slot is held open pending a decisive third closure within the same 2026-11-08 window. If neither slot resolves decisively (RESOLVED or FALSIFIED) by that date, the existing **AMBIGUOUS** branch applies ("no intake-class campaign closes" is read as "no intake-class campaign closes *decisively*").
 
 ### What is unchanged
 
@@ -377,7 +377,7 @@ grep -n "Running count (canonical): 0 / 2" docs/adr/2026-07-15-external-mechanis
 fires — no K/$ spent, no live-risk surface, no LOCKED/frozen surface touched, no admission
 requirement or §4 falsifier amended; this addendum only names a permitted search-traversal route
 within the existing sourcing/dedup workflow requirements 1–4 already govern). Drafted in
-[`six-lead pursuit plan`](../briefs/programs/2026-08-17-six-lead-pursuit-plan.md) §13, landing the
+[`six-lead pursuit plan`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-17-six-lead-pursuit-plan.md) §13, landing the
 2026-08-16 fork election (admit an OpenAlex-based substitute traversal when S2/Semantic Scholar
 has no record of a seed paper) that this addendum retroactively documents.
 

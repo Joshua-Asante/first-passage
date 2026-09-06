@@ -8,7 +8,7 @@
 **Lives in:** `docs/notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md`
 **Operator GO (instance 4):** this prompt. Scope frozen as download + map of *existing* rails. No new pipeline stage. Guardrails: [`external_mapping_guardrails.md`](../../methodology/external_mapping_guardrails.md). Audit: [`AUDIT-2026-08-20-external-mapping-move-class`](../audits/programme-audit/2026-08-20-external-mapping-move-class-audit.md).
 **Rule 2:** OUTER, $0/K=0, one instance. STRATEGIC 3/3 was already tripped; this row is owner adjudication, not a self-extension.
-**Addendum (operator reject):** the Proposed ADR and standing NeMo/guardrails surface (pin, `docs/agent_rails/`, checker, fetch helper) were rejected. Principles may be borrowed as needed. Ox-alpha consult: [`N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md`](N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md).
+**Addendum (operator reject):** the Proposed ADR and standing NeMo/guardrails surface (pin, `docs/agent_rails/`, checker, fetch helper) were rejected. Principles may be borrowed as needed. Ox-alpha consult: [`N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md).
 
 ---
 

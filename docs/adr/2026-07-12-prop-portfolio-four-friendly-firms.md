@@ -222,12 +222,12 @@ reopen this addendum's status.
   has **not occurred yet** — this addendum closes the gap pre-emptively, before any result would
   make the ruling self-serving (the same discipline the 2026-07-13 pre-registration's own §1
   invokes against ad-hoc scoring).
-- [`lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md`](../../lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md)
+- [`lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md)
   (full text) — anchor `027a729` (2026-08-14). Two Part A clearers exist, but only at the
   diagnostic-only **50K** band (`Tradeify_Select_50K` / `MFFU_Rapid_50K`), which the prereg's §3
   frozen tier cross-section explicitly excludes from §4 discharge — confirms the $100K count is
   the only count that matters here, and it is currently 0-of-4, not 1-of-4.
-- [`docs/adr/2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md`](2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md)
+- [`docs/adr/2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds.md)
   (full text) — anchor `b476860` (2026-08-16). §2/§5 explicitly decline to touch "any
   programme-level, date-boxed hard falsifier (e.g. the prop-portfolio §4 ... existence test)" —
   confirming that ADR is not a ruling on this gap and §4's exact wording remains untouched by it.

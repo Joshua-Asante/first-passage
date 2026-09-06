@@ -4,7 +4,7 @@
 **Authored:** 2026-08-18
 **Closed:** N/A
 **Authors:** Joshua + Claude Code
-**Parent question:** N/A — opened from the [2026-08-18 assumption-sweep audit note](../notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md), findings A3 + D4
+**Parent question:** N/A — opened from the [2026-08-18 assumption-sweep audit note](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md), findings A3 + D4
 **Sub-questions opened:** none
 **Loop:** Inquire-phase Pre-Q — closure gated on a $0/K=0 grep + local-arithmetic read of two already-cited production call paths
 **Artifact path:** `docs/briefs/Q-SIZECOMP-1-sizing-composition.md`

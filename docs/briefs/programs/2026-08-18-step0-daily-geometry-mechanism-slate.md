@@ -25,7 +25,7 @@ frozen screen sketches so each GO costs one session.
 | [`ops/instruments/MECHANISMS.md`](../../../ops/instruments/MECHANISMS.md) | Compression-family cells are all ENTRY-role (XAUUSD F4 design-mismatch · CON-2 gross+/net− · CON-3 AMBIGUOUS-HOLD); no conditioner-role cell exists; no daily-range-geometry class yet (`NEW` id lands with a prereg commit, never with this slate) |
 | [`docs/rejected_candidates.md`](../../rejected_candidates.md) (greps pasted in session log 2026-08-18a) | Gates-on-ORB kills (GEX/T10Y3M/Friday — G-era-confound battery imported); EIA/NG/TAS direction kills; both domain-level raised bars (index intraday OHLCV directional timing 07-21; EOD-adversity 08-02) |
 | `discovery_manifests/*.json` (all 15, listed this session) | Family banks for disclosure: GC/MGC 3,177 (DISC-CAMP-0) · CL 1 (`fb_eia_cl_reversal`) · 6E/6J/6CL 1 (`fc_carry`) — **disclosure-only** per [K-bank ADR](../../adr/2026-08-04-family-k-bank-disclosure-not-gate.md) |
-| [`Q-POLFRONT-1 intraday-honest`](../../../lab/analysis/c1/q_polfront_1_2026-08/RESULTS_INTRADAY_HONEST.md) · [MSL slate-2 design box](../../adr/2026-08-13-msl-slate-2-design-box.md) | Sizing envelope R ≈ $75–200 at the $100K eval (conservative upper bounds); design box rr∈[2,3] · WR 0.30–0.42 · hard stop · k=1 · no pyramiding |
+| [`Q-POLFRONT-1 intraday-honest`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_polfront_1_2026-08/RESULTS_INTRADAY_HONEST.md) · [MSL slate-2 design box](../../adr/2026-08-13-msl-slate-2-design-box.md) | Sizing envelope R ≈ $75–200 at the $100K eval (conservative upper bounds); design box rr∈[2,3] · WR 0.30–0.42 · hard stop · k=1 · no pyramiding |
 
 ## §1 — Context (one paragraph)
 
@@ -74,7 +74,7 @@ clustering-preserving placebo as primary**), verdict SIGNAL / NULL / AMBIGUOUS, 
 > clustering; L4 boundary-exact 6/8 under the rule's own small-n exclusion, a disclosed
 > prediction-miss adjudicated rules-govern) → **counts toward §4 RESOLVED, with A6 guard-rails:
 > not a mechanism, no mechanism-owed discharge, no conditioner license.** Record:
-> [`RESULTS_CORRECTED.md`](../../../lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md).
+> [`RESULTS_CORRECTED.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/rangestate_corrected_2026-08/RESULTS_CORRECTED.md).
 
 - **Frozen claim (sign = persistence):** `P(TR_{d+1} > median(TR, trailing 60d) | TR_d in top
   quintile of trailing 60d)` exceeds its block-shuffled null. Grounding: evidence-robustness
@@ -134,7 +134,7 @@ clustering-preserving placebo as primary**), verdict SIGNAL / NULL / AMBIGUOUS, 
 | P4 M6A event-window | WHO-track deaths 2026-08-14 (event-window door named) | Fresh grounds at the sourcing layer, not a slate row |
 
 > ⚠ **2026-08-18 — Q-EXPR-1 H1 admission screen (append-only intercept).**
-> [`Q-EXPR-1`](../closures/Q-EXPR-1-closure-resolved.md) `RESOLVED` (H1): a claim whose native
+> [`Q-EXPR-1`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-EXPR-1-closure-resolved.md) `RESOLVED` (H1): a claim whose native
 > horizon is weekly or daily is rejected at $0 unless it names a same-horizon (session /
 > flat-by-16:00) expression *before* any build. P2's "asymmetric-payoff claim (weekly)"
 > re-entry and P3's "triad/weekly expression" re-entry do **not** clear that screen on

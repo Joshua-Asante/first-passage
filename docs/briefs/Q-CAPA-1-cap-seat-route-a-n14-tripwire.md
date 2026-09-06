@@ -1,6 +1,6 @@
 # Q-CAPA-1 — Cap-seat Route A after N14: forward tripwire, or hold Cap?
 
-**Status:** `CLOSED` — `RESOLVED` 2026-08-06 ([`closure`](closures/Q-CAPA-1-closure-resolved.md)); Cap seat **spent**; tripwire **registered companion** (docs-only — [`ADR 2026-08-06`](../adr/2026-08-06-capa-tripwire-pfcusum-companion-registration.md))
+**Status:** `CLOSED` — `RESOLVED` 2026-08-06 ([`closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-CAPA-1-closure-resolved.md)); Cap seat **spent**; tripwire **registered companion** (docs-only — [`ADR 2026-08-06`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-06-capa-tripwire-pfcusum-companion-registration.md))
 **Authored:** 2026-08-06
 **Closed:** 2026-08-06
 **Authors:** Joshua + Cursor (Composer); Rule-0 + cheap falsifier parent-side; Cap-spend GO same day
@@ -12,9 +12,9 @@
 
 > **Cheap falsifier (parent-side, before lock — discharged this session):**
 >
-> 1. N14 stands: Δ = **−0.009367**, CI excludes 0, placebo p_emp **0.000**, n=255 — watchlist only ([`RESULTS`](../../lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/RESULTS.md) @ `be6b94e`).
-> 2. Level-proximity discriminator chain **STOPPED** (operator B/1): `MNQPROX-1` W6 + `MNQPROX-2` VOID-POWER (`n_paired=15`) — no MNQPROX-3 ([`PHASE0`](../../lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/PHASE0.md) @ `c820c12`).
-> 3. Catalogue wall: Route B ≤ **3** cells; arithmetic **favours Route A** (K=1, floor 0.650, headroom 0.350) ([`RESULTS`](../../lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) @ `87b0547`).
+> 1. N14 stands: Δ = **−0.009367**, CI excludes 0, placebo p_emp **0.000**, n=255 — watchlist only ([`RESULTS`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/RESULTS.md) @ `be6b94e`).
+> 2. Level-proximity discriminator chain **STOPPED** (operator B/1): `MNQPROX-1` W6 + `MNQPROX-2` VOID-POWER (`n_paired=15`) — no MNQPROX-3 ([`PHASE0`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/PHASE0.md) @ `c820c12`).
+> 3. Catalogue wall: Route B ≤ **3** cells; arithmetic **favours Route A** (K=1, floor 0.650, headroom 0.350) ([`RESULTS`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) @ `87b0547`).
 > 4. Avenue A Route A (survivor-tied) live; Route B `Accepted` but **not** the vehicle here ([`ADR`](../adr/2026-08-05-avenue-a-generate-confirm-route.md) @ `b0427fd`).
 > 5. Blind order-flow inadmissible; survivor-tied re-aim cleared condition 3 ([ruling §7](../notes/2026-08-05-order-flow-probe-governance-question.md) @ `a7dde66`).
 > 6. Estate still carries **Cap seat unspent** as the protected single discovery cell language (SESSIONS / MNQ session log) — under [`ADR 2026-08-04`](../adr/2026-08-04-family-k-bank-disclosure-not-gate.md) `K_banked` discloses and does **not** gate; this brief treats Cap seat as the **operator-reserved K_intrinsic=1 Route A slot**, not a resurrected summed-K scarcity claim.
@@ -27,10 +27,10 @@
 
 | Path | Anchor | What it grounds |
 |---|---|---|
-| [`lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/RESULTS.md`](../../lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/RESULTS.md) | `be6b94e` 2026-08-05 | **N14** numbers; FM-1; W1 opens nothing; Iterate names **watchlist + forward tripwire** companion to PF-CUSUM (baseline PF **1.1691**, floor **1.0855**, `block_size=2`); stop rule forbids outcome joins and gate conversion |
-| [`lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/PREREG.md`](../../lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/PREREG.md) | `2c1ff11`+ freeze lineage | S1–S7, FM-1…FM-8, Avenue A triple, K=0 reasoning for the diagnostic cell |
-| [`lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/PHASE0.md`](../../lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/PHASE0.md) | `c820c12` 2026-08-06 | PROX-2 VOID-POWER; operator B/1 STOP on discriminator chain |
-| [`lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md`](../../lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) | `87b0547` 2026-08-05 | Route B catalogue ≤3; **Route A favoured**; PROX named as owed successor — **superseded** by PROX Phase-0 kill (do not re-open that cell) |
+| [`lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/RESULTS.md) | `be6b94e` 2026-08-05 | **N14** numbers; FM-1; W1 opens nothing; Iterate names **watchlist + forward tripwire** companion to PF-CUSUM (baseline PF **1.1691**, floor **1.0855**, `block_size=2`); stop rule forbids outcome joins and gate conversion |
+| [`lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/PREREG.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/PREREG.md) | `2c1ff11`+ freeze lineage | S1–S7, FM-1…FM-8, Avenue A triple, K=0 reasoning for the diagnostic cell |
+| [`lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/PHASE0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_orb_level_proximity_tod_2026-08-06/PHASE0.md) | `c820c12` 2026-08-06 | PROX-2 VOID-POWER; operator B/1 STOP on discriminator chain |
+| [`lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) | `87b0547` 2026-08-05 | Route B catalogue ≤3; **Route A favoured**; PROX named as owed successor — **superseded** by PROX Phase-0 kill (do not re-open that cell) |
 | [`docs/adr/2026-08-05-avenue-a-generate-confirm-route.md`](../adr/2026-08-05-avenue-a-generate-confirm-route.md) | `b0427fd` 2026-08-05 | Route A unchanged; Route B admitted with Stage G/C; blind admission barred |
 | [`docs/methodology/avenue_a_generate_confirm.md`](../methodology/avenue_a_generate_confirm.md) | `b0427fd` | Checklist; ≥5 s horizon for *tradeable* claims; no ES→MNQ lead-lag |
 | [`docs/notes/2026-08-05-order-flow-probe-governance-question.md`](../notes/2026-08-05-order-flow-probe-governance-question.md) | `a7dde66` | Blind probe inadmissible; survivor-tied clears condition 3 |
@@ -117,7 +117,7 @@ The question does **not** presuppose wiring into live decay automation, a filter
 
 ## §7 — Execution plan
 
-- **Phase 0 — Charter only ($0, no Cap spend, no manifest).** **DONE 2026-08-06** — [`PHASE0.md`](../../lab/archive/mnq_capa_n14_tripwire_2026-08-06/PHASE0.md) verdict **`CHARTER-CLEARS`**. Frozen: forward twin of N14 — mean signed `A` on `[t, t+60s)` at the N14 event set vs same controls; stress class = ORB triggers (no A-threshold subclass); `K_intrinsic=1` if Cap spent; magnitude floor 0.05 contracts @ L1 median 7 (‖Δ‖ ≥ 0.00714); N14 quote cache is pre-touch only (forward pull still GO-gated).
+- **Phase 0 — Charter only ($0, no Cap spend, no manifest).** **DONE 2026-08-06** — [`PHASE0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/mnq_capa_n14_tripwire_2026-08-06/PHASE0.md) verdict **`CHARTER-CLEARS`**. Frozen: forward twin of N14 — mean signed `A` on `[t, t+60s)` at the N14 event set vs same controls; stress class = ORB triggers (no A-threshold subclass); `K_intrinsic=1` if Cap spent; magnitude floor 0.05 contracts @ L1 median 7 (‖Δ‖ ≥ 0.00714); N14 quote cache is pre-touch only (forward pull still GO-gated).
 - **Phase 1 — Operator GO** on Cap spend + PREREG freeze. **DONE 2026-08-06** — operator affirmed Phase-0 charter (*"affirm charter, commit, then proceed with next steps"*). Cap seat not marked spent until accept limbs fire.
 - **Phase 2 — PREREG** in `lab/archive/mnq_capa_n14_tripwire_2026-08-06/`; freeze before any forward-window quote; tests green before quotes.
 - **Phase 3 — Single run → RESULTS → closure** per §9; board writes (STATE, MNQ.md, SESSIONS, CATALOG, Cap-seat status line).

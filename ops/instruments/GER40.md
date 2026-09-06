@@ -33,7 +33,7 @@ structure:
 
 | # | Finding | Evidence | Confidence |
 |---|---|---|---|
-| **G1** | **GER40 has a genuine discrete cash open** (Xetra 09:00 CET; the CFD feed shows real overnight gaps, unlike the 23h US-index feeds). It is the **only** FXIFY instrument satisfying the literature's most-discriminating ORB trait — yet **empirically it is NOT the best ORB instrument.** | ORB study 2026-06-22 ([`lab/analysis/orb/orb_universe_2026-06-22/RESULTS.md`](../../lab/analysis/orb/orb_universe_2026-06-22/RESULTS.md)) | **HIGH**. |
+| **G1** | **GER40 has a genuine discrete cash open** (Xetra 09:00 CET; the CFD feed shows real overnight gaps, unlike the 23h US-index feeds). It is the **only** FXIFY instrument satisfying the literature's most-discriminating ORB trait — yet **empirically it is NOT the best ORB instrument.** | ORB study 2026-06-22 ([`lab/analysis/orb/orb_universe_2026-06-22/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_universe_2026-06-22/RESULTS.md)) | **HIGH**. |
 | **G2** | **GER40 ORB-30 FAILS the within-day placebo (p=0.126)** — the opening range is *not* significantly special vs arbitrary intraday windows — and the edge is **regime-concentrated** (meanR +0.060 / t 1.63 but 2022 alone +0.331; 2020/2023/2026 negative; halves +0.113/+0.007; short side weak +0.028). Good fill-cliff headroom (slip-to-zero 2.67× spread) but the discrete-open advantage did **not** translate into a robust signal. **Decisive lesson: ORB tradeability is dominated by opening-range/spread ratio, not by discreteness of the open** (NAS100, a 23h feed, beats DAX). | ORB study 2026-06-22 | **HIGH** (n=1646, canonical Pepperstone 2020-2026). |
 
 ## ACTIVE / OPEN
@@ -42,4 +42,4 @@ structure:
 
 ## SESSION LOG
 
-- **2026-06-22** — Ledger created. ORB cross-instrument study: GER40 is the only true-discrete-open FXIFY CFD but its ORB-30 fails the placebo (G2) → deprioritized for ORB. No core/lock/Pine change. See [`lab/analysis/orb/orb_universe_2026-06-22/RESULTS.md`](../../lab/analysis/orb/orb_universe_2026-06-22/RESULTS.md) + [`docs/SESSIONS.md`](../../docs/SESSIONS.md).
+- **2026-06-22** — Ledger created. ORB cross-instrument study: GER40 is the only true-discrete-open FXIFY CFD but its ORB-30 fails the placebo (G2) → deprioritized for ORB. No core/lock/Pine change. See [`lab/analysis/orb/orb_universe_2026-06-22/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_universe_2026-06-22/RESULTS.md) + [`docs/SESSIONS.md`](../../docs/SESSIONS.md).

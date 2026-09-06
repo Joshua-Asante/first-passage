@@ -9,7 +9,7 @@ Filename: `docs/adr/2026-08-22-catalog-hot-vs-disposition.md`
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Authors:** Cursor Cloud Agent (commission, PR #98) + Claude Code (draft)
-**Related:** [`2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) (limb-4 tier test) · [`2026-07-16-root-doc-charter-dedup.md`](2026-07-16-root-doc-charter-dedup.md) (no sixth root/index doc) · [`docs/notes/audits/2026-08-21-coherence-campaign.md`](../notes/audits/2026-08-21-coherence-campaign.md) C-P1-10 (regenerator-only CATALOG writer) · `docs/superpowers/specs/2026-07-11-lab-analysis-stm-ltm-archive-design.md` (pointer only — pruned from the public tree; retrievable via `git show pre-prune-2026-08-08:docs/superpowers/specs/2026-07-11-lab-analysis-stm-ltm-archive-design.md`, confirmed retrievable this session)
+**Related:** [`2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) (limb-4 tier test) · [`2026-07-16-root-doc-charter-dedup.md`](2026-07-16-root-doc-charter-dedup.md) (no sixth root/index doc) · [`docs/notes/audits/2026-08-21-coherence-campaign.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/2026-08-21-coherence-campaign.md) C-P1-10 (regenerator-only CATALOG writer) · `docs/superpowers/specs/2026-07-11-lab-analysis-stm-ltm-archive-design.md` (pointer only — pruned from the public tree; retrievable via `git show pre-prune-2026-08-08:docs/superpowers/specs/2026-07-11-lab-analysis-stm-ltm-archive-design.md`, confirmed retrievable this session)
 **Layer:** governance convention (lab hygiene tooling). **$0 / K=0.**
 **Tier:** full — limb 4 fires (creates a parsing/gating convention — Verdict-wins precedence, the `hot`/`disposition` axis split, the C2 join key — that binds `archive_lab_analysis.py`, `check_status_consistency.py`, and every future CATALOG-consuming script).
 
@@ -18,7 +18,7 @@ Filename: `docs/adr/2026-08-22-catalog-hot-vs-disposition.md`
 ## §0 — Rule 0 reads (production-source verification)
 
 All read this session on 2026-08-22, before authoring, per the commissioning handoff
-([`docs/briefs/handoffs/2026-08-22-cc-handoff-catalog-hot-vs-disposition.md`](../briefs/handoffs/2026-08-22-cc-handoff-catalog-hot-vs-disposition.md)):
+([`docs/briefs/handoffs/2026-08-22-cc-handoff-catalog-hot-vs-disposition.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/handoffs/2026-08-22-cc-handoff-catalog-hot-vs-disposition.md)):
 
 - `scripts/archive_lab_analysis.py` — anchor `b36d350` (2026-08-16 23:40:04 -0400, confirmed via `git log -1 --format='%h %ci' -- scripts/archive_lab_analysis.py`). `_NON_TERMINAL_DOMINANT` (L93–96): case-sensitive `HOLD`/`ACTIVE` regexes, deliberately upper-only so lowercase prose can't hijack a closure. `parse_disposition` (L282–304): scans the card's head lines top-to-bottom and **returns on the first line** that matches a `Disposition:`/`Status:`/`Verdict:` field — field *type* does not currently arbitrate; line *order* does. `is_archiveable` (L212–213): `status in _ARCHIVEABLE` — a plain set-membership test, unaffected by this ADR. `_hot_sys_path_dependent` (L796–817): walks every other hot slug's `.py` files for a `sys.path`-style import of the candidate slug; returns the consuming slug's name if found, `None` otherwise — this is the existing stay-hot pin mechanism `--slug` already respects.
 - `scripts/check_status_consistency.py` — anchor `b36d350` (same commit as above). `LIVE_STATUS`/`TERMINAL_STATUS` (L101–102): `{"ACTIVE", "HOLD"}` / `{"CLOSED", "FALSIFIED", "RETIRED"}` — closed vocab, unrecognised tokens never class-checked. `check_catalog_internal` (C2, L204–225): for each row, `expected_tier = "live" if table == "active" else "archived"` (checked against `body_tier`, untouched by this ADR), then `status_class = live|terminal|None` from the two frozenset above, compared against `expected_class = live if table == "active" else terminal` — **this is the clause this ADR retargets**: it currently joins table membership to status-word *class*, which is exactly what forbids a terminal disposition from sitting in the Active table. The parser above it (`col_map.get("status")`, L181) is **name-keyed**, not positional, when the header row contains `theme` — confirmed by reading the column-detection block (L140–200).
@@ -208,7 +208,7 @@ stays the sole CATALOG writer... This ADR does not authorize hand-editing a `sta
 cell."). Item 6 is under repeated real tension with lived practice, distinct from C-P1-10's own
 already-repaired defect (misclassified *existing* rows, closed 2026-08-21 via `--slug` archive):
 
-- A [2026-08-20 Cursor handoff](../briefs/handoffs/2026-08-20-cursor-handoff-aegis-3leg-risk-parameterization.md)
+- A [2026-08-20 Cursor handoff](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/handoffs/2026-08-20-cursor-handoff-aegis-3leg-risk-parameterization.md)
   §2 step 6 explicitly instructed adding one new `lab/CATALOG.md` row by hand rather than running
   `--regenerate-catalog`, "known to clobber unrelated hand-curated rows from a worktree; hand-insert
   only."

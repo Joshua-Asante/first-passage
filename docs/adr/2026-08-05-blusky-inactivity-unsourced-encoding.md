@@ -7,7 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** [`2026-08-05b-blusky-inactivity-rule-sourced.md`](2026-08-05b-blusky-inactivity-rule-sourced.md) in part — **§4 T1 FIRED same day.** BluSky's activity rule was sourced (Terms of Use art. 11490284 §3.3, trade-based per art. 12434442): the rule is real, binds evaluation accounts, and its faithful engine encoding is **22 idle business days**, not the 30 this ADR contained. The containment was correct for what was known and is **discharged, not overturned** — its guard machinery is retained and still gates the next unsourced tier.
 **Retain-until:** superseded by an ADR recording BluSky's actual published activity rule (§4 T1), or by a firm-rules change that retires the BluSky tiers
-**Related:** [`2026-08-04-firm-rules-eval-lock-fix-applied.md`](2026-08-04-firm-rules-eval-lock-fix-applied.md) (same file, same defect *class* — a field whose recorded value did not match the phase it models; **different field**, and that ADR's §5 forbidden move against widening the `dd_lock_offset_usd` fix to BluSky is respected, see §5 below) · measurement [`lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md`](../../lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md) §1 · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) §7 F3 (the fork whose verdict this field silently decides)
+**Related:** [`2026-08-04-firm-rules-eval-lock-fix-applied.md`](2026-08-04-firm-rules-eval-lock-fix-applied.md) (same file, same defect *class* — a field whose recorded value did not match the phase it models; **different field**, and that ADR's §5 forbidden move against widening the `dd_lock_offset_usd` fix to BluSky is respected, see §5 below) · measurement [`lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md) §1 · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) §7 F3 (the fork whose verdict this field silently decides)
 **Layer:** production config correctness (provenance defect) + one engine-plumbing guard in `core/mc/preflight.py`. **No `dd_protection` constant, allocation, Pine file, lifecycle state, or frozen gate threshold is touched. No measured number changes.**
 
 ---
@@ -121,7 +121,7 @@ The result is a field that reports an assumption in the grammar of a measurement
 - [`core/firm_rules.py`](../../core/firm_rules.py) — OPEN DEFECT block + two `inactivity_rule_sourced: False` flags.
 - [`core/mc/preflight.py`](../../core/mc/preflight.py) — `allow_unsourced_inactivity` keyword + guard + docstring.
 - [`tests/core/test_mc_preflight.py`](../../tests/core/test_mc_preflight.py) — six tests, incl. the flag-in-place pin and the Bulenox≡BluSky identity that makes the flag load-bearing.
-- [`lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/run_f3_cadence.py`](../../lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/run_f3_cadence.py) — explicit acknowledgement.
+- [`lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/run_f3_cadence.py`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/run_f3_cadence.py) — explicit acknowledgement.
 - [`docs/adr/INDEX.md`](INDEX.md) — regenerate. [`docs/SESSIONS.md`](../SESSIONS.md) — session entry.
 
 ---

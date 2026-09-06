@@ -9,7 +9,7 @@
 **Sub-questions opened:** none (the c1 1.00× rung question is packet **A0b**, a *downstream* item, not forked here)
 **Loop:** Inquire-phase Pre-Q — closure gated on the §6 locational read of the frozen pre-registration, then the operator's fork election
 **Artifact path:** `docs/briefs/Q-BUSTGATE-1-bust-gate-re-derivation.md`
-**Pre-registration (frozen method, committed before this derivation is admitted):** [`pre-registration/Q-BUSTGATE-1-verdict-preregistration.md`](pre-registration/Q-BUSTGATE-1-verdict-preregistration.md)
+**Pre-registration (frozen method, committed before this derivation is admitted):** [`pre-registration/Q-BUSTGATE-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-BUSTGATE-1-verdict-preregistration.md)
 
 ---
 
@@ -85,7 +85,7 @@ The incumbent Part-A eval bust ceiling (**3.0%**) was fixed on 2026-07-13 by a *
 | `FALSIFIED` | Optimal admissible rung busts **> 3.0%** on the horizon-robust cell | H's ratification claim fails: 3.0% is **not** economic. Output = fork **A** (retain 3.0% re-justified as a survival gate) **or** fork **B** (adopt an EV/dollar-day objective via a fresh superseding ADR, `concept-not-constant` chain). Neither fork edits `be6dda6`. | No *successor* ceiling admitted → incumbent **3.0% stands**; treat as the **block** branch — A0b 1.00× rung ADR blocked until the operator elects a fork |
 | `AMBIGUOUS-HOLD` | Optimal rung is horizon-fragile (§C(1)) | Economic optimum not robustly identified; cannot decide the fork | A0 = **OPEN**; 3.0% stands; A0b blocked; re-test when a bust-swept re-MC over the full horizon grid is authorized |
 
-**Pre-registered before the number was read** — the frozen method + this table live in [`pre-registration/Q-BUSTGATE-1-verdict-preregistration.md`](pre-registration/Q-BUSTGATE-1-verdict-preregistration.md) §B/§D, committed ahead of the §7 read. §6 is not amended to match the result (Trap #12). **Landed verdict: `FALSIFIED`** (§7 Phase 3) — every §6 branch keeps the incumbent 3.0% in force and the A0b 1.00× rung ADR blocked until an operator act; none of them is a mechanism by which this brief loosens the live gate.
+**Pre-registered before the number was read** — the frozen method + this table live in [`pre-registration/Q-BUSTGATE-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-BUSTGATE-1-verdict-preregistration.md) §B/§D, committed ahead of the §7 read. §6 is not amended to match the result (Trap #12). **Landed verdict: `FALSIFIED`** (§7 Phase 3) — every §6 branch keeps the incumbent 3.0% in force and the A0b 1.00× rung ADR blocked until an operator act; none of them is a mechanism by which this brief loosens the live gate.
 
 ---
 

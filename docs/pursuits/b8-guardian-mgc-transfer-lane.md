@@ -35,11 +35,11 @@ midpoint-by-day-count; (2) `intraday_low` from trade Adverse-Excursion, not bar-
 daily equity troughs.
 
 **Closure:** [`2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md`](../briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md)
-**Cell PREREG (retroactive):** [`2026-08-11-guardian-mgc-transfer-cell-prereg.md`](../briefs/pre-registration/2026-08-11-guardian-mgc-transfer-cell-prereg.md)
+**Cell PREREG (retroactive):** [`2026-08-11-guardian-mgc-transfer-cell-prereg.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/2026-08-11-guardian-mgc-transfer-cell-prereg.md)
 **Registry:** [`rejected_candidates.md`](../rejected_candidates.md) — Guardian→MGC transfer cell
 
 **Ratified PARK:** 2026-08-11 / JA · **SUBTRACT:** 2026-08-11 (this closure)
 **Source:** [`R6 ADR`](../adr/2026-07-10-r6-nogo-futures-residual-disposition.md) §2 item 3 ·
 [`07-16 ADR`](../adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) §2 item 1 ·
-[`MGC ledger`](../../ops/instruments/MGC.md) · [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) ·
+[`MGC ledger`](../../ops/instruments/MGC.md) · [`GSUB-1 inventory`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) ·
 [`Q-TXG-1 design`](../superpowers/specs/2026-08-11-transfer-expression-grid-design.md) §5

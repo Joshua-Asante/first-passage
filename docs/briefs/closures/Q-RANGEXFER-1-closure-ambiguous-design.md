@@ -8,9 +8,9 @@ own filename rule this closure files under that verdict. Full per-hypothesis bre
 **Spend / K:** $0.00 · K consumed at this closure: 0 (the presence battery re-derives already-cited panels; the pre-existing `K_fresh=2`/`K_fresh=2`/+1 declarations on `H-RANGEXFER-1.a-MYM`/`H-RANGEXFER-1.b-MYM`/the exploratory 0.785 look remain disclosed but were never spent — no Phase 3 execution ever ran)
 **Live effect:** none — conditioner-role research only; no entry/sizing construct was ever in scope (§5 forbidden moves); no `core/`, Pine, allocation, `dd_protection`, or rail change
 **Artifacts:**
-[`joint_surrogation_null_2026-08-30/RESULTS.md`](../../../lab/analysis/_inbox/joint_surrogation_null_2026-08-30/RESULTS.md) (Rounds 1–4, the hard-stop record) ·
-[`BOUNDED_ROUND_PLAN.md`](../../../lab/analysis/_inbox/joint_surrogation_null_2026-08-30/BOUNDED_ROUND_PLAN.md) (closure-path plan, Codex-reviewed) ·
-[`rangexfer_byyear_l4_2026-08-30/RESULTS.md`](../../../lab/analysis/_inbox/rangexfer_byyear_l4_2026-08-30/RESULTS.md) (L4, Codex-corrected) ·
+[`joint_surrogation_null_2026-08-30/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/joint_surrogation_null_2026-08-30/RESULTS.md) (Rounds 1–4, the hard-stop record) ·
+[`BOUNDED_ROUND_PLAN.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/joint_surrogation_null_2026-08-30/BOUNDED_ROUND_PLAN.md) (closure-path plan, Codex-reviewed) ·
+[`rangexfer_byyear_l4_2026-08-30/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/rangexfer_byyear_l4_2026-08-30/RESULTS.md) (L4, Codex-corrected) ·
 [`rangexfer_presence_battery_2026-08-30/RESULTS.md`](../../../lab/analysis/_inbox/rangexfer_presence_battery_2026-08-30/RESULTS.md) (L1–L3, adversarially verified — the decisive computation for this closure)
 
 ---

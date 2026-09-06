@@ -49,12 +49,12 @@ Q-TRADECAP-1 confirmed the gap. STATE queue row 2 held the election (now deleted
 
 ## §2 — Prior art / lineage
 
-- [`Q-TRADECAP-1`](Q-TRADECAP-1-per-trade-loss-bound.md) + [closure](closures/Q-TRADECAP-1-closure-resolved.md) — parent; absence only.
+- [`Q-TRADECAP-1`](Q-TRADECAP-1-per-trade-loss-bound.md) + [closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TRADECAP-1-closure-resolved.md) — parent; absence only.
 - [`1r_estimation.md`](../methodology/1r_estimation.md) L235–267 — pre-staged pair; CFD-era trigger retired.
-- [`disaster-stop ADR`](../adr/2026-07-28-c1-disaster-stop-payload-supported.md) — the only accepted path that can cap *realized* loss; unpaid Phase 0a.
+- [`disaster-stop ADR`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-07-28-c1-disaster-stop-payload-supported.md) — the only accepted path that can cap *realized* loss; unpaid Phase 0a.
 - M1 ADR — size-bound vs identity-bound; realized-magnitude is the unnamed third axis.
 - Assumption-sweep A6 — origin of the parent.
-- Ox-alpha consult (zero authority): [`N-2026-08-24-ox-alpha-per-trade-bound-election.md`](../notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md). Surviving rows travel with the election; they do not elect.
+- Ox-alpha consult (zero authority): [`N-2026-08-24-ox-alpha-per-trade-bound-election.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md). Surviving rows travel with the election; they do not elect.
 - Election record (`Accepted`): [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) — ID **2**.
 
 ---
@@ -112,7 +112,7 @@ Q-TRADECAP-1 confirmed the gap. STATE queue row 2 held the election (now deleted
 
 ## §8 — Verdict pre-registration
 
-[`Q-TRADECAP-2-verdict-preregistration.md`](pre-registration/Q-TRADECAP-2-verdict-preregistration.md)
+[`Q-TRADECAP-2-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-TRADECAP-2-verdict-preregistration.md)
 
 Pre-registration commit hash: `4d6761b`
 Pre-registration date: 2026-08-24

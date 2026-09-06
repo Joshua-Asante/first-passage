@@ -5,8 +5,8 @@ pre-filters fails harvest **Req 1a and Req 1b**. Disposition **STOP**, per the p
 **Verdict scope:** the admissible-mechanism well is dry **on the operator's timeline**, via the
 channels declared in §2 — not for all time and not for all channels.
 
-**Date:** 2026-08-04 · **Parent:** [`MNQBASE-1`](../rnd-pipeline/MNQBASE-1-tradeify-shaped-base-construct-harvest-scoping.md) §7 Step 2
-**Predecessor:** [Step 1 `RESOLVED`](../../../lab/analysis/c1/mnq_event_ceiling_2026-08-04/RESULTS.md) — frequency is not the constraint; selection is
+**Date:** 2026-08-04 · **Parent:** [`MNQBASE-1`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/MNQBASE-1-tradeify-shaped-base-construct-harvest-scoping.md) §7 Step 2
+**Predecessor:** [Step 1 `RESOLVED`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_event_ceiling_2026-08-04/RESULTS.md) — frequency is not the constraint; selection is
 **Cost:** **$0.00** · **K=0** · **no manifest opened** · **Cap seat untouched** · no data read, no PnL examined
 **Changes:** none to `core/`, lock, allocation, `dd_protection`, lifecycle, Pine, rail, or `LEG_MAP`.
 
@@ -21,13 +21,13 @@ channels declared in §2 — not for all time and not for all channels.
 ## §0 — Rule-0 reads (executed this session, not inherited)
 
 - **[`core/firm_rules.py`](../../../core/firm_rules.py) `Tradeify_Select_100K`** — read via the live dict, not prose. Confirms the §0 geometry of the parent brief. **New observation in §5.1.**
-- **[`eval_inverse_requirements_2026-08-03/RESULTS.md`](../../../lab/analysis/c1/eval_inverse_requirements_2026-08-03/RESULTS.md)** — the source of T1/T2/T7, read in full rather than through the parent's summary. §2a's 0.40R inversion and §3's archetypes are the arithmetic P1 rests on.
+- **[`eval_inverse_requirements_2026-08-03/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/eval_inverse_requirements_2026-08-03/RESULTS.md)** — the source of T1/T2/T7, read in full rather than through the parent's summary. §2a's 0.40R inversion and §3's archetypes are the arithmetic P1 rests on.
 - **[`ops/instruments/MNQ.md`](../../../ops/instruments/MNQ.md)** — read in full, including the **DEAD/REJECTED** table and the standing **F2 guard**. This is the P4 authority; the parent's §2.3 quotation of it is accurate.
 - **[`ops/instruments/MECHANISMS.md`](../../../ops/instruments/MECHANISMS.md)** — 17 classes enumerated for the §3 dedup; `regime-overlay` read in full as the nearest class to the surviving candidates.
 - **[`docs/methodology/strategy_harvest.md`](../../methodology/strategy_harvest.md)** — §1 Requirements 1–5, §2.3 ranked channel portfolio (the sourcing authority for this step), §4 decay haircut.
 - **`N-2026-07-26-forced-flow-census.md`** (pruned at the Great Prune; retrieve via `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`) — all four passes read in full. This is the inherited-coverage authority for §2.
-- **[`lab/analysis/harvest/harvest_mechanism_deep_search_2026-07-23/RESULTS.md`](../../../lab/analysis/harvest/harvest_mechanism_deep_search_2026-07-23/RESULTS.md)** — 0 SCREENABLE. ⚠ **Path note:** the census cites this at `lab/analysis/harvest_mechanism_deep_search_2026-07-23/`, which no longer resolves — the studies moved under the `harvest/` theme nest on 2026-08-03. Same for `radar_tier_a_burst_2026-07`. Corrected here rather than reported as absent.
-- **[`lab/archive/regime_signal_research_2026-06-25/CLOSURE.md`](../../../lab/archive/regime_signal_research_2026-06-25/CLOSURE.md)** — read to bound the `regime-overlay` adjacency honestly (see §3.3).
+- **[`lab/analysis/harvest/harvest_mechanism_deep_search_2026-07-23/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/harvest_mechanism_deep_search_2026-07-23/RESULTS.md)** — 0 SCREENABLE. ⚠ **Path note:** the census cites this at `lab/analysis/harvest_mechanism_deep_search_2026-07-23/`, which no longer resolves — the studies moved under the `harvest/` theme nest on 2026-08-03. Same for `radar_tier_a_burst_2026-07`. Corrected here rather than reported as absent.
+- **[`lab/archive/regime_signal_research_2026-06-25/CLOSURE.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/regime_signal_research_2026-06-25/CLOSURE.md)** — read to bound the `regime-overlay` adjacency honestly (see §3.3).
 
 ---
 

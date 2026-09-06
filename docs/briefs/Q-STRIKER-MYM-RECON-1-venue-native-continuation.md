@@ -8,7 +8,7 @@
 **Sub-questions opened:** none
 **Loop:** Inquire-phase Pre-Q — gates the first reconstruction candidate before any Pine search
 **Artifact path:** `docs/briefs/Q-STRIKER-MYM-RECON-1-venue-native-continuation.md`
-**Closure:** [`closures/2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md`](closures/2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md)
+**Closure:** [`closures/2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md)
 
 ---
 
@@ -87,7 +87,7 @@ This names the symptom—whether such an opportunity exists—without asking whi
 ## §6 — Gate criteria
 
 The exact thresholds and candidate semantics live in:
-[`pre-registration/2026-07-16-striker-mym-reconstruction-candidate-1-prereg.md`](pre-registration/2026-07-16-striker-mym-reconstruction-candidate-1-prereg.md).
+[`pre-registration/2026-07-16-striker-mym-reconstruction-candidate-1-prereg.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-1-prereg.md).
 
 | Verdict | Trigger condition | Disposition |
 | --- | --- | --- |
@@ -111,7 +111,7 @@ No criterion moves after the pre-registration is frozen.
 ## §8 — Verdict pre-registration
 
 Companion:
-[`docs/briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-1-prereg.md`](pre-registration/2026-07-16-striker-mym-reconstruction-candidate-1-prereg.md).
+[`docs/briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-1-prereg.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-1-prereg.md).
 
 Pre-registration commit hash: `1bc4eb1`
 Pre-registration date: 2026-07-16

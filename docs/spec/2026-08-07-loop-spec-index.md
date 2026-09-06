@@ -15,13 +15,13 @@ JA 2026-08-07 — recorded in `STATE.md` decision index + `docs/SESSIONS.md`).
 | # | Spec | One line | Depends |
 |---|---|---|---|
 | S1 | [environment ratification](2026-08-07-loop-s1-environment-ratification-spec.md) | F2+F3 ruled: rail kept warm, incumbent eval = the environment | — |
-| S2 | [signal-host fork](2026-08-07-loop-s2-signal-host-fork-spec.md) | Python-native ruled; M1 item-5 origin expressly superseded | S1 |
+| S2 | [signal-host fork](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s2-signal-host-fork-spec.md) | Python-native ruled; M1 item-5 origin expressly superseded | S1 |
 | S2b | [Python signal daemon](2026-08-07-loop-s2b-python-signal-daemon-spec.md) | bar source · B1 contract · heartbeat · fail-closed · second Fly app; no build alone | S2 |
 | S3 | [arbiter, two-tier](2026-08-07-loop-s3-arbiter-two-tier-spec.md) | Python engine = research authority per family; eval fills = deployment truth · **scaffold CODE_LANDED** (`parity_gen2_2026-08/`); Gate RESOLVED → first family TV anchor | S2, S4 |
-| S4 | [sensor layer](2026-08-07-loop-s4-sensor-layer-spec.md) | M1 → RESOLVED; execution-quality fields captured from fill one | S1 |
-| S5 | [bounded promotion lane](2026-08-07-loop-s5-bounded-promotion-lane-spec.md) | automation promotes into a capped sandbox; ceiling-crossings stay operator-only | S1, S4 |
-| S6 | [K-aware generation](2026-08-07-loop-s6-k-aware-generation-spec.md) | corridor + DSR-cap arithmetic executable at campaign-open | — |
-| S7 | [repo alignment](2026-08-07-loop-s7-repo-alignment-spec.md) | each ruling lands with its propagation sweep, from a pre-built manifest | consumes all |
+| S4 | [sensor layer](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s4-sensor-layer-spec.md) | M1 → RESOLVED; execution-quality fields captured from fill one | S1 |
+| S5 | [bounded promotion lane](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s5-bounded-promotion-lane-spec.md) | automation promotes into a capped sandbox; ceiling-crossings stay operator-only | S1, S4 |
+| S6 | [K-aware generation](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s6-k-aware-generation-spec.md) | corridor + DSR-cap arithmetic executable at campaign-open | — |
+| S7 | [repo alignment](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s7-repo-alignment-spec.md) | each ruling lands with its propagation sweep, from a pre-built manifest | consumes all |
 
 Series boundary (the recursion line): automation improves candidates and sandbox-budget
 allocations within operator-set ceilings (locked `BASE_RISK`/allocation constants

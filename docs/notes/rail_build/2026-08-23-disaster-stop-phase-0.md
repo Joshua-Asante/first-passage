@@ -1,8 +1,8 @@
 # Disaster-stop Phase 0 — recorded BLOCKED
 
 **Date:** 2026-08-23
-**Owner ADR:** [`2026-07-28-c1-disaster-stop-payload-supported.md`](../../adr/2026-07-28-c1-disaster-stop-payload-supported.md)
-**Plan:** [`2026-08-23-disaster-stop-phase-0-1-implementation.md`](../../superpowers/plans/2026-08-23-disaster-stop-phase-0-1-implementation.md)
+**Owner ADR:** [`2026-07-28-c1-disaster-stop-payload-supported.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-07-28-c1-disaster-stop-payload-supported.md)
+**Plan:** [`2026-08-23-disaster-stop-phase-0-1-implementation.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-disaster-stop-phase-0-1-implementation.md)
 **Procedure owner:** ADR §7 (no second RUNBOOK)
 
 | Limb | Result | Why |

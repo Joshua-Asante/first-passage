@@ -4,8 +4,8 @@
 **Closed:** 2026-07-16
 **Candidate:** `S-MYM-ORC-02`
 **Question:** [`Q-STRIKER-MYM-RECON-2`](../Q-STRIKER-MYM-RECON-2-session-aware-continuation.md)
-**Frozen authority:** [`2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md`](../pre-registration/2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md)
-**Development result:** [`DEVELOPMENT_RESULTS.md`](../../../lab/analysis/striker/striker_mym_reconstruction_candidate1_2026-07/DEVELOPMENT_RESULTS.md)
+**Frozen authority:** [`2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/2026-07-16-striker-mym-reconstruction-candidate-2-prereg.md)
+**Development result:** [`DEVELOPMENT_RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/striker/striker_mym_reconstruction_candidate1_2026-07/DEVELOPMENT_RESULTS.md)
 **Recommendation:** none
 
 No reserved-holdout P&L was read or computed. The valid development run mechanically fired the frozen `FALSIFIED` branch; execution stops before Pine, parity, holdout, firm-tier MC, rail, account registration, or live spend.

@@ -2,8 +2,8 @@
 
 **Closed:** 2026-07-20 (same session as lock — single-session execution per §7)
 **Parent brief:** [`../Q-BOOKFIT-1-fork-composition-coordinate-triage.md`](../Q-BOOKFIT-1-fork-composition-coordinate-triage.md) (now `CLOSED-RESOLVED`)
-**Pre-reg (FROZEN before any projection):** [`../pre-registration/Q-BOOKFIT-1-verdict-preregistration.md`](../pre-registration/Q-BOOKFIT-1-verdict-preregistration.md) — commit `0fc1e05` (19:18 ET), projection first ran after `4046bd2`
-**Run artifacts:** [`lab/archive/q_bookfit_1_2026-07/`](../../../lab/archive/q_bookfit_1_2026-07/) — `run_projection.py`, `projection_results.json`
+**Pre-reg (FROZEN before any projection):** [`../pre-registration/Q-BOOKFIT-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-BOOKFIT-1-verdict-preregistration.md) — commit `0fc1e05` (19:18 ET), projection first ran after `4046bd2`
+**Run artifacts:** [`lab/archive/q_bookfit_1_2026-07/`](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_bookfit_1_2026-07/) — `run_projection.py`, `projection_results.json`
 **Execution invariants held:** zero pulls for the projection; zero K; zero manifest opens; the one cost-gated symbology pull (Phase 1b) estimated then billed **$0.00**.
 
 ## Verdict (§D asserted against actual numbers)

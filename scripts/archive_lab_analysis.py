@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import re
 import shutil
 import subprocess
@@ -637,6 +638,57 @@ def _row_from_full_dir(
     )
 
 
+ARCHIVED_INDEX_REL = "lab/ARCHIVED.json"
+
+
+def load_archived_index(repo: Path) -> dict:
+    """``lab/ARCHIVED.json`` (studies whose bodies left this tree) or ``{}``.
+
+    Written by the 2026-09-06 tracked-file reduction ADR. Bodies listed here
+    live at ``archive_repo`` @ ``archive_commit``. Nothing is resolved against
+    disk: the index only keeps a study's CATALOG row after its body is gone.
+    """
+    path = repo / ARCHIVED_INDEX_REL
+    if not path.is_file():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(data, dict) or not isinstance(data.get("studies"), dict):
+        return {}
+    return data
+
+
+def _rows_from_archived_index(repo: Path) -> list[CatalogRow]:
+    """Archived-elsewhere rows: body cell is the archive URL, ``hot="no"``."""
+    data = load_archived_index(repo)
+    if not data:
+        return []
+    base = f"{str(data.get('archive_repo', '')).rstrip('/')}/tree/{data.get('archive_commit', '')}"
+    rows: list[CatalogRow] = []
+    for slug, meta in sorted(data["studies"].items()):
+        if not isinstance(meta, dict):
+            continue
+        body_rel = str(meta.get("baseline_body", "")).rstrip("/")
+        retained = list(meta.get("retained_files") or [])
+        card = f"{body_rel}/ ({len(retained)} file(s) retained)" if retained else "—"
+        rows.append(
+            CatalogRow(
+                slug=slug,
+                theme=str(meta.get("theme") or "—"),
+                status=str(meta.get("status") or "CLOSED"),
+                one_liner=str(meta.get("one_liner") or "—"),
+                card=card,
+                body=f"{base}/{body_rel}/",
+                heavy="—",
+                closed=str(meta.get("closed") or "—"),
+                hot="no",
+            )
+        )
+    return rows
+
+
 def scan_lab(
     repo: Path,
     tracked_override: dict[str, frozenset[str]] | None = None,
@@ -679,6 +731,15 @@ def scan_lab(
         theme = _resolve_scan_theme(stamped, dir_theme)
         active_rows.append(_row_from_full_dir(repo, slug, slug_dir, theme))
 
+    # (c) studies archived out of this tree (lab/ARCHIVED.json). The index
+    # row replaces any partial on-disk remnant row for the same slug so a slug
+    # never renders twice.
+    indexed = _rows_from_archived_index(repo)
+    if indexed:
+        indexed_slugs = {r.slug for r in indexed}
+        active_rows = [r for r in active_rows if r.slug not in indexed_slugs]
+        archived_rows = [r for r in archived_rows if r.slug not in indexed_slugs]
+        archived_rows.extend(indexed)
     return active_rows + archived_rows
 
 
@@ -871,8 +932,8 @@ def render_catalog(
     are omitted. Archived stays a single flat table (no theme col).
     """
     wanted = frozenset(in_flight_slugs or ())
-    active = [r for r in rows if r.body.startswith(f"{ANALYSIS_REL}/")]
-    archived = [r for r in rows if r.body.startswith(f"{ARCHIVE_REL}/")]
+    active = [r for r in rows if r.hot != "no" and r.body.startswith(f"{ANALYSIS_REL}/")]
+    archived = [r for r in rows if r.hot == "no" or r.body.startswith(f"{ARCHIVE_REL}/")]
     by_slug = {r.slug: r for r in active}
     in_flight_rows = [
         by_slug[s]
@@ -1751,6 +1812,13 @@ def check_lab(
             d.name for d in archive_root.iterdir() if d.is_dir()
         }
 
+    # Studies archived out of this tree (lab/ARCHIVED.json). Whatever is still on
+    # disk for one of these slugs is a RETAINED REMNANT -- a fixture or module some
+    # surviving test/script consumes -- not a hot body. scan_lab() renders them under
+    # ``## Archived`` from the index, so the body-shaped checks below would contradict
+    # the catalog they exist to validate.
+    indexed_slugs: set[str] = set(load_archived_index(repo).get("studies") or {})
+
     # Flat stub / dual-presence checks — skip closed-set theme directories.
     analysis_slugs: set[str] = set()
     if analysis_root.is_dir():
@@ -1808,6 +1876,8 @@ def check_lab(
     layout_active = theme_layout_active(repo)
     for dir_theme, slug, slug_dir in iter_hot_bodies(repo):
         if is_stub_dir(slug_dir, repo, tracked_override):
+            continue
+        if slug in indexed_slugs:
             continue
         if layout_active:
             try:

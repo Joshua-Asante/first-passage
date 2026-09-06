@@ -4,11 +4,11 @@
 **Authored:** 2026-08-18
 **Closed:** 2026-08-18
 **Authors:** Joshua (operator GO: "commit and continue on Q-TRAINKILL-3") + Cursor (execution)
-**Parent question:** [`Q-TRAINKILL-2-bounded-recovery-alt-dgp.md`](Q-TRAINKILL-2-bounded-recovery-alt-dgp.md) / [`closure`](closures/Q-TRAINKILL-2-closure-ambiguous-hold.md) Iterate entry packet
+**Parent question:** [`Q-TRAINKILL-2-bounded-recovery-alt-dgp.md`](Q-TRAINKILL-2-bounded-recovery-alt-dgp.md) / [`closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TRAINKILL-2-closure-ambiguous-hold.md) Iterate entry packet
 **Sub-questions opened:** none
 **Loop:** Inquire-phase Pre-Q — closure gated on two-block concordance (or an election this GO did not make)
 **Artifact path:** `docs/briefs/Q-TRAINKILL-3-neg-vs-dep-discriminator.md`
-**Pre-registration:** [`pre-registration/Q-TRAINKILL-3-verdict-preregistration.md`](pre-registration/Q-TRAINKILL-3-verdict-preregistration.md)
+**Pre-registration:** [`pre-registration/Q-TRAINKILL-3-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-TRAINKILL-3-verdict-preregistration.md)
 
 **D-S-A domain:** data (committed TK2 P vectors → two block g's)
 **Pre-Q gate:**
@@ -148,7 +148,7 @@ they disagree or either is a 2:1 tie, the DGPs are not concordant.
 
 ## §8 — Verdict pre-registration
 
-File: [`pre-registration/Q-TRAINKILL-3-verdict-preregistration.md`](pre-registration/Q-TRAINKILL-3-verdict-preregistration.md)
+File: [`pre-registration/Q-TRAINKILL-3-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-TRAINKILL-3-verdict-preregistration.md)
 
 Pre-registration sha256 (printed before block g):
 `93c21d21eb0fd2d0e580a384a586dbf10d19d8a23a593dea6e147f63ad57e7f6`

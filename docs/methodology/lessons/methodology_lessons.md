@@ -865,7 +865,7 @@ infrastructure), M-9 (gitignored bytes not git-reconcilable).
 
 **Sibling lessons:** per-gate/bp-space instance of [[lesson_gate_reachability_preregistration]] (Q-HARV-0 placebo-geometry scar → generalized beyond placebo clauses to cost clauses); complements M-19 (DSR floor screens the *selection* gate a-priori; M-20 screens the *cost* gate a-priori — together they make "which gates can a true world actually pass?" a pure Stage-0 arithmetic question).
 
-**Worked example:** [`lab/analysis/harvest/h_od_1_es_overnight_drift_2026-07/RESULTS.md`](../../../lab/analysis/harvest/h_od_1_es_overnight_drift_2026-07/RESULTS.md) (reachability recompute table + D5 recount; reproduce commands inline).
+**Worked example:** [`lab/analysis/harvest/h_od_1_es_overnight_drift_2026-07/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/h_od_1_es_overnight_drift_2026-07/RESULTS.md) (reachability recompute table + D5 recount; reproduce commands inline).
 
 ---
 
@@ -894,7 +894,7 @@ infrastructure), M-9 (gitignored bytes not git-reconcilable).
 
 **Sibling lessons:** the composition/portfolio-tail analogue of [[M-16]] (realistic-fill slip is the cheapest single-parameter falsifier — here the daily-$std ratio is that seconds-cost falsifier for composition); joins [[M-19]] (DSR selection-gate reachability, a-priori) and [[M-20]] (cost-gate reachability, a-priori) as the third "answer the gate with Stage-0 arithmetic before spending the expensive run" screen — M-21 answers the *portfolio-composition bust* gate; sibling to `lesson_market_neutral_not_regime_neutral` (correlation-space ≠ the operative risk space).
 
-**Worked example:** [`docs/briefs/closures/Q-COMPOSE-1-closure-falsified.md`](../../briefs/closures/Q-COMPOSE-1-closure-falsified.md) (anchor table: 2-leg vs composed-3-leg bust per tier/partition; §"breadth decomposition" for the N_eff split); [`lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md`](../../../lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md) caveat 3 (the pre-composition read); reproduce N_eff from `lab/research_utils/breadth.py` (`n_eff_dependence` / `n_eff_risk` / their deltas).
+**Worked example:** [`docs/briefs/closures/Q-COMPOSE-1-closure-falsified.md`](../../briefs/closures/Q-COMPOSE-1-closure-falsified.md) (anchor table: 2-leg vs composed-3-leg bust per tier/partition; §"breadth decomposition" for the N_eff split); [`lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md) caveat 3 (the pre-composition read); reproduce N_eff from `lab/research_utils/breadth.py` (`n_eff_dependence` / `n_eff_risk` / their deltas).
 
 ---
 

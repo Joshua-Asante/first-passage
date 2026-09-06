@@ -158,6 +158,36 @@ def test_c2_terminal_disposition_in_active_with_hot_yes_is_clean():
     assert csc.check_catalog_internal(csc.parse_catalog(CATALOG_THEMED_HOT)) == []
 
 
+CATALOG_ARCHIVED_ELSEWHERE = """# Lab analysis catalog
+
+## Active
+
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| stay_hot | c1 | ACTIVE | yes | live | lab/analysis/c1/stay_hot/ | — |
+
+## Archived
+
+| slug | status | one-liner | card | body | heavy | closed |
+|---|---|---|---|---|---|---|
+| gone_hot | FALSIFIED | no edge | — | https://example.invalid/archive/tree/deadbeef/lab/analysis/c1/gone_hot/ | — | 2026-08-01 |
+| gone_cold | CLOSED | done | — | https://example.invalid/archive/tree/deadbeef/lab/archive/gone_cold/ | — | 2026-07-01 |
+"""
+
+
+def test_c2_archive_url_body_is_archived_tier_even_when_url_echoes_analysis_layout():
+    """lab/ARCHIVED.json rows (2026-09-06 reduction): the body cell is an archive URL.
+
+    The baseline layout path inside the URL (`.../lab/analysis/c1/<slug>/`) must
+    not make the row live-tier; the body left this tree, so it is archived.
+    """
+    catalog = csc.parse_catalog(CATALOG_ARCHIVED_ELSEWHERE)
+    assert catalog["gone_hot"].table == "archived"
+    assert catalog["gone_hot"].body_tier == "archived"
+    assert catalog["gone_cold"].body_tier == "archived"
+    assert csc.check_catalog_internal(catalog) == []
+
+
 def test_c2_hot_no_in_active_table_is_flagged():
     bad = CATALOG_THEMED_HOT.replace("| stay_hot | c1 | FALSIFIED | yes |", "| stay_hot | c1 | FALSIFIED | no |")
     findings = csc.check_catalog_internal(csc.parse_catalog(bad))

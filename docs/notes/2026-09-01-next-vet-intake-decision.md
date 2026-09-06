@@ -78,8 +78,8 @@ run alongside high-expectancy sourcing; it does not displace the number-one stra
 - B1 evidence and explicit zero-measurement finding:
   [`2026-08-23-phase-b-lane-b1-falsifier-results.md`](research/2026-08-23-phase-b-lane-b1-falsifier-results.md).
 - B1 source-liveness instrument, now closed:
-  [`2026-08-24-phase-b-lane-b1-paper-log-tracker.md`](research/2026-08-24-phase-b-lane-b1-paper-log-tracker.md).
+  [`2026-08-24-phase-b-lane-b1-paper-log-tracker.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/research/2026-08-24-phase-b-lane-b1-paper-log-tracker.md).
 - Phase-B lane owner:
   [`2026-08-23-viable-strategy-phase-b-mechanism-supply.md`](../superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md).
 - Accepted Phase-A pair:
-  [`2026-09-01-gapcond-orb-1-vet-card.md`](2026-09-01-gapcond-orb-1-vet-card.md).
+  [`2026-09-01-gapcond-orb-1-vet-card.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-09-01-gapcond-orb-1-vet-card.md).

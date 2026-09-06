@@ -1,9 +1,9 @@
 # Q-CAPRES-2 — Reserve a fresh MNQ Cap seat for one ORB-tied Route A cell
 
-**Status:** RESOLVED — Cap-reservation GO signed; Cap-spend GO signed (CapFLOW PREREG). CapFLOW Cap-spend **`FALSIFIED` 2026-08-14** (Cap held). See [`Q-CAPFLOW-1 closure`](closures/Q-CAPFLOW-1-closure-falsified.md).
+**Status:** RESOLVED — Cap-reservation GO signed; Cap-spend GO signed (CapFLOW PREREG). CapFLOW Cap-spend **`FALSIFIED` 2026-08-14** (Cap held). See [`Q-CAPFLOW-1 closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-CAPFLOW-1-closure-falsified.md).
 **Authored:** 2026-08-08
 **Authors:** Joshua + Cursor; absolute-path plan item 3
-**Parent:** Cap spent via [`Q-CAPA-1`](closures/Q-CAPA-1-closure-resolved.md) · MNQDTL R2 Cap-reservation requirement · Avenue A Route A
+**Parent:** Cap spent via [`Q-CAPA-1`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-CAPA-1-closure-resolved.md) · MNQDTL R2 Cap-reservation requirement · Avenue A Route A
 **Loop:** Inquire — Cap **reservation** only (does not spend Cap; does not run the Cap cell)
 **Spend:** $0 · K=0 until Cap-spend GO · no pull
 
@@ -13,8 +13,8 @@
 
 | Path | What it grounds |
 |---|---|
-| [`Q-CAPA-1` closure](closures/Q-CAPA-1-closure-resolved.md) | Cap seat **SPENT** on N14 forward L1 `A` tripwire |
-| [`Cap companion ADR`](../adr/2026-08-06-capa-tripwire-pfcusum-companion-registration.md) | Tripwire docs-only; **not** entry filter |
+| [`Q-CAPA-1` closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-CAPA-1-closure-resolved.md) | Cap seat **SPENT** on N14 forward L1 `A` tripwire |
+| [`Cap companion ADR`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-06-capa-tripwire-pfcusum-companion-registration.md) | Tripwire docs-only; **not** entry filter |
 | [`MNQDTL-1`](../spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md) | Fresh Cap reservation before Cap-style K=1 cell |
 | [`MNQ.md`](../../ops/instruments/MNQ.md) C11 / N16 / F2 GUARD | No N14 `A` as ORB gate |
 | [`Avenue A ADR`](../adr/2026-08-05-avenue-a-generate-confirm-route.md) | Route A survivor-tied default |

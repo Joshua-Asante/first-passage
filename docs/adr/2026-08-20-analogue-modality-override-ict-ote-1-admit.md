@@ -14,11 +14,11 @@
 pause this ADR creates a bounded exception to) ·
 [`2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md`](2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md)
 (the sibling, timeframe-axis ruling — checked and confirmed **not** to apply here; different
-mechanism) · [`2026-08-20-dense1m-u1-operator-override-con4-reopen.md`](2026-08-20-dense1m-u1-operator-override-con4-reopen.md)
+mechanism) · [`2026-08-20-dense1m-u1-operator-override-con4-reopen.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md)
 (direct same-day precedent for an evidence-free operator override; different pause mechanism — that
 one marked U1 in the dense-1m lane's own vocabulary, this one does not, see §5) ·
-[`docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md`](../briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md)
-and [`Q-TNEC-CON-4-closure-ambiguous-hold.md`](../briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md)
+[`docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md)
+and [`Q-TNEC-CON-4-closure-ambiguous-hold.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md)
 (the 9-consecutive-null thread this override is evaluated against)
 
 ---
@@ -50,14 +50,14 @@ later operator decision (§2, §9).
   *dense-1m lane-membership* argument only; it does not touch the analogue-modality construct-type
   test this ADR is granting an exception to. Cited so a future reader does not assume this ADR is that
   gate's falsifier-pass event — it is not; this is a direct operator override, not a D2 PASS.
-- [`docs/adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md`](2026-08-20-dense1m-u1-operator-override-con4-reopen.md)
+- [`docs/adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md)
   — `Accepted`, same session. Direct precedent for the *form* of an evidence-free operator override
   (bounded, single-construct, named forbidden moves, revert trigger tied to the construct's own gate).
   **Not precedent for scope**: that ADR marked U1 in the dense-1m lane's own vocabulary because CON-4
   lives inside that lane; `Q-ICT-OTE-1` is deliberately filed outside it (its own §0), so this ADR
   grants a different, analogue-modality-specific exception instead — see §5 forbidden move 1.
-- [`Q-TNEC-CON-5` closure](../briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) and [`Q-TNEC-CON-4`
-  closure](../briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) — the 9-consecutive-zero-yield
+- [`Q-TNEC-CON-5` closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md) and [`Q-TNEC-CON-4`
+  closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) — the 9-consecutive-zero-yield
   thread (as of `CON-4`'s CONFIRM score, 2026-08-20) this override is evaluated against, not blind to.
 - [`ops/instruments/MNQ.md`](../../ops/instruments/MNQ.md) N6 and the CON-4/CON-5 stop-geometry pair —
   the cost-law framework the cheap falsifier below applies.
@@ -251,4 +251,4 @@ python scripts/check_adr_graph.py
 | Date | Change | By |
 |---|---|---|
 | 2026-08-20 | Authored and ratified same-turn (operator instruction, "Approve an override ADR," given in response to an already-laid-out scope). Status `Accepted` on introduction. | Joshua + Claude Code |
-| 2026-08-20 | **§7 Phase 1 executed same session.** Cheap falsifier ran (reconstructing the sweep/pivot detector fresh — original code unavailable in this public worktree, see the falsifier's own reconstruction note) and returned `FALSIFIED` — [`LOG`](../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_ict_ote_1_2026-08-20_LOG.md): both arms n≥100, CI entirely below 0 (long −0.525R, short −0.518R), mean stop_dist 13.16pt confirming the scoping doc's own predicted CON-5-shaped risk. §4's revert trigger fired: exception spent, `PREREG_G0` never frozen, Phase 2/3 do not follow. `Q-ICT-OTE-1` closes `STOP` at $0/K=0. | Claude Code (operator-licensed run) |
+| 2026-08-20 | **§7 Phase 1 executed same session.** Cheap falsifier ran (reconstructing the sweep/pivot detector fresh — original code unavailable in this public worktree, see the falsifier's own reconstruction note) and returned `FALSIFIED` — [`LOG`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_ict_ote_1_2026-08-20_LOG.md): both arms n≥100, CI entirely below 0 (long −0.525R, short −0.518R), mean stop_dist 13.16pt confirming the scoping doc's own predicted CON-5-shaped risk. §4's revert trigger fired: exception spent, `PREREG_G0` never frozen, Phase 2/3 do not follow. `Q-ICT-OTE-1` closes `STOP` at $0/K=0. | Claude Code (operator-licensed run) |

@@ -109,8 +109,8 @@ In the interim, every consumer that needed the corrected geometry applied it as 
 
 **Downstream artifacts needing update (this commit):**
 - [`core/firm_rules.py`](../../core/firm_rules.py) — the six `dd_lock_offset_usd` values; OPEN DEFECT comment blocks updated to state APPLIED, citing this ADR.
-- [`lab/analysis/c1/tradeify_futures3_remc_2026-07-11/RESULTS.md`](../../lab/analysis/c1/tradeify_futures3_remc_2026-07-11/RESULTS.md) — `SUPERSEDED` banner added (done, this session).
-- [`lab/analysis/c1/tradeify_futures3_bustcut_2026-07-11/RESULTS.md`](../../lab/analysis/c1/tradeify_futures3_bustcut_2026-07-11/RESULTS.md) — `SUPERSEDED` banner added (done, this session).
+- [`lab/analysis/c1/tradeify_futures3_remc_2026-07-11/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_futures3_remc_2026-07-11/RESULTS.md) — `SUPERSEDED` banner added (done, this session).
+- [`lab/analysis/c1/tradeify_futures3_bustcut_2026-07-11/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_futures3_bustcut_2026-07-11/RESULTS.md) — `SUPERSEDED` banner added (done, this session).
 - [`docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md`](2026-07-22-prop-portfolio-s4-discharge-withdrawal.md) — Addendum appended noting §10 hook #3's "NOT hand-edited" assertion is now historical (true as of 07-22; superseded by this ADR). Decision prose (§2) not touched.
 - [`docs/adr/INDEX.md`](INDEX.md) — regenerate.
 - [`docs/SESSIONS.md`](../SESSIONS.md) — session entry.

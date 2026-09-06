@@ -1,12 +1,12 @@
 # Q-TNEC-CON-5 — impulse→pullback→VWAP-reclaim (structural pullback stop; first/session)
 
-**Status:** `AMBIGUOUS-HOLD` → **STOP** — [`closure`](closures/Q-TNEC-CON-5-closure-ambiguous-hold.md); **Branch A elected** 2026-08-12 (OHLCV temporal-selectivity lane default paused)
-**Stage-0 PREREG:** [`lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/PREREG_G0.md`](../../lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/PREREG_G0.md)
+**Status:** `AMBIGUOUS-HOLD` → **STOP** — [`closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md); **Branch A elected** 2026-08-12 (OHLCV temporal-selectivity lane default paused)
+**Stage-0 PREREG:** [`lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/PREREG_G0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/PREREG_G0.md)
 **Explore RESULTS:** [`RESULTS.md`](../../lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/RESULTS.md)
 **Authored:** 2026-08-11
 **Authors:** Joshua + Cursor
 **Parent:** [dense-1m entry-mechanism lane](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) · TNEC-1 intake L4
-**Prior:** [`Q-TNEC-CON-4` Branch B](closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) · CON-3 AMBIGUOUS · CON-2 AMBIGUOUS · HTF-bias→LTF `FALSIFIED`
+**Prior:** [`Q-TNEC-CON-4` Branch B](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) · CON-3 AMBIGUOUS · CON-2 AMBIGUOUS · HTF-bias→LTF `FALSIFIED`
 **Loop:** Closed — Branch A STOP; CONFIRM unread forever; Cap unclaimed; lane FALSIFIED counter 1/3 unchanged
 **Spend:** $0 · K_intrinsic=1 · Cap not claimed
 
@@ -17,7 +17,7 @@
 | Path | Anchor | What it grounds |
 |---|---|---|
 | [`_mnq_1m.parquet`](../../lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/_mnq_1m.parquet) | present on disk 2026-08-11 | panel ($0 reuse; `volume` present) |
-| [`CON-4` closure](closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) | Branch B elected | lane continue → CON-5 non-breakout |
+| [`CON-4` closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md) | Branch B elected | lane continue → CON-5 non-breakout |
 | [`ADR 2026-08-10` temporal selectivity](../adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) | Accepted | route ① open; hold-time mapped |
 | Parent cheap falsifier | `CHEAP_FALSIFIER_OK` | licenses this freeze |
 | [`admission_schema.py`](../../lab/discovery/admission_schema.py) | S6 ADMIT 2026-08-11 | catalogue_k=1 |
@@ -90,7 +90,7 @@ Does a pre-registered **impulse→pullback→VWAP-reclaim** entry (structural pu
 | Entry | bias → VWAP tag → with-bias reclaim at next 1m open |
 | Selectivity | First valid signal per session |
 | K | `K_intrinsic=1` |
-| S6 | ADMIT ([`ADMISSION.md`](../../lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/ADMISSION.md)) |
+| S6 | ADMIT ([`ADMISSION.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_tnec_con5_impulse_pullback_vwap_2026-08/ADMISSION.md)) |
 | Cheap falsifier | `CHEAP_FALSIFIER_OK` (long +0.006 / short −0.427; coverage 90%; stop ≈19 pt) |
 
 ---

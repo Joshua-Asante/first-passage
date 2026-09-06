@@ -39,7 +39,7 @@ regime-spanning window if Stage 1 clears). Before it reached intake, two things 
 3. **Data authorization does not reach this brief's Stage 1 or Stage 2.** The only order-flow pull
    authorized in the estate as of this note is the single `tbbo` pull named in the sanctioned
    re-aim's S1 (`MNQ.v.0`, 2025-08-06 → 2026-08-04, $0.0000) — see the [re-aimed
-   PREREG](../../lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/PREREG.md) amendment log. This
+   PREREG](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/PREREG.md) amendment log. This
    brief's Stage 1 feature families (multi-level OFI, depth/book-pressure imbalance, iceberg/
    replenishment) need MBO or MBP-10, and "any MBP-10 pull" is explicitly listed there as **still
    requiring its own decision** — this brief does not supply that decision.

@@ -3,7 +3,7 @@
 **Verdict:** `FALSIFIED`
 **Closed:** 2026-08-31 (supersedes [`Q-RANGECOND-1-closure-resolved.md`](Q-RANGECOND-1-closure-resolved.md), retracted same day)
 **Lane:** UNASSIGNED
-**Pre-registration:** [`Q-RANGECOND-1-verdict-preregistration.md`](../pre-registration/Q-RANGECOND-1-verdict-preregistration.md) — frozen 2026-08-30, unchanged; the pre-registered gate itself was never wrong, only the input data feeding it
+**Pre-registration:** [`Q-RANGECOND-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-RANGECOND-1-verdict-preregistration.md) — frozen 2026-08-30, unchanged; the pre-registered gate itself was never wrong, only the input data feeding it
 **Live effect:** none — conditioner-role/filter research only; no entry, sizing, or timing construct was ever licensed; no `core/`, Pine, allocation, `dd_protection`, or rail change
 **Spend / K:** $0.00 · `K_intrinsic=1` (disclosure only, unchanged from the retracted closure) · Cap seat not claimed
 **Artifacts:** [`rangecond_1_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md) (updated in place with the corrected numbers) · [`phase1_2_3_conditioned_orb.py`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/phase1_2_3_conditioned_orb.py) · [`RESULTS.json`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.json) · [defect audit note](../../notes/audits/2026-08-31-mnq-overnight-window-lookahead-defect.md)

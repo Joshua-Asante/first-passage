@@ -56,7 +56,7 @@ SEVERITY (self-arming on ratification; two owning ADRs):
   Explicit-path mode does not run the coverage limb.
 
 SCOPE (extension is an ADR edit — supersede in part — not a flag):
-  - docs/briefs/closures/*.md, minus the GRANDFATHERED set (the 34 closures
+  - docs/briefs/closures/*.md, minus the GRANDFATHERED set (the 20 closures
     that predate the Iterate ADR; forward-only, no retro-editing per its §5).
   - Coverage: newly claimed terminal verdicts without a closure record,
     minus COVERAGE_GRANDFATHERED.
@@ -187,40 +187,26 @@ CLOSURE_FILENAME_NONSTANDARD = re.compile(
 # permanent record, per the ADR's §5 first forbidden move. Never append here to
 # dodge the gate; a new closure complies instead.
 GRANDFATHERED = frozenset({
-    "2026-07-16-aegis-6j-prop-reconstruction-stage1-falsified.md",
-    "2026-07-16-aegis-6j-prop-reconstruction-stage2-hsolo-falsified.md",
-    "2026-07-16-striker-mym-reconstruction-candidate-1-ambiguous.md",
     "2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md",
     "2026-07-27-hermes-agent-adoption-closure-resolved.md",
-    "H-FBEIA-1-closure-screen-fail.md",
-    "H-FCCARRY-1-closure-screen-fail.md",
     "H-ZNAUC-1-closure-screen-fail.md",
     "MYM-3FPS-1-closure-falsified.md",
     "OPENPRESS-1-closure-falsified.md",
-    "Q-6JCOMPOSE-1-closure-void-unexecutable.md",
-    "Q-6JCOMPOSE-2-closure-void-c2-red-gate-unreachable.md",
     "Q-BOOKFIT-1-closure-resolved.md",
     "Q-BUSTGATE-1-closure-falsified.md",
     "Q-C1PANEL-1-closure-ambiguous.md",
-    "Q-CAPALLOC-2-closure-resolved-fragile.md",
     "Q-COMPOSE-1-closure-falsified.md",
-    "Q-COSTGEO-1-closure-ambiguous.md",
     "Q-COSTGEO-2-closure-aborted.md",
     "Q-COSTGEO-3-closure-ambiguous-needs-depth.md",
-    "Q-FUNNEL-1-closure-resolved.md",
     "Q-GATECART-1-survivor-gate-cartography.md",
     "Q-GEOFIT-1-closure-ambiguous-parameterization.md",
     "Q-HARV-0-month-end-rebalance-ES.md",
-    "Q-ICT-1-closure-moot.md",
-    "Q-INVENTORY-1-closure-falsified.md",
-    "Q-JOINT-TAIL-WEEKLY-closure-retired.md",
     "Q-KBUDGET-1-axis-reachability-screen.md",
     "Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md",
     "Q-OBJCOHERE-1-closure-falsified-coherent.md",
     "Q-PYRPARITY-1-closure-falsified-nonproportional.md",
     "Q-RAIL-1-closure-resolved.md",
     "SLR-MYM-1-closure-falsified-stage0.md",
-    "ST-EH-1-closure-operator-stopped.md",
 })
 
 # Campaign IDs that claimed a terminal verdict without a joinable closure

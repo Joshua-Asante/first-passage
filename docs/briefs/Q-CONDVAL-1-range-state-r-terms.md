@@ -8,7 +8,7 @@
 **Sub-questions opened:** none
 **Loop:** Inquire-phase Pre-Q — closure gated on whether committed CL C−U lift clears a pre-declared `L_star`
 **Artifact path:** `docs/briefs/Q-CONDVAL-1-range-state-r-terms.md`
-**Pre-registration:** [`pre-registration/Q-CONDVAL-1-verdict-preregistration.md`](pre-registration/Q-CONDVAL-1-verdict-preregistration.md)
+**Pre-registration:** [`pre-registration/Q-CONDVAL-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-CONDVAL-1-verdict-preregistration.md)
 
 **D-S-A domain:** data (already-committed S1b numbers → one R-term comparison)
 **Pre-Q gate:**
@@ -162,7 +162,7 @@ of the cost hurdle and the S1b conditioner-engineering branch parks.
 
 ## §8 — Verdict pre-registration
 
-File: [`pre-registration/Q-CONDVAL-1-verdict-preregistration.md`](pre-registration/Q-CONDVAL-1-verdict-preregistration.md)
+File: [`pre-registration/Q-CONDVAL-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-CONDVAL-1-verdict-preregistration.md)
 
 Pre-registration commit hash: *(same-session freeze; sha256 `d1265eb2b0fa328c18b8a744a6f438d06611238fd2ada14ca12d06645748b386` recorded by the runner before substitute; git hash lands at operator commit)*
 Pre-registration date: 2026-08-18

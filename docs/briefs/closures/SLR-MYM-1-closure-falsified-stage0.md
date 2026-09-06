@@ -4,7 +4,7 @@
 data purchase, any pre-registration, or any K spend.
 **Closed:** 2026-07-29 (operator: *"close SLR-MYM and write the closure record"*)
 **Opened:** 2026-07-28
-**Brief:** [`docs/briefs/rnd-pipeline/SLR-MYM-1-liquidity-sweep-reclaim-scoping.md`](../rnd-pipeline/SLR-MYM-1-liquidity-sweep-reclaim-scoping.md)
+**Brief:** [`docs/briefs/rnd-pipeline/SLR-MYM-1-liquidity-sweep-reclaim-scoping.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/SLR-MYM-1-liquidity-sweep-reclaim-scoping.md)
 **Mechanism class:** `ict-liquidity` (existing vocabulary; **no new class minted** — a `NEW` entry must
 land in the same commit as a pre-registration, and none was ever authored)
 **Cost:** **$0.00 spent · 0 K consumed · 0 rows pulled · 0 live-constant changes.**
@@ -268,7 +268,7 @@ across eight years each, including the specific calendar window in question.
   records under a bias-gate on/off split, and its `netBias` formula survives only in the lost
   `.pine`, so it is permanently `BLOCKED`, not merely un-run.
 
-**Sources:** [`RESULTS_1H_1M.md`](../../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_1H_1M.md) §2 ·
+**Sources:** [`RESULTS_1H_1M.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_1H_1M.md) §2 ·
 [`RESULTS_1M_DIAG.md`](../../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_1M_DIAG.md) ·
 [`ops/instruments/MNQ.md`](../../../ops/instruments/MNQ.md) W3 ·
 companion corrections in [`MECHANISMS.md`](../../../ops/instruments/MECHANISMS.md) `ict-liquidity`

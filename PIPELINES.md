@@ -55,7 +55,7 @@ freeze, the zero-K state-drift re-check — regardless of (1) and (2).** This fi
 step-by-step Stage-2→8-to-ten-step crosswalk; `evaluation-order` is the sole authority for the order,
 and (1)/(2) are retained/owed for reasons that have nothing to do with which order governs. The
 interactive walkthrough is
-[`generate-evaluate-throughline.html`](docs/diagrams/generate-evaluate-throughline.html), which states
+[`generate-evaluate-throughline.html`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/diagrams/generate-evaluate-throughline.html), which states
 the same three-way distinction.
 
 ### Data flow
@@ -99,7 +99,7 @@ Temporal-**not**-instrument OOS axis (IS `2010–2018` parent / OOS `2019-05-06+
 
 ### Two standing constraints on new campaigns
 
-1. **The §8 gate is real code, but unexercised on a live survivor.** [`lab/research_utils/universe_gate.py`](lab/research_utils/universe_gate.py) wraps `arch` SPA/StepM/MCS + DSR + `skfolio` PBO/CPCV against the frozen thresholds, and [`lab/discovery/stage24_runner.py`](lab/discovery/stage24_runner.py) is the generic Stage-2/4 runner. **Caveat:** DISC-CAMP-0 (the shakedown campaign, [CLOSED FALSIFIED 2026-07-13](docs/briefs/closures/DISC-CAMP-0-closure-falsified.md)) found 0 candidates, so Stages 5–7 exited `SKIPPED` without ever calling the gate on real data — the *wiring* is exercised, the *gate logic on a live survivor* is not.
+1. **The §8 gate is real code, but unexercised on a live survivor.** [`lab/research_utils/universe_gate.py`](lab/research_utils/universe_gate.py) wraps `arch` SPA/StepM/MCS + DSR + `skfolio` PBO/CPCV against the frozen thresholds, and [`lab/discovery/stage24_runner.py`](lab/discovery/stage24_runner.py) is the generic Stage-2/4 runner. **Caveat:** DISC-CAMP-0 (the shakedown campaign, [CLOSED FALSIFIED 2026-07-13](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/DISC-CAMP-0-closure-falsified.md)) found 0 candidates, so Stages 5–7 exited `SKIPPED` without ever calling the gate on real data — the *wiring* is exercised, the *gate logic on a live survivor* is not.
 2. **A K-budget reachability screen gates new campaigns.** Q-GATECART-1 closed FALSIFIED at Phase 0.5; its fork [Q-KBUDGET-1](docs/briefs/closures/Q-KBUDGET-1-axis-reachability-screen.md) closed `RESOLVED` (2026-07-15). Standing HARD gates: harvest-intake ADR + [`lab/research_utils/axis_screen.py`](lab/research_utils/axis_screen.py) + HARV §R reachability attestation before `register_search open`; net-of-cost Sharpe vs the Clause-K floor at K_eff ≤ 3. Screen PASS never blesses a candidate and never authorizes a Databento pull. Axes that fail the screen stay unfunded for the 2026-11-08 falsifier — do not read this as "only D5 exists." This screen sits *before* Stage 2. The generic hot-path runner is Stages 2–4 ([`stage24_runner.py`](lab/discovery/stage24_runner.py)); Stages 5–7 are library primitives / per-campaign harnesses (often archived).
 
 **Manifest ledger:** `discovery_manifests/` is committed (committed = the pin). Read the per-manifest `status` field, not the file count — **open manifests do not bank K** (2026-07-31 ORB-MNQ ruling).
