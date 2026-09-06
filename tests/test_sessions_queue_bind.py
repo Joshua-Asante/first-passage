@@ -125,6 +125,291 @@ def test_non_rendered_header_route_fails(tmp_path: Path, hidden_route: str) -> N
     assert "header" in result.stderr
 
 
+def test_route_inside_raw_html_block_fails(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "Current priorities are documented here:\n\n"
+            "<pre>\n[STATE queue](../STATE.md#operator-queue)\n</pre>"
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "header" in result.stderr
+
+
+@pytest.mark.parametrize(
+    "raw_block",
+    [
+        "<div>\n[STATE queue](../STATE.md#operator-queue)\n</div>\n\n",
+        "<?example\n[STATE queue](../STATE.md#operator-queue)\n?>",
+        "<!DOCTYPE html\n[STATE queue](../STATE.md#operator-queue)\n>",
+        "<![CDATA[\n[STATE queue](../STATE.md#operator-queue)\n]]>",
+        "<custom-element>\n[STATE queue](../STATE.md#operator-queue)\n\n",
+    ],
+    ids=["block-tag", "processing", "declaration", "cdata", "generic-tag"],
+)
+def test_other_raw_html_block_routes_fail(
+    tmp_path: Path, raw_block: str
+) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions("Current priorities are documented here:\n\n" + raw_block),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "header" in result.stderr
+
+
+@pytest.mark.parametrize(
+    "comment_block",
+    [
+        "<!-- hidden --> [STATE queue](../STATE.md#operator-queue)",
+        "<!-- hidden\n--> [STATE queue](../STATE.md#operator-queue)",
+    ],
+    ids=["single-line", "closing-line"],
+)
+def test_route_after_raw_html_comment_on_same_line_fails(
+    tmp_path: Path, comment_block: str
+) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions("Current priorities are documented here:\n\n" + comment_block),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "header" in result.stderr
+
+
+def test_generic_html_tag_does_not_interrupt_paragraph(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "Current priorities:\n"
+            "<custom-element>\n"
+            "[STATE queue](../STATE.md#operator-queue)"
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_five_space_list_padding_makes_route_code(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions("-     [STATE queue](../STATE.md#operator-queue)"),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "header" in result.stderr
+
+
+def test_tab_padded_list_continuation_is_valid(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "-\tCurrent priorities:\n\n"
+            "    [STATE queue](../STATE.md#operator-queue)"
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.parametrize(
+    "container_block",
+    [
+        "- <pre>\n  [STATE queue](../STATE.md#operator-queue)\n  </pre>",
+        "> <pre>\n> [STATE queue](../STATE.md#operator-queue)\n> </pre>",
+    ],
+    ids=["list", "blockquote"],
+)
+def test_route_inside_container_raw_html_fails(
+    tmp_path: Path, container_block: str
+) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions("Current priorities are documented here:\n\n" + container_block),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "header" in result.stderr
+
+
+def test_generic_html_after_heading_hides_route(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "# Session routing\n"
+            "<custom-element>\n"
+            "[STATE queue](../STATE.md#operator-queue)\n\n"
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "header" in result.stderr
+
+
+@pytest.mark.parametrize("block", ["<pre>", "```markdown"])
+def test_route_inside_list_continuation_block_fails(
+    tmp_path: Path, block: str
+) -> None:
+    close = "</pre>" if block == "<pre>" else "```"
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "1.  Current priorities:\n\n"
+            f"    {block}\n"
+            "    [STATE queue](../STATE.md#operator-queue)\n"
+            f"    {close}"
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "header" in result.stderr
+
+
+def test_generic_html_after_list_item_heading_hides_route(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "- # Session routing\n"
+            "  <custom-element>\n"
+            "  [STATE queue](../STATE.md#operator-queue)\n\n"
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "header" in result.stderr
+
+
+def test_fence_state_does_not_cross_blockquote_boundary(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "> ```\n"
+            "> example\n"
+            "```\n"
+            "[STATE queue](../STATE.md#operator-queue)\n"
+            "```"
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "header" in result.stderr
+
+
+def test_state_queue_after_heading_inside_generic_html_fails(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        "# STATE\n\n# Example\n<custom-element>\n"
+        "## OPERATOR QUEUE — strictly ordered\n"
+        "| # | Item | Owner artifact | Blocks |\n"
+        "|---|---|---|---|\n"
+        "| 1 | item 1 | owner | block |\n\n",
+    )
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions("Current priorities: [STATE queue](../STATE.md#operator-queue)."),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "OPERATOR QUEUE" in result.stderr
+
+
+def test_blockquoted_dated_heading_does_not_end_living_header(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "> ## 2026-09-01a — quoted example\n\n"
+            "Current priorities: [STATE queue](../STATE.md#operator-queue)."
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_blockquoted_state_queue_fails(tmp_path: Path) -> None:
+    quoted_queue = "\n".join("> " + line for line in _state(1).splitlines())
+    state = _write(tmp_path / "STATE.md", "# STATE\n\n" + quoted_queue)
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions("Current priorities: [STATE queue](../STATE.md#operator-queue)."),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "OPERATOR QUEUE" in result.stderr
+
+
+@pytest.mark.parametrize("heading", ["OPERATOR QUEUES", "OPERATOR QUEUEBACKLOG"])
+def test_similar_state_queue_heading_fails(tmp_path: Path, heading: str) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1).replace("OPERATOR QUEUE", heading))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions("Current priorities: [STATE queue](../STATE.md#operator-queue)."),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "OPERATOR QUEUE" in result.stderr
+
+
+def test_route_nested_under_list_item_is_valid(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "- Current priorities:\n\n"
+            "    [STATE queue](../STATE.md#operator-queue)"
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_visible_link_after_longer_closing_fence_is_valid(tmp_path: Path) -> None:
     state = _write(tmp_path / "STATE.md", _state(1))
     sessions = _write(
@@ -226,6 +511,22 @@ def test_comment_marker_inside_fence_does_not_hide_visible_route(
 )
 def test_non_rendered_state_queue_fails(tmp_path: Path, hidden_queue: str) -> None:
     state = _write(tmp_path / "STATE.md", "# STATE\n\n" + hidden_queue)
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions("Current priorities: [STATE queue](../STATE.md#operator-queue)."),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "OPERATOR QUEUE" in result.stderr
+
+
+def test_state_queue_inside_raw_html_block_fails(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        "# STATE\n\n<pre>\n" + _state(1) + "</pre>\n",
+    )
     sessions = _write(
         tmp_path / "docs" / "SESSIONS.md",
         _sessions("Current priorities: [STATE queue](../STATE.md#operator-queue)."),

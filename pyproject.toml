@@ -14,6 +14,7 @@ dependencies = [
     "scipy>=1.11,<1.18",
     "statsmodels",
     "matplotlib",
+    "markdown-it-py>=4,<5",
     "pydantic>=2,<3",
     "pyyaml",  # codification concept_schema YAML loading
 ]

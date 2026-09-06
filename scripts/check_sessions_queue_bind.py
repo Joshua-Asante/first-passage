@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Bind the living SESSIONS header to STATE's operator queue.
 
-The header, before the first dated entry, must contain a relative Markdown
-link that resolves to the supplied STATE file. Historical entries are not
-current-state mirrors and are deliberately ignored.
+The header, before the first rendered dated entry, must contain a relative
+Markdown link that resolves to the supplied STATE file. Historical entries are
+not current-state mirrors and are deliberately ignored.
 """
 from __future__ import annotations
 
@@ -13,135 +13,91 @@ import sys
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
+from markdown_it import MarkdownIt
+from markdown_it.token import Token
+
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_STATE = REPO / "STATE.md"
 DEFAULT_SESSIONS = REPO / "docs" / "SESSIONS.md"
 
-QUEUE_SECTION_RE = re.compile(
-    r"^## OPERATOR QUEUE\b.*?(?=^## |\Z)",
-    re.M | re.S,
-)
-ROW_RE = re.compile(r"^\| (\d+) \|", re.M)
-DATED_ENTRY_RE = re.compile(r"(?m)^## \d{4}-\d{2}-\d{2}[a-z]?\b")
-MARKDOWN_LINK_RE = re.compile(
-    r"(?<!!)\[[^\]\n]+\]\(\s*"
-    r"(?P<destination><[^>\n]+>|[^\s)\n]+)"
-    r"(?:\s+(?:\"[^\"\n]*\"|'[^'\n]*'|\([^\n)]*\)))?\s*\)"
-)
-FENCE_LINE_RE = re.compile(
-    r"^[ \t]{0,3}(?P<fence>`{3,}|~{3,})(?P<rest>[^\n]*)(?:\n|\Z)"
-)
-INDENTED_CODE_RE = re.compile(r"^(?: {4}|\t).*?(?:\n|\Z)", re.M)
-INLINE_CODE_RE = re.compile(r"(?P<ticks>`+).*?(?P=ticks)", re.S)
-REFERENCE_LINK_RE = re.compile(
-    r"(?<!!)\[(?P<label>[^\]\n]+)\]\[(?P<reference>[^\]\n]*)\]"
-)
-SHORTCUT_REFERENCE_RE = re.compile(
-    r"(?<!!)\[(?P<reference>[^\]\n]+)\](?![\[(:])"
-)
-REFERENCE_DEFINITION_RE = re.compile(
-    r"^[ \t]{0,3}\[(?P<reference>[^\]\n]+)\]:[ \t]*"
-    r"(?P<destination><[^>\n]+>|[^\s\n]+)",
-    re.M,
-)
+MARKDOWN = MarkdownIt("commonmark").enable("table")
+DATED_ENTRY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}[a-z]?\b")
+QUEUE_HEADING_RE = re.compile(r"^OPERATOR QUEUE\b")
+
+
+def inline_content(tokens: list[Token], heading_index: int) -> str:
+    inline_index = heading_index + 1
+    if inline_index >= len(tokens) or tokens[inline_index].type != "inline":
+        return ""
+    return tokens[inline_index].content.strip()
 
 
 def validate_operator_queue(state_text: str) -> None:
-    section = QUEUE_SECTION_RE.search(rendered_markdown_source(state_text))
-    if section is None:
-        raise ValueError("STATE file has no OPERATOR QUEUE section")
-    if ROW_RE.search(section.group(0)) is None:
-        raise ValueError("OPERATOR QUEUE table has no numbered rows")
-
-
-def living_header(sessions_text: str) -> str:
-    first_entry = DATED_ENTRY_RE.search(sessions_text)
-    if first_entry is None:
-        return sessions_text
-    return sessions_text[: first_entry.start()]
-
-
-def without_html_comments(line: str, in_comment: bool) -> tuple[str, bool]:
-    visible: list[str] = []
-    cursor = 0
-    while cursor < len(line):
-        if in_comment:
-            end = line.find("-->", cursor)
-            if end < 0:
-                return "".join(visible), True
-            cursor = end + 3
-            in_comment = False
+    tokens = MARKDOWN.parse(state_text)
+    in_queue = False
+    in_queue_table = False
+    for index, token in enumerate(tokens):
+        if (
+            token.type == "heading_open"
+            and token.tag == "h2"
+            and token.level == 0
+        ):
+            heading = inline_content(tokens, index)
+            if in_queue:
+                break
+            in_queue = QUEUE_HEADING_RE.match(heading) is not None
             continue
-        start = line.find("<!--", cursor)
-        if start < 0:
-            visible.append(line[cursor:])
+        if token.type == "table_open":
+            in_queue_table = in_queue and token.level == 0
+            continue
+        if token.type == "table_close":
+            in_queue_table = False
+            continue
+        if not in_queue_table or token.type != "tr_open":
+            continue
+
+        row_end = index + 1
+        while row_end < len(tokens) and tokens[row_end].type != "tr_close":
+            row_end += 1
+        for cell_index in range(index + 1, row_end):
+            if tokens[cell_index].type != "td_open":
+                continue
+            value = inline_content(tokens, cell_index)
+            if value.isdigit():
+                return
             break
-        visible.append(line[cursor:start])
-        cursor = start + 4
-        in_comment = True
-    return "".join(visible), in_comment
+
+    if not in_queue:
+        raise ValueError("STATE file has no OPERATOR QUEUE section")
+    raise ValueError("OPERATOR QUEUE table has no numbered rows")
 
 
-def without_non_rendered_blocks(markdown: str) -> str:
-    rendered_lines: list[str] = []
-    open_fence: tuple[str, int] | None = None
-    in_comment = False
-    for line in markdown.splitlines(keepends=True):
-        if open_fence is not None:
-            match = FENCE_LINE_RE.match(line)
-            if match is not None:
-                fence = match.group("fence")
-                if (
-                    fence[0] == open_fence[0]
-                    and len(fence) >= open_fence[1]
-                    and not match.group("rest").strip()
-                ):
-                    open_fence = None
+def living_header_destinations(sessions_text: str) -> list[str]:
+    tokens = MARKDOWN.parse(sessions_text)
+    cutoff = len(tokens)
+    for index, token in enumerate(tokens):
+        if (
+            token.type == "heading_open"
+            and token.tag == "h2"
+            and token.level == 0
+            and DATED_ENTRY_RE.match(inline_content(tokens, index))
+        ):
+            cutoff = index
+            break
+
+    destinations: list[str] = []
+    for token in tokens[:cutoff]:
+        if token.type != "inline" or token.children is None:
             continue
-
-        visible_line, in_comment = without_html_comments(line, in_comment)
-        match = FENCE_LINE_RE.match(visible_line)
-        if match is None:
-            rendered_lines.append(visible_line)
-            continue
-        fence = match.group("fence")
-        open_fence = (fence[0], len(fence))
-    return "".join(rendered_lines)
-
-
-def rendered_markdown_source(markdown: str) -> str:
-    without_blocks = without_non_rendered_blocks(markdown)
-    without_indented_code = INDENTED_CODE_RE.sub("", without_blocks)
-    return INLINE_CODE_RE.sub("code", without_indented_code)
-
-
-def normalized_reference(reference: str) -> str:
-    return " ".join(reference.split()).casefold()
-
-
-def markdown_destinations(markdown: str) -> list[str]:
-    destinations = [
-        match.group("destination") for match in MARKDOWN_LINK_RE.finditer(markdown)
-    ]
-    definitions = {
-        normalized_reference(match.group("reference")): match.group("destination")
-        for match in REFERENCE_DEFINITION_RE.finditer(markdown)
-    }
-    for match in REFERENCE_LINK_RE.finditer(markdown):
-        reference = match.group("reference") or match.group("label")
-        destination = definitions.get(normalized_reference(reference))
-        if destination is not None:
-            destinations.append(destination)
-    for match in SHORTCUT_REFERENCE_RE.finditer(markdown):
-        destination = definitions.get(normalized_reference(match.group("reference")))
-        if destination is not None:
-            destinations.append(destination)
+        for child in token.children:
+            if child.type == "link_open":
+                destination = child.attrGet("href")
+                if destination is not None:
+                    destinations.append(destination)
     return destinations
 
 
 def link_destination_path(destination: str, *, sessions_file: Path) -> Path | None:
-    if destination.startswith("<") and destination.endswith(">"):
-        destination = destination[1:-1]
     parsed = urlsplit(destination)
     if parsed.scheme or parsed.netloc or not parsed.path:
         return None
@@ -155,10 +111,9 @@ def header_links_to_state(
     sessions_text: str, *, sessions_file: Path, state_file: Path
 ) -> bool:
     expected = state_file.resolve()
-    rendered_header = living_header(rendered_markdown_source(sessions_text))
     return any(
         link_destination_path(destination, sessions_file=sessions_file) == expected
-        for destination in markdown_destinations(rendered_header)
+        for destination in living_header_destinations(sessions_text)
     )
 
 

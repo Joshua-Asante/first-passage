@@ -66,9 +66,11 @@ Trap #9). "No new lesson" is a legal body.]
 - **Stop rule / re-proposal bar:** *(required for ITERATE and STOP; "n/a — integrated"
   legal for INTEGRATE)* — what evidence reopens this thread, or when it dies for good.
   Re-proposal bars demand new *mechanism* evidence, not new parameters.
-- **Board write:** [the STATE forward-board row or SESSIONS Open/next line this closure
-  adds, quoted verbatim — or `none — STOP, nothing owed`. One-line pointer + owner link
-  only (Rule 7); detail stays in this file.]
+- **Board write:** [if work remains live across sessions, quote the row this closure adds
+  to `STATE.md`; for campaign-local work, quote the update to the existing campaign-owner
+  artifact. A `SESSIONS.md` line may preserve historical context but cannot be the sole
+  live board write. Use `none — STOP, nothing owed` only when no work remains. One-line
+  pointer + owner link only (Rule 7); detail stays in this file.]
 - **Registry:** `rejected_candidates.md — ### <heading>` **or** `n/a — <reason>`
   (RESOLVED / governance / not a strategy-grounds kill). Token-gated; see
   [`docs/operational_rules.md`](../../../../docs/operational_rules.md) Rule 8

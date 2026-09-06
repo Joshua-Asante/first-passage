@@ -146,3 +146,18 @@ Baseline: 7185ccf. Five root files contained 14,206 whitespace-delimited words. 
   validation excludes comments and code examples, and shortcut references resolve.
   All four regressions failed before and passed after the second repair. The final
   affected suite passed **153 tests**, and the blocking gate manifest passed.
+- The third PR review exposed raw HTML blocks, list-continuation indentation, and a
+  closure-template ownership mismatch. Three initial parser regressions failed before
+  repair; broader CommonMark cases then showed that a hand-built block scanner would
+  duplicate container-stack semantics. It was replaced with `markdown-it-py` tokens;
+  the project dependency and existing hashed lock now record that direct use. The
+  routing suite covers raw HTML categories, lists, blockquotes, fences, comments,
+  references, top-level heading/table scope, and heading word boundaries.
+- Brief-authoring application tests reproduced the ownership ambiguity before the
+  edit: two of three fresh scenarios used a SESSIONS Open / next line as the sole live
+  record. After the skill and template amendment, all three routed cross-session work
+  to STATE and campaign-local work to its existing owner, and rejected SESSIONS as the
+  sole live board write.
+- The final third-review repair passed **274 tests** with **1 skipped**, the canonical
+  brief-authoring self-test, all skill-reference checks, the skill constants guard,
+  Python compilation, and the full blocking gate manifest.
