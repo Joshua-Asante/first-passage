@@ -132,3 +132,6 @@ git diff --check
 git diff --stat origin/main...HEAD
 ```
 
+## Completion note (Cursor)
+
+Implemented on `codex/strict-bar-export-validation`: `scripts/validate_bar_export_v2.py`, `tests/scripts/test_validate_bar_export_v2.py` (9 synthetic tests), and one `REPO_MAP.md` scripts-table row. Permissive producer unchanged. Parent/Codex review still required before merge.
