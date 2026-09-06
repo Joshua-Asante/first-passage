@@ -28,7 +28,6 @@ MARKDOWN_LINK_RE = re.compile(
     r"(?P<destination><[^>\n]+>|[^\s)\n]+)"
     r"(?:\s+(?:\"[^\"\n]*\"|'[^'\n]*'|\([^\n)]*\)))?\s*\)"
 )
-HTML_COMMENT_RE = re.compile(r"<!--.*?(?:-->|\Z)", re.S)
 FENCE_LINE_RE = re.compile(
     r"^[ \t]{0,3}(?P<fence>`{3,}|~{3,})(?P<rest>[^\n]*)(?:\n|\Z)"
 )
@@ -36,6 +35,9 @@ INDENTED_CODE_RE = re.compile(r"^(?: {4}|\t).*?(?:\n|\Z)", re.M)
 INLINE_CODE_RE = re.compile(r"(?P<ticks>`+).*?(?P=ticks)", re.S)
 REFERENCE_LINK_RE = re.compile(
     r"(?<!!)\[(?P<label>[^\]\n]+)\]\[(?P<reference>[^\]\n]*)\]"
+)
+SHORTCUT_REFERENCE_RE = re.compile(
+    r"(?<!!)\[(?P<reference>[^\]\n]+)\](?![\[(:])"
 )
 REFERENCE_DEFINITION_RE = re.compile(
     r"^[ \t]{0,3}\[(?P<reference>[^\]\n]+)\]:[ \t]*"
@@ -45,7 +47,7 @@ REFERENCE_DEFINITION_RE = re.compile(
 
 
 def validate_operator_queue(state_text: str) -> None:
-    section = QUEUE_SECTION_RE.search(state_text)
+    section = QUEUE_SECTION_RE.search(rendered_markdown_source(state_text))
     if section is None:
         raise ValueError("STATE file has no OPERATOR QUEUE section")
     if ROW_RE.search(section.group(0)) is None:
@@ -59,34 +61,57 @@ def living_header(sessions_text: str) -> str:
     return sessions_text[: first_entry.start()]
 
 
-def without_fenced_code(markdown: str) -> str:
+def without_html_comments(line: str, in_comment: bool) -> tuple[str, bool]:
+    visible: list[str] = []
+    cursor = 0
+    while cursor < len(line):
+        if in_comment:
+            end = line.find("-->", cursor)
+            if end < 0:
+                return "".join(visible), True
+            cursor = end + 3
+            in_comment = False
+            continue
+        start = line.find("<!--", cursor)
+        if start < 0:
+            visible.append(line[cursor:])
+            break
+        visible.append(line[cursor:start])
+        cursor = start + 4
+        in_comment = True
+    return "".join(visible), in_comment
+
+
+def without_non_rendered_blocks(markdown: str) -> str:
     rendered_lines: list[str] = []
     open_fence: tuple[str, int] | None = None
+    in_comment = False
     for line in markdown.splitlines(keepends=True):
-        match = FENCE_LINE_RE.match(line)
-        if open_fence is None:
-            if match is None:
-                rendered_lines.append(line)
-                continue
-            fence = match.group("fence")
-            open_fence = (fence[0], len(fence))
+        if open_fence is not None:
+            match = FENCE_LINE_RE.match(line)
+            if match is not None:
+                fence = match.group("fence")
+                if (
+                    fence[0] == open_fence[0]
+                    and len(fence) >= open_fence[1]
+                    and not match.group("rest").strip()
+                ):
+                    open_fence = None
             continue
+
+        visible_line, in_comment = without_html_comments(line, in_comment)
+        match = FENCE_LINE_RE.match(visible_line)
         if match is None:
+            rendered_lines.append(visible_line)
             continue
         fence = match.group("fence")
-        if (
-            fence[0] == open_fence[0]
-            and len(fence) >= open_fence[1]
-            and not match.group("rest").strip()
-        ):
-            open_fence = None
+        open_fence = (fence[0], len(fence))
     return "".join(rendered_lines)
 
 
 def rendered_markdown_source(markdown: str) -> str:
-    without_comments = HTML_COMMENT_RE.sub("", markdown)
-    without_fences = without_fenced_code(without_comments)
-    without_indented_code = INDENTED_CODE_RE.sub("", without_fences)
+    without_blocks = without_non_rendered_blocks(markdown)
+    without_indented_code = INDENTED_CODE_RE.sub("", without_blocks)
     return INLINE_CODE_RE.sub("code", without_indented_code)
 
 
@@ -105,6 +130,10 @@ def markdown_destinations(markdown: str) -> list[str]:
     for match in REFERENCE_LINK_RE.finditer(markdown):
         reference = match.group("reference") or match.group("label")
         destination = definitions.get(normalized_reference(reference))
+        if destination is not None:
+            destinations.append(destination)
+    for match in SHORTCUT_REFERENCE_RE.finditer(markdown):
+        destination = definitions.get(normalized_reference(match.group("reference")))
         if destination is not None:
             destinations.append(destination)
     return destinations

@@ -182,6 +182,61 @@ def test_reference_style_header_link_is_a_valid_route(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_shortcut_reference_header_link_is_a_valid_route(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "Current priorities: [STATE queue].\n\n"
+            "[STATE queue]: ../STATE.md#operator-queue"
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_comment_marker_inside_fence_does_not_hide_visible_route(
+    tmp_path: Path,
+) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "```markdown\n"
+            "<!-- literal example\n"
+            "```\n\n"
+            "Current priorities: [STATE queue](../STATE.md#operator-queue)."
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.parametrize(
+    "hidden_queue",
+    [
+        "<!--\n" + _state(1) + "-->",
+        "```markdown\n" + _state(1) + "```",
+    ],
+    ids=["html-comment", "fenced-code"],
+)
+def test_non_rendered_state_queue_fails(tmp_path: Path, hidden_queue: str) -> None:
+    state = _write(tmp_path / "STATE.md", "# STATE\n\n" + hidden_queue)
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions("Current priorities: [STATE queue](../STATE.md#operator-queue)."),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 1
+    assert "OPERATOR QUEUE" in result.stderr
+
+
 @pytest.mark.parametrize(
     "header",
     [

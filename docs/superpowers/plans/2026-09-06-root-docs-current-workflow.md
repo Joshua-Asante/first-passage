@@ -141,3 +141,8 @@ Baseline: 7185ccf. Five root files contained 14,206 whitespace-delimited words. 
   reference-style links, and ignores dated headings in comments or fenced examples
   when locating the first historical entry. The final affected suite passed **149
   tests**, and the blocking gate manifest passed before the repair commit.
+- The requested re-review exposed four further cases. A context-aware block scanner
+  now keeps comment markers inside fences from hiding later links, STATE queue
+  validation excludes comments and code examples, and shortcut references resolve.
+  All four regressions failed before and passed after the second repair. The final
+  affected suite passed **153 tests**, and the blocking gate manifest passed.
