@@ -121,10 +121,18 @@ def _is_int(value: object) -> bool:
     return type(value) is int
 
 
+def _has_disallowed_controls(text: str) -> bool:
+    for char in text:
+        code = ord(char)
+        if code < 32 or code == 127 or 0x80 <= code <= 0x9F:
+            return True
+    return False
+
+
 def _nonempty_str(value: object) -> str | None:
     if not isinstance(value, str) or value == "":
         return None
-    if "\0" in value or "\n" in value or "\r" in value:
+    if _has_disallowed_controls(value):
         return None
     return value
 
@@ -184,6 +192,10 @@ def _sha256_file(path: Path) -> str:
 def _cyclic_ids(nodes: Sequence[str], edges: Mapping[str, Sequence[str]]) -> set[str]:
     """Return every node that participates in a cycle (iterative Tarjan SCCs)."""
     node_set = set(nodes)
+    graph = {
+        node: [dest for dest in edges.get(node, ()) if dest in node_set]
+        for node in nodes
+    }
     index_of: dict[str, int] = {}
     lowlink: dict[str, int] = {}
     stack: list[str] = []
@@ -203,7 +215,7 @@ def _cyclic_ids(nodes: Sequence[str], edges: Mapping[str, Sequence[str]]) -> set
                 next_index += 1
                 stack.append(node)
                 on_stack.add(node)
-            children = [dest for dest in edges.get(node, ()) if dest in node_set]
+            children = graph[node]
             if child_i < len(children):
                 dest = children[child_i]
                 frames[-1] = (node, child_i + 1)
@@ -224,8 +236,7 @@ def _cyclic_ids(nodes: Sequence[str], edges: Mapping[str, Sequence[str]]) -> set
                         component.append(item)
                         if item == node:
                             break
-                    self_loop = node in edges.get(node, ())
-                    if len(component) > 1 or self_loop:
+                    if len(component) > 1 or node in graph[node]:
                         cyclic.update(component)
     return cyclic
 

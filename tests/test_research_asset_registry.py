@@ -756,7 +756,30 @@ class ResearchAssetRegistryTests(unittest.TestCase):
         }
         self.assertEqual(before, after)
 
+    def test_escape_control_in_label_is_rejected(self):
+        asset = self.source_asset(label="ok\u001b[0m")
+        assets_path, locations_path, root = self.write_inventory(
+            {"schema_version": 1, "assets": [asset]},
+            self.locations_for(("example-source-v1", "body", "source.txt")),
+            {"source.txt": SYNTHETIC_BYTES},
+        )
+        findings = validate_registry(assets_path, locations_path)
+        self.assertIn("INVALID_SCHEMA", self.codes(findings))
+        with self.assertRaises(ValueError):
+            render_index(assets_path)
+        self.assert_findings_shape(findings, root)
+
+    def test_tarjan_precomputes_children_for_repeated_edges(self):
+        nodes = ["n0", "n1"]
+        edges = {"n0": ["n1"] * 10_000, "n1": []}
+        self.assertEqual(_cyclic_ids(nodes, edges), set())
+        edges["n1"] = ["n0"]
+        self.assertEqual(_cyclic_ids(nodes, edges), set(nodes))
+
     def test_branching_relationship_cycle_reports_every_member(self):
+        nodes = ["n0", "n1", "n2"]
+        edges = {"n0": ["n1", "n2"], "n1": ["n0"], "n2": ["n1"]}
+        self.assertEqual(_cyclic_ids(nodes, edges), set(nodes))
         nodes = ["n0", "n1", "n2"]
         edges = {"n0": ["n1", "n2"], "n1": ["n0"], "n2": ["n1"]}
         self.assertEqual(_cyclic_ids(nodes, edges), set(nodes))
