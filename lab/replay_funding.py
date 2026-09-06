@@ -25,7 +25,7 @@ UNSUPPORTED_SIDE_MARGIN_QUANTITY, EXISTING_POSITION, COMPETING_ENTRY, then the
 arithmetic (NON_POSITIVE_CUSHION on a zero/negative surplus).
 
 Arithmetic (exact, Decimal, independent of the caller's ambient Decimal
-context — see `_EXACT_ARITHMETIC_CONTEXT`):
+context — see `_exact_arithmetic`):
 
     cash_after_cost       = cash_before - execution_cost
     funding_basis         = max(execution_price, current_mark)
@@ -40,16 +40,20 @@ slippage charge on top of it.
 """
 
 from dataclasses import dataclass
-from decimal import Context, Decimal, localcontext
+from decimal import Context, Decimal, Inexact, Rounded, localcontext
 from enum import Enum
 from typing import Optional
 
-# A fixed, generously high-precision context used for every arithmetic step so
-# the returned witnesses cannot change with the caller's ambient
-# decimal.getcontext() precision or rounding mode (frozen behavior contract
-# §3). Comparisons (`==`, `!=`, `>`, `max`) are exact in the decimal module
-# regardless of context and need no such override.
-_EXACT_ARITHMETIC_CONTEXT = Context(prec=200)
+# Every arithmetic step runs inside a context sized to the actual operands
+# (`_exact_arithmetic`) so the returned witnesses cannot change with the caller's
+# ambient decimal.getcontext() precision or rounding mode (frozen behavior
+# contract §3), and cannot be silently rounded by an undersized fixed cap
+# either — a fixed precision can lose digits on inputs with enough decimal
+# places (e.g. a many-digit fractional cash balance). Comparisons (`==`,
+# `!=`, `>`, `max`) are exact in the decimal module regardless of context and
+# need no such override.
+_INITIAL_PRECISION = 64
+_MAX_PRECISION = 1_000_000
 
 _SUPPORTED_DIRECTION = "LONG"
 
@@ -176,6 +180,45 @@ def _outside_domain(reason: FundingReason) -> FundingAssessment:
     )
 
 
+def _exact_arithmetic(facts: FundingFacts):
+    """Compute the five arithmetic witnesses with a precision sized to the
+    actual operands, so no finite `Decimal` input is ever silently rounded.
+
+    Starts from a generous but finite precision and doubles it whenever the
+    context reports that a coefficient was rounded or a value changed
+    (`Rounded` / `Inexact`, trapped as exceptions below) — i.e. whenever the
+    chosen precision turns out to be insufficient for these exact operands —
+    until every step is provably exact. This replaces a fixed precision cap,
+    which can silently round exact results for operands with enough digits.
+    """
+    quantity = Decimal(facts.requested_quantity)
+    precision = _INITIAL_PRECISION
+    while True:
+        context = Context(prec=precision)
+        context.traps[Inexact] = True
+        context.traps[Rounded] = True
+        try:
+            with localcontext(context):
+                cash_after_cost = facts.cash_before - facts.execution_cost
+                funding_basis = max(facts.execution_price, facts.current_mark)
+                required_at_basis = quantity * facts.point_value * funding_basis
+                surplus = cash_after_cost - required_at_basis
+                post_fill_margin_cushion = (
+                    cash_after_cost - quantity * facts.point_value * facts.execution_price
+                )
+            return (
+                cash_after_cost,
+                funding_basis,
+                required_at_basis,
+                surplus,
+                post_fill_margin_cushion,
+            )
+        except (Inexact, Rounded):
+            if precision >= _MAX_PRECISION:
+                raise
+            precision *= 4
+
+
 def assess_funding(facts: FundingFacts) -> FundingAssessment:
     """Return the exact conservative funding witness for one candidate execution.
 
@@ -201,15 +244,13 @@ def assess_funding(facts: FundingFacts) -> FundingAssessment:
     if facts.competing_entry_count != 0:
         return _outside_domain(FundingReason.COMPETING_ENTRY)
 
-    with localcontext(_EXACT_ARITHMETIC_CONTEXT):
-        quantity = Decimal(facts.requested_quantity)
-        cash_after_cost = facts.cash_before - facts.execution_cost
-        funding_basis = max(facts.execution_price, facts.current_mark)
-        required_at_basis = quantity * facts.point_value * funding_basis
-        surplus = cash_after_cost - required_at_basis
-        post_fill_margin_cushion = (
-            cash_after_cost - quantity * facts.point_value * facts.execution_price
-        )
+    (
+        cash_after_cost,
+        funding_basis,
+        required_at_basis,
+        surplus,
+        post_fill_margin_cushion,
+    ) = _exact_arithmetic(facts)
 
     if surplus > 0:
         status = FundingStatus.PROVEN_POSITIVE_CUSHION

@@ -80,19 +80,19 @@ def test_mark_above_execution_price_moves_surplus_not_cushion():
     ],
 )
 def test_zero_surplus_boundary(cash_before, expected_status, expected_reason, expected_surplus):
+    """Frozen §4 boundary case: only cash and mark move; point value stays 5
+    and execution cost stays 3 (the base fixture), so the execution-cost
+    deduction is what brings cash from 503 to the 500 required-at-basis."""
     facts = _facts(
         cash_before=cash_before,
-        point_value=Decimal("5.03"),
-        execution_price=Decimal("100"),
         current_mark=Decimal("100"),
-        execution_cost=Decimal("0"),
     )
     result = assess_funding(facts)
     assert result.status == expected_status
     assert result.reason == expected_reason
     assert result.surplus == expected_surplus
     # A zero/negative surplus still retains its arithmetic witnesses.
-    assert result.required_at_basis == Decimal("503.00")
+    assert result.required_at_basis == Decimal("500")
 
 
 def test_later_candidate_price_gap_does_not_mutate_prior_result():
@@ -292,6 +292,30 @@ def test_context_independence_with_long_decimal_coefficients():
     assert low_precision_result.required_at_basis == Decimal("5.000000000000000000000003")
     assert low_precision_result.surplus == Decimal("991.999999999999999999999996")
     assert low_precision_result.post_fill_margin_cushion == Decimal("991.999999999999999999999996")
+
+
+def test_precision_beyond_a_fixed_cap_is_not_rounded_away():
+    """Regression for a fixed-precision cap silently rounding a valid result:
+    with cost 0 and point value/price/mark all 1, cash_before is 1 plus a
+    surplus of exactly 1E-201 (a 1 after 200 zero fractional digits). Any
+    context precision capped below ~202 significant digits rounds this
+    surplus to zero; the helper must not impose such a cap.
+    """
+    cash_before = Decimal("1." + "0" * 200 + "1")
+    facts = _facts(
+        cash_before=cash_before,
+        point_value=Decimal("1"),
+        execution_price=Decimal("1"),
+        current_mark=Decimal("1"),
+        execution_cost=Decimal("0"),
+    )
+    result = assess_funding(facts)
+    assert result.status == FundingStatus.PROVEN_POSITIVE_CUSHION
+    assert result.reason == FundingReason.POSITIVE_CUSHION
+    assert result.cash_after_cost == cash_before
+    assert result.required_at_basis == Decimal("1")
+    assert result.surplus == Decimal("1E-201")
+    assert result.post_fill_margin_cushion == Decimal("1E-201")
 
 
 def test_module_exports_all_required_symbols():
