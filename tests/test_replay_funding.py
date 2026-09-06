@@ -16,6 +16,11 @@ from fractions import Fraction
 import pytest
 
 from replay_funding import (
+    _ABSOLUTE_MIN_EXPONENT,
+    _ArithmeticLimit,
+    _exact_add,
+    _exact_subtract,
+    _finalize,
     FundingAssessment,
     FundingFacts,
     FundingReason,
@@ -472,9 +477,9 @@ def test_large_digit_count_identity_factors_are_not_overcounted():
     actual product's digit count risks rejecting this even though the true
     result never grows past the widest operand. 3,000 digits is chosen to
     stay comfortably under Python's own default int-to-str conversion limit
-    (see `test_span_exceeding_python_str_conversion_limit_...` below for
-    that distinct, genuine boundary) so this test isolates the counting bug
-    only.
+    (see `test_arithmetic_is_independent_of_int_str_digit_limit_setting`
+    below for that distinct, genuine boundary, which this module no longer
+    depends on at all) so this test isolates the counting bug only.
     """
     point_value = Decimal("1" * 3000)
     cash_before = Decimal("2" * 3000)  # exactly 2 * point_value, digit-wise
@@ -493,32 +498,128 @@ def test_large_digit_count_identity_factors_are_not_overcounted():
     assert result.surplus == point_value
 
 
-def test_span_exceeding_python_str_conversion_limit_returns_arithmetic_limit_not_crash():
-    """Without the removed fixed `_MAX_EXACT_PRECISION` cap, an exponent span
-    is no longer rejected by an arbitrary business-logic threshold — but an
-    exact result can still need more digits than Python's own
-    interpreter-level int-to-str conversion limit
-    (`sys.get_int_max_str_digits`) permits. That is a genuine, externally
-    imposed resource constraint (not a cap this module invents), so this
-    module maps it to `ARITHMETIC_LIMIT` — a defined non-proof outcome
-    (handoff §3.1) — instead of raising/crashing. The span here is sized to
-    just clear the interpreter's own configured limit, not to perform a
-    large computation.
+def test_arithmetic_is_independent_of_int_str_digit_limit_setting():
+    """Required correction (review finding 1, head 93b2754): this module's
+    arithmetic must not read `sys.get_int_max_str_digits()` at all. A
+    5,000-digit exact witness — comfortably past the interpreter's own
+    default (4,300) and past the minimum allowed non-zero setting (640) —
+    must return the identical result whether that setting is disabled (0),
+    restricted to its minimum, or left at whatever it currently is. The
+    setting is saved and restored around the assertions; this module itself
+    never calls `sys.set_int_max_str_digits`.
     """
-    limit = sys.get_int_max_str_digits()
-    if limit == 0:
-        pytest.skip("int-to-str conversion limit is disabled in this interpreter")
-
-    exponent_span = limit + 100
+    point_value = Decimal("1" * 5000)
+    cash_before = Decimal("2" * 5000)  # exactly 2 * point_value, digit-wise
     facts = _facts(
-        cash_before=Decimal(f"1E{exponent_span}"),
+        cash_before=cash_before,
+        point_value=point_value,
+        execution_price=Decimal("1"),
+        current_mark=Decimal("1"),
+        execution_cost=Decimal("0"),
+    )
+
+    saved_limit = sys.get_int_max_str_digits()
+    try:
+        results = []
+        for limit in (0, 640, saved_limit):
+            sys.set_int_max_str_digits(limit)
+            results.append(assess_funding(facts))
+    finally:
+        sys.set_int_max_str_digits(saved_limit)
+
+    assert all(result == results[0] for result in results)
+    assert results[0].status == FundingStatus.PROVEN_POSITIVE_CUSHION
+    assert results[0].reason == FundingReason.POSITIVE_CUSHION
+    assert results[0].required_at_basis == point_value
+    assert results[0].surplus == point_value
+
+
+def test_alignment_span_beyond_default_budget_returns_arithmetic_limit():
+    """Required correction (review finding 3, head 93b2754): a nonzero cost
+    against a compact cash value at an astronomically large exponent needs
+    an aligned span far beyond the 1,000,000-digit default work budget
+    (handoff §3.2). This must be rejected via the cheap pre-multiply span
+    check — never by attempting to construct `10 ** shift` first, which is
+    what the prior head reached for before any string-guard check fired
+    when that guard's setting was 0.
+    """
+    facts = _facts(
+        cash_before=Decimal("1E1000000000000"),
         execution_cost=Decimal("1"),
+        point_value=Decimal("1"),
+        execution_price=Decimal("1"),
+        current_mark=Decimal("1"),
     )
     result = assess_funding(facts)
     assert result.status == FundingStatus.OUTSIDE_PROVEN_DOMAIN
     assert result.reason == FundingReason.ARITHMETIC_LIMIT
     assert result.cash_after_cost is None
     assert result.surplus is None
+
+
+def test_normalization_at_absolute_min_exponent_boundary():
+    """Required correction (review finding 2, head 93b2754): a product whose
+    *unnormalized* exponent sits one position below the absolute
+    representable floor, but whose exact value — after trimming an
+    insignificant trailing zero — lands exactly on that floor, must be
+    accepted. Reproduces the review's own compact literal counter-example
+    (point_value 5E<floor>, price/mark .2, cash 2E<floor>, cost 0: product
+    10E<floor-1>, representable exactly as 1E<floor>) directly against
+    `_finalize`.
+    """
+    floor = _ABSOLUTE_MIN_EXPONENT
+    result = _finalize(10, floor - 1)
+    assert result == Decimal(f"1E{floor}")
+
+
+def test_normalization_below_absolute_min_exponent_still_rejected():
+    """The same coefficient one digit-position further out — no trailing
+    zero available to trim away — is genuinely below the representable
+    floor and must still return an arithmetic limit, confirming the fix
+    normalizes rather than simply loosening the bound."""
+    floor = _ABSOLUTE_MIN_EXPONENT
+    with pytest.raises(_ArithmeticLimit):
+        _finalize(11, floor - 1)
+
+
+def test_budget_under_and_at_boundary_succeed_via_injected_budget():
+    """§3.2 injected-budget coverage: a span exactly at the budget succeeds,
+    as does a span comfortably under it. `999 + 1` has an aligned span of 3
+    digits (the wider operand's own digit count; no shift needed since both
+    share exponent 0) — a tiny private `_budget` keeps this cheap regardless
+    of the real 1,000,000-digit default ('no huge fixtures', handoff §3.2).
+    """
+    a, b = Decimal("999"), Decimal("1")
+    assert _exact_add(a, b, _budget=10) == Decimal("1000")
+    assert _exact_add(a, b, _budget=3) == Decimal("1000")
+
+
+def test_budget_over_boundary_returns_arithmetic_limit():
+    """The same pair rejected once the injected budget can no longer hold
+    the wider operand's own digit count."""
+    with pytest.raises(_ArithmeticLimit):
+        _exact_add(Decimal("999"), Decimal("1"), _budget=2)
+
+
+def test_carry_headroom_is_not_preflighted_away():
+    """§3.2: 'do not reject a budget-sized result solely because a
+    speculative carry ... adds to an upper estimate.' The aligned span here
+    (3 digits) exactly meets the injected budget, and the actual sum carries
+    into a 4th digit (999 + 1 = 1000) — this must not be preflighted away by
+    a padded estimate."""
+    assert _exact_add(Decimal("999"), Decimal("1"), _budget=3) == Decimal("1000")
+
+
+def test_zero_and_exact_cancellation_shortcuts_ignore_budget_entirely():
+    """Zero operands and exact numeric cancellation (`a == b` for subtract,
+    `a == -b` for add — at any differing exponent) must short-circuit
+    before any alignment span is even computed. Proven here with an
+    injected budget of 0, which would reject any real alignment work."""
+    assert _exact_add(Decimal("5"), Decimal("0"), _budget=0) == Decimal("5")
+    assert _exact_add(Decimal("0"), Decimal("5"), _budget=0) == Decimal("5")
+    assert _exact_add(Decimal("5"), Decimal("-5.00"), _budget=0) == Decimal("0")
+    assert _exact_subtract(Decimal("5"), Decimal("5.00"), _budget=0) == Decimal("0")
+    assert _exact_subtract(Decimal("5.00"), Decimal("5"), _budget=0) == Decimal("0")
 
 
 def test_module_exports_all_required_symbols():
