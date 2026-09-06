@@ -318,34 +318,105 @@ def test_precision_beyond_a_fixed_cap_is_not_rounded_away():
     assert result.post_fill_margin_cushion == Decimal("1E-201")
 
 
-def test_large_exponent_input_does_not_overflow():
+def test_large_exponent_compact_operands_do_not_overflow():
     """Regression for a `decimal.Overflow` on a large-but-finite input: a
-    `Context(prec=...)` built without also setting `Emax`/`Emin` keeps the
-    constructor's default exponent bounds (+/-999999), which an operand
-    exponent of 1,000,000 already exceeds during arithmetic. `cash_before`
-    here is the exact reported counter-example; the expected witnesses are
-    computed with plain Python `int` exponentiation (context-free, exact —
-    `Decimal(int)` construction never rounds) and never by calling
-    `assess_funding`.
+    fixed-`prec` context built without also widening `Emax`/`Emin` keeps a
+    small default exponent bound, which a large operand exponent exceeds
+    during arithmetic. Unlike the earlier version of this regression, every
+    operand and every expected witness here is compact (coefficient "1" or
+    "2") at a shared large exponent, so the expected values are written as
+    literal Decimals — no million-digit-coefficient `Decimal(10**N)`
+    conversion, which is itself slow independent of the helper under test.
     """
-    cash_before = Decimal("1E1000000")
     facts = _facts(
-        cash_before=cash_before,
+        cash_before=Decimal("2E10000000"),
         point_value=Decimal("1"),
-        execution_price=Decimal("1"),
-        current_mark=Decimal("1"),
+        execution_price=Decimal("1E10000000"),
+        current_mark=Decimal("1E10000000"),
         execution_cost=Decimal("0"),
     )
-    expected_cash_after_cost = Decimal(10**1_000_000)
-    expected_surplus = Decimal(10**1_000_000 - 1)
-
     result = assess_funding(facts)
     assert result.status == FundingStatus.PROVEN_POSITIVE_CUSHION
     assert result.reason == FundingReason.POSITIVE_CUSHION
-    assert result.cash_after_cost == expected_cash_after_cost
-    assert result.required_at_basis == Decimal("1")
-    assert result.surplus == expected_surplus
-    assert result.post_fill_margin_cushion == expected_surplus
+    assert result.cash_after_cost == Decimal("2E10000000")
+    assert result.funding_basis == Decimal("1E10000000")
+    assert result.required_at_basis == Decimal("1E10000000")
+    assert result.surplus == Decimal("1E10000000")
+    assert result.post_fill_margin_cushion == Decimal("1E10000000")
+
+
+def test_compact_huge_exponent_zero_surplus_does_not_allocate_excessively():
+    """Required regression (handoff §3.1 item 1): cash/price/mark all
+    `1E1000000000000` with cost 0 and point value 1 is a compact input whose
+    exact surplus is exactly zero. A naive implementation that realigns a
+    zero-cost subtraction to a common exponent, or that allocates a fixed
+    huge precision regardless of the operands, either materializes a
+    trillion-digit coefficient (`MemoryError`/multi-minute hang) or fails
+    outright; the operand-derived sizing here needs only a handful of digits
+    because every operand shares the same exponent.
+    """
+    huge = Decimal("1E1000000000000")
+    facts = _facts(
+        cash_before=huge,
+        point_value=Decimal("1"),
+        execution_price=huge,
+        current_mark=huge,
+        execution_cost=Decimal("0"),
+    )
+    result = assess_funding(facts)
+    assert result.status == FundingStatus.OUTSIDE_PROVEN_DOMAIN
+    assert result.reason == FundingReason.NON_POSITIVE_CUSHION
+    assert result.cash_after_cost == huge
+    assert result.funding_basis == huge
+    assert result.required_at_basis == huge
+    assert result.surplus == Decimal("0")
+    assert result.post_fill_margin_cushion == Decimal("0")
+
+
+def test_beyond_native_product_range_returns_arithmetic_limit():
+    """Required regression (handoff §3.1 item 2): the review's counter-example
+    where every operand is individually representable and validation/domain
+    checks all pass, but `point_value * funding_basis` has an adjusted
+    exponent (~1.2E18) beyond Decimal's native `MAX_EMAX` (~1E18 on this
+    platform). This is a defined non-proof outcome — `ARITHMETIC_LIMIT` with
+    no witnesses — not a `decimal.Overflow` crash and not a rounded
+    substitute.
+    """
+    exponent = "600000000000000000"
+    facts = _facts(
+        cash_before=Decimal(f"3E{exponent}"),
+        execution_cost=Decimal(f"1E{exponent}"),
+        point_value=Decimal(f"1E{exponent}"),
+        execution_price=Decimal(f"1E{exponent}"),
+        current_mark=Decimal(f"1E{exponent}"),
+    )
+    result = assess_funding(facts)
+    assert result.status == FundingStatus.OUTSIDE_PROVEN_DOMAIN
+    assert result.reason == FundingReason.ARITHMETIC_LIMIT
+    assert result.cash_after_cost is None
+    assert result.funding_basis is None
+    assert result.required_at_basis is None
+    assert result.surplus is None
+    assert result.post_fill_margin_cushion is None
+
+
+def test_precision_span_beyond_resource_ceiling_returns_arithmetic_limit():
+    """A second, distinct non-proof path from handoff §3.1: `cash_before` and
+    `execution_cost` are each individually representable and their exponents
+    are nowhere near Decimal's native range limit, but their exponents are
+    2,000,000 apart, so an exact `cash_before - execution_cost` would need a
+    coefficient with over two million digits — beyond this module's bounded
+    arithmetic-resource ceiling, independent of the native-range check above.
+    """
+    facts = _facts(
+        cash_before=Decimal("1E2000000"),
+        execution_cost=Decimal("1"),
+    )
+    result = assess_funding(facts)
+    assert result.status == FundingStatus.OUTSIDE_PROVEN_DOMAIN
+    assert result.reason == FundingReason.ARITHMETIC_LIMIT
+    assert result.cash_after_cost is None
+    assert result.surplus is None
 
 
 def test_module_exports_all_required_symbols():
@@ -359,6 +430,7 @@ def test_module_exports_all_required_symbols():
         "COMPETING_ENTRY",
         "POSITIVE_CUSHION",
         "NON_POSITIVE_CUSHION",
+        "ARITHMETIC_LIMIT",
         "INVALID_INPUT",
     }
     assert {reason.name for reason in FundingReason} == required_reasons

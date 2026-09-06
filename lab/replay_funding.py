@@ -23,10 +23,12 @@ limited to any with a zero reservation). Everything else returns
 `OUTSIDE_PROVEN_DOMAIN` with the first-matching reason, in this fixed
 precedence: UNKNOWN_STATE, UNESTABLISHED_EXECUTION_PRICE,
 UNSUPPORTED_SIDE_MARGIN_QUANTITY, EXISTING_POSITION, COMPETING_ENTRY, then the
-arithmetic (NON_POSITIVE_CUSHION on a zero/negative surplus).
+arithmetic (NON_POSITIVE_CUSHION on a zero/negative surplus, or
+ARITHMETIC_LIMIT — handoff §3.1 — if an exact witness cannot be produced;
+see below).
 
 Arithmetic (exact, Decimal, independent of the caller's ambient Decimal
-context — see `_exact_arithmetic`):
+context — see `_exact_add`/`_exact_subtract`/`_exact_multiply`):
 
     cash_after_cost       = cash_before - execution_cost
     funding_basis         = max(execution_price, current_mark)
@@ -38,38 +40,45 @@ context — see `_exact_arithmetic`):
 `execution_price` already includes slippage; `execution_cost` is the total
 known cost for this candidate execution — callers must not add a duplicate
 slippage charge on top of it.
+
+Precision and exponent bounds for every step are derived from the actual
+operands (their stored coefficient digit counts and exponents) rather than a
+fixed cap. A zero operand is returned as the other operand unchanged instead
+of letting decimal's ideal-exponent rule for `x +/- 0`
+(`min(exponent(x), exponent(0))`) force a compact, large-exponent `x` to
+materialize an astronomically large coefficient for no numeric benefit — the
+same reasoning applies to two equal-exponent operands, whose exact difference
+is cheap regardless of magnitude because no realignment is needed. Finite,
+shape-valid operands do not guarantee a representable or safely materializable
+result Decimal (handoff §3.1): if an exact witness's exponent would exceed
+Decimal's native representable range, or its exact coefficient would need
+more digits than a bounded arithmetic-resource ceiling
+(`_MAX_EXACT_PRECISION`), the step is preflighted to fail before it is
+attempted, and `assess_funding` returns `OUTSIDE_PROVEN_DOMAIN` /
+`ARITHMETIC_LIMIT` with every witness `None` — a defined non-proof outcome,
+never a rounded substitute or a broker action.
 """
 
 import decimal
 from dataclasses import dataclass
-from decimal import Context, Decimal, Inexact, Rounded, localcontext
+from decimal import Decimal, Inexact, localcontext
 from enum import Enum
 from typing import Optional
 
-# Every arithmetic step runs inside a context built from the decimal module's
-# own absolute ceiling — `decimal.MAX_PREC`/`MAX_EMAX`/`MIN_EMIN`, the true
-# limits of what a Decimal object can represent on this platform, not a
-# smaller value chosen by this module — so the returned witnesses cannot
-# change with the caller's ambient decimal.getcontext() precision or
-# rounding mode (frozen behavior contract §3), cannot be silently rounded by
-# an undersized coefficient cap (a fixed precision can lose digits on inputs
-# with enough decimal places), and cannot overflow/underflow on a
-# large-exponent input either (a fixed prec alone leaves the constructor's
-# default Emax/Emin in place, which a big enough exponent still exceeds).
-# `Inexact`/`Rounded` stay trapped so any input that could somehow still not
-# fit fails loudly instead of silently returning a wrong witness; no finite
-# Decimal actually constructible in memory can reach that ceiling. Exact
-# comparisons (`==`, `!=`, `>`, `max`) need no such override — they are exact
-# in the decimal module regardless of context.
-_EXACT_ARITHMETIC_CONTEXT = Context(
-    prec=decimal.MAX_PREC,
-    Emax=decimal.MAX_EMAX,
-    Emin=decimal.MIN_EMIN,
-)
-_EXACT_ARITHMETIC_CONTEXT.traps[Inexact] = True
-_EXACT_ARITHMETIC_CONTEXT.traps[Rounded] = True
+# A resource ceiling on the exact coefficient precision a single step may
+# require. Decimal's native Emax/Emin already bound representable exponents;
+# this bounds the *span* between two operands' exponents, which can be huge
+# (and so require an equally huge coefficient to add/subtract exactly) even
+# when both operands' own exponents are individually well within range.
+_MAX_EXACT_PRECISION = 1_000_000
 
 _SUPPORTED_DIRECTION = "LONG"
+
+
+class _ArithmeticLimit(Exception):
+    """Raised internally when an exact witness would exceed Decimal's native
+    result range or `_MAX_EXACT_PRECISION`. Caught only by `assess_funding`,
+    which translates it to `OUTSIDE_PROVEN_DOMAIN` / `ARITHMETIC_LIMIT`."""
 
 
 class FundingStatus(str, Enum):
@@ -90,6 +99,7 @@ class FundingReason(str, Enum):
     COMPETING_ENTRY = "COMPETING_ENTRY"
     POSITIVE_CUSHION = "POSITIVE_CUSHION"
     NON_POSITIVE_CUSHION = "NON_POSITIVE_CUSHION"
+    ARITHMETIC_LIMIT = "ARITHMETIC_LIMIT"
     INVALID_INPUT = "INVALID_INPUT"
 
 
@@ -118,8 +128,9 @@ class FundingFacts:
 @dataclass(frozen=True)
 class FundingAssessment:
     """Result of one `assess_funding` call. Witness fields are `None` for
-    `INVALID_INPUT` and every `OUTSIDE_PROVEN_DOMAIN` reason reached before the
-    arithmetic step; `NON_POSITIVE_CUSHION` retains its arithmetic witnesses."""
+    `INVALID_INPUT` and every `OUTSIDE_PROVEN_DOMAIN` reason reached before
+    the arithmetic finishes exactly; `NON_POSITIVE_CUSHION` retains its
+    arithmetic witnesses."""
 
     status: FundingStatus
     reason: FundingReason
@@ -197,20 +208,101 @@ def _outside_domain(reason: FundingReason) -> FundingAssessment:
     )
 
 
+def _require_bounded_exponent(exponent: int) -> None:
+    """Preflight an exponent against Decimal's native representable range,
+    raising `_ArithmeticLimit` before any allocation is attempted rather than
+    letting the arithmetic itself raise `decimal.Overflow`."""
+    if exponent > decimal.MAX_EMAX or exponent < decimal.MIN_EMIN:
+        raise _ArithmeticLimit()
+
+
+def _bounded_context(prec: int) -> decimal.Context:
+    """A context sized to exactly `prec` digits, spanning Decimal's full
+    native exponent range, that fails loudly (traps `Inexact`) rather than
+    silently discarding a significant digit. `Rounded` is left untrapped:
+    it fires whenever a coefficient is rounded to fit `prec`, including when
+    the discarded digits are all zero and the value is unchanged, so trapping
+    it would reject exact results (handoff §3.1)."""
+    ctx = decimal.Context(prec=prec, Emax=decimal.MAX_EMAX, Emin=decimal.MIN_EMIN)
+    ctx.traps[Inexact] = True
+    return ctx
+
+
+def _exact_add(a: Decimal, b: Decimal) -> Decimal:
+    """Exact `a + b`, with precision and exponent bounds sized to these two
+    operands only. A zero operand short-circuits to the other operand as-is
+    (see module docstring); two operands sharing an exponent are cheap by
+    construction, since no realignment is needed regardless of magnitude."""
+    if b == 0:
+        return a
+    if a == 0:
+        return b
+
+    a_exponent = a.as_tuple().exponent
+    b_exponent = b.as_tuple().exponent
+    low = min(a_exponent, b_exponent)
+    high = max(a.adjusted(), b.adjusted()) + 2  # +1 for a possible carry digit, +1 to size a length
+    _require_bounded_exponent(low)
+    _require_bounded_exponent(high)
+
+    needed_precision = high - low
+    if needed_precision > _MAX_EXACT_PRECISION:
+        raise _ArithmeticLimit()
+
+    try:
+        with localcontext(_bounded_context(needed_precision)):
+            return a + b
+    except (Inexact, decimal.Overflow, MemoryError) as exc:
+        raise _ArithmeticLimit() from exc
+
+
+def _exact_subtract(a: Decimal, b: Decimal) -> Decimal:
+    """Exact `a - b`; see `_exact_add` for the sizing and zero-operand rules."""
+    return _exact_add(a, b.copy_negate())
+
+
+def _exact_multiply(*factors: Decimal) -> Decimal:
+    """Exact product of two or more Decimals, with precision and exponent
+    bounds sized to these operands only. Any zero factor short-circuits to
+    exact zero."""
+    if any(factor == 0 for factor in factors):
+        return Decimal(0)
+
+    exponents = [factor.as_tuple().exponent for factor in factors]
+    digit_counts = [len(factor.as_tuple().digits) for factor in factors]
+    total_exponent = sum(exponents)
+    total_digits = sum(digit_counts)
+    _require_bounded_exponent(total_exponent)
+    _require_bounded_exponent(total_exponent + total_digits)  # +1 headroom for a carry digit
+
+    if total_digits > _MAX_EXACT_PRECISION:
+        raise _ArithmeticLimit()
+
+    try:
+        with localcontext(_bounded_context(total_digits)):
+            result = factors[0]
+            for factor in factors[1:]:
+                result = result * factor
+            return result
+    except (Inexact, decimal.Overflow, MemoryError) as exc:
+        raise _ArithmeticLimit() from exc
+
+
 def _exact_arithmetic(facts: FundingFacts):
-    """Compute the five arithmetic witnesses at the decimal module's true
-    coefficient-precision and exponent ceiling, so no finite `Decimal` input
-    is ever silently rounded or overflowed regardless of its magnitude.
+    """Compute the five arithmetic witnesses exactly, sizing each step's
+    precision and exponent bounds to its own operands (`_exact_add`,
+    `_exact_subtract`, `_exact_multiply`) instead of a fixed cap. Raises
+    `_ArithmeticLimit` — caught only by `assess_funding` — if any step's
+    exact result is not representable or not safely materializable.
     """
     quantity = Decimal(facts.requested_quantity)
-    with localcontext(_EXACT_ARITHMETIC_CONTEXT):
-        cash_after_cost = facts.cash_before - facts.execution_cost
-        funding_basis = max(facts.execution_price, facts.current_mark)
-        required_at_basis = quantity * facts.point_value * funding_basis
-        surplus = cash_after_cost - required_at_basis
-        post_fill_margin_cushion = (
-            cash_after_cost - quantity * facts.point_value * facts.execution_price
-        )
+    cash_after_cost = _exact_subtract(facts.cash_before, facts.execution_cost)
+    funding_basis = max(facts.execution_price, facts.current_mark)
+    required_at_basis = _exact_multiply(quantity, facts.point_value, funding_basis)
+    surplus = _exact_subtract(cash_after_cost, required_at_basis)
+    post_fill_margin_cushion = _exact_subtract(
+        cash_after_cost, _exact_multiply(quantity, facts.point_value, facts.execution_price)
+    )
     return (
         cash_after_cost,
         funding_basis,
@@ -245,13 +337,16 @@ def assess_funding(facts: FundingFacts) -> FundingAssessment:
     if facts.competing_entry_count != 0:
         return _outside_domain(FundingReason.COMPETING_ENTRY)
 
-    (
-        cash_after_cost,
-        funding_basis,
-        required_at_basis,
-        surplus,
-        post_fill_margin_cushion,
-    ) = _exact_arithmetic(facts)
+    try:
+        (
+            cash_after_cost,
+            funding_basis,
+            required_at_basis,
+            surplus,
+            post_fill_margin_cushion,
+        ) = _exact_arithmetic(facts)
+    except _ArithmeticLimit:
+        return _outside_domain(FundingReason.ARITHMETIC_LIMIT)
 
     if surplus > 0:
         status = FundingStatus.PROVEN_POSITIVE_CUSHION
