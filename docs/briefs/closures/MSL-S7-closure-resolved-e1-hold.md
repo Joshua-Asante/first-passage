@@ -3,10 +3,10 @@
 **Verdict:** `RESOLVED` (E1 HOLD) — Phase 3 HOLD; charter stays RATIFIED; no slate-4 card until a NEW WHO
 **Closed:** 2026-08-14
 **Lane:** UNASSIGNED
-**Pre-registration:** [packet §6](../programs/2026-08-14-msl-slate-generation-review.md) frozen at `c92d9063` (PR #820 merge) — no separate pre-reg file
+**Pre-registration:** [packet §6](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-14-msl-slate-generation-review.md) frozen at `c92d9063` (PR #820 merge) — no separate pre-reg file
 **Spend / K:** $0.00 · Cap **not claimed** · no Pine / TV / arming
 **Live effect:** plan Phase 3 → HOLD (E1); election no longer owed
-**Artifacts:** [packet](../programs/2026-08-14-msl-slate-generation-review.md) · [plan](../programs/2026-08-12-msl-program-plan.md)
+**Artifacts:** [packet](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-14-msl-slate-generation-review.md) · [plan](../programs/2026-08-12-msl-program-plan.md)
 
 ---
 
@@ -45,7 +45,7 @@ Below the two-incident bar — watch: composition dryness is a Board election, n
 - **Routing:** plan §4 Phase 3 HOLD (E1); charter Status unchanged (RATIFIED); no E2 ADR
 - **Entry packet:** n/a
 - **Stop rule / re-proposal bar:** no slate-4 card without a constraint-based WHO that is not in the 2026-08-10 INTAKE-DRY set and not a transfer of C1/C2/C3/S2A/S2B
-- **Board write:** `SESSIONS Open/next: no slate-4 card until NEW WHO. Carry: F-2; CapFLOW; F1 2026-11-08; M1; weekly token; Magdon-Ismail B.` Owner: this closure · [packet](../programs/2026-08-14-msl-slate-generation-review.md)
+- **Board write:** `SESSIONS Open/next: no slate-4 card until NEW WHO. Carry: F-2; CapFLOW; F1 2026-11-08; M1; weekly token; Magdon-Ismail B.` Owner: this closure · [packet](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-14-msl-slate-generation-review.md)
 
 ## §10 audit-hook discharge
 

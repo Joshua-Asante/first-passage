@@ -1,6 +1,6 @@
 # Q-M1WIRE-1 — Does the M1 arming interlock actually verify everything its own acceptance package and doctrine claim it verifies?
 
-**Status:** `CLOSED — FALSIFIED` — see [`closures/Q-M1WIRE-1-closure-falsified.md`](closures/Q-M1WIRE-1-closure-falsified.md)
+**Status:** `CLOSED — FALSIFIED` — see [`closures/Q-M1WIRE-1-closure-falsified.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-M1WIRE-1-closure-falsified.md)
 **Authored:** 2026-08-18
 **Closed:** 2026-08-21
 **Authors:** Joshua + Claude Code

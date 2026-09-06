@@ -1,7 +1,7 @@
 # Q-OBJCOHERE-1 — Closure: `FALSIFIED-COHERENT`
 
 **Parent brief:** [`docs/briefs/Q-OBJCOHERE-1-objective-coherence-audit.md`](../Q-OBJCOHERE-1-objective-coherence-audit.md)
-**Pre-registration:** [`docs/briefs/pre-registration/Q-OBJCOHERE-1-verdict-preregistration.md`](../pre-registration/Q-OBJCOHERE-1-verdict-preregistration.md) — FROZEN at commit `ad438ed`, 2026-07-30, strictly before any Phase 1 read.
+**Pre-registration:** [`docs/briefs/pre-registration/Q-OBJCOHERE-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-OBJCOHERE-1-verdict-preregistration.md) — FROZEN at commit `ad438ed`, 2026-07-30, strictly before any Phase 1 read.
 **Closed:** 2026-07-30
 **Verdict:** **`FALSIFIED-COHERENT`** — every constructed tension resolves to quoted precedence text in a ratified artifact. H-OBJCOHERE-1's fragmentation claim (and the parent thesis's H-EDGE clause it operationalized) is **FALSIFIED**.
 

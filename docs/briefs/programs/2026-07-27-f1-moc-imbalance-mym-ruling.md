@@ -5,7 +5,7 @@
 the census's only entry not already dead after its 2026-07-26 self-audit (F2/F3 were killed by prior rulings).
 **Verdict (this brief):** **FALSIFIED — reject-at-bar**, blocked at the **paid-data procurement gate**
 (not at the free-data domain bar — see §4, where F1 genuinely differs from D2). Not admitted for a full Pre-Q.
-**Precedent template:** [`2026-07-24-d2-letf-eod-flow-ruling.md`](2026-07-24-d2-letf-eod-flow-ruling.md).
+**Precedent template:** [`2026-07-24-d2-letf-eod-flow-ruling.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-07-24-d2-letf-eod-flow-ruling.md).
 
 ---
 

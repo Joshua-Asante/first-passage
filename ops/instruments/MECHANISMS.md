@@ -827,7 +827,7 @@ above for the un-renamed record.
 (overnight range) and on MNQ's own gap-magnitude sub-claim.** The stage-2 joint-surrogation null
 named as owed above never certified: 4 rounds, 9 constructions, hard-stopped (measured null
 Type-I rate 26% vs nominal 5% on the one design that looked viable —
-[`joint_surrogation_null_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/joint_surrogation_null_2026-08-30/RESULTS.md)
+[`joint_surrogation_null_2026-08-30/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/joint_surrogation_null_2026-08-30/RESULTS.md)
 Round 4). Separately, the presence battery (L1-L3, the day-history-vs-day-history-conditioning
 statistics cited above) PASSED on H-RANGEXFER-1 (MNQ), H-RANGEXFER-1.a (MNQ gap), and
 H-RANGEXFER-1-MYM (overnight range) — the stage-1 findings above stand, adversarially verified,
@@ -835,7 +835,7 @@ just not certifiable to a full stage-2 RESOLVED/FALSIFIED verdict at this panel 
 by-year floor also fails independently, N_valid=3 on both parents). Closure:
 [`Q-RANGEXFER-1-closure-ambiguous-design.md`](../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md).
 Re-open: panel growth to ≥7 qualifying years, or a design meeting
-[`BOUNDED_ROUND_PLAN.md`](../../lab/analysis/_inbox/joint_surrogation_null_2026-08-30/BOUNDED_ROUND_PLAN.md)
+[`BOUNDED_ROUND_PLAN.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/joint_surrogation_null_2026-08-30/BOUNDED_ROUND_PLAN.md)
 §3's certification requirements. No entry/sizing construct licensed; no ledger cell renamed.
 
 **⚠ Numbers above this note are stale, corrected 2026-08-31.** The MNQ-side stage-1 figures cited

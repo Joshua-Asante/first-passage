@@ -8,7 +8,7 @@
 **Loop:** Inquire-phase Pre-Q — Route B cell (clock-minute net signed aggressor size → 60 s mid) on EXPLORATION; Cap + confirm GO later for Stage-C
 **Artifact path:** `docs/briefs/Q-R2FLOW-1-signed-minute-flow-route-b-scoping.md`
 **Spend:** $0 · `K_intrinsic=1` · no Cap claim · no new pull (OFCHAN cache) · CONFIRM unread
-**G2:** [`RESULTS_g2`](../../lab/archive/mnq_r2flow_routeb_2026-08/RESULTS_g2.md)
+**G2:** [`RESULTS_g2`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/mnq_r2flow_routeb_2026-08/RESULTS_g2.md)
 
 ---
 
@@ -22,8 +22,8 @@
 | [`docs/adr/2026-08-05-avenue-a-generate-confirm-route.md`](../adr/2026-08-05-avenue-a-generate-confirm-route.md) | `b0427fd` | Route B Accepted |
 | [`docs/methodology/avenue_a_generate_confirm.md`](../methodology/avenue_a_generate_confirm.md) | `b0427fd` | G0 checklist |
 | [`lab/discovery/admission_schema.py`](../../lab/discovery/admission_schema.py) | `cc4142e` | S6 ADMIT/REFUSE |
-| [`docs/briefs/closures/Q-R2AGRUN-1-closure-ambiguous-hold.md`](closures/Q-R2AGRUN-1-closure-ambiguous-hold.md) | this session | Non-promotable close; re-proposal bar |
-| [`lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md`](../../lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md) | on main | Imbalance-ratio null |
+| [`docs/briefs/closures/Q-R2AGRUN-1-closure-ambiguous-hold.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-R2AGRUN-1-closure-ambiguous-hold.md) | this session | Non-promotable close; re-proposal bar |
+| [`lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md) | on main | Imbalance-ratio null |
 | [`ops/instruments/MNQ.md`](../../ops/instruments/MNQ.md) C9 / DEAD | on main | Not resting ToB size |
 
 **Gitignore pre-flight.** No Pine. No new Databento pull.

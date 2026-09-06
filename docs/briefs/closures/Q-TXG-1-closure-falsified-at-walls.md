@@ -7,7 +7,7 @@
 **Decision artifact:** [`Q-TXG-1-ha-reargument.md`](../Q-TXG-1-ha-reargument.md) — operator elected **(A) CLOSE**
 **Spend / K:** $0.00 · K=0 · no scoring · docs only
 **Live effect:** none on the rail or locked book. No `core/` / Pine / allocation / `dd_protection` / firm_rules change. c1 stays warm/disarmed; M1/GO untouched.
-**Cell closures (prior):** [`striker_nas100×MYM DEAD(cost)`](2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md) · [`striker×MNQ DEAD(N-SURV)`](2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md) · [`Guardian→MGC DEAD(N-SURV)`](2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md) · Aegis→6J both-layers ([`ops/instruments/6J.md`](../../../ops/instruments/6J.md) J4b+J14)
+**Cell closures (prior):** [`striker_nas100×MYM DEAD(cost)`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md) · [`striker×MNQ DEAD(N-SURV)`](2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md) · [`Guardian→MGC DEAD(N-SURV)`](2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md) · Aegis→6J both-layers ([`ops/instruments/6J.md`](../../../ops/instruments/6J.md) J4b+J14)
 
 ---
 

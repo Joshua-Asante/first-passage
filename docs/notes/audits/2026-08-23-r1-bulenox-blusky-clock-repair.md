@@ -3,7 +3,7 @@
 **Audit ID:** AUDIT-2026-08-23-r1-bulenox-blusky-clock-repair
 **Date:** 2026-08-23
 **Triggered by:** Task R1 of the [§4 firm-model parallel repair
-plan](../../superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md), the named
+plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md), the named
 (not opened) CLOCK-repair successor to
 [`Q-FIRMEOD-1`](../../briefs/closures/Q-FIRMEOD-1-closure-falsified.md), operator-GO'd this session
 (sibling Task R2 already landed this session at commit `65dc17b` before this task started).
@@ -313,7 +313,7 @@ as its own adversarial reviewer before deciding what, if anything, needed fixing
   deterministic result, not surface anything the code audit could not.
 
 **One gap found and fixed:** the parent plan
-([`docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md`](../../superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md))
+([`docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md))
 opens with "REQUIRED SUB-SKILL: `superpowers:subagent-driven-development` or
 `superpowers:executing-plans`. Checkbox (`- [ ]`) syntax for tracking" — but Task R1's four
 checkboxes were still `- [ ]` and the Gate (R1) line still read as an unfired conditional

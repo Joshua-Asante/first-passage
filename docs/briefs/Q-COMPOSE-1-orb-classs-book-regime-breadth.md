@@ -1,6 +1,6 @@
 # Q-COMPOSE-1 — Does adding ORB-MNQ-1 change the prop book's binding regime-fragility?
 
-**Status:** `CLOSED — FALSIFIED` (2026-07-17, frozen 10k×3 engine) — §6 row-2 fired on **every tier via both limbs** (H1 bust 54–68%, bootstrap-95th 47–60% vs the 3.0% ceiling at ORB @0.37%); breadth does not rescue — it destroys — the book's bust geometry (ORB's $438/day std at the $100K basis exceeds the entire 2-leg book's $273). Closure: [`closures/Q-COMPOSE-1-closure-falsified.md`](closures/Q-COMPOSE-1-closure-falsified.md); run artifacts [`lab/archive/q_compose_1_2026-07/`](../../lab/archive/q_compose_1_2026-07/RESULTS.md). Gate-0 was **GO** (mixed book in scope, no ADR amendment); ORB weight operator-signed **0.37%**; pre-reg [`Q-COMPOSE-1-verdict-preregistration.md`](pre-registration/Q-COMPOSE-1-verdict-preregistration.md) FROZEN 2026-07-16 (`970b5ed`), honored byte-for-byte.
+**Status:** `CLOSED — FALSIFIED` (2026-07-17, frozen 10k×3 engine) — §6 row-2 fired on **every tier via both limbs** (H1 bust 54–68%, bootstrap-95th 47–60% vs the 3.0% ceiling at ORB @0.37%); breadth does not rescue — it destroys — the book's bust geometry (ORB's $438/day std at the $100K basis exceeds the entire 2-leg book's $273). Closure: [`closures/Q-COMPOSE-1-closure-falsified.md`](closures/Q-COMPOSE-1-closure-falsified.md); run artifacts [`lab/archive/q_compose_1_2026-07/`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_compose_1_2026-07/RESULTS.md). Gate-0 was **GO** (mixed book in scope, no ADR amendment); ORB weight operator-signed **0.37%**; pre-reg [`Q-COMPOSE-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-COMPOSE-1-verdict-preregistration.md) FROZEN 2026-07-16 (`970b5ed`), honored byte-for-byte.
 **Authored:** 2026-07-16
 **Closed:** 2026-07-17
 **Authors:** Joshua (direction) + Claude Code (Opus 4.8, scoping)
@@ -108,7 +108,7 @@ Inherited verbatim from the frozen survivor gate (`be6dda6`) + regime-robustness
 
 ## §8 — Verdict pre-registration (mandatory before Phase 1)
 
-**FROZEN 2026-07-16** at [`docs/briefs/pre-registration/Q-COMPOSE-1-verdict-preregistration.md`](pre-registration/Q-COMPOSE-1-verdict-preregistration.md): the §6 table verbatim + ORB's frozen weight **0.37%** (operator-signed) + inherited partition/engine params + prior-look disclosure + the gate-0 GO record. Phase 1 may now run.
+**FROZEN 2026-07-16** at [`docs/briefs/pre-registration/Q-COMPOSE-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-COMPOSE-1-verdict-preregistration.md): the §6 table verbatim + ORB's frozen weight **0.37%** (operator-signed) + inherited partition/engine params + prior-look disclosure + the gate-0 GO record. Phase 1 may now run.
 
 Pre-registration commit hash: `970b5ed`
 Pre-registration date: 2026-07-16

@@ -2,8 +2,8 @@
 
 **Closed:** 2026-07-21
 **Verdict:** `FALSIFIED at Phase-0`
-**Pre-registration:** [`MYM-3FPS-1-verdict-preregistration.md`](../pre-registration/MYM-3FPS-1-verdict-preregistration.md), frozen at commit `9bf8002` before the pull and result.
-**Results:** [`lab/archive/mym_3fps_recon_2026-07/RESULTS.md`](../../../lab/archive/mym_3fps_recon_2026-07/RESULTS.md)
+**Pre-registration:** [`MYM-3FPS-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/MYM-3FPS-1-verdict-preregistration.md), frozen at commit `9bf8002` before the pull and result.
+**Results:** [`lab/archive/mym_3fps_recon_2026-07/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/mym_3fps_recon_2026-07/RESULTS.md)
 
 ## Gate return
 

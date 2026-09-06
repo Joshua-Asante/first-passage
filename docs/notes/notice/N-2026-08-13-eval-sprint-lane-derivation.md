@@ -3,7 +3,7 @@
 **Type:** Notice-phase analysis. **Proposes; rules on nothing.** $0 · K=0 · no gate moved, no threshold changed, no candidate admitted, no account purchased. Adding an admission lane requires an operator election (§8).
 **Trigger:** operator direction 2026-08-13 — *"move fast and aggressively towards finding a strategy… ok with trying unorthodox methods if the data supports it."*
 **Discharges a caveat open since 2026-07-10:** the SelectFlex re-MC recorded *"bust<1% is FXIFY one-shot economics; Tradeify Flex is cheap-retry → the accept/reject gate is a NEW operator EV decision, do not inherit 1%."* That decision was never taken. [`Q-BUSTGATE-1`](../../briefs/closures/Q-BUSTGATE-1-closure-falsified.md) then measured the fee/upside asymmetry at **12–36:1** and concluded economics *"do not reproduce 3.0% and… point looser"* — and stopped there, correctly, because loosening on EV alone is the degeneration move. This note supplies the third input that was missing.
-**Reads:** [`survivor-scoring prereg`](../../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) §3 · [`Q-BUSTGATE-1 closure`](../../briefs/closures/Q-BUSTGATE-1-closure-falsified.md) · [`design-box re-derivation`](N-2026-08-13-msl-design-box-rederivation.md) (the frontier solver reused here) · [`population notice`](N-2026-08-13-external-eval-population-data.md) §2 · `core/firm_rules.py` `Tradeify_Select_100K` @ HEAD.
+**Reads:** [`survivor-scoring prereg`](../../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) §3 · [`Q-BUSTGATE-1 closure`](../../briefs/closures/Q-BUSTGATE-1-closure-falsified.md) · [`design-box re-derivation`](N-2026-08-13-msl-design-box-rederivation.md) (the frontier solver reused here) · [`population notice`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-13-external-eval-population-data.md) §2 · `core/firm_rules.py` `Tradeify_Select_100K` @ HEAD.
 
 ---
 
@@ -15,7 +15,7 @@ The frozen gate is **bust ≤ 3.0% ∧ P(pass) ≥ 50%**. Under the venue's veri
 
 The pass floor still does real work inside a *finite-horizon simulator* (it catches the no-trade grinder whose run is truncated before either barrier), which is what the prereg §3 rationale describes. But as a statement about the venue, the gate demands a **97% per-attempt pass rate**.
 
-**Correction to my own prior note.** [`N-2026-08-13-external-eval-population-data`](N-2026-08-13-external-eval-population-data.md) §2 said our floor is "~3× the per-attempt population rate," comparing 50% against Tradeify's disclosed **17.2%**. The binding limb is 97%, so the true multiple is **5.6×**. That correction makes the gate stricter than previously recorded, not looser — and it is the reason this lane is worth deriving rather than assumed away.
+**Correction to my own prior note.** [`N-2026-08-13-external-eval-population-data`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-13-external-eval-population-data.md) §2 said our floor is "~3× the per-attempt population rate," comparing 50% against Tradeify's disclosed **17.2%**. The binding limb is 97%, so the true multiple is **5.6×**. That correction makes the gate stricter than previously recorded, not looser — and it is the reason this lane is worth deriving rather than assumed away.
 
 ## §2 — What a 97% per-attempt requirement costs, priced against a $169 reset
 

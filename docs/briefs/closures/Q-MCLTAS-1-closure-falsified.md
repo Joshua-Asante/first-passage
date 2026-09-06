@@ -2,8 +2,8 @@
 
 **Verdict:** `FALSIFIED` · 2026-08-11 · **$0.00 · K=0 · no manifest · no pull · no market data read**
 **Scoping brief:** [`Q-MCLTAS-1`](../Q-MCLTAS-1-tas-settlement-delta-extraction-probe-scoping.md) (§6 gate pre-registered before either stage ran)
-**Results:** [`_probe_stage0_RESULTS_2026-08-11.md`](../../../lab/analysis/c1/cheap_falsifiers_2026-08/_probe_stage0_RESULTS_2026-08-11.md) ·
-[Wall-B falsifier](../../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_mcl_tas_probe_2026-08-11_LOG.md)
+**Results:** [`_probe_stage0_RESULTS_2026-08-11.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/cheap_falsifiers_2026-08/_probe_stage0_RESULTS_2026-08-11.md) ·
+[Wall-B falsifier](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_mcl_tas_probe_2026-08-11_LOG.md)
 **Parent:** [`Q-TNEC-ENV-1` closure](Q-TNEC-ENV-1-closure.md) item (b), RULED 2026-08-11/JA — *"the direction re-opens only through a completed δ-extraction probe."*
 **Live effect:** none. No candidate proposed, admitted, scored, or licensed. Harvest Req 1–5, DSR-at-K, N-SURV MC and the regime gate are untouched and unweakened. No `core/` / Pine / allocation / `dd_protection` / rail change.
 

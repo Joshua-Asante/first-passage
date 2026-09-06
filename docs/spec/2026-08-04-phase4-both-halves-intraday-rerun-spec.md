@@ -1,7 +1,7 @@
 # SPEC 2026-08-04 — Phase-4 both-halves regime re-run on the venue's honest clock
 
 **Status:** `FROZEN` — operator **GO given 2026-08-04**. Build + run **NOT executed**; this spec is the frozen contract for executing it.
-**Owner artifact for the GO:** [`ADR 2026-08-03-lifecycle-ladder-intermediate-rung`](../adr/2026-08-03-lifecycle-ladder-intermediate-rung.md) §7 Phase 4 (which requires exactly this operator GO before the run).
+**Owner artifact for the GO:** [`ADR 2026-08-03-lifecycle-ladder-intermediate-rung`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-03-lifecycle-ladder-intermediate-rung.md) §7 Phase 4 (which requires exactly this operator GO before the run).
 **Repo anchor:** `289535d`, worktree clean, verified 2026-08-04.
 
 ---

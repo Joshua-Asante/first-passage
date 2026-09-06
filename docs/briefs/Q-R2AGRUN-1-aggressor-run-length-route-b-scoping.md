@@ -1,8 +1,8 @@
 # Q-R2AGRUN-1 — Does aggressor-run length predict 60 s mid returns on MNQ (Route B)?
 
 **Status:** `CLOSED — Stage-G AMBIGUOUS-HOLD` — non-promotable STOP (operator);
-[`closure`](closures/Q-R2AGRUN-1-closure-ambiguous-hold.md) ·
-[`RESULTS_g2`](../../lab/analysis/c1/mnq_r2agrun_routeb_2026-08/RESULTS_g2.md).
+[`closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-R2AGRUN-1-closure-ambiguous-hold.md) ·
+[`RESULTS_g2`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_r2agrun_routeb_2026-08/RESULTS_g2.md).
 Successor named: [`Q-R2FLOW-1`](Q-R2FLOW-1-signed-minute-flow-route-b-scoping.md).
 **Authored:** 2026-08-08
 **Closed:** 2026-08-08
@@ -29,12 +29,12 @@ Successor named: [`Q-R2FLOW-1`](Q-R2FLOW-1-signed-minute-flow-route-b-scoping.md
 | [`docs/spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md`](../spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md) | `27c7943` | MNQDTL D1/D2; R2 live; Cap before K-spend |
 | [`docs/adr/2026-08-05-avenue-a-generate-confirm-route.md`](../adr/2026-08-05-avenue-a-generate-confirm-route.md) | `b0427fd` | Route B Accepted; fresh holdout rule |
 | [`docs/methodology/avenue_a_generate_confirm.md`](../methodology/avenue_a_generate_confirm.md) | `b0427fd` | G0 checklist |
-| [`docs/spec/2026-08-07-loop-s6-k-aware-generation-spec.md`](../spec/2026-08-07-loop-s6-k-aware-generation-spec.md) | `45e3cea` | S6 admission schema |
+| [`docs/spec/2026-08-07-loop-s6-k-aware-generation-spec.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s6-k-aware-generation-spec.md) | `45e3cea` | S6 admission schema |
 | [`lab/discovery/admission_schema.py`](../../lab/discovery/admission_schema.py) | `cc4142e` | Machine ADMIT/REFUSE |
-| [`lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md`](../../lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md) | `2dc14db` | Association null; reopen = new mechanism |
-| [`lab/analysis/c1/mnq_ofchan_routeb_2026-08/RESULTS_g2.md`](../../lab/analysis/c1/mnq_ofchan_routeb_2026-08/RESULTS_g2.md) | on main | VOID-COVERAGE; new G0 required |
-| [`docs/briefs/rnd-pipeline/Q-MNQSEL-1-selection-value-ceiling-scoping.md`](rnd-pipeline/Q-MNQSEL-1-selection-value-ceiling-scoping.md) | on main | Restart-clock STOP |
-| [`lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md`](../../lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) | `87b0547` | K=1 floor 0.650 |
+| [`lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md) | `2dc14db` | Association null; reopen = new mechanism |
+| [`lab/analysis/c1/mnq_ofchan_routeb_2026-08/RESULTS_g2.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_ofchan_routeb_2026-08/RESULTS_g2.md) | on main | VOID-COVERAGE; new G0 required |
+| [`docs/briefs/rnd-pipeline/Q-MNQSEL-1-selection-value-ceiling-scoping.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/Q-MNQSEL-1-selection-value-ceiling-scoping.md) | on main | Restart-clock STOP |
+| [`lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) | `87b0547` | K=1 floor 0.650 |
 | [`ops/instruments/MNQ.md`](../../ops/instruments/MNQ.md) DEAD / C9 bar | `2dc14db` | Not resting ToB size; not R2VBUCK retune |
 | [`docs/notes/2026-08-04-databento-entitlement-inventory.md`](../notes/2026-08-04-databento-entitlement-inventory.md) | `b82ae65` | Rolling 1y `tbbo` free window |
 | [`docs/adr/2026-08-07-loop-s1-environment-ratification.md`](../adr/2026-08-07-loop-s1-environment-ratification.md) | on main | Incumbent env; R1 foreclosed |

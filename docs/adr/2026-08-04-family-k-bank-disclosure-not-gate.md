@@ -8,7 +8,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Amends-in-part:** [`2026-07-15-external-mechanism-harvest-intake.md`](2026-07-15-external-mechanism-harvest-intake.md) Requirement 3 · [`2026-07-11-discovery-campaign-defaults-ratified.md`](2026-07-11-discovery-campaign-defaults-ratified.md) Default #2 (K semantics) · [`2026-07-12-dsr-k-rule-and-variance-floor-supersession.md`](2026-07-12-dsr-k-rule-and-variance-floor-supersession.md) (the `K_DSR` *input*; its non-overlap floor and `V=1/n` pin are untouched) · [`2026-07-26-mechanism-counterparty-constraint-boundaries.md`](2026-07-26-mechanism-counterparty-constraint-boundaries.md) §2-C (executed-K banking survives, but what a bank *does* changes)
-**Related:** [`Q-ICTEXP-1 results`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_EXP.md) · [`Q-ICT-1MEXEC-1 draft prereg`](../briefs/pre-registration/2026-08-04-ict-1m-execution-mnq-preregistration.md) §2 (the reachability screen that surfaced this) · [`ORB cadence adjudication`](../notes/2026-08-04-orb-cadence-role-adjudication.md) (*"the K bank is NOT the terminator"*)
+**Related:** [`Q-ICTEXP-1 results`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_EXP.md) · [`Q-ICT-1MEXEC-1 draft prereg`](../briefs/pre-registration/2026-08-04-ict-1m-execution-mnq-preregistration.md) §2 (the reachability screen that surfaced this) · [`ORB cadence adjudication`](../notes/2026-08-04-orb-cadence-role-adjudication.md) (*"the K bank is NOT the terminator"*)
 **Layer:** methodology (research rules of evidence only). No strategy parameter, allocation, `dd_protection` constant, lifecycle state, Pine source, or rail config is touched.
 
 ---

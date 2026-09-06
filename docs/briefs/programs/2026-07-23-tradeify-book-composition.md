@@ -5,7 +5,7 @@
 **Amended:** 2026-07-23 (posture reconcile + compose-objective split vs Q-COMPOSE-1 / Q-FUNNEL-1);
 2026-07-23 later same day (operator: ORB PARKED; bust-gate re-derive + c1 1.00× aim → 08-08 packet)
 **Status:** `MEASUREMENT RECORD ONLY` — dispositions §6 are not live gate work; ORB operationally PARKED (operator)
-**Harness:** [`lab/analysis/c1/tradeify_book_composition_2026-07-23/`](../../../lab/analysis/c1/tradeify_book_composition_2026-07-23/)
+**Harness:** [`lab/analysis/c1/tradeify_book_composition_2026-07-23/`](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_book_composition_2026-07-23/)
 **Packet home:** [`2026-07-17-0808-packet-delta-and-sequence.md`](2026-07-17-0808-packet-delta-and-sequence.md) (§0.5 operator posture 2026-07-23)
 
 ---
@@ -56,7 +56,7 @@ current fill state.
 - [`Q-COMPOSE-1-closure-falsified.md`](../closures/Q-COMPOSE-1-closure-falsified.md) (2026-07-17) —
   2-leg + ORB@0.37% bust **2.65% → 38.75%** on Tradeify Select 100K under the survivor-scoring
   floor; disposition = deploy **c1 alone @ WATCH-1 0.50×**, no compose.
-- [`Q-FUNNEL-1-closure-resolved.md`](../closures/Q-FUNNEL-1-closure-resolved.md) (2026-07-22) —
+- [`Q-FUNNEL-1-closure-resolved.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-FUNNEL-1-closure-resolved.md) (2026-07-22) —
   funnel-EV vs bust≤3% / WATCH-1 tension; **operator 2026-07-23** routes this to a **fresh
   bust-gate re-derivation** (packet A0 / Trap #12), not an open “weigh both forever” question.
   Naming collision with this brief’s composition D1 — see §6.
@@ -336,7 +336,7 @@ bust≤3% — keep both on the board; do not merge labels.
 
     **PARKED stands anyway — on survival geometry, which is the real blocker and was never the
     one being cited. RE-RUN EXECUTED 2026-07-29 at the registered `Tradeify_Select_100K` tier**
-    ([`RESULTS`](../../../lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS.md); ledger **J4b**;
+    ([`RESULTS`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS.md); ledger **J4b**;
     reproduction control **12/12 PASS**, both anchors to the cent):
     - **The PROVISIONAL-basis worry is closed, and it was never load-bearing.** Bulenox Option-2
       and Tradeify Select 100K are **numerically identical** on every parameter the sim uses
@@ -363,7 +363,7 @@ bust≤3% — keep both on the board; do not merge labels.
       *book*, and composition adds variance, so a standalone fail is a fail **a fortiori** (no
       composition run owed).
     - **⚠ SUPERSEDED SAME DAY — the FAIL above is a wrong-configuration artifact** (ledger **J8**;
-      [`RESULTS_GAP`](../../../lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS_GAP.md)).
+      [`RESULTS_GAP`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS_GAP.md)).
       J4's arm (b) is **"0.5× until freeze, then FULL size"** — a Bulenox *ramp-up tactic* that
       re-sizes to full once the floor locks at start+$100, and its post-freeze full-size
       drawdowns are what breach. **No c1 leg runs that**; every deployed leg runs a **constant**
@@ -379,7 +379,7 @@ bust≤3% — keep both on the board; do not merge labels.
       constant 0.50×, adversarially reviewed.
 
     **On the ratified third-leg screen — R1 MEASURED 2026-07-29 and it PASSES** (ledger **J7**;
-    [`RESULTS_R1`](../../../lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS_R1.md)). 6J's
+    [`RESULTS_R1`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/aegis/aegis_6j_trail_tradeify_2026-07-29/RESULTS_R1.md)). 6J's
     per-contract daily-$ std is **0.138× (all-days) / 0.402× (trade-days) of ORB**, and ORB sits
     at 1.5× the ceiling ⇒ 6J at **0.21× / 0.61× — PASS under both conventions**, with **1.6–4.8
     contracts** fitting the budget ORB needed 0.66 of. **The granularity-lockout expectation is
@@ -484,7 +484,7 @@ that "the venue's economics reward churn — cheap immortal evals + fast extract
 **Not contaminated:** the §1 venue-fact table; `funded_sim` mechanics; the cap/quantization
 findings that do not route through `eval_sim`.
 
-**Inherited by Q-CAPALLOC-1.** [`run_capalloc.py:179`](../../../lab/archive/c1_capalloc_2026-07-27/run_capalloc.py)
+**Inherited by Q-CAPALLOC-1.** [`run_capalloc.py:179`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/c1_capalloc_2026-07-27/run_capalloc.py)
 calls `G.eval_sim` directly, so its `AMBIGUOUS (d)` closure and the `48/32` dominating-split
 finding carry the same defect. **Its owed re-run must fix the lock first** — re-running the
 harness unchanged would reproduce the defect and bank it as a decision.
@@ -510,10 +510,10 @@ frozen-MC regime gate, not on this harness; and the eval-fee-vs-funded-upside as
 ## Addendum 2026-07-28b — eval-lock FIXED; §2 re-derived; H1 retargeted to $318/acct-mo
 
 **Fix landed.** Every `eval_sim` / `esim` in
-[`lab/analysis/c1/tradeify_book_composition_2026-07-23/`](../../../lab/analysis/c1/tradeify_book_composition_2026-07-23/)
+[`lab/analysis/c1/tradeify_book_composition_2026-07-23/`](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_book_composition_2026-07-23/)
 now uses `floor = peak - DD` unconditionally (Tradeify article 10495897).
 `funded_sim` / `fsim` unchanged. Full record + M-24 sweep:
-[`RESULTS.md`](../../../lab/analysis/c1/tradeify_book_composition_2026-07-23/RESULTS.md).
+[`RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_book_composition_2026-07-23/RESULTS.md).
 
 **Reproduction control (SHA `602b692`, unmodified):** stage4 matched published
 2-leg 63% / 8.2 mo / $339, ORB@1 59% / 6.2 / $556, ORB@6 27% / 1.2 / $941
@@ -581,7 +581,7 @@ Addendum 2026-07-28b is superseded.
 
 Funded mortality is the larger finding: nearly **half** of funded accounts die within a year at the
 verified rules. Evidence + attribution (three arms, super-additive corrections):
-[`tradeify_book_composition_2026-07-23/RESULTS.md`](../../../lab/analysis/c1/tradeify_book_composition_2026-07-23/RESULTS.md)
+[`tradeify_book_composition_2026-07-23/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_book_composition_2026-07-23/RESULTS.md)
 §Addendum 2026-07-29.
 
 ---

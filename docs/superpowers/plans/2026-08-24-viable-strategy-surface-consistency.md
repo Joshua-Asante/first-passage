@@ -130,7 +130,7 @@ KILL; registry has a buyback-blackout / B3 row.
 
 ## Packet 3 — Banner / body authorization lag (item 4 + same-class)
 
-**Defect:** [`parallel-s4-firm-repair`](2026-08-23-viable-strategy-parallel-s4-firm-repair.md)
+**Defect:** [`parallel-s4-firm-repair`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md)
 L6 still banners `AUTHORIZATION: AWAITING GO` and names "a fresh Q + operator
 GO" as the open condition. That condition was met 2026-08-23: R1 is
 `RESOLVED — WITH NAMED RESIDUAL` with recorded ratification; R2 is `RESOLVED`

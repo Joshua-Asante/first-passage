@@ -199,8 +199,13 @@ def parse_catalog(text: str) -> dict[str, CatalogEntry]:
             body_cell = cells[4] if len(cells) >= 5 else ""
             hot_cell = ""
         hot = hot_cell.lower() if hot_cell.lower() in {"yes", "no"} else None
-        if "lab/archive/" in body_cell:
+        if "://" in body_cell:
+            # External archive URL (lab/ARCHIVED.json row, 2026-09-06 reduction):
+            # the body left this tree, so the row is archived-tier regardless of
+            # the baseline layout path echoed inside the URL.
             body_tier: str | None = "archived"
+        elif "lab/archive/" in body_cell:
+            body_tier = "archived"
         elif "lab/analysis/" in body_cell:
             body_tier = "live"
         else:

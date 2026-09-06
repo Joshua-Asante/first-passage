@@ -269,7 +269,7 @@ forward-trigger board. `docs/pursuits/` is created by GSUB-1 Phase 4 (post-Phase
 
 GSUB-1 ran and closed the same day it was accepted:
 [`closure`](../briefs/closures/GSUB-1-closure-resolved-loadbearing.md) ·
-[`inventory + dispositions`](../briefs/programs/GSUB-1-inventory-and-dispositions.md).
+[`inventory + dispositions`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md).
 
 **§4 reading:** the run yielded **19 ratified dispositions differing from status-quo standing**
 against a threshold of ≥1 (8 PARK · 9 SUBTRACT · 2 MERGE; operator bulk-ratified in-session).
@@ -300,7 +300,7 @@ test (keep-if R1–R5 on *parts*). It is not a GRAND Subtract and was not author
 Algorithm's Delete. §2.4's handoff names distinct objects; the L283 "deleted at the Great
 Prune" line is an incident cite, not an operator identification. Live test owner:
 `docs/operational_rules.md` Rule 16. Ruling:
-[`2026-08-19-great-prune-is-not-grand-subtract.md`](2026-08-19-great-prune-is-not-grand-subtract.md).
+[`2026-08-19-great-prune-is-not-grand-subtract.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-19-great-prune-is-not-grand-subtract.md).
 
 ---
 

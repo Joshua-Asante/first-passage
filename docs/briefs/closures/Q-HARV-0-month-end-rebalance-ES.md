@@ -1,7 +1,7 @@
 # Closure — Q-HARV-0 / HARV-2026-001
 
 **Brief:** [`docs/ltm/briefs/Q-HARV-0-month-end-rebalance-ES.md`](../Q-HARV-0-month-end-rebalance-ES.md)
-**Lab RESULTS:** [`lab/archive/harv_0_month_end_rebalance_es_2026-07/RESULTS.md`](../../../lab/archive/harv_0_month_end_rebalance_es_2026-07/RESULTS.md)
+**Lab RESULTS:** [`lab/archive/harv_0_month_end_rebalance_es_2026-07/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/harv_0_month_end_rebalance_es_2026-07/RESULTS.md)
 **Closed:** 2026-07-12 (Phase 5). Analysis flow complete; K manifest closed.
 
 ---

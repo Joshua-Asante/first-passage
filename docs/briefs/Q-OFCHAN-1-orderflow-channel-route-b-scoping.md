@@ -1,8 +1,8 @@
 # Q-OFCHAN-1 — Does the order-flow channel carry a Route B–admissible L1→return cell on MNQ?
 
 **Status:** `CLOSED — Stage-G VOID-COVERAGE` — G0 charter frozen at
-[`lab/analysis/c1/mnq_ofchan_routeb_2026-08/PREREG_G0.md`](../../lab/analysis/c1/mnq_ofchan_routeb_2026-08/PREREG_G0.md);
-G2 [`RESULTS_g2.md`](../../lab/analysis/c1/mnq_ofchan_routeb_2026-08/RESULTS_g2.md) empty candidates → STOP this catalogue.
+[`lab/analysis/c1/mnq_ofchan_routeb_2026-08/PREREG_G0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_ofchan_routeb_2026-08/PREREG_G0.md);
+G2 [`RESULTS_g2.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_ofchan_routeb_2026-08/RESULTS_g2.md) empty candidates → STOP this catalogue.
 **Explore GO discharged; G2 COMPLETE 2026-08-07.** Cap seat not claimed. CONFIRM untouched.
 **Authored:** 2026-08-06
 **Closed:** 2026-08-07 (Stage-G coverage floor fired; re-proposal bar = new G0 / new mechanism, not retune)
@@ -35,7 +35,7 @@ G2 [`RESULTS_g2.md`](../../lab/analysis/c1/mnq_ofchan_routeb_2026-08/RESULTS_g2.
 | [`docs/methodology/avenue_a_generate_confirm.md`](../methodology/avenue_a_generate_confirm.md) | `b0427fd` | G0 checklist; CONFIRM=older / EXPLORATION=newer worked example; M at G0 |
 | [`docs/briefs/Q-MSCHAN-1-microstructure-sourcing-channel-scoping.md`](Q-MSCHAN-1-microstructure-sourcing-channel-scoping.md) | `b0427fd` | Salvage: two-stage, ≥5 s, flicker (arXiv 2507.22712), no ES→MNQ lead-lag. **Do not reuse Q-ID** |
 | [`docs/briefs/closures/MNQBASE-1-closure-intake-dry.md`](closures/MNQBASE-1-closure-intake-dry.md) | `5c5012c` + intercept 2026-08-06 | STOP; re-proposal bar = new sourcing channel |
-| [`lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/RESULTS.md`](../../lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/RESULTS.md) | `be6b94e` 2026-08-05 | MNQFLOW depth census — mandatory §0 context (median L1 thin; ties) |
+| [`lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_orb_flow_substrate_2026-08-05/RESULTS.md) | `be6b94e` 2026-08-05 | MNQFLOW depth census — mandatory §0 context (median L1 thin; ties) |
 | [`docs/notes/2026-08-04-databento-entitlement-inventory.md`](../notes/2026-08-04-databento-entitlement-inventory.md) | `b82ae65` 2026-08-05 | Free 1y `tbbo`; no pull this session |
 | [`ops/instruments/MNQ.md`](../../ops/instruments/MNQ.md) N11 · N13 · N14 · N16 · F2 GUARD | `9d8dffc` 2026-08-06 | Cap spent; F2 GUARD; cadence/no-duration-cap; depth context |
 | [`docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md`](../adr/2026-08-04-family-k-bank-disclosure-not-gate.md) | `2ef7405` | `K_eff = K_intrinsic`; bank discloses, does not gate |
@@ -140,14 +140,14 @@ Verdict string at freeze: `P U U D D D` (EM0 PASS; EM1–EM2 UNSCREENABLE; EM3�
 - **Phase 2 (operator):** If ≥1 candidate, freeze C0 confirm PREREG (M=1) → confirm GO → Stage-C on CONFIRM only.
 - **Phase 3:** Closure per §6 + Iterate block; board write.
 
-Companion handoff: [`docs/briefs/handoffs/2026-08-06-q-ofchan-1-explore-go-card.md`](handoffs/2026-08-06-q-ofchan-1-explore-go-card.md).
+Companion handoff: [`docs/briefs/handoffs/2026-08-06-q-ofchan-1-explore-go-card.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/handoffs/2026-08-06-q-ofchan-1-explore-go-card.md).
 
 ---
 
 ## §8 — Verdict pre-registration
 
 Empirical §6 gates and cell definition are frozen in
-[`lab/analysis/c1/mnq_ofchan_routeb_2026-08/PREREG_G0.md`](../../lab/analysis/c1/mnq_ofchan_routeb_2026-08/PREREG_G0.md)
+[`lab/analysis/c1/mnq_ofchan_routeb_2026-08/PREREG_G0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_ofchan_routeb_2026-08/PREREG_G0.md)
 **before any explore pull**. Pre-registration commit hash: *populated when this branch is committed*.
 
 Pre-registration date: 2026-08-06

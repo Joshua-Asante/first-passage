@@ -1,10 +1,10 @@
 # Q-MNQDTL-CON-1 — EM-shaped construct on dense RTH 1m opens (G=10)
 
 **Status:** `CLOSED FALSIFIED` 2026-08-09 — explore GO (default window) → both arms fail; STOP catalogue
-**Stage-0 PREREG:** [`lab/archive/mnq_con1_dense1m_stage0_2026-08/PREREG_G0.md`](../../lab/archive/mnq_con1_dense1m_stage0_2026-08/PREREG_G0.md)
-**Closure:** [`closures/Q-MNQDTL-CON-1-closure-falsified.md`](closures/Q-MNQDTL-CON-1-closure-falsified.md)
+**Stage-0 PREREG:** [`lab/archive/mnq_con1_dense1m_stage0_2026-08/PREREG_G0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/mnq_con1_dense1m_stage0_2026-08/PREREG_G0.md)
+**Closure:** [`closures/Q-MNQDTL-CON-1-closure-falsified.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-MNQDTL-CON-1-closure-falsified.md)
 **Authored:** 2026-08-08
-**Authors:** Joshua + Cursor; unlocked by [`Q-MNQSEL-2` RESOLVED](closures/Q-MNQSEL-2-closure-resolved.md)
+**Authors:** Joshua + Cursor; unlocked by [`Q-MNQSEL-2` RESOLVED](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-MNQSEL-2-closure-resolved.md)
 **Parent:** TNEC-1 intake · absolute-path construct · Phase-0 ceiling cleared on dense 1m opens
 **Loop:** Inquire — freeze trade object shape before any path score beyond Phase-0 ceiling
 **Spend:** $0 · K_intrinsic=1 · explore scored · Cap not claimed
@@ -15,11 +15,11 @@
 
 | Path | What it grounds |
 |---|---|
-| [`Q-MNQSEL-2` RESULTS](../../lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/RESULTS.md) | S3 ≈ 0.858 both arms; S1 negative; median 390 clocks/day |
+| [`Q-MNQSEL-2` RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/RESULTS.md) | S3 ≈ 0.858 both arms; S1 negative; median 390 clocks/day |
 | [`eval-mechanism-shape-screen`](../spec/2026-08-05-eval-mechanism-shape-screen.md) | EM0–EM5; SHAPE-CLEAR needs stop/R |
 | [`TNEC-1`](../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) (`RATIFIED`) | Post-shape intake gates = N-ACT…N-SIZE (not MNQDTL D1/D2) |
 | [`MNQDTL-1`](../spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md) | Historical target only; D1/D2 demoted preferences ([ADR](../adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md)) |
-| [`catalogue_k_wall`](../../lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) | Stop band 5–20 pt |
+| [`catalogue_k_wall`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) | Stop band 5–20 pt |
 | [`MNQ.md`](../../ops/instruments/MNQ.md) F2 GUARD | No ORB filter laundering |
 
 ---
@@ -71,7 +71,7 @@ typed VOID; STOP construct catalogue; re-proposal = new entry mechanism (not G r
 | `FALSIFIED` | Frozen entry rule fails pre-registered limbs | STOP this construct catalogue |
 | `AMBIGUOUS-HOLD` | VOID / halves / magnitude as frozen at Stage-0 | ITERATE packet |
 
-**This session:** explore GO scored → `FALSIFIED` (both arms); see [`closure`](closures/Q-MNQDTL-CON-1-closure-falsified.md).
+**This session:** explore GO scored → `FALSIFIED` (both arms); see [`closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-MNQDTL-CON-1-closure-falsified.md).
 
 ---
 
@@ -83,10 +83,10 @@ typed VOID; STOP construct catalogue; re-proposal = new entry mechanism (not G r
 | Stop | **G = 10.0 pt** hard, adverse; same-bar stop wins |
 | Exit | **Session-flat** at last in-session RTH bar close (elected default). Alt 1R=10pt elect knowingly (WR bar 0.7705) |
 | Cost | RT **1.41 pt**; `R = (pts − 1.41) / 10` |
-| Entry | **ES-NQ 5m log-return divergence vs 20-session median abs(d)** — LONG iff d>=+theta, SHORT iff d<=-theta (relative contrarian; do not invert). Causal at bar open; not oracle; not ORB/C7, S/R C10, vol C6, L1 C9/C11, ICT C1-C4. Owner: [PREREG_G0](../../lab/archive/mnq_con1_dense1m_stage0_2026-08/PREREG_G0.md) §2 |
+| Entry | **ES-NQ 5m log-return divergence vs 20-session median abs(d)** — LONG iff d>=+theta, SHORT iff d<=-theta (relative contrarian; do not invert). Causal at bar open; not oracle; not ORB/C7, S/R C10, vol C6, L1 C9/C11, ICT C1-C4. Owner: [PREREG_G0](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/mnq_con1_dense1m_stage0_2026-08/PREREG_G0.md) §2 |
 | Independence | EM3 — no pyramid/scale-in; arms long/short separate |
 | K | `K_intrinsic = 1` |
-| Cheap falsifier | Pred. move G=10: EM1 0.40R → **5.41 pt** / WR **0.7705**; N-EDGE net>0 → **1.41 pt** / WR **0.5705**. If named rule prior-art effect &lt; bar/2 → `FALSIFIED-BY-ARITHMETIC` (record which bar). See [ADMISSION_FALSIFIER_LOG](../../lab/archive/mnq_con1_dense1m_stage0_2026-08/ADMISSION_FALSIFIER_LOG.md) — `CHEAP_FALSIFIER_OK`; explore still GO-gated |
+| Cheap falsifier | Pred. move G=10: EM1 0.40R → **5.41 pt** / WR **0.7705**; N-EDGE net>0 → **1.41 pt** / WR **0.5705**. If named rule prior-art effect &lt; bar/2 → `FALSIFIED-BY-ARITHMETIC` (record which bar). See [ADMISSION_FALSIFIER_LOG](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/mnq_con1_dense1m_stage0_2026-08/ADMISSION_FALSIFIER_LOG.md) — `CHEAP_FALSIFIER_OK`; explore still GO-gated |
 | Scoring | mean net R; session-block 95% CI exclude 0; placebo 1000; halves sign agree; DSR≥0.650; disclose WR/excursions/trades/session/coverage + EM six-char |
 | Gate | `SHAPE-CLEAR` / `FALSIFIED` / `VOID` as specified; TNEC limbs typed **U** until GO |
 | Post-shape target | TNEC N-* (not MNQDTL D1/D2 as gates) |

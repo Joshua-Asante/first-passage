@@ -5,7 +5,7 @@
 **Lane:** MSL · card MSL-S2B · mechanism `sweep-failure-filtered-continuation` × **MYM**
 **Pre-registration:** none — G0 never frozen · [`STAGE0`](../../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE0.md) · [`STAGE1`](../../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md)
 **Spend / K:** $0.00 · Cap **not claimed** · no Pine / TV / arming
-**Artifacts:** STAGE0 · STAGE1 · [`preflight.json`](../../../lab/analysis/c1/msl_s2b_mym_2026-08/preflight.json) · [`card.yaml`](../../../lab/analysis/c1/msl_s2b_mym_2026-08/card.yaml)
+**Artifacts:** STAGE0 · STAGE1 · [`preflight.json`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/msl_s2b_mym_2026-08/preflight.json) · [`card.yaml`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/msl_s2b_mym_2026-08/card.yaml)
 
 ---
 

@@ -3,7 +3,7 @@
 **Status:** `OPEN` — accepted 2026-08-09 alongside the
 [`GRAND-tier ADR`](../../adr/2026-08-09-grand-tier-quintessentials-binding.md) (ratification note
 there); **CLOSED `RESOLVED-LOADBEARING` 2026-08-09** — all four phases executed same day →
-[`inventory + dispositions`](GSUB-1-inventory-and-dispositions.md) (37 rows, 19 differences) ·
+[`inventory + dispositions`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) (37 rows, 19 differences) ·
 [`closure`](../closures/GSUB-1-closure-resolved-loadbearing.md) · records at [`docs/pursuits/`](../../pursuits/)
 **Authored:** 2026-08-09
 **Closed:** N/A

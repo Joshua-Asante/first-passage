@@ -3,10 +3,10 @@
 **Verdict:** `FALSIFIED` — committed C−U lift 0.1297 < frozen `L_star` 0.4226; S1b conditioner-engineering branch parked
 **Closed:** 2026-08-18
 **Lane:** UNASSIGNED
-**Pre-registration:** [`Q-CONDVAL-1-verdict-preregistration.md`](../pre-registration/Q-CONDVAL-1-verdict-preregistration.md) — frozen on disk at sha256 `d1265eb2b0fa328c18b8a744a6f438d06611238fd2ada14ca12d06645748b386` (printed by the runner **before** `s1b_results.json` was opened)
+**Pre-registration:** [`Q-CONDVAL-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-CONDVAL-1-verdict-preregistration.md) — frozen on disk at sha256 `d1265eb2b0fa328c18b8a744a6f438d06611238fd2ada14ca12d06645748b386` (printed by the runner **before** `s1b_results.json` was opened)
 **Spend / K:** $0.00 · K consumed: **0** · no manifest
 **Live effect:** none on rail / `core/` / `dd_protection`. Conditioner-engineering GO off S1b is no longer electable.
-**Artifacts:** [parent brief](../Q-CONDVAL-1-range-state-r-terms.md) · [prereg](../pre-registration/Q-CONDVAL-1-verdict-preregistration.md) · [`RESULTS`](../../../lab/analysis/_inbox/q_condval_1_2026-08/RESULTS.md)
+**Artifacts:** [parent brief](../Q-CONDVAL-1-range-state-r-terms.md) · [prereg](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-CONDVAL-1-verdict-preregistration.md) · [`RESULTS`](../../../lab/analysis/_inbox/q_condval_1_2026-08/RESULTS.md)
 **Parent notice:** [`N-2026-08-18-iteration2-identify-notice`](../../notes/notice/N-2026-08-18-iteration2-identify-notice.md)
 
 ---

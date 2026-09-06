@@ -7,7 +7,7 @@ starts, per the brainstorming skill's own gate.
 **Authors:** Joshua + Claude Code (design collaboration)
 **Related:** [Q-COMPOSE-1 closure](../../briefs/closures/Q-COMPOSE-1-closure-falsified.md) ·
 [Stage-8 variance-dominance ADR](../../adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md) ·
-[agentic research team structures note](../../notes/research/2026-08-19-agentic-research-team-structures.md)
+[agentic research team structures note](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/research/2026-08-19-agentic-research-team-structures.md)
 (Option E; the seam this design's Stage 2 also serves) · `lab/discovery/register_search.py` /
 `lab/research_utils/breadth.py` / `core/mc/modes.py` (all Rule-0 read in full this session)
 

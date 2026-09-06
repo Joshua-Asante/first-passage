@@ -262,7 +262,7 @@ Already ruled out on this construct, and the docs agree:
 
 - [`Q-FILLTAX-1`](../../briefs/Q-FILLTAX-1-fill-realism-and-parity-scoping.md) — fill optimism / Pine↔Python parity. Detalization changes *how* a bar fills; it does not restore missing warehouse bars.
 - [`Q-SIGID-1`](../../briefs/Q-SIGID-1-intra-bar-signal-identity.md) — mid-bar `alert()` vs close. Script-execution / history-tick settings can move that gap; they are not this note’s cliff.
-- [`Q-TVCOV-1`](../../briefs/closures/Q-TVCOV-1-closure-falsified.md) (closed) — Databento/TV **bar coverage**, not Strategy Report warehouse vs chart pane.
+- [`Q-TVCOV-1`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TVCOV-1-closure-falsified.md) (closed) — Databento/TV **bar coverage**, not Strategy Report warehouse vs chart pane.
 
 ---
 

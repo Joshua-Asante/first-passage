@@ -8,7 +8,7 @@
 **Test applied:** expired-park-shaped (T2 payability FIRED 2026-08-03, 15:30 exit barred; the prior repo park lacked both re-entry and expiry fields — this record supplies them for the first time per ADR §2.3)
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
-**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row b3
+**Source:** [`GSUB-1 inventory`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) row b3
 
 ---
 
@@ -22,7 +22,7 @@ clears both frozen limbs** (bust ≤3.0% ∧ P(pass) ≥50%) at any of the three
 ranges 62.37–82.22%, 21–27× the ceiling at every firm. Full measurement, controls, and the
 barrier-geometry finding explaining why BluSky/MFFU (higher cost) land close to Tradeify's own T2
 figures while Bulenox (lower cost) does not:
-[`RESULTS_bulenox_blusky_payability.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_bulenox_blusky_payability.md).
+[`RESULTS_bulenox_blusky_payability.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_bulenox_blusky_payability.md).
 
 **R3 does not fire anywhere** (a PASS was the precondition; every firm measured FAIL). **Standing
 stays PARK, unchanged.** With MFFU included, **all four `AUTOMATION_FRIENDLY_PROP_FIRMS` this
@@ -112,7 +112,7 @@ sessions) — a newly-disclosed panel-vintage drift, not previously flagged anyw
 document. The conditioned-vs-unconditioned comparison itself is unaffected (both legs measured on
 the identical panel); the absolute figures are a fresh measurement, not a byte-for-byte
 reproduction of this pursuit's own originally-published numbers. Full account:
-[`rangecond_1_2026-08-30/RESULTS.md`](../../lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md).
+[`rangecond_1_2026-08-30/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/rangecond_1_2026-08-30/RESULTS.md).
 
 **Re-entry / re-scoping this pursuit around a conditioned-entry framing, if warranted, is an
 operator call, not made here** — same discipline this document's own prior addenda apply. This

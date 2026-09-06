@@ -6,7 +6,7 @@
 **Successor:** none authored — the ADR's own §4 reading at 2026-11-08 is the next scheduled act, not a successor Q
 **Spend / K:** $0.00 · K consumed: 0
 **Live effect:** none on any live-risk surface (no strategy, allocation, `dd_protection`, Pine, rail, or arming state touched). Effect is governance-layer only: 37 pursuit records created; 3 user-level skill directories archived-then-removed; 1 Q-roster row closed; 1 retirements-record row flipped.
-**Artifacts:** [`inventory + dispositions`](../programs/GSUB-1-inventory-and-dispositions.md) · [`docs/pursuits/`](../../pursuits/) (37 records) · [`archived skills`](../../ltm/notes/archive/skills/)
+**Artifacts:** [`inventory + dispositions`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) · [`docs/pursuits/`](../../pursuits/) (37 records) · [`archived skills`](../../ltm/notes/archive/skills/)
 
 ---
 

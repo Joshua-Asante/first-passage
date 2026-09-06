@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-23
 **Plan:** [`Phase B mechanism supply`](../../superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) — Lane B1, tasks B1.0/B1.1/B1.2/B1.4
-**Owner artifacts:** [`F1 ruling`](../../briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md) (the re-proposal bar B1 routes through) · [`ops/instruments/MES.md`](../../../ops/instruments/MES.md) · [`ox-alpha notice`](../notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md) (zero authority; framing only)
+**Owner artifacts:** [`F1 ruling`](../../briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md) (the re-proposal bar B1 routes through) · [`ops/instruments/MES.md`](../../../ops/instruments/MES.md) · [`ox-alpha notice`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md) (zero authority; framing only)
 **Authorization:** operator per-lane GO this session for B1/B2 (task brief). No card opened; no admission bar claimed cleared; B1.3 (operator bar-reading) explicitly **not** ruled here.
 
 Catalog attestation (this session, before writing): `lab/CATALOG.md` / `docs/briefs/INDEX.md` / `docs/rejected_candidates.md` carry no B1/MOC-imbalance-MES harness slug — nothing duplicated.

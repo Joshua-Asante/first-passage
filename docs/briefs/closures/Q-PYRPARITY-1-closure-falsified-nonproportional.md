@@ -2,9 +2,9 @@
 
 **Closed:** 2026-07-17
 **Parent Pre-Q:** [`Q-PYRPARITY-1-watch1-pyramid-proportionality.md`](../Q-PYRPARITY-1-watch1-pyramid-proportionality.md) (now `CLOSED — FALSIFIED-NONPROPORTIONAL`)
-**Pre-reg (FROZEN 2026-07-17, operator-ratified):** [`Q-PYRPARITY-1-verdict-preregistration.md`](../pre-registration/Q-PYRPARITY-1-verdict-preregistration.md)
-**Phase 0:** [`lab/archive/q_pyrparity_1_2026-07/PHASE0.md`](../../../lab/archive/q_pyrparity_1_2026-07/PHASE0.md) — Branch B; structural proportionality CONFIRMED-IN-SOURCE (corroborating)
-**Phase 2:** [`lab/archive/q_pyrparity_1_2026-07/RESULTS.md`](../../../lab/archive/q_pyrparity_1_2026-07/RESULTS.md) — Branch B harness + four cohort tables
+**Pre-reg (FROZEN 2026-07-17, operator-ratified):** [`Q-PYRPARITY-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-PYRPARITY-1-verdict-preregistration.md)
+**Phase 0:** [`lab/archive/q_pyrparity_1_2026-07/PHASE0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_pyrparity_1_2026-07/PHASE0.md) — Branch B; structural proportionality CONFIRMED-IN-SOURCE (corroborating)
+**Phase 2:** [`lab/archive/q_pyrparity_1_2026-07/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_pyrparity_1_2026-07/RESULTS.md) — Branch B harness + four cohort tables
 **No criterion moved after data** (Trap #12 clean).
 
 ## Verdict (§6 asserted)

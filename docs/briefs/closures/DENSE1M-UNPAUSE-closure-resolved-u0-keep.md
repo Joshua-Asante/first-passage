@@ -3,10 +3,10 @@
 **Verdict:** `RESOLVED` (U0 KEEP) — Branch A stands; dense-1m OHLCV temporal-selectivity / entry-geometry default stays paused; no CON-6
 **Closed:** 2026-08-15
 **Lane:** UNASSIGNED
-**Pre-registration:** [packet §6](../programs/2026-08-15-dense1m-lane-unpause-review.md) frozen at `21dae757` — no separate pre-reg file
+**Pre-registration:** [packet §6](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-15-dense1m-lane-unpause-review.md) frozen at `21dae757` — no separate pre-reg file
 **Spend / K:** $0.00 · Cap **not claimed** · no Pine / TV / arming
 **Live effect:** election no longer owed; pause text unchanged
-**Artifacts:** [packet](../programs/2026-08-15-dense1m-lane-unpause-review.md) · [CON-5 Branch A](Q-TNEC-CON-5-closure-ambiguous-hold.md)
+**Artifacts:** [packet](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-15-dense1m-lane-unpause-review.md) · [CON-5 Branch A](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md)
 
 ---
 
@@ -26,7 +26,7 @@ Quoted frozen row: *Operator marks **U0** → `STOP` — Branch A stands; analog
 
 Packet forbade electing in the draft and named U0 as the keep-pause close. Operator marked U0. No ADR. No CON-6. No surprise.
 
-**Amendment-first (sub-rule 10).** Owner of the pause remains [CON-5 Branch A](Q-TNEC-CON-5-closure-ambiguous-hold.md). This file is the required companion of the Board packet (MSL-S7 precedent), not a sibling pause owner.
+**Amendment-first (sub-rule 10).** Owner of the pause remains [CON-5 Branch A](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md). This file is the required companion of the Board packet (MSL-S7 precedent), not a sibling pause owner.
 
 ```
 $ rg -n "DENSE1M-UNPAUSE|dense1m-lane-unpause" docs/briefs/INDEX.md lab/CATALOG.md docs/rejected_candidates.md
@@ -63,7 +63,7 @@ Below the two-incident bar — watch: an unpaid unpause packet can close KEEP wi
 - **Routing:** Branch A stands; no ADR; packet header records the mark; §6 table left frozen
 - **Entry packet:** n/a
 - **Stop rule / re-proposal bar:** a later Board mark of U1 or U2 (each still needs a **full** limb-4 ADR) or a new modality / non-route-① thesis — **not** a θ-retune, first/session-only cap, or stop-width rescue of CON-1–5
-- **Board write:** `SESSIONS Open/next: dense-1m pause stands (U0). No CON-6.` Owner: this closure · [packet](../programs/2026-08-15-dense1m-lane-unpause-review.md)
+- **Board write:** `SESSIONS Open/next: dense-1m pause stands (U0). No CON-6.` Owner: this closure · [packet](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-15-dense1m-lane-unpause-review.md)
 - **Registry:** n/a — RESOLVED / governance / not a strategy-grounds kill
 
 ## §10 audit-hook discharge
@@ -88,7 +88,7 @@ rg -n "Q-TNEC-CON-6" docs/briefs/INDEX.md lab/CATALOG.md || echo "no CON-6 yet"
 | Date | Change | By |
 |---|---|---|
 | 2026-08-15 | U0 KEEP recorded (leave the pause) | JA · Cursor |
-| 2026-08-20 | **U1 (ADMIT-ONE) now marked** — [`ADR`](../../adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md) (`Accepted`, operator override, no new evidence), scoped to `Q-TNEC-CON-4` CONFIRM-scoring only. This closure's own §3 "does NOT license" list stays historically accurate as of 2026-08-15 — U2 remains unmarked, and `CON-1/2/3/5`/any future `CON-6` are unaffected. | Claude Code (operator-ratified) |
+| 2026-08-20 | **U1 (ADMIT-ONE) now marked** — [`ADR`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-20-dense1m-u1-operator-override-con4-reopen.md) (`Accepted`, operator override, no new evidence), scoped to `Q-TNEC-CON-4` CONFIRM-scoring only. This closure's own §3 "does NOT license" list stays historically accurate as of 2026-08-15 — U2 remains unmarked, and `CON-1/2/3/5`/any future `CON-6` are unaffected. | Claude Code (operator-ratified) |
 | 2026-08-20 | **U1 exception discharged same day** — `CON-4` CONFIRM scored `AMBIGUOUS-HOLD`, exception spent, `CON-4` reverted to `U0`. The pause this closure kept is once again unconditional lane-wide. U2 still unmarked; still needs its own full limb-4 ADR if ever proposed. | Claude Code (operator-ratified run) |
 
 ---

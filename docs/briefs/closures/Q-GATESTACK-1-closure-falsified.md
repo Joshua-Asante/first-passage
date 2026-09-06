@@ -3,7 +3,7 @@
 **Verdict:** `FALSIFIED`
 **Closed:** 2026-08-19
 **Lane:** UNASSIGNED
-**Pre-registration:** [`Q-GATESTACK-1-verdict-preregistration.md`](../pre-registration/Q-GATESTACK-1-verdict-preregistration.md) — frozen 2026-08-19, same-session as Phase 1 (see that file's process note)
+**Pre-registration:** [`Q-GATESTACK-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-GATESTACK-1-verdict-preregistration.md) — frozen 2026-08-19, same-session as Phase 1 (see that file's process note)
 **Successor:** none authored — two packets named below per §6 `FALSIFIED` disposition; naming ≠ opening
 **Spend / K:** $0 / K=0
 **Live effect:** doc-correction successor packet executed same turn under explicit operator GO (see §3); branch-protection packet named, not opened

@@ -31,9 +31,9 @@ step 0.
 |---|---|---|---|---|
 | **A — Derive the target** | [`phase-a-target-derivation`](2026-08-23-viable-strategy-phase-a-target-derivation.md) | $0 / K=0 | A1+A2 executed 2026-08-23; A3 voided | none — started on GO |
 | **B — Mechanism supply** | [`phase-b-mechanism-supply`](2026-08-23-viable-strategy-phase-b-mechanism-supply.md) | $0 (falsifier stage) | per-candidate; two operator bar-readings named inside | A2's shape region (pre-check input; disclosed-N accepted — RESULTS §4); A1's revival list (B-revive lane voided) |
-| **C — The gauntlet** | [`phase-c-gauntlet`](2026-08-23-viable-strategy-phase-c-gauntlet.md) | $0 until data pulls; per-candidate | operator B4 GO per candidate (MSL charter step 5) | a Phase-B survivor |
-| **D — Deployment** | [`phase-d-deployment`](2026-08-23-viable-strategy-phase-d-deployment.md) | $0 | starts automatically when a candidate enters TNEC-1 intake (Phase C step 8); arming GOs operator-only | a Phase-C survivor |
-| **∥ — §4 firm-model repair** | [`parallel-s4-firm-repair`](2026-08-23-viable-strategy-parallel-s4-firm-repair.md) | $0 / K=0 | R1+R2 landed 2026-08-23; R3 gated on a Phase-C survivor | none — parallel with A/B |
+| **C — The gauntlet** | [`phase-c-gauntlet`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-viable-strategy-phase-c-gauntlet.md) | $0 until data pulls; per-candidate | operator B4 GO per candidate (MSL charter step 5) | a Phase-B survivor |
+| **D — Deployment** | [`phase-d-deployment`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-viable-strategy-phase-d-deployment.md) | $0 | starts automatically when a candidate enters TNEC-1 intake (Phase C step 8); arming GOs operator-only | a Phase-C survivor |
+| **∥ — §4 firm-model repair** | [`parallel-s4-firm-repair`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-viable-strategy-parallel-s4-firm-repair.md) | $0 / K=0 | R1+R2 landed 2026-08-23; R3 gated on a Phase-C survivor | none — parallel with A/B |
 
 ## Standing constraints inherited by every phase
 
@@ -58,8 +58,8 @@ step 0.
 
 Sequence derived from the 2026-08-23 posture review in-session; mechanism-supply inputs from the
 sanctioned ox-alpha lens, Uses 3–4, fully reconciled before inclusion
-([Use 3](../../notes/notice/N-2026-08-23-ox-alpha-msl-who-sourcing-methodology-review.md) ·
-[Use 4](../../notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md) ·
+([Use 3](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-23-ox-alpha-msl-who-sourcing-methodology-review.md) ·
+[Use 4](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md) ·
 [scope ADR](../../adr/2026-08-22-ox-alpha-adversarial-lens-scope.md)). Zero authority attaches to
 the external lens's output anywhere in these plans — every load-bearing claim cites a repo
 artifact.

@@ -36,7 +36,7 @@ gates computed both times, confirm untouched (mechanically verified: zero refere
 confirm cache in either harness; fable-judge pass 2026-08-23 re-ran the checks), abandonments
 dated on the canonical §4 counting line. Terminal-state rule §4(b) satisfied twice — no campaign
 evaporated off a counter. Anchors: commits `414e537` / `2086a17` / `b713ba2`;
-[DL-1 RESULTS](../../../../lab/archive/dl1_mgc_orc_2026-08-16/RESULTS.md) ·
+[DL-1 RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/dl1_mgc_orc_2026-08-16/RESULTS.md) ·
 [DL-2 RESULTS](../../../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md).
 
 **2. Belt churn — adds 3 / removes 0 (baseline; first window).** Adds: (a) §2.2(iv)

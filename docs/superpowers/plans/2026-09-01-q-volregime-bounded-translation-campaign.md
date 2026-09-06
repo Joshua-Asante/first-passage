@@ -219,7 +219,7 @@ payoff outcomes to invent direction or exits.
 [`docs/notes/2026-09-03-volregime-translation-t0.md`](../../notes/2026-09-03-volregime-translation-t0.md).
 Both Template A (`VOLREGIME-NB1`) and Template B (volume-conditioned ORB) fail T0. Exact P50 is
 ineligible. Vet card withdrawn:
-[`2026-09-03-volregime-nb1-vet-card.md`](../../notes/2026-09-03-volregime-nb1-vet-card.md)
+[`2026-09-03-volregime-nb1-vet-card.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-09-03-volregime-nb1-vet-card.md)
 (`T0-FAIL`). Do not enter T1/T2.
 
 For each proposed template, write one falsifiable sentence answering:

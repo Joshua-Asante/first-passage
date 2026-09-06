@@ -3,7 +3,7 @@
 **Verdict:** `FALSIFIED`
 **Closed:** 2026-08-23
 **Lane:** `UNASSIGNED` (governance/methodology completeness Q, not a strategy PREREG F2 lane)
-**Pre-registration:** [`Q-PUBTRANS-1-verdict-preregistration.md`](../pre-registration/Q-PUBTRANS-1-verdict-preregistration.md) — frozen at the brief's own 2026-08-18 authoring (Section 8's self-freeze); this sibling file is a 2026-08-23 mechanical backfill, not a re-freeze.
+**Pre-registration:** [`Q-PUBTRANS-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-PUBTRANS-1-verdict-preregistration.md) — frozen at the brief's own 2026-08-18 authoring (Section 8's self-freeze); this sibling file is a 2026-08-23 mechanical backfill, not a re-freeze.
 **Successor:** none named yet — B5 and D9 route to direct operator action (see Iterate), not a new Q
 **Spend / K:** $0.00 · K consumed: 0
 **Live effect:** none (no code, ADR, Pine, allocation, or dd_protection surface touched; no arming)

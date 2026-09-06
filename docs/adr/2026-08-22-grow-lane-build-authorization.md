@@ -167,7 +167,7 @@ blind/mechanism-first lanes.
 |---|---|---|
 | 2026-08-22 | `deep_lane_admission.py` + `grammar.py` + `--lane deep` wiring + `burned_segments.py`/seed — this session | `a5ee05e` |
 | 2026-08-22 | GROW-0 harness (`grow0_dgp.py`/`grow0_scoring.py`/`grow0_harness.py`/`grow0_red_patch.py`, Limb A/B + three RED controls + retry ledger + CLI), built against its own frozen PREREG | `a90e70c` |
-| 2026-08-22 | GROW-0's real full-scale invocation (N=5,500/c=7) run for the first time — `RESOLVED` (engine + calibration instrument sound); Part B's filing decision now unlocked for the operator, not decided here | [closure](../briefs/closures/GROW-0-closure-resolved.md) |
+| 2026-08-22 | GROW-0's real full-scale invocation (N=5,500/c=7) run for the first time — `RESOLVED` (engine + calibration instrument sound); Part B's filing decision now unlocked for the operator, not decided here | [closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/GROW-0-closure-resolved.md) |
 | 2026-08-23 | `burned_segments` wired into `register_search.open_run` for `--lane deep` (overlap refuses; unlisted discloses `consultation_count=0`; no silent pass). Follow-on slices (streak checker, `gates.yml` door-check, LOCKED-leg denylist, Rule-0 anchor checker, `universe_gate` exit-code) still named. | this session |
 
 ---

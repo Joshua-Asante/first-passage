@@ -11,6 +11,15 @@ historical retrieval. `pre-prune-2026-08-08` is **not a tag on this public
 clone** — `git show pre-prune-2026-08-08:<path>` works only in the private
 archive; on this tree use `git log --follow -- <path>` or that archive.
 
+**2026-09-06 tracked-file reduction:** 1,542 paths left this tree. Their
+study rows stay in [`lab/CATALOG.md`](../../lab/CATALOG.md) (Archived table,
+body cell = archive URL) via [`lab/ARCHIVED.json`](../../lab/ARCHIVED.json),
+which records every removed path's baseline blob and the preservation commit
+in `first-passage-archive` (branch `archive/preserve-2026-09-06`). Retrieval:
+`git show 2d40dbeb56c167844cab5136742d70787835f8e2:<path>` here, or that
+commit in the archive. Owner:
+[reduction ADR](../adr/2026-09-06-tracked-file-reduction-prune.md).
+
 | On this public tree today | Job |
 |---|---|
 | [`adr/`](adr/) | Cold ADR stubs (superseded / retired) |

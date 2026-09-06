@@ -1,7 +1,7 @@
 # Guardian→MGC transfer cell — CLOSURE: `DEAD(N-SURV)` (exploratory grade; margin-decisive)
 
 **Verdict:** `DEAD(N-SURV)` · 2026-08-11 · **$0.00 new spend · K=1 cell score already landed · no manifest · no pull**
-**Pre-registration:** [`2026-08-11-guardian-mgc-transfer-cell-prereg.md`](../pre-registration/2026-08-11-guardian-mgc-transfer-cell-prereg.md) — **retroactive** (authored after the score; ordering disclosed in the PREREG header)
+**Pre-registration:** [`2026-08-11-guardian-mgc-transfer-cell-prereg.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/2026-08-11-guardian-mgc-transfer-cell-prereg.md) — **retroactive** (authored after the score; ordering disclosed in the PREREG header)
 **Pursuit:** [`b8`](../../pursuits/b8-guardian-mgc-transfer-lane.md) — Standing flipped **PARK → SUBTRACT** by this closure
 **Parent shape:** [Q-TXG-1 §5 Phase B](../../superpowers/specs/2026-08-11-transfer-expression-grid-design.md) cell kill-chain (per-cell closure; **not** a grid-level H_A / election decision)
 **Precedent:** [`ops/instruments/6J.md`](../../../ops/instruments/6J.md) J4b — same trailing-survival failure class at Tradeify Select 100K; this cell's overshoot is larger (best half 16.5% vs J4b best cell 3.88%)

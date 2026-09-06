@@ -7,7 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [SPEC S7](../spec/2026-08-07-loop-s7-repo-alignment-spec.md) · [alignment manifest](../notes/2026-08-07-posture-a-alignment-manifest.md) · [gate-stack audit §5.3 R1/R2](../notes/audits/programme-audit/2026-08-03-gate-stack-audit.md) · [eval-lock fix ADR](2026-08-04-firm-rules-eval-lock-fix-applied.md)
+**Related:** [SPEC S7](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s7-repo-alignment-spec.md) · [alignment manifest](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-07-posture-a-alignment-manifest.md) · [gate-stack audit §5.3 R1/R2](../notes/audits/programme-audit/2026-08-03-gate-stack-audit.md) · [eval-lock fix ADR](2026-08-04-firm-rules-eval-lock-fix-applied.md)
 **Layer:** measurement method + commission only. **$0 / K=0** — no arming, no invented MC numbers, no lock/allocation/`dd_protection`/Pine edit.
 
 ---

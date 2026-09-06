@@ -3,7 +3,7 @@
 **Verdict:** `ABORTED` — P0.1's own abort condition fired on the first command. The §0 cost claim was an extrapolation and it was wrong by **$272.91**.
 **Closed:** 2026-07-23
 **Pre-registration:** [`Q-COSTGEO-2-verdict-preregistration.md`](../pre-registration/Q-COSTGEO-2-verdict-preregistration.md) — `FROZEN`, signed 2026-07-23 / JA, freeze commit **`32d9c87`**
-**Successor:** [`Q-COSTGEO-3-verdict-preregistration.md`](../pre-registration/Q-COSTGEO-3-verdict-preregistration.md) — MYM add-cohort only, event-day pull shape, cost verified day-by-day rather than extrapolated.
+**Successor:** [`Q-COSTGEO-3-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-COSTGEO-3-verdict-preregistration.md) — MYM add-cohort only, event-day pull shape, cost verified day-by-day rather than extrapolated.
 **Spend:** **$0.00.** No pull. P0.2 never started. K=0, no manifest.
 **Live effect:** **none.** c1 rung stays WATCH-1 0.50× / disarmed; no cost constant changed; lock HELD.
 

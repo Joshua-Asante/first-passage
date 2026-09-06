@@ -25,14 +25,14 @@ Superseded-in-part-by line above still says *"next `dry_run=false` entry/add **s
 **Decision date:** 2026-07-17
 **Authors:** Joshua (decision) + Claude Code (recorder)
 **Supersedes:** none — this ADR **discharges** the rail-build/account/live-spend gate held open by [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) ("rail build, account registration, and any live spend gated" on operator GO) and satisfies [`2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) §5 (no research ADR is rail authorization — a fresh operator decision + ADR is; this is that ADR). Manual-trading retirement ([`2026-06-30-no-manual-trading-cfd-retirement.md`](2026-06-30-no-manual-trading-cfd-retirement.md)) stands untouched — attended automation is not manual execution.
-**Related:** [`Q-RAIL-1 closure RESOLVED`](../briefs/closures/Q-RAIL-1-closure-resolved.md) (the decision packet this GO consumes); GO packet [`PHASE4.md`](../../lab/analysis/c1/q_rail_1_2026-07/PHASE4.md); rail architecture [`PHASE3.md`](../../lab/analysis/c1/q_rail_1_2026-07/PHASE3.md); sizing contract [`docs/spec/c1_watch_realization_multiplier_layer.md`](../spec/c1_watch_realization_multiplier_layer.md) (`Accepted` 2026-07-17); NT8 sizing-host implementation spec [`docs/spec/c1_nt8_sizing_host_impl.md`](../spec/c1_nt8_sizing_host_impl.md) (`Proposed`, B2, 2026-07-17); [`Q-PYRPARITY-1 closure`](../briefs/closures/Q-PYRPARITY-1-closure-falsified-nonproportional.md) (F1 fallback); c1 ratification [`G8_INTAKE.md`](../../lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/G8_INTAKE.md).
+**Related:** [`Q-RAIL-1 closure RESOLVED`](../briefs/closures/Q-RAIL-1-closure-resolved.md) (the decision packet this GO consumes); GO packet [`PHASE4.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/PHASE4.md); rail architecture [`PHASE3.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/PHASE3.md); sizing contract [`docs/spec/c1_watch_realization_multiplier_layer.md`](../spec/c1_watch_realization_multiplier_layer.md) (`Accepted` 2026-07-17); NT8 sizing-host implementation spec [`docs/spec/c1_nt8_sizing_host_impl.md`](../spec/c1_nt8_sizing_host_impl.md) (`Proposed`, B2, 2026-07-17); [`Q-PYRPARITY-1 closure`](../briefs/closures/Q-PYRPARITY-1-closure-falsified-nonproportional.md) (F1 fallback); c1 ratification [`G8_INTAKE.md`](../../lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/G8_INTAKE.md).
 **Layer:** execution — **not** locked-parameter. No change to locked Pine, allocations, `dd_protection` constants, or the FXIFY MC anchor pins (~~`ACTIVE_FIRM` stays FXIFY~~ — **superseded, see header**: `ACTIVE_FIRM = "Tradeify_Select_100K"` live since substrate Phase 1, 2026-07-22; historical MC/`dd_protection` challenge semantics still pin to `FIRM_RULES["FXIFY"]` by name, just not via this selector).
 
 ---
 
 ## §0 — Rule 0 reads (production-source verification)
 
-- [`lab/analysis/c1/q_rail_1_2026-07/PHASE4.md`](../../lab/analysis/c1/q_rail_1_2026-07/PHASE4.md) + [`PHASE3.md`](../../lab/analysis/c1/q_rail_1_2026-07/PHASE3.md) + [`F_SCORECARD.md`](../../lab/analysis/c1/q_rail_1_2026-07/F_SCORECARD.md) — authored/verified this session (F1–F5 all PASS; cost table sourced 2026-07-17; §10 hooks re-run green same day).
+- [`lab/analysis/c1/q_rail_1_2026-07/PHASE4.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/PHASE4.md) + [`PHASE3.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/PHASE3.md) + [`F_SCORECARD.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/F_SCORECARD.md) — authored/verified this session (F1–F5 all PASS; cost table sourced 2026-07-17; §10 hooks re-run green same day).
 - `core/firm_rules.py` — anchor `a53ee99` (re-verified this session): `Tradeify_Select_100K` trailing_locking 3.0% / $100 lock / cap 80 / $0.91/side / consistency 40.0 eval-only-soft.
 - [`docs/spec/c1_watch_realization_multiplier_layer.md`](../spec/c1_watch_realization_multiplier_layer.md) — `Accepted` 2026-07-17; §2 single rail-side integer-floored qty computation; §3 rules out TV-side scaling; §4 screen PASS via NT8-host row B.
 - Operator ceiling: **$700** signed 2026-07-17 (`AskUserQuestion` against the assembled cost table — recorded in the Q-RAIL-1 closure and §8 of the parent brief).
@@ -182,9 +182,9 @@ regenerated — closing the evidence-volatility gap the same re-audit surfaced.
 
 ## Addendum — 2026-07-19: E1 EOD-flat coverage without the CrossTrade Account Manager (Option C)
 
-**§0 reads (this addendum):** [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md) §1 **E1 row** (line 16, v1.0 RATIFIED 2026-07-13) + §… line 55 ("E1 default print — CONFIRMED 16:00 ET"); [`PHASE3.md`](../../lab/analysis/c1/q_rail_1_2026-07/PHASE3.md) E1/F4 rail rows (lines 27, 63, 168, 179); [`RUNBOOK.md`](../notes/rail_build/RUNBOOK.md) B5d BLOCKED note (2026-07-19). CrossTrade dashboard verified same day: banner "Account Manager for Tradovate is coming soon," left-nav AM carries a SOON badge.
+**§0 reads (this addendum):** [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md) §1 **E1 row** (line 16, v1.0 RATIFIED 2026-07-13) + §… line 55 ("E1 default print — CONFIRMED 16:00 ET"); [`PHASE3.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/PHASE3.md) E1/F4 rail rows (lines 27, 63, 168, 179); [`RUNBOOK.md`](../notes/rail_build/RUNBOOK.md) B5d BLOCKED note (2026-07-19). CrossTrade dashboard verified same day: banner "Account Manager for Tradovate is coming soon," left-nav AM carries a SOON badge.
 
-**Discovery (wiring-time, B5d):** the CrossTrade **Account Manager** — the Pro-tier auto-flatten that [`PHASE3.md`](../../lab/analysis/c1/q_rail_1_2026-07/PHASE3.md) maps to **E1** — is **not yet available for the Tradovate destination**. This is a CrossTrade-side capability gap surfaced during wiring, not a Tradeify ToS change (so §4(c) does not fire), but it removes an *automated* safeguard the GO packet assumed.
+**Discovery (wiring-time, B5d):** the CrossTrade **Account Manager** — the Pro-tier auto-flatten that [`PHASE3.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/PHASE3.md) maps to **E1** — is **not yet available for the Tradovate destination**. This is a CrossTrade-side capability gap surfaced during wiring, not a Tradeify ToS change (so §4(c) does not fire), but it removes an *automated* safeguard the GO packet assumed.
 
 **What E1 requires (verbatim, envelope §1):** *"All positions closed before the daily flat deadline; build target 16:00 ET."* Load-bearing caveat: *"never design to the [firm] auto-flatten as a backstop."* E1's substance is **your own** flatten by 16:00 ET, in ≥1 layer that is not the firm's auto-liquidation.
 
@@ -270,7 +270,7 @@ grep -n '§4a' ops/prop_envelope_default.md                        # hedging ove
 ## Addendum — 2026-07-24: §6's WATCH-1 0.50× figures MEASURED under corrected geometry — open B7 input CLOSED benign
 
 Operator directive 2026-07-24 ("proceed with the two unmeasured arms"). Run:
-[`lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/CORRECTED_FULLPANEL.md`](../../lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/CORRECTED_FULLPANEL.md)
+[`lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/CORRECTED_FULLPANEL.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/CORRECTED_FULLPANEL.md)
 (frozen 2026-07-15 primitives + the 2026-07-22 correction idiom; reproduction
 controls matched every published corrected pin, incl. 1.00× full 4.74%/4.25% and
 H1 6.78%/6.28%).
@@ -287,7 +287,7 @@ withdrawal ADR's own close recommendation). Read §6's risk framing with these
 corrected values; the GO stands unchanged. Same-day sibling result (separate
 pre-registration, not this ADR's scope): two corrected-geometry Part A clearers
 exist at the 50K band —
-[`lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md`](../../lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md).
+[`lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md).
 
 ## Addendum 2026-07-28 — the declared separable long pole is MEASURED and CLEARS
 
@@ -312,7 +312,7 @@ Correction cost at the bootstrap tail is **+0.43pp** (0.77% → 1.20%), leaving
 1.8pp of headroom under the 3.0% ceiling. **Every partition of the deployed
 configuration is now measured under corrected geometry and passes** — no open risk
 measurement remains on the 0.50× rung. Evidence:
-[`lab/analysis/c1/eval_shape_diagnostics_2026-07-28/RESULTS.md`](../../lab/analysis/c1/eval_shape_diagnostics_2026-07-28/RESULTS.md)
+[`lab/analysis/c1/eval_shape_diagnostics_2026-07-28/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/eval_shape_diagnostics_2026-07-28/RESULTS.md)
 Part B · `rider_050x_report.json`.
 
 **Scope discipline, unchanged.** This closes a *measurement*, not a gate: it was

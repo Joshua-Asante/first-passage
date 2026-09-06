@@ -59,10 +59,10 @@ election, 2026-07-27). The separate-account fork is explicitly out of scope — 
 (`Accepted` 2026-07-29) — adds **S7 order-symbol occupancy** to §7.1, corrects §2.2's sufficiency
 claim, narrows §2.4 Slot 2 to unoccupied symbols, and adds a sixth failing row to the §7.5 negative
 control. Origin: [`SLR-MYM-1 closure`](../briefs/closures/SLR-MYM-1-closure-falsified-stage0.md) F1.
-**Amended-in-part by:** [`docs/adr/2026-08-02-third-leg-liveness-limb.md`](../adr/2026-08-02-third-leg-liveness-limb.md)
+**Amended-in-part by:** [`docs/adr/2026-08-02-third-leg-liveness-limb.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-02-third-leg-liveness-limb.md)
 (`Accepted` 2026-08-02) — adds **§7.6 / L1 liveness contribution** as a **REPORTED** limb (never a bar,
 excluded from §6.2), and repairs §6.2's `SCREEN-PASS` trigger, which still read *"S1–S6"* after the
-S7 amendment landed. Origin: [`c1_liveness_diversification_2026-08-02`](../../lab/analysis/c1/c1_liveness_diversification_2026-08-02/RESULTS.md).
+S7 amendment landed. Origin: [`c1_liveness_diversification_2026-08-02`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/c1_liveness_diversification_2026-08-02/RESULTS.md).
 
 ---
 
@@ -438,7 +438,7 @@ see §5-adjacent forbidden moves in the admitting ADR.
 
 | # | Requirement | Source |
 |---|---|---|
-| **L1** | **Liveness contribution.** Report three fields: **L1.a** — weekday sessions the candidate **can** fire that **no incumbent can**, taken from **locked Pine session filters, never observed trade frequency** (S7's rule, inherited); **L1.b** — modeled reduction in the book's **82 dead Mon–Fri weeks** at the candidate's **measured** per-eligible-session entry rate, with the measured **1.13× common-mode discount** applied; **L1.c** — effect on the **p95 longest consecutive dead run** (baseline **4 weeks**). Verdicts `LIVENESS-POSITIVE / NEUTRAL / NEGATIVE`, none of which gates. **Both source rules bind:** eligibility from Pine filters (a leg that *can* fire covers the session as a matter of schedule), **firing rate from the measured panel** (a leg eligible Wed/Thu that fires 5% of the time covers almost nothing) — a report giving only one is incomplete, not conservative | [`c1_liveness_diversification_2026-08-02`](../../lab/analysis/c1/c1_liveness_diversification_2026-08-02/RESULTS.md); ADR [`2026-08-02-third-leg-liveness-limb`](../adr/2026-08-02-third-leg-liveness-limb.md) |
+| **L1** | **Liveness contribution.** Report three fields: **L1.a** — weekday sessions the candidate **can** fire that **no incumbent can**, taken from **locked Pine session filters, never observed trade frequency** (S7's rule, inherited); **L1.b** — modeled reduction in the book's **82 dead Mon–Fri weeks** at the candidate's **measured** per-eligible-session entry rate, with the measured **1.13× common-mode discount** applied; **L1.c** — effect on the **p95 longest consecutive dead run** (baseline **4 weeks**). Verdicts `LIVENESS-POSITIVE / NEUTRAL / NEGATIVE`, none of which gates. **Both source rules bind:** eligibility from Pine filters (a leg that *can* fire covers the session as a matter of schedule), **firing rate from the measured panel** (a leg eligible Wed/Thu that fires 5% of the time covers almost nothing) — a report giving only one is incomplete, not conservative | [`c1_liveness_diversification_2026-08-02`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/c1_liveness_diversification_2026-08-02/RESULTS.md); ADR [`2026-08-02-third-leg-liveness-limb`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-02-third-leg-liveness-limb.md) |
 
 **Why the limb exists.** The book is zero-trade in **82/312 Mon–Fri weeks (26.3%)**, longest run
 **4**, against an idle rule enforced by **irreversible account deletion**. And the effect is

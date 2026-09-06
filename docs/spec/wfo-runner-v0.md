@@ -78,7 +78,7 @@ All commands in `Q-CORR-1.2-guardian-family-silver-wfo.md` (evicted 2026-06-05; 
 
 ### §7.6 Adversarial discipline tests (pre-flight)
 
-Before TV operation, execute the scenarios in [`wfo-runner-v0-adversarial-tests.md`](wfo-runner-v0-adversarial-tests.md) and record outcomes in that file’s log table.
+Before TV operation, execute the scenarios in [`wfo-runner-v0-adversarial-tests.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/wfo-runner-v0-adversarial-tests.md) and record outcomes in that file’s log table.
 
 ---
 

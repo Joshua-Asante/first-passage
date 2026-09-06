@@ -9,4 +9,4 @@ under ADR §2.3, already in force for these via their own closing artifacts.
 
 **No disposition proposed or ratified for this row** — there is nothing for Phase 3 to act on.
 
-**Source:** [`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row e2
+**Source:** [`GSUB-1 inventory`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) row e2

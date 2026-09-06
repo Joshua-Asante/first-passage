@@ -1,12 +1,12 @@
 # Q-TNEC-CON-3 — HTF-native 5m compression→expansion break (structural stop; first/session)
 
-**Status:** `AMBIGUOUS-HOLD` — explore scored; [`closure`](closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) ITERATE; **Branch B elected** (lane CON-4); CON-4 mechanism design unpaid
-**Stage-0 PREREG:** [`lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/PREREG_G0.md`](../../lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/PREREG_G0.md)
+**Status:** `AMBIGUOUS-HOLD` — explore scored; [`closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-3-closure-ambiguous-hold.md) ITERATE; **Branch B elected** (lane CON-4); CON-4 mechanism design unpaid
+**Stage-0 PREREG:** [`lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/PREREG_G0.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/PREREG_G0.md)
 **Explore RESULTS:** [`RESULTS.md`](../../lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/RESULTS.md)
 **Authored:** 2026-08-10
 **Authors:** Joshua + Cursor
 **Parent:** [dense-1m entry-mechanism lane](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) · TNEC-1 intake L4
-**Prior:** [`Q-TNEC-CON-2` AMBIGUOUS-HOLD](closures/Q-TNEC-CON-2-closure-ambiguous-hold.md) · HTF-bias→LTF filter cheap-falsifier `FALSIFIED` (no Q-ID) · cell-#3 slate exhausted (stop-width / T-IMB / SWING-1)
+**Prior:** [`Q-TNEC-CON-2` AMBIGUOUS-HOLD](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-2-closure-ambiguous-hold.md) · HTF-bias→LTF filter cheap-falsifier `FALSIFIED` (no Q-ID) · cell-#3 slate exhausted (stop-width / T-IMB / SWING-1)
 **Loop:** Inquire — Branch B elected; CON-4 unnamed until mechanism design + cheap falsifier; Cap unclaimed
 **Spend:** $0 · K_intrinsic=1 · Cap not claimed
 
@@ -17,8 +17,8 @@
 | Path | Anchor | What it grounds |
 |---|---|---|
 | [`_mnq_1m.parquet`](../../lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/_mnq_1m.parquet) | present on disk 2026-08-10 | panel ($0 reuse) |
-| [`Q-MNQSEL-2` RESULTS](../../lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/RESULTS.md) | RESOLVED C4 | oracle headroom |
-| [`CON-2` closure](closures/Q-TNEC-CON-2-closure-ambiguous-hold.md) | AMBIGUOUS-HOLD 2026-08-10 | cost wall; successor = cost geometry / new mechanism |
+| [`Q-MNQSEL-2` RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/RESULTS.md) | RESOLVED C4 | oracle headroom |
+| [`CON-2` closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-2-closure-ambiguous-hold.md) | AMBIGUOUS-HOLD 2026-08-10 | cost wall; successor = cost geometry / new mechanism |
 | HTF-bias→LTF falsifier LOG | `FALSIFIED` 2026-08-10 | do not use HTF as 1m bias filter |
 | [`ADR 2026-08-10` temporal selectivity](../adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) | Accepted | route ① open for first/session |
 | [`lane spec`](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) | step 1a repaired | domain-bar consult mandatory |
@@ -88,7 +88,7 @@ Does a pre-registered **HTF-native 5m compression→expansion with-break** entry
 | Entry | 2 narrow 5m bars → close beyond quiet+midline → with-break at next 5m open |
 | Selectivity | First valid signal per session |
 | K | `K_intrinsic=1` |
-| S6 | ADMIT ([`ADMISSION.md`](../../lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/ADMISSION.md)) |
+| S6 | ADMIT ([`ADMISSION.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_tnec_con3_htf_native_break_2026-08/ADMISSION.md)) |
 | Cheap falsifier | `CHEAP_FALSIFIER_OK` |
 
 ---

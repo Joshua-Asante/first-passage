@@ -7,7 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** superseded by a BluSky rule republication (§4 T2) or by an ADR that resolves the absorbing-vs-discretionary residual (§6)
-**Related:** measurement [`lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md`](../../lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md) (+ its Addendum 2026-08-05b) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) §7 F3 · [`2026-08-04-firm-rules-eval-lock-fix-applied.md`](2026-08-04-firm-rules-eval-lock-fix-applied.md) (sibling `firm_rules.py` correction; its §5 no-widening-to-BluSky applies to `dd_lock_offset_usd`, untouched here)
+**Related:** measurement [`lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md) (+ its Addendum 2026-08-05b) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) §7 F3 · [`2026-08-04-firm-rules-eval-lock-fix-applied.md`](2026-08-04-firm-rules-eval-lock-fix-applied.md) (sibling `firm_rules.py` correction; its §5 no-widening-to-BluSky applies to `dd_lock_offset_usd`, untouched here)
 **Layer:** production config correctness (venue-fact sourcing + unit conversion). **No `dd_protection` constant, allocation, Pine file, lifecycle state, `dd_type`, or frozen gate threshold is touched.**
 
 ---

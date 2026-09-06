@@ -3,7 +3,7 @@
 **Verdict:** `FALSIFIED`
 **Closed:** 2026-08-23
 **Lane:** `UNASSIGNED`
-**Pre-registration:** [`Q-STATVALID-1-verdict-preregistration.md`](../pre-registration/Q-STATVALID-1-verdict-preregistration.md) — frozen before either Phase 1 read ran, this session
+**Pre-registration:** [`Q-STATVALID-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-STATVALID-1-verdict-preregistration.md) — frozen before either Phase 1 read ran, this session
 **Successor:** named, not opened — a DSR/PBO correction-pass packet on the DD-trigger and allocation grids (see Iterate block)
 **Spend / K:** $0.00 · K consumed: 0
 **Live effect:** none — this closure reads whether prior selections were multiplicity-corrected; per brief §5 it has no authority to move `DD_TRIGGER`, `DD_SCALE`, or any allocation regardless of verdict

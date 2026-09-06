@@ -2,8 +2,8 @@
 
 **Closed:** 2026-07-21
 **Verdict:** `FALSIFIED`
-**Pre-registration:** [`OPENPRESS-1-verdict-preregistration.md`](../pre-registration/OPENPRESS-1-verdict-preregistration.md), frozen before outcome data (`73000fe` / `249b3c5`).
-**Results:** [`lab/archive/opening_pressure_map_2026-07/RESULTS.md`](../../../lab/archive/opening_pressure_map_2026-07/RESULTS.md)
+**Pre-registration:** [`OPENPRESS-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/OPENPRESS-1-verdict-preregistration.md), frozen before outcome data (`73000fe` / `249b3c5`).
+**Results:** [`lab/archive/opening_pressure_map_2026-07/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/opening_pressure_map_2026-07/RESULTS.md)
 
 ## Gate return
 

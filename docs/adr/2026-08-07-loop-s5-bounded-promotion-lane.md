@@ -1,6 +1,6 @@
 # ADR 2026-08-07 — Loop S5: bounded promotion lane
 
-**Status:** `Accepted` — implements [SPEC S5](../spec/2026-08-07-loop-s5-bounded-promotion-lane-spec.md); plan-execution GO 2026-08-07
+**Status:** `Accepted` — implements [SPEC S5](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s5-bounded-promotion-lane-spec.md); plan-execution GO 2026-08-07
 **Decision date:** 2026-08-07
 **Authors:** Joshua (plan GO) + Cursor (drafter)
 **Supersedes:** `2026-07-10-strategies-never-locked-lifecycle-governance.md` in part — Call 5 absolute “no autonomous promotion” invariant only (bounded sandbox-up exception; demotion / retirement GO / RETIRED re-entry bar / re-optimization bar stand)
@@ -10,7 +10,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [SPEC S5](../spec/2026-08-07-loop-s5-bounded-promotion-lane-spec.md) · [S1 ADR](2026-08-07-loop-s1-environment-ratification.md) · [SPEC S4](../spec/2026-08-07-loop-s4-sensor-layer-spec.md) · [lifecycle owner](../methodology/strategy_lifecycle.md) · [alignment manifest](../notes/2026-08-07-posture-a-alignment-manifest.md)
+**Related:** [SPEC S5](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s5-bounded-promotion-lane-spec.md) · [S1 ADR](2026-08-07-loop-s1-environment-ratification.md) · [SPEC S4](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s4-sensor-layer-spec.md) · [lifecycle owner](../methodology/strategy_lifecycle.md) · [alignment manifest](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-07-posture-a-alignment-manifest.md)
 **Layer:** authorization / discovery promotion only. **$0 / K=0** — authorizes the lane doctrine + validator; does **not** arm the rail, place trades, fund accounts, or authorize unattended operation.
 
 ---
@@ -19,7 +19,7 @@
 
 | Source | Anchor | What it pins |
 |---|---|---|
-| [SPEC S5](../spec/2026-08-07-loop-s5-bounded-promotion-lane-spec.md) | `aee4137` | Bounded sandbox; budgets not candidates; ceiling-crossings operator-only; demotion universal+instant; failure→requirement map; reflex untouchable |
+| [SPEC S5](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s5-bounded-promotion-lane-spec.md) | `aee4137` | Bounded sandbox; budgets not candidates; ceiling-crossings operator-only; demotion universal+instant; failure→requirement map; reflex untouchable |
 | [`core/lifecycle.py`](../../core/lifecycle.py) | `ef4e89c` | `autonomous_demote` floors at WATCH-2; no promote path in code today |
 | [lifecycle ADR Call 5](2026-07-10-strategies-never-locked-lifecycle-governance.md) | Accepted 2026-07-10 | Hard asymmetry: automation down-only; no autonomous promotion |
 | [M1 ADR §5](2026-07-22-c1-venue-native-monitoring-maturity.md) | Accepted + Addendum 2026-07-31b | Forbidden autonomous promotion path; arm-gate; unattended barred |
@@ -116,4 +116,4 @@ The evidence for the packet contract is the measured failure→requirement map (
 
 ## §7 — Propagation (S7 S5-ADR section)
 
-Discharged in the same change-set as Accept — see [alignment manifest](../notes/2026-08-07-posture-a-alignment-manifest.md) §S5-ADR.
+Discharged in the same change-set as Accept — see [alignment manifest](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-07-posture-a-alignment-manifest.md) §S5-ADR.

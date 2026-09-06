@@ -13,12 +13,12 @@ rows S1a/S1b, and by direct exposure S2/S3 which were queued to reuse the same b
 
 ## §0 — Source anchors
 
-- [`PREREG_S1B.md`](../../../lab/analysis/_inbox/rangestate_mcl_2026-08/PREREG_S1B.md) /
-  [`run_s1b.py`](../../../lab/analysis/_inbox/rangestate_mcl_2026-08/run_s1b.py) /
-  [`s1b_results.json`](../../../lab/analysis/_inbox/rangestate_mcl_2026-08/s1b_results.json) —
+- [`PREREG_S1B.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/rangestate_mcl_2026-08/PREREG_S1B.md) /
+  [`run_s1b.py`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/rangestate_mcl_2026-08/run_s1b.py) /
+  [`s1b_results.json`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/rangestate_mcl_2026-08/s1b_results.json) —
   the run that surfaced the finding.
-- [`PREREG_S1A.md`](../../../lab/analysis/_inbox/rangestate_gc_2026-08/PREREG_S1A.md) /
-  [`run_s1a.py`](../../../lab/analysis/_inbox/rangestate_gc_2026-08/run_s1a.py) — the sibling
+- [`PREREG_S1A.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/rangestate_gc_2026-08/PREREG_S1A.md) /
+  [`run_s1a.py`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/rangestate_gc_2026-08/run_s1a.py) — the sibling
   screen sharing the identical `block_shuffle_conditional_p95` function, retroactively affected.
 - Adversarial-verify workflow `wf_b2b794d6-380` (4 lenses + synthesis), full transcript in this
   session's task journal — the placebo-design-skeptic lens is the primary evidence source.

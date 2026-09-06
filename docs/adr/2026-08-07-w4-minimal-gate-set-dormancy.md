@@ -7,7 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [SPEC S7](../spec/2026-08-07-loop-s7-repo-alignment-spec.md) · [alignment manifest](../notes/2026-08-07-posture-a-alignment-manifest.md) · [gate-stack audit R3/R5/R6](../notes/audits/programme-audit/2026-08-03-gate-stack-audit.md) · [survivor-scoring prereg](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) (frozen — close+reopen only)
+**Related:** [SPEC S7](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s7-repo-alignment-spec.md) · [alignment manifest](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-07-posture-a-alignment-manifest.md) · [gate-stack audit R3/R5/R6](../notes/audits/programme-audit/2026-08-03-gate-stack-audit.md) · [survivor-scoring prereg](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) (frozen — close+reopen only)
 **Layer:** research-gate composition. **$0 / K=0** — no campaign open, no K spend, no frozen-prereg body edit.
 
 ---

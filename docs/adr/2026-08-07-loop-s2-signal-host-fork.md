@@ -1,6 +1,6 @@
 # ADR 2026-08-07 — Loop S2: signal-host fork (Python-native)
 
-**Status:** `Accepted` — implements [SPEC S2](../spec/2026-08-07-loop-s2-signal-host-fork-spec.md); plan default Python-native + operator plan-execution GO 2026-08-07
+**Status:** `Accepted` — implements [SPEC S2](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s2-signal-host-fork-spec.md); plan default Python-native + operator plan-execution GO 2026-08-07
 **Decision date:** 2026-08-07
 **Authors:** Joshua (plan GO) + Cursor (drafter)
 **Supersedes:** `2026-07-22-c1-venue-native-monitoring-maturity.md` in part — §4 item 5 **signal-origin definition only** (TradingView-only → ruled host). Item 5 itself (real strategy signal, expected sizing, `dry_run` Stage-1 shape), the decline of deletion (Addendum 2026-07-31), and the bar on **silent** redefinition **stand**; this ADR is the **express** supersession that Addendum required.
@@ -8,7 +8,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [SPEC S2](../spec/2026-08-07-loop-s2-signal-host-fork-spec.md) · [SPEC S2b](../spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md) · [S1 ADR](2026-08-07-loop-s1-environment-ratification.md) · [M1 ADR](2026-07-22-c1-venue-native-monitoring-maturity.md) · [rail GO ADR](2026-07-17-c1-rail-build-account-registration-go.md) · [loop index](../spec/2026-08-07-loop-spec-index.md) · [TV backtest-egress automation ADR](2026-06-23-tv-backtest-egress-automation.md) (added 2026-08-29, adr-decay-audit discharge — this ADR makes Pine/TV the research/export surface rather than the live signal origin for new strategies; see that ADR's 2026-08-29 addendum for the open forward question this raises) · [`2026-07-10-databento-research-stack.md`](2026-07-10-databento-research-stack.md) (added 2026-08-29, adr-decay-audit discharge — superseded in part by this ADR: its §2 rail-verdict clause named TradingView as the live signal origin, which this ADR replaces with the ruled Python-native host. See that ADR's 2026-08-29 addendum)
+**Related:** [SPEC S2](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s2-signal-host-fork-spec.md) · [SPEC S2b](../spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md) · [S1 ADR](2026-08-07-loop-s1-environment-ratification.md) · [M1 ADR](2026-07-22-c1-venue-native-monitoring-maturity.md) · [rail GO ADR](2026-07-17-c1-rail-build-account-registration-go.md) · [loop index](../spec/2026-08-07-loop-spec-index.md) · [TV backtest-egress automation ADR](2026-06-23-tv-backtest-egress-automation.md) (added 2026-08-29, adr-decay-audit discharge — this ADR makes Pine/TV the research/export surface rather than the live signal origin for new strategies; see that ADR's 2026-08-29 addendum for the open forward question this raises) · [`2026-07-10-databento-research-stack.md`](2026-07-10-databento-research-stack.md) (added 2026-08-29, adr-decay-audit discharge — superseded in part by this ADR: its §2 rail-verdict clause named TradingView as the live signal origin, which this ADR replaces with the ruled Python-native host. See that ADR's 2026-08-29 addendum)
 **Layer:** signal-host / M1 origin definition only. **$0 / K=0** — this ADR authorizes no daemon build, no arming, no agent trade. Downstream: S2b Accepted + [build ADR](2026-08-08-s2b-signal-daemon-build.md) Accepted + operator build GO 2026-08-08 — daemon warm (`emit_enabled=false`); strategy emit + M1 item 5 still owed.
 
 ---
@@ -17,7 +17,7 @@
 
 | Source | Anchor | What it pins |
 |---|---|---|
-| [SPEC S2](../spec/2026-08-07-loop-s2-signal-host-fork-spec.md) | `aee4137` | Fork: Python daemon vs Pine/TV; M1 item-5 origin must be discharged or expressly superseded; no build before S2b |
+| [SPEC S2](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s2-signal-host-fork-spec.md) | `aee4137` | Fork: Python daemon vs Pine/TV; M1 item-5 origin must be discharged or expressly superseded; no build before S2b |
 | `ops/c1_rail/c1_rail_http_server.py` | `2345095` | `POST /c1/<path_token>` + JSON parse; **origin-agnostic** (no TV/sender identity gate) — cheap falsifier PASS 2026-08-07 |
 | `ops/c1_rail/c1_rail_listener.py` · `crosstrade_payload.py` | `2345095` | B1 → `handle_signal` → sizing → CrossTrade; same contract regardless of POST origin |
 | [M1 ADR Addendum 2026-07-31](2026-07-22-c1-venue-native-monitoring-maturity.md) | `8483743` | Item 5 stands; **silent** redefinition forbidden; deletion DECLINED |
@@ -97,4 +97,4 @@ M1 §4 item 5 still requires a real strategy signal with expected sizing at `dry
 
 ## §7 — Propagation (S7 S2-ADR + S2b sections)
 
-Discharged in the same change-set as Accept — see [alignment manifest](../notes/2026-08-07-posture-a-alignment-manifest.md) §S2-ADR / §S2b.
+Discharged in the same change-set as Accept — see [alignment manifest](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-07-posture-a-alignment-manifest.md) §S2-ADR / §S2b.

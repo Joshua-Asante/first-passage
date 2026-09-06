@@ -8,7 +8,7 @@
 **Sub-questions opened:** none
 **Loop:** Inquire-phase Pre-Q — closure gated on whether the joint kill record fits μ=0, μ=+0.10R, both, or neither
 **Artifact path:** `docs/briefs/Q-TRAINKILL-1-train-gate-power.md`
-**Pre-registration:** [`pre-registration/Q-TRAINKILL-1-verdict-preregistration.md`](pre-registration/Q-TRAINKILL-1-verdict-preregistration.md)
+**Pre-registration:** [`pre-registration/Q-TRAINKILL-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-TRAINKILL-1-verdict-preregistration.md)
 
 **D-S-A domain:** data (already-committed closure CIs → one joint likelihood)
 **Pre-Q gate:**
@@ -173,7 +173,7 @@ and open a fresh brief.
 
 ## §8 — Verdict pre-registration
 
-File: [`pre-registration/Q-TRAINKILL-1-verdict-preregistration.md`](pre-registration/Q-TRAINKILL-1-verdict-preregistration.md)
+File: [`pre-registration/Q-TRAINKILL-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-TRAINKILL-1-verdict-preregistration.md)
 
 Pre-registration commit hash: *(same-session freeze; sha256 recorded
 before table assembly)*

@@ -11,7 +11,10 @@ futures strategies at automation-friendly prop firms
 pass the retention test in [`docs/operational_rules.md`](docs/operational_rules.md) §16 Retention. Anything
 else is deleted under a snapshot tag ([`Great Prune ADR`](docs/adr/2026-08-08-great-prune.md)).
 On this public clone retrieval is `git log --follow -- <path>` — the `pre-prune-2026-08-08` tag
-lives only in the private archive ([`docs/ltm/README.md`](docs/ltm/README.md)).
+lives only in the private archive ([`docs/ltm/README.md`](docs/ltm/README.md)). The
+[2026-09-06 reduction](docs/adr/2026-09-06-tracked-file-reduction-prune.md) removed 1,542 tracked
+files: [`lab/ARCHIVED.json`](lab/ARCHIVED.json) indexes every one (baseline blob + preservation
+commit); `git show 2d40dbeb56c167844cab5136742d70787835f8e2:<path>` retrieves any of them here.
 
 **ADRs are canonical for every decision.** This file carries **pointers only** — never a retelling.
 Forward obligations live in [`STATE.md`](STATE.md); session narrative in

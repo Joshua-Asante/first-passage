@@ -4,7 +4,7 @@
 **Status:** **RE-ENTERED — K-void cleared; class-attested; not elected.** Research/discovery only. Third-leg `E-KCAP` elimination voided by [K-bank ADR](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md); standing non-K grounds remain. No live leg, no allocation, no K spend.
 **Last updated:** 2026-09-01
 
-**Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Created **2026-08-09** as the live touching session for [`instrument-lane SPEC`](../../docs/spec/2026-08-09-instrument-lane-mcl-mes-mgc-spec.md) — ADR [`2026-07-25`](../../docs/adr/2026-07-25-instrument-profile-index.md) §5. Thin ledger; inherit index class bar from parent ES / sibling [`M2K.md`](M2K.md) M1.
+**Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Created **2026-08-09** as the live touching session for [`instrument-lane SPEC`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-09-instrument-lane-mcl-mes-mgc-spec.md) — ADR [`2026-07-25`](../../docs/adr/2026-07-25-instrument-profile-index.md) §5. Thin ledger; inherit index class bar from parent ES / sibling [`M2K.md`](M2K.md) M1.
 
 ## PROFILE (machine-readable)
 
@@ -43,7 +43,7 @@ structure:
 
 | # | Finding | Evidence | Confidence |
 |---|---|---|---|
-| **S1** | **Voided kill: `E-KCAP`.** Third-leg map eliminated MES as “one seed at cap” (bank 2 → floor 0.98). Banner + [K-bank ADR](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md): Clause K no longer eliminates; bank is disclosure. Current screen floor for `K_intrinsic=1` is 0.650. | [`third-leg RESULTS`](../../lab/analysis/c1/c1_thirdleg_instrument_map_2026-07-27/RESULTS.md) L37 + banner L4–10 | **HIGH** (ADR void). |
+| **S1** | **Voided kill: `E-KCAP`.** Third-leg map eliminated MES as “one seed at cap” (bank 2 → floor 0.98). Banner + [K-bank ADR](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md): Clause K no longer eliminates; bank is disclosure. Current screen floor for `K_intrinsic=1` is 0.650. | [`third-leg RESULTS`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/c1_thirdleg_instrument_map_2026-07-27/RESULTS.md) L37 + banner L4–10 | **HIGH** (ADR void). |
 | **S2** | **Standing non-K grounds.** Equity Index Product Group · S4 long-only if co-legged · S7 unoccupied symbol vs withdrawn MNQ/MYM (occupancy released for new non-Striker research — [B8 ADR](../../docs/adr/2026-08-12-msl-mym-occupancy-release.md); Striker redeploy still barred) · inherit index OHLCV class bar from ES/M2K · cost-tax from third-leg row (re-cite, don’t re-derive: cost-tax 1t r=1 **0.0982**). | third-leg RESULTS · ES.md · M2K.md M1 · envelope §4a · B8 ADR | **HIGH** as posture; cost-tax is closed-study record. |
 | **S3** | **Envelope + TNEC class attestation (no candidate).** See table below. N-SIZE = U (no candidate edge). | this session · [prop envelope](../prop_envelope_default.md) · [TNEC-1](../../docs/spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) | **MODERATE** (class attestation). |
 
@@ -80,4 +80,4 @@ structure:
 - **2026-09-01** — Operator closed both B1 MOC-wake pursuits: strategy `DROP`, source-liveness
   `STOP` before any row. No card/contract/pull/K. Re-proposal bar: independently credible high
   positive net expectancy plus a complete expression; source availability alone does not qualify.
-- **2026-08-09** — **Ledger created + K-void re-screen** under [`instrument-lane SPEC`](../../docs/spec/2026-08-09-instrument-lane-mcl-mes-mgc-spec.md). Voided `E-KCAP` vs standing Equity Index / S4 / S7 / class-bar grounds named. Disposition `RE-ENTERED — K-void cleared; class-attested; not elected`. No pull, no K, no election, no `core/` change.
+- **2026-08-09** — **Ledger created + K-void re-screen** under [`instrument-lane SPEC`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-09-instrument-lane-mcl-mes-mgc-spec.md). Voided `E-KCAP` vs standing Equity Index / S4 / S7 / class-bar grounds named. Disposition `RE-ENTERED — K-void cleared; class-attested; not elected`. No pull, no K, no election, no `core/` change.

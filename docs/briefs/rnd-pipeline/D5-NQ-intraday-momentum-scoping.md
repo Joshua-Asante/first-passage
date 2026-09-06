@@ -3,7 +3,7 @@
 **Status:** `CLOSED — Stage-2 cost-law KILL 2026-07-16` (Stage-0 FROZEN + §R GO + Stage-1 complete; H1 failed 4× MNQ RT hurdle on IS).
 **Axis:** D5 (was "gamma-positioning"; confirm-construct pinned to **intraday-momentum footprint**)
 **Lane:** mechanism-first (HARV ADR `Accepted` — HARD gate)
-**Parents:** [`Q-KBUDGET-1`](../Q-KBUDGET-1-axis-reachability-screen.md) (RESOLVED) · [`d5_clause_n_rescreen.md`](../../../lab/archive/q_kbudget_1_2026-07/d5_clause_n_rescreen.md) · Baltussen et al. 2021 *JFE*
+**Parents:** [`Q-KBUDGET-1`](../Q-KBUDGET-1-axis-reachability-screen.md) (RESOLVED) · [`d5_clause_n_rescreen.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_kbudget_1_2026-07/d5_clause_n_rescreen.md) · Baltussen et al. 2021 *JFE*
 **Inheritance:** Campaign-defaults ADR 2026-07-11 + DSR-K supersession 2026-07-12 + HARV lane 2026-07-13
 
 ---
@@ -60,7 +60,7 @@ If H2/H3 cannot carry a reachability attestation, **drop them before freeze** ra
 | 1 | Freeze Stage-0 pre-reg (exact H1–H3 formulas, eras, cost gate, attestation) | CC | **DONE 2026-07-15** — [`D5-NQ-intraday-momentum-preregistration.md`](../pre-registration/D5-NQ-intraday-momentum-preregistration.md) (H2 dropped → K_eff=1; §R written) |
 | 2 | Review §R attestation → GO/NO-GO | Operator | **DONE 2026-07-15** — §8 GO signed (JA); both clauses REACHABLE |
 | 3 | On GO: `register_search open` + first estimate/pull | Operator + Cursor | **DONE 2026-07-16** — both Stage-1 legs cached $0.00 |
-| 4 | Stage-2 cost-law → Stage-4 fixed construct | Lab | **DONE 2026-07-16 — KILL** ([`RESULTS.md`](../../../lab/analysis/orb/d5_nq_intraday_mom_2026-07/RESULTS.md); mean +1.46 bp < 11.06 bp hurdle; manifest closed) |
+| 4 | Stage-2 cost-law → Stage-4 fixed construct | Lab | **DONE 2026-07-16 — KILL** ([`RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/d5_nq_intraday_mom_2026-07/RESULTS.md); mean +1.46 bp < 11.06 bp hurdle; manifest closed) |
 | 5 | Stage-5+ (block size / DSR / placebo / realism / breadth) | Lab | **BLOCKED** — Stage-2 kill |
 
 **Note on the frozen H-set:** the pre-reg drops H2 (alternate window) and keeps **H1 as the
@@ -70,4 +70,4 @@ This is the "drop before freeze rather than ship an unreachable bundle" call fro
 
 **08-08 packet:** D5 = Stage-2 cost-law **KILL** (gross footprint present, not tradeable at 4× MNQ RT); not a cleared survivor. Harvest PASSes H-OD-1 / H-TSMOM-1 remain the live scoped axes.
 
-**Correction (dated, post-audit):** the note above is stale. Both H-OD-1 and H-TSMOM-1 closed the same day as D5 (2026-07-16): H-OD-1 CLOSED (Stage-2 cost-law KILL) and H-TSMOM-1 CLOSED (Clause-N FAIL, P1=(c)). Per H-TSMOM-1's own §4: "Net effect on the harvest's 3-axis fundable-PASS set (D5 / H-OD-1 / H-TSMOM-1): zero survivors." Neither sibling axis was live as of the 2026-08-08 checkpoint. See [H-OD-1-ES-overnight-drift-scoping.md](H-OD-1-ES-overnight-drift-scoping.md) and [H-TSMOM-1-ES-tsmom-scoping.md](H-TSMOM-1-ES-tsmom-scoping.md) for the closure record.
+**Correction (dated, post-audit):** the note above is stale. Both H-OD-1 and H-TSMOM-1 closed the same day as D5 (2026-07-16): H-OD-1 CLOSED (Stage-2 cost-law KILL) and H-TSMOM-1 CLOSED (Clause-N FAIL, P1=(c)). Per H-TSMOM-1's own §4: "Net effect on the harvest's 3-axis fundable-PASS set (D5 / H-OD-1 / H-TSMOM-1): zero survivors." Neither sibling axis was live as of the 2026-08-08 checkpoint. See [H-OD-1-ES-overnight-drift-scoping.md](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/H-OD-1-ES-overnight-drift-scoping.md) and [H-TSMOM-1-ES-tsmom-scoping.md](H-TSMOM-1-ES-tsmom-scoping.md) for the closure record.

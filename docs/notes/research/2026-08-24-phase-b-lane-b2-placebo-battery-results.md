@@ -4,9 +4,9 @@
 **Plan:** [`Phase B mechanism supply`](../../superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) — Lane B2, task B2.2
 **Owner artifacts:** [`N-2026-08-24-b2-london-fix-wake-cost-arithmetic.md`](../notice/N-2026-08-24-b2-london-fix-wake-cost-arithmetic.md)
 (B2.0/B2.1, the mechanism definition in §4, and the B2.1 ADMIT ruling this task is licensed by) ·
-[`lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/`](../../../lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/)
+[`lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/`](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/)
 (harness, raw log, and the detailed per-symbol numeric record — `RESULTS.md`) ·
-[`nas100_orb_gex_gate.py`](../../../lab/analysis/orb/orb_universe_2026-06-22/) (gamma-family
+[`nas100_orb_gex_gate.py`](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_universe_2026-06-22/) (gamma-family
 orthogonality-partial precedent this task's regression is adapted from — pruned from the worktree
 by the 2026-08-08 Great Prune, retrieved via `git show pre-prune-2026-08-08:lab/analysis/orb/orb_universe_2026-06-22/nas100_orb_gex_gate.py`)
 **Authorization:** licensed this session — B2.0 (cost arithmetic) and B2.1 (operator bar-reading,

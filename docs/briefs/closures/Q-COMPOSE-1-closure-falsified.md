@@ -6,8 +6,8 @@
 
 **Closed:** 2026-07-17
 **Parent Pre-Q:** [`Q-COMPOSE-1-orb-classs-book-regime-breadth.md`](../Q-COMPOSE-1-orb-classs-book-regime-breadth.md) (now `CLOSED — FALSIFIED`)
-**Pre-reg (FROZEN 2026-07-16, operator-signed §9):** [`Q-COMPOSE-1-verdict-preregistration.md`](../pre-registration/Q-COMPOSE-1-verdict-preregistration.md)
-**Run artifacts:** [`lab/archive/q_compose_1_2026-07/`](../../../lab/archive/q_compose_1_2026-07/) — `PHASE0.md` (architecture confirm), `run_compose_regime_remc.py`, `RESULTS.md`, `compose_remc_report.json`
+**Pre-reg (FROZEN 2026-07-16, operator-signed §9):** [`Q-COMPOSE-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-COMPOSE-1-verdict-preregistration.md)
+**Run artifacts:** [`lab/archive/q_compose_1_2026-07/`](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_compose_1_2026-07/) — `PHASE0.md` (architecture confirm), `run_compose_regime_remc.py`, `RESULTS.md`, `compose_remc_report.json`
 **Engine:** frozen — 10,000 sims × seeds 42/123/2026, horizon 1500, Run-2 consistency-on, bootstrap n=100/126 bd/seed 20260715; floor bust ≤ 3.0% ∧ P(pass) ≥ 50% (+ bootstrap 95th ≤ 3.0%). No criterion moved after data (Trap #12 clean); single frozen ORB weight (no sweep).
 
 ## Verdict (§6 asserted against actual numbers)

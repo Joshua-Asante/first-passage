@@ -7,7 +7,7 @@
 **Pre-registration:** [`2026-08-12-q-txg-1-striker-mnq-cell-prereg.md`](../pre-registration/2026-08-12-q-txg-1-striker-mnq-cell-prereg.md) (`FROZEN`)
 **Spend / K:** $0.00 · **K declared=1 · K actual=1** ([manifest](../../../discovery_manifests/q_txg1_striker_mnq_20260812.json) closed OPERATOR-STOPPED after panel+N-SURV)
 **Live effect:** none — research cell only; no rail / locked-book / Pine / `dd_protection` / `firm_rules` change. De-scope disclosure: Striker-*mechanism* on a *different* instrument under the 2026-08-04 amendment — **not** WITHDRAWN(F1) striker×MYM redeploy ([ADR](../../adr/2026-08-04-tradeify-venue-descope-eval-included.md)).
-**Artifacts:** [`PANEL_SCORE.json`](../../../lab/archive/transfer_expression_grid_2026-08/cells/striker_mnq/PANEL_SCORE.json) · [`NSURV_BLOCK.txt`](../../../lab/archive/transfer_expression_grid_2026-08/cells/striker_mnq/NSURV_BLOCK.txt) · [`score_cell.py`](../../../lab/archive/transfer_expression_grid_2026-08/cells/striker_mnq/score_cell.py) · panel pin `inputs/SHA256SUMS`
+**Artifacts:** [`PANEL_SCORE.json`](../../../lab/archive/transfer_expression_grid_2026-08/cells/striker_mnq/PANEL_SCORE.json) · [`NSURV_BLOCK.txt`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/transfer_expression_grid_2026-08/cells/striker_mnq/NSURV_BLOCK.txt) · [`score_cell.py`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/transfer_expression_grid_2026-08/cells/striker_mnq/score_cell.py) · panel pin `inputs/SHA256SUMS`
 
 ---
 

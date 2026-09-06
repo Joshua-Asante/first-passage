@@ -7,7 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [`strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) Call 1 / Call 5 · [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) · ORB decay seed [`RESULTS_decay_monitor.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor.md) · replay consumer [`RESULTS_decay_monitor_replay.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor_replay.md) · Cap companion [`2026-08-06-capa-tripwire-pfcusum-companion-registration.md`](2026-08-06-capa-tripwire-pfcusum-companion-registration.md) (orthogonal — forbids inventing demotion *under Cap registration*; this ADR is the separate Call-1 governance packet) · intermediate-rung [`2026-08-03-lifecycle-ladder-intermediate-rung.md`](2026-08-03-lifecycle-ladder-intermediate-rung.md) (`Withdrawn` 2026-08-22 — orthogonal; does not address below-AUTHORIZED)
+**Related:** [`strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) Call 1 / Call 5 · [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) · ORB decay seed [`RESULTS_decay_monitor.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor.md) · replay consumer [`RESULTS_decay_monitor_replay.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor_replay.md) · Cap companion [`2026-08-06-capa-tripwire-pfcusum-companion-registration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-06-capa-tripwire-pfcusum-companion-registration.md) (orthogonal — forbids inventing demotion *under Cap registration*; this ADR is the separate Call-1 governance packet) · intermediate-rung [`2026-08-03-lifecycle-ladder-intermediate-rung.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-03-lifecycle-ladder-intermediate-rung.md) (`Withdrawn` 2026-08-22 — orthogonal; does not address below-AUTHORIZED)
 **Layer:** methodology / authorization-axis Call-1 policy. No strategy parameter, allocation, `dd_protection`, Pine, Cap arming, or `STRATEGY_KEYS` extension.
 
 ---
@@ -18,8 +18,8 @@
 |---|---|---|
 | [`core/lifecycle.py`](../../core/lifecycle.py) `TIER_MULTIPLIER` / `_LADDER_ORDER` / `next_tier_down` / `autonomous_demote` / `STRATEGY_KEYS` | `4441c72` | Ladder starts at `AUTHORIZED`; `CANDIDATE` is not a coded tier; `next_tier_down("CANDIDATE")` / `autonomous_demote("CANDIDATE")` raise `ValueError`; ORB not in `STRATEGY_KEYS`; autonomous floor is WATCH-2 (Call 5) |
 | [`docs/methodology/strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) Call 1 + Call 5 | `546b00f` | Call-1 action from AUTHORIZED is de-risk → WATCH (never kill); Call 5: reversible demotions autonomous, WATCH-2→RETIRED operator GO |
-| [`RESULTS_decay_monitor.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor.md) §3 | working-tree + prior `9d8dffc` Cap Accept lineage | Standing interim posture: breach = operator-flagged review, not automatic tier-step, until a `strategy_lifecycle.md`-level decision closes the gap |
-| [`ADMISSION.md`](../../lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md) decay bullet | same | Gap named; replay emits `OPERATOR_REVIEW_FLAG` only |
+| [`RESULTS_decay_monitor.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor.md) §3 | working-tree + prior `9d8dffc` Cap Accept lineage | Standing interim posture: breach = operator-flagged review, not automatic tier-step, until a `strategy_lifecycle.md`-level decision closes the gap |
+| [`ADMISSION.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md) decay bullet | same | Gap named; replay emits `OPERATOR_REVIEW_FLAG` only |
 | Cap companion ADR | `9d8dffc` | Cap registration forbids inventing demotion mapping *under Cap*; separate from this packet |
 | Replay runner header / disposition | working-tree (sibling packet) | Research harness already emits `OPERATOR_REVIEW_FLAG` only; leaves governance gap to this ADR |
 
@@ -108,9 +108,9 @@ The decay RESULTS already recorded an interim posture (operator-flagged review, 
 - Operators may treat repeated review flags as noise. Mitigation: flags stay auditable events; Cap arming and unpark GOs re-read them.
 
 **Downstream artifacts needing update (Proposed-era pointers; flip language on Accept):**
-- [`RESULTS_decay_monitor.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor.md) §3 — gap → this ADR
-- [`ADMISSION.md`](../../lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md) decay bullet
-- [`RESULTS_decay_monitor_replay.md`](../../lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor_replay.md) disposition
+- [`RESULTS_decay_monitor.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor.md) §3 — gap → this ADR
+- [`ADMISSION.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md) decay bullet
+- [`RESULTS_decay_monitor_replay.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor_replay.md) disposition
 - [`docs/methodology/strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) — Call 1 / Call 5 pointer
 - [`core/strategies/_archive/orb/orb_mnq_v0_1_CANDIDATE.md`](../../core/strategies/_archive/orb/orb_mnq_v0_1_CANDIDATE.md) checklist line
 - [`docs/adr/INDEX.md`](INDEX.md) — regenerate

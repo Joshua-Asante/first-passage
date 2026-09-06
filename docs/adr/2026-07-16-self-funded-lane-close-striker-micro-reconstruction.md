@@ -7,7 +7,7 @@
 **Decision date:** 2026-07-16
 **Authors:** Joshua (decision) + Cursor (recorder)
 **Supersedes:** `2026-07-10-r6-nogo-futures-residual-disposition.md` in part - R6's "sole active scale lane = self-funded Aegis->M6J" clause only. R6's locked-book futures-prop fan-out NO-GO, R5/P2 falsifiers, and rail-dormancy stand.
-**Related:** R5 DJ30→MYM prototype FALSIFIED ([`lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md`](../../lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md)); P2 as-mapped MNQ/MYM FALSIFIED ([`docs/adr/2026-07-03-hardcore-p2-edge-transfer-gate.md`](2026-07-03-hardcore-p2-edge-transfer-gate.md)); Aegis→6J panel of record ([`ops/instruments/6J.md`](../../ops/instruments/6J.md)); Phase-A micro floors ([`lab/analysis/legacy/futures_conversion_2026-07-01/RESULTS_phaseA.md`](../../lab/analysis/legacy/futures_conversion_2026-07-01/RESULTS_phaseA.md)).
+**Related:** R5 DJ30→MYM prototype FALSIFIED ([`lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md`](../../lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md)); P2 as-mapped MNQ/MYM FALSIFIED ([`docs/adr/2026-07-03-hardcore-p2-edge-transfer-gate.md`](2026-07-03-hardcore-p2-edge-transfer-gate.md)); Aegis→6J panel of record ([`ops/instruments/6J.md`](../../ops/instruments/6J.md)); Phase-A micro floors ([`lab/analysis/legacy/futures_conversion_2026-07-01/RESULTS_phaseA.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/legacy/futures_conversion_2026-07-01/RESULTS_phaseA.md)).
 **Layer:** execution + portfolio research priority — **not** locked-parameter. No change to locked CFD allocations, `dd_protection` constants, FXIFY MC pins, or the locked Striker/Guardian/Aegis Pine sources.
 
 ---

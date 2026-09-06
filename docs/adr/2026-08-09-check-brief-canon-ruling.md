@@ -39,7 +39,7 @@ tier was equally unmodeled.
 ## Gate
 
 RESOLVED — 7/7 canonical templates non-failing repo-side, this light record non-failing, 31/31 tests
-green, and [`2026-07-28 ADR`](2026-07-28-c1-disaster-stop-payload-supported.md)`:187` (which asserted
+green, and [`2026-07-28 ADR`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-07-28-c1-disaster-stop-payload-supported.md)`:187` (which asserted
 the opposite canon) corrected.
 
 ## Boundary

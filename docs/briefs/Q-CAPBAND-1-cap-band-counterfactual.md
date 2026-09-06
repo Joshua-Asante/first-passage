@@ -1,6 +1,6 @@
 # Q-CAPBAND-1 — Has `CAP = 1.0` ever excluded an axis that would otherwise have survived?
 
-**Status:** `CLOSED-RESOLVED 2026-08-15` — Cap 1.0 evidence-ratified; both D6 and D2-low independently fail a non-Cap gate. Closure: [`closures/Q-CAPBAND-1-closure-resolved.md`](closures/Q-CAPBAND-1-closure-resolved.md).
+**Status:** `CLOSED-RESOLVED 2026-08-15` — Cap 1.0 evidence-ratified; both D6 and D2-low independently fail a non-Cap gate. Closure: [`closures/Q-CAPBAND-1-closure-resolved.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-CAPBAND-1-closure-resolved.md).
 **Authored:** 2026-08-15
 **Closed:** 2026-08-15
 **Authors:** Joshua (raised the challenge to the 1.83 anchor) + Claude Code (authoring)
@@ -8,7 +8,7 @@
 **Sub-questions opened:** none
 **Loop:** Inquire-phase Pre-Q — closure gated on a locational read of already-recorded gate facts for two named axes
 **Artifact path:** `docs/briefs/Q-CAPBAND-1-cap-band-counterfactual.md`
-**Pre-registration:** [`pre-registration/Q-CAPBAND-1-verdict-preregistration.md`](pre-registration/Q-CAPBAND-1-verdict-preregistration.md)
+**Pre-registration:** [`pre-registration/Q-CAPBAND-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-CAPBAND-1-verdict-preregistration.md)
 
 ---
 
@@ -100,7 +100,7 @@ Estimated cost: **$0, K = 0, no manifest.** If any gate turns out to require a m
 
 ## §8 — Verdict pre-registration
 
-Frozen decision rule + pinned axis set: [`pre-registration/Q-CAPBAND-1-verdict-preregistration.md`](pre-registration/Q-CAPBAND-1-verdict-preregistration.md), to be committed **before** Phase 2 reads any gate fact.
+Frozen decision rule + pinned axis set: [`pre-registration/Q-CAPBAND-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-CAPBAND-1-verdict-preregistration.md), to be committed **before** Phase 2 reads any gate fact.
 
 ---
 

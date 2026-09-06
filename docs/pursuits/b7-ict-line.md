@@ -41,9 +41,9 @@ absent.
 GSUB-1 Phase 3 PARK, whose own §0 Rule-0 reads never touched
 `lab/analysis/_inbox/ict_mnq_2026-08/` directly and so did not surface that the named re-entry
 step (and a second, unnamed one) had already fired days earlier.
-**Source:** [`Q-ICTEXP-1` scoping](../briefs/rnd-pipeline/Q-ICTEXP-1-ict-chain-gross-expectancy-scoping.md)
-· [`PREREG_EXP.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/PREREG_EXP.md) ·
-[`RESULTS_EXP.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_EXP.md) ·
-[`RESULTS_STOP.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_STOP.md) ·
+**Source:** [`Q-ICTEXP-1` scoping](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/Q-ICTEXP-1-ict-chain-gross-expectancy-scoping.md)
+· [`PREREG_EXP.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/ict_mnq_2026-08/PREREG_EXP.md) ·
+[`RESULTS_EXP.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_EXP.md) ·
+[`RESULTS_STOP.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_STOP.md) ·
 [`ops/instruments/MNQ.md`](../../ops/instruments/MNQ.md) DEAD/REJECTED rows · originally PARKed
-[`GSUB-1 inventory`](../briefs/programs/GSUB-1-inventory-and-dispositions.md) row b7 (2026-08-09)
+[`GSUB-1 inventory`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) row b7 (2026-08-09)

@@ -46,10 +46,10 @@ Below two-incident bar — watch: Stage-1 entry-rate honesty was a **design** 1/
 - **Verdict used:** `FALSIFIED`
 - **Model update:** MCL pullback-failure resumption under this G0 is not an IS-viable solo construct (cadence). The continuation constraint beats a TOD sham but the long arm is better as a pullback *join* than as a resumption — Req 1a direction fails on that arm.
 - **Next:** STOP
-- **Routing:** STOP this catalogue / G0. Slate-2 slot remaining was **S2B**; board 2026-08-13 inserted [C3-K2 revive](../../adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) ahead of S2B (S2B route still unresolved — do not take the TV seat). Not opened here.
+- **Routing:** STOP this catalogue / G0. Slate-2 slot remaining was **S2B**; board 2026-08-13 inserted [C3-K2 revive](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) ahead of S2B (S2B route still unresolved — do not take the TV seat). Not opened here.
 - **Entry packet:** n/a
 - **Stop rule / re-proposal bar:** new mechanism evidence (different reference class / direction / TF), not I/P-window, stop-buffer, or rr retune on this G0. Re-proposal ≠ S2B.
-- **Board write:** Open/next was S2B at close; **superseded 2026-08-13** by [C3-K2 revive](../../adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) ahead of S2B — live pointer [`SESSIONS`](../../SESSIONS.md) top · plan §6 P3.2b.
+- **Board write:** Open/next was S2B at close; **superseded 2026-08-13** by [C3-K2 revive](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) ahead of S2B — live pointer [`SESSIONS`](../../SESSIONS.md) top · plan §6 P3.2b.
 
 - **Registry:** rejected_candidates.md — ### MSL-S2A pullback-failure resumption × MCL — FALSIFIED (explore IS)
 

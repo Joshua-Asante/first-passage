@@ -7,7 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [index-intraday-OHLCV raised bar](../rejected_candidates.md) (the bar being read) · [cross-index RV closure](../rejected_candidates.md) (the mapping's actual provenance) · [dense-1m lane spec](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) (repaired here) · [cell-#3 falsifier](../../lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_cost_geometry_2026-08-10_LOG.md) (surfaced both items) · [CON-2 closure](../briefs/closures/Q-TNEC-CON-2-closure-ambiguous-hold.md) · [rejection-register topology](2026-08-09-rejection-register-topology-and-bar-wiring.md)
+**Related:** [index-intraday-OHLCV raised bar](../rejected_candidates.md) (the bar being read) · [cross-index RV closure](../rejected_candidates.md) (the mapping's actual provenance) · [dense-1m lane spec](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) (repaired here) · [cell-#3 falsifier](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_cost_geometry_2026-08-10_LOG.md) (surfaced both items) · [CON-2 closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-2-closure-ambiguous-hold.md) · [rejection-register topology](2026-08-09-rejection-register-topology-and-bar-wiring.md)
 **Layer:** research-doctrine reading + gate-wiring repair. **$0 / K=0.** No `core/`, Pine, allocation, `dd_protection`, lifecycle, `LEG_MAP`, or rail change; nothing armed; no candidate admitted.
 
 ---

@@ -229,10 +229,10 @@ as a pre-registration — and §4's scaffold-safe rule (runner `.py`, `panel.csv
 scaffold *was* the thing being read as the prereg.
 
 - **How it surfaced.** The 2026-08-03 weekly run emitted `PREREG-SAMECOMMIT-c050965`
-  against [`lab/analysis/harvest/driftex_2026-08/RESULTS.md`](lab/analysis/harvest/driftex_2026-08/RESULTS.md),
+  against [`lab/analysis/harvest/driftex_2026-08/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/driftex_2026-08/RESULTS.md),
   naming `run_phase123_freeze_tstar.py` as Q-DRIFTEX-1's pre-registration. It is a
   Phase-1–3 runner. The real prereg —
-  [`2026-08-01-drift-exhaustion-mechanism-preregistration.md`](docs/briefs/pre-registration/2026-08-01-drift-exhaustion-mechanism-preregistration.md)
+  [`2026-08-01-drift-exhaustion-mechanism-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/2026-08-01-drift-exhaustion-mechanism-preregistration.md)
   — was frozen in `26cad59` (*"FREEZE Q-DRIFTEX-1 pre-registration"*), verified a **proper
   ancestor** of the results commit. That is the gold-standard shape reported as a violation:
   the check inverted its own verdict on the one commit in the window that complied.

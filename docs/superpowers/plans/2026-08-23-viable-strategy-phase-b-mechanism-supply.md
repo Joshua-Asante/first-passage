@@ -11,7 +11,7 @@ operator GO and is out of this plan's scope.
 **Inputs:** Phase A2's feasible-shape region (pre-check; disclosed-N accepted — [`RESULTS §4`](../../../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)), Phase A1's revival list (B4 lane — voided, empty list).
 **Provenance:** historical candidate lanes B1–B2; B3 KILL (A1). Lanes originate from the reconciled
 ox-alpha Use-4 output
-([notice](../../notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md)) — zero
+([notice](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md)) — zero
 authority; every lane's admission depends only on repo-verified evidence produced by its own
 falsifier tasks.
 
@@ -70,7 +70,7 @@ sources converge on this door.
   read against; the B1.5 source check does not score it.
 - [x] **B1.5 — STOP, never started:** the five-session source-liveness check has no consumer after
   B1's `DROP`. No MES outcomes and no source rows were logged. Historical scaffolding:
-  [`paper-log tracker`](../../notes/research/2026-08-24-phase-b-lane-b1-paper-log-tracker.md).
+  [`paper-log tracker`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/research/2026-08-24-phase-b-lane-b1-paper-log-tracker.md).
   **Pre-row-1 correction 2026-09-01:** the 20-session effect log was not powered to adjudicate its
   65% win-rate or mean-capture targets and was withdrawn with zero rows. The replacement answers
   only whether the admitted free source is recurrent and timely enough to retain the source lead.

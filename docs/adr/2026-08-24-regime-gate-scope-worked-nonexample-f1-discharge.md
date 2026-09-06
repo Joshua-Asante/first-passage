@@ -18,7 +18,7 @@ required" list is unedited in substance; this ADR adds a worked non-example and 
 (`FROZEN` — §7 item 7 stays byte-unedited, Trap #12) ·
 [candidate-1 prereg](../briefs/pre-registration/2026-07-15-existing-strategy-book-candidate-1-prereg.md)
 (`FROZEN` — the importing document, byte-unedited) ·
-[2026-08-15-regime-gate-scope-ratification.md](2026-08-15-regime-gate-scope-ratification.md)
+[2026-08-15-regime-gate-scope-ratification.md](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-15-regime-gate-scope-ratification.md)
 (also discharges gate-stack-audit F1, 9 days earlier, unaware of each other — see that ADR's
 2026-08-29 addendum) [added 2026-08-29, adr-decay-audit]
 **Layer:** methodology governance — no live-risk surface; no locked parameter; no allocation; no

@@ -3,7 +3,7 @@
 **Verdict:** `RESOLVED`
 **Closed:** 2026-08-23
 **Lane:** UNASSIGNED
-**Pre-registration:** [`Q-SIZECOMP-1-verdict-preregistration.md`](../pre-registration/Q-SIZECOMP-1-verdict-preregistration.md) — frozen 2026-08-23, same-session as Phase 1 (see that file's process note)
+**Pre-registration:** [`Q-SIZECOMP-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-SIZECOMP-1-verdict-preregistration.md) — frozen 2026-08-23, same-session as Phase 1 (see that file's process note)
 **Successor:** none authored — two forward items named below per §6 `RESOLVED` disposition; naming ≠ opening
 **Spend / K:** $0 / K=0
 **Live effect:** none — read-only investigation; rail's `r_eff` formula and `tests/test_lifecycle.py` both left byte-identical

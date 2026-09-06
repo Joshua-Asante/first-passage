@@ -239,7 +239,7 @@ remain **retained-not-released** pending F2; this addendum does not free `MYM1!`
 
 **Type:** dated correction under Rule 14. **§2 S7 requirement and §4/§6 bodies are not edited.**
 
-Addendum 2026-08-06's "Out of scope" asserted incumbent symbols remain **retained-not-released** pending F2, and that the addendum does not free `MYM1!` / `MNQ1!`. That occupancy-posture claim is **superseded** by [`2026-08-12-msl-mym-occupancy-release.md`](2026-08-12-msl-mym-occupancy-release.md): `MYM1!`/`MNQ1!` occupancy is released for **new non-Striker** research. This is not a full release — withdrawn Striker legs stay barred (de-scope clauses 1–2; occupancy-release Boundary). S7 remains live, generally-applicable doctrine (cited by [`2026-08-02-third-leg-liveness-limb.md`](2026-08-02-third-leg-liveness-limb.md)).
+Addendum 2026-08-06's "Out of scope" asserted incumbent symbols remain **retained-not-released** pending F2, and that the addendum does not free `MYM1!` / `MNQ1!`. That occupancy-posture claim is **superseded** by [`2026-08-12-msl-mym-occupancy-release.md`](2026-08-12-msl-mym-occupancy-release.md): `MYM1!`/`MNQ1!` occupancy is released for **new non-Striker** research. This is not a full release — withdrawn Striker legs stay barred (de-scope clauses 1–2; occupancy-release Boundary). S7 remains live, generally-applicable doctrine (cited by [`2026-08-02-third-leg-liveness-limb.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-02-third-leg-liveness-limb.md)).
 
 The 08-06 Rule-11 dormancy record for both empirical §4 limbs is **not** reopened by this addendum.
 

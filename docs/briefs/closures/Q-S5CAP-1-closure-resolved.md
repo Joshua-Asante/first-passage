@@ -6,7 +6,7 @@ Section 0 code inspection confirms neither call path reads or writes any state e
 the single packet argument.
 **Closed:** 2026-08-23
 **Lane:** UNASSIGNED (governance/mechanism-audit Q, not a strategy-validation lane)
-**Pre-registration:** [`Q-S5CAP-1-verdict-preregistration.md`](../pre-registration/Q-S5CAP-1-verdict-preregistration.md)
+**Pre-registration:** [`Q-S5CAP-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-S5CAP-1-verdict-preregistration.md)
 — `FROZEN`, criteria transcribed verbatim from the brief's own §6 (locked 2026-08-18); frozen
 at `52c3648` (repo HEAD at Phase 1 execution time, 2026-08-23)
 **Successor:** `Q-S5CAP-2` (working title) — wire a real cross-packet concurrency counter for

@@ -20,12 +20,12 @@ questions continue to use ordinary INQHIORI without being forced through this fu
 [`generate→confirm historical route`](../../methodology/avenue_a_generate_confirm.md) ·
 [`Q-GATECAL-1`](../../briefs/Q-GATECAL-1-mechanism-gate-false-negative-rate.md) ·
 [`objective composition map`](../../methodology/objective_composition_map.md) ·
-[`generate/evaluate tensions note`](../../notes/2026-08-30-generate-evaluate-tensions.md)
+[`generate/evaluate tensions note`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-30-generate-evaluate-tensions.md)
 
 ## Review — lineage and why v3 exists
 
 **v1** (PR #246/#247) proposed the three-speed funnel. **v2** (this PR, first commit) reconciled
-it with the [tensions note](../../notes/2026-08-30-generate-evaluate-tensions.md) — but was
+it with the [tensions note](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-30-generate-evaluate-tensions.md) — but was
 authored without enumerating `docs/adr/2026-08-30-*`: the note's recommendations had **already
 been ratified the same day as six Accepted ADRs**, and v2 restated (and in places contradicted)
 standing doctrine it believed was still proposed. The miss was v2's own amendment-first sweep —
@@ -607,7 +607,7 @@ is process validation, not a re-verdict of any historical candidate.
 
 **Accepted calibration case (operator decision, 2026-09-01):** `GAPCOND-ORB-1` enters the frozen
 sample as one paired sequence: the original informal false-`PASS` and the corrected `DROP` in
-[`2026-09-01-gapcond-orb-1-vet-card.md`](../../notes/2026-09-01-gapcond-orb-1-vet-card.md). Score
+[`2026-09-01-gapcond-orb-1-vet-card.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-09-01-gapcond-orb-1-vet-card.md). Score
 the pair as one case so the review-time correction is not misreported as two independent Vet
 decisions. Its inclusion accepts the `DROP` and Phase-A sample membership only; it does not ratify
 this specification or reopen the candidate.
