@@ -33,6 +33,16 @@ any entry, full or stub (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-05 — Strict BAR EXPORT v0.2 validator (Cursor)
+
+- **Focus:** Implement frozen handoff `docs/briefs/handoffs/2026-09-05-cursor-strict-bar-export.md` on `codex/strict-bar-export-validation` (operator GitHub PR delegation; queue-exception for off-queue implementation assignment).
+- **Shipped:** `codex/strict-bar-export-validation` @ `e552b51` — `scripts/validate_bar_export_v2.py`, `tests/scripts/test_validate_bar_export_v2.py` (9 synthetic tests), one `REPO_MAP.md` scripts-table row; completion note on handoff. Permissive producer untouched.
+- **Decisions/defects:** Contract owners: handoff + `SIGNAL_PIPE_V2_RE` in `core/bar_export_loader.py`. No new ADR.
+- **Open / next:** STATE queue: #1 Tradeify Select configuration campaign · #2 B7-REFIRE Stage 1 + M1. Codex independent review/babysit of this PR.
+- **Live-ops state:** unchanged (rail warm/disarmed; no arm).
+
+---
+
 ## 2026-09-05k — Complete capture intake and the single Phase 1 population
 
 **Open / next:** STATE queue: `#1` [Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#52--completed-capture-intake-and-export-provenance-2026-09-05) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). Capture provenance and the NAS100 premise correction are recorded in §52. Sizing-faithfulness, synchronized shared-symbol replay and the statistical freeze remain owed. No search or validation sample consumed.
