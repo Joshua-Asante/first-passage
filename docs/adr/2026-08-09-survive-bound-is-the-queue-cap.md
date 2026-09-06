@@ -9,6 +9,8 @@
 **Tier:** light
 **Layer:** governance convention. **$0 / K=0.**
 
+> **Current session routing (2026-09-06):** [the amendment below](#addendum-2026-09-06--session-history-routes-to-the-current-queue) replaces historical-session queue copying with a living-header link to STATE. Read it before following the older Open/next instructions.
+
 ## Decision
 
 The portfolio-level **Survive bound** required by [`GRAND §2.5`](2026-08-09-grand-tier-quintessentials-binding.md) is the existing **≤5 operator-queue cap** in `STATE.md` — **concurrency-denominated, not hours-denominated**. No hours figure is set, now or later, and GSUB-1's concern **C-2 closes RESOLVED-BY-REFRAMING**: the bound was never missing, its *rationale* had been deleted.
@@ -64,3 +66,23 @@ Do **not** quietly introduce an hours figure into a pursuit Survive-bound line (
 **Repair:** operator 2026-08-24 — M1 item 5 / B7 Stage 1 (unarmed) no longer waits on `#1`. `#1` stays the acceptable-strategy sequence. `#2` is dated 08-24 and is doable via the licensed test strategy. B7 Stage 2 / `dry_run=false` still waits on M1 `RESOLVED` + a separate arm GO.
 
 **Forbidden:** treating the test-strategy license as an arm; collapsing Stage 1 into Stage 2; a new generation channel; an hours figure (Boundary unchanged).
+
+---
+
+## Addendum 2026-09-06 — Session history routes to the current queue
+
+**Status:** `Accepted` — operator-directed root-document revision; full grounds,
+scope and verification are in the [root-charter amendment](2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-06--current-work-routing-and-root-consolidation). This expressly
+replaces the 2026-08-23 repair (1) and its mechanical queue-copy limb. The pre-edit reader and affected headers were verified at `7185ccf`.
+
+STATE owns current priorities. The SESSIONS living header links to STATE; campaign
+plans own executable next steps. Session entries preserve history, with optional
+session-specific Open / next. A later queue change neither rewrites an old entry
+nor requires a new queue-copy stub. The existing `sessions-queue-bind` checker now
+validates that header route and the queue section; it no longer compares row IDs.
+
+The ≤5 concurrency cap, queue-first session start, operator direction, evidence
+requirements and append-only historical entries remain in force. This does not
+change the M1/arming boundary or this ADR's standing falsifier. Verification:
+`python scripts/check_sessions_queue_bind.py` and
+`python -m pytest tests/test_sessions_queue_bind.py -q`.

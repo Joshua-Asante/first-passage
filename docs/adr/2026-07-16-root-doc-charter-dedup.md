@@ -10,6 +10,8 @@
 **Related:** Rule 7 origin incident (2026-06-03 STATE.md drift); [`2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md) ("retire, but do not over-retire")
 **Layer:** infrastructure (governance docs)
 
+> **Current routing (2026-09-06):** the [dated amendment](#addendum-2026-09-06--current-work-routing-and-root-consolidation) owns the current root roles and executable audit commands. The five-file charter, protected CLAUDE sections, and semantic-loss falsifier remain in force; prior command lists are historical.
+
 ---
 
 ## §0 — Rule 0 reads (production-source verification)
@@ -208,3 +210,99 @@ to its home in this repo.
 |---|---|---|
 | 2026-07-16 | Initial authoring + same-session execution | Joshua + Claude Code |
 | 2026-09-04 | Addendum: consolidation pass; §5 forbidden-move evidence corrected; anchor block ruled immovable | Joshua + Claude Code |
+
+---
+
+## Addendum 2026-09-06 — Current-work routing and root consolidation
+
+**Status:** `Accepted` — the operator approved the root-document review and directed
+"create a task list to completion and execute it" on 2026-09-06. This is the
+implementation of that instruction, including the proposed ownership/reader amendment.
+
+**Grounding before edits:** baseline `7185ccf` contains all five root files,
+`docs/operational_rules.md` Rule 7, `scripts/check_sessions_queue_bind.py`,
+`scripts/check_state_currency.py`, `scripts/check_repo_map_scripts_table.py`,
+`ops/recall/guard.py`, and the current Select plan/record. They were read directly;
+`core/dd_protection.py` and `core/firm_rules.py` were also read before describing
+the preserved risk-control boundary. The original reader compared live queue
+IDs to the latest historical session entry. README described P4 as idle while
+PIPELINES called it active; PIPELINES still blocked M1 on a selected strategy
+despite the 2026-08-24 license. The five root files totaled 14,206 words.
+
+**Decision and scope:**
+
+1. Retain the five files. README is human routing; CLAUDE is agent constraints and
+   essential safeguards; PIPELINES is workflow/handoffs; STATE owns priorities
+   and obligation pointers; REPO_MAP is present architecture and module entry points.
+2. Campaign implementation plans own executable next steps. Campaign records
+   own evidence, gate dispositions and operator decisions. SESSIONS owns history.
+   Its living header points to STATE; a session's optional Open / next is historical
+   context. A queue change does not require editing an old entry or adding a stub.
+   This explicitly replaces the queue-copy requirement of the W5 and Survive-bound
+   2026-08-23 addenda, recorded on those owners in the same change.
+3. Preserve numbered STATE rows and the decision-index/date/recurrence fields
+   consumed by the remaining readers. Keep its executed-decision index compact.
+   The root-layer script table remains generated in REPO_MAP, with its existing
+   generator interface. No sixth root document, new state store, or word-count gate.
+4. Correct M1 item 5 / B7 Stage 1 to its licensed independent test-strategy route.
+   Winner-specific parity and the M1 RESOLVED plus operator-GO arm gate remain separate.
+   No execution authority or risk-control change follows from this doc revision.
+5. Retain CLAUDE's entire Strategy Reference and Protection sections and the
+   operator-supplied Continuous improvement section. The recall guard's exact
+   historical MC source remains at the same file and the old heading stubs remain.
+
+**Alternatives:** retaining live queue copies in append-only session entries
+requires repetitive stubs and leaves a competing current-work surface; rejected.
+Deleting STATE's decision index or moving the generated script table would require
+unnecessary reader migration; both remain. A monolithic root guide combines
+different readers and cadences; the existing five-file division remains preferable.
+
+**Tradeoff:** readers use the queue and current campaign plan for continuation
+instead of treating the latest session entry as a work order. Historical detail is
+one owner-hop away. Essential safety remains inline; the existing §4 falsifier
+and role-specific restoration action continue to cover loss caused by demotion.
+Its next quarterly check is 2026-11-08; no new review cadence is introduced.
+
+**Completed-row disposition:** the discharged 2026-08-08 audit remains in
+`docs/notes/audits/programme-audit/2026-08-08-quarterly-audit.md`; Guardian-MGC's
+terminal transfer record remains in `docs/pursuits/b8-guardian-mgc-transfer-lane.md`;
+the spent 2027-02-08 mechanism-2B cross-reference is represented by the still-live
+channel-retirement limb-3 row. No open obligation is retired by those removals.
+Monitoring obligations and channel-reconciliation debts retain individual wake
+conditions or their owning debt lists.
+
+**Posture-size obligation discharged:** the rewritten Live-execution posture is
+21 lines, or 22 with the following Architecture heading included as §10's awk
+command does. It satisfies the existing ≤25-line hook; no exception or new ceiling
+is adopted. The corresponding STATE size-exception row is removed. The protected
+sections sit outside this trimmed block and are unchanged.
+
+**Reader amendment:** `scripts/check_sessions_queue_bind.py` retains its filename,
+gate id and CLI. It checks the living header's relative Markdown route to STATE
+and the existence of its OPERATOR QUEUE section, not historical queue numbers.
+Regression cases cover queue changes without journal churn, optional Open / next,
+misdirected/missing links, links only in history, and malformed/missing inputs.
+The gate trigger includes both consumed files and the checker. Existing session
+entries retain the append-only protection.
+
+**Current audit commands** (replace this ADR's obsolete §10 command recipe, not
+its semantic-loss falsifier):
+
+```text
+python scripts/check_root_doc_liveness.py
+python scripts/check_state_currency.py
+python scripts/check_sessions_queue_bind.py
+python scripts/check_repo_map_layers.py
+python scripts/check_repo_map_scripts_table.py --check
+python scripts/verify_lock_anchors.py --quiet
+python scripts/check_lifecycle_consistency.py
+python scripts/roll_sessions.py --check-order
+python scripts/roll_sessions.py --check-append-only
+python -m pytest tests/test_sessions_queue_bind.py tests/test_state_currency.py tests/test_repo_map_layers.py tests/test_repo_map_scripts_table.py tests/ops/test_recall_guard.py -q
+```
+
+The old `validate_params.py` command is retired and must not be resurrected.
+Link/date checks alone do not validate semantic agreement: review the current
+Select-plan route, independent M1 route, protected blocks and retained obligations.
+Execution checklist and verification evidence:
+[implementation plan](../superpowers/plans/2026-09-06-root-docs-current-workflow.md).

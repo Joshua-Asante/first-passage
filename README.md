@@ -1,99 +1,51 @@
 # First Passage
 
-Research + a built, **disarmed** rail; **no book is deployed**. Four
-automation-friendly firms are the program target, not current activity. The
-incumbent eval account exists (S1). The c1 rail (ruled host→listener→CrossTrade→Tradovate;
-Python-native signal host per S2; daemon Fly app warm with `emit_enabled=false`
-per S2b build GO) is built and disarmed there.
-Live-execution posture is owned by [`CLAUDE.md`](CLAUDE.md) §Live-execution
-posture and is deliberately NOT restated here (Rule 7). What is actually turning
-today: [`PIPELINES.md`](PIPELINES.md).
+Research and operations for automated futures strategies: **generate → evaluate →
+deploy → measure → update**. Current priorities are in [STATE.md](STATE.md);
+execution safeguards and the recorded rail posture are in
+[CLAUDE.md](CLAUDE.md#live-execution-posture).
 
 ## Source of truth
 
-This repo is the source of truth for locked parameters, risk controls,
-methodology, governance, and operational records. Per Rule 0
-([`docs/rule_0.md`](docs/rule_0.md)), when prior docs disagree with production
-code, the code wins — flag the skew and resync.
+The five root documents have separate jobs:
 
-Start here — five root docs, each with one job (no fact is restated across
-more than one; see [`docs/operational_rules.md`](docs/operational_rules.md)
-Rule 7 for the canonical-owner table):
+| File | Job |
+|---|---|
+| [README.md](README.md) | Human entry point and task routing |
+| [CLAUDE.md](CLAUDE.md) | Agent instructions, essential safeguards, and source authority |
+| [PIPELINES.md](PIPELINES.md) | Workflow, handoffs, and available machinery |
+| [STATE.md](STATE.md) | Current priorities and outstanding obligations |
+| [REPO_MAP.md](REPO_MAP.md) | Present architecture, import boundaries, and module entry points |
 
-- [`CLAUDE.md`](CLAUDE.md) — architecture, CLI usage, Strategy Reference table,
-  Protection spec, and the Key Principle (Pine Script is source of truth for
-  strategy parameters)
-- [`REPO_MAP.md`](REPO_MAP.md) — the static layer map: which of `core / lab /
-  ops` (+ root-resident governance) owns a given path, and the import-boundary
-  contract `scripts/check_boundaries.py` enforces
-- [`PIPELINES.md`](PIPELINES.md) — the dynamic companion to REPO_MAP: what is
-  actually turning right now (one active research pipeline; the portfolio /
-  firm / execution pipelines are locked-idle or retired)
-- [`STATE.md`](STATE.md) — the open-threads + forward-obligation register:
-  dormant cross-session investigations and the forward-trigger board
-- [`docs/SESSIONS.md`](docs/SESSIONS.md) — the session-by-session narrative;
-  its top entry carries the live Open/next
-
-Layer roots (`core/`, `lab/`, `ops/`, `docs/`, `scripts/`, `tests/`, `deploy/`)
-carry pointer-only READMEs. Open the catalog named there — do not glob a
-directory to infer what is live.
+Campaign plans own executable next steps; their campaign records own evidence
+and decisions. [SESSIONS.md](docs/SESSIONS.md) is historical narrative, not the
+current work list. [Operational Rule 7](docs/operational_rules.md#7-one-canonical-owner-per-fact-every-other-mention-links-or-is-a-labeled-mirror)
+assigns ownership; [Rule 0](docs/rule_0.md) requires reading production sources
+when checking claims about code, parameters, or risk controls.
 
 ## Where to look
 
 | Need | Open first |
 |---|---|
-| Layer / import contract | [`REPO_MAP.md`](REPO_MAP.md) |
-| What is turning | [`PIPELINES.md`](PIPELINES.md) |
-| Open threads + dated obligations | [`STATE.md`](STATE.md) |
-| Lab campaigns (In flight first, then hot bodies) | [`lab/CATALOG.md`](lab/CATALOG.md) |
-| Locked / withdrawn strategies (+ the locked parameter record) | [`core/strategies/CATALOG.md`](core/strategies/CATALOG.md) |
-| Which of two figures is the live one | [`docs/load_bearing_numbers.md`](docs/load_bearing_numbers.md) |
-| Instrument × mechanism verdicts | [`ops/instruments/PROFILES.md`](ops/instruments/PROFILES.md) · [`ops/instruments/MECHANISMS.md`](ops/instruments/MECHANISMS.md) |
-| Open / dormant questions | [`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) |
-| Decision status | [`docs/adr/INDEX.md`](docs/adr/INDEX.md) (derived; do not hand-edit) |
-| Kill / re-proposal bar | [`docs/rejected_candidates.md`](docs/rejected_candidates.md) |
-| GRAND-tier pursuits | [`docs/pursuits/`](docs/pursuits/) (persona-hierarchy review routing retired 2026-08-31 — see [retirement ADR](docs/adr/2026-08-31-persona-hierarchy-full-retirement.md)) |
-| Gates / `make` targets | [`scripts/gates.yml`](scripts/gates.yml) · `python scripts/gate_manifest.py --list` · `make audit` |
-| Closed-loop specs S1–S7 | [`docs/spec/2026-08-07-loop-spec-index.md`](docs/spec/2026-08-07-loop-spec-index.md) |
+| Choose or resume current work | [STATE queue](STATE.md#operator-queue--strictly-ordered-5-live-items), then the linked executable plan |
+| Understand a research or execution handoff | [PIPELINES.md](PIPELINES.md) |
+| Locate code or run a layer module | [REPO_MAP.md](REPO_MAP.md) |
+| Find prior research before opening work | [Lab catalog — In flight](lab/CATALOG.md#in-flight), then [brief index](docs/briefs/INDEX.md) |
+| Check instrument evidence and re-proposal bars | [Instrument profiles](ops/instruments/PROFILES.md), [mechanisms](ops/instruments/MECHANISMS.md), [rejected candidates](docs/rejected_candidates.md) |
+| Check a strategy's parameters or venue disposition | [Strategy catalog](core/strategies/CATALOG.md), [venue editions](ops/venue_editions/Tradeify_Select_100K.md) |
+| Resolve conflicting published figures | [Load-bearing numbers](docs/load_bearing_numbers.md) |
+| Find a decision or governing method | [ADR index](docs/adr/INDEX.md), [methodology](docs/methodology/README.md) |
+| Run checks or install hooks | [Scripts README](scripts/README.md), [gate manifest](scripts/gates.yml) |
+| Interpret identifiers or routine governance | [Governance index](docs/governance/INDEX.md) |
+| Retrieve a removed artifact | [Archive retrieval](docs/ltm/README.md), [removed-path manifest](lab/ARCHIVED.json) |
 
-**Status words** — these mean what they say. Identifier prefixes stay below so series do not collide.
-
-| Token | Means | Owner |
-|---|---|---|
-| In flight | CATALOG section: lab bodies whose question is not spent and not `HOLD`. Not the operator work list. | [`lab/CATALOG.md`](lab/CATALOG.md) · [`catalog-hot ADR`](docs/adr/2026-08-22-catalog-hot-vs-disposition.md) |
-| `hot` | Body still lives under `lab/analysis/<theme>/<slug>/` | same |
-| `LOCKED` | Parameter axis is frozen (SL/TP/ATR/risk%/pyramid/Pine). Not a deployed book. | [`strategy_lifecycle.md`](docs/methodology/strategy_lifecycle.md) |
-| eval account exists | Incumbent Tradeify eval; rail disarmed; no book is trading. | [`CLAUDE.md`](CLAUDE.md) §Live-execution posture |
-| four-firm program | §4 target / falsifier, not current activity. | [`four-firms ADR`](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) |
-| Survive queue | Numbered `STATE.md` rows (cap ≤5) — the work list. | [`STATE.md`](STATE.md) · [`Survive-bound ADR`](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md) |
-
-| Prefix | Means | Does not mean | Owner |
-|---|---|---|---|
-| pipeline `P1–P6` | Object pipelines in [`PIPELINES.md`](PIPELINES.md) | Pain-point packets P0–P10, or viable-strategy Phase A–D | [`PIPELINES.md`](PIPELINES.md) |
-| pain-point `P0–P10` | Repo-hygiene packets | Pipeline-P or phase-letter | [`pain-point charter`](docs/superpowers/plans/2026-08-23-repo-pain-point-packets.md) |
-| Phase A–D | Viable-strategy sequence phases | Pipeline-P or pain-point-P | [`sequence overview`](docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) |
-| `S1–S7` | Closed-loop specs | S2b daemon, or the Survive queue | [`loop-spec index`](docs/spec/2026-08-07-loop-spec-index.md) |
-| `F1/F2/F3` | S1 environment forks | Pain-point-F or firm-class F | [`S1 ADR`](docs/adr/2026-08-07-loop-s1-environment-ratification.md) |
-| `B6/B7` | c1 rail stages | Pipeline-P or pain-point-P | [`rail GO ADR`](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) |
-| `M1` | Venue-native monitoring maturity | Q-MONSURF M-A / M-B / M-C | [`M1 ADR`](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) |
-| `G0–G8` | Survivor-scoring gates | GRAND-tier G or generation-G | [`strategy-validation`](.claude/skills/strategy-validation/SKILL.md) |
-| `Q-*` | Brief roster | Queue rows | [`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) |
-
-An empty default-grep of `lab/archive/`, `docs/ltm/`, or `core/strategies/_archive/` is not evidence the work is absent — those trees are excluded from the default index; open the catalog **In flight** and Read by path ([`.cursor/rules/search-ltm.mdc`](.cursor/rules/search-ltm.mdc)). Pine sources and vendor CSVs are gitignored; CARD/LOCK stubs plus the tracked manifests are the public surface ([`CLAUDE.md`](CLAUDE.md) §Public-clone posture).
-
-Governance and decision records:
-
-- [`docs/operational_rules.md`](docs/operational_rules.md) — the canonical-owner
-  table (which doc owns which fact) and the doc/code skew-audit discipline
-- [`docs/governance/INDEX.md`](docs/governance/INDEX.md) — compact governance
-  and routine-workflow entry point
-- [`docs/adr/INDEX.md`](docs/adr/INDEX.md) — derived ADR lifecycle index
-- [`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) — open/dormant question roster;
-  individual briefs include both open and retained closure records
+Layer READMEs point to their catalogs. **In flight** means a question is not spent
+or on HOLD; **hot** means its body is on disk. Neither denotes queue priority.
+Default search excludes cold stores, and private inputs are gitignored: an empty
+search is not evidence that prior work or source bytes never existed.
 
 ## Public-clone note
 
-Vendor-licensed data, Pine strategy source, and executable ports of locked
-strategy logic are deliberately **not committed** (each hash-pinned by a tracked
-manifest; data-dependent tests skip cleanly when they are absent) — the canonical
-statement and integrity gates live in [`CLAUDE.md`](CLAUDE.md) §Public-clone posture.
+Vendor data, Pine sources, and executable ports of locked strategies are private,
+hash-pinned inputs; see [CLAUDE.md §Public-clone posture](CLAUDE.md#public-clone-posture)
+for the boundaries and integrity checks.

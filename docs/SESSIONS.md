@@ -19,17 +19,26 @@ links over prose. ~40 words per field is a soft target, not an enforced cap — 
 entries (multi-decision sessions) routinely run longer, and that's fine
 ([`W5 ADR`](adr/2026-08-07-w5-governance-diet.md)).
 
-**Open / next is queue-led.** The lead line cites every live [`STATE.md`](../STATE.md)
-operator-queue row (`STATE queue: #1 … · #2 … · #3 …`, titles + owner links). Default
-wrap-up does **not** copy leftover names from the prior top entry. Off-queue residue
-may follow the lead only if this session used `queue-exception: <reason>` and the
-residue's owner already exists. If a no-judgment-call session still needs to refresh
-the pointer, write a **stub** — heading + `Open / next` only — instead of editing the
-old top entry. `sessions-append-only` hard-fails any edit to an already-merged entry;
-`sessions-queue-bind` hard-fails if any live `#N` is missing from the newest Open/next.
+Current priorities and obligations live in the
+[`STATE.md` operator queue](../STATE.md#operator-queue--strictly-ordered-5-live-items).
+Session entries preserve the historical context of work already done; `Open / next`
+is optional and records only context specific to that session. A queue change does
+not require editing an existing entry or adding a pointer-only stub.
+`sessions-append-only` hard-fails any edit to an already-merged entry, while
+`sessions-queue-bind` validates this living header's route to the current queue.
 
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing
-any entry, full or stub (a-first; bare claims `a`).
+any entry (a-first; bare claims `a`).
+
+---
+
+## 2026-09-06b — Root guides route current work; sessions retain history
+
+**Focus:** Execute the operator-approved root-document simplification.
+
+**Shipped:** Revised the five root guides and session-routing checker; [task checklist](superpowers/plans/2026-09-06-root-docs-current-workflow.md).
+
+**Decisions/defects:** [Charter amendment](adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-06--current-work-routing-and-root-consolidation) assigns priorities to STATE and executable steps to campaign plans. Corrected the M1 dependency and daemon import-root instructions; protected safety sections remain intact.
 
 ---
 

@@ -528,7 +528,9 @@ kiwisolver==1.5.0 \
 markdown-it-py==4.2.0 \
     --hash=sha256:04a21681d6fbb623de53f6f364d352309d4094dd4194040a10fd51833e418d49 \
     --hash=sha256:9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a
-    # via rich
+    # via
+    #   first-passage (pyproject.toml)
+    #   rich
 matplotlib==3.11.0 \
     --hash=sha256:03acfeddf87b0dddb11b081ef7740ad445a3ca8bcb6b8e3011b08f2cf802b75c \
     --hash=sha256:0515d495124be3124340e59f164d901ed4484e2246a5b74cfa483cac3b80bd97 \

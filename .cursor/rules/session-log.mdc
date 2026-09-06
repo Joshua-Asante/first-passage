@@ -30,11 +30,11 @@ Do not add noise.
 - **Focus** — what the session set out to do
 - **Shipped** — branch + commit + concrete deltas (link artifacts, don't duplicate)
 - **Decisions/defects** — link the ADR / notice / brief produced
-- **Open / next** — lead line is `STATE queue: #1 <title> · #2 <title> · #3 <title>`
-  (titles + owner links). Do not copy leftover names from the previous top entry.
-  Residue after the lead only with `queue-exception: <reason>` and an existing owner.
+- **Open / next** — optional context specific to that historical session. Do not
+  copy the current queue into an entry or add a stub solely because the queue changed.
 - **Live-ops state** — lock / allocation / gate status where relevant
 
-Canonical owner: `docs/operational_rules.md §7`. Do **not** restate risk %, MC anchor,
-strategy versions, or hashes — link to their owners (`CLAUDE.md`, `docs/adr/`, `LOCK.md`).
-User rules override this file.
+The living header in `docs/SESSIONS.md` links to the `STATE.md` operator queue, which
+owns current priorities and obligations. Canonical owner: `docs/operational_rules.md
+§7`. Do **not** restate risk %, MC anchor, strategy versions, or hashes — link to their
+owners (`CLAUDE.md`, `docs/adr/`, `LOCK.md`). User rules override this file.
