@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
-"""Newest SESSIONS Open/next must cite every live STATE operator-queue row.
+"""Bind the living SESSIONS header to STATE's operator queue.
 
-Owns the queue-bind mechanical limb (Survive-bound addendum 2026-08-23 /
-W5 addendum 2026-08-23). Reads only STATE.md and docs/SESSIONS.md — no leftover
-name parsing, no other trees.
-
-Exit 0 if every live ``#N`` appears in the newest entry's Open/next line.
-Exit 1 on a missing row, a missing section, or an unreadable file.
+The header, before the first dated entry, must contain a relative Markdown
+link that resolves to the supplied STATE file. Historical entries are not
+current-state mirrors and are deliberately ignored.
 """
 from __future__ import annotations
 
@@ -14,6 +11,7 @@ import argparse
 import re
 import sys
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_STATE = REPO / "STATE.md"
@@ -24,36 +22,67 @@ QUEUE_SECTION_RE = re.compile(
     re.M | re.S,
 )
 ROW_RE = re.compile(r"^\| (\d+) \|", re.M)
-ENTRY_SPLIT_RE = re.compile(r"(?m)^## \d{4}-\d{2}-\d{2}")
-OPEN_NEXT_RE = re.compile(
-    r"\*\*Open / next:?\*\*(.*?)(?=\n\*\*[A-Za-z]|\n---|\Z)",
-    re.S,
+DATED_ENTRY_RE = re.compile(r"(?m)^## \d{4}-\d{2}-\d{2}[a-z]?\b")
+MARKDOWN_LINK_RE = re.compile(
+    r"(?<!!)\[[^\]\n]+\]\(\s*"
+    r"(?P<destination><[^>\n]+>|[^\s)\n]+)"
+    r"(?:\s+(?:\"[^\"\n]*\"|'[^'\n]*'|\([^\n)]*\)))?\s*\)"
 )
+HTML_COMMENT_RE = re.compile(r"<!--.*?(?:-->|\Z)", re.S)
+FENCED_CODE_RE = re.compile(
+    r"^[ \t]{0,3}(?P<fence>`{3,}|~{3,})[^\n]*\n"
+    r".*?(?:^[ \t]{0,3}(?P=fence)[ \t]*(?:\n|\Z)|\Z)",
+    re.M | re.S,
+)
+INDENTED_CODE_RE = re.compile(r"^(?: {4}|\t).*?(?:\n|\Z)", re.M)
+INLINE_CODE_RE = re.compile(r"(?P<ticks>`+).*?(?P=ticks)", re.S)
 
 
-def live_queue_ids(state_text: str) -> list[int]:
+def validate_operator_queue(state_text: str) -> None:
     section = QUEUE_SECTION_RE.search(state_text)
     if section is None:
-        raise ValueError("STATE.md has no OPERATOR QUEUE section")
-    ids = [int(m.group(1)) for m in ROW_RE.finditer(section.group(0))]
-    if not ids:
+        raise ValueError("STATE file has no OPERATOR QUEUE section")
+    if ROW_RE.search(section.group(0)) is None:
         raise ValueError("OPERATOR QUEUE table has no numbered rows")
-    return ids
 
 
-def newest_open_next(sessions_text: str) -> str:
-    parts = ENTRY_SPLIT_RE.split(sessions_text, maxsplit=2)
-    if len(parts) < 2:
-        raise ValueError("docs/SESSIONS.md has no dated entry")
-    newest_body = parts[1]
-    match = OPEN_NEXT_RE.search(newest_body)
-    if match is None:
-        raise ValueError("newest SESSIONS entry has no Open / next field")
-    return match.group(1)
+def living_header(sessions_text: str) -> str:
+    first_entry = DATED_ENTRY_RE.search(sessions_text)
+    if first_entry is None:
+        return sessions_text
+    return sessions_text[: first_entry.start()]
 
 
-def missing_row_cites(open_next: str, ids: list[int]) -> list[int]:
-    return [n for n in ids if f"#{n}" not in open_next]
+def rendered_markdown_source(markdown: str) -> str:
+    without_comments = HTML_COMMENT_RE.sub("", markdown)
+    without_fences = FENCED_CODE_RE.sub("", without_comments)
+    without_indented_code = INDENTED_CODE_RE.sub("", without_fences)
+    return INLINE_CODE_RE.sub("code", without_indented_code)
+
+
+def link_destination_path(destination: str, *, sessions_file: Path) -> Path | None:
+    if destination.startswith("<") and destination.endswith(">"):
+        destination = destination[1:-1]
+    parsed = urlsplit(destination)
+    if parsed.scheme or parsed.netloc or not parsed.path:
+        return None
+    path = Path(unquote(parsed.path))
+    if path.is_absolute():
+        return None
+    return (sessions_file.parent / path).resolve()
+
+
+def header_links_to_state(
+    sessions_text: str, *, sessions_file: Path, state_file: Path
+) -> bool:
+    expected = state_file.resolve()
+    return any(
+        link_destination_path(match.group("destination"), sessions_file=sessions_file)
+        == expected
+        for match in MARKDOWN_LINK_RE.finditer(
+            rendered_markdown_source(living_header(sessions_text))
+        )
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -64,23 +93,18 @@ def main(argv: list[str] | None = None) -> int:
     try:
         state_text = args.state.read_text(encoding="utf-8")
         sessions_text = args.file.read_text(encoding="utf-8")
-        ids = live_queue_ids(state_text)
-        open_next = newest_open_next(sessions_text)
+        validate_operator_queue(state_text)
+        if not header_links_to_state(
+            sessions_text, sessions_file=args.file, state_file=args.state
+        ):
+            raise ValueError(
+                "SESSIONS header has no relative Markdown link to the supplied STATE file"
+            )
     except (OSError, ValueError) as exc:
         print(f"sessions-queue-bind: FAIL — {exc}", file=sys.stderr)
         return 1
-    missing = missing_row_cites(open_next, ids)
-    if missing:
-        cited = ", ".join(f"#{n}" for n in missing)
-        print(
-            f"sessions-queue-bind: FAIL — newest Open/next omits {cited}",
-            file=sys.stderr,
-        )
-        return 1
-    print(
-        "sessions-queue-bind: OK — newest Open/next cites "
-        + ", ".join(f"#{n}" for n in ids)
-    )
+
+    print("sessions-queue-bind: OK — living header routes to STATE operator queue")
     return 0
 
 

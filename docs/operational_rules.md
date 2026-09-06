@@ -68,10 +68,12 @@ When any strategy's locked version changes (e.g., Guardian v5.4 → v5.5), or
 when any locked risk/allocation/`dd_protection` constant changes, immediately
 run a doc/code skew audit before closing the lock commit. The audit checks:
 
-1. **`CLAUDE.md`** — strategy table, Multiplier System risk numbers, Protection
-   constants, MC anchor lines. Anything pointing to a strategy version or risk
-   value must reflect the new lock or be explicitly marked as historical
-   record.
+1. **Strategy catalog and root safeguards** — the parameter mirror now lives in
+   `core/strategies/CATALOG.md`; `CLAUDE.md` retains its Protection synopsis and
+   machine-read historical MC block. Compare live risk/allocation claims with
+   their code owners. Version/risk mentions must match their scope or be marked
+   historical; preserve the recall guard's historical literals when updating
+   unrelated claims.
 2. **All ADRs in `docs/adr/`** — every `Code:` cross-reference line, every
    inline version mention. Stale `Code:` pointers are updated; conclusion
    text is left intact (ADRs are historical records of decisions made under
@@ -137,7 +139,9 @@ This generalizes Rule 5 (Pine owns strategy parameters) from constants to
 | ADR lifecycle status (`Proposed`/`Accepted`/`Superseded`/`Withdrawn`/`Retired`) | ADR header fields + derived `docs/adr/INDEX.md` + `scripts/check_adr_graph.py` |
 | Per-strategy version lineage | `core/strategies/_archive/<family>/*_CHANGELOG.md` (bodies); CARD stubs under `core/strategies/<family>/` |
 | What happened, session by session | `docs/SESSIONS.md` (append-only, links out) |
-| Carried-forward "open / next" | top entry of `docs/SESSIONS.md` |
+| Current priorities and outstanding obligations | `STATE.md` queue and forward board; obligation details remain with their owning decision/closure |
+| Executable campaign next steps | Campaign's current implementation plan; campaign record owns evidence, gate dispositions, and operator decisions |
+| Session-specific "open / next" | Optional historical context in that session's entry; never a replacement for the current STATE queue or campaign plan |
 | Per-Q forward disposition (Iterate exit) | closure's own `## Iterate` block (`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`); a STATE forward-board row is a labeled pointer mirror only |
 | Durable atomic facts | Owning ADRs and [`docs/methodology/lessons/`](methodology/lessons/). Claude-project `MEMORY.md` + memory files (outside this worktree) are **assistive-only** — never a Rule 7 owner, never Rule 0 / §0 attestation. Same class as `repo_retrieve.py` ([Limb B](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)). |
 
@@ -153,7 +157,10 @@ Roles that must **not** restate canonical values:
   log). Closed/retired rows are deleted from STATE (not struck); detail stays
   with the owning ADR/closure.
 - **`docs/SESSIONS.md`** — narrates work; links the ADR/CHANGELOG/commit instead
-  of duplicating its values. Prefer W5 entry classes and links over prose; the
+  of duplicating its values. Its living header links to STATE for current work;
+  existing entries do not track later queue changes. `Open / next` is optional
+  historical context; do not add a session stub just to copy the live queue.
+  Prefer W5 entry classes and links over prose; the
   ~40-word-per-field figure is a soft target the ADR itself calls directional, not
   an enforced cap — [`W5 ADR`](adr/2026-08-07-w5-governance-diet.md).
 - **`CLAUDE.md` §Live-execution posture** — a pointer block: the current
@@ -756,6 +763,7 @@ Full incident narration for each entry lives in `git log -p` on this file and in
 log states what changed and why in one line. Unless noted, edits are additive — no locked config,
 allocation, `dd_protection`, Pine, or rail touched.
 
+- **2026-09-06** — Rule 6 follows the relocated strategy mirror. Rule 7 assigns current priorities to STATE and executable next steps to campaign plans; SESSIONS becomes history with a stable header route. Queue-copy stubs are no longer required. [Root-charter amendment](adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-06--current-work-routing-and-root-consolidation).
 - **2026-09-03** — Rule 14 gains a "correction is a claim" corollary (grep the claim not the file, recompute from source, keep hedge words, "not determinable" is a complete answer) + a printed-precision caveat on `:.2f` interval bounds. No rule-text renumbering; additive only.
 - **2026-09-03** — Rule 7 gains a wrapper-accretion discipline paragraph: don't stack a new pointer/wrapper artifact over a fact family carrying an outstanding dated debt, citing PR #250 and #262/#264 as the precedent this fixes. No rule-text renumbering; additive only.
 - **2026-08-28** — Rule 17 added (quarterly programme-audit checklist; `check_falsifier_reachability.py --stats` census, wired `gates.yml`). [`ADR`](adr/2026-08-27-ssot-data-lineage-remediation-program.md)

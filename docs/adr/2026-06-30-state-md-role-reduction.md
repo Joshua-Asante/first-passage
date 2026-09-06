@@ -11,6 +11,8 @@
 **Layer:** infrastructure (governance / doc-taxonomy)
 **D-S-A domain:** **meta-process** (a governance-doc + the `§7` rule that charters it), with an authorized cascade into **data** (the content the deleted roles held — *relocated to existing owners, not destroyed*: working-tree state → `git` + SESSIONS; owner table → `§7`). Per the inqhiori-algorithm §8 cascade rule, meta-process D authorizes the corresponding content move.
 
+> **Current continuation owner (2026-09-06):** [root-charter amendment](2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-06--current-work-routing-and-root-consolidation) assigns current priorities to STATE and executable steps to campaign plans. SESSIONS is history. The prohibition on working-tree snapshots and duplicated fact-owner tables remains in force.
+
 ---
 
 ## §0 — Rule 0 reads (production-source verification)

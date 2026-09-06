@@ -156,7 +156,7 @@ gates:
   - id: sessions-queue-bind
     tier: path-conditional
     when:
-      staged_regex: '^docs/SESSIONS[.]md$'
+      staged_regex: '^(docs/SESSIONS[.]md|STATE[.]md|scripts/check_sessions_queue_bind[.]py)$'
     cmd:
       - python
       - scripts/check_sessions_queue_bind.py

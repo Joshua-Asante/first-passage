@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "gate_manifest.py"
 MANIFEST = REPO / "scripts" / "gates.yml"
@@ -245,6 +247,30 @@ def test_path_conditional_gates_are_reachable(monkeypatch):
             f"{gate_id}'s staged_regex does not match {probe_path!r} -- a "
             "change there cannot trigger this gate at pre-commit"
         )
+
+
+@pytest.mark.parametrize(
+    "staged_path",
+    ["STATE.md", "scripts/check_sessions_queue_bind.py"],
+)
+def test_sessions_queue_bind_reaches_each_additional_consumed_file(
+    monkeypatch, staged_path
+):
+    data = gm.load_manifest(MANIFEST)
+    monkeypatch.setattr(gm, "staged_names", lambda: [staged_path])
+
+    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
+
+    assert "sessions-queue-bind" in selected
+
+
+def test_sessions_queue_bind_does_not_run_for_unrelated_path(monkeypatch):
+    data = gm.load_manifest(MANIFEST)
+    monkeypatch.setattr(gm, "staged_names", lambda: ["docs/README.md"])
+
+    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
+
+    assert "sessions-queue-bind" not in selected
 
 
 def test_reindented_gate_fails_closed(tmp_path):

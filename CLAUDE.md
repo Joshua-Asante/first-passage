@@ -2,104 +2,63 @@
 
 ## Purpose
 
-Research + operational layer for First Passage. The mission pipeline is
-**generate → evaluate → deploy → measure → update**: discover, validate, and deploy automated
-futures strategies at automation-friendly prop firms
-(`core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS`).
+Research and operations for automated futures strategies at
+`core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS`. The mission is
+**generate → evaluate → deploy → measure → update**.
 
-**Documentation exists to serve that pipeline, not to be maintained by it.** Every artifact must
-pass the retention test in [`docs/operational_rules.md`](docs/operational_rules.md) §16 Retention. Anything
-else is deleted under a snapshot tag ([`Great Prune ADR`](docs/adr/2026-08-08-great-prune.md)).
-On this public clone retrieval is `git log --follow -- <path>` — the `pre-prune-2026-08-08` tag
-lives only in the private archive ([`docs/ltm/README.md`](docs/ltm/README.md)). The
-[2026-09-06 reduction](docs/adr/2026-09-06-tracked-file-reduction-prune.md) removed 1,542 tracked
-files: [`lab/ARCHIVED.json`](lab/ARCHIVED.json) indexes every one (baseline blob + preservation
-commit); `git show 2d40dbeb56c167844cab5136742d70787835f8e2:<path>` retrieves any of them here.
+Start with [STATE.md](STATE.md) for priorities and obligations, then the owning
+campaign plan for executable steps and its record for evidence. Use
+[PIPELINES.md](PIPELINES.md) for handoffs and [REPO_MAP.md](REPO_MAP.md) for code.
+[SESSIONS.md](docs/SESSIONS.md) is history. Direct operator instructions govern
+the current task; do not infer new work or authorization from historical dispatches.
 
-**ADRs are canonical for every decision.** This file carries **pointers only** — never a retelling.
-Forward obligations live in [`STATE.md`](STATE.md); session narrative in
-[`docs/SESSIONS.md`](docs/SESSIONS.md); prior research in [`lab/CATALOG.md`](lab/CATALOG.md) and
-[`docs/briefs/INDEX.md`](docs/briefs/INDEX.md).
+ADRs own decision rationale. Other documents link to the owner or label a derived
+mirror ([Rule 7](docs/operational_rules.md)). Documentation must serve the pipeline
+and pass the [retention test](docs/operational_rules.md#16-retention--an-artifact-must-earn-its-place-and-deletion-is-classified-by-execution-not-by-folder).
+Removed evidence remains retrievable through [archive guidance](docs/ltm/README.md)
+and [lab/ARCHIVED.json](lab/ARCHIVED.json).
 
 ## Live-execution posture
 
-**Environment:** the live incumbent `Tradeify_Select_100K` eval is the environment for **new**
-strategies. The c1 rail is **built, warm, and disarmed** (`dry_run=true`) pointed at it.
-**There is no live c1 book** — both Striker legs were withdrawn 2026-08-04 and stay barred.
-The two separately identified campaign expressions have conditional eval eligibility
-by [operator election](docs/adr/2026-09-05-tradeify-select-striker-expression-readmission.md);
-this does not reauthorize the withdrawn editions or any funded deployment.
+**Recorded posture:** the incumbent `Tradeify_Select_100K` eval exists; c1 is warm and **disarmed** (`dry_run=true`), with no deployed book. Daemon `emit_enabled=false`. Confirm actual host state before operational work.
 
-**Safety invariants (non-negotiable):**
+- `dry_run=false` requires M1 `RESOLVED`: the gate's object is the **arm**, not the send.
+- Disarm **before** absolute `armed_until` expiry; lapse-while-armed previously caused a host crash-loop.
+- Live spend requires M1 `RESOLVED` **and** separate operator GO. Every armed session needs its own GO.
+- **No agent may place a trade.** Weekly account-preservation trades are operator-placed; deadline in [STATE](STATE.md#scheduled-forward-triggers).
+- The arming interlock calls `validate_c1_monitoring_acceptance.validate(require_resolved=True)` in `ops/c1_rail/c1_rail_arm.py`; a forged or status-only artifact fails closed.
 
-* `dry_run=false` may not be set while M1 is not `RESOLVED`. The gate's object is the **arm**, not
-  the send.
-* Disarm **before** the absolute `armed_until` expiry — a lapse-while-armed self-bricked the host
-  into a crash-loop on 2026-07-31.
-* Live spend needs M1 `RESOLVED` **plus** a separate operator GO. Every armed session is its own GO.
-* No agent may place a trade. The weekly venue-idle token trade is **operator-placed**
-  ([`STATE.md`](STATE.md) §Weekly carries the rolling deadline).
-* The arming interlock validates the M1 acceptance artifact via
-  `validate_c1_monitoring_acceptance.validate(require_resolved=True)`
-  (`ops/c1_rail/c1_rail_arm.py`) — a forged or status-only artifact fails closed.
+**Account:** used, not pristine; canned-payload and weekly token trades have filled, but no strategy-signal fill has occurred. `order_id` idempotency is **DISPROVEN**; every payload gets a fresh tag. Private account figures stay private.
 
-**Account state:** not pristine — two hand-POSTed canned-payload sessions filled (B6 dry-fire
-2026-07-20; SIM `CHAIN_OK` 2026-07-27) plus the weekly token trades. Cumulative realized P&L is
-small and positive; the account identifier and dollar figures are redacted from the public tree.
-`order_id` idempotency is **DISPROVEN** — every payload gets a fresh tag. No strategy-signal fill
-has ever occurred.
-
-| Standing decision | Owner ADR |
+| Standing consequence | Owner |
 |---|---|
-| Environment ratified (F2+F3); no successor migration | [S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md) |
-| Signal host = Python daemon → listener; TV login automation prohibited | [S2](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) · [build](docs/adr/2026-08-08-s2b-signal-daemon-build.md) |
-| Tradeify de-scoped for the two Striker legs (eval included); F1 reversed 2026-09-01 — a Tradeify-resting discharge counts toward §4 again; hard-dates 11-08 unchanged | [de-scope](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md) |
-| Rail build + account registration GO; spend ceiling $700 | [rail GO](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) |
-| M1 venue-native monitoring maturity (arming gate) | [M1](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) |
-| Prop-portfolio program at four firms; §4 falsifier hard-dates **2026-11-08** | [four-firms](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) · [withdrawal](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md) |
-| Bounded sandbox-up promotion lane (the one exception to down-only automation) | [S5](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md) |
-| Challenge-era substrate retired; no `ACTIVE_FIRM` selector | [substrate](docs/adr/2026-07-22-challenge-era-substrate-retirement.md) |
-| CFD estate + manual trading retired | [CFD estate](docs/adr/2026-07-11-ops-cfd-estate-retirement.md) |
-| GRAND tier bound above STRATEGIC (Quintessentials; pursuit domain + intake rule) | [GRAND](docs/adr/2026-08-09-grand-tier-quintessentials-binding.md) |
-| MYM1!/MNQ1! occupancy released for new non-Striker research (Striker legs stay barred) | [occupancy](docs/adr/2026-08-12-msl-mym-occupancy-release.md) |
-| Persona-hierarchy review panel fully retired 2026-08-31 — no persona is spawnable; the generic 6-lens pre-ratification panel is unaffected | [full retirement](docs/adr/2026-08-31-persona-hierarchy-full-retirement.md) · historical: [08-19](docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md) · [08-21](docs/adr/2026-08-21-persona-hierarchy-front-office-only.md) |
+| Incumbent environment retained; no successor migration | [S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md) |
+| Python daemon → listener; TV login automation prohibited | [S2](docs/adr/2026-08-07-loop-s2-signal-host-fork.md), [daemon build](docs/adr/2026-08-08-s2b-signal-daemon-build.md) |
+| Withdrawn Striker editions stay barred; separate campaign expressions have conditional eval eligibility, not funded/deployment authority | [withdrawal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md), [readmission](docs/adr/2026-09-05-tradeify-select-striker-expression-readmission.md) |
+| Rail build/account registration GO; spend ceiling $700 | [rail GO](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) |
+| Licensed test strategy can discharge M1 item 5 / B7 Stage 1 independently of strategy selection; no arm | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) |
+| Four-firm program falsifier remains dated 2026-11-08; Tradeify counts again | [program](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md), [F1 reversal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4) |
 
 ## Architecture
 
-**4-layer monorepo** ([boundaries ADR](docs/adr/2026-06-05-monorepo-layer-boundaries.md); map in
-[`REPO_MAP.md`](REPO_MAP.md)): locked **`core/`** (+ backtest panels under `core/data/`),
-research **`lab/`**, operational **`ops/`** (tearsheet CLI + c1 rail + sentinel), and
-root-resident governance (`docs/ .claude/ .github/ scripts/`).
-`scripts/check_boundaries.py` enforces the import contract (`lab↔ops` isolation; `core` imports
-nothing internal).
+`core/` owns shared engines and frozen controls; `lab/` owns research; `ops/`
+owns operational services. Governance remains at the root. `lab↔ops` imports
+are forbidden; `core` imports nothing from other internal layers.
+[REPO_MAP.md](REPO_MAP.md) names the code owners and enforced boundary maps.
 
-* **`core/firm_rules.py`** — firm configs + locked `_BASE_RISK` allocations. Add new firms here.
-* **`core/dd_protection.py`** — the DD rule + live-sizing authority.
-* **`core/csv_parser.py`** — DXTrade CSV parser (historical).
-* **`ops/cli.py tearsheet`** — the only remaining CLI command.
-* **`ops/c1_rail/`** — live rail (listener leg); sizing host consumes `dd_protection` + lifecycle.
-* **`ops/c1_signal_daemon/`** — S2b Python signal daemon (warm, `emit_enabled=false`).
-
-**Lab layout:** hot bodies at `lab/analysis/<theme>/<slug>/`; closed campaigns keep
-`RESULTS*` / `PREREG*` / `CARD.md` only. Open [`lab/CATALOG.md`](lab/CATALOG.md) **In flight** and
-[`docs/briefs/INDEX.md`](docs/briefs/INDEX.md) before searching — **an empty Grep is not evidence
-of no prior work**: pruned bodies live in git history, and `docs/ltm/` is excluded from default
-`rg` (use `--no-ignore`). Hop table: [`README.md`](README.md) §Where to look.
+Before opening research, read [lab/CATALOG.md](lab/CATALOG.md) **In flight**,
+[docs/briefs/INDEX.md](docs/briefs/INDEX.md), and the relevant instrument ledger
+and rejection bar. An empty `rg` result is not evidence of no prior work:
+cold stores are search-excluded, removed bodies are in history, and private
+inputs are gitignored. Use catalog paths and [retrieval guidance](docs/ltm/README.md).
 
 ## Load-bearing numbers
 
-Owner: [`docs/load_bearing_numbers.md`](docs/load_bearing_numbers.md) — **read it before quoting any
-prop-tier figure.** The two standing rules, in one line each:
-
-* ⚠ **Eval bust figures are EOD-clock lower bounds** unless they cite an intraday-honest RESULTS
-  path. Scope is all 7 `dd_type="trailing"` tiers, Bulenox/BluSky included.
-* ⚠ **Every published bust/pass figure assumes the inactivity barrier is OFF.** The operator-placed
-  weekly token trade is the mitigation, and the barrier-ON re-MC is degenerate — **do not re-open
-  it as a fresh finding.**
-
-Six figures have a second, historical value in the tree (Part A ceiling · pass floor · §4 firm set ·
-venue inactivity rule · Q-RANGECOND-1 verdict · ORB-MYM headline). That doc names the live value and
-its sole owner for each.
+Read [docs/load_bearing_numbers.md](docs/load_bearing_numbers.md) before quoting
+prop-tier figures. Eval bust claims are EOD-clock lower bounds unless backed by
+an intraday-honest RESULTS artifact; published bust/pass claims assume the
+inactivity barrier is OFF. The owner records scope, exceptions, and historical
+values; do not reopen the degenerate barrier-ON re-MC as a fresh finding.
 
 ## Strategy Reference (LOCKED legacy book — do not modify)
 
@@ -117,30 +76,20 @@ figures), so moving them would silently denylist the wrong numbers. Reword only 
 Engine regression is vendor-free (`tests/core/test_mc_synthetic_engine.py`). Canonical feed = CME
 futures TV exports (`core/data/tv_exports/cme/`); OANDA and Pepperstone are retired.
 
+
 ## Strategy Authorization Lifecycle
 
-"LOCKED" splits into two **orthogonal** axes —
-[ADR](docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md); canonical owner
-[`docs/methodology/strategy_lifecycle.md`](docs/methodology/strategy_lifecycle.md). A third axis
-(venue binding: BOOK → VENUE EDITION → DEPLOYMENT) is
-[`Accepted`](docs/adr/2026-08-05-strategy-venue-binding-axis.md); registry
-[`ops/venue_editions/Tradeify_Select_100K.md`](ops/venue_editions/Tradeify_Select_100K.md) (live set empty).
+Parameter lock, capital authorization, and venue deployment are separate axes.
+[strategy_lifecycle.md](docs/methodology/strategy_lifecycle.md) owns the lifecycle;
+[venue editions](ops/venue_editions/Tradeify_Select_100K.md) owns venue binding.
+The legacy book's authorization does not imply a deployed strategy.
 
-* **Parameter axis — `LOCKED`**: SL/TP/ATR/risk%/pyramid/Pine are immutable. Decay never
-  authorizes editing these.
-* **Authorization axis — revocable**: `CANDIDATE → AUTHORIZED → WATCH{-1,-2} → RETIRED` at
-  **1.00× / 0.50× / 0.25× / 0.00×**, plus a durability tag `{MECHANISM | SURVIVAL-ONLY}`.
-
-The lifecycle multiplier is a risk_pct-layer haircut, multiplicative with `DD_SCALE`
-(`scaled_risk = BASE_RISK × DD_SCALE × lifecycle`). Decay is met by graded reversible de-risk fired
-by a pre-registered trigger — **never re-optimization**. Automation moves authorization **down
-only**, except the bounded sandbox-up lane ([S5](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md));
-retirement and full beta shutdown are operator GO/NO-GO.
-
-**Current state:** all four legs `AUTHORIZED · MECHANISM @ 1.00×` (no `lifecycle_state.json` ⇒ code
-default). ⚠ Historical: the c1 host ran the Striker book at **WATCH-1 0.50×** per the rail GO ADR;
-that book was withdrawn 2026-08-04, so there is no live deployed sizing today — neither figure is a
-current live haircut.
+Locked parameters are immutable. Decay permits pre-registered de-risking, never
+re-optimization. Automation moves authorization down only, except the
+[bounded sandbox-up lane](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md).
+Retirement and full beta shutdown require operator GO/NO-GO. Read
+`core/lifecycle.py` and its state for effective multipliers; do not infer a live
+haircut from historical rail operation.
 
 ## Protection
 
@@ -160,32 +109,24 @@ strategy is deployed.
 * ⚠ The prior equity tier was deleted 2026-04-17 and **its revert triggers are LOST**.
   Reintroducing a second tier needs **fresh pre-registration**, not a lookup.
 
+
 ## Firm Expansion
 
-Define rules in `firm_rules.py`, then run an **engine-support pre-flight** — config alone is not
-enough (falsified in production 2026-07-11 by a `daily_loss_pct: None` `TypeError`). Each firm class
-needs bespoke engine branches (`bust_trailing` Bulenox, `trailing_locking` Tradeify). Every prop tier
-must carry `starting_balance`. New firms need an ADR + pre-flight (+ re-MC when the run consumes that
-firm's rules). A different execution feed additionally requires the feed-equivalence pre-flight
-([`LOCKED spec`](docs/spec/feed_equivalence_discovery_test_LOCKED.md)).
+Define firm rules in `core/firm_rules.py`, then run the
+`core/mc/preflight.py` engine-support pre-flight: configuration alone does not
+prove support for a drawdown clock or firm class. Every prop tier requires
+`starting_balance`. New firms require an ADR, pre-flight, and re-MC when used;
+a new execution feed also requires the [feed-equivalence pre-flight](docs/spec/feed_equivalence_discovery_test_LOCKED.md).
 
 ## Methodology references
 
-* **Rule 0 — audit-first**: [`docs/rule_0.md`](docs/rule_0.md). Read production code first when
-  authoring anything touching risk controls. Extends to locked Pine.
-* **INQHIORI canon** (entry point; §14 binds the three loops; §15 owns Rule 2 —
-  budget before acting, ratified 2026-08-21 as an operator override ahead of its own
-  evidentiary graduation gate — [Addendum](docs/adr/2026-06-16-rule-2-budget-before-acting.md)):
-  [`docs/methodology/inqhiori-canon.md`](docs/methodology/inqhiori-canon.md).
-* **Regime-robustness gate** (mandatory before any LOCK CANDIDATE on a `dd_protection`-class
-  constant): [`docs/methodology/regime_robustness_gate.md`](docs/methodology/regime_robustness_gate.md).
-* **Strategy lifecycle** · **strategy harvest** · **observation routing** · **1R estimation** ·
-  **methodology lessons** · **rejected signals** — all under
-  [`docs/methodology/`](docs/methodology/).
-* **Operational rules** (incl. retention test + doc/code skew trigger):
-  [`docs/operational_rules.md`](docs/operational_rules.md).
-* **Rejected candidates** (re-proposal needs new *mechanism* evidence, not new parameters):
-  [`docs/rejected_candidates.md`](docs/rejected_candidates.md).
+- [Rule 0](docs/rule_0.md): read production sources before authoring risk-control or locked-Pine claims.
+- [INQHIORI canon](docs/methodology/inqhiori-canon.md): three-loop authority and Rule 2, budget before acting.
+- [Evaluation order](docs/adr/2026-08-30-evaluation-order.md): standing candidate sequence; campaign-specific amendments remain with their owners.
+- [Regime robustness](docs/methodology/regime_robustness_gate.md): mandatory gate for qualifying risk-control lock changes.
+- [Methodology index](docs/methodology/README.md): lifecycle, harvest, observation routing, estimation, and lessons.
+- [Operational rules](docs/operational_rules.md): instrument-ledger discipline, provenance, corrections, retention, and change control.
+- [Rejected candidates](docs/rejected_candidates.md): re-proposal requires new mechanism evidence, not parameter changes.
 
 ## Continuous improvement
 
@@ -211,64 +152,38 @@ Where each layer lives here: tests = `tests/` · hooks = [`scripts/gates.yml`](s
 ADR/lesson = [`docs/adr/`](docs/adr/) + [`docs/methodology/lessons/`](docs/methodology/lessons/)
 (indexed in `docs/methodology/LESSONS_INDEX.jsonl`).
 
+
 ## Public-clone posture
 
-**This repo is public** as of 2026-08-14
-([transition ADR](docs/adr/2026-08-14-repo-public-visibility-transition.md)). Pre-transition
-history (3000+ commits) lives privately in `first-passage-archive`; this repo started from a single
-"Initial public release" commit after a remediation pass scrubbed the live account identifier/P&L
-and redacted locked-strategy parameter/backtest detail. Three classes stay gitignored:
-
-* **Vendor-licensed CSVs** under `core/data/tv_exports/`, `core/data/bar_data/`,
-  `core/data/external/` — per-directory `SHA256SUMS` manifests are tracked.
-* **Pine strategy source** (`**/*.pine`) — hashes pinned in `core/strategies/MANIFEST.sha256`.
-* **Executable Python ports of locked strategy logic** — hashes in
-  `core/strategies/PORT_MANIFEST.sha256`. New ports land gitignored + hash-pinned, never tracked.
-
-Tests depending on vendor CSVs skip-if-missing. `core/data/bar_data/` is **RETAINED but FROZEN**
-(CME micros only; producer pipeline dead) — panels are usable but **not regenerable**.
+This repository is public ([transition ADR](docs/adr/2026-08-14-repo-public-visibility-transition.md)).
+Private history lives in `first-passage-archive`; follow [retrieval guidance](docs/ltm/README.md).
+Do not commit account identifiers/P&L, vendor-licensed CSVs, Pine source, or
+executable Python ports of locked strategy logic. Private sources are pinned by
+`SHA256SUMS`, `core/strategies/MANIFEST.sha256`, and
+`core/strategies/PORT_MANIFEST.sha256`; new locked ports follow the same policy.
+Vendor-dependent tests skip when inputs are absent. `core/data/bar_data/` is
+retained but frozen: usable panels, no regenerable producer.
 
 ### Vendor-data integrity gate
 
-Owner: [manifest integrity gate ADR](docs/adr/2026-05-10-manifest-integrity-gate.md) — it holds the
-`check_data_manifests.py` flags and the per-clone hook install. Three rules to know here:
-
-* After re-exporting any panel CSV, commit the `SHA256SUMS` delta in the **same commit** as the data
-  change. The checker hashes **working-tree bytes**, so all three manifest dirs must be present.
-* **Install the pre-commit hook once per clone** (`scripts/install_hooks.sh`) — CI cannot re-hash
-  gitignored bytes, so this gate is local-only. ⚠ On Windows use `scripts\install_hooks.bat`:
-  PowerShell `bash` is WSL, not Git Bash, and the `.sh` files are CRLF.
-* `git commit --no-verify` is not the standing path.
-
-⚠ **`main` is protected — you cannot push to it directly.** A PR is required (0 approvals) and
-exactly one status check must pass: `skills (3.12)`, the
-[`gate-manifest`](.github/workflows/gate-manifest.yml) job that runs
-[`scripts/gates.yml`](scripts/gates.yml). `pytest` / `build` / `manifest-check` /
-`validation-controls` are deliberately **not** required (path-filtered), so those staying red does
-**not** block a merge. Ruleset details: the
-[`Q-GATESTACK-1` closure](docs/briefs/closures/Q-GATESTACK-1-closure-falsified.md) 2026-08-19
-addendum — its verdict line is stale by design (Trap #12); read the addendum, not the headline.
+[Manifest integrity ADR](docs/adr/2026-05-10-manifest-integrity-gate.md) owns the
+commands. Commit each re-export's SHA256SUMS delta with the corresponding change;
+the checker hashes working-tree bytes. Install hooks once per clone:
+`scripts/install_hooks.sh` under Git Bash/POSIX, or `scripts\install_hooks.bat`
+on Windows. CI cannot hash absent private data. `git commit --no-verify` is not
+the standing path.
 
 ### Gate composition authority
 
-[`scripts/gates.yml`](scripts/gates.yml) via [`scripts/gate_manifest.py`](scripts/gate_manifest.py)
-— pre-commit and `make check` call the runner. **Do not hand-maintain a parallel list.** Report-only
-diagnostics sit at `tier: audit` and run **only** under `make audit` — never pre-commit,
-`make check`, or required CI, because a command that cannot return non-zero cannot protect a merge
-([W5 addendum](docs/adr/2026-08-07-w5-governance-diet.md)). The `params.toml` hub validator was
-[retired](docs/adr/2026-08-03-params-toml-gate-retirement.md); Pine is canonical for strategy
-behavior, `dd_protection.py` / `firm_rules.py` for live-sizing constants.
-
-```bash
-make validate                              # data manifests + pine
-python scripts/gate_manifest.py --list     # full hard-gate roster (blocking tiers)
-python scripts/gate_manifest.py --list --all-tiers   # ... plus audit-tier diagnostics
-python scripts/gate_manifest.py --tier pre-commit
-make audit                                 # report-only governance diagnostics
-```
+[scripts/gates.yml](scripts/gates.yml) and its runner own gate composition;
+[scripts/README.md](scripts/README.md) owns the command entry points.
+`make check` runs blocking checks; `make audit` runs report-only diagnostics.
+Do not maintain a parallel gate list. `main` requires a PR and the
+`skills (3.12)` status; [Q-GATESTACK-1's addendum](docs/briefs/closures/Q-GATESTACK-1-closure-falsified.md)
+records the ruleset. Other path-filtered checks are not required merge checks.
 
 ## Key Principle
 
-The portfolio is LOCKED **at the parameter axis** — this pipeline manages the *operational* layer
-and never touches strategy parameters. **Capital authorization is a separate, always-revocable
-axis.** "Locked" means parameters are frozen, **not** that a strategy earns capital indefinitely.
+**Locked artifacts retain immutable parameters; research follows its own approved
+campaign contract.** Capital authorization is revocable, and venue/deployment
+authority is separate. Neither a parameter lock nor a research result grants capital.

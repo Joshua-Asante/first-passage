@@ -10,6 +10,8 @@
 **Related:** [SPEC S7](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s7-repo-alignment-spec.md) · [alignment manifest](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-07-posture-a-alignment-manifest.md) · [`scripts/gates.yml`](../../scripts/gates.yml) · [`scripts/gate_manifest.py`](../../scripts/gate_manifest.py) · [root-doc charter](2026-07-16-root-doc-charter-dedup.md)
 **Layer:** governance tooling + doc diet. **$0 / K=0** — no gate dropped; CI re-enable separately owed.
 
+> **Current session routing (2026-09-06):** [the amendment below](#addendum-2026-09-06--session-history-routes-to-the-current-queue) replaces historical-session queue copying with a living-header link to STATE. Read it before following the older Open/next instructions.
+
 ---
 
 ## §0 — Rule 0 reads (verified 2026-08-07)
@@ -221,3 +223,23 @@ git log --first-parent --since=2026-09-03 --oneline
 python scripts/gate_manifest.py --tier audit --dry-run
 make audit
 ```
+
+---
+
+## Addendum 2026-09-06 — Session history routes to the current queue
+
+**Status:** `Accepted` — operator-directed root-document revision; full grounds,
+scope and verification are in the [root-charter amendment](2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-06--current-work-routing-and-root-consolidation). This expressly
+replaces the 2026-08-23 full-vs-stub and Open/next addenda only where they require queue-copy stubs or a copied live queue in session entries. The pre-edit reader and affected headers were verified at `7185ccf`.
+
+STATE owns current priorities. The SESSIONS living header links to STATE; campaign
+plans own executable next steps. Session entries preserve history, with optional
+session-specific Open / next. A later queue change neither rewrites an old entry
+nor requires a new queue-copy stub. The existing `sessions-queue-bind` checker now
+validates that header route and the queue section; it no longer compares row IDs.
+
+The ≤5 concurrency cap, queue-first session start, operator direction, evidence
+requirements and append-only historical entries remain in force. This does not
+change the M1/arming boundary or this ADR's standing falsifier. Verification:
+`python scripts/check_sessions_queue_bind.py` and
+`python -m pytest tests/test_sessions_queue_bind.py -q`.
