@@ -9,6 +9,7 @@ none of this touches a real account, capture or campaign export.
 
 import dataclasses
 import decimal
+import sys
 from decimal import Decimal
 from fractions import Fraction
 
@@ -400,16 +401,117 @@ def test_beyond_native_product_range_returns_arithmetic_limit():
     assert result.post_fill_margin_cushion is None
 
 
-def test_precision_span_beyond_resource_ceiling_returns_arithmetic_limit():
-    """A second, distinct non-proof path from handoff §3.1: `cash_before` and
-    `execution_cost` are each individually representable and their exponents
-    are nowhere near Decimal's native range limit, but their exponents are
-    2,000,000 apart, so an exact `cash_before - execution_cost` would need a
-    coefficient with over two million digits — beyond this module's bounded
-    arithmetic-resource ceiling, independent of the native-range check above.
+def test_subnormal_result_below_min_emin_is_not_falsely_rejected():
+    """Required regression (review finding 1, head 7e82324): `point_value`'s
+    own exponent sits well below `decimal.MIN_EMIN` — a genuine subnormal
+    magnitude, not a normal-range value — but multiplied by a large
+    `execution_price` the exact product's exponent lands comfortably inside
+    the representable range. A design that checks (or rounds) an
+    intermediate `quantity * point_value` step against a bound that isn't
+    itself low enough would reject this even though the real product is
+    fine; this module's exact big-integer multiply sums exponents directly
+    with no intermediate step and no such bound at all.
     """
+    point_value_exponent = decimal.MIN_EMIN - 10
+    price_exponent = 15
+    product_exponent = point_value_exponent + price_exponent  # decimal.MIN_EMIN + 5
+
     facts = _facts(
-        cash_before=Decimal("1E2000000"),
+        cash_before=Decimal(f"2E{product_exponent}"),
+        point_value=Decimal(f"1E{point_value_exponent}"),
+        execution_price=Decimal(f"1E{price_exponent}"),
+        current_mark=Decimal(f"1E{price_exponent}"),
+        execution_cost=Decimal("0"),
+    )
+    result = assess_funding(facts)
+    assert result.status == FundingStatus.PROVEN_POSITIVE_CUSHION
+    assert result.reason == FundingReason.POSITIVE_CUSHION
+    assert result.cash_after_cost == Decimal(f"2E{product_exponent}")
+    assert result.required_at_basis == Decimal(f"1E{product_exponent}")
+    assert result.surplus == Decimal(f"1E{product_exponent}")
+    assert result.post_fill_margin_cushion == Decimal(f"1E{product_exponent}")
+
+
+def test_identity_product_and_subtraction_at_max_emax_are_exact():
+    """Required regression (review finding 2, head 7e82324): cash, price and
+    mark all sit at `decimal.MAX_EMAX` itself — the true native exponent
+    ceiling, not one below it — with an identity point_value/quantity. Both
+    `point_value * funding_basis` and the final subtraction land exactly at
+    the ceiling (adjusted exponent == MAX_EMAX) and are representable
+    exactly. A preflight that adds speculative headroom (e.g. "+2" for a
+    possible carry digit that a compact identity computation never
+    produces) would reject this even though nothing overflows.
+    """
+    exponent = decimal.MAX_EMAX
+    facts = _facts(
+        cash_before=Decimal(f"2E{exponent}"),
+        execution_cost=Decimal("0"),
+        point_value=Decimal("1"),
+        execution_price=Decimal(f"1E{exponent}"),
+        current_mark=Decimal(f"1E{exponent}"),
+    )
+    result = assess_funding(facts)
+    assert result.status == FundingStatus.PROVEN_POSITIVE_CUSHION
+    assert result.reason == FundingReason.POSITIVE_CUSHION
+    assert result.cash_after_cost == Decimal(f"2E{exponent}")
+    assert result.funding_basis == Decimal(f"1E{exponent}")
+    assert result.required_at_basis == Decimal(f"1E{exponent}")
+    assert result.surplus == Decimal(f"1E{exponent}")
+    assert result.post_fill_margin_cushion == Decimal(f"1E{exponent}")
+
+
+def test_large_digit_count_identity_factors_are_not_overcounted():
+    """Required regression (review finding 4, head 7e82324): quantity and
+    execution_price/current_mark are identity (1), and point_value is a
+    3,000-digit repunit matched by a same-width cash_before (its exact
+    double — doubling an all-ones number never carries, since each digit is
+    1*2=2), so every exact witness has at most 3,000 coefficient digits. A
+    design that preflights precision from the SUM of every factor's own
+    digit count (1 + 3000 + 1 = 3,002, inflated further by the identity
+    factors that contribute nothing to the real result) instead of the
+    actual product's digit count risks rejecting this even though the true
+    result never grows past the widest operand. 3,000 digits is chosen to
+    stay comfortably under Python's own default int-to-str conversion limit
+    (see `test_span_exceeding_python_str_conversion_limit_...` below for
+    that distinct, genuine boundary) so this test isolates the counting bug
+    only.
+    """
+    point_value = Decimal("1" * 3000)
+    cash_before = Decimal("2" * 3000)  # exactly 2 * point_value, digit-wise
+
+    facts = _facts(
+        cash_before=cash_before,
+        point_value=point_value,
+        execution_price=Decimal("1"),
+        current_mark=Decimal("1"),
+        execution_cost=Decimal("0"),
+    )
+    result = assess_funding(facts)
+    assert result.status == FundingStatus.PROVEN_POSITIVE_CUSHION
+    assert result.reason == FundingReason.POSITIVE_CUSHION
+    assert result.required_at_basis == point_value
+    assert result.surplus == point_value
+
+
+def test_span_exceeding_python_str_conversion_limit_returns_arithmetic_limit_not_crash():
+    """Without the removed fixed `_MAX_EXACT_PRECISION` cap, an exponent span
+    is no longer rejected by an arbitrary business-logic threshold — but an
+    exact result can still need more digits than Python's own
+    interpreter-level int-to-str conversion limit
+    (`sys.get_int_max_str_digits`) permits. That is a genuine, externally
+    imposed resource constraint (not a cap this module invents), so this
+    module maps it to `ARITHMETIC_LIMIT` — a defined non-proof outcome
+    (handoff §3.1) — instead of raising/crashing. The span here is sized to
+    just clear the interpreter's own configured limit, not to perform a
+    large computation.
+    """
+    limit = sys.get_int_max_str_digits()
+    if limit == 0:
+        pytest.skip("int-to-str conversion limit is disabled in this interpreter")
+
+    exponent_span = limit + 100
+    facts = _facts(
+        cash_before=Decimal(f"1E{exponent_span}"),
         execution_cost=Decimal("1"),
     )
     result = assess_funding(facts)

@@ -41,44 +41,69 @@ context — see `_exact_add`/`_exact_subtract`/`_exact_multiply`):
 known cost for this candidate execution — callers must not add a duplicate
 slippage charge on top of it.
 
-Precision and exponent bounds for every step are derived from the actual
-operands (their stored coefficient digit counts and exponents) rather than a
-fixed cap. A zero operand is returned as the other operand unchanged instead
-of letting decimal's ideal-exponent rule for `x +/- 0`
-(`min(exponent(x), exponent(0))`) force a compact, large-exponent `x` to
-materialize an astronomically large coefficient for no numeric benefit — the
-same reasoning applies to two equal-exponent operands, whose exact difference
-is cheap regardless of magnitude because no realignment is needed. Finite,
-shape-valid operands do not guarantee a representable or safely materializable
-result Decimal (handoff §3.1): if an exact witness's exponent would exceed
-Decimal's native representable range, or its exact coefficient would need
-more digits than a bounded arithmetic-resource ceiling
-(`_MAX_EXACT_PRECISION`), the step is preflighted to fail before it is
-attempted, and `assess_funding` returns `OUTSIDE_PROVEN_DOMAIN` /
-`ARITHMETIC_LIMIT` with every witness `None` — a defined non-proof outcome,
-never a rounded substitute or a broker action.
+Every arithmetic step is computed with exact Python-integer coefficient
+arithmetic, never `decimal.Context`-bounded operations: each Decimal operand
+is decomposed into its exact `(coefficient, exponent)` pair straight from
+`as_tuple()` (no parsing, no rounding), combined with plain integer
+add/multiply (which never rounds, regardless of magnitude), and the result is
+rebuilt as a `Decimal` via direct tuple construction — a form the constructor
+documents as unbound by any context precision or exponent limit. This sidesteps
+an entire class of bugs from trying to *estimate* a big-enough
+`decimal.Context(prec=...)` up front: an estimate sized from operand digit
+counts or a `+2` carry-digit margin is either too tight (silently rounds a
+valid result) or systematically too loose (rejects a representable result,
+e.g. summing every factor's own digit count overcounts a product whose actual
+width doesn't grow past its widest operand, or comparing a raw exponent
+against `decimal.MIN_EMIN` wrongly rejects an exact subnormal that a
+sufficiently-precise context could still represent exactly).
+
+Finite, shape-valid operands do not guarantee a representable or safely
+materializable result Decimal (handoff §3.1). Every computed witness is
+preflighted, after being computed exactly, against:
+
+  * Decimal's true native ceiling on adjusted exponent (`decimal.MAX_EMAX`) —
+    the real ceiling any context's `Emax` can reach, not a value this module
+    chose;
+  * the most negative exponent representable by *any* legal context
+    (`Emin=decimal.MIN_EMIN` at `prec=decimal.MAX_PREC`, i.e. the lowest
+    `Context.Etiny()` decimal itself can ever produce) — so an exact
+    subnormal below `MIN_EMIN` is accepted as long as some context could
+    still hold it exactly;
+  * Python's own interpreter-level integer-to-string conversion limit
+    (`sys.get_int_max_str_digits`) — a distinct, externally imposed resource
+    guard, unrelated to this module's own logic, that a coefficient needing
+    enough digits can legitimately hit.
+
+None of these are a cap this module invents or a smaller substitute value —
+they are the union of what Decimal (and the interpreter it runs in) can
+represent at all. When a witness would fail any of them, or the underlying
+integer arithmetic itself exhausts memory, `assess_funding` returns
+`OUTSIDE_PROVEN_DOMAIN` / `ARITHMETIC_LIMIT` with every witness `None` — a
+defined non-proof outcome, never a rounded substitute or a broker action.
 """
 
 import decimal
+import sys
 from dataclasses import dataclass
-from decimal import Decimal, Inexact, localcontext
+from decimal import Decimal
 from enum import Enum
 from typing import Optional
 
-# A resource ceiling on the exact coefficient precision a single step may
-# require. Decimal's native Emax/Emin already bound representable exponents;
-# this bounds the *span* between two operands' exponents, which can be huge
-# (and so require an equally huge coefficient to add/subtract exactly) even
-# when both operands' own exponents are individually well within range.
-_MAX_EXACT_PRECISION = 1_000_000
+# The lowest exponent representable by ANY legal decimal.Context: Etiny() =
+# Emin - prec + 1, minimized by pairing the most negative allowed Emin with
+# the largest allowed prec. Below this, no context (however configured)
+# could ever hold the value exactly — a genuine union-of-all-contexts floor,
+# not a value this module chose.
+_ABSOLUTE_MIN_EXPONENT = decimal.MIN_EMIN - decimal.MAX_PREC + 1
 
 _SUPPORTED_DIRECTION = "LONG"
 
 
 class _ArithmeticLimit(Exception):
     """Raised internally when an exact witness would exceed Decimal's native
-    result range or `_MAX_EXACT_PRECISION`. Caught only by `assess_funding`,
-    which translates it to `OUTSIDE_PROVEN_DOMAIN` / `ARITHMETIC_LIMIT`."""
+    representable range, or the underlying integer arithmetic cannot be
+    safely completed. Caught only by `assess_funding`, which translates it
+    to `OUTSIDE_PROVEN_DOMAIN` / `ARITHMETIC_LIMIT`."""
 
 
 class FundingStatus(str, Enum):
@@ -208,92 +233,110 @@ def _outside_domain(reason: FundingReason) -> FundingAssessment:
     )
 
 
-def _require_bounded_exponent(exponent: int) -> None:
-    """Preflight an exponent against Decimal's native representable range,
-    raising `_ArithmeticLimit` before any allocation is attempted rather than
-    letting the arithmetic itself raise `decimal.Overflow`."""
-    if exponent > decimal.MAX_EMAX or exponent < decimal.MIN_EMIN:
+def _decimal_as_int(value: Decimal):
+    """Exact `(signed coefficient, exponent)` for a nonzero finite Decimal,
+    read directly from its stored digit tuple — no string parsing, no
+    context, no rounding of any kind."""
+    sign, digits, exponent = value.as_tuple()
+    coefficient = 0
+    for digit in digits:
+        coefficient = coefficient * 10 + digit
+    if sign:
+        coefficient = -coefficient
+    return coefficient, exponent
+
+
+def _finalize(coefficient: int, exponent: int) -> Decimal:
+    """Build the exact `Decimal` for `coefficient * 10 ** exponent` via
+    direct tuple construction, then preflight it against Decimal's true
+    native representable range (see module docstring) rather than a fixed
+    cap this module invents."""
+    if coefficient == 0:
+        return Decimal(0)
+
+    try:
+        digit_string = str(abs(coefficient))
+    except ValueError as exc:
+        # Python's own int-to-str conversion limit
+        # (sys.get_int_max_str_digits) — a genuine interpreter resource
+        # guard, not a business-logic cap.
+        raise _ArithmeticLimit() from exc
+
+    adjusted_exponent = exponent + len(digit_string) - 1
+    if adjusted_exponent > decimal.MAX_EMAX or exponent < _ABSOLUTE_MIN_EXPONENT:
         raise _ArithmeticLimit()
 
-
-def _bounded_context(prec: int) -> decimal.Context:
-    """A context sized to exactly `prec` digits, spanning Decimal's full
-    native exponent range, that fails loudly (traps `Inexact`) rather than
-    silently discarding a significant digit. `Rounded` is left untrapped:
-    it fires whenever a coefficient is rounded to fit `prec`, including when
-    the discarded digits are all zero and the value is unchanged, so trapping
-    it would reject exact results (handoff §3.1)."""
-    ctx = decimal.Context(prec=prec, Emax=decimal.MAX_EMAX, Emin=decimal.MIN_EMIN)
-    ctx.traps[Inexact] = True
-    return ctx
+    sign = 0 if coefficient >= 0 else 1
+    digits = tuple(int(ch) for ch in digit_string)
+    return Decimal((sign, digits, exponent))
 
 
 def _exact_add(a: Decimal, b: Decimal) -> Decimal:
-    """Exact `a + b`, with precision and exponent bounds sized to these two
-    operands only. A zero operand short-circuits to the other operand as-is
-    (see module docstring); two operands sharing an exponent are cheap by
-    construction, since no realignment is needed regardless of magnitude."""
+    """Exact `a + b` via aligned big-integer coefficients. A zero operand
+    short-circuits to the other operand unchanged, exactly as-is."""
     if b == 0:
         return a
     if a == 0:
         return b
 
-    a_exponent = a.as_tuple().exponent
-    b_exponent = b.as_tuple().exponent
-    low = min(a_exponent, b_exponent)
-    high = max(a.adjusted(), b.adjusted()) + 2  # +1 for a possible carry digit, +1 to size a length
-    _require_bounded_exponent(low)
-    _require_bounded_exponent(high)
+    a_coefficient, a_exponent = _decimal_as_int(a)
+    b_coefficient, b_exponent = _decimal_as_int(b)
+    exponent = min(a_exponent, b_exponent)
 
-    needed_precision = high - low
-    if needed_precision > _MAX_EXACT_PRECISION:
-        raise _ArithmeticLimit()
+    # Cheap upfront estimate (operand adjusted exponents, not a fixed cap) of
+    # how many digits aligning to the shared exponent could need, checked
+    # against Python's own conversion limit before attempting the
+    # potentially large alignment multiply below.
+    max_str_digits = sys.get_int_max_str_digits()
+    if max_str_digits:
+        estimated_digits = max(a.adjusted(), b.adjusted()) - exponent + 2
+        if estimated_digits > max_str_digits:
+            raise _ArithmeticLimit()
 
     try:
-        with localcontext(_bounded_context(needed_precision)):
-            return a + b
-    except (Inexact, decimal.Overflow, MemoryError) as exc:
+        scaled_a = a_coefficient * 10 ** (a_exponent - exponent)
+        scaled_b = b_coefficient * 10 ** (b_exponent - exponent)
+        coefficient = scaled_a + scaled_b
+    except MemoryError as exc:
         raise _ArithmeticLimit() from exc
+
+    return _finalize(coefficient, exponent)
 
 
 def _exact_subtract(a: Decimal, b: Decimal) -> Decimal:
-    """Exact `a - b`; see `_exact_add` for the sizing and zero-operand rules."""
+    """Exact `a - b`; see `_exact_add`. `copy_negate` is a sign-flip only —
+    the decimal module documents it as unaffected by context, so it never
+    rounds regardless of `b`'s magnitude."""
     return _exact_add(a, b.copy_negate())
 
 
 def _exact_multiply(*factors: Decimal) -> Decimal:
-    """Exact product of two or more Decimals, with precision and exponent
-    bounds sized to these operands only. Any zero factor short-circuits to
-    exact zero."""
+    """Exact product of two or more Decimals via big-integer coefficients
+    and summed exponents — multiplication needs no alignment, so this is
+    cheap regardless of any factor's magnitude. Any zero factor
+    short-circuits to exact zero."""
     if any(factor == 0 for factor in factors):
         return Decimal(0)
 
-    exponents = [factor.as_tuple().exponent for factor in factors]
-    digit_counts = [len(factor.as_tuple().digits) for factor in factors]
-    total_exponent = sum(exponents)
-    total_digits = sum(digit_counts)
-    _require_bounded_exponent(total_exponent)
-    _require_bounded_exponent(total_exponent + total_digits)  # +1 headroom for a carry digit
-
-    if total_digits > _MAX_EXACT_PRECISION:
-        raise _ArithmeticLimit()
-
+    coefficient = 1
+    exponent = 0
     try:
-        with localcontext(_bounded_context(total_digits)):
-            result = factors[0]
-            for factor in factors[1:]:
-                result = result * factor
-            return result
-    except (Inexact, decimal.Overflow, MemoryError) as exc:
+        for factor in factors:
+            factor_coefficient, factor_exponent = _decimal_as_int(factor)
+            coefficient *= factor_coefficient
+            exponent += factor_exponent
+    except MemoryError as exc:
         raise _ArithmeticLimit() from exc
+
+    return _finalize(coefficient, exponent)
 
 
 def _exact_arithmetic(facts: FundingFacts):
-    """Compute the five arithmetic witnesses exactly, sizing each step's
-    precision and exponent bounds to its own operands (`_exact_add`,
-    `_exact_subtract`, `_exact_multiply`) instead of a fixed cap. Raises
-    `_ArithmeticLimit` — caught only by `assess_funding` — if any step's
-    exact result is not representable or not safely materializable.
+    """Compute the five arithmetic witnesses exactly via big-integer
+    coefficient arithmetic (`_exact_add`/`_exact_subtract`/`_exact_multiply`)
+    — never a `decimal.Context`-bounded operation. Raises `_ArithmeticLimit`
+    — caught only by `assess_funding` — if any step's exact result is not
+    representable or not safely materializable.
     """
     quantity = Decimal(facts.requested_quantity)
     cash_after_cost = _exact_subtract(facts.cash_before, facts.execution_cost)
