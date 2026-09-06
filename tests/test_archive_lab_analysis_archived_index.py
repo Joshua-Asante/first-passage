@@ -113,3 +113,45 @@ def test_malformed_index_is_ignored(tmp_path: Path) -> None:
     assert ala.load_archived_index(tmp_path) == {}
     rows = ala.scan_lab(tmp_path, tracked_override={"live": frozenset({p})})
     assert [r.slug for r in rows] == ["live"]
+
+
+def test_full_check_treats_an_indexed_remnant_as_a_remnant_not_a_hot_body(
+    tmp_path: Path,
+) -> None:
+    """An indexed study's leftover files are fixtures, not a body to validate.
+
+    ``scan_lab`` renders indexed slugs under ``## Archived`` from the index, but
+    ``check_lab`` walks ``iter_hot_bodies`` independently. Without the index skip
+    it re-judged those remnants as hot bodies and emitted ``empty one-liner:``
+    against studies the catalog already showed as archived elsewhere -- the
+    checker contradicting the catalog it exists to validate.
+    """
+    remnant = tmp_path / "lab" / "analysis" / "c1" / "remnant"
+    remnant.mkdir(parents=True)
+    # No parsable disposition -> the scan cannot derive a one-liner, which is
+    # exactly the shape of the real remnants (STAGE0.md-style cards).
+    (remnant / "RESULTS.md").write_text(
+        "# Remnant\n\n**Theme:** c1\n\nFixture body.\n", encoding="utf-8"
+    )
+    (tmp_path / "lab" / "analysis" / "c1" / "README.md").write_text("# c1\n", encoding="utf-8")
+    tracked = {"remnant": frozenset({"lab/analysis/c1/remnant/RESULTS.md"})}
+
+    # Not indexed -> judged as a hot body, so the fixture is non-vacuous.
+    before = ala.check_lab(tmp_path, tracked_override=tracked)
+    assert "empty one-liner: remnant" in before
+
+    _index(
+        tmp_path,
+        {
+            "remnant": {
+                "theme": "c1",
+                "status": "CLOSED",
+                "one_liner": "archived elsewhere",
+                "baseline_body": "lab/analysis/c1/remnant/",
+                "retained_files": ["lab/analysis/c1/remnant/RESULTS.md"],
+            }
+        },
+    )
+    after = ala.check_lab(tmp_path, tracked_override=tracked)
+    assert "empty one-liner: remnant" not in after
+    assert not any("remnant" in issue for issue in after), after

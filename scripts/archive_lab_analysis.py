@@ -1812,6 +1812,13 @@ def check_lab(
             d.name for d in archive_root.iterdir() if d.is_dir()
         }
 
+    # Studies archived out of this tree (lab/ARCHIVED.json). Whatever is still on
+    # disk for one of these slugs is a RETAINED REMNANT -- a fixture or module some
+    # surviving test/script consumes -- not a hot body. scan_lab() renders them under
+    # ``## Archived`` from the index, so the body-shaped checks below would contradict
+    # the catalog they exist to validate.
+    indexed_slugs: set[str] = set(load_archived_index(repo).get("studies") or {})
+
     # Flat stub / dual-presence checks — skip closed-set theme directories.
     analysis_slugs: set[str] = set()
     if analysis_root.is_dir():
@@ -1869,6 +1876,8 @@ def check_lab(
     layout_active = theme_layout_active(repo)
     for dir_theme, slug, slug_dir in iter_hot_bodies(repo):
         if is_stub_dir(slug_dir, repo, tracked_override):
+            continue
+        if slug in indexed_slugs:
             continue
         if layout_active:
             try:

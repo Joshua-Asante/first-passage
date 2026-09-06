@@ -24,6 +24,22 @@ Steps:
    lab/analysis/` and classify every hit into: (a) prose-only mentions (`RESULTS.md`,
    `.json` — leave untouched, they are historical record); (b) code that mutates
    `FIRM_RULES[...]["dd_lock_offset_usd"]` directly. Only (b) is in scope for migration.
+
+   ⚠ **Amended 2026-09-06 — read both sub-points before running steps 1 and 2.** The
+   [tracked-file reduction](../adr/2026-09-06-tracked-file-reduction-prune.md) removed most of
+   this packet's inputs from the working tree; they are preserved, not lost.
+   * Step 1's *second* pattern copy
+     (`lab/analysis/c1/aegis3leg_engine_param_2026-08-20/run_aegis1p_rescore_parameterized.py`)
+     is no longer tracked. Read it with
+     `git show 2d40dbeb56c167844cab5136742d70787835f8e2:lab/analysis/c1/aegis3leg_engine_param_2026-08-20/run_aegis1p_rescore_parameterized.py`
+     (or the same path under `first-passage-archive` @ `5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2`).
+     The first copy (`tradeify_eval_lock_correction_2026-07-22/remc_eval_lock_fix.py`) is still tracked.
+   * Step 2's sweep **must not run against the working tree alone.** `dd_lock_offset_usd`
+     had **66** hits under `lab/analysis/` at the baseline and **18** here — 48 sites left
+     the tree, **23 of them `.py`**, i.e. category-(b) migration candidates. Sweep the
+     baseline instead: `git grep -l "dd_lock_offset_usd" 2d40dbeb56c167844cab5136742d70787835f8e2 -- lab/analysis/`.
+     A working-tree `rg` silently under-reports the site list by ~73% and would migrate a
+     fraction of the real surface while reporting completion.
 3. **RED-first tests, before the build:** (a) a joblib `Parallel(prefer="processes")`
    fan-out where only the parent process patches the constant must, under the new
    primitive's attestation check, **fail loudly** (the exact M-23 shape — reproduce it
