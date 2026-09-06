@@ -29,13 +29,19 @@ MARKDOWN_LINK_RE = re.compile(
     r"(?:\s+(?:\"[^\"\n]*\"|'[^'\n]*'|\([^\n)]*\)))?\s*\)"
 )
 HTML_COMMENT_RE = re.compile(r"<!--.*?(?:-->|\Z)", re.S)
-FENCED_CODE_RE = re.compile(
-    r"^[ \t]{0,3}(?P<fence>`{3,}|~{3,})[^\n]*\n"
-    r".*?(?:^[ \t]{0,3}(?P=fence)[ \t]*(?:\n|\Z)|\Z)",
-    re.M | re.S,
+FENCE_LINE_RE = re.compile(
+    r"^[ \t]{0,3}(?P<fence>`{3,}|~{3,})(?P<rest>[^\n]*)(?:\n|\Z)"
 )
 INDENTED_CODE_RE = re.compile(r"^(?: {4}|\t).*?(?:\n|\Z)", re.M)
 INLINE_CODE_RE = re.compile(r"(?P<ticks>`+).*?(?P=ticks)", re.S)
+REFERENCE_LINK_RE = re.compile(
+    r"(?<!!)\[(?P<label>[^\]\n]+)\]\[(?P<reference>[^\]\n]*)\]"
+)
+REFERENCE_DEFINITION_RE = re.compile(
+    r"^[ \t]{0,3}\[(?P<reference>[^\]\n]+)\]:[ \t]*"
+    r"(?P<destination><[^>\n]+>|[^\s\n]+)",
+    re.M,
+)
 
 
 def validate_operator_queue(state_text: str) -> None:
@@ -53,11 +59,55 @@ def living_header(sessions_text: str) -> str:
     return sessions_text[: first_entry.start()]
 
 
+def without_fenced_code(markdown: str) -> str:
+    rendered_lines: list[str] = []
+    open_fence: tuple[str, int] | None = None
+    for line in markdown.splitlines(keepends=True):
+        match = FENCE_LINE_RE.match(line)
+        if open_fence is None:
+            if match is None:
+                rendered_lines.append(line)
+                continue
+            fence = match.group("fence")
+            open_fence = (fence[0], len(fence))
+            continue
+        if match is None:
+            continue
+        fence = match.group("fence")
+        if (
+            fence[0] == open_fence[0]
+            and len(fence) >= open_fence[1]
+            and not match.group("rest").strip()
+        ):
+            open_fence = None
+    return "".join(rendered_lines)
+
+
 def rendered_markdown_source(markdown: str) -> str:
     without_comments = HTML_COMMENT_RE.sub("", markdown)
-    without_fences = FENCED_CODE_RE.sub("", without_comments)
+    without_fences = without_fenced_code(without_comments)
     without_indented_code = INDENTED_CODE_RE.sub("", without_fences)
     return INLINE_CODE_RE.sub("code", without_indented_code)
+
+
+def normalized_reference(reference: str) -> str:
+    return " ".join(reference.split()).casefold()
+
+
+def markdown_destinations(markdown: str) -> list[str]:
+    destinations = [
+        match.group("destination") for match in MARKDOWN_LINK_RE.finditer(markdown)
+    ]
+    definitions = {
+        normalized_reference(match.group("reference")): match.group("destination")
+        for match in REFERENCE_DEFINITION_RE.finditer(markdown)
+    }
+    for match in REFERENCE_LINK_RE.finditer(markdown):
+        reference = match.group("reference") or match.group("label")
+        destination = definitions.get(normalized_reference(reference))
+        if destination is not None:
+            destinations.append(destination)
+    return destinations
 
 
 def link_destination_path(destination: str, *, sessions_file: Path) -> Path | None:
@@ -76,12 +126,10 @@ def header_links_to_state(
     sessions_text: str, *, sessions_file: Path, state_file: Path
 ) -> bool:
     expected = state_file.resolve()
+    rendered_header = living_header(rendered_markdown_source(sessions_text))
     return any(
-        link_destination_path(match.group("destination"), sessions_file=sessions_file)
-        == expected
-        for match in MARKDOWN_LINK_RE.finditer(
-            rendered_markdown_source(living_header(sessions_text))
-        )
+        link_destination_path(destination, sessions_file=sessions_file) == expected
+        for destination in markdown_destinations(rendered_header)
     )
 
 

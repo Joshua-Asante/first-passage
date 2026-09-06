@@ -136,3 +136,8 @@ Baseline: 7185ccf. Five root files contained 14,206 whitespace-delimited words. 
   gate manifest and whitespace check passed after the fixes. Delivery is a local
   commit on `codex/root-docs-current-workflow`; the main checkout is not modified
   by this task.
+- PR #317 review follow-up: four failing CLI cases reproduced three Markdown-parser
+  gaps before repair. The checker now accepts longer valid closing fences and
+  reference-style links, and ignores dated headings in comments or fenced examples
+  when locating the first historical entry. The final affected suite passed **149
+  tests**, and the blocking gate manifest passed before the repair commit.

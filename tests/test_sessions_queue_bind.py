@@ -125,6 +125,63 @@ def test_non_rendered_header_route_fails(tmp_path: Path, hidden_route: str) -> N
     assert "header" in result.stderr
 
 
+def test_visible_link_after_longer_closing_fence_is_valid(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "```markdown\n"
+            "[example](../OTHER.md)\n"
+            "````\n\n"
+            "Current priorities: [STATE queue](../STATE.md#operator-queue)."
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.parametrize(
+    "hidden_heading",
+    [
+        "<!--\n## 2026-09-01a — example\n-->",
+        "```markdown\n## 2026-09-01a — example\n```",
+    ],
+    ids=["html-comment", "fenced-code"],
+)
+def test_hidden_dated_heading_does_not_end_living_header(
+    tmp_path: Path, hidden_heading: str
+) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            f"Example:\n\n{hidden_heading}\n\n"
+            "Current priorities: [STATE queue](../STATE.md#operator-queue)."
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_reference_style_header_link_is_a_valid_route(tmp_path: Path) -> None:
+    state = _write(tmp_path / "STATE.md", _state(1))
+    sessions = _write(
+        tmp_path / "docs" / "SESSIONS.md",
+        _sessions(
+            "Current priorities: [STATE queue][queue].\n\n"
+            "[queue]: ../STATE.md#operator-queue"
+        ),
+    )
+
+    result = _run(state, sessions)
+
+    assert result.returncode == 0, result.stderr
+
+
 @pytest.mark.parametrize(
     "header",
     [
