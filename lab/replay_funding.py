@@ -17,8 +17,9 @@ order ownership and the current execution-point mark.
 
 Supported interior: known state; established execution price; `LONG`;
 `requested_quantity == 1`; `margin_ratio == 1`; `open_quantity == 0`; no
-competing entry (`competing_entry_count == 0`, where a competing entry is any
-submitted request with a zero reservation). Everything else returns
+competing entry (`competing_entry_count == 0`; competing entries are all
+submitted requests contending for the same admission, including but not
+limited to any with a zero reservation). Everything else returns
 `OUTSIDE_PROVEN_DOMAIN` with the first-matching reason, in this fixed
 precedence: UNKNOWN_STATE, UNESTABLISHED_EXECUTION_PRICE,
 UNSUPPORTED_SIDE_MARGIN_QUANTITY, EXISTING_POSITION, COMPETING_ENTRY, then the
@@ -39,21 +40,34 @@ known cost for this candidate execution — callers must not add a duplicate
 slippage charge on top of it.
 """
 
+import decimal
 from dataclasses import dataclass
 from decimal import Context, Decimal, Inexact, Rounded, localcontext
 from enum import Enum
 from typing import Optional
 
-# Every arithmetic step runs inside a context sized to the actual operands
-# (`_exact_arithmetic`) so the returned witnesses cannot change with the caller's
-# ambient decimal.getcontext() precision or rounding mode (frozen behavior
-# contract §3), and cannot be silently rounded by an undersized fixed cap
-# either — a fixed precision can lose digits on inputs with enough decimal
-# places (e.g. a many-digit fractional cash balance). Comparisons (`==`,
-# `!=`, `>`, `max`) are exact in the decimal module regardless of context and
-# need no such override.
-_INITIAL_PRECISION = 64
-_MAX_PRECISION = 1_000_000
+# Every arithmetic step runs inside a context built from the decimal module's
+# own absolute ceiling — `decimal.MAX_PREC`/`MAX_EMAX`/`MIN_EMIN`, the true
+# limits of what a Decimal object can represent on this platform, not a
+# smaller value chosen by this module — so the returned witnesses cannot
+# change with the caller's ambient decimal.getcontext() precision or
+# rounding mode (frozen behavior contract §3), cannot be silently rounded by
+# an undersized coefficient cap (a fixed precision can lose digits on inputs
+# with enough decimal places), and cannot overflow/underflow on a
+# large-exponent input either (a fixed prec alone leaves the constructor's
+# default Emax/Emin in place, which a big enough exponent still exceeds).
+# `Inexact`/`Rounded` stay trapped so any input that could somehow still not
+# fit fails loudly instead of silently returning a wrong witness; no finite
+# Decimal actually constructible in memory can reach that ceiling. Exact
+# comparisons (`==`, `!=`, `>`, `max`) need no such override — they are exact
+# in the decimal module regardless of context.
+_EXACT_ARITHMETIC_CONTEXT = Context(
+    prec=decimal.MAX_PREC,
+    Emax=decimal.MAX_EMAX,
+    Emin=decimal.MIN_EMIN,
+)
+_EXACT_ARITHMETIC_CONTEXT.traps[Inexact] = True
+_EXACT_ARITHMETIC_CONTEXT.traps[Rounded] = True
 
 _SUPPORTED_DIRECTION = "LONG"
 
@@ -81,8 +95,11 @@ class FundingReason(str, Enum):
 
 @dataclass(frozen=True)
 class FundingFacts:
-    """Caller-supplied facts for one candidate execution. Invented/test facts only —
-    never populate this from a live account, capture or campaign export."""
+    """Caller-supplied facts for one candidate execution — a reusable, pure
+    data contract, not a fixture. This module's own tests and public
+    examples populate it with invented values only; an authorized caller may
+    later supply its own private facts here, subject to the same no-I/O,
+    no-broker-action boundary this module holds everywhere else."""
 
     cash_before: Decimal
     point_value: Decimal
@@ -181,42 +198,26 @@ def _outside_domain(reason: FundingReason) -> FundingAssessment:
 
 
 def _exact_arithmetic(facts: FundingFacts):
-    """Compute the five arithmetic witnesses with a precision sized to the
-    actual operands, so no finite `Decimal` input is ever silently rounded.
-
-    Starts from a generous but finite precision and doubles it whenever the
-    context reports that a coefficient was rounded or a value changed
-    (`Rounded` / `Inexact`, trapped as exceptions below) — i.e. whenever the
-    chosen precision turns out to be insufficient for these exact operands —
-    until every step is provably exact. This replaces a fixed precision cap,
-    which can silently round exact results for operands with enough digits.
+    """Compute the five arithmetic witnesses at the decimal module's true
+    coefficient-precision and exponent ceiling, so no finite `Decimal` input
+    is ever silently rounded or overflowed regardless of its magnitude.
     """
     quantity = Decimal(facts.requested_quantity)
-    precision = _INITIAL_PRECISION
-    while True:
-        context = Context(prec=precision)
-        context.traps[Inexact] = True
-        context.traps[Rounded] = True
-        try:
-            with localcontext(context):
-                cash_after_cost = facts.cash_before - facts.execution_cost
-                funding_basis = max(facts.execution_price, facts.current_mark)
-                required_at_basis = quantity * facts.point_value * funding_basis
-                surplus = cash_after_cost - required_at_basis
-                post_fill_margin_cushion = (
-                    cash_after_cost - quantity * facts.point_value * facts.execution_price
-                )
-            return (
-                cash_after_cost,
-                funding_basis,
-                required_at_basis,
-                surplus,
-                post_fill_margin_cushion,
-            )
-        except (Inexact, Rounded):
-            if precision >= _MAX_PRECISION:
-                raise
-            precision *= 4
+    with localcontext(_EXACT_ARITHMETIC_CONTEXT):
+        cash_after_cost = facts.cash_before - facts.execution_cost
+        funding_basis = max(facts.execution_price, facts.current_mark)
+        required_at_basis = quantity * facts.point_value * funding_basis
+        surplus = cash_after_cost - required_at_basis
+        post_fill_margin_cushion = (
+            cash_after_cost - quantity * facts.point_value * facts.execution_price
+        )
+    return (
+        cash_after_cost,
+        funding_basis,
+        required_at_basis,
+        surplus,
+        post_fill_margin_cushion,
+    )
 
 
 def assess_funding(facts: FundingFacts) -> FundingAssessment:

@@ -318,6 +318,36 @@ def test_precision_beyond_a_fixed_cap_is_not_rounded_away():
     assert result.post_fill_margin_cushion == Decimal("1E-201")
 
 
+def test_large_exponent_input_does_not_overflow():
+    """Regression for a `decimal.Overflow` on a large-but-finite input: a
+    `Context(prec=...)` built without also setting `Emax`/`Emin` keeps the
+    constructor's default exponent bounds (+/-999999), which an operand
+    exponent of 1,000,000 already exceeds during arithmetic. `cash_before`
+    here is the exact reported counter-example; the expected witnesses are
+    computed with plain Python `int` exponentiation (context-free, exact —
+    `Decimal(int)` construction never rounds) and never by calling
+    `assess_funding`.
+    """
+    cash_before = Decimal("1E1000000")
+    facts = _facts(
+        cash_before=cash_before,
+        point_value=Decimal("1"),
+        execution_price=Decimal("1"),
+        current_mark=Decimal("1"),
+        execution_cost=Decimal("0"),
+    )
+    expected_cash_after_cost = Decimal(10**1_000_000)
+    expected_surplus = Decimal(10**1_000_000 - 1)
+
+    result = assess_funding(facts)
+    assert result.status == FundingStatus.PROVEN_POSITIVE_CUSHION
+    assert result.reason == FundingReason.POSITIVE_CUSHION
+    assert result.cash_after_cost == expected_cash_after_cost
+    assert result.required_at_basis == Decimal("1")
+    assert result.surplus == expected_surplus
+    assert result.post_fill_margin_cushion == expected_surplus
+
+
 def test_module_exports_all_required_symbols():
     assert FundingFacts is not None
     assert FundingAssessment is not None
