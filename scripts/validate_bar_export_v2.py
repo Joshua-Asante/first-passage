@@ -12,7 +12,9 @@ import csv
 import hashlib
 import io
 import json
+import os
 import sys
+import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
@@ -24,10 +26,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "core"))
 
 from bar_export_loader import SIGNAL_PIPE_V2_RE  # noqa: E402
-from lib.atomic_io import atomic_write_text  # noqa: E402
 
 SCHEMA = "bar_export_v2_validation_v1"
 STATUS_PASS = "PASS"
+_UTC_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
 META_KEYS = (
     "ticker",
     "type",
@@ -131,6 +133,11 @@ def _require_utc(dt: datetime, *, field: str) -> datetime:
 
 
 def _validate_expected(expected: ExpectedBarExportV2) -> None:
+    if not isinstance(expected, ExpectedBarExportV2):
+        raise ValueError(
+            "field=expected: must be ExpectedBarExportV2, "
+            f"got {type(expected).__name__}"
+        )
     for field in ("price_column", "ticker", "instrument_type", "quote_currency", "timezone"):
         val = getattr(expected, field)
         if not isinstance(val, str) or val == "":
@@ -145,6 +152,34 @@ def _validate_expected(expected: ExpectedBarExportV2) -> None:
     last = _require_utc(expected.expected_last_open_utc, field="expected_last_open_utc")
     if first > last:
         raise ValueError("field=expected_first_open_utc: must be <= expected_last_open_utc")
+
+
+def _epoch_ms_to_utc(epoch_ms: int, *, field: str = "epoch") -> datetime:
+    """Convert UTC epoch milliseconds to datetime without float round-trip."""
+    try:
+        return _UTC_EPOCH + timedelta(milliseconds=epoch_ms)
+    except (OverflowError, OSError) as exc:
+        raise ValueError(f"field={field}: out of datetime range: {epoch_ms}") from exc
+
+
+def _atomic_write_bytes(path: Path, data: bytes) -> None:
+    """Atomically write exact bytes (no newline translation). Leaves original on failure."""
+    path = Path(path)
+    fd, tmp_name = tempfile.mkstemp(
+        dir=path.parent, prefix=path.name + ".", suffix=".tmp"
+    )
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_name, path)
+    except BaseException:
+        try:
+            os.unlink(tmp_name)
+        except OSError:
+            pass
+        raise
 
 
 def _canonical_timeframe(minutes: int) -> str:
@@ -506,8 +541,8 @@ def validate_bar_export_v2(
         raise ValueError(
             f"field=expected_unique_bars: expected {expected.expected_unique_bars}, got {unique_count}"
         )
-    first_open = datetime.fromtimestamp(unique_epochs[0] / 1000, tz=timezone.utc)
-    last_open = datetime.fromtimestamp(unique_epochs[-1] / 1000, tz=timezone.utc)
+    first_open = _epoch_ms_to_utc(unique_epochs[0], field="first_open_utc")
+    last_open = _epoch_ms_to_utc(unique_epochs[-1], field="last_open_utc")
     if first_open != expected.expected_first_open_utc:
         raise ValueError(
             "field=expected_first_open_utc: "
@@ -535,12 +570,11 @@ def validate_bar_export_v2(
 
 
 def _dt_to_iso(dt: datetime) -> str:
-    ms = int(dt.timestamp() * 1000)
-    whole = datetime.fromtimestamp(ms / 1000, tz=timezone.utc)
-    frac = ms % 1000
-    if frac:
-        return whole.strftime("%Y-%m-%dT%H:%M:%S.") + f"{frac:03d}Z"
-    return whole.strftime("%Y-%m-%dT%H:%M:%SZ")
+    """Serialize UTC datetime to ISO-Z using calendar fields only (no float timestamp)."""
+    ms = dt.microsecond // 1000
+    if ms:
+        return dt.strftime("%Y-%m-%dT%H:%M:%S.") + f"{ms:03d}Z"
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def receipt_to_json_bytes(receipt: BarExportValidationReceipt) -> bytes:
@@ -625,7 +659,7 @@ def main(argv: list[str] | None = None) -> int:
             for inp in paths:
                 if _paths_alias(out, inp) or out.resolve() == inp.resolve():
                     raise ValueError("field=receipt: refuses path that aliases an input")
-            atomic_write_text(out, payload.decode("utf-8"))
+            _atomic_write_bytes(out, payload)
 
         sys.stdout.buffer.write(payload)
         return 0

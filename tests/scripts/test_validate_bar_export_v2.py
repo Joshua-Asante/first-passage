@@ -3,9 +3,10 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, getcontext
 from pathlib import Path
 
@@ -101,8 +102,12 @@ def _write(path: Path, text: str, *, bom: bool = False) -> bytes:
     return data
 
 
+_UTC_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
+
+
 def _dt(ms: int) -> datetime:
-    return datetime.fromtimestamp(ms / 1000, tz=timezone.utc)
+    """Integer epoch-ms → UTC datetime (no float timestamp round-trip)."""
+    return _UTC_EPOCH + timedelta(milliseconds=ms)
 
 
 def _expected(**overrides) -> ExpectedBarExportV2:
@@ -555,9 +560,12 @@ def test_cli_receipt_alias_and_duplicate_inputs(tmp_path: Path):
 
     assert main(base_args(receipt_path)) == 0
     written = receipt_path.read_bytes()
-    assert written.endswith(b"\n")
     exp = _expected(expected_unique_bars=3, expected_last_open_utc=_dt(E2))
-    assert written == receipt_to_json_bytes(validate_bar_export_v2([p1, p2], expected=exp))
+    expected_bytes = receipt_to_json_bytes(validate_bar_export_v2([p1, p2], expected=exp))
+    assert written == expected_bytes
+    assert written.endswith(b"\n")
+    assert not written.endswith(b"\r\n")
+    assert written.count(b"\r") == 0
 
     bad = base_args(receipt_path)
     bad[bad.index("--expected-unique-bars") + 1] = "1"
@@ -578,6 +586,157 @@ def test_cli_receipt_alias_and_duplicate_inputs(tmp_path: Path):
             pytest.skip("symlink not permitted")
         link_args = ["--in", str(p1), str(link), *base_args(tmp_path / "r3.json")[3:]]
         assert main(link_args) == 2
+
+
+def test_epoch_datetime_iso_no_float_roundtrip(tmp_path: Path):
+    # Reported float failure: 2038-01-19T03:14:08.002000+00:00 → ...08.001Z
+    dt = datetime(2038, 1, 19, 3, 14, 8, 2000, tzinfo=timezone.utc)
+    assert mod._dt_to_iso(dt) == "2038-01-19T03:14:08.002Z"
+
+    # Reported float failure: epoch_ms=19000000000001 → .000999 rather than .001000
+    got = mod._epoch_ms_to_utc(19_000_000_000_001)
+    assert got == datetime(2572, 2, 1, 9, 46, 40, 1000, tzinfo=timezone.utc)
+    assert mod._dt_to_iso(got) == "2572-02-01T09:46:40.001Z"
+
+    with pytest.raises(ValueError, match="(?i)out of datetime range"):
+        mod._epoch_ms_to_utc(10**20)
+
+    # Out-of-range page epoch → ValueError → CLI exit 2; receipt left untouched.
+    bad_ms = 1_000_000_000_000_000  # timedelta ok; datetime OverflowError
+    page = tmp_path / "oor.csv"
+    receipt = tmp_path / "oor.json"
+    receipt.write_bytes(b"KEEP\n")
+    _write(
+        page,
+        _csv([_row(1, bad_ms, "1", "1", "1", "1", 1, close_ms=bad_ms + TF_MS - 1)]),
+    )
+    assert (
+        main(
+            [
+                "--in",
+                str(page),
+                "--price-column",
+                "Price USD",
+                "--expected-ticker",
+                META["ticker"],
+                "--expected-type",
+                META["type"],
+                "--expected-quote-currency",
+                META["quote_currency"],
+                "--expected-base-currency",
+                META["base_currency"],
+                "--expected-mintick",
+                META["mintick"],
+                "--expected-pointvalue",
+                META["pointvalue"],
+                "--expected-timeframe-minutes",
+                "15",
+                "--expected-timezone",
+                META["timezone"],
+                "--expected-unique-bars",
+                "1",
+                "--expected-first-open-utc",
+                "2023-11-14T22:13:20Z",
+                "--expected-last-open-utc",
+                "2023-11-14T22:13:20Z",
+                "--receipt",
+                str(receipt),
+            ]
+        )
+        == 2
+    )
+    assert receipt.read_bytes() == b"KEEP\n"
+
+
+def test_receipt_stdout_bytes_identical_lf_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """Receipt on disk must equal exact stdout bytes (single terminal LF, no CR)."""
+    from io import BytesIO
+
+    page = tmp_path / "p.csv"
+    _write(page, _csv([_row(1, E0, "1", "1", "1", "1", 1)]))
+    receipt = tmp_path / "r.json"
+    receipt.write_bytes(b"stale")
+    exp = _expected(expected_unique_bars=1, expected_last_open_utc=_dt(E0))
+    stdout_buf = BytesIO()
+
+    class _Stdout:
+        buffer = stdout_buf
+
+    monkeypatch.setattr(mod.sys, "stdout", _Stdout())
+    args = [
+        "--in",
+        str(page),
+        "--price-column",
+        "Price USD",
+        "--expected-ticker",
+        META["ticker"],
+        "--expected-type",
+        META["type"],
+        "--expected-quote-currency",
+        META["quote_currency"],
+        "--expected-base-currency",
+        META["base_currency"],
+        "--expected-mintick",
+        META["mintick"],
+        "--expected-pointvalue",
+        META["pointvalue"],
+        "--expected-timeframe-minutes",
+        "15",
+        "--expected-timezone",
+        META["timezone"],
+        "--expected-unique-bars",
+        "1",
+        "--expected-first-open-utc",
+        mod._dt_to_iso(_dt(E0)),
+        "--expected-last-open-utc",
+        mod._dt_to_iso(_dt(E0)),
+        "--receipt",
+        str(receipt),
+    ]
+    assert main(args) == 0
+    stdout_bytes = stdout_buf.getvalue()
+    disk_bytes = receipt.read_bytes()
+    api_bytes = receipt_to_json_bytes(validate_bar_export_v2([page], expected=exp))
+    assert disk_bytes == stdout_bytes == api_bytes
+    assert stdout_bytes.endswith(b"}\n")
+    assert stdout_bytes.count(b"\n") == 1
+    assert b"\r" not in stdout_bytes
+
+    # Literal endpoint JSON expectations for the float-bug epoch
+    edge = _dt(19_000_000_000_001)
+    edge_exp = _expected(
+        expected_unique_bars=1,
+        expected_first_open_utc=edge,
+        expected_last_open_utc=edge,
+    )
+    edge_page = tmp_path / "edge.csv"
+    _write(
+        edge_page,
+        _csv(
+            [
+                _row(
+                    1,
+                    19_000_000_000_001,
+                    "1",
+                    "1",
+                    "1",
+                    "1",
+                    1,
+                    close_ms=19_000_000_000_001 + TF_MS - 1,
+                )
+            ]
+        ),
+    )
+    edge_receipt = validate_bar_export_v2([edge_page], expected=edge_exp)
+    edge_bytes = receipt_to_json_bytes(edge_receipt)
+    assert b'"first_open_utc":"2572-02-01T09:46:40.001Z"' in edge_bytes
+    assert b'"last_open_utc":"2572-02-01T09:46:40.001Z"' in edge_bytes
+    assert json.loads(edge_bytes.decode("utf-8"))["first_open_utc"] == "2572-02-01T09:46:40.001Z"
+
+
+def test_rejects_wrong_expected_type():
+    with pytest.raises(ValueError, match="(?i)expected.*ExpectedBarExportV2"):
+        validate_bar_export_v2([], expected=None)  # type: ignore[arg-type]
 
 
 def test_permissive_loader_regression_unchanged(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
