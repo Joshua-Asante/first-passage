@@ -9,6 +9,8 @@
 **Format:** concise
 **Revision:** 2026-09-08; prior decision at `4fb2b88f3b7d56d77463c43ba45c87ffadff6a31`.
 
+**Workflow owners:** [Methodology skills — canonical source and one-way deployment](../../scripts/README.md#skill-lifecycle) · [Brief authoring — canonical check_brief checker, type contracts and repo subset](../../.claude/skills/brief-authoring/SKILL.md#checker-ownership).
+
 ## Decision
 
 ADRs are not a general decision log. Create a new ADR only when all three apply:

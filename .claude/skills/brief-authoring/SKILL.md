@@ -59,9 +59,30 @@ These six are the authoring-side stack. They are **type-scoped** — see the app
 
 **6. Audit hooks runnable.** §10 must contain commands or checks executable later (grep strings, file paths, specific assertions), not vague "review at quarterly check-in." Audit hooks that nobody can mechanically run will not be checked.
 
+### Checker ownership
+
+The canonical source is this skill's [checker](scripts/check_brief.py) and
+`references/*.md`; `~/.claude/skills/brief-authoring/scripts/check_brief.py` is its
+deployed copy under the [skill lifecycle](../../../scripts/README.md#skill-lifecycle).
+The [repo-side checker](../../../scripts/check_brief.py) is a narrower mechanical
+subset. It explicitly prints `NOT CHECKED` for concise/legacy light ADRs and
+`lock`, `notice`, `lesson`, `audit`; this is not a pass. Do not widen `generic`
+to absorb these contracts or promote the subset to a gate just because it was fixed.
+
+Canonical validation follows each type: a notice has GRADUATE/DROP/HOLD routing
+in §4 and needs §5 only for HOLD; an audit has anchored sources and root-cause §4,
+not a falsifier; a lesson uses named headings with Promotion/Retirement required
+by its status. Concise ADRs need substantive Decision/Grounds/Current owner;
+legacy light ADRs use Decision/Grounds/Reads/Gate/Boundary, with literal `none`
+permitted in Gate/Boundary. Legacy `lock` is a narrow compatibility content check,
+not a restored authoring type or a full reconstructed template. Both checkers
+accept supported Revert-trigger / if-then / reject-accept-if framing. Closure
+mode delegates to `scripts/check_closure_disposition.py`; run that command to
+obtain the closure verdict. A delegation notice is not the closure check.
+
 ### Type × check applicability
 
-`M` = mechanical. `J` = judgment. `—` = not owed. Two checkers exist ([ADR 2026-08-09](../../../docs/adr/2026-08-09-check-brief-canon-ruling.md)): repo-side `scripts/check_brief.py` is a narrower mechanical subset that **declines** — prints `NOT CHECKED`, not a pass — for concise/legacy light ADRs and `{lock, notice, lesson, audit}` because it doesn't model their section contracts; the **canonical** skill-side `~/.claude/skills/brief-authoring/scripts/check_brief.py` validates all of those against their own real section contracts instead of declining. `scripts/check_closure_disposition.py` remains the sole closure gate for both.
+`M` = mechanical. `J` = judgment. `—` = not owed. Apply the [checker ownership](#checker-ownership) and type-specific contract above; `NOT CHECKED` is not a pass.
 
 | Type | 1 §0 | 2 H | 3 forbidden | 4 gate | 5 Q-shape | 6 hooks | amend-first | 7–10 spawn | Iterate |
 |---|---|---|---|---|---|---|---|---|---|
@@ -116,7 +137,7 @@ If a CC handoff brief passes its applicable 1–6 checks but fails 7–10, the s
 | Triggering need | Use type | Lives in |
 |---|---|---|
 | Opening structured investigation | **Inquire-phase brief** (Pre-Q) | `docs/briefs/Q-X-name.md` |
-| Locking a structural decision (architecture, doctrine, methodology rule) | **ADR** | `docs/adr/YYYY-MM-DD-slug.md` (the filename slug **is** the identifier — `ADR-NNN` numbering was dropped) |
+| A durable architecture/governance/authority choice whose future-useful rationale needs a distinct record beyond an existing owner (all three admission conditions) | **ADR** | `docs/adr/YYYY-MM-DD-slug.md` (date-slug identifier) |
 | Spawning Claude Code for an execution task | **CC handoff brief** | Inline (passed to Claude Code) |
 | Recording an observation that may graduate to inquiry | **Notice-phase observation log** | `docs/notes/notice/` |
 | Adding a methodology/execution lesson to the registry | **Lesson capture** | Inline-edit the relevant `references/*lessons.md` |
@@ -124,7 +145,15 @@ If a CC handoff brief passes its applicable 1–6 checks but fails 7–10, the s
 | Closing any Q | **Closure record** | `docs/briefs/closures/` per `references/closure_record.md` |
 | Commissioning steps that decide nothing (PROPOSED, $0/K=0) | **Minimal spec** | `docs/spec/` per `docs/spec/TEMPLATE-minimal-spec.md` (standing style, ratified JA 2026-08-07) |
 
-**When the type is unclear:** if the artifact will gate a future investigation → Inquire brief. If it locks a decision → ADR. If it captures past learning → lesson capture or audit note. When no distinct consequential decision needs recording, use the existing owner or PR; uncertainty alone does not require an ADR.
+**Choose the owner before the type.** A specification, campaign record, implementation
+plan, PR or existing ADR can hold a consequential decision. Create a new ADR only
+when all three [admission conditions](../../../docs/adr/2026-08-08-adr-ceremony-tiering.md#decision)
+hold: a durable architecture/governance/authority choice; rationale or a tradeoff
+useful for future choices; and a distinct record needed because an existing owner
+cannot hold that rationale clearly. Significance, uncertainty or approval alone
+is insufficient. A structured investigation uses a Pre-Q; past learning uses a
+lesson or audit note. Preserve the approvals, source reads, research evidence and
+lock-change requirements of the owning contract regardless of artifact form.
 
 **Current ADR form** ([policy](../../../docs/adr/2026-08-08-adr-ceremony-tiering.md)):
 use the graph header plus `**Format:** concise` and Decision/Grounds/Current owner.
@@ -150,7 +179,7 @@ Each template lives in `references/`. The skill ships seven templates; copy and 
 | Template | File | When to use |
 |---|---|---|
 | Inquire-phase brief (Pre-Q) | `references/inquire_brief.md` | Opening a structured investigation — Q-X format, gates closure |
-| ADR | `references/adr.md` | Locking a structural/architectural decision |
+| ADR | `references/adr.md` | All three ADR admission conditions hold; an existing owner is insufficient |
 | Claude Code handoff | `references/cc_handoff.md` | Spawn prompt for fresh Claude Code session with verification gates |
 | Notice-phase observation log | `references/notice_log.md` | Lighter-weight pre-investigation observation capture |
 | Lesson capture | `references/lesson_capture.md` | New entry for a lessons registry (execution_lessons.md, behavioral lessons, etc.) |
@@ -233,7 +262,7 @@ Failure modes that recur, ranked by frequency:
 ## Discipline check summary
 
 ```
-[ ] Amendment-first: existing owner named or search output showing none (every new file)
+[ ] Existing-owner first: owner or PR considered; any new ADR meets all three admission conditions; required research source/dedup evidence preserved
 [ ] Applicable checks for this type (matrix above) — do not run the inquire/ADR six on a notice
 [ ] Verification block executed; the skill-side command that applies to this type passed as well-formed (repo-side printing NOT CHECKED for a declined type is expected, not the gate)
 
@@ -280,7 +309,7 @@ If brief is a CC handoff, also:
   ```
   Modeled: inquire / adr / cc_handoff → well-formed or MALFORMED. Unmodeled notice / lesson / audit / lock / concise or light ADR → `NOT CHECKED` — expected, not a gap; it declines what it doesn't model rather than misapplying a generic contract. `--type closure` delegates to `scripts/check_closure_disposition.py` (prints the command; exit 0). `--type lock` is a back-compat alias, not a live authoring type.
 
-- `~/.claude/skills/brief-authoring/scripts/check_brief.py` — **canonical** ([ADR 2026-08-09](../../../docs/adr/2026-08-09-check-brief-canon-ruling.md)). Same CLI shape as above; unlike repo-side it does NOT decline light ADR / `{lock, notice, lesson, audit}` — it applies each type's own real section contract (numbered §N for inquire/adr/cc_handoff/notice/audit, named headings for lesson/light-tier). `--list-checks` prints the per-type contract summary; `--self-test` regression-checks it against the seven canonical templates below.
+- `scripts/check_brief.py` in this skill — **canonical source**; `~/.claude/skills/brief-authoring/scripts/check_brief.py` is its deployed copy. See [checker ownership](#checker-ownership) for the distinct contracts and compatibility limits. `--list-checks` prints the contract summary; `--self-test` exercises the seven surviving canonical templates. Neither substitutes for running the applicable check against the authored artifact.
 
 - `references/inquire_brief.md` — Pre-Q template (§0–§10 structure)
 - `references/adr.md` — ADR template
@@ -292,5 +321,5 @@ If brief is a CC handoff, also:
 
 Related skills:
 - `inqhiori` — when to author (this skill is the how, given inqhiori has decided), and the Algorithm operator (Q/D/S/A); briefs authored here pass The Algorithm before shipping
-- `prop-firm-challenge` — produces the live-ops decisions that lock decision briefs document
+- `prop-firm-challenge` — owns live-ops decisions; its governing contract determines the required approval, evidence and artifact
 - `trade-csv-reconcile` — produce data referenced inside briefs (`live-execution-journal` retired 2026-07-11)

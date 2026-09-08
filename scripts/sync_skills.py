@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """sync_skills.py — one-way deploy of in-repo skills to the deployed bundle(s).
 
-ONE-WAY CONTRACT (ADR docs/adr/2026-06-04-methodology-skills-under-vc.md §2.2):
+ONE-WAY CONTRACT (scripts/README.md#skill-lifecycle):
 the repo is the single source of truth. Skills flow repo -> deployed ONLY.
 This script never copies deployed -> repo. Edits happen in-repo, pass the gate
 (`check_skill_refs.py`, `check_skills_no_constants.py`), then deploy via this script.
@@ -40,8 +40,8 @@ skill bundled with Claude Code/Cowork itself (not a project skill — expected
 to live only in the deployed bundle) — add it to STOCK_SKILLS_EXEMPT below and
 it stops being flagged; (b) a project skill authored directly in the bundle
 that never went through the repo (import it — see import_skill_from_cache.py,
-the exact defect class ADR docs/adr/2026-06-04-methodology-skills-under-vc.md
-closed); or (c) a stale directory to delete. Deliberately NOT auto-exempted:
+under the missing-source recovery contract in scripts/README.md#skill-lifecycle);
+or (c) a stale directory to delete. Deliberately NOT auto-exempted:
 resolving (b)/(c) requires a human decision, so an unrecognized extra keeps
 `--check` red until triaged.
 
@@ -79,10 +79,10 @@ HOME_SKILLS_DEPLOY_TARGET = Path.home() / ".claude" / "skills"
 # Deployed-only top-level directories confirmed to be stock skills bundled with
 # Claude Code/Cowork itself (not authored in this repo, not project skills) —
 # `--check` does not flag these as "extra in deployed". Triaged 2026-07-06
-# (skills-sync extras check): `notion-mcp-api-patterns` was NOT added here —
-# it is a Joshua-authored project skill that only ever lived in the bundle
-# (see docs/adr/2026-06-04-methodology-skills-under-vc.md §1), so it stays
-# flagged until imported via import_skill_from_cache.py, not exempted.
+# (skills-sync extras check): `notion-mcp-api-patterns` is not a stock exemption.
+# Its project copy was archived under docs/pursuits/d6-notion-mcp-api-patterns-user-skill.md;
+# do not import it from a stale bundle. Unrecognized extras remain triage under
+# scripts/README.md#skill-lifecycle.
 STOCK_SKILLS_EXEMPT = frozenset({
     "consolidate-memory",
     "docx",

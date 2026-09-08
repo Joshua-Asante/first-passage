@@ -1,7 +1,8 @@
 """Tests for scripts/check_skill_deploy_sync.py — the new gate from
 docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md Task 1.
 
-Root cause this gate closes: docs/adr/2026-08-09-check-brief-canon-ruling.md
+Current contract: scripts/README.md#skill-lifecycle. Historical root cause:
+https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md
 names ~/.claude/skills/brief-authoring/scripts/check_brief.py as canonical and
 every citing ADR's own Verification block runs it, but the deployed bundle
 could silently fall behind (or never have existed at all — the concrete

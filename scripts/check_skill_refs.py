@@ -3,9 +3,9 @@
 
 Every repo-relative path a skill cites should resolve. This catches the most
 common form of skill rot: a doc/code path referenced in a skill that has since
-moved or been deleted. Installed in the pre-commit gate per ADR
-`docs/adr/2026-06-04-methodology-skills-under-vc.md` §2.4 (cheapest-first
-check #1).
+moved or been deleted. Current contract: scripts/README.md#skill-lifecycle;
+gate composition: scripts/gates.yml. The implementation below defines eligible
+references and their documented exceptions.
 
 Convention (deliberately conservative — under-flag rather than false-positive):
 

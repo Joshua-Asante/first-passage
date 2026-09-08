@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """check_brief.py — CANONICAL brief well-formedness validator (skill-side).
 
-Authored under docs/adr/2026-08-09-check-brief-canon-ruling.md ("check_brief
-canon: skill-side governs; repo-side declines what it cannot check"). That
+Current contract: .claude/skills/brief-authoring/SKILL.md#checker-ownership.
+Authored under the historical "check_brief canon" ruling:
+https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md. That
 ADR's own §0 Reads line claimed this file already existed, untracked, with a
 passing --self-test; `docs/adr/2026-08-27-ssot-data-lineage-remediation-
 program.md` §0 Step 1 re-verified that claim against git history and found
@@ -342,7 +343,7 @@ def _check_required_sections(sections: dict[str, str], required: tuple[str, ...]
 def _check_falsifiable_hypothesis(sections: dict[str, str]) -> list[Violation]:
     """§4 needs a hypothesis AND a falsifier — OR one of the canonical
     alternative framings (Revert trigger / if-then / reject-accept-if), per
-    ADR 2026-08-09's explicit broadening of this check."""
+    .claude/skills/brief-authoring/SKILL.md#checker-ownership."""
     body = sections.get("4")
     if body is None or _is_empty_body(body):
         return []
@@ -765,7 +766,7 @@ def print_list_checks() -> None:
     print("  lock (retired, back-compat): best-effort content check only — see")
     print("                               check_lock()'s docstring for why.")
     print("  closure                    : delegates to check_closure_disposition.py.")
-    print("See docs/adr/2026-08-09-check-brief-canon-ruling.md for the skill-vs-repo split.")
+    print("See .claude/skills/brief-authoring/SKILL.md#checker-ownership for the skill-vs-repo split.")
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -5,7 +5,7 @@ Mirrors lock_event_hook.py. Reads PostToolUse JSON from stdin. If the edited
 file is under .claude/skills/, gates via check_skill_refs.py --all and then
 runs sync_skills.py (one-way repo -> deployed bundles) so the deployed copies
 never drift from the version-controlled source
-(ADR docs/adr/2026-06-04-methodology-skills-under-vc.md §2.2). The recurring
+(scripts/README.md#skill-lifecycle). The recurring
 failure this closes: editing a skill in-repo and forgetting `make sync-skills`,
 so the running bundle silently lags the source of truth.
 
@@ -14,8 +14,8 @@ skills-plugin path *and* ~/.claude/skills/ (the user-level bundle Claude Code
 sessions load). Explicit --target is not used here — the hook always deploys
 to the full default set.
 
-Gate-then-deploy contract (sync_skills.py docstring; ADR §2.2): edits pass the
-gate, THEN deploy. If the ref linter fails, the bundles are NOT deployed and the
+Gate-then-deploy contract (scripts/README.md#skill-lifecycle): edits pass the
+reference gate, THEN deploy. The no-constants check is in the commit battery. If the ref linter fails, the bundles are NOT deployed and the
 hook exits 2 — PostToolUse exit 2 surfaces stderr to the agent without blocking
 the already-completed edit; the next skill edit re-attempts the deploy. Sync
 failures (e.g. the cloud-synced target is offline) likewise exit 2 with the
@@ -69,7 +69,7 @@ def main() -> int:
     if not sync.exists():
         return 0
 
-    # Gate BEFORE deploy (ADR §2.2). Missing gate script also blocks — an
+    # Gate BEFORE deploy (scripts/README.md#skill-lifecycle). Missing checker blocks — an
     # ungated deploy is the exact failure mode the contract forbids.
     checker = script_dir / "check_skill_refs.py"
     if not checker.exists():

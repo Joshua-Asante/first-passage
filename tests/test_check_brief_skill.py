@@ -1,6 +1,6 @@
 """Tests for the SKILL-SIDE canonical `check_brief.py`
 (`.claude/skills/brief-authoring/scripts/check_brief.py`), authored under
-docs/adr/2026-08-09-check-brief-canon-ruling.md.
+https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md.
 
 This is a SEPARATE file from `scripts/check_brief.py` (the repo-side
 mechanical subset, covered by tests/test_check_brief.py, NOT modified here).

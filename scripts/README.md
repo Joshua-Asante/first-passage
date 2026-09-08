@@ -72,13 +72,59 @@ python scripts/check_repo_map_scripts_table.py --check
 
 Do not hand-edit the table. `--check` is not wired into `gates.yml`.
 
+## Skill lifecycle
+
+Project-authored skills are canonical in [`.claude/skills/`](../.claude/skills/).
+Edit that source, run the applicable gates, then deploy repository → bundle with
+[`sync_skills.py`](sync_skills.py). Its default destinations are the resolved
+primary bundle and `~/.claude/skills/`; an explicit `--target` selects only that
+destination. `--check` reports missing, differing and extra deployed content without
+writing. Cloud sync can overwrite the primary bundle, so this check does not prove
+the external sync layer enforces repository ownership.
+
+[`gates.yml`](gates.yml) owns composition. `skill-refs` and `skills-no-constants`
+are `always` gates. [`check_skill_refs.py`](check_skill_refs.py) checks eligible
+repository references; its documented template/vendor/local-path exceptions apply.
+[`check_skills_no_constants.py`](check_skills_no_constants.py) scans only the
+`SKILL.md` of `inqhiori`, `ooda-loop`, `programme-audit` and `brief-authoring`.
+Operational-reference skills and `pinescript-v6` are exempt. Guarded skills point
+to operational sources instead of restating their constants.
+
+The [PostToolUse hook](sync_skills_hook.py), registered in
+[settings](../.claude/settings.json), checks references before deploying. A missing
+or failing reference checker prevents deployment; a sync failure is surfaced.
+The hook does not run the no-constants guard; that check remains in the commit
+battery. Both sync and hook recognize `.claude/worktrees/`, but currently miss
+`.worktrees/`. Do not deploy from a worktree: deployment follows integration in
+the primary checkout.
+
+[`import_skill_from_cache.py`](import_skill_from_cache.py) is a missing-source
+recovery exception: it copies one named skill byte-for-byte only when the repository
+destination is absent and the source contains `SKILL.md`. It refuses an existing
+destination, with no overwrite option. After import, repository ownership and the
+gates apply. This is not a reverse-sync lane. Deployed-only extras require triage;
+stock exemptions are explicit in the implementation.
+
+[`check_skill_deploy_sync.py`](check_skill_deploy_sync.py) checks existence of
+literal ADR-cited deployed scripts, not byte equality: absent deployment root means
+`SKIP` / `NOT CHECKED`; an existing root missing a cited script fails. The drift
+check covers content differences.
+
+The June 4 quarterly keeper-count/old-name reread is **retired on 2026-09-08**, not
+passed. Its fixed “10 skills” census is obsolete; live gates and broken-reference /
+restated-constant failure tests remain. The [removed decision](../docs/adr/TOMBSTONES.md#2026-09-08-brief-and-skill-governance)
+preserves the migration history, including the superseded three-skill plan.
+
 ## Validation maintenance
 
-Brief-checker/template unification remains unresolved and is not commissioned by
-this consolidation. [`scripts/check_brief.py`](check_brief.py) is a subset checker;
-the [skill-side checker](../.claude/skills/brief-authoring/scripts/check_brief.py)
-owns the fuller type-aware contract, including concise ADR shape. Follow each
-artifact's current template; do not treat a subset result as full validation.
+### Brief checker ownership
+
+The [brief-authoring skill](../.claude/skills/brief-authoring/SKILL.md#checker-ownership)
+owns the canonical checker source, type contracts and repo-subset limits. Follow
+the artifact's verification contract; a `NOT CHECKED` or delegation notice is not
+a full validation pass. Checker/template unification remains unresolved and is
+not commissioned here. Neither brief checker is in the gate manifest.
+
 The separate unresolved 26-letter session-label ceiling remains with the
 [SESSIONS header](../docs/SESSIONS.md) and [`roll_sessions.py`](roll_sessions.py).
 

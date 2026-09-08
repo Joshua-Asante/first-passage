@@ -2,7 +2,8 @@
 """check_skill_deploy_sync.py -- do skills cited in an ADR Verification block
 actually exist at their deployed path?
 
-Root cause this gate closes: docs/adr/2026-08-09-check-brief-canon-ruling.md
+Current contract: scripts/README.md#skill-lifecycle. Historical root cause:
+https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md
 names ~/.claude/skills/brief-authoring/scripts/check_brief.py as canonical,
 and every citing ADR's own Verification block runs it -- but the deployed
 bundle can silently fall behind the in-repo source (sync_skills.py's own

@@ -73,7 +73,7 @@ remediation applied (or the forward obligation, if not applied this session — 
    this ADR ratified, without adding itself to that retirement ADR's 7-item `Supersedes` list.
    **Remediated** — addendum + reciprocal header field.
 
-3. **`2026-06-04-methodology-skills-under-vc.md`** — Ratified migrating 3 named skills
+3. **[`2026-06-04-methodology-skills-under-vc.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-06-04-methodology-skills-under-vc.md)** — Ratified migrating 3 named skills
    (`fxify-challenge`, `live-execution-journal`, `notion-mcp-api-patterns`) verbatim into
    `.claude/skills/`; none exist there. GSUB-1 (2026-08-09) found the first two are platform-bundled
    plugins with no file-level existence to migrate, and the third was archived, not migrated — the

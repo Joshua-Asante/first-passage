@@ -3,9 +3,9 @@
 
 Recovery path for exactly one failure shape: a skill whose ONLY copy lives in
 the deployed (evictable, cloud-synced) bundle because it was authored there
-directly and never went through the repo authoring path. ADR
-`docs/adr/2026-06-04-methodology-skills-under-vc.md` §2.1 made
-`.claude/skills/` canonical, but a skill created in the bundle *after* that
+directly and never went through the repo authoring path. Under
+scripts/README.md#skill-lifecycle, `.claude/skills/` is canonical, but a skill
+created in the bundle *after* the original
 migration (e.g. `strategy-validation`, ~2026-06-11) has no repo copy at all —
 so the de-facto canonical source is an evictable cache (data-loss exposure).
 Worse, any non-byte-true repo copy is a clobber hazard: `sync_skills.py` (and
@@ -14,7 +14,7 @@ rmtree+copytree, so a lossy repo copy would overwrite the only true copy on
 the next skill edit. The seed must therefore be byte-for-byte from the bundle,
 which is what this script does.
 
-This is NOT bidirectional sync (forbidden — ADR §5 move 3). Guardrails:
+This is NOT bidirectional sync (scripts/README.md#skill-lifecycle). Guardrails:
   * REFUSES when `.claude/skills/<skill>` already exists. Once a repo copy
     exists, every edit goes through the repo authoring path; there is no
     deployed -> repo overwrite, ever (deliberately no --force).
@@ -62,7 +62,7 @@ def import_skill(source_skill: Path, dest_skill: Path) -> tuple[int, str]:
     if dest_skill.exists():
         return 1, (
             f"REFUSED: repo copy already exists: {dest_skill}\n"
-            "  Edits go through the repo authoring path (ADR 2026-06-04 §2.2);\n"
+            "  Edits go through the repo authoring path (scripts/README.md#skill-lifecycle);\n"
             "  there is no deployed -> repo overwrite. If the bundle diverged,\n"
             "  reconcile by hand and commit in-repo."
         )

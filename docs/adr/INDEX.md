@@ -20,7 +20,6 @@
 | 2026-05-16-fxify-correct-timeout-semantic.md | Accepted | 2026-05-16 | none | ACCEPTED |
 | 2026-05-23-allocation-refresh-2.md | Accepted | 2026-05-23 | `2026-05-14-allocation-refresh.md` full | (with documented regime-robustness-gate override) |
 | 2026-06-04-lean-portfolio-meta-layer.md | Accepted | 2026-06-04 | none | ratified 2026-06-04 by PO (Joshua); Rule-0 anchors confirmed on-disk (see blockquote header below for the full ratification note). |
-| 2026-06-04-methodology-skills-under-vc.md | Accepted | 2026-06-04 | none | ratified 2026-06-04; Rule-0 anchors confirmed on-disk during authoring (see blockquote header below for the full provenance note). |
 | 2026-06-05-monorepo-layer-boundaries.md | Accepted | 2026-06-05 | none | ratified 2026-06-05 by PO (Joshua); execution-time amendment 2026-06-06 (see blockquote header below for the full ratification note). |
 | 2026-06-07-decompound-remc-hold.md | Accepted | 2026-06-07 | none | Accepted |
 | 2026-06-11-instrument-ledger-and-cfg-fingerprint.md | Accepted | 2026-06-11 | none | (P1 + P3) · P2 recorded as **not ratified** (§2c) |
@@ -62,7 +61,6 @@
 | 2026-08-08-adr-ceremony-tiering.md | Accepted | 2026-08-08 | none | operator approved ADR pruning and this policy revision on 2026-09-08. |
 | 2026-08-08-great-prune.md | Accepted | 2026-08-08 | none | operator (JA) approved the prune plan in-session 2026-08-08; merge of the prune PR is the executed ratification. **Tier: full** — doctrine limb fires (standing retention law + mass deletion of decision records). |
 | 2026-08-08-s2b-signal-daemon-build.md | Accepted | 2026-08-08 | none | fills deferred limbs of [SPEC S2b](../spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md); **does not authorize build alone** — requires a separate operator build GO citing this ADR + Accepted S2b |
-| 2026-08-09-check-brief-canon-ruling.md | Accepted | 2026-08-09 | none | ratified by operator (JA) 2026-08-09, in-session instruction ("make your best calls on … checker-canon split") |
 | 2026-08-09-grand-tier-quintessentials-binding.md | Accepted | 2026-08-09 | none | ratified by operator (JA) 2026-08-09, in-session direct instruction ("make best judgements and run …"); §0 populated at instantiation; GSUB-1 accepted alongside — see Ratification note |
 | 2026-08-09-rejection-register-topology-and-bar-wiring.md | Accepted | 2026-08-09 | `2026-06-14-rejected-candidate-patterns.md` in part — registry topology only. | ratified by operator (JA) 2026-08-09, in-session direct instruction ("make your best calls on The SNAG register…"); D2 channel (c), explicit owner adjudication |
 | 2026-08-10-temporal-selectivity-outside-mapped-levers.md | Accepted | 2026-08-10 | none | operator ruling in-session 2026-08-10 / JA ("I rule it open" + "proceed with the step 1 repair"). Ruling ID **`TEMPORAL-SELECTIVITY-OPEN-2026-08-10`**. |

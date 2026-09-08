@@ -82,3 +82,18 @@ newest first. Obligations that died with a carrier are recorded in the
 | 2026-06-12 | rnd-feed-instrument-class-split | Superseded by TV-CSV canonical-feed policy; CME futures TV exports are the live feed | `git show pre-prune-2026-08-08:docs/adr/2026-06-12-rnd-feed-instrument-class-split.md` |
 | 2026-05-14 | allocation-refresh | Superseded by 2026-05-23 allocation-refresh-2 (lock lineage lives in CLAUDE.md §Strategy Reference) | `git show pre-prune-2026-08-08:docs/adr/2026-05-14-allocation-refresh.md` |
 | 2026-05-11 | objective-map-section-4-tighten-falsifier | Retired with the Objective Map surface (challenge era closed) | `git show pre-prune-2026-08-08:docs/adr/2026-05-11-objective-map-section-4-tighten-falsifier.md` |
+
+## 2026-09-08 brief and skill governance
+
+The current [skill lifecycle](../../scripts/README.md#skill-lifecycle) and
+[brief checker ownership](../../scripts/README.md#brief-checker-ownership) retain
+the effective contracts. The June 4 quarterly expected-10-skills / old-name
+reread is retired, not passed; live gates and failure tests remain. The three-skill
+migration plan was already superseded by the August 29 correction and existing
+GSUB-1 dispositions. The canon ruling's initial resolution is historical; its
+type-aware contract remains in brief-authoring. These removals confer no authority.
+
+| Removed path | Disposition / current owner | Immutable body |
+|---|---|---|
+| `docs/adr/2026-06-04-methodology-skills-under-vc.md` | Source/deploy/gate contract consolidated in [Skill lifecycle](../../scripts/README.md#skill-lifecycle); redundant census retired. | `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-06-04-methodology-skills-under-vc.md`; blob `a81454bff43ca72c5db4ab1918e3b3b52798b1af` |
+| `docs/adr/2026-08-09-check-brief-canon-ruling.md` | Canonical/subset and distinct type contracts consolidated in [brief-authoring](../../.claude/skills/brief-authoring/SKILL.md#checker-ownership); original resolution historical. | `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-08-09-check-brief-canon-ruling.md`; blob `f903867b49debb62a88e0b51c60c5098286a7ebb` |
