@@ -92,7 +92,8 @@ it correctly. `conditions` is a JSON object, never executable predicate code.
 A later revision must explicitly name the previous revision UUID in `supersedes`.
 This prevents accidentally replacing another author's latest revision. Revisions
 and original source bytes remain recoverable. Source version identity deduplicates
-equal bytes for the same source; it does not establish statistical independence.
+equal bytes for the same source and rejects a conflicting `kind` on that identity;
+it does not establish statistical independence.
 
 Dependency fields: `consumer` (record revision UUID), `dependency` (source version
 or record revision), `evidence_version` (preserved source supporting the declaration),

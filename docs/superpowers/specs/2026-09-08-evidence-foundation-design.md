@@ -30,22 +30,26 @@ type and data. Journal replay validates shapes, references and temporal ordering
 Malformed, conflicting or torn input never replaces a valid index. Source content
 is SHA-256 verified on recovery. Index generation is identified by a digest of
 the journal bytes; it is rebuilt atomically when those bytes change, including
-uncommitted annotations. No timestamp or HEAD-only freshness heuristic.
+uncommitted annotations, and a cached projection is trusted only when its rows
+authenticate against that journal. No timestamp or HEAD-only freshness heuristic.
 
 ## Identity and source capture
 
 The caller supplies a stable `source_id` independent of the path. A source version
 is identified by source identity plus content hash; repeated captures do not create
-independent evidence. Renaming a source preserves identity when the caller reuses
+independent evidence, and a conflicting `kind` on the same version identity is
+rejected. Renaming a source preserves identity when the caller reuses
 its ID. Each capture preserves its path and recorded time. Optional full Git commit
-IDs resolve historical bytes locally; no fetch is performed. Failed local recovery
+IDs resolve historical bytes locally; no fetch is performed (including promisor
+lazy-fetch), and replace refs are ignored. Failed local recovery
 is `missing` or `unavailable`, never a claim of global irrecoverability. Such
 observations are indexed explicitly even when no bytes are available.
 
-Only repository-relative paths within the resolved repository are accepted;
-absolute paths, traversal, symlink escapes, Git internals and the store itself
+Only repository-relative regular files within the resolved repository are accepted;
+absolute paths, traversal, symlinks, Git internals and the store itself
 are rejected. Capture is opt-in, one named source at a time, not a whole-repository
-copy. Reads compare actual present bytes against the pinned version. A rename
+copy. Reads compare actual present bytes against the pinned version without
+following symlinks. A rename
 registered through the same source ID updates the current locator.
 
 ## Reviewed records and dependencies
