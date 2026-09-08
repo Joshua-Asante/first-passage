@@ -5,6 +5,10 @@ Composition authority is [`gates.yml`](gates.yml) via
 ([W5 ADR](../docs/adr/2026-08-07-w5-governance-diet.md)).
 Do not hand-maintain a parallel list.
 
+[Evidence store](evidence_store/README.md) provides opt-in source preservation,
+decision history and declared-dependency correction queries:
+`python -m scripts.evidence_store --help`. It is advisory governance tooling.
+
 ```text
 python scripts/gate_manifest.py --list
 python scripts/gate_manifest.py --list --all-tiers
