@@ -72,10 +72,12 @@ Use a separate store for unrelated repositories and give logical IDs a namespace
 | `retrieve REQUEST.json` | Select registered evidence by context/IDs and append a durable receipt. |
 | `use USE.json` | Report applied/not-applied evidence for an exact decision revision. |
 | `receipt ID` | Read original observations and subsequent use records. |
+| `assess REVIEW.json` | Preserve a reviewed assessment of an exact belief revision. |
+| `belief ID --context CONTEXT.json` | Read a belief, assessment history and current review flags. |
 | `rebuild` | Validate durable inputs and atomically recreate SQLite. |
 | `export` | Deterministic JSON graph snapshot, including its journal revision digest. |
 
-Record fields: `record_id`, `kind` (`decision`, `finding`, `analysis`),
+Record fields: `record_id`, `kind` (`decision`, `finding`, `analysis`, `belief`),
 `source_version`, `section`, `statement`, `status`, `conditions`; optional
 `effective_at` and `supersedes` (default null). `section` is one unique exact
 Markdown ATX heading (`#` through `######`, outside fenced code). The verbatim
@@ -131,8 +133,8 @@ deliberately rewriting the entire store and its blobs.
 Coverage is limited to explicitly captured sources and declared relationships.
 No absence-of-dependencies claim applies to unregistered research. Entire-source
 hash changes conservatively flag cited records even if their own excerpt did not
-change. Belief assessments, automatic adapters and reconciliation of existing
-FTS tools belong to later slices.
+change. Automatic adapters, calibrated numerical assessments and reconciliation
+of existing FTS tools belong to later slices.
 
 ## Retrieval and reported use
 
@@ -192,7 +194,7 @@ causal benefit; use edges do not automatically declare substantive dependencies.
 
 ## Neo4j projection
 
-`export` schema 2 contains sorted `nodes` and `edges` plus `revision` (SHA-256 of
+`export` schema 3 contains sorted `nodes` and `edges` plus `revision` (SHA-256 of
 the exact durable journal). Labels: Source, SourceVersion, RecordRevision.
 Relationships: VERSION_OF, BASED_ON, SUPERSEDES, DEPENDS_ON. Each edge has an ID,
 `from`, `to`, and `type`; declared edges carry evidence provenance. BASED_ON also
@@ -200,17 +202,88 @@ represents the evidence supporting a dependency declaration. Node conditions are
 nested JSON; a future Neo4j importer must encode those properties explicitly,
 not assume Neo4j property values accept nested objects.
 
-Schema 2 also includes RetrievalReceipt and EvidenceUse nodes, with RETRIEVED,
+Schema 3 retains RetrievalReceipt and EvidenceUse nodes, with RETRIEVED,
 FOR_DECISION, FROM_RECEIPT and ASSESSED relationships. Receipt/use nodes contain
 nested event JSON; encode it explicitly in a future importer. RETRIEVED carries
 position/applicability; ASSESSED carries disposition/reason. These observational
-edges stay separate from correction dependencies. Consumers of graph schema 1
-must explicitly support schema 2 before importing. Legacy journal events remain
-schema 1; receipt/use events use schema 2. SQLite schema 2 rebuilds automatically
-from either legacy-only or mixed journals; no durable input migration is needed.
+edges stay separate from correction dependencies. Consumers of older graph schemas
+must explicitly support schema 3 before importing. Legacy events remain valid;
+new belief records, assessments and retrieval receipts use schema 3, use events
+remain schema 2. SQLite schema 3 rebuilds automatically from older or mixed
+journals; no durable input migration is needed. Older receipts stay immutable.
+
+Assessment nodes preserve full review events. ASSESSES connects each review to
+its belief revision; SUPERSEDES links successive reviews. EVIDENCE edges preserve
+every review's supporting/challenging/limiting references. Active belief-to-evidence
+edges use SUPPORTING, CHALLENGING and SCOPE_LIMITING; BASED_ON also connects the
+belief to its latest review source. Only latest-assessment belief edges contribute
+to active correction traversal. Historical assessment nodes remain inspectable.
 
 Byte-identical journal rebuilds yield identical exports. Filesystem verification
 is intentionally separate and live; a graph snapshot is not evidence that current
 files remain unchanged. A future importer should stage and activate one revision,
 reject stale revisions at query time and rebuild from this projection. No Neo4j
 service or driver is installed in this slice.
+
+## Beliefs and reviewed assessments
+
+Use `record` with `kind: "belief"` to preserve a claim from an authored source.
+The same exact excerpt, conditions, effective-time and supersession rules apply.
+A new belief revision starts unassessed; no prior judgment transfers implicitly.
+
+An assessment must cite a preserved review artifact, for example a Markdown file
+containing `## Judgment` and a sentence explaining the evidence comparison.
+Capture that file before writing the assessment. `review.json` shape:
+
+```json
+{
+  "belief_revision": "UUID returned by the belief record command",
+  "judgment": "supported",
+  "reviewer": "Named reviewer or reviewing process",
+  "source_version": "version ID returned by capturing the review artifact",
+  "section": "## Judgment",
+  "statement": "Exact sentence from that section of the review artifact.",
+  "evidence": [
+    {
+      "revision_id": "Exact existing evidence record revision UUID",
+      "relationship": "supporting",
+      "rationale": "Why this evidence bears on this conditional claim.",
+      "resolution": null
+    }
+  ],
+  "supersedes": null
+}
+```
+
+Run `python -m scripts.evidence_store --repo REPO assess review.json`, then
+`python -m scripts.evidence_store --repo REPO belief BELIEF_ID --context context.json`.
+The context file is a plain JSON object, such as `{"instrument": "ES"}`.
+`belief` accepts `--known-at` and `--as-of` as well; it does not write a receipt.
+Use `retrieve` to preserve the result, including its nested `belief` view.
+
+Judgments are `supported`, `contested`, `insufficient`. Supported requires a
+supporting entry; contested requires a challenging entry; insufficient may have
+no evidence. These checks prove structure, not semantic validity. Attribution in
+`reviewer` is reported text, not authentication or operator approval.
+
+Relationships are `supporting`, `challenging`, `scope_limiting`. Each requires a
+reason; duplicate revision IDs and self-citations are rejected. A challenging
+entry with null `resolution` remains unresolved. Reviewed resolution text can be
+supplied on a replacement assessment. Resolutions are not accepted on other
+relationship types. Replacement must explicitly supersede the latest assessment
+for the same belief revision.
+
+The readout keeps the recorded judgment separate from `review_status`:
+`unassessed`, `needs_review`, or `no_flags`. It reports unresolved challenges,
+condition mismatches/unknowns, changed or unavailable sources, superseded
+revisions, and groups of evidence sharing the same source hash. Shared bytes are
+not independent votes; separate hashes do not prove independence either.
+`no_flags` means only that these mechanical checks found no review flags.
+No numeric confidence or automatic judgment change is implied.
+
+Latest assessment evidence and review-source changes participate in correction
+traversal through the belief into declared consuming decisions. Replaced reviews
+retain their historical evidence without keeping it active. Historical reads
+select the review known at the cutoff, but source and dependency checks describe
+present observations. Assessment review time is recorded time, never backdated
+effective time. Unknown claim effective dates still prevent current selection.

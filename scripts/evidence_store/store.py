@@ -14,6 +14,7 @@ from pathlib import Path
 
 from .model import EvidenceError, canonical, relative_path, replay, source_version, timestamp, verify_excerpt
 from .retrieval import ancestors, candidates, request, selectable, temporal
+from .beliefs import view as belief_view
 
 
 def _unique_object(pairs):
@@ -64,7 +65,7 @@ class Store:
                 if event['type'] == 'retrieval' and event['data']['revision'] != prefix.hexdigest():
                     raise EvidenceError('receipt journal digest does not match its history')
                 prefix.update(line)
-            for event in state['records'].values():
+            for event in [*state['records'].values(), *state['assessments'].values()]:
                 data = event['data']
                 content, _ = self._preserved(state['versions'][data['source_version']])
                 if content is not None:
@@ -134,16 +135,17 @@ class Store:
             events, _, revision = self._load()
             if expected_revision is not None and expected_revision != revision:
                 raise EvidenceError('journal changed during retrieval; retry the request')
-            event = {'schema': 2 if kind in {'retrieval', 'use'} else 1,
+            schema = 3 if kind in {'retrieval', 'assessment'} or (kind == 'record' and data['kind'] == 'belief') else 2 if kind == 'use' else 1
+            event = {'schema': schema,
                      'seq': len(events) + 1, 'id': str(uuid.uuid4()),
                      'recorded_at': timestamp(self.clock()), 'type': kind, 'data': data}
             state = replay([*events, event])
-            if kind in {'record', 'dependency'}:
-                key = 'source_version' if kind == 'record' else 'evidence_version'
+            if kind in {'record', 'dependency', 'assessment'}:
+                key = 'evidence_version' if kind == 'dependency' else 'source_version'
                 preserved, status = self._preserved(state['versions'][data[key]])
                 if preserved is None:
                     raise EvidenceError(f'annotation evidence is {status}')
-                if kind == 'record':
+                if kind in {'record', 'assessment'}:
                     verify_excerpt(data, preserved)
             if content is not None:
                 self._blob(data['sha256'], content)
@@ -178,6 +180,13 @@ class Store:
         event = self._append('dependency', data)
         return dict(data, id=event['id'], recorded_at=event['recorded_at'])
 
+    def assess(self, *, belief_revision, judgment, reviewer, source_version, section,
+               statement, evidence, supersedes=None):
+        """Preserve a reviewed judgment about an exact belief revision."""
+        return self._append('assessment', dict(belief_revision=belief_revision, judgment=judgment,
+                            reviewer=reviewer, source_version=source_version, section=section,
+                            statement=statement, evidence=evidence, supersedes=supersedes))
+
     def _build(self, events, state, revision):
         temp = self.root / f'.index-{uuid.uuid4()}.sqlite'
         try:
@@ -197,13 +206,23 @@ class Store:
                     CREATE TABLE uses (id TEXT PRIMARY KEY, receipt_id TEXT NOT NULL,
                         decision_revision TEXT NOT NULL, data TEXT NOT NULL,
                         UNIQUE(receipt_id, decision_revision));
+                    CREATE TABLE assessments (id TEXT PRIMARY KEY, belief_revision TEXT NOT NULL,
+                        seq INTEGER UNIQUE NOT NULL, source_version TEXT NOT NULL, data TEXT NOT NULL);
+                    CREATE TABLE assessment_evidence (assessment_id TEXT NOT NULL,
+                        revision_id TEXT NOT NULL, relationship TEXT NOT NULL, data TEXT NOT NULL,
+                        PRIMARY KEY(assessment_id, revision_id));
+                    CREATE VIEW active_assessments AS SELECT * FROM assessments a
+                        WHERE seq=(SELECT MAX(seq) FROM assessments WHERE belief_revision=a.belief_revision);
                     CREATE VIEW edges AS
                         SELECT id AS consumer, source_version AS dependency FROM records
                         UNION SELECT consumer, dependency FROM dependencies
-                        UNION SELECT consumer, evidence_version FROM dependencies;
+                        UNION SELECT consumer, evidence_version FROM dependencies
+                        UNION SELECT belief_revision, source_version FROM active_assessments
+                        UNION SELECT a.belief_revision, e.revision_id FROM active_assessments a
+                            JOIN assessment_evidence e ON e.assessment_id=a.id;
                 ''')
                 conn.execute('INSERT INTO meta VALUES (?, ?)', ('revision', revision))
-                conn.execute('INSERT INTO meta VALUES (?, ?)', ('schema', '2'))
+                conn.execute('INSERT INTO meta VALUES (?, ?)', ('schema', '3'))
                 conn.executemany('INSERT INTO versions VALUES (?, ?, ?)',
                                  [(key, data['source_id'], canonical(data)) for key, data in sorted(state['versions'].items())])
                 conn.executemany('INSERT INTO captures VALUES (?, ?, ?, ?, ?)', [
@@ -222,6 +241,13 @@ class Store:
                 conn.executemany('INSERT INTO uses VALUES (?, ?, ?, ?)',
                                  [(key, event['data']['receipt_id'], event['data']['decision_revision'], canonical(event))
                                   for key, event in state['uses'].items()])
+                conn.executemany('INSERT INTO assessments VALUES (?, ?, ?, ?, ?)',
+                                 [(key, event['data']['belief_revision'], event['seq'],
+                                   event['data']['source_version'], canonical(event))
+                                  for key, event in state['assessments'].items()])
+                conn.executemany('INSERT INTO assessment_evidence VALUES (?, ?, ?, ?)',
+                                 [(key, item['revision_id'], item['relationship'], canonical(item))
+                                  for key, event in state['assessments'].items() for item in event['data']['evidence']])
             os.replace(temp, self.root / 'index.sqlite')
         finally:
             temp.unlink(missing_ok=True)
@@ -237,7 +263,7 @@ class Store:
                     conn = sqlite3.connect(index.as_uri() + '?mode=ro', uri=True)
                     try:
                         fresh = (conn.execute('SELECT value FROM meta WHERE key=?', ('revision',)).fetchone() == (revision,)
-                                 and conn.execute('SELECT value FROM meta WHERE key=?', ('schema',)).fetchone() == ('2',))
+                                 and conn.execute('SELECT value FROM meta WHERE key=?', ('schema',)).fetchone() == ('3',))
                     finally:
                         conn.close()
                 except sqlite3.DatabaseError:
@@ -390,8 +416,24 @@ class Store:
                 if corrections:
                     warnings.append('dependencies_need_review')
                 row.update(warnings=warnings, current_source_verification=verification, corrections=corrections)
+                row['belief'] = belief_view(state, current, query['known_at'], query['context'], source)
         return self._append('retrieval', dict(request=query, observed_at=observed,
                                              revision=revision, results=results), expected_revision=revision)
+
+    def belief(self, record_id, context=None, known_at=None, as_of=None):
+        """Read a belief's recorded assessment alongside current mechanical checks."""
+        observed = timestamp(self.clock())
+        query = request({} if context is None else context, [record_id],
+                        known_at or observed, as_of or observed)
+        with self._read() as (conn, state, revision):
+            latest = state['latest'].get(record_id)
+            if latest is None or state['records'][latest]['data']['kind'] != 'belief':
+                raise EvidenceError('belief query requires a registered belief identity')
+            row = candidates(state, query, revision)[0]
+            row['belief'] = belief_view(state, row['current'], query['known_at'], query['context'],
+                                       lambda identity: self._source(conn, identity))
+            row['observed_at'] = observed
+            return row
 
     def use(self, receipt_id, decision_revision, selections):
         """Record reported evidence use; never imply causality or authorization."""
@@ -456,6 +498,28 @@ class Store:
                     edges.append(dict(id=f'assessed:{identity}:{item["revision_id"]}', type='ASSESSED',
                                       **{'from': identity, 'to': item['revision_id']},
                                       disposition=item['disposition'], reason=item['reason']))
-            return {'schema': 2, 'revision': revision,
+            for identity, event in state['assessments'].items():
+                data = event['data']
+                target = data['belief_revision']
+                nodes[identity] = dict(id=identity, label='Assessment', event=event)
+                edges.append(dict(id=f'assesses:{identity}', type='ASSESSES', **{'from': identity, 'to': target}))
+                edges.append(dict(id=f'review-source:{identity}', type='BASED_ON',
+                                  **{'from': identity, 'to': data['source_version']}, section=data['section']))
+                if data['supersedes']:
+                    edges.append(dict(id=f'review-supersedes:{identity}', type='SUPERSEDES',
+                                      **{'from': identity, 'to': data['supersedes']}))
+                active = state['latest_assessments'][target] == identity
+                if active:
+                    edges.append(dict(id=f'active-review-source:{identity}', type='BASED_ON',
+                                      **{'from': target, 'to': data['source_version']}, assessment_id=identity))
+                for item in data['evidence']:
+                    edges.append(dict(id=f'review-evidence:{identity}:{item["revision_id"]}', type='EVIDENCE',
+                                      **{'from': identity, 'to': item['revision_id']}, **item))
+                    if active:
+                        edges.append(dict(id=f'belief-evidence:{identity}:{item["revision_id"]}',
+                                          type=item['relationship'].upper(),
+                                          **{'from': target, 'to': item['revision_id']}, assessment_id=identity,
+                                          rationale=item['rationale'], resolution=item['resolution']))
+            return {'schema': 3, 'revision': revision,
                     'nodes': [nodes[key] for key in sorted(nodes)],
                     'edges': sorted(edges, key=lambda edge: edge['id'])}

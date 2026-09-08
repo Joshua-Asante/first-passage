@@ -92,13 +92,18 @@ def source_version(data):
 def replay(events):
     """Validate before any projection is changed; return normalized relational inputs."""
     state = {'versions': {}, 'captures': [], 'records': {}, 'latest': {}, 'dependencies': [],
-             'receipts': {}, 'uses': {}}
+             'receipts': {}, 'uses': {}, 'assessments': {}, 'latest_assessments': {}}
     ids = set()
     last_time = ''
     for seq, event in enumerate(events, 1):
         keys(event, {'schema', 'seq', 'id', 'recorded_at', 'type', 'data'})
+        if not isinstance(event['data'], dict):
+            raise EvidenceError('event data must be a JSON object')
         expected_schema = 2 if event['type'] in {'retrieval', 'use'} else 1
-        if type(event['schema']) is not int or event['schema'] != expected_schema:
+        if event['type'] == 'assessment' or (event['type'] == 'record' and event['data'].get('kind') == 'belief'):
+            expected_schema = 3
+        allowed = {2, 3} if event['type'] == 'retrieval' else {expected_schema}
+        if type(event['schema']) is not int or event['schema'] not in allowed:
             raise EvidenceError('unsupported event schema')
         if type(event['seq']) is not int or event['seq'] != seq:
             raise EvidenceError('journal sequence must be contiguous')
@@ -138,8 +143,8 @@ def replay(events):
                         'status', 'conditions', 'effective_at', 'supersedes'})
             for name in ('record_id', 'source_version', 'section', 'statement', 'status'):
                 text(data[name], name)
-            if data['kind'] not in {'decision', 'finding', 'analysis'}:
-                raise EvidenceError('record kind must be decision, finding or analysis')
+            if data['kind'] not in {'decision', 'finding', 'analysis', 'belief'}:
+                raise EvidenceError('record kind must be decision, finding, analysis or belief')
             version = state['versions'].get(data['source_version'])
             if version is None or version['availability'] != 'available':
                 raise EvidenceError('record must cite a captured source version')
@@ -180,6 +185,11 @@ def replay(events):
             from .retrieval import validate_use
             validate_use(event, state)
             state['uses'][event['id']] = event
+        elif event['type'] == 'assessment':
+            from .beliefs import validate_assessment
+            validate_assessment(event, state)
+            state['assessments'][event['id']] = event
+            state['latest_assessments'][data['belief_revision']] = event['id']
         else:
             raise EvidenceError(f'unsupported event type: {event["type"]}')
     return state

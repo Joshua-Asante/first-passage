@@ -91,6 +91,30 @@ class CliTest(unittest.TestCase):
         self.assertNotIn('Status: parked', json.dumps(source))
         self.assertEqual(self.cli('check')['findings'][0]['source']['preserved'], 'missing')
 
+    def test_belief_review_cli_preserves_judgment_and_receipt(self):
+        source = self.cli('capture', 'claim', 'decision.md')
+        fields = dict(source_version=source['version_id'], section='## Ruling',
+                      statement='Status: parked', status='parked', conditions={'venue': 'example'},
+                      effective_at='2026-08-01T00:00:00Z')
+        belief = self.cli('record', self.document('belief.json', dict(fields, record_id='belief', kind='belief')))
+        evidence = self.cli('record', self.document('finding.json', dict(fields, record_id='finding', kind='finding')))
+        review = dict(belief_revision=belief['id'], judgment='supported', reviewer='fixture',
+                      source_version=source['version_id'], section='## Ruling', statement='Status: parked',
+                      evidence=[dict(revision_id=evidence['id'], relationship='supporting',
+                                     rationale='Fixture comparison', resolution=None)])
+        assessment = self.cli('assess', self.document('review.json', review))
+        context = self.document('context.json', {'venue': 'example'})
+        view = self.cli('belief', 'belief', '--context', context)
+        self.assertEqual(view['belief']['assessment'], assessment)
+        receipt = self.cli('retrieve', self.document('request.json', {'record_ids': ['belief'], 'context': {'venue': 'example'}}))
+        (self.repo / 'decision.md').write_text('Changed', encoding='utf-8')
+        self.assertEqual(self.cli('belief', 'belief', '--context', context)['belief']['review_status'], 'needs_review')
+        self.assertEqual(self.cli('receipt', receipt['id'])['receipt'], receipt)
+        graph = self.cli('export')
+        self.cli('rebuild')
+        self.assertEqual(self.cli('export'), graph)
+        self.assertIn('error', self.cli('belief', 'finding', exit_code=2))
+
 
 if __name__ == '__main__':
     unittest.main()

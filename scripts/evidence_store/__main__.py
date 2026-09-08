@@ -28,7 +28,7 @@ def main(argv=None):
     capture.add_argument('path')
     capture.add_argument('--kind', default='document')
     capture.add_argument('--commit', help='full local Git commit SHA-1; never fetches')
-    for name in ('record', 'depend', 'retrieve', 'use'):
+    for name in ('record', 'depend', 'retrieve', 'use', 'assess'):
         commands.add_parser(name).add_argument('file', type=Path)
     for name in ('source', 'impact', 'receipt'):
         commands.add_parser(name).add_argument('id')
@@ -36,6 +36,11 @@ def main(argv=None):
     decision.add_argument('record_id')
     decision.add_argument('--known-at', help='timezone-aware recorded-time cutoff')
     decision.add_argument('--as-of', help='timezone-aware effective-time cutoff')
+    belief = commands.add_parser('belief', help='read a belief assessment with current checks')
+    belief.add_argument('record_id')
+    belief.add_argument('--context', type=Path, help='JSON object containing situation fields')
+    belief.add_argument('--known-at')
+    belief.add_argument('--as-of')
     for name in ('check', 'rebuild', 'export'):
         commands.add_parser(name)
     args = parser.parse_args(argv)
@@ -43,12 +48,15 @@ def main(argv=None):
         store = Store(args.repo, args.store or args.repo / '.evidence')
         if args.command == 'capture':
             result = store.capture(args.source_id, args.path, args.kind, commit=args.commit)
-        elif args.command in {'record', 'depend', 'retrieve', 'use'}:
+        elif args.command in {'record', 'depend', 'retrieve', 'use', 'assess'}:
             result = getattr(store, args.command)(**_object(args.file))
         elif args.command in {'source', 'impact', 'receipt'}:
             result = getattr(store, args.command)(args.id)
         elif args.command == 'decision':
             result = store.decision(args.record_id, known_at=args.known_at, as_of=args.as_of)
+        elif args.command == 'belief':
+            result = store.belief(args.record_id, context=_object(args.context) if args.context else None,
+                                  known_at=args.known_at, as_of=args.as_of)
         else:
             result = getattr(store, args.command)()
         print(json.dumps(result, sort_keys=True, ensure_ascii=True, allow_nan=False))

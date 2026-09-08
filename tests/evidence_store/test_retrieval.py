@@ -118,7 +118,7 @@ class RetrievalTest(unittest.TestCase):
         before = self.store.export()
         (self.store.root / 'index.sqlite').unlink()
         self.assertEqual(before, self.store.export())
-        self.assertEqual(before['schema'], 2)
+        self.assertEqual(before['schema'], 3)
         self.assertTrue({'RetrievalReceipt', 'EvidenceUse'} <= {n['label'] for n in before['nodes']})
         self.assertTrue({'RETRIEVED', 'FOR_DECISION', 'FROM_RECEIPT', 'ASSESSED'} <=
                         {e['type'] for e in before['edges']})
