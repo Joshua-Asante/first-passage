@@ -11,21 +11,27 @@ rules cannot see — so it is not mirrored here.)
 
 ## Session log (wrap-up)
 
-At the end of any substantive turn, append a reverse-chron entry to
-`docs/SESSIONS.md` — append-only, **link out** (never restate canonical values).
-Use Focus / Shipped (branch+commit) / Decisions-defects (link the ADR/brief) /
+At wrap-up, write a full reverse-chron entry only when the session made a real
+judgment call: a choice among options, a scope/priority/risk decision, or a
+measurement that resolves something open. Follow the living `docs/SESSIONS.md`
+header — append-only, **link out** (never restate canonical values).
+Use Focus / Shipped (branch+commit) / Decisions-defects (link the actual owner) /
 Live-ops state where relevant. **Open / next** is optional historical context for
 that session; do not copy the current queue into it or add a pointer-only stub when
 the queue changes. The living header in `docs/SESSIONS.md` links to `STATE.md`, the
-owner of current priorities and obligations. Skip trivial / read-only turns.
+owner of current priorities and obligations. Mechanical output without a judgment
+call, trivial turns and read-only turns need no full entry.
 Grounding: `feedback_session_log_discipline` (owner
 `docs/operational_rules.md §7`); bind:
-[`Survive-bound addendum`](../../docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md).
+[`Rule 7`](../../docs/operational_rules.md#7-one-canonical-owner-per-fact-every-other-mention-links-or-is-a-labeled-mirror).
 
 ## Session start (queue bind)
 
-First read: `STATE.md` operator table. If the user ask is not a live queue row,
-refuse and name the live rows unless they wrote `queue-exception: <reason>`.
+First read: `STATE.md` operator table. Serve priorities in dependency order;
+independent work need not wait on an unrelated row. Explicit operator direction
+can authorize off-queue work without a special phrase. Otherwise keep off-queue
+work with its owner until promoted. Do not auto-open a replacement/channel or
+infer phase GO from queue position.
 Treat any Open / next text in a session entry as historical context, never as a
 current priority source.
 
@@ -58,8 +64,7 @@ attestation. Full record:
 
 Claude-project `MEMORY.md` (outside this worktree) is the same class:
 assistive-only, never a Rule 7 owner, never a pasted §0 attestation.
-Owner: [`Rule 7`](../../docs/operational_rules.md) ·
-[state-md addendum](../../docs/adr/2026-06-30-state-md-role-reduction.md).
+Owner: [`Rule 7`](../../docs/operational_rules.md#7-one-canonical-owner-per-fact-every-other-mention-links-or-is-a-labeled-mirror).
 
 ~~Before creating a new `lab/analysis/` slug or a new file under `docs/adr/` or
 `docs/briefs/`, run `python scripts/repo_retrieve.py --query "<terms>"` and
@@ -69,10 +74,11 @@ Grounding: Q-XMEM-1 Limb B + `docs/operational_rules.md` §8.
 
 ## Falsifier before a brief
 
-Before authoring anything in `docs/briefs/` or `docs/adr/`, run the <5-min cheap
-falsifier PARENT-side and write against the empirical number, not the theoretical
-magnitude (one-shot script, 1-CSV sanity sweep, sha256 byte-identity, oracle-tier
-pre-check). Use the brief-authoring skill for structure; verify every Rule-0 read
-is real (handoff-verify). Grounding: `lesson_run_cheap_falsifier_before_authoring`
+Before authoring, apply the governing brief/claim contract. Where an empirical
+claim permits a cheap challenge, run it PARENT-side and write against the observed
+result (one-shot script, CSV sanity sweep, byte-identity or oracle-tier pre-check).
+Governance choices require source/consumer verification; do not invent a hypothesis
+or empirical number solely to fill an ADR form. Required research-brief falsifiers
+and evidence remain required. Use the brief-authoring skill for structure; verify
+every Rule-0 read is real (handoff-verify). Grounding: `lesson_run_cheap_falsifier_before_authoring`
 + `feedback_run_falsifier_before_brief`.
-

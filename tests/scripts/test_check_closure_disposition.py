@@ -7,6 +7,7 @@ mode below has a fixture that must FAIL, and the compliant fixture must PASS.
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
 from pathlib import Path
 
@@ -21,6 +22,16 @@ ccd = importlib.util.module_from_spec(_SPEC)
 # time — register before exec_module or frozen dataclasses crash on 3.14.
 sys.modules[_SPEC.name] = ccd
 _SPEC.loader.exec_module(ccd)
+
+
+def _load_checker(module_name: str):
+    spec = importlib.util.spec_from_file_location(
+        module_name, REPO / "scripts" / "check_closure_disposition.py"
+    )
+    checker = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = checker
+    spec.loader.exec_module(checker)
+    return checker
 
 
 COMPLIANT = """# Q-TEST-1 — CLOSURE: `FALSIFIED` (fixture)
@@ -120,6 +131,20 @@ HYPHENATED_BOARD = """# Q-TEST-11 — CLOSURE: `RESOLVED` (fixture)
 - **Board-write:** `- **X** — done. [owner](docs/x.md)` (STATE row added)
 """
 
+DEFECTS = {
+    "heading": ("## Iterate — loop exit", "## Exit", "no 'Iterate' heading"),
+    "next": ("- **Next:** STOP\n", "", "no 'Next:'"),
+    "board": ("- **Board write:** none — STOP, nothing owed\n", "", "Board write"),
+    "registry": (
+        "- **Registry:** n/a — fixture / not a strategy-grounds kill\n",
+        "",
+        "closure lacks a Registry line",
+    ),
+}
+
+FORMER_ITERATE_OWNER = "2026-08-04-iterate-closure-exit-mandatory.md"
+FORMER_COVERAGE_OWNER = "2026-08-12-closure-disposition-coverage-hard.md"
+
 
 def _write(tmp_path: Path, name: str, body: str) -> Path:
     p = tmp_path / name
@@ -204,52 +229,16 @@ def test_grandfathered_names_are_skipped_in_scan(tmp_path):
 
 
 def test_grandfather_list_matches_the_adr_boundary():
-    # Every grandfathered name must exist on disk (a typo'd entry silently
-    # un-grandfathers the real file), and no non-grandfathered pre-ADR file
-    # may exist without a block once the ADR is Accepted — the second half is
-    # exactly what the live scan asserts, so run it.
+    # Every grandfathered name must exist on disk: a typo silently removes
+    # the real file from the fixed forward-only boundary.
     for name in ccd.GRANDFATHERED:
         assert (ccd.CLOSURES_DIR / name).is_file(), f"grandfathered but absent: {name}"
 
 
-# ── severity: self-arming on ADR ratification ──────────────────
-
-def test_adr_status_parses_header_token_only(tmp_path):
-    adr = tmp_path / "adr.md"
-    adr.write_text(
-        "# T\n\n**Status:** `Proposed` — note\n\n---\n\n## Addendum\n"
-        "**Status:** `Accepted`\n",  # below the header boundary: ignored
-        encoding="utf-8",
-    )
-    assert ccd.adr_status(adr) == "Proposed"
-
-
-def test_adr_status_missing_file_degrades(tmp_path):
-    assert ccd.adr_status(tmp_path / "nope.md") == "MISSING"
-
-
-def test_adr_status_survives_frontmatter_and_bare_token(tmp_path):
-    adr = tmp_path / "adr.md"
-    adr.write_text(
-        "---\ntitle: x\n---\n# T\n\n**Status:** Accepted — ratified\n",
-        encoding="utf-8",
-    )
-    assert ccd.adr_status(adr) == "Accepted"
-
-
 def test_explicit_path_skips_grandfathered_in_closures_dir():
-    # Naming a grandfathered closure must SKIP, not hard-fail — hard-failing
-    # invites the retro-editing the ADR's §5 forbids.
+    # Naming a grandfathered closure must SKIP, not invite retro-editing.
     legacy = ccd.CLOSURES_DIR / "Q-RAIL-1-closure-resolved.md"
     assert ccd.main([str(legacy)]) == 0
-
-
-def test_live_scan_is_warn_tier_while_proposed(capsys):
-    # The owning ADR ships Proposed; the live corpus scan must exit 0 today
-    # regardless of violations, and hard-fail only after ratification.
-    if ccd.adr_status() == "Accepted":
-        pytest.skip("ADR ratified — WARN-tier branch no longer reachable")
-    assert ccd.main([]) == 0
 
 
 # ── explicit-path mode: authoring-time hard answer ─────────────
@@ -259,6 +248,42 @@ def test_explicit_path_mode_is_always_hard(tmp_path):
     good = _write(tmp_path, "Q-TEST-6-closure-resolved.md", COMPLIANT)
     assert ccd.main([str(bad)]) == 1
     assert ccd.main([str(good)]) == 0
+
+
+def test_explicit_path_registry_only_is_hard(tmp_path, capsys):
+    old, new, reason = DEFECTS["registry"]
+    bad = _write(
+        tmp_path,
+        "Q-TEST-12-closure-falsified.md",
+        COMPLIANT.replace(old, new, 1),
+    )
+    assert ccd.main([str(bad)]) == 1
+    out = capsys.readouterr().out
+    assert out.startswith("HARD closure-disposition: ")
+    assert reason in out
+
+
+def test_explicit_path_same_grandfather_name_outside_closures_fails(
+    tmp_path, capsys
+):
+    outside = _write(tmp_path, "Q-RAIL-1-closure-resolved.md", MISSING_BLOCK)
+    assert ccd.main([str(outside)]) == 1
+    out = capsys.readouterr().out
+    assert "HARD closure-disposition:" in out
+    assert "no 'Iterate' heading" in out
+
+
+def test_explicit_path_and_list_debt_do_not_run_coverage(
+    tmp_path, monkeypatch
+):
+    bad = _write(tmp_path, "Q-TEST-13-closure-void.md", MISSING_BLOCK)
+
+    def fail_coverage():
+        raise AssertionError("coverage must not run in this mode")
+
+    monkeypatch.setattr(ccd, "missing_closure_campaigns", fail_coverage)
+    assert ccd.main([str(bad)]) == 1
+    assert ccd.main(["--list-debt"]) == 0
 
 
 def test_scan_registry_requires_token_on_new_closure(tmp_path):
@@ -430,6 +455,161 @@ def _coverage_repo(tmp_path: Path, *, with_ofchan_closure: bool = False) -> Path
     return tmp_path
 
 
+def _clean_gate_repo(
+    tmp_path,
+    monkeypatch,
+    checker=ccd,
+    *,
+    actual_scope=None,
+    actual_missing=None,
+):
+    repo = _coverage_repo(tmp_path / "repo", with_ofchan_closure=True)
+    closures = repo / "docs" / "briefs" / "closures"
+    for name in (
+        "Q-NOCLOS-1-closure-falsified.md",
+        "Q-R2VBUCK-1-closure-falsified.md",
+    ):
+        _write(closures, name, COMPLIANT)
+    scope_fn = checker.in_scope if actual_scope is None else actual_scope
+    missing_fn = (
+        checker.missing_closure_campaigns
+        if actual_missing is None
+        else actual_missing
+    )
+    monkeypatch.setattr(checker, "REPO", repo)
+    monkeypatch.setattr(checker, "CLOSURES_DIR", closures)
+    monkeypatch.setattr(checker, "in_scope", lambda: scope_fn(closures))
+    monkeypatch.setattr(
+        checker, "missing_closure_campaigns", lambda: missing_fn(repo)
+    )
+    assert missing_fn(repo) == []
+    assert all(checker.scan_file(p) is None for p in scope_fn(closures))
+    assert all(checker.scan_registry(p) is None for p in scope_fn(closures))
+    return repo, closures / "Q-HASCLOS-1-closure-falsified.md"
+
+
+def _owner_paths(repo: Path) -> dict[str, Path]:
+    adr_dir = repo / "docs" / "adr"
+    return {
+        "iterate": adr_dir / FORMER_ITERATE_OWNER,
+        "coverage": adr_dir / FORMER_COVERAGE_OWNER,
+    }
+
+
+def _selected_owner_limbs(owner_target: str) -> set[str]:
+    if owner_target == "both":
+        return {"iterate", "coverage"}
+    return {owner_target}
+
+
+def _owner_fixture(status: str) -> str:
+    addendum_status = "Proposed" if status == "Accepted" else "Accepted"
+    return (
+        "# Historical owner fixture\n\n"
+        f"**Status:** `{status}` — header token\n\n"
+        "---\n\n## Addendum\n\n"
+        f"**Status:** `{addendum_status}` — conflicting later prose\n"
+    )
+
+
+def _configure_former_owners(
+    repo: Path,
+    monkeypatch,
+    *,
+    owner_target: str,
+    owner_variant: str,
+    checker=ccd,
+) -> None:
+    paths = _owner_paths(repo)
+    selected = _selected_owner_limbs(owner_target)
+    for limb, path in paths.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if limb in selected and owner_variant == "missing":
+            continue
+        if limb in selected and owner_variant == "malformed":
+            body = "# Historical owner fixture\n\nNo Status token.\n"
+        else:
+            status = (
+                owner_variant
+                if limb in selected and owner_variant in {"Accepted", "Proposed"}
+                else "Accepted"
+            )
+            body = _owner_fixture(status)
+        path.write_text(body, encoding="utf-8")
+
+    if hasattr(checker, "OWNING_ADR"):
+        monkeypatch.setattr(checker, "OWNING_ADR", paths["iterate"])
+    if hasattr(checker, "COVERAGE_OWNING_ADR"):
+        monkeypatch.setattr(
+            checker, "COVERAGE_OWNING_ADR", paths["coverage"]
+        )
+
+    if owner_variant == "unreadable":
+        denied = {
+            os.path.normcase(str(paths[limb].resolve()))
+            for limb in selected
+        }
+        actual_open = Path.open
+
+        def deny_selected_owner(path, *args, **kwargs):
+            if os.path.normcase(str(path.resolve())) in denied:
+                raise PermissionError(f"denied owner fixture: {path}")
+            return actual_open(path, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "open", deny_selected_owner)
+
+
+def _apply_defect(repo: Path, closure: Path, defect: str) -> str:
+    if defect == "coverage":
+        missing = (
+            repo
+            / "docs"
+            / "briefs"
+            / "closures"
+            / "Q-NOCLOS-1-closure-falsified.md"
+        )
+        missing.unlink()
+        return "Q-NOCLOS-1"
+    old, new, reason = DEFECTS[defect]
+    assert old in COMPLIANT
+    closure.write_text(COMPLIANT.replace(old, new, 1), encoding="utf-8")
+    return reason
+
+
+def _hard_prefixes(output: str) -> set[str]:
+    prefixes = set()
+    for line in output.splitlines():
+        if line.startswith("HARD closure-disposition registry:"):
+            prefixes.add("registry")
+        elif line.startswith("HARD closure-disposition coverage:"):
+            prefixes.add("coverage")
+        elif line.startswith("HARD closure-disposition:"):
+            prefixes.add("iterate")
+    return prefixes
+
+
+def _assert_independent_hard_failure(
+    defect: str, reason: str, output: str
+) -> None:
+    expected_limb = (
+        "coverage"
+        if defect == "coverage"
+        else "registry"
+        if defect == "registry"
+        else "iterate"
+    )
+    assert _hard_prefixes(output) == {expected_limb}
+    assert reason in output
+    warn_prefix = {
+        "iterate": "WARN closure-disposition:",
+        "registry": "WARN closure-disposition registry:",
+        "coverage": "WARN closure-disposition coverage:",
+    }[expected_limb]
+    assert not any(
+        line.startswith(warn_prefix) for line in output.splitlines()
+    )
+
+
 def test_coverage_reports_closed_campaign_without_closure(tmp_path):
     repo = _coverage_repo(tmp_path, with_ofchan_closure=False)
     missing = ccd.missing_closure_campaigns(repo)
@@ -490,30 +670,20 @@ def test_coverage_accepts_nonstandard_closure_filename():
     ) == "Q-OFCHAN-1"
 
 
-def test_coverage_limb_is_advisory_while_proposed(tmp_path, capsys):
-    # While the coverage ADR is Proposed (or hard=False), missing closures
-    # must not flip the exit code — belt-churn / unrelated-work concern.
-    repo = _coverage_repo(tmp_path, with_ofchan_closure=False)
-    findings = ccd.missing_closure_campaigns(repo)
-    assert findings  # precondition: something to warn about
-    code = ccd.report_missing_closure_coverage(findings, hard=False)
+def test_coverage_reporter_empty_findings_has_no_output(capsys):
+    code = ccd.report_missing_closure_coverage([])
     assert code == 0
-    out = capsys.readouterr().out
-    assert out.startswith("WARN ")
-    assert "Q-OFCHAN-1" in out
-    assert not any(ln.startswith("HARD ") for ln in out.splitlines())
+    assert capsys.readouterr().out == ""
 
 
-def test_coverage_limb_hard_when_armed(tmp_path, capsys):
-    # Adversarial: a fixture that actually violates coverage must fire HARD
-    # once the coverage ADR is Accepted (lesson_discipline_guards_need_adversarial_tests).
+def test_coverage_reporter_is_fixed_hard(tmp_path, capsys):
     repo = _coverage_repo(tmp_path, with_ofchan_closure=False)
     findings = ccd.missing_closure_campaigns(repo)
     assert findings  # precondition: real violation fixture
-    code = ccd.report_missing_closure_coverage(findings, hard=True)
+    code = ccd.report_missing_closure_coverage(findings)
     assert code == 1
     out = capsys.readouterr().out
-    assert out.startswith("HARD ")
+    assert out.startswith("HARD closure-disposition coverage:")
     assert "Q-OFCHAN-1" in out
     assert "Q-NOCLOS-1" in out
 
@@ -573,59 +743,255 @@ def test_coverage_public_seed_ltm_dir_without_joinable_closures_is_silent(tmp_pa
     assert ccd.missing_closure_campaigns(repo) == []
 
 
-def test_coverage_owning_adr_is_accepted_and_armed(capsys):
-    # After Accept, coverage limb is HARD-armed; live exit 0 requires backlog clear.
-    assert ccd.COVERAGE_OWNING_ADR.is_file(), (
-        "coverage owning ADR missing — COVERAGE_OWNING_ADR path drift"
+@pytest.mark.parametrize(
+    "owner_variant",
+    ["Accepted", "Proposed", "missing", "malformed", "unreadable"],
+)
+@pytest.mark.parametrize("owner_target", ["iterate", "coverage", "both"])
+def test_clean_repo_ignores_former_owner_state(
+    tmp_path,
+    monkeypatch,
+    capsys,
+    owner_target,
+    owner_variant,
+):
+    repo, _ = _clean_gate_repo(tmp_path, monkeypatch)
+    _configure_former_owners(
+        repo,
+        monkeypatch,
+        owner_target=owner_target,
+        owner_variant=owner_variant,
     )
-    assert ccd.adr_status(ccd.COVERAGE_OWNING_ADR) == "Accepted"
-    missing = ccd.missing_closure_campaigns()
-    if missing and not ccd.ltm_closure_corpus_present():
-        pytest.skip(
-            "closure bodies live under docs/ltm/briefs/ "
-            "(excluded from the public seed)"
-        )
-    assert missing == []
     assert ccd.main([]) == 0
     out = capsys.readouterr().out
-    assert "HARD closure-disposition coverage:" not in out
+    assert "owning ADR" not in out
+    assert "coverage ADR" not in out
+    assert not any(line.startswith("WARN ") for line in out.splitlines())
 
 
-def test_coverage_main_hard_exit_when_adr_accepted(tmp_path, monkeypatch, capsys):
-    # Simulated Accepted: coverage violation ⇒ HARD + exit 1.
-    adr = tmp_path / "coverage-adr.md"
-    adr.write_text(
-        "# T\n\n**Status:** `Accepted` — simulated ratification\n\n---\n\n## X\n",
-        encoding="utf-8",
+@pytest.mark.parametrize(
+    "owner_variant",
+    ["Accepted", "Proposed", "missing", "malformed", "unreadable"],
+)
+@pytest.mark.parametrize("owner_target", ["iterate", "coverage", "both"])
+@pytest.mark.parametrize(
+    "defect", ["heading", "next", "board", "registry", "coverage"]
+)
+def test_repo_mode_defects_are_hard_independent_of_former_owner_state(
+    tmp_path,
+    monkeypatch,
+    capsys,
+    owner_target,
+    owner_variant,
+    defect,
+):
+    repo, closure = _clean_gate_repo(tmp_path, monkeypatch)
+    _configure_former_owners(
+        repo,
+        monkeypatch,
+        owner_target=owner_target,
+        owner_variant=owner_variant,
     )
-    repo = _coverage_repo(tmp_path / "repo", with_ofchan_closure=False)
-    findings = ccd.missing_closure_campaigns(repo)
-    assert findings  # precondition: violating fixture
-    monkeypatch.setattr(ccd, "COVERAGE_OWNING_ADR", adr)
-    # Keep Iterate limb green so coverage alone drives the exit code.
-    monkeypatch.setattr(ccd, "in_scope", lambda: [])
-    monkeypatch.setattr(ccd, "missing_closure_campaigns", lambda: findings)
+    reason = _apply_defect(repo, closure, defect)
+    assert ccd.main([]) == 1
+    out = capsys.readouterr().out
+    _assert_independent_hard_failure(defect, reason, out)
+
+
+def test_main_iterate_only_is_hard_without_former_owner(
+    tmp_path, monkeypatch, capsys
+):
+    repo, closure = _clean_gate_repo(tmp_path, monkeypatch)
+    _configure_former_owners(
+        repo,
+        monkeypatch,
+        owner_target="both",
+        owner_variant="missing",
+    )
+    reason = _apply_defect(repo, closure, "heading")
+    assert ccd.main([]) == 1
+    out = capsys.readouterr().out
+    _assert_independent_hard_failure("heading", reason, out)
+
+
+def test_main_registry_only_is_hard_without_former_owner(
+    tmp_path, monkeypatch, capsys
+):
+    repo, closure = _clean_gate_repo(tmp_path, monkeypatch)
+    _configure_former_owners(
+        repo,
+        monkeypatch,
+        owner_target="both",
+        owner_variant="missing",
+    )
+    reason = _apply_defect(repo, closure, "registry")
+    assert ccd.main([]) == 1
+    out = capsys.readouterr().out
+    _assert_independent_hard_failure("registry", reason, out)
+
+
+def test_main_coverage_only_is_hard_without_former_owner(
+    tmp_path, monkeypatch, capsys
+):
+    repo, closure = _clean_gate_repo(tmp_path, monkeypatch)
+    _configure_former_owners(
+        repo,
+        monkeypatch,
+        owner_target="both",
+        owner_variant="missing",
+    )
+    reason = _apply_defect(repo, closure, "coverage")
+    assert ccd.main([]) == 1
+    out = capsys.readouterr().out
+    _assert_independent_hard_failure("coverage", reason, out)
+
+
+def test_repo_mode_reports_iterate_registry_and_coverage_together(
+    tmp_path, monkeypatch, capsys
+):
+    repo, closure = _clean_gate_repo(tmp_path, monkeypatch)
+    _configure_former_owners(
+        repo,
+        monkeypatch,
+        owner_target="both",
+        owner_variant="missing",
+    )
+    body = COMPLIANT
+    for defect in ("next", "registry"):
+        old, new, _ = DEFECTS[defect]
+        body = body.replace(old, new, 1)
+    closure.write_text(body, encoding="utf-8")
+    _apply_defect(repo, closure, "coverage")
+    assert ccd.main([]) == 1
+    out = capsys.readouterr().out
+    assert _hard_prefixes(out) == {"iterate", "registry", "coverage"}
+    assert "no 'Next:'" in out
+    assert "closure lacks a Registry line" in out
+    assert "Q-NOCLOS-1" in out
+
+
+def test_hot_gap_is_covered_by_ltm_then_hard_when_ltm_record_removed(
+    tmp_path, monkeypatch, capsys
+):
+    repo, _ = _clean_gate_repo(tmp_path, monkeypatch)
+    hot = (
+        repo
+        / "docs"
+        / "briefs"
+        / "closures"
+        / "Q-NOCLOS-1-closure-falsified.md"
+    )
+    ltm = (
+        repo
+        / "docs"
+        / "ltm"
+        / "briefs"
+        / "Q-NOCLOS-1-closure-falsified.md"
+    )
+    hot.unlink()
+    ltm.write_text(COMPLIANT, encoding="utf-8")
+
+    assert ccd.main([]) == 0
+    assert "coverage:" not in capsys.readouterr().out
+
+    ltm.unlink()
+    assert (
+        repo / "docs" / "ltm" / "briefs" / "Q-LTMCORPUS-1-closure.md"
+    ).is_file()
     assert ccd.main([]) == 1
     out = capsys.readouterr().out
     assert "HARD closure-disposition coverage:" in out
-    assert "Q-OFCHAN-1" in out
+    assert "Q-NOCLOS-1" in out
 
 
-def test_coverage_main_warn_exit_when_adr_proposed(tmp_path, monkeypatch, capsys):
-    # Simulated Proposed with a real coverage gap ⇒ WARN + exit 0.
-    adr = tmp_path / "coverage-adr.md"
-    adr.write_text(
-        "# T\n\n**Status:** `Proposed` — not yet ratified\n\n---\n\n## X\n",
-        encoding="utf-8",
-    )
-    repo = _coverage_repo(tmp_path / "repo", with_ofchan_closure=False)
-    findings = ccd.missing_closure_campaigns(repo)
-    assert findings
-    monkeypatch.setattr(ccd, "COVERAGE_OWNING_ADR", adr)
-    monkeypatch.setattr(ccd, "in_scope", lambda: [])
-    monkeypatch.setattr(ccd, "missing_closure_campaigns", lambda: findings)
-    assert ccd.main([]) == 0
+@pytest.mark.parametrize("ltm_layout", ["absent", "nested-template"])
+@pytest.mark.parametrize("defect", ["next", "registry"])
+def test_public_seed_waiver_does_not_mask_iterate_or_registry_failure(
+    tmp_path, monkeypatch, capsys, ltm_layout, defect
+):
+    repo, closure = _clean_gate_repo(tmp_path, monkeypatch)
+    ltm_dir = repo / "docs" / "ltm" / "briefs"
+    (ltm_dir / "Q-LTMCORPUS-1-closure.md").unlink()
+    if ltm_layout == "absent":
+        ltm_dir.rmdir()
+    else:
+        nested = ltm_dir / "rnd-pipeline"
+        nested.mkdir()
+        (nested / "discovery-campaign-template.md").write_text(
+            "# template\n", encoding="utf-8"
+        )
+    (
+        repo
+        / "docs"
+        / "briefs"
+        / "closures"
+        / "Q-NOCLOS-1-closure-falsified.md"
+    ).unlink()
+    reason = _apply_defect(repo, closure, defect)
+
+    assert ccd.main([]) == 1
     out = capsys.readouterr().out
-    assert "WARN closure-disposition coverage:" in out
-    assert "Q-OFCHAN-1" in out
-    assert "HARD closure-disposition coverage:" not in out
+    _assert_independent_hard_failure(defect, reason, out)
+    assert "Q-NOCLOS-1" not in out
+
+
+@pytest.mark.parametrize(
+    "denied_limbs",
+    [("iterate",), ("coverage",), ("iterate", "coverage")],
+)
+def test_fresh_checker_never_reads_former_status_owners(
+    tmp_path, monkeypatch, capsys, denied_limbs
+):
+    targets = _owner_paths(REPO)
+    denied = {
+        os.path.normcase(str(targets[limb].resolve()))
+        for limb in denied_limbs
+    }
+    attempts: list[str] = []
+    actual_open = Path.open
+
+    def deny_historical_owner(path, *args, **kwargs):
+        resolved = os.path.normcase(str(path.resolve()))
+        if resolved in denied:
+            attempts.append(resolved)
+            raise PermissionError(f"denied historical owner: {path}")
+        return actual_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", deny_historical_owner)
+    for limb in denied_limbs:
+        with pytest.raises(PermissionError):
+            targets[limb].open(encoding="utf-8")
+    assert attempts == [
+        os.path.normcase(str(targets[limb].resolve()))
+        for limb in denied_limbs
+    ]
+    attempts.clear()
+
+    module_name = "check_closure_disposition_denied_" + "_".join(
+        denied_limbs
+    )
+    fresh = _load_checker(module_name)
+    actual_scope = fresh.in_scope
+    actual_missing = fresh.missing_closure_campaigns
+    cases = ("clean", "iterate", "registry", "coverage")
+    for case in cases:
+        repo, closure = _clean_gate_repo(
+            tmp_path / case,
+            monkeypatch,
+            checker=fresh,
+            actual_scope=actual_scope,
+            actual_missing=actual_missing,
+        )
+        if case != "clean":
+            defect = "heading" if case == "iterate" else case
+            reason = _apply_defect(repo, closure, defect)
+        expected = 0 if case == "clean" else 1
+        assert fresh.main([]) == expected
+        out = capsys.readouterr().out
+        if case == "clean":
+            assert not any(
+                line.startswith(("HARD ", "WARN ")) for line in out.splitlines()
+            )
+        else:
+            _assert_independent_hard_failure(defect, reason, out)
+    assert attempts == []

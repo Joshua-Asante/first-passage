@@ -120,7 +120,7 @@ append-only -- the original text stands above the "post-diagnostic update" callo
 - **Verdict used:** `AMBIGUOUS` -- ABANDONMENT (prereg roster mapping; confirm never read,
   nothing tested).
 - **Model update:** Cross-checked against a sanitized ox-alpha second opinion
-  (2026-08-22, per `docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md`) that hypothesized
+  (2026-08-22, per [`docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md`](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md)) that hypothesized
   DL-1's and DL-2's failures might be "one disease at two stages." Reconciled by re-running
   DL-1's own archived harness and computing its exit-reason mix: DL-1 resolves 40-70% of
   trades to genuine stop/target (an adverse hit-rate-ratio, candidate-level failure), sharply

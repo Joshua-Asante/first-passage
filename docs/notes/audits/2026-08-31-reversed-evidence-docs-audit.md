@@ -136,7 +136,7 @@ This was a targeted 39-file pass, not a full-corpus sweep. Left unswept for this
   reversals). The other 36 (subscriptions, user-skill trackers, most `b*`/`c*`/`d*` rows) were not swept.
 - `docs/personas/*.md` (22 files) — not touched. *(Note 2026-08-31: this directory was deleted in
   full later the same day — see
-  [persona-hierarchy full retirement](../../adr/2026-08-31-persona-hierarchy-full-retirement.md) —
+  [persona-hierarchy full retirement](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-31-persona-hierarchy-full-retirement.md) —
   so it is no longer a live candidate for a future reversed-evidence pass.)*
 - `.claude/skills/*/SKILL.md` — only `c1-rail` and `prop-firm-challenge` checked (the two most
   fact-dense operational skills); the other 21 skills were not swept.

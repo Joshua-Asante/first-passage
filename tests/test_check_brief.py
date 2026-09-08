@@ -6,12 +6,13 @@ The validator encodes the *mechanical* subset of brief-authoring SKILL.md's
   §5 lists forbidden moves, §10 has a runnable fenced block; present-but-empty
   sections WARN (ceremonial-section trap #1).
 
-These tests are TDD-style fixtures (inline strings + the two real ADRs):
+These tests use compact inline fixtures:
   - a well-formed brief passes (HARD == 0)
   - a brief missing the §4 falsifier fails HARD
   - a brief missing §5 / §10 fails HARD
   - an empty-but-present section WARNs (exit 0)
-  - the two committed ADRs are well-formed (regression / migration smoke test)
+  - a representative full ADR preserves optional-section, fenced-heading, and
+    trailing-addendum parser coverage without retaining a historical ADR
 """
 from __future__ import annotations
 
@@ -449,19 +450,57 @@ def test_infer_real_cc_handoff_still_handoff():
     assert cb.infer_type(path, text) == "handoff"
 
 
-# ── regression: the two real ADRs are well-formed ──────────────
+# ── representative full ADR shape ──────────────────────────────
 
-def test_real_adrs_well_formed():
-    for name in (
-        "docs/adr/2026-06-04-methodology-skills-under-vc.md",
-        "docs/adr/2026-06-04-lean-portfolio-meta-layer.md",
-    ):
-        path = REPO_ROOT / name
-        if not path.exists():
-            continue  # tolerate absence on a partial checkout
-        text = path.read_text(encoding="utf-8")
-        v = cb.check_brief(text, "adr")
-        assert _hard(v) == [], f"{name}: {[str(x) for x in _hard(v)]}"
+REPRESENTATIVE_FULL_ADR = """\
+# ADR — representative full decision
+**Status:** Accepted
+**Decision date:** 2026-08-01
+
+> Provenance note: this full record intentionally exercises rich Markdown.
+
+## §0 — Rule 0: production reads
+| Claim | Source | Anchor |
+|---|---|---|
+| The checker parses full records | `scripts/check_brief.py` | `abc1234` |
+
+## §1 — Context
+The decision connects to the checker contract.
+
+---
+
+## §2 — Decision
+Keep optional full sections between required sections.
+
+## §4 — Falsifiable hypothesis
+**H:** If fenced hook comments are masked, then §10 remains intact.
+**Falsifier:** a heading-shaped hook comment truncates §10.
+
+## §5 — Forbidden moves
+1. Do not parse shell comments as Markdown sections.
+2. Do not discard optional full sections.
+
+## §6 — Gate / closure criteria
+**RESOLVED** when the complete representative record passes.
+**FALSIFIED** if a required section is lost.
+
+## §7 — Consequences
+The compact fixture retains parser stress without importing policy content.
+
+## §10 — Audit hooks
+```bash
+# 1. This heading-shaped shell comment is not a Markdown section.
+python scripts/check_brief.py sample.md --type adr
+```
+
+## Addendum
+Named trailing material after §10 remains part of a valid full record.
+"""
+
+
+def test_representative_full_adr_with_rich_section_shape_passes():
+    v = cb.check_brief(REPRESENTATIVE_FULL_ADR, "adr")
+    assert _hard(v) == [], [str(x) for x in _hard(v)]
 
 
 def test_file_not_found_exits_2(tmp_path, capsys):
@@ -564,6 +603,18 @@ def test_full_tier_adr_still_checked():
     broken = WELL_FORMED.replace("## §5 — Forbidden moves", "## §99 — Nothing")
     assert not cb.is_light_tier(broken)
     assert _hard(cb.check_brief(broken, "adr")), "a malformed full-tier ADR must still fail"
+
+
+def test_concise_adr_is_explicitly_declined_by_subset(tmp_path, capsys):
+    path = tmp_path / "adr.md"
+    text = "# ADR\n**Format:** concise\n\n## Decision\nKeep one owner.\n"
+    path.write_text(text, encoding="utf-8")
+    assert cb.main([str(path), "--type", "adr"]) == 0
+    output = capsys.readouterr().out
+    assert "NOT CHECKED" in output
+    assert "well-formed" not in output
+    assert cb.check_brief(text, "adr") == []
+    assert _hard(cb.check_brief(text, "inquire"))
 
 
 def test_type_closure_delegates_and_does_not_apply_general_contract(tmp_path, capsys):

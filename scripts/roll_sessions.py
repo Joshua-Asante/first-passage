@@ -737,6 +737,113 @@ def _frozen_entry_body(text: str) -> str:
     return _strip_trailing_debris(_normalize_historical_github_urls(text))
 
 
+def _commit_is_durably_reachable(root: Path, revision: str, base_ref: str) -> bool:
+    """True when ``revision`` is an ancestor of ``base_ref`` or a remote ref.
+
+    A locally resolvable commit object is not enough: an unpushed side-branch
+    tip can share a blob with ``base_ref`` yet become a 404 once the clone
+    drops that object. Reachability from the append-only base or any
+    ``refs/remotes/*`` tip is the durability bar.
+    """
+    if _git(root, 'merge-base', '--is-ancestor', revision, base_ref) is not None:
+        return True
+    refs = _git(root, 'for-each-ref', '--format=%(refname)', 'refs/remotes')
+    if not refs:
+        return False
+    for ref in refs.splitlines():
+        ref = ref.strip()
+        if ref and _git(root, 'merge-base', '--is-ancestor', revision, ref) is not None:
+            return True
+    return False
+
+
+def _normalize_verified_document_pins(
+    root: Path, base_ref: str, before: str, after: str,
+) -> str:
+    """Compare a relative document link with an immutable pin to identical bytes.
+
+    Only the href changes. Its repo, path, query and fragment must stay the same;
+    the full commit must resolve locally, be durably reachable from the
+    append-only base or a remote-tracking ref, and its target blob must match
+    base_ref. Missing Git evidence or the repo's Markdown parser grants no
+    exemption. Each changed occurrence must be a real parsed link, not a code
+    example. This does not allow unpinning.
+    """
+    old_links = list(_MARKDOWN_LINK_RE.finditer(before))
+    new_links = list(_MARKDOWN_LINK_RE.finditer(after))
+    if len(old_links) != len(new_links):
+        return after
+    replacements = []
+    verified_links = []
+    for old, new in zip(old_links, new_links):
+        old_href, new_href = old.group(2), new.group(2)
+        if old_href == new_href:
+            continue
+        source, pinned = urlsplit(old_href), urlsplit(new_href)
+        if (source.scheme or source.netloc or not source.path
+                or source.path.startswith('/') or not source.path.endswith('.md')):
+            continue
+        target = posixpath.normpath(posixpath.join('docs', source.path))
+        pin = re.fullmatch(
+            r'/Joshua-Asante/first-passage/blob/([0-9a-f]{40})/(.+)', pinned.path,
+        )
+        if (pinned.scheme != 'https' or pinned.netloc != 'github.com' or not pin
+                or pin.group(2) != target
+                or (source.query, source.fragment) != (pinned.query, pinned.fragment)):
+            continue
+        revision = pin.group(1)
+        commit = _git(root, 'rev-parse', '--verify', f'{revision}^{{commit}}')
+        if not commit or commit.strip() != revision:
+            continue
+        if not _commit_is_durably_reachable(root, revision, base_ref):
+            continue
+        base_blob = _git(root, 'rev-parse', '--verify', f'{base_ref}:{target}')
+        pin_blob = _git(root, 'rev-parse', '--verify', f'{revision}:{target}')
+        if base_blob and base_blob == pin_blob:
+            replacements.append((*new.span(2), old_href))
+            verified_links.append((old, new))
+    if not replacements:
+        return after
+    # The regex locates bytes; CommonMark proves they are real links. A regex
+    # alone would also permit changing literal Markdown inside code/comments.
+    # Keep the rest of this standalone tool usable without optional imports;
+    # the exception fails closed if the declared repository parser is missing.
+    try:
+        from markdown_it import MarkdownIt
+    except ImportError:
+        return after
+    parser = MarkdownIt('commonmark')
+    prefix = 'https://document-pin.invalid/'
+    while prefix in before or prefix in after:
+        prefix += '_'
+    for side, original in enumerate((before, after)):
+        probe = original
+        hrefs = {}
+        for index, pair in reversed(list(enumerate(verified_links))):
+            match = pair[side]
+            marker = f'{prefix}{index}'
+            hrefs[marker] = match.group(2)
+            start, end = match.span(2)
+            probe = probe[:start] + marker + probe[end:]
+        tokens = parser.parse(probe)
+        found = set()
+        for token in tokens:
+            for child in token.children or []:
+                href = child.attrGet('href') if child.type == 'link_open' else None
+                if href in hrefs:
+                    found.add(href)
+                    child.attrSet('href', parser.normalizeLink(hrefs[href]))
+        # Require every source occurrence, including otherwise invisible
+        # reference definitions, to produce a link. Restoring its href must
+        # reproduce that side's rendering; a marker must not repair malformed
+        # Markdown into a link. Existing frozen-body exemptions compose later.
+        if found != set(hrefs) or parser.render(original) != parser.renderer.render(tokens, parser.options, {}):
+            return after
+    for start, end, href in reversed(replacements):
+        after = after[:start] + href + after[end:]
+    return after
+
+
 def load_archived_entries_by_heading(root: Path) -> dict[str, Entry]:
     """Map heading line -> entry for every quarterly SESSIONS archive under root.
 
@@ -759,6 +866,7 @@ def append_only_problems(
     ours_doc: str,
     *,
     archived_by_heading: dict[str, Entry] | None = None,
+    document_pin_context: tuple[Path, str] | None = None,
 ) -> list[str]:
     """Prior headings must keep their bodies; new headings are allowed.
 
@@ -770,6 +878,10 @@ def append_only_problems(
     that is the PR-URL pin. A first-passage → first-passage-archive rewrite
     of ``/pull/`` or ``/commit/`` hrefs is also not a mutation (public-repo
     transplant; objects live only on the archive).
+
+    When Git context is supplied, a live entry's relative document href may be
+    pinned to a full commit containing the same blob as the base. Wording, link
+    label, target path, query and fragment remain frozen.
 
     Keep-20 roll exemption: a heading removed from the live file is legal iff
     ``archived_by_heading`` holds that heading with the frozen body after the
@@ -798,7 +910,11 @@ def append_only_problems(
                 continue
             problems.append(f"append-only: removed heading {heading!r}")
             continue
-        if _frozen_entry_body(e.text) != _frozen_entry_body(got.text):
+        current_text = got.text
+        if document_pin_context is not None:
+            root, base_ref = document_pin_context
+            current_text = _normalize_verified_document_pins(root, base_ref, e.text, current_text)
+        if _frozen_entry_body(e.text) != _frozen_entry_body(current_text):
             problems.append(
                 f"append-only: mutated prior entry {e.title!r} "
                 "(edit Open/next on the NEW top entry, not this one)"
@@ -839,6 +955,7 @@ def check_append_only(
         base_doc,
         ours_doc,
         archived_by_heading=load_archived_entries_by_heading(root),
+        document_pin_context=(root, base),
     )
 
 

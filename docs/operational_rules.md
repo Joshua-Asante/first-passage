@@ -135,19 +135,21 @@ This generalizes Rule 5 (Pine owns strategy parameters) from constants to
 | Which of two live-vs-historical values is current | [`docs/load_bearing_numbers.md`](load_bearing_numbers.md) — the live-value index (extracted from `CLAUDE.md` 2026-09-04). It **restates** each figure from that figure's own owner and is never itself the owner |
 | `dd_protection` / allocation constants | `core/dd_protection.py` / `core/firm_rules.py` |
 | MC anchors (historical record + engine pins) | `docs/mc_anchor_history.md` + `tests/core/test_mc_synthetic_engine.py` |
-| Decision rationale (the *why*) | `docs/adr/` |
+| Decision rationale (the *why*) | The owning specification, campaign record, plan or PR; a distinct ADR only under the [admission rule](adr/2026-08-08-adr-ceremony-tiering.md) |
+| Independent review mechanics / safety backstop | [Workflow contract](../scripts/README.md#independent-review) + its implementation; operator authority remains separate |
 | ADR lifecycle status (`Proposed`/`Accepted`/`Superseded`/`Withdrawn`/`Retired`) | ADR header fields + derived `docs/adr/INDEX.md` + `scripts/check_adr_graph.py` |
+| Removed ADR retrieval / current successor | `docs/adr/TOMBSTONES.md` with immutable commit/blob and current owner; no mandatory per-file stub |
 | Per-strategy version lineage | `core/strategies/_archive/<family>/*_CHANGELOG.md` (bodies); CARD stubs under `core/strategies/<family>/` |
 | What happened, session by session | `docs/SESSIONS.md` (append-only, links out) |
 | Current priorities and outstanding obligations | `STATE.md` queue and forward board; obligation details remain with their owning decision/closure |
 | Executable campaign next steps | Campaign's current implementation plan; campaign record owns evidence, gate dispositions, and operator decisions |
 | Session-specific "open / next" | Optional historical context in that session's entry; never a replacement for the current STATE queue or campaign plan |
 | Per-Q forward disposition (Iterate exit) | closure's own `## Iterate` block (`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`); a STATE forward-board row is a labeled pointer mirror only |
-| Durable atomic facts | Owning ADRs and [`docs/methodology/lessons/`](methodology/lessons/). Claude-project `MEMORY.md` + memory files (outside this worktree) are **assistive-only** — never a Rule 7 owner, never Rule 0 / §0 attestation. Same class as `repo_retrieve.py` ([Limb B](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)). |
+| Durable atomic facts | Their owning specification, campaign record, plan, PR, ADR or [`methodology lesson`](methodology/lessons/). Claude-project `MEMORY.md` + memory files (outside this worktree) are **assistive-only** — never a Rule 7 owner, never Rule 0 / §0 or sub-rule 8/10 attestation. Same class as `repo_retrieve.py` ([Limb B](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)). |
 
 Roles that must **not** restate canonical values:
-- **`STATE.md`** — the open-threads + forward-obligation register (dormant
-  cross-session threads with no other home + the forward-trigger board). Not a
+- **`STATE.md`** — current operator queue, compact executed-decision index,
+  dormant cross-session threads with no other home, and forward-trigger board. Not a
   state snapshot: carries no working-tree status, risk %, anchor number, version,
   hash, or owner table — points here (this §7) for ownership. See its header.
   Executed operator decisions appear only in its **decision index** (one line
@@ -155,17 +157,16 @@ Roles that must **not** restate canonical values:
   2026-08-19 concise relaxation is historical, see edit log), never as dated
   narrative sections (demoted 2026-07-16; reaffirmed 2026-08-03 — see edit
   log). Closed/retired rows are deleted from STATE (not struck); detail stays
-  with the owning ADR/closure.
-- **`docs/SESSIONS.md`** — narrates work; links the ADR/CHANGELOG/commit instead
+  with the owning decision record or closure.
+- **`docs/SESSIONS.md`** — narrates work; links the decision owner/CHANGELOG/commit instead
   of duplicating its values. Its living header links to STATE for current work;
   existing entries do not track later queue changes. `Open / next` is optional
   historical context; do not add a session stub just to copy the live queue.
-  Prefer W5 entry classes and links over prose; the
-  ~40-word-per-field figure is a soft target the ADR itself calls directional, not
-  an enforced cap — [`W5 ADR`](adr/2026-08-07-w5-governance-diet.md).
+  Its header gates full entries on a real judgment call; mechanical output alone
+  needs no full entry. The A–D classes and ~40-word targets are retired.
 - **`CLAUDE.md` §Live-execution posture** — a pointer block: the current
-  scale-path picture plus one line + ADR link per standing decision. The
-  multi-paragraph decision narrative lives in the owning ADRs; a new posture
+  scale-path picture plus one line + owner link per standing decision. The
+  decision narrative lives with its current owner; a new posture
   decision adds one pointer line, not a retelling (demoted 2026-07-16 — see
   edit log). **Narrowed 2026-09-04:** the gated lock surface still resident in
   `CLAUDE.md` is the **MC-anchor triple** (`ops/recall/guard.py` regex-reads it
@@ -176,6 +177,26 @@ Roles that must **not** restate canonical values:
 - **`README.md`** — human entry index; links out everywhere. Its public-clone
   note is a one-liner pointing at `CLAUDE.md` §Public-clone posture (the
   canonical statement).
+
+**STATE currency:** keep `Last curated` at least as recent as the newest dated
+decision-index bullet. Under `Scheduled forward triggers`, keep one `Weekly — recurring`
+and one `Monthly — recurring` heading with `next deadline **YYYY-MM-DD**` between
+today and the next 7/31 days respectively (America/New_York). Past `### YYYY-MM-DD`
+headings require affirmative standalone `DISCHARGED`; `NOT DISCHARGED` and
+`UNDISCHARGED` do not qualify. Prefer deleting completed rows once evidence is at
+the owner. Session-shaped promises belong in the current plan/queue. The always-on
+[`state-currency` checker](../scripts/check_state_currency.py) owns these field checks;
+a report-only digest or local reminder cannot discharge them.
+
+**Incident protection:** if a dated defect attributes a material decision error
+to missing orientation detail, a dormant thread is lost for lack of a home, or a
+load-bearing need for a deleted STATE role cannot be served by git/current owners,
+restore only the affected block/role and amend this ownership rule with the reason.
+Do not restore the whole snapshot or duplicate owner table by default. Keep the
+consolidated dormant-thread view; assistive recall is not its replacement. Do not
+copy private project memory here or commission a memory index/new state store.
+The [root charter](adr/2026-07-16-root-doc-charter-dedup.md) retains the rationale and
+queue-attention review; redundant quarterly document-maintenance/size ceremony is retired.
 
 **Origin:** 2026-06-03 doc-taxonomy audit. `STATE.md` (dated 2026-05-15) had
 drifted three weeks stale: it restated the locked strategy table and MC anchor
@@ -344,13 +365,13 @@ sub-rules of Rule 0 / Rule 2 — each anchored to a specific brief failure.
    write were gated and the registry append was checklist-only.
    _(Anchored: 2026-08-08 quarterly object audit §1.2 diagnostic 4; feed
    resumed 2026-08-11 only when sessions remembered the checklist.)_
-10. **Amend the existing owner before minting a sibling.** Before creating a
-    new ADR, brief, notice, or `lab/analysis/<theme>/<slug>/`, paste search
-    output that names the existing owner that should take an addendum, or
-    states none exists. Attestation without executed output is void (same
-    standard as sub-rule 8). Default is amend-in-place; a new file is the
-    exception. Ceremony-tiering already prefers light records when no limb
-    fires — this sub-rule is the adoption tooth, not a new ceremony.
+10. **Use the existing owner before minting a sibling.** Check the current
+    owner before opening a new ADR, brief, notice or research slug. Research
+    dedup evidence remains required under sub-rule 8. Routine fixes, file moves,
+    citation corrections and in-envelope campaign decisions use the owner or PR,
+    without a new ADR or a mandatory search transcript in the permanent record.
+    ADRs are for consequential, durable rationale or authority boundaries under
+    the [current policy](adr/2026-08-08-adr-ceremony-tiering.md).
     _(Anchored: F-2 already fired on ADR-count / file-Δ; MSL 17 ADD / 0
     REMOVE in 2 days; implied-SR light pair then full reversal.)_
 
@@ -489,19 +510,17 @@ proposal P1 the same day. Decision record:
 
 ## 11. Retirement events back-propagate to standing falsifiers
 
-When an ADR/decision retires a **venue, feed, or operator role** (or otherwise
-removes a surface that a *live* falsifier limb depends on), that same decision
-MUST sweep the standing falsifier set for limbs referencing the retired surface
-and, for each one it darkens, append a dated **re-arm condition** (an addendum,
-never an in-place edit of the falsifier). A falsifier whose input can no longer
-accrue is not "in force" regardless of unchanged threshold text — an
-unacknowledged dormant falsifier reads as live coverage that does not exist.
+When a decision retires a venue, feed, role or other input to a standing
+falsifier, identify each affected obligation and explicitly migrate, discharge,
+supersede or retire it. An input that can no longer accrue is not live coverage
+and does not count as a passing check.
 
-**What "back-propagate" requires:** for each dormant limb — (a) name it and the
-retiring event, (b) state why its input can no longer accrue, (c) give the
-condition under which it re-arms (usually: the replacement surface goes live), (d)
-confirm the *surviving* limbs still cover the decision. Do this in the retiring
-ADR's own §Consequences and by addendum on each affected prior ADR.
+For a retained dormant limb, name its unavailable input, a meaningful re-arm
+condition and the surviving coverage. For an approved permanent retirement,
+record the reason with its owner or tombstone; do not invent a restoration
+trigger for the removed mechanism. Frozen research evidence is corrected by
+addendum; approved effective ADR revisions follow Rule 14. No other obligation
+is discharged merely by association with the retired surface.
 
 **Origin:** 2026-07-01 programme audit. The 2026-06-30 CFD-retirement ADR
 (manual trading stopped, FXIFY idle) silently darkened the 2026-05-23
@@ -617,7 +636,7 @@ downstream of the claim it corrects).
 
 **The two-class boundary this rule draws, which Trap #12 never drew:**
 
-1. **FROZEN artifacts** (pre-registrations, closures, signed/ratified bodies):
+1. **FROZEN evidence artifacts** (pre-registrations, closures, signed evidence and lock records):
    Trap #12 stands — the body stays byte-unedited and the impeachment lives in
    an addendum. **But the addendum alone is not the correction.** A
    reader-intercept goes **upstream of the impeached claim in reading order**:
@@ -627,11 +646,15 @@ downstream of the claim it corrects).
    Trap #12 protects the **record**; the intercept protects the **reader**.
    Both, always — one without the other is half a correction.
 2. **LIVING operational documents** (desk cards, DRAFT specs, STATE, ledgers,
-   compliance notes, same-session RESULTS not yet merged): corrected **in
+   compliance notes, same-session RESULTS not yet merged), and accepted ADR
+   effective text after an approved revision: corrected **in
    place, at the assertion site**. A living doc that retracts its own headline
    three paragraphs below the headline has not been corrected. Same-session
    work is *never* frozen — freezing your own uncommitted document and
-   appending to it is the append reflex misfiring, not discipline.
+   appending to it is the append reflex misfiring, not discipline. ADR revisions
+   retain a dated scope note and immutable prior revision; Proposed clauses stay
+   separately labelled. This exception does not unfreeze research evidence,
+   preregistrations or verdict logic (see [ADR policy](adr/2026-08-08-adr-ceremony-tiering.md)).
 
 **The sweep half (extends the restating-surfaces rule):** withdrawing a claim
 is not complete until the withdrawn value has been grepped **repo-wide,
@@ -705,15 +728,25 @@ Pointers: `deploy/c1_rail/README.md` · `.claude/skills/c1-rail/SKILL.md`.
 - **R2 — live safety:** carries a live safety invariant for real money or the rail (M1 chain, RUNBOOK, compliance, arming rules, `dd_protection`/`firm_rules` change-control).
 - **R3 — re-proposal bar:** primary kill evidence a DEAD-list row or `rejected_candidates.md` cites as its kill source.
 - **R4 — reproducibility manifest** for non-regenerable bytes (`SHA256SUMS`, Pine `MANIFEST`, `PORT_MANIFEST`).
-- **R5 — open obligation:** an operator-signed decision with a still-open, dated, **fireable** obligation. An obligation whose check *cannot fire* does not qualify — unfalsifiable ceremony is deletable even when signed.
+- **R5 — open obligation:** a still-open commitment with a concrete date or wake
+  condition. An unreachable check is not a pass; explicitly resolve, migrate or
+  retire its obligation before removing its carrier.
 
-Everything else is deleted under a snapshot tag and retrieved with `git show <tag>:<path>`. Revival requires fresh pre-registration under the standing chain — never a lookup.
+These tests justify preserving the needed content or evidence, not necessarily
+its present file. Consolidate duplicate owners, then retrieve completed episodes
+from immutable history. A citation alone is a dependency to resolve, not a retention
+entitlement. For each removed ADR, record path, commit/blob, disposition and current
+owner (if any) in `docs/adr/TOMBSTONES.md`; no mandatory hot-stub/cold-body pair.
+Non-regenerable bytes still require verified preservation. Looking up history does
+not revive a retired authorization or evade a research re-proposal bar.
 
 **The classification instrument (this is the part that was paid for).** "It lives under `docs/` so it is prose" is **false** and cost four near-misses, including the c1 arming artifact. Before any deletion commit lands, run all four:
 
 1. quoted-path scan for `docs/…` and `lab/…` literals across `core/ ops/ scripts/ tests/ lab/`;
 2. **pathlib-join scan** (`"docs" / "notes" / …`) — constructed paths have no literal to grep;
-3. inbound markdown-link analysis from the files that will survive;
+3. incoming file, Markdown-fragment and section-reference validation from surviving
+   documents, plus content/glob readers (including Sentinel schedules and A8 counts);
+   moving an obligation to STATE is insufficient unless its reader follows;
 4. **full `pytest`** — the pre-commit gate battery does not run tests and is not sufficient evidence of safety.
 
 Owner: [`ADR 2026-08-08-great-prune`](adr/2026-08-08-great-prune.md) (§2 test, §4a failure log).
@@ -759,16 +792,29 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
+- **2026-09-08** — Clarified decision ownership: specifications, campaigns, plans
+  and PRs can own decisions; a distinct ADR must meet the admission rule. Neither
+  importance nor approval alone creates an ADR requirement.
+
+- **2026-09-08** — Complete persona removal: the generic review contract moves to
+  scripts/README; Rule 11 allows explicit retirement without a compelled re-arm
+  trigger. [Retirement disposition](adr/TOMBSTONES.md#2026-09-08-persona-parents).
+
+- **2026-09-08** — Approved ADR pruning: Rule 7 adds immutable retrieval; Rule 8
+  permits routine PR/campaign records; Rule 14 permits approved ADR revisions while
+  preserving frozen evidence; Rule 16 preserves obligations and content rather than
+  mandatory carriers and now checks fragment/content readers. [Policy](adr/2026-08-08-adr-ceremony-tiering.md).
+
 Full incident narration for each entry lives in `git log -p` on this file and in the linked ADR; this
 log states what changed and why in one line. Unless noted, edits are additive — no locked config,
 allocation, `dd_protection`, Pine, or rail touched.
 
-- **2026-09-06** — Rule 6 follows the relocated strategy mirror. Rule 7 assigns current priorities to STATE and executable next steps to campaign plans; SESSIONS becomes history with a stable header route. Queue-copy stubs are no longer required. [Root-charter amendment](adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-06--current-work-routing-and-root-consolidation).
+- **2026-09-06** — Rule 6 follows the relocated strategy mirror. Rule 7 assigns current priorities to STATE and executable next steps to campaign plans; SESSIONS becomes history with a stable header route. Queue-copy stubs are no longer required. [Root-charter amendment](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-06--current-work-routing-and-root-consolidation).
 - **2026-09-03** — Rule 14 gains a "correction is a claim" corollary (grep the claim not the file, recompute from source, keep hedge words, "not determinable" is a complete answer) + a printed-precision caveat on `:.2f` interval bounds. No rule-text renumbering; additive only.
 - **2026-09-03** — Rule 7 gains a wrapper-accretion discipline paragraph: don't stack a new pointer/wrapper artifact over a fact family carrying an outstanding dated debt, citing PR #250 and #262/#264 as the precedent this fixes. No rule-text renumbering; additive only.
 - **2026-08-28** — Rule 17 added (quarterly programme-audit checklist; `check_falsifier_reachability.py --stats` census, wired `gates.yml`). [`ADR`](adr/2026-08-27-ssot-data-lineage-remediation-program.md)
 - **2026-08-23** — P4 museum rules: Rule 1 origin marked HISTORICAL (Guardian cold-stored); Rule 7 lock-state paths retargeted to `_archive/<family>/`.
-- **2026-08-23** — Rule 7 durable-atoms owner demoted to owning ADRs / `docs/methodology/lessons/`; Claude-project MEMORY is assistive-only, never a Rule 7 owner. [`addendum`](adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner)
+- **2026-08-23** — Rule 7 durable-atoms owner demoted to owning ADRs / `docs/methodology/lessons/`; Claude-project MEMORY is assistive-only, never a Rule 7 owner. [`addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner)
 - **2026-08-22** — Rule 7 STATE decision-index restored to one line + owner (had grown back into multi-paragraph restatements after the 2026-08-19 relaxation below).
 - **2026-08-21** — Rule 9/10/14 reference repair: dropped a stale retired-script example, replaced drifted ordinal gate-number pointers with stable `id:` fields. No rule behavior changed.
 - **2026-08-19** — Rule 7 STATE decision-index cap relaxed from strict one-line to concise (practice had drifted; operator ruled relax-to-match). Still bars multi-sentence narrative.
@@ -776,15 +822,15 @@ allocation, `dd_protection`, Pine, or rail touched.
 - **2026-08-13** — Rule 8 sub-rule 8 added: paste literal dedup-search output (`lab/CATALOG.md` + `docs/briefs/INDEX.md`) before opening new work. [`ADR`](adr/2026-08-13-dedup-first-before-new-work.md)
 - **2026-08-08** — ADR ceremony stakes-tiering ratified (pointer only, no rule text changed): full §0–§7 only when a tier-test limb fires. [`ADR`](adr/2026-08-08-adr-ceremony-tiering.md)
 - **2026-08-07** — Rule 15 added (always-on hosting is not the desktop). [`ADR`](adr/2026-08-07-w6-rail-infra-closures.md)
-- **2026-08-07** — Rule 7 / SESSIONS·STATE entry-class direction (W5 — see the prose-target note above §7). [`ADR`](adr/2026-08-07-w5-governance-diet.md)
-- **2026-09-04** — Rule 7 owner table gains a live-value-index row (`docs/load_bearing_numbers.md`) and names `core/strategies/CATALOG.md` §Locked parameter record as the strategy-parameter mirror; the `CLAUDE.md` role note is narrowed to the two gated surfaces that remain resident there (MC-anchor triple + §Protection). [`charter ADR addendum`](adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-04--consolidation-pass-what-moved-and-what-was-ruled-immovable)
+- **2026-08-07** — Rule 7 / SESSIONS·STATE entry-class direction (W5 — see the prose-target note above §7). [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md)
+- **2026-09-04** — Rule 7 owner table gains a live-value-index row (`docs/load_bearing_numbers.md`) and names `core/strategies/CATALOG.md` §Locked parameter record as the strategy-parameter mirror; the `CLAUDE.md` role note is narrowed to the two gated surfaces that remain resident there (MC-anchor triple + §Protection). [`charter ADR addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-04--consolidation-pass-what-moved-and-what-was-ruled-immovable)
 - **2026-08-07** — Rule 7 owner table drops the retired `params.toml` row.
 - **2026-08-04** — Rule 7 owner table gains a "Per-Q forward disposition" row (each closure's own `## Iterate` block is canonical).
 - **2026-08-03** — Rule 7 STATE anti-accretion reaffirmed after STATE re-grew past charter (~2129 lines); rewritten to open-board only.
 - **2026-08-02** — Rule 14 added (corrections land where the error is read, not where it's convenient to write) + gate `check_supersession_placement.py`.
 - **2026-08-02** — Rule 4 + Rule 8 sub-rule 5 updated to point at current owners (retired weekly-review-feeder / accounts / cli surfaces).
 - **2026-08-02** — Rule 13 added (venue facts recorded as quote + source + date + explicit scope; silence reads BROAD).
-- **2026-07-16** — Rule 7 role list extended: CLAUDE.md posture, STATE.md decisions, README public-clone note all demoted to pointers (root-doc de-dup). [`ADR`](adr/2026-07-16-root-doc-charter-dedup.md)
+- **2026-07-16** — Rule 7 role list extended: CLAUDE.md posture, STATE.md decisions, README public-clone note all demoted to pointers (root-doc de-dup). [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md)
 - **2026-07-11** — Rule 3 marked dormant unless DXTrade is explicitly reactivated.
 - **2026-07-10** — Live-path skew repair: Rule 7/9 examples updated to current `core/` paths.
 - **2026-07-02** — Rule 8 sub-rule 7: shipped the queued mechanical check (`ops/sentinel/scan.py` `preregistration_scan`).

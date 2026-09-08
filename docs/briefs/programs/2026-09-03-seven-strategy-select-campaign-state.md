@@ -41,7 +41,7 @@ CAVEATS / REFUTED`.
 | 4 — Joint-book audit + deterministic screen (development segment only) | trial ledger complete incl. failures | QUEUED | Codex / local | — |
 | 5 — Coarse joint MC (joint-flat weekly blocks over the export) | frontier kept; checkpoints resumable | QUEUED | local compute | — |
 | 6 — Robustness / falsification | every listed challenge run; failures typed | QUEUED | local compute | — |
-| 7 — Locked confirmation | per slot: selection-inclusive outer bootstrap at the `1 − α/M` quantile **and** the worst Phase 6 partition both < 5%, forward-interval falsifier not tripped; per-candidate verdicts in terminal-taxonomy vocabulary; else `no qualifying configuration` | QUEUED | orchestrator adjudicates | — |
+| 7 — Locked confirmation | per slot: selection-inclusive outer bootstrap at the `1 − α/M` quantile **and** the worst Phase 6 partition both < 5%, forward-interval falsifier not tripped; per-candidate verdicts in [terminal-taxonomy vocabulary](../../adr/2026-08-30-evaluation-order.md#confirm-verdicts); else `no qualifying configuration` | QUEUED | orchestrator adjudicates | — |
 | 8 — Shadow-operational | dry-run parity through the c1 sizing/rule path; M1 + operator GO stay separate | QUEUED | c1-rail lane | — |
 
 ⚠ **D20 (2026-09-04) re-scopes rows 3 and 6–8 without editing them.** ⚠ **Row 3 included** (Codex P2, accepted — an
@@ -53,7 +53,7 @@ among the waived items** — D31 (2026-09-04) reinstates it with a named procedu
 
 Findings label vocabulary (plan): `EXPLORATORY` · `CONFIRMATORY` · `BLOCKED` — **nonterminal
 evidence labels** for this artifact only; terminal per-candidate verdicts use the
-[terminal taxonomy](../../adr/2026-08-30-terminal-taxonomy.md) (`CONFIRMED` / `MARKET-NULL` /
+[terminal taxonomy](../../adr/2026-08-30-evaluation-order.md#confirm-verdicts) (`CONFIRMED` / `MARKET-NULL` /
 `EXPRESSION-FAIL` / `EVIDENCE-VOID`) and the book-level `no qualifying configuration`. **No
 finding of any label exists yet.** Nothing numerical may be carried forward without its provenance tuple
 (code commit · input hashes · config hash · seed range · environment · output hash).
@@ -74,7 +74,7 @@ simulators") binds to these existing owners. A worker PR that re-derives any of 
 | Loaders | [`core/tv_export_loader.py`](../../../core/tv_export_loader.py) (paired trades, MAE/MFE columns) · [`core/bar_export_loader.py`](../../../core/bar_export_loader.py) / [`scripts/parse_bar_export.py`](../../../scripts/parse_bar_export.py) (BAR EXPORT v0.2 + sidecar) | No ad-hoc CSV interpretation (G0.4). `pair_tv_export_dataframe` **raises on non-long entries** (the locked book is long-only): a short or two-sided export needs the loader extended — `core/` is a locked surface, so that extension is CC-solo under ADR test 1, never a worker patch |
 | Two-level bootstrap precedent | [`lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/`](../../../lab/analysis/c1/class_s_w1_bootstrap_honest_2026-09-02/) (`_boot_paired.py`, `READING.md`) | The plan's Phase 7 qualifying bound is this design |
 | Eval bust ceiling of record | [`prop-survivor-scoring prereg v2`](../pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3 Part A: bust ≤ 5.0% | Plan's 5% aligns; the 2026-07-22 §4-withdrawal ADR §5 collision flagged in `SESSIONS 2026-09-02c` is **RULED 2026-09-03** (§6 D5) — candidate #1 **re-admitted**, §4 discharge **restored**, EOD-clock only — a `Proposed` ruling now exists at [Addendum 2026-09-03](../../adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-09-03--candidate-1-re-admitted-at-the-50-ceiling-accepted), and the collision is sharper than first logged: **all four** frozen tiers (3.51 / 4.74 / 4.25 / 4.44) clear 5.0%, so the raise re-admits candidate #1 by arithmetic |
-| Candidate / campaign governance | [`candidate-contract`](../../adr/2026-08-30-candidate-contract.md) · [`evaluation-order`](../../adr/2026-08-30-evaluation-order.md) · [`operator-approvals-campaign-envelope`](../../adr/2026-08-30-operator-approvals-campaign-envelope.md) · [`terminal-taxonomy`](../../adr/2026-08-30-terminal-taxonomy.md) · [`tradeable-reachable-gate`](../../adr/2026-08-30-tradeable-reachable-gate.md) | Terminal wording in this campaign uses the taxonomy's vocabulary |
+| Candidate / campaign governance | [Candidate fields and campaign authority](../../adr/2026-08-30-candidate-contract.md) · [evaluation order, reachability and confirm verdicts](../../adr/2026-08-30-evaluation-order.md) · [expression ladder and register routing](../../adr/2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing) | Terminal wording in this campaign uses the taxonomy's vocabulary |
 | Deployment gates (Phase 8 and beyond) | [`M1`](../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md) · [`rail GO`](../../adr/2026-07-17-c1-rail-build-account-registration-go.md) | Untouched by this campaign |
 
 ## §4 Phase gates

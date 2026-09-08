@@ -1,5 +1,5 @@
 ---
-description: Write a docs/SESSIONS.md entry at session wrap-up for any substantive work. User rules take precedence.
+description: Follow the docs/SESSIONS.md judgment-based logging threshold at wrap-up. User rules take precedence.
 globs: "**/*"
 alwaysApply: true
 ---
@@ -18,18 +18,20 @@ missed entry makes a session unresumable and hides parallel-session collisions.
 
 ## When to write
 
-At **session wrap-up**, if the session shipped code, recorded a decision
-(ADR / notice / brief), or moved live-ops state → append a reverse-chronological entry
-(**newest on top**) to `docs/SESSIONS.md`.
+At **session wrap-up**, write a full entry only for a real judgment call: a choice
+among options, a scope/priority/risk decision, or a measurement that resolves an
+open question. Follow the living `docs/SESSIONS.md` header; entries are reverse
+chronological (**newest on top**).
 
-**SKIP** trivial / read-only turns (a question answered, a file read, a one-line fix).
-Do not add noise.
+Mechanical output without a judgment call, trivial turns and read-only turns need
+no full entry, even if a commit shipped. The A–D classes/~40-word targets are retired.
 
 ## Entry shape (append-only; link out, never restate canonical values)
 
 - **Focus** — what the session set out to do
 - **Shipped** — branch + commit + concrete deltas (link artifacts, don't duplicate)
-- **Decisions/defects** — link the ADR / notice / brief produced
+- **Decisions/defects** — link the actual decision owner (specification, campaign,
+  plan, PR, existing ADR, notice or brief as applicable)
 - **Open / next** — optional context specific to that historical session. Do not
   copy the current queue into an entry or add a stub solely because the queue changed.
 - **Live-ops state** — lock / allocation / gate status where relevant

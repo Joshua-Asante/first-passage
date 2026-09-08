@@ -15,7 +15,7 @@
 Read at audit time, all at merge `e0c269f` (PR #681, 2026-08-08) unless a different anchor is named. Every claim in §2 traces to one of these; every finding in the underlying passes carries its own `file:line`.
 
 - `CLAUDE.md`, `STATE.md`, `docs/operational_rules.md`, `docs/rule_0.md` — the standing-doctrine surfaces the sweep judged everything against.
-- `docs/adr/2026-08-07-loop-s1-environment-ratification.md`, `-loop-s2-signal-host-fork.md`, `-loop-s5-bounded-promotion-lane.md`, `-w1-intraday-honest-engine-remeasure.md`, `-w4-minimal-gate-set-dormancy.md`, `-w5-governance-diet.md`, `-w6-rail-infra-closures.md` — the seven decisions ratified 2026-08-07 that re-based the sweep mid-flight.
+- `docs/adr/2026-08-07-loop-s1-environment-ratification.md`, `-loop-s2-signal-host-fork.md`, `-loop-s5-bounded-promotion-lane.md`, `-w1-intraday-honest-engine-remeasure.md`, `-w4-minimal-gate-set-dormancy.md`, [`-w5-governance-diet.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md), `-w6-rail-infra-closures.md` — the seven decisions ratified 2026-08-07 that re-based the sweep mid-flight.
 - `scripts/gates.yml` (15 gate ids) + `scripts/gate_manifest.py` + `scripts/githooks/pre-commit` (8-line thin caller) — the enforcement composition layer as rewritten by W5.
 - `scripts/validate_c1_monitoring_acceptance.py` + `ops/c1_rail/c1_rail_arm.py:78` + `docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json` — the arm interlock and its nominal instrument.
 - `docs/briefs/pre-registration/` (48 files) + `lab/analysis/**/PREREG*.md` (17) + `docs/ltm/briefs/pre-registration/` (30) + `docs/spec/PREREG-*.md` (3) + `discovery_manifests/*.json` (13) — the frozen-contract estate, five stores.

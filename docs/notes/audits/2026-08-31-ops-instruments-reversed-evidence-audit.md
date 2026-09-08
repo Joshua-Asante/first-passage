@@ -117,7 +117,7 @@ companion audit's §4 (`docs/pursuits/*.md` beyond the 5 already checked, `docs/
 obligations on `STATE.md`, unchanged by this pass. **Update 2026-08-31 (later same day):**
 `docs/personas/*.md` no longer names an open surface — the persona-hierarchy system was fully
 retired and every file under `docs/personas/` deleted the same day, see
-[`docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`](../../adr/2026-08-31-persona-hierarchy-full-retirement.md).
+[`docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-31-persona-hierarchy-full-retirement.md).
 The remaining unswept surfaces named above are unaffected.
 
 ---

@@ -187,7 +187,7 @@ Rule 1 (partition-hypothesis permutation gate)" is incomplete: that row is
 the 2026-04-24 extension of the same small-cell-variance-prior Rule 1
 ([owner](../methodology/archive/notion/rule-1-small-cell-variance-prior.md)).
 Pointer expanded at
-[`2026-08-19-rule-1-citation-not-three-meanings.md`](2026-08-19-rule-1-citation-not-three-meanings.md)
+[`2026-08-19-rule-1-citation-not-three-meanings.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-19-rule-1-citation-not-three-meanings.md)
 and on the gate doc. Full four-namespace deconflict (`OPS` / `INQ` /
 skill-local) remains out of scope per §5.8 and the
 [2026-08-08 conventions audit](../notes/audits/2026-08-08-conventions-delete-phase-gap-audit.md) §5.
@@ -247,16 +247,16 @@ addendum proposes a counting *convention* for reading §4's "empty across ≥2 a
 falsifier when a scheduled cycle's own review is disputed — it resolves a genuinely open
 ambiguity the trip-log's own text (`docs/notes/audits/rule-2-trip-log.md:59-64`) flags and
 explicitly defers ("Rule at the 2026-11-08 gate, and state the counting convention there rather
-than inferring one now"). **Tier: FULL** under `docs/adr/2026-08-08-adr-ceremony-tiering.md`
+than inferring one now"). **Tier: FULL** under [the ceremony policy then in force](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-08-adr-ceremony-tiering.md#decision)
 limb 4 (states a convention binding future audit-cadence counting, not just this file) — and,
 per that ADR's own escalation rule, an ambiguous tier defaults to FULL regardless. Landed as an
 **addendum to this ADR**, not a sibling file, per the 2026-08-15 amend-in-place convention
-(`2026-08-08-adr-ceremony-tiering.md` Addendum 2026-08-15): the dispute is entirely about how
+([ceremony ADR Addendum 2026-08-15](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-08-adr-ceremony-tiering.md#addendum-2026-08-15--amend-in-place-beats-a-sibling-adr)): the dispute is entirely about how
 *this* ADR's own §4 falsifier counts, so this file is already the correct owner — a new ADR would
 duplicate reasoning this file already carries in its 2026-08-15/-19/-21 addenda.
 
 **Reads (this run, 2026-08-22, full text unless noted):**
-- `docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md` — `b2e5f15d2b11a72759d3734eba89806c2375c38b` (2026-08-22). Scopes the sanitized second-opinion lens this task originated from as candidate-objection input only, carrying zero authority over a governing decision — the framing this addendum honors in the next paragraph.
+- [`docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md`](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md) — `b2e5f15d2b11a72759d3734eba89806c2375c38b` (2026-08-22). Scopes the sanitized second-opinion lens this task originated from as candidate-objection input only, carrying zero authority over a governing decision — the framing this addendum honors in the next paragraph.
 - `docs/notes/audits/rule-2-trip-log.md` — `f6f92dce914c9a36780de29b14e07e22d79174b7` (2026-08-20). The 2026-08-09 correction block (its own lines ~44–64) is the primary artifact for this dispute; the 2026-08-20 STRATEGIC trip row (added by the same commit that is this file's last touch) is load-bearing new evidence the correction block predates.
 - `docs/adr/2026-06-16-rule-2-budget-before-acting.md` (this file) — `d060698a3519737e9b9ed53dab542a8dbc599d25` (2026-08-21), i.e. the version immediately prior to this addendum. §4 (empty-log ≥2-cycle clause), §6 (per-loop-class graduation gate), and the 2026-08-21 addendum's own "override, logged as such, not a claim the gate was met" framing — the precedent this addendum reuses for landing PROPOSED rather than silently inferring a convention.
 - `docs/notes/audits/programme-audit/2026-07-01-methodology-belt-scoped-audit.md` — `937b9a23869f347a4eee015fcc2632e3e30e3361` (2026-08-15). §3 Q-B and §11 confirm this audit *did* execute a reasoned Rule-2 disposition (AMBIGUOUS-on-schedule, correctly reasoned as <2 cycles elapsed) — the positive control for "what an executed cycle looks like."
@@ -302,7 +302,7 @@ not satisfy on its own (INNER still carries zero entries).
 
 **One-sentence note on the originating review lens.** A sanitized, genericized restatement of
 this exact counting ambiguity was run this session through the stateless, zero-authority external
-second-opinion lens scoped by `2026-08-22-ox-alpha-adversarial-lens-scope.md`; per that ADR's §2/§5
+second-opinion lens scoped by [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md); per that ADR's §2/§5
 its output is candidate-objection input only and carries no authority here — the convention and
 resolution above are derived independently from the primary sources listed, not from that lens's
 output.

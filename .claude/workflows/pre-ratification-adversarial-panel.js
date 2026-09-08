@@ -200,17 +200,10 @@ async function verifyLensFindings(reviewResult, lens) {
   }
 }
 
-// ---- safety-invariant hard block (design spec §6.3, re-targeted per
-// docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D3, carried forward unchanged by
-// docs/adr/2026-08-31-persona-hierarchy-full-retirement.md §2 item 4/§5) -------------------------
-// Deterministic, not LLM-judgment-dependent -- mirrors this repo's own pattern of enforcing
-// non-negotiable safety invariants in code, not in a prompt (see validate_c1_monitoring_acceptance
-// .validate in ops/c1_rail/, a Python function, not an instruction). One of the 8 mechanical gates
-// the 2026-08-21 ADR established as the CRO seat's replacement; runs unconditionally on every
-// GRAND-tier call, independent of persona mode (which no longer exists at all as of the 2026-08-31
-// retirement) -- no persona spawn, no dependency on any reviewer happening to surface the citation.
-// Runs only on GRAND-tier calls, matching the prior mandatory-CRO-on-GRAND scope exactly (a
-// STRATEGIC-tier call still gets no automated safety-invariant hard block -- by design, unchanged).
+// ---- safety-invariant hard block (scripts/README.md#independent-review) ----
+// Deterministic matching over committed target text, independent of reviewer findings.
+// Runs on GRAND-tier calls only; STRATEGIC calls have no automatic safety scan.
+// This review backstop is separate from acceptance validation and execution authority.
 // Deliberately biased toward over-triggering: a false positive costs an operator one glance at an
 // unnecessary hard block, a false negative lets an actual safety-invariant citation through
 // undetected. A fixed-width proximity regex (an earlier version of this check) missed realistic
@@ -268,13 +261,13 @@ const hardBlock = await hardBlockPromise
 const hardBlockLine = hardBlock.scanFailed
   ? `\n\nSAFETY-INVARIANT HARD BLOCK (FAIL-CLOSED): the deterministic safety-invariant scan of ${targetPath} ` +
     `for this GRAND-tier review did not complete (agent failure or no result). Per ` +
-    `docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D3, this backstop must fail closed, not ` +
+    `scripts/README.md#independent-review, this backstop must fail closed, not ` +
     `open, when its own input is missing -- state "Overall disposition: BLOCKED" at the top of your memo and ` +
     `note that this is a coverage failure requiring a re-run, not a substantive finding.`
   : hardBlock.fires
     ? `\n\nSAFETY-INVARIANT HARD BLOCK: ${targetPath}'s own committed text cites a CLAUDE.md non-negotiable ` +
       `safety invariant (dry_run/armed_until/M1-RESOLVED/arm-not-send). Per ` +
-      `docs/adr/2026-08-21-persona-hierarchy-front-office-only.md §2 D3, this is a HARD BLOCK on synthesis -- ` +
+      `scripts/README.md#independent-review, this is a HARD BLOCK on synthesis -- ` +
       `state "Overall disposition: BLOCKED" at the top of your memo regardless of what any lens found, and ` +
       `do not let any other finding soften this.`
     : ''

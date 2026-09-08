@@ -2,8 +2,8 @@
 """check_skills_no_constants.py — methodology-skill no-constants guard.
 
 Extracted from the retired validate_params hub (ADR
-docs/adr/2026-08-03-params-toml-gate-retirement.md). ADR
-docs/adr/2026-06-04-methodology-skills-under-vc.md §2.4 hook #2.
+docs/adr/2026-08-03-params-toml-gate-retirement.md).
+Current four-skill contract: scripts/README.md#skill-lifecycle.
 
 CARVE-OUT: scans ONLY the four *methodology* skills, where a restated
 operational constant is pure drift. Operational-reference skills

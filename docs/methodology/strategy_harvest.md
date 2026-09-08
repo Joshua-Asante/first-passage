@@ -1,5 +1,7 @@
 # Strategy harvest — sourcing + admission of externally-published mechanisms
 
+**Channel governance:** [§2.3](#channel-liveness-contract) owns the cross-channel liveness requirement and routes to each channel's ceiling, counter and reconciliation owner.
+
 **Owner ADR:** [`docs/adr/2026-07-15-external-mechanism-harvest-intake.md`](../adr/2026-07-15-external-mechanism-harvest-intake.md) (`Accepted` 2026-07-15 — this doc is canonical procedure). §4 limb 2 (R10) is `Accepted` 2026-08-15; pin marked `no`; post-mark count lives on that addendum, not this file.
 **Superseded-in-part-by:** [`S5 ADR`](../adr/2026-08-07-loop-s5-bounded-promotion-lane.md) (`Accepted` 2026-08-07) — per-candidate operator GO before capital/account action is replaced by **budget approval** for in-ceiling sandbox admits only; Stage-0 / K / cost-law and ceiling-crossing GOs stand.
 **Position in the chain:** this is the **front door**. Everything downstream already exists and is unchanged by this doc:
@@ -68,22 +70,51 @@ Canonical: [`docs/adr/2026-07-25-instrument-profile-index.md`](../adr/2026-07-25
 
 ### 2.3 Ranked channel portfolio (replaces the old screenability-only tiers)
 
-**Channel-liveness requirement (added 2026-09-03, [`channel-liveness-gate`](../adr/2026-08-30-channel-liveness-gate.md)
-`Accepted` 2026-08-30):** every **channel's** founding charter must declare, at channel-open, a
-**reachable liveness ceiling** — a bounded count of unsuccessful attempts in the channel's own yield
-unit, and/or a bounded elapsed-time horizon — mapping to exactly one of two consequences: retirement,
-or mandatory redesign. This requirement binds at the **channel** level, not per rank: that ADR names
-five live channels (HARV, dense-1m/TNEC, MSL, no-counterparty-statistical/geometric, deep-iteration),
-each with its own ratifying artifact and liveness clause. **HARV is one of the five** — the six ranks
-below are sourcing *methods* inside the HARV channel, not five independently-chartered channels of
-their own; HARV's own owning artifact ([`2026-07-15-external-mechanism-harvest-intake.md`](../adr/2026-07-15-external-mechanism-harvest-intake.md))
-already carries a liveness clause (§4: the first-two-closures `FALSIFIED` revert trigger, the
-2026-11-08 idle guard, and the `RESOLVED`/`FALSIFIED`/`AMBIGUOUS` verdict vocabulary — extended by that
-ADR's own Addendum 2026-08-16 to a fourth `AMBIGUOUS-HOLD` branch) covering the whole rank-1–6 portfolio, not each
-rank separately. None of the five channels' clauses has yet been run through `gate-reachability-audit`
-or reconciled onto this ADR's two-option taxonomy. That reconciliation is a dated addendum owed on
-each channel's own owning artifact — never a rewrite here, per amendment-first discipline (that ADR
-§5) — tracked at [`STATE.md`](../../STATE.md), not restated as per-row numbers in this table.
+#### Channel liveness contract
+
+Every sourcing channel's founding owner must declare, at channel-open, a **reachable
+liveness ceiling**: a bounded count of unsuccessful attempts in that channel's named yield
+unit and/or a bounded elapsed-time horizon. It must pre-declare exactly one consequence:
+**retirement**, requiring fresh operator ratification before another campaign, or
+**mandatory redesign**, requiring a ratified explanation of what changed before another
+campaign. Use the appropriate owning record; an ADR is required only when the repository's
+selective ADR rule applies.
+
+A fired ceiling makes that consequence **due**, not executed. The operator must enact it;
+no further campaign opens pending that consequence. Before ratification, audit whether the
+ceiling can fire within the channel's realistic operating envelope and whether campaign
+opening actually consults it. `UNREACHABLE` and `UNBINDING` both fail the requirement. Do not
+substitute a universal ceiling, yield unit or Confirm-only success measure: a zero-K intake
+channel can have a meaningful yield before Confirm exists.
+
+This is the Accepted August 30 requirement, migrated from the
+[channel-liveness decision](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-channel-liveness-gate.md)
+on 2026-09-08. It applies to newly authored/amended channels and to the **five still-owed
+reconciliations** below. Each existing owner must receive a dated reconciliation that
+audits its existing ceiling and maps its consequence to one of the two options, explicitly
+adding a consequence if neither fits. This task does not perform those audits or elections.
+Reconciliation must not change existing numeric bounds or yield units. Counter
+tables/markers and reset rules stay with their owners. Their presence alone proves
+neither reachability nor adoption.
+
+| Channel | Actual owner and present authority boundary |
+|---|---|
+| HARV | [Harvest intake §4 and addenda](../adr/2026-07-15-external-mechanism-harvest-intake.md). Source-class/idle review and fundability-transfer counters retain their distinct cohorts. HARV owns the whole rank-1–6 portfolio below. |
+| dense-1m / TNEC | [Entry-mechanism lane spec](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md). Proposed and paused; its lane-review/reset rules do not authorize reopening. |
+| MSL | [Manual sourcing charter](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) under its [ratification](../adr/2026-08-12-msl-sourcing-channel-ratification.md). Process, soft and hard triggers retain their own units and consequences. |
+| No-counterparty statistical/geometric | [Blind-channel charter §4 and addenda](../adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md). A probe decline is not a battery failure or generation-dry election; remaining work still needs its scoped GO. |
+| Deep iteration | [Deep-iteration charter §4 and addenda](../adr/2026-08-16-deep-iteration-lane-charter.md). Completed, survivor and abandonment counts remain distinct. Discharged audit duty and paused supply do not authorize a new campaign. GROW is tooling inside this channel, not a sixth channel. |
+
+`CHANNEL-FAIL` is recorded at the channel owner, never in candidate WHY-rejected registers.
+Campaign K and confirm-family accounting remain governed by the
+[candidate contract](../adr/2026-08-30-candidate-contract.md). The manifest opener has no
+standing `--channel` guard; this rule is not mechanically enforced by its presence in docs.
+The five reconciliation obligations and the useful first liveness review remain in
+`STATE.md` and [candidate review](../adr/2026-08-30-candidate-contract.md#first-review-and-unresolved-obligations).
+No separate recurring review ceremony is created here.
+
+The six ranks below are sourcing **methods inside HARV**, not six independently chartered
+channels. Their table does not duplicate the owning channels' ceiling numbers.
 
 | Rank | Channel | Method | Note |
 |---|---|---|---|

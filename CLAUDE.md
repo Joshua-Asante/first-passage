@@ -12,8 +12,11 @@ campaign plan for executable steps and its record for evidence. Use
 [SESSIONS.md](docs/SESSIONS.md) is history. Direct operator instructions govern
 the current task; do not infer new work or authorization from historical dispatches.
 
-ADRs own decision rationale. Other documents link to the owner or label a derived
-mirror ([Rule 7](docs/operational_rules.md)). Documentation must serve the pipeline
+Decisions belong with their owning specification, campaign, plan or PR. Create an
+ADR only for durable architecture/governance rationale or authority that needs a
+distinct record under the [admission rule](docs/adr/2026-08-08-adr-ceremony-tiering.md).
+ADRs are not a universal decision log. Other documents link to the owner or label a derived mirror
+([Rule 7](docs/operational_rules.md)). Documentation must serve the pipeline
 and pass the [retention test](docs/operational_rules.md#16-retention--an-artifact-must-earn-its-place-and-deletion-is-classified-by-execution-not-by-folder).
 Removed evidence remains retrievable through [archive guidance](docs/ltm/README.md)
 and [lab/ARCHIVED.json](lab/ARCHIVED.json).

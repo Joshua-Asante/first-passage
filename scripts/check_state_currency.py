@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """STATE.md currency gate — Last curated, recurring deadlines, past dated sections.
 
-Owns the mechanical limb of the 2026-06-30 STATE role-reduction addendum
-2026-09-03 (rolling dates and Last curated must not go stale when the
+Owns the mechanical limb of docs/operational_rules.md Rule 7 STATE currency
+(rolling dates and Last curated must not go stale when the
 daily-repo-truth-sync digest is skipped). Reads only STATE.md.
 
 Exit 0 if all three invariants hold. Exit 1 on a missing field, a stale

@@ -12,6 +12,17 @@
 
 ---
 
+> **Current enforcement — 2026-09-08:** The approved ADR-pruning migration
+> replaces historical Status-based arming, including the M-22 missing-owner
+> downgrade, with fixed HARD enforcement in
+> [the operating contract](../../scripts/README.md#closure-enforcement).
+> The checker no longer reads either historical ADR. Status-flip and
+> `adr_status`/`OWNING_ADR` audit commands below describe the prior implementation;
+> use the checker and its focused tests for current enforcement verification.
+> Other authoring requirements, grandfather boundaries and review obligations
+> are unaffected by this engineering change. This ADR remains pending its
+> separate content-and-obligation consolidation.
+
 ## §0 — Rule 0 reads (production-source verification)
 
 Read before authoring, in this session (2026-08-04), with `git log -1 --format='%h %cs' -- <path>` anchors:
