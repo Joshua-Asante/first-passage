@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """check_brief.py — CANONICAL brief well-formedness validator (skill-side).
 
-Authored under docs/adr/2026-08-09-check-brief-canon-ruling.md ("check_brief
-canon: skill-side governs; repo-side declines what it cannot check"). That
+Current contract: .claude/skills/brief-authoring/SKILL.md#checker-ownership.
+Authored under the historical "check_brief canon" ruling:
+https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md. That
 ADR's own §0 Reads line claimed this file already existed, untracked, with a
 passing --self-test; `docs/adr/2026-08-27-ssot-data-lineage-remediation-
 program.md` §0 Step 1 re-verified that claim against git history and found
@@ -118,7 +119,10 @@ _SECTION_RE = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 # Any markdown heading (numbered or named) — used for header-keyed types.
-_NAMED_HEADING_RE = re.compile(r"^\s{0,3}#{1,4}\s+(?P<title>[^\n]+)$", re.MULTILINE)
+_NAMED_HEADING_RE = re.compile(
+    r"^\s{0,3}(?P<hashes>#{1,4})\s+(?P<title>[^\n]+)$",
+    re.MULTILINE,
+)
 
 _FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
 _INLINE_CODE_RE = re.compile(r"`([^`]+)`")
@@ -160,6 +164,7 @@ ACCEPTED_TYPES = (
 _CLOSURE_DELEGATE_TYPE = "closure"
 
 _LIGHT_TIER_RE = re.compile(r"^\*\*Tier:\*\*\s*light\b", re.IGNORECASE | re.MULTILINE)
+_CONCISE_ADR_RE = re.compile(r"^\*\*Format:\*\*\s*concise\b", re.IGNORECASE | re.MULTILINE)
 
 
 def _header_block(text: str) -> str:
@@ -237,6 +242,29 @@ def split_named_sections(text: str) -> list[tuple[str, str]]:
     return out
 
 
+def _section_body_at_level(text: str, title: str, *, level: int = 2) -> str | None:
+    """Body of the first heading with exact ``title`` at ``level``.
+
+    Includes subordinate headings until the next heading of the same or higher
+    rank (smaller or equal level). An H1 titled like a required section is
+    ignored when ``level`` is 2 — concise ADR sections are ``##`` headings.
+    """
+    matches = list(_NAMED_HEADING_RE.finditer(_mask_fences(text)))
+    for i, m in enumerate(matches):
+        if len(m.group("hashes")) != level:
+            continue
+        if m.group("title").strip().casefold() != title.casefold():
+            continue
+        start = m.end()
+        end = len(text)
+        for nxt in matches[i + 1:]:
+            if len(nxt.group("hashes")) <= level:
+                end = nxt.start()
+                break
+        return text[start:end]
+    return None
+
+
 def _find_named(sections: list[tuple[str, str]], keyword: str) -> str | None:
     """Body of the first heading whose title contains `keyword` (case-
     insensitive substring). None if no heading matches."""
@@ -249,7 +277,11 @@ def _find_named(sections: list[tuple[str, str]], keyword: str) -> str | None:
 
 def _is_empty_body(body: str) -> bool:
     """A section body is 'empty' if only whitespace, markdown rules, or a
-    TBD/N-A/none/todo placeholder remain — the ceremonial-section trap."""
+    TBD/N-A/none/todo placeholder remain — the ceremonial-section trap.
+
+    Also rejects the canonical concise-ADR template's whole-section
+    ``[instructional placeholder]`` blocks so an unfilled copy cannot pass.
+    """
     stripped = body.strip()
     if not stripped:
         return True
@@ -259,7 +291,13 @@ def _is_empty_body(body: str) -> bool:
         return True
     joined = " ".join(content).lower()
     placeholder_only = re.sub(r"[^a-z]", "", joined)
-    return placeholder_only in ("tbd", "na", "none", "tba", "todo")
+    if placeholder_only in ("tbd", "na", "none", "tba", "todo"):
+        return True
+    # Template bodies are one outer [...] block (no nested brackets).
+    block = "\n".join(content).strip()
+    if block.startswith("[") and block.endswith("]") and "[" not in block[1:-1]:
+        return True
+    return False
 
 
 def _is_blank(body: str) -> bool:
@@ -341,7 +379,7 @@ def _check_required_sections(sections: dict[str, str], required: tuple[str, ...]
 def _check_falsifiable_hypothesis(sections: dict[str, str]) -> list[Violation]:
     """§4 needs a hypothesis AND a falsifier — OR one of the canonical
     alternative framings (Revert trigger / if-then / reject-accept-if), per
-    ADR 2026-08-09's explicit broadening of this check."""
+    .claude/skills/brief-authoring/SKILL.md#checker-ownership."""
     body = sections.get("4")
     if body is None or _is_empty_body(body):
         return []
@@ -531,6 +569,23 @@ def check_light(text: str) -> list[Violation]:
     return out
 
 
+def check_concise_adr(text: str) -> list[Violation]:
+    """Current ADR form; optional evidence/reversal sections follow the stakes.
+
+    This checks the document contract, not approval, truth or preservation of
+    authority. Header lifecycle integrity remains check_adr_graph's concern.
+    Required sections are ``##`` headings; subordinate ``###`` content counts.
+    """
+    out: list[Violation] = []
+    for key in ("Decision", "Grounds", "Current owner"):
+        body = _section_body_at_level(text, key, level=2)
+        if body is None:
+            out.append(Violation("HARD", key, "required section missing"))
+        elif _is_empty_body(body):
+            out.append(Violation("HARD", key, "required section is empty / placeholder"))
+    return out
+
+
 def check_lock(text: str) -> list[Violation]:
     """lock — retired 2026-08-08 (SKILL.md:71), back-compat alias only. No
     reference template survives in-repo to derive a full contract from (the
@@ -626,6 +681,8 @@ def check_brief(text: str, brief_type: str) -> list[Violation]:
     --type adr still gets the light contract, matching the header it actually
     declares) — same precedence repo-side uses, but here light means REAL
     checks, not a skip."""
+    if brief_type == "adr" and _CONCISE_ADR_RE.search(_header_block(text)):
+        return check_concise_adr(text)
     if is_light_tier(text):
         return check_light(text)
     if brief_type == _CLOSURE_DELEGATE_TYPE:
@@ -723,6 +780,8 @@ def run_self_test() -> int:
 
 def print_list_checks() -> None:
     print("check_brief.py (skill-side canonical) — per-type section contracts:")
+    print("  concise ADR (Format header): Decision / Grounds / Current owner;")
+    print("                               no compulsory empirical falsifier or cadence.")
     print("  inquire / adr / cc_handoff : numbered §N; §0 path+anchor, §4 falsifiable")
     print("                               hypothesis (broadened framing), §5 forbidden")
     print("                               moves list, §6 gate verdict (WARN), §10 fenced")
@@ -742,7 +801,7 @@ def print_list_checks() -> None:
     print("  lock (retired, back-compat): best-effort content check only — see")
     print("                               check_lock()'s docstring for why.")
     print("  closure                    : delegates to check_closure_disposition.py.")
-    print("See docs/adr/2026-08-09-check-brief-canon-ruling.md for the skill-vs-repo split.")
+    print("See .claude/skills/brief-authoring/SKILL.md#checker-ownership for the skill-vs-repo split.")
 
 
 def main(argv: list[str] | None = None) -> int:

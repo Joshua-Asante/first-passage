@@ -13,7 +13,7 @@ two genuinely novel threads surfaced for future consideration.
 
 ## §0 — Governance basis
 
-Sent under [`docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md`](../../adr/2026-08-22-ox-alpha-adversarial-lens-scope.md)
+Sent under [`docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md`](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md)
 §2's **base scope** (adversarial second-opinion lens on a reasoning/judgment call) — not the
 bounded-extension candidate-generation addendum. The trigger was this session's own prior finding
 (arXiv 2603.24517, "AVO: Agentic Variation Operators for Autonomous Evolutionary Search" — an

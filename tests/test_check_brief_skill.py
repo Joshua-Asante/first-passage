@@ -1,6 +1,6 @@
 """Tests for the SKILL-SIDE canonical `check_brief.py`
 (`.claude/skills/brief-authoring/scripts/check_brief.py`), authored under
-docs/adr/2026-08-09-check-brief-canon-ruling.md.
+https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md.
 
 This is a SEPARATE file from `scripts/check_brief.py` (the repo-side
 mechanical subset, covered by tests/test_check_brief.py, NOT modified here).
@@ -27,8 +27,6 @@ _CB_PATH = (
 _spec = importlib.util.spec_from_file_location("check_brief_skill", _CB_PATH)
 cb = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(cb)
-
-REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 def _hard(violations) -> list:
@@ -487,15 +485,117 @@ def test_main_requires_brief_path_without_flags(capsys):
     assert exc_info.value.code == 2
 
 
-# ── regression: the light-tier ADR this file itself implements is clean ──
+# ── representative populated light-tier shape ────────────────────────────
 
-def test_real_canon_ruling_adr_is_well_formed():
-    path = REPO_ROOT / "docs" / "adr" / "2026-08-09-check-brief-canon-ruling.md"
-    assert path.exists()
-    text = path.read_text(encoding="utf-8")
-    assert cb.is_light_tier(text)
-    v = cb.check_brief(text, "adr")
+REPRESENTATIVE_LIGHT_ADR = """\
+# ADR — representative light record
+
+**Status:** `Accepted`
+**Decision date:** 2026-08-01
+**Tier:** light
+**Layer:** test maintenance. **Cost:** K=0.
+
+## Decision
+Use dedicated test data for checker regressions.
+
+## Grounds
+Runtime reads of governance records couple their retention to incidental tests.
+
+## Reads
+`scripts/check_brief.py` @ commit abc1234.
+
+## Gate
+RESOLVED when the focused checker tests pass without governance-file reads.
+
+## Boundary
+Do not weaken the canonical type contract or the subset's explicit declines.
+"""
+
+
+def test_representative_light_adr_with_populated_gate_and_boundary_passes():
+    assert cb.is_light_tier(REPRESENTATIVE_LIGHT_ADR)
+    v = cb.check_brief(REPRESENTATIVE_LIGHT_ADR, "adr")
     assert _hard(v) == [], [str(x) for x in _hard(v)]
+    assert _warn(v) == [], [str(x) for x in _warn(v)]
+
+
+def test_representative_light_adr_missing_decision_fails():
+    text = REPRESENTATIVE_LIGHT_ADR.replace(
+        "## Decision\nUse dedicated test data for checker regressions.\n\n", ""
+    )
+    hard = _hard(cb.check_brief(text, "adr"))
+    assert any(
+        v.section == "Decision" and "missing" in v.message.lower() for v in hard
+    ), hard
+
+
+CONCISE_ADR = """\
+# ADR — current ownership
+**Format:** concise
+
+## Decision
+Retain a single current owner for the workflow.
+
+## Grounds
+Duplicate instructions caused conflicting actions; a PR-only record would hide
+the continuing ownership boundary.
+
+## Current owner
+See [workflow](PIPELINES.md) for the procedure and this decision for its scope.
+"""
+
+
+def test_concise_adr_does_not_require_empirical_falsifier_or_quarterly_gate():
+    assert cb.check_brief(CONCISE_ADR, "adr") == []
+
+
+def test_concise_adr_missing_owner_fails():
+    text = CONCISE_ADR.split("## Current owner")[0]
+    hard = _hard(cb.check_brief(text, "adr"))
+    assert any("Current owner" == v.section for v in hard)
+
+
+def test_concise_adr_empty_rationale_fails():
+    text = CONCISE_ADR.split("## Grounds")[0] + "## Grounds\nTBD\n\n## Current owner\nPIPELINES.md\n"
+    assert any(v.section == "Grounds" for v in _hard(cb.check_brief(text, "adr")))
+
+
+def test_concise_marker_does_not_bypass_other_artifact_contracts():
+    assert _hard(cb.check_brief(CONCISE_ADR, "inquire"))
+    assert _hard(cb.check_brief(CONCISE_ADR, "notice"))
+    body_only = CONCISE_ADR.replace("**Format:** concise\n", "").replace(
+        "## Decision", "## Decision\n**Format:** concise")
+    assert _hard(cb.check_brief(body_only, "adr"))
+
+
+def test_concise_adr_includes_nested_heading_content():
+    """Decision body may be organized under ### subsections."""
+    text = CONCISE_ADR.replace(
+        "## Decision\nRetain a single current owner for the workflow.\n",
+        "## Decision\n### Scope\nRetain a single current owner for the workflow.\n",
+    )
+    assert cb.check_brief(text, "adr") == []
+
+
+def test_concise_adr_rejects_h1_titled_decision_as_required_section():
+    text = (
+        "# Decision\n\nNot the required section.\n\n"
+        "**Format:** concise\n\n"
+        "## Grounds\nBecause ownership must stay singular.\n\n"
+        "## Current owner\nPIPELINES.md\n"
+    )
+    hard = _hard(cb.check_brief(text, "adr"))
+    assert any(v.section == "Decision" and "missing" in v.message.lower() for v in hard)
+
+
+def test_concise_adr_rejects_canonical_template_placeholders():
+    template = (
+        Path(__file__).resolve().parents[1]
+        / ".claude/skills/brief-authoring/references/adr.md"
+    ).read_text(encoding="utf-8")
+    hard = _hard(cb.check_brief(template, "adr"))
+    assert {"Decision", "Grounds", "Current owner"} <= {v.section for v in hard}
+
 
 
 def test_file_not_found_exits_2(tmp_path, capsys):

@@ -1,5 +1,9 @@
 # 2026-06-14 — Rejected-candidate structural patterns: taxonomy, dedup axes, add-back gate
 
+**Current routing:** the [August 30 overlay](#expression-ladder-and-register-routing) owns the
+`N_expr` expression ladder and candidate WHY-rejected map. [Evaluation order](2026-08-30-evaluation-order.md#confirm-verdicts)
+owns confirm verdicts. The original parser descriptions below are historical; see the August 29 addendum.
+
 **Status:** Accepted (2026-06-14) — taxonomy, dedup-axis separation, add-back gate, and the additive schema extension are all adopted; the §7 downstream sweep landed (SCHEMA.md note + registry pointer + `feedback.py` field extension with a round-trip test, 19/19 intake tests green).
 **Supersedes:** none
 **Superseded-by:** none
@@ -212,16 +216,63 @@ grep -n "_KV_RE" lab/validation/concept_intake/dedup.py
 
 `lab/validation/concept_intake/dedup.py` and `lab/validation/concept_intake/feedback.py` — the "live parser" and the `build_registry_entry()` machinery this ADR's §0/§7/§10 describe as the current mechanism — were deleted 2026-07-11 (`docs/adr/2026-07-11-gen1-pipeline-retirement.md` §7 Phase 2). The dedup and negative-rediscovery registry content was confirmed fully mirrored into `docs/rejected_candidates.md` before deletion. §7/§D/§10's references to `dedup.py`/`feedback.py` describe the pre-retirement mechanism for historical/provenance purposes only — they are not a live parser today. Live registry topology is now governed by `docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md`; see `docs/rejected_candidates.md`'s DEAD SECTION note for the cross-reference this ADR never carried in-line. Never edit §1-§10 above in place — this addendum records the deletion and re-pointer only.
 
-## Addendum 2026-08-30 — §A amended-in-part: fifth class (`expression-failure`); `venue / cost-constraint` add-back widened
+## Addendum 2026-08-30 — fifth class, expression ladder and register routing
 
-Per `Amends-in-part` on `docs/adr/2026-08-30-terminal-taxonomy.md`'s header (`Accepted` this same date). §A's table above stays byte-stable (this ADR's own 2026-08-29 addendum forbids in-place edits) — this addendum is the amendment overlay a reader must apply on top of it.
+This overlay carries the Accepted [August 30 terminal-taxonomy decision](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-terminal-taxonomy.md),
+consolidated here on 2026-09-08. The original §1–§10 remain historical and byte-stable under
+the August 29 addendum. Existing classes and add-back conditions stand except for the two
+explicit amendments below. [Evaluation order](2026-08-30-evaluation-order.md#confirm-verdicts)
+owns the four confirm verdicts and their precedence; [candidate contract](2026-08-30-candidate-contract.md#contract-fields-and-freezes)
+owns the frozen discriminator and evidence object.
 
-**New fifth class, layered onto §A's table:**
+### Expression ladder and register routing
 
-| Class | Definition | Add-back condition (binary) |
+| Class | Definition | Add-back condition |
 |---|---|---|
-| **expression-failure** | The mechanism-level discriminator adjudicates cleanly (a powered, pre-specified pass) while the specific entry/exit expression built on it is rejected on confirm. | A materially new expression class of the same mechanism, differing on a declared structural axis (stop logic, exit family, or holding-horizon class — never a parameter re-tune), admitted as a new candidate contract with fresh K and a fresh holdout, citing the failed entry and its ordinal in the mechanism's expression history. Bounded by a mechanism-keyed `N_expr` ladder (default 2) — see the owning ADR §2. |
+| **expression-failure** (fifth class) | A powered, pre-specified mechanism discriminator passes while the specific entry/exit expression fails confirm. | A materially new expression class on a declared structural axis, such as stop logic, exit family or holding-horizon class; its own candidate contract, fresh K and fresh holdout; citation of the failed expression and ordinal history. A parameter retune does not qualify. |
 
-**`venue / cost-constraint` row, add-back widened:** the original text ("A geometry that clears the cost-law pre-flight with margin... OR a materially lower-cost venue") is amended to additionally admit: a shape/geometry that clears the failed limb with margin, or a venue whose rules remove the constraint. This covers a pre-explore `TRADEABLE-REACHABLE` payoff-shape-limb kill (`docs/adr/2026-08-30-tradeable-reachable-gate.md`), which the original text's cost/geometry-only wording did not contemplate. The row's **definition** and its cost-law/lower-cost-venue add-back clause are otherwise unchanged; latency and firm-geometry kills already fit the original wording.
+The **mechanism**, across contracts, owns `N_expr` (default 2) and the running attempt history.
+Persist both on the same scope-routed row that owns the mechanism's rejection entries.
+Each expression contract declares attempt *k* of `N_expr` and names every prior failed
+expression class. Omitting or contradicting the ledger count makes it integrity-invalid
+at the pre-confirm contract check; a later contract cannot reset the ordinal to one.
 
-No other row, and no other class's add-back condition, is touched by this addendum.
+After `N_expr` independent expression classes produce `EXPRESSION-FAIL` while the
+discriminator keeps passing, the standard ladder closes. If a recorded failure actually
+fired on a cost or execution-geometry limb, move the mechanism entry to
+`venue / cost-constraint` under that class's add-back. Otherwise it remains
+`expression-failure` with its ladder closed. A further expression must be structurally
+distinct from **every** failed class and requires operator ratification citing the full
+failure history. Do not invent a cost cause, treat a retune as a new class or enlarge the
+bound ad hoc. Changing the generally applicable bound requires a prospective governing
+decision; record it under the repository's selective ADR rule.
+
+**`venue / cost-constraint` add-back amendment:** retain the original cost-law/geometry
+clearance and materially lower-cost-venue routes, and additionally admit a shape/geometry
+that clears the failed limb with margin, or a venue whose rules remove the constraint.
+Its definition is unchanged. This covers the pre-Explore payoff-shape limb in
+[reachability](2026-08-30-evaluation-order.md#reachability).
+
+| Disposition | WHY-rejected destination |
+|---|---|
+| `MARKET-NULL` | `edge-failure`; the existing genuinely-new-mechanism add-back stands. |
+| `EXPRESSION-FAIL` | `expression-failure`, under the mechanism's ladder above. |
+| Candidate-level pre-Explore `TRADEABLE-REACHABLE` kill on cost, latency, geometry or payoff shape | `venue / cost-constraint`, recording **“priors-derived, no mechanism test run.”** Neither edge-failure nor expression-failure is available from that evidence. |
+| `EVIDENCE-VOID` | No WHY-rejected entry. Record the exhausted attempt on the contract; a fresh campaign needs a fresh holdout. |
+| `ROLE-BLOCKED` | No WHY-rejected entry. Record on the contract; re-screen only when the scoped role state changes. |
+| Post-confirm `VENUE-FAIL` | No candidate rejection. The evidence status remains `CONFIRMED`; record the edition-axis failure separately. |
+| `CHANNEL-FAIL` | No candidate rejection. Record the channel consequence on its owner. |
+
+Apply [D3's scope router](2026-08-09-rejection-register-topology-and-bar-wiring.md#2--decision)
+after choosing the WHY class: per-direction/instrument mechanisms belong in the instrument
+ledger; domain/cross-instrument failures in `docs/rejected_candidates.md`; methodology
+failures in `docs/methodology/rejected_signals.md`. A WHY class alone never chooses a register.
+These rules apply to post-August-30 confirm verdicts and frozen-candidate pre-Explore kills;
+they do not turn pre-contract intake dispositions into confirm verdicts.
+
+**Implementation limit:** the ordinal/ladder integrity check is unbuilt. The audit-tier
+`scripts/check_instrument_rejection_coverage.py` selects single-instrument closures and
+uses a narrower verdict parser: explicit `MARKET-NULL` is missed while `VENUE-FAIL` and
+`CHANNEL-FAIL` can be treated as negative. A green check does not establish this full map.
+The first consolidated review and unresolved checks are tracked in
+[evaluation review](2026-08-30-evaluation-order.md#first-review-and-unresolved-obligations) and `STATE.md`.

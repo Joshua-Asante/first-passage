@@ -7,7 +7,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Authors:** Claude Code (measurement, verification, draft) — commissioned via the Phase 0 section of the plan file below; ratification is a reserved operator action, not performed here.
-**Related:** [`2026-08-09-rejection-register-topology-and-bar-wiring.md`](2026-08-09-rejection-register-topology-and-bar-wiring.md) (D4 — this program's Phase 1 Task 2 discharges it; D1–D3 are read, not reopened) · [`2026-08-22-catalog-hot-vs-disposition.md`](2026-08-22-catalog-hot-vs-disposition.md) (confirmed already `Accepted` and landed — cited for contrast, not reopened) · [`2026-08-09-check-brief-canon-ruling.md`](2026-08-09-check-brief-canon-ruling.md) (Phase 1 Task 1 discharges its unimplemented half) · [`2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) (limb-4 tier test, applied below) · [`docs/notes/audits/2026-08-21-coherence-campaign.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/2026-08-21-coherence-campaign.md) (audit-format precedent this program reuses) · plan file [`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](../superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md) (§7 implementation-plan pointer; also carries this program's Global Constraints and Non-goals)
+**Related:** [`2026-08-09-rejection-register-topology-and-bar-wiring.md`](2026-08-09-rejection-register-topology-and-bar-wiring.md) (D4 — this program's Phase 1 Task 2 discharges it; D1–D3 are read, not reopened) · [`2026-08-22-catalog-hot-vs-disposition.md`](2026-08-22-catalog-hot-vs-disposition.md) (confirmed already `Accepted` and landed — cited for contrast, not reopened) · [`2026-08-09-check-brief-canon-ruling.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md) (Phase 1 Task 1 discharges its unimplemented half) · [`2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) (limb-4 tier test, applied below) · [`docs/notes/audits/2026-08-21-coherence-campaign.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/2026-08-21-coherence-campaign.md) (audit-format precedent this program reuses) · plan file [`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](../superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md) (§7 implementation-plan pointer; also carries this program's Global Constraints and Non-goals)
 **Layer:** governance convention (gate authorship + skill-deploy convention over `scripts/gates.yml`, `.claude/skills/`, `docs/rejected_candidates.md`/`ops/instruments/`, `docs/operational_rules.md`). **$0 / K=0.**
 **Tier:** full — limb 4 fires (creates/wires gates and a deploy-verification convention that binds future ADR authoring, skill deployment, and discharges a standing doctrine obligation (D4) from a prior ADR).
 
@@ -35,7 +35,7 @@ branch); it is at least "the file never existed in-repo" (the plan's "author" br
 than the plan's own two scripted steps: `git log --oneline --all -- ".claude/skills/brief-authoring/scripts/check_brief.py"`
 returns **zero commits, on any branch, ever** — the file has never existed anywhere in this repo's
 version-controlled history, not merely been deleted. This directly bears on
-[`2026-08-09-check-brief-canon-ruling.md`](2026-08-09-check-brief-canon-ruling.md)'s own §Reads line,
+[`2026-08-09-check-brief-canon-ruling.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md)'s own §Reads line,
 which cites `scripts/check_brief.py @ 47cc3eb · skill-side checker (untracked; --self-test PASS)`.
 
 **Correction (caught by independent re-verification, not accepted from the first pass):** the drafting
@@ -433,8 +433,8 @@ python scripts/check_instrument_rejection_coverage.py
 # ^ 2026-09-04: retiered. `--list` now prints blocking tiers only, and the tree-skew half moved to
 #   `tier: audit`, so the command below returns nothing on a correctly wired tree. Use
 #   `--list --all-tiers`. The structural half of the same script stayed blocking under a new gate
-#   id, `m1-artifact-structure`. Owner: docs/adr/2026-08-07-w5-governance-diet.md 2026-09-04
-#   addendum. Hook text left as authored (Trap #12); read this note, not the line under it.
+#   id, `m1-artifact-structure`. Owner: scripts/README.md#gate-composition-and-admission
+#   contract. Hook text left as authored (Trap #12); read this note, not the line under it.
 python scripts/gate_manifest.py --list --all-tiers | grep -i skew
 # Expected: an entry present. A real failure when run against the live worktree is a legitimate,
 # separately-named finding (per the plan's own Task 3 Step 4 instruction) — not to be suppressed to
@@ -454,7 +454,7 @@ grep -n "check_falsifier_reachability" docs/operational_rules.md scripts/gates.y
 #   CI-required `skills (3.12)` job" half of that Expected line is superseded -- it now runs at
 #   `make audit` only, because a command that always exits 0 cannot change a merge verdict. The
 #   cadence obligation itself (Rule 17, quarterly programme audit) is unchanged and is what this
-#   hook actually tests. Owner: docs/adr/2026-08-07-w5-governance-diet.md 2026-09-04 addendum.
+#   hook actually tests. Owner: scripts/README.md#gate-composition-and-admission.
 
 # Phase 2 — A8 running-count intra-ADR consistency (authorized 2026-08-29 addendum)
 python scripts/check_adr_graph.py --enable A8
@@ -501,7 +501,7 @@ python scripts/check_adr_graph.py
 | 2026-08-29 | Addendum: Phase 2 scoped and authorized (A8 intra-ADR running-count consistency). Recon (a)(b)(c) answered. STATE-join and HTML-comment schema declined. Phases 3–4 remain named-not-scoped. §2 Phase 1 text left in place (Trap #12) | Cursor Cloud Agent |
 | 2026-08-29 | Blast-radius: §2 Phase 2–4 lead sentence was still reading as the live GO ("does not authorize"). Pointer only — authorization stays on the addendum; Phase 2 bullet marked discharged. No change to §2 Phase 1 tasks or §4/§5 | Cursor Cloud Agent |
 | 2026-08-29 | Addendum: Phase 3 scoped and authorized (cost-model closed-world partition). Bars checker voided. Ledger join, firm_rules dollars, and harvest gate-2 rewrite declined. No STATE queue row. §2 Phase 1 text left in place (Trap #12) | Cursor Cloud Agent |
-| 2026-09-04 | Pointer, not a re-decision: `instrument-rejection-coverage` (Task 2), `m1-tree-skew` (Task 3) and `falsifier-reachability-census` (Task 4) moved to the new `tier: audit` under [W5 governance-diet](2026-08-07-w5-governance-diet.md) — they run at `make audit`, no longer at pre-commit / `make check` / required CI. Task 3's structural half stayed blocking as a separate gate id, `m1-artifact-structure`. §6 and §10 body text left as authored (Trap #12); the two §10 hooks whose *commands* now return a wrong answer carry an inline dated note. No change to §2/§5 scope or any task's discharge | Claude Code |
+| 2026-09-04 | Pointer, not a re-decision: `instrument-rejection-coverage` (Task 2), `m1-tree-skew` (Task 3) and `falsifier-reachability-census` (Task 4) moved to the new `tier: audit` under [W5 governance-diet](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md) — they run at `make audit`, no longer at pre-commit / `make check` / required CI. Task 3's structural half stayed blocking as a separate gate id, `m1-artifact-structure`. §6 and §10 body text left as authored (Trap #12); the two §10 hooks whose *commands* now return a wrong answer carry an inline dated note. No change to §2/§5 scope or any task's discharge | Claude Code |
 
 ---
 

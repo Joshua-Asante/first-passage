@@ -20,9 +20,9 @@ No candidate admission, lifecycle promotion, allocation, rail arming, or capital
 - [`2026-08-30-candidate-contract.md`](2026-08-30-candidate-contract.md) requires the founding
   freeze and K declaration before exploration outcomes are read. A contract cannot be opened
   retroactively around an outcome-selected cell.
-- [`2026-08-30-operator-approvals-campaign-envelope.md`](2026-08-30-operator-approvals-campaign-envelope.md)
+- [campaign authority](2026-08-30-candidate-contract.md#campaign-authority)
   requires a fresh operator GO before exceeding a frozen spend/schema/window/K envelope.
-- [`2026-08-30-terminal-taxonomy.md`](2026-08-30-terminal-taxonomy.md) reserves
+- [confirm-verdict owner](2026-08-30-evaluation-order.md#confirm-verdicts) reserves
   `EVIDENCE-VOID` and `EXPRESSION-FAIL` for contract/Confirm states and routes candidate-level
   pre-Explore reachability kills to `venue / cost-constraint`.
 - [`2026-06-16-rule-2-budget-before-acting.md`](2026-06-16-rule-2-budget-before-acting.md) binds
@@ -78,7 +78,7 @@ freeze may generate hypotheses or source priors, but it cannot later be wrapped 
 presented as prospectively selected.
 
 Every contract must also founding-freeze the independent **mechanism discriminator** required by
-the candidate-contract/terminal-taxonomy chain: observable and statistic, null, expected direction,
+[candidate-contract fields](2026-08-30-candidate-contract.md#contract-fields-and-freezes): observable and statistic, null, expected direction,
 decision threshold, and coverage/power requirement, adjudicated independently of the expression's
 payoff test. A complete trade object without this field is still contract-incomplete; `CONFIRMED`
 requires both the discriminator and payoff/temporal test to pass.
@@ -119,7 +119,7 @@ Before a contract exists:
   (venue/cost-constraint-shaped)` and no `N_expr` increment.
 
 `EVIDENCE-VOID`, `EXPRESSION-FAIL`, and candidate-level register routing are unavailable until the
-states defined by the terminal-taxonomy ADR actually exist.
+states defined by [confirm verdicts](2026-08-30-evaluation-order.md#confirm-verdicts) actually exist.
 
 ## §2 — Consequences
 
@@ -157,7 +157,7 @@ python scripts/check_md_relative_links.py
 
 Accepted from the operator's direct 2026-09-02 elections and campaign instruction. The P50
 prospective-freeze restriction and pre-contract vocabulary are reconciliations required by the
-already-Accepted candidate-contract, evaluation-order, approvals, and terminal-taxonomy ADRs; they
+already-Accepted [candidate-contract](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-candidate-contract.md#2--decision), [evaluation-order](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-evaluation-order.md#2--decision), [approvals](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-operator-approvals-campaign-envelope.md#2--decision), and [terminal-taxonomy](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-terminal-taxonomy.md#2--decision) ADRs; they
 do not narrow the elected portable-edge objective.
 
 ## Addendum 2026-09-03 — campaign is VOLREGIME translation; enter at Packet T

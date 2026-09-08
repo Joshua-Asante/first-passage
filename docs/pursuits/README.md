@@ -13,7 +13,7 @@ derived INDEX — the files *are* the register. Filename prefix is the class:
 
 | Also here | Job |
 |---|---|
-| [`SUBSCRIPTION_LEDGER.md`](SUBSCRIPTION_LEDGER.md) | CFO subscription ledger |
+| [`SUBSCRIPTION_LEDGER.md`](SUBSCRIPTION_LEDGER.md) | Subscription figures and operator reconfirmation |
 | [`e1-first-passage-program.md`](e1-first-passage-program.md) | Aim-scale KEEP row |
 
 Checker: `python scripts/check_pursuit_records.py` (WARN-tier) — run manually; **no longer wired into

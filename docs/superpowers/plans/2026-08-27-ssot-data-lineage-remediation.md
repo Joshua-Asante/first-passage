@@ -31,7 +31,7 @@ A cross-repo mining pass (2026-08-27, see the published "Recurrence Ledger" arti
 |---|---|
 | CATALOG conflates `hot` and `disposition` into one status word | **Already fixed.** `docs/adr/2026-08-22-catalog-hot-vs-disposition.md` — Accepted, Phase 1 (parser Verdict-wins rewrite, C2 retarget, `hot` column) landed the same day. Only the §4 falsifier re-check needs periodic re-confirmation. |
 | Three competing, unowned rejection registers | **Ownership already ruled.** `docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md` D3 assigns each of the three registers a distinct scope with `instrument_profiles.py` as the machine consult. **But D4 — the enforcement instrument that checks every terminal-negative closure naming an instrument actually has a ledger DEAD row — was explicitly deferred ("dispatched as a separate packet, not built here") and is still unbuilt**, against a hard 2026-11-08 falsifier date. |
-| Two divergent `check_brief.py` implementations | **Already ruled** (`docs/adr/2026-08-09-check-brief-canon-ruling.md`: skill-side is canonical). **But the skill-side file does not exist on disk right now** — `~/.claude/skills/brief-authoring/` has no `scripts/` directory at all, so every ADR's `Verification` section that pastes `python ~/.claude/skills/brief-authoring/scripts/check_brief.py ...` currently fails with "No such file or directory" if actually run. This is a live, undiagnosed instance of the exact "unverified claim propagates because nobody re-ran the verification block" pattern the report named. |
+| Two divergent `check_brief.py` implementations | **Already ruled** ([`docs/adr/2026-08-09-check-brief-canon-ruling.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md): skill-side is canonical). **But the skill-side file does not exist on disk right now** — `~/.claude/skills/brief-authoring/` has no `scripts/` directory at all, so every ADR's `Verification` section that pastes `python ~/.claude/skills/brief-authoring/scripts/check_brief.py ...` currently fails with "No such file or directory" if actually run. This is a live, undiagnosed instance of the exact "unverified claim propagates because nobody re-ran the verification block" pattern the report named. |
 | Coverage gaps in gate tooling | `check_falsifier_reachability.py` already exists and is a genuinely good example — it self-reports its own coverage eroding (28%→25% over one week in its own docstring) — but it is WARN-tier, **not wired into `gates.yml`**, and not run on any cadence. It is the closest thing this repo has to a standing decay-audit for the whole ADR corpus, sitting unused. |
 
 **Non-goals:** this program does not re-litigate CATALOG's schema (done), does not reopen the rejection-register topology ruling (done), does not touch Pine/risk constants, and does not attempt a second Great-Prune-style bulk deletion pass. It closes what's already been named and ratified, then generalizes the recurring "hand-synced mirror" micro-pattern once Phase 0's audit confirms its current shape.
@@ -42,7 +42,7 @@ A cross-repo mining pass (2026-08-27, see the published "Recurrence Ledger" arti
 
 **Files:**
 - Create: `docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md`
-- Read (production-source verification, do not trust this plan's descriptions above): `docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md`, `docs/adr/2026-08-22-catalog-hot-vs-disposition.md`, `docs/adr/2026-08-09-check-brief-canon-ruling.md`, `docs/notes/audits/2026-08-21-coherence-campaign.md`, `scripts/check_falsifier_reachability.py`, `scripts/gates.yml`, `.claude/skills/brief-authoring/` (in-repo source), `~/.claude/skills/brief-authoring/` (deployed target), `docs/methodology/rejected_signals.md`, `ops/instruments/MNQ.md`
+- Read (production-source verification, do not trust this plan's descriptions above): `docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md`, `docs/adr/2026-08-22-catalog-hot-vs-disposition.md`, [`docs/adr/2026-08-09-check-brief-canon-ruling.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md), `docs/notes/audits/2026-08-21-coherence-campaign.md`, `scripts/check_falsifier_reachability.py`, `scripts/gates.yml`, `.claude/skills/brief-authoring/` (in-repo source), `~/.claude/skills/brief-authoring/` (deployed target), `docs/methodology/rejected_signals.md`, `ops/instruments/MNQ.md`
 
 **Interfaces:**
 - Produces: the ADR at `docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md`, `Status: Accepted`, which every later phase in this plan cites as its authorizing decision. Phase 1+ tasks may not begin implementation until this ADR's Status is `Accepted` (operator GO).
@@ -106,6 +106,13 @@ Present the ADR for `Accepted` status per this repo's standing ratification conv
 
 ### Task 1: Redeploy (or author) the skill-side `check_brief.py`
 
+**Current-use pointer (2026-09-08):** Task 1's missing-checker finding and repair
+steps below record the August 27 implementation episode. Current source and
+validation contracts live in [brief checker ownership](../../../scripts/README.md#brief-checker-ownership).
+Retiring the historical canon ADR does not make the checker missing or commission
+the fallback copy/deploy sequence again. Re-read current source before any
+separately authorized maintenance; the program's own approval boundaries remain.
+
 **Files:**
 - Modify or create: `.claude/skills/brief-authoring/scripts/check_brief.py` (in-repo source — exact action depends on Phase 0 Step 1's finding)
 - Modify: `scripts/gates.yml` (add a new gate, see Step 4 below)
@@ -118,14 +125,14 @@ Present the ADR for `Accepted` status per this repo's standing ratification conv
 
 - [ ] **Step 1: If Phase 0 Step 1 found the file missing in-repo too, write it before anything else**
 
-If `.claude/skills/brief-authoring/scripts/check_brief.py` does not exist in-repo, this is a bigger gap than "stale sync" — the 2026-08-09 canon ruling ("skill-side check_brief.py is canonical") was never actually implemented. In that case, before doing Step 2 below, copy `scripts/check_brief.py` (the repo-side implementation, which does exist) into `.claude/skills/brief-authoring/scripts/check_brief.py` as the starting point, then diff it against the canon-ruling ADR's decision text (`docs/adr/2026-08-09-check-brief-canon-ruling.md` §Decision: skill-side must NOT decline `lock`/`notice`/`lesson`/`audit`/`light`-tier types the way repo-side does, and must accept every canonical falsifier framing, not just `H:`+`falsifi*`). Patch accordingly. This step has no fixed diff here because it depends on Phase 0's finding — do not guess at content Phase 0 hasn't confirmed.
+If `.claude/skills/brief-authoring/scripts/check_brief.py` does not exist in-repo, this is a bigger gap than "stale sync" — the 2026-08-09 canon ruling ("skill-side check_brief.py is canonical") was never actually implemented. In that case, before doing Step 2 below, copy `scripts/check_brief.py` (the repo-side implementation, which does exist) into `.claude/skills/brief-authoring/scripts/check_brief.py` as the starting point, then diff it against the canon-ruling ADR's decision text ([`docs/adr/2026-08-09-check-brief-canon-ruling.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md) §Decision: skill-side must NOT decline `lock`/`notice`/`lesson`/`audit`/`light`-tier types the way repo-side does, and must accept every canonical falsifier framing, not just `H:`+`falsifi*`). Patch accordingly. This step has no fixed diff here because it depends on Phase 0's finding — do not guess at content Phase 0 hasn't confirmed.
 
 - [ ] **Step 2: Deploy it**
 
 > **Superseded 2026-09-08:** publication now requires a reviewed revision and
 > an explicitly chosen destination from primary main. The commands below are
 > historical, not an executable release procedure. Follow the
-> [explicit-release policy](../../adr/2026-06-04-methodology-skills-under-vc.md#addendum-2026-09-08--explicit-reviewed-skill-releases)
+> [skill lifecycle](../../../scripts/README.md#skill-lifecycle)
 > and the [current post-merge guidance](../../../.claude/commands/post-merge.md#5-skills-deploy-optional-explicit-release-from-primary-main).
 
 ```bash
@@ -176,6 +183,8 @@ Run: `pytest tests/scripts/test_check_skill_deploy_sync.py -v`
 Expected: FAIL — `scripts/check_skill_deploy_sync.py` not found / ModuleNotFoundError equivalent for a subprocess call.
 
 - [ ] **Step 5: Write the gate script**
+
+Historical source for the quoted gate example: [canon ruling](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md).
 
 ```python
 #!/usr/bin/env python3

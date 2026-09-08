@@ -4,7 +4,7 @@
 Reads scripts/gates.yml and runs the selected tier. Blocking checks run at
 pre-commit/CI; report-only diagnostics run only when explicitly audited.
 
-ADR: docs/adr/2026-08-07-w5-governance-diet.md
+Operating contract: scripts/README.md#gate-composition-and-admission
 """
 from __future__ import annotations
 

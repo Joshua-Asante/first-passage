@@ -91,8 +91,7 @@ make sync-skills REVISION=<reviewed-sha> TARGET=<explicit-destination>
 Scoreboard `n/a` / `skipped (worktree)` means **not published here**. A
 `--check` skip or drift report does not discharge publication and does not
 prove review. Policy owner:
-[`docs/adr/2026-06-04-methodology-skills-under-vc.md`](../../docs/adr/2026-06-04-methodology-skills-under-vc.md)
-addendum 2026-09-08.
+[Skill lifecycle](../../scripts/README.md#skill-lifecycle).
 
 ## 6. Hygiene handoff
 

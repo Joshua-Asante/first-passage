@@ -102,7 +102,7 @@ RESOLVED positive — bear-FVG draw — died at expression on the horizon-mismat
 push closed with **zero admissions** (P1/P2 cheap-falsifier FAIL, P3 venue SCREEN-FAIL, P4 HOLD
 on a data-sourcing question, P5 UNSCREENABLE); six discovery threads terminated 2026-08-20 on
 "needs a genuinely new mechanism/data source, not another test"
-([ox-alpha ADR §1's dated anchor](../../../adr/2026-08-22-ox-alpha-adversarial-lens-scope.md));
+([ox-alpha ADR §1's dated anchor](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md));
 MSL S4's expiry-OI construct came back **wrong-signed** at explore (net divergence, FLIP-FAIL).
 What is left that is genuinely new: **(1) the order-flow modality** — its own class finding
 states the null probe "does **not** close the order-flow modality; it closes that modality's

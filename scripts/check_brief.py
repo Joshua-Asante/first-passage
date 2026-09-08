@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """check_brief.py — brief well-formedness validator.
 
-ADR `docs/adr/2026-06-04-methodology-skills-under-vc.md` §2.5 calls for landing
-this script: every brief's "Verification block" (and the two 2026-06-04 ADRs)
-invokes `python scripts/check_brief.py <brief.md>`, but the script did not exist
-in-repo. This is that script.
+Current checker ownership: scripts/README.md#brief-checker-ownership.
+Historical landing decision (§2.5):
+https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-06-04-methodology-skills-under-vc.md
 
 The checks are NOT invented — they are the *mechanical* subset of the
 "six load-bearing discipline checks" and the CC-handoff "patterns 7–10" that
@@ -17,8 +16,8 @@ What this validates (mechanical only — judgment checks stay with the human):
                         (SKILL.md "The six ... checks" #1; Known-trap #3.)
   §1  Context           present (SKILL.md trap #8: orphan briefs that don't
                         connect to standing doctrine).
-  §4  Falsifiable H     present AND contains an "H:" / hypothesis statement AND
-                        a falsifier/falsification clause.
+  §4  Falsifiable H     present with a supported hypothesis/falsifier,
+                        Revert-trigger, if-then or reject/accept-if framing.
                         (SKILL.md check #2; trap #1 ceremonial-section guard.)
   §5  Forbidden moves   present AND lists at least one move (a list item).
                         (SKILL.md check #3; trap #4.)
@@ -56,37 +55,14 @@ Type → required-section sets (SKILL.md type × check matrix, 2026-08-23):
                   scripts/check_closure_disposition.py.
 
 Relationship to the skill-side checker (CANONICAL):
-  The authoritative brief-discipline checker is skill-side —
-  `~/.claude/skills/brief-authoring/scripts/check_brief.py` — with 7 types
-  ({inquire, adr, lock, cc_handoff, notice, lesson, audit}), `--self-test`, and
-  `--list-checks`. THIS repo-side script is its *mechanical subset*: landed by
-  ADR `2026-06-04-methodology-skills-under-vc.md` §2.5 so every brief's
-  verification block resolves an in-repo path and CI / a public clone can run
-  *something* without the skill present. When the two disagree, the skill-side
-  result governs.
-
-  Type-name reconciliation (so a doc-copied `--type <skill-name>` never
-  hard-errors here): the skill-side vocabulary is accepted and mapped to the
-  closest repo-side internal type —
-      cc_handoff → handoff       inquire → brief        lock → brief
-      notice → generic           lesson → generic       audit → generic
-  Requesting any skill-only name prints a one-line note that only the mechanical
-  subset ran (see `SKILL_ONLY_TYPES`).
-
-  Known divergences (the two checkers can disagree in BOTH directions — a green
-  run here is NOT the full discipline gate, and a red run here is not necessarily
-  malformed by the canon; the skill-side result governs):
-    - Repo-side is WEAKER on several checks: it does not replicate the skill-side
-      §3 question-form heuristic, the cc_handoff §7 two-pass / consolidated-read
-      checks, the §6 BLOCKED sub-case taxonomy, or §10 command-recognition (here
-      §10 needs only a fenced block, not a recognizable shell/python command).
-    - Repo-side is STRICTER / more literal on §4: it requires an explicit
-      hypothesis token ("H:" / "hypothesis") AND a "falsifi*" token in the §4
-      body, whereas the skill-side ADR check also accepts the canonical
-      "Revert trigger" / if-then / reject-accept-if framing without those words.
-      So a canonical-template ADR using only "Revert trigger" wording passes
-      skill-side but fails here until §4 also states the hypothesis explicitly.
-  For the authoritative gate, run the skill-side checker.
+  .claude/skills/brief-authoring/SKILL.md#checker-ownership owns the type contracts.
+  Its scripts/check_brief.py is the canonical source; the ~/.claude/skills/ copy
+  is deployed from that source. This repo-side checker is a mechanical subset.
+  Unsupported types and concise/legacy light ADRs explicitly print NOT CHECKED;
+  closure mode prints the delegated command, not a closure verdict. A subset
+  result cannot replace the artifact's canonical validation and judgment checks.
+  Both checkers accept the supported broadened §4 framings. The implementation
+  below owns this subset's precise checks; checker unification is separate work.
 
 Exit codes:
   0 — well-formed (WARN-level issues may still have printed)
@@ -213,6 +189,7 @@ _UNMODELED_CONTRACT_TYPES = frozenset({"lock", "notice", "lesson", "audit"})
 # 6 HARD violations on a correctly-formed record. Same defect class as
 # _UNMODELED_CONTRACT_TYPES, found 2026-08-09 while authoring the first light ADR.
 _LIGHT_TIER_RE = re.compile(r"^\*\*Tier:\*\*\s*light\b", re.IGNORECASE | re.MULTILINE)
+_CONCISE_ADR_RE = re.compile(r"^\*\*Format:\*\*\s*concise\b", re.IGNORECASE | re.MULTILINE)
 
 
 def _header_block(text: str) -> str:
@@ -569,6 +546,8 @@ def check_brief(text: str, brief_type: str) -> list[Violation]:
     requested = brief_type
     if requested == _CLOSURE_DELEGATE_TYPE:
         return []
+    if requested == "adr" and _CONCISE_ADR_RE.search(_header_block(text)):
+        return []  # canonical skill checker owns this named-section contract
     brief_type = _normalize_type(brief_type)
     sections = split_sections(text)
     violations: list[Violation] = []
@@ -641,6 +620,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"check_brief: {args.brief}  (type=closure)")
         print("RESULT: DELEGATED — run: "
               f"python scripts/check_closure_disposition.py {args.brief}")
+        return 0
+    if requested == "adr" and _CONCISE_ADR_RE.search(_header_block(text)):
+        print(f"check_brief: {args.brief}  (type=adr, format=concise)")
+        print("RESULT: NOT CHECKED — concise ADR; run the canonical skill-side "
+              "checker for Decision/Grounds/Current owner validation")
         return 0
     if is_light_tier(text):
         print("note: light-tier decision record (ADR 2026-08-08-adr-ceremony-tiering) "

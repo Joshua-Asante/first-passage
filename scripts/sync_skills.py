@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """sync_skills.py — skill drift diagnostics and explicit revision publication.
 
-ONE-WAY CONTRACT (ADR docs/adr/2026-06-04-methodology-skills-under-vc.md §2.2):
+ONE-WAY CONTRACT (scripts/README.md#skill-lifecycle):
 the repo is the single source of truth. Skills flow repo -> deployed ONLY.
 This script never copies deployed -> repo.
 
@@ -96,7 +96,7 @@ def resolve_target(explicit: str | None) -> Path:
 
     Kept as a single-Path helper so import_skill_from_cache.py (and any other
     caller that needs one root) stays stable. Prefer resolve_targets() for
-    deploy/--check so the home bundle is included under default resolution.
+    diagnostic --check; publication always requires an explicit target.
     """
     if explicit:
         return Path(explicit)

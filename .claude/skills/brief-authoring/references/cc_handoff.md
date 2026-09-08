@@ -1,12 +1,12 @@
 # CC Handoff — [Short task name]
 
 **Date:** YYYY-MM-DD
-**Parent session:** claude.ai advisor (Joshua + Claude)
-**Spawn target:** Claude Code (Analyst + Tactical Ops) | Cursor (frozen-spec implementation — see `docs/adr/2026-07-14-cc-cursor-surface-allocation.md`; use the §0.5 Cursor variant)
+**Parent session:** <originating session or task>
+**Spawn target:** Claude Code | Cursor (frozen-spec implementation — see `docs/adr/2026-07-14-cc-cursor-surface-allocation.md`; use the §0.5 Cursor variant)
 **Repo:** `first-passage` (or specific repo path)
 **Brief type:** CC handoff (single-step | multi-step)
-**Parent question:** Q-X (if executing a Pre-Q) | ADR-NNN (if executing a locked decision) | `N/A`
-**Authority:** Joshua (CEO). claude.ai authored this brief; CC executes. No commit/merge without Joshua's go.
+**Parent question:** Q-X (if executing a Pre-Q) | <owning specification, campaign, plan, PR or dated ADR> (if executing an approved decision) | `N/A`
+**Authority:** Joshua (operator). The parent authors this brief; the selected agent executes within its authorized scope. Record any existing scoped authorization here. No commit/merge without Joshua's go; a `DONE` status or recommended next action supplies no permission.
 
 ---
 
@@ -18,7 +18,7 @@ Per SKILL.md: when production isn't directly accessible from the authoring envir
 
 - `path/to/file.py` — report: full file contents OR specific line range [a:b] for [reason]
 - `path/to/config.yaml` — report: full contents
-- `docs/adr/NNN-prior-decision.md` — report: §Decision section + §Consequences section
+- `<owning-artifact-path>` — report: the effective decision, scope, consequences and approval/evidence requirements (for an ADR, use its actual `docs/adr/YYYY-MM-DD-slug.md` path)
 - `Notion: <page_title>` (page ID `<id>`) — report: read-only confirmation of current state of [specific table/field]
 - `<git log -1 -- path/to/file.py>` — report: commit hash + date (anchor for §0 of any closure record this spawn produces)
 
@@ -64,7 +64,7 @@ Post ambiguities under `## §0.5 Response — ambiguities` in your first respons
 [2–4 sentences. What is this task and why is it being run NOW?]
 
 **Parent Pre-Q (if applicable):** Q-X — [one-sentence statement of what gates closure]
-**Decision being executed (if ADR):** ADR-NNN — [one-sentence summary of the locked decision this implements]
+**Decision being executed (if applicable):** <owning specification, campaign, plan, PR or dated ADR> — [one-sentence approved decision, scope and applicable authorization]
 
 **What CC is being asked to produce:**
 - [Deliverable 1 — specific file path or report format]
@@ -95,7 +95,12 @@ Multi-step plans have Step 2.x sub-blocks. Single-step plans have one block. If 
 
 ### Step 2.N — Closure artifact
 
-Produce the closure record per parent Pre-Q §9 format (or ADR amendment if executing a locked decision). Sentinel convention: no `recommendation.md` for non-PROMOTE verdicts.
+Produce the completion record required by the owning contract. For a Pre-Q, use
+the parent §9 closure format. For an approved decision, update its existing owner
+or PR as appropriate; an ADR amendment is not automatic. A new ADR must meet all
+three admission conditions in SKILL.md and stay within the authorized scope.
+Required research closure, frozen thresholds, lock evidence and approvals remain
+required. Sentinel convention: no `recommendation.md` for non-PROMOTE verdicts.
 
 ---
 
@@ -108,7 +113,7 @@ Restate the parent Pre-Q §4 H-X verbatim here, with the §6 reject/accept/ambig
 **Accept if:** [verbatim from parent §6]
 **Ambiguous-hold if:** [verbatim from parent §6]
 
-If this handoff executes a locked decision (ADR) rather than a Pre-Q investigation, this section reads `N/A — executing ADR-NNN, no hypothesis under test`.
+If this handoff does not execute a Pre-Q and the owning contract has no hypothesis under test, this section reads `N/A — executing <owning-artifact-path>, no hypothesis under test`. Keep any evidence and verification requirements imposed by that decision; do not infer their absence from the document type.
 
 ---
 
@@ -130,7 +135,7 @@ CC reports back with EXACTLY one of these four statuses (Discipline Check #8). T
 
 | Status | Meaning | Parent action |
 |---|---|---|
-| `DONE` | All §2 steps passed; all per-step gates green; no scope creep; no off-pattern observations. | Accept, merge, close. |
+| `DONE` | All §2 steps passed; all per-step gates green; no scope creep; no off-pattern observations. | Review under §7; accept/close after required checks. Merge requires separate applicable authorization. |
 | `DONE_WITH_CONCERNS` | Work completed but CC flags correctness, scope, or methodology doubts the parent should resolve before accepting. Every gate passed but CC noticed something off-pattern. | Parent reviews concerns; accept or re-dispatch with clarification. |
 | `NEEDS_CONTEXT` | Cannot proceed without missing input that can be supplied. (§0.5 ambiguity unresolved, file referenced but not on disk, parameter underspecified.) | Parent supplies context; CC re-dispatches the same plan with added input. |
 | `BLOCKED` | Cannot proceed; structural obstruction. Sub-case required (see below). | Parent escalates, decomposes, or re-spawns with stronger model. |
@@ -172,7 +177,7 @@ Two passes, not one (Discipline Check #9). Do not collapse them.
 
 **Pass 3 (only if §2 had >1 step) — Final consolidated read.** Read across ALL diffs together. Per-step gates catch local correctness; they do not catch integration issues — two correct steps producing an inconsistent combined state (Discipline Check #10).
 
-Only after all three passes complete does claude.ai recommend Joshua accept/merge.
+After all applicable passes, the parent reports the evidence and recommends the next action to Joshua. Acceptance, closure and merge follow their own requirements; completion of review supplies no additional authority.
 
 ---
 

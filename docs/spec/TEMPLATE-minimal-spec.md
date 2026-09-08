@@ -19,8 +19,8 @@ Owner: <docking Q-/ADR/spec thread, or "new">
 
 Keeps the load-bearing minimum of the brief discipline — read-anchors, binary gate,
 forbidden moves — at one line each; drops the rest of the §0–§10 apparatus. A spec in this
-form decides nothing: ratification still runs through an ADR or an explicit operator block —
-at the tier [ADR 2026-08-08](../adr/2026-08-08-adr-ceremony-tiering.md) assigns (limb-free
-decisions take the ≤300-word light record form).
+form decides nothing by itself: authorization is recorded in the existing owner or
+an explicit operator block. A distinct ADR is needed only for consequential, durable
+rationale or authority under the [current policy](../adr/2026-08-08-adr-ceremony-tiering.md).
 Ratified as the standing spec style by JA 2026-08-07. Worked examples: the
 `2026-08-07-loop-s*` series ([index](2026-08-07-loop-spec-index.md)).

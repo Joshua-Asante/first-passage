@@ -18,7 +18,7 @@ help:
 	@echo "sync-skills-check     read-only skill deploy drift check"
 
 # W5: composition owned by scripts/gates.yml via gate_manifest.py
-# (docs/adr/2026-08-07-w5-governance-diet.md). Individual targets below remain
+# (scripts/README.md#gate-composition-and-admission). Individual targets below remain
 # as thin wrappers for one-off runs.
 
 check:

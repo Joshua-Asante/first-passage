@@ -2,12 +2,12 @@
 """check_skill_deploy_sync.py -- do skills cited in an ADR Verification block
 actually exist at their deployed path?
 
-Root cause this gate closes: docs/adr/2026-08-09-check-brief-canon-ruling.md
+Current contract: scripts/README.md#skill-lifecycle. Historical root cause:
+https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md
 names ~/.claude/skills/brief-authoring/scripts/check_brief.py as canonical,
 and every citing ADR's own Verification block runs it -- but the deployed
-bundle can silently fall behind the in-repo source (sync_skills.py's own
-docstring: the one-way contract "cannot be fully enforced from this script --
-the sync layer can still clobber"). Concretely: docs/adr/2026-08-27-ssot-
+bundle can silently fall behind the in-repo source (the historical sync
+design could not prevent external rewrites). Concretely: docs/adr/2026-08-27-ssot-
 data-lineage-remediation-program.md Sec.0 Step 1 found the cited script had
 NEVER existed at all, on either side of the sync boundary, so
 `sync_skills.py --check` (which only diffs files that exist repo-side)
@@ -103,8 +103,7 @@ def main(argv: list[str]) -> int:
             "--target <explicit-destination>  "
             "(or: make sync-skills REVISION=<reviewed-sha> "
             "TARGET=<explicit-destination>). Policy: "
-            "docs/adr/2026-06-04-methodology-skills-under-vc.md "
-            "addendum 2026-09-08."
+            "scripts/README.md#skill-lifecycle."
         )
         return 1
 

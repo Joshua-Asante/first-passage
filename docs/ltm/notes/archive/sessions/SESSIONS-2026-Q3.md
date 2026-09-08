@@ -26,7 +26,7 @@ Relative Markdown links are rebased from `docs/` to this archive directory; all 
 
 **Focus:** Decision. Operator: date M1 for 08-24; a test strategy can resolve item 5.
 
-**Shipped:** [`M1 addendum`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`Survive-bound addendum`](../../../../adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--m1-item-5-no-longer-waits-on-queue-1). STATE `#2` no longer waits on `#1`. No emit. No arm.
+**Shipped:** [`M1 addendum`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`Survive-bound addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--m1-item-5-no-longer-waits-on-queue-1). STATE `#2` no longer waits on `#1`. No emit. No arm.
 
 **Decisions/defects:** evaluate-hook test strategy qualifies; canned hand-POST still does not.
 
@@ -54,7 +54,7 @@ Relative Markdown links are rebased from `docs/` to this archive directory; all 
 
 **Focus:** Decision. Operator: the blocker of #1 belongs on the queue ahead of it.
 
-**Shipped:** [`Survive-bound addendum`](../../../../adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1). STATE `#1` = acceptable strategy (existing sequence; GO unpaid). `#2` = B7/M1. Standing-lead paragraph deleted (now the row). No phase GO. No rail wire.
+**Shipped:** [`Survive-bound addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1). STATE `#1` = acceptable strategy (existing sequence; GO unpaid). `#2` = B7/M1. Standing-lead paragraph deleted (now the row). No phase GO. No rail wire.
 
 **Decisions/defects:** 2026-08-23 “#1/#2 cannot be executed” is not the live repair.
 
@@ -487,7 +487,7 @@ top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 
 **Focus:** Decision. Full entries now require a real judgment call, not "skip Hygiene-only" — the class had drifted (12 entries in one day).
 
-**Shipped:** [`docs/SESSIONS.md`](../../../../SESSIONS.md) header rewrite (judgment-gate + stub-entry mechanism). [`W5 ADR addendum`](../../../../adr/2026-08-07-w5-governance-diet.md). [`STATE.md`](../../../../../STATE.md) decision-index line. [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120). Heading remapped from colliding `2026-08-23m` on merge into this branch.
+**Shipped:** [`docs/SESSIONS.md`](../../../../SESSIONS.md) header rewrite (judgment-gate + stub-entry mechanism). [`W5 ADR addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md). [`STATE.md`](../../../../../STATE.md) decision-index line. [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120). Heading remapped from colliding `2026-08-23m` on merge into this branch.
 
 **Decisions/defects:** Stub entries (heading + Open/next only) replace in-place edits — `sessions-append-only` hard-fails mutating an already-merged entry. Entry-class table (A–D) itself unchanged; amended the W5 ADR per Rule 8 sub-rule 10 rather than minting a sibling.
 
@@ -557,7 +557,7 @@ top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 
 **Focus:** Decision. Operator promoted P2 as queue #3 and picked Approach A.
 
-**Shipped:** [`state-md addendum`](../../../../adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner) · [`Rule 7`](../../../../operational_rules.md) owner-table row · [`plan`](../../../../superpowers/plans/2026-08-23-p2-memory-demote-implementation.md). Reconciled `origin/main` first (F1 already ruled; live queue is B7/M1 + Q-TRADECAP-1).
+**Shipped:** [`state-md addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner) · [`Rule 7`](../../../../operational_rules.md) owner-table row · [`plan`](../../../../superpowers/plans/2026-08-23-p2-memory-demote-implementation.md). Reconciled `origin/main` first (F1 already ruled; live queue is B7/M1 + Q-TRADECAP-1).
 
 **Decisions/defects:** Durable atoms live in ADRs / lessons. Claude-project MEMORY is assistive-only, never §0. Not Approach B/C. Row 3 closed on land (succession: no auto-replace).
 
@@ -603,7 +603,7 @@ top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 
 **Focus:** Decision + Build. Operator named bind row 3 = Lane A (blind / no-counterparty channel). Landed queue-led Open/next, carry-forward rewrite, and the SESSIONS-only bind gate.
 
-**Shipped:** [`Survive-bound addendum`](../../../../adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-23--out-of-order-serving-is-the-live-defect) · [`W5 addendum`](../../../../adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--opennext-lead-is-the-state-queue) · [`STATE.md`](../../../../../STATE.md) row 3 · [`check_sessions_queue_bind.py`](../../../../../scripts/check_sessions_queue_bind.py) · `sessions-queue-bind` in [`gates.yml`](../../../../../scripts/gates.yml). Branch `docs/queue-bind-and-pain-point-plans`. Claude hookify files are `.local.md` / gitignored; Cursor always-apply is the tracked refuse surface.
+**Shipped:** [`Survive-bound addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-23--out-of-order-serving-is-the-live-defect) · [`W5 addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--opennext-lead-is-the-state-queue) · [`STATE.md`](../../../../../STATE.md) row 3 · [`check_sessions_queue_bind.py`](../../../../../scripts/check_sessions_queue_bind.py) · `sessions-queue-bind` in [`gates.yml`](../../../../../scripts/gates.yml). Branch `docs/queue-bind-and-pain-point-plans`. Claude hookify files are `.local.md` / gitignored; Cursor always-apply is the tracked refuse surface.
 
 **Decisions/defects:** Lane A GO — next concrete step is name or decline a construct on the reopened 6A/M6A or GC/MGC doors; do not spend the last pre-G0 slot unnamed. Succession: when row 3 leaves, do not auto-open a replacement. P1–P5 stay on the [pain-point charter](../../../../superpowers/plans/2026-08-23-repo-pain-point-packets.md).
 
@@ -615,7 +615,7 @@ top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 
 **Focus:** Decision. Full entries now require a real judgment call, not "skip Hygiene-only" — the class had drifted (12 entries in one day).
 
-**Shipped:** [`docs/SESSIONS.md`](../../../../SESSIONS.md) header rewrite (judgment-gate + stub-entry mechanism). [`W5 ADR addendum`](../../../../adr/2026-08-07-w5-governance-diet.md). [`STATE.md`](../../../../../STATE.md) decision-index line. [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120).
+**Shipped:** [`docs/SESSIONS.md`](../../../../SESSIONS.md) header rewrite (judgment-gate + stub-entry mechanism). [`W5 ADR addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md). [`STATE.md`](../../../../../STATE.md) decision-index line. [`PR #120`](https://github.com/Joshua-Asante/first-passage/pull/120).
 
 **Decisions/defects:** Stub entries (heading + Open/next only) replace in-place edits — `sessions-append-only` hard-fails mutating an already-merged entry. Entry-class table (A–D) itself unchanged; amended the W5 ADR per Rule 8 sub-rule 10 rather than minting a sibling.
 
@@ -1538,7 +1538,7 @@ disarmed; no book.
 **Focus:** Following same-day C-1 closure + d17 (Claude Max) tracking, operator ratified all four of
 the CFO's process recommendations, cadence set to monthly.
 
-**Shipped:** [`ADR`](../../../../adr/2026-08-21-cfo-subscription-ledger-consolidation.md) ratified (D1 ledger, D2
+**Shipped:** [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md) ratified (D1 ledger, D2
 mechanical `ledger-pointer` WARN gate, D3 monthly reconfirm reusing `daily-repo-truth-sync` +
 `cfo.md` standing-check line, D4 practice norm no artifact). `cfo.md` charter amended (Writes gains
 the ledger; `d11-d16` corrected to `d11-d17`). `STATE.md` gains a Monthly recurring row (next
@@ -1594,12 +1594,12 @@ a named, un-opened re-test candidate. **STATE queue unchanged:** #1 F1 · #2 B7-
 **Focus:** Operator insight — First Passage is primarily a research entity (deployment validates
 research); Middle/Back-office functions need to be services, not a standing persona roster.
 
-**Shipped:** [`ADR`](../../../../adr/2026-08-21-persona-hierarchy-front-office-only.md) narrowing the spawnable
+**Shipped:** [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/ltm/adr/2026-08-21-persona-hierarchy-front-office-only.md) narrowing the spawnable
 roster 17→9 (Front Office + CEO apex + cross-office CFO); 8 retired personas moved to
 `docs/personas/archive/`; `ownership-map.md` reassigned; `check_personas.py` `EXPECTED_COUNT` 17→9;
 `pre-ratification-adversarial-panel.js` CRO hard-block re-implemented as an unconditional
 deterministic scan (no longer requires a spawned CRO); `CLAUDE.md` pointer row updated;
-[prior ADR](../../../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md) gains `Superseded-in-part-by` +
+[prior ADR](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/ltm/adr/2026-08-19-loop-persona-hierarchy-review-panel.md) gains `Superseded-in-part-by` +
 addendum.
 
 **Decisions/defects:** CEO/CFO explicitly out of scope (operator confirmed). Ownership-map Layer 2
@@ -1643,7 +1643,7 @@ evidence. **STATE queue unchanged:** #1 F1 · #2 B7-REFIRE + M1. New: watch the 
 
 **Focus:** Ratified next-steps menu after the coherence campaign.
 
-**Shipped:** H2 dry-run (CATALOG regenerate withheld) · GO ADR + W5 addenda · Rule 0 Phase 1 `check_brief.py` §0 anchor HARD. Owners: [campaign](../../../../notes/audits/2026-08-21-coherence-campaign.md) · [GO ADR](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [W5](../../../../adr/2026-08-07-w5-governance-diet.md) · [Rule 0](../../../../adr/2026-08-20-rule0-anchor-verification-and-triage-discipline.md).
+**Shipped:** H2 dry-run (CATALOG regenerate withheld) · GO ADR + W5 addenda · Rule 0 Phase 1 `check_brief.py` §0 anchor HARD. Owners: [campaign](../../../../notes/audits/2026-08-21-coherence-campaign.md) · [GO ADR](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [W5](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md) · [Rule 0](../../../../adr/2026-08-20-rule0-anchor-verification-and-triage-discipline.md).
 
 **Decisions/defects:** F1 HOLD · B7/M1 HOLD until acceptable strategy · H6–H13 HOLD. CATALOG Status flips still need `--slug` archive.
 
@@ -1877,7 +1877,7 @@ unconditional lane-wide again pending a genuinely new modality or its own fresh 
 
 **Focus:** Fix pre-existing design-spec/ADR staleness the 2026-08-19 §6.6 panel (`wf_88c21d8d-a7f`) caught in passing — not caused by §6.6, does not block that section's ratification.
 
-**Shipped:** branch `cursor/persona-hierarchy-spec-staleness-1583` (stacked on PR #58). Dedup-first attestation backfilled into [`2026-08-19-loop-persona-hierarchy-review-panel.md`](../../../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md) §0. Design spec §5.2 / §2 / §4 / §11 / §13 reconciled; persona-file + roster-plan mirrors of the three Senior Manager "direct match" labels updated.
+**Shipped:** branch `cursor/persona-hierarchy-spec-staleness-1583` (stacked on PR #58). Dedup-first attestation backfilled into [`2026-08-19-loop-persona-hierarchy-review-panel.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/ltm/adr/2026-08-19-loop-persona-hierarchy-review-panel.md) §0. Design spec §5.2 / §2 / §4 / §11 / §13 reconciled; persona-file + roster-plan mirrors of the three Senior Manager "direct match" labels updated.
 
 **Decisions/defects:** none new — citation/attestation hygiene only. 19-agent and 32-agent process figures remain as-reported (run artifacts not preserved).
 
@@ -1931,7 +1931,7 @@ unconditional lane-wide again pending a genuinely new modality or its own fresh 
 
 **Focus:** Re-verify the Anchor / Rule-1 fragmentation finding against `origin/main` and dispose (a) rename, (b) `rule1_gate.py`, (c) sibling cross-wire.
 
-**Shipped:** branch `cursor/anchor-discipline-fragment-0f6f`. Light ADR [`2026-08-19-rule-1-citation-not-three-meanings.md`](../../../../adr/2026-08-19-rule-1-citation-not-three-meanings.md) (`Proposed`). Pointer-only on [`regime_robustness_gate.md`](../../../../methodology/regime_robustness_gate.md). Addendum on the Rule 2 ADR. Notice [`N-2026-08-18-quintessentials-ml-lifecycle-mapping`](../../../../notes/notice/N-2026-08-18-quintessentials-ml-lifecycle-mapping.md) §4 Anchor ACTION discharged.
+**Shipped:** branch `cursor/anchor-discipline-fragment-0f6f`. Light ADR [`2026-08-19-rule-1-citation-not-three-meanings.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-19-rule-1-citation-not-three-meanings.md) (`Proposed`). Pointer-only on [`regime_robustness_gate.md`](../../../../methodology/regime_robustness_gate.md). Addendum on the Rule 2 ADR. Notice [`N-2026-08-18-quintessentials-ml-lifecycle-mapping`](../../../../notes/notice/N-2026-08-18-quintessentials-ml-lifecycle-mapping.md) §4 Anchor ACTION discharged.
 
 **Decisions/defects:** (a) no rename — gate "Rule 1" is the 2026-04-24 extension of the same INQHIORI Rule 1. (b) do not build `rule1_gate.py`; drop "implementation deferred." (c) do not sibling-wire `mc_anchor_history.md`. Full `Rule N` prefixing stays with the [2026-08-08 audit](../../../../notes/audits/2026-08-08-conventions-delete-phase-gap-audit.md) §5.
 
@@ -2856,7 +2856,7 @@ token; Magdon-Ismail B.
 
 **Focus:** Close the search-blindness → new artifact → stale index loop (registry feed, amendment-first, Limb B FTS, liveness sweep, Rule 2 pointers, gate/CI diet). Live rail out of scope. Replayed onto the public seed; merged after [PR #1](https://github.com/Joshua-Asante/first-passage/pull/1).
 
-**Shipped:** branch `cursor/search-memory-liveness-2af2` — [PR #2](https://github.com/Joshua-Asante/first-passage/pull/2) — Rule 8.9/8.10 + addenda on [dedup-first](../../../../adr/2026-08-13-dedup-first-before-new-work.md) / [ceremony-tiering](../../../../adr/2026-08-08-adr-ceremony-tiering.md) / [W5](../../../../adr/2026-08-07-w5-governance-diet.md); [Q-XMEM-1](../../../../briefs/Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) v1.2 Limb B; `scripts/repo_retrieve.py` + `scripts/sync_liveness_indexes.py`; INDEX CON-3/CON-4 repair. Mem0 T0 and local vector unpaid. Trip-log not replayed (`docs/notes/` omitted from the public seed).
+**Shipped:** branch `cursor/search-memory-liveness-2af2` — [PR #2](https://github.com/Joshua-Asante/first-passage/pull/2) — Rule 8.9/8.10 + addenda on [dedup-first](../../../../adr/2026-08-13-dedup-first-before-new-work.md) / [ceremony-tiering](../../../../adr/2026-08-08-adr-ceremony-tiering.md) / [W5](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md); [Q-XMEM-1](../../../../briefs/Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) v1.2 Limb B; `scripts/repo_retrieve.py` + `scripts/sync_liveness_indexes.py`; INDEX CON-3/CON-4 repair. Mem0 T0 and local vector unpaid. Trip-log not replayed (`docs/notes/` omitted from the public seed).
 
 **Decisions/defects:** no new ADR. Rule 2 stays PROPOSED.
 
@@ -3130,9 +3130,9 @@ token; Magdon-Ismail B.
 
 **Focus:** Log ceremony-tiering omitted-apparatus candidate (implied-SR light→full escalation); trim two over-300-word light ADRs.
 
-**Shipped:** branch `cursor/implied-sr-incident-and-light-adr-trims-d214` — [PR #815](https://github.com/Joshua-Asante/first-passage-archive/pull/815) — [ceremony-tiering addendum](../../../../adr/2026-08-08-adr-ceremony-tiering.md) · STATE `### 2026-11-08` pointer · trims [C3 revive](../../../../adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) · [Survive bound](../../../../adr/2026-08-09-survive-bound-is-the-queue-cap.md). No retired-ADR rewrites.
+**Shipped:** branch `cursor/implied-sr-incident-and-light-adr-trims-d214` — [PR #815](https://github.com/Joshua-Asante/first-passage-archive/pull/815) — [ceremony-tiering addendum](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-08-adr-ceremony-tiering.md#addendum-2026-08-14--candidate-omitted-apparatus-incident-implied-sr) · STATE `### 2026-11-08` pointer · trims [C3 revive](../../../../adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) · [Survive bound](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md). No retired-ADR rewrites.
 
-**Decisions/defects:** Candidate incident only (1-vs-2 = audit call). Owner: [ceremony tiering §Falsifier](../../../../adr/2026-08-08-adr-ceremony-tiering.md).
+**Decisions/defects:** Candidate incident only (1-vs-2 = audit call). Owner: [ceremony tiering §Falsifier](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-08-adr-ceremony-tiering.md#falsifier).
 
 **Open / next:** Operator F-2 disposition (from 14b/14c). Confirm #806 CI green; cart confirm; CapFLOW; F1 2026-11-08; M1; weekly token; Magdon-Ismail B; research venvs. On Windows: `make sync-skills` (from 14c). Ceremony-tiering falsifier review at first quarterly after 08-08 (STATE 11-08).
 
