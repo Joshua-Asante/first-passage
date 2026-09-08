@@ -50,7 +50,7 @@ Every entry carries `"content_verified": true|false`:
 
 ## How to use this
 
-**Query it like any JSONL file** — `grep`, `jq`, or read it whole (115 lines, small).
+**Query it like any JSONL file** — `grep`, `jq`, or read it whole (112 lines, small).
 There is no query CLI yet; this is the consolidation step. A forcing-hook that surfaces
 a relevant entry automatically when a matching file/keyword is touched is a natural
 follow-up (`trigger_globs`/`trigger_keywords` are shaped for exactly that), not yet built.

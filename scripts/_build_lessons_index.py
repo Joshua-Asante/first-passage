@@ -376,16 +376,20 @@ STUB_NAMES = {
         "core_fxify_anchoring_audit", "databento_research_stack",
         "decompound_remc_canonical_shift_2026_06_07", "disccamp0_gate_reachability_audit",
         "dj30_mym_prototype_falsified", "ea_conversion_state", "futures_prop_pivot",
-        "grokbot_evaluation_2026_08_18", "ict_cascade_true_state_qict1_moot",
+        "ict_cascade_true_state_qict1_moot",
         "missed_alpha_sweep_synthesis", "no_manual_trading_cfd_retirement",
-        "ox_alpha_openrouter_evaluation_2026_08_22", "pyramid_is_strategy_for_nas100",
+        "pyramid_is_strategy_for_nas100",
         "q_ict_1h_revcon_phase0a", "q_mech_1_family_synthesis", "q_nas_4_closure",
         "rnd_pipeline_state", "status_consistency_gate", "strategy_lifecycle_governance",
         "tradeify_consistency_payoff_shape_constraint_2026_08_22",
-        "tradeify_discovery_channels_dry_2026_08_20", "tv_csv_canonical_feed_policy",
+        "tv_csv_canonical_feed_policy",
         "tv_egress_automation", "us_legal_master_research",
     ],
 }
+
+# Self-exclusion: STUB_NAMES declarations live in this file, so a naive git-grep
+# always self-matches and would keep zero-citation stubs forever.
+_GENERATOR_RELPATH = "scripts/_build_lessons_index.py"
 
 
 def grep_citing_files(name: str) -> list[str]:
@@ -398,7 +402,10 @@ def grep_citing_files(name: str) -> list[str]:
         return []
     if out.returncode not in (0, 1):
         return []
-    files = [ln for ln in out.stdout.splitlines() if ln.strip()]
+    files = [
+        ln for ln in out.stdout.splitlines()
+        if ln.strip() and ln != _GENERATOR_RELPATH
+    ]
     return sorted(files)
 
 
