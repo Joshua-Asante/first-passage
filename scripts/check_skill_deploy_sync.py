@@ -78,8 +78,10 @@ def main(argv: list[str]) -> int:
             "~/.claude/skills/ bundle at all (CI runner / fresh clone; there is "
             "no skills-deploy step in .github/workflows/, by design). NOT "
             "CHECKED, not a pass -- this gate cannot compare against a bundle "
-            "that does not exist. Run `python scripts/sync_skills.py` on a "
-            "machine that has a deployed bundle to exercise the real check."
+            "that does not exist. Re-run this existence checker "
+            "(`python scripts/check_skill_deploy_sync.py`) on a machine "
+            "where the deployed bundle already exists. Publication is not "
+            "required to perform this check."
         )
         return 0
 
@@ -93,7 +95,17 @@ def main(argv: list[str]) -> int:
         print(f"DRIFT: {len(missing)} ADR-cited skill script(s) missing from deployed bundle:")
         for skill, script, target in missing:
             print(f"  {skill}/scripts/{script} -- expected at {target}")
-        print("Run: python scripts/sync_skills.py")
+        print(
+            "Missing cited scripts are not fixed by a no-argument "
+            "publication. From a primary main checkout, after review of a "
+            "named revision, publish explicitly: "
+            "python scripts/sync_skills.py --revision <reviewed-sha> "
+            "--target <explicit-destination>  "
+            "(or: make sync-skills REVISION=<reviewed-sha> "
+            "TARGET=<explicit-destination>). Policy: "
+            "docs/adr/2026-06-04-methodology-skills-under-vc.md "
+            "addendum 2026-09-08."
+        )
         return 1
 
     print(f"OK: {len(cited)} ADR-cited skill script(s) present in deployed bundle.")

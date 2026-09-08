@@ -62,20 +62,37 @@ Optional rolloff (only if SESSIONS is long and operator wants it):
 python scripts/roll_sessions.py --dry-run
 ```
 
-## 5. Skills deploy (optional; main checkout only)
+## 5. Skills deploy (optional; explicit release from primary main)
 
-`make sync-skills` is **not** a required post-merge tax. Run it only when (a) you are on the durable **main** checkout (not a Cloud agent / `.claude/worktrees/` session), and (b) you intentionally want the cloud-synced deployed bundle updated after a skill merge.
+Skill publication is **not** a required post-merge tax. Edit hooks in any
+checkout (including worktrees) are **validation-only**: they report pending
+release and never copy to shared bundles. Read-only diagnostics may run
+from **any** checkout:
 
 ```bash
-# optional — main checkout only
-make sync-skills
-# or: python scripts/sync_skills.py
+python scripts/sync_skills.py --check
+# or: make sync-skills-check
+# or: make sync-skills CHECK=1
 ```
 
-Skip on worktrees and Cloud checkouts (would clobber the shared bundle or deploy branch state) — `scripts/sync_skills_hook.py` already skips worktrees; keep that invariant. Scoreboard `skipped (worktree|cloud)` means **not attempted here** — record it as such, not as a
-success. (Corrected 2026-08-08: `sync_skills.py --check` exits **1** on real drift, and drift is
-present today. A skip defers that check to a non-worktree session; it does not discharge it, and
-no gates.yml entry covers skill-bundle sync.)
+`--check` never implies permission to publish. Being on `main` does **not**
+prove review, and no home/AppData destination is implied.
+
+If you intentionally publish after independent review, do it from a
+**primary `main` checkout**, naming both the reviewed revision and an explicit
+target. Do not execute the example below as written.
+
+```bash
+# optional — primary main, after review of REVISION; substitute real values
+make sync-skills REVISION=<reviewed-sha> TARGET=<explicit-destination>
+# or: python scripts/sync_skills.py --revision <reviewed-sha> --target <explicit-destination>
+```
+
+Scoreboard `n/a` / `skipped (worktree)` means **not published here**. A
+`--check` skip or drift report does not discharge publication and does not
+prove review. Policy owner:
+[`docs/adr/2026-06-04-methodology-skills-under-vc.md`](../../docs/adr/2026-06-04-methodology-skills-under-vc.md)
+addendum 2026-09-08.
 
 ## 6. Hygiene handoff
 
@@ -97,5 +114,5 @@ Return a short scoreboard:
 | CATALOG | n/a / ok / needs edit |
 | STATE | n/a / ok / draft proposed |
 | SESSIONS | n/a / draft in chat / written |
-| sync-skills | n/a / done / skipped (worktree) |
+| skill release | n/a / skipped (worktree) / published (named revision+target) |
 | hygiene scout | n/a / report summarized |

@@ -92,6 +92,9 @@ def test_no_deploy_target_skips_not_passes(tmp_path):
     out = result.stdout
     assert "SKIP" in out and "NOT CHECKED" in out
     assert "OK:" not in out
+    assert "check_skill_deploy_sync.py" in out
+    assert "Publication is not required" in out
+    assert "python scripts/sync_skills.py" not in out
 
 
 def test_missing_deployed_file_fails(monkeypatch, tmp_path):
@@ -109,6 +112,8 @@ def test_missing_deployed_file_fails(monkeypatch, tmp_path):
     )
     assert result.returncode != 0
     assert "brief-authoring" in result.stdout
+    assert "--revision" in result.stdout and "--target" in result.stdout
+    assert "Run: python scripts/sync_skills.py" not in result.stdout
 
 
 def test_multiple_missing_scripts_are_all_reported(tmp_path):
