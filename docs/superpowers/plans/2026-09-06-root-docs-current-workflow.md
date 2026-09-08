@@ -8,7 +8,7 @@
 
 **Tech stack:** Markdown, existing Python document readers, pytest, and the gate manifest. Python source remains compatible with 3.11+.
 
-**Spec:** The operator-approved review in this task, concretized by the scope and acceptance criteria below; existing [root-doc charter](../../adr/2026-07-16-root-doc-charter-dedup.md) and [Rule 7](../../operational_rules.md#7-one-canonical-owner-per-fact-every-other-mention-links-or-is-a-labeled-mirror). The ownership amendment is recorded on existing ADRs, without creating a sixth root document.
+**Spec:** The operator-approved review in this task, concretized by the scope and acceptance criteria below; existing [root-doc charter](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md) and [Rule 7](../../operational_rules.md#7-one-canonical-owner-per-fact-every-other-mention-links-or-is-a-labeled-mirror). The ownership amendment is recorded on existing ADRs, without creating a sixth root document.
 
 ## Global constraints
 
@@ -54,7 +54,7 @@
 
 ## Task 4 — Amend existing ownership records
 
-**Files:** docs/operational_rules.md, docs/adr/2026-07-16-root-doc-charter-dedup.md, docs/adr/2026-08-07-w5-governance-diet.md, docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md, docs/governance/INDEX.md, STATE.md.
+**Files:** docs/operational_rules.md, [docs/adr/2026-07-16-root-doc-charter-dedup.md](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md), [docs/adr/2026-08-07-w5-governance-diet.md](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md), [docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md), docs/governance/INDEX.md, STATE.md.
 
 - [x] Rule 7: STATE owns current priorities, campaign plans own executable steps, session entries are historical; date the edit log.
 - [x] Root charter: append the operator-approved execution record, exact scope of ownership change, retained parser surfaces, and current runnable verification commands; retain the existing semantic-loss falsifier.

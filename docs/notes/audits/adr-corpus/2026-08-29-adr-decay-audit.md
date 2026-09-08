@@ -46,7 +46,7 @@ refute-first second pass; none were rubber-stamped.
 | ADR | Phase 1 | Phase 2 | Why |
 |---|---|---|---|
 | `2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md` | DECAYED_UNDOCUMENTED | **DECAYED_DOCUMENTED** | `docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md` §6 explicitly records the standing-research-interest suspension in prose ("it is its suspension, and it should be recorded as such") — no header link exists, but the fact is genuinely recorded elsewhere in the graph (Known Trap #2 shape). |
-| `2026-06-30-state-md-role-reduction.md` | DECAYED_DOCUMENTED | **DECAYED_UNDOCUMENTED** | The cited corroboration (`docs/operational_rules.md` Rule 7's dated changelog) only explains one of `STATE.md`'s two undocumented extra headers (the decision-index). The other — `## OPERATOR QUEUE`, added by `2026-08-09-survive-bound-is-the-queue-cap.md`, cited across 31 files — has no cross-reference anywhere back to this ADR or into Rule 7's text. |
+| [`2026-06-30-state-md-role-reduction.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-06-30-state-md-role-reduction.md) | DECAYED_DOCUMENTED | **DECAYED_UNDOCUMENTED** | The cited corroboration (`docs/operational_rules.md` Rule 7's dated changelog) only explains one of `STATE.md`'s two undocumented extra headers (the decision-index). The other — `## OPERATOR QUEUE`, added by [`2026-08-09-survive-bound-is-the-queue-cap.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md), cited across 31 files — has no cross-reference anywhere back to this ADR or into Rule 7's text. |
 | `2026-07-26-regime-candidate-flag-lane.md` | UNCERTAIN | **DECAYED_UNDOCUMENTED** | Both of Addendum 2026-08-21's self-certifying claims independently reproduce as false: no `STATE.md` forward-board line exists under any wording (exhaustive grep + full manual read of the 2026-11-08 section), and the "Phase 2 hook 3 — 0 hits" claim returns 3 hits on an identical re-run today. |
 | `2026-08-05-strategy-venue-binding-axis.md` | UNCERTAIN | **STILL_APPLICABLE** | The ADR's own §4 text explicitly states T2/T3/T4 are "unreachable before 2026-11-08 by construction" and names the quarterly-audit check date directly — today's live `ops/venue_editions/` vs. `LEG_MAP` disagreement is the anticipated pre-audit state the ADR itself designed for, not a silent firing. Flagged operationally: if unreconciled by 2026-11-08, T2 fires for real. |
 | `docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md` (LTM-retrieval clause) | UNCERTAIN | **resolved, no decay** | Phase-1's shallow clone made `git log --follow` unreliable. A full unshallow fetch (true root `027a729`, 862 commits) confirms the withdrawn predecessor ADR was pruned by the Great Prune (`docs/adr/TOMBSTONES.md` line 20) 6 days *before* the public repo was even seeded — its total absence from public history, and from `docs/ltm/adr/`'s post-transition cold-stub convention, is expected, not a gap. |
@@ -81,7 +81,7 @@ remediation applied (or the forward obligation, if not applied this session — 
    decisions (§2.1/§2.4/§2.5) remain very much alive. **Remediated** — addendum narrowly scoped to the
    falsified 3-skill migration plan only.
 
-4. **`2026-07-16-root-doc-charter-dedup.md`** — Own §10 hook expects `CLAUDE.md`'s Live-execution
+4. **[`2026-07-16-root-doc-charter-dedup.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md)** — Own §10 hook expects `CLAUDE.md`'s Live-execution
    posture section at ≤25 lines; it's 54 today (Safety invariants block, Account-state paragraph, Eval
    bust-figures warning all accreted post-2026-08-03, each individually irreducible to a pointer line).
    No addendum records the exception. **Logged as forward obligation** (see §7) — this is a judgment
@@ -164,7 +164,7 @@ remediation applied (or the forward obligation, if not applied this session — 
     2026-08-21's two self-certifying claims both independently reproduce as false. **Remediated** —
     follow-up addendum correcting both claims; `STATE.md` forward-board line added (§7, LIVING-doc fix).
 
-20. **`2026-06-30-state-md-role-reduction.md`** (reclassified from DECAYED_DOCUMENTED, §2) — The
+20. **[`2026-06-30-state-md-role-reduction.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-06-30-state-md-role-reduction.md)** (reclassified from DECAYED_DOCUMENTED, §2) — The
     `## OPERATOR QUEUE` header (2026-08-09, load-bearing, cited across 31 files) has no cross-reference
     anywhere. **Remediated** — reciprocal `Superseded-in-part-by` field added.
 
@@ -261,7 +261,7 @@ metadata correction only): findings #1, #2, #3, #5, #6, #7, #8, #9, #10, #11, #1
 #17, #18, #19, #20 from §3 (19 of 20) — see commit history for the exact diffs.
 
 **Logged as forward obligation, not fixed this session:**
-- Finding #4 (`2026-07-16-root-doc-charter-dedup.md`) — the CLAUDE.md size-hook exception is an
+- Finding #4 ([`2026-07-16-root-doc-charter-dedup.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md)) — the CLAUDE.md size-hook exception is an
   operator judgment call (accept as a bounded safety-content exception vs. trim back to pointer form),
   not a mechanical discharge. Owner: next session touching CLAUDE.md's Live-execution posture section,
   or the 2026-11-08 quarterly review at latest — logged on `STATE.md`.

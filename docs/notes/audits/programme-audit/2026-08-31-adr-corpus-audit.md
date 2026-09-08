@@ -184,12 +184,12 @@ Original ranked table, annotated with actual disposition:
 | `2026-08-22-ox-alpha-adversarial-lens-scope.md` | 4,994 | 4,994 | Refused — the 'Use N' addenda are each a dated, distinct measurement event, not repetitions of one caveat |
 | `2026-08-21-persona-hierarchy-front-office-only.md` | 3,692 | 3,692 | Refused — the parent-rationale restatement is what makes this narrowing self-contained without a second read |
 | `2026-08-15-notice-log-is-the-live-observation-routing-convention.md` | 2,589 | 2,589 | Refused — the proposal targets a section that does not exist in the file |
-| `2026-06-30-state-md-role-reduction.md` | 2,403 | 2,403 | Refused — no before/after full-text STATE.md reproduction exists in this file to cut |
+| [`2026-06-30-state-md-role-reduction.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-06-30-state-md-role-reduction.md) | 2,403 | 2,403 | Refused — no before/after full-text STATE.md reproduction exists in this file to cut |
 | `2026-08-29-clv-autocorrelation-admission-route-scope.md` | 4,492 | 4,492 | Refused — the named bloat section does not exist in this file |
 | `2026-08-02-third-leg-liveness-limb.md` | 2,266 | 2,109 | **APPLIED**, saved 157 |
 | `2026-08-03-orb-mnq-repark-payability-falsified.md` | 3,641 | 3,641 | Refused — the RESULTS numbers are the falsified verdict's own evidentiary support, not a restatement |
 | `2026-08-21-cfo-subscription-ledger-consolidation.md` | 2,595 | 2,595 | Refused — the proposed bloat section does not exist in this file as described |
-| `2026-08-09-survive-bound-is-the-queue-cap.md` | 901 | 901 | Refused — each addendum resolves a distinct queue-ordering event on a different date, not a repeated point |
+| [`2026-08-09-survive-bound-is-the-queue-cap.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md) | 901 | 901 | Refused — each addendum resolves a distinct queue-ordering event on a different date, not a repeated point |
 | `2026-05-10-manifest-integrity-gate.md` | 982 | 741 | **APPLIED**, saved 241 |
 | `2026-04-17-striker-v4.3-pyramid.md` | 635 | 635 | Refused — cited by `core/strategies/_archive/striker/striker_CHANGELOG.md`; flagged separately for a public-redaction question this pass does not decide (§7) |
 | `2026-08-14-msl-explore-stage-5a.md` | 599 | 599 | Refused — the file is already light-tier (599 words); the proposed cut has no safe room to take from without touching Decision/Gate |
@@ -212,7 +212,7 @@ Common bloat patterns, in priority order of recoverable words:
   touches no decision text, no falsifier, no supersession edge.
 - **(b) Measurement addenda accreting on decision records.** `2026-07-31-orb-mnq` (3 addenda,
   3,194w), `2026-08-22-ox-alpha-adversarial-lens-scope.md` (7 near-identical "Use N" addenda,
-  1,597w implementing a counter the ADR itself says is untrustworthy), `2026-08-09-survive-bound-is-the-queue-cap.md`
+  1,597w implementing a counter the ADR itself says is untrustworthy), [`2026-08-09-survive-bound-is-the-queue-cap.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md)
   (3 addenda about STATE.md queue ordering on a light-tier ADR). Each names its own Rule 7 owner
   in its first line — the ADR should carry the verdict and a pointer, not the transcript.
 - **(c) Implementation plans that outlive their execution.** 15,643 words across 101 files,
@@ -230,7 +230,7 @@ Common bloat patterns, in priority order of recoverable words:
 | `2026-07-13-prop-account-book-segregation.md` | §4's 2026-08-08 check passed with no disposition recorded. An arithmetic reading exists (27.04% vs a 25% trigger) but sits in a `DRAFT — SUPERSEDED BY EVENTS` brief with deleted provenance. Add a verdict-free pointer addendum; the verdict itself is an operator call. |
 | `2026-06-05-concept-admissibility.md` **and** `-sweep-engine.md` | Both self-declare "Graph edge OWED, not landed." Land `Superseded-in-part-by: 2026-07-11-gen1-pipeline-retirement.md` (machinery only), regenerate INDEX same commit. Do not edit the retirement ADR — one-sided in-part edges are already live convention here. |
 | `2026-08-07-w4-minimal-gate-set-dormancy.md` | §2 asserts `universe_gate.py` "still defaults to the empirical estimator." It doesn't — flipped to `1/n` at `universe_gate.py:363-365`, recorded in the 2026-08-15 addendum. Three stale reader-intercept markers to fix. |
-| `2026-08-07-w5-governance-diet.md` | Three sites still read "CI re-enable = owed" — discharged 2026-08-23, `gate-manifest.yml:45` runs it. One genuinely owed item (two `check_brief.py`) stays as-is. |
+| [`2026-08-07-w5-governance-diet.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md) | Three sites still read "CI re-enable = owed" — discharged 2026-08-23, `gate-manifest.yml:45` runs it. One genuinely owed item (two `check_brief.py`) stays as-is. |
 | `2026-08-07-w1-intraday-honest-engine-remeasure.md` | `core/firm_rules.py:336` still reads "W1 (Proposed)" — flipped to Accepted 2026-08-22. Needs `(Accepted 2026-08-22)`, not a bare swap. |
 | `2026-07-10-r6-nogo-futures-residual-disposition.md` | §10's hook greps `ls ops/` for "crosstrade" and prints OK while `ops/c1_rail/crosstrade_payload.py` exists — fails open. Strike the hook; don't redirect it. |
 | `2026-05-23-relocate-ecr-to-live-journal.md` | Owed retirement, blocked a month on a misread precondition (`--reason retired` needs no `--by`). Can run today. |

@@ -1,4 +1,4 @@
-# Gate composition authority — W5 ADR docs/adr/2026-08-07-w5-governance-diet.md
+# Gate composition authority — scripts/README.md#gate-composition-and-admission
 # Consumed by scripts/gate_manifest.py. Pre-commit + Make call the runner;
 # do not hand-duplicate this list in the shell hook.
 #
@@ -72,8 +72,8 @@ gates:
   # deleting/moving the link TARGET as by editing the link itself, and no
   # staged_regex here ever matched lab/|core/|ops/, so a commit that moved a
   # lab/analysis/ body out from under a root-doc link skipped this check at
-  # pre-commit. See docs/adr/2026-08-07-w5-governance-diet.md Addendum
-  # 2026-08-15 for the runtime cost measured before reverting (~0.7s + ~1.4s).
+  # pre-commit. See scripts/README.md#gate-composition-and-admission for the
+  # reachability rule; the historical reversion measured ~0.7s + ~1.4s.
   - id: path-liveness
     tier: always
     cmd:

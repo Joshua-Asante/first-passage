@@ -145,11 +145,11 @@ This generalizes Rule 5 (Pine owns strategy parameters) from constants to
 | Executable campaign next steps | Campaign's current implementation plan; campaign record owns evidence, gate dispositions, and operator decisions |
 | Session-specific "open / next" | Optional historical context in that session's entry; never a replacement for the current STATE queue or campaign plan |
 | Per-Q forward disposition (Iterate exit) | closure's own `## Iterate` block (`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`); a STATE forward-board row is a labeled pointer mirror only |
-| Durable atomic facts | Their owning specification, campaign record, ADR or [`methodology lesson`](methodology/lessons/). Claude-project `MEMORY.md` + memory files (outside this worktree) are **assistive-only** — never a Rule 7 owner, never Rule 0 / §0 attestation. Same class as `repo_retrieve.py` ([Limb B](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)). |
+| Durable atomic facts | Their owning specification, campaign record, plan, PR, ADR or [`methodology lesson`](methodology/lessons/). Claude-project `MEMORY.md` + memory files (outside this worktree) are **assistive-only** — never a Rule 7 owner, never Rule 0 / §0 or sub-rule 8/10 attestation. Same class as `repo_retrieve.py` ([Limb B](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)). |
 
 Roles that must **not** restate canonical values:
-- **`STATE.md`** — the open-threads + forward-obligation register (dormant
-  cross-session threads with no other home + the forward-trigger board). Not a
+- **`STATE.md`** — current operator queue, compact executed-decision index,
+  dormant cross-session threads with no other home, and forward-trigger board. Not a
   state snapshot: carries no working-tree status, risk %, anchor number, version,
   hash, or owner table — points here (this §7) for ownership. See its header.
   Executed operator decisions appear only in its **decision index** (one line
@@ -158,13 +158,12 @@ Roles that must **not** restate canonical values:
   narrative sections (demoted 2026-07-16; reaffirmed 2026-08-03 — see edit
   log). Closed/retired rows are deleted from STATE (not struck); detail stays
   with the owning decision record or closure.
-- **`docs/SESSIONS.md`** — narrates work; links the ADR/CHANGELOG/commit instead
+- **`docs/SESSIONS.md`** — narrates work; links the decision owner/CHANGELOG/commit instead
   of duplicating its values. Its living header links to STATE for current work;
   existing entries do not track later queue changes. `Open / next` is optional
   historical context; do not add a session stub just to copy the live queue.
-  Prefer W5 entry classes and links over prose; the
-  ~40-word-per-field figure is a soft target the ADR itself calls directional, not
-  an enforced cap — [`W5 ADR`](adr/2026-08-07-w5-governance-diet.md).
+  Its header gates full entries on a real judgment call; mechanical output alone
+  needs no full entry. The A–D classes and ~40-word targets are retired.
 - **`CLAUDE.md` §Live-execution posture** — a pointer block: the current
   scale-path picture plus one line + owner link per standing decision. The
   decision narrative lives with its current owner; a new posture
@@ -178,6 +177,26 @@ Roles that must **not** restate canonical values:
 - **`README.md`** — human entry index; links out everywhere. Its public-clone
   note is a one-liner pointing at `CLAUDE.md` §Public-clone posture (the
   canonical statement).
+
+**STATE currency:** keep `Last curated` at least as recent as the newest dated
+decision-index bullet. Under `Scheduled forward triggers`, keep one `Weekly — recurring`
+and one `Monthly — recurring` heading with `next deadline **YYYY-MM-DD**` between
+today and the next 7/31 days respectively (America/New_York). Past `### YYYY-MM-DD`
+headings require affirmative standalone `DISCHARGED`; `NOT DISCHARGED` and
+`UNDISCHARGED` do not qualify. Prefer deleting completed rows once evidence is at
+the owner. Session-shaped promises belong in the current plan/queue. The always-on
+[`state-currency` checker](../scripts/check_state_currency.py) owns these field checks;
+a report-only digest or local reminder cannot discharge them.
+
+**Incident protection:** if a dated defect attributes a material decision error
+to missing orientation detail, a dormant thread is lost for lack of a home, or a
+load-bearing need for a deleted STATE role cannot be served by git/current owners,
+restore only the affected block/role and amend this ownership rule with the reason.
+Do not restore the whole snapshot or duplicate owner table by default. Keep the
+consolidated dormant-thread view; assistive recall is not its replacement. Do not
+copy private project memory here or commission a memory index/new state store.
+The [root charter](adr/2026-07-16-root-doc-charter-dedup.md) retains the rationale and
+queue-attention review; redundant quarterly document-maintenance/size ceremony is retired.
 
 **Origin:** 2026-06-03 doc-taxonomy audit. `STATE.md` (dated 2026-05-15) had
 drifted three weeks stale: it restated the locked strategy table and MC anchor
@@ -790,12 +809,12 @@ Full incident narration for each entry lives in `git log -p` on this file and in
 log states what changed and why in one line. Unless noted, edits are additive — no locked config,
 allocation, `dd_protection`, Pine, or rail touched.
 
-- **2026-09-06** — Rule 6 follows the relocated strategy mirror. Rule 7 assigns current priorities to STATE and executable next steps to campaign plans; SESSIONS becomes history with a stable header route. Queue-copy stubs are no longer required. [Root-charter amendment](adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-06--current-work-routing-and-root-consolidation).
+- **2026-09-06** — Rule 6 follows the relocated strategy mirror. Rule 7 assigns current priorities to STATE and executable next steps to campaign plans; SESSIONS becomes history with a stable header route. Queue-copy stubs are no longer required. [Root-charter amendment](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-06--current-work-routing-and-root-consolidation).
 - **2026-09-03** — Rule 14 gains a "correction is a claim" corollary (grep the claim not the file, recompute from source, keep hedge words, "not determinable" is a complete answer) + a printed-precision caveat on `:.2f` interval bounds. No rule-text renumbering; additive only.
 - **2026-09-03** — Rule 7 gains a wrapper-accretion discipline paragraph: don't stack a new pointer/wrapper artifact over a fact family carrying an outstanding dated debt, citing PR #250 and #262/#264 as the precedent this fixes. No rule-text renumbering; additive only.
 - **2026-08-28** — Rule 17 added (quarterly programme-audit checklist; `check_falsifier_reachability.py --stats` census, wired `gates.yml`). [`ADR`](adr/2026-08-27-ssot-data-lineage-remediation-program.md)
 - **2026-08-23** — P4 museum rules: Rule 1 origin marked HISTORICAL (Guardian cold-stored); Rule 7 lock-state paths retargeted to `_archive/<family>/`.
-- **2026-08-23** — Rule 7 durable-atoms owner demoted to owning ADRs / `docs/methodology/lessons/`; Claude-project MEMORY is assistive-only, never a Rule 7 owner. [`addendum`](adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner)
+- **2026-08-23** — Rule 7 durable-atoms owner demoted to owning ADRs / `docs/methodology/lessons/`; Claude-project MEMORY is assistive-only, never a Rule 7 owner. [`addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-06-30-state-md-role-reduction.md#addendum-2026-08-23--memory-is-assistive-only-not-the-rule-7-owner)
 - **2026-08-22** — Rule 7 STATE decision-index restored to one line + owner (had grown back into multi-paragraph restatements after the 2026-08-19 relaxation below).
 - **2026-08-21** — Rule 9/10/14 reference repair: dropped a stale retired-script example, replaced drifted ordinal gate-number pointers with stable `id:` fields. No rule behavior changed.
 - **2026-08-19** — Rule 7 STATE decision-index cap relaxed from strict one-line to concise (practice had drifted; operator ruled relax-to-match). Still bars multi-sentence narrative.
@@ -803,15 +822,15 @@ allocation, `dd_protection`, Pine, or rail touched.
 - **2026-08-13** — Rule 8 sub-rule 8 added: paste literal dedup-search output (`lab/CATALOG.md` + `docs/briefs/INDEX.md`) before opening new work. [`ADR`](adr/2026-08-13-dedup-first-before-new-work.md)
 - **2026-08-08** — ADR ceremony stakes-tiering ratified (pointer only, no rule text changed): full §0–§7 only when a tier-test limb fires. [`ADR`](adr/2026-08-08-adr-ceremony-tiering.md)
 - **2026-08-07** — Rule 15 added (always-on hosting is not the desktop). [`ADR`](adr/2026-08-07-w6-rail-infra-closures.md)
-- **2026-08-07** — Rule 7 / SESSIONS·STATE entry-class direction (W5 — see the prose-target note above §7). [`ADR`](adr/2026-08-07-w5-governance-diet.md)
-- **2026-09-04** — Rule 7 owner table gains a live-value-index row (`docs/load_bearing_numbers.md`) and names `core/strategies/CATALOG.md` §Locked parameter record as the strategy-parameter mirror; the `CLAUDE.md` role note is narrowed to the two gated surfaces that remain resident there (MC-anchor triple + §Protection). [`charter ADR addendum`](adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-04--consolidation-pass-what-moved-and-what-was-ruled-immovable)
+- **2026-08-07** — Rule 7 / SESSIONS·STATE entry-class direction (W5 — see the prose-target note above §7). [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md)
+- **2026-09-04** — Rule 7 owner table gains a live-value-index row (`docs/load_bearing_numbers.md`) and names `core/strategies/CATALOG.md` §Locked parameter record as the strategy-parameter mirror; the `CLAUDE.md` role note is narrowed to the two gated surfaces that remain resident there (MC-anchor triple + §Protection). [`charter ADR addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-04--consolidation-pass-what-moved-and-what-was-ruled-immovable)
 - **2026-08-07** — Rule 7 owner table drops the retired `params.toml` row.
 - **2026-08-04** — Rule 7 owner table gains a "Per-Q forward disposition" row (each closure's own `## Iterate` block is canonical).
 - **2026-08-03** — Rule 7 STATE anti-accretion reaffirmed after STATE re-grew past charter (~2129 lines); rewritten to open-board only.
 - **2026-08-02** — Rule 14 added (corrections land where the error is read, not where it's convenient to write) + gate `check_supersession_placement.py`.
 - **2026-08-02** — Rule 4 + Rule 8 sub-rule 5 updated to point at current owners (retired weekly-review-feeder / accounts / cli surfaces).
 - **2026-08-02** — Rule 13 added (venue facts recorded as quote + source + date + explicit scope; silence reads BROAD).
-- **2026-07-16** — Rule 7 role list extended: CLAUDE.md posture, STATE.md decisions, README public-clone note all demoted to pointers (root-doc de-dup). [`ADR`](adr/2026-07-16-root-doc-charter-dedup.md)
+- **2026-07-16** — Rule 7 role list extended: CLAUDE.md posture, STATE.md decisions, README public-clone note all demoted to pointers (root-doc de-dup). [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md)
 - **2026-07-11** — Rule 3 marked dormant unless DXTrade is explicitly reactivated.
 - **2026-07-10** — Live-path skew repair: Rule 7/9 examples updated to current `core/` paths.
 - **2026-07-02** — Rule 8 sub-rule 7: shipped the queued mechanical check (`ops/sentinel/scan.py` `preregistration_scan`).

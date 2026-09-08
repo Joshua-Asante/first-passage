@@ -27,6 +27,21 @@ persona dependency. Historical retrieval creates no standing role or obligation.
 | `docs/ltm/adr/2026-08-21-persona-hierarchy-front-office-only.md` | Historical full body; persona lifecycle retired | `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/ltm/adr/2026-08-21-persona-hierarchy-front-office-only.md`; blob `eecf6891efaa04e7902e159743220837e335602a` |
 | `docs/adr/2026-08-31-persona-hierarchy-full-retirement.md` | Completed retirement episode; all persona reviews/restoration triggers retired by operator clarification. | `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`; blob `d1f665ed458befd78f01146e8ae085b49998aeb0` |
 
+## 2026-09-08 governance consolidation
+
+The [five-root charter](2026-07-16-root-doc-charter-dedup.md) retains the distinct
+ownership rationale. [Rule 7](../operational_rules.md#7-one-canonical-owner-per-fact-every-other-mention-links-or-is-a-labeled-mirror),
+the [STATE queue](../../STATE.md#operator-queue--strictly-ordered-5-live-items),
+the [SESSIONS header](../SESSIONS.md), and the
+[gate operating contract](../../scripts/README.md#gate-composition-and-admission)
+own current procedure. Historical bodies below do not reinstate superseded procedure.
+
+| Removed path | Disposition / current owner | Immutable body |
+|---|---|---|
+| `docs/adr/2026-06-30-state-md-role-reduction.md` | STATE role/snapshot exclusions, assistive-memory boundary, date-field contract and role-specific incident/dormant-thread protection retained in Rule 7 and current readers. Exact-two-header requirement superseded; redundant programme/quarterly document-maintenance review retired, not passed. No new memory store or STATE rename commissioned. | [Full body](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-06-30-state-md-role-reduction.md); `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-06-30-state-md-role-reduction.md`; blob `d287d3e2ae3f72f3299368d701298a753fd3ffd8` |
+| `docs/adr/2026-08-07-w5-governance-diet.md` | Manifest/runner, selector/reachability/admission and structural-M1 versus audit distinction retained in scripts guide. A–D classes/~40-word targets retired; queue-copy/stub requirements superseded September 6. H6 discharged August 23. Brief-checker unification and 26-letter exhaustion remain unresolved in scripts/SESSIONS owners. | [Full body](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md); `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-08-07-w5-governance-diet.md`; blob `3b8d62437cd9385d69e58292a1da4620f635ca20` |
+| `docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md` | ≤5 concurrency cap, dependency/operator order and no automatic replacement/channel/GO remain with STATE. November 8 attention/order review and failure condition migrate to charter plus STATE pointer; not discharged. Item-5 license already owned by [M1](2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24); arm authority unchanged. Earlier queue elections are completed history. | [Full body](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md); `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md`; blob `cb12d7669e587676b1ab6111615d0f889347c227` |
+
 ## Earlier removals
 
 One line per pruned ADR — the decision's *current consequence* survives here; the

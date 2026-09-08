@@ -2,7 +2,8 @@
 
 Chronological progress log, **newest first**. Each entry
 **links out** to the detailed artifacts (ADRs, notices, briefs, commits) rather than
-duplicating them. Durable atoms live with their owners (ADRs / `docs/methodology/lessons/`);
+duplicating them. Durable atoms live with the appropriate specification, campaign,
+plan, PR, ADR or methodology lesson;
 Claude-project `MEMORY.md` is assistive-only, never attestation;
 this file is the narrative timeline you can scan top-to-bottom.
 
@@ -11,13 +12,10 @@ choice among options, a decision that changes scope/priority/risk, a measurement
 result that resolves something open. Mechanical output (a plan authored to an
 already-decided spec, code shipped with no branching decision, routine hygiene) does
 not earn a full entry even if it produced a commit — that's already recoverable from
-`git log`. *(Judgment-gate added 2026-08-23, replacing the looser "skip Hygiene-only"
-rule; entry-class origin below is unchanged.)*
+`git log`.
 
-**Entry classes (W5 direction):** Decision / Build / Measurement / Hygiene — prefer
-links over prose. ~40 words per field is a soft target, not an enforced cap — judgment-heavy
-entries (multi-decision sessions) routinely run longer, and that's fine
-([`W5 ADR`](adr/2026-08-07-w5-governance-diet.md)).
+Prefer links and the detail needed to understand the judgment. The A–D entry
+classes and ~40-word targets are retired by the [2026-09-08 charter revision](adr/2026-07-16-root-doc-charter-dedup.md).
 
 Current priorities and obligations live in the
 [`STATE.md` operator queue](../STATE.md#operator-queue--strictly-ordered-5-live-items).
@@ -29,6 +27,10 @@ not require editing an existing entry or adding a pointer-only stub.
 
 Same-day letter: `python scripts/roll_sessions.py --next-label YYYY-MM-DD` before writing
 any entry (a-first; bare claims `a`).
+The 26-letter ceiling remains unresolved and needs an operator scheme decision;
+`--next-label` raises when the date is exhausted. Cross-clone collisions on dates
+with a free letter are renumbered at merge; this does not solve exhausted dates or
+license rewriting archived entries. Implementation: [`roll_sessions.py`](../scripts/roll_sessions.py).
 
 ---
 
@@ -38,7 +40,7 @@ any entry (a-first; bare claims `a`).
 
 **Shipped:** Revised the five root guides and session-routing checker; [task checklist](superpowers/plans/2026-09-06-root-docs-current-workflow.md).
 
-**Decisions/defects:** [Charter amendment](adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-06--current-work-routing-and-root-consolidation) assigns priorities to STATE and executable steps to campaign plans. Corrected the M1 dependency and daemon import-root instructions; protected safety sections remain intact.
+**Decisions/defects:** [Charter amendment](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-06--current-work-routing-and-root-consolidation) assigns priorities to STATE and executable steps to campaign plans. Corrected the M1 dependency and daemon import-root instructions; protected safety sections remain intact.
 
 ---
 
@@ -248,7 +250,7 @@ improvement` section. Then a second pass taking the three further cuts named in 
 [`docs/load_bearing_numbers.md`](load_bearing_numbers.md); locked parameter record moved to
 [`core/strategies/CATALOG.md`](../core/strategies/CATALOG.md); Rule 7 owner-table row + narrowed
 `CLAUDE.md` role note; [PR #299](https://github.com/Joshua-Asante/first-passage/pull/299).
-**Decisions/defects:** [charter ADR addendum 2026-09-04](adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-04--consolidation-pass-what-moved-and-what-was-ruled-immovable)
+**Decisions/defects:** [charter ADR addendum 2026-09-04](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-04--consolidation-pass-what-moved-and-what-was-ruled-immovable)
 — §5's first forbidden move justified itself by naming two parsers, **both claims now stale**
 (`validate_params.py` deleted with the params.toml retirement; `verify_lock_anchors.py` verified to
 read only `dd_protection` / `historical_challenge` / `firm_rules`). The live reader is
@@ -1450,7 +1452,7 @@ scored panels).
 
 **Focus:** Decision + Build. Operator GO for parked keep-20 roll and W5 CI-from-`gates.yml` (H6 HOLD). `queue-exception: operator GO for parked keep-20 + H6`.
 
-**Shipped:** append-only archive exemption in [`roll_sessions.py`](../scripts/roll_sessions.py); live window 20 + [`SESSIONS-2026-Q3.md`](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md); [`.github/workflows/gate-manifest.yml`](../.github/workflows/gate-manifest.yml) (`--tier check`); deleted hand-list `skills-check.yml`; [`W5 addendum`](adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--h6-hold-lifted-ci-composition-from-gatesyml); `install_hooks.sh` Windows bash warning.
+**Shipped:** append-only archive exemption in [`roll_sessions.py`](../scripts/roll_sessions.py); live window 20 + [`SESSIONS-2026-Q3.md`](ltm/notes/archive/sessions/SESSIONS-2026-Q3.md); [`.github/workflows/gate-manifest.yml`](../.github/workflows/gate-manifest.yml) (`--tier check`); deleted hand-list `skills-check.yml`; [`W5 addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--h6-hold-lifted-ci-composition-from-gatesyml); `install_hooks.sh` Windows bash warning.
 
 **Decisions/defects:** H6 HOLD lifted. Dated exceptions: `pursuit-records` off `--tier check`; `pine-pin-provenance --base` stays in manifest-check. No branch protection. Queue row 3 opened and closed same session (succession: no auto-replace).
 

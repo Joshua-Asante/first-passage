@@ -24,9 +24,10 @@ Serve the numbered priorities in dependency order; a priority number is not an
 assertion that independent work must wait. New decision packets, advisor triage,
 and sizing questions queue behind these items unless the operator directs otherwise.
 
-This is the concurrency-denominated [Survive bound](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md),
+This is the concurrency-denominated [Survive bound](docs/adr/2026-07-16-root-doc-charter-dedup.md#queue-attention-review),
 not an hours budget. Completed items leave; do not automatically open replacements.
 Off-queue work stays with its owner until promoted or explicitly directed.
+Queue position does not grant phase GO or authorize a new generation channel.
 
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
@@ -39,7 +40,7 @@ Newest 15 consequences; decision rationale remains with the owner. Older index:
 [archive](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md).
 Retracted verdicts leave this index; their correction stands with its owner.
 
-- **2026-09-06** — Root docs narrowed to current routing; STATE owns priorities, campaign plans executable steps, SESSIONS history. [Charter amendment](docs/adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-06--current-work-routing-and-root-consolidation)
+- **2026-09-06** — Root docs narrowed to current routing; STATE owns priorities, campaign plans executable steps, SESSIONS history. [Charter](docs/adr/2026-07-16-root-doc-charter-dedup.md#decision)
 - **2026-09-03** — Off-queue VOLREGIME translation closed at T0, PRE-CONTRACT DROP; no contract. [Ruling](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
 - **2026-09-03** — Select configuration campaign promoted to queue #1; cultivation remains off-queue. [Campaign record](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
 - **2026-09-02** — Portable-edge objective and bounded cultivation campaign approved; no candidate/capital authority. [ADR](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md)
@@ -53,7 +54,7 @@ Retracted verdicts leave this index; their correction stands with its owner.
 - **2026-08-27** — SSOT/data-lineage remediation Phase 1 authorized. [ADR](docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md)
 - **2026-08-24** — Regime-gate scope and validation-battery K-tiering ruled. [Scope](docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md) · [K-tiering](docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md)
 - **2026-08-24** — A2 disclosed-N reduction accepted; not a Phase B GO. [RESULTS §4](lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)
-- **2026-08-24** — M1 item 5 licensed to a test strategy; Stage 1 no longer waits on queue #1. [Addendum](docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--m1-item-5-no-longer-waits-on-queue-1)
+- **2026-08-24** — M1 item 5 licensed to a test strategy; Stage 1 no longer waits on queue #1. [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 
 ## Dormant cross-session threads
 
@@ -139,6 +140,9 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
 
 ### 2026-11-08
 
+- **Queue attention/order review:** first check of the ≤5 concurrency cap and
+  repeated out-of-order serving; retain dependency order/operator direction and
+  assess the two-consecutive-quarter cap condition. [Charter](docs/adr/2026-07-16-root-doc-charter-dedup.md#queue-attention-review).
 - **GRAND-tier ADR §4:** scheduled re-read; initial binding was satisfied, not sunset.
   [Owner](docs/adr/2026-08-09-grand-tier-quintessentials-binding.md).
 - **GSUB-1 PARK expiries:** b1 Aegis→6J, b3 ORB-MNQ, b6 Q-NAS-ECR convert to SUBTRACT

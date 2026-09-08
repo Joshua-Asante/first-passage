@@ -4,7 +4,7 @@
 plans, each phase a separate document"). Each phase carries its own GO gate; nothing below is
 authorized by this overview. Queue-bind note: under the 2026-08-23 queue-led convention, phase
 GOs function as operator promotions. STATE `#1` as of 2026-08-24
-([addendum](../../adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1));
+([addendum](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1));
 that placement is not a phase GO.
 
 > ⚠ **Reader-intercept 2026-09-03 — both numbers in this objective have moved since authoring.**

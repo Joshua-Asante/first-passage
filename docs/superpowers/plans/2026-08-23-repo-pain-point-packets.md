@@ -15,7 +15,7 @@
 - No second Great Prune; no hard doc-budget gate ([`2026-08-08-great-prune.md`](../../adr/2026-08-08-great-prune.md) F-2 addendum declined).
 - No hours budget (Rule 2 §5 #2).
 - No new generation channel (bind row 3 fills from an existing owner).
-- No sixth root doc ([`2026-07-16-root-doc-charter-dedup.md`](../../adr/2026-07-16-root-doc-charter-dedup.md)).
+- No sixth root doc ([`2026-07-16-root-doc-charter-dedup.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md)).
 - Empty grep of `lab/archive/`, `docs/ltm/`, `core/strategies/_archive/` is **not** evidence of absence ([`.cursor/rules/search-ltm.mdc`](../../../.cursor/rules/search-ltm.mdc)).
 - `repo_retrieve.py` remains ASSISTIVE-ONLY (Limb B settled).
 
@@ -185,7 +185,7 @@ Do not reopen P1 as a packet.
 
 Amendment-first: this charter is the owner. Do not open a parallel “first-look campaign.” Do not scaffold implementation plans until a packet is GO’d. Do not promote any of these as queue #3 without operator election.
 
-Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/INDEX.md` have no `front-door lead` / `identifier collision` / `open-roster` / `STATE diet` packet rows. Nearest owners: this file (P1 glossary), [`2026-07-16-root-doc-charter-dedup.md`](../../adr/2026-07-16-root-doc-charter-dedup.md) (no sixth root doc), [`scripts/roll_sessions.py`](../../../scripts/roll_sessions.py) (keep-20 — SESSIONS only), [`Q-TOM-SPX-1`](../../briefs/Q-TOM-SPX-1.md) (P10 exemplar), [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md) (object-layer dryness — not P6–P10).
+Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/INDEX.md` have no `front-door lead` / `identifier collision` / `open-roster` / `STATE diet` packet rows. Nearest owners: this file (P1 glossary), [`2026-07-16-root-doc-charter-dedup.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md) (no sixth root doc), [`scripts/roll_sessions.py`](../../../scripts/roll_sessions.py) (keep-20 — SESSIONS only), [`Q-TOM-SPX-1`](../../briefs/Q-TOM-SPX-1.md) (P10 exemplar), [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md) (object-layer dryness — not P6–P10).
 
 ---
 
@@ -314,7 +314,7 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 
 | Item | Why parked | Owner |
 |---|---|---|
-| W5 CI-from-`gates.yml` (H6) | **Landed 2026-08-23** | [`2026-08-23-w5-ci-from-gates-yml-implementation.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md) · [W5 addendum](../../adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--h6-hold-lifted-ci-composition-from-gatesyml) |
+| W5 CI-from-`gates.yml` (H6) | **Landed 2026-08-23** | [`2026-08-23-w5-ci-from-gates-yml-implementation.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md) · [W5 addendum](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--h6-hold-lifted-ci-composition-from-gatesyml) |
 | SESSIONS keep-20 roll | **Landed 2026-08-23** | [`scripts/roll_sessions.py`](../../../scripts/roll_sessions.py) · archive `docs/ltm/notes/archive/sessions/` |
 | Generation dryness | bind row 3 closed; object-layer sequence already authored | [channel ADR addendum](../../adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell) · [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md) |
 | Mass CATALOG Verdict / `--slug` | catalog ADR forbids without its own GO | [`2026-08-22-catalog-hot-vs-disposition.md`](../../adr/2026-08-22-catalog-hot-vs-disposition.md) |

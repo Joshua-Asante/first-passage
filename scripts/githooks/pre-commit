@@ -1,6 +1,6 @@
 #!/bin/sh
 # Pre-commit gate — composition owned by scripts/gates.yml via gate_manifest.py
-# (W5 ADR docs/adr/2026-08-07-w5-governance-diet.md). Do not hand-enumerate
+# (scripts/README.md#gate-composition-and-admission). Do not hand-enumerate
 # gates here; edit the manifest instead.
 ROOT="$(git rev-parse --show-toplevel)" || exit 1
 cd "$ROOT" || exit 1
