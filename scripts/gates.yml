@@ -20,6 +20,20 @@
 version: 1
 
 gates:
+  - id: evidence-store
+    tier: path-conditional
+    when:
+      staged_regex: '^(scripts/evidence_store/|tests/evidence_store/|scripts/gates[.]yml)'
+    cmd:
+      - python
+      - -m
+      - unittest
+      - discover
+      - -s
+      - tests/evidence_store
+      - -p
+      - test_*.py
+
   - id: skills-no-constants
     tier: always
     cmd:

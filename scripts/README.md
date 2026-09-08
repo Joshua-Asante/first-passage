@@ -6,6 +6,10 @@ Composition authority is [`gates.yml`](gates.yml) via
 [`gate_manifest.py`](gate_manifest.py).
 Do not hand-maintain a parallel list.
 
+[Evidence store](evidence_store/README.md) provides opt-in source preservation,
+decision history and declared-dependency correction queries:
+`python -m scripts.evidence_store --help`. It is advisory governance tooling.
+
 The manifest's complete tier set is `always`, `path-conditional`,
 `data-conditional`, and `audit`. The runner refuses unknown tiers (including the
 retired `soft`) and declared/parsed gate-count mismatches, so bad indentation or

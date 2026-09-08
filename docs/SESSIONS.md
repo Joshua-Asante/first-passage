@@ -34,6 +34,18 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 
 ---
 
+## 2026-09-08c — Codex re-review: evidence capture/index trust
+
+**Focus:** Address Codex re-review findings on PR #319 (`bf2ea5c`).
+
+**Shipped:** Reject symlink captures and do not follow them on verification; reject conflicting kinds on deduplicated source versions; authenticate cached SQLite projections against the journal; set `GIT_NO_LAZY_FETCH=1` for historical `cat-file`. Evidence suite 69 tests green.
+
+**Decisions / defects:** No new ADR; closes the four open Codex P2 threads from the second review pass.
+
+**Open / next:** Await CI / Codex on the repair head.
+
+---
+
 ## 2026-09-08b — Codex re-review: revision validators + non-regular payload reject
 
 **Focus:** Address Codex re-review of the skill-release fixes on PR #318.
