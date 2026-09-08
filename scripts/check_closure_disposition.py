@@ -1,67 +1,55 @@
 #!/usr/bin/env python3
-"""check_closure_disposition.py — every new closure carries a typed Iterate block.
+"""check_closure_disposition.py — enforce the accepted closure contract.
 
-THE FAILURE MODE (ADR 2026-08-04-iterate-closure-exit-mandatory §1; measured
-baseline in its §0):
+HISTORICAL FAILURE MODE (August 2026 Iterate-closure survey):
 
-  Closures already do forward-disposition work — 10/10 in the pre-ADR survey —
-  but under 7+ different section names, never as a typed field, and the
-  board-write pointer (which STATE row / SESSIONS Open-next line the closure
-  adds) is explicit in only 2/10. The ADR-layer version of that missing limb is
-  the paid incident: the 08-08 board gap (SESSIONS 2026-08-04a, audit R9 — the
-  quarterly audit vehicle unscheduled while ~31 ADRs' obligations rode it).
+  Closures already did forward-disposition work, but under inconsistent
+  section names and without a reliably typed board-write pointer. The accepted
+  standard made that exit mechanically findable without attempting semantic
+  completeness checks.
 
 THE MECHANICAL RULE (deliberately narrow — M-8; the dropped C1/C4 checks in
-check_status_consistency.py are the recorded proof that SEMANTIC closure
-completeness has no reachable gate):
+check_status_consistency.py record why semantic completeness stays outside
+this gate):
 
-  A non-grandfathered file under docs/briefs/closures/ must contain
+  A file outside the Iterate GRANDFATHERED set must contain
     (1) a heading whose text contains "Iterate",
     (2) a "Next:" line carrying exactly ONE of INTEGRATE / ITERATE / STOP
-        (all three at once = the unfilled template placeholder), and
+        (all three at once = the unfilled template placeholder),
     (3) a "Board write" token.
-  Entry-packet quality, stop-rule honesty, and disposition-vs-§6 consistency
-  are judgment — owned by the brief-authoring closure checklist and the
-  quarterly methodology audit (the owning ADR's §4 ceremony limb), never here.
+  A file outside REGISTRY_GRANDFATHERED must also contain a nonempty
+  "Registry:" token.
+  Entry-packet quality, stop-rule honesty, registry joins, and
+  disposition-vs-§6 consistency remain authoring judgment.
 
-COVERAGE LIMB (self-arming — ADR 2026-08-12-closure-disposition-coverage-hard):
+COVERAGE LIMB:
 
-  The Iterate-token scan can only see closures that EXIST. A second limb
-  derives campaigns that claim a closed/terminal verdict (INDEX Open rows
-  with CLOSED/FALSIFIED/VOID/AMBIGUOUS-… Status; INDEX Recently closed
-  bullets; CATALOG rows that name a Q-ID alongside archive-owed CLOSED/
-  FALSIFIED) and reports any with no matching file under
-  docs/briefs/closures/ or docs/ltm/briefs/. Severity is owned by
-  COVERAGE_OWNING_ADR (not the Iterate ADR): Proposed ⇒ WARN + exit 0;
-  Accepted ⇒ HARD + exit 1. Historical gaps listed in
-  COVERAGE_GRANDFATHERED stay excluded forever (belt-churn YELLOW
-  2026-08-08 — a HARD fire on pre-promotion gaps would block unrelated
-  work). That set is empty at authoring: PR #745 cleared the backlog
-  9 → 0 (SESSIONS 2026-08-11v). Never append IDs here to dodge the gate;
-  a newly discovered pre-promotion gap needs a superseding ADR.
+  The token scan can only see closures that exist. A second limb derives
+  campaigns that claim a terminal verdict (INDEX Open rows, INDEX Recently
+  closed bullets, and qualifying CATALOG rows) and reports any with no matching
+  file under docs/briefs/closures/ or docs/ltm/briefs/. The accepted enforcement
+  is fixed HARD in repository mode. COVERAGE_GRANDFATHERED remains the permanent
+  forward-only boundary; the no-joinable-LTM public-seed waiver is unchanged.
 
-SEVERITY (self-arming on ratification; two owning ADRs):
+SEVERITY:
 
-  Iterate limb → OWNING_ADR (2026-08-04-iterate-closure-exit-mandatory).
-  Coverage limb → COVERAGE_OWNING_ADR
-  (2026-08-12-closure-disposition-coverage-hard).
-  While an owning ADR is `Proposed`, that limb's violations print as WARN
-  and do not flip the exit code. Once `Accepted`, that limb's violations
-  are HARD and contribute exit 1. A missing/unparseable ADR degrades its
-  limb to WARN with a loud notice (fail-open: this gate must never block
-  unrelated commits on its own broken dependency — M-22 posture).
-  Explicit-path mode (authoring-time: `python scripts/check_closure_disposition.py
-  <file>...`) always exits 1 on Iterate-token violations — an opt-in check
-  of a named file wants a hard answer and cannot block unrelated work.
-  Explicit-path mode does not run the coverage limb.
+  Repository mode treats Iterate, Registry, and applicable coverage findings
+  as independent HARD violations. Historical ADR Status tokens no longer
+  configure enforcement. The operating contract is documented at
+  scripts/README.md#closure-enforcement; that prose is explanatory and is not a
+  runtime arming dependency. Existing unreadable closure/INDEX/CATALOG paths
+  retain their deliberately WARN-only handling.
 
-SCOPE (extension is an ADR edit — supersede in part — not a flag):
-  - docs/briefs/closures/*.md, minus the GRANDFATHERED set (the 20 closures
-    that predate the Iterate ADR; forward-only, no retro-editing per its §5).
+  Explicit-path authoring mode checks Iterate and Registry tokens and returns 1
+  on either violation. It does not run coverage. ``--list-debt`` remains
+  report-only.
+
+SCOPE (changes require reviewed code plus operating-contract revision):
+  - docs/briefs/closures/*.md, minus the fixed 20-name GRANDFATHERED set.
   - Coverage: newly claimed terminal verdicts without a closure record,
     minus COVERAGE_GRANDFATHERED.
 
-Exit 0 clean / WARN-tier, 1 on HARD violations. Warn-only on unreadable files.
+Exit 0 when clean; 1 when any HARD limb finds a violation.
 """
 from __future__ import annotations
 
@@ -75,13 +63,6 @@ CLOSURES_DIR = REPO / "docs" / "briefs" / "closures"
 LTM_BRIEFS_DIR = REPO / "docs" / "ltm" / "briefs"
 INDEX_PATH = REPO / "docs" / "briefs" / "INDEX.md"
 CATALOG_PATH = REPO / "lab" / "CATALOG.md"
-OWNING_ADR = REPO / "docs" / "adr" / "2026-08-04-iterate-closure-exit-mandatory.md"
-# Coverage-limb severity owner (supersedes the 2026-08-04 ADR in part —
-# advisory-coverage clause only). Independent of OWNING_ADR so Iterate can
-# stay HARD while coverage is still Proposed.
-COVERAGE_OWNING_ADR = (
-    REPO / "docs" / "adr" / "2026-08-12-closure-disposition-coverage-hard.md"
-)
 REJECTED_CANDIDATES = REPO / "docs" / "rejected_candidates.md"
 
 # A heading whose text contains "Iterate" ("## Iterate — loop exit",
@@ -115,11 +96,6 @@ REGISTRY_TOKEN = re.compile(
 # quoted template (the realistic paste-from-closure_record.md path) can never
 # satisfy the gate (adversarial finding: fence-blindness false pass).
 FENCE_DELIM = re.compile(r"^\s*(```|~~~)")
-
-# ADR Status header token, same grammar family as check_adr_graph.py
-# (backticks optional so a de-backticked header degrades the parse gracefully
-# rather than silently disarming a ratified gate).
-STATUS_LINE = re.compile(r"^\*\*Status:\*\*\s*`?(?P<tok>[A-Za-z][\w/-]*)`?")
 
 # ── coverage limb: campaign ID + terminal-verdict recognition ──────────
 # Bold IDs as stored in INDEX (M-AHF: **Q-OFCHAN-1**, not bare Q-OFCHAN-1).
@@ -376,32 +352,6 @@ def _strip_fences(lines: list[str]) -> list[str]:
     return out
 
 
-def adr_status(adr_path: Path = OWNING_ADR) -> str:
-    """Return the owning ADR's Status token, or 'MISSING' if unreadable.
-
-    A leading YAML frontmatter block is skipped; after that, only the header
-    region is scanned (up to the first '## ' or '---' line), matching
-    check_adr_graph.py's boundary so an addendum Status line never re-arms or
-    disarms the gate."""
-    try:
-        lines = adr_path.read_text(encoding="utf-8").splitlines()
-    except OSError:
-        return "MISSING"
-    start = 0
-    if lines and re.match(r"^---\s*$", lines[0]):  # YAML frontmatter
-        for i in range(1, len(lines)):
-            if re.match(r"^---\s*$", lines[i]):
-                start = i + 1
-                break
-    for line in lines[start:]:
-        if line.startswith("## ") or re.match(r"^---\s*$", line):
-            break
-        m = STATUS_LINE.match(line)
-        if m:
-            return m.group("tok")
-    return "MISSING"
-
-
 def scan_file(path: Path) -> str | None:
     """Return a violation message, or None if the closure is compliant.
 
@@ -454,7 +404,7 @@ def scan_file(path: Path) -> str | None:
     return (
         f"{shown}: closure lacks its typed Iterate block — {'; '.join(problems)} "
         f"(template: .claude/skills/brief-authoring/references/closure_record.md; "
-        f"ADR 2026-08-04-iterate-closure-exit-mandatory)"
+        f"scripts/README.md#closure-enforcement)"
     )
 
 
@@ -680,8 +630,8 @@ def missing_closure_campaigns(
     """Return terminal-verdict campaigns that have no closure record on disk.
 
     Campaign IDs in `grandfathered` (COVERAGE_GRANDFATHERED by default) are
-    excluded — historical gaps stay WARN-exempt / silent so a HARD coverage
-    fire never blocks unrelated work on pre-promotion debt.
+    excluded and silent so historical pre-promotion debt does not become a
+    new HARD finding.
     """
     index_path = repo / "docs" / "briefs" / "INDEX.md"
     catalog_path = repo / "lab" / "CATALOG.md"
@@ -739,35 +689,19 @@ def missing_closure_campaigns(
     return missing
 
 
-def report_missing_closure_coverage(
-    missing: list[MissingClosure],
-    *,
-    hard: bool = False,
-) -> int:
-    """Print coverage findings. Returns 1 iff hard and any missing, else 0."""
+def report_missing_closure_coverage(missing: list[MissingClosure]) -> int:
+    """Print coverage findings; return 1 iff any applicable finding exists."""
     if not missing:
         return 0
-    tier = "HARD" if hard else "WARN"
-    posture = (
-        "coverage limb armed HARD "
-        "(ADR 2026-08-12-closure-disposition-coverage-hard Accepted)"
-        if hard
-        else (
-            "advisory while coverage ADR is Proposed — "
-            "Accepted flips this limb HARD "
-            "(lesson_green_gate_is_not_coverage; "
-            "ADR 2026-08-12-closure-disposition-coverage-hard)"
-        )
-    )
     print(
-        f"{tier} closure-disposition coverage: {len(missing)} campaign(s) claim "
+        f"HARD closure-disposition coverage: {len(missing)} campaign(s) claim "
         "a terminal verdict with no closure record under docs/briefs/closures/ "
-        f"or docs/ltm/briefs/ ({posture}):"
+        "or docs/ltm/briefs/ (accepted HARD enforcement):"
     )
     for m in missing:
         src = ", ".join(m.sources)
         print(f"  - {m.campaign_id}  [{src}]")
-    return 1 if hard else 0
+    return 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -786,7 +720,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  - {name}")
         return 0
 
-    if argv:  # explicit-path mode: authoring-time, always hard (Iterate only)
+    if argv:  # explicit-path mode: authoring-time, always hard
         violations: list[str] = []
         for a in argv:
             p = Path(a)
@@ -812,61 +746,29 @@ def main(argv: list[str] | None = None) -> int:
         print("check_closure_disposition: OK — Iterate block tokens present.")
         return 0
 
-    iterate_status = adr_status(OWNING_ADR)
-    iterate_hard = iterate_status == "Accepted"
     violations = [msg for f in in_scope() if (msg := scan_file(f))]
     registry_violations = [
         msg for f in in_scope() if (msg := scan_registry(f))
     ]
-
-    coverage_status = adr_status(COVERAGE_OWNING_ADR)
-    coverage_hard = coverage_status == "Accepted"
     missing = missing_closure_campaigns()
 
-    if iterate_status == "MISSING":
-        print("WARN closure-disposition: owning ADR "
-              "2026-08-04-iterate-closure-exit-mandatory.md missing or has no "
-              "parseable Status token — Iterate limb degraded to WARN. If the "
-              "ADR was renamed, update OWNING_ADR here in the same commit.")
-    if coverage_status == "MISSING":
-        print("WARN closure-disposition: coverage ADR "
-              "2026-08-12-closure-disposition-coverage-hard.md missing or has "
-              "no parseable Status token — coverage limb degraded to WARN. If "
-              "the ADR was renamed, update COVERAGE_OWNING_ADR here in the "
-              "same commit.")
-
-    iterate_exit = 0
     if violations:
-        tier = "HARD" if iterate_hard else "WARN"
         for v in violations:
-            print(f"{tier} closure-disposition: {v}")
-        if iterate_hard:
-            print(f"check_closure_disposition: {len(violations)} violation(s).")
-            iterate_exit = 1
-        else:
-            print(f"check_closure_disposition: {len(violations)} warning(s) — "
-                  f"Iterate limb is WARN-tier while the owning ADR is "
-                  f"`{iterate_status}`; it hard-fails once `Accepted`.")
+            print(f"HARD closure-disposition: {v}")
+        print(f"check_closure_disposition: {len(violations)} violation(s).")
     else:
         print("check_closure_disposition: OK — every non-grandfathered closure "
               "carries its typed Iterate block.")
 
-    # Registry limb rides the Iterate ADR's severity (same closure file,
-    # same authoring moment). Grandfathered names are already skipped.
     if registry_violations:
-        tier = "HARD" if iterate_hard else "WARN"
         for v in registry_violations:
-            print(f"{tier} closure-disposition registry: {v}")
-        if iterate_hard:
-            iterate_exit = 1
+            print(f"HARD closure-disposition registry: {v}")
     else:
         print("check_closure_disposition: OK — every post-2026-08-15 closure "
               "carries a Registry line.")
 
-    coverage_exit = report_missing_closure_coverage(
-        missing, hard=coverage_hard
-    )
-    return 1 if (iterate_exit or coverage_exit) else 0
+    coverage_exit = report_missing_closure_coverage(missing)
+    return 1 if (violations or registry_violations or coverage_exit) else 0
 
 
 if __name__ == "__main__":

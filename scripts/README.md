@@ -165,6 +165,30 @@ not commissioned here. Neither brief checker is in the gate manifest.
 The separate unresolved 26-letter session-label ceiling remains with the
 [SESSIONS header](../docs/SESSIONS.md) and [`roll_sessions.py`](roll_sessions.py).
 
+## Closure enforcement
+
+`check_closure_disposition.py` enforces the accepted closure standard as
+HARD in repository mode: missing Iterate heading/Next/Board-write tokens,
+missing required Registry token, or an applicable terminal campaign claim
+without a hot/LTM closure record returns 1. Each limb acts independently.
+Historical ADR Status tokens do not configure these checks.
+
+Revision 2026-09-08 — the approved ADR-pruning migration replaces the
+former M-22 downgrade on missing/unparseable Status owners with this
+fixed code contract. The prior accepted arrangement is preserved at
+`502a8fb4717e8caaa7d183a0a010998cfd7a30c2:scripts/check_closure_disposition.py`
+and the August 4 Iterate / August 12 coverage ADRs at that revision.
+Future severity changes require a reviewed code and operating-contract change.
+This document is not a machine-readable arming dependency.
+
+The checker retains the exact grandfather boundaries, Registry NA/debt
+partition, hot/LTM filename joins and no-joinable-LTM public-seed waiver.
+Explicit paths check Iterate and Registry tokens without running coverage;
+`--list-debt` remains report-only. Existing unreadable-content warnings
+remain warnings. The [closure template](../.claude/skills/brief-authoring/references/closure_record.md)
+owns authoring detail; this gate does not enforce Lane/Closed fields,
+semantic completeness, or successor authorization.
+
 ## Independent review
 
 [The pre-ratification workflow](../.claude/workflows/pre-ratification-adversarial-panel.js)
