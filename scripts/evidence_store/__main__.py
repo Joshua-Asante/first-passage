@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from .model import EvidenceError
+from .audit import markdown
 from .store import Store, _unique_object
 
 
@@ -32,6 +33,10 @@ def main(argv=None):
         commands.add_parser(name).add_argument('file', type=Path)
     for name in ('source', 'impact', 'receipt'):
         commands.add_parser(name).add_argument('id')
+    review = commands.add_parser('review', help='read an exact decision revision and its evidence use')
+    review.add_argument('id')
+    review.add_argument('--format', choices=('json', 'markdown'), default='json')
+    commands.add_parser('use-impact', help='find receipt-time use of an exact node').add_argument('id')
     decision = commands.add_parser('decision')
     decision.add_argument('record_id')
     decision.add_argument('--known-at', help='timezone-aware recorded-time cutoff')
@@ -50,8 +55,8 @@ def main(argv=None):
             result = store.capture(args.source_id, args.path, args.kind, commit=args.commit)
         elif args.command in {'record', 'depend', 'retrieve', 'use', 'assess'}:
             result = getattr(store, args.command)(**_object(args.file))
-        elif args.command in {'source', 'impact', 'receipt'}:
-            result = getattr(store, args.command)(args.id)
+        elif args.command in {'source', 'impact', 'receipt', 'review', 'use-impact'}:
+            result = getattr(store, args.command.replace('-', '_'))(args.id)
         elif args.command == 'decision':
             result = store.decision(args.record_id, known_at=args.known_at, as_of=args.as_of)
         elif args.command == 'belief':
@@ -59,7 +64,10 @@ def main(argv=None):
                                   known_at=args.known_at, as_of=args.as_of)
         else:
             result = getattr(store, args.command)()
-        print(json.dumps(result, sort_keys=True, ensure_ascii=True, allow_nan=False))
+        if args.command == 'review' and args.format == 'markdown':
+            print(markdown(result))
+        else:
+            print(json.dumps(result, sort_keys=True, ensure_ascii=True, allow_nan=False))
         return 0
     except (EvidenceError, OSError, ValueError, TypeError, sqlite3.Error) as exc:
         print(json.dumps({'error': str(exc)}, ensure_ascii=True), file=sys.stderr)

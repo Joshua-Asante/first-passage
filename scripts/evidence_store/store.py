@@ -15,6 +15,7 @@ from pathlib import Path
 from .model import EvidenceError, canonical, relative_path, replay, source_version, timestamp, verify_excerpt
 from .retrieval import ancestors, candidates, request, selectable, temporal
 from .beliefs import view as belief_view
+from . import audit
 
 
 def _unique_object(pairs):
@@ -454,6 +455,26 @@ class Store:
             return dict(receipt=receipt, uses=uses, revision=revision,
                         selectable=sorted(selectable(receipt)),
                         coverage='registered records and declared dependencies; observations are not live verification')
+
+    def _audit(self, query, identity):
+        with self._read() as (conn, state, revision):
+            sources = {}
+
+            def source(node):
+                if node not in sources:
+                    sources[node] = self._source(conn, node)
+                return sources[node]
+
+            result = query(state, identity, source)
+            return dict(result, revision=revision, checked_at=timestamp(self.clock()))
+
+    def review(self, decision_revision):
+        """Read the decision, pinned evidence use and current correction checks."""
+        return self._audit(audit.review, decision_revision)
+
+    def use_impact(self, node_id):
+        """Find receipt-time uses of an exact version, revision or assessment."""
+        return self._audit(audit.use_impact, node_id)
 
     def export(self):
         """Portable graph contract, not a connection to or authority grant for Neo4j."""

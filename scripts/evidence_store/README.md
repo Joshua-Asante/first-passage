@@ -74,6 +74,9 @@ Use a separate store for unrelated repositories and give logical IDs a namespace
 | `receipt ID` | Read original observations and subsequent use records. |
 | `assess REVIEW.json` | Preserve a reviewed assessment of an exact belief revision. |
 | `belief ID --context CONTEXT.json` | Read a belief, assessment history and current review flags. |
+| `review DECISION_REVISION` | Read an exact decision revision, receipts, use reasons and current checks. |
+| `review DECISION_REVISION --format markdown` | Emit an attachable Markdown review packet. |
+| `use-impact NODE_ID` | Find selected receipt results containing an exact historical source, record or assessment. |
 | `rebuild` | Validate durable inputs and atomically recreate SQLite. |
 | `export` | Deterministic JSON graph snapshot, including its journal revision digest. |
 
@@ -287,3 +290,50 @@ retain their historical evidence without keeping it active. Historical reads
 select the review known at the cutoff, but source and dependency checks describe
 present observations. Assessment review time is recorded time, never backdated
 effective time. Unknown claim effective dates still prevent current selection.
+
+## Decision reviews and historical use audits
+
+`review` takes the exact UUID returned by `record` for a decision, unlike
+`decision`, which takes a stable record ID and selects a revision by time. It
+joins that revision's use events to full preserved receipts. Each selected
+item has its original observations, disposition/reason, receipt-time provenance
+nodes, and separate current source/supersession checks. No recorded use returns
+`no_recorded_use`: a coverage gap, not proof that no evidence was used.
+
+```powershell
+python -m scripts.evidence_store --repo REPO review DECISION_REVISION
+python -m scripts.evidence_store --repo REPO review DECISION_REVISION --format markdown
+python -m scripts.evidence_store --repo REPO use-impact EXACT_SOURCE_VERSION_OR_REVISION_OR_ASSESSMENT
+```
+
+Both commands are read-only with respect to durable records. They may refresh the
+disposable index. Markdown is emitted to stdout for the caller to save or attach;
+the command never modifies a source owner. Full receipts/excerpts may be private.
+Source text is fenced JSON in the report, not executable document markup.
+
+`use-impact` accepts a source version ID, record revision UUID, or assessment UUID.
+It replays the journal prefix preceding each receipt to follow the dependencies
+observed then. For a belief, its pinned assessment overrides the latest assessment
+at retrieval, including historical `known_at` queries. Later declarations and
+replacement evidence are not retroactively attributed to old receipts. Nested
+dependencies and cycles are supported; old schema 2 receipts remain usable.
+
+Results group matching selected roots by receipt and show associated decisions
+as `applied`, `not_applied`, or `unassessed`. `applied_decisions` includes only
+explicit applied selections. A receipt with no use event has no associated
+decision; it is still a retrieval match. History-only/future/undated results with
+no selected current revision are not treated as used evidence.
+
+Unlike `impact`, this query follows reported use and its historical provenance;
+it does not add substantive dependency declarations. Empty results mean no match
+within recorded coverage. Current node checks inspect bytes for source versions
+and replacement lineage for revisions/assessments; use `review` for the full
+associated decision's source checks.
+
+Review summary status reflects current checks on the decision and its applied
+evidence. Declined/unassessed items retain their own checks but do not become
+applied by association. Original scope, belief judgment and warnings remain in
+`as_observed`; `no_flags` is not a semantic approval or an authority grant.
+These joins deliberately favor traceability over a cache: per-receipt historical
+replay is suitable for bounded local workflows and is not a large-corpus latency
+claim. Journal, SQLite and graph schema versions remain unchanged at this slice.

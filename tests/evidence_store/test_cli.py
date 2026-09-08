@@ -18,13 +18,13 @@ class CliTest(unittest.TestCase):
         self.store = Path(self.temp.name) / 'store'
         (self.repo / 'decision.md').write_text('# Decision\n## Ruling\nStatus: parked\n', encoding='utf-8')
 
-    def cli(self, *args, exit_code=0):
+    def cli(self, *args, exit_code=0, raw=False):
         proc = subprocess.run([sys.executable, '-m', 'scripts.evidence_store',
                                '--repo', str(self.repo), '--store', str(self.store), *args],
                               cwd=REPO, capture_output=True, text=True)
         self.assertEqual(proc.returncode, exit_code, proc.stdout + proc.stderr)
         self.assertNotIn('Traceback', proc.stderr)
-        return json.loads(proc.stdout if proc.returncode == 0 else proc.stderr)
+        return proc.stdout if raw and proc.returncode == 0 else json.loads(proc.stdout if proc.returncode == 0 else proc.stderr)
 
     def document(self, name, data):
         path = Path(self.temp.name) / name
@@ -114,6 +114,30 @@ class CliTest(unittest.TestCase):
         self.cli('rebuild')
         self.assertEqual(self.cli('export'), graph)
         self.assertIn('error', self.cli('belief', 'finding', exit_code=2))
+
+    def test_review_and_use_impact_cli_with_markdown(self):
+        source = self.cli('capture', 'decision', 'decision.md')
+        decision = self.cli('record', self.document('decision.json', dict(record_id='decision', kind='decision',
+            source_version=source['version_id'], section='## Ruling', statement='Status: parked',
+            status='parked', conditions={}, effective_at='2026-08-01T00:00:00Z')))
+        self.assertEqual(self.cli('review', decision['id'])['review_status'], 'unassessed')
+        receipt = self.cli('retrieve', self.document('request.json', {'record_ids': ['decision']}))
+        self.cli('use', self.document('use.json', dict(receipt_id=receipt['id'], decision_revision=decision['id'],
+            selections=[dict(revision_id=decision['id'], disposition='applied', reason='Fixture owner check')])) )
+        journal = (self.store / 'events.jsonl').read_bytes()
+        (self.repo / 'decision.md').unlink()
+        report = self.cli('review', decision['id'])
+        self.assertEqual(report['review_status'], 'needs_review')
+        self.assertEqual(report['uses'][0]['receipt'], receipt)
+        impact = self.cli('use-impact', source['version_id'])
+        self.assertEqual(impact['applied_decisions'], [decision['id']])
+        rendered = self.cli('review', decision['id'], '--format', 'markdown', raw=True)
+        self.assertIn('# Decision review', rendered)
+        self.assertIn('Fixture owner check', rendered)
+        self.assertIn('Status: parked', rendered)
+        self.assertIn('needs_review', rendered)
+        self.assertEqual((self.store / 'events.jsonl').read_bytes(), journal)
+        self.assertIn('error', self.cli('review', 'decision', exit_code=2))
 
 
 if __name__ == '__main__':
