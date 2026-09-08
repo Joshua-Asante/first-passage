@@ -1,9 +1,11 @@
 """Behavioral checks for the durable evidence/correction boundary (stdlib only)."""
 import json
 import os
+import sqlite3
 import subprocess
 import tempfile
 import unittest
+from contextlib import closing
 from unittest.mock import patch
 from pathlib import Path
 
@@ -104,6 +106,58 @@ class StoreTest(unittest.TestCase):
         self.git('replace', original, self.git('rev-parse', 'HEAD'))
         result = self.store.capture('historical', 'decision.md', 'document', commit=original)
         self.assertIn(b'Status: parked', self.store.read_bytes(result['version_id']))
+
+    def test_historical_capture_disables_lazy_fetch(self):
+        self.git('init', '-q')
+        self.git('add', 'decision.md')
+        self.git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
+                 '-c', 'commit.gpgsign=false', 'commit', '-qm', 'fixture')
+        commit = self.git('rev-parse', 'HEAD')
+        seen = []
+        real_run = subprocess.run
+
+        def wrapped(*args, **kwargs):
+            seen.append(kwargs.get('env', {}))
+            return real_run(*args, **kwargs)
+
+        with patch('scripts.evidence_store.store.subprocess.run', side_effect=wrapped):
+            self.store.capture('historical', 'decision.md', 'document', commit=commit)
+        self.assertTrue(seen)
+        for env in seen:
+            self.assertEqual(env.get('GIT_NO_LAZY_FETCH'), '1')
+            self.assertFalse(any(key.startswith('GIT_') and key != 'GIT_NO_LAZY_FETCH' for key in env))
+
+    def test_symlink_captures_are_rejected_and_verification_does_not_follow(self):
+        target = self.repo / 'decision.md'
+        link = self.repo / 'alias.md'
+        try:
+            link.symlink_to(target)
+        except OSError:
+            self.skipTest('host cannot create symlinks')
+        with self.assertRaises(EvidenceError):
+            self.store.capture('link', 'alias.md', 'document')
+        version = self.capture()
+        self.assertEqual(self.store.source(version)['current'], 'unchanged')
+        target.unlink()
+        target.symlink_to(self.repo / 'missing-target')
+        self.assertEqual(self.store.source(version)['current'], 'unavailable')
+        self.git('init', '-q')
+        self.git('add', 'alias.md')
+        self.git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
+                 '-c', 'commit.gpgsign=false', 'commit', '-qm', 'symlink')
+        commit = self.git('rev-parse', 'HEAD')
+        with self.assertRaises(EvidenceError):
+            self.store.capture('historical-link', 'alias.md', 'document', commit=commit)
+
+    def test_conflicting_kind_on_deduplicated_version_is_rejected(self):
+        first = self.store.capture('venue:F1', 'decision.md', 'document')
+        before = (self.root / 'events.jsonl').read_bytes()
+        with self.assertRaises(EvidenceError):
+            self.store.capture('venue:F1', 'decision.md', 'adr')
+        self.assertEqual((self.root / 'events.jsonl').read_bytes(), before)
+        self.assertEqual(self.store.source(first['version_id'])['kind'], 'document')
+        exported = {node['id']: node for node in self.store.export()['nodes']}
+        self.assertEqual(exported[first['version_id']]['kind'], 'document')
 
     def test_non_string_condition_keys_leave_journal_unchanged(self):
         version = self.capture()
@@ -315,6 +369,15 @@ class StoreTest(unittest.TestCase):
         record = self.record()
         self.store.rebuild()
         (self.root / 'index.sqlite').write_bytes(b'not a database')
+        self.assertEqual(self.store.decision('venue:F1')['current']['id'], record['id'])
+
+    def test_tampered_projection_rows_are_rebuilt_from_the_journal(self):
+        record = self.record()
+        self.store.rebuild()
+        index = self.root / 'index.sqlite'
+        with closing(sqlite3.connect(index)) as conn, conn:
+            conn.execute("UPDATE records SET data=json_set(data, '$.status', 'fabricated')")
+        self.assertEqual(self.store.decision('venue:F1')['current']['status'], 'parked')
         self.assertEqual(self.store.decision('venue:F1')['current']['id'], record['id'])
 
 

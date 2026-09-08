@@ -136,6 +136,9 @@ def replay(events):
                 raise EvidenceError('unavailable observations cannot claim captured bytes')
             if data['version_id'] != source_version(data):
                 raise EvidenceError('source version identity mismatch')
+            existing = state['versions'].get(data['version_id'])
+            if existing is not None and existing['kind'] != data['kind']:
+                raise EvidenceError('captured source version already exists with a different kind')
             state['versions'].setdefault(data['version_id'], data)
             state['captures'].append(event)
         elif event['type'] == 'record':

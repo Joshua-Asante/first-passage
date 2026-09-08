@@ -83,29 +83,46 @@ class Store:
         relative_path(resolved.relative_to(self.repo).as_posix())
         return rel, resolved
 
+    def _git_env(self):
+        # Hook bindings must not override the explicitly selected repository.
+        # Disable promisor lazy-fetch so historical capture stays local-only.
+        env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
+        env['GIT_NO_LAZY_FETCH'] = '1'
+        return env
+
     def _bytes(self, path, commit=None):
-        rel, resolved = self._path(path)
+        rel, _ = self._path(path)
         if commit is not None:
             if not isinstance(commit, str) or not re.fullmatch(r'[0-9a-f]{40}', commit):
                 raise EvidenceError('historical capture requires a full lowercase Git SHA-1')
             try:
                 object_name = f'{commit}:{rel}'
-                # Hook bindings must not override the explicitly selected repository.
-                env = {key: value for key, value in os.environ.items()
-                       if not key.startswith('GIT_')}
+                env = self._git_env()
                 kind = subprocess.run(['git', '--no-replace-objects', '-C', str(self.repo), 'cat-file', '-t', object_name],
                                       env=env, capture_output=True, check=False, timeout=30)
                 if kind.returncode != 0:
                     return None, 'unavailable'
                 if kind.stdout.strip() != b'blob':
                     raise EvidenceError('historical source must be a Git blob, not a directory/tree')
+                listing = subprocess.run(
+                    ['git', '--no-replace-objects', '-C', str(self.repo), 'ls-tree', commit, '--', rel],
+                    env=env, capture_output=True, check=False, timeout=30)
+                if listing.returncode != 0 or not listing.stdout.strip():
+                    return None, 'unavailable'
+                mode = listing.stdout.decode('utf-8', 'replace').split(None, 1)[0]
+                if mode == '120000':
+                    raise EvidenceError('historical source must be a regular file, not a symlink')
                 result = subprocess.run(['git', '--no-replace-objects', '-C', str(self.repo), 'cat-file', 'blob', object_name],
                                         env=env, capture_output=True, check=False, timeout=30)
             except (OSError, subprocess.TimeoutExpired):
                 return None, 'unavailable'
             return (result.stdout, 'available') if result.returncode == 0 else (None, 'unavailable')
+        live = self.repo / rel
+        if live.is_symlink():
+            # Never follow symlinks: Git symlink blobs store the target path, not target bytes.
+            return None, 'unavailable'
         try:
-            return resolved.read_bytes(), 'available'
+            return live.read_bytes(), 'available'
         except FileNotFoundError:
             return None, 'missing'
         except IsADirectoryError as exc:
@@ -158,6 +175,8 @@ class Store:
 
     def capture(self, source_id, path, kind, commit=None):
         rel, _ = self._path(path)
+        if commit is None and (self.repo / rel).is_symlink():
+            raise EvidenceError('source must be a regular file, not a symlink')
         content, availability = self._bytes(rel, commit)
         data = {'source_id': source_id, 'kind': kind, 'path': rel, 'commit': commit,
                 'sha256': hashlib.sha256(content).hexdigest() if content is not None else None,
@@ -187,6 +206,59 @@ class Store:
         return self._append('assessment', dict(belief_revision=belief_revision, judgment=judgment,
                             reviewer=reviewer, source_version=source_version, section=section,
                             statement=statement, evidence=evidence, supersedes=supersedes))
+
+    @staticmethod
+    def _projection_digest(payload):
+        return hashlib.sha256(canonical(payload).encode()).hexdigest()
+
+    @staticmethod
+    def _projection_from_state(state):
+        return {
+            'versions': [(key, data['source_id'], canonical(data))
+                         for key, data in sorted(state['versions'].items())],
+            'captures': [(event['seq'], event['data']['source_id'], event['data']['version_id'],
+                          event['data']['path'], event['recorded_at']) for event in state['captures']],
+            'records': [(event['id'], event['data']['record_id'], event['seq'], event['recorded_at'],
+                         event['data']['effective_at'], event['data']['source_version'], canonical(event['data']))
+                        for event in sorted(state['records'].values(), key=lambda item: item['id'])],
+            'dependencies': [(event['id'], event['data']['consumer'], event['data']['dependency'],
+                              event['data']['evidence_version'], canonical(event['data']))
+                             for event in sorted(state['dependencies'], key=lambda item: item['id'])],
+            'receipts': [(key, canonical(event)) for key, event in sorted(state['receipts'].items())],
+            'uses': [(key, event['data']['receipt_id'], event['data']['decision_revision'], canonical(event))
+                     for key, event in sorted(state['uses'].items())],
+            'assessments': [(key, event['data']['belief_revision'], event['seq'],
+                             event['data']['source_version'], canonical(event))
+                            for key, event in sorted(state['assessments'].items())],
+            'assessment_evidence': sorted(
+                [(key, item['revision_id'], item['relationship'], canonical(item))
+                 for key, event in state['assessments'].items()
+                 for item in event['data']['evidence']],
+                key=lambda row: (row[0], row[1], row[2])),
+        }
+
+    @staticmethod
+    def _projection_from_conn(conn):
+        return {
+            'versions': [tuple(row) for row in conn.execute(
+                'SELECT id, source_id, data FROM versions ORDER BY id')],
+            'captures': [tuple(row) for row in conn.execute(
+                'SELECT seq, source_id, version_id, path, recorded_at FROM captures ORDER BY seq')],
+            'records': [tuple(row) for row in conn.execute(
+                'SELECT id, record_id, seq, recorded_at, effective_at, source_version, data '
+                'FROM records ORDER BY id')],
+            'dependencies': [tuple(row) for row in conn.execute(
+                'SELECT id, consumer, dependency, evidence_version, data FROM dependencies ORDER BY id')],
+            'receipts': [tuple(row) for row in conn.execute(
+                'SELECT id, data FROM receipts ORDER BY id')],
+            'uses': [tuple(row) for row in conn.execute(
+                'SELECT id, receipt_id, decision_revision, data FROM uses ORDER BY id')],
+            'assessments': [tuple(row) for row in conn.execute(
+                'SELECT id, belief_revision, seq, source_version, data FROM assessments ORDER BY id')],
+            'assessment_evidence': [tuple(row) for row in conn.execute(
+                'SELECT assessment_id, revision_id, relationship, data '
+                'FROM assessment_evidence ORDER BY assessment_id, revision_id, relationship')],
+        }
 
     def _build(self, events, state, revision):
         temp = self.root / f'.index-{uuid.uuid4()}.sqlite'
@@ -222,33 +294,20 @@ class Store:
                         UNION SELECT a.belief_revision, e.revision_id FROM active_assessments a
                             JOIN assessment_evidence e ON e.assessment_id=a.id;
                 ''')
+                projection = self._projection_from_state(state)
                 conn.execute('INSERT INTO meta VALUES (?, ?)', ('revision', revision))
                 conn.execute('INSERT INTO meta VALUES (?, ?)', ('schema', '3'))
-                conn.executemany('INSERT INTO versions VALUES (?, ?, ?)',
-                                 [(key, data['source_id'], canonical(data)) for key, data in sorted(state['versions'].items())])
-                conn.executemany('INSERT INTO captures VALUES (?, ?, ?, ?, ?)', [
-                    (event['seq'], event['data']['source_id'], event['data']['version_id'],
-                     event['data']['path'], event['recorded_at']) for event in state['captures']])
-                conn.executemany('INSERT INTO records VALUES (?, ?, ?, ?, ?, ?, ?)', [
-                    (event['id'], event['data']['record_id'], event['seq'], event['recorded_at'],
-                     event['data']['effective_at'], event['data']['source_version'], canonical(event['data']))
-                    for event in state['records'].values()])
-                conn.executemany('INSERT INTO dependencies VALUES (?, ?, ?, ?, ?)', [
-                    (event['id'], event['data']['consumer'], event['data']['dependency'],
-                     event['data']['evidence_version'], canonical(event['data']))
-                    for event in state['dependencies']])
-                conn.executemany('INSERT INTO receipts VALUES (?, ?)',
-                                 [(key, canonical(event)) for key, event in state['receipts'].items()])
-                conn.executemany('INSERT INTO uses VALUES (?, ?, ?, ?)',
-                                 [(key, event['data']['receipt_id'], event['data']['decision_revision'], canonical(event))
-                                  for key, event in state['uses'].items()])
-                conn.executemany('INSERT INTO assessments VALUES (?, ?, ?, ?, ?)',
-                                 [(key, event['data']['belief_revision'], event['seq'],
-                                   event['data']['source_version'], canonical(event))
-                                  for key, event in state['assessments'].items()])
+                conn.execute('INSERT INTO meta VALUES (?, ?)',
+                             ('projection', self._projection_digest(projection)))
+                conn.executemany('INSERT INTO versions VALUES (?, ?, ?)', projection['versions'])
+                conn.executemany('INSERT INTO captures VALUES (?, ?, ?, ?, ?)', projection['captures'])
+                conn.executemany('INSERT INTO records VALUES (?, ?, ?, ?, ?, ?, ?)', projection['records'])
+                conn.executemany('INSERT INTO dependencies VALUES (?, ?, ?, ?, ?)', projection['dependencies'])
+                conn.executemany('INSERT INTO receipts VALUES (?, ?)', projection['receipts'])
+                conn.executemany('INSERT INTO uses VALUES (?, ?, ?, ?)', projection['uses'])
+                conn.executemany('INSERT INTO assessments VALUES (?, ?, ?, ?, ?)', projection['assessments'])
                 conn.executemany('INSERT INTO assessment_evidence VALUES (?, ?, ?, ?)',
-                                 [(key, item['revision_id'], item['relationship'], canonical(item))
-                                  for key, event in state['assessments'].items() for item in event['data']['evidence']])
+                                 projection['assessment_evidence'])
             os.replace(temp, self.root / 'index.sqlite')
         finally:
             temp.unlink(missing_ok=True)
@@ -259,12 +318,16 @@ class Store:
             events, state, revision = self._load()
             index = self.root / 'index.sqlite'
             fresh = False
+            expected = self._projection_digest(self._projection_from_state(state))
             if index.exists() and not force:
                 try:
                     conn = sqlite3.connect(index.as_uri() + '?mode=ro', uri=True)
                     try:
-                        fresh = (conn.execute('SELECT value FROM meta WHERE key=?', ('revision',)).fetchone() == (revision,)
-                                 and conn.execute('SELECT value FROM meta WHERE key=?', ('schema',)).fetchone() == ('3',))
+                        meta = dict(conn.execute('SELECT key, value FROM meta').fetchall())
+                        fresh = (meta.get('revision') == revision
+                                 and meta.get('schema') == '3'
+                                 and meta.get('projection') == expected
+                                 and self._projection_digest(self._projection_from_conn(conn)) == expected)
                     finally:
                         conn.close()
                 except sqlite3.DatabaseError:

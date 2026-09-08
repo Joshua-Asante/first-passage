@@ -60,8 +60,8 @@ Use a separate store for unrelated repositories and give logical IDs a namespace
 
 | Command | Input / result |
 |---|---|
-| `capture SOURCE_ID PATH --kind KIND` | Preserve one relative file; return version ID and SHA-256. Reuse SOURCE_ID when relocating the same source. |
-| `capture ... --commit SHA` | Read a blob at an exact full local Git SHA-1. Never fetch. An unavailable object is recorded as unavailable, not globally lost. Trees are rejected. |
+| `capture SOURCE_ID PATH --kind KIND` | Preserve one relative regular file; return version ID and SHA-256. Reuse SOURCE_ID when relocating the same source. Symlinks are rejected. |
+| `capture ... --commit SHA` | Read a regular-file blob at an exact full local Git SHA-1. Never fetch (including promisor lazy-fetch). Replace refs are ignored. An unavailable object is recorded as unavailable, not globally lost. Trees and symlinks are rejected. |
 | `record FILE.json` | Validate and append a reviewed record revision. |
 | `depend FILE.json` | Append an explicit, evidence-cited dependency. |
 | `source VERSION_ID` | Verify preserved bytes and compare current working bytes using the latest registered path. |
@@ -121,7 +121,8 @@ No source copy is automatically pushed to the public repository. Custom stores
 must be outside tracked/public paths or explicitly ignored by their owner.
 
 Each append is serialized with `writer.lock` and flushed to disk. The index is
-replaced only after a complete journal validates. A crash may leave an orphan blob
+replaced only after a complete journal validates, and a cached index is trusted
+only when its projected rows authenticate against that journal. A crash may leave an orphan blob
 or temporary index; these are not evidence events. A torn journal fails closed;
 restore a verified backup, do not truncate it blindly. If a stale lock remains,
 verify that no process is using the store before removing it. This is local
