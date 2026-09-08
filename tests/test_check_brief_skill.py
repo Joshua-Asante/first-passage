@@ -28,8 +28,6 @@ _spec = importlib.util.spec_from_file_location("check_brief_skill", _CB_PATH)
 cb = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(cb)
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-
 
 def _hard(violations) -> list:
     return [v for v in violations if v.severity == "HARD"]
@@ -487,15 +485,48 @@ def test_main_requires_brief_path_without_flags(capsys):
     assert exc_info.value.code == 2
 
 
-# ── regression: the light-tier ADR this file itself implements is clean ──
+# ── representative populated light-tier shape ────────────────────────────
 
-def test_real_canon_ruling_adr_is_well_formed():
-    path = REPO_ROOT / "docs" / "adr" / "2026-08-09-check-brief-canon-ruling.md"
-    assert path.exists()
-    text = path.read_text(encoding="utf-8")
-    assert cb.is_light_tier(text)
-    v = cb.check_brief(text, "adr")
+REPRESENTATIVE_LIGHT_ADR = """\
+# ADR — representative light record
+
+**Status:** `Accepted`
+**Decision date:** 2026-08-01
+**Tier:** light
+**Layer:** test maintenance. **Cost:** K=0.
+
+## Decision
+Use dedicated test data for checker regressions.
+
+## Grounds
+Runtime reads of governance records couple their retention to incidental tests.
+
+## Reads
+`scripts/check_brief.py` @ commit abc1234.
+
+## Gate
+RESOLVED when the focused checker tests pass without governance-file reads.
+
+## Boundary
+Do not weaken the canonical type contract or the subset's explicit declines.
+"""
+
+
+def test_representative_light_adr_with_populated_gate_and_boundary_passes():
+    assert cb.is_light_tier(REPRESENTATIVE_LIGHT_ADR)
+    v = cb.check_brief(REPRESENTATIVE_LIGHT_ADR, "adr")
     assert _hard(v) == [], [str(x) for x in _hard(v)]
+    assert _warn(v) == [], [str(x) for x in _warn(v)]
+
+
+def test_representative_light_adr_missing_decision_fails():
+    text = REPRESENTATIVE_LIGHT_ADR.replace(
+        "## Decision\nUse dedicated test data for checker regressions.\n\n", ""
+    )
+    hard = _hard(cb.check_brief(text, "adr"))
+    assert any(
+        v.section == "Decision" and "missing" in v.message.lower() for v in hard
+    ), hard
 
 
 CONCISE_ADR = """\
