@@ -35,15 +35,6 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 ---
 
 
-## 2026-09-08d — Codex ADR-checker fixes; retire ox-alpha ADR
-
-**Focus:** Address Codex review on concise ADR validation and session document pins; delete the unused ox-alpha adversarial-lens ADR.
-**Shipped:** nested heading section parsing + template-placeholder rejection in skill check_brief; durable reachability for session document pins; tombstone + pin rewrite for [ox-alpha ADR](adr/TOMBSTONES.md#2026-09-08-ox-alpha-lens-retirement).
-**Decisions/defects:** ox-alpha lens **retired** (not passed); no successor owner.
-**Live-ops state:** unchanged.
-
----
-
 ## 2026-09-08e — Codex re-review: evidence path/schema trust on #320
 
 **Focus:** Address Codex P2 findings on PR #320 after the owner-alignment docs pass.
@@ -53,6 +44,15 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 **Decisions / defects:** Keep the hardened contract; implement it rather than narrowing the docs.
 
 **Open / next:** Await CI / Codex on the repair head.
+
+---
+
+## 2026-09-08d — Codex ADR-checker fixes; retire ox-alpha ADR
+
+**Focus:** Address Codex review on concise ADR validation and session document pins; delete the unused ox-alpha adversarial-lens ADR.
+**Shipped:** nested heading section parsing + template-placeholder rejection in skill check_brief; durable reachability for session document pins; tombstone + pin rewrite for [ox-alpha ADR](adr/TOMBSTONES.md#2026-09-08-ox-alpha-lens-retirement).
+**Decisions/defects:** ox-alpha lens **retired** (not passed); no successor owner.
+**Live-ops state:** unchanged.
 
 ---
 
