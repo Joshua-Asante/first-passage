@@ -63,7 +63,7 @@ These six are the authoring-side stack. They are **type-scoped** — see the app
 
 The canonical source is this skill's [checker](scripts/check_brief.py) and
 `references/*.md`; `~/.claude/skills/brief-authoring/scripts/check_brief.py` is its
-deployed copy under the [skill lifecycle](../../../scripts/README.md#skill-lifecycle).
+deployed copy under the [explicit reviewed release lifecycle](../../../scripts/README.md#skill-lifecycle).
 The [repo-side checker](../../../scripts/check_brief.py) is a narrower mechanical
 subset. It explicitly prints `NOT CHECKED` for concise/legacy light ADRs and
 `lock`, `notice`, `lesson`, `audit`; this is not a pass. Do not widen `generic`

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Cursor afterFileEdit adapter → Claude PostToolUse lock/sync hooks.
+"""Cursor afterFileEdit adapter → Claude PostToolUse lock/validation hooks.
 
 Remaps Cursor's afterFileEdit JSON ({file_path, edits}) into the
 tool_input shape expected by scripts/lock_event_hook.py and
 scripts/sync_skills_hook.py, then runs both. Fail-open: never blocks
-edits (always exit 0). Sync/gate stderr is forwarded so the agent can
-see deploy blocks.
+edits (always exit 0). Validator stderr is forwarded so the agent can
+see check failures. The skill hook validates and reports pending
+release; it does not publish shared bundles.
 """
 from __future__ import annotations
 
@@ -47,8 +48,8 @@ def _run_hook(script: Path, payload: dict, cwd: Path) -> None:
     )
     if proc.stderr:
         sys.stderr.buffer.write(proc.stderr)
-    # Claude sync_skills_hook exits 2 on gate/deploy failure; surface text
-    # but do not fail-closed the Cursor edit.
+    # Claude sync_skills_hook exits 2 on validator failure; surface text
+    # but do not fail-closed the Cursor edit. The hook does not publish.
     if proc.returncode not in (0, None) and proc.stdout:
         sys.stderr.buffer.write(proc.stdout)
 

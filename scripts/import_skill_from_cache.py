@@ -8,11 +8,12 @@ scripts/README.md#skill-lifecycle, `.claude/skills/` is canonical, but a skill
 created in the bundle *after* the original
 migration (e.g. `strategy-validation`, ~2026-06-11) has no repo copy at all —
 so the de-facto canonical source is an evictable cache (data-loss exposure).
-Worse, any non-byte-true repo copy is a clobber hazard: `sync_skills.py` (and
-the `sync_skills_hook.py` PostToolUse auto-deploy) push repo -> bundle with
-rmtree+copytree, so a lossy repo copy would overwrite the only true copy on
-the next skill edit. The seed must therefore be byte-for-byte from the bundle,
-which is what this script does.
+Worse, any non-byte-true repo copy is a clobber hazard: an explicit
+publication (`sync_skills.py --revision … --target …`) still copies
+repo -> bundle, so a lossy repo copy would overwrite the only true copy
+on the next authorized release. Edit hooks validate and report pending
+release; they do not auto-deploy. The seed must therefore be
+byte-for-byte from the bundle, which is what this script does.
 
 This is NOT bidirectional sync (scripts/README.md#skill-lifecycle). Guardrails:
   * REFUSES when `.claude/skills/<skill>` already exists. Once a repo copy
@@ -28,7 +29,7 @@ After a successful import the repo is canonical for that skill. Gate + commit:
   python scripts/sync_skills.py --check
   git add .claude/skills/<name>  &&  git commit
 
-Source resolution (mirrors sync_skills.py deploy-target resolution):
+Source resolution (uses sync_skills.py primary-target helper; not release defaults):
   1. --source <path>            (explicit, wins)
   2. $SKILLS_DEPLOY_TARGET       (env override)
   3. sync_skills.DEFAULT_DEPLOY_TARGET (the cloud-synced AppData bundle)

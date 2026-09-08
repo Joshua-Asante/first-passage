@@ -6,9 +6,8 @@ Current contract: scripts/README.md#skill-lifecycle. Historical root cause:
 https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md
 names ~/.claude/skills/brief-authoring/scripts/check_brief.py as canonical,
 and every citing ADR's own Verification block runs it -- but the deployed
-bundle can silently fall behind the in-repo source (sync_skills.py's own
-docstring: the one-way contract "cannot be fully enforced from this script --
-the sync layer can still clobber"). Concretely: docs/adr/2026-08-27-ssot-
+bundle can silently fall behind the in-repo source (the historical sync
+design could not prevent external rewrites). Concretely: docs/adr/2026-08-27-ssot-
 data-lineage-remediation-program.md Sec.0 Step 1 found the cited script had
 NEVER existed at all, on either side of the sync boundary, so
 `sync_skills.py --check` (which only diffs files that exist repo-side)
@@ -79,8 +78,10 @@ def main(argv: list[str]) -> int:
             "~/.claude/skills/ bundle at all (CI runner / fresh clone; there is "
             "no skills-deploy step in .github/workflows/, by design). NOT "
             "CHECKED, not a pass -- this gate cannot compare against a bundle "
-            "that does not exist. Run `python scripts/sync_skills.py` on a "
-            "machine that has a deployed bundle to exercise the real check."
+            "that does not exist. Re-run this existence checker "
+            "(`python scripts/check_skill_deploy_sync.py`) on a machine "
+            "where the deployed bundle already exists. Publication is not "
+            "required to perform this check."
         )
         return 0
 
@@ -94,7 +95,16 @@ def main(argv: list[str]) -> int:
         print(f"DRIFT: {len(missing)} ADR-cited skill script(s) missing from deployed bundle:")
         for skill, script, target in missing:
             print(f"  {skill}/scripts/{script} -- expected at {target}")
-        print("Run: python scripts/sync_skills.py")
+        print(
+            "Missing cited scripts are not fixed by a no-argument "
+            "publication. From a primary main checkout, after review of a "
+            "named revision, publish explicitly: "
+            "python scripts/sync_skills.py --revision <reviewed-sha> "
+            "--target <explicit-destination>  "
+            "(or: make sync-skills REVISION=<reviewed-sha> "
+            "TARGET=<explicit-destination>). Policy: "
+            "scripts/README.md#skill-lifecycle."
+        )
         return 1
 
     print(f"OK: {len(cited)} ADR-cited skill script(s) present in deployed bundle.")

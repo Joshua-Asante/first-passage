@@ -1,30 +1,16 @@
 #!/usr/bin/env python3
-"""PostToolUse hook — deploy in-repo skills to the bundles when a skill file changes.
+"""PostToolUse hook — validate skill edits; never publish.
 
-Mirrors lock_event_hook.py. Reads PostToolUse JSON from stdin. If the edited
-file is under .claude/skills/, gates via check_skill_refs.py --all and then
-runs sync_skills.py (one-way repo -> deployed bundles) so the deployed copies
-never drift from the version-controlled source
-(scripts/README.md#skill-lifecycle). The recurring
-failure this closes: editing a skill in-repo and forgetting `make sync-skills`,
-so the running bundle silently lags the source of truth.
+Reads PostToolUse JSON from stdin. If the edited file is under
+.claude/skills/, run check_skill_refs.py --all and
+check_skills_no_constants.py, report their actual outcomes, and report
+that an explicit release is pending. This hook never invokes
+sync_skills.py publication and never creates backups.
 
-Default destinations (see sync_skills.resolve_targets): the AppData
-skills-plugin path *and* ~/.claude/skills/ (the user-level bundle Claude Code
-sessions load). Explicit --target is not used here — the hook always deploys
-to the full default set.
-
-Gate-then-deploy contract (scripts/README.md#skill-lifecycle): edits pass the
-reference gate, THEN deploy. The no-constants check is in the commit battery. If the ref linter fails, the bundles are NOT deployed and the
-hook exits 2 — PostToolUse exit 2 surfaces stderr to the agent without blocking
-the already-completed edit; the next skill edit re-attempts the deploy. Sync
-failures (e.g. the cloud-synced target is offline) likewise exit 2 with the
-sync stderr surfaced, never swallowed. Malformed stdin still exits 0 — the
-hook must never crash an unrelated edit.
-
-Worktree sessions (repo root under .claude/worktrees/) skip the deploy
-entirely: uncommitted branch state must not clobber the shared live bundle.
-The main checkout deploys after merge.
+Malformed stdin and unrelated edits stay benign (exit 0). Missing or
+failing validators are visible and exit 2 — Cursor's after_file_edit
+adapter forwards that stderr. A missing validator is never reported as
+passed.
 """
 from __future__ import annotations
 
@@ -43,10 +29,24 @@ def is_under_worktrees(path: Path) -> bool:
     )
 
 
+def _script_dir() -> Path:
+    return Path(__file__).resolve().parent
+
+
 def _iter_paths(tool_input: dict):
     yield str(tool_input.get("file_path", ""))
     for edit in tool_input.get("edits", []) or []:
         yield str(edit.get("file_path", ""))
+
+
+def _run_validator(script: Path, argv: list[str], cwd: Path) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(script), *argv],
+        cwd=str(cwd),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
 
 
 def main() -> int:
@@ -60,60 +60,44 @@ def main() -> int:
     if not any("/.claude/skills/" in p or p.startswith(".claude/skills/") for p in paths):
         return 0
 
-    script_dir = Path(__file__).resolve().parent
+    script_dir = _script_dir()
     repo_root = script_dir.parent
-    if is_under_worktrees(repo_root):
-        return 0
-
-    sync = script_dir / "sync_skills.py"
-    if not sync.exists():
-        return 0
-
-    # Gate BEFORE deploy (scripts/README.md#skill-lifecycle). Missing checker blocks — an
-    # ungated deploy is the exact failure mode the contract forbids.
-    checker = script_dir / "check_skill_refs.py"
-    if not checker.exists():
+    validators = [
+        (script_dir / "check_skill_refs.py", ["--all"]),
+        (script_dir / "check_skills_no_constants.py", []),
+    ]
+    missing = [path.name for path, _argv in validators if not path.exists()]
+    if missing:
         print(
-            "SKILL SYNC BLOCKED: scripts/check_skill_refs.py missing — cannot "
-            "gate, bundle NOT deployed.",
+            "SKILL CHECK BLOCKED: missing validator(s) "
+            + ", ".join(missing)
+            + " — cannot validate. explicit release is pending; "
+            "this hook does not publish.",
             file=sys.stderr,
         )
         return 2
-    gate = subprocess.run(
-        [sys.executable, str(checker), "--all"],
-        cwd=str(repo_root),
-        check=False,
-        capture_output=True,
-        text=True,
+
+    failed = False
+    for script, argv in validators:
+        result = _run_validator(script, argv, repo_root)
+        label = " ".join([script.name, *argv]).strip()
+        if result.returncode != 0:
+            failed = True
+            print(
+                f"SKILL CHECK FAILED: {label} failed — repo edit kept; "
+                "explicit release is pending; this hook does not publish.",
+                file=sys.stderr,
+            )
+            sys.stderr.write(result.stdout or "")
+            sys.stderr.write(result.stderr or "")
+        else:
+            print(f"SKILL CHECK: {label}: ok", file=sys.stderr)
+
+    print(
+        "explicit release is pending; this hook does not publish.",
+        file=sys.stderr,
     )
-    if gate.returncode != 0:
-        print(
-            "SKILL SYNC BLOCKED: check_skill_refs.py --all failed — repo edit "
-            "kept, bundle NOT deployed; fix the refs and the next skill edit "
-            "re-attempts the deploy.",
-            file=sys.stderr,
-        )
-        sys.stderr.write(gate.stdout)
-        sys.stderr.write(gate.stderr)
-        return 2
-
-    result = subprocess.run(
-        [sys.executable, str(sync)],
-        cwd=str(repo_root),
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        print(
-            "SKILL SYNC FAILED: sync_skills.py exited "
-            f"{result.returncode} — deployed bundle may lag the repo; the next "
-            "skill edit re-attempts the deploy.",
-            file=sys.stderr,
-        )
-        sys.stderr.write(result.stderr)
-        return 2
-    return 0
+    return 2 if failed else 0
 
 
 if __name__ == "__main__":

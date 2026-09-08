@@ -75,45 +75,78 @@ Do not hand-edit the table. `--check` is not wired into `gates.yml`.
 ## Skill lifecycle
 
 Project-authored skills are canonical in [`.claude/skills/`](../.claude/skills/).
-Edit that source, run the applicable gates, then deploy repository → bundle with
-[`sync_skills.py`](sync_skills.py). Its default destinations are the resolved
-primary bundle and `~/.claude/skills/`; an explicit `--target` selects only that
-destination. `--check` reports missing, differing and extra deployed content without
-writing. Cloud sync can overwrite the primary bundle, so this check does not prove
-the external sync layer enforces repository ownership.
+Publication is an explicit release from a primary `main` checkout, with both a
+reviewed revision and a chosen destination. The operator approved this policy on
+2026-09-06 (recorded 2026-09-08); the [source record](../docs/adr/TOMBSTONES.md#2026-09-08-brief-and-skill-governance)
+preserves that approval. The policy and a successful check do not themselves
+authorize an actual release. Calling the publisher attests review; Git proves
+revision identity, not that review occurred. No home/AppData target is implicit.
+
+[`sync_skills.py`](sync_skills.py) requires `--revision <reviewed-sha> --target
+<explicit-destination>` for publication (`make sync-skills REVISION=... TARGET=...`).
+It refuses linked worktrees regardless of folder name, non-main/detached sources,
+submodules, separate Git directories and unknown source identity. HEAD must equal
+the named revision; releasable on-disk skill membership and content must match it,
+including ignored/untracked payload and index-hidden edits. Generated caches are
+excluded; unrelated dirty notes are permitted. `--force` bypasses none of these checks.
+
+Both reference and no-constants validators are loaded from the named revision,
+run against the source checkout, and run again after staging. Missing or failing
+validators refuse release. Publication stages exact revision bytes; it checks all
+staged files/directories against that inventory, derives installation names from
+the verified inventory, rechecks source identity/payload and the target snapshot,
+and refuses source/target overlap, Git metadata and symlinks/junctions/reparse paths.
+Successful installation requires a final byte/inventory check. It replaces only
+released skills, retaining predecessor backups and unrelated deployed skills,
+including separately owned `rule-0`.
+
+Install failure attempts rollback. Rollback must not overwrite concurrent target
+changes; failed recovery or installed-byte mismatch reports an incomplete release
+with the target/staging/backup locations for manual recovery. Preserve those
+materials. Success and clean rollback remove staging; backups remain available.
+An error is not a promise that the target is unchanged. External cloud sync can
+still rewrite bundles; local checks do not enforce external ownership.
+
+`--check` is read-only from any checkout and creates no destination or release
+artifacts. Only this diagnostic retains default target resolution: the primary
+bundle (environment override when set) plus `~/.claude/skills/`; explicit `--target`
+selects one. It reports missing/differing/extra content, ignoring generated caches
+and normalizing supported UTF-8 text newlines. Binary/invalid UTF-8 bytes compare
+exactly. A diagnostic result supplies no release permission. Exit codes: 0 success
+or no diagnostic drift; 1 drift/preparation/install/recovery error; 2 invalid source
+or CLI input; 3 source/target/release-policy refusal.
 
 [`gates.yml`](gates.yml) owns composition. `skill-refs` and `skills-no-constants`
-are `always` gates. [`check_skill_refs.py`](check_skill_refs.py) checks eligible
-repository references; its documented template/vendor/local-path exceptions apply.
-[`check_skills_no_constants.py`](check_skills_no_constants.py) scans only the
-`SKILL.md` of `inqhiori`, `ooda-loop`, `programme-audit` and `brief-authoring`.
-Operational-reference skills and `pinescript-v6` are exempt. Guarded skills point
-to operational sources instead of restating their constants.
+remain `always` gates. [`check_skill_refs.py`](check_skill_refs.py) checks eligible
+repository references with its documented exceptions.
+[`check_skills_no_constants.py`](check_skills_no_constants.py) scans only `SKILL.md`
+of `inqhiori`, `ooda-loop`, `programme-audit` and `brief-authoring`;
+operational-reference skills and `pinescript-v6` remain exempt.
 
-The [PostToolUse hook](sync_skills_hook.py), registered in
-[settings](../.claude/settings.json), checks references before deploying. A missing
-or failing reference checker prevents deployment; a sync failure is surfaced.
-The hook does not run the no-constants guard; that check remains in the commit
-battery. Both sync and hook recognize `.claude/worktrees/`, but currently miss
-`.worktrees/`. Do not deploy from a worktree: deployment follows integration in
-the primary checkout.
+The [PostToolUse skill hook](sync_skills_hook.py), registered in
+[settings](../.claude/settings.json), runs both validators on skill edits and
+reports their actual outcomes and a pending explicit release. It never publishes
+or creates backups, including from worktrees. Missing/failing validators exit 2;
+the [Cursor adapter](../.cursor/hooks/after_file_edit.py) surfaces failures while
+remaining fail-open for the completed edit. Malformed/unrelated hook input is benign.
 
-[`import_skill_from_cache.py`](import_skill_from_cache.py) is a missing-source
-recovery exception: it copies one named skill byte-for-byte only when the repository
-destination is absent and the source contains `SKILL.md`. It refuses an existing
-destination, with no overwrite option. After import, repository ownership and the
-gates apply. This is not a reverse-sync lane. Deployed-only extras require triage;
-stock exemptions are explicit in the implementation.
+[`import_skill_from_cache.py`](import_skill_from_cache.py) remains a missing-source
+recovery exception: copy one named skill byte-for-byte only when its repository
+destination is absent and the source has `SKILL.md`. No overwrite option exists.
+After import, repository ownership and gates apply; it is not reverse sync or a
+release. Deployed-only extras need triage, not automatic deletion/import;
+`notion-mcp-api-patterns` remains [archived](../docs/pursuits/d6-notion-mcp-api-patterns-user-skill.md).
 
 [`check_skill_deploy_sync.py`](check_skill_deploy_sync.py) checks existence of
-literal ADR-cited deployed scripts, not byte equality: absent deployment root means
-`SKIP` / `NOT CHECKED`; an existing root missing a cited script fails. The drift
-check covers content differences.
+literal ADR-cited deployed scripts, not equality: no deployment root is `SKIP` /
+`NOT CHECKED`; an existing root missing a cited script fails. Re-running this
+check against an existing bundle requires no publication. Any repair release
+requires the explicit reviewed-revision/target procedure above.
 
-The June 4 quarterly keeper-count/old-name reread is **retired on 2026-09-08**, not
-passed. Its fixed “10 skills” census is obsolete; live gates and broken-reference /
-restated-constant failure tests remain. The [removed decision](../docs/adr/TOMBSTONES.md#2026-09-08-brief-and-skill-governance)
-preserves the migration history, including the superseded three-skill plan.
+The June 4 quarterly expected-10-skills / old-name reread is retired, not passed
+([record](../docs/adr/TOMBSTONES.md#2026-09-08-brief-and-skill-governance)). Live
+reference/no-constants failure tests, release refusal/recovery tests and deployed
+script existence checks remain. This does not reopen retired skill migrations.
 
 ## Validation maintenance
 

@@ -87,7 +87,11 @@ newest first. Obligations that died with a carrier are recorded in the
 
 The current [skill lifecycle](../../scripts/README.md#skill-lifecycle) and
 [brief checker ownership](../../scripts/README.md#brief-checker-ownership) retain
-the effective contracts. The June 4 quarterly expected-10-skills / old-name
+the effective contracts, including the operator's explicit reviewed-release
+policy approved 2026-09-06 and recorded 2026-09-08. That policy permits no actual
+release by itself. The complete final source at `f55dcb7` includes the release
+addendum; prior June/August findings retain their original `4fb2b88` source.
+The June 4 quarterly expected-10-skills / old-name
 reread is retired, not passed; live gates and failure tests remain. The three-skill
 migration plan was already superseded by the August 29 correction and existing
 GSUB-1 dispositions. The canon ruling's initial resolution is historical; its
@@ -95,5 +99,5 @@ type-aware contract remains in brief-authoring. These removals confer no authori
 
 | Removed path | Disposition / current owner | Immutable body |
 |---|---|---|
-| `docs/adr/2026-06-04-methodology-skills-under-vc.md` | Source/deploy/gate contract consolidated in [Skill lifecycle](../../scripts/README.md#skill-lifecycle); redundant census retired. | `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-06-04-methodology-skills-under-vc.md`; blob `a81454bff43ca72c5db4ab1918e3b3b52798b1af` |
+| `docs/adr/2026-06-04-methodology-skills-under-vc.md` | Source/deploy/gate contract consolidated in [Skill lifecycle](../../scripts/README.md#skill-lifecycle); redundant census retired. | Final full body: `git show f55dcb788cacbaa9258f5358fb29c6a4a0ff5c72:docs/adr/2026-06-04-methodology-skills-under-vc.md`; blob `b09157fc0a7258cc8269d12b6fdc69c47ddf1803`. Prior history: `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-06-04-methodology-skills-under-vc.md`; blob `a81454bff43ca72c5db4ab1918e3b3b52798b1af` |
 | `docs/adr/2026-08-09-check-brief-canon-ruling.md` | Canonical/subset and distinct type contracts consolidated in [brief-authoring](../../.claude/skills/brief-authoring/SKILL.md#checker-ownership); original resolution historical. | `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-08-09-check-brief-canon-ruling.md`; blob `f903867b49debb62a88e0b51c60c5098286a7ebb` |

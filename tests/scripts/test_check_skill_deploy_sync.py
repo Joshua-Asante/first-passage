@@ -58,24 +58,14 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
 def test_clean_deploy_passes(tmp_path):
-    # After a successful sync_skills.py run to an ISOLATED target, the gate
-    # must exit 0. repo_skills_src is a copy of the real in-repo skills tree
-    # living under tmp_path (outside .claude/worktrees/, so the worktree-
-    # source refusal never triggers -- no --force needed), and deploy_target
-    # is an explicit --target (the sole destination -- see resolve_targets()).
-    # This never writes to the AppData cloud-synced target or
-    # ~/.claude/skills/ -- the two real bundle locations other sessions load.
-    repo_skills_src = tmp_path / "repo_skills_src"
-    shutil.copytree(REPO_ROOT / ".claude" / "skills", repo_skills_src)
+    # This checks citation-driven existence, not release authorization.
+    # Build a populated target directly under tmp_path: invoking publication
+    # would unnecessarily couple this gate to Git/review policy and risks
+    # resolving real user targets. Release behavior has its own tests.
     deploy_target = tmp_path / "deploy_target"
-
-    subprocess.run(
-        [
-            sys.executable, "scripts/sync_skills.py",
-            "--repo-skills", str(repo_skills_src),
-            "--target", str(deploy_target),
-        ],
-        check=True, cwd=REPO_ROOT,
+    shutil.copytree(
+        REPO_ROOT / ".claude" / "skills", deploy_target,
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
     )
     result = subprocess.run(
         [sys.executable, "scripts/check_skill_deploy_sync.py"],
@@ -103,6 +93,9 @@ def test_no_deploy_target_skips_not_passes(tmp_path):
     out = result.stdout
     assert "SKIP" in out and "NOT CHECKED" in out
     assert "OK:" not in out
+    assert "check_skill_deploy_sync.py" in out
+    assert "Publication is not required" in out
+    assert "python scripts/sync_skills.py" not in out
 
 
 def test_missing_deployed_file_fails(monkeypatch, tmp_path):
@@ -120,6 +113,8 @@ def test_missing_deployed_file_fails(monkeypatch, tmp_path):
     )
     assert result.returncode != 0
     assert "brief-authoring" in result.stdout
+    assert "--revision" in result.stdout and "--target" in result.stdout
+    assert "Run: python scripts/sync_skills.py" not in result.stdout
 
 
 def test_multiple_missing_scripts_are_all_reported(tmp_path):
