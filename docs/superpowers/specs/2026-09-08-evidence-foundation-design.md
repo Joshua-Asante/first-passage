@@ -31,7 +31,8 @@ Malformed, conflicting or torn input never replaces a valid index. Source conten
 is SHA-256 verified on recovery. Index generation is identified by a digest of
 the journal bytes; it is rebuilt atomically when those bytes change, including
 uncommitted annotations, and a cached projection is trusted only when its rows
-authenticate against that journal. No timestamp or HEAD-only freshness heuristic.
+and schema objects (tables, indexes, and derived views) authenticate against
+that journal. No timestamp or HEAD-only freshness heuristic.
 
 ## Identity and source capture
 
@@ -46,7 +47,8 @@ is `missing` or `unavailable`, never a claim of global irrecoverability. Such
 observations are indexed explicitly even when no bytes are available.
 
 Only repository-relative regular files within the resolved repository are accepted;
-absolute paths, traversal, symlinks, Git internals and the store itself
+absolute paths, traversal, symlinks in any path component, non-regular files,
+Git internals and the store itself
 are rejected. Capture is opt-in, one named source at a time, not a whole-repository
 copy. Reads compare actual present bytes against the pinned version without
 following symlinks. A rename
