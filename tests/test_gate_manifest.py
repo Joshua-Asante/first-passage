@@ -50,6 +50,7 @@ EXPECTED_ALWAYS = {
 }
 
 EXPECTED_PATH_CONDITIONAL = {
+    "evidence-store",
     "status-consistency",
     "adr-graph",
     "lab-catalog",
@@ -215,6 +216,7 @@ def test_manifest_file_present():
 # the violation the gate detects is enough to select it -- not merely that
 # the selector runs without crashing.
 REACHABILITY_PROBES = {
+    "evidence-store": "scripts/evidence_store/store.py",
     "status-consistency": "lab/CATALOG.md",
     "adr-graph": "docs/adr/2026-01-01-example.md",
     "lab-catalog": "lab/analysis/harvest/new_slug_2026-08/RESULTS.md",

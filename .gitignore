@@ -253,6 +253,10 @@ lab/analysis/_inbox/ict_1mexec_1_2026-08/mnq_1m.parquet
 # `python scripts/repo_retrieve.py --rebuild`. Not authority.
 .cache/
 
+# Private local evidence: events.jsonl and blobs are durable (back up together).
+# Only index.sqlite is disposable. Never publish captured source copies.
+.evidence/
+
 # Recall sidecar (Q-XMEM-1 Delete route): the FTS5 index is a REGENERATED
 # artifact -- `python -m ops.recall build` rebuilds it from the corpus in
 # seconds. It is also a derived copy of every markdown file including the cold
