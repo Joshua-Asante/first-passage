@@ -30,6 +30,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -741,8 +742,10 @@ def _staged_payload_problems(
             if _path_is_reparse(path):
                 problems.append(f"reparse in staged payload: {rel}")
                 continue
-            if path.is_file():
-                found[rel] = path.read_bytes()
+            if not path.is_file():
+                problems.append(f"non-regular entry in staged payload: {rel}")
+                continue
+            found[rel] = path.read_bytes()
     for extra in sorted(set(found) - set(expected)):
         problems.append(f"unexpected staged file: {extra}")
     for missing in sorted(set(expected) - set(found)):
@@ -788,45 +791,60 @@ def _installed_payload_problems(
     return problems
 
 
-def _run_release_validators(toplevel: Path) -> tuple[int, str]:
-    """Run skill validators against *toplevel* before publication."""
-    script_dir = Path(__file__).resolve().parent
-    validators = [
-        (script_dir / "check_skill_refs.py", ["--all", "--repo-root", str(toplevel)]),
+def _run_release_validators(toplevel: Path, revision: str) -> tuple[int, str]:
+    """Run skill validators from *revision* against *toplevel* before publication.
+
+    Validator scripts are read from the reviewed revision (not the working tree)
+    so a dirty or stubbed local copy cannot approve a release.
+    """
+    validator_specs = [
+        ("scripts/check_skill_refs.py", ["--all", "--repo-root", str(toplevel)]),
         (
-            script_dir / "check_skills_no_constants.py",
+            "scripts/check_skills_no_constants.py",
             ["--repo-root", str(toplevel)],
         ),
     ]
-    missing = [path.name for path, _argv in validators if not path.exists()]
-    if missing:
-        return (
-            EXIT_USAGE,
-            "ERROR: missing release validator(s): " + ", ".join(missing),
-        )
-    failures: list[str] = []
-    for script, argv in validators:
-        try:
-            result = subprocess.run(
-                [sys.executable, str(script), *argv],
-                cwd=str(toplevel),
-                check=False,
-                capture_output=True,
-                text=True,
+    try:
+        tmp = Path(tempfile.mkdtemp(prefix=".skill-release-validators-"))
+    except OSError as exc:
+        return EXIT_ERROR, f"ERROR: could not create validator staging dir: {exc}"
+    try:
+        failures: list[str] = []
+        for rel, argv in validator_specs:
+            blob = _run_git(toplevel, "show", f"{revision}:{rel}", binary=True)
+            if not _git_ok(blob):
+                return (
+                    EXIT_POLICY,
+                    f"REFUSED: release validator missing from revision: {rel}",
+                )
+            dest = tmp / Path(rel).name
+            try:
+                dest.write_bytes(blob.stdout or b"")
+            except OSError as exc:
+                return EXIT_ERROR, f"ERROR: could not stage validator {rel}: {exc}"
+            try:
+                result = subprocess.run(
+                    [sys.executable, str(dest), *argv],
+                    cwd=str(toplevel),
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+            except OSError as exc:
+                return EXIT_ERROR, f"ERROR: could not run {dest.name}: {exc}"
+            label = " ".join([Path(rel).name, *argv]).strip()
+            if result.returncode != 0:
+                detail = ((result.stdout or "") + (result.stderr or "")).strip()
+                detail = detail or f"exit {result.returncode}"
+                failures.append(f"{label} failed:\n{detail}")
+        if failures:
+            return (
+                EXIT_POLICY,
+                "REFUSED: release validators failed\n  " + "\n  ".join(failures),
             )
-        except OSError as exc:
-            return EXIT_ERROR, f"ERROR: could not run {script.name}: {exc}"
-        label = " ".join([script.name, *argv]).strip()
-        if result.returncode != 0:
-            detail = ((result.stdout or "") + (result.stderr or "")).strip()
-            detail = detail or f"exit {result.returncode}"
-            failures.append(f"{label} failed:\n{detail}")
-    if failures:
-        return (
-            EXIT_POLICY,
-            "REFUSED: release validators failed\n  " + "\n  ".join(failures),
-        )
-    return EXIT_OK, ""
+        return EXIT_OK, ""
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def _backup_existing_skill(src: Path, dest: Path) -> None:
@@ -958,7 +976,7 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
     if rc != EXIT_OK or toplevel is None or sha is None:
         print(msg, file=sys.stderr)
         return rc
-    rc, msg = _run_release_validators(toplevel)
+    rc, msg = _run_release_validators(toplevel, sha)
     if rc != EXIT_OK:
         print(msg, file=sys.stderr)
         return rc
@@ -999,7 +1017,7 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
             if msg:
                 print(msg, file=sys.stderr)
             return rc if rc != EXIT_OK else EXIT_POLICY
-        rc, msg = _run_release_validators(toplevel)
+        rc, msg = _run_release_validators(toplevel, sha)
         if rc != EXIT_OK:
             print(msg, file=sys.stderr)
             return rc

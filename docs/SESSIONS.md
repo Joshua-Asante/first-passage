@@ -32,6 +32,18 @@ any entry (a-first; bare claims `a`).
 
 ---
 
+## 2026-09-08b — Codex re-review: revision validators + non-regular payload reject
+
+**Focus:** Address Codex re-review of the skill-release fixes on PR #318.
+
+**Shipped:** Reject non-regular staged/installed entries (FIFO/socket/device); run release validators from the reviewed revision bytes (not a dirty working tree); seed validators in publish tests. 90 `test_sync_skills` tests green.
+
+**Decisions / defects:** No new ADR; tightens the explicit-release gate after Codex re-review.
+
+**Open / next:** Await CI on the new head; Codex threads may still need UI resolution.
+
+---
+
 ## 2026-09-08a — Codex review hardening for explicit skill releases
 
 **Focus:** Address Codex review findings on PR #318 (explicit skill publisher).

@@ -79,12 +79,22 @@ def _fingerprint(path: Path) -> dict[str, str]:
     return out
 
 
+def _seed_release_validators(repo: Path) -> None:
+    """Copy release validators into *repo*/scripts for revision-backed publish."""
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True, exist_ok=True)
+    real_scripts = Path(__file__).resolve().parents[1] / "scripts"
+    for name in ("check_skill_refs.py", "check_skills_no_constants.py"):
+        shutil.copy2(real_scripts / name, scripts_dir / name)
+
+
 def _primary_release(tmp_path: Path, skills: dict[str, dict[str, str | bytes]] | None = None):
     repo = _init_repo(tmp_path / "src")
     skills_dir = repo / ".claude" / "skills"
     payload = skills or {"alpha": {"SKILL.md": "alpha-v1\n"}}
     for name, files in payload.items():
         _write_skill(skills_dir, name, files)
+    _seed_release_validators(repo)
     sha = _commit_all(repo, "skills")
     target = tmp_path / "deployed"
     return repo, skills_dir, sha, target
@@ -1262,6 +1272,7 @@ def test_publish_clean_crlf_checkout_installs_revision_lf_bytes(tmp_path):
     (repo / ".gitattributes").write_text("*.md text eol=crlf\n", encoding="utf-8")
     skills_dir = repo / ".claude" / "skills"
     _write_skill(skills_dir, "alpha", {"SKILL.md": "alpha-v1\n"})
+    _seed_release_validators(repo)
     sha = _commit_all(repo, "skills")
     skill_md = skills_dir / "alpha" / "SKILL.md"
     skill_md.unlink()
@@ -1332,7 +1343,7 @@ def test_publish_refuses_when_release_validators_fail(tmp_path, monkeypatch, cap
     monkeypatch.setattr(
         ss,
         "_run_release_validators",
-        lambda _toplevel: (ss.EXIT_POLICY, "REFUSED: release validators failed"),
+        lambda *_a, **_k: (ss.EXIT_POLICY, "REFUSED: release validators failed"),
     )
     rc = _publish(skills_dir, sha, target)
     assert rc == ss.EXIT_POLICY
@@ -1446,3 +1457,44 @@ def test_path_has_reparse_ancestor_walks_full_chain(tmp_path):
         current = current / f"d{i}"
     # Lexical path has >64 components under the symlink root.
     assert ss._path_has_reparse_ancestor(current) is True
+
+
+def test_staged_payload_rejects_non_regular_entries(tmp_path):
+    root = tmp_path / "stage"
+    skill = root / "alpha"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_bytes(b"ok\n")
+    fifo = skill / "pipe"
+    try:
+        os.mkfifo(fifo)
+    except (OSError, AttributeError):
+        pytest.skip("FIFO creation is not supported on this host")
+    expected = {"alpha/SKILL.md": b"ok\n"}
+    problems = ss._staged_payload_problems(root, expected)
+    assert any("non-regular" in p for p in problems)
+
+
+def test_publish_runs_validators_from_revision_not_dirty_tree(tmp_path):
+    repo, skills_dir, sha, target = _primary_release(tmp_path)
+    dirty = repo / "scripts" / "check_skill_refs.py"
+    assert dirty.is_file()
+    # Working-tree stub always fails; revision bytes must still be used.
+    dirty.write_text(
+        "raise SystemExit('dirty working-tree validator')\n",
+        encoding="utf-8",
+    )
+    rc = _publish(skills_dir, sha, target)
+    assert rc == 0
+    assert (target / "alpha" / "SKILL.md").is_file()
+
+
+def test_publish_refuses_when_validator_missing_from_revision(tmp_path, capsys):
+    repo = _init_repo(tmp_path / "src")
+    skills_dir = repo / ".claude" / "skills"
+    _write_skill(skills_dir, "alpha", {"SKILL.md": "alpha-v1\n"})
+    sha = _commit_all(repo, "skills-without-validators")
+    target = tmp_path / "deployed"
+    rc = _publish(skills_dir, sha, target)
+    assert rc == ss.EXIT_POLICY
+    err = capsys.readouterr().err.lower()
+    assert "validator" in err and ("missing" in err or "refused" in err)
