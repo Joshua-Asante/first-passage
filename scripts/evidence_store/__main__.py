@@ -28,9 +28,9 @@ def main(argv=None):
     capture.add_argument('path')
     capture.add_argument('--kind', default='document')
     capture.add_argument('--commit', help='full local Git commit SHA-1; never fetches')
-    for name in ('record', 'depend'):
+    for name in ('record', 'depend', 'retrieve', 'use'):
         commands.add_parser(name).add_argument('file', type=Path)
-    for name in ('source', 'impact'):
+    for name in ('source', 'impact', 'receipt'):
         commands.add_parser(name).add_argument('id')
     decision = commands.add_parser('decision')
     decision.add_argument('record_id')
@@ -43,9 +43,9 @@ def main(argv=None):
         store = Store(args.repo, args.store or args.repo / '.evidence')
         if args.command == 'capture':
             result = store.capture(args.source_id, args.path, args.kind, commit=args.commit)
-        elif args.command in {'record', 'depend'}:
+        elif args.command in {'record', 'depend', 'retrieve', 'use'}:
             result = getattr(store, args.command)(**_object(args.file))
-        elif args.command in {'source', 'impact'}:
+        elif args.command in {'source', 'impact', 'receipt'}:
             result = getattr(store, args.command)(args.id)
         elif args.command == 'decision':
             result = store.decision(args.record_id, known_at=args.known_at, as_of=args.as_of)

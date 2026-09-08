@@ -69,6 +69,9 @@ Use a separate store for unrelated repositories and give logical IDs a namespace
 | `decision ... --known-at TIME --as-of TIME` | Recorded-time and effective-time cutoffs independently. |
 | `impact VERSION_OR_REVISION_ID` | Direct and transitive declared dependents, cycle-safe. |
 | `check` | Changed/missing/corrupt source findings and affected records. Advisory exit 0. |
+| `retrieve REQUEST.json` | Select registered evidence by context/IDs and append a durable receipt. |
+| `use USE.json` | Report applied/not-applied evidence for an exact decision revision. |
+| `receipt ID` | Read original observations and subsequent use records. |
 | `rebuild` | Validate durable inputs and atomically recreate SQLite. |
 | `export` | Deterministic JSON graph snapshot, including its journal revision digest. |
 
@@ -128,18 +131,83 @@ deliberately rewriting the entire store and its blobs.
 Coverage is limited to explicitly captured sources and declared relationships.
 No absence-of-dependencies claim applies to unregistered research. Entire-source
 hash changes conservatively flag cited records even if their own excerpt did not
-change. Cross-record applicability ranking, decision-use logs, belief assessments,
-automatic adapters and reconciliation of existing FTS tools belong to later slices.
+change. Belief assessments, automatic adapters and reconciliation of existing
+FTS tools belong to later slices.
+
+## Retrieval and reported use
+
+Retrieval is an explicit journal write. It considers only registered records and
+does not search prose or discover missing evidence. Existing keyword tools remain
+assistive source discovery. Request example (`request.json`):
+
+```json
+{"context": {"venue": "example"}, "record_ids": ["venue:F1"]}
+```
+
+Run `python -m scripts.evidence_store --repo REPO retrieve request.json` using the
+same repository/store as your captures. Omit `record_ids` to consider all registered
+identities; omit context for explicit-ID inspection. At least one is required.
+Optional `known_at` and `as_of` use the existing timestamp conventions.
+
+All results remain visible, ordered matching, unknown, conflicting, then record
+ID. Matching means every declared condition equals a provided scalar context
+value. Strings, booleans and numbers are distinct types (`1` equals `1.0`, but
+not `true`). Missing/null/structured conditions remain unknown; conflicting
+supported values take precedence. Empty conditions are unknown. Extra context
+keys do not invent restrictions. Conditions and source text never execute.
+
+The registry is current, while revision content is limited by `known_at`; an
+identity with no known revision has empty history and no selectable content.
+Future-effective or undated revisions do not invent a current disposition.
+Sources and transitive dependencies are checked at observation time, even for a
+historical request. Superseded dependency revisions require review, not automatic
+invalidation. These findings never grant research, capital or execution authority.
+
+The returned event `id` identifies the receipt. Its `data` pins the request,
+ordered results, exact revision excerpts, journal digest and observed warnings.
+`receipt ID` reads that preserved snapshot; run a new `retrieve` for fresh checks.
+A concurrent journal change fails before receipt append: retry the request.
+Filesystem checks are observations, not an atomic filesystem snapshot.
+
+Create `use.json` with IDs from your receipt and a registered decision revision:
+
+```json
+{
+  "receipt_id": "UUID returned by retrieve",
+  "decision_revision": "UUID returned by record for the decision",
+  "selections": [
+    {"revision_id": "current.id from a receipt result", "disposition": "applied", "reason": "Explains the decision's stated condition"}
+  ]
+}
+```
+
+Run `python -m scripts.evidence_store --repo REPO use use.json`, then
+`python -m scripts.evidence_store --repo REPO receipt RECEIPT_ID`. Each use record
+reports `unassessed` for omitted selectable revisions. Before any use event,
+every ID in `selectable` is unassessed. Use `not_applied` with a reason for evidence
+considered but rejected; no reason or outcome is inferred from silence.
+Only one use event per receipt/decision pair is accepted. Another decision
+revision can have a separate assessment. This is reported use, not measured
+causal benefit; use edges do not automatically declare substantive dependencies.
 
 ## Neo4j projection
 
-`export` schema 1 contains sorted `nodes` and `edges` plus `revision` (SHA-256 of
+`export` schema 2 contains sorted `nodes` and `edges` plus `revision` (SHA-256 of
 the exact durable journal). Labels: Source, SourceVersion, RecordRevision.
 Relationships: VERSION_OF, BASED_ON, SUPERSEDES, DEPENDS_ON. Each edge has an ID,
 `from`, `to`, and `type`; declared edges carry evidence provenance. BASED_ON also
 represents the evidence supporting a dependency declaration. Node conditions are
 nested JSON; a future Neo4j importer must encode those properties explicitly,
 not assume Neo4j property values accept nested objects.
+
+Schema 2 also includes RetrievalReceipt and EvidenceUse nodes, with RETRIEVED,
+FOR_DECISION, FROM_RECEIPT and ASSESSED relationships. Receipt/use nodes contain
+nested event JSON; encode it explicitly in a future importer. RETRIEVED carries
+position/applicability; ASSESSED carries disposition/reason. These observational
+edges stay separate from correction dependencies. Consumers of graph schema 1
+must explicitly support schema 2 before importing. Legacy journal events remain
+schema 1; receipt/use events use schema 2. SQLite schema 2 rebuilds automatically
+from either legacy-only or mixed journals; no durable input migration is needed.
 
 Byte-identical journal rebuilds yield identical exports. Filesystem verification
 is intentionally separate and live; a graph snapshot is not evidence that current

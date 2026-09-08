@@ -62,6 +62,29 @@ class CliTest(unittest.TestCase):
         self.assertIn('error', self.cli('record', wrong, exit_code=2))
         self.assertIn('error', self.cli('source', 'unknown', exit_code=2))
 
+    def test_retrieval_use_and_preserved_receipt_workflow(self):
+        source = self.cli('capture', 'venue:F1', 'decision.md')
+        annotation = self.document('record.json', dict(
+            record_id='venue:F1', kind='decision', source_version=source['version_id'],
+            section='## Ruling', statement='Status: parked', status='parked',
+            conditions={'venue': 'example'}, effective_at='2026-08-01T00:00:00Z'))
+        record = self.cli('record', annotation)
+        receipt = self.cli('retrieve', self.document('request.json', {'context': {'venue': 'example'}}))
+        self.assertEqual(receipt['data']['results'][0]['applicability']['status'], 'matching')
+        self.cli('use', self.document('use.json', dict(receipt_id=receipt['id'], decision_revision=record['id'],
+                 selections=[dict(revision_id=record['id'], disposition='applied', reason='reviewed ruling')])))
+        (self.repo / 'decision.md').write_text('changed', encoding='utf-8')
+        preserved = self.cli('receipt', receipt['id'])
+        self.assertEqual(preserved['receipt'], receipt)
+        self.assertEqual(preserved['uses'][0]['unassessed'], [])
+        later = self.cli('retrieve', self.document('request.json', {'record_ids': ['venue:F1']}))
+        self.assertIn('source_needs_review', later['data']['results'][0]['warnings'])
+        graph = self.cli('export')
+        self.cli('rebuild')
+        self.assertEqual(self.cli('export'), graph)
+        self.assertIn('error', self.cli('receipt', 'absent', exit_code=2))
+        self.assertIn('error', self.cli('retrieve', self.document('empty.json', {}), exit_code=2))
+
     def test_missing_capture_is_advisory_and_raw_source_is_not_dumped(self):
         self.cli('capture', 'absent', 'absent.md')
         source = self.cli('capture', 'private', 'decision.md')

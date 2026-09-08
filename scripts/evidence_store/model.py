@@ -91,12 +91,14 @@ def source_version(data):
 
 def replay(events):
     """Validate before any projection is changed; return normalized relational inputs."""
-    state = {'versions': {}, 'captures': [], 'records': {}, 'latest': {}, 'dependencies': []}
+    state = {'versions': {}, 'captures': [], 'records': {}, 'latest': {}, 'dependencies': [],
+             'receipts': {}, 'uses': {}}
     ids = set()
     last_time = ''
     for seq, event in enumerate(events, 1):
         keys(event, {'schema', 'seq', 'id', 'recorded_at', 'type', 'data'})
-        if type(event['schema']) is not int or event['schema'] != 1:
+        expected_schema = 2 if event['type'] in {'retrieval', 'use'} else 1
+        if type(event['schema']) is not int or event['schema'] != expected_schema:
             raise EvidenceError('unsupported event schema')
         if type(event['seq']) is not int or event['seq'] != seq:
             raise EvidenceError('journal sequence must be contiguous')
@@ -170,6 +172,14 @@ def replay(events):
             if version is None or version['availability'] != 'available':
                 raise EvidenceError('dependency declaration must cite captured evidence')
             state['dependencies'].append(event)
+        elif event['type'] == 'retrieval':
+            from .retrieval import validate_receipt
+            validate_receipt(event, state)
+            state['receipts'][event['id']] = event
+        elif event['type'] == 'use':
+            from .retrieval import validate_use
+            validate_use(event, state)
+            state['uses'][event['id']] = event
         else:
             raise EvidenceError(f'unsupported event type: {event["type"]}')
     return state

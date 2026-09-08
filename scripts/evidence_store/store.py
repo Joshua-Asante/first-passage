@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .model import EvidenceError, canonical, relative_path, replay, source_version, timestamp, verify_excerpt
+from .retrieval import ancestors, candidates, request, selectable, temporal
 
 
 def _unique_object(pairs):
@@ -58,6 +59,11 @@ class Store:
         try:
             events = [json.loads(line, object_pairs_hook=_unique_object) for line in raw.decode('utf-8').splitlines()]
             state = replay(events)
+            prefix = hashlib.sha256()
+            for line, event in zip(raw.splitlines(keepends=True), events):
+                if event['type'] == 'retrieval' and event['data']['revision'] != prefix.hexdigest():
+                    raise EvidenceError('receipt journal digest does not match its history')
+                prefix.update(line)
             for event in state['records'].values():
                 data = event['data']
                 content, _ = self._preserved(state['versions'][data['source_version']])
@@ -123,10 +129,13 @@ class Store:
         finally:
             temp.unlink(missing_ok=True)
 
-    def _append(self, kind, data, content=None):
+    def _append(self, kind, data, content=None, expected_revision=None):
         with self._lock():
-            events, _, _ = self._load()
-            event = {'schema': 1, 'seq': len(events) + 1, 'id': str(uuid.uuid4()),
+            events, _, revision = self._load()
+            if expected_revision is not None and expected_revision != revision:
+                raise EvidenceError('journal changed during retrieval; retry the request')
+            event = {'schema': 2 if kind in {'retrieval', 'use'} else 1,
+                     'seq': len(events) + 1, 'id': str(uuid.uuid4()),
                      'recorded_at': timestamp(self.clock()), 'type': kind, 'data': data}
             state = replay([*events, event])
             if kind in {'record', 'dependency'}:
@@ -184,13 +193,17 @@ class Store:
                     CREATE INDEX records_identity ON records(record_id, seq);
                     CREATE TABLE dependencies (id TEXT PRIMARY KEY, consumer TEXT NOT NULL,
                         dependency TEXT NOT NULL, evidence_version TEXT NOT NULL, data TEXT NOT NULL);
+                    CREATE TABLE receipts (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+                    CREATE TABLE uses (id TEXT PRIMARY KEY, receipt_id TEXT NOT NULL,
+                        decision_revision TEXT NOT NULL, data TEXT NOT NULL,
+                        UNIQUE(receipt_id, decision_revision));
                     CREATE VIEW edges AS
                         SELECT id AS consumer, source_version AS dependency FROM records
                         UNION SELECT consumer, dependency FROM dependencies
                         UNION SELECT consumer, evidence_version FROM dependencies;
                 ''')
                 conn.execute('INSERT INTO meta VALUES (?, ?)', ('revision', revision))
-                conn.execute('INSERT INTO meta VALUES (?, ?)', ('schema', '1'))
+                conn.execute('INSERT INTO meta VALUES (?, ?)', ('schema', '2'))
                 conn.executemany('INSERT INTO versions VALUES (?, ?, ?)',
                                  [(key, data['source_id'], canonical(data)) for key, data in sorted(state['versions'].items())])
                 conn.executemany('INSERT INTO captures VALUES (?, ?, ?, ?, ?)', [
@@ -204,6 +217,11 @@ class Store:
                     (event['id'], event['data']['consumer'], event['data']['dependency'],
                      event['data']['evidence_version'], canonical(event['data']))
                     for event in state['dependencies']])
+                conn.executemany('INSERT INTO receipts VALUES (?, ?)',
+                                 [(key, canonical(event)) for key, event in state['receipts'].items()])
+                conn.executemany('INSERT INTO uses VALUES (?, ?, ?, ?)',
+                                 [(key, event['data']['receipt_id'], event['data']['decision_revision'], canonical(event))
+                                  for key, event in state['uses'].items()])
             os.replace(temp, self.root / 'index.sqlite')
         finally:
             temp.unlink(missing_ok=True)
@@ -219,7 +237,7 @@ class Store:
                     conn = sqlite3.connect(index.as_uri() + '?mode=ro', uri=True)
                     try:
                         fresh = (conn.execute('SELECT value FROM meta WHERE key=?', ('revision',)).fetchone() == (revision,)
-                                 and conn.execute('SELECT value FROM meta WHERE key=?', ('schema',)).fetchone() == ('1',))
+                                 and conn.execute('SELECT value FROM meta WHERE key=?', ('schema',)).fetchone() == ('2',))
                     finally:
                         conn.close()
                 except sqlite3.DatabaseError:
@@ -288,11 +306,8 @@ class Store:
                                 (record_id, known)).fetchall()
             if not rows:
                 raise EvidenceError('no record revisions known at the requested time')
-            applicable = [row for row in rows if row['effective_at'] is not None and row['effective_at'] <= effective]
-            undated = [row for row in rows if row['effective_at'] is None]
-            current = applicable[-1] if applicable else None
-            if undated and (current is None or undated[-1]['seq'] > current['seq']):
-                current = None
+            history = [self._record_row(row) for row in rows]
+            current, undated = temporal(history, effective)
             warnings = ['unknown_effective_time'] if undated else []
             verification = None
             if current:
@@ -302,9 +317,8 @@ class Store:
                 if verification['preserved'] != 'available':
                     warnings.append('preserved_source_unavailable')
             return {'record_id': record_id, 'known_at': known, 'as_of': effective,
-                    'revision': revision, 'current': self._record_row(current) if current else None,
-                    'history': [self._record_row(row) for row in rows],
-                    'undated': [self._record_row(row) for row in undated],
+                    'revision': revision, 'current': current,
+                    'history': history, 'undated': undated,
                     'warnings': warnings, 'current_source_verification': verification}
 
     def _impact(self, conn, node_id):
@@ -340,6 +354,65 @@ class Store:
             return {'revision': revision, 'coverage': 'registered sources and declared dependencies only',
                     'findings': findings}
 
+    def retrieve(self, context=None, record_ids=None, known_at=None, as_of=None):
+        """Persist observations over one journal revision, with explicit coverage."""
+        observed = timestamp(self.clock())
+        query = request({} if context is None else context, record_ids,
+                        known_at or observed, as_of or observed)
+        with self._read() as (conn, state, revision):
+            results = candidates(state, query, revision)
+            sources = {}
+
+            def source(identity):
+                if identity not in sources:
+                    sources[identity] = self._source(conn, identity)
+                return sources[identity]
+
+            for row in results:
+                current = row['current']
+                warnings = ['unknown_effective_time'] if row['undated'] else []
+                verification, corrections = None, []
+                if current:
+                    verification = source(current['source_version'])
+                    if verification['current'] != 'unchanged':
+                        warnings.append('source_needs_review')
+                    if verification['preserved'] != 'available':
+                        warnings.append('preserved_source_unavailable')
+                    for identity in sorted(ancestors(state, current['id'])):
+                        if identity in state['versions']:
+                            observation = source(identity)
+                            if observation['current'] != 'unchanged' or observation['preserved'] != 'available':
+                                corrections.append(dict(id=identity, reason='source_needs_review', source=observation))
+                        else:
+                            latest = state['latest'][state['records'][identity]['data']['record_id']]
+                            if latest != identity:
+                                corrections.append(dict(id=identity, reason='dependency_superseded', replacement=latest))
+                if corrections:
+                    warnings.append('dependencies_need_review')
+                row.update(warnings=warnings, current_source_verification=verification, corrections=corrections)
+        return self._append('retrieval', dict(request=query, observed_at=observed,
+                                             revision=revision, results=results), expected_revision=revision)
+
+    def use(self, receipt_id, decision_revision, selections):
+        """Record reported evidence use; never imply causality or authorization."""
+        return self._append('use', dict(receipt_id=receipt_id, decision_revision=decision_revision,
+                                       selections=selections))
+
+    def receipt(self, receipt_id):
+        with self._read() as (conn, _, revision):
+            row = conn.execute('SELECT data FROM receipts WHERE id=?', (receipt_id,)).fetchone()
+            if row is None:
+                raise EvidenceError('unknown retrieval receipt')
+            receipt = json.loads(row['data'])
+            uses = []
+            for row in conn.execute('SELECT data FROM uses WHERE receipt_id=? ORDER BY rowid', (receipt_id,)):
+                event = json.loads(row['data'])
+                assessed = {item['revision_id'] for item in event['data']['selections']}
+                uses.append(dict(event=event, unassessed=sorted(selectable(receipt) - assessed)))
+            return dict(receipt=receipt, uses=uses, revision=revision,
+                        selectable=sorted(selectable(receipt)),
+                        coverage='registered records and declared dependencies; observations are not live verification')
+
     def export(self):
         """Portable graph contract, not a connection to or authority grant for Neo4j."""
         with self._read() as (conn, state, revision):
@@ -367,6 +440,22 @@ class Store:
                 edges.append({'id': 'declaration-evidence:' + event['id'], 'from': data['consumer'],
                               'to': data['evidence_version'], 'type': 'BASED_ON',
                               'declaration_id': event['id']})
-            return {'schema': 1, 'revision': revision,
+            for identity, event in state['receipts'].items():
+                nodes[identity] = dict(id=identity, label='RetrievalReceipt', event=event)
+                for position, result in enumerate(event['data']['results']):
+                    if result['current']:
+                        edges.append(dict(id=f'retrieved:{identity}:{position}', type='RETRIEVED',
+                                          **{'from': identity, 'to': result['current']['id']}, position=position,
+                                          applicability=result['applicability']['status']))
+            for identity, event in state['uses'].items():
+                data = event['data']
+                nodes[identity] = dict(id=identity, label='EvidenceUse', event=event)
+                for relation, target in [('FOR_DECISION', data['decision_revision']), ('FROM_RECEIPT', data['receipt_id'])]:
+                    edges.append(dict(id=f'{relation}:{identity}', type=relation, **{'from': identity, 'to': target}))
+                for item in data['selections']:
+                    edges.append(dict(id=f'assessed:{identity}:{item["revision_id"]}', type='ASSESSED',
+                                      **{'from': identity, 'to': item['revision_id']},
+                                      disposition=item['disposition'], reason=item['reason']))
+            return {'schema': 2, 'revision': revision,
                     'nodes': [nodes[key] for key in sorted(nodes)],
                     'edges': sorted(edges, key=lambda edge: edge['id'])}
