@@ -78,6 +78,6 @@ and diff, don't hand-patch entries out of sync with the generator's source data.
 - **No forcing hook.** Nothing surfaces a relevant entry automatically when a session
   touches a matching file. `trigger_globs`/`trigger_keywords` exist for this purpose;
   wiring a `PostToolUse` hook that consults them is scoped but not built.
-- **No content for the 83 stub entries.** Those need either a real migration (someone
+- **No content for the 80 stub entries.** Those need either a real migration (someone
   reads the external store and writes the content here) or they stay pointer-only
   indefinitely — both are honest outcomes; a fabricated middle ground is not.
