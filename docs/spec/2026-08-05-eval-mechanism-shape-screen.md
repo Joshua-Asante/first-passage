@@ -180,17 +180,17 @@ as a c1-book operational problem, never as a candidate screen; EM4 is where it b
 a Route B campaign can be impeccable and still explore a shape-dead catalogue, which is precisely the
 waste §2.0a exists to prevent.
 
-### 3a — Cost authority (open fracture, deliberately not resolved here)
+### 3a — Cost authority (scope split resolved 2026-08-24)
 
-**EM1 defines no cost formula.** It consumes whichever authority the estate names, and it must not
-become a third one. Two currently overlap and the conflict is **on the 08-08 board as G3**:
-`cost_geometry_pregate.py` (`cost_R = RT / (stop_atr · median ATR15m)`, PASS < 0.05R — still named by
-`operational_rules.md` Rule 10) versus [`strategy_harvest.md`](../methodology/strategy_harvest.md)
-**Requirement 5** (`RT_pts / OR_range`, 4× hurdle), which declares itself *"the sole authority"* and is
-what every cost-sensitive rejection since 2026-07-21 actually used. **EM1 points at Requirement 5**
-because this screen composes with harvest Req 1–5 — but if 08-08 rules the other way, or keeps both
-with a stated scope split, **EM1 re-points in the same change and does not fork.**
-[Pre-triage](../notes/2026-08-05-0808-pretriage-g3-g8-mechanical-findings.md) §G3.
+**EM1 defines no cost formula.** [August 24 D2](../adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md)
+resolved G3 by scope: [strategy_harvest Requirement 5](../methodology/strategy_harvest.md#1-the-five-admission-requirements-all-mandatory-before-screening)
+owns per-event bp-of-panel-price cost at admission/harvest; the separate
+[`cost_geometry_pregate.py`](../../scripts/cost_geometry_pregate.py) owns per-trade
+stop-distance-R geometry at design time. Both apply in their own scopes. EM1 continues
+to consume Requirement 5 and adds no third formula. This replaces the former open-fracture
+pointer, not either owner's arithmetic. The [G3 pre-triage](../notes/2026-08-05-0808-pretriage-g3-g8-mechanical-findings.md)
+records the historical question; [evaluation reachability](../adr/2026-08-30-evaluation-order.md#reachability)
+owns prospective cost-authority pinning and void/refreeze on a later authority/scope change.
 
 ### 3b — Portability: EM1–EM3 survive the F3 fork
 
@@ -234,7 +234,7 @@ mechanism-shape conditions, and a construct failing any one does not.*
 
 - **Reading a screen pass as an admission.** EM0–EM5 says a construct *survives the eval geometry*. It says nothing about durable edge. Harvest Req 1–5, DSR-at-K, cost-law, and the regime gate are independent and unweakened (§2.3.5). Genuinely tempting because the screen is quantitative and feels dispositive.
 - **Applying the screen to a scored candidate list instead of to the catalogue.** Under Route B this means shape-screening G2 output; under any other track it means picking the shape-clear survivor after measurement. **Both are priced in K exactly like any other post-hoc choice** (§2.0a). This is the most likely way the screen gets misused, because it is the *convenient* moment to reach for it — the candidates are already in front of you, and the screen's venue-derived provenance makes the filtering feel like a rule rather than a choice. It is a choice.
-- **Letting EM1 grow its own cost formula.** §3a names Requirement 5 as the authority precisely so this screen does not become the third entry in an already-fractured stack. If the authority moves at 08-08, re-point EM1; never fork it.
+- **Letting EM1 grow its own cost formula.** §3a names the accepted scope split: EM1 consumes Requirement 5 while the design-time geometry check retains its separate owner. Follow the pinned authority and its change rule; never fork either formula.
 - **Quoting $275 as a constant.** EM2 is **edge-indexed**. $275 is the 0.65R cell. Using it against a 0.49R candidate over-sizes by 10%.
 - **Re-introducing a trades-per-day floor.** Retired on a verified venue fact (Pin 6, three primary sources). A future search that wants speed must justify it as a *preference* with a stated reason, not inherit it as a requirement.
 - **Softening EM3's independence limb to admit a pyramided candidate.** The arithmetic is an identity, not a threshold: correlated adds *are* the k=1 row at a worse r. A candidate needing this softened needs a different construct.
@@ -358,12 +358,10 @@ rg -n '^\*\*Status:\*\*' docs/adr/2026-08-05-avenue-a-generate-confirm-route.md
 # Expected: Accepted. If it reverts, section 2.0a's Route B paragraph is a dead pointer and
 # the general form ("screen the class, not the winner") is what survives.
 
-# 10. EM1 still points at ONE cost authority and defines no formula of its own (section 3a).
-rg -n 'cost_R|RT_pts|0\.05R' docs/spec/2026-08-05-eval-mechanism-shape-screen.md
-# Expected: exactly 3 LINES, all accounted for -- the two section 3a lines quoting each side of
-# the G3 fracture, plus this hook line (Trap M-AHF self-match; corrected after execution
-# returned 3 on a spec that is correct). A match anywhere in section 2 means EM1 has started
-# carrying its own arithmetic and has become the third entry in the fracture.
+# 10. EM1 delegates costs under the accepted scope split (section 3a).
+rg -n 'validation-battery-k-tiering|Requirement 5|cost_geometry_pregate.py' docs/spec/2026-08-05-eval-mechanism-shape-screen.md
+# Read section 3a: Requirement 5 owns admission/harvest; the script owns design-time
+# stop-R geometry. The spec must not introduce a competing formula.
 
 # 11. The four-firm rope portability claim (section 3b) is still true at HEAD.
 python -c "

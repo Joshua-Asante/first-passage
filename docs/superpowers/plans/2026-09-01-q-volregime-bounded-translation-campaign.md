@@ -67,11 +67,9 @@ Read these from disk at the start of every packet; cached summaries do not gover
 - `docs/superpowers/plans/2026-08-31-q-volregime-next-step.md`
 - `lab/analysis/_inbox/volregime_l5_design_2026-08-31/DESIGN.md`
 - `lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ACCEPTANCE_BANDS.md`
-- `docs/adr/2026-08-30-candidate-contract.md`
-- `docs/adr/2026-08-30-tradeable-reachable-gate.md`
-- `docs/adr/2026-08-30-evaluation-order.md`
-- `docs/adr/2026-08-30-operator-approvals-campaign-envelope.md`
-- `docs/adr/2026-08-30-terminal-taxonomy.md`
+- [Candidate fields, campaign authority and confirm family](../../adr/2026-08-30-candidate-contract.md)
+- [Evaluation order, reachability and confirm verdicts](../../adr/2026-08-30-evaluation-order.md)
+- [Expression ladder and register routing](../../adr/2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing)
 - `docs/superpowers/specs/2026-09-01-three-speed-alpha-research-design.md`
 - `docs/superpowers/plans/2026-09-01-mnq-pine-vet-generate-confirm-outcome-map.md`
 - the current Tradeify edition in `ops/instruments/profiles.json` and the canonical firm-rule owner

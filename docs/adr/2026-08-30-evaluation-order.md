@@ -1,445 +1,201 @@
-# Evaluation order — one canonical ordered pipeline; role and composition screens gate fit, never lifecycle admission — `evaluation-order`
+# Evaluation order — ten steps, reachability and confirm verdicts
 
-**Status:** `Accepted` — ratified by operator (Joshua) 2026-08-30; see Ratification note.
+**Status:** `Accepted` — operator ratified 2026-08-30; ownership consolidated 2026-09-08.
 **Decision date:** 2026-08-30
 **Supersedes:** none
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Authors:** Joshua (direction) + Claude Code (drafter)
-**Amends-in-part:** `2026-08-30-candidate-contract.md` — adds the scoped account/book identifier +
-compliance-state snapshot, the ROLE-BLOCKED succession-rule declaration, and the append-only
-selection-freeze commit to the contract schema; the frozen multiplicity configuration (`α`/`M`/
-Bonferroni-or-Holm procedure identity) itself is **not** added here — it is
-`2026-08-30-operator-approvals-campaign-envelope.md`'s field, cited by this ADR's confirm-ordering
-step, not re-decided.
-**Layer:** methodology (pipeline sequencing and role/composition-screen scope only). No
-`dd_protection`, allocation, lifecycle, Pine, or rail config touched; nothing armed; no venue
-action; no spend.
-**Tier:** full — Limb 4 fires (creates the standing binding order every candidate contract's
-pipeline must follow).
+**Format:** concise
+**Layer:** methodology
 
----
+This owns candidate evaluation order, TRADEABLE-REACHABLE and terminal taxonomy.
+[Candidate contract](2026-08-30-candidate-contract.md) owns fields, freezes,
+operator-approved campaign envelopes and confirm-family multiplicity.
+[Rejection patterns](2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing)
+owns N_expr and register routing; [channel liveness](../methodology/strategy_harvest.md#channel-liveness-contract)
+owns the channel-liveness requirement and routes to each ceiling's owner. Role/venue fit, candidate evidence
+and channel consequences are distinct from lifecycle admission.
 
-## §0 — Rule 0 reads (production-source verification)
+## Decision
 
-Files read **before** authoring this ADR, this session (2026-08-30):
+**Effective:** every contract frozen after 2026-08-30 follows this order now,
+including while its channel's artifact adoption remains pending. The candidate
+contract's old-chain transition concerns artifact format, not an exemption from
+ordering. PIPELINES is a route to this owner; historical stage labels have no
+competing authority. The former throughline HTML companion is absent and is not
+a current owner.
 
-- `docs/notes/2026-08-30-generate-evaluate-tensions.md` — anchor `419433a` (2026-08-30). "Simplify
-  evaluation order" and "Defer portfolio composition" rows: one ordered battery from structural
-  class-level screening (pre-K, pre-pull) through contract freeze, `TRADEABLE-REACHABLE`, Explore
-  closed by a selection freeze, contract integrity, a zero-K role state-drift re-check, one atomic
-  confirm verdict, to portfolio/venue fit last. Generate-phase steps 2/5/7 and evaluate-phase steps
-  1/2/4 supply this ADR's operative mechanics; step 2's ordering point (structural limbs pre-K) is
-  already ratified doctrine (next bullet), not something this ADR re-decides.
-- `docs/spec/2026-08-05-eval-mechanism-shape-screen.md` §2.0a — anchor `340722c` (2026-08-24).
-  RATIFIED, general form (post-Route-B-retirement addendum, same section): "EM0–EM5 is applied to a
-  candidate *class* or a *catalogue*, before any data is examined — never to a scored candidate list
-  afterward... applying it early costs nothing and applying it late costs K." This ADR's step-1
-  ordering point (structural limbs pre-catalogue-freeze) applies this already-ratified placement
-  rule to the canonical pipeline; it does not re-decide §2.0a.
-- `docs/methodology/objective_composition_map.md` — anchor `e11fd39` (2026-08-24). "Candidate
-  admission" section: Stage-8 variance-dominance/risk-breadth and the third-leg spec's own screens
-  are "necessary, not sufficient — never a substitute for" the survivor-scoring Part-A admission
-  gate; "gate[s] composition-into-the-book only. They do not gate lifecycle admission" (quoting
-  Stage-8's own doctrine row and methodology lesson M-21). This ADR's ruling that role/composition
-  screens gate fit-for-scope, never candidate lifecycle, **applies** this already-ratified
-  precedence — it is not a new precedence rule.
-- `docs/spec/2026-07-27-third-leg-target-spec.md` §7.1 — anchor `25711e2` (2026-08-26). S1–S7 hard
-  structural/compliance limbs (Product-Group/sign, session, cap, S7 order-symbol occupancy,
-  instrument-class), explicitly "no discretion" and adjudicated before R4 (risk-breadth) ever scores
-  (§6.2 adjudication table, cited via the composition map, §0 above). These are the concrete limbs
-  this ADR's role state-drift re-check re-validates against the *current* compliance snapshot.
-- `docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md` — anchor `e11fd39` (2026-08-24),
-  as superseded-in-part by `2026-08-07-w4-minimal-gate-set-dormancy.md` (same anchor): risk-N_eff
-  coordinates stay Stage-8 doctrine but `breadth.py` is tombstoned as sole producer — report-optional
-  until a re-arm ADR restores a producer. This ADR's role re-check includes variance-dominance only
-  while a producer is live, per that dormancy status, unedited here.
-- `ops/prop_envelope_default.md` §4a — anchor `e11fd39` (2026-08-24). Hedging/Product-Group
-  precedence: absolute, no exceptions, across **any account under the same control** — wider scope
-  than the account/book-scoped cap/session/S7-occupancy limbs. This ADR's role re-check inherits
-  this scope distinction unedited (§2 below).
-- `docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md` §2 item 1 — anchor `e11fd39`.
-  "`register_search open --lane blind` before results are seen" — the estate's own standing
-  convention that a manifest binds K before any exploration data is read, not merely checked
-  afterward. Found via a review pass on this ADR's first draft (§7): step 6 (Explore) originally
-  read as permitting the catalogue to be scored before step 7's K check ever ran, letting real trials
-  proceed unbound — this citation grounds the fix (K-ledger bind moved to the start of step 6, §2).
-- `docs/adr/2026-08-30-candidate-contract.md` — anchor `7669664` (2026-08-30, this branch). §2's own
-  text names "evaluation order" as the owner of deferred fields including the multiplicity
-  configuration and, implicitly, the fields this ADR's Amends-in-part adds; §3 explicitly rules that
-  enumerating those fields inside ADR-1 itself "would violate 'ADRs document ONE decision.'"
-- `docs/adr/2026-08-30-tradeable-reachable-gate.md` — anchor `a682b74` (2026-08-30, this branch).
-  §2: `TRADEABLE-REACHABLE` runs pre-Explore, after contract freeze — this ADR places it at exactly
-  that point in the canonical sequence (step 4 below) and does not re-decide its own mechanics.
-- `docs/adr/2026-08-30-terminal-taxonomy.md` — anchor `60e8cd3` (2026-08-30, this branch). §2: the
-  closed confirm-phase verdict vocabulary (`CONFIRMED`/`MARKET-NULL`/`EXPRESSION-FAIL`/
-  `EVIDENCE-VOID`) and the nonterminal `ROLE-BLOCKED` disposition this ADR's role re-check (step 5
-  below) emits into — **this ADR is the decision terminal-taxonomy's own `ROLE-BLOCKED` bullet
-  forward-cited as `2026-08-30-candidate-contract.md`'s evaluate-phase role re-check**, a citation
-  error caught by this ADR's own Phase-2 sweep (§7) — the role re-check is this ADR's decision, not
-  ADR-1's; corrected in that ADR as a follow-up (§6 below).
+1. **Structural class screen, pre-catalogue-freeze, pre-K and pre-data.** Apply
+   EM0 catalogue, EM3 independence arithmetic, EM4 activity by construction,
+   EM5/N-SHAPE and the imported Product-Group/sign, session and S7 occupancy limbs
+   to the class/catalogue under the [EM screen §2.0a](../spec/2026-08-05-eval-mechanism-shape-screen.md).
+   N-EDGE and N-SIZE/EM2 measured limbs wait for their declared data.
+2. **Reserve Confirm, then obtain shape priors or a probe.** Commit the draft
+   contract's Confirm reservation before any probe reads data. Use conservative
+   citable priors or the separately approved, outside-Confirm probe below.
+3. **HARV all-clause attestation, before freeze.** Mechanism-first/HARV
+   candidates simulate every scorable dying limb in its own units (Reachability).
+   This requirement is channel-scoped.
+4. **Founding contract freeze.** Freeze the complete [candidate fields](2026-08-30-candidate-contract.md#contract-fields-and-freezes),
+   including discriminator, costs, scoped compliance snapshot, succession policy
+   and alpha/M/procedure. No unscored shape limb may pass this point.
+5. **TRADEABLE-REACHABLE, before Explore.** Delegate cost, latency, firm geometry
+   and payoff shape to their owners as below; the named blind cost exception
+   satisfies that limb by citation of its accepted deferred order.
+6. **Bind K, Explore, then selection-freeze.** Open the register_search manifest
+   against declared K/alpha/window before any exploration data read or cell score.
+   Score the entire frozen catalogue, select at most M cells, and append the full
+   scored ranking plus selected set in a separate hash-pinned commit before any
+   holdout access. A late K check cannot repair earlier unregistered trials.
+7. **Contract integrity first in evaluation.** Check code/data hashes, ledger K
+   versus contract K, frozen multiplicity configuration, holdout reservation and
+   candidate identity against the selection freeze. Identity must be either an
+   original selected cell or a valid step-8 successor at its frozen full-ranking
+   position. Check expression-history ordinal agreement when applicable. A
+   mismatch stops/voids the attempt as EVIDENCE-VOID; it is not a rejection.
+8. **Role state-drift recheck, zero-K and before holdout.** Compare current
+   compliance against the frozen snapshot: Product-Group/sign, cap, session and
+   S7 order-symbol occupancy. Include variance-dominance/risk-N_eff-delta only
+   when a live applicable producer/input exists under its owner; otherwise it is
+   report-only. `breadth.py` has a CME research panel under the August 19 revival;
+   that availability does not grant universal hard promotion or live composition
+   authority. Recheck changed state, not the frozen class screen. Cap/session/S7
+   are account/book scoped; Product-Group/sign applies across every account under
+   the same control. A failed limb emits ROLE-BLOCKED with its snapshot and scope,
+   never a lifecycle or register rejection. It may be re-screened when the relevant
+   scope/state changes; moving within the same control group cannot clear its
+   Product-Group/sign prohibition. Forfeit its Confirm slot by default, with M
+   unchanged. Only prospectively declared mechanical rank succession may replace
+   it: take the next cell in the frozen ranking and repeat steps 7 and 8 in full,
+   with no discretion or direct holdout entry.
+9. **Untouched Confirm and temporal robustness, one atomic step.** Run the
+   frozen confirm statistic and minimum temporal-consistency battery together;
+   emit one of the four evidence outcomes below only after adjudication.
+10. **Portfolio and venue fit last, CONFIRMED only.** Repeat role checks if the
+    deployment target changed; always recheck dynamic S7 occupancy. Then score
+    remaining composition, firm aggregate constraints, activity, drawdown and
+    sizing under their owners. Failure rejects the placement, leaving standalone
+    candidate confirmation intact.
 
-**Amendment-first / dedup (Rule 8 sub-rule 10), run at ratification:**
+Steps 1/8/10's structural/composition limbs are **fit-for-scope**; step 7 is
+**integrity-only**. The separate survivor-scoring Part-A gate owns lifecycle
+admission under the [composition map](../methodology/objective_composition_map.md).
+No fit screen or this ordering decision substitutes for that gate.
 
-```
-$ python scripts/check_advisor_dedup.py --keywords "evaluation order canonical pipeline sequence role composition screen fit lifecycle admission selection freeze"
-```
+### Reachability
 
-186 candidates surfaced, all keyword-overlap noise from instrument ledgers and unrelated claim-alignment audit findings — none proposes a single canonical ordered pipeline. No existing ADR or brief performs this ADR's decision.
+TRADEABLE-REACHABLE orchestrates existing authorities and derives no new formula.
+Cost at admission/harvest uses [strategy_harvest Requirement 5](../methodology/strategy_harvest.md#1-the-five-admission-requirements-all-mandatory-before-screening),
+the per-event bp-of-panel-price form. The per-trade stop-distance-R check in
+[`cost_geometry_pregate.py`](../../scripts/cost_geometry_pregate.py) remains
+separate and additive at design time. The [August 24 D2 split](2026-08-24-validation-battery-k-tiering-and-gate-retirement.md)
+settled these owners. Pin authority and revision at freeze; a later authority/scope
+revision voids and refreezes the affected campaign under the new authority,
+including its attestation, instead of silently rescoring it.
 
----
+**Blind-only cost exception:** the [no-counterparty statistical/geometric channel](2026-08-15-no-counterparty-statistical-sourcing-channel.md)
+uses its own Confirm-measured effect in Requirement 5. Its pre-Explore cost limb
+therefore cites that accepted deferred order; its own post-confirm cost check
+still runs. Do not invent a cohort prior or read Confirm early. Other channels
+run cost pre-Explore; any future exception needs its own prospectively named,
+cited ruling and cannot be inferred from this one.
 
-## §1 — Context
+Latency and firm geometry use the checks named by the channel/venue binding.
+Every channel needs conservative citable win-rate/mean-win/mean-loss shape priors,
+with the [Requirement 2 haircut discipline](../methodology/strategy_harvest.md#4-the-decay-haircut-requirement-2-mechanics),
+or a completed extraction probe. No citable prior means UNSCREENABLE on that limb,
+not a guessed value. The [probe's own GO, reservation and accounting](2026-08-30-candidate-contract.md#campaign-authority)
+must precede data access; no contract freezes with shape unscored.
 
-Three pipeline-sequencing facts are each separately ratified today — `eval-mechanism-shape-screen.md`
-§2.0a places structural class-level screening before any data is examined; the composition map
-records that role/composition screens are necessary-but-not-sufficient pre-screens, never a
-substitute for lifecycle admission; `2026-08-30-tradeable-reachable-gate.md` places its own pre-gate
-after contract freeze and before Explore — but no single artifact states the **complete** ordered
-sequence a candidate contract actually moves through, end to end. Two further mechanics that
-sequence depends on are undefined anywhere: an append-only commit closing Explore before any holdout
-access (so "the selected set matches the frozen contract" is checkable), and a cheap, zero-K
-re-validation between scoping and confirm that catches occupancy/cap drift without re-running the
-class-level screen.
+**HARV-only all-clause attestation:** under [HARV ratification](2026-07-13-harv-discovery-lane-ratification.md)
+and the [same-units amendment](2026-07-16-harv-attestation-same-units-supersession.md),
+simulate Stage-2 cost-law, Stage-6 Confirm, placebo, shape, latency, firm geometry
+and any bundled temporal battery before freeze, each in the gate's own units.
+Every scorable limb that can kill the contract must be covered. Other channels
+are not bound by this HARD gate without a separate ratifying decision. N-EDGE
+and N-SIZE/EM2 cannot be claimed pre-data or treated as pre-freeze-simulable.
 
-Absent an explicit order, two failure modes are live. First, a role or composition check could be
-read as gating candidate survival itself (contradicting the composition map's own ruling) if nothing
-states which gate is genuinely a lifecycle admission gate and which is a fit-for-scope check.
-Second, without an append-only selection freeze, a post-Explore "which candidates were actually
-selected" claim is unverifiable — selection necessarily post-dates contract freeze, so nothing
-today pins it before holdout access.
+A pre-Explore economic failure stops Explore and appends the failed limb and
+value to the frozen contract. It is a candidate-level venue/cost-constraint
+record labeled **“priors-derived, no mechanism test run”**, never MARKET-NULL
+or EXPRESSION-FAIL. Use the rejection owner's scoped routing and add-back rules.
 
-**Decision driver (one sentence):** the pipeline's already-ratified sequencing facts and gates need
-one explicit end-to-end order that ties them together, plus two currently-undefined mechanics (an
-append-only post-Explore selection freeze, and a zero-K pre-confirm role/compliance re-check) that
-the order cannot be stated correctly without.
+### Confirm verdicts
 
----
+Effective for Confirm verdicts and pre-Explore economic kills emitted after
+2026-08-30. Exactly four evidence outcomes, with precedence from top to bottom:
 
-## §2 — Decision
-
-**Decision:** Every candidate contract moves through one canonical ordered pipeline. Each step's
-gating scope is stated explicitly — lifecycle-admission, fit-for-scope, or integrity-only — so no
-step is ever read outside its own scope.
-
-1. **Structural class-level screening (pre-catalogue-freeze, pre-K, pre-pull).** The structural limbs
-   of the eval-mechanism-shape screen (EM0 catalogue, EM3 independence arithmetic, EM4 activity by
-   construction, EM5/N-SHAPE importing Product-Group/sign, session law, and S7 occupancy by
-   reference) apply to the candidate class/catalogue, per §2.0a's already-ratified placement (§0) —
-   this ADR states the ordering point, not the rule. The measured N-EDGE/N-SIZE limbs defer to their
-   declared data source and are not claimed here (unchanged from §0's own text).
-2. **CONFIRM-window reservation, then payoff-shape priors or extraction probe.** Per
-   `2026-08-30-tradeable-reachable-gate.md` §2 — cited, not re-decided.
-3. **All-clause reachability attestation (pre-freeze, HARV-lane).** Per the same ADR §2 and its own
-   §0 citations — cited, not re-decided.
-4. **Contract freeze.** Per `2026-08-30-candidate-contract.md` §2 — cited, not re-decided, plus the
-   three fields this ADR's Amends-in-part adds (below).
-5. **`TRADEABLE-REACHABLE` (pre-Explore).** Per `2026-08-30-tradeable-reachable-gate.md` §2 — cited,
-   not re-decided.
-6. **K-ledger bind, then Explore, closed by an append-only selection freeze.** Before any cell is
-   scored — before any exploration data is read — the campaign's `register_search open` manifest
-   binds K/α/window against the frozen contract's declared values, per the K-ledger ruling
-   (`2026-08-30-candidate-contract.md` §2) and the estate's own standing convention that a manifest
-   opens "before results are seen" (§0: `2026-08-15-no-counterparty-statistical-sourcing-channel.md`
-   §2 item 1). Binding K only at step 7, after Explore's reads already happened, would let real
-   trials run with no live-tracked ledger entry — a later integrity check cannot retroactively
-   restore accounting for reads that already occurred unbound. Only once the manifest is open does
-   Explore score every declared cell in the frozen catalogue and select at most the frozen confirm
-   count. Explore closes with an **append-only selection freeze**: the full scored ranking (not only
-   the selected subset) and the selected candidates are committed to the contract, hash-pinned,
-   before any holdout access. Without this commit, "the selected set matches the frozen contract" is
-   unverifiable, since selection necessarily post-dates step 4's freeze — this is this ADR's own new
-   mechanic, not a restatement of an existing one. (Corrected in review — see §7 for the finding this
-   fixes.)
-7. **Contract-integrity check (evaluate phase, first, integrity-only).** Before any other evaluate-
-   phase check runs: confirm that code/data hashes, the register_search manifest's `K` against the
-   contract's declared `K` (bound at step 6, re-checked here, not bound for the first time here), the
-   frozen multiplicity configuration (owned by `2026-08-30-operator-approvals-campaign-envelope.md`,
-   cited not re-decided here), the candidate under evaluation against step 6's hash-pinned commit —
-   **either as a member of the originally selected set, or, for a succession substitute entering
-   under step 8's pre-declared mechanical-succession rule, at its own frozen rank position in step
-   6's full scored ranking** (not only the originally-selected subset — a substitute is never
-   already a member of that subset by definition, so checking against the subset alone would reject
-   every legitimate succession) — and the holdout against step 2's reservation, all match the frozen
-   contract. A mismatch voids or stops the attempt on its own — it is never recorded as a structural
-   or evidentiary rejection (consistent with `2026-08-30-terminal-taxonomy.md`'s `EVIDENCE-VOID`
-   class, §0).
-8. **Role state-drift re-check (zero-K, fit-for-scope, never lifecycle).** Before any holdout is
-   consumed, re-validate each selected candidate against the *current* compliance snapshot versus the
-   one frozen in the contract: Product-Group/sign, cap, session, and S7 order-symbol occupancy
-   (third-leg spec §7.1 S1–S7, §0), plus variance-dominance/risk-N_eff-delta only while a live
-   producer exists (report-only while `breadth.py` stays tombstoned, §0). This step exists because
-   step 1 already ran the *class-level* application of these limbs — a failure here means the
-   *state* moved (occupancy or cap changed between scoping and confirm), never that a screen was
-   skipped. **None of these limbs are candidate-lifecycle absolute** — each gates only the
-   candidate's proposed role at the currently scoped account/book, consistent with the composition
-   map's own ruling (§0), never the candidate outright. Cap, session, and S7 occupancy are scoped to
-   the single account/book in scope — a rejection there may clear on a different, non-affiliated
-   account. Product-Group/sign is scoped wider — absolute across *any* account under the same
-   control (`prop_envelope_default.md` §4a, §0) — so a Product-Group/sign rejection clears only
-   outside the whole controlled-account group. A failure emits `ROLE-BLOCKED`
-   (`2026-08-30-terminal-taxonomy.md` §2) naming the limb and the compliance snapshot scored against
-   — a role verdict, never a rejection, never a register entry. Its confirm slot follows the
-   **succession rule frozen in the contract** (this ADR's own Amends-in-part field, below):
-   **forfeit by default** (the slot goes unread, the multiplicity divisor stays at the frozen `M`),
-   or, if pre-declared, **mechanical succession** — the next-ranked candidate from the step-6 frozen
-   ordering takes the slot, after itself passing steps 7 and 8 in full, never directly into a
-   holdout read.
-9. **One untouched confirm run, including temporal robustness, as one atomic step.** Per
-   `2026-08-30-terminal-taxonomy.md` §2's verdict vocabulary — cited, not re-decided. The confirm
-   statistic and the frozen minimum temporal-consistency battery run together; a single verdict is
-   emitted only once both clear.
-10. **Portfolio and venue fit, last.** For a `CONFIRMED` candidate only: re-run step 8's role
-    re-check if the deployment target changed since scoping, and always re-check S7 occupancy
-    specifically (dynamic, can move independently of the target). Then score remaining composition,
-    firm-level aggregate constraints, activity, drawdown, and sizing — **only after an edge exists**.
-    A failure here rejects that book-leg placement, not the candidate's standalone confirmed status
-    (`2026-08-30-terminal-taxonomy.md`'s edition axis, §0) — never evidence the market effect is
-    false.
-
-**Scope-class summary (the ruling this whole order exists to make explicit):** steps 1 and 8/10's
-role/composition limbs are **fit-for-scope** gates, step 7 is **integrity-only**, and only the
-survivor-scoring Part-A admission gate (outside this ADR's scope entirely — per the composition map,
-§0) is **lifecycle-admission**. No step in this pipeline gates candidate lifecycle by itself.
-
-**Effective:** immediately upon acceptance, for any candidate contract frozen after this date.
-**Scope:** the ordered pipeline and role/composition-screen scope, across all five live channels
-(GROW is tooling inside deep-iteration, not a sixth channel — matching
-`2026-08-30-channel-liveness-gate.md`'s own derivation). Does not alter any cited gate's own
-thresholds, ownership, or mechanics — it sequences them.
-
----
-
-## §3 — Alternatives considered
-
-| Alternative | Why ruled out |
+| Condition | Evidence outcome |
 |---|---|
-| Let the role state-drift re-check (step 8) gate candidate lifecycle when it fails | Directly contradicts the composition map's own ratified precedence — role/composition screens are "necessary, not sufficient... They do not gate lifecycle admission." Making step 8 lifecycle-absolute would silently overturn that ruling without an amending ADR naming it. |
-| Skip the append-only selection freeze (step 6); let the evaluate phase trust whatever candidates arrive | Makes "the selected set matches the frozen contract" unverifiable, since selection necessarily post-dates contract freeze — reopens exactly the kind of undetected drift `2026-08-30-candidate-contract.md` exists to close for the founding fields. |
-| Re-run the full class-level structural screen (step 1) again at step 8, instead of a lighter state-drift re-check | Wastes K re-scoring limbs that provably have not changed (the catalogue-level structure is frozen at step 4); the state that actually moves between scoping and confirm is compliance snapshot data (occupancy, cap), not the catalogue — a targeted re-check is the correct-cost instrument. |
-| Fold the multiplicity configuration into this ADR's own decision, since step 7 needs to check it | The note's own row structure (§0) introduces `α`/`M`/procedure under "simplify operator approvals," not evaluation order; duplicating ownership here would contradict `2026-08-30-candidate-contract.md`'s own naming of a distinct forthcoming ADR for it and risk two ADRs defining the same field inconsistently. |
+| Contract/holdout integrity, ordinary coverage/power or frozen discriminator adjudicability fails | EVIDENCE-VOID, regardless of payoff |
+| Powered, adjudicable discriminator fails | MARKET-NULL, regardless of payoff/temporal result |
+| Discriminator passes; expression payoff/temporal test fails | EXPRESSION-FAIL |
+| Discriminator and expression payoff/temporal tests both clear | CONFIRMED |
 
----
+EVIDENCE-VOID exhausts the attempt and follows the [fresh-campaign/fresh-holdout rule](2026-08-30-candidate-contract.md#campaign-authority).
+An underpowered discriminator is not evidence against the mechanism. A payoff
+pass cannot rescue a clean discriminator failure.
 
-## §4 — Falsifier (revert trigger)
+After CONFIRMED, placement-clear or VENUE-FAIL is a separate edition axis under
+the [venue-binding owner](2026-08-05-strategy-venue-binding-axis.md).
+**CONFIRMED · VENUE-FAIL(edition)** is valid. MARKET-NULL maps to edge-failure;
+EXPRESSION-FAIL maps to expression-failure; candidate-level pre-Explore kills
+map to venue/cost-constraint. [Rejection patterns](2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing)
+owns full routing and N_expr. EVIDENCE-VOID, ROLE-BLOCKED, CHANNEL-FAIL and
+post-confirm VENUE-FAIL enter no candidate WHY-rejected register. Record the
+first two on the contract, edition failures on the edition axis, and
+CHANNEL-FAIL on the [channel record](../methodology/strategy_harvest.md#channel-liveness-contract).
+Pre-contract source failures do not acquire Confirm states through this vocabulary.
 
-**H (hypothesis):** one explicit ten-step ordered pipeline, with role/composition screens correctly
-scoped as fit-not-lifecycle at every step, correctly closes the sequencing gap without silently
-promoting any fit-for-scope check into a lifecycle-admission gate.
+## Grounds
 
-**Revert trigger:** if, by the next scheduled quarterly programme audit after this ADR's acceptance,
-either (a) a candidate is found rejected from the estate's admission register on the strength of
-step 1, 8, or 10 alone (with no separate Part-A admission-gate finding), or (b) a candidate contract
-is found to have run any step out of the order above without a documented, pre-declared exception —
-this ADR is revoked.
+The order closes the gap between catalogue freeze, K binding and prospective
+selection. Integrity and changing compliance state have different jobs: repeating the
+whole structural screen would recheck frozen facts, while omitting the scoped recheck
+would miss changed occupancy. Fit screens cannot replace lifecycle admission, and an
+economic orchestrator cannot acquire its own competing arithmetic. Keeping these
+boundaries explicit costs a current owner-hop for each delegated gate.
 
-**Revert action:** author a superseding ADR that either re-states the scope-class boundary more
-mechanically (e.g. a lint refusing a `ROLE-BLOCKED`/`VENUE-FAIL` disposition to be cited as grounds
-for a lifecycle-register entry) or corrects the ordering itself if a genuine sequencing defect is
-found. Never silently edit this ADR's decision text.
+## First review and unresolved obligations
 
-**Trigger check schedule:** every quarterly programme audit (next: 2026-11-08).
+**Trigger check schedule:** initial consolidated review 2026-11-08; immediately on a change to either cost authority or its scope.
 
----
+Inspect actual campaign commits, manifests and holdout access for out-of-order runs without
+a documented prospective exception, invalid integrity/succession or lifecycle rejection
+based only on fit. Check reachability for invented arithmetic or unscored frozen shape;
+check verdict precedence, scoped register placement and any N_expr overrun against its
+required cost evidence/operator ratification. A failure requires an explicit correction
+at the owner before relying on that control, preserving the boundaries above.
 
-## §5 — Forbidden moves (under this ADR)
+Missing examples are inconclusive. This replaces the evaluation/reachability/taxonomy
+carriers' redundant recurring document reviews; their useful first review and unresolved
+implementation obligations remain.
 
-- **Treating a `ROLE-BLOCKED` or step-10 `VENUE-FAIL` disposition as grounds for a lifecycle-register
-  entry.** Ruled out in §2/§3 — both are fit-for-scope verdicts; the composition map's own
-  already-ratified precedence governs, unedited by this ADR.
-- **Re-running step 1's full class-level screen at step 8** to avoid defining a lighter re-check.
-  Ruled out in §3 — wastes K on limbs that cannot have changed since freeze.
-- **Skipping the append-only selection freeze (step 6)** for a channel whose tooling makes it
-  inconvenient. Ruled out in §2/§3 — the freeze is what makes the evaluate phase's integrity check
-  (step 7) meaningful at all.
-- **Defining or freezing the multiplicity configuration inside this ADR** because step 7 needs to
-  check it. Ruled out in §3 — that field belongs to
-  `2026-08-30-operator-approvals-campaign-envelope.md`; this ADR cites it once ratified.
-- **Letting mechanical succession (step 8) exercise discretion after exploration results are
-  visible.** The next-ranked candidate is fixed by the step-6 frozen ordering alone — never a
-  post-hoc pick.
+## Current owner
 
----
+Selection-freeze tooling, full contract/K/M/ordinal integrity, role state-drift
+checking and the TRADEABLE-REACHABLE orchestration remain owed, separately from
+this Accepted policy. Existing manifest attestation checks verify presence and
+JSON clause fields (prose gets presence-only checking), not reachability or all
+contract fields. [Candidate owner](2026-08-30-candidate-contract.md#current-owner)
+owns full-schema, envelope and channel-adoption debt; the rejection owner retains
+N_expr/schema/parser limits. [STATE](../../STATE.md#2026-11-08) tracks the review.
+No implementation or research run is authorized by this consolidation.
 
-## §6 — Consequences
+Grounding at `502a8fb4717e8caaa7d183a0a010998cfd7a30c2`: `lab/discovery/register_search.py`,
+`lab/discovery/admission_schema.py`, `lab/discovery/frozen_rules.py`,
+`lab/research_utils/breadth.py`, `core/mc/modes.py`,
+`scripts/cost_geometry_pregate.py`, `scripts/check_instrument_rejection_coverage.py`,
+the [composition map](../methodology/objective_composition_map.md),
+[EM screen](../spec/2026-08-05-eval-mechanism-shape-screen.md),
+[third-leg S1–S7](../spec/2026-07-27-third-leg-target-spec.md),
+[control-group scope](../../ops/prop_envelope_default.md),
+[CME research-panel revival](2026-08-19-cme-broker-panel-admission-for-breadth-revival.md)
+and all six August 30 bodies/amendments. The [original evaluation body](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-evaluation-order.md)
+preserves ratification and the September 3 ordering/adoption clarification.
+The four removed carriers' exact bodies and identities are in [TOMBSTONES](TOMBSTONES.md).
 
-**Positive consequences:**
-- States, for the first time in one place, the complete ordered sequence a candidate contract moves
-  through — closing the implicit-ordering gap the note's tension #8 (reachable process falsifiers)
-  and #5 (firm-specific feasibility bleeding into sourcing) both partly trace to.
-- Makes explicit, at every step, whether a gate is lifecycle-admission, fit-for-scope, or
-  integrity-only — preventing the specific misreading (a role/composition screen silently treated as
-  lifecycle-absolute) the composition map already warns against for Stage-8 and the third-leg spec.
-- Gives Explore a verifiable closing commit (the selection freeze) and gives the evaluate phase a
-  cheap, correctly-targeted re-check (state-drift, not a full re-screen) instead of either an
-  unverifiable selection claim or a wastefully-repeated structural screen.
-
-**Negative consequences (real cost, not theatrical):**
-- Every channel's tooling must now produce an explicit, hash-pinned selection-freeze commit at
-  Explore close — real build work, not free ceremony (§7).
-- A candidate that drifts out of compliance between scoping and confirm now costs its confirm slot
-  (forfeit) or requires a pre-declared succession rule to recover it — friction versus today's
-  undocumented ad hoc handling.
-
-**Risks (probabilistic, distinct from costs):**
-- If a future channel's tooling cannot cheaply distinguish "class-level structural state" from
-  "compliance snapshot state," step 8's cost advantage over re-running step 1 may not materialize in
-  practice — a build-time risk for the separate implementation handoff (§7), not a defect in this
-  ADR's own ordering logic.
-
-**Downstream artifacts:**
-- `2026-08-30-candidate-contract.md` — **landed at ratification** (this commit): scoped account/book
-  identifier + compliance-state snapshot, ROLE-BLOCKED succession-rule declaration, and the
-  selection-freeze commit added to the contract schema.
-- `2026-08-30-terminal-taxonomy.md` — its `ROLE-BLOCKED` bullet currently cites
-  `2026-08-30-candidate-contract.md`'s "evaluate-phase role re-check," which does not exist in that
-  ADR's own text; the role re-check is this ADR's decision (step 8). Correcting that citation is a
-  small follow-up edit to an already-`Proposed` (not yet `Accepted`) ADR — landed alongside this
-  commit (Trap #12 does not apply pre-acceptance).
-- `STATE.md` — new forward-board row: selection-freeze + role-re-check mechanical implementation
-  owed as a separate handoff (§7).
-
----
-
-## §7 — Implementation plan
-
-- **Phase 0** — re-confirm §0 anchors current at apply-time.
-- **Phase 1** — this ADR's own body is the complete policy deliverable; the `Amends-in-part` edge to
-  `2026-08-30-candidate-contract.md` **landed at ratification** (this commit), as a new §2 subsection
-  on that ADR.
-- **Phase 2** — grep-sweep (Known Trap #7): **(i)** no predecessor to check (`Supersedes: none`);
-  **(ii)** `grep -rl "selection freeze\|state-drift\|contract.integrity\|ROLE-BLOCKED" docs/adr/
-  docs/spec/ docs/methodology/` — executed at authoring time: exactly 3 hits, all under `docs/adr/`
-  and all this session's own prior work — `candidate-contract.md`, `terminal-taxonomy.md`, and this
-  file itself. Zero hits in `docs/spec/` or `docs/methodology/`, confirming these mechanics are
-  genuinely undefined outside this session's own three-ADR set (the source note under `docs/notes/`
-  is outside this sweep's searched paths by construction, same convention ADR-1/ADR-2 used). The
-  `2026-08-30-terminal-taxonomy.md` hit is the citation-error bullet corrected in that file as part
-  of this same change (§6 above).
-
-  **Post-review corrections (found by a Codex review pass on this PR):** two ordering defects in the
-  first draft's step sequence, both fixed in §2 above. **(a)** Step 6 (Explore) permitted scoring the
-  full catalogue before step 7's K-integrity check ever ran, letting real trials proceed with no
-  live-tracked ledger entry — a later check cannot retroactively restore accounting for reads that
-  already happened unbound. Fixed by moving the `register_search open` K-ledger bind to the start of
-  step 6, before any cell is scored, per the estate's own "before results are seen" convention (§0).
-  **(b)** Step 8's mechanical-succession substitute (drawn from step 6's full ranking, not the
-  originally-selected subset) had no path to pass step 7's integrity check as originally worded,
-  since that check validated only against "the selected candidates" — a substitute is, by
-  definition, never a member of that subset. Fixed by stating explicitly that step 7 validates a
-  candidate either as an original selectee or, for a succession substitute, at its own frozen rank
-  position in the full scored ranking.
-- **Phase 3** — verification block executes; status → `Accepted`.
-
-Mechanical enforcement (the selection-freeze hash-pinning tool, the state-drift re-check script) is
-a **separate implementation handoff** — doctrine binds now; code may lag, per the HARV-lane
-precedent (`2026-08-30-candidate-contract.md` §0).
-
----
-
-## §10 — Audit hooks (runnable)
-
-```bash
-# Every step's gating scope is stated (lifecycle-admission / fit-for-scope / integrity-only).
-grep -c "fit-for-scope\|lifecycle-admission\|integrity-only" docs/adr/2026-08-30-evaluation-order.md
-
-# ROLE-BLOCKED citation in terminal-taxonomy.md points at THIS ADR, not candidate-contract.md.
-grep -n "ROLE-BLOCKED" -A2 docs/adr/2026-08-30-terminal-taxonomy.md | grep -n "evaluation-order\|candidate-contract"
-
-# Candidate-contract amendment landed?
-grep -n "evaluation-order" docs/adr/2026-08-30-candidate-contract.md
-
-# Calendar trigger reminder
-# Quarterly programme audit due: 2026-11-08
-```
-
----
-
-## Verification
-
-```bash
-# Discipline checks (mechanical)
-$ python scripts/check_brief.py docs/adr/2026-08-30-evaluation-order.md --type adr
-
-# ADR lifecycle graph
-$ python scripts/check_adr_graph.py
-
-# Production-source verification (Rule 0 confirmation)
-$ git log -1 --format="%h %ci" -- docs/spec/2026-08-05-eval-mechanism-shape-screen.md
-$ git log -1 --format="%h %ci" -- docs/methodology/objective_composition_map.md
-
-# Downstream artifact update verification (post Amends-in-part landing)
-$ grep -n "evaluation-order" docs/adr/2026-08-30-candidate-contract.md
-```
-
----
-
-## Ratification note
-
-**Ratified by:** Joshua, direct instruction ("ratify the six ADRs," 2026-08-30), following a
-self-conducted adversarial re-read (the full 6-lens Workflow panel was declined for cost) that added
-the missing amendment-first/dedup attestation (§0).
-
-**§6-class preconditions at ratification:** mechanical checks clean (`check_brief.py` 0 HARD,
-`check_adr_graph.py` OK) ✓ · amendment-first dedup run, no genuine prior art ✓ · the Codex review
-round's 2 findings on this file (the K-ledger bind ordering vs. step-6 Explore; the mechanical-
-succession/integrity-check gap) verified already fixed in this file's current text ✓ · the
-`Amends-in-part` edge to `candidate-contract.md` confirmed landed (§10 hook) ✓.
-
-**Not licensed by this ratification:** building the selection-freeze hash-pinning tool or the
-state-drift re-check script (§7, separate implementation handoff) · any edit to `core/`, `ops/`,
-`dd_protection`, or allocations.
-
----
-
-## Addendum 2026-09-03 — canonical-owner cross-reference: `PIPELINES.md` P1 and the throughline diagram now point here; this ADR's decision text is unedited
-
-**Status of this addendum: informational, no decision-text change (Trap #12 — §2's decision stands
-byte-stable).** Filed to close a gap the pipeline-diagram re-audits named without fixing: PR #262's
-`open_gaps` entry (carried unresolved into PR #264) read *"Three competing decompositions of one
-pipeline now coexist: this map's 12 phases, `PIPELINES.md`'s Stage 2→8..., and `evaluation-order`'s 10
-steps. None cross-references the others."*
-
-This ADR is the **single canonical owner** of pipeline step ordering — its own title says so, and §2
-states it as "one canonical ordered pipeline." `PIPELINES.md` P1 now points here explicitly and
-separates three things that were previously conflated: (1) its own Stage 2→8 labels (`MINE`/`BIND K`/
-`SCORE`/.../`ADMIT`) are legacy research-activity vocabulary, not a rival ordering authority; (2) each
-channel's freeze-chain documents (seed manifest → intake screen → Stage-0 preregistration) are a
-narrower, separate concern — the *artifact format* a candidate is recorded in, which per
-`2026-08-30-candidate-contract.md` §6 stays "the channel's existing documents... its live practice"
-until that channel's own dated migration addendum lands; (3) this ADR's own ten-step order, whose §2
-effectivity clause carries no migration carve-out ("immediately upon acceptance, for any candidate
-contract frozen after this date"), so it already governs any contract frozen after 2026-08-30
-regardless of (1) or (2). `docs/diagrams/generate-evaluate-throughline.html` is the visual/interactive
-companion and now states the identical three-way distinction (its own 2026-09-03 revision), and its
-per-ADR `pending_doctrine` entry already carried the correct "EFFECTIVE for any candidate contract
-frozen after 2026-08-30" framing this addendum aligns `PIPELINES.md` to.
-
-Neither `PIPELINES.md` nor the diagram gains authority to redefine this ADR's step order — a future
-change to §2 lands here first. But neither is a bare pointer today: `PIPELINES.md` carries its own
-ordered Stage 2→8 list and the diagram's `pending_doctrine.items` entry for this ADR restates the full
-ten-step sequence for readers who don't open this file. A future §2 change means updating **both**
-restatements to match, not only their pointer prose — Rule 7 (`docs/operational_rules.md`) makes this
-ADR the fact's owner, not the sole place the fact may ever appear.
-
-This addendum also discharges this ADR's own §6 "STATE.md — new forward-board row" downstream
-artifact, together with the three sibling 2026-08-30 ADRs carrying the identical unmet obligation
-(`terminal-taxonomy`, `tradeable-reachable-gate`, `operator-approvals-campaign-envelope`) — one shared
-row, `STATE.md`'s 2026-11-08 section, the same row-sharing convention `2026-08-30-channel-liveness-gate.md`
-and `2026-08-30-candidate-contract.md` already used for their own shared row. This addendum does not
-build the selection-freeze hash-pinning tool or the state-drift re-check script (§7) — those remain
-owed, dated, unbuilt.
-
-No `core/`, `ops/`, `dd_protection`, Pine, or allocation change. No campaign, contract, K, or spend
-opened. $0/K=0.
-
----
-
-## Change history
-
-| Date | Change | By |
-|---|---|---|
-| 2026-08-30 | Initial authoring | Joshua + Claude Code |
-| 2026-08-30 | Ratified — status → `Accepted`; `Amends-in-part` edge to candidate-contract.md landed | Joshua (operator ratification) |
-| 2026-09-03 | Addendum — cross-referenced `PIPELINES.md` and the throughline diagram as pointers to this ADR's canonical order; discharged the four ADRs' shared owed STATE.md row | Claude Code |
+Verification uses the canonical `.claude/skills/brief-authoring/scripts/check_brief.py`
+with `--type adr`, `scripts/check_adr_graph.py` and `scripts/check_state_currency.py`.
+These check document shape/routing, not enforcement of the ten steps or verdict map.

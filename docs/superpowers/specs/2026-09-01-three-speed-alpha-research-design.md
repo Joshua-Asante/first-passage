@@ -2,19 +2,17 @@
 
 **Status:** `Proposed` — design specification only; no standing methodology, gate, K rule,
 candidate status, or execution authority changes until a separate ratification decision. Where
-this spec touches ground the six 2026-08-30 ADRs own, those ADRs are **already `Accepted` and
-govern today** — this spec cites them and adds nothing to their scope.
+this spec touches the August 30 candidate-pipeline rules, their current owners are **already
+`Accepted` and govern today** — this spec cites them and adds nothing to their scope.
 **Date:** 2026-09-01 (v3)
 **Authors:** Joshua + Codex (v1) · Claude Code (v2 reconciliation, v3 correction)
 **Scope:** tradeable-alpha research only. Structural, safety, governance, and measurement-method
 questions continue to use ordinary INQHIORI without being forced through this funnel.
-**Related — ratified owners this spec composes with (all `Accepted` 2026-08-30):**
+**Related — current owners of the rules Accepted 2026-08-30:**
 [`candidate-contract`](../../adr/2026-08-30-candidate-contract.md) ·
-[`terminal-taxonomy`](../../adr/2026-08-30-terminal-taxonomy.md) ·
-[`evaluation-order`](../../adr/2026-08-30-evaluation-order.md) ·
-[`tradeable-reachable-gate`](../../adr/2026-08-30-tradeable-reachable-gate.md) ·
-[`operator-approvals-campaign-envelope`](../../adr/2026-08-30-operator-approvals-campaign-envelope.md) ·
-[`channel-liveness-gate`](../../adr/2026-08-30-channel-liveness-gate.md)
+[`evaluation-order`, reachability and verdicts](../../adr/2026-08-30-evaluation-order.md) ·
+[expression ladder and register routing](../../adr/2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing) ·
+[channel liveness](../../methodology/strategy_harvest.md#channel-liveness-contract)
 **Related — context:** [`INQHIORI canon`](../../methodology/inqhiori-canon.md) ·
 [`strategy harvest`](../../methodology/strategy_harvest.md) ·
 [`generate→confirm historical route`](../../methodology/avenue_a_generate_confirm.md) ·
@@ -35,23 +33,23 @@ caught it (eight findings, plus four more in the operator-relayed meta-review).
 **v3's correction, finding by finding:**
 
 1. **Contract cardinality** — fixed: one contract per generation-open campaign and fixed trade
-   template; selected cells are hash-pinned sub-entries (cites `candidate-contract` §2 verbatim
+   template; selected cells are hash-pinned sub-entries (cites [`candidate-contract`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-candidate-contract.md#2--decision) §2 verbatim
    intent; v2's "one contract per candidate" wording is gone).
-2. **Confirm truth table** — fixed: the `terminal-taxonomy` table is cited whole, including the
+2. **Confirm truth table** — fixed: the [`terminal-taxonomy`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-terminal-taxonomy.md#2--decision) table is cited whole, including the
    branch v2 left undefined (discriminator clean-fail + payoff pass → `MARKET-NULL` regardless).
 3. **`EXPRESSION-FAIL` "pending"** — fixed: it is ratified, with `N_expr` default 2; v2's open
    decision 5 is deleted.
 4. **Universal channel-liveness default** — fixed: no funnel-imposed number; each channel's own
-   declared ceiling governs (`channel-liveness-gate` §2 forbids re-deriving calibrated bounds in
+   declared ceiling governs ([`channel-liveness-gate`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-channel-liveness-gate.md#2--decision) §2 forbids re-deriving calibrated bounds in
    reconciliation).
 5. **No-counterparty deferred-cost exception** — fixed: preserved explicitly in the Vet cost
    gate; it does not generalize.
 6. **Confirm reservation before any shape-extraction probe** — fixed: the reservation is an
-   early commit on the draft contract, before the probe reads any data (`evaluation-order` step
+   early commit on the draft contract, before the probe reads any data ([`evaluation-order`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-evaluation-order.md#2--decision) step
    2; v2 reserved at charter freeze, too late).
 7. **Probe-tranche accounting** — fixed: realized probe spend and K become an already-spent
    sub-line inside the inclusive campaign ceiling, never "subsumed by citation"
-   (`operator-approvals-campaign-envelope` §2).
+   ([`operator-approvals-campaign-envelope`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-operator-approvals-campaign-envelope.md#2--decision) §2).
 8. **`FALSIFIED-FAMILY` typed as `MARKET-NULL`** — fixed: Generate-stage closes are process
    dispositions; `MARKET-NULL` is reserved for a powered, untouched-confirm discriminator
    failure.
@@ -60,7 +58,7 @@ caught it (eight findings, plus four more in the operator-relayed meta-review).
 - **(B)** Venue change no longer creates a new candidate — a venue retarget of a `CONFIRMED`
   candidate is an edition-axis event; only a changed trade expression opens a new contract.
 - **(C)** Venue survivor scoring removed from the Confirm battery — bust/pass MC and edition
-  clearance run post-`CONFIRMED` (`evaluation-order` step 10).
+  clearance run post-`CONFIRMED` ([`evaluation-order`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-evaluation-order.md#2--decision) step 10).
 - **(D)** The pilot budget is no longer wall-clock-denominated.
 
 v1's surviving contributions: the three-speed vocabulary and speed boundaries, the six-gate Vet
@@ -80,8 +78,8 @@ Adopt a three-speed vocabulary over the already-ratified candidate pipeline:
 2. **Generate** — run the bounded, selection-accounted exploration the frozen contract declares.
 3. **Confirm** — score the selected expression once on untouched data.
 
-The pipeline itself — contract, ordering, gates, envelope, verdicts — is owned by the six
-2026-08-30 ADRs and is **not re-decided here**. What this spec adds, and what ratifying it would
+The pipeline itself — contract, ordering, gates, envelope, verdicts — belongs to the
+current owners linked above and is **not re-decided here**. What this spec adds, and what ratifying it would
 newly bind:
 
 - the **three-speed vocabulary** and the speed-boundary map onto the ratified pipeline (§7);
@@ -134,17 +132,17 @@ PROPOSAL → VET-PASS → (contract opens) → GENERATED → CONFIRMED → lifec
 ```
 
 **Confirm-phase evidence verdicts** are the closed vocabulary of
-[`terminal-taxonomy`](../../adr/2026-08-30-terminal-taxonomy.md) §2 — exactly four:
+[confirm verdicts](../../adr/2026-08-30-evaluation-order.md#confirm-verdicts) — exactly four:
 `CONFIRMED` · `MARKET-NULL` · `EXPRESSION-FAIL` · `EVIDENCE-VOID`, adjudicated by the
 contract-frozen mechanism discriminator per that ADR's truth table (§5.4 below). The **edition
-axis** (placement-clear / `VENUE-FAIL(edition)`, `CONFIRMED` candidates only) and all registry
-routing are that ADR's, unmodified. `AMBIGUOUS-HOLD` is **not** a confirm-phase verdict; a Q
+axis** (placement-clear / `VENUE-FAIL(edition)`, `CONFIRMED` candidates only) belongs to that owner;
+[rejection patterns](../../adr/2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing) owns registry routing, unmodified. `AMBIGUOUS-HOLD` is **not** a confirm-phase verdict; a Q
 hosting a funnel campaign may still close `AMBIGUOUS-HOLD` at the Q layer under its own
 pre-registered gate.
 
 **Pre-contract (Vet) outputs** are this spec's own process states: `VET-PASS` · `DROP` · `PARK` ·
 `MECHANISM-ONLY` · `VOID` (§3.4). A `DROP` whose failed limb is economic routes its registry
-entry per `terminal-taxonomy`'s pre-explore mapping (venue/cost-constraint, "priors-derived, no
+entry per [rejection patterns' pre-explore mapping](../../adr/2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing) (venue/cost-constraint, "priors-derived, no
 mechanism test run"); other `DROP`s follow standing §D3 conventions.
 
 **Generate-stage closes** are process dispositions, never evidence verdicts (§4.4).
@@ -158,12 +156,12 @@ stage and redefining the candidate.
 Any change to the **trade expression** — entry or side rule, feature definition or threshold,
 holding period or exit, stop/target/sizing logic, instrument, conditioning state, or a data
 window chosen because of a seen result — opens a **new contract** (a genuinely distinct template
-is never a new cell of an existing one — `candidate-contract` §2), and a post-`EXPRESSION-FAIL`
+is never a new cell of an existing one — [candidate-contract fields and freezes](../../adr/2026-08-30-candidate-contract.md#contract-fields-and-freezes)), and a post-`EXPRESSION-FAIL`
 successor additionally rides the ratified `N_expr` ladder (default 2, mechanism-ledger-keyed —
-`terminal-taxonomy` §2).
+[expression ladder](../../adr/2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing)).
 
 **Venue is the exception, by design:** a venue retarget of a `CONFIRMED` candidate is an
-edition-axis event (`evaluation-order` step 10 — new cost and firm-geometry scoring, possibly a
+edition-axis event ([evaluation order](../../adr/2026-08-30-evaluation-order.md#decision) step 10 — new cost and firm-geometry scoring, possibly a
 new edition), never automatically a new candidate. A new contract is required only if the new
 venue forces the expression itself to change (session semantics, execution clock, order type).
 
@@ -189,8 +187,7 @@ The three speeds use distinct evidence scopes:
   Bonferroni-or-Holm procedure identity), the campaign envelope, and probe-tranche accounting
   (realized probe spend and K as an already-spent sub-line inside the inclusive campaign
   ceiling; a probe that kills its candidate stands alone as its own closed spend) are owned by
-  [`candidate-contract`](../../adr/2026-08-30-candidate-contract.md) and
-  [`operator-approvals-campaign-envelope`](../../adr/2026-08-30-operator-approvals-campaign-envelope.md) —
+  [`candidate-contract` fields, campaign authority and confirm family](../../adr/2026-08-30-candidate-contract.md#campaign-authority) —
   cited, not restated.
 - `K_banked` remains disclosure-only under standing doctrine.
 - **Lane rules ride along.** A harvest-lane candidate remains bound by its lane's own Clause-K
@@ -203,7 +200,7 @@ The three speeds use distinct evidence scopes:
 A conditioner, correlation, or response statistic with no defined trade is a diagnostic, not a
 candidate. The hard form of this rule is already a ratified contract-admission gate: a candidate
 missing any of signal, entry clock, stop, exit/target, holding horizon, or costed payoff unit
-"is not yet a candidate and cannot be admitted" (`candidate-contract` §2). Vet's Decision gate
+"is not yet a candidate and cannot be admitted" ([candidate-contract fields and freezes](../../adr/2026-08-30-candidate-contract.md#contract-fields-and-freezes)). Vet's Decision gate
 (§3.3) applies the same test earlier and cheaper, as:
 
 ```text
@@ -217,8 +214,7 @@ Conditioner-only observations may be retained in the mechanism library without a
 One contract per generation-open campaign and fixed trade template, opened once, before Explore;
 up to `M` selected cells as hash-pinned sub-entries of its append-only selection freeze; no
 separate seed-manifest, G0, or preregistration document may restate its fields
-(`candidate-contract` §2, as amended by `tradeable-reachable-gate`, `evaluation-order`, and
-`operator-approvals-campaign-envelope`). The Vet card (§3.2) is the funnel's pre-contract
+([candidate-contract fields and freezes](../../adr/2026-08-30-candidate-contract.md#contract-fields-and-freezes)). The Vet card (§3.2) is the funnel's pre-contract
 artifact; on `VET-PASS` its content seeds the contract's founding freeze **without forking the
 schema** — where the ratified contract schema defines a field, the contract's definition governs
 and the card simply carries the draft value forward.
@@ -275,7 +271,7 @@ One compact artifact records:
 | Trade expression (draft) | instrument, side rule, entry clock, exit/hold, initial risk geometry — the complete-object fields the contract's admission gate will require |
 | Role | entry, exit, execution, sizing, conditioner, or portfolio-composition |
 | Venue legality | target venue/account and known structural constraints |
-| Mechanism discriminator (named) | the observable whose full adjudication rule the contract will freeze (`terminal-taxonomy` §2) |
+| Mechanism discriminator (named) | the observable whose full adjudication rule the contract will freeze ([candidate-contract fields](../../adr/2026-08-30-candidate-contract.md#contract-fields-and-freezes)) |
 | Data route | available source, span, fidelity, estimated acquisition cost |
 | Cost reachability | per gate 3 below — pinned authority, or the named channel exception |
 | Payoff-shape reachability | per gate 4 below |
@@ -293,30 +289,29 @@ All six must clear:
    route to the mechanism library, not to a contract.
 2. **Structural gate** — instrument, venue, session, data, latency, and product constraints do
    not make the expression illegal or impossible. Where the candidate class is subject to the
-   eval-mechanism-shape screen, this gate is discharged by `evaluation-order` step 1's
+   eval-mechanism-shape screen, this gate is discharged by [evaluation order](../../adr/2026-08-30-evaluation-order.md#decision) step 1's
    class-level structural screening (EM0/EM3/EM4/EM5-N-SHAPE, pre-catalogue, pre-K, $0) — run
    here, cited there.
 3. **Cost gate** — **delegated, never rederived**: the `TRADEABLE-REACHABLE` cost limb's pinned
    authority and void-and-refreeze rule
-   ([`tradeable-reachable-gate`](../../adr/2026-08-30-tradeable-reachable-gate.md) §2) applied to
+   ([reachability](../../adr/2026-08-30-evaluation-order.md#reachability)) applied to
    the draft values, with the full gate re-run pre-Explore at its ratified position
-   (`evaluation-order` step 5). **The no-counterparty-statistical/geometric channel's named
+   ([evaluation order](../../adr/2026-08-30-evaluation-order.md#decision) step 5). **The no-counterparty-statistical/geometric channel's named
    exception is preserved exactly**: for that channel only, the cost limb is satisfied by citing
    the channel's own ratified deferred order, with its post-confirm cost-law check remaining the
    operative discipline; the exception does not generalize.
 4. **Shape gate** — the hypothesized win rate, payoff ratio, cadence, and barrier exposure occupy
    a feasible region for the target venue's **measured** binding constraint. Shape inputs follow
    the ratified discipline (citable priors under harvest-Requirement-2 handling, or a declared
-   pre-freeze extraction probe under its own approved probe envelope — `tradeable-reachable-gate`
-   §2). **Ordering is the ratified one:** the Confirm-window reservation is committed on the
-   draft contract **before** any probe reads data (`evaluation-order` step 2), so a probe can
+   pre-freeze extraction probe under its own approved probe envelope — [reachability](../../adr/2026-08-30-evaluation-order.md#reachability)). **Ordering is the ratified one:** the Confirm-window reservation is committed on the
+   draft contract **before** any probe reads data ([evaluation order](../../adr/2026-08-30-evaluation-order.md#decision) step 2), so a probe can
    never influence which interval becomes the holdout.
 5. **Power gate** — the reserved panels can discriminate a useful effect at the declared N. A
    test that can only return underpowered ambiguity does not open.
 6. **Novelty gate** — the candidate is not a relabeled dead cell. A prior kill requires its
    recorded re-proposal bar satisfied by new evidence; a mechanism with an `EXPRESSION-FAIL`
    history requires its `N_expr` ledger row cited and its ordinal declared
-   (`terminal-taxonomy` §2).
+   ([expression ladder](../../adr/2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing)).
 
 Economic attribution is disclosed at Vet but is not an absolute alpha-admission gate in this
 proposed design — **for non-HARV lanes**. An `UNATTRIBUTED` candidate may pass only when it has a
@@ -332,7 +327,7 @@ continues to bind in full, unrelieved.
 
 | Output | Meaning | Next action |
 |---|---|---|
-| `VET-PASS` | all six gates clear | open the candidate contract (`candidate-contract` §2) |
+| `VET-PASS` | all six gates clear | open the candidate contract ([candidate-contract fields and freezes](../../adr/2026-08-30-candidate-contract.md#contract-fields-and-freezes)) |
 | `DROP` | a permanent or currently binding impossibility | registry entry per §2.1's routing, with re-proposal bar |
 | `PARK` | one named missing input could change the answer | wake only when that input exists |
 | `MECHANISM-ONLY` | observation is credible but has no decision bridge | retain finding; no contract |
@@ -364,7 +359,7 @@ Generate is allowed to search. It is not allowed to disguise searching as confir
 The contract's founding freeze, the reservation commit, the pinned cost authority, the
 discriminator's full adjudication rule, the multiplicity configuration and succession rule, the
 campaign envelope, and the single operator GO that approves it are all owned by the ratified
-schema (`candidate-contract` §2 plus its three Amends-in-part) — this spec adds no field and
+schema ([candidate-contract fields and freezes](../../adr/2026-08-30-candidate-contract.md#contract-fields-and-freezes)) — this spec adds no field and
 restates none.
 
 It adds one requirement at this boundary, the direct fix for the historical 0/4 failure:
@@ -378,7 +373,7 @@ the same way, in the same pass (§10 Phase C).
 
 ### 4.3 Generate execution — cited
 
-Execution is `evaluation-order` step 6, whole: K-ledger bind before any exploration read; every
+Execution is [evaluation order](../../adr/2026-08-30-evaluation-order.md#decision) step 6, whole: K-ledger bind before any exploration read; every
 declared cell scored once; costs under the pinned model; at most the frozen `M` cells selected by
 the frozen ordering; the append-only, hash-pinned **selection freeze** committed before any
 holdout access. Exploration train/validation subdivision, if the contract froze it, never becomes
@@ -388,13 +383,13 @@ Confirm; hyperparameter choices count toward selection accounting.
 
 | Close | Meaning | Next action |
 |---|---|---|
-| `GENERATED` | ≥1 cell clears; ≤ `M` selected | proceed to Confirm entry (`evaluation-order` steps 7–8) |
+| `GENERATED` | ≥1 cell clears; ≤ `M` selected | proceed to Confirm entry ([evaluation order](../../adr/2026-08-30-evaluation-order.md#decision) steps 7–8) |
 | `STOP-NONE` | no cell clears the calibrated floor | campaign closes; no threshold relaxation; registry/board writes per the channel's standing conventions |
 | `VOID-SELECTION` | catalogue/window/K changed, or Confirm was touched | no result; fresh campaign required |
 | `VOID-POWER` | realized valid N misses the frozen floor | park or redesign prospectively |
 
 No Generate-stage close is an evidence verdict. `MARKET-NULL` and `EXPRESSION-FAIL` exist only at
-Confirm, discriminator-adjudicated (`terminal-taxonomy` §2) — an exploration-stage family failure
+Confirm, discriminator-adjudicated ([confirm verdicts](../../adr/2026-08-30-evaluation-order.md#confirm-verdicts)) — an exploration-stage family failure
 is a `STOP-NONE`-class process close at the scope the contract froze, and any registry entry it
 owes follows the standing per-channel and §D3 conventions, never the confirm vocabulary.
 
@@ -419,7 +414,7 @@ Confirm receives the majority of rigor because few candidates reach it and its e
 
 ### 5.2 Entry — cited
 
-Confirm entry is `evaluation-order` steps 7–8, whole: the contract-integrity check first
+Confirm entry is [evaluation order](../../adr/2026-08-30-evaluation-order.md#decision) steps 7–8, whole: the contract-integrity check first
 (integrity-only — a mismatch voids or stops the attempt, never a rejection), then the zero-K role
 state-drift re-check against the current compliance snapshot (`ROLE-BLOCKED` is a fit-for-scope
 disposition, never a candidate rejection; slots follow the contract's frozen succession rule;
@@ -427,7 +422,7 @@ forfeited or unfilled slots enter Holm adjudication at the frozen placeholder p 
 
 ### 5.3 The battery — implementation adjudication only
 
-One atomic step (`evaluation-order` step 9): the confirm statistic and the frozen minimum
+One atomic step ([evaluation order](../../adr/2026-08-30-evaluation-order.md#decision) step 9): the confirm statistic and the frozen minimum
 temporal-consistency battery run together, and a single verdict is emitted only once both have
 run. The battery adjudicates the **frozen expression**: provenance and implementation integrity;
 net economic result under the pinned cost model; selection-aware inference under the frozen
@@ -437,13 +432,13 @@ TradingView is on the path); payoff and tail geometry **of the expression**; and
 mechanism discriminator.
 
 **Not in the battery:** venue bust/pass survivor MC, composition, activity, drawdown, and sizing
-— those are `evaluation-order` step 10, run post-`CONFIRMED` only (v2 wrongly placed venue
+— those are [evaluation order](../../adr/2026-08-30-evaluation-order.md#decision) step 10, run post-`CONFIRMED` only (v2 wrongly placed venue
 survivor scoring inside the battery). A test is included only if its result can change the frozen
 verdict; everything venue-fit-shaped waits for the edition axis.
 
 ### 5.4 Verdicts — cited truth table
 
-Per [`terminal-taxonomy`](../../adr/2026-08-30-terminal-taxonomy.md) §2, exactly four, no fifth
+Per [confirm verdicts](../../adr/2026-08-30-evaluation-order.md#confirm-verdicts), exactly four, no fifth
 combination undefined:
 
 | Discriminator | Payoff/temporal | Verdict |
@@ -454,7 +449,8 @@ combination undefined:
 | Cannot adjudicate (own coverage/power unmet) | any | `EVIDENCE-VOID` — attempt exhausted, never evidence against the candidate |
 
 Registry routing, add-backs, the `N_expr` ledger mechanics, and the ladder's terminus (migration
-to venue/cost-constraint only when cost/geometry limbs actually fired) are that ADR's, cited.
+to venue/cost-constraint only when cost/geometry limbs actually fired) belong to
+[rejection patterns](../../adr/2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing), cited.
 
 No Confirm outcome authorizes arming, live spend, or autonomous promotion.
 
@@ -472,7 +468,7 @@ causal-attribution requirement; the two remain typed separately.)
 
 ### 5.6 Post-verdict — cited
 
-`evaluation-order` step 10, whole: portfolio and venue fit last, `CONFIRMED` candidates only,
+[evaluation order](../../adr/2026-08-30-evaluation-order.md#decision) step 10, whole: portfolio and venue fit last, `CONFIRMED` candidates only,
 landing on the edition axis (placement-clear / `VENUE-FAIL(edition)`). A failure there rejects
 the placement, never the confirmed status, and is never evidence the market effect is false.
 Confirm effort guidance: **60–70%** of candidate research effort, conditional on the candidate
@@ -484,7 +480,7 @@ native-platform parity belong here.
 ## 6. Handoffs
 
 There are no handoff packets: the contract's own sections and appendices are the handoffs
-(`candidate-contract` §2). The one boundary artifact this funnel still owes is the
+([candidate-contract fields and freezes](../../adr/2026-08-30-candidate-contract.md#contract-fields-and-freezes)). The one boundary artifact this funnel still owes is the
 **Confirm → lifecycle appendix** for a `CONFIRMED` candidate — intended role and venue,
 durability-source tag (§5.5), the step-10 edition-axis outcome, the monitoring observable and
 decay-trigger design obligation, and every caveat that survived confirmation. Lifecycle,
@@ -495,7 +491,7 @@ standing authority; the funnel collapses none of those layers.
 
 ## 7. Speed-boundary map, INQHIORI mapping, and vocabulary crosswalk
 
-**Speeds onto the ratified pipeline** ([`evaluation-order`](../../adr/2026-08-30-evaluation-order.md) §2):
+**Speeds onto the ratified pipeline** ([evaluation order](../../adr/2026-08-30-evaluation-order.md#decision)):
 
 | Speed | Pipeline steps | Boundary events |
 |---|---|---|
@@ -517,7 +513,7 @@ standing authority; the funnel collapses none of those layers.
 
 **Crosswalk to the tensions note's phrasing:** the note's "lean generate phase" steps 1–6 ≈ Vet
 plus contract freeze; its step 7 ≈ Generate execution; its step 8 ≈ the channel-liveness gate
-(now its own ratified ADR); its "lean evaluate phase" ≈ Confirm entry, battery, verdicts, and
+([current channel-liveness owner](../../methodology/strategy_harvest.md#channel-liveness-contract)); its "lean evaluate phase" ≈ Confirm entry, battery, verdicts, and
 step 10. The note's "generate/evaluate" is never a synonym for this spec's Generate speed.
 
 The canon's bounded-acceleration rule applies at every speed: tooling must be cheaper than the
@@ -581,7 +577,7 @@ The funnel is not successful merely because each artifact is internally correct.
 | Defects found at each speed | placement of review effort |
 | Sampled false-negative rate of early gates | over-correction risk |
 | Research hours per decision-changing result | total programme efficiency |
-| **Each channel's position against its own declared liveness ceiling** | channel liveness — per [`channel-liveness-gate`](../../adr/2026-08-30-channel-liveness-gate.md): the ceiling, yield unit, and consequence are the channel charter's own declarations; this funnel imposes **no universal number** and reports against each channel's clause as declared |
+| **Each channel's position against its own declared liveness ceiling** | channel liveness — per [`channel-liveness-gate`](../../methodology/strategy_harvest.md#channel-liveness-contract): the ceiling, yield unit, and consequence are the channel charter's own declarations; this funnel imposes **no universal number** and reports against each channel's clause as declared |
 
 Do not target a high Confirm pass rate. Target calibrated flow: enough candidates reach Confirm
 to learn, while untouched Confirm remains difficult to pass. Promotion-rate targets must be set
@@ -591,8 +587,8 @@ by a separate calibration exercise, not inferred post hoc from the first cohort.
 
 ## 10. Adoption plan and required calibration
 
-This design must not become standing doctrine from prose approval alone. (The six 2026-08-30
-ADRs are already Accepted and are not gated on this plan — the phases below validate what this
+This design must not become standing doctrine from prose approval alone. (The August 30 rules
+remain Accepted at their current owners and are not gated on this plan — the phases below validate what this
 spec itself adds.)
 
 ### Phase A — historical shadow routing (`K=0`)
@@ -659,8 +655,8 @@ follows; no silent extension.
   prospective corrections or typed defects.
 - **Optimizing programme metrics.** Counts diagnose the funnel; they are not quotas and cannot
   justify threshold movement.
-- **Restating a ratified owner's content.** This spec cites the six 2026-08-30 ADRs; any future
-  amendment of their ground lands on them, never here. A restatement that drifts is a
+- **Restating a ratified owner's content.** This spec cites the current owners of the August 30 rules; any future
+  amendment of their ground lands with those owners, never here. A restatement that drifts is a
   source-of-truth fracture.
 
 ---
@@ -672,11 +668,11 @@ follows; no silent extension.
 3. Which promotion-statistic (and discriminator) families receive synthetic calibration first?
 4. What candidate count, K ceiling, spend ceiling, and iteration count bind the Phase-D pilot?
 5. Whether a unified K band should ever replace per-lane bands (§2.4) — named, not proposed.
-6. Whether ratification of this spec lands as its own thin ADR (the vocabulary, the Vet front
-   door, the calibration requirement, the relief valve) or folds into a future amendment of one
-   of the six owners.
+6. Which owning record carries ratification of this spec (the vocabulary, the Vet front
+   door, the calibration requirement, the relief valve): this spec or an appropriate amendment;
+   a separate ADR only if the repository's selective ADR admission rule calls for one.
 
 Until these are decided and a ratifying instrument lands, this spec authorizes no campaign, data
-pull, K spend, status change, Pine build, lifecycle change, or deployment action — while the six
-2026-08-30 ADRs it composes with remain in force on their own authority, unaffected by this
+pull, K spend, status change, Pine build, lifecycle change, or deployment action — while the
+August 30 rules it composes with remain in force at their current owners, unaffected by this
 spec's status.

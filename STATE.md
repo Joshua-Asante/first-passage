@@ -166,15 +166,23 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   · [analogue ruling](docs/adr/2026-08-15-analogue-modality-route-ruling.md).
 - **Regime-candidate flag lane:** two-strikes check against new confirm closures.
   [Owner](docs/adr/2026-07-26-regime-candidate-flag-lane.md).
-- **Mechanical-enforcement debt:** review the four still-owed implementation
-  obligations in [evaluation-order](docs/adr/2026-08-30-evaluation-order.md),
-  [terminal taxonomy](docs/adr/2026-08-30-terminal-taxonomy.md),
-  [tradeable-reachable](docs/adr/2026-08-30-tradeable-reachable-gate.md), and
-  [campaign envelope](docs/adr/2026-08-30-operator-approvals-campaign-envelope.md), each §6.
-- **Channel reconciliation debt:** ten owed addenda across five channels—liveness
-  ceiling and candidate-contract migration for each. Channel lists and required
-  edits remain with [channel-liveness §7](docs/adr/2026-08-30-channel-liveness-gate.md)
-  and [candidate-contract §6/§7](docs/adr/2026-08-30-candidate-contract.md).
+- **Candidate contract and channel review:** initial consolidated review of freezes,
+  field sufficiency, inclusive probe spend, fixed confirm family and fresh-attempt authority
+  under [candidate review](docs/adr/2026-08-30-candidate-contract.md#first-review-and-unresolved-obligations).
+  Five artifact adoptions and five liveness reconciliations remain owed at their channel
+  owners; [candidate owner](docs/adr/2026-08-30-candidate-contract.md#current-owner)
+  and [channel liveness](docs/methodology/strategy_harvest.md#channel-liveness-contract) route them.
+  Review fired ceilings for reachability, bindingness and operator consequence; no firing
+  leaves the first post-firing check owed. Missing examples are inconclusive, not PASS.
+- **Evaluation and rejection review:** initial consolidated ordering, role-scope,
+  reachability, verdict and N_expr review under
+  [evaluation review](docs/adr/2026-08-30-evaluation-order.md#first-review-and-unresolved-obligations).
+  Full contract/K/M/selection/role/reachability enforcement and the rejection parser/ladder
+  remain incomplete; [evaluation owner](docs/adr/2026-08-30-evaluation-order.md#current-owner)
+  and [rejection patterns](docs/adr/2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing)
+  retain the limits under [D3 scope routing](docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md#2--decision).
+  Cost-authority/scope changes trigger an immediate review. The six
+  documents' redundant recurring maintenance reviews are retired; useful unresolved work remains.
 
 ### 2027-02-08
 
