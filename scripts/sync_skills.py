@@ -177,6 +177,10 @@ def diff_skill(repo_skill: Path, deployed_skill: Path) -> list[str]:
         target_f = deployed_skill / f.relative_to(repo_skill)
         if not target_f.exists():
             diverging.append(f"{repo_skill.name}/{rel}  (missing in deployed)")
+        elif _entry_kind(target_f) != "file":
+            diverging.append(
+                f"{repo_skill.name}/{rel}  (deployed entry is not a regular file)"
+            )
         elif _files_differ(f, target_f):
             diverging.append(f"{repo_skill.name}/{rel}  (content differs)")
     if deployed_skill.is_dir():
@@ -317,7 +321,7 @@ def _any_reparse_in_tree(root: Path) -> bool:
 def _path_has_reparse_ancestor(path: Path) -> bool:
     """True if *path* or an unresolved ancestor is a symlink/junction/reparse."""
     current = Path(path)
-    for _ in range(64):
+    while True:
         try:
             if current.exists() or current.is_symlink():
                 if _path_is_reparse(current):
@@ -326,9 +330,8 @@ def _path_has_reparse_ancestor(path: Path) -> bool:
             return True
         parent = current.parent
         if parent == current:
-            break
+            return False
         current = parent
-    return False
 
 
 def _entry_kind(path: Path) -> str:
@@ -750,6 +753,82 @@ def _staged_payload_problems(
     return problems
 
 
+def _expected_for_skill(expected: dict[str, bytes], skill_name: str) -> dict[str, bytes]:
+    """Slice *expected* paths down to one skill directory (relative keys)."""
+    prefix = skill_name + "/"
+    return {
+        rel[len(prefix):]: data
+        for rel, data in expected.items()
+        if rel.startswith(prefix)
+    }
+
+
+def _skill_matches_expected(
+    dest: Path, skill_name: str, expected: dict[str, bytes]
+) -> bool:
+    """True when *dest* exactly matches this skill's release bytes."""
+    return not _staged_payload_problems(dest, _expected_for_skill(expected, skill_name))
+
+
+def _installed_payload_problems(
+    target: Path, skill_names: list[str], expected: dict[str, bytes]
+) -> list[str]:
+    """Compare installed skill trees against the release manifest."""
+    problems: list[str] = []
+    for name in skill_names:
+        dest = target / name
+        skill_expected = _expected_for_skill(expected, name)
+        if not skill_expected:
+            continue
+        if not dest.exists() and not dest.is_symlink():
+            problems.append(f"{name}/  (missing after install)")
+            continue
+        for item in _staged_payload_problems(dest, skill_expected):
+            problems.append(f"{name}: {item}")
+    return problems
+
+
+def _run_release_validators(toplevel: Path) -> tuple[int, str]:
+    """Run skill validators against *toplevel* before publication."""
+    script_dir = Path(__file__).resolve().parent
+    validators = [
+        (script_dir / "check_skill_refs.py", ["--all", "--repo-root", str(toplevel)]),
+        (
+            script_dir / "check_skills_no_constants.py",
+            ["--repo-root", str(toplevel)],
+        ),
+    ]
+    missing = [path.name for path, _argv in validators if not path.exists()]
+    if missing:
+        return (
+            EXIT_USAGE,
+            "ERROR: missing release validator(s): " + ", ".join(missing),
+        )
+    failures: list[str] = []
+    for script, argv in validators:
+        try:
+            result = subprocess.run(
+                [sys.executable, str(script), *argv],
+                cwd=str(toplevel),
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+        except OSError as exc:
+            return EXIT_ERROR, f"ERROR: could not run {script.name}: {exc}"
+        label = " ".join([script.name, *argv]).strip()
+        if result.returncode != 0:
+            detail = ((result.stdout or "") + (result.stderr or "")).strip()
+            detail = detail or f"exit {result.returncode}"
+            failures.append(f"{label} failed:\n{detail}")
+    if failures:
+        return (
+            EXIT_POLICY,
+            "REFUSED: release validators failed\n  " + "\n  ".join(failures),
+        )
+    return EXIT_OK, ""
+
+
 def _backup_existing_skill(src: Path, dest: Path) -> None:
     _safe_replace(src, dest)
 
@@ -763,17 +842,43 @@ def _install_skill(staged: Path, dest: Path) -> None:
     os.replace(staged, dest)
 
 
-def _restore_skill(backup: Path, dest: Path) -> None:
+def _restore_skill(
+    backup: Path,
+    dest: Path,
+    *,
+    installed_expected: dict[str, bytes] | None = None,
+) -> None:
+    """Restore *backup* over *dest*.
+
+    When *installed_expected* is provided, refuse to delete *dest* unless it still
+    matches those installed bytes — preserving concurrent target updates.
+    """
     _require_safe_tree(backup)
     _require_safe_io_path(dest)
     if dest.exists() or dest.is_symlink():
+        if installed_expected is not None:
+            problems = _staged_payload_problems(dest, installed_expected)
+            if problems:
+                raise OSError(
+                    f"destination changed since install; refusing to overwrite: {dest}"
+                )
         _safe_rmtree(dest)
     dest.parent.mkdir(parents=True, exist_ok=True)
     os.replace(backup, dest)
 
 
-def _remove_created_skill(dest: Path) -> None:
+def _remove_created_skill(
+    dest: Path,
+    *,
+    installed_expected: dict[str, bytes] | None = None,
+) -> None:
     if dest.exists() or dest.is_symlink():
+        if installed_expected is not None:
+            problems = _staged_payload_problems(dest, installed_expected)
+            if problems:
+                raise OSError(
+                    f"destination changed since install; refusing to remove: {dest}"
+                )
         _safe_rmtree(dest)
 
 
@@ -853,20 +958,26 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
     if rc != EXIT_OK or toplevel is None or sha is None:
         print(msg, file=sys.stderr)
         return rc
+    rc, msg = _run_release_validators(toplevel)
+    if rc != EXIT_OK:
+        print(msg, file=sys.stderr)
+        return rc
     rc, msg = _validate_target_for_publish(repo_skills, toplevel, target)
     if rc != EXIT_OK:
         print(msg, file=sys.stderr)
         return rc
 
     created_target = not target.exists() and not target.is_symlink()
-    preflight = _target_snapshot(target)
     token = uuid.uuid4().hex
     staging_root = target.parent / f".skill-release-stage-{token}"
     backup_root = target.parent / f".skill-release-backup-{token}"
     installed: list[tuple[str, bool]] = []
     preserve_recovery = False
+    expected: dict[str, bytes] = {}
+    skill_names: list[str] = []
 
     try:
+        preflight = _target_snapshot(target)
         _require_safe_io_path(staging_root)
         _require_safe_io_path(backup_root)
         _stage_release_payload(repo_skills, sha, staging_root)
@@ -888,6 +999,10 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
             if msg:
                 print(msg, file=sys.stderr)
             return rc if rc != EXIT_OK else EXIT_POLICY
+        rc, msg = _run_release_validators(toplevel)
+        if rc != EXIT_OK:
+            print(msg, file=sys.stderr)
+            return rc
         if _target_snapshot(target) != preflight:
             print(
                 "ERROR: target changed during staging; leaving existing skills in place",
@@ -898,7 +1013,9 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
         if rc != EXIT_OK:
             print(msg, file=sys.stderr)
             return rc
-        skill_names = sorted({Path(rel).parts[0] for rel in expected if len(Path(rel).parts) > 1})
+        skill_names = sorted(
+            {Path(rel).parts[0] for rel in expected if len(Path(rel).parts) > 1}
+        )
         backup_root.mkdir(parents=True, exist_ok=True)
         backed_up: list[str] = []
         for name in skill_names:
@@ -906,7 +1023,6 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
             if dest.exists():
                 _backup_existing_skill(dest, backup_root / name)
                 backed_up.append(name)
-                preserve_recovery = True
         if not target.exists():
             target.mkdir(parents=True, exist_ok=True)
         try:
@@ -925,13 +1041,21 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
                     restore_order.append((name, True))
             for name, had_predecessor in restore_order:
                 dest = target / name
+                skill_expected = _expected_for_skill(expected, name)
                 try:
                     if had_predecessor:
-                        _restore_skill(backup_root / name, dest)
+                        _restore_skill(
+                            backup_root / name,
+                            dest,
+                            installed_expected=skill_expected,
+                        )
                     else:
-                        _remove_created_skill(dest)
+                        _remove_created_skill(
+                            dest, installed_expected=skill_expected
+                        )
                 except OSError as restore_exc:
                     rollback_ok = False
+                    preserve_recovery = True
                     print(
                         f"ERROR: rollback failed for {dest}: {restore_exc}",
                         file=sys.stderr,
@@ -942,9 +1066,13 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
             if rollback_ok and leftover_new:
                 try:
                     for name in leftover_new:
-                        _remove_created_skill(target / name)
+                        _remove_created_skill(
+                            target / name,
+                            installed_expected=_expected_for_skill(expected, name),
+                        )
                 except OSError as leftover_exc:
                     rollback_ok = False
+                    preserve_recovery = True
                     print(
                         f"ERROR: refused unsafe leftover cleanup: {leftover_exc}",
                         file=sys.stderr,
@@ -960,6 +1088,7 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
                             _safe_rmtree(target)
                         except OSError as cleanup_exc:
                             rollback_ok = False
+                            preserve_recovery = True
                             print(
                                 f"ERROR: refused unsafe target cleanup: {cleanup_exc}",
                                 file=sys.stderr,
@@ -976,6 +1105,20 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
                 f"  target={target}\n"
                 f"  staging={staging_root}\n"
                 f"  backup={backup_root}",
+                file=sys.stderr,
+            )
+            return EXIT_ERROR
+
+        installed_problems = _installed_payload_problems(
+            target, skill_names, expected
+        )
+        if installed_problems:
+            preserve_recovery = True
+            print(
+                "ERROR: installed skills do not match the reviewed revision; "
+                "release incomplete. Manual recovery is required.\n  "
+                + "\n  ".join(installed_problems)
+                + f"\n  target={target}\n  staging={staging_root}\n  backup={backup_root}",
                 file=sys.stderr,
             )
             return EXIT_ERROR
@@ -1015,7 +1158,9 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
         )
         return EXIT_OK
     finally:
-        if staging_root.exists() and not installed and not preserve_recovery:
+        # Successful releases and clean rollbacks drop the stage directory.
+        # Incomplete recovery keeps it beside the retained backup.
+        if staging_root.exists() and not preserve_recovery:
             _safe_rmtree(staging_root, ignore_errors=True)
 
 

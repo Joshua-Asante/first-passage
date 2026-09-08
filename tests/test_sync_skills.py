@@ -1310,3 +1310,139 @@ def test_snapshot_detects_nested_dir_replaced_with_junction(tmp_path, monkeypatc
     assert (external / "keep.txt").read_text(encoding="utf-8") == "external\n"
     assert not (target / "alpha" / "SKILL.md").read_bytes() == b"new-a\n"
     assert list(tmp_path.glob(".skill-release-backup-*")) == []
+
+# --- Codex review follow-ups (explicit release hardening) ---
+
+def test_check_reports_non_file_deploy_entry_as_drift(tmp_path):
+    repo = tmp_path / "repo"
+    target = tmp_path / "deployed"
+    _mk(repo, "alpha", "SKILL.md", "hello\n")
+    ss.copy_skills(repo, target)
+    deployed_file = target / "alpha" / "SKILL.md"
+    deployed_file.unlink()
+    deployed_file.mkdir()
+    (deployed_file / "nested.txt").write_text("nope\n", encoding="utf-8")
+    drift = ss.check_drift(repo, target)
+    assert drift
+    assert any("not a regular file" in item for item in drift)
+
+
+def test_publish_refuses_when_release_validators_fail(tmp_path, monkeypatch, capsys):
+    repo, skills_dir, sha, target = _primary_release(tmp_path)
+    monkeypatch.setattr(
+        ss,
+        "_run_release_validators",
+        lambda _toplevel: (ss.EXIT_POLICY, "REFUSED: release validators failed"),
+    )
+    rc = _publish(skills_dir, sha, target)
+    assert rc == ss.EXIT_POLICY
+    assert not target.exists() or not (target / "alpha").exists()
+    err = capsys.readouterr().err
+    assert "validators failed" in err.lower() or "refused" in err.lower()
+
+
+def test_publish_success_removes_staging_directory(tmp_path):
+    repo, skills_dir, sha, target = _primary_release(tmp_path)
+    rc = _publish(skills_dir, sha, target)
+    assert rc == 0
+    leftovers = [
+        p for p in tmp_path.iterdir()
+        if p.name.startswith(".skill-release-stage-")
+    ]
+    assert leftovers == []
+    backups = [
+        p for p in tmp_path.iterdir()
+        if p.name.startswith(".skill-release-backup-")
+    ]
+    assert backups, "successful release still retains the advertised backup"
+
+
+def test_publish_verifies_installed_bytes_before_success(tmp_path, monkeypatch, capsys):
+    repo, skills_dir, sha, target = _primary_release(
+        tmp_path,
+        {"alpha": {"SKILL.md": "new-a\n"}, "beta": {"SKILL.md": "new-b\n"}},
+    )
+    real = ss._install_skill
+    seen = {"n": 0}
+
+    def _mutate_after_first(staged: Path, dest: Path, *a, **k):
+        real(staged, dest, *a, **k)
+        seen["n"] += 1
+        if seen["n"] == 1:
+            # Simulate cloud-sync rewriting an already-installed skill mid-release.
+            (dest / "SKILL.md").write_text("concurrent-edit\n", encoding="utf-8")
+
+    monkeypatch.setattr(ss, "_install_skill", _mutate_after_first)
+    rc = _publish(skills_dir, sha, target)
+    assert rc == 1
+    err = (capsys.readouterr().err + capsys.readouterr().out).lower()
+    assert "incomplete" in err or "do not match" in err or "does not match" in err
+    stages = list(tmp_path.glob(".skill-release-stage-*"))
+    backups = list(tmp_path.glob(".skill-release-backup-*"))
+    assert stages or backups
+
+
+def test_rollback_preserves_concurrent_target_update(tmp_path, monkeypatch, capsys):
+    repo, skills_dir, sha, target = _primary_release(
+        tmp_path,
+        {"alpha": {"SKILL.md": "new-a\n"}, "beta": {"SKILL.md": "new-b\n"}},
+    )
+    _mk(target, "alpha", "SKILL.md", "old-a\n")
+    _mk(target, "beta", "SKILL.md", "old-b\n")
+    real = ss._install_skill
+    seen = {"n": 0}
+
+    def _fail_after_mutating_first(staged: Path, dest: Path, *a, **k):
+        seen["n"] += 1
+        if seen["n"] >= 2:
+            # Concurrent update landed on the already-installed first skill.
+            (target / "alpha" / "SKILL.md").write_text(
+                "concurrent-cloud-sync\n", encoding="utf-8"
+            )
+            raise OSError("injected install failure after concurrent update")
+        return real(staged, dest, *a, **k)
+
+    monkeypatch.setattr(ss, "_install_skill", _fail_after_mutating_first)
+    rc = _publish(skills_dir, sha, target)
+    assert rc == 1
+    # Concurrent bytes must not be destroyed by rollback.
+    assert (target / "alpha" / "SKILL.md").read_text(encoding="utf-8") == (
+        "concurrent-cloud-sync\n"
+    )
+    err = capsys.readouterr().err.lower()
+    assert "manual" in err or "recovery" in err or "changed" in err
+    assert list(tmp_path.glob(".skill-release-backup-*")) or list(
+        tmp_path.glob(".skill-release-stage-*")
+    )
+
+
+def test_initial_target_snapshot_failure_is_reported(tmp_path, monkeypatch, capsys):
+    repo, skills_dir, sha, target = _primary_release(tmp_path)
+    _mk(target, "alpha", "SKILL.md", "old\n")
+
+    def _boom(_path: Path):
+        raise PermissionError("injected snapshot failure")
+
+    monkeypatch.setattr(ss, "_target_snapshot", _boom)
+    before = (target / "alpha" / "SKILL.md").read_text(encoding="utf-8")
+    rc = _publish(skills_dir, sha, target)
+    assert rc == 1
+    assert (target / "alpha" / "SKILL.md").read_text(encoding="utf-8") == before
+    err = capsys.readouterr().err.lower()
+    assert "snapshot" in err or "preparation" in err or "backup" in err
+
+
+def test_path_has_reparse_ancestor_walks_full_chain(tmp_path):
+    # Build a deep lexical chain; only the top is a symlink.
+    deep = tmp_path / "root"
+    deep.mkdir()
+    link = tmp_path / "link-root"
+    try:
+        link.symlink_to(deep, target_is_directory=True)
+    except OSError:
+        pytest.skip("symlink creation is not permitted on this host")
+    current = link
+    for i in range(80):
+        current = current / f"d{i}"
+    # Lexical path has >64 components under the symlink root.
+    assert ss._path_has_reparse_ancestor(current) is True
