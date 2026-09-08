@@ -34,6 +34,16 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 
 ---
 
+
+## 2026-09-08d — Codex ADR-checker fixes; retire ox-alpha ADR
+
+**Focus:** Address Codex review on concise ADR validation and session document pins; delete the unused ox-alpha adversarial-lens ADR.
+**Shipped:** nested  section parsing + template-placeholder rejection in skill ; durable reachability for session document pins; tombstone + pin rewrite for [](adr/TOMBSTONES.md#2026-09-08-ox-alpha-lens-retirement).
+**Decisions/defects:** ox-alpha lens **retired** (not passed); no successor owner.
+**Live-ops state:** unchanged.
+
+---
+
 ## 2026-09-08c — Codex re-review: evidence capture/index trust
 
 **Focus:** Address Codex re-review findings on PR #319 (`bf2ea5c`).
@@ -1419,7 +1429,7 @@ scored panels).
 ## 2026-08-25r — ox-alpha on mechanism-gate vs historical iteration
 
 **Focus:** Operator commission: pose the mechanism-first-gate vs. historically-iterated-book question to ox-alpha and post the response.
-**Shipped:** [`notice`](notes/notice/N-2026-08-25-ox-alpha-mechanism-gate-overcorrection.md) · [`ox-alpha ADR addendum`](adr/2026-08-22-ox-alpha-adversarial-lens-scope.md#addendum-2026-08-25--use-n-sanitized-mechanism-gate-vs-historical-iteration-consult). $0 / K=0.
+**Shipped:** [`notice`](notes/notice/N-2026-08-25-ox-alpha-mechanism-gate-overcorrection.md) · [`ox-alpha ADR addendum`](https://github.com/Joshua-Asante/first-passage/blob/770413bb2b6a90c51a5ac9cadcc784d9b0c793ad/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md#addendum-2026-08-25--use-n-sanitized-mechanism-gate-vs-historical-iteration-consult). $0 / K=0.
 **Decisions/defects:** no methodology change. Part 1 inferences fail against wall-scope + A1 + no-live-book. Part 2 re-derives the estate's own argument. One novel thread (gate-calibration probes) recorded, not adopted. Revert trigger (b) does not tick.
 **Open / next:** STATE queue: #1 Acceptable strategy on the ruled host ([`overview`](superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) · [`Phase B`](superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) · [`A2 RESULTS`](../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)) · #2 B7-REFIRE Stage 1 + M1 ([`M1 addendum`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy)).
 **Live-ops state:** unchanged (`dry_run=true`; no arm).

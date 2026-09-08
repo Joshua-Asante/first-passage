@@ -60,6 +60,6 @@ Sequence derived from the 2026-08-23 posture review in-session; mechanism-supply
 sanctioned ox-alpha lens, Uses 3–4, fully reconciled before inclusion
 ([Use 3](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-23-ox-alpha-msl-who-sourcing-methodology-review.md) ·
 [Use 4](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-23-ox-alpha-mechanism-supply-candidates.md) ·
-[scope ADR](../../adr/2026-08-22-ox-alpha-adversarial-lens-scope.md)). Zero authority attaches to
+[scope ADR](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md)). Zero authority attaches to
 the external lens's output anywhere in these plans — every load-bearing claim cites a repo
 artifact.

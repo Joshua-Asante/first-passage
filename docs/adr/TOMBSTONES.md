@@ -4,6 +4,20 @@ Current removals use explicit immutable commit/blob references below. Legacy row
 retain their original archive retrieval instructions. A tombstone records history,
 not renewed permission; the linked current owner governs present work.
 
+
+## 2026-09-08 ox-alpha lens retirement
+
+Operator direction 2026-09-08: delete the ox-alpha ADR; the stealth ox-alpha
+adversarial-lens lane is no longer in use. Authorization to invoke that model,
+its use-ledger and revert triggers are **retired**, not passed. Historical notices
+and consult records remain evidence of past asks; they confer no standing lane.
+No successor owner — do not reopen without a fresh ADR and operator GO.
+
+| Removed path | Disposition / current owner | Immutable body |
+|---|---|---|
+| `docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md` | Retired unused stealth-model adversarial-lens scope; no current owner. | [Full body](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md); `git show 07fecc6cceb8609fdd5feae78ae67779727ed5c6:docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md`; blob `5b9173fc928886b5ad5253dc714fdd70e1807f74` |
+
+
 ## 2026-09-08 citation pilot
 
 | Removed path | Disposition / current owner | Immutable body |

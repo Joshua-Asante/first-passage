@@ -251,7 +251,7 @@ reopen this addendum's status.
 - **External-lens note** (non-authoritative, per scope): a sanitized, genericized version of
   this exact success/revert-dichotomy shape was also run through the sanctioned
   stateless second-opinion lane under
-  [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](2026-08-22-ox-alpha-adversarial-lens-scope.md)
+  [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md)
   (anchor `b2e5f15`, 2026-08-22) as a blind candidate-objection check; per that ADR's
   own §2/§5, its output carries **zero authority** over this ruling and is not otherwise
   reproduced or relied upon here — this addendum's reasoning below is derived independently from
@@ -339,7 +339,7 @@ no second distinct firm has also cleared:
   tiers clear — and stays a separate, still-open queue item (STATE.md row 1). Deciding it here
   would be exactly the pre-emption STATE.md's own F1 note warns against.
 - **Treating the sanitized external-lens pass as evidence for or against this ruling.** Per
-  [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](2026-08-22-ox-alpha-adversarial-lens-scope.md)
+  [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md)
   §2/§5, that lane is zero-authority tripwire input only; this ruling stands or falls on the real
   artifacts cited in §0, not on that lane's output.
 

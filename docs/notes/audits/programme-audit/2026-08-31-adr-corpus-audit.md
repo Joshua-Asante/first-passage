@@ -181,7 +181,7 @@ Original ranked table, annotated with actual disposition:
 | `2026-06-16-rule-2-budget-before-acting.md` | 4,958 | 4,958 | Refused — the narrative is the ratification rationale itself, not a restatement of the addendum |
 | `2026-08-23-adr-decay-audit-skill-ratification.md` | 2,854 | 2,854 | Refused — the worked example is unique per section, not a repeated walkthrough |
 | `2026-08-27-ssot-data-lineage-remediation-program.md` | 5,766 | 5,766 | Refused — the phase narrative is each addendum's own completion record, not duplicated elsewhere |
-| `2026-08-22-ox-alpha-adversarial-lens-scope.md` | 4,994 | 4,994 | Refused — the 'Use N' addenda are each a dated, distinct measurement event, not repetitions of one caveat |
+| [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md) | 4,994 | 4,994 | Refused — the 'Use N' addenda are each a dated, distinct measurement event, not repetitions of one caveat |
 | `2026-08-21-persona-hierarchy-front-office-only.md` | 3,692 | 3,692 | Refused — the parent-rationale restatement is what makes this narrowing self-contained without a second read |
 | `2026-08-15-notice-log-is-the-live-observation-routing-convention.md` | 2,589 | 2,589 | Refused — the proposal targets a section that does not exist in the file |
 | [`2026-06-30-state-md-role-reduction.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-06-30-state-md-role-reduction.md) | 2,403 | 2,403 | Refused — no before/after full-text STATE.md reproduction exists in this file to cut |
@@ -211,7 +211,7 @@ Common bloat patterns, in priority order of recoverable words:
   of §0 + §3 alone recovers ~37,000 words — more than every consolidation family combined — and
   touches no decision text, no falsifier, no supersession edge.
 - **(b) Measurement addenda accreting on decision records.** `2026-07-31-orb-mnq` (3 addenda,
-  3,194w), `2026-08-22-ox-alpha-adversarial-lens-scope.md` (7 near-identical "Use N" addenda,
+  3,194w), [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md) (7 near-identical "Use N" addenda,
   1,597w implementing a counter the ADR itself says is untrustworthy), [`2026-08-09-survive-bound-is-the-queue-cap.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md)
   (3 addenda about STATE.md queue ordering on a light-tier ADR). Each names its own Rule 7 owner
   in its first line — the ADR should carry the verdict and a pointer, not the transcript.

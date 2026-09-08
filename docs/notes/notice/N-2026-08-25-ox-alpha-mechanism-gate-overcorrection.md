@@ -13,7 +13,7 @@ priced prior across already-chartered lanes).
 
 ## §0 — Governance basis
 
-Sent under [`docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md`](../../adr/2026-08-22-ox-alpha-adversarial-lens-scope.md)
+Sent under [`docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md`](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md)
 §2's **base scope** (adversarial second-opinion lens on a reasoning/judgment call) — not the
 bounded-extension candidate-generation addendum. The operator supplied the question; it was
 genericized further before send (no strategy / firm / date / dollar / campaign tokens; the
@@ -131,7 +131,7 @@ revert trigger (b) (three consecutive zero-value uses) does not tick.**
 test -f docs/notes/notice/N-2026-08-25-ox-alpha-mechanism-gate-overcorrection.md && echo present
 
 # Use-count pointer landed on the parent ADR
-rg -n "N-2026-08-25-ox-alpha-mechanism-gate-overcorrection" docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md
+rg -n "N-2026-08-25-ox-alpha-mechanism-gate-overcorrection" docs/adr/TOMBSTONES.md
 
 # Novel thread was not already named as a discovery-pipeline probe
 rg -n "gate-calibration probe|randomly selected.*reject" docs/methodology/ docs/adr/ docs/notes/notice/
