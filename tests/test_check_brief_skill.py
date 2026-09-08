@@ -568,6 +568,36 @@ def test_concise_marker_does_not_bypass_other_artifact_contracts():
     assert _hard(cb.check_brief(body_only, "adr"))
 
 
+def test_concise_adr_includes_nested_heading_content():
+    """Decision body may be organized under ### subsections."""
+    text = CONCISE_ADR.replace(
+        "## Decision\nRetain a single current owner for the workflow.\n",
+        "## Decision\n### Scope\nRetain a single current owner for the workflow.\n",
+    )
+    assert cb.check_brief(text, "adr") == []
+
+
+def test_concise_adr_rejects_h1_titled_decision_as_required_section():
+    text = (
+        "# Decision\n\nNot the required section.\n\n"
+        "**Format:** concise\n\n"
+        "## Grounds\nBecause ownership must stay singular.\n\n"
+        "## Current owner\nPIPELINES.md\n"
+    )
+    hard = _hard(cb.check_brief(text, "adr"))
+    assert any(v.section == "Decision" and "missing" in v.message.lower() for v in hard)
+
+
+def test_concise_adr_rejects_canonical_template_placeholders():
+    template = (
+        Path(__file__).resolve().parents[1]
+        / ".claude/skills/brief-authoring/references/adr.md"
+    ).read_text(encoding="utf-8")
+    hard = _hard(cb.check_brief(template, "adr"))
+    assert {"Decision", "Grounds", "Current owner"} <= {v.section for v in hard}
+
+
+
 def test_file_not_found_exits_2(tmp_path, capsys):
     rc = cb.main([str(tmp_path / "nope.md")])
     assert rc == 2

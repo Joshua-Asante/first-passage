@@ -737,16 +737,37 @@ def _frozen_entry_body(text: str) -> str:
     return _strip_trailing_debris(_normalize_historical_github_urls(text))
 
 
+def _commit_is_durably_reachable(root: Path, revision: str, base_ref: str) -> bool:
+    """True when ``revision`` is an ancestor of ``base_ref`` or a remote ref.
+
+    A locally resolvable commit object is not enough: an unpushed side-branch
+    tip can share a blob with ``base_ref`` yet become a 404 once the clone
+    drops that object. Reachability from the append-only base or any
+    ``refs/remotes/*`` tip is the durability bar.
+    """
+    if _git(root, 'merge-base', '--is-ancestor', revision, base_ref) is not None:
+        return True
+    refs = _git(root, 'for-each-ref', '--format=%(refname)', 'refs/remotes')
+    if not refs:
+        return False
+    for ref in refs.splitlines():
+        ref = ref.strip()
+        if ref and _git(root, 'merge-base', '--is-ancestor', revision, ref) is not None:
+            return True
+    return False
+
+
 def _normalize_verified_document_pins(
     root: Path, base_ref: str, before: str, after: str,
 ) -> str:
     """Compare a relative document link with an immutable pin to identical bytes.
 
     Only the href changes. Its repo, path, query and fragment must stay the same;
-    the full commit must resolve locally and its target blob must match base_ref.
-    Missing Git evidence or the repo's Markdown parser grants no exemption.
-    Each changed occurrence must be a real parsed link, not a code example.
-    This does not allow unpinning.
+    the full commit must resolve locally, be durably reachable from the
+    append-only base or a remote-tracking ref, and its target blob must match
+    base_ref. Missing Git evidence or the repo's Markdown parser grants no
+    exemption. Each changed occurrence must be a real parsed link, not a code
+    example. This does not allow unpinning.
     """
     old_links = list(_MARKDOWN_LINK_RE.finditer(before))
     new_links = list(_MARKDOWN_LINK_RE.finditer(after))
@@ -773,6 +794,8 @@ def _normalize_verified_document_pins(
         revision = pin.group(1)
         commit = _git(root, 'rev-parse', '--verify', f'{revision}^{{commit}}')
         if not commit or commit.strip() != revision:
+            continue
+        if not _commit_is_durably_reachable(root, revision, base_ref):
             continue
         base_blob = _git(root, 'rev-parse', '--verify', f'{base_ref}:{target}')
         pin_blob = _git(root, 'rev-parse', '--verify', f'{revision}:{target}')

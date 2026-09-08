@@ -1275,6 +1275,7 @@ def test_append_only_tolerates_archive_repo_repoint_on_a_frozen_entry():
     ('unused_reference_title', False),
     ('literal_and_real_link', False),
     ('pin_and_archive_repoint', True),
+    ('unreachable_side_branch', False),
 ])
 def test_append_only_document_pin_requires_same_evidence(tmp_path, change, allowed):
     """Pruning may pin identical evidence; it must not hide a changed claim or target."""
@@ -1317,10 +1318,23 @@ def test_append_only_document_pin_requires_same_evidence(tmp_path, change, allow
     _git(tmp_path, 'add', '-A')
     _git(tmp_path, 'commit', '-qm', 'frozen session')
     base = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=tmp_path, text=True).strip()
+    side = None
+    if change == 'unreachable_side_branch':
+        # New commit with the same target blob, not reachable from base or remotes.
+        branch = subprocess.check_output(
+            ['git', 'branch', '--show-current'], cwd=tmp_path, text=True,
+        ).strip()
+        _git(tmp_path, 'checkout', '-B', 'side-pin', original)
+        _git(tmp_path, 'commit', '--allow-empty', '-qm', 'unreachable same blob')
+        side = subprocess.check_output(
+            ['git', 'rev-parse', 'HEAD'], cwd=tmp_path, text=True,
+        ).strip()
+        _git(tmp_path, 'checkout', branch)
     target.unlink()  # actual pruning case: history is now the only copy
     revision = {'base_revision': base, 'changed_blob': changed,
                 'missing_revision': '0' * 40, 'moving_ref': 'HEAD',
-                'short_sha': original[:8], 'annotated_tag': tag}.get(change, original)
+                'short_sha': original[:8], 'annotated_tag': tag,
+                'unreachable_side_branch': side}.get(change, original)
     href = f'https://github.com/Joshua-Asante/first-passage/blob/{revision}/docs/adr/decision.md#decision'
     if change == 'different_path':
         href = href.replace('/decision.md', '/other.md')

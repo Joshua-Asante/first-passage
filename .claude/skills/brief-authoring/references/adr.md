@@ -28,10 +28,10 @@ an operator scope election or a quarterly review for a completed maintenance act
 and evidence. This ADR may own the durable rationale or scope itself. Avoid copying
 the runbook or creating another wrapper.]
 
+## Authoring and revision guidance
+
 Add evidence, constraints, reversal conditions and verification commands when they
 change a future action. Do not pad the three sections into a fixed apparatus.
-
-## Authoring and revision guidance
 
 Policy: [consequential-decision retention](../../../../docs/adr/2026-08-08-adr-ceremony-tiering.md).
 Filename: `docs/adr/YYYY-MM-DD-slug.md`; the filename is the identifier. Search for

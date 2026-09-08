@@ -119,7 +119,10 @@ _SECTION_RE = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 # Any markdown heading (numbered or named) — used for header-keyed types.
-_NAMED_HEADING_RE = re.compile(r"^\s{0,3}#{1,4}\s+(?P<title>[^\n]+)$", re.MULTILINE)
+_NAMED_HEADING_RE = re.compile(
+    r"^\s{0,3}(?P<hashes>#{1,4})\s+(?P<title>[^\n]+)$",
+    re.MULTILINE,
+)
 
 _FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
 _INLINE_CODE_RE = re.compile(r"`([^`]+)`")
@@ -239,6 +242,29 @@ def split_named_sections(text: str) -> list[tuple[str, str]]:
     return out
 
 
+def _section_body_at_level(text: str, title: str, *, level: int = 2) -> str | None:
+    """Body of the first heading with exact ``title`` at ``level``.
+
+    Includes subordinate headings until the next heading of the same or higher
+    rank (smaller or equal level). An H1 titled like a required section is
+    ignored when ``level`` is 2 — concise ADR sections are ``##`` headings.
+    """
+    matches = list(_NAMED_HEADING_RE.finditer(_mask_fences(text)))
+    for i, m in enumerate(matches):
+        if len(m.group("hashes")) != level:
+            continue
+        if m.group("title").strip().casefold() != title.casefold():
+            continue
+        start = m.end()
+        end = len(text)
+        for nxt in matches[i + 1:]:
+            if len(nxt.group("hashes")) <= level:
+                end = nxt.start()
+                break
+        return text[start:end]
+    return None
+
+
 def _find_named(sections: list[tuple[str, str]], keyword: str) -> str | None:
     """Body of the first heading whose title contains `keyword` (case-
     insensitive substring). None if no heading matches."""
@@ -251,7 +277,11 @@ def _find_named(sections: list[tuple[str, str]], keyword: str) -> str | None:
 
 def _is_empty_body(body: str) -> bool:
     """A section body is 'empty' if only whitespace, markdown rules, or a
-    TBD/N-A/none/todo placeholder remain — the ceremonial-section trap."""
+    TBD/N-A/none/todo placeholder remain — the ceremonial-section trap.
+
+    Also rejects the canonical concise-ADR template's whole-section
+    ``[instructional placeholder]`` blocks so an unfilled copy cannot pass.
+    """
     stripped = body.strip()
     if not stripped:
         return True
@@ -261,7 +291,13 @@ def _is_empty_body(body: str) -> bool:
         return True
     joined = " ".join(content).lower()
     placeholder_only = re.sub(r"[^a-z]", "", joined)
-    return placeholder_only in ("tbd", "na", "none", "tba", "todo")
+    if placeholder_only in ("tbd", "na", "none", "tba", "todo"):
+        return True
+    # Template bodies are one outer [...] block (no nested brackets).
+    block = "\n".join(content).strip()
+    if block.startswith("[") and block.endswith("]") and "[" not in block[1:-1]:
+        return True
+    return False
 
 
 def _is_blank(body: str) -> bool:
@@ -538,12 +574,11 @@ def check_concise_adr(text: str) -> list[Violation]:
 
     This checks the document contract, not approval, truth or preservation of
     authority. Header lifecycle integrity remains check_adr_graph's concern.
+    Required sections are ``##`` headings; subordinate ``###`` content counts.
     """
-    sections = split_named_sections(text)
     out: list[Violation] = []
     for key in ("Decision", "Grounds", "Current owner"):
-        body = next((body for title, body in sections
-                     if title.casefold() == key.casefold()), None)
+        body = _section_body_at_level(text, key, level=2)
         if body is None:
             out.append(Violation("HARD", key, "required section missing"))
         elif _is_empty_body(body):
