@@ -10,6 +10,7 @@ evidence in the addendum below (both seeded ground-truth defects independently c
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-09-08 — correct §1's obsolete ADR-admission premise; external-tool scope and permissions unchanged. Prior version: `4fb2b88f3b7d56d77463c43ba45c87ffadff6a31`.
 **Related:** [cc-cursor surface allocation](2026-07-14-cc-cursor-surface-allocation.md) ·
 [cc-cursor autonomous loop](2026-08-14-cc-cursor-autonomous-loop.md) ·
 [ADR ceremony tiering](2026-08-08-adr-ceremony-tiering.md) ·
@@ -76,8 +77,9 @@ The same workflow surfaced the EULA/training-license contradiction in §0 above 
 different from what the model's own listing page implies, and a reason to be stricter than
 "send it sanitized problems" alone. It also confirmed this repo already has one relevant
 precedent (the Grok Bot rejection) that reached a governance verdict but was never captured as
-an ADR — this repo's own doctrine ("ADRs are canonical for every decision," `CLAUDE.md`) implies
-that gap should not repeat.
+an ADR. The [current ADR policy](2026-08-08-adr-ceremony-tiering.md) requires a distinct record
+for consequential, durable rationale or authority boundaries; it does not require an ADR
+for every decision. This ADR records the external-tool authority boundary.
 
 **Decision driver (one sentence):** a capable, zero-cost external model is available during a
 deadline-critical, low-margin-for-error research sprint whose actual bottleneck is decision-shaped

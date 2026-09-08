@@ -27,9 +27,8 @@ THE MECHANICAL RULE (deliberately narrow — M-8):
      SUBTRACT (optional qualifier) or the e2 terminal form `no action`.
   5. ledger-pointer — every KEEP whose Class is (d) meta-belt (subscription) or
      (d) meta-belt (venue account) must reference SUBSCRIPTION_LEDGER.md
-     somewhere in its body (§2.5-adjacent; added 2026-08-21 per the CFO's
-     C-1-closure recommendation, docs/adr/2026-08-21-cfo-subscription-
-     ledger-consolidation.md D2).
+     somewhere in its body (§2.5-adjacent; ledger contract:
+     docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md D2).
 
 SEVERITY:
 
@@ -241,7 +240,7 @@ def scan_file(path: Path, asof: date) -> list[Finding]:
                     "ledger-pointer",
                     path,
                     "subscription/venue-account-class KEEP missing a SUBSCRIPTION_LEDGER.md "
-                    "pointer (CFO 2026-08-21 recommendation — $/mo tracked at row-creation "
+                    "pointer (subscription contract — $/mo tracked at row-creation "
                     "time, not backfilled later; see docs/adr/2026-08-21-"
                     "cfo-subscription-ledger-consolidation.md D2)",
                 )

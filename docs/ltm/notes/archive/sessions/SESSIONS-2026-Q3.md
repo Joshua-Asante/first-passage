@@ -1538,7 +1538,7 @@ disarmed; no book.
 **Focus:** Following same-day C-1 closure + d17 (Claude Max) tracking, operator ratified all four of
 the CFO's process recommendations, cadence set to monthly.
 
-**Shipped:** [`ADR`](../../../../adr/2026-08-21-cfo-subscription-ledger-consolidation.md) ratified (D1 ledger, D2
+**Shipped:** [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md) ratified (D1 ledger, D2
 mechanical `ledger-pointer` WARN gate, D3 monthly reconfirm reusing `daily-repo-truth-sync` +
 `cfo.md` standing-check line, D4 practice norm no artifact). `cfo.md` charter amended (Writes gains
 the ledger; `d11-d16` corrected to `d11-d17`). `STATE.md` gains a Monthly recurring row (next
@@ -1594,12 +1594,12 @@ a named, un-opened re-test candidate. **STATE queue unchanged:** #1 F1 · #2 B7-
 **Focus:** Operator insight — First Passage is primarily a research entity (deployment validates
 research); Middle/Back-office functions need to be services, not a standing persona roster.
 
-**Shipped:** [`ADR`](../../../../adr/2026-08-21-persona-hierarchy-front-office-only.md) narrowing the spawnable
+**Shipped:** [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/ltm/adr/2026-08-21-persona-hierarchy-front-office-only.md) narrowing the spawnable
 roster 17→9 (Front Office + CEO apex + cross-office CFO); 8 retired personas moved to
 `docs/personas/archive/`; `ownership-map.md` reassigned; `check_personas.py` `EXPECTED_COUNT` 17→9;
 `pre-ratification-adversarial-panel.js` CRO hard-block re-implemented as an unconditional
 deterministic scan (no longer requires a spawned CRO); `CLAUDE.md` pointer row updated;
-[prior ADR](../../../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md) gains `Superseded-in-part-by` +
+[prior ADR](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/ltm/adr/2026-08-19-loop-persona-hierarchy-review-panel.md) gains `Superseded-in-part-by` +
 addendum.
 
 **Decisions/defects:** CEO/CFO explicitly out of scope (operator confirmed). Ownership-map Layer 2
@@ -1877,7 +1877,7 @@ unconditional lane-wide again pending a genuinely new modality or its own fresh 
 
 **Focus:** Fix pre-existing design-spec/ADR staleness the 2026-08-19 §6.6 panel (`wf_88c21d8d-a7f`) caught in passing — not caused by §6.6, does not block that section's ratification.
 
-**Shipped:** branch `cursor/persona-hierarchy-spec-staleness-1583` (stacked on PR #58). Dedup-first attestation backfilled into [`2026-08-19-loop-persona-hierarchy-review-panel.md`](../../../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md) §0. Design spec §5.2 / §2 / §4 / §11 / §13 reconciled; persona-file + roster-plan mirrors of the three Senior Manager "direct match" labels updated.
+**Shipped:** branch `cursor/persona-hierarchy-spec-staleness-1583` (stacked on PR #58). Dedup-first attestation backfilled into [`2026-08-19-loop-persona-hierarchy-review-panel.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/ltm/adr/2026-08-19-loop-persona-hierarchy-review-panel.md) §0. Design spec §5.2 / §2 / §4 / §11 / §13 reconciled; persona-file + roster-plan mirrors of the three Senior Manager "direct match" labels updated.
 
 **Decisions/defects:** none new — citation/attestation hygiene only. 19-agent and 32-agent process figures remain as-reported (run artifacts not preserved).
 
@@ -1931,7 +1931,7 @@ unconditional lane-wide again pending a genuinely new modality or its own fresh 
 
 **Focus:** Re-verify the Anchor / Rule-1 fragmentation finding against `origin/main` and dispose (a) rename, (b) `rule1_gate.py`, (c) sibling cross-wire.
 
-**Shipped:** branch `cursor/anchor-discipline-fragment-0f6f`. Light ADR [`2026-08-19-rule-1-citation-not-three-meanings.md`](../../../../adr/2026-08-19-rule-1-citation-not-three-meanings.md) (`Proposed`). Pointer-only on [`regime_robustness_gate.md`](../../../../methodology/regime_robustness_gate.md). Addendum on the Rule 2 ADR. Notice [`N-2026-08-18-quintessentials-ml-lifecycle-mapping`](../../../../notes/notice/N-2026-08-18-quintessentials-ml-lifecycle-mapping.md) §4 Anchor ACTION discharged.
+**Shipped:** branch `cursor/anchor-discipline-fragment-0f6f`. Light ADR [`2026-08-19-rule-1-citation-not-three-meanings.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-19-rule-1-citation-not-three-meanings.md) (`Proposed`). Pointer-only on [`regime_robustness_gate.md`](../../../../methodology/regime_robustness_gate.md). Addendum on the Rule 2 ADR. Notice [`N-2026-08-18-quintessentials-ml-lifecycle-mapping`](../../../../notes/notice/N-2026-08-18-quintessentials-ml-lifecycle-mapping.md) §4 Anchor ACTION discharged.
 
 **Decisions/defects:** (a) no rename — gate "Rule 1" is the 2026-04-24 extension of the same INQHIORI Rule 1. (b) do not build `rule1_gate.py`; drop "implementation deferred." (c) do not sibling-wire `mc_anchor_history.md`. Full `Rule N` prefixing stays with the [2026-08-08 audit](../../../../notes/audits/2026-08-08-conventions-delete-phase-gap-audit.md) §5.
 
@@ -3130,9 +3130,9 @@ token; Magdon-Ismail B.
 
 **Focus:** Log ceremony-tiering omitted-apparatus candidate (implied-SR light→full escalation); trim two over-300-word light ADRs.
 
-**Shipped:** branch `cursor/implied-sr-incident-and-light-adr-trims-d214` — [PR #815](https://github.com/Joshua-Asante/first-passage-archive/pull/815) — [ceremony-tiering addendum](../../../../adr/2026-08-08-adr-ceremony-tiering.md) · STATE `### 2026-11-08` pointer · trims [C3 revive](../../../../adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) · [Survive bound](../../../../adr/2026-08-09-survive-bound-is-the-queue-cap.md). No retired-ADR rewrites.
+**Shipped:** branch `cursor/implied-sr-incident-and-light-adr-trims-d214` — [PR #815](https://github.com/Joshua-Asante/first-passage-archive/pull/815) — [ceremony-tiering addendum](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-08-adr-ceremony-tiering.md#addendum-2026-08-14--candidate-omitted-apparatus-incident-implied-sr) · STATE `### 2026-11-08` pointer · trims [C3 revive](../../../../adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) · [Survive bound](../../../../adr/2026-08-09-survive-bound-is-the-queue-cap.md). No retired-ADR rewrites.
 
-**Decisions/defects:** Candidate incident only (1-vs-2 = audit call). Owner: [ceremony tiering §Falsifier](../../../../adr/2026-08-08-adr-ceremony-tiering.md).
+**Decisions/defects:** Candidate incident only (1-vs-2 = audit call). Owner: [ceremony tiering §Falsifier](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-08-adr-ceremony-tiering.md#falsifier).
 
 **Open / next:** Operator F-2 disposition (from 14b/14c). Confirm #806 CI green; cart confirm; CapFLOW; F1 2026-11-08; M1; weekly token; Magdon-Ismail B; research venvs. On Windows: `make sync-skills` (from 14c). Ceremony-tiering falsifier review at first quarterly after 08-08 (STATE 11-08).
 

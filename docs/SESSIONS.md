@@ -935,7 +935,7 @@ candidate admitted or scored. $0/K=0.
 `AskUserQuestion`: delete everything including cross-references, via this repo's formal-retirement
 convention (never delete an ADR, supersede it), close #235 unmerged.
 **Shipped:** PR #237 — new retirement ADR
-[`2026-08-31-persona-hierarchy-full-retirement.md`](adr/2026-08-31-persona-hierarchy-full-retirement.md);
+[`2026-08-31-persona-hierarchy-full-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-31-persona-hierarchy-full-retirement.md);
 deleted all 34 `docs/personas/*.md` files, the design spec + 4 supporting plans, and
 `scripts/check_personas.py`; stripped persona-mode from
 `.claude/workflows/pre-ratification-adversarial-panel.js` while keeping its generic 6-lens pipeline

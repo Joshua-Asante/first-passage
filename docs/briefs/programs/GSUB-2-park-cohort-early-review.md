@@ -64,7 +64,7 @@ pass does **not** exist because that mechanism is broken; it exists for two inde
    design spec's own §13 rehearsal record explicitly could not count toward the panel's §4
    falsifier because it ran against an already-closed, already-ratified inventory (GSUB-1). A
    genuine pre-ratification GRAND review is the only thing that can produce that first data point,
-   per the [persona-hierarchy ADR](../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md) §4 and
+   per the [persona-hierarchy ADR](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/ltm/adr/2026-08-19-loop-persona-hierarchy-review-panel.md) §4 and
    the design spec's own §10.
 2. **Some PARKs in the cohort show zero new evidence and a widening idle window**, which is exactly
    the accretion symptom the GRAND tier exists to catch (GRAND ADR §1.4) — waiting mechanically
@@ -81,7 +81,7 @@ pass does **not** exist because that mechanism is broken; it exists for two inde
   verbatim.
 - [GRAND-tier ADR](../../adr/2026-08-09-grand-tier-quintessentials-binding.md) — pursuit lifecycle
   states (§2.3), cadence (§2.6: binds to the quarterly gate, but does not bar an off-cycle review).
-- [Persona-hierarchy ADR](../../adr/2026-08-19-loop-persona-hierarchy-review-panel.md), ratified this
+- [Persona-hierarchy ADR](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/ltm/adr/2026-08-19-loop-persona-hierarchy-review-panel.md), ratified this
   session — the panel mechanism this brief's Phase 2.5 invokes for the first real time.
 - No prior early-PARK-review pass exists (verified: `GSUB-2|early.*review|park.*cohort` grep over
   `docs/briefs/` and `STATE.md` returns only this brief).

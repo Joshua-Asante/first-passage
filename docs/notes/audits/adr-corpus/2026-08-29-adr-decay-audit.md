@@ -1,5 +1,7 @@
 # ADR corpus decay audit — full-corpus Phase 1/2 run
 
+**2026-09-08 clarification:** the persona-ADR retention verdicts below are historical; the operator's [complete-retirement disposition](../../../adr/TOMBSTONES.md#2026-09-08-persona-parents) supersedes them. Other findings are unaffected.
+
 **Audit ID:** AUDIT-2026-08-29-ADR-DECAY · **Date:** 2026-08-29 · **Trigger:** operator direction, during
 a broader documentation-simplification pass, to run `adr-decay-audit` as a real repeatable process for
 the first time against the full Accepted-ADR corpus (the skill itself had never been executed as a

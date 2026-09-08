@@ -498,6 +498,45 @@ def test_real_canon_ruling_adr_is_well_formed():
     assert _hard(v) == [], [str(x) for x in _hard(v)]
 
 
+CONCISE_ADR = """\
+# ADR — current ownership
+**Format:** concise
+
+## Decision
+Retain a single current owner for the workflow.
+
+## Grounds
+Duplicate instructions caused conflicting actions; a PR-only record would hide
+the continuing ownership boundary.
+
+## Current owner
+See [workflow](PIPELINES.md) for the procedure and this decision for its scope.
+"""
+
+
+def test_concise_adr_does_not_require_empirical_falsifier_or_quarterly_gate():
+    assert cb.check_brief(CONCISE_ADR, "adr") == []
+
+
+def test_concise_adr_missing_owner_fails():
+    text = CONCISE_ADR.split("## Current owner")[0]
+    hard = _hard(cb.check_brief(text, "adr"))
+    assert any("Current owner" == v.section for v in hard)
+
+
+def test_concise_adr_empty_rationale_fails():
+    text = CONCISE_ADR.split("## Grounds")[0] + "## Grounds\nTBD\n\n## Current owner\nPIPELINES.md\n"
+    assert any(v.section == "Grounds" for v in _hard(cb.check_brief(text, "adr")))
+
+
+def test_concise_marker_does_not_bypass_other_artifact_contracts():
+    assert _hard(cb.check_brief(CONCISE_ADR, "inquire"))
+    assert _hard(cb.check_brief(CONCISE_ADR, "notice"))
+    body_only = CONCISE_ADR.replace("**Format:** concise\n", "").replace(
+        "## Decision", "## Decision\n**Format:** concise")
+    assert _hard(cb.check_brief(body_only, "adr"))
+
+
 def test_file_not_found_exits_2(tmp_path, capsys):
     rc = cb.main([str(tmp_path / "nope.md")])
     assert rc == 2

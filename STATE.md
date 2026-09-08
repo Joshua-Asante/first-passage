@@ -1,10 +1,11 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-06
+**Last curated:** 2026-09-08
 
 Current priorities, dormant cross-session work, and outstanding obligations.
 Read the queue first, then the linked executable plan; campaign records own
-evidence and decisions. [SESSIONS](docs/SESSIONS.md) is history, `git status`
+evidence and decisions. Routine updates need no separate ADR; follow the
+[ADR retention policy](docs/adr/2026-08-08-adr-ceremony-tiering.md). [SESSIONS](docs/SESSIONS.md) is history, `git status`
 owns uncommitted work, and [Rule 7](docs/operational_rules.md) assigns fact ownership.
 
 **Anti-accretion:** decision index = consequence + owner; forward row = action,
@@ -83,8 +84,8 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
 
 - **Subscription reconfirm:** recheck [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md)
   rows d11–d17, record confirmation even when unchanged, and resolve Fly.io/Tradeify
-  unknowns if evidence becomes available. Roll monthly on the 21st. Cadence survives
-  persona retirement; no dedicated executor. [Owner ADR](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md).
+  unknowns if evidence becomes available. Roll monthly on the 21st; the operator
+  confirms the figures. [Owner ADR](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md).
 
 ### No fixed date / gated
 
@@ -138,8 +139,6 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
 
 ### 2026-11-08
 
-- **ADR ceremony tiering:** review light-record share and omitted-apparatus incidents.
-  [Owner](docs/adr/2026-08-08-adr-ceremony-tiering.md).
 - **GRAND-tier ADR §4:** scheduled re-read; initial binding was satisfied, not sunset.
   [Owner](docs/adr/2026-08-09-grand-tier-quintessentials-binding.md).
 - **GSUB-1 PARK expiries:** b1 Aegis→6J, b3 ORB-MNQ, b6 Q-NAS-ECR convert to SUBTRACT
@@ -163,9 +162,6 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   · [analogue ruling](docs/adr/2026-08-15-analogue-modality-route-ruling.md).
 - **Regime-candidate flag lane:** two-strikes check against new confirm closures.
   [Owner](docs/adr/2026-07-26-regime-candidate-flag-lane.md).
-- **Persona-retirement falsifier:** check recurring unaddressed judgment classes
-  at this audit or the owner's earlier event trigger.
-  [Owner](docs/adr/2026-08-31-persona-hierarchy-full-retirement.md).
 - **Mechanical-enforcement debt:** review the four still-owed implementation
   obligations in [evaluation-order](docs/adr/2026-08-30-evaluation-order.md),
   [terminal taxonomy](docs/adr/2026-08-30-terminal-taxonomy.md),

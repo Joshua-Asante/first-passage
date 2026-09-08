@@ -566,6 +566,18 @@ def test_full_tier_adr_still_checked():
     assert _hard(cb.check_brief(broken, "adr")), "a malformed full-tier ADR must still fail"
 
 
+def test_concise_adr_is_explicitly_declined_by_subset(tmp_path, capsys):
+    path = tmp_path / "adr.md"
+    text = "# ADR\n**Format:** concise\n\n## Decision\nKeep one owner.\n"
+    path.write_text(text, encoding="utf-8")
+    assert cb.main([str(path), "--type", "adr"]) == 0
+    output = capsys.readouterr().out
+    assert "NOT CHECKED" in output
+    assert "well-formed" not in output
+    assert cb.check_brief(text, "adr") == []
+    assert _hard(cb.check_brief(text, "inquire"))
+
+
 def test_type_closure_delegates_and_does_not_apply_general_contract(tmp_path, capsys):
     """`--type closure` must not argparse-die and must not run §0–§10."""
     p = tmp_path / "Q-X-closure-resolved.md"

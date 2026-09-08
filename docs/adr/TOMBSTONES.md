@@ -1,5 +1,34 @@
 # ADR Tombstone Index
 
+Current removals use explicit immutable commit/blob references below. Legacy rows
+retain their original archive retrieval instructions. A tombstone records history,
+not renewed permission; the linked current owner governs present work.
+
+## 2026-09-08 citation pilot
+
+| Removed path | Disposition / current owner | Immutable body |
+|---|---|---|
+| `docs/adr/2026-08-19-rule-1-citation-not-three-meanings.md` | Completed citation episode; Rule 1 extension, conditional script commission and distinct Anchor owners now in [regime gate](../methodology/regime_robustness_gate.md#cross-references). No risk/Pine change. | `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-08-19-rule-1-citation-not-three-meanings.md`; blob `741138c3a23cba4866bc0ab8ff334def6f7423d8` |
+
+## 2026-09-08 persona parents
+
+All three persona ADRs and both cold bodies are removed. The operator reaffirmed
+complete removal on 2026-09-08. The whole-panel, eight-seat and nine-seat review
+windows, November 8 backstops and persona-restoration triggers are **retired**, not
+passed or awaiting reactivation. Generic controls remain with their existing
+owners; [independent review](../../scripts/README.md#independent-review) has no
+persona dependency. Historical retrieval creates no standing role or obligation.
+
+| Removed path | Disposition | Immutable body |
+|---|---|---|
+| `docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md` | Superseded hot stub | `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`; blob `6fcbf5aaff113eff620782bb5bb16ae5fffbeeeb` |
+| `docs/adr/2026-08-21-persona-hierarchy-front-office-only.md` | Superseded hot stub | `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-08-21-persona-hierarchy-front-office-only.md`; blob `5005dcc6403541988d7cc10e4e0279f6cc233bad` |
+| `docs/ltm/adr/2026-08-19-loop-persona-hierarchy-review-panel.md` | Historical full body; persona lifecycle retired | `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/ltm/adr/2026-08-19-loop-persona-hierarchy-review-panel.md`; blob `f17477ef6753cc3c1c05b2dd34678b88e0fe9f72` |
+| `docs/ltm/adr/2026-08-21-persona-hierarchy-front-office-only.md` | Historical full body; persona lifecycle retired | `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/ltm/adr/2026-08-21-persona-hierarchy-front-office-only.md`; blob `eecf6891efaa04e7902e159743220837e335602a` |
+| `docs/adr/2026-08-31-persona-hierarchy-full-retirement.md` | Completed retirement episode; all persona reviews/restoration triggers retired by operator clarification. | `git show 4fb2b88f3b7d56d77463c43ba45c87ffadff6a31:docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`; blob `d1f665ed458befd78f01146e8ae085b49998aeb0` |
+
+## Earlier removals
+
 One line per pruned ADR — the decision's *current consequence* survives here; the
 full body is retrievable via `git show pre-prune-2026-08-08:docs/adr/<file>`
 in the **private archive** — that tag is not on this public clone

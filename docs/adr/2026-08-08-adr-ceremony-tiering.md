@@ -1,77 +1,89 @@
-# ADR 2026-08-08 — Stakes-tiered ADR ceremony: full apparatus only where stakes are
+# ADR 2026-08-08 — When an ADR is necessary; concise records and verified retirement
 
-**Status:** `Accepted` — ratified by operator (JA) 2026-08-08 after the 118-ADR retrospective sweep (annex in session; limb-3 deletion amendment + ⅕ falsifier calibration applied pre-ratification)
+**Status:** `Accepted` — operator approved ADR pruning and this policy revision on 2026-09-08.
 **Decision date:** 2026-08-08
-**Authors:** Joshua (direction: "conventions may be introducing undue friction") + Claude Code (measurement + draft)
 **Supersedes:** none
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [minimal-spec template](../spec/TEMPLATE-minimal-spec.md) (ratified 2026-08-07 — this ADR extends that style from specs to low-stakes decisions) · [W5 governance diet](2026-08-07-w5-governance-diet.md) · [root-doc charter](2026-07-16-root-doc-charter-dedup.md)
-**Layer:** governance convention. **$0 / K=0.** Applies forward only; no existing ADR is rewritten.
-
-**Reads (2026-08-08, this worktree):** `docs/adr/` census — 119 ADRs, monthly 8→15→22→46→26 (Aug = 7 days), 10/26 August ADRs are `$0/K=0` · `scripts/check_adr_graph.py:31` — required header fields enumerated; unknown fields tolerated · `docs/spec/TEMPLATE-minimal-spec.md` — ratified minimal form, but "ratification still runs through an ADR" · pre-commit battery timed 137 s.
+**Format:** concise
+**Revision:** 2026-09-08; prior decision at `4fb2b88f3b7d56d77463c43ba45c87ffadff6a31`.
 
 ## Decision
 
-**Tier test.** A decision gets the FULL template (§0–§7) iff any limb holds:
+ADRs are not a general decision log. Create a new ADR only when all three apply:
 
-1. Spends K or money (research runs, venue fees, live orders).
-2. Touches a live-risk surface: `dd_protection`, allocations, lifecycle state, arming/`dry_run` invariants, spend ceilings, or a `firm_rules` field consumed by sizing or by an open fork.
-3. Alters a LOCKED/frozen surface (Pine, locked params, frozen prereg) — including via supersession — or irreversibly deletes a non-regenerable surface (vendor data, production-code estates). *(Amended 2026-08-08 after the retrospective sweep: deletion ADRs like the substrate retirement and the bar-data wipe were light by the original letter — wrongly.)*
-4. Creates or amends doctrine: a rule, gate, falsifier threshold, or convention that binds future work.
+- The choice establishes or changes durable architecture, a standing governance
+  rule or an authority boundary that future work must respect.
+- Its rationale or tradeoff needs to remain discoverable to guide future choices.
+- An update to an existing owner cannot hold that rationale clearly; a distinct
+  record has a continuing purpose beyond documenting that a decision occurred.
 
-Otherwise it is a **LIGHT decision record**: same file location, same header field block (keeps `check_adr_graph` green), plus `**Tier:** light`, body capped at **300 words** in the minimal-spec style —
+A consequential decision may still belong in its specification, campaign record,
+implementation plan or PR. Importance, approval, or the fact that alternatives were
+considered does not by itself require an ADR. Routine fixes, moves, citation repairs
+and elections within an approved envelope need no ADR or light-record substitute.
+Record decisions where they help continuing work; do not inventory every choice.
 
-```
-Decision: <≤3 sentences>          Grounds: <links, never retellings>
-Reads: <path> @ <anchor> · …      Gate: <binary, or "none — record only">
-Boundary: <genuinely tempting forbidden move, or "none">
-```
+Keep an existing ADR only while its distinct rationale or authority boundary is
+still needed. One current owner holds each rule. ADRs explain the choice and tradeoff; operating
+owners hold procedure, schemas, counters and live evidence. Do not preserve a
+standalone ADR merely because it is Accepted, old, cited or contains unique history.
 
-**Escalation.** Ambiguous tier → FULL. A light record later found to gate a full-tier matter is **superseded by a full ADR** (marker: `escalated-from-light`), never padded in place. Rule 0 is tier-independent — the read always happens; only the table format is dropped.
+The current form is `Format: concise`: Decision (including scope), Grounds (the
+reason and real alternative/tradeoff), and Current owner (contract/implementation
+links). Keep the graph header and approval/effective date. Add source-read anchors,
+evidence, meaningful reversal conditions and checks where the decision needs them.
+There is no mandatory empirical falsifier, quarterly cadence, full/light election,
+word-count gate, or quota of retained records. Existing full/light formats remain
+readable; they need not be converted merely for appearance.
 
-This ADR is limb-4 full-tier, written compact deliberately: ceremony is the six discipline checks, not the word count.
+Approved changes update effective decision text with a dated revision and immutable
+prior version. Proposed branches remain separate and unapproved. This does not permit
+changing frozen preregistrations, lock artifacts, verdict logic or evidence after a
+result. Source-first risk review, authorization requirements and review independence
+continue to follow the consequence of the change, regardless of document length.
+Required research, lock-change and execution approvals/evidence remain required;
+their governing contracts determine the artifact, not a blanket ADR requirement.
 
-## Falsifier
+Before consolidation/removal, read the complete body and amendments. Migrate every
+surviving constraint and actual reader; disposition each obligation as retained,
+discharged, superseded or explicitly retired. A lost input is not a passing check.
+Preserve incoming file, fragment and section references by repointing current callers
+or pinning historical references. Verify retrieval of each removed blob and the
+failure behavior of affected tools before deleting it.
 
-**H:** ≥⅕ of post-ratification ADRs land light-tier with no loss of decision recoverability. *(Calibrated to the measured retrospective base rate — 22/118 ≈ 19% of the existing corpus classifies light; the original ⅓ draft figure sat above base rate and risked an unreachable gate.)*
+Use `TOMBSTONES.md` for removed ADR paths, immutable commit/blob, disposition and
+current owner if any. A hot stub plus cold body is optional legacy storage, not a
+retention requirement. If a stub remains, its existing A3 body/Status checks still
+apply. This replaces earlier rules requiring permanent parent ADRs, new sibling ADRs
+for every amendment, or a prohibition on slimming accepted decisions.
 
-**FALSIFIED if:** two dated incidents where a light record's omitted apparatus (falsifier / forbidden moves / §0 table) is causally implicated in a wrong downstream action or a re-litigated decision. **RESOLVED at** the first quarterly programme audit after 2026-08-08 if light share ≥⅕ and zero such incidents; **AMBIGUOUS** (extend one quarter) if fewer than 6 light records exist by then.
+## Grounds
 
-## Forbidden moves
+The September 8 review found 149 dated ADR files and 394,981 words at the revision
+above. The August 8 full/light rule still required a record for routine decisions,
+and the stub/body convention kept historical files on disk. Both encouraged growth.
+Keeping history verbatim in the live corpus was rejected because it competes with
+current instructions; deleting by age or citation count was rejected because prose
+can hold live authority or executable inputs. Consolidation requires more migration
+work but reduces ongoing reading and duplicate ownership.
 
-- Classifying a limb-1/2/3 decision light "because the change is small" — size ≠ stakes.
-- Using the light tier to skip the Rule 0 *read* (vs. the table).
-- Retro-converting existing full ADRs to light.
-- Padding light records back toward full — the 300-word cap is a cap.
+The former light-share target and its November 8 omitted-apparatus review are
+**retired by this policy replacement**, not marked passed. Their implied-SR example
+remains historical evidence that a short record can still change a consequential
+gate. Brevity never supplies approval or relaxes the underlying evidence standard.
 
-## Gate
+## Current owner
 
-**RESOLVED** when: operator ratifies + first light record lands with gate battery green + falsifier review passes at the audit above. Binary per §Falsifier.
+- [Operational rules](../operational_rules.md): fact ownership, source reads,
+  frozen-evidence protection and retention checks.
+- [ADR template](../../.claude/skills/brief-authoring/references/adr.md): current
+  form and graph/retrieval mechanics; the skill checker validates this form.
+- [Tombstone index](TOMBSTONES.md): retrieval of removed records.
+- [STATE](../../STATE.md): pointers to actual outstanding obligations. Moving an
+  obligation there must also preserve its scanner/reader coverage where applicable.
 
-## Audit hooks
-
-```bash
-grep -rl '^\*\*Tier:\*\* light' docs/adr/ | wc -l                      # adoption count
-for f in $(grep -rl '^\*\*Tier:\*\* light' docs/adr/); do awk '/^## /{b=1} b{w+=NF} END{print w, FILENAME}' "$f"; done   # ≤300-word body cap
-grep -rn 'escalated-from-light' docs/adr/                              # escalation incidents
-```
-
-## Addendum 2026-08-14 — Candidate omitted-apparatus incident (implied-SR)
-
-**Dated note (audit corpus; does not amend §Decision / §Falsifier).** Two post-ratification light records each created or amended a binding assumed-edge admission gate — ceremony-tiering **limb 4** ("creates/amends doctrine — a rule, gate, falsifier threshold, or convention that binds future work") — and were reversed within days by a full-tier ADR that itself cites "limb 4 fires: amends a gate":
-
-- [`docs/adr/2026-08-10-implied-sr-plausibility-gate.md`](2026-08-10-implied-sr-plausibility-gate.md) (body under [`docs/ltm/adr/`](../ltm/adr/2026-08-10-implied-sr-plausibility-gate.md)) — light; promoted `implied_annualized_sr` to a freeze-time gate and closed the fade design-region.
-- [`docs/adr/2026-08-12-msl-implied-sr-disclosure-not-kill.md`](2026-08-12-msl-implied-sr-disclosure-not-kill.md) (body under [`docs/ltm/adr/`](../ltm/adr/2026-08-12-msl-implied-sr-disclosure-not-kill.md)) — light; interim amend of the MSL pre-G0 kill wiring.
-- Reversal: [`docs/adr/2026-08-13-implied-sr-report-only-fade-reopen.md`](2026-08-13-implied-sr-report-only-fade-reopen.md) (full; demotes to report-only, reopens fade geometry).
-
-Bodies of the two light records are **not** rewritten (this ADR is forward-only). Surfaced as a **candidate incident** against this ADR's two-incident FALSIFIED threshold (§Falsifier). Whether the pair counts as one incident or two is an operator/audit call at the first quarterly programme audit after 2026-08-08. Forward pointer: [`STATE.md` §2026-11-08](../../STATE.md).
-
-## Addendum 2026-08-15 — Amend-in-place beats a sibling ADR
-
-**Does not amend §Decision / §Falsifier / light-tier word cap.** Adoption tooth only.
-
-When a decision can live as an addendum on an existing ADR (or a light record on that file), **do not mint a sibling ADR**. Light-tier share at land of this addendum is still well below the ≥⅕ falsifier (7/131). The missing move was not another ceremony — it was using the owners already on disk. Rule 8 sub-rule 10 is the operational statement; this addendum is the ceremony-tiering-side pointer.
-
-Forbidden here: retro-converting existing full ADRs to light (already §Forbidden); using this addendum to drop a limb-4 decision into a light sibling.
+Verification: `python scripts/check_adr_graph.py` and
+`python .claude/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-08-08-adr-ceremony-tiering.md --type adr`.
+Mechanical form checks do not establish semantic equivalence or ratification.

@@ -187,7 +187,7 @@ Rule 1 (partition-hypothesis permutation gate)" is incomplete: that row is
 the 2026-04-24 extension of the same small-cell-variance-prior Rule 1
 ([owner](../methodology/archive/notion/rule-1-small-cell-variance-prior.md)).
 Pointer expanded at
-[`2026-08-19-rule-1-citation-not-three-meanings.md`](2026-08-19-rule-1-citation-not-three-meanings.md)
+[`2026-08-19-rule-1-citation-not-three-meanings.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-19-rule-1-citation-not-three-meanings.md)
 and on the gate doc. Full four-namespace deconflict (`OPS` / `INQ` /
 skill-local) remains out of scope per §5.8 and the
 [2026-08-08 conventions audit](../notes/audits/2026-08-08-conventions-delete-phase-gap-audit.md) §5.
@@ -247,11 +247,11 @@ addendum proposes a counting *convention* for reading §4's "empty across ≥2 a
 falsifier when a scheduled cycle's own review is disputed — it resolves a genuinely open
 ambiguity the trip-log's own text (`docs/notes/audits/rule-2-trip-log.md:59-64`) flags and
 explicitly defers ("Rule at the 2026-11-08 gate, and state the counting convention there rather
-than inferring one now"). **Tier: FULL** under `docs/adr/2026-08-08-adr-ceremony-tiering.md`
+than inferring one now"). **Tier: FULL** under [the ceremony policy then in force](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-08-adr-ceremony-tiering.md#decision)
 limb 4 (states a convention binding future audit-cadence counting, not just this file) — and,
 per that ADR's own escalation rule, an ambiguous tier defaults to FULL regardless. Landed as an
 **addendum to this ADR**, not a sibling file, per the 2026-08-15 amend-in-place convention
-(`2026-08-08-adr-ceremony-tiering.md` Addendum 2026-08-15): the dispute is entirely about how
+([ceremony ADR Addendum 2026-08-15](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-08-adr-ceremony-tiering.md#addendum-2026-08-15--amend-in-place-beats-a-sibling-adr)): the dispute is entirely about how
 *this* ADR's own §4 falsifier counts, so this file is already the correct owner — a new ADR would
 duplicate reasoning this file already carries in its 2026-08-15/-19/-21 addenda.
 

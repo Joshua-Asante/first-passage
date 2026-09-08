@@ -234,7 +234,12 @@ Steps 4–5 are not part of the brief that ran this gate — they are downstream
 
 - **INQHIORI canon**: `docs/methodology/inqhiori-canon.md` (§14 three-loop binding); skill `.claude/skills/inqhiori/SKILL.md`
 - **Rule 0**: `docs/rule_0.md`
-- **Rule 1 extension (partition-hypothesis permutation):** same INQHIORI Rule 1 as canon §12, not a third numeral. Owner [`rule-1-small-cell-variance-prior.md`](archive/notion/rule-1-small-cell-variance-prior.md) (core top-k + 2026-04-24 partition extension). No `rule1_gate.py` exists; the archive gated that script on CFD-era USDJPY OHLC panel ingestion that never landed — implementation is **not pending**. Build only if a live n≤10 / partition investigation needs it ([citation ADR](../adr/2026-08-19-rule-1-citation-not-three-meanings.md)).
+- **Rule 1 extension (partition-hypothesis permutation):** same INQHIORI Rule 1 as canon §12, not a third numeral. Owner [`rule-1-small-cell-variance-prior.md`](archive/notion/rule-1-small-cell-variance-prior.md) (core top-k + 2026-04-24 partition extension). No `rule1_gate.py` exists; the archive gated that script on CFD-era USDJPY OHLC panel ingestion that never landed — implementation is **not pending**. Build only if a live n≤10 / partition investigation needs it, with that new decision
+  recorded in its owner/PR. Keep the numeral; Rule-N prefix changes remain separately
+  governed by the conventions audit. Rule 1, the retired MC-calibration history and
+  GRAND-tier Anchor have distinct owners; shared metaphor does not justify merging
+  them. Preserve the Notion-verbatim Rule 1 archive. Historical MC figures are not
+  current sizing authority. [Citation history](../adr/TOMBSTONES.md#2026-09-08-citation-pilot).
 - **Observation routing gate**: `docs/methodology/observation_routing.md`
 - **Q-DDP-1 worked example**: retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-DDP-1/recommendation.md`
 - **Locked dd_protection config**: `core/dd_protection.py` (literals owned there; human summary [`CLAUDE.md`](../../CLAUDE.md) §Protection; C2 relock + concept-not-constant ADRs)

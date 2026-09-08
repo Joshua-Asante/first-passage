@@ -1,5 +1,7 @@
 # ADR corpus audit — third pass, evidence-based this time
 
+**2026-09-08 clarification:** the persona-ADR retention verdicts below are historical; the operator's [complete-retirement disposition](../../../adr/TOMBSTONES.md#2026-09-08-persona-parents) supersedes them. Other findings are unaffected.
+
 **Audit ID:** AUDIT-2026-08-31-ADR-CORPUS
 **Date:** 2026-08-31 · **Trigger:** operator direction ("I have 174 ADRs. I do not believe I need
 174 ADRs... suggest deletions, consolidations, or simplifications").

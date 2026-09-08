@@ -1251,6 +1251,98 @@ def test_append_only_tolerates_archive_repo_repoint_on_a_frozen_entry():
 
 
 @needs_git
+@pytest.mark.parametrize(('change', 'allowed'), [
+    ('same_blob_older_revision', True),
+    ('base_revision', True),
+    ('changed_blob', False),
+    ('missing_revision', False),
+    ('different_path', False),
+    ('different_section', False),
+    ('moving_ref', False),
+    ('short_sha', False),
+    ('other_repository', False),
+    ('prose_edit', False),
+    ('label_edit', False),
+    ('query_added', False),
+    ('inline_code', False),
+    ('fenced_code', False),
+    ('escaped_link', False),
+    ('indented_code', False),
+    ('multiline_code', False),
+    ('html_comment', False),
+    ('annotated_tag', False),
+    ('code_label', True),
+    ('unused_reference_title', False),
+    ('literal_and_real_link', False),
+    ('pin_and_archive_repoint', True),
+])
+def test_append_only_document_pin_requires_same_evidence(tmp_path, change, allowed):
+    """Pruning may pin identical evidence; it must not hide a changed claim or target."""
+    _repo_with_history(tmp_path, [
+        ('2026-08-13T12:00:00+00:00', [('2026-08-13w', 'older')]),
+    ])
+    target = tmp_path / 'docs/adr/decision.md'
+    target.parent.mkdir()
+    target.write_text('# Decision\n\nOriginal evidence.\n', encoding='utf-8')
+    target.with_name('other.md').write_bytes(target.read_bytes())
+    _git(tmp_path, 'add', '-A')
+    _git(tmp_path, 'commit', '-qm', 'original evidence')
+    original = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=tmp_path, text=True).strip()
+    _git(tmp_path, 'tag', '-a', 'frozen', '-m', 'original evidence')
+    tag = subprocess.check_output(['git', 'rev-parse', 'refs/tags/frozen'], cwd=tmp_path, text=True).strip()
+    target.write_text('# Decision\n\nDifferent evidence.\n', encoding='utf-8')
+    _git(tmp_path, 'add', '-A')
+    _git(tmp_path, 'commit', '-qm', 'different evidence')
+    changed = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=tmp_path, text=True).strip()
+    target.write_bytes(target.with_name('other.md').read_bytes())
+    prior_href = 'adr/decision.md#decision'
+    evidence = f'[Evidence]({prior_href})'
+    evidence = {
+        'inline_code': f'`{evidence}`',
+        'fenced_code': f'\n\n```md\n{evidence}\n```\n',
+        'escaped_link': '\\' + evidence,
+        'indented_code': f'\n\n    {evidence}\n',
+        'multiline_code': f'`\n{evidence}\n`',
+        'html_comment': f'<!-- {evidence} -->',
+        'code_label': f'[`Evidence`]({prior_href})',
+        'unused_reference_title': f'\n\n[unused]: /unused "{evidence}"\n',
+        'literal_and_real_link': f'`{evidence}` {evidence}',
+    }.get(change, evidence)
+    base_doc = _doc([('2026-08-13w', 'older')]).replace(
+        'shipped for older', evidence
+    )
+    if change == 'pin_and_archive_repoint':
+        base_doc += '\n[PR](https://github.com/Joshua-Asante/first-passage/pull/42)\n'
+    _write(tmp_path, base_doc)
+    _git(tmp_path, 'add', '-A')
+    _git(tmp_path, 'commit', '-qm', 'frozen session')
+    base = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=tmp_path, text=True).strip()
+    target.unlink()  # actual pruning case: history is now the only copy
+    revision = {'base_revision': base, 'changed_blob': changed,
+                'missing_revision': '0' * 40, 'moving_ref': 'HEAD',
+                'short_sha': original[:8], 'annotated_tag': tag}.get(change, original)
+    href = f'https://github.com/Joshua-Asante/first-passage/blob/{revision}/docs/adr/decision.md#decision'
+    if change == 'different_path':
+        href = href.replace('/decision.md', '/other.md')
+    elif change == 'different_section':
+        href = href.replace('#decision', '#other')
+    elif change == 'other_repository':
+        href = href.replace('/first-passage/', '/unrelated/')
+    elif change == 'query_added':
+        href = href.replace('#decision', '?raw=1#decision')
+    ours = base_doc.replace(prior_href, href)
+    if change == 'prose_edit':
+        ours = ours.replace('focus for older', 'rewritten claim')
+    elif change == 'label_edit':
+        ours = ours.replace('[Evidence]', '[New claim]')
+    elif change == 'pin_and_archive_repoint':
+        ours = ours.replace('/first-passage/pull/42', '/first-passage-archive/pull/42')
+    _write(tmp_path, ours)
+    problems = rs.check_append_only(tmp_path, base_ref=base)
+    assert (problems == []) is allowed, problems
+
+
+@needs_git
 def test_check_append_only_cli_vs_explicit_base(tmp_path):
     _repo_with_history(tmp_path, [
         ("2026-08-13T12:00:00+00:00", [("2026-08-13w", "older")]),

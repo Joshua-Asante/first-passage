@@ -213,6 +213,7 @@ _UNMODELED_CONTRACT_TYPES = frozenset({"lock", "notice", "lesson", "audit"})
 # 6 HARD violations on a correctly-formed record. Same defect class as
 # _UNMODELED_CONTRACT_TYPES, found 2026-08-09 while authoring the first light ADR.
 _LIGHT_TIER_RE = re.compile(r"^\*\*Tier:\*\*\s*light\b", re.IGNORECASE | re.MULTILINE)
+_CONCISE_ADR_RE = re.compile(r"^\*\*Format:\*\*\s*concise\b", re.IGNORECASE | re.MULTILINE)
 
 
 def _header_block(text: str) -> str:
@@ -569,6 +570,8 @@ def check_brief(text: str, brief_type: str) -> list[Violation]:
     requested = brief_type
     if requested == _CLOSURE_DELEGATE_TYPE:
         return []
+    if requested == "adr" and _CONCISE_ADR_RE.search(_header_block(text)):
+        return []  # canonical skill checker owns this named-section contract
     brief_type = _normalize_type(brief_type)
     sections = split_sections(text)
     violations: list[Violation] = []
@@ -641,6 +644,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"check_brief: {args.brief}  (type=closure)")
         print("RESULT: DELEGATED — run: "
               f"python scripts/check_closure_disposition.py {args.brief}")
+        return 0
+    if requested == "adr" and _CONCISE_ADR_RE.search(_header_block(text)):
+        print(f"check_brief: {args.brief}  (type=adr, format=concise)")
+        print("RESULT: NOT CHECKED — concise ADR; run the canonical skill-side "
+              "checker for Decision/Grounds/Current owner validation")
         return 0
     if is_light_tier(text):
         print("note: light-tier decision record (ADR 2026-08-08-adr-ceremony-tiering) "

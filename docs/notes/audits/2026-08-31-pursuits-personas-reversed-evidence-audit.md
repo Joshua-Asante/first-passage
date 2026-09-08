@@ -220,7 +220,7 @@ going ceremonial" caution (`adr-decay-audit` skill, Known Trap #7).
 
 The PR carrying this audit's fixes (#235) was closed **unmerged** the same day, after operator
 direct instruction to retire the entire persona-hierarchy system rather than keep it corrected —
-see [`docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`](../../adr/2026-08-31-persona-hierarchy-full-retirement.md).
+see [`docs/adr/2026-08-31-persona-hierarchy-full-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-31-persona-hierarchy-full-retirement.md).
 
 **Disposition of this audit's findings, by scope:**
 

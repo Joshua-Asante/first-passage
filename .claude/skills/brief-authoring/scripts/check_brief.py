@@ -160,6 +160,7 @@ ACCEPTED_TYPES = (
 _CLOSURE_DELEGATE_TYPE = "closure"
 
 _LIGHT_TIER_RE = re.compile(r"^\*\*Tier:\*\*\s*light\b", re.IGNORECASE | re.MULTILINE)
+_CONCISE_ADR_RE = re.compile(r"^\*\*Format:\*\*\s*concise\b", re.IGNORECASE | re.MULTILINE)
 
 
 def _header_block(text: str) -> str:
@@ -531,6 +532,24 @@ def check_light(text: str) -> list[Violation]:
     return out
 
 
+def check_concise_adr(text: str) -> list[Violation]:
+    """Current ADR form; optional evidence/reversal sections follow the stakes.
+
+    This checks the document contract, not approval, truth or preservation of
+    authority. Header lifecycle integrity remains check_adr_graph's concern.
+    """
+    sections = split_named_sections(text)
+    out: list[Violation] = []
+    for key in ("Decision", "Grounds", "Current owner"):
+        body = next((body for title, body in sections
+                     if title.casefold() == key.casefold()), None)
+        if body is None:
+            out.append(Violation("HARD", key, "required section missing"))
+        elif _is_empty_body(body):
+            out.append(Violation("HARD", key, "required section is empty / placeholder"))
+    return out
+
+
 def check_lock(text: str) -> list[Violation]:
     """lock — retired 2026-08-08 (SKILL.md:71), back-compat alias only. No
     reference template survives in-repo to derive a full contract from (the
@@ -626,6 +645,8 @@ def check_brief(text: str, brief_type: str) -> list[Violation]:
     --type adr still gets the light contract, matching the header it actually
     declares) — same precedence repo-side uses, but here light means REAL
     checks, not a skip."""
+    if brief_type == "adr" and _CONCISE_ADR_RE.search(_header_block(text)):
+        return check_concise_adr(text)
     if is_light_tier(text):
         return check_light(text)
     if brief_type == _CLOSURE_DELEGATE_TYPE:
@@ -723,6 +744,8 @@ def run_self_test() -> int:
 
 def print_list_checks() -> None:
     print("check_brief.py (skill-side canonical) — per-type section contracts:")
+    print("  concise ADR (Format header): Decision / Grounds / Current owner;")
+    print("                               no compulsory empirical falsifier or cadence.")
     print("  inquire / adr / cc_handoff : numbered §N; §0 path+anchor, §4 falsifiable")
     print("                               hypothesis (broadened framing), §5 forbidden")
     print("                               moves list, §6 gate verdict (WARN), §10 fenced")

@@ -60,7 +60,7 @@
 | 2026-08-07-w4-minimal-gate-set-dormancy.md | Accepted | 2026-08-07 | `2026-07-20-stage8-variance-dominance-risk-neff-gate.md` in part — sole-producer status of risk-breadth coordinates while breadth is tombstoned (coordinates remain doctrine; producer dormant) | plan GO (Posture-A); dormancy + named re-arm conditions |
 | 2026-08-07-w5-governance-diet.md | Accepted | 2026-08-07 | none | composition/tier owned by one runner; entry-class diet |
 | 2026-08-07-w6-rail-infra-closures.md | Accepted | 2026-08-07 | none | docs + dry-run-safe tooling; no arming |
-| 2026-08-08-adr-ceremony-tiering.md | Accepted | 2026-08-08 | none | ratified by operator (JA) 2026-08-08 after the 118-ADR retrospective sweep (annex in session; limb-3 deletion amendment + ⅕ falsifier calibration applied pre-ratification) |
+| 2026-08-08-adr-ceremony-tiering.md | Accepted | 2026-08-08 | none | operator approved ADR pruning and this policy revision on 2026-09-08. |
 | 2026-08-08-great-prune.md | Accepted | 2026-08-08 | none | operator (JA) approved the prune plan in-session 2026-08-08; merge of the prune PR is the executed ratification. **Tier: full** — doctrine limb fires (standing retention law + mass deletion of decision records). |
 | 2026-08-08-s2b-signal-daemon-build.md | Accepted | 2026-08-08 | none | fills deferred limbs of [SPEC S2b](../spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md); **does not authorize build alone** — requires a separate operator build GO citing this ADR + Accepted S2b |
 | 2026-08-09-check-brief-canon-ruling.md | Accepted | 2026-08-09 | none | ratified by operator (JA) 2026-08-09, in-session instruction ("make your best calls on … checker-canon split") |
@@ -81,9 +81,8 @@
 | 2026-08-15-notice-log-is-the-live-observation-routing-convention.md | Accepted | 2026-08-15 | none | Accepted |
 | 2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md | Accepted | 2026-08-16 | none | operator election 2026-08-16 (in-session, presented as a blocking scope ruling with three options — narrow / broad / narrow-gated-by-cheap-falsifier; "cheap falsifier gate" elected) |
 | 2026-08-19-cme-broker-panel-admission-for-breadth-revival.md | Accepted | 2026-08-19 | none | operator ratified 2026-08-19, in-session direct instruction ("I accept |
-| 2026-08-19-rule-1-citation-not-three-meanings.md | Accepted | 2026-08-19 | none | ratified by operator (JA) 2026-08-21. Gate independently re-verified this session: `docs/methodology/regime_robustness_gate.md` L95 already names the Rule 1 row as the extension (not a third numeral), and L198 already names the owner, cites this ADR, and reads "implementation is **not pending**" … |
 | 2026-08-20-analogue-modality-override-ict-ote-1-admit.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session direct instruction |
-| 2026-08-21-cfo-subscription-ledger-consolidation.md | Accepted | 2026-08-21 | none | ratified by operator (Joshua) 2026-08-21, in-session direct instruction |
+| 2026-08-21-cfo-subscription-ledger-consolidation.md | Accepted | 2026-08-21 | none | operator ratified the ledger, checks and monthly cadence on 2026-08-21. |
 | 2026-08-22-catalog-hot-vs-disposition.md | Accepted | 2026-08-22 | none | ratified by operator (Joshua) 2026-08-22, in-session ("accepted. GO"); Phase 1 (parser + C2 + `hot` column) lands in the same GO. |
 | 2026-08-22-grow-lane-build-authorization.md | Accepted | 2026-08-22 | none | operator GO (JA) 2026-08-22 ("ratify, accept, and begin the build"), |
 | 2026-08-22-grow0-two-ledger-k-question.md | Accepted | 2026-08-22 | `2026-08-16-deep-iteration-lane-charter.md` in part — adds §2.2(iv), a | operator GO (JA) 2026-08-22 ("GO on the ADR — ratify it as-is"), after |
@@ -105,7 +104,6 @@
 | 2026-08-30-operator-approvals-campaign-envelope.md | Accepted | 2026-08-30 | none | ratified by operator (Joshua) 2026-08-30; see Ratification note. |
 | 2026-08-30-terminal-taxonomy.md | Accepted | 2026-08-30 | none | ratified by operator (Joshua) 2026-08-30; see Ratification note. |
 | 2026-08-30-tradeable-reachable-gate.md | Accepted | 2026-08-30 | none | ratified by operator (Joshua) 2026-08-30; see Ratification note. |
-| 2026-08-31-persona-hierarchy-full-retirement.md | Accepted | 2026-08-31 | `2026-08-19-loop-persona-hierarchy-review-panel.md` full; `2026-08-21-persona-hierarchy-front-office-only.md` full | ratified by operator (Joshua) 2026-08-31, in-session direct instruction ("I |
 | 2026-09-02-portable-edge-cultivation-campaign-objective.md | Accepted | 2026-09-02 | none | direct operator election, 2026-09-02. **Addendum 2026-09-03 (`Accepted`): this campaign is VOLREGIME translation; envelope GO recorded; L5 waived for this campaign only. Addendum 2026-09-03b (`Accepted`): Packet T0 closed `PRE-CONTRACT DROP` — see the dated addenda.** |
 | 2026-09-03-venue-legality-re-expression-lane.md | Accepted | 2026-09-03 | none | ratified by operator (Joshua) 2026-09-03 ("I ratify the lane ADR"), before any replacement export existed and therefore before any replacement result could be inspected. The ratification-order requirement in §2 is satisfied on the record. |
 | 2026-09-05-tradeify-select-striker-expression-readmission.md | Accepted | 2026-09-05 | `2026-08-04-tradeify-venue-descope-eval-included.md` in part — evaluation eligibility of the two exact campaign expressions below | records the operator's 2026-09-05 election; no deployment GO |
@@ -165,5 +163,3 @@
 | 2026-08-05-avenue-a-generate-confirm-route.md | Superseded | 2026-08-05 | none | Superseded |
 | 2026-08-10-implied-sr-plausibility-gate.md | Superseded | 2026-08-10 | none | Superseded |
 | 2026-08-12-msl-implied-sr-disclosure-not-kill.md | Superseded | 2026-08-12 | none | Superseded |
-| 2026-08-19-loop-persona-hierarchy-review-panel.md | Superseded | 2026-08-19 | none | Superseded |
-| 2026-08-21-persona-hierarchy-front-office-only.md | Superseded | 2026-08-21 | none | Superseded |
