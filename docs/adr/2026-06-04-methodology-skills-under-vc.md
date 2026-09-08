@@ -6,6 +6,10 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 
+> **Current release policy (approved 2026-09-06; recorded 2026-09-08):** the
+> [explicit-release addendum](#addendum-2026-09-08--explicit-reviewed-skill-releases)
+> narrows publication: edit hooks validate/report; they do not publish shared bundles.
+
 > **Status:** ACCEPTED 2026-06-04 — §0 anchors confirmed on-disk during authoring at HEAD `17ab0ad`; CC re-confirms in the companion handoff's Phase 0, then PO accepts.
 > **Author:** Claude (Tech Advisor) — drafted for PO (Joshua) review.
 > **Supersedes / relates to:** `2026-06-04-lean-portfolio-meta-layer.md` (provenance/audit discipline it installs); the 2026-06-04 advisor-session finding that the deployed skill set (11) and the repo's tracked skill set (2) diverge silently.
@@ -150,3 +154,52 @@ dispositions (two plugin-bundled, one archived), not by a reversal of the ADR's 
 executed-as-superseded — overtaken by GSUB-1's per-skill findings rather than carried out as
 originally planned. See `docs/briefs/programs/GSUB-1-inventory-and-dispositions.md` for the full disposition
 ledger.
+
+## Addendum 2026-09-08 — Explicit reviewed skill releases
+
+**Authority:** the operator approved the proposal “deploy explicitly from a reviewed
+revision; edit hooks should validate and report, without publishing shared bundles”
+with “yes. proceed as planned” in the skill-simplification task on 2026-09-06.
+This records that existing ruling; it does not authorize an actual release.
+
+**Reads:** `scripts/sync_skills.py`, `scripts/sync_skills_hook.py`, `Makefile`, and
+`tests/test_sync_skills.py`, reviewed on 2026-09-08 in the uncommitted
+`cursor/skill-release-tooling` worktree at base `4fb2b88f`. The base edit hook
+invokes publication after a reference check; a main-branch name alone neither
+proves review nor prevents uncommitted edits reaching deployed bundles.
+
+**Decision:** repository ownership and one-way source-to-deployed flow remain.
+Skill edit hooks validate and report pending release, without copying to shared
+targets. Publication is an explicit invocation naming a reviewed revision and a
+destination; no user or cloud bundle is chosen implicitly. The source must satisfy
+the approved release checks, and unknown source identity refuses publication.
+Git verifies revision identity; the caller supplies review attestation. Unrelated
+working-tree notes do not invalidate an otherwise matching release payload.
+
+**Preserved:** reference/no-constants validation, read-only drift diagnostics,
+separately owned user skills, and target existence checks. No global installation
+or research/operations authority changes. Local instructions or command wrappers
+that still promise edit-triggered deployment must be reconciled before release.
+
+**Implementation state (final review 2026-09-08):** the combined uncommitted tooling
+candidate passed independent review and 92 targeted tests. Coordinator closed the
+last staged-empty-directory gap with failing-before/passing-after regressions;
+installation names now derive from the verified revision inventory. This accepts
+the reviewed implementation only, not integration or an actual release. The prior
+accidental test publication remains an incident, not an authorized release.
+Final inspection briefly found shared Git configuration reporting `core.bare=true`;
+it subsequently returned to false without coordinator intervention. Ordinary
+worktree identity/status/whitespace checks then passed. The origin is unestablished;
+recheck repository identity before integration as usual.
+
+**Acceptance / falsifier:** an edit-hook invocation that publishes any skill, or a
+publication without explicit revision/target that changes a destination, contradicts
+this decision. Verify with isolated temporary repositories/targets; never exercise
+the falsifier against actual user bundles.
+
+```powershell
+python -m pytest tests/test_sync_skills.py tests/scripts/test_after_file_edit_cursor_hook.py tests/scripts/test_check_skill_deploy_sync.py -q
+```
+
+**Boundary:** recording this addendum permits no merge, deployment, global deletion,
+or weakening of source/target checks. Candidate fixes remain subject to review.

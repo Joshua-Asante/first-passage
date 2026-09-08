@@ -33,7 +33,11 @@ facts remain with the linked owners; this page does not restate locked values.
 - Session-log roll: `make roll-sessions` (design:
   [`../spec/2026-06-27-session-log-rolloff-design.md`](../spec/2026-06-27-session-log-rolloff-design.md)).
 - Hygiene sentinel: `make sentinel`.
-- Skill mirror check/copy: `make sync-skills-check` / `make sync-skills`.
+- Skill deploy diagnostic (read-only, any checkout): `make sync-skills-check`.
+  Explicit publication from primary `main` after review requires both
+  revision and target: `make sync-skills REVISION=<reviewed-sha>
+  TARGET=<explicit-destination>` (no implied home/AppData default). Being
+  on `main` does not prove review.
 - INDEX/CATALOG liveness census (report-only): `make sync-liveness` (or
   `make audit`). Wired [`../../scripts/gates.yml`](../../scripts/gates.yml)
   `tier: audit` — not pre-commit/`make check`/required CI. Script still exits

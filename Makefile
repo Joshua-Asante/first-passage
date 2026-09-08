@@ -14,6 +14,8 @@ help:
 	@echo "root-doc-liveness     five-root-doc markdown link gate"
 	@echo "sync-liveness         INDEX/CATALOG liveness census (report-only)"
 	@echo "find-owner            Rule 7 owner lookup (path or token)"
+	@echo "sync-skills           publish skills; requires REVISION and TARGET (or CHECK=1)"
+	@echo "sync-skills-check     read-only skill deploy drift check"
 
 # W5: composition owned by scripts/gates.yml via gate_manifest.py
 # (docs/adr/2026-08-07-w5-governance-diet.md). Individual targets below remain
@@ -128,13 +130,24 @@ test-ops:
 skills-check:
 	@python scripts/check_skill_refs.py --all
 
-# One-way sync of in-repo .claude/skills/ -> deployed bundle (repo is source of truth).
-# `make sync-skills` copies; `make sync-skills-check` is drift-only (advisory vs cloud-synced target).
+# Explicit skill release. Publication requires REVISION and TARGET.
+# `make sync-skills CHECK=1` and `make sync-skills-check` are read-only.
+ifneq ($(filter sync-skills,$(MAKECMDGOALS)),)
+ifeq ($(CHECK),)
+ifeq ($(REVISION),)
+$(error make sync-skills requires REVISION and TARGET, or CHECK=1)
+endif
+ifeq ($(TARGET),)
+$(error make sync-skills requires REVISION and TARGET, or CHECK=1)
+endif
+endif
+endif
+
 sync-skills:
 ifdef CHECK
 	@python scripts/sync_skills.py --check
 else
-	@python scripts/sync_skills.py
+	@python scripts/sync_skills.py --revision "$(REVISION)" --target "$(TARGET)"
 endif
 
 sync-skills-check:

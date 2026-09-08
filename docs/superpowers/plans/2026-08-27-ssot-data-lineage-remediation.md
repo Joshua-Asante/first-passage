@@ -122,6 +122,12 @@ If `.claude/skills/brief-authoring/scripts/check_brief.py` does not exist in-rep
 
 - [ ] **Step 2: Deploy it**
 
+> **Superseded 2026-09-08:** publication now requires a reviewed revision and
+> an explicitly chosen destination from primary main. The commands below are
+> historical, not an executable release procedure. Follow the
+> [explicit-release policy](../../adr/2026-06-04-methodology-skills-under-vc.md#addendum-2026-09-08--explicit-reviewed-skill-releases)
+> and the [current post-merge guidance](../../../.claude/commands/post-merge.md#5-skills-deploy-optional-explicit-release-from-primary-main).
+
 ```bash
 python scripts/sync_skills.py
 python scripts/sync_skills.py --check

@@ -46,3 +46,47 @@ def test_main_fail_open_on_bad_stdin():
         assert mod.main() == 0
     finally:
         sys.stdin = stdin
+
+
+def test_adapter_surfaces_validator_failure(monkeypatch, capsys):
+    mod = _load()
+    recorded: list[Path] = []
+
+    def _fake_run(script, payload, cwd):
+        recorded.append(script)
+        if script.name == "sync_skills_hook.py":
+            sys.stderr.write("SKILL CHECK FAILED: check_skill_refs.py --all failed\n")
+            sys.stderr.write("explicit release is pending\n")
+
+    monkeypatch.setattr(mod, "_run_hook", _fake_run)
+    stdin = sys.stdin
+    try:
+        sys.stdin = io.StringIO(json.dumps({
+            "file_path": ".claude/skills/alpha/SKILL.md",
+            "edits": [{"file_path": ".claude/skills/alpha/SKILL.md"}],
+        }))
+        assert mod.main() == 0
+    finally:
+        sys.stdin = stdin
+    err = capsys.readouterr().err
+    assert "SKILL CHECK FAILED" in err
+    assert any(p.name == "sync_skills_hook.py" for p in recorded)
+    assert any(p.name == "lock_event_hook.py" for p in recorded)
+
+
+def test_adapter_unrelated_edit_still_invokes_hooks(monkeypatch):
+    mod = _load()
+    recorded: list[str] = []
+
+    def _fake_run(script, payload, cwd):
+        recorded.append(script.name)
+
+    monkeypatch.setattr(mod, "_run_hook", _fake_run)
+    stdin = sys.stdin
+    try:
+        sys.stdin = io.StringIO(json.dumps({"file_path": "docs/STATE.md", "edits": []}))
+        assert mod.main() == 0
+    finally:
+        sys.stdin = stdin
+    assert "lock_event_hook.py" in recorded
+    assert "sync_skills_hook.py" in recorded
