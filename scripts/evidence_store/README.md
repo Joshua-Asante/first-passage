@@ -211,8 +211,11 @@ nested event JSON; encode it explicitly in a future importer. RETRIEVED carries
 position/applicability; ASSESSED carries disposition/reason. These observational
 edges stay separate from correction dependencies. Consumers of older graph schemas
 must explicitly support schema 3 before importing. Legacy events remain valid;
-new belief records, assessments and retrieval receipts use schema 3, use events
-remain schema 2. SQLite schema 3 rebuilds automatically from older or mixed
+new belief records and assessments use schema 3; retrieval receipts use schema 4,
+and use events remain schema 2. Schema 4 applies `known_at` to every traversed
+belief assessment, including nested beliefs. Schema 2/3 receipts retain their
+original validation and observations; historical use provenance applies the
+receipt's knowledge cutoff without rewriting those observations. SQLite schema 3 rebuilds automatically from older or mixed
 journals; no durable input migration is needed. Older receipts stay immutable.
 
 Assessment nodes preserve full review events. ASSESSES connects each review to

@@ -93,13 +93,13 @@ class Store:
                 # Hook bindings must not override the explicitly selected repository.
                 env = {key: value for key, value in os.environ.items()
                        if not key.startswith('GIT_')}
-                kind = subprocess.run(['git', '-C', str(self.repo), 'cat-file', '-t', object_name],
+                kind = subprocess.run(['git', '--no-replace-objects', '-C', str(self.repo), 'cat-file', '-t', object_name],
                                       env=env, capture_output=True, check=False, timeout=30)
                 if kind.returncode != 0:
                     return None, 'unavailable'
                 if kind.stdout.strip() != b'blob':
                     raise EvidenceError('historical source must be a Git blob, not a directory/tree')
-                result = subprocess.run(['git', '-C', str(self.repo), 'cat-file', 'blob', object_name],
+                result = subprocess.run(['git', '--no-replace-objects', '-C', str(self.repo), 'cat-file', 'blob', object_name],
                                         env=env, capture_output=True, check=False, timeout=30)
             except (OSError, subprocess.TimeoutExpired):
                 return None, 'unavailable'
@@ -136,7 +136,7 @@ class Store:
             events, _, revision = self._load()
             if expected_revision is not None and expected_revision != revision:
                 raise EvidenceError('journal changed during retrieval; retry the request')
-            schema = 3 if kind in {'retrieval', 'assessment'} or (kind == 'record' and data['kind'] == 'belief') else 2 if kind == 'use' else 1
+            schema = 4 if kind == 'retrieval' else 3 if kind == 'assessment' or (kind == 'record' and data['kind'] == 'belief') else 2 if kind == 'use' else 1
             event = {'schema': schema,
                      'seq': len(events) + 1, 'id': str(uuid.uuid4()),
                      'recorded_at': timestamp(self.clock()), 'type': kind, 'data': data}
@@ -405,7 +405,7 @@ class Store:
                         warnings.append('source_needs_review')
                     if verification['preserved'] != 'available':
                         warnings.append('preserved_source_unavailable')
-                    for identity in sorted(ancestors(state, current['id'])):
+                    for identity in sorted(ancestors(state, current['id'], known_at=query['known_at'])):
                         if identity in state['versions']:
                             observation = source(identity)
                             if observation['current'] != 'unchanged' or observation['preserved'] != 'available':

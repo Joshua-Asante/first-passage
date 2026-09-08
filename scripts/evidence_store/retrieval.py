@@ -69,12 +69,20 @@ def candidates(state, query, revision):
     return sorted(results, key=lambda row: (order[row['applicability']['status']], row['record_id']))
 
 
-def ancestors(state, revision_id, skip_assessment=None):
+def assessment_ids(state, known_at=None):
+    """Latest assessment per belief within the requested knowledge boundary."""
+    if known_at is None:
+        return dict(state['latest_assessments'])
+    return {event['data']['belief_revision']: identity
+            for identity, event in state['assessments'].items() if event['recorded_at'] <= known_at}
+
+
+def ancestors(state, revision_id, skip_assessment=None, known_at=None):
     edges = {item: {event['data']['source_version']} for item, event in state['records'].items()}
     for event in state['dependencies']:
         data = event['data']
         edges[data['consumer']].update((data['dependency'], data['evidence_version']))
-    for target, assessment_id in state['latest_assessments'].items():
+    for target, assessment_id in assessment_ids(state, known_at).items():
         if target == skip_assessment:
             continue
         data = state['assessments'][assessment_id]['data']
@@ -121,7 +129,7 @@ def validate_receipt(event, state):
     if not isinstance(data['results'], list) or len(data['results']) != len(expected):
         raise EvidenceError('receipt candidate set differs from journal')
     for row, base in zip(data['results'], expected):
-        extra = {'belief'} if event['schema'] == 3 else set()
+        extra = {'belief'} if event['schema'] >= 3 else set()
         keys(row, set(base) | {'warnings', 'current_source_verification', 'corrections'} | extra)
         if any(canonical(row[key]) != canonical(value) for key, value in base.items()):
             raise EvidenceError('receipt record differs from journal')
@@ -136,7 +144,8 @@ def validate_receipt(event, state):
                 warnings.append('preserved_source_unavailable')
         elif row['current_source_verification'] is not None:
             raise EvidenceError('unselected record cannot claim source verification')
-        allowed = ancestors(state, current['id']) if current else set()
+        cutoff = query['known_at'] if event['schema'] >= 4 else None
+        allowed = ancestors(state, current['id'], known_at=cutoff) if current else set()
         if not isinstance(row['corrections'], list):
             raise EvidenceError('corrections must be a list')
         seen = set()
@@ -165,9 +174,9 @@ def validate_receipt(event, state):
             warnings.append('dependencies_need_review')
         if warnings != row['warnings']:
             raise EvidenceError('receipt warnings do not match observations')
-        if event['schema'] == 3:
+        if event['schema'] >= 3:
             from .beliefs import validate_view
-            validate_view(row['belief'], state, current, query)
+            validate_view(row['belief'], state, current, query, legacy=event['schema'] < 4)
 
 
 def selectable(receipt):

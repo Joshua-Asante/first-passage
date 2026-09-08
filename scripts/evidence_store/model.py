@@ -102,7 +102,7 @@ def replay(events):
         expected_schema = 2 if event['type'] in {'retrieval', 'use'} else 1
         if event['type'] == 'assessment' or (event['type'] == 'record' and event['data'].get('kind') == 'belief'):
             expected_schema = 3
-        allowed = {2, 3} if event['type'] == 'retrieval' else {expected_schema}
+        allowed = {2, 3, 4} if event['type'] == 'retrieval' else {expected_schema}
         if type(event['schema']) is not int or event['schema'] not in allowed:
             raise EvidenceError('unsupported event schema')
         if type(event['seq']) is not int or event['seq'] != seq:
@@ -151,7 +151,8 @@ def replay(events):
             if not isinstance(data['conditions'], dict):
                 raise EvidenceError('conditions must be a JSON object')
             try:
-                canonical(data['conditions'])
+                if json.loads(canonical(data['conditions'])) != data['conditions']:
+                    raise EvidenceError('conditions must use JSON types and string object keys')
             except (TypeError, ValueError) as exc:
                 raise EvidenceError('conditions must contain finite JSON data') from exc
             if data['effective_at'] is not None and timestamp(data['effective_at']) != data['effective_at']:

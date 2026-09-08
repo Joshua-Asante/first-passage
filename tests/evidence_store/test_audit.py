@@ -89,6 +89,37 @@ class AuditTest(unittest.TestCase):
         self.assertEqual(self.store.use_impact(a1['id'])['matches'][0]['receipt_id'], receipt['id'])
         self.assertEqual(self.store.use_impact(a2['id'])['matches'], [])
 
+    def test_nested_belief_assessments_respect_known_at(self):
+        belief = self.record('belief', 'belief')
+        parent = self.record('parent', 'belief')
+        first, second = self.record('first'), self.record('second')
+        root = self.record('root', 'analysis')
+        decision = self.record('decision', 'decision')
+        self.store.depend(consumer=root['id'], dependency=belief['id'],
+                          evidence_version=root['source_version'], note='basis')
+        self.assess(parent, belief)
+        cutoff_without_assessment = self.now
+        self.now = '2026-09-08T10:10:00Z'
+        a1 = self.assess(belief, first)
+        self.now = '2026-09-08T11:00:00Z'
+        a2 = self.assess(belief, second, a1['id'])
+        (self.repo / 'second.md').unlink()
+        receipt = self.store.retrieve(record_ids=['root', 'parent'], known_at='2026-09-08T10:30:00Z')
+        self.use(receipt, decision, root)
+        for row in receipt['data']['results']:
+            self.assertEqual(row['corrections'], [])
+            if row['belief']:
+                self.assertNotIn(second['source_version'], [item['id'] for item in row['belief']['sources']])
+        self.assertEqual(self.store.use_impact(a1['id'])['applied_decisions'], [decision['id']])
+        self.assertEqual(self.store.use_impact(a2['id'])['matches'], [])
+        self.assertEqual(self.store.use_impact(second['id'])['matches'], [])
+        empty = self.store.retrieve(record_ids=['root'], known_at=cutoff_without_assessment)
+        self.assertEqual(empty['data']['results'][0]['corrections'], [])
+        self.assertNotIn(empty['id'], [item['receipt_id'] for item in self.store.use_impact(a1['id'])['matches']])
+        original = (self.store.root / 'events.jsonl').read_bytes()
+        self.store.rebuild()
+        self.assertEqual((self.store.root / 'events.jsonl').read_bytes(), original)
+
     def test_read_only_empty_unknown_and_markdown(self):
         decision = self.record('decision', 'decision')
         original = (self.store.root / 'events.jsonl').read_bytes()
@@ -102,6 +133,48 @@ class AuditTest(unittest.TestCase):
         with self.assertRaises(EvidenceError):
             self.store.use_impact('unknown')
         self.assertEqual((self.store.root / 'events.jsonl').read_bytes(), original)
+
+    def test_legacy_nested_assessment_receipt_keeps_original_observations(self):
+        belief = self.record('belief', 'belief')
+        first, second = self.record('first'), self.record('second')
+        root = self.record('root', 'analysis')
+        self.store.depend(consumer=root['id'], dependency=belief['id'],
+                          evidence_version=root['source_version'], note='basis')
+        a1 = self.assess(belief, first)
+        self.now = '2026-09-08T11:00:00Z'
+        a2 = self.assess(belief, second, a1['id'])
+        (self.repo / 'second.md').unlink()
+        receipt = self.store.retrieve(record_ids=['root'], known_at='2026-09-08T10:30:00Z')
+        # Schema 3 included the newer assessment's missing source in its observations.
+        receipt['schema'] = 3
+        row = receipt['data']['results'][0]
+        row['corrections'] = [dict(id=second['source_version'], reason='source_needs_review',
+                                   source=self.store.source(second['source_version']))]
+        row['warnings'] = ['dependencies_need_review']
+        journal = self.store.root / 'events.jsonl'
+        lines = journal.read_bytes().splitlines(keepends=True)
+        journal.write_bytes(b''.join(lines[:-1]) + (json.dumps(receipt) + '\n').encode())
+        original = journal.read_bytes()
+        self.store.rebuild()
+        self.assertEqual(self.store.receipt(receipt['id'])['receipt'], receipt)
+        self.assertEqual(self.store.use_impact(a2['id'])['matches'], [])
+        self.assertEqual(self.store.use_impact(a1['id'])['matches'][0]['receipt_id'], receipt['id'])
+        self.assertEqual(journal.read_bytes(), original)
+
+    def test_review_checks_declared_dependencies_outside_recorded_use(self):
+        dependency = self.record('dependency')
+        unrelated = self.record('unrelated')
+        decision = self.record('decision', 'decision')
+        self.store.depend(consumer=decision['id'], dependency=dependency['id'],
+                          evidence_version=decision['source_version'], note='declared basis')
+        receipt = self.store.retrieve(record_ids=['unrelated'])
+        self.use(receipt, decision, unrelated)
+        self.assertEqual(self.store.review(decision['id'])['review_status'], 'no_flags')
+        (self.repo / 'dependency.md').unlink()
+        report = self.store.review(decision['id'])
+        self.assertEqual(report['review_status'], 'needs_review')
+        self.assertTrue(any(row['id'] == dependency['source_version'] and row['status'] == 'needs_review'
+                            for row in report['decision_checks']))
 
     def test_legacy_receipts_rebuild_without_new_annotations(self):
         evidence = self.record('evidence')

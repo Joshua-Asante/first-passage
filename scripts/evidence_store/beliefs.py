@@ -45,7 +45,7 @@ def validate_assessment(event, state):
         raise EvidenceError('contested requires challenging evidence')
 
 
-def view(state, current, known_at, context, source):
+def view(state, current, known_at, context, source, legacy=False):
     """Current observations annotate the preserved assessment; they never rewrite it."""
     if current is None or current['kind'] != 'belief':
         return None
@@ -53,7 +53,9 @@ def view(state, current, known_at, context, source):
                if event['data']['belief_revision'] == current['id'] and event['recorded_at'] <= known_at]
     selected = history[-1] if history else None
     evidence, unresolved, groups = [], [], {}
-    nodes = {current['id'], current['source_version']} | ancestors(state, current['id'], skip_assessment=current['id'])
+    cutoff = None if legacy else known_at
+    nodes = {current['id'], current['source_version']} | ancestors(
+        state, current['id'], skip_assessment=current['id'], known_at=cutoff)
     warnings = []
     if applicability(current['conditions'], context)['status'] != 'matching':
         warnings.append('belief_scope_unresolved')
@@ -65,7 +67,7 @@ def view(state, current, known_at, context, source):
             scope = applicability(record['conditions'], context)
             evidence.append(dict(item, record=record, applicability=scope))
             nodes.update({record['id'], record['source_version']} |
-                         ancestors(state, record['id'], skip_assessment=current['id']))
+                         ancestors(state, record['id'], skip_assessment=current['id'], known_at=cutoff))
             digest = state['versions'][record['source_version']]['sha256']
             groups.setdefault(digest, []).append(record['id'])
             if item['relationship'] == 'challenging' and item['resolution'] is None:
@@ -98,7 +100,7 @@ def view(state, current, known_at, context, source):
                                       for digest, identities in sorted(groups.items()) if len(identities) > 1])
 
 
-def validate_view(value, state, current, query):
+def validate_view(value, state, current, query, legacy=False):
     """Reconstruct journal-derived fields using the receipt's historical observations."""
     if current is None or current['kind'] != 'belief':
         if value is not None:
@@ -120,6 +122,6 @@ def validate_view(value, state, current, query):
             raise EvidenceError('belief view omits required source observation')
         return observations[identity]
 
-    expected = view(state, current, query['known_at'], query['context'], source)
+    expected = view(state, current, query['known_at'], query['context'], source, legacy=legacy)
     if canonical(expected) != canonical(value):
         raise EvidenceError('belief snapshot differs from reviewed assessment or observations')

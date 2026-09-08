@@ -91,6 +91,30 @@ class StoreTest(unittest.TestCase):
         self.assertEqual(result['availability'], 'available')
         self.assertIn(b'Status: parked', self.store.read_bytes(result['version_id']))
 
+    def test_historical_capture_ignores_replace_refs(self):
+        self.git('init', '-q')
+        self.git('add', 'decision.md')
+        commit_args = ('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
+                       '-c', 'commit.gpgsign=false', 'commit', '-qm')
+        self.git(*commit_args, 'original')
+        original = self.git('rev-parse', 'HEAD')
+        self.write('decision.md', 'replacement bytes')
+        self.git('add', 'decision.md')
+        self.git(*commit_args, 'replacement')
+        self.git('replace', original, self.git('rev-parse', 'HEAD'))
+        result = self.store.capture('historical', 'decision.md', 'document', commit=original)
+        self.assertIn(b'Status: parked', self.store.read_bytes(result['version_id']))
+
+    def test_non_string_condition_keys_leave_journal_unchanged(self):
+        version = self.capture()
+        original = (self.root / 'events.jsonl').read_bytes()
+        for conditions in ({1: 'value'}, {'nested': {1: 'value'}}):
+            with self.subTest(conditions=conditions), self.assertRaises(EvidenceError):
+                self.store.record(record_id='bad', kind='decision', source_version=version,
+                                  section='## Ruling', statement='Status: parked', status='parked',
+                                  conditions=conditions, effective_at=self.now)
+            self.assertEqual((self.root / 'events.jsonl').read_bytes(), original)
+
     def test_path_escape_and_invalid_commit_are_rejected(self):
         for path in ['../outside.md', str(self.repo / 'decision.md'), '.git/config', 'a/../../x']:
             with self.subTest(path=path), self.assertRaises(EvidenceError):

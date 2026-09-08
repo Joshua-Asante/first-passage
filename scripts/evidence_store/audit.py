@@ -3,6 +3,7 @@ import json
 import re
 
 from .model import EvidenceError, replay
+from .retrieval import ancestors, assessment_ids
 
 
 def events_in_order(state):
@@ -22,7 +23,7 @@ def provenance(snapshot, historical):
     for event in historical['dependencies']:
         data = event['data']
         edges[data['consumer']].update((data['dependency'], data['evidence_version']))
-    assessments = dict(historical['latest_assessments'])
+    assessments = assessment_ids(historical, snapshot['known_at'])
     if snapshot.get('belief') is not None:
         selected = snapshot['belief']['assessment']
         assessments.pop(current['id'], None)
@@ -97,7 +98,8 @@ def review(state, decision_revision, source):
     decision = state['records'].get(decision_revision)
     if decision is None or decision['data']['kind'] != 'decision':
         raise EvidenceError('review requires an exact decision revision UUID')
-    checks = [node_check(state, identity, source) for identity in (decision_revision, decision['data']['source_version'])]
+    nodes = {decision_revision} | ancestors(state, decision_revision)
+    checks = [node_check(state, identity, source) for identity in sorted(nodes)]
     events, uses, cache = events_in_order(state), [], {}
     for use in state['uses'].values():
         if use['data']['decision_revision'] != decision_revision:
