@@ -600,6 +600,34 @@ def test_tree_query_failure_refuses_completion():
         AH.tree_still_running(None, BoomJob())
 
 
+def test_job_active_settle_ignores_post_exit_accounting_lag(monkeypatch):
+    # GetExitCodeProcess can report exit while ActiveProcesses still briefly counts the leader.
+    counts = [1, 1, 0]
+    class LagJob:
+        def active_processes(self):
+            return counts.pop(0) if counts else 0
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_POLL_SECONDS', 0)
+    assert AH.tree_still_running(None, LagJob(), after_provider_exit=True) is False
+    assert counts == []
+
+
+def test_job_active_settle_detects_persistent_descendants(monkeypatch):
+    class StickyJob:
+        def active_processes(self):
+            return 2  # still owned after the leader has exited
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_SECONDS', 0.05)
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_POLL_SECONDS', 0.01)
+    assert AH.tree_still_running(None, StickyJob(), after_provider_exit=True) is True
+
+
+def test_job_active_settle_query_failure_still_refuses():
+    class BoomJob:
+        def active_processes(self):
+            raise OSError('fixture QueryInformationJobObject failed during settle')
+    with pytest.raises(AH.HandoffError, match='liveness query failed'):
+        AH.tree_still_running(None, BoomJob(), after_provider_exit=True)
+
+
 def test_marker_loss_same_incarnation_reuses_instance(harness, tmp_path):
     with AH.workspace_lock(AH.path_control_root(harness.workspace)):
         first = AH.bind_workspace_instance(harness.workspace)

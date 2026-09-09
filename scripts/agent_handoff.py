@@ -1002,6 +1002,13 @@ def stop_child(process, job=None):
         process.wait(timeout=5)
 
 
+# Windows Job ActiveProcesses can lag GetExitCodeProcess: the leader may already
+# report exited while the job still briefly counts it. Real descendants keep the
+# count above zero past this window; query failures remain fail-closed.
+JOB_ACTIVE_SETTLE_SECONDS = 2.0
+JOB_ACTIVE_SETTLE_POLL_SECONDS = 0.05
+
+
 def owned_group_alive(process, job=None):
     # OSError from a job query must propagate: callers refuse completion on uncertainty.
     if job is not None:
@@ -1015,8 +1022,30 @@ def owned_group_alive(process, job=None):
         return False
 
 
-def tree_still_running(process, job=None):
+def descendants_survived_provider_exit(process, job=None, settle_seconds=JOB_ACTIVE_SETTLE_SECONDS):
+    """True when owned descendants remain after the provider leader has exited.
+
+    Fail closed on job-query errors. When a Windows job is present, poll
+    ActiveProcesses until it reaches 0 or the settle window elapses so a
+    transient post-exit accounting lag is not mistaken for survivors. A count
+    that stays above zero is treated as real descendants — never ignored.
+    """
+    if job is None:
+        return owned_group_alive(process, None)
+    deadline = time.monotonic() + max(0.0, float(settle_seconds))
+    while True:
+        active = job.active_processes()
+        if active <= 0:
+            return False
+        if time.monotonic() >= deadline:
+            return True
+        time.sleep(JOB_ACTIVE_SETTLE_POLL_SECONDS)
+
+
+def tree_still_running(process, job=None, *, after_provider_exit=False):
     try:
+        if after_provider_exit:
+            return descendants_survived_provider_exit(process, job)
         return owned_group_alive(process, job)
     except OSError as exc:
         raise HandoffError(f'Process-tree liveness query failed; refuse completion: {exc}') from exc
@@ -1220,7 +1249,9 @@ def run(args):
                     record['error'] = 'Local stop attempted; partial effects or remote work may remain. Reconcile before retry.'
                 else:
                     try:
-                        survivors = tree_still_running(process, job)
+                        # Leader has exited (or wait loop ended); settle job
+                        # ActiveProcesses before treating a nonzero count as survivors.
+                        survivors = tree_still_running(process, job, after_provider_exit=True)
                     except HandoffError as exc:
                         stop_child(process, job)
                         record.update(state='FAILED', error=str(exc))

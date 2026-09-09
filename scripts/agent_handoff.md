@@ -135,8 +135,11 @@ Changes in a provider's format fail visibly and retain raw evidence.
 
 Before accepting a DONE/DONE_WITH_CONCERNS return, the runner re-checks immutable
 inputs and refuses completion if owned process-group descendants are still alive.
-Cancellation is honored after staging/verification and before provider launch.
-File digests are streamed in bounded chunks.
+On Windows, job `ActiveProcesses` is allowed a short settle window after the leader
+exits so a GetExitCodeProcess/accounting lag is not mistaken for survivors; a count
+that remains nonzero is still treated as real descendants, and job-query failures
+stay fail-closed. Cancellation is honored after staging/verification and before
+provider launch. File digests are streamed in bounded chunks.
 Required-check evidence must be a nonempty string (JSON null is rejected). Staging copies create missing parents without rewriting existing directory modes. Nonzero provider exits also stop owned process-group descendants before releasing the lock. A closed reconciliation cannot later be reopened as resume.
 
 ## Verification

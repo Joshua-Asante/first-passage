@@ -35,6 +35,15 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 ---
 
 
+## 2026-09-09f — Handoff CLI: Windows job ActiveProcesses settle after leader exit
+
+- **Focus:** Joshua's Windows failure on `3e18b62` — childless ok worker marked UNKNOWN because job ActiveProcesses lagged GetExitCodeProcess.
+- **Shipped:** Post-exit survivor check polls job ActiveProcesses for a short settle window before concluding descendants remain; persistent nonzero counts still UNKNOWN; query OSError still fail-closed. Follow-up branch after #323 merge.
+- **Decisions:** Do not weaken the survivor assertion — treat the race as accounting lag, not as permission to ignore a live owned tree.
+- **Open / next:** Windows re-verify of the resume-refusal test on this head; not merge-ready until that lands.
+
+---
+
 ## 2026-09-09e — Handoff CLI: cookie restore vs recreate; pre-resolve alias capture
 
 - **Focus:** Address Codex current-head review on `e2e658b6` (PR #323) — binding recovery, stripped-cookie policy, CreateProcess BaseException window, alias capture before resolve.
