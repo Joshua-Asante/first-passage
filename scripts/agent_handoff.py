@@ -466,6 +466,56 @@ class WindowsJob:
             self.handle = None
 
 
+def windows_job_required():
+    return os.name == 'nt'
+
+
+def force_stop_process(process):
+    """Last-resort stop when job ownership was never established."""
+    if process is None:
+        return
+    if os.name == 'nt' and process.poll() is None:
+        subprocess.run(['taskkill', '/PID', str(process.pid), '/T', '/F'], capture_output=True, timeout=15)
+    if process.poll() is None:
+        try:
+            process.kill()
+        except OSError:
+            pass
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        try:
+            process.kill()
+        except OSError:
+            pass
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+
+
+def claim_windows_tree(process, job=None):
+    # Fail closed: either return a job that owns the tree, or ensure the process is dead.
+    owned = job
+    try:
+        if owned is None:
+            owned = WindowsJob.create()
+        owned.assign(process)
+        return owned
+    except OSError as exc:
+        if owned is not None:
+            try:
+                owned.terminate()
+            except OSError:
+                pass
+            try:
+                owned.close()
+            except OSError:
+                pass
+        force_stop_process(process)
+        raise HandoffError(f'Windows process-tree ownership could not be established: {exc}') from exc
+
+
 def stop_child(process, job=None):
     # Never kill a PID retrieved from a stale receipt. Only this owned process/tree.
     if job is not None:
@@ -640,11 +690,24 @@ def run(args):
                 with stdout_path.open('wb') as stdout, stderr_path.open('wb') as stderr:
                     privatize(stdout_path)
                     privatize(stderr_path)
-                    process = subprocess.Popen(actual_command, cwd=workspace, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
-                                               start_new_session=os.name != 'nt', creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
-                    if os.name == 'nt':
+                    if windows_job_required():
+                        # Create the job before spawn so launch fails closed if ownership
+                        # cannot be prepared. Assignment still happens immediately after Popen.
                         job = WindowsJob.create()
-                        job.assign(process)
+                    try:
+                        process = subprocess.Popen(actual_command, cwd=workspace, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
+                                                   start_new_session=not windows_job_required(),
+                                                   creationflags=subprocess.CREATE_NO_WINDOW if windows_job_required() else 0)
+                    except Exception:
+                        if job is not None:
+                            try:
+                                job.close()
+                            except OSError:
+                                pass
+                            job = None
+                        raise
+                    if windows_job_required():
+                        job = claim_windows_tree(process, job)
                     record.update(state='RUNNING', child_pid=process.pid, started_at=now())
                     write_json(record_path, record)
                     print(json.dumps({'request_id': request_id, 'record': str(record_path), 'child_pid': process.pid}), flush=True)
@@ -689,7 +752,11 @@ def run(args):
                                 break
                             time.sleep(0.1)
                 record['exit_code'] = process.returncode
-                if record['state'] in ('TIMED_OUT', 'CANCELLED'):
+                if windows_job_required() and job is None and record['state'] == 'RUNNING':
+                    # Should be unreachable after fail-closed launch; never accept completion.
+                    force_stop_process(process)
+                    record.update(state='FAILED', error='Windows process-tree ownership was lost; refuse completion')
+                elif record['state'] in ('TIMED_OUT', 'CANCELLED'):
                     record['error'] = 'Local stop attempted; partial effects or remote work may remain. Reconcile before retry.'
                 elif process.returncode != 0:
                     if owned_group_alive(process, job):

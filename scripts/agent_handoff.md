@@ -79,7 +79,10 @@ python scripts/agent_handoff.py reconcile --workspace C:/work/project --request-
 `cancel` requests cancellation from the running controller; it does not kill a PID
 read from a stale receipt. Wait for the receipt to change before assuming a stop.
 At the deadline (default 900 seconds), or on cancellation, the controller attempts
-to stop its owned local process tree and preserves all evidence. Detached workers
+to stop its owned local process tree and preserves all evidence. On Windows the
+provider is placed in a Job Object before monitoring begins; if that ownership
+cannot be established the launch fails closed and the process is not left running.
+On POSIX the provider runs in its own process group for the same purpose. Detached workers
 or provider-side work may outlive local cancellation; timeout never proves rollback.
 
 The workspace lock prevents concurrent dispatch through this runner. It cannot

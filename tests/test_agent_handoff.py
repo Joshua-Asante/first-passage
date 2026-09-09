@@ -584,3 +584,131 @@ def test_owned_group_alive_uses_windows_job_handle():
             calls.append('kill')
     AH.stop_child(Proc(), TermJob(1))
     assert calls == ['terminate']
+
+
+def test_claim_windows_tree_fail_closed_kills_process(monkeypatch):
+    created = []
+    class BoomJob:
+        @classmethod
+        def create(cls):
+            job = cls()
+            created.append(job)
+            return job
+        def assign(self, process):
+            raise OSError('fixture assign denied')
+        def terminate(self):
+            created.append('terminate')
+        def close(self):
+            created.append('close')
+    class Proc:
+        def __init__(self):
+            self.pid = 4242
+            self._alive = True
+        def poll(self):
+            return None if self._alive else 1
+        def kill(self):
+            self._alive = False
+            created.append('kill')
+        def wait(self, timeout=None):
+            self._alive = False
+            return 1
+    monkeypatch.setattr(AH, 'WindowsJob', BoomJob)
+    monkeypatch.setattr(AH.os, 'name', 'nt')
+    def fake_taskkill(*args, **kwargs):
+        created.append('taskkill')
+        return subprocess.CompletedProcess(args[0], 0)
+    monkeypatch.setattr(AH.subprocess, 'run', fake_taskkill)
+    proc = Proc()
+    with pytest.raises(AH.HandoffError, match='ownership could not be established'):
+        AH.claim_windows_tree(proc)
+    assert 'close' in created
+    assert proc.poll() is not None
+
+
+def test_windows_launch_fail_closed_when_job_prepare_fails(harness, monkeypatch):
+    class BoomJob:
+        @classmethod
+        def create(cls):
+            raise OSError('fixture CreateJobObject denied')
+    monkeypatch.setattr(AH, 'WindowsJob', BoomJob)
+    monkeypatch.setattr(AH, 'windows_job_required', lambda: True)
+    original_popen = AH.subprocess.Popen
+    calls = []
+    def guarded_popen(*args, **kwargs):
+        calls.append('popen')
+        return original_popen(*args, **kwargs)
+    monkeypatch.setattr(AH.subprocess, 'Popen', guarded_popen)
+    argv = harness.command('ok')[2:]
+    assert AH.main(argv) == 1
+    assert calls == []  # fail before spawn
+    record, = harness.records()
+    assert record['state'] == 'FAILED'
+    assert record.get('child_pid') is None
+    assert 'CreateJobObject' in record.get('error', '')
+
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='Windows Job Objects')
+def test_windows_job_tracks_descendant_after_leader_exits(harness):
+    child = (
+        "import time, pathlib, os\n"
+        "pathlib.Path('child.pid').write_text(str(os.getpid()))\n"
+        "pathlib.Path('child-ready').write_text('1')\n"
+        "time.sleep(60)\n"
+    )
+    harness.worker.write_text(
+        "import json, re, subprocess, sys, time, pathlib\n"
+        "prompt = sys.argv[-1]\n"
+        "rid = re.search(r'Request ID: ([\\w-]+)', prompt).group(1)\n"
+        "sha = re.search(r'Packet SHA256: (\\w+)', prompt).group(1)\n"
+        "sid = 'fixture-session'\n"
+        "print(json.dumps({'type':'system','subtype':'init','session_id':sid}), flush=True)\n"
+        "subprocess.Popen([sys.executable, '-c', " + repr(child) + "])\n"
+        "while not pathlib.Path('child-ready').exists():\n"
+        "    time.sleep(0.05)\n"
+        "body = {'request_id': rid, 'packet_sha256': sha, 'status': 'DONE', 'summary': 'done', 'artifacts': [], 'checks': []}\n"
+        "print(json.dumps({'type':'result','subtype':'success','session_id':sid,'result': json.dumps(body)}), flush=True)\n"
+    )
+    result = harness.run()
+    assert result.returncode == 1, result.stdout + result.stderr
+    record, = harness.records()
+    assert record['state'] == 'UNKNOWN'
+    assert 'descendants' in record.get('error', '').lower() or 'ownership' in record.get('error', '').lower() or 'survived' in record.get('error', '').lower()
+    child_pid = int((harness.workspace / 'child.pid').read_text())
+    # Job termination should have stopped the descendant.
+    time.sleep(0.5)
+    alive = True
+    try:
+        import ctypes
+        kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+        handle = kernel.OpenProcess(0x1000, False, child_pid)
+        if not handle:
+            alive = False
+        else:
+            code = ctypes.c_ulong()
+            kernel.GetExitCodeProcess(handle, ctypes.byref(code))
+            kernel.CloseHandle(handle)
+            alive = code.value == 259
+    except Exception:
+        alive = False
+    assert not alive
+
+
+
+
+
+def test_cancel_after_workspace_removed(harness):
+    assert harness.run('empty').returncode == 1
+    record, = harness.records()
+    rid = record['request_id']
+    # Put the receipt back into a non-terminal pending-looking state is unnecessary;
+    # cancel on a finished receipt should still resolve the cache path without the workspace.
+    workspace = str(harness.workspace)
+    shutil.rmtree(harness.workspace)
+    cancel = subprocess.run([sys.executable, str(RUNNER), 'cancel', '--workspace', workspace, '--request-id', rid],
+                            capture_output=True, text=True, timeout=10)
+    assert cancel.returncode == 0, cancel.stderr
+    body = json.loads(cancel.stdout)
+    assert body['request_id'] == rid
+    assert body.get('cancellation_requested') is False
+
