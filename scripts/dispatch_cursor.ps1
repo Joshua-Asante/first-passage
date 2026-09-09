@@ -12,31 +12,13 @@
   One-time setup (operator): review + commit this file, then allow-list ONLY it:
       "PowerShell(& \"$env:LOCALAPPDATA\\...repo...\\scripts\\dispatch_cursor.ps1\" *)"
   or invoke via the Bash tool and allow-list the equivalent Bash(...) prefix.
-  The inner `agent.cmd --force` then runs as a subprocess of the vetted script rather
-  than as a separately classifier-gated CC action.
+  Launch approval applies to the actual actions and data access, including subprocesses.
+  Capture stdout, stderr and exit status for each attempt. Review artifact changes
+  and verification evidence before accepting completion.
 
-  Three modes, same entrypoint:
-    default   — one-shot: read the pointer, execute, full write/exec permission.
-                Unchanged from before -Plan/-ResumeSessionId existed.
-    -Plan     — read-only: read the pointer, propose a plan, make NO edits. Prints
-                the session id and writes the full plan JSON to the worktree. Judgment
-                (does this plan look right?) stays with whoever reads that output —
-                CC or the operator — never auto-approved by this script.
-    -ResumeSessionId <id> — continue a prior -Plan session and execute it for real
-                (--force). This is the only place write/exec permission is granted
-                after a plan review; nothing here auto-chains Plan -> execute.
-
-  Known live bug (2026-08-19, forum.cursor.com/t/.../168129, engineering-acked, no
-  fix ETA): on Windows, if MSYSTEM is set (Git Bash always sets it) AND any Claude
-  Code PreToolUse hook is registered (e.g. the hookify plugin, enabled per-user in
-  ~/.claude/settings.json), Cursor composes its hook-invocation command as PowerShell
-  but evaluates it with bash — every shell/terminal tool call inside cursor-agent then
-  rejects with a syntax error, silently (exit 0, clean "success" event). File edits are
-  a DIFFERENT tool path (afterFileEdit, not beforeShellExecution) and are NOT affected
-  — only shell/terminal commands (tests, git, build scripts) are. A -Plan run under the
-  bug can silently degrade to guessed-from-docs output instead of a real directory
-  read; read $Worktree/CURSOR_PLAN.json's "result" text for hook-rejection language
-  before trusting it. Pass -CleanHome to route around it (see that parameter).
+.PARAMETER ForceCommands
+  Explicitly request Cursor --force for an already authorized execution task.
+  Omit for normal permission handling. Incompatible with -Plan.
 
 .PARAMETER Slug
   Worktree/branch slug. Worktree = <repo>/.worktrees/<Slug>, branch = cursor/<Slug>.
@@ -63,37 +45,27 @@
   session id needed for -ResumeSessionId. Mutually exclusive with -ResumeSessionId.
 
 .PARAMETER ResumeSessionId
-  Continue a session previously started under -Plan and execute it for real (--force).
+  Continue a session previously started under -Plan within existing authority.
   The session id is the "session_id" field in that run's CURSOR_PLAN.json (NOT the
   "chatId" the CLI's own --resume help text implies — verified empirically 2026-08-19,
   the CLI's help wording is wrong). Mutually exclusive with -Plan.
 
 .PARAMETER CleanHome
-  Work around the hook-merge bug (see .DESCRIPTION) by pointing cursor-agent at a
-  scratch HOME/USERPROFILE that junction-links your real .cursor (keeps auth working)
-  but has no .claude directory (so Cursor finds no Claude Code hooks to import — the
-  bug's own necessary condition never fires). Scoped to this invocation only: original
-  HOME/USERPROFILE are restored in every code path, including on error. The junction
-  target persists at $env:TEMP\cursor-clean-home-<Slug> for reuse across calls; if you
-  ever delete it by hand, remove the junction first (cmd /c rmdir
-  "<dir>\.cursor") — a recursive delete that follows junctions walks into your real
-  Cursor config. Does not touch this repo's own .cursor/hooks.json (a different,
-  intentional, unaffected hook path — that one uses a plain `python <path>` command,
-  never the broken PowerShell-composed wrapper).
+  Retired. Fails without suppressing hooks; diagnose hook errors with controls intact.
 
 .PARAMETER DryRun
-  Do everything EXCEPT firing the agent; print the exact command that would run.
+  Describe the intended dispatch without creating worktrees or copying files.
 
 .EXAMPLE
-  # One-shot (unchanged default behavior)
+  # Preview a one-shot dispatch
   ./scripts/dispatch_cursor.ps1 -Slug aegis-6j-wave1-v2 `
      -Pointer .worktrees/aegis-6j-wave1-v2/V2_DISPATCH_INSTRUCTIONS.md -DryRun
 
 .EXAMPLE
   # Plan, review, then execute — two calls
-  ./scripts/dispatch_cursor.ps1 -Slug new-packet -Pointer SPEC.md -Plan -CleanHome
+  ./scripts/dispatch_cursor.ps1 -Slug new-packet -Pointer SPEC.md -Plan
   # ... read .worktrees/new-packet/CURSOR_PLAN.json, decide if the plan is right ...
-  ./scripts/dispatch_cursor.ps1 -Slug new-packet -ResumeSessionId <session_id from above> -CleanHome
+  ./scripts/dispatch_cursor.ps1 -Slug new-packet -ResumeSessionId <session_id from above>
 #>
 [CmdletBinding()]
 param(
@@ -105,10 +77,17 @@ param(
   [switch]$Plan,
   [string]$ResumeSessionId,
   [switch]$CleanHome,
+  [switch]$ForceCommands,
+  [string]$AgentCmd = (Join-Path $env:LOCALAPPDATA 'cursor-agent\agent.cmd'),
   [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
+
+if ($CleanHome) {
+  throw '-CleanHome is retired: suppressing imported hooks is not a routine dispatch repair. Diagnose the exact hook failure with controls intact.'
+}
+if ($ForceCommands -and $Plan) { throw '-ForceCommands cannot be used with -Plan.' }
 
 if ($Plan -and $ResumeSessionId) {
   throw "-Plan and -ResumeSessionId are mutually exclusive (plan first, then resume in a second call)."
@@ -119,11 +98,15 @@ if (-not $ResumeSessionId -and -not $Pointer) {
 
 # Repo root = parent of the scripts/ dir this file lives in.
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$AgentCmd = Join-Path $env:LOCALAPPDATA "cursor-agent\agent.cmd"
 if (-not (Test-Path $AgentCmd)) { throw "cursor-agent not found at $AgentCmd" }
 
 $Worktree = Join-Path $RepoRoot ".worktrees/$Slug"
 $Branch   = "cursor/$Slug"
+
+if ($DryRun) {
+  Write-Host "Would prepare $Worktree from $Base and launch $AgentCmd (plan=$Plan, resume=$ResumeSessionId, forceCommands=$ForceCommands). No files changed."
+  return
+}
 
 # 1. Worktree (reuse if present).
 if (Test-Path $Worktree) {
@@ -131,6 +114,7 @@ if (Test-Path $Worktree) {
 } else {
   Write-Host "creating worktree $Worktree on $Branch off $Base"
   git -C $RepoRoot worktree add $Worktree -b $Branch $Base | Write-Host
+  if ($LASTEXITCODE -ne 0) { throw "git worktree add failed: exit $LASTEXITCODE" }
 }
 
 # 2. Stage artifacts (src::dest). Skipped on a resume — nothing new to stage.
@@ -161,7 +145,7 @@ if (-not $ResumeSessionId) {
 if ($ResumeSessionId) {
   $prompt = "Proceed with the plan exactly as proposed. No new scope, no re-derivation."
   $agentArgs = @("-p", $prompt, "--workspace", $Worktree, "--resume", $ResumeSessionId,
-                 "--force", "--trust", "--output-format", "text")
+                 "--trust", "--output-format", "json")
 } elseif ($Plan) {
   $prompt = "Read $pointerName and propose your implementation plan. Analyze only -- " +
             "make no edits and run no mutating commands. If anything in the pointer is " +
@@ -170,39 +154,34 @@ if ($ResumeSessionId) {
                  "--output-format", "json", "--trust")
 } else {
   $prompt = "Read $pointerName and execute exactly"
-  $agentArgs = @("-p", $prompt, "--workspace", $Worktree, "--force", "--trust",
-                 "--output-format", "text")
+  $agentArgs = @("-p", $prompt, "--workspace", $Worktree, "--trust",
+                 "--output-format", "json")
 }
+if ($ForceCommands) { $agentArgs += '--force' }
 if ($Model) { $agentArgs += @("--model", $Model) }
 
-if ($DryRun) {
-  Write-Host "`n[DRY RUN] would execute:`n  & `"$AgentCmd`" $($agentArgs -join ' ')"
-  if ($CleanHome) { Write-Host "[DRY RUN] would also redirect HOME/USERPROFILE per -CleanHome for this call only." }
-  Write-Host "worktree staged and ready: $Worktree"
-  return
-}
-
-# 5. -CleanHome: scope a hook-bug-free HOME/USERPROFILE to just this subprocess call.
-$origHome = $env:HOME
-$origUserProfile = $env:USERPROFILE
-if ($CleanHome) {
-  $cleanHomeDir = Join-Path $env:TEMP "cursor-clean-home-$Slug"
-  if (-not (Test-Path $cleanHomeDir)) {
-    New-Item -ItemType Directory -Force -Path $cleanHomeDir | Out-Null
-  }
-  $junctionTarget = Join-Path $cleanHomeDir ".cursor"
-  if (-not (Test-Path $junctionTarget)) {
-    cmd /c mklink /J "$junctionTarget" "$origUserProfile\.cursor" | Write-Host
-  }
-  Write-Host "clean-home: $cleanHomeDir (.cursor junctioned, no .claude -> hook import finds nothing)"
-  $env:HOME = $cleanHomeDir
-  $env:USERPROFILE = $cleanHomeDir
-}
-
 try {
+  # Preserve every attempt separately, including nonzero and silent returns.
+  $attempt = Join-Path $Worktree ('CURSOR_DISPATCH_' + [guid]::NewGuid().ToString('N'))
+  $stdoutPath = "$attempt.stdout.json"
+  $stderrPath = "$attempt.stderr.txt"
+  & $AgentCmd @agentArgs 1> $stdoutPath 2> $stderrPath
+  $agentExit = $LASTEXITCODE
+  @{ exit_code=$agentExit; stdout=$stdoutPath; stderr=$stderrPath; workspace=$Worktree; session_id=$ResumeSessionId } |
+    ConvertTo-Json | Set-Content "$attempt.result.json" -Encoding utf8
+  if ($agentExit -ne 0) { throw "Cursor exited $agentExit. Inspect $attempt.result.json and captured output before retrying." }
+  $rawOutput = Get-Content -Raw $stdoutPath
+  if ([string]::IsNullOrWhiteSpace($rawOutput)) { throw "Cursor returned no output. Outcome unknown; inspect changes and running processes before retrying. Evidence: $attempt.result.json" }
+  $response = $rawOutput | ConvertFrom-Json
+  if ($response.is_error -eq $true) { throw "Cursor reported an error: inspect $stdoutPath" }
+  if ($response.session_id) {
+    Write-Host "session_id: $($response.session_id)"
+    @{ exit_code=$agentExit; stdout=$stdoutPath; stderr=$stderrPath; workspace=$Worktree; session_id=$response.session_id } |
+      ConvertTo-Json | Set-Content "$attempt.result.json" -Encoding utf8
+  }
+  if ([string]::IsNullOrWhiteSpace([string]$response.result)) { throw "Cursor response has no result text. Inspect $stdoutPath before retrying." }
   if ($Plan) {
     Write-Host "`ndispatching cursor-agent in PLAN mode (read-only, no edits)..."
-    $rawOutput = & $AgentCmd @agentArgs
     $planPath = Join-Path $Worktree "CURSOR_PLAN.json"
     $rawOutput | Out-File -FilePath $planPath -Encoding utf8
     try {
@@ -212,7 +191,7 @@ try {
       if ($parsed.result -match "(?i)hook (blocked|rejected)|syntax error near unexpected token") {
         Write-Host "`n⚠ this plan's output mentions a blocked/rejected tool call -- it may be" -ForegroundColor Yellow
         Write-Host "  degraded (guessed instead of actually executed). Read the full result" -ForegroundColor Yellow
-        Write-Host "  text before trusting it. Consider re-running with -CleanHome." -ForegroundColor Yellow
+        Write-Host "  text before trusting it. Inspect the captured error before retrying." -ForegroundColor Yellow
       }
       Write-Host "`n-- result preview --"
       Write-Host $parsed.result
@@ -220,17 +199,19 @@ try {
       Write-Host "`n(could not parse JSON output -- raw response written to $planPath, read it directly)"
     }
     Write-Host "`nNEXT: read $planPath in full. If the plan looks right, re-dispatch with:"
-    Write-Host "  ./scripts/dispatch_cursor.ps1 -Slug $Slug -ResumeSessionId <session_id above>$(if ($CleanHome) {' -CleanHome'})"
+    Write-Host "  ./scripts/dispatch_cursor.ps1 -Slug $Slug -ResumeSessionId <session_id above>"
     Write-Host "-- nothing executes until that second call. This script never auto-approves a plan."
   } else {
-    Write-Host "`ndispatching cursor-agent (background-safe; results in $Worktree/CURSOR_RETURN.md)..."
-    & $AgentCmd @agentArgs
-    Write-Host "`n-- dispatch returned. NEXT: read $Worktree/CURSOR_RETURN.md, fable-judge before any commit."
+    Write-Host "Cursor process returned; completion still requires artifact review."
+    Write-Host $response.result
+    Write-Host "Process evidence: $attempt.result.json. Verify artifacts and tests before accepting completion."
+    if (Test-Path (Join-Path $Worktree 'CURSOR_RETURN.md')) {
+      Write-Host "Review CURSOR_RETURN.md against the current attempt; an existing file may be stale."
+    } else {
+      Write-Host "No CURSOR_RETURN.md found. Review captured result and the packet's expected artifacts."
+    }
     Write-Host "-- the agent does NOT commit/push/PR; that stays operator/CC-gated."
   }
 } finally {
-  if ($CleanHome) {
-    $env:HOME = $origHome
-    $env:USERPROFILE = $origUserProfile
-  }
+  # Each attempt retains its evidence for inspection and recovery.
 }

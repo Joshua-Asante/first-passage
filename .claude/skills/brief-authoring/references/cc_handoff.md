@@ -12,7 +12,7 @@
 
 ## §0 — Rule 0 reads (PHASE 0 — execute BEFORE any §2 work)
 
-CC: read each file below and report contents in your first response. Do not propose changes, do not write code, do not run analysis scripts until this Phase 0 read-report has been delivered and Joshua has confirmed any ambiguities surfaced in §0.5.
+CC: read each file below and report the relevant findings before §2 work. Resolve material ambiguities under §0.5; an already authorized task with no unresolved choice proceeds after the read-report.
 
 Per SKILL.md: when production isn't directly accessible from the authoring environment, §0 lives in the CC handoff brief, not in the parent brief. This is that case.
 
@@ -22,7 +22,17 @@ Per SKILL.md: when production isn't directly accessible from the authoring envir
 - `Notion: <page_title>` (page ID `<id>`) — report: read-only confirmation of current state of [specific table/field]
 - `<git log -1 -- path/to/file.py>` — report: commit hash + date (anchor for §0 of any closure record this spawn produces)
 
-After Phase 0: post the read-report. Wait for Joshua's go-ahead OR for §0.5 resolution before proceeding to §2.
+After Phase 0: post the read-report. Continue when the work is already authorized and the checks reveal no material contradiction or unresolved choice. Carry existing authorization forward accurately. Ask only for missing authority or a material change in scope, destination, data access, or permitted actions.
+
+### CLI execution contract (when dispatching through a CLI)
+
+Record the target CLI, working directory, required read paths, permitted write paths/actions, applicable existing authorization, and expected return location. For a routine task, these fields may be inline in the dispatch prompt; a separate brief is not required solely for CLI use.
+
+Verify the installed executable and supported options before launching. Match worker capabilities to the authorized task; permission flags and workspace trust do not supply authorization. Local execution may still send model context to an external provider. Reuse applicable authorization; ask only when authority is missing or materially expands.
+
+Capture the process exit code, stdout, stderr, and session identifier when available. An empty response or exit code zero does not establish completion. Check expected artifacts and relevant verification evidence.
+
+On failure, preserve the exact error and identify the supported cause: launch approval, worker permission, filesystem access, authentication/network, CLI invocation, or unknown. Correct demonstrated invocation errors within existing authority. Do not change launchers or disable controls to evade a denial. Before retrying an uncertain run, check whether it is still running or has already changed files; resume the existing worker when supported.
 
 ---
 
