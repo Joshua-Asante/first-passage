@@ -43,7 +43,7 @@ evidence. The parent still needs to evaluate that evidence and run appropriate
 verification. Review text belongs in the return's `summary`.
 
 Every launch prints its request ID, receipt path and local child PID. Evidence is
-stored outside the workspace under `~/.cache/agent-handoffs/<path+instance-sha256>/<request-id>/` (so a worker cleaning ignored workspace files cannot erase the lock or receipts). Each workspace gets a durable instance id at `<workspace>/.agent-handoffs/workspace-instance`; deleting and recreating a worktree at the same path starts a new receipt namespace. `status`/`cancel`/`reconcile` can locate a receipt by request id even after the workspace directory is removed. Legacy `<workspace>/.agent-handoffs/` receipt trees are refused as task I/O and are not used for coordination:
+stored outside the workspace under `~/.cache/agent-handoffs/<path+instance-sha256>/<request-id>/` (so a worker cleaning ignored workspace files cannot erase the lock or receipts). Path-level admission and locking live under `~/.cache/agent-handoffs/by-path/<path-sha256>/` and do not depend on the worker-visible marker: deleting that marker mid-run cannot mint a new lock or bypass an active receipt. Instance identity is bound with a durable cookie on the workspace directory itself (POSIX `user.agent_handoff_instance` xattr, or a Windows ADS); a worker-cleanable copy also sits at `<workspace>/.agent-handoffs/workspace-instance`. Marker loss with the same cookie reuses the instance; deleting and recreating a worktree at the same path drops the cookie and starts a new receipt namespace. `status`/`cancel`/`reconcile` can locate a receipt by request id even after the workspace directory is removed. Legacy `<workspace>/.agent-handoffs/` receipt trees are refused as task I/O and are not used for coordination:
 
 - `record.json`: durable lifecycle, provider/session IDs, packet identity, parent
   request, process IDs, exit status, before/after artifact hashes and timestamps.
@@ -80,12 +80,14 @@ python scripts/agent_handoff.py reconcile --workspace C:/work/project --request-
 read from a stale receipt. Wait for the receipt to change before assuming a stop.
 At the deadline (default 900 seconds), or on cancellation, the controller attempts
 to stop its owned local process tree and preserves all evidence. On Windows the
-provider is placed in a Job Object before monitoring begins; if that ownership
-cannot be established the launch fails closed and the process is not left running.
-On POSIX the provider runs in its own process group for the same purpose. Detached workers
+provider is created suspended, assigned to a Job Object, then resumed so membership
+exists before user code runs; if that ownership cannot be established the launch
+fails closed and the process is not left running. Job-object process-count queries
+that fail also refuse completion rather than assuming the tree is gone. On POSIX
+the provider runs in its own process group for the same purpose. Detached workers
 or provider-side work may outlive local cancellation; timeout never proves rollback.
 
-The workspace lock prevents concurrent dispatch through this runner. It cannot
+The path-level workspace lock prevents concurrent dispatch through this runner. It cannot
 detect workers started directly in other tools. A crash releases the OS lock but
 leaves an unresolved receipt, which prevents an automatic relaunch. Status reports
 whether recorded PIDs may still be alive; PID reuse can produce a conservative

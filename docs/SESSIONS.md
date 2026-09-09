@@ -35,6 +35,15 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 ---
 
 
+## 2026-09-09c — Handoff CLI: path lock vs marker; cookie incarnation; fail-closed job query
+
+- **Focus:** Close Joshua's three remaining safety gaps on PR #323 before final review (`codex/handoff-cli-contract`).
+- **Shipped:** Path-level admission/lock under `~/.cache/agent-handoffs/by-path/<path-sha>/` independent of the worker-cleanable marker; workspace identity via directory cookie (xattr/ADS) with marker as advisory mirror; Windows suspended create → job assign → resume; job `active_processes` / `tree_still_running` refuse completion on query uncertainty. Tests: 52 passed, 3 skipped.
+- **Decisions:** Rejected `(dev,ino,ctime_ns)` as same-workspace proof — workspace-root ctime drifts when workers create children, which reminted instance ids and bypassed duplicate/resume checks. Cookie on the directory survives marker loss and clears on recreate (including inode reuse). Path lock must not key off the marker.
+- **Open / next:** No rebase yet (per operator); main has advanced and strict checks will need an eventual update. Live Windows Job Object acceptance still unverified on this host.
+
+---
+
 ## 2026-09-09 — Handoff CLI: workspace instance identity + Windows job trees
 
 - **Focus:** Close Codex P1/P2 follow-ups on PR #323 (`codex/handoff-cli-contract`).

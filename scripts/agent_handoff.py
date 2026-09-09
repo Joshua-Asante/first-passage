@@ -71,6 +71,67 @@ INSTANCE_DIRNAME = '.agent-handoffs'
 INSTANCE_FILENAME = 'workspace-instance'
 
 
+def resolved_workspace_path(workspace):
+    return str(Path(workspace).resolve(strict=False))
+
+
+def path_key(workspace):
+    return hashlib.sha256(resolved_workspace_path(workspace).encode()).hexdigest()
+
+
+def path_control_root(workspace):
+    # Path-level admission/lock root — independent of the worker-visible marker.
+    return cache_home() / 'by-path' / path_key(workspace)
+
+
+def directory_incarnation(workspace):
+    # Diagnostic directory identity. Not sufficient alone: workspace-root ctime
+    # drifts when children are created, and inode numbers can be reused after
+    # rmtree+mkdir. Same-workspace decisions use the durable directory cookie.
+    stat = Path(workspace).stat()
+    ctime_ns = int(getattr(stat, 'st_ctime_ns', int(stat.st_ctime * 1_000_000_000)))
+    return {'dev': int(stat.st_dev), 'ino': int(stat.st_ino), 'ctime_ns': ctime_ns}
+
+
+COOKIE_XATTR = 'user.agent_handoff_instance'
+COOKIE_ADS = 'agent_handoff_instance'
+
+
+def read_workspace_cookie(workspace):
+    """Instance cookie on the workspace directory itself (survives marker loss)."""
+    workspace = Path(workspace)
+    if os.name == 'nt':
+        ads = f'{workspace.resolve()}:{COOKIE_ADS}'
+        try:
+            with open(ads, 'r', encoding='utf-8') as handle:
+                value = handle.read().strip()
+            return value or None
+        except OSError:
+            return None
+    try:
+        return os.getxattr(workspace, COOKIE_XATTR).decode('utf-8').strip() or None
+    except (AttributeError, NotImplementedError, OSError):
+        return None
+
+
+def write_workspace_cookie(workspace, instance_id):
+    """Stamp the workspace directory. Returns False when the FS cannot retain it."""
+    workspace = Path(workspace)
+    if os.name == 'nt':
+        ads = f'{workspace.resolve()}:{COOKIE_ADS}'
+        try:
+            with open(ads, 'w', encoding='utf-8') as handle:
+                handle.write(instance_id)
+            return True
+        except OSError:
+            return False
+    try:
+        os.setxattr(workspace, COOKIE_XATTR, instance_id.encode('utf-8'))
+        return True
+    except (AttributeError, NotImplementedError, OSError):
+        return False
+
+
 def read_workspace_instance(workspace):
     marker = Path(workspace) / INSTANCE_DIRNAME / INSTANCE_FILENAME
     if not marker.is_file():
@@ -79,30 +140,94 @@ def read_workspace_instance(workspace):
     return value or None
 
 
-def ensure_workspace_instance(workspace):
-    existing = read_workspace_instance(workspace)
-    if existing:
-        return existing
+def write_workspace_instance(workspace, instance_id):
+    # Unique temp name avoids concurrent first-launch clobbering a shared .tmp.
     secure_mkdir(Path(workspace) / INSTANCE_DIRNAME)
-    instance = str(uuid.uuid4())
     marker = Path(workspace) / INSTANCE_DIRNAME / INSTANCE_FILENAME
-    temporary = marker.with_suffix('.tmp')
-    temporary.write_text(instance + '\n', encoding='utf-8')
+    temporary = marker.with_name(f'{marker.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp')
+    temporary.write_text(instance_id + '\n', encoding='utf-8')
     privatize(temporary)
     os.replace(temporary, marker)
     privatize(marker)
-    return instance
+
+
+def read_path_binding(workspace):
+    binding = path_control_root(workspace) / 'binding.json'
+    if not binding.is_file():
+        return None
+    try:
+        return load(binding)
+    except (OSError, ValueError):
+        return None
+
+
+def write_path_binding(workspace, instance_id, incarnation, cookie=True):
+    control = path_control_root(workspace)
+    secure_mkdir(control)
+    payload = {
+        'workspace': resolved_workspace_path(workspace),
+        'instance_id': instance_id,
+        'dev': incarnation['dev'],
+        'ino': incarnation['ino'],
+        'ctime_ns': incarnation['ctime_ns'],
+        'cookie': bool(cookie),
+    }
+    write_json(control / 'binding.json', payload)
+
+
+def bind_workspace_instance(workspace):
+    """Resolve instance identity under the path-level lock.
+
+    Path-level admission/locking is independent of the worker-cleanable marker.
+    The durable directory cookie (xattr / Windows ADS) decides whether this
+    pathname still refers to the same workspace: marker loss keeps the cookie
+    and reuses the instance; a replaced directory loses the cookie and mints a
+    new one. When the filesystem cannot store a cookie, fall back to (dev, ino)
+    only — never to ctime, which drifts as workspace children are created.
+    """
+    workspace = Path(workspace)
+    incarnation = directory_incarnation(workspace)
+    binding = read_path_binding(workspace)
+    marker_id = read_workspace_instance(workspace)
+    cookie = read_workspace_cookie(workspace)
+    if binding and isinstance(binding.get('instance_id'), str) and binding['instance_id']:
+        instance_id = binding['instance_id']
+        if cookie == instance_id:
+            if marker_id != instance_id:
+                write_workspace_instance(workspace, instance_id)
+            # Refresh diagnostic incarnation; identity remains the cookie.
+            write_path_binding(workspace, instance_id, incarnation, cookie=True)
+            return instance_id
+        if cookie is None and not binding.get('cookie', True):
+            # Cookie-incapable filesystem: (dev, ino) only. Marker loss is OK.
+            if (
+                binding.get('dev') == incarnation['dev']
+                and binding.get('ino') == incarnation['ino']
+            ):
+                if marker_id != instance_id:
+                    write_workspace_instance(workspace, instance_id)
+                write_path_binding(workspace, instance_id, incarnation, cookie=False)
+                return instance_id
+        # Cookie missing after it was stored, or cookie/id mismatch → replaced dir.
+    instance_id = str(uuid.uuid4())
+    cookie_ok = write_workspace_cookie(workspace, instance_id)
+    write_workspace_instance(workspace, instance_id)
+    write_path_binding(workspace, instance_id, incarnation, cookie=cookie_ok)
+    return instance_id
 
 
 def handoff_root(workspace, instance_id=None):
-    # Key by resolved path + durable instance id so a deleted/recreated worktree
-    # at the same pathname cannot inherit the prior workspace's receipts.
+    # Receipt namespace: resolved path + instance id (not path alone).
     workspace = Path(workspace)
     if instance_id is None:
-        instance_id = read_workspace_instance(workspace)
+        binding = read_path_binding(workspace)
+        if binding and binding.get('instance_id'):
+            instance_id = binding['instance_id']
+        else:
+            instance_id = read_workspace_instance(workspace)
         if instance_id is None:
             raise HandoffError('Workspace has no instance identity yet')
-    key = hashlib.sha256(f'{workspace.resolve(strict=False)}\n{instance_id}'.encode()).hexdigest()
+    key = hashlib.sha256(f'{resolved_workspace_path(workspace)}\n{instance_id}'.encode()).hexdigest()
     return cache_home() / key
 
 
@@ -120,7 +245,8 @@ def locate_receipt(workspace_arg, request_id):
         except OSError:
             workspace = None
         else:
-            instance = read_workspace_instance(workspace)
+            binding = read_path_binding(workspace)
+            instance = binding.get('instance_id') if binding else read_workspace_instance(workspace)
             if instance:
                 path = handoff_root(workspace, instance) / request_id / 'record.json'
                 if path.is_file():
@@ -454,7 +580,7 @@ class WindowsJob:
             self.handle, self.JobObjectBasicAccountingInformation, self._ctypes.byref(info),
             self._ctypes.sizeof(info), self._ctypes.byref(returned)
         ):
-            return 0
+            raise OSError('QueryInformationJobObject failed')
         return int(info.ActiveProcesses)
 
     def terminate(self):
@@ -516,6 +642,183 @@ def claim_windows_tree(process, job=None):
         raise HandoffError(f'Windows process-tree ownership could not be established: {exc}') from exc
 
 
+
+class WindowsOwnedProcess:
+    """Minimal process adapter for CreateProcess + Job Object launches."""
+
+    STILL_ACTIVE = 259
+
+    def __init__(self, pid, process_handle, kernel, ctypes, wintypes):
+        self.pid = int(pid)
+        self._handle = int(process_handle)
+        self._kernel = kernel
+        self._ctypes = ctypes
+        self._wintypes = wintypes
+        self.returncode = None
+        self.stdin = None
+        self.stdout = None
+        self.stderr = None
+
+    def poll(self):
+        if self.returncode is not None:
+            return self.returncode
+        code = self._wintypes.DWORD()
+        if not self._kernel.GetExitCodeProcess(self._handle, self._ctypes.byref(code)):
+            return None
+        if code.value == self.STILL_ACTIVE:
+            return None
+        self.returncode = int(code.value)
+        return self.returncode
+
+    def wait(self, timeout=None):
+        milliseconds = self._wintypes.DWORD(0xFFFFFFFF if timeout is None else max(0, int(timeout * 1000)))
+        result = self._kernel.WaitForSingleObject(self._handle, milliseconds)
+        if result == 0:  # WAIT_OBJECT_0
+            return self.poll()
+        if result == 0x00000102:  # WAIT_TIMEOUT
+            raise subprocess.TimeoutExpired(cmd=None, timeout=timeout)
+        raise OSError(f'WaitForSingleObject failed: {result}')
+
+    def kill(self):
+        self._kernel.TerminateProcess(self._handle, 1)
+
+
+def spawn_provider(command, cwd, stdout, stderr, job=None):
+    """Start the provider. On Windows with a job, create suspended, assign, then resume."""
+    if job is None:
+        return subprocess.Popen(
+            command, cwd=cwd, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
+            start_new_session=True,
+        )
+    return _spawn_windows_suspended_in_job(command, cwd, stdout, stderr, job)
+
+
+def _spawn_windows_suspended_in_job(command, cwd, stdout, stderr, job):
+    import ctypes
+    from ctypes import wintypes
+
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    CREATE_SUSPENDED = 0x00000004
+    CREATE_NO_WINDOW = 0x08000000
+    CREATE_UNICODE_ENVIRONMENT = 0x00000400
+    STARTF_USESTDHANDLES = 0x00000100
+    HANDLE_FLAG_INHERIT = 0x00000001
+    DUPLICATE_SAME_ACCESS = 0x00000002
+    WAIT_OBJECT_0 = 0
+    WAIT_TIMEOUT = 0x00000102
+
+    class STARTUPINFOW(ctypes.Structure):
+        _fields_ = [
+            ('cb', wintypes.DWORD),
+            ('lpReserved', wintypes.LPWSTR),
+            ('lpDesktop', wintypes.LPWSTR),
+            ('lpTitle', wintypes.LPWSTR),
+            ('dwX', wintypes.DWORD),
+            ('dwY', wintypes.DWORD),
+            ('dwXSize', wintypes.DWORD),
+            ('dwYSize', wintypes.DWORD),
+            ('dwXCountChars', wintypes.DWORD),
+            ('dwYCountChars', wintypes.DWORD),
+            ('dwFillAttribute', wintypes.DWORD),
+            ('dwFlags', wintypes.DWORD),
+            ('wShowWindow', wintypes.WORD),
+            ('cbReserved2', wintypes.WORD),
+            ('lpReserved2', ctypes.POINTER(wintypes.BYTE)),
+            ('hStdInput', wintypes.HANDLE),
+            ('hStdOutput', wintypes.HANDLE),
+            ('hStdError', wintypes.HANDLE),
+        ]
+
+    class PROCESS_INFORMATION(ctypes.Structure):
+        _fields_ = [
+            ('hProcess', wintypes.HANDLE),
+            ('hThread', wintypes.HANDLE),
+            ('dwProcessId', wintypes.DWORD),
+            ('dwThreadId', wintypes.DWORD),
+        ]
+
+    kernel.CreateProcessW.argtypes = [
+        wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.LPVOID, wintypes.LPVOID,
+        wintypes.BOOL, wintypes.DWORD, wintypes.LPVOID, wintypes.LPCWSTR,
+        ctypes.POINTER(STARTUPINFOW), ctypes.POINTER(PROCESS_INFORMATION),
+    ]
+    kernel.CreateProcessW.restype = wintypes.BOOL
+    kernel.ResumeThread.argtypes = [wintypes.HANDLE]
+    kernel.ResumeThread.restype = wintypes.DWORD
+    kernel.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
+    kernel.TerminateProcess.restype = wintypes.BOOL
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel.GetCurrentProcess.restype = wintypes.HANDLE
+    kernel.DuplicateHandle.argtypes = [
+        wintypes.HANDLE, wintypes.HANDLE, wintypes.HANDLE,
+        ctypes.POINTER(wintypes.HANDLE), wintypes.DWORD, wintypes.BOOL, wintypes.DWORD,
+    ]
+    kernel.DuplicateHandle.restype = wintypes.BOOL
+    kernel.SetHandleInformation.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.DWORD]
+    kernel.SetHandleInformation.restype = wintypes.BOOL
+    kernel.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+    kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    kernel.CreateFileW.argtypes = [
+        wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, wintypes.LPVOID,
+        wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE,
+    ]
+    kernel.CreateFileW.restype = wintypes.HANDLE
+
+    def duplicate_inheritable(fileobj):
+        current = kernel.GetCurrentProcess()
+        source = wintypes.HANDLE(fileobj.fileno())
+        target = wintypes.HANDLE()
+        if not kernel.DuplicateHandle(current, source, current, ctypes.byref(target), 0, True, DUPLICATE_SAME_ACCESS):
+            raise OSError('DuplicateHandle failed for stdio')
+        return target
+
+    # NUL for stdin so the child does not inherit an interactive console handle.
+    GENERIC_READ = 0x80000000
+    FILE_SHARE_READ = 0x00000001
+    OPEN_EXISTING = 3
+    nul = kernel.CreateFileW('NUL', GENERIC_READ, FILE_SHARE_READ, None, OPEN_EXISTING, 0, None)
+    if not nul or nul == wintypes.HANDLE(-1).value:
+        raise OSError('Failed to open NUL for provider stdin')
+
+    startup = STARTUPINFOW()
+    startup.cb = ctypes.sizeof(STARTUPINFOW)
+    startup.dwFlags = STARTF_USESTDHANDLES
+    startup.hStdInput = nul
+    startup.hStdOutput = duplicate_inheritable(stdout)
+    startup.hStdError = duplicate_inheritable(stderr)
+    info = PROCESS_INFORMATION()
+    command_line = ctypes.create_unicode_buffer(subprocess.list2cmdline(list(map(str, command))))
+    created = kernel.CreateProcessW(
+        None, command_line, None, None, True,
+        CREATE_SUSPENDED | CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT,
+        None, str(cwd), ctypes.byref(startup), ctypes.byref(info),
+    )
+    # Parent copies of duplicated stdio handles are not needed after CreateProcess.
+    for handle in (startup.hStdOutput, startup.hStdError, nul):
+        try:
+            kernel.CloseHandle(handle)
+        except OSError:
+            pass
+    if not created:
+        raise OSError(f'CreateProcessW failed: {ctypes.get_last_error()}')
+    try:
+        carrier = type('HandleCarrier', (), {'_handle': int(info.hProcess)})()
+        job.assign(carrier)
+        resumed = kernel.ResumeThread(info.hThread)
+        if resumed == 0xFFFFFFFF:
+            raise OSError('ResumeThread failed')
+    except OSError:
+        try:
+            kernel.TerminateProcess(info.hProcess, 1)
+        finally:
+            kernel.CloseHandle(info.hThread)
+            kernel.CloseHandle(info.hProcess)
+        raise
+    kernel.CloseHandle(info.hThread)
+    process = WindowsOwnedProcess(info.dwProcessId, info.hProcess, kernel, ctypes, wintypes)
+    return process
+
+
 def stop_child(process, job=None):
     # Never kill a PID retrieved from a stale receipt. Only this owned process/tree.
     if job is not None:
@@ -556,11 +859,9 @@ def stop_child(process, job=None):
 
 
 def owned_group_alive(process, job=None):
+    # OSError from a job query must propagate: callers refuse completion on uncertainty.
     if job is not None:
-        try:
-            return job.active_processes() > 0
-        except OSError:
-            return False
+        return job.active_processes() > 0
     if os.name == 'nt' or process is None or process.pid is None:
         return False
     try:
@@ -568,6 +869,13 @@ def owned_group_alive(process, job=None):
         return True
     except ProcessLookupError:
         return False
+
+
+def tree_still_running(process, job=None):
+    try:
+        return owned_group_alive(process, job)
+    except OSError as exc:
+        raise HandoffError(f'Process-tree liveness query failed; refuse completion: {exc}') from exc
 
 
 def run(args):
@@ -600,9 +908,11 @@ def run(args):
     command = executable_command(args.provider, args.command_json)
     if args.dry_run:
         return {'state': 'DRY_RUN', 'workspace': str(workspace), 'contract': contract, 'command': command}
-    instance_id = ensure_workspace_instance(workspace)
-    root = handoff_root(workspace, instance_id)
-    with workspace_lock(root):
+    # Path-level lock is independent of the worker-visible instance marker.
+    with workspace_lock(path_control_root(workspace)):
+        instance_id = bind_workspace_instance(workspace)
+        root = handoff_root(workspace, instance_id)
+        secure_mkdir(root)
         records = [load(p) for p in root.glob('*/record.json')]
         parent = None
         if args.resume_request or args.resume_session:
@@ -691,23 +1001,25 @@ def run(args):
                     privatize(stdout_path)
                     privatize(stderr_path)
                     if windows_job_required():
-                        # Create the job before spawn so launch fails closed if ownership
-                        # cannot be prepared. Assignment still happens immediately after Popen.
+                        # Job exists before any provider instruction runs: create suspended,
+                        # assign, then resume. Fail closed if ownership cannot be established.
                         job = WindowsJob.create()
                     try:
-                        process = subprocess.Popen(actual_command, cwd=workspace, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
-                                                   start_new_session=not windows_job_required(),
-                                                   creationflags=subprocess.CREATE_NO_WINDOW if windows_job_required() else 0)
+                        process = spawn_provider(actual_command, workspace, stdout, stderr, job)
                     except Exception:
                         if job is not None:
+                            try:
+                                job.terminate()
+                            except OSError:
+                                pass
                             try:
                                 job.close()
                             except OSError:
                                 pass
                             job = None
+                        if 'process' in locals() and process is not None:
+                            force_stop_process(process)
                         raise
-                    if windows_job_required():
-                        job = claim_windows_tree(process, job)
                     record.update(state='RUNNING', child_pid=process.pid, started_at=now())
                     write_json(record_path, record)
                     print(json.dumps({'request_id': request_id, 'record': str(record_path), 'child_pid': process.pid}), flush=True)
@@ -758,25 +1070,34 @@ def run(args):
                     record.update(state='FAILED', error='Windows process-tree ownership was lost; refuse completion')
                 elif record['state'] in ('TIMED_OUT', 'CANCELLED'):
                     record['error'] = 'Local stop attempted; partial effects or remote work may remain. Reconcile before retry.'
-                elif process.returncode != 0:
-                    if owned_group_alive(process, job):
-                        stop_child(process, job)
-                    record.update(state='FAILED', error='Provider exited nonzero; inspect stderr.txt')
-                elif protocol_error or terminal is None or not record['session_id']:
-                    if owned_group_alive(process, job):
-                        stop_child(process, job)
-                    record.update(state='UNKNOWN', error=protocol_error or 'Missing terminal result or session ID')
-                elif owned_group_alive(process, job):
-                    stop_child(process, job)
-                    record.update(state='UNKNOWN', error='Owned process-group descendants survived provider exit')
                 else:
                     try:
-                        body = validate_return(terminal, record, workspace)
-                        return_path = directory / 'return.json'
-                        write_json(return_path, body)
-                        record.update(state='RETURNED', worker_status=body['status'])
+                        survivors = tree_still_running(process, job)
                     except HandoffError as exc:
-                        record.update(state='UNKNOWN', error=str(exc))
+                        stop_child(process, job)
+                        record.update(state='FAILED', error=str(exc))
+                        survivors = None
+                    if survivors is None:
+                        pass
+                    elif process.returncode != 0:
+                        if survivors:
+                            stop_child(process, job)
+                        record.update(state='FAILED', error='Provider exited nonzero; inspect stderr.txt')
+                    elif protocol_error or terminal is None or not record['session_id']:
+                        if survivors:
+                            stop_child(process, job)
+                        record.update(state='UNKNOWN', error=protocol_error or 'Missing terminal result or session ID')
+                    elif survivors:
+                        stop_child(process, job)
+                        record.update(state='UNKNOWN', error='Owned process-group descendants survived provider exit')
+                    else:
+                        try:
+                            body = validate_return(terminal, record, workspace)
+                            return_path = directory / 'return.json'
+                            write_json(return_path, body)
+                            record.update(state='RETURNED', worker_status=body['status'])
+                        except HandoffError as exc:
+                            record.update(state='UNKNOWN', error=str(exc))
         except BaseException as exc:
             if process is not None and process.poll() is None:
                 stop_child(process, job)
@@ -858,7 +1179,7 @@ def main(argv=None):
             elif args.action == 'reconcile':
                 if not args.note or not args.note.strip() or not args.resolution:
                     raise HandoffError('Reconciliation requires --note describing inspected effects/processes and --resolution resume|closed')
-                with workspace_lock(root):
+                with workspace_lock(path_control_root(result['workspace'])):
                     result = load(record_path)
                     if result.get('exit_code') is None and (live(result.get('child_pid')) or (result['state'] in ('STARTING', 'RUNNING') and live(result.get('controller_pid')))):
                         raise HandoffError('Recorded process may still be alive; reconcile only after inspecting/stopping it')

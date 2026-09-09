@@ -573,6 +573,60 @@ def test_owned_group_alive_uses_windows_job_handle():
             return self.n
     assert AH.owned_group_alive(None, FakeJob(2)) is True
     assert AH.owned_group_alive(None, FakeJob(0)) is False
+
+
+def test_tree_query_failure_refuses_completion():
+    class BoomJob:
+        def active_processes(self):
+            raise OSError('fixture QueryInformationJobObject failed')
+    with pytest.raises(AH.HandoffError, match='liveness query failed'):
+        AH.tree_still_running(None, BoomJob())
+
+
+def test_marker_loss_same_incarnation_reuses_instance(harness, tmp_path):
+    with AH.workspace_lock(AH.path_control_root(harness.workspace)):
+        first = AH.bind_workspace_instance(harness.workspace)
+    marker = harness.workspace / '.agent-handoffs' / 'workspace-instance'
+    assert marker.is_file()
+    marker.unlink()
+    (harness.workspace / '.agent-handoffs').rmdir()
+    with AH.workspace_lock(AH.path_control_root(harness.workspace)):
+        second = AH.bind_workspace_instance(harness.workspace)
+    assert second == first
+    assert AH.read_workspace_instance(harness.workspace) == first
+    assert AH.handoff_root(harness.workspace, first) == AH.handoff_root(harness.workspace, second)
+
+
+def test_path_lock_is_independent_of_receipt_namespace(harness):
+    with AH.workspace_lock(AH.path_control_root(harness.workspace)):
+        instance = AH.bind_workspace_instance(harness.workspace)
+    control = AH.path_control_root(harness.workspace)
+    root = AH.handoff_root(harness.workspace, instance)
+    assert control != root
+    assert control.parent.name == 'by-path'
+    assert (control / 'binding.json').is_file()
+
+
+def test_spawn_provider_assigns_before_resume(monkeypatch):
+    events = []
+    class FakeJob:
+        handle = 1
+        def assign(self, process):
+            events.append(('assign', getattr(process, '_handle', None)))
+    class FakeProcess:
+        def __init__(self):
+            self.pid = 7
+            self._handle = 99
+    def fake_spawn(command, cwd, stdout, stderr, job):
+        events.append('spawn_enter')
+        job.assign(type('H', (), {'_handle': 99})())
+        events.append('resume')
+        return FakeProcess()
+    monkeypatch.setattr(AH, '_spawn_windows_suspended_in_job', fake_spawn)
+    job = FakeJob()
+    process = AH.spawn_provider(['x'], '.', None, None, job)
+    assert process.pid == 7
+    assert events == ['spawn_enter', ('assign', 99), 'resume']
     calls = []
     class TermJob(FakeJob):
         def terminate(self):
@@ -582,7 +636,7 @@ def test_owned_group_alive_uses_windows_job_handle():
             return 0
         def kill(self):
             calls.append('kill')
-    AH.stop_child(Proc(), TermJob(1))
+    AH.stop_child(Proc(), TermJob())
     assert calls == ['terminate']
 
 
