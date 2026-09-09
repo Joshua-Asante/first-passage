@@ -3729,3 +3729,32 @@ P1–P6 are satisfied under this section's binding amendment. The study's
 VERIFICATION.md records the current-generation tests and artifact checks.
 P7 requires the final publication patch and metadata review; P8 requires green
 current-head publication CI on Python 3.11 and 3.12 before the operator merges.
+
+## §53 - Account-feedback/composition design checkpoint (2026-09-08)
+
+The operator approved design choices C1-C4 in the private account-feedback and
+composition contract. C5 remains unelected. Independent review accepted the
+common-population correction at design-review scope; the revised market-memory
+proposal still requires an explicit source-state/calendar-reset mapping and
+coverage evidence. Contract disposition remains **HOLD**.
+
+The authoritative specification, manifest, operator decision and consolidated
+reviews remain in the ignored private audit packet
+`account-feedback-composition-2026-09-08`. This public checkpoint records status
+only; it does not publish source parameters, account values, private review
+contents or execution logic, and is not a second specification.
+
+Next design work: consolidate the donor-prefix/state-restoration and financial
+reset mapping, exactly-once continuation semantics, and the bounded
+coverage/flatten-support evidence plan. Resolve C5 with the operator after the
+required correctness review. The effective private workflow amendment owns the
+current delivery sequence and supersedes historical wave ordering in this plan's
+linked campaign history.
+
+Existing source, account, calendar and execution evidence gaps remain open.
+Previously preserved dependency-stop evidence and frozen Phase1 artifacts remain
+unchanged. No qualifying configuration or new campaign sample is established.
+C1-C4 approval and this documentation commit do not release implementation,
+source/native replay, sampling/search, n1/n2/n3, profile promotion or deployment.
+S1/S2, full/H1/H2 acceptance, sole final n3 after winner parity and a fresh settled
+account state, M1 and separate deployment GO remain required.
