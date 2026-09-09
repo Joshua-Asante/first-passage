@@ -6,16 +6,51 @@ import json
 import os
 import re
 import sqlite3
+import stat
 import subprocess
 import uuid
 from contextlib import closing, contextmanager
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 
 from .model import EvidenceError, canonical, relative_path, replay, source_version, timestamp, verify_excerpt
 from .retrieval import ancestors, candidates, request, selectable, temporal
 from .beliefs import view as belief_view
 from . import audit
+
+# Shared by index builds and projection authentication. Derived views (edges /
+# active_assessments) are part of the trust boundary for impact/check queries.
+_INDEX_DDL = '''
+    CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+    CREATE TABLE versions (id TEXT PRIMARY KEY, source_id TEXT NOT NULL, data TEXT NOT NULL);
+    CREATE TABLE captures (seq INTEGER PRIMARY KEY, source_id TEXT NOT NULL,
+        version_id TEXT NOT NULL, path TEXT NOT NULL, recorded_at TEXT NOT NULL);
+    CREATE TABLE records (id TEXT PRIMARY KEY, record_id TEXT NOT NULL,
+        seq INTEGER UNIQUE NOT NULL, recorded_at TEXT NOT NULL,
+        effective_at TEXT, source_version TEXT NOT NULL, data TEXT NOT NULL);
+    CREATE INDEX records_identity ON records(record_id, seq);
+    CREATE TABLE dependencies (id TEXT PRIMARY KEY, consumer TEXT NOT NULL,
+        dependency TEXT NOT NULL, evidence_version TEXT NOT NULL, data TEXT NOT NULL);
+    CREATE TABLE receipts (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+    CREATE TABLE uses (id TEXT PRIMARY KEY, receipt_id TEXT NOT NULL,
+        decision_revision TEXT NOT NULL, data TEXT NOT NULL,
+        UNIQUE(receipt_id, decision_revision));
+    CREATE TABLE assessments (id TEXT PRIMARY KEY, belief_revision TEXT NOT NULL,
+        seq INTEGER UNIQUE NOT NULL, source_version TEXT NOT NULL, data TEXT NOT NULL);
+    CREATE TABLE assessment_evidence (assessment_id TEXT NOT NULL,
+        revision_id TEXT NOT NULL, relationship TEXT NOT NULL, data TEXT NOT NULL,
+        PRIMARY KEY(assessment_id, revision_id));
+    CREATE VIEW active_assessments AS SELECT * FROM assessments a
+        WHERE seq=(SELECT MAX(seq) FROM assessments WHERE belief_revision=a.belief_revision);
+    CREATE VIEW edges AS
+        SELECT id AS consumer, source_version AS dependency FROM records
+        UNION SELECT consumer, dependency FROM dependencies
+        UNION SELECT consumer, evidence_version FROM dependencies
+        UNION SELECT belief_revision, source_version FROM active_assessments
+        UNION SELECT a.belief_revision, e.revision_id FROM active_assessments a
+            JOIN assessment_evidence e ON e.assessment_id=a.id;
+'''
 
 
 def _unique_object(pairs):
@@ -25,6 +60,13 @@ def _unique_object(pairs):
             raise EvidenceError(f'duplicate JSON field: {key}')
         result[key] = value
     return result
+
+
+@lru_cache(maxsize=1)
+def _canonical_index_schema():
+    with closing(sqlite3.connect(':memory:')) as conn:
+        conn.executescript(_INDEX_DDL)
+        return Store._schema_from_conn(conn)
 
 
 class Store:
@@ -83,6 +125,36 @@ class Store:
         relative_path(resolved.relative_to(self.repo).as_posix())
         return rel, resolved
 
+    def _inspect_live(self, rel):
+        """Classify a live locator without following any path component."""
+        cursor = self.repo
+        parts = Path(rel).parts
+        for index, part in enumerate(parts):
+            cursor = cursor / part
+            try:
+                mode = cursor.lstat().st_mode
+            except FileNotFoundError:
+                return cursor, 'missing'
+            if stat.S_ISLNK(mode):
+                return cursor, 'symlink'
+            if index < len(parts) - 1 and not stat.S_ISDIR(mode):
+                return cursor, 'unavailable'
+        if stat.S_ISDIR(mode):
+            return cursor, 'directory'
+        if not stat.S_ISREG(mode):
+            return cursor, 'nonregular'
+        return cursor, None
+
+    def _require_live_regular_file(self, rel):
+        _, status = self._inspect_live(rel)
+        if status in {None, 'missing'}:
+            return
+        if status == 'directory':
+            raise EvidenceError('source must be a file')
+        if status == 'symlink':
+            raise EvidenceError('source must be a regular file, not a symlink')
+        raise EvidenceError('source must be a regular file')
+
     def _git_env(self):
         # Hook bindings must not override the explicitly selected repository.
         # Disable promisor lazy-fetch so historical capture stays local-only.
@@ -110,16 +182,22 @@ class Store:
                 if listing.returncode != 0 or not listing.stdout.strip():
                     return None, 'unavailable'
                 mode = listing.stdout.decode('utf-8', 'replace').split(None, 1)[0]
-                if mode == '120000':
-                    raise EvidenceError('historical source must be a regular file, not a symlink')
+                if mode not in {'100644', '100755'}:
+                    if mode == '120000':
+                        raise EvidenceError('historical source must be a regular file, not a symlink')
+                    raise EvidenceError('historical source must be a regular file')
                 result = subprocess.run(['git', '--no-replace-objects', '-C', str(self.repo), 'cat-file', 'blob', object_name],
                                         env=env, capture_output=True, check=False, timeout=30)
             except (OSError, subprocess.TimeoutExpired):
                 return None, 'unavailable'
             return (result.stdout, 'available') if result.returncode == 0 else (None, 'unavailable')
-        live = self.repo / rel
-        if live.is_symlink():
-            # Never follow symlinks: Git symlink blobs store the target path, not target bytes.
+        live, status = self._inspect_live(rel)
+        if status == 'missing':
+            return None, 'missing'
+        if status == 'directory':
+            raise EvidenceError('source must be a file')
+        if status is not None:
+            # Symlinks (any path component), FIFOs, devices: never follow or stream.
             return None, 'unavailable'
         try:
             return live.read_bytes(), 'available'
@@ -175,8 +253,8 @@ class Store:
 
     def capture(self, source_id, path, kind, commit=None):
         rel, _ = self._path(path)
-        if commit is None and (self.repo / rel).is_symlink():
-            raise EvidenceError('source must be a regular file, not a symlink')
+        if commit is None:
+            self._require_live_regular_file(rel)
         content, availability = self._bytes(rel, commit)
         data = {'source_id': source_id, 'kind': kind, 'path': rel, 'commit': commit,
                 'sha256': hashlib.sha256(content).hexdigest() if content is not None else None,
@@ -212,8 +290,16 @@ class Store:
         return hashlib.sha256(canonical(payload).encode()).hexdigest()
 
     @staticmethod
+    def _schema_from_conn(conn):
+        return [tuple(row) for row in conn.execute(
+            "SELECT type, name, sql FROM sqlite_master "
+            "WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%' "
+            "ORDER BY type, name")]
+
+    @staticmethod
     def _projection_from_state(state):
         return {
+            'schema': _canonical_index_schema(),
             'versions': [(key, data['source_id'], canonical(data))
                          for key, data in sorted(state['versions'].items())],
             'captures': [(event['seq'], event['data']['source_id'], event['data']['version_id'],
@@ -240,6 +326,7 @@ class Store:
     @staticmethod
     def _projection_from_conn(conn):
         return {
+            'schema': Store._schema_from_conn(conn),
             'versions': [tuple(row) for row in conn.execute(
                 'SELECT id, source_id, data FROM versions ORDER BY id')],
             'captures': [tuple(row) for row in conn.execute(
@@ -264,36 +351,7 @@ class Store:
         temp = self.root / f'.index-{uuid.uuid4()}.sqlite'
         try:
             with closing(sqlite3.connect(temp)) as conn, conn:
-                conn.executescript('''
-                    CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
-                    CREATE TABLE versions (id TEXT PRIMARY KEY, source_id TEXT NOT NULL, data TEXT NOT NULL);
-                    CREATE TABLE captures (seq INTEGER PRIMARY KEY, source_id TEXT NOT NULL,
-                        version_id TEXT NOT NULL, path TEXT NOT NULL, recorded_at TEXT NOT NULL);
-                    CREATE TABLE records (id TEXT PRIMARY KEY, record_id TEXT NOT NULL,
-                        seq INTEGER UNIQUE NOT NULL, recorded_at TEXT NOT NULL,
-                        effective_at TEXT, source_version TEXT NOT NULL, data TEXT NOT NULL);
-                    CREATE INDEX records_identity ON records(record_id, seq);
-                    CREATE TABLE dependencies (id TEXT PRIMARY KEY, consumer TEXT NOT NULL,
-                        dependency TEXT NOT NULL, evidence_version TEXT NOT NULL, data TEXT NOT NULL);
-                    CREATE TABLE receipts (id TEXT PRIMARY KEY, data TEXT NOT NULL);
-                    CREATE TABLE uses (id TEXT PRIMARY KEY, receipt_id TEXT NOT NULL,
-                        decision_revision TEXT NOT NULL, data TEXT NOT NULL,
-                        UNIQUE(receipt_id, decision_revision));
-                    CREATE TABLE assessments (id TEXT PRIMARY KEY, belief_revision TEXT NOT NULL,
-                        seq INTEGER UNIQUE NOT NULL, source_version TEXT NOT NULL, data TEXT NOT NULL);
-                    CREATE TABLE assessment_evidence (assessment_id TEXT NOT NULL,
-                        revision_id TEXT NOT NULL, relationship TEXT NOT NULL, data TEXT NOT NULL,
-                        PRIMARY KEY(assessment_id, revision_id));
-                    CREATE VIEW active_assessments AS SELECT * FROM assessments a
-                        WHERE seq=(SELECT MAX(seq) FROM assessments WHERE belief_revision=a.belief_revision);
-                    CREATE VIEW edges AS
-                        SELECT id AS consumer, source_version AS dependency FROM records
-                        UNION SELECT consumer, dependency FROM dependencies
-                        UNION SELECT consumer, evidence_version FROM dependencies
-                        UNION SELECT belief_revision, source_version FROM active_assessments
-                        UNION SELECT a.belief_revision, e.revision_id FROM active_assessments a
-                            JOIN assessment_evidence e ON e.assessment_id=a.id;
-                ''')
+                conn.executescript(_INDEX_DDL)
                 projection = self._projection_from_state(state)
                 conn.execute('INSERT INTO meta VALUES (?, ?)', ('revision', revision))
                 conn.execute('INSERT INTO meta VALUES (?, ?)', ('schema', '3'))

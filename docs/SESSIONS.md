@@ -35,6 +35,18 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 ---
 
 
+## 2026-09-08e — Codex re-review: evidence path/schema trust on #320
+
+**Focus:** Address Codex P2 findings on PR #320 after the owner-alignment docs pass.
+
+**Shipped:** Reject symlinks in any path component and non-regular live files (no FIFO stream/block); authenticate SQLite schema objects (including `edges` / `active_assessments`) in the projection digest. Evidence suite 72 tests green.
+
+**Decisions / defects:** Keep the hardened contract; implement it rather than narrowing the docs.
+
+**Open / next:** Await CI / Codex on the repair head.
+
+---
+
 ## 2026-09-08d — Codex ADR-checker fixes; retire ox-alpha ADR
 
 **Focus:** Address Codex review on concise ADR validation and session document pins; delete the unused ox-alpha adversarial-lens ADR.
