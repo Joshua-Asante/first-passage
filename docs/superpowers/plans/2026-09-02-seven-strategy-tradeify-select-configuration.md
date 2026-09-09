@@ -1,15 +1,20 @@
 # Tradeify Select configuration — bounded implementation plan
 
-> For agentic workers: use the executing-plans skill for implementation. This file
-> owns the current sequence; the campaign record owns evidence, gate dispositions
-> and operator decisions. Read both before work. Do not execute historical dispatches
-> whose obligations this plan replaces.
+> **Current gate (2026-09-08): HOLD.** C1-C5 are approved design choices, not an
+> implementation or data-execution release. Historical task lists and the former
+> end-to-end implementation authorization below are suspended. Before any
+> implementation, source/native replay, sampling/search or n1/n2/n3, obtain a
+> separate bounded release tied to accepted evidence and the current contract.
+> Workers without the private packet must stop at this gate; they cannot infer GO
+> from unchecked tasks. The [campaign checkpoint](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#53---account-feedbackcomposition-design-checkpoint-2026-09-08)
+> records current design approval and the immutable private revision identity.
+> The executing-plans skill applies only after implementation is separately released.
 
 **Goal:** find the fastest qualifying configuration within a frozen, executable
 grammar on the incumbent Tradeify Select 100K evaluation, or return no qualifying
 configuration from one bounded attempt.
 
-**Status (2026-09-05):** orchestrator transferred to Codex. The operator merged
+**Historical status (2026-09-05; subordinate to the HOLD above):** orchestrator transferred to Codex. The operator merged
 campaign-only #302; scanner work is deferred to draft #307. Capture and summary population are complete (§52); legal sizes and replay remain
 open. No configuration has qualified, no search has run, and the rail remains
 disarmed. The operator approved S1/S2 below on 2026-09-05. Sizing-faithfulness,
@@ -84,9 +89,10 @@ pre-registration gates still control freeze readiness.
 
 ## Budget and stop conditions
 
-The operator authorizes **one bounded implementation attempt** beyond the existing
-intake effort. This is one end-to-end opportunity to build, freeze, select, validate
-and disposition this book, not a reset of the three-constituent budget. Preserve D3:
+**Historical authorization, suspended by the 2026-09-08 HOLD:** the operator
+previously authorized one bounded end-to-end implementation attempt beyond intake.
+This remains the campaign attempt limit, not current permission to execute any
+task below. A separate bounded release is required; no attempt budget is reset. Preserve D3:
 constituent (i) Phase 1, (ii) Phases 2–3, (iii) Phases 4–8. Phase 1 is at iteration
 6 of 8 including the completed population dispatch; two further cycles remain under
 §47's accounting. Do not count worker pushes as new campaign attempts or let a
@@ -99,6 +105,11 @@ the frozen search yields no provisional winner, the winner cannot execute faithf
 or the single n3 fails. Missing operator evidence pauses dependent work; it does not
 license fabricated inputs. A new venue, source family, repeat search or extra n3
 requires a new operator decision. No further scanner research is in this attempt.
+
+## Historical task inventory - all execution subject to the current HOLD
+
+The tasks below preserve planned scope and completed evidence. Unchecked tasks
+are requirements for a later release, not executable instructions now.
 
 ## Task 1 — Close the executable source inventory
 

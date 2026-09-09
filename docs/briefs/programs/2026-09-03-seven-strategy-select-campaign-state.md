@@ -1,7 +1,7 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
-**Status:** Codex owns orchestration by the 2026-09-05 operator transfer. The operator merged campaign-only #302; scanner draft #307 is deferred. The [current execution plan](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) replaces the old phase sequence. Capture and summary population are complete under the operator-attested binding in §52; sizing-faithfulness and replay remain open; no search, final freeze, qualification or live authorization has occurred. One bounded implementation attempt is authorized (§49); S1 unconditional speed and S2 final validation after winner parity are approved (2026-09-05).
-**Last curated:** 2026-09-05 (Codex, `codex/tradeify-used-account-kernel`)
+**Status:** Codex owns orchestration. C1-C5 composition design choices are approved; the current gate is **HOLD** for required evidence (section 53). Historical implementation authority in section 49 is suspended; no implementation, data execution, replay or campaign sampling may proceed without a separate bounded release. S1/S2 and the one-attempt limit remain unchanged; no search, final freeze, qualification or live authorization has occurred.
+**Last curated:** 2026-09-08 (Codex, `codex/tradeify-composition-checkpoint`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
 with #273; four Codex passes `459421b`, `78c82de`, `e8694a9`, `6aa7ff8`, the operator's ruling and
@@ -3744,6 +3744,11 @@ reviews remain in the ignored private audit packet
 `account-feedback-composition-2026-09-08`. This public checkpoint records status
 only; it does not publish source parameters, account values, private review
 contents or execution logic, and is not a second specification.
+
+**Immutable approval revision:** private `c5-approved-design-revision/approval-receipt.json`,
+SHA-256 `bad72266716a31782960c49deed0e25c8c2dc8256300cd8bbc2423d7778d73aa`. The receipt binds the pre-election design,
+approval-annotated specification and manifest snapshot by byte count and digest.
+Later edits to the reusable packet directory do not inherit this approval.
 
 The next gate is the already specified bounded evidence process: bind the
 source-state/calendar interfaces and establish the required coverage and
