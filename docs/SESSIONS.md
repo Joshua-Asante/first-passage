@@ -37,10 +37,10 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 
 ## 2026-09-09f — Handoff CLI: Windows job ActiveProcesses settle after leader exit
 
-- **Focus:** Joshua's Windows failure on `3e18b62` — childless ok worker marked UNKNOWN because job ActiveProcesses lagged GetExitCodeProcess.
-- **Shipped:** Post-exit survivor check polls job ActiveProcesses for a short settle window before concluding descendants remain; persistent nonzero counts still UNKNOWN; query OSError still fail-closed. Follow-up branch after #323 merge.
+- **Focus:** Joshua's Windows failure on `3e18b62` — childless ok worker marked UNKNOWN because job ActiveProcesses lagged GetExitCodeProcess. Fresh full rerun then failed two *different* ordinary-ok tests with the same survivor UNKNOWN, supporting an intermittent exit/accounting race.
+- **Shipped:** Post-exit survivor check polls job ActiveProcesses for a short settle window before concluding descendants remain; persistent nonzero counts still UNKNOWN; query OSError still fail-closed. Deterministic coverage for exit-observed-vs-lagging-ActiveProcesses (instantaneous false positive vs settled clear). Follow-up PR #325 after #323 merge.
 - **Decisions:** Do not weaken the survivor assertion — treat the race as accounting lag, not as permission to ignore a live owned tree.
-- **Open / next:** Windows re-verify of the resume-refusal test on this head; not merge-ready until that lands.
+- **Open / next:** Windows re-verify on the settle head; not merge-ready until that lands.
 
 ---
 

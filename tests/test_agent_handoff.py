@@ -611,6 +611,47 @@ def test_job_active_settle_ignores_post_exit_accounting_lag(monkeypatch):
     assert counts == []
 
 
+def test_exit_observation_versus_job_accounting_race(monkeypatch):
+    """Deterministic diagnosis for the intermittent Windows UNKNOWN on childless ok workers.
+
+    Exit is already observed (returncode set) while job ActiveProcesses still
+    briefly counts the leader. Instantaneous tree accounting would falsely
+    report survivors; the post-exit settle path must wait for accounting to
+    clear. Persistent nonzero counts remain survivors (covered separately).
+    """
+    class ExitedLeader:
+        pid = 4242
+        returncode = 0
+        def poll(self):
+            return 0
+
+    class LaggingJob:
+        def __init__(self, counts):
+            self.reads = []
+            self._counts = list(counts)
+        def active_processes(self):
+            value = self._counts.pop(0) if self._counts else 0
+            self.reads.append(value)
+            return value
+
+    process = ExitedLeader()
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_POLL_SECONDS', 0)
+
+    # Exit is visible before job accounting has settled.
+    assert process.poll() == 0
+    assert process.returncode == 0
+
+    # Instantaneous check (no settle) matches the false-UNKNOWN Windows race.
+    instant = LaggingJob([1, 0])
+    assert AH.tree_still_running(process, instant, after_provider_exit=False) is True
+    assert instant.reads == [1]
+
+    # Post-exit completion path must settle through the lag instead of failing.
+    settled = LaggingJob([1, 1, 0])
+    assert AH.tree_still_running(process, settled, after_provider_exit=True) is False
+    assert settled.reads == [1, 1, 0]
+
+
 def test_job_active_settle_detects_persistent_descendants(monkeypatch):
     class StickyJob:
         def active_processes(self):
