@@ -43,7 +43,7 @@ evidence. The parent still needs to evaluate that evidence and run appropriate
 verification. Review text belongs in the return's `summary`.
 
 Every launch prints its request ID, receipt path and local child PID. Evidence is
-stored outside the workspace under `~/.cache/agent-handoffs/<workspace-sha256>/<request-id>/` (so a worker cleaning ignored workspace files cannot erase the lock or receipts). Legacy `<workspace>/.agent-handoffs/` is refused as task I/O and is not used for coordination:
+stored outside the workspace under `~/.cache/agent-handoffs/<path+instance-sha256>/<request-id>/` (so a worker cleaning ignored workspace files cannot erase the lock or receipts). Each workspace gets a durable instance id at `<workspace>/.agent-handoffs/workspace-instance`; deleting and recreating a worktree at the same path starts a new receipt namespace. `status`/`cancel`/`reconcile` can locate a receipt by request id even after the workspace directory is removed. Legacy `<workspace>/.agent-handoffs/` receipt trees are refused as task I/O and are not used for coordination:
 
 - `record.json`: durable lifecycle, provider/session IDs, packet identity, parent
   request, process IDs, exit status, before/after artifact hashes and timestamps.

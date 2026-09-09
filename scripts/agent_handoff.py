@@ -63,10 +63,88 @@ def write_json(path, value):
     privatize(path)
 
 
-def handoff_root(workspace):
-    # Keep receipts/locks outside the worker-cleanable workspace tree.
-    key = hashlib.sha256(str(Path(workspace).resolve()).encode()).hexdigest()
-    return Path.home() / '.cache' / 'agent-handoffs' / key
+def cache_home():
+    return Path.home() / '.cache' / 'agent-handoffs'
+
+
+INSTANCE_DIRNAME = '.agent-handoffs'
+INSTANCE_FILENAME = 'workspace-instance'
+
+
+def read_workspace_instance(workspace):
+    marker = Path(workspace) / INSTANCE_DIRNAME / INSTANCE_FILENAME
+    if not marker.is_file():
+        return None
+    value = marker.read_text(encoding='utf-8').strip()
+    return value or None
+
+
+def ensure_workspace_instance(workspace):
+    existing = read_workspace_instance(workspace)
+    if existing:
+        return existing
+    secure_mkdir(Path(workspace) / INSTANCE_DIRNAME)
+    instance = str(uuid.uuid4())
+    marker = Path(workspace) / INSTANCE_DIRNAME / INSTANCE_FILENAME
+    temporary = marker.with_suffix('.tmp')
+    temporary.write_text(instance + '\n', encoding='utf-8')
+    privatize(temporary)
+    os.replace(temporary, marker)
+    privatize(marker)
+    return instance
+
+
+def handoff_root(workspace, instance_id=None):
+    # Key by resolved path + durable instance id so a deleted/recreated worktree
+    # at the same pathname cannot inherit the prior workspace's receipts.
+    workspace = Path(workspace)
+    if instance_id is None:
+        instance_id = read_workspace_instance(workspace)
+        if instance_id is None:
+            raise HandoffError('Workspace has no instance identity yet')
+    key = hashlib.sha256(f'{workspace.resolve(strict=False)}\n{instance_id}'.encode()).hexdigest()
+    return cache_home() / key
+
+
+def normalize_workspace_path(value):
+    return str(Path(value).expanduser().resolve(strict=False))
+
+
+def locate_receipt(workspace_arg, request_id):
+    # Recovery must work after the workspace directory is gone.
+    request_id = identifier(request_id)
+    workspace_arg = Path(workspace_arg).expanduser()
+    if workspace_arg.exists():
+        try:
+            workspace = workspace_arg.resolve(strict=True)
+        except OSError:
+            workspace = None
+        else:
+            instance = read_workspace_instance(workspace)
+            if instance:
+                path = handoff_root(workspace, instance) / request_id / 'record.json'
+                if path.is_file():
+                    record = load(path)
+                    if record.get('workspace') == str(workspace):
+                        return path, record
+    target = normalize_workspace_path(workspace_arg)
+    matches = []
+    if cache_home().is_dir():
+        for path in cache_home().glob(f'*/{request_id}/record.json'):
+            try:
+                record = load(path)
+            except (OSError, ValueError):
+                continue
+            recorded = record.get('workspace')
+            if recorded is None:
+                continue
+            if recorded == target or normalize_workspace_path(recorded) == target:
+                matches.append((path, record))
+    if len(matches) == 1:
+        return matches[0]
+    if not matches:
+        raise HandoffError('Receipt not found')
+    raise HandoffError('Ambiguous receipt match for request ID and workspace path')
 
 
 def load(path):
@@ -267,8 +345,140 @@ def verify_inputs(contract):
         raise HandoffError(f'Immutable input changed: {path}')
 
 
-def stop_child(process):
-    # Never kill a PID retrieved from a stale receipt. Only this owned process.
+class WindowsJob:
+    """Retain a Windows Job Object handle for the owned provider tree."""
+
+    JobObjectBasicAccountingInformation = 1
+    JobObjectExtendedLimitInformation = 9
+    JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x2000
+    PROCESS_TERMINATE = 0x0001
+    PROCESS_SET_QUOTA = 0x0100
+
+    def __init__(self, handle):
+        self.handle = handle
+        self._kernel = None
+
+    @classmethod
+    def _api(cls):
+        import ctypes
+        from ctypes import wintypes
+        kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+        kernel.CreateJobObjectW.argtypes = [wintypes.LPVOID, wintypes.LPCWSTR]
+        kernel.CreateJobObjectW.restype = wintypes.HANDLE
+        kernel.SetInformationJobObject.argtypes = [wintypes.HANDLE, wintypes.INT, wintypes.LPVOID, wintypes.DWORD]
+        kernel.SetInformationJobObject.restype = wintypes.BOOL
+        kernel.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
+        kernel.AssignProcessToJobObject.restype = wintypes.BOOL
+        kernel.QueryInformationJobObject.argtypes = [wintypes.HANDLE, wintypes.INT, wintypes.LPVOID, wintypes.DWORD, wintypes.LPDWORD]
+        kernel.QueryInformationJobObject.restype = wintypes.BOOL
+        kernel.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
+        kernel.TerminateJobObject.restype = wintypes.BOOL
+        kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel.CloseHandle.restype = wintypes.BOOL
+        return ctypes, wintypes, kernel
+
+    @classmethod
+    def create(cls):
+        ctypes, wintypes, kernel = cls._api()
+
+        class IO_COUNTERS(ctypes.Structure):
+            _fields_ = [
+                ('ReadOperationCount', ctypes.c_ulonglong),
+                ('WriteOperationCount', ctypes.c_ulonglong),
+                ('OtherOperationCount', ctypes.c_ulonglong),
+                ('ReadTransferCount', ctypes.c_ulonglong),
+                ('WriteTransferCount', ctypes.c_ulonglong),
+                ('OtherTransferCount', ctypes.c_ulonglong),
+            ]
+
+        class JOBOBJECT_BASIC_LIMIT_INFORMATION(ctypes.Structure):
+            _fields_ = [
+                ('PerProcessUserTimeLimit', ctypes.c_int64),
+                ('PerJobUserTimeLimit', ctypes.c_int64),
+                ('LimitFlags', wintypes.DWORD),
+                ('MinimumWorkingSetSize', ctypes.c_size_t),
+                ('MaximumWorkingSetSize', ctypes.c_size_t),
+                ('ActiveProcessLimit', wintypes.DWORD),
+                ('Affinity', ctypes.c_size_t),
+                ('PriorityClass', wintypes.DWORD),
+                ('SchedulingClass', wintypes.DWORD),
+            ]
+
+        class JOBOBJECT_EXTENDED_LIMIT_INFORMATION(ctypes.Structure):
+            _fields_ = [
+                ('BasicLimitInformation', JOBOBJECT_BASIC_LIMIT_INFORMATION),
+                ('IoInfo', IO_COUNTERS),
+                ('ProcessMemoryLimit', ctypes.c_size_t),
+                ('JobMemoryLimit', ctypes.c_size_t),
+                ('PeakProcessMemoryUsed', ctypes.c_size_t),
+                ('PeakJobMemoryUsed', ctypes.c_size_t),
+            ]
+
+        handle = kernel.CreateJobObjectW(None, None)
+        if not handle:
+            raise OSError('CreateJobObject failed')
+        info = JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
+        info.BasicLimitInformation.LimitFlags = cls.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+        if not kernel.SetInformationJobObject(handle, cls.JobObjectExtendedLimitInformation, ctypes.byref(info), ctypes.sizeof(info)):
+            kernel.CloseHandle(handle)
+            raise OSError('SetInformationJobObject failed')
+        job = cls(handle)
+        job._kernel = kernel
+        job._ctypes = ctypes
+        job._wintypes = wintypes
+        job._accounting = type('JOBOBJECT_BASIC_ACCOUNTING_INFORMATION', (ctypes.Structure,), {
+            '_fields_': [
+                ('TotalUserTime', ctypes.c_int64),
+                ('TotalKernelTime', ctypes.c_int64),
+                ('ThisPeriodTotalUserTime', ctypes.c_int64),
+                ('ThisPeriodTotalKernelTime', ctypes.c_int64),
+                ('TotalPageFaultCount', wintypes.DWORD),
+                ('TotalProcesses', wintypes.DWORD),
+                ('ActiveProcesses', wintypes.DWORD),
+                ('TotalTerminatedProcesses', wintypes.DWORD),
+            ]
+        })
+        return job
+
+    def assign(self, process):
+        handle = getattr(process, '_handle', None)
+        if not handle:
+            raise OSError('Windows process handle unavailable for job assignment')
+        if not self._kernel.AssignProcessToJobObject(self.handle, int(handle)):
+            raise OSError('AssignProcessToJobObject failed')
+
+    def active_processes(self):
+        info = self._accounting()
+        returned = self._wintypes.DWORD()
+        if not self._kernel.QueryInformationJobObject(
+            self.handle, self.JobObjectBasicAccountingInformation, self._ctypes.byref(info),
+            self._ctypes.sizeof(info), self._ctypes.byref(returned)
+        ):
+            return 0
+        return int(info.ActiveProcesses)
+
+    def terminate(self):
+        self._kernel.TerminateJobObject(self.handle, 1)
+
+    def close(self):
+        if self.handle:
+            self._kernel.CloseHandle(self.handle)
+            self.handle = None
+
+
+def stop_child(process, job=None):
+    # Never kill a PID retrieved from a stale receipt. Only this owned process/tree.
+    if job is not None:
+        try:
+            job.terminate()
+        except OSError:
+            pass
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=5)
+        return
     if os.name == 'nt':
         if process.poll() is None:
             subprocess.run(['taskkill', '/PID', str(process.pid), '/T', '/F'], capture_output=True, timeout=15)
@@ -295,7 +505,12 @@ def stop_child(process):
         process.wait(timeout=5)
 
 
-def owned_group_alive(process):
+def owned_group_alive(process, job=None):
+    if job is not None:
+        try:
+            return job.active_processes() > 0
+        except OSError:
+            return False
     if os.name == 'nt' or process is None or process.pid is None:
         return False
     try:
@@ -308,7 +523,6 @@ def owned_group_alive(process):
 def run(args):
     workspace = args.workspace.resolve(strict=True)
     args.workspace = workspace
-    root = handoff_root(workspace)
     pointer = Path(args.pointer).resolve(strict=True)
     followup = Path(args.message_file).read_text(encoding='utf-8') if args.message_file else None
     if args.copy and (args.resume_request or args.resume_session):
@@ -336,6 +550,8 @@ def run(args):
     command = executable_command(args.provider, args.command_json)
     if args.dry_run:
         return {'state': 'DRY_RUN', 'workspace': str(workspace), 'contract': contract, 'command': command}
+    instance_id = ensure_workspace_instance(workspace)
+    root = handoff_root(workspace, instance_id)
     with workspace_lock(root):
         records = [load(p) for p in root.glob('*/record.json')]
         parent = None
@@ -357,6 +573,13 @@ def run(args):
                 raise HandoffError(f"Unresolved request {previous['request_id']}: inspect/reconcile before another launch")
             if previous['packet_sha256'] == packet_hash and not parent and not previous.get('resumed_by') and previous.get('resolution') != 'closed':
                 raise HandoffError(f"Packet already dispatched: {previous['request_id']}; resume its session or explicitly reconcile/close it")
+        artifacts_before = {}
+        for relative in contract['expected_outputs']:
+            artifact_path = inside(workspace, relative)
+            try:
+                artifacts_before[relative] = digest(artifact_path) if artifact_path.is_file() else None
+            except OSError as exc:
+                raise HandoffError(f'Preflight artifact snapshot failed: {relative}: {exc}') from exc
         request_id = identifier(args.request_id) if args.request_id else str(uuid.uuid4())
         directory = root / request_id
         directory.mkdir(mode=0o700)  # Existing IDs are never overwritten.
@@ -364,12 +587,13 @@ def run(args):
         record_path = directory / 'record.json'
         fresh_session = str(uuid.uuid4()) if args.provider == 'claude' and not parent else None
         record = dict(request_id=request_id, provider=args.provider, workspace=str(workspace),
+                      workspace_instance=instance_id,
                       packet_sha256=packet_hash, contract=contract, mode=args.mode,
                       session_id=parent['session_id'] if parent else fresh_session,
                       parent_request=parent['request_id'] if parent else None,
                       state='STARTING', created_at=now(), controller_pid=os.getpid(), child_pid=None,
                       exit_code=None, timeout_seconds=args.timeout_seconds, independently_verified=False)
-        record['artifacts_before'] = {p: digest(inside(workspace, p)) if inside(workspace, p).is_file() else None for p in contract['expected_outputs']}
+        record['artifacts_before'] = artifacts_before
         write_json(record_path, record)
         if parent:
             parent['resumed_by'] = request_id
@@ -385,15 +609,16 @@ def run(args):
                   'Report blocked/skipped checks honestly; never manufacture evidence. No separate return file is required.')
         if followup is not None:
             prompt += '\nFollow-up message:\n' + followup
-        prompt_path = directory / 'prompt.txt'
-        prompt_path.write_text(prompt, encoding='utf-8')
-        privatize(prompt_path)
-        record['prompt_sha256'] = digest(prompt_path)
-        write_json(record_path, record)
         process = None
+        job = None
         terminal = None
         protocol_error = None
         try:
+            prompt_path = directory / 'prompt.txt'
+            prompt_path.write_text(prompt, encoding='utf-8')
+            privatize(prompt_path)
+            record['prompt_sha256'] = digest(prompt_path)
+            write_json(record_path, record)
             # Admission and the workspace lock precede every staging write.
             for source, destination in copies:
                 destination = inside(workspace, destination)
@@ -417,6 +642,9 @@ def run(args):
                     privatize(stderr_path)
                     process = subprocess.Popen(actual_command, cwd=workspace, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
                                                start_new_session=os.name != 'nt', creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
+                    if os.name == 'nt':
+                        job = WindowsJob.create()
+                        job.assign(process)
                     record.update(state='RUNNING', child_pid=process.pid, started_at=now())
                     write_json(record_path, record)
                     print(json.dumps({'request_id': request_id, 'record': str(record_path), 'child_pid': process.pid}), flush=True)
@@ -455,7 +683,7 @@ def run(args):
                                 write_json(record_path, record)
                             if (directory / 'cancel.request').exists() or time.monotonic() >= deadline:
                                 record['state'] = 'CANCELLED' if (directory / 'cancel.request').exists() else 'TIMED_OUT'
-                                stop_child(process)
+                                stop_child(process, job)
                                 break
                             if exited:
                                 break
@@ -464,15 +692,15 @@ def run(args):
                 if record['state'] in ('TIMED_OUT', 'CANCELLED'):
                     record['error'] = 'Local stop attempted; partial effects or remote work may remain. Reconcile before retry.'
                 elif process.returncode != 0:
-                    if owned_group_alive(process):
-                        stop_child(process)
+                    if owned_group_alive(process, job):
+                        stop_child(process, job)
                     record.update(state='FAILED', error='Provider exited nonzero; inspect stderr.txt')
                 elif protocol_error or terminal is None or not record['session_id']:
-                    if owned_group_alive(process):
-                        stop_child(process)
+                    if owned_group_alive(process, job):
+                        stop_child(process, job)
                     record.update(state='UNKNOWN', error=protocol_error or 'Missing terminal result or session ID')
-                elif owned_group_alive(process):
-                    stop_child(process)
+                elif owned_group_alive(process, job):
+                    stop_child(process, job)
                     record.update(state='UNKNOWN', error='Owned process-group descendants survived provider exit')
                 else:
                     try:
@@ -484,11 +712,17 @@ def run(args):
                         record.update(state='UNKNOWN', error=str(exc))
         except BaseException as exc:
             if process is not None and process.poll() is None:
-                stop_child(process)
+                stop_child(process, job)
             record.update(state='CANCELLED' if isinstance(exc, KeyboardInterrupt) else 'FAILED', error=str(exc))
         finally:
             if process is not None:
                 record['exit_code'] = process.poll()
+            if job is not None:
+                try:
+                    job.close()
+                except OSError:
+                    pass
+                job = None
             record['finished_at'] = now()
             record['artifacts_after'] = {}
             for p in contract['expected_outputs']:
@@ -529,9 +763,8 @@ def main(argv=None):
     parser.add_argument('--resolution', choices=['resume', 'closed'])
     args = parser.parse_args(argv)
     try:
-        args.workspace = args.workspace.resolve(strict=True)
-        root = handoff_root(args.workspace)
         if args.action == 'run':
+            args.workspace = args.workspace.resolve(strict=True)
             if not args.pointer or not 0 < args.timeout_seconds < float('inf'):
                 raise HandoffError('A packet path and a finite positive timeout are required')
             if args.force_commands and (args.provider != 'cursor' or args.mode != 'execute'):
@@ -544,10 +777,9 @@ def main(argv=None):
         else:
             if not args.request_id:
                 raise HandoffError('--request-id is required')
-            record_path = root / identifier(args.request_id) / 'record.json'
-            result = load(record_path)
-            if result['workspace'] != str(args.workspace):
-                raise HandoffError('Receipt workspace mismatch')
+            record_path, result = locate_receipt(args.workspace, args.request_id)
+            root = record_path.parent.parent
+            args.workspace = Path(result['workspace'])
             if args.action == 'cancel':
                 pending = result['state'] in ('STARTING', 'RUNNING')
                 if pending:

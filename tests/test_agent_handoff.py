@@ -74,6 +74,8 @@ def harness(tmp_path):
             return subprocess.run(self.command(case, *extra), capture_output=True, text=True, timeout=15)
 
         def records(self):
+            if AH.read_workspace_instance(workspace) is None:
+                return []
             root = handoff_root(workspace)
             return [json.loads(p.read_text()) for p in root.glob('*/record.json')]
 
@@ -225,8 +227,8 @@ def test_status_does_not_signal_process(harness):
 
 def test_dry_run_and_path_boundaries(harness):
     assert harness.run('ok', '--dry-run').returncode == 0
+    assert AH.read_workspace_instance(harness.workspace) is None
     assert not (harness.workspace / '.agent-handoffs').exists()
-    assert not handoff_root(harness.workspace).exists()
     assert harness.run('ok', '--expected-output', '../outside.txt').returncode == 2
     assert harness.run('ok', '--expected-output', '.agent-handoffs/fake.txt').returncode == 2
     assert not harness.records()
@@ -375,8 +377,11 @@ def test_receipts_live_outside_workspace(harness):
     record, = harness.records()
     root = handoff_root(harness.workspace)
     assert root.exists()
-    assert not (harness.workspace / '.agent-handoffs').exists()
+    # Instance marker may live under the workspace; receipts/locks must not.
+    assert (harness.workspace / '.agent-handoffs' / 'workspace-instance').is_file()
+    assert not (harness.workspace / '.agent-handoffs' / record['request_id']).exists()
     assert (root / record['request_id'] / 'record.json').is_file()
+    assert root.is_relative_to(Path.home() / '.cache' / 'agent-handoffs')
 
 
 def test_streaming_digest_matches_bytes(tmp_path):
@@ -505,3 +510,77 @@ def test_nonzero_exit_terminates_surviving_descendants(harness):
     except ProcessLookupError:
         pass
 
+
+
+def test_preflight_artifact_failure_leaves_no_blocking_receipt(harness, monkeypatch):
+    boom = harness.workspace / 'boom.txt'
+    boom.write_text('x')
+    real_digest = AH.digest
+    def digest(path):
+        if Path(path).name == 'boom.txt':
+            raise OSError('fixture unreadable')
+        return real_digest(path)
+    monkeypatch.setattr(AH, 'digest', digest)
+    argv = harness.command('ok', '--expected-output', 'boom.txt')[2:]  # drop python + runner
+    assert AH.main(argv) == 2
+    assert not harness.records()
+    monkeypatch.setattr(AH, 'digest', real_digest)
+    assert harness.run('ok').returncode == 0
+
+def test_recreated_workspace_does_not_inherit_receipts(harness):
+    assert harness.run().returncode == 0
+    old_root = handoff_root(harness.workspace)
+    old_instance = AH.read_workspace_instance(harness.workspace)
+    packet = harness.packet.read_text()
+    worker_src = harness.worker.read_text()
+    shutil.rmtree(harness.workspace)
+    harness.workspace.mkdir()
+    harness.packet.write_text(packet)
+    harness.worker.write_text(worker_src)
+    assert AH.read_workspace_instance(harness.workspace) is None
+    assert harness.run().returncode == 0
+    new_instance = AH.read_workspace_instance(harness.workspace)
+    new_root = handoff_root(harness.workspace)
+    assert new_instance != old_instance
+    assert new_root != old_root
+    assert len(harness.records()) == 1
+
+
+def test_status_and_reconcile_after_workspace_removed(harness, tmp_path):
+    assert harness.run('empty').returncode == 1
+    record, = harness.records()
+    rid = record['request_id']
+    workspace = str(harness.workspace)
+    shutil.rmtree(harness.workspace)
+    status = subprocess.run([sys.executable, str(RUNNER), 'status', '--workspace', workspace, '--request-id', rid],
+                            capture_output=True, text=True, timeout=10)
+    assert status.returncode == 0, status.stderr
+    body = json.loads(status.stdout)
+    assert body['request_id'] == rid
+    assert body['state'] == 'UNKNOWN'
+    reconcile = subprocess.run([sys.executable, str(RUNNER), 'reconcile', '--workspace', workspace, '--request-id', rid,
+                                '--resolution', 'closed', '--note', 'Workspace removed; inspected cache receipt'],
+                               capture_output=True, text=True, timeout=10)
+    assert reconcile.returncode == 0, reconcile.stderr
+    assert json.loads(reconcile.stdout)['resolution'] == 'closed'
+
+
+def test_owned_group_alive_uses_windows_job_handle():
+    class FakeJob:
+        def __init__(self, n):
+            self.n = n
+        def active_processes(self):
+            return self.n
+    assert AH.owned_group_alive(None, FakeJob(2)) is True
+    assert AH.owned_group_alive(None, FakeJob(0)) is False
+    calls = []
+    class TermJob(FakeJob):
+        def terminate(self):
+            calls.append('terminate')
+    class Proc:
+        def wait(self, timeout=None):
+            return 0
+        def kill(self):
+            calls.append('kill')
+    AH.stop_child(Proc(), TermJob(1))
+    assert calls == ['terminate']
