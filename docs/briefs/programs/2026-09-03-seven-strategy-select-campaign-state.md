@@ -1,7 +1,7 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
 **Status:** Codex owns orchestration. C1-C5 composition design choices are approved; the current gate is **HOLD** for required evidence (section 53). Historical implementation authority in section 49 is suspended; no implementation, data execution, replay or campaign sampling may proceed without a separate bounded release. S1/S2 and the one-attempt limit remain unchanged; no search, final freeze, qualification or live authorization has occurred.
-**Last curated:** 2026-09-09 (Cursor, `codex/tradeify-composition-checkpoint`)
+**Last curated:** 2026-09-09 (Codex, `codex/tradeify-composition-checkpoint`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
 with #273; four Codex passes `459421b`, `78c82de`, `e8694a9`, `6aa7ff8`, the operator's ruling and
