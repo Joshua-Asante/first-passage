@@ -50,7 +50,7 @@ Every entry carries `"content_verified": true|false`:
 
 ## How to use this
 
-**Query it like any JSONL file** — `grep`, `jq`, or read it whole (115 lines, small).
+**Query it like any JSONL file** — `grep`, `jq`, or read it whole (112 lines, small).
 There is no query CLI yet; this is the consolidation step. A forcing-hook that surfaces
 a relevant entry automatically when a matching file/keyword is touched is a natural
 follow-up (`trigger_globs`/`trigger_keywords` are shaped for exactly that), not yet built.
@@ -78,6 +78,6 @@ and diff, don't hand-patch entries out of sync with the generator's source data.
 - **No forcing hook.** Nothing surfaces a relevant entry automatically when a session
   touches a matching file. `trigger_globs`/`trigger_keywords` exist for this purpose;
   wiring a `PostToolUse` hook that consults them is scoped but not built.
-- **No content for the 83 stub entries.** Those need either a real migration (someone
+- **No content for the 80 stub entries.** Those need either a real migration (someone
   reads the external store and writes the content here) or they stay pointer-only
   indefinitely — both are honest outcomes; a fabricated middle ground is not.
