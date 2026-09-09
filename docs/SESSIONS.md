@@ -35,6 +35,15 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 ---
 
 
+## 2026-09-09h — Handoff CLI: merge #326 settle + Codex PID-list fixes (#325)
+
+- **Focus:** Resolve main merge conflicts with #326's ActiveProcesses-only settle; address Codex review on #325 (`90ce0e42`) — P1 deadline recheck/fail-closed, P2 `ERROR_MORE_DATA` PID-list retry, P3 settle-seconds monkeypatch binding.
+- **Shipped:** Keep PID-list discrimination as the survivor path (supersedes #326-only settle for completion); at settle deadline re-snapshot PIDs and fail closed when the list is empty but `ActiveProcesses` stays positive; enlarge ProcessIdList buffer on `ERROR_MORE_DATA`; read `JOB_ACTIVE_SETTLE_SECONDS` inside the helper. Tests cover lag clear, deadline fail-closed, replacement recheck, buffer retry, and monkeypatch timing.
+- **Decisions:** Prefer #325's PID-list evidence over #326's time-only settle; do not clear a positive job count at deadline from an earlier empty PID snapshot (replacement race).
+- **Open / next:** Joshua Windows re-verify on this head; do not auto-merge.
+
+---
+
 ## 2026-09-09f — Windows handoff: settle Job ActiveProcesses after leader exit
 
 - **Focus:** Follow-up to merged PR #323 intermittent Windows UNKNOWN (`Owned process-group descendants survived provider exit`) on clean ok workers (comments 5596795479 / 5596811802).
