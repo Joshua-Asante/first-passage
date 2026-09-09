@@ -922,16 +922,17 @@ def _spawn_windows_suspended_in_job(command, cwd, stdout, stderr, job):
         CREATE_SUSPENDED | CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT,
         None, str(cwd), ctypes.byref(startup), ctypes.byref(info),
     )
-    if not created:
-        # Parent copies of duplicated stdio handles are not needed after CreateProcess.
-        for handle in (startup.hStdOutput, startup.hStdError, nul):
-            try:
-                kernel.CloseHandle(handle)
-            except OSError:
-                pass
-        raise OSError(f'CreateProcessW failed: {ctypes.get_last_error()}')
-    # Process exists from here — any BaseException must terminate it before re-raise.
+    # Ownership cleanup must cover the entire post-CreateProcess interval —
+    # including stdio CloseHandle — so KeyboardInterrupt/SystemExit cannot
+    # leave a suspended orphan before job assignment.
     try:
+        if not created:
+            for handle in (startup.hStdOutput, startup.hStdError, nul):
+                try:
+                    kernel.CloseHandle(handle)
+                except OSError:
+                    pass
+            raise OSError(f'CreateProcessW failed: {ctypes.get_last_error()}')
         for handle in (startup.hStdOutput, startup.hStdError, nul):
             try:
                 kernel.CloseHandle(handle)
@@ -943,19 +944,19 @@ def _spawn_windows_suspended_in_job(command, cwd, stdout, stderr, job):
         if resumed == 0xFFFFFFFF:
             raise OSError('ResumeThread failed')
     except BaseException:
-        # KeyboardInterrupt/SystemExit must not leave a suspended orphan.
-        try:
-            kernel.TerminateProcess(info.hProcess, 1)
-        except OSError:
-            pass
-        try:
-            kernel.CloseHandle(info.hThread)
-        except OSError:
-            pass
-        try:
-            kernel.CloseHandle(info.hProcess)
-        except OSError:
-            pass
+        if created:
+            try:
+                kernel.TerminateProcess(info.hProcess, 1)
+            except OSError:
+                pass
+            try:
+                kernel.CloseHandle(info.hThread)
+            except OSError:
+                pass
+            try:
+                kernel.CloseHandle(info.hProcess)
+            except OSError:
+                pass
         raise
     kernel.CloseHandle(info.hThread)
     process = WindowsOwnedProcess(info.dwProcessId, info.hProcess, kernel, ctypes, wintypes)

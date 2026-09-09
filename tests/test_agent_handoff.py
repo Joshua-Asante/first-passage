@@ -855,27 +855,45 @@ def test_windows_spawn_cleans_up_on_baseexception(monkeypatch):
         def CloseHandle(self, handle):
             events.append(('close', int(handle)))
             return True
-    # Directly verify the cleanup helper semantics expected after CreateProcess.
+    # Post-CreateProcess ownership: terminate only when create succeeded.
     info_hProcess, info_hThread = 111, 222
     kernel = FakeKernel()
-    try:
-        raise KeyboardInterrupt
-    except BaseException:
+    created = True
+    with pytest.raises(KeyboardInterrupt):
         try:
-            kernel.TerminateProcess(info_hProcess, 1)
-        except OSError:
-            pass
-        try:
-            kernel.CloseHandle(info_hThread)
-        except OSError:
-            pass
-        try:
-            kernel.CloseHandle(info_hProcess)
-        except OSError:
-            pass
+            raise KeyboardInterrupt
+        except BaseException:
+            if created:
+                try:
+                    kernel.TerminateProcess(info_hProcess, 1)
+                except OSError:
+                    pass
+                try:
+                    kernel.CloseHandle(info_hThread)
+                except OSError:
+                    pass
+                try:
+                    kernel.CloseHandle(info_hProcess)
+                except OSError:
+                    pass
+            raise
     assert ('terminate', 111, 1) in events
     assert ('close', 222) in events
     assert ('close', 111) in events
+
+
+def test_windows_spawn_try_covers_post_create_stdio_close():
+    """CreateProcess success path must enter try before closing duplicated stdio."""
+    source = Path(AH.__file__).read_text(encoding='utf-8')
+    start = source.index('created = kernel.CreateProcessW(')
+    chunk = source[start:start + 1800]
+    try_at = chunk.index('try:')
+    close_at = chunk.index('for handle in (startup.hStdOutput, startup.hStdError, nul):')
+    # First stdio close loop after CreateProcess must be inside the try
+    # (failure-path close is also inside try, immediately after `if not created`).
+    assert try_at < close_at
+    assert 'if not created:' in chunk[try_at:close_at + 80]
+    assert 'if created:' in chunk
 
 
 def test_receipt_recovery_uses_workspace_arg_alias(harness, tmp_path):
