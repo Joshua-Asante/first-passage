@@ -531,20 +531,14 @@ def test_recreated_workspace_does_not_inherit_receipts(harness):
     assert harness.run().returncode == 0
     old_root = handoff_root(harness.workspace)
     old_instance = AH.read_workspace_instance(harness.workspace)
-    old_incarnation = AH.directory_incarnation(harness.workspace)
     packet = harness.packet.read_text()
     worker_src = harness.worker.read_text()
-    control = AH.path_control_root(harness.workspace)
     shutil.rmtree(harness.workspace)
     harness.workspace.mkdir()
     harness.packet.write_text(packet)
     harness.worker.write_text(worker_src)
     assert AH.read_workspace_instance(harness.workspace) is None
-    new_incarnation = AH.directory_incarnation(harness.workspace)
-    if (new_incarnation['dev'], new_incarnation['ino']) == (old_incarnation['dev'], old_incarnation['ino']):
-        # Inode reuse + cookie loss is ambiguous; refuse rather than mint a new ID.
-        assert harness.run().returncode == 2
-        shutil.rmtree(control, ignore_errors=True)
+    # Marker+cookie gone; even on inode reuse with a resolved prior namespace, mint fresh.
     assert harness.run().returncode == 0
     new_instance = AH.read_workspace_instance(harness.workspace)
     new_root = handoff_root(harness.workspace)
@@ -807,8 +801,13 @@ def test_missing_cookie_same_directory_fails_closed(harness, monkeypatch):
     binding = AH.read_path_binding(harness.workspace)
     assert binding and binding.get('cookie') is True
     assert AH.read_workspace_cookie(harness.workspace) == first
-    if hasattr(os, 'removexattr'):
-        os.removexattr(harness.workspace, AH.COOKIE_XATTR)
+    # Unresolved receipt keeps recovery closed until reconcile/close.
+    root = AH.handoff_root(harness.workspace, first)
+    pending = root / 'pending-req'
+    pending.mkdir(parents=True)
+    (pending / 'record.json').write_text(json.dumps({
+        'request_id': 'pending-req', 'state': 'RUNNING', 'workspace_instance': first,
+    }))
     monkeypatch.setattr(AH, 'read_workspace_cookie', lambda workspace: None)
     with AH.workspace_lock(AH.path_control_root(harness.workspace)):
         with pytest.raises(AH.HandoffError, match='cookie missing or mismatched'):
@@ -898,3 +897,55 @@ def test_receipt_recovery_uses_workspace_arg_alias(harness, tmp_path):
     # Unambiguous request-ID lookup also works with a nonsense workspace path.
     located2 = AH.locate_receipt(str(tmp_path / 'missing-ws'), rid)
     assert located2[1]['request_id'] == rid
+
+def test_recover_identity_from_marker_and_cookie_without_binding(harness):
+    with AH.workspace_lock(AH.path_control_root(harness.workspace)):
+        first = AH.bind_workspace_instance(harness.workspace)
+    binding_path = AH.path_control_root(harness.workspace) / 'binding.json'
+    assert binding_path.is_file()
+    binding_path.unlink()
+    assert AH.read_workspace_cookie(harness.workspace) == first
+    assert AH.read_workspace_instance(harness.workspace) == first
+    with AH.workspace_lock(AH.path_control_root(harness.workspace)):
+        second = AH.bind_workspace_instance(harness.workspace)
+    assert second == first
+    assert AH.read_path_binding(harness.workspace)['instance_id'] == first
+
+
+def test_stripped_cookie_restores_after_namespace_resolved(harness, monkeypatch):
+    assert harness.run().returncode == 0
+    record, = harness.records()
+    instance = record['workspace_instance']
+    assert AH.read_workspace_instance(harness.workspace) == instance
+    writes = []
+    monkeypatch.setattr(AH, 'read_workspace_cookie', lambda workspace: None)
+    real_write = AH.write_workspace_cookie
+    def tracking_write(workspace, instance_id):
+        writes.append(instance_id)
+        return real_write(workspace, instance_id)
+    monkeypatch.setattr(AH, 'write_workspace_cookie', tracking_write)
+    with AH.workspace_lock(AH.path_control_root(harness.workspace)):
+        # Marker preserved + namespace resolved → restore cookie for same identity.
+        restored = AH.bind_workspace_instance(harness.workspace)
+    assert restored == instance
+    assert writes == [instance]
+
+
+def test_main_preserves_workspace_arg_before_resolve(tmp_path, monkeypatch):
+    real = tmp_path / 'real-ws'
+    real.mkdir()
+    alias = tmp_path / 'alias-ws'
+    alias.symlink_to(real, target_is_directory=True)
+    packet = real / 'packet.md'
+    packet.write_text('task')
+    captured = {}
+    def fake_run(args):
+        captured['workspace_arg'] = getattr(args, 'workspace_arg', None)
+        captured['workspace'] = str(args.workspace)
+        return {'state': 'DRY_RUN'}
+    monkeypatch.setattr(AH, 'run', fake_run)
+    rc = AH.main(['run', '--workspace', str(alias), '--pointer', str(packet), '--dry-run',
+                  '--command-json', '["true"]'])
+    assert rc == 0
+    assert captured['workspace_arg'] == str(alias)
+    assert Path(captured['workspace']) == real.resolve()

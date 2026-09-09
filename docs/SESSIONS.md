@@ -35,6 +35,15 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 ---
 
 
+## 2026-09-09e — Handoff CLI: cookie restore vs recreate; pre-resolve alias capture
+
+- **Focus:** Address Codex current-head review on `e2e658b6` (PR #323) — binding recovery, stripped-cookie policy, CreateProcess BaseException window, alias capture before resolve.
+- **Shipped:** Recover identity when binding is missing but marker+cookie agree; after a fully resolved namespace, restore a stripped cookie when the marker still matches, otherwise mint on recreate (including inode reuse); capture `workspace_arg` in `main` before canonicalize so receipts keep symlink/junction aliases; move Windows stdio CloseHandle into the post-CreateProcess cleanup try. Linux: 62 passed, 3 skipped.
+- **Decisions:** Stripped cookie is not always fail-closed once the namespace is terminal — marker presence distinguishes “same live workspace, restore cookie” from “deleted/recreated path, mint fresh” so unresolved work stays blocked while clean recreates do not inherit old receipts.
+- **Open / next:** Windows re-verify of restore/mint/alias paths; no merge-ready claim.
+
+---
+
 ## 2026-09-09d — Handoff CLI: Codex follow-ups on cookie/group/stdio lifecycle
 
 - **Focus:** Address Codex current-head review on `d803de16` (PR #323).

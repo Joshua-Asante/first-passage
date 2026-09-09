@@ -213,6 +213,21 @@ def write_path_binding(workspace, instance_id, incarnation, cookie=True):
     write_json(control / 'binding.json', payload)
 
 
+def namespace_fully_resolved(workspace, instance_id):
+    """True when every receipt in the instance namespace is terminal."""
+    root = handoff_root(workspace, instance_id)
+    if not root.is_dir():
+        return True
+    for path in root.glob('*/record.json'):
+        try:
+            record = load(path)
+        except (OSError, ValueError):
+            return False
+        if record.get('state') not in ('RETURNED', 'RECONCILED'):
+            return False
+    return True
+
+
 def bind_workspace_instance(workspace):
     """Resolve instance identity under the path-level lock.
 
@@ -248,13 +263,29 @@ def bind_workspace_instance(workspace):
                 write_path_binding(workspace, instance_id, incarnation, cookie=False)
                 return instance_id
         if same_directory:
-            # Cookie was expected on this directory. Missing/mismatched cookie is
-            # not a new workspace — minting a new ID would orphan unresolved work.
-            raise HandoffError(
-                'Workspace instance cookie missing or mismatched for the same directory; '
-                'refusing to mint a new identity. Restore the cookie or reconcile first.'
-            )
-        # Different directory incarnation at this path → fresh receipt namespace.
+            # Cookie expected but missing/mismatched.
+            if not namespace_fully_resolved(workspace, instance_id):
+                raise HandoffError(
+                    'Workspace instance cookie missing or mismatched for the same directory; '
+                    'refusing to mint a new identity. Reconcile/close unresolved receipts, '
+                    'then retry to restore the cookie — or restore it manually.'
+                )
+            if marker_id == instance_id:
+                # Marker preserved → cookie was stripped on the live workspace; restore.
+                write_workspace_cookie(workspace, instance_id)
+                write_path_binding(workspace, instance_id, incarnation, cookie=True)
+                return instance_id
+            # Marker also gone with a resolved namespace usually means inode-reuse
+            # recreate; fall through and mint a fresh identity.
+        # Different directory incarnation (or resolved recreate) → fresh namespace.
+    elif (
+        isinstance(marker_id, str) and marker_id
+        and cookie == marker_id
+    ):
+        # Binding missing/corrupt but marker and cookie agree — recover identity.
+        instance_id = marker_id
+        write_path_binding(workspace, instance_id, incarnation, cookie=True)
+        return instance_id
     instance_id = str(uuid.uuid4())
     cookie_ok = write_workspace_cookie(workspace, instance_id)
     write_workspace_instance(workspace, instance_id)
@@ -891,15 +922,21 @@ def _spawn_windows_suspended_in_job(command, cwd, stdout, stderr, job):
         CREATE_SUSPENDED | CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT,
         None, str(cwd), ctypes.byref(startup), ctypes.byref(info),
     )
-    # Parent copies of duplicated stdio handles are not needed after CreateProcess.
-    for handle in (startup.hStdOutput, startup.hStdError, nul):
-        try:
-            kernel.CloseHandle(handle)
-        except OSError:
-            pass
     if not created:
+        # Parent copies of duplicated stdio handles are not needed after CreateProcess.
+        for handle in (startup.hStdOutput, startup.hStdError, nul):
+            try:
+                kernel.CloseHandle(handle)
+            except OSError:
+                pass
         raise OSError(f'CreateProcessW failed: {ctypes.get_last_error()}')
+    # Process exists from here — any BaseException must terminate it before re-raise.
     try:
+        for handle in (startup.hStdOutput, startup.hStdError, nul):
+            try:
+                kernel.CloseHandle(handle)
+            except OSError:
+                pass
         carrier = type('HandleCarrier', (), {'_handle': int(info.hProcess)})()
         job.assign(carrier)
         resumed = kernel.ResumeThread(info.hThread)
@@ -985,7 +1022,8 @@ def tree_still_running(process, job=None):
 
 
 def run(args):
-    workspace_arg = str(Path(args.workspace).expanduser())
+    # Prefer the pre-canonicalization alias captured by main(); fall back for direct calls.
+    workspace_arg = getattr(args, 'workspace_arg', None) or str(Path(args.workspace).expanduser())
     workspace = Path(args.workspace).expanduser().resolve(strict=True)
     args.workspace = workspace
     pointer = Path(args.pointer).resolve(strict=True)
@@ -1263,7 +1301,9 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.action == 'run':
-            args.workspace = args.workspace.resolve(strict=True)
+            workspace_input = Path(args.workspace).expanduser()
+            args.workspace_arg = str(workspace_input)
+            args.workspace = workspace_input.resolve(strict=True)
             if not args.pointer or not 0 < args.timeout_seconds < float('inf'):
                 raise HandoffError('A packet path and a finite positive timeout are required')
             if args.force_commands and (args.provider != 'cursor' or args.mode != 'execute'):
