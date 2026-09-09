@@ -47,6 +47,8 @@ if case in ('artifacts', 'absolute-artifact'):
     body['artifacts'] = [{'path':'answer.txt','sha256':hashlib.sha256(Path('answer.txt').read_bytes()).hexdigest()}]
     body['checks'] = [{'name':'unit', 'status':'passed', 'evidence':'fixture test exit 0'}]
     if case == 'absolute-artifact': body['artifacts'][0]['path'] = str(Path('answer.txt').resolve())
+if case == 'null-evidence':
+    body['checks'] = [{'name':'unit', 'status':'passed', 'evidence': None}]
 event = {'type':'result','subtype':'success','is_error':case=='error','session_id':sid,'result':json.dumps(body)}
 if case == 'session': event['session_id'] = 'other-session'
 if case == 'plain': event['result'] = 'I am done'
@@ -423,8 +425,6 @@ def test_cancel_before_launch_skips_provider(harness, monkeypatch):
 
 
 @pytest.mark.skipif(os.name == 'nt', reason='POSIX process groups')
-
-@pytest.mark.skipif(os.name == 'nt', reason='POSIX process groups')
 def test_surviving_descendant_blocks_returned(harness):
     harness.worker.write_text('import json, re, subprocess, sys, time, pathlib\nprompt = sys.argv[-1]\nrid = re.search(r\'Request ID: ([\\w-]+)\', prompt).group(1)\nsha = re.search(r\'Packet SHA256: (\\w+)\', prompt).group(1)\nsid = \'fixture-session\'\nprint(json.dumps({\'type\': \'system\', \'subtype\': \'init\', \'session_id\': sid}), flush=True)\nsubprocess.Popen([sys.executable, \'-c\', "import signal, time, pathlib; signal.signal(signal.SIGTERM, signal.SIG_IGN); pathlib.Path(\'ready\').write_text(\'1\'); time.sleep(60)"])\nwhile not pathlib.Path(\'ready\').exists():\n    time.sleep(0.05)\nbody = {\'request_id\': rid, \'packet_sha256\': sha, \'status\': \'DONE\', \'summary\': \'done\', \'artifacts\': [], \'checks\': []}\nprint(json.dumps({\'type\': \'result\', \'subtype\': \'success\', \'session_id\': sid, \'result\': json.dumps(body)}), flush=True)\n')
     result = harness.run()
@@ -432,4 +432,76 @@ def test_surviving_descendant_blocks_returned(harness):
     record, = harness.records()
     assert record['state'] == 'UNKNOWN'
     assert 'survived' in record.get('error', '').lower()
+
+
+
+
+@pytest.mark.skipif(os.name == 'nt', reason='POSIX permissions')
+
+@pytest.mark.skipif(os.name == 'nt', reason='POSIX process groups')
+
+def test_null_check_evidence_is_rejected(harness):
+    assert harness.run('null-evidence', '--required-check', 'unit').returncode == 1
+    record, = harness.records()
+    assert record['state'] == 'UNKNOWN'
+    assert 'evidence' in record.get('error', '').lower()
+
+
+def test_closed_reconciliation_is_immutable(harness):
+    assert harness.run('ok', '--mode', 'plan').returncode == 0
+    record, = harness.records()
+    assert harness.action('reconcile', record['request_id'], '--resolution', 'closed',
+                          '--note', 'Closed after review').returncode == 0
+    assert harness.run().returncode == 0
+    reopen = harness.action('reconcile', record['request_id'], '--resolution', 'resume',
+                            '--note', 'Attempt to reopen closed request')
+    assert reopen.returncode == 2
+    assert 'immutable' in reopen.stderr.lower()
+    closed = json.loads((handoff_root(harness.workspace) / record['request_id'] / 'record.json').read_text())
+    assert closed['resolution'] == 'closed'
+
+
+@pytest.mark.skipif(os.name == 'nt', reason='POSIX permissions')
+def test_staging_copy_preserves_existing_directory_modes(harness):
+    mode_before = harness.workspace.stat().st_mode & 0o777
+    nested = harness.workspace / 'already'
+    nested.mkdir()
+    os.chmod(nested, 0o755)
+    source = harness.workspace / 'stage-src.txt'
+    source.write_text('payload')
+    assert harness.run('ok', '--copy', str(source) + '::already/staged.txt').returncode == 0
+    assert (harness.workspace / 'already/staged.txt').read_text() == 'payload'
+    assert harness.workspace.stat().st_mode & 0o777 == mode_before
+    assert nested.stat().st_mode & 0o777 == 0o755
+
+
+@pytest.mark.skipif(os.name == 'nt', reason='POSIX process groups')
+def test_nonzero_exit_terminates_surviving_descendants(harness):
+    child = "import signal,time,pathlib,os; signal.signal(signal.SIGTERM, signal.SIG_IGN); pathlib.Path('ready').write_text(str(os.getpid())); time.sleep(60)"
+    harness.worker.write_text(
+        "import json, subprocess, sys, time, pathlib\n"
+        "print(json.dumps({'type':'system','subtype':'init','session_id':'fixture-session'}), flush=True)\n"
+        "subprocess.Popen([sys.executable, '-c', " + repr(child) + "])\n"
+        "while not pathlib.Path('ready').exists():\n"
+        "    time.sleep(0.05)\n"
+        "raise SystemExit(9)\n"
+    )
+    result = harness.run()
+    assert result.returncode == 1
+    record, = harness.records()
+    assert record['state'] == 'FAILED'
+    child_pid = int((harness.workspace / 'ready').read_text())
+    import signal
+    try:
+        os.kill(child_pid, 0)
+        alive = True
+    except ProcessLookupError:
+        alive = False
+    if alive:
+        stat = Path(f'/proc/{child_pid}/stat')
+        assert stat.exists() and stat.read_text().split()[2] == 'Z'
+    try:
+        os.kill(child_pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
 

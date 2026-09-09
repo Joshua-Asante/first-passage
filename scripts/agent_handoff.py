@@ -50,6 +50,11 @@ def secure_mkdir(path):
     privatize(path, directory=True)
 
 
+def ensure_dir(path):
+    # Create missing parents for workspace staging without rewriting existing modes.
+    path.mkdir(parents=True, exist_ok=True)
+
+
 def write_json(path, value):
     temporary = path.with_suffix('.tmp')
     temporary.write_text(json.dumps(value, indent=2, ensure_ascii=False), encoding='utf-8')
@@ -245,7 +250,8 @@ def validate_return(event, record, workspace):
         checks = {item.get('name'): item for item in body['checks']}
         for name in record['contract']['required_checks']:
             check = checks.get(name, {})
-            if check.get('status') != 'passed' or not str(check.get('evidence', '')).strip():
+            evidence = check.get('evidence')
+            if check.get('status') != 'passed' or not isinstance(evidence, str) or not evidence.strip():
                 raise HandoffError(f'Required check not reported passed with evidence: {name}')
     return body
 
@@ -396,7 +402,7 @@ def run(args):
                     if digest(destination) != expected:
                         raise HandoffError('Refusing to overwrite staged input')
                 else:
-                    secure_mkdir(destination.parent)
+                    ensure_dir(destination.parent)
                     with source.open('rb') as src, destination.open('xb') as output:
                         shutil.copyfileobj(src, output, length=DIGEST_CHUNK)
             verify_inputs(contract)
@@ -458,6 +464,8 @@ def run(args):
                 if record['state'] in ('TIMED_OUT', 'CANCELLED'):
                     record['error'] = 'Local stop attempted; partial effects or remote work may remain. Reconcile before retry.'
                 elif process.returncode != 0:
+                    if owned_group_alive(process):
+                        stop_child(process)
                     record.update(state='FAILED', error='Provider exited nonzero; inspect stderr.txt')
                 elif protocol_error or terminal is None or not record['session_id']:
                     if owned_group_alive(process):
@@ -557,6 +565,8 @@ def main(argv=None):
                         raise HandoffError('Recorded process may still be alive; reconcile only after inspecting/stopping it')
                     if result.get('resumed_by'):
                         raise HandoffError('Reconcile the latest request in the chain')
+                    if result.get('resolution') == 'closed':
+                        raise HandoffError('Closed reconciliation is immutable; start a replacement instead of reopening it')
                     result.update(state='RECONCILED', resolution=args.resolution, reconciliation_note=args.note, reconciled_at=now())
                     write_json(record_path, result)
         print(json.dumps(result, indent=2))

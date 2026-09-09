@@ -132,6 +132,7 @@ Before accepting a DONE/DONE_WITH_CONCERNS return, the runner re-checks immutabl
 inputs and refuses completion if owned process-group descendants are still alive.
 Cancellation is honored after staging/verification and before provider launch.
 File digests are streamed in bounded chunks.
+Required-check evidence must be a nonempty string (JSON null is rejected). Staging copies create missing parents without rewriting existing directory modes. Nonzero provider exits also stop owned process-group descendants before releasing the lock. A closed reconciliation cannot later be reopened as resume.
 
 ## Verification
 
