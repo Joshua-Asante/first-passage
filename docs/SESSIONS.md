@@ -35,6 +35,15 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 ---
 
 
+## 2026-09-09 — Handoff CLI: workspace instance identity + Windows job trees
+
+- **Focus:** Close Codex P1/P2 follow-ups on PR #323 (`codex/handoff-cli-contract`).
+- **Shipped:** `752aaaf5` — Windows Job Object tracking; preflight artifact snapshot before STARTING; receipt cache keyed by path+instance id (`<workspace>/.agent-handoffs/workspace-instance`); `status`/`cancel`/`reconcile` via `locate_receipt` without a live worktree.
+- **Decisions:** Chose an explicit workspace-instance marker (not inode/device) so deleted/recreated `.worktrees/<slug>` paths cannot resume foreign sessions; recovery scans `~/.cache/agent-handoffs` by request id + recorded workspace path.
+- **Open / next:** Await CI on `752aaaf5`; live Cursor/Claude acceptance still unverified.
+
+---
+
 ## 2026-09-08e — Codex re-review: evidence path/schema trust on #320
 
 **Focus:** Address Codex P2 findings on PR #320 after the owner-alignment docs pass.
