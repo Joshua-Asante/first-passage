@@ -35,6 +35,14 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 ---
 
 
+## 2026-09-09f — Windows handoff: settle Job ActiveProcesses after leader exit
+
+- **Focus:** Follow-up to merged PR #323 intermittent Windows UNKNOWN (`Owned process-group descendants survived provider exit`) on clean ok workers (comments 5596795479 / 5596811802).
+- **Judgment:** Treat as exit-observation vs Job accounting race, not assertion softening — re-query `ActiveProcesses` briefly after leader exit; keep query errors and non-settling counts fail-closed so real descendants still stop completion.
+- **Shipped:** [PR #326](https://github.com/Joshua-Asante/first-passage/pull/326) (`7af9bfc5`) — `tree_still_running` settle loop + deterministic scripted-job tests. Linux: 67 passed / 3 skipped. **Actual Windows suite still owed** (no Windows/`pwsh` here).
+
+---
+
 ## 2026-09-09e — Handoff CLI: cookie restore vs recreate; pre-resolve alias capture
 
 - **Focus:** Address Codex current-head review on `e2e658b6` (PR #323) — binding recovery, stripped-cookie policy, CreateProcess BaseException window, alias capture before resolve.
