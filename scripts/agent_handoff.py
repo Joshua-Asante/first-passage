@@ -1002,6 +1002,12 @@ def stop_child(process, job=None):
         process.wait(timeout=5)
 
 
+# GetExitCodeProcess can observe leader exit before Job ActiveProcesses drops that
+# same process. Bound the re-query window; never treat query failure as idle.
+JOB_ACCOUNTING_SETTLE_SECONDS = 1.0
+JOB_ACCOUNTING_SETTLE_INTERVAL = 0.01
+
+
 def owned_group_alive(process, job=None):
     # OSError from a job query must propagate: callers refuse completion on uncertainty.
     if job is not None:
@@ -1016,8 +1022,33 @@ def owned_group_alive(process, job=None):
 
 
 def tree_still_running(process, job=None):
+    """True when the owned tree still has live members after provider exit.
+
+    On Windows Job Objects, exit-code observation can precede ActiveProcesses
+    settlement for the leader. After the leader has exited, re-query until the
+    count reaches zero or the settle window expires. A non-zero count after
+    settlement still means survivors (fail closed). Query failures still refuse
+    completion.
+    """
     try:
-        return owned_group_alive(process, job)
+        if job is None:
+            return owned_group_alive(process, job)
+        if process is not None and process.poll() is not None:
+            deadline = time.monotonic() + JOB_ACCOUNTING_SETTLE_SECONDS
+            remaining = deadline - time.monotonic()
+            if remaining > 0:
+                # Prefer a signaled process handle before trusting job accounting.
+                try:
+                    process.wait(timeout=remaining)
+                except (subprocess.TimeoutExpired, OSError):
+                    pass
+            while True:
+                if job.active_processes() == 0:
+                    return False
+                if time.monotonic() >= deadline:
+                    return True
+                time.sleep(JOB_ACCOUNTING_SETTLE_INTERVAL)
+        return job.active_processes() > 0
     except OSError as exc:
         raise HandoffError(f'Process-tree liveness query failed; refuse completion: {exc}') from exc
 

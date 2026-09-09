@@ -600,6 +600,102 @@ def test_tree_query_failure_refuses_completion():
         AH.tree_still_running(None, BoomJob())
 
 
+def test_tree_still_running_settles_stale_leader_active_count(monkeypatch):
+    """Exit observation can precede Job ActiveProcesses dropping the leader."""
+    monkeypatch.setattr(AH, 'JOB_ACCOUNTING_SETTLE_SECONDS', 0.2)
+    monkeypatch.setattr(AH, 'JOB_ACCOUNTING_SETTLE_INTERVAL', 0.001)
+
+    class Exited:
+        pid = 42
+        returncode = 0
+        def poll(self):
+            return 0
+        def wait(self, timeout=None):
+            return 0
+
+    class ScriptedJob:
+        def __init__(self):
+            self.readings = [1, 1, 0]
+            self.calls = 0
+        def active_processes(self):
+            self.calls += 1
+            if self.readings:
+                return self.readings.pop(0)
+            return 0
+
+    job = ScriptedJob()
+    assert AH.tree_still_running(Exited(), job) is False
+    assert job.calls >= 3
+
+
+def test_tree_still_running_fail_closed_when_active_count_never_settles(monkeypatch):
+    monkeypatch.setattr(AH, 'JOB_ACCOUNTING_SETTLE_SECONDS', 0.05)
+    monkeypatch.setattr(AH, 'JOB_ACCOUNTING_SETTLE_INTERVAL', 0.001)
+
+    class Exited:
+        pid = 42
+        returncode = 0
+        def poll(self):
+            return 0
+        def wait(self, timeout=None):
+            return 0
+
+    class StickyJob:
+        def __init__(self):
+            self.calls = 0
+        def active_processes(self):
+            self.calls += 1
+            return 1
+
+    job = StickyJob()
+    assert AH.tree_still_running(Exited(), job) is True
+    assert job.calls >= 2
+
+
+def test_tree_still_running_detects_persistent_descendant_count(monkeypatch):
+    monkeypatch.setattr(AH, 'JOB_ACCOUNTING_SETTLE_SECONDS', 0.05)
+    monkeypatch.setattr(AH, 'JOB_ACCOUNTING_SETTLE_INTERVAL', 0.001)
+
+    class Exited:
+        pid = 7
+        returncode = 0
+        def poll(self):
+            return 0
+        def wait(self, timeout=None):
+            return 0
+
+    class DescendantJob:
+        def active_processes(self):
+            return 2
+
+    assert AH.tree_still_running(Exited(), DescendantJob()) is True
+
+
+def test_tree_still_running_query_error_during_settle_refuses(monkeypatch):
+    monkeypatch.setattr(AH, 'JOB_ACCOUNTING_SETTLE_SECONDS', 0.2)
+    monkeypatch.setattr(AH, 'JOB_ACCOUNTING_SETTLE_INTERVAL', 0.001)
+
+    class Exited:
+        pid = 9
+        returncode = 0
+        def poll(self):
+            return 0
+        def wait(self, timeout=None):
+            return 0
+
+    class FlakyJob:
+        def __init__(self):
+            self.calls = 0
+        def active_processes(self):
+            self.calls += 1
+            if self.calls >= 2:
+                raise OSError('fixture QueryInformationJobObject failed mid-settle')
+            return 1
+
+    with pytest.raises(AH.HandoffError, match='liveness query failed'):
+        AH.tree_still_running(Exited(), FlakyJob())
+
+
 def test_marker_loss_same_incarnation_reuses_instance(harness, tmp_path):
     with AH.workspace_lock(AH.path_control_root(harness.workspace)):
         first = AH.bind_workspace_instance(harness.workspace)

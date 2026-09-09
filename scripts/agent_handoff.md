@@ -83,7 +83,9 @@ to stop its owned local process tree and preserves all evidence. On Windows the
 provider is created suspended, assigned to a Job Object, then resumed so membership
 exists before user code runs. Stdio duplication uses `msvcrt.get_osfhandle` (CRT fd → Win32 HANDLE) and opens inheritable `NUL` for stdin; if that ownership cannot be established the launch
 fails closed and the process is not left running. Job-object process-count queries
-that fail also refuse completion rather than assuming the tree is gone. On POSIX
+that fail also refuse completion rather than assuming the tree is gone. After the
+leader exits, `ActiveProcesses` is re-queried briefly so a stale leader count is
+not mistaken for survivors; a count that stays non-zero still fails closed. On POSIX
 the provider runs in its own process group for the same purpose. Detached workers
 or provider-side work may outlive local cancellation; timeout never proves rollback.
 
