@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-08
+**Last curated:** 2026-09-09
 
 Current priorities, dormant cross-session work, and outstanding obligations.
 Read the queue first, then the linked executable plan; campaign records own
@@ -31,7 +31,7 @@ Queue position does not grant phase GO or authorize a new generation channel.
 
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
-| 1 | **Tradeify Select configuration campaign** — bounded attempt; complete sizing-faithfulness, private account binding, shared-symbol replay and statistical freeze. No qualified book or live authorization. | [Executable plan](docs/superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) · [evidence / decisions §52](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#52--completed-capture-intake-and-export-provenance-2026-09-05) | Frozen search and winner validation |
+| 1 | **Tradeify Select configuration campaign** — **HOLD** (2026-09-08): C1–C5 design approved; no implementation, replay or sampling without a separate bounded release. Evidence binding remains open. No qualified book or live authorization. | [Executable plan](docs/superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) · [checkpoint §53](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#53---account-feedbackcomposition-design-checkpoint-2026-09-08) · [evidence §52](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#52--completed-capture-intake-and-export-provenance-2026-09-05) | Frozen search and winner validation |
 | 2 | **B7-REFIRE Stage 1 + M1** — licensed test strategy; item 5 dated 2026-08-24 remains owed. Independent of #1. No arm. | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [GO addendum](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) | Live-signal / arming path |
 
 ## Executed operator decisions — decision index
