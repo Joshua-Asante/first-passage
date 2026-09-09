@@ -37,10 +37,10 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 
 ## 2026-09-09f — Handoff CLI: Windows job ActiveProcesses settle after leader exit
 
-- **Focus:** Joshua's Windows failure on `3e18b62` — childless ok worker marked UNKNOWN because job ActiveProcesses lagged GetExitCodeProcess. Fresh full rerun then failed two *different* ordinary-ok tests with the same survivor UNKNOWN, supporting an intermittent exit/accounting race.
-- **Shipped:** Post-exit survivor check polls job ActiveProcesses for a short settle window before concluding descendants remain; persistent nonzero counts still UNKNOWN; query OSError still fail-closed. Deterministic coverage for exit-observed-vs-lagging-ActiveProcesses (instantaneous false positive vs settled clear). Follow-up PR #325 after #323 merge.
-- **Decisions:** Do not weaken the survivor assertion — treat the race as accounting lag, not as permission to ignore a live owned tree.
-- **Open / next:** Windows re-verify on the settle head; not merge-ready until that lands.
+- **Focus:** Joshua's intermittent Windows UNKNOWN on childless ok workers at `3e18b62` (different tests across two full suite runs; same "descendants survived" with exit 0). Asked for cause establishment, not assertion weakening; follow-up PR #325 (not a change to merged #323).
+- **Shipped:** Discriminate cause via job live PID-list (exclude exited leader) plus ActiveProcesses settle fallback; empty live list with lagging ActiveProcesses ⇒ no survivors; other live PIDs ⇒ real descendants; query OSError fail-closed. Deterministic coverage for exit-vs-accounting lag and PID-list paths. Linux suite green; no Windows host in this environment.
+- **Decisions:** Prefer PID-list evidence over time-only settle so lag is confirmed rather than assumed; do not accept uncertain completion.
+- **Open / next:** Joshua Windows re-verify on this head; do not auto-merge.
 
 ---
 

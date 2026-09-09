@@ -661,6 +661,66 @@ def test_job_active_settle_detects_persistent_descendants(monkeypatch):
     assert AH.tree_still_running(None, StickyJob(), after_provider_exit=True) is True
 
 
+def test_live_pid_list_clears_accounting_lag_without_waiting(monkeypatch):
+    """ActiveProcesses>0 with empty live PID list (leader excluded) is lag, not survivors."""
+    class ExitedLeader:
+        pid = 4242
+        def poll(self):
+            return 0
+
+    class LagJobWithPidList:
+        def __init__(self):
+            self.list_calls = 0
+            self.active_calls = 0
+        def active_processes(self):
+            self.active_calls += 1
+            return 1  # never clears on its own
+        def live_descendant_pids(self, exclude_pid=None):
+            self.list_calls += 1
+            assert exclude_pid == 4242
+            return []
+
+    job = LagJobWithPidList()
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_SECONDS', 0.05)
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_POLL_SECONDS', 0.01)
+    assert AH.tree_still_running(ExitedLeader(), job, after_provider_exit=True) is False
+    assert job.list_calls >= 1
+    assert job.active_calls >= 1
+
+
+def test_live_pid_list_detects_real_descendant_immediately(monkeypatch):
+    class ExitedLeader:
+        pid = 10
+        def poll(self):
+            return 0
+
+    class JobWithChild:
+        def active_processes(self):
+            return 2
+        def live_descendant_pids(self, exclude_pid=None):
+            assert exclude_pid == 10
+            return [99]
+
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_SECONDS', 30)  # must not need to wait
+    assert AH.tree_still_running(ExitedLeader(), JobWithChild(), after_provider_exit=True) is True
+
+
+def test_live_pid_list_query_failure_still_refuses():
+    class ExitedLeader:
+        pid = 10
+        def poll(self):
+            return 0
+
+    class BoomListJob:
+        def active_processes(self):
+            return 1
+        def live_descendant_pids(self, exclude_pid=None):
+            raise OSError('fixture ProcessIdList query failed')
+
+    with pytest.raises(AH.HandoffError, match='liveness query failed'):
+        AH.tree_still_running(ExitedLeader(), BoomListJob(), after_provider_exit=True)
+
+
 def test_job_active_settle_query_failure_still_refuses():
     class BoomJob:
         def active_processes(self):

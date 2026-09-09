@@ -576,14 +576,25 @@ class WindowsJob:
     """Retain a Windows Job Object handle for the owned provider tree."""
 
     JobObjectBasicAccountingInformation = 1
+    JobObjectBasicProcessIdList = 3
     JobObjectExtendedLimitInformation = 9
     JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x2000
     PROCESS_TERMINATE = 0x0001
     PROCESS_SET_QUOTA = 0x0100
+    PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+    STILL_ACTIVE = 259
+    ERROR_INVALID_PARAMETER = 87
+    ERROR_ACCESS_DENIED = 5
+    # Cap for one QueryInformationJobObject PID-list read; jobs with more
+    # processes retry with a larger buffer via NumberOfAssignedProcesses.
+    _PID_LIST_INITIAL_CAPACITY = 64
 
     def __init__(self, handle):
         self.handle = handle
         self._kernel = None
+        self._ctypes = None
+        self._wintypes = None
+        self._accounting = None
 
     @classmethod
     def _api(cls):
@@ -602,6 +613,10 @@ class WindowsJob:
         kernel.TerminateJobObject.restype = wintypes.BOOL
         kernel.CloseHandle.argtypes = [wintypes.HANDLE]
         kernel.CloseHandle.restype = wintypes.BOOL
+        kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        kernel.OpenProcess.restype = wintypes.HANDLE
+        kernel.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+        kernel.GetExitCodeProcess.restype = wintypes.BOOL
         return ctypes, wintypes, kernel
 
     @classmethod
@@ -683,6 +698,63 @@ class WindowsJob:
         ):
             raise OSError('QueryInformationJobObject failed')
         return int(info.ActiveProcesses)
+
+    def process_ids(self):
+        """Return PIDs currently associated with the job (may include an exiting leader)."""
+        capacity = self._PID_LIST_INITIAL_CAPACITY
+        while True:
+            list_type = type(
+                'JOBOBJECT_BASIC_PROCESS_ID_LIST',
+                (self._ctypes.Structure,),
+                {
+                    '_fields_': [
+                        ('NumberOfAssignedProcesses', self._wintypes.DWORD),
+                        ('NumberOfProcessIdsInList', self._wintypes.DWORD),
+                        ('ProcessIdList', self._ctypes.c_size_t * capacity),
+                    ]
+                },
+            )
+            info = list_type()
+            returned = self._wintypes.DWORD()
+            ok = self._kernel.QueryInformationJobObject(
+                self.handle, self.JobObjectBasicProcessIdList, self._ctypes.byref(info),
+                self._ctypes.sizeof(info), self._ctypes.byref(returned),
+            )
+            if not ok:
+                raise OSError('QueryInformationJobObject(ProcessIdList) failed')
+            assigned = int(info.NumberOfAssignedProcesses)
+            listed = int(info.NumberOfProcessIdsInList)
+            if listed < assigned and capacity < assigned:
+                capacity = assigned
+                continue
+            return [int(info.ProcessIdList[i]) for i in range(listed)]
+
+    def _pid_still_active(self, pid):
+        handle = self._kernel.OpenProcess(self.PROCESS_QUERY_LIMITED_INFORMATION, False, int(pid))
+        if not handle:
+            error = self._ctypes.get_last_error()
+            # Process already gone — not a live descendant.
+            if error in (self.ERROR_INVALID_PARAMETER, 0):
+                return False
+            # Access denied / other query failures must fail closed.
+            raise OSError(f'OpenProcess({pid}) failed: {error}')
+        try:
+            code = self._wintypes.DWORD()
+            if not self._kernel.GetExitCodeProcess(handle, self._ctypes.byref(code)):
+                raise OSError(f'GetExitCodeProcess({pid}) failed')
+            return int(code.value) == self.STILL_ACTIVE
+        finally:
+            self._kernel.CloseHandle(handle)
+
+    def live_descendant_pids(self, exclude_pid=None):
+        """Live PIDs in the job, optionally excluding an already-exited leader."""
+        live = []
+        for pid in self.process_ids():
+            if exclude_pid is not None and int(pid) == int(exclude_pid):
+                continue
+            if self._pid_still_active(pid):
+                live.append(int(pid))
+        return live
 
     def terminate(self):
         self._kernel.TerminateJobObject(self.handle, 1)
@@ -1025,20 +1097,45 @@ def owned_group_alive(process, job=None):
 def descendants_survived_provider_exit(process, job=None, settle_seconds=JOB_ACTIVE_SETTLE_SECONDS):
     """True when owned descendants remain after the provider leader has exited.
 
-    Fail closed on job-query errors. When a Windows job is present, poll
-    ActiveProcesses until it reaches 0 or the settle window elapses so a
-    transient post-exit accounting lag is not mistaken for survivors. A count
-    that stays above zero is treated as real descendants — never ignored.
+    Fail closed on job-query errors. Cause discrimination for the Windows
+    false-UNKNOWN race:
+
+    1. Prefer live PID enumeration from the job. If the leader has already
+       exited (`poll()` not None), exclude its PID. Any other still-active PID
+       is a real descendant.
+    2. If ActiveProcesses is still > 0 but no other live PIDs remain, treat that
+       as GetExitCodeProcess vs job-accounting lag and keep polling until the
+       count clears or the settle window ends.
+    3. After the settle window, a successful empty live-PID list means no
+       survivors even if ActiveProcesses still lags; an ActiveProcesses-only
+       fallback (no PID list API) still treats a persistent nonzero count as
+       survivors. Query failures remain fail-closed.
     """
     if job is None:
         return owned_group_alive(process, None)
     deadline = time.monotonic() + max(0.0, float(settle_seconds))
+    leader_pid = getattr(process, 'pid', None) if process is not None else None
+    list_fn = getattr(job, 'live_descendant_pids', None)
     while True:
-        active = job.active_processes()
-        if active <= 0:
-            return False
-        if time.monotonic() >= deadline:
-            return True
+        if callable(list_fn):
+            leader_exited = process is not None and process.poll() is not None
+            exclude = leader_pid if leader_exited else None
+            live = list_fn(exclude_pid=exclude)
+            if live:
+                return True
+            # No live non-leader PIDs. ActiveProcesses may still briefly count
+            # the exiting leader — settle rather than declaring survivors.
+            if job.active_processes() <= 0:
+                return False
+            if time.monotonic() >= deadline:
+                # PID list confirmed empty of live descendants; accounting lag only.
+                return False
+        else:
+            active = job.active_processes()
+            if active <= 0:
+                return False
+            if time.monotonic() >= deadline:
+                return True
         time.sleep(JOB_ACTIVE_SETTLE_POLL_SECONDS)
 
 
