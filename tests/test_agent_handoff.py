@@ -16,6 +16,27 @@ _spec = importlib.util.spec_from_file_location('agent_handoff', RUNNER)
 AH = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(AH)
 handoff_root = AH.handoff_root
+
+def make_directory_link(link, target):
+    """Create a directory alias without requiring Windows symlink privilege.
+
+    Windows uses a junction (no SeCreateSymbolicLinkPrivilege); POSIX uses a symlink.
+    """
+    link = Path(link)
+    target = Path(target)
+    if os.name == 'nt':
+        # Match the instance-directory rejection fixture: junctions exercise reparse
+        # behavior without optional symlink rights (WinError 1314).
+        subprocess.run(
+            ['pwsh', '-NoProfile', '-Command',
+             "New-Item -ItemType Junction -Path '" + str(link).replace("'", "''") +
+             "' -Target '" + str(target).replace("'", "''") + "'"],
+            check=True, capture_output=True,
+        )
+    else:
+        link.symlink_to(target, target_is_directory=True)
+
+
 WORKER = r'''
 import hashlib, json, os, re, sys, time
 from pathlib import Path
@@ -320,12 +341,7 @@ def test_copy_through_external_directory_link_is_refused(harness):
     outside = harness.workspace.parent / 'outside'
     outside.mkdir()
     link = harness.workspace / 'link'
-    if os.name == 'nt':
-        subprocess.run(['pwsh', '-NoProfile', '-Command',
-                        "New-Item -ItemType Junction -Path '" + str(link).replace("'", "''") +
-                        "' -Target '" + str(outside).replace("'", "''") + "'"], check=True, capture_output=True)
-    else:
-        link.symlink_to(outside, target_is_directory=True)
+    make_directory_link(link, outside)
     result = harness.run('ok', '--copy', str(harness.packet) + '::link/copied.txt')
     assert result.returncode == 2
     assert not (outside / 'copied.txt').exists()
@@ -818,13 +834,7 @@ def test_reject_symlink_workspace_instance_directory(harness, tmp_path):
     outside = tmp_path / 'external-instance'
     outside.mkdir()
     link = harness.workspace / AH.INSTANCE_DIRNAME
-    if os.name == 'nt':
-        # Junctions test the reparse boundary without optional symlink privilege.
-        subprocess.run(['pwsh', '-NoProfile', '-Command',
-                        "New-Item -ItemType Junction -Path '" + str(link).replace("'", "''") +
-                        "' -Target '" + str(outside).replace("'", "''") + "'"], check=True, capture_output=True)
-    else:
-        link.symlink_to(outside, target_is_directory=True)
+    make_directory_link(link, outside)
     with pytest.raises(AH.HandoffError, match='symbolic link|reparse point|must not be'):
         AH.write_workspace_instance(harness.workspace, 'should-not-write')
     assert not (outside / AH.INSTANCE_FILENAME).exists()
@@ -953,7 +963,7 @@ def test_main_preserves_workspace_arg_before_resolve(tmp_path, monkeypatch):
     real = tmp_path / 'real-ws'
     real.mkdir()
     alias = tmp_path / 'alias-ws'
-    alias.symlink_to(real, target_is_directory=True)
+    make_directory_link(alias, real)
     packet = real / 'packet.md'
     packet.write_text('task')
     captured = {}
