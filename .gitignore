@@ -276,3 +276,6 @@ third_party/
 # lab/analysis/<theme>/<slug>/inputs/, already ignored above.
 workspace_inputs/
 workspace_outputs/
+
+# Local agent prompts, tool streams and request receipts can contain private context.
+.agent-handoffs/

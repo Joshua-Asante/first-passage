@@ -34,6 +34,8 @@ Capture the process exit code, stdout, stderr, and session identifier when avail
 
 On failure, preserve the exact error and identify the supported cause: launch approval, worker permission, filesystem access, authentication/network, CLI invocation, or unknown. Correct demonstrated invocation errors within existing authority. Do not change launchers or disable controls to evade a denial. Before retrying an uncertain run, check whether it is still running or has already changed files; resume the existing worker when supported.
 
+For local Cursor/Claude dispatch, use the repository's `scripts/dispatch_cursor.ps1` / `scripts/dispatch_claude.ps1` and `scripts/agent_handoff.md` recovery procedure. Supply expected outputs and required check names; the runner injects a correlated JSON return contract. Preserve the request receipt, use its request ID for continuation, and reconcile uncertain outcomes before retrying. A valid return with worker status BLOCKED/NEEDS_CONTEXT is not completed work; DONE still requires parent verification.
+
 ---
 
 ## §0.75 — Local-only dependency check (required when Spawn target is Cursor)
