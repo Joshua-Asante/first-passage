@@ -82,6 +82,10 @@ If the work already landed (merged PR, on-disk module, closed RESULTS), return `
 
 If the handoff freezes a campaign gate (DSR K, placebo clause, SPA family size): confirm a **reachability / power attestation** exists or is explicitly tasked before freeze. Unreachable frozen gates are the Q-HARV-0 / DISC-CAMP-0 class. Do not start pulls against a gate the audit already called unreachable.
 
+### 7. CLI execution contract (CLI handoffs only)
+
+Check the [shared execution contract](../brief-authoring/references/cc_handoff.md#cli-execution-contract-when-dispatching-through-a-cli): requested actions must fit the recorded authority, read/write paths, working directory and worker capabilities. Carry existing authorization forward; report only missing authority or material conflicts. Keep dispatch errors separate from packet-state contradictions, preserving the exact error and using `unknown` when the cause is unproven.
+
 ## Output shape
 
 On success, one short block:

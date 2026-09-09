@@ -35,6 +35,42 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 ---
 
 
+## 2026-09-09e — Handoff CLI: cookie restore vs recreate; pre-resolve alias capture
+
+- **Focus:** Address Codex current-head review on `e2e658b6` (PR #323) — binding recovery, stripped-cookie policy, CreateProcess BaseException window, alias capture before resolve.
+- **Shipped:** Recover identity when binding is missing but marker+cookie agree; after a fully resolved namespace, restore a stripped cookie when the marker still matches, otherwise mint on recreate (including inode reuse); capture `workspace_arg` in `main` before canonicalize so receipts keep symlink/junction aliases; move Windows stdio CloseHandle into the post-CreateProcess cleanup try. Linux: 62 passed, 3 skipped.
+- **Decisions:** Stripped cookie is not always fail-closed once the namespace is terminal — marker presence distinguishes “same live workspace, restore cookie” from “deleted/recreated path, mint fresh” so unresolved work stays blocked while clean recreates do not inherit old receipts.
+- **Open / next:** Windows re-verify of restore/mint/alias paths; no merge-ready claim.
+
+---
+
+## 2026-09-09d — Handoff CLI: Codex follow-ups on cookie/group/stdio lifecycle
+
+- **Focus:** Address Codex current-head review on `d803de16` (PR #323).
+- **Shipped:** Fail closed when cookie missing/mismatched on same `(dev,ino)`; stop owned process group on controller exceptions even if leader exited; `BaseException` cleanup for suspended Windows create; reject symlink/junction `.agent-handoffs`; retain `workspace_arg` aliases + unambiguous request-ID receipt recovery.
+- **Decisions:** Prefer refuse-to-mint over silent namespace switch when cookie is stripped but the directory incarnation matches — inode-reuse recreate requires clearing the path binding or reconcile rather than bypassing unresolved work.
+- **Open / next:** Windows re-verification of these follow-ups; no merge-ready claim.
+
+---
+
+## 2026-09-09c — Handoff CLI: path lock vs marker; cookie incarnation; fail-closed job query
+
+- **Focus:** Close Joshua's three remaining safety gaps on PR #323 before final review (`codex/handoff-cli-contract`).
+- **Shipped:** Path-level admission/lock under `~/.cache/agent-handoffs/by-path/<path-sha>/` independent of the worker-cleanable marker; workspace identity via directory cookie (xattr/ADS) with marker as advisory mirror; Windows suspended create → job assign → resume; job `active_processes` / `tree_still_running` refuse completion on query uncertainty. Tests: 52 passed, 3 skipped.
+- **Decisions:** Rejected `(dev,ino,ctime_ns)` as same-workspace proof — workspace-root ctime drifts when workers create children, which reminted instance ids and bypassed duplicate/resume checks. Cookie on the directory survives marker loss and clears on recreate (including inode reuse). Path lock must not key off the marker.
+- **Open / next:** No rebase yet (per operator); main has advanced and strict checks will need an eventual update. Live Windows Job Object acceptance still unverified on this host.
+
+---
+
+## 2026-09-09 — Handoff CLI: workspace instance identity + Windows job trees
+
+- **Focus:** Close Codex P1/P2 follow-ups on PR #323 (`codex/handoff-cli-contract`).
+- **Shipped:** `752aaaf5` — Windows Job Object tracking; preflight artifact snapshot before STARTING; receipt cache keyed by path+instance id (`<workspace>/.agent-handoffs/workspace-instance`); `status`/`cancel`/`reconcile` via `locate_receipt` without a live worktree.
+- **Decisions:** Chose an explicit workspace-instance marker (not inode/device) so deleted/recreated `.worktrees/<slug>` paths cannot resume foreign sessions; recovery scans `~/.cache/agent-handoffs` by request id + recorded workspace path.
+- **Open / next:** Await CI on `752aaaf5`; live Cursor/Claude acceptance still unverified.
+
+---
+
 ## 2026-09-08e — Codex re-review: evidence path/schema trust on #320
 
 **Focus:** Address Codex P2 findings on PR #320 after the owner-alignment docs pass.
