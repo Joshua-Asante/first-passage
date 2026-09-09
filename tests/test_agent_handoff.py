@@ -819,7 +819,13 @@ def test_reject_symlink_workspace_instance_directory(harness, tmp_path):
     outside = tmp_path / 'external-instance'
     outside.mkdir()
     link = harness.workspace / AH.INSTANCE_DIRNAME
-    link.symlink_to(outside, target_is_directory=True)
+    if os.name == 'nt':
+        # Junctions test the reparse boundary without optional symlink privilege.
+        subprocess.run(['pwsh', '-NoProfile', '-Command',
+                        "New-Item -ItemType Junction -Path '" + str(link).replace("'", "''") +
+                        "' -Target '" + str(outside).replace("'", "''") + "'"], check=True, capture_output=True)
+    else:
+        link.symlink_to(outside, target_is_directory=True)
     with pytest.raises(AH.HandoffError, match='symbolic link|reparse point|must not be'):
         AH.write_workspace_instance(harness.workspace, 'should-not-write')
     assert not (outside / AH.INSTANCE_FILENAME).exists()

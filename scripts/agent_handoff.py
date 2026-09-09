@@ -56,7 +56,11 @@ def is_link_or_reparse(path):
     if os.name == 'nt':
         try:
             import ctypes
-            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+            from ctypes import wintypes
+            get_attributes = ctypes.windll.kernel32.GetFileAttributesW
+            get_attributes.argtypes = [wintypes.LPCWSTR]
+            get_attributes.restype = wintypes.DWORD
+            attrs = get_attributes(str(path))
             FILE_ATTRIBUTE_REPARSE_POINT = 0x400
             INVALID_FILE_ATTRIBUTES = 0xFFFFFFFF
             if attrs == INVALID_FILE_ATTRIBUTES:
