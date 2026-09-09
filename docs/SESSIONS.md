@@ -35,6 +35,15 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 ---
 
 
+## 2026-09-09d — Handoff CLI: Codex follow-ups on cookie/group/stdio lifecycle
+
+- **Focus:** Address Codex current-head review on `d803de16` (PR #323).
+- **Shipped:** Fail closed when cookie missing/mismatched on same `(dev,ino)`; stop owned process group on controller exceptions even if leader exited; `BaseException` cleanup for suspended Windows create; reject symlink/junction `.agent-handoffs`; retain `workspace_arg` aliases + unambiguous request-ID receipt recovery.
+- **Decisions:** Prefer refuse-to-mint over silent namespace switch when cookie is stripped but the directory incarnation matches — inode-reuse recreate requires clearing the path binding or reconcile rather than bypassing unresolved work.
+- **Open / next:** Windows re-verification of these follow-ups; no merge-ready claim.
+
+---
+
 ## 2026-09-09c — Handoff CLI: path lock vs marker; cookie incarnation; fail-closed job query
 
 - **Focus:** Close Joshua's three remaining safety gaps on PR #323 before final review (`codex/handoff-cli-contract`).

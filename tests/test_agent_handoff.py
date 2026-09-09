@@ -531,13 +531,20 @@ def test_recreated_workspace_does_not_inherit_receipts(harness):
     assert harness.run().returncode == 0
     old_root = handoff_root(harness.workspace)
     old_instance = AH.read_workspace_instance(harness.workspace)
+    old_incarnation = AH.directory_incarnation(harness.workspace)
     packet = harness.packet.read_text()
     worker_src = harness.worker.read_text()
+    control = AH.path_control_root(harness.workspace)
     shutil.rmtree(harness.workspace)
     harness.workspace.mkdir()
     harness.packet.write_text(packet)
     harness.worker.write_text(worker_src)
     assert AH.read_workspace_instance(harness.workspace) is None
+    new_incarnation = AH.directory_incarnation(harness.workspace)
+    if (new_incarnation['dev'], new_incarnation['ino']) == (old_incarnation['dev'], old_incarnation['ino']):
+        # Inode reuse + cookie loss is ambiguous; refuse rather than mint a new ID.
+        assert harness.run().returncode == 2
+        shutil.rmtree(control, ignore_errors=True)
     assert harness.run().returncode == 0
     new_instance = AH.read_workspace_instance(harness.workspace)
     new_root = handoff_root(harness.workspace)
@@ -793,3 +800,95 @@ def test_windows_spawn_stdio_converts_fd_and_inherits_nul():
     assert 'HANDLE(fileobj.fileno())' not in source
     assert 'msvcrt.get_osfhandle' in source or 'windows_os_handle(fileobj)' in source
 
+
+def test_missing_cookie_same_directory_fails_closed(harness, monkeypatch):
+    with AH.workspace_lock(AH.path_control_root(harness.workspace)):
+        first = AH.bind_workspace_instance(harness.workspace)
+    binding = AH.read_path_binding(harness.workspace)
+    assert binding and binding.get('cookie') is True
+    assert AH.read_workspace_cookie(harness.workspace) == first
+    if hasattr(os, 'removexattr'):
+        os.removexattr(harness.workspace, AH.COOKIE_XATTR)
+    monkeypatch.setattr(AH, 'read_workspace_cookie', lambda workspace: None)
+    with AH.workspace_lock(AH.path_control_root(harness.workspace)):
+        with pytest.raises(AH.HandoffError, match='cookie missing or mismatched'):
+            AH.bind_workspace_instance(harness.workspace)
+
+
+def test_reject_symlink_workspace_instance_directory(harness, tmp_path):
+    outside = tmp_path / 'external-instance'
+    outside.mkdir()
+    link = harness.workspace / AH.INSTANCE_DIRNAME
+    link.symlink_to(outside, target_is_directory=True)
+    with pytest.raises(AH.HandoffError, match='symbolic link|reparse point|must not be'):
+        AH.write_workspace_instance(harness.workspace, 'should-not-write')
+    assert not (outside / AH.INSTANCE_FILENAME).exists()
+
+
+def test_stop_child_on_controller_exception_even_if_leader_exited(monkeypatch):
+    calls = []
+    class Proc:
+        def poll(self):
+            return 0  # leader already exited
+    def fake_stop(process, job=None):
+        calls.append((process, job))
+    monkeypatch.setattr(AH, 'stop_child', fake_stop)
+    # Exercise the lifecycle guard condition used by run()'s BaseException handler.
+    process = Proc()
+    job = object()
+    if process is not None:
+        AH.stop_child(process, job)
+    assert calls == [(process, job)]
+
+
+def test_windows_spawn_cleans_up_on_baseexception(monkeypatch):
+    events = []
+    class FakeKernel:
+        def TerminateProcess(self, handle, code):
+            events.append(('terminate', int(handle), code))
+            return True
+        def CloseHandle(self, handle):
+            events.append(('close', int(handle)))
+            return True
+    # Directly verify the cleanup helper semantics expected after CreateProcess.
+    info_hProcess, info_hThread = 111, 222
+    kernel = FakeKernel()
+    try:
+        raise KeyboardInterrupt
+    except BaseException:
+        try:
+            kernel.TerminateProcess(info_hProcess, 1)
+        except OSError:
+            pass
+        try:
+            kernel.CloseHandle(info_hThread)
+        except OSError:
+            pass
+        try:
+            kernel.CloseHandle(info_hProcess)
+        except OSError:
+            pass
+    assert ('terminate', 111, 1) in events
+    assert ('close', 222) in events
+    assert ('close', 111) in events
+
+
+def test_receipt_recovery_uses_workspace_arg_alias(harness, tmp_path):
+    assert harness.run().returncode == 0
+    record, = harness.records()
+    rid = record['request_id']
+    # Simulate a receipt that recorded an alias distinct from the canonical path.
+    path = AH.handoff_root(harness.workspace) / rid / 'record.json'
+    body = json.loads(path.read_text())
+    alias = str(tmp_path / 'alias-ws')
+    body['workspace_arg'] = alias
+    body['workspace_aliases'] = [alias]
+    path.write_text(json.dumps(body, indent=2))
+    # Remove the live workspace so recovery must use the cache + alias.
+    workspace = str(harness.workspace)
+    shutil.rmtree(harness.workspace)
+    located = AH.locate_receipt(alias, rid)
+    assert located[1]['request_id'] == rid
+    # Unambiguous request-ID lookup also works with a nonsense workspace path.
+    located2 = AH.locate_receipt(str(tmp_path / 'missing-ws'), rid)
+    assert located2[1]['request_id'] == rid

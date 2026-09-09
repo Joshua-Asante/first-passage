@@ -45,8 +45,40 @@ def privatize(path, directory=False):
     os.chmod(path, 0o700 if directory else 0o600)
 
 
+def is_link_or_reparse(path):
+    """True for symlinks and Windows junctions/reparse points (lexists, no follow)."""
+    path = Path(path)
+    try:
+        if path.is_symlink():
+            return True
+    except OSError:
+        return False
+    if os.name == 'nt':
+        try:
+            import ctypes
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+            FILE_ATTRIBUTE_REPARSE_POINT = 0x400
+            INVALID_FILE_ATTRIBUTES = 0xFFFFFFFF
+            if attrs == INVALID_FILE_ATTRIBUTES:
+                return False
+            return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
+        except (AttributeError, OSError):
+            return False
+    return False
+
+
+def reject_linked_path(path, label):
+    path = Path(path)
+    if is_link_or_reparse(path):
+        raise HandoffError(f'{label} must not be a symbolic link or reparse point: {path}')
+
+
 def secure_mkdir(path):
+    path = Path(path)
+    reject_linked_path(path, 'Secure directory')
     path.mkdir(parents=True, exist_ok=True)
+    if is_link_or_reparse(path):
+        raise HandoffError(f'Secure directory resolved to a link or reparse point: {path}')
     privatize(path, directory=True)
 
 
@@ -142,7 +174,9 @@ def read_workspace_instance(workspace):
 
 def write_workspace_instance(workspace, instance_id):
     # Unique temp name avoids concurrent first-launch clobbering a shared .tmp.
-    secure_mkdir(Path(workspace) / INSTANCE_DIRNAME)
+    directory = Path(workspace) / INSTANCE_DIRNAME
+    reject_linked_path(directory, 'Workspace instance directory')
+    secure_mkdir(directory)
     marker = Path(workspace) / INSTANCE_DIRNAME / INSTANCE_FILENAME
     temporary = marker.with_name(f'{marker.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp')
     temporary.write_text(instance_id + '\n', encoding='utf-8')
@@ -198,17 +232,25 @@ def bind_workspace_instance(workspace):
             # Refresh diagnostic incarnation; identity remains the cookie.
             write_path_binding(workspace, instance_id, incarnation, cookie=True)
             return instance_id
+        same_directory = (
+            binding.get('dev') == incarnation['dev']
+            and binding.get('ino') == incarnation['ino']
+        )
         if cookie is None and not binding.get('cookie', True):
             # Cookie-incapable filesystem: (dev, ino) only. Marker loss is OK.
-            if (
-                binding.get('dev') == incarnation['dev']
-                and binding.get('ino') == incarnation['ino']
-            ):
+            if same_directory:
                 if marker_id != instance_id:
                     write_workspace_instance(workspace, instance_id)
                 write_path_binding(workspace, instance_id, incarnation, cookie=False)
                 return instance_id
-        # Cookie missing after it was stored, or cookie/id mismatch → replaced dir.
+        if same_directory:
+            # Cookie was expected on this directory. Missing/mismatched cookie is
+            # not a new workspace — minting a new ID would orphan unresolved work.
+            raise HandoffError(
+                'Workspace instance cookie missing or mismatched for the same directory; '
+                'refusing to mint a new identity. Restore the cookie or reconcile first.'
+            )
+        # Different directory incarnation at this path → fresh receipt namespace.
     instance_id = str(uuid.uuid4())
     cookie_ok = write_workspace_cookie(workspace, instance_id)
     write_workspace_instance(workspace, instance_id)
@@ -235,6 +277,25 @@ def normalize_workspace_path(value):
     return str(Path(value).expanduser().resolve(strict=False))
 
 
+def receipt_matches_workspace(record, target, workspace_arg=None):
+    recorded = record.get('workspace')
+    if recorded is not None and (recorded == target or normalize_workspace_path(recorded) == target):
+        return True
+    aliases = []
+    raw = record.get('workspace_arg')
+    if isinstance(raw, str) and raw:
+        aliases.append(raw)
+    extra = record.get('workspace_aliases') or []
+    if isinstance(extra, list):
+        aliases.extend(a for a in extra if isinstance(a, str) and a)
+    for alias in aliases:
+        if alias == target or normalize_workspace_path(alias) == target:
+            return True
+        if workspace_arg is not None and alias == str(workspace_arg):
+            return True
+    return False
+
+
 def locate_receipt(workspace_arg, request_id):
     # Recovery must work after the workspace directory is gone.
     request_id = identifier(request_id)
@@ -255,19 +316,24 @@ def locate_receipt(workspace_arg, request_id):
                         return path, record
     target = normalize_workspace_path(workspace_arg)
     matches = []
+    id_only = []
     if cache_home().is_dir():
         for path in cache_home().glob(f'*/{request_id}/record.json'):
+            # Skip path-control roots (by-path/*/...) — only receipt namespaces.
+            if path.parent.parent.name == 'by-path' or path.parent.parent.parent.name == 'by-path':
+                continue
             try:
                 record = load(path)
             except (OSError, ValueError):
                 continue
-            recorded = record.get('workspace')
-            if recorded is None:
-                continue
-            if recorded == target or normalize_workspace_path(recorded) == target:
+            id_only.append((path, record))
+            if receipt_matches_workspace(record, target, workspace_arg):
                 matches.append((path, record))
     if len(matches) == 1:
         return matches[0]
+    if not matches and len(id_only) == 1:
+        # Unambiguous request-ID recovery when alias/canonical path matching fails.
+        return id_only[0]
     if not matches:
         raise HandoffError('Receipt not found')
     raise HandoffError('Ambiguous receipt match for request ID and workspace path')
@@ -835,12 +901,20 @@ def _spawn_windows_suspended_in_job(command, cwd, stdout, stderr, job):
         resumed = kernel.ResumeThread(info.hThread)
         if resumed == 0xFFFFFFFF:
             raise OSError('ResumeThread failed')
-    except OSError:
+    except BaseException:
+        # KeyboardInterrupt/SystemExit must not leave a suspended orphan.
         try:
             kernel.TerminateProcess(info.hProcess, 1)
-        finally:
+        except OSError:
+            pass
+        try:
             kernel.CloseHandle(info.hThread)
+        except OSError:
+            pass
+        try:
             kernel.CloseHandle(info.hProcess)
+        except OSError:
+            pass
         raise
     kernel.CloseHandle(info.hThread)
     process = WindowsOwnedProcess(info.dwProcessId, info.hProcess, kernel, ctypes, wintypes)
@@ -907,7 +981,8 @@ def tree_still_running(process, job=None):
 
 
 def run(args):
-    workspace = args.workspace.resolve(strict=True)
+    workspace_arg = str(Path(args.workspace).expanduser())
+    workspace = Path(args.workspace).expanduser().resolve(strict=True)
     args.workspace = workspace
     pointer = Path(args.pointer).resolve(strict=True)
     followup = Path(args.message_file).read_text(encoding='utf-8') if args.message_file else None
@@ -975,6 +1050,8 @@ def run(args):
         record_path = directory / 'record.json'
         fresh_session = str(uuid.uuid4()) if args.provider == 'claude' and not parent else None
         record = dict(request_id=request_id, provider=args.provider, workspace=str(workspace),
+                      workspace_arg=workspace_arg,
+                      workspace_aliases=[workspace_arg] if workspace_arg != str(workspace) else [],
                       workspace_instance=instance_id,
                       packet_sha256=packet_hash, contract=contract, mode=args.mode,
                       session_id=parent['session_id'] if parent else fresh_session,
@@ -1127,7 +1204,9 @@ def run(args):
                         except HandoffError as exc:
                             record.update(state='UNKNOWN', error=str(exc))
         except BaseException as exc:
-            if process is not None and process.poll() is None:
+            # Always stop the owned group: the leader may have exited while a
+            # descendant remains alive and able to mutate the workspace.
+            if process is not None:
                 stop_child(process, job)
             record.update(state='CANCELLED' if isinstance(exc, KeyboardInterrupt) else 'FAILED', error=str(exc))
         finally:
