@@ -766,3 +766,30 @@ def test_cancel_after_workspace_removed(harness):
     assert body['request_id'] == rid
     assert body.get('cancellation_requested') is False
 
+def test_windows_os_handle_uses_msvcrt(monkeypatch):
+    calls = []
+    class FakeMsvcrt:
+        @staticmethod
+        def get_osfhandle(fd):
+            calls.append(fd)
+            return 0xABCD
+    class FileObj:
+        def fileno(self):
+            return 7
+    monkeypatch.setitem(__import__('sys').modules, 'msvcrt', FakeMsvcrt)
+    assert AH.windows_os_handle(FileObj()) == 0xABCD
+    assert calls == [7]
+
+
+def test_windows_spawn_stdio_converts_fd_and_inherits_nul():
+    """Native CreateProcess path must use Win32 HANDLEs and an inheritable NUL."""
+    import inspect
+    source = inspect.getsource(AH._spawn_windows_suspended_in_job)
+    assert 'windows_os_handle' in source
+    assert 'SECURITY_ATTRIBUTES' in source
+    assert 'bInheritHandle = True' in source
+    assert 'SetHandleInformation' in source
+    # Must not pass CRT fileno() directly to DuplicateHandle.
+    assert 'HANDLE(fileobj.fileno())' not in source
+    assert 'msvcrt.get_osfhandle' in source or 'windows_os_handle(fileobj)' in source
+

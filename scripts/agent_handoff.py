@@ -683,6 +683,12 @@ class WindowsOwnedProcess:
         self._kernel.TerminateProcess(self._handle, 1)
 
 
+
+def windows_os_handle(fileobj):
+    """Map a Python file object to a Win32 HANDLE (not a CRT fd index)."""
+    import msvcrt
+    return int(msvcrt.get_osfhandle(fileobj.fileno()))
+
 def spawn_provider(command, cwd, stdout, stderr, job=None):
     """Start the provider. On Windows with a job, create suspended, assign, then resume."""
     if job is None:
@@ -748,6 +754,7 @@ def _spawn_windows_suspended_in_job(command, cwd, stdout, stderr, job):
     kernel.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
     kernel.TerminateProcess.restype = wintypes.BOOL
     kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel.CloseHandle.restype = wintypes.BOOL
     kernel.GetCurrentProcess.restype = wintypes.HANDLE
     kernel.DuplicateHandle.argtypes = [
         wintypes.HANDLE, wintypes.HANDLE, wintypes.HANDLE,
@@ -764,21 +771,42 @@ def _spawn_windows_suspended_in_job(command, cwd, stdout, stderr, job):
     ]
     kernel.CreateFileW.restype = wintypes.HANDLE
 
+    class SECURITY_ATTRIBUTES(ctypes.Structure):
+        _fields_ = [
+            ('nLength', wintypes.DWORD),
+            ('lpSecurityDescriptor', wintypes.LPVOID),
+            ('bInheritHandle', wintypes.BOOL),
+        ]
+
     def duplicate_inheritable(fileobj):
+        # Python fileobj.fileno() is a CRT fd index on Windows, not a Win32 HANDLE.
         current = kernel.GetCurrentProcess()
-        source = wintypes.HANDLE(fileobj.fileno())
+        source = wintypes.HANDLE(windows_os_handle(fileobj))
         target = wintypes.HANDLE()
         if not kernel.DuplicateHandle(current, source, current, ctypes.byref(target), 0, True, DUPLICATE_SAME_ACCESS):
             raise OSError('DuplicateHandle failed for stdio')
+        if not kernel.SetHandleInformation(target, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT):
+            kernel.CloseHandle(target)
+            raise OSError('SetHandleInformation failed for duplicated stdio')
         return target
 
-    # NUL for stdin so the child does not inherit an interactive console handle.
+    # Inheritable NUL for stdin so CreateProcess can pass it to the child.
+    # CreateFileW with lpSecurityAttributes=None yields a non-inheritable handle.
     GENERIC_READ = 0x80000000
     FILE_SHARE_READ = 0x00000001
     OPEN_EXISTING = 3
-    nul = kernel.CreateFileW('NUL', GENERIC_READ, FILE_SHARE_READ, None, OPEN_EXISTING, 0, None)
+    security = SECURITY_ATTRIBUTES()
+    security.nLength = ctypes.sizeof(SECURITY_ATTRIBUTES)
+    security.lpSecurityDescriptor = None
+    security.bInheritHandle = True
+    nul = kernel.CreateFileW(
+        'NUL', GENERIC_READ, FILE_SHARE_READ, ctypes.byref(security), OPEN_EXISTING, 0, None,
+    )
     if not nul or nul == wintypes.HANDLE(-1).value:
         raise OSError('Failed to open NUL for provider stdin')
+    if not kernel.SetHandleInformation(nul, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT):
+        kernel.CloseHandle(nul)
+        raise OSError('SetHandleInformation failed for NUL stdin')
 
     startup = STARTUPINFOW()
     startup.cb = ctypes.sizeof(STARTUPINFOW)

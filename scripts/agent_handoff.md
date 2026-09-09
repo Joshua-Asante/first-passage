@@ -81,7 +81,7 @@ read from a stale receipt. Wait for the receipt to change before assuming a stop
 At the deadline (default 900 seconds), or on cancellation, the controller attempts
 to stop its owned local process tree and preserves all evidence. On Windows the
 provider is created suspended, assigned to a Job Object, then resumed so membership
-exists before user code runs; if that ownership cannot be established the launch
+exists before user code runs. Stdio duplication uses `msvcrt.get_osfhandle` (CRT fd → Win32 HANDLE) and opens inheritable `NUL` for stdin; if that ownership cannot be established the launch
 fails closed and the process is not left running. Job-object process-count queries
 that fail also refuse completion rather than assuming the tree is gone. On POSIX
 the provider runs in its own process group for the same purpose. Detached workers
