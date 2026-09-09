@@ -43,7 +43,7 @@ evidence. The parent still needs to evaluate that evidence and run appropriate
 verification. Review text belongs in the return's `summary`.
 
 Every launch prints its request ID, receipt path and local child PID. Evidence is
-stored in `<workspace>/.agent-handoffs/<request-id>/`:
+stored outside the workspace under `~/.cache/agent-handoffs/<workspace-sha256>/<request-id>/` (so a worker cleaning ignored workspace files cannot erase the lock or receipts). Legacy `<workspace>/.agent-handoffs/` is refused as task I/O and is not used for coordination:
 
 - `record.json`: durable lifecycle, provider/session IDs, packet identity, parent
   request, process IDs, exit status, before/after artifact hashes and timestamps.
@@ -51,8 +51,9 @@ stored in `<workspace>/.agent-handoffs/<request-id>/`:
 - `stdout.jsonl` / `stderr.txt`: raw provider stream and errors.
 - `return.json`: only written when the terminal response passes the return contract.
 
-These files can contain private context and are gitignored in First Passage. In
-other repositories, keep this directory out of commits as well. No evidence is
+These files can contain private context. On POSIX they are created with owner-only
+permissions (`0700` directories, `0600` files). The cache path is outside the git worktree;
+First Passage also gitignores any accidental workspace-local `.agent-handoffs/` directory. No evidence is
 automatically deleted. Legacy `CURSOR_RETURN.md` and `CURSOR_PLAN.json` files are
 never adopted as receipts; old sessions without a receipt cannot be blindly resumed.
 
@@ -126,6 +127,11 @@ verified runtime/entrypoint pairs and test doubles. No CLI is auto-installed.
 Provider stream contracts: [Cursor output format](https://cursor.com/docs/cli/reference/output-format)
 and [Claude programmatic usage](https://code.claude.com/docs/en/headless).
 Changes in a provider's format fail visibly and retain raw evidence.
+
+Before accepting a DONE/DONE_WITH_CONCERNS return, the runner re-checks immutable
+inputs and refuses completion if owned process-group descendants are still alive.
+Cancellation is honored after staging/verification and before provider launch.
+File digests are streamed in bounded chunks.
 
 ## Verification
 

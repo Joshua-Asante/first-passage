@@ -12,6 +12,10 @@ import shutil
 import pytest
 
 RUNNER = Path(__file__).resolve().parents[1] / 'scripts/agent_handoff.py'
+_spec = importlib.util.spec_from_file_location('agent_handoff', RUNNER)
+AH = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(AH)
+handoff_root = AH.handoff_root
 WORKER = r'''
 import hashlib, json, os, re, sys, time
 from pathlib import Path
@@ -68,7 +72,8 @@ def harness(tmp_path):
             return subprocess.run(self.command(case, *extra), capture_output=True, text=True, timeout=15)
 
         def records(self):
-            return [json.loads(p.read_text()) for p in workspace.glob('.agent-handoffs/*/record.json')]
+            root = handoff_root(workspace)
+            return [json.loads(p.read_text()) for p in root.glob('*/record.json')]
 
         def action(self, action, rid, *extra):
             return subprocess.run([sys.executable, str(RUNNER), action, '--workspace', str(workspace),
@@ -87,7 +92,7 @@ def test_invalid_returns_stay_unresolved(harness, case, state):
     assert result.returncode == 1, result.stderr
     record, = harness.records()
     assert record['state'] == state
-    evidence = harness.workspace / '.agent-handoffs' / record['request_id']
+    evidence = handoff_root(harness.workspace) / record['request_id']
     assert (evidence / 'stdout.jsonl').exists()
     assert (evidence / 'stderr.txt').exists()
     assert not (evidence / 'return.json').exists()
@@ -104,7 +109,7 @@ def test_success_identity_and_duplicate_prevention(harness):
     assert record['state'] == 'RETURNED'
     assert record['worker_status'] == 'DONE'
     assert record['independently_verified'] is False
-    body = json.loads((harness.workspace / '.agent-handoffs' / record['request_id'] / 'return.json').read_text())
+    body = json.loads((handoff_root(harness.workspace) / record['request_id'] / 'return.json').read_text())
     assert body['request_id'] == record['request_id']
     assert harness.run().returncode == 2
 
@@ -208,7 +213,7 @@ def test_input_hash_and_workspace_root_change_refuse_resume(harness):
 def test_status_does_not_signal_process(harness):
     assert harness.run().returncode == 0
     record, = harness.records()
-    path = harness.workspace / '.agent-handoffs' / record['request_id'] / 'record.json'
+    path = handoff_root(harness.workspace) / record['request_id'] / 'record.json'
     record['child_pid'] = os.getpid()
     path.write_text(json.dumps(record))
     result = harness.action('status', record['request_id'])
@@ -219,6 +224,7 @@ def test_status_does_not_signal_process(harness):
 def test_dry_run_and_path_boundaries(harness):
     assert harness.run('ok', '--dry-run').returncode == 0
     assert not (harness.workspace / '.agent-handoffs').exists()
+    assert not handoff_root(harness.workspace).exists()
     assert harness.run('ok', '--expected-output', '../outside.txt').returncode == 2
     assert harness.run('ok', '--expected-output', '.agent-handoffs/fake.txt').returncode == 2
     assert not harness.records()
@@ -359,3 +365,71 @@ def test_cancellation_kills_descendant_when_leader_exits(harness):
                 pass
         if running.poll() is None:
             running.kill()
+
+
+
+def test_receipts_live_outside_workspace(harness):
+    assert harness.run().returncode == 0
+    record, = harness.records()
+    root = handoff_root(harness.workspace)
+    assert root.exists()
+    assert not (harness.workspace / '.agent-handoffs').exists()
+    assert (root / record['request_id'] / 'record.json').is_file()
+
+
+def test_streaming_digest_matches_bytes(tmp_path):
+    path = tmp_path / 'blob.bin'
+    path.write_bytes(b'abc' * 10000 + b'\x00\xff')
+    assert AH.digest(path) == __import__('hashlib').sha256(path.read_bytes()).hexdigest()
+
+
+@pytest.mark.skipif(os.name == 'nt', reason='POSIX permissions')
+def test_evidence_permissions_are_owner_only(harness):
+    assert harness.run().returncode == 0
+    record, = harness.records()
+    directory = handoff_root(harness.workspace) / record['request_id']
+    assert directory.stat().st_mode & 0o777 == 0o700
+    assert (directory / 'record.json').stat().st_mode & 0o777 == 0o600
+    assert (directory / 'prompt.txt').stat().st_mode & 0o777 == 0o600
+
+
+def test_cancel_before_launch_skips_provider(harness, monkeypatch):
+    calls = []
+    real_popen = AH.subprocess.Popen
+
+    def fake_popen(*args, **kwargs):
+        calls.append(args)
+        return real_popen(*args, **kwargs)
+
+    monkeypatch.setattr(AH.subprocess, 'Popen', fake_popen)
+    original_verify = AH.verify_inputs
+
+    def verify_and_cancel(contract):
+        original_verify(contract)
+        # Receipt already exists under the locked root.
+        root = handoff_root(harness.workspace)
+        request_dirs = [p for p in root.iterdir() if p.is_dir()]
+        assert request_dirs
+        (request_dirs[0] / 'cancel.request').touch()
+
+    monkeypatch.setattr(AH, 'verify_inputs', verify_and_cancel)
+    result = AH.main(['run', '--workspace', str(harness.workspace), '--pointer', str(harness.packet),
+                      '--command-json', __import__('json').dumps([__import__('sys').executable, str(harness.worker), 'ok'])])
+    assert result == 1
+    assert calls == []
+    record, = harness.records()
+    assert record['state'] == 'CANCELLED'
+    assert 'before provider launch' in record['error'].lower()
+
+
+@pytest.mark.skipif(os.name == 'nt', reason='POSIX process groups')
+
+@pytest.mark.skipif(os.name == 'nt', reason='POSIX process groups')
+def test_surviving_descendant_blocks_returned(harness):
+    harness.worker.write_text('import json, re, subprocess, sys, time, pathlib\nprompt = sys.argv[-1]\nrid = re.search(r\'Request ID: ([\\w-]+)\', prompt).group(1)\nsha = re.search(r\'Packet SHA256: (\\w+)\', prompt).group(1)\nsid = \'fixture-session\'\nprint(json.dumps({\'type\': \'system\', \'subtype\': \'init\', \'session_id\': sid}), flush=True)\nsubprocess.Popen([sys.executable, \'-c\', "import signal, time, pathlib; signal.signal(signal.SIGTERM, signal.SIG_IGN); pathlib.Path(\'ready\').write_text(\'1\'); time.sleep(60)"])\nwhile not pathlib.Path(\'ready\').exists():\n    time.sleep(0.05)\nbody = {\'request_id\': rid, \'packet_sha256\': sha, \'status\': \'DONE\', \'summary\': \'done\', \'artifacts\': [], \'checks\': []}\nprint(json.dumps({\'type\': \'result\', \'subtype\': \'success\', \'session_id\': sid, \'result\': json.dumps(body)}), flush=True)\n')
+    result = harness.run()
+    assert result.returncode == 1, result.stdout + result.stderr
+    record, = harness.records()
+    assert record['state'] == 'UNKNOWN'
+    assert 'survived' in record.get('error', '').lower()
+

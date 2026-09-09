@@ -25,14 +25,43 @@ def now():
     return datetime.now(timezone.utc).isoformat()
 
 
+DIGEST_CHUNK = 1024 * 1024
+
+
 def digest(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    hasher = hashlib.sha256()
+    with Path(path).open('rb') as handle:
+        while True:
+            chunk = handle.read(DIGEST_CHUNK)
+            if not chunk:
+                break
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def privatize(path, directory=False):
+    if os.name == 'nt':
+        return
+    os.chmod(path, 0o700 if directory else 0o600)
+
+
+def secure_mkdir(path):
+    path.mkdir(parents=True, exist_ok=True)
+    privatize(path, directory=True)
 
 
 def write_json(path, value):
     temporary = path.with_suffix('.tmp')
     temporary.write_text(json.dumps(value, indent=2, ensure_ascii=False), encoding='utf-8')
+    privatize(temporary)
     os.replace(temporary, path)
+    privatize(path)
+
+
+def handoff_root(workspace):
+    # Keep receipts/locks outside the worker-cleanable workspace tree.
+    key = hashlib.sha256(str(Path(workspace).resolve()).encode()).hexdigest()
+    return Path.home() / '.cache' / 'agent-handoffs' / key
 
 
 def load(path):
@@ -57,13 +86,14 @@ def inside(workspace, value):
 
 @contextmanager
 def workspace_lock(root):
-    root.mkdir(exist_ok=True)
+    secure_mkdir(root)
     with (root / 'dispatch.lock').open('a+b') as lock:
         lock.seek(0, 2)
         if lock.tell() == 0:
             lock.write(b'0')
             lock.flush()
         lock.seek(0)
+        privatize(root / 'dispatch.lock')
         try:
             if os.name == 'nt':
                 import msvcrt
@@ -259,10 +289,20 @@ def stop_child(process):
         process.wait(timeout=5)
 
 
+def owned_group_alive(process):
+    if os.name == 'nt' or process is None or process.pid is None:
+        return False
+    try:
+        os.killpg(process.pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+
+
 def run(args):
     workspace = args.workspace.resolve(strict=True)
     args.workspace = workspace
-    root = workspace / '.agent-handoffs'
+    root = handoff_root(workspace)
     pointer = Path(args.pointer).resolve(strict=True)
     followup = Path(args.message_file).read_text(encoding='utf-8') if args.message_file else None
     if args.copy and (args.resume_request or args.resume_session):
@@ -313,7 +353,8 @@ def run(args):
                 raise HandoffError(f"Packet already dispatched: {previous['request_id']}; resume its session or explicitly reconcile/close it")
         request_id = identifier(args.request_id) if args.request_id else str(uuid.uuid4())
         directory = root / request_id
-        directory.mkdir()  # Existing IDs are never overwritten.
+        directory.mkdir(mode=0o700)  # Existing IDs are never overwritten.
+        privatize(directory, directory=True)
         record_path = directory / 'record.json'
         fresh_session = str(uuid.uuid4()) if args.provider == 'claude' and not parent else None
         record = dict(request_id=request_id, provider=args.provider, workspace=str(workspace),
@@ -338,8 +379,10 @@ def run(args):
                   'Report blocked/skipped checks honestly; never manufacture evidence. No separate return file is required.')
         if followup is not None:
             prompt += '\nFollow-up message:\n' + followup
-        (directory / 'prompt.txt').write_text(prompt, encoding='utf-8')
-        record['prompt_sha256'] = digest(directory / 'prompt.txt')
+        prompt_path = directory / 'prompt.txt'
+        prompt_path.write_text(prompt, encoding='utf-8')
+        privatize(prompt_path)
+        record['prompt_sha256'] = digest(prompt_path)
         write_json(record_path, record)
         process = None
         terminal = None
@@ -353,71 +396,84 @@ def run(args):
                     if digest(destination) != expected:
                         raise HandoffError('Refusing to overwrite staged input')
                 else:
-                    destination.parent.mkdir(parents=True, exist_ok=True)
-                    with destination.open('xb') as output:
-                        output.write(source.read_bytes())
+                    secure_mkdir(destination.parent)
+                    with source.open('rb') as src, destination.open('xb') as output:
+                        shutil.copyfileobj(src, output, length=DIGEST_CHUNK)
             verify_inputs(contract)
-            actual_command = windows_command(command + cli_args(args, prompt, record['session_id'] if parent else None, fresh_session))
-            with (directory / 'stdout.jsonl').open('wb') as stdout, (directory / 'stderr.txt').open('wb') as stderr:
-                process = subprocess.Popen(actual_command, cwd=workspace, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
-                                           start_new_session=os.name != 'nt', creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
-                record.update(state='RUNNING', child_pid=process.pid, started_at=now())
-                write_json(record_path, record)
-                print(json.dumps({'request_id': request_id, 'record': str(record_path), 'child_pid': process.pid}), flush=True)
-                deadline = time.monotonic() + args.timeout_seconds
-                with (directory / 'stdout.jsonl').open('rb') as stream:
-                    while True:
-                        exited = process.poll() is not None
-                        while True:
-                            if (directory / 'cancel.request').exists() or time.monotonic() >= deadline:
-                                break
-                            position = stream.tell()
-                            line = stream.readline()
-                            if not line:
-                                break
-                            if not line.endswith(b'\n') and not exited:
-                                stream.seek(position)
-                                break
-                            try:
-                                event = json.loads(line)
-                                if not isinstance(event, dict):
-                                    raise ValueError('event is not an object')
-                            except (ValueError, UnicodeError):
-                                protocol_error = 'Malformed provider output; inspect stdout.jsonl'
-                                continue
-                            session = event.get('session_id')
-                            if session:
-                                if not isinstance(session, str) or (record['session_id'] and record['session_id'] != session):
-                                    protocol_error = 'Provider session changed unexpectedly'
-                                else:
-                                    record['session_id'] = session
-                            record['last_event_at'] = now()
-                            if event.get('type') == 'result':
-                                if terminal is not None:
-                                    protocol_error = 'Multiple terminal results'
-                                terminal = event
-                            write_json(record_path, record)
-                        if (directory / 'cancel.request').exists() or time.monotonic() >= deadline:
-                            record['state'] = 'CANCELLED' if (directory / 'cancel.request').exists() else 'TIMED_OUT'
-                            stop_child(process)
-                            break
-                        if exited:
-                            break
-                        time.sleep(0.1)
-            record['exit_code'] = process.returncode
-            if record['state'] in ('TIMED_OUT', 'CANCELLED'):
-                record['error'] = 'Local stop attempted; partial effects or remote work may remain. Reconcile before retry.'
-            elif process.returncode != 0:
-                record.update(state='FAILED', error='Provider exited nonzero; inspect stderr.txt')
-            elif protocol_error or terminal is None or not record['session_id']:
-                record.update(state='UNKNOWN', error=protocol_error or 'Missing terminal result or session ID')
+            if (directory / 'cancel.request').exists():
+                record.update(state='CANCELLED', error='Cancelled before provider launch')
             else:
-                try:
-                    body = validate_return(terminal, record, workspace)
-                    write_json(directory / 'return.json', body)
-                    record.update(state='RETURNED', worker_status=body['status'])
-                except HandoffError as exc:
-                    record.update(state='UNKNOWN', error=str(exc))
+                actual_command = windows_command(command + cli_args(args, prompt, record['session_id'] if parent else None, fresh_session))
+                stdout_path = directory / 'stdout.jsonl'
+                stderr_path = directory / 'stderr.txt'
+                with stdout_path.open('wb') as stdout, stderr_path.open('wb') as stderr:
+                    privatize(stdout_path)
+                    privatize(stderr_path)
+                    process = subprocess.Popen(actual_command, cwd=workspace, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
+                                               start_new_session=os.name != 'nt', creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
+                    record.update(state='RUNNING', child_pid=process.pid, started_at=now())
+                    write_json(record_path, record)
+                    print(json.dumps({'request_id': request_id, 'record': str(record_path), 'child_pid': process.pid}), flush=True)
+                    deadline = time.monotonic() + args.timeout_seconds
+                    with stdout_path.open('rb') as stream:
+                        while True:
+                            exited = process.poll() is not None
+                            while True:
+                                if (directory / 'cancel.request').exists() or time.monotonic() >= deadline:
+                                    break
+                                position = stream.tell()
+                                line = stream.readline()
+                                if not line:
+                                    break
+                                if not line.endswith(b'\n') and not exited:
+                                    stream.seek(position)
+                                    break
+                                try:
+                                    event = json.loads(line)
+                                    if not isinstance(event, dict):
+                                        raise ValueError('event is not an object')
+                                except (ValueError, UnicodeError):
+                                    protocol_error = 'Malformed provider output; inspect stdout.jsonl'
+                                    continue
+                                session = event.get('session_id')
+                                if session:
+                                    if not isinstance(session, str) or (record['session_id'] and record['session_id'] != session):
+                                        protocol_error = 'Provider session changed unexpectedly'
+                                    else:
+                                        record['session_id'] = session
+                                record['last_event_at'] = now()
+                                if event.get('type') == 'result':
+                                    if terminal is not None:
+                                        protocol_error = 'Multiple terminal results'
+                                    terminal = event
+                                write_json(record_path, record)
+                            if (directory / 'cancel.request').exists() or time.monotonic() >= deadline:
+                                record['state'] = 'CANCELLED' if (directory / 'cancel.request').exists() else 'TIMED_OUT'
+                                stop_child(process)
+                                break
+                            if exited:
+                                break
+                            time.sleep(0.1)
+                record['exit_code'] = process.returncode
+                if record['state'] in ('TIMED_OUT', 'CANCELLED'):
+                    record['error'] = 'Local stop attempted; partial effects or remote work may remain. Reconcile before retry.'
+                elif process.returncode != 0:
+                    record.update(state='FAILED', error='Provider exited nonzero; inspect stderr.txt')
+                elif protocol_error or terminal is None or not record['session_id']:
+                    if owned_group_alive(process):
+                        stop_child(process)
+                    record.update(state='UNKNOWN', error=protocol_error or 'Missing terminal result or session ID')
+                elif owned_group_alive(process):
+                    stop_child(process)
+                    record.update(state='UNKNOWN', error='Owned process-group descendants survived provider exit')
+                else:
+                    try:
+                        body = validate_return(terminal, record, workspace)
+                        return_path = directory / 'return.json'
+                        write_json(return_path, body)
+                        record.update(state='RETURNED', worker_status=body['status'])
+                    except HandoffError as exc:
+                        record.update(state='UNKNOWN', error=str(exc))
         except BaseException as exc:
             if process is not None and process.poll() is None:
                 stop_child(process)
@@ -431,7 +487,7 @@ def run(args):
                 try:
                     path = inside(workspace, p)
                     record['artifacts_after'][p] = digest(path) if path.is_file() else None
-                except (OSError, HandoffError) as exc:
+                except (OSError, HandoffError, MemoryError) as exc:
                     record.setdefault('artifact_snapshot_errors', {})[p] = str(exc)
                     if record['state'] == 'RETURNED':
                         record.update(state='UNKNOWN', error='Artifact snapshot failed')
@@ -466,7 +522,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         args.workspace = args.workspace.resolve(strict=True)
-        root = args.workspace / '.agent-handoffs'
+        root = handoff_root(args.workspace)
         if args.action == 'run':
             if not args.pointer or not 0 < args.timeout_seconds < float('inf'):
                 raise HandoffError('A packet path and a finite positive timeout are required')
