@@ -46,24 +46,11 @@ if ($existingWorkspace) {
   if ($LASTEXITCODE -ne 0 -or $branch -ne "cursor/$Slug") { throw 'Existing worktree branch mismatch.' }
 }
 if (($ResumeRequestId -or $ResumeSessionId) -and $Copy.Count) { throw 'Do not stage new copies during resume.' }
-foreach ($pair in $Copy) {
-  $parts = $pair -split '::', 2
-  if ($parts.Count -ne 2) { throw 'Copy entries must be source::relative-destination.' }
-  $destination = [IO.Path]::GetFullPath((Join-Path $Workspace $parts[1]))
-  $prefix = [IO.Path]::GetFullPath($Workspace).TrimEnd('\','/') + [IO.Path]::DirectorySeparatorChar
-  if (!$destination.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'Copy destination leaves workspace.' }
-  if (Test-Path -LiteralPath $destination) {
-    if ((Get-FileHash -LiteralPath $parts[0]).Hash -ne (Get-FileHash -LiteralPath $destination).Hash) { throw 'Refusing to overwrite staged input.' }
-  } else {
-    New-Item -ItemType Directory -Force -Path (Split-Path $destination) | Out-Null
-    Copy-Item -LiteralPath $parts[0] -Destination $destination
-  }
-  $InputFile += $destination
-}
 $mode = if ($Plan) {'plan'} elseif ($Ask) {'ask'} else {'execute'}
 $runnerArgs = @((Join-Path $PSScriptRoot 'agent_handoff.py'), 'run', '--provider', 'cursor', '--workspace', $Workspace,
                 '--pointer', $pointerPath, '--mode', $mode, '--timeout-seconds', $TimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
 foreach ($item in $InputFile) { $runnerArgs += @('--input', (Resolve-Path -LiteralPath $item).Path) }
+foreach ($item in $Copy) { $runnerArgs += @('--copy', $item) }
 foreach ($item in $ExpectedOutput) { $runnerArgs += @('--expected-output', $item) }
 foreach ($item in $RequiredCheck) { $runnerArgs += @('--required-check', $item) }
 foreach ($item in $AddDirectory) { $runnerArgs += @('--add-dir', $item) }

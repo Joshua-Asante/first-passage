@@ -129,6 +129,14 @@ Changes in a provider's format fail visibly and retain raw evidence.
 
 ## Verification
 
+Staged copies are confined using resolved paths and written only after workspace
+lock acquisition and receipt admission. The packet and pinned inputs are rehashed
+before launch and before accepting a return. Snapshot failures are retained in the
+terminal receipt rather than leaving a misleading running state.
+
+Cursor wrapper dry runs preview worktree preparation without calling the runner;
+Claude dry runs validate through the runner. Neither proves provider acceptance.
+
 ```powershell
 python -m pytest --noconftest tests/test_agent_handoff.py -q
 pwsh -NoProfile -File scripts/test_dispatch_cursor.ps1

@@ -172,6 +172,7 @@ def cli_args(args, prompt, session, fresh_session):
 
 
 def validate_return(event, record, workspace):
+    verify_inputs(record['contract'])
     if event.get('is_error') or event.get('subtype', 'success') != 'success':
         raise HandoffError('Provider returned an error result; see stdout/stderr')
     body = event.get('result')
@@ -199,13 +200,14 @@ def validate_return(event, record, workspace):
     if not all(isinstance(item, dict) for item in body['artifacts'] + body['checks']):
         raise HandoffError('Artifact/check entries must be objects')
     if status in ('DONE', 'DONE_WITH_CONCERNS') and record['mode'] == 'execute':
+        reported = {}
         for artifact in body['artifacts']:
             if not isinstance(artifact.get('path'), str):
                 raise HandoffError('Artifact path must be a string')
             path = inside(workspace, artifact['path'])
             if not path.is_file() or artifact.get('sha256') != digest(path):
                 raise HandoffError(f"Reported artifact hash mismatch: {artifact['path']}")
-        reported = {item.get('path'): item.get('sha256') for item in body['artifacts']}
+            reported[path.relative_to(workspace).as_posix()] = artifact['sha256']
         for output in record['contract']['expected_outputs']:
             path = inside(workspace, output)
             if not path.is_file() or reported.get(output) != digest(path):
@@ -218,6 +220,17 @@ def validate_return(event, record, workspace):
     return body
 
 
+def verify_inputs(contract):
+    inputs = {contract['pointer']: contract['pointer_sha256'], **contract['inputs']}
+    for path, expected in inputs.items():
+        try:
+            if digest(path) == expected:
+                continue
+        except OSError as exc:
+            raise HandoffError(f'Immutable input unavailable: {path}: {exc}') from exc
+        raise HandoffError(f'Immutable input changed: {path}')
+
+
 def stop_child(process):
     # Never kill a PID retrieved from a stale receipt. Only this owned process.
     if os.name == 'nt':
@@ -226,6 +239,14 @@ def stop_child(process):
     else:
         try:
             os.killpg(process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        # The leader can exit while a tool in its group ignores SIGTERM.
+        # Give the group a grace period, then stop survivors independently
+        # of the leader's return code. Never use a PID from a saved receipt.
+        time.sleep(1)
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
     try:
@@ -243,6 +264,15 @@ def run(args):
     args.workspace = workspace
     root = workspace / '.agent-handoffs'
     pointer = Path(args.pointer).resolve(strict=True)
+    followup = Path(args.message_file).read_text(encoding='utf-8') if args.message_file else None
+    if args.copy and (args.resume_request or args.resume_session):
+        raise HandoffError('Do not stage new copies during resume')
+    copies = []
+    for pair in args.copy:
+        source, separator, destination = pair.partition('::')
+        if not separator:
+            raise HandoffError('Copy entries must be source::relative-destination')
+        copies.append((Path(source).resolve(strict=True), inside(workspace, destination)))
     contract = {
         'pointer': str(pointer), 'pointer_sha256': digest(pointer),
         'inputs': {str(Path(p).resolve(strict=True)): digest(Path(p).resolve(strict=True)) for p in args.input},
@@ -250,6 +280,11 @@ def run(args):
         'required_checks': sorted(set(args.required_check)),
         'add_dirs': sorted({str(Path(p).resolve(strict=True)) for p in args.add_dir}),
     }
+    for source, destination in copies:
+        expected = digest(source)
+        if str(destination) in contract['inputs'] and contract['inputs'][str(destination)] != expected:
+            raise HandoffError('Conflicting staged input')
+        contract['inputs'][str(destination)] = expected
     args.add_dir = contract['add_dirs']
     packet_hash = hashlib.sha256(json.dumps(contract, sort_keys=True).encode()).hexdigest()
     command = executable_command(args.provider, args.command_json)
@@ -301,8 +336,8 @@ def run(args):
                   'Return exactly one JSON object as your final response with this shape: ' + json.dumps(example) +
                   '. Status must be DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT or BLOCKED. '
                   'Report blocked/skipped checks honestly; never manufacture evidence. No separate return file is required.')
-        if args.message_file:
-            prompt += '\nFollow-up message:\n' + Path(args.message_file).read_text(encoding='utf-8')
+        if followup is not None:
+            prompt += '\nFollow-up message:\n' + followup
         (directory / 'prompt.txt').write_text(prompt, encoding='utf-8')
         record['prompt_sha256'] = digest(directory / 'prompt.txt')
         write_json(record_path, record)
@@ -310,6 +345,18 @@ def run(args):
         terminal = None
         protocol_error = None
         try:
+            # Admission and the workspace lock precede every staging write.
+            for source, destination in copies:
+                destination = inside(workspace, destination)
+                expected = contract['inputs'][str(destination)]
+                if destination.exists():
+                    if digest(destination) != expected:
+                        raise HandoffError('Refusing to overwrite staged input')
+                else:
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    with destination.open('xb') as output:
+                        output.write(source.read_bytes())
+            verify_inputs(contract)
             actual_command = windows_command(command + cli_args(args, prompt, record['session_id'] if parent else None, fresh_session))
             with (directory / 'stdout.jsonl').open('wb') as stdout, (directory / 'stderr.txt').open('wb') as stderr:
                 process = subprocess.Popen(actual_command, cwd=workspace, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
@@ -322,6 +369,8 @@ def run(args):
                     while True:
                         exited = process.poll() is not None
                         while True:
+                            if (directory / 'cancel.request').exists() or time.monotonic() >= deadline:
+                                break
                             position = stream.tell()
                             line = stream.readline()
                             if not line:
@@ -348,11 +397,11 @@ def run(args):
                                     protocol_error = 'Multiple terminal results'
                                 terminal = event
                             write_json(record_path, record)
-                        if exited:
-                            break
                         if (directory / 'cancel.request').exists() or time.monotonic() >= deadline:
                             record['state'] = 'CANCELLED' if (directory / 'cancel.request').exists() else 'TIMED_OUT'
                             stop_child(process)
+                            break
+                        if exited:
                             break
                         time.sleep(0.1)
             record['exit_code'] = process.returncode
@@ -374,8 +423,18 @@ def run(args):
                 stop_child(process)
             record.update(state='CANCELLED' if isinstance(exc, KeyboardInterrupt) else 'FAILED', error=str(exc))
         finally:
+            if process is not None:
+                record['exit_code'] = process.poll()
             record['finished_at'] = now()
-            record['artifacts_after'] = {p: digest(inside(workspace, p)) if inside(workspace, p).is_file() else None for p in contract['expected_outputs']}
+            record['artifacts_after'] = {}
+            for p in contract['expected_outputs']:
+                try:
+                    path = inside(workspace, p)
+                    record['artifacts_after'][p] = digest(path) if path.is_file() else None
+                except (OSError, HandoffError) as exc:
+                    record.setdefault('artifact_snapshot_errors', {})[p] = str(exc)
+                    if record['state'] == 'RETURNED':
+                        record.update(state='UNKNOWN', error='Artifact snapshot failed')
             write_json(record_path, record)
         return record
 
@@ -388,6 +447,7 @@ def main(argv=None):
     parser.add_argument('--provider', choices=['cursor', 'claude'], default='cursor')
     parser.add_argument('--pointer')
     parser.add_argument('--input', action='append', default=[])
+    parser.add_argument('--copy', action='append', default=[])
     parser.add_argument('--expected-output', action='append', default=[])
     parser.add_argument('--required-check', action='append', default=[])
     parser.add_argument('--add-dir', action='append', default=[])
