@@ -25,16 +25,6 @@ Grounding: `feedback_session_log_discipline` (owner
 `docs/operational_rules.md §7`); bind:
 [`Rule 7`](../../docs/operational_rules.md#7-one-canonical-owner-per-fact-every-other-mention-links-or-is-a-labeled-mirror).
 
-## Session start (queue bind)
-
-First read: `STATE.md` operator table. Serve priorities in dependency order;
-independent work need not wait on an unrelated row. Explicit operator direction
-can authorize off-queue work without a special phrase. Otherwise keep off-queue
-work with its owner until promoted. Do not auto-open a replacement/channel or
-infer phase GO from queue position.
-Treat any Open / next text in a session entry as historical context, never as a
-current priority source.
-
 ## Fetch before a multi-step build
 
 Before scaffolding, building out, or implementing a pipeline/stage/runner/harness,
