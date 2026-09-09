@@ -83,7 +83,9 @@ to stop its owned local process tree and preserves all evidence. On Windows the
 provider is created suspended, assigned to a Job Object, then resumed so membership
 exists before user code runs. Stdio duplication uses `msvcrt.get_osfhandle` (CRT fd → Win32 HANDLE) and opens inheritable `NUL` for stdin; if that ownership cannot be established the launch
 fails closed and the process is not left running. Job-object process-count queries
-that fail also refuse completion rather than assuming the tree is gone. On POSIX
+that fail also refuse completion rather than assuming the tree is gone. After the
+leader exits, `ActiveProcesses` is re-queried briefly so a stale leader count is
+not mistaken for survivors; a count that stays non-zero still fails closed. On POSIX
 the provider runs in its own process group for the same purpose. Detached workers
 or provider-side work may outlive local cancellation; timeout never proves rollback.
 
@@ -136,9 +138,11 @@ Changes in a provider's format fail visibly and retain raw evidence.
 Before accepting a DONE/DONE_WITH_CONCERNS return, the runner re-checks immutable
 inputs and refuses completion if owned process-group descendants are still alive.
 On Windows, post-exit survivor detection prefers the job's live process-ID list
-(excluding an already-exited leader). ActiveProcesses-only lag with no other live
-PIDs is settled rather than treated as survivors; any other still-active PID is a
-real descendant. Job-query failures stay fail-closed. Cancellation is honored after staging/verification and before
+(excluding an already-exited leader). An empty live list with a still-positive
+`ActiveProcesses` count is polled until the count clears within the settle
+window; at the deadline a final PID recheck runs, and an empty list with a
+still-positive count fails closed (replacement race). Any other still-active PID
+is a real descendant. Job-query failures stay fail-closed. Cancellation is honored after staging/verification and before
 provider launch. File digests are streamed in bounded chunks.
 Required-check evidence must be a nonempty string (JSON null is rejected). Staging copies create missing parents without rewriting existing directory modes. Nonzero provider exits also stop owned process-group descendants before releasing the lock. A closed reconciliation cannot later be reopened as resume.
 

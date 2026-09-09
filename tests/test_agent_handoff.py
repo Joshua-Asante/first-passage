@@ -624,6 +624,8 @@ def test_exit_observation_versus_job_accounting_race(monkeypatch):
         returncode = 0
         def poll(self):
             return 0
+        def wait(self, timeout=None):
+            return 0
 
     class LaggingJob:
         def __init__(self, counts):
@@ -661,20 +663,21 @@ def test_job_active_settle_detects_persistent_descendants(monkeypatch):
     assert AH.tree_still_running(None, StickyJob(), after_provider_exit=True) is True
 
 
-def test_live_pid_list_clears_accounting_lag_without_waiting(monkeypatch):
-    """ActiveProcesses>0 with empty live PID list (leader excluded) is lag, not survivors."""
+def test_live_pid_list_clears_when_active_count_drops(monkeypatch):
+    """Empty live PID list + ActiveProcesses that settles to 0 ⇒ no survivors."""
     class ExitedLeader:
         pid = 4242
         def poll(self):
+            return 0
+        def wait(self, timeout=None):
             return 0
 
     class LagJobWithPidList:
         def __init__(self):
             self.list_calls = 0
-            self.active_calls = 0
+            self._counts = [1, 1, 0]
         def active_processes(self):
-            self.active_calls += 1
-            return 1  # never clears on its own
+            return self._counts.pop(0) if self._counts else 0
         def live_descendant_pids(self, exclude_pid=None):
             self.list_calls += 1
             assert exclude_pid == 4242
@@ -685,13 +688,75 @@ def test_live_pid_list_clears_accounting_lag_without_waiting(monkeypatch):
     monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_POLL_SECONDS', 0.01)
     assert AH.tree_still_running(ExitedLeader(), job, after_provider_exit=True) is False
     assert job.list_calls >= 1
-    assert job.active_calls >= 1
+
+
+def test_live_pid_list_fail_closed_when_empty_list_and_count_never_settles(monkeypatch):
+    """At settle deadline, empty live list + positive ActiveProcesses must fail closed.
+
+    A descendant may exit and spawn a replacement between the empty snapshot and
+    the ActiveProcesses read; clearing as lag would permit RETURNED while the
+    replacement remains able to mutate the workspace.
+    """
+    class ExitedLeader:
+        pid = 4242
+        def poll(self):
+            return 0
+        def wait(self, timeout=None):
+            return 0
+
+    class StickyLagJob:
+        def __init__(self):
+            self.list_calls = 0
+        def active_processes(self):
+            return 1
+        def live_descendant_pids(self, exclude_pid=None):
+            self.list_calls += 1
+            assert exclude_pid == 4242
+            return []
+
+    job = StickyLagJob()
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_SECONDS', 0.05)
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_POLL_SECONDS', 0.01)
+    assert AH.tree_still_running(ExitedLeader(), job, after_provider_exit=True) is True
+    # Initial polls plus final deadline recheck.
+    assert job.list_calls >= 2
+
+
+def test_live_pid_list_deadline_recheck_catches_replacement(monkeypatch):
+    """Final PID recheck must observe a replacement absent from earlier snapshots."""
+    class ExitedLeader:
+        pid = 4242
+        def poll(self):
+            return 0
+        def wait(self, timeout=None):
+            return 0
+
+    class ReplacementJob:
+        def __init__(self):
+            self.list_calls = 0
+        def active_processes(self):
+            return 1
+        def live_descendant_pids(self, exclude_pid=None):
+            self.list_calls += 1
+            assert exclude_pid == 4242
+            # Empty until the deadline recheck.
+            if self.list_calls < 2:
+                return []
+            return [99]
+
+    job = ReplacementJob()
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_SECONDS', 0.05)
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_POLL_SECONDS', 0.01)
+    assert AH.tree_still_running(ExitedLeader(), job, after_provider_exit=True) is True
+    assert job.list_calls >= 2
 
 
 def test_live_pid_list_detects_real_descendant_immediately(monkeypatch):
     class ExitedLeader:
         pid = 10
         def poll(self):
+            return 0
+        def wait(self, timeout=None):
             return 0
 
     class JobWithChild:
@@ -705,10 +770,30 @@ def test_live_pid_list_detects_real_descendant_immediately(monkeypatch):
     assert AH.tree_still_running(ExitedLeader(), JobWithChild(), after_provider_exit=True) is True
 
 
+def test_settle_seconds_monkeypatch_is_honored(monkeypatch):
+    """settle_seconds must read JOB_ACTIVE_SETTLE_SECONDS inside the helper (P3)."""
+    class StickyJob:
+        def __init__(self):
+            self.calls = 0
+        def active_processes(self):
+            self.calls += 1
+            return 1
+
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_SECONDS', 0.05)
+    monkeypatch.setattr(AH, 'JOB_ACTIVE_SETTLE_POLL_SECONDS', 0.01)
+    started = time.monotonic()
+    assert AH.tree_still_running(None, StickyJob(), after_provider_exit=True) is True
+    elapsed = time.monotonic() - started
+    # Production default is 2.0s; a working monkeypatch must finish well under that.
+    assert elapsed < 1.0
+
+
 def test_live_pid_list_query_failure_still_refuses():
     class ExitedLeader:
         pid = 10
         def poll(self):
+            return 0
+        def wait(self, timeout=None):
             return 0
 
     class BoomListJob:
@@ -727,6 +812,63 @@ def test_job_active_settle_query_failure_still_refuses():
             raise OSError('fixture QueryInformationJobObject failed during settle')
     with pytest.raises(AH.HandoffError, match='liveness query failed'):
         AH.tree_still_running(None, BoomJob(), after_provider_exit=True)
+
+
+def test_process_ids_retries_when_buffer_reports_more_data():
+    """ERROR_MORE_DATA must enlarge the PID-list buffer and retry (Codex P2)."""
+    import ctypes
+    from ctypes import wintypes
+
+    # Linux CPython may lack ctypes.set_last_error; stub get_last_error on the
+    # object process_ids actually calls so the retry path stays portable.
+    class CT:
+        Structure = ctypes.Structure
+        c_size_t = ctypes.c_size_t
+        byref = staticmethod(ctypes.byref)
+        sizeof = staticmethod(ctypes.sizeof)
+        _last = 0
+
+        @classmethod
+        def get_last_error(cls):
+            return cls._last
+
+    job = AH.WindowsJob(handle=1)
+    job._ctypes = CT
+    job._wintypes = wintypes
+    capacities = []
+
+    def fake_query(handle, info_class, buf, buflen, retlen):
+        header = ctypes.sizeof(wintypes.DWORD) * 2
+        capacity = (buflen - header) // ctypes.sizeof(ctypes.c_size_t)
+        capacities.append(capacity)
+
+        class Hdr(ctypes.Structure):
+            _fields_ = [
+                ('NumberOfAssignedProcesses', wintypes.DWORD),
+                ('NumberOfProcessIdsInList', wintypes.DWORD),
+                ('ProcessIdList', ctypes.c_size_t * max(capacity, 1)),
+            ]
+
+        info = ctypes.cast(buf, ctypes.POINTER(Hdr)).contents
+        if capacity < 100:
+            info.NumberOfAssignedProcesses = 100
+            info.NumberOfProcessIdsInList = 0
+            CT._last = AH.WindowsJob.ERROR_MORE_DATA
+            return 0
+        info.NumberOfAssignedProcesses = 2
+        info.NumberOfProcessIdsInList = 2
+        info.ProcessIdList[0] = 11
+        info.ProcessIdList[1] = 22
+        CT._last = 0
+        return 1
+
+    class Kernel:
+        QueryInformationJobObject = staticmethod(fake_query)
+
+    job._kernel = Kernel()
+    assert job.process_ids() == [11, 22]
+    assert capacities[0] == AH.WindowsJob._PID_LIST_INITIAL_CAPACITY
+    assert capacities[1] >= 100
 
 
 def test_marker_loss_same_incarnation_reuses_instance(harness, tmp_path):

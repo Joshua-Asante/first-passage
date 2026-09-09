@@ -585,8 +585,10 @@ class WindowsJob:
     STILL_ACTIVE = 259
     ERROR_INVALID_PARAMETER = 87
     ERROR_ACCESS_DENIED = 5
+    ERROR_MORE_DATA = 234
     # Cap for one QueryInformationJobObject PID-list read; jobs with more
-    # processes retry with a larger buffer via NumberOfAssignedProcesses.
+    # processes retry with a larger buffer via NumberOfAssignedProcesses /
+    # ERROR_MORE_DATA rather than failing closed on the first undersized read.
     _PID_LIST_INITIAL_CAPACITY = 64
 
     def __init__(self, handle):
@@ -720,9 +722,15 @@ class WindowsJob:
                 self.handle, self.JobObjectBasicProcessIdList, self._ctypes.byref(info),
                 self._ctypes.sizeof(info), self._ctypes.byref(returned),
             )
-            if not ok:
-                raise OSError('QueryInformationJobObject(ProcessIdList) failed')
             assigned = int(info.NumberOfAssignedProcesses)
+            if not ok:
+                err = self._ctypes.get_last_error()
+                # Undersized buffer: NumberOfAssignedProcesses still names the
+                # required size. Enlarge and retry instead of failing closed.
+                if err == self.ERROR_MORE_DATA and assigned > capacity:
+                    capacity = assigned
+                    continue
+                raise OSError(f'QueryInformationJobObject(ProcessIdList) failed: {err}')
             listed = int(info.NumberOfProcessIdsInList)
             if listed < assigned and capacity < assigned:
                 capacity = assigned
@@ -1075,8 +1083,9 @@ def stop_child(process, job=None):
 
 
 # Windows Job ActiveProcesses can lag GetExitCodeProcess: the leader may already
-# report exited while the job still briefly counts it. Real descendants keep the
-# count above zero past this window; query failures remain fail-closed.
+# report exited while the job still briefly counts it. Prefer live PID-list
+# discrimination; ActiveProcesses-only fallback settles then fail-closes.
+# (#326 settled ActiveProcesses alone; this path supersedes that for survivors.)
 JOB_ACTIVE_SETTLE_SECONDS = 2.0
 JOB_ACTIVE_SETTLE_POLL_SECONDS = 0.05
 
@@ -1094,7 +1103,7 @@ def owned_group_alive(process, job=None):
         return False
 
 
-def descendants_survived_provider_exit(process, job=None, settle_seconds=JOB_ACTIVE_SETTLE_SECONDS):
+def descendants_survived_provider_exit(process, job=None, settle_seconds=None):
     """True when owned descendants remain after the provider leader has exited.
 
     Fail closed on job-query errors. Cause discrimination for the Windows
@@ -1105,14 +1114,21 @@ def descendants_survived_provider_exit(process, job=None, settle_seconds=JOB_ACT
        is a real descendant.
     2. If ActiveProcesses is still > 0 but no other live PIDs remain, treat that
        as GetExitCodeProcess vs job-accounting lag and keep polling until the
-       count clears or the settle window ends.
-    3. After the settle window, a successful empty live-PID list means no
-       survivors even if ActiveProcesses still lags; an ActiveProcesses-only
-       fallback (no PID list API) still treats a persistent nonzero count as
-       survivors. Query failures remain fail-closed.
+       count clears within the settle window.
+    3. At the settle deadline with a still-positive count, re-snapshot live PIDs.
+       Any PID ⇒ survivors. Still-empty list with positive ActiveProcesses ⇒
+       fail closed (a replacement may have appeared after the earlier empty
+       snapshot). ActiveProcesses-only fallback (no PID list API) also treats a
+       persistent nonzero count as survivors. Query failures remain fail-closed.
+
+    ``settle_seconds`` defaults to ``JOB_ACTIVE_SETTLE_SECONDS`` when omitted so
+    monkeypatches of that global apply (do not bind the default at import time).
     """
     if job is None:
         return owned_group_alive(process, None)
+    if settle_seconds is None:
+        settle_seconds = JOB_ACTIVE_SETTLE_SECONDS
+    settle_poll_seconds = JOB_ACTIVE_SETTLE_POLL_SECONDS
     deadline = time.monotonic() + max(0.0, float(settle_seconds))
     leader_pid = getattr(process, 'pid', None) if process is not None else None
     list_fn = getattr(job, 'live_descendant_pids', None)
@@ -1128,20 +1144,39 @@ def descendants_survived_provider_exit(process, job=None, settle_seconds=JOB_ACT
             if job.active_processes() <= 0:
                 return False
             if time.monotonic() >= deadline:
-                # PID list confirmed empty of live descendants; accounting lag only.
-                return False
+                # Final recheck: a replacement may have spawned after the empty
+                # snapshot. Empty list + still-positive ActiveProcesses ⇒ fail
+                # closed (do not treat as lag). Count may also have cleared.
+                live_again = list_fn(exclude_pid=exclude)
+                if live_again:
+                    return True
+                if job.active_processes() <= 0:
+                    return False
+                return True
         else:
             active = job.active_processes()
             if active <= 0:
                 return False
             if time.monotonic() >= deadline:
                 return True
-        time.sleep(JOB_ACTIVE_SETTLE_POLL_SECONDS)
+        time.sleep(settle_poll_seconds)
 
 
 def tree_still_running(process, job=None, *, after_provider_exit=False):
+    """True when the owned tree still has live members.
+
+    When ``after_provider_exit`` is set (completion path after the leader has
+    exited), prefer a signaled process handle briefly, then discriminate
+    survivors via ``descendants_survived_provider_exit`` (live PID list + settle).
+    Instantaneous checks (no flag) use ``owned_group_alive`` only.
+    """
     try:
         if after_provider_exit:
+            if process is not None and process.poll() is not None:
+                try:
+                    process.wait(timeout=0)
+                except (subprocess.TimeoutExpired, OSError):
+                    pass
             return descendants_survived_provider_exit(process, job)
         return owned_group_alive(process, job)
     except OSError as exc:
