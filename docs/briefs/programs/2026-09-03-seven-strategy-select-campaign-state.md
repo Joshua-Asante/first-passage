@@ -1,7 +1,7 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
 **Status:** Codex owns orchestration. C1-C5 composition design choices are approved; the current gate is **HOLD** for required evidence (section 53). Historical implementation authority in section 49 is suspended; no implementation, data execution, replay or campaign sampling may proceed without a separate bounded release. S1/S2 and the one-attempt limit remain unchanged; no search, final freeze, qualification or live authorization has occurred.
-**Last curated:** 2026-09-08 (Codex, `codex/tradeify-composition-checkpoint`)
+**Last curated:** 2026-09-09 (Cursor, `codex/tradeify-composition-checkpoint`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
 with #273; four Codex passes `459421b`, `78c82de`, `e8694a9`, `6aa7ff8`, the operator's ruling and
@@ -3562,6 +3562,10 @@ Also reported: the five artifacts and their screenshots are gitignored and show 
 
 ## §49 — Codex takeover and bounded campaign revision (2026-09-05)
 
+> **Suspension (2026-09-08):** implementation authorization in this section is
+> **HOLD**-suspended by §53. Retain the one-attempt ceiling; do not execute from
+> this section until a separate bounded release.
+
 **Transfer scope:** the §1 Orchestrator role records the operator's transfer of
 both governance authorship and previously CC-solo implementation, including
 locked `core/` work for this bounded campaign. It is the campaign-specific
@@ -3577,7 +3581,7 @@ used-account simulation and winner execution parity. Preserve one bounded attemp
 as a test that can return no qualifying configuration, not a promise of success.
 
 **Operator decisions:** prepare the #302 split; the operator will merge. Authorize
-one bounded implementation attempt beyond the intake effort. Preserve the Select
+one bounded implementation attempt beyond the intake effort (**suspended 2026-09-08 by §53 HOLD** — kept only as the campaign attempt ceiling, not current execution permission). Preserve the Select
 incumbent, the full/H1/H2 ≤5% failure test, the certified median reservation of
 200 business days, select-from-five (the initial one-MNQ restriction was replaced
 by the operator's §51 amendment), and D33's sole final
@@ -3745,17 +3749,19 @@ reviews remain in the ignored private audit packet
 only; it does not publish source parameters, account values, private review
 contents or execution logic, and is not a second specification.
 
-**Immutable approval revision:** private `c5-approved-design-revision/approval-receipt.json`,
-SHA-256 `bad72266716a31782960c49deed0e25c8c2dc8256300cd8bbc2423d7778d73aa`. The receipt binds the pre-election design,
-approval-annotated specification and manifest snapshot by byte count and digest.
-Later edits to the reusable packet directory do not inherit this approval.
+**Immutable approval revision (SHA-256):** `bad72266716a31782960c49deed0e25c8c2dc8256300cd8bbc2423d7778d73aa`
+for private `c5-approved-design-revision/approval-receipt.json`. The receipt binds the
+pre-election design, approval-annotated specification and manifest snapshot by byte
+count and digest. Later edits to the reusable packet directory name
+`account-feedback-composition-2026-09-08` do not inherit this approval.
 
 The next gate is the already specified bounded evidence process: bind the
 source-state/calendar interfaces and establish the required coverage and
 execution-support witnesses. Any implementation or data execution needs a
-separate bounded release. The effective private workflow amendment owns the
-current delivery sequence and supersedes historical wave ordering in this
-campaign record and the linked implementation plan.
+separate bounded release. The private workflow amendment supersedes historical
+wave ordering for the design/evidence sequence only; it does **not** authorize
+implementation or data execution. Public workers follow the HOLD in the linked
+implementation plan until that separate bounded release exists.
 
 Existing source, account, calendar and execution evidence gaps remain open.
 Previously preserved dependency-stop evidence and frozen Phase1 artifacts remain

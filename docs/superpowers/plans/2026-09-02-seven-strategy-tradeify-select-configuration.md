@@ -142,6 +142,9 @@ sets are explicit; the existing reconciliation tests pass; blockers stay blocker
 
 ## Task 2 — Repair the calculator and build the live-state transition
 
+> Unchecked items below remain **blocked by the HOLD**. They are release
+> requirements, not current work instructions.
+
 **Files:** `scripts/certification_power.py`, `tests/test_certification_power.py`;
 then `core/mc/simulation.py`, `core/mc/preflight.py` and synthetic MC tests.
 
