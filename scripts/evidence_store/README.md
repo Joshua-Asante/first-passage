@@ -60,8 +60,8 @@ Use a separate store for unrelated repositories and give logical IDs a namespace
 
 | Command | Input / result |
 |---|---|
-| `capture SOURCE_ID PATH --kind KIND` | Preserve one relative regular file; return version ID and SHA-256. Reuse SOURCE_ID when relocating the same source. Symlinks are rejected. |
-| `capture ... --commit SHA` | Read a regular-file blob at an exact full local Git SHA-1. Never fetch (including promisor lazy-fetch). Replace refs are ignored. An unavailable object is recorded as unavailable, not globally lost. Trees and symlinks are rejected. |
+| `capture SOURCE_ID PATH --kind KIND` | Preserve one relative regular file; return version ID and SHA-256. Reuse SOURCE_ID when relocating the same source. Symlinks in any path component and non-regular files are rejected. |
+| `capture ... --commit SHA` | Read a regular-file blob at an exact full local Git SHA-1. Never fetch (including promisor lazy-fetch). Replace refs are ignored. An unavailable object is recorded as unavailable, not globally lost. Trees, symlinks, and other non-regular modes are rejected. |
 | `record FILE.json` | Validate and append a reviewed record revision. |
 | `depend FILE.json` | Append an explicit, evidence-cited dependency. |
 | `source VERSION_ID` | Verify preserved bytes and compare current working bytes using the latest registered path. |
@@ -92,7 +92,8 @@ it correctly. `conditions` is a JSON object, never executable predicate code.
 A later revision must explicitly name the previous revision UUID in `supersedes`.
 This prevents accidentally replacing another author's latest revision. Revisions
 and original source bytes remain recoverable. Source version identity deduplicates
-equal bytes for the same source; it does not establish statistical independence.
+equal bytes for the same source and rejects a conflicting `kind` on that identity;
+it does not establish statistical independence.
 
 Dependency fields: `consumer` (record revision UUID), `dependency` (source version
 or record revision), `evidence_version` (preserved source supporting the declaration),
@@ -122,7 +123,8 @@ must be outside tracked/public paths or explicitly ignored by their owner.
 
 Each append is serialized with `writer.lock` and flushed to disk. The index is
 replaced only after a complete journal validates, and a cached index is trusted
-only when its projected rows authenticate against that journal. A crash may leave an orphan blob
+only when its projected rows and schema objects (including derived views)
+authenticate against that journal. A crash may leave an orphan blob
 or temporary index; these are not evidence events. A torn journal fails closed;
 restore a verified backup, do not truncate it blindly. If a stale lock remains,
 verify that no process is using the store before removing it. This is local

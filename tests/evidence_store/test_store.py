@@ -149,6 +149,44 @@ class StoreTest(unittest.TestCase):
         with self.assertRaises(EvidenceError):
             self.store.capture('historical-link', 'alias.md', 'document', commit=commit)
 
+    def test_parent_directory_symlinks_are_rejected(self):
+        real_dir = self.repo / 'real'
+        real_dir.mkdir()
+        self.write('real/note.md', 'nested source')
+        alias = self.repo / 'alias'
+        try:
+            alias.symlink_to(real_dir, target_is_directory=True)
+        except OSError:
+            self.skipTest('host cannot create directory symlinks')
+        with self.assertRaises(EvidenceError):
+            self.store.capture('nested', 'alias/note.md', 'document')
+        version = self.store.capture('nested', 'real/note.md', 'document')['version_id']
+        self.assertEqual(self.store.source(version)['current'], 'unchanged')
+        # Replace a path component with a symlink after capture; do not follow it.
+        (real_dir / 'note.md').unlink()
+        (real_dir / 'note.md').write_text('other', encoding='utf-8')
+        alias.unlink()
+        elsewhere = self.repo / 'elsewhere'
+        elsewhere.mkdir()
+        (elsewhere / 'note.md').write_text('nested source', encoding='utf-8')
+        try:
+            alias.symlink_to(elsewhere, target_is_directory=True)
+        except OSError:
+            self.skipTest('host cannot recreate directory symlinks')
+        # Current locator stays real/note.md from latest capture; parent-symlink
+        # probe uses the aliased path directly.
+        self.assertEqual(self.store._bytes('alias/note.md')[1], 'unavailable')
+
+    def test_nonregular_files_are_rejected_without_blocking(self):
+        fifo = self.repo / 'pipe.fifo'
+        try:
+            os.mkfifo(fifo)
+        except (AttributeError, OSError):
+            self.skipTest('host cannot create FIFOs')
+        with self.assertRaises(EvidenceError):
+            self.store.capture('fifo', 'pipe.fifo', 'document')
+        self.assertEqual(self.store._bytes('pipe.fifo')[1], 'unavailable')
+
     def test_conflicting_kind_on_deduplicated_version_is_rejected(self):
         first = self.store.capture('venue:F1', 'decision.md', 'document')
         before = (self.root / 'events.jsonl').read_bytes()
@@ -379,6 +417,23 @@ class StoreTest(unittest.TestCase):
             conn.execute("UPDATE records SET data=json_set(data, '$.status', 'fabricated')")
         self.assertEqual(self.store.decision('venue:F1')['current']['status'], 'parked')
         self.assertEqual(self.store.decision('venue:F1')['current']['id'], record['id'])
+
+    def test_tampered_derived_views_are_rebuilt_from_the_journal(self):
+        record = self.record()
+        self.store.depend(consumer=record['id'], dependency=record['source_version'],
+                          evidence_version=record['source_version'], note='explicit dependency')
+        before = self.store.impact(record['source_version'])
+        self.assertEqual({row['record_id'] for row in before['dependents']}, {'venue:F1'})
+        index = self.root / 'index.sqlite'
+        with closing(sqlite3.connect(index)) as conn, conn:
+            conn.execute('DROP VIEW edges')
+            conn.execute('CREATE VIEW edges AS SELECT NULL AS consumer, NULL AS dependency WHERE 0')
+        after = self.store.impact(record['source_version'])
+        self.assertEqual({row['record_id'] for row in after['dependents']}, {'venue:F1'})
+        with closing(sqlite3.connect(index)) as conn:
+            sql = conn.execute(
+                "SELECT sql FROM sqlite_master WHERE type='view' AND name='edges'").fetchone()[0]
+        self.assertIn('FROM records', sql)
 
 
 if __name__ == '__main__':
