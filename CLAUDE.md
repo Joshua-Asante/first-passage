@@ -25,6 +25,8 @@ and [lab/ARCHIVED.json](lab/ARCHIVED.json).
 
 **Recorded posture:** the incumbent `Tradeify_Select_100K` eval exists; c1 is warm and **disarmed** (`dry_run=true`), with no deployed book. Daemon `emit_enabled=false`. Confirm actual host state before operational work.
 
+**Data source disposition (operator report 2026-09-10):** Databento is retired and unsubscribed. No replacement is approved; daemon emission remains blocked. Prior source selections are historical. See the [retirement record](docs/adr/2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento).
+
 - `dry_run=false` requires M1 `RESOLVED`: the gate's object is the **arm**, not the send.
 - Disarm **before** absolute `armed_until` expiry; lapse-while-armed previously caused a host crash-loop.
 - Live spend requires M1 `RESOLVED` **and** separate operator GO. Every armed session needs its own GO.

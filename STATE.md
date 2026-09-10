@@ -29,6 +29,8 @@ not an hours budget. Completed items leave; do not automatically open replacemen
 Off-queue work stays with its owner until promoted or explicitly directed.
 Queue position does not grant phase GO or authorize a new generation channel.
 
+**Source blocker (2026-09-10):** Databento retired/unsubscribed by operator report; no replacement approved. M1 emission remains blocked pending an approved source or an explicit acceptance amendment. [Owner record](docs/adr/2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento).
+
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
 | 1 | **B7-REFIRE Stage 1 + M1** — licensed test strategy; item 5 dated 2026-08-24 remains owed. Former queue item 2; unchanged scope and no arm. | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [GO addendum](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) | Live-signal / arming path |
