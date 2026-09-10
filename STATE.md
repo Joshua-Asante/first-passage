@@ -73,12 +73,11 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   No agent places it; the rail stays disarmed. A missed venue week risks account
   deletion; venue-session boundaries apply. [S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md)
   · [idle-clock audit](docs/notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md).
-- **Coverage evidence:** week 08-31→09-04 was operator-attested on 09-04 and
-  restated on 09-05; the exact trade day is unresolved between 09-02/09-03.
-  The private compliance ledger row remains owed; its session hook still reads
-  NOT RECORDED until written. [Campaign record §15](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#15-d20--the-acceleration-ruling-2026-09-04-deploy-at-the-phase-3-commit)
-  retains the attestation history. Week 09-07→09-11 is open. Roll the deadline
-  each Monday; `daily-repo-truth-sync` reads this board's dated obligations.
+- **Coverage evidence:** the [compliance record](docs/notes/rail_build/TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md)
+  §2b owns the per-bucket trade days and is the file the session hook reads.
+  Buckets 08-31→09-04 (traded 09-02) and 09-07→09-11 (traded 09-10) are covered.
+  Roll the deadline each Monday; `daily-repo-truth-sync` reads this board's
+  dated obligations.
 
 ### Monthly — recurring (rolling; next deadline **2026-09-21**)
 
