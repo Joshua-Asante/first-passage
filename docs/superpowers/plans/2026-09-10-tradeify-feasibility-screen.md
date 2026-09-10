@@ -1,22 +1,8 @@
 # Tradeify bounded feasibility screen implementation plan
 
-> **Integration requirement:** Preserve plan-only commit
-> `69be794bdecc86248942f789c75bd9f83dd0702e` as an ancestor of the later closure
-> and selection commits. PR #329 must use a merge commit, not a squash merge,
-> so the pre-execution plan remains independently inspectable in ancestry.
-> The closure banner below was added after that plan-only commit.
-
-> **2026-09-10 closure:** The fixed-menu screen has returned a private report;
-> its execution is closed. Subsequent interpretation review identified an
-> incorrect all-halves speed requirement and unsupported lower-bound language;
-> the report's disposition is not an accepted qualification or rejection.
-> The operator paused the full simulator and requested a separate exploratory
-> Aegis/Vanguard/ORB weighting study. Preserve this screen's menu and outputs;
-> any weighting study is new development-data analysis, not a rerun of this menu.
-
 > **For agentic workers:** Use executing-plans for inline execution of this single component. Do not launch parallel workers or turn its steps into separate review waves.
 
-**Status:** LOCKED PLAN; exploratory screen authorized by the operator's instruction to lock the proposed minimum-infrastructure approach into a plan (2026-09-10 UTC). This publication does not claim implementation or results.
+**Status:** CLOSED - execution returned; disposition not accepted. See [closure record](../../notes/2026-09-10-tradeify-protection-selection.md#feasibility-screen-closure). All other frozen text is retained unedited from plan-only commit `69be794`.
 
 **Goal:** Determine whether existing development histories provide enough evidence to justify further faithful replay engineering for the Tradeify campaign.
 

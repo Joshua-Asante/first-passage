@@ -46,9 +46,15 @@ At a $100,000 peak this is approximately $1,000 of drawdown; the dollar trigger 
 
 Re-evaluate daily. Full exposure and normal ORB adds resume when drawdown falls below the trigger. There is no latch until a new equity peak, cooldown, or automatic account liquidation. This follows the executable threshold behavior in `core/dd_protection.py::calculate_protection` and the prior-state timing in `core/mc/simulation.py`; a comment suggesting recovery must reach the peak is not the selected behavior. The frozen historical 1.5% production constant is **not edited** by this record.
 
+## Feasibility screen closure
+
+The fixed-menu [feasibility screen](../superpowers/plans/2026-09-10-tradeify-feasibility-screen.md) returned a private report and its execution is closed. Subsequent interpretation review identified an incorrect all-halves speed requirement and unsupported lower-bound language; the report's disposition is not an accepted qualification or rejection. The operator paused the full simulator and requested a separate exploratory Aegis/Vanguard/ORB weighting study. Preserve the screen's menu and outputs; the weighting study is new development-data analysis, not a rerun of that menu.
+
+The closure narrative previously added to the frozen plan in `eeaf8aa` is moved here to correct the broader-than-status edit. The current plan differs from plan-only commit `69be794bdecc86248942f789c75bd9f83dd0702e` only in its single `**Status:**` line; this correction does not erase the earlier edit from history. PR #329 must use a merge commit, not a squash merge, to preserve that exact pre-execution ancestor independently of the later closure and selection commits.
+
 ## Evidence and limits
 
-The selected policy was compared with uniform 40% scaling at the predeclared 0.75% and 1.00% triggers, using the existing full/H1/H2 historical partitions, cashflow stresses and forced-exit pricing probes. Supporting reports, figures, histories and analysis scripts remain in the ignored private audit area. This commit publishes the operator's selected configuration and routing, not those private results.
+The selected policy was compared with uniform 40% scaling at the 0.75% and 1.00% triggers, using the existing full/H1/H2 historical partitions, cashflow stresses and forced-exit pricing probes. This separate weighting/protection study is **unregistered exploratory analysis**, not preregistered selection evidence. Its identifier first appears in git in `eeaf8aa` together with the selection; the ignored private configuration and its digest do not establish an earlier git-verifiable freeze. The seven-entry feasibility plan at `69be794` does not preregister these protection cells or the ORB-base-only comparison. The earlier description of these triggers as "predeclared" is withdrawn; no retrospective preregistration is claimed. Supporting reports, figures, histories and analysis scripts remain in the ignored private audit area. This record publishes the operator's selected configuration and routing, not those private results.
 
 Private evidence identifiers, verified when recording this decision:
 
