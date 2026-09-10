@@ -54,6 +54,7 @@ for _p in (str(_REPO_ROOT / "core"), str(_RAIL_DIR)):
 from dd_protection import BASE_RISK, calculate_protection  # noqa: E402
 from firm_rules import FIRM_RULES  # noqa: E402
 from lifecycle import TIER_MULTIPLIER  # noqa: E402
+import m1_stage1_contract as m1_test  # noqa: E402
 
 # Spec §2.1 — leg_id mapping table (venue-edition constants mirror the locked
 # Pine inputs: pyramidSize 750/1000, mymPointValue 0.50 / mnqPointValue 2.00).
@@ -96,6 +97,10 @@ from lifecycle import TIER_MULTIPLIER  # noqa: E402
 # see the ADR for why (the frozen spec worked-example + f2_floors.json oracle
 # both cite it verbatim and are not touched by this release).
 LEG_MAP: dict[str, dict] = {
+    m1_test.LEG_ID: {
+        "leg_key": m1_test.LEG_KEY, "pyr_pct": m1_test.PYR_PCT,
+        "dollars_per_pt": m1_test.DOLLARS_PER_PT, "cap_alloc": 0,
+    },
     "dj30_mym": {
         "leg_key": "Striker",
         "pyr_pct": 750.0,
@@ -140,7 +145,8 @@ def generate_constants(tier: str, leg_map: dict[str, dict] | None = None) -> dic
         "leg_map": {
             leg_id: {
                 "leg_key": leg["leg_key"],
-                "base_risk": BASE_RISK[leg["leg_key"]],
+                "base_risk": (m1_test.BASE_RISK if leg_id == m1_test.LEG_ID
+                              else BASE_RISK[leg["leg_key"]]),
                 "pyr_pct": leg["pyr_pct"],
                 "dollars_per_pt": leg["dollars_per_pt"],
                 "cap_alloc": leg["cap_alloc"],
@@ -273,6 +279,9 @@ class C1SizingHostReference:
             return _halt(f"unknown leg_id {leg_id!r}; valid: {sorted(LEG_MAP)}")
         leg_key = LEG_MAP[leg_id]["leg_key"]
 
+        if leg_id == m1_test.LEG_ID and signal_type != "entry":
+            return _halt("m1_test_entry_only")
+
         if signal_type in ("exit", "flat"):
             # Bookkeeping only — exits/EOD/DD-closes are the strategy's own
             # orders + CrossTrade Account Manager, never this host's.
@@ -285,6 +294,23 @@ class C1SizingHostReference:
 
         try:
             constants = self._read_constants()
+            if leg_id == m1_test.LEG_ID:
+                try:
+                    firm = FIRM_RULES[m1_test.TIER]
+                    m1_test.validate_sizing_inputs(
+                        constants, payload, current_equity,
+                        expected_equity=firm["starting_balance"],
+                        expected_cap=firm["micro_contract_cap"],
+                    )
+                    # Separate listener lifecycle namespace, not core STRATEGY_KEYS.
+                    state = _load_json(Path(self.lifecycle_state_path), "lifecycle state")
+                    if state.get(leg_key) not in ("AUTHORIZED", "RETIRED"):
+                        raise ValueError("m1_test_lifecycle_mismatch")
+                    peak = _load_json(Path(self.dd_state_path), "dd state").get("peak_equity")
+                    if not m1_test.finite_number(peak) or peak <= 0:
+                        raise ValueError("m1_test_invalid_peak")
+                except (ValueError, TypeError, KeyError, OverflowError) as exc:
+                    return _halt(str(exc))
             leg_const = constants["leg_map"].get(leg_id)
             if leg_const is None:
                 raise _StateError(f"constants leg_map has no entry for {leg_id!r}")

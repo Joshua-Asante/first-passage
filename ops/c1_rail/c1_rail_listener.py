@@ -54,8 +54,10 @@ from c1_rail_telemetry import (
 )
 from c1_sizing_host_reference import C1SizingHostReference, SizingDecision
 from crosstrade_payload import build_crosstrade_payload, send_to_crosstrade
+import m1_stage1_contract as m1_test
 
 INSTRUMENT_SYMBOLS: dict[str, str] = {
+    m1_test.LEG_ID: m1_test.SYMBOL,
     "dj30_mym": "MYM1!",
     "nas100_mnq": "MNQ1!",
 }
@@ -160,8 +162,33 @@ def handle_signal(
     """
     notifier = notifier or LoggingNotifier()
     eid = event_id or new_event_id()
-    dry_run = config.get("dry_run", True)  # absent -> safe default, never live
+    # One mode snapshot for both the test guard and transport decision. The
+    # test requires explicit True; existing identities keep their safe default.
+    dry_run = config.get("dry_run", None if payload.get("leg_id") == m1_test.LEG_ID else True)
     is_risk_add = str(payload.get("signal_type", "")) in ("entry", "add")
+
+    # Immutable identity prohibition, before ALL routing/sizing/payload work.
+    # In particular, production's best-effort exit semantics do not apply here.
+    test_reason = m1_test.rejection_reason(payload, {"dry_run": dry_run})
+    if test_reason is not None:
+        decision = SizingDecision(
+            leg_id=m1_test.LEG_ID, signal_type=str(payload.get("signal_type", "")),
+            qty_out=0, submit=False, halt=True, halt_reason=test_reason,
+        )
+        if ledger is not None:
+            try:
+                ledger.append("decision", {
+                    **decision_fields(decision), "dry_run": dry_run is True,
+                    "pre_send": True, "test_only": True, "sender_invoked": False,
+                }, event_id=eid)
+                ledger.append("transport_result", make_transport_payload(
+                    TransportOutcome(state="not_attempted"), dry_run=dry_run is True,
+                    payload_sha256=None), event_id=eid)
+            except TelemetryError:
+                # A broken recorder must never make a prohibited send possible.
+                pass
+        return RailAction(decision=decision, sent=False, dry_run=dry_run is True,
+                          event_id=eid, transport_state="not_attempted")
 
     if ledger is not None and is_risk_add and ledger.risk_add_blocked:
         reason = ledger.block_reason or "risk-add blocked by monitoring spine"
@@ -204,6 +231,9 @@ def handle_signal(
             "current_equity": current_equity,
             "dry_run": dry_run,
         }
+        if decision.leg_id == m1_test.LEG_ID:
+            payload_body.update(test_only=True, sender_invoked=False,
+                                test_contract_sha256=m1_test.contract_sha256())
         ledger.append("decision", payload_body, event_id=eid, order_id=order_id)
 
     def _persist_transport(outcome: TransportOutcome,

@@ -28,6 +28,8 @@ ops/**
 !ops/c1_rail/c1_rail_slippage.py
 !ops/c1_rail/c1_rail_telemetry.py
 !ops/c1_rail/c1_sizing_host_reference.py
+!ops/c1_rail/m1_stage1_contract.py
+!ops/c1_rail/m1_stage1_control.py
 !ops/c1_rail/crosstrade_payload.py
 
 !ops/c1_signal_daemon
@@ -41,6 +43,10 @@ ops/**
 !ops/c1_signal_daemon/http_status.py
 !ops/c1_signal_daemon/listener_client.py
 !ops/c1_signal_daemon/strategy_protocol.py
+!ops/c1_signal_daemon/m1_stage1.py
+!ops/c1_signal_daemon/m1_stage1_state.py
+!ops/c1_signal_daemon/m1_stage1_strategy.py
+!ops/c1_signal_daemon/m1_stage1_control.py
 
 !core
 core/**

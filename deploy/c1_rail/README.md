@@ -98,3 +98,13 @@ Steps 1–3 are **discharged**: equity field pinned `balance.netLiq`, `equity_so
 - **Single machine only (per app).** `peak_equity` state is local to the volume; a second machine would fork the DD state. Do not `fly scale count 2`. The signal-daemon app is separate (`ops/c1_signal_daemon/`; built, `emit_enabled=false`) and must not share this volume (S2b).
 - **Deploys are manual and deliberate** (`fly deploy`), never auto-on-push — an order-placing service must not redeploy from an unrelated repo commit.
 - **Config / evidence tooling:** `ops/c1_rail/write_volume_config.py` (disarmed merges) · `ops/c1_rail/export_session_evidence.py` (post-disarm export) · `ops/c1_rail/c1_rail_arm.py` (arm/disarm).
+
+## 2026-09-10 - offline M1 test infrastructure
+
+The [M1 contract](../../docs/notes/rail_build/M1_STAGE1_TEST_CONTRACT.md) defines the
+permanent entry-only/dry-run-only one-micro test identity. Generated cap is zero.
+Databento is retired and no replacement is approved: attended emission is blocked.
+Migration defaults to a plan; preflight does not POST or ratchet DD. Evidence
+projection is explicitly offline-only and cannot supply M1's acceptance-event field.
+All canonical deployment preconditions remain, including authenticated private
+crash recovery and fresh in-container pins. No live operation is authorized here.

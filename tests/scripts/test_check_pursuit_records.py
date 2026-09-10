@@ -249,8 +249,10 @@ def test_in_scope_skips_directory_readme(tmp_path):
 
 
 def test_live_subscription_keeps_have_ledger_pointer():
-    subs = sorted(cpr.PURSUITS_DIR.glob("d1[1-7]-*.md"))
-    assert len(subs) == 7, f"expected 7 subscription/venue-account pursuit records (d11-d17), got {len(subs)}"
+    subs = sorted(cpr.PURSUITS_DIR.glob("d1[1-8]-*.md"))
+    assert len(subs) == 8, (
+        f"expected 8 subscription/venue-account pursuit records (d11-d18), got {len(subs)}"
+    )
     for p in subs:
         text = p.read_text(encoding="utf-8")
         assert cpr.LEDGER_POINTER.search(text), f"{p.name} missing SUBSCRIPTION_LEDGER.md pointer"

@@ -1,5 +1,9 @@
 # Claude Max subscription — KEEP
 
+**Operator update 2026-09-10:** remains active; revised monthly cost is recorded in
+the [subscription ledger](SUBSCRIPTION_LEDGER.md). This updates the cost only;
+no plan-tier change or cancellation is asserted.
+
 **Class:** (d) meta-belt (subscription) · **Standing:** KEEP
 **Aim served:** cross-cutting — not scoped to one Aim the way TradingView/Databento are. Claude
 Max is the substrate running the Claude Code sessions that produce most of First Passage's actual
