@@ -1,5 +1,12 @@
 # Tradeify Select configuration — bounded implementation plan
 
+> **2026-09-10 operator acceptance — queue item closed:** The operator accepted
+> the selected configuration as satisfying STATE item 1. Configuration selection
+> is complete by that decision; the item leaves the live queue. See the
+> [acceptance record](../../notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure).
+> The implementation steps below remain historical/paused, not active work or
+> newly satisfied technical gates. Deployment is separate.
+
 > **2026-09-10 working configuration selected:** The operator chose a 1%
 > combined peak-drawdown trigger for Aegis/Vanguard/MYM/original ORB, with
 > Aegis/Vanguard/MYM at 40% and ORB base at full size without adds while

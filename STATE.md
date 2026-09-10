@@ -31,8 +31,7 @@ Queue position does not grant phase GO or authorize a new generation channel.
 
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
-| 1 | **Tradeify Select configuration campaign** — Operator selected Aegis + Vanguard + MYM + original ORB with a 1% combined peak-drawdown trigger: protected Aegis/Vanguard/MYM at 40%, ORB base full size with no adds. Working research configuration selected; executable sizing and native no-add exits remain unverified. Full simulator remains paused; qualification and deployment remain held. | [Selection record](docs/notes/2026-09-10-tradeify-protection-selection.md) · [Governing plan and pause](docs/superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) | Integer-contract execution and native exit validation |
-| 2 | **B7-REFIRE Stage 1 + M1** — licensed test strategy; item 5 dated 2026-08-24 remains owed. Independent of #1. No arm. | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [GO addendum](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) | Live-signal / arming path |
+| 1 | **B7-REFIRE Stage 1 + M1** — licensed test strategy; item 5 dated 2026-08-24 remains owed. Former queue item 2; unchanged scope and no arm. | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [GO addendum](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) | Live-signal / arming path |
 
 ## Executed operator decisions — decision index
 
@@ -40,7 +39,7 @@ Newest 15 consequences; decision rationale remains with the owner. Older index:
 [archive](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md).
 Retracted verdicts leave this index; their correction stands with its owner.
 
-- **2026-09-10** — Selected the four-strategy working configuration with 1% combined drawdown protection and full-size ORB base/no adds while protected. Records the research choice, not live implementation or qualification. [Selection](docs/notes/2026-09-10-tradeify-protection-selection.md)
+- **2026-09-10** — Operator accepted the selected Tradeify configuration as satisfying queue item 1; configuration-selection work closed and removed from the live queue. Deployment remains separate. [Acceptance](docs/notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure)
 - **2026-09-06** — Root docs narrowed to current routing; STATE owns priorities, campaign plans executable steps, SESSIONS history. [Charter](docs/adr/2026-07-16-root-doc-charter-dedup.md#decision)
 - **2026-09-03** — Off-queue VOLREGIME translation closed at T0, PRE-CONTRACT DROP; no contract. [Ruling](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
 - **2026-09-03** — Select configuration campaign promoted to queue #1; cultivation remains off-queue. [Campaign record](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)

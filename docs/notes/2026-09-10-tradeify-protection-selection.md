@@ -2,6 +2,12 @@
 
 The operator selected the **1% combined drawdown trigger with full-size ORB base entries and no ORB adds during protection**, then authorized recording, committing and pushing that decision. This records the working research configuration. It is not a production parameter change, accepted final validation, or permission to deploy.
 
+## Operator acceptance and STATE item 1 closure
+
+On 2026-09-10, after the selection was recorded and pushed, the operator explicitly accepted this configuration as satisfying item 1 on the STATE board. **The configuration-selection objective is accepted and closed.** Remove that completed item from the live queue; the existing B7-REFIRE Stage 1 + M1 item advances from position 2 to position 1 without changing its scope.
+
+This acceptance supersedes the earlier routing that kept configuration selection open pending native exits and integer sizing. The documented approximation and execution gaps remain factual limitations, but are not outstanding conditions for this operator-accepted queue item. Do not automatically reopen the campaign, resume the simulator, or create a replacement validation task. This closure records operator acceptance of the configuration, not a claim that the unperformed technical validation passed or authorization to deploy.
+
 ## Selected book
 
 | Strategy | Normal setting retained |

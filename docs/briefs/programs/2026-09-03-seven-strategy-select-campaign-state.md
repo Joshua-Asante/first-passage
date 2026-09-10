@@ -1,5 +1,12 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
+> **2026-09-10 acceptance and closure:** The operator accepted the selected
+> configuration as satisfying STATE item 1. The configuration-selection objective
+> is closed and removed from the live queue. The
+> [acceptance record](../../notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure)
+> supersedes earlier next-work routing. No automatic replacement work, simulator
+> resumption, technical validation claim or deployment follows from this closure.
+
 > **Current operator direction, 2026-09-10:** Full simulator work is paused.
 > The separate exploratory work has produced an operator-selected working
 > configuration: Aegis + Vanguard + MYM + original ORB, 1% combined drawdown
@@ -8,7 +15,7 @@
 > governs that choice. This supersedes earlier "next work" routing, while the
 > formal replay acceptance, qualification and deployment holds below remain.
 
-**Status:** Codex owns orchestration. C1-C5 composition design choices are approved (§53). Private synthetic scope passed independent review (125 tests; named repairs closed); the current gate is **HOLD** for the coverage contract and remaining real evidence bindings (section 54). Full replay acceptance is not released. Historical implementation authority in section 49 remains suspended; no real/source/native replay, campaign sampling, final freeze, qualification or live authorization may proceed without a separate bounded release. S1/S2 and the one-attempt limit remain unchanged.
+**Status:** Configuration selection **ACCEPTED / CLOSED by operator decision, 2026-09-10**; former STATE item 1 is satisfied. The historical implementation/validation board below is preserved as evidence, not a live queue. Its unperformed checks remain unperformed; full replay acceptance and deployment are not implied. Full simulator work remains paused. Codex retains record ownership.
 **Last curated:** 2026-09-10 (Codex, `codex/tradeify-feasibility-screen-plan`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
