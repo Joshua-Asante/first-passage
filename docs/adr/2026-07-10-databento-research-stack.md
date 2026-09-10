@@ -1,5 +1,7 @@
 # ADR 2026-07-10 — Databento research stack: discovery-first futures research on deep granular data; Nautilus research-only; live rail KEEP
 
+**Current source disposition (reported 2026-09-10): Databento retired.** The operator has unsubscribed and retired Databento as an information source for First Passage. No replacement source is approved. See the retirement addendum below; historical acquisition decisions are not current authority to access Databento.
+
 **Status:** `Accepted` — the strategic decision was made operator-side on 2026-07-10 (advisor session authored the deliverables; the CC handoff enacting it states "this handoff does not re-litigate it"). This ADR records the decision and lands with the integration commit.
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-08-07-loop-s1-environment-ratification.md` - the §2 rail-verdict clause only (TradingView/NinjaTrader8/Rithmic/Bulenox chain). The §4 falsifier never fired; the rail changed via a different mechanism these two ADRs describe.
@@ -258,3 +260,11 @@ identity, and none of it has been superseded. Only §2's rail-verdict sentence a
 falsifier (which never fired, and is now effectively moot — the rail already changed by the S1/S2
 route, not the direct-API-broker route it names) are stale. Reader encountering §2/§4 today: read
 the current rail from `ops/c1_rail/__init__.py` and the S1/S2 ADRs, not from this ADR's own text.
+
+## Addendum 2026-09-10 - operator retirement of Databento
+
+Joshua reported that Databento has been retired as an information source for First Passage and the subscription has been cancelled. This records the report date; it does not invent an earlier cancellation date or independently attest billing status. The retirement applies to research acquisition and the proposed daemon feed. Do not connect, pull, estimate, renew or infer access from installed SDKs, retained scripts, old credentials or earlier GO documents. No replacement source has been approved.
+
+Historical artifacts, source fingerprints, tooling and prior results remain historical records; this change neither deletes data nor grants new rights to use retained vendor data. Non-provider research methodology and protection/strategy decisions are unchanged. The old acquisition and feed selections above are superseded by this explicit operator retirement, not by a claimed firing of the original falsifiers.
+
+The [daemon build ADR](2026-08-08-s2b-signal-daemon-build.md) records the execution consequence. M1 item 5 still needs a qualifying evaluate-hook event and separate signoff. Any proposal to qualify controlled replay instead of the currently specified live feed requires an explicit acceptance amendment; retirement alone does not approve a substitute or weaken the no-arm gate.
