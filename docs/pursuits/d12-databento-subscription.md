@@ -1,4 +1,17 @@
-# databento — KEEP
+# databento — RETIRED
+
+**Class:** (d) meta-belt (subscription/usage) · **Standing:** RETIRED
+**Operator report:** 2026-09-10 — unsubscribed; no longer an approved First Passage
+information source. Effective cancellation date and final invoice were not supplied.
+No replacement is approved. No acquisition or estimate calls are authorized by this record.
+
+Current costs and confirmation status belong to the
+[subscription ledger](SUBSCRIPTION_LEDGER.md). The
+[source retirement record](../adr/2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento)
+supersedes the earlier KEEP disposition below. Historical research is retained;
+this is an operator retirement, not a new research falsifier.
+
+## Historical disposition — superseded 2026-09-10
 
 **Class:** (d) meta-belt (subscription/usage) · **Standing:** KEEP
 **Aim served:** A2 — CME futures tick/order-book data for the discovery pipeline
