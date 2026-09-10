@@ -1,12 +1,23 @@
 """Weekly activity-decision status for the Tradeify Mon–Fri idle clock.
 
 Report-only. Reads the compliance note's append-only coverage protocol — the
-designated authoritative record of a week's operator decision / trade: §2a of
-TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md defines the row shape, §2b holds the
-rows this module actually matches. That file was created 2026-09-10; before
-that it had never existed, so ``decision_status`` read empty text and returned
-NOT RECORDED for every bucket, unconditionally. An empty or missing file still
-means "no row was written", never "the week was idle".
+designated authoritative record of a week's operator decision / trade
+(TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md).
+
+⚠ That record is **redacted from this public clone** and is expected to be absent
+here — see `docs/load_bearing_numbers.md` (venue-inactivity row) and the
+[public-visibility transition ADR](../../docs/adr/2026-08-14-repo-public-visibility-transition.md),
+which names the file among the artifacts deliberately withheld. Its §2a is the
+owner of record for the ENFORCEMENT consequence (irreversible account deletion,
+art. 12268494), cited by ``core/firm_rules.py`` and the load-bearing-numbers
+table. Do NOT recreate it here to satisfy this reader, and do not renumber its
+sections: a public stub would shadow the owner those citations resolve to.
+
+Because of that, an absent file is reported as ``UNAVAILABLE``, never as
+``NOT RECORDED`` — "I cannot see the record" and "the record says no row" are
+different facts, and only the second is evidence about the account. Conflating
+them would hand the operator a false weekly-coverage status on the one clone
+where the record is guaranteed missing.
 
 Does not invent a store, does not place trades, and must never read as a
 standing licence or a reminder-to-trade. STATE.md owns the recurrence posture,
@@ -21,8 +32,11 @@ surfaces model the same bucket and are reusable:
     ``weekly_coverage`` -- ``pd.period_range(..., freq="W-FRI")`` coverage fraction.
   * ``lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/idle_clock_monitor.py``
     ``evaluate_week`` -- per-week T-2/T-1 alerts, ``breached`` iff the week has
-    zero active days, i.e. the venue predicate exactly. That study's RESULTS.md
-    is the idle-clock write-up; there is no separate "idle-clock tracking spec".
+    zero active days, i.e. the venue predicate exactly. Its frozen semantics are
+    ``docs/briefs/pre-registration/Q-MONSURF-1-verdict-preregistration.md`` §3-5
+    (that module's own docstring names it); §4 is the frozen T-2/T-1 operational
+    definition. Change the monitor's behaviour there, not against the study's
+    RESULTS.md, which is an outcome write-up rather than the normative artifact.
 Do not treat this report parser as the sole semantic authority; prefer those when
 you need the bucket as a computation rather than as a coverage-note read. The MC engine
 models something different and stricter: ``core/mc/simulation.py`` counts ROLLING
@@ -97,7 +111,12 @@ def business_days_remaining(asof: date, friday: date) -> int:
 
 
 def decision_status(text: str, monday: date, friday: date) -> str:
-    """Return RECORDED or NOT RECORDED for the Mon–Fri bucket in `text`."""
+    """Return RECORDED or NOT RECORDED for the Mon–Fri bucket in `text`.
+
+    Callers holding a possibly-absent record must NOT pass ``""`` here and read
+    the result as NOT RECORDED — use :func:`coverage_state`, which separates
+    "no row" from "no record". This function answers only about text it was given.
+    """
     start, end = bucket_mmdd(monday, friday)
     for rx in (_COVERAGE_LIMB, _WEEK_COVERED_HEADING, _HISTORY_COVERED):
         for m in rx.finditer(text):
@@ -106,16 +125,40 @@ def decision_status(text: str, monday: date, friday: date) -> str:
     return "NOT RECORDED"
 
 
+def coverage_state(root: Path, monday: date, friday: date) -> str:
+    """RECORDED / NOT RECORDED / UNAVAILABLE for the bucket.
+
+    UNAVAILABLE means the compliance record is not readable on this clone — the
+    expected case here, since it is redacted from the public tree (see module
+    header). It is a statement about THIS READER, not about the account: absence
+    of the record is not evidence that no trade was placed or no row written.
+    """
+    path = root / COMPLIANCE_REL
+    if not path.is_file():
+        return "UNAVAILABLE"
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return "UNAVAILABLE"
+    return decision_status(text, monday, friday)
+
+
 def format_activity_decision_line(root: Path, asof: date) -> str:
     """One operator-decision status line; never a trade instruction."""
     monday, friday = mon_fri_week(asof)
-    path = root / COMPLIANCE_REL
-    text = path.read_text(encoding="utf-8") if path.is_file() else ""
-    status = decision_status(text, monday, friday)
+    state = coverage_state(root, monday, friday)
     days = business_days_remaining(asof, friday)
     label = week_label(monday, friday)
+    if state == "UNAVAILABLE":
+        # Deliberately does not imply a coverage verdict either way.
+        return (
+            f"weekly activity decision [{label}]: UNAVAILABLE "
+            f"(coverage record redacted from this clone; not a coverage verdict) "
+            f"({days} business day{'s' if days != 1 else ''} left) "
+            f"— operator call, see STATE scheduled forward triggers"
+        )
     return (
-        f"weekly activity decision [{label}]: {status} "
+        f"weekly activity decision [{label}]: {state} "
         f"({days} business day{'s' if days != 1 else ''} left) "
         f"— operator call, see STATE scheduled forward triggers"
     )

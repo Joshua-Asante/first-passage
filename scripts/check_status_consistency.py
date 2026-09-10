@@ -14,9 +14,10 @@ surfaces carry) whose status drifts:
   C3 (HARD) — a lab/analysis/<slug>/<file> link that no longer resolves but is
               present under lab/archive/<slug>/ (stale tier link; suggest
               repoint) OR under lab/analysis/<theme>/<slug>/ (flat-to-theme-nest
-              move; suggest repoint). "Present" means real content, not a
-              directory entry: a `__pycache__`-only shell is residue and does
-              not make a repoint suggestable (`_resolves_with_content`).
+              move; suggest repoint). "Resolves" and "present" both mean TRACKED
+              content, on the source path and both destinations alike
+              (`_resolves_with_content`): untracked residue left in a pruned
+              directory must not decide either half of the question.
   NOTE      — a slug cited as rejected with no CATALOG row (scoped orphan; does
               NOT change the exit code — the surfaces are deliberately not 1:1).
 
@@ -58,10 +59,11 @@ links with NO lab/(analysis|archive)/<slug>/ anchor, is NOT joinable and is
 skipped (e.g. NAS100's memory-linked "Q-NAS-4" row). This gate reports what it
 can join; it is not a completeness proof.
 
-Reads only committed markdown, and probes the filesystem only for CONTENT
-(`_resolves_with_content`) -> environment-independent (green on CI / clone).
+Reads only committed markdown, and asks git what is TRACKED rather than what
+happens to sit on disk -> environment-independent (green on CI / clone).
 Untracked residue must never change a verdict; a bare `.exists()` here once
-did, and split CI-green from local-red off one commit (2026-09-10).
+did, and split CI-green from local-red off one commit (2026-09-10). Tracked-ness
+is a property of the commit, which is the invariant this module actually needs.
 
 Exit codes: 0 = no HARD findings (NOTEs allowed); 1 = one or more C2/C3.
 """
@@ -69,6 +71,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -380,32 +383,91 @@ def _analysis_to_archive_target(target: str) -> str:
     return "lab/archive/" + "/".join(parts)
 
 
-def _resolves_with_content(path: Path) -> bool:
-    """True if `path` is a file, or a directory holding at least one real file.
+def _tracked_index(repo_root: Path) -> tuple[frozenset[str], frozenset[str]] | None:
+    """(tracked files, their ancestor dirs) as repo-relative POSIX paths.
 
-    A directory left behind holding ONLY ``__pycache__`` is residue, not content.
-    Measured 2026-09-10: after the 2026-09-06 tracked-file reduction moved
-    ``ict_cascade_2026-06-18`` / ``ict_revcon_2026-06-19`` out to the archive
-    repo, both ``lab/archive/<slug>/`` directories survived on developer machines
-    as bytecode-only shells (0 tracked files, 0 non-``__pycache__`` files). Bare
-    ``.exists()`` read those as "the study is present under archive" and C3
-    suggested repointing live prose at a path that resolves on ONE machine and
-    nowhere else -- CI and every fresh clone lack the directory entirely, so the
-    gate was red locally and green on CI off the same commit. That breaks this
-    module's own environment-independence claim (see the header), so the archive
-    and theme-nest probes below ask for content, not for a directory entry.
+    ``None`` when git cannot answer (no git, not a repo, command failure), which
+    makes the callers fall back to a filesystem probe rather than hard-fail.
     """
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(repo_root), "ls-files", "-z"],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if proc.returncode != 0:
+        return None
+    files = frozenset(p for p in proc.stdout.split(chr(0)) if p)
+    dirs: set[str] = set()
+    for f in files:
+        parts = f.split("/")
+        for i in range(1, len(parts)):
+            dirs.add("/".join(parts[:i]))
+    return files, frozenset(dirs)
+
+
+def _resolves_with_content(
+    path: Path,
+    repo_root: Path,
+    tracked: tuple[frozenset[str], frozenset[str]] | None,
+) -> bool:
+    """True if `path` names TRACKED content — a tracked file, or a directory
+    holding one.
+
+    TRACKED, not merely present: untracked residue must never change a verdict,
+    because a path that resolves only on one machine does not resolve for CI, a
+    fresh clone, or a reader. Measured 2026-09-10: after the 2026-09-06
+    tracked-file reduction moved ``ict_cascade_2026-06-18`` /
+    ``ict_revcon_2026-06-19`` out to the archive repo, both ``lab/archive/<slug>/``
+    directories survived on developer machines as bytecode-only shells (0 tracked
+    files). Bare ``.exists()`` read those as "the study is present under archive"
+    and C3 suggested repointing live prose at a path no clone has — the gate was
+    red locally and green on CI off the same commit.
+
+    A ``__pycache__``-only filter was the first fix and was too narrow: any
+    ignored artifact left in the directory (a stray ``.pyc`` outside
+    ``__pycache__``, a ``.DS_Store``, an input CSV under the repo's
+    ``lab/**/inputs/*.csv`` ignore rule) would still read as content. Asking git
+    what is tracked covers every such case at once, and is a property of the
+    commit rather than of the working tree — which is what environment
+    independence actually requires.
+
+    Falls back to a filesystem probe when `tracked` is ``None`` (no git, not a
+    repo). That fallback is STRICTLY WEAKER and known to be: without git it
+    cannot tell tracked from ignored, so it still recognises a stray ``.pyc`` or
+    a ``.DS_Store`` as content and can emit the machine-local repoint this
+    function exists to prevent. It degrades rather than hard-fails on purpose --
+    a gate that cannot run is worse than one that runs at the old fidelity -- and
+    every environment that actually runs this gate (CI, a clone, a dev box) has
+    git. The fallback tests components RELATIVE to `path`: an absolute-parts test
+    would filter every file when the clone itself lives under a directory named
+    ``__pycache__``.
+    """
+    if tracked is not None:
+        try:
+            rel = path.resolve().relative_to(repo_root.resolve()).as_posix()
+        except ValueError:
+            return False
+        files, dirs = tracked
+        return rel in files or rel in dirs
     if path.is_file():
         return True
     if not path.is_dir():
         return False
     return any(
-        child.is_file() and "__pycache__" not in child.parts
+        child.is_file() and "__pycache__" not in child.relative_to(path).parts
         for child in path.rglob("*")
     )
 
 
-def _analysis_to_theme_nest_targets(target: str, repo_root: Path) -> list[str]:
+def _analysis_to_theme_nest_targets(
+    target: str,
+    repo_root: Path,
+    tracked: tuple[frozenset[str], frozenset[str]] | None = None,
+) -> list[str]:
     """If ``lab/analysis/<slug>/...`` is gone, find ``lab/analysis/<theme>/<slug>/...``.
 
     Inserts one path segment after ``lab/analysis/`` and keeps every extra
@@ -424,7 +486,7 @@ def _analysis_to_theme_nest_targets(target: str, repo_root: Path) -> list[str]:
     found: list[str] = []
     for child in sorted(p for p in analysis_root.iterdir() if p.is_dir()):
         candidate = child / rest
-        if _resolves_with_content(candidate):
+        if _resolves_with_content(candidate, repo_root, tracked):
             found.append(f"{prefix}{child.name}/{rest}")
     return found
 
@@ -438,18 +500,23 @@ def check_c3(assertions: list[Assertion], repo_root: Path) -> list[Finding]:
     or theme-nest counterpart is a plain dead link, out of scope (§5). Nested
     hot links have their theme segment stripped in the suggested archive path."""
     findings: list[Finding] = []
+    tracked = _tracked_index(repo_root)
     for a in assertions:
         if a.link_tier != "analysis":
             continue
-        if (repo_root / a.target).exists():
+        # The SOURCE path gets the same content test as the destinations. A bare
+        # .exists() here is the mirror of the bug fixed below: a __pycache__-only
+        # shell at lab/analysis/<slug>/ short-circuits the loop, so the gate goes
+        # locally GREEN on a link a clean clone reports as a HARD C3 finding.
+        if _resolves_with_content(repo_root / a.target, repo_root, tracked):
             continue
         archive_target = _analysis_to_archive_target(a.target)
-        if _resolves_with_content(repo_root / archive_target):
+        if _resolves_with_content(repo_root / archive_target, repo_root, tracked):
             findings.append(Finding(
                 "HARD", "C3", a.surface, a.lineno,
                 f"stale tier link -> {a.target} (moved; repoint to {archive_target})"))
             continue
-        nest_targets = _analysis_to_theme_nest_targets(a.target, repo_root)
+        nest_targets = _analysis_to_theme_nest_targets(a.target, repo_root, tracked)
         if nest_targets:
             findings.append(Finding(
                 "HARD", "C3", a.surface, a.lineno,

@@ -48,10 +48,30 @@ def test_not_recorded_when_compliance_silent(tmp_path):
     assert "remind" not in line.lower()
 
 
-def test_not_recorded_when_compliance_missing(tmp_path):
+def test_unavailable_not_not_recorded_when_compliance_missing(tmp_path):
+    """A missing record is UNAVAILABLE, never NOT RECORDED (Codex review, PR #331).
+
+    The compliance note is redacted from the public clone, so "absent" is the
+    NORMAL state here. Reporting that as NOT RECORDED asserts a fact about the
+    account ("no row was written") from an observation about the reader ("I
+    cannot see the record") -- and would show a false weekly-coverage status on
+    the one clone where the file is guaranteed missing.
+    """
     asof = date(2026, 8, 12)
     line = format_activity_decision_line(tmp_path, asof)
+    assert "UNAVAILABLE" in line
+    assert "NOT RECORDED" not in line
+    assert "redacted" in line.lower()
+    # Still not a coverage verdict in either direction.
+    assert "RECORDED (" not in line
+
+
+def test_not_recorded_only_when_the_record_is_readable(tmp_path):
+    """NOT RECORDED stays reachable -- it means the record has no matching row."""
+    _write_compliance(tmp_path, "# Coverage" + chr(10) * 2 + "No rows yet." + chr(10))
+    line = format_activity_decision_line(tmp_path, date(2026, 8, 12))
     assert "NOT RECORDED" in line
+    assert "UNAVAILABLE" not in line
 
 
 def test_recorded_via_coverage_limb(tmp_path):

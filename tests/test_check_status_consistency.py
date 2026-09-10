@@ -382,6 +382,94 @@ def test_c3_stale_flat_link_orb_mnq_theme_nest(tmp_path):
     assert "lab/analysis/orb/orb_mnq_2026-07/RESULTS.md" in findings[0].message
 
 
+def test_c3_untracked_source_shell_does_not_suppress_the_finding(tmp_path):
+    """The SOURCE path gets the content test too (Codex review, PR #331).
+
+    Mirror of the destination bug: if lab/analysis/<slug>/ survives locally as a
+    __pycache__-only shell, a bare .exists() short-circuits check_c3 and the gate
+    goes GREEN on a link that a clean clone reports as a HARD finding.
+    """
+    src = tmp_path / "lab" / "analysis" / "movedstudy" / "__pycache__"
+    src.mkdir(parents=True)
+    (src / "harness.cpython-312.pyc").write_bytes(b"cached")
+    dest = tmp_path / "lab" / "archive" / "movedstudy"
+    dest.mkdir(parents=True)
+    (dest / "RESULTS.md").write_text("body", encoding="utf-8")
+    assertions = [csc.Assertion(
+        "ops/instruments/TESTSYM.md", 12, "movedstudy",
+        "analysis", "lab/analysis/movedstudy/", True)]
+    findings = csc.check_c3(assertions, tmp_path)
+    assert len(findings) == 1, "source shell must not suppress the C3 finding"
+    assert findings[0].code == "C3"
+
+
+def _git_repo(root: Path) -> Path:
+    """Init a real repo so the TRACKED code path (not the fallback) is exercised."""
+    run = lambda *a: subprocess.run(
+        ["git", "-C", str(root), *a], capture_output=True, text=True, check=True)
+    root.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init", "-q", str(root)], capture_output=True, check=True)
+    run("config", "user.email", "t@example.invalid")
+    run("config", "user.name", "t")
+    (root / "seed.md").write_text("seed", encoding="utf-8")
+    run("add", "seed.md")
+    run("commit", "-qm", "seed")
+    return root
+
+
+def test_c3_ignored_non_pycache_residue_is_not_content(tmp_path):
+    """A __pycache__-only filter was too narrow (Codex review, PR #331/#333).
+
+    Any UNTRACKED artifact left behind -- a stray .pyc outside __pycache__, a
+    .DS_Store, an input CSV under the repo's lab/**/inputs/*.csv ignore rule --
+    would still read as "the study is present under archive" and produce a
+    machine-local repoint that CI and a fresh clone cannot resolve.
+    """
+    root = _git_repo(tmp_path / "repo")
+    for residue in ("gate.pyc", ".DS_Store", "panel.csv"):
+        slug = "study_" + residue.replace(".", "_")
+        d = root / "lab" / "archive" / slug
+        d.mkdir(parents=True)
+        (d / residue).write_bytes(b"residue")  # never git-added => untracked
+        assertions = [csc.Assertion(
+            "ops/instruments/TESTSYM.md", 12, slug,
+            "analysis", f"lab/analysis/{slug}/", True)]
+        assert csc.check_c3(assertions, root) == [], residue
+
+
+def test_c3_tracked_content_in_archive_still_fires(tmp_path):
+    """The tracked-ness rule must not blind C3 to a genuine, committed move."""
+    root = _git_repo(tmp_path / "repo")
+    d = root / "lab" / "archive" / "movedstudy"
+    d.mkdir(parents=True)
+    (d / "RESULTS.md").write_text("body", encoding="utf-8")
+    subprocess.run(["git", "-C", str(root), "add", "lab/archive/movedstudy/RESULTS.md"],
+                   capture_output=True, check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "add study"],
+                   capture_output=True, check=True)
+    assertions = [csc.Assertion(
+        "ops/instruments/TESTSYM.md", 12, "movedstudy",
+        "analysis", "lab/analysis/movedstudy/", True)]
+    findings = csc.check_c3(assertions, root)
+    assert len(findings) == 1 and findings[0].code == "C3"
+
+
+def test_resolves_with_content_fallback_parts_are_relative(tmp_path):
+    """A clone living under a dir named __pycache__ must not blank every probe.
+
+    `child.parts` on an ABSOLUTE path carries every ancestor component, so an
+    absolute-parts test filters all real files when any ancestor is named
+    __pycache__ -- a clone-location-dependent false negative the prior
+    `.exists()` did not have (Codex review, PR #331).
+    """
+    root = tmp_path / "__pycache__" / "checkout"
+    study = root / "lab" / "archive" / "movedstudy"
+    study.mkdir(parents=True)
+    (study / "RESULTS.md").write_text("body", encoding="utf-8")
+    # tracked=None forces the filesystem fallback (tmp_path is not a git repo)
+    assert csc._resolves_with_content(study, root, None) is True
+
+
 def test_c3_pycache_only_archive_shell_is_not_a_repoint(tmp_path):
     """Bytecode residue is not the study having moved.
 
