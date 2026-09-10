@@ -85,7 +85,7 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
 ### Monthly — recurring (rolling; next deadline **2026-09-21**)
 
 - **Subscription reconfirm:** recheck [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md)
-  rows d11–d17, record confirmation even when unchanged, and resolve Fly.io/Tradeify
+  rows d11–d18, record confirmation even when unchanged, and resolve Fly.io/Tradeify
   unknowns if evidence becomes available. Roll monthly on the 21st; the operator
   confirms the figures. [Owner ADR](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md).
 
