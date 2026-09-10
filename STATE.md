@@ -54,7 +54,6 @@ Retracted verdicts leave this index; their correction stands with its owner.
 - **2026-08-27** — SSOT/data-lineage remediation Phase 1 authorized. [ADR](docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md)
 - **2026-08-24** — Regime-gate scope and validation-battery K-tiering ruled. [Scope](docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md) · [K-tiering](docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md)
 - **2026-08-24** — A2 disclosed-N reduction accepted; not a Phase B GO. [RESULTS §4](lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)
-- **2026-08-24** — M1 item 5 licensed to a test strategy; Stage 1 no longer waits on queue #1. [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 
 ## Dormant cross-session threads
 

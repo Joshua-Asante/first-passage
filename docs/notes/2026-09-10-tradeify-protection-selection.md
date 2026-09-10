@@ -8,6 +8,18 @@ On 2026-09-10, after the selection was recorded and pushed, the operator explici
 
 This acceptance supersedes the earlier routing that kept configuration selection open pending native exits and integer sizing. The documented approximation and execution gaps remain factual limitations, but are not outstanding conditions for this operator-accepted queue item. Do not automatically reopen the campaign, resume the simulator, or create a replacement validation task. This closure records operator acceptance of the configuration, not a claim that the unperformed technical validation passed or authorization to deploy.
 
+## Explicit publication authorization
+
+On 2026-09-10, before the first push of selection commit `eeaf8aa`, the operator
+was told that `Joshua-Asante/first-passage` is public and asked to authorize
+publishing that commit, including the selected strategy names, sizing and 1%
+protection policy. The operator replied: **"Yes you may."** This is an explicit,
+narrow publication exception to the campaign's earlier private-override boundary
+for the selected configuration values recorded in this note, including its normal
+ORB configuration and protected-mode behavior. It does not release raw histories,
+other captured overrides, private reports, account snapshots or numerical results.
+The existing public selection commit is retained under this authorization.
+
 ## Selected book
 
 | Strategy | Normal setting retained |

@@ -40,7 +40,6 @@
 > owns the reviewed status, private disposition identity and remaining gates.
 > The executing-plans skill applies only to a separately released scope.
 
-
 **Goal:** find the fastest qualifying configuration within a frozen, executable
 grammar on the incumbent Tradeify Select 100K evaluation, or return no qualifying
 configuration from one bounded attempt.

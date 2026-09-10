@@ -1,5 +1,11 @@
 # Tradeify bounded feasibility screen implementation plan
 
+> **Integration requirement:** Preserve plan-only commit
+> `69be794bdecc86248942f789c75bd9f83dd0702e` as an ancestor of the later closure
+> and selection commits. PR #329 must use a merge commit, not a squash merge,
+> so the pre-execution plan remains independently inspectable in ancestry.
+> The closure banner below was added after that plan-only commit.
+
 > **2026-09-10 closure:** The fixed-menu screen has returned a private report;
 > its execution is closed. Subsequent interpretation review identified an
 > incorrect all-halves speed requirement and unsupported lower-bound language;

@@ -7,6 +7,12 @@
 > supersedes earlier next-work routing. No automatic replacement work, simulator
 > resumption, technical validation claim or deployment follows from this closure.
 
+> **Narrow publication exception, 2026-09-10:** Before the selection was pushed,
+> the operator explicitly authorized publishing the selected configuration in
+> this public repository. The [authorization record](../../notes/2026-09-10-tradeify-protection-selection.md#explicit-publication-authorization)
+> limits that exception to the configuration values in the selection note. Earlier
+> private-override restrictions below remain in force for all other contents.
+
 > **Current operator direction, 2026-09-10:** Full simulator work is paused.
 > The separate exploratory work has produced an operator-selected working
 > configuration: Aegis + Vanguard + MYM + original ORB, 1% combined drawdown
