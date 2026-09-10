@@ -140,7 +140,9 @@ def run_daemon(config_path, cfg):
     try:
         while True:
             record = loop.step()
-            if record.get("action") not in ("idle",):
+            disabled = (record.get("action") == "suppress"
+                        and record.get("reason") == "ceremony_disabled")
+            if record.get("action") != "idle" and not disabled:
                 log.info("step %s", record)
             time.sleep(interval)
     except KeyboardInterrupt:

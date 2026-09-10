@@ -65,6 +65,13 @@ def prepare(store, config_path, manifest, *, boot_id, now):
         ident = manifest["ceremony_id"]
         if ident in obj["ceremonies"] or ident in obj["tombstones"]:
             raise CeremonyError("ceremony identity already used")
+        unresolved = {"EVALUATED", "SEND_RESERVED", "EMITTED", "TRANSPORT_UNKNOWN"}
+        for prior in obj["ceremonies"].values():
+            checkpoint = (prior.get("previous_state") if prior["state"] == "CLOSED"
+                          else prior["state"])
+            if checkpoint in unresolved:
+                # Neither a fresh ID, close, nor restart reconciles an uncertain send.
+                raise CeremonyError("unresolved prior attempt; reconciliation required")
         if obj["active"] and obj["ceremonies"][obj["active"]]["state"] == "READY":
             raise CeremonyError("close current ceremony before preparing another")
         # Disable the durable gate before touching configuration.

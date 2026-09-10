@@ -133,7 +133,7 @@ class M1Coordinator:
             advance(item, "SEND_RESERVED", "TRANSPORT_UNKNOWN" if unknown else "EMITTED")
             if not unknown:
                 kind = "rejected" if not 200 <= status < 300 else "http_success"
-                if body == "dry_run: computed, not sent":
+                if body in ("dry_run: computed, not sent", "dry_run: computed, not sent\n"):
                     kind = "dry_run_computed"
                 item["response"] = {"http_status": status,
                                     "body_sha256": hashlib.sha256(body.encode()).hexdigest(),

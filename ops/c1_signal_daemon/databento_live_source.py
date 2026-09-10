@@ -47,27 +47,41 @@ class DatabentoLiveBarSource:
         except Exception:
             return False
 
-    def _disconnect(self):
+    def _detach_locked(self):
         client, self._client = self._client, None
         self._session += 1
         self.binding = None
         self._mapping = None
-        with self._mutex:
-            self._queue.clear()
+        self._queue.clear()
+        return client
+
+    @staticmethod
+    def _terminate(client):
         if client is not None:
             try:
                 client.terminate()
             except Exception:
                 pass
 
-    def deactivate(self):
-        self._requested = None
-        self._disconnect()
+    def _disconnect(self):
+        with self._mutex:
+            client = self._detach_locked()
+        self._terminate(client)
 
-    def _failed(self, *_):
-        self._disconnect()
-        self._retry_at = self._clock().timestamp() + self._backoff
-        self._backoff = min(self._backoff * 2, 30)
+    def deactivate(self):
+        with self._mutex:
+            self._requested = None
+            client = self._detach_locked()
+        self._terminate(client)
+
+    def _failed(self, *_, session=None):
+        with self._mutex:
+            if session is not None and session != self._session:
+                return
+            client = self._detach_locked()
+            self._retry_at = self._clock().timestamp() + self._backoff
+            self._backoff = min(self._backoff * 2, 30)
+        self._terminate(client)
 
     def activate(self, binding):
         if self._requested is not None and self._requested != binding:
@@ -81,17 +95,27 @@ class DatabentoLiveBarSource:
             return
         if self._clock().timestamp() < self._retry_at:
             return
-        try:
-            self._disconnect()
+        self._disconnect()
+        with self._mutex:
             session = self._session
-            self._client = self._factory()
-            self._client.add_callback(
-                lambda record: self._on_record(record, session), self._failed)
-            self._client.subscribe(dataset="GLBX.MDP3", schema="ohlcv-1m",
+        try:
+            client = self._factory()
+            with self._mutex:
+                current = session == self._session and self._requested == binding
+                if current:
+                    self._client = client
+            if not current:
+                self._terminate(client)
+                return
+            # SDK calls can wait on its callback thread; never hold our mutex here.
+            client.add_callback(
+                lambda record: self._on_record(record, session),
+                lambda error: self._failed(error, session=session))
+            client.subscribe(dataset="GLBX.MDP3", schema="ohlcv-1m",
                                    symbols=[binding["raw_symbol"]], stype_in="raw_symbol")
-            self._client.start()
+            client.start()
         except Exception:
-            self._failed()
+            self._failed(session=session)
 
     def _on_record(self, record, session):
         with self._mutex:

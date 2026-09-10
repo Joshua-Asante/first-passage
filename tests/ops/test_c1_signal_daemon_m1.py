@@ -373,3 +373,32 @@ def test_close_between_response_checkpoints_is_never_reopened(tmp_path, monkeypa
     assert item["previous_state"] == "RESPONSE_RECORDED"
     assert item["response"]["http_status"] == 200
     assert store.read()["enabled"] is False
+
+
+@pytest.mark.parametrize("stage", ["EVALUATED", "SEND_RESERVED", "EMITTED", "TRANSPORT_UNKNOWN"])
+@pytest.mark.parametrize("disposition", ["active", "closed", "restarted"])
+def test_unresolved_attempt_blocks_fresh_ceremony_identity(tmp_path, stage, disposition):
+    m, store, path = prepared(tmp_path)
+    def pending(obj):
+        obj["ceremonies"]["offline-001"]["state"] = stage
+        obj["tombstones"]["offline-001"] = {"reason": "offline_checkpoint"}
+    store.mutate(pending)
+    if disposition == "closed":
+        m.close(store, path, "offline-001")
+    if disposition == "restarted":
+        store.boot("boot-B")
+    before = store.path.read_bytes(), path.read_bytes()
+    next_manifest = {**manifest(), "ceremony_id": "offline-new"}
+    with pytest.raises(m.CeremonyError, match="unresolved"):
+        m.prepare(store, path, next_manifest,
+                  boot_id="boot-B" if disposition == "restarted" else "boot-A", now=NOW)
+    assert (store.path.read_bytes(), path.read_bytes()) == before
+
+
+def test_actual_newline_response_is_classified_without_changing_body_hash(tmp_path):
+    body = "dry_run: computed, not sent\n"
+    loop, store, calls, path = active_loop(tmp_path, (200, body))
+    loop.step(TARGET + timedelta(seconds=61))
+    response = store.read()["ceremonies"]["offline-001"]["response"]
+    assert response["response_kind"] == "dry_run_computed"
+    assert response["body_sha256"] == hashlib.sha256(body.encode()).hexdigest()

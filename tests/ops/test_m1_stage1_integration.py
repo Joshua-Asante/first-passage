@@ -79,10 +79,13 @@ def test_sdk_hook_to_http_decision_and_closed_proof(tmp_path, monkeypatch, dry_r
         handler.headers = {"Content-Length": str(len(body)), **headers}
         handler.rfile = io.BytesIO(body)
         responses = []
-        handler._respond = lambda status, text: responses.append((status, text))
+        handler.send_response = responses.append
+        handler.send_header = lambda *args: None
+        handler.end_headers = lambda: None
+        handler.wfile = io.BytesIO()
         handler.do_POST()  # actual authentication, parsing, equity and listener path
         assert len(responses) == 1
-        return responses[0]
+        return responses[0], handler.wfile.getvalue().decode("utf-8")
 
     stamp = int(target.timestamp()) * 10**9
     Mapping = type("SymbolMappingMsg", (SimpleNamespace,), {})
@@ -115,6 +118,7 @@ def test_sdk_hook_to_http_decision_and_closed_proof(tmp_path, monkeypatch, dry_r
     close(store, daemon_cfg, cid)
     rows = list(ledger.iter_records())
     if dry_run:
+        assert store.read()["ceremonies"][cid]["response"]["response_kind"] == "dry_run_computed"
         proof = project_evidence(rows, store.read(), cid)
         assert proof["expected_qty"] == proof["observed_qty"] == 1
         assert proof["dry_run"] is True and proof["sender_invoked"] is False

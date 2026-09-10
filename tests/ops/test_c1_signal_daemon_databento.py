@@ -15,6 +15,7 @@ class SDK:
         self.subscriptions = []
     def add_callback(self, callback, exception_callback=None):
         self.callback = callback
+        self.error_callback = exception_callback
     def subscribe(self, **kwargs):
         self.subscriptions.append(kwargs)
     def start(self):
@@ -170,3 +171,67 @@ def test_runtime_build_is_network_free_and_exposes_boot(tmp_path):
     assert heartbeat["strategy"] == "NullStrategy"
     assert heartbeat["effective_emit"] is False
     assert "path_token" not in str(heartbeat)
+
+
+def test_superseded_sdk_error_cannot_disconnect_replacement(tmp_path):
+    source, first, calls, now, store = source_fixture(tmp_path)
+    source.activate(manifest()["source"])
+    old_error = first.error_callback
+    first.up = False
+    source.activate(manifest()["source"])
+    now[0] += timedelta(seconds=2)
+    replacement = SDK()
+    source._factory = lambda: replacement
+    source.activate(manifest()["source"])
+    old_error(RuntimeError("delayed old session failure"))
+    assert source.connected and replacement.up
+    replacement.callback(mapping())
+    replacement.callback(record())
+    assert source.poll() is not None
+    replacement.error_callback(RuntimeError("current session failure"))
+    assert not source.connected
+
+
+def test_sdk_subscribe_can_wait_for_callback_thread_without_lock_inversion(tmp_path):
+    import threading
+    source, first, calls, now, store = source_fixture(tmp_path)
+    source.activate(manifest()["source"])
+    old_error = first.error_callback
+    first.up = False
+    source.activate(manifest()["source"])
+    now[0] += timedelta(seconds=2)
+    completed = threading.Event()
+    class Replacement(SDK):
+        def subscribe(self, **kwargs):
+            def callback():
+                old_error(RuntimeError("old event loop callback"))
+                completed.set()
+            worker = threading.Thread(target=callback, daemon=True)
+            worker.start()
+            assert completed.wait(1), "callback mutex held across SDK subscription"
+    source._factory = Replacement
+    source.activate(manifest()["source"])
+    assert completed.wait(1)
+    assert source.connected
+
+
+def test_disabled_runtime_does_not_log_each_poll(tmp_path, monkeypatch, caplog):
+    import json
+    import logging
+    path = tmp_path / "config.json"
+    value = cfg()
+    value["strategy"] = "null"
+    value["m1_test"]["state_path"] = str(tmp_path / "idle-state.json")
+    path.write_text(json.dumps(value))
+    monkeypatch.setattr(daemon, "serve_health", lambda **kwargs: SimpleNamespace(
+        serve_forever=lambda: None, shutdown=lambda: None))
+    polls = []
+    def sleep(interval):
+        polls.append(interval)
+        if len(polls) == 3:
+            raise KeyboardInterrupt
+    monkeypatch.setattr(daemon.time, "sleep", sleep)
+    with caplog.at_level(logging.INFO):
+        assert daemon.run_daemon(path, value) == 0
+    assert len(polls) == 3
+    assert not any(r.getMessage().startswith("step ") for r in caplog.records)

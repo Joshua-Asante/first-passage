@@ -57,6 +57,10 @@ retries that reservation. HTTP redirects are terminal responses and cannot creat
 another request. Duplicate bars, stale boot generations and spent ceremony
 IDs cannot re-enable it. Operator close preserves late receipts without reopening
 the ceremony. File locks and durable replacements protect state transitions.
+Any prior unresolved evaluation/send checkpoint or uncertain transport also blocks
+preparing a fresh ceremony ID, including after close or restart. This offline
+packet supplies no reset or reconciliation bypass: preserve the journal and stop
+until a separate operator-reviewed reconciliation procedure is available.
 State, initialized marker and tombstones must survive rollback; deleting state is
 not recovery. An established feed disconnect uses bounded reconnect backoff.
 
@@ -190,3 +194,14 @@ behavior. This is code-review evidence, not M1 item-5 acceptance or deployment G
 Clean-state PR rerun: **371 passed** on Python 3.12 after removing prior pytest
 fixtures and bytecode caches, with bytecode writing and pytest caching disabled.
 This is the original 366-test selection plus five redirect regressions.
+
+GitHub review follow-up: offline regressions reproduced 15 failures covering stale
+SDK error callbacks, newline-terminated wire receipts, disabled polling logs and
+fresh-ID bypass of unresolved sends. Repairs scope error callbacks to the SDK
+session, preserve exact body hashes while recognizing the real response terminator,
+keep disabled polling quiet, and block preparation across unresolved journal history.
+The integration test now uses the HTTP handler's real response writer.
+
+Follow-up verification: **387 passed** on Python 3.12. The callback lock-inversion
+regression failed before moving all SDK calls outside the callback mutex, then
+passed with the combined suite. No deployment, feed or signal was used.
