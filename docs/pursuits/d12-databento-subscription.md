@@ -1,9 +1,9 @@
-# databento — RETIRED
+# databento — SUBTRACT (retired)
 
-**Class:** (d) meta-belt (subscription/usage) · **Standing:** RETIRED
-**Operator report:** 2026-09-10 — unsubscribed; no longer an approved First Passage
-information source. Effective cancellation date and final invoice were not supplied.
-No replacement is approved. No acquisition or estimate calls are authorized by this record.
+**Class:** (d) meta-belt (subscription/usage) · **Standing:** SUBTRACT — operator
+retirement 2026-09-10; unsubscribed; no longer an approved First Passage information
+source. Effective cancellation date and final invoice were not supplied. No replacement
+is approved. No acquisition or estimate calls are authorized by this record.
 
 Current costs and confirmation status belong to the
 [subscription ledger](SUBSCRIPTION_LEDGER.md). The

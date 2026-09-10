@@ -49,7 +49,7 @@ they do not suspend the evaluation order. Campaign amendments are explicit owner
 
 | Handoff | Producer / input | Consumer / output |
 |---|---|---|
-| Acquire research data | `lab/databento_fetch/db_fetch.py estimate`, then cost-gated `pull` | Private local DBN cache; free estimate precedes paid pull |
+| Acquire research data | **Blocked** — Databento retired/unsubscribed (operator report 2026-09-10); no replacement approved. Do not run `db_fetch.py` estimate/pull | Retained historical DBN cache only; new source needs explicit operator GO ([retirement record](docs/adr/2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento)) |
 | Define and bind a search | Channel intake and frozen candidate contract | `lab/discovery/register_search.py` → committed `discovery_manifests/<run_id>.json` |
 | Explore | `lab/discovery/stage24_runner.py` and campaign-specific harnesses | Observations and candidate evidence, never automatic promotion |
 | Evaluate | Current evaluation-order owner and [survivor-scoring preregistration](docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) | Typed verdict and evidence; `lab/discovery/prop_survivor_scoring.py` supplies scoring |
@@ -57,10 +57,12 @@ they do not suspend the evaluation order. Campaign amendments are explicit owner
 
 ### Inputs → transforms → outputs
 
-Databento data and proxy discipline are owned by the `databento-data` skill;
-candidate-generation tools by `futures-anomaly-discovery`; validation mechanics
-by `strategy-validation`. Parent/micro rescaling provides realism, not independent
-instrument evidence. [Campaign defaults](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)
+Research data acquisition is blocked pending an approved replacement source.
+The `databento-data` skill is a retirement notice that refuses estimate/pull/
+batch/download despite retained scripts or keys ([owner](docs/adr/2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento)).
+Candidate-generation tools remain owned by `futures-anomaly-discovery`; validation
+mechanics by `strategy-validation`. Parent/micro rescaling provides realism, not
+independent instrument evidence. [Campaign defaults](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)
 own temporal evidence and budget conventions.
 
 ### Ratified rules of evidence (campaign defaults, inherited by reference)
@@ -154,7 +156,7 @@ The retired DXTrade/manual-CFD monitoring estate is historical evidence.
 | `lab/analysis/<theme>/<slug>/` | Campaign evidence and active harnesses; [catalog](lab/CATALOG.md) owns discovery |
 | `discovery_manifests/` | Committed search contracts/status; commitment is the pin |
 | `ops/data/` | Retained reconciliation records |
-| Private DBN cache | Request-keyed Databento pulls; gitignored |
+| Private DBN cache | Historical request-keyed Databento pulls; gitignored; not a live acquisition path |
 | [lab/ARCHIVED.json](lab/ARCHIVED.json) | Removed-path inventory and preservation provenance |
 
 No canonical CFD feed remains. Historical figures keep their original provenance;
