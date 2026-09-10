@@ -33,3 +33,14 @@ fly deploy . --config deploy/c1_signal_daemon/fly.toml \
 curl -sS https://c1-signal-daemon.fly.dev/
 # expect JSON: ok, feed_healthy, emit_enabled=false
 ```
+
+## 2026-09-10 - source unavailable
+
+Databento is retired and unsubscribed by operator report. No replacement is
+approved. The daemon image has no Databento adapter or dependency; startup uses
+NullStrategy and an unavailable bar source even if old ceremony flags are true.
+Prepare/enable commands refuse without writing state. Close/status remain usable.
+No fixture or replay is licensed as M1 item-5 evidence. See the
+[M1 contract](../../docs/notes/rail_build/M1_STAGE1_TEST_CONTRACT.md).
+The daemon remains a separate app/volume; preserve its journal and tombstones.
+This is offline infrastructure only, with no deployment or emission authorization.

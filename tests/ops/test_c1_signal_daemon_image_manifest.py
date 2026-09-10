@@ -9,6 +9,7 @@ DOCKERFILE = REPO_ROOT / "deploy" / "c1_signal_daemon" / "Dockerfile"
 _ENTRYPOINTS = (
     REPO_ROOT / "ops" / "c1_signal_daemon" / "daemon.py",
     REPO_ROOT / "ops" / "c1_signal_daemon" / "evaluate_loop.py",
+    REPO_ROOT / "ops" / "c1_signal_daemon" / "m1_stage1_control.py",
 )
 
 
@@ -50,6 +51,10 @@ def _repo_import_names(path: Path) -> set[str]:
 
 
 def _resolve_c1_signal_module(mod: str) -> Path | None:
+    if mod.startswith("c1_rail"):
+        rel = Path(*mod.split("."))
+        candidate = REPO_ROOT / "ops" / rel.with_suffix(".py")
+        return candidate if candidate.is_file() else None
     if not mod.startswith("c1_signal_daemon"):
         return None
     parts = mod.split(".")
@@ -94,3 +99,9 @@ def test_daemon_dockerfile_covers_import_closure():
         "daemon Dockerfile missing COPY for import closure members "
         f"(green-build / dead-CMD class): {missing}"
     )
+
+
+def test_daemon_build_context_allows_packaged_files():
+    allowed = {line[1:] for line in (REPO_ROOT / ".dockerignore").read_text().splitlines()
+               if line.startswith("!")}
+    assert _dockerfile_copied_py_paths(DOCKERFILE) <= allowed

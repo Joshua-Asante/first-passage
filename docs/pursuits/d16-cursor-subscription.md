@@ -1,4 +1,12 @@
-# Cursor — KEEP
+# Cursor — SUBTRACT (removed from active recurring spend)
+
+**Class:** (d) meta-belt (subscription) · **Standing:** SUBTRACT — removed from active
+recurring spend by operator instruction 2026-09-10. Cancellation date and final charges
+were not supplied. Current cost/status belongs to the
+[subscription ledger](SUBSCRIPTION_LEDGER.md). This updates the subscription record;
+it does not retire unrelated tooling or historical work.
+
+## Historical disposition — superseded 2026-09-10
 
 **Class:** (d) meta-belt (subscription) · **Standing:** KEEP
 **Aim served:** A2/A4 — fleet workers for spec-freezable implementation packets (pursuit a6)
