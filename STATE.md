@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-09
+**Last curated:** 2026-09-10
 
 Current priorities, dormant cross-session work, and outstanding obligations.
 Read the queue first, then the linked executable plan; campaign records own
@@ -31,8 +31,7 @@ Queue position does not grant phase GO or authorize a new generation channel.
 
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
-| 1 | **Tradeify Select configuration campaign** — **HOLD** (2026-09-09): private synthetic scope passed 125 tests; independent review found no new defect and named repairs are closed. Full replay acceptance remains held on coverage support and real bindings. No qualified book or live authorization. | [Executable plan](docs/superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) · [checkpoint §54](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#54---synthetic-implementation-review-checkpoint-2026-09-09) | Coverage contract and remaining evidence bindings |
-| 2 | **B7-REFIRE Stage 1 + M1** — licensed test strategy; item 5 dated 2026-08-24 remains owed. Independent of #1. No arm. | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [GO addendum](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) | Live-signal / arming path |
+| 1 | **B7-REFIRE Stage 1 + M1** — licensed test strategy; item 5 dated 2026-08-24 remains owed. Former queue item 2; unchanged scope and no arm. | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [GO addendum](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) | Live-signal / arming path |
 
 ## Executed operator decisions — decision index
 
@@ -40,6 +39,7 @@ Newest 15 consequences; decision rationale remains with the owner. Older index:
 [archive](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md).
 Retracted verdicts leave this index; their correction stands with its owner.
 
+- **2026-09-10** — Operator accepted the selected Tradeify configuration as satisfying queue item 1; configuration-selection work closed and removed from the live queue. Deployment remains separate. [Acceptance](docs/notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure)
 - **2026-09-06** — Root docs narrowed to current routing; STATE owns priorities, campaign plans executable steps, SESSIONS history. [Charter](docs/adr/2026-07-16-root-doc-charter-dedup.md#decision)
 - **2026-09-03** — Off-queue VOLREGIME translation closed at T0, PRE-CONTRACT DROP; no contract. [Ruling](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
 - **2026-09-03** — Select configuration campaign promoted to queue #1; cultivation remains off-queue. [Campaign record](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
@@ -54,7 +54,6 @@ Retracted verdicts leave this index; their correction stands with its owner.
 - **2026-08-27** — SSOT/data-lineage remediation Phase 1 authorized. [ADR](docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md)
 - **2026-08-24** — Regime-gate scope and validation-battery K-tiering ruled. [Scope](docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md) · [K-tiering](docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md)
 - **2026-08-24** — A2 disclosed-N reduction accepted; not a Phase B GO. [RESULTS §4](lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)
-- **2026-08-24** — M1 item 5 licensed to a test strategy; Stage 1 no longer waits on queue #1. [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
 
 ## Dormant cross-session threads
 

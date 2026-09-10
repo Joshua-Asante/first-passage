@@ -1,5 +1,32 @@
 # Tradeify Select configuration — bounded implementation plan
 
+> **2026-09-10 operator acceptance — queue item closed:** The operator accepted
+> the selected configuration as satisfying STATE item 1. Configuration selection
+> is complete by that decision; the item leaves the live queue. See the
+> [acceptance record](../../notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure).
+> The implementation steps below remain historical/paused, not active work or
+> newly satisfied technical gates. Deployment is separate.
+
+> **2026-09-10 working configuration selected:** The operator chose a 1%
+> combined peak-drawdown trigger for Aegis/Vanguard/MYM/original ORB, with
+> Aegis/Vanguard/MYM at 40% and ORB base at full size without adds while
+> protected. See the [selection record](../../notes/2026-09-10-tradeify-protection-selection.md)
+> for exact semantics and remaining execution gaps. This research selection
+> does not resume the simulator or establish formal qualification/deployment.
+
+> **2026-09-10 operator pause:** Full simulator development is closed for now,
+> with all existing implementation and evidence preserved. This is a pause,
+> not completion or a finding that no configuration qualifies. The operator
+> redirected research to an exploratory Aegis/Vanguard/ORB weighting comparison.
+> No further simulator repair wave or faithful replay is authorized by that
+> comparison; formal selection, final validation and deployment remain held.
+
+> **2026-09-10 exploratory exception:** The operator approved the
+> [bounded feasibility screen](2026-09-10-tradeify-feasibility-screen.md).
+> That plan permits only its local daily-ledger diagnostic implementation and
+> execution within eight active hours. It is development evidence, not native
+> replay, formal selection or n1/n2/n3. All other HOLD boundaries below remain.
+
 > **Current gate (2026-09-09): HOLD — remaining support and evidence.** A separately
 > released private synthetic implementation scope passed 125 tests; independent
 > static review found no new defect, and the named v6 repairs are closed within

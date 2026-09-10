@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Fourteenth roll, 2026-09-10** (one entry, pushed off by the accepted Tradeify configuration closure):
+
+- **2026-08-24** — M1 item 5 licensed to a test strategy; Stage 1 no longer waits on queue #1. [M1 addendum](../../../../../docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
+
 **Thirteenth roll, 2026-09-03** (one entry, pushed off by the VOLREGIME translation GO addendum):
 
 - **2026-08-24** — Operator queue: mechanism supply is `#1`; B7/M1 is `#2` (waits on #1). Placement is not a phase GO. [`Survive-bound addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-survive-bound-is-the-queue-cap.md#addendum-2026-08-24--the-blocker-of-b7m1-is-queue-1) [`overview`](../../../../../docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md)
