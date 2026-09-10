@@ -555,7 +555,7 @@ index-futures-intraday domain bar (route 2).
 > blind probe, three sessions, clean null", never as a settled class kill, and never to foreclose
 > the sanctioned survivor-tied thread (`mnq_orb_flow_substrate_2026-08-05`). The **depth census
 > stands unconditionally** (selection-free, descriptive) and is mandatory disclosed context for any
-> size-derived successor. [`ruling §7`](../../docs/notes/2026-08-05-order-flow-probe-governance-question.md)
+> size-derived successor. [`ruling §7`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-05-order-flow-probe-governance-question.md)
 
 - **Class finding:** 10-level size imbalance carries **no** directional information at the
   1-minute horizon on NQ. Spearman ρ(I_t, r_{t+1}) = **−0.01205** on n=1,167 RTH minute pairs —
