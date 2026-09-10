@@ -1,5 +1,11 @@
 # Tradeify Select configuration — bounded implementation plan
 
+> **2026-09-10 exploratory exception:** The operator approved the
+> [bounded feasibility screen](2026-09-10-tradeify-feasibility-screen.md).
+> That plan permits only its local daily-ledger diagnostic implementation and
+> execution within eight active hours. It is development evidence, not native
+> replay, formal selection or n1/n2/n3. All other HOLD boundaries below remain.
+
 > **Current gate (2026-09-09): HOLD — remaining support and evidence.** A separately
 > released private synthetic implementation scope passed 125 tests; independent
 > static review found no new defect, and the named v6 repairs are closed within
@@ -12,6 +18,7 @@
 > The [campaign checkpoint](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#54---synthetic-implementation-review-checkpoint-2026-09-09)
 > owns the reviewed status, private disposition identity and remaining gates.
 > The executing-plans skill applies only to a separately released scope.
+
 
 **Goal:** find the fastest qualifying configuration within a frozen, executable
 grammar on the incumbent Tradeify Select 100K evaluation, or return no qualifying
