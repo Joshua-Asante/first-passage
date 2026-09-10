@@ -3770,3 +3770,36 @@ C1-C5 approval and this documentation commit do not release implementation,
 source/native replay, sampling/search, n1/n2/n3, profile promotion or deployment.
 S1/S2, full/H1/H2 acceptance, sole final n3 after winner parity and a fresh settled
 account state, M1 and separate deployment GO remain required.
+
+## §54 - Synthetic implementation review checkpoint (2026-09-09)
+
+A separately authorized private, synthetic-only implementation and repair scope
+has completed its v6 review. The recorded suite passed 125 tests with no failures,
+errors or skips. An independent static review found no new defect; Codex accepted
+closure of the named repairs within that reviewed scope. Neither the test count
+nor the review establishes complete replay support or a qualifying configuration.
+
+The full replay bundle remains **HOLD**. Required clipped lot-coverage nomination
+and partial-leg support are unresolved, alongside source/calendar/account bindings
+and actual execution-coverage evidence. A previously claimed clipped-coverage
+positive was withdrawn: the current implementation stops on the unresolved
+selection rather than choosing an unapproved allocation rule. Its demonstrated
+support is therefore narrower than earlier private iterations claimed.
+
+The next gate is one coverage-contract decision and the remaining evidence
+bindings, followed by a separately reviewed real-source reproduction/replay
+release proposal. No new allocation policy is elected by this checkpoint.
+
+This is a public status record only. Implementation, source parameters, account
+values, test fixtures and review bodies remain in the ignored private audit area.
+**Immutable private disposition (SHA-256):** `6b88401332405d2c8e70ebe7bd6bb40999379f818304fdbef757005e1475e7f3`
+for `repair-v6-disposition/disposition.json`. It records the bounded closures and
+remaining dependencies; this status update does not publish the implementation.
+
+The current gate supersedes §53's implementation-not-yet-released status, not its
+design approval or safety boundaries. Historical task lists do not authorize
+further implementation. No real/source/native replay, sampling/search, n1/n2/n3,
+profile promotion or deployment is released. Frozen Phase1 artifacts and preserved
+dependency-stop evidence remain unchanged. Retain the one bounded attempt,
+S1/S2, full/H1/H2 acceptance, winner parity before fresh settled account state and
+the sole final n3, M1 and separate deployment GO. No configuration has qualified.

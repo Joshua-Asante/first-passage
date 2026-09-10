@@ -1,14 +1,17 @@
 # Tradeify Select configuration — bounded implementation plan
 
-> **Current gate (2026-09-08): HOLD.** C1-C5 are approved design choices, not an
-> implementation or data-execution release. Historical task lists and the former
-> end-to-end implementation authorization below are suspended. Before any
-> implementation, source/native replay, sampling/search or n1/n2/n3, obtain a
-> separate bounded release tied to accepted evidence and the current contract.
-> Workers without the private packet must stop at this gate; they cannot infer GO
-> from unchecked tasks. The [campaign checkpoint](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#53---account-feedbackcomposition-design-checkpoint-2026-09-08)
-> records current design approval and the immutable private revision identity.
-> The executing-plans skill applies only after implementation is separately released.
+> **Current gate (2026-09-09): HOLD — remaining support and evidence.** A separately
+> released private synthetic implementation scope passed 125 tests; independent
+> static review found no new defect, and the named v6 repairs are closed within
+> that scope. The full replay bundle is not accepted. Coverage nomination,
+> partial-leg support and real source/calendar/account/execution bindings remain
+> open. Historical task lists do not authorize further implementation or any
+> real/source/native replay, sampling/search, n1/n2/n3, promotion or deployment.
+> Each next execution scope needs a separate bounded release. Workers without
+> the private packet must stop here; they cannot infer GO from unchecked tasks.
+> The [campaign checkpoint](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#54---synthetic-implementation-review-checkpoint-2026-09-09)
+> owns the reviewed status, private disposition identity and remaining gates.
+> The executing-plans skill applies only to a separately released scope.
 
 **Goal:** find the fastest qualifying configuration within a frozen, executable
 grammar on the incumbent Tradeify Select 100K evaluation, or return no qualifying
