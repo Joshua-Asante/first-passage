@@ -35,7 +35,7 @@ The daemon app runs the 2026-08-08 build under a release Fly marks `failed`. The
 ## 2. Execution plan
 
 ### Step 2.1 — Listener disarm reconfirm
-`MSYS_NO_PATHCONV=1 fly ssh console -a c1-rail -C "python ops/c1_rail/c1_rail_arm.py --status"` → `dry_run=True`, `armed_until=None`. Record the listener ledger's last `seq`.
+`MSYS_NO_PATHCONV=1 fly ssh console -a c1-rail -C "python ops/c1_rail/c1_rail_arm.py --status"` → `dry_run=True`, `armed_until=None`. Otherwise the armed-host procedure (Track A plan §6) applies: read the boot line, operator flatness attestation, `--disarm` + `fly machine restart` + boot-line verify — or, without the operator, no disarm, alert, and return `BLOCKED — plan-itself-wrong`; the daemon deploy does not happen either way. Record the listener ledger's last `seq`.
 
 ### Step 2.2 — Daemon pre-read
 `fly status`, `fly releases`, `fly logs | tail -40`, `curl -sS https://c1-signal-daemon.fly.dev/`; in-container `ls -la /data`; state-file summary via a one-liner printing `boot_id`, `generation`, `enabled`, `active`, ceremony states (never manifests' private fields); config keys + non-secret flags. Gate: §0.5 first bullet clear.

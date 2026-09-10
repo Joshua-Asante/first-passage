@@ -67,8 +67,8 @@ A0  merge #332 + #334  (operator)  ───────────────
                                                                                       │
 Lane R (recovery)   A3 recovery-path attestation ──────────────────────────┐         │
 Lane L (listener)   A2-L image validation ──► A4-L readiness ──► A5 listener deploy (disarmed)
-Lane D (daemon)     A1 source decision packet ──► operator ratifies ──► A1b build (PR) ──►
-                    A2-D image validation ──► A4-D readiness ──► A6 daemon deploy (inert)
+Lane D (daemon)     A1 source decision packet ──► operator ratifies ──► A1r records it on disk ──►
+                    A1b build (PR) ──► A2-D image validation ──► A4-D readiness ──► A6 daemon deploy (inert)
 Lane C (ceremony)   [A3 + A5 + A6 all DONE] ──► A7 attended Stage 1 dry-run (operator enables)
                     ──► A8 signoff + RESOLVED artifact + listener redeploy ──► STOP (no arm)
 ```
@@ -93,7 +93,8 @@ Routing test is [`2026-07-14-cc-cursor-surface-allocation.md`](../../adr/2026-07
 |---|---|---|---|---|---|
 | A0 merge #332, #334 | Operator | Merge is operator-gated on rail surfaces (auto-merge ADR forbidden list). | — | merge SHAs | none |
 | A1 signal-source decision packet | **Claude** | Authors an ADR addendum (test 1). Web research allowed; no signups, no spend. | archive reads only | PROPOSED addendum to the S2b build ADR with scored options; operator ratifies | spec + quality |
-| A1b implement the ratified input | **Codex** (or Cursor) | Frozen spec from the ratified A1; `ops/c1_signal_daemon/` only; Codex authored #332 and holds its design. Brief authored **after** A1 ratification — not in this plan (must-cover list in §3.1). | none | PR on `codex/*` | fable-judge + Codex review |
+| A1r record the ratification | **Claude** (parent) | Docs-only edit of the A1 addendum status line plus the M1 ADR amendment when the option needs one (test 1); the operator's ruling becomes on-disk state that A6 checks. | none | PR replacing `PROPOSED` with the dated ruling | operator merge |
+| A1b implement the ratified input | **Codex** (or Cursor) | Frozen spec from the merged A1r text; daemon-side code plus the validation-script expectations named in §3.1; Codex authored #332 and holds its design. Brief authored **after** A1r merges — not in this plan (must-cover list in §3.1). | none | PR on `codex/*` | fable-judge + Codex review |
 | A2 Linux image validation | **Cursor** (or Codex) | Frozen spec; new workflow + script; no judgment calls. | none — GitHub Actions has Docker | PR adding `.github/workflows/c1-image-validation.yml` + `scripts/c1_image_validation.sh`; green run URL | spec + quality; parent re-runs the workflow |
 | A3 recovery-path attestation | **Claude** + operator | Governed note; needs Fly read access and the private archive; operator attests access. | fly auth; archive clone | readiness record §A3 | spec + quality |
 | A4 deployment-readiness review | **Claude** | Judgment-heavy review of live host state; governed note. | fly auth | readiness record §A4 with per-item GO/NO-GO | spec + quality |
@@ -123,7 +124,17 @@ The implementer of the ratified input changes the daemon only. The spec the pare
   (`bar.ts == target` and `60 ≤ now − bar.ts ≤ 150` s) holds. Bar numerics finite and positive.
 - The manifest `source` marker: `validate_manifest` currently requires equality with
   `OFFLINE_SOURCE`; the approved marker becomes a named constant in `ops/c1_rail/m1_stage1_contract.py`
-  and the offline marker stays test-only.
+  and the offline marker stays test-only. **The inputs of `contract_sha256()` (the frozen tuple,
+  `entry_only`, `permanently_dry_run_only`) must not change**: A5's listener image keeps the pre-A1b
+  copy of this module until A8, and A7 gates on both images' `contract_sha256()` being equal. If the
+  tuple ever has to change, an A5-class listener redeploy precedes A7. The file's bytes will still
+  differ between the A5 and A8 listener images (the added marker), which is why A8 compares pins per
+  file against explaining commits rather than requiring "unchanged".
+- The standing Linux validation (A2) expectations that the source changes — D2's declared-dependency
+  set and D6's `prepare`/`enable` refusal wording — are updated in the A1b PR itself
+  (`scripts/c1_image_validation.sh`, `tests/fixtures/c1_image_validation/`), never left red; the
+  Databento-absence check stays as is. A `deploy/c1_signal_daemon/requirements.txt` is permitted
+  when the ratified source needs a client package; the listener image stays stdlib-only.
 - `daemon.build_loop` constructs the approved source **disconnected** plus the coordinator;
   `prepare`/`enable` stop returning the hard `2` but keep every boot/generation/manifest check.
 - Credentials (if any) live only in the daemon volume config; `load_config` validates the new keys;
@@ -141,7 +152,8 @@ The implementer of the ratified input changes the daemon only. The spec the pare
 ## 4. Task list (checkbox = parent-session acceptance after the two-pass review)
 
 - [ ] **A0** — #332 and #334 merged; `origin/main` carries `ops/c1_rail/m1_stage1_contract.py` and the S2b build ADR's 2026-09-10 addendum. Then a one-line edit: `STATE.md` queue row 1 gains a pointer to this plan (Claude, docs-only PR).
-- [ ] **A1** — decision packet returned; operator ratifies exactly one option (or NO-GO for all, which parks Track A after A5). Parent then authors the A1b brief from the ratified text.
+- [ ] **A1** — decision packet returned; operator ratifies exactly one option (or NO-GO for all, which parks Track A after A5).
+- [ ] **A1r** — the ratification is on disk: a docs-only PR (parent session) replaces the addendum's `PROPOSED` status line with `RATIFIED <date> — option <X>`, adds the change-history row, and applies the amendment text to the M1 ADR when the option needs one; operator merges. A6's Phase 0 hard-checks this edit; an oral or PR-comment ruling alone does not unblock the daemon lane. Parent then authors the A1b brief from the merged text.
 - [ ] **A2 (listener half)** — workflow green on `main`; listener entrypoint boots disarmed under `--network none`; test identity rejected at `dry_run=false` in-container; focused suites pass on Linux.
 - [ ] **A3** — readiness record §A3 written: procedure available (path @ SHA, no content), operator access confirmed (date), current + rollback images named for both apps, recovery cannot restore obsolete allocations or `dry_run=false`.
 - [ ] **A4 (listener half)** — readiness record §A4-L: every checklist item GO, or the NO-GO named with its owner.
@@ -170,7 +182,7 @@ The implementer of the ratified input changes the daemon only. The spec the pare
 
 ## 6. Track-level stop rules
 
-- Any sub-track that finds `dry_run=false` or a non-null `armed_until` on the host: stop, flat-verify, disarm, record, and return `BLOCKED — plan-itself-wrong` before anything else.
+- **Armed-host discovery (any sub-track, any read):** if `--status` shows `dry_run=False` or a non-null `armed_until`, the sub-track stops and nothing else in it runs. `--status` reads the volume file; read the boot line in `fly logs` as well, because the running process holds its boot-time config and may differ. Then: (1) the operator attests flatness from Tradovate; **without the operator present do not disarm** (disarm blocks exits and would orphan an open position) — alert the operator and return `BLOCKED — plan-itself-wrong` naming the state; (2) with flatness attested, run `python ops/c1_rail/c1_rail_arm.py --disarm`, then `fly machine restart <listener machine id> -a c1-rail` (the disarm takes effect only on restart), then verify the boot line reads `dry_run=True armed_until=-` and `--status` agrees; (3) record the finding and every command in the readiness record; (4) return `BLOCKED — plan-itself-wrong`. Discovering the hazard and leaving it in place is not an option.
 - Any unresolved ceremony checkpoint (`EVALUATED` / `SEND_RESERVED` / `EMITTED` / `TRANSPORT_UNKNOWN`) in the daemon journal: no new ceremony; preserve state; return for a separately reviewed reconciliation. No reset bypass exists and none is to be built.
 - A green Linux build with a dead CMD (`ModuleNotFoundError` at boot) is a FAIL of A2, never "fix the COPY line and redeploy" inside A5/A6.
 - A `qty_out` of anything other than exactly 1 at A7 preflight or decision: the ceremony does not proceed; the identity's frozen tuple is the contract's, and the discrepancy is a finding, not a parameter to tune.

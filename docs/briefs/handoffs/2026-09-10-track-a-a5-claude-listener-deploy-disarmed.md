@@ -20,7 +20,7 @@ Currency: `git fetch origin main`; record the SHA; `git status --porcelain` empt
 
 ## 0.5. Clarifications (halt on ambiguity)
 
-- If `--status` shows anything but `dry_run=True` / `armed_until=None`: track stop rule → `BLOCKED — plan-itself-wrong` before any other step.
+- If `--status` shows `dry_run=False` or a non-null `armed_until`: the armed-host procedure (Track A plan §6) runs before anything else and the deploy does not happen. Read the boot line in `fly logs` as well (the running process holds its boot-time config). Ask the operator to attest flatness from Tradovate; **without the operator present do not disarm** (disarm blocks exits and would orphan an open position) — alert and return `BLOCKED — plan-itself-wrong` naming the state. With flatness attested: `python ops/c1_rail/c1_rail_arm.py --disarm`, then `fly machine restart <machine id> -a c1-rail` (the disarm takes effect only on restart), verify the boot line reads `dry_run=True armed_until=-` and `--status` agrees, record every command in the readiness record, then return `BLOCKED — plan-itself-wrong`. Finding the hazard and leaving it in place is not an option.
 - If pre-deploy in-container hashes differ from the acceptance JSON pins, the running build is not the one on record → stop and return; do not deploy over an unknown build.
 - If the A4 plan shows the volume still holds 69/11 caps, `--release-withdrawn` is used only if the operator says so in-session (the 2026-08-26 release is doctrine; the volume write is this session's act). Otherwise leave the rows and record the residue.
 - If the Phase 0 code read shows constants/lifecycle are cached at boot, a `fly machine restart` follows the migration — preceded by a fresh `--status` read.

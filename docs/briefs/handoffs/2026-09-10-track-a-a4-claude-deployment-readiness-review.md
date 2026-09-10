@@ -24,7 +24,7 @@ Currency: `git fetch origin main`; record the SHA (authoring-time `47972f6`). Ha
 ## 0.5. Clarifications (halt on ambiguity)
 
 - The daemon volume config contains `path_token`. Never `cat` it. Read keys and non-secret flags only through an in-container one-liner that prints `sorted(cfg)` and the values of `emit_enabled`, `strategy`, `bar_period_s`, `poll_interval_s`, `m1_test.enabled`, `listener_base_url`'s host part. If the one-liner cannot run on the old image (pre-#332 image has no `m1_test` defaults), print keys only.
-- If the listener's `--status` shows anything other than `dry_run=True` with `armed_until=None`, stop: this is the track-level stop rule (`BLOCKED — plan-itself-wrong`), not a checklist item.
+- If the listener's `--status` shows `dry_run=False` or a non-null `armed_until`, this is the armed-host procedure (Track A plan §6), not a checklist item: read the boot line in `fly logs` too (the process holds its boot-time config); ask the operator to attest flatness from Tradovate; **without the operator present do not disarm** (disarm blocks exits) — alert and return `BLOCKED — plan-itself-wrong` naming the state; with flatness attested, run `python ops/c1_rail/c1_rail_arm.py --disarm`, then `fly machine restart <listener machine id> -a c1-rail`, verify the boot line reads `dry_run=True armed_until=-`, record every command in the readiness record, and only then return `BLOCKED — plan-itself-wrong`. This is the one write this brief permits, and only in that scenario.
 - If the A2 workflow is green but its L5b/L6 evidence lines are not in the log, treat A2 as not done and return `NEEDS_CONTEXT`.
 
 ## 1. Context and deliverable
