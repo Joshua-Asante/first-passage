@@ -7,9 +7,17 @@ description: Adversarial verification of finished work — a "done" report is a 
 
 Adapted 2026-07-15 from `Sahir619/fable-method@88b5cf3` (`skills/fable-judge/`); the repo-specific fraud table and verification surfaces below replace the source's coding defaults. Port record lives in the private archive (excluded from the public seed).
 
-The stance is fixed: **a report is a set of claims, not evidence. Nothing is believed that was not observed.** The most documented failure of agentic work is claiming success regardless of reality — and this repo has its own incident on file: `feedback_web_advisor_handoff_confabulates_repo_state` ("I stamped <path>" — nothing was stamped) plus the §7 review-skip lesson (load-bearing validator reasoning lived only in a review section that was skipped).
+The stance is fixed: **a report is a set of claims, not evidence. Nothing is believed that was not
+observed.** Grounds: `feedback_web_advisor_handoff_confabulates_repo_state` and the §7 review-skip
+lesson.
 
-Position in the gate family: `handoff-verify` gates an instruction packet **before** acting; `verify-source` gates a single borrowed value; **this skill gates a completed-work claim after acting.** It is the mechanical form of CC's adjudicator role under `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` — a Cursor-implemented frozen spec is not merged on its own report.
+Plain local work without a completed-work claim does not activate this skill. Reuse sibling evidence
+only while source/target/revision, claim, scope, and relevant state remain unchanged; refresh affected
+evidence after change or uncertainty, not unrelated facts. The optional
+[shared family reference](../verify-source/references/shared-evidence.md) expands this guidance; the
+standalone checklist does not require it.
+
+This skill gates a completed-work claim after acting. It is the mechanical form of CC's adjudicator role under `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` — a Cursor-implemented frozen spec is not merged on its own report.
 
 ## Procedure
 

@@ -20,6 +20,12 @@ Any time the instructions to execute originated outside a fresh Rule-0 read in *
 
 If you wrote the plan yourself in this session after reading the files, skip — but still use `verify-source` for any borrowed number.
 
+Plain local work with no external packet does not activate this skill. Reuse sibling evidence only
+while source/target/revision, claim, scope, and relevant state remain unchanged; refresh affected
+evidence after change or uncertainty, not unrelated facts. The optional
+[shared family reference](../verify-source/references/shared-evidence.md) expands this guidance; the
+Phase-0 checklist remains standalone.
+
 **Size-triggered escalation.** For a long packet with many distinct claims (multiple paths, edits,
 statuses, and premises to check), run this same checklist as the `handoff-verify-panel` Workflow
 instead of inline — it fans the checks below out to independent parallel verifiers plus an

@@ -11,6 +11,12 @@ Rule-0 says *read the source, not memory*. This skill is the next layer: **a cor
 
 **The discipline: before you act on a value/claim/premise, verify the STATE of the source it came from — currency, vintage, scope, cohort — not merely that you read it from a source.**
 
+Plain local work with no borrowed premise, external packet, or completed-work claim does not activate
+this family. Reuse sibling evidence only while source/target/revision, claim, scope, and relevant state
+remain unchanged; refresh affected evidence after change or uncertainty, not unrelated facts. The
+optional [shared family reference](references/shared-evidence.md) expands cross-skill routing and reuse;
+this single-value workflow does not require it.
+
 ## When to use
 
 Trigger when (a) you're about to quote/commit/decide on a value, claim, or premise, and (b) it originated somewhere other than a fresh authoritative computation this turn. Each channel below is a documented burn:
@@ -54,9 +60,7 @@ The check is O(seconds). Time pressure is the trigger for this skill, not an exe
 
 Asked to quote the canonical MC anchor from a feature branch, three fresh agents each grepped the checked-out `CLAUDE.md`, quoted the figure, and explicitly cited Rule-0 ("I did not use memory; the grep is the sourcing step") — and none ran a branch-currency check. The source was read correctly; it was the wrong *state*. The fix is one command before quoting: `git log HEAD..origin/main`, and if behind, read main's copy.
 
-## Relationship to other skills
+## Handoffs
 
-- **`rule-0`** (`docs/rule_0.md`) owns one channel: read production source first, not memory or prior briefs. This skill assumes Rule-0 is done and adds the source-STATE check. Rule-0 compliance can give *false confidence* — see the worked example.
-- **`handoff-verify`** — before *executing* an external handoff packet (CC/advisor/Phase-0), run that skill's Phase-0 checklist; then use this skill for any specific number/claim inside it.
-- **`fable-judge`** — after work is *claimed complete* (by another session, advisor, Cursor, or subagent), that skill re-runs the claimed verifications and hunts frauds; this skill is its per-value tool.
-- Hand off to **`prop-firm-challenge`** for the operational facts and **`brief-authoring`** for where the verified value lands.
+The optional [shared family reference](references/shared-evidence.md) summarizes sibling routing.
+Operational facts go to **`prop-firm-challenge`**; placement goes to **`brief-authoring`**.
