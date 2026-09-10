@@ -382,6 +382,50 @@ def test_c3_stale_flat_link_orb_mnq_theme_nest(tmp_path):
     assert "lab/analysis/orb/orb_mnq_2026-07/RESULTS.md" in findings[0].message
 
 
+def test_c3_pycache_only_archive_shell_is_not_a_repoint(tmp_path):
+    """Bytecode residue is not the study having moved.
+
+    Regression for 2026-09-10: after the 09-06 tracked-file reduction moved
+    ict_cascade_2026-06-18 / ict_revcon_2026-06-19 to the archive repo, both
+    lab/archive/<slug>/ dirs survived locally as __pycache__-only shells. The
+    bare .exists() probe read that as "present under archive" and suggested
+    repointing live SPX500.md prose at a path no clone and no CI runner has --
+    the gate was red locally and green on CI off the same commit.
+    """
+    shell = tmp_path / "lab" / "archive" / "movedstudy" / "__pycache__"
+    shell.mkdir(parents=True)
+    (shell / "harness.cpython-312.pyc").write_bytes(b"cached")
+    assertions = [csc.Assertion(
+        "ops/instruments/TESTSYM.md", 12, "movedstudy",
+        "analysis", "lab/analysis/movedstudy/", True)]
+    assert csc.check_c3(assertions, tmp_path) == []
+
+
+def test_c3_archive_dir_with_one_real_file_still_fires(tmp_path):
+    """The fix must not blind C3 to a genuine move that carries content."""
+    d = tmp_path / "lab" / "archive" / "movedstudy"
+    (d / "__pycache__").mkdir(parents=True)
+    (d / "__pycache__" / "harness.cpython-312.pyc").write_bytes(b"cached")
+    (d / "RESULTS.md").write_text("body", encoding="utf-8")
+    assertions = [csc.Assertion(
+        "ops/instruments/TESTSYM.md", 12, "movedstudy",
+        "analysis", "lab/analysis/movedstudy/", True)]
+    findings = csc.check_c3(assertions, tmp_path)
+    assert len(findings) == 1
+    assert findings[0].code == "C3"
+
+
+def test_c3_pycache_only_theme_nest_is_not_a_repoint(tmp_path):
+    """Same residue rule on the flat-to-theme-nest branch."""
+    shell = tmp_path / "lab" / "analysis" / "c1" / "movedstudy" / "__pycache__"
+    shell.mkdir(parents=True)
+    (shell / "probe.cpython-312.pyc").write_bytes(b"cached")
+    assertions = [csc.Assertion(
+        "ops/instruments/TESTSYM.md", 30, "movedstudy",
+        "analysis", "lab/analysis/movedstudy/", True)]
+    assert csc.check_c3(assertions, tmp_path) == []
+
+
 def test_c3_unresolved_without_nest_or_archive_is_clean(tmp_path):
     assertions = [csc.Assertion(
         "ops/instruments/TESTSYM.md", 3, "ghost",

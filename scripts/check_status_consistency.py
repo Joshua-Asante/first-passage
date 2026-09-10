@@ -14,7 +14,9 @@ surfaces carry) whose status drifts:
   C3 (HARD) — a lab/analysis/<slug>/<file> link that no longer resolves but is
               present under lab/archive/<slug>/ (stale tier link; suggest
               repoint) OR under lab/analysis/<theme>/<slug>/ (flat-to-theme-nest
-              move; suggest repoint).
+              move; suggest repoint). "Present" means real content, not a
+              directory entry: a `__pycache__`-only shell is residue and does
+              not make a repoint suggestable (`_resolves_with_content`).
   NOTE      — a slug cited as rejected with no CATALOG row (scoped orphan; does
               NOT change the exit code — the surfaces are deliberately not 1:1).
 
@@ -56,7 +58,10 @@ links with NO lab/(analysis|archive)/<slug>/ anchor, is NOT joinable and is
 skipped (e.g. NAS100's memory-linked "Q-NAS-4" row). This gate reports what it
 can join; it is not a completeness proof.
 
-Reads only committed markdown -> environment-independent (green on CI / clone).
+Reads only committed markdown, and probes the filesystem only for CONTENT
+(`_resolves_with_content`) -> environment-independent (green on CI / clone).
+Untracked residue must never change a verdict; a bare `.exists()` here once
+did, and split CI-green from local-red off one commit (2026-09-10).
 
 Exit codes: 0 = no HARD findings (NOTEs allowed); 1 = one or more C2/C3.
 """
@@ -375,6 +380,31 @@ def _analysis_to_archive_target(target: str) -> str:
     return "lab/archive/" + "/".join(parts)
 
 
+def _resolves_with_content(path: Path) -> bool:
+    """True if `path` is a file, or a directory holding at least one real file.
+
+    A directory left behind holding ONLY ``__pycache__`` is residue, not content.
+    Measured 2026-09-10: after the 2026-09-06 tracked-file reduction moved
+    ``ict_cascade_2026-06-18`` / ``ict_revcon_2026-06-19`` out to the archive
+    repo, both ``lab/archive/<slug>/`` directories survived on developer machines
+    as bytecode-only shells (0 tracked files, 0 non-``__pycache__`` files). Bare
+    ``.exists()`` read those as "the study is present under archive" and C3
+    suggested repointing live prose at a path that resolves on ONE machine and
+    nowhere else -- CI and every fresh clone lack the directory entirely, so the
+    gate was red locally and green on CI off the same commit. That breaks this
+    module's own environment-independence claim (see the header), so the archive
+    and theme-nest probes below ask for content, not for a directory entry.
+    """
+    if path.is_file():
+        return True
+    if not path.is_dir():
+        return False
+    return any(
+        child.is_file() and "__pycache__" not in child.parts
+        for child in path.rglob("*")
+    )
+
+
 def _analysis_to_theme_nest_targets(target: str, repo_root: Path) -> list[str]:
     """If ``lab/analysis/<slug>/...`` is gone, find ``lab/analysis/<theme>/<slug>/...``.
 
@@ -394,7 +424,7 @@ def _analysis_to_theme_nest_targets(target: str, repo_root: Path) -> list[str]:
     found: list[str] = []
     for child in sorted(p for p in analysis_root.iterdir() if p.is_dir()):
         candidate = child / rest
-        if candidate.exists():
+        if _resolves_with_content(candidate):
             found.append(f"{prefix}{child.name}/{rest}")
     return found
 
@@ -414,7 +444,7 @@ def check_c3(assertions: list[Assertion], repo_root: Path) -> list[Finding]:
         if (repo_root / a.target).exists():
             continue
         archive_target = _analysis_to_archive_target(a.target)
-        if (repo_root / archive_target).exists():
+        if _resolves_with_content(repo_root / archive_target):
             findings.append(Finding(
                 "HARD", "C3", a.surface, a.lineno,
                 f"stale tier link -> {a.target} (moved; repoint to {archive_target})"))

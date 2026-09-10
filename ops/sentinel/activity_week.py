@@ -1,12 +1,16 @@
 """Weekly activity-decision status for the Tradeify Mon–Fri idle clock.
 
 Report-only. Reads the compliance note's append-only coverage protocol — the
-designated authoritative record of a week's operator decision / trade (see
-TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md §2a; idle-clock tracking spec §4).
+designated authoritative record of a week's operator decision / trade: §2a of
+TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md defines the row shape, §2b holds the
+rows this module actually matches. That file was created 2026-09-10; before
+that it had never existed, so ``decision_status`` read empty text and returned
+NOT RECORDED for every bucket, unconditionally. An empty or missing file still
+means "no row was written", never "the week was idle".
 
 Does not invent a store, does not place trades, and must never read as a
-standing licence or a reminder-to-trade. STATE.md row 0 owns the recurrence
-posture (RECURRENCE-UNRULED).
+standing licence or a reminder-to-trade. STATE.md owns the recurrence posture,
+under "Scheduled forward triggers" -> "Weekly — recurring".
 
 ⚠ This module is the venue rule's OPERATIONAL/REPORTING surface (2026-09-03) --
 the weekly coverage-decision reader, not the only place the bucket is modelled.
@@ -17,7 +21,8 @@ surfaces model the same bucket and are reusable:
     ``weekly_coverage`` -- ``pd.period_range(..., freq="W-FRI")`` coverage fraction.
   * ``lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/idle_clock_monitor.py``
     ``evaluate_week`` -- per-week T-2/T-1 alerts, ``breached`` iff the week has
-    zero active days, i.e. the venue predicate exactly.
+    zero active days, i.e. the venue predicate exactly. That study's RESULTS.md
+    is the idle-clock write-up; there is no separate "idle-clock tracking spec".
 Do not treat this report parser as the sole semantic authority; prefer those when
 you need the bucket as a computation rather than as a coverage-note read. The MC engine
 models something different and stricter: ``core/mc/simulation.py`` counts ROLLING
@@ -112,5 +117,5 @@ def format_activity_decision_line(root: Path, asof: date) -> str:
     return (
         f"weekly activity decision [{label}]: {status} "
         f"({days} business day{'s' if days != 1 else ''} left) "
-        f"— operator call, see STATE row 0"
+        f"— operator call, see STATE scheduled forward triggers"
     )

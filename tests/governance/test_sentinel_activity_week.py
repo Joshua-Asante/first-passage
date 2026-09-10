@@ -1,4 +1,4 @@
-"""Weekly activity-decision status line (STATE row 0 / idle-clock follow-up).
+"""Weekly activity-decision status line (STATE forward trigger / idle-clock follow-up).
 
 Fixtures fake the compliance-note append-only record — never against live data.
 """
@@ -41,7 +41,7 @@ def test_not_recorded_when_compliance_silent(tmp_path):
     line = format_activity_decision_line(tmp_path, asof)
     assert "weekly activity decision [2026-08-10->08-14]: NOT RECORDED" in line
     assert "(3 business days left)" in line
-    assert "operator call, see STATE row 0" in line
+    assert "operator call, see STATE scheduled forward triggers" in line
     # Load-bearing wording: status, not a trade instruction / standing licence.
     assert "trade" not in line.lower()
     assert "licence" not in line.lower() and "license" not in line.lower()
@@ -71,7 +71,7 @@ def test_recorded_via_coverage_limb(tmp_path):
     line = format_activity_decision_line(tmp_path, asof)
     assert f"weekly activity decision [{week_label(monday, friday)}]: RECORDED" in line
     assert "(3 business days left)" in line
-    assert "operator call, see STATE row 0" in line
+    assert "operator call, see STATE scheduled forward triggers" in line
 
 
 def test_recorded_via_covered_heading(tmp_path):
@@ -95,7 +95,7 @@ def test_other_week_coverage_does_not_count(tmp_path):
 def test_render_run_includes_status_line():
     line = (
         "weekly activity decision [2026-08-10→08-14]: NOT RECORDED "
-        "(3 business days left) — operator call, see STATE row 0"
+        "(3 business days left) — operator call, see STATE scheduled forward triggers"
     )
     out = render_run(date(2026, 8, 12), findings=[], status_lines=[line])
     assert line in out
