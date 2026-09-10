@@ -1,3 +1,0 @@
-# APIs verified from locally installed SDK source; no dependency download in Phase A.
-databento==0.81.0
-databento-dbn==0.62.0

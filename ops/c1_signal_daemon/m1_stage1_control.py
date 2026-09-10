@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 import re
 
-from c1_rail.m1_stage1_contract import contract_sha256
+from c1_rail.m1_stage1_contract import contract_sha256, OFFLINE_SOURCE
 from c1_signal_daemon.m1_stage1_state import CeremonyError, CeremonyStore, atomic_json, require
 
 
@@ -41,11 +41,8 @@ def validate_manifest(value, now=None):
         require(type(value["expected_qty"]) is int and value["expected_qty"] == 1)
         require(re.fullmatch("[0-9a-f]{64}", value["preflight_sha256"]))
         source = value["source"]
-        require(set(source) == {"dataset", "schema", "raw_symbol", "instrument_id", "publisher_id"})
-        require(source["dataset"] == "GLBX.MDP3" and source["schema"] == "ohlcv-1m")
-        require(re.fullmatch(r"MYM[HMUZ][0-9]{1,2}", source["raw_symbol"]))
-        require(type(source["instrument_id"]) is int and source["instrument_id"] > 0)
-        require(type(source["publisher_id"]) is int and source["publisher_id"] > 0)
+        # Pure offline harness contract, never an approved live-source manifest.
+        require(source == OFFLINE_SOURCE)
     except (TypeError, KeyError):
         raise CeremonyError("ceremony manifest incomplete or invalid") from None
     return value
@@ -141,15 +138,9 @@ def safe_status(store, config_path=None):
     obj = store.read()
     item = obj["ceremonies"].get(obj["active"], {})
     effective = False
-    if config_path is not None:
-        from c1_signal_daemon.m1_stage1 import M1Coordinator
-        coordinator = M1Coordinator(store, config_path, boot_id=obj["boot_id"])
-        try:
-            effective = coordinator._active(obj, datetime.now(timezone.utc)) is not None
-        except (OSError, ValueError, KeyError, TypeError, SystemExit):
-            pass
     return dict(boot_id=obj["boot_id"], ceremony_id=obj["active"],
-                state=item.get("state", "DISABLED"), effective_emit=effective)
+                state=item.get("state", "DISABLED"), effective_emit=effective,
+                source_status="unavailable")
 
 
 def main(argv=None):
@@ -161,6 +152,9 @@ def main(argv=None):
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--ceremony-id")
     args = parser.parse_args(argv)
+    if args.action in ("prepare", "enable"):
+        print("ceremony blocked: no approved source; Databento retired")
+        return 2
     store = CeremonyStore(args.state)
     try:
         if args.action == "status":

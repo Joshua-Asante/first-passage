@@ -173,10 +173,18 @@ def project_evidence(records: list[dict], state: dict, ceremony_id: str | None =
         item = state["ceremonies"][ident]
         manifest, bar = item["manifest"], item["bar"]
         if (item["state"] != "CLOSED" or manifest["ceremony_id"] != ident
+                or item.get("previous_state") != "RESPONSE_RECORDED"
                 or manifest["contract_sha256"] != contract.contract_sha256()
                 or type(manifest["expected_qty"]) is not int or manifest["expected_qty"] != 1
                 or _json_digest(manifest) != item["manifest_sha256"]):
             raise ValueError("closed ceremony contract mismatch")
+        response = item.get("response", {})
+        allowed_bodies = {hashlib.sha256(body.encode()).hexdigest() for body in
+                         ("dry_run: computed, not sent", "dry_run: computed, not sent\n")}
+        if (type(response.get("http_status")) is not int or response["http_status"] != 200
+                or response.get("response_kind") != "dry_run_computed"
+                or response.get("body_sha256") not in allowed_bodies):
+            raise ValueError("recorded dry-run response required")
         event = "m1-" + _json_digest({k: manifest[k] for k in
                                     ("ceremony_id", "target", "contract_sha256", "source")})
         if (item["event_identity"] != event
@@ -187,8 +195,7 @@ def project_evidence(records: list[dict], state: dict, ceremony_id: str | None =
         if datetime.fromisoformat(bar["timestamp"]) != datetime.fromisoformat(manifest["target"]):
             raise ValueError("bar timestamp mismatch")
         source = manifest["source"]
-        if (source["dataset"] != "GLBX.MDP3" or source["schema"] != "ohlcv-1m"
-                or not re.fullmatch(r"MYM[HMUZ][0-9]{1,2}", source["raw_symbol"])):
+        if source != contract.OFFLINE_SOURCE:
             raise ValueError("feed binding mismatch")
         for key in ("request_sha256", "bar_sha256"):
             if not re.fullmatch(r"[0-9a-f]{64}", item[key]):
@@ -226,7 +233,8 @@ def project_evidence(records: list[dict], state: dict, ceremony_id: str | None =
             or decision.get("test_contract_sha256") != contract.contract_sha256()
             or transport.get("transport_state") != "not_attempted" or transport.get("dry_run") is not True):
         raise ValueError("dry-run decision/transport evidence mismatch")
-    return {"schema_version": 1, "dry_run_strategy_signal_event_id": eid,
+    return {"schema_version": 1, "listener_event_id": eid,
+            "offline_test_only": True, "qualifying_live_source": False,
             "ceremony_sha256": _json_digest(ident), "leg_id": contract.LEG_ID,
             "request_sha256": item["request_sha256"], "signal_id": event,
             "bar_sha256": item["bar_sha256"], "expected_qty": 1, "observed_qty": 1,

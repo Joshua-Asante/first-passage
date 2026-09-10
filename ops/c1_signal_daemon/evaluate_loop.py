@@ -25,6 +25,7 @@ class EvaluateLoop:
         bar_period_s: float = 900.0,
         emit_enabled: bool = False,
         coordinator=None,
+        boot_id: str | None = None,
     ) -> None:
         self._source = source
         self._client = client
@@ -34,6 +35,7 @@ class EvaluateLoop:
         self._last_bar_ts: datetime | None = None
         self._last_post: tuple[int, str] | None = None
         self._coordinator = coordinator
+        self._boot_id = boot_id
         self._step_lock = threading.Lock()
 
     def heartbeat(self, now: datetime | None = None) -> HeartbeatState:
@@ -52,7 +54,7 @@ class EvaluateLoop:
             connected=self._source.connected,
             strategy=type(self._strategy).__name__,
             feed_mode=getattr(self._source, "feed_mode", "idle"),
-            boot_id=getattr(self._coordinator, "boot_id", None),
+            boot_id=getattr(self._coordinator, "boot_id", self._boot_id),
             ceremony_id=getattr(self._coordinator, "ceremony_id", None),
             ceremony_state=getattr(self._coordinator, "state", "DISABLED"),
             effective_emit=(self._coordinator.effective_emit if self._coordinator else self.emit_enabled),

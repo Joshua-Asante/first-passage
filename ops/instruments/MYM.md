@@ -420,3 +420,6 @@ entry-only, cap one micro and permanently dry-run-only. Its smallest valid tuple
 is base risk `0.0000125` with a one-point native stop. Defaults are retired/cap
 zero. See [the contract](../../docs/notes/rail_build/M1_STAGE1_TEST_CONTRACT.md).
 This adds no production strategy authorization or live venue disposition.
+
+Databento retirement (operator report 2026-09-10) leaves this test without an approved
+source; emission and item-5 acceptance remain blocked. No replay substitution is approved.

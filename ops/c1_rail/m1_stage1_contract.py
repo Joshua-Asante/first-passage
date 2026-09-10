@@ -21,6 +21,7 @@ STOP_DIST_PTS = 1.0
 DOLLARS_PER_PT = .50
 CAP_ALLOC = 1
 PYR_PCT = 0.0
+OFFLINE_SOURCE = {"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": SYMBOL}
 
 
 def constants_row(*, enabled: bool = False) -> dict:

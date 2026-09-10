@@ -112,8 +112,7 @@ def proof():
         return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     eid = str(uuid4())
     cid = str(uuid4())
-    source = {"dataset": "GLBX.MDP3", "schema": "ohlcv-1m", "raw_symbol": "MYMU6",
-              "instrument_id": 123, "publisher_id": 1}
+    source = {"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": "MYM1!"}
     manifest = {"ceremony_id": cid, "target": "2026-09-10T14:00:00+00:00",
                 "expires": "2026-09-10T14:02:00+00:00", "source": source,
                 "contract_sha256": contract_sha256(), "preflight_sha256": "e" * 64,
@@ -126,6 +125,8 @@ def proof():
     request_hash = hashlib.sha256(json.dumps(parsed, separators=(",", ":")).encode()).hexdigest()
     item = {"state": "CLOSED", "previous_state": "RESPONSE_RECORDED",
             "manifest": manifest, "manifest_sha256": digest(manifest), "event_identity": event,
+            "response": {"http_status": 200, "response_kind": "dry_run_computed",
+                         "body_sha256": hashlib.sha256(b"dry_run: computed, not sent\n").hexdigest()},
             "request_sha256": request_hash, "bar": bar,
             "bar_sha256": digest({"bar": bar, "source": source})}
     receipt = {"schema_version": 1, "active": cid, "enabled": False,
@@ -150,8 +151,10 @@ def test_evidence_allowlist_and_exact_join():
     mod = control()
     rows, receipt = proof()
     public = mod.project_evidence(rows, receipt)
-    assert public["dry_run_strategy_signal_event_id"] == rows[0]["event_id"]
+    assert public["listener_event_id"] == rows[0]["event_id"]
     assert public["observed_qty"] == public["expected_qty"] == 1
+    assert public["offline_test_only"] is True and public["qualifying_live_source"] is False
+    assert "dry_run_strategy_signal_event_id" not in public
     assert "DO_NOT_EXPORT" not in json.dumps(public)
     assert "123456" not in json.dumps(public)
     assert "order_id" not in public  # needn't publish arbitrary request strings
@@ -206,5 +209,13 @@ def test_proof_cannot_relabel_a_real_listener_event(mutation):
         state["tombstones"] = {}
     else:
         rows.pop(0)
+    with pytest.raises(ValueError):
+        control().project_evidence(rows, state)
+
+
+@pytest.mark.parametrize("prior", ["SEND_RESERVED", "TRANSPORT_UNKNOWN", "EMITTED", None])
+def test_closed_unresolved_transport_cannot_project_success(prior):
+    rows, state = proof()
+    state["ceremonies"][state["active"]]["previous_state"] = prior
     with pytest.raises(ValueError):
         control().project_evidence(rows, state)

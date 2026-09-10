@@ -6,15 +6,11 @@
 #   fly deploy . --config deploy/c1_signal_daemon/fly.toml \
 #                --dockerfile deploy/c1_signal_daemon/Dockerfile
 #
-# Warm default: IdleBarSource + emit_enabled=false (NullStrategy). Databento
-# Live wiring is dormant until an attended M1 ceremony; listener stays stdlib-only.
+# No approved source: IdleBarSource + NullStrategy, emit disabled.
+# Databento retired by operator; both images remain stdlib-only.
 FROM python:3.12-slim
 
 WORKDIR /app
-
-# SDK pinned against locally inspected source; connection remains lazy and gated.
-COPY deploy/c1_signal_daemon/requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ops/c1_signal_daemon/__init__.py ops/c1_signal_daemon/__main__.py \
      ops/c1_signal_daemon/b1_payload.py ops/c1_signal_daemon/daemon.py \
@@ -22,7 +18,6 @@ COPY ops/c1_signal_daemon/__init__.py ops/c1_signal_daemon/__main__.py \
      ops/c1_signal_daemon/heartbeat.py ops/c1_signal_daemon/http_status.py \
      ops/c1_signal_daemon/listener_client.py \
      ops/c1_signal_daemon/strategy_protocol.py \
-     ops/c1_signal_daemon/databento_live_source.py \
      ops/c1_signal_daemon/m1_stage1.py \
      ops/c1_signal_daemon/m1_stage1_state.py \
      ops/c1_signal_daemon/m1_stage1_strategy.py \

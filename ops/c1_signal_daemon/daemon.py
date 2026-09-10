@@ -1,7 +1,7 @@
 """Daemon entrypoint — feed + evaluate loop + health HTTP.
 
-Warm default: emit_enabled=false. Live Databento adapter is optional at import
-time so unit tests stay vendor-free.
+No approved live source: the runtime stays on NullStrategy and an unavailable
+bar source regardless of stale ceremony configuration.
 """
 from __future__ import annotations
 
@@ -32,10 +32,12 @@ log = logging.getLogger("c1_signal_daemon")
 
 
 class IdleBarSource:
-    """Connected placeholder until a live Databento session is wired."""
+    """Unavailable source until a replacement is explicitly approved and built."""
+
+    feed_mode = "unavailable"
 
     def __init__(self) -> None:
-        self._connected = True
+        self._connected = False
 
     @property
     def connected(self) -> bool:
@@ -43,6 +45,9 @@ class IdleBarSource:
 
     def poll(self) -> Bar | None:
         return None
+
+    def deactivate(self):
+        pass
 
 
 def load_config(path: Path) -> dict:
@@ -82,23 +87,17 @@ def load_config(path: Path) -> dict:
     return cfg
 
 
-def build_loop(config_path, *, boot_id, sdk_factory=None, transport=None):
+def build_loop(config_path, *, boot_id, transport=None):
     """Construct an inert runtime. The caller holds DaemonOwnership for its lifetime."""
-    from c1_signal_daemon.databento_live_source import DatabentoLiveBarSource
-    from c1_signal_daemon.m1_stage1 import M1Coordinator
     from c1_signal_daemon.m1_stage1_state import CeremonyStore, DEFAULT_STATE_PATH
-    from c1_signal_daemon.m1_stage1_strategy import M1Stage1TestStrategy
     cfg = load_config(config_path)
     store = CeremonyStore(cfg["m1_test"].get("state_path", DEFAULT_STATE_PATH))
     store.boot(boot_id)
-    coordinator = M1Coordinator(store, config_path, boot_id=boot_id)
-    source = DatabentoLiveBarSource(store, sdk_factory=sdk_factory)
     return EvaluateLoop(
-        source=source,
+        source=IdleBarSource(),
         client=ListenerClient(base_url=cfg["listener_base_url"], path_token=cfg["path_token"],
                               transport=transport),
-        strategy=M1Stage1TestStrategy(coordinator) if cfg["strategy"] == "m1_stage1_test" else NullStrategy(),
-        bar_period_s=60, emit_enabled=False, coordinator=coordinator)
+        strategy=NullStrategy(), bar_period_s=60, emit_enabled=False, boot_id=boot_id)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -141,7 +140,9 @@ def run_daemon(config_path, cfg):
         while True:
             record = loop.step()
             disabled = (record.get("action") == "suppress"
-                        and record.get("reason") == "ceremony_disabled")
+                        and (record.get("reason") == "ceremony_disabled"
+                             or (record.get("reason") == "feed_unhealthy"
+                                 and loop._source.feed_mode == "unavailable")))
             if record.get("action") != "idle" and not disabled:
                 log.info("step %s", record)
             time.sleep(interval)

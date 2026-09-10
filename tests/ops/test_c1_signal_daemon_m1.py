@@ -33,9 +33,7 @@ def manifest():
                 expires=(TARGET + timedelta(seconds=140)).isoformat(),
                 contract_sha256=contract_sha256(), expected_qty=1,
                 preflight_sha256="a" * 64,
-                source={"dataset": "GLBX.MDP3", "schema": "ohlcv-1m",
-                        "raw_symbol": "MYMU6", "instrument_id": 123,
-                        "publisher_id": 1})
+                source={"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": "MYM1!"})
 
 
 def prepared(tmp_path):
@@ -326,8 +324,8 @@ def test_cli_prepare_enable_close_are_control_only(tmp_path, monkeypatch, capsys
     monkeypatch.setattr(ListenerClient, "post_b1", forbidden)
     common = ["--state", str(store.path), "--config", str(path), "--boot-id", "boot-A",
               "--manifest", str(reviewed), "--ceremony-id", "offline-001"]
-    assert control.main(["enable", *common]) == 0
-    assert store.read()["enabled"] is True
+    assert control.main(["enable", *common]) == 2
+    assert store.read()["enabled"] is False
     assert control.main(["close", *common]) == 0
     assert store.read()["enabled"] is False
     assert control.main(["status", *common]) == 0

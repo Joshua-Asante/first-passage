@@ -31,7 +31,7 @@ Queue position does not grant phase GO or authorize a new generation channel.
 
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
-| 1 | **B7-REFIRE Stage 1 + M1** — licensed test strategy; offline `m1_stage1_test` implementation on `codex/m1-stage1-test` ([contract](docs/notes/rail_build/M1_STAGE1_TEST_CONTRACT.md)); item 5 dated 2026-08-24 remains owed. Former queue item 2; unchanged scope and no arm. | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [GO addendum](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) | Live-signal / arming path |
+| 1 | **B7-REFIRE Stage 1 + M1** — licensed test strategy; offline `m1_stage1_test` implementation on `codex/m1-stage1-test` ([contract](docs/notes/rail_build/M1_STAGE1_TEST_CONTRACT.md)); item 5 dated 2026-08-24 remains owed; emission blocked after Databento retirement, no replacement approved. Former queue item 2; unchanged scope and no arm. | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [GO addendum](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) | Live-signal / arming path |
 
 ## Executed operator decisions — decision index
 

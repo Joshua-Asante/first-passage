@@ -1,11 +1,10 @@
-"""Offline SDK-shaped input -> real hook/client/HTTP adapter/listener/ledger.
+"""Offline fixture input -> real hook/client/HTTP adapter/listener/ledger.
 
 These synthetic fixtures are software tests, not M1 item-5 evidence.
 """
 from datetime import datetime, timedelta, timezone
 import io
 import json
-from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
@@ -16,7 +15,7 @@ from c1_rail_telemetry import EventLedger
 from c1_sizing_host_reference import C1SizingHostReference, generate_constants
 from c1_rail.m1_stage1_contract import contract_sha256
 from c1_rail.m1_stage1_control import project_evidence
-from c1_signal_daemon.databento_live_source import DatabentoLiveBarSource
+from c1_signal_daemon.feed import Bar
 from c1_signal_daemon.evaluate_loop import EvaluateLoop
 from c1_signal_daemon.listener_client import ListenerClient
 from c1_signal_daemon.m1_stage1 import M1Coordinator
@@ -31,7 +30,7 @@ def write(path, value):
 
 
 @pytest.mark.parametrize("dry_run,equity", [(True, 100000.), (True, 98000.), (False, 100000.)])
-def test_sdk_hook_to_http_decision_and_closed_proof(tmp_path, monkeypatch, dry_run, equity):
+def test_fixture_hook_to_http_decision_and_closed_proof(tmp_path, monkeypatch, dry_run, equity):
     def never_send(*args, **kwargs):
         pytest.fail("venue sender reached by test identity")
     monkeypatch.setattr(c1_rail_listener, "send_to_crosstrade", never_send)
@@ -63,8 +62,7 @@ def test_sdk_hook_to_http_decision_and_closed_proof(tmp_path, monkeypatch, dry_r
     write(daemon_cfg, {"listener_base_url": "https://offline.invalid", "path_token": "x" * 32,
         "bind_host": "127.0.0.1", "bind_port": 8080, "bar_period_s": 60,
         "poll_interval_s": 1, "emit_enabled": False, "strategy": "null"})
-    source_binding = {"dataset": "GLBX.MDP3", "schema": "ohlcv-1m", "raw_symbol": "MYMU6",
-                      "instrument_id": 123, "publisher_id": 1}
+    source_binding = {"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": "MYM1!"}
     manifest = {"ceremony_id": cid, "target": target.isoformat(),
         "expires": (target + timedelta(seconds=140)).isoformat(), "source": source_binding,
         "contract_sha256": contract_sha256(), "expected_qty": 1, "preflight_sha256": "e" * 64}
@@ -87,27 +85,16 @@ def test_sdk_hook_to_http_decision_and_closed_proof(tmp_path, monkeypatch, dry_r
         assert len(responses) == 1
         return responses[0], handler.wfile.getvalue().decode("utf-8")
 
-    stamp = int(target.timestamp()) * 10**9
-    Mapping = type("SymbolMappingMsg", (SimpleNamespace,), {})
-    OHLCV = type("OHLCVMsg", (SimpleNamespace,), {})
-    class SDK:
-        def add_callback(self, callback, error):
-            self.callback = callback
-        def subscribe(self, **kwargs):
-            assert kwargs == {"dataset": "GLBX.MDP3", "schema": "ohlcv-1m",
-                              "symbols": ["MYMU6"], "stype_in": "raw_symbol"}
-        def start(self):
-            self.callback(Mapping(stype_in="raw_symbol", stype_out="raw_symbol",
-                stype_in_symbol="MYMU6", stype_out_symbol="MYMU6", instrument_id=123,
-                publisher_id=1, start_ts=stamp-60*10**9, end_ts=stamp+3600*10**9))
-            self.callback(OHLCV(rtype=33, instrument_id=123, publisher_id=1, ts_event=stamp,
-                open=44000*10**9, high=44002*10**9, low=43999*10**9,
-                close=44001*10**9, volume=5))
-        def is_connected(self):
-            return True
-        def terminate(self):
+    class OfflineFixtureSource:
+        connected = True
+        binding = source_binding
+        def activate(self, binding):
+            assert binding == self.binding
+        def deactivate(self):
             pass
-    source = DatabentoLiveBarSource(store, sdk_factory=SDK, clock=lambda: received)
+        def poll(self):
+            return Bar(target, 44000., 44002., 43999., 44001., 5)
+    source = OfflineFixtureSource()
     coordinator = M1Coordinator(store, daemon_cfg, boot_id="offline-boot")
     loop = EvaluateLoop(source=source, client=ListenerClient(base_url="https://offline.invalid",
         path_token="x"*32, transport=transport), strategy=M1Stage1TestStrategy(coordinator),
@@ -121,8 +108,10 @@ def test_sdk_hook_to_http_decision_and_closed_proof(tmp_path, monkeypatch, dry_r
         assert store.read()["ceremonies"][cid]["response"]["response_kind"] == "dry_run_computed"
         proof = project_evidence(rows, store.read(), cid)
         assert proof["expected_qty"] == proof["observed_qty"] == 1
+        assert proof["offline_test_only"] is True
+        assert proof["qualifying_live_source"] is False
         assert proof["dry_run"] is True and proof["sender_invoked"] is False
-        assert proof["dry_run_strategy_signal_event_id"] == rows[0]["event_id"]
+        assert proof["listener_event_id"] == rows[0]["event_id"]
         assert str(equity) not in json.dumps(proof)
     else:
         assert any(r.get("halt_reason") == "m1_test_requires_explicit_dry_run" for r in rows)

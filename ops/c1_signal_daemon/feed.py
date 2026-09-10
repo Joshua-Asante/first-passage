@@ -21,7 +21,7 @@ class Bar:
 
 
 class BarSource(Protocol):
-    """Live CME bar feed (Databento Live ohlcv-1m in production)."""
+    """Bar-source interface; no live provider is currently approved."""
 
     def poll(self) -> Bar | None:
         """Return the newest bar, or None if none yet / disconnected."""

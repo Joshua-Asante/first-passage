@@ -99,15 +99,12 @@ Steps 1–3 are **discharged**: equity field pinned `balance.netLiq`, `equity_so
 - **Deploys are manual and deliberate** (`fly deploy`), never auto-on-push — an order-placing service must not redeploy from an unrelated repo commit.
 - **Config / evidence tooling:** `ops/c1_rail/write_volume_config.py` (disarmed merges) · `ops/c1_rail/export_session_evidence.py` (post-disarm export) · `ops/c1_rail/c1_rail_arm.py` (arm/disarm).
 
-## 2026-09-10 - offline M1 test implementation
+## 2026-09-10 - offline M1 test infrastructure
 
-The [M1 test contract](../../docs/notes/rail_build/M1_STAGE1_TEST_CONTRACT.md)
-defines the user-approved one-micro MYM test and separate future deployment,
-volume migration, daemon deployment and ceremony phases. Its listener guard is
-permanently dry-run-only and entry-only; generated capacity is zero. The operator
-CLI is `python ops/c1_rail/m1_stage1_control.py --help`. Migration defaults to a
-plan and preflight never posts or ratchets DD. Do not run operational phases under
-the offline approval. All six canonical deployment preconditions remain binding,
-including authenticated private crash-loop recovery, copied operator imports,
-fresh in-container hashes and boot/disarm/health checks. No live readiness or M1
-item-5 evidence is claimed; historical deployed pins remain unchanged.
+The [M1 contract](../../docs/notes/rail_build/M1_STAGE1_TEST_CONTRACT.md) defines the
+permanent entry-only/dry-run-only one-micro test identity. Generated cap is zero.
+Databento is retired and no replacement is approved: attended emission is blocked.
+Migration defaults to a plan; preflight does not POST or ratchet DD. Evidence
+projection is explicitly offline-only and cannot supply M1's acceptance-event field.
+All canonical deployment preconditions remain, including authenticated private
+crash recovery and fresh in-container pins. No live operation is authorized here.
