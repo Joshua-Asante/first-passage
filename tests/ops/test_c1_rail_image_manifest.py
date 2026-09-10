@@ -29,6 +29,8 @@ LISTENER = REPO_ROOT / "ops" / "c1_rail" / "c1_rail_listener.py"
 _ENTRYPOINTS = (
     REPO_ROOT / "ops" / "c1_rail" / "c1_rail_listener.py",
     REPO_ROOT / "ops" / "c1_rail" / "c1_rail_http_server.py",
+    REPO_ROOT / "ops" / "c1_rail" / "m1_stage1_control.py",
+    REPO_ROOT / "ops" / "c1_rail" / "c1_rail_arm.py",
 )
 
 
@@ -90,6 +92,7 @@ def _resolve_repo_module(mod: str) -> Path | None:
         REPO_ROOT / "ops" / "c1_rail" / rel.with_suffix(".py"),
         REPO_ROOT / "ops" / rel.with_suffix(".py"),
         REPO_ROOT / "core" / rel.with_suffix(".py"),
+        REPO_ROOT / rel.with_suffix(".py"),
     )
     for candidate in candidates:
         if candidate.is_file():
@@ -153,3 +156,10 @@ def test_closure_includes_historical_challenge_regression_pin():
     assert "core/historical_challenge.py" in closure_rels
     assert "core/lib/file_lock.py" in closure_rels
     assert "ops/c1_rail/c1_rail_telemetry.py" in closure_rels
+
+
+def test_packaged_files_are_allowed_in_build_context():
+    # Default-excluded context must explicitly include each packaged module.
+    allowed = {line[1:] for line in (REPO_ROOT / ".dockerignore").read_text().splitlines()
+               if line.startswith("!")}
+    assert _dockerfile_copied_py_paths(DOCKERFILE) <= allowed
