@@ -393,7 +393,12 @@ def test_generated_constants_match_production_sources():
     for leg_id, leg in LEG_MAP.items():
         row = c["leg_map"][leg_id]
         assert row["leg_key"] == leg["leg_key"]
-        assert row["base_risk"] == BASE_RISK[leg["leg_key"]]
+        if leg_id == "m1_stage1_test":
+            # Dedicated proof contract; never insert it into production BASE_RISK.
+            assert leg["leg_key"] not in BASE_RISK
+            assert row["base_risk"] == .0000125
+        else:
+            assert row["base_risk"] == BASE_RISK[leg["leg_key"]]
         assert row["pyr_pct"] == leg["pyr_pct"]
         assert row["dollars_per_pt"] == leg["dollars_per_pt"]
 

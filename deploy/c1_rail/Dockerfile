@@ -36,6 +36,7 @@ WORKDIR /app
 # be present in-container to be usable over `fly ssh console`.
 COPY ops/c1_rail/c1_rail_http_server.py ops/c1_rail/c1_rail_listener.py \
      ops/c1_rail/c1_rail_telemetry.py ops/c1_rail/c1_sizing_host_reference.py \
+     ops/c1_rail/m1_stage1_contract.py ops/c1_rail/m1_stage1_control.py \
      ops/c1_rail/crosstrade_payload.py ops/c1_rail/c1_rail_arm.py \
      ops/c1_rail/c1_rail_slippage.py ops/c1_rail/__init__.py \
      ./ops/c1_rail/

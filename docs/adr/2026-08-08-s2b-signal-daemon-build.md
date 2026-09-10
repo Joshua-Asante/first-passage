@@ -1,5 +1,7 @@
 # ADR 2026-08-08 — S2b signal-daemon build (deferred limbs)
 
+**Current feed disposition (2026-09-10): unavailable.** Databento is retired and unsubscribed per the operator; the Databento selection below is historical. No replacement is approved. See the addendum below.
+
 **Status:** `Accepted` — fills deferred limbs of [SPEC S2b](../spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md); **does not authorize build alone** — requires a separate operator build GO citing this ADR + Accepted S2b
 **Decision date:** 2026-08-08
 **Authors:** Joshua (plan execution GO) + Cursor (drafter)
@@ -127,3 +129,9 @@ rg -n '_REQUIRED_PAYLOAD_FIELDS' ops/c1_rail/c1_sizing_host_reference.py
 **Operator 2026-08-24:** the §2 “First emit waits a new strategy + any required `LEG_MAP` extension (separate GO)” gate is **GO’d for a test strategy only**, dated 2026-08-24, to discharge M1 item 5. `NullStrategy` stays the warm default until that attended emit. Withdrawn Striker / MYM / MNQ redeploy stays forbidden. `emit_enabled=true` remains the attended step the daemon already refuses without this GO.
 
 Owner: [M1 addendum](2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
+
+## Addendum 2026-09-10 - selected source retired; no replacement
+
+The operator retired Databento as a First Passage information source and reported unsubscribing. The Databento GLBX.MDP3 Live selection in section 2 is no longer authorized. The [source-owner retirement record](2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento) preserves the original decision and records its current disposition.
+
+No replacement provider, subscription or connection is approved. Keep the daemon inert and M1 emission blocked. The existing live-feed requirement is not silently replaced with a local fixture or replay; that would need an explicit amendment identifying what the test certifies and leaving live-feed readiness separate. Source retirement does not waive expected nonzero dry-run sizing, genuine hook/transport evidence, operator signoff or the prohibition on arming. No deployment or operational action is authorized by this documentation change.
