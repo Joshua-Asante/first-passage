@@ -1,5 +1,19 @@
 # Tradeify Select configuration — bounded implementation plan
 
+> **2026-09-10 working configuration selected:** The operator chose a 1%
+> combined peak-drawdown trigger for Aegis/Vanguard/MYM/original ORB, with
+> Aegis/Vanguard/MYM at 40% and ORB base at full size without adds while
+> protected. See the [selection record](../../notes/2026-09-10-tradeify-protection-selection.md)
+> for exact semantics and remaining execution gaps. This research selection
+> does not resume the simulator or establish formal qualification/deployment.
+
+> **2026-09-10 operator pause:** Full simulator development is closed for now,
+> with all existing implementation and evidence preserved. This is a pause,
+> not completion or a finding that no configuration qualifies. The operator
+> redirected research to an exploratory Aegis/Vanguard/ORB weighting comparison.
+> No further simulator repair wave or faithful replay is authorized by that
+> comparison; formal selection, final validation and deployment remain held.
+
 > **2026-09-10 exploratory exception:** The operator approved the
 > [bounded feasibility screen](2026-09-10-tradeify-feasibility-screen.md).
 > That plan permits only its local daily-ledger diagnostic implementation and

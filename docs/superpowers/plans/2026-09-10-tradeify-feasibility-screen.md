@@ -1,5 +1,13 @@
 # Tradeify bounded feasibility screen implementation plan
 
+> **2026-09-10 closure:** The fixed-menu screen has returned a private report;
+> its execution is closed. Subsequent interpretation review identified an
+> incorrect all-halves speed requirement and unsupported lower-bound language;
+> the report's disposition is not an accepted qualification or rejection.
+> The operator paused the full simulator and requested a separate exploratory
+> Aegis/Vanguard/ORB weighting study. Preserve this screen's menu and outputs;
+> any weighting study is new development-data analysis, not a rerun of this menu.
+
 > **For agentic workers:** Use executing-plans for inline execution of this single component. Do not launch parallel workers or turn its steps into separate review waves.
 
 **Status:** LOCKED PLAN; exploratory screen authorized by the operator's instruction to lock the proposed minimum-infrastructure approach into a plan (2026-09-10 UTC). This publication does not claim implementation or results.

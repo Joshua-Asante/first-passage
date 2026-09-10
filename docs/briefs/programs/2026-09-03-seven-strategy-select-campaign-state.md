@@ -1,7 +1,15 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
+> **Current operator direction, 2026-09-10:** Full simulator work is paused.
+> The separate exploratory work has produced an operator-selected working
+> configuration: Aegis + Vanguard + MYM + original ORB, 1% combined drawdown
+> trigger, protected Aegis/Vanguard/MYM at 40%, and full-size ORB base with no
+> adds while protected. The [selection record](../../notes/2026-09-10-tradeify-protection-selection.md)
+> governs that choice. This supersedes earlier "next work" routing, while the
+> formal replay acceptance, qualification and deployment holds below remain.
+
 **Status:** Codex owns orchestration. C1-C5 composition design choices are approved (§53). Private synthetic scope passed independent review (125 tests; named repairs closed); the current gate is **HOLD** for the coverage contract and remaining real evidence bindings (section 54). Full replay acceptance is not released. Historical implementation authority in section 49 remains suspended; no real/source/native replay, campaign sampling, final freeze, qualification or live authorization may proceed without a separate bounded release. S1/S2 and the one-attempt limit remain unchanged.
-**Last curated:** 2026-09-09 (Codex, `codex/tradeify-composition-checkpoint`)
+**Last curated:** 2026-09-10 (Codex, `codex/tradeify-feasibility-screen-plan`)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
 with #273; four Codex passes `459421b`, `78c82de`, `e8694a9`, `6aa7ff8`, the operator's ruling and
