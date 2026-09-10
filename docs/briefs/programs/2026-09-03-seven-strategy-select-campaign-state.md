@@ -3803,3 +3803,27 @@ profile promotion or deployment is released. Frozen Phase1 artifacts and preserv
 dependency-stop evidence remain unchanged. Retain the one bounded attempt,
 S1/S2, full/H1/H2 acceptance, winner parity before fresh settled account state and
 the sole final n3, M1 and separate deployment GO. No configuration has qualified.
+
+### Coverage preparation and independent-review handoff (2026-09-10)
+
+The private combined coverage proposal and consolidated remaining-evidence
+handoff are prepared. The proposal compares coverage alternatives and records
+their protective and accounting consequences; it is not an elected policy.
+The evidence handoff distinguishes accepted records, locally recoverable facts
+and missing external witnesses, reusing accepted captures. Preparation included
+static identity verification and invented document arithmetic, with no product
+suite, source replay or new external capture.
+
+The operator is sharing the handoff with the existing independent reviewer.
+Review return and Codex disposition remain pending. No review verdict or design
+approval is inferred from delivery. Any later coverage implementation requires
+its own explicit bounded release after the applicable decision and review gates.
+
+**Private preparation verification receipt (SHA-256):**
+`24f7441947337ddd8bb11c4ad4529525fab5ce5fa206d24308d7684afb3fa26c`.
+The receipt, specification, source context, witness details and review bodies
+remain private. This status publication supplies no new capture, replay,
+selection, validation or deployment authority. The existing dependency stops,
+withdrawn coverage claim, retained catalogue and frozen Phase1 evidence remain
+unchanged. An infrastructure dependency preventing an attempt is distinct from
+no configuration qualifying after an authorized attempt.
