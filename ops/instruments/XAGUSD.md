@@ -62,7 +62,7 @@ structure:
 | # | Rejection | Class | Discriminator | Source |
 |---|---|---|---|---|
 | **D1** | **Guardian-family strategy on XAGUSD** (v5.5 port + parameter-freedom track) | SNAG-budget exhaustion / edge-failure | Q-CORR-1 closed 2026-05-14; v5.5 port falsified (DD/WR); WFO withdrawn | [`docs/rejected_candidates.md`](../../docs/rejected_candidates.md) |
-| **D2** | **Guardian Silver v1.0** (BE-off fair-weather, operator override 2026-06-11) | NOT ADMITTED (override condition failed) | §9 H1-counterbalance never materialized; CLOSED 2026-07-01 | Registry + [`docs/ltm/briefs/2026-06-11-guardian-silver-v1-admission-override.md`](../../docs/ltm/briefs/2026-06-11-guardian-silver-v1-admission-override.md); labs `silver_*`, `guardian_silver_be_*` |
+| **D2** | **Guardian Silver v1.0** (BE-off fair-weather, operator override 2026-06-11) | NOT ADMITTED (override condition failed) | §9 H1-counterbalance never materialized; CLOSED 2026-07-01 | Registry + [`docs/ltm/briefs/2026-06-11-guardian-silver-v1-admission-override.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/pre-prune-2026-08-08/docs/ltm/briefs/2026-06-11-guardian-silver-v1-admission-override.md); labs `silver_*`, `guardian_silver_be_*` |
 
 ---
 
