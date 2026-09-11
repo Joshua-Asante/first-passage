@@ -50,7 +50,7 @@ From the repo root on `main` at the merge SHA: `fly deploy . --config deploy/c1_
 - `fly logs` → `daemon up bind=… emit_enabled=false boot_id=…`; no `b1_post` / `m1_b1_post` lines; no source-connect lines.
 - `curl -sS https://c1-signal-daemon.fly.dev/` → `emit_enabled:false`, `effective_emit:false`, `strategy:"NullStrategy"`, `connected:false`, `feed_healthy:false`, `ceremony_state:"DISABLED"`, `feed_mode` = the A1b-defined disconnected value, `boot_id` new.
 - In-container `python ops/c1_signal_daemon/m1_stage1_control.py status --state /data/c1_m1_stage1_state.json` → `effective_emit:false`.
-- State file: `enabled:false`, `active:null`, `generation` = previous + 1, prior ceremonies (if any) closed with `boot_changed` tombstones, `.lock` marker intact.
+- State file, two cases decided by what A4 (and Step 2.2) found on the volume. **No journal before this deploy** (expected: the pre-#332 image never wrote one): `CeremonyStore.boot()` creates it fresh — `schema_version` 1, `generation` **0**, `boot_id` = this boot, `enabled` false, `active` null, empty `ceremonies`/`tombstones`/`watermarks`, and the `.lock` marker reads `initialized`. **Journal already present:** `generation` = previous + 1, `enabled` false, `active` null, prior `READY`/`DISABLED` ceremonies closed with `boot_changed` tombstones, `.lock` marker intact. A fresh file at generation 0 when A4 recorded an existing journal means the marker was lost and the store re-initialized — that is a `FALSIFIED`, not a pass.
 - Listener side: last ledger `seq` unchanged vs 2.1 → **no signal on boot**.
 - Over 60 s of logs: no `step ` lines (inert quiet path).
 
