@@ -415,7 +415,8 @@ sys.path[:0]=["/app/ops/c1_rail","/app/core"]
 from m1_stage1_contract import contract_sha256
 print(contract_sha256())
 PY
-)"
+)" || l5b=0
+      [[ -n "$csha" ]] || l5b=0   # a broken contract-hash probe is a validation result, not a harness abort
     fi
     local bar_b; bar_b="ci-l5b-$(python3 -c 'import uuid;print(uuid.uuid4())')"
     local body_b; body_b="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar_b','close':42000.0,'stop_dist_pts':1.0}))")"
@@ -774,9 +775,19 @@ PY
   stop_rm c1-D6
   docker run -d --name c1-D6 --network none -v "$d6:/data" --entrypoint sleep "$DAEMON_TAG" infinity
   local d6ok=1
+  # Full activation requests (state, config, current boot id, the committed ceremony
+  # manifest fixture, ceremony id) so the refusal is proven on the real activation path,
+  # not on an incomplete call (Codex P2, 2026-09-11).
+  local d6_boot
+  d6_boot="$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['boot_id'])" "$state_file" 2>/dev/null || echo unknown-boot)"
+  docker cp "$FIXTURES/ceremony_manifest.json" c1-D6:/tmp/ceremony_manifest.json >/dev/null
+  local d6_cid
+  d6_cid="$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['ceremony_id'])" "$FIXTURES/ceremony_manifest.json")"
   for act in prepare enable; do
     set +e
     docker exec -e PYTHONPATH=/app/ops c1-D6 python -m c1_signal_daemon.m1_stage1_control "$act" \
+      --state /data/c1_m1_stage1_state.json --config /data/c1_signal_daemon_config.json \
+      --boot-id "$d6_boot" --manifest /tmp/ceremony_manifest.json --ceremony-id "$d6_cid" \
       >"$LOG_DIR/D6_${act}.out" 2>&1
     local rc=$?
     set -e
@@ -923,9 +934,10 @@ PY
   [[ "$slim_rc" -eq 0 ]] || d9ok=0
   # Daemon-image subset: files whose imports resolve from /app/ops alone (the
   # listener-importing tests and the image-manifest test read the repo tree and
-  # run in the slim cell only). One subprocess test inserts the repo's ops/ into
-  # a child interpreter by construction and is deselected here. The subset must
-  # execute and pass (Codex P1, 2026-09-11) — no informational escape hatch.
+  # run in the slim cell only). The subprocess lock test prepends a nonexistent
+  # /work/ops but tests/conftest.py preserves PYTHONPATH for children, so its child
+  # interpreters resolve the image's /app/ops modules — it runs here deliberately.
+  # The subset must execute and pass (Codex P1, 2026-09-11) — no escape hatch.
   local d9_image_files=(
     tests/ops/test_c1_signal_daemon_b1_payload.py
     tests/ops/test_c1_signal_daemon_evaluate_loop.py
@@ -937,13 +949,12 @@ PY
   )
   local in_ok=1
   image_pytest "$DAEMON_TAG" "/app/ops:/app" "$LOG_DIR/D9_inimage.log" \
-    --deselect tests/ops/test_c1_signal_daemon_m1.py::test_process_lock_and_optimized_validation \
     "${d9_image_files[@]}" || in_ok=0
   [[ "$in_ok" -eq 1 ]] || d9ok=0
   {
     echo "slim_rc=$slim_rc inimage_ok=$in_ok"
     echo "slim_files=${#d9_list[@]} paths=${d9_list[*]}"
-    echo "inimage_files=${#d9_image_files[@]} paths=${d9_image_files[*]} (deselect: test_process_lock_and_optimized_validation)"
+    echo "inimage_files=${#d9_image_files[@]} paths=${d9_image_files[*]}"
     echo -n "slim_counts "; grep -E 'passed|failed|error|skipped' "$LOG_DIR/D9_slim.log" | tail -1 || echo "(no summary)"
     echo -n "inimage_counts "; grep -E 'passed|failed|error|skipped' "$LOG_DIR/D9_inimage.log" | tail -1 || echo "(no summary)"
   } >"$LOG_DIR/D9_summary.txt"
