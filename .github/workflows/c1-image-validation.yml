@@ -40,6 +40,11 @@ on:
 permissions:
   contents: read
 
+# One run per ref: `push` and `pull_request` fire on the same SHA; the parent reads one log, not two.
+concurrency:
+  group: c1-image-validation-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   listener:
     runs-on: ubuntu-latest
@@ -64,6 +69,9 @@ jobs:
           # break upload-artifact zip creation when included wholesale.
           path: |
             /tmp/c1_image_validation/*.log
+            /tmp/c1_image_validation/*.status
+            /tmp/c1_image_validation/*.arm
+            /tmp/c1_image_validation/*.second
             /tmp/c1_image_validation/*.txt
             /tmp/c1_image_validation/*.err
             /tmp/c1_image_validation/*.out
@@ -101,6 +109,9 @@ jobs:
           # break upload-artifact zip creation when included wholesale.
           path: |
             /tmp/c1_image_validation/*.log
+            /tmp/c1_image_validation/*.status
+            /tmp/c1_image_validation/*.arm
+            /tmp/c1_image_validation/*.second
             /tmp/c1_image_validation/*.txt
             /tmp/c1_image_validation/*.err
             /tmp/c1_image_validation/*.out
