@@ -399,6 +399,7 @@ git diff --stat origin/main...HEAD -- docs/adr/2026-08-08-s2b-signal-daemon-buil
 
 | Date | Change | By |
 |---|---|---|
+| 2026-09-11 | Codex round 9 folded (2 P2): A6 Step 2.2b gates `poll_interval_s == 1` before the put and the post-deploy remedy is re-stage + machine restart + re-verify; the Stage 1 contract's readiness gate names what is still owed (A1b, validation, A3, A4–A6) instead of a source approval already granted | Claude (fold) · Codex (review) |
 | 2026-09-11 | Codex round 8 folded (2 P2): §2 Reconnect and Heartbeat rows carry dated scope notes (live-transport semantics; non-alerting controlled-input semantics); the Stage 1 test contract records the ratified disposition and separates the pre-A1b runtime from the approved post-A1b design | Claude (fold) · Codex (review) |
 | 2026-09-11 | Codex round 7 folded (2 P2): addendum heading renamed to its RATIFIED state (anchors updated in the M1 ADR, A7 brief and STATE.md); `inject` publishes the one-shot bar atomically (`atomic_json`), with a concurrent-publication integration case | Claude (fold) · Codex (review) |
 | 2026-09-11 | Codex round 6 folded (1 P1 + 2 P2): `poll_interval_s` deployment gate (example config → 1, heartbeat reports it, A4-D pending write, A6 stages and verifies, A7 refuses otherwise); §6 positive consequence no longer claims an explicit feed; parent plan reserves `inject` for the operator | Claude (fold) · Codex (review) |

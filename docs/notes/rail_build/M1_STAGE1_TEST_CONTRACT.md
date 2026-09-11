@@ -99,9 +99,11 @@ an instruction to operate on a live volume under this PR.
 
 ## Readiness and review
 
-All deployment/ceremony work remains blocked pending an approved source or an
-explicit acceptance amendment, plus authenticated private crash-loop recovery
-and the canonical deployment preconditions. Do not reconstruct or waive that
+The input-source amendment is ratified (2026-09-11, controlled input — see the
+disposition at the top of this note); what still gates deployment and the
+ceremony is the implementation of that input (A1b), Linux image validation,
+authenticated private crash-loop recovery (A3), and the canonical deployment
+preconditions (A4-A6). Do not reconstruct or waive that
 recovery procedure. Future deployments require reviewed integrated source,
 import/COPY checks, actual in-container fixture hashes and boot/disarm/health
 verification. Existing deployed M1 pins, evidence IDs, status and signoff remain
