@@ -56,7 +56,7 @@ read-only command; `--arm` is operator-only and is **not in Track A at all**.
 7. `order_id` idempotency is DISPROVEN; every payload carries a fresh identity; a re-sent file is not a no-op. Owner: acceptance JSON notes (2026-07-27).
 8. `fixture_hashes` for every pin the image carries are refreshed only from in-container bytes after a real deploy; a tree-bytes rewrite asserts a deploy that never happened. The one pin the image does not carry, `tests/ops/test_m1_acceptance_drills.py`, is re-verified from the deployed commit's tree, as the 2026-08-19 refresh recorded. Owner: acceptance JSON `fixture_hashes_note`.
 9. No agent places a trade; the weekly account-preservation trade stays operator-placed. Owner: `CLAUDE.md` §Live-execution posture, `STATE.md` weekly trigger.
-10. Private figures (Net Liq, account ids, tokens, raw bar values) never enter a public artifact; the acceptance validator's secret scanner is the mechanical check. Owner: `scripts/validate_c1_monitoring_acceptance.py`.
+10. Private figures (Net Liq, account ids, tokens, raw bar values) never enter a public artifact; the acceptance validator's secret scanner is the mechanical check, and it does **not** detect account identifiers. `c1_rail_arm.py --status` prints `account=<id>` (its `_PRINTABLE` allow-list includes `account`), so every paste of that output into a readiness record, PR, or transcript replaces the token with `account=<redacted>`; the boot line in `fly logs` prints no account and may be pasted as is. Credential **key names** are public by design (READMEs, example configs, `load_config`); the thing that never appears anywhere is a credential **value**. Owner: `scripts/validate_c1_monitoring_acceptance.py` + `CLAUDE.md` §Live-execution posture.
 
 ---
 

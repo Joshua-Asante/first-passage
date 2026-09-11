@@ -36,7 +36,7 @@ The listener image on the host is the 2026-08-19 build; main has moved (2026-08-
 ## 2. Execution plan (order is the six pre-conditions)
 
 ### Step 2.1 — Host read first (pre-condition 1)
-`MSYS_NO_PATHCONV=1 fly ssh console -a c1-rail -C "python ops/c1_rail/c1_rail_arm.py --status"` → paste. Gate: `dry_run=True`, `armed_until=None`, `m1_gate: status='CODE_LANDED' result=FAIL`.
+`MSYS_NO_PATHCONV=1 fly ssh console -a c1-rail -C "python ops/c1_rail/c1_rail_arm.py --status"` → paste **with the `account=…` token replaced by `account=<redacted>`** — `_PRINTABLE` in `c1_rail_arm.py` includes `account`, the identifier is private (plan §1 invariant 10), and the acceptance secret scanner does not catch it; this applies to every `--status` paste in this brief. Gate: `dry_run=True`, `armed_until=None`, `m1_gate: status='CODE_LANDED' result=FAIL`.
 
 ### Step 2.2 — Pre-deploy in-container hashes
 `sha256sum` of the five deployed `ops/c1_rail/*.py` pins in `/app` → must equal the acceptance JSON pins. Record the last ledger `seq` (`tail -c 400 /data/c1_rail_events.jsonl`).

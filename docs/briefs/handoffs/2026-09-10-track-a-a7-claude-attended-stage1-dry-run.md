@@ -36,10 +36,12 @@ M1 item 5 requires a real strategy signal from the ruled host that reaches the l
 
 **Not asked:** editing `M1_MONITORING_ACCEPTANCE.json`; a second ceremony; any arm; any order.
 
-## 2. Execution plan (gates are binary; any miss stops the session)
+## 2. Execution plan (gates are binary; any miss stops the session — after teardown)
+
+**Teardown rule, binding from the moment Step 2.2 succeeds until Step 2.10 completes:** whatever stops the session — a `preflight` receipt other than `expected_qty: 1`, a manifest the validator rejects, `prepare` or `enable` exiting non-zero (elapsed target, changed `boot_id`, manifest/source validation), a missed target, an expired ceremony, an unknown transport, an operator abort — the session does not return until it has (a) closed any ceremony that reached `READY` or beyond with the full Step 2.9 close command (which also clears `emit_enabled` and `m1_test.enabled` on the daemon config; a partially written config may still read `strategy: "m1_stage1_test"` with the gate disabled, which is inert — record it), (b) run Step 2.10 in full (listener row back to cap 0 / `RETIRED` after flatness confirmation; listener disarm and daemon `effective_emit:false` reconfirmed), and (c) recorded the failure and every teardown command in §A7. Only the journal is never edited. The branch-specific notes in Steps 2.3 and 2.7 are instances of this rule, not the whole of it.
 
 ### Step 2.1 — Pre-checks
-Listener `--status` → `dry_run=True`, `armed_until=None`, `m1_gate … result=FAIL` (expected); anything else is the armed-host procedure (Track A plan §6: boot line, operator flatness attestation, `--disarm` + restart + verify, or alert without disarm if the operator cannot attest) and the ceremony does not run. Daemon `GET /` → `effective_emit:false`, `ceremony_state:"DISABLED"`; `status` CLI healthy; record daemon `boot_id`. Both `contract_sha256()` values (listener image, daemon image) printed in-container → **must be equal**. Listener ledger last `seq` recorded.
+Listener `--status` (every paste of it in this brief has `account=…` replaced by `account=<redacted>`; `_PRINTABLE` includes the account id) → `dry_run=True`, `armed_until=None`, `m1_gate … result=FAIL` (expected); anything else is the armed-host procedure (Track A plan §6: boot line, operator flatness attestation, `--disarm` + restart + verify, or alert without disarm if the operator cannot attest) and the ceremony does not run. Daemon `GET /` → `effective_emit:false`, `ceremony_state:"DISABLED"`; `status` CLI healthy; record daemon `boot_id`. Both `contract_sha256()` values (listener image, daemon image) printed in-container → **must be equal**. Listener ledger last `seq` recorded.
 
 ### Step 2.2 — Enable the allocation
 Operator flatness attestation (Tradovate "No open positions", time). Precondition from the A5 record: the withdrawn rows read 0/0 on the volume (released at A5, or never present). If §A5 recorded 69/11 left in place, this step cannot succeed — the enable plan sums to 81 > 80 and `plan_migration` raises `m1_test_account_cap_exhausted` — so do not run it; return `BLOCKED — plan-itself-wrong` naming the residue and the pending operator decision. `--release-withdrawn` is an A5-class attended write and is never added ad hoc here. Then two reads, then one write, exactly as A5 Step 2.7 does with `RW = False`: the CLI plan `migrate --config /data/c1_rail_config.json --enable-test` for the `before` digests, and the read-only in-container `plan_migration(c, enabled=True, release_withdrawn=False)` one-liner (the CLI does not print the after-state) → review: `after.constants.leg_map` differs from the current file only in the test row (`cap_alloc` 1) and `after.lifecycle` only in `M1 Stage1 Test: AUTHORIZED` → `--apply --flat-verified --expect-constants … --expect-lifecycle …` with the same flags → re-run the one-liner's no-op check (`noop True`). Restart the listener only if A4 established that constants are cached (then `--status` first).
@@ -51,7 +53,7 @@ Operator flatness attestation (Tradovate "No open positions", time). Preconditio
 Write the manifest on the daemon volume (`/data/m1_manifest_<ceremony_id>.json`) with: fresh `ceremony_id` (e.g. `stage1-<YYYYMMDD>-1`), `target`, `expires` (= target + 150 s, per §0.5), `contract_sha256` (from 2.1), `expected_qty: 1`, `preflight_sha256` (from 2.3), `source` = the approved marker verbatim from the A1b brief. Paste it (no private values inside).
 
 ### Step 2.5 — Prepare (agent)
-`python ops/c1_signal_daemon/m1_stage1_control.py prepare --state /data/c1_m1_stage1_state.json --config /data/c1_signal_daemon_config.json --boot-id <boot_id> --manifest /data/m1_manifest_<id>.json` → exit 0; `status` → `state:"READY"`, `effective_emit:false`. Health still `effective_emit:false`.
+`python ops/c1_signal_daemon/m1_stage1_control.py prepare --state /data/c1_m1_stage1_state.json --config /data/c1_signal_daemon_config.json --boot-id <boot_id> --manifest /data/m1_manifest_<id>.json` → exit 0; `status` → `state:"READY"`, `effective_emit:false`. Health still `effective_emit:false`. A non-zero exit here (the CLI prints only `ceremony control failed closed`) is the §2 teardown rule: check `status` for a `READY` ceremony and close it if one exists, run Step 2.10, record, return `DONE_WITH_CONCERNS`.
 
 ### Step 2.6 — Enable (operator)
 Agent drafts the exact command; the **operator** runs it in their own `fly ssh console -a c1-signal-daemon`: `python ops/c1_signal_daemon/m1_stage1_control.py enable --state … --config … --boot-id <boot_id> --manifest /data/m1_manifest_<id>.json --ceremony-id <id>`. Health → `effective_emit:true`, `ceremony_state:"READY"`, source activates per the A1b brief. Time stamp recorded.
@@ -86,7 +88,7 @@ Append §A7 to the readiness record: UUID, ceremony id, target, contract hash, r
 - Editing the journal, the manifest after `prepare`, or the volume configs by hand.
 - Running `enable` as the agent.
 - Populating `dry_run_strategy_signal_event_id` (A8).
-- Leaving the allocation at cap 1 or the ceremony config enabled after the session.
+- Leaving the allocation at cap 1 or the ceremony config enabled after the session, on any exit path — success, failure, or abort (the §2 teardown rule).
 - `--arm`, under any wording.
 
 ## 6. Gate and return taxonomy
