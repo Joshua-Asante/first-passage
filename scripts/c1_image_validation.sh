@@ -324,9 +324,11 @@ run_listener() {
   fi
 
   local files="$LOG_DIR/L2_files.txt" exp="$LOG_DIR/L2_expected.txt"
-  docker run --rm --network none --entrypoint find "$LISTENER_TAG" /app -type f | sort >"$files"
+  local probe_ok=1
+  if ! docker run --rm --network none --entrypoint find "$LISTENER_TAG" /app -type f | sort >"$files"; then probe_ok=0; fi
   printf '%s\n' "${LISTENER_FILES[@]}" | sort >"$exp"
   local l2=1
+  [[ "$probe_ok" -eq 1 ]] || l2=0   # an image that cannot run `find` is a FAIL, not a script abort
   diff -u "$exp" "$files" >"$LOG_DIR/L2_diff.txt" || l2=0
   if grep -E '\.pine$|/core/data(/|$)|/tests/' "$files" >/dev/null; then l2=0; fi
   if ! grep -qx '/app/docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json' "$files"; then l2=0; fi
@@ -587,9 +589,11 @@ run_daemon() {
   fi
 
   local files="$LOG_DIR/D2_files.txt" exp="$LOG_DIR/D2_expected.txt"
-  docker run --rm --network none --entrypoint find "$DAEMON_TAG" /app -type f | sort >"$files"
+  local probe_ok=1
+  if ! docker run --rm --network none --entrypoint find "$DAEMON_TAG" /app -type f | sort >"$files"; then probe_ok=0; fi
   printf '%s\n' "${DAEMON_FILES[@]}" | sort >"$exp"
   local d2=1
+  [[ "$probe_ok" -eq 1 ]] || d2=0   # an image that cannot run `find` is a FAIL, not a script abort
   diff -u "$exp" "$files" >"$LOG_DIR/D2_diff.txt" || d2=0
   set +e
   docker run --rm --network none "$DAEMON_TAG" python -c 'import databento' >"$LOG_DIR/D2_db.log" 2>&1
