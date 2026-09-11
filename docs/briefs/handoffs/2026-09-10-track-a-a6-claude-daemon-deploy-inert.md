@@ -76,7 +76,7 @@ Append §A6 to the readiness record; commit on `claude/*`, push, PR. Final `--st
 
 ## 6. Gate and return taxonomy
 
-RESOLVED = release complete and every inert check evidenced. FALSIFIED = §4 reject (rolled back). AMBIGUOUS = unresolved journal or missing A1b inputs.
+RESOLVED = release complete and every inert check evidenced. FALSIFIED = §4 reject fired; rolled back to the §A3 image with the §A3 no-build command; the return pastes the post-rollback health JSON (`emit_enabled:false`, `connected:false`, redacted) and the listener ledger `seq` unchanged from the pre-deploy baseline. AMBIGUOUS = unresolved journal or missing A1b inputs.
 
 Return exactly one of `DONE` · `DONE_WITH_CONCERNS` · `NEEDS_CONTEXT` · `BLOCKED — context-problem | capability-problem | scope-problem | plan-itself-wrong`, with release number, machine id, image ref, deployed SHA, the health JSON (redacted), the state-file summary, and the PR URL.
 

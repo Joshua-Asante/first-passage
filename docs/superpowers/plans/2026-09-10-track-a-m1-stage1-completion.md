@@ -153,12 +153,18 @@ The implementer of the ratified input changes the daemon only. The spec the pare
   `2 × bar_period + 30 s`, second app, no listener B1 contract change.
 - Tests: unit + the real-HTTP-handler integration path; the source-retirement test updated to the
   new disposition rather than deleted.
+- `ops/c1_signal_daemon/m1_stage1_control.py` gains `daemon.py`'s `sys.path` bootstrap so
+  `python ops/c1_signal_daemon/m1_stage1_control.py <action>` runs from `/app` with no `PYTHONPATH`
+  (today it exits at import, line 11, with `ModuleNotFoundError: No module named 'c1_rail'`; the
+  listener-side `ops/c1_rail/m1_stage1_control.py` already carries the bootstrap). A `tests/ops`
+  subprocess test runs `status` from the repository root, and A2's D6 runs that exact invocation on
+  the A1b image. Every in-container daemon CLI command in A6 and A7 depends on this.
 
 ---
 
 ## 4. Task list (checkbox = parent-session acceptance after the two-pass review)
 
-- [ ] **A0** — #332 and #334 merged; `origin/main` carries `ops/c1_rail/m1_stage1_contract.py` and the S2b build ADR's 2026-09-10 addendum. Then a one-line edit: `STATE.md` queue row 1 gains a pointer to this plan (Claude, docs-only PR).
+- [ ] **A0** — #332 and #334 merged; `origin/main` carries `ops/c1_rail/m1_stage1_contract.py` and the S2b build ADR's 2026-09-10 addendum. The `STATE.md` queue row 1 pointer to this plan lands in this PR (#335), not in a later edit.
 - [ ] **A1** — decision packet returned; operator ratifies exactly one option (or NO-GO for all, which parks Track A after A5).
 - [ ] **A1r** — the ratification is on disk: a docs-only PR (parent session) replaces the addendum's `PROPOSED` status line with `RATIFIED <date> — option <X>`, rewrites the `### Selection` block to the operator's actual choice when it differs from the packet's recommendation (the recommendation stays as a dated historical line), applies the chosen option's amendment text to the M1 ADR when the option needs one, and adds the change-history row; operator merges. A6's Phase 0 hard-checks this edit; an oral or PR-comment ruling alone does not unblock the daemon lane. Parent then authors the A1b brief from the merged text, never from a superseded selection.
 - [ ] **A2 (listener half)** — workflow green on `main`; listener entrypoint boots disarmed under `--network none`; test identity rejected at `dry_run=false` in-container; focused suites pass on Linux.

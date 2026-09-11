@@ -102,7 +102,7 @@ Final `--status` read pasted. No arm. No signal.
 
 ## 6. Gate and return taxonomy
 
-RESOLVED = every step's gate met, `--status` disarmed after, pins refreshed in-container, PR open. FALSIFIED = §4 reject fired (rolled back; record what happened). AMBIGUOUS = a precondition input missing.
+RESOLVED = every step's gate met, `--status` disarmed after, pins refreshed in-container, PR open. FALSIFIED = §4 reject fired; rolled back to the §A3 image with the §A3 no-build command; the return pastes the post-rollback boot line from `fly logs` and the in-container `--status` (with `account=<redacted>`) showing `dry_run=True armed_until=-`, and records what happened. AMBIGUOUS = a precondition input missing.
 
 Return exactly one of `DONE` · `DONE_WITH_CONCERNS` · `NEEDS_CONTEXT` · `BLOCKED — context-problem | capability-problem | scope-problem | plan-itself-wrong`, with: release number, machine id, image ref, deployed SHA, the before/after `--status` lines, the migration plan digest, the PR URL.
 
