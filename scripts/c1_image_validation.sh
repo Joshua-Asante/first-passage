@@ -187,6 +187,10 @@ transports = [r for r in rows if r.get("kind") == "transport_result"]
 if not decisions:
     raise SystemExit("no decision rows")
 d = decisions[-1]
+# Pair the transport row with THIS decision by event_id (Codex P1, 2026-09-11):
+# the ledger still holds earlier checks' rows, so "last transport" is not "this
+# request's transport" when a regression omits it.
+transports = [r for r in transports if r.get("event_id") == d.get("event_id")]
 errs = []
 def need(c, m):
     if not c: errs.append(m)
@@ -204,7 +208,7 @@ if halt_reason:
 if contract:
     need(d.get("test_contract_sha256") == contract, f"test_contract_sha256 mismatch")
 if not transports:
-    errs.append("no transport_result")
+    errs.append(f"no transport_result for decision event_id={d.get('event_id')}")
 else:
     need(transports[-1].get("transport_state") == "not_attempted",
          f"transport_state={transports[-1].get('transport_state')}")
@@ -327,14 +331,15 @@ PY
     local tok; tok="$(path_token)"
     local bar_a; bar_a="ci-l5a-$(python3 -c 'import uuid;print(uuid.uuid4())')"
     local body_a; body_a="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar_a','close':42000.0,'stop_dist_pts':1.0}))")"
-    http_post_in c1-L4 "http://127.0.0.1:8080/c1/${tok}" "$body_a" "$LOG_DIR/L5a.out"
+    local l5a_post=1
+    http_post_in c1-L4 "http://127.0.0.1:8080/c1/${tok}" "$body_a" "$LOG_DIR/L5a.out" 2>"$LOG_DIR/L5a.post.err" || l5a_post=0
     # Prefer in-container ledger bytes (bind-mount visibility is usually fine on
     # Linux, but docker exec removes any doubt when asserting).
     docker exec c1-L4 cat /data/c1_rail_events.jsonl >"$LOG_DIR/L5a.events" 2>"$LOG_DIR/L5a.events.err" || true
     if [[ ! -s "$LOG_DIR/L5a.events" && -s "$d4/c1_rail_events.jsonl" ]]; then
       cp "$d4/c1_rail_events.jsonl" "$LOG_DIR/L5a.events"
     fi
-    if head -1 "$LOG_DIR/L5a.out" | grep -qx 200 \
+    if [[ "$l5a_post" -eq 1 ]] && head -1 "$LOG_DIR/L5a.out" | grep -qx 200 \
        && python3 "$LOG_DIR/_assert_decision.py" "$LOG_DIR/L5a.events" 0 any \
             >"$LOG_DIR/L5a.assert" 2>"$LOG_DIR/L5a.err"; then
       record_pass L5a "qty_out=0 default identity" "$(cat "$LOG_DIR/L5a.assert")"
@@ -373,7 +378,7 @@ PY
     local bar_b; bar_b="ci-l5b-$(python3 -c 'import uuid;print(uuid.uuid4())')"
     local body_b; body_b="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar_b','close':42000.0,'stop_dist_pts':1.0}))")"
     if [[ "$l5b" -eq 1 ]]; then
-      http_post_in c1-L4 "http://127.0.0.1:8080/c1/${tok}" "$body_b" "$LOG_DIR/L5b.out"
+      http_post_in c1-L4 "http://127.0.0.1:8080/c1/${tok}" "$body_b" "$LOG_DIR/L5b.out" 2>"$LOG_DIR/L5b.post.err" || l5b=0
       local rbody; rbody="$(tail -n +2 "$LOG_DIR/L5b.out")"
       grep -q 'dry_run: computed, not sent' <<<"$rbody" || l5b=0
       head -1 "$LOG_DIR/L5b.out" | grep -qx 200 || l5b=0
@@ -414,7 +419,7 @@ PY
   local bar6; bar6="ci-l6-$(python3 -c 'import uuid;print(uuid.uuid4())')"
   local body6; body6="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar6','close':42000.0,'stop_dist_pts':1.0}))")"
   if container_alive c1-L6; then
-    http_post_in c1-L6 "http://127.0.0.1:8080/c1/${tok}" "$body6" "$LOG_DIR/L6.out"
+    http_post_in c1-L6 "http://127.0.0.1:8080/c1/${tok}" "$body6" "$LOG_DIR/L6.out" 2>"$LOG_DIR/L6.post.err" || l6=0
     docker exec c1-L6 cat /data/c1_rail_events.jsonl >"$LOG_DIR/L6.events" 2>/dev/null \
       || cp "$d6/c1_rail_events.jsonl" "$LOG_DIR/L6.events"
     # Live-mode halt records dry_run=false on the decision row — do not require True.
@@ -444,7 +449,7 @@ PY
   local bar6b; bar6b="ci-l6b-$(python3 -c 'import uuid;print(uuid.uuid4())')"
   local body6b; body6b="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar6b','close':42000.0,'stop_dist_pts':1.0}))")"
   if container_alive c1-L6b; then
-    http_post_in c1-L6b "http://127.0.0.1:8080/c1/${tok}" "$body6b" "$LOG_DIR/L6b.out"
+    http_post_in c1-L6b "http://127.0.0.1:8080/c1/${tok}" "$body6b" "$LOG_DIR/L6b.out" 2>"$LOG_DIR/L6b.post.err" || l6b=0
     python3 "$LOG_DIR/_assert_decision.py" "$d6b/c1_rail_events.jsonl" 0 any \
       >"$LOG_DIR/L6b.assert" 2>"$LOG_DIR/L6b.err" || l6b=0
   else l6b=0; fi
@@ -717,7 +722,9 @@ PY
     >"$LOG_DIR/D7.second" 2>&1
   local src=$?
   set -e
-  [[ "$src" -ne 0 ]] || d7ok=0
+  # Must EXIT non-zero within 5 s: 124 is GNU timeout's "command timed out" and
+  # 125-127 are docker/exec infrastructure statuses, none of which is a refusal.
+  case "$src" in 0|124|125|126|127) d7ok=0 ;; esac
   grep -q 'daemon ownership unavailable' "$LOG_DIR/D7.second" || d7ok=0
   http_get_in c1-D7 'http://127.0.0.1:8080/' "$LOG_DIR/D7.get" 2>"$LOG_DIR/D7.get.err" || d7ok=0
   if [[ "$d7ok" -eq 1 ]]; then record_pass D7 "second process refused; GET ok"
@@ -830,6 +837,9 @@ PY
     >"$LOG_DIR/D9_inimage.log" 2>&1
   local in_rc=$?
   set -e
+  # Executed-test failures in the built image are gating (Codex P1, 2026-09-11);
+  # collection-time import errors stay informational per brief §0.5 (A).
+  if grep -qE '(^|[^a-z])[0-9]+ failed' "$LOG_DIR/D9_inimage.log"; then d9ok=0; fi
   {
     echo "slim_rc=$slim_rc inimage_rc=$in_rc"
     echo "slim_files=${#d9_list[@]} paths=${d9_list[*]}"
@@ -846,8 +856,8 @@ PY
     echo "---- D9_inimage.log (tail) ----"
     tail -n 40 "$LOG_DIR/D9_inimage.log" || true
   fi
-  if [[ "$d9ok" -eq 1 ]]; then record_pass D9 "slim suite green; in-image reported rc=$in_rc" "$(tr '\n' ' ' <"$LOG_DIR/D9_summary.txt")"
-  else record_fail D9 "slim suite failed; see D9_slim.log" "$(tr '\n' ' ' <"$LOG_DIR/D9_summary.txt")"; fi
+  if [[ "$d9ok" -eq 1 ]]; then record_pass D9 "slim suite green; in-image: no executed failures (rc=$in_rc; import errors informational)" "$(tr '\n' ' ' <"$LOG_DIR/D9_summary.txt")"
+  else record_fail D9 "slim suite failed or in-image executed tests failed; see D9_slim.log / D9_inimage.log" "$(tr '\n' ' ' <"$LOG_DIR/D9_summary.txt")"; fi
 
   # D10 real-socket timeout — helper temp .py
   cat >"$LOG_DIR/D10_probe.py" <<'PY'
