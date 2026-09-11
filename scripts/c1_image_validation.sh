@@ -318,6 +318,8 @@ run_listener() {
     record_pass L1 "built $LISTENER_TAG"
   else
     record_fail L1 "build failed; see $blog"
+    local dep
+    for dep in L2 L3 L4 L5a L5b L6 L6b L7 L8 L9; do record_fail "$dep" "not runnable: listener image build failed (L1)"; done
     return 0
   fi
 
@@ -579,6 +581,8 @@ run_daemon() {
     record_pass D1 "built $DAEMON_TAG"
   else
     record_fail D1 "build failed; see $blog"
+    local dep
+    for dep in D2 D3 D4 D5 D6 D7 D8 D9 D10; do record_fail "$dep" "not runnable: daemon image build failed (D1)"; done
     return 0
   fi
 
