@@ -23,7 +23,7 @@ Currency: `git fetch origin main`; SHA recorded. At authoring time (2026-09-10) 
 
 ## 0.5. Clarifications (halt on ambiguity)
 
-- `target` selection: the operator names a UTC minute at least 5 minutes ahead, inside a Globex session; `expires = target + 150 s` — the manifest maximum (`60 < expires − target ≤ 150`) and equal to `accept_bar`'s 150 s ceiling, so the expiry can never close a ceremony that the bar window would still accept. Under option D the bar is delivered by the operator's `inject`, which the CLI accepts only inside `[target + 60 s, target + 120 s]` (30 s of headroom under the 150 s acceptance ceiling, because the daemon consumes the one-shot file on its next poll); the ceremony config carries `poll_interval_s ≤ 1` (validated by `prepare`). If the A1b build deviates from those bounds, stop and return `NEEDS_CONTEXT` — do not widen either window in code.
+- `target` selection: the operator names a UTC minute at least 5 minutes ahead, inside a Globex session; `expires = target + 150 s` — the manifest maximum (`60 < expires − target ≤ 150`) and equal to `accept_bar`'s 150 s ceiling, so the expiry can never close a ceremony that the bar window would still accept. Under option D the bar is delivered by the operator's `inject`, which the CLI accepts only inside `[target + 60 s, target + 120 s]` (30 s of headroom under the 150 s acceptance ceiling, because the daemon consumes the one-shot file on its next poll); the ceremony config carries `0 < poll_interval_s ≤ 1` (validated by `prepare`). If the A1b build deviates from those bounds, stop and return `NEEDS_CONTEXT` — do not widen either window in code.
 - If `preflight` returns anything other than `expected_qty: 1`, the ceremony does not proceed (track stop rule). Return the receipt, disable the allocation again, and stop.
 - If the daemon journal shows any unresolved checkpoint from an earlier attempt, no new ceremony; `BLOCKED — plan-itself-wrong`.
 - The evidence projection needs the listener ledger and the daemon state on one filesystem. Default: `fly ssh sftp get` both files into the session scratchpad (never into the repo) and run the projection locally; delete the copies after the return is written.
@@ -103,7 +103,7 @@ Return exactly one of `DONE` · `DONE_WITH_CONCERNS` · `NEEDS_CONTEXT` · `BLOC
 
 ## 7. Parent-session review
 
-Pass 1 — spec compliance: one ceremony; `enable` run by the operator (transcript shows the agent drafting, not running); allocation back to zero; no acceptance edit. Pass 2 — quality: parent re-runs the projection from the retained host files and re-greps the ledger for the UUID (expects exactly three lines); parent confirms the manifest's `source` marker equals the ratified amendment's. Pass 3 — consolidated read of §A5–§A7.
+Pass 1 — spec compliance: one ceremony; `enable` **and `inject`** run by the operator (the transcript shows the agent drafting both commands and the operator running them — neither the journal nor the evidence projection records the CLI actor, so the transcript is the only evidence of operator authority); allocation back to zero; no acceptance edit. Pass 2 — quality: parent re-runs the projection from the retained host files and re-greps the ledger for the UUID (expects exactly three lines); parent confirms the manifest's `source` marker equals the ratified amendment's. Pass 3 — consolidated read of §A5–§A7.
 
 ## 10. Audit hooks
 
