@@ -1,0 +1,18 @@
+{
+  "listener_base_url": "http://127.0.0.1:9",
+  "path_token": "cigBYtBzwby1tsnbQ30YArL6hQ1PTbJzdGTl0ZYA8HzGFBke",
+  "bind_host": "0.0.0.0",
+  "bind_port": 8080,
+  "bar_period_s": 60,
+  "emit_enabled": true,
+  "strategy": "m1_stage1_test",
+  "m1_test": {
+    "enabled": true,
+    "state_path": "/data/c1_m1_stage1_state.json",
+    "boot_id": "ci_placeholder_boot_id_not_real_0123456789abcdef",
+    "ceremony_id": "ci_placeholder_ceremony_id_not_real",
+    "generation": 1,
+    "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "poll_interval_s": 5
+}

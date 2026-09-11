@@ -1,0 +1,13 @@
+{
+  "ceremony_id": "ci_offline_manifest_placeholder_001",
+  "target": "2099-01-01T14:00:00+00:00",
+  "expires": "2099-01-01T14:02:00+00:00",
+  "contract_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "expected_qty": 1,
+  "preflight_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "source": {
+    "kind": "offline_fixture",
+    "schema": "ohlcv-1m",
+    "symbol": "MYM1!"
+  }
+}
