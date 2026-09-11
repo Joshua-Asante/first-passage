@@ -41,6 +41,7 @@ Newest 15 consequences; decision rationale remains with the owner. Older index:
 [archive](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md).
 Retracted verdicts leave this index; their correction stands with its owner.
 
+- **2026-09-11** — Stage 1 input source ruled: operator-attended controlled input (option D); no live feed; A1b implementation owed; no arm. [Addendum](docs/adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-09-11--stage-1-input-source-options-and-ratified-selection-option-d) · [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-09-11--item-5-input-for-stage-1-operator-attended-controlled-input-express)
 - **2026-09-10** — Operator accepted the selected Tradeify configuration as satisfying queue item 1; configuration-selection work closed and removed from the live queue. Deployment remains separate. [Acceptance](docs/notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure)
 - **2026-09-06** — Root docs narrowed to current routing; STATE owns priorities, campaign plans executable steps, SESSIONS history. [Charter](docs/adr/2026-07-16-root-doc-charter-dedup.md#decision)
 - **2026-09-03** — Off-queue VOLREGIME translation closed at T0, PRE-CONTRACT DROP; no contract. [Ruling](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
@@ -55,7 +56,6 @@ Retracted verdicts leave this index; their correction stands with its owner.
 - **2026-08-29** — SSOT Phase 2 running-count consistency authorized. [Addendum](docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md#addendum-2026-08-29--phase-2-authorized-a8-intra-adr-running-count-consistency)
 - **2026-08-27** — SSOT/data-lineage remediation Phase 1 authorized. [ADR](docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md)
 - **2026-08-24** — Regime-gate scope and validation-battery K-tiering ruled. [Scope](docs/adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md) · [K-tiering](docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md)
-- **2026-08-24** — A2 disclosed-N reduction accepted; not a Phase B GO. [RESULTS §4](lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)
 
 ## Dormant cross-session threads
 
