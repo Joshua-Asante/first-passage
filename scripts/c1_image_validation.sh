@@ -147,10 +147,16 @@ wait_for_log() {
 # HTTP against --network none via docker exec + urllib (helper .py avoids quote hell).
 write_http_helpers() {
   cat >"$LOG_DIR/_http_get.py" <<'PY'
-import sys, urllib.request
+import sys, urllib.error, urllib.request
 url = sys.argv[1]
-with urllib.request.urlopen(url, timeout=5) as resp:
-    sys.stdout.buffer.write(resp.read())
+# First line = HTTP status (callers assert exactly 200); the body follows.
+try:
+    with urllib.request.urlopen(url, timeout=5) as resp:
+        status, body = int(resp.status), resp.read()
+except urllib.error.HTTPError as exc:
+    status, body = int(exc.code), exc.read()
+sys.stdout.buffer.write(f"{status}\n".encode("utf-8"))
+sys.stdout.buffer.write(body)
 PY
   cat >"$LOG_DIR/_http_post.py" <<'PY'
 import sys, urllib.error, urllib.request
@@ -171,15 +177,15 @@ PY
   cat >"$LOG_DIR/_assert_decision.py" <<'PY'
 """Assert last decision (+ transport_result) in an events JSONL ledger.
 
-argv: path qty halt_mode [halt_reason [contract [require_dry_run]]]
+argv: path qty halt_mode [halt_reason [contract [expect_dry_run]]]
   halt_mode: true|false|any
-  require_dry_run: true (default) | false  — L6 live-mode halt records dry_run=false
+  expect_dry_run: true (default) | false  — the decision row's dry_run must equal this exactly
 """
 import json, sys
 path, qty_s, halt_mode = sys.argv[1], sys.argv[2], sys.argv[3]
 halt_reason = sys.argv[4] if len(sys.argv) > 4 else ""
 contract = sys.argv[5] if len(sys.argv) > 5 else ""
-require_dry_run = (sys.argv[6] if len(sys.argv) > 6 else "true") != "false"
+expect_dry_run = (sys.argv[6] if len(sys.argv) > 6 else "true") != "false"
 qty = int(qty_s)
 rows = [json.loads(l) for l in open(path, encoding="utf-8") if l.strip()]
 decisions = [r for r in rows if r.get("kind") == "decision"]
@@ -195,8 +201,7 @@ errs = []
 def need(c, m):
     if not c: errs.append(m)
 need(d.get("qty_out") == qty, f"qty_out={d.get('qty_out')} want {qty}")
-if require_dry_run:
-    need(d.get("dry_run") is True, f"dry_run={d.get('dry_run')}")
+need(d.get("dry_run") is expect_dry_run, f"dry_run={d.get('dry_run')} want {expect_dry_run}")
 need(d.get("test_only") is True, f"test_only={d.get('test_only')}")
 need(d.get("sender_invoked") is False, f"sender_invoked={d.get('sender_invoked')}")
 if halt_mode == "true":
@@ -221,9 +226,14 @@ PY
 }
 
 http_get_in() {
+  # Writes the body to <out> and the HTTP status to <out>.status; returns non-zero
+  # unless the status is exactly 200 (a 201/204 must not read as a healthy probe).
   local name="$1" url="$2" out="$3"
   docker cp "$LOG_DIR/_http_get.py" "$name:/tmp/_http_get.py" >/dev/null
-  docker exec "$name" python /tmp/_http_get.py "$url" >"$out"
+  docker exec "$name" python /tmp/_http_get.py "$url" >"$out.raw" || return 1
+  head -1 "$out.raw" >"$out.status"
+  tail -n +2 "$out.raw" >"$out"
+  grep -qx 200 "$out.status"
 }
 
 http_post_in() {
@@ -503,7 +513,7 @@ PY
     >"$LOG_DIR/L7.arm" 2>&1
   local arc=$?
   set -e
-  [[ "$arc" -ne 0 ]] || l7=0
+  [[ "$arc" -eq 1 ]] || l7=0   # the validated refusal path exits 1; any other status is a regression
   grep -qi 'refusing to arm' "$LOG_DIR/L7.arm" || l7=0
   after="$(sha256_file "$d7/c1_rail_config.json")"
   [[ "$before" == "$after" ]] || l7=0
@@ -1070,6 +1080,8 @@ def main() -> int:
     if n1 != 1: raise SystemExit(f"accepted_first={n1}")
     if n2 != 1: raise SystemExit(f"accepted_after={n2}")
     if elapsed < 25 or elapsed > 45: raise SystemExit(f"elapsed={elapsed}")
+    if not isinstance(result, dict) or result.get("action") != "transport_unknown":
+        raise SystemExit(f"step must return transport_unknown, got {result!r}")
     if state != "TRANSPORT_UNKNOWN" and prev != "TRANSPORT_UNKNOWN":
         raise SystemExit(f"state={state!r} prev={prev!r} item={item!r}")
     return 0
