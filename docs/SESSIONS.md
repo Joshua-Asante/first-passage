@@ -35,6 +35,15 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 ---
 
 
+## 2026-09-11a — Track B release (TB-G0): D-B1..D-B15 recorded; D-B5 corrected to option D
+
+- **Focus:** Land the orchestrator's Track B release commit so wave 1a can be dispatched: record the operator's fifteen rulings as campaign authority, release the governing plan's HOLD for the umbrella's packets only, transfer the orchestrator role per D-B2, and add the STATE queue row.
+- **Judgment:** The umbrella's D-B5 still cited Track A's superseded Option A ruling; the ratified ruling is option D (operator-attended controlled input), which discharges M1 without selecting a live feed. Recorded that as open item O-4 (operator decision; Track B never chooses the feed) rather than letting the dependency graph imply Track A delivers a source it will not. The 2026-09-09 HOLD block is relabelled *Prior gate* in place (Rule 14 class 2) with the release above it; nothing withheld and not named is released.
+- **Shipped:** [umbrella](briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) rev 11 (status RELEASED, D-B5 corrected, O-4, TB-G0 row LANDED) · [campaign record §55](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#55--track-b-release--d-b1d-b15-recorded-2026-09-11) + §1 Roles · [plan](superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md) status block · `STATE.md` row 2.
+- **Open / next:** operator rules O-4 (feed); wave 1a dispatch (TB-R1, TB-S1, TB-S2, TB-S3, TB-P1, TB-P2); Track A continues (A3, A4-L, A1b after #340).
+
+---
+
 ## 2026-09-09h — Handoff CLI: merge #326 settle + Codex PID-list fixes (#325)
 
 - **Focus:** Resolve main merge conflicts with #326's ActiveProcesses-only settle; address Codex review on #325 (`90ce0e42`) — P1 deadline recheck/fail-closed, P2 `ERROR_MORE_DATA` PID-list retry, P3 settle-seconds monkeypatch binding.
