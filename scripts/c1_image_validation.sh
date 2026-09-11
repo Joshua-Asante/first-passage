@@ -264,6 +264,34 @@ PY
   [[ -s "$dest/c1_sizing_constants.json" ]] || return 1
 }
 
+# Run a pytest subset INSIDE a built image (tests/ + lock + pyproject mounted
+# read-only; PYTHONPATH points at the image's own /app modules so the code under
+# test is the deployed code, not the repo checkout). Returns 0 only when pytest
+# exits 0 AND at least one test actually ran (Codex P1, 2026-09-11: a session
+# that executed zero in-image tests must not read as PASS).
+image_pytest() {
+  local image="$1" pythonpath="$2" logf="$3"; shift 3
+  local extra_mounts=()
+  while [[ "${1:-}" == "-v" ]]; do extra_mounts+=("$1" "$2"); shift 2; done
+  mkdir -p "${HOME:-/root}/.cache/pip"
+  set +e
+  docker run --rm \
+    -v "$ROOT/tests:/work/tests:ro" \
+    -v "$ROOT/requirements-ops.lock:/work/requirements-ops.lock:ro" \
+    -v "$ROOT/pyproject.toml:/work/pyproject.toml:ro" \
+    -v "${HOME:-/root}/.cache/pip:/root/.cache/pip" \
+    "${extra_mounts[@]}" \
+    -e "PYTHONPATH=$pythonpath" \
+    -w /work "$image" \
+    bash -lc "python -m pip install --require-hashes -r requirements-ops.lock >/tmp/pip.log 2>&1 || { cat /tmp/pip.log; exit 97; }; python -m pytest -q -p no:cacheprovider $*" \
+    >"$logf" 2>&1
+  local rc=$?
+  set -e
+  local passed
+  passed="$(grep -oE '[0-9]+ passed' "$logf" | tail -1 | awk '{print $1}')"
+  [[ "$rc" -eq 0 && -n "$passed" && "$passed" -gt 0 ]]
+}
+
 stage_daemon_data() {
   local dest="$1" cfg="$2"
   rm -rf "$dest"; mkdir -p "$dest"
@@ -496,12 +524,37 @@ PY
   stop_rm c1-L8
   docker run -d --name c1-L8 --network none -v "$d8:/data" "$LISTENER_TAG" >"$LOG_DIR/L8.cid"
   if wait_for_log c1-L8 'dry_run=True armed_until=-' 15 "$LOG_DIR/L8.log" \
-     && grep -q 'IMPLICIT DISARM' "$LOG_DIR/L8.log"; then
-    record_pass L8 "IMPLICIT DISARM on expired armed_until"
+     && grep -q 'IMPLICIT DISARM' "$LOG_DIR/L8.log" \
+     && container_alive c1-L8; then
+    record_pass L8 "IMPLICIT DISARM on expired armed_until; alive"
   else
-    record_fail L8 "see L8.log"
+    record_fail L8 "see L8.log (or the container exited after disarm)"
   fi
   stop_rm c1-L8
+
+  # L9 compatible listener tests run against the BUILT listener image (Codex P2,
+  # 2026-09-11): the slim suite exercises repo source in python:3.12-slim, not the
+  # image that deploys. Subset = files whose imports resolve from /app alone; the
+  # F2 sizing oracle is data and is mounted read-only for test_c1_sizing_host_reference.
+  local l9_files=(
+    tests/ops/test_c1_rail_arm.py
+    tests/ops/test_c1_rail_http_server.py
+    tests/ops/test_c1_rail_listener.py
+    tests/ops/test_c1_rail_slippage.py
+    tests/ops/test_c1_rail_telemetry.py
+    tests/ops/test_c1_sizing_host_reference.py
+    tests/ops/test_m1_stage1_listener.py
+    tests/ops/test_m1_stage1_control.py
+    tests/ops/test_m1_acceptance_drills.py
+    tests/ops/test_crosstrade_payload.py
+  )
+  local f2="$ROOT/lab/analysis/c1/q_rail_1_2026-07/f2_floors.json"
+  if image_pytest "$LISTENER_TAG" "/app/ops/c1_rail:/app/core:/app/ops:/app" "$LOG_DIR/L9_inimage.log" \
+       -v "$f2:/work/lab/analysis/c1/q_rail_1_2026-07/f2_floors.json:ro" "${l9_files[@]}"; then
+    record_pass L9 "listener-image tests executed and green" "$(grep -E 'passed|failed|error' "$LOG_DIR/L9_inimage.log" | tail -1)"
+  else
+    record_fail L9 "listener-image tests failed or did not execute; see L9_inimage.log" "$(grep -E 'passed|failed|error' "$LOG_DIR/L9_inimage.log" | tail -1)"
+  fi
 }
 
 ########################################################################
@@ -544,14 +597,25 @@ if not req.exists():
     expected = []
 else:
     text = req.read_text(encoding="utf-8")
-    if "--hash=" not in text:
-        print("FAIL: requirements.txt not hash-pinned")
-        sys.exit(2)
+    # Every logical requirement (backslash-continued lines joined) must carry its
+    # own --hash= (Codex P2, 2026-09-11): a single hashed line must not vouch for
+    # an unpinned neighbour. Options (-r/--index-url…) and comments are skipped.
+    logical=[]; buf=""
+    for raw in text.splitlines():
+        line=raw.split("#",1)[0].rstrip()
+        if line.endswith("\\"):
+            buf += line[:-1] + " "; continue
+        buf += line
+        if buf.strip(): logical.append(buf.strip())
+        buf=""
+    if buf.strip(): logical.append(buf.strip())
     names=[]
-    for line in text.splitlines():
-        line=line.strip()
-        if not line or line.startswith("#") or line.startswith("-"): continue
-        names.append(line.split("==")[0].split("[")[0].strip().lower())
+    for item in logical:
+        if item.startswith("-"): continue
+        if "--hash=" not in item or "==" not in item:
+            print(f"FAIL: requirement without a pin and hash: {item.split()[0]}")
+            sys.exit(2)
+        names.append(item.split("==")[0].split("[")[0].strip().lower())
     expected=sorted(set(n for n in names if n))
 print(json.dumps({"extras":extras,"expected":expected}, sort_keys=True))
 sys.exit(0 if extras==expected else 1)
@@ -593,7 +657,8 @@ PY
   # Snapshot /data from inside the container so bind-mount surprises are visible.
   docker exec c1-D4 sh -c 'ls -la /data; echo ---; for f in /data/*.json /data/*.lock /data/*.owner.lock; do [ -e "$f" ] || continue; echo "# $f"; wc -c "$f"; done' \
     >"$LOG_DIR/D4.data.ls.log" 2>&1 || true
-  docker cp c1-D4:/data "$LOG_DIR/D4_data_cp" >/dev/null 2>&1 || true
+  rm -rf "$LOG_DIR/D4_data_cp"   # never let a previous run's snapshot stand in for this one
+  docker cp c1-D4:/data "$LOG_DIR/D4_data_cp" >/dev/null 2>&1 || rm -rf "$LOG_DIR/D4_data_cp"
   cat >"$LOG_DIR/D4_state.py" <<'PY'
 import json,sys
 from pathlib import Path
@@ -652,7 +717,9 @@ PY
   # the stale-enabled config must not validate as "inert".
   container_alive c1-D5 || d5ok=0
   docker logs c1-D5 >"$LOG_DIR/D5.log" 2>&1 || true
-  grep -E 'b1_post|m1_b1_post' "$LOG_DIR/D5.log" >/dev/null && d5ok=0
+  # A transport attempt that fails logs only a `step … transport_unknown` record
+  # (no b1_post marker), so step records are rejected here exactly as in D4.
+  grep -E 'step |b1_post|m1_b1_post' "$LOG_DIR/D5.log" >/dev/null && d5ok=0
   if [[ "$d5ok" -eq 1 ]]; then record_pass D5 "stale-enabled stays inert; alive after interval"
   else record_fail D5 "see D5.log"; fi
   stop_rm c1-D5
@@ -826,28 +893,31 @@ PY
   local slim_rc=$?
   set -e
   [[ "$slim_rc" -eq 0 ]] || d9ok=0
-  set +e
-  docker run --rm \
-    -v "$ROOT/tests:/work/tests:ro" \
-    -v "$ROOT/requirements-ops.lock:/work/requirements-ops.lock:ro" \
-    -v "$ROOT/pyproject.toml:/work/pyproject.toml:ro" \
-    -v "${HOME:-/root}/.cache/pip:/root/.cache/pip" \
-    -w /work "$DAEMON_TAG" \
-    bash -lc 'python -m pip install --require-hashes -r requirements-ops.lock >/tmp/pip.log 2>&1; python -m pytest -q tests/ops/test_c1_signal_daemon_*.py tests/ops/test_m1_stage1_*.py' \
-    >"$LOG_DIR/D9_inimage.log" 2>&1
-  local in_rc=$?
-  set -e
-  # Executed-test failures in the built image are gating (Codex P1, 2026-09-11);
-  # collection-time import errors stay informational per brief §0.5 (A).
-  if grep -qE '(^|[^a-z])[0-9]+ failed' "$LOG_DIR/D9_inimage.log"; then d9ok=0; fi
+  # Daemon-image subset: files whose imports resolve from /app/ops alone (the
+  # listener-importing tests and the image-manifest test read the repo tree and
+  # run in the slim cell only). One subprocess test inserts the repo's ops/ into
+  # a child interpreter by construction and is deselected here. The subset must
+  # execute and pass (Codex P1, 2026-09-11) — no informational escape hatch.
+  local d9_image_files=(
+    tests/ops/test_c1_signal_daemon_b1_payload.py
+    tests/ops/test_c1_signal_daemon_evaluate_loop.py
+    tests/ops/test_c1_signal_daemon_feed.py
+    tests/ops/test_c1_signal_daemon_listener_client.py
+    tests/ops/test_c1_signal_daemon_m1.py
+    tests/ops/test_c1_signal_daemon_source_retirement.py
+    tests/ops/test_c1_signal_daemon_transport.py
+  )
+  local in_ok=1
+  image_pytest "$DAEMON_TAG" "/app/ops:/app" "$LOG_DIR/D9_inimage.log" \
+    --deselect tests/ops/test_c1_signal_daemon_m1.py::test_process_lock_and_optimized_validation \
+    "${d9_image_files[@]}" || in_ok=0
+  [[ "$in_ok" -eq 1 ]] || d9ok=0
   {
-    echo "slim_rc=$slim_rc inimage_rc=$in_rc"
+    echo "slim_rc=$slim_rc inimage_ok=$in_ok"
     echo "slim_files=${#d9_list[@]} paths=${d9_list[*]}"
+    echo "inimage_files=${#d9_image_files[@]} paths=${d9_image_files[*]} (deselect: test_process_lock_and_optimized_validation)"
     echo -n "slim_counts "; grep -E 'passed|failed|error|skipped' "$LOG_DIR/D9_slim.log" | tail -1 || echo "(no summary)"
     echo -n "inimage_counts "; grep -E 'passed|failed|error|skipped' "$LOG_DIR/D9_inimage.log" | tail -1 || echo "(no summary)"
-    if grep -qiE 'ModuleNotFoundError|ImportError' "$LOG_DIR/D9_inimage.log"; then
-      echo "inimage_note=imports failed in-image (reported, not forced)"
-    fi
   } >"$LOG_DIR/D9_summary.txt"
   cat "$LOG_DIR/D9_summary.txt"
   if [[ "$d9ok" -ne 1 ]]; then
@@ -856,8 +926,8 @@ PY
     echo "---- D9_inimage.log (tail) ----"
     tail -n 40 "$LOG_DIR/D9_inimage.log" || true
   fi
-  if [[ "$d9ok" -eq 1 ]]; then record_pass D9 "slim suite green; in-image: no executed failures (rc=$in_rc; import errors informational)" "$(tr '\n' ' ' <"$LOG_DIR/D9_summary.txt")"
-  else record_fail D9 "slim suite failed or in-image executed tests failed; see D9_slim.log / D9_inimage.log" "$(tr '\n' ' ' <"$LOG_DIR/D9_summary.txt")"; fi
+  if [[ "$d9ok" -eq 1 ]]; then record_pass D9 "slim suite green; daemon-image subset executed and green" "$(tr '\n' ' ' <"$LOG_DIR/D9_summary.txt")"
+  else record_fail D9 "slim suite failed, or the daemon-image subset failed / did not execute; see D9_slim.log / D9_inimage.log" "$(tr '\n' ' ' <"$LOG_DIR/D9_summary.txt")"; fi
 
   # D10 real-socket timeout — helper temp .py
   cat >"$LOG_DIR/D10_probe.py" <<'PY'
