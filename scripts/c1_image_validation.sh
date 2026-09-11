@@ -448,6 +448,7 @@ PY
   local body6; body6="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar6','close':42000.0,'stop_dist_pts':1.0}))")"
   if container_alive c1-L6; then
     http_post_in c1-L6 "http://127.0.0.1:8080/c1/${tok}" "$body6" "$LOG_DIR/L6.out" 2>"$LOG_DIR/L6.post.err" || l6=0
+    head -1 "$LOG_DIR/L6.out" | grep -qx 200 || l6=0   # a halted decision is still a 200 "halted: …" reply
     docker exec c1-L6 cat /data/c1_rail_events.jsonl >"$LOG_DIR/L6.events" 2>/dev/null \
       || cp "$d6/c1_rail_events.jsonl" "$LOG_DIR/L6.events"
     # Live-mode halt records dry_run=false on the decision row — do not require True.
@@ -478,6 +479,7 @@ PY
   local body6b; body6b="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar6b','close':42000.0,'stop_dist_pts':1.0}))")"
   if container_alive c1-L6b; then
     http_post_in c1-L6b "http://127.0.0.1:8080/c1/${tok}" "$body6b" "$LOG_DIR/L6b.out" 2>"$LOG_DIR/L6b.post.err" || l6b=0
+    head -1 "$LOG_DIR/L6b.out" | grep -qx 200 || l6b=0
     python3 "$LOG_DIR/_assert_decision.py" "$d6b/c1_rail_events.jsonl" 0 any \
       >"$LOG_DIR/L6b.assert" 2>"$LOG_DIR/L6b.err" || l6b=0
   else l6b=0; fi
@@ -588,7 +590,12 @@ def dists(image):
     out = subprocess.check_output(
         ["docker","run","--rm","--network","none",image,"python","-m","pip","list","--format=json"],
         text=True)
-    return {r["name"].lower() for r in json.loads(out)}
+    return {norm(r["name"]) for r in json.loads(out)}
+
+def norm(name):
+    # PEP 503 normalization: runs of -, _ and . are equivalent; compare canonical forms.
+    import re as _re
+    return _re.sub(r"[-_.]+", "-", name).lower()
 
 base, img = dists("python:3.12-slim"), dists(sys.argv[1])
 extras = sorted(img - base)
@@ -615,14 +622,14 @@ else:
         if "--hash=" not in item or "==" not in item:
             print(f"FAIL: requirement without a pin and hash: {item.split()[0]}")
             sys.exit(2)
-        names.append(item.split("==")[0].split("[")[0].strip().lower())
+        names.append(norm(item.split("==")[0].split("[")[0].strip()))
     expected=sorted(set(n for n in names if n))
 print(json.dumps({"extras":extras,"expected":expected}, sort_keys=True))
 sys.exit(0 if extras==expected else 1)
 PY
   python3 "$LOG_DIR/D2_pip.py" "$DAEMON_TAG" >"$LOG_DIR/D2_pip.json" 2>"$LOG_DIR/D2_pip.err" || d2=0
   if [[ "$d2" -eq 1 ]]; then record_pass D2 "COPY exact; no databento; extras match" "$(cat "$LOG_DIR/D2_pip.json")"
-  else record_fail D2 "see D2_diff.txt / D2_pip.err"; fi
+  else record_fail D2 "see D2_diff.txt / D2_pip.err" "$(cat "$LOG_DIR/D2_pip.json" 2>/dev/null | tr -d '\n')"; fi
 
   local d3="$LOG_DIR/D3_data"; rm -rf "$d3"; mkdir -p "$d3"
   stop_rm c1-D3
