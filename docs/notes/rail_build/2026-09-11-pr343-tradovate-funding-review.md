@@ -198,3 +198,35 @@ This staged rule preserves A′ as a credible fallback without mistaking the
 first priced option for the best option, account funding for deployment
 readiness, or an application-level promise not to trade for a read-only
 credential boundary.
+
+## Condensed checklist while funding is deferred
+
+- [ ] **Record the deferral:** PR #343 must not leave A′ presented as funded,
+  connected or finally selected; no account, subscription, credentials or A9
+  provider implementation yet.
+- [ ] **Finish Track A without a live feed:** implement and Linux-validate the
+  option-D controlled input, deploy the daemon inert, run the attended M1
+  ceremony, obtain operator signoff and reach M1 `RESOLVED`; never arm.
+- [ ] **Run Track B's source-independent work:** regenerate the missing private
+  inputs, accept the locked specs, intake every reachable size/mode, build the
+  four private adapters, prove parity, implement the offline rail/runtime
+  controls, and complete the fixed-book legality/n1/n2 qualification. Stop if
+  the K=1 book fails; a feed would no longer unlock this deployment.
+- [ ] **Close pre-feed operational gaps:** freeze the forward calendar and
+  closure overlay; resolve lifecycle/protection state; verify all four
+  CrossTrade ticket symbols; implement dedupe, capacity, execution feedback,
+  EOD flattening, restart recovery and fail-closed interlocks in dry-run/inert
+  form.
+- [ ] **Prepare provider-neutral feed gates:** freeze the adapter contract and
+  the four-symbol TB-I5 feed-equivalence test, including bar-close timing,
+  session/timezone, roll mapping, corrections/backfill, reconnect and staleness.
+- [ ] **Near the actual feed gate, compare vendors:** obtain written answers
+  from tastytrade, Ironbeam and Tradovate; verify IBKR's unattended-auth shape;
+  compare all-in cost, capital, CME/COMEX/CBOT coverage, licensing and a
+  technically enforced read-only boundary.
+- [ ] **Return for one funding decision only when needed:** the fixed book has
+  survived every source-independent gate, one provider clears every mandatory
+  fact, its adapter is ready for immediate live validation, and an owner/time
+  window is booked for subscription, all-four-symbol receipt, reconnect,
+  staleness and TB-I5. Funding authorizes data validation only—not deployment,
+  emission, arming or trading.
