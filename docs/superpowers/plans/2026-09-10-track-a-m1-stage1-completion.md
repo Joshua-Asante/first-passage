@@ -102,6 +102,7 @@ Routing test is [`2026-07-14-cc-cursor-surface-allocation.md`](../../adr/2026-07
 | A6 daemon deploy (inert) | **Claude** | Same class as A5. | fly auth | readiness record §A6 | spec + quality + consolidated |
 | A7 attended Stage 1 dry-run | Operator + **Claude** (console) | Operator runs `enable` **and `inject`** (option D, ratified 2026-09-11); agent runs read-only preflight, `prepare`, verification, `close`, and drafts both operator commands. | fly auth; operator present | evidence projection + genuine listener event UUID; readiness record §A7 | spec + quality + consolidated |
 | A8 signoff + RESOLVED + redeploy | **Claude** | Edits the acceptance artifact (governed); redeploy under the grant. | fly auth | PR with `status=RESOLVED`; post-redeploy `--status` shows `m1_gate … result=PASS`; STOP | spec + quality + consolidated |
+| A9 production-feed preparation — added 2026-09-11 | **Codex** (provider-neutral spec authored by the parent) | Track A deliverable per Track B D-B5; not on the M1 path (A7/A8 run on option D). Freeze only the provider-neutral `BarSource` contract: authentication/renewal interface, reconnect, staleness, fail-closed behavior and the four-symbol route-label ↔ dated-contract mapping. O-4 is deferred; do not implement a provider client, open or fund an account, subscribe, or stage credentials. | none for provider-neutral specification and mocked contract tests | PR on `codex/*`; readiness record §A9-PREP; later provider-specific packet only after a new operator ruling | fable-judge + Codex review |
 
 Handoff briefs (dispatch in this order; each is self-contained):
 
@@ -160,6 +161,58 @@ The implementer of the ratified input changes the daemon only. The spec the pare
   subprocess test runs `status` from the repository root, and A2's D6 runs that exact invocation on
   the A1b image. Every in-container daemon CLI command in A6 and A7 depends on this.
 
+### 3.2 A9 — production feed: verification record and funding checkpoint (added 2026-09-11)
+
+Folded from the Codex advisory review of O-4 (PR #344); the ruling's owners are the S2b build ADR §2 row and the umbrella's O-4, and this section is the A9 preparation record. **Latest ruling:** the operator deferred funding and provider selection on 2026-09-11. Option A′ (Tradovate market-data API on a personal live data-only account) is shortlisted only. The comparison and checkpoint below are retained for the later decision; until then only provider-neutral specification and mocked contract tests are authorized.
+
+**Entitlements the account must carry** (the first recording named only CME and COMEX — wrong for MYM):
+
+| Leg | Contract | Exchange |
+|---|---|---|
+| Aegis | 6J | CME |
+| Vanguard | MGC | COMEX |
+| Striker | MYM | **CBOT** (`ops/instruments/MYM.md`: "CBOT Micro E-mini Dow"; export symbol `CBOT_MINI:MYM1!`) |
+| ORB | MNQ | CME |
+
+**Candidates (vendor pages read 2026-09-11 by the Codex review; prices and eligibility are operator-verified at signup, never quoted from here):**
+
+| Candidate | What the vendor page establishes | Cost / capital visible | Material issue | Disposition |
+|---|---|---|---|---|
+| tastytrade Open API / DXLink | WebSocket streaming with CME futures symbols; candle events; 15-minute OAuth access tokens, 24-hour quote token; "fully onboarded tastytrade customer" required ([streaming guide](https://developer.tastytrade.com/docs/guides/stream-market-data/), [API](https://tastytrade.com/api/)) | fee and minimum not established | full read/write API; needs all-four-contract real-time entitlement, unattended refresh and any data-only scope confirmed in writing | **best challenger — verify first** |
+| Interactive Brokers | CME/CBOT/COMEX/NYMEX top-of-book; Web/TWS APIs ([pricing](https://www.interactivebrokers.com/en/pricing/market-data-pricing.php)) | $500 minimum equity for data; $10 base + $5 streaming (non-pro, as displayed) | always-on Client Portal or TWS gateway; order-capable | **economic challenger, operationally conditional** |
+| Ironbeam REST/WebSocket | WebSocket quotes, trades, trade bars; bearer auth; documented reconnect rule ([API](https://www.ironbeam.com/api/), [reference](https://docs.ironbeamapi.com/)) | minimum, API and data charges not established | order-capable; bar-close semantics and read-only restriction unknown | **request a quote; do not fund** |
+| CME Group direct / Smart Stream ([market-data APIs](https://www.cmegroup.com/market-data/market-data-api.html)) | direct real-time API and cloud WebSocket products | self-service price not readable; enterprise onboarding | likely commercial licensing | **RFI only** |
+| TradeStation ([API](https://www.tradestation.com/platforms-and-tools/trading-api/)) | REST + streaming, futures | no subscription fee, but a **$10,000 funded minimum** for an API key (page read 2026-09-11 by the parent; the A1 scan understated this) | ten times A′'s parked capital; order-capable | **dominated** |
+| Massive Advanced ([futures](https://www.massive.com/futures)) | CME/CBOT/NYMEX/COMEX real-time WebSockets, minute aggregates | $199/month | data-only secret; same run-rate as the retired Databento plan | **safe fallback, not cost leader** |
+| Databento paid plan | existing adapter experience; CME Globex real-time and OHLCV | ≈ $199/month; retired 2026-09-10 | reverses an explicit cost decision | **fallback only** |
+| IQFeed / CQG / Barchart / dxFeed direct | futures data or an API | no self-service headless price established | Windows client, broker sponsorship, or sales-gated | **no evidence they beat the shortlist** |
+
+**Credential-boundary correction (adopted):** Tradovate, tastytrade, IBKR, Ironbeam and TradeStation are brokerage-backed APIs; unless the vendor issues a technically enforced market-data-only credential, an application-level promise not to call order endpoints does not make the secret data-only. Massive, Databento and a direct licensed feed have the safer boundary, and that benefit is priced explicitly in the decision rule below.
+
+**Six written questions** (send to tastytrade, Ironbeam and Tradovate; check IBKR's documentation; no account opened, nothing funded):
+
+1. May a non-professional customer consume real-time 6J, MGC, MYM and MNQ data from a headless Linux service for internal algorithmic decision-making?
+2. All-in monthly API and CME/CBOT/COMEX entitlement fees, minimum funded balance, inactivity fees, withdrawal constraints?
+3. Is there a market-data-only OAuth scope or API key that cannot place, modify or cancel orders? If not, can order permission be disabled at the account or API-user level?
+4. Does the stream publish completed 1-minute OHLCV bars with exchange timestamps, or must the client aggregate trades? Are historical backfill and correction events available after reconnect?
+5. Can authentication and token renewal run unattended for weeks without a UI, MFA prompt, daily login or desktop gateway? What session caps apply?
+6. Are cloud/VPS use, local persistence of derived 1-minute bars, and use as an input to automated signals permitted under the subscriber agreement?
+
+Reject any answer that leaves licensing, all-four-symbol coverage, unattended authentication, or the ability to disable order actions ambiguous; run a paper or demo spike only for candidates that survive.
+
+**Readiness checkpoint (fund only after all six are recorded):**
+
+1. *Campaign viability* — the fixed K=1 book has passed every qualification gate that does not need a live source (Track B TB-E1), so feed spend is the actual next blocker.
+2. *Build readiness* — A9-PREP has frozen the provider-neutral adapter contract and mocked tests; after selection, the provider-specific packet names endpoints, token renewal, reconnect and staleness behaviour, route-label ↔ dated-contract mapping, secret fields and live test plan.
+3. *Primary signup verification* — the operator confirms in the vendor's own UI or written terms the API eligibility, fee, minimum equity, token lifetime, session behaviour, and data-only permission; the six-question comparison is complete.
+4. *Complete entitlements* — CME, CBOT and COMEX covered for 6J/MNQ, MYM and MGC, with the actual total monthly cost recorded before purchase.
+5. *Credential containment* — operator-staged, volume-only, excluded from logs and images, used only by an allowlisted market-data client; no order endpoint implemented; the feed account is never linked to CrossTrade; account closure is the rollback.
+6. *Immediate-use window* — an owner and time window are booked for live auth, subscription, all-four-symbol receipt, reconnect, staleness and TB-I5 equivalence checks; fees never start to leave an account idle.
+
+**Decision rule for the operator's later ruling (not standing purchase authority):** if tastytrade (or another challenger) proves real-time, all-four-symbol, headless use with no greater secret authority and lower capital or run-rate than A′, recommend it over Tradovate. If no challenger clears every mandatory fact and the A′ checkpoint passes, recommend Tradovate. If the book fails an earlier qualification gate, do not fund. If eligibility, all-three-exchange coverage or read-only containment cannot be confirmed, re-price a data-only licensed provider — the extra recurring cost buys a materially safer secret boundary. In every surviving case, return to the operator before selection or spend and revise the S2b row only after that ruling.
+
+**Runs while funding is deferred:** source-independent Track A/Track B work; the provider-neutral `BarSource` adapter contract; the provider-neutral TB-I5 feed-equivalence spec; mocked protocol tests. Send the six vendor questions near the actual feed gate so answers and prices are current.
+
 ---
 
 ## 4. Task list (checkbox = parent-session acceptance after the two-pass review)
@@ -176,6 +229,7 @@ The implementer of the ratified input changes the daemon only. The spec the pare
 - [ ] **A4 (daemon half)** — second dispatch of the A4 brief (Step 2.3b/2.4b): readiness record §A4-D with every row GO; the v1-failed-release anomaly explained from evidence; approved-source keys present but disabled; journal state clean; daemon import closure re-traced on the A1b merge SHA; A6 command sequence frozen.
 - [ ] **A6** — daemon at the new release; `GET /` shows `emit_enabled=false`, `effective_emit=false`, `strategy=NullStrategy`, source disconnected; no signal on boot (listener ledger last `seq` unchanged); ceremony state file valid; `status` CLI healthy. STOP before any ceremony.
 - [ ] **A7** — one ceremony: preflight `expected_qty=1`; operator `enable`; operator `inject` of the just-closed `venue_contract` bar inside `[target + 60 s, target + 120 s]`; one B1 POST; listener triad `request_received → decision(qty_out=1, dry_run=true, test_only=true, sender_invoked=false) → transport_result(not_attempted)`; evidence projection joins uniquely; `close`; listener disarm + daemon `effective_emit=false` reconfirmed; genuine listener event UUID recorded.
+- [ ] **A9-PREP** (added 2026-09-11; off the M1 critical path) — freeze the provider-neutral `BarSource` contract, four-symbol mapping requirements and mocked auth/renewal/reconnect/staleness/fail-closed test contract. Stop before any provider-specific module, account, subscription, credential, live connection or TB-I5 application. A later operator ruling creates the provider-specific implementation packet; no emit, no arm.
 - [ ] **A8** — acceptance JSON: `dry_run_strategy_signal_event_id`, `operator_signoff`, `status=RESOLVED`, in-container `fixture_hashes` (deployed pins in-container, the test pin from the tree); validator plain + `--require-resolved` exit 0; PR merged; listener redeployed with the `RESOLVED` artifact; `--status` → `result=PASS`; if any pin moved at that deploy, PR 2's refreshed record is re-baked by one docs-only redeploy (ops bytes unchanged, hashes identical before and after) so the running image's embedded record describes its own bytes, and the STATE row stays queued as "re-bake owed" until PR 3 records the verified re-bake. **STOP. No arm.** STATE row 1 leaves the queue with its record only once the host carries the record that describes it.
 
 ---
@@ -190,6 +244,7 @@ The implementer of the ratified input changes the daemon only. The spec the pare
 6. Provide `operator_signoff` (name, date, statement) for A8.
 7. Keep placing the weekly account-preservation trade; Track A does not change that obligation.
 8. `--arm` is not in Track A. If anyone proposes it, the answer is the M1 ADR: `RESOLVED` **plus** a separate GO, in a later track.
+9. (A9-PREP; O-4 deferred 2026-09-11) No signup, funding, subscription or credential staging. Complete the source-independent qualification and provider-neutral preparation first. Near the actual feed gate, send the §3.2 written questions (tastytrade, Ironbeam, Tradovate; check IBKR's documentation), then return for one operator provider/funding decision. Any later account action, provider client, credential staging or TB-I5 application requires that new ruling.
 
 ---
 
