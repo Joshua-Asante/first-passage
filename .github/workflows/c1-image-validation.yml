@@ -60,7 +60,22 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: c1-image-validation-listener
-          path: /tmp/c1_image_validation/
+          # Curated evidence only — bind-mount *_data dirs are root-owned and
+          # break upload-artifact zip creation when included wholesale.
+          path: |
+            /tmp/c1_image_validation/*.log
+            /tmp/c1_image_validation/*.txt
+            /tmp/c1_image_validation/*.err
+            /tmp/c1_image_validation/*.out
+            /tmp/c1_image_validation/*.assert
+            /tmp/c1_image_validation/*.events
+            /tmp/c1_image_validation/*.state
+            /tmp/c1_image_validation/*.get
+            /tmp/c1_image_validation/*.plan
+            /tmp/c1_image_validation/*.apply
+            /tmp/c1_image_validation/*.health
+            /tmp/c1_image_validation/*.py
+            /tmp/c1_image_validation/*.cid
           if-no-files-found: warn
 
   daemon:
@@ -82,5 +97,20 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: c1-image-validation-daemon
-          path: /tmp/c1_image_validation/
+          # Curated evidence only — bind-mount *_data dirs are root-owned and
+          # break upload-artifact zip creation when included wholesale.
+          path: |
+            /tmp/c1_image_validation/*.log
+            /tmp/c1_image_validation/*.txt
+            /tmp/c1_image_validation/*.err
+            /tmp/c1_image_validation/*.out
+            /tmp/c1_image_validation/*.assert
+            /tmp/c1_image_validation/*.events
+            /tmp/c1_image_validation/*.state
+            /tmp/c1_image_validation/*.get
+            /tmp/c1_image_validation/*.plan
+            /tmp/c1_image_validation/*.apply
+            /tmp/c1_image_validation/*.health
+            /tmp/c1_image_validation/*.py
+            /tmp/c1_image_validation/*.cid
           if-no-files-found: warn

@@ -156,13 +156,17 @@ PY
 import sys, urllib.error, urllib.request
 url, body = sys.argv[1], sys.argv[2].encode("utf-8")
 req = urllib.request.Request(url, data=body, headers={"Content-Type":"application/json"}, method="POST")
+# Write status+body through the buffer only — mixing print() and buffer.write()
+# can reorder lines under block buffering inside `docker exec`.
+def _emit(code: int, payload: bytes) -> None:
+    sys.stdout.buffer.write(f"{code}\n".encode("ascii"))
+    sys.stdout.buffer.write(payload)
+    sys.stdout.buffer.flush()
 try:
     with urllib.request.urlopen(req, timeout=30) as resp:
-        print(resp.status)
-        sys.stdout.buffer.write(resp.read())
+        _emit(resp.status, resp.read())
 except urllib.error.HTTPError as exc:
-    print(exc.code)
-    sys.stdout.buffer.write(exc.read())
+    _emit(exc.code, exc.read())
 PY
   cat >"$LOG_DIR/_assert_decision.py" <<'PY'
 """Assert last decision (+ transport_result) in an events JSONL ledger.
@@ -239,7 +243,9 @@ stage_listener_data() {
 
 generate_constants_in_image() {
   local dest="$1" logf="$2"
-  docker run --rm --network none -v "$dest:/data" "$LISTENER_TAG" \
+  # -i forwards the heredoc on stdin; without it `python -` sees EOF and exits 0
+  # while writing nothing — L4 GET still passes, but later POSTs halt on missing constants.
+  docker run --rm -i --network none -v "$dest:/data" "$LISTENER_TAG" \
     python - >"$logf" 2>&1 <<'PY'
 import json, sys
 sys.path[:0] = ["/app/ops/c1_rail", "/app/core"]
@@ -250,6 +256,8 @@ with open("/data/c1_sizing_constants.json", "w", encoding="utf-8") as fh:
     fh.write("\n")
 print("ok", constants.get("tier"))
 PY
+  # Fail closed if the mirror never landed (empty-python-success trap).
+  [[ -s "$dest/c1_sizing_constants.json" ]] || return 1
 }
 
 stage_daemon_data() {
@@ -353,7 +361,8 @@ PY
     ls "$d4"/*.m1-backup-* >/dev/null 2>&1 || l5b=0
     local csha=""
     if [[ "$l5b" -eq 1 ]]; then
-      csha="$(docker exec c1-L4 python - <<'PY'
+      # -i is required so the heredoc reaches `python -`; without it csha is empty.
+      csha="$(docker exec -i c1-L4 python - <<'PY'
 import sys
 sys.path[:0]=["/app/ops/c1_rail","/app/core"]
 from m1_stage1_contract import contract_sha256
@@ -707,6 +716,9 @@ PY
   stop_rm c1-D7
 
   # D8 restart semantics
+  # Brief: boot_id changed, generation +1, enabled false, active null, lock still
+  # "initialized", state not re-created (generation > 0). atomic_json uses
+  # os.replace, so inode may change — do not require inode equality.
   local d8="$LOG_DIR/D8_data"
   stage_daemon_data "$d8" "$FIXTURES/c1_signal_daemon_config.json"
   stop_rm c1-D8a
@@ -714,19 +726,8 @@ PY
   wait_for_log c1-D8a 'daemon up' 15 "$LOG_DIR/D8a.log" || true
   host_readable_data c1-D8a
   python3 "$LOG_DIR/D4_state.py" "$d8" >"$LOG_DIR/D8a.state" 2>"$LOG_DIR/D8a.err" || true
-  local marker inode
-  marker="$(python3 - <<PY
-from pathlib import Path
-for p in Path("$d8").iterdir():
-    if p.suffix==".lock" or p.name.endswith(".json.lock"):
-        # ceremony lock companion
-        if "owner" in p.name: continue
-        print(p.read_text(encoding="utf-8").strip()); break
-    if p.name.endswith(".lock") and "owner" not in p.name:
-        print(p.read_text(encoding="utf-8").strip()); break
-PY
-)"
-  # Prefer explicit *.json.lock
+  local marker
+  # Prefer explicit *.json.lock (ceremony companion; skip owner locks).
   marker="$(python3 - <<PY
 from pathlib import Path
 data=Path("$d8")
@@ -736,7 +737,6 @@ for p in cands:
     print(p.read_text(encoding="utf-8").strip()); break
 PY
 )"
-  inode="$(python3 -c "import json;print(json.load(open('$LOG_DIR/D8a.state'))['inode'])" 2>/dev/null || echo 0)"
   stop_rm c1-D8a
   stop_rm c1-D8b
   docker run -d --name c1-D8b --network none -v "$d8:/data" "$DAEMON_TAG"
@@ -745,34 +745,37 @@ PY
   host_readable_data c1-D8b
   python3 "$LOG_DIR/D4_state.py" "$d8" >"$LOG_DIR/D8b.state" 2>"$LOG_DIR/D8b.err" || d8ok=0
   if [[ "$d8ok" -eq 1 ]]; then
-    python3 - "$LOG_DIR/D8a.state" "$LOG_DIR/D8b.state" "$marker" "$inode" "$d8" <<'PY' || d8ok=0
+    python3 - "$LOG_DIR/D8a.state" "$LOG_DIR/D8b.state" "$marker" "$d8" <<'PY' || d8ok=0
 import json,sys
 from pathlib import Path
 a,b=json.load(open(sys.argv[1])),json.load(open(sys.argv[2]))
-marker,old_ino,data=sys.argv[3],int(sys.argv[4]),Path(sys.argv[5])
-assert a["boot_id"]!=b["boot_id"]
-assert b["generation"]==a["generation"]+1
-assert marker=="initialized"
-# lock still initialized
+marker,data=sys.argv[3],Path(sys.argv[4])
+assert a["boot_id"]!=b["boot_id"], (a["boot_id"], b["boot_id"])
+assert b["generation"]==a["generation"]+1, (a.get("generation"), b.get("generation"))
+assert marker=="initialized", marker
 ok=False
 for p in list(data.glob("*.json.lock"))+list(data.glob("*.lock")):
     if "owner" in p.name: continue
     assert p.read_text(encoding="utf-8").strip()=="initialized"
     ok=True
-assert ok
-# state file not recreated when generation>0
+assert ok, "ceremony lock missing after restart"
+# Continuity = generation advanced from a prior state (not a fresh generation-0 boot).
+assert a["generation"] >= 0 and b["generation"] > 0
 for p in data.glob("*.json"):
     try: o=json.loads(p.read_text())
     except Exception: continue
     if "schema_version" in o:
         assert o["enabled"] is False and o["active"] is None
-        if o.get("generation",0)>0:
-            assert p.stat().st_ino==old_ino
+        assert o.get("generation",0) > 0
 print("ok")
 PY
   fi
   if [[ "$d8ok" -eq 1 ]]; then record_pass D8 "boot_id changed; generation+1; lock initialized"
-  else record_fail D8 "see D8*.err marker=$marker"; fi
+  else
+    evidence_log "$LOG_DIR/D8.fail.log" "$LOG_DIR/D8a.state" "$LOG_DIR/D8b.state" \
+      "$LOG_DIR/D8a.err" "$LOG_DIR/D8b.err" "$LOG_DIR/D8a.log" "$LOG_DIR/D8b.log"
+    record_fail D8 "see D8.fail.log marker=$marker"
+  fi
   stop_rm c1-D8b
 
   # D9 focused suites
@@ -795,18 +798,24 @@ PY
     for e in "${exp[@]}"; do [[ -e "$e" ]] && d9_list+=("$e"); done
   done
   local d9ok=1
+  # Ephemeral pip needs network (brief §0.5(A)); boot checks stay --network none.
+  mkdir -p "${HOME:-/root}/.cache/pip"
   set +e
-  docker run --rm --network none -v "$ROOT:/work:ro" -w /work python:3.12-slim \
+  docker run --rm \
+    -v "$ROOT:/work:ro" \
+    -v "${HOME:-/root}/.cache/pip:/root/.cache/pip" \
+    -w /work python:3.12-slim \
     bash -lc "python -m pip install --require-hashes -r requirements-ops.lock >/tmp/pip.log 2>&1 && python -m pytest -q ${d9_list[*]}" \
     >"$LOG_DIR/D9_slim.log" 2>&1
   local slim_rc=$?
   set -e
   [[ "$slim_rc" -eq 0 ]] || d9ok=0
   set +e
-  docker run --rm --network none \
+  docker run --rm \
     -v "$ROOT/tests:/work/tests:ro" \
     -v "$ROOT/requirements-ops.lock:/work/requirements-ops.lock:ro" \
     -v "$ROOT/pyproject.toml:/work/pyproject.toml:ro" \
+    -v "${HOME:-/root}/.cache/pip:/root/.cache/pip" \
     -w /work "$DAEMON_TAG" \
     bash -lc 'python -m pip install --require-hashes -r requirements-ops.lock >/tmp/pip.log 2>&1; python -m pytest -q tests/ops/test_c1_signal_daemon_*.py tests/ops/test_m1_stage1_*.py' \
     >"$LOG_DIR/D9_inimage.log" 2>&1
@@ -822,6 +831,12 @@ PY
     fi
   } >"$LOG_DIR/D9_summary.txt"
   cat "$LOG_DIR/D9_summary.txt"
+  if [[ "$d9ok" -ne 1 ]]; then
+    echo "---- D9_slim.log (tail) ----"
+    tail -n 80 "$LOG_DIR/D9_slim.log" || true
+    echo "---- D9_inimage.log (tail) ----"
+    tail -n 40 "$LOG_DIR/D9_inimage.log" || true
+  fi
   if [[ "$d9ok" -eq 1 ]]; then record_pass D9 "slim suite green; in-image reported rc=$in_rc" "$(tr '\n' ' ' <"$LOG_DIR/D9_summary.txt")"
   else record_fail D9 "slim suite failed; see D9_slim.log" "$(tr '\n' ' ' <"$LOG_DIR/D9_summary.txt")"; fi
 
