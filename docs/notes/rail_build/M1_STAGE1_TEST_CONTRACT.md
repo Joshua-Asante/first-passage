@@ -1,8 +1,14 @@
-# M1 Stage 1 test infrastructure - source unavailable
+# M1 Stage 1 test infrastructure - input source ruled 2026-09-11 (implementation owed)
 
 **Offline M1 Stage 1 test infrastructure only - no deployment, no signal emission, no arm.**
 
-## Current disposition (operator report 2026-09-10)
+## Disposition 2026-09-11 (ratified; supersedes the 2026-09-10 section below for the input-source question)
+
+The Stage 1 input is an **operator-attended controlled input**, ratified 2026-09-11 as the explicit acceptance amendment this contract anticipated ([S2b build ADR Addendum 2026-09-11](../../adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-09-11--stage-1-input-source-options-and-ratified-selection-option-d) option D · [M1 ADR Addendum 2026-09-11](../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-09-11--item-5-input-for-stage-1-operator-attended-controlled-input-express)). The operator transcribes the just-closed 1-minute bar of the dated front-month MYM contract named in the ceremony manifest (`venue_contract`) from the Tradovate platform chart and injects it in-container inside `[target + 60 s, target + 120 s]`; the strategy hook, B1 build, reservation and POST stay the daemon's. No live feed is approved; live-feed readiness remains separate and owed.
+
+**Two states, read them apart.** *Current runtime on `main` (pre-A1b):* exactly what the 2026-09-10 section describes — `NullStrategy`, an unavailable source, `prepare`/`enable` refusing, evidence projected `offline_test_only=true` / `qualifying_live_source=false`. *Approved design (post-A1b, Track A plan §3.1 + the option D build sketch):* `OperatorInputSource` + `inject` CLI, marker `OPERATOR_INPUT_SOURCE`, manifest `venue_contract` (quarterly code, expiry window), `0 < poll_interval_s ≤ 1` staged at A6, atomic one-shot publication, `project_evidence` returning `qualifying_live_source: false`, `operator_attended_input: true`. A4 and A7 read this contract for the frozen identity, sizing and journal rules, which are unchanged; the source disposition is the ratified one above, not the 2026-09-10 text.
+
+## Disposition 2026-09-10 (operator report; input-source paragraphs superseded above)
 
 The operator retired Databento as an information source for First Passage and
 reported unsubscribing. No replacement source is approved. This supersedes this
@@ -93,9 +99,11 @@ an instruction to operate on a live volume under this PR.
 
 ## Readiness and review
 
-All deployment/ceremony work remains blocked pending an approved source or an
-explicit acceptance amendment, plus authenticated private crash-loop recovery
-and the canonical deployment preconditions. Do not reconstruct or waive that
+The input-source amendment is ratified (2026-09-11, controlled input — see the
+disposition at the top of this note); what still gates deployment and the
+ceremony is the implementation of that input (A1b), Linux image validation,
+authenticated private crash-loop recovery (A3), and the canonical deployment
+preconditions (A4-A6). Do not reconstruct or waive that
 recovery procedure. Future deployments require reviewed integrated source,
 import/COPY checks, actual in-container fixture hashes and boot/disarm/health
 verification. Existing deployed M1 pins, evidence IDs, status and signoff remain
