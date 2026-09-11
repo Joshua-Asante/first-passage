@@ -1,0 +1,914 @@
+#!/usr/bin/env bash
+# Track A / A2 — Linux image validation for c1 listener + signal daemon.
+# Usage: ./scripts/c1_image_validation.sh listener|daemon|all
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+TARGET="${1:-}"
+if [[ "$TARGET" != "listener" && "$TARGET" != "daemon" && "$TARGET" != "all" ]]; then
+  echo "Usage: $0 listener|daemon|all" >&2
+  exit 2
+fi
+
+LOG_DIR="${C1_IMAGE_VALIDATION_LOG_DIR:-/tmp/c1_image_validation}"
+mkdir -p "$LOG_DIR"
+FIXTURES="$ROOT/tests/fixtures/c1_image_validation"
+LISTENER_TAG="c1-rail:ci"
+DAEMON_TAG="c1-signal-daemon:ci"
+
+PASS_N=0
+FAIL_N=0
+declare -a RESULTS=()
+
+record_pass() {
+  local id="$1"; shift
+  PASS_N=$((PASS_N + 1))
+  RESULTS+=("PASS $id")
+  printf 'PASS %s' "$id"
+  if [[ $# -gt 0 ]]; then printf ' %s' "$*"; fi
+  printf '\n'
+}
+
+record_fail() {
+  local id="$1"; shift
+  FAIL_N=$((FAIL_N + 1))
+  RESULTS+=("FAIL $id")
+  printf 'FAIL %s' "$id"
+  if [[ $# -gt 0 ]]; then printf ' %s' "$*"; fi
+  printf '\n'
+}
+
+need_cmd() {
+  command -v "$1" >/dev/null 2>&1 || { echo "missing command: $1" >&2; exit 2; }
+}
+need_cmd docker
+need_cmd python3
+
+LISTENER_FILES=(
+  /app/core/dd_protection.py
+  /app/core/firm_rules.py
+  /app/core/historical_challenge.py
+  /app/core/lib/atomic_io.py
+  /app/core/lib/file_lock.py
+  /app/core/lib/mvd.py
+  /app/core/lib/validation.py
+  /app/core/lifecycle.py
+  /app/docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json
+  /app/ops/c1_rail/__init__.py
+  /app/ops/c1_rail/c1_rail_arm.py
+  /app/ops/c1_rail/c1_rail_http_server.py
+  /app/ops/c1_rail/c1_rail_listener.py
+  /app/ops/c1_rail/c1_rail_slippage.py
+  /app/ops/c1_rail/c1_rail_telemetry.py
+  /app/ops/c1_rail/c1_sizing_host_reference.py
+  /app/ops/c1_rail/crosstrade_payload.py
+  /app/ops/c1_rail/m1_stage1_contract.py
+  /app/ops/c1_rail/m1_stage1_control.py
+  /app/scripts/validate_c1_monitoring_acceptance.py
+)
+
+DAEMON_FILES=(
+  /app/ops/c1_rail/__init__.py
+  /app/ops/c1_rail/m1_stage1_contract.py
+  /app/ops/c1_signal_daemon/__init__.py
+  /app/ops/c1_signal_daemon/__main__.py
+  /app/ops/c1_signal_daemon/b1_payload.py
+  /app/ops/c1_signal_daemon/daemon.py
+  /app/ops/c1_signal_daemon/evaluate_loop.py
+  /app/ops/c1_signal_daemon/feed.py
+  /app/ops/c1_signal_daemon/heartbeat.py
+  /app/ops/c1_signal_daemon/http_status.py
+  /app/ops/c1_signal_daemon/listener_client.py
+  /app/ops/c1_signal_daemon/m1_stage1.py
+  /app/ops/c1_signal_daemon/m1_stage1_control.py
+  /app/ops/c1_signal_daemon/m1_stage1_state.py
+  /app/ops/c1_signal_daemon/m1_stage1_strategy.py
+  /app/ops/c1_signal_daemon/strategy_protocol.py
+)
+
+sha256_file() { sha256sum "$1" | awk '{print $1}'; }
+
+stop_rm() { docker rm -f "$1" >/dev/null 2>&1 || true; }
+
+container_alive() {
+  docker inspect -f '{{.State.Running}}' "$1" 2>/dev/null | grep -qx true
+}
+
+wait_for_log() {
+  local name="$1" pattern="$2" seconds="$3" logf="$4"
+  local i
+  for i in $(seq 1 "$seconds"); do
+    docker logs "$name" >"$logf" 2>&1 || true
+    if grep -q -- "$pattern" "$logf"; then return 0; fi
+    sleep 1
+  done
+  docker logs "$name" >"$logf" 2>&1 || true
+  return 1
+}
+
+# HTTP against --network none via docker exec + urllib (helper .py avoids quote hell).
+write_http_helpers() {
+  cat >"$LOG_DIR/_http_get.py" <<'PY'
+import sys, urllib.request
+url = sys.argv[1]
+with urllib.request.urlopen(url, timeout=5) as resp:
+    sys.stdout.buffer.write(resp.read())
+PY
+  cat >"$LOG_DIR/_http_post.py" <<'PY'
+import sys, urllib.error, urllib.request
+url, body = sys.argv[1], sys.argv[2].encode("utf-8")
+req = urllib.request.Request(url, data=body, headers={"Content-Type":"application/json"}, method="POST")
+try:
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        print(resp.status)
+        sys.stdout.buffer.write(resp.read())
+except urllib.error.HTTPError as exc:
+    print(exc.code)
+    sys.stdout.buffer.write(exc.read())
+PY
+  cat >"$LOG_DIR/_assert_decision.py" <<'PY'
+"""Assert last decision (+ transport_result) in an events JSONL ledger."""
+import json, sys
+path, qty_s, halt_mode = sys.argv[1], sys.argv[2], sys.argv[3]
+halt_reason = sys.argv[4] if len(sys.argv) > 4 else ""
+contract = sys.argv[5] if len(sys.argv) > 5 else ""
+qty = int(qty_s)
+rows = [json.loads(l) for l in open(path, encoding="utf-8") if l.strip()]
+decisions = [r for r in rows if r.get("kind") == "decision"]
+transports = [r for r in rows if r.get("kind") == "transport_result"]
+if not decisions:
+    raise SystemExit("no decision rows")
+d = decisions[-1]
+errs = []
+def need(c, m):
+    if not c: errs.append(m)
+need(d.get("qty_out") == qty, f"qty_out={d.get('qty_out')} want {qty}")
+need(d.get("dry_run") is True, f"dry_run={d.get('dry_run')}")
+need(d.get("test_only") is True, f"test_only={d.get('test_only')}")
+need(d.get("sender_invoked") is False, f"sender_invoked={d.get('sender_invoked')}")
+if halt_mode == "true":
+    need(d.get("halt") is True, f"halt={d.get('halt')}")
+elif halt_mode == "false":
+    need(d.get("halt") is False, f"halt={d.get('halt')}")
+if halt_reason:
+    need(d.get("halt_reason") == halt_reason, f"halt_reason={d.get('halt_reason')!r}")
+if contract:
+    need(d.get("test_contract_sha256") == contract, f"test_contract_sha256 mismatch")
+if not transports:
+    errs.append("no transport_result")
+else:
+    need(transports[-1].get("transport_state") == "not_attempted",
+         f"transport_state={transports[-1].get('transport_state')}")
+if errs:
+    raise SystemExit("; ".join(errs))
+print(json.dumps({"qty_out": d.get("qty_out"), "halt": d.get("halt"),
+                  "halt_reason": d.get("halt_reason"),
+                  "transport_state": transports[-1].get("transport_state")}, sort_keys=True))
+PY
+}
+
+http_get_in() {
+  local name="$1" url="$2" out="$3"
+  docker cp "$LOG_DIR/_http_get.py" "$name:/tmp/_http_get.py" >/dev/null
+  docker exec "$name" python /tmp/_http_get.py "$url" >"$out"
+}
+
+http_post_in() {
+  local name="$1" url="$2" body="$3" out="$4"
+  docker cp "$LOG_DIR/_http_post.py" "$name:/tmp/_http_post.py" >/dev/null
+  docker exec "$name" python /tmp/_http_post.py "$url" "$body" >"$out"
+}
+
+path_token() { tr -d '[:space:]' <"$FIXTURES/PATH_TOKEN.txt"; }
+daemon_path_token() { tr -d '[:space:]' <"$FIXTURES/DAEMON_PATH_TOKEN.txt"; }
+
+stage_listener_data() {
+  local dest="$1"
+  rm -rf "$dest"; mkdir -p "$dest" "$dest/c1_rail_alert_acks"
+  cp "$FIXTURES/c1_rail_config.json" "$dest/c1_rail_config.json"
+  cp "$FIXTURES/lifecycle_state.json" "$dest/lifecycle_state.json"
+  cp "$FIXTURES/c1_dd_state.json" "$dest/c1_dd_state.json"
+  cp "$FIXTURES/c1_current_equity.json" "$dest/c1_current_equity.json"
+  : >"$dest/c1_rail_events.jsonl"
+}
+
+generate_constants_in_image() {
+  local dest="$1" logf="$2"
+  docker run --rm --network none -v "$dest:/data" "$LISTENER_TAG" \
+    python - >"$logf" 2>&1 <<'PY'
+import json, sys
+sys.path[:0] = ["/app/ops/c1_rail", "/app/core"]
+from c1_sizing_host_reference import generate_constants
+constants = generate_constants("Tradeify_Select_100K")
+with open("/data/c1_sizing_constants.json", "w", encoding="utf-8") as fh:
+    json.dump(constants, fh, sort_keys=True, indent=2)
+    fh.write("\n")
+print("ok", constants.get("tier"))
+PY
+}
+
+stage_daemon_data() {
+  local dest="$1" cfg="$2"
+  rm -rf "$dest"; mkdir -p "$dest"
+  cp "$cfg" "$dest/c1_signal_daemon_config.json"
+}
+
+########################################################################
+# Listener
+########################################################################
+run_listener() {
+  write_http_helpers
+  local blog="$LOG_DIR/L1_build.log"
+  if docker build -f deploy/c1_rail/Dockerfile -t "$LISTENER_TAG" . >"$blog" 2>&1; then
+    record_pass L1 "built $LISTENER_TAG"
+  else
+    record_fail L1 "build failed; see $blog"
+    return 0
+  fi
+
+  local files="$LOG_DIR/L2_files.txt" exp="$LOG_DIR/L2_expected.txt"
+  docker run --rm --network none --entrypoint find "$LISTENER_TAG" /app -type f | sort >"$files"
+  printf '%s\n' "${LISTENER_FILES[@]}" | sort >"$exp"
+  local l2=1
+  diff -u "$exp" "$files" >"$LOG_DIR/L2_diff.txt" || l2=0
+  if grep -E '\.pine$|/core/data(/|$)|/tests/' "$files" >/dev/null; then l2=0; fi
+  if ! grep -qx '/app/docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json' "$files"; then l2=0; fi
+  if ! docker run --rm --network none "$LISTENER_TAG" \
+      python -c "import sys; sys.path.insert(0,'scripts'); import validate_c1_monitoring_acceptance" \
+      >"$LOG_DIR/L2_import.log" 2>&1; then l2=0; fi
+  if [[ "$l2" -eq 1 ]]; then record_pass L2 "exact COPY set; validator imports"
+  else record_fail L2 "see $LOG_DIR/L2_diff.txt / L2_import.log"; fi
+
+  local d3="$LOG_DIR/L3_data"; rm -rf "$d3"; mkdir -p "$d3"
+  stop_rm c1-L3
+  docker run -d --name c1-L3 --network none -v "$d3:/data" "$LISTENER_TAG" >"$LOG_DIR/L3.cid"
+  if wait_for_log c1-L3 'WAIT:' 10 "$LOG_DIR/L3.log" && container_alive c1-L3; then
+    record_pass L3 "WAIT present; alive"
+  else
+    record_fail L3 "see $LOG_DIR/L3.log"
+  fi
+  stop_rm c1-L3
+
+  local d4="$LOG_DIR/L4_data"
+  stage_listener_data "$d4"
+  if ! generate_constants_in_image "$d4" "$LOG_DIR/L4_constants.log"; then
+    record_fail L4 "constants generation failed"
+  else
+    stop_rm c1-L4
+    docker run -d --name c1-L4 --network none -v "$d4:/data" "$LISTENER_TAG" >"$LOG_DIR/L4.cid"
+    local l4=1
+    wait_for_log c1-L4 'dry_run=True' 15 "$LOG_DIR/L4.log" || l4=0
+    grep -q 'dry_run=True armed_until=-' "$LOG_DIR/L4.log" || l4=0
+    http_get_in c1-L4 'http://127.0.0.1:8080/' "$LOG_DIR/L4.get" 2>"$LOG_DIR/L4.get.err" || l4=0
+    python3 - "$LOG_DIR/L4.get" <<'PY' || l4=0
+import json,sys
+d=json.load(open(sys.argv[1],encoding="utf-8"))
+assert d.get("ok") is True and d.get("service")=="c1_rail_http_server"
+PY
+    if [[ "$l4" -eq 1 ]]; then record_pass L4 "boot disarmed; GET ok"
+    else record_fail L4 "see $LOG_DIR/L4.log / L4.get"; fi
+  fi
+
+  # L5a / L5b share c1-L4 if alive
+  if container_alive c1-L4; then
+    local tok; tok="$(path_token)"
+    local bar_a; bar_a="ci-l5a-$(python3 -c 'import uuid;print(uuid.uuid4())')"
+    local body_a; body_a="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar_a','close':42000.0,'stop_dist_pts':1.0}))")"
+    http_post_in c1-L4 "http://127.0.0.1:8080/c1/${tok}" "$body_a" "$LOG_DIR/L5a.out"
+    if head -1 "$LOG_DIR/L5a.out" | grep -qx 200 \
+       && python3 "$LOG_DIR/_assert_decision.py" "$d4/c1_rail_events.jsonl" 0 any \
+            >"$LOG_DIR/L5a.assert" 2>"$LOG_DIR/L5a.err"; then
+      record_pass L5a "qty_out=0 default identity" "$(cat "$LOG_DIR/L5a.assert")"
+    else
+      record_fail L5a "see L5a.out / L5a.err"
+    fi
+
+    local l5b=1
+    if ! docker exec c1-L4 python ops/c1_rail/m1_stage1_control.py migrate \
+          --config /data/c1_rail_config.json --enable-test \
+          >"$LOG_DIR/L5b.plan" 2>"$LOG_DIR/L5b.plan.err"; then l5b=0; fi
+    local ec el
+    ec="$(python3 -c "import json;print(json.load(open('$LOG_DIR/L5b.plan'))['before']['constants'])" 2>/dev/null || true)"
+    el="$(python3 -c "import json;print(json.load(open('$LOG_DIR/L5b.plan'))['before']['lifecycle'])" 2>/dev/null || true)"
+    [[ -n "$ec" && -n "$el" ]] || l5b=0
+    if [[ "$l5b" -eq 1 ]]; then
+      if ! docker exec c1-L4 python ops/c1_rail/m1_stage1_control.py migrate \
+            --config /data/c1_rail_config.json --enable-test \
+            --apply --flat-verified \
+            --expect-constants "$ec" --expect-lifecycle "$el" \
+            >"$LOG_DIR/L5b.apply" 2>"$LOG_DIR/L5b.apply.err"; then l5b=0; fi
+    fi
+    ls "$d4"/*.m1-backup-* >/dev/null 2>&1 || l5b=0
+    local csha=""
+    if [[ "$l5b" -eq 1 ]]; then
+      csha="$(docker exec c1-L4 python - <<'PY'
+import sys
+sys.path[:0]=["/app/ops/c1_rail","/app/core"]
+from m1_stage1_contract import contract_sha256
+print(contract_sha256())
+PY
+)"
+    fi
+    local bar_b; bar_b="ci-l5b-$(python3 -c 'import uuid;print(uuid.uuid4())')"
+    local body_b; body_b="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar_b','close':42000.0,'stop_dist_pts':1.0}))")"
+    if [[ "$l5b" -eq 1 ]]; then
+      http_post_in c1-L4 "http://127.0.0.1:8080/c1/${tok}" "$body_b" "$LOG_DIR/L5b.out"
+      local rbody; rbody="$(tail -n +2 "$LOG_DIR/L5b.out")"
+      grep -q 'dry_run: computed, not sent' <<<"$rbody" || l5b=0
+      head -1 "$LOG_DIR/L5b.out" | grep -qx 200 || l5b=0
+      python3 "$LOG_DIR/_assert_decision.py" "$d4/c1_rail_events.jsonl" 1 false "" "$csha" \
+        >"$LOG_DIR/L5b.assert" 2>"$LOG_DIR/L5b.err" || l5b=0
+    fi
+    if [[ "$l5b" -eq 1 ]]; then record_pass L5b "migrate+POST qty_out=1; no restart" "$(cat "$LOG_DIR/L5b.assert")"
+    else record_fail L5b "see L5b.*.err / plan"; fi
+  else
+    record_fail L5a "container down"
+    record_fail L5b "container down"
+  fi
+  stop_rm c1-L4
+
+  # L6 live-mode
+  local d6="$LOG_DIR/L6_data"
+  stage_listener_data "$d6"
+  generate_constants_in_image "$d6" "$LOG_DIR/L6_constants.log" || true
+  python3 - "$d6/c1_rail_config.json" <<'PY'
+import json,sys
+from datetime import datetime,timedelta,timezone
+p=sys.argv[1]; c=json.load(open(p,encoding="utf-8"))
+c["dry_run"]=False
+c["armed_until"]=(datetime.now(timezone.utc)+timedelta(hours=1)).replace(microsecond=0).isoformat()
+json.dump(c, open(p,"w",encoding="utf-8"), indent=2); open(p,"a",encoding="utf-8").write("\n")
+PY
+  stop_rm c1-L6
+  docker run -d --name c1-L6 --network none -v "$d6:/data" "$LISTENER_TAG" >"$LOG_DIR/L6.cid"
+  local l6=1
+  wait_for_log c1-L6 'dry_run=False' 15 "$LOG_DIR/L6.log" || l6=0
+  local tok; tok="$(path_token)"
+  local bar6; bar6="ci-l6-$(python3 -c 'import uuid;print(uuid.uuid4())')"
+  local body6; body6="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar6','close':42000.0,'stop_dist_pts':1.0}))")"
+  if container_alive c1-L6; then
+    http_post_in c1-L6 "http://127.0.0.1:8080/c1/${tok}" "$body6" "$LOG_DIR/L6.out"
+    python3 "$LOG_DIR/_assert_decision.py" "$d6/c1_rail_events.jsonl" 0 true \
+      "m1_test_requires_explicit_dry_run" >"$LOG_DIR/L6.assert" 2>"$LOG_DIR/L6.err" || l6=0
+  else l6=0; fi
+  if [[ "$l6" -eq 1 ]]; then record_pass L6 "live-mode halted" "$(cat "$LOG_DIR/L6.assert")"
+  else record_fail L6 "see L6.log / L6.err"; fi
+  stop_rm c1-L6
+
+  # L6b absent dry_run
+  local d6b="$LOG_DIR/L6b_data"
+  stage_listener_data "$d6b"
+  generate_constants_in_image "$d6b" "$LOG_DIR/L6b_constants.log" || true
+  python3 - "$d6b/c1_rail_config.json" <<'PY'
+import json,sys
+p=sys.argv[1]; c=json.load(open(p,encoding="utf-8")); c.pop("dry_run",None)
+json.dump(c, open(p,"w",encoding="utf-8"), indent=2); open(p,"a",encoding="utf-8").write("\n")
+PY
+  stop_rm c1-L6b
+  docker run -d --name c1-L6b --network none -v "$d6b:/data" "$LISTENER_TAG" >"$LOG_DIR/L6b.cid"
+  local l6b=1
+  wait_for_log c1-L6b 'dry_run=True armed_until=-' 15 "$LOG_DIR/L6b.log" || l6b=0
+  local bar6b; bar6b="ci-l6b-$(python3 -c 'import uuid;print(uuid.uuid4())')"
+  local body6b; body6b="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar6b','close':42000.0,'stop_dist_pts':1.0}))")"
+  if container_alive c1-L6b; then
+    http_post_in c1-L6b "http://127.0.0.1:8080/c1/${tok}" "$body6b" "$LOG_DIR/L6b.out"
+    python3 "$LOG_DIR/_assert_decision.py" "$d6b/c1_rail_events.jsonl" 0 any \
+      >"$LOG_DIR/L6b.assert" 2>"$LOG_DIR/L6b.err" || l6b=0
+  else l6b=0; fi
+  if [[ "$l6b" -eq 1 ]]; then record_pass L6b "absent dry_run defaults True"
+  else record_fail L6b "see L6b.log / L6b.err"; fi
+  stop_rm c1-L6b
+
+  # L7 arming interlock
+  local d7="$LOG_DIR/L7_data"
+  stage_listener_data "$d7"
+  generate_constants_in_image "$d7" "$LOG_DIR/L7_constants.log" || true
+  stop_rm c1-L7
+  docker run -d --name c1-L7 --network none -v "$d7:/data" --entrypoint sleep "$LISTENER_TAG" infinity
+  local before after; before="$(sha256_file "$d7/c1_rail_config.json")"
+  local l7=1
+  docker exec c1-L7 python ops/c1_rail/c1_rail_arm.py --status --config /data/c1_rail_config.json \
+    >"$LOG_DIR/L7.status" 2>&1 || l7=0
+  grep -q "m1_gate: status='CODE_LANDED' result=FAIL" "$LOG_DIR/L7.status" || l7=0
+  set +e
+  docker exec c1-L7 python ops/c1_rail/c1_rail_arm.py --arm --hours 1 --config /data/c1_rail_config.json \
+    >"$LOG_DIR/L7.arm" 2>&1
+  local arc=$?
+  set -e
+  [[ "$arc" -ne 0 ]] || l7=0
+  grep -qi 'refusing to arm' "$LOG_DIR/L7.arm" || l7=0
+  after="$(sha256_file "$d7/c1_rail_config.json")"
+  [[ "$before" == "$after" ]] || l7=0
+  if [[ "$l7" -eq 1 ]]; then record_pass L7 "interlock refuses arm; sha unchanged"
+  else record_fail L7 "see L7.status / L7.arm"; fi
+  stop_rm c1-L7
+
+  # L8 implicit disarm
+  local d8="$LOG_DIR/L8_data"
+  stage_listener_data "$d8"
+  generate_constants_in_image "$d8" "$LOG_DIR/L8_constants.log" || true
+  python3 - "$d8/c1_rail_config.json" <<'PY'
+import json,sys
+from datetime import datetime,timedelta,timezone
+p=sys.argv[1]; c=json.load(open(p,encoding="utf-8"))
+c["dry_run"]=False
+c["armed_until"]=(datetime.now(timezone.utc)-timedelta(hours=1)).replace(microsecond=0).isoformat()
+json.dump(c, open(p,"w",encoding="utf-8"), indent=2); open(p,"a",encoding="utf-8").write("\n")
+PY
+  stop_rm c1-L8
+  docker run -d --name c1-L8 --network none -v "$d8:/data" "$LISTENER_TAG" >"$LOG_DIR/L8.cid"
+  if wait_for_log c1-L8 'dry_run=True armed_until=-' 15 "$LOG_DIR/L8.log" \
+     && grep -q 'IMPLICIT DISARM' "$LOG_DIR/L8.log"; then
+    record_pass L8 "IMPLICIT DISARM on expired armed_until"
+  else
+    record_fail L8 "see L8.log"
+  fi
+  stop_rm c1-L8
+}
+
+########################################################################
+# Daemon
+########################################################################
+run_daemon() {
+  write_http_helpers
+  local blog="$LOG_DIR/D1_build.log"
+  if docker build -f deploy/c1_signal_daemon/Dockerfile -t "$DAEMON_TAG" . >"$blog" 2>&1; then
+    record_pass D1 "built $DAEMON_TAG"
+  else
+    record_fail D1 "build failed; see $blog"
+    return 0
+  fi
+
+  local files="$LOG_DIR/D2_files.txt" exp="$LOG_DIR/D2_expected.txt"
+  docker run --rm --network none --entrypoint find "$DAEMON_TAG" /app -type f | sort >"$files"
+  printf '%s\n' "${DAEMON_FILES[@]}" | sort >"$exp"
+  local d2=1
+  diff -u "$exp" "$files" >"$LOG_DIR/D2_diff.txt" || d2=0
+  set +e
+  docker run --rm --network none "$DAEMON_TAG" python -c 'import databento' >"$LOG_DIR/D2_db.log" 2>&1
+  local db=$?
+  set -e
+  [[ "$db" -ne 0 ]] || d2=0
+  cat >"$LOG_DIR/D2_pip.py" <<'PY'
+import json, subprocess, sys
+from pathlib import Path
+
+def dists(image):
+    out = subprocess.check_output(
+        ["docker","run","--rm","--network","none",image,"python","-m","pip","list","--format=json"],
+        text=True)
+    return {r["name"].lower() for r in json.loads(out)}
+
+base, img = dists("python:3.12-slim"), dists(sys.argv[1])
+extras = sorted(img - base)
+req = Path("deploy/c1_signal_daemon/requirements.txt")
+if not req.exists():
+    expected = []
+else:
+    text = req.read_text(encoding="utf-8")
+    if "--hash=" not in text:
+        print("FAIL: requirements.txt not hash-pinned")
+        sys.exit(2)
+    names=[]
+    for line in text.splitlines():
+        line=line.strip()
+        if not line or line.startswith("#") or line.startswith("-"): continue
+        names.append(line.split("==")[0].split("[")[0].strip().lower())
+    expected=sorted(set(n for n in names if n))
+print(json.dumps({"extras":extras,"expected":expected}, sort_keys=True))
+sys.exit(0 if extras==expected else 1)
+PY
+  python3 "$LOG_DIR/D2_pip.py" "$DAEMON_TAG" >"$LOG_DIR/D2_pip.json" 2>"$LOG_DIR/D2_pip.err" || d2=0
+  if [[ "$d2" -eq 1 ]]; then record_pass D2 "COPY exact; no databento; extras match" "$(cat "$LOG_DIR/D2_pip.json")"
+  else record_fail D2 "see D2_diff.txt / D2_pip.err"; fi
+
+  local d3="$LOG_DIR/D3_data"; rm -rf "$d3"; mkdir -p "$d3"
+  stop_rm c1-D3
+  docker run -d --name c1-D3 --network none -v "$d3:/data" "$DAEMON_TAG" >"$LOG_DIR/D3.cid"
+  if wait_for_log c1-D3 'WAIT:' 10 "$LOG_DIR/D3.log" && container_alive c1-D3; then
+    record_pass D3 "WAIT present; alive"
+  else record_fail D3 "see D3.log"; fi
+  stop_rm c1-D3
+
+  # D4 inert boot
+  local d4="$LOG_DIR/D4_data"
+  stage_daemon_data "$d4" "$FIXTURES/c1_signal_daemon_config.json"
+  stop_rm c1-D4
+  docker run -d --name c1-D4 --network none -v "$d4:/data" "$DAEMON_TAG" >"$LOG_DIR/D4.cid"
+  local d4ok=1
+  wait_for_log c1-D4 'daemon up' 15 "$LOG_DIR/D4.log" || d4ok=0
+  grep -Eq 'daemon up bind=.+:.+ emit_enabled=false boot_id=' "$LOG_DIR/D4.log" || d4ok=0
+  http_get_in c1-D4 'http://127.0.0.1:8080/' "$LOG_DIR/D4.get" 2>"$LOG_DIR/D4.get.err" || d4ok=0
+  cat >"$LOG_DIR/D4_health.py" <<'PY'
+import json,sys
+d=json.load(open(sys.argv[1],encoding="utf-8"))
+need={"emit_enabled":False,"effective_emit":False,"strategy":"NullStrategy",
+      "feed_mode":"unavailable","connected":False,"feed_healthy":False,
+      "ceremony_state":"DISABLED"}
+for k,v in need.items():
+    if d.get(k)!=v: raise SystemExit(f"{k}={d.get(k)!r} want {v!r}")
+if not d.get("boot_id"): raise SystemExit("empty boot_id")
+print(json.dumps({**need,"boot_id":d["boot_id"]}, sort_keys=True))
+PY
+  python3 "$LOG_DIR/D4_health.py" "$LOG_DIR/D4.get" >"$LOG_DIR/D4.health" 2>"$LOG_DIR/D4.health.err" || d4ok=0
+  cat >"$LOG_DIR/D4_state.py" <<'PY'
+import json,sys
+from pathlib import Path
+data=Path(sys.argv[1]); state=None; sp=None
+for p in data.glob("*.json"):
+    try: obj=json.loads(p.read_text(encoding="utf-8"))
+    except Exception: continue
+    if "schema_version" in obj and "boot_id" in obj:
+        state,sp=obj,p; break
+if state is None: raise SystemExit("state missing")
+assert state["schema_version"]==1
+assert state["enabled"] is False
+assert state["active"] is None
+assert state["boot_id"]
+locks=list(data.glob("*.owner.lock"))
+assert locks, "owner.lock missing"
+print(json.dumps({"path":sp.name,"boot_id":state["boot_id"],"generation":state.get("generation"),
+                  "inode":sp.stat().st_ino,"owner":locks[0].name}, sort_keys=True))
+PY
+  python3 "$LOG_DIR/D4_state.py" "$d4" >"$LOG_DIR/D4.state" 2>"$LOG_DIR/D4.state.err" || d4ok=0
+  sleep 15
+  docker logs c1-D4 >"$LOG_DIR/D4.log" 2>&1 || true
+  if grep -E 'step |b1_post|m1_b1_post' "$LOG_DIR/D4.log" >/dev/null; then d4ok=0; fi
+  if [[ "$d4ok" -eq 1 ]]; then record_pass D4 "inert boot" "$(cat "$LOG_DIR/D4.health")"
+  else record_fail D4 "see D4.log / D4.*.err"; fi
+  stop_rm c1-D4
+
+  # D5 stale-enabled
+  local d5="$LOG_DIR/D5_data"
+  stage_daemon_data "$d5" "$FIXTURES/c1_signal_daemon_config.stale_enabled.json"
+  stop_rm c1-D5
+  docker run -d --name c1-D5 --network none -v "$d5:/data" "$DAEMON_TAG" >"$LOG_DIR/D5.cid"
+  local d5ok=1
+  wait_for_log c1-D5 'daemon up' 15 "$LOG_DIR/D5.log" || d5ok=0
+  http_get_in c1-D5 'http://127.0.0.1:8080/' "$LOG_DIR/D5.get" 2>"$LOG_DIR/D5.get.err" || d5ok=0
+  python3 "$LOG_DIR/D4_health.py" "$LOG_DIR/D5.get" >"$LOG_DIR/D5.health" 2>"$LOG_DIR/D5.health.err" || d5ok=0
+  sleep 5
+  docker logs c1-D5 >"$LOG_DIR/D5.log" 2>&1 || true
+  grep -E 'b1_post|m1_b1_post' "$LOG_DIR/D5.log" >/dev/null && d5ok=0
+  if [[ "$d5ok" -eq 1 ]]; then record_pass D5 "stale-enabled stays inert"
+  else record_fail D5 "see D5.log"; fi
+  stop_rm c1-D5
+
+  # D6 CLI refusal
+  local d6="$LOG_DIR/D6_data"
+  stage_daemon_data "$d6" "$FIXTURES/c1_signal_daemon_config.json"
+  stop_rm c1-D6seed
+  docker run -d --name c1-D6seed --network none -v "$d6:/data" "$DAEMON_TAG"
+  wait_for_log c1-D6seed 'daemon up' 15 "$LOG_DIR/D6.seed.log" || true
+  stop_rm c1-D6seed
+  local state_file
+  state_file="$(python3 - <<PY
+from pathlib import Path
+import json
+for p in Path("$d6").glob("*.json"):
+    try: o=json.loads(p.read_text())
+    except Exception: continue
+    if "schema_version" in o:
+        print(p); break
+PY
+)"
+  local cfg_sha st_sha
+  cfg_sha="$(sha256_file "$d6/c1_signal_daemon_config.json")"
+  st_sha="$(sha256_file "$state_file")"
+  stop_rm c1-D6
+  docker run -d --name c1-D6 --network none -v "$d6:/data" --entrypoint sleep "$DAEMON_TAG" infinity
+  local d6ok=1
+  for act in prepare enable; do
+    set +e
+    docker exec -e PYTHONPATH=/app/ops c1-D6 python -m c1_signal_daemon.m1_stage1_control "$act" \
+      >"$LOG_DIR/D6_${act}.out" 2>&1
+    local rc=$?
+    set -e
+    [[ "$rc" -eq 2 ]] || d6ok=0
+    grep -q 'ceremony blocked: no approved source' "$LOG_DIR/D6_${act}.out" || d6ok=0
+  done
+  set +e
+  docker exec -e PYTHONPATH=/app/ops c1-D6 python -m c1_signal_daemon.m1_stage1_control status \
+    >"$LOG_DIR/D6_status.out" 2>&1
+  local src=$?
+  set -e
+  [[ "$src" -eq 0 ]] || d6ok=0
+  python3 - "$LOG_DIR/D6_status.out" <<'PY' || d6ok=0
+import json,sys
+d=json.loads(open(sys.argv[1],encoding="utf-8").read())
+assert d.get("effective_emit") is False
+assert d.get("source_status")=="unavailable"
+PY
+  [[ "$(sha256_file "$d6/c1_signal_daemon_config.json")" == "$cfg_sha" ]] || d6ok=0
+  [[ "$(sha256_file "$state_file")" == "$st_sha" ]] || d6ok=0
+  if [[ "$d6ok" -eq 1 ]]; then record_pass D6 "prepare/enable exit 2; hashes unchanged"
+  else record_fail D6 "see D6_*.out"; fi
+  stop_rm c1-D6
+
+  # D7 ownership
+  local d7="$LOG_DIR/D7_data"
+  stage_daemon_data "$d7" "$FIXTURES/c1_signal_daemon_config.json"
+  stop_rm c1-D7
+  docker run -d --name c1-D7 --network none -v "$d7:/data" "$DAEMON_TAG"
+  local d7ok=1
+  wait_for_log c1-D7 'daemon up' 15 "$LOG_DIR/D7.log" || d7ok=0
+  set +e
+  timeout 5 docker exec c1-D7 python ops/c1_signal_daemon/daemon.py --config /data/c1_signal_daemon_config.json \
+    >"$LOG_DIR/D7.second" 2>&1
+  local src=$?
+  set -e
+  [[ "$src" -ne 0 ]] || d7ok=0
+  grep -q 'daemon ownership unavailable' "$LOG_DIR/D7.second" || d7ok=0
+  http_get_in c1-D7 'http://127.0.0.1:8080/' "$LOG_DIR/D7.get" 2>"$LOG_DIR/D7.get.err" || d7ok=0
+  if [[ "$d7ok" -eq 1 ]]; then record_pass D7 "second process refused; GET ok"
+  else record_fail D7 "see D7.second"; fi
+  stop_rm c1-D7
+
+  # D8 restart semantics
+  local d8="$LOG_DIR/D8_data"
+  stage_daemon_data "$d8" "$FIXTURES/c1_signal_daemon_config.json"
+  stop_rm c1-D8a
+  docker run -d --name c1-D8a --network none -v "$d8:/data" "$DAEMON_TAG"
+  wait_for_log c1-D8a 'daemon up' 15 "$LOG_DIR/D8a.log" || true
+  python3 "$LOG_DIR/D4_state.py" "$d8" >"$LOG_DIR/D8a.state" 2>"$LOG_DIR/D8a.err" || true
+  local marker inode
+  marker="$(python3 - <<PY
+from pathlib import Path
+for p in Path("$d8").iterdir():
+    if p.suffix==".lock" or p.name.endswith(".json.lock"):
+        # ceremony lock companion
+        if "owner" in p.name: continue
+        print(p.read_text(encoding="utf-8").strip()); break
+    if p.name.endswith(".lock") and "owner" not in p.name:
+        print(p.read_text(encoding="utf-8").strip()); break
+PY
+)"
+  # Prefer explicit *.json.lock
+  marker="$(python3 - <<PY
+from pathlib import Path
+data=Path("$d8")
+cands=list(data.glob("*.json.lock"))+list(data.glob("*.lock"))
+for p in cands:
+    if "owner" in p.name: continue
+    print(p.read_text(encoding="utf-8").strip()); break
+PY
+)"
+  inode="$(python3 -c "import json;print(json.load(open('$LOG_DIR/D8a.state'))['inode'])" 2>/dev/null || echo 0)"
+  stop_rm c1-D8a
+  stop_rm c1-D8b
+  docker run -d --name c1-D8b --network none -v "$d8:/data" "$DAEMON_TAG"
+  local d8ok=1
+  wait_for_log c1-D8b 'daemon up' 15 "$LOG_DIR/D8b.log" || d8ok=0
+  python3 "$LOG_DIR/D4_state.py" "$d8" >"$LOG_DIR/D8b.state" 2>"$LOG_DIR/D8b.err" || d8ok=0
+  if [[ "$d8ok" -eq 1 ]]; then
+    python3 - "$LOG_DIR/D8a.state" "$LOG_DIR/D8b.state" "$marker" "$inode" "$d8" <<'PY' || d8ok=0
+import json,sys
+from pathlib import Path
+a,b=json.load(open(sys.argv[1])),json.load(open(sys.argv[2]))
+marker,old_ino,data=sys.argv[3],int(sys.argv[4]),Path(sys.argv[5])
+assert a["boot_id"]!=b["boot_id"]
+assert b["generation"]==a["generation"]+1
+assert marker=="initialized"
+# lock still initialized
+ok=False
+for p in list(data.glob("*.json.lock"))+list(data.glob("*.lock")):
+    if "owner" in p.name: continue
+    assert p.read_text(encoding="utf-8").strip()=="initialized"
+    ok=True
+assert ok
+# state file not recreated when generation>0
+for p in data.glob("*.json"):
+    try: o=json.loads(p.read_text())
+    except Exception: continue
+    if "schema_version" in o:
+        assert o["enabled"] is False and o["active"] is None
+        if o.get("generation",0)>0:
+            assert p.stat().st_ino==old_ino
+print("ok")
+PY
+  fi
+  if [[ "$d8ok" -eq 1 ]]; then record_pass D8 "boot_id changed; generation+1; lock initialized"
+  else record_fail D8 "see D8*.err marker=$marker"; fi
+  stop_rm c1-D8b
+
+  # D9 focused suites
+  local d9_list=()
+  local g
+  for g in \
+    tests/ops/test_c1_signal_daemon_*.py \
+    tests/ops/test_m1_stage1_*.py \
+    tests/ops/test_c1_rail_*.py \
+    tests/ops/test_c1_sizing_host_reference.py \
+    tests/ops/test_m1_acceptance_drills.py \
+    tests/ops/test_crosstrade_payload.py \
+    tests/test_validate_c1_monitoring_acceptance.py \
+    tests/rail_crosstrade \
+    tests/test_rail_goldenpath_crosstrade.py
+  do
+    # shellcheck disable=SC2206
+    local exp=( $g )
+    local e
+    for e in "${exp[@]}"; do [[ -e "$e" ]] && d9_list+=("$e"); done
+  done
+  local d9ok=1
+  set +e
+  docker run --rm --network none -v "$ROOT:/work:ro" -w /work python:3.12-slim \
+    bash -lc "python -m pip install --require-hashes -r requirements-ops.lock >/tmp/pip.log 2>&1 && python -m pytest -q ${d9_list[*]}" \
+    >"$LOG_DIR/D9_slim.log" 2>&1
+  local slim_rc=$?
+  set -e
+  [[ "$slim_rc" -eq 0 ]] || d9ok=0
+  set +e
+  docker run --rm --network none \
+    -v "$ROOT/tests:/work/tests:ro" \
+    -v "$ROOT/requirements-ops.lock:/work/requirements-ops.lock:ro" \
+    -v "$ROOT/pyproject.toml:/work/pyproject.toml:ro" \
+    -w /work "$DAEMON_TAG" \
+    bash -lc 'python -m pip install --require-hashes -r requirements-ops.lock >/tmp/pip.log 2>&1; python -m pytest -q tests/ops/test_c1_signal_daemon_*.py tests/ops/test_m1_stage1_*.py' \
+    >"$LOG_DIR/D9_inimage.log" 2>&1
+  local in_rc=$?
+  set -e
+  echo "slim_rc=$slim_rc inimage_rc=$in_rc" >"$LOG_DIR/D9_summary.txt"
+  grep -E 'passed|failed|error' "$LOG_DIR/D9_slim.log" | tail -1 >>"$LOG_DIR/D9_summary.txt" || true
+  if [[ "$d9ok" -eq 1 ]]; then record_pass D9 "slim suite green; in-image reported rc=$in_rc" "$(cat "$LOG_DIR/D9_summary.txt" | tr '\n' ' ')"
+  else record_fail D9 "slim suite failed; see D9_slim.log"; fi
+
+  # D10 real-socket timeout — helper temp .py
+  cat >"$LOG_DIR/D10_probe.py" <<'PY'
+"""D10: emitting loop + real default_transport → silent listening socket."""
+from __future__ import annotations
+import json, os, socket, sys, threading, time, traceback
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from uuid import uuid4
+
+sys.path[:0] = ["/app/ops", "/app"]
+
+from c1_signal_daemon.evaluate_loop import EvaluateLoop
+from c1_signal_daemon.feed import Bar
+from c1_signal_daemon.listener_client import ListenerClient, default_transport
+from c1_signal_daemon.m1_stage1 import M1Coordinator
+from c1_signal_daemon.m1_stage1_control import enable, prepare
+from c1_signal_daemon.m1_stage1_state import CeremonyStore
+from c1_signal_daemon.m1_stage1_strategy import M1Stage1TestStrategy
+from c1_rail.m1_stage1_contract import contract_sha256
+
+
+def main() -> int:
+    work = Path(os.environ.get("D10_WORK", "/tmp/d10_work"))
+    work.mkdir(parents=True, exist_ok=True)
+    accepted = {"n": 0}
+    stop = {"flag": False}
+
+    def server():
+        srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        srv.bind(("127.0.0.1", 0))
+        srv.listen(5)
+        (work / "port.txt").write_text(str(srv.getsockname()[1]), encoding="utf-8")
+        srv.settimeout(1.0)
+        conns = []
+        while not stop["flag"]:
+            try:
+                conn, _ = srv.accept()
+                accepted["n"] += 1
+                conns.append(conn)  # never read
+            except socket.timeout:
+                continue
+        for c in conns:
+            try: c.close()
+            except OSError: pass
+        srv.close()
+
+    threading.Thread(target=server, daemon=True).start()
+    for _ in range(50):
+        if (work / "port.txt").exists(): break
+        time.sleep(0.05)
+    port = int((work / "port.txt").read_text(encoding="utf-8").strip())
+    base_url = f"http://127.0.0.1:{port}"
+
+    target = datetime(2099, 1, 1, 14, 0, tzinfo=timezone.utc)
+    now = target - timedelta(minutes=1)
+    received = target + timedelta(seconds=61)
+    cid = "ci-d10-" + uuid4().hex[:12]
+    token = "c" + ("i" * 47)
+
+    state_path = work / "state.json"
+    cfg_path = work / "daemon.json"
+    store = CeremonyStore(state_path)
+    store.boot("d10-boot")
+    cfg = {
+        "listener_base_url": base_url,
+        "path_token": token,
+        "bind_host": "127.0.0.1",
+        "bind_port": 18080,
+        "bar_period_s": 60,
+        "poll_interval_s": 1,
+        "emit_enabled": False,
+        "strategy": "null",
+        "m1_test": {"enabled": False, "state_path": str(state_path)},
+    }
+    cfg_path.write_text(json.dumps(cfg), encoding="utf-8")
+    source_binding = {"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": "MYM1!"}
+    manifest = {
+        "ceremony_id": cid,
+        "target": target.isoformat(),
+        "expires": (target + timedelta(seconds=140)).isoformat(),
+        "source": source_binding,
+        "contract_sha256": contract_sha256(),
+        "expected_qty": 1,
+        "preflight_sha256": "e" * 64,
+    }
+    prepare(store, cfg_path, manifest, boot_id="d10-boot", now=now)
+    enable(store, cfg_path, cid, boot_id="d10-boot", reviewed=manifest, now=now)
+
+    class Source:
+        connected = True
+        binding = source_binding
+        feed_mode = "offline_fixture"
+        def activate(self, binding): assert binding == self.binding
+        def deactivate(self): pass
+        def poll(self): return Bar(target, 41000.0, 41002.0, 40999.0, 41001.0, 3.0)
+
+    coordinator = M1Coordinator(store, cfg_path, boot_id="d10-boot")
+    client = ListenerClient(base_url=base_url, path_token=token, transport=default_transport)
+    loop = EvaluateLoop(
+        source=Source(), client=client, strategy=M1Stage1TestStrategy(coordinator),
+        coordinator=coordinator, bar_period_s=60, emit_enabled=True, boot_id="d10-boot",
+    )
+
+    t0 = time.monotonic()
+    try:
+        result = loop.step(received)
+    except Exception as exc:  # noqa: BLE001
+        result = {"action": "exception", "exc": type(exc).__name__}
+        traceback.print_exc()
+    elapsed = time.monotonic() - t0
+
+    obj = store.read()
+    item = obj["ceremonies"].get(cid) or obj["ceremonies"].get(obj.get("active"), {})
+    state = item.get("state")
+    prev = item.get("previous_state")
+    n1 = accepted["n"]
+    loop.step(received)
+    loop.step(received)
+    n2 = accepted["n"]
+    stop["flag"] = True
+
+    report = {
+        "elapsed_s": round(elapsed, 3),
+        "accepted_first": n1,
+        "accepted_after": n2,
+        "ceremony_state": state,
+        "previous_state": prev,
+        "result": result,
+    }
+    print(json.dumps(report, sort_keys=True))
+    if n1 != 1: raise SystemExit(f"accepted_first={n1}")
+    if n2 != 1: raise SystemExit(f"accepted_after={n2}")
+    if elapsed < 25 or elapsed > 45: raise SystemExit(f"elapsed={elapsed}")
+    if state != "TRANSPORT_UNKNOWN" and prev != "TRANSPORT_UNKNOWN":
+        raise SystemExit(f"state={state!r} prev={prev!r} item={item!r}")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except SystemExit:
+        raise
+    except Exception:
+        traceback.print_exc()
+        raise SystemExit(1)
+PY
+  local d10w="$LOG_DIR/D10_work"; rm -rf "$d10w"; mkdir -p "$d10w"
+  set +e
+  docker run --rm --network none \
+    -v "$LOG_DIR/D10_probe.py:/tmp/D10_probe.py:ro" \
+    -v "$d10w:/tmp/d10_work" \
+    -e D10_WORK=/tmp/d10_work -e PYTHONPATH=/app/ops \
+    "$DAEMON_TAG" python /tmp/D10_probe.py \
+    >"$LOG_DIR/D10.out" 2>"$LOG_DIR/D10.err"
+  local d10rc=$?
+  set -e
+  if [[ "$d10rc" -eq 0 ]]; then record_pass D10 "30s timeout; TRANSPORT_UNKNOWN; one accept" "$(tail -1 "$LOG_DIR/D10.out")"
+  else record_fail D10 "see D10.err / D10.out"; fi
+}
+
+########################################################################
+echo "c1 image validation — target=$TARGET log_dir=$LOG_DIR"
+case "$TARGET" in
+  listener) run_listener ;;
+  daemon) run_daemon ;;
+  all) run_listener; run_daemon ;;
+esac
+
+echo
+echo "==== summary ===="
+for r in "${RESULTS[@]}"; do echo "$r"; done
+echo "PASS=$PASS_N FAIL=$FAIL_N"
+printf '%s\n' "${RESULTS[@]}" >"$LOG_DIR/summary.txt"
+echo "PASS=$PASS_N FAIL=$FAIL_N" >>"$LOG_DIR/summary.txt"
+[[ "$FAIL_N" -eq 0 ]]
