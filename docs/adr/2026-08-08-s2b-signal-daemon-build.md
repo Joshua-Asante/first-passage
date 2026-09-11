@@ -37,11 +37,11 @@ S2 ruled the live signal origin Python-native. S2b Accepted the minimal daemon s
 
 ## §2 — Decision
 
-**Deferred S2b limbs are locked as follows** (amend only by superseding ADR):
+**Deferred S2b limbs are locked as follows** (amend only by superseding ADR or an operator-approved dated revision under the [ADR policy](2026-08-08-adr-ceremony-tiering.md) revision clause; the "Live CME bar source" row was revised in place 2026-09-11 — see [Addendum 2026-09-11](#addendum-2026-09-11--stage-1-input-source-options-and-proposed-selection)):
 
 | Limb | Lock |
 |---|---|
-| Live CME bar source | **Databento GLBX.MDP3 Live**, schema `ohlcv-1m` (parent/micro as the strategy requires). Express reading of the Databento research ADR: “live rail KEEP” means the sizing/CrossTrade/**listener** path stays unchanged; the daemon image **may** depend on `databento`. Listener image stays stdlib-only. |
+| Live CME bar source | **Revised in place 2026-09-11** (operator ruling, Track A / A1r; prior wording verbatim under [Addendum 2026-09-11 §Prior revision](#addendum-2026-09-11--stage-1-input-source-options-and-proposed-selection)). **No live source selected.** For Stage 1 ceremonies only, an **operator-attended controlled input**: the operator transcribes the just-closed 1m bar of the dated front-month MYM contract named in the ceremony manifest (`venue_contract`) from the Tradovate platform chart into the daemon container within the ceremony window; the strategy hook, B1 build, reservation and POST are the daemon's. `MYM1!` is the identity's listener route label, not a venue symbol. This is not a feed, not a fixture and not a replay; it certifies the chain, not feed readiness. S2b step 1's live-feed selection remains owed. Listener and daemon images stay stdlib-only under this disposition. |
 | Reconnect | Auto-reconnect with backoff; feed **unhealthy** while disconnected. |
 | Staleness | Unhealthy if `now - last_bar_ts` exceeds **`2 × bar_period + 30s`** (e.g. 15m strategy bar → 30m + 30s). Formula is canonical; do not hard-code a one-off magic age. |
 | Heartbeat | Operator-visible on the **daemon** app: process up + `last_bar_age_s` via `GET /` JSON (separate from listener health). Log/page when heartbeat missed for the same staleness window. |
@@ -70,7 +70,7 @@ S2 ruled the live signal origin Python-native. S2b Accepted the minimal daemon s
 
 ## §4 — Falsifier (revert trigger)
 
-**H:** After Accept, any daemon build that lands under an operator GO citing this ADR implements the table in §2 (Databento Live `ohlcv-1m`, formula staleness, fail-closed-all, second Fly app, emit-disabled default) and does not alter the listener B1 contract.
+**H:** After Accept, any daemon build that lands under an operator GO citing this ADR implements the table in §2 (the source disposition in force — from 2026-09-11 the operator-attended controlled input for Stage 1 with no live source, revised in place per [Addendum 2026-09-11](#addendum-2026-09-11--stage-1-input-source-options-and-proposed-selection); prior wording named Databento Live `ohlcv-1m` — formula staleness, fail-closed-all, second Fly app, emit-disabled default) and does not alter the listener B1 contract.
 
 **Revert / FALSIFIED (any limb):**
 1. Daemon shares the listener volume / `peak_equity` → tear back; restore two-app boundary.
@@ -99,7 +99,7 @@ S2 ruled the live signal origin Python-native. S2b Accepted the minimal daemon s
 
 **Positive:** Buildable daemon design with explicit feed, fail-closed, and second-app locks; unblocks operator build GO → warm infrastructure.
 
-**Negative / costs:** Databento Live dependency + cost gate on the daemon image; second always-on Fly machine; emit remains disabled until a strategy GO.
+**Negative / costs:** no live-source dependency or data cost under the 2026-09-11 disposition (prior wording: Databento Live dependency + cost gate on the daemon image — revised in place 2026-09-11, [Addendum 2026-09-11 §Prior revision](#addendum-2026-09-11--stage-1-input-source-options-and-proposed-selection)); a production feed and its cost remain owed; second always-on Fly machine; emit remains disabled until a strategy GO.
 
 **Risks:** Live feed outages suppress all signals including exits (accepted under fail-closed); mitigate with heartbeat visibility + attended ops.
 
@@ -140,7 +140,7 @@ No replacement provider, subscription or connection is approved. Keep the daemon
 
 **Status:** RATIFIED 2026-09-11 — option D (operator-attended controlled input). Operator rulings: "i choose option d"; Q1–Q5 "adopt all, dated 2026-09-11". Recorded on disk by the parent session as Track A / A1r (this edit). The packet's recommendation was D, so the Selection block stands unrewritten.
 **Track:** [Track A plan](../superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md) sub-track A1 · brief [A1](../briefs/handoffs/2026-09-10-track-a-a1-claude-signal-source-decision-packet.md) · the parent session records the ruling as A1r.
-**Amends** §2's "Live CME bar source" disposition as of 2026-09-11 through the option D amendment text below and the header disposition line (the §2 table body stays byte-unedited, Rule 14). **Does not** claim M1 `RESOLVED`. **Does not** arm, sign up, spend, connect, or implement. **$0 / K=0.**
+**Amends in place** (operational Rule 14 class 2 — accepted-ADR effective text after an approved revision; [ADR policy](2026-08-08-adr-ceremony-tiering.md) revision clause) the §2 "Live CME bar source" row, the §2 amendment clause, the §4 hypothesis parenthetical and the §6 cost line, each carrying a dated scope note; the prior wording is preserved verbatim under §Prior revision below and in git history. §4 revert limbs (1)–(5) are byte-unchanged. The header disposition line is the reader-intercept. **Does not** claim M1 `RESOLVED`. **Does not** arm, sign up, spend, connect, or implement. **$0 / K=0.**
 
 ### §0 — Rule 0 reads (this addendum; anchors are `git log -1 --format=%h -- <path>` on `origin/main` @ `051f8e5`)
 
@@ -235,11 +235,11 @@ A separate **personal live Tradovate account used for market data only** is elig
 
 ### Option D — operator-attended controlled input
 
-- **Mechanism:** the ceremony manifest names `source = OPERATOR_INPUT_SOURCE`. At target + 60…150 s the operator reads the just-closed `MYM1!` 1-minute bar from the **Tradovate platform chart** of the eval account (real-time, human display; Tradeify states it covers the CME non-professional data fee — [Tradeify FAQ mirror](https://pickmytrade.trade/en/prop-firm-faq/tradeify-faq/), accessed 2026-09-11) and runs, inside the daemon container over `fly ssh console`, `python ops/c1_signal_daemon/m1_stage1_control.py inject --ceremony-id … --boot-id … --time <target> --open … --high … --low … --close … --volume …`. The CLI validates against the READY manifest and current boot, writes a one-shot bar file bound to the ceremony id, and `OperatorInputSource.poll()` returns it exactly once; the rest of the chain is unchanged. Tradovate's platform data is used by a human at a screen, which is display use; nothing machine-reads it.
+- **Mechanism:** the ceremony manifest names `source = OPERATOR_INPUT_SOURCE`. At target + 60…150 s the operator reads the just-closed 1-minute bar of the **dated front-month MYM contract named in the ceremony manifest** (`venue_contract`, chosen by the operator at `prepare` time from the venue's front-month designation) from the **Tradovate platform chart** of the eval account (real-time, human display; Tradeify states it covers the CME non-professional data fee — [Tradeify FAQ mirror](https://pickmytrade.trade/en/prop-firm-faq/tradeify-faq/), accessed 2026-09-11) and runs, inside the daemon container over `fly ssh console`, `python ops/c1_signal_daemon/m1_stage1_control.py inject --ceremony-id … --boot-id … --contract <venue_contract> --time <target> --open … --high … --low … --close … --volume …`. The CLI validates against the READY manifest and current boot (including `--contract == manifest.venue_contract`), writes a one-shot bar file bound to the ceremony id, and `OperatorInputSource.poll()` returns it exactly once; the rest of the chain is unchanged. **Contract identification (Codex P1, 2026-09-11):** `MYM1!` is TradingView continuous-contract notation carried as the identity's listener route label (`INSTRUMENT_SYMBOLS`, provisional per `docs/spec/c1_nt8_sizing_host_impl.md` §Risks); Tradovate charts show dated contracts. The manifest therefore names the exact contract the operator reads, the bar record and `bar_sha256` carry it, and `project_evidence` reports it, so the record cannot label a bar as something it is not — including across a quarterly roll. Sizing is price-independent, so the contract month cannot change the decision; this binds provenance honesty, not discharge validity. Tradovate's platform data is used by a human at a screen, which is display use; nothing machine-reads it.
 - **Item-5 limbs:** the strategy hook runs in the ruled host on a genuine market bar; the B1 payload is daemon-built, not canned; expected non-zero sizing at `dry_run=true`; the express amendment below prevents silent redefinition. **Operator call (§0.5 (2)):** whether an operator-transcribed bar is a "controlled input" distinct from "fixture or replay". It is not replayed from any store and did not exist before the ceremony; it is also not machine-sourced.
 - **Doctrine:** this is "the explicit amendment identifying what the test certifies and leaving live-feed readiness separate" that Addendum 2026-09-10 and the Databento retirement addendum name. S2/S2b untouched (no TradingView involvement at all).
 - **Certifies / leaves open:** certifies hook → B1 → listener → dry-run decision at `qty_out=1` on a real market bar, in production containers, with the ceremony journal, reservation and evidence join end to end — including **input → decision price identity** (`parsed.close == bar.close`, the 07-28 class from the operator's input onward). Leaves open **everything about a live feed**: no source connects, so feed → daemon identity and feed health are not exercised; S2b step 1 remains fully owed.
-- **Cost:** $0. **Build:** `ops/c1_signal_daemon/operator_input_source.py`; `inject` action in `m1_stage1_control.py` (+ `sys.path` bootstrap); `daemon.build_loop` wires the source (disconnected) + coordinator; marker `OPERATOR_INPUT_SOURCE = {"kind": "operator_attended_input", "schema": "ohlcv-1m", "symbol": "MYM1!"}`; `validate_manifest` accepts it; `project_evidence` returns `qualifying_live_source: False`, `offline_test_only: False`, `operator_attended_input: True`; no dependency, no ingress, no secret; tests for inject validation (wrong boot/ceremony/time, malformed OHLC, second inject refused), one-shot semantics, integration path; retirement test updated; A2 D6 expectation updated. Time-to-first-event: ~1 build day + A2-D/A4-D/A6 + one attended ceremony.
+- **Cost:** $0. **Build:** `ops/c1_signal_daemon/operator_input_source.py`; `inject` action in `m1_stage1_control.py` (+ `sys.path` bootstrap); `daemon.build_loop` wires the source (disconnected) + coordinator; marker `OPERATOR_INPUT_SOURCE = {"kind": "operator_attended_input", "schema": "ohlcv-1m", "symbol": "MYM1!"}` (fixed; `accept_bar` binding equality unchanged); `validate_manifest` accepts it and requires a top-level manifest field `venue_contract` matching `^MYM[FGHJKMNQUVXZ]\d$` (covered by `manifest_sha256`, not by `contract_sha256()`); `inject --contract` must equal it; the bar record carries `venue_contract` inside the `bar_sha256` fingerprint; `project_evidence` returns `qualifying_live_source: False`, `offline_test_only: False`, `operator_attended_input: True`; no dependency, no ingress, no secret; tests for inject validation (wrong boot/ceremony/time, malformed OHLC, second inject refused), one-shot semantics, integration path; retirement test updated; A2 D6 expectation updated. Time-to-first-event: ~1 build day + A2-D/A4-D/A6 + one attended ceremony.
 - **Operational risk:** the operator has ~90 s to transcribe five numbers and run one command over `fly ssh console` (open the console before target; the command is pre-typed); a transcription error is caught by the OHLC consistency check or simply yields a different `close` — sizing is unaffected. No ingress, no secrets. Fail-closed: nothing else can produce a bar.
 - **Reversibility:** nothing persists beyond the ceremony journal; the CLI action can be removed.
 
@@ -303,10 +303,10 @@ M1 ADR change-history row: `| 2026-09-DD | Addendum — item-5 Stage 1 input tra
 
 ### Amendment text — option D (APPLIED 2026-09-11)
 
-This ADR §2 row — the effective disposition from 2026-09-11; the §2 table body stays byte-unedited (Rule 14) and the header line at the top of this ADR is the reader-intercept:
+This ADR §2 row — applied in place 2026-09-11 (identical to the live row; prior wording under §Prior revision):
 
 ```
-| Live CME bar source | **No live source selected.** For Stage 1 ceremonies only, an **operator-attended controlled input**: the operator transcribes the just-closed `MYM1!` 1m bar from the Tradovate platform chart into the daemon container within the ceremony window; the strategy hook, B1 build, reservation and POST are the daemon's. This is not a feed, not a fixture and not a replay; it certifies the chain, not feed readiness. S2b step 1's live-feed selection remains owed. Selected 2026-09-11 (Addendum 2026-09-11, ratified 2026-09-11). |
+| Live CME bar source | **Revised in place 2026-09-11** (operator ruling, Track A / A1r; prior wording verbatim under [Addendum 2026-09-11 §Prior revision](#addendum-2026-09-11--stage-1-input-source-options-and-proposed-selection)). **No live source selected.** For Stage 1 ceremonies only, an **operator-attended controlled input**: the operator transcribes the just-closed 1m bar of the dated front-month MYM contract named in the ceremony manifest (`venue_contract`) from the Tradovate platform chart into the daemon container within the ceremony window; the strategy hook, B1 build, reservation and POST are the daemon's. `MYM1!` is the identity's listener route label, not a venue symbol. This is not a feed, not a fixture and not a replay; it certifies the chain, not feed readiness. S2b step 1's live-feed selection remains owed. Listener and daemon images stay stdlib-only under this disposition. |
 ```
 
 Append to the M1 ADR after Addendum 2026-08-24:
@@ -316,8 +316,10 @@ Append to the M1 ADR after Addendum 2026-08-24:
 
 **Does not amend** item 5's limbs. **Does not** claim `RESOLVED`. **Does not** arm. **$0 / K=0.**
 
-The Stage 1 ceremony's bar is a genuine, just-closed `MYM1!` 1-minute bar transcribed by the operator
-from the Tradovate platform chart and injected in-container within the ceremony window (S2b build ADR
+The Stage 1 ceremony's bar is a genuine, just-closed 1-minute bar of the dated front-month MYM contract named
+in the ceremony manifest (`venue_contract`), transcribed by the operator from the Tradovate platform chart and
+injected in-container within the ceremony window (`MYM1!` is the identity's listener route label, not a venue
+symbol; S2b build ADR
 Addendum 2026-09-11, option D, ratified 2026-09-11). This is the explicit amendment the 2026-09-10
 addenda require: it is a **controlled input**, not a fixture or a replay — nothing is replayed from a
 store and the bar did not exist before the ceremony. The signal origin is the daemon (`Strategy.on_bar`
@@ -343,7 +345,7 @@ M1 ADR change-history row: `| 2026-09-11 | Addendum — item-5 Stage 1 input = o
 
 **Not recommended:** C would be the stronger technical claim at $0, but TradingView's Terms of Use §3 forbid the machine-driven non-display use it requires; the packet applies the same bar it applies to free sources. **A′** is the production-feed route (Tradovate data, machine feed, feed → decision identity certified) at ~$30–37/mo plus $1,000 parked and a live login at rest; it belongs with a production-strategy ruling, not with M1, and it is available as an alternative if the operator wants a machine feed now. **B** repeats the retired run-rate for no M1 gain.
 
-The operator's 2026-09-11 conditional ruling for option A returns **BLOCKED — eval account ineligible**; per that ruling no fallback is selected by this packet. A fresh ruling is owed on the options above.
+Sequence of rulings: the operator's first, conditional ruling for option A returned **BLOCKED — eval account ineligible** and the packet selected no fallback; the operator then ruled **option D** on 2026-09-11 (§Operator rulings below). No further ruling is owed.
 
 ### Falsifiable hypothesis (brief §4) — outcome
 
@@ -362,10 +364,29 @@ RESOLVED for A1 = every option scored on every criterion, recommendation stated,
 - **Q4 — RULED: reading confirmed.** A delayed-but-genuine bar would satisfy the origin limb only under an amended window and staleness lock; any future delayed-feed proposal must carry both amendments, so the S2b locks cannot loosen by omission.
 - **Q5 — RULED: later.** M1 needs no machine feed; a production-feed decision belongs with a production strategy. A′ stays scored as the standing priced route.
 
+### Prior revision — immutable record of the 2026-09-11 in-place edits (all at `2cb980d`)
+
+§2 amendment clause, prior: `**Deferred S2b limbs are locked as follows** (amend only by superseding ADR):`
+
+§2 row "Live CME bar source", prior:
+
+```
+| Live CME bar source | **Databento GLBX.MDP3 Live**, schema `ohlcv-1m` (parent/micro as the strategy requires). Express reading of the Databento research ADR: “live rail KEEP” means the sizing/CrossTrade/**listener** path stays unchanged; the daemon image **may** depend on `databento`. Listener image stays stdlib-only. |
+```
+
+§4 hypothesis, prior (revert limbs (1)–(5) unchanged):
+
+```
+**H:** After Accept, any daemon build that lands under an operator GO citing this ADR implements the table in §2 (Databento Live `ohlcv-1m`, formula staleness, fail-closed-all, second Fly app, emit-disabled default) and does not alter the listener B1 contract.
+```
+
+§6 cost line, prior: `**Negative / costs:** Databento Live dependency + cost gate on the daemon image; second always-on Fly machine; emit remains disabled until a strategy GO.`
+
 ### §10 — Audit hooks (this addendum)
 
 ```bash
-grep -n "^## Addendum 2026-09-11" docs/adr/2026-08-08-s2b-signal-daemon-build.md                                    # 1 hit
+grep -n "^## Addendum 2026-09-11 — Stage 1 input source" docs/adr/2026-08-08-s2b-signal-daemon-build.md              # 1 hit (the fenced M1 template heading differs)
+grep -c "^| Live CME bar source | \*\*Revised in place 2026-09-11" docs/adr/2026-08-08-s2b-signal-daemon-build.md   # 2 (live §2 row + its fenced copy)
 grep -n "^\*\*Status:\*\* RATIFIED 2026-09-11" docs/adr/2026-08-08-s2b-signal-daemon-build.md                     # 1 hit (A1r landed 2026-09-11)
 grep -n "^## Addendum 2026-09-11 — item-5 input for Stage 1" docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md   # 1 hit (M1 amendment applied)
 grep -n "Tradovate API LIVE-funded only" ops/prop_envelope_default.md                                        # 1 hit (option A finding)
@@ -378,5 +399,6 @@ git diff --stat origin/main...HEAD                                              
 
 | Date | Change | By |
 |---|---|---|
+| 2026-09-11 | Codex review of PR #340 folded (6 findings, all verified real): §2 row, §2 amendment clause, §4 hypothesis parenthetical and §6 cost line revised **in place** with prior wording preserved (Rule 14 class 2 / ADR policy revision clause — the earlier "byte-unedited" framing was the wrong Rule 14 class); option D gains the `venue_contract` provenance requirement; stale "fresh ruling owed" sentence replaced; M1 addendum Rule 0 pin distinguishes packet pin from ratification; addendum-count hook narrowed | Claude (fold) · Codex (review) |
 | 2026-09-11 | **RATIFIED — option D** (operator: "i choose option d"; Q1–Q5 adopted as suggested, dated 2026-09-11). Status line, header disposition, Selection and the option D amendment applied here; option D addendum + change-history row appended to the M1 ADR (Track A / A1r) | Joshua (ruling) · Claude (recorder) |
 | 2026-09-11 | Addendum — Stage 1 input-source decision packet (options A/A′/B/C/D/E/F scored; option A found ineligible on the eval account; C re-graded on TradingView Terms of Use §3; D recommended); status PROPOSED, ratification owed (Track A / A1r) | Claude (packet) · Joshua (ruling owed) |
