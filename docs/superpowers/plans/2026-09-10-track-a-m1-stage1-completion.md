@@ -100,7 +100,7 @@ Routing test is [`2026-07-14-cc-cursor-surface-allocation.md`](../../adr/2026-07
 | A4 deployment-readiness review | **Claude** | Judgment-heavy review of live host state; governed note. | fly auth | readiness record §A4 with per-item GO/NO-GO | spec + quality |
 | A5 listener deploy (disarmed) | **Claude** | Live-safety surface; the 2026-08-02 grant covers `fly deploy`; migration apply needs the operator's flat attestation. | fly auth | acceptance JSON `fixture_hashes` refresh + notes entry; readiness record §A5 | spec + quality + consolidated |
 | A6 daemon deploy (inert) | **Claude** | Same class as A5. | fly auth | readiness record §A6 | spec + quality + consolidated |
-| A7 attended Stage 1 dry-run | Operator + **Claude** (console) | Operator runs `enable`; agent runs read-only preflight, `prepare`, verification, `close`. | fly auth; operator present | evidence projection + genuine listener event UUID; readiness record §A7 | spec + quality + consolidated |
+| A7 attended Stage 1 dry-run | Operator + **Claude** (console) | Operator runs `enable` **and `inject`** (option D, ratified 2026-09-11); agent runs read-only preflight, `prepare`, verification, `close`, and drafts both operator commands. | fly auth; operator present | evidence projection + genuine listener event UUID; readiness record §A7 | spec + quality + consolidated |
 | A8 signoff + RESOLVED + redeploy | **Claude** | Edits the acceptance artifact (governed); redeploy under the grant. | fly auth | PR with `status=RESOLVED`; post-redeploy `--status` shows `m1_gate … result=PASS`; STOP | spec + quality + consolidated |
 
 Handoff briefs (dispatch in this order; each is self-contained):
@@ -175,7 +175,7 @@ The implementer of the ratified input changes the daemon only. The spec the pare
 - [ ] **A2 (daemon half)** — re-run on the A1b image: boots inert, no outbound connection at boot (`--network none`), `prepare`/`enable` still refuse without a valid ceremony, lock/restart/timeout checks pass on Linux.
 - [ ] **A4 (daemon half)** — second dispatch of the A4 brief (Step 2.3b/2.4b): readiness record §A4-D with every row GO; the v1-failed-release anomaly explained from evidence; approved-source keys present but disabled; journal state clean; daemon import closure re-traced on the A1b merge SHA; A6 command sequence frozen.
 - [ ] **A6** — daemon at the new release; `GET /` shows `emit_enabled=false`, `effective_emit=false`, `strategy=NullStrategy`, source disconnected; no signal on boot (listener ledger last `seq` unchanged); ceremony state file valid; `status` CLI healthy. STOP before any ceremony.
-- [ ] **A7** — one ceremony: preflight `expected_qty=1`; operator `enable`; one B1 POST; listener triad `request_received → decision(qty_out=1, dry_run=true, test_only=true, sender_invoked=false) → transport_result(not_attempted)`; evidence projection joins uniquely; `close`; listener disarm + daemon `effective_emit=false` reconfirmed; genuine listener event UUID recorded.
+- [ ] **A7** — one ceremony: preflight `expected_qty=1`; operator `enable`; operator `inject` of the just-closed `venue_contract` bar inside `[target + 60 s, target + 120 s]`; one B1 POST; listener triad `request_received → decision(qty_out=1, dry_run=true, test_only=true, sender_invoked=false) → transport_result(not_attempted)`; evidence projection joins uniquely; `close`; listener disarm + daemon `effective_emit=false` reconfirmed; genuine listener event UUID recorded.
 - [ ] **A8** — acceptance JSON: `dry_run_strategy_signal_event_id`, `operator_signoff`, `status=RESOLVED`, in-container `fixture_hashes` (deployed pins in-container, the test pin from the tree); validator plain + `--require-resolved` exit 0; PR merged; listener redeployed with the `RESOLVED` artifact; `--status` → `result=PASS`; if any pin moved at that deploy, PR 2's refreshed record is re-baked by one docs-only redeploy (ops bytes unchanged, hashes identical before and after) so the running image's embedded record describes its own bytes, and the STATE row stays queued as "re-bake owed" until PR 3 records the verified re-bake. **STOP. No arm.** STATE row 1 leaves the queue with its record only once the host carries the record that describes it.
 
 ---
@@ -186,7 +186,7 @@ The implementer of the ratified input changes the daemon only. The spec the pare
 2. Ratify the A1 decision (one option, dated) — or NO-GO.
 3. Attest broker-verified flatness before A5's migration apply and before A7 (Tradovate "No open positions").
 4. Confirm access to the private recovery procedure (A3) — by opening it, not by recalling it.
-5. Run `enable` for the single A7 ceremony; run `close` if the agent cannot.
+5. Run `enable` **and `inject`** (the option D bar injection, inside `[target + 60 s, target + 120 s]`) for the single A7 ceremony; run `close` if the agent cannot. An agent-run injection invalidates the ceremony.
 6. Provide `operator_signoff` (name, date, statement) for A8.
 7. Keep placing the weekly account-preservation trade; Track A does not change that obligation.
 8. `--arm` is not in Track A. If anyone proposes it, the answer is the M1 ADR: `RESOLVED` **plus** a separate GO, in a later track.
