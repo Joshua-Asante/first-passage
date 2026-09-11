@@ -27,7 +27,19 @@
 > execution within eight active hours. It is development evidence, not native
 > replay, formal selection or n1/n2/n3. All other HOLD boundaries below remain.
 
-> **Current gate (2026-09-09): HOLD — remaining support and evidence.** A separately
+> **Current gate (2026-09-11): BOUNDED RELEASE — Track B packets only (TB-G0, operator ruling D-B1).**
+> The HOLD below is released **only** for the packets in the
+> [Track B umbrella's claim manifest](../../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md#claim-manifest-orchestrator-owned-the-anti-duplication-device),
+> under its wave gates (orchestrator-owned; a wave opens only when the prior wave's specs
+> are accepted). The D3 attempt ceiling stays one and a failed final n3 ends the attempt.
+> Rulings D-B1..D-B15 are recorded in the
+> [campaign record §55](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#55--track-b-release--d-b1d-b15-recorded-2026-09-11)
+> ([defaults ruling](https://github.com/Joshua-Asante/first-passage/pull/336#issuecomment-5629047943), [D-B4/D-B11 ruling](https://github.com/Joshua-Asante/first-passage/pull/336#issuecomment-5628479176)). Everything the
+> 2026-09-09 gate withheld and this release does not name stays withheld: no real/source/native
+> replay, sampling/search, n1/n2/n3, promotion, deployment or arm outside a packet's own gate.
+
+> **Prior gate (2026-09-09): HOLD — remaining support and evidence** *(superseded in part by the
+> 2026-09-11 bounded release above; retained as the record of what it withheld).* A separately
 > released private synthetic implementation scope passed 125 tests; independent
 > static review found no new defect, and the named v6 repairs are closed within
 > that scope. The full replay bundle is not accepted. Coverage nomination,
