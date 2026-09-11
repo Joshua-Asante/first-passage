@@ -346,8 +346,14 @@ numbers restarted at #1. Every PR number cited in an artifact dated before 2026-
 with every live PR.
 
 **Convention (forward-only).**
-1. An archive-era PR is cited as `first-passage-archive#N` (GitHub auto-links this form) or by
+1. An archive-era PR is cited as the plain-text identifier `first-passage-archive#N` or by
    its full archive pull URL. A bare `PR #N` is never used for one from here on.
+   For clickable citations in repository Markdown, use an explicit Markdown link to the
+   pull URL. In GitHub discussions, cross-repository autolinks require the owner-qualified
+   form `Joshua-Asante/first-passage-archive#N` (without code formatting); the short
+   identifier does not auto-link. GitHub does not create these autolinks in repository
+   files. Source: [GitHub autolink documentation](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/autolinked-references-and-urls),
+   verified 2026-09-11. The same distinction applies to live-repository citations.
 2. A live PR may be cited bare only inside an artifact whose own date is on or after 2026-08-15
    and that cites no archive-era PR. Documents that mix eras — `docs/SESSIONS.md`, `STATE.md`,
    `docs/operational_rules.md`, `CLAUDE.md`, session memory — use `first-passage#N`.

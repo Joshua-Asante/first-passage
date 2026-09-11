@@ -36,7 +36,9 @@ license rewriting archived entries. Implementation: [`roll_sessions.py`](../scri
 pull-request numbers restarted at #1, so entries dated before 2026-08-15 cite
 `first-passage-archive` numbers that now collide with live ones (two different merges answer
 to `#308`). From here on cite archive-era PRs as `first-passage-archive#N` and live PRs as
-`first-passage#N` in this header and in any document that mixes eras; resolve an ambiguous
+`first-passage#N` in this header and in any document that mixes eras. These are plain-text
+identifiers; use explicit Markdown links to pull URLs for clickable citations in repository
+files. Resolve an ambiguous
 historical number by merge commit or branch name, never by number alone. Owner:
 [public-visibility ADR, addendum 2026-09-11](adr/2026-08-14-repo-public-visibility-transition.md#addendum-2026-09-11--pr-number-era-convention).
 
