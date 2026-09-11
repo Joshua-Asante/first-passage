@@ -12,6 +12,8 @@
 
 **Status:** Proposed for review. Planning only; no application changes, dependency installation, publication, or deployment performed.
 
+**Related roadmap:** [Architecture improvements](2026-09-11-architecture-improvements.md) sequences boundary-checker coverage and dependency-aware CI ahead of packaging, adds the service verification baseline for the rail migration, and defines separate authority-data and compatibility-API follow-ups. PR 1 / PR 2 below are the two packaging deliveries within that broader sequence.
+
 ## Design decision
 
 Use an incremental packaging migration. First make code distributable without moving it or renaming imports. Then prove the deployment can consume the artifact. Namespace and state-path modernization follow separately if their benefits justify the migration.
