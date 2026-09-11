@@ -6,16 +6,56 @@ must produce a complete failing table, not terminate at the first launch.
 
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
+import types
 
 import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
 LISTENER = "L1 L2 L3 L4 L5a L5b L6 L6b L7 L8 L9".split()
-DAEMON = "D1 D2 D3 D4 D5 D6 D7 D8 D9 D10".split()
+DAEMON = "D1 D2 D3 D4 D5 D6 D7 D8 D9 D10 D11".split()
+
+
+def d11_probe():
+    """Load the actual in-image probe without running its real-clock ceremony."""
+    source = (ROOT / "scripts/c1_image_validation.sh").read_text(encoding="utf-8")
+    found = re.search(r'cat >"\$LOG_DIR/D11_probe.py" <<\x27PY\x27\n(.*?)\nPY\n', source, re.S)
+    assert found, "D11 executable probe missing"
+    module = types.ModuleType("d11_probe")
+    exec(compile(found.group(1), "D11_probe.py", "exec"), module.__dict__)
+    return module
+
+
+def test_d11_cli_failure_stops_before_wait(tmp_path):
+    """A refused prepare must fail the probe before reaching its target wait."""
+    probe = d11_probe()
+    child = tmp_path / "refuse.py"
+    child.write_text('print("ceremony control failed closed")\nraise SystemExit(2)\n')
+    probe.CLI = [sys.executable, str(child)]
+    with pytest.raises(AssertionError, match="prepare exit=2"):
+        probe.command("prepare", 0)
+
+
+def test_d11_captured_value_leak_is_not_echoed(tmp_path, capsys):
+    """A faulty CLI printing a bar value fails without amplifying it to CI logs."""
+    probe = d11_probe()
+    child = tmp_path / "leak.py"
+    child.write_text('print("41001")\n')
+    probe.CLI = [sys.executable, str(child)]
+    with pytest.raises(AssertionError, match="bar value leaked"):
+        probe.command("inject", 0)
+    assert "41001" not in capsys.readouterr().out
+
+
+def test_d11_wait_refuses_a_missed_window():
+    """A delayed runner must fail promptly instead of injecting outside the test window."""
+    probe = d11_probe()
+    with pytest.raises(AssertionError, match="missed injection checkpoint"):
+        probe.wait_until(0, latest=1)
 
 
 @pytest.fixture
@@ -130,6 +170,7 @@ def test_docker_failure_emits_every_result(shell, tmp_path, target, expected, fa
         assert not (logs / "L5b.out").exists()
     if failure != "build":
         last_logs = (["L9_inimage.log"] if target == "listener" else
-                     ["D10.err"] if target == "daemon" else ["L9_inimage.log", "D10.err"])
+                     ["D10.err", "D11.err"] if target == "daemon" else
+                     ["L9_inimage.log", "D10.err", "D11.err"])
         for name in last_logs:
             assert "injected Docker failure" in (logs / name).read_text(encoding="utf-8")

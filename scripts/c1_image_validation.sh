@@ -96,6 +96,7 @@ DAEMON_FILES=(
   /app/ops/c1_signal_daemon/heartbeat.py
   /app/ops/c1_signal_daemon/http_status.py
   /app/ops/c1_signal_daemon/listener_client.py
+  /app/ops/c1_signal_daemon/operator_input_source.py
   /app/ops/c1_signal_daemon/m1_stage1.py
   /app/ops/c1_signal_daemon/m1_stage1_control.py
   /app/ops/c1_signal_daemon/m1_stage1_state.py
@@ -593,7 +594,7 @@ run_daemon() {
   else
     record_fail D1 "build failed; see $blog"
     local dep
-    for dep in D2 D3 D4 D5 D6 D7 D8 D9 D10; do record_fail "$dep" "not runnable: daemon image build failed (D1)"; done
+    for dep in D2 D3 D4 D5 D6 D7 D8 D9 D10 D11; do record_fail "$dep" "not runnable: daemon image build failed (D1)"; done
     return 0
   fi
 
@@ -680,7 +681,7 @@ PY
 import json,sys
 d=json.load(open(sys.argv[1],encoding="utf-8"))
 need={"emit_enabled":False,"effective_emit":False,"strategy":"NullStrategy",
-      "feed_mode":"unavailable","connected":False,"feed_healthy":False,
+      "feed_mode":"operator_input","poll_interval_s":5,"connected":False,"feed_healthy":False,
       "ceremony_state":"DISABLED"}
 for k,v in need.items():
     if d.get(k)!=v: raise SystemExit(f"{k}={d.get(k)!r} want {v!r}")
@@ -758,68 +759,79 @@ PY
   else record_fail D5 "see D5.log"; fi
   stop_rm c1-D5
 
-  # D6 CLI refusal
-  local d6="$LOG_DIR/D6_data"
-  local d6ok=1
+  # D6 standalone CLI: three refusals without any state/config/publication write.
+  local d6="$LOG_DIR/D6_data" d6ok=1
   stage_daemon_data "$d6" "$FIXTURES/c1_signal_daemon_config.json"
-  stop_rm c1-D6seed
-  launch_container c1-D6seed --network none -v "$d6:/data" "$DAEMON_TAG" || d6ok=0
-  wait_for_log c1-D6seed 'daemon up' 15 "$LOG_DIR/D6.seed.log" || d6ok=0
-  host_readable_data c1-D6seed
-  stop_rm c1-D6seed
-  local state_file
-  state_file="$(python3 - <<PY
-from pathlib import Path
-import json
-for p in Path("$d6").glob("*.json"):
-    try: o=json.loads(p.read_text())
-    except Exception: continue
-    if "schema_version" in o:
-        print(p); break
-PY
-)"
-  local cfg_sha st_sha
-  cfg_sha="$(sha256_file "$d6/c1_signal_daemon_config.json")"
-  st_sha="$(sha256_file "$state_file")"
-  [[ "$st_sha" != FILE_MISSING ]] || d6ok=0
-  stop_rm c1-D6
-  launch_container c1-D6 --network none -v "$d6:/data" --entrypoint sleep "$DAEMON_TAG" infinity || d6ok=0
-  # Full activation requests (state, config, current boot id, the committed ceremony
-  # manifest fixture, ceremony id) so the refusal is proven on the real activation path,
-  # not on an incomplete call (Codex P2, 2026-09-11).
-  local d6_boot
-  d6_boot="$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['boot_id'])" "$state_file" 2>/dev/null || echo unknown-boot)"
-  docker cp "$FIXTURES/ceremony_manifest.json" c1-D6:/tmp/ceremony_manifest.json >/dev/null || d6ok=0
-  local d6_cid
-  d6_cid="$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['ceremony_id'])" "$FIXTURES/ceremony_manifest.json")" || d6ok=0
-  [[ -n "$d6_cid" ]] || d6ok=0
-  for act in prepare enable; do
-    set +e
-    docker exec -e PYTHONPATH=/app/ops c1-D6 python -m c1_signal_daemon.m1_stage1_control "$act" \
-      --state /data/c1_m1_stage1_state.json --config /data/c1_signal_daemon_config.json \
-      --boot-id "$d6_boot" --manifest /tmp/ceremony_manifest.json --ceremony-id "$d6_cid" \
-      >"$LOG_DIR/D6_${act}.out" 2>&1
-    local rc=$?
-    set -e
-    [[ "$rc" -eq 2 ]] || d6ok=0
-    grep -q 'ceremony blocked: no approved source' "$LOG_DIR/D6_${act}.out" || d6ok=0
-  done
-  set +e
-  docker exec -e PYTHONPATH=/app/ops c1-D6 python -m c1_signal_daemon.m1_stage1_control status \
-    >"$LOG_DIR/D6_status.out" 2>&1
-  local src=$?
-  set -e
-  [[ "$src" -eq 0 ]] || d6ok=0
-  python3 - "$LOG_DIR/D6_status.out" <<'PY' || d6ok=0
+  python3 - "$d6/c1_signal_daemon_config.json" <<'PY' || d6ok=0
 import json,sys
-d=json.loads(open(sys.argv[1],encoding="utf-8").read())
-assert d.get("effective_emit") is False
-assert d.get("source_status")=="unavailable"
+from pathlib import Path
+p=Path(sys.argv[1]); cfg=json.loads(p.read_text()); cfg["poll_interval_s"]=1
+p.write_text(json.dumps(cfg))
 PY
-  [[ "$(sha256_file "$d6/c1_signal_daemon_config.json")" == "$cfg_sha" ]] || d6ok=0
-  [[ "$(sha256_file "$state_file")" == "$st_sha" ]] || d6ok=0
-  if [[ "$d6ok" -eq 1 ]]; then record_pass D6 "prepare/enable exit 2; hashes unchanged"
-  else record_fail D6 "see D6_*.out"; fi
+  stop_rm c1-D6seed
+  if launch_container c1-D6seed --network none -v "$d6:/data" "$DAEMON_TAG"; then
+    wait_for_log c1-D6seed 'daemon up' 15 "$LOG_DIR/D6.seed.log" || d6ok=0
+  else d6ok=0; fi
+  stop_rm c1-D6seed
+  cat >"$LOG_DIR/D6_probe.py" <<'PY'
+import hashlib,json,os,subprocess,sys
+from datetime import datetime,timezone
+from pathlib import Path
+sys.path[:0]=["/app/ops", "/app"]
+from c1_rail.m1_stage1_contract import contract_sha256
+from c1_signal_daemon.m1_stage1_control import validate_manifest
+
+data=Path("/data")
+state=data/"c1_m1_stage1_state.json"
+config=data/"c1_signal_daemon_config.json"
+manifest=Path("/tmp/ceremony_manifest.json")
+value=json.loads(manifest.read_text())
+value["contract_sha256"]=contract_sha256()  # computed from this image
+validate_manifest(value, datetime.now(timezone.utc))
+manifest.write_text(json.dumps(value))
+boot=json.loads(state.read_text())["boot_id"]
+cid=value["ceremony_id"]
+upload=data/f"m1_upload_{cid}.json"
+env=dict(os.environ); env.pop("PYTHONPATH", None)
+cli=[sys.executable,"ops/c1_signal_daemon/m1_stage1_control.py"]
+common=["--state",str(state),"--config",str(config)]
+def hashes():
+    return tuple(hashlib.sha256(p.read_bytes()).hexdigest() for p in (config,state))
+original=hashes()
+actions=[
+    ("prepare",["--boot-id","stale-boot","--manifest",str(manifest)]),
+    ("enable",["--boot-id",boot,"--manifest",str(manifest),"--ceremony-id","does-not-exist"]),
+    ("inject",["--boot-id",boot,"--ceremony-id",cid,"--contract",value["venue_contract"],
+               "--time",value["target"],"--bar-file",str(upload)]),
+]
+for action,args in actions:
+    if action=="inject":
+        upload.write_text(json.dumps({"open":41000,"high":41002,"low":40999,"close":41001,"volume":3}))
+    result=subprocess.run(cli+[action]+common+args,cwd="/app",env=env,
+                          capture_output=True,text=True,timeout=10)
+    assert result.returncode==2, f"{action} exit={result.returncode}"
+    expected="inject refused: not active" if action=="inject" else "ceremony control failed closed"
+    assert result.stdout.strip()==expected and not result.stderr, f"{action} unexpected output"
+    assert hashes()==original, f"{action} changed config/state"
+    assert not list(data.glob("m1_bar_*")) and not list(data.glob("m1_claim_*"))
+    assert not upload.exists(), f"{action} upload retained"
+    print(f"{action}: exit=2; config/state hashes unchanged; upload/bar/claim absent")
+result=subprocess.run(cli+["status"]+common,cwd="/app",env=env,
+                      capture_output=True,text=True,timeout=10)
+assert result.returncode==0 and not result.stderr
+status=json.loads(result.stdout)
+assert status["effective_emit"] is False and status["source_status"]=="disconnected"
+assert hashes()==original
+print(json.dumps(status,sort_keys=True))
+PY
+  stop_rm c1-D6
+  if launch_container c1-D6 --network none -v "$d6:/data" --entrypoint sleep "$DAEMON_TAG" infinity; then
+    docker cp "$FIXTURES/ceremony_manifest.json" c1-D6:/tmp/ceremony_manifest.json >/dev/null || d6ok=0
+    docker cp "$LOG_DIR/D6_probe.py" c1-D6:/tmp/D6_probe.py >/dev/null || d6ok=0
+    docker exec c1-D6 python /tmp/D6_probe.py >"$LOG_DIR/D6.out" 2>"$LOG_DIR/D6.err" || d6ok=0
+  else d6ok=0; fi
+  if [[ "$d6ok" -eq 1 ]]; then record_pass D6 "prepare/enable/inject exit 2; hashes unchanged; no input files" "$(tr '\n' ' ' <"$LOG_DIR/D6.out")"
+  else record_fail D6 "see D6.out / D6.err / D6.launch.err"; fi
   stop_rm c1-D6
 
   # D7 ownership
@@ -962,6 +974,9 @@ PY
     tests/ops/test_c1_signal_daemon_m1.py
     tests/ops/test_c1_signal_daemon_source_retirement.py
     tests/ops/test_c1_signal_daemon_transport.py
+    tests/ops/test_c1_signal_daemon_operator_input.py
+    tests/ops/test_c1_signal_daemon_inject.py
+    tests/ops/test_c1_signal_daemon_cli_bootstrap.py
   )
   local in_ok=1
   image_pytest "$DAEMON_TAG" "/app/ops:/app" "$LOG_DIR/D9_inimage.log" \
@@ -1061,11 +1076,20 @@ def main() -> int:
     }
     cfg_path.write_text(json.dumps(cfg), encoding="utf-8")
     source_binding = {"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": "MYM1!"}
+    # Choose the first quarterly third Friday on/after this probe's target.
+    venues = []
+    for year in (target.year, target.year + 1):
+        for month, code in ((3, "H"), (6, "M"), (9, "U"), (12, "Z")):
+            first = target.date().replace(year=year, month=month, day=1)
+            expiry = first + timedelta(days=(4 - first.weekday()) % 7 + 14)
+            if expiry >= target.date():
+                venues.append((expiry, f"MYM{code}{year % 10}"))
     manifest = {
         "ceremony_id": cid,
         "target": target.isoformat(),
         "expires": (target + timedelta(seconds=140)).isoformat(),
         "source": source_binding,
+        "venue_contract": min(venues)[1],
         "contract_sha256": contract_sha256(),
         "expected_qty": 1,
         "preflight_sha256": "e" * 64,
@@ -1077,7 +1101,7 @@ def main() -> int:
         connected = True
         binding = source_binding
         feed_mode = "offline_fixture"
-        def activate(self, binding): assert binding == self.binding
+        def activate(self, binding, *, ceremony_id): assert binding == self.binding
         def deactivate(self): pass
         def poll(self): return Bar(target, 41000.0, 41002.0, 40999.0, 41001.0, 3.0)
 
@@ -1146,6 +1170,222 @@ PY
   set -e
   if [[ "$d10rc" -eq 0 ]]; then record_pass D10 "30s timeout; TRANSPORT_UNKNOWN; one accept" "$(tail -1 "$LOG_DIR/D10.out")"
   else record_fail D10 "see D10.err / D10.out"; fi
+
+  # D11 real-clock, one-shot input in the daemon image. Docker launch/health
+  # failures never enter the long wait. All CLI calls use the standalone A7 form.
+  local d11="$LOG_DIR/D11_data" d11ok=1
+  local d11_start=$SECONDS
+  stage_daemon_data "$d11" "$FIXTURES/c1_signal_daemon_config.json"
+  python3 - "$d11/c1_signal_daemon_config.json" <<'PY' || d11ok=0
+import json,sys
+from pathlib import Path
+p=Path(sys.argv[1]); cfg=json.loads(p.read_text())
+cfg.update(poll_interval_s=1,bar_period_s=60,strategy="null",emit_enabled=False,
+           listener_base_url="http://127.0.0.1:9")
+p.write_text(json.dumps(cfg))
+PY
+  cat >"$LOG_DIR/D11_probe.py" <<'PY'
+"""D11: exercise the packaged CLI and daemon, using this probe's UTC clock."""
+import json,math,os,subprocess,sys,time,urllib.request
+from datetime import date,datetime,timedelta,timezone
+from pathlib import Path
+from uuid import uuid4
+
+DATA=Path("/data")
+STATE=DATA/"c1_m1_stage1_state.json"
+CONFIG=DATA/"c1_signal_daemon_config.json"
+CLI=[sys.executable,"ops/c1_signal_daemon/m1_stage1_control.py"]
+COMMON=["--state",str(STATE),"--config",str(CONFIG)]
+VALUES=("41000","41001","40999","41002")
+
+def command(action, expected, *args):
+    env=dict(os.environ); env.pop("PYTHONPATH",None)
+    result=subprocess.run(CLI+[action]+COMMON+list(args),env=env,
+                          capture_output=True,text=True,timeout=10)
+    # Never amplify a runtime leak into the validator's own stdout/traceback.
+    assert not any(value in result.stdout+result.stderr for value in VALUES), "bar value leaked"
+    assert result.returncode==expected, f"{action} exit={result.returncode}, expected={expected}"
+    assert not result.stderr, f"{action} unexpected stderr"
+    print(f"{action} exit={result.returncode} {result.stdout.strip()}",flush=True)
+    return result.stdout
+
+def wait_until(checkpoint, *, latest):
+    remaining=checkpoint-time.time()
+    while remaining>0:
+        time.sleep(min(remaining,1))
+        remaining=checkpoint-time.time()
+    assert time.time()<latest, "missed injection checkpoint"
+
+def health():
+    with urllib.request.urlopen("http://127.0.0.1:8080/",timeout=2) as response:
+        assert response.status==200
+        return json.load(response)
+
+def await_health(expected):
+    deadline=time.monotonic()+5
+    while True:
+        value=health()
+        if all(value.get(key)==want for key,want in expected.items()):
+            print("health "+json.dumps({key:value[key] for key in expected},sort_keys=True),flush=True)
+            return value
+        remaining=deadline-time.monotonic()
+        assert remaining>0, "health checkpoint timed out"
+        time.sleep(min(.1,remaining))
+
+def venue_contract(target):
+    for year in (target.year,target.year+1):
+        for month,code in ((3,"H"),(6,"M"),(9,"U"),(12,"Z")):
+            first=date(year,month,1)
+            expiry=first+timedelta(days=(4-first.weekday())%7+14)
+            if expiry>=target.date():
+                return f"MYM{code}{year%10}"
+    raise AssertionError("no quarterly contract")
+
+def manifest(contract_hash, source):
+    target=datetime.fromtimestamp(math.ceil((time.time()+20)/60)*60,timezone.utc)
+    return dict(ceremony_id="ci-d11-"+uuid4().hex[:12],target=target.isoformat(),
+                expires=(target+timedelta(seconds=150)).isoformat(),
+                source=source,venue_contract=venue_contract(target),
+                contract_sha256=contract_hash,expected_qty=1,preflight_sha256="e"*64)
+
+def publication_identity(path):
+    try:
+        stat=path.stat()
+        return stat.st_ino,stat.st_mtime_ns,stat.st_size
+    except FileNotFoundError:
+        return None
+
+def main():
+    sys.path[:0]=["/app/ops","/app"]
+    from c1_rail.m1_stage1_contract import contract_sha256,OPERATOR_INPUT_SOURCE
+    from c1_signal_daemon.m1_stage1_control import validate_manifest
+    from c1_signal_daemon.m1_stage1_state import CeremonyStore
+    started=time.monotonic()
+    initial=await_health(dict(poll_interval_s=1,feed_mode="operator_input",
+                              effective_emit=False,connected=False,ceremony_state="DISABLED"))
+    boot=initial["boot_id"]
+    assert boot
+    value=manifest(contract_sha256(),OPERATOR_INPUT_SOURCE)
+    validate_manifest(value,datetime.now(timezone.utc))
+    cid=value["ceremony_id"]
+    target=datetime.fromisoformat(value["target"]).timestamp()
+    assert 19<=target-time.time()<=80
+    path=DATA/f"m1_manifest_{cid}.json"
+    path.write_text(json.dumps(value))
+    upload=DATA/f"m1_upload_{cid}.json"
+    published=DATA/f"m1_bar_{cid}.json"
+    claim=DATA/f"m1_claim_{cid}"
+    binding=["--boot-id",boot,"--manifest",str(path)]
+    injection=["--ceremony-id",cid,"--boot-id",boot,"--contract",value["venue_contract"],
+               "--time",value["target"]]
+    def stage():
+        upload.write_text(json.dumps(dict(open=41000,high=41002,low=40999,close=41001,volume=3)))
+    command("prepare",0,*binding)
+    status=json.loads(command("status",0))
+    assert status["state"]=="READY" and status["effective_emit"] is False
+    await_health(dict(effective_emit=False))
+    command("enable",0,*binding,"--ceremony-id",cid)
+    await_health(dict(effective_emit=True,ceremony_state="READY",connected=False))
+
+    stage()
+    wait_until(target+59,latest=target+60)
+    early=command("inject",2,*injection,"--bar-file",str(upload))
+    assert early.strip()=="inject refused: before window"
+    assert not upload.exists() and not published.exists() and not claim.exists()
+    print("early refusal: upload/bar/claim absent",flush=True)
+    stage()
+    wait_until(target+61,latest=target+70)
+    receipt=json.loads(command("inject",0,*injection,"--bar-file",str(upload)))
+    received=time.monotonic()
+    assert target+61<=datetime.fromisoformat(receipt["published_at"]).timestamp()<=target+70
+    assert len(receipt["bar_sha256"])==64 and not upload.exists()
+    # Capture publication identity before the immediate duplicate. Deactivation
+    # may remove it concurrently; the duplicate must never create/replace it.
+    before=publication_identity(published)
+    stage()
+    duplicate=command("inject",2,*injection,"--bar-file",str(upload))
+    assert duplicate.strip() in {"inject refused: already injected",
+                                 "inject refused: not enabled","inject refused: not active"}
+    after=publication_identity(published)
+    assert not upload.exists() and (after is None or after==before)
+    print("duplicate refusal: upload absent; no new publication",flush=True)
+
+    store=CeremonyStore(STATE)
+    deadline=received+5
+    while True:
+        obj=store.read(); item=obj["ceremonies"][cid]
+        if (item["state"]=="TRANSPORT_UNKNOWN" and not published.exists() and not claim.exists()):
+            assert obj["enabled"] is False and item["bar_sha256"]==receipt["bar_sha256"]
+            assert time.monotonic()<=deadline, "terminal/cleanup exceeded five seconds"
+            break
+        remaining=deadline-time.monotonic()
+        assert remaining>0, "terminal/cleanup exceeded five seconds"
+        time.sleep(min(.05,remaining))
+    print(json.dumps(dict(state=item["state"],enabled=obj["enabled"],
+                          receipt_bar_sha256=receipt["bar_sha256"],journal_bar_sha256=item["bar_sha256"],
+                          upload_absent=not upload.exists(),bar_absent=True,claim_absent=True)),flush=True)
+    # Stable terminal state avoids mistaking a legitimate reservation write for
+    # a bad-path write. Take the journal lock as an additional race guard: path
+    # validation must refuse without trying to acquire it.
+    with store.locked():
+        before_state=STATE.read_bytes()
+        bad_path=command("inject",2,*injection,"--bar-file",str(STATE))
+        assert bad_path.strip()=="inject refused: bad upload path"
+        assert STATE.read_bytes()==before_state
+    print("protected-path refusal: state byte-identical",flush=True)
+    command("close",0,"--ceremony-id",cid)
+    obj=store.read(); item=obj["ceremonies"][cid]
+    assert item["state"]=="CLOSED" and item["previous_state"]=="TRANSPORT_UNKNOWN"
+    assert obj["enabled"] is False
+    # Fresh future manifest makes the refusal prove the unresolved-attempt
+    # barrier, not a stale target, reused ID, or invalid quarterly contract.
+    fresh=manifest(contract_sha256(),OPERATOR_INPUT_SOURCE)
+    validate_manifest(fresh,datetime.now(timezone.utc))
+    fresh_path=DATA/f"m1_manifest_{fresh['ceremony_id']}.json"
+    fresh_path.write_text(json.dumps(fresh))
+    before_state=STATE.read_bytes(); before_config=CONFIG.read_bytes()
+    refused=command("prepare",2,"--boot-id",boot,"--manifest",str(fresh_path))
+    assert refused.strip()=="ceremony control failed closed"
+    assert STATE.read_bytes()==before_state and CONFIG.read_bytes()==before_config
+    assert fresh["ceremony_id"] not in store.read()["ceremonies"]
+    await_health(dict(effective_emit=False))
+    assert not upload.exists() and not published.exists() and not claim.exists()
+    assert time.monotonic()-started<240, "D11 exceeded four minutes"
+    print("CLOSED previous_state=TRANSPORT_UNKNOWN; fresh prepare refused; effective_emit=false",flush=True)
+
+if __name__=="__main__":
+    try:
+        main()
+    except Exception as exc:
+        # Exception details may contain captured private values (e.g. JSON
+        # decoder diagnostics). Keep failures useful without printing locals.
+        print("D11 probe failed: "+type(exc).__name__,file=sys.stderr)
+        raise SystemExit(1)
+PY
+  stop_rm c1-D11
+  if [[ "$d11ok" -eq 1 ]] && launch_container c1-D11 --network none -v "$d11:/data" "$DAEMON_TAG"; then
+    if wait_for_log c1-D11 'daemon up' 15 "$LOG_DIR/D11.boot.log" \
+       && docker cp "$LOG_DIR/D11_probe.py" c1-D11:/tmp/D11_probe.py >/dev/null; then
+      local d11_budget=$((240 - (SECONDS - d11_start)))
+      if [[ "$d11_budget" -gt 0 ]]; then
+        timeout "$d11_budget" docker exec c1-D11 python /tmp/D11_probe.py >"$LOG_DIR/D11.out" 2>"$LOG_DIR/D11.err" || d11ok=0
+      else d11ok=0; fi
+    else d11ok=0; fi
+  else
+    d11ok=0
+    cp "$LOG_DIR/D11.launch.err" "$LOG_DIR/D11.err" 2>/dev/null || true
+  fi
+  docker logs c1-D11 >"$LOG_DIR/D11.log" 2>&1 || d11ok=0
+  [[ $(grep -c "step {'action': 'transport_unknown'}" "$LOG_DIR/D11.log" || true) -eq 1 ]] || d11ok=0
+  # No raw journal dump: it deliberately retains the bar for evidence joins.
+  if grep -E '41000|41001|40999|41002' "$LOG_DIR/D11.log" "$LOG_DIR/D11.out" "$LOG_DIR/D11.err" >/dev/null 2>&1; then d11ok=0; fi
+  [[ $((SECONDS - d11_start)) -le 240 ]] || d11ok=0
+  container_alive c1-D11 || d11ok=0
+  if [[ "$d11ok" -eq 1 ]]; then
+    record_pass D11 "one receipt; one transport_unknown; matching bar hash; cleanup; close/barrier; no values"
+    cat "$LOG_DIR/D11.out"
+  else record_fail D11 "see D11.out / D11.err / D11.log"; fi
+  stop_rm c1-D11
 }
 
 ########################################################################
