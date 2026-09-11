@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-10
+**Last curated:** 2026-09-11
 
 Current priorities, dormant cross-session work, and outstanding obligations.
 Read the queue first, then the linked executable plan; campaign records own
@@ -29,11 +29,11 @@ not an hours budget. Completed items leave; do not automatically open replacemen
 Off-queue work stays with its owner until promoted or explicitly directed.
 Queue position does not grant phase GO or authorize a new generation channel.
 
-**Source blocker (2026-09-10):** Databento retired/unsubscribed by operator report; no replacement approved. M1 emission remains blocked pending an approved source or an explicit acceptance amendment. [Owner record](docs/adr/2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento).
+**Source disposition (2026-09-11):** Databento retired/unsubscribed by operator report ([owner record](docs/adr/2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento)); no live feed approved. The Stage 1 input is an **operator-attended controlled input**, ratified 2026-09-11 as the explicit acceptance amendment ([S2b build ADR Addendum 2026-09-11](docs/adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-09-11--stage-1-input-source-options-and-proposed-selection) option D · [M1 ADR Addendum 2026-09-11](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-09-11--item-5-input-for-stage-1-operator-attended-controlled-input-express)). Implementation (A1b), Linux validation, deployment and the attended ceremony remain owed; live-feed readiness remains separate and owed; no arm.
 
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
-| 1 | **B7-REFIRE Stage 1 + M1** — licensed test strategy; offline `m1_stage1_test` implementation on `codex/m1-stage1-test` ([contract](docs/notes/rail_build/M1_STAGE1_TEST_CONTRACT.md)); item 5 dated 2026-08-24 remains owed; emission blocked after Databento retirement, no replacement approved. Former queue item 2; unchanged scope and no arm. | [Track A plan](docs/superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md) · [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [GO addendum](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) | Live-signal / arming path |
+| 1 | **B7-REFIRE Stage 1 + M1** — licensed test strategy; offline `m1_stage1_test` implementation on `codex/m1-stage1-test` ([contract](docs/notes/rail_build/M1_STAGE1_TEST_CONTRACT.md)); item 5 dated 2026-08-24 remains owed; Stage 1 input ruled 2026-09-11 (option D, operator-attended controlled input; A1b implementation owed). Former queue item 2; unchanged scope and no arm. | [Track A plan](docs/superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md) · [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [GO addendum](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) | Live-signal / arming path |
 
 ## Executed operator decisions — decision index
 
