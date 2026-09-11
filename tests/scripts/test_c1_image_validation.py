@@ -4,12 +4,15 @@ Run the real shell orchestration with a failing Docker boundary. A broken image
 must produce a complete failing table, not terminate at the first launch.
 """
 
+import ast
+import json
 import os
 from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import types
 
 import pytest
@@ -18,6 +21,61 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 LISTENER = "L1 L2 L3 L4 L5a L5b L6 L6b L7 L8 L9".split()
 DAEMON = "D1 D2 D3 D4 D5 D6 D7 D8 D9 D10 D11".split()
+
+
+def test_d6_preserves_copied_fixture_and_uses_generated_manifest(tmp_path, monkeypatch, capsys):
+    """Copied inputs may be unwritable; the CLI must use a separate validated manifest."""
+    from c1_rail.m1_stage1_contract import contract_sha256
+    from c1_signal_daemon.m1_stage1_state import CeremonyStore
+
+    data = tmp_path / "data"
+    data.mkdir()
+    fixture = tmp_path / "copied_manifest.json"
+    fixture.write_bytes((ROOT / "tests/fixtures/c1_image_validation/ceremony_manifest.json").read_bytes())
+    original = fixture.read_bytes()
+    config = json.loads((ROOT / "tests/fixtures/c1_image_validation/c1_signal_daemon_config.json").read_text())
+    config["poll_interval_s"] = 1
+    config["m1_test"]["state_path"] = str(data / "c1_m1_stage1_state.json")
+    (data / "c1_signal_daemon_config.json").write_text(json.dumps(config))
+    CeremonyStore(data / "c1_m1_stage1_state.json").boot("d6-test-boot")
+
+    source = (ROOT / "scripts/c1_image_validation.sh").read_text(encoding="utf-8")
+    found = re.search(r'cat >"\$LOG_DIR/D6_probe.py" <<\x27PY\x27\n(.*?)\nPY\n', source, re.S)
+    assert found, "D6 executable probe missing"
+    # Run the actual probe and CLI, adapting only container paths to this checkout.
+    paths = {"/app": str(ROOT), "/app/ops": str(ROOT / "ops"),
+             "/data": str(data), "/tmp/ceremony_manifest.json": str(fixture)}
+
+    class LocalPaths(ast.NodeTransformer):
+        def visit_Constant(self, node):
+            if isinstance(node.value, str) and node.value in paths:
+                return ast.copy_location(ast.Constant(paths[node.value]), node)
+            return node
+
+    calls = []
+    real_run = subprocess.run
+
+    def record_cli(args, **kwargs):
+        result = real_run(args, **kwargs)
+        if "--manifest" in args:
+            manifest_path = Path(args[args.index("--manifest") + 1])
+            calls.append((args[2], manifest_path, json.loads(manifest_path.read_text()),
+                          result.returncode))
+        return result
+
+    monkeypatch.setattr(subprocess, "run", record_cli)
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
+    tree = ast.fix_missing_locations(LocalPaths().visit(ast.parse(found.group(1))))
+    exec(compile(tree, "D6_probe.py", "exec"), {"__name__": "d6_probe"})
+    assert fixture.read_bytes() == original, "copied fixture was modified"
+    assert [action for action, _, _, _ in calls] == ["prepare", "enable"]
+    for _, path, value, code in calls:
+        assert path != fixture and path.is_file()
+        assert value["contract_sha256"] == contract_sha256()
+        assert code == 2
+    output = capsys.readouterr().out
+    assert "inject: exit=2; config/state hashes unchanged; upload/bar/claim absent" in output
+    assert not list(data.glob("m1_bar_*")) and not list(data.glob("m1_claim_*"))
 
 
 def d11_probe():

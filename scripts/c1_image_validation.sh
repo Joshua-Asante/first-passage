@@ -774,7 +774,7 @@ PY
   else d6ok=0; fi
   stop_rm c1-D6seed
   cat >"$LOG_DIR/D6_probe.py" <<'PY'
-import hashlib,json,os,subprocess,sys
+import hashlib,json,os,subprocess,sys,tempfile
 from datetime import datetime,timezone
 from pathlib import Path
 sys.path[:0]=["/app/ops", "/app"]
@@ -784,10 +784,12 @@ from c1_signal_daemon.m1_stage1_control import validate_manifest
 data=Path("/data")
 state=data/"c1_m1_stage1_state.json"
 config=data/"c1_signal_daemon_config.json"
-manifest=Path("/tmp/ceremony_manifest.json")
-value=json.loads(manifest.read_text())
+value=json.loads(Path("/tmp/ceremony_manifest.json").read_text())
 value["contract_sha256"]=contract_sha256()  # computed from this image
 validate_manifest(value, datetime.now(timezone.utc))
+# The Docker-copied fixture is input only. Generate into a private directory
+# owned by this process rather than rewriting a copied file in shared /tmp.
+manifest=Path(tempfile.mkdtemp(prefix="c1-d6-"))/"ceremony_manifest.json"
 manifest.write_text(json.dumps(value))
 boot=json.loads(state.read_text())["boot_id"]
 cid=value["ceremony_id"]
