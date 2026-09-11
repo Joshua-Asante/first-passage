@@ -1,6 +1,6 @@
 # Machine block for REPO_MAP.md ↔ check_boundaries.py coupling (P5).
 # Keep in lockstep with scripts/check_boundaries.py:
-#   APP_LAYER_PREFIX, GOVERNANCE_PREFIXES, SCRIPTS_LAYER
+#   APP_LAYER_PREFIX, GOVERNANCE_PREFIXES, SCRIPTS_LAYER, FLAT_IMPORT_ROOTS
 # Do not parse REPO_MAP.md free prose — this file is the compare target.
 
 app_layer_prefix:
@@ -37,3 +37,11 @@ scripts_layer:
   parse_econ_export: lab
   diff_econ_calendar: lab
   lock_event_hook: ops
+
+flat_import_roots:
+  - core
+  - lab
+  - ops
+  - ops/c1_rail
+  - ops/c1_signal_daemon
+  - scripts

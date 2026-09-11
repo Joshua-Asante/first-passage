@@ -42,4 +42,4 @@ jobs:
         run: pytest tests/ -v
 
   # lab/ research-guardrail job moved to validation-controls.yml
-  # (path-filtered to lab/; W5 addendum 2026-08-15).
+  # (path-filtered to lab/ and its shared core/metadata/ops-lock dependencies).
