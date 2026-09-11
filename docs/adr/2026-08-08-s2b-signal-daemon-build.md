@@ -1,6 +1,6 @@
 # ADR 2026-08-08 — S2b signal-daemon build (deferred limbs)
 
-**Current feed disposition (2026-09-10): unavailable.** Databento is retired and unsubscribed per the operator; the Databento selection below is historical. No replacement is approved. See the addendum below.
+**Current feed disposition (2026-09-11): no live source selected.** Databento is retired and unsubscribed per the operator; the Databento selection in §2 is historical (§2 body byte-unedited, Rule 14). For Stage 1 ceremonies only, the ruled input is an **operator-attended controlled input** — [Addendum 2026-09-11](#addendum-2026-09-11--stage-1-input-source-options-and-proposed-selection), option D, **RATIFIED 2026-09-11**. No live feed is approved; live-feed readiness remains owed.
 
 **Status:** `Accepted` — fills deferred limbs of [SPEC S2b](../spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md); **does not authorize build alone** — requires a separate operator build GO citing this ADR + Accepted S2b
 **Decision date:** 2026-08-08
@@ -138,9 +138,9 @@ No replacement provider, subscription or connection is approved. Keep the daemon
 
 ## Addendum 2026-09-11 — Stage 1 input source: options and PROPOSED selection
 
-**Status:** PROPOSED — operator ratification owed
+**Status:** RATIFIED 2026-09-11 — option D (operator-attended controlled input). Operator rulings: "i choose option d"; Q1–Q5 "adopt all, dated 2026-09-11". Recorded on disk by the parent session as Track A / A1r (this edit). The packet's recommendation was D, so the Selection block stands unrewritten.
 **Track:** [Track A plan](../superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md) sub-track A1 · brief [A1](../briefs/handoffs/2026-09-10-track-a-a1-claude-signal-source-decision-packet.md) · the parent session records the ruling as A1r.
-**Does not amend** §2 until ratified; the ratified option's `### Amendment text` block below is the only text A1r applies. **Does not** claim M1 `RESOLVED`. **Does not** arm, sign up, spend, connect, or implement. **$0 / K=0.**
+**Amends** §2's "Live CME bar source" disposition as of 2026-09-11 through the option D amendment text below and the header disposition line (the §2 table body stays byte-unedited, Rule 14). **Does not** claim M1 `RESOLVED`. **Does not** arm, sign up, spend, connect, or implement. **$0 / K=0.**
 
 ### §0 — Rule 0 reads (this addendum; anchors are `git log -1 --format=%h -- <path>` on `origin/main` @ `051f8e5`)
 
@@ -198,7 +198,7 @@ A separate **personal live Tradovate account used for market data only** is elig
 | B | Licensed third-party CME 1m feed (real-time) | satisfies all | none | chain + production-class feed / vendor SLA | cheapest plain-API real-time: **$199/mo** (Massive Advanced) = the retired run-rate; broker-sponsored APIs $55–125/mo need a brokerage account | WS client; lock file | data-only key at rest; vendor outage → fail-closed | cancel | viable, not recommended |
 | B-delayed | Massive Starter, 10-min delayed | fails `accept_bar` window and staleness without amending §2 locks | window + staleness amendment | — | $29/mo | as B | — | cancel | not viable as specified |
 | C | TradingView alert webhook as **bar transport** (strategy stays in Python) | satisfies all technically | S2/S2b clarification (TV as transport ≠ origin); M1 note; **and a ruling on TradingView Terms of Use §3** | chain on a genuine live bar / production feed still owed | $0 incremental on Premium if real-time CME is active, else **$7/mo** CME add-on | ingest handler + source; 5–7 files; no new dependency | new public POST path on the daemon app; **TV Terms of Use license alerts/webhooks for "exclusive display-only use" and forbid machine-driven non-display use** | delete the alert; remove the ingest key | technically viable — **not recommended** (terms conflict) |
-| D | Operator-attended controlled input (bar read from the Tradovate chart, injected in-container) | satisfies all as read in §0.5 (2) | the explicit amendment the 2026-09-10 addenda name | chain on a genuine market bar, input → decision identity / **live-feed readiness untouched** | **$0** | CLI + one-shot source; 4–6 files; no dependency, no ingress, no secret | human transcription in the data path; 90 s window for the operator | nothing persists | **viable — recommended** |
+| D | Operator-attended controlled input (bar read from the Tradovate chart, injected in-container) | satisfies all as read in §0.5 (2) | the explicit amendment the 2026-09-10 addenda name | chain on a genuine market bar, input → decision identity / **live-feed readiness untouched** | **$0** | CLI + one-shot source; 4–6 files; no dependency, no ingress, no secret | human transcription in the data path; 90 s window for the operator | nothing persists | **viable — recommended · RATIFIED 2026-09-11** |
 | E | Databento re-subscription | — | — | — | $199/mo Standard | — | — | — | **NOT AUTHORIZED** (Track A) |
 | F | Free / unlicensed sources (Yahoo `YM=F`, `yfinance`, Stooq, Google Finance) | — | — | — | $0 | — | terms bar automated access; CAPTCHA-gated; delayed | — | **EXCLUDED** |
 
@@ -301,24 +301,24 @@ projection's `listener_event_id`.
 
 M1 ADR change-history row: `| 2026-09-DD | Addendum — item-5 Stage 1 input transport = TV alert webhook (express); limbs, decline, no-arm stand | Joshua (ruling) · Claude (recorder) |`.
 
-### Amendment text — option D
+### Amendment text — option D (APPLIED 2026-09-11)
 
-This ADR §2 row:
+This ADR §2 row — the effective disposition from 2026-09-11; the §2 table body stays byte-unedited (Rule 14) and the header line at the top of this ADR is the reader-intercept:
 
 ```
-| Live CME bar source | **No live source selected.** For Stage 1 ceremonies only, an **operator-attended controlled input**: the operator transcribes the just-closed `MYM1!` 1m bar from the Tradovate platform chart into the daemon container within the ceremony window; the strategy hook, B1 build, reservation and POST are the daemon's. This is not a feed, not a fixture and not a replay; it certifies the chain, not feed readiness. S2b step 1's live-feed selection remains owed. Selected 2026-09-DD (Addendum 2026-09-11, ratified 2026-09-DD). |
+| Live CME bar source | **No live source selected.** For Stage 1 ceremonies only, an **operator-attended controlled input**: the operator transcribes the just-closed `MYM1!` 1m bar from the Tradovate platform chart into the daemon container within the ceremony window; the strategy hook, B1 build, reservation and POST are the daemon's. This is not a feed, not a fixture and not a replay; it certifies the chain, not feed readiness. S2b step 1's live-feed selection remains owed. Selected 2026-09-11 (Addendum 2026-09-11, ratified 2026-09-11). |
 ```
 
 Append to the M1 ADR after Addendum 2026-08-24:
 
 ```
-## Addendum 2026-09-DD — item-5 input for Stage 1: operator-attended controlled input (express)
+## Addendum 2026-09-11 — item-5 input for Stage 1: operator-attended controlled input (express)
 
 **Does not amend** item 5's limbs. **Does not** claim `RESOLVED`. **Does not** arm. **$0 / K=0.**
 
 The Stage 1 ceremony's bar is a genuine, just-closed `MYM1!` 1-minute bar transcribed by the operator
 from the Tradovate platform chart and injected in-container within the ceremony window (S2b build ADR
-Addendum 2026-09-11, option D, ratified 2026-09-DD). This is the explicit amendment the 2026-09-10
+Addendum 2026-09-11, option D, ratified 2026-09-11). This is the explicit amendment the 2026-09-10
 addenda require: it is a **controlled input**, not a fixture or a replay — nothing is replayed from a
 store and the bar did not exist before the ceremony. The signal origin is the daemon (`Strategy.on_bar`
 → B1 → listener); the payload is not canned.
@@ -333,9 +333,11 @@ health remain entirely separate and owed (S2b step 1). The evidence projection r
 is written only by the operator-signed A8 edit from a projection's `listener_event_id`.
 ```
 
-M1 ADR change-history row: `| 2026-09-DD | Addendum — item-5 Stage 1 input = operator-attended controlled input (express); limbs, decline, no-arm stand | Joshua (ruling) · Claude (recorder) |`.
+M1 ADR change-history row: `| 2026-09-11 | Addendum — item-5 Stage 1 input = operator-attended controlled input (express); limbs, decline, no-arm stand | Joshua (ruling) · Claude (recorder) |`. **Applied 2026-09-11:** the addendum above (with a Rule 0 line and the Q1–Q5 scope note) and this row were appended to the M1 ADR by the same A1r edit.
 
 ### Selection
+
+**RATIFIED 2026-09-11 — option D.** The operator adopted the packet's recommendation as written; the grounds below stand as the dated record.
 
 **Recommended: option D — operator-attended controlled input, bar read from the Tradovate platform chart.** Grounds: (1) every item-5 limb is met with the daemon as the signal origin on a real market bar, and the event exercises the whole production chain including the input → decision price identity that item 5 exists to catch; (2) $0, no signup, no capital parked, no credentials at rest, no new public ingress; (3) the doctrine change is the exact amendment the 2026-09-10 addenda already anticipate, and it says plainly that live-feed readiness stays owed; (4) it uses the venue's own real-time data the eval account already carries, by human display, with no terms conflict; (5) nothing persists to reverse. Its cost is honesty about scope: it certifies the chain, not a feed.
 
@@ -350,21 +352,22 @@ The operator's 2026-09-11 conditional ruling for option A returns **BLOCKED — 
 
 ### Return gate (this packet)
 
-RESOLVED for A1 = every option scored on every criterion, recommendation stated, amendment text drafted, checkers green — **met, with concerns** (Q1–Q5 below). FALSIFIED would be an option graded viable that violates a limb — C was re-graded from viable on the terms finding, which is this clause working as intended. AMBIGUOUS = option A eligibility (above).
+RESOLVED for A1 = every option scored on every criterion, recommendation stated, amendment text drafted, checkers green — **met**; Q1–Q5 ruled 2026-09-11 (below). FALSIFIED would be an option graded viable that violates a limb — C was re-graded from viable on the terms finding, which is this clause working as intended. AMBIGUOUS = option A eligibility (above).
 
-### Open operator questions (answer with the ruling)
+### Operator rulings 2026-09-11 (Q1–Q5; operator: "adopt all, dated 2026-09-11")
 
-- **Q1.** §0.5 (2): is option D a "controlled input" distinct from fixture/replay, or a replay class? Determines whether D may be ratified at all.
-- **Q2.** Can the operator open Tradeify FTA §6.6 or the NinjaTrader "Tradovate API Access" article to confirm or refute the eval-account exclusion from a primary page? (Flips the option A finding only.)
-- **Q3.** Does the operator rule TradingView Terms of Use §3 inapplicable to option C? If not, C stays out. (This finding also touches the historical TV-alert → listener path and any TV-webhook bridging kept on the record; that is outside this packet and is surfaced, not ruled.)
-- **Q4.** §0.5 (1): confirm or reject the reading that a delayed-but-genuine bar would satisfy the origin limb *if* the window/staleness locks were amended. (No option relies on it; it governs whether B-delayed may ever be re-proposed.)
-- **Q5.** If a machine feed is wanted now rather than later, A′ or B — and the operator performs the signup.
+- **Q1 — RULED: controlled input, not replay.** The bar did not exist before the ceremony, nothing is read back from a store, and the B1 payload is built by the daemon's strategy hook — the distinction the 2026-09-10 addenda draw. D is ratifiable; the option D amendment text states what the event certifies and what stays owed.
+- **Q2 — RULED: left open, dated.** The option A exclusion rests on the repo's 2026-07-22 verification plus convergent secondary sources and is not primary-confirmed; re-verify only if A′ or any Tradovate feed is proposed. Nothing in Track A depends on it once D is chosen.
+- **Q3 — RULED: TradingView Terms of Use §3 applicable; C stays out.** The historical TV-alert → listener path is already superseded by S2 and no strategy is deployed, so nothing operational changes; the touch on that history is this dated note, not a re-litigation.
+- **Q4 — RULED: reading confirmed.** A delayed-but-genuine bar would satisfy the origin limb only under an amended window and staleness lock; any future delayed-feed proposal must carry both amendments, so the S2b locks cannot loosen by omission.
+- **Q5 — RULED: later.** M1 needs no machine feed; a production-feed decision belongs with a production strategy. A′ stays scored as the standing priced route.
 
 ### §10 — Audit hooks (this addendum)
 
 ```bash
 grep -n "^## Addendum 2026-09-11" docs/adr/2026-08-08-s2b-signal-daemon-build.md                                    # 1 hit
-grep -n "^\*\*Status:\*\* PROPOSED" docs/adr/2026-08-08-s2b-signal-daemon-build.md                                # 1 hit until A1r
+grep -n "^\*\*Status:\*\* RATIFIED 2026-09-11" docs/adr/2026-08-08-s2b-signal-daemon-build.md                     # 1 hit (A1r landed 2026-09-11)
+grep -n "^## Addendum 2026-09-11 — item-5 input for Stage 1" docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md   # 1 hit (M1 amendment applied)
 grep -n "Tradovate API LIVE-funded only" ops/prop_envelope_default.md                                        # 1 hit (option A finding)
 python scripts/check_adr_graph.py                                                                            # OK
 python scripts/validate_c1_monitoring_acceptance.py docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json     # unchanged, exit 0, CODE_LANDED
@@ -375,4 +378,5 @@ git diff --stat origin/main...HEAD                                              
 
 | Date | Change | By |
 |---|---|---|
+| 2026-09-11 | **RATIFIED — option D** (operator: "i choose option d"; Q1–Q5 adopted as suggested, dated 2026-09-11). Status line, header disposition, Selection and the option D amendment applied here; option D addendum + change-history row appended to the M1 ADR (Track A / A1r) | Joshua (ruling) · Claude (recorder) |
 | 2026-09-11 | Addendum — Stage 1 input-source decision packet (options A/A′/B/C/D/E/F scored; option A found ineligible on the eval account; C re-graded on TradingView Terms of Use §3; D recommended); status PROPOSED, ratification owed (Track A / A1r) | Claude (packet) · Joshua (ruling owed) |

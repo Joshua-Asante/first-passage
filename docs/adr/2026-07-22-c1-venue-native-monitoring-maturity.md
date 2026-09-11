@@ -961,12 +961,26 @@ grep -n "M1_MONITORING_ACCEPTANCE" ops/c1_rail/c1_rail_arm.py
 
 **Still owed after a recorded event id:** `operator_signoff`. `emit_enabled=true` is the attended emit step the daemon already refuses without a strategy GO — this addendum *is* that GO for a test strategy only. Q-M1WIRE-1 A2/A5 gaps do not block `RESOLVED`. `dry_run=false` stays forbidden.
 
+## Addendum 2026-09-11 — item-5 input for Stage 1: operator-attended controlled input (express)
+
+**Does not amend** item 5's limbs (real signal, expected non-zero sizing, Stage-1 `dry_run=true`, no silent redefinition, `--allow-live` must not write `dry_run_strategy_signal_event_id`). **Does not** claim M1 `RESOLVED`. **Does not** arm. **$0 / K=0.**
+
+**Rule 0 (this addendum):** [S2b build ADR Addendum 2026-09-11](2026-08-08-s2b-signal-daemon-build.md#addendum-2026-09-11--stage-1-input-source-options-and-proposed-selection) @ `df48c58` — option D, RATIFIED 2026-09-11 (options A/A′/B/C/E/F scored and not selected; option A ineligible on the eval account; option C out on TradingView Terms of Use §3). `ops/c1_signal_daemon/m1_stage1.py` `accept_bar` window `60 ≤ now − bar.ts ≤ 150` @ `3cdeabe`. `ops/c1_rail/m1_stage1_control.py::project_evidence` @ `811df7c` (returns `listener_event_id`, never `dry_run_strategy_signal_event_id`).
+
+**Operator ruling 2026-09-11 ("i choose option d"; Q1–Q5 "adopt all, dated 2026-09-11"):** the Stage 1 ceremony's bar is a genuine, just-closed `MYM1!` 1-minute bar transcribed by the operator from the Tradovate platform chart and injected in-container within the ceremony window (S2b build ADR Addendum 2026-09-11, option D, ratified 2026-09-11). This is the explicit amendment the 2026-09-10 addenda require: it is a **controlled input**, not a fixture or a replay — nothing is replayed from a store and the bar did not exist before the ceremony (Q1). The signal origin is the daemon (`Strategy.on_bar` → B1 → listener); the payload is not canned.
+
+**What the item-5 event certifies:** the ruled host produced a real strategy signal on a real market bar with expected sizing at `dry_run=true`, through the deployed daemon and listener, including the ceremony journal, reservation, evidence join and input → decision price identity in production containers.
+**What it does not certify:** any live feed. Live-feed readiness, feed → daemon price identity and feed health remain entirely separate and owed (S2b step 1). The evidence projection records `qualifying_live_source: false`, `operator_attended_input: true`; `dry_run_strategy_signal_event_id` is written only by the operator-signed A8 edit from a projection's `listener_event_id`.
+
+**Not licensed by this addendum (Q2–Q5 scope):** a TradingView alert webhook as bar transport (Terms of Use §3 ruled applicable, Q3); any delayed feed without a window and staleness amendment (Q4); any Tradovate API session on the eval account (ineligible; primary confirmation left open, Q2); a machine feed for M1 (deferred to a production-strategy ruling, Q5); arming; `RESOLVED`.
+
 ---
 
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
+| 2026-09-11 | Addendum — item-5 Stage 1 input = operator-attended controlled input (express); limbs, decline, no-arm stand; TV webhook / delayed feed / eval-account API not licensed | Joshua (ruling) · Claude (recorder) |
 | 2026-08-24 | **Test strategy licensed** as item-5 qualifying emit; dated 08-24. Limbs + deletion decline + no-arm stand; M1 stays `CODE_LANDED` until the attended session records the event id + `operator_signoff` | Joshua (ruling) · Cursor (recorder) |
 | 2026-08-07 | **§5 autonomous-promotion limb superseded in part** by S5 ADR (bounded sandbox lane). Header `Superseded-in-part-by` extended; no second tier/state writer; arm-gate + unattended bar stand | Cursor (drafter) · Joshua (plan GO) |
 | 2026-08-07 | **Item-5 signal-origin superseded in part** by S2 ADR (Python-native ruled host). Header `Superseded-in-part-by` + this addendum; historical body frozen; item 5 still owed; `status` unchanged | Cursor (drafter) · Joshua (plan GO) |
