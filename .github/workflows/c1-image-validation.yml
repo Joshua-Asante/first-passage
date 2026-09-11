@@ -1,0 +1,86 @@
+name: c1 image validation
+
+# Track A / A2 — Linux Docker image validation for the c1 listener and daemon.
+# Not a required merge check. Parent re-runs via workflow_dispatch and reads logs.
+on:
+  pull_request:
+    paths:
+      - "deploy/**"
+      - ".dockerignore"
+      - "ops/c1_rail/**"
+      - "ops/c1_signal_daemon/**"
+      - "core/**"
+      - "scripts/validate_c1_monitoring_acceptance.py"
+      - "docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json"
+      - "tests/ops/**"
+      - "tests/conftest.py"
+      - "tests/fixtures/c1_image_validation/**"
+      - "requirements-ops.lock"
+      - "pyproject.toml"
+      - "scripts/c1_image_validation.sh"
+      - ".github/workflows/c1-image-validation.yml"
+  push:
+    paths:
+      - "deploy/**"
+      - ".dockerignore"
+      - "ops/c1_rail/**"
+      - "ops/c1_signal_daemon/**"
+      - "core/**"
+      - "scripts/validate_c1_monitoring_acceptance.py"
+      - "docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json"
+      - "tests/ops/**"
+      - "tests/conftest.py"
+      - "tests/fixtures/c1_image_validation/**"
+      - "requirements-ops.lock"
+      - "pyproject.toml"
+      - "scripts/c1_image_validation.sh"
+      - ".github/workflows/c1-image-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  listener:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Cache pip wheels (ops lock)
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ~/.cache/pip
+          key: c1-image-val-pip-${{ hashFiles('requirements-ops.lock') }}
+          restore-keys: |
+            c1-image-val-pip-
+      - name: Validate listener image
+        run: ./scripts/c1_image_validation.sh listener
+      - name: Upload listener logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: c1-image-validation-listener
+          path: /tmp/c1_image_validation/*.log
+          if-no-files-found: warn
+
+  daemon:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Cache pip wheels (ops lock)
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ~/.cache/pip
+          key: c1-image-val-pip-${{ hashFiles('requirements-ops.lock') }}
+          restore-keys: |
+            c1-image-val-pip-
+      - name: Validate daemon image
+        run: ./scripts/c1_image_validation.sh daemon
+      - name: Upload daemon logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: c1-image-validation-daemon
+          path: /tmp/c1_image_validation/*.log
+          if-no-files-found: warn

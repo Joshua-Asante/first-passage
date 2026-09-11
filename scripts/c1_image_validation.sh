@@ -730,10 +730,18 @@ PY
     >"$LOG_DIR/D9_inimage.log" 2>&1
   local in_rc=$?
   set -e
-  echo "slim_rc=$slim_rc inimage_rc=$in_rc" >"$LOG_DIR/D9_summary.txt"
-  grep -E 'passed|failed|error' "$LOG_DIR/D9_slim.log" | tail -1 >>"$LOG_DIR/D9_summary.txt" || true
-  if [[ "$d9ok" -eq 1 ]]; then record_pass D9 "slim suite green; in-image reported rc=$in_rc" "$(cat "$LOG_DIR/D9_summary.txt" | tr '\n' ' ')"
-  else record_fail D9 "slim suite failed; see D9_slim.log"; fi
+  {
+    echo "slim_rc=$slim_rc inimage_rc=$in_rc"
+    echo "slim_files=${#d9_list[@]} paths=${d9_list[*]}"
+    echo -n "slim_counts "; grep -E 'passed|failed|error|skipped' "$LOG_DIR/D9_slim.log" | tail -1 || echo "(no summary)"
+    echo -n "inimage_counts "; grep -E 'passed|failed|error|skipped' "$LOG_DIR/D9_inimage.log" | tail -1 || echo "(no summary)"
+    if grep -qiE 'ModuleNotFoundError|ImportError' "$LOG_DIR/D9_inimage.log"; then
+      echo "inimage_note=imports failed in-image (reported, not forced)"
+    fi
+  } >"$LOG_DIR/D9_summary.txt"
+  cat "$LOG_DIR/D9_summary.txt"
+  if [[ "$d9ok" -eq 1 ]]; then record_pass D9 "slim suite green; in-image reported rc=$in_rc" "$(tr '\n' ' ' <"$LOG_DIR/D9_summary.txt")"
+  else record_fail D9 "slim suite failed; see D9_slim.log" "$(tr '\n' ' ' <"$LOG_DIR/D9_summary.txt")"; fi
 
   # D10 real-socket timeout — helper temp .py
   cat >"$LOG_DIR/D10_probe.py" <<'PY'
