@@ -37,6 +37,13 @@ def digest(value):
                                     allow_nan=False).encode()).hexdigest()
 
 
+def positive_finite_number(value):
+    try:
+        return type(value) in (int, float) and math.isfinite(value) and value > 0
+    except OverflowError:
+        return False
+
+
 def _third_friday(year, month):
     first = date(year, month, 1)
     first_friday = first + timedelta(days=(4 - first.weekday()) % 7)
@@ -201,15 +208,21 @@ def close(store, config_path, ceremony_id):
 
 
 def inject(store, config_path, *, ceremony_id, boot_id, contract, time, bar_file, now):
-    expected_upload = store.path.parent / f"m1_upload_{ceremony_id}.json"
+    if (not isinstance(ceremony_id, str)
+            or not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", ceremony_id)):
+        raise CeremonyError("bad upload path")
+    state_dir = store.path.parent.resolve()
+    expected_upload = state_dir / f"m1_upload_{ceremony_id}.json"
     try:
         candidate = Path(bar_file)
-        bad_path = candidate.is_symlink() or candidate.resolve() != expected_upload.resolve()
+        bad_path = (expected_upload.parent != state_dir or expected_upload.is_symlink()
+                    or candidate.is_symlink()
+                    or candidate.resolve() != expected_upload.resolve())
     except (OSError, TypeError, ValueError):
         bad_path = True
     if bad_path:
         raise CeremonyError("bad upload path")
-    upload = candidate.resolve()
+    upload = expected_upload
     try:
         with store.locked():
             obj = store._read()
@@ -247,8 +260,7 @@ def inject(store, config_path, *, ceremony_id, boot_id, contract, time, bar_file
                 if not isinstance(bar, dict) or set(bar) != keys:
                     raise ValueError
                 numbers = [bar[key] for key in ("open", "high", "low", "close", "volume")]
-                if not all(type(number) in (int, float) and math.isfinite(number) and number > 0
-                           for number in numbers):
+                if not all(positive_finite_number(number) for number in numbers):
                     raise ValueError
                 open_, high, low, close_, volume = numbers
                 if not low <= min(open_, close_) <= max(open_, close_) <= high:

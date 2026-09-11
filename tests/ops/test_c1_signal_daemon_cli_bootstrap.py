@@ -5,10 +5,11 @@ import subprocess
 import sys
 
 from c1_signal_daemon.m1_stage1_state import CeremonyStore
+from c1_signal_daemon import m1_stage1_control as control
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = REPO_ROOT / "ops" / "c1_signal_daemon" / "m1_stage1_control.py"
+SCRIPT = Path(control.__file__).resolve()
+PRODUCTION_ROOT = SCRIPT.parents[2]
 
 
 def _run(cwd, state):
@@ -22,8 +23,7 @@ def _run(cwd, state):
 def test_cli_bootstraps_without_pythonpath_from_repo_and_unrelated_cwd(tmp_path):
     state = tmp_path / "state.json"
     CeremonyStore(state).boot("boot-1")
-    for cwd in (REPO_ROOT, tmp_path):
+    for cwd in (PRODUCTION_ROOT, tmp_path):
         result = _run(cwd, state)
         assert result.returncode == 0, result.stderr
         assert json.loads(result.stdout)["boot_id"] == "boot-1"
-

@@ -72,9 +72,13 @@ def bar_record(**changes):
            ("timestamp", "open", "high", "low", "close", "volume", "venue_contract")}
     if "bar_sha256" not in record:
         numbers = [record[key] for key in ("open", "high", "low", "close", "volume")]
+        try:
+            representable = all(type(n) in (int, float) and math.isfinite(n)
+                                for n in numbers)
+        except OverflowError:
+            representable = False
         record["bar_sha256"] = (digest({"bar": bar, "source": OPERATOR_SOURCE})
-                                if all(type(n) in (int, float) and math.isfinite(n)
-                                       for n in numbers) else "e" * 64)
+                                if representable else "e" * 64)
     return record
 
 
@@ -140,6 +144,7 @@ def test_operator_source_deactivate_removes_bound_files(tmp_path):
     {"timestamp": "2026-09-10T14:00:00"},
     {"schema_version": 2},
     {"schema_version": True},
+    {"open": 10 ** 400},
 ])
 def test_operator_source_rejects_invalid_published_record(tmp_path, change, caplog):
     mod = _source_module()

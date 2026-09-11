@@ -3,12 +3,11 @@ from __future__ import annotations
 
 import json
 import logging
-import math
 from pathlib import Path
 
 from c1_rail.m1_stage1_contract import OPERATOR_INPUT_SOURCE
 from c1_signal_daemon.feed import Bar
-from c1_signal_daemon.m1_stage1_control import digest, utc
+from c1_signal_daemon.m1_stage1_control import digest, positive_finite_number, utc
 from c1_signal_daemon.m1_stage1_state import CeremonyError
 
 log = logging.getLogger(__name__)
@@ -74,8 +73,7 @@ class OperatorInputSource:
                     or value["boot_id"] != self.boot_id):
                 return self._reject()
             numbers = [value[key] for key in ("open", "high", "low", "close", "volume")]
-            if not all(type(number) in (int, float) and math.isfinite(number) and number > 0
-                       for number in numbers):
+            if not all(positive_finite_number(number) for number in numbers):
                 return self._reject()
             open_, high, low, close, volume = numbers
             if not low <= min(open_, close) <= max(open_, close) <= high:

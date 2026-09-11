@@ -1,4 +1,5 @@
 """Retired provider stays absent while option D supplies the bounded source."""
+from datetime import timedelta
 import importlib.util
 import json
 
@@ -110,6 +111,15 @@ def test_enabled_ceremony_awaiting_injection_does_not_log_each_poll(tmp_path, mo
     control.prepare(store, path, reviewed, boot_id="boot-A", now=NOW)
     control.enable(store, path, "offline-001", boot_id="boot-A", reviewed=reviewed, now=NOW)
     monkeypatch.setattr(daemon.uuid, "uuid4", lambda: SimpleNamespace(hex="boot-A"))
+    real_build_loop = daemon.build_loop
+
+    def build_with_frozen_clock(*args, **kwargs):
+        loop = real_build_loop(*args, **kwargs)
+        real_step = loop.step
+        loop.step = lambda: real_step(NOW + timedelta(seconds=1))
+        return loop
+
+    monkeypatch.setattr(daemon, "build_loop", build_with_frozen_clock)
     monkeypatch.setattr(daemon, "serve_health", lambda **kwargs: SimpleNamespace(
         serve_forever=lambda: None, shutdown=lambda: None))
     polls = []
@@ -121,6 +131,10 @@ def test_enabled_ceremony_awaiting_injection_does_not_log_each_poll(tmp_path, mo
     with caplog.at_level(logging.INFO):
         assert daemon.run_daemon(path, value) == 0
     assert not any(r.getMessage().startswith("step ") for r in caplog.records)
+    current = store.read()
+    assert current["enabled"] is True
+    assert current["ceremonies"]["offline-001"]["state"] == "READY"
+    assert json.loads(path.read_text())["m1_test"]["enabled"] is True
 
 
 @pytest.mark.parametrize("interval", [0, -1, "1", True, float("nan")])
@@ -152,6 +166,31 @@ def test_prepare_enforces_ceremony_poll_interval(tmp_path, interval, accepted):
         with pytest.raises(control.CeremonyError):
             control.prepare(store, path, reviewed, boot_id="boot-A", now=NOW)
         assert store.read()["ceremonies"] == {}
+
+
+@pytest.mark.parametrize("interval,accepted", [(5, False), (1, True), (0.5, True)])
+def test_enable_enforces_ceremony_poll_interval(tmp_path, interval, accepted):
+    from c1_rail.m1_stage1_contract import OPERATOR_INPUT_SOURCE
+    from test_c1_signal_daemon_m1 import cfg, manifest
+    value = cfg()
+    path = tmp_path / "config.json"
+    path.write_text(json.dumps(value))
+    store = control.CeremonyStore(tmp_path / "state.json")
+    store.boot("boot-A")
+    reviewed = manifest(source=OPERATOR_INPUT_SOURCE)
+    control.prepare(store, path, reviewed, boot_id="boot-A", now=NOW)
+    staged = json.loads(path.read_text())
+    staged["poll_interval_s"] = interval
+    path.write_text(json.dumps(staged))
+    if accepted:
+        control.enable(store, path, "offline-001", boot_id="boot-A",
+                       reviewed=reviewed, now=NOW)
+        assert store.read()["enabled"] is True
+    else:
+        with pytest.raises(control.CeremonyError):
+            control.enable(store, path, "offline-001", boot_id="boot-A",
+                           reviewed=reviewed, now=NOW)
+        assert store.read()["enabled"] is False
 
 
 def test_build_loop_cleans_operator_input_orphans_at_boot(tmp_path):

@@ -7,6 +7,7 @@ import pytest
 
 from c1_rail.m1_stage1_contract import OPERATOR_INPUT_SOURCE, contract_sha256
 from c1_signal_daemon import m1_stage1_control as control
+from c1_signal_daemon import m1_stage1_state as state_module
 from c1_signal_daemon.m1_stage1_state import CeremonyError, CeremonyStore
 from c1_signal_daemon.operator_input_source import OperatorInputSource
 
@@ -122,6 +123,7 @@ def test_inject_refuses_expired_manifest(tmp_path):
     _bar(open=0),
     _bar(open=-1),
     _bar(high=float("inf")),
+    _bar(open=10 ** 400),
     _bar(low=44001.5),
 ])
 def test_inject_refuses_every_bad_bar_class(tmp_path, raw):
@@ -199,6 +201,78 @@ def test_publication_failure_keeps_claim_and_prevents_retry(tmp_path, monkeypatc
         source = OperatorInputSource(tmp_path, boot_id=BOOT)
         source.activate(OPERATOR_INPUT_SOURCE, ceremony_id=CID)
         assert source.poll().close == 44001.0
+
+
+def test_internal_os_replace_failure_keeps_claim_and_no_published_file(
+        tmp_path, monkeypatch):
+    store, cfg_path, _, upload = _ceremony(tmp_path)
+    original_replace = state_module.os.replace
+
+    def fail_replace(source, destination):
+        raise OSError("private replace detail")
+
+    monkeypatch.setattr(state_module.os, "replace", fail_replace)
+    with pytest.raises(CeremonyError, match="publication uncertain"):
+        _inject(store, cfg_path, upload)
+    assert (tmp_path / f"m1_claim_{CID}").is_file()
+    assert not (tmp_path / f"m1_bar_{CID}.json").exists()
+    monkeypatch.setattr(state_module.os, "replace", original_replace)
+    duplicate = _write(upload, _bar())
+    with pytest.raises(CeremonyError, match="already injected"):
+        _inject(store, cfg_path, duplicate)
+
+
+def test_internal_parent_directory_fsync_failure_keeps_complete_publication(
+        tmp_path, monkeypatch):
+    store, cfg_path, _, upload = _ceremony(tmp_path)
+    published = tmp_path / f"m1_bar_{CID}.json"
+    real_os = state_module.os
+    real_atomic_json = control.atomic_json
+    fsync_calls = 0
+
+    def fail_directory_fsync(fd):
+        nonlocal fsync_calls
+        fsync_calls += 1
+        if fsync_calls == 2:
+            raise OSError("private directory fsync detail")
+        return real_os.fsync(fd)
+
+    class PosixAtomicJsonOs:
+        """Exercise atomic_json's directory fsync branch on Windows."""
+        name = "posix"
+        O_DIRECTORY = 0
+
+        def __getattr__(self, name):
+            return getattr(real_os, name)
+
+        def fsync(self, fd):
+            return fail_directory_fsync(fd)
+
+        def open(self, path, flags, *args):
+            if Path(path) == published.parent and flags == real_os.O_RDONLY:
+                return real_os.open(published, real_os.O_RDONLY)
+            return real_os.open(path, flags, *args)
+
+    def atomic_json_with_posix_directory_fsync(path, value):
+        monkeypatch.setattr(state_module, "os", PosixAtomicJsonOs())
+        try:
+            return real_atomic_json(path, value)
+        finally:
+            monkeypatch.setattr(state_module, "os", real_os)
+
+    monkeypatch.setattr(control, "atomic_json", atomic_json_with_posix_directory_fsync)
+    with pytest.raises(CeremonyError, match="publication uncertain"):
+        _inject(store, cfg_path, upload)
+    assert fsync_calls == 2
+    assert published.is_file()
+    assert (tmp_path / f"m1_claim_{CID}").is_file()
+    source = OperatorInputSource(tmp_path, boot_id=BOOT)
+    source.activate(OPERATOR_INPUT_SOURCE, ceremony_id=CID)
+    assert source.poll().close == 44001.0
+    monkeypatch.setattr(control, "atomic_json", real_atomic_json)
+    duplicate = _write(upload, _bar())
+    with pytest.raises(CeremonyError, match="already injected"):
+        _inject(store, cfg_path, duplicate)
 
 
 def test_claim_close_failure_is_publication_uncertain_and_claim_is_kept(
@@ -318,3 +392,45 @@ def test_inject_cli_missing_bar_file_fails_closed_without_traceback(tmp_path, ca
     ])
     assert result == 2
     assert capsys.readouterr().out.strip() == "inject refused: bad upload path"
+
+
+def test_malformed_ceremony_id_cannot_escape_state_dir_or_delete_protected_file(tmp_path):
+    store, cfg_path, _, _ = _ceremony(tmp_path)
+    protected = tmp_path.parent / "protected.json"
+    protected.write_bytes(b"protected-bytes")
+    with pytest.raises(CeremonyError, match="bad upload path"):
+        control.inject(store, cfg_path, ceremony_id="x/../../protected", boot_id="wrong",
+                       contract="MYMZ6", time=TARGET.isoformat(), bar_file=protected,
+                       now=TARGET + timedelta(seconds=60))
+    assert protected.read_bytes() == b"protected-bytes"
+
+
+def test_target_path_cannot_bypass_symlink_at_canonical_upload_name(
+        tmp_path, monkeypatch):
+    store, cfg_path, _, upload = _ceremony(tmp_path)
+    upload.unlink()
+    target = tmp_path / "protected.json"
+    target.write_text(json.dumps(_bar()), encoding="utf-8")
+    real_symlink = True
+    try:
+        upload.symlink_to(target)
+    except OSError:
+        real_symlink = False
+        original_is_symlink = Path.is_symlink
+        original_resolve = Path.resolve
+        monkeypatch.setattr(
+            Path, "is_symlink",
+            lambda self: self == upload or original_is_symlink(self),
+        )
+        monkeypatch.setattr(
+            Path, "resolve",
+            lambda self, *args, **kwargs: target if self == upload
+            else original_resolve(self, *args, **kwargs),
+        )
+    before = target.read_bytes()
+    with pytest.raises(CeremonyError, match="bad upload path"):
+        control.inject(store, cfg_path, ceremony_id=CID, boot_id="wrong",
+                       contract="MYMZ6", time=TARGET.isoformat(), bar_file=target,
+                       now=TARGET + timedelta(seconds=60))
+    assert target.read_bytes() == before
+    assert upload.is_symlink() or not real_symlink
