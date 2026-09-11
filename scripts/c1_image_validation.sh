@@ -870,7 +870,10 @@ for p in data.glob("*.json"):
 print("ok")
 PY
   fi
-  if [[ "$d8ok" -eq 1 ]]; then record_pass D8 "boot_id changed; generation+1; lock initialized"
+  # The restarted daemon must still be running (logs and bind-mounted state survive
+  # a stopped container, so the assertions above cannot tell on their own).
+  container_alive c1-D8b || d8ok=0
+  if [[ "$d8ok" -eq 1 ]]; then record_pass D8 "boot_id changed; generation+1; lock initialized; alive"
   else
     evidence_log "$LOG_DIR/D8.fail.log" "$LOG_DIR/D8a.state" "$LOG_DIR/D8b.state" \
       "$LOG_DIR/D8a.err" "$LOG_DIR/D8b.err" "$LOG_DIR/D8a.log" "$LOG_DIR/D8b.log"
