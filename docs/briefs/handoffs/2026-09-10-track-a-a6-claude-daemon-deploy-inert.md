@@ -21,7 +21,7 @@ Currency: `git fetch origin main`; SHA recorded; tree clean and equal to `origin
 ## 0.5. Clarifications (halt on ambiguity)
 
 - If the daemon volume already holds `/data/c1_m1_stage1_state.json` with any ceremony in an unresolved state (`EVALUATED`/`SEND_RESERVED`/`EMITTED`/`TRANSPORT_UNKNOWN`, including under `CLOSED.previous_state`): do not deploy; return `BLOCKED — plan-itself-wrong` (track stop rule; reconciliation is a separate review).
-- If §A4-D recorded a **pending write** (the A1b image needs config keys not yet on the volume — an endpoint, a credential), Step 2.2b stages them before the deploy and the operator performs the put; the agent never handles the values. If the operator is absent, `NEEDS_CONTEXT`.
+- If §A4-D recorded a **pending write** (the A1b image needs config keys not yet on the volume — an endpoint, a credential — or, under the ratified option D, the value change `poll_interval_s: 1`, which is always pending because the volume holds the example value 5 and the loop caches it at startup), Step 2.2b stages them before the deploy and the operator performs the put; the agent never handles the values. If the operator is absent, `NEEDS_CONTEXT`.
 - If the deploy's health wait fails on the `WAIT:` guard even though the config exists, do **not** apply a command override (the 2026-07-31 residual class); investigate logs and return.
 
 ## 1. Context and deliverable
@@ -51,7 +51,7 @@ From the repo root on `main` at the merge SHA: `fly deploy . --config deploy/c1_
 
 ### Step 2.5 — Verify inert
 - `fly logs` → `daemon up bind=… emit_enabled=false boot_id=…`; no `b1_post` / `m1_b1_post` lines; no source-connect lines.
-- `curl -sS https://c1-signal-daemon.fly.dev/` → `emit_enabled:false`, `effective_emit:false`, `strategy:"NullStrategy"`, `connected:false`, `feed_healthy:false`, `ceremony_state:"DISABLED"`, `feed_mode` = the A1b-defined disconnected value, `boot_id` new.
+- `curl -sS https://c1-signal-daemon.fly.dev/` → `poll_interval_s:1` (the running value, reported by the A1b heartbeat field; any other value is a NO-GO for A7 and the config is re-staged before proceeding), `emit_enabled:false`, `effective_emit:false`, `strategy:"NullStrategy"`, `connected:false`, `feed_healthy:false`, `ceremony_state:"DISABLED"`, `feed_mode` = the A1b-defined disconnected value, `boot_id` new.
 - In-container `python ops/c1_signal_daemon/m1_stage1_control.py status --state /data/c1_m1_stage1_state.json` → `effective_emit:false`.
 - State file, two cases decided by what A4 (and Step 2.2) found on the volume. **No journal before this deploy** (expected: the pre-#332 image never wrote one): `CeremonyStore.boot()` creates it fresh — `schema_version` 1, `generation` **0**, `boot_id` = this boot, `enabled` false, `active` null, empty `ceremonies`/`tombstones`/`watermarks`, and the `.lock` marker reads `initialized`. **Journal already present:** `generation` = previous + 1, `enabled` false, `active` null, prior `READY`/`DISABLED` ceremonies closed with `boot_changed` tombstones, `.lock` marker intact. A fresh file at generation 0 when A4 recorded an existing journal means the marker was lost and the store re-initialized — that is a `FALSIFIED`, not a pass.
 - Listener side: last ledger `seq` unchanged vs 2.1 → **no signal on boot**.
