@@ -35,10 +35,11 @@ def _load_boundaries_maps(path: Path) -> dict:
             "APP_LAYER_PREFIX",
             "GOVERNANCE_PREFIXES",
             "SCRIPTS_LAYER",
+            "FLAT_IMPORT_ROOTS",
         ):
             continue
         out[name.id] = ast.literal_eval(node.value)
-    missing = {"APP_LAYER_PREFIX", "GOVERNANCE_PREFIXES", "SCRIPTS_LAYER"} - set(out)
+    missing = {"APP_LAYER_PREFIX", "GOVERNANCE_PREFIXES", "SCRIPTS_LAYER", "FLAT_IMPORT_ROOTS"} - set(out)
     if missing:
         raise ValueError(f"check_boundaries.py missing assignments: {sorted(missing)}")
     return out
@@ -59,6 +60,7 @@ def _parse_simple_yml(text: str) -> dict:
     """Minimal YAML subset for this file only (no PyYAML required)."""
     app: dict[str, str] = {}
     gov: list[str] = []
+    roots: list[str] = []
     scripts: dict[str, str] = {}
     section: str | None = None
     for raw in text.splitlines():
@@ -73,12 +75,15 @@ def _parse_simple_yml(text: str) -> dict:
             app[k.strip()] = v.strip()
         elif section == "governance_prefixes" and line.strip().startswith("- "):
             gov.append(line.strip()[2:].strip())
+        elif section == "flat_import_roots" and line.strip().startswith("- "):
+            roots.append(line.strip()[2:].strip())
         elif section == "scripts_layer" and ":" in line:
             k, v = line.strip().split(":", 1)
             scripts[k.strip()] = v.strip()
     return {
         "app_layer_prefix": app,
         "governance_prefixes": gov,
+        "flat_import_roots": roots,
         "scripts_layer": scripts,
     }
 
@@ -97,6 +102,10 @@ def compare(boundaries: dict, yml: dict) -> list[str]:
         problems.append(
             f"GOVERNANCE_PREFIXES drift: boundaries={gov_b!r} yml={gov_y!r}"
         )
+    roots_b = tuple(boundaries["FLAT_IMPORT_ROOTS"])
+    roots_y = tuple(yml.get("flat_import_roots") or ())
+    if roots_b != roots_y:
+        problems.append(f"FLAT_IMPORT_ROOTS drift: boundaries={roots_b!r} yml={roots_y!r}")
     scr_b = boundaries["SCRIPTS_LAYER"]
     scr_y = yml.get("scripts_layer") or {}
     if scr_b != scr_y:

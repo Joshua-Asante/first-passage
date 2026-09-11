@@ -167,6 +167,17 @@ _66 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 Layer roots are import roots. Pytest configures them in `pyproject.toml`;
 standalone module commands need the relevant root on `PYTHONPATH`.
 
+The import-boundary scanner resolves repository-qualified imports and the flat
+roots `core`, `lab`, `ops`, `ops/c1_rail`, `ops/c1_signal_daemon`, and `scripts`
+(the latter supports direct script execution). These roots mirror pytest and
+script bootstraps; `FLAT_IMPORT_ROOTS` in `scripts/check_boundaries.py` is checked
+against `scripts/repo_map_layers.yml`. Imported submodules are resolved to their
+actual paths, including mixed-layer scripts. Cross-layer name collisions fail
+with candidate paths; same-layer duplicates remain legal. Unknown external
+roots are ignored, while unresolved imports under known first-party roots fail.
+Relative imports resolve from their source package and use the same legal edges.
+Dynamic imports and filesystem reads remain outside the AST scanner's coverage.
+
 | Module / use | Required import root |
 |---|---|
 | `c1_rail_arm`, other flat listener tools | `ops/c1_rail` (follow the rail runbook for commands) |

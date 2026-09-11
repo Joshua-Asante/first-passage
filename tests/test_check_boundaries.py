@@ -79,58 +79,14 @@ def test_core_must_not_import_other_layers():
         assert ("core", tgt) not in cb.LEGAL_EDGES
 
 
-# ── _first_party_targets: AST import extraction ────────────────────
-
-def test_plain_and_aliased_imports_are_extracted():
-    index = {"labmod": "lab"}
-    targets = cb._first_party_targets(ast.parse("import labmod as lm\n"), index)
-    assert targets == [(1, "labmod", "lab")]
-
-
-def test_from_import_is_extracted():
-    index = {"core_pkg": "core"}
-    targets = cb._first_party_targets(ast.parse("from core_pkg.sub import thing\n"), index)
-    assert targets == [(1, "core_pkg", "core")]
-
-
-def test_in_function_import_is_detected():
-    # The lazy/in-function form a line-grep missed at parity_check.py — ast.walk
-    # must still see it.
-    src = "def f():\n    import labmod\n    return labmod\n"
-    targets = cb._first_party_targets(ast.parse(src), {"labmod": "lab"})
-    assert (2, "labmod", "lab") in targets
-
-
-def test_relative_import_is_skipped():
-    # Relative imports are same-layer by construction → never a cross-layer edge.
-    assert cb._first_party_targets(ast.parse("from . import sibling\n"),
-                                   {"sibling": "core"}) == []
-
-
-def test_third_party_import_is_ignored():
-    # Only first-party (in-index) names count; stdlib/third-party are skipped.
-    assert cb._first_party_targets(ast.parse("import numpy\nimport ast\n"),
-                                   {"labmod": "lab"}) == []
-
-
-def test_illegal_edge_is_detectable_from_building_blocks():
-    # Compose the pieces main() uses: a core file importing a lab module is the
-    # isolation violation, and the (src, tgt) pair is NOT in LEGAL_EDGES.
-    src_layer = cb.layer_of_file("core/widget.py")
-    targets = cb._first_party_targets(ast.parse("import labmod\n"), {"labmod": "lab"})
-    (_, _, tgt_layer), = targets
-    assert (src_layer, tgt_layer) == ("core", "lab")
-    assert (src_layer, tgt_layer) not in cb.LEGAL_EDGES
-
-
 # ── build_index on the real tree ───────────────────────────────────
 
 def test_build_index_has_no_collisions_and_maps_known_modules():
     index, collisions = cb.build_index()
     assert collisions == [], collisions
-    assert index.get("portfolio_mc") == "core"
-    assert index.get("firm_rules") == "core"
-    assert index.get("cli") == "ops"  # accounts.py retired substrate Phase 2
+    assert index.get("portfolio_mc") == ("core/portfolio_mc.py",)
+    assert index.get("firm_rules") == ("core/firm_rules.py",)
+    assert index.get("cli") == ("ops/cli.py",)  # accounts.py retired substrate Phase 2
 
 
 # ── CLI: the real repo currently honours the contract ──────────────
@@ -162,3 +118,106 @@ def test_parse_failure_message_is_not_labeled_illegal():
         )
         assert "UNPARSEABLE" in labeled
         assert "ILLEGAL" not in labeled
+
+
+@pytest.mark.parametrize("statement,target", [
+    ("import ops.runner as run", "ops/runner.py"),
+    ("from ops import runner as run", "ops/runner.py"),
+    ("def f():\n    from c1_rail import listener", "ops/c1_rail/listener.py"),
+    ("import listener", "ops/c1_rail/listener.py"),
+    ("import daemon", "ops/c1_signal_daemon/daemon.py"),
+    ("from scripts import lock_event_hook", "scripts/lock_event_hook.py"),
+    ("import scripts.lock_event_hook", "scripts/lock_event_hook.py"),
+])
+def test_synthetic_import_paths_fail_closed(tmp_path, monkeypatch, capsys, statement, target):
+    for rel, source in {"core/source.py": statement, target: ""}.items():
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(source, encoding="utf-8")
+    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    assert cb.main() == 1
+    output = capsys.readouterr().out
+    assert "ILLEGAL core->ops" in output
+    assert target in output
+
+
+def test_unresolved_first_party_is_not_third_party(tmp_path, monkeypatch, capsys):
+    (tmp_path / "core").mkdir()
+    (tmp_path / "core/source.py").write_text("import ops.missing\nimport numpy\n", encoding="utf-8")
+    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    assert cb.main() == 1
+    output = capsys.readouterr().out
+    assert "UNRESOLVED first-party import 'ops.missing'" in output
+    assert "numpy" not in output
+
+
+def test_cross_layer_collision_reports_paths(tmp_path, monkeypatch, capsys):
+    for rel in ("core/shared.py", "ops/c1_rail/shared.py"):
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("", encoding="utf-8")
+    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    assert cb.main() == 1
+    output = capsys.readouterr().out
+    assert "NAME COLLISION" in output
+    assert "core/shared.py" in output
+    assert "ops/c1_rail/shared.py" in output
+
+
+def test_same_layer_duplicate_and_relative_imports_pass(tmp_path, monkeypatch):
+    for rel, source in {"ops/shared.py": "", "ops/c1_rail/shared.py": "", "ops/pkg/source.py": "from . import sibling\nfrom .. import shared", "ops/pkg/sibling.py": ""}.items():
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(source, encoding="utf-8")
+    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    assert cb.main() == 0
+
+
+@pytest.mark.parametrize("statement", [
+    "import portfolio_mc as mc\nimport numpy\nimport ast",
+    "from core import portfolio_mc as mc",
+    "def f():\n    from portfolio_mc import run",
+])
+def test_legal_core_and_external_imports_pass(tmp_path, monkeypatch, statement):
+    (tmp_path / "core").mkdir()
+    (tmp_path / "ops").mkdir()
+    (tmp_path / "core/portfolio_mc.py").write_text("def run(): pass", encoding="utf-8")
+    (tmp_path / "ops/source.py").write_text(statement, encoding="utf-8")
+    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    assert cb.main() == 0
+
+
+def test_relative_import_of_mixed_layer_script_is_checked(tmp_path, monkeypatch, capsys):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/check_brief.py").write_text("from . import lock_event_hook", encoding="utf-8")
+    (tmp_path / "scripts/lock_event_hook.py").write_text("", encoding="utf-8")
+    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    assert cb.main() == 1
+    assert "ILLEGAL governance->ops" in capsys.readouterr().out
+
+
+def test_unresolved_known_flat_package_fails(tmp_path, monkeypatch, capsys):
+    (tmp_path / "core/pkg").mkdir(parents=True)
+    (tmp_path / "core/pkg/__init__.py").write_text("", encoding="utf-8")
+    (tmp_path / "core/source.py").write_text("import pkg.missing", encoding="utf-8")
+    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    assert cb.main() == 1
+    assert "UNRESOLVED first-party import 'pkg.missing'" in capsys.readouterr().out
+
+
+def test_beyond_top_level_relative_import_is_distinct(tmp_path, monkeypatch, capsys):
+    (tmp_path / "core").mkdir()
+    (tmp_path / "core/source.py").write_text("from ... import sibling", encoding="utf-8")
+    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    assert cb.main() == 1
+    output = capsys.readouterr().out
+    assert "INVALID RELATIVE" in output
+    assert "UNRESOLVED" not in output
+
+
+def test_missing_relative_package_fails(tmp_path, monkeypatch, capsys):
+    (tmp_path / "core/pkg").mkdir(parents=True)
+    (tmp_path / "core/pkg/source.py").write_text("from .missing import thing", encoding="utf-8")
+    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    assert cb.main() == 1
+    assert "UNRESOLVED first-party import 'core.pkg.missing'" in capsys.readouterr().out
