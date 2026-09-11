@@ -32,6 +32,14 @@ The 26-letter ceiling remains unresolved and needs an operator scheme decision;
 with a free letter are renumbered at merge; this does not solve exhausted dates or
 license rewriting archived entries. Implementation: [`roll_sessions.py`](../scripts/roll_sessions.py).
 
+**PR numbers are era-scoped.** The public repo was seeded fresh on 2026-08-15 and its
+pull-request numbers restarted at #1, so entries dated before 2026-08-15 cite
+`first-passage-archive` numbers that now collide with live ones (two different merges answer
+to `#308`). From here on cite archive-era PRs as `first-passage-archive#N` and live PRs as
+`first-passage#N` in this header and in any document that mixes eras; resolve an ambiguous
+historical number by merge commit or branch name, never by number alone. Owner:
+[public-visibility ADR, addendum 2026-09-11](adr/2026-08-14-repo-public-visibility-transition.md#addendum-2026-09-11--pr-number-era-convention).
+
 ---
 
 

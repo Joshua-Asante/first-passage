@@ -324,9 +324,59 @@ $ grep -A1 "Superseded-in-part-by" docs/adr/2026-07-01-guardian-pyport-public-tr
 
 ---
 
+## Addendum 2026-09-11 — PR-number era convention
+
+**Does not amend §2 / §4 / §5.** Records a consequence of §2's fresh-repo transplant that the
+ADR did not name, and fixes the citation convention going forward. No retro-edit of any dated
+artifact.
+
+**Reads (2026-09-11, origin/main `2449cfc`):** `gh pr list --state all --limit 1` → highest live
+PR is #344. `git log --all --oneline --grep="Merge pull request #308"` → two merges: `1316290`
+(Databento research stack, 2026-07-11, archive-era numbering) and `32b31d5` (Select-campaign
+consolidation, 2026-09-05, live numbering). `git grep -c -E "PR #[0-9]+"` over tracked
+`*.md|*.py|*.yml|*.jsonl` → 699 references in 199 files, 519 of them with a number in the
+collision range 1–344; 47 references already use the full `first-passage-archive` pull URL, 91
+the live pull URL, none the `owner/repo#N` form. First observed misresolution: the 2026-09-11
+memory-consolidation pass found a memory citing "PR #308 merged 2026-07-11" that resolves on
+GitHub to the 2026-09-05 PR.
+
+**The consequence.** The public repo was seeded fresh on 2026-08-15 (§2), so its pull-request
+numbers restarted at #1. Every PR number cited in an artifact dated before 2026-08-15 belongs to
+`first-passage-archive`, and the range in which an unqualified number is ambiguous grows by one
+with every live PR.
+
+**Convention (forward-only).**
+1. An archive-era PR is cited as `first-passage-archive#N` (GitHub auto-links this form) or by
+   its full archive pull URL. A bare `PR #N` is never used for one from here on.
+2. A live PR may be cited bare only inside an artifact whose own date is on or after 2026-08-15
+   and that cites no archive-era PR. Documents that mix eras — `docs/SESSIONS.md`, `STATE.md`,
+   `docs/operational_rules.md`, `CLAUDE.md`, session memory — use `first-passage#N`.
+3. An ambiguous historical number is resolved by merge commit or branch name, never by number.
+4. Existing references in dated artifacts stay as written (Rule 14 class 1: frozen bodies are
+   not edited; the date disambiguates). The reader-intercept is the paragraph in the
+   `docs/SESSIONS.md` living header, which is the document that mixes eras most (80 references).
+
+**Boundary.** No gate is added. A report-only audit check under `make audit` (flag an
+unqualified number in the collision range inside an era-mixing living document) is owed only if
+a second documented misresolution occurs; record it against this addendum.
+
+**Audit hooks (runnable; none matches this addendum's own text).**
+
+```bash
+# Collision witness — expect exactly 2 lines, one per era
+git log --all --oneline --grep="Merge pull request #308"
+# Reader-intercept present in the SESSIONS living header — expect 1
+grep -c "^\*\*PR numbers are era-scoped" docs/SESSIONS.md
+# Convention uptake — baseline 0 on 2026-09-11; expect growth, never regression to 0 once used
+git grep -c -E "first-passage(-archive)?#[0-9]+" -- 'docs/*.md' 'STATE.md' | awk -F: '{s+=$2} END {print s+0}'
+```
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-14 | Initial authoring | Joshua + claude.ai |
 | 2026-08-22 | **Operator Accept.** Status `Proposed` → `Accepted`. Phase 1 remediation and the fresh-repo transplant already executed; this public clone is that seed. Status field lagged the executed work. | Joshua (Accept) + Cursor (record) |
+| 2026-09-11 | **Addendum — PR-number era convention.** Numbers restarted at #1 with the §2 transplant; citation rule (`first-passage-archive#N` / `first-passage#N`), no retro-edits, reader-intercept in the `docs/SESSIONS.md` living header. Does not amend §2 / §4 / §5. | Joshua (request) + Claude Code (record) |
