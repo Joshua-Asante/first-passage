@@ -1,11 +1,11 @@
 # Operator + Claude handoff — Track A / A7: the attended Stage 1 dry-run (one ceremony)
 
-**Type:** cc_handoff (multi-step; attended; the operator runs `enable`)
+**Type:** cc_handoff (multi-step; attended; the operator runs `enable` and `inject`)
 **Date:** 2026-09-10
 **Status:** dispatch only when A3, A5, and A6 are DONE, the A1 decision is ratified and implemented (A1b), and the operator is at the console for the whole window
 **Spawn target:** Claude Code (local console session with `fly` auth) with the operator present
 **Parent:** [Track A plan](../../superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md) §3
-**Authority:** the listener stays `dry_run=true`; the sender is never invoked; exactly one ceremony; the operator enables it. The agent runs read-only preflight, `prepare`, verification, and `close`. **No `--arm`. No hand-POST. No retry.**
+**Authority:** the listener stays `dry_run=true`; the sender is never invoked; exactly one ceremony; the operator enables it **and injects the bar** (`inject` is operator-only, like `enable`; an agent-run injection invalidates the ceremony — Steps 2.6b, §5, §7). The agent runs read-only preflight, `prepare`, verification, and `close`, and drafts both operator commands. **No `--arm`. No hand-POST. No retry.**
 
 ## 0. Rule 0 reads (Phase 0 — report before touching either host)
 
