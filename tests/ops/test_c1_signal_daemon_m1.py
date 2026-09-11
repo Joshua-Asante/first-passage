@@ -27,13 +27,15 @@ def cfg():
                 m1_test={"enabled": False})
 
 
-def manifest():
+def manifest(**changes):
     from c1_rail.m1_stage1_contract import contract_sha256
-    return dict(ceremony_id="offline-001", target=TARGET.isoformat(),
-                expires=(TARGET + timedelta(seconds=140)).isoformat(),
-                contract_sha256=contract_sha256(), expected_qty=1,
-                preflight_sha256="a" * 64,
-                source={"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": "MYM1!"})
+    value = dict(ceremony_id="offline-001", target=TARGET.isoformat(),
+                 expires=(TARGET + timedelta(seconds=140)).isoformat(),
+                 contract_sha256=contract_sha256(), expected_qty=1,
+                 preflight_sha256="a" * 64, venue_contract="MYMZ6",
+                 source={"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": "MYM1!"})
+    value.update(changes)
+    return value
 
 
 def prepared(tmp_path):
@@ -100,8 +102,9 @@ def active_loop(tmp_path, outcome=(200, '{"listener_id":"fixture-1"}')):
     class Source:
         connected = True
         binding = manifest()["source"]
-        def activate(self, binding):
+        def activate(self, binding, *, ceremony_id):
             assert binding == self.binding
+            assert ceremony_id == "offline-001"
         def deactivate(self):
             pass
         def poll(self):
@@ -303,15 +306,22 @@ def test_response_receipt_redacts_body_and_retains_bar_fingerprint(tmp_path):
     assert item["response"] == {"http_status": 409, "response_kind": "rejected",
                                 "body_sha256": hashlib.sha256(b"private-equity-token").hexdigest()}
     assert item["bar"] == {"timestamp": TARGET.isoformat(), "open": 41000.0,
-                           "high": 41002.0, "low": 40999.0, "close": 41001.0, "volume": 3.0}
+                           "high": 41002.0, "low": 40999.0, "close": 41001.0,
+                           "volume": 3.0, "venue_contract": "MYMZ6"}
     assert len(item["bar_sha256"]) == 64
 
 
 def test_cli_prepare_enable_close_are_control_only(tmp_path, monkeypatch, capsys):
     from c1_signal_daemon import m1_stage1_control as control
-    m, store, path = prepared(tmp_path)
+    from c1_rail.m1_stage1_contract import OPERATOR_INPUT_SOURCE
+    m = api()
+    store = m.CeremonyStore(tmp_path / "state.json")
+    store.boot("boot-A")
+    path = tmp_path / "config.json"
+    path.write_text(json.dumps(cfg()))
+    value = manifest(ceremony_id="operator-001", source=OPERATOR_INPUT_SOURCE)
     reviewed = tmp_path / "manifest.json"
-    reviewed.write_text(json.dumps(manifest()))
+    reviewed.write_text(json.dumps(value))
     class Clock:
         @staticmethod
         def now(tz):
@@ -323,9 +333,10 @@ def test_cli_prepare_enable_close_are_control_only(tmp_path, monkeypatch, capsys
         raise AssertionError("control CLI must never send")
     monkeypatch.setattr(ListenerClient, "post_b1", forbidden)
     common = ["--state", str(store.path), "--config", str(path), "--boot-id", "boot-A",
-              "--manifest", str(reviewed), "--ceremony-id", "offline-001"]
-    assert control.main(["enable", *common]) == 2
-    assert store.read()["enabled"] is False
+              "--manifest", str(reviewed), "--ceremony-id", "operator-001"]
+    assert control.main(["prepare", *common]) == 0
+    assert control.main(["enable", *common]) == 0
+    assert store.read()["enabled"] is True
     assert control.main(["close", *common]) == 0
     assert store.read()["enabled"] is False
     assert control.main(["status", *common]) == 0

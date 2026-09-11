@@ -1,13 +1,10 @@
-"""Daemon entrypoint — feed + evaluate loop + health HTTP.
-
-No approved live source: the runtime stays on NullStrategy and an unavailable
-bar source regardless of stale ceremony configuration.
-"""
+"""Daemon entrypoint for the bounded operator-input evaluate loop and health HTTP."""
 from __future__ import annotations
 
 import argparse
 import json
 import logging
+import math
 import sys
 import threading
 import time
@@ -23,31 +20,16 @@ for _p in (str(_REPO_ROOT / "ops"), str(_DAEMON_DIR), str(_REPO_ROOT)):
         sys.path.insert(0, _p)
 
 from c1_signal_daemon.evaluate_loop import EvaluateLoop  # noqa: E402
-from c1_signal_daemon.feed import Bar  # noqa: E402
 from c1_signal_daemon.http_status import serve_health  # noqa: E402
 from c1_signal_daemon.listener_client import ListenerClient  # noqa: E402
+from c1_signal_daemon.m1_stage1 import M1Coordinator  # noqa: E402
+from c1_signal_daemon.operator_input_source import (  # noqa: E402
+    OperatorInputSource,
+    cleanup_orphans,
+)
 from c1_signal_daemon.strategy_protocol import NullStrategy  # noqa: E402
 
 log = logging.getLogger("c1_signal_daemon")
-
-
-class IdleBarSource:
-    """Unavailable source until a replacement is explicitly approved and built."""
-
-    feed_mode = "unavailable"
-
-    def __init__(self) -> None:
-        self._connected = False
-
-    @property
-    def connected(self) -> bool:
-        return self._connected
-
-    def poll(self) -> Bar | None:
-        return None
-
-    def deactivate(self):
-        pass
 
 
 def load_config(path: Path) -> dict:
@@ -73,6 +55,9 @@ def load_config(path: Path) -> dict:
         raise SystemExit("path_token must be len >= 32")
     if type(cfg["emit_enabled"]) is not bool or type(cfg["m1_test"]["enabled"]) is not bool:
         raise ValueError("emit and ceremony enabled flags must be booleans")
+    interval = cfg["poll_interval_s"]
+    if (type(interval) not in (int, float) or not math.isfinite(interval) or interval <= 0):
+        raise ValueError("poll_interval_s must be finite and positive")
     if cfg["strategy"] not in ("null", "m1_stage1_test"):
         raise ValueError("unknown strategy")
     if cfg["m1_test"]["enabled"] or cfg["emit_enabled"]:
@@ -93,11 +78,16 @@ def build_loop(config_path, *, boot_id, transport=None):
     cfg = load_config(config_path)
     store = CeremonyStore(cfg["m1_test"].get("state_path", DEFAULT_STATE_PATH))
     store.boot(boot_id)
+    state_dir = store.path.parent
+    cleanup_orphans(state_dir)
+    source = OperatorInputSource(state_dir, boot_id=boot_id)
+    coordinator = M1Coordinator(store, config_path, boot_id=boot_id)
     return EvaluateLoop(
-        source=IdleBarSource(),
+        source=source,
         client=ListenerClient(base_url=cfg["listener_base_url"], path_token=cfg["path_token"],
                               transport=transport),
-        strategy=NullStrategy(), bar_period_s=60, emit_enabled=False, boot_id=boot_id)
+        strategy=NullStrategy(), bar_period_s=60, emit_enabled=False,
+        coordinator=coordinator, boot_id=boot_id)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -120,11 +110,13 @@ def main(argv: list[str] | None = None) -> int:
 
 def run_daemon(config_path, cfg):
     loop = build_loop(config_path, boot_id=uuid.uuid4().hex)
+    interval = float(cfg["poll_interval_s"])
 
     httpd = serve_health(
         host=str(cfg["bind_host"]),
         port=int(cfg["bind_port"]),
-        get_heartbeat=lambda: loop.heartbeat(datetime.now(timezone.utc)),
+        get_heartbeat=lambda: loop.heartbeat(datetime.now(timezone.utc),
+                                             poll_interval_s=interval),
     )
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
@@ -135,14 +127,13 @@ def run_daemon(config_path, cfg):
         loop.heartbeat().boot_id,
     )
 
-    interval = float(cfg["poll_interval_s"])
     try:
         while True:
             record = loop.step()
             disabled = (record.get("action") == "suppress"
                         and (record.get("reason") == "ceremony_disabled"
                              or (record.get("reason") == "feed_unhealthy"
-                                 and loop._source.feed_mode == "unavailable")))
+                                 and not loop._source.connected)))
             if record.get("action") != "idle" and not disabled:
                 log.info("step %s", record)
             time.sleep(interval)
