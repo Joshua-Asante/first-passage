@@ -429,8 +429,9 @@ PY
     local body_b; body_b="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar_b','close':42000.0,'stop_dist_pts':1.0}))")"
     if [[ "$l5b" -eq 1 ]]; then
       http_post_in c1-L4 "http://127.0.0.1:8080/c1/${tok}" "$body_b" "$LOG_DIR/L5b.out" 2>"$LOG_DIR/L5b.post.err" || l5b=0
-      local rbody; rbody="$(tail -n +2 "$LOG_DIR/L5b.out")"
-      grep -q 'dry_run: computed, not sent' <<<"$rbody" || l5b=0
+      # The helper can fail before creating its output (e.g. docker cp). Read
+      # under a guard so missing response evidence fails this check, not the run.
+      grep -q 'dry_run: computed, not sent' "$LOG_DIR/L5b.out" || l5b=0
       head -1 "$LOG_DIR/L5b.out" | grep -qx 200 || l5b=0
       docker exec c1-L4 cat /data/c1_rail_events.jsonl >"$LOG_DIR/L5b.events" 2>/dev/null \
         || cp "$d4/c1_rail_events.jsonl" "$LOG_DIR/L5b.events" || l5b=0
@@ -790,7 +791,8 @@ PY
   d6_boot="$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['boot_id'])" "$state_file" 2>/dev/null || echo unknown-boot)"
   docker cp "$FIXTURES/ceremony_manifest.json" c1-D6:/tmp/ceremony_manifest.json >/dev/null || d6ok=0
   local d6_cid
-  d6_cid="$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['ceremony_id'])" "$FIXTURES/ceremony_manifest.json")"
+  d6_cid="$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['ceremony_id'])" "$FIXTURES/ceremony_manifest.json")" || d6ok=0
+  [[ -n "$d6_cid" ]] || d6ok=0
   for act in prepare enable; do
     set +e
     docker exec -e PYTHONPATH=/app/ops c1-D6 python -m c1_signal_daemon.m1_stage1_control "$act" \
@@ -930,16 +932,22 @@ PY
   local d9ok=1
   # Ephemeral pip needs network (brief §0.5(A)); boot checks stay --network none.
   mkdir -p "${HOME:-/root}/.cache/pip"
-  set +e
-  docker run --rm \
-    -v "$ROOT:/work:ro" \
-    -v "${HOME:-/root}/.cache/pip:/root/.cache/pip" \
-    -w /work python:3.12-slim \
-    bash -lc "python -m pip install --require-hashes -r requirements-ops.lock >/tmp/pip.log 2>&1 && python -m pytest -q ${d9_list[*]}" \
-    >"$LOG_DIR/D9_slim.log" 2>&1
-  local slim_rc=$?
-  set -e
+  local slim_rc=1
+  if [[ "${#d9_list[@]}" -gt 0 ]]; then
+    set +e
+    docker run --rm \
+      -v "$ROOT:/work:ro" \
+      -v "${HOME:-/root}/.cache/pip:/root/.cache/pip" \
+      -w /work python:3.12-slim \
+      bash -lc "python -m pip install --require-hashes -r requirements-ops.lock >/tmp/pip.log 2>&1 && python -m pytest -q ${d9_list[*]}" \
+      >"$LOG_DIR/D9_slim.log" 2>&1
+    slim_rc=$?
+    set -e
+  else
+    echo "No focused test paths selected; refusing unrestricted pytest discovery" >"$LOG_DIR/D9_slim.log"
+  fi
   [[ "$slim_rc" -eq 0 ]] || d9ok=0
+  grep -Eq '(^|[[:space:]])[1-9][0-9]* passed' "$LOG_DIR/D9_slim.log" || d9ok=0
   # Daemon-image subset: files whose imports resolve from /app/ops alone (the
   # listener-importing tests and the image-manifest test read the repo tree and
   # run in the slim cell only). The subprocess lock test prepends a nonexistent
