@@ -610,12 +610,18 @@ assert locks, f"owner.lock missing; dir={listing}"
 print(json.dumps({"path":sp.name,"boot_id":state["boot_id"],"generation":state.get("generation"),
                   "inode":sp.stat().st_ino,"owner":locks[0].name,"dir":listing}, sort_keys=True))
 PY
-  python3 "$LOG_DIR/D4_state.py" "$d4" >"$LOG_DIR/D4.state" 2>"$LOG_DIR/D4.state.err" || d4ok=0
-  # Also try the docker-cp snapshot if the bind-mount view failed.
-  if [[ "$d4ok" -ne 1 && -d "$LOG_DIR/D4_data_cp" ]]; then
-    python3 "$LOG_DIR/D4_state.py" "$LOG_DIR/D4_data_cp" >"$LOG_DIR/D4.state.cp" 2>"$LOG_DIR/D4.state.cp.err" && d4ok=1 || true
+  # State check tracked separately: the docker-cp fallback may recover only THIS
+  # check, never an earlier health/log failure (Codex P1, 2026-09-11).
+  local d4state=1
+  python3 "$LOG_DIR/D4_state.py" "$d4" >"$LOG_DIR/D4.state" 2>"$LOG_DIR/D4.state.err" || d4state=0
+  if [[ "$d4state" -ne 1 && -d "$LOG_DIR/D4_data_cp" ]]; then
+    python3 "$LOG_DIR/D4_state.py" "$LOG_DIR/D4_data_cp" >"$LOG_DIR/D4.state.cp" 2>"$LOG_DIR/D4.state.cp.err" && d4state=1 || true
   fi
+  [[ "$d4state" -eq 1 ]] || d4ok=0
   sleep 15
+  # The daemon must still be running after the quiet interval; a crash-looping
+  # image would otherwise pass the "no step lines" grep trivially.
+  container_alive c1-D4 || d4ok=0
   docker logs c1-D4 >"$LOG_DIR/D4.log" 2>&1 || true
   if grep -E 'step |b1_post|m1_b1_post' "$LOG_DIR/D4.log" >/dev/null; then d4ok=0; fi
   if [[ "$d4ok" -eq 1 ]]; then record_pass D4 "inert boot" "$(cat "$LOG_DIR/D4.health")"
@@ -637,9 +643,12 @@ PY
   http_get_in c1-D5 'http://127.0.0.1:8080/' "$LOG_DIR/D5.get" 2>"$LOG_DIR/D5.get.err" || d5ok=0
   python3 "$LOG_DIR/D4_health.py" "$LOG_DIR/D5.get" >"$LOG_DIR/D5.health" 2>"$LOG_DIR/D5.health.err" || d5ok=0
   sleep 5
+  # Still alive after the interval (Codex P2, 2026-09-11): a daemon that exits on
+  # the stale-enabled config must not validate as "inert".
+  container_alive c1-D5 || d5ok=0
   docker logs c1-D5 >"$LOG_DIR/D5.log" 2>&1 || true
   grep -E 'b1_post|m1_b1_post' "$LOG_DIR/D5.log" >/dev/null && d5ok=0
-  if [[ "$d5ok" -eq 1 ]]; then record_pass D5 "stale-enabled stays inert"
+  if [[ "$d5ok" -eq 1 ]]; then record_pass D5 "stale-enabled stays inert; alive after interval"
   else record_fail D5 "see D5.log"; fi
   stop_rm c1-D5
 
