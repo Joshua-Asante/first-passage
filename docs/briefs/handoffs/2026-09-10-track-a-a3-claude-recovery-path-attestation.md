@@ -13,7 +13,7 @@ Currency: `git fetch origin main`; record the SHA (authoring-time `47972f6`; #33
 
 - `deploy/c1_rail/README.md` — the Status banner, the "A redeploy is not free… Pre-condition 4 is load-bearing" paragraph, and the "On first deploy the machine boots and **waits**" line (the public statement that the recovery path must be known before a deploy).
 - `.claude/skills/c1-rail/SKILL.md` §Agent-session authority, deploy pre-condition 6 ("An expired `armed_until` makes the host refuse to boot, and `fly ssh` needs a booted machine, so a restart cannot fix it") — note that this sentence describes the **pre-fix** behaviour; verify against the code below and say so in the record.
-- `ops/c1_rail/c1_rail_http_server.py::load_config` — the IMPLICIT DISARM block (in-memory disarm on expired/invalid `armed_until`; comment block dated to the 2026-07-31 incident). Then prove the **deployed** build has it: `git show 31fd642:ops/c1_rail/c1_rail_http_server.py | grep -n "IMPLICIT DISARM"` (31fd642 is the commit the acceptance JSON names for release v7).
+- `ops/c1_rail/c1_rail_http_server.py::load_config` — the IMPLICIT DISARM block (in-memory disarm on expired/invalid `armed_until`; comment block dated to the 2026-07-31 incident). Then prove the **deployed** build has it, from the running bytes first: `MSYS_NO_PATHCONV=1 fly ssh console -a c1-rail -C "grep -n 'IMPLICIT DISARM' ops/c1_rail/c1_rail_http_server.py"` (read-only; the definitive evidence). Corroborate from history: `git show 31fd642:ops/c1_rail/c1_rail_http_server.py | grep -n "IMPLICIT DISARM"` — `31fd642` (2026-08-19) is a **public** commit, an ancestor of `origin/main` (`gh api repos/Joshua-Asante/first-passage/commits/31fd642` returns it), not archive lineage; if `git show` says `unable to read tree`, the clone is shallow — run `git fetch --unshallow origin` and retry. A shallow-clone failure is never evidence that the build lacks the fix; the in-container grep decides.
 - `docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json` — `code_commit_or_branch` (release v7, machine `e820221a657d28`, image `deployment-01M0DMFSFXVXEHZ27G8VYC0WQK`), the 2026-08-19 note ("the recovery sequence was pulled from history and reviewed before starting anyway, per precondition 6"), and the 2026-07-27 note (restart re-reads the volume config; disarm and restart are two separate actions).
 - `docs/adr/2026-08-07-w6-rail-infra-closures.md` — Related line's RUNBOOK pointer (dead on the public tree by design) and §2 item 3 (prefer `c1_rail_arm.py` / `write_volume_config.py` over hand edits).
 - `docs/ltm/README.md` and `docs/adr/2026-08-14-repo-public-visibility-transition.md` — archive retrieval guidance; `first-passage-archive` pins used across the repo resolve to `5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2`.
@@ -44,7 +44,7 @@ The 2026-07-31 incident bricked the listener host: a lapsed `armed_until` with `
 ## 2. Execution plan
 
 ### Step 2.1 — Code evidence
-Run the two greps (main and `31fd642`); paste the matching line numbers. Gate: both hit. If `31fd642` lacks the block, the deployed build predates the fix — record it as a NO-GO for A5 until A5's own deploy (which carries the fix) and say the recovery procedure is therefore load-bearing for A5's first boot.
+Run the three greps — in-container on the deployed listener, on `origin/main`, and on `31fd642` (after `git fetch --unshallow origin` if the tree is unreadable); paste the matching line numbers. Gate: the in-container grep hits (decisive) and the two history greps corroborate. If the in-container grep does not hit, the deployed build predates the fix — record it as a NO-GO for A5 until A5's own deploy (which carries the fix) and say the recovery procedure is therefore load-bearing for A5's first boot.
 
 ### Step 2.2 — Fly read-only inventory
 Run the read-only commands in §0; paste printed output (Windows `fly ssh` is not used here; these commands do not have the exit-code quirk). Gate: image references for both apps captured.
@@ -68,7 +68,7 @@ Commit on a `claude/*` branch, push, open a PR (Codex reviews; operator merges).
 ## 4. Falsifiable hypothesis
 
 **H:** the deployed listener build contains the implicit-disarm boot path, the private procedure is reachable by the operator at the pinned SHA, and an exact no-build rollback command exists for both apps.
-**Falsifier — reject if** any limb fails: if `git show 31fd642:… | grep "IMPLICIT DISARM"` is empty, then the deployed build lacks the mitigation and A5 is NO-GO until its own deploy; if the archive grep returns no heading, then availability is unproven and A5/A6 are NO-GO; if `fly deploy --help` shows no `--image` form, then the rollback command must be re-derived before A5. **Accept if** all three limbs hold with pasted evidence. Either way the record is written. **Ambiguous** if the archive cannot be read from this machine → `NEEDS_CONTEXT`.
+**Falsifier — reject if** any limb fails: if the in-container `grep 'IMPLICIT DISARM'` on the deployed listener is empty, then the deployed build lacks the mitigation and A5 is NO-GO until its own deploy (a shallow-clone `unable to read tree` on the `31fd642` corroboration is not this limb); if the archive grep returns no heading, then availability is unproven and A5/A6 are NO-GO; if `fly deploy --help` shows no `--image` form, then the rollback command must be re-derived before A5. **Accept if** all three limbs hold with pasted evidence. Either way the record is written. **Ambiguous** if the archive cannot be read from this machine → `NEEDS_CONTEXT`.
 
 ## 5. Forbidden moves
 
@@ -91,7 +91,8 @@ Pass 1 — spec compliance: one new file; no procedure content; no Fly writes in
 ## 10. Audit hooks
 
 ```bash
-git show 31fd642:ops/c1_rail/c1_rail_http_server.py | grep -n "IMPLICIT DISARM"
+MSYS_NO_PATHCONV=1 fly ssh console -a c1-rail -C "grep -n 'IMPLICIT DISARM' ops/c1_rail/c1_rail_http_server.py"
+git show 31fd642:ops/c1_rail/c1_rail_http_server.py | grep -n "IMPLICIT DISARM"   # full-history clone; fetch --unshallow if needed
 grep -n "^## §A3\|^## A3\|Operator access confirmed" docs/notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md
 fly status -a c1-rail | grep -n "Image"
 fly status -a c1-signal-daemon | grep -n "Image"
