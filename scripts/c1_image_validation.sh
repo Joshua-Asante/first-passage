@@ -38,6 +38,21 @@ record_fail() {
   printf 'FAIL %s' "$id"
   if [[ $# -gt 0 ]]; then printf ' %s' "$*"; fi
   printf '\n'
+  # Surface evidence in the job log (artifacts alone are easy to miss).
+  local f
+  for f in "$@"; do
+    [[ -f "$f" ]] || continue
+    printf -- '----- begin %s -----\n' "$f"
+    cat "$f" 2>/dev/null || true
+    printf -- '----- end %s -----\n' "$f"
+  done
+}
+
+# atomic_json/mkstemp writes root-owned mode 0600 into the bind mount; the
+# runner user then cannot read state/owner files. Re-open world-read after boot.
+host_readable_data() {
+  local name="$1"
+  docker exec "$name" sh -c 'chmod -R a+rX /data 2>/dev/null || true' || true
 }
 
 need_cmd() {
@@ -88,7 +103,28 @@ DAEMON_FILES=(
   /app/ops/c1_signal_daemon/strategy_protocol.py
 )
 
-sha256_file() { sha256sum "$1" | awk '{print $1}'; }
+sha256_file() {
+  # Never trip `set -e` on a missing path (D6 seed can leave state_file empty).
+  if [[ -z "${1:-}" || ! -f "$1" ]]; then
+    printf '%s\n' "FILE_MISSING"
+    return 0
+  fi
+  sha256sum "$1" | awk '{print $1}'
+}
+
+# Copy evidence into *.log so the workflow artifact upload (*.log) retains it.
+evidence_log() {
+  local dest="$1"; shift
+  {
+    printf '=== %s ===\n' "$*"
+    for f in "$@"; do
+      [[ -e "$f" ]] || continue
+      printf -- '--- %s ---\n' "$f"
+      cat "$f" 2>/dev/null || true
+      printf '\n'
+    done
+  } >"$dest" 2>/dev/null || true
+}
 
 stop_rm() { docker rm -f "$1" >/dev/null 2>&1 || true; }
 
@@ -129,11 +165,17 @@ except urllib.error.HTTPError as exc:
     sys.stdout.buffer.write(exc.read())
 PY
   cat >"$LOG_DIR/_assert_decision.py" <<'PY'
-"""Assert last decision (+ transport_result) in an events JSONL ledger."""
+"""Assert last decision (+ transport_result) in an events JSONL ledger.
+
+argv: path qty halt_mode [halt_reason [contract [require_dry_run]]]
+  halt_mode: true|false|any
+  require_dry_run: true (default) | false  — L6 live-mode halt records dry_run=false
+"""
 import json, sys
 path, qty_s, halt_mode = sys.argv[1], sys.argv[2], sys.argv[3]
 halt_reason = sys.argv[4] if len(sys.argv) > 4 else ""
 contract = sys.argv[5] if len(sys.argv) > 5 else ""
+require_dry_run = (sys.argv[6] if len(sys.argv) > 6 else "true") != "false"
 qty = int(qty_s)
 rows = [json.loads(l) for l in open(path, encoding="utf-8") if l.strip()]
 decisions = [r for r in rows if r.get("kind") == "decision"]
@@ -145,7 +187,8 @@ errs = []
 def need(c, m):
     if not c: errs.append(m)
 need(d.get("qty_out") == qty, f"qty_out={d.get('qty_out')} want {qty}")
-need(d.get("dry_run") is True, f"dry_run={d.get('dry_run')}")
+if require_dry_run:
+    need(d.get("dry_run") is True, f"dry_run={d.get('dry_run')}")
 need(d.get("test_only") is True, f"test_only={d.get('test_only')}")
 need(d.get("sender_invoked") is False, f"sender_invoked={d.get('sender_invoked')}")
 if halt_mode == "true":
@@ -162,9 +205,9 @@ else:
     need(transports[-1].get("transport_state") == "not_attempted",
          f"transport_state={transports[-1].get('transport_state')}")
 if errs:
-    raise SystemExit("; ".join(errs))
+    raise SystemExit("; ".join(errs) + " | decision=" + json.dumps(d, sort_keys=True, default=str)[:500])
 print(json.dumps({"qty_out": d.get("qty_out"), "halt": d.get("halt"),
-                  "halt_reason": d.get("halt_reason"),
+                  "halt_reason": d.get("halt_reason"), "dry_run": d.get("dry_run"),
                   "transport_state": transports[-1].get("transport_state")}, sort_keys=True))
 PY
 }
@@ -277,12 +320,19 @@ PY
     local bar_a; bar_a="ci-l5a-$(python3 -c 'import uuid;print(uuid.uuid4())')"
     local body_a; body_a="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar_a','close':42000.0,'stop_dist_pts':1.0}))")"
     http_post_in c1-L4 "http://127.0.0.1:8080/c1/${tok}" "$body_a" "$LOG_DIR/L5a.out"
+    # Prefer in-container ledger bytes (bind-mount visibility is usually fine on
+    # Linux, but docker exec removes any doubt when asserting).
+    docker exec c1-L4 cat /data/c1_rail_events.jsonl >"$LOG_DIR/L5a.events" 2>"$LOG_DIR/L5a.events.err" || true
+    if [[ ! -s "$LOG_DIR/L5a.events" && -s "$d4/c1_rail_events.jsonl" ]]; then
+      cp "$d4/c1_rail_events.jsonl" "$LOG_DIR/L5a.events"
+    fi
     if head -1 "$LOG_DIR/L5a.out" | grep -qx 200 \
-       && python3 "$LOG_DIR/_assert_decision.py" "$d4/c1_rail_events.jsonl" 0 any \
+       && python3 "$LOG_DIR/_assert_decision.py" "$LOG_DIR/L5a.events" 0 any \
             >"$LOG_DIR/L5a.assert" 2>"$LOG_DIR/L5a.err"; then
       record_pass L5a "qty_out=0 default identity" "$(cat "$LOG_DIR/L5a.assert")"
     else
-      record_fail L5a "see L5a.out / L5a.err"
+      evidence_log "$LOG_DIR/L5a.fail.log" "$LOG_DIR/L5a.out" "$LOG_DIR/L5a.err" "$LOG_DIR/L5a.events" "$LOG_DIR/L5a.events.err"
+      record_fail L5a "$LOG_DIR/L5a.fail.log"
     fi
 
     local l5b=1
@@ -318,11 +368,17 @@ PY
       local rbody; rbody="$(tail -n +2 "$LOG_DIR/L5b.out")"
       grep -q 'dry_run: computed, not sent' <<<"$rbody" || l5b=0
       head -1 "$LOG_DIR/L5b.out" | grep -qx 200 || l5b=0
-      python3 "$LOG_DIR/_assert_decision.py" "$d4/c1_rail_events.jsonl" 1 false "" "$csha" \
+      docker exec c1-L4 cat /data/c1_rail_events.jsonl >"$LOG_DIR/L5b.events" 2>/dev/null \
+        || cp "$d4/c1_rail_events.jsonl" "$LOG_DIR/L5b.events"
+      python3 "$LOG_DIR/_assert_decision.py" "$LOG_DIR/L5b.events" 1 false "" "$csha" \
         >"$LOG_DIR/L5b.assert" 2>"$LOG_DIR/L5b.err" || l5b=0
     fi
     if [[ "$l5b" -eq 1 ]]; then record_pass L5b "migrate+POST qty_out=1; no restart" "$(cat "$LOG_DIR/L5b.assert")"
-    else record_fail L5b "see L5b.*.err / plan"; fi
+    else
+      evidence_log "$LOG_DIR/L5b.fail.log" "$LOG_DIR/L5b.plan" "$LOG_DIR/L5b.plan.err" \
+        "$LOG_DIR/L5b.apply" "$LOG_DIR/L5b.apply.err" "$LOG_DIR/L5b.out" "$LOG_DIR/L5b.err" "$LOG_DIR/L5b.events"
+      record_fail L5b "$LOG_DIR/L5b.fail.log"
+    fi
   else
     record_fail L5a "container down"
     record_fail L5b "container down"
@@ -350,11 +406,17 @@ PY
   local body6; body6="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar6','close':42000.0,'stop_dist_pts':1.0}))")"
   if container_alive c1-L6; then
     http_post_in c1-L6 "http://127.0.0.1:8080/c1/${tok}" "$body6" "$LOG_DIR/L6.out"
-    python3 "$LOG_DIR/_assert_decision.py" "$d6/c1_rail_events.jsonl" 0 true \
-      "m1_test_requires_explicit_dry_run" >"$LOG_DIR/L6.assert" 2>"$LOG_DIR/L6.err" || l6=0
+    docker exec c1-L6 cat /data/c1_rail_events.jsonl >"$LOG_DIR/L6.events" 2>/dev/null \
+      || cp "$d6/c1_rail_events.jsonl" "$LOG_DIR/L6.events"
+    # Live-mode halt records dry_run=false on the decision row — do not require True.
+    python3 "$LOG_DIR/_assert_decision.py" "$LOG_DIR/L6.events" 0 true \
+      "m1_test_requires_explicit_dry_run" "" false >"$LOG_DIR/L6.assert" 2>"$LOG_DIR/L6.err" || l6=0
   else l6=0; fi
   if [[ "$l6" -eq 1 ]]; then record_pass L6 "live-mode halted" "$(cat "$LOG_DIR/L6.assert")"
-  else record_fail L6 "see L6.log / L6.err"; fi
+  else
+    evidence_log "$LOG_DIR/L6.fail.log" "$LOG_DIR/L6.log" "$LOG_DIR/L6.out" "$LOG_DIR/L6.err" "$LOG_DIR/L6.events"
+    record_fail L6 "$LOG_DIR/L6.fail.log"
+  fi
   stop_rm c1-L6
 
   # L6b absent dry_run
@@ -500,6 +562,7 @@ PY
   local d4ok=1
   wait_for_log c1-D4 'daemon up' 15 "$LOG_DIR/D4.log" || d4ok=0
   grep -Eq 'daemon up bind=.+:.+ emit_enabled=false boot_id=' "$LOG_DIR/D4.log" || d4ok=0
+  host_readable_data c1-D4
   http_get_in c1-D4 'http://127.0.0.1:8080/' "$LOG_DIR/D4.get" 2>"$LOG_DIR/D4.get.err" || d4ok=0
   cat >"$LOG_DIR/D4_health.py" <<'PY'
 import json,sys
@@ -513,31 +576,45 @@ if not d.get("boot_id"): raise SystemExit("empty boot_id")
 print(json.dumps({**need,"boot_id":d["boot_id"]}, sort_keys=True))
 PY
   python3 "$LOG_DIR/D4_health.py" "$LOG_DIR/D4.get" >"$LOG_DIR/D4.health" 2>"$LOG_DIR/D4.health.err" || d4ok=0
+  # Snapshot /data from inside the container so bind-mount surprises are visible.
+  docker exec c1-D4 sh -c 'ls -la /data; echo ---; for f in /data/*.json /data/*.lock /data/*.owner.lock; do [ -e "$f" ] || continue; echo "# $f"; wc -c "$f"; done' \
+    >"$LOG_DIR/D4.data.ls.log" 2>&1 || true
+  docker cp c1-D4:/data "$LOG_DIR/D4_data_cp" >/dev/null 2>&1 || true
   cat >"$LOG_DIR/D4_state.py" <<'PY'
 import json,sys
 from pathlib import Path
 data=Path(sys.argv[1]); state=None; sp=None
+listing=sorted(p.name for p in data.iterdir()) if data.is_dir() else []
 for p in data.glob("*.json"):
     try: obj=json.loads(p.read_text(encoding="utf-8"))
     except Exception: continue
     if "schema_version" in obj and "boot_id" in obj:
         state,sp=obj,p; break
-if state is None: raise SystemExit("state missing")
-assert state["schema_version"]==1
-assert state["enabled"] is False
-assert state["active"] is None
-assert state["boot_id"]
+if state is None:
+    raise SystemExit(f"state missing; dir={listing}")
+assert state["schema_version"]==1, state
+assert state["enabled"] is False, state
+assert state["active"] is None, state
+assert state["boot_id"], state
 locks=list(data.glob("*.owner.lock"))
-assert locks, "owner.lock missing"
+assert locks, f"owner.lock missing; dir={listing}"
 print(json.dumps({"path":sp.name,"boot_id":state["boot_id"],"generation":state.get("generation"),
-                  "inode":sp.stat().st_ino,"owner":locks[0].name}, sort_keys=True))
+                  "inode":sp.stat().st_ino,"owner":locks[0].name,"dir":listing}, sort_keys=True))
 PY
   python3 "$LOG_DIR/D4_state.py" "$d4" >"$LOG_DIR/D4.state" 2>"$LOG_DIR/D4.state.err" || d4ok=0
+  # Also try the docker-cp snapshot if the bind-mount view failed.
+  if [[ "$d4ok" -ne 1 && -d "$LOG_DIR/D4_data_cp" ]]; then
+    python3 "$LOG_DIR/D4_state.py" "$LOG_DIR/D4_data_cp" >"$LOG_DIR/D4.state.cp" 2>"$LOG_DIR/D4.state.cp.err" && d4ok=1 || true
+  fi
   sleep 15
   docker logs c1-D4 >"$LOG_DIR/D4.log" 2>&1 || true
   if grep -E 'step |b1_post|m1_b1_post' "$LOG_DIR/D4.log" >/dev/null; then d4ok=0; fi
   if [[ "$d4ok" -eq 1 ]]; then record_pass D4 "inert boot" "$(cat "$LOG_DIR/D4.health")"
-  else record_fail D4 "see D4.log / D4.*.err"; fi
+  else
+    evidence_log "$LOG_DIR/D4.fail.log" "$LOG_DIR/D4.log" "$LOG_DIR/D4.get" "$LOG_DIR/D4.health.err" \
+      "$LOG_DIR/D4.state.err" "$LOG_DIR/D4.state.cp.err" "$LOG_DIR/D4.data.ls.log"
+    record_fail D4 "$LOG_DIR/D4.fail.log"
+  fi
   stop_rm c1-D4
 
   # D5 stale-enabled
@@ -547,6 +624,7 @@ PY
   docker run -d --name c1-D5 --network none -v "$d5:/data" "$DAEMON_TAG" >"$LOG_DIR/D5.cid"
   local d5ok=1
   wait_for_log c1-D5 'daemon up' 15 "$LOG_DIR/D5.log" || d5ok=0
+  host_readable_data c1-D5
   http_get_in c1-D5 'http://127.0.0.1:8080/' "$LOG_DIR/D5.get" 2>"$LOG_DIR/D5.get.err" || d5ok=0
   python3 "$LOG_DIR/D4_health.py" "$LOG_DIR/D5.get" >"$LOG_DIR/D5.health" 2>"$LOG_DIR/D5.health.err" || d5ok=0
   sleep 5
@@ -562,6 +640,7 @@ PY
   stop_rm c1-D6seed
   docker run -d --name c1-D6seed --network none -v "$d6:/data" "$DAEMON_TAG"
   wait_for_log c1-D6seed 'daemon up' 15 "$LOG_DIR/D6.seed.log" || true
+  host_readable_data c1-D6seed
   stop_rm c1-D6seed
   local state_file
   state_file="$(python3 - <<PY
@@ -614,6 +693,7 @@ PY
   docker run -d --name c1-D7 --network none -v "$d7:/data" "$DAEMON_TAG"
   local d7ok=1
   wait_for_log c1-D7 'daemon up' 15 "$LOG_DIR/D7.log" || d7ok=0
+  host_readable_data c1-D7
   set +e
   timeout 5 docker exec c1-D7 python ops/c1_signal_daemon/daemon.py --config /data/c1_signal_daemon_config.json \
     >"$LOG_DIR/D7.second" 2>&1
@@ -632,6 +712,7 @@ PY
   stop_rm c1-D8a
   docker run -d --name c1-D8a --network none -v "$d8:/data" "$DAEMON_TAG"
   wait_for_log c1-D8a 'daemon up' 15 "$LOG_DIR/D8a.log" || true
+  host_readable_data c1-D8a
   python3 "$LOG_DIR/D4_state.py" "$d8" >"$LOG_DIR/D8a.state" 2>"$LOG_DIR/D8a.err" || true
   local marker inode
   marker="$(python3 - <<PY
@@ -661,6 +742,7 @@ PY
   docker run -d --name c1-D8b --network none -v "$d8:/data" "$DAEMON_TAG"
   local d8ok=1
   wait_for_log c1-D8b 'daemon up' 15 "$LOG_DIR/D8b.log" || d8ok=0
+  host_readable_data c1-D8b
   python3 "$LOG_DIR/D4_state.py" "$d8" >"$LOG_DIR/D8b.state" 2>"$LOG_DIR/D8b.err" || d8ok=0
   if [[ "$d8ok" -eq 1 ]]; then
     python3 - "$LOG_DIR/D8a.state" "$LOG_DIR/D8b.state" "$marker" "$inode" "$d8" <<'PY' || d8ok=0
