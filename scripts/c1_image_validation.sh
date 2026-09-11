@@ -132,6 +132,13 @@ container_alive() {
   docker inspect -f '{{.State.Running}}' "$1" 2>/dev/null | grep -qx true
 }
 
+# Every boot uses this boundary; callers must preserve its failure in their
+# check flag. Keep Docker's creation error in the uploaded evidence as well.
+launch_container() {
+  local name="$1"; shift
+  docker run -d --name "$name" "$@" >"$LOG_DIR/${name#c1-}.cid" 2>"$LOG_DIR/${name#c1-}.launch.err"
+}
+
 wait_for_log() {
   local name="$1" pattern="$2" seconds="$3" logf="$4"
   local i
@@ -229,7 +236,7 @@ http_get_in() {
   # Writes the body to <out> and the HTTP status to <out>.status; returns non-zero
   # unless the status is exactly 200 (a 201/204 must not read as a healthy probe).
   local name="$1" url="$2" out="$3"
-  docker cp "$LOG_DIR/_http_get.py" "$name:/tmp/_http_get.py" >/dev/null
+  docker cp "$LOG_DIR/_http_get.py" "$name:/tmp/_http_get.py" >/dev/null || return 1
   docker exec "$name" python /tmp/_http_get.py "$url" >"$out.raw" || return 1
   head -1 "$out.raw" >"$out.status"
   tail -n +2 "$out.raw" >"$out"
@@ -238,7 +245,7 @@ http_get_in() {
 
 http_post_in() {
   local name="$1" url="$2" body="$3" out="$4"
-  docker cp "$LOG_DIR/_http_post.py" "$name:/tmp/_http_post.py" >/dev/null
+  docker cp "$LOG_DIR/_http_post.py" "$name:/tmp/_http_post.py" >/dev/null || return 1
   docker exec "$name" python /tmp/_http_post.py "$url" "$body" >"$out"
 }
 
@@ -340,8 +347,8 @@ run_listener() {
 
   local d3="$LOG_DIR/L3_data"; rm -rf "$d3"; mkdir -p "$d3"
   stop_rm c1-L3
-  docker run -d --name c1-L3 --network none -v "$d3:/data" "$LISTENER_TAG" >"$LOG_DIR/L3.cid"
-  if wait_for_log c1-L3 'WAIT:' 10 "$LOG_DIR/L3.log" && container_alive c1-L3; then
+  if launch_container c1-L3 --network none -v "$d3:/data" "$LISTENER_TAG" \
+     && wait_for_log c1-L3 'WAIT:' 10 "$LOG_DIR/L3.log" && container_alive c1-L3; then
     record_pass L3 "WAIT present; alive"
   else
     record_fail L3 "see $LOG_DIR/L3.log"
@@ -354,8 +361,8 @@ run_listener() {
     record_fail L4 "constants generation failed"
   else
     stop_rm c1-L4
-    docker run -d --name c1-L4 --network none -v "$d4:/data" "$LISTENER_TAG" >"$LOG_DIR/L4.cid"
     local l4=1
+    launch_container c1-L4 --network none -v "$d4:/data" "$LISTENER_TAG" || l4=0
     wait_for_log c1-L4 'dry_run=True' 15 "$LOG_DIR/L4.log" || l4=0
     grep -q 'dry_run=True armed_until=-' "$LOG_DIR/L4.log" || l4=0
     http_get_in c1-L4 'http://127.0.0.1:8080/' "$LOG_DIR/L4.get" 2>"$LOG_DIR/L4.get.err" || l4=0
@@ -426,7 +433,7 @@ PY
       grep -q 'dry_run: computed, not sent' <<<"$rbody" || l5b=0
       head -1 "$LOG_DIR/L5b.out" | grep -qx 200 || l5b=0
       docker exec c1-L4 cat /data/c1_rail_events.jsonl >"$LOG_DIR/L5b.events" 2>/dev/null \
-        || cp "$d4/c1_rail_events.jsonl" "$LOG_DIR/L5b.events"
+        || cp "$d4/c1_rail_events.jsonl" "$LOG_DIR/L5b.events" || l5b=0
       python3 "$LOG_DIR/_assert_decision.py" "$LOG_DIR/L5b.events" 1 false "" "$csha" \
         >"$LOG_DIR/L5b.assert" 2>"$LOG_DIR/L5b.err" || l5b=0
     fi
@@ -455,8 +462,8 @@ c["armed_until"]=(datetime.now(timezone.utc)+timedelta(hours=1)).replace(microse
 json.dump(c, open(p,"w",encoding="utf-8"), indent=2); open(p,"a",encoding="utf-8").write("\n")
 PY
   stop_rm c1-L6
-  docker run -d --name c1-L6 --network none -v "$d6:/data" "$LISTENER_TAG" >"$LOG_DIR/L6.cid"
   local l6=1
+  launch_container c1-L6 --network none -v "$d6:/data" "$LISTENER_TAG" || l6=0
   wait_for_log c1-L6 'dry_run=False' 15 "$LOG_DIR/L6.log" || l6=0
   local tok; tok="$(path_token)"
   local bar6; bar6="ci-l6-$(python3 -c 'import uuid;print(uuid.uuid4())')"
@@ -465,7 +472,7 @@ PY
     http_post_in c1-L6 "http://127.0.0.1:8080/c1/${tok}" "$body6" "$LOG_DIR/L6.out" 2>"$LOG_DIR/L6.post.err" || l6=0
     head -1 "$LOG_DIR/L6.out" | grep -qx 200 || l6=0   # a halted decision is still a 200 "halted: …" reply
     docker exec c1-L6 cat /data/c1_rail_events.jsonl >"$LOG_DIR/L6.events" 2>/dev/null \
-      || cp "$d6/c1_rail_events.jsonl" "$LOG_DIR/L6.events"
+      || cp "$d6/c1_rail_events.jsonl" "$LOG_DIR/L6.events" || l6=0
     # Live-mode halt records dry_run=false on the decision row — do not require True.
     python3 "$LOG_DIR/_assert_decision.py" "$LOG_DIR/L6.events" 0 true \
       "m1_test_requires_explicit_dry_run" "" false >"$LOG_DIR/L6.assert" 2>"$LOG_DIR/L6.err" || l6=0
@@ -487,8 +494,8 @@ p=sys.argv[1]; c=json.load(open(p,encoding="utf-8")); c.pop("dry_run",None)
 json.dump(c, open(p,"w",encoding="utf-8"), indent=2); open(p,"a",encoding="utf-8").write("\n")
 PY
   stop_rm c1-L6b
-  docker run -d --name c1-L6b --network none -v "$d6b:/data" "$LISTENER_TAG" >"$LOG_DIR/L6b.cid"
   local l6b=1
+  launch_container c1-L6b --network none -v "$d6b:/data" "$LISTENER_TAG" || l6b=0
   wait_for_log c1-L6b 'dry_run=True armed_until=-' 15 "$LOG_DIR/L6b.log" || l6b=0
   local bar6b; bar6b="ci-l6b-$(python3 -c 'import uuid;print(uuid.uuid4())')"
   local body6b; body6b="$(python3 -c "import json;print(json.dumps({'leg_id':'m1_stage1_test','signal_type':'entry','bar_time':'$bar6b','close':42000.0,'stop_dist_pts':1.0}))")"
@@ -507,9 +514,9 @@ PY
   stage_listener_data "$d7"
   generate_constants_in_image "$d7" "$LOG_DIR/L7_constants.log" || true
   stop_rm c1-L7
-  docker run -d --name c1-L7 --network none -v "$d7:/data" --entrypoint sleep "$LISTENER_TAG" infinity
-  local before after; before="$(sha256_file "$d7/c1_rail_config.json")"
   local l7=1
+  launch_container c1-L7 --network none -v "$d7:/data" --entrypoint sleep "$LISTENER_TAG" infinity || l7=0
+  local before after; before="$(sha256_file "$d7/c1_rail_config.json")"
   docker exec c1-L7 python ops/c1_rail/c1_rail_arm.py --status --config /data/c1_rail_config.json \
     >"$LOG_DIR/L7.status" 2>&1 || l7=0
   grep -q "m1_gate: status='CODE_LANDED' result=FAIL" "$LOG_DIR/L7.status" || l7=0
@@ -539,8 +546,8 @@ c["armed_until"]=(datetime.now(timezone.utc)-timedelta(hours=1)).replace(microse
 json.dump(c, open(p,"w",encoding="utf-8"), indent=2); open(p,"a",encoding="utf-8").write("\n")
 PY
   stop_rm c1-L8
-  docker run -d --name c1-L8 --network none -v "$d8:/data" "$LISTENER_TAG" >"$LOG_DIR/L8.cid"
-  if wait_for_log c1-L8 'dry_run=True armed_until=-' 15 "$LOG_DIR/L8.log" \
+  if launch_container c1-L8 --network none -v "$d8:/data" "$LISTENER_TAG" \
+     && wait_for_log c1-L8 'dry_run=True armed_until=-' 15 "$LOG_DIR/L8.log" \
      && grep -q 'IMPLICIT DISARM' "$LOG_DIR/L8.log" \
      && container_alive c1-L8; then
     record_pass L8 "IMPLICIT DISARM on expired armed_until; alive"
@@ -652,8 +659,8 @@ PY
 
   local d3="$LOG_DIR/D3_data"; rm -rf "$d3"; mkdir -p "$d3"
   stop_rm c1-D3
-  docker run -d --name c1-D3 --network none -v "$d3:/data" "$DAEMON_TAG" >"$LOG_DIR/D3.cid"
-  if wait_for_log c1-D3 'WAIT:' 10 "$LOG_DIR/D3.log" && container_alive c1-D3; then
+  if launch_container c1-D3 --network none -v "$d3:/data" "$DAEMON_TAG" \
+     && wait_for_log c1-D3 'WAIT:' 10 "$LOG_DIR/D3.log" && container_alive c1-D3; then
     record_pass D3 "WAIT present; alive"
   else record_fail D3 "see D3.log"; fi
   stop_rm c1-D3
@@ -662,8 +669,8 @@ PY
   local d4="$LOG_DIR/D4_data"
   stage_daemon_data "$d4" "$FIXTURES/c1_signal_daemon_config.json"
   stop_rm c1-D4
-  docker run -d --name c1-D4 --network none -v "$d4:/data" "$DAEMON_TAG" >"$LOG_DIR/D4.cid"
   local d4ok=1
+  launch_container c1-D4 --network none -v "$d4:/data" "$DAEMON_TAG" || d4ok=0
   wait_for_log c1-D4 'daemon up' 15 "$LOG_DIR/D4.log" || d4ok=0
   grep -Eq 'daemon up bind=.+:.+ emit_enabled=false boot_id=' "$LOG_DIR/D4.log" || d4ok=0
   host_readable_data c1-D4
@@ -732,8 +739,8 @@ PY
   local d5="$LOG_DIR/D5_data"
   stage_daemon_data "$d5" "$FIXTURES/c1_signal_daemon_config.stale_enabled.json"
   stop_rm c1-D5
-  docker run -d --name c1-D5 --network none -v "$d5:/data" "$DAEMON_TAG" >"$LOG_DIR/D5.cid"
   local d5ok=1
+  launch_container c1-D5 --network none -v "$d5:/data" "$DAEMON_TAG" || d5ok=0
   wait_for_log c1-D5 'daemon up' 15 "$LOG_DIR/D5.log" || d5ok=0
   host_readable_data c1-D5
   http_get_in c1-D5 'http://127.0.0.1:8080/' "$LOG_DIR/D5.get" 2>"$LOG_DIR/D5.get.err" || d5ok=0
@@ -752,10 +759,11 @@ PY
 
   # D6 CLI refusal
   local d6="$LOG_DIR/D6_data"
+  local d6ok=1
   stage_daemon_data "$d6" "$FIXTURES/c1_signal_daemon_config.json"
   stop_rm c1-D6seed
-  docker run -d --name c1-D6seed --network none -v "$d6:/data" "$DAEMON_TAG"
-  wait_for_log c1-D6seed 'daemon up' 15 "$LOG_DIR/D6.seed.log" || true
+  launch_container c1-D6seed --network none -v "$d6:/data" "$DAEMON_TAG" || d6ok=0
+  wait_for_log c1-D6seed 'daemon up' 15 "$LOG_DIR/D6.seed.log" || d6ok=0
   host_readable_data c1-D6seed
   stop_rm c1-D6seed
   local state_file
@@ -772,15 +780,15 @@ PY
   local cfg_sha st_sha
   cfg_sha="$(sha256_file "$d6/c1_signal_daemon_config.json")"
   st_sha="$(sha256_file "$state_file")"
+  [[ "$st_sha" != FILE_MISSING ]] || d6ok=0
   stop_rm c1-D6
-  docker run -d --name c1-D6 --network none -v "$d6:/data" --entrypoint sleep "$DAEMON_TAG" infinity
-  local d6ok=1
+  launch_container c1-D6 --network none -v "$d6:/data" --entrypoint sleep "$DAEMON_TAG" infinity || d6ok=0
   # Full activation requests (state, config, current boot id, the committed ceremony
   # manifest fixture, ceremony id) so the refusal is proven on the real activation path,
   # not on an incomplete call (Codex P2, 2026-09-11).
   local d6_boot
   d6_boot="$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['boot_id'])" "$state_file" 2>/dev/null || echo unknown-boot)"
-  docker cp "$FIXTURES/ceremony_manifest.json" c1-D6:/tmp/ceremony_manifest.json >/dev/null
+  docker cp "$FIXTURES/ceremony_manifest.json" c1-D6:/tmp/ceremony_manifest.json >/dev/null || d6ok=0
   local d6_cid
   d6_cid="$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['ceremony_id'])" "$FIXTURES/ceremony_manifest.json")"
   for act in prepare enable; do
@@ -816,8 +824,8 @@ PY
   local d7="$LOG_DIR/D7_data"
   stage_daemon_data "$d7" "$FIXTURES/c1_signal_daemon_config.json"
   stop_rm c1-D7
-  docker run -d --name c1-D7 --network none -v "$d7:/data" "$DAEMON_TAG"
   local d7ok=1
+  launch_container c1-D7 --network none -v "$d7:/data" "$DAEMON_TAG" || d7ok=0
   wait_for_log c1-D7 'daemon up' 15 "$LOG_DIR/D7.log" || d7ok=0
   host_readable_data c1-D7
   set +e
@@ -839,12 +847,13 @@ PY
   # "initialized", state not re-created (generation > 0). atomic_json uses
   # os.replace, so inode may change — do not require inode equality.
   local d8="$LOG_DIR/D8_data"
+  local d8ok=1
   stage_daemon_data "$d8" "$FIXTURES/c1_signal_daemon_config.json"
   stop_rm c1-D8a
-  docker run -d --name c1-D8a --network none -v "$d8:/data" "$DAEMON_TAG"
-  wait_for_log c1-D8a 'daemon up' 15 "$LOG_DIR/D8a.log" || true
+  launch_container c1-D8a --network none -v "$d8:/data" "$DAEMON_TAG" || d8ok=0
+  wait_for_log c1-D8a 'daemon up' 15 "$LOG_DIR/D8a.log" || d8ok=0
   host_readable_data c1-D8a
-  python3 "$LOG_DIR/D4_state.py" "$d8" >"$LOG_DIR/D8a.state" 2>"$LOG_DIR/D8a.err" || true
+  python3 "$LOG_DIR/D4_state.py" "$d8" >"$LOG_DIR/D8a.state" 2>"$LOG_DIR/D8a.err" || d8ok=0
   local marker
   # Prefer explicit *.json.lock (ceremony companion; skip owner locks).
   marker="$(python3 - <<PY
@@ -858,8 +867,7 @@ PY
 )"
   stop_rm c1-D8a
   stop_rm c1-D8b
-  docker run -d --name c1-D8b --network none -v "$d8:/data" "$DAEMON_TAG"
-  local d8ok=1
+  launch_container c1-D8b --network none -v "$d8:/data" "$DAEMON_TAG" || d8ok=0
   wait_for_log c1-D8b 'daemon up' 15 "$LOG_DIR/D8b.log" || d8ok=0
   host_readable_data c1-D8b
   python3 "$LOG_DIR/D4_state.py" "$d8" >"$LOG_DIR/D8b.state" 2>"$LOG_DIR/D8b.err" || d8ok=0
