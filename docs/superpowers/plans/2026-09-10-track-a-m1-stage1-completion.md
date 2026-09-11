@@ -134,7 +134,14 @@ The implementer of the ratified input changes the daemon only. The spec the pare
   set and D6's `prepare`/`enable` refusal wording — are updated in the A1b PR itself
   (`scripts/c1_image_validation.sh`, `tests/fixtures/c1_image_validation/`), never left red; the
   Databento-absence check stays as is. A `deploy/c1_signal_daemon/requirements.txt` is permitted
-  when the ratified source needs a client package; the listener image stays stdlib-only.
+  when the ratified source needs a client package, and it must be a fully resolved, hash-pinned
+  lock naming every transitive distribution (`pip-compile --generate-hashes`, installed with
+  `--require-hashes`, as `requirements-ops.lock` is) so A2's D2 can compare the installed closure
+  exactly; the listener image stays stdlib-only.
+- Volume configuration for the ratified source (endpoint, credential key names) is documented in
+  the A1b PR's README section, because A4-D reviews it as a **pending write** and A6 stages it
+  (operator-performed `fly ssh sftp` put of a locally prepared config, never through an agent
+  transcript) before deploying — no earlier sub-track writes the daemon volume.
 - `daemon.build_loop` constructs the approved source **disconnected** plus the coordinator;
   `prepare`/`enable` stop returning the hard `2` but keep every boot/generation/manifest check.
 - Credentials (if any) live only in the daemon volume config; `load_config` validates the new keys;

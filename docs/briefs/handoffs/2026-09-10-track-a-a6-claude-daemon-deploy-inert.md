@@ -21,7 +21,7 @@ Currency: `git fetch origin main`; SHA recorded; tree clean and equal to `origin
 ## 0.5. Clarifications (halt on ambiguity)
 
 - If the daemon volume already holds `/data/c1_m1_stage1_state.json` with any ceremony in an unresolved state (`EVALUATED`/`SEND_RESERVED`/`EMITTED`/`TRANSPORT_UNKNOWN`, including under `CLOSED.previous_state`): do not deploy; return `BLOCKED — plan-itself-wrong` (track stop rule; reconciliation is a separate review).
-- If the A1b image needs a new config key on the volume (a credential or endpoint), the value is supplied by the operator in-session and written with a one-liner that never echoes it; if the operator is absent, `NEEDS_CONTEXT`.
+- If §A4-D recorded a **pending write** (the A1b image needs config keys not yet on the volume — an endpoint, a credential), Step 2.2b stages them before the deploy and the operator performs the put; the agent never handles the values. If the operator is absent, `NEEDS_CONTEXT`.
 - If the deploy's health wait fails on the `WAIT:` guard even though the config exists, do **not** apply a command override (the 2026-07-31 residual class); investigate logs and return.
 
 ## 1. Context and deliverable
@@ -40,8 +40,11 @@ The daemon app runs the 2026-08-08 build under a release Fly marks `failed`. The
 ### Step 2.2 — Daemon pre-read
 `fly status`, `fly releases`, `fly logs | tail -40`, `curl -sS https://c1-signal-daemon.fly.dev/`; in-container `ls -la /data`; state-file summary via a one-liner printing `boot_id`, `generation`, `enabled`, `active`, ceremony states (never manifests' private fields); config keys + non-secret flags. Gate: §0.5 first bullet clear.
 
+### Step 2.2b — Stage the approved-source configuration (only if §A4-D recorded a pending write)
+The operator prepares the complete `c1_signal_daemon_config.json` **locally**, from `deploy/c1_signal_daemon/c1_signal_daemon_config.fly.example.json` plus the A1b README's keys, with `emit_enabled:false`, `strategy:"null"`, `m1_test.enabled:false`, the same `path_token` and `listener_base_url` the volume already holds, and the credential values only they possess. Before it goes anywhere: the agent verifies the file's **shape** without seeing values — the operator runs, locally on the merge-SHA checkout, `python -c "import sys;sys.path.insert(0,'ops');from c1_signal_daemon.daemon import load_config;from pathlib import Path;c=load_config(Path('<local path>'));print(sorted(c), c['emit_enabled'], c['strategy'], c['m1_test']['enabled'])"` and pastes only that output (key names and the three flags). Then the operator — not the agent — puts it: `fly ssh sftp shell -a c1-signal-daemon` → `put <local path> /data/c1_signal_daemon_config.json` (the README's listener pattern), and deletes the local copy. The running pre-A1b daemon holds its boot-time config and is unaffected until the deploy restarts it. Agent verification afterwards, in-container, keys only: `python -c "import json;c=json.load(open('/data/c1_signal_daemon_config.json'));print(sorted(c));print(c['emit_enabled'],c['strategy'],c['bar_period_s'],c['m1_test']['enabled'])"`. Gate: the key set equals §A4-D's pending-write list; the three flags are false/null/false; no value was printed anywhere.
+
 ### Step 2.3 — Import closure
-`pytest tests/ops/test_c1_signal_daemon_image_manifest.py -q` on the merge SHA; manual `sys.modules` trace of `daemon.py` and `m1_stage1_control.py` against the COPY lines. Gate: 0 missing.
+`pytest tests/ops/test_c1_signal_daemon_image_manifest.py -q` on the merge SHA; manual `sys.modules` trace of `daemon.py` and `m1_stage1_control.py` against the COPY lines and, if present, the hash-pinned `deploy/c1_signal_daemon/requirements.txt`. Gate: 0 missing.
 
 ### Step 2.4 — Deploy
 From the repo root on `main` at the merge SHA: `fly deploy . --config deploy/c1_signal_daemon/fly.toml --dockerfile deploy/c1_signal_daemon/Dockerfile`. Paste the summary. Gate: release complete (v2 or later shows `complete`).
@@ -68,7 +71,7 @@ Append §A6 to the readiness record; commit on `claude/*`, push, PR. Final `--st
 - Deleting or editing `/data/c1_m1_stage1_state.json`, its `.lock`, or `.owner.lock`.
 - A command override to get past a failed health wait.
 - Mounting or reading the listener volume from the daemon app.
-- Echoing the `path_token` or any credential.
+- Echoing the `path_token` or any credential; typing, `cat`-ing, or transmitting a credential value as the agent (Step 2.2b is operator-performed by design).
 - Deploying the pre-A1b (source-free) image "as an interim" without the operator asking for it in-session.
 
 ## 6. Gate and return taxonomy
