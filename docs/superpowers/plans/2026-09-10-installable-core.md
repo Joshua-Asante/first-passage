@@ -6,7 +6,7 @@
 
 **Architecture:** Keep `core/`, `lab/`, and `ops/` as the source ownership boundaries. Add a `first-passage-core` wheel with explicit public-source membership and existing import names; test it outside the checkout. Introduce wheel consumption into the rail build only after artifact and runtime compatibility tests pass.
 
-**Tech Stack:** Python 3.11+, setuptools, wheel, pip, pytest, existing gate manifest, Docker.
+**Tech Stack:** Python 3.11+, setuptools, pip, pytest, existing gate manifest, Docker.
 
 **Spec:** The proposed design in this document is the specification for the first slice. Later slices below are a sequenced roadmap, not independently approved execution specifications.
 
@@ -34,7 +34,7 @@ The wheel is internal and is not published to PyPI. A distribution name is not a
 - `scripts/check_boundaries.py` owns the layer contract; `scripts/repo_map_layers.yml` mirrors it. Keep `core` independent of other internal layers and keep `lab ↔ ops` forbidden.
 - `deploy/c1_rail/Dockerfile` currently copies four core modules and four `lib` modules. Its runtime is standard-library-only. The daemon has its own Dockerfile and does not currently require the core wheel.
 - `tests/ops/test_c1_rail_image_manifest.py` checks source COPY coverage. A wheel migration must replace that assumption with installed-artifact coverage, not remove the protection.
-- `core/lifecycle.py` and `core/dd_protection.py` resolve default state beside their source. `core/mc/modes.py` resolves default datasets relative to its source. Installing into site-packages changes those locations; it does not make stateful CLIs automatically portable.
+- `core/lifecycle.py` and `core/dd_protection.py` resolve default state beside their source. `core/mc/modes.py` resolves default datasets relative to its source; `core/bar_export_loader.py::DEFAULT_BAR_DIR` also points beside the source into `data/bar_data`. Installing into site-packages changes those locations; it does not make stateful CLIs automatically portable.
 - `ops/c1_rail/c1_sizing_host_reference.py` receives explicit state paths and rejects missing lifecycle entries. Do not substitute the core helper's missing-state behavior.
 - `ops/c1_rail/c1_rail_arm.py` resolves the acceptance JSON and validator from the application tree. They remain explicit deployment artifacts with their current semantics.
 - Private strategy bodies, vendor inputs, local state, credentials, and historical research are not package inputs. No package discovery across `core/strategies/` or `core/data/`.
@@ -49,12 +49,13 @@ The wheel is internal and is not published to PyPI. A distribution name is not a
 - No state, datasets, strategy bodies, or governance artifacts inside the core wheel.
 - A normal installed-package smoke test must run outside the checkout with `PYTHONPATH` removed and must verify module origins.
 - No production deployment, arming, credential use, or broker traffic is part of implementation verification.
-- Reuse `scripts/gates.yml` for blocking gate composition; do not create a competing gate registry.
+- Preserve `scripts/gates.yml` as required-gate authority. Expensive packaging verification belongs in a dedicated non-required workflow, outside the required `skills (3.12)` check.
+- Governed `core/*` code edits route to Claude Code under [surface-allocation ADR test 1](../../adr/2026-07-14-cc-cursor-surface-allocation.md); PR 1 adds metadata without editing existing application Python.
 
 ## Delivery sequence
 
 1. **PR 1: Build and verify the core wheel.** Independently useful: a clean environment can install and import shared code, and CI catches incomplete or contaminated artifacts. Detailed tasks follow.
-2. **PR 2: Consume the wheel in the rail image.** Preserve existing state and governance paths. Build and test the image offline; operational rollout is separate.
+2. **PR 2: Consume the wheel in the rail image.** Preserve existing state and governance paths. Defer through Track B closure and a fresh operator decision under the [roadmap sequencing rules](2026-09-11-architecture-improvements.md#sequencing-against-tracks-a-and-b). No image assembly or ops byte changes from A5 Step 2.5 through A8 Step 2.4b; no executable changes from the TB-I3 live test through B7 or after the seal in that attempt. Earlier adoption needs the operator to adopt the wheel in TB-S3, not an assumed “after A8, before TB-S3” window.
 3. **PR 3, conditional: Make installed CLIs and imports fully portable.** Explicit resource/state interfaces and a project namespace require a separate design. Do not make this a prerequisite for the first two deliveries.
 
 ## First-slice file map
@@ -62,12 +63,12 @@ The wheel is internal and is not published to PyPI. A distribution name is not a
 | File | Responsibility |
 |---|---|
 | `core/pyproject.toml` (new) | Core distribution metadata, explicit module/package names, optional scientific dependencies |
-| `scripts/build_core_wheel.py` (new) | Build from a temporary directory containing only approved source files; verify resulting wheel membership |
+| `scripts/build_core_wheel.py` (new) | Build from approved Git blobs in a temporary directory; verify resulting wheel membership |
 | `tests/packaging/test_core_wheel.py` (new) | Artifact contents, clean install, module-origin, dependency, and missing-file regression tests |
-| `requirements-build.lock` (new) | Hash-locked build dependencies, generated by the repository's established lock workflow |
-| `scripts/gates.yml` | Admit the bounded packaging tests on relevant changes |
-| `.github/workflows/gate-manifest.yml` | Install the build lock before the manifest invokes packaging tests |
-| `.github/workflows/tests.yml` | Provide build dependencies for the new tests and add package platform coverage |
+| `requirements-build.lock` (new) | Hash-locked build dependencies generated with pip-compile; align shared pins with the ops lock |
+| `.github/workflows/core-package.yml` (new) | Path-filtered, non-required four-cell packaging verification |
+| `.github/workflows/tests.yml` | Exclude dedicated packaging tests from ordinary discovery; retain current matrix |
+| `.gitignore` | Ignore wheel/receipt output; prohibit build products under core |
 | `core/README.md`, `REPO_MAP.md`, `scripts/README.md` | Describe the distribution and the distinction between installable APIs and checkout-dependent CLIs |
 
 New build tooling is governance-owned and must not import the core application. It may inspect and copy source files. If added to `SCRIPTS_LAYER`, update the YAML mirror in the same change; otherwise its existing governance default is appropriate. Regenerate the REPO_MAP scripts table when adding the script.
@@ -76,14 +77,16 @@ New build tooling is governance-owned and must not import the core application. 
 
 **Consumes:** Existing public sources under `core/`.
 
-**Produces:** `python scripts/build_core_wheel.py --output-dir <directory>`; exactly one `first_passage_core-*.whl` plus `core-wheel.json` recording wheel name, SHA256, source revision, dirty-tree indicator, and source-file hashes. A dirty build is marked, not misrepresented as the clean commit. Deployment builds later require a clean source revision.
+**Produces:** `python scripts/build_core_wheel.py --revision <commit> --output-dir <directory>`; exactly one `first_passage_core-*.whl` plus `core-wheel.json` recording wheel name, distribution version, SHA256, full source revision, build-tool pins, and source-file hashes. All inputs come from that commit, never uncommitted edits. Reject dirty relevant inputs when building the checkout HEAD, so a developer cannot mistake omitted changes for tested code. Historical revision builds remain explicitly identified.
+
+**Version policy:** `0.1.0` is the initial compatibility version, not an execution identity. Identify every internal artifact by `(source revision, wheel SHA256)` in its receipt; TB-I1/TB-D0 source changes require a new receipt, not an out-of-footprint version edit. Bump the compatibility version in a packaging-owned PR for an intentional API/metadata contract change. Tests compare installed version to receipt metadata rather than hardcoding a version as evidence of source identity.
 
 - [ ] Add the content test first. It must assert exact Python member equality, rather than merely searching for prohibited extensions.
 - [ ] Use this proposed setuptools configuration in `core/pyproject.toml`:
 
 ```toml
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools>=70.1,<81"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -98,6 +101,7 @@ research = ["numpy>=2.0,<2.5", "pandas"]
 analysis = ["numpy>=2.0,<2.5", "nolds<0.6", "setuptools<81"]
 mc = ["numpy>=2.0,<2.5", "pandas", "joblib"]
 report = ["pandas", "quantstats"]
+cli = ["rich"]
 
 [tool.setuptools]
 include-package-data = false
@@ -110,12 +114,12 @@ packages = ["lib", "mc"]
 ```
 
 - [ ] The build script owns one explicit source-file tuple: the ten modules above; `lib/atomic_io.py`, `lib/correlation.py`, `lib/file_lock.py`, `lib/mvd.py`, `lib/nonlinear.py`, `lib/regime_bootstrap.py`, `lib/tearsheet.py`, `lib/validation.py`; and `mc/__init__.py`, `mc/ingest.py`, `mc/modes.py`, `mc/preflight.py`, `mc/simulation.py`. Preserve `lib` as the existing implicit namespace; do not invent an initializer in application source.
-- [ ] Copy only that tuple, the build metadata, and the repository license into a temporary build directory. Do not use recursive copies or VCS package discovery. A missing listed file is a hard error before build.
-- [ ] Generate `requirements-build.lock` for setuptools and wheel with hashes using the current repository workflow. Use the lock in CI and the build environment; the broad metadata range is not the reproducibility mechanism.
+- [ ] Stage only that tuple, metadata, and license from raw `git show <rev>:<path>` stdout bytes using subprocess byte capture, never shell text redirection or working-tree reads. LF Git blobs avoid Windows CRLF checkout differences. A missing listed blob is a hard error; verify byte equality and SHA256 against the blobs. Use fixed `SOURCE_DATE_EPOCH` from the source commit, stable member ordering, canonical archive permissions/platform metadata and pinned tools; compare wheel SHA256 across Windows/Linux builds before claiming reproducibility. Reject in-place staging/build/output under `core/` (including `core/build/lib`); use a temporary directory and an explicitly gitignored output directory.
+- [ ] Generate `requirements-build.lock` with `pip-compile --generate-hashes` from explicit build requirements, not the W6 real-freeze method. Pin setuptools to the same version as `requirements-ops.lock` (currently `80.10.2`, below the analysis extra's `<81` cap); setuptools ≥70.1 does not need a separate wheel dependency. Install with `--require-hashes` in the isolated build environment and verify any overlapping pins agree. Freeze the pip/frontend version too; metadata ranges alone do not establish reproducibility.
 - [ ] Build with `sys.executable -m pip wheel --no-deps --no-build-isolation --wheel-dir <temporary-output> <staged-source>`. Check the wheel before writing final outputs. Refuse ambiguous/multiple wheel results and refuse overwriting an existing output artifact silently.
 - [ ] Verify every non-metadata wheel member is in the exact Python allow-list and that every listed source matches its wheel member byte-for-byte. Permit only expected `.dist-info` metadata and license files beyond the source list; reject traversal paths and unexpected data members.
-- [ ] Test with synthetic private decoys in a temporary source fixture: `strategies/private.py`, `data/vendor.csv`, `lifecycle_state.json`, `.env`, and an unlisted `lib/private.py`. None may enter staging or the wheel. Do not create decoys in the actual private directories.
-- [ ] Test a listed source missing from the fixture: the builder must fail rather than emit a partial wheel.
+- [ ] Test with synthetic private decoys committed in a temporary Git fixture: `strategies/private.py`, `data/vendor.csv`, `lifecycle_state.json`, `.env`, and an unlisted `lib/private.py`. None may enter staging or the wheel. Do not create decoys in the actual private directories.
+- [ ] Test a listed source missing from the fixture commit: the builder must fail rather than emit a partial wheel.
 - [ ] Run `python -m pytest tests/packaging/test_core_wheel.py -q` and commit only this task's files when passing.
 
 ### Task 2: Prove installed behavior independently of the checkout
@@ -134,7 +138,11 @@ import importlib.util
 from pathlib import Path
 import sys
 
-assert importlib.metadata.version("first-passage-core") == "0.1.0"
+# The test driver supplies expected_version from the validated receipt.
+assert importlib.metadata.version("first-passage-core") == expected_version
+import lib
+assert len(lib.__path__) == 1
+assert Path(next(iter(lib.__path__))).resolve().is_relative_to(Path(sys.prefix).resolve())
 for name in ("firm_rules", "historical_challenge", "lifecycle",
              "dd_protection", "lib.atomic_io", "lib.file_lock",
              "lib.mvd", "lib.validation"):
@@ -145,7 +153,7 @@ assert importlib.util.find_spec("pandas") is None
 ```
 
 - [ ] Assert wheel metadata has no unconditional `Requires-Dist` entries. Optional dependencies must have extra markers. Do not use a development environment's installed dependencies as proof of the base contract.
-- [ ] In a second clean environment with scientific dependencies from existing hashed locks, install the same wheel and import `portfolio_mc`, `mc.preflight`, all public core modules, and all `lib` modules. Exercise the nonlinear helper separately with its analysis extra dependencies. Check metadata for the lazy `joblib` and `quantstats` dependencies under the `mc` and `report` extras; use offline synthetic parallel/report fixtures if those optional features are exercised.
+- [ ] In a second clean environment with scientific dependencies from existing hashed locks, install the same wheel and import `portfolio_mc`, `mc.preflight`, all public core modules, and all `lib` modules. Exercise the nonlinear helper separately with its analysis extra dependencies. Check metadata for the lazy `joblib` and `quantstats` dependencies under the `mc` and `report` extras, and lazy `rich` in `mc/modes.py` under the `cli` extra (its absence currently silently falls back); use offline synthetic parallel/report fixtures if those optional features are exercised.
 - [ ] Run the synthetic MC regression suite against the installed artifact: copy `tests/core/test_mc_synthetic_engine.py` and only its required fixtures into a temporary test tree, use a temporary pytest config with no source `pythonpath`, and assert imported core module origins remain under the venv. Keep checkout tests as an additional test path, not as a substitute.
 - [ ] Compare pure, synthetic API results for checkout and wheel imports in separate subprocesses. Reuse the regression suite's input cases; compare structured results, not console output. No vendor data is needed.
 - [ ] Verify no state/data files are embedded or created merely by importing. Explicitly document that source-relative CLI defaults are unchanged and installed stateful CLIs are not yet a supported workflow.
@@ -155,20 +163,11 @@ assert importlib.util.find_spec("pandas") is None
 
 **Consumes:** Tasks 1–2.
 
-**Produces:** A reproducible wheel build and a packaging regression gate in the existing workflow.
+**Produces:** A reproducible wheel build and dedicated non-required packaging CI.
 
-- [ ] Add a `core-package` path-conditional gate with the command below and a trigger covering `core/`, root `pyproject.toml`, `requirements*.lock`, `scripts/build_core_wheel.py`, `tests/packaging/`, `scripts/gates.yml`, and the affected CI workflows.
-
-```yaml
-cmd:
-  - python
-  - -m
-  - pytest
-  - tests/packaging/test_core_wheel.py
-  - -q
-```
-
-- [ ] Install `requirements-build.lock` in both current CI jobs that may run these tests. Add the four-cell package platform matrix to the existing tests workflow. Reuse the current pinned checkout/setup-python actions. Use no production secrets.
+- [ ] Add `.github/workflows/core-package.yml`, with push-to-main and pull-request filters for `core/**`, `pyproject.toml`, `requirements-ops.lock`, `requirements-build.lock`, `scripts/build_core_wheel.py`, `tests/packaging/**`, and its own workflow. Run `python -m pytest tests/packaging/test_core_wheel.py -q` after installing the hashed locks. Test both event predicates and unrelated docs/research-lock negative cases.
+- [ ] Do not register `core-package` as a path-conditional manifest gate: `gate_manifest.py --tier check` runs those unconditionally, including on docs PRs in required `skills (3.12)`. Do not install build dependencies in `gate-manifest.yml`. Keep packaging tests out of ordinary `tests.yml` discovery so the expensive suite runs only in its dedicated job. Since no manifest entry is admitted, `EXPECTED_PATH_CONDITIONAL` and `REACHABILITY_PROBES` stay unchanged; any future manifest admission must update both and reconsider the required-check cost explicitly.
+- [ ] Run Windows/Linux × Python 3.11/3.12 in the dedicated workflow, reusing pinned actions and no production secrets. This intentionally reverses the recorded “CI diet (A+C+D)” for package verification only; public-repository Actions cost and the cross-platform artifact contract justify it. Record that limited reversal in the implementation PR/workflow comment with a pointer to this decision; retain the ordinary tests/pylint diet. Verify equal artifact hashes across all four cells for identical source/tool inputs, or fail the reproducibility claim.
 - [ ] Keep the root dependency project and the ordinary test suite operational. Do not add a same-named dependency resolved from public PyPI; local consumers install the built artifact explicitly.
 - [ ] Document build, local wheel install, optional scientific dependencies, receipt verification, and source-relative CLI limitations. Describe generic module names as a compatibility phase, not the eventual external API.
 - [ ] Run `python scripts/check_repo_map_scripts_table.py --write`, then its `--check` mode. Update the affected documentation without rewriting root instructions or current operational state.
@@ -177,18 +176,26 @@ cmd:
 
 ## Second-slice design: rail artifact consumption
 
-Write the detailed execution plan after PR 1 establishes the artifact contract. The intended changes are bounded to these surfaces:
+Write the detailed execution plan after PR 1 establishes the artifact contract and the sequencing condition above is satisfied. PR 2 is not ready for dispatch. Its design must amend all affected owners together; existing Track A/B contracts remain in force until then.
+
+**Artifact handoff choice:** retain the documented repo-root build context. CI builds from a clean source revision and provides the wheel as an artifact; an integration commit tracks its expected SHA256 and receipt. The operator retrieves that exact artifact into an ignored, explicitly allow-listed path before a remote `fly deploy`. A build-time hash check must reject missing, stale or modified artifacts before pip installation. The tracked receipt refers to the clean source commit; the later integration/deploy commit records that provenance and proves its ops/acceptance inputs are the reviewed ones. Do not assert that a receipt can embed its own commit hash. The detailed plan must define that two-commit relationship and pin all inputs before dispatch.
+
+Required surfaces:
 
 - `deploy/c1_rail/Dockerfile` and `.dockerignore`: install the validated wheel instead of individually copying core source. Preserve the explicit ops files, acceptance JSON, and schema validator.
-- `scripts/build_core_wheel.py` or a separate governance build-context script: create an isolated deployment context from approved files. Build receipts must identify the same clean revision as ops and acceptance inputs; verify the wheel SHA256 before installation. Do not upload an arbitrary contents wildcard from a local output directory.
-- `tests/ops/test_c1_rail_image_manifest.py`: change the coverage model to core wheel members plus explicit ops COPY members. Retain the historical missing-transitive-import regression. Add arm and slippage CLI coverage alongside server/listener coverage.
-- `deploy/c1_rail/README.md`: document the artifact-based build and rollback by complete previous image, not by downgrading only the wheel.
+- Build tooling and tracked receipt: implement the CI artifact handoff above; never select an arbitrary local wildcard. Preserve repo-root deployment under `deploy/README.md` and `.claude/skills/c1-rail/SKILL.md` pre-condition 2. Amend A5 Phase 0 to verify the ignored wheel against the tracked receipt alongside the clean tracked checkout. Any future isolated-context alternative must first amend these owners and the Dockerfile header.
+- `tests/ops/test_c1_rail_image_manifest.py`: replace the COPY-only predicate with `closure ∩ core ⊆ wheel RECORD` plus explicit ops COPY coverage. Replace the `core/historical_challenge.py` COPY regression with an installed-member regression, including a deliberately omitted transitive wheel member that must fail. Restrict the `.dockerignore` COPY-source assertion to actual source COPY inputs and separately test wheel inclusion/hash validation. Add arm and slippage CLI coverage alongside server/listener coverage.
+- `deploy/c1_rail/README.md`, Dockerfile header and `.dockerignore` prose: replace the “traced subset” claim with the full wheel plus explicit ops/metadata inventory; document the artifact-based build and rollback by complete previous image, not by downgrading only the wheel.
 
-For the first image migration, install the wheel with `pip install --no-index --no-deps --target /app/core <wheel>`. This deliberately preserves core-relative paths and the current ops bootstrap. It proves artifact consumption without simultaneously changing state locations. The wheel contains additional public scientific source modules, but scientific dependencies are not installed or imported by the rail. Acceptance requires an actual image test proving the runtime import closure remains standard-library-only.
+Before admission, reconcile A2 L2's exact COPY-file-set check, Track A plan §1 invariant 3 and §6 stop rule, c1-rail skill pre-condition 3, and A4 Step 2.2 / A5 Step 2.3 import tracing with the installed-wheel closure. TB-S3 (J)/(L) and Phase 0 must describe the adopted model. Coordinate TB-I3's reserved deployment and manifest-test files; do not share live packet footprints.
+
+`fixture_hashes` currently pins the test and five ops modules, not core bytes. PR 2 must add the wheel SHA256 and receipt to the evidence identity and TB-B7 shared execution-fingerprint components, with validator/schema and regression coverage, so TB-D0's `POLICY_REGISTRY` is identified in the tested, sealed artifact. This closes an existing core-identity gap rather than attributing it to packaging. LF blob staging also changes the current desk's CRLF core payload: explicitly record/requalify that byte change and do not call it an unchanged image.
+
+For the first image migration, install the wheel with `pip install --no-index --no-deps --no-compile --target /app/core <wheel>`. This deliberately preserves core-relative paths and the current ops bootstrap. It proves artifact consumption without simultaneously changing state locations. The installed inventory also includes `.dist-info`; `--no-compile` avoids install-time `__pycache__` (isolate runtime-generated caches in tests). The wheel contains all 23 approved Python files, including additional public scientific source modules, but scientific dependencies are not installed or imported by the rail. Acceptance requires an actual image test proving the runtime import closure remains standard-library-only.
 
 The M1 JSON stays at `/app/docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json`; its validator remains at `/app/scripts/validate_c1_monitoring_acceptance.py`. Neither belongs in the core wheel. Never rewrite evidence/status to make a packaging test pass. Verify provenance logic against the installed layout before merging.
 
-Image acceptance tests must run without network access and with temporary synthetic configuration/state. Exercise startup, invalid/missing state, incomplete/forged M1 records, and the operator CLIs' read-only paths. Missing lifecycle entries must still refuse sizing; missing/invalid acceptance must still refuse arming. Reuse current behavioral tests and compare old/new images' structured responses. Do not call a production endpoint or arm a host.
+Image acceptance scenarios run on GitHub Actions Docker, since the desk has no Docker. Strip inherited `PYTHONPATH`, use isolated subprocesses and a temporary pytest config without checkout roots, and verify installed origins. Runtime scenarios must run without external network access and with temporary synthetic configuration/state. Exercise startup, invalid/missing state, incomplete/forged M1 records, and the operator CLIs' read-only paths. Missing lifecycle entries must still refuse sizing; missing/invalid acceptance must still refuse arming. Reuse current behavioral tests and compare old/new images' structured responses. Do not call a production endpoint or arm a host.
 
 The signal daemon remains independent. Its existing build must keep passing when the root build-context rules change; do not add a core dependency it does not need.
 
