@@ -1,6 +1,8 @@
 name: c1 image validation
 
 # Track A / A2 — Linux Docker image validation for the c1 listener and daemon.
+# Triggers follow tests.yml convention A: pull_request + push-to-main only, so a PR
+# branch runs once per SHA (a feature-branch push would duplicate the pull_request run).
 # Not a required merge check. Parent re-runs via workflow_dispatch and reads logs.
 on:
   pull_request:
@@ -20,6 +22,8 @@ on:
       - "scripts/c1_image_validation.sh"
       - ".github/workflows/c1-image-validation.yml"
   push:
+    branches:
+      - main
     paths:
       - "deploy/**"
       - ".dockerignore"
@@ -39,13 +43,6 @@ on:
 
 permissions:
   contents: read
-
-# One run per branch: `push` and `pull_request` fire on the same SHA; the parent reads one log, not two.
-# Keyed on the branch name because `github.ref` differs between the two events
-# (`refs/heads/<branch>` vs `refs/pull/<n>/merge`) and would not dedupe them.
-concurrency:
-  group: c1-image-validation-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: true
 
 jobs:
   listener:
