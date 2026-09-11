@@ -42,8 +42,9 @@ databento research-venv integration).
 
 Resolution catches plain `import X`, `from X import Y`, aliased, and lazy/
 in-function forms (ast.walk visits every node — the in-function import is exactly
-what a line-grep missed at parity_check.py). Relative imports (`from . import`)
-are same-layer by construction -> always legal.
+what a line-grep missed at parity_check.py). Relative imports are resolved from
+the source package; legal same-layer imports remain allowed. Dynamic imports
+and filesystem reads are outside this AST import check.
 
 Exit codes: 0 = no illegal edges, no name collisions, no unparseable sources;
 1 = failure(s). Parse failures are reported separately from illegal edges.
@@ -116,52 +117,89 @@ def layer_of_file(rel: str) -> str | None:
     return "governance"  # other root-resident .py (none after the move)
 
 
-def _dir_has_py(d: Path) -> bool:
-    return any(d.rglob("*.py"))
+# Import roots used by pyproject.toml, scripts/layer_bootstrap.py and the rail
+# entry points. Mirror in repo_map_layers.yml and REPO_MAP section 2.2.
+FLAT_IMPORT_ROOTS = ("core", "lab", "ops", "ops/c1_rail", "ops/c1_signal_daemon", "scripts")
 
 
-def build_index() -> tuple[dict[str, str], list[tuple[str, str, str]]]:
-    """Map first-party top-level module/package name -> layer. Returns
-    (index, collisions). A name in >1 layer is a hard error (Option B flattens
-    the layer roots onto sys.path, so a collision mis-resolves silently)."""
-    index: dict[str, str] = {}
-    collisions: list[tuple[str, str, str]] = []
+def build_index() -> tuple[dict[str, tuple[str, ...]], list[tuple[str, tuple[str, ...]]]]:
+    """Resolve importable names to repository paths, including namespace packages.
 
-    def add(name: str, layer: str) -> None:
-        if name.startswith("_"):
-            return
-        if name in index and index[name] != layer:
-            collisions.append((name, index[name], layer))
-        index.setdefault(name, layer)
-
-    for layer in ("core", "lab", "ops"):
-        root = REPO_ROOT / layer
-        if not root.is_dir():
+    Never recursively flatten arbitrary directories: only documented import roots
+    create bare names. Retain every candidate so cross-layer ambiguity fails closed.
+    """
+    candidates: dict[str, set[str]] = {}
+    for path in sorted(REPO_ROOT.rglob("*.py")):
+        rel = path.relative_to(REPO_ROOT).as_posix()
+        if layer_of_file(rel) is None or "__pycache__" in path.parts:
             continue
-        for child in sorted(root.iterdir()):
-            if child.is_file() and child.suffix == ".py":
-                add(child.stem, layer)
-            elif child.is_dir() and child.name != "__pycache__" and _dir_has_py(child):
-                add(child.name, layer)  # importable package / namespace dir
+        for root in ("", *FLAT_IMPORT_ROOTS):
+            prefix = root + "/" if root else ""
+            if not rel.startswith(prefix):
+                continue
+            parts = rel[len(prefix):].split("/")
+            parts[-1] = parts[-1][:-3]
+            if parts[-1] == "__init__":
+                parts.pop()
+            if not parts or not all(part.isidentifier() for part in parts):
+                continue
+            name = ".".join(parts)
+            candidates.setdefault(name, set()).add(rel)
+            # Namespace directories are importable even without __init__.py.
+            for count in range(1, len(parts)):
+                parent = ".".join(parts[:count])
+                directory = prefix + "/".join(parts[:count]) + "/"
+                candidates.setdefault(parent, set()).add(directory)
+    index = {}
+    for name, paths in candidates.items():
+        # Package initializers take precedence over the synthetic directory entry.
+        index[name] = tuple(sorted(path for path in paths
+                                   if not (path.endswith("/") and path + "__init__.py" in paths)))
+    collisions = [(name, paths) for name, paths in sorted(index.items())
+                  if len({layer_of_file(path) for path in paths}) > 1]
     return index, collisions
 
 
-def _first_party_targets(tree: ast.AST, index: dict[str, str]) -> list[tuple[int, str, str]]:
-    """Yield (lineno, module_name, target_layer) for each first-party import.
-    Relative imports are skipped (same-layer by construction)."""
-    out: list[tuple[int, str, str]] = []
+def _first_party_targets(tree: ast.AST, index: dict[str, tuple[str, ...]],
+                         source: str = "") -> list[tuple[int, str, str | None]]:
+    """Return (line, import name, resolved path); None marks unresolved first-party.
+
+    Unknown absolute roots are external. A known first-party root with a missing
+    module is an error, distinct from external imports. For from-imports, resolve
+    an imported submodule before treating its name as an attribute of the base.
+    """
+    out: list[tuple[int, str, str | None]] = []
+    first_party = {name.split(".")[0] for name in index} | {"core", "lab", "ops", "scripts"}
+
+    def emit(line: int, name: str, force: bool = False) -> None:
+        if name in index:
+            out.extend((line, name, path) for path in index[name])
+        elif force or name.split(".")[0] in first_party:
+            out.append((line, name, None))
+
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
-                head = alias.name.split(".", 1)[0]
-                if head in index:
-                    out.append((node.lineno, head, index[head]))
+                emit(node.lineno, alias.name)
         elif isinstance(node, ast.ImportFrom):
-            if node.level and node.level > 0:
-                continue  # relative -> same layer -> legal
-            head = (node.module or "").split(".", 1)[0]
-            if head in index:
-                out.append((node.lineno, head, index[head]))
+            base = node.module or ""
+            if node.level:
+                parents = source.split("/")[:-1]
+                if node.level > len(parents):
+                    emit(node.lineno, "." * node.level + base, True)
+                    continue
+                base = ".".join(parents[:len(parents) - node.level + 1] + ([base] if base else []))
+            resolved_child = False
+            needs_base = False
+            for alias in node.names:
+                child = base + "." + alias.name
+                if child in index:
+                    emit(node.lineno, child)
+                    resolved_child = True
+                else:
+                    needs_base = True
+            if needs_base or not resolved_child:
+                emit(node.lineno, base, bool(node.level))
     return out
 
 
@@ -182,9 +220,9 @@ def main() -> int:
     parse_errors: list[str] = []
     py_label = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 
-    for name, a, b in collisions:
+    for name, paths in collisions:
         edge_violations.append(
-            f"NAME COLLISION: module '{name}' in both {a}/ and {b}/ "
+            f"NAME COLLISION: module '{name}' candidates {list(paths)} "
             f"(Option B flattens layer roots; rename or consolidate)")
 
     for path in sorted(REPO_ROOT.rglob("*.py")):
@@ -202,18 +240,23 @@ def main() -> int:
             parse_errors.append(
                 f"{rel}:{exc.lineno}: UNPARSEABLE under Python {py_label} — {exc.msg}")
             continue
-        for lineno, mod, tgt_layer in _first_party_targets(tree, index):
+        for lineno, mod, target in _first_party_targets(tree, index, rel):
+            if target is None:
+                kind = "INVALID RELATIVE" if mod.startswith(".") else "UNRESOLVED first-party"
+                edge_violations.append(f"{rel}:{lineno}: {kind} import '{mod}'")
+                continue
+            tgt_layer = layer_of_file(target)
             if (src_layer, tgt_layer) not in LEGAL_EDGES:
                 edge_violations.append(
                     f"{rel}:{lineno}: ILLEGAL {src_layer}->{tgt_layer} "
-                    f"import '{mod}' (legal {src_layer} targets: "
+                    f"import '{mod}' -> {target} (legal {src_layer} targets: "
                     f"{sorted(t for s, t in LEGAL_EDGES if s == src_layer)})")
 
     failed = bool(edge_violations or parse_errors)
     if failed:
         parts = []
         if edge_violations:
-            parts.append(f"{len(edge_violations)} illegal edge(s)/collision(s)")
+            parts.append(f"{len(edge_violations)} import failure(s)/collision(s)")
         if parse_errors:
             parts.append(f"{len(parse_errors)} unparseable source(s)")
         print(f"check_boundaries: {'; '.join(parts)}")
