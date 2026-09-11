@@ -31,7 +31,7 @@ Currency: `git fetch origin main`; record the SHA (authoring-time `47972f6`). Ha
 
 Two deploys are ahead (A5 listener, A6 daemon). Each is a risk event on a live broker-linked host. This review establishes, from host reads and the A2/A3 returns, whether every A5 (and later A6) precondition is evidenced — and names the owner of every item that is not. No deploy happens here.
 
-**Deliverable:** append **§A4-L — Listener readiness** (and later **§A4-D — Daemon readiness**) to `docs/notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md`: a table `item → evidence (command + printed line, redacted) → GO / NO-GO (owner)`, followed by the **exact A5 command sequence** the parent will freeze into the A5 brief, and the **fixture-hash choreography** (which files are pinned, when they are hashed, what the acceptance JSON entry will say).
+**Deliverable:** append **§A4-L — Listener readiness** (first dispatch) and later **§A4-D — Daemon readiness** (second dispatch, Step 2.3b/2.4b) to `docs/notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md`: a table `item → evidence (command + printed line, redacted) → GO / NO-GO (owner)`, followed by the **exact A5 (or A6) command sequence** the parent will freeze into that brief, and — first dispatch only — the **fixture-hash choreography** (which files are pinned, when they are hashed, what the acceptance JSON entry will say).
 
 **Not asked:** deploying, restarting, migrating, editing any volume file, editing the acceptance JSON, or running `preflight` with the test row enabled.
 
@@ -82,6 +82,27 @@ MSYS_NO_PATHCONV=1 fly ssh console -a c1-signal-daemon -C "python -c \"import js
 
 Explain the **v1 `failed` release with a started, healthy machine** from evidence only (release history, logs, whether the config existed at first boot, whether a manual restart followed). Record: image ref, machine id, whether `/data/c1_m1_stage1_state.json` exists (pre-#332 image: expected absent), `emit_enabled` value.
 
+### Step 2.3b — Daemon checklist, §A4-D (second dispatch only: after A1r and A1b are merged, A2-D is green on the A1b merge SHA, and A5 is DONE)
+
+This is the pass that gates A6; the first dispatch leaves it marked "pre-A1b". Re-run every Step 2.3 read on the current host first (the daemon may have restarted since), then fill every row:
+
+| Item | How evidenced | GO/NO-GO |
+|---|---|---|
+| Listener still `dry_run=true`, `armed_until` None | `--status` line (fresh) | |
+| A2-D green on the A1b merge SHA | run URL + quoted `PASS D1…D10` lines; D2's declared-dependency set and D6's refusal wording match the A1b PR | |
+| Daemon import closure re-trace on the A1b merge SHA | `pytest tests/ops/test_c1_signal_daemon_image_manifest.py -q` locally + manual `sys.modules` trace of `daemon.py` and `m1_stage1_control.py` against the daemon Dockerfile COPY lines and, if present, `deploy/c1_signal_daemon/requirements.txt`: 0 missing | |
+| Approved source configured but disabled | the A1b brief's config keys are present on the volume (keys only; values never printed); `emit_enabled` false, `strategy` `null`, `m1_test.enabled` false; the expected disconnected `feed_mode` value quoted from the A1b brief | |
+| Credentials at rest only on the daemon volume | key names present in `/data/c1_signal_daemon_config.json`; absent from the listener volume, the repo, and every log line sampled | |
+| Journal state | `/data/c1_m1_stage1_state.json` absent (first-deploy case: A6 expects creation at generation 0) **or** present with no ceremony in `EVALUATED`/`SEND_RESERVED`/`EMITTED`/`TRANSPORT_UNKNOWN` (including under `CLOSED.previous_state`) — an unresolved checkpoint is the track stop rule, NO-GO with no owner but a separate reconciliation review | |
+| Two apps, two volumes | `fly volumes list` for both apps shows distinct volumes attached to distinct machines; `deploy/c1_signal_daemon/fly.toml` mounts `c1_signal_daemon_data` only | |
+| Rollback image known | §A3 daemon image ref + the Step 2.3 v1-failed explanation | |
+| Listener ledger baseline for "no signal on boot" | last `seq` recorded now, to be compared after the A6 deploy | |
+| Exact A6 command sequence reviewed | written in Step 2.4b | |
+
+### Step 2.4b — Freeze the A6 sequence (second dispatch only)
+
+Write, as a fenced block, the exact ordered commands for A6: listener `--status` read → daemon pre-reads (Step 2.3 set) → local currency check on `main` at the A1b merge SHA → `pytest tests/ops/test_c1_signal_daemon_image_manifest.py -q` → `fly deploy . --config deploy/c1_signal_daemon/fly.toml --dockerfile deploy/c1_signal_daemon/Dockerfile` from the repo root → boot log line → `GET /` health fields expected (per the A1b brief) → in-container `status` CLI → journal summary one-liner (fields only) → listener ledger `seq` compare → 60 s quiet-log check.
+
 ### Step 2.4 — Freeze the A5 sequence and the hash choreography
 
 Write, as a fenced block, the exact ordered commands for A5 (host `--status` read → local currency check → import-closure test → pre-deploy in-container hashes → `fly deploy . --config deploy/c1_rail/fly.toml --dockerfile deploy/c1_rail/Dockerfile` from the repo root on `main` at the merge SHA → boot line + health → post-deploy in-container `sha256sum` of the six pinned files plus `ops/c1_rail/m1_stage1_contract.py`, `ops/c1_rail/m1_stage1_control.py`, `scripts/validate_c1_monitoring_acceptance.py` → `contract_sha256()` in-image → migration plan/apply → `--status` → acceptance JSON update → validator). Recommend extending the pin set with the two `m1_stage1_*` listener modules and say why (the contract hash is load-bearing for the ceremony); the parent decides in the A5 brief.
@@ -98,7 +119,7 @@ Commit on `claude/*`, push, PR.
 
 ## 4. Falsifiable hypothesis
 
-**H:** every A5 precondition can be evidenced from host reads plus the A2 and A3 returns without a deploy, and the running listener build is still the 2026-08-19 pinned build.
+**H:** every A5 precondition (first dispatch) and every A6 precondition (second dispatch) can be evidenced from host reads plus the A2 and A3 returns without a deploy, and on the first dispatch the running listener build is still the 2026-08-19 pinned build.
 **Reject** if any item lacks evidence → that row is NO-GO with an owner; if the in-container hashes do not match the pins, the running build is unknown → NO-GO for A5 until explained. **Ambiguous** if the operator cannot attest flatness now → the row stays open and A5 cannot start.
 
 ## 5. Forbidden moves
@@ -111,9 +132,9 @@ Commit on `claude/*`, push, PR.
 
 ## 6. Gate and return taxonomy
 
-RESOLVED = every listener row GO (daemon rows may read "pre-A1b" for the first dispatch). FALSIFIED = a row is NO-GO for a reason A5 cannot fix (report). AMBIGUOUS = operator attestation or A2/A3 inputs missing.
+This brief is dispatched twice. **First dispatch (listener pass):** RESOLVED = every §A4-L row GO; daemon rows read "pre-A1b" and Step 2.3b/2.4b are not attempted. **Second dispatch (daemon pass, after A1r + A1b merged, A2-D green, A5 DONE):** RESOLVED = every §A4-D row GO with the A6 sequence frozen; the §A4-L rows are re-read only for the listener-disarm line. FALSIFIED = a row is NO-GO for a reason the next deploy cannot fix (report). AMBIGUOUS = operator attestation or A2/A3 inputs missing. An unresolved journal checkpoint on the second dispatch is `BLOCKED — plan-itself-wrong`.
 
-Return exactly one of `DONE` · `DONE_WITH_CONCERNS` (any NO-GO) · `NEEDS_CONTEXT` · `BLOCKED — context-problem | capability-problem | scope-problem | plan-itself-wrong`, with branch, PR URL, the checklist table, and the frozen A5 command block.
+Return exactly one of `DONE` · `DONE_WITH_CONCERNS` (any NO-GO) · `NEEDS_CONTEXT` · `BLOCKED — context-problem | capability-problem | scope-problem | plan-itself-wrong`, with branch, PR URL, which dispatch this was, the checklist table(s), and the frozen A5 (first dispatch) or A6 (second dispatch) command block.
 
 ## 7. Parent-session review
 

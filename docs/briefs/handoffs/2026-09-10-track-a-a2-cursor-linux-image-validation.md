@@ -30,7 +30,7 @@ Anchor each with `git log -1 --format=%h -- <path>`.
 
 ## 0.5. Clarifications — parent-recommended defaults (apply unless Phase 0 contradicts; then bounce `NEEDS_CONTEXT` quoting the conflict)
 
-- (A) **Where tests run.** Default: focused suites run in a plain `python:3.12-slim` container with the repo bind-mounted read-only and `pytest` installed at run time; additionally, the subset whose imports resolve inside each **built** image runs there with `tests/` bind-mounted and `pytest` installed into an ephemeral container (never into the Dockerfiles). Report which files ran where; a test whose imports fail in-image is reported, not forced.
+- (A) **Where tests run.** `tests/conftest.py` imports `pandas` unconditionally, so `pytest` alone cannot even collect. Default: focused suites run in a plain `python:3.12-slim` container with the repo bind-mounted read-only and the repository's hash-pinned test dependencies installed ephemerally exactly as `.github/workflows/tests.yml` does (`python -m pip install --require-hashes -r requirements-ops.lock`), never into the Dockerfiles; additionally, the subset whose imports resolve inside each **built** image runs in an ephemeral container derived from that image with `tests/`, `tests/conftest.py`'s inputs, and `requirements-ops.lock` bind-mounted and the same lock installed at run time. Report which files ran where; a test whose imports fail in-image is reported, not forced. Cache the pip wheels with `actions/cache` keyed on the lock's hash so the job stays inside the §0.5 (E) budget.
 - (B) **How to get `qty_out=1` for the listener check.** Default: apply the migration in-container with `--enable-test` on the throwaway `/data` (plan first to obtain the `--expect-*` preimage hashes). Do not hand-edit constants.
 - (C) **Timeout check construction.** Default: build the emitting loop exactly as `tests/ops/test_m1_stage1_integration.py` does, substituting the real `default_transport` and a local listening-but-silent socket. If that needs an `ops/` edit, return `NEEDS_CONTEXT` instead of editing.
 - (D) **Workflow triggers.** Default: `pull_request` and `push` filtered to `deploy/**`, `.dockerignore`, `ops/c1_rail/**`, `ops/c1_signal_daemon/**`, `core/**` (the listener image COPYs and imports `core/` modules, and a new transitive import anywhere under `core/` is exactly the green-build / dead-CMD class this workflow exists to catch), `scripts/validate_c1_monitoring_acceptance.py`, `docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json`, `tests/ops/**`, `tests/fixtures/c1_image_validation/**`, `scripts/c1_image_validation.sh`, the workflow file itself; plus `workflow_dispatch`. Not a required merge check (the ruleset owner is Q-GATESTACK-1's closure; do not edit it).
@@ -91,7 +91,7 @@ Each check prints `PASS <id>` or `FAIL <id>` plus the evidence line (boot line, 
 ## 5. Forbidden moves
 
 - Editing `deploy/*/Dockerfile`, `.dockerignore`, or any `ops/` file to make a check pass.
-- Installing `pytest` or anything else into the production Dockerfiles.
+- Installing `pytest`, the ops lock, or anything else into the production Dockerfiles (ephemeral containers only).
 - Running any boot check with networking enabled.
 - Committing a real token, account id, or equity figure; every value is a placeholder.
 - Touching `docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json` (a green build is not a deploy; `fixture_hashes` are in-container-only).

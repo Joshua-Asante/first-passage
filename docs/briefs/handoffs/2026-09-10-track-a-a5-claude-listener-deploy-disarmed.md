@@ -54,7 +54,19 @@ From the repo root on `main` at the merge SHA: `fly deploy . --config deploy/c1_
 `fly logs -a c1-rail` → boot line `dry_run=True armed_until=- equity_source=crosstrade`; `curl -sS https://c1-rail.fly.dev/` → `{"ok":true,...}`; `--status` in-container → same as 2.1. The ~1 s port-bind race warning from fly-proxy is benign (08-19 precedent); a `ModuleNotFoundError` is not — roll back to the §A3 image and return `FALSIFIED`.
 
 ### Step 2.7 — Migration at cap zero
-`python ops/c1_rail/m1_stage1_control.py migrate --config /data/c1_rail_config.json` (plan; no `--enable-test`) → paste (redact nothing here: leg keys and caps are not secrets). Review: only the `m1_stage1_test` row (`cap_alloc` 0) and lifecycle key `M1 Stage1 Test: RETIRED` change. Then `--apply --flat-verified --expect-constants <before.constants> --expect-lifecycle <before.lifecycle>`. Verify: backups `*.m1-backup-*` present; re-run the plan → the second plan's `after` equals the current files (no-op). If a restart is required (per §0.5), `--status` read, then `fly machine restart e820221a657d28`-class command with the current machine id, then 2.6 again.
+Two reads, then one write. (1) `python ops/c1_rail/m1_stage1_control.py migrate --config /data/c1_rail_config.json` (plan; no `--enable-test`) → prints `applied:false`, `enabled`, `before` (the two preimage digests) and `contract_sha256` — it does **not** print the after-state. (2) The after-state comes from the same pure function the CLI uses, called read-only in-container with the **same flags** the apply will use (`enabled=False`, `release_withdrawn` per §0.5):
+
+```bash
+MSYS_NO_PATHCONV=1 fly ssh console -a c1-rail -C "python -c \"import json,sys;sys.path.insert(0,'ops/c1_rail');import m1_stage1_control as m;c=m._read('/data/c1_rail_config.json');p=m.plan_migration(c,enabled=False,release_withdrawn=False);print(json.dumps({k:p[k] for k in ('enabled','release_withdrawn','before','contract_sha256','after')},indent=1,sort_keys=True))\""
+```
+
+`plan_migration` reads the constants and lifecycle files, mutates in-memory copies, validates, and returns; it writes nothing. Its `after` holds the full constants JSON (tier, firm constants, `leg_map` rows) and the lifecycle map — no secrets, no account figures — so paste it unredacted. Review: `after.constants.leg_map` differs from the current file only by the added `m1_stage1_test` row with `cap_alloc` 0 (and, only if `release_withdrawn` was set, the two withdrawn rows at 0), `after.lifecycle` differs only by `M1 Stage1 Test: RETIRED`, and the `before` digests equal those the CLI printed. Then `--apply --flat-verified --expect-constants <before.constants> --expect-lifecycle <before.lifecycle>` with the identical flags. Verify: backups `*.m1-backup-*` present; re-run read (2) and check the no-op property in-container:
+
+```bash
+MSYS_NO_PATHCONV=1 fly ssh console -a c1-rail -C "python -c \"import json,sys;sys.path.insert(0,'ops/c1_rail');import m1_stage1_control as m;c=m._read('/data/c1_rail_config.json');p=m.plan_migration(c,enabled=False,release_withdrawn=False);print('noop', p['after']['constants']==json.load(open(c['constants_path'])) and p['after']['lifecycle']==json.load(open(c['lifecycle_state_path'])))\""
+```
+
+Expect `noop True` (the files now equal the plan's after-state; applying again would change nothing). If a restart is required (per §0.5), `--status` read, then `fly machine restart e820221a657d28`-class command with the current machine id, then 2.6 again.
 
 ### Step 2.8 — Preflight refusal (expected)
 `python ops/c1_rail/m1_stage1_control.py preflight --config /data/c1_rail_config.json` → expect exit 1 with the refusal line (cap 0 / `RETIRED` cannot size one micro). This confirms the allocation is genuinely zero. Do not enable anything to make it pass.
@@ -76,13 +88,13 @@ Final `--status` read pasted. No arm. No signal.
 ## 4. Falsifiable hypothesis
 
 **H:** the merge-SHA listener image boots disarmed on the host, the identity lands at cap zero with the sizing host refusing to size it, and the deployed bytes are pinned from in-container reads.
-**Reject** if the boot line is not `dry_run=True armed_until=-`, if `preflight` sizes anything, or if a pinned hash had to come from the tree → roll back / stop and return `FALSIFIED`. **Ambiguous** if the pre-deploy hashes do not match the record → stop before deploying.
+**Reject** if the boot line is not `dry_run=True armed_until=-`, if `preflight` sizes anything, or if the hash of any pin the image carries (the `ops/c1_rail/*.py` and `scripts/` pins) had to come from the tree instead of an in-container read → roll back / stop and return `FALSIFIED`. The one non-image pin, `tests/ops/test_m1_acceptance_drills.py`, is tree-backed by design (Step 2.9) and is outside this clause. **Ambiguous** if the pre-deploy hashes do not match the record → stop before deploying.
 
 ## 5. Forbidden moves
 
 - `--arm`, `--acknowledge-m1-unresolved`, hand-editing `/data/c1_rail_config.json`, `--enable-test`, any POST to the listener — each is one step away and each is out of scope.
 - Deploying from a dirty tree, a worktree not at the merge SHA, or any branch but `main`.
-- Refreshing `fixture_hashes` from tree bytes.
+- Refreshing any image-carried pin in `fixture_hashes` from tree bytes (the non-image test pin is verified from the merge-SHA tree, as the 2026-08-19 refresh did).
 - `--release-withdrawn` without the operator's in-session yes.
 - "Fixing" a dead CMD by editing the Dockerfile in this session (that is an A2 finding; roll back instead).
 - Touching the daemon app or its volume.

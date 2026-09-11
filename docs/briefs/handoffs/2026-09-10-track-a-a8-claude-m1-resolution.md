@@ -44,7 +44,7 @@ A7 produced the item-5 event. The validator requires both the genuine event id a
 - `operator_signoff`: the object from §0.5, verbatim from the operator.
 - `status`: `RESOLVED`.
 - `notes[]`: a dated entry — item 5 discharged by the A7 event (ceremony id, target minute, contract hash, `qty_out=1`, sender never invoked, rail `dry_run=true` throughout), what the ratified A1 amendment says it certifies and leaves open, the signoff date, and the sentence "RESOLVED is the arm-gate's precondition, not an arm; `dry_run=false` still requires a separate operator GO."
-- Leave `fixture_hashes`, `drills`, `drill_evidence`, `sim_chain_ok_event_id`, `notification_*` untouched.
+- Leave `fixture_hashes`, `drills`, `drill_evidence`, `sim_chain_ok_event_id`, `notification_*` untouched in this PR (`fixture_hashes` changes only in PR 2, from the Step 2.3 reads).
 - Run: `python scripts/validate_c1_monitoring_acceptance.py docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json` (exit 0) and `… --require-resolved` (exit 0). Then the local gate simulation: `python ops/c1_rail/c1_rail_arm.py --status --config deploy/c1_rail/c1_rail_config.fly.example.json --acceptance docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json` → `m1_gate: status='RESOLVED' result=PASS` (the example config is disarmed and secret-free; `--status` writes nothing).
 - Commit, push, open PR 1 (Codex reviews; operator merges).
 
@@ -69,10 +69,11 @@ Final `--status` pasted: `dry_run=True armed_until=None … m1_gate: status='RES
 
 - `--arm`, `--acknowledge-m1-unresolved`, or any config edit beyond what `fly deploy` does — tempting exactly now, and exactly forbidden: `RESOLVED` is one of two conditions, the other is a separate GO.
 - Populating the event field with any id but the A7 UUID (the 2026-07-28 floored event, a fabricated id, the SIM chain id).
-- Editing `drills`, `drill_evidence`, `sim_chain_ok_event_id`, `notification_*`, or `fixture_hashes` values.
+- Editing `drills`, `drill_evidence`, `sim_chain_ok_event_id`, or `notification_*` values at any point.
+- Editing `fixture_hashes` in PR 1 (no deploy has happened yet; PR 1 changes only the three owed fields plus notes). PR 2 is the only place they change, and only to the Step 2.3 values.
 - Loosening the validator, the secret scanner, or `m1_acceptance_reason`.
 - Claiming live-feed readiness, strategy readiness, or deployment authority in the notes.
-- Refreshing pins from tree bytes.
+- Refreshing any image-carried pin from tree bytes (the non-image `tests/ops/test_m1_acceptance_drills.py` pin is verified from the merge-SHA tree by design).
 
 ## 6. Gate and return taxonomy
 
