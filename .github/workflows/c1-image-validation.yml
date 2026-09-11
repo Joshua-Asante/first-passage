@@ -40,9 +40,11 @@ on:
 permissions:
   contents: read
 
-# One run per ref: `push` and `pull_request` fire on the same SHA; the parent reads one log, not two.
+# One run per branch: `push` and `pull_request` fire on the same SHA; the parent reads one log, not two.
+# Keyed on the branch name because `github.ref` differs between the two events
+# (`refs/heads/<branch>` vs `refs/pull/<n>/merge`) and would not dedupe them.
 concurrency:
-  group: c1-image-validation-${{ github.ref }}
+  group: c1-image-validation-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
