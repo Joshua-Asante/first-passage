@@ -21,6 +21,8 @@ from collections.abc import Iterator
 DEFAULT_CEILING = 0.05
 DEFAULT_ALPHA = 0.05
 DEFAULT_LIMBS = 3
+DEFAULT_PASS_TARGET = 0.5   # S1: one-sided lower bound on P(T <= 200) must be >= 0.50
+SPEED_LIMB_FAILURE_LIMBS = 3  # full / H1 / H2 failure limbs beside the one speed limb
 DEFAULT_STEP = 10
 DEFAULT_N_MAX = 8000
 DEPENDENCE_INDEPENDENT = "independent"
@@ -163,6 +165,120 @@ def joint_power(q: float, limbs: int, dependence: str) -> float:
     )
 
 
+def min_certifying_passes(
+    n: int, target: float = DEFAULT_PASS_TARGET, alpha: float = DEFAULT_ALPHA
+) -> int:
+    """Smallest k with the one-sided (1-alpha) Clopper-Pearson LOWER bound on k/n >= target, else -1.
+
+    Additive TB-P1 mode (speed limb, S1). Identity: a lower bound on the pass
+    proportion >= target is the upper bound on the failure proportion
+    <= 1 - target, so the count is n minus max_certifying_busts at ceiling
+    1 - target. Equivalent to: P(X >= k; n, target) <= alpha.
+    """
+    _require_n(n)
+    _require_open_unit("target", target)
+    _require_open_unit("alpha", alpha)
+    k_fail = max_certifying_busts(n, ceiling=1.0 - target, alpha=alpha)
+    return -1 if k_fail < 0 else n - k_fail
+
+
+def speed_limb_power(
+    n: int,
+    true_pass_rate: float,
+    target: float = DEFAULT_PASS_TARGET,
+    alpha: float = DEFAULT_ALPHA,
+) -> float:
+    """P(lower bound on the pass proportion >= target) at a true pass rate; 0.0 when no count certifies.
+
+    Computed as the complement identity per_limb_power(n, 1 - q, ceiling = 1 - target)
+    so the same normalized recurrence carries the tail (no 1 - CDF cancellation).
+    """
+    _require_unit_interval("true_pass_rate", true_pass_rate)
+    if min_certifying_passes(n, target=target, alpha=alpha) < 0:
+        return 0.0
+    return per_limb_power(n, 1.0 - true_pass_rate, ceiling=1.0 - target, alpha=alpha)
+
+
+def joint_power_four(q_fail: float, q_speed: float, dependence: str) -> float:
+    """Joint power over three failure limbs (full/H1/H2) and one speed limb on shared paths.
+
+    independence -> q_fail**3 * q_speed; frechet -> max(0, 1 - 3*(1-q_fail) - (1-q_speed)).
+    """
+    _require_unit_interval("q_fail", q_fail)
+    _require_unit_interval("q_speed", q_speed)
+    if dependence == DEPENDENCE_INDEPENDENT:
+        return q_fail**SPEED_LIMB_FAILURE_LIMBS * q_speed
+    if dependence == DEPENDENCE_FRECHET:
+        return max(0.0, 1.0 - SPEED_LIMB_FAILURE_LIMBS * (1.0 - q_fail) - (1.0 - q_speed))
+    raise ValueError(
+        f"dependence must be one of {DEPENDENCE_CHOICES}, got {dependence!r}"
+    )
+
+
+def size_for_joint_four(
+    true_rate: float,
+    true_pass_rate: float,
+    target_power: float,
+    *,
+    pass_target: float = DEFAULT_PASS_TARGET,
+    dependence: str = DEPENDENCE_INDEPENDENT,
+    ceiling: float = DEFAULT_CEILING,
+    alpha: float = DEFAULT_ALPHA,
+    step: int = DEFAULT_STEP,
+    n_max: int = DEFAULT_N_MAX,
+) -> int:
+    """Smallest n on range(step, n_max+1, step) meeting the four-limb joint-power target (linear scan)."""
+    _require_unit_interval("true_rate", true_rate)
+    _require_unit_interval("true_pass_rate", true_pass_rate)
+    _require_target(target_power)
+    _require_open_unit("pass_target", pass_target)
+    _require_open_unit("ceiling", ceiling)
+    _require_open_unit("alpha", alpha)
+    if step < 1:
+        raise ValueError(f"step must be >= 1, got {step}")
+    if n_max < step:
+        raise ValueError(f"n_max must be >= step, got n_max={n_max} step={step}")
+    for n in range(step, n_max + 1, step):
+        q_fail = per_limb_power(n, true_rate, ceiling=ceiling, alpha=alpha)
+        q_speed = speed_limb_power(n, true_pass_rate, target=pass_target, alpha=alpha)
+        if joint_power_four(q_fail, q_speed, dependence) >= target_power:
+            return n
+    raise ValueError(
+        f"no n <= {n_max} on step {step} meets four-limb joint power {target_power} "
+        f"(true_rate={true_rate}, true_pass_rate={true_pass_rate}, dependence={dependence})"
+    )
+
+
+def format_speed_eval_line(
+    n: int, true_rate: float, true_pass_rate: float, *, pass_target: float,
+    ceiling: float, alpha: float,
+) -> str:
+    q_fail = per_limb_power(n, true_rate, ceiling=ceiling, alpha=alpha)
+    q_speed = speed_limb_power(n, true_pass_rate, target=pass_target, alpha=alpha)
+    k_min = min_certifying_passes(n, target=pass_target, alpha=alpha)
+    return (
+        f"n={n} fail_limb={_fmt_prob(q_fail)} speed_limb={_fmt_prob(q_speed)} "
+        f"min_passes={k_min} max_busts={max_certifying_busts(n, ceiling=ceiling, alpha=alpha)} "
+        f"joint4_independent={_fmt_prob(joint_power_four(q_fail, q_speed, DEPENDENCE_INDEPENDENT))} "
+        f"joint4_frechet={_fmt_prob(joint_power_four(q_fail, q_speed, DEPENDENCE_FRECHET))} "
+        f"(pass_target={_fmt_param(pass_target)} ceiling={_fmt_param(ceiling)} alpha={_fmt_param(alpha)})"
+    )
+
+
+def format_speed_size_line(
+    n: int, true_rate: float, true_pass_rate: float, *, pass_target: float,
+    dependence: str, ceiling: float, alpha: float, step: int,
+) -> str:
+    q_fail = per_limb_power(n, true_rate, ceiling=ceiling, alpha=alpha)
+    q_speed = speed_limb_power(n, true_pass_rate, target=pass_target, alpha=alpha)
+    return (
+        f"n={n} fail_limb={_fmt_prob(q_fail)} speed_limb={_fmt_prob(q_speed)} "
+        f"joint4={_fmt_prob(joint_power_four(q_fail, q_speed, dependence))} "
+        f"(pass_target={_fmt_param(pass_target)} ceiling={_fmt_param(ceiling)} "
+        f"alpha={_fmt_param(alpha)} dependence={dependence} step={step})"
+    )
+
+
 def size_for_power(
     true_rate: float,
     target: float,
@@ -264,9 +380,28 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--alpha", type=float, default=DEFAULT_ALPHA)
     parser.add_argument("--step", type=int, default=DEFAULT_STEP)
     parser.add_argument("--n-max", type=int, default=DEFAULT_N_MAX)
+    # TB-P1 additive speed-limb mode; absent --true-pass-rate keeps the legacy output byte-identical.
+    parser.add_argument("--true-pass-rate", type=float, default=None)
+    parser.add_argument("--pass-target", type=float, default=DEFAULT_PASS_TARGET)
     args = parser.parse_args(argv)
 
     try:
+        if args.true_pass_rate is not None:
+            if args.power is not None:
+                n = size_for_joint_four(
+                    args.true_rate, args.true_pass_rate, args.power,
+                    pass_target=args.pass_target, dependence=args.dependence,
+                    ceiling=args.ceiling, alpha=args.alpha, step=args.step, n_max=args.n_max,
+                )
+                print(format_speed_size_line(
+                    n, args.true_rate, args.true_pass_rate, pass_target=args.pass_target,
+                    dependence=args.dependence, ceiling=args.ceiling, alpha=args.alpha,
+                    step=args.step))
+                return 0
+            print(format_speed_eval_line(
+                args.n, args.true_rate, args.true_pass_rate, pass_target=args.pass_target,
+                ceiling=args.ceiling, alpha=args.alpha))
+            return 0
         if args.power is not None:
             n = size_for_power(
                 args.true_rate,
