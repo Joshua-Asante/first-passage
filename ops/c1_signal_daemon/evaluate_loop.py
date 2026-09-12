@@ -38,7 +38,7 @@ class EvaluateLoop:
         self._boot_id = boot_id
         self._step_lock = threading.Lock()
 
-    def heartbeat(self, now: datetime | None = None) -> HeartbeatState:
+    def heartbeat(self, now: datetime | None = None, *, poll_interval_s=None) -> HeartbeatState:
         now = now or datetime.now(timezone.utc)
         healthy = feed_healthy(
             connected=self._source.connected,
@@ -58,6 +58,7 @@ class EvaluateLoop:
             ceremony_id=getattr(self._coordinator, "ceremony_id", None),
             ceremony_state=getattr(self._coordinator, "state", "DISABLED"),
             effective_emit=(self._coordinator.effective_emit if self._coordinator else self.emit_enabled),
+            poll_interval_s=poll_interval_s,
         )
 
     def step(self, now: datetime | None = None) -> dict[str, Any]:

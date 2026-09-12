@@ -4,9 +4,10 @@
   "expires": "2099-01-01T14:02:00+00:00",
   "contract_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
   "expected_qty": 1,
+  "venue_contract": "MYMH9",
   "preflight_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
   "source": {
-    "kind": "offline_fixture",
+    "kind": "operator_attended_input",
     "schema": "ohlcv-1m",
     "symbol": "MYM1!"
   }

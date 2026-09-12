@@ -8,8 +8,8 @@ import math
 import uuid
 
 from c1_signal_daemon.listener_client import serialize_b1_payload
-from c1_signal_daemon.m1_stage1_control import (close, digest, enable, prepare,
-                                               utc, validate_manifest)
+from c1_signal_daemon.m1_stage1_control import (active_ceremony, close, digest, enable,
+                                               prepare, utc, validate_manifest)
 from c1_signal_daemon.m1_stage1_state import CeremonyError, CeremonyStore, DaemonOwnership
 from c1_signal_daemon.m1_stage1_strategy import M1Stage1TestStrategy
 
@@ -25,24 +25,7 @@ class M1Coordinator:
 
     def _active(self, obj, now):
         from c1_signal_daemon.daemon import load_config
-        cfg = load_config(self.config_path)
-        gate = cfg["m1_test"]
-        item = obj["ceremonies"].get(obj["active"])
-        if (not item or obj["boot_id"] != self.boot_id or item["boot_id"] != self.boot_id
-                or obj["enabled"] is not True or item["state"] != "READY"
-                or obj["active"] in obj["tombstones"]
-                or cfg["emit_enabled"] is not True or gate["enabled"] is not True
-                or cfg["strategy"] != "m1_stage1_test" or cfg["bar_period_s"] != 60
-                or gate.get("boot_id") != self.boot_id or gate.get("ceremony_id") != obj["active"]
-                or gate.get("generation") != obj["generation"]
-                or item["generation"] != obj["generation"]
-                or gate.get("manifest_sha256") != item["manifest_sha256"]
-                or digest(item["manifest"]) != item["manifest_sha256"]):
-            return None
-        validate_manifest(item["manifest"])
-        if now >= utc(item["manifest"]["expires"]):
-            return None
-        return item
+        return active_ceremony(obj, load_config(self.config_path), self.boot_id, now)
 
     def before_poll(self, source, now):
         self.effective_emit = False
@@ -62,7 +45,7 @@ class M1Coordinator:
                 source.deactivate()
                 return False
             self.current_manifest = active["manifest"]
-            source.activate(active["manifest"]["source"])
+            source.activate(active["manifest"]["source"], ceremony_id=obj["active"])
             self.effective_emit = True
             return True
         except (CeremonyError, OSError, ValueError, KeyError, TypeError, SystemExit):
@@ -85,7 +68,8 @@ class M1Coordinator:
         if valid:
             self._accepted_bar = dict(timestamp=bar.ts.isoformat(), open=float(bar.open),
                                       high=float(bar.high), low=float(bar.low), close=float(bar.close),
-                                      volume=float(bar.volume))
+                                      volume=float(bar.volume),
+                                      venue_contract=self.current_manifest["venue_contract"])
         return valid
 
     def reserve(self, payload, now):

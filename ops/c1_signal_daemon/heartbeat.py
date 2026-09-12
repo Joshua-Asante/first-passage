@@ -18,6 +18,7 @@ class HeartbeatState:
     ceremony_id: str | None = None
     ceremony_state: str = "DISABLED"
     effective_emit: bool = False
+    poll_interval_s: float | None = None
 
     def as_json_dict(self) -> dict[str, Any]:
         return asdict(self)
