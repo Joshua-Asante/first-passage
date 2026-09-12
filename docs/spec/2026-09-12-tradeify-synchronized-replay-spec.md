@@ -1,0 +1,90 @@
+# SPEC: Tradeify portfolio — synchronized intraday replay (TB-S2)
+
+Status: PROPOSED · 2026-09-12 · authorizes nothing ($0 · K=0) · depends: [umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) D-B1, D-B3, D-B8, D-B9 (all RULED), campaign record §56 (O-1, O-5..O-9 RULED) · consumes TB-S1's candidate policy value (`book_policy.candidate_book_protection_policy()`) read-only
+Objective: specify the engine (TB-I2, Codex) that reruns the four private adapters on the frozen CME panels as one synchronized book with the fixed 1 % / 40 % policy, integer sizes, account-wide capacity and the venue clock, and hands the used-account MC kernel an intraday-honest session series — closing, item by item, the daily-cashflow approximation the acceptance record names.
+
+Owner of the rules: [acceptance record](../notes/2026-09-10-tradeify-protection-selection.md) · umbrella TB-S2 packet · [TB-R2 read](../notes/2026-09-12-track-b-scaling-faithfulness-read.md) · [adapters and book rules](../notes/2026-09-11-track-b-adapters-and-book-rules.md). Engine footprint (TB-I2): `lab/analysis/c1/tradeify_book_replay_2026-09/` (tracked code + synthetic fixtures + tests only; private runs under the primary checkout's ignored roots).
+
+## Reads (anchors at `origin/main @ c41e2be`, 2026-09-12)
+
+`core/mc/simulation.py` @ `adccb7d` (`EvaluationState`, `simulate_path(path, dd_trigger, dd_scale, horizon, *, intraday_low, initial_state, …)`, `_drawdown_outcome`, `_has_passed`; `intraday_low` = per-day excursion ≤ 0 below the day's opening equity; inactivity-OFF only with an initial state) · `core/mc/preflight.py` `firm_kwargs` · `ops/c1_signal_daemon/tv_broker_emulator.py` @ `027895e` (TV fill semantics 1–8, FIFO lots, margin off for the rail, `ExecutionEvent` path, rejects/partials injectable) · `ops/c1_signal_daemon/book_protocol.py` @ `8c9d002` · `ops/c1_rail/book_policy.py` @ `bda7a48` (`BookProtectionClock`, `CapacityLedger`, `Takeover`, `leg_quantities`, `transition_cancels`) · `lab/research_utils/joint_trade_blocks.py`, `trade_reconciliation.py` (`_deadline_timestamps`: `entry < deadline <= exit` is a violation) · `lab/analysis/c1/tradeify_book_composition_2026-09/book_grid.py` `build_intraday_low_sequenced` (daily MAE bucketing on recorded trades — **not** a bar replay; the nearest analogue, superseded here) · `phase1_config.json` @ `9f69e94` (`source_timezone America/New_York` on all legs; `synchronized_intraday_path_available false` — this spec supplies it; roll policy `ACCEPTED_UNMODELED` with two obligations) · `tradeify_commission_schedule.json` (round-trip 6J 6.20, MNQ/MYM 1.82, MGC 2.12 USD) · `cme_early_close_calendar.json` (D19; 40 rows, `coverage_end 2026-09-02`) · [venue-legality ADR](../adr/2026-09-03-venue-legality-re-expression-lane.md) lines 166–170 (2023-04-07, 2025-01-09, 2026-04-03 close before 12:59 ET; no deadline expresses them) · [Striker readmission ADR](../adr/2026-09-05-tradeify-select-striker-expression-readmission.md) same-day amendment (one controller per order symbol) · [S7](../adr/2026-07-29-third-leg-symbol-occupancy-limb.md) §2-A · campaign record §53/§54 (C1–C5 exist only as a digest; §54's 125 tests are not evidence here) · governing plan lines 76–83, 199–216 (accepted boundaries, Task 2 cases).
+
+## Composition decisions re-derived here (fresh; the lost C1–C5 are not reconstructed)
+
+| Id | Decision | Why |
+|---|---|---|
+| RC-1 | **Adapter replay.** The four private adapters (`BookStrategy`) are rerun bar by bar on the frozen panels through one `TVBrokerEmulator` per leg (margin off); each adapter keeps its own **paper equity** exactly as its Pine does (Striker halts, Vanguard ladder), and the **account** equity is the marked sum. Recorded-trade replay is not admissible for any leg (ORB under protection and both ladder legs change their trades with size/mode; Aegis needs no fallback). | parity PASS binds the ports to the exports only under these semantics; umbrella (A) |
+| RC-2 | **One clock:** the 15-minute bar grid keyed by UTC open time, displayed in `America/New_York`; every leg's session filter runs in its own Pine timezone as ported. The 6J panel's later origin is its own first session. | `source_timezone`; parity |
+| RC-3 | **Two mode-runs, one chronology.** Stage A runs the whole book twice — every session in NORMAL mode and every session in PROTECTED mode (AUTHORIZED tier) — producing per-session records under each mode. Because all four legs force-flat every session and the per-day state resets daily, a session's trades depend on the mode of that session and on the leg's own cumulative paper state (chronological), not on the account path. Stage B then assembles paths by picking, for each resampled session, the record of the mode the account path's **prior close** selects (`BookProtectionClock`). | this is the native replacement for the acceptance record's "continuously scaled cashflows"; it makes ORB adds-off exits and integer sizes native |
+| RC-4 | **Fill model = the parity-validated TV semantics** (emulator rules 1–8) with the pinned per-symbol slippage ticks; the decision-bearing run does not use the "stop-first on a touching bar" convention because that convention would contradict the exports the ports reproduce. The conservative same-bar ordering, doubled slippage and a partial-fill fraction are **pre-registered stress cells** of the D20 battery (TB-P1 (E)), not the base run. Commission in the decision-bearing run = the **venue schedule** per side (`tradeify_commission_schedule.json`), never the Pine literals the captures used. | umbrella (B) says "unless Phase 0 contradicts"; parity contradicts; costs must be the venue's |
+| RC-5 | **Capacity and priority at a bar-time barrier.** Signals carrying one bar timestamp are collected, then admitted to the account-wide `CapacityLedger` in the frozen global order **D-B8 priority (Aegis → Striker → Vanguard → ORB), entry before add, `leg_id` lexical**; refuse-never-clip; the Aegis takeover is `book_policy.Takeover` (cancel displaced pending → ack → close → confirmed flat → admit; any partial/unknown refuses). Under the ruled O-5/O-6 laws the protected Striker ceiling is 77 micro-equivalents, so a protected Aegis entry (30) **can** trigger a takeover of Striker; the replay models it natively and logs it distinctly (`capacity_takeover_*`). | D-B8, O-6 |
+
+## Interfaces (engine files; every name is the TB-I2 footprint)
+
+| Component | Owner file | Contract |
+|---|---|---|
+| `BarPanel` | `panel.py` | loads `<SYMBOL>_M15.csv` from `FP_BAR_DATA_DIR` (digest-checked against `core/data/bar_data/SHA256SUMS`, CRLF-stripped); yields `Bar` on the UTC grid; reports coverage per session per leg |
+| `AccountClock` | `clock.py` | venue sessions in ET (18:00 open → 17:00 close, weekday 16:45 ET flat deadline, 12:59 ET on D19 early-close dates), the **typed closure overlay** (TB-C1: 2023-04-07, 2025-01-09, 2026-04-03 = no-trade, flat before the prior deadline), the TB-C1 forward calendar; **fails closed** past the combined `coverage_end` |
+| `ProtectionClock` | `book_policy.BookProtectionClock` (reused) | mode for the next session from the settled close; EOD peak ratchet; frozen initial state (E1: pristine; E2: the sealed B7 snapshot's `historical_eod_peak`) |
+| `BookReplay` (Stage A) | `replay.py` | per bar: feed every leg its bar (a leg without a bar this timestamp is marked MISSING); collect actions at the barrier; admit in the RC-5 order through `CapacityLedger`; execute through each leg's `TVBrokerEmulator`; deliver `ExecutionEvent`s; apply `transition_cancels` at a mode change; mark account equity (RC-6 below); emit the per-bar equity path, trade ledger (`ClosedTrade` + leg id), event log |
+| `SessionRecord` | `sessions.py` | per venue session and per mode: realized cashflow net of venue commission, **intraday adverse excursion** (RC-6) as an excursion ≤ 0 from the session's opening equity, fills count, `flat_before_deadline` (bool), coverage flag, idle flag |
+| `JointFlatBlocks` | `blocks.py` | contiguous sessions with every leg flat at both edges (true at every session boundary for this book; the builder still proves it from the ledger and refuses otherwise); block length family frozen in TB-F1 |
+| `PathAssembler` (Stage B) | `paths.py` | block bootstrap over the frozen family and seed stream; per path iterate sessions: mode = `ProtectionClock` on the path's own EOD equity; take that session's record of that mode; build `path` (daily P&L) and `intraday_low`; call `simulate_path(..., dd_scale=1.0, intraday_low=…, initial_state=…)` with `firm_kwargs("Tradeify_Select_100K", inactivity_off=True, consistency=0.40)` — protection is already expressed, so the kernel must not scale again (a test asserts `dd_scale == 1.0` is passed) |
+| `WeekClock` | `sessions.py` | Mon–Fri calendar weeks; counts weeks with no fill per path (descriptive, D22: never a bust) |
+| `Coverage` | `coverage.py` | excluded sessions and why (missing bar on an active leg, deadline violation, overlay date), counts reported in RESULTS |
+| RESULTS | `run_stage_a.py`, `run_paths.py` | digests of panels, ports (`PORT_MANIFEST`), policy value, calendar/overlay, commission schedule, engine commit; excluded counts; idle-week counts; numbers private (D-B12) |
+
+**RC-6 — marked equity.** Per bar, account equity = cash + Σ legs open P&L at the bar close (EOD ratchet uses the last bar of the session); the floor test uses the **side-aware adverse mark**: a long leg at its bar low, the short leg (Aegis) at its bar **high**, summed across legs on the same bar (adverse extremes assumed coincident; no favourable netting). The session's `intraday_low` is the minimum over its bars of (adverse mark − session opening equity), clipped at 0.
+
+**RC-7 — coverage rule.** For each session and each leg, the leg's expected timestamps are the union grid of the four panels restricted to that leg's own session window (its ported Pine filter); a missing timestamp on **any** leg, in position or flat, excludes the session from the decision-bearing pool and is counted; last-close imputation is permitted only in diagnostic runs, labelled in every output.
+
+**RC-8 — flatten legality.** Each leg's own Pine EOD flat is replayed as ported (Aegis 16:00 ET signal → next-open fill; Vanguard 16:00 ET → 16:15; Striker and ORB at the close of the 15:45 / 16:15 bar); the `AccountClock` then **verifies** every position is flat strictly before the deadline (`fill < 16:45 ET`, `< 12:59 ET` on early-close dates). A violation is a coverage failure of that session (excluded, counted) — the replay never adds a flatten the Pine does not have (that backstop is the live rail's, TB-S3 (G)); the 17:00–18:00 ET halt makes any next-open fill after 16:45 land at 18:00, which the check catches.
+
+**RC-9 — duplicates, stale orders, partial fills.** An action whose `(leg, kind, bar_time)` already produced an accepted order is dropped; a resting entry/add older than one bar is cancelled and its reservation released regardless of position; the leg state machine is the adapters' `on_execution` path (confirmed fills only); the decision-bearing fill model is **full fill** (frozen field), with partial fraction as a stress cell; a partial exit leaves a residual that keeps its bracket and is flattened by the Pine's EOD path; a partial fill can never create a short.
+
+## Steps
+
+1. TB-I2 (Codex) implements the interfaces above test-first, on synthetic fixtures (`tests/lab/tradeify_book_replay/`) and then on the regenerated ledgers; single-process; private outputs only under the primary checkout's ignored roots.
+2. The coordinator runs the consolidated read (one sizing law, one capacity accounting, one policy, one clock) against TB-S1/TB-S3 and `book_policy`.
+3. TB-F1 freezes the block family, streams, sizes, E1 initial state, calendar/overlay digests and the fill-model field; TB-E1 runs the sequence once.
+
+## Test matrix (named; every case has a deterministic expected outcome)
+
+| Case | Expected |
+|---|---|
+| `same_bar_stop_and_target` | resolved by the TV path rule (open nearer high → O-H-L-C); the stress cell variant resolves stop-first |
+| `gap_through_stop_long` / `gap_through_stop_short` | fill at the bar open plus slippage on the adverse side, never at the level |
+| `short_leg_adverse_mark_at_high` | an Aegis path whose highs breach the floor while lows and closes do not → bust on the adverse mark |
+| `cross_leg_excursion_overlap` | adverse marks of two legs on the same bar are summed; no netting |
+| `entry_at_cap_refused` / `add_at_cap_refused` | refuse, never clip; reservation released at bar end |
+| `barrier_global_order` | Aegis admitted before Striker regardless of arrival order; entry before add |
+| `aegis_takeover_cancel_fill_race` | a displaced order that fills in the same bar refuses Aegis rather than exceeding 80 |
+| `aegis_takeover_partial_close_refuses` | partial close → Aegis refused; ledger keeps broker truth |
+| `protected_striker_ceiling_77_forces_takeover` | protected Aegis entry against a 77-micro Striker position → Striker displaced whole, Aegis admitted only after confirmed flat |
+| `early_close_cancellation` | resting ORB entry cancelled on the 12:59 ET date; flatten fill strictly before 12:59 |
+| `closure_overlay_date_no_session` | no entry admitted on 2023-04-07 / 2025-01-09 / 2026-04-03; flat before the prior deadline asserted |
+| `one_leg_exits_other_stays` | Striker exit reduces only Striker's allocation |
+| `simultaneous_stops_targets` | each leg's bracket resolved independently on its own bar path |
+| `stale_duplicate_exits` | second exit for the same lot dropped; no short |
+| `session_flatten_before_1645` | a next-open fill landing at 18:00 → session excluded |
+| `priority_force_close_logged_distinctly` | takeover close events carry `capacity_takeover_*` kinds, not strategy exits |
+| `partial_entry_then_add_from_confirmed_base` | add sized from the confirmed quantity |
+| `partial_exit_residual_flattened` | residual keeps its bracket, flattened by the EOD path |
+| `partial_add_releases_reservation` / `partial_fill_at_capacity_boundary` | reservation released; cap never exceeded |
+| `missing_bar_open_position` / `missing_bar_flat_leg` | both exclude the session and count it |
+| `coverage_end_exceeded_fails_closed` | a window past the calendar's coverage → refuse to run |
+| `idle_week_count_synthetic` | descriptive count equals the planted number; no bust |
+| `mode_from_prior_close_only` | a session whose intraday equity crosses 1 % keeps its mode; the next session flips; no latch |
+| `two_mode_runs_pick_by_path` | assembler selects the PROTECTED record exactly on sessions whose prior close is ≥ 1 % below the path's peak |
+| `kernel_not_scaling_twice` | `simulate_path` invoked with `dd_scale == 1.0` |
+| `venue_commission_not_pine_literal` | Aegis round trip charged 6.20, not the Pine's literal |
+| `joint_flat_edges_proven` | block builder refuses a block whose edge has an open position |
+| `initial_state_required` | no run without a frozen `EvaluationState` (E1 pristine or E2 snapshot) |
+
+## What the replay certifies and what it does not
+
+Closes, item by item, the acceptance record's limits: (1) ORB adds-off exits are **native** (stall exit off, average-price exits recomputed); (2) sizing is **integer** under the ruled per-leg laws, not a continuous 40 %; (3) capacity, takeover and freed room are **recalculated natively**, not carried from the study's schedule; (4) equity is **marked per bar** and the floor is tested on the side-aware adverse mark, not on daily cashflows; (5) the mode is chosen from the prior close on the **path**, not on the chronology. It does **not** certify: leg-local halts and DD kills under resampling (they are evaluated on the chronology, RC-3 — stated as a limitation and stressed by block-length alternatives); the TradingView margin branch (absent by design, O-7); contract-month seams (`ACCEPTED_UNMODELED`, obligations carried into TB-P1); real fills (Phase 8 and B7 own execution).
+
+Gate: RESOLVED if every case above has a deterministic expected outcome and every interface names its owner file (this file) **and** TB-I2's matrix is green on synthetic fixtures and on the regenerated ledgers with the four parity-PASS adapters; FALSIFIED if any case needs a rule the accepted boundaries, the rulings D-B1..D-B15 / O-1..O-9 or the acceptance record do not fix (return `BLOCKED — plan-itself-wrong` naming the case).
+Boundary: no engine code in this packet · no `POLICY_REGISTRY` read (the candidate value is threaded) · no fill or ordering convention chosen for a result · no reweighting of realized trades · no leg-level tuning · no run past `coverage_end` · no account value in tracked output · §54's 125 tests are not evidence here.
+Owner: umbrella TB-S2 → TB-I2; TB-F1 freezes the fields marked frozen; consolidated read by the coordinator.
