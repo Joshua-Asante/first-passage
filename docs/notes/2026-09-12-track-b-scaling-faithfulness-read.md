@@ -1,8 +1,13 @@
 # Track B — scaling-faithfulness read and the export menu (TB-R2, 2026-09-12)
 
-**Status:** classification RESOLVED · export menu **DRAFT — NOT FROZEN** (freeze waits on umbrella
-§0.8 rulings **O-5** (ladder-leg sizing law), **O-6** (add-quantity law) and **O-7** (ORB chart margin
-for the new exports)) · authorizes nothing ($0 · K=0).
+**Status:** classification RESOLVED · export menu **FROZEN 2026-09-12** — the operator ruled
+"defaults" on umbrella §0.8 **O-1** (Call-4 off-rail), **O-5** (law B for Striker, law A for Vanguard),
+**O-6** (Striker executed-base add law, 77-micro protected ceiling accepted), **O-7** (ORB exports at
+0 % chart margin), **O-8** (keep the holiday artefact) and **O-9** (provenance) — so the reachable set
+is `{1, 0.5, 0.25} × {1, 0.40}` and §3 is the single finite menu; any later change to a ruled law
+re-issues it as a replacement · authorizes nothing ($0 · K=0). (The draft status of the first issue
+and its gate on O-1/O-5/O-6/O-7 are superseded by this line; Codex's #358 finding that O-1 belongs
+in the freeze gate is folded here.)
 **Packet:** TB-R2 of the [Track B umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md)
 (footprint: this file). **Owner of the rules:** [Tradeify portfolio acceptance record](2026-09-10-tradeify-protection-selection.md)
 (D-B10, D-B14 (a)). **Coordinator record:** [dispatch 1](2026-09-12-tradeify-portfolio-coordinator-dispatch-1.md).
@@ -77,12 +82,13 @@ O-6 is **Striker-specific**. Vanguard retains its captured per-leg rule
 applying Striker's floor would produce 0/1 and invalidate V-0 parity. ORB keeps
 its one-for-one add rule. No global add-rounding replacement is proposed.
 
-## §3 — The single finite export menu (DRAFT, written for the recommended rulings)
+## §3 — The single finite export menu (FROZEN 2026-09-12 under the ruled defaults)
 
-Recommended rulings assumed: **O-5 = law B for Striker, law A (zero) for Vanguard with its WATCH
-tiers restricted to zero**, **O-6 = Striker executed-base floor (other legs retain their own rounding)**, **O-7 = ORB exports at 0 % chart margin**. If the
-operator rules otherwise, this menu is **re-issued as a replacement** (plan Task 1: never extended
-after results). Common chart state for every owed export — identical to the 2026-09-03 capture
+Rulings in force (operator, 2026-09-12): **O-1 = Call-4 off-rail**, **O-5 = law B for Striker, law A
+(zero) for Vanguard with its WATCH tiers restricted to zero**, **O-6 = Striker executed-base floor
+(other legs retain their own rounding)**, **O-7 = ORB exports at 0 % chart margin**. The alternate
+O-5/O-6 combinations are not applicable; if a ruling is later changed, this menu is **re-issued as a
+replacement** (plan Task 1: never extended after results). Common chart state for every owed export — identical to the 2026-09-03 capture
 except the one named change: same symbol (the continuous CME contract in the pinned filename),
 15-minute bars, Deep Backtesting over the same span the capture used (campaign-state §47 (e)),
 same commission/slippage properties, **List of trades** CSV export, plus **one Inputs-tab and one
@@ -103,10 +109,10 @@ procedure, campaign-state §47a) so the new override file is never lost again.
 | O-N | same body | contracts input 1 · chart Properties margin long/short **0 %** (O-7) · scale-in enabled | none | as S-P | the fixed book's **normal** ORB mode (1 micro, adds fire whenever the price rule fires) | **OWED (operator)** |
 | O-P | same body | contracts 1 · margin 0 % · **scale-in disabled** | none | as S-P | the fixed book's **protected** ORB mode (base one micro, no adds, no stall exit) | **OWED (operator)** |
 
-Count: **7 owed exports** (5 Striker, 2 ORB); 4 available. If O-5 is ruled **law A for Striker**,
-S-P … S-W2P are **withdrawn** (not expressible) and the Striker protected/WATCH evidence becomes the
-port's Pine-faithful semantics plus a recorded bounded-divergence test against S-0 — that waiver
-is then an explicit operator ruling recorded in TB-S1, never an inference. Every owed export enters
+Count: **7 owed exports** (5 Striker, 2 ORB); 4 available. The law-A fallback for Striker (export
+withdrawal plus a bounded-divergence test) is **not applicable** under the 2026-09-12 ruling and is
+retired from this menu; the O-5/O-6 combination in force is law B with the executed-base add law,
+which every Striker export reproduces natively. Every owed export enters
 through the **TB-R3 intake gate** (source identity with the new override digest, normalization,
 reconciliation) before it is decision-bearing; parity at a protected size or in adds-off mode may
 not start on an un-intaken export (umbrella D-B10, TB-R3).

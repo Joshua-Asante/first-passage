@@ -77,7 +77,11 @@ the STATE row (R-2 is cleared).
 
 ## 4 — Operator decisions still needed (one consolidated list)
 
-Recorded as umbrella §0.8 rows; recommendations are the coordinator's, not rulings.
+Recorded as umbrella §0.8 rows. **RULED 2026-09-12 (operator, in the coordinator session): "defaults for
+O-1 and O-5 through O-9"** — every recommendation in this table is now the ruling, including O-6's
+77-micro protected Striker ceiling and the re-derived D-B8 capacity cases (umbrella rev 13;
+[campaign record §56](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#56--coordinator-dispatch-1-rulings-o-1-o-5o-9-recorded-2026-09-12)).
+The TB-R2 menu is frozen on them.
 
 | Id | Decision | Recommendation | Consequence of the recommendation |
 |---|---|---|---|

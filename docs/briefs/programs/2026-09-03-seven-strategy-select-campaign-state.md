@@ -3859,3 +3859,28 @@ operator. **Not yet ruled (O-4):** the production market-data feed for the four 
 D covers the M1 ceremony only; until the operator rules the feed (the A1 packet scored a personal live
 Tradovate data-only account and a licensed vendor feed as the two viable routes), TB-I5, the TB-I3 live-feed
 test, TB-E2's timing, TB-D2 and TB-B10 remain BLOCKED on an authorization dependency, not FALSIFIED.
+
+## §56 — Coordinator dispatch 1 rulings: O-1, O-5..O-9 recorded (2026-09-12)
+
+**Coordinator write (Tradeify portfolio, dispatch 1).** The operator's name for the accepted four-strategy
+book is the **Tradeify portfolio** (alias recorded in the
+[acceptance record](../../notes/2026-09-10-tradeify-protection-selection.md#alias--the-tradeify-portfolio-recorded-2026-09-12)).
+On 2026-09-12 the operator ruled, in the coordinator session, **"defaults for O-1 and O-5 through O-9"** on the
+open items the [coordinator record](../../notes/2026-09-12-tradeify-portfolio-coordinator-dispatch-1.md)
+raised and the [umbrella §0.8](../handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md#08--open-items-recorded-not-folded-owned-by-the-named-packet)
+carries. This section records those rulings as the campaign's authority; the umbrella rows mirror them.
+
+| Item | Ruling (the umbrella row carries the operative text) |
+|---|---|
+| O-1 | Call-4 portfolio beta de-risk is handled **off-rail**: a beta-death event is an operator kill-switch / GO-NO-GO trigger, never a rail multiplier; the reachable multiplier set is `{1, 0.5, 0.25} × {1, 0.40}`. |
+| O-5 | Protected / lifecycle sizing law: **law B (risk-scaled, the sizing host's law) for Striker MYM**; **law A (quantity-floor) for Vanguard MGC**, whose WATCH tiers are restricted to zero; Aegis and ORB are fixed-quantity legs. |
+| O-6 | Striker add law: `floor(executed_base × 250%)`; the protected Striker ceiling of 22 base + 55 add = 77 micro-equivalents is **accepted**, and TB-S1 re-derives the D-B8 protected-capacity cases (protected Aegis at 30 micro-equivalents can require a takeover). Vanguard keeps `max(1, round(base × 80%))`; ORB keeps one-for-one adds. |
+| O-7 | The two new ORB exports (one contract; scale-in on / off) are produced with the chart Properties margin long/short at 0 %, attested in their Properties capture. |
+| O-8 | Vanguard's post-holiday no-trade artefact is **kept as captured** for this attempt. |
+| O-9 | Effective-input provenance: (a) re-capture the five Inputs tabs per §47a if the charts still exist, else (b) accept the reconstructed set as RECONSTRUCTED with a per-export Inputs/Properties capture for every OP-1 export; never a manifest rewrite. |
+
+**Effect.** The TB-R2 export menu is **frozen** ([read §3](../../notes/2026-09-12-track-b-scaling-faithfulness-read.md):
+seven owed exports — five Striker by scaling the Account Size input, two ORB at one contract with margin 0 % —
+Aegis and Vanguard none). TB-S1 is authorable on the ruled laws; TB-S2, TB-S3, TB-P1 and TB-P2 are authored on
+their manifest branches as separate PRs (2026-09-12). Nothing here authorizes implementation beyond a packet's
+own gate, deployment, arming or orders; merges stay with the operator.

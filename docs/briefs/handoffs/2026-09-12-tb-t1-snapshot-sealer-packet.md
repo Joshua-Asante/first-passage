@@ -27,7 +27,7 @@
 | `core/lib/validation.py` | `origin/main` | `require_finite_number`, `dump_strict_json` |
 | `scripts/certification_power.py` | `5e5a216` | stdlib-script convention (argparse, no third-party imports, exact-integer oracle in tests) |
 | `ops/c1_rail/c1_sizing_host_reference.py` lines 44–52 | `509b524` | the `sys.path` bootstrap pattern for importing `core/` modules from a script |
-| Governing contract | this dispatch | fields, evidence files, checks C1–C9, output, boundary |
+| Governing contract | this dispatch (rev 2: Codex review on #358 folded — distinct artifacts, working orders, zero adjustments, `valid_until`) | fields, evidence files, checks C1–C10, output, boundary |
 | Umbrella TB-T1 / TB-B7 stubs | `8f99b41` | evidence class (dashboard PRIMARY), refusal without the statement, freshness at a session boundary |
 
 ## §0.5 — Recommended defaults (apply unless Phase 0 contradicts; then `NEEDS_CONTEXT`)
@@ -44,22 +44,22 @@ TB-B7 seals the fresh live-account snapshot that TB-E2 (the sole n3) initializes
 
 ## §2 — Steps (test-first)
 
-- **2.1 Failing tests first** in `tests/test_seal_account_snapshot.py`, one per check: C1 missing/empty evidence file; C2 kernel rejection (peak below basis; zero trade days with a non-pristine state; constructor-valid equity exactly at the floor, below it, or inside the kernel's rounded breach boundary must all refuse; a valid state safely above the boundary must pass); C3 equity ≠ balance, and `positions_export_shows_flat: false`; C4 `threshold + width < balance`; C5 captures 31 minutes apart, seal 25 hours late, a capture inside a live session (Tuesday 14:00 ET); C6 display disagrees by more than one point; C7 wrong target display; C8 non-zero adjustments without a reconciliation note; C9 output path not ignored (use a temporary git repo in the test); plus one **synthetic** all-pass fixture at the high-water mark and one with a carried drawdown, asserting the sealed JSON's shape, `at_high_water_mark`, the recorded digests, and that stdout contains no digit sequence from any field value.
-- **2.2 Implement** `scripts/seal_account_snapshot.py`: stdlib only; `EvaluationState`, `_drawdown_outcome`, `firm_kwargs` and `FIRM_RULES` imported through the `sys.path` bootstrap; C2 requires both successful construction and a null drawdown outcome under the tier geometry; atomic write (temp file + `os.replace`); exit code 0 on seal, 2 on refusal; stdout = sealed-file SHA-256 + passed check ids + the attested-not-verified sentence; stderr = failing check ids only.
+- **2.1 Failing tests first** in `tests/test_seal_account_snapshot.py`, one per check: C1 missing/empty evidence file, and the same file passed for two evidence roles; C2 kernel rejection (peak below basis; zero trade days with a non-pristine state; constructor-valid equity exactly at the floor, below it, or inside the kernel's rounded breach boundary must all refuse; a valid state safely above the boundary must pass); C3 equity ≠ balance, `positions_export_shows_flat: false`, and `working_orders_count: 1`; C4 `threshold + width < balance`; C5 captures 31 minutes apart, seal 25 hours late, a capture inside a live session (Tuesday 14:00 ET); C6 display disagrees by more than one point; C7 wrong target display; C8 any non-zero `cash_adjustments_total` (no note path exists); C9 output path not ignored (use a temporary git repo in the test); C10 seal time past the window's reopen, and `valid_until` equal to that reopen on a passing seal; plus one **synthetic** all-pass fixture at the high-water mark and one with a carried drawdown, asserting the sealed JSON's shape, `at_high_water_mark`, `valid_until`, the recorded digests, and — by parsing the structured stdout/stderr (digest line, check-id line, `valid_until` line, sentence) — that no serialized monetary value from the fixture (as formatted in the manifest, e.g. `100250.00`) appears in either stream. Do not search for arbitrary digit sequences: check ids and the hex digest legitimately contain digits.
+- **2.2 Implement** `scripts/seal_account_snapshot.py`: stdlib only; `EvaluationState`, `_drawdown_outcome`, `firm_kwargs` and `FIRM_RULES` imported through the `sys.path` bootstrap; C2 requires both successful construction and a null drawdown outcome under the tier geometry; `valid_until` derived from the C5 window in `America/New_York`; atomic write (temp file + `os.replace`); exit code 0 on seal, 2 on refusal; stdout = sealed-file SHA-256 + passed check ids + `valid_until` + the attested-not-verified sentence; stderr = failing check ids only.
 - **2.3 Independent oracle**: one test recomputes `historical_eod_peak` and the C6 ratio with `fractions.Fraction` from the synthetic fixture and compares to the tool's output.
 - **2.4 Run** `python -m pytest tests/test_seal_account_snapshot.py -q` and `make check`; record both outputs in the PR body.
 
 ## §4 — Hypothesis and gate
 
-**H:** the B7 snapshot boundary can be bound to the three evidence files by mechanical checks alone (C1–C9), so that a sealed file exists only when every check passed and the seal carries no value the evidence does not.
+**H:** the B7 snapshot boundary can be bound to the three evidence files by mechanical checks alone (C1–C10), so that a sealed file exists only when every check passed and the seal carries no value the evidence does not.
 
-**Revert trigger (binary):** **Reject (FALSIFIED) if** any check C1–C9 cannot be implemented from the three evidence files as the contract defines them — then return `BLOCKED — plan-itself-wrong` naming the check and change nothing. **Accept (RESOLVED) if** every C1–C9 refusal has a named failing test that passed only after the implementation, both synthetic seals produce the contract's JSON shape, `make check` is green, and no test fixture, log line or PR body carries a live account value.
+**Revert trigger (binary):** **Reject (FALSIFIED) if** any check C1–C10 cannot be implemented from the three evidence files as the contract defines them — then return `BLOCKED — plan-itself-wrong` naming the check and change nothing. **Accept (RESOLVED) if** every C1–C10 refusal has a named failing test that passed only after the implementation, both synthetic seals produce the contract's JSON shape, `make check` is green, and no test fixture, log line or PR body carries a live account value.
 
 ## §5 — Forbidden moves
 
 - Reconstructing or defaulting any field (peak from statements, basis from balance, trade days from dates).
 - Reading Tradovate, Tradeify, CrossTrade or the rail hosts; this tool is offline and file-bound.
-- Relaxing a frozen default via CLI; widening the evidence set; sealing without E3.
+- Relaxing a frozen default via CLI; widening the evidence set; sealing without E3; inventing adjustment or rebasing semantics for a non-zero `cash_adjustments_total`.
 - Using any real account value, screenshot or statement as a fixture; synthetic values only.
 - Touching `core/`, `ops/`, `docs/` beyond the two footprint files.
 
