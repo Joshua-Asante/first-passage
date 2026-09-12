@@ -2,6 +2,15 @@
 
 The operator selected the **1% combined drawdown trigger with full-size ORB base entries and no ORB adds during protection**, then authorized recording, committing and pushing that decision. This records the working research configuration. It is not a production parameter change, accepted final validation, or permission to deploy.
 
+## Alias — the Tradeify portfolio (recorded 2026-09-12)
+
+From 2026-09-12 the operator calls the accepted configuration recorded here — Aegis 6J, Vanguard
+MGC, Striker MYM and ORB MNQ with the protection and capacity rules below — the **Tradeify
+portfolio**. New prose uses that name; the technical identifiers (`aegis_6j`, `vanguard_mgc`,
+`dj30_mym_p250`, `orb_mnq_v7`, the `phase1_config.json` strategy ids and digests) and every
+historical reference to "the accepted book" or "the selected configuration" are unchanged and
+denote the same object. The alias changes no rule, size, status or authority in this record.
+
 ## Operator acceptance and STATE item 1 closure
 
 On 2026-09-10, after the selection was recorded and pushed, the operator explicitly accepted this configuration as satisfying item 1 on the STATE board. **The configuration-selection objective is accepted and closed.** Remove that completed item from the live queue; the existing B7-REFIRE Stage 1 + M1 item advances from position 2 to position 1 without changing its scope.
