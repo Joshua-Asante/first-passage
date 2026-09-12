@@ -45,6 +45,15 @@ historical number by merge commit or branch name, never by number alone. Owner:
 ---
 
 
+## 2026-09-12a — Tradeify portfolio coordinator, dispatch 1: reconcile #356/#357, classify, draft the export menu, prepare TB-T1
+
+- **Focus:** Pre-A7 coordinator dispatch for the Tradeify portfolio (the operator's new name for the accepted four-strategy book): verify main/PR state, reconcile #356's delivered adapters/policy/emulator/parity against the umbrella's obligations, resolve the recorded strategy-behaviour discrepancies against the pinned Pine and the ports, produce TB-R2's export menu and TB-W1's warm-up requirements, and prepare the first Codex packets.
+- **Judgment:** the two ways of expressing "40 % of normal" (quantity-floor as built vs the sizing host's risk-scaled law) differ by a contract on roughly one Striker entry in ten, and only the risk-scaled law can be reproduced on a TradingView chart, so the export menu cannot freeze until the operator rules it; recorded as O-5 with a recommendation (law B for Striker, law A for Vanguard) rather than choosing. The Aegis fixed-8 rule was verified size-invariant in timing (121/121 captured bars and prices reproduced), so Aegis needs no further export. All 85 delivered book tests re-run green with the private inputs.
+- **Shipped:** [coordinator record](notes/2026-09-12-tradeify-portfolio-coordinator-dispatch-1.md) (verified state, completion matrix, decisions, packet dispositions) · [TB-R2 read + draft menu](notes/2026-09-12-track-b-scaling-faithfulness-read.md) · [snapshot-seal contract](spec/2026-09-12-tradeify-account-snapshot-seal-contract.md) + [TB-T1 packet](briefs/handoffs/2026-09-12-tb-t1-snapshot-sealer-packet.md) (READY, not launched) · umbrella rev 12 (§0.8 O-5..O-9, manifest statuses) · alias in the [acceptance record](notes/2026-09-10-tradeify-protection-selection.md#alias--the-tradeify-portfolio-recorded-2026-09-12) · STATE row 2.
+- **Open / next:** operator rules O-5..O-9 (and O-1); then TB-R2 menu freeze and TB-S1 authoring; TB-I2 / TB-I3 stay BLOCKED on TB-S2 / TB-S3; A7 runs Sunday 2026-09-13 in its own session.
+
+---
+
 ## 2026-09-11a — Track B release (TB-G0): D-B1..D-B15 recorded; D-B5 corrected to option D
 
 - **Focus:** Land the orchestrator's Track B release commit so wave 1a can be dispatched: record the operator's fifteen rulings as campaign authority, release the governing plan's HOLD for the umbrella's packets only, transfer the orchestrator role per D-B2, and add the STATE queue row.
