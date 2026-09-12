@@ -30,10 +30,10 @@ Private (primary checkout `ops/c1_signal_daemon/ports/`, gitignored; digests rep
 
 | Port | `leg_id` | SHA-256 |
 |---|---|---|
-| `aegis_6j.py` | `aegis_6j` | `bdb9db76994e4a593f9522d785969e9dacf46bccfe6edd080e6f9f507298b5d9` |
-| `dj30_mym_p250.py` | `dj30_mym_p250` | `a03b7e38d996e62b688224357e5c685d9e4b5bfab6332715d414fcbfcfbe6caa` |
-| `vanguard_mgc.py` | `vanguard_mgc` | `1cb7d70dfb79f2c5c961be839689ab516183b30d1ce42d95a072d60ac47897f7` |
-| `orb_mnq_v7.py` | `orb_mnq_v7` | `6e678976027591ab9f4a606942e503a88a9327ba49e48a4cf9a7a33c5040fe7c` |
+| `aegis_6j.py` | `aegis_6j` | `11763740bc3fdcc8b9e94cb0b465823aec202cd8333379c46878185db5e9e84f` |
+| `dj30_mym_p250.py` | `dj30_mym_p250` | `c81aa59c811dd2f318bf2f6b51e9df32fca20315ffab0885ec1d4ec6a2ab5379` |
+| `vanguard_mgc.py` | `vanguard_mgc` | `e6a03d04c65a19e7fde71103560a229630c3663f445676f06622feec4e9157a3` |
+| `orb_mnq_v7.py` | `orb_mnq_v7` | `b1f4e573009e62b976013e08e7ef2784497d840f490f04e3878fdaef553f317d` |
 | `effective_inputs.json` | reconstructed capture inputs | `66406dee955fa69f237fde60eacdd24259a08d5320352d98e59889acaa18158d` |
 
 Private evidence base restored on the primary checkout: the four refreshed CME panels
