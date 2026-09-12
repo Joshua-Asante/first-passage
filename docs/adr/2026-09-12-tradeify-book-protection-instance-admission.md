@@ -30,7 +30,7 @@
 | [Regime-robustness gate](../methodology/regime_robustness_gate.md) | `origin/main` | mandatory for a new `POLICY_REGISTRY` instance: block bootstrap + half-panel split pinned to the full-panel floor |
 | Governing plan §Accepted boundaries, S1/S2 | `3c439f7` | full/H1/H2 ≤ 5 % one-sided 95 % upper failure bound; P(T ≤ 200) lower bound ≥ 0.50; one attempt; no runner-up |
 
-**Cheap falsifier run before authoring:** `python -c "import sys; sys.path[:0]=['core','ops']; import dd_geometry, book_policy as b; assert dd_geometry.POLICY_REGISTRY == {}; print(b.frozen_surfaces_untouched())"` → `{'DD_TRIGGER': 0.015, 'DD_SCALE': 0.4, 'registry_empty': True}` (2026-09-12). The candidate is threaded, not admitted.
+**Cheap falsifier (rev 2 — the first issue quoted a command that fails with `ModuleNotFoundError`; the frozen-surface result had been observed through the test suite, not that command):** `python -c "import sys; sys.path[:0]=['core','ops']; import dd_geometry; from c1_rail import book_policy as b; assert dd_geometry.POLICY_REGISTRY == {}; print(b.frozen_surfaces_untouched())"` → `{'DD_TRIGGER': 0.015, 'DD_SCALE': 0.4, 'registry_empty': True}` (run 2026-09-12 with the corrected import). The candidate is threaded, not admitted.
 
 ---
 
@@ -47,8 +47,8 @@ The concept ADR admits a protection instance to `POLICY_REGISTRY` only by (1) pr
 3. **Step 2 of the concept ADR §4 is superseded for this instance by the operator's fixed selection.** No trigger × scale grid is run; no alternative cell may be evaluated or promoted (D-B4, D-B11); a failed confirmation ends the attempt with **no admission** and does not reopen the policy choice.
 4. **Steps 1, 3 and 4 are retained and mapped onto Track B:**
    - *Step 1 — pre-registration:* TB-P1 drafts and **TB-F1 freezes** the K = 1 confirmation contract (objective = confirm the fixed instance clears the plan's four acceptance conditions at least sizing intervention; selection rule = none, K = 1; the gate below) **before** TB-E1 runs.
-   - *Step 3 — both-halves regime gate:* the plan's **H1 and H2 half-panel limbs** of TB-E1 and TB-E2 (each a one-sided 95 % upper failure bound ≤ 5 % on the chronological half) are this instance's half-panel split, and the joint-flat block-bootstrap family frozen in TB-F1 is its block bootstrap; the full-panel limb is the floor both halves are pinned to. The gate is passed only when **both** halves pass on the sole n3 (TB-E2); a pass on n1/n2 alone is screening.
-   - *Step 4 — freeze + admitting ADR:* TB-E1's sealed **fixed-book replay fingerprint** freezes the row's provenance; **TB-D0** lands exactly this row with `provenance` naming this ADR and the seal digest, after TB-E1 and before the Phase 8 live test, so the executable tested, sealed at B7 and used by n3 already carries the final row; `c1_rail_arm.py --arm` refuses unless the admitted row equals the sealed cell.
+   - *Step 3 — regime-robustness gate, retained in full for the single fixed candidate (rev 2):* **Part B** (half-panel split) is the plan's **H1 and H2 limbs** — each a one-sided 95 % upper failure bound ≤ 5 % on the chronological half — pinned to the full-panel limb; **Part A** (block bootstrap) is retained as its own outer test: 100 alternate-history panels built from **6-month contiguous blocks** of the replay's session series, each replayed at the fixed instance, and the **5th percentile of the per-panel pass-rate distribution must be ≥ the full-panel pass-rate floor** (floor = 0.95, i.e. one minus the 5 % failure ceiling, on per-panel point estimates). Because every path is a continuous replay, the per-panel path count is a frozen field sized to the compute budget (`OWED-BY: TB-F1`); **that reduced per-panel depth is the one amendment to step 3 this ADR asks the operator to ratify**, and it is a reduction in depth, not a removal of the test. Part A runs inside TB-E1 (screening admission) and both parts must hold on the sole n3 for deployment qualification.
+   - *Step 4 — freeze, admitting ADR and the two-stage admission (rev 2):* TB-E1's sealed **fixed-book replay fingerprint** freezes the row's provenance. **TB-D0 = executable admission:** after TB-E1 passes (legality screen, n1 cutoff, n2 with its H1/H2 limbs and Part A) TB-D0 lands exactly this row with `provenance` naming this ADR and the seal digest, before the Phase 8 live test, so the executable tested, sealed at B7 and used by n3 already carries the final row (umbrella D-B11; the D0-before-B7 order is preserved). Between TB-D0 and TB-E2 the row is admitted **for the Phase 8 dry-run window and the B7 seal only**: `dry_run=true`, `armed_until` unset, no arm (D-B15). **TB-E2 = deployment qualification:** the sole n3 must pass all four conditions with both parts of step 3 holding; only then may TB-D2 request the deployment GO. **On a failed n3 the row is retired:** the closure record supersedes this ADR and a follow-up commit removes the row from `POLICY_REGISTRY`; until that commit lands `c1_rail_arm.py --arm` refuses on the closure marker. `c1_rail_arm.py --arm` always refuses unless the admitted row equals the sealed cell.
 5. **Evidence class stated honestly.** The selection evidence (`dd-orb-base-only-2026-09-10`, private digests in the acceptance record) is unregistered exploratory analysis and is cited as provenance only; it is not confirmation evidence and no figure from it is quoted. Confirmation evidence is TB-E1 (screen, n1, n2) and TB-E2 (sole n3) on the frozen contract, numbers private per D-B12.
 
 **Effective:** on the operator's dated ratification addendum. Until then this ADR authorizes nothing and `POLICY_REGISTRY` stays empty.
@@ -75,7 +75,8 @@ The concept ADR admits a protection instance to `POLICY_REGISTRY` only by (1) pr
 
 | # | Trigger | Threshold | Action |
 |---|---|---|---|
-| R1 | TB-E1's legality screen, n1 or n2, or TB-E2's sole n3 fails any acceptance bound | one failed bound | **No admission.** TB-D0 does not land; the attempt ends with no qualifying configuration (D-B4, D33); this ADR is superseded by the closure record; no grid, runner-up or second sample |
+| R1a | TB-E1's legality screen, n1 cutoff, n2 bound or Part A fails | one failed bound | **No admission.** TB-D0 does not land; the attempt ends with no qualifying configuration (D-B4, D33); this ADR is superseded by the closure record; no grid, runner-up or second sample |
+| R1b | TB-E2's sole n3 fails any acceptance bound or either part of step 3 after TB-D0 has landed | one failed bound | **Row retired.** The closure record supersedes this ADR; a follow-up commit removes the row from `POLICY_REGISTRY`; `c1_rail_arm.py --arm` refuses on the closure marker until then; no deployment GO, no grid, no runner-up |
 | R2 | A `POLICY_REGISTRY` row for this instance appears before TB-E1's seal, or with a `provenance` that does not name this ADR's ratification and the seal digest | any such row | **Revert the row** (`git revert`), record the deviation in the campaign record; the umbrella §10 registry hook is the mechanical check |
 | R3 | `DD_TRIGGER`, `DD_SCALE`, `calculate_protection` or the `_validate_protection_rule` pins change on any Track B branch | any diff | **Revert**; the instance is a registry row and a threaded value, never an edit to the frozen surface |
 | R4 | The evaluation's lock becomes reachable (tier rule change) or `book_policy` and the registry disagree on `reference_mode` | mismatch | **Halt** the live path (`c1_rail_arm.py` refuses on a row mismatch); re-admit under a fresh ADR |
@@ -89,7 +90,7 @@ The concept ADR admits a protection instance to `POLICY_REGISTRY` only by (1) pr
 
 - Running a trigger × scale grid, a second cell, or any policy comparison inside Track B.
 - Landing the registry row before TB-E1's seal, or from a branch other than TB-D0's.
-- Editing `core/dd_protection.py` or `core/dd_geometry.py` to express the instance; rebinding `DD_TRIGGER` / `DD_SCALE`.
+- Editing `core/dd_protection.py`; rebinding `DD_TRIGGER` / `DD_SCALE`; changing `core/dd_geometry.py`'s geometry semantics (`ProtectionPolicy`, `REFERENCE_MODES`, `reference_mode_for_dd_type`). **Permitted, and only in TB-D0:** the one-line addition of this instance's row to `POLICY_REGISTRY` with its `provenance` string.
 - Quoting a number from the private selection study as confirmation evidence, or publishing any bound, curve or replay statistic (D-B12).
 - Treating a withheld or pending ratification as a technical verdict; it is `BLOCKED — context-problem` for TB-F1.
 - Substituting `locking` for `trailing` (or the reverse) in the row on the strength of `reference_mode_for_dd_type` alone.
@@ -113,7 +114,7 @@ python -c "import sys; sys.path.insert(0,'core'); import dd_geometry; print(dd_g
 # Frozen constants untouched on this branch (expected: no lines, exit=1)
 git diff origin/main -- core/dd_protection.py | grep -E "^[+-].*(DD_TRIGGER|DD_SCALE)\s*=" ; echo "exit=$?"
 # The candidate is threaded, not admitted (expected: registry_empty True, 0.015 / 0.4)
-python -c "import sys; sys.path[:0]=['core','ops']; import book_policy as b; print(b.frozen_surfaces_untouched())"
+python -c "import sys; sys.path[:0]=['core','ops']; from c1_rail import book_policy as b; print(b.frozen_surfaces_untouched())"
 # Well-formedness
 python scripts/check_brief.py docs/adr/2026-09-12-tradeify-book-protection-instance-admission.md --type adr
 python scripts/check_adr_graph.py
@@ -126,3 +127,4 @@ grep -n "^## Addendum .* ratification" docs/adr/2026-09-12-tradeify-book-protect
 ## Change history
 
 - 2026-09-12 — authored (TB-P2), `PROPOSED`; ratification owed before TB-F1.
+- 2026-09-12 (rev 2) — Codex review on #361 folded: two-stage admission (TB-D0 executable admission on TB-E1; TB-E2 deployment qualification; row retired on a failed n3), step 3 retained in full with Part A's per-panel depth as the one ratified amendment, the TB-D0 registry-row edit permitted, the audit command's import corrected and the §0 claim restated honestly.
