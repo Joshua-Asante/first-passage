@@ -375,7 +375,7 @@ No ceremony preparation. The daemon is at v2, inert: emission disabled, source d
 
 ### Phase 0 — handoff-verify of the A7 brief (2026-09-12)
 
-`HANDOFF-VERIFY: PASS` with four skews, none blocking. Anchors at `origin/main @ eb1c6df`: test contract `c480f99`; daemon `m1_stage1_control.py` / `operator_input_source.py` `2af8f97`; `m1_stage1.py`, listener `m1_stage1_control.py`, `m1_stage1_contract.py` `36b3996`; `m1_stage1_strategy.py`, `c1_rail_listener.py` `509b524`; daemon README `a92cabf`; c1-rail skill `9c89dfa`; this record `e04fe38`. Read directly and confirmed against the brief: `validate_manifest` requires exactly the eight fields (`venue_contract` included), `60 < expires − target ≤ 150`, `target.second == 0`, `contract_sha256()`, `expected_qty` int 1, a 64-hex `preflight_sha256`, `source` = the operator marker; **`prepare` and `enable` both require `target > now`** (so `enable` must complete before the target minute opens); `inject` refuses before `+60` and after `+120`, requires journal **and** config enabled, contract and time equal to the manifest, and the upload exactly at `/data/m1_upload_<id>.json`; `accept_bar` takes `60 ≤ now − target ≤ 150`; `default_transport` timeout 30 s (the brief's `≈ target + 165 s` terminal bound holds); `close` clears both config flags and unlinks the three input files; the listener's `handle_signal` test path writes `test_only`, `sender_invoked`, `test_contract_sha256` on the decision and answers `dry_run: computed, not sent`; `resolve_current_equity` runs per request and per `preflight`, and an equity-read failure answers **503** (no decision). Skews: (1) the brief's §0 SHAs (`47972f6`, `811df7c`) predate A1b — the ceremony code is the A1b merge; (2) this session cannot invoke `fly ssh console`, so the operator runs **every** in-container command (`prepare`, `close`, the migrate steps too), the agent drafts each one and reads the output from the Terminal panel — §7 pass 1's actor requirement (operator runs `enable` and `inject`) is met a fortiori; (3) `fly ssh sftp get`/`put` **do** work from this session when the remote path is protected from the MSYS rewrite (`MSYS_NO_PATHCONV=1`; proven today on the journal, 158 bytes, read and deleted), so the manifest put and the Step 2.11 fetch are agent-run; (4) the listener ledger carries private values — `decision.current_equity` and `request_received.parsed.close` (the raw bar close, persisted by `build_parsed_fields`) — so the triad paste into §A7 is an allowlisted projection (Step 2.8 names the fields), never raw lines, as `--status` pastes redact the account id.
+`HANDOFF-VERIFY: PASS` with four skews, none blocking. Anchors at `origin/main @ eb1c6df`: test contract `c480f99`; daemon `m1_stage1_control.py` / `operator_input_source.py` `2af8f97`; `m1_stage1.py`, listener `m1_stage1_control.py`, `m1_stage1_contract.py` `36b3996`; `m1_stage1_strategy.py`, `c1_rail_listener.py` `509b524`; daemon README `a92cabf`; c1-rail skill `9c89dfa`; this record `e04fe38`. Read directly and confirmed against the brief: `validate_manifest` requires exactly the eight fields (`venue_contract` included), `60 < expires − target ≤ 150`, `target.second == 0`, `contract_sha256()`, `expected_qty` int 1, a 64-hex `preflight_sha256`, `source` = the operator marker; **`prepare` and `enable` both require `target > now`** (so `enable` must complete before the target minute opens); `inject` refuses before `+60` and after `+120`, requires journal **and** config enabled, contract and time equal to the manifest, and the upload exactly at `/data/m1_upload_<id>.json`; `accept_bar` takes `60 ≤ now − target ≤ 150`; `default_transport` timeout 30 s (the brief's `≈ target + 165 s` terminal bound holds); `close` clears both config flags and unlinks the three input files; the listener's `handle_signal` test path writes `test_only`, `sender_invoked`, `test_contract_sha256` on the decision and answers `dry_run: computed, not sent`; `resolve_current_equity` runs per request and per `preflight`, and an equity-read failure answers **503** (no decision). Skews: (1) the brief's §0 SHAs (`47972f6`, `811df7c`) predate A1b — the ceremony code is the A1b merge; (2) this session cannot invoke `fly ssh console`, so the operator runs **every** in-container command (`prepare`, `close`, the migrate steps too), the agent drafts each one and reads the output from the Terminal panel — §7 pass 1's actor requirement (operator runs `enable` and `inject`) is met a fortiori; (3) `fly ssh sftp get`/`put` **do** work from this session when the remote path is protected from the MSYS rewrite (`MSYS_NO_PATHCONV=1`; proven today on the journal, 158 bytes, read and deleted), so the manifest put and the Step 2.11 fetch are agent-run; (4) the listener ledger carries private values — `decision.current_equity` and `request_received.parsed.close` (the raw bar close, persisted by `build_parsed_fields`) — so Step 2.8 applies an allowlisted projection inside the listener container before any terminal output; only that projection enters the transcript or §A7, never raw lines, as `--status` pastes redact the account id.
 
 ### Host state read today (read-only, 2026-09-12 15:13 UTC)
 
@@ -411,13 +411,48 @@ No ceremony preparation. The daemon is at v2, inert: emission disabled, source d
 | T−5 | staged | put and inject commands typed in the two tabs, not sent | — |
 | T+60 | 2.6b | the T bar closes on the chart; operator reads O/H/L/C/V into the private file and saves | values never typed into the recorded console; volume must be > 0 (a zero-volume minute is refused as `bad bar file`) |
 | T+60…T+120 | 2.6b | `MSYS_NO_PATHCONV=1 fly ssh sftp put -a c1-signal-daemon <private file> /data/m1_upload_stage1-20260913-1.json` then `inject --state … --config … --ceremony-id stage1-20260913-1 --boot-id <boot_id> --contract <venue_contract> --time <target> --bar-file /data/m1_upload_stage1-20260913-1.json` | aim to have the put done by T+90; receipt JSON (`bar_sha256`, `published_at`) pasted into the record; on `inject refused: …` do not retry past T+120 |
-| ≤T+122 | 2.7 | daemon log | exactly one `m1_b1_post status=200`; health `ceremony_state RESPONSE_RECORDED`, `effective_emit false`, `connected false` (the source deactivates and removes the three input files on the next poll) |
+| ≤T+165 | 2.7 | daemon log (success is logged only after the POST returns; allow the full 30 s transport window after the last permitted injection) | exactly one `m1_b1_post status=200`; health `ceremony_state RESPONSE_RECORDED`, `effective_emit false`, `connected false` (the source deactivates and removes the three input files on the next poll) |
 | ≤T+165 | 2.7 | agent sftp-gets the journal | `state RESPONSE_RECORDED`, `response_kind dry_run_computed`, `enabled false`; never proceed while `SEND_RESERVED` / `EMITTED` |
-| after | 2.8 | in-container `grep <request_sha256> /data/c1_rail_events.jsonl` on `c1-rail`, then the `event_id` | one `request_received`, one `decision` (`qty_out 1`, `halt false`, `dry_run true`, `test_only true`, `sender_invoked false`), one `transport_result` (`not_attempted`); paste only these fields — `kind`, `event_id`, `order_id`, `auth_ok`, `body_category`, `body_sha256`, `parsed.leg_id`, `parsed.bar_time`, `parsed.stop_dist_pts`, `qty_out`, `halt`, `dry_run`, `test_only`, `sender_invoked`, `test_contract_sha256`, `transport_state` — **`parsed.close` and `current_equity` never appear**; operator: CrossTrade Alert History empty for the window, Tradovate no order/position |
+| after | 2.8 | run the in-container allowlisted triad read below on `c1-rail`, selecting by exact `request_sha256` and then `event_id`; never print raw ledger lines | one `request_received`, one `decision` (`qty_out 1`, `halt false`, `dry_run true`, `test_only true`, `sender_invoked false`), one `transport_result` (`not_attempted`); paste only these fields — `kind`, `event_id`, `order_id`, `auth_ok`, `body_category`, `body_sha256`, `parsed.leg_id`, `parsed.bar_time`, `parsed.stop_dist_pts`, `qty_out`, `halt`, `dry_run`, `test_only`, `sender_invoked`, `test_contract_sha256`, `transport_state` — **`parsed.close` and `current_equity` never appear**; operator: CrossTrade Alert History empty for the window, Tradovate no order/position |
 | after | 2.9 | `close --state … --config … --ceremony-id stage1-20260913-1` | exit 0; journal `CLOSED` / `previous_state RESPONSE_RECORDED`; config `emit_enabled false`, `m1_test.enabled false`; health `effective_emit false` |
 | after | 2.10 | `migrate --config /data/c1_rail_config.json` (plan, no `--enable-test`) → one-liner `enabled=False` → apply with the current preimage hashes → no-op check; listener `--status`; daemon health | test row `cap_alloc 0`, `RETIRED`; `dry_run=True armed_until=None`; `effective_emit false` |
 | after | 2.11 (agent) | sftp-get `/data/c1_rail_events.jsonl` (listener) and the journal into the scratchpad; `python ops/c1_rail/m1_stage1_control.py evidence --events <events.jsonl> --daemon-state <state.json> --ceremony-id stage1-20260913-1`; both copies stay in the scratchpad until §A7's return is written (brief §0.5), then are deleted — the parent's §7 re-run refetches from the hosts: the journal is closed and the ledger join is by exact `request_sha256`, so later appended events cannot change it, and a second `request_received` with that digest would itself be a finding | `listener_event_id` UUID, `operator_attended_input true`, `qualifying_live_source false`, `observed_qty 1`, `post_test_emit_enabled false`; `bar_sha256` equals the receipt's and the journal's |
 | after | 2.12 | §A7 appended, PR | no bar values, no equity, no token, account id redacted |
+
+### Step 2.8 — Filter before terminal output
+
+The operator runs this Python in the listener container, with `REQUEST_SHA256` replaced by the journal's public request digest. The agent drafts the console wrapper before the ceremony. This replaces the handoff's raw `grep` in Step 2.8 and its parent-review re-grep: selection and projection both happen in-container, before stdout reaches the recorded terminal. Do not use raw `grep`, `cat`, or a raw-record debug print; redact-before-paste is too late. A refusal stops evidence collection and invokes the teardown rule; never diagnose it by dumping the ledger into the transcript. Step 2.11 still uses the private full ledger for the evidence validator.
+
+```python
+import json
+from pathlib import Path
+
+request_sha256 = "REQUEST_SHA256"
+try:
+    records = [json.loads(line) for line in Path("/data/c1_rail_events.jsonl").read_text().splitlines()]
+    requests = [r for r in records if r.get("kind") == "request_received"
+                and r.get("body_sha256") == request_sha256]
+    if len(requests) != 1 or not requests[0].get("event_id"):
+        raise ValueError
+    event_id = requests[0]["event_id"]
+    triad = [r for r in records if r.get("event_id") == event_id]
+    if sorted(r.get("kind", "") for r in triad) != ["decision", "request_received", "transport_result"]:
+        raise ValueError
+    fields = ("kind", "event_id", "order_id", "auth_ok", "body_category", "body_sha256",
+              "qty_out", "halt", "dry_run", "test_only", "sender_invoked",
+              "test_contract_sha256", "transport_state")
+    projected = []
+    for record in triad:
+        safe = {key: record[key] for key in fields if key in record}
+        if record["kind"] == "request_received":
+            safe["parsed"] = {key: record.get("parsed", {}).get(key)
+                              for key in ("leg_id", "bar_time", "stop_dist_pts")}
+        projected.append(safe)
+    output = "\n".join(json.dumps(record) for record in projected)
+except Exception:
+    raise SystemExit("triad projection refused; no ledger values printed") from None
+print(output)
+```
 
 ### Teardown (binding from a successful Step 2.2 until Step 2.10 completes)
 
