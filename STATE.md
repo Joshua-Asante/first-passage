@@ -76,15 +76,17 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   No agent places it; the rail stays disarmed. A missed venue week risks account
   deletion; venue-session boundaries apply. [S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md)
   · [idle-clock audit](docs/notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md).
-- **Coverage evidence:** week 08-31→09-04 was operator-attested on 09-04 and
-  restated on 09-05; the exact trade day is unresolved between 09-02/09-03.
-  The private compliance ledger row remains owed; its session hook still reads
-  NOT RECORDED until written. [Campaign record §15](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#15-d20--the-acceleration-ruling-2026-09-04-deploy-at-the-phase-3-commit)
-  retains the attestation history. Week 09-07→09-11: placement **not verified from
-  this clone** as of 2026-09-12 (the session hook reads UNAVAILABLE — the coverage
-  record is redacted here; this is not a coverage verdict) — the operator's attestation
-  for that week is owed. Week 09-14→09-18 is open. Roll the deadline each Monday;
-  `daily-repo-truth-sync` reads this board's dated obligations.
+- **Coverage evidence:** week 09-07→09-11 is operator-attested: on 2026-09-12,
+  the operator confirmed placement on Thursday, 2026-09-10, and reported that
+  it had already been recorded with Claude. This is the operator's attestation;
+  the private compliance record is unavailable in this checkout and was not
+  independently verified. Week 09-14→09-18 is open; the next deadline is 09-18.
+- **Earlier record still owed:** week 08-31→09-04 was operator-attested on
+  09-04 and restated on 09-05; the exact trade day remains unresolved between
+  09-02/09-03, and its private ledger row remains unverified.
+  [Campaign record §15](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#15-d20--the-acceleration-ruling-2026-09-04-deploy-at-the-phase-3-commit)
+  retains that history. Advance the recurring deadline after coverage is
+  attested; `daily-repo-truth-sync` reads this board's dated obligations.
 
 ### Monthly — recurring (rolling; next deadline **2026-09-21**)
 
