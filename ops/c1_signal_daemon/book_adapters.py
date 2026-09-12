@@ -53,6 +53,11 @@ ADAPTERS: tuple[AdapterSpec, ...] = (
 )
 ADAPTER_BY_LEG: dict[str, AdapterSpec] = {a.leg_id: a for a in ADAPTERS}
 
+# Digest of the private ``effective_inputs.json`` (reconstructed 2026-09-03 capture
+# inputs; docs/notes/2026-09-11-track-b-adapters-and-book-rules.md). The loader
+# refuses any other bytes; re-pin only with a recorded reason.
+EFFECTIVE_INPUTS_SHA256 = "66406dee955fa69f237fde60eacdd24259a08d5320352d98e59889acaa18158d"
+
 
 def port_root() -> Path:
     override = os.environ.get("FP_PORT_ROOT")

@@ -211,7 +211,7 @@ def test_takeover_fails_closed_on_partial_close_or_missing_ack():
     assert t.state == "refused"
     res = led.settle_takeover()
     assert not res.admitted and led.reserved.get("aegis_6j", 0) == 0
-    assert led.confirmed["dj30_mym_p250"] == 60                 # ledger untouched until confirmed flat
+    assert led.confirmed["dj30_mym_p250"] == 5                  # broker truth kept even though refused
     assert any(e["kind"] == "capacity_takeover_refused" for e in led.events)
 
     led2 = CapacityLedger()

@@ -158,6 +158,7 @@ class ParityReport:
     extra_in_port: int
     qty_mismatches: int
     price_mismatches: int
+    pnl_mismatches: int = 0
     first_divergences: list[str] = field(default_factory=list)
     window_start: str = ""
     window_end: str = ""
@@ -165,12 +166,14 @@ class ParityReport:
     @property
     def passed(self) -> bool:
         return (self.missing_in_port == 0 and self.extra_in_port == 0
-                and self.qty_mismatches == 0 and self.price_mismatches == 0)
+                and self.qty_mismatches == 0 and self.price_mismatches == 0
+                and self.pnl_mismatches == 0)
 
     def summary(self) -> str:
         head = (f"{self.leg_id}: export={self.export_trades} port={self.port_trades} "
                 f"matched={self.matched} missing={self.missing_in_port} extra={self.extra_in_port} "
                 f"qty_mismatch={self.qty_mismatches} price_mismatch={self.price_mismatches} "
+                f"pnl_mismatch={self.pnl_mismatches} "
                 f"window={self.window_start}..{self.window_end} -> "
                 f"{'PASS' if self.passed else 'FAIL'}")
         return "\n".join([head] + ["  " + d for d in self.first_divergences])
@@ -178,11 +181,13 @@ class ParityReport:
 
 def compare(leg_id: str, export: list[ExportTrade], port: list[PortTrade], *,
             price_tol: float, window_start: datetime, window_end: datetime,
-            qty_scale: float = 1.0, max_divergences: int = 12) -> ParityReport:
+            qty_scale: float = 1.0, max_divergences: int = 12, pnl_tol: float = 0.011) -> ParityReport:
     """Match on (entry bar, exit bar); export trades outside the panel window are dropped.
 
     ``qty_scale`` rescales the export quantity before comparing (a size-invariant
-    leg captured at 2 contracts and replayed at 1 compares with 0.5).
+    leg captured at 2 contracts and replayed at 1 compares with 0.5); the export's
+    net P&L is rescaled the same way. Net P&L (commission included) is part of the
+    verdict so a wrong point value or fee schedule cannot pass on bars and prices.
     """
     exp = [t for t in export if window_start <= t.entry_time <= window_end and t.exit_time <= window_end]
     prt = [t for t in port if window_start <= t.entry_time <= window_end]
@@ -204,7 +209,7 @@ def compare(leg_id: str, export: list[ExportTrade], port: list[PortTrade], *,
             t = next(t for t in prt if (t.entry_time, t.exit_time) == key)
             div.append(f"EXTRA in port: {t.entry_kind} {key[0]} -> {t.exit_reason} {key[1]} qty={t.qty}")
 
-    qty_mm = price_mm = 0
+    qty_mm = price_mm = pnl_mm = 0
     exp_by_key: dict[tuple, list[ExportTrade]] = {}
     for t in exp:
         exp_by_key.setdefault((t.entry_time, t.exit_time), []).append(t)
@@ -224,7 +229,12 @@ def compare(leg_id: str, export: list[ExportTrade], port: list[PortTrade], *,
                 if len(div) < max_divergences:
                     div.append(f"PRICE: export #{e.trade_no} {key[0]} {e.entry_price}->{e.exit_price} "
                                f"vs port {p.entry_price}->{p.exit_price} ({p.exit_reason})")
-    return ParityReport(leg_id, len(exp), len(prt), matched, missing, extra, qty_mm, price_mm, div,
+            if abs(e.net_pnl * qty_scale - p.net_pnl) > pnl_tol:
+                pnl_mm += 1
+                if len(div) < max_divergences:
+                    div.append(f"PNL: export #{e.trade_no} {key[0]} net {e.net_pnl * qty_scale:.2f} "
+                               f"vs port {p.net_pnl:.2f}")
+    return ParityReport(leg_id, len(exp), len(prt), matched, missing, extra, qty_mm, price_mm, pnl_mm, div,
                         window_start.isoformat(), window_end.isoformat())
 
 
@@ -236,19 +246,28 @@ def panel_window_et(bars: list[Bar]) -> tuple[datetime, datetime]:
 
 # ── shared runner (tests + CLI) ───────────────────────────────────────────
 
-def load_effective_inputs() -> dict | None:
+def load_effective_inputs(*, verify: bool = True) -> dict | None:
     """Reconstructed effective chart inputs per leg (private JSON in the port root).
 
     The captured exports were produced with chart inputs that differ from the
     pinned bodies' defaults (the D26 override files are lost); the parity
     harness reconstructed them and the port root holds them as
     ``effective_inputs.json``. None when absent (public clone / bare worktree).
+    The bytes are verified against the pinned digest
+    (``book_adapters.EFFECTIVE_INPUTS_SHA256``) so a locally edited file cannot
+    present a replay as verification of the frozen capture inputs.
     """
-    from c1_signal_daemon.book_adapters import port_root
+    from c1_signal_daemon.book_adapters import EFFECTIVE_INPUTS_SHA256, port_root
     path = port_root() / "effective_inputs.json"
     if not path.is_file():
         return None
-    return json.loads(path.read_text(encoding="utf-8"))
+    raw = path.read_bytes()
+    if verify:
+        digest = hashlib.sha256(raw).hexdigest()
+        if digest != EFFECTIVE_INPUTS_SHA256:
+            raise ValueError(f"{path}: sha256 {digest[:12]}... != pinned {EFFECTIVE_INPUTS_SHA256[:12]}...; "
+                             f"the reconstructed capture inputs are frozen - re-pin deliberately")
+    return json.loads(raw.decode("utf-8"))
 
 
 def run_leg(leg_id: str, *, adapter_overrides: dict | None = None, emulator_overrides: dict | None = None,

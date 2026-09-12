@@ -131,15 +131,27 @@ class TVBrokerEmulator:
     def submit(self, actions: list[Action], bar: Bar) -> list[ExecutionEvent]:
         """Register the adapter's actions generated at ``bar``'s close."""
         out: list[ExecutionEvent] = []
+        crossed_now: list[str] = []
         for act in actions:
             if isinstance(act, Cancel):
                 out.extend(self._cancel(act, bar))
             elif isinstance(act, BracketAmend):
                 self._amend(act)
             elif isinstance(act, OrderIntent):
-                out.extend(self._place(act, bar))
+                out.extend(self._place(act, bar, crossed_now))
             else:  # pragma: no cover - defensive
                 raise TypeError(f"unknown action {act!r}")
+        # Stops already through the close activate only after EVERY order of this
+        # script run is registered, so an OCA sibling placed later in the same
+        # run is cancelled by the fill (TradingView places the run's orders together).
+        for oid in crossed_now:
+            intent = self._pending_stop.pop(oid, None)
+            if intent is None:
+                continue        # cancelled by an earlier sibling's fill
+            start = len(self.events)
+            self._fill_entry(intent, bar.close, bar.ts, slip=True)
+            self._cancel_oca(intent, bar.ts)
+            out.extend(self.events[start:])
         if self.orders_on_close:
             out.extend(self._evaluate_at_close(bar))
         return out
@@ -165,10 +177,14 @@ class TVBrokerEmulator:
                     self._fill_exit(of, c, ts, slip=False, reason="limit_close")
         return self.events[start:]
 
-    def _place(self, intent: OrderIntent, bar: Bar) -> list[ExecutionEvent]:
+    def _place(self, intent: OrderIntent, bar: Bar, crossed_now: list[str] | None = None) -> list[ExecutionEvent]:
         if intent.leg_id != self.leg_id:
             raise ValueError(f"intent for {intent.leg_id!r} sent to {self.leg_id!r} emulator")
         if intent.kind in ("exit", "flat"):
+            bad = self._close_side_mismatch(intent)
+            if bad:
+                self.rejected.append(intent)
+                return [self._emit("reject", bar.ts, order_id=intent.order_id, detail=bad)]
             if intent.timing is FillTiming.THIS_CLOSE:
                 return self._close_scope(intent, bar.close, bar.ts, slip=True)
             # A next-open close is sized at the position that exists when it is
@@ -186,12 +202,30 @@ class TVBrokerEmulator:
             return []
         # stop entry
         crossed = (bar.close >= intent.price) if intent.side is Side.BUY else (bar.close <= intent.price)
-        if crossed and intent.timing is FillTiming.THIS_CLOSE:
-            ev = self._fill_entry(intent, bar.close, bar.ts, slip=True)
+        if crossed:
+            # "a stop order at a better value than the current market price activates
+            # immediately": THIS_CLOSE scripts fill at this close (after the whole
+            # script run is registered - see submit), others at the next open.
+            if intent.timing is FillTiming.THIS_CLOSE:
+                self._pending_stop[intent.order_id] = replace(intent, price=self._tick(intent.price))
+                if crossed_now is not None:
+                    crossed_now.append(intent.order_id)
+                return []
             self._cancel_oca(intent, bar.ts)
-            return [ev]
+            self._pending_market.append(replace(intent, order_type="market", price=None))
+            return []
         self._pending_stop[intent.order_id] = replace(intent, price=self._tick(intent.price))
         return []
+
+    def _close_side_mismatch(self, intent: OrderIntent) -> str:
+        """An exit must oppose every lot it targets; a same-side 'exit' would ADD live."""
+        lots = [o for o in self._open.values() if o.lot_qty > 0
+                and (intent.scope_fill_ids is None or o.fill.fill_id in intent.scope_fill_ids)]
+        for o in lots:
+            closing = Side.SELL if o.is_long else Side.BUY
+            if intent.side is not closing:
+                return f"exit_side_mismatch:{intent.side.value}_vs_{o.fill.side.value}_lot"
+        return ""
 
     def _cancel(self, act: Cancel, bar: Bar) -> list[ExecutionEvent]:
         out = []
@@ -313,6 +347,7 @@ class TVBrokerEmulator:
                     self._fill_exit(of, o, ts, slip=True, reason="stop_gap"); continue
                 if br.limit is not None and o >= br.limit:
                     self._fill_exit(of, o, ts, slip=False, reason="limit_gap"); continue
+                self._activate_trail_if_crossed(of, o)
                 self._trail_touch(of, o, up=True)
             else:
                 stop = self._short_effective_stop(of)
@@ -320,6 +355,7 @@ class TVBrokerEmulator:
                     self._fill_exit(of, o, ts, slip=True, reason="stop_gap"); continue
                 if br.limit is not None and o <= br.limit:
                     self._fill_exit(of, o, ts, slip=False, reason="limit_gap"); continue
+                self._activate_trail_if_crossed(of, o)
                 self._trail_touch(of, o, up=False)
 
     def _segment(self, a: float, b: float, bar: Bar) -> None:
@@ -411,6 +447,16 @@ class TVBrokerEmulator:
             levels.append(self._snap(of.trail_extreme + br.trail_offset_ticks * self.mintick))
         return min(levels) if levels else None
 
+    def _activate_trail_if_crossed(self, of: _OpenFill, price: float) -> None:
+        """A bar opening beyond the activation level activates the trail there (gap rule)."""
+        br = of.bracket
+        if br is None or of.trail_active or br.trail_activation_ticks is None:
+            return
+        if of.is_long and price >= self._snap(of.fill.price + br.trail_activation_ticks * self.mintick):
+            of.trail_active, of.trail_extreme = True, price
+        elif (not of.is_long) and price <= self._snap(of.fill.price - br.trail_activation_ticks * self.mintick):
+            of.trail_active, of.trail_extreme = True, price
+
     def _trail_touch(self, of: _OpenFill, price: float, *, up: bool) -> None:
         """Let an active trail follow a favourable extreme (long: highs, short: lows)."""
         if of.bracket is None or not of.trail_active:
@@ -430,8 +476,11 @@ class TVBrokerEmulator:
     def _affordable(self, intent: OrderIntent, fill_price: float) -> bool:
         if self.margin_pct <= 0:
             return True
+        # Equity and the margin already committed are both marked at the price the
+        # decision is taken at (the captured ORB export is reproduced exactly under
+        # either marking; marking both at the same price is the consistent choice).
         equity = self.initial_capital + self.realized_net() + self.open_pnl(fill_price)
-        used = sum(o.fill.price * self.pointvalue * o.lot_qty for o in self._open.values())
+        used = sum(fill_price * self.pointvalue * o.lot_qty for o in self._open.values())
         used *= self.margin_pct / 100.0
         need = fill_price * self.pointvalue * intent.qty * self.margin_pct / 100.0
         return need <= equity - used
@@ -507,10 +556,14 @@ class TVBrokerEmulator:
         lots = sorted((o for o in self._open.values() if o.lot_qty > 0), key=lambda o: o.fill_seq)
         if intent.scope_fill_ids is not None:
             lots = [o for o in lots if o.fill.fill_id in intent.scope_fill_ids]
+        remaining = intent.qty if intent.qty is not None else sum(o.lot_qty for o in lots)
         for lot in lots:
+            if remaining <= 0:
+                break
             side = Side.SELL if lot.is_long else Side.BUY
             fill_price = self._slipped(price, side, slip)
-            take = lot.lot_qty
+            take = min(lot.lot_qty, remaining)
+            remaining -= take
             self._seq += 1
             fill = Fill(
                 fill_id=f"{self.leg_id}:{self._seq}", order_id=intent.order_id, leg_id=self.leg_id,
@@ -524,9 +577,9 @@ class TVBrokerEmulator:
             entry_fill = (replace(lot.fill, qty=take, commission=entry_comm)
                           if take != lot.fill.qty else lot.fill)
             self.closed_trades.append(ClosedTrade(entry_fill, fill, gross, entry_comm + fill.commission))
-            lot.lot_qty = 0
+            lot.lot_qty -= take
             out.append(self._emit("fill", ts, fill=fill, order_id=fill.order_id))
-        if intent.scope_fill_ids is None or not any(o.lot_qty > 0 for o in self._open.values()):
+        if not any(o.lot_qty > 0 for o in self._open.values()):
             self._open.clear()
         else:
             for fid in [fid for fid, o in self._open.items() if o.lot_qty == 0]:

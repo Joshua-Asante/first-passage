@@ -21,9 +21,10 @@ Tracked (public):
 | `ops/c1_signal_daemon/book_adapters.py` | Public registry of the four adapters (leg ids, pinned Pine digests, instrument constants) + private-port loader |
 | `ops/c1_signal_daemon/book_parity.py` | Parity harness + CLI (`python -m c1_signal_daemon.book_parity`) |
 | `ops/c1_signal_daemon/ports/README.md`, `.gitignore` | The private port root (inside `ops/`: the ports import daemon modules); everything but these two files is ignored |
-| `tests/ops/test_book_policy.py` | Every rule above as a failing-first test (37) |
-| `tests/ops/test_tv_broker_emulator.py` | The fill semantics on synthetic bars (12) |
-| `tests/ops/test_book_adapters_parity.py` | Parity + protected-size + adds-off behaviour (13; skip without private inputs) |
+| `tests/ops/test_book_policy.py` | Every rule above as a failing-first test |
+| `tests/ops/test_tv_broker_emulator.py` | The fill semantics on synthetic bars |
+| `tests/ops/test_book_adapters_parity.py` | Parity + protected-size + adds-off behaviour (skip without private inputs) |
+| `tests/ops/test_book_review_followups.py` | PR #356 review follow-ups: fixed-instance policy validation, post-refusal ledger reconciliation, partial explicit exits, exit side validation, gap trail activation, marketable next-open stops, OCA cancel events, digest pin, P&L in the verdict |
 
 Private (primary checkout `ops/c1_signal_daemon/ports/`, gitignored; digests reported for TB-A0):
 
@@ -46,14 +47,16 @@ located in Downloads by filename and verified against `phase1_config.json` diges
 ## Verification — parity against the captured exports
 
 Each port is replayed through the emulator on its frozen panel and matched to the pinned export on
-(entry bar, exit bar, quantity, entry price, exit price); the window is the panel's span.
+(entry bar, exit bar, quantity, entry price, exit price, net P&L incl. commission); the window is the
+panel's span. The private `effective_inputs.json` is digest-pinned in `book_adapters.py`; the loader
+refuses other bytes.
 
-| Leg | Export trades | Matched | Missing | Extra | Qty mismatch | Price mismatch | Net P&L | Verdict |
+| Leg | Export trades | Matched | Missing | Extra | Qty mismatch | Price mismatch | P&L mismatch | Verdict |
 |---|---|---|---|---|---|---|---|---|
-| `orb_mnq_v7` | 681 | 681 | 0 | 0 | 0 | 0 | identical to the cent | PASS |
-| `dj30_mym_p250` | 203 | 203 | 0 | 0 | 0 | 0 | identical to the cent | PASS |
-| `vanguard_mgc` | 338 | 338 | 0 | 0 | 0 | 0 | identical to the cent | PASS |
-| `aegis_6j` | 121 | 121 | 0 | 0 | 0 | 0 | identical to the cent | PASS |
+| `orb_mnq_v7` | 681 | 681 | 0 | 0 | 0 | 0 | 0 | PASS |
+| `dj30_mym_p250` | 203 | 203 | 0 | 0 | 0 | 0 | 0 | PASS |
+| `vanguard_mgc` | 338 | 338 | 0 | 0 | 0 | 0 | 0 | PASS |
+| `aegis_6j` | 121 | 121 | 0 | 0 | 0 | 0 | 0 | PASS |
 
 Regression: `tests/ops` + `tests/core` green (841 passed, 4 skipped) with the new modules in place.
 
@@ -73,7 +76,8 @@ Regression: `tests/ops` + `tests/core` green (841 passed, 4 skipped) with the ne
 6. A next-open close is sized at the position that existed when it was issued (an add issued on the
    same bar survives to the next bar's close order).
 7. Pine v6 `strategy()` defaults `margin_long/short` to 100: a body that omits them (ORB v7) cannot
-   fill an entry whose value exceeds the equity not already committed — the emulator rejects it.
+   fill an entry whose value exceeds the equity not already committed (both marked at the decision
+   price) — the emulator rejects it. Marketable stops activate at once (this close, or the next open).
 8. `time("D")` has no daily bar on a US market holiday: the holiday session belongs to the next
    trading day's bar, so `ta.change(time("D"))` is 0 at that evening's reopen (`tv_daily_key`).
 

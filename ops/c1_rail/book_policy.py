@@ -90,13 +90,26 @@ def candidate_book_protection_policy() -> ProtectionPolicy:
     )
 
 
+class PolicyMismatch(RuntimeError):
+    """A policy other than the fixed 1%/40% trailing instance was threaded: halt."""
+
+
 def require_policy(policy: ProtectionPolicy | None) -> ProtectionPolicy:
+    """Only the fixed instance is executable here (D-B4 (a), D-B11): a different
+    trigger, scale or reference mode would move the risk-control boundary, so it
+    halts instead of being honoured."""
     if policy is None:
         raise PolicyAbsent(
             "no protection policy supplied; the book sizing path halts rather "
             "than defaulting a trigger/scale (TB-S1 (A))")
     if not isinstance(policy, ProtectionPolicy):
         raise PolicyAbsent(f"policy must be a ProtectionPolicy, got {type(policy).__name__}")
+    if (Fraction(str(policy.trigger)) != Fraction(CANDIDATE_TRIGGER)
+            or Fraction(str(policy.scale)) != Fraction(CANDIDATE_SCALE)
+            or policy.reference_mode != "trailing"):
+        raise PolicyMismatch(
+            f"policy ({policy.reference_mode}, trigger={policy.trigger}, scale={policy.scale}) "
+            f"is not the fixed book instance (trailing, {CANDIDATE_TRIGGER}, {CANDIDATE_SCALE}); halting")
     return policy
 
 
@@ -386,6 +399,7 @@ class Takeover:
     state: str = "pending"            # pending | admitted | refused
     cancel_acked: set[str] = field(default_factory=set)
     closed_confirmed: set[str] = field(default_factory=set)
+    confirmed_positions: dict[str, int] = field(default_factory=dict)   # every broker-reported position
     events: list[dict] = field(default_factory=list)
     refuse_reason: str | None = None
 
@@ -401,6 +415,9 @@ class Takeover:
     def confirm_close(self, leg_id: str, confirmed_position: int) -> None:
         self._require_pending()
         self._require_displaced(leg_id)
+        if confirmed_position < 0:
+            raise CapacityError("confirmed position must be >= 0")
+        self.confirmed_positions[leg_id] = confirmed_position   # broker truth is kept even on refusal
         if leg_id not in self.cancel_acked:
             self.fail(leg_id, "close reported before the leg's cancel was acknowledged")
             return
@@ -516,11 +533,19 @@ class CapacityLedger:
             if t.state == "pending":
                 t.fail(t.plan.requester, "settle called before every displaced leg was "
                                          "cancel-acked and confirmed flat")
+            # Fail closed for the requester, but never discard broker truth: an
+            # acknowledged cancel has released that leg's reservation, and a
+            # reported position (flat or partial) is the leg's exposure now.
+            for leg_id in t.cancel_acked:
+                self.reserved.pop(leg_id, None)
+            for leg_id, pos in t.confirmed_positions.items():
+                self.confirmed[leg_id] = pos
             self.events.extend(t.events)
             self._event("capacity_requester_refused", leg_id=t.plan.requester,
-                        reason=t.refuse_reason)
+                        reason=t.refuse_reason, reconciled=sorted(t.confirmed_positions))
             self._takeover = None
-            return CapacityDecision(False, f"takeover refused: {t.refuse_reason}", used, need)
+            return CapacityDecision(False, f"takeover refused: {t.refuse_reason}",
+                                    self.micro_used(), need)
         for leg_id in t.plan.displaced:
             self.reserved.pop(leg_id, None)
             self.confirmed.pop(leg_id, None)
@@ -553,6 +578,8 @@ class CapacityLedger:
     def release_reservation(self, leg_id: str, contracts: int | None = None) -> None:
         leg(leg_id)
         held = self.reserved.get(leg_id, 0)
+        if contracts is not None and (not isinstance(contracts, int) or contracts <= 0):
+            raise CapacityError(f"release contracts must be a positive int, got {contracts!r}")
         rel = held if contracts is None else contracts
         if rel > held:
             raise CapacityError(f"{leg_id}: release {rel} exceeds reservation {held}")
