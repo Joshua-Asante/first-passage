@@ -3,7 +3,7 @@
 **Status:** Accepted (operator directive 2026-07-12 "keep dd_protection as a concept, not as a constant — it is portfolio and prop firm variable"; recommendation ratified 2026-07-13 §6 `RESOLVED`, no dial adjustments; execution authorized "proceed with 1 and 2")
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** `2026-07-22-challenge-era-substrate-retirement.md` - `POLICY_REGISTRY["FXIFY-C2"]` seed-row + `_validate_fxify_seed()` + `ACTIVE_FIRM` retention only. The concept-not-constant frame, the venue-agnostic policy type, and the pre-reg → re-MC → both-halves-gate → ADR admission chain stand (and are now the sole change-control on the DD constants).
+**Superseded-in-part-by:** `2026-07-22-challenge-era-substrate-retirement.md` - `POLICY_REGISTRY["FXIFY-C2"]` seed-row + `_validate_fxify_seed()` + `ACTIVE_FIRM` retention only. The concept-not-constant frame, the venue-agnostic policy type, and the pre-reg → re-MC → both-halves-gate → ADR admission chain stand (and are now the sole change-control on the DD constants). **Also (PROPOSED, effective on ratification):** `2026-09-12-tradeify-book-protection-instance-admission.md` - §4 step 2 (the trigger × scale grid) and §2 item 2 (the `dd_type` dispatch of `reference_mode`) for the `tradeify_portfolio@Tradeify_Select_100K` instance only; the invariant, the three variables and steps 1, 3, 4 stand.
 **Retain-until:** none
 **Decision date:** 2026-07-13
 **Authors:** Joshua (decision) + Claude Code Opus 4.8 (recorder/implementer)
