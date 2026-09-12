@@ -232,3 +232,139 @@ In-container `contract_sha256()` → `346387e565225d956da0f5b9696f211dee82ff9a82
 Final in-container `--status` → `dry_run=True armed_until=None … m1_gate: status='CODE_LANDED' result=FAIL`. No arm, no signal, no order, no position.
 
 **Return:** `DONE_WITH_CONCERNS` — every gate met and every §4 limb held (boot line disarmed; preflight refused; every image-carried pin read in-container). Concerns, none blocking: (1) the A5 brief describes the CLI plan output as printing `release_withdrawn`; it does not (the after-state read carries it) — a brief text skew for the parent; (2) every in-container command was operator-run because this session cannot invoke `fly ssh console`, so the transcript evidence is the Terminal panel read by the session; (3) the ledger `seq` was read pre-deploy only (32); A6 Step 2.1 re-reads it as its own baseline. Per-step gates: 2.1–2.11 pass. Files touched: the acceptance JSON and this note.
+
+## §A4-D — Daemon readiness (2026-09-12, second dispatch of the A4 brief)
+
+**Brief:** [A4 handoff](../../briefs/handoffs/2026-09-10-track-a-a4-claude-deployment-readiness-review.md) Steps 2.3b/2.4b · **Preconditions:** A1r and A1b merged (`fa02a13`), A2-D green on that merge SHA (push run [34660963201](https://github.com/Joshua-Asante/first-passage/actions/runs/34660963201)), A5 DONE (§A5, #352 `133f043`) · **Currency:** `origin/main @ 133f043` · **Authority used:** read-only — non-ssh Fly reads and local tests by the session; in-container reads operator-run in their own console (this session's permission layer blocks `fly ssh console`), output read from the Terminal panel; no write to either volume, no restart, no deploy.
+
+### Fresh host reads (Step 2.3 re-run; `--status` account token redacted)
+
+Operator-run 2026-09-12 (PowerShell, two `fly ssh console` calls on one line), session-read from the Terminal panel.
+
+- Listener `--status` → `current: dry_run=True armed_until=None equity_source='crosstrade' equity_field='balance.netLiq' destination='tradovate' account=<redacted> bind_host='0.0.0.0' bind_port=8080` · `m1_gate: status='CODE_LANDED' result=FAIL`. Ledger: 32 records, last `seq 32` (`transport_result`) — unchanged since §A4-L and through the A5 deploy, so the v8 boot produced no request.
+- Daemon `/data`: `c1_signal_daemon_config.json` (2026-08-08 04:53, 239 bytes) and `lost+found` only — **no journal**, no `.lock`, no `.owner.lock`.
+- Daemon `/app/ops/c1_signal_daemon`: the pre-#332 file set (`__init__.py, __main__.py, b1_payload.py, daemon.py, evaluate_loop.py, feed.py, heartbeat.py, http_status.py, listener_client.py, strategy_protocol.py`) — the 2026-08-08 build still runs; its health JSON has the old field set (`ok, last_bar_age_s, feed_healthy, emit_enabled, connected`) and it logs a `suppress` step every 5 s.
+- Daemon config keys `bar_period_s, bind_host, bind_port, emit_enabled, listener_base_url, path_token, poll_interval_s`; `emit_enabled False`; `strategy` absent; `bar_period_s 900`; **`poll_interval_s 5`**; `m1_test` absent; `listener_base_url` host `c1-rail.fly.dev`. Unchanged since §A4-L.
+
+### Daemon checklist (Step 2.3b)
+
+| Item | How evidenced | GO / NO-GO (owner) |
+|---|---|---|
+| Listener still `dry_run=true`, `armed_until` None | fresh `--status`, above | **GO** |
+| A2-D green on the A1b merge SHA | push run [34660963201](https://github.com/Joshua-Asante/first-passage/actions/runs/34660963201) on `fa02a13`: `PASS D1 … D11`; D2 `COPY exact; no databento; extras match {"expected": [], "extras": []}` (no `requirements.txt` on `main`); D6 `prepare/enable/inject exit 2; hashes unchanged; no input files` — the three-refusal form the A1b PR specified, run without `PYTHONPATH`; D11 `one receipt; one transport_unknown; matching bar hash; cleanup; close/barrier; no values` — receipt and journal `bar_sha256` both `5b912affdbf00fd3206693da4b05ba1012e1c1ddfe3804d7c53f3ead844d4618` on that run; D10 `30.049` s to `TRANSPORT_UNKNOWN`, one accepted connection, no retry (both re-read from the run log by the parent) | **GO** |
+| Daemon import closure re-trace on the merge SHA | on `133f043`: `python -m pytest tests/ops/test_c1_signal_daemon_image_manifest.py -q` → `2 passed`; manual AST trace of `daemon.py`, `m1_stage1_control.py`, `evaluate_loop.py`, `__main__.py` against the daemon Dockerfile COPY lines → 15 modules (`operator_input_source.py` included), **0 missing**; `.dockerignore` and the Dockerfile both re-include the new module; no `deploy/c1_signal_daemon/requirements.txt` | **GO** |
+| Approved source configured but disabled | **Pending write, reviewed here (the expected case: no sub-track before A6 writes the daemon volume).** Keys the A1b `load_config` requires: `listener_base_url`, `path_token`, `bind_host`, `bind_port`, `bar_period_s`, `emit_enabled`, `poll_interval_s`; optional with defaults `strategy` (`"null"`) and `m1_test` (`{"enabled": false}`). Secret: `path_token` only. Non-secret values to stage: `emit_enabled false`, `strategy "null"`, `m1_test.enabled false` (with `state_path /data/c1_m1_stage1_state.json`), `bar_period_s 900` (`prepare` sets 60 for a ceremony), `listener_base_url` unchanged (host `c1-rail.fly.dev`), and **`poll_interval_s: 1`** — the one value change option D needs (the volume holds 5, and `run_daemon` caches the interval at startup, so it must be staged before the deploy, never after). Operator confirmation in-session, verbatim: "I hold the daemon path_token and will do the A6 put myself." (Codex's parallel A4-D dispatch, PR #353, had asked the same question and recorded the operator's answer "I will handle this in Claude Code", leaving its row NO-GO pending this confirmation; the sentence here discharges it.) | **GO** — pending write recorded; the operator holds the secret and performs the put at A6 Step 2.2b |
+| Credential values at rest only on the daemon volume | `git grep` on `main` for a literal 32+ character value after `path_token` outside test fixtures → none (every hit is a key name, a key list or a placeholder); the running daemon's health JSON `{"ok": true, "last_bar_age_s": null, "feed_healthy": false, "emit_enabled": false, "connected": true}` (the 2026-08-08 build's field set) carries no token-like string; a sampled `fly logs` window carries none; §A4-L's config read printed key names only | **GO** |
+| Journal state | fresh read above: `/data/c1_m1_stage1_state.json` absent (the volume holds only the config and `lost+found`) — the first-deploy case; A6 Step 2.5 expects `CeremonyStore.boot()` to create it at `generation 0`, `enabled false`, `active null`, with the `.lock` marker reading `initialized`. No unresolved checkpoint can exist where no journal exists | **GO** |
+| Two apps, two volumes | `fly volumes list`: `c1_rail_data` `vol_vxm828pzmlzyn7j4` on `e820221a657d28`; `c1_signal_daemon_data` `vol_r1j1pglm3zpmyy9r` on `840759c2474928`; `deploy/c1_signal_daemon/fly.toml` mounts `c1_signal_daemon_data` only; one machine per app | **GO** |
+| Rollback image known | §A3 item 4: `registry.fly.io/c1-signal-daemon:deployment-01KZFVAFXM3RTWJWVWND6W6TQ7` (`sha256:8e3a8f68…`), the source-free 2026-08-08 build; the v1 `failed` release with a running machine explained in §A4-L from timestamps and the `WAIT:` CMD (config loaded 04:53:26, then a restart) | **GO** |
+| Listener ledger baseline for "no signal on boot" | `seq 32` (`transport_result`), read fresh above; A6 Step 2.5 compares after its deploy | **GO** |
+| Exact A6 command sequence reviewed | written below (Step 2.4b) | **GO** |
+
+### The A6 sequence (Step 2.4b) — frozen for the A6 brief
+
+Deploy from the repo root of a clean checkout of `main` at the merge SHA recorded at A6 time (any `main` at or after `fa02a13` carries A1b; `133f043` traced clean above). PowerShell forms are given where the operator runs the command; the `MSYS_NO_PATHCONV=1 fly ssh console …` forms in the A6 brief are the Git Bash equivalents.
+
+```bash
+# 0. Listener posture first (pre-condition 1) + ledger baseline — operator-run; paste with account=<redacted>
+& fly ssh console -a c1-rail -C "sh -c 'cd /app; python ops/c1_rail/c1_rail_arm.py --status; echo ==LEDGER; python -c ""import json,sys;l=[x for x in open(sys.argv[1]).read().splitlines() if x.strip()];r=json.loads(l[-1]);print(len(l),{k:r.get(k) for k in sys.argv[2:]})"" /data/c1_rail_events.jsonl seq kind'"
+#    gate: dry_run=True armed_until=None; record seq (A4-D read: see above)
+# 1. Daemon pre-reads (Step 2.3 set)
+fly status -a c1-signal-daemon; fly releases -a c1-signal-daemon | head -3; fly logs -a c1-signal-daemon --no-tail | tail -20; curl -sS https://c1-signal-daemon.fly.dev/
+& fly ssh console -a c1-signal-daemon -C "sh -c 'ls -la /data; echo ==APP; ls /app/ops/c1_signal_daemon; echo ==CFG; python -c ""import json,sys;from urllib.parse import urlsplit;c=json.load(open(sys.argv[1]));print(sorted(c));print({k:c.get(k) for k in sys.argv[2:6]});m=c.get(sys.argv[6]);print(sys.argv[6], m.get(sys.argv[7]) if isinstance(m,dict) else m);print(urlsplit(str(c.get(sys.argv[8]))).hostname)"" /data/c1_signal_daemon_config.json emit_enabled strategy bar_period_s poll_interval_s m1_test enabled listener_base_url'"
+#    journal inspection (never a write): prints exists, schema_version/generation/enabled/active/boot_id, every ceremony's [state, previous_state], tombstones, watermarks, the .json.lock marker text and whether .owner.lock exists
+& fly ssh console -a c1-signal-daemon -C "sh -c 'python -c ""import json,sys,pathlib;p=pathlib.Path(sys.argv[1]);e=p.exists();print(sys.argv[2],e);o=json.loads(p.read_text()) if e else {};print({k:o.get(k) for k in sys.argv[3:8]});print(sys.argv[8],{i:[c.get(sys.argv[9]),c.get(sys.argv[10])] for i,c in o.get(sys.argv[8],{}).items()});print(sys.argv[11],o.get(sys.argv[11]));print(sys.argv[12],o.get(sys.argv[12]));l=pathlib.Path(str(p)+sys.argv[13]);print(sys.argv[13],l.exists(),l.read_text().strip() if l.exists() else None);w=pathlib.Path(str(p).replace(sys.argv[14],sys.argv[15]));print(sys.argv[15],w.exists())"" /data/c1_m1_stage1_state.json exists schema_version generation enabled active boot_id ceremonies state previous_state tombstones watermarks .lock .json .owner.lock; ls -la /data'"
+#    gate (A6 §0.5): exists False → first-deploy case, record it (this pass read: no journal); exists True → no ceremony state or previous_state in {EVALUATED, SEND_RESERVED, EMITTED, TRANSPORT_UNKNOWN}, else BLOCKED — plan-itself-wrong, preserve state; record generation G and the marker text (`initialized` expected whenever a journal exists)
+# 2. Step 2.2b — stage the config (OPERATOR performs every step that touches the value)
+#    a. prepare c1_signal_daemon_config.json LOCALLY from deploy/c1_signal_daemon/c1_signal_daemon_config.fly.example.json:
+#       listener_base_url https://c1-rail.fly.dev · path_token = the value already on the volume (operator-held) · bind_host 0.0.0.0 · bind_port 8080
+#       bar_period_s 900 · emit_enabled false · strategy "null" · m1_test {"enabled": false, "state_path": "/data/c1_m1_stage1_state.json"} · poll_interval_s 1
+#    b. shape check locally on the merge-SHA checkout (PowerShell; prints keys and the four non-secret values, never the token):
+python -c "import sys;sys.path.insert(0,sys.argv[1]);from c1_signal_daemon.daemon import load_config;from pathlib import Path;c=load_config(Path(sys.argv[2]));print(sorted(c), c[sys.argv[3]], c[sys.argv[4]], c[sys.argv[5]][sys.argv[6]], c[sys.argv[7]])" ops <local path> emit_enabled strategy m1_test enabled poll_interval_s
+#       PRE-DEPLOY GATE: the last value printed must be 1; anything else is not put
+#    c. put:  fly ssh sftp shell -a c1-signal-daemon   →   put <local path> /data/c1_signal_daemon_config.json   → then delete the local copy
+#    d. verify in-container, keys and flags only (the step-1 CFG one-liner again) → poll_interval_s 1, emit_enabled False, strategy null, m1_test enabled False
+#       (the running pre-A1b daemon holds its boot-time config and is unaffected until the deploy restarts it)
+# 3. Build verification on the merge SHA (pre-conditions 2 and 3) — session-run from the clean checkout
+git fetch origin main && git status --porcelain && git rev-parse HEAD origin/main && git diff --exit-code origin/main --stat   # porcelain empty; the two SHAs equal; no diff — record the SHA as the deployment SHA
+python -m pytest tests/ops/test_c1_signal_daemon_image_manifest.py -q                                                       # 2 passed
+python - <<'PY'
+import pathlib, runpy, sys
+root = pathlib.Path.cwd().resolve(); sys.path.insert(0, str(root / "ops"))
+import c1_signal_daemon.daemon, c1_signal_daemon.m1_stage1_control  # noqa: F401  (runtime import, bootstrap included)
+helper = runpy.run_path("tests/ops/test_c1_signal_daemon_image_manifest.py")
+copied = helper["_dockerfile_copied_py_paths"](root / "deploy/c1_signal_daemon/Dockerfile")
+loaded = set()
+for m in list(sys.modules.values()):
+    f = getattr(m, "__file__", None)
+    if f and pathlib.Path(f).resolve().is_relative_to(root / "ops"):
+        loaded.add(pathlib.Path(f).resolve().relative_to(root).as_posix())
+print("runtime modules under ops/", len(loaded), "missing from COPY", sorted(loaded - copied))   # expect: missing []
+PY
+# 4. Deploy (pre-condition 2) from the repo root on main at the merge SHA — session-run (fly deploy is permitted; fly ssh is not)
+fly deploy . --config deploy/c1_signal_daemon/fly.toml --dockerfile deploy/c1_signal_daemon/Dockerfile     # release v2 … complete
+T0=$(date -u +%Y-%m-%dT%H:%M:%SZ)                      # observation start — the first command after the deploy returns, before any verification read
+# 5. Verify inert (pre-condition 5)
+fly logs -a c1-signal-daemon --no-tail | tail -40      # `daemon up bind=0.0.0.0:8080 emit_enabled=false boot_id=…`; no b1_post / m1_b1_post; no connect line
+curl -sS https://c1-signal-daemon.fly.dev/             # poll_interval_s:1, emit_enabled false, effective_emit false, strategy "NullStrategy", feed_mode "operator_input", connected false, feed_healthy false, ceremony_state "DISABLED", boot_id new
+& fly ssh console -a c1-signal-daemon -C "sh -c 'cd /app; python ops/c1_signal_daemon/m1_stage1_control.py status --state /data/c1_m1_stage1_state.json'"
+#    gate: effective_emit false, source_status disconnected
+& fly ssh console -a c1-signal-daemon -C "sh -c 'python -c ""import json,sys,pathlib;p=pathlib.Path(sys.argv[1]);e=p.exists();print(sys.argv[2],e);o=json.loads(p.read_text()) if e else {};print({k:o.get(k) for k in sys.argv[3:8]});print(sys.argv[8],{i:[c.get(sys.argv[9]),c.get(sys.argv[10])] for i,c in o.get(sys.argv[8],{}).items()});print(sys.argv[11],o.get(sys.argv[11]));print(sys.argv[12],o.get(sys.argv[12]));l=pathlib.Path(str(p)+sys.argv[13]);print(sys.argv[13],l.exists(),l.read_text().strip() if l.exists() else None);w=pathlib.Path(str(p).replace(sys.argv[14],sys.argv[15]));print(sys.argv[15],w.exists())"" /data/c1_m1_stage1_state.json exists schema_version generation enabled active boot_id ceremonies state previous_state tombstones watermarks .lock .json .owner.lock; ls -la /data'"
+#    gates: schema_version 1, enabled False, active None, boot_id = the boot line's; generation = 0 if the step-1 read found no journal (A4-D's read), else G + 1 with every prior READY/DISABLED ceremony CLOSED under a `boot_changed` tombstone and tombstones/watermarks otherwise unchanged; .json.lock marker reads `initialized`; .owner.lock exists; a generation-0 file where step 1 found a journal means the marker was lost and the store re-initialised → FALSIFIED (A6 brief Step 2.5); no m1_upload_* / m1_bar_* / m1_claim_* files
+& fly ssh console -a c1-rail -C "sh -c 'python -c ""import json,sys;l=[x for x in open(sys.argv[1]).read().splitlines() if x.strip()];print(len(l),json.loads(l[-1]).get(sys.argv[2]))"" /data/c1_rail_events.jsonl seq'"    # seq unchanged vs step 0 → no signal on boot
+T1=$(date -u -d "$T0 + 60 seconds" +%Y-%m-%dT%H:%M:%SZ); while ! [ "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \> "$T1" ]; do sleep 5; done; fly logs -a c1-signal-daemon --no-tail | sed "s/\x1b\[[0-9;]*m//g" | awk -v t0="$T0" -v t1="$T1" '$1 >= t0 && $1 <= t1' > quiet.log && echo "lines $(wc -l < quiet.log) step_or_post $(grep -c -E 'step |b1_post|m1_b1_post|connect' quiet.log)"
+#    the loop continues while now <= T1 (second-precision dates: `< T1` would exit at the endpoint second and fetch before that second finishes); once now > T1 the full inclusive minute [T0, T0+60 s] is inspected, not a tail: lines > 0 (the health GETs prove the window is populated) and step_or_post = 0 (quiet path: no step, no POST, no connect); a window that the log service no longer holds is a FAIL to re-run, never a pass
+# 6. Record §A6; commit on claude/*; PR. STOP before any ceremony preparation.
+```
+
+**Return:** `DONE` — every §A4-D row GO with evidence; the A6 sequence is frozen above (revised 2026-09-12 on Codex's review of #354: journal inspection before and after the deploy with a generation gate tied to the pre-read, executable currency and runtime-import checks, a timed 60 s quiet window; round 3: quiet-window wait continues while `now <= T1` so the endpoint second is fully past before the fetch); the only volume change A6 needs is the `poll_interval_s: 1` staging the operator performs. Per-step gates: 2.3 (fresh reads) pass · 2.3b pass · 2.4b pass · 2.5 pass. Files touched: this note only. Second dispatch of the A4 brief complete; the A4 box in the plan closes with this section.
+
+## §A6 — Daemon deployed, inert (2026-09-12)
+
+**Brief:** [A6 handoff](../../briefs/handoffs/2026-09-10-track-a-a6-claude-daemon-deploy-inert.md) · **Preconditions:** A1b merged, A2-D green on `fa02a13`, §A4-D all GO (#354), A5 DONE (§A5) · **Currency:** clean detached worktree at `origin/main @ d6f8e84` (porcelain empty; equal to `origin/main` re-checked immediately before the deploy) · **Authority used:** `fly deploy` under the 2026-08-02 grant (session-run), read-only Fly commands; every in-container command operator-run in their own console (this session cannot invoke `fly ssh console`), output read from the Terminal panel; the config staging performed by the operator (Step 2.2b). **No `prepare`, no `enable`, no manifest, no source activation, no journal edit.**
+
+### 2.1 Listener disarm reconfirm
+
+`--status` → `current: dry_run=True armed_until=None equity_source='crosstrade' equity_field='balance.netLiq' destination='tradovate' account=<redacted> bind_host='0.0.0.0' bind_port=8080` · `m1_gate: status='CODE_LANDED' result=FAIL`. Ledger: 32 records, last `seq 32` (`transport_result`) — the baseline for "no signal on boot".
+
+### 2.2 Daemon pre-read
+
+`fly releases` → v1 `failed` (2026-08-08) only; `fly status` → machine `840759c2474928` `started` on `deployment-01KZFVAFXM3RTWJWVWND6W6TQ7` (the 2026-08-08 build); health JSON with the old field set (`ok, last_bar_age_s, feed_healthy, emit_enabled, connected`); logs: a `suppress/feed_unhealthy` step every 5 s. `/data`: `c1_signal_daemon_config.json` (239 bytes) and `lost+found` only. Journal probe: `exists False`; `.json.lock` absent; `.owner.lock` absent → the first-deploy case (A6 §0.5 gate clear; expected `generation 0` after the deploy). Config keys before staging: `bar_period_s, bind_host, bind_port, emit_enabled, listener_base_url, path_token, poll_interval_s`; `poll_interval_s 5`; `strategy` and `m1_test` absent.
+
+### 2.2b Staging the approved-source configuration (operator-performed)
+
+The §A4-D pending write, executed by the operator with the session drafting each command and reading only key names, flags and byte counts:
+
+1. `fly ssh sftp get -a c1-signal-daemon /data/c1_signal_daemon_config.json` into the operator's home directory (outside every repository) — 239 bytes.
+2. Edited in place by a one-liner that printed only the key list: `poll_interval_s` → `1`; `strategy` → `"null"` and `m1_test` → `{"enabled": false, "state_path": "/data/c1_m1_stage1_state.json"}` added (the A1b `load_config` defaults both; added explicitly to match the example config). No other key changed.
+3. Shape check against the A1b code on the `d6f8e84` checkout (`load_config` on the local file): keys `bar_period_s, bind_host, bind_port, emit_enabled, listener_base_url, m1_test, path_token, poll_interval_s, strategy` and the four gated values **`False null False 1`** — the pre-deploy gate (`poll_interval_s` must print `1`) met.
+4. Put: the interactive `fly ssh sftp shell` mangled typed input on this console and was abandoned; the non-interactive `fly ssh sftp put -a c1-signal-daemon <local> /data/c1_signal_daemon_config.json` refused because the remote file exists (flyctl does not overwrite), so the file was put as `/data/c1_signal_daemon_config.json.new` (358 bytes) and swapped in-container by the operator with a backup: `cp … c1_signal_daemon_config.json.pre-a6-bak` (239 bytes) then `mv … .json.new → .json`. `ls -la /data` afterwards: the config (358 bytes, 02:40 UTC), `.pre-a6-bak`, `lost+found`.
+5. In-container verify (keys and flags only): `emit_enabled False`, `strategy 'null'`, `bar_period_s 900`, **`poll_interval_s 1`**, `m1_test False`. Local copy deleted. The running pre-A1b daemon kept its boot-time config until the deploy restarted it (its 5 s `suppress` cadence continued to 02:41:27 UTC).
+
+*Procedure note for the parent:* a `Remove-Item` chained after the first, refused put deleted the operator's prepared file and forced a re-run of steps 1–3; never chain the cleanup to the put.
+
+### 2.3 Import closure (pre-condition 3)
+
+On `d6f8e84`: `python -m pytest tests/ops/test_c1_signal_daemon_image_manifest.py -q` → `2 passed`; the §A4-D runtime trace (import `daemon` and `m1_stage1_control` through the bootstrap, `sys.modules` under `ops/` against the Dockerfile COPY set) → 16 modules, **missing []**. Currency re-checked immediately before the deploy: `HEAD == origin/main == d6f8e84`, porcelain empty, no diff.
+
+### 2.4 Deploy (pre-condition 2)
+
+From the repo root of the clean `d6f8e84` checkout: `fly deploy . --config deploy/c1_signal_daemon/fly.toml --dockerfile deploy/c1_signal_daemon/Dockerfile` → rolling update of machine `840759c2474928`, smoke and machine checks passed, DNS verified. `fly releases` → **v2 `complete`** (v1 `failed` 2026-08-08 stays in history). Image `registry.fly.io/c1-signal-daemon:deployment-01M29QV4Y81BXWN4BWWMW67CEN` (sha256:254272cbf94a4d7e67d1cfc5b3814cbee285ceaf896e15dfd596e3ba975dae40). `T0 = 2026-09-12T02:41:45Z`, taken as the first command after the deploy returned.
+
+### 2.5 Verify inert (pre-condition 5)
+
+- **Boot log** (`fly logs --no-tail`, ANSI stripped): old build's last `suppress` step 02:41:27Z → `Main child exited normally with code: 0` 02:41:32Z → `Preparing to run: sh -c if [ ! -f /data/c1_signal_daemon_config.json ] …` 02:41:34Z (the `WAIT:` guard, config present) → one `Health check … has failed` line at 02:41:34Z and `is now passing` at 02:41:35Z (the bind race, benign) → **`daemon up bind=0.0.0.0:8080 emit_enabled=false boot_id=cce8b7b8d0f34027a69a1a6fe63dfba6`** 02:41:35Z. No `b1_post`, no `m1_b1_post`, no connect line, no `ModuleNotFoundError`.
+- **Health** `curl -sS https://c1-signal-daemon.fly.dev/` → `{"ok": true, "last_bar_age_s": null, "feed_healthy": false, "emit_enabled": false, "connected": false, "strategy": "NullStrategy", "feed_mode": "operator_input", "boot_id": "cce8b7b8d0f34027a69a1a6fe63dfba6", "ceremony_id": null, "ceremony_state": "DISABLED", "effective_emit": false, "poll_interval_s": 1.0}` — every A6 Step 2.5 field as expected, **`poll_interval_s` 1** (the A7 Step 2.1 gate).
+- **Quiet window** `[T0, T0 + 60 s]` = `[02:41:45Z, 02:42:45Z]`, fetched after `T1` had passed and filtered by timestamp: 3 lines, all `http_status … "GET / HTTP/1.1"` (the health checks populate the window); **0** `step` / `b1_post` / `m1_b1_post` / `connect` lines — the quiet path holds with no ceremony.
+- **In-container status CLI, journal, listener ledger (operator-run):**
+
+  - `python ops/c1_signal_daemon/m1_stage1_control.py status --state /data/c1_m1_stage1_state.json` (from `/app`, no `PYTHONPATH`) → `{"boot_id": "cce8b7b8d0f34027a69a1a6fe63dfba6", "ceremony_id": null, "state": "DISABLED", "effective_emit": false, "source_status": "disconnected"}` — the bootstrap works on the deployed image; `boot_id` equals the boot line's.
+  - Journal probe → `exists True`; `schema_version 1`, **`generation 0`**, `enabled False`, `active None`, `boot_id cce8b7b8…`; `ceremonies {}`, `tombstones {}`, `watermarks {}`; `.json.lock` present reading **`initialized`**; `.owner.lock` present. Created fresh by `CeremonyStore.boot()` — the first-deploy case §A4-D predicted, so generation 0 is the expected value, not a re-initialisation.
+  - `ls -la /data` → `c1_m1_stage1_state.json` (158 bytes, mode 600, 02:41 UTC), `c1_m1_stage1_state.json.lock` (12 bytes), `c1_m1_stage1_state.owner.lock` (0 bytes), the config (358 bytes) and its `.pre-a6-bak` (239 bytes), `lost+found`. **No `m1_upload_*`, `m1_bar_*` or `m1_claim_*` file.**
+  - Listener ledger → 32 records, last `seq 32` (`transport_result`) — **unchanged from the baseline: no signal on boot.**
+
+### 2.6 Stop
+
+No ceremony preparation. The daemon is at v2, inert: emission disabled, source disconnected, journal fresh, listener untouched.
+
+**Return:** `DONE_WITH_CONCERNS` — every §4 limb held (boot disarmed and inert, source disconnected, journal fresh and valid, no listener request), so the daemon is at v2 as the A7 brief requires. Concerns, none blocking: (1) every in-container command was operator-run (this session cannot invoke `fly ssh console`); (2) on this console the interactive `fly ssh sftp shell` mangled typed input and was abandoned — the non-interactive `fly ssh sftp put <local> <remote>` form works and refuses to overwrite an existing remote file, which matters for A7's private upload (`/data/m1_upload_<id>.json` must not pre-exist; `inject` removes it on every exit) — and a cleanup chained after a refused put deleted the operator's local file once, so A7 must never chain the deletion to the put; (3) `ls ops/c1_signal_daemon` was not re-listed after the deploy — the D2 file-set check on the A1b image (run 34660963201) and the working `status` bootstrap cover the packaged set. Per-step gates: 2.1–2.6 pass. Files touched: this note only. STOP before any ceremony.
