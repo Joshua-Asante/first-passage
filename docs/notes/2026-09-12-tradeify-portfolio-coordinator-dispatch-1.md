@@ -38,23 +38,23 @@ This record is a derived mirror of those owners plus this dispatch's own finding
 | TB-R1 2.2 regenerate ledgers | not run: `verify_input_overrides` refuses without the D26 files | O-9 ruling | operator → coordinator | O-9 | NEEDS_CONTEXT |
 | TB-R1 2.3 panels | four panels verify | none | — | — | DONE |
 | TB-R1 2.4 / 2.5 lost-set inventory, backup list | not run this dispatch | run before wave 2 | coordinator | — | OPEN |
-| TB-R2 scaling read + export menu | [note](2026-09-12-track-b-scaling-faithfulness-read.md): classification RESOLVED; menu DRAFT (7 owed exports) | menu freeze | coordinator | O-5, O-6, O-7 | DRAFT LANDED |
+| TB-R2 scaling read + export menu | [note](2026-09-12-track-b-scaling-faithfulness-read.md): classification RESOLVED; menu **FROZEN** 2026-09-12 (7 owed exports under ruled O-1/O-5/O-6/O-7) | operator produces OP-1 exports | coordinator | rulings recorded | FROZEN |
 | TB-W1 warm-up | private inventory; boundary = panel origin; no pre-window bars owed | freeze in TB-S3/TB-F1 | coordinator | — | LANDED |
-| TB-S1 protection/capacity spec | rules (A)–(F) exist as **code** in `book_policy.py` (candidate policy, ULP trigger, prior-close clock, integer table, carried positions, ledger + atomic takeover) with 21 failing-first tests | the spec file; the O-5/O-6 law; the fixed-quantity leg type for the host | Claude | O-5, O-6 | NOT AUTHORED (blocked on rulings) |
+| TB-S1 protection/capacity spec | rules (A)–(F) exist as **code** in `book_policy.py` (candidate policy, ULP trigger, prior-close clock, integer table, carried positions, ledger + atomic takeover) with 21 failing-first tests | the spec file; the fixed-quantity leg type for the host; re-derived D-B8 capacity cases under the ruled laws | Claude | rulings recorded | NOT AUTHORED (authorable now — O-5/O-6 ruled) |
 | TB-S2 replay spec | emulator = per-leg TV-faithful replay broker (fill semantics 1–8 pinned); **not** the synchronized multi-leg replay | spec incl. C1–C5 re-derivation, calendar/overlay, missing-bar rule, week clock | Claude | TB-R1 inventory (partial) | NOT AUTHORED (authorable now) |
 | TB-S3 rail/daemon extension spec | protocol (C)/(D)/(M) delivered as `book_protocol.py`; capacity/takeover (E) in `book_policy.py`; O-3 seeding unspecified | registry, barrier, sides, kill switch, scheduler, restart, packaging, policy source, live/offline split | Claude | O-8 (holiday latch), O-3 | NOT AUTHORED (authorable now; O-8 assumed "keep") |
 | TB-P1 validation-contract draft + ORB ADR skeleton | not started; `certification_power.py` has no speed-limb mode | both files + additive calculator mode | Claude | — | NOT AUTHORED (authorable now) |
 | TB-P2 fixed-instance ADR | not started | full-tier ADR, PROPOSED → operator ratification before TB-F1 | Claude | D-B11 ruled | NOT AUTHORED (authorable now) |
 | TB-A1..A4 adapters + parity | **DELIVERED-IN-PART (#356):** ports, captured-size parity PASS 681/203/338/121, protected-size / adds-off behaviour under port semantics | parity against TB-R3-intaken exports at every protected/WATCH size and mode | Claude | OP-1 + TB-R3 | OWED-IN-PART |
 | TB-A0 port manifest | `PORT_MANIFEST.sha256` carries no book line | after all TB-A parity | coordinator | TB-A parity PASS at every size | STUB |
-| OP-1 exports | menu drafted: Striker ×5 (Account Size ×0.40/0.50/0.20/0.25/0.10), ORB ×2 (1 contract, margin 0 %, adds on/off); Aegis and Vanguard none | operator supplies | operator | menu freeze | QUEUED |
+| OP-1 exports | menu **FROZEN**: Striker ×5 (Account Size ×0.40/0.50/0.20/0.25/0.10), ORB ×2 (1 contract, margin 0 %, adds on/off); Aegis and Vanguard none | operator supplies | operator | menu frozen | QUEUED (produce exports) |
 | TB-R3 intake | not started | intake dir + manifests | Claude | OP-1 delivered | STUB |
 | TB-I1 locked surfaces | untouched (`firm_rules`, `lifecycle`, sizing host) | thread the ruled law; fixed-quantity leg type; keys/allocations at zero | Claude | TB-S1 accepted + ratified | STUB |
 | TB-I2 replay engine (Codex) | none | engine + matrix | Codex | TB-S2 accepted; parity PASS at every exercised size; TB-R1 panels | **BLOCKED** |
 | TB-I3 rail/daemon offline (Codex) | none | offline requirements | Codex | TB-S3 accepted + TB-I1 merged | **BLOCKED** |
 | TB-T1 snapshot sealer (Codex) | [contract](../spec/2026-09-12-tradeify-account-snapshot-seal-contract.md) + [packet](../briefs/handoffs/2026-09-12-tb-t1-snapshot-sealer-packet.md) | build | Codex | contract fixed | **READY (not launched)** |
 | TB-C1 forward calendar | none | needs TB-P1 horizon | Claude | TB-P1 | STUB |
-| O-1 Call-4 beta term | host lacks it; `lifecycle.get_effective_multipliers` has it | ruling | operator → TB-S1 | — | recommendation below |
+| O-1 Call-4 beta term | host lacks it; `lifecycle.get_effective_multipliers` has it | **RULED off-rail** | operator → TB-S1 (states it) | — | RULED 2026-09-12 |
 | O-2 initial lifecycle state | none | TB-V1 migration | operator/coordinator | wave 3 | open |
 | O-3 live peak seeding | none | TB-S3 requirement + test | Claude | TB-S3 | open |
 | O-4 production feed | deferred by operator | — | operator | later | DEFERRED |
@@ -92,16 +92,14 @@ The TB-R2 menu is frozen on them.
 | O-8 | Vanguard post-holiday no-trade artefact | keep as captured | live adapter keeps the TV daily-key latch; no pre-registration needed |
 | O-9 | effective-input provenance | re-capture the five Inputs tabs (§47a) if the charts exist, else accept the reconstructed set as RECONSTRUCTED with per-export Inputs/Properties captures for every OP-1 export | TB-R1 2.2 can run (a) or is recorded LOST-with-reconstruction (b); no manifest rewrite either way |
 
-Until O-5/O-6/O-7 are ruled the export menu stays DRAFT and TB-S1 is not authored; O-8 and O-9
-do not block TB-S2/TB-S3/TB-P1/TB-P2 authoring.
+O-1 and O-5 through O-9 are **ruled** (operator: "defaults"); the TB-R2 menu is **FROZEN**; TB-S1 is now authorable on the ruled laws. O-8 and O-9 do not block TB-S2/TB-S3/TB-P1/TB-P2 authoring.
 
 ## 5 — Export menu
 
-Drafted in the [TB-R2 read §3](2026-09-12-track-b-scaling-faithfulness-read.md): 4 available
-(the captured exports), **7 owed** under the recommended rulings (Striker ×5 by scaling the Account
-Size input; ORB ×2 at one contract with margin 0 %, scale-in on/off), Aegis and Vanguard none.
-Freeze blocked by O-5 (Striker rows exist only under law B), O-6, O-7. TB-R3's intake gate stays in
-front of every new export before it is decision-bearing.
+**FROZEN** in the [TB-R2 read §3](2026-09-12-track-b-scaling-faithfulness-read.md) under the 2026-09-12
+rulings: 4 available (the captured exports), **7 owed** (Striker ×5 by scaling the Account Size
+input; ORB ×2 at one contract with margin 0 %, scale-in on/off), Aegis and Vanguard none.
+TB-R3's intake gate stays in front of every new export before it is decision-bearing.
 
 ## 6 — Packet dispositions (Claude / Codex split)
 
@@ -111,13 +109,13 @@ front of every new export before it is decision-bearing.
 | TB-I3 offline rail/daemon | Codex | **BLOCKED — context-problem** | TB-S3 not authored/accepted; TB-I1 not started |
 | TB-I2 synchronized replay | Codex | **BLOCKED — context-problem** | TB-S2 not authored/accepted; OP-1 exports and per-size parity not delivered |
 | TB-S2, TB-S3, TB-P1, TB-P2 | Claude | **authorable now** (TB-S3 under the O-8 "keep" assumption; O-3 folded in) | entry conditions met by the rulings D-B1..D-B15 |
-| TB-S1 | Claude | **BLOCKED — context-problem** | O-5 / O-6 rulings fix its quantity tables |
-| TB-R3, TB-A parity at new sizes, TB-A0 | Claude | BLOCKED on OP-1 | menu freeze → exports → intake |
+| TB-S1 | Claude | **authorable now** | O-5 / O-6 ruled; quantity tables and re-derived D-B8 capacity cases are in scope |
+| TB-R3, TB-A parity at new sizes, TB-A0 | Claude | BLOCKED on OP-1 | menu frozen → operator exports → intake |
 
 ## 7 — Next executable actions
 
-- **Operator:** rule O-1, O-5, O-6, O-7, O-8, O-9 (one comment suffices; "defaults" applies the recommendations); merge this dispatch's PR; then produce the OP-1 exports from the frozen menu with an Inputs-tab and Properties-tab capture per export; run A7 on Sunday in its own session.
-- **Claude (coordinator):** after the rulings, re-issue the TB-R2 menu as FROZEN (replacement, not extension) and author TB-S1; independently now: author TB-S2, TB-S3, TB-P2 and TB-P1 (with the additive speed-limb mode in `certification_power.py`); run TB-R1 2.4/2.5; adjudicate TB-T1 on return.
+- **Operator:** merge this dispatch's PR; produce the OP-1 exports from the **frozen** TB-R2 menu with an Inputs-tab and Properties-tab capture per export; run A7 on Sunday in its own session. O-1 and O-5..O-9 are already ruled ("defaults"); no further ruling is required for those items.
+- **Claude (coordinator):** author TB-S1 on the ruled laws (including the re-derived D-B8 protected-capacity cases); independently: author TB-S2, TB-S3, TB-P2 and TB-P1 (with the additive speed-limb mode in `certification_power.py`); run TB-R1 2.4/2.5; adjudicate TB-T1 on return. The TB-R2 menu is already FROZEN — do not re-solicit O-1/O-5..O-9.
 - **Codex:** execute TB-T1 when the operator launches it (branch `codex/tb-t1-snapshot-sealer`; two files; acceptance = the packet's §4 gate); review this dispatch's PR.
 
 Checks run for this record: `make check`, `python scripts/check_md_relative_links.py --strict` on the
