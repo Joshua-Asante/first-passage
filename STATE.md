@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-11
+**Last curated:** 2026-09-12
 
 Current priorities, dormant cross-session work, and outstanding obligations.
 Read the queue first, then the linked executable plan; campaign records own
@@ -33,7 +33,7 @@ Queue position does not grant phase GO or authorize a new generation channel.
 
 | # | Item | Owner artifact | Blocks |
 |---|---|---|---|
-| 1 | **B7-REFIRE Stage 1 + M1** — licensed test strategy; offline `m1_stage1_test` implementation on `codex/m1-stage1-test` ([contract](docs/notes/rail_build/M1_STAGE1_TEST_CONTRACT.md)); item 5 dated 2026-08-24 remains owed; Stage 1 input ruled 2026-09-11 (option D, operator-attended controlled input); A1b implemented and Linux-validated (#349, 2026-09-12); readiness record §A3 and §A4-L landed (#348, #350); next A5 listener deploy (disarmed), then A4-D, A6, one attended ceremony (A7), A8. Former queue item 2; unchanged scope and no arm. | [Track A plan](docs/superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md) · [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [GO addendum](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) | Live-signal / arming path |
+| 1 | **B7-REFIRE Stage 1 + M1** — licensed test strategy; offline `m1_stage1_test` implementation on `codex/m1-stage1-test` ([contract](docs/notes/rail_build/M1_STAGE1_TEST_CONTRACT.md)); item 5 dated 2026-08-24 remains owed; Stage 1 input ruled 2026-09-11 (option D, operator-attended controlled input); A1b implemented and Linux-validated (#349, 2026-09-12); readiness record §A3, §A4-L, §A5, §A4-D, §A6 landed (#348, #350, #352, #354, #355): listener v8 and daemon v2 deployed disarmed/inert 2026-09-12; A7 (the one attended ceremony) prepared for Sunday 2026-09-13 (§A7-P), then A8. Former queue item 2; unchanged scope and no arm. | [Track A plan](docs/superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md) · [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) · [GO addendum](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-08-24--test-strategy-is-a-qualifying-strategy) | Live-signal / arming path |
 | 2 | **Track B — qualify the accepted Tradeify book** — K=1 confirmation of the operator-accepted four-strategy book under the fixed 1% trigger / 40% scale / full ORB base / ORB adds-off policy; HOLD released 2026-09-11 for the umbrella's packets only (TB-G0, D-B1..D-B15 recorded); wave 1a dispatchable, later waves per the umbrella's wave gates. Consumes Track A's M1 `RESOLVED`; the production feed for the four adapters is a separate open operator decision (umbrella O-4). No deployment or arm authority. | [Track B umbrella](docs/briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) · [campaign record §55](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#55--track-b-release--d-b1d-b15-recorded-2026-09-11) · [acceptance](docs/notes/2026-09-10-tradeify-protection-selection.md) | Deployment GO / arm |
 
 ## Executed operator decisions — decision index
@@ -70,7 +70,7 @@ second queue here. Registry backfill debt is enumerated by
 Owners retain canonical criteria; rows below are pointers. Delete discharged
 rows rather than retaining completion narratives. A gated row does not grant GO.
 
-### Weekly — recurring (rolling; next deadline **2026-09-11**, bucket 09-07→09-11)
+### Weekly — recurring (rolling; next deadline **2026-09-18**, bucket 09-14→09-18)
 
 - **Operator-placed account-preservation trade:** at least one per Mon–Fri week.
   No agent places it; the rail stays disarmed. A missed venue week risks account
@@ -80,8 +80,11 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   restated on 09-05; the exact trade day is unresolved between 09-02/09-03.
   The private compliance ledger row remains owed; its session hook still reads
   NOT RECORDED until written. [Campaign record §15](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#15-d20--the-acceleration-ruling-2026-09-04-deploy-at-the-phase-3-commit)
-  retains the attestation history. Week 09-07→09-11 is open. Roll the deadline
-  each Monday; `daily-repo-truth-sync` reads this board's dated obligations.
+  retains the attestation history. Week 09-07→09-11: placement **not verified from
+  this clone** as of 2026-09-12 (the session hook reads UNAVAILABLE — the coverage
+  record is redacted here; this is not a coverage verdict) — the operator's attestation
+  for that week is owed. Week 09-14→09-18 is open. Roll the deadline each Monday;
+  `daily-repo-truth-sync` reads this board's dated obligations.
 
 ### Monthly — recurring (rolling; next deadline **2026-09-21**)
 
