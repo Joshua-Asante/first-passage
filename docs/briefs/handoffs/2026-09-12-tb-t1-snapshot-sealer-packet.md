@@ -22,7 +22,7 @@
 
 | Source | Anchor | What it pins |
 |---|---|---|
-| `core/mc/simulation.py` `EvaluationState` (lines 75–124) | `adccb7d` | the five-field kernel and its validation (basis, equity, peak, trade days, best day); "cannot certify provenance" |
+| `core/mc/simulation.py` `EvaluationState`, `_drawdown_outcome` and `core/mc/preflight.py` `firm_kwargs` | `adccb7d` | the five-field kernel validation plus the tier-aware initial drawdown-floor predicate; constructor validation alone does not reject an already-breached account; "cannot certify provenance" |
 | `core/firm_rules.py` `Tradeify_Select_100K` | `d4d1c5e` | `starting_balance`, `max_dd_pct` 3.0, `profit_target_pct` 6.0, `min_trading_days` 3, `consistency_rule_pct` 40 |
 | `core/lib/validation.py` | `origin/main` | `require_finite_number`, `dump_strict_json` |
 | `scripts/certification_power.py` | `5e5a216` | stdlib-script convention (argparse, no third-party imports, exact-integer oracle in tests) |
@@ -44,8 +44,8 @@ TB-B7 seals the fresh live-account snapshot that TB-E2 (the sole n3) initializes
 
 ## §2 — Steps (test-first)
 
-- **2.1 Failing tests first** in `tests/test_seal_account_snapshot.py`, one per check: C1 missing/empty evidence file; C2 kernel rejection (peak below basis; zero trade days with a non-pristine state); C3 equity ≠ balance, and `positions_export_shows_flat: false`; C4 `threshold + width < balance`; C5 captures 31 minutes apart, seal 25 hours late, a capture inside a live session (Tuesday 14:00 ET); C6 display disagrees by more than one point; C7 wrong target display; C8 non-zero adjustments without a reconciliation note; C9 output path not ignored (use a temporary git repo in the test); plus one **synthetic** all-pass fixture at the high-water mark and one with a carried drawdown, asserting the sealed JSON's shape, `at_high_water_mark`, the recorded digests, and that stdout contains no digit sequence from any field value.
-- **2.2 Implement** `scripts/seal_account_snapshot.py`: stdlib only; `EvaluationState` and `FIRM_RULES` imported through the `sys.path` bootstrap; atomic write (temp file + `os.replace`); exit code 0 on seal, 2 on refusal; stdout = sealed-file SHA-256 + passed check ids + the attested-not-verified sentence; stderr = failing check ids only.
+- **2.1 Failing tests first** in `tests/test_seal_account_snapshot.py`, one per check: C1 missing/empty evidence file; C2 kernel rejection (peak below basis; zero trade days with a non-pristine state; constructor-valid equity exactly at the floor, below it, or inside the kernel's rounded breach boundary must all refuse; a valid state safely above the boundary must pass); C3 equity ≠ balance, and `positions_export_shows_flat: false`; C4 `threshold + width < balance`; C5 captures 31 minutes apart, seal 25 hours late, a capture inside a live session (Tuesday 14:00 ET); C6 display disagrees by more than one point; C7 wrong target display; C8 non-zero adjustments without a reconciliation note; C9 output path not ignored (use a temporary git repo in the test); plus one **synthetic** all-pass fixture at the high-water mark and one with a carried drawdown, asserting the sealed JSON's shape, `at_high_water_mark`, the recorded digests, and that stdout contains no digit sequence from any field value.
+- **2.2 Implement** `scripts/seal_account_snapshot.py`: stdlib only; `EvaluationState`, `_drawdown_outcome`, `firm_kwargs` and `FIRM_RULES` imported through the `sys.path` bootstrap; C2 requires both successful construction and a null drawdown outcome under the tier geometry; atomic write (temp file + `os.replace`); exit code 0 on seal, 2 on refusal; stdout = sealed-file SHA-256 + passed check ids + the attested-not-verified sentence; stderr = failing check ids only.
 - **2.3 Independent oracle**: one test recomputes `historical_eod_peak` and the C6 ratio with `fractions.Fraction` from the synthetic fixture and compares to the tool's output.
 - **2.4 Run** `python -m pytest tests/test_seal_account_snapshot.py -q` and `make check`; record both outputs in the PR body.
 
@@ -75,7 +75,7 @@ Concerns surfaced (if any): <list>
 Next action recommended: <one sentence>
 ```
 
-**File ownership (exact):** `scripts/seal_account_snapshot.py` (new) · `tests/test_seal_account_snapshot.py` (new). **Reusable components:** `EvaluationState`, `FIRM_RULES`, `require_finite_number`, `dump_strict_json`. **Dependencies:** none pending (contract fixed 2026-09-12). **Non-goals:** the live capture, TB-B7's execution fingerprint, any n3 run, any change to the kernel. **Stopping condition:** the §4 gate reads RESOLVED, or a `NEEDS_CONTEXT` / `BLOCKED` return is posted; no second design pass without the coordinator.
+**File ownership (exact):** `scripts/seal_account_snapshot.py` (new) · `tests/test_seal_account_snapshot.py` (new). **Reusable components:** `EvaluationState`, `_drawdown_outcome`, `firm_kwargs`, `FIRM_RULES`, `require_finite_number`, `dump_strict_json`. **Dependencies:** none pending (contract fixed 2026-09-12). **Non-goals:** the live capture, TB-B7's execution fingerprint, any n3 run, any change to the kernel. **Stopping condition:** the §4 gate reads RESOLVED, or a `NEEDS_CONTEXT` / `BLOCKED` return is posted; no second design pass without the coordinator.
 
 ## §10 — Audit hooks (runnable)
 

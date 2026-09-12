@@ -63,13 +63,24 @@ Striker's Account Size input and Vanguard's risk input scale the *risk*, never t
 and Vanguard places nothing while protected; both are accepted consequences of D-B10/D-B14, and
 TB-P1 (E) records them as the reachable-ladder restriction for those legs. **The decision that
 gates the menu is O-5** (law A or B for Striker, and for Vanguard's WATCH-1 cell) and **O-6**
-(add law: A's `floor(0.4 × normal add)` vs B's `floor(executed base × pyramid%)`, which is also
-TradingView's own law at any size — Striker at 22 gives 22 vs 20).
+(Striker add law: A's `floor(0.4 × normal add)` vs the executed-base
+`floor(executed base × 250%)`). With law A's protected base ceiling of 8, these
+produce adds of 22 versus 20. With the recommended O-5 law B and O-6 executed-base
+law together, the protected ceiling is instead **22 base + 55 add = 77 micros**.
+Protected Aegis consumes 30 micro-equivalents, so it cannot coexist with that ceiling
+within the 80-micro account cap: the old D-B8 protected-capacity assurance does not
+carry over. TB-S1 must re-derive the capacity cases and the operator must explicitly
+accept this consequence before the recommended law is frozen.
+
+O-6 is **Striker-specific**. Vanguard retains its captured per-leg rule
+`max(1, round(executed base × 80%))`, with normal base 1/2 producing add 1/2;
+applying Striker's floor would produce 0/1 and invalidate V-0 parity. ORB keeps
+its one-for-one add rule. No global add-rounding replacement is proposed.
 
 ## §3 — The single finite export menu (DRAFT, written for the recommended rulings)
 
 Recommended rulings assumed: **O-5 = law B for Striker, law A (zero) for Vanguard with its WATCH
-tiers restricted to zero**, **O-6 = law B**, **O-7 = ORB exports at 0 % chart margin**. If the
+tiers restricted to zero**, **O-6 = Striker executed-base floor (other legs retain their own rounding)**, **O-7 = ORB exports at 0 % chart margin**. If the
 operator rules otherwise, this menu is **re-issued as a replacement** (plan Task 1: never extended
 after results). Common chart state for every owed export — identical to the 2026-09-03 capture
 except the one named change: same symbol (the continuous CME contract in the pinned filename),
