@@ -146,3 +146,31 @@ def test_pnl_is_part_of_the_verdict():
     prt = [PortTrade(t0, "entry", 100.0, t1, "stop", 101.0, 1, -999.0)]
     rep = compare("orb_mnq_v7", exp, prt, price_tol=0.01, window_start=t0, window_end=t1)
     assert rep.matched == 1 and rep.pnl_mismatches == 1 and not rep.passed
+
+
+# ── round 2 (2026-09-12 16:05) ───────────────────────────────────────────
+
+def test_open_entry_commission_reduces_margin_equity():
+    # $100 capital, 100 % margin, $50 contract, $1 commission: after one fill $49 is left
+    e = emu(initial_capital=100.0, margin_pct=100.0, pointvalue=1.0, commission_per_side=1.0, slippage_ticks=0)
+    e.submit([entry("a", 1, timing=FillTiming.THIS_CLOSE)], bar(0, 50, 50, 50, 50))
+    got = e.submit([entry("b", 1, kind="add", timing=FillTiming.THIS_CLOSE)], bar(1, 50, 50, 50, 50))
+    assert got[0].event == "reject"
+
+
+def test_pending_stop_snaps_with_pine_tie_breaking():
+    e = emu()
+    e.submit([entry("s", order_type="stop", price=100.125)], bar(0, 99, 99, 99, 99))   # halfway: 100.25, not 100.0
+    assert e._pending_stop["s"].price == 100.25
+
+
+def test_serialized_mode_values_are_honoured_and_junk_is_rejected():
+    from book_policy import as_mode, candidate_book_protection_policy, leg_quantities, transition_cancels
+    pol = candidate_book_protection_policy()
+    assert scaled_quantity(8, mode="protected", policy=pol) == 3
+    assert leg_quantities("orb_mnq_v7", 1, mode="protected", policy=pol) == (1, 0)
+    assert transition_cancels("normal", "protected", ["x"]) == ["x"]
+    assert as_mode("normal") is Mode.NORMAL
+    for junk in ("PROTECTED", "off", None, 1):
+        with pytest.raises(ValueError):
+            scaled_quantity(8, mode=junk, policy=pol)

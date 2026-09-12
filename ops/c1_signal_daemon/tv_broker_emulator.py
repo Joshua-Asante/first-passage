@@ -44,6 +44,7 @@ from c1_signal_daemon.book_protocol import (
     Side,
 )
 from c1_signal_daemon.feed import Bar
+from c1_signal_daemon.pine_ta import pine_round
 
 
 @dataclass
@@ -257,9 +258,10 @@ class TVBrokerEmulator:
         return round(price, 10)
 
     def _tick(self, price: float | None) -> float | None:
+        """Pine math.round to the tick: ties away from zero, not Python's ties-to-even."""
         if price is None:
             return None
-        return self._snap(round(price / self.mintick) * self.mintick)
+        return self._snap(pine_round(price / self.mintick) * self.mintick)
 
     def _tick_floor(self, price: float | None) -> float | None:
         if price is None:
@@ -479,7 +481,10 @@ class TVBrokerEmulator:
         # Equity and the margin already committed are both marked at the price the
         # decision is taken at (the captured ORB export is reproduced exactly under
         # either marking; marking both at the same price is the consistent choice).
-        equity = self.initial_capital + self.realized_net() + self.open_pnl(fill_price)
+        open_commission = sum(o.fill.commission * (o.lot_qty / o.fill.qty)
+                              for o in self._open.values() if o.fill.qty > 0)
+        equity = (self.initial_capital + self.realized_net() + self.open_pnl(fill_price)
+                  - open_commission)          # fees already charged on the open lots
         used = sum(fill_price * self.pointvalue * o.lot_qty for o in self._open.values())
         used *= self.margin_pct / 100.0
         need = fill_price * self.pointvalue * intent.qty * self.margin_pct / 100.0

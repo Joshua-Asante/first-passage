@@ -208,6 +208,16 @@ def leg(leg_id: str) -> LegSpec:
 
 # ── quantities ───────────────────────────────────────────────────────────
 
+def as_mode(mode) -> Mode:
+    """Accept a Mode or its serialized value; anything else halts (never 'normal' by default)."""
+    if isinstance(mode, Mode):
+        return mode
+    try:
+        return Mode(mode)
+    except (ValueError, TypeError):
+        raise ValueError(f"unknown protection mode {mode!r}; valid: {[m.value for m in Mode]}") from None
+
+
 def lifecycle_multiplier(tier: str) -> Fraction:
     if tier not in TIER_MULTIPLIER:
         raise ValueError(f"unknown lifecycle tier {tier!r}; valid: {sorted(TIER_MULTIPLIER)}")
@@ -218,6 +228,7 @@ def scaled_quantity(normal_qty: int, *, mode: Mode, policy: ProtectionPolicy | N
                     lifecycle_tier: str = "AUTHORIZED") -> int:
     """D-B10: floor(normal x scale x lifecycle), exact rationals, never a float floor."""
     policy = require_policy(policy)
+    mode = as_mode(mode)
     if not isinstance(normal_qty, int) or normal_qty < 0:
         raise ValueError(f"normal_qty must be a non-negative int, got {normal_qty!r}")
     scale = Fraction(CANDIDATE_SCALE) if mode is Mode.PROTECTED else Fraction(1)
@@ -234,6 +245,7 @@ def leg_quantities(leg_id: str, normal_base: int, *, mode: Mode, policy: Protect
     floored from its own normal value (TB-S1 (C) 'including every add tier').
     """
     spec = leg(leg_id)
+    mode = as_mode(mode)
     if normal_base not in spec.normal_base_values:
         raise ValueError(f"{leg_id}: normal base {normal_base} not in the captured ladder "
                          f"{spec.normal_base_values}")
@@ -346,6 +358,7 @@ class BookProtectionClock:
         return self._mode_next
 
     def snapshot(self) -> dict:
+        """Serialized state; ``mode_next`` is the Mode's value — pass it back through ``as_mode``."""
         return {"peak": self.peak, "last_close_equity": self.last_close_equity,
                 "last_settled_date": (self.last_settled_date.isoformat()
                                       if self.last_settled_date else None),
@@ -356,6 +369,7 @@ class BookProtectionClock:
 
 def transition_cancels(previous: Mode, new: Mode, resting_orb_adds: Iterable[str]) -> list[str]:
     """TB-S1 (D): entering PROTECTED cancels resting ORB adds; nothing is ever resized."""
+    previous, new = as_mode(previous), as_mode(new)
     if previous is not Mode.PROTECTED and new is Mode.PROTECTED:
         return list(resting_orb_adds)
     return []
