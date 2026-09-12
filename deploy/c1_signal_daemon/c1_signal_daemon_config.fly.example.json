@@ -10,5 +10,5 @@
     "enabled": false,
     "state_path": "/data/c1_m1_stage1_state.json"
   },
-  "poll_interval_s": 5
+  "poll_interval_s": 1
 }

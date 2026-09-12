@@ -106,20 +106,21 @@ def test_interrupted_migration_does_not_activate_test(inputs, monkeypatch):
     assert json.loads(Path(cfg["constants_path"]).read_text())["leg_map"][LEG]["cap_alloc"] == 0
 
 
-def proof():
-    from m1_stage1_contract import contract_sha256
+def proof(operator=False):
+    from m1_stage1_contract import OPERATOR_INPUT_SOURCE, contract_sha256
     def digest(value):
         return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     eid = str(uuid4())
     cid = str(uuid4())
-    source = {"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": "MYM1!"}
+    source = (OPERATOR_INPUT_SOURCE if operator else
+              {"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": "MYM1!"})
     manifest = {"ceremony_id": cid, "target": "2026-09-10T14:00:00+00:00",
                 "expires": "2026-09-10T14:02:00+00:00", "source": source,
                 "contract_sha256": contract_sha256(), "preflight_sha256": "e" * 64,
-                "expected_qty": 1}
+                "expected_qty": 1, "venue_contract": "MYMZ6"}
     event = "m1-" + digest({k: manifest[k] for k in ("ceremony_id", "target", "contract_sha256", "source")})
     bar = {"timestamp": manifest["target"], "open": 44000., "high": 44002.,
-           "low": 43999., "close": 44001., "volume": 7.}
+           "low": 43999., "close": 44001., "volume": 7., "venue_contract": "MYMZ6"}
     parsed = {"leg_id": LEG, "signal_type": "entry", "bar_time": event,
               "close": bar["close"], "stop_dist_pts": 1.}
     request_hash = hashlib.sha256(json.dumps(parsed, separators=(",", ":")).encode()).hexdigest()
@@ -163,6 +164,16 @@ def test_evidence_allowlist_and_exact_join():
         mod.project_evidence(rows, receipt)
 
 
+def test_operator_evidence_reports_attended_source_and_venue_contract():
+    rows, receipt = proof(operator=True)
+    public = control().project_evidence(rows, receipt)
+    assert public["operator_attended_input"] is True
+    assert public["offline_test_only"] is False
+    assert public["qualifying_live_source"] is False
+    assert public["venue_contract"] == "MYMZ6"
+    assert "44001" not in json.dumps(public)
+
+
 @pytest.mark.parametrize("which,field,value", [(0,"body_sha256","wrong"),
     (1,"qty_out",0), (1,"sender_invoked",True), (1,"dry_run",False),
     (2,"transport_state","accepted"), (1,"halt",True)])
@@ -184,10 +195,11 @@ def test_preflight_cli_redacts_equity_errors(inputs, monkeypatch, capsys):
     assert "123456" not in output.err + output.out
 
 
+@pytest.mark.parametrize("operator", [False, True])
 @pytest.mark.parametrize("mutation", ["missing_order", "wrong_ceremony", "wrong_bar", "wrong_signal",
     "wrong_contract", "wrong_close", "enabled", "unclaimed", "no_request"])
-def test_proof_cannot_relabel_a_real_listener_event(mutation):
-    rows, state = proof()
+def test_proof_cannot_relabel_a_real_listener_event(mutation, operator):
+    rows, state = proof(operator=operator)
     cid = state["active"]
     item = state["ceremonies"][cid]
     if mutation == "missing_order":

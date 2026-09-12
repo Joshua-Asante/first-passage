@@ -42,6 +42,7 @@ ops/**
 !ops/c1_signal_daemon/heartbeat.py
 !ops/c1_signal_daemon/http_status.py
 !ops/c1_signal_daemon/listener_client.py
+!ops/c1_signal_daemon/operator_input_source.py
 !ops/c1_signal_daemon/strategy_protocol.py
 !ops/c1_signal_daemon/m1_stage1.py
 !ops/c1_signal_daemon/m1_stage1_state.py

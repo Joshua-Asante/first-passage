@@ -21,7 +21,9 @@ STOP_DIST_PTS = 1.0
 DOLLARS_PER_PT = .50
 CAP_ALLOC = 1
 PYR_PCT = 0.0
+# The offline marker is retained for synthetic test harnesses only.
 OFFLINE_SOURCE = {"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": SYMBOL}
+OPERATOR_INPUT_SOURCE = {"kind": "operator_attended_input", "schema": "ohlcv-1m", "symbol": SYMBOL}
 
 
 def constants_row(*, enabled: bool = False) -> dict:

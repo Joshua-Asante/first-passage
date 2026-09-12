@@ -6,7 +6,7 @@
 #   fly deploy . --config deploy/c1_signal_daemon/fly.toml \
 #                --dockerfile deploy/c1_signal_daemon/Dockerfile
 #
-# No approved source: IdleBarSource + NullStrategy, emit disabled.
+# Operator-attended Stage 1 input; startup remains NullStrategy, emit disabled.
 # Databento retired by operator; both images remain stdlib-only.
 FROM python:3.12-slim
 
@@ -17,6 +17,7 @@ COPY ops/c1_signal_daemon/__init__.py ops/c1_signal_daemon/__main__.py \
      ops/c1_signal_daemon/evaluate_loop.py ops/c1_signal_daemon/feed.py \
      ops/c1_signal_daemon/heartbeat.py ops/c1_signal_daemon/http_status.py \
      ops/c1_signal_daemon/listener_client.py \
+     ops/c1_signal_daemon/operator_input_source.py \
      ops/c1_signal_daemon/strategy_protocol.py \
      ops/c1_signal_daemon/m1_stage1.py \
      ops/c1_signal_daemon/m1_stage1_state.py \

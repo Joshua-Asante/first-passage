@@ -195,7 +195,11 @@ def project_evidence(records: list[dict], state: dict, ceremony_id: str | None =
         if datetime.fromisoformat(bar["timestamp"]) != datetime.fromisoformat(manifest["target"]):
             raise ValueError("bar timestamp mismatch")
         source = manifest["source"]
-        if source != contract.OFFLINE_SOURCE:
+        if source not in (contract.OFFLINE_SOURCE, contract.OPERATOR_INPUT_SOURCE):
+            raise ValueError("feed binding mismatch")
+        operator_input = source == contract.OPERATOR_INPUT_SOURCE
+        if operator_input and (not re.fullmatch(r"MYM[HMUZ]\d", manifest["venue_contract"])
+                               or bar["venue_contract"] != manifest["venue_contract"]):
             raise ValueError("feed binding mismatch")
         for key in ("request_sha256", "bar_sha256"):
             if not re.fullmatch(r"[0-9a-f]{64}", item[key]):
@@ -234,7 +238,10 @@ def project_evidence(records: list[dict], state: dict, ceremony_id: str | None =
             or transport.get("transport_state") != "not_attempted" or transport.get("dry_run") is not True):
         raise ValueError("dry-run decision/transport evidence mismatch")
     return {"schema_version": 1, "listener_event_id": eid,
-            "offline_test_only": True, "qualifying_live_source": False,
+            "offline_test_only": not operator_input,
+            "operator_attended_input": operator_input,
+            "qualifying_live_source": False,
+            "venue_contract": manifest["venue_contract"] if operator_input else None,
             "ceremony_sha256": _json_digest(ident), "leg_id": contract.LEG_ID,
             "request_sha256": item["request_sha256"], "signal_id": event,
             "bar_sha256": item["bar_sha256"], "expected_qty": 1, "observed_qty": 1,
