@@ -579,6 +579,15 @@ class CapacityLedger:
         return CapacityDecision(True, "admitted after confirmed takeover", used_after, need)
 
     # -- broker truth -----------------------------------------------------
+    def _displaced_leg_moved(self, leg_id: str, what: str) -> None:
+        """Cancel/fill race (umbrella TB-S1 (E)): any fill or position change reported for a
+        displaced leg while its takeover is pending invalidates the earlier flat confirmation
+        and refuses the requester. The ledger still records the broker truth."""
+        t = self._takeover
+        if t is not None and t.state == "pending" and leg_id in t.plan.displaced:
+            t.closed_confirmed.discard(leg_id)
+            t.fail(leg_id, f"{what} reported for a displaced leg after its cancel/close was confirmed")
+
     def confirm_fill(self, leg_id: str, contracts: int) -> None:
         """A reserved entry/add filled (fully or partially) — move reservation to confirmed."""
         leg(leg_id)
@@ -588,6 +597,9 @@ class CapacityLedger:
         self.reserved[leg_id] -= contracts
         self.confirmed[leg_id] = self.confirmed.get(leg_id, 0) + contracts
         self._event("capacity_fill_confirmed", leg_id=leg_id, contracts=contracts)
+        self._displaced_leg_moved(leg_id, "fill")
+        if self._takeover is not None and self._takeover.state == "refused":
+            self._takeover.confirmed_positions[leg_id] = self.confirmed[leg_id]
 
     def release_reservation(self, leg_id: str, contracts: int | None = None) -> None:
         leg(leg_id)
@@ -607,6 +619,8 @@ class CapacityLedger:
             raise CapacityError("confirmed position must be >= 0")
         self.confirmed[leg_id] = contracts
         self._event("capacity_position_confirmed", leg_id=leg_id, contracts=contracts)
+        if contracts > 0:
+            self._displaced_leg_moved(leg_id, "non-flat position")
 
 
 # ── governance self-checks used by tests ─────────────────────────────────

@@ -22,8 +22,15 @@ broker emulator as documented and as evidenced by the exports:
   fixed stop and the trailing stop.
 * Commission is cash per contract per side.
 
-Deliberately NOT modelled: bar magnifier, partial fills, margin, order
-rejects. Partial fills and rejects are the live broker's outcomes and reach
+SCOPE (fixed at PR #356 review close, 2026-09-12): this is the offline
+replay broker for the four ported bodies, judged by exact parity against
+their pinned exports plus the tests in tests/ops. It is not a general broker.
+Order shapes none of the four adapters emits are refused fail-closed at
+submit (``NotImplementedError``) rather than modelled: a marketable next-open
+stop that belongs to an OCA group is the one such shape identified so far.
+
+Deliberately NOT modelled: bar magnifier, partial fills, margin calls, order
+rejects other than insufficient margin. Partial fills and rejects are the live broker's outcomes and reach
 the adapter through the same event path (TB-S3 (M)); tests inject them.
 """
 from __future__ import annotations
@@ -134,6 +141,9 @@ class TVBrokerEmulator:
         out: list[ExecutionEvent] = []
         crossed_now: list[str] = []
         for act in actions:
+            if getattr(act, "leg_id", None) != self.leg_id:
+                raise ValueError(f"action for {getattr(act, 'leg_id', None)!r} sent to "
+                                 f"{self.leg_id!r} emulator: {type(act).__name__}")
             if isinstance(act, Cancel):
                 out.extend(self._cancel(act, bar))
             elif isinstance(act, BracketAmend):
@@ -150,8 +160,9 @@ class TVBrokerEmulator:
             if intent is None:
                 continue        # cancelled by an earlier sibling's fill
             start = len(self.events)
-            self._fill_entry(intent, bar.close, bar.ts, slip=True)
-            self._cancel_oca(intent, bar.ts)
+            ev = self._fill_entry(intent, bar.close, bar.ts, slip=True)
+            if ev.event == "fill":
+                self._cancel_oca(intent, bar.ts)   # siblings go only on a confirmed fill
             out.extend(self.events[start:])
         if self.orders_on_close:
             out.extend(self._evaluate_at_close(bar))
@@ -212,7 +223,10 @@ class TVBrokerEmulator:
                 if crossed_now is not None:
                     crossed_now.append(intent.order_id)
                 return []
-            self._cancel_oca(intent, bar.ts)
+            if intent.oca_group is not None:
+                raise NotImplementedError(
+                    "marketable next-open stop inside an OCA group: no fixed-book adapter "
+                    "emits this shape; refused fail-closed (emulator scope)")
             self._pending_market.append(replace(intent, order_type="market", price=None))
             return []
         self._pending_stop[intent.order_id] = replace(intent, price=self._tick(intent.price))
@@ -337,8 +351,8 @@ class TVBrokerEmulator:
             crossed = (o >= intent.price) if intent.side is Side.BUY else (o <= intent.price)
             if crossed:
                 del self._pending_stop[oid]
-                self._fill_entry(intent, o, ts, slip=True)
-                self._cancel_oca(intent, ts)
+                if self._fill_entry(intent, o, ts, slip=True).event == "fill":
+                    self._cancel_oca(intent, ts)
         for fid, of in list(self._open.items()):
             if fid not in self._open or of.bracket is None:
                 continue
@@ -399,8 +413,8 @@ class TVBrokerEmulator:
             if best[0] == "stop_entry":
                 intent = best[1]
                 del self._pending_stop[intent.order_id]
-                self._fill_entry(intent, best_level, ts, slip=True)
-                self._cancel_oca(intent, ts)
+                if self._fill_entry(intent, best_level, ts, slip=True).event == "fill":
+                    self._cancel_oca(intent, ts)
             else:
                 _, of, kind = best
                 if kind == "trail_activate":

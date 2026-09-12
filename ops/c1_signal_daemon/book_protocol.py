@@ -94,6 +94,9 @@ class OrderIntent:
         if self.kind in ("entry", "add"):
             if not isinstance(self.qty, int) or self.qty <= 0:
                 raise ValueError(f"{self.kind} qty must be a positive int, got {self.qty!r}")
+        elif self.qty is not None and (not isinstance(self.qty, int) or isinstance(self.qty, bool)
+                                       or self.qty <= 0):
+            raise ValueError(f"{self.kind} qty must be None (all in scope) or a positive int, got {self.qty!r}")
         if self.order_type == "stop" and self.price is None:
             raise ValueError("stop order needs a trigger price")
 

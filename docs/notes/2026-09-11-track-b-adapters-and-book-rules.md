@@ -142,3 +142,20 @@ FP_TV_EXPORT_DIR=<dir holding the four exports> python -m pytest tests/ops/test_
 ```bash
 python -m c1_signal_daemon.book_parity
 ```
+
+## Review loop closure (2026-09-12)
+
+Codex returned 11, 3 and 7 distinct findings over three rounds on PR #356. Rounds 1-2 and the real
+items of round 3 (the takeover cancel/fill race, non-finite parity values, close-quantity
+validation, action ownership, siblings cancelled only on a confirmed fill, the exact protected-fill
+assertion) are fixed with failing-first tests in `tests/ops/test_book_review_followups.py`. Half of
+round 3 was on code the earlier fixes added; the loop was therefore stopped with a scope statement
+rather than a fourth fold: the emulator is the offline replay broker for the four ported bodies,
+judged by exact parity plus tests, and refuses order shapes no adapter emits (`NotImplementedError`
+at submit). Later reviewer findings land here as open items, not as further folds.
+
+| # | Open item | Owner |
+|---|---|---|
+| R-1 | Marketable next-open stop inside an OCA group is refused, not modelled | TB-I2 if a future adapter needs it |
+| R-2 | `check_state_currency` fails once STATE's weekly deadline (2026-09-11) is past; worker commits bypassed the hook with the reason in each commit body | orchestrator (STATE row) |
+

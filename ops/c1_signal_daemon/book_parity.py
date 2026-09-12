@@ -17,6 +17,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import math
 import os
 from collections import Counter
 from dataclasses import dataclass, field
@@ -224,6 +225,14 @@ def compare(leg_id: str, export: list[ExportTrade], port: list[PortTrade], *,
                 qty_mm += 1
                 if len(div) < max_divergences:
                     div.append(f"QTY: export #{e.trade_no} {key[0]} qty {e.qty}x{qty_scale} vs port {p.qty}")
+            finite = all(math.isfinite(v) for v in (e.entry_price, e.exit_price, p.entry_price,
+                                                     p.exit_price, e.net_pnl, p.net_pnl))
+            if not finite:
+                price_mm += 1
+                pnl_mm += 1
+                if len(div) < max_divergences:
+                    div.append(f"NON-FINITE: export #{e.trade_no} {key[0]} export/port carry NaN or inf")
+                continue
             if abs(e.entry_price - p.entry_price) > price_tol or abs(e.exit_price - p.exit_price) > price_tol:
                 price_mm += 1
                 if len(div) < max_divergences:
@@ -271,8 +280,11 @@ def load_effective_inputs(*, verify: bool = True) -> dict | None:
 
 
 def run_leg(leg_id: str, *, adapter_overrides: dict | None = None, emulator_overrides: dict | None = None,
-            mode=None, quantity_rule=None, bars: list[Bar] | None = None):
-    """Replay one adapter on its panel; returns (adapter, emulator, bars)."""
+            mode=None, quantity_rule=None, bars: list[Bar] | None = None, adapter_hook=None):
+    """Replay one adapter on its panel; returns (adapter, emulator, bars).
+
+    ``adapter_hook(adapter)`` runs after construction and before the replay (tests
+    instrument the adapter with it)."""
     from c1_signal_daemon.book_adapters import ADAPTER_BY_LEG, load_port
     from c1_signal_daemon.book_protocol import Mode
     spec = ADAPTER_BY_LEG[leg_id]
@@ -284,6 +296,8 @@ def run_leg(leg_id: str, *, adapter_overrides: dict | None = None, emulator_over
     if quantity_rule is not None:
         kwargs["quantity_rule"] = quantity_rule
     adapter = mod.build(**kwargs)
+    if adapter_hook is not None:
+        adapter_hook(adapter)
     emu_kw = dict(mintick=spec.mintick, pointvalue=spec.pointvalue,
                   slippage_ticks=spec.pine_slippage_ticks,
                   commission_per_side=spec.pine_commission_per_side)

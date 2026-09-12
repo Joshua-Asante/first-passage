@@ -107,29 +107,40 @@ def test_striker_protected_sizes_floor_each_tier_from_its_normal_value():
         "dj30_mym_p250", mode=Mode.PROTECTED,
         quantity_rule=lambda n: leg_quantities("dj30_mym_p250", n, mode=Mode.PROTECTED, policy=POLICY),
         **common)
-    spec = leg("dj30_mym_p250")
-    by_bar_normal = {}
-    for t in normal.closed_trades:
-        by_bar_normal.setdefault((t.entry.bar_time, t.entry.kind), t.entry.qty)
-    checked = diverged = 0
+    # Every protected fill is checked against the exact floor of the normal tier the adapter
+    # sized from — including entries the full-size run never took (the leg's own realised P&L
+    # drives its day soft-stop, so a 40 % book can trade where 100 % halted). The adapter
+    # records its normal tier (`initial_size`) when it places an order; a THIS_CLOSE order fills
+    # on the same bar, so (bar, kind) keys the expectation exactly.
+    from c1_signal_daemon.book_protocol import OrderIntent
+    expected = {}
+
+    def instrument(adapter):
+        orig = adapter.on_bar
+
+        def on_bar(bar):
+            actions = orig(bar)
+            for a in actions:
+                if isinstance(a, OrderIntent) and a.kind in ("entry", "add"):
+                    base, add = leg_quantities("dj30_mym_p250", adapter.initial_size,
+                                               mode=Mode.PROTECTED, policy=POLICY)
+                    expected[(bar.ts, a.kind)] = base if a.kind == "entry" else add
+            return actions
+        adapter.on_bar = on_bar
+
+    _, protected, _ = run_leg(
+        "dj30_mym_p250", mode=Mode.PROTECTED,
+        quantity_rule=lambda n: leg_quantities("dj30_mym_p250", n, mode=Mode.PROTECTED, policy=POLICY),
+        adapter_hook=instrument, **common)
+    seen = set()
     for t in protected.closed_trades:
-        key = (t.entry.bar_time, t.entry.kind)
-        if key not in by_bar_normal:
-            diverged += 1              # size-dependent feedback (day stop / DD kill) moved the leg
-            continue
-        nq = by_bar_normal[key]
-        if t.entry.kind == "entry":
-            assert t.entry.qty == math.floor(nq * 0.4), (key, nq, t.entry.qty)
-        else:
-            base = next(b for b in spec.normal_base_values if spec.normal_add(b) == nq)
-            assert t.entry.qty == leg_quantities("dj30_mym_p250", base, mode=Mode.PROTECTED, policy=POLICY)[1]
-        checked += 1
-    assert checked > 0
+        if t.entry.fill_id in seen:
+            continue                         # a lot closed in parts appears once per part
+        seen.add(t.entry.fill_id)
+        want = expected[(t.entry.bar_time, t.entry.kind)]
+        assert t.entry.qty == want, (t.entry.bar_time, t.entry.kind, t.entry.qty, want)
+    assert len(seen) == len(expected) > 0
     assert max(t.entry.qty for t in protected.closed_trades if t.entry.kind == "entry") <= 8
-    assert max((t.entry.qty for t in protected.closed_trades if t.entry.kind == "add"), default=0) <= 22
-    # the leg's own realised P&L drives its day soft-stop, so a 40 % book can take entries the
-    # full-size run halted; that divergence is expected and bounded, never zero-asserted
-    assert diverged <= len(protected.closed_trades)
 
 
 def test_vanguard_protected_places_nothing_and_watch1_places_one():

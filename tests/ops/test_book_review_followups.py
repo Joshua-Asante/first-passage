@@ -174,3 +174,62 @@ def test_serialized_mode_values_are_honoured_and_junk_is_rejected():
     for junk in ("PROTECTED", "off", None, 1):
         with pytest.raises(ValueError):
             scaled_quantity(8, mode=junk, policy=pol)
+
+
+# ── round 3 (2026-09-12 16:23) — final bounded pass ─────────────────────
+
+def test_displaced_leg_fill_during_takeover_refuses_it():
+    led = CapacityLedger()
+    led.request("orb_mnq_v7", 3); led.confirm_fill("orb_mnq_v7", 3)
+    led.request("dj30_mym_p250", 75)                         # pending, would be displaced
+    led.confirm_fill("dj30_mym_p250", 70)
+    d = led.request("aegis_6j", 2)
+    t = led.begin_takeover(d.takeover)
+    for l in d.takeover.displaced:
+        t.ack_cancel(l); t.confirm_close(l, 0)
+    assert t.complete()
+    led.confirm_fill("dj30_mym_p250", 5)                     # the race: a fill lands after the flat ack
+    assert t.state == "refused" and not t.complete()
+    res = led.settle_takeover()
+    assert not res.admitted and led.reserved.get("aegis_6j", 0) == 0
+    assert led.confirmed["dj30_mym_p250"] == 75              # broker truth kept (70 earlier + 5)
+    assert led.micro_used() <= 80
+
+
+def test_close_quantity_must_be_none_or_positive_int():
+    for bad in (0, -1, 1.5, True):
+        with pytest.raises(ValueError):
+            OrderIntent(order_id="x", leg_id=LEG, kind="exit", side=Side.SELL, qty=bad)
+    OrderIntent(order_id="ok", leg_id=LEG, kind="flat", side=Side.SELL, qty=None)
+
+
+def test_non_finite_values_fail_parity():
+    t0, t1 = datetime(2026, 9, 14, 10, 0), datetime(2026, 9, 14, 11, 0)
+    exp = [ExportTrade(1, t0, "Long", 100.0, t1, "Exit", 101.0, 1, 1.0, 0.0)]
+    prt = [PortTrade(t0, "entry", 100.0, t1, "stop", 101.0, 1, float("nan"))]
+    rep = compare("orb_mnq_v7", exp, prt, price_tol=0.01, window_start=t0, window_end=t1)
+    assert not rep.passed and rep.pnl_mismatches == 1
+
+
+def test_misrouted_cancel_and_amend_are_refused():
+    from c1_signal_daemon.book_protocol import BracketAmend, Cancel
+    e = emu()
+    with pytest.raises(ValueError):
+        e.submit([Cancel("aegis_6j", None)], bar(0, 100, 100, 100, 100))
+    with pytest.raises(ValueError):
+        e.submit([BracketAmend("aegis_6j", Bracket(stop=1.0))], bar(0, 100, 100, 100, 100))
+
+
+def test_oca_siblings_cancelled_only_on_a_confirmed_fill():
+    e = emu(initial_capital=10.0, margin_pct=100.0, pointvalue=1.0)   # nothing is affordable
+    got = e.submit([entry("l", order_type="stop", price=105.0, oca="G", timing=FillTiming.THIS_CLOSE),
+                    entry("s", order_type="stop", price=200.0, oca="G", timing=FillTiming.THIS_CLOSE)],
+                   bar(0, 100, 111, 99, 110))
+    assert [x.event for x in got] == ["reject"] and "s" in e.pending_order_ids()
+
+
+def test_marketable_next_open_stop_in_an_oca_group_is_out_of_scope():
+    e = emu()
+    with pytest.raises(NotImplementedError):
+        e.submit([entry("l", order_type="stop", price=105.0, oca="G")], bar(0, 100, 111, 99, 110))
+
