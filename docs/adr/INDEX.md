@@ -99,6 +99,7 @@
 | 2026-09-03-venue-legality-re-expression-lane.md | Accepted | 2026-09-03 | none | ratified by operator (Joshua) 2026-09-03 ("I ratify the lane ADR"), before any replacement export existed and therefore before any replacement result could be inspected. The ratification-order requirement in §2 is satisfied on the record. |
 | 2026-09-05-tradeify-select-striker-expression-readmission.md | Accepted | 2026-09-05 | `2026-08-04-tradeify-venue-descope-eval-included.md` in part — evaluation eligibility of the two exact campaign expressions below | records the operator's 2026-09-05 election; no deployment GO |
 | 2026-09-06-tracked-file-reduction-prune.md | Proposed | 2026-09-06 | none | operator (JA) adjudicated the survivor rules and path sets in-session 2026-09-06; merge of the reduction PR is the executed ratification; the §3 archive-push gate is satisfied. **Tier: full** — doctrine limb fires (mass deletion of decision and research records under … |
+| 2026-09-12-tradeify-book-protection-instance-admission.md | Proposed | 2026-09-12 | none | operator ratification required **before TB-F1** (umbrella D-B11); ratification is recorded as a dated addendum at the foot of this file, never by editing the decision text |
 
 ## Partially superseded
 
