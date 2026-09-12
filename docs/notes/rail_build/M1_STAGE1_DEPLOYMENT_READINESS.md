@@ -162,3 +162,73 @@ python scripts/validate_c1_monitoring_acceptance.py docs/notes/rail_build/M1_MON
 - **Recommendation for the A5 brief (parent decides):** extend the pin set with `ops/c1_rail/m1_stage1_contract.py`, `ops/c1_rail/m1_stage1_control.py` and `scripts/validate_c1_monitoring_acceptance.py`. The contract module is load-bearing for the ceremony (A7 gates on `contract_sha256()` equality across images and A8 compares pins per file against explaining commits, since A1b's marker changes the file's bytes but not the hash inputs); the control module carries `migrate`/`preflight`/`evidence`; the validator is the interlock's schema reader inside the image. The validator iterates whatever `fixture_hashes` holds (`scripts/validate_c1_monitoring_acceptance.py` 155), so extension is mechanical.
 
 **Return:** `DONE_WITH_CONCERNS` — every §A4-L row is GO or N/A with evidence, the A5 sequence and the hash choreography are frozen above, and the daemon presence reads are recorded pre-A1b for §A4-D. Concerns for the parent: (1) the 69/11 residue is on the listener volume — A5 needs the operator's in-session `RW = True` or A7 is `BLOCKED` at cap 81 > 80; (2) the daemon volume holds `poll_interval_s: 5` and no journal — the pending write A6 stages, recorded here for §A4-D; (3) every in-container read was operator-run because this session's permission layer blocks `fly ssh console`, and A5's in-container hash reads will meet the same block unless a read-only permission rule is added. Per-step gates: 2.1 pass · 2.2 pass · 2.3 presence reads pass (pre-A1b) · 2.4 pass · 2.5 pass. Files touched: this note only.
+
+## §A5 — Listener deployed, disarmed; identity at cap zero (2026-09-12)
+
+**Brief:** [A5 handoff](../../briefs/handoffs/2026-09-10-track-a-a5-claude-listener-deploy-disarmed.md) · **Currency:** clean detached worktree at `origin/main @ cf75e45` (`git status --porcelain` empty; `git diff origin/main --stat` empty; `git cat-file -e 31fd642^{tree}` OK — full history) · **Authority used:** `fly deploy` under the 2026-08-02 grant (run by the session from the clean checkout), read-only Fly commands, and the in-container commands below, which the operator ran in their own console because this session's permission layer blocks `fly ssh console` (output read from the Terminal panel; `--status` pastes carry `account=<redacted>`). **No `--arm`, no `--acknowledge-m1-unresolved`, no `--enable-test`, no POST, no daemon change.**
+
+### 2.1 Host read first (pre-condition 1)
+
+`python ops/c1_rail/c1_rail_arm.py --status` → `current: dry_run=True armed_until=None equity_source='crosstrade' equity_field='balance.netLiq' destination='tradovate' account=<redacted> bind_host='0.0.0.0' bind_port=8080` · `m1_gate: status='CODE_LANDED' result=FAIL`. Gate met.
+
+### 2.2 Pre-deploy in-container hashes
+
+`sha256sum` in `/app` of the five pins → `923e0847…`, `711980e8…`, `d3b16b3e…`, `471e28da…`, `93992da9…` — **all five equal the acceptance JSON's 2026-08-19 pins**: the running build was the pinned v7. Ledger: 32 records, last `seq 32` (`transport_result`) — A6's "no signal on boot" baseline. `ls ops/c1_rail/` showed no `m1_stage1_*` file (expected pre-deploy).
+
+### 2.3 Import closure (pre-condition 3)
+
+On `cf75e45`: `python -m pytest tests/ops/test_c1_rail_image_manifest.py -q` → `4 passed`; manual AST trace of `c1_rail_http_server.py`, `c1_rail_arm.py`, `c1_rail_slippage.py`, `m1_stage1_control.py` against the listener Dockerfile COPY lines → 17 modules traced, **0 missing**.
+
+### 2.4 Operator flatness attestation
+
+Recorded verbatim, in-session, before Step 2.7: **"RW = True, no open positions 8:07 PM CDT"** (2026-09-12 01:07 UTC). The operator was asked to glance at Tradovate again immediately before running the apply block and did not report a position.
+
+### 2.5 Deploy (pre-condition 2)
+
+From the repo root of the clean `cf75e45` checkout: `fly deploy . --config deploy/c1_rail/fly.toml --dockerfile deploy/c1_rail/Dockerfile` → image `registry.fly.io/c1-rail:deployment-01M29JA2721JHQGCXCRNCF54G1` (`sha256:02ca9a12f935adb21e5adc4fd033352f0c8c05b52d7661b2484902f3f792447e`, 40 MB), rolling update of machine `e820221a657d28`, smoke and machine checks passed, DNS verified. `fly releases` → **v8 `complete`** (v7 2026-08-19 is now the rollback target named in §A3 item 4).
+
+### 2.6 Boot line + health (pre-condition 5)
+
+`fly logs` 2026-09-12T01:05:07–08Z: `Preparing to run: sh -c if [ ! -f /data/c1_rail_config.json ] …` (the `WAIT:` guard, config present so it fell through) → `WARNING c1_rail_http: DRY_RUN=true - will compute and audit, never call CrossTrade` → **`c1 rail HTTP adapter listening on http://0.0.0.0:8080/c1/<redacted>  dry_run=True armed_until=- equity_source=crosstrade`**; the port-bind race printed one `Health check … has failed` line at 01:05:08 and `is now passing` in the same second (the 2026-08-19 precedent, benign). `curl -sS https://c1-rail.fly.dev/` → `{"ok":true,"service":"c1_rail_http_server"}`. In-container `--status` after the deploy → identical to 2.1. No `ModuleNotFoundError`, no `IMPLICIT DISARM` (there was nothing to disarm).
+
+### 2.7 Migration at cap zero — `RW = True`
+
+Operator ruling recorded before the plan: **`RW = True`** (the volume held Striker's 69/11; the 2026-08-26 ADR released them; the volume write is this session's act). Reads first, then one write, all with `--release-withdrawn`:
+
+- **Plan (CLI, read-only):** `migrate --config /data/c1_rail_config.json --release-withdrawn` → `applied: false`, `enabled: false`, `before.constants` `32a783304e8f307fae0ba0be2d25c023ae0cecf9ff5b889b5691faf0c05f084c`, `before.lifecycle` `6e29f44ba0f380e2a46524b631720599cb6027607fc2de5463bbc54a420aee05`, `contract_sha256` `346387e5…9d94f`. *Brief skew, not a defect:* the CLI's result dict does not print `release_withdrawn` (only `applied`, `enabled`, `before`, `contract_sha256`); the after-state read below does.
+- **After-state (same function, read-only, `release_withdrawn=True`):** `release_withdrawn: true`; the same two `before` digests; `after.constants` = `tier Tradeify_Select_100K`, `E_firm 100000`, `cap_firm 80`, `cost_per_side_usd 0.91`, `leg_map` = `dj30_mym {base_risk 0.007, cap_alloc 0, dollars_per_pt 0.5, leg_key Striker, pyr_pct 750.0}` · `nas100_mnq {base_risk 0.0037, cap_alloc 0, dollars_per_pt 2.0, leg_key Striker NAS100, pyr_pct 1000.0}` · **`m1_stage1_test {base_risk 1.25e-05, cap_alloc 0, dollars_per_pt 0.5, leg_key M1 Stage1 Test, pyr_pct 0.0}`** (the contract's `constants_row(enabled=False)`); `after.lifecycle` = `{M1 Stage1 Test: RETIRED, Striker: WATCH-1, Striker NAS100: WATCH-1}`. Reviewed by the parent: differs from the volume only by the new test row at 0, the two withdrawn rows 69 → 0 and 11 → 0, and the added lifecycle key.
+- **Apply:** `migrate --config /data/c1_rail_config.json --release-withdrawn --apply --flat-verified --expect-constants 32a78330… --expect-lifecycle 6e29f44b…` → `applied: true` with the same `before` digests and contract hash (the apply re-plans from its own flags and would have refused on any drift). Backups written 2026-09-12 01:33 UTC: `c1_sizing_constants.json.m1-backup-d440a68c-31f2-4438-8805-b804880ca1cd` (442 bytes) and `lifecycle_state.json.m1-backup-d440a68c-31f2-4438-8805-b804880ca1cd` (57 bytes).
+- **No-op check** (plan re-run with `release_withdrawn=True`, after-state compared to the files) → `noop True`. Re-read: `cap_alloc` = **`{dj30_mym: 0, m1_stage1_test: 0, nas100_mnq: 0}`**; `lifecycle_state.json` = `{"M1 Stage1 Test": "RETIRED", "Striker": "WATCH-1", "Striker NAS100": "WATCH-1"}`. The 69/11 residue §A4-L flagged is released; A7's enable plan (test row → 1) now sums to 1 ≤ 80.
+- **No restart:** §A4-L established that the sizing host re-reads constants, lifecycle and DD state on every request (A2 L5b proved it in-image), so none was issued.
+
+### 2.8 Preflight refusal (expected)
+
+`python ops/c1_rail/m1_stage1_control.py preflight --config /data/c1_rail_config.json` → `M1 control refused: invalid, changed, unavailable or unapproved inputs`, non-zero exit — cap 0 / `RETIRED` cannot size one micro. Nothing was enabled to change that.
+
+### 2.9 Post-deploy in-container hashes (pre-condition 4)
+
+`sha256sum` in `/app` after the deploy (operator-run; the terminal wraps 64-hex lines, so each value was reassembled and corroborated against the merge-SHA tree in both byte forms — every image pin reproduced exactly):
+
+| Pinned file | In-container sha256 (v8) | Tree form at `cf75e45` | Explaining commits since `31fd642` |
+|---|---|---|---|
+| `ops/c1_rail/c1_rail_arm.py` | `723f1bf3349b0b0ec4c7d7b77d01057fb5ba62a0a5756a46a9ef0fd228e524bd` | LF | none (line-ending move only: `ops/c1_rail/*.py` now carry `text eol=lf`; the 2026-08-19 pins were CRLF) |
+| `ops/c1_rail/c1_rail_http_server.py` | `9e62727078ea585c2fdc39fc82455ae2747f58031f7b36410746da6a56517984` | LF | none (line endings) |
+| `ops/c1_rail/c1_rail_listener.py` | `a31b8869c1d1b2736ac63cf90c467295bc26a6c2a47eadae45b015496210c1c7` | LF | `509b524` (#332) |
+| `ops/c1_rail/c1_rail_telemetry.py` | `45151defe6e747b96c0eaec64c6d348fbbddcfc9efbd8a05ef2f92638c37c93b` | LF | none (line endings) |
+| `ops/c1_rail/c1_sizing_host_reference.py` | `5f10481b0d9474ad2bf37462ab64e606baa6065b097708de3f726d891da6a868` | LF | `509b524`, `25711e2`, `da084bc` |
+| `ops/c1_rail/m1_stage1_contract.py` (new pin) | `35e4a72bbb036a3d9570f439f6abc2735dbcd4537006c60fd9560f3096466651` | LF | `811df7c`, `509b524` (#332), `36b3996` (#349) |
+| `ops/c1_rail/m1_stage1_control.py` (new pin) | `7c5a9b15be989e7596fdf1344470dd50082ec4ac6e446085ee335e98c944ece1` | LF | `811df7c`, `509b524`, `36b3996` |
+| `scripts/validate_c1_monitoring_acceptance.py` (new pin) | `452a52ab4c2606569c7ff31e4fece8897ac07d79545304682095439ea14d54c4` | **CRLF** (no eol attribute; shipped as checked out on Windows) | none |
+| `tests/ops/test_m1_acceptance_drills.py` (not in the image) | `104dafa8cc3cf236cb88e2c4b929fffa0b72aa45e797723a88d9077afe7b8bbd` = LF blob at `cf75e45` (CRLF form `786009cc…`) | tree-backed by design (A2 L2) | `25711e2` (2026-08-26 cap release) — moved from the `31fd642` pin `bf91071b…` with an explaining commit |
+
+In-container `contract_sha256()` → `346387e565225d956da0f5b9696f211dee82ff9a823dda6e56b0ce32aba9d94f` (equals the tree value; unchanged by A1b's marker). `ls ops/c1_rail/` now lists `m1_stage1_contract.py` and `m1_stage1_control.py`.
+
+### 2.10 Acceptance JSON refresh
+
+`docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json`: `fixture_hashes` → the nine values above (pin set extended per §A4-L with the two Stage 1 modules and the validator); `code_commit_or_branch` → `origin/main @ cf75e45 — DEPLOYED to host 2026-09-12 01:05 UTC (machine e820221a657d28, image deployment-01M29JA2721JHQGCXCRNCF54G1, …, release v8)`; `fixture_hashes_note` → a `SKEW CLOSED 2026-09-12` entry prepended (host read first, pre-deploy pins matched, closure re-traced, documented command, boot line, in-container refresh, byte forms, RW = True, final caps); `notes[]` → a dated A5 entry. **`status` stays `CODE_LANDED`.** Validator: exit 0 (`OK status=CODE_LANDED`); `--check-tree-skew` → `tree skew: none — all 9 pinned file(s) match this tree` (on this Windows worktree the validator is CRLF and the `ops/` files LF, matching the image; an LF checkout will report the validator pin as skew, which the note explains); `--require-resolved` → exit 1 as expected (status, the event id and `operator_signoff` still owed).
+
+### 2.11 Stop
+
+Final in-container `--status` → `dry_run=True armed_until=None … m1_gate: status='CODE_LANDED' result=FAIL`. No arm, no signal, no order, no position.
+
+**Return:** `DONE_WITH_CONCERNS` — every gate met and every §4 limb held (boot line disarmed; preflight refused; every image-carried pin read in-container). Concerns, none blocking: (1) the A5 brief describes the CLI plan output as printing `release_withdrawn`; it does not (the after-state read carries it) — a brief text skew for the parent; (2) every in-container command was operator-run because this session cannot invoke `fly ssh console`, so the transcript evidence is the Terminal panel read by the session; (3) the ledger `seq` was read pre-deploy only (32); A6 Step 2.1 re-reads it as its own baseline. Per-step gates: 2.1–2.11 pass. Files touched: the acceptance JSON and this note.
