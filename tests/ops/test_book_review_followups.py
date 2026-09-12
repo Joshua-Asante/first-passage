@@ -233,3 +233,36 @@ def test_marketable_next_open_stop_in_an_oca_group_is_out_of_scope():
     with pytest.raises(NotImplementedError):
         e.submit([entry("l", order_type="stop", price=105.0, oca="G")], bar(0, 100, 111, 99, 110))
 
+
+@pytest.mark.parametrize("latest_position", [5, 0])
+def test_takeover_settlement_preserves_latest_position_report(latest_position):
+    led = CapacityLedger()
+    led.request("dj30_mym_p250", 77)
+    led.confirm_fill("dj30_mym_p250", 77)
+    t = led.begin_takeover(led.request("aegis_6j", 8).takeover)
+    t.ack_cancel("dj30_mym_p250")
+    t.confirm_close("dj30_mym_p250", 0)
+    led.confirm_position("dj30_mym_p250", 5)
+    assert t.state == "refused"
+    if latest_position == 0:
+        # A later flat report after refusal must also replace the cached position.
+        led.confirm_position("dj30_mym_p250", 0)
+    assert not led.settle_takeover().admitted
+    assert led.confirmed["dj30_mym_p250"] == latest_position
+    assert led.request("aegis_6j", 8).admitted is (latest_position == 0)
+
+
+def test_parity_cli_fails_when_panel_has_no_comparable_trades(monkeypatch, capsys):
+    from c1_signal_daemon import book_adapters, book_parity
+    t0, t1, t2 = datetime(2026, 9, 1), datetime(2026, 9, 2), datetime(2026, 9, 3)
+    export = [ExportTrade(1, t0, "Long", 100.0, t1, "Exit", 101.0, 1, 1.0, 0.0)]
+    # Keep real comparison and CLI verdict handling; replace private replay inputs.
+    monkeypatch.setattr(book_parity, "load_effective_inputs", lambda: {})
+    monkeypatch.setattr(book_parity, "parity_for", lambda leg_id, effective: compare(
+        leg_id, export, [], price_tol=0.01, window_start=t2, window_end=t2))
+    monkeypatch.setattr(book_adapters, "port_available", lambda leg_id: True)
+    monkeypatch.setattr(book_adapters, "port_sha256", lambda leg_id: "0" * 64)
+    assert book_parity.main(["--leg", "orb_mnq_v7"]) == 1
+    output = capsys.readouterr().out
+    assert "FAIL" in output and "PASS" not in output
+

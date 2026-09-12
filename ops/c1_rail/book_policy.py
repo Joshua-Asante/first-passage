@@ -621,6 +621,10 @@ class CapacityLedger:
         self._event("capacity_position_confirmed", leg_id=leg_id, contracts=contracts)
         if contracts > 0:
             self._displaced_leg_moved(leg_id, "non-flat position")
+        if self._takeover is not None and self._takeover.state == "refused":
+            # Settlement must not restore an older flat/partial close report.
+            # Keep subsequent updates, including zero, after the refusal too.
+            self._takeover.confirmed_positions[leg_id] = contracts
 
 
 # ── governance self-checks used by tests ─────────────────────────────────

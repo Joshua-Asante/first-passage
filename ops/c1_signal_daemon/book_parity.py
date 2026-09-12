@@ -166,7 +166,7 @@ class ParityReport:
 
     @property
     def passed(self) -> bool:
-        return (self.missing_in_port == 0 and self.extra_in_port == 0
+        return (self.matched > 0 and self.missing_in_port == 0 and self.extra_in_port == 0
                 and self.qty_mismatches == 0 and self.price_mismatches == 0
                 and self.pnl_mismatches == 0)
 
@@ -177,7 +177,8 @@ class ParityReport:
                 f"pnl_mismatch={self.pnl_mismatches} "
                 f"window={self.window_start}..{self.window_end} -> "
                 f"{'PASS' if self.passed else 'FAIL'}")
-        return "\n".join([head] + ["  " + d for d in self.first_divergences])
+        coverage = ["  Insufficient evidence: no matched trades in the comparison window."] if self.matched == 0 else []
+        return "\n".join([head] + coverage + ["  " + d for d in self.first_divergences])
 
 
 def compare(leg_id: str, export: list[ExportTrade], port: list[PortTrade], *,
