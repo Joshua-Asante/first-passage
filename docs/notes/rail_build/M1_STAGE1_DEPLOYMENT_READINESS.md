@@ -368,3 +368,105 @@ From the repo root of the clean `d6f8e84` checkout: `fly deploy . --config deplo
 No ceremony preparation. The daemon is at v2, inert: emission disabled, source disconnected, journal fresh, listener untouched.
 
 **Return:** `DONE_WITH_CONCERNS` — every §4 limb held (boot disarmed and inert, source disconnected, journal fresh and valid, no listener request), so the daemon is at v2 as the A7 brief requires. Concerns, none blocking: (1) every in-container command was operator-run (this session cannot invoke `fly ssh console`); (2) on this console the interactive `fly ssh sftp shell` mangled typed input and was abandoned — the non-interactive `fly ssh sftp put <local> <remote>` form works and refuses to overwrite an existing remote file, which matters for A7's private upload (`/data/m1_upload_<id>.json` must not pre-exist; `inject` removes it on every exit) — and a cleanup chained after a refused put deleted the operator's local file once, so A7 must never chain the deletion to the put; (3) `ls ops/c1_signal_daemon` was not re-listed after the deploy — the D2 file-set check on the A1b image (run 34660963201) and the working `status` bootstrap cover the packaged set. Per-step gates: 2.1–2.6 pass. Files touched: this note only. STOP before any ceremony.
+
+## §A7-P — The A7 ceremony sequence, frozen for Sunday 2026-09-13 (prepared 2026-09-12)
+
+**Brief:** [A7 handoff](../../briefs/handoffs/2026-09-10-track-a-a7-claude-attended-stage1-dry-run.md) (`037f09a`) · **Preconditions at freeze time:** A3 (#348), A5 (#352), A4-D (#354), A6 (#355) merged; A1b merged at `fa02a13`; `origin/main @ eb1c6df`. **Nothing on either host was written today:** no manifest, no allocation change, no `prepare`. This section is the parent's preparation record; the ceremony itself writes §A7. **Why Sunday:** the bar must be a genuine just-closed minute of the dated MYM contract inside a CME Globex session; the session that ended Friday 2026-09-11 21:00 UTC reopens **Sunday 2026-09-13 22:00 UTC (17:00 CDT)**.
+
+### Phase 0 — handoff-verify of the A7 brief (2026-09-12)
+
+`HANDOFF-VERIFY: PASS` with four skews, none blocking. Anchors at `origin/main @ eb1c6df`: test contract `c480f99`; daemon `m1_stage1_control.py` / `operator_input_source.py` `2af8f97`; `m1_stage1.py`, listener `m1_stage1_control.py`, `m1_stage1_contract.py` `36b3996`; `m1_stage1_strategy.py`, `c1_rail_listener.py` `509b524`; daemon README `a92cabf`; c1-rail skill `9c89dfa`; this record `e04fe38`. Read directly and confirmed against the brief: `validate_manifest` requires exactly the eight fields (`venue_contract` included), `60 < expires − target ≤ 150`, `target.second == 0`, `contract_sha256()`, `expected_qty` int 1, a 64-hex `preflight_sha256`, `source` = the operator marker; **`prepare` and `enable` both require `target > now`** (so `enable` must complete before the target minute opens); `inject` refuses before `+60` and after `+120`, requires journal **and** config enabled, contract and time equal to the manifest, and the upload exactly at `/data/m1_upload_<id>.json`; `accept_bar` takes `60 ≤ now − target ≤ 150`; `default_transport` timeout 30 s (the brief's `≈ target + 165 s` terminal bound holds); `close` clears both config flags and unlinks the three input files; the listener's `handle_signal` test path writes `test_only`, `sender_invoked`, `test_contract_sha256` on the decision and answers `dry_run: computed, not sent`; `resolve_current_equity` runs per request and per `preflight`, and an equity-read failure answers **503** (no decision). Skews: (1) the brief's §0 SHAs (`47972f6`, `811df7c`) predate A1b — the ceremony code is the A1b merge; (2) this session cannot invoke `fly ssh console`, so the operator runs **every** in-container command (`prepare`, `close`, the migrate steps too), the agent drafts each one and reads the output from the Terminal panel — §7 pass 1's actor requirement (operator runs `enable` and `inject`) is met a fortiori; (3) `fly ssh sftp get`/`put` **do** work from this session when the remote path is protected from the MSYS rewrite (`MSYS_NO_PATHCONV=1`; proven today on the journal, 158 bytes, read and deleted), so the manifest put and the Step 2.11 fetch are agent-run; (4) the listener ledger carries private values — `decision.current_equity` and `request_received.parsed.close` (the raw bar close, persisted by `build_parsed_fields`) — so Step 2.8 applies an allowlisted projection inside the listener container before any terminal output; only that projection enters the transcript or §A7, never raw lines, as `--status` pastes redact the account id.
+
+### Host state read today (read-only, 2026-09-12 15:13 UTC)
+
+`GET /` → `boot_id cce8b7b8d0f34027a69a1a6fe63dfba6`, `poll_interval_s 1.0`, `strategy NullStrategy`, `feed_mode operator_input`, `connected false`, `ceremony_state DISABLED`, `effective_emit false`. Both machines unchanged since their deploys (`840759c2474928` v2, last update 02:41:34Z; `e820221a657d28` v8, 01:05:07Z). Journal (sftp read): `generation 0`, `active null`, `ceremonies {}`, `tombstones {}`, `enabled false`. The returned daemon log window holds only health checks and today's SSH session. **Sunday's Step 2.1 re-reads all of it**; reconfirm both machines' deployed release/image and build commit against §A5/§A6 before accepting the boot id. A different `boot_id` can mean a restart or a redeploy; accept the new value only after confirming the same reviewed image/build and a valid, inert journal (a restart re-runs `boot()` and `cleanup_orphans`). If either deployment identity differs or cannot be verified, stop and repeat its readiness review before any allocation change or ceremony.
+
+### Identifiers fixed for Sunday
+
+| Field | Value | Source |
+|---|---|---|
+| `ceremony_id` | `stage1-20260913-1` | fresh; a second attempt would be a new session with `-2` |
+| `target` | operator-named UTC minute, `…:00Z`, ≥ 5 min ahead when the manifest is written; recommended band **23:00–01:00 UTC** (18:00–20:00 CDT) | brief §0.5 |
+| `expires` | `target + 150 s` | brief §0.5 |
+| `contract_sha256` | `346387e565225d956da0f5b9696f211dee82ff9a823dda6e56b0ce32aba9d94f` (recomputed today at `origin/main`; equals the A5 in-container value; Step 2.1 prints it from both images) | `m1_stage1_contract.contract_sha256()` |
+| `expected_qty` | `1` | contract |
+| `preflight_sha256` | from Sunday's Step 2.3 receipt | `preflight` CLI |
+| `source` | `{"kind": "operator_attended_input", "schema": "ohlcv-1m", "symbol": "MYM1!"}` | `OPERATOR_INPUT_SOURCE` |
+| `venue_contract` | the dated contract the Tradovate chart shows as front — expected **`MYMZ6`** | operator reads it from the chart the bar will be read from |
+
+`_valid_venue_contract` was run today at `origin/main`: for a 2026-09-13 target it accepts **`MYMU6` and `MYMZ6` only** (September expiry 2026-09-18; the roll to December has passed). `inject --contract` must equal the manifest value. The continuous label `MYM1!` is never a `venue_contract`. A template manifest with these values and a placeholder preflight hash passed `validate_manifest` today (`now` five minutes before target: valid; `now == target`: refused).
+
+### Timeline (T = target minute; every host command operator-run unless marked agent)
+
+| When | Step | Command (canonical form; PowerShell wrapping as in A5/A6) | Gate / expected reading |
+|---|---|---|---|
+| T−45 | operator ready | Tradovate signed in, chart on the dated contract at **1 minute**, chart time zone noted and the local label of T computed; two PowerShell tabs; an editor open on a private folder **outside every repository** with the bar-file skeleton `{"open": , "high": , "low": , "close": , "volume": }`; Terminal panel open for the session | flatness attestation ("No open positions", time) |
+| T−42 | rehearsal | time one `fly ssh console -a c1-signal-daemon -C "python ops/c1_signal_daemon/m1_stage1_control.py status --state /data/c1_m1_stage1_state.json"` round trip; rehearse `fly ssh sftp put -a c1-signal-daemon <dummy> /tmp/a7_rehearsal.json` (container `/tmp`, not the volume) | both under ~10 s; `Remove-Item` is never chained to a put |
+| T−40 | 2.1 | both machines' release/image/build identity against §A5/§A6; listener current-process boot line from `fly logs -a c1-rail --no-tail` and listener `--status`; `curl -sS https://c1-signal-daemon.fly.dev/` (agent); daemon `status`; both `contract_sha256()` in-container; ledger last `seq`; daemon `boot_id` recorded | listener boot line `dry_run=True armed_until=-` agrees with `--status` (`dry_run=True armed_until=None`); missing/current-boot-unverifiable or conflicting readings stop the ceremony (armed reading → armed-host teardown row); deployment identities match; `poll_interval_s 1` (**any other value stops the session**); `DISABLED`, `effective_emit false`; hashes equal; `seq` = baseline |
+| T−32 | 2.2 | `migrate --config /data/c1_rail_config.json --enable-test` (plan) → the A5 §2.7 read-only one-liner with `enabled=True, release_withdrawn=False` → `--apply --flat-verified --enable-test --expect-constants <before.constants> --expect-lifecycle <before.lifecycle>` → no-op re-check | after-state differs only in the test row `cap_alloc 1` and `M1 Stage1 Test: AUTHORIZED`; `noop True`; no listener restart (A4-L/A5: per-request re-read) |
+| T−25 | 2.3 | `preflight --config /data/c1_rail_config.json` | `expected_qty 1`, `dry_run true`, `armed_until null`, `sizing_only true`; record `preflight_sha256`. A refusal is the live equity GET or sizing failing: **stop**, run 2.10 |
+| T−20 | 2.4 (agent) | manifest written locally, pasted into the record, `MSYS_NO_PATHCONV=1 fly ssh sftp put -a c1-signal-daemon <local> /data/m1_manifest_stage1-20260913-1.json` | remote path must not pre-exist (put refuses overwrite) |
+| T−15 | 2.5 | `prepare --state /data/c1_m1_stage1_state.json --config /data/c1_signal_daemon_config.json --boot-id <boot_id> --manifest /data/m1_manifest_stage1-20260913-1.json` | exit 0, JSON `state READY`; health `ceremony_state READY`, `effective_emit false` |
+| T−10 | 2.6 | `enable … --boot-id <boot_id> --manifest /data/m1_manifest_stage1-20260913-1.json --ceremony-id stage1-20260913-1` | health `effective_emit true`, `ceremony_state READY`, `connected false`; timestamp recorded; agent starts the `fly logs -a c1-signal-daemon` watch |
+| T−5 | staged | put and inject commands typed in the two tabs, not sent | — |
+| T+60 | 2.6b | the T bar closes on the chart; operator reads O/H/L/C/V into the private file and saves | values never typed into the recorded console; volume must be > 0 (a zero-volume minute is refused as `bad bar file`) |
+| T+60…T+120 | 2.6b | `MSYS_NO_PATHCONV=1 fly ssh sftp put -a c1-signal-daemon <private file> /data/m1_upload_stage1-20260913-1.json` then `inject --state … --config … --ceremony-id stage1-20260913-1 --boot-id <boot_id> --contract <venue_contract> --time <target> --bar-file /data/m1_upload_stage1-20260913-1.json` | aim to have the put done by T+90; receipt JSON (`bar_sha256`, `published_at`) pasted into the record; on `inject refused: …` do not retry past T+120 |
+| ≤T+165 | 2.7 | daemon log (success is logged only after the POST returns; allow the full 30 s transport window after the last permitted injection) | exactly one `m1_b1_post status=200`; health `ceremony_state RESPONSE_RECORDED`, `effective_emit false`, `connected false` (the source deactivates and removes the three input files on the next poll) |
+| ≤T+165 | 2.7 | agent sftp-gets the journal | `state RESPONSE_RECORDED`, `response_kind dry_run_computed`, `enabled false`; never proceed while `SEND_RESERVED` / `EMITTED` |
+| after | 2.8 | run the in-container allowlisted triad read below on `c1-rail`, selecting by exact `request_sha256` and then `event_id`; never print raw ledger lines | one `request_received`, one `decision` (`qty_out 1`, `halt false`, `dry_run true`, `test_only true`, `sender_invoked false`), one `transport_result` (`not_attempted`); paste only these fields — `kind`, `event_id`, `order_id`, `auth_ok`, `body_category`, `body_sha256`, `parsed.leg_id`, `parsed.bar_time`, `parsed.stop_dist_pts`, `qty_out`, `halt`, `dry_run`, `test_only`, `sender_invoked`, `test_contract_sha256`, `transport_state` — **`parsed.close` and `current_equity` never appear**; operator: CrossTrade Alert History empty for the window, Tradovate no order/position |
+| after | 2.9 | `close --state … --config … --ceremony-id stage1-20260913-1` | exit 0; journal `CLOSED` / `previous_state RESPONSE_RECORDED`; config `emit_enabled false`, `m1_test.enabled false`; health `effective_emit false` |
+| after | 2.10 | `migrate --config /data/c1_rail_config.json` (plan, no `--enable-test`) → one-liner `enabled=False` → apply with the current preimage hashes → no-op check; listener `--status`; daemon health | test row `cap_alloc 0`, `RETIRED`; `dry_run=True armed_until=None`; `effective_emit false` |
+| after | 2.11 (agent) | sftp-get `/data/c1_rail_events.jsonl` (listener) and the journal into the scratchpad; `python ops/c1_rail/m1_stage1_control.py evidence --events <events.jsonl> --daemon-state <state.json> --ceremony-id stage1-20260913-1`; both copies stay in the scratchpad until §A7's return is written (brief §0.5), then are deleted — the parent's §7 re-run refetches from the hosts: the journal is closed and the ledger join is by exact `request_sha256`, so later appended events cannot change it, and a second `request_received` with that digest would itself be a finding | `listener_event_id` UUID, `operator_attended_input true`, `qualifying_live_source false`, `observed_qty 1`, `post_test_emit_enabled false`; `bar_sha256` equals the receipt's and the journal's |
+| after | 2.12 | §A7 appended, PR | no bar values, no equity, no token, account id redacted |
+
+### Step 2.8 — Filter before terminal output
+
+The operator runs this Python in the listener container, with `REQUEST_SHA256` replaced by the journal's public request digest. The agent drafts the console wrapper before the ceremony. This replaces the handoff's raw `grep` in Step 2.8 and its parent-review re-grep: selection and projection both happen in-container, before stdout reaches the recorded terminal. Do not use raw `grep`, `cat`, or a raw-record debug print; redact-before-paste is too late. A refusal stops evidence collection and invokes the teardown rule; never diagnose it by dumping the ledger into the transcript. Step 2.11 still uses the private full ledger for the evidence validator.
+
+```python
+import json
+from pathlib import Path
+
+request_sha256 = "REQUEST_SHA256"
+try:
+    records = [json.loads(line) for line in Path("/data/c1_rail_events.jsonl").read_text().splitlines()]
+    requests = [r for r in records if r.get("kind") == "request_received"
+                and r.get("body_sha256") == request_sha256]
+    if len(requests) != 1 or not requests[0].get("event_id"):
+        raise ValueError
+    event_id = requests[0]["event_id"]
+    triad = [r for r in records if r.get("event_id") == event_id]
+    if sorted(r.get("kind", "") for r in triad) != ["decision", "request_received", "transport_result"]:
+        raise ValueError
+    fields = ("kind", "event_id", "order_id", "auth_ok", "body_category", "body_sha256",
+              "qty_out", "halt", "dry_run", "test_only", "sender_invoked",
+              "test_contract_sha256", "transport_state")
+    projected = []
+    for record in triad:
+        safe = {key: record[key] for key in fields if key in record}
+        if record["kind"] == "request_received":
+            safe["parsed"] = {key: record.get("parsed", {}).get(key)
+                              for key in ("leg_id", "bar_time", "stop_dist_pts")}
+        projected.append(safe)
+    output = "\n".join(json.dumps(record) for record in projected)
+except Exception:
+    raise SystemExit("triad projection refused; no ledger values printed") from None
+print(output)
+```
+
+### Teardown (binding from a successful Step 2.2 until Step 2.10 completes)
+
+| Stop condition | Then |
+|---|---|
+| Step 2.1 finds the listener **armed** (`dry_run=False` or a non-null `armed_until`, in `--status` or the boot line) | nothing else in the session runs; plan §6 armed-host procedure: the operator (present for A7) attests flatness from Tradovate → `python ops/c1_rail/c1_rail_arm.py --disarm` → `fly machine restart e820221a657d28 -a c1-rail` → boot line `dry_run=True armed_until=-` and `--status` agree; every command recorded; `BLOCKED — plan-itself-wrong`. Without a flatness attestation: alert, **do not disarm** (it blocks exits), same return |
+| Step 2.1 `poll_interval_s ≠ 1`, unequal `contract_sha256()`, or an unresolved journal checkpoint | no ceremony; the listener allocation was not touched, so record and return (`BLOCKED — plan-itself-wrong` for the journal case; the interval case is the A6 re-stage + `fly deploy` workflow, never a restart) |
+| `preflight` ≠ `expected_qty 1` (or refused) | 2.10 in full; record; `DONE_WITH_CONCERNS`; the discrepancy is a finding, not a parameter |
+| `prepare` or `enable` non-zero | `status`; if a `READY` ceremony exists, 2.9 close; 2.10; record; `DONE_WITH_CONCERNS` |
+| inject refused (any reason other than `publication uncertain` or `already injected`), window missed, ceremony `expired` / `target_missed` with no POST | confirm `/data/m1_upload_stage1-20260913-1.json` absent; 2.9 close in full; 2.10; record; `DONE_WITH_CONCERNS` — a second attempt is a **new session, new id** |
+| `inject refused: publication uncertain` or `inject refused: already injected` | the bar may already be published (`atomic_json` replaces the file before its directory fsync; the retained claim also makes a second invocation refuse as `already injected`), so the daemon can consume it — **do not close yet**: run Step 2.7 as written (daemon log + journal until a terminal state, ≤ T+165 s), then branch on the journal — `RESPONSE_RECORDED` → continue at 2.8 (use the original successful receipt if available; otherwise record the missing receipt and journal `bar_sha256` as a concern for the parent's §7 check); `CLOSED` with no POST → the row above; `TRANSPORT_UNKNOWN` → the row below. Never re-inject |
+| `TRANSPORT_UNKNOWN` | no retry; 2.9 close in full (the journal keeps the barrier); 2.10 in full; record; `BLOCKED — plan-itself-wrong` (reconciliation is a separate review) |
+| operator abort at any point after 2.2 | 2.9 if anything reached `READY`; 2.10; record every command |
+
+Never edited: the journal, the manifest after `prepare`, either volume config by hand. Never run by the agent: `enable`, `inject`, `--arm`.
+
+**Return (preparation):** `DONE` — the brief verified against the deployed code, the identifiers fixed, the sequence and teardown frozen, the operator's console setup named. Dispatch condition unchanged: the operator present for the whole window, and the target inside Sunday's Globex session.
