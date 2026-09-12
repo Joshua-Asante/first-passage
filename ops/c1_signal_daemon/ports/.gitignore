@@ -1,0 +1,7 @@
+# Private executable ports of the fixed-book strategies (Track B TB-A1..A4).
+# Same edge-protection class as **/*.pine: NEVER tracked. Only this file and
+# the README are public; hashes are pinned in core/strategies/PORT_MANIFEST.sha256
+# by the TB-A0 integration commit.
+*
+!.gitignore
+!README.md
