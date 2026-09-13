@@ -703,6 +703,16 @@ AUTOMATION_FRIENDLY_PROP_FIRMS = {
 _LIVE_BASE_RISK_SLUGS = ("striker", "striker_nas100")
 _BASE_RISK = {k: HISTORICAL_CHALLENGE_BASE_RISK[k] for k in _LIVE_BASE_RISK_SLUGS}
 
+# TB-I1 identities only: no risk allocation, policy admission or verified
+# broker order symbols. Kept separate from the historical BASE_RISK spine.
+# (leg_id, lifecycle_key, instrument root); TB-S3 fixed K=1 book.
+TRADEIFY_BOOK_IDENTITIES = (
+    ("aegis_6j", "Aegis 6J", "6J"),
+    ("dj30_mym_p250", "Striker MYM p250", "MYM"),
+    ("vanguard_mgc", "Vanguard MGC", "MGC"),
+    ("orb_mnq_v7", "ORB MNQ v7", "MNQ"),
+)
+
 # Slug → Title-Case keys used by dd_protection.BASE_RISK / c1 LEG_MAP leg_key.
 _BASE_RISK_DISPLAY_KEYS = {
     "striker": "Striker",
