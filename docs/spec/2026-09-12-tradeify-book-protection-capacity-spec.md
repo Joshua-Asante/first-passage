@@ -93,6 +93,43 @@ HTTP acceptance proves transport only. Completion requires terminal broker evide
 
 ## 6. Acceptance and ownership
 
+### TB-I1 typed sizing boundary (Task 3b)
+
+`C1SizingHostReference.process_book_signal(request, *, policy, context, binding, now)`
+calls the pure boundary in `ops/c1_rail/book_sizing_context.py`, then the shared
+`entry_quantities` or `add_quantity` implementation. All arguments are explicit.
+The legacy `process_signal(payload, current_equity)` remains blocked for book IDs.
+
+| Input | Required producer and contents |
+|---|---|
+| `BookSizingRequest` | Adapter-to-host integration: operation ID, fixed leg ID, order symbol, entry/add kind, adapter-normal base and explicit per-contract risk. Striker risk is not reconstructed from the integer base. |
+| `BookSizingBinding` | Trusted integration owner: account identity, current owner/boot epoch, policy and snapshot digests, the complete verified `SettledClose`, calendar `BookSession`, explicit evidence-age limit, leg/order-symbol binding, micro-equivalent allocation ceiling and unscaled risk dollars from the accepted account basis/configuration. This is not adapter-supplied authority. |
+| `BookAccountContext` | TB-I3 account owner: matching operation/account/session/leg/symbol/digests, active mode, settled record, lifecycle key/tier, observation and expiry times, intended/confirmed base and base-operation identity, gross confirmed/reserved contracts for exactly all four legs, pending operation IDs and active block reasons. Unknown exposure or unresolved protection-transition evidence must produce a block, not a zero row. |
+| `BookSession` / `SettledClose` | TB-C1 supplies exact current/prior session identities and open/risk-add-cutoff/close times; no weekday arithmetic or hard-coded schedule. TB-T1 verifies the settlement seal, full contents and snapshot provenance. The host compares those verified contents with context, including the seal; it does not implement the verifier. |
+
+The boundary checks identity and digest agreement, full settled-record agreement,
+timezone-aware chronology, freshness, allocation/count types, lifecycle identity,
+complete exposure accounting and the mode derived from the prior settled close.
+It rejects pending reuse of the same operation and every supplied owner block.
+Adds use confirmed base only; entry requires an empty leg. It never writes the
+historical host's in-memory base map or resizes a carried position. Capacity is
+checked using confirmed plus reserved gross contracts, with whole-request refusal.
+
+`BookSizingDecision.submit` is always false. A positive demand and apparent
+headroom do not reserve capacity, authenticate evidence, admit a policy or prove
+execution readiness. Task 4 supplies canonical fingerprints; TB-I3 must persist
+and serialize admission, recheck evidence, deduplicate completed operations,
+reserve before send, handle takeover and release only on terminal evidence.
+Repeated identical pure calls are deliberately identical; they are not durable
+dedupe. Duplicate/out-of-order settlement persistence and transition cancellation
+remain account-owner obligations. The method remains non-emitting. The Docker
+recipe and build-context allowlist include its pure dependency closure, including
+shared policy/geometry and protocol/feed types; packaging enables imports, not a
+listener route or deployment. An isolated-process test loads the host using only
+the recipe's copied Python files.
+
+### Combined packet acceptance
+
 TB-I1 owns `book_policy.py`, sizing-host, firm allocation/lifecycle keys and focused tests for §§2–4. TB-I3 owns durable persistence, listener/broker reconciliation, telemetry and the same-shape harness integration. TB-I2 must consume this contract in replay and remains blocked until all seven protected/WATCH/ORB-mode exports pass the TB-R3 intake/parity gate; captured-export parity alone does not discharge them. TB-T1 owns snapshot production and must provide the settled-close fields and seals in §3.
 
 Acceptance cases include zero base/add, each reachable integer tier, partial entry/add fill, reject, cancel, persist-before-send crash at every cut, stale/missing evidence, carried position, protected transition with working ORB adds, ordinary cap refusal, successful takeover, partial/failed/contended takeover, restart, early close and next-session recovery. Synthetic fixtures may establish mechanics; qualification and live capability evidence remain separate gates.

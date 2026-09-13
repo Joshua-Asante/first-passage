@@ -40,6 +40,18 @@ These are review text, not approval records. Record each accepted decision as a 
 
 **Evidence and scope:** production Rule-0 reads reconfirmed the current independent normal-base/add scaling, normal-integer-only helper, host risk expression, empty policy registry and existing lifecycle tiers. This slice reconciles their governing requirements; it does not claim that code now implements them. Literal arithmetic and document validation results are recorded in the execution plan after the checks run.
 
+### Subsequent bounded implementation — Task 3b
+
+The operator's continuation explicitly requested the session/policy/account-context
+boundary and its connection to shared sizing. Its typed interface and producer
+obligations are recorded in [TB-S1 §6](../../spec/2026-09-12-tradeify-book-protection-capacity-spec.md#tb-i1-typed-sizing-boundary-task-3b).
+The host now has an offline demand path that compares context against explicit
+owner bindings and calls the shared quantity laws. Every result remains
+non-submitting. Canonical seal verification, durable account integration,
+ratifications, policy admission and live prerequisites remain separate open work;
+the first-slice release ledger above is not evidence that these later components
+or approvals are complete.
+
 ## 1. Historical source-backed inventory
 
 | Obligation | Owner | Artifact / exact observed head | Evidence | Remaining gap / next action |
