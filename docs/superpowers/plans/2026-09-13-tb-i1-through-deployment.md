@@ -132,7 +132,7 @@ Red/green evidence: 196 initial new cases failed because the APIs were absent; t
 - [x] Specify the typed account-context boundary in the Task 1 contract: operation identity, leg/symbol, active session/mode, settled-session evidence and seal, policy digest, lifecycle authorization, intended and confirmed base, reserved/confirmed exposure and evidence time. Missing required fields halt. This is a proposed production boundary, not an existing broker feed.
 - [x] Add explicit candidate-policy/context arguments to the book sizing path. Preserve the existing M1/historical behavior under its own tests; do not silently substitute the new policy into legacy calls.
 - [x] Add four lifecycle keys and inert host/config bindings with zero deployed allocation. Positive test allocations are explicit fixture inputs. Reuse the accepted risk-expression values; do not repurpose historical BASE_RISK constants or derive quantities from zero production allocations.
-- [ ] Test a 100000 peak and 99000 settled close entering protection on the next session, the rounding boundary immediately around 1%, duplicate/out-of-order settlement refusal, missing/stale/unsealed state and restart with mismatched state. Carried positions retain quantity; protected transition blocks ORB adds pending terminal cancellation.
+- [x] Test a 100000 peak and 99000 settled close entering protection on the next session, the rounding boundary immediately around 1%, duplicate/out-of-order settlement refusal, missing/stale/unsealed state and restart with mismatched state. Carried positions retain quantity; protected transition blocks ORB adds pending terminal cancellation.
 - [x] Test 6J=10 and micro=1 accounting; all-or-refuse requests at 80; confirmed exposure plus unresolved reservations, partial fill transfer, and terminal-only release. Protected Aegis consumes 30 and capped Striker 77, so coexistence requires refusal/takeover rather than a claim that protection guarantees capacity.
 - [x] Test only Aegis may displace, whole legs lowest-priority first. Partial/rejected/stale/unknown close evidence and contended takeover preserve the block. Per-operation identity must prevent duplicate release/fill accounting; if current per-leg helpers cannot express it, define the event reducer boundary here and leave durable journal ownership explicitly with TB-I3.
 - [x] Run the focused host/policy/integration tests. Record which assertions use real host/policy components and which rely on synthetic account evidence.
@@ -249,8 +249,9 @@ or prove evidence completeness. Successful sizing remains `submit=False`.
 The new module is not yet imported by the deployed listener; image contents are
 unchanged. TB-I3 must integrate the owner, persistence and packaging together.
 
-Remaining Task 3 work includes the combined settlement/transition acceptance
-cases and the focused R-P semantic contract. Task 4 fingerprint serialization,
+At the Task 3c close, remaining Task 3 work included the combined settlement/transition
+acceptance cases and focused R-P semantic contract, now addressed by Task 3d below.
+Task 4 fingerprint serialization,
 TB-I3 durable reservation/recovery, verified evidence producers, calendar and
 snapshot tooling remain open. These synthetic events do not qualify a live route
 or supply policy/execution ratifications or the seven private exports.
@@ -267,6 +268,63 @@ review found no actionable defects within this boundary and separately ran the
 38 capacity tests successfully. Core policy/lifecycle/firm-rule files and deployed
 image manifests match the slice base. No full-repository or live-route result is
 claimed; publication is separate from this local engineering record.
+
+### Task 3d execution packet — settlement/transition and R-P closure
+
+Starts at `589ecce8229b99440cad3d286cb8330883ce948b` on
+`codex/tb-i1-session-protocol`, reusing the isolated worktree. Coordinator owns
+integration. Use the existing clock, typed session boundary and capacity reducer;
+do not invent a durable settlement owner or broker cancellation producer.
+
+- [x] Test prior-close mode selection and rounding through the real host, duplicate
+  and out-of-order settlement refusal without state mutation, and restarted host
+  rejection of mismatched account/session/policy/snapshot evidence.
+- [x] Add an immutable transition descriptor binding account, owner epoch, session,
+  modes and the complete owner-supplied resting ORB-add operation IDs. A pure
+  projection derives its block from retained terminal evidence, preserves carried
+  quantities and unrelated blocks, and halts on unknown/mismatched operations.
+  TB-I3 must authenticate completeness, persist this descriptor before cancellation,
+  and send/reconcile broker actions; this projection sends nothing.
+- [x] Document R-P adapter-normal entry/add quantities, confirmed-scope exits,
+  unchanged brackets and admitted emulator quantities. Test shared admission/host
+  parity using complete inputs, partial confirmed bases and missing-input refusals.
+  B1 mapping remains TB-I3; no private port bodies change.
+- [x] Run operations regressions, required gates, lint and independent review;
+  record the exact bounded completion and remaining owner dependencies.
+
+Task 3's bounded implementation is complete locally. The clock-to-host tests
+cover prior-close selection at and around the rounding threshold, duplicate/older
+settlement refusal without mutation, and mismatched evidence on a new host.
+`ProtectionTransition` retains the owner-captured add IDs and binds the session,
+account, epoch and modes. `project_transition` projects capacity and derives a
+block until every captured operation is terminal. It neither clears existing
+blocks nor changes carried quantities. A fill/cancel race preserves the filled
+quantity; missing/unknown facts remain blocked. Feed this function fresh owner
+context each time: an earlier projection is not evidence and its blocks are never
+implicitly cleared. Invalid bindings raise and require caller halt.
+
+R-P is now documented on `OrderIntent`; shared-admission versus real-host tests
+cover all four legs, modes and lifecycle tiers, confirmed-base adds, absent risk
+or fill evidence, and unchanged exit scope/bracket semantics. These tests use
+explicit normalized synthetic owner inputs, not private adapters or a B1 builder.
+Actual production replay, payload mapping, descriptor persistence before send,
+authenticated completeness, concurrent ownership, cancellation/recovery and live
+restart qualification remain TB-I2/TB-I3 responsibilities. Calendar and snapshot
+authentication remain their named owners; Task 1 ratifications are still pending.
+
+Verification over `589ecce`: six transition tests first failed because the new
+API was absent, then passed. An initial R-P fixture referenced `side` instead of
+the existing `entry_side` field; corrected without production behavior changes.
+The combined focused suite passed 227 tests before additional race coverage.
+`py -3.13 -m pytest tests/ops -q --tb=short` passed **1,462 tests, 12 skipped,
+2 dependency warnings**, in 125.62 seconds. A final added two-operation terminal
+case was verified in the **160-passing** integration-file run. Error-level lint
+and the required repository check tier passed (72 evidence-store tests, 3 skips;
+existing private-data/advisory warnings). Independent review found no actionable
+defects and separately passed the then-current 159 integration cases. Core risk,
+lifecycle and firm-rule sources and deployed image manifests match the base;
+the protocol constructor and emulator behavior are unchanged. This is local
+implementation evidence, not PR review/merge, policy admission or live capability.
 
 ## Task 4 — Canonical fingerprint implementation
 

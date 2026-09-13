@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 
 from book_policy import ACCOUNT_MICRO_CAP, BOOK_LEGS, leg
 from book_sizing_context import BookAccountContext, BookExposure
+from c1_signal_daemon.book_protocol import Mode
 
 
 @dataclass(frozen=True)
@@ -330,3 +331,52 @@ def project_capacity(state: CapacityState, context: BookAccountContext) -> BookA
     return replace(context, exposures=exposures(state),
                    pending_operation_ids=tuple(dict.fromkeys(context.pending_operation_ids + pending)),
                    blocks=tuple(dict.fromkeys(context.blocks + state.blocks)))
+
+
+@dataclass(frozen=True)
+class ProtectionTransition:
+    """Owner-captured complete resting ORB-add set, retained before cancel sends.
+
+    The owner authenticates operation kind/completeness and persists this record.
+    IDs remain here after completion; omission is not cancellation evidence.
+    """
+    account_id: str
+    owner_epoch: str
+    session_id: str
+    previous_mode: Mode
+    mode: Mode
+    operation_ids: tuple[str, ...]
+
+
+def project_transition(transition: ProtectionTransition, state: CapacityState,
+                       context: BookAccountContext) -> BookAccountContext:
+    """Derive a risk-add block until all captured ORB adds are terminal.
+
+    Pass the owner's fresh context, not a previous projection. Existing blocks
+    are never removed here. The host separately checks settled mode and seals.
+    This function does not change exposures, send cancels, or authorize execution.
+    Invalid binding raises: callers must halt, never fall back to unprojected data.
+    """
+    _require(isinstance(transition, ProtectionTransition), "typed transition required")
+    _require(transition.account_id == state.account_id == context.account_id
+             and transition.owner_epoch == state.owner_epoch == context.owner_epoch
+             and _identity(transition.session_id) and transition.session_id == context.session_id,
+             "transition identity mismatch")
+    _require(type(transition.previous_mode) is Mode and type(transition.mode) is Mode
+             and transition.mode == context.mode, "transition mode mismatch")
+    ids = transition.operation_ids
+    _require(type(ids) is tuple and all(_identity(i) for i in ids)
+             and len(set(ids)) == len(ids), "invalid transition operations")
+    activating = transition.previous_mode is Mode.NORMAL and transition.mode is Mode.PROTECTED
+    _require(activating or not ids, "cancellations outside protection activation")
+    pending = False
+    for identity in ids:
+        operation = _operation(state, identity)
+        _require(operation.request.leg_id == "orb_mnq_v7" and operation.status == "active",
+                 "transition requires admitted ORB operations")
+        pending = pending or operation.terminal is None
+    result = project_capacity(state, context)
+    if pending:
+        block = "protection-transition:" + transition.session_id
+        result = replace(result, blocks=tuple(dict.fromkeys(result.blocks + (block,))))
+    return result
