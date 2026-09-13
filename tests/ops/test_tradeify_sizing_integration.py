@@ -51,6 +51,43 @@ def decide(host, request, context, binding, **kwargs):
                                     now=kwargs.get("now", NOW))
 
 
+def test_capacity_projection_preserves_evidence_and_blocks_real_host(host):
+    from book_capacity import CapacityState, Event, Reserve, apply_event, project_capacity
+
+    request, context, binding = inputs()
+    state = CapacityState(context.account_id, context.owner_epoch)
+    event = Event("reserve", 1, NOW, context.account_id, context.owner_epoch,
+                  Reserve("other", "aegis_6j", "SYNTHETIC-6J", 8))
+    state = apply_event(state, event, now=NOW, max_age=timedelta(seconds=30))
+    projected = project_capacity(state, context)
+    assert projected.as_of == context.as_of and projected.snapshot_digest == context.snapshot_digest
+    assert projected.pending_operation_ids == ("other",)
+    result = decide(host, request, projected, binding)
+    assert result.halt and result.submit is False
+    with pytest.raises(ValueError, match="identity"):
+        project_capacity(replace(state, owner_epoch="wrong"), context)
+
+
+def test_capacity_projection_does_not_erase_existing_obligations(host):
+    from book_capacity import CapacityState, project_capacity
+
+    request, context, binding = inputs()
+    context = replace(context, blocks=("transition",), pending_operation_ids=("existing",))
+    projected = project_capacity(CapacityState(context.account_id, context.owner_epoch), context)
+    assert projected.blocks == ("transition",) and projected.pending_operation_ids == ("existing",)
+    assert decide(host, request, projected, binding).halt
+
+
+def test_empty_capacity_projection_reaches_shared_sizing_laws(host):
+    from book_capacity import CapacityState, project_capacity
+
+    request, context, binding = inputs()
+    projected = project_capacity(CapacityState(context.account_id, context.owner_epoch), context)
+    result = decide(host, request, projected, binding)
+    assert not result.halt and (result.qty_out, result.prospective_add) == (22, 55)
+    assert result.submit is False
+
+
 @pytest.mark.parametrize("leg_id,normal,protected", [
     ("aegis_6j", (8, 0), (3, 0)),
     ("dj30_mym_p250", (22, 55), (22, 55)),

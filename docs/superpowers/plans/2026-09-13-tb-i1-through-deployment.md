@@ -131,11 +131,11 @@ Red/green evidence: 196 initial new cases failed because the APIs were absent; t
 
 - [x] Specify the typed account-context boundary in the Task 1 contract: operation identity, leg/symbol, active session/mode, settled-session evidence and seal, policy digest, lifecycle authorization, intended and confirmed base, reserved/confirmed exposure and evidence time. Missing required fields halt. This is a proposed production boundary, not an existing broker feed.
 - [x] Add explicit candidate-policy/context arguments to the book sizing path. Preserve the existing M1/historical behavior under its own tests; do not silently substitute the new policy into legacy calls.
-- [ ] Add four lifecycle keys and inert host/config bindings with zero deployed allocation. Positive test allocations are explicit fixture inputs. Reuse the accepted risk-expression values; do not repurpose historical BASE_RISK constants or derive quantities from zero production allocations.
+- [x] Add four lifecycle keys and inert host/config bindings with zero deployed allocation. Positive test allocations are explicit fixture inputs. Reuse the accepted risk-expression values; do not repurpose historical BASE_RISK constants or derive quantities from zero production allocations.
 - [ ] Test a 100000 peak and 99000 settled close entering protection on the next session, the rounding boundary immediately around 1%, duplicate/out-of-order settlement refusal, missing/stale/unsealed state and restart with mismatched state. Carried positions retain quantity; protected transition blocks ORB adds pending terminal cancellation.
-- [ ] Test 6J=10 and micro=1 accounting; all-or-refuse requests at 80; confirmed exposure plus unresolved reservations, partial fill transfer, and terminal-only release. Protected Aegis consumes 30 and capped Striker 77, so coexistence requires refusal/takeover rather than a claim that protection guarantees capacity.
-- [ ] Test only Aegis may displace, whole legs lowest-priority first. Partial/rejected/stale/unknown close evidence and contended takeover preserve the block. Per-operation identity must prevent duplicate release/fill accounting; if current per-leg helpers cannot express it, define the event reducer boundary here and leave durable journal ownership explicitly with TB-I3.
-- [ ] Run the focused host/policy/integration tests. Record which assertions use real host/policy components and which rely on synthetic account evidence.
+- [x] Test 6J=10 and micro=1 accounting; all-or-refuse requests at 80; confirmed exposure plus unresolved reservations, partial fill transfer, and terminal-only release. Protected Aegis consumes 30 and capped Striker 77, so coexistence requires refusal/takeover rather than a claim that protection guarantees capacity.
+- [x] Test only Aegis may displace, whole legs lowest-priority first. Partial/rejected/stale/unknown close evidence and contended takeover preserve the block. Per-operation identity must prevent duplicate release/fill accounting; if current per-leg helpers cannot express it, define the event reducer boundary here and leave durable journal ownership explicitly with TB-I3.
+- [x] Run the focused host/policy/integration tests. Record which assertions use real host/policy components and which rely on synthetic account evidence.
 
 **Stop:** TB-I1 owns pure decisions and validated interfaces. Durable reserve-before-send, broker reconciliation, concurrent account serialization, protected-transition completion and restart recovery are not accepted as production-complete until Task 6 integrates TB-I3.
 
@@ -200,6 +200,73 @@ check tier passed (including 72 evidence-store tests with 3 skips); strict links
 and whitespace checks passed. Frozen drawdown/geometry, lifecycle and firm
 rules source files match the slice base. These results were recorded before the
 separately requested commit and PR publication.
+
+### Task 3c execution packet — operation-aware capacity events
+
+Opened from `796a4897bc193a11de2f1d35aebaa6142c422e76` on
+`codex/tb-i1-capacity-events`. The coordinator owns integration. The legacy
+per-leg `CapacityLedger` remains an offline compatibility helper; its misleading
+durability docstring will be corrected. This slice adds a pure immutable reducer
+in `ops/c1_rail/book_capacity.py`, with focused tests and a projection into the
+existing typed sizing context. No broker producer or durable journal is invented.
+
+Execution trace: host sizing demand → owner reserve command → new reducer state
+→ owner persistence (TB-I3) → broker send (TB-I3) → validated execution/terminal/
+reduction facts → reducer → gross exposure and pending-operation projection.
+Every command carries a retained event ID and external causal sequence. Reserve
+identity binds operation, leg, symbol and quantity; fills and reductions also
+retain broker fact IDs. Exact repeats are idempotent; conflicting identities or
+invalid evidence retain an account block without releasing capacity. This layer
+consumes normalized facts from the future verified producer, not raw broker JSON.
+
+- [x] Test operation-bound reservations, no clipping, 6J conversion and exact cap.
+- [x] Test partial fill transfer, cumulative terminal agreement, terminal-only
+  remainder release and request-attributed execution reductions. Duplicate IDs
+  must not double count; stale, reordered, unknown or conflicting facts block.
+- [x] Test only Aegis can initiate takeover, lowest-priority whole legs first.
+  Keep its block until all displaced reservations are terminal and executions
+  reduced to zero, with fresh post-update quiescence evidence. A competing request
+  or partial/unknown evidence cannot clear the block or reserve the requester.
+- [x] Project reducer exposure/pending IDs/blocks into typed context, preserving
+  account/owner identity and other verified evidence; test through the real host.
+- [x] Run focused regressions and required repository gates; record the remaining
+  durable, snapshot-authentication and broker-route obligations explicitly.
+
+Implementation uses immutable operation records, execution facts, request-attributed
+reductions, retained event receipts and completed takeover identities. Refused
+operation IDs cannot become new reservations on retry. Entry and close requests
+share a unique namespace; a close request cannot change leg or contract symbol.
+An invalid or unreserved late execution retains a block and the raw typed event;
+known exposure is not represented as complete evidence in that state. No generic
+block-clear or snapshot/epoch reset is supplied. A valid completion clears only
+its own takeover block after terminal order facts, execution reductions and a
+newer quiescence acquisition covering gross, working, protection and pending state.
+
+`project_capacity` feeds gross counts, pending IDs and retained blocks into the
+existing real sizing host. The owner must bind reducer state to the authenticated
+snapshot behind that context; projection does not renew timestamps, verify seals
+or prove evidence completeness. Successful sizing remains `submit=False`.
+The new module is not yet imported by the deployed listener; image contents are
+unchanged. TB-I3 must integrate the owner, persistence and packaging together.
+
+Remaining Task 3 work includes the combined settlement/transition acceptance
+cases and the focused R-P semantic contract. Task 4 fingerprint serialization,
+TB-I3 durable reservation/recovery, verified evidence producers, calendar and
+snapshot tooling remain open. These synthetic events do not qualify a live route
+or supply policy/execution ratifications or the seven private exports.
+
+Verification on the uncommitted slice over `796a489`: initial tests failed because
+the reducer module was absent. Later red/green regressions caught repeated
+takeover-completion handling, cross-leg close-request reuse, and entry/close
+request-ID collisions. Final `py -3.13 -m pytest tests/ops -q --tb=short`:
+**1,402 passed, 12 skipped, 2 dependency warnings** in 96.79 seconds. Error-level
+lint passed for the changed Python files. The repository check tier passed,
+including 72 evidence-store tests with 3 skips; private-data/advisory warnings
+remain. Strict plan links and whitespace checks passed. An independent read-only
+review found no actionable defects within this boundary and separately ran the
+38 capacity tests successfully. Core policy/lifecycle/firm-rule files and deployed
+image manifests match the slice base. No full-repository or live-route result is
+claimed; publication is separate from this local engineering record.
 
 ## Task 4 — Canonical fingerprint implementation
 
