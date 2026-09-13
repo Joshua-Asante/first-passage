@@ -256,6 +256,16 @@ def test_min_certifying_passes_preserves_inclusive_boundary() -> None:
     assert cp.speed_limb_power(1, 1.0, target=0.05, alpha=0.05) == 1.0
 
 
+def test_min_certifying_passes_rejects_alpha_one_ulp_below_boundary() -> None:
+    # P(X >= 1; n=1, p=0.05) equals target exactly, so it exactly matches an
+    # alpha of 0.05 (certifies, see above) but must NOT match a genuinely
+    # smaller alpha even one ULP below it: that P(X >= 1) is then strictly
+    # greater than alpha, so no count certifies. A tolerance wide enough to
+    # recover the exact-tie case above would wrongly accept this too.
+    tighter_alpha = math.nextafter(0.05, 0.0)
+    assert cp.min_certifying_passes(1, target=0.05, alpha=tighter_alpha) == -1
+
+
 def test_min_certifying_passes_none_when_n_too_small() -> None:
     assert cp.min_certifying_passes(3, target=0.5, alpha=0.05) == -1
     assert cp.speed_limb_power(3, 0.9, target=0.5, alpha=0.05) == 0.0

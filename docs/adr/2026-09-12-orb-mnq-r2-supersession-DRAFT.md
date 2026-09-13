@@ -87,7 +87,7 @@ What this ADR does **not** do, whatever the slot says: unpark the standalone ORB
 # The slot is empty until TB-D1 (expected before fill: one line)
 grep -n "<slot — TB-D1 fills" docs/adr/2026-09-12-orb-mnq-r2-supersession-DRAFT.md
 # No result figures leak into the decision slot (D-B12 allowlist rule; expected: exit 0)
-python -c "import re,sys,functools;t=open('docs/adr/2026-09-12-orb-mnq-r2-supersession-DRAFT.md',encoding='utf-8').read().split('## §2 — Decision (slot)',1)[1].split('## §3 — Alternatives',1)[0];A=[r'\b(?:TB-[A-Z]\d*|D-B\d+|O-[A-Z0-9]+|R[1-3]|n[1-3]|H[12]|ORB-MNQ-1)\b',r'\d{4}-\d{2}-\d{2}',r'\bK = 1\b',r'≤ 2',r'0 %'];u=functools.reduce(lambda s,p:re.sub(p,'',s),A,t);bad=re.findall(r'(?<![A-Za-z])\d+(?:\.\d+)?\s*%?(?![A-Za-z])',u);print('ok' if not bad else 'unexpected decision-slot figures: '+', '.join(bad));sys.exit(bool(bad))"
+python -c "import re,sys,functools;t=open('docs/adr/2026-09-12-orb-mnq-r2-supersession-DRAFT.md',encoding='utf-8').read().split('## §2 — Decision (slot)',1)[1].split('## §3 — Alternatives',1)[0];A=[r'(?i)sha-?256',r'\b(?=[0-9a-f]*[a-f])[0-9a-f]{7,64}\b',r'\b(?:TB-[A-Z]\d*|D-B\d+|O-[A-Z0-9]+|R[1-3]|n[1-3]|H[12]|ORB-MNQ-1)\b',r'\d{4}-\d{2}-\d{2}',r'\bK = 1\b',r'≤ 2',r'0 %'];u=functools.reduce(lambda s,p:re.sub(p,'',s),A,t);bad=re.findall(r'(?<![A-Za-z])\d+(?:\.\d+)?\s*%?(?![A-Za-z])',u);print('ok' if not bad else 'unexpected decision-slot figures: '+', '.join(bad));sys.exit(bool(bad))"
 # Well-formedness
 python scripts/check_brief.py docs/adr/2026-09-12-orb-mnq-r2-supersession-DRAFT.md --type adr
 python scripts/check_adr_graph.py

@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import math
 from collections.abc import Iterator
+from fractions import Fraction
 
 DEFAULT_CEILING = 0.05
 DEFAULT_ALPHA = 0.05
@@ -170,25 +171,37 @@ def min_certifying_passes(
 ) -> int:
     """Smallest k with the one-sided (1-alpha) Clopper-Pearson LOWER bound on k/n >= target, else -1.
 
-    Additive TB-P1 mode (speed limb, S1). Identity: a lower bound on the pass
-    proportion >= target is the upper bound on the failure proportion
-    <= 1 - target, so the count is n minus max_certifying_busts at ceiling
-    1 - target. Equivalent to: P(X >= k; n, target) <= alpha.
+    Additive TB-P1 mode (speed limb, S1). Equivalent to: P(X >= k; n, target) <= alpha.
+
+    Computed with exact rational arithmetic (``fractions.Fraction``) on the
+    doubles' own binary values, term-by-term from k = 0. A ``1.0 - target``
+    float reflection perturbs an exact Clopper-Pearson boundary by up to a
+    few ULPs, and any tolerance wide enough to recover that boundary is also
+    wide enough to accept a genuinely different, merely nearby alpha (e.g.
+    one ULP off) as if it were exactly on the boundary. Carrying the tail
+    exactly needs no tolerance at all: it reproduces the boundary case
+    losslessly and never inflates a distinct alpha into a false match.
+    Cost grows with n (the accumulated fraction's bit-length grows roughly
+    linearly in the term count), which is fine at this file's n scale
+    (DEFAULT_N_MAX) but not intended for very large n.
     """
     _require_n(n)
     _require_open_unit("target", target)
     _require_open_unit("alpha", alpha)
-    # ``1.0 - target`` may land one ULP above the mathematical complement.
-    # Admit a CDF that differs from alpha only by floating-point roundoff so an
-    # exact Clopper-Pearson boundary remains inclusive (the contract says >=).
-    complement = 1.0 - target
-    k_fail = -1
-    for k, cdf in _iter_lower_cdf(n, complement):
-        if cdf <= alpha or math.isclose(cdf, alpha, rel_tol=1e-14, abs_tol=0.0):
-            k_fail = k
-        else:
-            break
-    return -1 if k_fail < 0 else n - k_fail
+    p = Fraction(target)
+    q = 1 - p
+    a = Fraction(alpha)
+    odds = p / q
+    pmf = q**n  # P(X = 0; n, p)
+    tail = Fraction(1)  # P(X >= 0; n, p)
+    if tail <= a:
+        return 0
+    for k in range(1, n + 1):
+        tail -= pmf  # P(X >= k) = P(X >= k-1) - P(X = k-1)
+        if tail <= a:
+            return k
+        pmf = pmf * Fraction(n - k + 1, k) * odds  # P(X = k) from P(X = k-1)
+    return -1
 
 
 def speed_limb_power(
