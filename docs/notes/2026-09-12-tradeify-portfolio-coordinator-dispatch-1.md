@@ -2,7 +2,7 @@
 
 **Status:** dispatch record · authorizes nothing · the umbrella's return vocabulary applies.
 **Scope executed:** read-only investigation, source inventory by digest, reconciliation, behaviour
-decisions against existing authority, TB-R2 draft menu + TB-W1, TB-T1 contract and packet, progress
+decisions against existing authority, TB-R2 menu ([read](2026-09-12-track-b-scaling-faithfulness-read.md)) + TB-W1, TB-T1 contract and packet, progress
 records. **Not executed (by dispatch boundary):** any trading-behaviour change, qualification sample,
 deployment, provider selection, host write, A7. A7 remains the attended session on Sunday
 2026-09-13 (18:00 ET / 17:00 CT reopening).
