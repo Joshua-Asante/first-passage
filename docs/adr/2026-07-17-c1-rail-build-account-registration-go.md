@@ -28,6 +28,8 @@ Superseded-in-part-by line above still says *"next `dry_run=false` entry/add **s
 **Related:** [`Q-RAIL-1 closure RESOLVED`](../briefs/closures/Q-RAIL-1-closure-resolved.md) (the decision packet this GO consumes); GO packet [`PHASE4.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/PHASE4.md); rail architecture [`PHASE3.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/PHASE3.md); sizing contract [`docs/spec/c1_watch_realization_multiplier_layer.md`](../spec/c1_watch_realization_multiplier_layer.md) (`Accepted` 2026-07-17); NT8 sizing-host implementation spec [`docs/spec/c1_nt8_sizing_host_impl.md`](../spec/c1_nt8_sizing_host_impl.md) (`Proposed`, B2, 2026-07-17); [`Q-PYRPARITY-1 closure`](../briefs/closures/Q-PYRPARITY-1-closure-falsified-nonproportional.md) (F1 fallback); c1 ratification [`G8_INTAKE.md`](../../lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/G8_INTAKE.md).
 **Layer:** execution — **not** locked-parameter. No change to locked Pine, allocations, `dd_protection` constants, or the FXIFY MC anchor pins (~~`ACTIVE_FIRM` stays FXIFY~~ — **superseded, see header**: `ACTIVE_FIRM = "Tradeify_Select_100K"` live since substrate Phase 1, 2026-07-22; historical MC/`dd_protection` challenge semantics still pin to `FIRM_RULES["FXIFY"]` by name, just not via this selector).
 
+**Pointer re-home 2026-09-12 (TB-O1; reader-intercept, no clause amended):** the `RUNBOOK.md` links in the header clarification, the §7 table (B3, B6 rows) and the 2026-07-19 addendum (re-add trigger, discharged open item, audit hooks) name `docs/notes/rail_build/RUNBOOK.md`, a private file **not on the public tree**; those bodies stay byte-unedited (Trap #12; Addendum 2026-08-21). The public operating procedure is [`ARMING_PROCEDURE.md`](../notes/rail_build/ARMING_PROCEDURE.md); the private runbook is retrieved per its §2 (archive pin `5d47b4dc…`, or the primary checkout's ignored private root). See Addendum 2026-09-12 at the end of this file.
+
 ---
 
 ## §0 — Rule 0 reads (production-source verification)
@@ -391,6 +393,7 @@ Reads: de-scope addendum “any qualifying strategy” @ `acc4f41` · M1 addendu
 | 2026-08-21 | Addendum: §7 B6 **PENDING** cell is the 2026-07 build-order snapshot; this-build B6 status is the header PASSED record | Joshua (H3 GO) + Cursor |
 | 2026-08-24 | Addendum: test strategy is a qualifying strategy for M1 item 5 / B7 Stage 1; dated 08-24; Stage 2 / arm unchanged | Joshua (ruling) + Cursor |
 | 2026-09-01 | Addendum: reader-intercept -- Addendum 2026-07-22's 69/11 cap-alloc split was released to 0/0 by a later ADR (2026-08-26); this addendum was never updated to reflect it | Claude Code (ADR-corpus reconciliation sweep) |
+| 2026-09-12 | Addendum + header intercept: `RUNBOOK.md` pointer re-home to the public `ARMING_PROCEDURE.md` and the private retrieval convention (TB-O1); no clause amended | Claude Code (recorder) |
 
 ---
 
@@ -406,3 +409,17 @@ grep -n '"cap_alloc": 0' ops/c1_rail/c1_sizing_host_reference.py
 grep -n "RELEASED 2026-08-26" ops/c1_rail/c1_sizing_host_reference.py
 grep -n "Status" docs/adr/2026-08-26-striker-legmap-cap-release.md | head -1
 ```
+
+---
+
+## Addendum 2026-09-12 -- `RUNBOOK.md` pointer re-home (TB-O1; no clause amended)
+
+**Does not amend §2 Decision, §4 Falsifier, §5 Forbidden moves, §7, or any prior addendum.** The arm gate, the attended-only posture, the spend ceiling and the per-session GO stand exactly as written. **$0 / K=0.** Nothing arms.
+
+`docs/notes/rail_build/RUNBOOK.md` is cited by this file at the header clarification (B6 PASSED, "RUNBOOK §B6"), §7 rows B3 ("B5d") and B6 ("B5e"), and the 2026-07-19 Option C addendum (the **5d** re-add trigger, the discharged "E1 pre-B7 decision", and two audit-hook `grep` lines). The file left the public tree under the [public-visibility ADR](2026-08-14-repo-public-visibility-transition.md)'s exclusion rule; every one of those links is dead on this tree **by design**, and the bodies stay byte-unedited (Trap #12; Addendum 2026-08-21 already fixes §7 as the 2026-07 snapshot). This addendum and the header intercept re-home the reader:
+
+- **Public procedure:** [`docs/notes/rail_build/ARMING_PROCEDURE.md`](../notes/rail_build/ARMING_PROCEDURE.md) (Track B TB-O1) — arm/disarm/session steps, interlocks, `armed_until` discipline, stop conditions and recovery pointers, with source anchors. It carries no account value and authorizes nothing; the arm stays operator-only behind M1 `RESOLVED` **plus** a separate GO.
+- **Private runbook:** retrieved per that file's §2 — archive pin `5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2` ([RUNBOOK.md at the pin](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/rail_build/RUNBOOK.md)), or the `pre-prune-2026-08-08` blob `d523ee0d…` in the primary checkout's ignored private root. The 2026-07-19 addendum's two `grep … RUNBOOK.md` hooks run against that copy.
+- **Unchanged:** the private crash-loop recovery procedure (availability attested in the [readiness record](../notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md) §A3).
+
+Reads: this file @ `770413b` (sites located by `grep -n RUNBOOK`) · `deploy/c1_rail/README.md` @ `811df7c` ("Operating procedure lives in the private archive") · `.claude/skills/c1-rail/SKILL.md` @ `9c89dfa` (file map row "Runbook + B-gate history").
