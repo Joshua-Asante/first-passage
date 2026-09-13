@@ -59,6 +59,36 @@ new admission; reservations for those entries are released because dispatch did 
 occur. Dispatched attempts remain unknown until evidence resolves them. A production
 migration is outside this test model.
 
+### Review refinements after `2eb6c12`
+
+- A fill close cancels that fill's originating entry remainder and retains its
+  cancellation ownership through terminal evidence. A full fill exit also closes
+  late fills racing cancellation. Bounded reductions retain their requested quantity
+  and require confirmed cancellation plus valid residual protection. Leg and symbol
+  flats persist all cancellation effects and the close before the first dispatch.
+- Consuming a protection target is distinct from making the entire entry quiescent:
+  an executed amendment resolves once its current lot and protective orders are gone,
+  even if the entry later fills again. The entry remainder and any full exit still
+  retain their own ownership.
+- Evidence timestamps cannot regress the latest position-only fact, even when a
+  full snapshot was acquired later. Sequence restarts preserve injected sizing.
+- An admitted orphan protective cancellation is a durable symbol-scoped `CANCEL`
+  operation. Transport acceptance is not removal. A terminal order and zero position
+  discharge it; a fill racing cancellation retains the block and starts recovery.
+  Symbol recovery accounts for broker exposure, including unallocated exposure.
+  Fenced nonpending full-close evidence with a remaining position permits retry even
+  when the position was first observed after dispatch; a measured reduction is not
+  required to establish that an accepted full close still owes work.
+- The daemon classifies a bracket reissue using the same observed-parameter direction
+  rule as the listener before choosing its emission gate. Loosening requires fresh
+  control; tightening and first attachment retain the risk-reducing gate.
+
+The Codex suggestion to suppress gap recovery while a first attachment is pending
+was not adopted: rev 5.6 I7 explicitly makes fresh absence after definition a gap, not a
+permitted transient state. Pending execution proves future request ownership only.
+The deferred-attach characterization and late-outcome tests require owned recovery;
+changing this policy would require an explicit governing-contract decision.
+
 ## Verification
 
 Baseline: 58 existing tests passed. Initial redesign regressions: 12 failed, one

@@ -80,7 +80,8 @@ class Sequence:
         """Restart only the listener; broker truth, pending requests and clock survive."""
         world = self.world
         world.kernel = Kernel.restart(world.kernel.store, world.broker, world.clock, world.now,
-                                      protection_cases=world.kernel.protection_cases)
+                                      protection_cases=world.kernel.protection_cases,
+                                      size=world.kernel.size)
         world.daemon.kernel = world.kernel
         self.history.append("restart")
 

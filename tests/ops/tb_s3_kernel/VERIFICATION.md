@@ -72,6 +72,34 @@ endings; the coordinator repeated the kernel suite and focused lint afterwards.
 
 ## Disposition
 
+### Codex follow-up to `2eb6c12`
+
+Codex reported seven findings on the pushed redesign. Six were reproduced and repaired:
+fill-entry remainder ownership, timestamp regression after position-only evidence,
+sizing loss across harness restart, unowned orphan cancellation, daemon loosening
+gate bypass, and interrupted multi-order cancellation planning. The seventh proposed
+deferring a gap for a broker-pending first attachment; both source review and an
+independent reviewer confirmed that this conflicts with rev 5.6 I7 and the recorded
+contract. A concrete characterization retains the specified recovery behavior.
+
+`test_tb_s3_kernel_review_round3.py` adds 30 cases. The first run against `2eb6c12`
+produced 22 failures and three passing controls. Further composed cases were also
+observed failing before repair: orphan fill/cancel recovery, consumed amendments,
+partial unallocated recovery, and residual exposure first observed after dispatch.
+The final kernel run passed all 262 cases, independently repeated by the reviewer,
+who accepted the bounded offline code with no blocking findings. Final full-ops:
+839 passed, 13 skipped, two existing seaborn warnings. Focused lint across the model
+and all eight suites: 9.87/10, exit 0. Check-tier gates passed (normal private-data
+skips); pre-commit and push hooks are run when integrating the repairs.
+
+The isolated mutation runner passed its 262-test control and detected all five
+semantic mutations again: owner overwrite 77 failures, ignored working remainder 3,
+timestamp without causality 1, ignored protection parameters 3, omitted disarm 9.
+Repository-wide lint and other remote checks for this follow-up are tracked on the
+PR; the earlier 8.49/10 local result applies to the initial redesign, not this diff.
+
+### Production disposition
+
 The local offline redesign is implemented and reviewed. The production-reference
 acceptance hold remains pending operator disposition; this record does not approve
 the current GitHub PR or merge it. Remote CI and Codex review results are recorded

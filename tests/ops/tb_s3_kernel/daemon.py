@@ -82,7 +82,10 @@ class Daemon:
         if "orders_on_close" in cases and crossed and self.emit_risk_reducing():
             self.kernel.handle_exit(leg_id, now, fill_id=fill_id, qty=lot.qty)
             return "close_time_exit"
-        if not self.may_emit("tightening_amend", now):
+        action = self.kernel.amend_action(fill_id, bracket, now)
+        if action is None:
+            return "amend_deferred"
+        if not self.may_emit(action, now):
             return "suppressed"
         return self.kernel.amend(fill_id, bracket, now).reason
 

@@ -8,13 +8,22 @@ def covers(ev, at, boundary, now):
             and ev.as_of <= now and now - ev.as_of <= BAR)
 
 
+def protection_consumed(ev, fill_id):
+    """The current lot and its protective targets are gone; an entry may still have remainder."""
+    return (ev.order_level and ev.lots.get(fill_id) == 0
+            and not any(w.get("attached_to") == fill_id for w in ev.working))
+
+
 def scope_quiescent(ev, scope_kind, scope_id, pending):
     """No position, executable order, or unreconciled future exposure in scope."""
     if not ev.order_level:
         return False
     if scope_kind == "fill":
-        return (ev.lots.get(scope_id) == 0
-                and not any(w.get("attached_to") == scope_id for w in ev.working))
+        entries = [o for o in pending.values() if o.lot_id == scope_id]
+        return (protection_consumed(ev, scope_id)
+                and not any(any(w["ref"] == o.ref for o in entries) for w in ev.working)
+                and all(o.status in ("filled", "cancelled", "rejected", "not_sent")
+                        for o in entries))
     if ev.position != 0 or ev.working:
         return False
     return not any(o.sym == ev.sym and o.status not in

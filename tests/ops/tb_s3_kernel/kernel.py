@@ -23,7 +23,7 @@ from book_protocol import Bracket, OrderIntent, Side
 
 from .broker import (BAR, STALENESS_WINDOW, Clock, Evidence, FakeBroker,
                      Outcome)
-from .rules import covers, scope_quiescent, valid_component
+from .rules import covers, protection_consumed, scope_quiescent, valid_component
 from .state import Attempt, Effect, Obligation
 from .effects import dispatch
 
@@ -95,7 +95,7 @@ class Operation:  # pylint: disable=too-many-instance-attributes
     """A durable protection operation (spec §1 ``operations[operation_id]``)."""
 
     op_id: str
-    kind: str                   # CLOSE | AMEND | ATTACH
+    kind: str                   # CLOSE | AMEND | ATTACH | CANCEL
     scope_kind: str             # fill | leg | sym
     scope_id: str
     sym: str
@@ -265,7 +265,11 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             order = self.pending.get(effect.owner)
             if order:
                 order.cancel_requested = outcome.status == "accepted"
-            self._emit("cancel_sent", ref=effect.owner, outcome=outcome.status)
+            op = self.operations.get(effect.owner)
+            if op:
+                op.status = "sent" if outcome.status == "accepted" else outcome.status
+                op.detail = outcome.detail
+            self._emit("cancel_sent", ref=effect.payload["ref"], outcome=outcome.status)
             return
         if effect.kind == "disarm":
             # Local disarm is idempotent; production config acknowledgment is still owed.
@@ -408,6 +412,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         previous = self.evidence.get(ev.sym)
         if (ev.acquired <= 0 or not ev.request_fence or ev.as_of > self.clock.now
                 or self.clock.now - ev.as_of > BAR
+                or (ev.sym in self.p_ev and ev.as_of < self.p_ev[ev.sym][1])
                 or (previous and (ev.acquired <= previous.acquired
                                   or ev.as_of < previous.as_of))):
             self._emit("evidence_ignored", sym=ev.sym, acquired=ev.acquired)
@@ -573,6 +578,16 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 continue
             if op.kind == "CLOSE":
                 self._settle_close(op, ev)
+            elif op.kind == "CANCEL":
+                op.reconciled_at = ev.as_of
+                if (ev.order_status.get(op.target) in ("filled", "cancelled", "rejected")
+                        and op.target not in ev.working_refs()):
+                    if ev.position == 0:
+                        op.status = "complete"
+                        self.unblock("unknown_order", op.op_id)
+                        self._emit("orphan_removed", ref=op.target)
+                    else:
+                        self.close("sym", op.sym, ev.as_of, "orphan_cancel_recovery")
             else:
                 self._settle_protection_op(op, ev)
 
@@ -586,14 +601,17 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         if op.scope_kind == "fill":
             after = ev.lots.get(op.scope_id, before)
         else:
-            after = sum(q for lid, q in ev.lots.items()
-                        if lid in self.lots and self.lots[lid].sym == op.sym)
+            after = abs(ev.position)
         op.payload["last_exposure"] = after
         if op.status in ("sent", "unknown", "partial") and after < before:
             op.status = "partial"
             op.payload["closed"] = op.payload.get("closed", 0) + (before - after)
             self._emit("operation_outcome", op=op.op_id, status="partial", remaining=after)
         requested = op.payload.get("qty")
+        if requested is None and op.status == "sent" and after > 0:
+            # A fenced, nonpending full close still owes this observed remainder,
+            # even if no pre-dispatch read ever measured the exposure it reduced.
+            op.status = "partial"
         if (requested is not None and op.payload.get("closed", 0) >= requested
                 and self._residual_protected(op, ev)):
             self._complete_close(op, ev)
@@ -601,6 +619,11 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     def _residual_protected(self, op: Operation, ev: Evidence) -> bool:
         """A bounded reduction is done only with the expected residual protection."""
+        if ev.lots.get(op.scope_id) == 0:
+            return self._scope_flat(op, ev)
+        if any(self.pending[r].status not in ("filled", "cancelled", "rejected", "not_sent")
+               for r in op.payload.get("cancel_refs", [])):
+            return False
         exp = self.expected.get(op.scope_id)
         if exp is None:
             return False
@@ -617,10 +640,10 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         if op.scope_kind == "fill":
             lot = self.lots.get(op.scope_id)
             return lot.qty if lot else 0
-        return self._confirmed_position(op.sym)
+        return abs(self.p_ev.get(op.sym, (0, None))[0])
 
     def _settle_protection_op(self, op: Operation, ev: Evidence) -> None:
-        if self._scope_flat(op, ev):
+        if protection_consumed(ev, op.scope_id):
             op.status, op.detail = "complete", "scope consumed"
             return
         exp = self.expected.get(op.scope_id)
@@ -676,8 +699,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             lot = self.lots.get(lot_id)
             if lot is not None and lot.sym == ev.sym:
                 lot.qty = open_qty
-                if open_qty == 0 and not any(w.get("attached_to") == lot_id
-                                            for w in ev.working):
+                if protection_consumed(ev, lot_id):
                     self.expected.pop(lot_id, None)
         for leg_id in {l.leg_id for l in self.lots.values() if l.sym == ev.sym}:
             qty = sum(l.qty for l in self.lots.values() if l.leg_id == leg_id)
@@ -891,22 +913,27 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             op.status, op.detail = "refused", "route lacks L2(d)/(e)"
             self.block("close_rejected", f"{op.op_id}:capability", owner=op.op_id)
             return op
-        if scope_kind != "fill":
-            resting = [o for o in self.pending.values() if o.sym == sym and
-                       o.status not in ("filled", "cancelled", "rejected", "not_sent")]
-            op.payload["cancel_refs"] = [o.ref for o in resting]
-            self.persist()
-            for order in resting:
-                if order.cancel_effect is None:
-                    self.cancel(order.ref, now)
+        # Persist every cancellation and the close before any member can dispatch.
+        already_deferring = self._in_evidence
+        self._in_evidence = True
+        resting = [o for o in self.pending.values() if o.sym == sym
+                   and (scope_kind != "fill" or o.lot_id == scope_id)
+                   and o.status not in ("filled", "cancelled", "rejected", "not_sent")]
+        op.payload["cancel_refs"] = [o.ref for o in resting]
+        self.persist()
+        for order in resting:
+            if order.cancel_effect is None:
+                self.cancel(order.ref, now)
         if any(o is not op and o.sym == sym and o.kind == "CLOSE" and o.status in UNRESOLVED
                for o in self.operations.values()):
             op.status = "queued"                      # never dropped: dispatched in turn
             self._emit("operation_queued", op=op.op_id)
-            self.persist()
-            return op
-        self._progress_one(op, now)
+        else:
+            self._progress_one(op, now)
         self.persist()
+        self._in_evidence = already_deferring
+        if not already_deferring:
+            self._drain_effects()
         return op
 
     def progress(self, now: datetime) -> None:
@@ -985,10 +1012,23 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         if sym is None:
             return self._refuse("cancel_unknown_ref", ref)
         state, qty = self.position(sym, now)
-        if state == "CONFIRMED" and qty == 0:
-            effect = self._effect("cancel", ref, {"ref": ref})
-            return Decision(effect.outcome == "accepted", "orphan_removed", ref=ref)
-        return self._refuse("protective_cancel_refused", ref)
+        if state != "CONFIRMED" or qty != 0 or self.working(sym, now)[0] != "CONFIRMED":
+            return self._refuse("protective_cancel_refused", ref)
+        op = next((o for o in self.operations.values() if o.kind == "CANCEL"
+                   and o.target == ref and o.status != "complete"), None)
+        if op:
+            ev = self.evidence.get(sym)
+            if (op.status not in ("rejected", "unknown") or ev is None
+                    or not self._operation_covered(op, ev)):
+                return Decision(False, "cancel_pending", ref=ref, op=op)
+        else:
+            op = Operation(self._next("op"), "CANCEL", "sym", sym, sym, LEG_BY_SYMBOL[sym],
+                           "orphan_cancel", prepared_at=now, prepared_seq=self.clock.tick(),
+                           target=ref)
+            self.operations[op.op_id] = op
+            self.block("unknown_order", op.op_id)
+        effect = self._effect("cancel", op.op_id, {"ref": ref})
+        return Decision(effect.outcome == "accepted", effect.outcome or "planned", ref=ref, op=op)
 
     def kill_status(self, daemon_reachable: bool, now: datetime) -> dict:
         """S8 (7): completion reported beside the daemon-app acknowledgement."""
@@ -1031,6 +1071,26 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         return op
 
     # ── AMEND / ATTACH (spec §1 primitives) ────────────────────────────────
+    def amend_action(self, fill_id: str, bracket: Bracket | dict, now: datetime) -> str | None:
+        """Pure action classification for the daemon, using the listener's same direction rule."""
+        lot = self.lots.get(fill_id)
+        if lot is None or lot.qty == 0:
+            return None
+        exp = self.expected.get(fill_id)
+        if exp is None or exp.is_bare:
+            return "attach"
+        state, orders = self.working(lot.sym, now)
+        if state != "CONFIRMED":
+            return None
+        current = {w["kind"]: w for w in orders if w.get("attached_to") == fill_id}
+        new = components_of(bracket)
+        if any(c not in current for c in new):
+            return None
+        changes = self._diff(new, current, lot.side)
+        if changes is None:
+            return None
+        return "loosening_amend" if any(c["loosening"] for c in changes.values()) else "tightening_amend"
+
     def amend(self, fill_id: str, bracket: Bracket | dict, now: datetime) -> Decision:
         """The port re-issued its bracket for a lot: component-wise modify, or first attach."""
         self._sweep_timeouts(now)
@@ -1198,7 +1258,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
     def _advance_flat_work(self, ev: Evidence) -> None:
         """A broad flat retains ownership of fills racing cancellation until quiescent."""
         for op in list(self.operations.values()):
-            if (op.kind != "CLOSE" or op.scope_kind == "fill" or op.sym != ev.sym
+            if (op.kind != "CLOSE" or op.payload.get("qty") is not None or op.sym != ev.sym
                     or op.status not in ("sent", "partial") or op.reconciled_at is None):
                 continue
             # A previously dispatched all-scope close observed before a late entry fill
@@ -1251,6 +1311,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         halted = False
         known = set(self.pending) | {r for e in self.expected.values()
                                      for r in e.working.values() if r}
+        known.update(o.target for o in self.operations.values()
+                     if o.kind == "CANCEL" and o.status != "complete")
         for sym in OWNED_SYMBOLS:
             working, _ = self.w_ev[sym]
             if self.p_ev[sym][0] != self._signed_position(sym):
