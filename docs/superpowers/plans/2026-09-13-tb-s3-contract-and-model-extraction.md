@@ -60,10 +60,10 @@
 | Item | Current disposition | Dependency / acceptance gate |
 |---|---|---|
 | #358 | Merged 2026-09-12 | Historical prerequisite satisfied; not an open merge blocker. |
-| #360 | PROPOSED governing execution contract, rev 6 candidate | Operator ratification and independent contract review; no accepted #365 reference. |
+| #360 | PROPOSED governing execution contract, rev 7 candidate | Operator ratification and independent contract review; no accepted #365 reference. |
 | #361 | PROPOSED policy ADR; separate review track | Operator ratification before TB-F1; exact Part A depth ratification before TB-E1; registry admission only under its lifecycle. |
 | #362 | Prepared operating procedure | Actual implemented/qualified capabilities and operational gates before authorization. |
-| #363 | DRAFT—NOT FROZEN preregistration plus calculator | Existing freeze dependencies remain; calculator extraction is recommended but outside this execution request. |
+| #363 | DRAFT—NOT FROZEN documentation-only preregistration | Existing freeze dependencies remain; calculator extracted separately to #371 in the subsequent authorized task. |
 | #365 | Unaccepted preserved development candidate | Replaced for review by evidence → primitive kernel → account orchestration; no acceptance transferred. |
 
 The last published #365 review found five additional P1 issues after earlier local acceptance. Its 23cf0e1 results and the uncommitted 385-test repair candidate are historical evidence, not proof of completeness. Request-owner/gross-lot compositions and the incomplete retained-close regression remain explicit review questions during extraction.
