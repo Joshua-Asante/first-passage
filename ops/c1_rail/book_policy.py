@@ -20,10 +20,11 @@ Rules (each with the selection-note / umbrella sentence it implements):
 * Timing: the mode for weekday D is computed once from the settled close of
   the prior trading day (TB-S1 (B)); intraday equity never changes it; a loss
   that first crosses the trigger is not retroactively reduced.
-* Quantities (TB-S1 (C), D-B10 floor): protected size for Aegis / Vanguard /
-  Striker MYM = floor(0.40 x normal) per tier, incl. every add tier; ORB base
-  stays 1 micro and ORB adds are not placed while protected. Lifecycle tiers
-  (D-B14 (a)) compound multiplicatively before the floor.
+* Quantities (TB-S1, ruled O-1/O-5/O-6): Striker scales risk before its floor
+  and cap; Aegis scales fixed quantity; Vanguard uses quantity-floor and is
+  disabled below AUTHORIZED. Adds derive from confirmed base with per-leg
+  rounding. ORB base stays one micro and protected adds are refused. Call-4
+  remains off-rail. Candidate calculations do not admit or deploy the policy.
 * Carried positions (TB-S1 (D)): a position open at a transition keeps its
   size; never a resize order; resting ORB adds are cancelled on activation.
 * Capacity (TB-S1 (E), D-B8): micro-equivalents 6J=10, MGC/MYM/MNQ=1; the
@@ -41,6 +42,7 @@ import math
 import sys
 from dataclasses import dataclass, field
 from datetime import date
+from decimal import Decimal
 from enum import Enum
 from fractions import Fraction
 from pathlib import Path
@@ -229,7 +231,7 @@ def scaled_quantity(normal_qty: int, *, mode: Mode, policy: ProtectionPolicy | N
     """D-B10: floor(normal x scale x lifecycle), exact rationals, never a float floor."""
     policy = require_policy(policy)
     mode = as_mode(mode)
-    if not isinstance(normal_qty, int) or normal_qty < 0:
+    if type(normal_qty) is not int or normal_qty < 0:
         raise ValueError(f"normal_qty must be a non-negative int, got {normal_qty!r}")
     scale = Fraction(CANDIDATE_SCALE) if mode is Mode.PROTECTED else Fraction(1)
     if mode is Mode.PROTECTED and Fraction(str(policy.scale)) != scale:
@@ -237,31 +239,104 @@ def scaled_quantity(normal_qty: int, *, mode: Mode, policy: ProtectionPolicy | N
     return int(math.floor(Fraction(normal_qty) * scale * lifecycle_multiplier(lifecycle_tier)))
 
 
-def leg_quantities(leg_id: str, normal_base: int, *, mode: Mode, policy: ProtectionPolicy | None,
-                   lifecycle_tier: str = "AUTHORIZED") -> tuple[int, int]:
-    """(base, add) contracts the leg may place today for a captured normal base.
+def _positive_risk(value: object, field_name: str) -> Fraction:
+    """Preserve rational/decimal inputs; reject bool, strings and nonfinite data."""
+    if isinstance(value, bool) or not isinstance(value, (int, float, Fraction, Decimal)):
+        raise ValueError(f"{field_name} must be a positive finite risk number")
+    try:
+        result = Fraction(str(value)) if isinstance(value, float) else Fraction(value)
+    except (ValueError, OverflowError) as exc:
+        raise ValueError(f"{field_name} must be a positive finite risk number") from exc
+    if result <= 0:
+        raise ValueError(f"{field_name} must be a positive finite risk number")
+    return result
 
-    ORB: base unchanged (1 micro), adds 0 while protected. Others: every tier
-    floored from its own normal value (TB-S1 (C) 'including every add tier').
+
+def add_quantity(leg_id: str, confirmed_base: int, *, mode: Mode,
+                 policy: ProtectionPolicy | None, lifecycle_tier: str) -> int:
+    """Per-tier add from confirmed base, never from intended or normal add size.
+
+    The caller must obtain base evidence from the execution owner; this pure
+    function neither verifies broker evidence nor reserves account capacity.
+    A nonzero lifecycle haircut has already affected the executed base and
+    must not be applied a second time. Current zero-authorization/mode gates
+    still refuse new adds without resizing the carried base.
     """
     spec = leg(leg_id)
+    require_policy(policy)
     mode = as_mode(mode)
-    if normal_base not in spec.normal_base_values:
-        raise ValueError(f"{leg_id}: normal base {normal_base} not in the captured ladder "
-                         f"{spec.normal_base_values}")
-    policy = require_policy(policy)
-    normal_add = spec.normal_add(normal_base)
-    if spec.protected_rule is ProtectedRule.BASE_FIXED_ADDS_OFF:
-        base = scaled_quantity(normal_base, mode=Mode.NORMAL, policy=policy,
-                               lifecycle_tier=lifecycle_tier)
-        if mode is Mode.PROTECTED:
-            return base, 0
-        add = scaled_quantity(normal_add, mode=Mode.NORMAL, policy=policy,
+    multiplier = lifecycle_multiplier(lifecycle_tier)
+    if type(confirmed_base) is not int or not 0 <= confirmed_base <= max(spec.normal_base_values):
+        raise ValueError(f"{leg_id}: invalid confirmed base {confirmed_base!r}")
+    if confirmed_base == 0 or multiplier == 0 or spec.max_adds == 0:
+        return 0
+    if leg_id in {"vanguard_mgc", "orb_mnq_v7"}:
+        if lifecycle_tier != "AUTHORIZED" or mode is Mode.PROTECTED:
+            return 0
+    return spec.normal_add(confirmed_base)
+
+
+def entry_quantities(leg_id: str, *, mode: Mode, policy: ProtectionPolicy | None,
+                     lifecycle_tier: str, normal_base: int | None = None,
+                     risk_dollars: object = None, per_contract_risk: object = None,
+                     cap_alloc: int | None = None) -> tuple[int, int]:
+    """Requested base and prospective add *assuming a complete base fill*.
+
+    Striker requires unscaled risk dollars, per-contract risk and an explicit
+    allocation. A rounded normal quantity cannot recover those inputs. For
+    an actual add, call add_quantity with the confirmed base instead of using
+    this prospective tuple. All outputs still require capacity admission.
+    """
+    spec = leg(leg_id)
+    require_policy(policy)
+    mode = as_mode(mode)
+    lifecycle = lifecycle_multiplier(lifecycle_tier)
+    scale = Fraction(CANDIDATE_SCALE) if mode is Mode.PROTECTED else Fraction(1)
+    if leg_id == "dj30_mym_p250":
+        if normal_base is not None and (type(normal_base) is not int or not 0 <= normal_base <= 22):
+            raise ValueError("Striker normal_base diagnostic must be an integer in 0..22")
+        risk = _positive_risk(risk_dollars, "risk_dollars")
+        denominator = _positive_risk(per_contract_risk, "per_contract_risk")
+        if type(cap_alloc) is not int or not 0 <= cap_alloc <= ACCOUNT_MICRO_CAP:
+            raise ValueError("cap_alloc must be an explicit integer within the account cap")
+        base = min(math.floor(risk * scale * lifecycle / denominator),
+                   math.floor(Fraction(cap_alloc) / (1 + Fraction(spec.add_pct, 100))))
+    elif leg_id == "vanguard_mgc":
+        if type(normal_base) is not int or normal_base not in spec.normal_base_values:
+            raise ValueError("vanguard_mgc requires normal_base 1 or 2")
+        base = math.floor(normal_base * scale) if lifecycle_tier == "AUTHORIZED" else 0
+    else:
+        fixed_base = spec.normal_base_values[0]
+        if normal_base is not None and (type(normal_base) is not int or normal_base != fixed_base):
+            raise ValueError(f"{leg_id}: normal_base must equal fixed quantity {fixed_base}")
+        applied_scale = Fraction(1) if leg_id == "orb_mnq_v7" else scale
+        base = math.floor(fixed_base * applied_scale * lifecycle)
+    return base, add_quantity(leg_id, base, mode=mode, policy=policy,
                               lifecycle_tier=lifecycle_tier)
-        return base, add
-    base = scaled_quantity(normal_base, mode=mode, policy=policy, lifecycle_tier=lifecycle_tier)
-    add = scaled_quantity(normal_add, mode=mode, policy=policy, lifecycle_tier=lifecycle_tier)
-    return base, add
+
+
+def leg_quantities(leg_id: str, normal_base: int, *, mode: Mode, policy: ProtectionPolicy | None,
+                   lifecycle_tier: str = "AUTHORIZED", risk_dollars: object = None,
+                   per_contract_risk: object = None, cap_alloc: int | None = None) -> tuple[int, int]:
+    """Compatibility for offline callers; Striker requires explicit risk inputs.
+
+    New account consumers use entry_quantities with explicit authorization.
+    The legacy normal-integer-only Striker callback now fails closed.
+    """
+    spec = leg(leg_id)
+    if type(normal_base) is not int or normal_base not in spec.normal_base_values:
+        raise ValueError(f"{leg_id}: normal base {normal_base!r} outside captured ladder")
+    return entry_quantities(leg_id, normal_base=normal_base, mode=mode, policy=policy,
+                            lifecycle_tier=lifecycle_tier, risk_dollars=risk_dollars,
+                            per_contract_risk=per_contract_risk, cap_alloc=cap_alloc)
+
+
+@dataclass(frozen=True)
+class StrikerRiskInputs:
+    """Explicit input witness for an offline quantity table, not broker evidence."""
+    risk_dollars: Fraction
+    per_contract_risk: Fraction
+    cap_alloc: int
 
 
 @dataclass(frozen=True)
@@ -273,28 +348,58 @@ class QuantityRow:
     mode: Mode
     base: int
     add: int
+    risk_inputs: StrikerRiskInputs | None = None
 
 
 def quantity_table(policy: ProtectionPolicy | None,
-                   lifecycle_tiers: Iterable[str] = ("AUTHORIZED", "WATCH-1", "WATCH-2")
+                   lifecycle_tiers: Iterable[str] = ("AUTHORIZED", "WATCH-1", "WATCH-2"),
+                   *, striker_inputs: Iterable[StrikerRiskInputs]
                    ) -> list[QuantityRow]:
-    """The explicit integer table (TB-S1 (C)) — every leg, ladder value, tier, mode."""
+    """Evaluate supplied risk samples and fixed/quantity legs at each tier/mode.
+
+    Keep each Striker witness with its row: the same normal integer may map
+    to different protected quantities. Coverage of these samples is the
+    caller's obligation; no private export parity is implied by this table.
+    """
     policy = require_policy(policy)
+    tiers = tuple(lifecycle_tiers)
+    if not tiers:
+        raise ValueError("lifecycle_tiers must not be empty")
+    for tier in tiers:
+        lifecycle_multiplier(tier)
+    inputs = tuple(striker_inputs)
+    if not inputs or any(not isinstance(item, StrikerRiskInputs) for item in inputs):
+        raise ValueError("striker_inputs requires explicit StrikerRiskInputs samples")
     rows: list[QuantityRow] = []
     for spec in BOOK_LEGS:
-        for nb in spec.normal_base_values:
-            for tier in lifecycle_tiers:
+        samples = [(nb, None) for nb in spec.normal_base_values]
+        if spec.leg_id == "dj30_mym_p250":
+            samples = []
+            for item in inputs:
+                nb, _ = entry_quantities(spec.leg_id, mode=Mode.NORMAL, policy=policy,
+                                          lifecycle_tier="AUTHORIZED",
+                                          risk_dollars=item.risk_dollars,
+                                          per_contract_risk=item.per_contract_risk,
+                                          cap_alloc=item.cap_alloc)
+                samples.append((nb, item))
+        for nb, item in samples:
+            for tier in tiers:
                 for mode in (Mode.NORMAL, Mode.PROTECTED):
-                    b, a = leg_quantities(spec.leg_id, nb, mode=mode, policy=policy,
-                                          lifecycle_tier=tier)
-                    rows.append(QuantityRow(spec.leg_id, nb, spec.normal_add(nb), tier, mode, b, a))
+                    b, a = entry_quantities(
+                        spec.leg_id, normal_base=nb, mode=mode, policy=policy,
+                        lifecycle_tier=tier, risk_dollars=item.risk_dollars if item else None,
+                        per_contract_risk=item.per_contract_risk if item else None,
+                        cap_alloc=item.cap_alloc if item else None)
+                    rows.append(QuantityRow(spec.leg_id, nb, spec.normal_add(nb),
+                                            tier, mode, b, a, item))
     return rows
 
 
-def reachable_quantity_menu(policy: ProtectionPolicy | None) -> dict[str, dict[str, set[int]]]:
-    """Distinct reachable (leg -> kind -> quantities), the input to TB-R2's export menu."""
+def reachable_quantity_menu(policy: ProtectionPolicy | None, *,
+                            striker_inputs: Iterable[StrikerRiskInputs]) -> dict[str, dict[str, set[int]]]:
+    """Distinct quantities witnessed by supplied inputs; not a complete reachability proof."""
     menu: dict[str, dict[str, set[int]]] = {}
-    for row in quantity_table(policy):
+    for row in quantity_table(policy, striker_inputs=striker_inputs):
         kinds = menu.setdefault(row.leg_id, {"base": set(), "add": set()})
         if row.base > 0:
             kinds["base"].add(row.base)
