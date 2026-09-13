@@ -1,0 +1,346 @@
+# c1 rail — arming and session operating procedure (public, redacted)
+
+**Type:** operating procedure · **Packet:** Track B TB-O1 ([umbrella](../../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) claim manifest row TB-O1)
+**Date:** 2026-09-12 · **Author:** Claude Code (recorder) · **Authority:** Joshua (operator)
+**Status:** **PREPARATION COMPLETE — NOT AUTHORIZED TO EXECUTE.** This file authorizes nothing. It
+describes how an attended c1 session is armed, monitored, disarmed and recovered, with every step
+anchored to source. **Gate status is never read from this file**: the
+[Track B umbrella](../../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) claim
+manifest and [STATE](../../../STATE.md) own what is open; §1 names the gates and their owners. No
+agent arms, emits, trades, or edits host state under this file.
+
+**Book this file serves:** the Tradeify portfolio — the operator-accepted Aegis 6J · Vanguard MGC ·
+Striker MYM · ORB MNQ configuration with its protection/capacity rules
+([acceptance record](../2026-09-10-tradeify-protection-selection.md)). The generic c1 session
+procedure (§4–§7) applies to any deployed strategy on the rail; the portfolio prerequisites (§1)
+are Track B's.
+
+**Redaction rule applied:** campaign-state §33a — the redaction class is *any dollar figure, or
+derivative that inverts to one, describing live-account activity* (balances, thresholds, P&L over
+any window, per-fill results, token-trade outcomes)
+([owner](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md), §33a). This
+file carries no account identifier, no account dollar figure or history, no credential, and no
+private operational output. A tool's "secret-free" output is not automatically public-safe:
+`c1_rail_arm.py --status` prints `account=<id>`; every paste of it replaces the token with
+`account=<redacted>` (Track A plan §1 invariant 10).
+
+**Private runbook:** the historical operator runbook (`docs/notes/rail_build/RUNBOOK.md`, B3→B7
+build record, B7 arming log, relink procedure, post-disarm export) is **not on the public tree** by
+the [public-visibility ADR](../../adr/2026-08-14-repo-public-visibility-transition.md)'s exclusion
+rule. §2 gives the retrieval convention. This file is the public successor for the *procedure*; the
+private runbook remains the owner of the *history* and of the crash-loop recovery procedure, which
+this packet did not change.
+
+---
+
+## §1 — Gates and owners (status lives with the owners, not here)
+
+Before any use of this file, read gate status from the umbrella's claim manifest and STATE's queue.
+This section only names the gates, in the umbrella's order, and where each one's state is recorded.
+An A7 pass (Track A's attended Stage 1 dry-run) discharges M1 item 5 **only**; it is not portfolio
+deployment authority, and M1 `RESOLVED` (A8) is not a GO.
+
+| Gate | Owner / where its state is recorded |
+|---|---|
+| M1 acceptance `RESOLVED` **in the deployed listener image** (the interlock reads the artifact baked into the image, so `RESOLVED` on the tree needs a redeploy) | [M1 ADR](../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md) §4 · [acceptance JSON](M1_MONITORING_ACCEPTANCE.json) · [Track A plan](../../superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md) A7/A8 · [readiness record](M1_STAGE1_DEPLOYMENT_READINESS.md) |
+| Session-specific operator GO (every armed session needs its own) | [GO ADR](../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · `CLAUDE.md` §Live-execution posture |
+| TB-O1 (this procedure) merged before TB-B7 / TB-B10 | umbrella claim manifest |
+| Approved production feed and source equivalence (O-4 → TB-I5) | umbrella §0.8 O-4 · [S2b build ADR](../../adr/2026-08-08-s2b-signal-daemon-build.md) Addendum 2026-09-11 |
+| Runtime binding and per-symbol verification (TB-V1, TB-S3 (B)) | umbrella TB-V1 stub · `ops/c1_rail/c1_sizing_host_reference.py` `LEG_MAP` · `ops/c1_rail/c1_rail_listener.py` `INSTRUMENT_SYMBOLS` |
+| Protection policy admitted for the book (TB-D0, D-B11) | umbrella TB-D0 stub · `core/dd_geometry.py` `POLICY_REGISTRY` |
+| Multi-leg daemon and rail extension (TB-S3 → TB-I3) | umbrella TB-S3 packet |
+| Dedupe implemented (TB-I4, D-B13) | [pre-registration](../../spec/PREREG-C1-DEDUPE-1-intent-key-functional-property.md) |
+| Live test on the sealed image (TB-I3 live part, D-B15) | umbrella TB-I3 stub |
+| Sealed snapshot and execution/replay fingerprint equality (TB-T1 → TB-B7) | umbrella TB-B7 stub · seal contract (PR #358) |
+| Sole n3 (TB-E2) and deployment GO (TB-D2 → operator) | umbrella TB-E2 / TB-D2 stubs |
+| Arm (TB-B10) | this file §4–§5, only after every row above is closed at its owner |
+
+---
+
+## §2 — Private runbook retrieval (convention; content never enters the public tree)
+
+| Item | Value |
+|---|---|
+| Archive repository | `Joshua-Asante/first-passage-archive` (private, archived/read-only) |
+| Archive pin used by every link on this tree | `5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2` — [RUNBOOK.md at the pin](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/rail_build/RUNBOOK.md) (blob `0b90318f7695…`, the revision Track A §A3 verified) |
+| Revision this packet retrieved (umbrella TB-O1 manifest) | `pre-prune-2026-08-08:docs/notes/rail_build/RUNBOOK.md` → blob `d523ee0d1e9d6054fdd75813a9bc25221102e635` · SHA-256 `d672c331bc9bd7ddabc44da6bae737cd4f6032b1bb5cd897b395c743d965cf5a` |
+| Private root (primary checkout, ignored) | `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/rail_build/RUNBOOK.md` — the Track B private root named by the umbrella (§10 D-B3 hook, TB-R1 2.4); ignored by that study's `.gitignore` (`local_artifacts/`) |
+| Integrity check (read-only, prints no content) | `git hash-object <private root>/RUNBOOK.md` → must print `d523ee0d…`; a differing digest means the copy was edited and is no longer the archive blob |
+
+**Convention.** The `pre-prune-2026-08-08` tag is **not** on public clones
+([ltm README](../../ltm/README.md)); `git show pre-prune-2026-08-08:<path>` works only on a clone
+that carries the private lineage, or against the archive. The archive pin `5d47b4dc` is a **later**
+revision of the same file (same heading structure, additional body text); the umbrella manifest
+names the pre-prune tag, Track A's readiness record cites the pin. Both are recorded here so a reader can tell which revision they hold; the
+choice of which revision the private root should carry going forward is the umbrella owner's
+(flagged in the TB-O1 PR). Never copy either revision into the public tree, a PR, a log, or a
+tracked patch; never print its body. The retrieved copy is **read-only history** — new session
+entries go to a separate private file in the same root, never into `RUNBOOK.md`, so its digest
+keeps matching the archive blob.
+
+Other private `docs/notes/rail_build/` artifacts referenced by public documents (desk cards,
+`b4_dry_fire_payloads/`, compliance notes) follow the same convention: archive URL at the pin, or
+the private root.
+
+---
+
+## §3 — Source anchors (Rule 0; read before stating any behaviour below)
+
+The five files that carry every behavioural claim in §4–§7. Other sources are cited inline where
+used.
+
+| Source | Anchor | What it pins for this procedure |
+|---|---|---|
+| `ops/c1_rail/c1_rail_arm.py` | `027a729` 2026-08-14 | `DEFAULT_CONFIG_PATH = /data/c1_rail_config.json`; `plan_arm` (M1 interlock via the validator with `require_resolved=True`; `--acknowledge-m1-unresolved` path; `armed_until = now_utc + hours`, second-truncated; self-check with `arming_expiry_reason`); `plan_disarm` (`dry_run=True`, `armed_until=None`); `describe_m1_gate` (`--status` line `m1_gate: status=… result=PASS|FAIL`); `_LONG_WINDOW_HOURS = 8.0` (warn, not refuse); `_write` keeps a one-deep `.prev` backup; `main` prints **NOT YET IN EFFECT … Restart to apply** — the tool edits the volume file and does not restart the host |
+| `ops/c1_rail/c1_rail_http_server.py` | `027a729` | `load_config`: `dry_run` defaults True when absent; `dry_run=false` without `events_log_path` raises; expired/absent/malformed `armed_until` at boot → **IMPLICIT DISARM in memory** (log line), disk unchanged; `startup_log_line` prints `dry_run=… armed_until=…`; `ratchet_peak_equity` persists `max(peak, current)`; equity/peak read failure → HTTP 503 and no decision for entry/add, best-effort relay for exit/flat; `serve` loads `ExecutionStateStore` into `open_leg_state` at startup and each request (unreadable/malformed → `TelemetryError` from `load_into`/`_read`, raised outside `handle_signal`'s handler — exits included; not a `qty_out 0` sizing halt); unhealthy ledger at startup blocks risk-add |
+| `ops/c1_rail/c1_rail_listener.py` | `509b524` 2026-09-10 | `arming_expiry_reason` (absolute ISO-8601 deadline with offset; absent/naive/unparseable/past → expired; **risk-add only** — exit/flat keep relaying past expiry); `handle_signal` (risk-add blocked by ledger, by expiry; `dry_run` returns before the sender for **every** signal type, exits included; `transport_unknown` blocks further risk-add in the current process only and never auto-retries; startup does not reconstruct that block (§7 restart interlock owed)); `INSTRUMENT_SYMBOLS` (three entries, no 6J/MGC) |
+| `scripts/validate_c1_monitoring_acceptance.py` | `027a729` | `RESOLVED_REQUIRED`; `--require-resolved`; `--check-tree-skew` / `--require-tree-current` ("pre-deploy / pre-arm use only"); `fixture_hashes` describe the **deployed** bytes |
+| `ops/c1_signal_daemon/daemon.py` | `36b3996` 2026-09-11 | `load_config`: `emit_enabled=true` or `m1_test.enabled=true` is accepted only with `strategy == m1_stage1_test`, `bar_period_s == 60` and both flags equal; the daemon boots `emit_enabled=false` — no portfolio strategy can emit from the deployed daemon |
+
+**Distinguish three things throughout:** repository code (anchored above), historical evidence
+(acceptance JSON notes, readiness record, private runbook), and **actual host state** — which only
+a host read establishes (§5 step 5.1). This packet verified none of the host.
+
+---
+
+## §4 — Entry checklist (session-local checks; the gate order is the umbrella's)
+
+The umbrella's dependency graph and wave-3 gates own the order in which Track B's gates close
+(Track A `RESOLVED` → TB-I5 → D-B13 → TB-I4 → TB-I3 live test → TB-O1 → TB-B7 seal → TB-E2 → TB-D2
+→ TB-B10) and the entry conditions of each; this file does not restate them. Confirm at the
+umbrella that every gate up to TB-D2 is closed and the deployment GO is recorded, then run the four
+checks below, which are the only ones a session adds. A row that cannot be evidenced is a **stop**,
+returned to its owner; it is never waived, and a future gate is never recorded as satisfied because
+its implementation is "expected".
+
+| # | Check | Actor | How it is checked | Evidence recorded | If it fails |
+|---|---|---|---|---|---|
+| E1 | M1 `RESOLVED` in the **deployed** image | Operator (reads), agent may draft | In-container: `python scripts/validate_c1_monitoring_acceptance.py docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json --require-resolved` → exit 0; `python ops/c1_rail/c1_rail_arm.py --status` → `m1_gate: status='RESOLVED' result=PASS`. A tree-side pass is not the gate; the image is. | the two printed lines (account token redacted) | stop; Track A (A8 + redeploy) owns it |
+| E2 | Deployed build is the reviewed, sealed build | Operator | Locally, use the acceptance artifact retrieved from the image and a complete checkout of the sealed source revision (including tests, with the sealed line endings): `python scripts/validate_c1_monitoring_acceptance.py <image-acceptance.json> --require-tree-current --root <sealed-tree>`. The image omits test pins, so this full comparison cannot run in-container. Separately compare current release/image identity, image-carried file hashes, and every immutable B7-bound volume input against the execution fingerprint. Use the B7 inventory and its frozen hashing/projection rules for account/destination config, sizing constants/allocations, active-leg binding and daemon/source config; file shape is insufficient. Intentionally mutable fields/files (arming window, lifecycle, DD and execution state) must match their latest authorized transition record and writer provenance, not an obsolete B7 byte hash. Missing classification, current evidence or matching digest → stop for the B7/TB-S3 owner; do not invent exclusions or rewrite pins | printed skew line; release + image tag | stop; a redeploy is a deploy (six pre-conditions), and a change after the seal re-seals and re-runs the live test before B10 |
+| E3 | Session-specific operator GO | Operator | dated statement naming the session window and this procedure's revision; recorded before any host write | verbatim in the private session record; date + digest in the public record | no GO → nothing arms |
+| E4 | Account flat, no working orders, no open reconciliation | Operator | Tradovate positions and working orders; CrossTrade Alert History; ledger `--deviations` plus every potentially sent attempt since the last verified reconciliation boundary matched to broker evidence, using the full §6 reconciliation scope (including decisions with no transport result). `--deviations` lists arming exceptions, not unresolved sends. The tested image must also carry the restart-time reconciliation interlock owed in §7; a one-time operator check cannot protect an unexpected restart. For the initial TB-B10 arm, verify the snapshot digest bound to n3, current time strictly before `valid_until`, and no intervening fill/order/adjustment (TB-T1 seal contract C10); invalidation returns to the operator and the contract's dependent gates | attestation sentence with time (UTC and ET) | resolve first; never arm over an open position or an unreconciled send |
+
+**Sole n3 adjudication and the stop rule after it:** TB-E2's result is adjudicated once by the
+orchestrator; any change after n3 stops for the operator (governing plan S2; umbrella wave-3 gate).
+This procedure never reopens n3 on its own: an invalidated snapshot or fingerprint returns to the operator and the governing replacement-seal/evidence/approval process; an old n3 result cannot validate a new seal.
+
+---
+
+## §5 — Session timeline (generic c1; runs only after §4 is all PASS)
+
+Every host command is **operator-run** in the operator's own console unless marked *agent*. The
+agent may draft commands, run read-only reads it is permitted to run, and read printed output. No
+command below is a validation step that silently arms, emits, trades or changes host state; the four
+writes (arm, apply, disarm, apply) are labelled and are the operator's.
+
+> **Three rules this timeline exists to enforce** (each from a dated incident; sources in §3).
+>
+> 1. **An edit is not a restart.** `c1_rail_arm.py` validates and atomically writes
+>    `/data/c1_rail_config.json`; the listener reads its config once at boot into a closure. A
+>    written but un-restarted arm leaves the rail **disarmed** (the safe direction); a restart
+>    without a preceding `--disarm` re-applies whatever the file says (2026-07-27). Always read both
+>    surfaces — `--status` for the file, the boot line for the process — and treat disagreement as
+>    a stop.
+> 2. **Expiry is not a disarm.** `armed_until` is an absolute ISO-8601 deadline with a UTC offset
+>    (`plan_arm`: `now_utc + --hours`, truncated to the second; above 8 h the tool warns, it does
+>    not refuse). Past it, `handle_signal` halts **risk-add only**; exits keep relaying because the
+>    process is still `dry_run=false`, and the disk still says armed. At boot, a lapsed, absent or
+>    malformed deadline with `dry_run=false` on disk produces an **in-memory implicit disarm**
+>    (`IMPLICIT DISARM at boot`) — the 2026-07-31 crash-loop class is mitigated in the deployed code
+>    (readiness record §A3; `tests/ops/test_c1_rail_http_server.py` @ `027a729` pins the four invalid
+>    shapes booting disarmed) — but the file is unchanged until `--disarm` runs. The operator who
+>    armed disarms **deliberately, before the deadline**; a lapsed or disarmed window is never
+>    extended in place — re-arming is a new session with its own GO (§4 E1–E4, then this timeline).
+> 3. **Disarm is not flat.** `dry_run=true` returns before the sender for **every** signal type,
+>    exits included, so a disarm over an open position orphans it (c1-rail skill, invariant 2).
+>    Order: verified stop of new risk-adds (exit/flatten path preserved) → reconcile in-flight
+>    sends → broker-confirmed flat → disarm → restart → verify. `--disarm` is **not** the
+>    risk-add stop: the arm helper only edits the volume file and does not stop the running
+>    listener, and once applied `dry_run=true` blocks exits. An agent that finds an armed host
+>    without the operator present alerts and does **not** disarm.
+
+| Step | Actor | Command / source | Expected observation | Refusal / stop |
+|---|---|---|---|---|
+| **Pre-arm** | | | | |
+| 5.1 Host read — on-disk config | Operator (agent may) | PowerShell: `& fly ssh console -a c1-rail -C "python ops/c1_rail/c1_rail_arm.py --status"` · Git Bash: prefix `MSYS_NO_PATHCONV=1`. Judge by the printed text, not the exit code (Windows `fly ssh console -C` may exit 1 after correct output). | `current: dry_run=True armed_until=None …` and `m1_gate: status='RESOLVED' result=PASS` | `dry_run=False` or a non-null `armed_until` → **armed-host stop rule** (Track A plan §6): stop the planned session. The operator closes through 5.13–5.18: verify new risk-adds stopped, reconcile in-flight sends, then establish final broker flatness before disarm/restart. At this first read, daemon emission has not yet been checked; do not assume it is inert or skip directly to `--disarm`. Without the operator present do **not** disarm (rule 3) |
+| 5.2 Host read — running process | Operator (agent may) | `fly logs -a c1-rail --no-tail` filtered to `dry_run=`, `armed_until=`, `IMPLICIT DISARM` | boot line `dry_run=True armed_until=-`; no `IMPLICIT DISARM` line | boot line disagrees with `--status` → rule 1: stop, reconcile, never assume |
+| 5.3 Health | Agent | `curl -sS https://<listener-app>.fly.dev/` and the daemon health `GET /` | listener `{"ok":true,…}`; daemon `effective_emit false`, `ceremony_state DISABLED`, `connected=true`, `feed_healthy=true`, and non-null `last_bar_age_s` within the approved feed contract's freshness limit. `ok` and connectivity alone are insufficient; missing/stale bars or a closed feed session → no arm | unhealthy → stop |
+| 5.4 Ledger health | Operator | ledger health is reported at boot (`events ledger unhealthy/blocked at startup`); first verify the configured remote ledger exists and is readable (a missing ledger is a stop, not an empty-history pass). Then, **in the listener container**, run `python ops/c1_rail/c1_rail_telemetry.py --events /data/c1_rail_events.jsonl --deviations` (read-only listing). Enter via `fly ssh console -a c1-rail` or use its `-C` wrapper as in 5.1; never run this `/data` command in the local checkout | no unhealthy/blocked line; `arming_deviations: 0` or every listed record already explained in the private record | an unexplained deviation, a blocked ledger, or a truncated tail → stop (M1 §2.8: armed risk-add stays blocked until operator repair) |
+| 5.5 State files present and seeded | Operator | existence and **shape** of `/data/lifecycle_state.json` (a key per active leg), `/data/c1_dd_state.json` (`peak_equity`; seeding per §7), `/data/c1_sizing_constants.json` (regenerated from production, never hand-typed), `/data/c1_execution_state.json`; the sizing host (`ops/c1_rail/c1_sizing_host_reference.py` @ `509b524`, `_read_lifecycle_multiplier`, `_read_dd_scale`) halts entry/add on unreadable constants/lifecycle/DD inputs or an unlisted lifecycle key. Execution-state loading is separate: malformed/unreadable execution state can prevent boot or fail a request before sizing, including exit/flat (§6) | keys only; **no values pasted** | a missing leg key or malformed file → stop; fix only through the documented writers / TB-V1 migration, never by hand-editing volume JSON |
+| 5.6 Broker flatness and working orders | Operator | re-confirm §4 E4 immediately before the arm (Tradovate positions and working orders; CrossTrade Alert History clear) | attestation sentence with time (UTC and ET) | any position or working order → resolve first; never arm over an open position |
+| 5.7 Window and deadline fixed | Operator | write the intended **absolute end of session** in ET and UTC; it must fall inside attended time and **no later than the operator's 15:55 ET regular-session flat-check**, with enough lead time to complete 5.13–5.17 before that check (GO ADR Option C: own-flatten target 16:00 ET). The venue's later 16:45 ET limit is not the session bound. On early closes use the approved earlier close/check schedule, strictly before the 12:59 ET venue deadline (GO ADR Addendum 2026-07-22); absent that schedule, no arm. Name the person who will disarm. Compute the positive `<H>` from the current UTC time immediately before 5.8 with allowance for command latency; a duration computed now is not a durable deadline. The printed `armed_until` must be no later than the recorded absolute deadline before any restart | the deadline and the name in the session record | no absolute deadline → no arm |
+| **Arm** | | | | |
+| 5.8 **ARM** (write 1 of 4) | **Operator only** | in-container: `python ops/c1_rail/c1_rail_arm.py --arm --hours <H>` | prints `before : dry_run=True …`, `after  : dry_run=False armed_until='<UTC deadline>' window=open`, `backup : /data/c1_rail_config.json.prev`, then `*** NOT YET IN EFFECT — the running process still holds its old config. Restart to apply`; a `WARNING: <H>h window is long` appears above 8 h | Compare printed `armed_until` with 5.7's recorded absolute deadline **before 5.9**. If it is later, missing, or no longer future, do not restart: run `--disarm` while the process remains disarmed, verify the file reset, and recalculate from the current time without extending the approved deadline. `ERROR: refusing to arm: …` → stop; do **not** pass `--acknowledge-m1-unresolved` (5.10) or hand-edit the file |
+| 5.9 **APPLY** (write 2 of 4) and verify | **Operator only** | `fly machine restart <listener-machine-id> -a c1-rail` (id from `fly machine list -a c1-rail`; the tool's own print names `fly apps restart c1-rail`) · then `fly logs -a c1-rail --no-tail` and `--status` | boot line `dry_run=False armed_until=<deadline>` and `--status` `window=open`; health green; **no** `IMPLICIT DISARM` line | an `IMPLICIT DISARM` line means the deadline was already past or malformed at boot (rule 2): run `--disarm`, restart, start over; a restart that does not come back → 5.21 |
+| 5.10 M1 interlock precision | — | `plan_arm` refuses when `m1_acceptance_reason` is non-null. The code carries an explicit acknowledgement path for a **structurally valid but unresolved** artifact (`--acknowledge-m1-unresolved '<reason>'` writes an `arming_deviation` ledger record **before** the config edit and refuses the arm if the record cannot be written); a forged or status-only `RESOLVED` is refused on both paths (`tests/ops/test_c1_rail_arm.py` @ `027a729`). | — | **This procedure and this handoff authorize no such deviation.** Code capability is not operator authority. The M1 ADR's falsifier names a third armed session while unresolved as the trigger for structural escalation; the acknowledgement path is never the readiness solution. A hand edit of `/data/c1_rail_config.json` is the same act with the audit trail removed and is barred. |
+| 5.11 Signal source enable | Operator, per TB-S3 | the portfolio daemon's emit-enable step — **pending** (§7). Today the deployed daemon accepts `emit_enabled=true` only for the M1 test identity. | per TB-S3 | absent spec → no session |
+| **Monitor** | | | | |
+| 5.12 Attend until the deliberate disarm | Operator | §6 stop conditions; start 5.13 early enough to stop new risk-adds, reconcile all in-flight attempts, flatten and complete disarm/restart verification before the 15:55 ET check (or approved earlier early-close check). Perform that broker flat-check for every session that carried open risk (GO ADR Option C); keep risk-adds stopped thereafter and never extend the 5.7 deadline | evidence per §6 | any §6 stop → go to 5.13 now |
+| **Close** | | | | |
+| 5.13 Stop new risk-adds (verified) | Operator, per TB-S3 | **Prerequisite — not available on the deployed rail.** Halt new entries/adds while leaving exit/flat relay and operator flatten intact. Owner: TB-S3 (F)/(K) portfolio emit-disable (and the kill switch's risk-add halt). Do **not** use `--disarm` here: the arm helper only edits the volume file and does not stop the running listener, and once applied `dry_run=true` blocks exits too. Until TB-S3 specifies and TB-I3 ships a verified command, **stop and return to TB-S3** — invent no substitute. | risk-add halted under the TB-S3 acceptance; exit/flatten path still available (listener still armed; operator can flatten on Tradovate/CrossTrade) | capability absent → this procedure cannot close an armed session; owner TB-S3 → TB-I3 |
+| 5.14 Reconcile in-flight sends | Operator | CrossTrade Alert History for the window; the §6 reconciliation scope across the whole session, including attempts already in flight when risk-adds stopped and decisions without transport results; confirm no open reconciliation | every in-flight send has a broker-confirmed terminal outcome (filled, cancelled or rejected) or a completed reconciliation proving no outstanding order; HTTP `accepted` alone is not execution evidence. No unresolved `transport_unknown`, send-shaped decision without a result, or pending accepted send remains | unresolved send → resolve before the flatness check; never disarm over unknown transport |
+| 5.15 Final flat and clean | Operator | Tradovate positions and working orders; CrossTrade Alert History for the window | "No open positions", no working orders, every alert accounted for | flatten by hand if needed (Option C operator layer); never disarm first (rule 3). 5.13–5.14 must already hold — a risk-add after this check and before disarm/restart can open a position whose rail exits the subsequent disarm then blocks |
+| 5.16 **DISARM** (write 3 of 4) | **Operator** (an agent may, only after broker-verified flatness — c1-rail skill grant) | in-container `python ops/c1_rail/c1_rail_arm.py --disarm` | `after  : dry_run=True armed_until=None …`, `backup : …prev`, then the NOT YET IN EFFECT print | `--disarm` never consults the M1 gate and clears the deadline so a later bare edit cannot inherit a window |
+| 5.17 **APPLY** (write 4 of 4) and verify | Operator | `fly machine restart <listener-machine-id> -a c1-rail`; then `fly logs -a c1-rail --no-tail` and `--status`; health | boot line `dry_run=True armed_until=-`; `--status` `dry_run=True armed_until=None`; health green | the disarm takes effect only on restart (rule 1); both surfaces must agree |
+| 5.18 Signal-source disable verified | Operator, per TB-S3 | confirm the 5.13 emit-disable still holds after disarm/restart as applicable (same TB-S3 (F)/(K) capability; no portfolio command today — §7) | emit disabled per the TB-S3 acceptance | — |
+| 5.19 Evidence capture (private) | Operator (agent may run the dry-run plan) | From the operator's local checkout: first SFTP-download the volume evidence into a new private local mirror, then run `python ops/c1_rail/export_session_evidence.py --src-dir "<private-mirror>" --dest "<private-root>/sessions/<session-id>" --include-acks` (plan, inspect expected files, then `--apply`). Follow the transfer details below; the exporter is not in the listener image and cannot read remote `/data` | complete listener evidence plus the TB-S3 daemon evidence set from its separate app/volume, stored under the same private session root; both inventories and digests verified | ledger lines carry `current_equity` and `parsed.close`: **never paste raw lines**; use the allowlisted projection pattern (readiness record §A7-P, Step 2.8) for anything that enters a public record |
+| 5.20 Session record | Operator | append to a **separate** private session log in the private root (not to the retrieved `RUNBOOK.md`); the public readiness-style record carries dates, digests, labels and redacted status lines only | digest of the private entry in the public record | §33a applies to every line |
+| **Recover** | | | | |
+| 5.21 Crash-loop / recovery | Operator | the private runbook's B7 arming log section (unchanged by this packet; §2 retrieval) and readiness record §A3 (what the in-memory implicit disarm removes — the lapsed-deadline crash loop — and what it does not: missing config `WAIT`, dead `CMD`, non-validating config, anything else) | recovery ends **disarmed**; `dry_run=false` is never a recovery target | recovery touches only `dry_run`/`armed_until`; it never rewrites constants, lifecycle, DD state or the daemon journal; a rollback is itself a deploy (six pre-conditions) |
+| 5.22 Resume / re-arm | Operator | a new session: §4 re-evidenced, this timeline from 5.1, its own GO | — | after the B7 seal no executable change without reseal and a re-run live test before B10 (umbrella wave-3 gate); any change after n3 stops for the operator |
+
+
+**5.19 transfer details (operator console, local checkout).** Create a new private mirror with a
+session-unique name. Use `fly ssh sftp get -a c1-rail --machine <listener-machine-id>
+/data/c1_rail_events.jsonl "<private-mirror>/c1_rail_events.jsonl"` and the same command for
+`c1_broker_evidence.jsonl` and `c1_execution_state.json`. Download `/data/c1_rail_alert_acks` with
+`fly ssh sftp get -R -a c1-rail --machine <listener-machine-id> /data/c1_rail_alert_acks
+"<private-mirror>/c1_rail_alert_acks"`; preserve its directory layout. In Git Bash prefix Fly
+commands with `MSYS_NO_PATHCONV=1`. Verify all expected files, transfer exit statuses and digests
+before running the local export plan; it silently omits absent sources, so a nonempty plan is not
+proof of a complete capture. Retain the configured alert JSONL in the mirror as well: the exporter
+copies only its three named evidence files and ack files, not the alert stream. The private mirror
+and the exported session directory are both retained evidence.
+
+The listener mirror alone is **not** a complete portfolio-session record. Use the TB-S3/TB-I3
+accepted evidence inventory to SFTP-download the daemon journal/checkpoints, processed-bar and
+emission records, and boot/lifecycle evidence from the separate `c1-signal-daemon` machine and
+volume (`-a c1-signal-daemon --machine <daemon-machine-id>`) into a `daemon/` subdirectory of the
+same private session root. Preserve the records proving the risk-add stop, final emit-disable,
+restarts and reconciliation boundaries, with source app/machine, capture times and digests.
+The daemon inventory and consistent-capture method are owed by TB-S3 before any portfolio arm;
+missing inventory or missing required evidence blocks session capture acceptance. Do not guess
+future filenames or reuse the M1-test journal as portfolio evidence. No raw output enters a
+public record.
+
+---
+
+## §6 — Monitoring and stop conditions
+
+**Frozen controls (pointers, not restatements).** `DD_TRIGGER`/`DD_SCALE` are frozen and
+import-guarded in `core/dd_protection.py` (@ `94041d9`); the rail's sizing path composes them with
+the lifecycle multiplier (down-only, `core/lifecycle.py` @ `027a729`) and the account-aggregate
+`cap_alloc`. The accepted 1%/40% portfolio policy reaches the sizing path only through the
+`core/dd_geometry.py` `POLICY_REGISTRY` row TB-D0 admits (D-B11; the registry is empty at
+`4929c44`). M1 telemetry is the monitoring spine: pre-send decision persistence, honest transport
+states, `transport_unknown` blocking, the `FileAckNotifier` alert/ack channel. Feed-failure
+handling and the kill switch are **not built** (§7).
+
+| Condition | How it shows | Rail behaviour (source) | Operator action | Evidence | Escalation |
+|---|---|---|---|---|---|
+| Stale / missing / malformed constants, lifecycle key, or DD state | entry/add halted `qty_out 0`; `--status` unaffected | sizing host halts the signal; exits still relay (exit/flat short-circuits before those reads in `C1SizingHostReference.process_signal`) | stop adding risk; verify positions on Tradovate; repair only via the writers / migration; disarm **after** flat | halt reason line from the ledger projection | unresolved after one repair attempt → close (5.13) |
+| Malformed / unreadable execution state | request fails before sizing; startup load can prevent boot; not a `qty_out 0` halt | `ExecutionStateStore.load_into` → `_read` raises `TelemetryError` for unreadable/malformed state. `_handle_post` calls `load_into` **before** `handle_signal` and **outside** its `except`, including for exit/flat; `serve()` also loads at startup with no handler. Rail exits are **not** available on this path | verify positions directly on Tradovate/CrossTrade; flatten by hand if needed (Option C). Do **not** wait for a repair attempt to restore rail exits; do not treat this as an ordinary sizing halt | process log / uncaught `TelemetryError` from `load_into` | open risk or any doubt → flatten manually, then close (5.13) |
+| Equity / peak read failure | HTTP 503 on entry/add; CRITICAL on exit/flat (relayed best-effort) | `_handle_post` | treat as feed/broker failure; confirm positions directly | the 503/CRITICAL line | close if it recurs |
+| `transport_unknown` or incomplete send record | `transport_unknown: reconcile before retry` response/CRITICAL alert, or a ledger audit finds a send-shaped decision without its transport result | ledger blocks further risk-add in this process only; never auto-retries. A new `EventLedger` checks JSONL structure but does not restore unresolved-transport blocks | stop new risk-adds (5.13), reconcile persisted unknown sends against CrossTrade Alert History and Tradovate; never re-POST or restart as a way to clear the block. The restart-time interlock in §7 must apply the full reconciliation scope below and is a prerequisite for any armed session | reconciler verdict | `RAIL_ONLY`/`REJECTED`/`QTY_MISMATCH`/`POSITION_MISMATCH`/`NO_FLAT_CONFIRM` → stop and flatten by hand if needed |
+| Reconciliation failure on a fill | non-`CHAIN_OK` verdict | — | stop; do not add risk; flatten via the Tradovate/CrossTrade dashboards if a position is open (GO ADR Option C operator layer) | verdict + broker evidence overlay | close |
+| Restart uncertainty (daemon boot id changed, listener boot line ≠ `--status`, unknown config in memory) | daemon health `boot_id` differs; for the listener, inspect timestamped startup lines and machine lifecycle events (`fly machine status <listener-machine-id> -a c1-rail`) for a restart since the session baseline. Listener health exposes only `ok` and `service`, not a boot id or runtime config; a repeated config line alone does not establish the same process | process may hold a different config than disk (rule 1) | stop; use the operator close path (5.13–5.18) if armed, then re-run 5.1–5.3 and re-verify deployment identity before a new session | the two readings | any doubt → close (5.13) |
+| Alert not acknowledged | an `alert_id` in the configured `alert_log_path` JSONL has no matching `<alert_id>.ack.json` in `alert_ack_dir` (`FileAckNotifier.is_acknowledged`). Enumerate the alert stream first; an empty ack directory does not mean no alerts | `notify()` appends the alert; only `acknowledge()` creates the ack file. Pull-based channel; no push exists | inspect each outstanding alert and take its required action; the operator then acknowledges its exact ID. Unreadable/truncated alert stream → monitoring unavailable, stop session | alert ID and matching ack file, held privately | CRITICAL or unavailable monitoring → close (5.13) |
+
+
+**Reconciliation scope (E4, 5.14 and the restart interlock).** Join persisted decisions,
+transport results and broker reconciliation evidence by `event_id` across the entire interval
+since the last verified boundary. An armed, send-shaped pre-send decision with **no matching
+transport result** is an unresolved attempt: the listener writes that decision before the send,
+and can crash after the order leaves but before the result is persisted. No explicit `unknown`
+record is needed for this case. Include explicit unknown results and accepted sends without a
+verified terminal broker outcome as well. A missing record is not proof of rejection or no-send;
+uncertain/malformed shapes stay blocked. Exclude an event as a proven non-send only when its
+recorded `dry_run=true`, `halt=true`, non-exit/flat `submit=false`, or `not_attempted`
+outcome establishes that no send could occur. `submit=false` alone does not exclude an exit/flat. Reconcile every remaining attempt against broker order/position evidence before
+risk-add is released after restart or the final flatness check is accepted; the presence of a
+well-formed JSONL tail alone proves neither completeness nor reconciliation.
+
+No threshold in this section is new; each points at its owner. Strategy behaviour (what a leg does
+on a bar) is the adapters' and the replay spec's, never this file's.
+
+---
+
+## §7 — Capabilities this procedure depends on that are not built (owner named; no workaround)
+
+Each item is owed to the named packet and is absent from the deployed rail and daemon. Where one is
+missing the disposition is **stop and return to the owner** — never hand-edit live state, never
+improvise an interlock, never substitute a source.
+
+- **Sealed runtime-input inventory and evidence capture contract** — TB-B7 / TB-S3 → TB-I3.
+  Classify every bound volume input as immutable or intentionally mutable, fix digest/projection
+  rules and the authorized transition evidence required by E2, and specify the complete daemon
+  evidence inventory and consistent-capture method required by 5.19. Missing definitions block
+  arm; a source/image match or listener-only export cannot substitute.
+- **Evidence-bound account snapshot seal** with the kernel drawdown breach check (C2) — TB-T1
+  sealer, then TB-B7 (umbrella stubs; seal contract on PR #358).
+- **Live peak seeding from the sealed snapshot (O-3)** — initialize and verify `c1_dd_state.json`
+  from `historical_eod_peak` before the execution fingerprint is sealed, with an arm-interlock check
+  — TB-S3 spec → TB-I3; today the peak is operator-typed and `ratchet_peak_equity` only raises it.
+- **Kill switch** (coordinated flatten-all + disarm + emit-disable, callable without the daemon) —
+  TB-S3 (F). Required order once built: verified risk-add stop (exit/flatten path preserved) →
+  reconcile in-flight → broker flat / no working orders → disarm → restart → verify (this file
+  5.13–5.18). `--disarm` alone is not a kill switch: the edit does not stop the running listener,
+  and once applied it blocks exits. Today: no such command — flatten by hand on
+  Tradovate/CrossTrade; owner TB-S3 → TB-I3.
+- **Restart-time unresolved-transport interlock** — TB-S3 (H) → TB-I3. Before any armed
+  session, the tested implementation must hold risk-adds closed after every listener restart
+  until every unresolved attempt in the §6 reconciliation scope is reconciled against broker
+  evidence, including pre-send decisions without a transport result; preserve exit/flatten capability. Today `EventLedger.block_risk_add` is memory-only; startup validates
+  JSONL structure without restoring that block. Neither a green health response nor the
+  pre-arm operator check E4 supplies this protection. Missing interlock → no arm.
+- **Feed failure, bar-time barrier timeout and restart semantics** for the multi-leg daemon (exits
+  only, risk-adds refused, adapters restart warm and reconcile to the broker-confirmed position)
+  and the **EOD flatten scheduler** — TB-S3 (A)/(G)/(H) → TB-I3.
+- **Portfolio emit-enable / emit-disable step** (5.11, 5.13, 5.18) — TB-S3 (F)/(K) → TB-I3; the
+  deployed daemon accepts `emit_enabled=true` only for the M1 test identity (`load_config` @
+  `36b3996`). Emit-disable is a **close-path prerequisite** (5.13): new risk-adds must be
+  verified stopped before the final flatness check, while exits/flatten remain available. Absent
+  that capability, this procedure cannot safely close an armed session.
+- **Active-leg digest and initial lifecycle state for the four legs (O-2)** — TB-V1; the host halts
+  any leg without a key.
+- **Protection-policy row equal to the TB-E1 sealed cell, with `--arm` refusing otherwise** —
+  TB-S3 (L) / TB-D0.
+
+**Implemented, with a gap.** Execution-state restore across restart is in code and drilled
+(`ExecutionStateStore.load_into` at `serve` and per request; drill `restart_confirmed_base` —
+`ops/c1_rail/c1_rail_telemetry.py` @ `027a729`, `tests/ops/test_m1_acceptance_drills.py` @
+`25711e2`), but **no production write path populates the store**: `set_confirmed_base` /
+`confirm_executed_base` have no callers outside tests
+([Q-M1WIRE-1](../../briefs/Q-M1WIRE-1-arming-interlock-coverage.md) limb A2, CLOSED — FALSIFIED),
+so an `add` halts until an operator-attested write exists. The operator decision that closure names
+is owed before any armed session relies on adds.
+
+---
+
+## §8 — Preservation obligation
+
+The operator-placed account-preservation trade (at least one per venue week) is **not** part of
+this procedure and is never agent-placed; the rail stays disarmed for it. The current deadline and
+attestation state live on [STATE's forward board](../../../STATE.md#scheduled-forward-triggers) —
+read it there; this reusable procedure carries no date.
+
+---
+
+## §9 — Verification (runnable, read-only; none of these arms, emits, trades or writes host state)
+
+```bash
+# Acceptance artifact still validates; RESOLVED is still owed (expect exit 0, then "NOTE: M1 is not RESOLVED")
+python scripts/validate_c1_monitoring_acceptance.py docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json
+# Pre-arm form — expected exit 1 until A8 lands; never forced
+python scripts/validate_c1_monitoring_acceptance.py docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json --require-resolved
+
+# Relative links on this file and the four re-homed pointer files
+python scripts/check_md_relative_links.py --strict --glob docs/notes/rail_build/ARMING_PROCEDURE.md
+
+# Interlock and boot-gate tests
+python -m pytest tests/ops/test_c1_rail_arm.py tests/ops/test_c1_rail_http_server.py -q
+
+# The arm helper does not restart; the boot gate disarms in memory on a lapsed deadline
+grep -n "NOT YET IN EFFECT" ops/c1_rail/c1_rail_arm.py
+grep -n "IMPLICIT DISARM" ops/c1_rail/c1_rail_http_server.py
+
+# Private copy integrity (operator, primary checkout; prints a digest, never content)
+git hash-object lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/rail_build/RUNBOOK.md   # expect d523ee0d1e9d6054fdd75813a9bc25221102e635
+
+# §33a: no dollar figure in this file (expect no output)
+grep -nE '\$ ?[0-9]' docs/notes/rail_build/ARMING_PROCEDURE.md
+```
+
+**Boundary.** This file changed no runtime code, sizing rule, allocation, policy admission,
+deployment configuration or historical decision. Decisions stay with their owners (the M1 ADR, the
+GO ADR, the Track B umbrella, the Track A plan); no ADR was created for this procedure.
