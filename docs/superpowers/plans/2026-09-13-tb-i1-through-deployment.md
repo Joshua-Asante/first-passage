@@ -139,6 +139,18 @@ Red/green evidence: 196 initial new cases failed because the APIs were absent; t
 
 **Stop:** TB-I1 owns pure decisions and validated interfaces. Durable reserve-before-send, broker reconciliation, concurrent account serialization, protected-transition completion and restart recovery are not accepted as production-complete until Task 6 integrates TB-I3.
 
+### Task 3a — Inert identity bindings, 2026-09-13
+
+Task 2 was committed as `9606c62` and published in separate [PR #374](https://github.com/Joshua-Asante/first-passage/pull/374), stacked on the first-slice branch. Continuation work uses `codex/tb-i1-host-bindings` at that revision.
+
+This bounded part of Task 3 adds the four fixed-book identities to `firm_rules.py`, accepts their explicit lifecycle keys, and exposes `generate_book_bindings()` with zero capacity allocation and no verified order symbols. The existing sizing path explicitly refuses these IDs, including exit/flat bookkeeping, before historical sizing or state reads. The identity tuple remains separate from historical risk constants; its correspondence to `BOOK_LEGS` is tested. Existing image dependencies already include the affected core modules.
+
+The session/policy/evidence sizing interface, account event reducer and capacity integration remain open Task 3 work. No new evidence schema is frozen by these identity bindings. TB-I3 owns durable execution integration, and TB-V1 owns deployed allocation and verified broker symbols. The historical host does not become a book execution route through this change.
+
+Tests first failed in all 18 new cases, then passed after implementation. Focused host, lifecycle and quantity regressions passed: 303 tests, 4 existing skips. Full core/ops regressions passed under Python 3.13.2: 1549 passed, 16 skipped, 6 dependency warnings. Error-level lint, the repository check tier (including 72 evidence-store tests with 3 skips), strict plan links and whitespace checks passed. Frozen `dd_protection.py` and `dd_geometry.py` are unchanged. These results were recorded against the local working tree before committing Task 3a. No private evidence or broker integration is validated by these tests.
+
+PR #374's final refreshed head was `9606c62dc72f40fffc70dc8831bad81985f57c77`: open, non-draft, clean and mergeable, current with its base, all checks successful and no review threads or submitted reviews. CodeRabbit skipped review of the stacked branch; its success status is not independent code approval.
+
 ## Task 4 — Canonical fingerprint implementation
 
 **Outcome:** every later producer and verifier can call one side-effect-free serializer under a pinned runtime; unauthorized changes alter identity or fail validation.

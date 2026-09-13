@@ -25,6 +25,7 @@ human hand-edits lifecycle_state.json in the interim.
 
 from pathlib import Path
 
+from firm_rules import TRADEIFY_BOOK_IDENTITIES
 from lib.validation import load_strict_json
 
 # Ratified tier ladder (operator, 2026-07-10; strategy_lifecycle.md Call 2).
@@ -37,7 +38,8 @@ TIER_MULTIPLIER = {
     "RETIRED":    0.00,
 }
 DEFAULT_TIER = "AUTHORIZED"
-STRATEGY_KEYS = frozenset({"Guardian", "Striker", "Aegis", "Striker NAS100"})
+STRATEGY_KEYS = frozenset({"Guardian", "Striker", "Aegis", "Striker NAS100"}) | frozenset(
+    key for _, key, _ in TRADEIFY_BOOK_IDENTITIES)
 
 # Authorization ladder, most- to least-authorized. Demotions step DOWN this list.
 _LADDER_ORDER = ["AUTHORIZED", "WATCH-1", "WATCH-2", "RETIRED"]
