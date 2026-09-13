@@ -311,13 +311,15 @@ def test_rejected_attach_becomes_a_protection_gap_with_recovery_close():
     world.advance(BAR)
     decision = world.kernel.amend(lot, Bracket(stop=41_200.0), world.now)
     assert decision.op.kind == "ATTACH" and decision.op.status == "rejected"
-    world.advance(MIN)
-    world.snap("MYM")
-    assert world.kernel.expected[lot].status["stop"] == "missing"
+    assert world.kernel.expected[lot].status["stop"] == "missing"     # immediately
     assert "protection_gap" in world.kernel.blocks
     recovery = [o for o in world.kernel.operations.values()
                 if o.reason == "protection_gap_recovery"]
     assert recovery and recovery[0].scope_id == lot
+    world.advance(MIN)
+    world.snap("MYM")
+    assert recovery[0].status == "complete" and world.kernel.lots[lot].qty == 0
+    assert "protection_gap" not in world.kernel.blocks
 
 
 # CLOSE — an unknown close that never executed is resubmitted under the same identity

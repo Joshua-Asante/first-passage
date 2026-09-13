@@ -104,9 +104,10 @@ class Daemon:
         sym = leg_spec(leg_id).symbol
         if not self.source_unhealthy(sym, now) or not self.emit_risk_reducing():
             return None
-        state, qty = self.kernel.position(sym, now)
-        if state == "CONFIRMED" and qty == 0:
-            return None
+        p_state, qty = self.kernel.position(sym, now)
+        w_state, orders = self.kernel.working(sym, now)
+        if p_state == "CONFIRMED" and qty == 0 and w_state == "CONFIRMED" and not orders:
+            return None                                   # flat AND nothing resting
         episode = self.source_last_bar.get(sym)
         op_id = self.feed_loss_ops.get(leg_id) or (
             f"feedloss:{leg_id}:{episode.isoformat() if episode else 'never'}")

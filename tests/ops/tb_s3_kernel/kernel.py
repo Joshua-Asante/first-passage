@@ -255,7 +255,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
     def evidence_after(self, sym: str, at: datetime) -> bool:
         """True when both position and working-order evidence postdate ``at``."""
         p, w = self.p_ev.get(sym), self.w_ev.get(sym)
-        return bool(p and w and p[1] >= at and w[1] >= at)
+        return bool(p and w and p[1] > at and w[1] > at)   # equal instants prove no order
 
     def _confirmed_position(self, sym: str) -> int:
         return sum(l.qty for l in self.lots.values() if l.sym == sym and l.qty > 0)
@@ -303,10 +303,11 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 self._release(order)
                 order.status = "rejected"
                 self._emit("unknown_resolved_not_executed", ref=order.ref)
+        self._settle_operations(ev)          # an amend's completion updates intent first
         self._check_expectations(ev)
-        self._settle_operations(ev)
         self._sync_lots(ev)
         self._maybe_clear_unknown_order()
+        self._maybe_disarm(ev.as_of)
         self.persist()
 
     def _signed_position(self, sym: str) -> int:
@@ -350,8 +351,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                     or ev.as_of < exp.defined_at):
                 continue
             attached = {w["kind"]: w for w in ev.working if w.get("attached_to") == exp.fill_id}
-            for component in exp.intended:
-                if component in attached:
+            for component, params in exp.intended.items():
+                if component in attached and self._matches(attached[component],
+                                                            self._fields(params)):
                     exp.working[component] = attached[component]["ref"]
                     exp.status[component] = "working"
                 elif exp.status.get(component) != "missing":
@@ -378,7 +380,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             return                                        # position-only reads settle nothing
         for op in list(self.operations.values()):
             if (op.sym != ev.sym or op.status in ("complete", "refused", "queued")
-                    or ev.as_of < op.prepared_at):
+                    or ev.as_of <= op.prepared_at):
                 continue
             if op.kind == "CLOSE":
                 self._settle_close(op, ev)
@@ -483,9 +485,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         for lot in self.lots.values():
             if lot.sym == ev.sym and lot.qty == 0:
                 self.expected.pop(lot.fill_id, None)
-        if ("close_rejected" in self.blocks
-                and self.blocks["close_rejected"].startswith(op.op_id)
-                and self._scope_flat(op, ev)):
+        if "close_rejected" in self.blocks and not any(
+                o.kind == "CLOSE" and o.status in ("rejected", "refused")
+                for o in self.operations.values()):
             self.unblock("close_rejected")
         if op.reason == "protection_gap_recovery" and not any(
                 s == "missing" for e in self.expected.values() for s in e.status.values()):
@@ -581,28 +583,27 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     # ── takeover (spec S10) ────────────────────────────────────────────────
     def takeover(self, plan: TakeoverPlan, now: datetime) -> list[Operation]:
-        """Cancel displaced resting orders, then ``CLOSE`` each displaced symbol."""
+        """Cancel every displaced resting or partially filled risk-add, then ``CLOSE`` each
+        displaced symbol; cancellation counts only when evidence confirms it (settle)."""
         if self.risk_add_blocked:
             raise KernelRefusal("takeover under a block")
-        takeover = self.ledger.begin_takeover(plan)
+        self.ledger.begin_takeover(plan)
         ops = []
         for leg_id in plan.displaced:
             sym = leg_spec(leg_id).symbol
-            resting = [o for o in self.pending.values()
-                       if o.leg_id == leg_id and o.status in ("accepted", "sent", "unknown")]
-            acked = True
+            resting = [o for o in self.pending.values() if o.leg_id == leg_id
+                       and o.status in ("accepted", "sent", "unknown", "partial")]
             for order in resting:
-                if self.broker.cancel(order.ref).status != "accepted":
-                    acked = False
-                order.cancel_requested = True
-            if acked:
-                takeover.ack_cancel(leg_id)
-            ops.append(self.close("sym", sym, now, "capacity_takeover"))
+                order.cancel_requested = self.broker.cancel(order.ref).status == "accepted"
+            op = self.close("sym", sym, now, "capacity_takeover")
+            op.payload["cancel_refs"] = [o.ref for o in resting]
+            ops.append(op)
         self.persist()
         return ops
 
     def settle_takeover(self, intent: OrderIntent, now: datetime) -> Decision:
-        """Admit the requester only on postdating flat evidence for every displaced leg."""
+        """Admit the requester only when every displaced cancel is confirmed by evidence and
+        every displaced symbol is flat on postdating evidence."""
         takeover = self.ledger._takeover  # pylint: disable=protected-access
         if takeover is None:
             raise KernelRefusal("no takeover pending")
@@ -610,8 +611,18 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             sym = leg_spec(leg_id).symbol
             ops = [o for o in self.operations.values()
                    if o.reason == "capacity_takeover" and o.sym == sym]
-            if not ops or ops[-1].status != "complete":
-                takeover.fail(leg_id, f"close not confirmed ({ops[-1].status if ops else 'none'})")
+            if not ops:
+                takeover.fail(leg_id, "no close operation")
+                break
+            op = ops[-1]
+            unconfirmed = [r for r in op.payload.get("cancel_refs", [])
+                           if self.pending[r].status not in ("cancelled", "filled", "rejected")]
+            if unconfirmed:
+                takeover.fail(leg_id, f"cancel not confirmed for {unconfirmed}")
+                break
+            takeover.ack_cancel(leg_id)
+            if op.status != "complete":
+                takeover.fail(leg_id, f"close not confirmed ({op.status})")
                 break
             takeover.confirm_close(leg_id, self.p_ev[sym][0])
         decision = self.ledger.settle_takeover()
@@ -830,7 +841,10 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 live = current.get("trail")
                 if live and live.get("trail_active") and self.broker.modify_resets_trail_anchor:
                     return None                           # would move the effective stop back
-                changes[component] = {"fields": dict(params), "loosening": False,
+                loosening = bool(old) and (
+                    params.get("trail_activation", 0) > old.get("trail_activation", 0)
+                    or (params.get("trail_offset") or 0) > (old.get("trail_offset") or 0))
+                changes[component] = {"fields": dict(params), "loosening": loosening,
                                       "intended": params}
                 continue
             if component not in current:
@@ -858,6 +872,11 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             op.status = "sent"                           # working only on evidence
         elif outcome.status == "rejected":
             op.status, op.detail = "rejected", outcome.detail
+            for component in exp.intended:               # known unprotected exposure: now
+                exp.status[component] = "missing"
+            self.block("protection_gap", f"{exp.fill_id}:attach_rejected")
+            self._emit("protection_gap", fill=exp.fill_id, component="attach")
+            self.close("fill", exp.fill_id, now, "protection_gap_recovery")
         else:
             op.status = "unknown"
             self.block("unknown_order", op.op_id)
@@ -911,7 +930,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     def flatten_complete(self, reason: str, now: datetime) -> bool:
         """S7 (4)–(5) / S8 completion: every owned symbol flat with no working order,
-        on evidence that postdates its close operation."""
+        on evidence that postdates its close operation (pure; no side effect)."""
+        del now
         ops = [o for o in self.operations.values() if o.reason == reason]
         if len(ops) < len(OWNED_SYMBOLS) or any(o.status != "complete" for o in ops):
             return False
@@ -921,15 +941,27 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 return False
             if self.p_ev[sym][0] != 0 or self.w_ev[sym][0]:
                 return False
-        if reason == "kill":
-            self.dry_run = True                           # S8 (6) --disarm
-            self.persist()
-        del now
         return True
+
+    def _maybe_disarm(self, now: datetime) -> None:
+        """S8 (6): the disarm is part of the kill-completion transition itself."""
+        if self.dry_run or not any(o.reason == "kill" for o in self.operations.values()):
+            return
+        if self.flatten_complete("kill", now):
+            self.dry_run = True
+            self._emit("disarmed", at=now.isoformat())
 
     # ── feed loss / daemon loss (spec S6) ──────────────────────────────────
     def on_flat_intent(self, op_id: str, leg_id: str, now: datetime) -> Operation:
-        """The daemon's feed-loss flat; idempotent by operation identity."""
+        """The daemon's feed-loss flat; idempotent by operation identity. A resting risk-add
+        of the leg is cancelled too — it must not trigger after its source has failed."""
+        if op_id not in self.operations:
+            for order in self.pending.values():
+                if (order.leg_id == leg_id and order.kind in ("entry", "add")
+                        and order.status in ("accepted", "sent", "unknown", "partial")
+                        and not order.cancel_requested):
+                    order.cancel_requested = self.broker.cancel(order.ref).status == "accepted"
+                    self._emit("cancel_sent", ref=order.ref, reason="feed_loss")
         op = self.close("leg", leg_id, now, "feed_loss_flat", op_id=op_id)
         self.block("feed", op_id)
         return op
