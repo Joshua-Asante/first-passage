@@ -129,8 +129,8 @@ Red/green evidence: 196 initial new cases failed because the APIs were absent; t
 
 **Producer/consumer trace:** adapter signal → host quantity request → shared quantity function → capacity decision. The later TB-I3 account owner supplies validated active session/mode and terminal order evidence; TB-T1 supplies the sealed initial account state. Lifecycle state supplies per-leg authorization. The host never uses intraday equity to switch this book's mode.
 
-- [ ] Specify the typed account-context boundary in the Task 1 contract: operation identity, leg/symbol, active session/mode, settled-session evidence and seal, policy digest, lifecycle authorization, intended and confirmed base, reserved/confirmed exposure and evidence time. Missing required fields halt. This is a proposed production boundary, not an existing broker feed.
-- [ ] Add explicit candidate-policy/context arguments to the book sizing path. Preserve the existing M1/historical behavior under its own tests; do not silently substitute the new policy into legacy calls.
+- [x] Specify the typed account-context boundary in the Task 1 contract: operation identity, leg/symbol, active session/mode, settled-session evidence and seal, policy digest, lifecycle authorization, intended and confirmed base, reserved/confirmed exposure and evidence time. Missing required fields halt. This is a proposed production boundary, not an existing broker feed.
+- [x] Add explicit candidate-policy/context arguments to the book sizing path. Preserve the existing M1/historical behavior under its own tests; do not silently substitute the new policy into legacy calls.
 - [ ] Add four lifecycle keys and inert host/config bindings with zero deployed allocation. Positive test allocations are explicit fixture inputs. Reuse the accepted risk-expression values; do not repurpose historical BASE_RISK constants or derive quantities from zero production allocations.
 - [ ] Test a 100000 peak and 99000 settled close entering protection on the next session, the rounding boundary immediately around 1%, duplicate/out-of-order settlement refusal, missing/stale/unsealed state and restart with mismatched state. Carried positions retain quantity; protected transition blocks ORB adds pending terminal cancellation.
 - [ ] Test 6J=10 and micro=1 accounting; all-or-refuse requests at 80; confirmed exposure plus unresolved reservations, partial fill transfer, and terminal-only release. Protected Aegis consumes 30 and capped Striker 77, so coexistence requires refusal/takeover rather than a claim that protection guarantees capacity.
@@ -152,6 +152,54 @@ Tests first failed in all 18 new cases, then passed after implementation. Focuse
 PR #374's final refreshed head was `9606c62dc72f40fffc70dc8831bad81985f57c77`: open, non-draft, clean and mergeable, current with its base, all checks successful and no review threads or submitted reviews. CodeRabbit skipped review of the stacked branch; its success status is not independent code approval.
 
 Task 3a was published in [PR #375](https://github.com/Joshua-Asante/first-passage/pull/375). Its initial full-repository CI caught two historical Call-4 membership regressions outside the earlier core/ops run. The repair keeps `STRATEGY_KEYS` at the historical four legs and uses separate `BOOK_STRATEGY_KEYS` only to extend state validation. A new regression proves retired book legs cannot de-risk the historical Call-4 book. Both original failing tests remain unchanged. The repaired focused coldstore/lifecycle/host suite passed 109 tests with 4 skips, and error-level lint passed; the complete repository CI is rerun on the repair.
+
+### Task 3b — Explicit session/account boundary, 2026-09-13
+
+At `c68e768a67d7de66c99b257ef153dc7fbcbba723`, the operator requested completion of
+the explicit boundary and connection to shared sizing. Branch
+`codex/tb-i1-session-context` reuses the existing isolated worktree. The footprint
+adds `ops/c1_rail/book_sizing_context.py` to keep typed validation separate from
+quantity arithmetic and historical file-based sizing. The host's new
+`process_book_signal` delegates to it; TB-S1 §6 and the Task 1 closeout specify
+the caller/producer obligations. Historical code, policy admission and deployed
+bindings remain unchanged.
+
+The boundary accepts explicit request, candidate policy, account context, trusted
+binding and clock time. It compares account/boot/operation/leg/symbol/session and
+digest identities, full settled evidence against the binding, lifecycle and
+evidence timing. It derives mode only from the prior close and calls the shared
+entry or confirmed-base add law. It checks all four gross exposure/reservation
+rows and refuses over-cap requests without clipping. All results have
+`submit=False`; successful observations are not durable capacity admission.
+
+This completes the requested interface and sizing connection, not the remaining
+Task 3 account event reducer, durable settlement order, terminal cancellation,
+takeover or reservation reconciliation. Snapshot authentication and canonical
+fingerprinting remain TB-T1/Task 4; real owner inputs and atomic execution remain
+TB-I3. The Docker recipe and `.dockerignore` include the pure import closure;
+the listener still cannot route book orders. No image was deployed.
+
+Tests initially failed on the absent interface. Focused review added a failing
+changed-settlement/same-seal case, then bound the full verified record instead of
+comparing only its digest. The boundary suite now passes 96 synthetic cases.
+The full-repository
+run exposed the image import-closure guard: lazy imports must also be packaged.
+The recipe/allowlist now include the boundary, policy/geometry and protocol/feed
+dependencies. The unchanged closure guard plus a new isolated-process import
+test pass; combined boundary/image tests pass 101 cases. Local Docker is unavailable,
+so this is manifest/import validation, not a Docker build claim.
+
+Final full-repository run under Python 3.13.2: 4394 passed, 63 skipped, 23 warnings
+and one failure (the packaging guard), in 1168.03 seconds. That run began before
+the packaging repair; the repaired guard and new smoke test pass in the 101-case
+focused rerun. The full suite was not repeated after the packaging-only repair.
+Initial full-suite collection lacked statsmodels; hash-pinned statsmodels 0.14.6
+and patsy 1.0.2 were installed into a temporary test directory, leaving repository
+and global dependencies unchanged. Final error-level lint and the repository
+check tier passed (including 72 evidence-store tests with 3 skips); strict links
+and whitespace checks passed. Frozen drawdown/geometry, lifecycle and firm
+rules source files match the slice base. These results were recorded before the
+separately requested commit and PR publication.
 
 ## Task 4 — Canonical fingerprint implementation
 

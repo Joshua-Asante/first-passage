@@ -273,6 +273,18 @@ class C1SizingHostReference:
 
     # ── the sizing law (spec §2.2) ────────────────────────────────────────
 
+    def process_book_signal(self, request, *, policy, context, binding, now):
+        """Offline TB-I1 demand from explicit session/account evidence.
+
+        The result always has submit=False. TB-I3 must integrate trusted evidence
+        producers, durable reservations and dedupe before this can feed execution.
+        The pure dependency closure is packaged with the host; the listener still
+        uses process_signal and cannot route book orders through this method.
+        """
+        from book_sizing_context import size_book_request  # pylint: disable=import-outside-toplevel
+        return size_book_request(request, policy=policy, context=context,
+                                 binding=binding, now=now)
+
     def process_signal(self, payload: dict, current_equity: float) -> SizingDecision:
         leg_id = str(payload.get("leg_id", "<absent>"))
         signal_type = str(payload.get("signal_type", "<absent>"))
