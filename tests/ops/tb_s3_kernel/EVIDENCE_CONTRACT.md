@@ -89,3 +89,12 @@ Their success does not accept the consumers: the previous stack assumes one stab
 lot ID per entry and allows malformed route calls as implicit fault injection.
 #369 must migrate to the owner/tranche protocol, explicitly inject adversarial facts,
 and re-review all retained-close, orphan and late-fill sequences before acceptance.
+
+## Stage 2 extension (#369)
+
+The primitive migration adds optional `Reduction.request_id`: explicit reductions
+executed inside a broker request retain that request ID; direct external closes
+retain `None`. This enables exact bounded-operation attribution despite concurrent
+entry fills. The historical #368 verification below/above remains evidence for
+its recorded revision; #369's updated producer and consumers are verified together
+in `PRIMITIVE_VERIFICATION.md`.

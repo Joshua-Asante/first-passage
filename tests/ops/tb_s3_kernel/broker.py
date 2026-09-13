@@ -122,6 +122,7 @@ class Reduction:
     protection_owner: str | None
     allocations: tuple[tuple[str, int], ...]
     execution_allocations: tuple[tuple[int, int], ...]
+    request_id: str | None = None
 
 
 @dataclass
@@ -192,6 +193,7 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
     executions: list[Execution] = field(default_factory=list)
     reductions: list[Reduction] = field(default_factory=list)
     tick_sizes: dict[str, float] = field(default_factory=dict)  # abstract unit tick unless supplied
+    _executing_request: str | None = None
 
     def request(self, action: str, request_id: str, **payload) -> Outcome:
         """Transport acceptance can precede route execution by arbitrarily many events."""
@@ -222,7 +224,11 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
     def _execute_request(self, index: int) -> Outcome:
         # Unexpected harness failures retain unresolved ownership; never manufacture a fence.
         request_id, action, payload = self.queued_requests[index]
-        result = getattr(self, action)(**payload)
+        self._executing_request = request_id
+        try:
+            result = getattr(self, action)(**payload)
+        finally:
+            self._executing_request = None
         self.request_outcomes[request_id] = result.status
         self.queued_requests.pop(index)
         return result
@@ -505,7 +511,8 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         if plan:
             self.reductions.append(Reduction(self.clock.tick(), sym, "explicit_scope",
                                              None, None, tuple((l.fill_id, q) for _, l, q in plan),
-                                             tuple((e.execution_id, q) for e, _, q in plan)))
+                                             tuple((e.execution_id, q) for e, _, q in plan),
+                                             self._executing_request))
         self._note("close", sym=sym, fill_id=fill_id, qty=qty)
         if inj == "unknown":
             return Outcome("unknown", detail="closed; acknowledgement lost")
