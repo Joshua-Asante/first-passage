@@ -1,4 +1,4 @@
-"""Listener-side offline kernel of TB-S3 rev 5.6 and the adjacent CONTRACT.md redesign.
+"""Listener-side offline kernel of TB-S3 rev7 and KERNEL_CONTRACT.md.
 
 Broker facts arrive through ordered, fenced Evidence. Intent owns individual obligations
 and planned effects; the dispatch journal persists before touching the broker. Account-wide
@@ -17,13 +17,14 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Callable
 
-from book_policy import BOOK_LEGS, CapacityDecision, CapacityLedger
+from book_policy import BOOK_LEGS, CapacityDecision, CapacityLedger, TakeoverPlan
 from book_policy import leg as leg_spec
 from book_protocol import Bracket, OrderIntent, Side
 
 from .broker import (BAR, STALENESS_WINDOW, Clock, Evidence, Execution, FakeBroker,
                      Outcome)
 from .provenance import entry_evidence_matches, order_matches
+from .acquisition import allocation_error
 from .rules import covers, protection_consumed, scope_quiescent, valid_component
 from .state import Attempt, Effect, Obligation, UnownedRequest
 from .effects import dispatch, planned_command
@@ -86,6 +87,7 @@ class PendingOrder:  # pylint: disable=too-many-instance-attributes
     filled_qty: int = 0
     intended: dict[str, dict] = field(default_factory=dict)   # port-defined protection
     lot_id: str | None = None
+    lot_ids: set[str] = field(default_factory=set)
     cancel_requested: bool = False
     last_evidence_at: datetime | None = None    # last order-level read that mentioned it
     sent_seq: int = 0
@@ -205,6 +207,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
     unowned_requests: dict[str, UnownedRequest] = field(default_factory=dict)
     request_cursor: int = 0
     request_as_of: datetime | None = None
+    history_conflicts: set[str] = field(default_factory=set)
+    completed_requests: set[str] = field(default_factory=set)
     effects: dict[str, Effect] = field(default_factory=dict)
     restart_seq: int = 0
     effect_hook: Callable | None = None   # deterministic harness crash boundaries
@@ -229,11 +233,11 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         """
 
     # ── persistence ────────────────────────────────────────────────────────
-    SCHEMA = 4
+    SCHEMA = 6
     PERSISTED = ("pending", "operations", "expected", "lots", "obligations", "p_ev", "w_ev",
                  "lot_ev", "status_ev", "dry_run", "halted_legs", "_seq",
                  "evidence", "position_cursor", "effects", "restart_seq", "unowned_requests",
-                 "request_cursor", "request_as_of")
+                 "request_cursor", "request_as_of", "history_conflicts", "completed_requests")
 
     def persist(self) -> None:
         """Atomic snapshot of every durable state (one write, as the spec requires)."""
@@ -361,7 +365,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         current = next((w for w in ev.working if w["ref"] == effect.payload["ref"]), None)
         lot = self.lots[op.scope_id]
         if current is None or not valid_component(current, component, {}, op.scope_id,
-                                                  ev.lots.get(op.scope_id), lot.side):
+                                                  self._protection_qty(ev, op.scope_id), lot.side):
             return False
         change = op.payload["changes"][component]
         classified = self._diff({component: change["fields"]}, {component: current}, lot.side)
@@ -492,9 +496,27 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         if ev.acquired < self.position_cursor.get(ev.sym, 0):
             self.persist()
             return
+        self._observe_unowned_requests(ev)
+        error = (allocation_error(ev, previous) or self._global_identity_error(ev)
+                 or self._reduction_authority_error(ev))
+        if error:
+            if error.startswith("identity conflict"):
+                self.history_conflicts.add(ev.sym)
+            self.block("unknown_order", f"evidence:{ev.sym}")
+            self._emit("invalid_acquisition", sym=ev.sym, detail=error)
+            for order in self.pending.values():
+                authority = self._order_authority(order)
+                if order.sym == ev.sym and authority and not entry_evidence_matches(
+                        ev, authority, order.executions_seen, order.reserved, order.sent_seq,
+                        order.history_acquired):
+                    self._quarantine(order, ev)
+            return
+        if ev.sym in self.history_conflicts:
+            self.block("unknown_order", f"evidence:{ev.sym}")
+            return
+        self.unblock("unknown_order", f"evidence:{ev.sym}")
         self.evidence[ev.sym] = copy.deepcopy(ev)
         self._in_evidence = True
-        self._observe_unowned_requests(ev)
         for effect in list(self.effects.values()):
             outcome = ev.request_outcomes.get(effect.effect_id)
             op = self.operations.get(effect.owner)
@@ -542,7 +564,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             if filled > order.filled_qty:
                 executions = [e for e in ev.executions if e.ref == order.ref
                               and e.execution_id not in order.executions_seen]
-                self._on_fill(order, filled - order.filled_qty, ev, executions[0].fill_id)
+                for execution in sorted(executions, key=lambda e: e.execution_id):
+                    self._on_fill(order, execution.qty, ev, execution.fill_id)
                 order.executions_seen.update((e.execution_id, e) for e in executions)
                 order.filled_qty = filled
                 order.status = "filled" if status == "filled" else "partial"
@@ -586,6 +609,37 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 signed += lot.qty if lot.side == "buy" else -lot.qty
         return signed
 
+    def _reduction_authority_error(self, ev: Evidence) -> str | None:
+        totals: dict[str, int] = {}
+        for reduction in ev.reductions:
+            effect = self.effects.get(reduction.request_id)
+            if effect is None:
+                continue  # external executions reduce broker exposure, not our attempt budget
+            scope = effect.payload.get("fill_id")
+            if (effect.kind != "close" or not 0 < effect.boundary < reduction.execution_id
+                    or effect.payload.get("sym") != reduction.sym
+                    or reduction.transition != "explicit_scope"
+                    or scope is not None and any(i != scope for i, _ in reduction.allocations)):
+                return "reduction does not match dispatched authority"
+            totals[effect.effect_id] = totals.get(effect.effect_id, 0) + sum(
+                qty for _, qty in reduction.allocations)
+            budget = effect.payload.get("qty")
+            if budget is not None and totals[effect.effect_id] > budget:
+                return "reduction exceeds dispatched budget"
+        return None
+
+    def _global_identity_error(self, ev: Evidence) -> str | None:
+        retained_refs = {ref for prior in self.evidence.values()
+                         if prior.acquired < ev.acquired
+                         for ref in (prior.order_symbols or {})}
+        if not retained_refs <= set(ev.order_symbols or {}):
+            return "incomplete retained global order registry"
+        ids = {item.execution_id for prior in self.evidence.values() if prior.sym != ev.sym
+               for item in (*prior.executions, *prior.reductions)}
+        if any(item.execution_id in ids for item in (*ev.executions, *ev.reductions)):
+            return "identity conflict: execution ID reused across symbols"
+        return None
+
     @property
     def unresolved_requests(self) -> bool:
         """Unknown future scope prevents account and per-scope quiescence claims."""
@@ -597,15 +651,19 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 or self.request_as_of is not None and ev.as_of < self.request_as_of):
             return
         self.request_cursor, self.request_as_of = ev.acquired, ev.as_of
+        for request_id in ev.pending_requests & self.completed_requests:
+            self.block("unknown_order", f"request-conflict:{request_id}")
+        self.completed_requests.update(ev.request_outcomes)
         known = {i for i, effect in self.effects.items() if 0 < effect.boundary < ev.acquired}
-        observed = (set(ev.pending_requests) | set(ev.request_outcomes)) - known
+        observed = ((set(ev.pending_requests) | set(ev.request_outcomes)) - known
+                    | {i for i, r in self.unowned_requests.items() if r.status != "resolved"})
         symbols = set(OWNED_SYMBOLS) | set((ev.order_symbols or {}).values())
         for request_id in observed:
             record = self.unowned_requests.setdefault(request_id, UnownedRequest(request_id))
+            if request_id in ev.pending_requests and record.completion_seq:
+                record.status = "conflict"  # completion is final even before all coverage arrives
             if record.status == "resolved":
-                if request_id not in ev.pending_requests:
-                    continue  # retained outcome history is a tombstone, not new work
-                record.status = "conflict"  # globally unique IDs cannot become pending again
+                continue  # retained outcome history is a tombstone, not new work
             added_scope = symbols - record.symbols
             record.symbols.update(symbols)
             self.block("unknown_order", f"unowned-request:{request_id}")
@@ -758,6 +816,18 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         for reason, owner in list(self.obligations):
             if reason == "unknown_order" and owner.startswith(prefix) and owner not in owners:
                 self.unblock(reason, owner)
+        lot_prefix = f"unowned-lot:{ev.sym}:"
+        for lot_id, qty in ev.lots.items():
+            lot = self.lots.get(lot_id)
+            facts = ev.lot_facts.get(lot_id, {})
+            owned = (lot is not None and not self.pending[lot.entry_ref].quarantined
+                     and facts.get("entry_ref") == lot.entry_ref and facts.get("side") == lot.side
+                     and facts.get("sym") == lot.sym and facts.get("leg_id") == lot.leg_id
+                     and qty == lot.qty)
+            if qty != 0 and not owned:
+                self.block("unknown_order", lot_prefix + lot_id)
+            elif qty == 0 or owned:
+                self.unblock("unknown_order", lot_prefix + lot_id)
 
     def _release(self, order: PendingOrder) -> None:
         if order.reserved:
@@ -773,6 +843,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             self.lots[lot_id] = lot
         lot.qty += delta
         order.lot_id = lot_id
+        order.lot_ids.add(lot_id)
         exp = self.expected.get(lot_id)
         if exp is None:
             exp = Expectation(lot_id, order.sym, order.leg_id, {})
@@ -788,7 +859,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             if exp.sym != ev.sym or exp.is_bare or exp.defined_at is None:
                 continue
             lot = self.lots.get(exp.fill_id)
-            if (lot is None or lot.qty == 0 or ev.lots.get(exp.fill_id) == 0
+            if (lot is None or protection_consumed(ev, exp.fill_id)
                     or ev.as_of < exp.defined_at):
                 continue
             for component, params in exp.intended.items():
@@ -803,7 +874,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                               and w["kind"] == component]
                 valid = (len(candidates) == 1 and any(valid_component(
                     candidates[0], component, self._fields(p), exp.fill_id,
-                    ev.lots.get(exp.fill_id), lot.side) for p in choices))
+                    self._protection_qty(ev, exp.fill_id), lot.side) for p in choices))
                 if valid:
                     exp.working[component] = candidates[0]["ref"]
                     exp.status[component] = "working"
@@ -818,6 +889,15 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         if self.unresolved_requests:
             return False
         return scope_quiescent(ev, op.scope_kind, op.scope_id, self.pending)
+
+    @staticmethod
+    def _protection_qty(ev: Evidence, fill_id: str) -> int | None:
+        return ev.protection_owners.get(fill_id, {}).get("qty")
+
+    def _close_lot_ids(self, op: Operation) -> set[str]:
+        if op.payload.get("qty") is None and op.payload.get("entry_ref") in self.pending:
+            return self.pending[op.payload["entry_ref"]].lot_ids | {op.scope_id}
+        return {op.scope_id}
 
     def _operation_covered(self, op: Operation, ev: Evidence) -> bool:
         current = self.coherent_evidence(op.sym, self.clock.now)
@@ -862,6 +942,10 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 self._settle_protection_op(op, ev)
 
     def _settle_close(self, op: Operation, ev: Evidence) -> None:
+        attempts = {e.effect_id for e in self.effects.values() if e.owner == op.op_id
+                    and e.kind == "close" and 0 < e.boundary < ev.acquired}
+        op.payload["closed"] = sum(qty for r in ev.reductions if r.request_id in attempts
+                                   for _, qty in r.allocations)
         if self._scope_flat(op, ev):
             self._complete_close(op, ev)
             return
@@ -869,13 +953,13 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             return
         before = op.payload.get("last_exposure", self._scope_exposure(op))
         if op.scope_kind == "fill":
-            after = ev.lots.get(op.scope_id, before)
+            after = sum(ev.lots.get(i, before) for i in self._close_lot_ids(op))
         else:
             after = max(abs(ev.position), sum(ev.lots.values()))
         op.payload["last_exposure"] = after
-        if op.status in ("sent", "unknown", "partial") and after < before:
+        if op.status in ("sent", "unknown", "partial") and (
+                after < before or op.payload["closed"] > 0):
             op.status = "partial"
-            op.payload["closed"] = op.payload.get("closed", 0) + (before - after)
             self._emit("operation_outcome", op=op.op_id, status="partial", remaining=after)
         requested = op.payload.get("qty")
         if requested is None and op.status == "sent" and after > 0:
@@ -889,27 +973,31 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     def _residual_protected(self, op: Operation, ev: Evidence) -> bool:
         """A bounded reduction is done only with the expected residual protection."""
-        if ev.lots.get(op.scope_id) == 0:
-            return self._scope_flat(op, ev)
+        if self._scope_flat(op, ev):
+            return True
         if any(self.pending[r].status not in ("filled", "cancelled", "rejected", "not_sent")
                for r in op.payload.get("cancel_refs", [])):
             return False
-        exp = self.expected.get(op.scope_id)
-        if exp is None:
+        if any(qty > 0 and lot_id not in self.lots for lot_id, qty in ev.lots.items()):
             return False
-        for component, params in exp.intended.items():
-            attached = [w for w in ev.working if w.get("attached_to") == op.scope_id
-                        and w["kind"] == component]
-            if len(attached) != 1 or not valid_component(
-                    attached[0], component, self._fields(params), op.scope_id,
-                    ev.lots.get(op.scope_id), self.lots[op.scope_id].side):
+        for lot_id, lot in self.lots.items():
+            if lot.sym != ev.sym or protection_consumed(ev, lot_id):
+                continue
+            exp = self.expected.get(lot_id)
+            if exp is None:
                 return False
+            for component, params in exp.intended.items():
+                attached = [w for w in ev.working if w.get("attached_to") == lot_id
+                            and w["kind"] == component]
+                if len(attached) != 1 or not valid_component(
+                        attached[0], component, self._fields(params), lot_id,
+                        self._protection_qty(ev, lot_id), lot.side):
+                    return False
         return True
 
     def _scope_exposure(self, op: Operation) -> int:
         if op.scope_kind == "fill":
-            lot = self.lots.get(op.scope_id)
-            return lot.qty if lot else 0
+            return sum(self.lots[i].qty for i in self._close_lot_ids(op) if i in self.lots)
         ev = self.evidence.get(op.sym)
         return max(abs(self.p_ev.get(op.sym, (0, None))[0]),
                    sum(ev.lots.values()) if ev else 0)
@@ -930,7 +1018,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                         and covers(ev, attempt.sent_at, attempt.boundary, self.clock.now)
                         and component in attached and valid_component(
                             attached[component], component, change["fields"], op.scope_id,
-                            ev.lots.get(op.scope_id), self.lots[op.scope_id].side)):
+                            self._protection_qty(ev, op.scope_id), self.lots[op.scope_id].side)):
                     exp.intended[component] = change["intended"]
                     exp.working[component] = attached[component]["ref"]
                     exp.status[component] = "working"
@@ -940,7 +1028,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                       and attempt.effect_id not in ev.pending_requests
                       and valid_component(attached[component], component,
                                           self._fields(exp.intended[component]), op.scope_id,
-                                          ev.lots.get(op.scope_id), self.lots[op.scope_id].side)):
+                                          self._protection_qty(ev, op.scope_id), self.lots[op.scope_id].side)):
                     attempt.status = "rejected"   # fenced read: no application or pending send
             if all(a.status == "confirmed" for a in op.components.values()):
                 op.status = "complete"
@@ -953,7 +1041,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             op.reconciled_at = ev.as_of
             return
         if all(c in attached and valid_component(attached[c], c, self._fields(p),
-                                                op.scope_id, ev.lots.get(op.scope_id),
+                                                op.scope_id, self._protection_qty(ev, op.scope_id),
                                                 self.lots[op.scope_id].side)
                for c, p in exp.intended.items()):
             for component in exp.intended:
@@ -992,7 +1080,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         if self._scope_flat(op, ev):
             for key in list(self.obligations):
                 if key[0] == "protection_gap":
-                    fill_id = key[1].split(":", 1)[0]
+                    fill_id = key[1].rsplit(":", 1)[0]
                     if scope_quiescent(ev, "fill", fill_id, self.pending):
                         self.unblock(*key)
         self._emit("close_complete", op=op.op_id, reason=op.reason)
@@ -1122,8 +1210,15 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
               op_id: str | None = None, qty: int | None = None) -> Operation:
         """Prepare a durable close; send only when postdating evidence does not show it flat.
         Overlapping scopes serialize: one close in flight per symbol, later ones queue."""
+        if (scope_kind not in ("fill", "leg", "sym")
+                or qty is not None and (scope_kind != "fill" or type(qty) is not int or qty <= 0)):
+            raise KernelRefusal("bounded CLOSE requires an explicit fill and positive quantity")
         if op_id and op_id in self.operations:
-            return self.operations[op_id]            # idempotent by operation identity
+            previous = self.operations[op_id]
+            if (previous.kind, previous.scope_kind, previous.scope_id, previous.reason,
+                    previous.payload.get("qty")) != ("CLOSE", scope_kind, scope_id, reason, qty):
+                raise KernelRefusal("operation identity conflicts with durable demand")
+            return previous
         self._sweep_timeouts(now)
         sym, leg_id = self._scope(scope_kind, scope_id)
         for other in self.operations.values():
@@ -1135,6 +1230,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 return other                          # idempotent by scope (retry path)
         op = Operation(op_id or self._next("op"), "CLOSE", scope_kind, scope_id, sym, leg_id,
                        reason, prepared_at=now, prepared_seq=self.clock.tick(), payload={"qty": qty})
+        if scope_kind == "fill":
+            op.payload["entry_ref"] = self.lots[scope_id].entry_ref
         self.operations[op.op_id] = op
         self.block("unknown_order", op.op_id)
         self._emit("operation_prepared", op=op.op_id, reason=reason)
@@ -1147,7 +1244,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         already_deferring = self._in_evidence
         self._in_evidence = True
         resting = [o for o in self.pending.values() if o.sym == sym
-                   and (scope_kind != "fill" or o.lot_id == scope_id)
+                   and (scope_kind != "fill" or scope_id in o.lot_ids)
                    and o.status not in ("filled", "cancelled", "rejected", "not_sent")]
         op.payload["cancel_refs"] = [o.ref for o in resting]
         self.persist()
@@ -1257,7 +1354,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         cancel_kind = target.get("kind")
         if cancel_kind not in ("entry", "add", "stop", "limit", "trail"):
             return self._refuse("cancel_unknown_kind", ref)
-        if cancel_kind not in ("entry", "add") and ev.position != 0:
+        if cancel_kind not in ("entry", "add") and (ev.position != 0 or any(ev.lots.values())):
             return self._refuse("protective_cancel_refused", ref)
         op = next((o for o in self.operations.values() if o.kind == "CANCEL"
                    and o.target == ref and o.status != "complete"), None)
@@ -1286,7 +1383,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             qty = op.payload.get("qty")
             if qty is not None:
                 qty = max(0, qty - op.payload.get("closed", 0))
-            payload.update(fill_id=op.scope_id, qty=qty)
+            target = next((i for i in sorted(self._close_lot_ids(op))
+                           if self.lots.get(i) and self.lots[i].qty > 0), op.scope_id)
+            payload.update(fill_id=target, qty=qty)
         op.status = "sent"
         self._effect("close", op.op_id, payload)
 
@@ -1314,7 +1413,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
     def amend_action(self, fill_id: str, bracket: Bracket | dict, now: datetime) -> str | None:
         """Pure action classification for the daemon, using the listener's same direction rule."""
         lot = self.lots.get(fill_id)
-        if lot is None or lot.qty == 0:
+        ev = self.coherent_evidence(lot.sym, now) if lot else None
+        if (lot is None or ev is None or protection_consumed(ev, fill_id)
+                or lot.qty == 0 and not self._protection_qty(ev, fill_id)):
             return None
         exp = self.expected.get(fill_id)
         if exp is None or exp.is_bare:
@@ -1340,7 +1441,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         """The port re-issued its bracket for a lot: component-wise modify, or first attach."""
         self._sweep_timeouts(now)
         lot = self.lots.get(fill_id)
-        if lot is None or lot.qty == 0:
+        ev = self.coherent_evidence(lot.sym, now) if lot else None
+        if (lot is None or ev is not None and protection_consumed(ev, fill_id)
+                or lot.qty == 0 and (ev is None or not self._protection_qty(ev, fill_id))):
             return self._refuse("amend_no_lot", fill_id)
         exp = self.expected.setdefault(fill_id, Expectation(fill_id, lot.sym, lot.leg_id, {}))
         unresolved = [o for o in self.operations.values()
@@ -1463,6 +1566,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                     qty: int | None = None) -> Operation:
         """A strategy exit or flat: ``CLOSE(fill)`` with a clamped quantity, or ``CLOSE(leg)``."""
         if fill_id is None:
+            if qty is not None:
+                raise KernelRefusal("bounded exit requires an explicit fill")
             return self.close("leg", leg_id, now, "exit")
         lot = self.lots[fill_id]
         if qty is not None and qty > lot.qty:

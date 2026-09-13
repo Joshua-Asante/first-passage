@@ -1,18 +1,24 @@
-"""Fake broker for the TB-S3 kernel model (spec §1: broker truth, L-2 capabilities, evidence).
+"""Offline evidence producer for TB-S3 (not a qualified live route).
 
 Broker truth (positions, working orders, lots, trailing anchors) lives only here. The kernel
-never reads it directly: it receives ``Evidence`` objects stamped with ``as_of`` through
-``snapshot()``, exactly as the listener would receive an execution/position read (L-1).
+never reads it directly: it receives detached ``Evidence`` captures through ``snapshot()``.
+Production telemetry does not currently supply this complete E1–E3 protocol.
 
 Capabilities are the spec's L-2 items (a)–(g), each ``supported`` / ``not supported`` /
 ``unrecorded``. Failure injection (``reject`` / ``unknown`` / ``partial``) drives the
 rejection, unknown-outcome and partial-fill branches of the spec's sequences. An ``unknown``
 outcome is reported to the caller as such while the broker may or may not have executed it —
-the two flavours the spec's S9 distinguishes.
+the two flavours the spec's S9 distinguishes. Market triggers are explicit harness events;
+there is no price-path/slippage simulator. Prices use abstract unit ticks by default;
+instrument fixtures must supply ``tick_sizes``. Supported flags characterize this model,
+not live L-2 qualification. Scoped close after FIFO owner/allocation divergence is refused;
+full-symbol close and triggered-protection allocation are distinct implemented transitions.
 """
 from __future__ import annotations
 
 import copy
+import inspect
+import math
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
@@ -105,6 +111,20 @@ class Execution:  # pylint: disable=too-many-instance-attributes
     attached_to: str | None
 
 
+@dataclass(frozen=True)
+class Reduction:
+    """One atomic exit, with its protection identity separate from accounting lots."""
+
+    execution_id: int
+    sym: str
+    transition: str
+    order_ref: str | None
+    protection_owner: str | None
+    allocations: tuple[tuple[str, int], ...]
+    execution_allocations: tuple[tuple[int, int], ...]
+    request_id: str | None = None
+
+
 @dataclass
 class Lot:
     """An open fill (one lot) with the protective orders linked to it."""
@@ -117,11 +137,13 @@ class Lot:
     entry_ref: str
     price: float = 100.0
     protection: dict[str, str] = field(default_factory=dict)   # component -> order ref
+    protection_qty: int = 0     # independent of FIFO accounting quantity
+    protection_consumed: bool = False
 
 
 @dataclass(frozen=True)
 class Evidence:
-    """A broker read of one symbol at ``as_of`` (positions, working orders, order status)."""
+    """Detached symbol facts plus global fences; nested maps permit adversarial delivery tests."""
 
     sym: str
     as_of: datetime
@@ -138,6 +160,9 @@ class Evidence:
     order_facts: dict[str, dict] = field(default_factory=dict)  # includes terminal orders
     executions: tuple[Execution, ...] = ()  # complete immutable entry execution history
     order_symbols: dict[str, str] | None = None  # global ref location, including terminal refs
+    lot_facts: dict[str, dict] = field(default_factory=dict)
+    protection_owners: dict[str, dict] = field(default_factory=dict)
+    reductions: tuple[Reduction, ...] = ()
 
     def working_refs(self) -> set[str]:
         """Refs of every working order in this read."""
@@ -166,24 +191,46 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
     queued_requests: list[tuple[str, str, dict]] = field(default_factory=list)
     request_outcomes: dict[str, str] = field(default_factory=dict)
     executions: list[Execution] = field(default_factory=list)
+    reductions: list[Reduction] = field(default_factory=list)
+    tick_sizes: dict[str, float] = field(default_factory=dict)  # abstract unit tick unless supplied
+    _executing_request: str | None = None
 
     def request(self, action: str, request_id: str, **payload) -> Outcome:
         """Transport acceptance can precede route execution by arbitrarily many events."""
+        if (not request_id or request_id in self.request_outcomes
+                or any(r[0] == request_id for r in self.queued_requests)):
+            return Outcome("rejected", detail="request identity must be new")
+        if action not in ("place", "modify", "attach", "cancel", "close"):
+            return Outcome("rejected", detail="unknown route action")
+        try:
+            inspect.signature(getattr(self, action)).bind(**payload)
+        except TypeError:
+            return Outcome("rejected", detail="invalid route payload")
         if self.inject.get(action) == "defer":
             self.inject.pop(action)
             self.queued_requests.append((request_id, action, copy.deepcopy(payload)))
             self._note("accepted_pending", request_id=request_id, action=action)
             return Outcome("accepted")
-        result = getattr(self, action)(**payload)
-        self.request_outcomes[request_id] = result.status
-        return result
+        self.queued_requests.append((request_id, action, copy.deepcopy(payload)))
+        return self._execute_request(len(self.queued_requests) - 1)
 
     def execute_next(self) -> Outcome:
         """Independent broker execution event; it never calls back into the listener."""
-        request_id, action, payload = self.queued_requests.pop(0)
-        result = getattr(self, action)(**payload)
-        self.request_outcomes[request_id] = result.status
+        request_id, action, _ = self.queued_requests[0]
+        result = self._execute_request(0)
         self._note("request_executed", request_id=request_id, action=action)
+        return result
+
+    def _execute_request(self, index: int) -> Outcome:
+        # Unexpected harness failures retain unresolved ownership; never manufacture a fence.
+        request_id, action, payload = self.queued_requests[index]
+        self._executing_request = request_id
+        try:
+            result = getattr(self, action)(**payload)
+        finally:
+            self._executing_request = None
+        self.request_outcomes[request_id] = result.status
+        self.queued_requests.pop(index)
         return result
 
     # ── helpers ────────────────────────────────────────────────────────────
@@ -202,14 +249,39 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
 
     def _ref(self, prefix: str) -> str:
         self._seq += 1
+        while f"{prefix}-{self._seq}" in self.orders:
+            self._seq += 1
         return f"{prefix}-{self._seq}"
+
+    @staticmethod
+    def _positive_qty(qty) -> bool:
+        return type(qty) is int and qty > 0
+
+    def _valid_bracket(self, bracket: dict | None) -> bool:
+        if bracket is None:
+            return True
+        if not isinstance(bracket, dict):
+            return False
+        if any(k not in ("stop", "limit", "trail_activation_ticks", "trail_offset_ticks")
+               for k in bracket):
+            return False
+        for key in ("stop", "limit"):
+            value = bracket.get(key)
+            if value is not None and (type(value) not in (int, float)
+                                      or not math.isfinite(value)):
+                return False
+        activation, offset = bracket.get("trail_activation_ticks"), bracket.get("trail_offset_ticks")
+        if activation is None and offset is None:
+            return True
+        return (self.supports("g") and type(activation) is int and activation >= 0
+                and self._positive_qty(offset))
 
     def _note(self, event: str, **detail) -> None:
         self.log.append({"event": event, "at": self.clock.now, **detail})
 
     @staticmethod
     def lot_id(ref: str) -> str:
-        """The lot id a fill of order ``ref`` produces (shared with the kernel)."""
+        """Initial lot identity only; later generations must use returned/evidenced IDs."""
         return f"{ref}#lot"
 
     # ── placing ────────────────────────────────────────────────────────────
@@ -217,6 +289,16 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
               order_type: str = "market", price: float | None = None,
               bracket: dict | None = None, ref: str | None = None) -> Outcome:
         """Place an entry/add (market or stop) with an optional attached bracket."""
+        if (not self._positive_qty(qty) or side not in ("buy", "sell")
+                or kind not in ("entry", "add") or not self._valid_bracket(bracket)):
+            return Outcome("rejected", detail="invalid entry or bracket")
+        if (order_type not in ("market", "stop", "limit")
+                or price is not None and (type(price) not in (int, float)
+                                         or not math.isfinite(price))
+                or order_type in ("stop", "limit") and price is None):
+            return Outcome("rejected", detail="invalid order type or price")
+        if ref is not None and (not ref or ref in self.orders):
+            return Outcome("rejected", detail="order identity must be new")
         if order_type == "stop" and not self.supports("a"):
             return Outcome("rejected", detail="route has no resting stop-entry order type")
         if bracket and not self.supports("b"):
@@ -242,9 +324,14 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
     def fill(self, ref: str, qty: int | None = None, price: float = 100.0) -> str:
         """Execute a working entry/add (fully or partially) and create/extend its lot."""
         order = self.orders[ref]
+        if (order.kind not in ("entry", "add") or order.attached_to is not None
+                or qty is not None and not self._positive_qty(qty)):
+            raise CapabilityError("fill requires an entry/add and a positive integer quantity")
         if order.status not in ("working", "partial"):
             raise CapabilityError(f"{ref} is {order.status}, cannot fill")
         remaining = order.qty - order.filled_qty
+        if not self._positive_qty(remaining):
+            raise CapabilityError("order has no valid working remainder")
         take = remaining if qty is None else min(qty, remaining)
         order.filled_qty += take
         order.status = "filled" if order.filled_qty == order.qty else "partial"
@@ -252,9 +339,12 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         self.positions[order.sym] = self.positions.get(order.sym, 0) + signed
         execution_id = self.clock.tick()
         lot_id = self.lot_id(ref)
-        prior = self.lots.get(lot_id)
-        if prior and (prior.sym, prior.leg_id, prior.side) != (order.sym, order.leg_id, order.side):
-            lot_id = f"{lot_id}:{execution_id}"
+        if lot_id in self.lots:
+            active = next((l for l in reversed(list(self.lots.values()))
+                           if l.entry_ref == ref and l.qty > 0 and not l.protection_consumed
+                           and (l.sym, l.leg_id, l.side)
+                           == (order.sym, order.leg_id, order.side)), None)
+            lot_id = active.fill_id if active else f"{lot_id}:{execution_id}"
         self.executions.append(Execution(execution_id, ref, lot_id, order.sym,
                                          order.leg_id, order.kind, order.side, take,
                                          order.qty, order.order_type, order.price,
@@ -268,12 +358,15 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         if bracket and not lot.protection and not self.drop_attached_at_fill:
             self._attach_protection(lot, bracket, price)
         elif lot.protection and self.supports("e"):
+            lot.protection_qty += take
             for pref in lot.protection.values():
-                self.orders[pref].qty = lot.qty
+                self.orders[pref].qty = lot.protection_qty
         self._note("fill", ref=ref, qty=take, lot=lot_id)
         return lot_id
 
     def _attach_protection(self, lot: Lot, bracket: dict, price: float) -> None:
+        if not lot.protection:
+            lot.protection_qty = lot.qty
         exit_side = "sell" if lot.side == "buy" else "buy"
         for component in PROTECTIVE_KINDS:
             level = bracket.get(component)
@@ -285,7 +378,7 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
             elif level is None:
                 continue
             pref = self._ref(component)
-            order = BrokerOrder(pref, lot.sym, lot.leg_id, component, exit_side, lot.qty,
+            order = BrokerOrder(pref, lot.sym, lot.leg_id, component, exit_side, lot.protection_qty,
                                 component if component != "trail" else "trail",
                                 level if component != "trail" else None, attached_to=lot.fill_id)
             if component == "trail":
@@ -301,8 +394,25 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         if not self.supports("c"):
             return Outcome("rejected", detail="route has no atomic modify")
         order = self.orders.get(ref)
-        if order is None or order.status != "working":
+        if order is None or order.status not in ("working", "partial"):
             return Outcome("rejected", detail="order not working")
+        if (not changes or any(k not in ("qty", "price", "trail_activation", "trail_offset")
+                               for k in changes)):
+            return Outcome("rejected", detail="unsupported modify field")
+        qty = changes.get("qty", order.qty)
+        price = changes.get("price", order.price)
+        if (not self._positive_qty(qty) or qty <= order.filled_qty
+                or price is not None and (type(price) not in (int, float)
+                                         or not math.isfinite(price))
+                or order.order_type in ("stop", "limit") and price is None):
+            return Outcome("rejected", detail="invalid quantity or price")
+        if "trail_activation" in changes or "trail_offset" in changes:
+            activation = changes.get("trail_activation", order.trail_activation)
+            offset = changes.get("trail_offset", order.trail_offset)
+            if (order.kind != "trail" or not self.supports("g")
+                    or type(activation) is not int or activation < 0
+                    or not self._positive_qty(offset)):
+                return Outcome("rejected", detail="invalid native trail")
         inj = self._take("modify")
         if inj == "reject":
             return Outcome("rejected", detail="injected reject")
@@ -325,6 +435,15 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         lot = self.lots.get(fill_id)
         if lot is None or lot.qty == 0:
             return Outcome("rejected", detail="no open lot")
+        if not bracket or not self._valid_bracket(bracket) or lot.protection_consumed:
+            return Outcome("rejected", detail="invalid bracket or consumed protection owner")
+        components = {c for c in ("stop", "limit") if bracket.get(c) is not None}
+        if bracket.get("trail_activation_ticks") is not None:
+            components.add("trail")
+        if not components:
+            return Outcome("rejected", detail="no protection component")
+        if components.intersection(lot.protection):
+            return Outcome("rejected", detail="defined components require native modify")
         inj = self._take("attach")
         if inj == "reject":
             return Outcome("rejected", detail="injected reject")
@@ -356,8 +475,12 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
     def close(self, *, sym: str, fill_id: str | None = None,
               qty: int | None = None) -> Outcome:
         """Scoped or quantity-less close with atomic attached-order handling (L2(d)/(e))."""
-        if not self.supports("d"):
+        if not self.supports("d") or not self.supports("e"):
             return Outcome("rejected", detail="route has no atomic scoped close")
+        if qty is not None and not self._positive_qty(qty):
+            return Outcome("rejected", detail="close quantity must be a positive integer")
+        if fill_id is not None and (fill_id not in self.lots or self.lots[fill_id].sym != sym):
+            return Outcome("rejected", detail="unknown or foreign lot scope")
         inj = self._take("close")
         if inj == "reject":
             return Outcome("rejected", detail="injected reject")
@@ -366,23 +489,56 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         sides = {l.side for l in self.lots.values() if l.sym == sym and l.qty > 0}
         if len(sides) > 1 and (fill_id is not None or qty is not None
                               or isinstance(inj, tuple) and inj[0] == "partial"):
-            return Outcome("rejected", detail="mixed-side exposure requires atomic full-symbol close")
+            return Outcome("rejected",
+                           detail="mixed-side exposure requires atomic full-symbol close")
         lots = ([self.lots[fill_id]] if fill_id else
                 [l for l in self.lots.values() if l.sym == sym and l.qty > 0])
-        wanted = qty
         allowance = inj[1] if isinstance(inj, tuple) and inj[0] == "partial" else None
-        for lot in lots:
-            take = lot.qty if wanted is None else min(wanted, lot.qty)
-            if allowance is not None:
-                take = min(take, allowance)
-                allowance -= take
+        full_symbol = fill_id is None and qty is None and allowance is None
+        if not full_symbol and any(l.protection and l.protection_qty != l.qty
+                                   for l in self.lots.values() if l.sym == sym):
+            return Outcome("rejected", detail="scoped owner/allocation divergence is unqualified")
+        wanted = sum(l.qty for l in lots) if qty is None else qty
+        if allowance is not None:
+            wanted = min(wanted, allowance)
+        plan = self._allocation_plan(lots, wanted)
+        for _, lot, take in plan:
             self._reduce_lot(lot, take)
-            if wanted is not None:
-                wanted -= take
+        if full_symbol:
+            for owner in self.lots.values():
+                if owner.sym == sym:
+                    self._consume_protection(owner)
+        if plan:
+            self.reductions.append(Reduction(self.clock.tick(), sym, "explicit_scope",
+                                             None, None, tuple((l.fill_id, q) for _, l, q in plan),
+                                             tuple((e.execution_id, q) for e, _, q in plan),
+                                             self._executing_request))
         self._note("close", sym=sym, fill_id=fill_id, qty=qty)
         if inj == "unknown":
             return Outcome("unknown", detail="closed; acknowledgement lost")
         return Outcome("accepted", ref=fill_id or sym)
+
+    def _allocation_plan(self, lots: list[Lot], wanted: int) -> list[tuple[Execution, Lot, int]]:
+        """FIFO is execution order, including interleaved partial fills of one order."""
+        by_id = {l.fill_id: l for l in lots}
+        available = {l.fill_id: l.qty for l in lots}
+        spent: dict[int, int] = {}
+        for reduction in self.reductions:
+            for execution_id, qty in reduction.execution_allocations:
+                spent[execution_id] = spent.get(execution_id, 0) + qty
+        plan = []
+        for execution in sorted(self.executions, key=lambda e: e.execution_id):
+            if execution.fill_id not in by_id:
+                continue
+            take = min(wanted, available[execution.fill_id],
+                       execution.qty - spent.get(execution.execution_id, 0))
+            if take > 0:
+                plan.append((execution, by_id[execution.fill_id], take))
+                available[execution.fill_id] -= take
+                wanted -= take
+        if wanted > 0 and any(available.values()):
+            raise CapabilityError("gross lots lack complete entry execution history")
+        return plan
 
     def _reduce_lot(self, lot: Lot, take: int) -> None:
         if take <= 0:
@@ -397,6 +553,17 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
                 del lot.protection[component]
             elif self.supports("e"):
                 order.qty = lot.qty
+        lot.protection_qty = lot.qty if lot.protection else 0
+        if lot.qty == 0:
+            lot.protection_consumed = True
+
+    def _consume_protection(self, owner: Lot, triggered: str | None = None) -> None:
+        for ref in owner.protection.values():
+            if ref != triggered and self.orders[ref].status in ("working", "partial"):
+                self.orders[ref].status = "cancelled"
+        owner.protection.clear()
+        owner.protection_qty = 0
+        owner.protection_consumed = True
 
     # ── market events ──────────────────────────────────────────────────────
     def trigger(self, ref: str) -> None:
@@ -405,10 +572,28 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         if order.status != "working":
             raise CapabilityError(f"{ref} is {order.status}")
         if order.attached_to:
-            order.status, order.filled_qty = "filled", order.qty
-            lot = self.lots[order.attached_to]
-            lot.protection = {c: r for c, r in lot.protection.items() if r != ref}
-            self._reduce_lot(lot, order.qty)
+            owner = self.lots[order.attached_to]
+            if owner.protection_consumed or ref not in owner.protection.values():
+                raise CapabilityError("trigger requires an unconsumed protection owner")
+            lots = [l for l in self.lots.values() if l.sym == owner.sym
+                    and l.leg_id == owner.leg_id and l.side == owner.side and l.qty > 0]
+            plan = self._allocation_plan(lots, order.qty)
+            total = sum(q for _, _, q in plan)
+            if total <= 0:
+                raise CapabilityError("no exposure for protective execution")
+            order.status, order.filled_qty = "filled", total
+            for _, lot, take in plan:
+                lot.qty -= take
+                self.positions[lot.sym] += -take if lot.side == "buy" else take
+            self._consume_protection(owner, triggered=ref)
+            if not any(l.qty > 0 for l in self.lots.values() if l.sym == owner.sym):
+                for sibling in self.lots.values():
+                    if sibling.sym == owner.sym:
+                        self._consume_protection(sibling)
+            self.reductions.append(Reduction(self.clock.tick(), owner.sym, "triggered_protection",
+                                             ref, owner.fill_id,
+                                             tuple((l.fill_id, q) for _, l, q in plan),
+                                             tuple((e.execution_id, q) for e, _, q in plan)))
         else:
             self.fill(ref)
         self._note("trigger", ref=ref)
@@ -421,7 +606,8 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
             lot = self.lots[order.attached_to]
             base = lot.price
             long = lot.side == "buy"
-            activation = base + order.trail_activation if long else base - order.trail_activation
+            distance = order.trail_activation * self.tick_sizes.get(sym, 1.0)
+            activation = base + distance if long else base - distance
             if not order.trail_active and ((long and price >= activation)
                                            or (not long and price <= activation)):
                 order.trail_active, order.trail_anchor = True, price
@@ -445,4 +631,12 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
                         request_outcomes=dict(self.request_outcomes),
                         order_facts={o.ref: o.view() for o in self.orders.values() if o.sym == sym},
                         executions=tuple(e for e in self.executions if e.sym == sym),
-                        order_symbols={o.ref: o.sym for o in self.orders.values()})
+                        order_symbols={o.ref: o.sym for o in self.orders.values()},
+                        lot_facts={l.fill_id: {"sym": l.sym, "leg_id": l.leg_id, "side": l.side,
+                                              "entry_ref": l.entry_ref, "qty": l.qty}
+                                   for l in self.lots.values() if l.sym == sym},
+                        protection_owners={l.fill_id: {"qty": l.protection_qty,
+                                                      "consumed": l.protection_consumed,
+                                                      "orders": dict(l.protection)}
+                                           for l in self.lots.values() if l.sym == sym},
+                        reductions=tuple(r for r in self.reductions if r.sym == sym))

@@ -179,8 +179,10 @@ def test_restart_halts_on_an_orphan_working_order_and_never_cancels_it():
     """Restart halts on an orphan working order and never cancels it."""
     world = make_world()
     _lot(world, "dj30_mym_p250", 22)
-    orphan = world.broker.place(sym="MYM", leg_id="dj30_mym_p250", kind="unknown", side="sell",
-                                qty=5, order_type="stop", price=41_000.0)
+    from tests.ops.tb_s3_kernel.broker import BrokerOrder
+    orphan = BrokerOrder("unknown-orphan", "MYM", "dj30_mym_p250", "unknown", "sell",
+                         5, "stop", price=41_000.0)
+    world.broker.orders[orphan.ref] = orphan
     world.advance(MIN)
     restarted = type(world.kernel).restart(world.kernel.store, world.broker, world.clock, world.now,
                                protection_cases=world.kernel.protection_cases)

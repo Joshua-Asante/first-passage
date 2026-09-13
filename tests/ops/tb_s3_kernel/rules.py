@@ -9,8 +9,8 @@ def covers(ev, at, boundary, now):
 
 
 def protection_consumed(ev, fill_id):
-    """The current lot and its protective targets are gone; an entry may still have remainder."""
-    return (ev.order_level and ev.lots.get(fill_id) == 0
+    """A protection owner is consumed independently of FIFO accounting quantity."""
+    return (ev.order_level and ev.protection_owners.get(fill_id, {}).get("consumed") is True
             and not any(w.get("attached_to") == fill_id for w in ev.working))
 
 
@@ -19,8 +19,11 @@ def scope_quiescent(ev, scope_kind, scope_id, pending):
     if not ev.order_level:
         return False
     if scope_kind == "fill":
-        entries = [o for o in pending.values() if o.lot_id == scope_id]
-        return (protection_consumed(ev, scope_id)
+        entries = [o for o in pending.values() if scope_id in o.lot_ids]
+        lots = {scope_id} | {i for o in entries for i in o.lot_ids}
+        return (all(ev.lots.get(i) == 0 for i in lots)
+                and all(ev.protection_owners.get(i, {}).get("qty") == 0 for i in lots)
+                and not any(w.get("attached_to") in lots for w in ev.working)
                 and not any(any(w["ref"] == o.ref for o in entries) for w in ev.working)
                 and all(o.status in ("filled", "cancelled", "rejected", "not_sent")
                         for o in entries))
