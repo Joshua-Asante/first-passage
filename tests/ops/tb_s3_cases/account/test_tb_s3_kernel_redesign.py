@@ -200,4 +200,7 @@ def test_kill_does_not_report_complete_before_the_disarm_effect_is_applied():
     restart(w)
     assert w.kernel.kill_status(False, w.now)["complete"] is False
     w.kernel.progress(w.now)
+    assert w.kernel.kill_status(False, w.now)["complete"] is False
+    w.advance(MIN)
+    w.snap()  # rev7: a planned disarm also needs post-restart account proof
     assert w.kernel.kill_status(False, w.now)["complete"] is True

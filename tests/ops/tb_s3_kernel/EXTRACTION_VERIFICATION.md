@@ -20,3 +20,11 @@ These results apply to the extracted code with account schema5 and primitive sch
 They demonstrate preservation and selected fault detection, not completeness.
 Known consumer acceptance blockers remain in `KERNEL_CONTRACT.md`. Hosting CI,
 independent model acceptance, operator ratification and live qualification are separate.
+
+## Subsequent rev7 integration (#370)
+
+The counts and schema numbers above are historical extraction evidence. Current
+account acceptance is recorded in `ACCOUNT_VERIFICATION.md`. Inherited expectations
+were corrected where rev7 requires an ongoing outage to retain its rollover latch
+and requires post-restart proof before dispatching a planned disarm. New independent
+sequence cases live in `account/test_rev7_integration.py`.

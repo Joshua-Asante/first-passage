@@ -68,6 +68,9 @@ def test_ac6_feed_loss_flat_once_per_episode_and_session_scoped_feed_block():
     world.snap("MGC")
     assert op.status == "complete" and world.kernel.lots[lot].qty == 0
     world.kernel.session_open()
+    assert "feed" in world.kernel.blocks  # rev7: the outage owns the new session latch
+    world.daemon.on_bar("MGC", world.now)
+    world.kernel.session_open()
     assert "feed" not in world.kernel.blocks
 
 

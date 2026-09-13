@@ -300,9 +300,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             self._emit("cancel_sent", ref=effect.payload["ref"], outcome=outcome.status)
             return
         if effect.kind == "disarm":
-            # Local disarm is idempotent; production config acknowledgment is still owed.
-            self.dry_run = True
-            self._emit("disarmed", at=self.clock.now.isoformat())
+            if outcome.status == "accepted":
+                self.dry_run = True
+                self._emit("disarmed", at=self.clock.now.isoformat())
             return
         op = self.operations[effect.owner]
         status = "sent" if outcome.status == "accepted" else outcome.status
@@ -616,9 +616,11 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             if effect is None:
                 continue  # external executions reduce broker exposure, not our attempt budget
             scope = effect.payload.get("fill_id")
+            owner = effect.payload.get("protection_owner")
             if (effect.kind != "close" or not 0 < effect.boundary < reduction.execution_id
                     or effect.payload.get("sym") != reduction.sym
-                    or reduction.transition != "explicit_scope"
+                    or reduction.transition != ("triggered_protection" if owner else "explicit_scope")
+                    or owner is not None and reduction.protection_owner != owner
                     or scope is not None and any(i != scope for i, _ in reduction.allocations)):
                 return "reduction does not match dispatched authority"
             totals[effect.effect_id] = totals.get(effect.effect_id, 0) + sum(
@@ -888,6 +890,11 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         """Flat on THIS read: order-level reads only; absent data is never flatness."""
         if self.unresolved_requests:
             return False
+        if op.payload.get("transition") == "triggered_protection":
+            return (protection_consumed(ev, op.scope_id)
+                    and all(self.pending[r].status in ("filled", "cancelled", "rejected", "not_sent")
+                            for r in op.payload.get("cancel_refs", []))
+                    and self._residual_protected(op, ev))
         return scope_quiescent(ev, op.scope_kind, op.scope_id, self.pending)
 
     @staticmethod
@@ -973,7 +980,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     def _residual_protected(self, op: Operation, ev: Evidence) -> bool:
         """A bounded reduction is done only with the expected residual protection."""
-        if self._scope_flat(op, ev):
+        if op.payload.get("transition") != "triggered_protection" and self._scope_flat(op, ev):
             return True
         if any(self.pending[r].status not in ("filled", "cancelled", "rejected", "not_sent")
                for r in op.payload.get("cancel_refs", [])):
@@ -1207,16 +1214,25 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
     # ── CLOSE (spec §1 primitive) ──────────────────────────────────────────
     @planned_command
     def close(self, scope_kind: str, scope_id: str, now: datetime, reason: str,
-              op_id: str | None = None, qty: int | None = None) -> Operation:
+              op_id: str | None = None, qty: int | None = None,
+              transition: str = "explicit_scope", trigger_bracket: dict | None = None) -> Operation:
         """Prepare a durable close; send only when postdating evidence does not show it flat.
         Overlapping scopes serialize: one close in flight per symbol, later ones queue."""
+        if transition not in ("explicit_scope", "triggered_protection"):
+            raise KernelRefusal("unknown close transition")
+        if transition == "triggered_protection" and (scope_kind != "fill" or not trigger_bracket):
+            raise KernelRefusal("trigger requires an identified owner and issued bracket")
+        if transition == "explicit_scope" and trigger_bracket is not None:
+            raise KernelRefusal("ambiguous close transition")
         if (scope_kind not in ("fill", "leg", "sym")
                 or qty is not None and (scope_kind != "fill" or type(qty) is not int or qty <= 0)):
             raise KernelRefusal("bounded CLOSE requires an explicit fill and positive quantity")
         if op_id and op_id in self.operations:
             previous = self.operations[op_id]
             if (previous.kind, previous.scope_kind, previous.scope_id, previous.reason,
-                    previous.payload.get("qty")) != ("CLOSE", scope_kind, scope_id, reason, qty):
+                    previous.payload.get("qty"), previous.payload.get("transition", "explicit_scope"),
+                    previous.payload.get("trigger_bracket")) != (
+                        "CLOSE", scope_kind, scope_id, reason, qty, transition, trigger_bracket):
                 raise KernelRefusal("operation identity conflicts with durable demand")
             return previous
         self._sweep_timeouts(now)
@@ -1225,11 +1241,15 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             if (other.sym == sym and other.kind == "CLOSE" and other.scope_id == scope_id
                     and other.scope_kind == scope_kind and other.reason == reason
                     and other.payload.get("qty") == qty
+                    and other.payload.get("transition", "explicit_scope") == transition
+                    and other.payload.get("trigger_bracket") == trigger_bracket
                     and (op_id is None or other.op_id == op_id)
                     and other.status in ("prepared", "queued", "rejected", *UNRESOLVED)):
                 return other                          # idempotent by scope (retry path)
         op = Operation(op_id or self._next("op"), "CLOSE", scope_kind, scope_id, sym, leg_id,
-                       reason, prepared_at=now, prepared_seq=self.clock.tick(), payload={"qty": qty})
+                       reason, prepared_at=now, prepared_seq=self.clock.tick(),
+                       payload={"qty": qty, "transition": transition,
+                                "trigger_bracket": trigger_bracket})
         if scope_kind == "fill":
             op.payload["entry_ref"] = self.lots[scope_id].entry_ref
         self.operations[op.op_id] = op
@@ -1275,6 +1295,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         self._drain_effects()
         self.completion_actions(now)
         self.persist()
+        self._drain_effects()
 
     def _dispatch_queued(self, sym: str, now: datetime) -> None:
         if any(o.sym == sym and o.kind == "CLOSE" and o.status in UNRESOLVED
@@ -1379,6 +1400,12 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         del now
         op.payload["last_exposure"] = self._scope_exposure(op)
         payload = {"sym": op.sym}
+        if op.payload.get("transition") == "triggered_protection":
+            payload.update(protection_owner=op.scope_id, bracket=op.payload["trigger_bracket"],
+                           qty=op.payload["qty"])
+            op.status = "sent"
+            self._effect("close", op.op_id, payload)
+            return
         if op.scope_kind == "fill":
             qty = op.payload.get("qty")
             if qty is not None:
