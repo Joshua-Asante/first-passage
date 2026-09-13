@@ -21,14 +21,14 @@
 > governs that choice. This supersedes earlier "next work" routing, while the
 > formal replay acceptance, qualification and deployment holds below remain.
 
-**Status:** Configuration selection **ACCEPTED / CLOSED by operator decision, 2026-09-10**; former STATE item 1 is satisfied. The historical implementation/validation board below is preserved as evidence, not a live queue. Its unperformed checks remain unperformed; full replay acceptance and deployment are not implied. Full simulator work remains paused. Codex retains record ownership.
-**Last curated:** 2026-09-10 (Codex, `codex/tradeify-feasibility-screen-plan`)
+**Status:** Configuration selection **ACCEPTED / CLOSED by operator decision, 2026-09-10**; former STATE item 1 is satisfied. The historical implementation/validation board below is preserved as evidence, not a live queue. Its unperformed checks remain unperformed; full replay acceptance and deployment are not implied. Full simulator work remains paused. Astra retains record ownership under §57.
+**Last curated:** 2026-09-13 (Astra; campaign ownership updated)
 **Parent plan:** [`2026-09-02-seven-strategy-tradeify-select-configuration.md`](../../superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
 (PR [#272](https://github.com/Joshua-Asante/first-passage/pull/272) — **merged 2026-09-03** together
 with #273; four Codex passes `459421b`, `78c82de`, `e8694a9`, `6aa7ff8`, the operator's ruling and
 override `11d22e2`, and the Phase 7 simplification `1fe4600` are all on `main`).
 **Role:** this file is the plan's campaign evidence and decision record
-**and the claim manifest**. One writer — the orchestrating Codex session (operator transfer 2026-09-05) — per the MSL
+**and the claim manifest**. One writer — the Astra coordinator (§57; operator direction 2026-09-12) — per the MSL
 precedent ([`2026-08-12-msl-program-plan.md`](2026-08-12-msl-program-plan.md) §6) and the
 `cursor-fleet` single-writer rule. Delegated workers (Codex / Cursor / local compute) never edit it; they
 report via PR description and the orchestrator transcribes.
@@ -40,14 +40,14 @@ report via PR description and the orchestrator transcribes.
 
 | Role | Holder | Owns | May not |
 |---|---|---|---|
-| **Orchestrator** | Claude Code orchestrator session (operator ruling **D-B2**, 2026-09-11 — transferred from Codex, which held it from 2026-09-05) | decompose / freeze gates before outputs are read / review claims against artifacts / integrate / adjudicate; sole writer of this file, `STATE.md`, `docs/SESSIONS.md` for this campaign; owns the previously CC-solo implementation work | merge to `main` (operator retained this decision on 2026-09-05); arm or place trades |
+| **Orchestrator** | Astra coordinator (operator direction 2026-09-12; §57 supersedes D-B2 ownership) | decompose / freeze gates before outputs are read / review claims against artifacts / integrate / adjudicate; sole writer of this file, `STATE.md`, `docs/SESSIONS.md` for this campaign; owns specification, implementation and evidence assessment within each authorized packet | merge to `main` (operator retained this decision on 2026-09-05); arm or place trades |
 | **Worker — ingestion / engine integration / batch runner** | Codex (`codex/*` branches) | Phase 0 intake; Phase 1 ledger + reconciliation; runner + tests | rank, score a payoff cell, or write any governance surface; fork a simulator that duplicates §3 |
 | **Worker — IDE assist** | *(not a lane — operator ruling **D-B6**, 2026-09-11; Cursor left recurring spend with PR #334. Cursor-eligible packets go to Codex local.)* | — | — |
 | **Local compute** | operator machine | checkpointed shards from immutable manifests | change seeds mid-run |
 | **Board** | operator (Joshua) | every §6 decision; merge; GO for spend | — |
 
 Agreement between assistants is not evidence (plan). The orchestrator's review of a Codex phase is
-a `fable-judge`-posture read: claims vs artifacts, re-run what is cheap, `VERIFIED / VERIFIED WITH
+an Astra evidence review: claims vs artifacts, re-run what is cheap, `VERIFIED / VERIFIED WITH
 CAVEATS / REFUTED`.
 
 ## §2 Phase and gate board
@@ -3839,7 +3839,7 @@ satisfied 2026-09-10 (`583294f`, `343bbd0`).
 | D-B2 | Orchestrator role moves from Codex to the Claude Code orchestrator session; Codex remains the implementation lane and the automatic PR reviewer; STATE / SESSIONS / this record / the plan are orchestrator-only writes. §1 Roles amended by this commit. |
 | D-B3 | The private packet is not on this machine. TB-R1 regenerates the ledgers from the pinned exports and records the rest as LOST with digests retained; C1–C5 design decisions are re-derived as fresh decisions inside TB-S2. A restoration under the primary checkout's private root before TB-R1 runs supersedes this line. |
 | D-B4 | (a) single-candidate confirmation: exactly the accepted four-strategy book (Aegis + Vanguard + Striker MYM + ORB MNQ), K=1; no fifth leg, on/off search, runner-up or replacement path; any failed screen or bound ends the attempt with no qualifying configuration. |
-| D-B5 | Feed, M1 item-5 discharge and `operator_signoff` are Track A deliverables; Track B builds only what is offline-testable; TB-O1, TB-I4, TB-I5 owned in Track B unless Track A lands them first; Track B never chooses the feed. **Corrected 2026-09-11 (this commit):** Track A's A1 ruling is **option D — operator-attended controlled input** for the Stage 1 ceremony ([S2b build ADR Addendum 2026-09-11](../../docs/adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-09-11--stage-1-input-source-options-and-ratified-selection-option-d)); option A (Tradovate market-data API on the eval account) was found ineligible. Option D discharges M1 **without selecting a live feed**, so the production market-data source for the four adapters is a separate operator decision, recorded as umbrella open item **O-4**; the umbrella's earlier "Option A" parenthetical was stale. |
+| D-B5 | Feed, M1 item-5 discharge and `operator_signoff` are Track A deliverables; Track B builds only what is offline-testable; TB-O1, TB-I4, TB-I5 owned in Track B unless Track A lands them first; Track B never chooses the feed. **Corrected 2026-09-11 (this commit):** Track A's A1 ruling is **option D — operator-attended controlled input** for the Stage 1 ceremony ([S2b build ADR Addendum 2026-09-11](../../adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-09-11--stage-1-input-source-options-and-ratified-selection-option-d)); option A (Tradovate market-data API on the eval account) was found ineligible. Option D discharges M1 **without selecting a live feed**, so the production market-data source for the four adapters is a separate operator decision, recorded as umbrella open item **O-4**; the umbrella's earlier "Option A" parenthetical was stale. |
 | D-B6 | Cursor is not a lane; Cursor-eligible packets go to Codex local. |
 | D-B7 | Per-leg `allowed_entry_side` (Aegis `sell` only; Vanguard MGC, Striker MYM, ORB MNQ `buy` only) enforced by the listener, with the Equity-Index product-group hedging bar retained as an independent second check. |
 | D-B8 | Force-close semantic = the operator's recorded selection, confirmed; executed only as TB-S1 (E)'s atomic, fail-closed takeover; priority highest first Aegis 6J → Striker MYM → Vanguard MGC → ORB MNQ; whole legs closed from the lowest priority upward; any unconfirmed/partial/rejected/unknown/timed-out cancel or close refuses the Aegis entry. |
@@ -3884,3 +3884,10 @@ seven owed exports — five Striker by scaling the Account Size input, two ORB a
 Aegis and Vanguard none). TB-S1 is authorable on the ruled laws; TB-S2, TB-S3, TB-P1 and TB-P2 are authored on
 their manifest branches as separate PRs (2026-09-12). Nothing here authorizes implementation beyond a packet's
 own gate, deployment, arming or orders; merges stay with the operator.
+
+
+## §57 — Astra Tradeify contract ownership and closeout routing (2026-09-13)
+
+Joshua directed on 2026-09-12 that Claude have no further role in bringing the Tradeify portfolio into live deployment. Astra owns active coordination, specifications, implementation, planning, review integration and evidence assessment across Track A and Track B. This campaign-specific direction supersedes D-B2 and earlier Claude-only surface assignments; it does not change routing for unrelated campaigns. Historical branch names and authorship remain intact; Claude/Fable and `fable-judge` are not active dependencies. Joshua retains risk/trading ratifications, merges and operational GOs.
+
+The [TB-S1 contract](../../spec/2026-09-12-tradeify-book-protection-capacity-spec.md) and [closeout record](../handoffs/2026-09-13-tradeify-contract-closeout.md) own the live inventory, findings ledger, unresolved decision text and later TB-I1/TB-I2/TB-I3/TB-T1/TB-D2 routing. The recorded heads are #360 `e158323`, #361 `6e419a3`, #362 `0e68cc0`, #363 `482fbf4`, and #365 `f8e39af`; they are observations, not merge or acceptance claims. No portfolio implementation, qualification or operation is authorized.
