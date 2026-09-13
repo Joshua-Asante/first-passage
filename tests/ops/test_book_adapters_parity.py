@@ -2,14 +2,12 @@
 exports, and their behaviour at the protected sizes / ORB adds-off mode (Track B
 TB-A1..A4 acceptance; umbrella wave-2 gate).
 
-Everything here needs private inputs (gitignored ports, the reconstructed
+Adapter runs here need private inputs (gitignored ports, the reconstructed
 effective-input file, the frozen CME panels, the captured exports); each test
 skips with the missing input named when they are absent (public clone, CI, bare
 worktree). Tracked assertions are counts and structural facts only.
 """
 from __future__ import annotations
-
-import math
 
 import pytest
 
@@ -98,52 +96,15 @@ def test_aegis_protected_size_three_with_identical_signals_under_the_fixed_law()
     assert {t[4] for t in n} == {8} and {t[4] for t in p} == {3}
 
 
-def test_striker_protected_sizes_floor_each_tier_from_its_normal_value():
-    cfg = _require("dj30_mym_p250")
-    bars = _bars("dj30_mym_p250")
-    common = dict(adapter_overrides=cfg["adapter"], emulator_overrides=cfg["emulator"], bars=bars)
-    _, normal, _ = run_leg("dj30_mym_p250", **common)
-    _, protected, _ = run_leg(
-        "dj30_mym_p250", mode=Mode.PROTECTED,
-        quantity_rule=lambda n: leg_quantities("dj30_mym_p250", n, mode=Mode.PROTECTED, policy=POLICY),
-        **common)
-    # Every protected fill is checked against the exact floor of the normal tier the adapter
-    # sized from — including entries the full-size run never took (the leg's own realised P&L
-    # drives its day soft-stop, so a 40 % book can trade where 100 % halted). The adapter
-    # records its normal tier (`initial_size`) when it places an order; a THIS_CLOSE order fills
-    # on the same bar, so (bar, kind) keys the expectation exactly.
-    from c1_signal_daemon.book_protocol import OrderIntent
-    expected = {}
-
-    def instrument(adapter):
-        orig = adapter.on_bar
-
-        def on_bar(bar):
-            actions = orig(bar)
-            for a in actions:
-                if isinstance(a, OrderIntent) and a.kind in ("entry", "add"):
-                    base, add = leg_quantities("dj30_mym_p250", adapter.initial_size,
-                                               mode=Mode.PROTECTED, policy=POLICY)
-                    expected[(bar.ts, a.kind)] = base if a.kind == "entry" else add
-            return actions
-        adapter.on_bar = on_bar
-
-    _, protected, _ = run_leg(
-        "dj30_mym_p250", mode=Mode.PROTECTED,
-        quantity_rule=lambda n: leg_quantities("dj30_mym_p250", n, mode=Mode.PROTECTED, policy=POLICY),
-        adapter_hook=instrument, **common)
-    seen = set()
-    for t in protected.closed_trades:
-        if t.entry.fill_id in seen:
-            continue                         # a lot closed in parts appears once per part
-        seen.add(t.entry.fill_id)
-        want = expected[(t.entry.bar_time, t.entry.kind)]
-        assert t.entry.qty == want, (t.entry.bar_time, t.entry.kind, t.entry.qty, want)
-    assert len(seen) == len(expected) > 0
-    assert max(t.entry.qty for t in protected.closed_trades if t.entry.kind == "entry") <= 8
+def test_striker_normal_integer_callback_cannot_establish_protected_parity():
+    # The former law-A test asserted a cap of 8 and scaled normal adds.
+    # O-5/O-6 retired that claim. Law-B synthetic vectors live in
+    # test_book_quantity_laws; seven-export intake/parity remains TB-R3/TB-I2.
+    with pytest.raises(ValueError, match="risk"):
+        leg_quantities("dj30_mym_p250", 22, mode=Mode.PROTECTED, policy=POLICY)
 
 
-def test_vanguard_protected_places_nothing_and_watch1_places_one():
+def test_vanguard_protected_and_watch1_place_nothing():
     cfg = _require("vanguard_mgc")
     bars = _bars("vanguard_mgc")
     common = dict(adapter_overrides=cfg["adapter"], emulator_overrides=cfg["emulator"], bars=bars)
@@ -156,8 +117,7 @@ def test_vanguard_protected_places_nothing_and_watch1_places_one():
         "vanguard_mgc",
         quantity_rule=lambda n: leg_quantities("vanguard_mgc", n, mode=Mode.NORMAL, policy=POLICY,
                                                lifecycle_tier="WATCH-1"), **common)
-    assert {t.entry.qty for t in watch1.closed_trades} <= {1}
-    assert len(watch1.closed_trades) > 0
+    assert len(watch1.closed_trades) == 0
 
 
 # ── ORB adds-off (selection note: base one micro, adds disabled) ─────────

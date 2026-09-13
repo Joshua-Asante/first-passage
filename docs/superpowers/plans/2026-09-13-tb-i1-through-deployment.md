@@ -101,13 +101,25 @@ Arithmetic verification passed for all 8 mode/lifecycle rows, 23 Striker base/ad
 - Vanguard: quantity-floor law; protected and WATCH/RETIRED rows zero; a positive authorized normal base 1/2 produces add 1/2 via `max(1, pine_round(base × 0.8))`.
 - ORB: authorized base 1; normal adds 1 each, protected adds 0; WATCH/RETIRED base/add zero. No beta haircut added on rail.
 
-- [ ] Add literal vectors before production edits, including a Striker case with risk dollars 700 and per-contract risk 10: normal 22/55, protected 22/55, WATCH-1 protected 14/35, WATCH-2 protected 7/17. These synthetic boundary inputs distinguish law B from quantity-floor law A.
-- [ ] Add Aegis authorized normal 8/0 and protected 3/0, protected WATCH-1 1/0 and WATCH-2 0/0; Vanguard 1/1 and 2/2 authorized normal, all protected/WATCH rows 0/0; ORB normal 1/1 and protected 1/0.
-- [ ] Add absent/wrong policy, unknown leg/mode/tier, nonfinite/nonpositive risk denominator, zero-base/add and exact integer-boundary rejection cases. Test partial executed-base add sizing independently from intended base size.
-- [ ] Run the focused tests and retain the observed regression failures; implement the minimal shared law and migrate the menu/table consumers.
-- [ ] Run `python -m pytest tests/ops/test_book_policy.py -q`; require the literal vectors to pass without deriving expected values from the implementation.
+- [x] Add literal vectors before production edits, including a Striker case with risk dollars 700 and per-contract risk 10: normal 22/55, protected 22/55, WATCH-1 protected 14/35, WATCH-2 protected 7/17. These synthetic boundary inputs distinguish law B from quantity-floor law A.
+- [x] Add Aegis authorized normal 8/0 and protected 3/0, protected WATCH-1 1/0 and WATCH-2 0/0; Vanguard 1/1 and 2/2 authorized normal, all protected/WATCH rows 0/0; ORB normal 1/1 and protected 1/0.
+- [x] Add absent/wrong policy, unknown leg/mode/tier, nonfinite/nonpositive risk denominator, zero-base/add and exact integer-boundary rejection cases. Test partial executed-base add sizing independently from intended base size.
+- [x] Run the focused tests and retain the observed regression failures; implement the minimal shared law and migrate the menu/table consumers.
+- [x] Run `python -m pytest tests/ops/test_book_policy.py -q`; require the literal vectors to pass without deriving expected values from the implementation.
 
 **Boundary:** this API calculates quantities. It does not prove broker fills, reserve capacity, admit the policy, or implement live execution.
+
+### Second-slice execution record — 2026-09-13
+
+The operator requested commit/push/separate PRs and continuation to the next slice. Plan [PR #372](https://github.com/Joshua-Asante/first-passage/pull/372) contains `2374ae0`; first-slice [PR #373](https://github.com/Joshua-Asante/first-passage/pull/373) contains `d620602` and is stacked on the plan branch. Both were verified open, non-draft, mergeable with successful checks and no review threads; CodeRabbit skipped review and is not an independent code approval. Explicit public-publication consent was recorded for those two commits after automatic review required it.
+
+The continuation authorizes this bounded offline implementation; it does not populate S3/P2 ratification addenda or enable live behavior. Local branch `codex/tb-i1-quantity-laws` starts at `d620602e0bc2e247f0e5513558eb512aa50c13ed`. Task 2 is implemented locally in `book_policy.py`, with literal vectors in `tests/ops/test_book_quantity_laws.py` rather than a separate JSON fixture. Host wiring, durable evidence, registry admission, allocations, fingerprints and private port changes are outside this slice.
+
+Implemented API: `entry_quantities` requires explicit policy, mode and lifecycle; Striker additionally requires unscaled `risk_dollars`, `per_contract_risk` and integer `cap_alloc`. Its returned add is prospective, assuming full base execution. Actual add sizing uses `add_quantity(leg_id, confirmed_base, *, mode, policy, lifecycle_tier)` and preserves per-leg rounding without a second haircut. The caller still must prove execution evidence and pass capacity admission.
+
+`StrikerRiskInputs` records explicit input samples for `quantity_table(..., striker_inputs=...)` and `reachable_quantity_menu(..., striker_inputs=...)`. Each row retains its input sample. Normal-integer-only Striker callbacks fail closed; supplied samples demonstrate quantities but do not prove complete private-data reachability. Existing tests that asserted the superseded eight-contract protected ceiling and Vanguard WATCH-1 exposure were replaced by the ruled-law cases. Seven-export parity remains owed.
+
+Red/green evidence: 196 initial new cases failed because the APIs were absent; the explicit-risk table test then failed before migration; six additional input-validation cases reproduced missing rejections before correction. The first combined focused run after implementation/migration passed 254 tests with 12 private-input skips. Errors-only pylint passed after identifying intentional missing-argument rejection tests. Final `py -3.13 -m pytest tests/core tests/ops -q --tb=short`: **1,531 passed, 16 skipped, 6 dependency deprecation warnings** in 276.41 seconds. The repository check tier passed under Python 3.13.2 (72 evidence-store tests, 3 skips); absent-private-data/advisory warnings remain. Errors-only pylint passed for all four changed Python files; document links and whitespace checks passed. Six host/governance/protocol source blobs match the first-slice base. Task 2 is implemented and verified; this record accompanies its separately requested review commit. Code review in this slice is focused coordinator self-review, not independent acceptance or a live-capability claim.
 
 ## Task 3 — Host bindings, session state and capacity contract
 
