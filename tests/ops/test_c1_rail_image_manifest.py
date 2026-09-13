@@ -16,6 +16,7 @@ members are not.
 from __future__ import annotations
 
 import ast
+import re
 import shutil
 import subprocess
 import sys
@@ -152,6 +153,14 @@ def test_dockerfile_copy_set_is_nonempty():
     assert "ops/c1_rail/c1_rail_listener.py" in copied
     assert "core/historical_challenge.py" in copied, (
         "regression pin: the 2026-07-31 bite must stay in the COPY set")
+
+
+def test_ci_exact_inventory_includes_packaged_python_modules():
+    script = (REPO_ROOT / "scripts/c1_image_validation.sh").read_text(encoding="utf-8")
+    inventory = re.search(r"(?ms)^LISTENER_FILES=\(\n(.*?)^\)", script)
+    assert inventory is not None
+    declared = set(re.findall(r"/app/([^\s\"']+\.py)", inventory.group(1)))
+    assert _dockerfile_copied_py_paths(DOCKERFILE) <= declared
 
 
 def test_listener_import_closure_is_covered_by_dockerfile_copy():
