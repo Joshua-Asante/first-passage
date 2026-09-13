@@ -224,3 +224,131 @@ def test_cdf_matches_small_exact_binomial_distribution(numerator: int) -> None:
     for k, got in cp._iter_lower_cdf(n, numerator / 10):
         cumulative += math.comb(n, k) * numerator**k * (10 - numerator)**(n - k)
         assert got == pytest.approx(cumulative / 10**n, rel=2e-13, abs=1e-15)
+
+
+# ── TB-P1 additive mode: pass-by-day speed limb (one-sided lower bound) ─────────
+# Existing pins above are byte-identical; everything below is new surface only.
+
+from fractions import Fraction  # noqa: E402
+
+
+def _exact_min_passes(n: int, target: Fraction, alpha: Fraction) -> int:
+    """Smallest k with P(X >= k; n, target) <= alpha, exact rationals."""
+    for k in range(n + 2):
+        upper = sum(
+            Fraction(math.comb(n, i)) * target**i * (1 - target) ** (n - i)
+            for i in range(k, n + 1)
+        )
+        if upper <= alpha:
+            return k
+    return -1
+
+
+def test_min_certifying_passes_matches_exact_oracle() -> None:
+    n = 100
+    expected = _exact_min_passes(n, Fraction(1, 2), Fraction(1, 20))
+    assert cp.min_certifying_passes(n, target=0.5, alpha=0.05) == expected
+    assert expected == 59
+
+
+def test_min_certifying_passes_preserves_inclusive_boundary() -> None:
+    assert cp.min_certifying_passes(1, target=0.05, alpha=0.05) == 1
+    assert cp.speed_limb_power(1, 1.0, target=0.05, alpha=0.05) == 1.0
+
+
+def test_min_certifying_passes_rejects_alpha_one_ulp_below_boundary() -> None:
+    # P(X >= 1; n=1, p=0.05) equals target exactly, so it exactly matches an
+    # alpha of 0.05 (certifies, see above) but must NOT match a genuinely
+    # smaller alpha even one ULP below it: that P(X >= 1) is then strictly
+    # greater than alpha, so no count certifies. A tolerance wide enough to
+    # recover the exact-tie case above would wrongly accept this too.
+    tighter_alpha = math.nextafter(0.05, 0.0)
+    assert cp.min_certifying_passes(1, target=0.05, alpha=tighter_alpha) == -1
+
+
+def test_min_certifying_passes_none_when_n_too_small() -> None:
+    assert cp.min_certifying_passes(3, target=0.5, alpha=0.05) == -1
+    assert cp.speed_limb_power(3, 0.9, target=0.5, alpha=0.05) == 0.0
+
+
+def test_speed_limb_power_matches_exact_small_binomial() -> None:
+    n, q = 25, Fraction(7, 10)
+    k_min = _exact_min_passes(n, Fraction(1, 2), Fraction(1, 20))
+    exact = sum(
+        Fraction(math.comb(n, i)) * q**i * (1 - q) ** (n - i) for i in range(k_min, n + 1)
+    )
+    got = cp.speed_limb_power(n, float(q), target=0.5, alpha=0.05)
+    assert got == pytest.approx(float(exact), rel=2e-12, abs=1e-15)
+
+
+def test_speed_limb_power_is_the_complement_of_the_failure_limb() -> None:
+    # A lower bound on passes >= t is the upper bound on failures <= 1 - t.
+    assert cp.speed_limb_power(300, 0.65, target=0.5) == pytest.approx(
+        cp.per_limb_power(300, 0.35, ceiling=0.5), abs=1e-15
+    )
+
+
+def test_joint_power_four_formulas() -> None:
+    assert cp.joint_power_four(0.9, 0.8, "independent") == pytest.approx(0.9**3 * 0.8)
+    assert cp.joint_power_four(0.9, 0.8, "frechet") == pytest.approx(1 - 3 * 0.1 - 0.2)
+    assert cp.joint_power_four(0.5, 0.5, "frechet") == 0.0
+    with pytest.raises(ValueError):
+        cp.joint_power_four(0.9, 0.8, "gaussian")
+
+
+def test_size_for_joint_four_returns_first_grid_n_meeting_target() -> None:
+    n = cp.size_for_joint_four(0.03, 0.65, 0.80, dependence="frechet")
+    assert n % cp.DEFAULT_STEP == 0
+
+    def joint(m: int) -> float:
+        return cp.joint_power_four(
+            cp.per_limb_power(m, 0.03), cp.speed_limb_power(m, 0.65), "frechet"
+        )
+
+    assert joint(n) >= 0.80
+    assert all(joint(m) < 0.80 for m in range(cp.DEFAULT_STEP, n, cp.DEFAULT_STEP))
+
+
+def test_size_for_joint_four_rejects_unattainable_perfect_power() -> None:
+    with pytest.raises(ValueError, match="target_power 1.0 requires"):
+        cp.size_for_joint_four(0.01, 0.9, 1.0)
+    with pytest.raises(ValueError, match="target_power 1.0 requires"):
+        cp.size_for_joint_four(0.0, 0.9, 1.0)
+
+
+@pytest.mark.parametrize("kwargs", [{"target": 0.0}, {"target": 1.0}, {"alpha": 0.0}])
+def test_speed_limb_rejects_out_of_domain(kwargs: dict) -> None:
+    with pytest.raises(ValueError):
+        cp.min_certifying_passes(100, **kwargs)
+
+
+def test_cli_speed_mode_smoke_and_legacy_line_unchanged() -> None:
+    legacy = subprocess.run(
+        [sys.executable, str(SCRIPT), "--true-rate", "0.03", "--n", "630"],
+        capture_output=True, text=True, check=False,
+    )
+    assert legacy.returncode == 0 and "per_limb=0.803" in legacy.stdout
+    assert "speed_limb" not in legacy.stdout
+    speed = subprocess.run(
+        [sys.executable, str(SCRIPT), "--true-rate", "0.03", "--true-pass-rate", "0.65",
+         "--n", "950"],
+        capture_output=True, text=True, check=False,
+    )
+    assert speed.returncode == 0, speed.stderr
+    assert "speed_limb=" in speed.stdout and "joint4_frechet=" in speed.stdout
+    sized = subprocess.run(
+        [sys.executable, str(SCRIPT), "--true-rate", "0.03", "--true-pass-rate", "0.65",
+         "--power", "0.80", "--dependence", "frechet"],
+        capture_output=True, text=True, check=False,
+    )
+    assert sized.returncode == 0, sized.stderr
+    assert sized.stdout.startswith("n=") and "joint4=" in sized.stdout
+
+
+def test_cli_speed_mode_rejects_bad_pass_target() -> None:
+    proc = subprocess.run(
+        [sys.executable, str(SCRIPT), "--true-rate", "0.03", "--true-pass-rate", "0.65",
+         "--pass-target", "1.5", "--n", "100"],
+        capture_output=True, text=True, check=False,
+    )
+    assert proc.returncode == 2 and proc.stdout == "" and "Traceback" not in proc.stderr
