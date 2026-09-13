@@ -4,7 +4,7 @@
 **Supersedes:** none
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-07-22-challenge-era-substrate-retirement.md` - `POLICY_REGISTRY["FXIFY-C2"]` seed-row + `_validate_fxify_seed()` + `ACTIVE_FIRM` retention only. The concept-not-constant frame, the venue-agnostic policy type, and the pre-reg → re-MC → both-halves-gate → ADR admission chain stand (and are now the sole change-control on the DD constants).
-**Superseded-in-part-by:** `2026-09-12-tradeify-book-protection-instance-admission.md` - PROPOSED, effective on its ratification: §4 step 2 (the trigger × scale grid), §2 item 2 (the `dd_type` dispatch of `reference_mode`) and §4 step 3 as to the regime gate's Part A per-panel depth, for the `tradeify_portfolio@Tradeify_Select_100K` instance only; the invariant, the three variables, steps 1 and 4 and the gate's three criteria stand.
+**Superseded-in-part-by:** `2026-09-12-tradeify-book-protection-instance-admission.md` - PROPOSED, effective on its ratification: §4 step 2 (the trigger × scale grid), §2 item 2 (the `dd_type` dispatch of `reference_mode`), §4 step 3 as to the regime gate's Part A per-panel depth, and §2 item 1's multiplier as to that instance's ORB leg only (a mode response — base held at one micro, adds withheld while protected — in place of the factor), for the `tradeify_portfolio@Tradeify_Select_100K` instance only; the invariant for every other leg and instance, the three variables, steps 1 and 4 and the gate's three criteria stand.
 **Retain-until:** none
 **Decision date:** 2026-07-13
 **Authors:** Joshua (decision) + Claude Code Opus 4.8 (recorder/implementer)
