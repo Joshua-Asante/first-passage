@@ -33,7 +33,7 @@ Output: one private JSON (`values`, `derived` incl. `valid_until`, `evidence` {p
 
 Steps:
 1. Codex builds `scripts/seal_account_snapshot.py` + `tests/test_seal_account_snapshot.py` test-first per the [TB-T1 packet](../briefs/handoffs/2026-09-12-tb-t1-snapshot-sealer-packet.md).
-2. The coordinator adjudicates (`fable-judge`); the operator merges.
+2. The Astra coordinator adjudicates against the evidence; the operator merges (campaign ownership record §57).
 3. At TB-B7 the operator captures E1–E3 and runs the sealer; the coordinator records the sealed digest, timestamp and `valid_until` in the execution fingerprint; TB-E2 and TB-B10 check `valid_until` before they start.
 
 Gate: RESOLVED if the tool refuses on every check C1–C10 with a named failing test and seals a synthetic fixture that passes them all, printing only the allowed stdout fields; FALSIFIED if any check needs a value the three evidence files do not carry.

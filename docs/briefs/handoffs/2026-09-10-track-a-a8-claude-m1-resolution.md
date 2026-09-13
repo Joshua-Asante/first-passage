@@ -1,5 +1,7 @@
 # Claude handoff — Track A / A8: operator signoff, `RESOLVED` artifact, listener redeploy — then STOP
 
+> **Current owner — operator direction 2026-09-12:** Astra replaces Claude for this remaining Tradeify packet and its evidence review. Historical role names below identify the original dispatch; [campaign ownership §57](../programs/2026-09-03-seven-strategy-select-campaign-state.md#57--astra-tradeify-contract-ownership-and-closeout-routing-2026-09-13) governs current execution. Joshua retains attended inputs, signoff, merges and operational GOs; all scope and entry gates remain unchanged.
+
 **Type:** cc_handoff (multi-step; governed artifact edit + one listener redeploy under the 2026-08-02 grant)
 **Date:** 2026-09-10
 **Status:** dispatch only when A7 is DONE with a recorded listener event UUID and the operator is present to sign

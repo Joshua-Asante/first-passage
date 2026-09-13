@@ -1,5 +1,7 @@
 # Tradeify Select configuration — bounded implementation plan
 
+> **Ownership update — operator direction 2026-09-12:** Astra owns the remaining Tradeify coordination, implementation and evidence assessment. Earlier Claude/Fable role assignments and adjudication references are historical; [campaign ownership record](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#57--astra-tradeify-contract-ownership-and-closeout-routing-2026-09-13) governs current routing. Joshua retains ratifications, merges and operational GOs. This changes ownership only, not packet scope or entry gates.
+
 > **2026-09-10 operator acceptance — queue item closed:** The operator accepted
 > the selected configuration as satisfying STATE item 1. Configuration selection
 > is complete by that decision; the item leaves the live queue. See the
