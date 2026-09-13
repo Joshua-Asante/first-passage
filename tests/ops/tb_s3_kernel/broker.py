@@ -194,6 +194,7 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
     reductions: list[Reduction] = field(default_factory=list)
     tick_sizes: dict[str, float] = field(default_factory=dict)  # abstract unit tick unless supplied
     _executing_request: str | None = None
+    control_owner: object = None
 
     def request(self, action: str, request_id: str, **payload) -> Outcome:
         """Transport acceptance can precede route execution by arbitrarily many events."""
@@ -473,10 +474,15 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
 
     # ── closing ────────────────────────────────────────────────────────────
     def close(self, *, sym: str, fill_id: str | None = None,
-              qty: int | None = None) -> Outcome:
+              qty: int | None = None, protection_owner: str | None = None,
+              bracket: dict | None = None) -> Outcome:
         """Scoped or quantity-less close with atomic attached-order handling (L2(d)/(e))."""
         if not self.supports("d") or not self.supports("e"):
             return Outcome("rejected", detail="route has no atomic scoped close")
+        if protection_owner is not None:
+            return self._close_trigger(sym, protection_owner, bracket, qty, fill_id)
+        if bracket is not None:
+            return Outcome("rejected", detail="bracket requires protection owner")
         if qty is not None and not self._positive_qty(qty):
             return Outcome("rejected", detail="close quantity must be a positive integer")
         if fill_id is not None and (fill_id not in self.lots or self.lots[fill_id].sym != sym):
@@ -517,6 +523,31 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         if inj == "unknown":
             return Outcome("unknown", detail="closed; acknowledgement lost")
         return Outcome("accepted", ref=fill_id or sym)
+
+    def _close_trigger(self, sym, owner_id, bracket, qty, fill_id):
+        """Atomic close-time issue/trigger; no intermediate attach or explicit close."""
+        owner = self.lots.get(owner_id)
+        if (fill_id is not None or owner is None or owner.sym != sym
+                or owner.protection_consumed or not bracket or not self._valid_bracket(bracket)
+                or len(bracket) != 1 or next(iter(bracket)) not in ("stop", "limit")
+                or not self._positive_qty(qty)):
+            return Outcome("rejected", detail="invalid triggered protection demand")
+        wanted = owner.protection_qty if owner.protection else owner.qty
+        if wanted != qty:
+            return Outcome("rejected", detail="protection quantity changed; reconcile")
+        inj = self._take("close")
+        if inj == "reject" or isinstance(inj, tuple):
+            return Outcome("rejected", detail="trigger transition not executed")
+        if inj == "unknown_lost":
+            return Outcome("unknown", detail="trigger never reached route")
+        component = next(iter(bracket))
+        if component not in owner.protection:
+            self._attach_protection(owner, bracket, owner.price)
+        ref = owner.protection[component]
+        self.orders[ref].price = bracket[component]
+        self.trigger(ref)
+        self._note("close", sym=sym, protection_owner=owner_id, qty=qty)
+        return Outcome("unknown" if inj == "unknown" else "accepted")
 
     def _allocation_plan(self, lots: list[Lot], wanted: int) -> list[tuple[Execution, Lot, int]]:
         """FIFO is execution order, including interleaved partial fills of one order."""
@@ -593,7 +624,8 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
             self.reductions.append(Reduction(self.clock.tick(), owner.sym, "triggered_protection",
                                              ref, owner.fill_id,
                                              tuple((l.fill_id, q) for _, l, q in plan),
-                                             tuple((e.execution_id, q) for e, _, q in plan)))
+                                             tuple((e.execution_id, q) for e, _, q in plan),
+                                             self._executing_request))
         else:
             self.fill(ref)
         self._note("trigger", ref=ref)

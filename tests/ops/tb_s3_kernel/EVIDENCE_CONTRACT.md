@@ -98,3 +98,12 @@ retain `None`. This enables exact bounded-operation attribution despite concurre
 entry fills. The historical #368 verification below/above remains evidence for
 its recorded revision; #369's updated producer and consumers are verified together
 in `PRIMITIVE_VERIFICATION.md`.
+
+## Stage 3 producer extension (#370)
+
+The account integration adds an atomic close-time protection issue/trigger command.
+Its reductions retain `request_id`, identify the triggering owner and allocate
+FIFO. It can create a bare owner's first fixed component and consume it in the
+same event. Partial execution is refused before mutation. No producer-only #368
+acceptance or live qualification is inferred for this extension; see
+`ACCOUNT_VERIFICATION.md` for combined sequence evidence.

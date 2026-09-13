@@ -59,3 +59,11 @@ explicit adversarial injection rather than invalid normal producer calls.
 (request-to-gross ownership, scope expansion, renewed IDs and the retained-close
 race) now have focused sequence regressions and independent review. This boundary
 accepts neither the superseded #365 implementation nor the #370 account stage.
+
+## Stage 3 integration extension (#370)
+
+#370 extends the command API with durable `triggered_protection` close-time exits
+and an offline atomic producer transition. It preserves explicit-close limits and
+request-attributed reduction accounting. The explicit-only restriction above
+records the accepted #369 boundary; the extension is separately verified in
+`ACCOUNT_VERIFICATION.md` and scoped in `ACCOUNT_CONTRACT.md`.

@@ -49,7 +49,7 @@ def dispatch(kernel, effect):
     payload = dict(effect.payload)
     payload.pop("component", None)
     if effect.kind == "disarm":
-        outcome = Outcome("accepted")
+        outcome = kernel.disarm_effect(effect)
     else:
         outcome = kernel.broker.request(effect.kind, effect.effect_id, **payload)
     if kernel.effect_hook:
