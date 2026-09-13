@@ -193,7 +193,9 @@ def test_ac7_daemon_loss_timer_survives_listener_restart_and_absent_timestamp_is
     assert all(o.status == "complete" for o in ops) and restarted.lots[lot].qty == 0
     bare = Kernel.restart(world.kernel.store, world.broker, world.clock, world.now)
     bare.last_control_read = None                                    # never persisted
-    bare.p_ev["6J"] = (3, world.now)                                 # some exposure
+    world.broker.positions["6J"] = -3                              # external exposure
+    world.advance(MIN)
+    bare.apply_evidence(world.broker.snapshot("6J"))
     assert bare.daemon_loss_check(world.now)                          # absent = expired
 
 

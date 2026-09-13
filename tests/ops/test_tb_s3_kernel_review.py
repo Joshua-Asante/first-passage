@@ -5,6 +5,8 @@ it exposed cannot return silently.
 """
 from __future__ import annotations
 
+from dataclasses import replace
+
 from book_protocol import Bracket
 
 from tests.ops.tb_s3_kernel.harness import BAR, MIN, entry, fill_lot, make_world
@@ -12,7 +14,7 @@ from tests.ops.tb_s3_kernel.harness import BAR, MIN, entry, fill_lot, make_world
 
 def _position_only(ev):
     """A read that carries the position but no order-level data (spec: aggregate P)."""
-    return type(ev)(ev.sym, ev.as_of, ev.position, (), {}, {}, {}, order_level=False)
+    return replace(ev, working=(), order_status={}, fills={}, lots={}, order_level=False)
 
 
 # Finding 1 — position-only evidence must never complete a close or clear its block

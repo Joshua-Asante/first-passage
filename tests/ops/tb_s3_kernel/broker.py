@@ -12,6 +12,7 @@ the two flavours the spec's S9 distinguishes.
 """
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
@@ -32,6 +33,12 @@ class Clock:
     """Explicit clock; nothing in the model reads wall-clock time."""
 
     now: datetime
+    sequence: int = 0
+
+    def tick(self) -> int:
+        """Harness event order, independent of wall time and evidence delivery order."""
+        self.sequence += 1
+        return self.sequence
 
     def advance(self, delta: timedelta) -> datetime:
         """Move time forward and return the new instant."""
@@ -75,6 +82,7 @@ class BrokerOrder:
             "type": self.order_type, "price": self.price, "attached_to": self.attached_to,
             "trail_active": self.trail_active, "trail_anchor": self.trail_anchor,
             "trail_activation": self.trail_activation, "trail_offset": self.trail_offset,
+            "remaining": self.qty - self.filled_qty,
         }
 
 
@@ -104,6 +112,10 @@ class Evidence:
     fills: dict[str, int]       # order ref -> cumulative filled quantity
     lots: dict[str, int] = field(default_factory=dict)   # lot id -> open quantity
     order_level: bool = True    # False for a position-only read (no working list, no status)
+    acquired: int = 0           # harness acquisition identity; 0 supplies no causal proof
+    request_fence: bool = False # read accounts for every earlier request, including pending
+    pending_requests: frozenset[str] = frozenset()
+    request_outcomes: dict[str, str] = field(default_factory=dict)
 
     def working_refs(self) -> set[str]:
         """Refs of every working order in this read."""
@@ -129,6 +141,27 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
     pending_bracket: dict[str, dict | None] = field(default_factory=dict)
     drop_attached_at_fill: bool = False          # route bug: bracketed fill, no child orders
     _seq: int = 0
+    queued_requests: list[tuple[str, str, dict]] = field(default_factory=list)
+    request_outcomes: dict[str, str] = field(default_factory=dict)
+
+    def request(self, action: str, request_id: str, **payload) -> Outcome:
+        """Transport acceptance can precede route execution by arbitrarily many events."""
+        if self.inject.get(action) == "defer":
+            self.inject.pop(action)
+            self.queued_requests.append((request_id, action, copy.deepcopy(payload)))
+            self._note("accepted_pending", request_id=request_id, action=action)
+            return Outcome("accepted")
+        result = getattr(self, action)(**payload)
+        self.request_outcomes[request_id] = result.status
+        return result
+
+    def execute_next(self) -> Outcome:
+        """Independent broker execution event; it never calls back into the listener."""
+        request_id, action, payload = self.queued_requests.pop(0)
+        result = getattr(self, action)(**payload)
+        self.request_outcomes[request_id] = result.status
+        self._note("request_executed", request_id=request_id, action=action)
+        return result
 
     # ── helpers ────────────────────────────────────────────────────────────
     def supports(self, item: str) -> bool:
@@ -136,6 +169,12 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         return self.caps.get(item) == SUPPORTED
 
     def _take(self, action: str):
+        value = self.inject.get(action)
+        if isinstance(value, list):
+            result = value.pop(0)
+            if not value:
+                self.inject.pop(action)
+            return result
         return self.inject.pop(action, None)
 
     def _ref(self, prefix: str) -> str:
@@ -237,6 +276,8 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         if inj == "reject":
             return Outcome("rejected", detail="injected reject")
         touches_trail = "trail_activation" in changes or "trail_offset" in changes
+        if inj == "unknown_lost":
+            return Outcome("unknown", detail="modify never reached the route")
         for key, value in changes.items():
             setattr(order, key, value)
         if touches_trail and self.modify_resets_trail_anchor:
@@ -256,6 +297,8 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         inj = self._take("attach")
         if inj == "reject":
             return Outcome("rejected", detail="injected reject")
+        if inj == "unknown_lost":
+            return Outcome("unknown", detail="attach never reached the route")
         self._attach_protection(lot, bracket, price)
         self._note("attach", lot=fill_id)
         if inj == "unknown":
@@ -270,6 +313,8 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         inj = self._take("cancel")
         if inj == "reject":
             return Outcome("rejected", detail="injected reject")
+        if inj == "unknown_lost":
+            return Outcome("unknown", detail="cancel never reached the route")
         order.status = "cancelled"
         self._note("cancel", ref=ref)
         if inj == "unknown":
@@ -357,4 +402,7 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
                  if o.sym == sym and o.filled_qty}
         lots = {l.fill_id: l.qty for l in self.lots.values() if l.sym == sym}
         return Evidence(sym, as_of or self.clock.now, self.positions.get(sym, 0),
-                        working, status, fills, lots)
+                        copy.deepcopy(working), status, fills, lots,
+                        acquired=self.clock.tick(), request_fence=True,
+                        pending_requests=frozenset(r[0] for r in self.queued_requests),
+                        request_outcomes=dict(self.request_outcomes))

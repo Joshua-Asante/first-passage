@@ -2,6 +2,7 @@
 helpers that read like the spec's acceptance cases."""
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -50,6 +51,38 @@ class World:
         """Every source delivered a bar (all healthy)."""
         for sym in OWNED_SYMBOLS:
             self.daemon.on_bar(sym, at or self.now)
+
+
+@dataclass
+class Sequence:
+    """Acquire reads independently, then replay named deliveries and listener restarts."""
+
+    world: World
+    reads: dict
+    history: list
+
+    @classmethod
+    def start(cls, world):
+        """An empty deterministic trace with no policy oracle inside the harness."""
+        return cls(world, {}, [])
+
+    def acquire(self, name, sym):
+        """Capture facts now; later broker changes never rewrite a queued read."""
+        self.reads[name] = self.world.broker.snapshot(sym)
+        self.history.append(f"acquire:{name}")
+
+    def deliver(self, name):
+        """Deliver or replay exactly the acquired facts."""
+        self.world.kernel.apply_evidence(copy.deepcopy(self.reads[name]))
+        self.history.append(f"deliver:{name}")
+
+    def restart(self):
+        """Restart only the listener; broker truth, pending requests and clock survive."""
+        world = self.world
+        world.kernel = Kernel.restart(world.kernel.store, world.broker, world.clock, world.now,
+                                      protection_cases=world.kernel.protection_cases)
+        world.daemon.kernel = world.kernel
+        self.history.append("restart")
 
 
 def make_world(caps: dict[str, str] | None = None, cases: dict | None = None,

@@ -44,10 +44,12 @@ def test_close_noop_only_on_postdating_evidence_and_never_on_a_pre_buffer_snapsh
     world.advance(5 * MIN)
     sent = world.kernel.close("sym", "MGC", world.now, "eod_flatten")
     assert sent.status == "sent" and world.kernel.events("close_noop") == []
+    noop = world.kernel.close("sym", "MGC", world.now, "kill", op_id="queued-noop")
+    assert noop.status == "queued"
     world.advance(MIN)
     world.snap("MGC")
     assert sent.status == "complete"
-    noop = world.kernel.close("sym", "MGC", world.now - MIN, "eod_flatten")   # evidence ≥ prepared
+    # The read was acquired after both real commands; backdating a new command is no proof.
     assert noop.status == "complete" and world.kernel.events("close_noop")
     assert stale < noop.prepared_at
 
