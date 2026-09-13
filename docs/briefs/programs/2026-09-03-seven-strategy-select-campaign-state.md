@@ -3884,3 +3884,10 @@ seven owed exports — five Striker by scaling the Account Size input, two ORB a
 Aegis and Vanguard none). TB-S1 is authorable on the ruled laws; TB-S2, TB-S3, TB-P1 and TB-P2 are authored on
 their manifest branches as separate PRs (2026-09-12). Nothing here authorizes implementation beyond a packet's
 own gate, deployment, arming or orders; merges stay with the operator.
+
+
+## §57 — Astra Tradeify contract ownership and closeout routing (2026-09-13)
+
+Active coordination, specification, implementation planning, review integration and evidence assessment move to Astra under the operator's retirement direction. Historical branch names and authorship remain intact; Claude/Fable and `fable-judge` are not active dependencies. Joshua retains risk/trading ratifications, merges and operational GOs.
+
+The [TB-S1 contract](../../spec/2026-09-12-tradeify-book-protection-capacity-spec.md) and [closeout record](../handoffs/2026-09-13-tradeify-contract-closeout.md) own the live inventory, findings ledger, unresolved decision text and later TB-I1/TB-I2/TB-I3/TB-T1/TB-D2 routing. The recorded heads are #360 `e158323`, #361 `6e419a3`, #362 `0e68cc0`, #363 `482fbf4`, and #365 `f8e39af`; they are observations, not merge or acceptance claims. No portfolio implementation, qualification or operation is authorized.
