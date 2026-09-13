@@ -109,6 +109,32 @@ changing this policy would require an explicit governing-contract decision.
 - A broker partial-close allowance is one request-total budget across all lots,
   also bounded by requested quantity. It is not replenished for each lot.
 
+### Review refinements after `e46a4fa`
+
+- Live evidence and restart use the same order-ownership classification. Each
+  unowned executable order blocks account admission independently; unallocated
+  broker position has its own symbol owner. Position-only evidence can establish
+  the uncertainty but cannot discharge it. Fresh full evidence resolves only its
+  observed owners, and session rollover does not erase outstanding ownership.
+  An unknown order kind cannot enter the protective-orphan cancellation path.
+  Freshly classified external entry/add orders remain cancelable beside allocated
+  exposure. Terminal evidence resolves their cancellation without flattening the
+  existing lot; any raced external fill retains its separate unallocated-position
+  block for attended reconciliation.
+- An amendment durably stages every changed component before the first store write
+  or dispatch. Unknown component outcomes pause further modifications on the fill
+  until covering evidence resolves the attempt. Never-sent siblings then resume
+  from the journal automatically. A component proven not applied retains the old
+  protection and can be reissued; it is not blindly retried. Pending components
+  cannot be replaced by another command or disappear as rejected placeholders.
+- Classification, listener validation and resumed amendment dispatch require one
+  coherent full read. Dispatch reclassifies the target's current fields and applies
+  the account block to any loosening. Restart still cancels never-sent loosening
+  requests as specified above. A planned value cannot explain an observed transition.
+- First attachment requires `L2(f)` and, for any trailing component, `L2(g)` before
+  defining protection or dispatching. Unsupported mixed brackets cannot be partly
+  attached and then converted into a gap by the model.
+
 ## Verification
 
 Baseline: 58 existing tests passed. Initial redesign regressions: 12 failed, one
@@ -132,7 +158,7 @@ No mutation is applied to this checkout or production files.
 
 Subsequent review rounds and final full-ops, check-tier and lint results are recorded
 in `VERIFICATION.md`. The current kernel suite includes actual store-write crash
-cuts as well as route-dispatch cuts, with 290 passing cases.
+cuts as well as route-dispatch cuts, with 316 passing cases.
 
 The production-reference acceptance hold remains pending final operator disposition.
 Live L-1 request/evidence equivalence, L-2 validation, production disarm acknowledgment

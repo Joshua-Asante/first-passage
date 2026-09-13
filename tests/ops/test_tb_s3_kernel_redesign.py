@@ -133,14 +133,19 @@ def test_unknown_component_does_not_whitelist_an_unsent_sibling():
     lot = fill_lot(w, "vanguard_mgc", 2, Bracket(stop=90, limit=120))
     w.broker.inject["modify"] = "unknown"
     d = w.kernel.amend(lot, Bracket(stop=95, limit=125), w.now)
+    # Covering evidence now resumes durable siblings automatically. Cut that resumed
+    # dispatch so this trace still tests a value that was never actually attempted.
+    crash_once(w.kernel, "modify", "planned")
     w.advance(MIN)
-    w.snap()
+    with pytest.raises(Crash):
+        w.snap("MGC")
     assert "protection_gap" not in w.kernel.blocks     # 95/120 is legitimate
     assert d.op.status != "complete"                  # unsent limit still owed
     limit = w.kernel.expected[lot].working["limit"]
+    restart(w)
     w.broker.orders[limit].price = 125                  # unexplained unsent value
     w.advance(MIN)
-    w.snap()
+    w.snap("MGC")
     assert "protection_gap" in w.kernel.blocks
 
 

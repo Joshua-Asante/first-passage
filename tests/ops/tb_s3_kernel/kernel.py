@@ -318,10 +318,32 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             return
         self._draining = True
         try:
-            while effect := next((e for e in self.effects.values() if e.status == "planned"), None):
+            while effect := next((e for e in self.effects.values() if self._effect_ready(e)), None):
                 dispatch(self, effect)
         finally:
             self._draining = False
+
+    def _effect_ready(self, effect: Effect) -> bool:
+        if effect.status != "planned":
+            return False
+        op = self.operations.get(effect.owner)
+        if effect.kind != "modify" or op.status == "complete":
+            return True
+        if any(a.status in ("unknown", "dispatching") for a in op.components.values()):
+            return False
+        ev = self.coherent_evidence(op.sym, self.clock.now)
+        if ev is None:
+            return False
+        component = effect.payload["component"]
+        current = next((w for w in ev.working if w["ref"] == effect.payload["ref"]), None)
+        lot = self.lots[op.scope_id]
+        if current is None or not valid_component(current, component, {}, op.scope_id,
+                                                  ev.lots.get(op.scope_id), lot.side):
+            return False
+        change = op.payload["changes"][component]
+        classified = self._diff({component: change["fields"]}, {component: current}, lot.side)
+        return classified is not None and not (
+            self.risk_add_blocked and any(c["loosening"] for c in classified.values()))
 
     @classmethod
     def restart(cls, store: Store, broker: FakeBroker, clock: Clock, now: datetime,
@@ -440,6 +462,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             self.p_ev[ev.sym] = (ev.position, ev.as_of)
             self.position_cursor[ev.sym] = ev.acquired
         if not ev.order_level:
+            self._reconcile_ownership(ev)
             self.persist()
             return
         # Never use an older full read to settle against a newer position-only view.
@@ -497,6 +520,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         self._settle_operations(ev)          # all operations use this immutable read
         self._check_expectations(ev)
         self._sync_lots(ev)
+        self._reconcile_ownership(ev)
         self._maybe_clear_unknown_order()
         self._advance_flat_work(ev)
         self._dispatch_queued(ev.sym, self.clock.now)
@@ -512,6 +536,33 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             if lot.sym == sym:
                 signed += lot.qty if lot.side == "buy" else -lot.qty
         return signed
+
+    def _known_order_refs(self) -> set[str]:
+        known = set(self.pending) | {r for e in self.expected.values()
+                                     for r in e.working.values() if r}
+        known.update(o.target for o in self.operations.values()
+                     if o.kind == "CANCEL" and o.status != "complete")
+        return known
+
+    def _reconcile_ownership(self, ev: Evidence) -> None:
+        """Every observed unowned risk source blocks the account until full evidence resolves it."""
+        if ev.acquired != self.position_cursor.get(ev.sym):
+            return
+        position_owner = f"unallocated:{ev.sym}"
+        if ev.position != self._signed_position(ev.sym):
+            self.block("unknown_order", position_owner)
+        elif ev.order_level:
+            self.unblock("unknown_order", position_owner)
+        if not ev.order_level:
+            return
+        prefix = f"unowned-order:{ev.sym}:"
+        known = self._known_order_refs()
+        owners = {prefix + order["ref"] for order in ev.working if order["ref"] not in known}
+        for owner in owners:
+            self.block("unknown_order", owner)
+        for reason, owner in list(self.obligations):
+            if reason == "unknown_order" and owner.startswith(prefix) and owner not in owners:
+                self.unblock(reason, owner)
 
     def _release(self, order: PendingOrder) -> None:
         if order.reserved:
@@ -601,10 +652,12 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 op.reconciled_at = ev.as_of
                 if (ev.order_status.get(op.target) in ("filled", "cancelled", "rejected")
                         and op.target not in ev.working_refs()):
-                    if ev.position == 0:
+                    entry_cancel = op.payload.get("cancel_kind") in ("entry", "add")
+                    if ev.position == 0 or entry_cancel:
                         op.status = "complete"
                         self.unblock("unknown_order", op.op_id)
-                        self._emit("orphan_removed", ref=op.target)
+                        self._emit("cancel_acknowledged" if entry_cancel else "orphan_removed",
+                                   ref=op.target)
                     else:
                         self.close("sym", op.sym, ev.as_of, "orphan_cancel_recovery")
             else:
@@ -691,6 +744,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                     attempt.status = "rejected"   # fenced read: no application or pending send
             if all(a.status == "confirmed" for a in op.components.values()):
                 op.status = "complete"
+            elif any(a.status == "planned" for a in op.components.values()):
+                op.status = "unknown" if any(a.status == "unknown" for a in op.components.values()) \
+                    else "partial"
             elif not any(a.status in ("sent", "unknown", "dispatching")
                          for a in op.components.values()):
                 op.status, op.detail = "rejected", "partial mutation; reissue remaining components"
@@ -750,8 +806,10 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                     self.unblock(*key)
             elif owner in self.operations:
                 op = self.operations[owner]
-                if op.status == "complete" or (op.kind == "AMEND" and op.status == "rejected"
-                                                and op.reconciled_at is not None):
+                if op.status == "complete" or (op.kind == "AMEND"
+                        and op.reconciled_at is not None
+                        and not any(a.status in ("unknown", "dispatching")
+                                    for a in op.components.values())):
                     self.unblock(*key)
 
     # ── admission (spec S1 (5)) ────────────────────────────────────────────
@@ -1043,13 +1101,19 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             effect = self._effect("cancel", ref, {"ref": ref})
             self.persist()
             return effect
-        # A protective order: only orphan removal on a confirmed-flat position is admissible.
+        # Fresh W can classify an external entry/add; protective removal also requires flatness.
         sym = next((w_sym for w_sym, (orders, _) in self.w_ev.items()
                     if any(w["ref"] == ref for w in orders)), None)
         if sym is None:
             return self._refuse("cancel_unknown_ref", ref)
-        state, qty = self.position(sym, now)
-        if state != "CONFIRMED" or qty != 0 or self.coherent_evidence(sym, now) is None:
+        ev = self.coherent_evidence(sym, now)
+        if ev is None:
+            return self._refuse("protective_cancel_refused", ref)
+        target = next(w for w in ev.working if w["ref"] == ref)
+        cancel_kind = target.get("kind")
+        if cancel_kind not in ("entry", "add", "stop", "limit", "trail"):
+            return self._refuse("cancel_unknown_kind", ref)
+        if cancel_kind not in ("entry", "add") and ev.position != 0:
             return self._refuse("protective_cancel_refused", ref)
         op = next((o for o in self.operations.values() if o.kind == "CANCEL"
                    and o.target == ref and o.status != "complete"), None)
@@ -1061,7 +1125,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         else:
             op = Operation(self._next("op"), "CANCEL", "sym", sym, sym, LEG_BY_SYMBOL[sym],
                            "orphan_cancel", prepared_at=now, prepared_seq=self.clock.tick(),
-                           target=ref)
+                           target=ref, payload={"cancel_kind": cancel_kind})
             self.operations[op.op_id] = op
             self.block("unknown_order", op.op_id)
         return self._effect("cancel", op.op_id, {"ref": ref})
@@ -1115,10 +1179,10 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         exp = self.expected.get(fill_id)
         if exp is None or exp.is_bare:
             return "attach"
-        state, orders = self.working(lot.sym, now)
-        if state != "CONFIRMED":
+        ev = self.coherent_evidence(lot.sym, now)
+        if ev is None:
             return None
-        current = {w["kind"]: w for w in orders if w.get("attached_to") == fill_id}
+        current = {w["kind"]: w for w in ev.working if w.get("attached_to") == fill_id}
         new = components_of(bracket)
         if any(c not in current for c in new):
             return None
@@ -1135,21 +1199,21 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             return self._refuse("amend_no_lot", fill_id)
         exp = self.expected.setdefault(fill_id, Expectation(fill_id, lot.sym, lot.leg_id, {}))
         unresolved = [o for o in self.operations.values()
-                      if o.scope_id == fill_id and o.status in UNRESOLVED]
+                      if o.scope_id == fill_id and (o.status in UNRESOLVED or any(
+                          e.owner == o.op_id and e.status == "planned" for e in self.effects.values()))]
         if unresolved:
             return self._refuse("amend_deferred", f"operation {unresolved[0].op_id} unresolved")
         new = components_of(bracket)
         if exp.is_bare:
             return self._attach(exp, new, now)
-        w_state, w_orders = self.working(lot.sym, now)
-        w_at = self.w_ev.get(lot.sym, (None, None))[1]
+        ev = self.coherent_evidence(lot.sym, now)
         last_op = max((o.sent_at or o.prepared_at for o in self.operations.values()
                        if o.scope_id == fill_id and o.sent_at), default=None)
-        if w_state == "UNKNOWN" or (last_op is not None and w_at is not None and w_at < last_op):
+        if ev is None or (last_op is not None and ev.as_of < last_op):
             return self._refuse("amend_deferred", "W unknown; reconcile before modifying")
         if not self.broker.supports("c"):
             return self._refuse("l2_refused", "c")
-        current = {w["kind"]: w for w in w_orders if w.get("attached_to") == fill_id}
+        current = {w["kind"]: w for w in ev.working if w.get("attached_to") == fill_id}
         if any(c not in current for c in new):
             return self._refuse("amend_deferred", "target absent from fresh W")
         changes = self._diff(new, current, lot.side)
@@ -1159,21 +1223,23 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             return Decision(True, "unchanged")
         if any(c["loosening"] for c in changes.values()) and self.risk_add_blocked:
             return self._refuse("policy_block", "loosening amend under a block")
-        op = Operation(self._next("op"), "AMEND", "fill", fill_id, lot.sym, lot.leg_id, "amend",
-                       prepared_at=now, prepared_seq=self.clock.tick(), payload={"changes": changes},
-                       components={c: Attempt("", change["fields"])
-                                   for c, change in changes.items()})
+        op = self._plan_amend(lot, changes, current, now)
+        return Decision(op.status == "sent", op.status, op=op)
+
+    @planned_command
+    def _plan_amend(self, lot: Lot, changes: dict, current: dict, now: datetime) -> Operation:
+        """Journal every changed component before any dispatch; unknown siblings wait for evidence."""
+        op = Operation(self._next("op"), "AMEND", "fill", lot.fill_id, lot.sym, lot.leg_id, "amend",
+                       prepared_at=now, prepared_seq=self.clock.tick(), payload={"changes": changes})
         self.operations[op.op_id] = op
         self.persist()
         for component, change in changes.items():
             ref = current[component]["ref"]
             op.target = ref
-            effect = self._effect("modify", op.op_id,
-                                  {"ref": ref, "component": component, **change["fields"]})
-            if effect.outcome == "unknown":
-                break
+            self._effect("modify", op.op_id,
+                         {"ref": ref, "component": component, **change["fields"]})
         self.persist()
-        return Decision(op.status == "sent", op.status, op=op)
+        return op
 
     def _diff(self, new: dict, current: dict, side: str):
         changes: dict[str, dict] = {}
@@ -1208,8 +1274,10 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         return changes
 
     def _attach(self, exp: Expectation, components: dict[str, dict], now: datetime) -> Decision:
-        if not self.broker.supports("f"):
-            return self._refuse("l2_refused", "f")
+        required = {"f", "g"} if "trail" in components else {"f"}
+        missing = sorted(item for item in required if not self.broker.supports(item))
+        if missing:
+            return self._refuse("l2_refused", ",".join(missing))
         exp.define(components, now)                       # intended before send
         op = Operation(self._next("op"), "ATTACH", "fill", exp.fill_id, exp.sym, exp.leg_id,
                        "attach", prepared_at=now, prepared_seq=self.clock.tick(),
@@ -1349,10 +1417,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             if not self.evidence_after(sym, self.restarted_at, self.restart_seq):
                 return Decision(False, "evidence_owed", ref=sym)
         halted = False
-        known = set(self.pending) | {r for e in self.expected.values()
-                                     for r in e.working.values() if r}
-        known.update(o.target for o in self.operations.values()
-                     if o.kind == "CANCEL" and o.status != "complete")
+        known = self._known_order_refs()
         for sym in OWNED_SYMBOLS:
             working, _ = self.w_ev[sym]
             if self.p_ev[sym][0] != self._signed_position(sym):

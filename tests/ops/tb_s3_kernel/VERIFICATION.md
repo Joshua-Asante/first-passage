@@ -129,6 +129,43 @@ mutation: owner overwrite 77 failures, ignored working remainder 3, timestamp wi
 causality 1, ignored protective parameters 3, omitted disarm 11. `git diff --check`
 passed. GitHub CI and the next Codex review are separate checks on the pushed commit.
 
+### Codex follow-up to `e46a4fa`
+
+The next Codex review found four issues: fresh unowned orders were ignored by live
+admission; multi-component amendments published only their first effect; amendment
+classification combined mismatched acquisitions; and first trailing attachment did
+not require `L2(g)`. All 14 initial round5 cases failed before repair.
+
+The shared fixes retain each unowned order and unallocated position as an account
+obligation; stage every amendment component atomically; pause unknown attempts until
+covering evidence then resume never-sent siblings; require coherent classification
+and dispatch; and reject unsupported first trailing attachments before definition.
+Additional controls cover both owner-resolution orders, position-only uncertainty,
+and reported unknown outcomes with and without broker execution.
+
+`test_tb_s3_kernel_review_round5.py` adds 26 cases. A final source check also reproduced
+an unknown-kind cancellation being admitted through the protective-orphan path;
+unknown kinds now refuse while fresh known entry/add orders remain cancelable beside
+existing allocated exposure. Their terminal cancellation does not close the existing
+lot; raced external fills retain separate unallocated-exposure ownership. Independent
+review caught the need to preserve that known-kind path, and its flat/nonflat and
+restart race cases are retained. The older unsent-sibling protection
+test now cuts the automatic resumed dispatch at its planned boundary and delivers
+the adversarial scope evidence first, preserving its original guarantee that a
+never-attempted value cannot explain working protection. Automatic resumption means
+the former fixture no longer left that component unsent after reconciliation.
+The complete local kernel suite passes 316 cases.
+
+Independent review accepted the complete round5 repair, independently running all
+309 then-current cases. It separately accepted the final cancellation-classification
+follow-up after running 31 affected cancellation/orphan cases, including preserved
+allocated exposure and fill races across restart. Final coordinator validation:
+893 ops passed, 13 skipped, two existing seaborn warnings; focused lint 9.80/10;
+mutation control 316 passed, with all five mutations detected (81, 3, 1, 3 and 11
+failures respectively). The final check-tier run passed, with normal public-worktree
+skips for private artifacts. Integration hooks and the requested remote review are
+tracked against the pushed revision in the babysit ledger and PR conversation.
+
 ### Production disposition
 
 The local offline redesign is implemented and reviewed. The production-reference
