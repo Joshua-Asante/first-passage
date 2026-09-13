@@ -38,7 +38,9 @@ TIER_MULTIPLIER = {
     "RETIRED":    0.00,
 }
 DEFAULT_TIER = "AUTHORIZED"
-STRATEGY_KEYS = frozenset({"Guardian", "Striker", "Aegis", "Striker NAS100"}) | frozenset(
+# Historical Call-4 membership stays fixed; book state keys only widen validation.
+STRATEGY_KEYS = frozenset({"Guardian", "Striker", "Aegis", "Striker NAS100"})
+BOOK_STRATEGY_KEYS = frozenset(
     key for _, key, _ in TRADEIFY_BOOK_IDENTITIES)
 
 # Authorization ladder, most- to least-authorized. Demotions step DOWN this list.
@@ -63,7 +65,7 @@ def load_lifecycle_state() -> dict:
         state = load_strict_json(STATE_FILE)
         if not isinstance(state, dict):
             raise ValueError("Lifecycle state must be a JSON object")
-        unknown = set(state) - STRATEGY_KEYS
+        unknown = set(state) - (STRATEGY_KEYS | BOOK_STRATEGY_KEYS)
         if unknown:
             raise ValueError(f"Unknown lifecycle strategies: {sorted(unknown)}")
         invalid = {key: tier for key, tier in state.items() if tier not in TIER_MULTIPLIER}
