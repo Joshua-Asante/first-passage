@@ -4,6 +4,8 @@
 **Owner:** Astra coordinator. **Observed:** 2026-09-13 UTC.
 **Boundary:** no portfolio implementation, qualification, live operations, deployment, arm, emission, or orders.
 
+**Policy-review correction (PR #361 rev9, 2026-09-13):** the inventory below is a historical observation, not current merge/acceptance authority. #360 has since merged and expressly leaves #365 and replacement models #368–#370 unaccepted. For TB-P2/C10, follow the proposed admission ADR's complete T0–T11 trace: two separate ratifications, complete bootstrap/fingerprint freeze, and initial effective-activation checks after restart. A void seal requires stopping for the operator, not an automatic replacement outcome-bearing draw. The proposed text below is not a ratification or authorization; schedule decisions remain outstanding.
+
 ## 1. Source-backed inventory
 
 | Obligation | Owner | Artifact / exact observed head | Evidence | Remaining gap / next action |
