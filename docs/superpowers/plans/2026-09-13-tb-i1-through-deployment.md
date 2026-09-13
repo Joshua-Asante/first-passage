@@ -151,6 +151,8 @@ Tests first failed in all 18 new cases, then passed after implementation. Focuse
 
 PR #374's final refreshed head was `9606c62dc72f40fffc70dc8831bad81985f57c77`: open, non-draft, clean and mergeable, current with its base, all checks successful and no review threads or submitted reviews. CodeRabbit skipped review of the stacked branch; its success status is not independent code approval.
 
+Task 3a was published in [PR #375](https://github.com/Joshua-Asante/first-passage/pull/375). Its initial full-repository CI caught two historical Call-4 membership regressions outside the earlier core/ops run. The repair keeps `STRATEGY_KEYS` at the historical four legs and uses separate `BOOK_STRATEGY_KEYS` only to extend state validation. A new regression proves retired book legs cannot de-risk the historical Call-4 book. Both original failing tests remain unchanged. The repaired focused coldstore/lifecycle/host suite passed 109 tests with 4 skips, and error-level lint passed; the complete repository CI is rerun on the repair.
+
 ## Task 4 — Canonical fingerprint implementation
 
 **Outcome:** every later producer and verifier can call one side-effect-free serializer under a pinned runtime; unauthorized changes alter identity or fail validation.

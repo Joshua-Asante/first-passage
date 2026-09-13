@@ -20,7 +20,7 @@ def test_book_bindings_are_inert_and_match_policy():
     bindings = host_module.generate_book_bindings()
     assert {key: row["leg_key"] for key, row in bindings.items()} == EXPECTED
     assert set(bindings).isdisjoint(host_module.LEG_MAP)
-    assert set(EXPECTED.values()) <= lifecycle.STRATEGY_KEYS
+    assert set(EXPECTED.values()) == lifecycle.BOOK_STRATEGY_KEYS
     for spec in BOOK_LEGS:
         row = bindings[spec.leg_id]
         assert row == {"leg_key": spec.lifecycle_key, "symbol": spec.symbol,
@@ -36,6 +36,15 @@ def test_lifecycle_loader_accepts_explicit_book_states(tmp_path, monkeypatch):
     state_file.write_text(json.dumps(state), encoding="utf-8")
     monkeypatch.setattr(lifecycle, "STATE_FILE", state_file)
     assert lifecycle.load_lifecycle_state() == state
+
+
+def test_book_demotions_do_not_change_historical_call4(tmp_path, monkeypatch):
+    state_file = tmp_path / "lifecycle.json"
+    state_file.write_text(json.dumps(dict.fromkeys(EXPECTED.values(), "RETIRED")),
+                          encoding="utf-8")
+    monkeypatch.setattr(lifecycle, "STATE_FILE", state_file)
+    assert lifecycle.get_effective_multipliers(lifecycle.STRATEGY_KEYS) == {
+        "Guardian": 1.0, "Striker": 1.0, "Aegis": 1.0, "Striker NAS100": 1.0}
 
 
 @pytest.mark.parametrize("leg_id", EXPECTED)
