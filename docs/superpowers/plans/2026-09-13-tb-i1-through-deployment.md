@@ -42,17 +42,27 @@ This is a gated delivery plan. Task 1 is actionable immediately. Tasks 2–5 are
 
 **Files:** TB-S1, scaling-faithfulness note, TB-P2, TB-S2, TB-S3, TB-O1 procedure and existing closeout/umbrella status records. Change only the consumers affected by the reconciled decision.
 
-- [ ] At execution time create an isolated `codex/tb-i1-book-policy` worktree from verified current main using the worktree skill; preserve the primary checkout and its private roots.
-- [ ] Read applicable repository instructions and record full base SHA, governing document revisions, model acceptance evidence and installed Python patch version.
-- [ ] Reconcile TB-S1 §2's generic `floor(normal_base × policy × lifecycle × beta)` with the already-ruled Striker law B. Striker must scale risk before the floor/cap, not scale a previously floored quantity. Preserve its executed-base add law. Correct the spec and affected consumers to the existing ruling; do not ask Joshua to select O-5/O-6 again.
-- [ ] Remove the implied on-rail Call-4 beta multiplier from the TB-I1 contract: O-1 records Call-4 off-rail. Preserve unrelated lifecycle functionality and the ordinary per-leg lifecycle multiplier.
-- [ ] Produce a literal table for all four legs, both modes and all reachable lifecycle states. Record inputs required by law B, which cannot be reconstructed from the normal integer alone.
+- [x] At execution time create an isolated `codex/tb-i1-book-policy` worktree from verified current main using the worktree skill; preserve the primary checkout and its private roots.
+- [x] Read applicable repository instructions and record full base SHA, governing document revisions, model acceptance evidence and installed Python patch version.
+- [x] Reconcile TB-S1 §2's generic `floor(normal_base × policy × lifecycle × beta)` with the already-ruled Striker law B. Striker must scale risk before the floor/cap, not scale a previously floored quantity. Preserve its executed-base add law. Correct the spec and affected consumers to the existing ruling; do not ask Joshua to select O-5/O-6 again.
+- [x] Remove the implied on-rail Call-4 beta multiplier from the TB-I1 contract: O-1 records Call-4 off-rail. Preserve unrelated lifecycle functionality and the ordinary per-leg lifecycle multiplier.
+- [x] Produce a literal table for all four legs, both modes and all reachable lifecycle states. Record inputs required by law B, which cannot be reconstructed from the normal integer alone.
 - [ ] Reconcile TB-I1's ratification entry condition with the exact accepted P2 interface. Record the dated evidence when satisfied. A merged PROPOSED ADR is not a ratification.
-- [ ] Prepare concrete decision text for the remaining policy and execution ratifications and unified schedule. Preserve separate P2 decisions: initial policy/deviation ratification before TB-F1, then ratification of the exact Part A depth after TB-F1 and before TB-E1.
-- [ ] Reconcile R-1/R-2/S2b and any later execution amendments against the latest TB-S3; identify capability requirements separately from operator acceptance of the behavior.
-- [ ] Present the schedule proposal: regular-session evidence check 15:55 ET, own-flat completion 16:00 ET, 16:30 reconciliation backstop. These remain proposed until ratified. Freeze corresponding early-close rules from the official calendar, including entry cutoff and settlement semantics, identically in replay, rail and procedure.
+- [x] Prepare concrete decision text for the remaining policy and execution ratifications and unified schedule. Preserve separate P2 decisions: initial policy/deviation ratification before TB-F1, then ratification of the exact Part A depth after TB-F1 and before TB-E1.
+- [x] Reconcile R-1/R-2/S2b and any later execution amendments against the latest TB-S3; identify capability requirements separately from operator acceptance of the behavior.
+- [x] Present the schedule proposal: regular-session evidence check 15:55 ET, own-flat completion 16:00 ET, 16:30 reconciliation backstop. These remain proposed until ratified. Freeze corresponding early-close rules from the official calendar, including entry cutoff and settlement semantics, identically in replay, rail and procedure.
 
 **Exit evidence:** corrected cross-document quantity trace; literal expected rows; dated ratifications or explicit blocked consumers; no new policy choice inferred from this plan. Fingerprint technical work may be separately released only if the accepted interface and TB-I1 entry authority support it.
+
+### First-slice execution record — 2026-09-13
+
+Plan committed as `2374ae0d3f4f7a9607c4a7a56484808ff93d53dc` on `codex/tb-i1-book-policy`, based on `f9427edfc42f5910726094022eb334d8119e5945`. Worktree: `.worktrees/tb-i1-book-policy`; Python 3.14.3. The primary checkout and its unrelated work were preserved.
+
+The first slice corrected S1 and its S2/S3 consumers for O-5 law B, O-6 confirmed-base adds and O-1 off-rail Call-4; supplied literal quantities and capacity cases; and updated the umbrella footprint to include the protocol docstring/parity and single fingerprint owner. R-P requires complete risk/configuration inputs, not inverse sizing from `qty_normal`. Production files remain unchanged.
+
+The [current release ledger and concrete decision text](../../briefs/handoffs/2026-09-13-tradeify-contract-closeout.md#current-tb-i1-first-slice-reconciliation--2026-09-13) identify the still-pending S3/P2 ratifications and incomplete unified schedule. Checked boxes above mean reconciliation/preparation was performed, not that Joshua approved the proposal. Task 1's ratification entry remains open, and Tasks 2–5 have not started. Exact Part A depth remains a later F1/E1 decision.
+
+Arithmetic verification passed for all 8 mode/lifecycle rows, 23 Striker base/add rows and 264 rational boundary cases, plus the non-cap law discriminator and protected-capacity arithmetic. These checks validate the written vectors, not the production sizing code or private export parity. Plan commit hooks passed. Strict relative-link validation passed for all six changed documents (40 links), and `git diff --check` passed. The repository check tier (`python scripts/gate_manifest.py --tier check`) passed under existing Python 3.13.2, including 72 evidence-store tests with 3 skips; the first Python 3.14.3 attempt stopped because that interpreter lacked PyYAML. No dependency files changed. Existing absent-private-data and advisory warnings remain; those skips do not verify private evidence. A Git-blob comparison confirmed seven relevant production files match the execution base. The first-slice reconciliation is verified locally; this record belongs to its separate review commit. Policy and execution ratifications remain pending.
 
 ## Parallel evidence track — Seven exports and intake
 
@@ -103,7 +113,7 @@ This is a gated delivery plan. Task 1 is actionable immediately. Tasks 2–5 are
 
 **Outcome:** an explicit candidate policy and validated account context drive the real sizing host; uncertain evidence produces a halt and unresolved capacity stays reserved.
 
-**Files:** `ops/c1_rail/c1_sizing_host_reference.py`, `ops/c1_rail/book_policy.py`, `core/firm_rules.py`, `core/lifecycle.py`, `tests/ops/test_c1_sizing_host_reference.py`, `tests/ops/test_book_policy.py`; add `tests/ops/test_tradeify_sizing_integration.py`.
+**Files:** `ops/c1_rail/c1_sizing_host_reference.py`, `ops/c1_rail/book_policy.py`, `core/firm_rules.py`, `core/lifecycle.py`, `ops/c1_signal_daemon/book_protocol.py` (R-P docstring), `tests/ops/test_c1_sizing_host_reference.py`, `tests/ops/test_book_policy.py`, `tests/ops/test_book_adapters_parity.py`; add `tests/ops/test_tradeify_sizing_integration.py` and a focused protocol-semantic test. Private ports remain unchanged; B1 transport implementation belongs to TB-I3.
 
 **Producer/consumer trace:** adapter signal → host quantity request → shared quantity function → capacity decision. The later TB-I3 account owner supplies validated active session/mode and terminal order evidence; TB-T1 supplies the sealed initial account state. Lifecycle state supplies per-leg authorization. The host never uses intraday equity to switch this book's mode.
 
