@@ -25,7 +25,7 @@ from .broker import (BAR, STALENESS_WINDOW, Clock, Evidence, FakeBroker,
                      Outcome)
 from .rules import covers, protection_consumed, scope_quiescent, valid_component
 from .state import Attempt, Effect, Obligation
-from .effects import dispatch
+from .effects import dispatch, planned_command
 
 BLOCK_REASONS = ("kill", "eod", "overlay", "restart_unreconciled", "unknown_order",
                  "close_rejected", "feed", "protection_gap", "arming")
@@ -196,6 +196,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
     restart_seq: int = 0
     effect_hook: Callable | None = None   # deterministic harness crash boundaries
     _in_evidence: bool = False
+    _plan_depth: int = 0
+    _draining: bool = False
     p_ev: dict[str, tuple[int, datetime]] = field(default_factory=dict)
     w_ev: dict[str, tuple[tuple[dict, ...], datetime]] = field(default_factory=dict)
     lot_ev: dict[str, tuple[int, datetime]] = field(default_factory=dict)
@@ -215,6 +217,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     def persist(self) -> None:
         """Atomic snapshot of every durable state (one write, as the spec requires)."""
+        if self._plan_depth:
+            return
         snap = {name: copy.deepcopy(getattr(self, name)) for name in self.PERSISTED}
         snap["ledger"] = copy.deepcopy({"confirmed": self.ledger.confirmed,
                                         "reserved": self.ledger.reserved,
@@ -235,8 +239,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             self.pending[owner].cancel_effect = effect.effect_id
             self.block("unknown_order", f"cancel:{owner}")
         self.persist()
-        if not self._in_evidence:
-            dispatch(self, effect)
+        self._drain_effects()
         return effect
 
     def _mark_dispatch(self, effect: Effect) -> None:
@@ -255,6 +258,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             attempt.status, attempt.boundary = "dispatching", effect.boundary
             attempt.sent_at = effect.sent_at
 
+    @planned_command(drain=False)
     def _effect_outcome(self, effect: Effect, outcome: Outcome) -> None:
         """Transport outcomes never substitute for broker confirmation."""
         effect.status, effect.outcome = "recorded", outcome.status
@@ -310,9 +314,14 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             self.close("fill", exp.fill_id, self.clock.now, "protection_gap_recovery")
 
     def _drain_effects(self) -> None:
-        for effect in list(self.effects.values()):
-            if effect.status == "planned":
+        if self._in_evidence or self._plan_depth or self._draining:
+            return
+        self._draining = True
+        try:
+            while effect := next((e for e in self.effects.values() if e.status == "planned"), None):
                 dispatch(self, effect)
+        finally:
+            self._draining = False
 
     @classmethod
     def restart(cls, store: Store, broker: FakeBroker, clock: Clock, now: datetime,
@@ -399,13 +408,22 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     def evidence_after(self, sym: str, at: datetime, boundary: int = 0) -> bool:
         """True when both position and working-order evidence postdate ``at``."""
-        ev = self.evidence.get(sym)
+        ev = self.coherent_evidence(sym, self.clock.now)
         return bool(ev and covers(ev, at, boundary, self.clock.now))
+
+    def coherent_evidence(self, sym: str, now: datetime) -> Evidence | None:
+        """One fresh, full acquisition must support every combined position/order decision."""
+        ev = self.evidence.get(sym)
+        if (ev and ev.order_level and ev.request_fence and ev.as_of <= now
+                and now - ev.as_of <= BAR and ev.acquired == self.position_cursor.get(sym)):
+            return ev
+        return None
 
     def _confirmed_position(self, sym: str) -> int:
         return sum(l.qty for l in self.lots.values() if l.sym == sym and l.qty > 0)
 
     # ── evidence application (the only writer of P, W, pending outcomes, lots) ─
+    @planned_command
     def apply_evidence(self, ev: Evidence) -> None:  # pylint: disable=too-many-branches
         """Spec I2: broker evidence alone moves ``P``, ``W``, ``pending`` and the lots."""
         self._sweep_timeouts(self.clock.now)
@@ -555,6 +573,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         return scope_quiescent(ev, op.scope_kind, op.scope_id, self.pending)
 
     def _operation_covered(self, op: Operation, ev: Evidence) -> bool:
+        current = self.coherent_evidence(op.sym, self.clock.now)
+        if current is None or current.acquired != ev.acquired:
+            return False
         if not covers(ev, op.sent_at or op.prepared_at,
                       max(op.prepared_seq, op.sent_seq), self.clock.now):
             return False
@@ -564,10 +585,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     def quiescent(self, sym: str, now: datetime) -> bool:
         """Shared daemon/listener view of confirmed absence of future exposure."""
-        ev = self.evidence.get(sym)
-        return bool(ev and now - ev.as_of <= BAR and ev.as_of <= now
-                    and ev.acquired == self.position_cursor.get(sym)
-                    and scope_quiescent(ev, "sym", sym, self.pending))
+        ev = self.coherent_evidence(sym, now)
+        return bool(ev and scope_quiescent(ev, "sym", sym, self.pending))
 
     def _settle_operations(self, ev: Evidence) -> None:
         if not ev.order_level:
@@ -768,9 +787,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                          if not self.broker.supports(i))
         if missing:
             return self._refuse("l2_refused", ",".join(missing))
-        for state in (self.position(sym, now), self.working(sym, now)):
-            if state[0] == "UNKNOWN":
-                return self._refuse("unknown_state", sym)
+        if self.coherent_evidence(sym, now) is None:
+            return self._refuse("unknown_state", sym)
         return None
 
     def admit_entry(self, intent: OrderIntent, now: datetime) -> Decision:
@@ -793,6 +811,14 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         return Decision(False, reason)
 
     def _place(self, intent: OrderIntent, qty: int, now: datetime) -> Decision:
+        result = self._plan_place(intent, qty, now)
+        if isinstance(result, Decision):
+            return result
+        return Decision(result.outcome == "accepted", result.outcome or "planned", ref=result.owner)
+
+    @planned_command
+    def _plan_place(self, intent: OrderIntent, qty: int, now: datetime) -> Effect | Decision:
+        """Persist reservation, pending order and dispatch intent in one recoverable write."""
         spec = leg_spec(intent.leg_id)
         ref = self._next("ord")
         order = PendingOrder(ref, intent.leg_id, spec.symbol, intent.kind, intent.side.value, qty,
@@ -809,7 +835,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                              order_type=intent.order_type, price=intent.price,
                              bracket=bracket_dict(intent.bracket), ref=ref))
         self.persist()
-        return Decision(effect.outcome == "accepted", effect.outcome, ref=ref)
+        return effect
 
     def _apply_send_outcome(self, order: PendingOrder, outcome: Outcome) -> None:
         if outcome.status == "accepted":
@@ -822,6 +848,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             self.block("unknown_order", order.ref)
 
     # ── takeover (spec S10) ────────────────────────────────────────────────
+    @planned_command
     def takeover(self, plan: TakeoverPlan, now: datetime) -> list[Operation]:
         """Cancel every displaced resting or partially filled risk-add, then ``CLOSE`` each
         displaced symbol; cancellation counts only when evidence confirms it (settle)."""
@@ -888,6 +915,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         return self._place(intent, takeover.plan.contracts, now)
 
     # ── CLOSE (spec §1 primitive) ──────────────────────────────────────────
+    @planned_command
     def close(self, scope_kind: str, scope_id: str, now: datetime, reason: str,
               op_id: str | None = None, qty: int | None = None) -> Operation:
         """Prepare a durable close; send only when postdating evidence does not show it flat.
@@ -993,6 +1021,15 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     def cancel(self, ref: str, now: datetime) -> Decision:
         """Spec S4: a cancel is classified by the listener from ``pending`` and fresh ``W``."""
+        result = self._plan_cancel(ref, now)
+        if isinstance(result, Decision):
+            return result
+        return Decision(result.outcome == "accepted", result.outcome or "planned", ref=ref,
+                        op=self.operations.get(result.owner))
+
+    @planned_command
+    def _plan_cancel(self, ref: str, now: datetime) -> Effect | Decision:
+        """Persist the cancellation owner and effect together; report after dispatch."""
         order = self.pending.get(ref)
         if order is not None and order.kind in ("entry", "add"):
             if order.cancel_effect:
@@ -1005,14 +1042,14 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                     return Decision(False, "cancel_pending", ref=ref)
             effect = self._effect("cancel", ref, {"ref": ref})
             self.persist()
-            return Decision(effect.outcome == "accepted", effect.outcome or "planned", ref=ref)
+            return effect
         # A protective order: only orphan removal on a confirmed-flat position is admissible.
         sym = next((w_sym for w_sym, (orders, _) in self.w_ev.items()
                     if any(w["ref"] == ref for w in orders)), None)
         if sym is None:
             return self._refuse("cancel_unknown_ref", ref)
         state, qty = self.position(sym, now)
-        if state != "CONFIRMED" or qty != 0 or self.working(sym, now)[0] != "CONFIRMED":
+        if state != "CONFIRMED" or qty != 0 or self.coherent_evidence(sym, now) is None:
             return self._refuse("protective_cancel_refused", ref)
         op = next((o for o in self.operations.values() if o.kind == "CANCEL"
                    and o.target == ref and o.status != "complete"), None)
@@ -1027,8 +1064,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                            target=ref)
             self.operations[op.op_id] = op
             self.block("unknown_order", op.op_id)
-        effect = self._effect("cancel", op.op_id, {"ref": ref})
-        return Decision(effect.outcome == "accepted", effect.outcome or "planned", ref=ref, op=op)
+        return self._effect("cancel", op.op_id, {"ref": ref})
 
     def kill_status(self, daemon_reachable: bool, now: datetime) -> dict:
         """S8 (7): completion reported beside the daemon-app acknowledgement."""
@@ -1210,11 +1246,13 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         return self.close("fill", fill_id, now, "exit", qty=qty)
 
     # ── EOD and kill (spec S7, S8) ─────────────────────────────────────────
+    @planned_command
     def eod(self, now: datetime) -> list[Operation]:
         """S7 (1)–(3): block, cancel resting risk-adds, prepare a close for every owned symbol."""
         self.block("eod", now.isoformat())
         return self._flatten_all(now, "eod_flatten")
 
+    @planned_command
     def kill(self, now: datetime) -> list[Operation]:
         """S8: the listener block first, then the S7 steps."""
         self.block("kill", now.isoformat())
@@ -1267,6 +1305,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 self._send_close(op, self.clock.now)
 
     # ── feed loss / daemon loss (spec S6) ──────────────────────────────────
+    @planned_command
     def on_flat_intent(self, op_id: str, leg_id: str, now: datetime) -> Operation:
         """The daemon's feed-loss flat; idempotent by operation identity. A resting risk-add
         of the leg is cancelled too — it must not trigger after its source has failed."""
@@ -1279,6 +1318,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         self.last_control_read = now
         self.persist()
 
+    @planned_command
     def daemon_loss_check(self, now: datetime) -> list[Operation]:
         """S6 daemon-loss flat: absent timestamp counts as expired."""
         expired = self.last_control_read is None or now - self.last_control_read > STALENESS_WINDOW
@@ -1320,7 +1360,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 self._emit("restart_unallocated_exposure", sym=sym)
                 halted = True
             for order in working:
-                if order["ref"] in known or (order.get("attached_to") in self.lots):
+                if order["ref"] in known:
                     continue
                 self._emit("restart_orphan_order", ref=order["ref"],
                            order_kind=order.get("kind"))

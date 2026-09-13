@@ -98,6 +98,37 @@ timestamp without causality 1, ignored protection parameters 3, omitted disarm 9
 Repository-wide lint and other remote checks for this follow-up are tracked on the
 PR; the earlier 8.49/10 local result applies to the initial redesign, not this diff.
 
+### Codex follow-up to `ea8a5db`
+
+Codex reported five further findings: admission combining different acquisitions,
+obsolete planned effects reviving completed operations, restart trusting arbitrary
+orders linked to known lots, intermediate store writes losing command suffixes,
+and a fake-broker partial budget applied independently to each lot. All five were
+reproduced and repaired. The first new regression run had 17 failures and two controls.
+
+Caller review reproduced the same coherence defect in orphan cancellation and close
+retry. Independent review also found durable prefixes that stranded orphan cancels,
+retained phantom entry reservations (ordinary admission and takeover settlement),
+and saved an immediate attachment-rejection gap without its required recovery close.
+Each was observed failing before repair. The shared planning boundary now commits
+the whole transition before dispatch, with synchronous Decision results constructed
+after the effect driver returns. Outcome recording does not drain during restart.
+
+`test_tb_s3_kernel_review_round4.py` adds 28 cases. Store cuts interrupt actual atomic
+writes, independently of the number of calls to `persist`. Scope completion tests
+deliver the covering scope read before resuming planned dispatch. Broker quantity
+expectations use literal totals across multiple lots and independently cap the
+request quantity. The complete local kernel suite passes 290 cases.
+
+Independent review accepted the bounded offline model after inspecting the complete
+repair diff and independently running all nine kernel suites: 290 passed. Full-ops
+verification: 867 passed, 13 skipped, two existing seaborn warnings. Check-tier gates
+passed with the normal public-worktree/private-data skips. Focused lint passed at
+9.82/10. The isolated mutation runner passed its 290-test control and detected every
+mutation: owner overwrite 77 failures, ignored working remainder 3, timestamp without
+causality 1, ignored protective parameters 3, omitted disarm 11. `git diff --check`
+passed. GitHub CI and the next Codex review are separate checks on the pushed commit.
+
 ### Production disposition
 
 The local offline redesign is implemented and reviewed. The production-reference

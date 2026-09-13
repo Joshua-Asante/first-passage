@@ -335,10 +335,12 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         lots = ([self.lots[fill_id]] if fill_id else
                 [l for l in self.lots.values() if l.sym == sym and l.qty > 0])
         wanted = qty
+        allowance = inj[1] if isinstance(inj, tuple) and inj[0] == "partial" else None
         for lot in lots:
             take = lot.qty if wanted is None else min(wanted, lot.qty)
-            if isinstance(inj, tuple) and inj[0] == "partial":
-                take = min(take, inj[1])
+            if allowance is not None:
+                take = min(take, allowance)
+                allowance -= take
             self._reduce_lot(lot, take)
             if wanted is not None:
                 wanted -= take
