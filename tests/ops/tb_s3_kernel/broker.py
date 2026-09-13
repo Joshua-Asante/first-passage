@@ -74,6 +74,7 @@ class BrokerOrder:
             "ref": self.ref, "kind": self.kind, "side": self.side, "qty": self.qty,
             "type": self.order_type, "price": self.price, "attached_to": self.attached_to,
             "trail_active": self.trail_active, "trail_anchor": self.trail_anchor,
+            "trail_activation": self.trail_activation, "trail_offset": self.trail_offset,
         }
 
 

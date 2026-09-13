@@ -82,6 +82,7 @@ class PendingOrder:  # pylint: disable=too-many-instance-attributes
     intended: dict[str, dict] = field(default_factory=dict)   # port-defined protection
     lot_id: str | None = None
     cancel_requested: bool = False
+    last_evidence_at: datetime | None = None    # last order-level read that mentioned it
 
 
 @dataclass
@@ -96,7 +97,7 @@ class Operation:  # pylint: disable=too-many-instance-attributes
     leg_id: str | None
     reason: str
     prepared_at: datetime
-    status: str = "prepared"    # prepared|sent|partial|rejected|unknown|complete|refused
+    status: str = "prepared"    # prepared|queued|sent|partial|rejected|unknown|complete|refused
     sent_at: datetime | None = None
     target: str | None = None   # AMEND: the working order modified
     payload: dict = field(default_factory=dict)
@@ -262,6 +263,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
     # ── evidence application (the only writer of P, W, pending outcomes, lots) ─
     def apply_evidence(self, ev: Evidence) -> None:  # pylint: disable=too-many-branches
         """Spec I2: broker evidence alone moves ``P``, ``W``, ``pending`` and the lots."""
+        self._sweep_timeouts(ev.as_of)
         self.p_ev[ev.sym] = (ev.position, ev.as_of)
         if ev.order_level:
             self.w_ev[ev.sym] = (ev.working, ev.as_of)
@@ -275,6 +277,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 continue
             status = ev.order_status.get(order.ref)
             filled = ev.fills.get(order.ref, 0)
+            if ev.order_level and (status is not None or order.ref in working_refs):
+                order.last_evidence_at = ev.as_of
             if filled > order.filled_qty:
                 self._on_fill(order, filled - order.filled_qty, ev)
                 order.filled_qty = filled
@@ -349,38 +353,90 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                     self.close("fill", exp.fill_id, ev.as_of, "protection_gap_recovery")
 
     def _scope_flat(self, op: Operation, ev: Evidence) -> bool:
+        """Flat on THIS read: order-level reads only; absent data is never flatness."""
+        if not ev.order_level:
+            return False
         if op.scope_kind == "fill":
-            open_qty = ev.lots.get(op.scope_id, 0)
+            open_qty = ev.lots.get(op.scope_id)
+            if open_qty is None:
+                return False
             attached = any(w.get("attached_to") == op.scope_id for w in ev.working)
             return open_qty == 0 and not attached
         protective = any(w["kind"] in PROTECTIVE_KINDS for w in ev.working)
         return ev.position == 0 and not protective
 
-    def _settle_operations(self, ev: Evidence) -> None:  # pylint: disable=too-many-branches
+    def _settle_operations(self, ev: Evidence) -> None:
+        if not ev.order_level:
+            return                                        # position-only reads settle nothing
         for op in list(self.operations.values()):
-            if (op.sym != ev.sym or op.status in ("complete", "refused")
+            if (op.sym != ev.sym or op.status in ("complete", "refused", "queued")
                     or ev.as_of < op.prepared_at):
                 continue
             if op.kind == "CLOSE":
-                if self._scope_flat(op, ev):
-                    self._complete_close(op, ev)
-                elif op.status in ("sent", "unknown", "rejected", "partial"):
-                    op.reconciled_at = ev.as_of
-                    if op.scope_kind == "fill" and 0 < ev.lots.get(op.scope_id, 0) < \
-                            (self.lots[op.scope_id].qty if op.scope_id in self.lots else 0):
-                        op.status = "partial"
-                        self._sync_lots(ev)
-            else:   # AMEND / ATTACH: complete when every intended component is working
-                exp = self.expected.get(op.scope_id)
-                if exp is None:
-                    continue
-                attached = {w["kind"]: w for w in ev.working if w.get("attached_to") == exp.fill_id}
-                if all(c in attached for c in exp.intended):
-                    for c in exp.intended:
-                        exp.working[c], exp.status[c] = attached[c]["ref"], "working"
-                    op.status = "complete"
-                elif op.status in ("sent", "unknown", "rejected"):
-                    op.reconciled_at = ev.as_of
+                self._settle_close(op, ev)
+            else:
+                self._settle_protection_op(op, ev)
+        self._dispatch_queued(ev.sym, ev.as_of)
+
+    def _settle_close(self, op: Operation, ev: Evidence) -> None:
+        if self._scope_flat(op, ev):
+            self._complete_close(op, ev)
+            return
+        if op.status not in ("sent", "unknown", "rejected", "partial"):
+            return
+        before = self._scope_exposure(op)
+        self._sync_lots(ev)
+        after = self._scope_exposure(op)
+        if op.status in ("sent", "unknown", "partial") and after < before:
+            op.status = "partial"
+            op.payload["closed"] = op.payload.get("closed", 0) + (before - after)
+            self._emit("operation_outcome", op=op.op_id, status="partial", remaining=after)
+        op.reconciled_at = ev.as_of
+
+    def _scope_exposure(self, op: Operation) -> int:
+        if op.scope_kind == "fill":
+            lot = self.lots.get(op.scope_id)
+            return lot.qty if lot else 0
+        return self._confirmed_position(op.sym)
+
+    def _settle_protection_op(self, op: Operation, ev: Evidence) -> None:
+        exp = self.expected.get(op.scope_id)
+        if exp is None:
+            return
+        attached = {w["kind"]: w for w in ev.working if w.get("attached_to") == exp.fill_id}
+        if op.kind == "AMEND":
+            wanted = op.payload.get("changes", {})
+            done = all(c in attached and self._matches(attached[c], ch["fields"])
+                       for c, ch in wanted.items())
+            if done:
+                for component, change in wanted.items():
+                    exp.intended[component] = change["intended"]
+                    exp.working[component] = attached[component]["ref"]
+                    exp.status[component] = "working"
+                op.status = "complete"
+            elif op.status in ("sent", "unknown", "rejected"):
+                op.reconciled_at = ev.as_of
+            return
+        if all(c in attached and self._matches(attached[c], self._fields(p))
+               for c, p in exp.intended.items()):
+            for component in exp.intended:
+                exp.working[component] = attached[component]["ref"]
+                exp.status[component] = "working"
+            op.status = "complete"
+        elif op.status in ("sent", "unknown", "rejected"):
+            op.reconciled_at = ev.as_of
+
+    @staticmethod
+    def _fields(params: dict) -> dict:
+        """Route-field shape of one intended component."""
+        return {key: value for key, value in params.items()
+                if key in ("price", "trail_activation", "trail_offset")}
+
+    @staticmethod
+    def _matches(working: dict, fields: dict) -> bool:
+        """The working order carries every requested parameter."""
+        return all(working.get(key) == value for key, value in fields.items()
+                   if value is not None)
 
     def _sync_lots(self, ev: Evidence) -> None:
         for lot_id, open_qty in ev.lots.items():
@@ -432,6 +488,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         """Spec S1 (5)–(6): admission in the frozen order, then send; I4 sizing authority."""
         if intent.kind not in ("entry", "add"):
             raise KernelRefusal("admit_entry takes risk-adds only")
+        self._sweep_timeouts(now)
         spec = leg_spec(intent.leg_id)
         sym = spec.symbol
         if self.risk_add_blocked:
@@ -536,13 +593,16 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
     # ── CLOSE (spec §1 primitive) ──────────────────────────────────────────
     def close(self, scope_kind: str, scope_id: str, now: datetime, reason: str,
               op_id: str | None = None, qty: int | None = None) -> Operation:
-        """Prepare a durable close; send only when postdating evidence does not show it flat."""
+        """Prepare a durable close; send only when postdating evidence does not show it flat.
+        Overlapping scopes serialize: one close in flight per symbol, later ones queue."""
         if op_id and op_id in self.operations:
             return self.operations[op_id]            # idempotent by operation identity
+        self._sweep_timeouts(now)
         sym, leg_id = self._scope(scope_kind, scope_id)
         for other in self.operations.values():
-            if other.sym == sym and other.status in UNRESOLVED and other.kind == "CLOSE":
-                return other                          # overlapping scopes serialize
+            if (other.sym == sym and other.kind == "CLOSE" and other.scope_id == scope_id
+                    and other.status in ("prepared", "queued", "rejected", *UNRESOLVED)):
+                return other                          # idempotent by scope (retry path)
         op = Operation(op_id or self._next("op"), "CLOSE", scope_kind, scope_id, sym, leg_id,
                        reason, prepared_at=now, payload={"qty": qty})
         self.operations[op.op_id] = op
@@ -552,16 +612,49 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             op.status, op.detail = "refused", "route lacks L2(d)/(e)"
             self.block("close_rejected", f"{op.op_id}:capability")
             return op
+        if any(o is not op and o.sym == sym and o.kind == "CLOSE" and o.status in UNRESOLVED
+               for o in self.operations.values()):
+            op.status = "queued"                      # never dropped: dispatched in turn
+            self._emit("operation_queued", op=op.op_id)
+            self.persist()
+            return op
         self._progress_one(op, now)
         self.persist()
         return op
 
     def progress(self, now: datetime) -> None:
-        """Send every prepared close that postdating evidence does not show as a no-op."""
+        """Send every prepared close that postdating evidence does not show as a no-op,
+        then dispatch queued closes on symbols with nothing in flight."""
+        self._sweep_timeouts(now)
         for op in list(self.operations.values()):
             if op.kind == "CLOSE" and op.status == "prepared":
                 self._progress_one(op, now)
+        for sym in OWNED_SYMBOLS:
+            self._dispatch_queued(sym, now)
         self.persist()
+
+    def _dispatch_queued(self, sym: str, now: datetime) -> None:
+        if any(o.sym == sym and o.kind == "CLOSE" and o.status in UNRESOLVED
+               for o in self.operations.values()):
+            return
+        for op in list(self.operations.values()):
+            if op.sym == sym and op.kind == "CLOSE" and op.status == "queued":
+                op.status = "prepared"
+                self._progress_one(op, now)
+                if op.status in UNRESOLVED:
+                    return                            # one in flight per symbol
+
+    def _sweep_timeouts(self, now: datetime) -> None:
+        """Spec S1 cut: no order-level evidence about a sent/accepted order within one bar
+        makes it UNKNOWN and blocks every risk-add account-wide until evidence resolves it."""
+        for order in self.pending.values():
+            if order.status not in ("sent", "accepted", "partial") or order.sent_at is None:
+                continue
+            last = order.last_evidence_at or order.sent_at
+            if now - last > BAR:
+                order.status = "unknown"
+                self.block("unknown_order", order.ref)
+                self._emit("unknown_order", ref=order.ref, since=last.isoformat())
 
     def _progress_one(self, op: Operation, now: datetime) -> None:
         # A no-op needs evidence that postdates the operation; without it the close is sent
@@ -608,7 +701,10 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     def _send_close(self, op: Operation, now: datetime) -> None:
         if op.scope_kind == "fill":
-            outcome = self.broker.close(sym=op.sym, fill_id=op.scope_id, qty=op.payload.get("qty"))
+            qty = op.payload.get("qty")
+            if qty is not None:
+                qty = max(0, qty - op.payload.get("closed", 0))
+            outcome = self.broker.close(sym=op.sym, fill_id=op.scope_id, qty=qty)
         else:
             outcome = self.broker.close(sym=op.sym)           # quantity-less, exclusively owned
         op.sent_at, op.attempts = now, op.attempts + 1
@@ -624,9 +720,10 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             self.block("unknown_order", op.op_id)
 
     def retry(self, op_id: str, now: datetime) -> Operation:
-        """Resubmit a rejected/unknown close only after reconciliation, never blindly."""
+        """Resubmit a rejected, unknown or partial close only after reconciliation on
+        postdating evidence — never blindly; a rejected close at most once per bar."""
         op = self.operations[op_id]
-        if op.status not in ("rejected", "unknown"):
+        if op.status not in ("rejected", "unknown", "partial"):
             raise KernelRefusal(f"{op_id} is {op.status}")
         if op.reconciled_at is None or op.reconciled_at < (op.sent_at or op.prepared_at):
             raise KernelRefusal("reconcile on postdating evidence before resubmitting")
@@ -640,6 +737,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
     # ── AMEND / ATTACH (spec §1 primitives) ────────────────────────────────
     def amend(self, fill_id: str, bracket: Bracket | dict, now: datetime) -> Decision:
         """The port re-issued its bracket for a lot: component-wise modify, or first attach."""
+        self._sweep_timeouts(now)
         lot = self.lots.get(fill_id)
         if lot is None or lot.qty == 0:
             return self._refuse("amend_no_lot", fill_id)
@@ -677,8 +775,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             outcome = self.broker.modify(ref, **change["fields"])
             op.sent_at, op.attempts = now, op.attempts + 1
             if outcome.status == "accepted":
-                exp.intended[component] = new[component]
-                op.status = "complete"
+                op.status = "sent"                    # complete only on broker evidence
             elif outcome.status == "rejected":
                 op.status, op.detail = "rejected", outcome.detail   # old protection stands
             else:
@@ -686,7 +783,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 self.block("unknown_order", op.op_id)
                 break
         self.persist()
-        return Decision(op.status == "complete", op.status, op=op)
+        return Decision(op.status == "sent", op.status, op=op)
 
     def _diff(self, exp: Expectation, new: dict, current: dict, side: str):
         changes: dict[str, dict] = {}
@@ -698,7 +795,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 live = current.get("trail")
                 if live and live.get("trail_active") and self.broker.modify_resets_trail_anchor:
                     return None                           # would move the effective stop back
-                changes[component] = {"fields": dict(params), "loosening": False}
+                changes[component] = {"fields": dict(params), "loosening": False,
+                                      "intended": params}
                 continue
             if component not in current:
                 continue
@@ -707,7 +805,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 loosening = new_price < old_price if side == "buy" else new_price > old_price
             else:
                 loosening = False
-            changes[component] = {"fields": {"price": new_price}, "loosening": loosening}
+            changes[component] = {"fields": {"price": new_price}, "loosening": loosening,
+                                  "intended": params}
         return changes
 
     def _attach(self, exp: Expectation, components: dict[str, dict], now: datetime) -> Decision:
@@ -812,8 +911,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             return []
         ops = []
         for sym in OWNED_SYMBOLS:
-            state, qty = self.position(sym, now)
-            if state == "CONFIRMED" and qty == 0 and not self.w_ev.get(sym, ((), None))[0]:
+            p_state, qty = self.position(sym, now)
+            w_state, orders = self.working(sym, now)
+            if p_state == "CONFIRMED" and qty == 0 and w_state == "CONFIRMED" and not orders:
                 continue
             ops.append(self.close("sym", sym, now, "daemon_loss_flat"))
         if ops:
