@@ -568,7 +568,11 @@ class Takeover:
 
 @dataclass
 class CapacityLedger:
-    """Durable micro-equivalent ledger: confirmed positions + outstanding reservations."""
+    """In-memory offline compatibility ledger; not durable or operation-aware.
+
+    Production owner event accounting lives in book_capacity; persistence and
+    verified broker evidence remain TB-I3 responsibilities.
+    """
 
     cap: int = ACCOUNT_MICRO_CAP
     confirmed: dict[str, int] = field(default_factory=dict)   # leg_id -> contracts
