@@ -78,12 +78,31 @@ class BrokerOrder:
     def view(self) -> dict:
         """The working-order view the spec's ``W`` carries."""
         return {
-            "ref": self.ref, "kind": self.kind, "side": self.side, "qty": self.qty,
+            "ref": self.ref, "sym": self.sym, "leg_id": self.leg_id,
+            "kind": self.kind, "side": self.side, "qty": self.qty,
             "type": self.order_type, "price": self.price, "attached_to": self.attached_to,
             "trail_active": self.trail_active, "trail_anchor": self.trail_anchor,
             "trail_activation": self.trail_activation, "trail_offset": self.trail_offset,
-            "remaining": self.qty - self.filled_qty,
+            "remaining": self.qty - self.filled_qty, "filled_qty": self.filled_qty,
         }
+
+
+@dataclass(frozen=True)
+class Execution:  # pylint: disable=too-many-instance-attributes
+    """Immutable broker-origin identity captured at execution, before later order edits."""
+
+    execution_id: int
+    ref: str
+    fill_id: str
+    sym: str
+    leg_id: str
+    kind: str
+    side: str
+    qty: int
+    order_qty: int
+    order_type: str
+    order_price: float | None
+    attached_to: str | None
 
 
 @dataclass
@@ -116,6 +135,9 @@ class Evidence:
     request_fence: bool = False # read accounts for every earlier request, including pending
     pending_requests: frozenset[str] = frozenset()
     request_outcomes: dict[str, str] = field(default_factory=dict)
+    order_facts: dict[str, dict] = field(default_factory=dict)  # includes terminal orders
+    executions: tuple[Execution, ...] = ()  # complete immutable entry execution history
+    order_symbols: dict[str, str] | None = None  # global ref location, including terminal refs
 
     def working_refs(self) -> set[str]:
         """Refs of every working order in this read."""
@@ -143,6 +165,7 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
     _seq: int = 0
     queued_requests: list[tuple[str, str, dict]] = field(default_factory=list)
     request_outcomes: dict[str, str] = field(default_factory=dict)
+    executions: list[Execution] = field(default_factory=list)
 
     def request(self, action: str, request_id: str, **payload) -> Outcome:
         """Transport acceptance can precede route execution by arbitrarily many events."""
@@ -227,7 +250,15 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         order.status = "filled" if order.filled_qty == order.qty else "partial"
         signed = take if order.side == "buy" else -take
         self.positions[order.sym] = self.positions.get(order.sym, 0) + signed
+        execution_id = self.clock.tick()
         lot_id = self.lot_id(ref)
+        prior = self.lots.get(lot_id)
+        if prior and (prior.sym, prior.leg_id, prior.side) != (order.sym, order.leg_id, order.side):
+            lot_id = f"{lot_id}:{execution_id}"
+        self.executions.append(Execution(execution_id, ref, lot_id, order.sym,
+                                         order.leg_id, order.kind, order.side, take,
+                                         order.qty, order.order_type, order.price,
+                                         order.attached_to))
         lot = self.lots.get(lot_id)
         if lot is None:
             lot = Lot(lot_id, order.sym, order.leg_id, order.side, 0, ref, price)
@@ -332,6 +363,10 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
             return Outcome("rejected", detail="injected reject")
         if inj == "unknown_lost":
             return Outcome("unknown", detail="close never reached the route")
+        sides = {l.side for l in self.lots.values() if l.sym == sym and l.qty > 0}
+        if len(sides) > 1 and (fill_id is not None or qty is not None
+                              or isinstance(inj, tuple) and inj[0] == "partial"):
+            return Outcome("rejected", detail="mixed-side exposure requires atomic full-symbol close")
         lots = ([self.lots[fill_id]] if fill_id else
                 [l for l in self.lots.values() if l.sym == sym and l.qty > 0])
         wanted = qty
@@ -407,4 +442,7 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
                         copy.deepcopy(working), status, fills, lots,
                         acquired=self.clock.tick(), request_fence=True,
                         pending_requests=frozenset(r[0] for r in self.queued_requests),
-                        request_outcomes=dict(self.request_outcomes))
+                        request_outcomes=dict(self.request_outcomes),
+                        order_facts={o.ref: o.view() for o in self.orders.values() if o.sym == sym},
+                        executions=tuple(e for e in self.executions if e.sym == sym),
+                        order_symbols={o.ref: o.sym for o in self.orders.values()})

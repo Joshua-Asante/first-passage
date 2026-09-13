@@ -37,6 +37,9 @@ def matches(order, fields):
 
 def valid_component(order, component, fields, fill_id, qty, side):
     """Protection includes linkage, direction, type and the entire residual quantity."""
+    if component == "trail" and (order.get("trail_activation") is None
+                                 or order.get("trail_offset") is None):
+        return False
     return (order.get("kind") == component and order.get("type") == component
             and order.get("attached_to") == fill_id and order.get("qty") == qty
             and order.get("side") == ("sell" if side == "buy" else "buy")

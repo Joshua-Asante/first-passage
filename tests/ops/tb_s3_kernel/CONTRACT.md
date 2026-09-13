@@ -52,7 +52,7 @@ spec and TB-I3; they do not amend a live adapter or authorize live activity.
   scopes. The in-progress ledger takeover survives restart. Repeated unchanged
   position evidence does not manufacture a position-change event.
 
-Schema 2 rejects incompatible or missing restart snapshots explicitly. It never boots
+Schema 3 rejects incompatible or missing restart snapshots explicitly. It never boots
 empty/armed because records are absent, and restart halts on unallocated bare exposure.
 Never-dispatched entries and loosening amendments are cancelled on restart and require
 new admission; reservations for those entries are released because dispatch did not
@@ -135,6 +135,58 @@ changing this policy would require an explicit governing-contract decision.
   defining protection or dispatching. Unsupported mixed brackets cannot be partly
   attached and then converted into a gap by the model.
 
+### Review refinements after `bafdd97`
+
+- Resuming a retained amendment requires a full read postdating listener restart,
+  in addition to the component's dispatch boundary. Cached pre-restart prices
+  cannot classify an external price change as tightening.
+- First attachment commits its definition, operation and planned send in one store
+  write. Entry, first attachment and amendment all reject a trailing bracket with
+  only activation or only offset before changing intent or reserving capacity.
+- Pending entry ownership requires the original persisted PLACE fields to match
+  broker quantity, symbol, leg, kind, side, type, price and linkage. A familiar ref
+  does not establish identity. Cancellation of a quarantined ref uses its actual
+  current coherent order kind and the existing protective-cancellation restrictions.
+- The offline evidence contract now includes terminal order facts and complete,
+  immutable broker-origin entry executions, captured at fill time. Each execution
+  carries its identity, lot, order fields and executed quantity; restoring mutable
+  order fields later cannot change that history. This is an explicit L-1 extension:
+  production `book_protocol.Fill` supplies identity fields, but the current telemetry
+  `BrokerEvidence` does not supply this complete provenance and history guarantee.
+  A production feed implementation/equivalence decision remains owed.
+  A complete global ref-to-symbol registry makes original-symbol absence distinct
+  from a known ref moved to another symbol. Quarantine retains every observed
+  location, and terminal resolution requires coherent covering reads at all of them,
+  with consistent location records, terminal facts and no working target or pending
+  send. A contradictory terminal status beside a working remainder cannot release
+  the original reserve. Trusted and suspect execution histories are compared
+  independently; a durable conflict marker retains any observed identity rewrite,
+  including after an earlier quarantine or later restored history. Conflicting
+  immutable identities require attended resolution.
+- Credit an entry execution only when its identity matches the original send, the
+  history is complete and monotonic, and its quantity fits that order's remaining
+  reservation. The leg's aggregate reservation cannot fund another order's overfill.
+  Terminal orders remain checked for later executions; lot snapshots cannot create
+  allocation. Ordinary verified lot reductions still reduce allocation.
+- A mismatch persists its own quarantine and observed execution history across
+  restart. Suspect fills never become adapter fills or new owned allocation. Retain
+  the original reservation until covering, fenced terminal evidence establishes no
+  remaining request; retain any previously verified ambiguous lot allocation until
+  that lot is consumed. Discharge quarantine only with complete preserved execution
+  history, terminal order evidence, consumed associated lots/protection and a broker
+  position consistent with verified allocation. This permits cancellation of an
+  unfilled drifted order beside unrelated owned exposure. Missing evidence, restored
+  fields, or net-position coincidence alone cannot discharge the mismatch. Recovery
+  remains native or attended; the model does not infer ownership for suspect fills.
+- The broker retains actual lot identity when an order's side, symbol or leg changes
+  between partial executions. Such executions use distinct lots; they cannot be
+  accumulated into an earlier lot with a different identity and make native CLOSE
+  increase exposure. Ordinary matching executions retain their canonical order lot.
+  Mixed-side exposure supports atomic full-symbol consumption only: the broker
+  rejects bounded, fill-scoped or partial close execution before changing any lot,
+  because such a close could enlarge or reverse net exposure. This is a refusal
+  within the offline capability model, not an added live recovery guarantee.
+
 ## Verification
 
 Baseline: 58 existing tests passed. Initial redesign regressions: 12 failed, one
@@ -158,7 +210,7 @@ No mutation is applied to this checkout or production files.
 
 Subsequent review rounds and final full-ops, check-tier and lint results are recorded
 in `VERIFICATION.md`. The current kernel suite includes actual store-write crash
-cuts as well as route-dispatch cuts, with 316 passing cases.
+cuts as well as route-dispatch cuts. Current counts are recorded in `VERIFICATION.md`.
 
 The production-reference acceptance hold remains pending final operator disposition.
 Live L-1 request/evidence equivalence, L-2 validation, production disarm acknowledgment

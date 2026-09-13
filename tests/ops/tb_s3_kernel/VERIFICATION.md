@@ -166,6 +166,40 @@ failures respectively). The final check-tier run passed, with normal public-work
 skips for private artifacts. Integration hooks and the requested remote review are
 tracked against the pushed revision in the babysit ledger and PR conversation.
 
+### Codex follow-up to `bafdd97`
+
+Codex reported five comments representing four distinct findings: retained MODIFY
+used pre-restart evidence, first ATTACH published a durable prefix, incomplete
+trailing fields were accepted, and familiar entry references bypassed risk-field
+validation. All were reproduced before repair (initial run: 20 failures, 3 passes).
+The round6 suite now contains 46 cases with literal accounting and broker outcomes.
+
+The provenance repair checks the persisted original PLACE authority against actual
+order fields and immutable broker-origin execution records before crediting a fill.
+Each order must fund its own executions. Terminal orders remain checked, and lot
+reads cannot grow allocation. A persistent quarantine owns mismatches without
+fabricating adapter fills. It retains reserve until coherent terminal evidence and
+retains ambiguous verified allocation until consumption. `CONTRACT.md` explicitly
+records the new offline L-1 guarantees, global order-location registry and schema 3;
+these are not claims about the current live telemetry producer.
+
+Independent review reproduced and closed related issues in foreign-symbol absence,
+contradictory terminal/working facts, conflicting execution histories, and mixed
+side/symbol lot recovery. Added regressions cover each, including a conflict arriving
+after earlier quarantine and surviving restart. Broker lots preserve actual execution
+identity; mixed-side bounded, fill-scoped or partial close execution refuses before
+mutation, while full atomic symbol recovery can consume the scope. Conflicting
+immutable identities remain subject to attended resolution.
+
+Independent review accepted the complete bounded offline candidate and independently
+ran all eleven kernel suites: 362 passed. Coordinator full-ops verification: 939
+passed, 13 skipped, two existing seaborn warnings. Focused pylint: 9.73/10, exit 0.
+`git diff --check` and final check-tier gates passed, with normal public-worktree
+skips for private artifacts. The isolated mutation control passed 362 tests; all
+five mutations were detected (81, 3, 1, 3 and 11 failures respectively). Integration
+hooks are tracked in the babysit ledger. Remote CI and the requested Codex review
+apply separately to the pushed revision.
+
 ### Production disposition
 
 The local offline redesign is implemented and reviewed. The production-reference

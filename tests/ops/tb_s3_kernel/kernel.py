@@ -21,8 +21,9 @@ from book_policy import BOOK_LEGS, CapacityDecision, CapacityLedger, TakeoverPla
 from book_policy import leg as leg_spec
 from book_protocol import Bracket, OrderIntent, Side
 
-from .broker import (BAR, STALENESS_WINDOW, Clock, Evidence, FakeBroker,
+from .broker import (BAR, STALENESS_WINDOW, Clock, Evidence, Execution, FakeBroker,
                      Outcome)
+from .provenance import entry_evidence_matches, order_matches
 from .rules import covers, protection_consumed, scope_quiescent, valid_component
 from .state import Attempt, Effect, Obligation
 from .effects import dispatch, planned_command
@@ -45,6 +46,8 @@ def components_of(bracket: Bracket | dict | None) -> dict[str, dict]:
                "trail_offset_ticks": bracket.trail_offset_ticks}
     else:
         raw = dict(bracket)
+    if (raw.get("trail_activation_ticks") is None) != (raw.get("trail_offset_ticks") is None):
+        raise ValueError("trailing protection requires both activation and offset")
     out: dict[str, dict] = {}
     if raw.get("stop") is not None:
         out["stop"] = {"price": raw["stop"]}
@@ -88,6 +91,12 @@ class PendingOrder:  # pylint: disable=too-many-instance-attributes
     sent_seq: int = 0
     cancel_effect: str | None = None
     place_effect: str | None = None
+    executions_seen: dict[int, Execution] = field(default_factory=dict)
+    quarantined: bool = False
+    suspect_lots: set[str] = field(default_factory=set)
+    suspect_executions: dict[int, Execution] = field(default_factory=dict)
+    suspect_symbols: set[str] = field(default_factory=set)
+    identity_conflict: bool = False
 
 
 @dataclass
@@ -210,7 +219,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
     _seq: int = 0
 
     # ── persistence ────────────────────────────────────────────────────────
-    SCHEMA = 2
+    SCHEMA = 3
     PERSISTED = ("pending", "operations", "expected", "lots", "obligations", "p_ev", "w_ev",
                  "lot_ev", "status_ev", "last_control_read", "dry_run", "halted_legs", "_seq",
                  "evidence", "position_cursor", "effects", "restart_seq")
@@ -333,6 +342,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             return False
         ev = self.coherent_evidence(op.sym, self.clock.now)
         if ev is None:
+            return False
+        if self.restarted_at is not None and not covers(
+                ev, self.restarted_at, self.restart_seq, self.clock.now):
             return False
         component = effect.payload["component"]
         current = next((w for w in ev.working if w["ref"] == effect.payload["ref"]), None)
@@ -488,16 +500,36 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             self.lot_ev[lot_id] = (open_qty, ev.as_of)
         working_refs = ev.working_refs()
         for order in list(self.pending.values()):
-            if order.sym != ev.sym or order.status in ("filled", "cancelled", "rejected"):
+            location = (ev.order_symbols or {}).get(order.ref)
+            if ((location is not None and location != order.sym)
+                    or (order.sym != ev.sym and (order.ref in working_refs
+                        or order.ref in ev.order_facts
+                        or any(e.ref == order.ref for e in ev.executions)))):
+                self._quarantine(order, ev)
+            if order.sym != ev.sym:
                 continue
             if (ev.acquired <= order.sent_seq or order.place_effect in ev.pending_requests):
                 continue
             status = ev.order_status.get(order.ref)
+            authority = self._order_authority(order)
+            if (not authority and status is None and order.ref not in ev.order_facts
+                    and order.ref not in working_refs and not ev.fills.get(order.ref)
+                    and not any(e.ref == order.ref for e in ev.executions)):
+                continue  # a dry-run intent never created broker risk
+            if not authority or not entry_evidence_matches(
+                    ev, authority, order.executions_seen, order.reserved, order.sent_seq):
+                self._quarantine(order, ev)
+            if order.quarantined:
+                self._quarantine(order, ev)
+                continue
             filled = ev.fills.get(order.ref, 0)
             if ev.order_level and (status is not None or order.ref in working_refs):
                 order.last_evidence_at = ev.as_of
             if filled > order.filled_qty:
-                self._on_fill(order, filled - order.filled_qty, ev)
+                executions = [e for e in ev.executions if e.ref == order.ref
+                              and e.execution_id not in order.executions_seen]
+                self._on_fill(order, filled - order.filled_qty, ev, executions[0].fill_id)
+                order.executions_seen.update((e.execution_id, e) for e in executions)
                 order.filled_qty = filled
                 order.status = "filled" if status == "filled" else "partial"
             if status in ("rejected", "cancelled"):
@@ -517,9 +549,11 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 self._release(order)
                 order.status = "rejected"
                 self._emit("unknown_resolved_not_executed", ref=order.ref)
+        self._settle_quarantines(release_only=True)
         self._settle_operations(ev)          # all operations use this immutable read
         self._check_expectations(ev)
         self._sync_lots(ev)
+        self._settle_quarantines()
         self._reconcile_ownership(ev)
         self._maybe_clear_unknown_order()
         self._advance_flat_work(ev)
@@ -537,9 +571,87 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 signed += lot.qty if lot.side == "buy" else -lot.qty
         return signed
 
-    def _known_order_refs(self) -> set[str]:
-        known = set(self.pending) | {r for e in self.expected.values()
-                                     for r in e.working.values() if r}
+    def _order_authority(self, order: PendingOrder) -> dict | None:
+        effect = self.effects.get(order.place_effect)
+        return effect.payload if effect else None
+
+    def _quarantine(self, order: PendingOrder, ev: Evidence) -> None:
+        """Retain suspect broker exposure without assigning it to an authorized allocation."""
+        if not order.quarantined:
+            self._emit("order_mismatch", ref=order.ref)
+        order.quarantined = True
+        order.suspect_symbols.add(order.sym)
+        location = (ev.order_symbols or {}).get(order.ref)
+        if location:
+            order.suspect_symbols.add(location)
+        for execution in ev.executions:
+            if execution.ref == order.ref:
+                if any(execution.execution_id in preserved
+                       and preserved[execution.execution_id] != execution
+                       for preserved in (order.executions_seen, order.suspect_executions)):
+                    order.identity_conflict = True
+                order.suspect_executions.setdefault(execution.execution_id, execution)
+                order.suspect_lots.add(execution.fill_id)
+                order.suspect_symbols.add(execution.sym)
+        candidate = f"{order.ref}#lot"  # the fake broker's explicit one-order/one-lot contract
+        if candidate in ev.lots:
+            order.suspect_lots.add(candidate)
+        if order.lot_id:
+            order.suspect_lots.add(order.lot_id)
+        self.block("unknown_order", f"mismatch:{order.ref}")
+
+    def _quarantine_terminal_reads(self, order: PendingOrder) -> tuple[list[Evidence], Evidence] | None:
+        """Original-symbol absence cannot resolve a ref observed at another broker location."""
+        reads = [self.coherent_evidence(sym, self.clock.now) for sym in order.suspect_symbols]
+        if not reads or any(ev is None or not covers(ev, order.sent_at, order.sent_seq, self.clock.now)
+                            or order.place_effect in ev.pending_requests
+                            or order.ref in ev.working_refs() or ev.order_symbols is None
+                            for ev in reads):
+            return None
+        locations = {ev.order_symbols.get(order.ref) for ev in reads}
+        if len(locations) != 1:
+            return None
+        terminal = next((ev for ev in reads if ev.sym in locations
+                         and ev.order_status.get(order.ref) in ("filled", "cancelled", "rejected")
+                         and ev.order_facts.get(order.ref, {}).get("sym") == ev.sym), None)
+        return (reads, terminal) if terminal else None
+
+    def _settle_quarantines(self, release_only: bool = False) -> None:
+        for order in self.pending.values():
+            if not order.quarantined:
+                continue
+            proof = self._quarantine_terminal_reads(order)
+            if proof is None:
+                continue
+            reads, terminal = proof
+            self._release(order)
+            order.status = terminal.order_status[order.ref]
+            if release_only:
+                continue
+            # Compare both preserved histories; suspect identities cannot overwrite trusted ones.
+            records = [e for ev in reads for e in ev.executions if e.ref == order.ref]
+            history = {e.execution_id: e for e in records}
+            history_complete = (len(records) == len(history)
+                                and all(history.get(i) == e for preserved in
+                                        (order.executions_seen, order.suspect_executions)
+                                        for i, e in preserved.items())
+                                and sum(e.qty for e in records) == terminal.fills.get(order.ref, 0)
+                                and terminal.order_facts[order.ref].get("filled_qty")
+                                == terminal.fills.get(order.ref, 0))
+            lots = {lot: qty for ev in reads for lot, qty in ev.lots.items()}
+            if (not order.identity_conflict and history_complete
+                    and all(lots.get(lot) == 0 for lot in order.suspect_lots)
+                    and not any(w.get("attached_to") in order.suspect_lots
+                                for ev in reads for w in ev.working)
+                    and all(ev.position == self._signed_position(ev.sym) for ev in reads)):
+                self.unblock("unknown_order", f"mismatch:{order.ref}")
+
+    def _known_order_refs(self, ev: Evidence) -> set[str]:
+        known = {r for r, o in self.pending.items() if not o.quarantined and o.sym == ev.sym
+                 and self._order_authority(o)
+                 and all(order_matches(w, self._order_authority(o)) for w in ev.working
+                         if w["ref"] == r)}
+        known.update(r for e in self.expected.values() for r in e.working.values() if r)
         known.update(o.target for o in self.operations.values()
                      if o.kind == "CANCEL" and o.status != "complete")
         return known
@@ -556,7 +668,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         if not ev.order_level:
             return
         prefix = f"unowned-order:{ev.sym}:"
-        known = self._known_order_refs()
+        known = self._known_order_refs(ev)
         owners = {prefix + order["ref"] for order in ev.working if order["ref"] not in known}
         for owner in owners:
             self.block("unknown_order", owner)
@@ -569,10 +681,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             self.ledger.release_reservation(order.leg_id, order.reserved)
             order.reserved = 0
 
-    def _on_fill(self, order: PendingOrder, delta: int, ev: Evidence) -> None:
+    def _on_fill(self, order: PendingOrder, delta: int, ev: Evidence, lot_id: str) -> None:
         self.ledger.confirm_fill(order.leg_id, delta)
         order.reserved = max(0, order.reserved - delta)
-        lot_id = self.broker.lot_id(order.ref)
         lot = self.lots.get(lot_id)
         if lot is None:
             lot = Lot(lot_id, order.leg_id, order.sym, order.side, 0, order.ref, ev.as_of)
@@ -773,7 +884,11 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         for lot_id, open_qty in ev.lots.items():
             lot = self.lots.get(lot_id)
             if lot is not None and lot.sym == ev.sym:
-                lot.qty = open_qty
+                order = self.pending[lot.entry_ref]
+                if open_qty > lot.qty or open_qty < 0:
+                    self._quarantine(order, ev)
+                elif not order.quarantined or open_qty == 0:
+                    lot.qty = open_qty
                 if protection_consumed(ev, lot_id):
                     self.expected.pop(lot_id, None)
         for leg_id in {l.leg_id for l in self.lots.values() if l.sym == ev.sym}:
@@ -841,6 +956,10 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         if intent.side != spec.entry_side or (sym in EQUITY_INDEX_SYMBOLS
                                               and intent.side == Side.SELL):
             return self._refuse("side_refused", f"{intent.leg_id}:{intent.side.value}")
+        try:
+            components_of(intent.bracket)
+        except ValueError as exc:
+            return self._refuse("invalid_bracket", str(exc))
         missing = sorted(i for i in self._required_l2(intent.leg_id, intent)
                          if not self.broker.supports(i))
         if missing:
@@ -1089,7 +1208,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
     def _plan_cancel(self, ref: str, now: datetime) -> Effect | Decision:
         """Persist the cancellation owner and effect together; report after dispatch."""
         order = self.pending.get(ref)
-        if order is not None and order.kind in ("entry", "add"):
+        if order is not None and not order.quarantined and order.kind in ("entry", "add"):
             if order.cancel_effect:
                 prior = self.effects[order.cancel_effect]
                 ev = self.evidence.get(order.sym)
@@ -1183,7 +1302,10 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         if ev is None:
             return None
         current = {w["kind"]: w for w in ev.working if w.get("attached_to") == fill_id}
-        new = components_of(bracket)
+        try:
+            new = components_of(bracket)
+        except ValueError:
+            return None
         if any(c not in current for c in new):
             return None
         changes = self._diff(new, current, lot.side)
@@ -1203,7 +1325,10 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                           e.owner == o.op_id and e.status == "planned" for e in self.effects.values()))]
         if unresolved:
             return self._refuse("amend_deferred", f"operation {unresolved[0].op_id} unresolved")
-        new = components_of(bracket)
+        try:
+            new = components_of(bracket)
+        except ValueError as exc:
+            return self._refuse("invalid_bracket", str(exc))
         if exp.is_bare:
             return self._attach(exp, new, now)
         ev = self.coherent_evidence(lot.sym, now)
@@ -1278,6 +1403,13 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         missing = sorted(item for item in required if not self.broker.supports(item))
         if missing:
             return self._refuse("l2_refused", ",".join(missing))
+        effect = self._plan_attach(exp, components, now)
+        return Decision(effect.outcome == "accepted", effect.outcome or "planned",
+                        op=self.operations[effect.owner])
+
+    @planned_command
+    def _plan_attach(self, exp: Expectation, components: dict[str, dict], now: datetime) -> Effect:
+        """Commit the first defined protection, its owner and its send intent together."""
         exp.define(components, now)                       # intended before send
         op = Operation(self._next("op"), "ATTACH", "fill", exp.fill_id, exp.sym, exp.leg_id,
                        "attach", prepared_at=now, prepared_seq=self.clock.tick(),
@@ -1287,7 +1419,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         effect = self._effect("attach", op.op_id,
                               {"fill_id": exp.fill_id, "bracket": self._bracket_from(components)})
         self.persist()
-        return Decision(effect.outcome == "accepted", effect.outcome, op=op)
+        return effect
 
     @staticmethod
     def _bracket_from(components: dict[str, dict]) -> dict:
@@ -1417,8 +1549,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             if not self.evidence_after(sym, self.restarted_at, self.restart_seq):
                 return Decision(False, "evidence_owed", ref=sym)
         halted = False
-        known = self._known_order_refs()
         for sym in OWNED_SYMBOLS:
+            known = self._known_order_refs(self.evidence[sym])
             working, _ = self.w_ev[sym]
             if self.p_ev[sym][0] != self._signed_position(sym):
                 self.halted_legs.add(LEG_BY_SYMBOL[sym])
