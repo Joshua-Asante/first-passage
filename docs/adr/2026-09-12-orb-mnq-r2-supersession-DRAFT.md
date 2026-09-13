@@ -54,9 +54,9 @@ What this ADR does **not** do, whatever the slot says: unpark the standalone ORB
 
 ## §4 — Falsifier and gate (binary)
 
-**H (to be measured, not asserted):** *with ORB recon v7 present at one micro under the fixed policy, the Tradeify portfolio clears the four frozen acceptance conditions.*
+**H (to be measured, not asserted):** *with ORB recon v7 present at one micro under the fixed policy, the Tradeify portfolio clears the frozen legality, n1, n2, regime-gate Part A and ORB parity conditions.*
 
-**Reject (FALSIFIED) if** TB-E1's legality screen, n1 or n2 fails any bound with ORB present, or the ORB parity at O-N / O-P is not PASS → the Decision slot records "not superseded", the attempt ends (D33), no runner-up, no re-run without ORB.
+**Reject (FALSIFIED) if** TB-E1's legality screen, n1, n2 or regime-gate Part A fails with ORB present, or the ORB parity at O-N / O-P is not PASS → the Decision slot records "not superseded", the attempt ends (D33), no runner-up, no re-run without ORB.
 **Accept if** TB-E1 passes and seals the fixed-book replay fingerprint → the slot records the digests and the disposition, and the **operator's fresh GO** is requested; a withheld or pending GO leaves Track B `BLOCKED — context-problem` (never negative technical evidence).
 
 **Revert trigger for this ADR once accepted:** the sole n3 (TB-E2) failing any bound → the acceptance is void with the attempt; re-pointing again needs a new frozen contract and a new ADR. **Trigger check schedule:** at TB-E1 (fill), at TB-D1 (GO), at TB-E2 (n3).
@@ -86,8 +86,8 @@ What this ADR does **not** do, whatever the slot says: unpark the standalone ORB
 ```bash
 # The slot is empty until TB-D1 (expected before fill: one line)
 grep -n "<slot — TB-D1 fills" docs/adr/2026-09-12-orb-mnq-r2-supersession-DRAFT.md
-# No figures leak into this ADR (D-B12 allowlist rule; expected: exit 0)
-python -c "import re,sys;A=[r'\d{4}-\d{2}-\d{2}(-[a-z0-9-]+\.md)?',r'\b(?=[0-9a-f]*[a-f])[0-9a-f]{7,64}\b',r'#\d+',r'\bD-B\d+\b',r'\bTB-[A-Z]\d*\b',r'\bO-\d\b',r'\b(n1|n2|n3|H1|H2|M1|R[1-3]|D\d{1,2}|k = [123]|100K|\$100K)\b'];t=open('docs/adr/2026-09-12-orb-mnq-r2-supersession-DRAFT.md',encoding='utf-8').read();import functools;print('ok')"
+# No result figures leak into the decision slot (D-B12 allowlist rule; expected: exit 0)
+python -c "import re,sys,functools;t=open('docs/adr/2026-09-12-orb-mnq-r2-supersession-DRAFT.md',encoding='utf-8').read().split('## §2 — Decision (slot)',1)[1].split('## §3 — Alternatives',1)[0];A=[r'\b(?:TB-[A-Z]\d*|D-B\d+|O-[A-Z0-9]+|R[1-3]|n[1-3]|H[12]|ORB-MNQ-1)\b',r'\d{4}-\d{2}-\d{2}',r'\bK = 1\b',r'≤ 2',r'0 %'];u=functools.reduce(lambda s,p:re.sub(p,'',s),A,t);bad=re.findall(r'(?<![A-Za-z])\d+(?:\.\d+)?\s*%?(?![A-Za-z])',u);print('ok' if not bad else 'unexpected decision-slot figures: '+', '.join(bad));sys.exit(bool(bad))"
 # Well-formedness
 python scripts/check_brief.py docs/adr/2026-09-12-orb-mnq-r2-supersession-DRAFT.md --type adr
 python scripts/check_adr_graph.py

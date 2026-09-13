@@ -31,13 +31,13 @@ n=970 fail_limb=0.939 speed_limb=1.000 joint4=0.816 (pass_target=0.5 ceiling=0.0
 $ python scripts/certification_power.py --true-rate 0.03 --true-pass-rate 0.65 --power 0.80 --dependence independent
 n=950 fail_limb=0.932 speed_limb=1.000 joint4=0.809 (pass_target=0.5 ceiling=0.05 alpha=0.05 dependence=independent step=10)
 $ python scripts/certification_power.py --true-rate 0.03 --true-pass-rate 0.60 --power 0.80 --dependence frechet
-n=970 fail_limb=0.939 speed_limb=1.000 joint4=0.816 (...)
+n=970 fail_limb=0.939 speed_limb=1.000 joint4=0.816 (pass_target=0.5 ceiling=0.05 alpha=0.05 dependence=frechet step=10)
 $ python scripts/certification_power.py --true-rate 0.02 --true-pass-rate 0.60 --power 0.80 --dependence frechet
-n=390 fail_limb=0.947 speed_limb=0.990 joint4=0.831 (...)
+n=390 fail_limb=0.947 speed_limb=0.990 joint4=0.831 (pass_target=0.5 ceiling=0.05 alpha=0.05 dependence=frechet step=10)
 $ python scripts/certification_power.py --true-rate 0.03 --true-pass-rate 0.65 --n 950
-n=950 fail_limb=0.932 speed_limb=1.000 min_passes=501 max_busts=36 joint4_independent=0.809 joint4_frechet=0.795 (...)
+n=950 fail_limb=0.932 speed_limb=1.000 min_passes=501 max_busts=36 joint4_independent=0.809 joint4_frechet=0.795 (pass_target=0.5 ceiling=0.05 alpha=0.05)
 $ python scripts/certification_power.py --true-rate 0.03 --true-pass-rate 0.65 --n 1200
-n=1200 fail_limb=0.970 speed_limb=1.000 min_passes=629 max_busts=47 joint4_independent=0.913 joint4_frechet=0.910 (...)
+n=1200 fail_limb=0.970 speed_limb=1.000 min_passes=629 max_busts=47 joint4_independent=0.913 joint4_frechet=0.910 (pass_target=0.5 ceiling=0.05 alpha=0.05)
 ```
 
 Reading: at a true failure rate of 3 % the failure limbs bind and the speed limb is essentially non-binding once the true pass-by-200 rate is ≥ 0.60 (its minimum certifying count is 501 of 950); the dependence-valid Fréchet bound at 80 % joint power gives **n = 970 per stream**. **Proposed (`OWED-BY: TB-F1`):** n2 = n3 = 970 at the (3 %, 0.65) design alternative under Fréchet; n1 = 200 as a screen with continuation cutoff "stage-1 point-estimate failure proportion ≤ 0.05 on full and both halves" (a failed cutoff ends the attempt; a passed cutoff certifies nothing). n3 is **never** sized from n1/n2 results.
@@ -62,7 +62,7 @@ Full = the documented coverage **2022-09-01 → 2026-09-02** (D19 `coverage_end`
 
 | Layer | Contents | Sealed by |
 |---|---|---|
-| **K = 1 confirmation contract** | adapter port hashes (`PORT_MANIFEST.sha256` via TB-A0), replay-engine commit, bar-panel digests (`SHA256SUMS`), warm-up boundaries (TB-W1: panel origin), D19 calendar digest, TB-C1 forward-calendar and closure-overlay digests, commission-schedule digest, capacity rules (TB-S1), fill model (§10), E1 initial state (§9), the fixed book and fixed policy, streams and sizes (§2), dates/halves/horizon (§5) | **TB-F1** (`OWED-BY: TB-F1` for every digest) |
+| **K = 1 confirmation contract** | adapter port hashes (`PORT_MANIFEST.sha256` via TB-A0), replay-engine commit, bar-panel digests (`SHA256SUMS`), warm-up boundaries (TB-W1: panel origin), D19 calendar digest, TB-C1 forward-calendar and closure-overlay digests, commission-schedule digest, capacity rules (TB-S1), fill model (§9), E1 initial state (§9), the fixed book and fixed policy, streams and sizes (§2), dates/halves/horizon (§5) | **TB-F1** (`OWED-BY: TB-F1` for every digest) |
 | **Fixed-book replay fingerprint** | the contract + the exact four-leg book + the exact 1 % / 40 % policy | **TB-E1** seal; unchanged through Phase 8, B7 and n3 |
 | **Execution fingerprint** | rail/daemon commit, image hashes, deployed config digests, the dd-state seed (TB-S3 R-L), TB-I5 source identity, the B7 snapshot digest + `valid_until` | **TB-B7**; must prove equality of every shared component with the replay fingerprint |
 
@@ -73,9 +73,9 @@ Full = the documented coverage **2022-09-01 → 2026-09-02** (D19 `coverage_end`
 | Leave-one-year-out (each of the four panel years dropped in turn) | report each variant's full-sample failure upper bound; severity WARN if any variant > 0.075 | operator review; no re-selection |
 | Dependence-length alternatives (block length ×0.5, ×2) | report the failure upper bound and the speed lower bound per variant | WARN if any bound crosses its acceptance value; monitoring input |
 | Commission / adverse-fill stress (venue schedule ×1.5; slippage ticks ×2; conservative same-bar ordering; partial-fill fraction 0.5 on adds) | report; WARN if the full-sample failure upper bound > 0.075 | monitoring input |
-| Delays / missed trades / outages (drop 5 % of entries at random; one missed session per month) | report | monitoring input |
-| Strategy removal, best-trade / best-month / best-year removal | report per removal | monitoring input; a book without a leg is never a substitute |
-| Downside correlation / loss clustering (longest joint-loss run; conditional co-loss) | report | monitoring input |
+| Delays / missed trades / outages (drop 5 % of entries at random; one missed session per month) | descriptive-only; report with no verdict cutoff or severity | no automatic action; operator context only |
+| Strategy removal, best-trade / best-month / best-year removal | descriptive-only; report per removal with no verdict cutoff or severity | no automatic action; operator context only; a book without a leg is never a substitute |
+| Downside correlation / loss clustering (longest joint-loss run; conditional co-loss) | descriptive-only; report with no verdict cutoff or severity | no automatic action; operator context only |
 | Rule-faithful tie ordering | fixed by §4 | — |
 | Lifecycle ladder | WATCH-1 (0.50×) and WATCH-2 (0.25×) are the only tiers automation may move to; Call-1 decay breach k = 1.0 with two consecutive windows (`core/lifecycle.py`); RETIRED is operator-only; **Call-4 off-rail (O-1)**: three de-authorized legs → operator kill switch / GO-NO-GO | down only |
 | Live time-to-pass predictive interval | quantiles q10 / q50 / q90 of T from the n3 paths; clock origin = the first venue session after the arm | a live bust, or T outside [q10, q90], falsifies the model-fitted proposal → all four legs to WATCH-1 pending operator review |

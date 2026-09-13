@@ -251,6 +251,11 @@ def test_min_certifying_passes_matches_exact_oracle() -> None:
     assert expected == 59
 
 
+def test_min_certifying_passes_preserves_inclusive_boundary() -> None:
+    assert cp.min_certifying_passes(1, target=0.05, alpha=0.05) == 1
+    assert cp.speed_limb_power(1, 1.0, target=0.05, alpha=0.05) == 1.0
+
+
 def test_min_certifying_passes_none_when_n_too_small() -> None:
     assert cp.min_certifying_passes(3, target=0.5, alpha=0.05) == -1
     assert cp.speed_limb_power(3, 0.9, target=0.5, alpha=0.05) == 0.0
@@ -292,6 +297,13 @@ def test_size_for_joint_four_returns_first_grid_n_meeting_target() -> None:
 
     assert joint(n) >= 0.80
     assert all(joint(m) < 0.80 for m in range(cp.DEFAULT_STEP, n, cp.DEFAULT_STEP))
+
+
+def test_size_for_joint_four_rejects_unattainable_perfect_power() -> None:
+    with pytest.raises(ValueError, match="target_power 1.0 requires"):
+        cp.size_for_joint_four(0.01, 0.9, 1.0)
+    with pytest.raises(ValueError, match="target_power 1.0 requires"):
+        cp.size_for_joint_four(0.0, 0.9, 1.0)
 
 
 @pytest.mark.parametrize("kwargs", [{"target": 0.0}, {"target": 1.0}, {"alpha": 0.0}])

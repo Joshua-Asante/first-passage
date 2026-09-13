@@ -178,7 +178,16 @@ def min_certifying_passes(
     _require_n(n)
     _require_open_unit("target", target)
     _require_open_unit("alpha", alpha)
-    k_fail = max_certifying_busts(n, ceiling=1.0 - target, alpha=alpha)
+    # ``1.0 - target`` may land one ULP above the mathematical complement.
+    # Admit a CDF that differs from alpha only by floating-point roundoff so an
+    # exact Clopper-Pearson boundary remains inclusive (the contract says >=).
+    complement = 1.0 - target
+    k_fail = -1
+    for k, cdf in _iter_lower_cdf(n, complement):
+        if cdf <= alpha or math.isclose(cdf, alpha, rel_tol=1e-14, abs_tol=0.0):
+            k_fail = k
+        else:
+            break
     return -1 if k_fail < 0 else n - k_fail
 
 
@@ -190,13 +199,14 @@ def speed_limb_power(
 ) -> float:
     """P(lower bound on the pass proportion >= target) at a true pass rate; 0.0 when no count certifies.
 
-    Computed as the complement identity per_limb_power(n, 1 - q, ceiling = 1 - target)
-    so the same normalized recurrence carries the tail (no 1 - CDF cancellation).
+    Computed from the certifying success count as a lower-tail probability for
+    the complementary failure count (no 1 - CDF cancellation).
     """
     _require_unit_interval("true_pass_rate", true_pass_rate)
-    if min_certifying_passes(n, target=target, alpha=alpha) < 0:
+    k_min = min_certifying_passes(n, target=target, alpha=alpha)
+    if k_min < 0:
         return 0.0
-    return per_limb_power(n, 1.0 - true_pass_rate, ceiling=1.0 - target, alpha=alpha)
+    return _binom_cdf(n - k_min, n, 1.0 - true_pass_rate)
 
 
 def joint_power_four(q_fail: float, q_speed: float, dependence: str) -> float:
@@ -231,6 +241,10 @@ def size_for_joint_four(
     _require_unit_interval("true_rate", true_rate)
     _require_unit_interval("true_pass_rate", true_pass_rate)
     _require_target(target_power)
+    if target_power == 1.0 and (true_rate > 0.0 or true_pass_rate < 1.0):
+        raise ValueError(
+            "target_power 1.0 requires true_rate == 0 and true_pass_rate == 1"
+        )
     _require_open_unit("pass_target", pass_target)
     _require_open_unit("ceiling", ceiling)
     _require_open_unit("alpha", alpha)
