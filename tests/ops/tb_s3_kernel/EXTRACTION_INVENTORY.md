@@ -169,3 +169,13 @@ Source: PR365 23cf0e1 plus preserved uncommitted round7 candidate. All tests ret
 | test_tb_s3_kernel_sequences::test_two_owners_remain_independent_across_reordered_reads_and_restart | A1 | account |
 | test_tb_s3_kernel_sequences::test_partial_remainder_cancel_outcomes_keep_reservation_until_terminal | E2 | primitives |
 | test_tb_s3_kernel_sequences::test_two_rejected_owners_on_one_symbol_do_not_overwrite_each_other | K1 | primitives |
+
+## Rev7 consumer acceptance additions (#369)
+
+`primitives/test_tb_s3_rev7.py` adds event-sequence coverage for request coverage
+handoff/expansion/reuse, gross-zero-net retained closes, generation-aware late
+fills, surviving protection owners, immutable allocation/history validation,
+external-order membership and registry retention, global IDs, and exact bounded
+close attribution/completion. `support/adversarial.py` explicitly constructs
+malformed external facts for inherited quarantine cases. These are consumer tests;
+account orchestration remains in #370.

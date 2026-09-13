@@ -11,6 +11,7 @@ from book_protocol import Bracket
 
 
 from tests.ops.tb_s3_kernel.broker import BrokerOrder
+from tests.ops.tb_s3_cases.support.adversarial import inject_unlinked_execution
 
 
 from tests.ops.tb_s3_kernel.harness import BAR, MIN, Sequence, entry, fill_lot, make_world
@@ -175,7 +176,7 @@ def test_orphan_cancel_fill_race_retains_ownership_through_recovery(reboot):
     w.kernel.cancel(ref, w.now)
     if reboot:
         Sequence.start(w).restart()
-    w.broker.trigger(ref)
+    inject_unlinked_execution(w.broker, ref)
     w.broker.execute_next()
     w.advance(MIN)
     w.snap()
@@ -201,13 +202,15 @@ def test_consumed_amendment_does_not_strand_a_later_partial_entry_fill():
     w.snap()
     assert op.status == "complete"
     assert w.kernel.pending[d.ref].reserved == 1
-    w.broker.fill(d.ref)
+    next_lot = w.broker.fill(d.ref)
+    assert next_lot != lot
     w.advance(MIN)
     w.snap()
-    assert w.kernel.amend(lot, Bracket(stop=96), w.now).ok
+    assert not w.kernel.amend(lot, Bracket(stop=96), w.now).ok
+    assert w.kernel.amend(next_lot, Bracket(stop=96), w.now).ok
     w.advance(MIN)
     w.snap()
-    assert w.kernel.expected[lot].intended["stop"] == {"price": 96}
+    assert w.kernel.expected[next_lot].intended["stop"] == {"price": 96}
 
 
 def test_partial_orphan_recovery_counts_broker_exposure_and_retries_same_operation():
@@ -220,7 +223,7 @@ def test_partial_orphan_recovery_counts_broker_exposure_and_retries_same_operati
     w.snap()
     w.broker.inject["cancel"] = "defer"
     w.kernel.cancel(ref, w.now)
-    w.broker.trigger(ref)
+    inject_unlinked_execution(w.broker, ref)
     w.broker.execute_next()
     w.broker.inject["close"] = ("partial", 1)
     w.advance(MIN)
@@ -248,7 +251,7 @@ def test_full_close_can_retry_residual_first_observed_after_dispatch():
     w.snap()
     w.broker.inject["cancel"] = "defer"
     w.kernel.cancel(ref, w.now)
-    w.broker.trigger(ref)
+    inject_unlinked_execution(w.broker, ref)
     w.broker.inject["close"] = ("partial", 1)
     op = w.kernel.close("sym", "MGC", w.now, "exit")
     w.broker.execute_next()

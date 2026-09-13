@@ -2,6 +2,7 @@
 
 
 from dataclasses import replace
+from tests.ops.tb_s3_cases.support.adversarial import inject_unlinked_execution
 
 
 import pytest
@@ -177,7 +178,7 @@ def test_change_fill_restore_cannot_fabricate_an_owned_fill(field, value):
     order = w.broker.orders[d.ref]
     old = getattr(order, field)
     setattr(order, field, value)
-    w.broker.fill(d.ref)
+    inject_unlinked_execution(w.broker, d.ref)
     setattr(order, field, old)
     w.advance(MIN)
     w.snap()

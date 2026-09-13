@@ -1,48 +1,61 @@
-# Durable primitive kernel candidate
+# Durable primitive kernel
 
-Stage 2 consumes stage 1 evidence and owns consumer enforcement of E1–E3 and
-K1–K3 in PR360 rev6 §2e. **Unaccepted offline candidate.** Ownership and recovery
-stay in one state machine. No daemon or account orchestration module is imported
-or required to run the primitive suite.
+Stage 2 consumes the merged #368 producer and implements the offline consumer
+rules E1–E3/K1–K3 in TB-S3 rev7 §2e. It owns reservations, verified allocation,
+quarantine, individual obligations, CANCEL/CLOSE/AMEND/ATTACH, protection recovery
+and persisted effects. No daemon or account orchestration module is required.
+Production L1 equivalence, L2 qualification and operator authorization remain owed.
 
-The listener owns order reservations, verified allocation, quarantine, individual
-obligations, CANCEL/CLOSE/AMEND/ATTACH, gap recovery, attempts and persisted effects.
-The producer owns facts; the production aggregate capacity ledger receives only
-verified per-order credit. `completion_actions(now)` is a transaction extension
-point: account composition may plan journaled effects before the same final store
-write, but no status query may invoke it. Recovery does not require that extension.
+## Supported boundary
 
-| Contract | Independently expected outcome |
-|---|---|
-| E1 | Duplicate/older, position-only or pre-dispatch evidence cannot settle newer work. |
-| E2 | No sibling reserve funds overfill; changed or backdated identity retains quarantine across restart. |
-| E3 | Every unresolved request blocks admission until its future exposure is resolved or transferred to another owner. |
-| K1 | Completing one owner preserves all others; zero net with gross lots or working remainders is not quiescent. |
-| K2 | Unsupported/removing/incomplete brackets are refused; only dispatched component values explain transitions. |
-| K3 | Store/dispatch crashes retain required work; unknown sends are not blindly retried; bounded reductions do not execute twice. |
+- Entry executions have immutable, account-wide IDs and generation-specific lot
+  IDs. Every generation is allocated separately; a full fill close owns late fills
+  of its original entry until its remainders and gross exposure are quiescent.
+- Accounting lots and protection owners are distinct. Triggered FIFO reductions
+  may consume another accounting lot while preserving an owner's original anchor.
+  Consumption is established in event order, including flat-then-new-entry traces.
+- Commands expose explicit market closes. Bounded reductions support only
+  `CLOSE(fill, qty)`; bounded leg/symbol exits are refused before dispatch.
+  The producer refuses divergent scoped closes; the consumer retains a block
+  until attended recovery (including a supported full-symbol close) resolves it.
+- Native `triggered_protection` evidence is consumed, but listener-origin
+  close-time triggered-protection dispatch is not exposed by this command API.
+  #370 must re-review its caller against this limitation; it must not substitute
+  an explicit fill close. That integration or a separate primitive extension is owed.
+- Bounded-close progress is the sum of immutable reductions attributed to its
+  dispatched request IDs, not a position delta. A late fill cannot erase progress
+  and permit duplicate execution. Residual protection is checked before completion.
+- `completion_actions(now)` permits account composition to plan journaled effects
+  in the same transaction. Completion drives effects; status queries only report.
 
-`EXTRACTION_INVENTORY.md` maps every inherited test to a semantic contract and stage.
-Historical filenames preserve traceability, not acceptance boundaries. Expected
-quantities, owner sets and broker facts remain literal or event-derived; extraction
-does not introduce a second copy of the kernel as the test oracle.
+## Evidence and ownership
 
-Schema 4 is an offline primitive snapshot with explicit required fields. Missing
-or incompatible snapshots are refused; no production migration is supplied.
+Full acquisitions must contain coherent W, status, facts and a global registry.
+Previously observed registry keys cannot disappear from newer acquisitions.
+Immutable entry/reduction histories must remain complete and unchanged; allocations
+must conserve gross lots and net position. Reused global IDs and backdated or
+rewritten histories retain identity-conflict blocks across restart. Incomplete
+structural proof cannot settle work; later complete proof can restore coherence.
 
-## Unresolved candidate findings
+Each pending or covering external request expands its possible symbol set on
+newer global fences even when its completion record is omitted. Renewed pending
+state after completion retains a conflict owner. Completion transfers exposure
+atomically to order/gross-lot owners, including offsetting lots with zero net.
+Clearing one owner never clears another. Quiescence includes gross lots, active
+protection and working entry remainders.
 
-The five findings on published PR365 head `23cf0e1` have candidate repairs in the
-preserved round7 source. Passing inherited regressions is not independent acceptance.
-Review must still close these compositions before this candidate is accepted:
+The producer extension in this stage adds optional `Reduction.request_id` for
+explicit request attribution; direct external reductions retain `None`. It does
+not add a live route. Schema **6** persists generation membership, acquired proof,
+completed request identities and history conflicts. Missing/incompatible snapshots
+are refused; no production or #370 schema migration is supplied.
 
-- Request completion can expose unowned gross offsetting lots whose net is zero;
-  request-to-lot ownership must not disappear behind net position equality.
-- A covering external request must expand coverage when a later global registry
-  introduces another symbol, even if that read omits its completion record.
-- Renewed pending state after completion must retain an ID conflict, including
-  before coverage of all possible symbols has completed.
-- The inherited retained-close gross-lot case restarts before the relevant fresh
-  read and therefore does not establish the intended no-op race on its own.
+## Verification and acceptance
 
-These are acceptance blockers, preserved explicitly rather than hidden by the split.
-Production L1 equivalence, L2 qualification and operator gates remain separate.
+`EXTRACTION_INVENTORY.md` preserves inherited test mapping. New rev7 regressions
+use literal quantities and event-derived identities, and malformed evidence uses
+explicit adversarial injection rather than invalid normal producer calls.
+`PRIMITIVE_VERIFICATION.md` records final evidence. The former candidate blockers
+(request-to-gross ownership, scope expansion, renewed IDs and the retained-close
+race) now have focused sequence regressions and independent review. This boundary
+accepts neither the superseded #365 implementation nor the #370 account stage.

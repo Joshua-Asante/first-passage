@@ -47,6 +47,8 @@ def entry_evidence_matches(ev: Evidence, authority: dict, seen: dict[int, Execut
         if (not order_matches(fields, authority) or type(execution.qty) is not int
                 or execution.qty <= 0 or not sent_seq < execution.execution_id < ev.acquired
                 or (execution.execution_id not in seen and execution.execution_id <= history_acquired)
-                or execution.fill_id != f"{ref}#lot"):
+                or not execution.fill_id
+                or ev.lot_facts.get(execution.fill_id, {}).get("entry_ref") != ref
+                or any(e.fill_id == execution.fill_id and e.ref != ref for e in ev.executions)):
             return False
     return True

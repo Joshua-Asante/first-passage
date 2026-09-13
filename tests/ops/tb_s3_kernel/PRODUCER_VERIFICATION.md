@@ -56,3 +56,10 @@ quarantine, scope expansion, restart/reordering and unsupported divergent closes
 A passing producer is not permission to waive any of those failures or merge #370.
 
 Live producer equivalence, L-2 qualification and all operator gates remain owed.
+
+## Subsequent #369 migration
+
+The nine exposed migration failures are repaired in #369 using explicit adversarial
+injection and generation-aware consumer allocation. #369 also adds optional close
+request attribution to Reduction. See `PRIMITIVE_VERIFICATION.md` for the updated
+combined verification; the #368 counts and revision above remain historical.
