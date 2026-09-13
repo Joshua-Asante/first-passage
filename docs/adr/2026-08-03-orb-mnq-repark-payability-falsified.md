@@ -5,6 +5,7 @@
 **Supersedes:** `2026-07-31-orb-mnq-unpark-payability-target.md` in part — its **§2 unpark decision**, its **payable-`Tradeify_Select_100K`-leg target**, and its **§4 trigger table** only. That ADR's §3 evidence, Addendum 2026-07-31b (both operator rulings), Addendum 2026-07-31c (T1 `PASS`), and Addendum 2026-08-02 (T2 measurement) stand as `Accepted` record and are **not** retracted.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
+**Superseded-in-part-by:** `2026-09-12-orb-mnq-r2-supersession-DRAFT.md` — pending only: §4 R2 for ORB recon v7 as the fixed Tradeify portfolio leg; ineffective until TB-D1 evidence and operator GO. Standalone ORB-MNQ-1 remains unchanged.
 **Retain-until:** none
 **Authors:** Joshua (three rulings, chat 2026-08-03) + Claude Code (adjudication mechanics + recorder)
 **Related:** [`RESULTS_t2_intraday_bust.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md) (the measurement this rests on) · [`2026-07-13-prop-survivor-scoring-prereg.md`](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) (the frozen protocol both limbs fail) · [`2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) (the lane ADR whose reopen bar governs any future unpark) · [`Q-COMPOSE-1 closure`](../briefs/closures/Q-COMPOSE-1-closure-falsified.md) (book-leg role, independently FALSIFIED and untouched)

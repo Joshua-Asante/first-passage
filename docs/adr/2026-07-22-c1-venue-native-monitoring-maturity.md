@@ -16,6 +16,15 @@ rule); `2026-07-10-strategies-never-locked-lifecycle-governance.md`;
 `2026-07-22-challenge-era-substrate-retirement.md`;
 `2026-08-07-loop-s2-signal-host-fork.md` (express item-5 origin supersession).
 
+**Pointer re-home 2026-09-12 (TB-O1; reader-intercept, no clause amended):** every
+`docs/notes/rail_build/RUNBOOK.md` reference below — the §0 anchor, the §6 downstream list, the
+§Verification command, and Addendum 2026-07-31b's §0 table, §Falsifier and §10 hook 2 — names a
+private file that is **not on the public tree**. The public operating procedure is
+[`ARMING_PROCEDURE.md`](../notes/rail_build/ARMING_PROCEDURE.md); the private runbook is retrieved
+per its §2 (archive pin `5d47b4dc…`, or the primary checkout's ignored private root). Hooks that grep
+the old path run against that private copy. Body text below is byte-unedited; see Addendum
+2026-09-12.
+
 ---
 
 ## §0 — Rule 0 reads and cheap falsifier
@@ -976,10 +985,42 @@ grep -n "M1_MONITORING_ACCEPTANCE" ops/c1_rail/c1_rail_arm.py
 
 ---
 
+## Addendum 2026-09-12 — `RUNBOOK.md` pointer re-home (TB-O1; no clause amended)
+
+**Does not amend** §2, §4, §5 or any prior addendum; M1 stays `CODE_LANDED`; nothing arms.
+**$0 / K=0.**
+
+Six sites in this file cite `docs/notes/rail_build/RUNBOOK.md`: the §0 Rule-0 anchor (`d9e8f2a`),
+the §6 downstream-artifacts list ("M1 gate and session export procedure"), the §Verification
+`git log` command, and Addendum 2026-07-31b's §0 table row, §Falsifier ("a new entry in the RUNBOOK
+§B7 arming log") and §10 hook 2 (`grep -n "DRY_RUN=false" …`). The file left the public tree under
+the [public-visibility ADR](2026-08-14-repo-public-visibility-transition.md)'s exclusion rule
+(operational logs carrying the live account identifier and dollar history). Those sites stay
+byte-unedited (Trap #12); this addendum and the header intercept re-home the reader:
+
+- **Public procedure (steps, interlocks, window, stop conditions, recovery pointers):**
+  [`docs/notes/rail_build/ARMING_PROCEDURE.md`](../notes/rail_build/ARMING_PROCEDURE.md) — TB-O1,
+  Track B umbrella. It restates no account value and authorizes nothing.
+- **Private runbook (history, B7 arming log, crash-loop recovery):** retrieved per that file's §2 —
+  archive pin `5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2` (the revision Track A §A3 verified), or
+  the `pre-prune-2026-08-08` blob `d523ee0d…` copied into the primary checkout's ignored private
+  root (`lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/rail_build/`).
+  Hooks 2 and the §Verification anchor command run against that copy; their expected counts were
+  recorded against the 2026-07-31 revision and are not re-baselined here.
+- **Unchanged:** the crash-loop recovery procedure (private; availability attested in the
+  [readiness record](../notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md) §A3), the acceptance
+  JSON's status, evidence ids, pins and signoff (a `notes` entry only was added, same PR).
+
+Reads: this file @ `0059ca7` (six sites located by `grep -n RUNBOOK`) · `ops/c1_rail/c1_rail_arm.py`
+@ `027a729` · `ops/c1_rail/c1_rail_http_server.py` @ `027a729`.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
+| 2026-09-12 | Addendum + header intercept — `RUNBOOK.md` pointer re-home to the public `ARMING_PROCEDURE.md` and the private retrieval convention (TB-O1); no clause amended, status unchanged | Claude Code (recorder) |
 | 2026-09-11 | Codex fold (PR #340): Rule 0 pin distinguishes the PROPOSED packet pin from the A1r ratification; option D names the venue contract (`venue_contract`) the operator reads — provenance, not sizing | Claude (fold) · Codex (review) |
 | 2026-09-11 | Addendum — item-5 Stage 1 input = operator-attended controlled input (express); limbs, decline, no-arm stand; TV webhook / delayed feed / eval-account API not licensed | Joshua (ruling) · Claude (recorder) |
 | 2026-08-24 | **Test strategy licensed** as item-5 qualifying emit; dated 08-24. Limbs + deletion decline + no-arm stand; M1 stays `CODE_LANDED` until the attended session records the event id + `operator_signoff` | Joshua (ruling) · Cursor (recorder) |
