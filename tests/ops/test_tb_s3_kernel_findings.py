@@ -325,11 +325,8 @@ def test_unknown_close_that_did_not_execute_is_resubmitted_with_the_same_identit
     """Unknown close that did not execute is resubmitted with the same identity."""
     world = make_world()
     lot = _lot(world, "vanguard_mgc", 1, Bracket(stop=2_400.0))
-    world.broker.inject["close"] = "unknown"
+    world.broker.inject["close"] = "unknown_lost"
     op = world.kernel.handle_exit("vanguard_mgc", world.now, fill_id=lot)
-    world.broker.lots[lot].qty, world.broker.positions["MGC"] = 1, 1   # it never executed
-    for pref in list(world.broker.lots[lot].protection.values()):
-        world.broker.orders[pref].status = "working"
     world.advance(MIN)
     world.snap("MGC")
     assert op.status == "unknown" and op.reconciled_at is not None

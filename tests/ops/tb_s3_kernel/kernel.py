@@ -265,6 +265,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         """Spec I2: broker evidence alone moves ``P``, ``W``, ``pending`` and the lots."""
         self._sweep_timeouts(ev.as_of)
         self.p_ev[ev.sym] = (ev.position, ev.as_of)
+        if not ev.order_level:
+            self.persist()
+            return
         if ev.order_level:
             self.w_ev[ev.sym] = (ev.working, ev.as_of)
         for ref, status in ev.order_status.items():
@@ -283,7 +286,6 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 self._on_fill(order, filled - order.filled_qty, ev)
                 order.filled_qty = filled
                 order.status = "filled" if status == "filled" else "partial"
-                continue
             if status in ("rejected", "cancelled"):
                 self._release(order)
                 order.status = status
@@ -291,6 +293,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                     self._emit("cancel_acknowledged", ref=order.ref)
             elif status == "working" and order.status in ("sent", "unknown"):
                 order.status = "accepted"
+            elif status == "partial":
+                order.status = "partial"
             elif (order.status == "unknown" and status is None and ev.order_level
                   and order.ref not in working_refs and order.sent_at is not None
                   and ev.as_of > order.sent_at
@@ -301,6 +305,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
                 self._emit("unknown_resolved_not_executed", ref=order.ref)
         self._check_expectations(ev)
         self._settle_operations(ev)
+        self._sync_lots(ev)
         self._maybe_clear_unknown_order()
         self.persist()
 
@@ -335,11 +340,14 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         self._emit("fill", ref=order.ref, qty=delta, lot=lot_id)
 
     def _check_expectations(self, ev: Evidence) -> None:
+        if not ev.order_level:
+            return
         for exp in list(self.expected.values()):
             if exp.sym != ev.sym or exp.is_bare or exp.defined_at is None:
                 continue
             lot = self.lots.get(exp.fill_id)
-            if lot is None or lot.qty == 0 or ev.as_of < exp.defined_at:
+            if (lot is None or lot.qty == 0 or ev.lots.get(exp.fill_id) == 0
+                    or ev.as_of < exp.defined_at):
                 continue
             attached = {w["kind"]: w for w in ev.working if w.get("attached_to") == exp.fill_id}
             for component in exp.intended:
@@ -384,14 +392,30 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             return
         if op.status not in ("sent", "unknown", "rejected", "partial"):
             return
-        before = self._scope_exposure(op)
+        before = op.payload.get("last_exposure", self._scope_exposure(op))
         self._sync_lots(ev)
         after = self._scope_exposure(op)
+        op.payload["last_exposure"] = after
         if op.status in ("sent", "unknown", "partial") and after < before:
             op.status = "partial"
             op.payload["closed"] = op.payload.get("closed", 0) + (before - after)
             self._emit("operation_outcome", op=op.op_id, status="partial", remaining=after)
+        requested = op.payload.get("qty")
+        if (requested is not None and op.payload.get("closed", 0) >= requested
+                and self._residual_protected(op, ev)):
+            self._complete_close(op, ev)
         op.reconciled_at = ev.as_of
+
+    def _residual_protected(self, op: Operation, ev: Evidence) -> bool:
+        """A bounded reduction is done only with the expected residual protection."""
+        exp = self.expected.get(op.scope_id)
+        if exp is None:
+            return False
+        attached = {w["kind"]: w for w in ev.working
+                    if w.get("attached_to") == op.scope_id}
+        return all(c in attached and attached[c]["qty"] == ev.lots.get(op.scope_id)
+                   and self._matches(attached[c], self._fields(params))
+                   for c, params in exp.intended.items())
 
     def _scope_exposure(self, op: Operation) -> int:
         if op.scope_kind == "fill":
@@ -400,6 +424,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         return self._confirmed_position(op.sym)
 
     def _settle_protection_op(self, op: Operation, ev: Evidence) -> None:
+        if self._scope_flat(op, ev):
+            op.status, op.detail = "complete", "scope consumed"
+            return
         exp = self.expected.get(op.scope_id)
         if exp is None:
             return
@@ -443,6 +470,9 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
             lot = self.lots.get(lot_id)
             if lot is not None and lot.sym == ev.sym:
                 lot.qty = open_qty
+                if open_qty == 0 and not any(w.get("attached_to") == lot_id
+                                            for w in ev.working):
+                    self.expected.pop(lot_id, None)
         for leg_id in {l.leg_id for l in self.lots.values() if l.sym == ev.sym}:
             self.ledger.confirm_position(leg_id, sum(l.qty for l in self.lots.values()
                                                      if l.leg_id == leg_id))
@@ -450,12 +480,12 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
     def _complete_close(self, op: Operation, ev: Evidence) -> None:
         op.status = "complete"
         self._sync_lots(ev)
-        if op.scope_kind == "fill" and op.scope_id in self.lots:
-            self.lots[op.scope_id].qty = 0
         for lot in self.lots.values():
             if lot.sym == ev.sym and lot.qty == 0:
                 self.expected.pop(lot.fill_id, None)
-        if "close_rejected" in self.blocks and self.blocks["close_rejected"].startswith(op.op_id):
+        if ("close_rejected" in self.blocks
+                and self.blocks["close_rejected"].startswith(op.op_id)
+                and self._scope_flat(op, ev)):
             self.unblock("close_rejected")
         if op.reason == "protection_gap_recovery" and not any(
                 s == "missing" for e in self.expected.values() for s in e.status.values()):
@@ -601,6 +631,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         sym, leg_id = self._scope(scope_kind, scope_id)
         for other in self.operations.values():
             if (other.sym == sym and other.kind == "CLOSE" and other.scope_id == scope_id
+                    and other.scope_kind == scope_kind and other.reason == reason
+                    and (op_id is None or other.op_id == op_id)
                     and other.status in ("prepared", "queued", "rejected", *UNRESOLVED)):
                 return other                          # idempotent by scope (retry path)
         op = Operation(op_id or self._next("op"), "CLOSE", scope_kind, scope_id, sym, leg_id,
@@ -700,6 +732,7 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         return Evidence(sym, p_at, position, working, status, {}, lots)
 
     def _send_close(self, op: Operation, now: datetime) -> None:
+        op.payload["last_exposure"] = self._scope_exposure(op)
         if op.scope_kind == "fill":
             qty = op.payload.get("qty")
             if qty is not None:
@@ -723,6 +756,8 @@ class Kernel:  # pylint: disable=too-many-instance-attributes,too-many-public-me
         """Resubmit a rejected, unknown or partial close only after reconciliation on
         postdating evidence — never blindly; a rejected close at most once per bar."""
         op = self.operations[op_id]
+        if op.kind != "CLOSE":
+            raise KernelRefusal("retry requires a CLOSE operation")
         if op.status not in ("rejected", "unknown", "partial"):
             raise KernelRefusal(f"{op_id} is {op.status}")
         if op.reconciled_at is None or op.reconciled_at < (op.sent_at or op.prepared_at):

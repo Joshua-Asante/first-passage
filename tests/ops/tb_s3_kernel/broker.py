@@ -285,6 +285,8 @@ class FakeBroker:  # pylint: disable=too-many-instance-attributes
         inj = self._take("close")
         if inj == "reject":
             return Outcome("rejected", detail="injected reject")
+        if inj == "unknown_lost":
+            return Outcome("unknown", detail="close never reached the route")
         lots = ([self.lots[fill_id]] if fill_id else
                 [l for l in self.lots.values() if l.sym == sym and l.qty > 0])
         wanted = qty
