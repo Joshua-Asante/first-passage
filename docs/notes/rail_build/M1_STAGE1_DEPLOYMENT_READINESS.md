@@ -652,3 +652,68 @@ Because `build_loop` constructs `ListenerClient` once at startup, only the disab
 Non-emitting verification used the actual deployed `listener_post_url` on the daemon and `sizing_post_path` on the listener. Their path fingerprints were compared privately and only the equality verdict was returned: **exact constructed path matches**. The daemon destination is the expected HTTPS listener with no query/fragment. Listener config was byte-identical to its pre-repair copy; comparison with the daemon backup confirmed that only `path_token` changed. Listener remained dry-run/disarmed and ledger 33; no POST, signal, new ceremony, order or arming occurred.
 
 All temporary local configuration/preimage files were deleted with absence verified; only value-free verification remains locally, with the rollback backup retained privately on the daemon volume. This closes the diagnosed binding mismatch. It does not turn attempt 2 into a successful event or discharge A7/A8. A future attempt needs a fresh attended target and must bind to the new daemon boot. Exact path equality belongs in that preflight before enablement; it must not be inferred from image compatibility or a health GET.
+
+## A7 attempt 3 — 2026-09-14 18:25 UTC: captured candle, injection deadline missed
+
+**DONE_WITH_CONCERNS — unsuccessful attempt; teardown verified.** Exactly one new ceremony was prepared and enabled. Codex captured the correct closed target candle inside the permitted window, but never invoked inject: a local PowerShell JSON read-back comparison failed, and the transfer completed after the deadline once the comparison was corrected. The ceremony expired without a published bar or request. There is no listener UUID, request digest, triad or successful projection for this attempt. A7 and A8 remain incomplete; no acceptance/signoff edit, deployment, restart, arm, order, hand-POST or second attempt occurred.
+
+### Entry, attendance and readiness
+
+GitHub reported PR [387](https://github.com/Joshua-Asante/first-passage/pull/387) MERGED at 18:09:39 UTC. Fetched main `da6e27fb4deb5170b7f2955a13079fd86fc5cb44` contains repair-record commit `fc8ab83b1f4932cfce499169d90dd4b579500933` (ancestry check exit 0). Work used clean isolated branch `codex/a7-attended-attempt3-20260914`; existing worktrees and untracked files were preserved.
+
+The current actor supplement, canonical A7 procedure, compatibility/attempt-2/path-correction records, actor ADR and M1/S2b amendments were read with the production contract, daemon controls/coordinator/strategy/source, shared validator, listener controls/sizing/guard and client. Last-change anchors on fetched main: contract, listener control, operator source and shared validator `a3be3f4`; daemon control `28d9bbe`; coordinator `36b3996`; strategy/client `509b524`; HTTP adapter `55c9d96`. Main includes later unrelated code; it was not deployed for this ceremony.
+
+Fresh machine inventory matched listener v9 / daemon v3 image digests recorded in the compatibility section. Both hosts returned the shared frozen contract and validator hashes; daemon control matched `43fb4bd7bda018128b2f6164329068ab9e3057ce42120801ef742d1d7cc9cee3`. Boot was `205bae18fc514c54aeec213e211c76e2`, generation 4, DISABLED/NullStrategy, disconnected, poll interval 1.0, all emission flags false. Both historical attempts were CLOSED with no unresolved transport checkpoint. Listener: dry_run true, armed_until null, all allocations zero, test RETIRED, ledger 33 records / seq 33.
+
+The actual deployed daemon `listener_post_url` and listener `sizing_post_path` constructed matching paths. Fingerprints stayed in process memory; only equality and expected HTTPS host/no-query/no-fragment verdicts were emitted. All passed before activation and again after teardown. No verification POST was sent. An initial local SSH-wrapper quoting error executed neither remote probe; the corrected read-only wrapper produced the verdicts. Machine inventory used the installed CLI's supported `machines list --json` after `machine status --json` proved unsupported.
+
+Joshua freshly confirmed presence, sole A7 ownership, correct selected account, no positions or working orders; subsequently confirmed MYMZ6 one-minute interval and explicitly agreed the target. Supported Chrome claim/DOM reads captured only the selected timestamp and OHLCV, excluding SMA/account/page content. Practice read: databox 14:14 at approximately 18:14 UTC; after Joshua selected the current candle, databox 14:16 at approximately 18:16 UTC. His application-clock report was 1:15 CDT before that second observation. These fresh observations re-established chart UTC-04:00 separately from the application CDT clock; the interval is his attestation. The Monday afternoon target falls inside [CME published session hours](https://www.cmegroup.com/trading/equity-index/files/cme-micro-e-mini-futures-fact-card.pdf).
+
+### Allocation, manifest and action evidence
+
+Both canonical migration plan and separate after-state comparison showed only the test row changing to cap 1/AUTHORIZED, with other caps zero. Apply used the freshly read preimage digests; its durable no-op verification passed. Fresh canonical preflight returned expected_qty 1, dry_run true, armed_until null, sizing_only true. Its digest equaled earlier receipts because the hashed inputs were unchanged; the preflight was executed afresh, not reused.
+
+| Field | Actual evidence |
+|---|---|
+| Ceremony / generation | `stage1-20260914-3` / 5 |
+| Target / expiry | `2026-09-14T18:25:00Z` / `2026-09-14T18:27:30Z` |
+| Capture/inject window | 18:26:00–18:27:00 UTC inclusive |
+| Venue / source | MYMZ6 / `agent_attended_browser_capture`, `ohlcv-1m`, `MYM1!` |
+| Contract SHA256 | `346387e565225d956da0f5b9696f211dee82ff9a823dda6e56b0ce32aba9d94f` |
+| Retained private session GO SHA256 | `41bceabc8f2a2d21eb27cd4d6ee7334adfc5407ea1e6cbcf5adff21d736a3f15` |
+| Fresh preflight SHA256 | `5e831589ed3f8590dc5ca2222a5d87e89aa0a72c313e2a5152ca73b9f19f3412` |
+| Manifest SHA256 | `3a428360dd3aedbd7b9775a11f2e3bf2b3bbd8bb32e2e5aaf3ef884eeed5c8dd` |
+| Enable, one invocation / actor | `2026-09-14T18:18:52.417663+00:00` / codex |
+| Actual capture / chart timestamp | `2026-09-14T18:26:24.674Z` / `2026-09-14T14:25:00-04:00` |
+| Private upload file SHA256 | `ec0b151036f9e8841875c1eda09aed46c1e24292e1ef4629d462e43044a6a171` |
+| Injection / POST / source-bound bar digest | None — inject not invoked, no accepted/published bar or request |
+
+Private SFTP staged the fresh manifest with mode 0600. Prepare was verified READY/inactive against journal and health before enable. One `enable --actor codex` was followed by durable actor evidence and fresh health READY/effective_emit true; no ambiguous-result retry occurred. Final checks at approximately 18:24 UTC retained the same boot, READY state and expected allocation.
+
+Joshua selected the candle after its close and sent “selected.” Codex's single final observation required a unique visible databox, exact target timestamp, exactly one of each field, finite positive numbers and consistent OHLC bounds. Capture metadata reflects the actual observation, with actor codex, venue MYMZ6 and bar_period_s 60. Joshua selected; Codex transcribed and wrote the file. This was not fully automatic candle selection.
+
+The first local read-back used PowerShell `ConvertFrom-Json`, which converted ISO timestamps to `System.DateTime`; equality with the original timestamp string was false. It stopped before SFTP or inject. The corrected read-back used `-DateKind String`, checked all values and metadata, and passed; the file bytes were unchanged. SFTP uploaded once, but the local UTC deadline guard then printed `Injection not invoked: transfer failed or deadline passed`. The transfer itself succeeded; the deadline had passed. No inject CLI call was made, and no capture/injection time was invented. Post-session reproduction returned default type DateTime/comparison false versus String/comparison true.
+
+At 18:27:27 UTC the journal was still READY with one upload file and no inject evidence, bar, request or response. It subsequently reached CLOSED with tombstone reason `expired`; status confirmed the terminal state before explicit close. This is a missed injection window caused by the local command workflow, not a listener rejection or unknown transport.
+
+### Teardown, projection and return
+
+Joshua freshly confirmed no positions/working orders and no new CrossTrade Alert History entry for 1:25–1:27 PM CDT. The full mandatory close ran:
+
+```text
+python ops/c1_signal_daemon/m1_stage1_control.py close --state /data/c1_m1_stage1_state.json --config /data/c1_signal_daemon_config.json --ceremony-id stage1-20260914-3
+```
+
+Final journal filesystem mtime was `2026-09-14T18:28:03.544278+00:00`; this is the post-close file timestamp, not a dedicated close-action receipt. Both config emission flags and journal enabled were false. The canonical disable plan and separate after-state read showed only test cap 1→0 and lifecycle AUTHORIZED→RETIRED. Apply used the fresh enabled-state preimages:
+
+```text
+python ops/c1_rail/m1_stage1_control.py migrate --config /data/c1_rail_config.json --apply --flat-verified --expect-constants ba20c23143ffc262f296b32f6f937d95e5da56778bf80ee548fda5d7e0091821 --expect-lifecycle d656310a7937bc47234bcf06c043955dadd9fafe9fb6c27a101a35b46a648765
+```
+
+Fresh final probes confirmed no-op true, all caps zero, test RETIRED, listener dry_run true/armed_until null, ledger unchanged at 33/seq 33, daemon CLOSED/disconnected/effective_emit false and both config flags false, zero upload/bar/claim files. The inert M1Stage1TestStrategy label does not qualify a live source. All three historical tombstones remain. Windows Fly SSH printed complete receipts followed by its known handle error; durable state was verified rather than repeating writes.
+
+Private journal/ledger scratch copies were retrieved outside repositories. The canonical local `m1_stage1_control.py evidence` command returned exit 1 with `M1 control refused: invalid, changed, unavailable or unapproved inputs`, as required for an expired attempt without a bar/response. The first local launch was sandbox-blocked before Python ran; the installed runtime then executed the projector successfully as a command and returned that refusal. No successful projection, observed quantity, listener UUID, request digest or triad is fabricated.
+
+Before another separately authorized session, rehearse the exact local serialization/read-back/transfer workflow, including preservation of ISO timestamp strings, outside a booked window. This is the bounded improvement suggested by the observed failure; no new ceremony or timing change is authorized here.
+
+After writing this record, the private journal/ledger scratch copies and local candle upload were deleted with absence verified. Host originals and tombstones remain; the private value-free GO, manifest and preflight receipt are retained.
