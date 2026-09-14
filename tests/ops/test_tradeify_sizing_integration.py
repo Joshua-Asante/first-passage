@@ -289,6 +289,212 @@ def test_host_threads_risk_before_floor_instead_of_normal_integer(host):
     assert not result.halt and (result.qty_out, result.prospective_add) == (1, 2)
 
 
+@pytest.mark.parametrize("equity,expected", [(99000, Mode.PROTECTED),
+                                         (99000.04, Mode.PROTECTED),
+                                         (99000.06, Mode.NORMAL)])
+def test_settlement_clock_to_session_host_and_invalid_ordering(host, equity, expected):
+    from datetime import date
+    from book_policy import BookProtectionClock
+
+    clock = BookProtectionClock(POLICY, 100000, 100000)
+    assert clock.mode_for(date(2026, 9, 11)) is Mode.NORMAL
+    clock.settle(date(2026, 9, 11), equity)
+    snapshot = clock.snapshot()
+    for duplicate_or_old in (date(2026, 9, 11), date(2026, 9, 10)):
+        with pytest.raises(ValueError):
+            clock.settle(duplicate_or_old, 101000)
+        assert clock.snapshot() == snapshot
+    with pytest.raises(ValueError):
+        clock.mode_for(date(2026, 9, 11))
+    assert clock.mode_for(date(2026, 9, 14)) is expected
+    request, context, binding = inputs("aegis_6j")
+    settled = replace(context.settled, equity=equity, peak=clock.peak)
+    context = replace(context, settled=settled, mode=expected)
+    result = decide(host, request, context, replace(binding, settlement=settled))
+    assert not result.halt and result.qty_out == (3 if expected is Mode.PROTECTED else 8)
+
+
+@pytest.mark.parametrize("field,value", [("owner_epoch", "old-boot"),
+    ("account_id", "other-account"), ("session_id", "old-session"),
+    ("policy_digest", "e" * 64), ("snapshot_digest", "e" * 64)])
+def test_fresh_host_rejects_mismatched_restored_context(tmp_path, field, value):
+    request, context, binding = inputs()
+    restarted = C1SizingHostReference(tmp_path / "lifecycle", tmp_path / "dd", tmp_path / "config")
+    result = decide(restarted, request, replace(context, **{field: value}), binding)
+    assert result.halt and not result.submit
+
+
+def transition_fixture():
+    from book_capacity import CapacityState, Event, Reserve, Fill, Terminal, apply_event
+
+    state = CapacityState("synthetic-account", "boot-2")
+    facts = (Reserve("orb-base", "orb_mnq_v7", "SYNTHETIC-MNQ", 1),
+             Fill("orb-fill", "orb-base", 1), Terminal("orb-base", "filled", 1),
+             Reserve("orb-add", "orb_mnq_v7", "SYNTHETIC-MNQ", 1))
+    for seq, fact in enumerate(facts, 1):
+        state = apply_event(state, Event(str(seq), seq, NOW, state.account_id, state.owner_epoch, fact),
+                            now=NOW, max_age=timedelta(seconds=30))
+    return state
+
+
+def test_transition_blocks_until_terminal_and_never_resizes_carried_position(host):
+    from book_capacity import (Event, Terminal, apply_event, exposures,
+                               ProtectionTransition, project_transition)
+    state = transition_fixture()
+    request, context, binding = inputs()
+    transition = ProtectionTransition(state.account_id, state.owner_epoch, context.session_id,
+                                      Mode.NORMAL, Mode.PROTECTED, ("orb-add",))
+    projected = project_transition(transition, state, context)
+    assert projected.blocks and decide(host, request, projected, binding).halt
+    # An acknowledgement is not terminal proof and must not release the reservation.
+    ack = Event("ack", 5, NOW, state.account_id, state.owner_epoch,
+                Terminal("orb-add", "cancel_ack", 0))
+    invalid = apply_event(state, ack, now=NOW, max_age=timedelta(seconds=30))
+    assert project_transition(transition, invalid, context).blocks
+    terminal = replace(ack, event_id="terminal", fact=Terminal("orb-add", "cancelled", 0))
+    done = apply_event(state, terminal, now=NOW, max_age=timedelta(seconds=30))
+    completed = project_transition(transition, done, context)
+    assert not completed.blocks and not decide(host, request, completed, binding).halt
+    orb = next(row for row in exposures(done) if row.leg_id == "orb_mnq_v7")
+    assert (orb.confirmed, orb.reserved) == (1, 0)
+    assert transition.operation_ids == ("orb-add",)  # descriptor retained for reconciliation
+    assert project_transition(transition, done, replace(context, blocks=("other",))).blocks == ("other",)
+    orb_request, orb_context, orb_binding = inputs("orb_mnq_v7")
+    orb_context = replace(orb_context, intended_base=1, confirmed_base=1, base_operation_id="orb-base")
+    orb_request = replace(orb_request, kind="add")
+    assert decide(host, orb_request, project_transition(transition, state, orb_context), orb_binding).halt
+    refused_add = decide(host, orb_request, project_transition(transition, done, orb_context), orb_binding)
+    assert not refused_add.halt and refused_add.qty_out == 0 and not refused_add.submit
+
+
+@pytest.mark.parametrize("changes", [{"owner_epoch": "old"}, {"session_id": "old"},
+    {"operation_ids": ("unknown",)}, {"operation_ids": ("orb-add", "orb-add")},
+    {"mode": Mode.NORMAL}])
+def test_transition_invalid_binding_fails_closed(changes):
+    from book_capacity import ProtectionTransition, project_transition
+    state = transition_fixture()
+    _, context, _ = inputs()
+    transition = ProtectionTransition(state.account_id, state.owner_epoch, context.session_id,
+                                      Mode.NORMAL, Mode.PROTECTED, ("orb-add",))
+    with pytest.raises(ValueError):
+        project_transition(replace(transition, **changes), state, context)
+
+
+@pytest.mark.parametrize("terminal_status", ["filled", "cancelled", "rejected"])
+def test_transition_fill_race_retains_carried_quantity_and_unknown_blocks(terminal_status):
+    from book_capacity import (Event, Fill, Terminal, apply_event, exposures,
+                               ProtectionTransition, project_transition)
+    state = transition_fixture()
+    _, context, _ = inputs()
+    transition = ProtectionTransition(state.account_id, state.owner_epoch, context.session_id,
+                                      Mode.NORMAL, Mode.PROTECTED, ("orb-add",))
+    fill = Event("late-fill", 5, NOW, state.account_id, state.owner_epoch,
+                 Fill("add-fill", "orb-add", 1))
+    state = apply_event(state, fill, now=NOW, max_age=timedelta(seconds=30))
+    assert project_transition(transition, state, context).blocks  # full fill still needs terminal
+    terminal = replace(fill, event_id="terminal", sequence=6,
+                       fact=Terminal("orb-add", terminal_status, 1))
+    state = apply_event(state, terminal, now=NOW, max_age=timedelta(seconds=30))
+    assert not project_transition(transition, state, context).blocks
+    orb = next(e for e in exposures(state) if e.leg_id == "orb_mnq_v7")
+    assert (orb.confirmed, orb.reserved) == (2, 0)
+    unknown = replace(fill, event_id="unknown", sequence=7, fact=Fill("unknown", "missing", 1))
+    state = apply_event(state, unknown, now=NOW, max_age=timedelta(seconds=30))
+    assert project_transition(transition, state, context).blocks
+
+
+def test_transition_requires_every_captured_add_to_be_terminal():
+    from book_capacity import (Event, Reserve, Terminal, apply_event,
+                               ProtectionTransition, project_transition)
+    state = transition_fixture()
+    _, context, _ = inputs()
+    event = Event("second", 5, NOW, state.account_id, state.owner_epoch,
+                  Reserve("orb-add-2", "orb_mnq_v7", "SYNTHETIC-MNQ", 1))
+    state = apply_event(state, event, now=NOW, max_age=timedelta(seconds=30))
+    transition = ProtectionTransition(state.account_id, state.owner_epoch, context.session_id,
+                                      Mode.NORMAL, Mode.PROTECTED, ("orb-add", "orb-add-2"))
+    state = apply_event(state, replace(event, event_id="terminal-1", sequence=6,
+                        fact=Terminal("orb-add", "cancelled", 0)),
+                        now=NOW, max_age=timedelta(seconds=30))
+    assert project_transition(transition, state, context).blocks
+    state = apply_event(state, replace(event, event_id="terminal-2", sequence=7,
+                        fact=Terminal("orb-add-2", "cancelled", 0)),
+                        now=NOW, max_age=timedelta(seconds=30))
+    assert not project_transition(transition, state, context).blocks
+
+
+@pytest.mark.parametrize("leg_id,adapter_normal", [("aegis_6j", 8),
+    ("dj30_mym_p250", 2), ("vanguard_mgc", 2), ("orb_mnq_v7", 1)])
+@pytest.mark.parametrize("protected", [False, True])
+@pytest.mark.parametrize("tier", ["AUTHORIZED", "WATCH-1", "WATCH-2", "RETIRED"])
+def test_rp_adapter_normal_entry_shared_admission_matches_host(host, leg_id, adapter_normal,
+                                                              protected, tier):
+    from book_policy import entry_quantities, leg
+    from c1_signal_daemon.book_protocol import OrderIntent, Bracket
+
+    bracket = Bracket(stop=90, limit=110, trail_activation_ticks=8, trail_offset_ticks=4)
+    intent = OrderIntent("adapter-entry", leg_id, "entry", leg(leg_id).entry_side,
+                         adapter_normal, bracket=bracket, stop_dist_pts=2)
+    request, context, binding = inputs(leg_id, protected=protected, tier=tier)
+    # Explicit normalized owner inputs; production payload conversion is TB-I3.
+    dollars_per_point = Fraction(1)
+    risk = Fraction(intent.stop_dist_pts) * dollars_per_point
+    binding = replace(binding, risk_dollars=Fraction(5))
+    request = replace(request, normal_base=intent.qty, per_contract_risk=risk)
+    shared = entry_quantities(leg_id, policy=POLICY, mode=context.mode, lifecycle_tier=tier,
+                              normal_base=intent.qty, risk_dollars=binding.risk_dollars,
+                              per_contract_risk=risk, cap_alloc=binding.cap_alloc)
+    result = decide(host, request, context, binding)
+    assert not result.halt and (result.qty_out, result.prospective_add) == shared
+    assert intent.qty == adapter_normal and intent.bracket == bracket
+    if result.qty_out:
+        admitted = replace(intent, qty=result.qty_out)
+        assert admitted.bracket == bracket and admitted.stop_dist_pts == intent.stop_dist_pts
+    assert result.submit is False
+
+
+@pytest.mark.parametrize("leg_id,normal_add,confirmed", [
+    ("dj30_mym_p250", 55, 3), ("vanguard_mgc", 2, 1), ("orb_mnq_v7", 1, 1)])
+@pytest.mark.parametrize("protected", [False, True])
+def test_rp_add_uses_confirmed_base_not_adapter_add(host, leg_id, normal_add, confirmed, protected):
+    from book_policy import add_quantity, leg
+    from c1_signal_daemon.book_protocol import OrderIntent
+
+    intent = OrderIntent("adapter-add", leg_id, "add", leg(leg_id).entry_side, normal_add)
+    request, context, binding = inputs(leg_id, protected=protected)
+    context = replace(context, intended_base=max(leg(leg_id).normal_base_values),
+                      confirmed_base=confirmed, base_operation_id="confirmed-base",
+                      exposures=tuple(replace(row, confirmed=confirmed) if row.leg_id == leg_id
+                                      else row for row in context.exposures))
+    # The adapter add is intentionally not substituted for confirmed-base evidence.
+    result = decide(host, replace(request, kind="add"), context, binding)
+    assert not result.halt and result.qty_out == add_quantity(
+        leg_id, confirmed, mode=context.mode, policy=POLICY, lifecycle_tier="AUTHORIZED")
+    assert intent.qty == normal_add
+    if leg_id == "dj30_mym_p250":
+        assert result.qty_out == 7 and result.qty_out != intent.qty
+
+
+def test_rp_normal_integer_cannot_supply_missing_risk_or_fill_evidence(host):
+    request, context, binding = inputs()
+    request = replace(request, normal_base=22)
+    assert decide(host, request, context, replace(binding, risk_dollars=None)).halt
+    assert decide(host, replace(request, per_contract_risk=None), context, binding).halt
+    assert decide(host, replace(request, kind="add"), context, binding).halt
+
+
+@pytest.mark.parametrize("kind", ["exit", "flat"])
+@pytest.mark.parametrize("qty", [None, 3])
+def test_rp_exit_scope_and_bracket_semantics_unchanged(kind, qty):
+    from c1_signal_daemon.book_protocol import OrderIntent, Bracket, BracketAmend, Side
+
+    intent = OrderIntent("exit", "aegis_6j", kind, Side.BUY, qty, scope_fill_ids=("confirmed-fill",))
+    bracket = Bracket(stop=90, limit=110, trail_activation_ticks=8, trail_offset_ticks=4)
+    amend = BracketAmend(intent.leg_id, bracket, intent.scope_fill_ids)
+    assert intent.qty == qty and intent.scope_fill_ids == ("confirmed-fill",)
+    assert amend.bracket is bracket and amend.scope_fill_ids == intent.scope_fill_ids
+
+
 def test_host_threads_vanguard_normal_ladder(host):
     request, context, binding = inputs("vanguard_mgc", protected=False)
     result = decide(host, replace(request, normal_base=1), context, binding)

@@ -69,7 +69,23 @@ class Bracket:
 
 @dataclass(frozen=True)
 class OrderIntent:
-    """One order the adapter wants placed. Quantity is an integer contract count."""
+    """Adapter intent; entry/add ``qty`` is the adapter-normal quantity (R-P).
+
+    It is not account-admitted size. Shared policy admission and the rail sizing
+    host apply the same per-leg laws to complete validated inputs: session/mode,
+    lifecycle, allocation, and (for Striker) unscaled risk dollars and per-contract
+    risk derived from adapter stop distance and configured dollars per point.
+    Never reconstruct those inputs from the rounded adapter-normal integer.
+    Adds use confirmed executed-base evidence, not the adapter-normal add.
+
+    On exit/flat, ``qty`` remains None (all confirmed fills in scope) or the
+    confirmed contract quantity to close. Brackets and amendments keep their
+    port-defined price and trailing semantics; sizing does not scale them.
+    The TB-I3 B1 builder must map entry/add qty to qty_normal and exit/flat qty
+    to qty. The unchanged emulator consumes a COPY with the admitted quantity;
+    it does not apply account sizing to raw adapter intent. Constructor behavior
+    and private port bodies are unchanged by this documentation migration.
+    """
 
     order_id: str
     leg_id: str
