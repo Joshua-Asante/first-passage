@@ -52,7 +52,7 @@ for _p in (str(_REPO_ROOT / "core"), str(_RAIL_DIR)):
         sys.path.insert(0, _p)
 
 from dd_protection import BASE_RISK, calculate_protection  # noqa: E402
-from firm_rules import FIRM_RULES  # noqa: E402
+from firm_rules import FIRM_RULES, TRADEIFY_BOOK_IDENTITIES  # noqa: E402
 from lifecycle import TIER_MULTIPLIER  # noqa: E402
 import m1_stage1_contract as m1_test  # noqa: E402
 
@@ -116,8 +116,21 @@ LEG_MAP: dict[str, dict] = {
 }
 
 _SIGNAL_TYPES = frozenset({"entry", "add", "exit", "flat"})
+_BOOK_LEG_IDS = frozenset(row[0] for row in TRADEIFY_BOOK_IDENTITIES)
 _REQUIRED_PAYLOAD_FIELDS = ("leg_id", "signal_type", "bar_time", "close",
                             "stop_dist_pts")
+
+
+def generate_book_bindings() -> dict[str, dict]:
+    """Return inert TB-I1 identities, separate from historical sizing constants.
+
+    Zero capacity and absent broker symbols are intentional. TB-V1 supplies
+    verified deployed bindings later. This metadata cannot authorize sizing;
+    the book requires its session/policy boundary and TB-I3 account owner.
+    """
+    return {leg_id: {"leg_key": key, "symbol": symbol,
+                     "cap_alloc": 0, "order_symbol": None}
+            for leg_id, key, symbol in TRADEIFY_BOOK_IDENTITIES}
 
 
 def generate_constants(tier: str, leg_map: dict[str, dict] | None = None) -> dict:
@@ -275,6 +288,8 @@ class C1SizingHostReference:
         if signal_type not in _SIGNAL_TYPES:
             return _halt(f"unknown signal_type {signal_type!r}; "
                          f"valid: {sorted(_SIGNAL_TYPES)}")
+        if leg_id in _BOOK_LEG_IDS:
+            return _halt("book_requires_session_policy_and_account_owner")
         if leg_id not in LEG_MAP:
             return _halt(f"unknown leg_id {leg_id!r}; valid: {sorted(LEG_MAP)}")
         leg_key = LEG_MAP[leg_id]["leg_key"]

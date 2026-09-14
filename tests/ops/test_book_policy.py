@@ -8,6 +8,7 @@ core/dd_protection.py constants or lands a POLICY_REGISTRY row.
 from __future__ import annotations
 
 from datetime import date
+from fractions import Fraction
 
 import pytest
 
@@ -19,6 +20,7 @@ from book_policy import (
     CapacityLedger,
     PolicyAbsent,
     ProtectedRule,
+    StrikerRiskInputs,
     candidate_book_protection_policy,
     frozen_surfaces_untouched,
     is_protected,
@@ -91,15 +93,11 @@ def test_trigger_formula_with_ulp_rounding(equity, peak, expected):
     ("aegis_6j", 8, "WATCH-1", Mode.PROTECTED, (1, 0)),
     ("aegis_6j", 8, "WATCH-2", Mode.NORMAL, (2, 0)),
     ("aegis_6j", 8, "WATCH-2", Mode.PROTECTED, (0, 0)),
-    ("dj30_mym_p250", 22, "AUTHORIZED", Mode.NORMAL, (22, 55)),
-    ("dj30_mym_p250", 22, "AUTHORIZED", Mode.PROTECTED, (8, 22)),   # every tier floored from its own normal
-    ("dj30_mym_p250", 22, "WATCH-1", Mode.NORMAL, (11, 27)),
-    ("dj30_mym_p250", 5, "AUTHORIZED", Mode.PROTECTED, (2, 4)),      # 5 x 0.4 = 2 exactly (no binary64 floor slip)
     ("vanguard_mgc", 2, "AUTHORIZED", Mode.NORMAL, (2, 2)),
     ("vanguard_mgc", 2, "AUTHORIZED", Mode.PROTECTED, (0, 0)),       # D-B10 accepted consequence
     ("vanguard_mgc", 1, "AUTHORIZED", Mode.NORMAL, (1, 1)),
     ("vanguard_mgc", 1, "AUTHORIZED", Mode.PROTECTED, (0, 0)),
-    ("vanguard_mgc", 2, "WATCH-1", Mode.NORMAL, (1, 1)),
+    ("vanguard_mgc", 2, "WATCH-1", Mode.NORMAL, (0, 0)),
     ("orb_mnq_v7", 1, "AUTHORIZED", Mode.NORMAL, (1, 1)),
     ("orb_mnq_v7", 1, "AUTHORIZED", Mode.PROTECTED, (1, 0)),         # base unchanged, adds off
     ("orb_mnq_v7", 1, "WATCH-1", Mode.NORMAL, (0, 0)),               # ladder retained (D-B14 (a))
@@ -119,9 +117,11 @@ def test_floor_is_exact_rational_not_float():
 
 
 def test_quantity_table_and_reachable_menu():
-    rows = quantity_table(POLICY)
-    assert len(rows) == (1 + 22 + 2 + 1) * 3 * 2
-    menu = reachable_quantity_menu(POLICY)
+    samples = [StrikerRiskInputs(Fraction(i, 2), Fraction(1), 80)
+               for i in range(1, 444, 2)]
+    rows = quantity_table(POLICY, striker_inputs=samples)
+    assert len(rows) == (1 + len(samples) + 2 + 1) * 3 * 2
+    menu = reachable_quantity_menu(POLICY, striker_inputs=samples)
     assert menu["aegis_6j"]["base"] == {8, 3, 4, 1, 2}
     assert menu["aegis_6j"]["add"] == set()
     assert menu["orb_mnq_v7"] == {"base": {1}, "add": {1}}

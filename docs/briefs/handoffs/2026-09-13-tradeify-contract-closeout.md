@@ -6,7 +6,41 @@
 
 **Policy-review correction (PR #361 rev9, 2026-09-13):** the inventory below is a historical observation, not current merge/acceptance authority. #360 has since merged and expressly leaves #365 and replacement models #368–#370 unaccepted. For TB-P2/C10, follow the proposed admission ADR's complete T0–T11 trace: two separate ratifications, complete bootstrap/fingerprint freeze, and initial effective-activation checks after restart. A void seal requires stopping for the operator, not an automatic replacement outcome-bearing draw. The proposed text below is not a ratification or authorization; schedule decisions remain outstanding.
 
-## 1. Source-backed inventory
+## Current TB-I1 first-slice reconciliation — 2026-09-13
+
+**Execution base:** `f9427edfc42f5910726094022eb334d8119e5945`; plan commit `2374ae0d3f4f7a9607c4a7a56484808ff93d53dc`; branch `codex/tb-i1-book-policy`; local Python 3.14.3. See the [execution plan](../../superpowers/plans/2026-09-13-tb-i1-through-deployment.md). This section supersedes the readiness inventory and proposed decision shortcuts below; older sections are retained as historical observations, not current dispatch authority.
+
+### Closed technical conflicts
+
+- [TB-S1 §2](../../spec/2026-09-12-tradeify-book-protection-capacity-spec.md#2-quantity-law) now follows the already-ruled O-5 risk-scaled Striker law B, O-6 executed-base add law and O-1 off-rail Call-4 disposition. No new risk choice or ratification is recorded. The contract includes all mode/lifecycle rows, Striker's complete integer/add ladder and interval boundaries, and protected-capacity counterexamples.
+- TB-S3 R-P/R-Q and TB-S2's sizing-consumer note now require the complete input context. Striker's rounded adapter-normal quantity cannot determine its protected quantity: the adapter produces stop distance; validated configuration produces the unscaled account risk budget, dollars-per-point and allocation; account/lifecycle owners provide mode/session and authorization. Adds use confirmed executed-base evidence. Production allocation remains zero until TB-V1.
+- TB-P1 already records law B Striker, law A Vanguard, executed-base Striker adds and Call-4 off-rail. TB-P2 already assigns the corresponding `book_policy` corrections and canonical fingerprint implementation to TB-I1. Those decision texts are not edited or ratified by this slice.
+- PRs #368/#369/#370 are now merged at the base, with primitive, producer and account acceptance records under `tests/ops/tb_s3_kernel/`. Their accepted model boundary remains offline; #365 is historical regression material. Old wording calling the three merged models unaccepted is historical and must not be used as a new model gate or as evidence of production readiness. Model suites were not rerun for this documentation slice.
+
+### Release ledger
+
+| Packet / obligation | Current disposition | Exact remaining gate |
+|---|---|---|
+| TB-I1 first slice: contract reconciliation | Locally verified; separate review commit | Arithmetic, strict document links, whitespace and repository check tier passed; production entry still awaits the ratifications below |
+| TB-I1 production sizing, protocol docstring/parity, host bindings and fingerprints | BLOCKED — context-problem | Umbrella entry requires accepted TB-S1 plus operator ratification; TB-S3 Steps 1–2 require its §6 decisions and dated §5 S2b addendum, and the separately ratified P2 contract. No such ratification is inferred from the request to begin this slice. |
+| Policy/fingerprint technical contract | Defined in P2 rev9 | The first P2 ratification is still absent; fingerprint implementation stays with TB-I1, not a second serializer in TB-T1. Second exact-depth approval is later and does not block specification reconciliation. |
+| TB-I2 | BLOCKED — evidence and contract | Seven TB-R3-intaken exports and all reachable parity, corrected TB-I1, and accepted/reconciled S2; captured parity alone is insufficient. |
+| TB-I3 offline | BLOCKED — dependency and ratification | TB-I1 plus TB-S3 §6/§5 ratifications; accepted models do not supply these approvals. |
+| TB-C1 / unified schedule | Preparation available; schedule unresolved | Exact regular/early-close cutoff, own-flat, fill timing and backstop must agree across S2/S3/O1 before final acceptance/freeze. |
+| TB-T1 | BLOCKED — policy transition | Accepted P2/C10 transition and shared TB-I1 fingerprint interface; its own account-evidence producer contract still applies. |
+| TB-F1 / TB-E1 | BLOCKED — upstream gates | First P2 decision before F1; implementation/parity/calendar/consolidated evidence before freeze; exact positive Part A depth, budget and second dated ratification before E1. |
+
+### Concrete decisions prepared for Joshua
+
+These are review text, not approval records. Record each accepted decision as a dated addendum at its owning source, identifying the actual reviewed revision; partial acceptance leaves its dependent packets blocked. Previously ruled O-1/O-5..O-9 are not reopened.
+
+1. **Execution contract:** “Ratify TB-S3 rev7 including its reconciled R-P/R-Q sizing-input contract, §5 S2b addendum, R-A3 late risk-reducing/barrier deviation, R-1 session latch and R-2 listener-owned daemon-loss recovery. R-L remains conditional on separate P2 ratification. Land the dated S2b addendum. Approval establishes the contract, not L1/L2 capability existence, source approval, deployment or arm authority.” The exact scope and retained conditions are the five rows of [TB-S3 §6](../../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md#6--operator-ratification-package-approval-pending), not the older R-1/R-2-only summary below. The base's S3 content was last changed at `091fbbd1063bc304a46c022b75c37eb18b1b50e7`; the current reconciliation diff must be included in the reviewed revision before recording this decision.
+2. **First policy decision:** “Ratify TB-P2 rev9's fixed instance and five scoped concept-ADR supersessions, retained Part A construction, B1 statistic and B2 count correction, two-stage admission, canonical fingerprint contract, GO reseal and effective-activation checks. C10 invalidation stops for the operator and grants no automatic replacement outcome-bearing draw. Exact Part A depth requires a second dated ratification after TB-F1. This decision admits no registry row and authorizes no live action.” The full owner is [TB-P2 §7](../../adr/2026-09-12-tradeify-book-protection-instance-admission.md#7--ratification-package-both-decisions-pending); content at the execution base includes `cacd1f947ffc696bf9f6acfce8fdf7fa9f58e117`. The second decision must name the actual depth, deterministic budget and frozen runtime/tool/vector digests; it cannot be approved now without that evidence.
+3. **Schedule direction, still proposed:** “Use 15:55 ET as the regular-session operator evidence check and 16:00 ET as portfolio own-flat completion; 16:30 ET is reconciliation only, never a holding allowance. Require a single pre-frozen schedule for replay and operations, including explicit risk-add cutoff, sufficient cancel/close lead time and early-close times from the official calendar.” This is a direction for the coordinated S2/S3/O1 amendment, not a fully specified scheduler: RC-8 currently includes next-open strategy exits at/after 16:00 and an active 16:30 flatten. Exact earlier risk-add cutoff and each early-close check/own-flat/backstop must be presented and accepted before schedule closure. Do not silently change strategy timing, infer a venue deadline, or label TB-F1 ready from accepting these three regular-session times alone.
+
+**Evidence and scope:** production Rule-0 reads reconfirmed the current independent normal-base/add scaling, normal-integer-only helper, host risk expression, empty policy registry and existing lifecycle tiers. This slice reconciles their governing requirements; it does not claim that code now implements them. Literal arithmetic and document validation results are recorded in the execution plan after the checks run.
+
+## 1. Historical source-backed inventory
 
 | Obligation | Owner | Artifact / exact observed head | Evidence | Remaining gap / next action |
 |---|---|---|---|---|
@@ -45,7 +79,7 @@ The accepted dependency chain is TB-S1 quantity/state → TB-S2 replay → TB-S3
 
 TB-I3 must run the #365 scenario API against real daemon, listener, persistence, fake broker and telemetry components without weakening assertions. Later attended route verification uses the same cases without transmitting exploratory orders.
 
-## 4. Consolidated operator decisions still required
+## 4. Historical proposed decisions — superseded by the current section
 
 Previously ruled O-1 and O-5 through O-9 are not reopened.
 
@@ -67,7 +101,7 @@ Previously ruled O-1 and O-5 through O-9 are not reopened.
 
 **Conflict:** replay's 16:30 backstop can be read as a holding deadline while governing operations require own-flat by 16:00. **Recommendation:** preserve 16:00 own-flat and demote 16:30 to evidence recovery only. **Consequence:** S2, S3 and O1 need one coordinated amendment; no earlier arbitrary shutdown is inferred. **Blocked consumers:** TB-F1 and final O1 acceptance.
 
-## 5. Bounded implementation packets
+## 5. Historical bounded implementation packets — use the current release ledger
 
 ### TB-I1 — BLOCKED (contract ready; entry gates not met)
 
