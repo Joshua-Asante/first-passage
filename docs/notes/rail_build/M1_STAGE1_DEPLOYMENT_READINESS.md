@@ -785,3 +785,50 @@ Canonical disable plan plus separate after-state comparison showed only test cap
 This returns the successful A7 event for the separately authorized A8 evidence/signoff procedure. It does not edit acceptance, grant an arm, qualify a production feed or merge the result PR. Known Windows Fly handle errors followed complete receipts; mutations were reconciled by durable state rather than repeated.
 
 After this return was written, the public projection was verified byte-identical to canonical output. Private journal/ledger scratch copies, the local candle upload and rehearsal file were deleted with absence verified. Host originals/tombstones and the private value-free GO/manifest remain retained. Acceptance structure validation and git diff --check passed; acceptance remains CODE_LANDED. No runtime-code test result is claimed for this evidence-only return.
+
+
+## §A8 — Signed acceptance deployed; pin-record re-bake owed (2026-09-14)
+
+**Status: first deployment verified; A8 remains open for Step 2.4b.** Joshua adopted the full dated statement preserved verbatim in `operator_signoff`. [PR #389](https://github.com/Joshua-Asante/first-passage/pull/389) merged as `e7792000c508b1ef3d76cc98819b923bb7832695`; the signed event is `7186beef-51b3-4da3-8f3f-b1052bddaaf1`, ceremony `stage1-20260914-4`. This section records the listener deployment only; it grants no arming, trading, strategy or live-feed readiness.
+
+### Preflight and source identity
+
+Fresh host reads before deployment: dry_run true, armed_until null, M1 CODE_LANDED/FAIL, ledger 36 records, exactly three A7 event records, all allocations zero, test RETIRED. All nine image-carried pins matched the v9 acceptance record. The current healthy v9 image `registry.fly.io/c1-rail:deployment-01M2GC05QDKK2KF7VRWVKJZ8EN` / `sha256:4a54afb0bd2c96256e14b3196a5b69afa1ea165b1df4dc436272bf3453df35e6` was identified as the no-build rollback target; recovery classes and procedure pointers in §A3 were read.
+
+A separate clean detached checkout of merged main `e779200` had no tracked or untracked changes. Image-manifest tests: **6 passed**. Explicit import closure from server, arm/status, slippage and Stage 1 control entrypoints: **24 modules, zero missing**. The Dockerfile and default-exclude build context were inspected. Immediately before the deploy, a new read asserted explicit dry_run true, null arming deadline, and the same private config digest as preflight. No private config content or digest is published.
+
+### Deployment and live verification
+
+Executed from that clean merged-main checkout:
+
+```text
+fly deploy . --config deploy/c1_rail/fly.toml --dockerfile deploy/c1_rail/Dockerfile
+```
+
+Fly release **v10 complete**, created `2026-09-14T20:38:13Z`; machine `e820221a657d28`; image `registry.fly.io/c1-rail:deployment-01M2GT7SX2S3XG1NH6SBTBK84F`, digest `sha256:c8ee22331eb08a64807484f7c49dd22dfe35220bcbc7d53199264c9c7a4f3628`. Rolling update, smoke checks, machine health and DNS checks succeeded. Boot at `2026-09-14T20:38:21.967Z` printed `dry_run=True armed_until=-`; public health GET returned `ok=true`, service `c1_rail_http_server`, and the machine health check passed.
+
+Post-deploy in-container status:
+
+```text
+dry_run=True armed_until=None
+m1_gate: status='RESOLVED' result=PASS
+```
+
+The in-image acceptance hash is `cdc249ab08411d6989c3b518fe69c47076dc92ee76414852ab75069145508738`, equal to the signed merged-main deployment checkout. Its event UUID matches the signed A7 event. Private config digest was unchanged; ledger remained 36 records with the same event triad; all allocations remained zero and test lifecycle RETIRED. Windows Fly SSH returned its known handle error after complete JSON receipts; the asserted receipts and fresh health reads establish the results without repeating any mutation.
+
+### Pin comparison and pending re-bake
+
+Every image-carried pin was re-read in-container and matched the corresponding file in the actual deployment checkout. A separate in-container inventory of all 27 Python source files under `/app` also matched that checkout; its canonical path→SHA256 JSON digest (sorted keys, compact separators) is `a390d54c9ec55d9920256f91b57b4009301f3e1c6a4cfe4511121d7aa90d4d76`. Re-verify this complete source inventory before and after the docs-only re-bake, in addition to the pinned subset. Seven image-carried pins were unchanged. Two moved:
+
+| Path | v9 hash | v10 hash | Explanation |
+|---|---|---|---|
+| `ops/c1_rail/c1_rail_http_server.py` | `6639735355ad00d602d5296766807df85f20c59438bf8c33090f59281894c328` | `132c5f3ad6ca18b56e12b237dd327b1bbd98b0b8f51b62f7b114901342e5849e` | Source commit `55c9d96`: BOOK_LEGS controlled-symbol scope. |
+| `scripts/validate_c1_monitoring_acceptance.py` | `3fc1c5d6ba5cfecfbfe8c108b295a8161ebcbf52e5db73895e00a070522c6196` | `452a52ab4c2606569c7ff31e4fece8897ac07d79545304682095439ea14d54c4` | LF→CRLF only; git blobs at deployed v9 source `f1e25951` and merge `e779200` are identical, and CRLF expansion reproduces the deployed hash exactly. |
+
+The non-image `tests/ops/test_m1_acceptance_drills.py` pin was re-verified from the merge-SHA LF blob as `104dafa8cc3cf236cb88e2c4b929fffa0b72aa45e797723a88d9077afe7b8bbd`. No image pin was refreshed from tree bytes; tree comparisons corroborated the in-container reads.
+
+The pre-deploy `checkout-index` attempt to normalize line endings did not rewrite the existing CRLF validator file. That was discovered in the post-deploy pin comparison; the initial intent to avoid a byte-form change is not claimed as accomplished. The measured line-ending equivalence explains the drift without inventing a validator code commit or treating it as different logic. This is the same byte-form distinction already recorded in §A5.
+
+The refreshed acceptance record describes v10, but v10 still embeds PR 1's older pins. **Keep the STATE queue item open.** After this deployment-record PR merges, perform Step 2.4b from its clean main revision: verify pre-deploy image pins against this record, preserve the deployed byte forms, deploy the updated JSON with unchanged image-carried source bytes, and verify post-deploy pin equality plus embedded-JSON/repository hash equality. Record the final release in a subsequent closeout PR before removing the queue item. M1 PASS alone does not establish pin-record self-consistency.
+
+No arm, order, signal POST, daemon change or configuration write was performed. Routine deployment evidence is owned here; no separate SESSIONS judgment entry is added.
