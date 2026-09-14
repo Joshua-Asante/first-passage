@@ -279,3 +279,6 @@ workspace_outputs/
 
 # Local agent prompts, tool streams and request receipts can contain private context.
 .agent-handoffs/
+
+# Private CrossTrade observations and SQLite rollback journals; back up together.
+.crosstrade-observer/
