@@ -91,3 +91,55 @@ request fence. No provider message was sent. Only after those capabilities are
 identified can controlled nonempty order/fill, external-request, reconnect and
 session-rollover tests qualify them. Such tests are not satisfied by this flat
 account probe. Production RecoveryOwner dispatch remains unavailable.
+
+## Support-free continuation — 2026-09-14
+
+Joshua subsequently directed continuation without contacting support, using the
+documented limits. This supersedes the support inquiry as the immediate next step;
+it does not supply E1–E3 qualification or authorize changing recovery guarantees.
+
+Five additional HTTPS GET requests ran at 23:09:07–23:09:13 UTC using the same
+in-place credential and disarmed-configuration assertions. Three returned HTTP
+200 and two returned HTTP 400. No host files, configuration, orders or streams
+were changed. A completion marker was received before the same Fly client
+`The handle is invalid` exit-1 error.
+
+- Retrieved one actual historical fill and verified its account against the
+  configured account before using its order ID.
+- Both the basic order-item GET and lifecycle GET returned
+  `400 tradovate_rejected`. The failure therefore also affects the basic lookup;
+  it is not isolated to lifecycle's optional command/report enrichment. The
+  upstream cause remains unknown; expiry is not established by this comparison.
+- Two account snapshots separated by five seconds both succeeded, each matched
+  exactly one configured account without account errors, and their `asOf` values
+  differed. This demonstrates timestamp refresh in this sample, not an atomic
+  account boundary or complete request accounting.
+
+### Documented limits carried forward
+
+The [snapshot reference](https://crosstrade.io/docs/api/accounts/get-accounts-summary)
+documents a three-second cache and recommends polling at five seconds or slower.
+Order-version enrichment is limited to 20 lookups across a snapshot; missing
+fields remain null. Version-derived fields can reflect rejected modifications.
+Neither a fresh timestamp nor a populated snapshot establishes the required E1
+broker causal boundary.
+
+The [lifecycle reference](https://crosstrade.io/docs/api/orders/get-order-lifecycle)
+documents concurrent order/version/command reads, followed by report reads for
+IDs in the last ten returned commands. HTTP 200 can carry `partial` and
+`unavailable` markers for failed optional reads. The mandatory order read fails
+the request when unavailable. A successful lifecycle response is therefore not
+automatically a complete command history, and its latest version is not proof of
+an accepted modification.
+
+The documented fill-history cursor enumerates stored rows without certifying
+capture coverage. Observed execution identities can support deduplication;
+overlapping rereads must preserve revisions rather than silently overwriting
+earlier economic facts or mistaking fee updates for new executions.
+
+Support-free disposition: use these endpoints for observations and diagnostics.
+E1 coherence, E2 complete history and E3 global unresolved-request accounting
+remain unestablished. API errors and absent data must remain visible limitations.
+Do not convert local collection sequence numbers, stable repeated reads, empty
+positions/orders or exhausted pagination into those missing guarantees. No
+automatic recovery-complete or resume decision is justified by this packet.
