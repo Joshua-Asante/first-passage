@@ -1,5 +1,9 @@
 # ADR 2026-07-22 — Adopt a venue-native c1 monitoring spine and staged maturity gates
 
+**Superseded-in-part-by:** `2026-09-14-a7-attended-agent-capture.md` — controlled-input actor and candle transcript scope only
+
+> **Scoped amendment, 2026-09-14:** [Attended agent capture](2026-09-14-a7-attended-agent-capture.md) changes the controlled-input actor/provenance for the approved agent variant. Item 5's origin, sizing, dry-run and signoff requirements stand; the source is not a production-feed qualification. Historical manual evidence and current M1 acceptance remain unchanged.
+
 **D-S-A domain:** system
 **Status:** `Accepted` — operator ratified 2026-07-23 ("flip ADR to ratified and proceed to close the monitoring gap"); architecture policy in force. **AMENDED 2026-07-31, operator-ratified (Addendum 2026-07-31b): the M1 gate's trigger is the ARM, not the send** — `dry_run=false` may not be set while M1 is not `RESOLVED`. Acceptance authorizes M1 implementation; it does **not** claim M1 is `RESOLVED` or permit an armed session (§4 M1 verdict is the next-**arm** gate).
 **Decision date:** 2026-07-22

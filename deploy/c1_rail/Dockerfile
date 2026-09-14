@@ -39,6 +39,7 @@ COPY ops/c1_rail/c1_rail_http_server.py ops/c1_rail/c1_rail_listener.py \
      ops/c1_rail/book_sizing_context.py ops/c1_rail/book_policy.py \
      ops/c1_rail/book_halt.py \
      ops/c1_rail/m1_stage1_contract.py ops/c1_rail/m1_stage1_control.py \
+     ops/c1_rail/m1_stage1_agent_input.py \
      ops/c1_rail/crosstrade_payload.py ops/c1_rail/c1_rail_arm.py \
      ops/c1_rail/c1_rail_slippage.py ops/c1_rail/__init__.py \
      ./ops/c1_rail/
