@@ -1,6 +1,9 @@
 # TB-S3 rev8 — durable halt and operator resume
 
-Status: DESIGN REVISION — operator requested this simplification on 2026-09-14 UTC. No runtime change, operational approval or retrospective qualification is recorded.
+
+> **Ratified 2026-09-14 UTC:** Joshua approved rev8 execution and schedule plus the separate first P2 decision. See the [exact revision/approval record](../briefs/handoffs/2026-09-14-track-b-ratifications.md) and dated S2b/P2 addenda. Pre-approval wording below describes the reviewed design; those first-decision gates are now satisfied. Implementation, calendar/route evidence, exact-depth approval and live gates remain distinct.
+
+Status: RATIFIED CONTRACT — execution and schedule approved 2026-09-14 UTC. No runtime change, operational GO or retrospective qualification is recorded.
 
 Base: merged TB-I1 PR #379, `d53a06e3fa6018c6c36eb63771e5ad6d1ae961cf`. This document owns the replacement halt/resume and schedule choices for [TB-S3](2026-09-12-c1-multi-leg-rail-extension-spec.md), [TB-S2](2026-09-12-tradeify-synchronized-replay-spec.md) and the [operating procedure](../notes/rail_build/ARMING_PROCEDURE.md). Their retained order primitives, evidence contracts and strategy rules continue to apply. Formal execution ratification binds the exact reviewed revision and lands the S2b addendum; it is distinct from approving this design edit.
 

@@ -1,6 +1,6 @@
 # ADR 2026-09-12 — Tradeify portfolio protection instance: fixed-instance admission (supersedes-in-part the concept ADR §4 step 2, §2 item 2, §4 step 3's Part A depth and §2 item 1's multiplier for the ORB leg, for this instance only)
 
-**Status:** `PROPOSED` — operator decision ratification required **before TB-F1** (umbrella D-B11), followed by a second operator ratification of TB-F1's exact Part A depth **before TB-E1**; both are dated addenda at the foot of this file, never edits to the decision text
+**Status:** `Accepted` — first policy ratification recorded 2026-09-14 UTC below; exact Part A depth/budget and its scoped supersession remain pending the second post-TB-F1, pre-TB-E1 ratification.
 **Decision date:** 2026-09-12
 **Packet:** TB-P2 of the [Track B umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) (authored 2026-09-12; rev 4 2026-09-12 rebuilt around the acceptance trace of §2a; rev 9 2026-09-13 completes bootstrap, fingerprint and effective-activation contracts; the ratification date is recorded in the addendum)
 **Authors:** Joshua (selection 2026-09-10; D-B11 ruling 2026-09-11; root-cause direction 2026-09-12) + Claude Code coordinator (drafter)
@@ -240,3 +240,11 @@ grep -n "^## Addendum .* ratification" docs/adr/2026-09-12-tradeify-book-protect
 
 - 2026-09-12 (rev 6) — latest Codex round folded: the GO reseal now compares image manifests and requires every non-GO v2 layer to be byte-identical and ordered identically to v1, refusing mutable-base or cache-driven runtime drift; R1c is restricted to explicitly permitted non-shared build-context/seal-invalidating changes, while shared-component or non-GO image-layer changes end the attempt without a replacement n3.
 - 2026-09-12 (rev 7) — latest Codex round folded: T11 now binds `--arm` to a host-verified complete EF2 image/config manifest; A1 requires a second dated operator addendum ratifying TB-F1's exact depth before TB-E1; row provenance includes the TB-E1 freeze date; FBR/EF equality uses a canonical policy-row serialization without provenance and an AST-normalized `dd_geometry.py` digest excluding only the registry assignment, breaking the pre-admission digest cycle.
+
+## Addendum 2026-09-14 UTC — first operator ratification
+
+Joshua explicitly approved the recommendations to retain decision P while updating E/U to S3 rev8. Approved P2 rev9 content: merge `8101ba498aad812e79c3d80c45f963cd67b55de6`, Git blob `f94be43e25a9f4e4c0b10ccf3bb115f41aded3ec`, identical to the packet's #379 policy blob. See the [revision-bound approval record](../briefs/handoffs/2026-09-14-track-b-ratifications.md).
+
+This ratifies the first-decision scope in §7: fixed policy/response map, five scoped concept-ADR supersessions subject to their specified effective points, retained Part A construction, stricter B1 statistic, B2 count correction, two-stage admission, canonical fingerprint implementation contract, GO reseal and initial effective-activation checks. C10 invalidation stops for Joshua and grants no automatic replacement draw. The second decision remains required after TB-F1: exact positive Part A depth, deterministic budget and frozen evidence identities. The depth supersession does not take effect on this first approval. No registry row, qualification run, source approval, deployment or live authorization is granted.
+
+Earlier statements that both decisions were absent describe the pre-ratification proposal; this addendum updates their status without rewriting the approved decision text.

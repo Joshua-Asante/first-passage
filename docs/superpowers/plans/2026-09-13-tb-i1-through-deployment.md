@@ -12,17 +12,17 @@
 
 Simplified from `2c72294` on 2026-09-13 at the operator's request. Task 1's technical reconciliation and Tasks 2-3's bounded implementation are delivered through PRs #373-#378; the plan is #372. This is not a claim of operator review, merge, ratification or live qualification. Task 1's decisions remain in the ledger below.
 
-**Stage 1 engineering packet verified locally:** canonical policy/geometry/config
+**Stage 1 accepted — 2026-09-14 UTC:** canonical policy/geometry/config
 fingerprints, explicit manifests, conformance vectors and serializer-to-host/capacity
 integration are implemented. See the [fingerprint interface](../../spec/tb-i1-fingerprint-interface.md)
 and appendix execution record. The repository-environment core/ops suite passed
 1,841 tests (16 skipped); independent review and required local gates passed.
-TB-I1 acceptance remains pending its explicit entry authority; mainline integration is complete.
+E/P authority is now explicitly ratified; the coordinator records bounded TB-I1 acceptance in the [approval and acceptance record](../../briefs/handoffs/2026-09-14-track-b-ratifications.md). Mainline integration is complete. Publication of this decision record remains a separate repository action.
 Do not rebuild the completed sizing, context, capacity or transition components.
 
-**Observed integration state, 2026-09-14 UTC:** PR #379 merged at `d53a06e3fa6018c6c36eb63771e5ad6d1ae961cf`, incorporating the fingerprint packet and stacked foundations. Mainline integration is complete; formal TB-I1 entry/acceptance remains distinct. The [rev8 halt/resume design](../../spec/2026-09-14-tb-s3-halt-resume-contract.md) now completes execution and schedule choices for ratification. It replaces the old session-latch proposal; no runtime implementation or policy ratification is inferred.
+**Observed integration state, 2026-09-14 UTC:** PR #379 merged at `d53a06e3fa6018c6c36eb63771e5ad6d1ae961cf`, incorporating the fingerprint packet and stacked foundations. Mainline integration is complete; the dated approval record above now closes formal TB-I1 entry/acceptance. The [rev8 halt/resume design](../../spec/2026-09-14-tb-s3-halt-resume-contract.md) is now ratified for execution and schedule. It replaces the old session-latch proposal; first P2 ratification is recorded separately in its ADR. Runtime recovery/resume implementation remains open.
 
-**Post-merge verification and Stage 2 start, 2026-09-14 UTC:** PR #380 merged at `8101ba498aad812e79c3d80c45f963cd67b55de6`; its tree equals checked head `6f0969b`. The operator explicitly requested Stage 2 commencement. The [runtime integration plan](2026-09-14-stage2-runtime-integration.md) records producer/consumer ownership and the first durable halt rejection slice. This implementation authorization is not a dated policy ratification or operational GO. Stage 1 technical/mainline work is complete; remaining formal acceptance records are still explicit.
+**Post-merge verification and Stage 2 start, reconciled 2026-09-14 UTC:** #380 merged at `8101ba498aad812e79c3d80c45f963cd67b55de6`, with the reviewed tree from `6f0969b`. Joshua authorized Stage 2 commencement and subsequently explicitly approved E/P/U, as recorded above. #381 merged HALTED-only enforcement; recovery/resume remain open. The [runtime integration plan](2026-09-14-stage2-runtime-integration.md) owns the sequence. #382 at `420ce3af88ede04ff5503aa1c3f14cd2a16eea10` is the current collection/intake baseline. Its older checkpoint/no-PR language is historical.
 
 The [companion appendix](2026-09-13-tb-i1-through-deployment-appendix.md) retains every original task requirement, governing-source reference, detailed acceptance case and execution record. Its task numbers provide the mapping below. The active plan owns status; the appendix supplies details without a second delivery checklist. Governing specifications and their operator gates remain authoritative.
 
@@ -45,15 +45,15 @@ Update each row with a dated evidence reference when satisfied. Preparation may 
 
 | Prerequisite | Owner | Current status | Required evidence | Blocks |
 |---|---|---|---|---|
-| Policy/execution ratifications and TB-I1 entry authority | Joshua; coordinator prepares exact text | Pending | Dated acceptance of the applicable S3/P2 interface and deviations; reconcile TB-I1 entry authority explicitly. A merged PROPOSED ADR is insufficient. | Stage 1 acceptance; affected Stage 2 execution work; Stage 3 F1 |
-| Unified regular/early-close schedule | Joshua ratifies; calendar/runtime owners implement | Rev8 design complete; ratification/calendar evidence pending | One accepted schedule including cutoffs, settlement, early closes and source-backed closure/DST coverage, used identically by replay, rail and procedure | Stage 2 calendar-dependent integration; Stage 3 F1 |
-| Seven exports and intake/parity | Joshua supplies; coordinator intakes and verifies | Pending | Exact S-P, S-W1, S-W1P, S-W2, S-W2P, O-N and O-P bundles; source/override identity, normalization, coverage and all required parity PASS | Stage 2 decision-bearing replay use; Stage 3 F1 |
+| Policy/execution ratifications and TB-I1 entry authority | Joshua; coordinator records | E and first P accepted 2026-09-14 UTC; TB-I1 accepted (linked record above) | Dated acceptance of the applicable S3/P2 interface and deviations; reconcile TB-I1 entry authority explicitly. A merged PROPOSED ADR is insufficient. | Stage 1 acceptance; affected Stage 2 execution work; Stage 3 F1 |
+| Unified regular/early-close schedule | Joshua ratifies; calendar/runtime owners implement | U ratified 2026-09-14 UTC; calendar/route evidence pending | One accepted schedule including cutoffs, settlement, early closes and source-backed closure/DST coverage, used identically by replay, rail and procedure | Stage 2 calendar-dependent integration; Stage 3 F1 |
+| Seven exports and intake/parity | Parallel prerequisites owns collection/intake verification; runtime coordinator supplies tooling | Collection 7/7; acceptance 0/7; admitted normalization/parity not run (#382) | Exact S-P, S-W1, S-W1P, S-W2, S-W2P, O-N and O-P bundles; source/override identity, normalization, coverage and all required parity PASS | Stage 2 decision-bearing replay use; Stage 3 F1 |
 | Exact Part A depth | Coordinator derives at F1; Joshua ratifies | Not yet due | Frozen construction, sample/depth values, seeds and measured budget; second dated P2 ratification after F1 and before E1 | Stage 3 E1 |
 | M1, feed and feed equivalence | Joshua attends/approves; implementation owners supply evidence | Pending | M1 RESOLVED; A9-gated selection/funding; approved source and TB-I5 equivalence under frozen criteria | Stage 4 live integration |
 | Broker capabilities, symbols and dedupe | Broker/evidence owners; Joshua supplies attended evidence | Pending | Actual L1/L2 support for used semantics, all symbol verifications, TB-I4 after its M1/GO/disarmed gates | Stage 4 live use |
 | Runtime binding and operational GOs | Joshua authorizes; coordinator verifies | Not yet due | E1/D0/D1 and symbol gates for TB-V1; separately authorized attended dry run; B7, final verdict, deployment GO and activation evidence | Stage 4 binding, integration and initial arm at their respective checkpoints |
 
-Seven-export specifications, private storage paths and intake obligations remain in the appendix's parallel evidence track. P2/C10 snapshot-transition acceptance remains an explicit TB-T1 entry gate in the Stage 2 packet table; it is not implicitly approved by this simplification.
+Seven-export specifications, private storage paths and intake obligations remain in the appendix's parallel evidence track. P2/C10 first contract ratification is now explicit in its dated ADR addendum; TB-T1 must still implement and verify the accepted snapshot-transition behavior.
 
 ## Engineering and verification rules
 

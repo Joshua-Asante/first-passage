@@ -52,6 +52,7 @@ for _p in (str(_REPO_ROOT / "core"), str(_RAIL_DIR)):
         sys.path.insert(0, _p)
 
 from book_halt import BookHaltStore
+from book_policy import BOOK_LEGS
 from c1_rail_listener import arming_expiry_reason, handle_signal  # noqa: E402
 from c1_rail_telemetry import (  # noqa: E402
     EventLedger,
@@ -427,7 +428,8 @@ def make_handler(
     configured and never invent equity.
     """
     notifier = notifier or LoggingNotifier()
-    book_halt = (BookHaltStore.boot(cfg["book_halt_path"], cfg["account"])
+    book_halt = (BookHaltStore.boot(cfg["book_halt_path"], cfg["account"],
+                                 controlled_symbols=tuple(leg.symbol for leg in BOOK_LEGS))
                  if "book_halt_path" in cfg else None)
 
     class Handler(BaseHTTPRequestHandler):
