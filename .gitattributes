@@ -32,6 +32,9 @@ ops/calendars/cme_holiday_calendar_2022_2026.json text eol=lf
 tests/ops/test_m1_acceptance_drills.py text eol=lf
 ops/c1_rail/*.py text eol=lf
 
+# TB-I1 literal byte/hash vectors are externally pinned by the engineering record.
+tests/ops/fixtures/policy_fingerprint_vectors.json text eol=lf
+
 # Hash-gated analysis CSVs: WAVE1_SHA256SUMS is LF-blob-based, so autocrlf checkout
 # (CRLF) fails the harness hash-gate in a fresh worktree — and would halt a Cursor
 # dispatch. eol=lf pins the checkout to LF (matches the blob), is renormalize-safe,

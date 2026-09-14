@@ -36,14 +36,19 @@ WORKDIR /app
 # be present in-container to be usable over `fly ssh console`.
 COPY ops/c1_rail/c1_rail_http_server.py ops/c1_rail/c1_rail_listener.py \
      ops/c1_rail/c1_rail_telemetry.py ops/c1_rail/c1_sizing_host_reference.py \
+     ops/c1_rail/book_sizing_context.py ops/c1_rail/book_policy.py \
      ops/c1_rail/m1_stage1_contract.py ops/c1_rail/m1_stage1_control.py \
      ops/c1_rail/crosstrade_payload.py ops/c1_rail/c1_rail_arm.py \
      ops/c1_rail/c1_rail_slippage.py ops/c1_rail/__init__.py \
      ./ops/c1_rail/
-COPY core/dd_protection.py core/firm_rules.py core/lifecycle.py \
+COPY core/dd_protection.py core/dd_geometry.py core/firm_rules.py core/lifecycle.py \
      core/historical_challenge.py ./core/
 COPY core/lib/atomic_io.py core/lib/file_lock.py core/lib/mvd.py \
      core/lib/validation.py ./core/lib/
+
+# Pure TB-I1 sizing dependencies. Packaging does not route or authorize book orders.
+COPY ops/c1_signal_daemon/__init__.py ops/c1_signal_daemon/book_protocol.py \
+     ops/c1_signal_daemon/feed.py ./ops/c1_signal_daemon/
 
 # The M1 acceptance artifact — read by ops/c1_rail/c1_rail_arm.py's arming interlock
 # (ADR 2026-07-22 Addendum 2026-07-31b: dry_run=false may not be set while M1

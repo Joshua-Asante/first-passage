@@ -12,7 +12,19 @@
 
 Simplified from `2c72294` on 2026-09-13 at the operator's request. Task 1's technical reconciliation and Tasks 2-3's bounded implementation are delivered through PRs #373-#378; the plan is #372. This is not a claim of operator review, merge, ratification or live qualification. Task 1's decisions remain in the ledger below.
 
-**Next engineering packet: Stage 1, canonical fingerprints plus combined TB-I1 acceptance.** Do not rebuild the completed sizing, context, capacity or transition components.
+**Stage 1 engineering packet verified locally:** canonical policy/geometry/config
+fingerprints, explicit manifests, conformance vectors and serializer-to-host/capacity
+integration are implemented. See the [fingerprint interface](../../spec/tb-i1-fingerprint-interface.md)
+and appendix execution record. The repository-environment core/ops suite passed
+1,841 tests (16 skipped); independent review and required local gates passed.
+TB-I1 acceptance remains pending its entry authority and mainline integration.
+Do not rebuild the completed sizing, context, capacity or transition components.
+
+**Observed integration state, 2026-09-14 UTC:** `origin/main` is `c65b2ca`.
+PRs #376–#378 merged into their feature-branch parents after those parents had
+merged, so their combined code is not yet on `main`. The isolated fingerprint
+worktree combines `c65b2ca` with `eb0e8db` (the merged capacity/transition stack)
+without a commit. This local integration does not imply publication or merge.
 
 The [companion appendix](2026-09-13-tb-i1-through-deployment-appendix.md) retains every original task requirement, governing-source reference, detailed acceptance case and execution record. Its task numbers provide the mapping below. The active plan owns status; the appendix supplies details without a second delivery checklist. Governing specifications and their operator gates remain authoritative.
 
