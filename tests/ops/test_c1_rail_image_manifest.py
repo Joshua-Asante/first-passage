@@ -16,6 +16,10 @@ members are not.
 from __future__ import annotations
 
 import ast
+import re
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -32,6 +36,27 @@ _ENTRYPOINTS = (
     REPO_ROOT / "ops" / "c1_rail" / "m1_stage1_control.py",
     REPO_ROOT / "ops" / "c1_rail" / "c1_rail_arm.py",
 )
+
+
+def test_packaged_book_boundary_imports_without_checkout(tmp_path):
+    """Exercise the lazy host import using only Python files in the image recipe."""
+    for rel in _dockerfile_copied_py_paths(DOCKERFILE):
+        target = tmp_path / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(REPO_ROOT / rel, target)
+    script = """
+import sys
+from pathlib import Path
+root = Path(sys.argv[1])
+sys.path[:0] = [str(root / 'core'), str(root / 'ops' / 'c1_rail')]
+from c1_sizing_host_reference import C1SizingHostReference
+host = C1SizingHostReference(root / 'absent', root / 'absent', root / 'absent')
+result = host.process_book_signal(None, policy=None, context=None, binding=None, now=None)
+assert result.halt and result.qty_out == 0 and result.submit is False
+"""
+    result = subprocess.run([sys.executable, "-I", "-c", script, str(tmp_path)],
+                            cwd=tmp_path, capture_output=True, text=True, check=False)
+    assert result.returncode == 0, result.stderr
 
 
 def _dockerfile_copied_py_paths(dockerfile: Path) -> set[str]:
@@ -128,6 +153,14 @@ def test_dockerfile_copy_set_is_nonempty():
     assert "ops/c1_rail/c1_rail_listener.py" in copied
     assert "core/historical_challenge.py" in copied, (
         "regression pin: the 2026-07-31 bite must stay in the COPY set")
+
+
+def test_ci_exact_inventory_includes_packaged_python_modules():
+    script = (REPO_ROOT / "scripts/c1_image_validation.sh").read_text(encoding="utf-8")
+    inventory = re.search(r"(?ms)^LISTENER_FILES=\(\n(.*?)^\)", script)
+    assert inventory is not None
+    declared = set(re.findall(r"/app/([^\s\"']+\.py)", inventory.group(1)))
+    assert _dockerfile_copied_py_paths(DOCKERFILE) <= declared
 
 
 def test_listener_import_closure_is_covered_by_dockerfile_copy():
