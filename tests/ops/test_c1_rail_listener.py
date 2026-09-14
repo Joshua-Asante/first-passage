@@ -384,3 +384,17 @@ def test_arming_expiry_reason_clock_injection_is_opt_in_and_not_config_driven():
     # Injection is honoured only through the keyword.
     before = datetime.fromisoformat(past) - timedelta(hours=1)
     assert arming_expiry_reason({"armed_until": past}, now=before) is None
+
+
+@pytest.mark.parametrize("dry_run", [False, True])
+def test_durable_book_halt_preserves_legacy_close_path(host, tmp_path, dry_run):
+    from book_halt import BookHaltStore
+    store = BookHaltStore.boot(tmp_path / "halt.sqlite", "account")
+    sender = _CapturingSender()
+    result = handle_signal(
+        {**entry_payload(), "signal_type": "flat", "bar_time": 3},
+        host, current_equity=E_FIRM, config=_config(dry_run=dry_run),
+        sender=sender, book_halt=store)
+    assert result.sent is (not dry_run)
+    assert len(sender.calls) == (0 if dry_run else 1)
+    assert store.snapshot()["permission"] == "HALTED"

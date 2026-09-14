@@ -55,6 +55,8 @@ from c1_rail_telemetry import (
 from c1_sizing_host_reference import C1SizingHostReference, SizingDecision
 from crosstrade_payload import build_crosstrade_payload, send_to_crosstrade
 import m1_stage1_contract as m1_test
+from book_policy import BOOK_LEGS
+from book_halt import BookHaltStore
 
 INSTRUMENT_SYMBOLS: dict[str, str] = {
     m1_test.LEG_ID: m1_test.SYMBOL,
@@ -150,6 +152,7 @@ def handle_signal(
     ledger: EventLedger | None = None,
     notifier: OperatorNotifier | None = None,
     event_id: str | None = None,
+    book_halt: BookHaltStore | None = None,
 ) -> RailAction:
     """Route one B1 signal through sizing + optional CrossTrade send.
 
@@ -188,6 +191,20 @@ def handle_signal(
                 # A broken recorder must never make a prohibited send possible.
                 pass
         return RailAction(decision=decision, sent=False, dry_run=dry_run is True,
+                          event_id=eid, transport_state="not_attempted")
+
+    # Four-leg book orders cannot bypass the not-yet-qualified runtime by
+    # omitting its store. Legacy deployments are unchanged unless configured.
+    if is_risk_add and (book_halt is not None or payload.get("leg_id") in
+                        {leg.leg_id for leg in BOOK_LEGS}):
+        reason = (book_halt.rejection_reason() if book_halt is not None else
+                  "book runtime unavailable; durable halt gate required")
+        decision = SizingDecision(
+            leg_id=str(payload.get("leg_id", "<absent>")),
+            signal_type=str(payload.get("signal_type", "<absent>")),
+            qty_out=0, submit=False, halt=True, halt_reason=reason,
+        )
+        return RailAction(decision=decision, sent=False, dry_run=dry_run,
                           event_id=eid, transport_state="not_attempted")
 
     if ledger is not None and is_risk_add and ledger.risk_add_blocked:

@@ -75,6 +75,7 @@ LISTENER_FILES=(
   /app/ops/c1_rail/__init__.py
   /app/ops/c1_rail/book_policy.py
   /app/ops/c1_rail/book_sizing_context.py
+  /app/ops/c1_rail/book_halt.py
   /app/ops/c1_rail/c1_rail_arm.py
   /app/ops/c1_rail/c1_rail_http_server.py
   /app/ops/c1_rail/c1_rail_listener.py

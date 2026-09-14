@@ -51,6 +51,7 @@ for _p in (str(_REPO_ROOT / "core"), str(_RAIL_DIR)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+from book_halt import BookHaltStore
 from c1_rail_listener import arming_expiry_reason, handle_signal  # noqa: E402
 from c1_rail_telemetry import (  # noqa: E402
     EventLedger,
@@ -426,6 +427,8 @@ def make_handler(
     configured and never invent equity.
     """
     notifier = notifier or LoggingNotifier()
+    book_halt = (BookHaltStore.boot(cfg["book_halt_path"], cfg["account"])
+                 if "book_halt_path" in cfg else None)
 
     class Handler(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
@@ -569,6 +572,7 @@ def make_handler(
                     payload, host, current_equity=float(current_equity or 0.0),
                     config=_rail_config_from(cfg),
                     ledger=ledger, notifier=notifier, event_id=event_id,
+                    book_halt=book_halt,
                 )
             except Exception:
                 log.exception("handle_signal raised - no order placed by adapter")

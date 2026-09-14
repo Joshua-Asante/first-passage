@@ -22,6 +22,8 @@ Do not rebuild the completed sizing, context, capacity or transition components.
 
 **Observed integration state, 2026-09-14 UTC:** PR #379 merged at `d53a06e3fa6018c6c36eb63771e5ad6d1ae961cf`, incorporating the fingerprint packet and stacked foundations. Mainline integration is complete; formal TB-I1 entry/acceptance remains distinct. The [rev8 halt/resume design](../../spec/2026-09-14-tb-s3-halt-resume-contract.md) now completes execution and schedule choices for ratification. It replaces the old session-latch proposal; no runtime implementation or policy ratification is inferred.
 
+**Post-merge verification and Stage 2 start, 2026-09-14 UTC:** PR #380 merged at `8101ba498aad812e79c3d80c45f963cd67b55de6`; its tree equals checked head `6f0969b`. The operator explicitly requested Stage 2 commencement. The [runtime integration plan](2026-09-14-stage2-runtime-integration.md) records producer/consumer ownership and the first durable halt rejection slice. This implementation authorization is not a dated policy ratification or operational GO. Stage 1 technical/mainline work is complete; remaining formal acceptance records are still explicit.
+
 The [companion appendix](2026-09-13-tb-i1-through-deployment-appendix.md) retains every original task requirement, governing-source reference, detailed acceptance case and execution record. Its task numbers provide the mapping below. The active plan owns status; the appendix supplies details without a second delivery checklist. Governing specifications and their operator gates remain authoritative.
 
 ## Four stages and acceptance matrix
