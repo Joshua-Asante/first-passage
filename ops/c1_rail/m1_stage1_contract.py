@@ -24,6 +24,7 @@ PYR_PCT = 0.0
 # The offline marker is retained for synthetic test harnesses only.
 OFFLINE_SOURCE = {"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": SYMBOL}
 OPERATOR_INPUT_SOURCE = {"kind": "operator_attended_input", "schema": "ohlcv-1m", "symbol": SYMBOL}
+AGENT_INPUT_SOURCE = {"kind": "agent_attended_browser_capture", "schema": "ohlcv-1m", "symbol": SYMBOL}
 
 
 def constants_row(*, enabled: bool = False) -> dict:

@@ -369,6 +369,26 @@ No ceremony preparation. The daemon is at v2, inert: emission disabled, source d
 
 **Return:** `DONE_WITH_CONCERNS` — every §4 limb held (boot disarmed and inert, source disconnected, journal fresh and valid, no listener request), so the daemon is at v2 as the A7 brief requires. Concerns, none blocking: (1) every in-container command was operator-run (this session cannot invoke `fly ssh console`); (2) on this console the interactive `fly ssh sftp shell` mangled typed input and was abandoned — the non-interactive `fly ssh sftp put <local> <remote>` form works and refuses to overwrite an existing remote file, which matters for A7's private upload (`/data/m1_upload_<id>.json` must not pre-exist; `inject` removes it on every exit) — and a cleanup chained after a refused put deleted the operator's local file once, so A7 must never chain the deletion to the put; (3) `ls ops/c1_signal_daemon` was not re-listed after the deploy — the D2 file-set check on the A1b image (run 34660963201) and the working `status` bootstrap cover the packaged set. Per-step gates: 2.1–2.6 pass. Files touched: this note only. STOP before any ceremony.
 
+## §A7-R — Read-only readiness refresh, September 14, 2026
+
+Coordinator: Astra. Repository baseline `c1dcb31730157c2895c258c9921b8d8164557335`. Joshua confirmed the September 13 ceremony **did not run**. This return establishes readiness observations only; no ceremony, allocation change, manifest, prepare, enable, inject, restart or deployment occurred. The earlier §A7-P remains historical; its date/identity is not a fresh manifest.
+
+Host reads began around **2026-09-14 04:22 UTC**. Commands: `fly status --json` and `fly releases --json` for each app; listener `--status` with account redacted before output; daemon `status --state /data/c1_m1_stage1_state.json --config /data/c1_signal_daemon_config.json`; direct daemon health GET; value-safe Python projections of the daemon journal, listener allocation/lifecycle and ledger metadata; persistent audit-log boot lines. SSH printed complete successful probe outputs followed by the documented Windows `Error: The handle is invalid.`; shell exit status alone was not used to claim failure or success.
+
+| Check | Fresh observation | Disposition |
+| --- | --- | --- |
+| Listener identity | v8, machine `e820221a657d28`, image `deployment-01M29JA2721JHQGCXCRNCF54G1`, digest `sha256:02ca9a12f935adb21e5adc4fd033352f0c8c05b52d7661b2484902f3f792447e`; updated September 12 01:05:07 UTC; started, health passing | Matches A5; no observed deployment change |
+| Daemon identity | v2, machine `840759c2474928`, image `deployment-01M29QV4Y81BXWN4BWWMW67CEN`, digest `sha256:254272cbf94a4d7e67d1cfc5b3814cbee285ceaf896e15dfd596e3ba975dae40`; updated September 12 02:41:34 UTC; started, health passing | Matches A6 |
+| Listener config status | `dry_run=True armed_until=None`; M1 `CODE_LANDED`, gate FAIL | Expected pending A7/A8 |
+| Current deployment boot | Persistent audit log September 12 01:05:08.150 UTC: `dry_run=True armed_until=- equity_source=crosstrade`; machine deployment/start identity unchanged | Agrees with current config. Fly buffered logs had no boot line; persistent log supplied it without a restart |
+| Daemon health/status | Boot `cce8b7b8d0f34027a69a1a6fe63dfba6`; `NullStrategy`, operator_input, disconnected, DISABLED, emit/effective_emit false, poll interval 1.0 | Inert, same boot as A6 |
+| Journal | Schema 1, generation 0, enabled false, active null, zero ceremonies/tombstones, no checkpoints, no upload/bar/claim files | No persisted prior attempt |
+| Deployed contract | Both images print `346387e565225d956da0f5b9696f211dee82ff9a823dda6e56b0ce32aba9d94f` | Exact agreement with recorded contract |
+| Listener allocation | `dj30_mym=0`, `nas100_mnq=0`, `m1_stage1_test=0`; test lifecycle RETIRED | No allocation write needed during readiness |
+| Ledger metadata | 32 records, last sequence 32 | Unchanged from A6 baseline; raw records not printed |
+
+**Return:** read-only readiness refresh PASS at the observed time; A7 remains unexecuted. Before a fresh ceremony, Joshua names the attended window and confirms the actual dated MYM chart contract. Verify the target against authoritative session coverage, then refresh the time-sensitive host posture and obtain broker flatness attestation before A7 Step 2.2. Only after its allocation migration may Step 2.3 produce the fresh nonzero preflight receipt. No receipt, manifest or target was fabricated here. Operator enable/inject, no-order confirmation and A8 signoff remain owed.
+
 ## §A7-P — The A7 ceremony sequence, frozen for Sunday 2026-09-13 (prepared 2026-09-12)
 
 **Brief:** [A7 handoff](../../briefs/handoffs/2026-09-10-track-a-a7-claude-attended-stage1-dry-run.md) (`037f09a`) · **Preconditions at freeze time:** A3 (#348), A5 (#352), A4-D (#354), A6 (#355) merged; A1b merged at `fa02a13`; `origin/main @ eb1c6df`. **Nothing on either host was written today:** no manifest, no allocation change, no `prepare`. This section is the parent's preparation record; the ceremony itself writes §A7. **Why Sunday:** the bar must be a genuine just-closed minute of the dated MYM contract inside a CME Globex session; the session that ended Friday 2026-09-11 21:00 UTC reopens **Sunday 2026-09-13 22:00 UTC (17:00 CDT)**.
@@ -470,3 +490,79 @@ print(output)
 Never edited: the journal, the manifest after `prepare`, either volume config by hand. Never run by the agent: `enable`, `inject`, `--arm`.
 
 **Return (preparation):** `DONE` — the brief verified against the deployed code, the identifiers fixed, the sequence and teardown frozen, the operator's console setup named. Dispatch condition unchanged: the operator present for the whole window, and the target inside Sunday's Globex session.
+
+## §A7 — September 14 attended attempt expired; teardown complete
+
+**Return: DONE_WITH_CONCERNS — failed attempt, no recorded send. A7 is not accepted.** The attempt ended CLOSED/expired without an accepted bar, request, response, listener UUID or successful evidence projection. M1 remains CODE_LANDED; A8 item-5 acceptance/signoff/deployment must not proceed from this attempt. No second attempt was made.
+
+**Authority and ownership:** Joshua reassigned this single A7 ceremony to this Codex task, superseding the prior Claude dispatch. Joshua confirmed he was present, no other task was running A7, the relevant Tradovate account had no positions or working orders, and later that he personally ran enable once and the timed block once. A8 and portfolio deployment remain with the deployment/runtime task. The existing [A7 procedure](../../briefs/handoffs/2026-09-10-track-a-a7-claude-attended-stage1-dry-run.md) governed preparation, timing, actor requirements and teardown. No helper, timing amendment, deploy, restart, arm, hand-POST, journal edit or acceptance edit was performed.
+
+### Preparation and identity
+
+Repository `origin/main` was freshly fetched at `420ce3af88ede04ff5503aa1c3f14cd2a16eea10`; return branch `codex/a7-attended-20260914`. Phase 0 read the procedure in full, source contract, daemon controls/coordinator/strategy/operator source, listener guard/projector, approved-source README/ADRs, c1-rail verification instructions and A3–A6 readiness. Last-change anchors: contract note `c480f99`; daemon control/operator source `2af8f97`; coordinator and listener contract/control `36b3996`; strategy `509b524`; listener `7bf243c`; deployment README `a92cabf`; rail skill `9c89dfa`; main's readiness note `2a849b9`. The earlier uncommitted September 14 §A7-R addition was incorporated without changing its source worktree or engineering packet.
+
+Fresh Fly identities at approximately 14:37 and again 14:58–14:59 UTC matched the reviewed A5/A6 images: listener v8, machine `e820221a657d28`, image `deployment-01M29JA2721JHQGCXCRNCF54G1`, digest `sha256:02ca9a12f935adb21e5adc4fd033352f0c8c05b52d7661b2484902f3f792447e`; daemon v2, machine `840759c2474928`, image `deployment-01M29QV4Y81BXWN4BWWMW67CEN`, digest `sha256:254272cbf94a4d7e67d1cfc5b3814cbee285ceaf896e15dfd596e3ba975dae40`. Machine start/update identities were unchanged from September 12. Both images printed the contract digest below. The listener's persistent audit log supplied its September 12 01:05:08.150 UTC dry_run=True / armed_until-clear boot evidence. Current listener posture was dry_run=True, armed_until=None, M1 CODE_LANDED / FAIL. Daemon was DISABLED, disconnected, emit/effective_emit false, poll interval 1.0, with the unchanged boot below. Journal schema 1/generation 0 was empty; no input files. Ledger baseline: 32 records, last seq 32.
+
+Joshua confirmed MYMZ6, changed the chart from 15 minutes to one minute, and named CDT (UTC-5). He explicitly agreed the 10:10 CDT opening minute after untimed preparation. The appointment was 14:30–15:30 UTC; [CME hours](https://www.cmegroup.com/articles/faqs/micro-e-mini-equity-index-futures-frequently-asked-questions.html) cover this Monday morning window and [CME roll dates](https://www.cmegroup.com/trading/equity-index/rolldates.html) were refreshed. Actual chart designation, rather than a presumed continuous symbol, bound MYMZ6.
+
+Read-only Chrome inventory located the user's actual Tradovate tab. A supported claimTab/Playwright interface allowed filtered DOM reads without a full-page dump and confirmed MYMZ6. The interval was not exposed in accessible text; one-minute/CDT, account-match and flatness verdicts are Joshua's attestations, not agent-observed account-panel evidence. The browser was not used to read the bar or operate trading controls. CrossTrade evidence is the separate operator history confirmation below.
+
+Privacy incident: an attempted regex redaction of listener --status failed and an account identifier reached the task's tool output. It is not reproduced in this record. Subsequent host probes used strict field allowlists. No raw OHLCV, equity or credentials were printed, entered into recorded shell input, or included in repository artifacts. Joshua created the private bar file in Notepad outside repositories and supplied its values himself.
+
+### Allocation, preflight and manifest
+
+The canonical migrate --enable-test plan (without --apply) and separate plan_migration after-state read showed only m1_stage1_test cap 0→1 and M1 Stage1 Test lifecycle RETIRED→AUTHORIZED; both withdrawn rows remained zero. After Joshua's flatness attestation, apply succeeded with the exact reviewed preimage hashes. Re-plan/no-op check was true. No listener restart was required because A4 established per-request state reads. The real read-only preflight returned expected_qty=1, dry_run=true, armed_until=null, sizing_only=true.
+
+| Field | Actual evidence |
+| --- | --- |
+| Ceremony | `stage1-20260914-1` |
+| Target | `2026-09-14T15:10:00Z` — 10:10 CDT, candle opening time |
+| Expiry | `2026-09-14T15:12:30Z` |
+| Inject window | 15:11:00–15:12:00 UTC inclusive |
+| Boot | `cce8b7b8d0f34027a69a1a6fe63dfba6` |
+| Venue contract/source | MYMZ6; `{"kind":"operator_attended_input","schema":"ohlcv-1m","symbol":"MYM1!"}` |
+| Contract SHA256 | `346387e565225d956da0f5b9696f211dee82ff9a823dda6e56b0ce32aba9d94f` |
+| Preflight SHA256 | `5e831589ed3f8590dc5ca2222a5d87e89aa0a72c313e2a5152ca73b9f19f3412` |
+| Manifest SHA256 | `8367d1dc8752535c104df4bb68cdc074a1d683ca3f515db53fee5d694a00cb96` |
+| Pre-enable constants/lifecycle digests | `6400699a17e5052e17ad40eecd2d6d884b408111c78bf3fd9b785be2a19d67e5` / `dae54590963090e7afa7d7f51cd1f78a977fc9dace1fb2f3d6eed7a2dc280ce2` |
+| Enabled constants/lifecycle digests | `ba20c23143ffc262f296b32f6f937d95e5da56778bf80ee548fda5d7e0091821` / `d656310a7937bc47234bcf06c043955dadd9fafe9fb6c27a101a35b46a648765` |
+| Preflight DD state digest | `d2dc7f4fcc4e508e0e13381725543f857335d4724fd6684bf6c0efb20142ed1c` |
+
+Manifest was exclusively created at `/data/m1_manifest_stage1-20260914-1.json` at approximately 15:00:43 UTC after validation and a target-lead-time >=300-second assertion. Agent prepare returned READY/effective_emit false. Immediate health lagged by one poll; a subsequent read confirmed READY and both emission flags false before Joshua was given enable.
+
+### Actor evidence and failed outcome
+
+Both exact operator commands were drafted before target. Joshua's own PowerShell ran enable; the task received READY and the conservative CLI effective_emit=false/source_status=disconnected output. Live health at 15:02:10 UTC independently confirmed correct id/boot, READY, M1Stage1TestStrategy, emit_enabled/effective_emit true. A subsequent journal/config read confirmed all enable flags true. Journal mtime while still enabled READY was **15:01:41.458112 UTC**, supporting enable-before-target timing; it is a filesystem timestamp, not a dedicated CLI actor log.
+
+The timed block uploaded Joshua's private file with SFTP mode 0600 to `/data/m1_upload_stage1-20260914-1.json`, then invoked inject only if the upload returned success. Agent did not run either operator action. At 15:12:01 UTC the task told Joshua the injection deadline had passed and not to run or retry thereafter. The value-safe terminal status observed by 15:12:37 UTC was CLOSED. Journal projection showed tombstone reason expired, enabled false, request_sha256=null, bar_sha256=null and response=null, with no input files. There was no SEND_RESERVED/EMITTED state requiring an in-flight wait at close.
+
+Joshua supplied the command outcome: **`inject refused: not active`**, process status 2. No success receipt or published_at/bar_sha256 exists. His explicit actor/route confirmation was: **"no positions or working orders, no new entry. i personally ran enable once and the timed block once."** He explained that keeping the 10:10 candle stable while transcribing the values delayed his PowerShell execution beyond the available time. Record this as an expired, failed attempt, not a successful signal or an uncertain transport. The exact refused-injection timestamp was not captured; no timestamp is invented from the later pasted output.
+
+Private journal/ledger copies were acquired with SFTP outside every repository. The existing evidence CLI returned exit 1: `M1 control refused: invalid, changed, unavailable or unapproved inputs`, expected for a closed expired ceremony with no bar/response. Independent allowlisted inspection found ledger count 32, last seq 32 and zero ceremony-matching records. The deterministic manifest-derived event identity is `m1-3d679a2435022145cfdb8b269b921b905440a0cf77403713e7d84760c8713700`; it is a computed lookup key, not a recorded signal or listener UUID. There is no request/decision/transport triad to publish. **No success projection, observed quantity, sender flag or source-qualification acceptance is fabricated.** The quantity-one receipt is sizing preflight evidence only.
+
+### Teardown and post-session posture
+
+Canonical close was run with both required paths:
+
+```text
+python ops/c1_signal_daemon/m1_stage1_control.py close --state /data/c1_m1_stage1_state.json --config /data/c1_signal_daemon_config.json --ceremony-id stage1-20260914-1
+```
+
+It preserved CLOSED/expired, cleared emit_enabled and m1_test.enabled and left zero upload/bar/claim files. Journal mtime after explicit close: **15:13:13.001612 UTC**. The disable migration plan plus separate after-state read confirmed only the test cap returns 1→0 and lifecycle AUTHORIZED→RETIRED. After Joshua's renewed no-position/no-order/CrossTrade-no-entry attestation, restore ran:
+
+```text
+python ops/c1_rail/m1_stage1_control.py migrate --config /data/c1_rail_config.json --apply --flat-verified --expect-constants ba20c23143ffc262f296b32f6f937d95e5da56778bf80ee548fda5d7e0091821 --expect-lifecycle d656310a7937bc47234bcf06c043955dadd9fafe9fb6c27a101a35b46a648765
+```
+
+Apply returned applied:true/enabled:false. Fresh verification completed by **15:15:50 UTC**:
+
+- Migration no-op true; dj30_mym=0, nas100_mnq=0, m1_stage1_test=0; test RETIRED.
+- Listener dry_run=true, armed_until=null; ledger still 32 records/seq 32.
+- Daemon journal CLOSED/enabled=false; config emit_enabled=false and m1_test.enabled=false; zero input files.
+- Live health emit_enabled=false, effective_emit=false, disconnected, CLOSED, same boot, poll interval 1.0. The retained M1Stage1TestStrategy label is inert behind the cleared gates.
+
+Successful SSH probes and writes printed complete results followed by the known Windows handle error; results were independently verified, not retried based on exit code alone. An automatic approval rejection of a daemon status read incorrectly associated it with the earlier listener status leak; source inspection established the daemon CLI's fixed safe fields, and the identical read then succeeded through the approval path. No rejection was bypassed.
+
+**Deployment/runtime return:** failed attempt safely closed; no item-5 event or successful projection to hand to A8. Keep this ceremony identity/tombstone and do not retry its input. Any future attempt requires a separately authorized attended session with a fresh identity/target and an operator workflow that can complete the existing timing bounds; this return changes neither the actor rule nor those bounds. Parent review and A8 acceptance remain separate from this documentation return.
+
+Private scratch journal/ledger copies were deleted after writing this return; absence of both files was verified. Host evidence remains intact. Strict Markdown link validation passed (12 targets, zero unresolved), and git diff --check passed. No runtime code changed or new runtime test result is claimed.

@@ -195,10 +195,14 @@ def project_evidence(records: list[dict], state: dict, ceremony_id: str | None =
         if datetime.fromisoformat(bar["timestamp"]) != datetime.fromisoformat(manifest["target"]):
             raise ValueError("bar timestamp mismatch")
         source = manifest["source"]
-        if source not in (contract.OFFLINE_SOURCE, contract.OPERATOR_INPUT_SOURCE):
+        if source not in (contract.OFFLINE_SOURCE, contract.OPERATOR_INPUT_SOURCE, contract.AGENT_INPUT_SOURCE):
             raise ValueError("feed binding mismatch")
         operator_input = source == contract.OPERATOR_INPUT_SOURCE
-        if operator_input and (not re.fullmatch(r"MYM[HMUZ]\d", manifest["venue_contract"])
+        agent_input = source == contract.AGENT_INPUT_SOURCE
+        if agent_input:
+            from c1_rail.m1_stage1_agent_input import validate_evidence
+            agent_evidence = validate_evidence(item)
+        if (operator_input or agent_input) and (not re.fullmatch(r"MYM[HMUZ]\d", manifest["venue_contract"])
                                or bar["venue_contract"] != manifest["venue_contract"]):
             raise ValueError("feed binding mismatch")
         for key in ("request_sha256", "bar_sha256"):
@@ -237,15 +241,20 @@ def project_evidence(records: list[dict], state: dict, ceremony_id: str | None =
             or decision.get("test_contract_sha256") != contract.contract_sha256()
             or transport.get("transport_state") != "not_attempted" or transport.get("dry_run") is not True):
         raise ValueError("dry-run decision/transport evidence mismatch")
-    return {"schema_version": 1, "listener_event_id": eid,
-            "offline_test_only": not operator_input,
+    proof = {"schema_version": 1, "listener_event_id": eid,
+            "offline_test_only": not (operator_input or agent_input),
             "operator_attended_input": operator_input,
             "qualifying_live_source": False,
-            "venue_contract": manifest["venue_contract"] if operator_input else None,
+            "venue_contract": manifest["venue_contract"] if (operator_input or agent_input) else None,
             "ceremony_sha256": _json_digest(ident), "leg_id": contract.LEG_ID,
             "request_sha256": item["request_sha256"], "signal_id": event,
             "bar_sha256": item["bar_sha256"], "expected_qty": 1, "observed_qty": 1,
             "dry_run": True, "sender_invoked": False, "post_test_emit_enabled": False}
+    if agent_input:
+        proof.update(agent_attended_input=True,
+            operator_authorization_sha256=manifest["operator_authorization_sha256"],
+            agent_evidence=json.loads(json.dumps(agent_evidence)))
+    return proof
 
 
 def main(argv=None) -> int:

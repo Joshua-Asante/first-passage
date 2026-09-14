@@ -5,7 +5,7 @@ import json
 import logging
 from pathlib import Path
 
-from c1_rail.m1_stage1_contract import OPERATOR_INPUT_SOURCE
+from c1_rail.m1_stage1_contract import OPERATOR_INPUT_SOURCE, AGENT_INPUT_SOURCE
 from c1_signal_daemon.feed import Bar
 from c1_signal_daemon.m1_stage1_control import digest, positive_finite_number, utc
 from c1_signal_daemon.m1_stage1_state import CeremonyError
@@ -42,7 +42,7 @@ class OperatorInputSource:
         return self._connected
 
     def activate(self, binding, *, ceremony_id):
-        if binding != OPERATOR_INPUT_SOURCE:
+        if binding not in (OPERATOR_INPUT_SOURCE, AGENT_INPUT_SOURCE):
             raise CeremonyError("operator input binding refused")
         if self.binding == binding and self.ceremony_id == ceremony_id:
             return

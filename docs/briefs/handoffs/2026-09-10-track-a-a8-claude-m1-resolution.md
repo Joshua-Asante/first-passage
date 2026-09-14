@@ -1,5 +1,7 @@
 # Claude handoff — Track A / A8: operator signoff, `RESOLVED` artifact, listener redeploy — then STOP
 
+> **Approved evidence variant, 2026-09-14:** Apply the [attended agent amendment](../../adr/2026-09-14-a7-attended-agent-capture.md) when A7 uses the new source. Require `agent_attended_input=true`, `operator_attended_input=false`, explicit capture/enable/inject evidence and retained operator GO, alongside the existing unique ledger join and broker/CrossTrade verdicts. Never claim Joshua performed agent actions. Actual item-5 evidence, dated signoff, compatible deployment and all other A8 gates remain owed.
+
 > **Current owner — operator direction 2026-09-12:** Astra replaces Claude for this remaining Tradeify packet and its evidence review. Historical role names below identify the original dispatch; [campaign ownership §57](../programs/2026-09-03-seven-strategy-select-campaign-state.md#57--astra-tradeify-contract-ownership-and-closeout-routing-2026-09-13) governs current execution. Joshua retains attended inputs, signoff, merges and operational GOs; all scope and entry gates remain unchanged.
 
 **Type:** cc_handoff (multi-step; governed artifact edit + one listener redeploy under the 2026-08-02 grant)

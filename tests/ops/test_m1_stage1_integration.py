@@ -13,7 +13,7 @@ import c1_rail_listener
 from c1_rail_http_server import make_handler
 from c1_rail_telemetry import EventLedger
 from c1_sizing_host_reference import C1SizingHostReference, generate_constants
-from c1_rail.m1_stage1_contract import OPERATOR_INPUT_SOURCE, contract_sha256
+from c1_rail.m1_stage1_contract import OPERATOR_INPUT_SOURCE, AGENT_INPUT_SOURCE, contract_sha256
 from c1_rail.m1_stage1_control import project_evidence
 from c1_signal_daemon.feed import Bar
 from c1_signal_daemon.evaluate_loop import EvaluateLoop
@@ -31,7 +31,7 @@ def write(path, value):
 
 
 @pytest.mark.parametrize("dry_run,equity", [(True, 100000.), (True, 98000.), (False, 100000.)])
-@pytest.mark.parametrize("source_mode", ["offline", "operator"])
+@pytest.mark.parametrize("source_mode", ["offline", "operator", "agent"])
 def test_fixture_hook_to_http_decision_and_closed_proof(
         tmp_path, monkeypatch, dry_run, equity, source_mode):
     def never_send(*args, **kwargs):
@@ -67,12 +67,17 @@ def test_fixture_hook_to_http_decision_and_closed_proof(
         "poll_interval_s": 1, "emit_enabled": False, "strategy": "null"})
     source_binding = (OPERATOR_INPUT_SOURCE if source_mode == "operator" else
                       {"kind": "offline_fixture", "schema": "ohlcv-1m", "symbol": "MYM1!"})
+    if source_mode == "agent":
+        source_binding = AGENT_INPUT_SOURCE
     manifest = {"ceremony_id": cid, "target": target.isoformat(),
         "expires": (target + timedelta(seconds=140)).isoformat(), "source": source_binding,
         "contract_sha256": contract_sha256(), "expected_qty": 1,
         "preflight_sha256": "e" * 64, "venue_contract": "MYMZ6"}
+    if source_mode == "agent":
+        manifest["operator_authorization_sha256"] = "a" * 64
     prepare(store, daemon_cfg, manifest, boot_id="offline-boot", now=now)
-    enable(store, daemon_cfg, cid, boot_id="offline-boot", reviewed=manifest, now=now)
+    enable(store, daemon_cfg, cid, boot_id="offline-boot", reviewed=manifest, now=now,
+           actor="codex" if source_mode == "agent" else None)
 
     def transport(url, body, headers):
         assert store.read()["ceremonies"][cid]["state"] == "SEND_RESERVED"
@@ -90,13 +95,16 @@ def test_fixture_hook_to_http_decision_and_closed_proof(
         assert len(responses) == 1
         return responses[0], handler.wfile.getvalue().decode("utf-8")
 
-    if source_mode == "operator":
+    if source_mode in ("operator", "agent"):
         upload = tmp_path / f"m1_upload_{cid}.json"
-        upload.write_text(json.dumps({"open": 44000., "high": 44002., "low": 43999.,
-                                      "close": 44001., "volume": 5.}))
+        uploaded = {"open": 44000., "high": 44002., "low": 43999., "close": 44001., "volume": 5.}
+        if source_mode == "agent":
+            uploaded["capture"] = {"actor": "codex", "captured_at": received.isoformat(),
+                "chart_timestamp": "2026-09-10T10:00:00-04:00", "venue_contract": "MYMZ6", "bar_period_s": 60}
+        upload.write_text(json.dumps(uploaded))
         receipt = inject(store, daemon_cfg, ceremony_id=cid, boot_id="offline-boot",
                          contract="MYMZ6", time=target.isoformat(), bar_file=upload,
-                         now=received)
+                         now=received, actor="codex" if source_mode == "agent" else None)
         source = OperatorInputSource(tmp_path, boot_id="offline-boot")
     else:
         class OfflineFixtureSource:
@@ -126,12 +134,26 @@ def test_fixture_hook_to_http_decision_and_closed_proof(
         assert proof["offline_test_only"] is (source_mode == "offline")
         assert proof["operator_attended_input"] is (source_mode == "operator")
         assert proof["qualifying_live_source"] is False
-        assert proof["venue_contract"] == ("MYMZ6" if source_mode == "operator" else None)
+        assert proof["venue_contract"] == ("MYMZ6" if source_mode in ("operator", "agent") else None)
         assert proof["dry_run"] is True and proof["sender_invoked"] is False
         assert proof["listener_event_id"] == rows[0]["event_id"]
         assert str(equity) not in json.dumps(proof)
-        if source_mode == "operator":
+        if source_mode in ("operator", "agent"):
             assert receipt["bar_sha256"] == store.read()["ceremonies"][cid]["bar_sha256"]
+        if source_mode == "agent":
+            assert proof["agent_attended_input"] is True
+            assert proof["operator_authorization_sha256"] == "a" * 64
+            assert proof["agent_evidence"]["capture"]["actor"] == "codex"
+            import copy
+            for field in ("enable", "inject", "capture", "bar_sha256"):
+                damaged = copy.deepcopy(store.read())
+                del damaged["ceremonies"][cid]["agent_evidence"][field]
+                with pytest.raises(ValueError):
+                    project_evidence(rows, damaged, cid)
+            damaged = copy.deepcopy(store.read())
+            damaged["ceremonies"][cid]["agent_evidence"]["capture"]["chart_timestamp"] = "2026-09-10T10:01:00-04:00"
+            with pytest.raises(ValueError):
+                project_evidence(rows, damaged, cid)
     else:
         assert any(r.get("halt_reason") == "m1_test_requires_explicit_dry_run" for r in rows)
         with pytest.raises(ValueError):
