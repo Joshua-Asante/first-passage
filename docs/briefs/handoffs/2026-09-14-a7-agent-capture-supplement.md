@@ -1,6 +1,6 @@
 # A7 attended agent capture supplement
 
-Status: operator-approved design, local implementation reviewed; **not deployed or ready for a ceremony**. This supplement applies only to the new agent source. Preserve historical manual A7 records, including the expired September 14 attempt. Integration owner: current Codex A7 task; deployment/runtime acceptance remains with that separate task.
+Status: operator-approved and reviewed; compatible listener v9 / daemon v3 deployed from main f1e25951 on September 14. See the [deployment record](../../notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md). A fresh attended preflight and target are still required before a ceremony. This supplement applies only to the new agent source. Preserve historical manual A7 records, including the expired September 14 attempt. Integration owner: current Codex A7 task; deployment/runtime acceptance remains with that separate task.
 
 Joshua authorized Codex to capture, enable and inject while he remains present, approved the design, and subsequently allowed the selected candle timestamp and five OHLCV values in tool records. Account identifiers, balances, positions, credentials and unrelated page content remain excluded. Public evidence remains value-free. Neither authorization permits an order, arm, new account access or production feed qualification.
 

@@ -566,3 +566,35 @@ Successful SSH probes and writes printed complete results followed by the known 
 **Deployment/runtime return:** failed attempt safely closed; no item-5 event or successful projection to hand to A8. Keep this ceremony identity/tombstone and do not retry its input. Any future attempt requires a separately authorized attended session with a fresh identity/target and an operator workflow that can complete the existing timing bounds; this return changes neither the actor rule nor those bounds. Parent review and A8 acceptance remain separate from this documentation return.
 
 Private scratch journal/ledger copies were deleted after writing this return; absence of both files was verified. Host evidence remains intact. Strict Markdown link validation passed (12 targets, zero unresolved), and git diff --check passed. No runtime code changed or new runtime test result is claimed.
+
+
+## A7 agent-capture compatibility deployment — 2026-09-14
+
+**Result: compatible images deployed and verified inert; no new ceremony.** Joshua authorized deployment, public PR/merge, and necessary value-free deployment updates. PR [384](https://github.com/Joshua-Asante/first-passage/pull/384) merged at `f1e25951a131476ec03807602437d28efb91c3a1`. Both documented Fly deploy commands ran from a clean `main` checkout at that exact revision in a separate build directory; no private/untracked files entered the allowlisted build context.
+
+| Component | Release / machine | Image |
+|---|---|---|
+| Listener | v9 / `e820221a657d28` | `deployment-01M2GC05QDKK2KF7VRWVKJZ8EN`, `sha256:4a54afb0bd2c96256e14b3196a5b69afa1ea165b1df4dc436272bf3453df35e6` |
+| Daemon | v3 / `840759c2474928` | `deployment-01M2GC2W4P1DZ0BZYYFBWT7YHX`, `sha256:2d808ffa81736988c734e15c98c146d7b9dc50b181d74b30d3fe056d0605841a` |
+
+### Build and integration evidence
+
+Local final suite: **200 passed in 11.11 seconds**, including eight image-manifest tests. Independent review accepted source/actor attribution, the non-object manifest refusal correction, and image packaging. The missing shared module was detected by failing import-closure tests and added to both Dockerfiles, the build-context allowlist and exact image inventories. All PR384 checks passed on `28d9bbe92d7ec23020be8224dbc357cbc7a7d1b5`; [Linux image validation](https://github.com/Joshua-Asante/first-passage/actions/runs/34868207224) passed both apps. Daemon validation included 513 slim-suite passes (11 skips, one warning), 146 in-image passes, and D1–D11, including restart, one-shot and uncertain-transport behavior. Broader pytest, lint, security and the required skills check also passed. CodeRabbit skipped automatic review; this is not counted as an independent review.
+
+### Host observations
+
+Before deployment: listener v8 / daemon v2 identities matched the earlier record; listener config `dry_run=true`, `armed_until=null`, config SHA-256 `974912fc3dfb2233718153bc615876842e8e52acfc142679b3201b623fd1e4f2`; all three allocations zero and test RETIRED. Ledger 32 records / last seq 32. Existing daemon journal generation 1, boot `cce8b7b8d0f34027a69a1a6fe63dfba6`, enabled false, prior `stage1-20260914-1` CLOSED. No uncertain send was present.
+
+Listener after deployment: persistent audit boot **2026-09-14 16:29:31.785 UTC** says dry-run true / arming deadline clear; health OK and the config fingerprint is unchanged. Agent contract/validator modules import. Fresh final checks retain zero allocations, test RETIRED, dry-run true, no arming deadline, and ledger 32 / seq 32.
+
+Daemon after deployment: boot **`60c660616b724efcbe8c34ec26f6fdab`**, journal generation **2**, enabled false, active null, previous failed ceremony retained CLOSED, zero upload/bar/claim files. Health: `ok=true`, `NullStrategy`, `DISABLED`, emit/effective_emit false, connected false, poll interval 1.0. The deployed CLI exposes `--actor {codex}`. Pure manifest/capture validation accepted the agent schema without invoking prepare/enable/inject or writing a ceremony. The post-boot log window contained the daemon-up line and zero B1 POST lines; a later listener ledger check remained unchanged.
+
+Both images report frozen contract `346387e565225d956da0f5b9696f211dee82ff9a823dda6e56b0ce32aba9d94f`. Shared deployed files match across apps: contract source `a7f5243773e8258fd57d72c25ff1fe4d892ae08da431377ff10038726cd2f674`, agent validator `f87e72086d51ab10b87051697a5ae21566e5323c888a9d7bccba2ef8bc257da1`. Daemon control source `43fb4bd7bda018128b2f6164329068ab9e3057ce42120801ef742d1d7cc9cee3`; attended source `b9d1c679e53b92772c6389d49ad79711652bc1f86e05d524006d5f382f76a8ed`.
+
+### Pins, scope and rollback
+
+The acceptance record's image pins were refreshed from actual in-container SHA-256 reads, including the new shared validator. Its test-only pin remains unchanged at LF `104dafa8...`. The only working-tree skew is `validate_c1_monitoring_acceptance.py`: local CRLF `452a52ab...` normalizes to the deployed LF `3fc1c5d6...`; this was explicitly verified. Existing reviewed main changes `7369675`, `db315a4`, `7bf243c` explain other runtime pin movement since v8. The image carries the pre-refresh CODE_LANDED snapshot; repository evidence now records current source pins, following the A5 post-deploy recording sequence. No RESOLVED/signoff or arming change occurred.
+
+Rollback images retained: listener v8 `deployment-01M29JA2721JHQGCXCRNCF54G1` / `sha256:02ca9a12f935adb21e5adc4fd033352f0c8c05b52d7661b2484902f3f792447e`; daemon v2 `deployment-01M29QV4Y81BXWN4BWWMW67CEN` / `sha256:254272cbf94a4d7e67d1cfc5b3814cbee285ceaf896e15dfd596e3ba975dae40`. Use the documented no-build `fly deploy --image` form with each app's own config if rollback becomes necessary; no rollback occurred.
+
+The new agent source is runtime-compatible. A7 still needs a fresh attended readiness/preflight, exact closed target and unique actual evidence join under the [agent supplement](../../briefs/handoffs/2026-09-14-a7-agent-capture-supplement.md). No remote prepare, enable, inject, allocation write, order, arm or A8 signoff happened during this deployment.
