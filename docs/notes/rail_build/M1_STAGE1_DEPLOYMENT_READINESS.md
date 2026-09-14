@@ -787,9 +787,9 @@ This returns the successful A7 event for the separately authorized A8 evidence/s
 After this return was written, the public projection was verified byte-identical to canonical output. Private journal/ledger scratch copies, the local candle upload and rehearsal file were deleted with absence verified. Host originals/tombstones and the private value-free GO/manifest remain retained. Acceptance structure validation and git diff --check passed; acceptance remains CODE_LANDED. No runtime-code test result is claimed for this evidence-only return.
 
 
-## §A8 — Signed acceptance deployed; pin-record re-bake owed (2026-09-14)
+## §A8 — Signed acceptance deployed; re-bake verified (2026-09-14)
 
-**Status: first deployment verified; A8 remains open for Step 2.4b.** Joshua adopted the full dated statement preserved verbatim in `operator_signoff`. [PR #389](https://github.com/Joshua-Asante/first-passage/pull/389) merged as `e7792000c508b1ef3d76cc98819b923bb7832695`; the signed event is `7186beef-51b3-4da3-8f3f-b1052bddaaf1`, ceremony `stage1-20260914-4`. This section records the listener deployment only; it grants no arming, trading, strategy or live-feed readiness.
+**Status: A8 operational verification complete; final re-bake evidence is recorded below.** The first-deployment and pending-re-bake paragraphs describe the v10 checkpoint. Joshua adopted the full dated statement preserved verbatim in `operator_signoff`. [PR #389](https://github.com/Joshua-Asante/first-passage/pull/389) merged as `e7792000c508b1ef3d76cc98819b923bb7832695`; the signed event is `7186beef-51b3-4da3-8f3f-b1052bddaaf1`, ceremony `stage1-20260914-4`. This section records the listener deployment only; it grants no arming, trading, strategy or live-feed readiness.
 
 ### Preflight and source identity
 
@@ -816,7 +816,7 @@ m1_gate: status='RESOLVED' result=PASS
 
 The in-image acceptance hash is `cdc249ab08411d6989c3b518fe69c47076dc92ee76414852ab75069145508738`, equal to the signed merged-main deployment checkout. Its event UUID matches the signed A7 event. Private config digest was unchanged; ledger remained 36 records with the same event triad; all allocations remained zero and test lifecycle RETIRED. Windows Fly SSH returned its known handle error after complete JSON receipts; the asserted receipts and fresh health reads establish the results without repeating any mutation.
 
-### Pin comparison and pending re-bake
+### Pin comparison and pending re-bake (v10 checkpoint)
 
 Every image-carried pin was re-read in-container and matched the corresponding file in the actual deployment checkout. A separate in-container inventory of all 27 Python source files under `/app` also matched that checkout; its canonical path→SHA256 JSON digest (sorted keys, compact separators) is `a390d54c9ec55d9920256f91b57b4009301f3e1c6a4cfe4511121d7aa90d4d76`. Re-verify this complete source inventory before and after the docs-only re-bake, in addition to the pinned subset. Seven image-carried pins were unchanged. Two moved:
 
@@ -832,3 +832,28 @@ The pre-deploy `checkout-index` attempt to normalize line endings did not rewrit
 The refreshed acceptance record describes v10, but v10 still embeds PR 1's older pins. **Keep the STATE queue item open.** After this deployment-record PR merges, perform Step 2.4b from its clean main revision: verify pre-deploy image pins against this record, preserve the deployed byte forms, deploy the updated JSON with unchanged image-carried source bytes, and verify post-deploy pin equality plus embedded-JSON/repository hash equality. Record the final release in a subsequent closeout PR before removing the queue item. M1 PASS alone does not establish pin-record self-consistency.
 
 No arm, order, signal POST, daemon change or configuration write was performed. Routine deployment evidence is owned here; no separate SESSIONS judgment entry is added.
+
+
+### Final re-bake — v11, 2026-09-14
+
+[PR #390](https://github.com/Joshua-Asante/first-passage/pull/390) merged at `2026-09-14T20:50:07Z` as `93566fe80b7c4dc0950c24539c530ddec021d823`. A separate clean detached checkout of that merged main revision contained only the recorded documentation changes since v10's source `e779200`. The six image-manifest tests passed again. All 27 source files matched the v10 in-container inventory byte-for-byte, including the recorded CRLF validator; the non-image test pin was independently verified from the merge-SHA LF blob.
+
+Fresh pre-deploy host read: dry_run true, armed_until null, M1 RESOLVED/PASS, config digest unchanged, ledger 36 with three A7 records. All nine image-carried pins equalled the merged PR #390 record exactly, and the complete source inventory digest remained `a390d54c9ec55d9920256f91b57b4009301f3e1c6a4cfe4511121d7aa90d4d76`. Current healthy v10 was the rollback image; the six deployment preconditions remained satisfied.
+
+The documented listener deploy command ran once from the clean `93566fe` checkout. Fly release **v11 complete**, created `2026-09-14T20:52:10Z`; machine `e820221a657d28`; image `registry.fly.io/c1-rail:deployment-01M2GV1AHJC54VA3X114R0YQQP`, digest `sha256:07e3009264c5d4bf65da1ea2ebf07d9b8def32ad6018c541ff0b7d705e53ded0`. Rolling update, smoke, machine health and DNS checks succeeded. Boot `2026-09-14T20:52:16.787Z` printed `dry_run=True armed_until=-`; public health GET and machine health both passed.
+
+The actual in-container status CLI, with account redacted before recording:
+
+```text
+current: dry_run=True armed_until=None equity_source='crosstrade' equity_field='balance.netLiq' destination='tradovate' account=<redacted> bind_host='0.0.0.0' bind_port=8080
+m1_gate: status='RESOLVED' result=PASS
+```
+
+Post-deploy verification established all of the following:
+
+- Embedded acceptance SHA256 `e6ff51bef93e507bb136d30883bf8574fe07019fbff9b5dbec50244ce9c96edf` equals the merged PR #390 deployment checkout's JSON bytes.
+- Each image-carried `fixture_hashes` entry in that embedded JSON equals the corresponding running file's in-container SHA256. The embedded non-image test pin equals the verified merge-tree hash.
+- All 27 Python source hashes are identical before and after re-bake; the full inventory digest remains `a390d54c9ec55d9920256f91b57b4009301f3e1c6a4cfe4511121d7aa90d4d76`.
+- Configuration digest is unchanged; ledger remains 36 with the same three A7 event records; all allocations remain zero and the test identity remains RETIRED.
+
+**A8 operational result: DONE.** The running image now carries the signed, validated record whose image pins describe its own bytes. This final documentation-only closeout removes the completed Track A item from the STATE queue and records its consequence. The acceptance JSON is unchanged in this closeout; no further deploy is required. A7's accepted agent attribution, no-live-feed qualification, and separate arming/strategy-readiness requirements remain in force. No arm, order, POST, daemon operation or config write occurred in either A8 deployment.
