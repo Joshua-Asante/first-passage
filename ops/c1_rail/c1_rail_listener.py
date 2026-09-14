@@ -56,7 +56,8 @@ from c1_sizing_host_reference import C1SizingHostReference, SizingDecision
 from crosstrade_payload import build_crosstrade_payload, send_to_crosstrade
 import m1_stage1_contract as m1_test
 from book_policy import BOOK_LEGS
-from book_halt import BookHaltStore
+from book_halt import BookHaltStore, HaltStoreError
+from book_recovery import RecoveryOwner
 
 INSTRUMENT_SYMBOLS: dict[str, str] = {
     m1_test.LEG_ID: m1_test.SYMBOL,
@@ -152,7 +153,7 @@ def handle_signal(
     ledger: EventLedger | None = None,
     notifier: OperatorNotifier | None = None,
     event_id: str | None = None,
-    book_halt: BookHaltStore | None = None,
+    book_halt: BookHaltStore | RecoveryOwner | None = None,
 ) -> RailAction:
     """Route one B1 signal through sizing + optional CrossTrade send.
 
@@ -195,10 +196,20 @@ def handle_signal(
 
     # Four-leg book orders cannot bypass the not-yet-qualified runtime by
     # omitting its store. Legacy deployments are unchanged unless configured.
-    if is_risk_add and (book_halt is not None or payload.get("leg_id") in
-                        {leg.leg_id for leg in BOOK_LEGS}):
+    if (book_halt is not None or 'book_halt_path' in config or
+            payload.get("leg_id") in {leg.leg_id for leg in BOOK_LEGS}):
         reason = (book_halt.rejection_reason() if book_halt is not None else
                   "book runtime unavailable; durable halt gate required")
+        if str(payload.get('signal_type', '')) in ('exit', 'flat'):
+            if book_halt is not None:
+                try:
+                    report = (book_halt.report_fault if isinstance(book_halt, RecoveryOwner)
+                              else book_halt.halt)
+                    report('legacy-exit-refused:' + eid, 'execution')
+                except HaltStoreError:
+                    reason = 'book recovery state unavailable; attended reconciliation required'
+            notifier.notify('CRITICAL', 'book exit refused; qualified recovery unavailable',
+                            event_id=eid)
         decision = SizingDecision(
             leg_id=str(payload.get("leg_id", "<absent>")),
             signal_type=str(payload.get("signal_type", "<absent>")),

@@ -76,6 +76,9 @@ LISTENER_FILES=(
   /app/ops/c1_rail/book_policy.py
   /app/ops/c1_rail/book_sizing_context.py
   /app/ops/c1_rail/book_halt.py
+  /app/ops/c1_rail/book_account_lock.py
+  /app/ops/c1_rail/book_recovery.py
+  /app/ops/c1_rail/book_recovery_schema.py
   /app/ops/c1_rail/c1_rail_arm.py
   /app/ops/c1_rail/c1_rail_http_server.py
   /app/ops/c1_rail/c1_rail_listener.py
