@@ -17,14 +17,10 @@ fingerprints, explicit manifests, conformance vectors and serializer-to-host/cap
 integration are implemented. See the [fingerprint interface](../../spec/tb-i1-fingerprint-interface.md)
 and appendix execution record. The repository-environment core/ops suite passed
 1,841 tests (16 skipped); independent review and required local gates passed.
-TB-I1 acceptance remains pending its entry authority and mainline integration.
+TB-I1 acceptance remains pending its explicit entry authority; mainline integration is complete.
 Do not rebuild the completed sizing, context, capacity or transition components.
 
-**Observed integration state, 2026-09-14 UTC:** `origin/main` is `c65b2ca`.
-PRs #376–#378 merged into their feature-branch parents after those parents had
-merged, so their combined code is not yet on `main`. The isolated fingerprint
-worktree combines `c65b2ca` with `eb0e8db` (the merged capacity/transition stack)
-without a commit. This local integration does not imply publication or merge.
+**Observed integration state, 2026-09-14 UTC:** PR #379 merged at `d53a06e3fa6018c6c36eb63771e5ad6d1ae961cf`, incorporating the fingerprint packet and stacked foundations. Mainline integration is complete; formal TB-I1 entry/acceptance remains distinct. The [rev8 halt/resume design](../../spec/2026-09-14-tb-s3-halt-resume-contract.md) now completes execution and schedule choices for ratification. It replaces the old session-latch proposal; no runtime implementation or policy ratification is inferred.
 
 The [companion appendix](2026-09-13-tb-i1-through-deployment-appendix.md) retains every original task requirement, governing-source reference, detailed acceptance case and execution record. Its task numbers provide the mapping below. The active plan owns status; the appendix supplies details without a second delivery checklist. Governing specifications and their operator gates remain authoritative.
 
@@ -48,7 +44,7 @@ Update each row with a dated evidence reference when satisfied. Preparation may 
 | Prerequisite | Owner | Current status | Required evidence | Blocks |
 |---|---|---|---|---|
 | Policy/execution ratifications and TB-I1 entry authority | Joshua; coordinator prepares exact text | Pending | Dated acceptance of the applicable S3/P2 interface and deviations; reconcile TB-I1 entry authority explicitly. A merged PROPOSED ADR is insufficient. | Stage 1 acceptance; affected Stage 2 execution work; Stage 3 F1 |
-| Unified regular/early-close schedule | Joshua ratifies; calendar/runtime owners implement | Proposed, incomplete | One accepted schedule including cutoffs, settlement, early closes and source-backed closure/DST coverage, used identically by replay, rail and procedure | Stage 2 calendar-dependent integration; Stage 3 F1 |
+| Unified regular/early-close schedule | Joshua ratifies; calendar/runtime owners implement | Rev8 design complete; ratification/calendar evidence pending | One accepted schedule including cutoffs, settlement, early closes and source-backed closure/DST coverage, used identically by replay, rail and procedure | Stage 2 calendar-dependent integration; Stage 3 F1 |
 | Seven exports and intake/parity | Joshua supplies; coordinator intakes and verifies | Pending | Exact S-P, S-W1, S-W1P, S-W2, S-W2P, O-N and O-P bundles; source/override identity, normalization, coverage and all required parity PASS | Stage 2 decision-bearing replay use; Stage 3 F1 |
 | Exact Part A depth | Coordinator derives at F1; Joshua ratifies | Not yet due | Frozen construction, sample/depth values, seeds and measured budget; second dated P2 ratification after F1 and before E1 | Stage 3 E1 |
 | M1, feed and feed equivalence | Joshua attends/approves; implementation owners supply evidence | Pending | M1 RESOLVED; A9-gated selection/funding; approved source and TB-I5 equivalence under frozen criteria | Stage 4 live integration |

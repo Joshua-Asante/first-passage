@@ -1,5 +1,8 @@
 # c1 rail — arming and session operating procedure (public, redacted)
 
+> **Track B rev8 design amendment (2026-09-14):** the [halt/resume contract](../../spec/2026-09-14-tb-s3-halt-resume-contract.md) replaces this procedure's proposed Track B session auto-clear, outage continuation and 16:30 first-flatten guidance. Use its exact schedule formula and fresh operator resume after flat reconciliation; 16:30 is reporting only. Initial B7/n3/GO/activation and separate policy gates remain. This amendment does not change existing deployed single-strategy operation or authorize use of a not-yet-implemented resume command.
+
+
 **Type:** operating procedure · **Packet:** Track B TB-O1 ([umbrella](../../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) claim manifest row TB-O1)
 **Date:** 2026-09-13 (merged TB-P2 rev9 / TB-S3 rev7 reconciliation) · **Author:** Claude Code (recorder) · **Authority:** Joshua (operator)
 **Status:** **PREPARATION COMPLETE — NOT AUTHORIZED TO EXECUTE.** This file authorizes nothing. It
@@ -53,7 +56,7 @@ deployment authority, and M1 `RESOLVED` (A8) is not a GO.
 | Live test on the sealed image (TB-I3 live part, D-B15) | umbrella TB-I3 stub |
 | Sealed snapshot and execution/replay fingerprint equality (TB-T1 → TB-B7) | umbrella TB-B7 stub · seal contract (PR #358) |
 | Sole n3 (TB-E2), deployment GO and the narrowly permitted GO-only reseal (TB-D2 → operator) | umbrella TB-E2 / TB-D2 stubs; [TB-P2 policy ADR](../../adr/2026-09-12-tradeify-book-protection-instance-admission.md) T10–T11, subject to its two ratifications |
-| One ratified portfolio replay/operations schedule, including regular and early-close risk-add cutoff, own-flat target and reconciliation backstop | TB-P2/TB-S2/TB-S3 and operator; the existing generic 15:55 check/16:00 own-flat requirement does not silently rewrite the portfolio replay's 16:30 scheduler. Unresolved alignment blocks portfolio execution and freeze; this document chooses no new schedule. |
+| One ratified portfolio replay/operations schedule, including regular and early-close risk-add cutoff, own-flat target and reconciliation backstop | TB-S3 rev8 §5 chooses the shared schedule formula and explicitly revises TB-S2 RC-8. Formal schedule ratification, source-backed calendar rows and regenerated affected parity remain required before freeze/use. |
 | Arm (TB-B10) | this file §4–§5, only after every row above is closed at its owner |
 
 ---
