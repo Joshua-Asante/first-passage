@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "status": "CODE_LANDED",
+  "adr": "2026-07-22-c1-venue-native-monitoring-maturity.md",
+  "code_commit_or_branch": "isolated L7 negative-control fixture",
+  "offline_tests_note": "Unresolved acceptance must refuse arming even after the bundled production record is RESOLVED.",
+  "secrets_present": false
+}

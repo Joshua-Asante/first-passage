@@ -520,7 +520,8 @@ PY
   else record_fail L6b "see L6b.log / L6b.err"; fi
   stop_rm c1-L6b
 
-  # L7 arming interlock
+  # L7 bundled acceptance identity plus an explicit unresolved negative control.
+  # The production artifact may become RESOLVED; never use it for the refusal test.
   local d7="$LOG_DIR/L7_data"
   stage_listener_data "$d7"
   generate_constants_in_image "$d7" "$LOG_DIR/L7_constants.log" || true
@@ -529,18 +530,35 @@ PY
   launch_container c1-L7 --network none -v "$d7:/data" --entrypoint sleep "$LISTENER_TAG" infinity || l7=0
   local before after; before="$(sha256_file "$d7/c1_rail_config.json")"
   docker exec c1-L7 python ops/c1_rail/c1_rail_arm.py --status --config /data/c1_rail_config.json \
+    >"$LOG_DIR/L7.bundled.status" 2>&1 || l7=0
+  python3 ops/c1_rail/c1_rail_arm.py --status --config "$d7/c1_rail_config.json" \
+    >"$LOG_DIR/L7.expected.status" 2>&1 || l7=0
+  grep '^m1_gate:' "$LOG_DIR/L7.expected.status" >"$LOG_DIR/L7.expected.txt" || l7=0
+  grep -Fx -f "$LOG_DIR/L7.expected.txt" "$LOG_DIR/L7.bundled.status" >/dev/null || l7=0
+  local bundled_sha
+  bundled_sha="$(docker exec c1-L7 sha256sum /app/docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json | awk '{print $1}')" || l7=0
+  [[ "$bundled_sha" == "$(sha256_file "$ROOT/docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json")" ]] || l7=0
+  docker cp "$FIXTURES/m1_unresolved_acceptance.json" c1-L7:/tmp/m1_unresolved_acceptance.json \
+    >"$LOG_DIR/L7.fixture.log" 2>&1 || l7=0
+  docker exec c1-L7 python scripts/validate_c1_monitoring_acceptance.py /tmp/m1_unresolved_acceptance.json \
+    >>"$LOG_DIR/L7.fixture.log" 2>&1 || l7=0
+  docker exec c1-L7 python ops/c1_rail/c1_rail_arm.py --status --config /data/c1_rail_config.json \
+    --acceptance /tmp/m1_unresolved_acceptance.json \
     >"$LOG_DIR/L7.status" 2>&1 || l7=0
   grep -q "m1_gate: status='CODE_LANDED' result=FAIL" "$LOG_DIR/L7.status" || l7=0
   set +e
   docker exec c1-L7 python ops/c1_rail/c1_rail_arm.py --arm --hours 1 --config /data/c1_rail_config.json \
+    --acceptance /tmp/m1_unresolved_acceptance.json \
     >"$LOG_DIR/L7.arm" 2>&1
   local arc=$?
   set -e
   [[ "$arc" -eq 1 ]] || l7=0   # the validated refusal path exits 1; any other status is a regression
   grep -qi 'refusing to arm' "$LOG_DIR/L7.arm" || l7=0
-  after="$(sha256_file "$d7/c1_rail_config.json")"
+  # Read inside the container so an unexpected successful write is reported as
+  # a failed assertion even when atomic_write_text made the file root-only.
+  after="$(docker exec c1-L7 sha256sum /data/c1_rail_config.json | awk '{print $1}')" || l7=0
   [[ "$before" == "$after" ]] || l7=0
-  if [[ "$l7" -eq 1 ]]; then record_pass L7 "interlock refuses arm; sha unchanged"
+  if [[ "$l7" -eq 1 ]]; then record_pass L7 "bundled acceptance matches; unresolved interlock refuses arm; sha unchanged"
   else record_fail L7 "see L7.status / L7.arm"; fi
   stop_rm c1-L7
 
