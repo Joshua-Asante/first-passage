@@ -1,0 +1,22 @@
+{
+  "policy": {
+    "utf8": "{\"instance_key\":\"tradeify_portfolio@Tradeify_Select_100K\",\"reference_mode\":\"trailing\",\"scale\":\"0.4\",\"trigger\":\"0.01\"}",
+    "sha256": "406f53b87223e624a0af43b43851dd646a6ba2b678ea5592fa84ee97385d871c"
+  },
+  "geometry": {
+    "utf8": "Module(body=[Expr(value=Constant(value='geometry')), ImportFrom(module='dataclasses', names=[alias(name='dataclass')], level=0), Assign(targets=[Name(id='VALUE', ctx=Store())], value=Constant(value=1), type_comment='int')])",
+    "sha256": "d9bf8b4184b4fed750b4dd818562f9dd3044b2c586254eaaa79dee021a5098de"
+  },
+  "config_before": {
+    "utf8": "{\"account\":\"synthetic\",\"armed_until\":null,\"cap_alloc\":0,\"dry_run\":true,\"nested\":{\"quantity\":1}}",
+    "sha256": "2ea82db2223c2e499a18acda5a7b42f9ebd5deb1a055d292e19d3b6affb1e54a"
+  },
+  "config_after": {
+    "utf8": "{\"account\":\"synthetic\",\"armed_until\":\"2026-09-14T20:00:00+00:00\",\"cap_alloc\":0,\"dry_run\":false,\"nested\":{\"quantity\":1}}",
+    "sha256": "b9138190d2e72a44188fff7eeb39c9d5c7dab3adae84467e3898668e29c887ca"
+  },
+  "geometry_pre_313": {
+    "utf8": "Module(body=[Expr(value=Constant(value='geometry')), ImportFrom(module='dataclasses', names=[alias(name='dataclass')], level=0), Assign(targets=[Name(id='VALUE', ctx=Store())], value=Constant(value=1), type_comment='int')], type_ignores=[])",
+    "sha256": "0833fff2f544dc976d715e351ae57c0aee3934f3207dc93dd98f9d0db5909918"
+  }
+}

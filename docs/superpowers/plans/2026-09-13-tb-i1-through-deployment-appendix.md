@@ -335,21 +335,92 @@ implementation evidence, not PR review/merge, policy admission or live capabilit
 
 **Proposed functions:** `canonical_policy_bytes(row: Mapping[str, str]) -> bytes`, `normalized_geometry_bytes(source: bytes) -> bytes`, `sha256_bytes(data: bytes) -> str`. The policy serializer accepts exactly the four canonical string fields; caller-side policy conversion is explicit. Runtime/recipe/tool-manifest validation is a separate pure check, with an exact schema fixed during Task 1. Registry contents/provenance are checked independently of exclusion; normalization never constitutes admission.
 
-- [ ] Add a literal policy byte vector with instance `tradeify_portfolio@Tradeify_Select_100K`, reference `trailing`, scale `"0.4"`, trigger `"0.01"`. Expected bytes are `b'{"instance_key":"tradeify_portfolio@Tradeify_Select_100K","reference_mode":"trailing","scale":"0.4","trigger":"0.01"}'`.
-- [ ] Test key-order equivalence, UTF-8/no BOM/no newline, sorted compact JSON, and rejection of extra/missing fields, floats/bools and noncanonical/nonfinite numeric strings. Serialize with `ensure_ascii=False` and `allow_nan=False`.
-- [ ] Parse geometry with `ast.parse(..., mode="exec", type_comments=True)`. Require one top-level simple registry assignment; reject repeated, indirect or ambiguous rebinding. Remove exactly that node; dump with `annotate_fields=True`, `include_attributes=False`, `indent=None`; hash UTF-8 bytes without newline.
-- [ ] Pin literal normalized bytes and SHA-256 vectors for permitted pre/post admission; mutate each other AST component and require a changed digest. Include extra registry rows/provenance violations in the independent governance check so exclusion cannot conceal them. Ordinary comments are not represented by this AST recipe; do not claim raw-byte coverage of them.
-- [ ] Hash full bytes for `book_policy.py` and every other unexcluded shared component. Validate exact CPython patch, recipe version and tool/dependency digests; keep the tool's own digest outside its hashed payload.
-- [ ] Define deterministic config serialization and vectors for T11's only allowed initial-arm delta: `dry_run` to false and `armed_until` to the explicitly authorized deadline. Reject every other config change. The helper validates bytes only and does not perform activation.
-- [ ] Run `python -m pytest tests/ops/test_policy_fingerprint.py -q`; retain literal independently checked byte/hash evidence and publish the complete manifest schema for E1/D0/T1/B7/D2/I3 consumers.
+- [x] Add a literal policy byte vector with instance `tradeify_portfolio@Tradeify_Select_100K`, reference `trailing`, scale `"0.4"`, trigger `"0.01"`. Expected bytes are `b'{"instance_key":"tradeify_portfolio@Tradeify_Select_100K","reference_mode":"trailing","scale":"0.4","trigger":"0.01"}'`.
+- [x] Test key-order equivalence, UTF-8/no BOM/no newline, sorted compact JSON, and rejection of extra/missing fields, floats/bools and noncanonical/nonfinite numeric strings. Serialize with `ensure_ascii=False` and `allow_nan=False`.
+- [x] Parse geometry with `ast.parse(..., mode="exec", type_comments=True)`. Require one top-level simple registry assignment; reject repeated, indirect or ambiguous rebinding. Remove exactly that node; dump with `annotate_fields=True`, `include_attributes=False`, `indent=None`; hash UTF-8 bytes without newline.
+- [x] Pin literal normalized bytes and SHA-256 vectors for permitted pre/post admission; mutate each other AST component and require a changed digest. Include extra registry rows/provenance violations in the independent governance check so exclusion cannot conceal them. Ordinary comments are not represented by this AST recipe; do not claim raw-byte coverage of them.
+- [x] Hash full bytes for `book_policy.py` and every other unexcluded shared component. Validate exact CPython patch, recipe version and tool/dependency digests; keep the tool's own digest outside its hashed payload.
+- [x] Define deterministic config serialization and vectors for T11's only allowed initial-arm delta: `dry_run` to false and `armed_until` to the explicitly authorized deadline. Reject every other config change. The helper validates bytes only and does not perform activation.
+- [x] Run `python -m pytest tests/ops/test_policy_fingerprint.py -q`; retain literal independently checked byte/hash evidence and publish the complete manifest schema for E1/D0/T1/B7/D2/I3 consumers.
 
 ## Task 5 — Accept the bounded TB-I1 packet
 
-- [ ] Run `python -m pytest tests/core tests/ops -q` and the current repository-required checks from the isolated execution base. Include the accepted model suites to detect shared-import regressions; their historical test counts are not current evidence.
-- [ ] Verify original `core/dd_protection.py` bytes unchanged, registry still unadmitted, live allocations inert and private files absent from the diff.
-- [ ] Trace the real host → shared policy → capacity decision and policy/config → canonical bytes → digest → verifier boundaries with both accepted and refused inputs.
-- [ ] Review quantity literals independently of implementation formulas, rejected evidence paths, and fingerprint exclusions. Record exact tested SHA and unresolved TB-I3/TB-T1 producers.
-- [ ] Prepare a bounded review packet with changed behavior, regression evidence, contract sources, consumer migration list and remaining capability/evidence gates. Commit/PR/merge follow their separately authorized workflow; this planning request performs none of them.
+### Tasks 4–5 engineering record — 2026-09-14 UTC
+
+Integration owner: coordinator. Isolated branch `codex/tb-i1-fingerprints` starts
+at `c65b2ca2ea1279182c2de280f073cabedd8d7f66` and locally integrates
+`eb0e8db2a1768f11244ef44b43d060bea7326192` without committing. PRs #376–#378
+merged into their stacked feature parents but are absent from that `main` base.
+The implementation in this packet includes those existing foundation bytes;
+they are not rebuilt or claimed as new fingerprint code.
+
+The [consumer interface](../../spec/tb-i1-fingerprint-interface.md) defines the
+exact serializer/manifest schema, required inputs and remaining producer duties.
+The [engineering manifest](../../../tests/ops/fixtures/policy_fingerprint_engineering_manifest.json)
+pins the actual uncommitted tool/source/test/vector bytes, 17 shared components
+and 62 local CPython 3.14.3 runtime artifacts. It is explicitly unqualified local
+evidence, not FBR/EF or an accepted future runtime/distribution inventory. Tool
+source SHA-256 is `45214014035aa2f8ebe484dfe71b288cfa4440efcfc795ecbba3becae293d5eb`.
+
+Canonical policy digest is
+`406f53b87223e624a0af43b43851dd646a6ba2b678ea5592fa84ee97385d871c`.
+The exact policy/config and two AST-profile byte/hash vectors passed an independent
+.NET SHA-256 cross-check. Review reproduced and closed an encoding-cookie mismatch;
+source declarations now must be UTF-8. Red/green cases also covered hidden registry
+annotation code, planned/admitted policy mismatch and oversized integer rejection.
+
+The real source/config → manifest → verifier → policy digest → host → operation
+capacity chain admits a synthetic protected Striker base and refuses its add when
+protected Aegis reservations consume the remaining aggregate capacity. All outputs
+remain non-submitting. Existing settlement, transition, rejected-evidence and
+accepted kernel/model suites remain in the combined regression run. Snapshot and
+runtime-owner artifacts in the integration test are explicitly synthetic.
+
+Independent read-only review accepted the fingerprint code, the host/capacity
+integration boundary and schema/trust documentation; it independently ran 249
+then-current tests and recomputed the 17-component/62-runtime record. Its final
+minor exception-type observation was fixed with a failing/passing regression and
+the engineering pins were refreshed. Final focused fingerprint run: **90 passed**
+on CPython 3.14.3, including mutation of every unexcluded production top-level AST
+node. Error-level lint, strict relative links and the repository check tier passed;
+the latter includes 72 evidence-store tests with 3 skips and existing advisory/
+absent-private-data notices. An initial gate run saw temporary test copies under
+unexcluded `tmp`; those copies were moved into the excluded worktree test area,
+and the unchanged boundary gate then passed.
+
+The CPython 3.14.3 core/ops run passed **1,840 tests, 16 skipped, 6 warnings** in
+434.87 seconds, before the final one-case AST coverage addition. Its temporary
+test environment used NumPy 2.5.3/SciPy 1.18.1, outside the project's declared
+upper bounds, so this result is additional compatibility evidence. A final run
+in the existing repository CPython 3.11.9 environment (NumPy 2.4.6, pandas 3.0.3,
+SciPy 1.17.1, pytest 9.0.3) passed **1,841 tests, 16 skipped, 4 warnings** in
+427.22 seconds. That run includes the final AST mutation case and all accepted
+kernel/model suites. Command: the repository virtual environment's Python with
+`-m pytest tests/core tests/ops -q --tb=short -p no:cacheprovider`, using a new
+temporary directory inside the ignored worktree test area. This is the final
+core/ops verification result for the pinned source/test bytes. Lint and strict
+links were also rerun successfully in that environment. No global or repository
+dependency declarations were changed. All tests use synthetic/public fixtures;
+skipped private-data cases remain unverified.
+
+Historical `core/dd_protection.py` working bytes match the untouched primary
+checkout. Core drawdown/geometry, firm-rule and lifecycle files have no diff from
+the execution base. The actual registry remains empty; generated book bindings
+have zero allocations and absent broker symbols, and legacy deployed allocations
+remain zero. No private inputs, bodies, account figures or live configuration were
+read into the diff. No new listener route, image deployment, admission or arm is
+claimed.
+
+**Formal TB-I1 acceptance remains BLOCKED on its entry authority and ratifications.**
+Publication and mainline integration of this local packet remain separate. TB-I2
+replay, TB-I3 durable ownership/execution/recovery, TB-C1 calendar and TB-T1 snapshot
+producers remain open, as do exports/parity, qualification and attended live gates.
+
+- [x] Run `python -m pytest tests/core tests/ops -q` and the current repository-required checks from the isolated execution base. Include the accepted model suites to detect shared-import regressions; their historical test counts are not current evidence.
+- [x] Verify original `core/dd_protection.py` bytes unchanged, registry still unadmitted, live allocations inert and private files absent from the diff.
+- [x] Trace the real host → shared policy → capacity decision and policy/config → canonical bytes → digest → verifier boundaries with both accepted and refused inputs.
+- [x] Review quantity literals independently of implementation formulas, rejected evidence paths, and fingerprint exclusions. Record exact tested SHA and unresolved TB-I3/TB-T1 producers.
+- [x] Prepare a bounded review packet with changed behavior, regression evidence, contract sources, consumer migration list and remaining capability/evidence gates. Commit/PR/merge follow their separately authorized workflow; this planning request performs none of them.
 
 **TB-I1 complete means:** corrected shared quantities, explicit host policy/context threading, inert bindings, tested state/capacity decisions and canonical fingerprints are accepted at a specific revision. It does not mean parity, qualification, durable rail integration or deployment is complete.
 

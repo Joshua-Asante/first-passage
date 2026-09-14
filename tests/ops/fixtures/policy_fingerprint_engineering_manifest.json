@@ -1,0 +1,165 @@
+{
+  "base_revision": "c65b2ca2ea1279182c2de280f073cabedd8d7f66",
+  "conformance_vectors": {
+    "tests/ops/fixtures/policy_fingerprint_vectors.json": "bbf977f78d88e55b36f16e6b121fd61aafbb72e8fcbb739c29faf0ab2f0a264d"
+  },
+  "integrated_foundation_revision": "eb0e8db2a1768f11244ef44b43d060bea7326192",
+  "remaining_gates": [
+    "TB-I1 entry authority and ratifications",
+    "publication/integration on main",
+    "TB-F1 complete replay/execution artifact inventory and runtime distribution freeze",
+    "TB-I2/TB-I3/TB-T1 production consumers and artifact/evidence authentication"
+  ],
+  "runtime_inventory_scope": "Observed imported stdlib files, executable, root DLLs and DLLs directory native libraries; Windows CPython 3.14.3 engineering run, not an authenticated distribution or deployed image.",
+  "schema": "tb-i1-engineering-evidence-v1",
+  "shared_manifest": {
+    "schema": "tb-i1-shared-manifest-v1",
+    "shared_components": {
+      "core/dd_geometry.py": {
+        "recipe": "geometry-ast",
+        "sha256": "b8c660b904caf3ee3e1b0b1526f9c4818791c62272cc06bc8742aaaadf790d44"
+      },
+      "core/dd_protection.py": {
+        "recipe": "full-bytes",
+        "sha256": "b05f50ef572c2df8a289be1c4a411fa5aea8c0089885658952724913d0f76470"
+      },
+      "core/firm_rules.py": {
+        "recipe": "full-bytes",
+        "sha256": "aea6abaa175d2da8352be63bd603c82f28e9d1df1c8956f5fb9a37598f09f49b"
+      },
+      "core/historical_challenge.py": {
+        "recipe": "full-bytes",
+        "sha256": "53ab52e1b6313f61f30a961e76d32b6caff99ea1fd2879c240e9ab48bb5a487f"
+      },
+      "core/lib/atomic_io.py": {
+        "recipe": "full-bytes",
+        "sha256": "8d5aa7dc46aec5b267cffb14de810757b330af20bd0684646426a1fb453481f7"
+      },
+      "core/lib/file_lock.py": {
+        "recipe": "full-bytes",
+        "sha256": "6ca0e8f1ebd1127d22c3ce2959615940b5fcb9b97dd62e8a66629b8de719ccf9"
+      },
+      "core/lib/mvd.py": {
+        "recipe": "full-bytes",
+        "sha256": "57d35c97c8afbc9f037f07d9472421f92d4da1e4ace0941e8046f124280b3b51"
+      },
+      "core/lib/validation.py": {
+        "recipe": "full-bytes",
+        "sha256": "02aa8d6eb58a14d724567f2b03d46af990820899b436e5083a395b65505eba75"
+      },
+      "core/lifecycle.py": {
+        "recipe": "full-bytes",
+        "sha256": "0a70785dada705b6ea1e6b0951ad0caaa00944bd8a3b49b5d9d3a365c83eaf87"
+      },
+      "ops/c1_rail/book_capacity.py": {
+        "recipe": "full-bytes",
+        "sha256": "0a115f4a02dc49af35d1dc08344799cb733155f334939f1a1433c7937d913d25"
+      },
+      "ops/c1_rail/book_policy.py": {
+        "recipe": "full-bytes",
+        "sha256": "ffcd3aab3e74235e60c711f266f884f96874072c3d84d0b3e1d25d67abd8567a"
+      },
+      "ops/c1_rail/book_sizing_context.py": {
+        "recipe": "full-bytes",
+        "sha256": "368724574971e364da20ffbd86c841928ddbfd18ca54e451149e3913d86e6cad"
+      },
+      "ops/c1_rail/c1_sizing_host_reference.py": {
+        "recipe": "full-bytes",
+        "sha256": "3109e6ff02bb28c835e0fc912fc2115a5783b82f2ce136c9bec4fb8d108f0190"
+      },
+      "ops/c1_rail/m1_stage1_contract.py": {
+        "recipe": "full-bytes",
+        "sha256": "35e4a72bbb036a3d9570f439f6abc2735dbcd4537006c60fd9560f3096466651"
+      },
+      "ops/c1_signal_daemon/book_protocol.py": {
+        "recipe": "full-bytes",
+        "sha256": "37d1cd7885604f198c88fe6ae3d792e0b42416b37caf7bfc0afa53a8475375e8"
+      },
+      "ops/c1_signal_daemon/feed.py": {
+        "recipe": "full-bytes",
+        "sha256": "b94e43c0e3410a82d9a25c05f4e3f84e278a3840e7eddc8452ceb4e038148e35"
+      },
+      "policy_row": {
+        "recipe": "canonical-policy",
+        "sha256": "406f53b87223e624a0af43b43851dd646a6ba2b678ea5592fa84ee97385d871c"
+      }
+    },
+    "toolchain": {
+      "dependencies": {
+        "runtime/DLLs/_decimal.pyd": "04738ee6b96bcc6351446b011b523d831aa88ec3f11d4b64c33414c965b56b80",
+        "runtime/DLLs/_hashlib.pyd": "d4524b261f09806a828c62fc97e8517328b23d65ab87d20706a4bafd86bbf345",
+        "runtime/DLLs/libcrypto-3.dll": "e03dd02fdcfb791981c9962827cfcf495f2a47a514c1526efb57f847a9df514a",
+        "runtime/DLLs/libffi-8.dll": "eff52743773eb550fcc6ce3efc37c85724502233b6b002a35496d828bd7b280a",
+        "runtime/DLLs/libssl-3.dll": "1e4bc0638682bfcbb36f4465d6a2e9944d917a60f05ecc8ddf9e96847e05e13f",
+        "runtime/DLLs/sqlite3.dll": "153883edf04717624437cd092adb2b72015be3984e03d25cf5a1823b0f764ac7",
+        "runtime/DLLs/tcl86t.dll": "a308beae8555cff5ac2aff7eaf0aef40b5fe173f047e246dc49da9a4d3ef62f9",
+        "runtime/DLLs/tk86t.dll": "20f4876506bce7f89e53570e64fd1dce30a64548326b45f372871c7019560df4",
+        "runtime/DLLs/zlib1.dll": "1dd27f0411ebb31bd148a61589cee254410915f1e6c37aa3ffa52fac71a5426c",
+        "runtime/Lib/__future__.py": "bf11d13b6c9b2b8706be425addf399965738622bb4cc553217be16399c51d51a",
+        "runtime/Lib/_collections_abc.py": "65233950af4a4733ec37eb843e7c1c86ee740506871b4d2993047b2644a7f684",
+        "runtime/Lib/_sitebuiltins.py": "0dd946f275833e75c3bbbffa8003a122871dfaf86db4ff80e6c50af42687a3c0",
+        "runtime/Lib/abc.py": "d51c54428495cd62a5da4360315fa84f692b5aa9db21be986b3e14a83f7cf288",
+        "runtime/Lib/ast.py": "897e3e83094135d3eb4b30a32df40873d928db152686648481896d23140f93e6",
+        "runtime/Lib/codecs.py": "1a9c2322d454fdd4d733107c710eef94335be47c3bffd8d9eea07fbaefa5148d",
+        "runtime/Lib/collections/__init__.py": "f52c917fbab8e0a695de27a389776a6a61e7df1831a9de56e5e2a63176a1992f",
+        "runtime/Lib/contextlib.py": "ca6071e379d65e1ed13fea5206fb4cee35fdb6b3063fa4a47254acf10e42b764",
+        "runtime/Lib/copyreg.py": "b4fc88bc9f9ac782175728099b309f9818e29be635b97104f80dea52f8c95316",
+        "runtime/Lib/datetime.py": "8262c677654011417ae08751ae9c38edc8ca802d21c65232452529248a17aae9",
+        "runtime/Lib/decimal.py": "8e2c8f5b6a30f488597a17216a54b5a5090d97c0662451c280b1fb4779f9c6c3",
+        "runtime/Lib/encodings/__init__.py": "d65eff616f93902031e101cb70a7f20f8f687a29e30e97fe0dec279fe8e8eaa1",
+        "runtime/Lib/encodings/_win_cp_codecs.py": "344faac7c9b1702d987233c500f5793f1d2729b7722578ceb344747078883b8e",
+        "runtime/Lib/encodings/aliases.py": "078e508591512436ec170f790ddaa8bfd36649b47eb10cdf3873991435cc4373",
+        "runtime/Lib/encodings/cp1252.py": "7acb7b80c29d9ffda0fe79540509439537216df3a259973d54e1fb23c34e7519",
+        "runtime/Lib/encodings/utf_8.py": "9c54c7db8ce0722ca4ddb5f45d4e170357e37991afb3fcdc091721bf6c09257e",
+        "runtime/Lib/enum.py": "81866aafa2a0a4ef1f542ce0b9aa26c8779086924704269e5df8c2676554741b",
+        "runtime/Lib/fnmatch.py": "52a65ca47cb1d6bf5b664f39d2067ecf43af468fff19443a9bae7bc79905ef21",
+        "runtime/Lib/functools.py": "169c8a9e3ff35cf6699500dcf1b46be093f6618178b71895c14ea07382abd897",
+        "runtime/Lib/genericpath.py": "ad628dc3bb5c5f684a05f6a5322850e3875a65f32db9c865ee874d8b994e55a3",
+        "runtime/Lib/glob.py": "2e2016be69c93514aded75ebcfa5a30f1adc72e96e9ca156eb8d223081b1c805",
+        "runtime/Lib/hashlib.py": "271b00a30d27c3cdd99b7f70962680f8455d3057b3c103f028e2da31141b91ee",
+        "runtime/Lib/importlib/_bootstrap_external.py": "fac54dc5a217501ddf1fa8fc18106ed20875c5a71e20598103b994f352e272a4",
+        "runtime/Lib/io.py": "f1e213175399ef7d480379344c36fc80de1732f285834eb14c8ef9ebdfcb4116",
+        "runtime/Lib/json/__init__.py": "0439e6546415d4147396afac324beadb7a8dc2c1e2391dcb541fb34c83986d8f",
+        "runtime/Lib/json/decoder.py": "604bd92a9459f42143208068f0f321d816a81bdb920c7a3d7fb509bb06833ecc",
+        "runtime/Lib/json/encoder.py": "498ba55bf9907208e58426f98dd72e2756417ab5478b141284abd373863e621c",
+        "runtime/Lib/json/scanner.py": "b2577f9db9f69a0a27f251776349238b17b8b214a01128e7477b0f7d8e24a186",
+        "runtime/Lib/keyword.py": "1f28f509383273238ad86eda04a96343fa0dc10eeaf3189439959d75cdac0a0b",
+        "runtime/Lib/ntpath.py": "5964199f4d108700723d503faf310d823747dd30c94360f3ab433d3c00cf50b3",
+        "runtime/Lib/numbers.py": "9ea88bd701713ada94855ff63d18fee1f9ecc3c2000c6292002da04c96ee59cb",
+        "runtime/Lib/operator.py": "eb4bd627ac1a6ecd480cdaa7521322095506dc0cbad4106e0a272a5195b04e10",
+        "runtime/Lib/os.py": "8b9a446b736524e5838cd1d84803885b579c1c13c4063c322a82dcc3f3791258",
+        "runtime/Lib/pathlib/__init__.py": "208546aa566ca8df4b8e1259f30209c0f803c3f920e6d080ae1b10d53d05bd72",
+        "runtime/Lib/pathlib/_os.py": "6d0d7b691069830cc46a971b8c45ee8a8f0a5340ab981b5c15183054cc9a77c9",
+        "runtime/Lib/posixpath.py": "eb4b02ede56f0e13d06f7a9c6ae35c4adb55469e06e663df67b1f60950efe97c",
+        "runtime/Lib/re/__init__.py": "5e285750c13fdf690a100379ec133d2038bb0f6c6e1b51206caf94e41288440b",
+        "runtime/Lib/re/_casefix.py": "b0dee234e5f8096fc9c1b035ec52d0b1b50cc1f3aea20b360b8be902e53ac752",
+        "runtime/Lib/re/_compiler.py": "2adaca25db0cfe86285f30b4575677b6fca46bada911c29e29801414c6148289",
+        "runtime/Lib/re/_constants.py": "4e6db98c59fec998d4145747536b3447c01d36e6f6e6bed18eb32682d81b3cf2",
+        "runtime/Lib/re/_parser.py": "015f98b5d25dccd79209deecd4499648b37e8d4d6bde8dadc9a9e613cb7cc5bf",
+        "runtime/Lib/reprlib.py": "98924232fa398cf72a7820722ee37606b271be663612e79356ecf2bf14484b9c",
+        "runtime/Lib/site.py": "a035d4c8774a19adf35e29d9aee1e0e4991cde15966c1bbccde434dd310c051d",
+        "runtime/Lib/stat.py": "a79146ccc1baf78e60215e7f1b4b423adf58840978e0bfe5213d9fbfd3eff9c8",
+        "runtime/Lib/token.py": "0093ebf0af835316d68f8eba5a7ae9da24c5cd3b84b2a459c806237b95570e1a",
+        "runtime/Lib/tokenize.py": "8249cdd9df4c5d4a9964787678bc626303342bed067fe7abc75d0139aa6f1d69",
+        "runtime/Lib/types.py": "51ef35ccc85536d3cd796967ad1ba896f0345a5a673ade848560715c7bef113c",
+        "runtime/Lib/zipimport.py": "33afcd0f7ce1ddd4a76b6efd94f965392490f31a665d005e16fed7f7993ba840",
+        "runtime/python.exe": "cce21c0e8710e304273e98ac4b2b0f5aceb639acbcd2343cbaa5c4e81619c45b",
+        "runtime/python3.dll": "be1017ca4ca8ff837efbb343d5c8f739bd67bd1c43fb41068a539b19357c0213",
+        "runtime/python314.dll": "1ac15e2224581fc678bbd17728b9aa538d47b891b72c76499ef07e54cd74f151",
+        "runtime/vcruntime140.dll": "052ad6a20d375957e82aa6a3c441ea548d89be0981516ca7eb306e063d5027f4",
+        "runtime/vcruntime140_1.dll": "6a99bc0128e0c7d6cbbf615fcc26909565e17d4ca3451b97f8987f9c6acbc6c8"
+      },
+      "recipe": "tb-i1-canonical-v1",
+      "runtime": {
+        "implementation": "CPython",
+        "version": "3.14.3"
+      },
+      "source_sha256": "45214014035aa2f8ebe484dfe71b288cfa4440efcfc795ecbba3becae293d5eb"
+    }
+  },
+  "status": "LOCAL_ENGINEERING_ONLY_NOT_FBR_OR_EF",
+  "test_sources": {
+    "tests/ops/test_policy_fingerprint.py": "b0d45528d574fbc8154e087f7d29919c6b600c41b9373bccf4e981fc0b23a935",
+    "tests/ops/test_tradeify_sizing_integration.py": "ba54d5d462e47e3239795ef4f07e1bc5012f61c1c5a01600b213d758c041bb79"
+  }
+}

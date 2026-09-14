@@ -62,6 +62,7 @@ need_cmd docker
 need_cmd python3
 
 LISTENER_FILES=(
+  /app/core/dd_geometry.py
   /app/core/dd_protection.py
   /app/core/firm_rules.py
   /app/core/historical_challenge.py
@@ -72,6 +73,8 @@ LISTENER_FILES=(
   /app/core/lifecycle.py
   /app/docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json
   /app/ops/c1_rail/__init__.py
+  /app/ops/c1_rail/book_policy.py
+  /app/ops/c1_rail/book_sizing_context.py
   /app/ops/c1_rail/c1_rail_arm.py
   /app/ops/c1_rail/c1_rail_http_server.py
   /app/ops/c1_rail/c1_rail_listener.py
@@ -81,6 +84,9 @@ LISTENER_FILES=(
   /app/ops/c1_rail/crosstrade_payload.py
   /app/ops/c1_rail/m1_stage1_contract.py
   /app/ops/c1_rail/m1_stage1_control.py
+  /app/ops/c1_signal_daemon/__init__.py
+  /app/ops/c1_signal_daemon/book_protocol.py
+  /app/ops/c1_signal_daemon/feed.py
   /app/scripts/validate_c1_monitoring_acceptance.py
 )
 
