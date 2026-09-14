@@ -1,6 +1,9 @@
 # SPEC: c1 multi-leg signal daemon and rail extension for the Tradeify portfolio (TB-S3)
 
-Status: DESIGN REVISION · 2026-09-14 · rev 8 — durable account halt and operator resume. Formal execution ratification remains separate; no live activity is authorized.
+
+> **Ratified 2026-09-14 UTC:** Joshua approved rev8 execution and schedule plus the separate first P2 decision. See the [exact revision/approval record](../briefs/handoffs/2026-09-14-track-b-ratifications.md) and dated S2b/P2 addenda. Pre-approval wording below describes the reviewed design; those first-decision gates are now satisfied. Implementation, calendar/route evidence, exact-depth approval and live gates remain distinct.
+
+Status: RATIFIED CONTRACT · 2026-09-14 UTC · rev 8 — durable account halt and operator resume. Execution/schedule approval is recorded below; implementation acceptance and live authorization remain separate.
 
 The [rev8 halt/resume contract](2026-09-14-tb-s3-halt-resume-contract.md) owns permission, outage recovery, restart, schedule and resume semantics. It replaces rev7 session auto-clear and daemon-emitted feed-loss flats. Historical change entries and old test names are provenance only; update tests to the rev8 acceptance cases before implementation acceptance.
 Objective: extend the single-strategy daemon and the two-leg long-only listener into the fixed four-leg book's signal host and rail — registry, bar-time barrier, per-leg sides, integer quantities under the ruled laws, account-wide capacity with the D-B8 takeover, prior-close protection mode seeded from the B7 snapshot, EOD scheduler, kill switch, warm restart, execution feedback, private-port packaging and the policy interlock — split into what TB-I3 builds offline now and what waits for a live source.
