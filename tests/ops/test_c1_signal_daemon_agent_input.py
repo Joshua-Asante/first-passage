@@ -13,6 +13,12 @@ TARGET = datetime(2026, 9, 14, 15, 46, tzinfo=timezone.utc)
 SOURCE = {"kind": "agent_attended_browser_capture", "schema": "ohlcv-1m", "symbol": "MYM1!"}
 
 
+@pytest.mark.parametrize("value", [None, [], "invalid", 1])
+def test_manifest_non_object_fails_with_controlled_refusal(value):
+    with pytest.raises(CeremonyError):
+        control.validate_manifest(value)
+
+
 def setup_agent(tmp_path, *, operator=False):
     store = CeremonyStore(tmp_path / "state.json")
     store.boot("test-boot")

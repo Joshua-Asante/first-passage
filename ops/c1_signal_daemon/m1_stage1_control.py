@@ -70,6 +70,7 @@ def _valid_venue_contract(value, target):
 
 def validate_manifest(value, now=None):
     try:
+        require(isinstance(value, dict))
         keys = {"ceremony_id", "target", "expires", "contract_sha256",
                 "expected_qty", "preflight_sha256", "source", "venue_contract"}
         if value.get("source") == AGENT_INPUT_SOURCE:
