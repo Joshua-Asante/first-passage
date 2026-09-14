@@ -84,6 +84,7 @@ LISTENER_FILES=(
   /app/ops/c1_rail/c1_sizing_host_reference.py
   /app/ops/c1_rail/crosstrade_payload.py
   /app/ops/c1_rail/m1_stage1_contract.py
+  /app/ops/c1_rail/m1_stage1_agent_input.py
   /app/ops/c1_rail/m1_stage1_control.py
   /app/ops/c1_signal_daemon/__init__.py
   /app/ops/c1_signal_daemon/book_protocol.py
@@ -94,6 +95,7 @@ LISTENER_FILES=(
 DAEMON_FILES=(
   /app/ops/c1_rail/__init__.py
   /app/ops/c1_rail/m1_stage1_contract.py
+  /app/ops/c1_rail/m1_stage1_agent_input.py
   /app/ops/c1_signal_daemon/__init__.py
   /app/ops/c1_signal_daemon/__main__.py
   /app/ops/c1_signal_daemon/b1_payload.py

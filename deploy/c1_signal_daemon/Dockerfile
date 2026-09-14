@@ -26,7 +26,8 @@ COPY ops/c1_signal_daemon/__init__.py ops/c1_signal_daemon/__main__.py \
      ./ops/c1_signal_daemon/
 
 # Only the stdlib proof contract is shared, never listener/account state.
-COPY ops/c1_rail/__init__.py ops/c1_rail/m1_stage1_contract.py ./ops/c1_rail/
+COPY ops/c1_rail/__init__.py ops/c1_rail/m1_stage1_contract.py \
+     ops/c1_rail/m1_stage1_agent_input.py ./ops/c1_rail/
 
 # Config on volume; wait if missing (mirror listener — no crash-loop).
 CMD ["sh", "-c", "if [ ! -f /data/c1_signal_daemon_config.json ]; then echo 'WAIT: /data/c1_signal_daemon_config.json missing — sftp config to /data, then: fly machine restart <id>' >&2; exec sleep infinity; fi; exec python ops/c1_signal_daemon/daemon.py --config /data/c1_signal_daemon_config.json"]

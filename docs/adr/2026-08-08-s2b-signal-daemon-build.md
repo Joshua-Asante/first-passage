@@ -1,5 +1,7 @@
 # ADR 2026-08-08 — S2b signal-daemon build (deferred limbs)
 
+> **Scoped amendment, 2026-09-14:** [Attended agent capture](2026-09-14-a7-attended-agent-capture.md) permits the expressly approved agent source/actors and candle-only tool records. It supersedes the manual actor requirement only for that variant. Historical option-D records remain intact; compatible deployment and fresh A7 readiness are still required.
+
 **Current feed disposition (2026-09-11): no live source selected.** Databento is retired and unsubscribed per the operator; the Databento selection in §2 was revised out in place on 2026-09-11 with its prior wording preserved (Rule 14 class 2; Addendum 2026-09-11 §Prior revision). For Stage 1 ceremonies only, the ruled input is an **operator-attended controlled input** — [Addendum 2026-09-11](#addendum-2026-09-11--stage-1-input-source-options-and-ratified-selection-option-d), option D, **RATIFIED 2026-09-11**. No live feed is approved; live-feed readiness remains owed.
 
 **Status:** `Accepted` — fills deferred limbs of [SPEC S2b](../spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md); **does not authorize build alone** — requires a separate operator build GO citing this ADR + Accepted S2b
@@ -7,7 +9,7 @@
 **Authors:** Joshua (plan execution GO) + Cursor (drafter)
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** [Attended agent capture](2026-09-14-a7-attended-agent-capture.md) — controlled-input actor and candle transcript scope only
 **Retain-until:** none
 **Related:** [SPEC S2b](../spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md) · [S2 ADR](2026-08-07-loop-s2-signal-host-fork.md) · [Databento research ADR](2026-07-10-databento-research-stack.md) · [M1 ADR](2026-07-22-c1-venue-native-monitoring-maturity.md) · [rail GO ADR](2026-07-17-c1-rail-build-account-registration-go.md)
 **Layer:** infrastructure / signal-host. Fills S2b deferred decisions. Code/image/deploy wait on operator build GO.

@@ -18,7 +18,8 @@ for _p in (str(_REPO_ROOT / "ops"), str(_DAEMON_DIR), str(_REPO_ROOT)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from c1_rail.m1_stage1_contract import contract_sha256, OFFLINE_SOURCE, OPERATOR_INPUT_SOURCE
+from c1_rail.m1_stage1_contract import contract_sha256, OFFLINE_SOURCE, OPERATOR_INPUT_SOURCE, AGENT_INPUT_SOURCE
+from c1_rail.m1_stage1_agent_input import validate_authorization, validate_capture
 from c1_signal_daemon.m1_stage1_state import CeremonyError, CeremonyStore, atomic_json, require
 
 
@@ -69,8 +70,15 @@ def _valid_venue_contract(value, target):
 
 def validate_manifest(value, now=None):
     try:
-        require(set(value) == {"ceremony_id", "target", "expires", "contract_sha256",
-                              "expected_qty", "preflight_sha256", "source", "venue_contract"})
+        keys = {"ceremony_id", "target", "expires", "contract_sha256",
+                "expected_qty", "preflight_sha256", "source", "venue_contract"}
+        if value.get("source") == AGENT_INPUT_SOURCE:
+            keys.add("operator_authorization_sha256")
+            try:
+                validate_authorization(value)
+            except ValueError:
+                raise CeremonyError("operator authorization required") from None
+        require(set(value) == keys)
         require(re.fullmatch(r"[A-Za-z0-9_-]{1,80}", value["ceremony_id"]))
         target, expires = utc(value["target"]), utc(value["expires"])
         require(target.second == 0 and target.microsecond == 0)
@@ -81,7 +89,7 @@ def validate_manifest(value, now=None):
         require(type(value["expected_qty"]) is int and value["expected_qty"] == 1)
         require(re.fullmatch("[0-9a-f]{64}", value["preflight_sha256"]))
         source = value["source"]
-        require(source in (OPERATOR_INPUT_SOURCE, OFFLINE_SOURCE))
+        require(source in (OPERATOR_INPUT_SOURCE, OFFLINE_SOURCE, AGENT_INPUT_SOURCE))
         require(_valid_venue_contract(value["venue_contract"], target))
     except (TypeError, KeyError):
         raise CeremonyError("ceremony manifest incomplete or invalid") from None
@@ -159,8 +167,13 @@ def prepare(store, config_path, manifest, *, boot_id, now):
         atomic_json(store.path, obj)
 
 
-def enable(store, config_path, ceremony_id, *, boot_id, reviewed, now):
+def enable(store, config_path, ceremony_id, *, boot_id, reviewed, now, actor=None):
     validate_manifest(reviewed, now)
+    agent_input = reviewed["source"] == AGENT_INPUT_SOURCE
+    if agent_input and actor != "codex":
+        raise CeremonyError("agent actor required")
+    if not agent_input and actor is not None:
+        raise CeremonyError("actor does not match input source")
     cfg = _cfg(config_path)
     _require_ceremony_interval(cfg)
     with store.locked():
@@ -171,6 +184,10 @@ def enable(store, config_path, ceremony_id, *, boot_id, reviewed, now):
                 or ceremony_id in obj["tombstones"] or item["manifest"] != reviewed):
             raise CeremonyError("current boot and exact reviewed READY ceremony required")
         obj["enabled"] = False
+        if agent_input:
+            if item.get("agent_evidence"):
+                raise CeremonyError("agent enable already recorded")
+            item["agent_evidence"] = {"enable": {"actor": actor, "at": now.astimezone(timezone.utc).isoformat()}}
         atomic_json(store.path, obj)
         gate = cfg["m1_test"]
         if (gate.get("generation") != obj["generation"]
@@ -207,7 +224,7 @@ def close(store, config_path, ceremony_id):
             (store.path.parent / name).unlink(missing_ok=True)
 
 
-def inject(store, config_path, *, ceremony_id, boot_id, contract, time, bar_file, now):
+def inject(store, config_path, *, ceremony_id, boot_id, contract, time, bar_file, now, actor=None):
     if (not isinstance(ceremony_id, str)
             or not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", ceremony_id)):
         raise CeremonyError("bad upload path")
@@ -232,8 +249,13 @@ def inject(store, config_path, *, ceremony_id, boot_id, contract, time, bar_file
                     or current.get("boot_id") != boot_id or obj.get("boot_id") != boot_id
                     or current.get("state") != "READY" or ceremony_id in obj["tombstones"]):
                 raise CeremonyError("not active")
-            if current.get("manifest", {}).get("source") != OPERATOR_INPUT_SOURCE:
+            if current.get("manifest", {}).get("source") not in (OPERATOR_INPUT_SOURCE, AGENT_INPUT_SOURCE):
                 raise CeremonyError("not active")
+            agent_input = current["manifest"]["source"] == AGENT_INPUT_SOURCE
+            if not agent_input and actor is not None:
+                raise CeremonyError("actor does not match input source")
+            if agent_input and (actor != "codex" or current.get("agent_evidence", {}).get("enable", {}).get("actor") != "codex"):
+                raise CeremonyError("agent actor required")
             gate = cfg.get("m1_test", {})
             if (obj.get("enabled") is not True or cfg.get("emit_enabled") is not True
                     or gate.get("enabled") is not True):
@@ -257,8 +279,12 @@ def inject(store, config_path, *, ceremony_id, boot_id, contract, time, bar_file
             try:
                 bar = json.loads(upload.read_text(encoding="utf-8"))
                 keys = {"open", "high", "low", "close", "volume"}
+                if agent_input:
+                    keys.add("capture")
                 if not isinstance(bar, dict) or set(bar) != keys:
                     raise ValueError
+                if agent_input:
+                    validate_capture(bar["capture"], manifest, now)
                 numbers = [bar[key] for key in ("open", "high", "low", "close", "volume")]
                 if not all(positive_finite_number(number) for number in numbers):
                     raise ValueError
@@ -282,6 +308,11 @@ def inject(store, config_path, *, ceremony_id, boot_id, contract, time, bar_file
                 bar_sha256 = digest({"bar": canonical_bar, "source": manifest["source"]})
                 record = {"schema_version": 1, "ceremony_id": ceremony_id,
                           "boot_id": boot_id, **canonical_bar, "bar_sha256": bar_sha256}
+                if agent_input:
+                    item["agent_evidence"].update(capture=bar["capture"],
+                        inject={"actor": actor, "at": now.astimezone(timezone.utc).isoformat()},
+                        bar_sha256=bar_sha256)
+                    atomic_json(store.path, obj)
                 atomic_json(store.path.parent / f"m1_bar_{ceremony_id}.json", record)
             except Exception:
                 raise CeremonyError("publication uncertain") from None
@@ -314,6 +345,7 @@ def main(argv=None):
     parser.add_argument("--contract")
     parser.add_argument("--time")
     parser.add_argument("--bar-file", type=Path)
+    parser.add_argument("--actor", choices=("codex",))
     args = parser.parse_args(argv)
     store = CeremonyStore(args.state)
     try:
@@ -327,21 +359,21 @@ def main(argv=None):
         elif args.action == "inject":
             result = inject(store, args.config, ceremony_id=args.ceremony_id,
                             boot_id=args.boot_id, contract=args.contract, time=args.time,
-                            bar_file=args.bar_file, now=datetime.now(timezone.utc))
+                            bar_file=args.bar_file, now=datetime.now(timezone.utc), actor=args.actor)
             print(json.dumps(result, sort_keys=True))
             return 0
         else:
             if args.manifest is None or not args.boot_id:
                 raise CeremonyError("reviewed manifest and current boot required")
             value = json.loads(args.manifest.read_text(encoding="utf-8"))
-            if value.get("source") != OPERATOR_INPUT_SOURCE:
+            if value.get("source") not in (OPERATOR_INPUT_SOURCE, AGENT_INPUT_SOURCE):
                 raise CeremonyError("operator input source required")
             if args.action == "prepare":
                 prepare(store, args.config, value, boot_id=args.boot_id,
                         now=datetime.now(timezone.utc))
             else:
                 enable(store, args.config, args.ceremony_id, boot_id=args.boot_id,
-                       reviewed=value, now=datetime.now(timezone.utc))
+                       reviewed=value, now=datetime.now(timezone.utc), actor=args.actor)
         print(json.dumps(safe_status(store, args.config)))
         return 0
     except (CeremonyError, OSError, ValueError, SystemExit) as exc:

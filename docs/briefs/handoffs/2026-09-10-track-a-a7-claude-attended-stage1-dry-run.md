@@ -1,5 +1,7 @@
 # Operator + Claude handoff — Track A / A7: the attended Stage 1 dry-run (one ceremony)
 
+> **Approved agent variant, 2026-09-14:** The [actor/source amendment](../../adr/2026-09-14-a7-attended-agent-capture.md) and [execution supplement](2026-09-14-a7-agent-capture-supplement.md) supersede the Joshua-only enable/inject and private transcription clauses below only for the new agent source. Joshua remains present and supplies GO and final route/account verdicts. Timing, single-attempt, preflight and teardown requirements remain. Do not activate before verifying compatible deployed revisions.
+
 > **Current owner — operator direction 2026-09-12:** Astra replaces Claude for this remaining Tradeify packet and its evidence review. Historical role names below identify the original dispatch; [campaign ownership §57](../programs/2026-09-03-seven-strategy-select-campaign-state.md#57--astra-tradeify-contract-ownership-and-closeout-routing-2026-09-13) governs current execution. Joshua retains attended inputs, signoff, merges and operational GOs; all scope and entry gates remain unchanged.
 
 **Type:** cc_handoff (multi-step; attended; the operator runs `enable` and `inject`)
