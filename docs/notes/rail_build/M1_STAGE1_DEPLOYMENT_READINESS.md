@@ -598,3 +598,57 @@ The acceptance record's image pins were refreshed from actual in-container SHA-2
 Rollback images retained: listener v8 `deployment-01M29JA2721JHQGCXCRNCF54G1` / `sha256:02ca9a12f935adb21e5adc4fd033352f0c8c05b52d7661b2484902f3f792447e`; daemon v2 `deployment-01M29QV4Y81BXWN4BWWMW67CEN` / `sha256:254272cbf94a4d7e67d1cfc5b3814cbee285ceaf896e15dfd596e3ba975dae40`. Use the documented no-build `fly deploy --image` form with each app's own config if rollback becomes necessary; no rollback occurred.
 
 The new agent source is runtime-compatible. A7 still needs a fresh attended readiness/preflight, exact closed target and unique actual evidence join under the [agent supplement](../../briefs/handoffs/2026-09-14-a7-agent-capture-supplement.md). No remote prepare, enable, inject, allocation write, order, arm or A8 signoff happened during this deployment.
+
+## A7 attempt 2 — 2026-09-14 17:50 UTC: capture accepted, path authentication rejected
+
+**DONE_WITH_CONCERNS — unsuccessful A7 event; safely closed.** Joshua requested this fresh attempt, confirmed attendance/no competing A7 task/account flatness, and confirmed the 12:50 CDT target (17:50 UTC). He accepted a one-click fallback: Joshua selected the candle; Codex read the databox and performed capture, upload, enable and inject. This accurately records partial UI assistance, not fully automatic candle selection. The fresh chart-time observation was 13:43 against the application's 12:43:09 CDT clock; the captured 13:50 chart timestamp used UTC-04:00. The target was inside the [CME published session hours](https://www.cmegroup.com/trading/equity-index/files/cme-micro-e-mini-futures-fact-card.pdf).
+
+### Preconditions and single attempt
+
+Listener v9 / daemon v3 remained the compatible images recorded above. Shared contract/agent-module hashes matched. Listener was dry-run with no arming deadline, all allocations zero, test RETIRED; ledger 32 / seq 32. Daemon boot `60c660616b724efcbe8c34ec26f6fdab`, generation 2, disabled, no active ceremony and only the prior CLOSED attempt. Poll interval was 1.0.
+
+The two migration-plan reads established that only the test allocation/lifecycle would change to 1/AUTHORIZED. The digest-bound apply succeeded; the follow-up plan was a no-op. Read-only sizing preflight returned expected quantity 1, dry-run true, no arming deadline, receipt `5e831589ed3f8590dc5ca2222a5d87e89aa0a72c313e2a5152ca73b9f19f3412`. Automatic approval review initially blocked the private equity read; inspecting the canonical preflight's value-free receipt/error boundary resolved the rejection, and Joshua also explicitly approved preflight. No equity or account values were emitted into tool records.
+
+| Field | Observed value |
+|---|---|
+| Ceremony | `stage1-20260914-2`, generation 3 |
+| Target / expiry | `2026-09-14T17:50:00Z` / `2026-09-14T17:52:30Z` |
+| Contract / source | MYMZ6 / `agent_attended_browser_capture`, `ohlcv-1m`, `MYM1!` |
+| Frozen contract digest | `346387e565225d956da0f5b9696f211dee82ff9a823dda6e56b0ce32aba9d94f` |
+| Retained operator GO digest | `b829bfa1cff2425fdf10d07f6be4ad69417efab7c47aeb4b59b2665e2fe75e86` |
+| Enable (one invocation, actor codex) | `2026-09-14T17:41:25.744645+00:00` |
+| Actual capture | `2026-09-14T17:51:14.745Z`; chart `2026-09-14T13:50:00-04:00` |
+| Inject (one invocation, actor codex) | `2026-09-14T17:51:38.734348+00:00` |
+| Upload file digest | `b08e2b8155be980e5a26633812b1e38835977c8e68ccff7ce9e01e5d0cf4c99d` |
+| Source-bound bar digest | `40a0e650497242cc7b834d1373ce999a96541ff39b31b7f9e238cdb6b2436825` |
+| Daemon request digest | `1640fc47e1ba7a029734f2de10d5077d4540e86909f382a426aedd6822faab41` |
+
+The parser required one databox, the exact target timestamp, exactly one of each OHLCV field, positive finite numbers and consistent OHLC bounds. File read-back matched the observed values. Capture and injection both met the +60 through +120 second bounds. The enable action was verified from persisted actor evidence and fresh health (`READY`, `effective_emit=true`) without retrying it.
+
+### Outcome and diagnosis
+
+Daemon reached `RESPONSE_RECORDED`, enabled false, HTTP **404**, response kind `rejected`, response-body SHA-256 `709009e02c8e364113b28205aadde30cce270d709073f28153c85fdc5036c96d`. The listener ledger grew by exactly one record, seq 33 at `2026-09-14T17:51:39+00:00`: event `1640e4e8-7f90-4ce8-939a-15ee7b053d0d`, `request_received`, `auth_ok=false`, `body_category=unauthorized`. This is an unauthorized-request event, **not an M1 item-5 UUID**. The unauthorized branch deliberately stores no body digest, so no exact request-digest join or decision/transport triad exists. The evidence CLI refused the closed attempt as expected; no successful projection is claimed.
+
+Read-only diagnosis privately compared the two configured path-token fingerprints and emitted only equality: **tokens do not match**. The daemon's configured destination host is the expected listener, uses HTTPS, has a root base path and no query/fragment. The deployed listener rejects an incorrect `/c1/<path_token>` path with 404 before body parsing, equity resolution or signal handling. The rejected response, single unauthorized ledger event and configuration mismatch identify the path-authentication failure. No credential values or fingerprints are published. No retry, hand-POST or configuration repair occurred in this ceremony.
+
+### Teardown and return
+
+The full canonical daemon close command ran with both state/config arguments. Final journal: `CLOSED`, previous state `RESPONSE_RECORDED`; journal enabled false, both config flags false, health effective emission false, disconnected. Upload, bar and claim files for this ceremony were absent. Joshua confirmed no Tradovate positions/working orders and no new CrossTrade Alert History entry for 12:50–12:52 CDT.
+
+The disable plan and its after-state comparison were reviewed, then applied with fresh preimage hashes and the renewed flatness confirmation. Final plan was a no-op: all allocations 0, test RETIRED; listener dry-run true, arming deadline null; ledger 33 / seq 33. Daemon health retained the inactive `M1Stage1TestStrategy` label with emission disabled; this label is not a live-source claim. No order or arm occurred. M1 acceptance fields/signoff remain unchanged.
+
+The next attempt requires correction and non-emitting verification of the daemon/listener path binding, then a fresh attended target and identity. Preserve this attempt's tombstone; it cannot be reused. Candle selection still used the operator's click, although capture/transcription, upload and CLI actions were agent-performed. This record does not discharge A7 or A8.
+
+Private journal/ledger scratch copies were deleted after this record was written; absence verified, host originals retained. Independent review found no privacy or acceptance-classification blockers. Acceptance validator and git diff --check passed; no new runtime-code test result is claimed.
+
+## A7 path-binding correction — 2026-09-14, after attempt 2
+
+Joshua explicitly requested correction and verification of the path-token binding. Pre-write checks confirmed listener dry-run/no arming deadline, all allocations zero/test RETIRED, ledger 33, and daemon CLOSED with emission disabled. Private configuration files were retrieved outside the repository, and the proposed daemon config was verified to differ only in `path_token`, copying the existing listener binding. The listener was not modified. No credential or credential fingerprint was emitted to tool records or published.
+
+The staged daemon config was validated with the deployed `load_config`, guarded by the original config digest and the ceremony lock, and atomically installed with the deployed `atomic_json`. Both emission flags remained false and all ceremonies were closed. A private exclusive backup was retained on the daemon volume. The first apply invocation incorrectly treated the lock's returned file handle as the store and failed before any config/backup write; the corrected invocation used the store object, passed the unchanged preimage check, and applied successfully. Staged update/preimage files were removed.
+
+Because `build_loop` constructs `ListenerClient` once at startup, only the disabled daemon machine was restarted to load the corrected binding; its image was not changed. New boot `205bae18fc514c54aeec213e211c76e2`, generation 4, health OK, `NullStrategy`, `DISABLED`, disconnected, poll interval 1.0, emit/effective_emit false. Both historical ceremonies remained CLOSED, journal enabled false; no journal was hand-edited.
+
+Non-emitting verification used the actual deployed `listener_post_url` on the daemon and `sizing_post_path` on the listener. Their path fingerprints were compared privately and only the equality verdict was returned: **exact constructed path matches**. The daemon destination is the expected HTTPS listener with no query/fragment. Listener config was byte-identical to its pre-repair copy; comparison with the daemon backup confirmed that only `path_token` changed. Listener remained dry-run/disarmed and ledger 33; no POST, signal, new ceremony, order or arming occurred.
+
+All temporary local configuration/preimage files were deleted with absence verified; only value-free verification remains locally, with the rollback backup retained privately on the daemon volume. This closes the diagnosed binding mismatch. It does not turn attempt 2 into a successful event or discharge A7/A8. A future attempt needs a fresh attended target and must bind to the new daemon boot. Exact path equality belongs in that preflight before enablement; it must not be inferred from image compatibility or a health GET.
