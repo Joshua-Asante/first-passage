@@ -137,3 +137,76 @@ Only combined 2a–2c acceptance closes recovery slice 2. Shared calendar/replay
 snapshot/resume and combined Stage 2 acceptance remain subsequent packets. No
 seven-bundle admission, parity, qualification, allocation, live configuration or
 M1 rework was performed or authorized by these tests.
+
+## Publication and Stage 2 continuation audit — 2026-09-14
+
+Joshua requested commit/push and continuation through Stage 2. The reviewed 2b
+packet was committed as `014144158831256b32c0091c7fcd30c03d9c9001` and pushed to
+`origin/codex/stage2-runtime-owner`. Commit hooks and push collision checks passed.
+The earlier local/uncommitted description above is its pre-publication record.
+
+The next dependency was investigated against production source, current governing
+records, and official provider documentation; no live account API, host mutation,
+broker send or qualification was performed. Joshua did not know of a newer
+accepted producer packet. Read-only coordination with **Complete Tradeify
+deployment** confirmed that main through #391 supplies none. The last prerequisite
+owner is **Resume Track B prerequisites**, task
+`01a09e17-faa1-7d00-abd4-f8f8b5019745`; that task is archived and was not reopened.
+Its retained #382 ledger remains the evidence baseline. No competing governing
+document or private manifest was changed.
+
+### Named candidate inputs and the unresolved contract
+
+| Required guarantee | Actual source inspected | Result for the next consumer |
+|---|---|---|
+| S3 E1 coherent acquisition and restart-stable causal domain | CrossTrade Tradovate REST positions/orders; WebSocket `Tv_ListPositions`/`Tv_ListOrders` and pushed events | Candidate read interfaces exist; accepted coherent acquisition and durable shared boundary do not. A new local counter cannot manufacture broker causal order. |
+| S3 E2 complete immutable execution/history and protection/FIFO identities | CrossTrade fill routes and Tradovate per-order lifecycle; local `BrokerEvidence`/`ExecutionStateStore` | No accepted complete-history/gross-lot/protection producer. Existing local stores are insufficient. |
+| S3 E3 every earlier accepted request, including external requests | Existing local operation/attempt journal and provider order reads | Local ownership is implemented; no accepted global request fence accounts for requests outside it. Order existence or missing orders cannot prove absence of unresolved requests. |
+| Native L2 cancel/close/protection | CrossTrade REST close-position documentation and legacy `crosstrade_payload.py` | Documented routes are candidates; route/version-specific acceptance and protection-transition evidence remain absent. No fallback adapter is admitted. |
+| Authenticated source-health reports | `EvaluateLoop`, `ListenerClient`, daemon `build_loop`, listener handler | Production currently builds the bounded M1 operator-input loop and posts B1 only. No four-source authenticated fault producer/endpoint or required-session consumer exists. |
+| Qualified completion and acknowledged disarm | `c1_rail_arm.py` config writer | The CLI writes configuration and explicitly requires restart to take effect; it does not supply a recovery-owner activation/readback acknowledgment. |
+| Shared calendar and settlement/host inputs | D19 calendar, TB-T1 seal contract, `BookSession`/`SettledClose`, M1 deployment records | Date membership and prior deployment evidence do not supply source-backed deadline coverage, settled-account-close producer or reusable boot/request-bound host verifier. |
+
+Current official sources, read 2026-09-14:
+
+- [CrossTrade WebSocket API](https://crosstrade.io/docs/api/websocket-api) documents
+  connection-lifetime sequence numbers, possible dropped frames, and a stream that
+  is not a durable log. Re-pulling and per-order lifecycle reads are advised after
+  gaps/reconnects. This does not establish S3's durable all-account causal fence.
+- [Tradovate order lifecycle](https://crosstrade.io/docs/api/orders/get-order-lifecycle)
+  is assembled from order, orderVersion, command and commandReport dependency
+  reads for an identified order. The documented response exposes the current order,
+  highest-ID version, commands and reports; it is not a documented all-request fence.
+- [All orders](https://crosstrade.io/docs/api/orders/get-all-orders),
+  [all positions](https://crosstrade.io/docs/api/positions/get-all-positions), and
+  [executions/fills](https://crosstrade.io/docs/api/executions) name real read
+  surfaces. Combining separate reads is not, by itself, proof of coherent E1–E3.
+- [Close position](https://crosstrade.io/docs/api/positions/post-close-position)
+  documents a Tradovate REST route through the shared dispatcher, including Account
+  Manager/Trade Copier behavior. A route description supplies neither this
+  account's accepted controls nor the retained S3 protection/quantity guarantees.
+
+These are findings about the inspected interfaces and absent acceptance evidence,
+not proof that the provider can never supply an adequate contract. In particular,
+TB-T1's evidence-file labels E1/E2/E3 must not be confused with S3's E1–E3 producer
+guarantees: a sealed dashboard/positions/statement packet does not supply a global
+broker request fence.
+
+### Exact continuation prerequisite
+
+Before decision-bearing 2c integration, identify and accept the account/route/version
+producer that supplies a fresh coherent gross/order/protection/history acquisition,
+immutable complete-history cursor and global unresolved-request fence in the same
+durable causal domain as preparation/dispatch. Include recovery after producer and
+listener restarts and requests submitted outside the listener. Runtime owns the
+adapter and consumer implementation; prerequisites owns collection/verification.
+If the route cannot provide those facts, that is a capability problem requiring an
+explicit contract/route decision, not a permissive mock or inferred approval.
+
+The 2c implementation then needs durable cursors/conflicts and execution credit,
+atomic request-to-order/lot/quarantine transfer, fresh global gross quiescence, and
+config-owner write/readback acknowledgment. Slices 3–5 retain their calendar,
+replay/feedback, snapshot/resume and combined acceptance dependencies. The handoff
+requires these actual interfaces; another synthetic-only owner extension cannot
+close them. Stage 2 therefore remains **INCOMPLETE, blocked on the named producer
+contract/evidence**, rather than accepted from 2b's green module suites.
