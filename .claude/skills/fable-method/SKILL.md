@@ -54,7 +54,7 @@ Name the scope — the files or surfaces the change will touch. Needing somethin
 3. **Smallest correct change.** Match existing style. Precise edits over rewrites; rewrite a whole file only if you authored it this session or fully read it.
 4. **Track multi-part work.** 3+ heterogeneous steps or >~5 similar items → written checklist first; audit it against the ask before reporting. A checklist that itself fails the one-session test (more than one context window, more than five gate conditions, a step whose input is an earlier step's unbuilt output) is oversize work → `work-decomposition` cuts it into children with their own gates before Step 4 continues.
 5. **Never destroy without looking.** Before deleting or overwriting, look at what is actually there.
-6. **Standing prohibitions, absent explicit operator instruction:** never commit or push; never weaken a check (or fabricate what it looks for) to make it pass; never edit a test pin or baseline to green a failing run; never regenerate `SHA256SUMS` without a same-commit data-change rationale; never touch Pine, `dd_protection` constants, `firm_rules` risk %, or allocations outside a ratified ADR; never add a dependency; never touch secrets or credentials.
+6. **Standing prohibitions, absent explicit operator instruction:** never commit or push; never weaken a check (or fabricate what it looks for) to make it pass; never add a guard, default, retry, broad `except` or wider parser to make a failure disappear before its mechanism is named (`root-cause-first`); never edit a test pin or baseline to green a failing run; never regenerate `SHA256SUMS` without a same-commit data-change rationale; never touch Pine, `dd_protection` constants, `firm_rules` risk %, or allocations outside a ratified ADR; never add a dependency; never touch secrets or credentials.
 
 ## Step 5 — Verify by observation
 
@@ -68,12 +68,12 @@ If something cannot be verified (no local vendor CSVs, TV-side behavior, needs o
 
 ## Step 6 — Report outcome-first
 
-- First sentence answers "what happened" / "what was found". No step numbers or method scaffolding; the only method artifacts a report may contain are the `INTENT:`, `AUTH:`, `TWINS:`, and `PENDING:` lines when owed.
+- First sentence answers "what happened" / "what was found". No step numbers or method scaffolding; the only method artifacts a report may contain are the `INTENT:`, `AUTH:`, `TWINS:`, and `PENDING:` lines when owed, plus `root-cause-first`'s `ROOT CAUSE:` / `FIX:` / `VERIFICATION:` block when a defect was fixed.
 - Complete sentences a teammate who stepped away can follow; quote only load-bearing lines; define jargon at first use.
 - Include caveats: what was skipped, what is weak, what could not be verified; failures reported as failures with their output. A prescribed-but-deliberately-untaken follow-up (a push, a manifest regen, a SESSIONS entry) carries `PENDING: <the action> — awaiting your authorization`, verbatim.
 - Delete scratch files you created; note the cleanup. Leftover debris reads as a fraud signal to `fable-judge`.
 - Offer only follow-ups that emerged from this task; none emerged → end without follow-ups.
-- **Artifact gate, last check before sending:** behavior changed with no `INTENT:` line → add it; outward action with no `AUTH:` → add it; untaken prescribed follow-up with no `PENDING:` → add it; defect fixed with no `TWINS:` → add it. A clean report passes untouched.
+- **Artifact gate, last check before sending:** behavior changed with no `INTENT:` line → add it; outward action with no `AUTH:` → add it; untaken prescribed follow-up with no `PENDING:` → add it; defect fixed with no `TWINS:`, or with no `ROOT CAUSE:` / `FIX:` / `VERIFICATION:` block → add them. A clean report passes untouched.
 
 ## Modes
 
