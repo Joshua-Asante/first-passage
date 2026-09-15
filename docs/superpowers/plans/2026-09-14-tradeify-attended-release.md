@@ -219,6 +219,13 @@ and unique event-to-bar matches; all 3,632 captured trade holds have uninterrupt
 15-minute panel coverage. Gaps while flat still require classification for
 indicator continuity. The retained 6J prefix produces identical diagnostic closed
 trades, but its provenance and the original calculation boundary remain pending.
+Seven fresh XLSX reports now bind the MYM/MNQ declared backtesting ranges to
+explicit timestamps and reproduce all 6,346 original event rows across all 17
+columns; independent review accepted that bounded evidence. Nine-case startup
+observations and an exact queue of 4,142 product-specific gaps are retained.
+Older Aegis/Vanguard range/capture-state provenance, endpoint inclusion, complete
+initial-state binding and Step 4's source-backed gap classifications still block
+Step 3 closure. The current execution-domain acceptance disposition is controlling.
 Do not spend
 another broad implementation pass on a producer
 whose required evidence is unavailable. A failed feasibility check produces an

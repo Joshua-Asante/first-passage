@@ -439,3 +439,92 @@ so those gaps remain in the Step 4 calendar queue. Nor does it establish the exa
 Deep calculation origin, end-date inclusion semantics, independently attest all
 effective settings, or admit a bundle. The pending 6J provenance question and
 Step 3's combined coverage review remain open.
+
+### Seven fresh XLSX range bindings and startup observations
+
+The event-coverage findings were committed as `f511060`; commit checks passed.
+Continued beyond the date-only picker by downloading TradingView's complete XLSX
+reports for corrected O-N, O-P and all five Striker cases. No Pine source body was
+edited. Striker used MYM1!, the recorded per-case account-size overrides and the
+fixed September 1, 2022–September 2, 2026 Deep range. ORB used MNQ1! and the pinned
+add parameters, with adds disabled only for O-P. O-P's inactive-input difference
+remains governed by Step 2. Original ORB adds and Striker account-size controls
+were restored after collection; no layout save or live action was performed.
+
+All seven `Properties!B3` cells report **Backtesting range = August 31, 2022,
+20:00 through September 2, 2026, 20:00**. In the retained New York display-clock
+context these correspond to **September 1, 2022, 00:00Z through September 3, 2026,
+00:00Z**, matching MYM/MNQ panel endpoints. The separate `Trading range` field
+must not be substituted for this field. TradingView documents that XLSX exports
+include the [Properties data and overall available backtesting range](https://www.tradingview.com/pine-script-docs/concepts/strategies/#properties-tab).
+
+The private comparator checks all **6,346 event rows and all 17 columns** against
+the original seven CSVs: zero differing cells. Numeric cells compare as decimals;
+Excel date serials must be within a tiny representational rounding distance of an
+exact minute before comparing the timestamp. Text compares exactly. These are
+fresh declared-range bindings plus complete trade-export equivalence. They do not
+independently prove historical hidden state or whether the displayed endpoint is
+an included calculation bar. No coverage PASS follows solely from those cells.
+
+Independent reviewer `packet0_review` decoded the workbook XML separately and
+verified all rows/columns, symbols, intervals, case account-size settings, ranges,
+and final runner/workbook pins. **Accepted for this bounded comparison, no
+findings.** The earlier stale O-N runner pin was regenerated after generalizing
+the comparator; only the final generations indexed below apply.
+
+The startup-state runner observes the first 2,000 retained bars for each of nine
+reference cases, retaining full adapter parameters, explicit emulator overrides,
+port/runtime hashes and the first observed indicator seeds/windows and entry
+intents. It confirms ORB can emit its first entry before its prior-session history
+reaches capacity; the five Striker cases share indicator startup observations;
+Aegis/Vanguard retain their recursive seeds. This is executable replay evidence,
+not a live hold policy or a complete source-to-initial-state acceptance. The older
+Aegis/Vanguard effective inputs remain reconstructed evidence. No seed or window
+was changed to improve comparison results.
+
+The gap queue preserves all **4,142 product-specific intervals**, grouped into
+21 observed patterns for 6J, 22 for MGC, 26 for MYM and 25 for MNQ. Every group is
+still `UNCLASSIFIED`, with no source attached. Patterns are descriptive, including
+elapsed-time differences around DST; they do not infer market closure. Every
+interval and each panel boundary remain available for Step 4's targeted evidence
+review. No universal historical archive prerequisite is reintroduced.
+
+Private evidence index: `step3-coverage/step3-evidence-index.json`, SHA-256
+`1d764dbf8f21f7690bf45c02f8d9ab3323772a3bcafca54831d8b7982c989fc5`.
+It binds seven XLSX files, seven comparisons, captures, startup observations and
+the calendar queue to exact bytes. Key final identities:
+
+| Artifact | SHA-256 |
+|---|---|
+| `inspect_xlsx.py` | `f7efe64379fb5da0e6de6315bf6d9aa3b2b44f6e88c46f36dd362ad1db756049` |
+| `startup_state.py` | `d390ed7a7798a77dab1d87185b8f3e645b62f2c7e1d9dc2398261ed8d6e60a1e` |
+| `startup-state.json` | `ae14a8dac50751ca6583b2ff85c55d071d16422670898cca19b19bd636ee5eeb` |
+| `calendar-gap-queue.json` | `509346d604999baf270a26091727883e1ca583bf03e504028a6654eb86b35328` |
+
+Final analysis invocations on bundled Python 3.12.14 exited 0. The startup runner
+was corrected to serialize its frozen date sets explicitly before its successful
+final generation. The independent review also reconfirmed the previous panel and
+event-coverage claims; it did not rerun the two-origin Aegis replay.
+
+### Step 3 acceptance disposition
+
+**OPEN — not finished, not admitted.** The minimum remaining evidence is:
+
+1. Older Aegis/Vanguard declared calculation ranges and capture-state provenance;
+   qualify the retained 6J prefix if that interval requires it. The operator's
+   prefix-provenance question remains unanswered.
+2. Exact end-inclusion interpretation and complete source/settings/initial-state
+   binding. The seven fresh workbook ranges remove the date-only ambiguity for
+   the declared ranges, not every initialization obligation.
+3. Accepted product/session evidence covering the flat-time gaps and boundary
+   intervals, joined through Step 4. D19 membership and the four forward event
+   observations cannot supply these facts.
+4. Combined review of the completed coverage record before issuing PASS.
+
+Existing event/held-position evidence and the seven matching workbook exports
+need not be recollected merely because these other prerequisites remain open.
+
+Independent reviewer `packet0_review` accepted this final progress handoff with
+no material findings and independently verified all 25 indexed artifact hashes
+and sizes. This accepts the evidence record's accuracy, not Step 3 completion.
+Local `git diff --check` passed; private XLSX and analysis artifacts remain ignored.
