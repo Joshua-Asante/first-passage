@@ -2,8 +2,8 @@
 
 Status: **IMPLEMENTED against the approved contract; producer QUALIFIED on the operator's actual
 reports (2026-09-15); operator key ENROLLED; independent review still owed.** Base: PR #394 head plus
-Step 4. Owner: Packet 1 coordinator (TB-T1 ongoing) → TB-I3 integration. No close has been
-accepted, no key is enrolled, and nothing here grants activation, resumption or deployment.
+Step 4. Owner: Packet 1 coordinator (TB-T1 ongoing) → TB-I3 integration. No production close
+has been accepted, and nothing here grants activation, resumption or deployment.
 
 Contract: [attended settlement contract](../spec/2026-09-15-tradeify-attended-settlement-contract.md)
 (operator-approved 2026-09-15). This record implements it; it does not amend it.
@@ -14,7 +14,7 @@ Contract: [attended settlement contract](../spec/2026-09-15-tradeify-attended-se
 |---|---|
 | `ops/c1_rail/ed25519_verify.py` | RFC 8032 Ed25519 verification in the standard library only, because the rail image ships no crypto dependency. Verification only; it cannot sign. Pinned to the RFC test vectors and cross-checked against `cryptography` signatures. |
 | `ops/c1_rail/book_settlement.py` | The durable account-close owner: `SettlementStore` (SQLite, FULL synchronous, `BEGIN IMMEDIATE` single writer, account-bound, boot-fenced, hash-chained rows), `verify_package` (every contract check as a named refusal), challenge issuance, signed submission, B7 bootstrap, record-only catch-up, revision invalidation, restart reconciliation and read-only status. |
-| `tests/ops/test_book_settlement.py` | 41 tests. `tests/ops/test_ed25519_verify.py`: 8 tests. |
+| `tests/ops/test_book_settlement.py` | 49 tests. `tests/ops/test_ed25519_verify.py`: 8 tests. `tests/ops/test_account_close_assembler.py`: 12 tests. |
 
 ## Protocol as implemented
 
@@ -71,7 +71,7 @@ Contract: [attended settlement contract](../spec/2026-09-15-tradeify-attended-se
   changed digests or keys across restart, B7 bootstrap refusals and PROTECTED seating, record-only
   catch-up in predecessor order while HALTED, a 26-case package refusal matrix with the challenge
   left issued, venue-equity basis acceptance, and offsetting adjustments refused despite zero net.
-- `tests/ops/test_ed25519_verify.py`: 8 passed. `tests/ops`: 1766 passed, 15 skipped.
+- `tests/ops/test_ed25519_verify.py`: 8 passed. `tests/ops`: 1778 passed, 15 skipped.
   `scripts/check_boundaries.py`: OK.
 
 ## Producer qualification on the actual account reports — 2026-09-15
