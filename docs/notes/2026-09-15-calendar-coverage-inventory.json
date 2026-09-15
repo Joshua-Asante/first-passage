@@ -1,0 +1,2115 @@
+{
+  "schema": "tradeify_calendar_evidence_inventory/v1",
+  "status": "INCOMPLETE_NOT_RUNTIME_INPUT",
+  "historical_interval": [
+    "2022-09-01",
+    "2026-09-02"
+  ],
+  "forward_interval": [
+    "2026-09-03",
+    "2026-09-30"
+  ],
+  "symbols": [
+    "6J",
+    "MGC",
+    "MYM",
+    "MNQ"
+  ],
+  "candidate_date_count": 74,
+  "candidate_product_date_count": 296,
+  "candidate_origin": "ops/calendars/cme_holiday_calendar_2022_2026.json",
+  "regular_session_coverage": "UNPROVEN_FOR_FULL_INTERVAL",
+  "exception_inventory_completeness": "UNPROVEN_SECONDARY_CANDIDATES_ONLY",
+  "warning": "Single-day events do not certify full intervals. Unlisted dates do not default to regular sessions. Frozen D19 is unchanged.",
+  "sources": [
+    {
+      "id": "cme-ui-labor-2026",
+      "origin": "actual rendered CME product lookup",
+      "observed_date_utc": "2026-09-15",
+      "raw_capture_basename": "labor-day-products.json",
+      "sha256": "3dafe4b7cb926e60a07575792604a12af5872bedb91dd53394bce5e4c5baeba1",
+      "source_url": "https://www.cmegroup.com/trading-hours.html",
+      "query_wall_date": "2026-09-07",
+      "individual_product_queries": [
+        "6J",
+        "MGC",
+        "MYM",
+        "MNQ"
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "wall_date": "2022-09-05",
+      "symbol": "6J",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-09-05",
+      "symbol": "MGC",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-09-05",
+      "symbol": "MYM",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-09-05",
+      "symbol": "MNQ",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-09-19",
+      "symbol": "6J",
+      "candidate_event": "UK Bank Holiday / State Funeral of Queen Elizabeth II (NOT a US market holiday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-09-19",
+      "symbol": "MGC",
+      "candidate_event": "UK Bank Holiday / State Funeral of Queen Elizabeth II (NOT a US market holiday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-09-19",
+      "symbol": "MYM",
+      "candidate_event": "UK Bank Holiday / State Funeral of Queen Elizabeth II (NOT a US market holiday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-09-19",
+      "symbol": "MNQ",
+      "candidate_event": "UK Bank Holiday / State Funeral of Queen Elizabeth II (NOT a US market holiday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-11-24",
+      "symbol": "6J",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-11-24",
+      "symbol": "MGC",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-11-24",
+      "symbol": "MYM",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-11-24",
+      "symbol": "MNQ",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-11-25",
+      "symbol": "6J",
+      "candidate_event": "Day after Thanksgiving (Black Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-11-25",
+      "symbol": "MGC",
+      "candidate_event": "Day after Thanksgiving (Black Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-11-25",
+      "symbol": "MYM",
+      "candidate_event": "Day after Thanksgiving (Black Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-11-25",
+      "symbol": "MNQ",
+      "candidate_event": "Day after Thanksgiving (Black Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-12-25",
+      "symbol": "6J",
+      "candidate_event": "Christmas Day (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-12-25",
+      "symbol": "MGC",
+      "candidate_event": "Christmas Day (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-12-25",
+      "symbol": "MYM",
+      "candidate_event": "Christmas Day (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-12-25",
+      "symbol": "MNQ",
+      "candidate_event": "Christmas Day (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-12-26",
+      "symbol": "6J",
+      "candidate_event": "Christmas Day (observed; December 25 fell on a Sunday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-12-26",
+      "symbol": "MGC",
+      "candidate_event": "Christmas Day (observed; December 25 fell on a Sunday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-12-26",
+      "symbol": "MYM",
+      "candidate_event": "Christmas Day (observed; December 25 fell on a Sunday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2022-12-26",
+      "symbol": "MNQ",
+      "candidate_event": "Christmas Day (observed; December 25 fell on a Sunday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-01-01",
+      "symbol": "6J",
+      "candidate_event": "New Year's Day (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-01-01",
+      "symbol": "MGC",
+      "candidate_event": "New Year's Day (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-01-01",
+      "symbol": "MYM",
+      "candidate_event": "New Year's Day (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-01-01",
+      "symbol": "MNQ",
+      "candidate_event": "New Year's Day (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-01-02",
+      "symbol": "6J",
+      "candidate_event": "New Year's Day (observed; Jan 1 fell on a Sunday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-01-02",
+      "symbol": "MGC",
+      "candidate_event": "New Year's Day (observed; Jan 1 fell on a Sunday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-01-02",
+      "symbol": "MYM",
+      "candidate_event": "New Year's Day (observed; Jan 1 fell on a Sunday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-01-02",
+      "symbol": "MNQ",
+      "candidate_event": "New Year's Day (observed; Jan 1 fell on a Sunday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-01-16",
+      "symbol": "6J",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-01-16",
+      "symbol": "MGC",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-01-16",
+      "symbol": "MYM",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-01-16",
+      "symbol": "MNQ",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-02-20",
+      "symbol": "6J",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-02-20",
+      "symbol": "MGC",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-02-20",
+      "symbol": "MYM",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-02-20",
+      "symbol": "MNQ",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-04-06",
+      "symbol": "6J",
+      "candidate_event": "Maundy Thursday — metals evening reopen suppressed ahead of the COMEX Good Friday closure",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-04-06",
+      "symbol": "MGC",
+      "candidate_event": "Maundy Thursday — metals evening reopen suppressed ahead of the COMEX Good Friday closure",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-04-06",
+      "symbol": "MYM",
+      "candidate_event": "Maundy Thursday — metals evening reopen suppressed ahead of the COMEX Good Friday closure",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-04-06",
+      "symbol": "MNQ",
+      "candidate_event": "Maundy Thursday — metals evening reopen suppressed ahead of the COMEX Good Friday closure",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-04-07",
+      "symbol": "6J",
+      "candidate_event": "Good Friday (coincides with the March Employment Situation / NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-04-07",
+      "symbol": "MGC",
+      "candidate_event": "Good Friday (coincides with the March Employment Situation / NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-04-07",
+      "symbol": "MYM",
+      "candidate_event": "Good Friday (coincides with the March Employment Situation / NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-04-07",
+      "symbol": "MNQ",
+      "candidate_event": "Good Friday (coincides with the March Employment Situation / NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-05-29",
+      "symbol": "6J",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-05-29",
+      "symbol": "MGC",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-05-29",
+      "symbol": "MYM",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-05-29",
+      "symbol": "MNQ",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-06-19",
+      "symbol": "6J",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-06-19",
+      "symbol": "MGC",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-06-19",
+      "symbol": "MYM",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-06-19",
+      "symbol": "MNQ",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-07-03",
+      "symbol": "6J",
+      "candidate_event": "Day before Independence Day (US half-day)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-07-03",
+      "symbol": "MGC",
+      "candidate_event": "Day before Independence Day (US half-day)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-07-03",
+      "symbol": "MYM",
+      "candidate_event": "Day before Independence Day (US half-day)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-07-03",
+      "symbol": "MNQ",
+      "candidate_event": "Day before Independence Day (US half-day)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-07-04",
+      "symbol": "6J",
+      "candidate_event": "Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-07-04",
+      "symbol": "MGC",
+      "candidate_event": "Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-07-04",
+      "symbol": "MYM",
+      "candidate_event": "Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-07-04",
+      "symbol": "MNQ",
+      "candidate_event": "Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-09-04",
+      "symbol": "6J",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-09-04",
+      "symbol": "MGC",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-09-04",
+      "symbol": "MYM",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-09-04",
+      "symbol": "MNQ",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-10-09",
+      "symbol": "6J",
+      "candidate_event": "Columbus Day / Indigenous Peoples' Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-10-09",
+      "symbol": "MGC",
+      "candidate_event": "Columbus Day / Indigenous Peoples' Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-10-09",
+      "symbol": "MYM",
+      "candidate_event": "Columbus Day / Indigenous Peoples' Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-10-09",
+      "symbol": "MNQ",
+      "candidate_event": "Columbus Day / Indigenous Peoples' Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-11-10",
+      "symbol": "6J",
+      "candidate_event": "Veterans Day (observed; Nov 11 fell on a Saturday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-11-10",
+      "symbol": "MGC",
+      "candidate_event": "Veterans Day (observed; Nov 11 fell on a Saturday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-11-10",
+      "symbol": "MYM",
+      "candidate_event": "Veterans Day (observed; Nov 11 fell on a Saturday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-11-10",
+      "symbol": "MNQ",
+      "candidate_event": "Veterans Day (observed; Nov 11 fell on a Saturday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-11-23",
+      "symbol": "6J",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-11-23",
+      "symbol": "MGC",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-11-23",
+      "symbol": "MYM",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-11-23",
+      "symbol": "MNQ",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-11-24",
+      "symbol": "6J",
+      "candidate_event": "Day after Thanksgiving (Black Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-11-24",
+      "symbol": "MGC",
+      "candidate_event": "Day after Thanksgiving (Black Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-11-24",
+      "symbol": "MYM",
+      "candidate_event": "Day after Thanksgiving (Black Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-11-24",
+      "symbol": "MNQ",
+      "candidate_event": "Day after Thanksgiving (Black Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-12-24",
+      "symbol": "6J",
+      "candidate_event": "Christmas Eve (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-12-24",
+      "symbol": "MGC",
+      "candidate_event": "Christmas Eve (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-12-24",
+      "symbol": "MYM",
+      "candidate_event": "Christmas Eve (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-12-24",
+      "symbol": "MNQ",
+      "candidate_event": "Christmas Eve (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-12-25",
+      "symbol": "6J",
+      "candidate_event": "Christmas Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-12-25",
+      "symbol": "MGC",
+      "candidate_event": "Christmas Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-12-25",
+      "symbol": "MYM",
+      "candidate_event": "Christmas Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-12-25",
+      "symbol": "MNQ",
+      "candidate_event": "Christmas Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-12-31",
+      "symbol": "6J",
+      "candidate_event": "New Year's Eve (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-12-31",
+      "symbol": "MGC",
+      "candidate_event": "New Year's Eve (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-12-31",
+      "symbol": "MYM",
+      "candidate_event": "New Year's Eve (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2023-12-31",
+      "symbol": "MNQ",
+      "candidate_event": "New Year's Eve (Sunday) — Globex Sunday-evening open suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-01-01",
+      "symbol": "6J",
+      "candidate_event": "New Year's Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-01-01",
+      "symbol": "MGC",
+      "candidate_event": "New Year's Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-01-01",
+      "symbol": "MYM",
+      "candidate_event": "New Year's Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-01-01",
+      "symbol": "MNQ",
+      "candidate_event": "New Year's Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-01-15",
+      "symbol": "6J",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-01-15",
+      "symbol": "MGC",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-01-15",
+      "symbol": "MYM",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-01-15",
+      "symbol": "MNQ",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-02-19",
+      "symbol": "6J",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-02-19",
+      "symbol": "MGC",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-02-19",
+      "symbol": "MYM",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-02-19",
+      "symbol": "MNQ",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-03-28",
+      "symbol": "6J",
+      "candidate_event": "Maundy Thursday — no 18:00 ET evening reopen ahead of the Good Friday full closure",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-03-28",
+      "symbol": "MGC",
+      "candidate_event": "Maundy Thursday — no 18:00 ET evening reopen ahead of the Good Friday full closure",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-03-28",
+      "symbol": "MYM",
+      "candidate_event": "Maundy Thursday — no 18:00 ET evening reopen ahead of the Good Friday full closure",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-03-28",
+      "symbol": "MNQ",
+      "candidate_event": "Maundy Thursday — no 18:00 ET evening reopen ahead of the Good Friday full closure",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-03-29",
+      "symbol": "6J",
+      "candidate_event": "Good Friday (no NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-03-29",
+      "symbol": "MGC",
+      "candidate_event": "Good Friday (no NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-03-29",
+      "symbol": "MYM",
+      "candidate_event": "Good Friday (no NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-03-29",
+      "symbol": "MNQ",
+      "candidate_event": "Good Friday (no NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-05-27",
+      "symbol": "6J",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-05-27",
+      "symbol": "MGC",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-05-27",
+      "symbol": "MYM",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-05-27",
+      "symbol": "MNQ",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-06-19",
+      "symbol": "6J",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-06-19",
+      "symbol": "MGC",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-06-19",
+      "symbol": "MYM",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-06-19",
+      "symbol": "MNQ",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-07-03",
+      "symbol": "6J",
+      "candidate_event": "Day before Independence Day (US half-day)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-07-03",
+      "symbol": "MGC",
+      "candidate_event": "Day before Independence Day (US half-day)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-07-03",
+      "symbol": "MYM",
+      "candidate_event": "Day before Independence Day (US half-day)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-07-03",
+      "symbol": "MNQ",
+      "candidate_event": "Day before Independence Day (US half-day)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-07-04",
+      "symbol": "6J",
+      "candidate_event": "Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-07-04",
+      "symbol": "MGC",
+      "candidate_event": "Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-07-04",
+      "symbol": "MYM",
+      "candidate_event": "Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-07-04",
+      "symbol": "MNQ",
+      "candidate_event": "Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-09-02",
+      "symbol": "6J",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-09-02",
+      "symbol": "MGC",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-09-02",
+      "symbol": "MYM",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-09-02",
+      "symbol": "MNQ",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-10-14",
+      "symbol": "6J",
+      "candidate_event": "Columbus Day / Indigenous Peoples' Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-10-14",
+      "symbol": "MGC",
+      "candidate_event": "Columbus Day / Indigenous Peoples' Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-10-14",
+      "symbol": "MYM",
+      "candidate_event": "Columbus Day / Indigenous Peoples' Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-10-14",
+      "symbol": "MNQ",
+      "candidate_event": "Columbus Day / Indigenous Peoples' Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-11",
+      "symbol": "6J",
+      "candidate_event": "Veterans Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-11",
+      "symbol": "MGC",
+      "candidate_event": "Veterans Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-11",
+      "symbol": "MYM",
+      "candidate_event": "Veterans Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-11",
+      "symbol": "MNQ",
+      "candidate_event": "Veterans Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-27",
+      "symbol": "6J",
+      "candidate_event": "Day before Thanksgiving",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-27",
+      "symbol": "MGC",
+      "candidate_event": "Day before Thanksgiving",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-27",
+      "symbol": "MYM",
+      "candidate_event": "Day before Thanksgiving",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-27",
+      "symbol": "MNQ",
+      "candidate_event": "Day before Thanksgiving",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-28",
+      "symbol": "6J",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-28",
+      "symbol": "MGC",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-28",
+      "symbol": "MYM",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-28",
+      "symbol": "MNQ",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-29",
+      "symbol": "6J",
+      "candidate_event": "Day after Thanksgiving (Black Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-29",
+      "symbol": "MGC",
+      "candidate_event": "Day after Thanksgiving (Black Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-29",
+      "symbol": "MYM",
+      "candidate_event": "Day after Thanksgiving (Black Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-11-29",
+      "symbol": "MNQ",
+      "candidate_event": "Day after Thanksgiving (Black Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-24",
+      "symbol": "6J",
+      "candidate_event": "Christmas Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-24",
+      "symbol": "MGC",
+      "candidate_event": "Christmas Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-24",
+      "symbol": "MYM",
+      "candidate_event": "Christmas Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-24",
+      "symbol": "MNQ",
+      "candidate_event": "Christmas Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-25",
+      "symbol": "6J",
+      "candidate_event": "Christmas Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-25",
+      "symbol": "MGC",
+      "candidate_event": "Christmas Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-25",
+      "symbol": "MYM",
+      "candidate_event": "Christmas Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-25",
+      "symbol": "MNQ",
+      "candidate_event": "Christmas Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-26",
+      "symbol": "6J",
+      "candidate_event": "Day after Christmas",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-26",
+      "symbol": "MGC",
+      "candidate_event": "Day after Christmas",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-26",
+      "symbol": "MYM",
+      "candidate_event": "Day after Christmas",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-26",
+      "symbol": "MNQ",
+      "candidate_event": "Day after Christmas",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-31",
+      "symbol": "6J",
+      "candidate_event": "New Year's Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-31",
+      "symbol": "MGC",
+      "candidate_event": "New Year's Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-31",
+      "symbol": "MYM",
+      "candidate_event": "New Year's Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2024-12-31",
+      "symbol": "MNQ",
+      "candidate_event": "New Year's Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-01",
+      "symbol": "6J",
+      "candidate_event": "New Year's Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-01",
+      "symbol": "MGC",
+      "candidate_event": "New Year's Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-01",
+      "symbol": "MYM",
+      "candidate_event": "New Year's Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-01",
+      "symbol": "MNQ",
+      "candidate_event": "New Year's Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-09",
+      "symbol": "6J",
+      "candidate_event": "National Day of Mourning — former President Jimmy Carter (one-off, non-recurring)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-09",
+      "symbol": "MGC",
+      "candidate_event": "National Day of Mourning — former President Jimmy Carter (one-off, non-recurring)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-09",
+      "symbol": "MYM",
+      "candidate_event": "National Day of Mourning — former President Jimmy Carter (one-off, non-recurring)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-09",
+      "symbol": "MNQ",
+      "candidate_event": "National Day of Mourning — former President Jimmy Carter (one-off, non-recurring)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-10",
+      "symbol": "6J",
+      "candidate_event": "Day after the National Day of Mourning",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-10",
+      "symbol": "MGC",
+      "candidate_event": "Day after the National Day of Mourning",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-10",
+      "symbol": "MYM",
+      "candidate_event": "Day after the National Day of Mourning",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-10",
+      "symbol": "MNQ",
+      "candidate_event": "Day after the National Day of Mourning",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-20",
+      "symbol": "6J",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-20",
+      "symbol": "MGC",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-20",
+      "symbol": "MYM",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-01-20",
+      "symbol": "MNQ",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-02-17",
+      "symbol": "6J",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-02-17",
+      "symbol": "MGC",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-02-17",
+      "symbol": "MYM",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-02-17",
+      "symbol": "MNQ",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-04-17",
+      "symbol": "6J",
+      "candidate_event": "Maundy Thursday — no evening Globex reopen ahead of the Good Friday closure",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-04-17",
+      "symbol": "MGC",
+      "candidate_event": "Maundy Thursday — no evening Globex reopen ahead of the Good Friday closure",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-04-17",
+      "symbol": "MYM",
+      "candidate_event": "Maundy Thursday — no evening Globex reopen ahead of the Good Friday closure",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-04-17",
+      "symbol": "MNQ",
+      "candidate_event": "Maundy Thursday — no evening Globex reopen ahead of the Good Friday closure",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-04-18",
+      "symbol": "6J",
+      "candidate_event": "Good Friday (no NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-04-18",
+      "symbol": "MGC",
+      "candidate_event": "Good Friday (no NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-04-18",
+      "symbol": "MYM",
+      "candidate_event": "Good Friday (no NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-04-18",
+      "symbol": "MNQ",
+      "candidate_event": "Good Friday (no NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-05-26",
+      "symbol": "6J",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-05-26",
+      "symbol": "MGC",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-05-26",
+      "symbol": "MYM",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-05-26",
+      "symbol": "MNQ",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-06-19",
+      "symbol": "6J",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-06-19",
+      "symbol": "MGC",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-06-19",
+      "symbol": "MYM",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-06-19",
+      "symbol": "MNQ",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-06-20",
+      "symbol": "6J",
+      "candidate_event": "Day after Juneteenth (bridge Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-06-20",
+      "symbol": "MGC",
+      "candidate_event": "Day after Juneteenth (bridge Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-06-20",
+      "symbol": "MYM",
+      "candidate_event": "Day after Juneteenth (bridge Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-06-20",
+      "symbol": "MNQ",
+      "candidate_event": "Day after Juneteenth (bridge Friday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-07-03",
+      "symbol": "6J",
+      "candidate_event": "Day before Independence Day (US half-day)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-07-03",
+      "symbol": "MGC",
+      "candidate_event": "Day before Independence Day (US half-day)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-07-03",
+      "symbol": "MYM",
+      "candidate_event": "Day before Independence Day (US half-day)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-07-03",
+      "symbol": "MNQ",
+      "candidate_event": "Day before Independence Day (US half-day)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-07-04",
+      "symbol": "6J",
+      "candidate_event": "Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-07-04",
+      "symbol": "MGC",
+      "candidate_event": "Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-07-04",
+      "symbol": "MYM",
+      "candidate_event": "Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-07-04",
+      "symbol": "MNQ",
+      "candidate_event": "Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-09-01",
+      "symbol": "6J",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-09-01",
+      "symbol": "MGC",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-09-01",
+      "symbol": "MYM",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-09-01",
+      "symbol": "MNQ",
+      "candidate_event": "Labor Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-10-13",
+      "symbol": "6J",
+      "candidate_event": "Columbus Day / Indigenous Peoples' Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-10-13",
+      "symbol": "MGC",
+      "candidate_event": "Columbus Day / Indigenous Peoples' Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-10-13",
+      "symbol": "MYM",
+      "candidate_event": "Columbus Day / Indigenous Peoples' Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-10-13",
+      "symbol": "MNQ",
+      "candidate_event": "Columbus Day / Indigenous Peoples' Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-11-11",
+      "symbol": "6J",
+      "candidate_event": "Veterans Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-11-11",
+      "symbol": "MGC",
+      "candidate_event": "Veterans Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-11-11",
+      "symbol": "MYM",
+      "candidate_event": "Veterans Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-11-11",
+      "symbol": "MNQ",
+      "candidate_event": "Veterans Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-11-27",
+      "symbol": "6J",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-11-27",
+      "symbol": "MGC",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-11-27",
+      "symbol": "MYM",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-11-27",
+      "symbol": "MNQ",
+      "candidate_event": "Thanksgiving Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-11-28",
+      "symbol": "6J",
+      "candidate_event": "Day after Thanksgiving (Black Friday) — SCHEDULED half-day, ACTUAL session destroyed by the CME Globex outage",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-11-28",
+      "symbol": "MGC",
+      "candidate_event": "Day after Thanksgiving (Black Friday) — SCHEDULED half-day, ACTUAL session destroyed by the CME Globex outage",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-11-28",
+      "symbol": "MYM",
+      "candidate_event": "Day after Thanksgiving (Black Friday) — SCHEDULED half-day, ACTUAL session destroyed by the CME Globex outage",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-11-28",
+      "symbol": "MNQ",
+      "candidate_event": "Day after Thanksgiving (Black Friday) — SCHEDULED half-day, ACTUAL session destroyed by the CME Globex outage",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-24",
+      "symbol": "6J",
+      "candidate_event": "Christmas Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-24",
+      "symbol": "MGC",
+      "candidate_event": "Christmas Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-24",
+      "symbol": "MYM",
+      "candidate_event": "Christmas Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-24",
+      "symbol": "MNQ",
+      "candidate_event": "Christmas Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-25",
+      "symbol": "6J",
+      "candidate_event": "Christmas Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-25",
+      "symbol": "MGC",
+      "candidate_event": "Christmas Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-25",
+      "symbol": "MYM",
+      "candidate_event": "Christmas Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-25",
+      "symbol": "MNQ",
+      "candidate_event": "Christmas Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-26",
+      "symbol": "6J",
+      "candidate_event": "Day after Christmas",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-26",
+      "symbol": "MGC",
+      "candidate_event": "Day after Christmas",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-26",
+      "symbol": "MYM",
+      "candidate_event": "Day after Christmas",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-26",
+      "symbol": "MNQ",
+      "candidate_event": "Day after Christmas",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-31",
+      "symbol": "6J",
+      "candidate_event": "New Year's Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-31",
+      "symbol": "MGC",
+      "candidate_event": "New Year's Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-31",
+      "symbol": "MYM",
+      "candidate_event": "New Year's Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2025-12-31",
+      "symbol": "MNQ",
+      "candidate_event": "New Year's Eve",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-01-01",
+      "symbol": "6J",
+      "candidate_event": "New Year's Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-01-01",
+      "symbol": "MGC",
+      "candidate_event": "New Year's Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-01-01",
+      "symbol": "MYM",
+      "candidate_event": "New Year's Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-01-01",
+      "symbol": "MNQ",
+      "candidate_event": "New Year's Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-01-19",
+      "symbol": "6J",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-01-19",
+      "symbol": "MGC",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-01-19",
+      "symbol": "MYM",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-01-19",
+      "symbol": "MNQ",
+      "candidate_event": "Martin Luther King Jr. Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-02-16",
+      "symbol": "6J",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-02-16",
+      "symbol": "MGC",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-02-16",
+      "symbol": "MYM",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-02-16",
+      "symbol": "MNQ",
+      "candidate_event": "Presidents Day (Washington's Birthday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-04-02",
+      "symbol": "6J",
+      "candidate_event": "Thursday before Good Friday — metals evening reopen suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-04-02",
+      "symbol": "MGC",
+      "candidate_event": "Thursday before Good Friday — metals evening reopen suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-04-02",
+      "symbol": "MYM",
+      "candidate_event": "Thursday before Good Friday — metals evening reopen suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-04-02",
+      "symbol": "MNQ",
+      "candidate_event": "Thursday before Good Friday — metals evening reopen suppressed",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-04-03",
+      "symbol": "6J",
+      "candidate_event": "Good Friday (coincides with the March Employment Situation / NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-04-03",
+      "symbol": "MGC",
+      "candidate_event": "Good Friday (coincides with the March Employment Situation / NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-04-03",
+      "symbol": "MYM",
+      "candidate_event": "Good Friday (coincides with the March Employment Situation / NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-04-03",
+      "symbol": "MNQ",
+      "candidate_event": "Good Friday (coincides with the March Employment Situation / NFP release)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-05-25",
+      "symbol": "6J",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-05-25",
+      "symbol": "MGC",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-05-25",
+      "symbol": "MYM",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-05-25",
+      "symbol": "MNQ",
+      "candidate_event": "Memorial Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-06-19",
+      "symbol": "6J",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-06-19",
+      "symbol": "MGC",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-06-19",
+      "symbol": "MYM",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-06-19",
+      "symbol": "MNQ",
+      "candidate_event": "Juneteenth National Independence Day",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-07-02",
+      "symbol": "6J",
+      "candidate_event": "Thursday before the observed Independence Day holiday",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-07-02",
+      "symbol": "MGC",
+      "candidate_event": "Thursday before the observed Independence Day holiday",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-07-02",
+      "symbol": "MYM",
+      "candidate_event": "Thursday before the observed Independence Day holiday",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-07-02",
+      "symbol": "MNQ",
+      "candidate_event": "Thursday before the observed Independence Day holiday",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-07-03",
+      "symbol": "6J",
+      "candidate_event": "Independence Day (observed; July 4 falls on a Saturday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-07-03",
+      "symbol": "MGC",
+      "candidate_event": "Independence Day (observed; July 4 falls on a Saturday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-07-03",
+      "symbol": "MYM",
+      "candidate_event": "Independence Day (observed; July 4 falls on a Saturday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-07-03",
+      "symbol": "MNQ",
+      "candidate_event": "Independence Day (observed; July 4 falls on a Saturday)",
+      "status": "PRIMARY_COVERAGE_GAP",
+      "source_id": null
+    },
+    {
+      "wall_date": "2026-09-07",
+      "symbol": "6J",
+      "candidate_event": "Labor Day",
+      "status": "OBSERVED_EVENTS_ONLY",
+      "source_id": "cme-ui-labor-2026"
+    },
+    {
+      "wall_date": "2026-09-07",
+      "symbol": "MGC",
+      "candidate_event": "Labor Day",
+      "status": "OBSERVED_EVENTS_ONLY",
+      "source_id": "cme-ui-labor-2026"
+    },
+    {
+      "wall_date": "2026-09-07",
+      "symbol": "MYM",
+      "candidate_event": "Labor Day",
+      "status": "OBSERVED_EVENTS_ONLY",
+      "source_id": "cme-ui-labor-2026"
+    },
+    {
+      "wall_date": "2026-09-07",
+      "symbol": "MNQ",
+      "candidate_event": "Labor Day",
+      "status": "OBSERVED_EVENTS_ONLY",
+      "source_id": "cme-ui-labor-2026"
+    }
+  ]
+}

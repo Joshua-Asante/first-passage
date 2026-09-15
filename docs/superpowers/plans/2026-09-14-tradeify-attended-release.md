@@ -121,6 +121,11 @@ This is a gated program plan. Fully design the next independently deliverable sl
 
 **Execution checkpoint:** [intake progress and bounded emulator correction](../../notes/2026-09-15-tradeify-packet1-intake-progress.md). Corrected O-N collected under Joshua's decision to preserve the pinned source; seven diagnostic comparisons match. Formal admission/shared-law parity and calendar/settlement acceptance remain open.
 
+**Continuation:** [execution domain and evidence status](../../notes/2026-09-15-packet1-execution-domain.md)
+records the unchanged-source attestation, September 30 forward horizon, shared-law
+and finite-margin diagnostics, reviewed exact-byte admission runner, offline sealer,
+five Striker summary reconciliations and remaining acceptance gaps. Packet 1 is open.
+
 **Outcome:** admitted strategy inputs and a common source-backed calendar/settlement contract suitable for replay and runtime consumers.
 
 **Files/components:** existing seven-bundle intake ledger/interface proposal; private parity harness and pinned ports; `ops/c1_signal_daemon/book_protocol.py`; TB-C1 calendar/overlay artifacts under `ops/calendars/`; TB-T1 snapshot/sealer consumers; `book_sizing_context.py`.
@@ -131,6 +136,83 @@ This is a gated program plan. Fully design the next independently deliverable sl
 - [ ] Test early closes, DST, missing coverage, duplicate/out-of-order settlement and stale seals. Ensure missing inputs refuse permission rather than select a default mode/session.
 
 **Acceptance:** seven accepted bundles and all required mode/quantity parity PASS; source-backed schedule and accepted settlement interface. Calendar data is reverified from official sources at execution, not assumed from policy examples.
+
+#### Packet 1 completion sequence — 2026-09-15
+
+Planning response to Joshua's request for the completion sequence; no new runtime
+execution or external access authorization is implied. Coordinator owns combined
+acceptance. Preserve the implemented/tested components and existing evidence.
+
+1. **Resolve producer feasibility first — COMPLETE (source route/design only).**
+   Retain D19's already accepted historical date-membership artifact unchanged;
+   establish a reachable official source for the bounded forward calendar. Inspect the actual
+   available account statement/history format and identify how authenticated
+   operator submission can establish account, session and fees/adjustments, paired
+   with the required Tradeify dashboard source for initial EOD peak (D23; never
+   reconstructed from statements). Record unsupported facts immediately. The offline sealer and observer
+   cannot stand in for missing facts. Resolve any needed contract amendment before
+   implementing a producer; private account access retains its authorization gate.
+   **2026-09-15 probe:** actual balance/cash report access demonstrated. See
+   [producer feasibility](../../notes/2026-09-15-packet1-producer-feasibility.md)
+   for retained evidence, source limits and concrete unblock requirements.
+   **Follow-up:** [calendar/account resolution](../../notes/2026-09-15-calendar-account-contract-resolution.md)
+   records the product/date inventory, four actual Labor Day product observations,
+   source-side archive block and the operator-approved attended settlement contract.
+   The original universal primary historical-archive prerequisite overreached D19
+   and TB-C1. D19 supplies date membership only, never product matching hours or
+   missing-bar explanations. Use CME public product schedules plus venue guidance
+   for September 3–30 forward qualification; four actual September 7 product
+   lookups demonstrate access. Typed no-trade overlays stay separate. The approved
+   session-key/C8 clarifications are reconciled into their owners. Actual calendar
+   and account producer acceptance remain Steps 4/5, with no defaulted facts.
+2. **Finish ORB reconciliation — COMPLETE.** Capture the two summary panels for the existing
+   fixed-window O-N/O-P cases; reconcile under the same D17/D32 rules as Striker.
+   Prove O-P's differing inactive add inputs are inert, or recapture only that case
+   with the pinned inputs. Preserve every original export and capture. Exit:
+   seven reviewed reconciliation records, with no source or parameter search.
+   **2026-09-15:** both fresh ORB summaries reconcile; all seven case records PASS
+   under D17/D32. O-P's inactive add inputs are supported by pinned-source control
+   flow and equal fresh panels at captured/pinned settings. Original exports stay
+   unchanged. See [Step 2 evidence](../../notes/2026-09-15-packet1-execution-domain.md#packet-1-step-2--orb-summary-reconciliation).
+3. **Close startup and coverage.** Establish the deep-backtest calculation origin,
+   each adapter's required startup history and exact panel endpoints. Classify
+   missing bars against the accepted session evidence from step 4; do not silently
+   truncate trades or backfill with invented bars. Exit: reviewed coverage reports
+   binding panel bytes, source settings and the complete comparison interval.
+4. **Accept and implement the shared calendar.** Reuse immutable D19 through
+   2026-09-02 for its accepted historical date-membership purpose only. Produce
+   separately identified forward rows for 2026-09-03 through 2026-09-30 from
+   retained official product schedules and venue guidance. Bind product/session
+   identities and every matching boundary/deadline actually consumed. Historical
+   matching or missing-bar claims require their own supporting evidence; D19
+   cannot supply times or prove exchange closure. Keep typed book no-trade overlays
+   for 2023-04-07, 2025-01-09 and 2026-04-03 separate from exchange market states.
+   Supply the existing `BookSession` consumer. Exit: source review plus executable
+   early-close, DST, closure/reopen and absent/expired-coverage refusals. Step 3's
+   gap classification completes once these rows are accepted.
+5. **Complete settlement ingestion through its real consumer.** Using the producer
+   established in step 1, bind authenticated submission and retained evidence to
+   the exact account/prior session; verify contents before producing `SettledClose`.
+   Keep simulated replay closes explicitly separate from live evidence. Persist
+   accepted identity/order so duplicates, conflicting revisions and older records
+   cannot regress state across restart. Exercise `book_sizing_context` with valid,
+   missing, wrong-account/session, incomplete, stale and tampered records. Exit:
+   reviewed producer-to-consumer evidence; initial snapshot and later-session
+   activation remain distinct. No settlement acceptance grants resume permission.
+6. **Admit, reproduce and close.** Assemble complete candidate evidence, including
+   panel/runtime-bound shared-law and finite-margin verification. Review it before
+   issuing the independent admission contract. Then execute all seven admitted
+   bundles through `run_bundle_parity` at quantity scale 1 with no excluded trades,
+   retained finite-margin checks and resolved final state. Run relevant regressions
+   and repository gates; obtain final combined review and record revision/digests.
+   Exit: seven admitted PASS bundles, accepted calendar and settlement interface,
+   and every Packet 1 acceptance item supported by evidence. Prepare the commit/PR
+   handoff; Packet 2 and live gates are not completion substitutes.
+
+Step 3 is next; its calendar-dependent checks join Step 4. Do not spend
+another broad implementation pass on a producer
+whose required evidence is unavailable. A failed feasibility check produces an
+exact source/contract blocker, not another generic placeholder interface.
 
 ### Packet 2 — One complete offline four-leg execution path
 

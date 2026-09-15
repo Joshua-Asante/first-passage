@@ -3,6 +3,17 @@
 Status: PROPOSED · 2026-09-12 (rev 4, #358 Codex capture-ordering and output-collision findings closed) · authorizes nothing ($0 · K=0) · depends: [Track B umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) TB-T1 / TB-B7 stubs · campaign-state §17 / D23 (evidence class) · campaign-state §15 item 2 (recapture immediately before arming) · [used-account kernel](../superpowers/plans/2026-09-05-tradeify-used-account-kernel.md) (no adjustments, no pending orders)
 Objective: fix the fields, evidence files, checks and output of the B7 account-snapshot sealer so Codex can build the tool now (TB-T1) while the fresh live snapshot itself stays a later operator gate; TB-P1 cites this contract instead of restating it.
 
+Approved C8 clarification, 2026-09-15 UTC: identifiable transaction-linked
+commission, exchange, clearing and NFA costs belong once in net equity, even when
+reported as separate fee rows. They are not external cash adjustments and must
+not be deducted again. Unlinked or unknown fees refuse acceptance. Establish the
+initial nominal funding as the frozen account basis using lifecycle evidence;
+never silently exclude an ambiguous deposit. Later deposits, withdrawals, resets
+and other adjustments remain out of scope; C8 still requires the sum of absolute
+adjustments to be zero. No numeric check, output field, expiry or n3 gate changes.
+See the [approved ongoing settlement contract](2026-09-15-tradeify-attended-settlement-contract.md),
+which does not replace this initial B7 seal.
+
 Fields (the operator types the dashboard values; the tool derives, never guesses):
 
 | Field | Source | Typed / derived | Rule |
@@ -16,7 +27,7 @@ Fields (the operator types the dashboard values; the tool derives, never guesses
 | `prior_max_day_profit` | dashboard `Highest Profit Day` (E1) | typed | non-negative |
 | `consistency_display_pct` | dashboard `Consistency` (E1) | typed | informational cross-check (C6) |
 | `profit_target_display` | dashboard `Profit Target` denominator (E1) | typed | must equal `starting_balance × profit_target_pct / 100` (C7) |
-| `cash_adjustments_total` | statement (E3): deposits, withdrawals, fees outside commissions, manual adjustments | typed from E3 | **must be exactly zero** (C8); sum of absolute adjustment amounts, never the signed net — the kernel defines no adjustment semantics |
+| `cash_adjustments_total` | statement (E3): deposits, withdrawals, fees outside identifiable transaction-linked trading costs, manual adjustments; initial funding requires the lifecycle classification above | typed from E3 | **must be exactly zero** (C8); sum of absolute adjustment amounts, never the signed net — the kernel defines no adjustment semantics |
 | `token_trade_fill_dates` | statement (E3) | typed list of ISO dates | informational (weekly preservation-trade evidence); parse only |
 | `positions_export_shows_flat` | E2 | typed boolean attestation | must be `true` (C3); positions only — working orders are attested separately by `working_orders_count` |
 | `working_orders_count` | E2 | typed non-negative integer | must be `0` (C3): a resting entry, stop or limit order is a pending order the kernel forbids; required even when positions are flat |

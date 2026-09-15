@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import io
 import json
 import math
 import os
@@ -105,7 +106,12 @@ def locate_export(leg_id: str) -> Path:
 
 
 def load_export(path: Path) -> list[ExportTrade]:
-    rows = list(csv.DictReader(path.open(encoding="utf-8-sig")))
+    return load_export_bytes(path.read_bytes())
+
+
+def load_export_bytes(payload: bytes) -> list[ExportTrade]:
+    """Parse a byte snapshot; callers can bind its hash before parsing."""
+    rows = list(csv.DictReader(io.StringIO(payload.decode("utf-8-sig"))))
     by_no: dict[int, dict[str, dict]] = {}
     for r in rows:
         kind = r["Type"].split()[0]
