@@ -3,6 +3,11 @@
 Status: PROPOSED · 2026-09-12 (rev 4, #358 Codex capture-ordering and output-collision findings closed) · authorizes nothing ($0 · K=0) · depends: [Track B umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) TB-T1 / TB-B7 stubs · campaign-state §17 / D23 (evidence class) · campaign-state §15 item 2 (recapture immediately before arming) · [used-account kernel](../superpowers/plans/2026-09-05-tradeify-used-account-kernel.md) (no adjustments, no pending orders)
 Objective: fix the fields, evidence files, checks and output of the B7 account-snapshot sealer so Codex can build the tool now (TB-T1) while the fresh live snapshot itself stays a later operator gate; TB-P1 cites this contract instead of restating it.
 
+Input parsing: duplicate JSON keys at any depth refuse as `C2` before evidence
+validation or output writes, including identical repeated values and keys that
+decode to the same name through JSON escapes. Refusal prints only the check ID;
+the manifest, evidence files and any existing seal remain unchanged.
+
 Approved C8 clarification, 2026-09-15 UTC: identifiable transaction-linked
 commission, exchange, clearing and NFA costs belong once in net equity, even when
 reported as separate fee rows. They are not external cash adjustments and must

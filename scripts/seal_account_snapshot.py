@@ -187,9 +187,18 @@ def write_private(output, canonical_evidence, document, manifest_path):
 
 
 def seal(args):
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            require(key not in result, "C2")
+            result[key] = value
+        return result
+
     try:
         # Numeric NaN/Infinity are rejected by the owning check rather than echoed.
-        manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+        # Reject ambiguous keys in every object, including decoded escape aliases.
+        manifest = json.loads(args.manifest.read_text(encoding="utf-8"),
+                              object_pairs_hook=unique_object)
         require(isinstance(manifest, dict), "C2")
         values, captures = manifest["values"], manifest["captured_at"]
     except (OSError, KeyError, TypeError, ValueError) as exc:

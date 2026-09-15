@@ -36,10 +36,12 @@ def case(tmp_path):
     return tmp_path, manifest, evidence
 
 
-def run(case, *, seal="2026-09-14T17:20:00-04:00", output="private/seal.json", cwd=None, extra=()):
+def run(case, *, seal="2026-09-14T17:20:00-04:00", output="private/seal.json", cwd=None, extra=(),
+        raw_manifest=None):
     root, manifest, evidence = case
     manifest_path = root / "manifest.json"
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    manifest_path.write_text(json.dumps(manifest) if raw_manifest is None else raw_manifest,
+                             encoding="utf-8")
     # The production CLI has no clock override. Inject a synthetic clock only
     # in this subprocess test harness, keeping stdout/stderr behavior intact.
     harness = (
@@ -95,6 +97,40 @@ def test_carried_drawdown(case):
     derived = json.loads(output.read_text())["derived"]
     assert derived["carried_drawdown"] == 1000
     assert derived["at_high_water_mark"] is False
+
+
+@pytest.mark.parametrize("variant", [
+    "values", "captured_at", "balance", "capture", "escaped_balance", "identical_balance",
+])
+@pytest.mark.parametrize("existing_output", [False, True])
+def test_duplicate_manifest_keys_refuse_without_writing_or_leaking(case, variant, existing_output):
+    raw = json.dumps(case[1])
+    replacements = {
+        "values": ('"values":', '"values": "SYNTHETIC_PRIVATE_TEXT", "values":'),
+        "captured_at": ('"captured_at":', '"captured_at": "SYNTHETIC_PRIVATE_TEXT", "captured_at":'),
+        "balance": ('"balance":', '"balance": 0, "balance":'),
+        "capture": ('"E1":', '"E1": "2099-01-01T00:00:00Z", "E1":'),
+        "escaped_balance": ('"balance":', '"\\u0062alance": 0, "balance":'),
+        "identical_balance": ('"balance":', '"balance": 102000, "balance":'),
+    }
+    target, replacement = replacements[variant]
+    assert raw.count(target) == 1
+    raw = raw.replace(target, replacement, 1)
+    # Every payload would otherwise pass under last-key-wins parsing.
+    assert json.loads(raw) == case[1]
+    output = case[0] / 'private/seal.json'
+    previous = b'SYNTHETIC EXISTING SEAL'
+    if existing_output:
+        output.parent.mkdir()
+        output.write_bytes(previous)
+    evidence_before = {role: path.read_bytes() for role, path in case[2].items()}
+    result, _ = run(case, raw_manifest=raw)
+    assert result.returncode == 2
+    assert result.stdout == ''
+    assert result.stderr == 'C2\n'
+    assert output.read_bytes() == previous if existing_output else not output.exists()
+    assert {role: path.read_bytes() for role, path in case[2].items()} == evidence_before
+    assert (case[0] / 'manifest.json').read_text(encoding='utf-8') == raw
 
 
 @pytest.mark.parametrize("variant", ["missing", "empty", "alias", "identical"])
