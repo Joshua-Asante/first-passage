@@ -1,6 +1,6 @@
 ---
 name: root-cause-first
-description: Use at the moment a fix is about to be written or reviewed — "fix this", "make the test pass", "green the CI", "it's flaky, add a retry", "just guard it", "wrap it in try/except", "widen the parser", a diff that adds a None-check, default, retry, broad except or looser schema, or a hook/daemon/script that "handles" an error by exiting 0 — and whenever the first visible error is a TypeError, None, KeyError, schema or parse error, which is a symptom until the upstream mechanism is named. Bans the band-aid moves until the root cause is stated in one sentence, prescribes the backward call-chain trace and the first-unintended-write hunt, and requires a ROOT CAUSE / FIX / VERIFICATION block with a regression test that reproduces the original failure. Encodes the repo's designed fail-open doctrines (risk-reduction exits on the rail, report-only hooks) so the ban never contradicts them. Gate layered on code-defect-debugging, which owns reproduction and boundary logging; sibling of verify-source and fable-method's INTENT line. Changes no strategy parameters, allocations, dd_protection constants, or MC calibration.
+description: Use at the moment a fix is about to be written or reviewed — "fix this", "make the test pass", "green the CI", "it's flaky, add a retry", "just guard it", "wrap it in try/except", "widen the parser", a diff that adds a None-check, default, retry, broad except or looser schema, or a hook/daemon/script that "handles" an error by exiting 0 — and whenever the first visible error is a TypeError, None, KeyError, schema or parse error, which is a symptom until the upstream mechanism is named. Bans the band-aid moves until the root cause is stated in one sentence, prescribes the backward call-chain trace and the first-unintended-write hunt, and requires a ROOT CAUSE / FIX / VERIFICATION block with a regression test that reproduces the original failure (or, for an unmodifiable external source, captured evidence plus a consumer-side test). Encodes the repo's designed fail-open doctrines (risk-reduction exits on the rail, report-only hooks) so the ban never contradicts them. Gate layered on code-defect-debugging, which owns reproduction and boundary logging; sibling of verify-source and fable-method's INTENT line. Changes no strategy parameters, allocations, dd_protection constants, or MC calibration.
 ---
 
 # root-cause-first — name the mechanism before you touch the code
@@ -136,10 +136,15 @@ a failure into success is a band-aid whatever the comment above it says.
    over a downstream contract; never make a contract more permissive unless the observed payload
    is proven intended in the final design. An architectural concern found on the way goes to a
    Notice log or ADR candidate, not into the fix.
-7. **Verify against the original failure.** A regression test that reproduces the original
-   symptom, fails on the pre-fix code and passes after; then the surrounding gates (fable-method
-   Step 5b); then the `TWINS:` sweep, extended per M-24 to independent re-encodings that share no
-   identifier with the fixed site.
+7. **Verify against the original failure.** For a fix that lands in repository code: a
+   regression test that reproduces the original symptom, fails on the pre-fix code and passes
+   after. For a defect in an unmodifiable external source (the TradingView JPY case,
+   `code-defect-debugging` §7): no repository test can reproduce the upstream symptom, so the
+   verification is the captured failing evidence — the offending input and the observed wrong
+   output, pinned where the consumer-side rule is recorded — plus a consumer-side test that fails
+   when the rule is absent (`code-defect-debugging` Phase 4 item 7). Then the surrounding gates
+   (fable-method Step 5b); then the `TWINS:` sweep, extended per M-24 to independent
+   re-encodings that share no identifier with the fixed site.
 8. **Defense after the cause, never instead of it.** With the mechanism fixed, layered validation
    at the boundaries the bad value crossed is welcome, and it fails *closed*: the layer-boundaries
    ADR's "unresolved first-party imports fail closed"
@@ -157,8 +162,9 @@ FIX: <what changed, where, at which layer; the band-aids rejected and why>
 VERIFICATION: <regression test node that reproduced the symptom; gates run; remaining risk>
 ```
 
-A fix report without the first line is a symptom fix by definition. A `VERIFICATION:` line
-naming no test that fails on the pre-fix code is verification theater (fable-method failure
+A fix report without the first line is a symptom fix by definition. A `VERIFICATION:` line that
+names neither a test failing on the pre-fix code nor, for an external-source defect, the
+captured evidence and the consumer-side test, is verification theater (fable-method failure
 mode 14).
 
 ## Rationalizations — STOP if you think one

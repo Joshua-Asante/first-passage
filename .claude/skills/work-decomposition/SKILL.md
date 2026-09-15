@@ -142,7 +142,7 @@ inline under the session's own checklist (fable-method Step 4.4).
    per the surface-allocation ADR's §Decision clause "Orchestrating more than one worker at a
    time"; one frozen build above the handoff-overhead
    threshold → a single `cc_handoff` brief for a Claude Code session, or a Codex task carrying the
-   same §0 / §0.5 / §5 / §6 content; judgment or locked-surface work → the orchestrating Claude
+   same §0 / §0.5 / §0.75 / §5 / §6 content; judgment or locked-surface work → the orchestrating Claude
    session; work that still fits one session but needs ordering → the session's own checklist.
    Environment per child → the local-only checklist in `task-routing`.
 6. **Hand the children off.** Packet authoring is `brief-authoring` (cc_handoff template),
