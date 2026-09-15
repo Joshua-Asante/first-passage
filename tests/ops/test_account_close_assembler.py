@@ -82,6 +82,15 @@ def synthetic():
     return cash, files, bal1, bal2
 
 
+def predecessor_inventory():
+    """Independent synthetic sealed history before the first close under test."""
+    from account_close_ledger import transactions_for
+    cash, _, _, _ = synthetic()
+    rows, _ = parse_cash_windows(cash, report_tz=CT)
+    return {"report_timezone": CT.key, "ledger": {"transactions": [t for t in transactions_for(rows)
+        if t["session_id"] <= S11]}}
+
+
 def build(cash, files, bal1, bal2, **over):
     args = dict(account_id=ACCOUNT, cash=cash, dashboard_balance=f"{bal2:,.2f}",
                 dashboard_threshold=str(max(bal1, bal2) - 3000), inception_utc=datetime(2026, 7, 18, 15, tzinfo=timezone.utc),
@@ -127,7 +136,7 @@ def test_exports_reconcile_into_a_package_the_verifier_and_consumer_accept():
     assert sum(s["role"].startswith("cash_history") for s in package["sources"]) == 6
     head = {"session_id": S11, "package_sha256": "0" * 64, "equity": str(bal1), "peak": str(bal1),
             "as_of_utc": "2026-09-11T21:00:00Z"}
-    assert verify_package(package, sources, head=head, previous_package=None, account=ACCOUNT,
+    assert verify_package(package, sources, head=head, previous_package=predecessor_inventory(), account=ACCOUNT,
                           calendar_digest=CALENDAR.calendar_digest, policy_digest="b" * 64, calendar=CALENDAR,
                           scope="submit_account_close", now=NOW) is None
     close = SettledClose(S14, CALENDAR.schedule_for(S14).closes_at, float(bal2), float(bal1),
@@ -216,7 +225,7 @@ def test_defective_exports_are_refused_or_flagged(defect, match):
         assert not (report["dashboard_balance_equals_net_equity"] and report["dashboard_threshold_plus_width_equals_peak"])
         head = {"session_id": S11, "package_sha256": "0" * 64, "equity": str(bal1), "peak": str(bal1),
                 "as_of_utc": "2026-09-11T21:00:00Z"}
-        assert verify_package(package, sources, head=head, previous_package=None, account=ACCOUNT,
+        assert verify_package(package, sources, head=head, previous_package=predecessor_inventory(), account=ACCOUNT,
                               calendar_digest=CALENDAR.calendar_digest, policy_digest="b" * 64, calendar=CALENDAR,
                               scope="submit_account_close", now=NOW) == "dashboard_disagreement"
     else:
@@ -273,7 +282,7 @@ def test_historical_catch_up_tolerates_later_session_fills_with_venue_equity():
 def verify_assembled(pkg, sources, bal1):
     return verify_package(pkg, sources, head={"session_id": S11, "package_sha256": "0" * 64,
         "equity": str(bal1), "peak": str(bal1), "as_of_utc": "2026-09-11T21:00:00Z"},
-        previous_package=None, account=ACCOUNT, calendar_digest=CALENDAR.calendar_digest,
+        previous_package=predecessor_inventory(), account=ACCOUNT, calendar_digest=CALENDAR.calendar_digest,
         policy_digest="b" * 64, calendar=CALENDAR, scope=pkg["scope"], now=NOW)
 
 

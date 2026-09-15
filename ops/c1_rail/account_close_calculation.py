@@ -5,14 +5,16 @@ import json
 import math
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from book_policy import FIRM_RULES, TIER, ProtectionPolicy, is_protected, require_policy
 from book_session_calendar import SessionCalendar
 from c1_signal_daemon.book_protocol import Mode
-from account_close_evidence import sha256_hex, verify_source_manifest, verify_history_coverage
+from account_close_evidence import (sha256_hex, verify_source_manifest, verify_history_coverage,
+    AssemblyError, SourceFile, parse_cash_windows, parse_balance_history, COST_TYPES)
+from account_close_ledger import reconcile, equity_at_end_of, check_balance_history, transactions_for
 
 CONTRACT = "docs/spec/2026-09-15-tradeify-attended-settlement-contract.md"
 
@@ -193,6 +195,7 @@ def _v7_chronology(c: _Ctx):
         return "chronology:inception_not_before_close"
     if c.effective > now:
         return "chronology:effective_close_in_future"
+    published = None
     if p["source_publication_utc"] is not None:
         published = _utc(p["source_publication_utc"])
         if published is None or published > now:
@@ -209,6 +212,8 @@ def _v7_chronology(c: _Ctx):
                 return "chronology:stale_evidence"
             if (role in CLOSE_SENSITIVE_ROLES or role.startswith("cash_history")) and captured < c.effective:
                 return "chronology:capture_before_effective_close"
+        if published is not None and role != "inception" and published > captured:
+            return "chronology:publication_after_capture"
         captures[role] = captured
     if p["dashboard"]["captured_utc"] != c.roles["dashboard"]["captured_utc"] or \
             p["positions"]["captured_utc"] != c.roles["positions"]["captured_utc"]:
@@ -267,8 +272,11 @@ def _v10_transactions(c: _Ctx):
         return "duplicate_transaction_id"
     if ledger["revisions"] != []:
         return "transaction_revision_detected"
-    # A B7 predecessor has no transaction inventory, but a current close still
-    # cannot include later-session activity. Earlier inception history is valid.
+    if c.prev is None:
+        return "predecessor_inventory_required"
+    if c.prev.get("report_timezone") != c.p["report_timezone"]:
+        return "report_timezone_changed"
+    # Current closes cannot include later-session activity. Earlier history is valid.
     if c.scope == "submit_account_close" and any(t["session_id"] > c.p["session_id"] for t in txs):
         return "history_changed"
     if c.prev is not None:
@@ -278,6 +286,71 @@ def _v10_transactions(c: _Ctx):
             return "history_changed"
         if any(t["id"] not in before and t["session_id"] <= c.head["session_id"] for t in txs):
             return "history_changed"
+    return None
+
+
+def _v10_source_ledger(c: _Ctx):
+    """Recompute all machine-readable claims from the hash-bound original reports."""
+    p, claimed = c.p, c.p["ledger"]
+    tz = ZoneInfo(p["report_timezone"])
+    by_file = {s["file"]: s for s in c.roles.values()}
+    windows = claimed["coverage"]["windows"]
+    cash = []
+    for win in windows:
+        src = by_file[win["file"]]
+        start, end = _utc(win["from_utc"]).astimezone(tz), _utc(win["to_utc"]).astimezone(tz)
+        # Coverage uses exclusive endpoints; UI query labels are inclusive dates.
+        last = end.date() - timedelta(days=1) if end.time() == time(0) else end.date()
+        cash.append(SourceFile("cash_history", src["file"], c.sources[src["file"]],
+            _utc(src["captured_utc"]), start.date(), last, win["complete"], c.account))
+    try:
+        rows, report = parse_cash_windows(cash, report_tz=tz)
+        for source, window in zip(cash, windows):
+            source_rows, _ = parse_cash_windows([source], report_tz=tz)
+            start, end = _utc(window["from_utc"]), _utc(window["to_utc"])
+            inclusive_end = end == source.captured_utc
+            if any(r.ts_utc < start or r.ts_utc > end or (r.ts_utc == end and not inclusive_end)
+                   for r in source_rows):
+                return "source_row_outside_coverage"
+        if report["revisions"]:
+            return "transaction_revision_detected"
+        if {w["file"]: w["rows"] for w in report["windows"]} != {w["file"]: w["rows"] for w in windows}:
+            return "source_row_count_mismatch"
+        actual = transactions_for(rows)
+        before = {t["id"]: (t["sha256"], t["session_id"]) for t in c.prev["ledger"]["transactions"]}
+        after = {t["id"]: (t["sha256"], t["session_id"]) for t in actual}
+        if any(after.get(k) != v for k, v in before.items()) or any(
+                t["id"] not in before and t["session_id"] <= c.head["session_id"] for t in actual):
+            return "history_changed"
+        if actual != claimed["transactions"]:
+            return "source_transactions_mismatch"
+        ledger = reconcile(rows)
+        balances = parse_balance_history(c.sources[c.roles["balance_history"]["file"]], account_id=c.account)
+        if check_balance_history(ledger, balances)["mismatches"]:
+            return "source_balance_disagreement"
+    except (AssemblyError, ValueError, TypeError, KeyError, AttributeError, ArithmeticError):
+        return "source_ledger_invalid"
+    if ledger.unknown_rows or ledger.unlinked_fee_rows or ledger.adjustments_abs_total:
+        return "source_ledger_unclassified"
+    if ledger.fund_row.ts_utc < c.inception:
+        return "source_activity_before_inception"
+    day = date.fromisoformat(p["session_id"].split(":")[1])
+    prior_day = date.fromisoformat(c.head["session_id"].split(":")[1])
+    bucket = ledger.sessions.get(day, {"gross": Decimal(0), "costs": {k: Decimal(0) for k in COST_TYPES.values()}, "rows": 0})
+    if (_decimal(claimed["predecessor_net_equity"]) != equity_at_end_of(ledger, prior_day)
+            or c.net_equity != equity_at_end_of(ledger, day)
+            or _decimal(claimed["gross_trade_pnl"]) != bucket["gross"]
+            or any(_decimal(claimed["trading_costs"][k]) != v for k, v in bucket["costs"].items())):
+        return "source_ledger_disagreement"
+    venue_row = next((total for d, total, _ in balances if d == day), None)
+    if p["settlement_basis"] == "VENUE_ROW":
+        if venue_row != c.net_equity:
+            return "source_close_row_missing"
+    else:
+        prior_rows = [(d, total) for d, total, _ in balances if d <= day]
+        if venue_row is not None or bucket["rows"] or not prior_rows or prior_rows[-1][1] != c.net_equity:
+            return "source_no_activity_unproven"
+    c.full_history_equity = rows[-1].amount_after
     return None
 
 
@@ -313,7 +386,7 @@ def _v12_dashboard(c: _Ctx):
     if not math.isfinite(float(c.net_equity)) or not math.isfinite(float(c.peak)) or float(c.peak) <= 0:
         return "numeric_range"
     if c.scope == "record_only":
-        if threshold + _WIDTH < c.peak:
+        if balance != c.full_history_equity or threshold + _WIDTH < c.peak:
             return "dashboard_disagreement"
     elif balance != c.net_equity or threshold + _WIDTH != c.peak:
         return "dashboard_disagreement"
@@ -327,7 +400,7 @@ def _v13_attestations(c: _Ctx):
 
 
 _INVARIANTS = (_v1_shape, _v2_account, _v3_scope, _v4_digests, _v5_session_chain, _v6_effective_close,
-               _v8_sources, _v7_chronology, _v9_ledger, _v10_transactions, _v11_close_equity, _v12_dashboard,
+               _v8_sources, _v7_chronology, _v9_ledger, _v10_transactions, _v10_source_ledger, _v11_close_equity, _v12_dashboard,
                _v13_attestations)
 
 
@@ -373,6 +446,6 @@ def calculate_close(package: dict, sources: dict[str, bytes], *, policy: Protect
         calendar_digest=calendar_digest, policy_digest=policy_digest, calendar=calendar, scope=scope,
         now=now, issued_utc=issued_utc)
     if isinstance(result, str):
-        return Refusal(result)
+        return Refusal(result, halt_required=result in {"history_changed", "transaction_revision_detected", "out_of_order_settlement", "report_timezone_changed"})
     mode = Mode.PROTECTED if is_protected(float(result.net_equity), float(result.peak), policy) else Mode.NORMAL
     return ProposedClose(result.net_equity, result.peak, mode)
