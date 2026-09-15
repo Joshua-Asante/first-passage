@@ -671,3 +671,19 @@ files parse, no forward row inside the frozen D19 window, overlay rows carry
 sessions and remaining ratification are in the
 [Step 4 record](../../notes/2026-09-15-packet1-step4-session-calendar.md). Nothing
 here admits a bundle, grants activation or changes D19.
+
+## September 15 — O-8 narrowed by the Step 3 provider-reset correction (pending operator ratification)
+
+O-8's ruling ("keep as captured") is retained in its mechanism: the live Vanguard
+adapter keeps the TradingView daily-key latch exactly as ported, and the reset
+table stays inside the active-leg digest. The Step 3 acceptance corrected the
+table's date membership from the NYSE holiday list to the provider-observed
+daily-reset grouping (three dates removed; 189,116 observed MGC/MYM bars matched;
+Vanguard parity unchanged at every row). This is an evidence correction of the
+merge model, not a strategy change and not a pre-registration event; the captured
+no-trade artefact on the sessions after the retained holiday dates is still
+reproduced. The table is qualified through 2026-09-03 only. If the operator rules
+that the date-set change is a strategy change, the three dates are restored and
+Step 3 reopens. Owner reconciliation: the
+[rail extension spec's O-8 paragraph](../../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md)
+and the [Step 3 acceptance](../../notes/2026-09-15-packet1-step3-acceptance.md).

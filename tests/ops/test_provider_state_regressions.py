@@ -1,10 +1,31 @@
-"""Synthetic state regressions; direct provider observations are retained privately."""
+"""Synthetic state regressions; direct provider observations are retained privately.
+
+The Striker cases run only against the reviewed corrected candidate port (Step 3
+acceptance, ``corrected-ports/`` generation, digest below). With ``FP_PORT_ROOT``
+unset the loader resolves the preserved original port, which lacks the reset and
+fee corrections; running the regressions against it would fail for the wrong
+reason, so they skip with the digest they expect instead.
+"""
 from datetime import datetime, timezone
 
 import pytest
 
-from c1_signal_daemon.book_adapters import load_port, port_available
+from c1_signal_daemon.book_adapters import load_port, port_available, port_sha256
 from c1_signal_daemon.pine_ta import tv_daily_key
+
+STRIKER = 'dj30_mym_p250'
+CORRECTED_STRIKER_SHA256 = 'efd479b6b4c7eeaa7d8df3f40f36593f87d96b9d5f512dc79c4dd9b0520211f4'
+
+
+def corrected_striker():
+    """Load the reviewed corrected Striker candidate or skip; never the original port."""
+    if not port_available(STRIKER):
+        pytest.skip('private Striker adapter absent')
+    actual = port_sha256(STRIKER)
+    if actual != CORRECTED_STRIKER_SHA256:
+        pytest.skip(f'loaded Striker port {actual[:12]} is not the reviewed corrected candidate '
+                    f'{CORRECTED_STRIKER_SHA256[:12]}; point FP_PORT_ROOT at the corrected-ports generation')
+    return load_port(STRIKER)
 
 
 def test_daily_key_keeps_observed_january_2025_reset():
@@ -28,11 +49,8 @@ def test_daily_key_keeps_observed_sunday_reopen(before, after):
 
 
 def test_striker_does_not_reset_on_merged_provider_day():
-    leg = 'dj30_mym_p250'
-    if not port_available(leg):
-        pytest.skip('private Striker adapter absent')
     from c1_signal_daemon.feed import Bar
-    adapter = load_port(leg).build(force_flat=False)
+    adapter = corrected_striker().build(force_flat=False)
     def bar(hour, minute):
         return Bar(ts=datetime(2022, 9, 5, hour, minute, tzinfo=timezone.utc),
                    open=100.0, high=101.0, low=99.0, close=100.0, volume=10.0)
@@ -43,10 +61,7 @@ def test_striker_does_not_reset_on_merged_provider_day():
 
 
 def test_striker_open_entry_fees_reduce_equity_at_loss_boundary():
-    leg = 'dj30_mym_p250'
-    if not port_available(leg):
-        pytest.skip('private Striker adapter absent')
-    module = load_port(leg)
+    module = corrected_striker()
     adapter = module.build(max_total_dd_pct=0.0015, force_flat=False)
     # One flat-price synthetic lot: its paid entry commission is already a loss.
     adapter._lots = {'synthetic': (1, 100.0, 2.0)}
@@ -59,11 +74,9 @@ def test_striker_open_entry_fees_reduce_equity_at_loss_boundary():
 
 
 def test_striker_partial_close_preserves_unspent_entry_fee_allocation():
-    leg = 'dj30_mym_p250'
-    if not port_available(leg):
-        pytest.skip('private Striker adapter absent')
     from c1_signal_daemon.book_protocol import ExecutionEvent, Fill, Side
-    adapter = load_port(leg).build()
+    leg = STRIKER
+    adapter = corrected_striker().build()
     now = datetime(2024, 2, 6, 15, tzinfo=timezone.utc)
     entry = Fill('entry', 'order', leg, 'entry', Side.BUY, 2, 100.0, now, commission=4.0)
     adapter.on_execution(ExecutionEvent('fill', leg, now, fill=entry))
