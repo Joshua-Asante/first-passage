@@ -50,10 +50,11 @@ same check before policy evaluation. Unsupported ranges produce `numeric_range`,
 not an exception misreported as storage failure. Policy constants and formulas
 are unchanged.
 
-The package schema is `account_close_package/v2`: source manifests require
+The owner integration advances the package schema to `account_close_package/v3`: source manifests require
 per-source `account_id`, and every history window requires its source `file`.
 The assembler validates aware input event times and source-account bindings
-before producing the package. Legacy v1 submissions refuse; there is no implicit
+before producing the package. Signing time belongs to the signed response after
+challenge issuance, not this package. Legacy v1/v2 submissions refuse; there is no implicit
 upgrade or rewrite of retained history.
 
 ## Acceptance limits
@@ -62,6 +63,9 @@ The retained evidence class is operator-attested. Original source bytes and
 transcribed source identities are bound, but opaque images are not automatically
 interpreted or certified as final by these modules.
 
+The [owner component](2026-09-15-account-close-owner-component.md) calls this
+calculator under its transaction and owns revision retention and signing
+chronology. This calculator does not authenticate or persist its proposals.
 PR #400 owns retained B7 E3 inventory, correction quarantine and the signed
 acceptance flow. It advances packages to v3 by moving signing time into the
 challenge response. Live evidence qualification remains owed, including the

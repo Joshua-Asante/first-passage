@@ -60,7 +60,7 @@ def package(head, session_id: str, now: datetime, *, gross="250.00", prior_tx=()
         "session_id": session_id, "predecessor_session_id": head.session_id,
         "predecessor_package_sha256": head.package_sha256, "calendar_digest": CALENDAR.calendar_digest,
         "policy_digest": POLICY_DIGEST, "effective_close_utc": utc(row.closes_at),
-        "source_publication_utc": None, "operator_signed_utc": utc(now),
+        "source_publication_utc": None,
         "report_timezone": "America/New_York", "inception_utc": "2026-08-20T13:00:00Z",
         "equity": {"net_equity": str(net_equity), "basis": "NET_OF_TRADING_COSTS", "at_effective_close": "FLAT",
                    "flatness_basis": flatness, "equity_at_effective_close": None, "valuation_basis": None},

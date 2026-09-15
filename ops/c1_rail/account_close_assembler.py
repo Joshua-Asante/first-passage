@@ -1,4 +1,4 @@
-"""Assemble an ``account_close_package/v2`` from the venue's actual report exports.
+"""Assemble an ``account_close_package/v3`` from the venue's actual report exports.
 
 Operator-side producer for the attended settlement contract. It reads the Tradovate
 cash-history windows, the account-balance history, the Tradeify dashboard values and the
@@ -38,7 +38,7 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
              dashboard_balance: str, dashboard_threshold: str, inception_utc: datetime,
              session_id: str, predecessor_session_id: str, predecessor_package_sha256: str,
              calendar: SessionCalendar, policy_digest: str, report_tz: ZoneInfo,
-             operator_signed_utc: datetime, attestations: dict, unresolved_runtime_requests: list,
+             attestations: dict, unresolved_runtime_requests: list,
              open_positions: int, working_orders: int, scope: str,
              close_equity: SourceFile | None = None, close_equity_value: str | None = None) -> tuple[dict, dict, dict]:
     """Return (package, sources bytes by file, figures-free qualification report).
@@ -49,7 +49,6 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
     refuses by design until one exists (invariant A7/V11).
     """
     require_aware(inception_utc, "inception_utc")
-    require_aware(operator_signed_utc, "operator_signed_utc")
     all_files = cash + [balance, dashboard, positions, orders, inception] + ([close_equity] if close_equity else [])
     validate_source_files(all_files, account_id=account_id)
     expected_roles = [(balance, "balance_history"), (dashboard, "dashboard"), (positions, "positions"),
@@ -148,7 +147,7 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
         "predecessor_package_sha256": predecessor_package_sha256,
         "calendar_digest": calendar.calendar_digest, "policy_digest": policy_digest,
         "effective_close_utc": _iso(row.closes_at), "source_publication_utc": None,
-        "operator_signed_utc": _iso(operator_signed_utc), "report_timezone": report_tz.key,
+        "report_timezone": report_tz.key,
         "inception_utc": _iso(inception_utc),
         "equity": {"net_equity": str(net_equity), "basis": "NET_OF_TRADING_COSTS",
                    "at_effective_close": "FLAT" if not historical else "VENUE_EQUITY",

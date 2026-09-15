@@ -96,7 +96,6 @@ def build(cash, files, bal1, bal2, **over):
                 dashboard_threshold=str(max(bal1, bal2) - 3000), inception_utc=datetime(2026, 7, 18, 15, tzinfo=timezone.utc),
                 session_id=S14, predecessor_session_id=S11, predecessor_package_sha256="0" * 64,
                 calendar=CALENDAR, policy_digest="b" * 64, report_tz=CT,
-                operator_signed_utc=NOW - timedelta(minutes=1),
                 attestations={"reflects_effective_close": True, "costs_included_once": True,
                               "no_known_pending_correction": True, "no_conflicting_observation": True},
                 unresolved_runtime_requests=[], open_positions=0, working_orders=0,
@@ -242,14 +241,13 @@ def test_no_activity_session_without_a_venue_row_is_corroborated_not_copied():
     now = datetime(2026, 9, 17, 11, 25, tzinfo=timezone.utc)
     fresh = [replace(f, captured_utc=now - timedelta(minutes=2)) for f in cash]
     fresh_files = {k: (replace(v, captured_utc=now - timedelta(minutes=2)) if k != "inception" else v) for k, v in files.items()}
-    package, sources, report = build(fresh, fresh_files, bal1, bal2, session_id=S17, predecessor_session_id=S16,
-                                     operator_signed_utc=now - timedelta(minutes=1))
+    package, sources, report = build(fresh, fresh_files, bal1, bal2, session_id=S17, predecessor_session_id=S16)
     assert report["balance_history"]["settled_session_basis"] == "NO_ACTIVITY_DASHBOARD_CORROBORATED"
     assert package["ledger"]["gross_trade_pnl"] == "0" and package["equity"]["net_equity"] == str(bal2)
     assert package["scope"] == "submit_account_close" and package["settlement_basis"] == "NO_ACTIVITY_DASHBOARD_CORROBORATED"
     with pytest.raises(AssemblyError, match="historical catch-up needs the venue balance row"):
         build(fresh, fresh_files, bal1, bal2, session_id=S17, predecessor_session_id=S16,
-              operator_signed_utc=now - timedelta(minutes=1), scope="record_only")
+              scope="record_only")
 
 
 def test_historical_catch_up_tolerates_later_session_fills_with_venue_equity():
@@ -295,7 +293,7 @@ def test_every_history_window_needs_its_retained_source():
     assert verify_assembled(pkg, sources, bal1) == "chronology:coverage_source_missing"
 
 
-@pytest.mark.parametrize("field", ["cash", "dashboard", "inception_utc", "operator_signed_utc"])
+@pytest.mark.parametrize("field", ["cash", "dashboard", "inception_utc"])
 def test_naive_evidence_times_refuse_before_host_timezone_conversion(field):
     cash, files, bal1, bal2 = synthetic()
     over = {}
