@@ -1,6 +1,6 @@
 # Tradeify Attended Release Execution Plan
 
-> **For agentic workers:** Joshua authorized Packet 0 by directing “execute the first slice” after review. Execute only that contract/feasibility slice using superpowers:executing-plans; later implementation and operational actions remain gated. Preserve one coordinator-owned contract and combined acceptance. Independent review follows the requesting-code-review skill.
+> **For agentic workers:** Joshua authorized Packet 0 by directing “execute the first slice” after review, then authorized its commit/push and Packet 1 with “commit, push and continue to the next slice.” Execute Packet 1 using superpowers:executing-plans; later packets and operational actions retain their gates. Preserve one coordinator-owned contract and combined acceptance. Independent review follows the requesting-code-review skill.
 
 **Goal:** Qualify and deploy the fixed four-leg Tradeify portfolio with durable execution controls, broker observations and operator-owned incident recovery.
 
@@ -118,6 +118,8 @@ This is a gated program plan. Fully design the next independently deliverable sl
 **Acceptance:** every transition in section 2 has an owner, persisted record, confirmed outcome or explicit unresolved block. No notification, observation or attestation is incorrectly promoted to execution evidence.
 
 ### Packet 1 — Accept the seven bundles and shared session inputs
+
+**Execution checkpoint:** [intake progress and bounded emulator correction](../../notes/2026-09-15-tradeify-packet1-intake-progress.md). Corrected O-N collected under Joshua's decision to preserve the pinned source; seven diagnostic comparisons match. Formal admission/shared-law parity and calendar/settlement acceptance remain open.
 
 **Outcome:** admitted strategy inputs and a common source-backed calendar/settlement contract suitable for replay and runtime consumers.
 
