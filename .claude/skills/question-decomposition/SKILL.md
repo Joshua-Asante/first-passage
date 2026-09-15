@@ -137,3 +137,7 @@ would never get its own decision.
   *input* to those reviews (it hands them named axes to attack instead of one fused verdict), but
   it is never a substitute for them. This skill structures an analysis; it does not verify one,
   and it renders no ratification verdict itself.
+- **`work-decomposition`** — the sibling for *work* rather than *questions*: a brief, issue, plan
+  step or PR with too many deliverables, gates or files for one session, or an input too large to
+  read in one context. A bundled question inside an oversize brief comes here first; the cut lines
+  often follow the axes this skill names.
