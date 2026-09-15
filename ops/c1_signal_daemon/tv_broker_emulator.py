@@ -140,7 +140,7 @@ class TVBrokerEmulator:
         """Register the adapter's actions generated at ``bar``'s close."""
         out: list[ExecutionEvent] = []
         crossed_now: list[str] = []
-        for act in actions:
+        for index, act in enumerate(actions):
             if getattr(act, "leg_id", None) != self.leg_id:
                 raise ValueError(f"action for {getattr(act, 'leg_id', None)!r} sent to "
                                  f"{self.leg_id!r} emulator: {type(act).__name__}")
@@ -149,7 +149,24 @@ class TVBrokerEmulator:
             elif isinstance(act, BracketAmend):
                 self._amend(act)
             elif isinstance(act, OrderIntent):
-                out.extend(self._place(act, bar, crossed_now))
+                # Pine registers a calculation's cancellations before its market
+                # orders can fill. Keep an entry cancelled later in this batch
+                # pending so _cancel emits the terminal event without a fill or
+                # fee. A prior cancel, unrelated id, or later submit cannot
+                # retract a fill. Uncancelled order/close ordering is unchanged.
+                cancelled_in_run = (
+                    act.kind in ("entry", "add")
+                    and act.order_type == "market"
+                    and act.timing is FillTiming.THIS_CLOSE
+                    and any(isinstance(later, Cancel)
+                            and later.leg_id == self.leg_id
+                            and later.order_id in (None, act.order_id)
+                            for later in actions[index + 1:])
+                )
+                if cancelled_in_run:
+                    self._pending_market.append(act)
+                else:
+                    out.extend(self._place(act, bar, crossed_now))
             else:  # pragma: no cover - defensive
                 raise TypeError(f"unknown action {act!r}")
         # Stops already through the close activate only after EVERY order of this

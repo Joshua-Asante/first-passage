@@ -1,5 +1,7 @@
 # SPEC: c1 multi-leg signal daemon and rail extension for the Tradeify portfolio (TB-S3)
 
+> **Current attended amendment — rev9, recorded 2026-09-15 UTC:** [halt/resume owner](2026-09-14-tb-s3-halt-resume-contract.md) sections 1–4/7 replace the incident-dispatch portions of rev8 and the retained S6–S9, R-G/R-H/R-K and protection-gap/AC branches below. Incidents revoke all runtime mutation authority and require attended intervention; scheduled/ordinary primitives retain their requirements. E1–E3, normal protection/takeover, quantity laws, schedule section 5 and P2 gates remain. Old emergency-dispatch test names describe historical model evidence, not current production authority. [Packet 0 evidence](../notes/2026-09-14-tradeify-attended-feasibility.md) records exact scope and blockers. Contract approval is not implementation or live acceptance.
+
 
 > **Ratified 2026-09-14 UTC:** Joshua approved rev8 execution and schedule plus the separate first P2 decision. See the [exact revision/approval record](../briefs/handoffs/2026-09-14-track-b-ratifications.md) and dated S2b/P2 addenda. Pre-approval wording below describes the reviewed design; those first-decision gates are now satisfied. Implementation, calendar/route evidence, exact-depth approval and live gates remain distinct.
 
@@ -145,7 +147,7 @@ The following rules refine §1 and govern every sequence and acceptance case abo
 
 **O-8 applied:** the live Vanguard adapter keeps the TradingView daily-key latch (`pine_ta.tv_daily_key`) exactly as ported; the daemon's US-holiday table is the frozen set the ports use and is part of the active-leg digest.
 
-**Rev8 acceptance mapping:** S6–S9 and all AC cases involving outages/restart use rev8 whole-book halt and fresh operator resume. Old test names do not preserve automatic session clearing or per-leg outage recovery. Ordinary CLOSE scope rules still apply inside each recovery operation.
+**Rev9 acceptance mapping:** S6–S9 and all AC cases involving incidents/restart require whole-book intervention, a confirmed local all-mutation fence or explicit unconfirmed-fence block, retained requests and fresh operator resume only after qualified reconciliation. Production automatic incident CLOSE/AMEND/ATTACH is deferred. Ordinary/scheduled CLOSE scope, normal protection/takeover and E1–E3 requirements remain; old test names do not preserve automatic incident dispatch, session clearing or per-leg outage recovery.
 
 **Telemetry:** `EVENT_KINDS` gains `capacity_reserved`, `capacity_refused`, `capacity_takeover_begin`, `capacity_takeover_cancel_ack`, `capacity_takeover_close_confirmed`, `capacity_takeover_admitted`, `capacity_takeover_refused`, `side_refused`, `barrier_timeout`, `feed_loss_flat`, `daemon_loss_flat`, `exit_qty_clamped`, `amend_deferred`, `close_rejected`, `close_time_exit`, `operation_prepared`, `operation_sent`, `operation_outcome`, `protection_gap`, `l2_refused`, `mode_settled`, `eod_flatten`, `overlay_block`, `kill_switch`, `kill_daemon_control`, `control_read_failed`, `restart_reconcile`, `restart_orphan_order`, `unknown_order` (schema version bump; the validator's secret scanner unchanged; `decision` and `mode_settled` carry `policy_provenance` and `fingerprint_digest`).
 
@@ -162,7 +164,7 @@ Lifecycle keys are added to `core/lifecycle.STRATEGY_KEYS` (TB-I1); the runtime 
 
 ## §5 — Replacement S2b addendum for ratification
 
-On explicit execution ratification, land a dated addendum in the S2b build ADR naming the reviewed revision. Retain R-B1/R-B3 optional B1 fields and cancel/amend types, and five-field M1 compatibility. Replace the four-leg fail-closed rule with rev8 §§1–4: unhealthy sources emit no ordinary strategy signal until valid bars return; authenticated health reports request a listener-owned account halt, not a daemon B1 flat. The listener may execute only qualified risk-reducing recovery while halted. Missing reports do not authorize risk-adds; the independent watchdog and evidence freshness gates apply. Source recovery never resumes trading. Preserve separate apps/volumes, source selection, build GO, M1 and emission gates. Other B1 changes still need their own authorization. This design edit is not the dated ratification addendum.
+The dated S2b addenda record rev8 and its rev9 attended replacement. Retain R-B1/R-B3 optional B1 fields and cancel/amend types, and five-field M1 compatibility. Unhealthy sources emit no ordinary strategy signal until valid bars return; authenticated health reports request listener-owned account intervention, not a daemon B1 flat. The listener fences all runtime mutations during INTERVENTION; only non-incident SCHEDULED_EXIT retains narrow qualified exit authority. Missing reports do not authorize risk-adds; watchdog and evidence freshness gates apply. Source recovery never resumes trading. Preserve separate apps/volumes, source selection, build GO, M1 and emission gates. Other B1 changes still need their own authorization.
 
 ## §6 — Simplified ratification package
 

@@ -1,5 +1,17 @@
 # c1 rail — arming and session operating procedure (public, redacted)
 
+> **Current Track B incident procedure — rev9, recorded 2026-09-15 UTC:** use [the attended contract](../../spec/2026-09-14-tb-s3-halt-resume-contract.md). For portfolio incidents, the sequence immediately below supersedes the generic timeline's preserved automatic exit/flat advice. The generic commands are not an implemented portfolio takeover/resume interface. Normal scheduled cutoff/flatten and the exact schedule formula remain. No live action is authorized by this document.
+
+## Track B incident sequence — required before live acceptance
+
+1. The listener persists HALTED/intervention scope and fences every future runtime broker mutation. Own-flat deadline breach or calendar invalidity while active also enters INTERVENTION and revokes scheduled-exit authority; there is no post-deadline automated retry. Inspect whether the local fence is confirmed; a hung/in-flight sender leaves explicit uncertainty. Already transmitted and provider-managed effects may still occur.
+2. Phone/desktop alarms identify the same incident. Joshua acknowledges attendance, targeting under 60 seconds after notification. Lack of acknowledgment triggers alternate-channel escalation at 60 seconds after the first attempt; delivery failures use remaining channels immediately. Neither condition restores automation.
+3. Joshua inspects positions, resting orders, protection and unresolved requests in the platform and manages exposure. No automated emergency CLOSE/AMEND/ATTACH/CANCEL or late strategy exit is allowed during INTERVENTION. The qualified runbook must account for CrossTrade-managed/copy/scheduled work that a local fence cannot stop. Urgent manual action does not make the displayed uncertainty disappear.
+4. Collector observations and manual-action notes remain evidence with limitations. Reconciliation must cover gross positions, working/protective orders and all earlier runtime/manual/provider requests under retained E1–E3. Empty screens, elapsed time and acknowledgment do not clear blocks.
+5. On verified reconciliation, persist/read back ordinary disarm and remain HALTED. Resume is a separate fresh authenticated request bound to boot, generation, evidence and runtime identities, within the eligible session. Confirm effective activation before new risk; never replay halted-period signals.
+
+Every armed session requires explicit attendance and a verified alert/platform access path. Attendance continues until reconciled/disarmed; leaving early requires completing stop/intervention/disarm. Initial B7/n3/GO and later session gates stand. Production takeover, evidence verification and resume remain unavailable until implemented/qualified; [Packet 0](../../notes/2026-09-14-tradeify-attended-feasibility.md) records the blockers. M1/A7/A8 are recorded complete and are not reopened by this amendment.
+
 > **Track B rev8 design amendment (2026-09-14):** the [halt/resume contract](../../spec/2026-09-14-tb-s3-halt-resume-contract.md) replaces this procedure's proposed Track B session auto-clear, outage continuation and 16:30 first-flatten guidance. Use its exact schedule formula and fresh operator resume after flat reconciliation; 16:30 is reporting only. Initial B7/n3/GO/activation and separate policy gates remain. This amendment does not change existing deployed single-strategy operation or authorize use of a not-yet-implemented resume command.
 
 

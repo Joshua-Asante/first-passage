@@ -53,6 +53,35 @@ def test_market_timing_and_slippage():
     assert fills(got)[0].price == 102.25 and fills(got)[0].bar_time == bar(1, 0, 0, 0, 0).ts
 
 
+def test_same_calculation_cancel_prevents_market_add_before_flat():
+    # Pine can cancel an unfilled market order in its creating calculation.
+    # Filling each action immediately would invent an add and its round-trip fee.
+    for target in (None, "add"):
+        e = emu()
+        b = bar(0, 100, 100, 100, 100)
+        e.submit([entry("base", timing=FillTiming.THIS_CLOSE)], b)
+        got = e.submit([entry("add", kind="add", timing=FillTiming.THIS_CLOSE),
+                        Cancel(LEG, target), flat("close", FillTiming.THIS_CLOSE)], b)
+        assert [(f.kind, f.qty) for f in fills(got)] == [("flat", 1)]
+        assert [(ev.event, ev.order_id) for ev in got if ev.event == "cancel"] == [("cancel", "add")]
+        assert len(e.closed_trades) == 1
+        assert e.closed_trades[0].commission == 1.82
+        assert e.position() == 0 and e.pending_order_ids() == []
+
+
+def test_cancel_scope_does_not_retract_fills_or_cancel_later_placements():
+    e = emu()
+    b = bar(0, 100, 100, 100, 100)
+    e.submit([entry("base", timing=FillTiming.THIS_CLOSE)], b)
+    got = e.submit([Cancel(LEG, None),
+                    entry("add", kind="add", timing=FillTiming.THIS_CLOSE),
+                    Cancel(LEG, "unrelated")], b)
+    assert [(f.kind, f.qty) for f in fills(got)] == [("add", 1)]
+    assert e.position() == 2
+    assert e.submit([Cancel(LEG, "add")], b) == []
+    assert e.position() == 2
+
+
 def test_stop_entry_fills_at_level_or_at_open_after_gap_and_activates_when_crossed():
     e = emu()
     e.submit([entry("s", order_type="stop", price=105.0, timing=FillTiming.THIS_CLOSE)], bar(0, 100, 104, 99, 103))

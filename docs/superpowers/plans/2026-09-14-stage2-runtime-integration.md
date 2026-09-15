@@ -1,5 +1,7 @@
 # Stage 2 runtime integration implementation plan
 
+> **Current continuation, recorded 2026-09-15 UTC:** [attended Packet 0](2026-09-14-tradeify-attended-release.md) freezes [TB-S3 rev9](../../spec/2026-09-14-tb-s3-halt-resume-contract.md). Incident-triggered automated emergency dispatch in the historical slice 2b/2c instructions below is deferred for the first release. Implement durable all-mutation intervention, observation, attendance and qualified separate resume instead. Normal/scheduled execution, evidence/capacity/fingerprint requirements remain. [Packet 0 capability matrix](../../notes/2026-09-14-tradeify-attended-feasibility.md) owns the current READY/BLOCKED disposition and dependency revision inventory; it explicitly distinguishes newer committed recovery/collector work from main. M1/A7/A8 are complete. Historical slice records and tests are provenance, not current completion or renewed pending-approval claims.
+
 > **For agentic workers:** Execute with superpowers:executing-plans. Preserve one integration owner and the behavioral contract. No delegation is required for the first slice.
 
 **Goal:** Connect the accepted TB-I1 components to durable execution, shared calendar/replay and snapshot consumers under TB-S3 rev8.
