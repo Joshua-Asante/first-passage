@@ -218,12 +218,16 @@ The seven new exports plus Aegis/Vanguard references have complete event pairs
 and unique event-to-bar matches; all 3,632 captured trade holds have uninterrupted
 15-minute panel coverage. Gaps while flat still require classification for
 indicator continuity. The retained 6J prefix produces identical diagnostic closed
-trades, but its provenance and the original calculation boundary remain pending.
+  trades. The operator has now attested its unchanged chart/harness provenance;
+  a separate 94,893-row derivative retains the original panel and adds 88 bars.
 Seven fresh XLSX reports now bind the MYM/MNQ declared backtesting ranges to
 explicit timestamps and reproduce all 6,346 original event rows across all 17
 columns; independent review accepted that bounded evidence. Nine-case startup
 observations and an exact queue of 4,142 product-specific gaps are retained.
-Older Aegis/Vanguard range/capture-state provenance, endpoint inclusion, complete
+  Fresh Aegis/Vanguard XLSX reports bind their declared ranges too: Vanguard's
+  676 rows match exactly; Aegis's 242 rows have 30 specifically explained
+  notional-value serialization differences, retained without relaxing comparison.
+  Historical source/settings provenance, endpoint inclusion, complete
 initial-state binding and Step 4's source-backed gap classifications still block
 Step 3 closure. The current execution-domain acceptance disposition is controlling.
 Do not spend

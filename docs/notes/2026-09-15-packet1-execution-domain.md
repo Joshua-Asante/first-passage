@@ -510,9 +510,9 @@ event-coverage claims; it did not rerun the two-origin Aegis replay.
 
 **OPEN — not finished, not admitted.** The minimum remaining evidence is:
 
-1. Older Aegis/Vanguard declared calculation ranges and capture-state provenance;
-   qualify the retained 6J prefix if that interval requires it. The operator's
-   prefix-provenance question remains unanswered.
+1. Complete historical source/settings binding for Aegis/Vanguard. Fresh declared
+   ranges and the operator's retained-prefix provenance attestation are now bound
+   below; they do not independently establish every historical hidden state.
 2. Exact end-inclusion interpretation and complete source/settings/initial-state
    binding. The seven fresh workbook ranges remove the date-only ambiguity for
    the declared ranges, not every initialization obligation.
@@ -528,3 +528,70 @@ Independent reviewer `packet0_review` accepted this final progress handoff with
 no material findings and independently verified all 25 indexed artifact hashes
 and sizes. This accepts the evidence record's accuracy, not Step 3 completion.
 Local `git diff --check` passed; private XLSX and analysis artifacts remain ignored.
+
+### Attested 6J prefix and older-reference report ranges
+
+The operator confirmed that `BAR_EXPORT_v0.2_CME_6J1!_2026-09-05_a759e.csv`
+used the same 6J1! 15-minute chart and precision-corrected harness as the main
+September 3 export: **only the date window changed**. This resolves the collection
+provenance question. It does not attest exchange-calendar completeness or admit
+the panel. The private attestation binds both raw-export hashes.
+
+Fresh full Aegis and Vanguard reports were downloaded from their saved TradingView
+layouts without editing inputs, broker-emulator properties or Pine bodies. The
+Deep range was set to September 1, 2022–September 2, 2026. Both XLSX Properties
+declare August 31, 2022, 20:00 through September 2, 2026, 20:00 in the retained
+New York display context: September 1, 2022, 00:00Z through September 3, 2026,
+00:00Z. Symbols and 15-minute intervals match their references.
+
+- Vanguard: all **676 event rows × 17 columns match exactly**.
+- Aegis: all **242 event rows** compared; exactly **30 cells differ**, exclusively
+  `Size (value)`. All other cells match. For each differing cell, exact decimal
+  entry price × entry quantity × point value equals the original CSV value;
+  ordinary binary floating-point multiplication produces the XLSX value. Parsed
+  binary64 values differ by one representable step; the largest decimal difference
+  is `1e-10`. These specific derived-value serialization differences are explained,
+  retained in the report, and **do not change the comparator's exact-equality
+  rule**. Its `all_columns_match=false` remains accurate.
+
+Independent reviewer `packet0_review` reproduced both comparisons, the Aegis
+arithmetic explanation and raw-export pins, accepting these bounded claims with
+no material findings. Fresh reproduction is distinct from independent proof of
+historical installed source bodies or hidden initialization state.
+
+A separate private derivative now joins the attested **88 retained bars** to the
+original 6J panel: **94,893 rows**, from September 1, 2022, 00:00Z through
+September 3, 2026, 00:00Z. The assembler verifies five raw overlap rows across
+OHLCV, strict timestamp ordering and exact preservation of all original panel
+rows. No bar was invented and the original panel was not replaced. Its start
+matches the fresh declared range. The earlier fixed two-origin replay already
+establishes unchanged closed trades for these same decoded prefix bars; that
+result alone does not qualify all indicator state or missing intervals.
+
+| Private artifact | SHA-256 |
+|---|---|
+| `6J-prefix-provenance-attestation.json` | `b85e6b70be5c729b29dc086daee913de8da1c7ad77e3d4a39d6e4eac8e118177` |
+| `6J_M15-with-attested-prefix.csv` | `8ae083d07b6870aa427dc69009434da0f3cab2d6818ca356e441ad40f3648fd2` |
+| `Aegis-boundary-report.xlsx` | `7e92c06fda51c3e9327810ffdaa9a6836ca09856440de6c08203fc785171886f` |
+| `Vanguard-boundary-report.xlsx` | `1e76ccf67f007038723d80807bb1eb3ba72526367e21ef4b5a0fab580a75cec2` |
+
+`step3-evidence-index-v2.json` binds these files, captures, comparison runners,
+results and assembler to exact bytes, retaining the prior index unchanged.
+SHA-256: `7bfbf0358b75fa860ff2a257aad4967d803417d2586b547eb52be51332fa4d26`.
+Final comparator, notional check and assembler invocations on bundled Python
+3.12.14 exited 0. The notional check's first attempts exposed a CSV BOM and an
+incorrect comparison of decimal string error with a binary ULP; the final check
+compares parsed binary64 values and retains the separate decimal difference.
+
+**Step 3 remains OPEN.** No further prefix attestation is needed. Exact endpoint
+inclusion, complete source/settings/initial-state binding, and Step 4's accepted
+session evidence still require completion. The existing 4,142-gap queue describes
+the original panels; the derivative's added prefix intervals must also enter the
+calendar join before coverage acceptance. A declared range and a recovered prefix
+cannot substitute for that join. No admission, production dispatch or resumption
+was enabled.
+
+The independent reviewer also verified all 16 v2-index artifact hashes/sizes,
+all 88 derivative prefix bars against the raw export, preservation of the 94,805
+original rows, and the five overlap rows. The final bounded evidence handoff was
+accepted with no material findings. `git diff --check` passed.
