@@ -32,6 +32,8 @@ class BookSession:
     risk_add_cutoff: datetime
     closes_at: datetime
     calendar_digest: str
+    flatten_start: datetime | None = None
+    own_flat_deadline: datetime | None = None
 
 
 @dataclass(frozen=True)
@@ -262,7 +264,12 @@ def size_book_request(request, *, context, binding, policy, now) -> BookSizingDe
         needed = qty * spec.micro_equiv
         _require((own.confirmed + own.reserved) * spec.micro_equiv + needed <= binding.cap_alloc,
                  "leg_allocation_refusal")
-        _require(used + needed <= ACCOUNT_MICRO_CAP, "insufficient_observed_capacity")
+        if used + needed > ACCOUNT_MICRO_CAP:
+            lower_used = sum((row.confirmed + row.reserved) * leg(row.leg_id).micro_equiv
+                             for row in context.exposures
+                             if leg(row.leg_id).priority > spec.priority)
+            _require(spec.priority == 1 and used - lower_used + needed <= ACCOUNT_MICRO_CAP,
+                     "insufficient_observed_capacity")
         return BookSizingDecision(*identity, qty_out=qty, prospective_add=prospective,
                                   halt=False, session_id=context.session_id, mode=mode,
                                   policy_digest=context.policy_digest, snapshot_digest=context.snapshot_digest,

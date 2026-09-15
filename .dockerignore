@@ -31,6 +31,17 @@ ops/**
 !ops/c1_rail/book_sizing_context.py
 !ops/c1_rail/book_halt.py
 !ops/c1_rail/book_policy.py
+!ops/c1_rail/book_account_lock.py
+!ops/c1_rail/book_account_owner.py
+!ops/c1_rail/book_capacity.py
+!ops/c1_rail/book_session_calendar.py
+!ops/c1_rail/book_settlement.py
+!ops/c1_rail/account_close_calculation.py
+!ops/c1_rail/account_close_evidence.py
+!ops/c1_rail/account_close_ledger.py
+!ops/c1_rail/ed25519_verify.py
+!ops/c1_rail/settlement_signing.py
+!ops/c1_rail/operator_keys.json
 !ops/c1_rail/m1_stage1_contract.py
 !ops/c1_rail/m1_stage1_control.py
 !ops/c1_rail/m1_stage1_agent_input.py
@@ -41,6 +52,9 @@ ops/**
 !ops/c1_signal_daemon/__main__.py
 !ops/c1_signal_daemon/b1_payload.py
 !ops/c1_signal_daemon/book_protocol.py
+!ops/c1_signal_daemon/book_adapters.py
+!ops/c1_signal_daemon/book_runtime.py
+!ops/c1_signal_daemon/book_evaluate_loop.py
 !ops/c1_signal_daemon/daemon.py
 !ops/c1_signal_daemon/evaluate_loop.py
 !ops/c1_signal_daemon/feed.py
@@ -60,6 +74,7 @@ core/**
 !core/dd_geometry.py
 !core/firm_rules.py
 !core/historical_challenge.py
+!core/calendar_evidence.py
 !core/lifecycle.py
 !core/lib
 core/lib/**

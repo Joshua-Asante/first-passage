@@ -245,7 +245,8 @@ class SessionCalendar:
         if now < self.ratified_at:
             return SessionDecision(None, "calendar_not_yet_ratified", row, self.calendar_digest, tuple(warnings))
         session = BookSession(row.session_id, row.prior_session_id, row.opens_at,
-                              row.risk_add_cutoff, row.closes_at, self.calendar_digest)
+                              row.risk_add_cutoff, row.closes_at, self.calendar_digest,
+                              row.flatten_start, row.own_flat_deadline)
         return SessionDecision(session, None, row, self.calendar_digest, tuple(warnings))
 
 

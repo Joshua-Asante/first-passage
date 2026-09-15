@@ -9,6 +9,7 @@ DOCKERFILE = REPO_ROOT / "deploy" / "c1_signal_daemon" / "Dockerfile"
 _ENTRYPOINTS = (
     REPO_ROOT / "ops" / "c1_signal_daemon" / "daemon.py",
     REPO_ROOT / "ops" / "c1_signal_daemon" / "evaluate_loop.py",
+    REPO_ROOT / "ops" / "c1_signal_daemon" / "book_evaluate_loop.py",
     REPO_ROOT / "ops" / "c1_signal_daemon" / "m1_stage1_control.py",
 )
 

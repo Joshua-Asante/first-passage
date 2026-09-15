@@ -66,6 +66,7 @@ LISTENER_FILES=(
   /app/core/dd_protection.py
   /app/core/firm_rules.py
   /app/core/historical_challenge.py
+  /app/core/calendar_evidence.py
   /app/core/lib/atomic_io.py
   /app/core/lib/file_lock.py
   /app/core/lib/mvd.py
@@ -76,6 +77,17 @@ LISTENER_FILES=(
   /app/ops/c1_rail/book_policy.py
   /app/ops/c1_rail/book_sizing_context.py
   /app/ops/c1_rail/book_halt.py
+  /app/ops/c1_rail/book_account_lock.py
+  /app/ops/c1_rail/book_account_owner.py
+  /app/ops/c1_rail/book_capacity.py
+  /app/ops/c1_rail/book_session_calendar.py
+  /app/ops/c1_rail/book_settlement.py
+  /app/ops/c1_rail/account_close_calculation.py
+  /app/ops/c1_rail/account_close_evidence.py
+  /app/ops/c1_rail/account_close_ledger.py
+  /app/ops/c1_rail/ed25519_verify.py
+  /app/ops/c1_rail/settlement_signing.py
+  /app/ops/c1_rail/operator_keys.json
   /app/ops/c1_rail/c1_rail_arm.py
   /app/ops/c1_rail/c1_rail_http_server.py
   /app/ops/c1_rail/c1_rail_listener.py
@@ -88,6 +100,8 @@ LISTENER_FILES=(
   /app/ops/c1_rail/m1_stage1_control.py
   /app/ops/c1_signal_daemon/__init__.py
   /app/ops/c1_signal_daemon/book_protocol.py
+  /app/ops/c1_signal_daemon/book_runtime.py
+  /app/ops/c1_signal_daemon/book_adapters.py
   /app/ops/c1_signal_daemon/feed.py
   /app/scripts/validate_c1_monitoring_acceptance.py
 )
