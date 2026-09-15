@@ -215,3 +215,17 @@ cash windows are attested complete from the collection record.
 
 Re-qualification after the fold: unchanged verdicts; package digest `c239fd35…`.
 
+## Review fold, round four — 2026-09-15 (Codex on PR #395)
+
+- **Historical catch-up with later fills**: under `record_only` the fresh full history may contain
+  fills from later missed sessions; the assembler no longer treats them as failed flatness. The
+  venue's balance row for the settled trade date is the venue-backed equity at that close
+  (`flatness_basis = VENUE_EQUITY_AT_CLOSE`, valuation basis naming the row). Fills inside the
+  17:00–18:00 ET break are still refused as outside any session.
+- **Key account binding**: an enrollment row's `account_binding` must be `BOUND_AT_RUNTIME` or the
+  literal account the runtime boots for; anything else refuses the record.
+- **Whole-minute boundaries**: session opens, closes and deadlines must fall on a whole minute.
+
+Re-qualification after the fold (report 2026-09-15T15:18:54Z): unchanged verdicts and package
+digest `c239fd35…`.
+
