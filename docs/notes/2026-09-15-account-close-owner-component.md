@@ -25,6 +25,48 @@ owner's signed submission path; component tests alone do not establish acceptanc
   and halt-required refusals through signed submission, and independently review
   the combined change before publishing. Actual venue qualification stays open.
 
+### Source-derived verification and B7 handoff
+
+The calculator reparses the bound cash and balance reports, derives their
+inventory and economics, and compares them with the package claims. Historical
+catch-up compares the current dashboard with the full-history ending balance;
+the accepted peak still ratchets only through the proposed historical close.
+Publication must precede the dependent captures.
+
+`bootstrap_b7(..., cash_history_bytes=..., report_timezone=...)` can retain the
+original full-history cash CSV named by the seal's E3 evidence. Its bytes must
+match the authenticated seal's E3 digest, every row must belong to the account
+and precede the effective close, and its reconciled ending balance must equal
+the sealed equity. Duplicate transactions, unknown/adjustment rows and unlinked
+costs refuse. The peak remains the sealed dashboard-derived value.
+
+The report timezone is explicit bootstrap metadata, frozen under the history
+digest alongside the seal binding. Subsequent packages must use that timezone;
+neither inventory nor timezone is inferred from a fresh first-close package.
+The owner rechecks the original bytes on reads/restart and re-derives the initial
+inventory for first-close verification. This adds no query-completeness claim:
+E3's inception-through-capture coverage remains the seal's evidence obligation.
+
+An opaque statement or absent original E3 CSV cannot provide this machine-readable
+baseline. B7 may still seat without the optional report, but a first subsequent
+close then refuses `predecessor_inventory_required`. A separately reviewed fresh
+bootstrap is required; there is no operation to attach or bless a replacement
+baseline after seating. Actual E3 format/timezone qualification remains open.
+
+### Durable quarantine for detected history corrections
+
+A signed submission reporting changed prior inventory, transaction revisions or
+a changed report timezone is retained as a correction observation with its source
+bytes, signed envelope and signature. In the same transaction the owner invalidates
+the chain and voids unused challenges. Since these refusal values do not establish
+the earliest affected close, the boundary is conservatively the B7 head; a
+separately reviewed reseal/recovery is required. Restore reconciliation cannot
+make the prior close available again. Ordinary invalid input still refuses without
+advancing the accepted chain; acceptance and invalidation are distinct outcomes.
+
+Halt notifications run after the SQLite transaction commits and closes. A failed
+notification cannot roll back retained evidence or reopen the quarantined chain.
+
 ## Signing without a dependency cycle
 
 1. Assemble the evidence package (`account_close_package/v3`). It contains capture

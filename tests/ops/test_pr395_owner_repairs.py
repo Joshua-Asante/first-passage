@@ -287,3 +287,101 @@ def test_pre_audit_integrity_store_refused_without_rewriting(tmp_path):
     with pytest.raises(SettlementError, match="unsupported settlement store version"):
         boot(tmp_path, operator)
     assert store.path.read_bytes() == before
+
+
+def _baseline_csv():
+    return ("Account,Transaction ID,Timestamp,Date,Delta,Amount,Cash Change Type,Currency,Contract\r\n"
+            "synthetic-account,1,08/20/2026 09:00:00,2026-08-20,100000.00,100000.00,Fund Transaction,USD,\r\n").encode()
+
+
+def _seat_with_history(store, data, *, report_timezone="America/New_York", expected_data=None):
+    from test_book_settlement import B7_SESSION, B7_CLOSE, TOOL_SHA256, POLICY
+    seal = b7_seal(mutate=lambda doc: doc["evidence"]["E3"].update(sha256=sha256_hex(
+        data if expected_data is None else expected_data)))
+    return store.bootstrap_b7(seal, expected_seal_sha256=sha256_hex(seal), expected_tool_sha256=TOOL_SHA256,
+        session_id=B7_SESSION, effective_close_utc=B7_CLOSE, policy=POLICY,
+        now=datetime(2026, 9, 12, 14, tzinfo=timezone.utc),
+        cash_history_bytes=data, report_timezone=report_timezone)
+
+
+@pytest.mark.parametrize("mutation", ["source_edit", "source_delete", "timezone_edit", "binding_delete"])
+def test_b7_history_is_retained_and_integrity_checked_on_restart(tmp_path, mutation):
+    operator = Operator()
+    store = boot(tmp_path, operator)
+    assert isinstance(_seat_with_history(store, _baseline_csv()), Receipt)
+    with sqlite3.connect(store.path) as db:
+        assert db.execute("SELECT data FROM sources").fetchone()[0] == _baseline_csv()
+        statements = {"source_edit": "UPDATE sources SET data=x'00'",
+                      "source_delete": "DELETE FROM sources",
+                      "timezone_edit": "UPDATE b7_history SET report_timezone='UTC'",
+                      "binding_delete": "DELETE FROM b7_history"}
+        db.execute(statements[mutation])
+    with pytest.raises(SettlementError, match="integrity"):
+        boot(tmp_path, operator)
+
+
+@pytest.mark.parametrize("mutation", ["digest", "account", "duplicate", "equity", "timezone", "unparseable"])
+def test_b7_history_refuses_unbound_or_unreconciled_inventory(tmp_path, mutation):
+    store = boot(tmp_path, Operator())
+    data = _baseline_csv()
+    kwargs = {}
+    if mutation == "digest":
+        kwargs["expected_data"] = b"different report"
+    elif mutation == "account":
+        data = data.replace(b"synthetic-account", b"another-account")
+    elif mutation == "duplicate":
+        data += data.splitlines(keepends=True)[1]
+    elif mutation == "equity":
+        data += b"synthetic-account,2,09/11/2026 12:00:00,2026-09-11,1,100001,Trade Paired,USD,MYMU6\r\n"
+    elif mutation == "timezone":
+        kwargs["report_timezone"] = "invalid-zone"
+    elif mutation == "unparseable":
+        data = b"opaque statement"
+    assert _seat_with_history(store, data, **kwargs) == Refusal("b7_history_invalid")
+    assert store.status()["rows"] == 0
+
+
+def test_signed_history_correction_quarantines_chain_and_survives_restart(tmp_path):
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    source = next(s for s in pkg["sources"] if s["role"] == "cash_history:0")
+    # Same account, timestamp and money; changing the sealed funding ID is still
+    # a revision of the accepted B7 inventory, even when claims stay unchanged.
+    files[source["file"]] = files[source["file"]].replace(b",1,08/20/2026", b",9,08/20/2026")
+    source["sha256"] = sha256_hex(files[source["file"]])
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    halts = []
+    result = submit(store, operator, env, pkg, files, NOW14, on_halt=lambda reason, _: halts.append(reason))
+    assert result == Refusal("history_changed", halt_required=True)
+    assert len(halts) == 1
+    assert store.settled_close() == Refusal("chain_invalidated")
+    store = boot(tmp_path, operator)
+    store.reconcile_restore(NOW14)
+    assert store.settled_close() == Refusal("chain_invalidated")
+    with sqlite3.connect(store.path) as db:
+        assert db.execute("SELECT status FROM challenges WHERE challenge_id=?", (env["challenge_id"],)).fetchone()[0] == "VOIDED_REVISION"
+        payload = json.loads(db.execute("SELECT package_json FROM packages WHERE kind='REVISION'").fetchone()[0])
+        assert payload["revised_package"]["observed_package"] == pkg
+
+
+def test_b7_without_original_inventory_cannot_accept_first_close(tmp_path):
+    operator = Operator()
+    store = boot(tmp_path, operator)
+    head = seat(store, b7_seal(), retain_history=False)
+    pkg, files = package(head, S14, NOW14)
+    assert submit(store, operator, challenge(store, pkg, target=S15, now=NOW14), pkg, files, NOW14) == Refusal("predecessor_inventory_required")
+    assert store.status()["rows"] == 1
+
+
+def test_halt_notification_failure_cannot_roll_back_correction(tmp_path):
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    pkg["ledger"]["revisions"] = ["operator observed revised history"]
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    def failed_notification(*_):
+        raise RuntimeError("halt notification unavailable")
+    with pytest.raises(RuntimeError, match="halt notification unavailable"):
+        submit(store, operator, env, pkg, files, NOW14, on_halt=failed_notification)
+    assert store.settled_close() == Refusal("chain_invalidated")

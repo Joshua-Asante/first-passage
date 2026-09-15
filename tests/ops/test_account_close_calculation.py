@@ -139,7 +139,7 @@ def test_unknown_scope_cannot_bypass_scope_specific_invariants():
 def test_bound_reports_are_authoritative(mutation):
     from test_account_close_assembler import synthetic, build, NOW, S11, S14
     cash, files, bal1, bal2 = synthetic()
-    p, sources, _ = build(cash, files, bal1, bal2, operator_signed_utc=NOW)
+    p, sources, _ = build(cash, files, bal1, bal2)
     head = SimpleNamespace(session_id=S11, equity=str(bal1), peak=str(bal1), package_sha256="0" * 64)
     from test_account_close_assembler import predecessor_inventory
     baseline = predecessor_inventory()
@@ -208,7 +208,7 @@ def test_source_history_correction_cannot_hide_behind_unchanged_inventory_claims
     from decimal import Decimal
     from test_account_close_assembler import synthetic, build, NOW, S11, predecessor_inventory
     cash, files, bal1, bal2 = synthetic()
-    p, sources, _ = build(cash, files, bal1, bal2, operator_signed_utc=NOW)
+    p, sources, _ = build(cash, files, bal1, bal2)
     head = SimpleNamespace(session_id=S11, equity=str(bal1), peak=str(bal1), package_sha256="0" * 64)
     baseline = predecessor_inventory()
     source = next(s for s in p["sources"] if s["role"] == "cash_history")
@@ -234,7 +234,7 @@ def test_source_history_correction_cannot_hide_behind_unchanged_inventory_claims
 def test_cash_rows_must_lie_inside_the_signed_timestamp_span():
     from test_account_close_assembler import synthetic, build, NOW, S11, predecessor_inventory
     cash, files, bal1, bal2 = synthetic()
-    p, sources, _ = build(cash, files, bal1, bal2, operator_signed_utc=NOW)
+    p, sources, _ = build(cash, files, bal1, bal2)
     head = SimpleNamespace(session_id=S11, equity=str(bal1), peak=str(bal1), package_sha256="0" * 64)
     source = dict(next(s for s in p["sources"] if s["role"] == "cash_history"))
     sources["partial.csv"] = sources[source["file"]]

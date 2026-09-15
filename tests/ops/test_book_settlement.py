@@ -24,6 +24,7 @@ from book_sizing_context import SettledClose, size_book_request
 from c1_signal_daemon.book_protocol import Mode
 from test_tradeify_sizing_integration import inputs
 from settlement_signing import signing_envelope
+from account_close_test_support import b7_cash_history
 
 cryptography = pytest.importorskip("cryptography")
 from cryptography.hazmat.primitives import serialization  # noqa: E402
@@ -78,7 +79,7 @@ def b7_seal(*, balance="100000", peak="100000", valid_until="2026-09-13T18:00:00
                     "carried_drawdown": "0", "valid_until": valid_until},
         "evidence": {"E1": {"path": "dash.png", "sha256": "1" * 64, "captured_at": "2026-09-12T09:00:00-04:00"},
                      "E2": {"path": "pos.csv", "sha256": "2" * 64, "captured_at": "2026-09-12T09:01:00-04:00"},
-                     "E3": {"path": "cash.csv", "sha256": "3" * 64, "captured_at": "2026-09-12T09:02:00-04:00"}},
+                     "E3": {"path": "cash.csv", "sha256": sha256_hex(b7_cash_history(balance)), "captured_at": "2026-09-12T09:02:00-04:00"}},
         "checks": checks, "seal_timestamp": "2026-09-12T10:00:00-04:00", "tool_sha256": TOOL_SHA256,
         "contract": SEAL_CONTRACT,
     }
@@ -88,10 +89,14 @@ def b7_seal(*, balance="100000", peak="100000", valid_until="2026-09-13T18:00:00
 
 
 def seat(store, seal: bytes, *, now=datetime(2026, 9, 12, 14, tzinfo=timezone.utc), tool=TOOL_SHA256,
-         session_id=None, close=None, expected=None):
+         session_id=None, close=None, expected=None, retain_history=True):
+    kwargs = {}
+    if retain_history and session_id is None and close is None:
+        kwargs = {"cash_history_bytes": b7_cash_history(json.loads(seal)["values"]["balance"]),
+                  "report_timezone": "America/New_York"}
     return store.bootstrap_b7(seal, expected_seal_sha256=expected or sha256_hex(seal), expected_tool_sha256=tool,
                               session_id=session_id or B7_SESSION, effective_close_utc=close or B7_CLOSE,
-                              policy=POLICY, now=now)
+                              policy=POLICY, now=now, **kwargs)
 
 
 def boot(tmp_path, operator, now=NOW14, scopes=("submit_account_close", "record_only")):
@@ -198,7 +203,7 @@ def test_second_close_chains_on_the_first_and_history_must_be_retained(tmp_path)
     pkg3, files3 = package(r2, S16, now15 + timedelta(days=1))          # omits prior ids entirely
     refusal = submit(store, operator, challenge(store, pkg3, target="tradeify-account-day:2026-09-17",
                                                 now=now15 + timedelta(days=1)), pkg3, files3, now15 + timedelta(days=1))
-    assert refusal == Refusal("history_changed")
+    assert refusal == Refusal("history_changed", halt_required=True)
 
 
 # ---------------------------------------------------------------- authentication and challenge
@@ -482,8 +487,18 @@ def test_record_only_catch_up_accepts_missed_sessions_in_order_while_halted(tmp_
     pkg14, f14 = package(head, S14, late, scope="record_only")
     # Both fresh queries contain the same complete inventory, including trades
     # from the later missed session. Each close uses its own venue equity view.
-    later_txs = [{"id": "later-trade", "sha256": "d" * 64, "session_id": S15}]
-    pkg14["ledger"]["transactions"].extend(later_txs)
+    preview = replace(head, session_id=S14, equity=pkg14["equity"]["net_equity"],
+                      peak=pkg14["equity"]["net_equity"])
+    pkg15, f15 = package(preview, S15, late, prior_tx=pkg14["ledger"]["transactions"], scope="record_only")
+    close_source = next(src for src in pkg14["sources"] if src["role"] == "close_equity")
+    close_bytes = f14[close_source["file"]]
+    pkg14["ledger"]["transactions"] = deepcopy(pkg15["ledger"]["transactions"])
+    pkg14["ledger"]["coverage"] = deepcopy(pkg15["ledger"]["coverage"])
+    pkg14["sources"] = deepcopy(pkg15["sources"])
+    pkg14["sources"] = [close_source if src["role"] == "close_equity" else src for src in pkg14["sources"]]
+    pkg14["dashboard"] = deepcopy(pkg15["dashboard"])
+    f14 = dict(f15)
+    f14[close_source["file"]] = close_bytes
     assert store.issue_challenge(scope="record_only", target_session_id=None, proposed_session_id=S14,
                                  package_sha256=sha256_hex(canonical_bytes(pkg14)), halt_generation=3,
                                  permission="RUNNING", calendar=CALENDAR, now=late) == Refusal("record_only_requires_halted")
@@ -491,8 +506,7 @@ def test_record_only_catch_up_accepts_missed_sessions_in_order_while_halted(tmp_
     assert env["expires_utc"] == utc(late + CHALLENGE_LIFETIME) and env["target_session_id"] is None
     r14 = submit(store, operator, env, pkg14, f14, late, generation=3)
     assert isinstance(r14, Receipt) and r14.grants_activation is False
-    pkg15, f15 = package(r14, S15, late, prior_tx=pkg14["ledger"]["transactions"], scope="record_only")
-    pkg15["ledger"]["transactions"] = deepcopy(pkg14["ledger"]["transactions"])
+    pkg15["predecessor_package_sha256"] = r14.package_sha256
     env = challenge(store, pkg15, target=None, now=late, scope="record_only", permission="HALTED", generation=3)
     r15 = submit(store, operator, env, pkg15, f15, late, generation=3)
     assert isinstance(r15, Receipt)
@@ -626,10 +640,10 @@ def test_defective_packages_are_refused_by_name_without_state_advance(tmp_path, 
                 "operator_signed_in_future": "chronology:signed_after_receipt",
                 "capture_before_effective_close": "chronology:capture_before_effective_close",
                 "source_publication_utc": "chronology:publication_after_receipt"}
-    assert result == Refusal(expected.get(mutation, mutation)), result
+    assert result == Refusal(expected.get(mutation, mutation), halt_required=mutation == "transaction_revision_detected"), result
     assert store.status()["rows"] == 1
     with sqlite3.connect(tmp_path / "settlement.sqlite") as db:
-        assert db.execute("SELECT status FROM challenges WHERE challenge_id=?", (env["challenge_id"],)).fetchone()[0] == "ISSUED"
+        assert db.execute("SELECT status FROM challenges WHERE challenge_id=?", (env["challenge_id"],)).fetchone()[0] == ("VOIDED_REVISION" if mutation == "transaction_revision_detected" else "ISSUED")
 
 
 def test_venue_equity_basis_accepts_carried_boundary_with_valuation(tmp_path):
@@ -707,7 +721,7 @@ def test_late_added_historical_transaction_is_refused(tmp_path):
     pkg2, files2 = package(r1, S15, now15, prior_tx=pkg1["ledger"]["transactions"])
     pkg2["ledger"]["transactions"].append({"id": "tx-late-history", "sha256": "a" * 64, "session_id": S14})
     env = challenge(store, pkg2, target=S16, now=now15)
-    assert submit(store, operator, env, pkg2, files2, now15) == Refusal("history_changed")
+    assert submit(store, operator, env, pkg2, files2, now15) == Refusal("history_changed", halt_required=True)
 
 
 def test_modified_or_missing_package_bytes_break_the_chain(tmp_path):
@@ -750,7 +764,6 @@ def test_record_only_catch_up_tolerates_a_later_current_peak(tmp_path):
     late = datetime(2026, 9, 16, 12, tzinfo=timezone.utc)
     pkg14, f14 = package(head, S14, late, scope="record_only")
     pkg14["dashboard"]["trailing_threshold"] = str(Decimal(pkg14["dashboard"]["trailing_threshold"]) + 500)   # later peak
-    pkg14["dashboard"]["balance"] = str(Decimal(pkg14["dashboard"]["balance"]) + 700)                        # current balance
     env = challenge(store, pkg14, target=None, now=late, scope="record_only", permission="HALTED", generation=3)
     assert isinstance(submit(store, operator, env, pkg14, f14, late, generation=3), Receipt)
     lower = pkg14.copy(); lower["dashboard"] = dict(pkg14["dashboard"], trailing_threshold=str(Decimal(head.peak) - 3000 - 1))
@@ -936,19 +949,16 @@ def test_superseded_history_corruption_blocks_consumers(tmp_path, reader, mutati
             getattr(store, reader)()
 
 
-@pytest.mark.parametrize("tx_session, accepted", [(B7_SESSION, True), (S14, True), (S15, False)])
-def test_first_current_close_checks_transaction_session_boundary(tmp_path, tx_session, accepted):
+@pytest.mark.parametrize("tx_session", [B7_SESSION, S14, S15])
+def test_first_current_close_refuses_relabelled_b7_inventory(tmp_path, tx_session):
     operator = Operator()
     store, head = seated(tmp_path, operator)
     pkg, files = package(head, S14, NOW14)
     pkg["ledger"]["transactions"][0]["session_id"] = tx_session
     env = challenge(store, pkg, target=S15, now=NOW14)
     result = submit(store, operator, env, pkg, files, NOW14)
-    if accepted:
-        assert isinstance(result, Receipt)
-    else:
-        assert result == Refusal("history_changed")
-        assert store.status()["rows"] == 1
+    assert result == Refusal("history_changed", halt_required=True)
+    assert store.status()["rows"] == 1
 
 
 @pytest.mark.parametrize("role", ["dashboard", "positions", "orders", "balance_history", "cash_history"])

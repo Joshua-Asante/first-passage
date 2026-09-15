@@ -73,6 +73,14 @@ An added or removed historical transaction also requires reconciliation; unchang
 IDs alone do not establish an unchanged history.
 This does not weaken TB-S1's duplicate/out-of-order settlement refusal.
 
+The verifier re-derives machine-readable cash and balance claims from the bound
+original reports; internally consistent package totals alone are insufficient.
+For the first close after B7, the owner requires a retained parseable E3 cash
+report matching the authenticated seal, with explicit frozen report timezone and
+ending equity reconciled to the sealed equity. Absent that baseline, the first
+close refuses; a new submission cannot establish its own historical baseline.
+An opaque E3 statement remains insufficient for machine-readable continuity.
+
 Record the displayed report timezone and retain both raw and normalized timestamps.
 Reject ambiguous or nonexistent local times unless the source resolves the offset.
 Account-wide evidence includes all instruments and manual activity, not only book
@@ -196,6 +204,12 @@ bytes and current acceptance invariants are verified. Resolution needs reviewed
 reconciliation and separate resumption; it does not rewrite historical actions.
 A restore begins halted and must reconcile its durable chain and challenge state
 before accepting another close. No second account writer is permitted.
+
+Detected history corrections in signed submission use that same durable
+invalidation path, retaining the observation and original source bytes before
+notifying the halt owner. If the refusal cannot identify the earliest affected
+close, quarantine starts at B7 and requires separately reviewed reseal/recovery.
+Notification failure cannot roll back quarantine; restore cannot clear it.
 
 ## Required acceptance traces
 

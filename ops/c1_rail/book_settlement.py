@@ -28,6 +28,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from book_policy import FIRM_RULES, TIER, ProtectionPolicy, is_protected, require_policy
 from book_session_calendar import SessionCalendar
 from account_close_calculation import CONTRACT, PACKAGE_SCHEMA, Refusal, verify_package, calculate_close
+from account_close_evidence import AssemblyError, parse_cash_report
+from account_close_ledger import reconcile, transactions_for
 from book_sizing_context import SettledClose
 from c1_signal_daemon.book_protocol import Mode
 from ed25519_verify import is_strong_public_key, verify as ed25519_verify
@@ -180,7 +182,7 @@ class SettlementStore:
     # ---- storage primitives ------------------------------------------------
 
     @contextmanager
-    def _tx(self, *, create: bool = False):
+    def _tx(self, *, create: bool = False, after_commit=None):
         try:
             uri = self.path.resolve().as_uri() + ("?mode=rwc" if create else "?mode=rw")
             with closing(sqlite3.connect(uri, uri=True, timeout=5, isolation_level=None)) as db:
@@ -190,6 +192,8 @@ class SettlementStore:
                 db.commit()
         except (sqlite3.Error, OSError, ValueError) as exc:
             raise SettlementError("settlement state unavailable") from exc
+        for callback, args in after_commit or ():
+            callback(*args)
 
     @staticmethod
     def _create(db):
@@ -204,6 +208,7 @@ class SettlementStore:
                    "package_json TEXT, source_digests TEXT, received_utc TEXT)")
         db.execute("CREATE TABLE sources (package_sha256 TEXT, file TEXT, sha256 TEXT, data BLOB, "
                    "PRIMARY KEY (package_sha256, file))")
+        db.execute("CREATE TABLE b7_history (seal_sha256 TEXT PRIMARY KEY, report_timezone TEXT)")
         db.execute("CREATE TABLE challenges (challenge_id TEXT PRIMARY KEY, envelope_sha256 TEXT, envelope_json TEXT, "
                    "scope TEXT, issued_utc TEXT, expires_utc TEXT, status TEXT, consumed_utc TEXT)")
         db.execute("CREATE TABLE events (seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT, session_id TEXT, "
@@ -274,8 +279,9 @@ class SettlementStore:
         archived = db.execute("SELECT * FROM superseded_chain ORDER BY rowid").fetchall()
         revisions = db.execute("SELECT * FROM packages WHERE kind='REVISION' ORDER BY package_sha256").fetchall()
         events = db.execute("SELECT * FROM events ORDER BY seq").fetchall()
+        b7_history = db.execute("SELECT * FROM b7_history ORDER BY seal_sha256").fetchall()
         return sha256_hex(canonical_bytes({"chain": active, "superseded_chain": archived,
-                                          "revisions": revisions, "events": events}))
+                                          "revisions": revisions, "events": events, "b7_history": b7_history}))
 
     @staticmethod
     def _verify_retained_evidence(db, package_sha256: str, origin: str) -> None:
@@ -285,10 +291,13 @@ class SettlementStore:
         kind = "B7_SEAL" if origin == "B7" else origin
         if stored is None or stored[1] != kind or sha256_hex(stored[0].encode("utf-8")) != package_sha256:
             raise SettlementError("settlement package integrity failure")
-        if kind in ("ACCOUNT_CLOSE", "REVISION"):
+        b7_binding = db.execute("SELECT report_timezone FROM b7_history WHERE seal_sha256=?", (package_sha256,)).fetchone()
+        if kind in ("ACCOUNT_CLOSE", "REVISION") or (kind == "B7_SEAL" and b7_binding):
             # Derive the source manifest from the hash-bound package, not merely
             # the mutable index alongside it.
-            declared = {s["file"]: s["sha256"] for s in json.loads(stored[0])["sources"]}
+            payload = json.loads(stored[0])
+            declared = ({payload["evidence"]["E3"]["path"]: payload["evidence"]["E3"]["sha256"]}
+                        if kind == "B7_SEAL" else {s["file"]: s["sha256"] for s in payload["sources"]})
             if json.loads(stored[2]) != declared:
                 raise SettlementError("settlement source manifest integrity failure")
             retained = {f: (s, d) for f, s, d in db.execute(
@@ -418,9 +427,29 @@ class SettlementStore:
 
     # ---- B7 seat (O5) --------------------------------------------------------
 
+    def _b7_previous(self, seal, cash_history_bytes, report_timezone, effective_close, equity):
+        """Derive inventory from the seal's E3 report; never from the new close."""
+        if not isinstance(cash_history_bytes, bytes) or not isinstance(report_timezone, str) \
+                or sha256_hex(cash_history_bytes) != seal["evidence"]["E3"]["sha256"]:
+            raise AssemblyError("B7 history binding")
+        rows = parse_cash_report(cash_history_bytes, report_tz=ZoneInfo(report_timezone),
+            captured_utc=datetime.fromisoformat(seal["evidence"]["E3"]["captured_at"]), account_id=self.account)
+        ids = [r.transaction_id for r in rows]
+        if len(ids) != len(set(ids)) or any(r.ts_utc > effective_close for r in rows):
+            raise AssemblyError("B7 history inventory")
+        rows.sort(key=lambda r: (r.ts_utc, int(r.transaction_id)))
+        ledger = reconcile(rows)
+        end_equity = rows[-1].amount_after
+        if ledger.unknown_rows or ledger.unlinked_fee_rows or ledger.adjustments_abs_total != 0 \
+                or any(cost < 0 for bucket in ledger.sessions.values() for cost in bucket["costs"].values()) \
+                or end_equity != equity:
+            raise AssemblyError("B7 history economics")
+        return {"report_timezone": report_timezone, "ledger": {"transactions": transactions_for(rows)}}
+
     def bootstrap_b7(self, seal_bytes: bytes, *, expected_seal_sha256: str, expected_tool_sha256: str,
                      session_id: str, effective_close_utc: datetime, policy: ProtectionPolicy,
-                     now: datetime) -> Receipt | Refusal:
+                     now: datetime, cash_history_bytes: bytes | None = None,
+                     report_timezone: str | None = None) -> Receipt | Refusal:
         """Seat the chain head from the authenticated B7 snapshot; distinct from any later close."""
         policy = require_policy(policy)
         if not _aware(now) or not _aware(effective_close_utc):
@@ -486,6 +515,11 @@ class SettlementStore:
         reopen_local = (close_local + timedelta(days=2 if close_local.weekday() == 4 else 0)).replace(hour=18)
         if expiry != reopen_local.astimezone(timezone.utc):
             return Refusal("seal_reopen_mismatch")
+        if cash_history_bytes is not None or report_timezone is not None:
+            try:
+                self._b7_previous(seal, cash_history_bytes, report_timezone, effective_close_utc, equity)
+            except (ValueError, TypeError, KeyError, ArithmeticError):
+                return Refusal("b7_history_invalid")
         mode = Mode.PROTECTED if is_protected(float(equity), float(peak), policy) else Mode.NORMAL
         with self._tx() as db:
             state = self._state(db)
@@ -494,8 +528,16 @@ class SettlementStore:
             if state["phase"] != "EMPTY" or self._chain(db):
                 return Refusal("chain_already_seated")
             digest = sha256_hex(seal_bytes)
+            declared = {}
+            if cash_history_bytes is not None:
+                source = seal["evidence"]["E3"]
+                declared = {source["path"]: source["sha256"]}
+                db.execute("INSERT INTO sources VALUES (?,?,?,?)",
+                           (digest, source["path"], source["sha256"], sqlite3.Binary(cash_history_bytes)))
+                db.execute("INSERT INTO b7_history VALUES (?,?)", (digest, report_timezone))
+                self._transition(db, history_sha256=self._history_digest(db))
             db.execute("INSERT INTO packages VALUES (?,?,?,?,?,?)",
-                       (digest, session_id, "B7_SEAL", seal_bytes.decode("utf-8"), "{}", _iso(now)))
+                       (digest, session_id, "B7_SEAL", seal_bytes.decode("utf-8"), json.dumps(declared), _iso(now)))
             self._append_chain(db, session_id=session_id, predecessor_session_id="", package_sha256=digest,
                                equity=str(equity), peak=str(peak), as_of_utc=_iso(effective_close_utc),
                                mode_next=mode.value, origin="B7", scope="", accepted_utc=_iso(now))
@@ -569,7 +611,7 @@ class SettlementStore:
     def submit(self, *, envelope: dict, signature: bytes, key_id: str, package: dict, sources: dict[str, bytes],
                halt_generation: int, policy: ProtectionPolicy, calendar: SessionCalendar, now: datetime,
                on_halt=None) -> Receipt | Refusal:
-        """Exactly-once acceptance under the single-writer transaction; a refusal advances nothing."""
+        """Exactly-once acceptance; refusals cannot advance closes and corrections quarantine history."""
         if not _aware(now):
             return Refusal("invalid_now")
         policy = require_policy(policy)
@@ -583,7 +625,8 @@ class SettlementStore:
             package_bytes = canonical_bytes(package) if isinstance(package, dict) else b""
         except (TypeError, ValueError):
             return Refusal("package_serialization")
-        with self._tx() as db:
+        notifications = []
+        with self._tx(after_commit=notifications) as db:
             state = self._state(db)
             if state["restore_pending"]:
                 return Refusal("restore_reconciliation_required")
@@ -635,13 +678,22 @@ class SettlementStore:
             if any(r["session_id"] == session_id for r in chain):
                 self._event(db, "duplicate_settlement_refused", session_id, {"challenge_id": envelope["challenge_id"]}, now)
                 if on_halt is not None:
-                    on_halt("settlement:duplicate:" + str(session_id), "protection")
+                    notifications.append((on_halt, ("settlement:duplicate:" + str(session_id), "protection")))
                 return Refusal("duplicate_settlement", halt_required=True)
             previous = db.execute("SELECT package_json, kind FROM packages WHERE package_sha256=?",
                                   (head["package_sha256"],)).fetchone()
             if previous is None or (head["origin"] == "ACCOUNT_CLOSE" and previous[1] != "ACCOUNT_CLOSE"):
                 raise SettlementError("settlement package integrity failure")
             previous_package = json.loads(previous[0]) if previous[1] == "ACCOUNT_CLOSE" else None
+            if previous[1] == "B7_SEAL":
+                baseline = db.execute("SELECT report_timezone FROM b7_history WHERE seal_sha256=?",
+                                      (head["package_sha256"],)).fetchone()
+                if baseline:
+                    seal = json.loads(previous[0])
+                    data = db.execute("SELECT data FROM sources WHERE package_sha256=? AND file=?",
+                        (head["package_sha256"], seal["evidence"]["E3"]["path"])).fetchone()[0]
+                    previous_package = self._b7_previous(seal, bytes(data), baseline[0],
+                                                        _utc(head["as_of_utc"]), Decimal(head["equity"]))
             proposal = calculate_close(package, sources, policy=policy, head=head, previous_package=previous_package,
                                     account=self.account, calendar_digest=state["calendar_digest"],
                                     policy_digest=state["policy_digest"], calendar=calendar,
@@ -650,11 +702,21 @@ class SettlementStore:
                 reason = proposal.reason
                 self._event(db, "submission_refused", session_id, {"reason": reason,
                                                                    "challenge_id": envelope["challenge_id"]}, now)
-                if reason == "out_of_order_settlement":
+                if reason in {"history_changed", "transaction_revision_detected", "report_timezone_changed"}:
+                    # The refusal does not certify an earliest affected close.
+                    # Quarantine the complete chain rather than leave any known
+                    # suspect prefix available after restore reconciliation.
+                    observation = {"account_id": self.account, "session_id": chain[0]["session_id"],
+                                   "sources": package["sources"], "reason": reason,
+                                   "observed_package": package, "signed_envelope": envelope,
+                                   "signature": signature.hex(), "key_id": key_id}
+                    self._record_revision(db, session_id=chain[0]["session_id"], revised_package=observation,
+                                          sources=sources, now=now, from_seq=1)
+                if proposal.halt_required:
                     if on_halt is not None:
-                        on_halt("settlement:out_of_order:" + str(session_id), "protection")
-                    return Refusal(reason, halt_required=True)
-                return Refusal(reason)
+                        label = "out_of_order" if reason == "out_of_order_settlement" else reason
+                        notifications.append((on_halt, ("settlement:" + label + ":" + str(session_id), "protection")))
+                return proposal
             net_equity, peak, mode = proposal.equity, proposal.peak, proposal.mode_next
             digest = envelope["package_sha256"]
             declared = {s["file"]: s["sha256"] for s in package["sources"]}
@@ -677,6 +739,22 @@ class SettlementStore:
             return receipt
 
     # ---- corrections (O3) ----------------------------------------------------
+
+    def _record_revision(self, db, *, session_id, revised_package, sources, now, from_seq):
+        """Retain and quarantine under the caller's existing writer transaction."""
+        state = self._state(db)
+        rows = revised_package["sources"]
+        declared = {src["file"]: src["sha256"] for src in rows}
+        revision_bytes = canonical_bytes({"schema": "settlement_revision/v1", "account_id": self.account,
+            "session_id": session_id, "sources": rows, "revised_package": revised_package})
+        digest = sha256_hex(revision_bytes)
+        self._retain_package(db, digest=digest, session_id=session_id, kind="REVISION",
+                             payload=revision_bytes, declared=declared, sources=sources, now=now)
+        boundary = min(state["invalidated_from_seq"] or from_seq, from_seq)
+        self._transition(db, phase="INVALIDATED", invalidated=True, invalidated_from_seq=boundary)
+        db.execute("UPDATE challenges SET status='VOIDED_REVISION' WHERE status='ISSUED'")
+        self._event(db, "revision_recorded", session_id, {"revised_sha256": digest,
+                                                        "invalidated_from_seq": from_seq}, now)
 
     def record_revision(self, *, session_id: str, revised_package: dict, sources: dict[str, bytes],
                         now: datetime, on_halt=None) -> Refusal:
@@ -713,19 +791,8 @@ class SettlementStore:
                 return Refusal("session_not_accepted")
             if sha256_hex(revised_bytes) == chain[index]["package_sha256"]:
                 return Refusal("revision_identical")
-            # A correction observation and a later accepted package may contain
-            # the exact same candidate. Give the observation its own namespace.
-            revision_bytes = canonical_bytes({"schema": "settlement_revision/v1", "account_id": self.account,
-                "session_id": session_id, "sources": rows, "revised_package": revised_package})
-            digest = sha256_hex(revision_bytes)
-            self._retain_package(db, digest=digest, session_id=session_id, kind="REVISION",
-                                 payload=revision_bytes, declared=declared, sources=sources, now=now)
-            from_seq = min(state["invalidated_from_seq"] or chain[index]["seq"], chain[index]["seq"])
-            self._transition(db, phase="INVALIDATED", invalidated=True, invalidated_from_seq=from_seq)
-            db.execute("UPDATE challenges SET status='VOIDED_REVISION' WHERE status='ISSUED'")
-            self._event(db, "revision_recorded", session_id, {"revised_sha256": digest,
-                                                             "invalidated_from_seq": chain[index]["seq"]}, now)
-            self._transition(db, history_sha256=self._history_digest(db))
+            self._record_revision(db, session_id=session_id, revised_package=revised_package,
+                                  sources=sources, now=now, from_seq=chain[index]["seq"])
         if on_halt is not None:
             on_halt("settlement:revision:" + session_id, "protection")
         return Refusal("accepted_record_revised", halt_required=True)
