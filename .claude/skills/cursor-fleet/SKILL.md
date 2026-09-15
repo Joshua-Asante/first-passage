@@ -5,7 +5,7 @@ description: Use when a task decomposes into 2+ independent, spec-freezable IMPL
 
 # Cursor Fleet — CC orchestrates, Cursor implements in parallel
 
-Extends `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` from one-build-at-a-time to N parallel workers under one orchestrator. **Every ADR clause still binds per packet** — this skill adds the orchestration layer, it never relaxes the routing tests, the handoff contract, or "no commit/merge without operator go." Every rule below exists because of a dated failure from the week of 2026-07-18→24; the friction ledger at the bottom is the why.
+Extends `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` from one-build-at-a-time to N parallel workers under one orchestrator. **Every ADR clause still binds per packet** — this skill adds the orchestration layer, it never relaxes the routing tests, the handoff contract, or "no commit/merge without operator go." Every rule below exists because of a dated failure — the week of 2026-07-18→24 unless the ledger dates it otherwise; the friction ledger at the bottom is the why.
 
 ## Routing — three lanes, pick one
 
@@ -33,12 +33,13 @@ Hard disqualifiers for any packet: touches ADR test-1 locked surfaces (core anch
    - `git fetch origin && git log --oneline origin/main --since="24 hours ago"` — re-verify the packet's Phase-0 premises against CURRENT main. Overtaken → mark OVERTAKEN in the manifest, do not dispatch. (Three artifacts were overtaken between authoring and dispatch on 2026-07-24 alone; the daily-repo-truth-sync task reports this each morning, but the dispatch-moment check is still mandatory.)
    - `gh pr list --state open` — no open PR already touches the packet's files.
    - Test 0 per packet: vendor bytes / secrets → route that packet LOCAL (worktree on this machine), never cloud. This is the `task-routing` skill's local-only checklist, re-applied per packet at dispatch time rather than once at fleet-authoring time — if that checklist changes, this step changes with it.
+   - The umbrella brief's review round (Codex, or whatever pre-dispatch review the operator runs on it) has COMPLETED and any re-freeze it produced is merged to `main` before the FIRST packet is dispatched. The review round is part of the freeze, not a track that runs alongside the builds; dispatching from the brief as first opened is a forbidden move. (2026-09-04f: all three workers were fired from `af0203f` while Codex was still reviewing; the re-freeze withdrew packet B and moved packet C's guard after the builds had started.)
 
 **5. Dispatch mechanics (the honest constraints):**
    - Follow the [shared CLI execution contract](../brief-authoring/references/cc_handoff.md#cli-execution-contract-when-dispatching-through-a-cli). Check the installed CLI and current approval result; historical classifier failures are not a universal ban on direct dispatch. A wrapper does not grant authority or bypass a denial. Carry applicable operator authorization forward and capture each worker's process result before retrying.
    - One worktree per packet; workers branch `cursor/<fleet-slug>-p<N>` from CURRENT `origin/main`, never from another packet's branch.
    - Worktree gotchas apply to workers: bare worktrees fail catalog/data gates (doc-only packets commit via doc sub-gates); CRLF pins matter for `.dockerignore`/hash-gated files; `sync_skills` never runs from a worktree.
-   - Point each worker at the umbrella brief path + its packet letter — the packet must be self-contained enough to survive `handoff-verify` (the 2026-07-24 price-capture handoff bounced `NEEDS_CONTEXT` once for exactly this; re-anchoring cost a round-trip).
+   - Point each worker at the umbrella brief path + its packet letter + **the commit SHA at which the brief was frozen** (the post-review-round freeze, never the as-first-opened commit). A worker whose pointer SHA no longer matches the brief on `main` returns `NEEDS_CONTEXT` rather than building — a stale pointer is a stale spec, and building it anyway is how a withdrawn packet gets built (2026-09-04f, packet B). The packet must be self-contained enough to survive `handoff-verify` (the 2026-07-24 price-capture handoff bounced `NEEDS_CONTEXT` once for exactly this; re-anchoring cost a round-trip).
 
 **6. Integration — the orchestrator's half of the token savings:**
    - Review each returned PR as **diffs + gate output, never whole-file re-reads** (Pass 1 spec-compliance: diff touches exactly the packet footprint; Pass 2 quality: gates green, no forbidden-move violations). Escalate to `fable-judge` only for claims that matter if wrong.
@@ -48,7 +49,7 @@ Hard disqualifiers for any packet: touches ADR test-1 locked surfaces (core anch
 
 **7. Fleet-level falsifier (same shape as the ADR's §4):** if 2 fleets in a rolling 8-week window end with integration cost exceeding the estimated solo-build cost (operator-judged, logged in SESSIONS), or any worker lands a spec-interpretation judgment defect, stop fleeting that task class and revert to single-dispatch ADR flow. Do not silently keep fleeting.
 
-## Friction ledger (why each rule exists — all week of 2026-07-18→24)
+## Friction ledger (why each rule exists — week of 2026-07-18→24 unless dated otherwise)
 
 | Rule | Dated failure it encodes |
 |---|---|
@@ -60,6 +61,7 @@ Hard disqualifiers for any packet: touches ADR test-1 locked surfaces (core anch
 | Wrapper/allow-rule honesty | `cursor-agent` CLI dispatch classifier-blocked; working around it is forbidden, asking once is cheap |
 | Umbrella-brief amortization | ADR §6's recorded cost: a full brief per dispatch "costs a real fraction of a session" — at N packets that overhead compounds unless amortized |
 | Claim manifest | Q-SFRISK-1 collision (firing 2): two sessions independently answered the same question; a registry of who-holds-what prevents the re-derivation |
+| Review round is part of the freeze; dispatch pointer carries the brief's frozen SHA | SESSIONS `2026-09-04f` (fleet dispositioned 2026-09-05): all three workers fired from the brief as first opened (`af0203f`) before Codex's pre-dispatch review re-froze it (`9914dd8e`…`70f1c47c`) — packet B was withdrawn by the re-freeze and built anyway (#304 closed without merge); packet C's guard moved mid-build (C falsified, fix round C1 owed). Relay lag, not worker error — the workers had no SHA to notice the drift by |
 
 ## Forbidden moves
 
@@ -67,6 +69,7 @@ Hard disqualifiers for any packet: touches ADR test-1 locked surfaces (core anch
 - **Workers writing SESSIONS/STATE/boards** — one writer, at integration.
 - **Dispatching a packet whose Phase-0 premises you verified at fleet-authoring time instead of dispatch time.**
 - **Retro-fitting the umbrella brief after workers started** — same class as retro-fitted handoffs (ADR §5).
+- **Dispatching from the umbrella brief as first opened, before its review round has completed and its re-freeze is on `main`** — the review round is part of the freeze (2026-09-04f: three workers built against a brief that then withdrew one packet and moved another's guard).
 - **Using the fleet to parallelize a judgment task** (design, adjudication, threshold-setting) — judgment stays in CC; if a packet needs judgment mid-build, it was mis-routed.
 
 ## Hand-offs
