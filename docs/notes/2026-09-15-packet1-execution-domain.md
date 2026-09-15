@@ -723,3 +723,23 @@ and MNQ exact-decimal results, the reported aggregate bar-call count and the
 source-state review record. It did not rerun nine full replays, certify browser
 restoration or establish the cause of volume differences. `git diff --check`
 passed and all 12 local Markdown targets in the two changed documents resolved.
+
+## Step 3 accepted — retained provider generation and corrected state
+
+The [final acceptance record](2026-09-15-packet1-step3-acceptance.md) closes
+Step 3 under the calendar/parity amendment. Independent reviewer `packet0_review`
+accepted the retained provider generation, captured active cold initialization
+and nine-reference parity with no blocking findings. The sealed v4 evidence and
+separate approval preserve the reviewed proposed contract unchanged.
+
+Direct provider observations corrected daily-reset grouping and open-entry fee
+accounting. All nine corrected candidate replays pass: 3,632 matched trades,
+851,011 bar calls, zero exclusions and flat terminal state without pending orders.
+All 30 focused and related tests pass, including an independent reviewer run.
+Original-capture provenance and one-bar export-duration evidence establish
+provider-relative completeness. Eight later volume differences remain retained
+outside the selected generation; their cause is not asserted.
+
+This accepted candidate supersedes the historical OPEN status above for Step 3
+only. Original artifacts and ports remain preserved. Step 4 calendar permission,
+Step 5 settlement, Step 6 combined admission and live activation remain separate.

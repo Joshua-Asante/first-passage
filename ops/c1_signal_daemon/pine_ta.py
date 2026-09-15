@@ -204,30 +204,31 @@ def trading_day(ts: datetime, tz: ZoneInfo = ET, session_open_hour: int = 18) ->
 
 
 US_MARKET_HOLIDAYS_2022_2027 = frozenset({
-    # NYSE full-closure holidays (CME Globex runs a shortened session but publishes
-    # no daily bar for the date on TradingView). Source: NYSE holiday calendar.
+    # Legacy name retained for callers. This is a provider daily-series merge
+    # model, not an exchange closure or trading-permission calendar. MGC/MYM
+    # 15-minute reset transitions are checked against retained provider markers
+    # over 2022-09-01 through 2026-09-03; later dates remain unqualified here.
     20220117, 20220221, 20220415, 20220530, 20220620, 20220704, 20220905, 20221124, 20221226,
-    20230102, 20230116, 20230220, 20230407, 20230529, 20230619, 20230704, 20230904, 20231123, 20231225,
+    20230102, 20230116, 20230220, 20230529, 20230619, 20230704, 20230904, 20231123, 20231225,
     20240101, 20240115, 20240219, 20240329, 20240527, 20240619, 20240704, 20240902, 20241128, 20241225,
-    20250101, 20250109, 20250120, 20250217, 20250418, 20250526, 20250619, 20250704, 20250901, 20251127, 20251225,
-    20260101, 20260119, 20260216, 20260403, 20260525, 20260619, 20260703, 20260907, 20261126, 20261225,
+    20250101, 20250120, 20250217, 20250418, 20250526, 20250619, 20250704, 20250901, 20251127, 20251225,
+    20260101, 20260119, 20260216, 20260525, 20260619, 20260703, 20260907, 20261126, 20261225,
     20270101, 20270118, 20270215, 20270326, 20270531, 20270618, 20270705, 20270906, 20271125, 20271224,
 })
 
 
 def tv_daily_key(ts: datetime, holidays: frozenset[int] = US_MARKET_HOLIDAYS_2022_2027,
                  tz: ZoneInfo = ET, session_open_hour: int = 18) -> date:
-    """The daily bar a 15-minute bar belongs to on TradingView (``time("D")``).
+    """Model provider daily-reset equivalence classes, not literal daily opens.
 
-    A CME session opens at 18:00 ET and carries the next calendar date. A US
-    market holiday has NO daily bar on TradingView: the holiday's shortened
-    session belongs to the next trading day's daily bar, so
-    ``ta.change(time("D"))`` is 0 at the holiday-evening reopen. Evidence: the
-    captured Vanguard export has no trade on the session after MLK,
-    Presidents', Memorial, Labor Day and the 2026-07-03 observed holiday
-    although the entry rule fires (its EOD flat latch resets only on a new
-    daily bar), while it does trade on 2023-07-04, 2024-07-04 and 2024-12-26,
-    whose daily bars begin at the prior evening's reopen.
+    The returned date is a grouping key used only to detect transitions. Direct
+    MGC/MYM provider markers support these transitions in the configurations/domains
+    recorded in the Packet 1 execution-domain evidence. In particular, the
+    2025-01-09 evening reopen DOES reset; a generic US holiday label cannot
+    suppress it. The MYM Sunday reopens following 2023-04-07 and 2026-04-03 also
+    reset; these dates must not merge into the next observed daily group.
+    This helper does not qualify future sessions, exchange closure
+    causes, or another chart configuration. Calendar permission is separate.
     """
     key = trading_day(ts, tz, session_open_hour)
     while (key.year * 10000 + key.month * 100 + key.day) in holidays or key.weekday() >= 5:

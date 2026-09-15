@@ -214,23 +214,21 @@ acceptance. Preserve the implemented/tested components and existing evidence.
    and every Packet 1 acceptance item supported by evidence. Prepare the commit/PR
    handoff; Packet 2 and live gates are not completion substitutes.
 
-Step 3 remains in progress. The
-[execution-domain record](../../notes/2026-09-15-packet1-execution-domain.md)
-retains the panel inventories, nine-reference event coverage, seven exact fresh
-report comparisons and the reviewed Aegis/Vanguard report reconciliation. The
-attested 6J derivative adds 88 retained bars without replacing the original panel.
-The [amendment](../../notes/2026-09-15-calendar-parity-separation-amendment.md)
-supersedes the earlier universal gap-classification prerequisite. No prior OPEN
-record becomes PASS: complete provider-input agreement, source/settings and
-initialization binding, endpoint evidence and a newly reviewed admission contract
-remain required. Session legality and calendar/settlement acceptance still gate
-Packet 1 and runtime permission separately.
-The latest continuation verifies all four original raw-to-panel conversions and
-all fresh provider timestamps/endpoints. MYM also matches OHLCV exactly; eight
-volume cells differ across fresh 6J/MGC/MNQ captures and remain unresolved. Nine
-full cold replays have ordered-bar/initial-state evidence. The next specific
-state check is actual provider daily-reset markers for MGC/MYM, alongside original
-capture provenance/completeness and reviewed capture-generation disposition.
+**Step 3 is complete and independently accepted** under the
+[amendment](../../notes/2026-09-15-calendar-parity-separation-amendment.md).
+The [acceptance record](../../notes/2026-09-15-packet1-step3-acceptance.md)
+binds retained provider coverage, source/settings provenance, complete cold
+initializers and the reviewed evidence contract. All nine reference replays pass:
+3,632 matched trades, zero exclusions and resolved terminal state. The selected
+original generation includes the attested 6J prefix; eight later volume revisions
+remain recorded separately, without replacing original data or applying tolerance.
+Direct observations corrected provider resets and open-entry fee accounting in
+the candidate runtime. Original private ports remain preserved; Step 6 must use
+the reviewed candidate identities. Historical evidence remains in the
+[execution-domain record](../../notes/2026-09-15-packet1-execution-domain.md).
+Next is Step 4 calendar permission, followed by Step 5 settlement and Step 6
+finite-margin/shared-law checks and combined bundle admission. These and live
+activation retain their separate gates.
 Do not spend
 another broad implementation pass on a producer
 whose required evidence is unavailable. A failed feasibility check produces an
