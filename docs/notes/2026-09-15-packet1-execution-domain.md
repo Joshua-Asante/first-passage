@@ -615,3 +615,111 @@ Missing/expired coverage halts new risk; safe flattening, protective/recovery
 ownership, prior-account-session chronology across denied days, settlement,
 separate resumption and activation gates remain required. D19 stays immutable
 historical date membership only. Step 3 and Packet 1 are not closed by this change.
+
+## Step 3 continued — provider identity, endpoints and cold initialization
+
+Evidence gathered on base `d109cf1`, September 15, 2026, under the approved
+calendar/parity amendment. Private raw files remain outside tracked source.
+No strategy settings, reference panel, runtime behavior or admission verdict was
+changed. The diagnostic browser capture returned to its original 6J symbol,
+with the export harness hidden and Aegis selected.
+
+### Provider evidence
+
+The four retained raw BAR EXPORT files reproduce their frozen Python panels
+exactly: ordered timestamps and decimal OHLCV, 15-minute durations, stable symbol
+metadata and sequential entry identities. The attested 6J prefix remains a
+separate derivative. Independent review reproduced all four conversion checks.
+This establishes conversion identity, not capture completeness by itself.
+
+Fresh full-window BAR EXPORT workbooks cover the same declared Deep range. All
+**378,512 entry-bar timestamps** match the corresponding Python inputs, including
+the attested 6J derivative, from September 1, 2022, 00:00Z through September 3,
+2026, 00:00Z. Both endpoints are represented. The terminal encoded entry must be
+retained even though the report's closed-trade count is one lower.
+
+| Input | Fresh entry bars | Timestamp differences | Price differences | Volume differences |
+|---|---:|---:|---:|---:|
+| 6J with attested prefix | 94,893 | 0 | 0 | 1 |
+| MGC | 94,617 | 0 | 0 | 4 |
+| MYM | 94,499 | 0 | 0 | 0 |
+| MNQ | 94,503 | 0 | 0 | 3 |
+
+Comparisons use exact decimal values, without interpolation or tolerance. Raw
+workbooks and the eight differing values are retained privately. Their cause is
+not independently certified. Fresh workbooks corroborate timestamps and prices;
+the three differing symbols cannot silently replace the retained generation.
+Even MYM's complete agreement does not alone establish historical source state
+or export completeness. A separately reviewed evidence disposition is required.
+
+Current installed Aegis source is byte-identical to its pinned file. Vanguard
+matches its pinned text after CRLF/LF normalization only. The installed harness
+uses corrected tick precision, encodes each in-window bar into alternating
+entries, and has window controls covering the selected interval. These current
+observations do not retroactively establish original chart provenance. The
+original MGC/MYM/MNQ capture attestation is pending; no repeat 6J attestation is
+needed. Seven-bundle source-body attestations already recorded remain valid.
+
+### Initialization evidence and remaining state dependency
+
+`full-initialization-and-interval.json` records the actual complete Python cold
+adapter and emulator objects for all nine reference cases, preserving indicator
+buffers and class defaults. All **851,011 bar calls** occurred once in panel order,
+including both endpoints. Each run ended flat with no pending orders. The runner
+also compares an empty-run constructor with the actual full-run initial object.
+Independent review reproduced the nine cold snapshots and inspected the full-run
+instrumentation; it did not independently rerun all nine complete replays.
+
+Source review maps active indicator seeds, session history, position levels and
+initial account state to the captured settings. It distinguishes behaviorally
+inert initial differences from literal state equality and keeps disabled source
+branches conditional on the captured controls. This is a cold-replay claim,
+not live restart/recovery acceptance.
+
+**A material source-state obligation remains:** Vanguard's active daily resets
+use Pine's provider daily-time series, while Python substitutes a holiday-adjusted
+key whose supporting explanation relies on trade outcomes. Striker uses a plain
+shifted daily key. Capture actual provider daily timestamps/reset markers for the
+complete MGC/MYM interval and compare their transitions with the actual adapters,
+including the origin, holiday-adjacent bars and DST. Matching trades cannot
+establish this mapping. This is provider-series evidence under Step 3, not a return
+to universal exchange-calendar gap classification. Subsequent account/fill event
+ordering also remains distinct from empty initial account state.
+
+The earlier regular-session gap screen is retained as diagnostic evidence only:
+3,972 ordinary-closure candidates and 171 residual gaps over the derivative-aware
+inventory. It neither admits session facts nor supplies trading permission.
+
+### Evidence seal and next acceptance checks
+
+Private `step3-evidence-index-v3.json` binds 30 new artifacts and preserves v2:
+`9c8d36cbace103e99cda62e6401d5dc45d32927aa04343feecb2f570b05c6569`.
+The seal builder verifies all prior v2 artifact hashes/sizes and the unchanged
+runtime/private-port identities used by the full initialization evidence.
+
+| Report | SHA-256 |
+|---|---|
+| Retained raw/panel identity | `cf107bec15063bae2307359eba5d35afc19b15bfd0eabaf94c52a3872b2f4536` |
+| Full initialization and interval | `c1aa67c0fd93d62b423918493b16996cc507aab9de993b47e9c6fcb484eb7da8` |
+| Fresh exact 6J/MGC comparison | `231c66f0f118e1df800f4064f9c019db9a9ddf69de80528158a94b5aba67eb8e` |
+| Fresh exact MYM comparison | `f311dfb6ed4f746b857e184771efcd765558ff9e7bfe4582b35a00259d42c3d2` |
+| Fresh exact MNQ comparison | `5a9c5c9bb86c01ca6ee3166348ea31caa079f051b051154677e3a48d97b39660` |
+
+Final comparison and seal-builder invocations on bundled Python 3.12.14 exited
+zero. An exit-zero diagnostic is not a coverage PASS: all eight differences remain
+in the reports. The earlier float-based endpoint probes are retained; the exact
+decimal reports above control the value-comparison claims.
+
+**Step 3 remains OPEN.** Finish original capture provenance and completeness,
+resolve the recorded generation differences through review, establish the active
+provider daily series and complete state/event binding, then review the combined
+source/settings/panel/runtime evidence and new admission contract. Calendar and
+settlement acceptance remain separate Packet 1 gates. No live capability or
+automatic resumption is asserted.
+
+Independent reviewer `packet0_review` accepted this bounded continuation with no
+material findings. It independently verified all 30 v3 hashes/sizes, fresh MYM
+and MNQ exact-decimal results, the reported aggregate bar-call count and the
+source-state review record. It did not rerun nine full replays, certify browser
+restoration or establish the cause of volume differences. `git diff --check`
+passed and all 12 local Markdown targets in the two changed documents resolved.

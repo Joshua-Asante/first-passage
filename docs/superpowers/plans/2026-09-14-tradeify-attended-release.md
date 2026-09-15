@@ -225,6 +225,12 @@ record becomes PASS: complete provider-input agreement, source/settings and
 initialization binding, endpoint evidence and a newly reviewed admission contract
 remain required. Session legality and calendar/settlement acceptance still gate
 Packet 1 and runtime permission separately.
+The latest continuation verifies all four original raw-to-panel conversions and
+all fresh provider timestamps/endpoints. MYM also matches OHLCV exactly; eight
+volume cells differ across fresh 6J/MGC/MNQ captures and remain unresolved. Nine
+full cold replays have ordered-bar/initial-state evidence. The next specific
+state check is actual provider daily-reset markers for MGC/MYM, alongside original
+capture provenance/completeness and reviewed capture-generation disposition.
 Do not spend
 another broad implementation pass on a producer
 whose required evidence is unavailable. A failed feasibility check produces an
