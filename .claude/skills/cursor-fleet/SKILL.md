@@ -11,7 +11,7 @@ Extends `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` from one-build-at-
 
 | Work shape | Lane | Why |
 |---|---|---|
-| Read-only research / verification / review fan-out | **Claude subagents (Workflow/Agent tool)** | No branch overhead, results return in-context; e.g. the 14-agent Algorithm review (2026-07-24) |
+| Read-only research / verification / review fan-out | **Claude subagents (Workflow/Agent tool)** — protocol: `work-decomposition` §Input-shaped (size, filter, batch, depth-1 wave, spot-check) | No branch overhead, results return in-context; e.g. the 14-agent Algorithm review (2026-07-24) |
 | One implementation build | **Single Cursor handoff** (ADR flow) or CC solo below the test-3 threshold | Fleet overhead is pure waste at N=1 |
 | 2+ independent, spec-freezable implementation packets, each ADR-tests-0–2 clean, jointly clearing test 3 | **THIS SKILL** | CC context goes to judgment (decompose/freeze/review); Cursor tokens go to mechanical build |
 
@@ -19,7 +19,7 @@ Hard disqualifiers for any packet: touches ADR test-1 locked surfaces (core anch
 
 ## The orchestration loop
 
-**1. Decompose into packets with DISJOINT file footprints.** No two packets may touch the same file — file overlap is how parallel branches manufacture merge conflicts and semantic auto-merge contradictions. `docs/SESSIONS.md`, `STATE.md`, the umbrella note, and all board/index files are RESERVED to the orchestrator's integration commit; workers never write them (also keeps the merge=union phantom-conflict class to one writer).
+**1. Decompose into packets with DISJOINT file footprints.** Whether a task is oversize, where it cuts, and the six-point atomic test each packet must pass (one output, one gate, revertible, one session, disjoint footprint, frozen) are `work-decomposition`'s; this step applies its footprint rule at dispatch. No two packets may touch the same file — file overlap is how parallel branches manufacture merge conflicts and semantic auto-merge contradictions. `docs/SESSIONS.md`, `STATE.md`, the umbrella note, and all board/index files are RESERVED to the orchestrator's integration commit; workers never write them (also keeps the merge=union phantom-conflict class to one writer).
 
 **2. One umbrella handoff brief, N packet appendices.** The umbrella is a real `docs/briefs/handoffs/` brief passing `check_brief` (satisfies the ADR handoff contract once, amortizing test-3 overhead across the fleet). Each packet appendix carries exactly four load-bearing elements, nothing more:
    - **Phase-0 staleness check** — the packet's premises as runnable commands, with the explicit no-op condition ("if already fixed on main → return DONE, cite the commit"). This is what caught all three overtakes on 2026-07-24; it is the single most load-bearing line in the packet.
@@ -71,6 +71,7 @@ Hard disqualifiers for any packet: touches ADR test-1 locked surfaces (core anch
 
 ## Hand-offs
 
+- Sizing an oversize task into packets, the per-packet atomic test, and re-cutting after a second `NEEDS_CONTEXT` bounce → `work-decomposition`
 - Packet authoring structure → `brief-authoring` (cc_handoff template, §0.5 Cursor variant)
 - Consuming/verifying any packet before dispatch → `handoff-verify`
 - Post-return adjudication of load-bearing claims → `fable-judge`
