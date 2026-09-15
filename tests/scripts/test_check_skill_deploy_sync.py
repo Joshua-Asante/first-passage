@@ -60,6 +60,14 @@ one ADR-cited skill has a directory DIRECTLY under the root.
 `test_partial_bundle_is_drift_not_skip` pins that the decision is
 "any cited skill dir present", never "all present", so a partial deploy
 still fails as drift.
+
+Codex review fix on PR #403 (P1): keying the decision on the CITED skill's
+directory alone left a hole -- the ADR corpus cites only brief-authoring, so
+a real bundle that lost brief-authoring/ itself read as harness-owned and
+SKIPped on the exact deletion the gate guards. The marker set is now the
+cited skills plus every directory the repo owns under .claude/skills/;
+`test_bundle_missing_only_the_cited_skill_still_fails` plants that bundle
+and requires exit 1 with brief-authoring listed.
 """
 import os
 import shutil
@@ -163,6 +171,29 @@ def test_root_with_only_unrelated_dirs_skips_not_passes(tmp_path):
     assert "check_skill_deploy_sync.py" in out
     assert "Publication is not required" in out
     assert "python scripts/sync_skills.py" not in out
+
+
+def test_bundle_missing_only_the_cited_skill_still_fails(tmp_path):
+    """Codex P1 on PR #403: a REAL deployed bundle whose brief-authoring/ was
+    removed (the external-rewrite class this gate exists to catch) still
+    carries the repo's other skills directly under the root. It must take
+    the real check and report brief-authoring as drift -- never SKIP as if
+    the root were a harness-owned container directory."""
+    root = tmp_path / "home_skills"
+    for name in ("fable-method", "inqhiori", "verify-source"):
+        assert (REPO_ROOT / ".claude" / "skills" / name).is_dir(), name
+        (root / name).mkdir(parents=True)
+        (root / name / "SKILL.md").write_text("# deployed copy\n", encoding="utf-8")
+    assert not (root / "brief-authoring").exists()
+    result = subprocess.run(
+        [sys.executable, "scripts/check_skill_deploy_sync.py"],
+        capture_output=True, text=True, cwd=REPO_ROOT,
+        env={**os.environ, "HOME_SKILLS_DEPLOY_TARGET_OVERRIDE": str(root)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "SKIP" not in result.stdout
+    assert "DRIFT" in result.stdout
+    assert "brief-authoring/scripts/check_brief.py" in result.stdout
 
 
 def test_partial_bundle_is_drift_not_skip(tmp_path):

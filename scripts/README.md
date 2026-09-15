@@ -143,11 +143,12 @@ release. Deployed-only extras need triage, not automatic deletion/import;
 
 [`check_skill_deploy_sync.py`](check_skill_deploy_sync.py) checks existence of
 literal ADR-cited deployed scripts, not equality. It is `SKIP` / `NOT CHECKED`
-when there is no deployment root, or when the root holds none of the cited
-skills' directories directly under it (a managed remote container's
-harness-owned `~/.claude/skills/`, for example); nested marketplace copies do
-not count as the bundle. A root that has a cited skill's directory but lacks
-the cited script fails, and a partial bundle is drift, not a skip. Re-running
+when there is no deployment root, or when the root holds none of this repo's
+skill directories, cited or not, directly under it (a managed remote
+container's harness-owned `~/.claude/skills/`, for example); nested
+marketplace copies do not count as the bundle. A root that has any repo
+skill's directory but lacks a cited script fails, including a bundle that
+lost the cited skill itself, and a partial bundle is drift, not a skip. Re-running
 this check against an existing bundle requires no publication. Any repair
 release requires the explicit reviewed-revision/target procedure above.
 
