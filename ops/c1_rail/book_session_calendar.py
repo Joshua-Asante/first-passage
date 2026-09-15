@@ -14,7 +14,6 @@ deadlines of the current row remain available through ``schedule_for``.
 from __future__ import annotations
 
 import hashlib
-import json
 import re
 from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta, timezone
@@ -22,12 +21,14 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from book_sizing_context import BookSession
+from calendar_evidence import halt_evidence, index_captures, read_json_object, require_halt_evidence
 
 SCHEMA = "book_session_calendar/v1"
 OVERLAY_SCHEMA = "book_closure_overlay/v1"
 EVIDENCE_SCHEMA_V1 = "forward_session_source_captures/v1"
 EVIDENCE_SCHEMA_V2 = "forward_session_source_captures/v2"
 EVIDENCE_V1_WARNING = "evidence_schema_v1_no_product_coverage"
+_V1_CALENDAR_DIGEST = "650e8aab4166f74a988675a3f3dfa2dbd21c1c1b342777ac37d65aacea9d6f2f"
 RATIFICATION_SCHEMA = "calendar_ratification/v1"
 _RATIFICATION_KEYS = frozenset({
     "calendar_id", "calendar_file", "calendar_sha256", "closure_overlay_file",
@@ -143,7 +144,7 @@ def _minutes(value: object, label: str) -> timedelta:
 def _read(path: Path) -> tuple[bytes, dict]:
     data = path.read_bytes()
     try:
-        payload = json.loads(data)
+        payload = read_json_object(data)
     except ValueError as exc:
         raise CalendarError(f"{path}: not JSON ({exc})") from exc
     if not isinstance(payload, dict):
@@ -190,6 +191,7 @@ class SessionCalendar:
     review_due: datetime
     rows: tuple[SessionSchedule, ...]
     products: tuple[str, ...]
+    generated_at: datetime
     evidence_warning: str | None = None   # set when the evidence file predates per-capture product coverage
     ratified_at: datetime | None = None  # absent on a validation-only load
 
@@ -215,13 +217,13 @@ class SessionCalendar:
         """Produce the BookSession that admits new risk at ``now``, or a refusal."""
         if not isinstance(now, datetime) or now.tzinfo is None or now.utcoffset() is None:
             return SessionDecision(None, "invalid_now", None, self.calendar_digest)
-        if expected_digest is not None and expected_digest != self.calendar_digest:
-            return SessionDecision(None, "calendar_digest_mismatch", None, self.calendar_digest)
         warnings: list[str] = []
         if self.evidence_warning:
             warnings.append(self.evidence_warning)
         if now >= self.review_due:
             warnings.append("calendar_review_due")
+        if expected_digest is not None and expected_digest != self.calendar_digest:
+            return SessionDecision(None, "calendar_digest_mismatch", None, self.calendar_digest, tuple(warnings))
         if now < self.coverage_start:
             return SessionDecision(None, "coverage_not_started", None, self.calendar_digest, tuple(warnings))
         if now >= self.coverage_end:
@@ -242,7 +244,7 @@ class SessionCalendar:
             return SessionDecision(None, "calendar_not_ratified", row, self.calendar_digest, tuple(warnings))
         if now < self.ratified_at:
             return SessionDecision(None, "calendar_not_yet_ratified", row, self.calendar_digest, tuple(warnings))
-        session = BookSession(row.session_id, row.prior_session_id, row.admits_from,
+        session = BookSession(row.session_id, row.prior_session_id, row.opens_at,
                               row.risk_add_cutoff, row.closes_at, self.calendar_digest)
         return SessionDecision(session, None, row, self.calendar_digest, tuple(warnings))
 
@@ -345,6 +347,11 @@ def _verify_row(row: dict, index: int, *, tz: ZoneInfo, venue: dict, rule: dict,
             raise CalendarError(f"{plabel}: qualified product needs a matching open")
         if not (opens < m_close <= closes):
             raise CalendarError(f"{plabel}: matching close must fall inside the account day")
+        if not holiday:
+            close_h, close_m = _clock(products[code]["regular_matching_close_local"], f"{plabel}.regular_close")
+            regular_close = datetime(day.year, day.month, day.day, close_h, close_m, tzinfo=tz)
+            if m_close != regular_close.astimezone(timezone.utc):
+                raise CalendarError(f"{plabel}: matching close differs from the declared regular product clock")
         deadlines.append(m_close)
 
     cap_h, cap_m = _clock(rule["own_flat_cap_local"], "schedule_rule.own_flat_cap_local")
@@ -382,6 +389,7 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
                             f"extra={sorted(set(payload) - _TOP_KEYS)})")
     if payload["schema"] != SCHEMA:
         raise CalendarError("calendar: wrong schema")
+    generated = _utc_event(payload["generated_utc"], "calendar.generated_utc")
     if not isinstance(payload["calendar_id"], str) or not payload["calendar_id"].strip():
         raise CalendarError("calendar: calendar_id required")
     if isinstance(payload["version"], bool) or not isinstance(payload["version"], int) or payload["version"] < 1:
@@ -393,9 +401,12 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
     if tz_name != "America/New_York":
         raise CalendarError("calendar: venue.timezone must be America/New_York")
     tz = ZoneInfo(tz_name)
-    for key in ("account_day_opens_local", "account_day_closes_local",
-                "regular_flat_deadline_local", "holiday_shortened_flat_deadline_local"):
-        _clock(venue.get(key), f"venue.{key}")
+    # These are the source-backed clocks of this venue contract, not artifact knobs.
+    for key, expected in {"account_day_opens_local": "18:00", "account_day_closes_local": "17:00",
+                          "regular_flat_deadline_local": "16:45",
+                          "holiday_shortened_flat_deadline_local": "12:59"}.items():
+        if venue.get(key) != expected:
+            raise CalendarError(f"venue.{key}: differs from source-backed clock {expected}")
     rule = payload["schedule_rule"]
     if not isinstance(rule, dict) or set(rule) != {"owner", "own_flat_cap_local", "own_flat_before_v_minutes",
                                                     "cutoff_before_own_flat_minutes",
@@ -409,6 +420,11 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
     products = payload["products"]
     if not isinstance(products, dict) or set(products) != {"6J", "MGC", "MYM", "MNQ"}:
         raise CalendarError("calendar: products must be exactly 6J/MGC/MYM/MNQ")
+    for code, spec in products.items():
+        if not isinstance(spec, dict):
+            raise CalendarError(f"calendar: product {code} spec must be an object")
+        if (spec.get("regular_matching_open_local"), spec.get("regular_matching_close_local")) != ("18:00", "17:00"):
+            raise CalendarError(f"calendar: product {code} differs from source-backed regular clocks")
 
     sources = payload["sources"]
     if not isinstance(sources, dict) or set(sources) != {"evidence_file", "evidence_sha256", "ids"}:
@@ -421,12 +437,14 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
     evidence_bytes = evidence_path.read_bytes()
     if hashlib.sha256(evidence_bytes).hexdigest() != sources["evidence_sha256"]:
         raise CalendarError("calendar: evidence_sha256 does not match the evidence file bytes")
-    evidence = json.loads(evidence_bytes)
-    captures = evidence.get("captures", [])
-    if not isinstance(captures, list) or not captures or any(not isinstance(c, dict) or not isinstance(c.get("id"), str)
-                                                              for c in captures):
-        raise CalendarError("calendar: evidence captures")
-    captured_ids = {c["id"] for c in captures}
+    try:
+        evidence = read_json_object(evidence_bytes)
+        capture_index = index_captures(evidence)
+        halts = halt_evidence(evidence_bytes, capture_index)
+    except ValueError as exc:
+        raise CalendarError(str(exc)) from exc
+    captures = capture_index.values()
+    captured_ids = set(capture_index)
     evidence_schema = evidence.get("schema")
     if evidence_schema == EVIDENCE_SCHEMA_V2:
         coverage: dict[str, frozenset[str]] | None = {}
@@ -437,6 +455,9 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
             coverage[c["id"]] = frozenset(covered)
         evidence_warning = None
     elif evidence_schema == EVIDENCE_SCHEMA_V1:
+        # The pinned calendar itself transitively pins the exact evidence digest.
+        if hashlib.sha256(data).hexdigest() != _V1_CALENDAR_DIGEST:
+            raise CalendarError("calendar: v1 evidence is restricted to the pinned September calendar")
         coverage = None                      # v1 captures carry no product coverage; every decision warns
         evidence_warning = EVIDENCE_V1_WARNING
     else:
@@ -458,6 +479,14 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
     for index, raw in enumerate(rows_raw):
         row = _verify_row(raw, index, tz=tz, venue=venue, rule=rule, products=products,
                           source_ids=captured_ids, overlay_dates=overlay_dates, coverage=coverage)
+        if row.denial_reason in ("HOLIDAY", "SHORTENED"):
+            day = date.fromisoformat(raw["account_date"])
+            for code, product in raw["products"].items():
+                try:
+                    require_halt_evidence(halts, product["source_ids"], day, code,
+                                          _utc(product["matching_close_utc"], "matching_close_utc"))
+                except ValueError as exc:
+                    raise CalendarError(str(exc)) from exc
         if index == 0:
             if raw["predecessor_in_file"] is not False:
                 raise CalendarError("sessions[0]: predecessor_in_file must be false")
@@ -511,7 +540,7 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
         calendar_id=payload["calendar_id"], calendar_digest=hashlib.sha256(data).hexdigest(),
         overlay_digest=overlay_digest, timezone=tz_name, coverage_start=start, coverage_end=end,
         review_due=review_due, rows=tuple(rows), products=tuple(sorted(products)),
-        evidence_warning=evidence_warning,
+        evidence_warning=evidence_warning, generated_at=generated,
     )
 
 
@@ -565,4 +594,7 @@ def load_ratified_calendar(path: Path, *, overlay_path: Path, ratified_path: Pat
               _utc(row["coverage_end_utc"], "coverage_end_utc"))
     if bounds != (calendar.coverage_start, calendar.coverage_end):
         raise CalendarError("ratification_coverage_mismatch")
-    return replace(calendar, ratified_at=_utc_event(row["ratified_utc"], "ratified_utc"))
+    ratified = _utc_event(row["ratified_utc"], "ratified_utc")
+    if ratified < calendar.generated_at:
+        raise CalendarError("ratification_precedes_generation")
+    return replace(calendar, ratified_at=ratified)
