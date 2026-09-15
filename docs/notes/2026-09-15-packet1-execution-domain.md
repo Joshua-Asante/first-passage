@@ -336,3 +336,43 @@ coverage evidence; the inventory does not supply that acceptance.
 
 No strategy, runtime, source settings, calendar verdict or admission changed in
 this initial slice.
+
+### Continued investigation — retained 6J prefix candidate
+
+Initial inventory committed as `a2799f8`; repository commit checks passed. A
+read-only scan of six September 3/5 raw 6J exports in Downloads found a previously
+retained prefix candidate, `BAR_EXPORT_v0.2_CME_6J1!_2026-09-05_a759e.csv`, SHA-256
+`4dc86e96ae5ace2fed2e8d9e097a7076bf93301387a89e3f198c342476802018`.
+
+It contains 185 unique entry-encoded bars from 2022-08-31 00:00Z through
+2022-09-02 00:00Z, including **88 bars on September 1 before 23:00Z**. All five
+overlapping bars match the pinned 6J panel in every OHLCV field. The canonical
+`bar_export_loader` decoder accepts all 185 signals and their v0.2 metadata;
+instrument metadata is constant and matches the panel sidecar. OHLCV shape,
+finite values, nonnegative volume and 6J tick alignment pass. These checks make
+it a candidate for qualification, not an accepted splice or proof of the original
+strategy's calculation origin.
+
+The raw source of the pinned panel (`ed300`) reproduces every one of its 94,805
+bars exactly. The earlier `1e1e0` capture contains the 88-bar prefix but differs
+on every overlapping OHLCV row and is not a substitute for the precision-corrected
+panel. The two duplicate September 5 full exports (`72d33` and `f79cb`) begin at
+the same late boundary and differ from the panel on one row; do not silently
+replace the pinned panel with either. The short `c2642` capture supplies no prefix.
+
+Private diagnostic artifacts in `step3-coverage`:
+
+| Artifact | SHA-256 |
+|---|---|
+| `audit_raw_6j.py` | `6117551f27dc5330fac5a9208547e017491376fa175bbd2577ed2c27b1a6c9d5` |
+| `raw-6j-candidates.json` | `9b45c8c3738d2e5c2b6c3733a854d54c71266da54072687e6d5c4528105dec8a` |
+
+The report binds all six raw file hashes, the pinned panel hash, duplicates,
+boundaries and overlap comparisons. Its prefix decoder is diagnostic; the
+separate canonical-decoder check above validates the candidate's full metadata
+shape. Neither checker establishes capture settings or acceptance by itself.
+
+Next: establish the prefix capture's provenance and original strategy calculation
+boundary, then compare cold replay with the appropriate retained history. Retain
+the current panel unchanged until that evidence is reviewed. A fresh bar export
+may be unnecessary; no recapture decision is made by this inventory alone.
