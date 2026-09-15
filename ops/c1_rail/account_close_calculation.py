@@ -16,7 +16,7 @@ from account_close_evidence import sha256_hex, verify_source_manifest, verify_hi
 
 CONTRACT = "docs/spec/2026-09-15-tradeify-attended-settlement-contract.md"
 
-PACKAGE_SCHEMA = "account_close_package/v2"
+PACKAGE_SCHEMA = "account_close_package/v3"
 
 EVIDENCE_FRESHNESS = timedelta(minutes=30)
 
@@ -39,7 +39,7 @@ _WIDTH = Decimal(str(FIRM_RULES[TIER]["starting_balance"])) * Decimal(str(FIRM_R
 _PACKAGE_KEYS = frozenset({
     "schema", "contract", "account_id", "venue", "session_id", "predecessor_session_id",
     "predecessor_package_sha256", "calendar_digest", "policy_digest", "effective_close_utc",
-    "source_publication_utc", "operator_signed_utc", "report_timezone", "inception_utc",
+    "source_publication_utc", "report_timezone", "inception_utc",
     "equity", "ledger", "dashboard", "positions", "sources", "attestations",
     "unresolved_runtime_requests", "scope", "settlement_basis"})
 
@@ -186,8 +186,7 @@ def _v7_chronology(c: _Ctx):
     """One ordering over every timestamp the package and the challenge carry."""
     p, now = c.p, c.now
     c.inception = _utc(p["inception_utc"])
-    signed = _utc(p["operator_signed_utc"])
-    if c.inception is None or signed is None:
+    if c.inception is None:
         return "chronology:timestamp_shape"
     if not c.inception < c.effective:
         return "chronology:inception_not_before_close"
@@ -213,14 +212,8 @@ def _v7_chronology(c: _Ctx):
     if p["dashboard"]["captured_utc"] != c.roles["dashboard"]["captured_utc"] or \
             p["positions"]["captured_utc"] != c.roles["positions"]["captured_utc"]:
         return "chronology:capture_time_unbound"
-    if any(signed < t for r, t in captures.items() if r != "inception"):
-        return "chronology:signed_before_capture"
-    if c.issued_utc is not None and signed < c.issued_utc:
-        return "chronology:signed_before_challenge"
     if c.issued_utc is not None and any(t > c.issued_utc for r, t in captures.items() if r != "inception"):
         return "chronology:capture_after_challenge"
-    if signed > now:
-        return "chronology:signed_after_receipt"
     return verify_history_coverage(p["ledger"]["coverage"], c.roles,
                                    report_timezone=p["report_timezone"], inception=c.inception)
 
