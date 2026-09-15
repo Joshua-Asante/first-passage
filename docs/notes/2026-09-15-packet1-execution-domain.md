@@ -376,3 +376,33 @@ Next: establish the prefix capture's provenance and original strategy calculatio
 boundary, then compare cold replay with the appropriate retained history. Retain
 the current panel unchanged until that evidence is reviewed. A fresh bar export
 may be unnecessary; no recapture decision is made by this inventory alone.
+
+### Prefix sensitivity replay (after commit `416169d`)
+
+Executed two fixed diagnostic scenarios without tuning settings: the unchanged
+6J panel and an in-memory sequence prepending the candidate's 88 September 1 bars.
+Both use the existing private reconstructed effective settings, pinned Aegis
+export and current replay components. The private report binds those input and
+component hashes; reconstructed settings remain diagnostic, not newly attested
+capture evidence. The pinned panel file was not changed.
+
+Both scenarios match all **121** exported closed trades at quantity scale 1,
+with zero excluded exports and no quantity, price or P&L mismatches under the
+existing comparator tolerances. Their full closed-trade sequences are exactly
+equal. Both end with zero position and no pending orders. This establishes
+closed-trade insensitivity for these two tested origins only, not equality of
+every internal indicator state or live restart readiness.
+
+Crucially, the two different origins both pass: a matching trade sequence cannot
+identify the original TradingView calculation boundary. Prefix provenance was
+requested from the operator and remains pending. No coverage PASS is issued.
+
+| Private artifact in `step3-coverage` | SHA-256 |
+|---|---|
+| `replay_prefix.py` | `c08c949f0ec5cedc4c363847029fea500344c94af124c13eeae1367a75062dd2` |
+| `prefix-replay.json` | `86ede9ca996e2510b666af0b5a78b7a7eb7e288f9dc6b6a8aa7675bc3f8c0ef9` |
+
+Final runner invocation on bundled Python 3.12.14 exited 0. A preceding attempt
+to add terminal-state reporting called the position accessor incorrectly and
+failed JSON serialization; corrected to `position()` and reran both scenarios.
+The hashes above identify the successful final generation.
