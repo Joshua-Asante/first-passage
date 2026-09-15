@@ -103,9 +103,22 @@ retirement of the skill that stated them:
   against current `origin/main` at dispatch, with an explicit no-op condition ("if already fixed
   on main → return DONE, cite the commit"). Three artifacts were overtaken between authoring and
   dispatch on 2026-07-24 alone.
-- **A brief's automated-review round is part of the freeze — dispatch waits for it**, and the
-  dispatch pointer carries the brief's commit SHA so a worker can detect a re-freeze (2026-09-04
-  defect; `docs/SESSIONS.md`).
+- **A brief's review round is part of the freeze, not a track running alongside the builds.** The
+  umbrella brief's pre-dispatch review must have COMPLETED and any re-freeze it produced must be
+  merged to `main` **before the first packet is dispatched**. Dispatching from the brief as first
+  opened is a forbidden move.
+- **The dispatch pointer carries the brief's frozen SHA** — the post-review-round freeze, never
+  the as-first-opened commit. A worker whose pointer SHA no longer matches the brief on `main`
+  returns `NEEDS_CONTEXT` rather than building: a stale pointer is a stale spec, and building it
+  anyway is how a withdrawn packet gets built.
+
+  Both rules are paid for by SESSIONS `2026-09-04f`: all three workers were fired from `af0203f`
+  while the review was still running; the re-freeze withdrew packet B (built anyway, #304 closed
+  without merge) and moved packet C's guard mid-build (C falsified, fix round C1 owed). Relay lag,
+  not worker error — the workers had no SHA to notice the drift by. Ratified as
+  [#402](https://github.com/Joshua-Asante/first-passage/pull/402) against the `cursor-fleet`
+  skill on 2026-09-15 and carried here verbatim in substance when that skill was deleted the same
+  day; nothing of #402 is lost.
 
 **Effective:** the 2026-07-14 decision on acceptance; the 2026-09-15 rescoping on the
 operator's same-day in-session ratification.
