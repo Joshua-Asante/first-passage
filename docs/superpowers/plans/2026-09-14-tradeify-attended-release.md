@@ -251,6 +251,16 @@ record-only catch-up, revision invalidation, restart reconciliation) and
 `size_book_request`. Open: the operator's actual reports and signing key, the package
 assembler from those report formats, account qualification and TB-I3 integration.
 No close is accepted and nothing grants activation or resumption.
+
+**Step 6 assembled and provisionally executed 2026-09-15; independent admission NOT
+issued.** The [Step 6 record](../../notes/2026-09-15-packet1-step6-provisional-admission.md)
+binds the seven `book-bundle-v1` candidate manifests (corrected Striker port generation,
+pinned exports, panels, Pine bodies, reviewed captures and verdict records) and new
+panel-bound finite-margin/shared-law artifacts. Under a clearly labelled provisional
+contract, `admit_bundle` and `run_bundle_parity` pass 7/7 with 3,173 matched trades,
+zero exclusions and resolved final state. The independent reviewer must issue the
+real admission contract against those exact manifest digests; then the run is repeated
+under it and Packet 1 receives its combined review. Packet 1 remains open.
 Do not spend
 another broad implementation pass on a producer
 whose required evidence is unavailable. A failed feasibility check produces an
