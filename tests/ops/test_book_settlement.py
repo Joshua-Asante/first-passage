@@ -18,7 +18,7 @@ from book_policy import candidate_book_protection_policy
 from book_session_calendar import load_ratified_calendar
 from book_settlement import (
     CHALLENGE_LIFETIME, CONTRACT, PACKAGE_SCHEMA, Receipt, Refusal, SettlementError, SettlementStore,
-    canonical_bytes, sha256_hex,
+    canonical_bytes, load_operator_keys, sha256_hex,
 )
 from book_sizing_context import SettledClose, size_book_request
 from c1_signal_daemon.book_protocol import Mode
@@ -535,3 +535,42 @@ def test_offsetting_adjustments_refuse_despite_zero_net(tmp_path):
     pkg["ledger"]["adjustments_abs_total"] = "2.00"
     env = challenge(store, pkg, target=S15, now=NOW14)
     assert submit(store, operator, env, pkg, files, NOW14) == Refusal("cash_adjustments_present")
+
+
+# ---------------------------------------------------------------- enrolled operator keys
+
+
+ENROLLED = "1f75cea0c36941f8964d393490b6886bcbcdb010b4bc67dd45e925d1a04604aa"
+
+
+def test_tracked_enrollment_record_loads_the_confirmed_operator_key():
+    """The operator-confirmed public key is the only active key, scoped to both contract scopes."""
+    keys = load_operator_keys(REPO / "ops" / "c1_rail" / "operator_keys.json")
+    assert keys == {ENROLLED: ["submit_account_close", "record_only"]}
+
+
+@pytest.mark.parametrize("mutation", [
+    "not_operator", "bad_point", "extra_scope", "revoked_only", "duplicate", "extra_key", "wrong_schema",
+])
+def test_defective_enrollment_records_are_refused(tmp_path, mutation):
+    """A key record that is malformed, non-operator, revoked or not a curve point enrols nothing."""
+    raw = json.loads((REPO / "ops" / "c1_rail" / "operator_keys.json").read_bytes())
+    row = raw["keys"][0]
+    if mutation == "not_operator":
+        row["enrolled_by"] = "agent"
+    elif mutation == "bad_point":
+        row["key_id"] = "f" * 64          # y >= p: undecodable
+    elif mutation == "extra_scope":
+        row["scopes"].append("resume")
+    elif mutation == "revoked_only":
+        row["revoked_utc"] = "2026-09-16T00:00:00Z"
+    elif mutation == "duplicate":
+        raw["keys"].append(dict(row))
+    elif mutation == "extra_key":
+        row["private_key"] = "never"
+    elif mutation == "wrong_schema":
+        raw["schema"] = "operator_signing_keys/v0"
+    path = tmp_path / "keys.json"
+    path.write_bytes(json.dumps(raw).encode("utf-8"))
+    with pytest.raises(SettlementError):
+        load_operator_keys(path)

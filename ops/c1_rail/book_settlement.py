@@ -689,3 +689,46 @@ class SettlementStore:
             close = SettledClose(head["session_id"], _utc(head["as_of_utc"]), float(Decimal(head["equity"])),
                                  float(Decimal(head["peak"])), head["package_sha256"])
             return close, Mode(head["mode_next"])
+
+
+# --------------------------------------------------------------------------- enrolled operator keys
+
+
+KEYS_SCHEMA = "operator_signing_keys/v1"
+_KEY_ROW = frozenset({"key_id", "algorithm", "scopes", "account_binding", "enrolled_by", "enrolled_utc",
+                      "instruction", "record", "revoked_utc"})
+
+
+def load_operator_keys(path: Path) -> dict[str, list[str]]:
+    """Read the tracked enrollment record into ``SettlementStore.boot`` trusted_keys; refuse whole on defect."""
+    try:
+        payload = json.loads(Path(path).read_bytes())
+    except (OSError, ValueError) as exc:
+        raise SettlementError("operator key record unavailable") from exc
+    if not isinstance(payload, dict) or set(payload) != {"schema", "note", "keys"} or payload["schema"] != KEYS_SCHEMA:
+        raise SettlementError("operator key record schema")
+    rows = payload["keys"]
+    if not isinstance(rows, list):
+        raise SettlementError("operator key rows")
+    keys: dict[str, list[str]] = {}
+    from ed25519_verify import _decode_point
+    for index, row in enumerate(rows):
+        label = f"keys[{index}]"
+        if not isinstance(row, dict) or set(row) != _KEY_ROW:
+            raise SettlementError(f"{label}: key set mismatch")
+        key_id = row["key_id"]
+        if not isinstance(key_id, str) or not re.fullmatch(r"[0-9a-f]{64}", key_id)                 or _decode_point(bytes.fromhex(key_id)) is None:
+            raise SettlementError(f"{label}: not a valid Ed25519 public key")
+        if row["algorithm"] != "ed25519" or row["enrolled_by"] != "operator":
+            raise SettlementError(f"{label}: only operator-enrolled ed25519 keys are trusted")
+        if not isinstance(row["scopes"], list) or not row["scopes"] or any(s not in SCOPES for s in row["scopes"])                 or len(set(row["scopes"])) != len(row["scopes"]):
+            raise SettlementError(f"{label}: scopes")
+        if _utc(row["enrolled_utc"]) is None or (row["revoked_utc"] is not None and _utc(row["revoked_utc"]) is None):
+            raise SettlementError(f"{label}: timestamps")
+        if key_id in keys:
+            raise SettlementError(f"{label}: duplicate key")
+        if row["revoked_utc"] is None:
+            keys[key_id] = list(row["scopes"])
+    if not keys:
+        raise SettlementError("no active operator key enrolled")
+    return keys

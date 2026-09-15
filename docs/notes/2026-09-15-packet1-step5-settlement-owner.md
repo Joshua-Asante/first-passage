@@ -1,7 +1,7 @@
 # Packet 1 Step 5 — attended settlement owner (producer to consumer)
 
-Status: **IMPLEMENTED against the approved contract, tests green on synthetic values;
-actual producer qualification on the live account NOT started.** Base: PR #394 head plus
+Status: **IMPLEMENTED against the approved contract; producer QUALIFIED on the operator's actual
+reports (2026-09-15); operator key ENROLLED; independent review still owed.** Base: PR #394 head plus
 Step 4. Owner: Packet 1 coordinator (TB-T1 ongoing) → TB-I3 integration. No close has been
 accepted, no key is enrolled, and nothing here grants activation, resumption or deployment.
 
@@ -74,11 +74,57 @@ Contract: [attended settlement contract](../spec/2026-09-15-tradeify-attended-se
 - `tests/ops/test_ed25519_verify.py`: 8 passed. `tests/ops`: 1766 passed, 15 skipped.
   `scripts/check_boundaries.py`: OK.
 
+## Producer qualification on the actual account reports — 2026-09-15
+
+The operator collected the venue reports into the private folder
+`producer-qualification-2026-09-15/` under the op1 evidence root (six cash-history windows
+of at most 14 calendar dates including one empty window, the account-balance history, the
+Tradeify dashboard summary and objectives captures with a detail text, the Tradovate
+positions and orders views, the activation email as inception evidence, capture times and
+a collection status). Originals remain in Downloads; copies were verified byte-for-byte.
+
+`ops/c1_rail/account_close_assembler.py` (12 tests on synthetic exports in the exact
+column shapes) turned them into the package for account session
+`tradeify-account-day:2026-09-14` with predecessor `2026-09-11`. Figures stay private; the
+verdicts:
+
+| Check | Result |
+|---|---|
+| Cash windows | 6 windows, 100 raw rows, 91 distinct transactions, 9 boundary duplicates removed, 0 revisions |
+| Classification | Fund Transaction 1 (nominal basis, equal to the tier starting balance); Commission, Exchange, Clearing and NFA fee rows all contract-linked; Trade Paired rows; 0 unknown, 0 unlinked, adjustments exactly zero |
+| Running balance | every row's reported amount equals the reconciled running net |
+| Balance history | 25 rows, 0 mismatches against the reconciled equity at each trade date |
+| Dashboard | balance equals the reconciled net equity; trailing threshold plus the 3,000 width equals the EOD peak from the ledger |
+| Session 09-14 | no activity; flat at the close by the no-later-fills rule with flat positions and zero working orders at capture |
+| `verify_package` | no refusal |
+| Store path | qualification head seated, challenge issued, signed submission accepted, `mode_next = normal` |
+| Consumer | `size_book_request` for session 09-15 with the produced `SettledClose`: no halt |
+
+Package SHA-256 `72b0c65dff701d08b77b360b76be2092f1c30d44fcf8279bf52df01d232f4885`; outputs and
+the figures-free `qualification-report.json` are retained under the same private folder.
+
+Limits recorded with the run: the store head was seated from the reconciled predecessor
+state, not the B7 seal (a Packet 6 gate); the four attestations were placeholders that the
+operator supplies by signing a real challenge; CSV capture instants are the Downloads file
+times, operator-side rather than server evidence; the qualification receipt instant was the
+last capture plus three minutes, so a live acceptance needs captures within 30 minutes of
+receipt; the policy digest is a placeholder pending TB-I3's shared fingerprint; the
+report timezone is the UI's Central label, which the CSV itself does not declare.
+
+## Operator key enrolled — 2026-09-15
+
+The operator generated an Ed25519 keypair on their own device (private key under their
+home `.signing` folder, never in the repository) and confirmed the public key in chat
+("confirm"). `ops/c1_rail/operator_keys.json` records key id
+`1f75cea0c36941f8964d393490b6886bcbcdb010b4bc67dd45e925d1a04604aa` with scopes
+`submit_account_close` and `record_only`; `book_settlement.load_operator_keys` refuses any
+record that is malformed, non-operator, revoked-only or not a curve point, and the store
+boots from its result. The account binding happens at runtime.
+
 ## What this does not do
 
-- No live account was read. No operator key is enrolled. The package assembly from the venue's
-  actual reports (cash history windows, dashboard capture, positions view, balance history,
-  inception evidence) is not built; the verifier consumes an already-assembled package.
+- No live close has been accepted by a production owner; the qualification store is a private
+  artifact. The listener does not yet host the challenge/submit/status routes.
 - No HTTP route exists yet. The listener's TB-I3 account owner integrates `issue_challenge`,
   `submit` and `status` under its authenticated control surface (Packet 2/5).
 - No activation or resumption: receipts and status carry `grants_activation: false` and
@@ -86,12 +132,9 @@ Contract: [attended settlement contract](../spec/2026-09-15-tradeify-attended-se
 
 ## Remaining to close Step 5
 
-1. **Operator evidence** (requested 2026-09-15): the signing public key; cash history from
-   inception in windows of at most 14 days with query notes and the report timezone; inception
-   evidence; a fresh dashboard capture with the matching balance/equity history; the account-wide
-   positions and working-orders view.
-2. Build the package assembler from those actual report formats, retaining raw bytes and
-   normalized timestamps, and qualify it on the account: inception, full-history re-query,
-   close finality and correction semantics, effective-close equity or boundary flatness.
-3. Independent review of this implementation against the contract's acceptance-trace table,
-   then the TB-I3 integration under the halt owner's permission state.
+1. Independent review of this implementation and the qualification against the contract's
+   acceptance-trace table.
+2. TB-I3 integration: host challenge/submit/status under the listener's authenticated control
+   surface and the halt owner's permission state; bind the real policy digest and account.
+3. First live acceptance only after the B7 seal seats the chain head (Packet 6), with fresh
+   captures within 30 minutes of receipt and the operator's real signature.
