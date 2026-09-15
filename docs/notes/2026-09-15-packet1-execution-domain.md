@@ -247,3 +247,92 @@ material findings. A read-only rerun reproduced all seven reconciliation records
 the reviewer verified original/fresh controls and properties, artifact identities,
 O-P's pinned-source inertness proof and unchanged D17/D32/downstream gates.
 **Step 2 is complete; Step 3 startup and panel coverage is next.**
+
+## Step 3 — initial panel and startup audit (2026-09-15)
+
+Status: **IN PROGRESS; inventory only, no coverage PASS or admission.** Work
+starts from merged PR #393 (`757deb1`) on
+`codex/tradeify-packet1-startup-coverage`.
+
+### Exact retained panel boundaries
+
+Read every row of the four retained panels and verified each complete file against
+`core/data/bar_data/SHA256SUMS`. Times below are UTC bar-open timestamps; the final
+bar-open is not automatically the approved comparison cutoff.
+
+| Panel | Rows | First bar | Last bar | Adjacent intervals longer than 15 minutes |
+|---|---:|---|---|---:|
+| 6J | 94,805 | 2022-09-01 23:00 | 2026-09-03 00:00 | 1,035 |
+| MGC | 94,617 | 2022-09-01 00:00 | 2026-09-03 00:00 | 1,035 |
+| MYM | 94,499 | 2022-09-01 00:00 | 2026-09-03 00:00 | 1,036 |
+| MNQ | 94,503 | 2022-09-01 00:00 | 2026-09-03 00:00 | 1,036 |
+
+All timestamps are strictly increasing and on the 15-minute grid. OHLCV values
+are finite, volumes nonnegative, and opens/closes within the high/low range.
+No zero-volume rows occurred. These are structural checks, not independent price
+verification. Every longer interval is retained with both endpoints, duration and
+absent grid-slot count, classified `UNCLASSIFIED`. A grid slot is not an expected
+market bar until product/session evidence establishes that trading was available.
+
+The 6J start is 23 hours later than the other panel starts, consistent with its
+existing capture README. The audit does not establish why, whether those hours
+belong to the Aegis calculation interval, or whether a recapture is required.
+Do not truncate the other legs to 6J's start to conceal this difference.
+
+Private evidence under the existing ignored
+`op1/2026-09-14-seven/step3-coverage` directory:
+
+| Artifact | SHA-256 |
+|---|---|
+| `audit.py` | `8a3b2a8b1865a54b789868c4f9b3ac341e23147683522af7dbdd39c8afd98bdb` |
+| `panel-inventory.json` | `607d861714aaaa1eeb7843e58ff9ece1d17df4da833c081c7b3161e332dbddd1` |
+
+The JSON binds full panel hashes, row counts, endpoints, all observed gaps and the
+runner hash. The runner uses the bundled Python 3.12.14 and does not change inputs.
+An independent pandas read reproduced all four hashes, row counts, endpoints,
+strict ordering and gap counts. Both private artifacts are gitignored;
+`git diff --check` passed. This is local verification, not independent acceptance
+review of Step 3.
+
+### Calculation origin and startup remain distinct questions
+
+TradingView documents that Deep Backtesting starts calculations at the beginning
+of the selected date range, and that EMA/RMA results depend on calculation origin.
+Its [calculation-origin explanation](https://www.tradingview.com/support/solutions/43000666266-why-do-the-data-of-the-regular-mode-and-deep-backtesting-not-match/)
+does not establish the exact UTC first calculation bar for our retained captures.
+The visible September 1 date alone does not resolve that instant. The private
+TB-W1 inventory's assertion that panel origin equals Deep origin is therefore not
+accepted as proof; exact parity alone also does not establish all startup state.
+
+Code inspection of the retained adapters and `pine_ta.py` establishes:
+
+- EMA seeds at its first valid value; RMA seeds from its initial length-sized SMA
+  and then remains recursive. A proposed multiple-of-length live hold does not
+  prove exact independence from earlier state.
+- Aegis carries synthetic-price Bollinger/ATR and previous-close state; Striker
+  carries ATR, its moving average, breakout history and session/account state;
+  Vanguard carries recursive EMA/ATR and previous-value/session/account state.
+- ORB evaluates available prior opening-range volumes. Its empty-history branch
+  permits the volume condition, and a partial history is averaged as available.
+  Fifteen sessions is a bounded history capacity, not a mandatory cold-replay
+  exclusion. Imposing the suggested live hold on the reference replay would
+  change behavior.
+
+These observations do not yet bind every effective override or certify live
+restart readiness. Broker/account state cannot be recovered solely by warming
+indicators. The existing `cold_at_panel_origin` intake assertion requires accepted
+coverage evidence; the inventory does not supply that acceptance.
+
+### Remaining Step 3 exit work
+
+1. Bind each reference capture's exact calculation origin and end semantics to
+   retained source/settings evidence, including the older 6J/MGC reference cases.
+   Resolve the 6J prefix before declaring any common comparison interval complete.
+2. Bind actual per-case adapter settings and initialization to those boundaries;
+   reconcile first/final trade events and terminal state without exclusions.
+3. Join every observed gap to accepted product/session evidence in Step 4. Keep
+   unresolved trading-time gaps blocked; obtain source bars when required.
+4. Independently review the combined coverage report before issuing coverage PASS.
+
+No strategy, runtime, source settings, calendar verdict or admission changed in
+this initial slice.

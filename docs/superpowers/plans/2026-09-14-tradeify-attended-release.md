@@ -209,7 +209,12 @@ acceptance. Preserve the implemented/tested components and existing evidence.
    and every Packet 1 acceptance item supported by evidence. Prepare the commit/PR
    handoff; Packet 2 and live gates are not completion substitutes.
 
-Step 3 is next; its calendar-dependent checks join Step 4. Do not spend
+Step 3 is in progress: the initial four-panel inventory is retained in the
+[execution-domain record](../../notes/2026-09-15-packet1-execution-domain.md#step-3--initial-panel-and-startup-audit-2026-09-15).
+All four panel hashes and structural checks pass; 6J starts 23 hours later than
+the other panels. Calculation-origin proof and per-case startup binding remain
+open; every gap is unclassified pending accepted calendar evidence in Step 4.
+Do not spend
 another broad implementation pass on a producer
 whose required evidence is unavailable. A failed feasibility check produces an
 exact source/contract blocker, not another generic placeholder interface.
