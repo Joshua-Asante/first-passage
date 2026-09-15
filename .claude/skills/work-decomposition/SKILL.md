@@ -1,6 +1,6 @@
 ---
 name: work-decomposition
-description: Use when a unit of work — a handoff brief, a lightweight dispatch issue, a campaign-plan step, a PR, or this session's own task — is too big for one focused session or one packet, or when the input to be read is too big for one context (10+ files, 50k+ tokens, or pairwise/multi-hop reasoning across scattered sources). Triggers on "break this down", "split this", "too big for one session", "decompose the work", "chunk this", a brief with more than 5 gate conditions or more than 3 unrelated code areas, a `BLOCKED — scope-problem` return, a second `NEEDS_CONTEXT` bounce on the same packet, or a task whose worst-case iteration count exceeds its Rule 2 budget. Produces sized child units each with its own gate plus a parent manifest (work-shaped), or a sized batch plan with depth-1 sub-agents and a source spot-check (input-shaped). Sibling of question-decomposition (a question with too many axes, not work with too many parts). Does not dispatch workers (cursor-fleet), pick environments (task-routing), author the packets (brief-authoring), or verify returns (fable-judge); changes no strategy parameters, allocations, dd_protection constants, or MC calibration.
+description: Use when a unit of work — a handoff brief, a lightweight dispatch issue, a campaign-plan step, a PR, or this session's own task — is too big for one focused session or one packet, or when the input to be read is too big for one context (10+ files, 50k+ tokens, or pairwise/multi-hop reasoning across scattered sources). Triggers on "break this down", "split this", "too big for one session", "decompose the work", "chunk this", a brief with more than 5 gate conditions or more than 3 unrelated code areas, a `BLOCKED — scope-problem` return, a second `NEEDS_CONTEXT` bounce on the same packet, or a task whose worst-case iteration count exceeds its Rule 2 budget. Produces sized child units each with its own gate plus a parent manifest (work-shaped), or a sized batch plan with depth-1 sub-agents and a source spot-check (input-shaped). Sibling of question-decomposition (a question with too many axes, not work with too many parts). Does not dispatch implementation workers (the fleet loop does), pick environments (task-routing), author the packets (brief-authoring), or verify returns (fable-judge); its input-shaped protocol does run read-only sub-agent waves in-session, which is evidence gathering, not work dispatch; changes no strategy parameters, allocations, dd_protection constants, or MC calibration.
 ---
 
 # work-decomposition — size it before you start it
@@ -13,7 +13,9 @@ units fail in small, fixable ways — one child returns `BLOCKED`, the other fou
 owns two protocols the repo otherwise gestures at without criteria: **work-shaped** (cut the work
 into children that each fit one session or one packet) and **input-shaped** (cut the reading when
 the input does not fit one context). It produces sized units and a manifest; it does not build,
-dispatch, or adjudicate. Worker surfaces are Claude Code sessions and Codex; Cursor agents were
+dispatch implementation workers, or adjudicate; the input-shaped protocol below does run read-only
+sub-agent waves inside the session, which is evidence gathering, not work dispatch. Worker surfaces
+are Claude Code sessions and Codex; Cursor agents were
 retired by operator instruction on 2026-09-15 (retirement record pending), so the fleet
 orchestration mechanics recorded in `cursor-fleet` — umbrella brief, claim manifest, disjoint
 footprints, dispatch-time Phase-0, integration order — carry over surface-agnostically while its
@@ -54,7 +56,7 @@ imported numbers as calibration candidates — record the firing when one bites,
 | More than **one context window** of work | One CC session; after compaction the summary keeps the plan and loses the detail the gate needs | One child per session-sized deliverable, each with its own resume handoff |
 | **Multiple independent deliverables** | §1 "What CC is being asked to produce" bullets that do not consume each other's outputs | One child per deliverable |
 | **Internal sequencing** — step N's input is step N−1's output, which does not exist yet | §2 Step 2.x chains whose later specs cannot be frozen until earlier steps return | Cut at the first output that must exist before the next spec can be frozen |
-| **Worst-case iterations exceed the Rule 2 budget** for the unit's loop class (INNER 3 / OUTER 8 / STRATEGIC 3 — [canon §15](../../../docs/methodology/inqhiori-canon.md)) | Attempt-and-check cycles | The tripwire would fire mid-unit. Cutting does not mint budget: the parent's budget is allocated across the children and their worst cases must sum inside it; a sum that exceeds it is the parent's tripwire firing at cut time — a structured stop and, for OUTER / STRATEGIC, the owner's extension authority before anything is dispatched ([Rule 2 ADR](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md)) |
+| **Worst-case iterations exceed the Rule 2 budget** — *INQHIORI-loop work only*, i.e. a unit with a declared Loop-of-Record (INNER 3 / OUTER 8 / STRATEGIC 3 constituent OUTER investigations — [canon §15](../../../docs/methodology/inqhiori-canon.md)); the [Rule 2 ADR](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md)'s 2026-08-15 addendum instructs budget declaration from INQHIORI entry only, so this row never turns a non-loop task into a budgeted one | Attempt-and-check cycles (INNER / OUTER); constituent OUTER investigations (STRATEGIC) | The tripwire would fire mid-unit. Cutting does not mint budget: an INNER or OUTER parent's iterations are allocated across its children and their worst cases must sum inside it; a STRATEGIC parent's budget is a *count* of OUTER children (at most three), each carrying its own full OUTER budget. A sum or count that exceeds the parent's is the parent's tripwire firing at cut time — a structured stop and, for OUTER / STRATEGIC, the owner's extension authority before anything is dispatched |
 | A `BLOCKED — scope-problem` return, or a **second** `NEEDS_CONTEXT` bounce on the same packet | brief-authoring check 8; the fleet loop's §6 rule ("two bounces means the spec wasn't freezable", recorded in `cursor-fleet`) | The packet was mis-sized or mis-routed; re-cut before any re-dispatch |
 
 Dated repo instances of the output this skill prescribes: the 2026-08-25 first-look residuals
@@ -80,9 +82,11 @@ That umbrella is the reference shape for this skill's work-shaped output.
    child means reverting its dependents first, in reverse dependency order, which the manifest's
    edges make explicit. A revert that would silently break a sibling with no edge to it means the
    footprint or the edge is wrong.
-4. **Fits one session with margin** — worst-case iterations inside the budget allocated to it
-   from the parent's Rule 2 budget (never a fresh budget of its own); no step whose detail must
-   survive a compaction.
+4. **Fits one session with margin** — no step whose detail must survive a compaction. For
+   INQHIORI-loop work only: an INNER or OUTER child's worst-case iterations fit the share
+   allocated to it from the parent's Rule 2 budget, never a fresh budget of its own; a STRATEGIC
+   parent's children are whole OUTER investigations, each with its own OUTER budget, and the
+   parent's budget bounds how many of them there are.
 5. **Disjoint file footprint** from every parallel sibling (the fleet loop's §1 rule), or an
    explicit *depends-on* edge that makes it sequential. `docs/SESSIONS.md`, `STATE.md`, boards and
    index files are reserved to the parent's integration commit.
@@ -122,7 +126,10 @@ inline under the session's own checklist (fable-method Step 4.4).
    `RETURNED (NEEDS_CONTEXT — re-anchor 1 of 1 | re-cut)`, `RETURNED (BLOCKED — <sub-case>)` — so
    the row says whether work is still owed; a child never stays `DISPATCHED` after its return, and
    a `NEEDS_CONTEXT` child goes back to `QUEUED` only once, then is re-cut. The `budget` column
-   holds each child's share of the parent's Rule 2 budget and the column sums inside it. The
+   is filled only for INQHIORI-loop parents (a declared Loop-of-Record): each child's share of an
+   INNER / OUTER parent's iterations, summing inside the parent's, or `OUTER (own 8)` under a
+   STRATEGIC parent; for every other unit it reads `n/a — one session`, per the Rule 2 ADR's
+   2026-08-15 propagation limit. The
    parent lists every child; a child absent from the manifest does not exist. This is the
    anti-duplication device: before any session opens work in the area, the manifest says who holds
    it.
@@ -172,8 +179,12 @@ blur of them. The protocol treats the input as an environment to query, not a do
 2. **Filter.** Search before reading a directory; never list a tree recursively as a substitute
    for a query. Chain filters (path glob → content pattern → file type) until what remains is the
    candidate set.
-3. **Chunk** the candidate set into natural units — module, section, ADR series, date range — in
-   **disjoint batches of 5–10 files**. Write the batch count down before launching anything.
+3. **Chunk** the candidate set into natural units — a file, a module, a section, an ADR series,
+   a date range, or a line range of one file — in **disjoint batches**. When the trigger is file
+   count, batches of 5–10 files; when the trigger is one oversized file, batches are its sections
+   or line ranges; when the trigger is a pairwise or multi-hop question over two to four sources,
+   one batch per source (or per pair) is correct and no batch is padded with unrelated files to
+   reach a count. Write the batch count down before launching anything.
 4. **Recurse at depth 1.** One sub-agent (`Agent` / `Explore`, or a `Workflow` script) per batch,
    each with a self-contained brief — the files, the question, the output schema. Launch **one
    parallel wave**, then merge. Sub-agents answer; they never spawn sub-agents, and no two
@@ -203,6 +214,9 @@ Do not: open files outside the batch; spawn agents; summarise beyond the schema
 
 ### Hard rules
 
+The partition rules (batches, one wave, no duplicate queries, the cross-batch join) govern
+partition fan-outs; replication fan-outs are exempt from them as described below.
+
 - MUST size before reading; MUST search before opening a directory.
 - MUST read a file over ~2,000 lines or ~50 KB by line range, never whole.
 - NEVER load more than ~5 files into the main context without a written batch plan.
@@ -212,14 +226,18 @@ Do not: open files outside the batch; spawn agents; summarise beyond the schema
 - MUST, for a pairwise or multi-hop question, collect per-batch inventories and run the cross-batch
   join; disjoint batches alone cannot see a relationship whose endpoints sit in different batches.
 
-The repo's existing fan-outs are instances of this protocol, not exceptions to it:
-[`handoff-verify-panel`](../../workflows/handoff-verify-panel.js) and
+Two fan-out shapes, one protocol each. **Partition fan-outs** join disjoint evidence: the batch
+and inventory rules above apply in full — `adr-decay-audit`'s batch-scan-then-adversarial-verify
+and the 14-agent Algorithm review of 2026-07-24 cited in `cursor-fleet` are instances.
+**Replication fan-outs** deliberately have every agent read the *same* target through a different
+lens, because independent duplicate review is the verification mechanism:
 [`pre-ratification-adversarial-panel`](../../workflows/pre-ratification-adversarial-panel.js)
-(one verifier per claim class; the adjudication pass is step 5),
-[`gate-reachability-audit`](../../workflows/gate-reachability-audit.js), `adr-decay-audit`'s
-batch-scan-then-adversarial-verify, and the 14-agent Algorithm review of 2026-07-24 cited in
-`cursor-fleet`. Prefer the existing workflow when one fits the question; author an ad-hoc wave
-only when none does.
+(six lenses, each told to read the entire target, then skeptics re-reading it),
+[`handoff-verify-panel`](../../workflows/handoff-verify-panel.js) and
+[`gate-reachability-audit`](../../workflows/gate-reachability-audit.js). They partition the
+*question*, not the content; the disjoint-partition and one-wave rules do not apply to them, and
+only the depth-1 and self-contained-brief rules carry over. Prefer the existing workflow when one
+fits the question; author an ad-hoc wave only when none does.
 
 ## Rationalizations — STOP if you think one
 

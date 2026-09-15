@@ -94,8 +94,11 @@ a failure into success is a band-aid whatever the comment above it says.
 ## Procedure
 
 1. **State the observed failure concretely.** Exact error text, assertion or log line; the
-   command that produced it; the commit. A wrong *value* rather than a crash → hand to
-   `code-defect-debugging` Phase 1 for a deterministic reproduction and come back here at the fix.
+   command that produced it; the commit. Any deterministic defect — a wrong value *or* a crash —
+   runs `code-defect-debugging` Phase 1 first (deterministic reproduction, expected-value
+   authority, git anchors; its §0 routes script crashes to itself) and comes back here for the
+   trace and the fix gate. This step stands alone only at review time, or when Phase 1 has
+   already run.
 2. **Reconstruct the intended contract.** Three sentences: the expected behaviour; the invariant
    it rests on; what definitely did *not* happen. The contract comes from the read source under
    fable-method's `INTENT` authority order (operator > ADR/LOCK > tests > current code), never
