@@ -38,7 +38,7 @@ For local Cursor/Claude dispatch, use the repository's `scripts/dispatch_cursor.
 
 ---
 
-## §0.75 — Local-only dependency check (required when Spawn target is Cursor)
+## §0.75 — Local-only dependency check (required for any cloud worker)
 
 **(Added 2026-07-16, per `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` §2 Step 0 — RATIFIED 2026-07-16.)** Three cloud→local bounces in one 48h window (Class-S C1 scoring, Class-S C1 regime rider, H-OD-1 Stage-1/2 — all in `docs/SESSIONS.md` 2026-07-15/16) shared one root cause: the dispatch environment didn't have bytes or a credential the §0 reads assumed were there. Answer explicitly before dispatch:
 
@@ -47,9 +47,9 @@ For local Cursor/Claude dispatch, use the repository's `scripts/dispatch_cursor.
 - **Secrets/API keys:** does any step need a credential (e.g. the databento key)?
   - If yes: `Confirmed present — <the check you ran in THIS environment, e.g. a command output>` OR `NOT confirmed — route local.`
 
-A general belief that the bytes or key exist "somewhere" (a prior session, a different project) does not clear this gate — confirm for the dispatch you are about to make. If either line is `NOT confirmed`, do not dispatch to Cursor cloud: either run locally (CC or a local Cursor session) or stage the dependency into this specific cloud workspace first and re-confirm.
+A general belief that the bytes or key exist "somewhere" (a prior session, a different project) does not clear this gate — confirm for the dispatch you are about to make. If either line is `NOT confirmed`, do not dispatch to a cloud worker: either run locally (the orchestrating session, or a worker session on the operator's own machine) or stage the dependency into that specific cloud workspace first and re-confirm.
 
-If Spawn target is CC (not Cursor), this section reads `N/A — CC runs in the operator's own environment, where these bytes/keys are already present.`
+The discriminator is the *environment*, not the surface (ADR §2 test 0; 2026-09-15 addendum). A Codex cloud task and a Claude Code on the web session are cloud workers and carry this section filled in. Only when the worker runs in the operator's own environment (a local Claude Code session on this machine) does this section read `N/A — local environment, where these bytes/keys are already present.`
 
 ---
 
@@ -67,7 +67,7 @@ Surface ambiguities in these categories:
 
 Post ambiguities under `## §0.5 Response — ambiguities` in your first response. Set `Status: NEEDS_CONTEXT` until resolved (see §6).
 
-**Worker variant — parent-recommended defaults (use when the Spawn target is a worker session, not the orchestrating CC session).** Under the surface-allocation rule (`docs/adr/2026-07-14-cc-cursor-surface-allocation.md`), frozen-spec implementation routes to a worker session — a Claude Code session or a Codex task since the 2026-09-15 addendum retired the Cursor worker lane; the text below was written for Cursor and applies to any worker unchanged. For a worker handoff, do NOT leave §0.5 as bare open questions — for each ambiguity state a bolded **Recommended default:** that Cursor *applies* unless its Phase-0 read contradicts it, in which case it bounces `Status: NEEDS_CONTEXT` with the conflict quoted. Enumerate them `(A) … (B) … (C) …`. Reference implementation (retired; public seed excludes `docs/ltm/`) — retrieve via `git show pre-prune-2026-08-08:docs/ltm/briefs/rnd-pipeline/2026-07-13-cursor-handoff-prop-survivor-scoring-harness.md` §0.5. Rationale: Cursor executes frozen specs and never resolves a spec ambiguity unilaterally (ADR §2 test 2); a stated default keeps a spec-frozen build moving without a round-trip while preserving the halt-on-*conflict* guarantee. The pure halt-and-ask form above stays the default when the spawn target is CC.
+**Worker variant — parent-recommended defaults (use for every frozen-spec worker handoff, whatever the worker's surface).** Under the surface-allocation rule (`docs/adr/2026-07-14-cc-cursor-surface-allocation.md`), frozen-spec implementation routes to a worker session — a Claude Code session or a Codex task since the 2026-09-15 addendum retired the Cursor worker lane. For a frozen-spec worker handoff, do NOT leave §0.5 as bare open questions — for each ambiguity state a bolded **Recommended default:** that the worker *applies* unless its Phase-0 read contradicts it, in which case it bounces `Status: NEEDS_CONTEXT` with the conflict quoted. Enumerate them `(A) … (B) … (C) …`. Reference implementation (retired; public seed excludes `docs/ltm/`) — retrieve via `git show pre-prune-2026-08-08:docs/ltm/briefs/rnd-pipeline/2026-07-13-cursor-handoff-prop-survivor-scoring-harness.md` §0.5. Rationale: a worker executes a frozen spec and never resolves a spec ambiguity unilaterally (ADR §2 test 2); a stated default keeps a spec-frozen build moving without a round-trip while preserving the halt-on-*conflict* guarantee. The pure halt-and-ask form above is for the other kind of spawn: a judgment-owned child whose spec is *not* frozen, which surface-allocation test 2 keeps with a Claude session that may resolve ambiguities. The discriminator is whether the spec is frozen, never whether the spawn target is a Claude Code session or a Codex task.
 
 ---
 
