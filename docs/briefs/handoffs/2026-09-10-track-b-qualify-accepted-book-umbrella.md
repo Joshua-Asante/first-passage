@@ -660,7 +660,7 @@ ownership, prior-account-session chronology across denied days, settlement,
 separate resumption and activation gates remain required. D19 stays immutable
 historical date membership only. Step 3 and Packet 1 are not closed by this change.
 
-## September 15 — O-8 narrowed by the Step 3 provider-reset correction (pending operator ratification)
+## September 15 — O-8 narrowed by the Step 3 provider-reset correction (operator-ratified)
 
 O-8's ruling ("keep as captured") is retained in its mechanism: the live Vanguard
 adapter keeps the TradingView daily-key latch exactly as ported, and the reset
@@ -670,8 +670,9 @@ daily-reset grouping (three dates removed; 189,116 observed MGC/MYM bars matched
 Vanguard parity unchanged at every row). This is an evidence correction of the
 merge model, not a strategy change and not a pre-registration event; the captured
 no-trade artefact on the sessions after the retained holiday dates is still
-reproduced. The table is qualified through 2026-09-03 only. If the operator rules
-that the date-set change is a strategy change, the three dates are restored and
-Step 3 reopens. Owner reconciliation: the
+reproduced. The table is qualified through 2026-09-03 only. **Ratified by the operator on
+2026-09-15 ("ratify O-8 narrowing")**: the date-set change stands as an evidence
+correction, not a strategy change; no pre-registration is owed and Step 3 stays
+closed. Owner reconciliation: the
 [rail extension spec's O-8 paragraph](../../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md)
 and the [Step 3 acceptance](../../notes/2026-09-15-packet1-step3-acceptance.md).
