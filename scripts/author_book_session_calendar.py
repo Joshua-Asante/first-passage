@@ -29,10 +29,14 @@ import copy
 import hashlib
 import json
 import re
+import sys
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "core"))
+from calendar_evidence import halt_evidence, index_captures, read_json_object, require_halt_evidence
 
 SCHEMA = "book_session_calendar/v1"
 TZ_NAME = "America/New_York"
@@ -96,6 +100,8 @@ def parse_halts(text: str) -> dict:
         code, _, clock = item.strip().partition("=")
         if code not in PRODUCTS or not re.fullmatch(r"\d{2}:\d{2}", clock):
             raise ValueError(f"bad halt spec {item!r}; expected e.g. MYM=13:00")
+        if code in out:
+            raise ValueError(f"duplicate product halt: {code}")
         out[code] = clock
     if set(out) != set(PRODUCTS):
         raise ValueError("every product needs a halt clock")
@@ -219,13 +225,20 @@ def build_row(day: date, *, denial: Denial | None, evidence_ids: set[str]) -> di
 def build_calendar(first: date, last: date, denials: dict[date, Denial],
                    evidence_path: Path, generated_utc: str, calendar_id: str) -> dict:
     evidence_bytes = evidence_path.read_bytes()
-    evidence = json.loads(evidence_bytes)
-    evidence_ids = {c["id"] for c in evidence["captures"]}
-    for denial in denials.values():
+    evidence = read_json_object(evidence_bytes)
+    captures = index_captures(evidence)
+    evidence_ids = set(captures)
+    halts = halt_evidence(evidence_bytes, captures)
+    for day, denial in denials.items():
         if denial.reason not in DENIAL_REASONS:
             raise ValueError(f"unknown denial reason {denial.reason}")
         if denial.source_ids and any(s not in evidence_ids for s in denial.source_ids):
             raise ValueError("denial source ids must name captured sources")
+        if denial.reason in ("HOLIDAY", "SHORTENED"):
+            if not denial.halts_local or not denial.source_ids:
+                raise ValueError(f"{day}: a HOLIDAY/SHORTENED denial needs that date's own per-product halts and source ids")
+            for code in PRODUCTS:
+                require_halt_evidence(halts, denial.source_ids, day, code, _local(day, denial.halts_local[code]))
     rows = [build_row(day, denial=denials.get(day), evidence_ids=evidence_ids)
             for day in _account_days(first, last)]
     if not rows:
@@ -292,15 +305,31 @@ def main(argv=None) -> int:
     parser.add_argument("--calendar-id", default=None)
     parser.add_argument("--generated-utc", default=None)
     args = parser.parse_args(argv)
-    halts = {date.fromisoformat(d): (parse_halts(h), tuple(s.split(","))) for d, h, s in args.halts}
+    evidence_path = args.evidence.resolve()
+    try:
+        evidence_file = evidence_path.relative_to(Path(__file__).resolve().parents[1]).as_posix()
+    except ValueError:
+        parser.error("--evidence must be inside the repository root")
+    halts = {}
+    for d, h, s in args.halts:
+        day = date.fromisoformat(d)
+        if day in halts:
+            parser.error(f"duplicate --halts date: {day}")
+        halts[day] = (parse_halts(h), tuple(s.split(",")))
     denials = {}
     for d, reason, note in args.deny:
         day = date.fromisoformat(d)
+        if day in denials:
+            parser.error(f"duplicate --deny date: {day}")
         h, ids = halts.get(day, (None, None))
         denials[day] = Denial(reason, note, h, ids)
+    for day in halts:
+        if day not in denials or denials[day].reason not in ("HOLIDAY", "SHORTENED"):
+            parser.error(f"--halts date {day} must bind to a HOLIDAY/SHORTENED denial")
     generated = args.generated_utc or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     calendar_id = args.calendar_id or f"tradeify-select-100k/forward/{args.first.isoformat()}..{args.last.isoformat()}"
-    payload = build_calendar(args.first, args.last, denials, args.evidence, generated, calendar_id)
+    payload = build_calendar(args.first, args.last, denials, evidence_path, generated, calendar_id)
+    payload["sources"]["evidence_file"] = evidence_file
     data = json.dumps(payload, indent=2, ensure_ascii=False).encode("utf-8") + b"\n"
     args.out.write_bytes(data)
     print(f"wrote {args.out} sessions={len(payload['sessions'])} sha256={hashlib.sha256(data).hexdigest()}")
