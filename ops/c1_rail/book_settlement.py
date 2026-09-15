@@ -124,11 +124,17 @@ def verify_package(package: dict, sources: dict[str, bytes], *, head: dict, prev
                 "predecessor_package_sha256", "calendar_digest", "policy_digest", "effective_close_utc",
                 "source_publication_utc", "operator_signed_utc", "report_timezone", "inception_utc",
                 "equity", "ledger", "dashboard", "positions", "sources", "attestations",
-                "unresolved_runtime_requests"}
+                "unresolved_runtime_requests", "scope", "settlement_basis"}
     if set(package) != required:
         return "package_keys"
     if package["account_id"] != account or package["venue"] != TIER:
         return "wrong_account"
+    if package["scope"] != scope:
+        return "scope_mismatch"
+    if package["settlement_basis"] not in ("VENUE_ROW", "NO_ACTIVITY_DASHBOARD_CORROBORATED"):
+        return "settlement_basis"
+    if scope == "record_only" and package["settlement_basis"] != "VENUE_ROW":
+        return "historical_close_needs_venue_row"
     if package["calendar_digest"] != calendar_digest or package["policy_digest"] != policy_digest:
         return "digest_mismatch"
     session_id = package["session_id"]
@@ -150,8 +156,10 @@ def verify_package(package: dict, sources: dict[str, bytes], *, head: dict, prev
         return "effective_close_not_after_predecessor"
     if effective > now:
         return "effective_close_in_future"
-    if package["source_publication_utc"] is not None and _utc(package["source_publication_utc"]) is None:
-        return "source_publication_utc"
+    if package["source_publication_utc"] is not None:
+        published = _utc(package["source_publication_utc"])
+        if published is None or published > now:
+            return "source_publication_utc"
     signed = _utc(package["operator_signed_utc"])
     if signed is None or signed > now:
         return "operator_signed_in_future"
@@ -167,11 +175,20 @@ def verify_package(package: dict, sources: dict[str, bytes], *, head: dict, prev
     if not isinstance(src_rows, list) or not src_rows:
         return "sources_missing"
     roles: dict[str, dict] = {}
+    seen_files: set[str] = set()
+    seen_digests: set[str] = set()
     for src in src_rows:
         if not isinstance(src, dict) or set(src) != {"role", "file", "sha256", "captured_utc"}:
             return "source_row"
         if src["role"] in roles:
             return "duplicate_source_role"
+        # Filenames are unique across every source; digests are unique across the required roles
+        # (independent artifacts). Several empty cash windows may legitimately share bytes.
+        if src["file"] in seen_files or (src["role"] in REQUIRED_SOURCE_ROLES and src["sha256"] in seen_digests):
+            return "source_not_distinct"
+        seen_files.add(src["file"])
+        if src["role"] in REQUIRED_SOURCE_ROLES:
+            seen_digests.add(src["sha256"])
         data = sources.get(src["file"])
         if data is None or not _HEX64.match(str(src["sha256"])) or sha256_hex(data) != src["sha256"]:
             return "source_bytes_mismatch"
@@ -803,6 +820,7 @@ def load_operator_keys(path: Path) -> dict[str, list[str]]:
     if not isinstance(rows, list):
         raise SettlementError("operator key rows")
     keys: dict[str, list[str]] = {}
+    revoked: set[str] = set()
     for index, row in enumerate(rows):
         label = f"keys[{index}]"
         if not isinstance(row, dict) or set(row) != _KEY_ROW:
@@ -818,11 +836,15 @@ def load_operator_keys(path: Path) -> dict[str, list[str]]:
         if _utc(row["enrolled_utc"]) is None or (row["revoked_utc"] is not None and _utc(row["revoked_utc"]) is None):
             raise SettlementError(f"{label}: timestamps")
         if row["revoked_utc"] is not None:
-            # Append-only revocation: a later row naming an enrolled key with revoked_utc removes it.
+            # Append-only revocation: a later row naming an enrolled key with revoked_utc removes it
+            # permanently; a revoked key id can never be enrolled again.
             if key_id not in keys:
                 raise SettlementError(f"{label}: revocation of a key that is not enrolled")
             del keys[key_id]
+            revoked.add(key_id)
             continue
+        if key_id in revoked:
+            raise SettlementError(f"{label}: re-enrolment of a revoked key")
         if key_id in keys:
             raise SettlementError(f"{label}: duplicate active enrolment")
         keys[key_id] = list(row["scopes"])

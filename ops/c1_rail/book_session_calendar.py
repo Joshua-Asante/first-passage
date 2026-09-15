@@ -340,6 +340,8 @@ def _verify_row(row: dict, index: int, *, tz: ZoneInfo, venue: dict, rule: dict,
     if not isinstance(row["source_ids"], list) or not row["source_ids"] or \
             any(s not in source_ids for s in row["source_ids"]):
         raise CalendarError(f"{label}: source_ids must name captured sources")
+    if not set(venue.get("source_ids", [])) <= set(row["source_ids"]):
+        raise CalendarError(f"{label}: a session row must cite the venue's declared sources")
     return SessionSchedule(
         session_id=row["session_id"], prior_session_id=row["prior_session_id"],
         permission=row["permission"], denial_reason=row["denial_reason"],

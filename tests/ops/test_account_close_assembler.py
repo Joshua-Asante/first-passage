@@ -88,7 +88,8 @@ def build(cash, files, bal1, bal2, **over):
                 operator_signed_utc=NOW - timedelta(minutes=1),
                 attestations={"reflects_effective_close": True, "costs_included_once": True,
                               "no_known_pending_correction": True, "no_conflicting_observation": True},
-                unresolved_runtime_requests=[], open_positions=0, working_orders=0, **files)
+                unresolved_runtime_requests=[], open_positions=0, working_orders=0,
+                scope="submit_account_close", **files)
     args.update(over)
     return assemble(**args)
 
@@ -232,3 +233,7 @@ def test_no_activity_session_without_a_venue_row_is_corroborated_not_copied():
                                      operator_signed_utc=now - timedelta(minutes=1))
     assert report["balance_history"]["settled_session_basis"] == "NO_ACTIVITY_DASHBOARD_CORROBORATED"
     assert package["ledger"]["gross_trade_pnl"] == "0" and package["equity"]["net_equity"] == str(bal2)
+    assert package["scope"] == "submit_account_close" and package["settlement_basis"] == "NO_ACTIVITY_DASHBOARD_CORROBORATED"
+    with pytest.raises(AssemblyError, match="historical catch-up needs the venue balance row"):
+        build(fresh, fresh_files, bal1, bal2, session_id=S17, predecessor_session_id=S16,
+              operator_signed_utc=now - timedelta(minutes=1), scope="record_only")

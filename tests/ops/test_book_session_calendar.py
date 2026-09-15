@@ -333,6 +333,8 @@ def _mutate(payload, mutation):
         del rows[2]
     elif mutation == "first_row_skips_a_day":
         rows[0]["prior_session_id"] = "tradeify-account-day:2026-09-10"   # Monday 09-14's prior must be Friday 09-11
+    elif mutation == "row_omits_venue_sources":
+        rows[3]["source_ids"] = ["cme-spec-6J"]
     elif mutation == "product_cites_other_product_source":
         rows[3]["products"]["MGC"]["source_ids"] = ["cme-spec-6J", "cme-globex-2026-holiday-schedule"]
     elif mutation == "predecessor_flag_wrong":
@@ -353,7 +355,7 @@ def _mutate(payload, mutation):
     "schedule_constants_changed", "products_set_wrong", "local_utc_disagree", "session_overlap",
     "wrong_venue_deadline", "matching_outside_day", "gap_beyond_weekend", "predecessor_flag_wrong",
     "policy_permits_more", "timezone_changed", "skipped_weekday", "product_cites_other_product_source",
-    "first_row_skips_a_day",
+    "first_row_skips_a_day", "row_omits_venue_sources",
 ])
 def test_defective_calendar_files_are_refused_whole(tmp_path, mutation):
     """Any inconsistency with the schedule rule, chain, sources or coverage refuses the file."""

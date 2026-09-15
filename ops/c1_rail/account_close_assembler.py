@@ -276,8 +276,11 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
              session_id: str, predecessor_session_id: str, predecessor_package_sha256: str,
              calendar: SessionCalendar, policy_digest: str, report_tz: ZoneInfo,
              operator_signed_utc: datetime, attestations: dict, unresolved_runtime_requests: list,
-             open_positions: int, working_orders: int, historical: bool = False) -> tuple[dict, dict, dict]:
+             open_positions: int, working_orders: int, scope: str) -> tuple[dict, dict, dict]:
     """Return (package, sources bytes by file, figures-free qualification report)."""
+    if scope not in ("submit_account_close", "record_only"):
+        raise AssemblyError("scope must be submit_account_close or record_only")
+    historical = scope == "record_only"
     rows, window_report = parse_cash_windows(cash, report_tz=report_tz)
     if window_report["revisions"]:
         raise AssemblyError("same transaction id with changed contents across windows")
@@ -390,6 +393,8 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
                     for f in sorted(cash, key=lambda f: f.window_from) if f is not latest_cash],
         "attestations": dict(attestations),
         "unresolved_runtime_requests": list(unresolved_runtime_requests),
+        "scope": scope,
+        "settlement_basis": balance_basis,
     }
     sources = {f.name: f.data for f in all_files}
     report = {

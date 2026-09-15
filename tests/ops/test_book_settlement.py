@@ -107,7 +107,8 @@ def seated(tmp_path, operator, now=NOW14):
 
 
 def package(head: Receipt, session_id: str, now: datetime, *, gross="250.00", prior_tx=(), net=None,
-            flatness="DAILY_FLATTEN_CONFIRMED_NO_LATER_FILLS") -> tuple[dict, dict[str, bytes]]:
+            flatness="DAILY_FLATTEN_CONFIRMED_NO_LATER_FILLS", scope="submit_account_close",
+            basis="VENUE_ROW") -> tuple[dict, dict[str, bytes]]:
     row = CALENDAR.schedule_for(session_id)
     costs = {"commission": "4.00", "exchange": "1.20", "clearing": "0.30", "nfa": "0.04"}
     net_equity = Decimal(head.equity) + Decimal(gross) - sum(Decimal(v) for v in costs.values())
@@ -146,6 +147,7 @@ def package(head: Receipt, session_id: str, now: datetime, *, gross="250.00", pr
         "attestations": {"reflects_effective_close": True, "costs_included_once": True,
                          "no_known_pending_correction": True, "no_conflicting_observation": True},
         "unresolved_runtime_requests": [],
+        "scope": scope, "settlement_basis": basis,
     }
     return pkg, files
 
@@ -502,7 +504,7 @@ def test_record_only_catch_up_accepts_missed_sessions_in_order_while_halted(tmp_
     operator = Operator()
     store, head = seated(tmp_path, operator)
     late = datetime(2026, 9, 16, 12, tzinfo=timezone.utc)
-    pkg14, f14 = package(head, S14, late)
+    pkg14, f14 = package(head, S14, late, scope="record_only")
     assert store.issue_challenge(scope="record_only", target_session_id=None, proposed_session_id=S14,
                                  package_sha256=sha256_hex(canonical_bytes(pkg14)), halt_generation=3,
                                  permission="RUNNING", calendar=CALENDAR, now=late) == Refusal("record_only_requires_halted")
@@ -510,7 +512,7 @@ def test_record_only_catch_up_accepts_missed_sessions_in_order_while_halted(tmp_
     assert env["expires_utc"] == utc(late + CHALLENGE_LIFETIME) and env["target_session_id"] is None
     r14 = submit(store, operator, env, pkg14, f14, late, generation=3)
     assert isinstance(r14, Receipt) and r14.grants_activation is False
-    pkg15, f15 = package(r14, S15, late, prior_tx=pkg14["ledger"]["transactions"])
+    pkg15, f15 = package(r14, S15, late, prior_tx=pkg14["ledger"]["transactions"], scope="record_only")
     env = challenge(store, pkg15, target=None, now=late, scope="record_only", permission="HALTED", generation=3)
     r15 = submit(store, operator, env, pkg15, f15, late, generation=3)
     assert isinstance(r15, Receipt)
@@ -580,6 +582,14 @@ def _mutate(pkg, files, mutation, now):
         pkg["ledger"]["transactions"][0]["sha256"] = "not-hex"
     elif mutation == "transactions_int_id":
         pkg["ledger"]["transactions"][0]["id"] = 12345
+    elif mutation == "source_not_distinct":
+        for src in pkg["sources"]:
+            if src["role"] == "orders":
+                src["file"], src["sha256"] = "positions.csv", sha256_hex(files["positions.csv"])
+    elif mutation == "source_publication_utc":
+        pkg["source_publication_utc"] = utc(now + timedelta(days=400))
+    elif mutation == "scope_mismatch":
+        pkg["scope"] = "record_only"
     elif mutation == "venue_equity_at_close":
         pkg["equity"]["flatness_basis"] = "VENUE_EQUITY_AT_CLOSE"    # without venue equity/valuation basis
     elif mutation == "attestation_incomplete":
@@ -610,6 +620,7 @@ def _mutate(pkg, files, mutation, now):
     "predecessor_mismatch", "package_keys", "report_timezone", "operator_signed_in_future",
     "flatness_uncertain_open_position", "capture_time_unbound", "capture_time_unbound_positions",
     "capture_before_effective_close", "source_role_missing_orders", "transactions_bad_digest", "transactions_int_id",
+    "source_not_distinct", "source_publication_utc", "scope_mismatch",
 ])
 def test_defective_packages_are_refused_by_name_without_state_advance(tmp_path, mutation):
     """Every contract refusal is a named value; the challenge stays issued and the chain unchanged."""
@@ -741,7 +752,7 @@ def test_record_only_catch_up_tolerates_a_later_current_peak(tmp_path):
     operator = Operator()
     store, head = seated(tmp_path, operator)
     late = datetime(2026, 9, 16, 12, tzinfo=timezone.utc)
-    pkg14, f14 = package(head, S14, late)
+    pkg14, f14 = package(head, S14, late, scope="record_only")
     pkg14["dashboard"]["trailing_threshold"] = str(Decimal(pkg14["dashboard"]["trailing_threshold"]) + 500)   # later peak
     pkg14["dashboard"]["balance"] = str(Decimal(pkg14["dashboard"]["balance"]) + 700)                        # current balance
     env = challenge(store, pkg14, target=None, now=late, scope="record_only", permission="HALTED", generation=3)
@@ -764,3 +775,25 @@ def test_append_only_revocation_removes_a_key_and_a_full_revocation_leaves_none(
     raw["keys"].append(dict(row, key_id=other.key_id, revoked_utc=None, instruction="enrol replacement"))
     path.write_bytes(json.dumps(raw).encode("utf-8"))
     assert load_operator_keys(path) == {other.key_id: ["submit_account_close", "record_only"]}
+
+
+def test_historical_close_needs_the_venue_balance_row_basis(tmp_path):
+    """record_only binds the historical requirement to the signed scope, not a caller flag."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    late = datetime(2026, 9, 16, 12, tzinfo=timezone.utc)
+    pkg14, f14 = package(head, S14, late, scope="record_only", basis="NO_ACTIVITY_DASHBOARD_CORROBORATED")
+    env = challenge(store, pkg14, target=None, now=late, scope="record_only", permission="HALTED", generation=3)
+    assert submit(store, operator, env, pkg14, f14, late, generation=3) == Refusal("historical_close_needs_venue_row")
+
+
+def test_revoked_key_can_never_be_re_enrolled(tmp_path):
+    """An enrolment row appended after a revocation of the same key id refuses the whole record."""
+    raw = json.loads((REPO / "ops" / "c1_rail" / "operator_keys.json").read_bytes())
+    row = raw["keys"][0]
+    raw["keys"].append(dict(row, revoked_utc="2026-09-16T00:00:00Z", instruction="revoke"))
+    raw["keys"].append(dict(row, revoked_utc=None, instruction="stale re-enrol"))
+    path = tmp_path / "keys.json"
+    path.write_bytes(json.dumps(raw).encode("utf-8"))
+    with pytest.raises(SettlementError, match="re-enrolment of a revoked key"):
+        load_operator_keys(path)

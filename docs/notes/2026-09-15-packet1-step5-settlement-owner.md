@@ -100,8 +100,9 @@ verdicts:
 | Store path | qualification head seated, challenge issued, signed submission accepted, `mode_next = normal` |
 | Consumer | `size_book_request` for session 09-15 with the produced `SettledClose`: no halt |
 
-Package SHA-256 `261b4578b15dd7c330939446e09c5719b5af6afae955ac5098218b2e047d8a09` (re-run after the
-review fold below; the earlier `72b0c65d…` package predates transaction provenance); outputs and
+Package SHA-256 `c239fd3581dc9ac83edc9397a5489bd16a586cfd8158c3f8fd733e41ca293dce` (re-run after the
+third review fold; earlier packages `72b0c65d…` and `261b4578…` predate transaction provenance and the
+scope/basis fields); outputs and
 the figures-free `qualification-report.json` are retained under the same private folder.
 
 Limits recorded with the run: the store head was seated from the reconciled predecessor
@@ -199,4 +200,18 @@ holds; no real cash row fell outside a session.
 
 Re-qualification after the fold: unchanged verdicts, same package digest `261b4578…`; all six
 cash windows are attested complete from the collection record.
+
+## Review fold, round three — 2026-09-15 (Codex on PR #395)
+
+- **Revoked keys stay revoked**: the enrollment loader keeps a permanent revoked set and refuses
+  any later enrollment row for a revoked key id.
+- **Distinct evidence**: filenames are unique across every source, and digests are unique across
+  the required roles; several empty cash windows may legitimately share bytes.
+- **Session rows cite the venue sources**: every row must include the venue's declared source ids.
+- **Scope bound to the package**: the package carries `scope` and `settlement_basis`; the verifier
+  requires the package scope to equal the signed challenge scope and, for `record_only`, the
+  `VENUE_ROW` basis. The assembler takes the scope explicitly and derives the historical rule from it.
+- **Publication time** must not be later than receipt.
+
+Re-qualification after the fold: unchanged verdicts; package digest `c239fd35…`.
 
