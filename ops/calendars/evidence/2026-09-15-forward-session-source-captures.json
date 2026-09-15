@@ -1,0 +1,89 @@
+{
+  "schema": "forward_session_source_captures/v1",
+  "purpose": "Public source statements captured for the September 3-30, 2026 book session calendar. Text extracts only; each statement is quoted from the rendered page at the capture instant. These establish source semantics for the forward file and are not exchange-closure facts for historical dates.",
+  "captured_by": "in-app browser, read-only page loads, 2026-09-15",
+  "captures": [
+    {
+      "id": "tradeify-permitted-times-2026-07-14",
+      "url": "https://help.tradeify.co/en/articles/10495876-rules-permitted-times-to-trade",
+      "article_date": "2026-07-14",
+      "captured_utc": "2026-09-15T10:26:00Z",
+      "statements": [
+        "All positions must be closed by 4:45 PM Eastern Time each trading day. You cannot hold positions overnight or swing trade. This applies to ALL account types including Live.",
+        "Market opens: 6:00 PM Eastern Time (Sunday through Thursday). Market closes: 5:00 PM Eastern Time (Monday through Friday). Daily maintenance break: 5:00 PM to 6:00 PM Eastern Time.",
+        "Regular days: Close all positions by 4:45 PM ET. Holiday shortened days: Close all positions by 12:59 PM ET.",
+        "Holiday market hours are announced in our Discord server. Check before trading on holidays.",
+        "A trading day at Tradeify spans from 6:00 PM ET to 5:00 PM ET the next calendar day.",
+        "Holiday trading days count as independent trading days, even with shortened hours.",
+        "Eastern Time (ET). This is Eastern Standard Time (EST) in winter and Eastern Daylight Time (EDT) in summer."
+      ]
+    },
+    {
+      "id": "tradeify-trading-day-2026-06-18",
+      "url": "https://help.tradeify.co/en/articles/10468225-what-is-a-trading-day",
+      "article_date": "2026-06-18",
+      "captured_utc": "2026-09-15T10:26:30Z",
+      "statements": [
+        "A trading day is counted as at least one trade placed from 6:00 P.M. EST/EDT to 5:00 P.M. EST/EDT the next day."
+      ]
+    },
+    {
+      "id": "cme-globex-2026-holiday-schedule",
+      "url": "https://www.cmegroup.com/trading-hours.html",
+      "captured_utc": "2026-09-15T10:27:00Z",
+      "statements": [
+        "2026 CME Globex Trading Schedule: Labor Day includes the following dates: 6 - 8 September 2026 (Holiday Schedule).",
+        "2026 CME Globex Trading Schedule: Thanksgiving includes the following dates: 26 - 28 November 2026 (Holiday Schedule). No other U.S. holiday row lists a September 2026 date.",
+        "Note: This schedule is subject to change. Trading hours are usually finalized approximately two weeks prior to the holiday.",
+        "Trading hours are subject to change and are in U.S. Central Time unless otherwise stated."
+      ]
+    },
+    {
+      "id": "cme-spec-6J",
+      "url": "https://www.cmegroup.com/markets/fx/g10/japanese-yen.contractSpecs.html",
+      "captured_utc": "2026-09-15T10:27:45Z",
+      "product_code": "CME Globex: 6J",
+      "statements": [
+        "CME Globex: Sunday - Friday 5:00 p.m. - 4:00 p.m. (6:00 p.m. - 5:00 p.m. ET) with a 60-minute break each day beginning at 4:00 p.m. (5:00 p.m. ET)"
+      ]
+    },
+    {
+      "id": "cme-spec-MGC",
+      "url": "https://www.cmegroup.com/markets/metals/precious/e-micro-gold.contractSpecs.html",
+      "captured_utc": "2026-09-15T10:28:49Z",
+      "product_code": "CME Globex: MGC",
+      "statements": [
+        "Trading Hours: Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)"
+      ]
+    },
+    {
+      "id": "cme-spec-MYM",
+      "url": "https://www.cmegroup.com/markets/equities/dow-jones/micro-e-mini-dow.contractSpecs.html",
+      "captured_utc": "2026-09-15T10:28:28Z",
+      "product_code": "CME Globex: MYM",
+      "statements": [
+        "CME Globex: Sunday 6:00 p.m. - Friday - 5:00 p.m. ET (5:00 p.m. - 4:00 p.m. CT) with a daily maintenance period from 5:00 p.m. - 6:00 p.m. ET (4:00 p.m. - 5:00 p.m. CT)"
+      ]
+    },
+    {
+      "id": "cme-spec-MNQ",
+      "url": "https://www.cmegroup.com/markets/equities/nasdaq/micro-e-mini-nasdaq-100.contractSpecs.html",
+      "captured_utc": "2026-09-15T10:28:34Z",
+      "product_code": "CME Globex: MNQ",
+      "statements": [
+        "CME Globex: Sunday 6:00 p.m. - Friday - 5:00 p.m. ET (5:00 p.m. - 4:00 p.m. CT) with a daily maintenance period from 5:00 p.m. - 6:00 p.m. ET (4:00 p.m. - 5:00 p.m. CT)"
+      ]
+    },
+    {
+      "id": "cme-ui-labor-2026",
+      "url": "https://www.cmegroup.com/trading-hours.html",
+      "captured_utc": "2026-09-15T00:00:00Z",
+      "retained_privately": "lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/calendar_producer_2026-09-15/labor-day-products.json",
+      "retained_sha256": "3dafe4b7cb926e60a07575792604a12af5872bedb91dd53394bce5e4c5baeba1",
+      "statements": [
+        "Wall date 2026-09-07, Central Time: 6J PREOPEN 16:00 / OPEN 17:00; MGC PREOPEN 13:30 / OPEN 17:00; MYM PREOPEN 12:00 / OPEN 17:00; MNQ PREOPEN 12:00 / OPEN 17:00; CME business trade date of the 17:00 OPEN is September 8.",
+        "These events establish the halt/reopen distinction for the observed wall date; they do not alone establish the preceding open or following final close."
+      ]
+    }
+  ]
+}
