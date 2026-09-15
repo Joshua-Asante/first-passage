@@ -298,6 +298,16 @@ def _v10_source_ledger(c: _Ctx):
             _utc(src["captured_utc"]), start.date(), last, win["complete"], c.account))
     try:
         rows, report = parse_cash_windows(cash, report_tz=tz)
+        if report["revisions"]:
+            return "transaction_revision_detected"
+        actual = transactions_for(rows)
+        before = {t["id"]: (t["sha256"], t["session_id"]) for t in c.prev["ledger"]["transactions"]}
+        after = {t["id"]: (t["sha256"], t["session_id"]) for t in actual}
+        if any(after.get(k) != v for k, v in before.items()) or any(
+                t["id"] not in before and t["session_id"] <= c.head["session_id"] for t in actual):
+            return "history_changed"
+        # Establish historical integrity from parsed rows before checking current
+        # package claims: stale counts or spans must not downgrade a known correction.
         for source, window in zip(cash, windows):
             source_rows, _ = parse_cash_windows([source], report_tz=tz)
             start, end = _utc(window["from_utc"]), _utc(window["to_utc"])
@@ -305,16 +315,8 @@ def _v10_source_ledger(c: _Ctx):
             if any(r.ts_utc < start or r.ts_utc > end or (r.ts_utc == end and not inclusive_end)
                    for r in source_rows):
                 return "source_row_outside_coverage"
-        if report["revisions"]:
-            return "transaction_revision_detected"
         if {w["file"]: w["rows"] for w in report["windows"]} != {w["file"]: w["rows"] for w in windows}:
             return "source_row_count_mismatch"
-        actual = transactions_for(rows)
-        before = {t["id"]: (t["sha256"], t["session_id"]) for t in c.prev["ledger"]["transactions"]}
-        after = {t["id"]: (t["sha256"], t["session_id"]) for t in actual}
-        if any(after.get(k) != v for k, v in before.items()) or any(
-                t["id"] not in before and t["session_id"] <= c.head["session_id"] for t in actual):
-            return "history_changed"
         if actual != claimed["transactions"]:
             return "source_transactions_mismatch"
         ledger = reconcile(rows)
