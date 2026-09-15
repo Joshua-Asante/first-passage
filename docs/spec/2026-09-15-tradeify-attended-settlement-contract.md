@@ -215,11 +215,3 @@ protocol through the real durable account owner before accepting any close.
 Actual account inception/complete-history and close-update evidence remain required;
 today's sample reports do not discharge them. A reviewed contract is not a qualified
 producer, and a qualified producer is not deployment approval.
-
-### Implementation status — 2026-09-15
-
-The owner-side protocol above is implemented in `ops/c1_rail/book_settlement.py` with
-`ops/c1_rail/ed25519_verify.py`; see the
-[Step 5 record](../notes/2026-09-15-packet1-step5-settlement-owner.md) for the exact
-refusal set, tests and remaining qualification. This status line changes no
-requirement of this contract.

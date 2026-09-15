@@ -229,38 +229,6 @@ the reviewed candidate identities. Historical evidence remains in the
 Next is Step 4 calendar permission, followed by Step 5 settlement and Step 6
 finite-margin/shared-law checks and combined bundle admission. These and live
 activation retain their separate gates.
-
-**Step 4 implemented 2026-09-15, pending independent review and digest ratification.**
-The [Step 4 record](../../notes/2026-09-15-packet1-step4-session-calendar.md) binds
-the versioned September 3–30 session file (`ops/calendars/book_session_calendar_2026-09.json`,
-`650e8aab…`), the typed closure overlay, the captured Tradeify/CME sources, the
-`ops/c1_rail/book_session_calendar.py` producer and 55 executable checks: permitted
-and denied sessions, §5 derivations, DST mapping, boundary, stale/missing coverage
-and prior-close chronology through denied days. Eighteen ordinary sessions are
-permitted; 2026-09-07 and 2026-09-08 are denied. The artifacts live under
-`ops/calendars/` because the rail consumes them. Ratification pins the digest in
-the runtime's trusted configuration; the monthly extension is due before
-2026-09-30. No activation or historical legality claim follows from this step.
-
-**Step 5 implemented 2026-09-15 on synthetic evidence; live producer qualification
-not started.** The [Step 5 record](../../notes/2026-09-15-packet1-step5-settlement-owner.md)
-binds `ops/c1_rail/book_settlement.py` (durable single-writer settled-close chain,
-one-use 300-second signed challenge, full package verification, B7 bootstrap,
-record-only catch-up, revision invalidation, restart reconciliation) and
-`ops/c1_rail/ed25519_verify.py`, with 49 tests including consumer agreement through
-`size_book_request`. Open: the operator's actual reports and signing key, the package
-assembler from those report formats, account qualification and TB-I3 integration.
-No close is accepted and nothing grants activation or resumption.
-
-**Step 6 assembled and provisionally executed 2026-09-15; independent admission NOT
-issued.** The [Step 6 record](../../notes/2026-09-15-packet1-step6-provisional-admission.md)
-binds the seven `book-bundle-v1` candidate manifests (corrected Striker port generation,
-pinned exports, panels, Pine bodies, reviewed captures and verdict records) and new
-panel-bound finite-margin/shared-law artifacts. Under a clearly labelled provisional
-contract, `admit_bundle` and `run_bundle_parity` pass 7/7 with 3,173 matched trades,
-zero exclusions and resolved final state. The independent reviewer must issue the
-real admission contract against those exact manifest digests; then the run is repeated
-under it and Packet 1 receives its combined review. Packet 1 remains open.
 Do not spend
 another broad implementation pass on a producer
 whose required evidence is unavailable. A failed feasibility check produces an
