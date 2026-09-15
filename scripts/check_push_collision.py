@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """check_push_collision.py — governance-surface push collision gate (governance tier).
 
-This repo is worked from several concurrent sessions/worktrees (CC, Cursor,
+This repo is worked from several concurrent sessions/worktrees (Claude Code, Codex,
 operator). The recurring failure is not "main moved" — main moves constantly and
 that is fine — it is **both sides editing the same governance surface from a
 stale base**, which merges cleanly and lands a contradiction.

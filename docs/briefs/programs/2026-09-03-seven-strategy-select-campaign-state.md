@@ -30,8 +30,10 @@ override `11d22e2`, and the Phase 7 simplification `1fe4600` are all on `main`).
 **Role:** this file is the plan's campaign evidence and decision record
 **and the claim manifest**. One writer — the Astra coordinator (§57; operator direction 2026-09-12) — per the MSL
 precedent ([`2026-08-12-msl-program-plan.md`](2026-08-12-msl-program-plan.md) §6) and the
-`cursor-fleet` single-writer rule. Delegated workers (Codex / Cursor / local compute) never edit it; they
-report via PR description and the orchestrator transcribes.
+orchestrator single-writer rule, which survives the Cursor retirement surface-agnostically
+([worker-surface allocation](../../adr/2026-07-14-cc-cursor-surface-allocation.md), Revision
+2026-09-15; it was previously stated by the deleted `cursor-fleet` skill). Delegated workers (Codex / Claude Code / local compute)
+never edit it; they report via PR description and the orchestrator transcribes.
 **Authorizes:** nothing. $0 · K=0 · no candidate contract · no capital · c1 rail stays disarmed.
 
 ---

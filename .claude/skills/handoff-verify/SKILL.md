@@ -1,6 +1,6 @@
 ---
 name: handoff-verify
-description: Use BEFORE executing any external handoff — Claude Code / CC spawn, web-advisor note, Cursor Phase-0 handoff, or any brief that claims repo state you did not just verify. Triggers on "execute this handoff", "CC handoff", "advisor said", "Phase-0", or when a prompt asserts files/ADRs/closures/templates exist. Blocks work until the Phase-0 checklist passes or returns NEEDS_CONTEXT. Sibling of verify-source (source STATE) and rule-0 (read production first); this skill is the handoff-shaped gate for the recurring feedback_web_advisor_handoff_confabulates_repo_state failure.
+description: Use BEFORE executing any external handoff — Claude Code / CC spawn, Codex packet, web-advisor note, or any brief that claims repo state you did not just verify. Triggers on "execute this handoff", "CC handoff", "advisor said", "Phase-0", or when a prompt asserts files/ADRs/closures/templates exist. Blocks work until the Phase-0 checklist passes or returns NEEDS_CONTEXT. Sibling of verify-source (source STATE) and rule-0 (read production first); this skill is the handoff-shaped gate for the recurring feedback_web_advisor_handoff_confabulates_repo_state failure.
 ---
 
 # handoff-verify — Phase-0 before executing an external handoff
@@ -15,7 +15,7 @@ Any time the instructions to execute originated outside a fresh Rule-0 read in *
 
 - Claude Code / CC handoff briefs under `docs/briefs/**`
 - Web-advisor notes pasted into chat
-- Cursor Phase-0 / spawn prompts from another session
+- Worker Phase-0 / spawn prompts from another session
 - "I already updated X / it's on main / the template exists" claims
 
 If you wrote the plan yourself in this session after reading the files, skip — but still use `verify-source` for any borrowed number.

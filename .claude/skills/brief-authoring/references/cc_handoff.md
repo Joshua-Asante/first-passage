@@ -2,7 +2,7 @@
 
 **Date:** YYYY-MM-DD
 **Parent session:** <originating session or task>
-**Spawn target:** Claude Code | Cursor (frozen-spec implementation — see `docs/adr/2026-07-14-cc-cursor-surface-allocation.md`; use the §0.5 Cursor variant)
+**Spawn target:** Claude Code | Codex — and for each, `local` or `cloud` (the environment is what §0.75 turns on, not the vendor). Frozen-spec implementation routes to a worker per `docs/adr/2026-07-14-cc-cursor-surface-allocation.md`; use the §0.5 frozen-spec-worker variant.
 **Repo:** `first-passage` (or specific repo path)
 **Brief type:** CC handoff (single-step | multi-step)
 **Parent question:** Q-X (if executing a Pre-Q) | <owning specification, campaign, plan, PR or dated ADR> (if executing an approved decision) | `N/A`
@@ -34,11 +34,11 @@ Capture the process exit code, stdout, stderr, and session identifier when avail
 
 On failure, preserve the exact error and identify the supported cause: launch approval, worker permission, filesystem access, authentication/network, CLI invocation, or unknown. Correct demonstrated invocation errors within existing authority. Do not change launchers or disable controls to evade a denial. Before retrying an uncertain run, check whether it is still running or has already changed files; resume the existing worker when supported.
 
-For local Cursor/Claude dispatch, use the repository's `scripts/dispatch_cursor.ps1` / `scripts/dispatch_claude.ps1` and `scripts/agent_handoff.md` recovery procedure. Supply expected outputs and required check names; the runner injects a correlated JSON return contract. Preserve the request receipt, use its request ID for continuation, and reconcile uncertain outcomes before retrying. A valid return with worker status BLOCKED/NEEDS_CONTEXT is not completed work; DONE still requires parent verification.
+For local CLI dispatch, use the repository's `scripts/dispatch_claude.ps1` and `scripts/agent_handoff.md` recovery procedure. Supply expected outputs and required check names; the runner injects a correlated JSON return contract. Preserve the request receipt, use its request ID for continuation, and reconcile uncertain outcomes before retrying. A valid return with worker status BLOCKED/NEEDS_CONTEXT is not completed work; DONE still requires parent verification.
 
 ---
 
-## §0.75 — Local-only dependency check (required when Spawn target is Cursor)
+## §0.75 — Local-only dependency check (required for every dispatch)
 
 **(Added 2026-07-16, per `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` §2 Step 0 — RATIFIED 2026-07-16.)** Three cloud→local bounces in one 48h window (Class-S C1 scoring, Class-S C1 regime rider, H-OD-1 Stage-1/2 — all in `docs/SESSIONS.md` 2026-07-15/16) shared one root cause: the dispatch environment didn't have bytes or a credential the §0 reads assumed were there. Answer explicitly before dispatch:
 
@@ -47,9 +47,11 @@ For local Cursor/Claude dispatch, use the repository's `scripts/dispatch_cursor.
 - **Secrets/API keys:** does any step need a credential (e.g. the databento key)?
   - If yes: `Confirmed present — <the check you ran in THIS environment, e.g. a command output>` OR `NOT confirmed — route local.`
 
-A general belief that the bytes or key exist "somewhere" (a prior session, a different project) does not clear this gate — confirm for the dispatch you are about to make. If either line is `NOT confirmed`, do not dispatch to Cursor cloud: either run locally (CC or a local Cursor session) or stage the dependency into this specific cloud workspace first and re-confirm.
+A general belief that the bytes or key exist "somewhere" (a prior session, a different project) does not clear this gate — confirm for the dispatch you are about to make. If either line is `NOT confirmed`, do not dispatch to a cloud environment: run locally, or stage the dependency into that specific cloud workspace first and re-confirm.
 
-If Spawn target is CC (not Cursor), this section reads `N/A — CC runs in the operator's own environment, where these bytes/keys are already present.`
+**This section has no surface exemption (corrected 2026-09-15).** It previously read `N/A` whenever the spawn target was CC, on the premise that "CC runs in the operator's own environment, where these bytes/keys are already present." That premise is false: Claude Code runs in remote cloud containers too (claude.ai/code, GitHub Actions, and this repo's own remote sessions), where a fresh clone structurally lacks every gitignored vendor path. Codex likewise has local and cloud modes. The gate keys on **environment**, never on vendor — answer it for every dispatch. `N/A` is only correct when no §0 read or §2 step touches vendor data or a secret at all.
+
+Canonical checklist owner: [`task-routing`](../../task-routing/SKILL.md).
 
 ---
 
@@ -67,7 +69,7 @@ Surface ambiguities in these categories:
 
 Post ambiguities under `## §0.5 Response — ambiguities` in your first response. Set `Status: NEEDS_CONTEXT` until resolved (see §6).
 
-**Cursor variant — parent-recommended defaults (use when Spawn target is Cursor, not CC).** Under the CC/Cursor surface-allocation rule (`docs/adr/2026-07-14-cc-cursor-surface-allocation.md`), frozen-spec implementation routes to Cursor. For a Cursor handoff, do NOT leave §0.5 as bare open questions — for each ambiguity state a bolded **Recommended default:** that Cursor *applies* unless its Phase-0 read contradicts it, in which case it bounces `Status: NEEDS_CONTEXT` with the conflict quoted. Enumerate them `(A) … (B) … (C) …`. Reference implementation (retired; public seed excludes `docs/ltm/`) — retrieve via `git show pre-prune-2026-08-08:docs/ltm/briefs/rnd-pipeline/2026-07-13-cursor-handoff-prop-survivor-scoring-harness.md` §0.5. Rationale: Cursor executes frozen specs and never resolves a spec ambiguity unilaterally (ADR §2 test 2); a stated default keeps a spec-frozen build moving without a round-trip while preserving the halt-on-*conflict* guarantee. The pure halt-and-ask form above stays the default when the spawn target is CC.
+**Frozen-spec-worker variant — parent-recommended defaults.** Under the worker-surface allocation rule (`docs/adr/2026-07-14-cc-cursor-surface-allocation.md`), frozen-spec implementation routes to a worker. For such a handoff, do NOT leave §0.5 as bare open questions — for each ambiguity state a bolded **Recommended default:** that the worker *applies* unless its Phase-0 read contradicts it, in which case it bounces `Status: NEEDS_CONTEXT` with the conflict quoted. Enumerate them `(A) … (B) … (C) …`. Reference implementation (retired; public seed excludes `docs/ltm/`) — retrieve via `git show pre-prune-2026-08-08:docs/ltm/briefs/rnd-pipeline/2026-07-13-cursor-handoff-prop-survivor-scoring-harness.md` §0.5. Rationale: a worker executes frozen specs and never resolves a spec ambiguity unilaterally (ADR routing test 2); a stated default keeps a spec-frozen build moving without a round-trip while preserving the halt-on-*conflict* guarantee. The pure halt-and-ask form above stays the default when the coordinator is doing the work itself. (Written for Cursor 2026-07; generalised to any frozen-spec worker 2026-09-15 — the pattern was never Cursor-specific.)
 
 ---
 

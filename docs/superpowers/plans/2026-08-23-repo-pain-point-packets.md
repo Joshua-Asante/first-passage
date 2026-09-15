@@ -16,7 +16,7 @@
 - No hours budget (Rule 2 §5 #2).
 - No new generation channel (bind row 3 fills from an existing owner).
 - No sixth root doc ([`2026-07-16-root-doc-charter-dedup.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md)).
-- Empty grep of `lab/archive/`, `docs/ltm/`, `core/strategies/_archive/` is **not** evidence of absence ([`.cursor/rules/search-ltm.mdc`](../../../.cursor/rules/search-ltm.mdc)).
+- Empty grep of `lab/archive/`, `docs/ltm/`, `core/strategies/_archive/` is **not** evidence of absence ([`.rgignore`](../../../.rgignore); `CLAUDE.md` §Architecture).
 - `repo_retrieve.py` remains ASSISTIVE-ONLY (Limb B settled).
 
 ## What the two looks actually claimed
@@ -322,7 +322,7 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 | CI green ≠ merge precondition / no branch protection | ⚠ **Stale (corrected 2026-08-24)** — ruleset landed 2026-08-19; `skills (3.12)` IS required | [`Q-GATESTACK-1`](../../briefs/closures/Q-GATESTACK-1-closure-falsified.md) closure addendum |
 | S3/S7 `PROPOSED`; session lettering | leave; do not reopen S7 | [`loop-spec index`](../../spec/2026-08-07-loop-spec-index.md) · [`roll_sessions.py`](../../../scripts/roll_sessions.py) |
 | Folder `multi_firm_operations` vs GitHub `first-passage` | cosmetic identity | operator-only |
-| Pine gitignored; LTM `.rgignore` | correct; P1 teaches | [`.cursor/rules/search-ltm.mdc`](../../../.cursor/rules/search-ltm.mdc) |
+| Pine gitignored; LTM `.rgignore` | correct; P1 teaches | [`.rgignore`](../../../.rgignore) · `CLAUDE.md` §Architecture |
 | Windows `bash` vs Git Bash for hooks | **Landed** — sentence on `install_hooks.sh` | [`scripts/install_hooks.sh`](../../../scripts/install_hooks.sh) · [`scripts/install_hooks.bat`](../../../scripts/install_hooks.bat) |
 
 ## Success for this charter

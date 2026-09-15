@@ -1,7 +1,7 @@
 # `docs/ltm/` — long-term memory (search-excluded)
 
-Cursor indexing and default `rg` **exclude** this tree
-(`.rgignore` / `.cursorindexingignore`). It is git-tracked.
+Default `rg` **excludes** this tree (`.rgignore`, sole owner of that
+exclusion since the 2026-09-15 Cursor retirement). It is git-tracked.
 An empty Grep is not evidence of absence — use
 `rg --no-ignore` or Read-by-path.
 

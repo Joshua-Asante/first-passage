@@ -36,8 +36,9 @@ ops/c1_rail/*.py text eol=lf
 tests/ops/fixtures/policy_fingerprint_vectors.json text eol=lf
 
 # Hash-gated analysis CSVs: WAVE1_SHA256SUMS is LF-blob-based, so autocrlf checkout
-# (CRLF) fails the harness hash-gate in a fresh worktree — and would halt a Cursor
-# dispatch. eol=lf pins the checkout to LF (matches the blob), is renormalize-safe,
+# (CRLF) fails the harness hash-gate in a fresh worktree — and would halt a worker
+# dispatch (originally observed against Cursor, retired 2026-09-15; the failure mode
+# is the checkout's, not any one vendor's). eol=lf pins the checkout to LF (matches the blob), is renormalize-safe,
 # and stays diffable. Scope kept narrow (this dir only); broaden per hash-gated dir
 # after confirming its manifest is LF-based. Vendor data (data/*) stays CRLF-hashed.
 lab/analysis/aegis_6j_prop_reconstruction_2026-07/*.csv text eol=lf

@@ -442,7 +442,7 @@ illustration only, not a live cross-check today). `scripts/sync_pine_to_worktree
 Any session that derives, tests, tunes, or adjudicates on an instrument MUST
 (a) read `ops/instruments/<SYMBOL>.md` **before its first run or edit**, and
 (b) append a dated disposition entry at session end. This applies on every
-surface (Claude Code, claude.ai, cursor) — the ledger exists precisely because
+surface (Claude Code, claude.ai, Codex) — the ledger exists precisely because
 per-surface memory is mutually invisible.
 
 Ledgers carry: active concepts + status, dead/parked items (with revival bars),
@@ -712,8 +712,8 @@ those processes: SSH/`fly ssh`, status reads, attended arm/disarm commands —
 not the runtime host.
 
 **Scope:** always-on / unattended-capable services. Does **not** ban
-route-LOCAL interactive agent work (Cursor fleet, one-shot analysis) on a
-desktop. Does **not** authorize leaving `dry_run=false` unattended.
+route-LOCAL interactive agent work (parallel worker packets, one-shot analysis)
+on a desktop. Does **not** authorize leaving `dry_run=false` unattended.
 
 Owner ADR: [`docs/adr/2026-08-07-w6-rail-infra-closures.md`](adr/2026-08-07-w6-rail-infra-closures.md).
 Pointers: `deploy/c1_rail/README.md` · `.claude/skills/c1-rail/SKILL.md`.

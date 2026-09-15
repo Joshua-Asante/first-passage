@@ -20,15 +20,16 @@ un-reconfirmed for >60 days should be treated as stale, not silently trusted.
 | Fly.io | [d13](d13-flyio-subscription.md) | — | — | asked 2026-08-21, not supplied | **still open** |
 | CrossTrade | [d14](d14-crosstrade-subscription.md) | $50 | flat | 2026-08-21 | confirmed |
 | Tradeify | [d15](d15-tradeify-account.md) | — | account-carrying cost, not a subscription fee | asked 2026-08-21, not supplied | **still open** |
-| Cursor Ultra | [d16](d16-cursor-subscription.md) | excluded | removed from recurring spend by operator; final charges unverified | 2026-09-10 (operator instruction) | removed from active recurring total |
+| Cursor Ultra | [d16](d16-cursor-subscription.md) | excluded | removed from recurring spend by operator; **surface retired outright 2026-09-15** ([worker-surface allocation](../adr/2026-07-14-cc-cursor-surface-allocation.md), Revision 2026-09-15); cancellation date and final charges **still not supplied** | 2026-09-10 (spend), 2026-09-15 (surface) | removed from active recurring total |
 | Claude Max | [d17](d17-claude-max-subscription.md) | $100 | flat | 2026-09-10 | confirmed |
 | Codex | [d18](d18-codex-subscription.md) | $200 | monthly amount supplied; plan details unspecified | 2026-09-10 | operator-confirmed |
 
 **Confirmed active recurring monthly total:** $420/mo (four confirmed active rows:
 TradingView, CrossTrade, Claude Max and Codex).
 Databento is retired and excluded; its effective cancellation date and final invoice
-were not supplied. Cursor is removed from recurring spend by operator instruction;
-no cancellation date or final invoice was supplied. Fly.io and Tradeify remain
+were not supplied. Cursor is removed from recurring spend by operator instruction and the surface
+itself was retired on 2026-09-15; no cancellation date or final invoice was
+supplied, and retiring the surface does not settle those figures. Fly.io and Tradeify remain
 unverified, not zero. Do not read $420 as total spend or as settlement of outstanding
 charges.
 
@@ -36,6 +37,7 @@ charges.
 
 | Date | Change |
 |---|---|
+| 2026-09-15 | Cursor retired as a worker surface repo-wide (operator instruction; [ADR revision](../adr/2026-07-14-cc-cursor-surface-allocation.md)). Ledger effect: **none** — the row was already excluded from the active recurring total on 2026-09-10. Cancellation date and final charges remain outstanding operator items; this row records the surface retirement, not a settlement. |
 | 2026-09-10 | Operator removes Cursor from recurring spend, revises Claude Max from $200 to $100/month, and adds Codex at $200/month. Active recurring total: $520 - $200 - $100 + $200 = $420. Claude remains active. Cursor cancellation date/final charges and Codex plan details not supplied. |
 | 2026-09-10 | Operator reports Databento retired/unsubscribed, no replacement approved. Removed prior $200 from active recurring total: $720 to $520. Report date is not an asserted cancellation date; final invoice and historical billing-model tension remain unverified. |
 | 2026-08-21 | Ledger created — five figures operator-confirmed, one flagged (Databento billing-model tension), two still open (Fly.io, Tradeify). Closes GSUB-1 C-1. |
