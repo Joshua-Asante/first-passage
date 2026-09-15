@@ -229,7 +229,10 @@ try:
 except ImportError:  # pragma: no cover - environment error, never a silent skip
     sys.stderr.write(
         "FATAL: PyYAML not installed. This gate does not silently no-op "
-        "(operational_rules.md 9).\n  pip install -r requirements-ops.lock\n"
+        "(operational_rules.md 9).\n"
+        "  python -m pip install --require-hashes -r requirements-ops.lock\n"
+        "  If pip reports 'RECORD file not found' (Debian-based container), "
+        "see scripts/README.md#installing-the-check-dependencies\n"
     )
     raise SystemExit(2)
 
