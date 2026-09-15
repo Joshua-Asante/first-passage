@@ -1,0 +1,20 @@
+{
+  "schema": "calendar_ratification/v1",
+  "note": "Operator ratifications of TB-C1 session calendars by exact file digest. The rail loader refuses to produce a BookSession from a calendar whose digest is not listed here. A changed calendar byte needs a new row; rows are never edited or removed, only superseded by a later row with a later ratified_utc.",
+  "ratifications": [
+    {
+      "calendar_id": "tradeify-select-100k/forward/2026-09",
+      "calendar_file": "ops/calendars/book_session_calendar_2026-09.json",
+      "calendar_sha256": "650e8aab4166f74a988675a3f3dfa2dbd21c1c1b342777ac37d65aacea9d6f2f",
+      "closure_overlay_file": "ops/calendars/book_closure_overlay.json",
+      "closure_overlay_sha256": "483f2324b85548e60429b823454641a0ee6e34c8ef2a9cadc7dcc6555f7def5b",
+      "coverage_start_utc": "2026-09-02T22:00:00Z",
+      "coverage_end_utc": "2026-09-30T21:00:00Z",
+      "ratified_by": "operator",
+      "ratified_utc": "2026-09-15T11:05:00Z",
+      "instruction": "ratify calendar 650e8aab",
+      "record": "docs/notes/2026-09-15-packet1-step4-session-calendar.md",
+      "scope": "Book permission rows for the first attended release only. Grants no activation, deployment, resumption or historical legality; the volume config pin at activation is a separate Packet 6 step."
+    }
+  ]
+}
