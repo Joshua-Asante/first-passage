@@ -214,6 +214,11 @@ Step 3 is in progress: the initial four-panel inventory is retained in the
 All four panel hashes and structural checks pass; 6J starts 23 hours later than
 the other panels. Calculation-origin proof and per-case startup binding remain
 open; every gap is unclassified pending accepted calendar evidence in Step 4.
+The seven new exports plus Aegis/Vanguard references have complete event pairs
+and unique event-to-bar matches; all 3,632 captured trade holds have uninterrupted
+15-minute panel coverage. Gaps while flat still require classification for
+indicator continuity. The retained 6J prefix produces identical diagnostic closed
+trades, but its provenance and the original calculation boundary remain pending.
 Do not spend
 another broad implementation pass on a producer
 whose required evidence is unavailable. A failed feasibility check produces an

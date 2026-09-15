@@ -406,3 +406,36 @@ Final runner invocation on bundled Python 3.12.14 exited 0. A preceding attempt
 to add terminal-state reporting called the position accessor incorrectly and
 failed JSON serialization; corrected to `position()` and reran both scenarios.
 The hashes above identify the successful final generation.
+
+### Nine-reference event and held-position coverage
+
+Prefix replay findings committed as `c8ef13b`; commit checks passed. Continued
+with all seven September 14 cases (using corrected O-N) and the retained Aegis
+and Vanguard references. The private runner verifies each export digest, binds
+panel bytes and inspects raw rows without silently dropping incomplete trades.
+
+Across **3,632 trade pairs / 7,264 event rows**:
+
+- Every trade ID has exactly one entry and one exit.
+- Every event's New York display-clock timestamp maps to exactly one retained
+  panel bar; no event has a missing or ambiguous panel label.
+- No adjacent-bar gap intersects a captured entry-to-exit hold. This includes
+  gap intervals at hold boundaries, using the actual UTC panel timestamps.
+
+A separate implementation enumerated every 15-minute timestamp inclusively from
+entry through exit for each pair and found all timestamps in the corresponding
+panel. It also checked entry precedes or equals exit. Both checks ran on bundled
+Python 3.12.14 and exited 0. This is local cross-verification, not independent
+acceptance review. No source values or runtime behavior changed.
+
+| Private artifact in `step3-coverage` | SHA-256 |
+|---|---|
+| `event_coverage.py` | `28d1e69b282aa17744bd55c2971c8c6aa6473fe871b8e37a8702a15e54743c99` |
+| `event-coverage.json` | `ee1ae712c9f010e8c03f6afbcee7a465b70180bed895a267cfca07673dc3701d` |
+
+This resolves the bounded question of retained bars during captured trade holds.
+It does **not** classify gaps while flat: indicators update outside positions,
+so those gaps remain in the Step 4 calendar queue. Nor does it establish the exact
+Deep calculation origin, end-date inclusion semantics, independently attest all
+effective settings, or admit a bundle. The pending 6J provenance question and
+Step 3's combined coverage review remain open.
