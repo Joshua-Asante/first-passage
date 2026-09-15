@@ -639,3 +639,40 @@ PR from `claude/tb-p1-validation-prereg-draft` with the two files; closure block
 Joshua approved the [attended settlement design](../../spec/2026-09-15-tradeify-attended-settlement-contract.md). TB-T1 retains its initial B7 role; ongoing closes follow that authenticated evidence contract, including account-session mapping and the B7 C8 clarification for identifiable transaction-linked trading costs. Actual producer qualification remains open.
 
 TB-C1 retains the original forward-calendar and separate typed-overlay scope: immutable D19 remains accepted for historical date membership only. The initial forward bound is September 3–30, 2026. The [Step 1 closure](../../notes/2026-09-15-calendar-account-contract-resolution.md#step-1-closure--approved-design-and-bounded-calendar-route) records source feasibility, limits and remaining executable acceptance. Neither D19 nor a book no-trade overlay establishes historical product matching hours.
+
+
+## September 15 amendment — separate provider coverage and session legality
+
+The operator authorized the [calendar/parity separation amendment](../../notes/2026-09-15-calendar-parity-separation-amendment.md).
+It controls the current Packet 1 acceptance method over earlier requirements in
+this record to classify every historical gap through exchange calendars.
+Provider-data coverage requires complete, source-bound provider bar evidence,
+exact ordered timestamp/OHLCV agreement and accepted initialization; matching
+trades or shared omissions alone do not establish it. Unexplained shared provider
+gaps do not assert exchange closure and remain blocking for any dependent
+legality, fill or completeness claim. Existing evidence and verdicts are preserved;
+a newly reviewed admission contract is required before using the amended method.
+
+The first forward release uses a versioned September 3–30, 2026 file of qualified
+ordinary sessions, denying holiday, shortened and uncertain adjacent sessions.
+Missing/expired coverage halts new risk; safe flattening, protective/recovery
+ownership, prior-account-session chronology across denied days, settlement,
+separate resumption and activation gates remain required. D19 stays immutable
+historical date membership only. Step 3 and Packet 1 are not closed by this change.
+
+## September 15 — O-8 narrowed by the Step 3 provider-reset correction (operator-ratified)
+
+O-8's ruling ("keep as captured") is retained in its mechanism: the live Vanguard
+adapter keeps the TradingView daily-key latch exactly as ported, and the reset
+table stays inside the active-leg digest. The Step 3 acceptance corrected the
+table's date membership from the NYSE holiday list to the provider-observed
+daily-reset grouping (three dates removed; 189,116 observed MGC/MYM bars matched;
+Vanguard parity unchanged at every row). This is an evidence correction of the
+merge model, not a strategy change and not a pre-registration event; the captured
+no-trade artefact on the sessions after the retained holiday dates is still
+reproduced. The table is qualified through 2026-09-03 only. **Ratified by the operator on
+2026-09-15 ("ratify O-8 narrowing")**: the date-set change stands as an evidence
+correction, not a strategy change; no pre-registration is owed and Step 3 stays
+closed. Owner reconciliation: the
+[rail extension spec's O-8 paragraph](../../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md)
+and the [Step 3 acceptance](../../notes/2026-09-15-packet1-step3-acceptance.md).

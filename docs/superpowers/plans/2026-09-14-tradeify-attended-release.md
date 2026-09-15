@@ -174,22 +174,27 @@ acceptance. Preserve the implemented/tested components and existing evidence.
    under D17/D32. O-P's inactive add inputs are supported by pinned-source control
    flow and equal fresh panels at captured/pinned settings. Original exports stay
    unchanged. See [Step 2 evidence](../../notes/2026-09-15-packet1-execution-domain.md#packet-1-step-2--orb-summary-reconciliation).
-3. **Close startup and coverage.** Establish the deep-backtest calculation origin,
-   each adapter's required startup history and exact panel endpoints. Classify
-   missing bars against the accepted session evidence from step 4; do not silently
-   truncate trades or backfill with invented bars. Exit: reviewed coverage reports
-   binding panel bytes, source settings and the complete comparison interval.
-4. **Accept and implement the shared calendar.** Reuse immutable D19 through
-   2026-09-02 for its accepted historical date-membership purpose only. Produce
-   separately identified forward rows for 2026-09-03 through 2026-09-30 from
-   retained official product schedules and venue guidance. Bind product/session
-   identities and every matching boundary/deadline actually consumed. Historical
-   matching or missing-bar claims require their own supporting evidence; D19
-   cannot supply times or prove exchange closure. Keep typed book no-trade overlays
-   for 2023-04-07, 2025-01-09 and 2026-04-03 separate from exchange market states.
-   Supply the existing `BookSession` consumer. Exit: source review plus executable
-   early-close, DST, closure/reopen and absent/expired-coverage refusals. Step 3's
-   gap classification completes once these rows are accepted.
+3. **Close startup and provider-data coverage.** Apply the operator-authorized
+   [calendar/parity amendment](../../notes/2026-09-15-calendar-parity-separation-amendment.md).
+   Bind the calculation origin/endpoints, complete provider bar exports and
+   source/settings/initial state to the exact ordered Python input. Resolve every
+   timestamp/OHLCV discrepancy; matching trades alone are insufficient. Retain
+   shared provider gaps without inventing bars or claiming exchange closure.
+   Exit: independently reviewed provider coverage and initialization reports;
+   calendar evidence remains required wherever a dependent claim consumes it.
+4. **Accept and implement the bounded session calendar.** Preserve immutable D19
+   for historical date membership only and the separate typed policy overlays.
+   Use a versioned file for September 3–30, 2026 permitting only qualified ordinary
+   sessions; deny holiday, shortened and uncertain adjacent sessions. Bind every
+   product/account boundary and deadline actually consumed, including safe
+   flattening before denied sessions and prior-account-session chronology across
+   non-trading days. Supply verified `BookSession` values; missing or expired
+   coverage halts new risk without abandoning protective/recovery ownership.
+   Review extensions monthly and apply digest/freeze/activation requirements.
+   Exit: source review and executable permitted/denied-session, DST, boundary,
+   stale/missing coverage and prior-close checks. Historical legality claims
+   retain their own evidence requirements. No universal historical gap-to-calendar
+   join is a prerequisite for provider-data coverage under the amendment.
 5. **Complete settlement ingestion through its real consumer.** Using the producer
    established in step 1, bind authenticated submission and retained evidence to
    the exact account/prior session; verify contents before producing `SettledClose`.
@@ -209,7 +214,22 @@ acceptance. Preserve the implemented/tested components and existing evidence.
    and every Packet 1 acceptance item supported by evidence. Prepare the commit/PR
    handoff; Packet 2 and live gates are not completion substitutes.
 
-Step 3 is next; its calendar-dependent checks join Step 4. Do not spend
+**Step 3 is complete and independently accepted** under the
+[amendment](../../notes/2026-09-15-calendar-parity-separation-amendment.md).
+The [acceptance record](../../notes/2026-09-15-packet1-step3-acceptance.md)
+binds retained provider coverage, source/settings provenance, complete cold
+initializers and the reviewed evidence contract. All nine reference replays pass:
+3,632 matched trades, zero exclusions and resolved terminal state. The selected
+original generation includes the attested 6J prefix; eight later volume revisions
+remain recorded separately, without replacing original data or applying tolerance.
+Direct observations corrected provider resets and open-entry fee accounting in
+the candidate runtime. Original private ports remain preserved; Step 6 must use
+the reviewed candidate identities. Historical evidence remains in the
+[execution-domain record](../../notes/2026-09-15-packet1-execution-domain.md).
+Next is Step 4 calendar permission, followed by Step 5 settlement and Step 6
+finite-margin/shared-law checks and combined bundle admission. These and live
+activation retain their separate gates.
+Do not spend
 another broad implementation pass on a producer
 whose required evidence is unavailable. A failed feasibility check produces an
 exact source/contract blocker, not another generic placeholder interface.
