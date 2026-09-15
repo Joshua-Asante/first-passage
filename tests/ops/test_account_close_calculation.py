@@ -244,3 +244,21 @@ def test_cash_rows_must_lie_inside_the_signed_timestamp_span():
     window.update(file="partial.csv", from_utc="2026-09-10T15:00:00Z")
     p["ledger"]["coverage"]["windows"].append(window)
     assert calculate(p, sources, head, prev=predecessor_inventory(), now=NOW) == Refusal("source_row_outside_coverage")
+
+
+def test_retained_source_deletion_requires_halt_even_with_stale_claimed_counts():
+    from test_account_close_assembler import synthetic, build, NOW, S11, predecessor_inventory
+    cash, files, bal1, bal2 = synthetic()
+    p, sources, _ = build(cash, files, bal1, bal2)
+    head = SimpleNamespace(session_id=S11, equity=str(bal1), peak=str(bal1), package_sha256="0" * 64)
+    baseline = predecessor_inventory()
+    assert isinstance(calculate(p, sources, head, prev=baseline, now=NOW), ProposedClose)
+    source = next(s for s in p["sources"] if s["role"] == "cash_history")
+    original = sources[source["file"]]
+    # Remove a retained September 10 commission row. Leave inventory and counts
+    # unchanged so neither claim can mask the actual historical deletion.
+    sources[source["file"]] = b"\n".join(line for line in original.split(b"\n")
+        if b",100000000100," not in line)
+    assert sources[source["file"]] != original
+    source["sha256"] = sha256_hex(sources[source["file"]])
+    assert calculate(p, sources, head, prev=baseline, now=NOW) == Refusal("history_changed", True)
