@@ -13,7 +13,11 @@ units fail in small, fixable ways — one child returns `BLOCKED`, the other fou
 owns two protocols the repo otherwise gestures at without criteria: **work-shaped** (cut the work
 into children that each fit one session or one packet) and **input-shaped** (cut the reading when
 the input does not fit one context). It produces sized units and a manifest; it does not build,
-dispatch, or adjudicate.
+dispatch, or adjudicate. Worker surfaces are Claude Code sessions and Codex; Cursor agents were
+retired by operator instruction on 2026-09-15 (retirement record pending), so the fleet
+orchestration mechanics recorded in `cursor-fleet` — umbrella brief, claim manifest, disjoint
+footprints, dispatch-time Phase-0, integration order — carry over surface-agnostically while its
+`cursor/*` branch and CLI dispatch mechanics do not.
 
 Provenance: adapted 2026-09-15 from three external drafts — `troykelly/claude-skills`
 issue-decomposition (oversize thresholds, child-quality checklist, dependency status),
@@ -51,7 +55,7 @@ imported numbers as calibration candidates — record the firing when one bites,
 | **Multiple independent deliverables** | §1 "What CC is being asked to produce" bullets that do not consume each other's outputs | One child per deliverable |
 | **Internal sequencing** — step N's input is step N−1's output, which does not exist yet | §2 Step 2.x chains whose later specs cannot be frozen until earlier steps return | Cut at the first output that must exist before the next spec can be frozen |
 | **Worst-case iterations exceed the Rule 2 budget** for the unit's loop class (INNER 3 / OUTER 8 / STRATEGIC 3 — [canon §15](../../../docs/methodology/inqhiori-canon.md)) | Attempt-and-check cycles | The tripwire would fire mid-unit; cut so each child's worst case fits its own budget |
-| A `BLOCKED — scope-problem` return, or a **second** `NEEDS_CONTEXT` bounce on the same packet | brief-authoring check 8; `cursor-fleet` §6 ("two bounces means the spec wasn't freezable") | The packet was mis-sized or mis-routed; re-cut before any re-dispatch |
+| A `BLOCKED — scope-problem` return, or a **second** `NEEDS_CONTEXT` bounce on the same packet | brief-authoring check 8; the fleet loop's §6 rule ("two bounces means the spec wasn't freezable", recorded in `cursor-fleet`) | The packet was mis-sized or mis-routed; re-cut before any re-dispatch |
 
 Dated repo instances of the output this skill prescribes: the 2026-08-25 first-look residuals
 were cut into five plans P6–P10 and, on operator follow-up, re-landed one commit per packet
@@ -74,21 +78,23 @@ That umbrella is the reference shape for this skill's work-shaped output.
 3. **Independently revertible** — one PR, one revert, and every sibling still passes its own gate.
 4. **Fits one session with margin** — worst-case iterations inside its Rule 2 budget; no step
    whose detail must survive a compaction.
-5. **Disjoint file footprint** from every parallel sibling (the `cursor-fleet` §1 rule), or an
+5. **Disjoint file footprint** from every parallel sibling (the fleet loop's §1 rule), or an
    explicit *depends-on* edge that makes it sequential. `docs/SESSIONS.md`, `STATE.md`, boards and
    index files are reserved to the parent's integration commit.
-6. **Frozen, or explicitly judgment-owned** — a child that needs a judgment call mid-build is
-   CC-solo work under the [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md)
-   test 2; a child on a locked surface is CC-solo under test 1 regardless of size. Never launder
-   a judgment task into a "small packet".
+6. **Frozen, or explicitly judgment-owned** — a child that needs a judgment call mid-build stays
+   with the orchestrating Claude session; a child on a locked surface (core anchor code, Pine,
+   ADRs / pre-registrations / `CLAUDE.md` / `STATE.md`) stays there regardless of size. The
+   [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md) tests 1–2
+   record the rule; its Cursor lane is retired, the rule is not. Never launder a judgment task into
+   a "small packet".
 
 Name each child `<verb> <object> so that <observable outcome>` — "Add the closure-overlay test so
 that an overlay row cannot silently override a frozen D19 row", not "work on the calendar
 stuff". If the outcome clause cannot be written, the child has no gate (point 2) and is not cut
 yet.
 
-Lower bound: do not cut below the ADR's test 3 threshold — a build smaller than its brief stays
-on the open surface. A child too small to amortise a handoff is folded into a sibling or run
+Lower bound: do not cut below the handoff-overhead threshold (the surface-allocation ADR's test 3)
+— a build smaller than its brief stays in the session that is already open. A child too small to amortise a handoff is folded into a sibling or run
 inline under the session's own checklist (fable-method Step 4.4).
 
 ### Procedure
@@ -110,10 +116,12 @@ inline under the session's own checklist (fable-method Step 4.4).
    manifest does not exist. This is the anti-duplication device: before any session opens work in
    the area, the manifest says who holds it.
 5. **Route each child** to the lane its size and shape earn: 2+ frozen implementation packets →
-   `cursor-fleet`; one frozen build above test 3 → a single `cc_handoff` brief or, for a small
-   precedented fix, the lightweight issue format of the ADR's 2026-08-29 addendum; judgment or
-   locked-surface work → CC solo; work that still fits one session but needs ordering → the
-   session's own checklist. Environment per child → `task-routing`.
+   parallel worker sessions (Claude Code or Codex) under one umbrella brief and claim manifest,
+   per the fleet loop recorded in `cursor-fleet`; one frozen build above the handoff-overhead
+   threshold → a single `cc_handoff` brief for a Claude Code session, or a Codex task carrying the
+   same §0 / §0.5 / §5 / §6 content; judgment or locked-surface work → the orchestrating Claude
+   session; work that still fits one session but needs ordering → the session's own checklist.
+   Environment per child → the local-only checklist in `task-routing`.
 6. **Hand the children off.** Packet authoring is `brief-authoring` (cc_handoff template),
    pre-dispatch verification is `handoff-verify`, returns are adjudicated by `fable-judge`. This
    skill's deliverable ends at the manifest and the child specs.
@@ -194,7 +202,7 @@ only when none does.
 |---|---|
 | "I'll work out the cut as I go." | Sizing costs one pass; a mid-unit compaction or a second `NEEDS_CONTEXT` bounce costs the unit. |
 | "It's too tangled to break down." | Everything cuts at its outputs. Start from the deliverable that must exist first; the rest sequence behind it. |
-| "Too granular — that's five PRs for one feature." | Five children that each merge beat one that never returns; fold only the ones below the ADR's test 3 threshold. |
+| "Too granular — that's five PRs for one feature." | Five children that each merge beat one that never returns; fold only the ones below the handoff-overhead threshold. |
 | "The parent's acceptance list is good enough for the children." | Copied-wholesale criteria are the top anti-pattern: no child can pass or fail alone, so nothing is verifiable until everything is. |
 | "Just read all the files first for context." | That is the input-shaped tell. Size, filter, batch. |
 | "The merge looks thin — spawn another level." | Depth 2 is never the fix; re-read the disputed span. |
@@ -218,7 +226,7 @@ only when none does.
 |---|---|
 | `question-decomposition` | A question with too many axes → that skill; work with too many parts → this one. A bundled question inside an oversize brief goes there first — the cut lines often follow the axes. |
 | `refine-question` | If the parent's done cannot be stated in two sentences, refine before decomposing. |
-| `cursor-fleet` | Consumes this skill's manifest and children when 2+ packets are frozen implementation; owns dispatch mechanics, worktrees and integration order. Its §1 "disjoint footprints" rule is the atomic test's point 5 applied at dispatch. |
+| `cursor-fleet` | Records the fleet orchestration loop that consumes this skill's manifest and children when 2+ packets are frozen implementation — umbrella brief, claim manifest, dispatch-time Phase-0, integration order. Worker surfaces are now Claude Code and Codex (Cursor retired 2026-09-15); its `cursor/*` branch and CLI mechanics no longer apply. Its §1 "disjoint footprints" rule is the atomic test's point 5 applied at dispatch. |
 | `brief-authoring` | Authors each child as a `cc_handoff` brief; check 8's `BLOCKED — scope-problem` sub-case sends the packet back here for re-cutting. |
 | `handoff-verify` / `handoff-verify-panel` | Pre-dispatch verification of a child; the panel is the input-shaped protocol applied to a many-claim packet. |
 | `task-routing` | Picks local vs cloud per child after the cut. |
@@ -232,7 +240,7 @@ only when none does.
 |---|---|
 | issue-decomposition thresholds (>5 criteria, >3 areas, >1 context window, multiple deliverables, complex sequencing) | Imported as presumptive tells with repo units; calibration pending firings |
 | issue-decomposition sub-issue checklist, dependency status mapping, parent-lists-children | Imported as the child checklist, `READY / BLOCKED-BY / BLOCKS`, and the manifest rule |
-| issue-decomposition GitHub sub-issue labels, Projects board, knowledge-graph step | **Dropped** — this repo's children are brief packets, lightweight dispatch issues and PRs under a manifest; it runs no Projects board or knowledge graph |
+| issue-decomposition GitHub sub-issue labels, Projects board, knowledge-graph step | **Dropped** — this repo's children are brief packets, dispatch issues and PRs under a manifest; it runs no Projects board or knowledge graph |
 | task-decomposition "under 4 hours" per task | **Transformed** — Rule 2 forbids minute-denominated budgets; the unit here is iterations within the loop-class budget, and "one session" |
 | task-decomposition atomic criteria, verb-object-outcome naming, dependency graph, incremental integration | Imported |
 | recursive-decomposition six-step protocol, thresholds, depth-1 rule, hard rules, anti-patterns | Imported |
