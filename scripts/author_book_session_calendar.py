@@ -29,10 +29,14 @@ import copy
 import hashlib
 import json
 import re
+import sys
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "core"))
+from calendar_evidence import halt_evidence, index_captures, require_halt_evidence
 
 SCHEMA = "book_session_calendar/v1"
 TZ_NAME = "America/New_York"
@@ -220,12 +224,19 @@ def build_calendar(first: date, last: date, denials: dict[date, Denial],
                    evidence_path: Path, generated_utc: str, calendar_id: str) -> dict:
     evidence_bytes = evidence_path.read_bytes()
     evidence = json.loads(evidence_bytes)
-    evidence_ids = {c["id"] for c in evidence["captures"]}
-    for denial in denials.values():
+    captures = index_captures(evidence)
+    evidence_ids = set(captures)
+    halts = halt_evidence(evidence_bytes, captures)
+    for day, denial in denials.items():
         if denial.reason not in DENIAL_REASONS:
             raise ValueError(f"unknown denial reason {denial.reason}")
         if denial.source_ids and any(s not in evidence_ids for s in denial.source_ids):
             raise ValueError("denial source ids must name captured sources")
+        if denial.reason in ("HOLIDAY", "SHORTENED"):
+            if not denial.halts_local or not denial.source_ids:
+                raise ValueError(f"{day}: a HOLIDAY/SHORTENED denial needs that date's own per-product halts and source ids")
+            for code in PRODUCTS:
+                require_halt_evidence(halts, denial.source_ids, day, code, _local(day, denial.halts_local[code]))
     rows = [build_row(day, denial=denials.get(day), evidence_ids=evidence_ids)
             for day in _account_days(first, last)]
     if not rows:

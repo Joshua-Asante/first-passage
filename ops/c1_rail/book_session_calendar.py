@@ -22,6 +22,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from book_sizing_context import BookSession
+from calendar_evidence import halt_evidence, index_captures, require_halt_evidence
 
 SCHEMA = "book_session_calendar/v1"
 OVERLAY_SCHEMA = "book_closure_overlay/v1"
@@ -242,7 +243,7 @@ class SessionCalendar:
             return SessionDecision(None, "calendar_not_ratified", row, self.calendar_digest, tuple(warnings))
         if now < self.ratified_at:
             return SessionDecision(None, "calendar_not_yet_ratified", row, self.calendar_digest, tuple(warnings))
-        session = BookSession(row.session_id, row.prior_session_id, row.admits_from,
+        session = BookSession(row.session_id, row.prior_session_id, row.opens_at,
                               row.risk_add_cutoff, row.closes_at, self.calendar_digest)
         return SessionDecision(session, None, row, self.calendar_digest, tuple(warnings))
 
@@ -422,11 +423,13 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
     if hashlib.sha256(evidence_bytes).hexdigest() != sources["evidence_sha256"]:
         raise CalendarError("calendar: evidence_sha256 does not match the evidence file bytes")
     evidence = json.loads(evidence_bytes)
-    captures = evidence.get("captures", [])
-    if not isinstance(captures, list) or not captures or any(not isinstance(c, dict) or not isinstance(c.get("id"), str)
-                                                              for c in captures):
-        raise CalendarError("calendar: evidence captures")
-    captured_ids = {c["id"] for c in captures}
+    try:
+        capture_index = index_captures(evidence)
+        halts = halt_evidence(evidence_bytes, capture_index)
+    except ValueError as exc:
+        raise CalendarError(str(exc)) from exc
+    captures = capture_index.values()
+    captured_ids = set(capture_index)
     evidence_schema = evidence.get("schema")
     if evidence_schema == EVIDENCE_SCHEMA_V2:
         coverage: dict[str, frozenset[str]] | None = {}
@@ -458,6 +461,14 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
     for index, raw in enumerate(rows_raw):
         row = _verify_row(raw, index, tz=tz, venue=venue, rule=rule, products=products,
                           source_ids=captured_ids, overlay_dates=overlay_dates, coverage=coverage)
+        if row.denial_reason in ("HOLIDAY", "SHORTENED"):
+            day = date.fromisoformat(raw["account_date"])
+            for code, product in raw["products"].items():
+                try:
+                    require_halt_evidence(halts, product["source_ids"], day, code,
+                                          _utc(product["matching_close_utc"], "matching_close_utc"))
+                except ValueError as exc:
+                    raise CalendarError(str(exc)) from exc
         if index == 0:
             if raw["predecessor_in_file"] is not False:
                 raise CalendarError("sessions[0]: predecessor_in_file must be false")

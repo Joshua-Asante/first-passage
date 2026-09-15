@@ -187,3 +187,42 @@ python scripts/author_book_session_calendar.py --first 2026-10-01 --last 2026-10
 Every denied session must be named explicitly with its reason; the tool enumerates Monday–Friday
 account days inside the named horizon and nothing else. Pin the new digest in the tests and record the
 operator's ratification before activation. Never edit a ratified file in place.
+
+### Capture identity and holiday halt evidence
+
+Both author and loader reject duplicate capture IDs before indexing evidence.
+For each `HOLIDAY` or `SHORTENED` row, every product must cite a capture whose
+`matching_halts` entry matches the account date, product and exact matching-close
+instant. Conflicting cited halt times refuse the calendar. Knowing an ID or
+citing a holiday date range is insufficient.
+
+New evidence captures may carry a `matching_halts` list alongside the v2
+`products` coverage list. Each halt entry has exactly these fields (synthetic
+format example, not a source observation):
+
+```json
+{
+  "account_date": "2026-11-26",
+  "product": "MYM",
+  "matching_close_utc": "2026-11-26T18:00:00Z"
+}
+```
+
+`account_date` is the Tradeify account date; it must agree with the halt's
+Eastern wall date. `matching_close_utc` is a whole-minute UTC `Z` timestamp.
+Each date/product pair is unique within a capture and must belong to that
+capture's declared products. Ordinary schedule captures can omit
+`matching_halts`; holiday authoring requires matching events for all four products
+among the capture IDs supplied to `--halts`.
+
+The immutable September v1 evidence has one compatibility mapping: its exact
+SHA-256 `56951e1527af20966dea64130bf8d0a1dccb9bc011bd6e0501282faa549fcba5`
+binds the quoted `cme-ui-labor-2026` observations to September 7 only. It grants
+no evidence for any other date or changed evidence bytes. The v1 warning stays
+visible, and the pinned calendar and evidence remain byte-for-byte reproducible.
+Future holiday extensions still need separately qualified CME trade-date input;
+this validation does not supply that missing authoring capability.
+
+Delayed product opens affect admission only. A returned `BookSession.opens_at`
+always remains the account-day open, preserving the sizing consumer's requirement
+that the prior settlement precede the current account session.
