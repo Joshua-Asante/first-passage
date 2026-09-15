@@ -138,3 +138,115 @@ def test_query_coverage_uses_report_timestamp_not_cme_business_date(timestamp, t
     else:
         with pytest.raises(AssemblyError, match="outside query window"):
             parse_cash_windows([source], report_tz=ZoneInfo("UTC"))
+
+@pytest.mark.parametrize("role", ["dashboard", "positions", "orders", "inception", "balance_history", "cash_history", "cash_history:earlier", "close_equity"])
+@pytest.mark.parametrize("timestamp", ["not-a-time", "2026-11-11T06:00:00", "2026-02-30T06:00:00Z"])
+def test_every_manifest_capture_requires_a_valid_utc_timestamp(role, timestamp):
+    p, sources = manifest(close=True)
+    next(s for s in p["sources"] if s["role"] == role)["captured_utc"] = timestamp
+    assert verify_source_manifest(p, sources) == "source_row"
+
+
+@pytest.mark.parametrize("equity", [None, [], "invalid"])
+def test_malformed_equity_returns_a_manifest_refusal(equity):
+    p, sources = manifest()
+    p["equity"] = equity
+    assert verify_source_manifest(p, sources) == "source_row"
+
+
+@pytest.mark.parametrize("inception", [datetime(2026, 11, 12, tzinfo=timezone.utc), NOW])
+def test_history_must_extend_beyond_inception(inception):
+    p, sources = manifest()
+    roles = verify_source_manifest(p, sources)
+    assert verify_history_coverage(coverage(), roles, report_timezone="America/New_York",
+                                   inception=inception) == "chronology:coverage_gap_at_inception"
+
+
+def csv_bytes(columns, cells):
+    import csv
+    import io
+    out = io.StringIO()
+    writer = csv.writer(out)
+    writer.writerow(columns)
+    writer.writerow(cells)
+    return out.getvalue().encode()
+
+
+def parse_money_export(kind, money="1000", arity=0):
+    from account_close_evidence import CASH_COLUMNS, BALANCE_COLUMNS, parse_balance_history
+    if kind == "cash":
+        cells = [ACCOUNT, "1", "11/10/2026 10:00:00", "2026-11-10", money, "100001", "Trade Paired", "USD", ""]
+        columns = CASH_COLUMNS
+    else:
+        cells = ["123", ACCOUNT, "2026-11-10", money, "0"]
+        columns = BALANCE_COLUMNS
+    if arity > 0:
+        cells.append("surplus")
+    elif arity < 0:
+        cells.pop()
+    data = csv_bytes(columns, cells)
+    if kind == "cash":
+        source = SourceFile("cash_history", "cash.csv", data, NOW, date(2026, 11, 10), date(2026, 11, 10), True, ACCOUNT)
+        rows, _ = parse_cash_windows([source], report_tz=ZoneInfo("UTC"))
+        return rows[0].delta
+    return parse_balance_history(data, account_id=ACCOUNT)[0][1]
+
+
+@pytest.mark.parametrize("kind", ["cash", "balance"])
+@pytest.mark.parametrize("arity", [-1, 1])
+def test_csv_rows_require_exact_column_count(kind, arity):
+    with pytest.raises(AssemblyError, match="column count"):
+        parse_money_export(kind, arity=arity)
+
+
+@pytest.mark.parametrize("kind", ["cash", "balance"])
+@pytest.mark.parametrize("money", ["1,2,3", "1,,000", "$1$0", "12,34.00", "1,000,00", "1 000"])
+def test_export_money_refuses_malformed_grouping_and_currency(kind, money):
+    with pytest.raises(AssemblyError, match="not a decimal"):
+        parse_money_export(kind, money)
+
+
+@pytest.mark.parametrize("kind", ["cash", "balance"])
+@pytest.mark.parametrize("money,expected", [("1,000.25", "1000.25"), ("$1,000.25", "1000.25"),
+    ("-$1,000.25", "-1000.25"), ("$-1,000.25", "-1000.25"), (" +1000.25 ", "1000.25"),
+    (".25", "0.25"), ("1000.", "1000"), ("1e3", "1000")])
+def test_export_money_preserves_valid_currency_and_grouping(kind, money, expected):
+    from decimal import Decimal
+    assert parse_money_export(kind, money) == Decimal(expected)
+
+
+def sealed_report(mutation=None):
+    from account_close_evidence import CASH_COLUMNS
+    cells = [ACCOUNT, "1", "10/01/2026 10:00:00", "2026-10-01", "1", "100001", "Trade Paired", "USD", ""]
+    if mutation == "arity":
+        cells.append("surplus")
+    elif mutation == "money":
+        cells[4] = "$1$0"
+    elif mutation == "account":
+        cells[0] = "foreign-account"
+    elif mutation == "capture":
+        cells[2] = "11/12/2026 10:00:00"
+    return csv_bytes(CASH_COLUMNS, cells)
+
+
+def test_sealed_cash_report_parses_history_without_query_window_claims():
+    from account_close_evidence import parse_cash_report
+    rows = parse_cash_report(sealed_report(), report_tz=ZoneInfo("UTC"), captured_utc=NOW, account_id=ACCOUNT)
+    assert len(rows) == 1
+    assert rows[0].transaction_id == "1"
+    assert rows[0].trade_date == date(2026, 10, 1)
+    assert rows[0].delta == 1
+
+
+@pytest.mark.parametrize("mutation", ["arity", "money", "account", "capture"])
+def test_sealed_cash_report_keeps_cash_row_boundary_checks(mutation):
+    from account_close_evidence import parse_cash_report
+    with pytest.raises(AssemblyError):
+        parse_cash_report(sealed_report(mutation), report_tz=ZoneInfo("UTC"), captured_utc=NOW, account_id=ACCOUNT)
+
+
+@pytest.mark.parametrize("account", [None, ""])
+def test_sealed_cash_report_requires_account_binding(account):
+    from account_close_evidence import parse_cash_report
+    with pytest.raises(AssemblyError, match="account"):
+        parse_cash_report(sealed_report(), report_tz=ZoneInfo("UTC"), captured_utc=NOW, account_id=account)

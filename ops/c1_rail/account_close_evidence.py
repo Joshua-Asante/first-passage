@@ -53,6 +53,13 @@ class SourceFile:
 
 
 def _decimal(text: str, label: str) -> Decimal:
+    # Validate the export spelling before removing currency/grouping characters.
+    # Allow one leading sign and dollar symbol (in either order), and groups of
+    # exactly three digits. Scientific notation retains the numeric-range check.
+    if not isinstance(text, str) or not re.fullmatch(
+            r"(?:[+-]?\$?|\$[+-]?)(?:(?:[0-9]+|[0-9]{1,3}(?:,[0-9]{3})+)"
+            r"(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?", text.strip()):
+        raise AssemblyError(f"{label}: not a decimal")
     try:
         value = Decimal(text.replace(",", "").replace("$", "").strip())
     except (InvalidOperation, AttributeError) as exc:
@@ -124,6 +131,54 @@ def validate_source_files(files: list[SourceFile], *, account_id: str) -> None:
         names.add(source.name)
 
 
+def parse_cash_report(data: bytes, *, report_tz: ZoneInfo, captured_utc: datetime,
+                      account_id: str) -> list[CashRow]:
+    """Parse retained cash bytes; makes no query-window or completeness assertion.
+
+    Keep raw order and duplicate rows so the caller can detect inventory conflicts.
+    Authentication of the retained bytes and capture metadata belongs to the owner.
+    """
+    if not isinstance(account_id, str) or not account_id.strip():
+        raise AssemblyError("cash report: source account required")
+    return _parse_cash_report(data, report_tz=report_tz, captured_utc=captured_utc,
+                              account_id=account_id, label="cash report")
+
+
+def _parse_cash_report(data: bytes, *, report_tz: ZoneInfo, captured_utc: datetime,
+                       account_id: str | None, label: str) -> list[CashRow]:
+    require_aware(captured_utc, label)
+    text = data.decode("utf-8-sig")
+    reader = csv.DictReader(io.StringIO(text))
+    if not reader.fieldnames:
+        # An empty query result exports as an empty file or a bare line ending.
+        if text.strip():
+            raise AssemblyError(f"{label}: unreadable header")
+        return []
+    if reader.fieldnames != CASH_COLUMNS:
+        raise AssemblyError(f"{label}: unexpected cash columns")
+    rows = []
+    for raw in reader:
+        if None in raw or any(value is None for value in raw.values()):
+            raise AssemblyError(f"{label}: cash row column count")
+        tid = raw["Transaction ID"].strip()
+        if not re.fullmatch(r"\d+", tid):
+            raise AssemblyError(f"{label}: transaction id shape")
+        if raw["Currency"].strip() != "USD":
+            raise AssemblyError(f"{label}: currency")
+        ts_local = _local(raw["Timestamp"], report_tz, f"{label}:{tid}")
+        content = "|".join(raw[c].strip() for c in CASH_COLUMNS)
+        row = CashRow(tid, raw["Account"].strip(), ts_local, ts_local.astimezone(timezone.utc),
+                      date.fromisoformat(raw["Date"].strip()), _decimal(raw["Delta"], "delta"),
+                      _decimal(raw["Amount"], "amount"), raw["Cash Change Type"].strip(),
+                      raw["Contract"].strip(), sha256_hex(content.encode("utf-8")))
+        if row.ts_utc > captured_utc:
+            raise AssemblyError(f"{label}:{tid}: transaction after capture")
+        if account_id is not None and row.account != account_id:
+            raise AssemblyError(f"{label}:{tid}: different account from query capture")
+        rows.append(row)
+    return rows
+
+
 def parse_cash_windows(files: list[SourceFile], *, report_tz: ZoneInfo) -> tuple[list[CashRow], dict]:
     """Union of windows, deduplicated by transaction id; revisions and duplicates are named."""
     rows: dict[str, CashRow] = {}
@@ -144,41 +199,19 @@ def parse_cash_windows(files: list[SourceFile], *, report_tz: ZoneInfo) -> tuple
             raise AssemblyError(f"{win.name}: window labels")
         if win.query_complete is not True:
             raise AssemblyError(f"{win.name}: query completion not attested from the retained query capture")
-        text = win.data.decode("utf-8-sig")
-        reader = csv.DictReader(io.StringIO(text))
-        count = 0
-        if not reader.fieldnames:
-            # An empty query result exports as an empty file or a bare line ending.
-            if text.strip():
-                raise AssemblyError(f"{win.name}: unreadable header")
-        elif reader.fieldnames != CASH_COLUMNS:
-            raise AssemblyError(f"{win.name}: unexpected cash columns")
-        else:
-            for raw in reader:
-                count += 1
-                tid = raw["Transaction ID"].strip()
-                if not re.fullmatch(r"\d+", tid):
-                    raise AssemblyError(f"{win.name}: transaction id shape")
-                if raw["Currency"].strip() != "USD":
-                    raise AssemblyError(f"{win.name}: currency")
-                ts_local = _local(raw["Timestamp"], report_tz, f"{win.name}:{tid}")
-                content = "|".join(raw[c].strip() for c in CASH_COLUMNS)
-                row = CashRow(tid, raw["Account"].strip(), ts_local, ts_local.astimezone(timezone.utc),
-                              date.fromisoformat(raw["Date"].strip()), _decimal(raw["Delta"], "delta"),
-                              _decimal(raw["Amount"], "amount"), raw["Cash Change Type"].strip(),
-                              raw["Contract"].strip(), sha256_hex(content.encode("utf-8")))
-                if row.ts_utc > win.captured_utc:
-                    raise AssemblyError(f"{win.name}:{tid}: transaction after capture")
-                if not win.window_from <= row.ts_local.date() <= win.window_to:
-                    raise AssemblyError(f"{win.name}:{tid}: transaction timestamp outside query window")
-                if win.account_id is not None and row.account != win.account_id:
-                    raise AssemblyError(f"{win.name}:{tid}: different account from query capture")
-                accounts.add(row.account)
-                if tid in rows:
-                    if rows[tid].content_sha256 != row.content_sha256:
-                        revisions.append(tid)
-                    continue
-                rows[tid] = row
+        parsed = _parse_cash_report(win.data, report_tz=report_tz, captured_utc=win.captured_utc,
+                                    account_id=win.account_id, label=win.name)
+        count = len(parsed)
+        for row in parsed:
+            if not win.window_from <= row.ts_local.date() <= win.window_to:
+                raise AssemblyError(f"{win.name}:{row.transaction_id}: transaction timestamp outside query window")
+            accounts.add(row.account)
+            tid = row.transaction_id
+            if tid in rows:
+                if rows[tid].content_sha256 != row.content_sha256:
+                    revisions.append(tid)
+                continue
+            rows[tid] = row
         per_window.append({"file": win.name, "from": win.window_from.isoformat(), "to": win.window_to.isoformat(),
                            "rows": count, "complete": True})
     if len(accounts) > 1:
@@ -195,6 +228,8 @@ def parse_balance_history(data: bytes, *, account_id: str) -> list[tuple[date, D
     out = []
     venue_ids: set[str] = set()
     for raw in reader:
+        if None in raw or any(value is None for value in raw.values()):
+            raise AssemblyError("balance history row column count")
         # The venue names the account in "Account Name"; "Account ID" is its numeric internal id.
         if raw["Account Name"].strip() != account_id:
             raise AssemblyError("balance history row belongs to a different account")
@@ -222,6 +257,8 @@ def verify_source_manifest(package: dict, sources: dict[str, bytes]) -> dict[str
     rows = package.get("sources")
     if not isinstance(rows, list) or not rows:
         return "source_row"
+    if not isinstance(package.get("equity", {}), dict):
+        return "source_row"
     required = REQUIRED_SOURCE_ROLES | ({"close_equity"} if package.get("scope") == "record_only" or
         package.get("equity", {}).get("flatness_basis") == "VENUE_EQUITY_AT_CLOSE" else set())
     roles, files, digest_roles = {}, set(), {}
@@ -232,6 +269,8 @@ def verify_source_manifest(package: dict, sources: dict[str, bytes]) -> dict[str
             return "source_row"
         if src["account_id"] != package.get("account_id"):
             return "source_account_mismatch"
+        if parse_utc(src["captured_utc"]) is None:
+            return "source_row"
         if src["role"] in roles:
             return "duplicate_source_role"
         prior_role = digest_roles.get(src["sha256"])
@@ -309,4 +348,6 @@ def verify_history_coverage(coverage: dict, roles: dict[str, dict], *, report_ti
         return "chronology:coverage_source_unbound"
     if cursor != parse_utc(roles["cash_history"]["captured_utc"]):
         return "chronology:coverage_end_not_capture"
+    if cursor <= inception:
+        return "chronology:coverage_gap_at_inception"
     return None

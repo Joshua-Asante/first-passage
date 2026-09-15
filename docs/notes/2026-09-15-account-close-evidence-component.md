@@ -58,3 +58,34 @@ Standalone tests cover source identity, role/file binding, digest independence,
 identical empty cash exports, DST/date limits and per-file capture chronology.
 Producer-to-verifier and durable-owner integration are tested in the dependent
 calculation/integration workspace. No live source collection or trading occurred.
+
+### Review boundary repairs
+
+The repair sequence reproduces malformed input at the public verifier and real
+CSV parser boundaries, adds validation before normalization/access, then reruns
+the component suite and repository commit gates. Existing public signatures and
+package schema remain unchanged.
+
+- Every manifest capture timestamp is parsed as UTC, including opaque sources.
+  Non-object equity returns a refusal before any nested field access.
+- Continuous coverage must extend beyond inception through the terminal capture;
+  a historical interval entirely before inception cannot satisfy the contract.
+- Cash and balance CSV rows must contain exactly the declared number of cells.
+  An explicitly empty cell remains distinct from a missing cell; surplus cash
+  cells cannot escape the row hash or revision checks.
+- Monetary spellings are validated before removing dollars or commas. A single
+  leading sign/currency symbol and three-digit grouping remain supported, as do
+  ungrouped decimal/scientific values subject to the existing range check.
+
+The original implementation failed 43 new regression cases. The repaired focused
+suite passes 108 cases, including valid currency spellings through both parsers.
+This is synthetic boundary evidence; actual venue export qualification remains
+required under the collection contract above.
+
+`parse_cash_report(data, report_tz=..., captured_utc=..., account_id=...)` exposes
+the shared cash-row parser for authenticated full-history report bytes. It returns
+rows in original order, including duplicates, and enforces the same header,
+arity, timestamp, account and monetary checks as bounded cash queries. It makes
+no query-window or completeness assertion. The caller authenticates the bytes
+and capture metadata and owns inventory reconciliation; bounded query parsing
+retains its date limits and completion requirements.
