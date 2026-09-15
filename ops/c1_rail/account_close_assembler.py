@@ -87,12 +87,21 @@ def _local(text: str, tz: ZoneInfo, label: str) -> datetime:
     return fold0
 
 
-def account_session_date(ts: datetime) -> date:
-    """Tradeify account day: 18:00 ET opens the NEXT calendar date's session; weekends roll to Monday."""
+def account_session_date(ts: datetime) -> date | None:
+    """Tradeify account day containing ``ts``, or None when no session contains it.
+
+    A session runs 18:00 ET to 17:00 ET the next calendar date, Sunday evening through Friday.
+    The 17:00-18:00 ET break, Friday after 17:00, Saturday and Sunday before 18:00 belong to
+    no session; a cash row there is refused rather than attributed to a neighbouring session.
+    """
     local = ts.astimezone(ET)
+    if time(17, 0) <= local.time() < time(18, 0):
+        return None
     day = local.date() + timedelta(days=1) if local.time() >= time(18, 0) else local.date()
-    while day.weekday() >= 5:
-        day += timedelta(days=1)
+    if day.weekday() >= 5:
+        return None
+    if local.weekday() == 4 and local.time() >= time(18, 0):    # Friday evening: no session opens
+        return None
     return day
 
 
@@ -152,14 +161,21 @@ def parse_cash_windows(files: list[SourceFile], *, report_tz: ZoneInfo) -> tuple
                           "raw_rows": sum(w["rows"] for w in per_window)}
 
 
-def parse_balance_history(data: bytes) -> list[tuple[date, Decimal, Decimal]]:
+def parse_balance_history(data: bytes, *, account_id: str) -> list[tuple[date, Decimal, Decimal]]:
     reader = csv.DictReader(io.StringIO(data.decode("utf-8-sig")))
     if reader.fieldnames != BALANCE_COLUMNS:
         raise AssemblyError("unexpected balance-history columns")
     out = []
+    venue_ids: set[str] = set()
     for raw in reader:
+        # The venue names the account in "Account Name"; "Account ID" is its numeric internal id.
+        if raw["Account Name"].strip() != account_id:
+            raise AssemblyError("balance history row belongs to a different account")
+        venue_ids.add(raw["Account ID"].strip())
         out.append((date.fromisoformat(raw["Trade Date"].strip()), _decimal(raw["Total Amount"], "balance"),
                     _decimal(raw["Total Realized PNL"], "pnl")))
+    if len(venue_ids) > 1:
+        raise AssemblyError("balance history spans more than one venue account id")
     if not out or [d for d, _, _ in out] != sorted(d for d, _, _ in out):
         raise AssemblyError("balance history empty or unordered")
     return out
@@ -199,6 +215,9 @@ def reconcile(rows: list[CashRow]) -> Ledger:
             classified[FUND_TYPE] = classified.get(FUND_TYPE, 0) + 1
             continue
         day = account_session_date(row.ts_utc)
+        if day is None:
+            raise AssemblyError(f"cash row outside any account session at transaction {row.transaction_id[-4:]}; "
+                                "explicit adjudication required")
         bucket = sessions.setdefault(day, {"gross": Decimal(0), "costs": {k: Decimal(0) for k in COST_TYPES.values()},
                                            "rows": 0, "trade_rows": 0, "last_ts_utc": row.ts_utc})
         bucket["rows"] += 1
@@ -273,10 +292,27 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
         raise AssemblyError("session not in the ratified calendar")
     if [r for r in rows if r.kind == TRADE_TYPE and r.ts_utc > row.closes_at]:
         raise AssemblyError("effective-close flatness not established; venue equity at the close required")
-    balance_rows = parse_balance_history(balance.data)
+    balance_rows = parse_balance_history(balance.data, account_id=account_id)
     balance_report = check_balance_history(ledger, balance_rows)
     if balance_report["mismatches"]:
         raise AssemblyError("balance history disagrees with the reconciled ledger")
+    session_day_for_row = date.fromisoformat(session_id.split(":")[1])
+    venue_row = next((total for d, total, _ in balance_rows if d == session_day_for_row), None)
+    session_rows = ledger.sessions.get(session_day_for_row, {}).get("rows", 0)
+    if venue_row is None:
+        if session_rows:
+            raise AssemblyError("balance history lacks the venue row for a session with activity")
+        # No-activity session: the venue emits no row. Require query coverage over the session and
+        # that the latest venue row on or before the session agrees with the reconciled equity;
+        # the dashboard balance cross-check below supplies the venue-published close.
+        prior_rows = [(d, total) for d, total, _ in balance_rows if d <= session_day_for_row]
+        if not prior_rows or prior_rows[-1][1] != equity_at_end_of(ledger, session_day_for_row):
+            raise AssemblyError("no venue balance observation supports the settled session")
+        balance_basis = "NO_ACTIVITY_DASHBOARD_CORROBORATED"
+    else:
+        if venue_row != equity_at_end_of(ledger, session_day_for_row):
+            raise AssemblyError("venue balance row for the settled session disagrees with the ledger")
+        balance_basis = "VENUE_ROW"
     row = calendar.schedule_for(session_id)
     prior = calendar.schedule_for(predecessor_session_id)
     if row is None or prior is None or row.prior_session_id != predecessor_session_id:
@@ -310,7 +346,18 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
                   win.captured_utc)
         rows_in = next(w["rows"] for w in window_report["windows"] if w["file"] == win.name)
         windows.append({"from_utc": _iso(start), "to_utc": _iso(end), "rows": rows_in, "complete": True})
-    transactions = [{"id": r.transaction_id, "sha256": r.content_sha256} for r in rows]
+    def labelled_session(r: CashRow) -> str:
+        # In-session rows were mapped by reconcile(); the nominal funding row precedes every session
+        # and is labelled with the first account day after it.
+        day = account_session_date(r.ts_utc)
+        if day is None:
+            day = r.ts_utc.astimezone(ET).date() + timedelta(days=1)
+            while day.weekday() >= 5:
+                day += timedelta(days=1)
+        return session_id_for(day)
+
+    transactions = [{"id": r.transaction_id, "sha256": r.content_sha256, "session_id": labelled_session(r)}
+                    for r in rows]
     latest_cash = max(cash, key=lambda f: f.window_to)
     package = {
         "schema": PACKAGE_SCHEMA, "contract": CONTRACT, "account_id": account_id, "venue": TIER,
@@ -348,7 +395,7 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
         "unknown_rows": ledger.unknown_rows, "unlinked_fee_rows": ledger.unlinked_fee_rows,
         "adjustments_abs_total_is_zero": ledger.adjustments_abs_total == 0,
         "sessions_with_activity": len(ledger.sessions),
-        "balance_history": balance_report,
+        "balance_history": balance_report | {"settled_session_basis": balance_basis},
         "session": {"id": session_id, "predecessor": predecessor_session_id, "rows": bucket["rows"],
                     "trade_rows": bucket["trade_rows"], "later_fills_after_close": len(later_fills),
                     "flatness_basis": flat_basis},

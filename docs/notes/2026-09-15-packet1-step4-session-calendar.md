@@ -105,3 +105,16 @@ deployment, resumption or historical legality.
 1. Independent review of this record, the loader and the file against the amendment.
 2. Monthly extension before 2026-09-30 (procedure in `ops/calendars/README.md`); each
    extension needs its own ratification row.
+
+## Review fold — 2026-09-15 (Codex on PR #395)
+
+- **Skipped account day.** The loader now requires every Monday–Friday account day to have
+  its own row: the previous row must be exactly the preceding weekday, so a chain that jumps
+  over a missing weekday is refused rather than accepted as a weekend-sized gap.
+- **Product rows cite their own sources.** A qualified product row must cite every source id
+  its product declares; an MGC row citing only the 6J spec capture is refused.
+- **Holiday evidence per denial.** The authoring tool no longer carries Labor Day's halts and
+  capture ids into any other holiday: a `HOLIDAY`/`SHORTENED` denial must supply that date's
+  own per-product halts and the capture ids that evidence them (`--halts`), or it refuses.
+  The September file reproduces byte-for-byte under the new interface (digest unchanged).
+

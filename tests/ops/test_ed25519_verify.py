@@ -65,3 +65,16 @@ def test_cross_check_against_operator_side_library():
         other = ed25519.Ed25519PrivateKey.generate().public_key().public_bytes(
             serialization.Encoding.Raw, serialization.PublicFormat.Raw)
         assert not verify(other, message, signature)
+
+
+def test_small_order_keys_and_points_are_rejected():
+    """The identity key with R = identity and S = 0 satisfies the raw equation; it must be refused."""
+    from ed25519_verify import is_strong_public_key
+    identity = (1).to_bytes(32, "little")            # y = 1, x = 0: the neutral element
+    assert not is_strong_public_key(identity)
+    assert not verify(identity, b"any envelope", identity + bytes(32))
+    order_two = (2 ** 255 - 19 - 1).to_bytes(32, "little")   # y = -1: the point of order two
+    assert not is_strong_public_key(order_two)
+    pk, msg, sig = (bytes.fromhex(v) for v in VECTORS[0])
+    assert is_strong_public_key(pk)
+    assert not verify(pk, msg, identity + sig[32:])

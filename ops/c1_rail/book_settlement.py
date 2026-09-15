@@ -29,9 +29,14 @@ from book_policy import FIRM_RULES, TIER, ProtectionPolicy, is_protected, requir
 from book_session_calendar import SessionCalendar
 from book_sizing_context import SettledClose
 from c1_signal_daemon.book_protocol import Mode
-from ed25519_verify import verify as ed25519_verify
+from ed25519_verify import is_strong_public_key, verify as ed25519_verify
 
 CONTRACT = "docs/spec/2026-09-15-tradeify-attended-settlement-contract.md"
+SEAL_CONTRACT = "docs/spec/2026-09-12-tradeify-account-snapshot-seal-contract.md"
+SEAL_CHECKS = tuple(f"C{i}" for i in range(1, 11))
+_SEAL_VALUES = frozenset({"balance", "equity", "trailing_threshold", "prior_trade_days", "prior_max_day_profit",
+                          "consistency_display_pct", "profit_target_display", "cash_adjustments_total",
+                          "token_trade_fill_dates", "positions_export_shows_flat", "working_orders_count"})
 PACKAGE_SCHEMA = "account_close_package/v1"
 CHALLENGE_SCHEMA = "settlement_challenge/v1"
 SCOPES = ("submit_account_close", "record_only")
@@ -197,6 +202,9 @@ def verify_package(package: dict, sources: dict[str, bytes], *, head: dict, prev
     else:
         if equity["at_effective_close"] != "FLAT" or package["unresolved_runtime_requests"] != []:
             return "flatness_uncertain"
+        pos_view = package["positions"]
+        if not isinstance(pos_view, dict) or pos_view.get("open_positions") != 0 or pos_view.get("working_orders") != 0:
+            return "flatness_uncertain"
 
     ledger = package["ledger"]
     if not isinstance(ledger, dict) or set(ledger) != {"predecessor_net_equity", "gross_trade_pnl", "trading_costs",
@@ -221,7 +229,9 @@ def verify_package(package: dict, sources: dict[str, bytes], *, head: dict, prev
     if predecessor_equity + gross - sum(cost_values) != net_equity:
         return "ledger_arithmetic"
     txs = ledger["transactions"]
-    if not isinstance(txs, list) or any(not isinstance(t, dict) or set(t) != {"id", "sha256"} for t in txs):
+    if not isinstance(txs, list) or any(not isinstance(t, dict) or set(t) != {"id", "sha256", "session_id"}
+                                        or not isinstance(t["session_id"], str) or not _SESSION_ID.match(t["session_id"])
+                                        for t in txs):
         return "transactions"
     ids = [t["id"] for t in txs]
     if len(ids) != len(set(ids)):
@@ -232,6 +242,10 @@ def verify_package(package: dict, sources: dict[str, bytes], *, head: dict, prev
         before = {t["id"]: t["sha256"] for t in previous_package["ledger"]["transactions"]}
         after = {t["id"]: t["sha256"] for t in txs}
         if any(after.get(k) != v for k, v in before.items()):
+            return "history_changed"
+        # Every transaction not retained from the predecessor must belong to the proposed session;
+        # a late-added historical row is a correction, never a silent addition.
+        if any(t["id"] not in before and t["session_id"] != session_id for t in txs):
             return "history_changed"
     cov = ledger["coverage"]
     if not isinstance(cov, dict) or set(cov) != {"window_limit_days", "windows"}:
@@ -266,6 +280,8 @@ def verify_package(package: dict, sources: dict[str, bytes], *, head: dict, prev
     balance, threshold = _decimal(dash["balance"]), _decimal(dash["trailing_threshold"])
     if balance is None or threshold is None or _utc(dash["captured_utc"]) is None:
         return "dashboard_values"
+    if dash["captured_utc"] != roles["dashboard"]["captured_utc"]:
+        return "capture_time_unbound"
     peak = max(Decimal(head["peak"]), net_equity)
     if balance != net_equity or threshold + _WIDTH != peak:
         return "dashboard_disagreement"
@@ -275,6 +291,8 @@ def verify_package(package: dict, sources: dict[str, bytes], *, head: dict, prev
     for key in ("open_positions", "working_orders"):
         if isinstance(pos[key], bool) or not isinstance(pos[key], int) or pos[key] < 0:
             return "positions_values"
+    if _utc(pos["captured_utc"]) is None or pos["captured_utc"] != roles["positions"]["captured_utc"]:
+        return "capture_time_unbound"
     att = package["attestations"]
     expected_att = {"reflects_effective_close", "costs_included_once", "no_known_pending_correction",
                     "no_conflicting_observation"}
@@ -358,6 +376,12 @@ class SettlementStore:
                 raise SettlementError("settlement chain integrity failure")
             if prev_session is not None and predecessor != prev_session:
                 raise SettlementError("settlement chain predecessor break")
+            stored = db.execute("SELECT package_json, kind FROM packages WHERE package_sha256=?",
+                                (package_sha256,)).fetchone()
+            expected_kind = "B7_SEAL" if origin == "B7" else "ACCOUNT_CLOSE"
+            if stored is None or stored[1] != expected_kind \
+                    or sha256_hex(stored[0].encode("utf-8")) != package_sha256:
+                raise SettlementError("settlement package integrity failure")
             out.append({"seq": seq, "session_id": session_id, "predecessor_session_id": predecessor,
                         "package_sha256": package_sha256, "equity": equity, "peak": peak, "as_of_utc": as_of,
                         "mode_next": mode_next, "origin": origin, "scope": scope, "accepted_utc": accepted,
@@ -394,8 +418,9 @@ class SettlementStore:
             raise SettlementError("at least one enrolled operator key required")
         for key_id, scopes in trusted_keys.items():
             if not isinstance(key_id, str) or not re.fullmatch(r"[0-9a-f]{64}", key_id) \
+                    or not is_strong_public_key(bytes.fromhex(key_id)) \
                     or not isinstance(scopes, list) or not scopes or any(s not in SCOPES for s in scopes):
-                raise SettlementError("trusted key must be a 32-byte public key hex with contract scopes")
+                raise SettlementError("trusted key must be a strong Ed25519 public key hex with contract scopes")
         if not _aware(now):
             raise SettlementError("aware clock required")
         store = cls(path, account, str(uuid4()))
@@ -409,13 +434,20 @@ class SettlementStore:
                 old = store._state(db, check_boot=False)
                 if old["calendar_digest"] != calendar_digest or old["policy_digest"] != policy_digest:
                     raise SettlementError("calendar or policy digest changed across restart")
-                if old["trusted_keys"] != trusted_keys:
-                    raise SettlementError("enrolled operator keys changed across restart")
                 store._chain(db)
                 voided = db.execute("UPDATE challenges SET status='VOIDED_RESTART' WHERE status='ISSUED'").rowcount
                 db.execute("UPDATE state SET boot_id=?, restore_pending=1", (store.boot_id,))
                 store._event(db, "boot", None, {"boot_id": store.boot_id, "fresh": False,
                                                 "voided_challenges": voided}, now)
+                if old["trusted_keys"] != trusted_keys:
+                    # Rotation/revocation is an audited enrollment change; the chain is preserved and
+                    # only currently enrolled keys can sign from this boot on.
+                    db.execute("UPDATE state SET trusted_keys=?", (json.dumps(trusted_keys, sort_keys=True),))
+                    store._event(db, "trusted_keys_rotated", None, {
+                        "removed": sorted(set(old["trusted_keys"]) - set(trusted_keys)),
+                        "added": sorted(set(trusted_keys) - set(old["trusted_keys"])),
+                        "scope_changes": sorted(k for k in set(old["trusted_keys"]) & set(trusted_keys)
+                                                if old["trusted_keys"][k] != trusted_keys[k])}, now)
             store._state(db)
         return store
 
@@ -429,28 +461,53 @@ class SettlementStore:
                         {"rows": len(chain)}, now)
             return {"rows": len(chain), "invalidated": state["invalidated"]}
 
-    def bootstrap_b7(self, seal_bytes: bytes, *, session_id: str, effective_close_utc: datetime,
-                     policy: ProtectionPolicy, now: datetime) -> Receipt | Refusal:
+    def bootstrap_b7(self, seal_bytes: bytes, *, expected_seal_sha256: str, expected_tool_sha256: str,
+                     session_id: str, effective_close_utc: datetime, policy: ProtectionPolicy,
+                     now: datetime) -> Receipt | Refusal:
         """Seat the chain head from the sealed B7 snapshot; distinct from any later close.
 
+        The seal's exact bytes and the sealer's tool digest are supplied out of band by the
+        B7 owner; the document must carry the seal contract, exactly the ten checks passed,
+        three distinct evidence digests, and values whose C3/C4/C8 derivations re-check here.
         ``effective_close_utc`` is the account close the seal window follows (the seal
         contract's C5 boundary: a weekday 17:00 ET close, or Friday's before a weekend).
         """
         policy = require_policy(policy)
         if not _aware(now) or not _aware(effective_close_utc):
             return Refusal("invalid_now")
+        if not _HEX64.match(expected_seal_sha256 or "") or sha256_hex(seal_bytes) != expected_seal_sha256:
+            return Refusal("seal_identity")
         try:
             seal = json.loads(seal_bytes)
         except ValueError:
             return Refusal("seal_not_json")
-        if not isinstance(seal, dict) or not {"values", "derived", "evidence", "checks", "seal_timestamp"} <= set(seal):
+        if not isinstance(seal, dict) or set(seal) != {"values", "derived", "evidence", "checks", "seal_timestamp",
+                                                       "tool_sha256", "contract"}:
             return Refusal("seal_schema")
-        if any(v != "pass" for v in seal["checks"].values()) or len(seal["checks"]) < 10:
+        if seal["contract"] != SEAL_CONTRACT or not _HEX64.match(expected_tool_sha256 or "")                 or seal["tool_sha256"] != expected_tool_sha256:
+            return Refusal("seal_contract_or_tool")
+        checks = seal["checks"]
+        if not isinstance(checks, dict) or tuple(checks) != SEAL_CHECKS or any(v != "pass" for v in checks.values()):
             return Refusal("seal_checks")
+        evidence = seal["evidence"]
+        if not isinstance(evidence, dict) or set(evidence) != {"E1", "E2", "E3"} or any(
+                not isinstance(r, dict) or set(r) != {"path", "sha256", "captured_at"} or not _HEX64.match(str(r["sha256"]))
+                for r in evidence.values()) or len({r["sha256"] for r in evidence.values()}) != 3:
+            return Refusal("seal_evidence")
         values, derived = seal["values"], seal["derived"]
-        balance, equity, peak = _decimal(values.get("balance")), _decimal(values.get("equity")), _decimal(derived.get("historical_eod_peak"))
-        if balance is None or equity is None or peak is None or balance != equity or peak < equity or peak <= 0:
+        if not isinstance(values, dict) or set(values) != _SEAL_VALUES or not isinstance(derived, dict)                 or not {"original_basis", "historical_eod_peak", "valid_until"} <= set(derived):
             return Refusal("seal_values")
+        balance, equity = _decimal(values["balance"]), _decimal(values["equity"])
+        threshold, peak = _decimal(values["trailing_threshold"]), _decimal(derived["historical_eod_peak"])
+        adjustments = _decimal(values["cash_adjustments_total"])
+        if balance is None or equity is None or threshold is None or peak is None or adjustments is None:
+            return Refusal("seal_values")
+        if balance != equity or values["positions_export_shows_flat"] is not True or values["working_orders_count"] != 0:
+            return Refusal("seal_c3")
+        if peak != threshold + _WIDTH or peak < balance or peak <= 0:
+            return Refusal("seal_c4")
+        if adjustments != 0 or _decimal(derived["original_basis"]) != Decimal(str(FIRM_RULES[TIER]["starting_balance"])):
+            return Refusal("seal_c8")
         valid_until = derived.get("valid_until")
         try:
             expiry = datetime.fromisoformat(valid_until)
@@ -597,7 +654,9 @@ class SettlementStore:
                 return Refusal("duplicate_settlement", halt_required=True)
             previous = db.execute("SELECT package_json, kind FROM packages WHERE package_sha256=?",
                                   (head["package_sha256"],)).fetchone()
-            previous_package = json.loads(previous[0]) if previous and previous[1] == "ACCOUNT_CLOSE" else None
+            if previous is None or (head["origin"] == "ACCOUNT_CLOSE" and previous[1] != "ACCOUNT_CLOSE"):
+                raise SettlementError("settlement package integrity failure")
+            previous_package = json.loads(previous[0]) if previous[1] == "ACCOUNT_CLOSE" else None
             reason = verify_package(package, sources, head=head, previous_package=previous_package,
                                     account=self.account, calendar_digest=state["calendar_digest"],
                                     policy_digest=state["policy_digest"], calendar=calendar,
@@ -711,14 +770,14 @@ def load_operator_keys(path: Path) -> dict[str, list[str]]:
     if not isinstance(rows, list):
         raise SettlementError("operator key rows")
     keys: dict[str, list[str]] = {}
-    from ed25519_verify import _decode_point
     for index, row in enumerate(rows):
         label = f"keys[{index}]"
         if not isinstance(row, dict) or set(row) != _KEY_ROW:
             raise SettlementError(f"{label}: key set mismatch")
         key_id = row["key_id"]
-        if not isinstance(key_id, str) or not re.fullmatch(r"[0-9a-f]{64}", key_id)                 or _decode_point(bytes.fromhex(key_id)) is None:
-            raise SettlementError(f"{label}: not a valid Ed25519 public key")
+        if not isinstance(key_id, str) or not re.fullmatch(r"[0-9a-f]{64}", key_id) \
+                or not is_strong_public_key(bytes.fromhex(key_id)):
+            raise SettlementError(f"{label}: not a strong Ed25519 public key")
         if row["algorithm"] != "ed25519" or row["enrolled_by"] != "operator":
             raise SettlementError(f"{label}: only operator-enrolled ed25519 keys are trusted")
         if not isinstance(row["scopes"], list) or not row["scopes"] or any(s not in SCOPES for s in row["scopes"])                 or len(set(row["scopes"])) != len(row["scopes"]):

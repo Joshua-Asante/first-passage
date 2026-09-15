@@ -304,6 +304,8 @@ def _verify_row(row: dict, index: int, *, tz: ZoneInfo, venue: dict, rule: dict,
         if not isinstance(prow["source_ids"], list) or not prow["source_ids"] or \
                 any(s not in source_ids for s in prow["source_ids"]):
             raise CalendarError(f"{plabel}: source_ids must name captured sources")
+        if prow["qualified"] and not set(products[code].get("source_ids", [])) <= set(prow["source_ids"]):
+            raise CalendarError(f"{plabel}: a qualified product row must cite its own product's declared sources")
         m_close = _utc(prow["matching_close_utc"], f"{plabel}.matching_close_utc")
         if prow["matching_open_utc"] is not None:
             m_open = _utc(prow["matching_open_utc"], f"{plabel}.matching_open_utc")
@@ -416,9 +418,14 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
                                     f"({prev.session_id}); denied days stay in the chain")
             if row.opens_at < prev.closes_at:
                 raise CalendarError(f"sessions[{index}]: overlaps the preceding session")
-            if row.opens_at.date() != prev.closes_at.date() and \
-                    (row.opens_at - prev.closes_at) > timedelta(days=3, hours=1):
-                raise CalendarError(f"sessions[{index}]: gap after {prev.session_id} exceeds a weekend")
+            this_day = date.fromisoformat(row.session_id.split(":")[1])
+            prev_day = date.fromisoformat(prev.session_id.split(":")[1])
+            expected_prev = this_day - timedelta(days=1)
+            while expected_prev.weekday() >= 5:
+                expected_prev -= timedelta(days=1)
+            if prev_day != expected_prev:
+                raise CalendarError(f"sessions[{index}]: account day {expected_prev} is missing before "
+                                    f"{this_day}; every Monday-Friday account day needs its own row")
         rows.append(row)
     ids = [r.session_id for r in rows]
     if len(set(ids)) != len(ids):

@@ -40,6 +40,10 @@ def load():
     return load_session_calendar(CALENDAR, overlay_path=OVERLAY, repo_root=REPO)
 
 
+LABOR_DAY = dict(halts_local={"6J": "17:00", "MGC": "14:30", "MYM": "13:00", "MNQ": "13:00"},
+                 source_ids=("cme-ui-labor-2026", "cme-globex-2026-holiday-schedule"))
+
+
 def calendar_fixture(tmp_path, *, first, last, denials=(), generated="2026-09-15T00:00:00Z"):
     """Author a synthetic calendar through the real authoring tool into a tmp repo layout."""
     sys.path.insert(0, str(REPO / "scripts"))
@@ -101,8 +105,8 @@ def test_checked_in_calendar_reproduces_from_the_authoring_tool():
     finally:
         sys.path.pop(0)
     denials = {
-        date(2026, 9, 7): ("HOLIDAY", "CME Globex 2026 Labor Day holiday schedule (dates 6-8 September); Tradeify holiday-shortened flat deadline 12:59 ET; product matching halts observed on the wall date (cme-ui-labor-2026); preceding open not separately established"),
-        date(2026, 9, 8): ("UNCERTAIN_ADJACENT", "Inside the CME 2026 Labor Day schedule dates 6-8 September. The 17:00 CT reopen on 2026-09-07 is observed, but the full 2026-09-08 regular session is not separately qualified; denied under the first-release adjacent-session rule"),
+        date(2026, 9, 7): author.Denial("HOLIDAY", "CME Globex 2026 Labor Day holiday schedule (dates 6-8 September); Tradeify holiday-shortened flat deadline 12:59 ET; product matching halts observed on the wall date (cme-ui-labor-2026); preceding open not separately established", **LABOR_DAY),
+        date(2026, 9, 8): author.Denial("UNCERTAIN_ADJACENT", "Inside the CME 2026 Labor Day schedule dates 6-8 September. The 17:00 CT reopen on 2026-09-07 is observed, but the full 2026-09-08 regular session is not separately qualified; denied under the first-release adjacent-session rule"),
     }
     payload = author.build_calendar(date(2026, 9, 3), date(2026, 9, 30), denials, EVIDENCE,
                                     "2026-09-15T10:40:00Z", "tradeify-select-100k/forward/2026-09")
@@ -324,6 +328,11 @@ def _mutate(payload, mutation):
     elif mutation == "gap_beyond_weekend":
         del rows[1]
         del rows[1]
+    elif mutation == "skipped_weekday":
+        rows[3]["prior_session_id"] = rows[1]["session_id"]     # chain around the deleted Wednesday
+        del rows[2]
+    elif mutation == "product_cites_other_product_source":
+        rows[3]["products"]["MGC"]["source_ids"] = ["cme-spec-6J", "cme-globex-2026-holiday-schedule"]
     elif mutation == "predecessor_flag_wrong":
         rows[0]["predecessor_in_file"] = True
     elif mutation == "policy_permits_more":
@@ -341,7 +350,7 @@ def _mutate(payload, mutation):
     "wrong_schema", "coverage_end_extended", "review_due_after_coverage",
     "schedule_constants_changed", "products_set_wrong", "local_utc_disagree", "session_overlap",
     "wrong_venue_deadline", "matching_outside_day", "gap_beyond_weekend", "predecessor_flag_wrong",
-    "policy_permits_more", "timezone_changed",
+    "policy_permits_more", "timezone_changed", "skipped_weekday", "product_cites_other_product_source",
 ])
 def test_defective_calendar_files_are_refused_whole(tmp_path, mutation):
     """Any inconsistency with the schedule rule, chain, sources or coverage refuses the file."""
@@ -449,3 +458,22 @@ def test_defective_ratification_files_are_refused(tmp_path, mutation):
     path.write_bytes(json.dumps(raw).encode("utf-8"))
     with pytest.raises(CalendarError):
         load_ratifications(path)
+
+
+def test_holiday_denial_needs_its_own_halts_and_sources(tmp_path):
+    """The authoring tool never reuses another holiday's halts; a HOLIDAY denial without evidence refuses."""
+    sys.path.insert(0, str(REPO / "scripts"))
+    try:
+        import author_book_session_calendar as author
+    finally:
+        sys.path.pop(0)
+    (tmp_path / "a").mkdir()
+    (tmp_path / "b").mkdir()
+    with pytest.raises(ValueError, match="own per-product halts"):
+        calendar_fixture(tmp_path / "a", first=date(2026, 11, 23), last=date(2026, 11, 27),
+                         denials={date(2026, 11, 26): author.Denial("HOLIDAY", "Thanksgiving")})
+    with pytest.raises(ValueError, match="captured sources"):
+        calendar_fixture(tmp_path / "b", first=date(2026, 11, 23), last=date(2026, 11, 27),
+                         denials={date(2026, 11, 26): author.Denial("HOLIDAY", "Thanksgiving",
+                                                                    halts_local=LABOR_DAY["halts_local"],
+                                                                    source_ids=("cme-ui-thanksgiving-2026",))})

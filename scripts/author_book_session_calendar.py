@@ -17,6 +17,7 @@ Example (the September 2026 first-release file):
     python scripts/author_book_session_calendar.py \
         --first 2026-09-03 --last 2026-09-30 \
         --deny 2026-09-07 HOLIDAY "CME Globex Labor Day holiday schedule; Tradeify holiday-shortened flat deadline 12:59 ET; product matching halts observed (cme-ui-labor-2026)" \
+        --halts 2026-09-07 "6J=17:00,MGC=14:30,MYM=13:00,MNQ=13:00" cme-ui-labor-2026,cme-globex-2026-holiday-schedule \
         --deny 2026-09-08 UNCERTAIN_ADJACENT "Inside the CME 2026 Labor Day schedule dates 6-8 September; post-holiday reopen observed but the full regular session is not separately qualified" \
         --evidence ops/calendars/evidence/2026-09-15-forward-session-source-captures.json \
         --out ops/calendars/book_session_calendar_2026-09.json
@@ -27,6 +28,8 @@ import argparse
 import copy
 import hashlib
 import json
+import re
+from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -73,11 +76,30 @@ PRODUCTS = {
             "source_ids": ["cme-spec-MNQ"]},
 }
 
-# Observed 2026-09-07 matching halts (Central Time PREOPEN, converted to ET) — see the
-# cme-ui-labor-2026 capture. These qualify the halt/reopen distinction only.
-LABOR_DAY_2026_HALTS_LOCAL = {"6J": "17:00", "MGC": "14:30", "MYM": "13:00", "MNQ": "13:00"}
-
 DENIAL_REASONS = ("HOLIDAY", "SHORTENED", "UNCERTAIN_ADJACENT", "MISSING_SOURCE")
+
+
+@dataclass(frozen=True)
+class Denial:
+    """A denied account day. HOLIDAY/SHORTENED must carry that date's own observed per-product
+    matching halts (ET, HH:MM) and the capture ids that evidence them; nothing is inferred
+    from another holiday."""
+    reason: str
+    note: str
+    halts_local: dict | None = None      # {"6J": "17:00", ...} for HOLIDAY/SHORTENED
+    source_ids: tuple | None = None      # capture ids evidencing those halts
+
+
+def parse_halts(text: str) -> dict:
+    out = {}
+    for item in text.split(","):
+        code, _, clock = item.strip().partition("=")
+        if code not in PRODUCTS or not re.fullmatch(r"\d{2}:\d{2}", clock):
+            raise ValueError(f"bad halt spec {item!r}; expected e.g. MYM=13:00")
+        out[code] = clock
+    if set(out) != set(PRODUCTS):
+        raise ValueError("every product needs a halt clock")
+    return out
 
 
 def _hhmm(text: str) -> time:
@@ -123,10 +145,12 @@ def session_id_for(day: date) -> str:
     return f"tradeify-account-day:{day.isoformat()}"
 
 
-def build_row(day: date, *, denial: tuple[str, str] | None, evidence_ids: set[str]) -> dict:
+def build_row(day: date, *, denial: Denial | None, evidence_ids: set[str]) -> dict:
     opens = _local(day - timedelta(days=1), VENUE["account_day_opens_local"])
     closes = _local(day, VENUE["account_day_closes_local"])
-    holiday = denial is not None and denial[0] in ("HOLIDAY", "SHORTENED")
+    holiday = denial is not None and denial.reason in ("HOLIDAY", "SHORTENED")
+    if holiday and (not denial.halts_local or not denial.source_ids):
+        raise ValueError(f"{day}: a HOLIDAY/SHORTENED denial needs that date's own per-product halts and source ids")
     venue_deadline_clock = VENUE["holiday_shortened_flat_deadline_local"] if holiday \
         else VENUE["regular_flat_deadline_local"]
     venue_deadline = _local(day, venue_deadline_clock)
@@ -135,14 +159,14 @@ def build_row(day: date, *, denial: tuple[str, str] | None, evidence_ids: set[st
     deadlines = [venue_deadline]
     for code, spec in PRODUCTS.items():
         if holiday:
-            halt = _local(day, LABOR_DAY_2026_HALTS_LOCAL[code])
+            halt = _local(day, denial.halts_local[code])
             products[code] = {
                 "qualified": False,
                 "cme_trade_date": day.isoformat(),
                 "matching_open_utc": None,
                 "matching_close_utc": _iso_utc(halt),
                 "observed_events": "PREOPEN halt observed on the wall date; preceding open not separately established",
-                "source_ids": ["cme-ui-labor-2026", "cme-globex-2026-holiday-schedule"],
+                "source_ids": list(denial.source_ids),
             }
             deadlines.append(halt)
             continue
@@ -175,8 +199,8 @@ def build_row(day: date, *, denial: tuple[str, str] | None, evidence_ids: set[st
         "account_date": day.isoformat(),
         "prior_session_id": session_id_for(_prior_account_day(day)),
         "permission": "DENIED" if denial else "PERMITTED",
-        "denial_reason": denial[0] if denial else None,
-        "denial_note": denial[1] if denial else None,
+        "denial_reason": denial.reason if denial else None,
+        "denial_note": denial.note if denial else None,
         "opens_local": _iso_local(opens),
         "closes_local": _iso_local(closes),
         "opens_utc": _iso_utc(opens),
@@ -192,14 +216,16 @@ def build_row(day: date, *, denial: tuple[str, str] | None, evidence_ids: set[st
     return row
 
 
-def build_calendar(first: date, last: date, denials: dict[date, tuple[str, str]],
+def build_calendar(first: date, last: date, denials: dict[date, Denial],
                    evidence_path: Path, generated_utc: str, calendar_id: str) -> dict:
     evidence_bytes = evidence_path.read_bytes()
     evidence = json.loads(evidence_bytes)
     evidence_ids = {c["id"] for c in evidence["captures"]}
-    for reason, _ in denials.values():
-        if reason not in DENIAL_REASONS:
-            raise ValueError(f"unknown denial reason {reason}")
+    for denial in denials.values():
+        if denial.reason not in DENIAL_REASONS:
+            raise ValueError(f"unknown denial reason {denial.reason}")
+        if denial.source_ids and any(s not in evidence_ids for s in denial.source_ids):
+            raise ValueError("denial source ids must name captured sources")
     rows = [build_row(day, denial=denials.get(day), evidence_ids=evidence_ids)
             for day in _account_days(first, last)]
     if not rows:
@@ -257,12 +283,21 @@ def main(argv=None) -> int:
     parser.add_argument("--first", required=True, type=date.fromisoformat)
     parser.add_argument("--last", required=True, type=date.fromisoformat)
     parser.add_argument("--deny", nargs=3, action="append", default=[], metavar=("DATE", "REASON", "NOTE"))
+    parser.add_argument("--halts", nargs=3, action="append", default=[], metavar=("DATE", "HALTS", "SOURCE_IDS"),
+                        help="required for each HOLIDAY/SHORTENED denial: that date's observed per-product ET "
+                             "halts, e.g. '6J=17:00,MGC=14:30,MYM=13:00,MNQ=13:00', and the comma-separated "
+                             "capture ids that evidence them")
     parser.add_argument("--evidence", required=True, type=Path)
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--calendar-id", default=None)
     parser.add_argument("--generated-utc", default=None)
     args = parser.parse_args(argv)
-    denials = {date.fromisoformat(d): (reason, note) for d, reason, note in args.deny}
+    halts = {date.fromisoformat(d): (parse_halts(h), tuple(s.split(","))) for d, h, s in args.halts}
+    denials = {}
+    for d, reason, note in args.deny:
+        day = date.fromisoformat(d)
+        h, ids = halts.get(day, (None, None))
+        denials[day] = Denial(reason, note, h, ids)
     generated = args.generated_utc or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     calendar_id = args.calendar_id or f"tradeify-select-100k/forward/{args.first.isoformat()}..{args.last.isoformat()}"
     payload = build_calendar(args.first, args.last, denials, args.evidence, generated, calendar_id)

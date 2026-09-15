@@ -75,6 +75,21 @@ def _decode_point(data: bytes):
     return (x, y, 1, x * y % _P)
 
 
+def _has_small_order(p) -> bool:
+    """True for the identity and the other seven torsion points ([8]P == identity)."""
+    return _equal(_mul(8, p), _IDENTITY)
+
+
+def is_strong_public_key(data: bytes) -> bool:
+    """A decodable point of exact prime order: not small-order, and [q]A == identity.
+
+    RFC 8032 verification alone accepts torsion keys (the identity with R = identity
+    and S = 0 verifies every message), so enrolment and verification both refuse them.
+    """
+    point = _decode_point(bytes(data)) if isinstance(data, (bytes, bytearray)) else None
+    return point is not None and not _has_small_order(point) and _equal(_mul(_Q, point), _IDENTITY)
+
+
 def verify(public_key: bytes, message: bytes, signature: bytes) -> bool:
     """Return True only for a valid signature; malformed inputs are simply False."""
     if not isinstance(public_key, (bytes, bytearray)) or not isinstance(message, (bytes, bytearray)) \
@@ -85,6 +100,8 @@ def verify(public_key: bytes, message: bytes, signature: bytes) -> bool:
     a = _decode_point(bytes(public_key))
     r = _decode_point(bytes(signature[:32]))
     if a is None or r is None:
+        return False
+    if _has_small_order(a) or _has_small_order(r) or not _equal(_mul(_Q, a), _IDENTITY):
         return False
     s = int.from_bytes(signature[32:], "little")
     if s >= _Q:

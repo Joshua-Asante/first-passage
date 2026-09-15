@@ -65,11 +65,11 @@ def synthetic():
     cash = [SourceFile("cash_history", n, body.encode("utf-8"), CAPTURE - timedelta(minutes=2), f, t)
             for n, f, t, body in windows]
     balance_csv = ("Account ID,Account Name,Trade Date,Total Amount,Total Realized PNL\n"
-                   f"{ACCOUNT},synthetic,2026-07-18,\"100,000.00\",0.00\n"
-                   f"{ACCOUNT},synthetic,2026-07-19,\"100,000.00\",0.00\n"
-                   f"{ACCOUNT},synthetic,2026-09-10,\"{bal1:,.2f}\",25.00\n"
-                   f"{ACCOUNT},synthetic,2026-09-11,\"{bal1:,.2f}\",0.00\n"
-                   f"{ACCOUNT},synthetic,2026-09-14,\"{bal2:,.2f}\",-10.00\n")
+                   f"12345678,{ACCOUNT},2026-07-18,\"100,000.00\",0.00\n"
+                   f"12345678,{ACCOUNT},2026-07-19,\"100,000.00\",0.00\n"
+                   f"12345678,{ACCOUNT},2026-09-10,\"{bal1:,.2f}\",25.00\n"
+                   f"12345678,{ACCOUNT},2026-09-11,\"{bal1:,.2f}\",0.00\n"
+                   f"12345678,{ACCOUNT},2026-09-14,\"{bal2:,.2f}\",-10.00\n")
     files = dict(
         balance=SourceFile("balance_history", "balance.csv", balance_csv.encode(), CAPTURE - timedelta(minutes=3)),
         dashboard=SourceFile("dashboard", "dashboard.png", b"png-dash", CAPTURE),
@@ -93,11 +93,15 @@ def build(cash, files, bal1, bal2, **over):
     return assemble(**args)
 
 
-def test_account_session_mapping_across_the_evening_boundary_and_weekend():
-    """18:00 ET opens the next account day; Friday evening rolls to Monday."""
-    assert account_session_date(datetime(2026, 9, 14, 21, 59, tzinfo=timezone.utc)) == date(2026, 9, 14)  # 17:59 ET
+def test_account_session_mapping_refuses_the_break_and_the_weekend():
+    """A session is 18:00-17:00 ET Sunday evening to Friday; anything else maps to no session."""
+    assert account_session_date(datetime(2026, 9, 14, 20, 59, tzinfo=timezone.utc)) == date(2026, 9, 14)  # 16:59 ET
+    assert account_session_date(datetime(2026, 9, 14, 21, 0, tzinfo=timezone.utc)) is None                 # 17:00 ET break
+    assert account_session_date(datetime(2026, 9, 14, 21, 59, tzinfo=timezone.utc)) is None                 # 17:59 ET break
     assert account_session_date(datetime(2026, 9, 14, 22, 0, tzinfo=timezone.utc)) == date(2026, 9, 15)   # 18:00 ET
-    assert account_session_date(datetime(2026, 9, 11, 23, 30, tzinfo=timezone.utc)) == date(2026, 9, 14)  # Fri 19:30 ET
+    assert account_session_date(datetime(2026, 9, 11, 23, 30, tzinfo=timezone.utc)) is None                 # Fri 19:30 ET
+    assert account_session_date(datetime(2026, 9, 12, 15, 0, tzinfo=timezone.utc)) is None                  # Saturday
+    assert account_session_date(datetime(2026, 9, 13, 20, 0, tzinfo=timezone.utc)) is None                  # Sun 16:00 ET
     assert account_session_date(datetime(2026, 9, 13, 22, 30, tzinfo=timezone.utc)) == date(2026, 9, 14)  # Sun 18:30 ET
 
 
@@ -115,6 +119,8 @@ def test_exports_reconcile_into_a_package_the_verifier_and_consumer_accept():
     assert package["ledger"]["trading_costs"] == {"commission": "1.00", "exchange": "1.20", "clearing": "0.30", "nfa": "0.10"}
     assert {s["role"] for s in package["sources"]} >= {"cash_history", "balance_history", "dashboard", "positions",
                                                        "orders", "inception"}
+    assert all(t["session_id"].startswith("tradeify-account-day:") for t in package["ledger"]["transactions"])
+    assert report["balance_history"]["settled_session_basis"] == "VENUE_ROW"
     assert sum(s["role"].startswith("cash_history") for s in package["sources"]) == 6
     head = {"session_id": S11, "package_sha256": "0" * 64, "equity": str(bal1), "peak": str(bal1),
             "as_of_utc": "2026-09-11T21:00:00Z"}
@@ -151,6 +157,8 @@ def test_overlapping_windows_dedupe_by_id_and_revisions_refuse():
     ("second_fund", "adjustment"), ("unknown_type", "unknown"), ("unlinked_fee", "unlinked"),
     ("running_balance", "running balance"), ("later_fill", "flatness"), ("open_position", "flatness"),
     ("balance_history", "balance history"), ("dashboard_balance", None), ("dashboard_threshold", None),
+    ("other_account_balance", "different account"), ("break_row", "outside any account session"),
+    ("friday_evening_row", "outside any account session"), ("missing_venue_row_with_activity", "lacks the venue row"),
 ])
 def test_defective_exports_are_refused_or_flagged(defect, match):
     """Adjustments, unknown rows, unlinked fees, continuity breaks, later fills and disagreements surface."""
@@ -179,6 +187,17 @@ def test_defective_exports_are_refused_or_flagged(defect, match):
         over = {"dashboard_balance": f"{bal2 + 1:,.2f}"}
     elif defect == "dashboard_threshold":
         over = {"dashboard_threshold": str(bal1 - 3001)}
+    elif defect == "other_account_balance":
+        over = {"balance": replace(files["balance"], data=files["balance"].data.replace(ACCOUNT.encode(), b"TDFYSL999999999999"))}
+    elif defect == "break_row":
+        extra, _ = trade_rows(100000000900, "09/14/2026 16:30:00", "1.00", str(bal2))   # 17:30 ET break
+        cash[5] = replace(cash[5], data=(last + extra).encode())
+    elif defect == "friday_evening_row":
+        extra, _ = trade_rows(100000000900, "09/11/2026 18:30:00", "1.00", str(bal1))   # Fri 19:30 ET
+        cash[5] = replace(cash[5], data=(last + extra).encode())
+    elif defect == "missing_venue_row_with_activity":
+        over = {"balance": replace(files["balance"], data=b"\n".join(
+            l for l in files["balance"].data.split(b"\n") if b"2026-09-14" not in l))}
     if match is None:
         package, sources, report = build(cash, files, bal1, bal2, **over)
         assert not (report["dashboard_balance_equals_net_equity"] and report["dashboard_threshold_plus_width_equals_peak"])
@@ -190,3 +209,18 @@ def test_defective_exports_are_refused_or_flagged(defect, match):
     else:
         with pytest.raises(AssemblyError, match=match):
             build(cash, files, bal1, bal2, **over)
+
+
+def test_no_activity_session_without_a_venue_row_is_corroborated_not_copied():
+    """A session with no cash rows may settle without a venue row only when the latest venue row and
+    the dashboard both agree with the reconciled equity; the basis is recorded, never assumed."""
+    cash, files, bal1, bal2 = synthetic()
+    S16 = "tradeify-account-day:2026-09-16"
+    S17 = "tradeify-account-day:2026-09-17"
+    now = datetime(2026, 9, 17, 11, 25, tzinfo=timezone.utc)
+    fresh = [replace(f, captured_utc=now - timedelta(minutes=2)) for f in cash]
+    fresh_files = {k: (replace(v, captured_utc=now - timedelta(minutes=2)) if k != "inception" else v) for k, v in files.items()}
+    package, sources, report = build(fresh, fresh_files, bal1, bal2, session_id=S17, predecessor_session_id=S16,
+                                     operator_signed_utc=now - timedelta(minutes=1))
+    assert report["balance_history"]["settled_session_basis"] == "NO_ACTIVITY_DASHBOARD_CORROBORATED"
+    assert package["ledger"]["gross_trade_pnl"] == "0" and package["equity"]["net_equity"] == str(bal2)

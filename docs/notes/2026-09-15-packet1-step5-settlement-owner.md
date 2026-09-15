@@ -95,12 +95,13 @@ verdicts:
 | Running balance | every row's reported amount equals the reconciled running net |
 | Balance history | 25 rows, 0 mismatches against the reconciled equity at each trade date |
 | Dashboard | balance equals the reconciled net equity; trailing threshold plus the 3,000 width equals the EOD peak from the ledger |
-| Session 09-14 | no activity; flat at the close by the no-later-fills rule with flat positions and zero working orders at capture |
+| Session 09-14 | no activity; flat at the close by the no-later-fills rule with flat positions and zero working orders at capture; settled on the `NO_ACTIVITY_DASHBOARD_CORROBORATED` basis (no venue balance row exists for the day; the latest venue row and the dashboard both equal the reconciled equity) |
 | `verify_package` | no refusal |
 | Store path | qualification head seated, challenge issued, signed submission accepted, `mode_next = normal` |
 | Consumer | `size_book_request` for session 09-15 with the produced `SettledClose`: no halt |
 
-Package SHA-256 `72b0c65dff701d08b77b360b76be2092f1c30d44fcf8279bf52df01d232f4885`; outputs and
+Package SHA-256 `261b4578b15dd7c330939446e09c5719b5af6afae955ac5098218b2e047d8a09` (re-run after the
+review fold below; the earlier `72b0c65d…` package predates transaction provenance); outputs and
 the figures-free `qualification-report.json` are retained under the same private folder.
 
 Limits recorded with the run: the store head was seated from the reconciled predecessor
@@ -138,3 +139,37 @@ boots from its result. The account binding happens at runtime.
    surface and the halt owner's permission state; bind the real policy digest and account.
 3. First live acceptance only after the B7 seal seats the chain head (Packet 6), with fresh
    captures within 30 minutes of receipt and the operator's real signature.
+
+## Review fold — 2026-09-15 (Codex on PR #395)
+
+- **B7 seal authenticated before seating.** `bootstrap_b7` now requires the seal's exact
+  SHA-256 and the sealer's tool digest out of band, the seal contract path, exactly the ten
+  checks in order all passed, three distinct evidence digests with capture times, the full
+  sealer value set, and re-derives C3 (balance equals equity, flat, no working orders), C4
+  (`peak = trailing_threshold + width`, peak at or above balance) and C8 (zero adjustments,
+  original basis equal to the tier constant).
+- **Small-order keys refused.** The verifier and the enrollment loader reject any public key or
+  signature point that is the identity or another torsion point, and require the key to lie in
+  the prime-order subgroup; the identity key with `R = identity` and `S = 0` no longer verifies.
+- **Flatness basis requires flat evidence.** Under `DAILY_FLATTEN_CONFIRMED_NO_LATER_FILLS`
+  the positions view must show zero open positions and zero working orders.
+- **Package bytes are part of the chain.** Every chain row's retained package bytes must be
+  present and hash to the row's digest; a modified or deleted package refuses every read, and a
+  missing predecessor package can no longer silently skip the retained-history comparison.
+- **Capture times bound to sources.** The dashboard and positions capture times in the package
+  must equal the freshness-checked source rows.
+- **Late-added history refused.** Transactions carry their account-session id; any transaction
+  not retained from the predecessor must belong to the proposed session.
+- **Key rotation across restart.** A changed enrolment no longer refuses boot: the chain is
+  preserved, the change is recorded as an audited `trusted_keys_rotated` event, and only
+  currently enrolled keys can sign afterwards.
+- **Balance history bound to the account** by its Account Name column, with a single venue id.
+- **Cash rows outside any session refuse** (the 17:00–18:00 ET break, Friday evening, the
+  weekend before the Sunday reopen) instead of being attributed to a neighbouring session.
+- **Venue balance row required** for any session with activity; a no-activity session settles
+  only when the latest venue row and the dashboard both agree with the reconciled equity, and the
+  basis is recorded.
+
+Re-qualification on the operator's reports after the fold: every verdict in the table above
+holds; no real cash row fell outside a session.
+
