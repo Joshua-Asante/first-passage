@@ -131,3 +131,119 @@ insensitive to all of them. The live ones worth knowing:
 There is no generator script — this was a research pass, not a pipeline. To extend past 2026, either
 resolve the primary source above, or re-derive from the same third-party encodings and record the
 new rows with their own `confidence` and `note`. Never widen `coverage_end` without adding entries.
+
+## Forward session file and typed overlay (TB-C1, first attended release)
+
+Landed 2026-09-15 under Packet 1 Step 4 of the
+[attended-release plan](../../docs/superpowers/plans/2026-09-14-tradeify-attended-release.md) and the
+[calendar/parity amendment](../../docs/notes/2026-09-15-calendar-parity-separation-amendment.md).
+The D19 file above is **unchanged**; it remains historical date membership only. These artifacts live
+under `ops/calendars/` because their consumer is the rail (`lab` may not import `ops`); the Track B
+umbrella's original claim manifest named a `lab/analysis/...` path, and the
+[Step 4 record](../../docs/notes/2026-09-15-packet1-step4-session-calendar.md) records that decision.
+
+| File | What it owns |
+|---|---|
+| [`book_session_calendar_2026-09.json`](book_session_calendar_2026-09.json) | Schema `book_session_calendar/v1`. Twenty Tradeify account sessions, September 3–30, 2026, for 6J/MGC/MYM/MNQ. Each row carries its account-session key, predecessor, permission, per-product matching interval and CME trade date, the venue flat deadline, and the TB-S3 rev9 §5 derived times (`V`, own-flat `D`, cutoff, flatten start) in both ET and UTC. Eighteen rows are `PERMITTED`; 2026-09-07 (`HOLIDAY`) and 2026-09-08 (`UNCERTAIN_ADJACENT`) are `DENIED` but keep their identities and deadlines so chronology and safe flattening survive. |
+| [`book_closure_overlay.json`](book_closure_overlay.json) | Schema `book_closure_overlay/v1`. The three typed book no-trade dates (2023-04-07, 2025-01-09, 2026-04-03), each flagged `overrides_d19: true`. A book permission restriction, never an exchange-closure claim. |
+| [`evidence/2026-09-15-forward-session-source-captures.json`](evidence/2026-09-15-forward-session-source-captures.json) | Quoted source statements with URLs and capture instants: Tradeify permitted times (4:45 PM ET regular, 12:59 PM ET holiday-shortened, 6 PM–5 PM ET account day), the CME 2026 Globex holiday schedule (Labor Day 6–8 September; next holiday Thanksgiving), the four product spec pages, and the retained 2026-09-07 product observations. |
+
+**Loader:** `ops/c1_rail/book_session_calendar.py`. It verifies the whole file (exact key sets,
+`America/New_York` ↔ UTC mapping with DST gap/fold refusal, §5 formula equality on every row,
+predecessor chain through denied days, evidence digest, coverage bounds) and refuses the file whole on
+any defect. `SessionCalendar.session_for(now, expected_digest=...)` returns either a consumer
+`BookSession` or a typed refusal (`coverage_not_started`, `coverage_expired`, `no_session_at_now`,
+`session_denied:<reason>`, `overlay_closure`, `after_risk_add_cutoff`, `calendar_digest_mismatch`,
+`invalid_now`). No weekday fallback exists. `schedule_for` exposes deadlines for denied rows too.
+
+`load_session_calendar` validates schedules for lookup but grants no admission
+authority. Use `load_ratified_calendar` for admission: it binds the operator
+record and retains `ratified_at`. Otherwise-valid admission refuses with
+`calendar_not_ratified` on a raw load or `calendar_not_yet_ratified` before that
+instant. At the exact instant, normal schedule rules apply. Historical lookup
+and protective deadlines remain available before ratification.
+
+Generation and ratification are ordered events: the loader parses and retains
+`generated_utc` with second precision, and refuses a selected ratification whose
+`ratified_utc` precedes it. Equality is allowed. Valid historical schedules may
+predate generation; this does not authorize historical admission.
+
+This component is extracted under the approved
+[PR 395 split](../../docs/superpowers/specs/2026-09-15-pr395-component-split.md).
+Its legacy source evidence warning remains visible; extracting the calendar
+does not qualify settlement or activate the book.
+
+| [`RATIFIED.json`](RATIFIED.json) | Schema `calendar_ratification/v1`. Operator ratifications by exact digest; `load_ratified_calendar` refuses a calendar not listed here. Rows are appended, never edited. |
+
+**Identity:** the calendar digest is the SHA-256 of the file bytes and is what `BookSession.calendar_digest`
+carries. Ratification pins that digest in the runtime's trusted configuration; a changed byte is a
+replacement freeze and a new operator decision. Current digests are pinned in
+`tests/ops/test_book_session_calendar.py`.
+
+**Monthly extension (owed before 2026-09-30 21:00Z; review due 2026-09-24):** re-capture the sources
+into a new dated evidence file, then run
+
+```
+python scripts/author_book_session_calendar.py --first 2026-10-01 --last 2026-10-30 \
+    --deny <date> <HOLIDAY|SHORTENED|UNCERTAIN_ADJACENT|MISSING_SOURCE> "<source-backed note>" ... \
+    --evidence ops/calendars/evidence/<new-capture>.json --out ops/calendars/book_session_calendar_2026-10.json
+```
+
+Every denied session must be named explicitly with its reason; the tool enumerates Monday–Friday
+account days inside the named horizon and nothing else. Pin the new digest in the tests and record the
+operator's ratification before activation. Never edit a ratified file in place.
+
+### Capture identity and holiday halt evidence
+
+Both author and loader reject duplicate capture IDs before indexing evidence.
+For each `HOLIDAY` or `SHORTENED` row, every product must cite a capture whose
+`matching_halts` entry matches the account date, product and exact matching-close
+instant. Conflicting cited halt times refuse the calendar. Knowing an ID or
+citing a holiday date range is insufficient.
+
+New evidence captures may carry a `matching_halts` list alongside the v2
+`products` coverage list. Each halt entry has exactly these fields (synthetic
+format example, not a source observation):
+
+```json
+{
+  "account_date": "2026-11-26",
+  "product": "MYM",
+  "matching_close_utc": "2026-11-26T18:00:00Z"
+}
+```
+
+`account_date` is the Tradeify account date; it must agree with the halt's
+Eastern wall date. `matching_close_utc` is a whole-minute UTC `Z` timestamp.
+Each date/product pair is unique within a capture and must belong to that
+capture's declared products. Ordinary schedule captures can omit
+`matching_halts`; holiday authoring requires matching events for all four products
+among the capture IDs supplied to `--halts`.
+
+The immutable September v1 evidence has one compatibility mapping: its exact
+SHA-256 `56951e1527af20966dea64130bf8d0a1dccb9bc011bd6e0501282faa549fcba5`
+binds the quoted `cme-ui-labor-2026` observations to September 7 only. It grants
+no evidence for any other date or changed evidence bytes. The v1 warning stays
+visible, and the pinned calendar and evidence remain byte-for-byte reproducible.
+The v1 exception is also restricted to the exact pinned September **calendar**
+digest `650e8aab4166f74a988675a3f3dfa2dbd21c1c1b342777ac37d65aacea9d6f2f`,
+which transitively pins the evidence bytes. A future or modified v1-backed
+calendar is refused on load, even if a ratification record names it. Extensions
+must supply v2 product coverage. Authoring a candidate alone never establishes
+its loadability or admission authority.
+Future holiday extensions still need separately qualified CME trade-date input;
+this validation does not supply that missing authoring capability.
+
+Delayed product opens affect admission only. A returned `BookSession.opens_at`
+always remains the account-day open, preserving the sizing consumer's requirement
+that the prior settlement precede the current account session.
+
+### Reject ambiguity before parsing erases it
+
+Calendar, evidence, overlay and ratification JSON reject duplicate object keys,
+including nested keys. They cannot silently select the last occurrence. The
+authoring CLI likewise refuses duplicate `--deny` dates, duplicate `--halts`
+dates and repeated product clocks inside one halt argument. Every `--halts`
+date must bind to a `HOLIDAY` or `SHORTENED` denial; unused halt arguments are
+errors. These checks run before the output file is written, preserving any
+existing output when an input conflicts.
