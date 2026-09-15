@@ -331,6 +331,8 @@ def _mutate(payload, mutation):
     elif mutation == "skipped_weekday":
         rows[3]["prior_session_id"] = rows[1]["session_id"]     # chain around the deleted Wednesday
         del rows[2]
+    elif mutation == "first_row_skips_a_day":
+        rows[0]["prior_session_id"] = "tradeify-account-day:2026-09-10"   # Monday 09-14's prior must be Friday 09-11
     elif mutation == "product_cites_other_product_source":
         rows[3]["products"]["MGC"]["source_ids"] = ["cme-spec-6J", "cme-globex-2026-holiday-schedule"]
     elif mutation == "predecessor_flag_wrong":
@@ -351,6 +353,7 @@ def _mutate(payload, mutation):
     "schedule_constants_changed", "products_set_wrong", "local_utc_disagree", "session_overlap",
     "wrong_venue_deadline", "matching_outside_day", "gap_beyond_weekend", "predecessor_flag_wrong",
     "policy_permits_more", "timezone_changed", "skipped_weekday", "product_cites_other_product_source",
+    "first_row_skips_a_day",
 ])
 def test_defective_calendar_files_are_refused_whole(tmp_path, mutation):
     """Any inconsistency with the schedule rule, chain, sources or coverage refuses the file."""
@@ -477,3 +480,15 @@ def test_holiday_denial_needs_its_own_halts_and_sources(tmp_path):
                          denials={date(2026, 11, 26): author.Denial("HOLIDAY", "Thanksgiving",
                                                                     halts_local=LABOR_DAY["halts_local"],
                                                                     source_ids=("cme-ui-thanksgiving-2026",))})
+
+
+def test_late_product_open_delays_admission_until_every_market_is_open(tmp_path):
+    """A product whose matching interval opens after the account open moves admission to that open."""
+    path, overlay, repo, payload = calendar_fixture(tmp_path, first=date(2026, 9, 14), last=date(2026, 9, 18))
+    row = payload["sessions"][1]                                     # 2026-09-15
+    row["products"]["6J"]["matching_open_utc"] = "2026-09-15T00:00:00Z"   # 20:00 ET Sept 14, after the 18:00 ET open
+    rewrite(path, payload)
+    cal = load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+    assert cal.session_for(et(2026, 9, 14, 19)).refusal == "before_product_open"
+    decision = cal.session_for(et(2026, 9, 14, 20, 30))
+    assert decision.permitted and decision.session.opens_at == datetime(2026, 9, 15, 0, tzinfo=timezone.utc)

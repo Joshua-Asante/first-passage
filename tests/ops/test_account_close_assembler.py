@@ -62,7 +62,7 @@ def synthetic():
         ("cash-history-2026-08-25_2026-09-07.csv", date(2026, 8, 25), date(2026, 9, 7), HEADER),
         ("cash-history-2026-09-07_2026-09-15.csv", date(2026, 9, 7), date(2026, 9, 15), HEADER + t1 + t2),
     ]
-    cash = [SourceFile("cash_history", n, body.encode("utf-8"), CAPTURE - timedelta(minutes=2), f, t)
+    cash = [SourceFile("cash_history", n, body.encode("utf-8"), CAPTURE - timedelta(minutes=2), f, t, True)
             for n, f, t, body in windows]
     balance_csv = ("Account ID,Account Name,Trade Date,Total Amount,Total Realized PNL\n"
                    f"12345678,{ACCOUNT},2026-07-18,\"100,000.00\",0.00\n"
@@ -150,6 +150,14 @@ def test_overlapping_windows_dedupe_by_id_and_revisions_refuse():
     rows, report = parse_cash_windows(cash, report_tz=CT)
     assert report["revisions"] == ["100000000001"]
     with pytest.raises(AssemblyError, match="changed contents"):
+        build(cash, files, bal1, bal2)
+
+
+def test_unattested_query_completion_refuses(tmp_path):
+    """A cash window without the operator-typed completion attestation cannot claim coverage."""
+    cash, files, bal1, bal2 = synthetic()
+    cash[5] = replace(cash[5], query_complete=None)
+    with pytest.raises(AssemblyError, match="completion not attested"):
         build(cash, files, bal1, bal2)
 
 

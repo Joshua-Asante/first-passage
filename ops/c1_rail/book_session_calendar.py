@@ -60,6 +60,7 @@ class SessionSchedule:
     permission: str
     denial_reason: str | None
     opens_at: datetime
+    admits_from: datetime          # account open or the latest qualified product matching open, whichever is later
     risk_add_cutoff: datetime
     flatten_start: datetime
     own_flat_deadline: datetime
@@ -218,7 +219,9 @@ class SessionCalendar:
                                    self.calendar_digest, tuple(warnings))
         if now >= row.risk_add_cutoff:
             return SessionDecision(None, "after_risk_add_cutoff", row, self.calendar_digest, tuple(warnings))
-        session = BookSession(row.session_id, row.prior_session_id, row.opens_at,
+        if now < row.admits_from:
+            return SessionDecision(None, "before_product_open", row, self.calendar_digest, tuple(warnings))
+        session = BookSession(row.session_id, row.prior_session_id, row.admits_from,
                               row.risk_add_cutoff, row.closes_at, self.calendar_digest)
         return SessionDecision(session, None, row, self.calendar_digest, tuple(warnings))
 
@@ -284,6 +287,7 @@ def _verify_row(row: dict, index: int, *, tz: ZoneInfo, venue: dict, rule: dict,
         raise CalendarError(f"{label}: venue flat deadline must be {expected_clock} on {day}")
 
     deadlines = [venue_deadline_local.astimezone(timezone.utc)]
+    admits_from = opens
     prod_rows = row["products"]
     if not isinstance(prod_rows, dict) or set(prod_rows) != set(products):
         raise CalendarError(f"{label}: products must be exactly {sorted(products)}")
@@ -311,6 +315,8 @@ def _verify_row(row: dict, index: int, *, tz: ZoneInfo, venue: dict, rule: dict,
             m_open = _utc(prow["matching_open_utc"], f"{plabel}.matching_open_utc")
             if not (opens <= m_open < m_close <= closes):
                 raise CalendarError(f"{plabel}: matching interval must sit inside the account day")
+            if prow["qualified"]:
+                admits_from = max(admits_from, m_open)
         elif prow["qualified"]:
             raise CalendarError(f"{plabel}: qualified product needs a matching open")
         if not (opens < m_close <= closes):
@@ -329,13 +335,15 @@ def _verify_row(row: dict, index: int, *, tz: ZoneInfo, venue: dict, rule: dict,
                             f"flatten={exp_flatten:%H:%MZ})")
     if not (opens < cutoff < flatten_start < own_flat <= v <= closes):
         raise CalendarError(f"{label}: no valid trading window")
+    if not denied and admits_from >= cutoff:
+        raise CalendarError(f"{label}: no product is open before the risk-add cutoff")
     if not isinstance(row["source_ids"], list) or not row["source_ids"] or \
             any(s not in source_ids for s in row["source_ids"]):
         raise CalendarError(f"{label}: source_ids must name captured sources")
     return SessionSchedule(
         session_id=row["session_id"], prior_session_id=row["prior_session_id"],
         permission=row["permission"], denial_reason=row["denial_reason"],
-        opens_at=opens, risk_add_cutoff=cutoff, flatten_start=flatten_start,
+        opens_at=opens, admits_from=admits_from, risk_add_cutoff=cutoff, flatten_start=flatten_start,
         own_flat_deadline=own_flat, v=v, closes_at=closes, overlay_blocked=day in overlay_dates,
     )
 
@@ -409,6 +417,12 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
         if index == 0:
             if raw["predecessor_in_file"] is not False:
                 raise CalendarError("sessions[0]: predecessor_in_file must be false")
+            first_day = date.fromisoformat(row.session_id.split(":")[1])
+            expected_prev = first_day - timedelta(days=1)
+            while expected_prev.weekday() >= 5:
+                expected_prev -= timedelta(days=1)
+            if row.prior_session_id.split(":")[1] != expected_prev.isoformat():
+                raise CalendarError("sessions[0]: prior_session_id must be the immediately preceding account day")
         else:
             prev = rows[-1]
             if raw["predecessor_in_file"] is not True:

@@ -62,6 +62,7 @@ class SourceFile:
     captured_utc: datetime
     window_from: date | None = None    # cash windows only, inclusive UI labels
     window_to: date | None = None
+    query_complete: bool | None = None  # cash windows only: operator-typed from the retained query capture
 
 
 def _decimal(text: str, label: str) -> Decimal:
@@ -123,6 +124,8 @@ def parse_cash_windows(files: list[SourceFile], *, report_tz: ZoneInfo) -> tuple
     for win in ordered:
         if win.window_from is None or win.window_to is None or win.window_to < win.window_from:
             raise AssemblyError(f"{win.name}: window labels")
+        if win.query_complete is not True:
+            raise AssemblyError(f"{win.name}: query completion not attested from the retained query capture")
         text = win.data.decode("utf-8-sig")
         reader = csv.DictReader(io.StringIO(text))
         count = 0
@@ -273,7 +276,7 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
              session_id: str, predecessor_session_id: str, predecessor_package_sha256: str,
              calendar: SessionCalendar, policy_digest: str, report_tz: ZoneInfo,
              operator_signed_utc: datetime, attestations: dict, unresolved_runtime_requests: list,
-             open_positions: int, working_orders: int) -> tuple[dict, dict, dict]:
+             open_positions: int, working_orders: int, historical: bool = False) -> tuple[dict, dict, dict]:
     """Return (package, sources bytes by file, figures-free qualification report)."""
     rows, window_report = parse_cash_windows(cash, report_tz=report_tz)
     if window_report["revisions"]:
@@ -308,6 +311,8 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
         prior_rows = [(d, total) for d, total, _ in balance_rows if d <= session_day_for_row]
         if not prior_rows or prior_rows[-1][1] != equity_at_end_of(ledger, session_day_for_row):
             raise AssemblyError("no venue balance observation supports the settled session")
+        if historical:
+            raise AssemblyError("historical catch-up needs the venue balance row for the settled session")
         balance_basis = "NO_ACTIVITY_DASHBOARD_CORROBORATED"
     else:
         if venue_row != equity_at_end_of(ledger, session_day_for_row):
@@ -399,8 +404,10 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
         "session": {"id": session_id, "predecessor": predecessor_session_id, "rows": bucket["rows"],
                     "trade_rows": bucket["trade_rows"], "later_fills_after_close": len(later_fills),
                     "flatness_basis": flat_basis},
+        "historical_catch_up": historical,
         "dashboard_balance_equals_net_equity": dash_balance == net_equity,
         "dashboard_threshold_plus_width_equals_peak": dash_threshold + WIDTH == peak,
+        "dashboard_peak_at_or_above_ledger_peak": dash_threshold + WIDTH >= peak,
         "peak_from_ledger_equals_dashboard_peak": ledger.peak == dash_threshold + WIDTH,
         "package_sha256": None,
     }

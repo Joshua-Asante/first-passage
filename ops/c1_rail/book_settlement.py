@@ -43,7 +43,8 @@ SCOPES = ("submit_account_close", "record_only")
 CHALLENGE_LIFETIME = timedelta(seconds=300)
 EVIDENCE_FRESHNESS = timedelta(minutes=30)
 MAX_HISTORY_WINDOW_DAYS = 14
-REQUIRED_SOURCE_ROLES = frozenset({"dashboard", "positions", "balance_history", "cash_history", "inception"})
+REQUIRED_SOURCE_ROLES = frozenset({"dashboard", "positions", "orders", "balance_history", "cash_history", "inception"})
+CLOSE_SENSITIVE_ROLES = frozenset({"dashboard", "positions", "orders", "balance_history", "cash_history"})
 FLATNESS_BASES = frozenset({"DAILY_FLATTEN_CONFIRMED_NO_LATER_FILLS", "VENUE_EQUITY_AT_CLOSE"})
 TRADING_COST_KEYS = ("commission", "exchange", "clearing", "nfa")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
@@ -181,6 +182,8 @@ def verify_package(package: dict, sources: dict[str, bytes], *, head: dict, prev
             return "future_capture"
         if src["role"] != "inception" and now - captured > EVIDENCE_FRESHNESS:
             return "stale_evidence"
+        if (src["role"] in CLOSE_SENSITIVE_ROLES or src["role"].startswith("cash_history")) and captured < effective:
+            return "capture_before_effective_close"
         roles[src["role"]] = src
     if not REQUIRED_SOURCE_ROLES <= set(roles):
         return "source_role_missing"
@@ -230,6 +233,8 @@ def verify_package(package: dict, sources: dict[str, bytes], *, head: dict, prev
         return "ledger_arithmetic"
     txs = ledger["transactions"]
     if not isinstance(txs, list) or any(not isinstance(t, dict) or set(t) != {"id", "sha256", "session_id"}
+                                        or not isinstance(t["id"], str) or not re.fullmatch(r"[0-9A-Za-z_.:-]{1,64}", t["id"])
+                                        or not isinstance(t["sha256"], str) or not _HEX64.match(t["sha256"])
                                         or not isinstance(t["session_id"], str) or not _SESSION_ID.match(t["session_id"])
                                         for t in txs):
         return "transactions"
@@ -283,7 +288,13 @@ def verify_package(package: dict, sources: dict[str, bytes], *, head: dict, prev
     if dash["captured_utc"] != roles["dashboard"]["captured_utc"]:
         return "capture_time_unbound"
     peak = max(Decimal(head["peak"]), net_equity)
-    if balance != net_equity or threshold + _WIDTH != peak:
+    if scope == "record_only":
+        # Historical catch-up: the dashboard shows the CURRENT balance and peak. The venue balance
+        # row (assembler basis VENUE_ROW) corroborates the historical close; the dashboard may only
+        # show a peak at or above the historical one.
+        if threshold + _WIDTH < peak:
+            return "dashboard_disagreement"
+    elif balance != net_equity or threshold + _WIDTH != peak:
         return "dashboard_disagreement"
     pos = package["positions"]
     if not isinstance(pos, dict) or set(pos) != {"open_positions", "working_orders", "captured_utc"}:
@@ -341,6 +352,8 @@ class SettlementStore:
                    "scope TEXT, accepted_utc TEXT, status TEXT, row_hash TEXT)")
         db.execute("CREATE TABLE packages (package_sha256 TEXT PRIMARY KEY, session_id TEXT, kind TEXT, "
                    "package_json TEXT, source_digests TEXT, received_utc TEXT)")
+        db.execute("CREATE TABLE sources (package_sha256 TEXT, file TEXT, sha256 TEXT, data BLOB, "
+                   "PRIMARY KEY (package_sha256, file))")
         db.execute("CREATE TABLE challenges (challenge_id TEXT PRIMARY KEY, envelope_sha256 TEXT, envelope_json TEXT, "
                    "scope TEXT, issued_utc TEXT, expires_utc TEXT, status TEXT, consumed_utc TEXT)")
         db.execute("CREATE TABLE events (seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT, session_id TEXT, "
@@ -376,12 +389,19 @@ class SettlementStore:
                 raise SettlementError("settlement chain integrity failure")
             if prev_session is not None and predecessor != prev_session:
                 raise SettlementError("settlement chain predecessor break")
-            stored = db.execute("SELECT package_json, kind FROM packages WHERE package_sha256=?",
+            stored = db.execute("SELECT package_json, kind, source_digests FROM packages WHERE package_sha256=?",
                                 (package_sha256,)).fetchone()
             expected_kind = "B7_SEAL" if origin == "B7" else "ACCOUNT_CLOSE"
             if stored is None or stored[1] != expected_kind \
                     or sha256_hex(stored[0].encode("utf-8")) != package_sha256:
                 raise SettlementError("settlement package integrity failure")
+            if expected_kind == "ACCOUNT_CLOSE":
+                declared = json.loads(stored[2])
+                retained = {f: (s, d) for f, s, d in db.execute(
+                    "SELECT file, sha256, data FROM sources WHERE package_sha256=?", (package_sha256,))}
+                if set(retained) != set(declared) or any(
+                        retained[f][0] != declared[f] or sha256_hex(bytes(retained[f][1])) != declared[f] for f in declared):
+                    raise SettlementError("settlement source-bytes integrity failure")
             out.append({"seq": seq, "session_id": session_id, "predecessor_session_id": predecessor,
                         "package_sha256": package_sha256, "equity": equity, "peak": peak, "as_of_utc": as_of,
                         "mode_next": mode_next, "origin": origin, "scope": scope, "accepted_utc": accepted,
@@ -432,13 +452,19 @@ class SettlementStore:
                 store._event(db, "boot", None, {"boot_id": store.boot_id, "fresh": True}, now)
             else:
                 old = store._state(db, check_boot=False)
-                if old["calendar_digest"] != calendar_digest or old["policy_digest"] != policy_digest:
-                    raise SettlementError("calendar or policy digest changed across restart")
                 store._chain(db)
                 voided = db.execute("UPDATE challenges SET status='VOIDED_RESTART' WHERE status='ISSUED'").rowcount
                 db.execute("UPDATE state SET boot_id=?, restore_pending=1", (store.boot_id,))
                 store._event(db, "boot", None, {"boot_id": store.boot_id, "fresh": False,
                                                 "voided_challenges": voided}, now)
+                if old["calendar_digest"] != calendar_digest or old["policy_digest"] != policy_digest:
+                    # The monthly calendar extension and any policy replacement freeze are audited
+                    # rotations: the accepted-close chain is preserved, open challenges are already
+                    # voided, and every later challenge binds the new digests.
+                    db.execute("UPDATE state SET calendar_digest=?, policy_digest=?", (calendar_digest, policy_digest))
+                    store._event(db, "digests_rotated", None, {
+                        "calendar": [old["calendar_digest"], calendar_digest],
+                        "policy": [old["policy_digest"], policy_digest]}, now)
                 if old["trusted_keys"] != trusted_keys:
                     # Rotation/revocation is an audited enrollment change; the chain is preserved and
                     # only currently enrolled keys can sign from this boot on.
@@ -519,6 +545,10 @@ class SettlementStore:
             return Refusal("effective_close_outside_seal_window")
         if not isinstance(session_id, str) or not _SESSION_ID.match(session_id):
             return Refusal("session_id")
+        close_local = effective_close_utc.astimezone(ZoneInfo("America/New_York"))
+        if close_local.weekday() >= 5 or (close_local.hour, close_local.minute, close_local.second) != (17, 0, 0) \
+                or close_local.date().isoformat() != session_id.split(":")[1]:
+            return Refusal("effective_close_not_session_close")
         mode = Mode.PROTECTED if is_protected(float(equity), float(peak), policy) else Mode.NORMAL
         with self._tx() as db:
             state = self._state(db)
@@ -673,9 +703,12 @@ class SettlementStore:
             peak = max(Decimal(head["peak"]), net_equity)
             mode = Mode.PROTECTED if is_protected(float(net_equity), float(peak), policy) else Mode.NORMAL
             digest = envelope["package_sha256"]
+            declared_sources = {s["file"]: s["sha256"] for s in package["sources"]}
             db.execute("INSERT INTO packages VALUES (?,?,?,?,?,?)",
                        (digest, session_id, "ACCOUNT_CLOSE", package_bytes.decode("utf-8"),
-                        json.dumps({s["file"]: s["sha256"] for s in package["sources"]}, sort_keys=True), _iso(now)))
+                        json.dumps(declared_sources, sort_keys=True), _iso(now)))
+            for file_name, file_sha in declared_sources.items():
+                db.execute("INSERT INTO sources VALUES (?,?,?,?)", (digest, file_name, file_sha, sqlite3.Binary(sources[file_name])))
             db.execute("UPDATE challenges SET status='CONSUMED', consumed_utc=? WHERE challenge_id=?",
                        (_iso(now), envelope["challenge_id"]))
             self._append_chain(db, session_id=session_id, predecessor_session_id=head["session_id"],
@@ -784,10 +817,15 @@ def load_operator_keys(path: Path) -> dict[str, list[str]]:
             raise SettlementError(f"{label}: scopes")
         if _utc(row["enrolled_utc"]) is None or (row["revoked_utc"] is not None and _utc(row["revoked_utc"]) is None):
             raise SettlementError(f"{label}: timestamps")
+        if row["revoked_utc"] is not None:
+            # Append-only revocation: a later row naming an enrolled key with revoked_utc removes it.
+            if key_id not in keys:
+                raise SettlementError(f"{label}: revocation of a key that is not enrolled")
+            del keys[key_id]
+            continue
         if key_id in keys:
-            raise SettlementError(f"{label}: duplicate key")
-        if row["revoked_utc"] is None:
-            keys[key_id] = list(row["scopes"])
+            raise SettlementError(f"{label}: duplicate active enrolment")
+        keys[key_id] = list(row["scopes"])
     if not keys:
         raise SettlementError("no active operator key enrolled")
     return keys

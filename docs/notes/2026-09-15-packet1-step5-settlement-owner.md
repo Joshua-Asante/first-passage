@@ -173,3 +173,30 @@ boots from its result. The account binding happens at runtime.
 Re-qualification on the operator's reports after the fold: every verdict in the table above
 holds; no real cash row fell outside a session.
 
+## Review fold, round two — 2026-09-15 (Codex on PR #395)
+
+- **Orders evidence required**: the account-wide orders export is a required source role, so a
+  zero working-order claim is always backed by its own capture.
+- **Close-sensitive captures at or after the effective close**: dashboard, positions, orders,
+  balance history and every cash window must be captured at or after `effective_close_utc`.
+- **Historical catch-up reconciles against the current dashboard**: under `record_only` the
+  dashboard may show a peak at or above the historical one; equality is required only for a
+  current-session submission, and the assembler requires the venue balance row for historical closes.
+- **B7 session metadata bound**: the effective close must be a weekday 17:00 ET on the date named
+  by the session id, inside the seal window.
+- **Calendar and policy digests rotate across restart** as audited `digests_rotated` events; the
+  chain is preserved and every later challenge binds the new digests.
+- **Append-only key revocation**: a later enrollment row with `revoked_utc` removes the key; a full
+  revocation leaves no active key and refuses boot until a replacement is enrolled.
+- **Source bytes retained**: every accepted package stores its evidence bytes, verified by digest
+  on every chain read.
+- **Transaction ids and digests** must be short printable identifiers and 64-hex digests.
+- **Query completion attested**: each cash window carries an operator-typed completion flag from
+  the retained query capture; an unattested window refuses.
+- **Calendar**: the first row's predecessor must be the immediately preceding account day, and
+  admission waits for every qualified product's matching interval (`admits_from`; refusal
+  `before_product_open`).
+
+Re-qualification after the fold: unchanged verdicts, same package digest `261b4578…`; all six
+cash windows are attested complete from the collection record.
+

@@ -116,6 +116,7 @@ def package(head: Receipt, session_id: str, now: datetime, *, gross="250.00", pr
     peak = max(Decimal(head.peak), net_equity)
     captured = utc(now - timedelta(minutes=5))
     files = {"dashboard.png": b"dash-" + session_id.encode(), "positions.csv": b"pos-" + session_id.encode(),
+             "orders.csv": b"ord-" + session_id.encode(),
              "balance_history.csv": b"bal-" + session_id.encode(), "cash_history.csv": b"cash-" + session_id.encode(),
              "inception.pdf": b"inception-evidence"}
     txs = [dict(t) for t in prior_tx] + \
@@ -139,7 +140,7 @@ def package(head: Receipt, session_id: str, now: datetime, *, gross="250.00", pr
         "dashboard": {"balance": str(net_equity), "trailing_threshold": str(peak - 3000), "captured_utc": captured},
         "positions": {"open_positions": 0, "working_orders": 0, "captured_utc": captured},
         "sources": [{"role": r, "file": f, "sha256": sha256_hex(files[f]), "captured_utc": captured if r != "inception" else "2026-08-20T13:05:00Z"}
-                    for r, f in (("dashboard", "dashboard.png"), ("positions", "positions.csv"),
+                    for r, f in (("dashboard", "dashboard.png"), ("positions", "positions.csv"), ("orders", "orders.csv"),
                                  ("balance_history", "balance_history.csv"), ("cash_history", "cash_history.csv"),
                                  ("inception", "inception.pdf"))],
         "attestations": {"reflects_effective_close": True, "costs_included_once": True,
@@ -390,14 +391,25 @@ def test_tampered_chain_row_is_detected_on_boot(tmp_path):
         boot(tmp_path, operator, now=NOW14 + timedelta(hours=1))
 
 
-def test_changed_digests_across_restart_are_refused(tmp_path):
-    """The durable owner is bound to the ratified calendar and the policy digest."""
+def test_calendar_rotation_across_restart_is_audited_and_binds_later_challenges(tmp_path):
+    """The monthly calendar extension changes the digest; the chain survives and new challenges bind it."""
     operator = Operator()
-    seated(tmp_path, operator)
-    with pytest.raises(SettlementError, match="changed"):
-        SettlementStore.boot(tmp_path / "settlement.sqlite", ACCOUNT,
-                             trusted_keys={operator.key_id: ["submit_account_close", "record_only"]},
-                             calendar_digest="e" * 64, policy_digest=POLICY_DIGEST, now=NOW14)
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    r1 = submit(store, operator, challenge(store, pkg, target=S15, now=NOW14), pkg, files, NOW14)
+    later = NOW14 + timedelta(days=1)
+    rotated = SettlementStore.boot(tmp_path / "settlement.sqlite", ACCOUNT,
+                                   trusted_keys={operator.key_id: ["submit_account_close", "record_only"]},
+                                   calendar_digest="e" * 64, policy_digest=POLICY_DIGEST, now=later)
+    assert rotated.reconcile_restore(later)["rows"] == 2
+    with sqlite3.connect(tmp_path / "settlement.sqlite") as db:
+        detail = json.loads(db.execute("SELECT detail FROM events WHERE kind='digests_rotated'").fetchone()[0])
+    assert detail["calendar"] == [CALENDAR.calendar_digest, "e" * 64]
+    pkg2, files2 = package(r1, S15, later, prior_tx=pkg["ledger"]["transactions"])
+    # A challenge against the still-loaded September calendar object mismatches the rotated digest.
+    assert rotated.issue_challenge(scope="submit_account_close", target_session_id=S16, proposed_session_id=S15,
+                                   package_sha256=sha256_hex(canonical_bytes(pkg2)), halt_generation=1,
+                                   permission="RUNNING", calendar=CALENDAR, now=later) == Refusal("calendar_digest_mismatch")
 
 
 def test_key_rotation_across_restart_is_audited_and_the_old_key_is_refused(tmp_path):
@@ -438,6 +450,16 @@ def test_b7_bootstrap_is_initial_only_and_checked(tmp_path):
     close, mode = store.settled_close()
     assert close.session_id == B7_SESSION and close.equity == 98500.0 and mode is Mode.PROTECTED
     assert seat(store, b7_seal(), now=at) == Refusal("chain_already_seated")
+
+
+def test_b7_session_metadata_must_match_a_weekday_close(tmp_path):
+    """The seal seats only with the session id whose 17:00 ET close is the given effective close."""
+    operator = Operator()
+    store = boot(tmp_path, operator)
+    at = datetime(2026, 9, 12, 14, tzinfo=timezone.utc)
+    assert seat(store, b7_seal(), now=at, close=B7_CLOSE + timedelta(hours=1)) == Refusal("effective_close_not_session_close")
+    assert seat(store, b7_seal(), now=at, session_id="tradeify-account-day:2026-09-10") == Refusal("effective_close_not_session_close")
+    assert isinstance(seat(store, b7_seal(), now=at), Receipt)
 
 
 def _seal_mutation(name):
@@ -547,6 +569,17 @@ def _mutate(pkg, files, mutation, now):
         pkg["dashboard"]["captured_utc"] = utc(now - timedelta(minutes=9))
     elif mutation == "capture_time_unbound_positions":
         pkg["positions"]["captured_utc"] = utc(now - timedelta(minutes=9))
+    elif mutation == "capture_before_effective_close":
+        early = utc(now - timedelta(minutes=20))          # 20:50Z, before the 21:00Z close
+        for src in pkg["sources"]:
+            if src["role"] == "cash_history":
+                src["captured_utc"] = early
+    elif mutation == "source_role_missing_orders":
+        pkg["sources"] = [s for s in pkg["sources"] if s["role"] != "orders"]
+    elif mutation == "transactions_bad_digest":
+        pkg["ledger"]["transactions"][0]["sha256"] = "not-hex"
+    elif mutation == "transactions_int_id":
+        pkg["ledger"]["transactions"][0]["id"] = 12345
     elif mutation == "venue_equity_at_close":
         pkg["equity"]["flatness_basis"] = "VENUE_EQUITY_AT_CLOSE"    # without venue equity/valuation basis
     elif mutation == "attestation_incomplete":
@@ -576,6 +609,7 @@ def _mutate(pkg, files, mutation, now):
     "venue_equity_at_close", "attestation_incomplete", "wrong_account", "digest_mismatch",
     "predecessor_mismatch", "package_keys", "report_timezone", "operator_signed_in_future",
     "flatness_uncertain_open_position", "capture_time_unbound", "capture_time_unbound_positions",
+    "capture_before_effective_close", "source_role_missing_orders", "transactions_bad_digest", "transactions_int_id",
 ])
 def test_defective_packages_are_refused_by_name_without_state_advance(tmp_path, mutation):
     """Every contract refusal is a named value; the challenge stays issued and the chain unchanged."""
@@ -585,7 +619,9 @@ def test_defective_packages_are_refused_by_name_without_state_advance(tmp_path, 
     _mutate(pkg, files, mutation, NOW14)
     env = challenge(store, pkg, target=S15, now=NOW14)
     result = submit(store, operator, env, pkg, files, NOW14)
-    expected = {"flatness_uncertain_open_position": "flatness_uncertain", "capture_time_unbound_positions": "capture_time_unbound"}
+    expected = {"flatness_uncertain_open_position": "flatness_uncertain", "capture_time_unbound_positions": "capture_time_unbound",
+                "source_role_missing_orders": "source_role_missing", "transactions_bad_digest": "transactions",
+                "transactions_int_id": "transactions"}
     assert result == Refusal(expected.get(mutation, mutation)), result
     assert store.status()["rows"] == 1
     with sqlite3.connect(tmp_path / "settlement.sqlite") as db:
@@ -682,3 +718,49 @@ def test_modified_or_missing_package_bytes_break_the_chain(tmp_path):
         db.execute("DELETE FROM packages WHERE package_sha256=?", (r1.package_sha256,))
     with pytest.raises(SettlementError, match="package integrity"):
         store.settled_close()
+
+
+def test_accepted_source_bytes_are_retained_and_integrity_checked(tmp_path):
+    """Every accepted package keeps its evidence bytes; altering them refuses reads after restart."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    r1 = submit(store, operator, challenge(store, pkg, target=S15, now=NOW14), pkg, files, NOW14)
+    with sqlite3.connect(tmp_path / "settlement.sqlite") as db:
+        retained = {f: bytes(d) for f, d in db.execute("SELECT file, data FROM sources WHERE package_sha256=?",
+                                                       (r1.package_sha256,))}
+    assert retained == files
+    with sqlite3.connect(tmp_path / "settlement.sqlite") as db:
+        db.execute("UPDATE sources SET data=? WHERE package_sha256=? AND file='cash_history.csv'", (b"tampered", r1.package_sha256))
+    with pytest.raises(SettlementError, match="source-bytes integrity"):
+        store.status()
+
+
+def test_record_only_catch_up_tolerates_a_later_current_peak(tmp_path):
+    """Historical catch-up: the current dashboard may show a higher peak than the historical close."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    late = datetime(2026, 9, 16, 12, tzinfo=timezone.utc)
+    pkg14, f14 = package(head, S14, late)
+    pkg14["dashboard"]["trailing_threshold"] = str(Decimal(pkg14["dashboard"]["trailing_threshold"]) + 500)   # later peak
+    pkg14["dashboard"]["balance"] = str(Decimal(pkg14["dashboard"]["balance"]) + 700)                        # current balance
+    env = challenge(store, pkg14, target=None, now=late, scope="record_only", permission="HALTED", generation=3)
+    assert isinstance(submit(store, operator, env, pkg14, f14, late, generation=3), Receipt)
+    lower = pkg14.copy(); lower["dashboard"] = dict(pkg14["dashboard"], trailing_threshold=str(Decimal(head.peak) - 3000 - 1))
+    env = challenge(store, lower, target=None, now=late, scope="record_only", permission="HALTED", generation=3)
+    assert submit(store, operator, env, lower, f14, late, generation=3) == Refusal("duplicate_settlement", halt_required=True)
+
+
+def test_append_only_revocation_removes_a_key_and_a_full_revocation_leaves_none(tmp_path):
+    """A later row with revoked_utc removes the key without editing enrolment history."""
+    raw = json.loads((REPO / "ops" / "c1_rail" / "operator_keys.json").read_bytes())
+    row = raw["keys"][0]
+    raw["keys"].append(dict(row, revoked_utc="2026-09-16T00:00:00Z", instruction="revoke"))
+    path = tmp_path / "keys.json"
+    path.write_bytes(json.dumps(raw).encode("utf-8"))
+    with pytest.raises(SettlementError, match="no active operator key"):
+        load_operator_keys(path)
+    other = Operator()
+    raw["keys"].append(dict(row, key_id=other.key_id, revoked_utc=None, instruction="enrol replacement"))
+    path.write_bytes(json.dumps(raw).encode("utf-8"))
+    assert load_operator_keys(path) == {other.key_id: ["submit_account_close", "record_only"]}
