@@ -85,13 +85,18 @@ class SessionDecision:
         return self.session is not None
 
 
-def _utc(text: object, label: str) -> datetime:
+def _utc_event(text: object, label: str) -> datetime:
     if not isinstance(text, str) or not text.endswith("Z"):
         raise CalendarError(f"{label}: expected UTC 'Z' timestamp, got {text!r}")
     try:
         value = datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
     except ValueError as exc:
         raise CalendarError(f"{label}: {exc}") from exc
+    return value
+
+
+def _utc(text: object, label: str) -> datetime:
+    value = _utc_event(text, label)
     if value.second:
         raise CalendarError(f"{label}: clock-defined boundaries must fall on a whole minute")
     return value
@@ -529,7 +534,7 @@ def load_ratifications(path: Path) -> dict[str, dict]:
             raise CalendarError(f"{label}: only the operator ratifies a calendar")
         start = _utc(row["coverage_start_utc"], f"{label}.coverage_start_utc")
         end = _utc(row["coverage_end_utc"], f"{label}.coverage_end_utc")
-        ratified = _utc(row["ratified_utc"], f"{label}.ratified_utc")
+        ratified = _utc_event(row["ratified_utc"], f"{label}.ratified_utc")
         if not start < end:
             raise CalendarError(f"{label}: coverage bounds")
         if ratified >= end:

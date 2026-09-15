@@ -69,6 +69,16 @@ def rewrite(path, payload):
     path.write_bytes(json.dumps(payload, indent=2).encode("utf-8") + b"\n")
 
 
+def test_ratification_preserves_second_precision_audit_time(tmp_path):
+    payload = json.loads(RATIFIED.read_bytes())
+    payload["ratifications"][0]["ratified_utc"] = "2026-09-15T10:26:30Z"
+    path = tmp_path / "ratified.json"
+    rewrite(path, payload)
+    calendar = load_ratified_calendar(CALENDAR, overlay_path=OVERLAY, ratified_path=path, repo_root=REPO)
+    assert calendar.calendar_digest == CALENDAR_SHA256
+    assert load_ratifications(path)[CALENDAR_SHA256]["ratified_utc"] == "2026-09-15T10:26:30Z"
+
+
 # ---------------------------------------------------------------- checked-in artifacts
 
 

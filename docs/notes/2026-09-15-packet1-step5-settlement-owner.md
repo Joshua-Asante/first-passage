@@ -261,3 +261,47 @@ qualification re-passes (verifier clean, signed submission accepted, consumer no
 September 14 no-activity session on the corroborated basis. The earlier review-fold sections
 above are historical; the invariant table is the current statement of what is enforced.
 
+## Post-rebuild review repair — 2026-09-15
+
+Starting revision: `f29ee061fd410fa8ab5e4c9f03245cf107210fa7` (PR #395).
+The six findings on that rebuild were reproduced and repaired. An independent
+review of the repairs exposed four related gaps, which were also reproduced,
+repaired and accepted on focused re-review.
+
+The changes consolidate authority instead of adding separate recovery paths:
+
+- The minimum outstanding revision sequence lives in checked owner state;
+  resolution archives the entire affected suffix in one SQL statement, preserves
+  the unchanged prefix, and leaves restore reconciliation required. Rehashing that
+  prefix and selecting the newest audit event are removed.
+- One history digest binds active and superseded rows, correction payloads and
+  reconciliation links. Both kinds of accepted close use the same retained-evidence
+  verifier, deriving source identities from the hash-bound package. Edits and
+  suffix/whole-history deletion refuse reads and restart.
+- Challenge issue/expiry come from the verified signed envelope, not duplicate
+  database columns. Non-inception captures must precede challenge issuance; B7
+  requires aware close/capture/seal timestamps in order through receipt.
+- The verifier rejects later-session transactions in a current close even when
+  its predecessor is B7. Historical submissions require the venue-equity basis
+  at the verifier boundary, matching the assembler's existing requirement.
+- Calendar ratification timestamps preserve second precision; trading boundaries
+  retain their whole-minute rule. Ratified artifact bytes are unchanged.
+
+Verification: Python 3.13, `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`, `python -m pytest
+tests/ops -q`: **1889 passed, 15 skipped** (two upstream seaborn deprecation warnings).
+The initial focused baseline passed 172 tests; 36 new failing cases reproduced
+the original findings, then 13 failing cases reproduced the independent follow-up
+findings. Positive controls cover earlier inception history, repeated revisions,
+multiple correction cycles, and complete historical inventory across catch-up.
+The older-schema regression verifies refusal leaves the database bytes unchanged.
+The independent reviewer reran 40 focused cases and accepted the repaired code.
+The repository boundary checker passed.
+
+Internal store schema is now version 2; older stores require reviewed migration
+and are refused without modification. No automatic migration or deletion is
+provided for previously unanchored history. Historical catch-up still requires a
+qualified venue close-equity producer, which the rebuild did not establish. No
+live evidence was recaptured and no live close, enrollment, activation or resumption
+was performed. These results establish code repairs, not renewed private-report
+qualification or Step 6 admission.
+

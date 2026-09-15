@@ -70,7 +70,7 @@ _SEAL_VALUES = frozenset({"balance", "equity", "trailing_threshold", "prior_trad
 _KEY_ROW = frozenset({"key_id", "algorithm", "scopes", "account_binding", "enrolled_by", "enrolled_utc",
                       "instruction", "record", "revoked_utc"})
 _STATE_FIELDS = ("version", "account", "boot_id", "calendar_digest", "policy_digest", "trusted_keys",
-                 "restore_pending", "invalidated", "phase")
+                 "restore_pending", "invalidated", "phase", "invalidated_from_seq", "history_sha256")
 
 
 class SettlementError(RuntimeError):
@@ -288,6 +288,8 @@ def _v7_chronology(c: _Ctx):
         return "chronology:signed_before_capture"
     if c.issued_utc is not None and signed < c.issued_utc:
         return "chronology:signed_before_challenge"
+    if c.issued_utc is not None and any(t > c.issued_utc for r, t in captures.items() if r != "inception"):
+        return "chronology:capture_after_challenge"
     if signed > now:
         return "chronology:signed_after_receipt"
     cov = p["ledger"]["coverage"]
@@ -359,6 +361,10 @@ def _v10_transactions(c: _Ctx):
         return "duplicate_transaction_id"
     if ledger["revisions"] != []:
         return "transaction_revision_detected"
+    # A B7 predecessor has no transaction inventory, but a current close still
+    # cannot include later-session activity. Earlier inception history is valid.
+    if c.scope == "submit_account_close" and any(t["session_id"] > c.p["session_id"] for t in txs):
+        return "history_changed"
     if c.prev is not None:
         before = {t["id"]: (t["sha256"], t["session_id"]) for t in c.prev["ledger"]["transactions"]}
         after = {t["id"]: (t["sha256"], t["session_id"]) for t in txs}
@@ -376,6 +382,8 @@ def _v11_close_equity(c: _Ctx):
             return "positions_values"
     if equity["flatness_basis"] not in FLATNESS_BASES:
         return "flatness_basis"
+    if c.scope == "record_only" and equity["flatness_basis"] != "VENUE_EQUITY_AT_CLOSE":
+        return "venue_equity_at_close"
     if equity["flatness_basis"] == "DAILY_FLATTEN_CONFIRMED_NO_LATER_FILLS":
         if equity["at_effective_close"] != "FLAT" or c.p["unresolved_runtime_requests"] != [] \
                 or pos["open_positions"] != 0 or pos["working_orders"] != 0:
@@ -532,19 +540,27 @@ class SettlementStore:
 
     def _state(self, db, *, check_boot: bool = True) -> dict:
         """O1: one integrity-hashed state row for this account (and this boot unless restarting)."""
+        columns = {r[1] for r in db.execute("PRAGMA table_info(state)")}
+        if columns != set(_STATE_FIELDS) | {"state_hash"}:
+            raise SettlementError("unsupported settlement store version; reviewed migration required")
         rows = db.execute("SELECT " + ", ".join(_STATE_FIELDS) + ", state_hash FROM state").fetchall()
         if len(rows) != 1:
             raise SettlementError("invalid or fenced settlement owner")
         values = dict(zip(_STATE_FIELDS, rows[0][:-1]))
         if rows[0][-1] != self._state_hash(values):
             raise SettlementError("settlement state integrity failure")
-        if values["version"] != "1" or values["account"] != self.account \
+        if values["version"] != "2" or values["account"] != self.account \
                 or (check_boot and values["boot_id"] != self.boot_id) or values["phase"] not in PHASES:
             raise SettlementError("invalid or fenced settlement owner")
+        from_seq = int(values["invalidated_from_seq"])
+        if from_seq < 0 or (from_seq > 0) != (values["invalidated"] == "1") \
+                or (from_seq > 0) != (values["phase"] == "INVALIDATED"):
+            raise SettlementError("settlement invalidation integrity failure")
         return {"account": values["account"], "boot_id": values["boot_id"], "calendar_digest": values["calendar_digest"],
                 "policy_digest": values["policy_digest"], "trusted_keys": json.loads(values["trusted_keys"]),
                 "restore_pending": values["restore_pending"] == "1", "invalidated": values["invalidated"] == "1",
-                "phase": values["phase"]}
+                "phase": values["phase"], "invalidated_from_seq": from_seq,
+                "history_sha256": values["history_sha256"]}
 
     _ALLOWED = {  # O3: phase transitions
         ("EMPTY", "SEATED"), ("SEATED", "ACCEPTING"), ("ACCEPTING", "ACCEPTING"), ("SEATED", "INVALIDATED"),
@@ -571,8 +587,45 @@ class SettlementStore:
     def _row_hash(prev_hash: str, fields: tuple) -> str:
         return sha256_hex((prev_hash + "|" + "|".join(str(f) for f in fields)).encode("utf-8"))
 
+    @staticmethod
+    def _history_digest(db) -> str:
+        # One anchor covers both histories, including length/order and review
+        # metadata. A per-row hash chain alone misses deletion of its suffix.
+        active = db.execute("SELECT * FROM chain ORDER BY seq").fetchall()
+        archived = db.execute("SELECT * FROM superseded_chain ORDER BY rowid").fetchall()
+        revisions = db.execute("SELECT * FROM packages WHERE kind='REVISION' ORDER BY package_sha256").fetchall()
+        reconciliation = db.execute("SELECT * FROM events WHERE kind IN ('revision_recorded', 'invalidation_resolved') "
+                                    "ORDER BY seq").fetchall()
+        return sha256_hex(canonical_bytes({"chain": active, "superseded_chain": archived,
+                                          "revisions": revisions, "reconciliation": reconciliation}))
+
+    @staticmethod
+    def _verify_retained_evidence(db, package_sha256: str, origin: str) -> None:
+        """The same evidence obligation applies to active and superseded closes."""
+        stored = db.execute("SELECT package_json, kind, source_digests FROM packages WHERE package_sha256=?",
+                            (package_sha256,)).fetchone()
+        kind = "B7_SEAL" if origin == "B7" else "ACCOUNT_CLOSE"
+        if stored is None or stored[1] != kind or sha256_hex(stored[0].encode("utf-8")) != package_sha256:
+            raise SettlementError("settlement package integrity failure")
+        if kind == "ACCOUNT_CLOSE":
+            # Derive the source manifest from the hash-bound package, not merely
+            # the mutable index alongside it.
+            declared = {s["file"]: s["sha256"] for s in json.loads(stored[0])["sources"]}
+            if json.loads(stored[2]) != declared:
+                raise SettlementError("settlement source manifest integrity failure")
+            retained = {f: (s, d) for f, s, d in db.execute(
+                "SELECT file, sha256, data FROM sources WHERE package_sha256=?", (package_sha256,))}
+            if set(retained) != set(declared) or any(
+                    retained[f][0] != declared[f] or sha256_hex(bytes(retained[f][1])) != declared[f] for f in declared):
+                raise SettlementError("settlement source-bytes integrity failure")
+
     def _chain(self, db) -> list[dict]:
         """O2: strict hash-chained sequence with retained, re-verified package and source bytes."""
+        state = self._state(db, check_boot=False)
+        if self._history_digest(db) != state["history_sha256"]:
+            raise SettlementError("settlement chain integrity failure")
+        for digest, origin in db.execute("SELECT package_sha256, origin FROM superseded_chain"):
+            self._verify_retained_evidence(db, digest, origin)
         rows = db.execute("SELECT seq, session_id, predecessor_session_id, package_sha256, equity, peak, as_of_utc, "
                           "mode_next, origin, scope, accepted_utc, status, row_hash FROM chain ORDER BY seq").fetchall()
         out, prev_hash, prev_session = [], "", None
@@ -585,18 +638,7 @@ class SettlementStore:
                 raise SettlementError("settlement chain integrity failure")
             if prev_session is not None and predecessor != prev_session:
                 raise SettlementError("settlement chain predecessor break")
-            stored = db.execute("SELECT package_json, kind, source_digests FROM packages WHERE package_sha256=?",
-                                (package_sha256,)).fetchone()
-            kind = "B7_SEAL" if origin == "B7" else "ACCOUNT_CLOSE"
-            if stored is None or stored[1] != kind or sha256_hex(stored[0].encode("utf-8")) != package_sha256:
-                raise SettlementError("settlement package integrity failure")
-            if kind == "ACCOUNT_CLOSE":
-                declared = json.loads(stored[2])
-                retained = {f: (s, d) for f, s, d in db.execute(
-                    "SELECT file, sha256, data FROM sources WHERE package_sha256=?", (package_sha256,))}
-                if set(retained) != set(declared) or any(
-                        retained[f][0] != declared[f] or sha256_hex(bytes(retained[f][1])) != declared[f] for f in declared):
-                    raise SettlementError("settlement source-bytes integrity failure")
+            self._verify_retained_evidence(db, package_sha256, origin)
             out.append({"seq": seq, "session_id": session_id, "predecessor_session_id": predecessor,
                         "package_sha256": package_sha256, "equity": equity, "peak": peak, "as_of_utc": as_of,
                         "mode_next": mode_next, "origin": origin, "scope": scope, "accepted_utc": accepted,
@@ -612,13 +654,7 @@ class SettlementStore:
                   "ACCEPTED")
         db.execute("INSERT INTO chain VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                    fields + (self._row_hash(prev[0] if prev else "", fields),))
-
-    def _rehash(self, db) -> None:
-        prev = ""
-        for fields in db.execute("SELECT seq, session_id, predecessor_session_id, package_sha256, equity, peak, "
-                                 "as_of_utc, mode_next, origin, scope, accepted_utc, status FROM chain ORDER BY seq").fetchall():
-            prev = self._row_hash(prev, fields)
-            db.execute("UPDATE chain SET row_hash=? WHERE seq=?", (prev, fields[0]))
+        self._transition(db, history_sha256=self._history_digest(db))
 
     def _event(self, db, kind: str, session_id: str | None, detail: dict, now: datetime) -> None:
         db.execute("INSERT INTO events (kind, session_id, detail, utc) VALUES (?,?,?,?)",
@@ -650,9 +686,10 @@ class SettlementStore:
             tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             if not tables and not existed:
                 cls._create(db)
-                values = {"version": "1", "account": account, "boot_id": store.boot_id, "calendar_digest": calendar_digest,
+                values = {"version": "2", "account": account, "boot_id": store.boot_id, "calendar_digest": calendar_digest,
                           "policy_digest": policy_digest, "trusted_keys": keys_json, "restore_pending": "0",
-                          "invalidated": "0", "phase": "EMPTY"}
+                          "invalidated": "0", "phase": "EMPTY", "invalidated_from_seq": "0",
+                          "history_sha256": cls._history_digest(db)}
                 db.execute("INSERT INTO state VALUES (" + ",".join("?" * (len(_STATE_FIELDS) + 1)) + ")",
                            tuple(values[f] for f in _STATE_FIELDS) + (cls._state_hash(values),))
                 store._event(db, "boot", None, {"boot_id": store.boot_id, "fresh": True}, now)
@@ -738,10 +775,19 @@ class SettlementStore:
             return Refusal("seal_expired")
         if not (expiry - timedelta(hours=49) <= effective_close_utc < expiry):
             return Refusal("effective_close_outside_seal_window")
+        try:
+            sealed = datetime.fromisoformat(seal["seal_timestamp"])
+            captures = [datetime.fromisoformat(r["captured_at"]) for r in evidence.values()]
+        except (TypeError, ValueError):
+            return Refusal("seal_chronology")
+        if not _aware(sealed) or any(not _aware(t) for t in captures) \
+                or not effective_close_utc <= sealed <= now \
+                or any(not effective_close_utc <= t <= sealed for t in captures):
+            return Refusal("seal_chronology")
         if not isinstance(session_id, str) or not _SESSION_ID.match(session_id):
             return Refusal("session_id")
         close_local = effective_close_utc.astimezone(ET)
-        if close_local.weekday() >= 5 or (close_local.hour, close_local.minute, close_local.second) != (17, 0, 0) \
+        if close_local.weekday() >= 5 or (close_local.hour, close_local.minute, close_local.second, close_local.microsecond) != (17, 0, 0, 0) \
                 or close_local.date().isoformat() != session_id.split(":")[1]:
             return Refusal("effective_close_not_session_close")
         mode = Mode.PROTECTED if is_protected(float(equity), float(peak), policy) else Mode.NORMAL
@@ -845,16 +891,18 @@ class SettlementStore:
             message = canonical_bytes(envelope)
             if not ed25519_verify(bytes.fromhex(key_id), message, signature):
                 return Refusal("bad_signature")
-            row = db.execute("SELECT envelope_sha256, status, expires_utc, issued_utc FROM challenges "
+            row = db.execute("SELECT envelope_sha256, status FROM challenges "
                              "WHERE challenge_id=?", (envelope.get("challenge_id"),)).fetchone()
             if row is None:
                 return Refusal("challenge_unknown")
-            envelope_sha256, status, expires_utc, issued_utc = row
+            envelope_sha256, status = row
             if envelope_sha256 != sha256_hex(message):
                 return Refusal("challenge_mismatch")
             if status != "ISSUED":
                 return Refusal("challenge_consumed")
-            if now >= _utc(expires_utc):
+            # Chronology belongs to the exact signed envelope. Indexed copies
+            # are not an independent authority for extending or shifting it.
+            if now >= _utc(envelope["expires_utc"]):
                 db.execute("UPDATE challenges SET status='EXPIRED' WHERE challenge_id=?", (envelope["challenge_id"],))
                 return Refusal("challenge_expired")
             if envelope["account"] != self.account or envelope["boot_id"] != self.boot_id \
@@ -887,7 +935,7 @@ class SettlementStore:
             reason = verify_package(package, sources, head=head, previous_package=previous_package,
                                     account=self.account, calendar_digest=state["calendar_digest"],
                                     policy_digest=state["policy_digest"], calendar=calendar,
-                                    scope=envelope["scope"], now=now, issued_utc=_utc(issued_utc))
+                                    scope=envelope["scope"], now=now, issued_utc=_utc(envelope["issued_utc"]))
             if reason is not None:
                 self._event(db, "submission_refused", session_id, {"reason": reason,
                                                                    "challenge_id": envelope["challenge_id"]}, now)
@@ -925,7 +973,7 @@ class SettlementStore:
     def record_revision(self, *, session_id: str, revised_package: dict, now: datetime, on_halt=None) -> Refusal:
         """A changed accepted record invalidates it and every dependent row; nothing is overwritten."""
         with self._tx() as db:
-            self._state(db)
+            state = self._state(db)
             chain = self._chain(db)
             index = next((i for i, r in enumerate(chain) if r["session_id"] == session_id), None)
             if index is None:
@@ -936,10 +984,12 @@ class SettlementStore:
                 return Refusal("revision_identical")
             db.execute("INSERT OR IGNORE INTO packages VALUES (?,?,?,?,?,?)",
                        (digest, session_id, "REVISION", revised_bytes.decode("utf-8"), "{}", _iso(now)))
-            self._transition(db, phase="INVALIDATED", invalidated=True)
+            from_seq = min(state["invalidated_from_seq"] or chain[index]["seq"], chain[index]["seq"])
+            self._transition(db, phase="INVALIDATED", invalidated=True, invalidated_from_seq=from_seq)
             db.execute("UPDATE challenges SET status='VOIDED_REVISION' WHERE status='ISSUED'")
             self._event(db, "revision_recorded", session_id, {"revised_sha256": digest,
                                                              "invalidated_from_seq": chain[index]["seq"]}, now)
+            self._transition(db, history_sha256=self._history_digest(db))
         if on_halt is not None:
             on_halt("settlement:revision:" + session_id, "protection")
         return Refusal("accepted_record_revised", halt_required=True)
@@ -958,29 +1008,29 @@ class SettlementStore:
             state = self._state(db)
             if state["phase"] != "INVALIDATED":
                 return Refusal("chain_not_invalidated")
-            revised = db.execute("SELECT session_id, detail FROM events WHERE kind='revision_recorded' "
-                                 "ORDER BY seq DESC LIMIT 1").fetchone()
-            if revised is None:
-                return Refusal("chain_not_invalidated")
-            from_seq = json.loads(revised[1])["invalidated_from_seq"]
+            from_seq = state["invalidated_from_seq"]
             if from_seq <= 1:
                 return Refusal("b7_head_revised_reseal_required")
             chain = self._chain(db)
-            for row in chain:
-                if row["seq"] >= from_seq:
-                    db.execute("INSERT INTO superseded_chain SELECT seq, session_id, predecessor_session_id, package_sha256, "
-                               "equity, peak, as_of_utc, mode_next, origin, scope, accepted_utc, 'SUPERSEDED', ?, ? "
-                               "FROM chain WHERE seq=?", (_iso(now), review_sha256, row["seq"]))
+            if from_seq > len(chain):
+                raise SettlementError("settlement invalidation integrity failure")
+            revised_session = chain[from_seq - 1]["session_id"]
+            db.execute("INSERT INTO superseded_chain SELECT seq, session_id, predecessor_session_id, package_sha256, "
+                       "equity, peak, as_of_utc, mode_next, origin, scope, accepted_utc, 'SUPERSEDED', ?, ? "
+                       "FROM chain WHERE seq>=? ORDER BY seq", (_iso(now), review_sha256, from_seq))
             db.execute("DELETE FROM chain WHERE seq>=?", (from_seq,))
-            self._rehash(db)
-            remaining = self._chain(db)
+            # The retained prefix is unchanged, including its hashes. Publish the
+            # new archive anchor and clear the pending boundary in this transaction.
+            remaining = chain[:from_seq - 1]
             phase = "SEATED" if remaining[-1]["origin"] == "B7" else "ACCEPTING"
-            self._transition(db, phase=phase, invalidated=False, restore_pending=True)
             db.execute("UPDATE challenges SET status='VOIDED_RECONCILIATION' WHERE status='ISSUED'")
-            self._event(db, "invalidation_resolved", revised[0], {"review_sha256": review_sha256,
+            self._event(db, "invalidation_resolved", revised_session, {"review_sha256": review_sha256,
                                                                    "reviewed_by": reviewed_by,
                                                                    "superseded_from_seq": from_seq,
                                                                    "new_head": remaining[-1]["session_id"]}, now)
+            self._transition(db, phase=phase, invalidated=False, invalidated_from_seq=0, restore_pending=True,
+                             history_sha256=self._history_digest(db))
+            self._chain(db)
             return {"head": remaining[-1]["session_id"], "superseded_from_seq": from_seq, "restore_pending": True}
 
     # ---- reads ---------------------------------------------------------------

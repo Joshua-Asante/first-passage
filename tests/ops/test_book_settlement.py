@@ -149,6 +149,12 @@ def package(head: Receipt, session_id: str, now: datetime, *, gross="250.00", pr
         "unresolved_runtime_requests": [],
         "scope": scope, "settlement_basis": basis,
     }
+    if scope == "record_only":
+        files["close_equity.png"] = b"synthetic venue close equity-" + session_id.encode()
+        pkg["sources"].append({"role": "close_equity", "file": "close_equity.png",
+                               "sha256": sha256_hex(files["close_equity.png"]), "captured_utc": captured})
+        pkg["equity"].update(flatness_basis="VENUE_EQUITY_AT_CLOSE", at_effective_close="VENUE_EQUITY_AT_CLOSE",
+                             equity_at_effective_close=str(net_equity), valuation_basis="close_equity.png")
     return pkg, files
 
 
@@ -505,6 +511,10 @@ def test_record_only_catch_up_accepts_missed_sessions_in_order_while_halted(tmp_
     store, head = seated(tmp_path, operator)
     late = datetime(2026, 9, 16, 12, tzinfo=timezone.utc)
     pkg14, f14 = package(head, S14, late, scope="record_only")
+    # Both fresh queries contain the same complete inventory, including trades
+    # from the later missed session. Each close uses its own venue equity view.
+    later_txs = [{"id": "later-trade", "sha256": "d" * 64, "session_id": S15}]
+    pkg14["ledger"]["transactions"].extend(later_txs)
     assert store.issue_challenge(scope="record_only", target_session_id=None, proposed_session_id=S14,
                                  package_sha256=sha256_hex(canonical_bytes(pkg14)), halt_generation=3,
                                  permission="RUNNING", calendar=CALENDAR, now=late) == Refusal("record_only_requires_halted")
@@ -513,6 +523,7 @@ def test_record_only_catch_up_accepts_missed_sessions_in_order_while_halted(tmp_
     r14 = submit(store, operator, env, pkg14, f14, late, generation=3)
     assert isinstance(r14, Receipt) and r14.grants_activation is False
     pkg15, f15 = package(r14, S15, late, prior_tx=pkg14["ledger"]["transactions"], scope="record_only")
+    pkg15["ledger"]["transactions"] = deepcopy(pkg14["ledger"]["transactions"])
     env = challenge(store, pkg15, target=None, now=late, scope="record_only", permission="HALTED", generation=3)
     r15 = submit(store, operator, env, pkg15, f15, late, generation=3)
     assert isinstance(r15, Receipt)
@@ -875,4 +886,224 @@ def test_revising_the_b7_head_needs_a_new_seal(tmp_path):
     store.record_revision(session_id=B7_SESSION, revised_package={"changed": True}, now=NOW14)
     result = store.resolve_invalidation(review_sha256="1" * 64, reviewed_by="packet0_review", now=NOW14)
     assert result == Refusal("b7_head_revised_reseal_required")
+
+
+def two_closes(tmp_path):
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    p14, f14 = package(head, S14, NOW14)
+    r14 = submit(store, operator, challenge(store, p14, target=S15, now=NOW14), p14, f14, NOW14)
+    now15 = NOW14 + timedelta(days=1)
+    p15, f15 = package(r14, S15, now15, prior_tx=p14["ledger"]["transactions"])
+    r15 = submit(store, operator, challenge(store, p15, target=S16, now=now15), p15, f15, now15)
+    assert isinstance(r15, Receipt)
+    return operator, store, head, p14, p15, r14, r15, now15
+
+
+@pytest.mark.parametrize("sessions", [(S14, S15), (S15, S14), (S14, S14)])
+def test_resolution_removes_every_outstanding_revision(tmp_path, sessions):
+    operator, store, head, p14, p15, r14, r15, now = two_closes(tmp_path)
+    for i, sid in enumerate(sessions):
+        store.record_revision(session_id=sid, revised_package={"correction": i}, now=now)
+    # A restart must retain the earliest invalidation, independent of event order.
+    store = boot(tmp_path, operator, now)
+    result = store.resolve_invalidation(review_sha256="1" * 64, reviewed_by="reviewer", now=now)
+    assert result == {"head": B7_SESSION, "superseded_from_seq": 2, "restore_pending": True}
+    assert store.settled_close() == Refusal("restore_reconciliation_required")
+    store.reconcile_restore(now)
+    assert store.settled_close()[0].session_id == B7_SESSION
+    with sqlite3.connect(store.path) as db:
+        assert db.execute("SELECT session_id FROM superseded_chain ORDER BY seq").fetchall() == [(S14,), (S15,)]
+
+
+def test_second_resolution_does_not_reuse_a_resolved_revision(tmp_path):
+    operator, store, head, p14, p15, r14, r15, now = two_closes(tmp_path)
+    store.record_revision(session_id=S14, revised_package={"correction": 1}, now=now)
+    store.resolve_invalidation(review_sha256="1" * 64, reviewed_by="reviewer", now=now)
+    store.reconcile_restore(now)
+    # Re-submit distinct corrected evidence, then revise only the later session.
+    p14b, f14b = package(head, S14, now, gross="200", scope="record_only")
+    env = challenge(store, p14b, target=None, now=now, scope="record_only", permission="HALTED")
+    r14b = submit(store, operator, env, p14b, f14b, now)
+    p15b, f15b = package(r14b, S15, now, prior_tx=p14b["ledger"]["transactions"], scope="record_only")
+    env = challenge(store, p15b, target=None, now=now, scope="record_only", permission="HALTED")
+    assert isinstance(submit(store, operator, env, p15b, f15b, now), Receipt)
+    store.record_revision(session_id=S15, revised_package={"correction": 2}, now=now)
+    result = store.resolve_invalidation(review_sha256="2" * 64, reviewed_by="reviewer", now=now)
+    assert result["head"] == S14 and result["superseded_from_seq"] == 3
+    store = boot(tmp_path, operator, now)
+    store.reconcile_restore(now)
+    assert store.settled_close()[0].equity == 100194.46
+
+
+@pytest.mark.parametrize("reader", ["status", "settled_close", "boot"])
+@pytest.mark.parametrize("mutation", ["row_edit", "row_delete", "all_rows_delete", "package_edit", "package_delete", "source_edit", "source_delete"])
+def test_superseded_history_corruption_blocks_consumers(tmp_path, reader, mutation):
+    operator, store, head, p14, p15, r14, r15, now = two_closes(tmp_path)
+    store.record_revision(session_id=S14, revised_package={"correction": 1}, now=now)
+    store.resolve_invalidation(review_sha256="1" * 64, reviewed_by="reviewer", now=now)
+    store.reconcile_restore(now)
+    with sqlite3.connect(store.path) as db:
+        if mutation == "row_edit":
+            db.execute("UPDATE superseded_chain SET equity='1' WHERE seq=2")
+        elif mutation == "row_delete":
+            db.execute("DELETE FROM superseded_chain WHERE seq=3")
+        elif mutation == "all_rows_delete":
+            db.execute("DELETE FROM superseded_chain")
+        elif mutation == "package_edit":
+            db.execute("UPDATE packages SET package_json='{}' WHERE package_sha256=?", (r14.package_sha256,))
+        elif mutation == "package_delete":
+            db.execute("DELETE FROM packages WHERE package_sha256=?", (r14.package_sha256,))
+        elif mutation == "source_edit":
+            db.execute("UPDATE sources SET data=? WHERE package_sha256=?", (b"changed", r14.package_sha256))
+        else:
+            db.execute("DELETE FROM sources WHERE package_sha256=?", (r14.package_sha256,))
+    with pytest.raises(SettlementError, match="integrity"):
+        if reader == "boot":
+            boot(tmp_path, operator, now)
+        else:
+            getattr(store, reader)()
+
+
+@pytest.mark.parametrize("tx_session, accepted", [(B7_SESSION, True), (S14, True), (S15, False)])
+def test_first_current_close_checks_transaction_session_boundary(tmp_path, tx_session, accepted):
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    pkg["ledger"]["transactions"][0]["session_id"] = tx_session
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    result = submit(store, operator, env, pkg, files, NOW14)
+    if accepted:
+        assert isinstance(result, Receipt)
+    else:
+        assert result == Refusal("history_changed")
+        assert store.status()["rows"] == 1
+
+
+@pytest.mark.parametrize("role", ["dashboard", "positions", "orders", "balance_history", "cash_history"])
+def test_capture_after_challenge_is_refused_even_before_signing(tmp_path, role):
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    capture = utc(NOW14 + timedelta(seconds=1))
+    next(s for s in pkg["sources"] if s["role"] == role)["captured_utc"] = capture
+    if role in ("dashboard", "positions"):
+        pkg[role]["captured_utc"] = capture
+    if role == "cash_history":
+        pkg["ledger"]["coverage"]["windows"][-1]["to_utc"] = capture
+    pkg["operator_signed_utc"] = utc(NOW14 + timedelta(seconds=2))
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    assert submit(store, operator, env, pkg, files, NOW14 + timedelta(seconds=3)) == Refusal("chronology:capture_after_challenge")
+    assert store.status()["rows"] == 1
+
+
+@pytest.mark.parametrize("mutation", ["future_close", "future_seal", "future_capture", "capture_after_seal", "seal_before_close", "naive_seal", "malformed_capture"])
+def test_b7_chronology_must_end_before_receipt(tmp_path, mutation):
+    operator = Operator()
+    store = boot(tmp_path, operator)
+    now = datetime(2026, 9, 12, 14, tzinfo=timezone.utc)
+    def mutate(doc):
+        if mutation == "future_seal":
+            doc["seal_timestamp"] = "2026-09-12T10:00:01-04:00"
+        elif mutation == "future_capture":
+            doc["evidence"]["E2"]["captured_at"] = "2026-09-12T10:00:01-04:00"
+        elif mutation == "capture_after_seal":
+            doc["seal_timestamp"] = "2026-09-12T09:00:00-04:00"
+        elif mutation == "seal_before_close":
+            doc["seal_timestamp"] = "2026-09-11T16:59:00-04:00"
+        elif mutation == "naive_seal":
+            doc["seal_timestamp"] = "2026-09-12T10:00:00"
+        elif mutation == "malformed_capture":
+            doc["evidence"]["E2"]["captured_at"] = "not a time"
+    if mutation == "future_close":
+        now = B7_CLOSE - timedelta(seconds=1)
+    result = seat(store, b7_seal(mutate=mutate), now=now)
+    assert isinstance(result, Refusal)
+    assert store.status()["rows"] == 0
+
+
+@pytest.mark.parametrize("reader", ["status", "settled_close", "boot"])
+@pytest.mark.parametrize("suffix_only", [True, False])
+def test_active_history_deletion_cannot_roll_back_the_consumed_close(tmp_path, reader, suffix_only):
+    operator, store, head, p14, p15, r14, r15, now = two_closes(tmp_path)
+    with sqlite3.connect(store.path) as db:
+        db.execute("DELETE FROM chain WHERE seq=3" if suffix_only else "DELETE FROM chain")
+    with pytest.raises(SettlementError, match="integrity"):
+        if reader == "boot":
+            boot(tmp_path, operator, now)
+        else:
+            getattr(store, reader)()
+
+
+def test_record_only_requires_close_equity_even_with_a_current_flat_snapshot(tmp_path):
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    now = NOW14 + timedelta(days=2)
+    pkg, files = package(head, S14, now, scope="record_only")
+    pkg["equity"].update(flatness_basis="DAILY_FLATTEN_CONFIRMED_NO_LATER_FILLS",
+                         at_effective_close="FLAT", equity_at_effective_close=None, valuation_basis=None)
+    pkg["sources"] = [s for s in pkg["sources"] if s["role"] != "close_equity"]
+    pkg["ledger"]["transactions"][0]["session_id"] = S15
+    env = challenge(store, pkg, target=None, now=now, scope="record_only", permission="HALTED")
+    assert submit(store, operator, env, pkg, files, now) == Refusal("venue_equity_at_close")
+    assert store.status()["rows"] == 1
+
+
+@pytest.mark.parametrize("mutation", ["revision_delete", "revision_edit", "event_delete", "event_edit"])
+def test_revision_evidence_and_linkage_remain_verified_after_resolution(tmp_path, mutation):
+    operator, store, head, p14, p15, r14, r15, now = two_closes(tmp_path)
+    store.record_revision(session_id=S14, revised_package={"correction": 1}, now=now)
+    store.resolve_invalidation(review_sha256="1" * 64, reviewed_by="reviewer", now=now)
+    store.reconcile_restore(now)
+    with sqlite3.connect(store.path) as db:
+        if mutation == "revision_delete":
+            db.execute("DELETE FROM packages WHERE kind='REVISION'")
+        elif mutation == "revision_edit":
+            db.execute("UPDATE packages SET package_json='{}' WHERE kind='REVISION'")
+        elif mutation == "event_delete":
+            db.execute("DELETE FROM events WHERE kind='revision_recorded'")
+        else:
+            db.execute("UPDATE events SET detail='{}' WHERE kind='invalidation_resolved'")
+    with pytest.raises(SettlementError, match="integrity"):
+        store.settled_close()
+    with pytest.raises(SettlementError, match="integrity"):
+        boot(tmp_path, operator, now)
+
+
+@pytest.mark.parametrize("column", ["issued_utc", "expires_utc"])
+def test_challenge_chronology_uses_the_signed_envelope(tmp_path, column):
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    now = NOW14 + timedelta(seconds=3)
+    if column == "issued_utc":
+        next(s for s in pkg["sources"] if s["role"] == "orders")["captured_utc"] = utc(NOW14 + timedelta(seconds=1))
+        pkg["operator_signed_utc"] = utc(NOW14 + timedelta(seconds=2))
+    else:
+        now = NOW14 + timedelta(minutes=6)
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    with sqlite3.connect(store.path) as db:
+        if column == "issued_utc":
+            db.execute("UPDATE challenges SET issued_utc=?", (utc(NOW14 + timedelta(seconds=1)),))
+        else:
+            db.execute("UPDATE challenges SET expires_utc=?", (utc(NOW14 + timedelta(hours=1)),))
+    result = submit(store, operator, env, pkg, files, now)
+    assert result == Refusal("chronology:capture_after_challenge" if column == "issued_utc" else "challenge_expired")
+    assert store.status()["rows"] == 1
+
+
+def test_older_store_is_refused_without_rewriting_its_evidence(tmp_path):
+    """Unanchored v1 history needs reviewed migration; boot must not silently bless it."""
+    path = tmp_path / "settlement.sqlite"
+    with sqlite3.connect(path) as db:
+        db.execute("CREATE TABLE state (version TEXT, account TEXT, boot_id TEXT, calendar_digest TEXT, "
+                   "policy_digest TEXT, trusted_keys TEXT, restore_pending TEXT, invalidated TEXT, "
+                   "phase TEXT, state_hash TEXT)")
+        db.execute("INSERT INTO state VALUES ('1', 'synthetic-account', 'old-boot', '', '', '{}', '0', '0', 'SEATED', '')")
+        db.execute("CREATE TABLE retained_evidence (data BLOB)")
+        db.execute("INSERT INTO retained_evidence VALUES (?)", (b"preserve this older store for review",))
+    before = path.read_bytes()
+    with pytest.raises(SettlementError, match="reviewed migration required"):
+        boot(tmp_path, Operator())
+    assert path.read_bytes() == before
 

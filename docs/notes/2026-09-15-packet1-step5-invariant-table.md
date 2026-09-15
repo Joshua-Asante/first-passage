@@ -19,8 +19,8 @@ does not map to a row is a missing row, not a patch. Tests violate exactly one r
 | V7 | One chronology holds across every timestamp: inception < effective close ≤ every close-sensitive capture ≤ challenge issue ≤ operator signing ≤ receipt; publication (if any) ≤ receipt; every non-inception capture within 30 minutes of receipt; embedded dashboard and positions times equal their source rows; history windows overlap from inception and end exactly at the cash capture | `chronology:<detail>` | package, envelope (`issued_utc`), receipt |
 | V8 | Evidence is complete and independent: string roles and files, every required role present, unique files, unique digests across required roles, bytes present and matching | `source_row`, `source_role_missing`, `source_not_distinct`, `source_bytes_mismatch` | sources |
 | V9 | Ledger continuity in decimal arithmetic from the predecessor's equity; zero adjustments; no unknown or unlinked rows; non-negative transaction-linked costs | `predecessor_equity_mismatch`, `ledger_arithmetic`, `cash_adjustments_present`, `unclassified_ledger_rows`, `trading_costs` | head |
-| V10 | Transaction provenance: typed ids and digests, unique, no revisions; every retained transaction keeps its digest and session; every new transaction belongs to the proposed session | `transactions`, `duplicate_transaction_id`, `transaction_revision_detected`, `history_changed` | previous package |
-| V11 | Equity at the effective close is established: under the daily-flatten basis the account is flat at capture with no fills after the close and no unresolved requests; under the venue-equity basis a `close_equity` source is present and its typed value equals the reconciled equity | `flatness_uncertain`, `venue_equity_at_close` | sources |
+| V10 | Transaction provenance: typed ids and digests, unique, no revisions; every retained transaction keeps its digest and session; every new transaction after an account-close predecessor belongs to the proposed session; current-close packages never include later-session transactions, including the first package after B7 (earlier inception history is allowed) | `transactions`, `duplicate_transaction_id`, `transaction_revision_detected`, `history_changed` | package, previous package when present |
+| V11 | Equity at the effective close is established: under the daily-flatten basis the account is flat at capture with no fills after the close and no unresolved requests; under the venue-equity basis a `close_equity` source is present and its typed value equals the reconciled equity. `record_only` requires the venue-equity basis in the verifier as well as the assembler | `flatness_uncertain`, `venue_equity_at_close` | signed scope, sources |
 | V12 | The dashboard corroborates: balance equals net equity and threshold plus width equals the ratcheted peak for a current close; for a historical close the current threshold plus width is at or above the ratcheted peak | `dashboard_disagreement` | head, tier width |
 | V13 | The operator attested every required fact | `attestation_incomplete` | package |
 
@@ -28,12 +28,12 @@ does not map to a row is a missing row, not a patch. Tests violate exactly one r
 
 | Id | Claim | Enforcement |
 |---|---|---|
-| O1 | One durable state row, integrity-hashed over every field that grants authority or marks safety (account, boot, digests, enrolled keys, restore-pending, invalidated, phase) | `_state` verifies the hash; every mutation goes through `_transition` |
-| O2 | The chain is a strict sequence whose rows are hash-chained and whose package and source bytes are retained and re-verified on every read | `_chain` |
-| O3 | Phases: `EMPTY` → `SEATED` (B7 seal) → `ACCEPTING`; any phase → `INVALIDATED` on a revision; `INVALIDATED` → `SEATED`/`ACCEPTING` only through `resolve_invalidation` under a reviewed reconciliation; `restore_pending` is set on every restart and cleared only by `reconcile_restore` | `_transition` refuses illegal moves |
+| O1 | One durable state row, integrity-hashed over every field that grants authority or marks safety (account, boot, digests, enrolled keys, restore-pending, invalidated, phase, earliest outstanding revision sequence, complete history digest) | `_state` verifies the hash; every mutation goes through `_transition` |
+| O2 | One history digest binds the complete active chain, superseded archive, revision payloads and reconciliation events to state, detecting suffix/whole-history deletion as well as edits. Active and superseded closes share package/source verification against the hash-bound package manifest on every successful read and restart | `_chain`, `_history_digest`, shared `_verify_retained_evidence` |
+| O3 | Phases: `EMPTY` → `SEATED` (B7 seal) → `ACCEPTING`; a revision retains the minimum outstanding sequence in checked state and enters `INVALIDATED`; reviewed resolution archives the whole affected suffix, clears that boundary atomically, and leaves restore pending. Audit events do not determine the recovery boundary. A revised B7 still requires a separately reviewed reseal path | `_transition`, `record_revision`, `resolve_invalidation` |
 | O4 | Every boot is a new fenced owner; enrolment, calendar and policy changes across restart are audited events, never silent | boot events `trusted_keys_rotated`, `digests_rotated` |
-| O5 | The B7 seal is authenticated by out-of-band seal and tool digests, the seal contract, ordered checks, distinct evidence, and re-derived C3/C4/C8; its session id names the weekday whose 17:00 ET close is the effective close | `bootstrap_b7` |
-| O6 | A challenge is one-use, 300 s, bound to account, boot, halt generation, scope, sessions, predecessor digest, contract, digests and package digest; a `submit_account_close` challenge is capped by the target's cutoff; `record_only` only while HALTED | `issue_challenge`, `submit` |
+| O5 | The B7 seal is authenticated by out-of-band seal and tool digests, the seal contract, ordered checks, distinct evidence, and re-derived C3/C4/C8; its session id names the weekday whose exact 17:00 ET close is the effective close; aware timestamps satisfy close ≤ every capture ≤ seal ≤ receipt | `bootstrap_b7` |
+| O6 | A challenge is one-use, 300 s, bound to account, boot, halt generation, scope, sessions, predecessor digest, contract, digests and package digest; signed envelope times are authoritative, never mutable index copies; a `submit_account_close` challenge is capped by the target's cutoff; `record_only` only while HALTED | `issue_challenge`, `submit` |
 | O7 | Acceptance is exactly once under one transaction; refusal advances nothing; a duplicate or out-of-order close demands a halt | `submit` |
 | O8 | Only a strong, enrolled, unrevoked key with the challenge's scope and a binding for this account may sign | `load_operator_keys`, `submit` |
 
@@ -58,3 +58,13 @@ does not map to a row is a missing row, not a patch. Tests violate exactly one r
 | C2 | Every product row, permitted or denied, cites captured sources that cover that product; qualified rows also cite the product's declared spec sources; session rows cite the venue's sources | `source_ids` refusals; evidence schema v2 declares `products` per capture, v1 loads with warning `evidence_schema_v1_no_product_coverage` |
 | C3 | Stored deadlines equal the section 5 formula; boundaries fall on whole minutes; admission waits for every qualified product's open | `disagree with the section 5 formula`, `whole minute`, `before_product_open` |
 | C4 | Holiday facts (halts, sources, CME trade date) are explicit inputs, never inferred from another holiday | authoring tool refuses |
+| C5 | Ratification records preserve honest second-precision UTC event times; only clock-defined trading boundaries require whole minutes | `_utc_event`, `_utc` |
+
+## Storage compatibility
+
+The post-rebuild repair uses internal SQLite state version 2. Version 1 lacks an
+authenticated complete-history digest and outstanding-revision boundary; it is explicitly
+refused without modification. This change does not automatically convert, delete,
+or bless an older store. Any populated older store requires a separately reviewed
+migration grounded in its original evidence. Public package/challenge schemas and
+the `SettledClose` interface are unchanged.
