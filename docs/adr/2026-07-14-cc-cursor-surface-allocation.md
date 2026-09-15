@@ -330,6 +330,22 @@ rg -n -i "@cursor|cursor/\*|dispatch_cursor|cursor\[bot\]|cursor-agent" .claude 
 # Historical citations in docs/adr/, docs/SESSIONS.md, docs/notes/ and lab/ARCHIVED.json are
 # deliberately out of scope — history is not swept.
 
+# 2b. No LIVE handoff brief still offers the retired surface as a spawn target.
+#     Scope widened 2026-09-15 after a Codex review found
+#     docs/briefs/handoffs/2026-09-11-track-a-a1b-... at "Status: dispatch now" still reading
+#     "Spawn target: Codex (or Cursor)" while hooks 1-2 reported clean: they scan only
+#     .claude/ scripts/ .github/, so a dispatchable brief was outside them.
+rg -n -i "spawn target.*cursor" docs/briefs docs/superpowers
+# Expected, as of 2026-09-15, exactly two hits, both spent and both verified as such:
+#   docs/briefs/handoffs/2026-07-24-cursor-handoff-agent-surface-posture-sync.md
+#     -- its own banner reads "STATUS 2026-07-24: DISCHARGED - DO NOT DISPATCH";
+#   docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md
+#     -- no DISCHARGED line, but discharged BY DELIVERY: its deliverable exists at
+#     lab/discovery/lifecycle_call1/, whose __init__.py:12 cites this brief as its handoff.
+# (A third hit, the 2026-07-24 core-dead-code-prune brief, matches only because it says
+#  "NOT Cursor-eligible" -- it routes AWAY from the retired surface, which is correct.)
+# Any hit on a brief that is still dispatchable is a finding.
+
 # 3. Worker branches use a surviving namespace.
 git branch -a --format='%(refname:short)' | grep -i '^cursor/\|/cursor/'
 # Expected: empty (verified empty at authoring: no cursor/* branch exists locally or on origin).

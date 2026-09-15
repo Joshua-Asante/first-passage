@@ -43,6 +43,13 @@ Thumbs.db
 .idea/
 *.swp
 
+# Retired Cursor blast-radius edit ledger — MIGRATION ARMOR, deliberately retained.
+# The hooks were deleted 2026-09-15, but git does not remove ignored files, so any clone
+# that ran them still has untracked per-conversation state here. Dropping this rule would
+# surface `?? .cursor/` on those clones and can block clean-worktree checks. Same treatment
+# as the telemetry.jsonl rule below. Safe to delete once no clone carries the directory.
+.cursor/hooks/state/
+
 # Hookify local rules — per-clone agent guardrails (claude-plugins-official
 # hookify plugin). `.local.md` = machine-local by convention; not shared via git.
 .claude/*.local.md
