@@ -305,6 +305,11 @@ def main(argv=None) -> int:
     parser.add_argument("--calendar-id", default=None)
     parser.add_argument("--generated-utc", default=None)
     args = parser.parse_args(argv)
+    evidence_path = args.evidence.resolve()
+    try:
+        evidence_file = evidence_path.relative_to(Path(__file__).resolve().parents[1]).as_posix()
+    except ValueError:
+        parser.error("--evidence must be inside the repository root")
     halts = {}
     for d, h, s in args.halts:
         day = date.fromisoformat(d)
@@ -323,7 +328,8 @@ def main(argv=None) -> int:
             parser.error(f"--halts date {day} must bind to a HOLIDAY/SHORTENED denial")
     generated = args.generated_utc or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     calendar_id = args.calendar_id or f"tradeify-select-100k/forward/{args.first.isoformat()}..{args.last.isoformat()}"
-    payload = build_calendar(args.first, args.last, denials, args.evidence, generated, calendar_id)
+    payload = build_calendar(args.first, args.last, denials, evidence_path, generated, calendar_id)
+    payload["sources"]["evidence_file"] = evidence_file
     data = json.dumps(payload, indent=2, ensure_ascii=False).encode("utf-8") + b"\n"
     args.out.write_bytes(data)
     print(f"wrote {args.out} sessions={len(payload['sessions'])} sha256={hashlib.sha256(data).hexdigest()}")

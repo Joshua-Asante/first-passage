@@ -217,13 +217,13 @@ class SessionCalendar:
         """Produce the BookSession that admits new risk at ``now``, or a refusal."""
         if not isinstance(now, datetime) or now.tzinfo is None or now.utcoffset() is None:
             return SessionDecision(None, "invalid_now", None, self.calendar_digest)
-        if expected_digest is not None and expected_digest != self.calendar_digest:
-            return SessionDecision(None, "calendar_digest_mismatch", None, self.calendar_digest)
         warnings: list[str] = []
         if self.evidence_warning:
             warnings.append(self.evidence_warning)
         if now >= self.review_due:
             warnings.append("calendar_review_due")
+        if expected_digest is not None and expected_digest != self.calendar_digest:
+            return SessionDecision(None, "calendar_digest_mismatch", None, self.calendar_digest, tuple(warnings))
         if now < self.coverage_start:
             return SessionDecision(None, "coverage_not_started", None, self.calendar_digest, tuple(warnings))
         if now >= self.coverage_end:
@@ -347,6 +347,11 @@ def _verify_row(row: dict, index: int, *, tz: ZoneInfo, venue: dict, rule: dict,
             raise CalendarError(f"{plabel}: qualified product needs a matching open")
         if not (opens < m_close <= closes):
             raise CalendarError(f"{plabel}: matching close must fall inside the account day")
+        if not holiday:
+            close_h, close_m = _clock(products[code]["regular_matching_close_local"], f"{plabel}.regular_close")
+            regular_close = datetime(day.year, day.month, day.day, close_h, close_m, tzinfo=tz)
+            if m_close != regular_close.astimezone(timezone.utc):
+                raise CalendarError(f"{plabel}: matching close differs from the declared regular product clock")
         deadlines.append(m_close)
 
     cap_h, cap_m = _clock(rule["own_flat_cap_local"], "schedule_rule.own_flat_cap_local")
@@ -396,9 +401,12 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
     if tz_name != "America/New_York":
         raise CalendarError("calendar: venue.timezone must be America/New_York")
     tz = ZoneInfo(tz_name)
-    for key in ("account_day_opens_local", "account_day_closes_local",
-                "regular_flat_deadline_local", "holiday_shortened_flat_deadline_local"):
-        _clock(venue.get(key), f"venue.{key}")
+    # These are the source-backed clocks of this venue contract, not artifact knobs.
+    for key, expected in {"account_day_opens_local": "18:00", "account_day_closes_local": "17:00",
+                          "regular_flat_deadline_local": "16:45",
+                          "holiday_shortened_flat_deadline_local": "12:59"}.items():
+        if venue.get(key) != expected:
+            raise CalendarError(f"venue.{key}: differs from source-backed clock {expected}")
     rule = payload["schedule_rule"]
     if not isinstance(rule, dict) or set(rule) != {"owner", "own_flat_cap_local", "own_flat_before_v_minutes",
                                                     "cutoff_before_own_flat_minutes",
@@ -412,6 +420,11 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
     products = payload["products"]
     if not isinstance(products, dict) or set(products) != {"6J", "MGC", "MYM", "MNQ"}:
         raise CalendarError("calendar: products must be exactly 6J/MGC/MYM/MNQ")
+    for code, spec in products.items():
+        if not isinstance(spec, dict):
+            raise CalendarError(f"calendar: product {code} spec must be an object")
+        if (spec.get("regular_matching_open_local"), spec.get("regular_matching_close_local")) != ("18:00", "17:00"):
+            raise CalendarError(f"calendar: product {code} differs from source-backed regular clocks")
 
     sources = payload["sources"]
     if not isinstance(sources, dict) or set(sources) != {"evidence_file", "evidence_sha256", "ids"}:

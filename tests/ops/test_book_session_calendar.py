@@ -890,3 +890,82 @@ def test_duplicate_json_keys_refuse_before_normalization(tmp_path, artifact):
         operation = lambda: load_ratifications(ratified)
     with pytest.raises(CalendarError, match="duplicate JSON key"):
         operation()
+
+@pytest.mark.parametrize("key,clock", [
+    ("account_day_opens_local", "17:00"),
+    ("account_day_closes_local", "18:00"),
+    ("regular_flat_deadline_local", "17:00"),
+    ("holiday_shortened_flat_deadline_local", "13:00"),
+])
+def test_self_consistent_venue_clock_changes_refuse(tmp_path, monkeypatch, key, clock):
+    # The real author supplies mutually consistent metadata, rows and coverage.
+    monkeypatch.setitem(author.VENUE, key, clock)
+    if key == "account_day_opens_local":
+        for spec in author.PRODUCTS.values():
+            monkeypatch.setitem(spec, "regular_matching_open_local", clock)
+    path, overlay, repo, _ = calendar_fixture(tmp_path, first=date(2026, 9, 14), last=date(2026, 9, 18))
+    with pytest.raises(CalendarError, match="venue.*source-backed"):
+        load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+
+
+@pytest.mark.parametrize("change", ["declared_open", "declared_close", "row_close", "missing_clock", "bad_spec"])
+def test_regular_product_clocks_cannot_be_redefined(tmp_path, change):
+    path, overlay, repo, payload = _v2_fixture(tmp_path)
+    if change == "declared_open":
+        payload["products"]["6J"]["regular_matching_open_local"] = "19:00"
+    elif change == "declared_close":
+        payload["products"]["6J"]["regular_matching_close_local"] = "16:59"
+        payload["sessions"][1]["products"]["6J"]["matching_close_utc"] = "2026-09-15T20:59:00Z"
+    elif change == "row_close":
+        payload["sessions"][1]["products"]["6J"]["matching_close_utc"] = "2026-09-15T20:59:00Z"
+    elif change == "missing_clock":
+        del payload["products"]["6J"]["regular_matching_close_local"]
+    else:
+        payload["products"]["6J"] = None
+    rewrite(path, payload)
+    with pytest.raises(CalendarError, match="product.*(clock|source-backed|spec)"):
+        load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+
+
+@pytest.mark.parametrize("now", [et(2026, 9, 15, 9), et(2026, 9, 29, 9)])
+def test_digest_mismatch_keeps_calendar_warnings(now):
+    cal = load()
+    decision = cal.session_for(now, expected_digest="0" * 64)
+    assert decision.refusal == "calendar_digest_mismatch"
+    assert "evidence_schema_v1_no_product_coverage" in decision.warnings
+    assert ("calendar_review_due" in decision.warnings) == (now >= cal.review_due)
+
+
+def test_author_cli_evidence_path_survives_checkout_relocation(tmp_path):
+    import shutil
+    _, _, repo, _ = _v2_fixture(tmp_path)
+    (repo / "scripts").mkdir()
+    (repo / "core").mkdir()
+    shutil.copy2(REPO / "scripts/author_book_session_calendar.py", repo / "scripts")
+    shutil.copy2(REPO / "core/calendar_evidence.py", repo / "core")
+    out = repo / "ops/calendars/authored.json"
+    result = subprocess.run([sys.executable, str(repo / "scripts/author_book_session_calendar.py"),
+                             "--first", "2026-10-01", "--last", "2026-10-02", "--evidence",
+                             str(repo / "ops/calendars/evidence" / EVIDENCE.name), "--out", str(out)],
+                            cwd=tmp_path, capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(out.read_bytes())
+    assert payload["sources"]["evidence_file"] == "ops/calendars/evidence/" + EVIDENCE.name
+    relocated = tmp_path / "relocated"
+    repo.rename(relocated)
+    cal = load_session_calendar(relocated / "ops/calendars/authored.json",
+                                overlay_path=relocated / "ops/calendars/book_closure_overlay.json",
+                                repo_root=relocated)
+    assert len(cal.rows) == 2
+
+
+def test_author_cli_refuses_evidence_outside_checkout(tmp_path):
+    evidence = tmp_path / "external.json"
+    evidence.write_bytes(EVIDENCE.read_bytes())
+    out = tmp_path / "calendar.json"
+    out.write_bytes(b"existing output")
+    result = subprocess.run([sys.executable, str(REPO / "scripts/author_book_session_calendar.py"),
+                             "--first", "2026-10-01", "--last", "2026-10-02", "--evidence",
+                             str(evidence), "--out", str(out)], cwd=tmp_path, capture_output=True, text=True)
+    assert result.returncode != 0 and "repository root" in result.stderr
+    assert out.read_bytes() == b"existing output"
