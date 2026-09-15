@@ -10,7 +10,8 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from book_session_calendar import (
-    CalendarError, SessionDecision, load_closure_overlay, load_session_calendar,
+    CalendarError, SessionDecision, load_closure_overlay, load_ratifications,
+    load_ratified_calendar, load_session_calendar,
 )
 from book_sizing_context import BookSession, SettledClose, size_book_request
 from test_tradeify_sizing_integration import POLICY, inputs
@@ -20,6 +21,7 @@ CALENDAR = REPO / "ops" / "calendars" / "book_session_calendar_2026-09.json"
 OVERLAY = REPO / "ops" / "calendars" / "book_closure_overlay.json"
 EVIDENCE = REPO / "ops" / "calendars" / "evidence" / "2026-09-15-forward-session-source-captures.json"
 D19 = REPO / "ops" / "calendars" / "cme_holiday_calendar_2022_2026.json"
+RATIFIED = REPO / "ops" / "calendars" / "RATIFIED.json"
 ET = ZoneInfo("America/New_York")
 
 # Pinned identities for the first attended-release file. A changed byte here is a
@@ -383,3 +385,67 @@ def test_evidence_file_cannot_escape_the_repository(tmp_path):
     rewrite(path, payload)
     with pytest.raises(CalendarError, match="escapes"):
         load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+
+
+# ---------------------------------------------------------------- operator ratification
+
+
+def test_checked_in_ratification_binds_exactly_the_checked_in_bytes():
+    """The operator's 2026-09-15 ratification names the current calendar and overlay digests."""
+    rows = load_ratifications(RATIFIED)
+    assert set(rows) == {CALENDAR_SHA256}
+    row = rows[CALENDAR_SHA256]
+    assert row["closure_overlay_sha256"] == OVERLAY_SHA256
+    assert row["ratified_by"] == "operator" and row["instruction"] == "ratify calendar 650e8aab"
+    cal = load_ratified_calendar(CALENDAR, overlay_path=OVERLAY, ratified_path=RATIFIED, repo_root=REPO)
+    assert cal.calendar_digest == CALENDAR_SHA256
+    assert cal.session_for(et(2026, 9, 15, 9, 30), expected_digest=CALENDAR_SHA256).permitted
+
+
+def test_unratified_calendar_bytes_cannot_produce_a_session(tmp_path):
+    """A valid but unratified file is refused whole; ratification is by exact digest."""
+    path, overlay, repo, payload = calendar_fixture(tmp_path, first=date(2026, 9, 14), last=date(2026, 9, 18))
+    with pytest.raises(CalendarError, match="calendar_not_ratified"):
+        load_ratified_calendar(path, overlay_path=overlay, ratified_path=RATIFIED, repo_root=repo)
+
+
+def test_ratification_with_wrong_overlay_or_coverage_is_refused(tmp_path):
+    """Ratifying the calendar digest alone does not accept a different overlay or horizon."""
+    raw = json.loads(RATIFIED.read_bytes())
+    wrong_overlay = json.loads(json.dumps(raw))
+    wrong_overlay["ratifications"][0]["closure_overlay_sha256"] = "e" * 64
+    p1 = tmp_path / "r1.json"
+    p1.write_bytes(json.dumps(wrong_overlay).encode("utf-8"))
+    with pytest.raises(CalendarError, match="overlay_not_ratified"):
+        load_ratified_calendar(CALENDAR, overlay_path=OVERLAY, ratified_path=p1, repo_root=REPO)
+    wrong_cov = json.loads(json.dumps(raw))
+    wrong_cov["ratifications"][0]["coverage_end_utc"] = "2026-10-30T21:00:00Z"
+    p2 = tmp_path / "r2.json"
+    p2.write_bytes(json.dumps(wrong_cov).encode("utf-8"))
+    with pytest.raises(CalendarError, match="ratification_coverage_mismatch"):
+        load_ratified_calendar(CALENDAR, overlay_path=OVERLAY, ratified_path=p2, repo_root=REPO)
+
+
+@pytest.mark.parametrize("mutation", [
+    "not_operator", "bad_digest", "duplicate_digest", "ratified_after_expiry", "extra_key", "wrong_schema",
+])
+def test_defective_ratification_files_are_refused(tmp_path, mutation):
+    """Ratification rows must be complete, operator-issued and unique per digest."""
+    raw = json.loads(RATIFIED.read_bytes())
+    row = raw["ratifications"][0]
+    if mutation == "not_operator":
+        row["ratified_by"] = "agent"
+    elif mutation == "bad_digest":
+        row["calendar_sha256"] = "650E8AAB"
+    elif mutation == "duplicate_digest":
+        raw["ratifications"].append(dict(row))
+    elif mutation == "ratified_after_expiry":
+        row["ratified_utc"] = "2026-10-01T00:00:00Z"
+    elif mutation == "extra_key":
+        row["waives"] = "activation"
+    elif mutation == "wrong_schema":
+        raw["schema"] = "calendar_ratification/v0"
+    path = tmp_path / "ratified.json"
+    path.write_bytes(json.dumps(raw).encode("utf-8"))
+    with pytest.raises(CalendarError):
+        load_ratifications(path)

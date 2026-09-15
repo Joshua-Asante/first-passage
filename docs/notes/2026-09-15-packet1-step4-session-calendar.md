@@ -1,7 +1,7 @@
 # Packet 1 Step 4 — bounded session calendar (September 3–30, 2026)
 
-Status: **IMPLEMENTED, tests green, awaiting independent review and operator digest
-ratification.** Base: PR #394 head plus this change. Owner: Packet 1 coordinator (TB-C1).
+Status: **IMPLEMENTED and OPERATOR-RATIFIED by digest (2026-09-15); independent review
+still owed.** Base: PR #394 head plus this change. Owner: Packet 1 coordinator (TB-C1).
 No runtime activation, live permission, deployment or resumption authority is granted.
 
 ## What was built
@@ -86,9 +86,22 @@ risk; it never invents a fallback session.
 - No scheduler, `AccountClock` or replay integration (Packet 2). This record supplies the
   producer those consumers will call.
 
+## Ratification — 2026-09-15
+
+Operator instruction, verbatim: **"ratify calendar 650e8aab"**. Recorded in
+`ops/calendars/RATIFIED.json` (schema `calendar_ratification/v1`) against the full
+calendar digest `650e8aab4166f74a988675a3f3dfa2dbd21c1c1b342777ac37d65aacea9d6f2f`.
+The closure overlay digest `483f2324…` was presented in the same request as the
+calendar's companion artifact and is pinned in the same row; the operator did not
+name it separately, so an objection would unpin it without touching the calendar row.
+`ops/c1_rail/book_session_calendar.load_ratified_calendar` refuses any calendar whose
+exact bytes are not ratified there, and refuses a ratified calendar whose overlay or
+coverage bounds differ from the row. The volume-config pin at activation remains a
+Packet 6 step. Ratification grants book permission rows only: no activation,
+deployment, resumption or historical legality.
+
 ## Remaining to close Step 4
 
 1. Independent review of this record, the loader and the file against the amendment.
-2. Operator ratification of the calendar digest `650e8aab…` and overlay digest `483f2324…`,
-   recorded here with the date; then the runtime trusted config pins both.
-3. Monthly extension before 2026-09-30 (procedure in `ops/calendars/README.md`).
+2. Monthly extension before 2026-09-30 (procedure in `ops/calendars/README.md`); each
+   extension needs its own ratification row.

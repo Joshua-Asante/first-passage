@@ -156,6 +156,8 @@ any defect. `SessionCalendar.session_for(now, expected_digest=...)` returns eith
 `session_denied:<reason>`, `overlay_closure`, `after_risk_add_cutoff`, `calendar_digest_mismatch`,
 `invalid_now`). No weekday fallback exists. `schedule_for` exposes deadlines for denied rows too.
 
+| [`RATIFIED.json`](RATIFIED.json) | Schema `calendar_ratification/v1`. Operator ratifications by exact digest; `load_ratified_calendar` refuses a calendar not listed here. Rows are appended, never edited. |
+
 **Identity:** the calendar digest is the SHA-256 of the file bytes and is what `BookSession.calendar_digest`
 carries. Ratification pins that digest in the runtime's trusted configuration; a changed byte is a
 replacement freeze and a new operator decision. Current digests are pinned in

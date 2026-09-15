@@ -25,6 +25,12 @@ from book_sizing_context import BookSession
 
 SCHEMA = "book_session_calendar/v1"
 OVERLAY_SCHEMA = "book_closure_overlay/v1"
+RATIFICATION_SCHEMA = "calendar_ratification/v1"
+_RATIFICATION_KEYS = frozenset({
+    "calendar_id", "calendar_file", "calendar_sha256", "closure_overlay_file",
+    "closure_overlay_sha256", "coverage_start_utc", "coverage_end_utc", "ratified_by",
+    "ratified_utc", "instruction", "record", "scope",
+})
 _TOP_KEYS = frozenset({
     "schema", "calendar_id", "version", "generated_utc", "authoring_note", "venue",
     "schedule_rule", "products", "sources", "coverage", "first_release_policy", "sessions",
@@ -441,3 +447,56 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
         overlay_digest=overlay_digest, timezone=tz_name, coverage_start=start, coverage_end=end,
         review_due=review_due, rows=tuple(rows), products=tuple(sorted(products)),
     )
+
+
+def load_ratifications(path: Path) -> dict[str, dict]:
+    """Return operator ratification rows keyed by calendar digest; malformed files refuse whole."""
+    data, payload = _read(path)
+    if set(payload) != {"schema", "note", "ratifications"} or payload["schema"] != RATIFICATION_SCHEMA:
+        raise CalendarError("ratification: wrong schema or keys")
+    rows = payload["ratifications"]
+    if not isinstance(rows, list):
+        raise CalendarError("ratification: ratifications must be a list")
+    out: dict[str, dict] = {}
+    for index, row in enumerate(rows):
+        label = f"ratifications[{index}]"
+        if not isinstance(row, dict) or set(row) != _RATIFICATION_KEYS:
+            raise CalendarError(f"{label}: key set mismatch")
+        for key in ("calendar_sha256", "closure_overlay_sha256"):
+            if not isinstance(row[key], str) or not _HEX64.fullmatch(row[key]):
+                raise CalendarError(f"{label}.{key}: expected lowercase 64-hex")
+        for key in ("calendar_id", "calendar_file", "closure_overlay_file", "ratified_by",
+                    "instruction", "record", "scope"):
+            if not isinstance(row[key], str) or not row[key].strip():
+                raise CalendarError(f"{label}.{key}: required")
+        if row["ratified_by"] != "operator":
+            raise CalendarError(f"{label}: only the operator ratifies a calendar")
+        start = _utc(row["coverage_start_utc"], f"{label}.coverage_start_utc")
+        end = _utc(row["coverage_end_utc"], f"{label}.coverage_end_utc")
+        ratified = _utc(row["ratified_utc"], f"{label}.ratified_utc")
+        if not start < end:
+            raise CalendarError(f"{label}: coverage bounds")
+        if ratified >= end:
+            raise CalendarError(f"{label}: ratified after coverage expiry")
+        if row["calendar_sha256"] in out:
+            raise CalendarError(f"{label}: duplicate ratification for one digest")
+        out[row["calendar_sha256"]] = row
+    return out
+
+
+def load_ratified_calendar(path: Path, *, overlay_path: Path, ratified_path: Path,
+                           repo_root: Path) -> SessionCalendar:
+    """Load a calendar and refuse it unless the operator ratified exactly these bytes."""
+    calendar = load_session_calendar(path, overlay_path=overlay_path, repo_root=repo_root)
+    row = load_ratifications(ratified_path).get(calendar.calendar_digest)
+    if row is None:
+        raise CalendarError("calendar_not_ratified")
+    if row["closure_overlay_sha256"] != calendar.overlay_digest:
+        raise CalendarError("overlay_not_ratified")
+    if row["calendar_id"] != calendar.calendar_id:
+        raise CalendarError("ratification_calendar_id_mismatch")
+    bounds = (_utc(row["coverage_start_utc"], "coverage_start_utc"),
+              _utc(row["coverage_end_utc"], "coverage_end_utc"))
+    if bounds != (calendar.coverage_start, calendar.coverage_end):
+        raise CalendarError("ratification_coverage_mismatch")
+    return calendar
