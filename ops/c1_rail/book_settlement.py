@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import sqlite3
 from contextlib import closing, contextmanager
@@ -38,6 +39,7 @@ SCOPES = ("submit_account_close", "record_only")
 CHALLENGE_LIFETIME = timedelta(seconds=300)
 SEAL_CHECKS = tuple(f"C{i}" for i in range(1, 11))
 PHASES = ("EMPTY", "SEATED", "ACCEPTING", "INVALIDATED")
+STORE_VERSION = "4"
 ET = ZoneInfo("America/New_York")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _SESSION_ID = re.compile(r"^tradeify-account-day:\d{4}-\d{2}-\d{2}$")
@@ -98,7 +100,7 @@ def _decimal(text: object) -> Decimal | None:
         value = Decimal(str(text))
     except InvalidOperation:
         return None
-    return value if value.is_finite() else None
+    return value if value.is_finite() and math.isfinite(float(value)) else None
 
 
 def _aware(now: object) -> bool:
@@ -224,7 +226,9 @@ class SettlementStore:
         values = dict(zip(_STATE_FIELDS, rows[0][:-1]))
         if rows[0][-1] != self._state_hash(values):
             raise SettlementError("settlement state integrity failure")
-        if values["version"] != "3" or values["account"] != self.account \
+        if values["version"] != STORE_VERSION:
+            raise SettlementError("unsupported settlement store version; reviewed migration required")
+        if values["account"] != self.account \
                 or (check_boot and values["boot_id"] != self.boot_id) or values["phase"] not in PHASES:
             raise SettlementError("invalid or fenced settlement owner")
         from_seq = int(values["invalidated_from_seq"])
@@ -269,10 +273,9 @@ class SettlementStore:
         active = db.execute("SELECT * FROM chain ORDER BY seq").fetchall()
         archived = db.execute("SELECT * FROM superseded_chain ORDER BY rowid").fetchall()
         revisions = db.execute("SELECT * FROM packages WHERE kind='REVISION' ORDER BY package_sha256").fetchall()
-        reconciliation = db.execute("SELECT * FROM events WHERE kind IN ('revision_recorded', 'invalidation_resolved', 'close_accepted') "
-                                    "ORDER BY seq").fetchall()
+        events = db.execute("SELECT * FROM events ORDER BY seq").fetchall()
         return sha256_hex(canonical_bytes({"chain": active, "superseded_chain": archived,
-                                          "revisions": revisions, "reconciliation": reconciliation}))
+                                          "revisions": revisions, "events": events}))
 
     @staticmethod
     def _verify_retained_evidence(db, package_sha256: str, origin: str) -> None:
@@ -346,6 +349,7 @@ class SettlementStore:
     def _event(self, db, kind: str, session_id: str | None, detail: dict, now: datetime) -> None:
         db.execute("INSERT INTO events (kind, session_id, detail, utc) VALUES (?,?,?,?)",
                    (kind, session_id, json.dumps(detail, sort_keys=True), _iso(now)))
+        self._transition(db, history_sha256=self._history_digest(db))
 
     # ---- lifecycle (O3, O4) --------------------------------------------------
 
@@ -373,7 +377,7 @@ class SettlementStore:
             tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             if not tables and not existed:
                 cls._create(db)
-                values = {"version": "3", "account": account, "boot_id": store.boot_id, "calendar_digest": calendar_digest,
+                values = {"version": STORE_VERSION, "account": account, "boot_id": store.boot_id, "calendar_digest": calendar_digest,
                           "policy_digest": policy_digest, "trusted_keys": keys_json, "restore_pending": "0",
                           "invalidated": "0", "phase": "EMPTY", "invalidated_from_seq": "0",
                           "history_sha256": cls._history_digest(db)}
@@ -401,8 +405,10 @@ class SettlementStore:
             store._state(db)
         return store
 
-    def reconcile_restore(self, now: datetime) -> dict:
+    def reconcile_restore(self, now: datetime) -> dict | Refusal:
         """Verify the durable chain after a restart; permission stays with the halt owner."""
+        if not _aware(now):
+            return Refusal("invalid_now")
         with self._tx() as db:
             state = self._state(db)
             chain = self._chain(db)
@@ -447,6 +453,8 @@ class SettlementStore:
         threshold, peak = _decimal(values["trailing_threshold"]), _decimal(derived["historical_eod_peak"])
         adjustments = _decimal(values["cash_adjustments_total"])
         if any(v is None for v in (balance, equity, threshold, peak, adjustments)):
+            return Refusal("seal_values")
+        if equity < 0 or peak <= 0:
             return Refusal("seal_values")
         if balance != equity or values["positions_export_shows_flat"] is not True or values["working_orders_count"] != 0:
             return Refusal("seal_c3")
@@ -567,6 +575,14 @@ class SettlementStore:
         policy = require_policy(policy)
         if not isinstance(envelope, dict) or envelope.get("schema") != CHALLENGE_SCHEMA:
             return Refusal("envelope_schema")
+        try:
+            message = canonical_bytes(envelope)
+        except (TypeError, ValueError):
+            return Refusal("envelope_serialization")
+        try:
+            package_bytes = canonical_bytes(package) if isinstance(package, dict) else b""
+        except (TypeError, ValueError):
+            return Refusal("package_serialization")
         with self._tx() as db:
             state = self._state(db)
             if state["restore_pending"]:
@@ -576,7 +592,6 @@ class SettlementStore:
             scopes = state["trusted_keys"].get(key_id)
             if not scopes or envelope.get("scope") not in scopes:
                 return Refusal("unknown_key_or_scope")
-            message = canonical_bytes(envelope)
             if not ed25519_verify(bytes.fromhex(key_id), message, signature):
                 return Refusal("bad_signature")
             row = db.execute("SELECT envelope_sha256, status FROM challenges "
@@ -607,7 +622,6 @@ class SettlementStore:
                     or envelope["policy_digest"] != state["policy_digest"] \
                     or calendar.calendar_digest != state["calendar_digest"]:
                 return Refusal("stale_boot_generation_or_digest")
-            package_bytes = canonical_bytes(package) if isinstance(package, dict) else b""
             if sha256_hex(package_bytes) != envelope["package_sha256"]:
                 return Refusal("evidence_changed")
             chain = self._chain(db)
@@ -682,7 +696,7 @@ class SettlementStore:
                     or src.get("account_id") != self.account or src["file"] in declared:
                 return Refusal("revision_source_manifest")
             data = sources.get(src["file"])
-            if not isinstance(data, bytes) or not data or sha256_hex(data) != src["sha256"]:
+            if not isinstance(data, bytes) or sha256_hex(data) != src["sha256"]:
                 return Refusal("revision_source_bytes_mismatch")
             declared[src["file"]] = src["sha256"]
         if set(sources) != set(declared):

@@ -4,6 +4,27 @@ Fourth component of the approved #395 split, following calendar #396, evidence
 #398 and pure calculation #399. This component serializes acceptance and retains
 its evidence; the calculator alone only proposes a close.
 
+## Current review repair plan
+
+Coordinator owns combined acceptance across the component stack. Starting owner
+revision: `524fac1`. The source-to-calculation repair in #399 must reach this
+owner's signed submission path; component tests alone do not establish acceptance.
+
+- [x] Reproduce deletion/edit of authority rotation events and naive restore
+  clocks through real SQLite restart/read paths. Bind all audit events in the
+  history digest, updating the anchor atomically with every event; refuse old
+  store formats unchanged rather than blessing unauthenticated prior events.
+- [x] Reproduce an accepted empty source followed by correction, and preserve
+  its exact bytes during invalidation, reviewed resolution and restart.
+- [x] Reproduce malformed canonical package/envelope values and out-of-range
+  B7 numbers. Refuse caller data before storage mutation or policy conversion;
+  durable corruption must continue to raise `SettlementError`.
+- [x] Restore the historical enrollment provenance without changing enrollment;
+  align version guidance and test the affected owner/component suites.
+- [ ] Integrate repaired upstream components, verify source-backed calculations
+  and halt-required refusals through signed submission, and independently review
+  the combined change before publishing. Actual venue qualification stays open.
+
 ## Signing without a dependency cycle
 
 1. Assemble the evidence package (`account_close_package/v3`). It contains capture
@@ -65,8 +86,11 @@ content; each new acceptance still needs a fresh signature and current checks.
 
 Every chain read verifies original and revised source bytes, including after
 resolution moves the affected closes to the superseded archive and after restart.
-The shared history digest covers revisions, reconciliation and signed acceptance
-events. Reconciliation does not erase either version or grant resumption.
+The shared history digest covers revisions and all audit events, including
+reconciliation, signed acceptance, authority rotation and restore. Each event
+updates the anchor in its existing transaction. Reconciliation does not erase
+either version or grant resumption. Corrections retain exact bytes, including
+empty files that were previously accepted; they cannot silently discard them.
 
 ## B7 boundary
 
@@ -78,7 +102,7 @@ close, at or before receipt, with receipt strictly before reopen.
 
 ## Versioning and acceptance limits
 
-Store schema is v3; older stores refuse unchanged pending a reviewed migration.
+Store schema is v4; older stores refuse unchanged pending a reviewed migration.
 Packages v1/v2 and challenge v1 are not silently upgraded. Reassemble fresh
 packages and issue fresh challenges. Retained history is never rewritten to
 manufacture compliance with the stronger protocol.
@@ -94,3 +118,8 @@ with two upstream seaborn deprecation warnings. An independent reviewer accepted
 the scope after reproducing the revision/readmission collision and rechecking
 its repair; their focused owner run passed **162 tests**. Hosted CI is recorded
 on the component PR separately.
+
+That count describes the prior `524fac1` revision. The current owner repair
+reproduced 23 failures, then passed 185 owner tests; a further older-store
+compatibility regression also passes (53 focused repair tests). Combined
+source-derived calculation and B7 inventory verification remain in progress.

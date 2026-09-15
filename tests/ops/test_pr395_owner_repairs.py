@@ -189,3 +189,101 @@ def test_operator_envelope_builder_records_aware_time_without_mutating_challenge
     assert isinstance(submit(store, operator, reply, pkg, files, NOW14 + timedelta(seconds=6)), Receipt)
     with pytest.raises(ValueError, match="aware"):
         signing_envelope(issued, signed_at=NOW14.replace(tzinfo=None))
+
+
+@pytest.mark.parametrize("kind", ["trusted_keys_rotated", "digests_rotated", "restore_reconciled"])
+@pytest.mark.parametrize("mutation", ["delete", "edit"])
+@pytest.mark.parametrize("reader", ["status", "boot"])
+def test_authority_audit_corruption_blocks_reads_and_restart(tmp_path, kind, mutation, reader):
+    from book_settlement import SettlementStore
+    from test_book_settlement import ACCOUNT, POLICY_DIGEST
+    operator = Operator()
+    store, _ = seated(tmp_path, operator)
+    keys = {operator.key_id: ["submit_account_close", "record_only"]}
+    if kind == "trusted_keys_rotated":
+        keys[operator.key_id] = ["record_only"]
+    digest = "a" * 64 if kind == "digests_rotated" else CALENDAR.calendar_digest
+    store = SettlementStore.boot(store.path, ACCOUNT, trusted_keys=keys,
+                                 calendar_digest=digest, policy_digest=POLICY_DIGEST, now=NOW14)
+    store.reconcile_restore(NOW14)
+    assert store.status()["rows"] == 1
+    with sqlite3.connect(store.path) as db:
+        assert db.execute("SELECT count(*) FROM events WHERE kind=?", (kind,)).fetchone()[0] == 1
+        db.execute("DELETE FROM events WHERE kind=?" if mutation == "delete" else
+                   "UPDATE events SET detail='{}' WHERE kind=?", (kind,))
+    with pytest.raises(SettlementError, match="integrity"):
+        boot(tmp_path, operator) if reader == "boot" else store.status()
+
+
+def test_naive_restore_clock_cannot_clear_pending_state(tmp_path):
+    operator = Operator()
+    seated(tmp_path, operator)
+    store = boot(tmp_path, operator)
+    before = store.path.read_bytes()
+    assert store.reconcile_restore(NOW14.replace(tzinfo=None)) == Refusal("invalid_now")
+    assert store.path.read_bytes() == before
+    assert store.settled_close() == Refusal("restore_reconciliation_required")
+    assert store.reconcile_restore(NOW14) == {"rows": 1, "invalidated": False}
+
+
+def test_correction_preserves_empty_bytes_accepted_in_original_source(tmp_path):
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    row = next(s for s in pkg["sources"] if s["role"] == "positions")
+    files[row["file"]] = b""
+    row["sha256"] = sha256_hex(b"")
+    assert isinstance(submit(store, operator, challenge(store, pkg, target=S15, now=NOW14),
+                             pkg, files, NOW14), Receipt)
+    pkg["observed_problem"] = "position evidence was empty"
+    halts = []
+    assert store.record_revision(session_id=S14, revised_package=pkg, sources=files, now=NOW14,
+                                 on_halt=lambda reason, _: halts.append(reason)) == Refusal(
+                                     "accepted_record_revised", halt_required=True)
+    assert halts == ["settlement:revision:" + S14]
+    assert store.settled_close() == Refusal("chain_invalidated")
+    store = boot(tmp_path, operator)
+    store.resolve_invalidation(review_sha256="1" * 64, reviewed_by="reviewer", now=NOW14)
+    store.reconcile_restore(NOW14)
+    with sqlite3.connect(store.path) as db:
+        retained = db.execute("SELECT data FROM sources WHERE file=?", (row["file"],)).fetchall()
+    assert retained == [(b"",), (b"",)]
+
+
+@pytest.mark.parametrize("number", ["1e309", "1e999999", "-1"])
+def test_b7_unsupported_policy_numbers_refuse_without_seating(tmp_path, number):
+    store = boot(tmp_path, Operator())
+    seal = b7_seal(balance=number, peak=number if number != "-1" else "100000")
+    result = seat(store, seal)
+    assert result == Refusal("seal_values")
+    assert store.status()["rows"] == 0
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), {"not", "json"}])
+@pytest.mark.parametrize("target", ["package", "envelope"])
+def test_uncanonical_caller_values_are_refusals_not_store_faults(tmp_path, value, target):
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    signature = operator.sign(env)
+    (pkg if target == "package" else env)["bad_value"] = value
+    before = store.path.read_bytes()
+    result = submit(store, operator, env, pkg, files, NOW14, signature=signature)
+    assert result == Refusal(target + "_serialization")
+    assert store.path.read_bytes() == before
+    assert store.status()["rows"] == 1
+
+
+def test_pre_audit_integrity_store_refused_without_rewriting(tmp_path):
+    from book_settlement import SettlementStore, _STATE_FIELDS
+    operator = Operator()
+    store, _ = seated(tmp_path, operator)
+    with sqlite3.connect(store.path) as db:
+        values = dict(zip(_STATE_FIELDS, db.execute("SELECT " + ",".join(_STATE_FIELDS) + " FROM state").fetchone()))
+        values["version"] = "3"
+        db.execute("UPDATE state SET version=?, state_hash=?", ("3", SettlementStore._state_hash(values)))
+    before = store.path.read_bytes()
+    with pytest.raises(SettlementError, match="unsupported settlement store version"):
+        boot(tmp_path, operator)
+    assert store.path.read_bytes() == before

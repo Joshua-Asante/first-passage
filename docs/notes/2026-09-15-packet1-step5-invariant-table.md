@@ -29,7 +29,7 @@ does not map to a row is a missing row, not a patch. Tests violate exactly one r
 | Id | Claim | Enforcement |
 |---|---|---|
 | O1 | One durable state row, integrity-hashed over every field that grants authority or marks safety (account, boot, digests, enrolled keys, restore-pending, invalidated, phase, earliest outstanding revision sequence, complete history digest) | `_state` verifies the hash; every mutation goes through `_transition` |
-| O2 | One history digest binds the complete active chain, superseded archive, revision payloads, signed acceptance evidence and reconciliation events to state, detecting suffix/whole-history deletion as well as edits. Active, superseded and revision records share package/source verification against the hash-bound package manifest on every successful read and restart | `_chain`, `_history_digest`, shared `_verify_retained_evidence` |
+| O2 | One history digest binds the complete active chain, superseded archive, revision payloads and every audit event (including signed acceptance, key/digest rotation and restore reconciliation) to state, detecting suffix/whole-history deletion as well as edits. Active, superseded and revision records share package/source verification against the hash-bound package manifest on every successful read and restart | `_chain`, `_history_digest`, shared `_verify_retained_evidence` |
 | O3 | Phases: `EMPTY` → `SEATED` (B7 seal) → `ACCEPTING`; a revision retains the minimum outstanding sequence in checked state and enters `INVALIDATED`; reviewed resolution archives the whole affected suffix, clears that boundary atomically, and leaves restore pending. Audit events do not determine the recovery boundary. A revised B7 still requires a separately reviewed reseal path | `_transition`, `record_revision`, `resolve_invalidation` |
 | O4 | Every boot is a new fenced owner; enrolment, calendar and policy changes across restart are audited events, never silent | boot events `trusted_keys_rotated`, `digests_rotated` |
 | O5 | The B7 seal is authenticated by out-of-band seal and tool digests, the seal contract, ordered checks, distinct evidence, and re-derived C3/C4/C8; its session id names the weekday whose exact 17:00 ET close is the effective close; aware timestamps satisfy close ≤ every capture ≤ seal ≤ receipt < derived local reopen; valid_until equals weekday 18:00 ET or Sunday 18:00 ET after Friday | `bootstrap_b7` |
@@ -62,9 +62,9 @@ does not map to a row is a missing row, not a patch. Tests violate exactly one r
 
 ## Storage compatibility
 
-The post-rebuild repair uses internal SQLite state version 2. Version 1 lacks an
-authenticated complete-history digest and outstanding-revision boundary; it is explicitly
-refused without modification. This change does not automatically convert, delete,
-or bless an older store. Any populated older store requires a separately reviewed
-migration grounded in its original evidence. Public package/challenge schemas and
-the `SettledClose` interface are unchanged.
+The current repair uses internal SQLite state version 4. Earlier versions lack
+the complete audit-event integrity obligation and are refused without modification.
+This change does not automatically convert, delete or bless an older store. Any
+populated older store requires a separately reviewed migration grounded in its
+original evidence. Current wire formats are `account_close_package/v3` and
+`settlement_challenge/v2`; the `SettledClose` interface is unchanged.
