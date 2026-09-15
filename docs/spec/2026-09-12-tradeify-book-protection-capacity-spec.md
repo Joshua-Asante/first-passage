@@ -71,7 +71,16 @@ TB-I1 must test each interval's lower boundary and a rational value immediately 
 
 ## 3. Settled-close state machine
 
-One durable account state records `last_settled_session`, settled equity, historical EOD peak, `mode_next`, active mode/session and source snapshot seal. A settlement is accepted exactly once in exchange-session order. Duplicate or out-of-order closes halt. Missing, stale, non-finite, or unsealed account evidence leaves the next session blocked.
+One durable account state records `last_settled_session`, settled equity, historical EOD peak, `mode_next`, active mode/session and source snapshot seal. A settlement is accepted exactly once in source-backed account-session order. Duplicate or out-of-order closes halt. Missing, stale, non-finite, or unsealed account evidence leaves the next session blocked.
+
+Approved clarification, 2026-09-15 UTC: the former “exchange-session order” means
+the account's protection-session sequence, with explicit CME business-date
+mappings per product/matching interval retained in the calendar digest. These
+dates can differ on holidays; no weekday inference or collapsed intervals.
+The [approved attended settlement contract](2026-09-15-tradeify-attended-settlement-contract.md)
+owns ongoing evidence, authentication, freshness, durable acceptance and correction
+requirements. Its implementation and actual producer qualification remain open;
+accepting a close never grants activation or resumption.
 
 At the first startup for session D, atomically activate the mode derived from the last settled close before admitting risk. Intraday account observations are evidence only and cannot switch mode. Early-close sessions use their official settlement and the same transition. A position carried across a mode transition is never resized. Transition into PROTECTED first blocks ORB adds, then cancels every working ORB add, and remains blocked until each cancel has terminal broker evidence; existing positions and protective exits remain owned.
 
