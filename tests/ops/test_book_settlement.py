@@ -797,3 +797,18 @@ def test_revoked_key_can_never_be_re_enrolled(tmp_path):
     path.write_bytes(json.dumps(raw).encode("utf-8"))
     with pytest.raises(SettlementError, match="re-enrolment of a revoked key"):
         load_operator_keys(path)
+
+
+def test_key_bound_to_another_account_is_refused(tmp_path):
+    """A literal account binding must equal the booting account; BOUND_AT_RUNTIME is portable."""
+    raw = json.loads((REPO / "ops" / "c1_rail" / "operator_keys.json").read_bytes())
+    raw["keys"][0]["account_binding"] = "TDFYSL999999999999"
+    path = tmp_path / "keys.json"
+    path.write_bytes(json.dumps(raw).encode("utf-8"))
+    with pytest.raises(SettlementError, match="different account"):
+        load_operator_keys(path, account_id="synthetic-account")
+    assert set(load_operator_keys(path, account_id="TDFYSL999999999999")) == {ENROLLED}
+    raw["keys"][0]["account_binding"] = ""
+    path.write_bytes(json.dumps(raw).encode("utf-8"))
+    with pytest.raises(SettlementError, match="account_binding"):
+        load_operator_keys(path)

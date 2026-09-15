@@ -237,3 +237,21 @@ def test_no_activity_session_without_a_venue_row_is_corroborated_not_copied():
     with pytest.raises(AssemblyError, match="historical catch-up needs the venue balance row"):
         build(fresh, fresh_files, bal1, bal2, session_id=S17, predecessor_session_id=S16,
               operator_signed_utc=now - timedelta(minutes=1), scope="record_only")
+
+
+def test_historical_catch_up_tolerates_later_session_fills_with_venue_equity():
+    """record_only for an earlier session accepts later-session fills; the venue row is the equity basis."""
+    cash, files, bal1, bal2 = synthetic()
+    now = datetime(2026, 9, 15, 11, 25, tzinfo=timezone.utc)
+    package, sources, report = build(cash, files, bal1, bal2, session_id="tradeify-account-day:2026-09-10",
+                                     predecessor_session_id="tradeify-account-day:2026-09-09", scope="record_only")
+    assert package["scope"] == "record_only" and package["settlement_basis"] == "VENUE_ROW"
+    assert package["equity"]["flatness_basis"] == "VENUE_EQUITY_AT_CLOSE"
+    assert package["equity"]["equity_at_effective_close"] == str(bal1) and "2026-09-10" in package["equity"]["valuation_basis"]
+    assert report["session"]["later_fills_after_close"] == 1          # the 09-14 trade
+    broken = [replace(c) for c in cash]
+    extra, _ = trade_rows(100000000900, "09/10/2026 16:30:00", "1.00", str(bal1))    # 17:30 ET, inside the break
+    broken[5] = replace(broken[5], data=(broken[5].data.decode() + extra).encode())
+    with pytest.raises(AssemblyError, match="outside any account session"):
+        build(broken, files, bal1, bal2, session_id="tradeify-account-day:2026-09-10",
+              predecessor_session_id="tradeify-account-day:2026-09-09", scope="record_only")

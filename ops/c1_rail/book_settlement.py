@@ -808,8 +808,12 @@ _KEY_ROW = frozenset({"key_id", "algorithm", "scopes", "account_binding", "enrol
                       "instruction", "record", "revoked_utc"})
 
 
-def load_operator_keys(path: Path) -> dict[str, list[str]]:
-    """Read the tracked enrollment record into ``SettlementStore.boot`` trusted_keys; refuse whole on defect."""
+def load_operator_keys(path: Path, *, account_id: str | None = None) -> dict[str, list[str]]:
+    """Read the tracked enrollment record into ``SettlementStore.boot`` trusted_keys; refuse whole on defect.
+
+    A row's ``account_binding`` is either ``BOUND_AT_RUNTIME`` (usable for the account the
+    runtime is booted for) or a literal account id, which must equal ``account_id``.
+    """
     try:
         payload = json.loads(Path(path).read_bytes())
     except (OSError, ValueError) as exc:
@@ -831,6 +835,11 @@ def load_operator_keys(path: Path) -> dict[str, list[str]]:
             raise SettlementError(f"{label}: not a strong Ed25519 public key")
         if row["algorithm"] != "ed25519" or row["enrolled_by"] != "operator":
             raise SettlementError(f"{label}: only operator-enrolled ed25519 keys are trusted")
+        binding = row["account_binding"]
+        if not isinstance(binding, str) or not binding.strip():
+            raise SettlementError(f"{label}: account_binding required")
+        if binding != "BOUND_AT_RUNTIME" and binding != account_id:
+            raise SettlementError(f"{label}: key is bound to a different account")
         if not isinstance(row["scopes"], list) or not row["scopes"] or any(s not in SCOPES for s in row["scopes"])                 or len(set(row["scopes"])) != len(row["scopes"]):
             raise SettlementError(f"{label}: scopes")
         if _utc(row["enrolled_utc"]) is None or (row["revoked_utc"] is not None and _utc(row["revoked_utc"]) is None):

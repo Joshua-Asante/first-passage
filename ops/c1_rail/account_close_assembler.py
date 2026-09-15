@@ -296,13 +296,13 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
     row = calendar.schedule_for(session_id)
     if row is None:
         raise AssemblyError("session not in the ratified calendar")
-    if [r for r in rows if r.kind == TRADE_TYPE and r.ts_utc > row.closes_at]:
+    session_day_for_row = date.fromisoformat(session_id.split(":")[1])
+    if not historical and [r for r in rows if r.kind == TRADE_TYPE and r.ts_utc > row.closes_at]:
         raise AssemblyError("effective-close flatness not established; venue equity at the close required")
     balance_rows = parse_balance_history(balance.data, account_id=account_id)
     balance_report = check_balance_history(ledger, balance_rows)
     if balance_report["mismatches"]:
         raise AssemblyError("balance history disagrees with the reconciled ledger")
-    session_day_for_row = date.fromisoformat(session_id.split(":")[1])
     venue_row = next((total for d, total, _ in balance_rows if d == session_day_for_row), None)
     session_rows = ledger.sessions.get(session_day_for_row, {}).get("rows", 0)
     if venue_row is None:
@@ -336,12 +336,19 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
             not isinstance(open_positions, int) or not isinstance(working_orders, int) \
             or open_positions < 0 or working_orders < 0:
         raise AssemblyError("open_positions and working_orders must be typed non-negative integers")
-    # Flat at the effective close follows only when the account is flat at capture AND no fill
-    # occurred between that close and the capture: a position carried past the close would have
-    # produced a later Trade Paired row. A later flat snapshot alone proves nothing.
-    if later_fills or open_positions or working_orders:
-        raise AssemblyError("effective-close flatness not established; venue equity at the close required")
-    flat_basis = "DAILY_FLATTEN_CONFIRMED_NO_LATER_FILLS"
+    if historical:
+        # Historical catch-up: the fresh full history legitimately contains fills from later missed
+        # sessions, so flatness cannot be inferred from their absence. The venue's own balance row for
+        # this trade date is the venue-backed equity at that close (basis VENUE_EQUITY_AT_CLOSE).
+        # A fill inside the 17:00-18:00 ET break is already refused by reconcile() as outside any session.
+        flat_basis = "VENUE_EQUITY_AT_CLOSE"
+    else:
+        # Flat at the effective close follows only when the account is flat at capture AND no fill
+        # occurred between that close and the capture: a position carried past the close would have
+        # produced a later Trade Paired row. A later flat snapshot alone proves nothing.
+        if later_fills or open_positions or working_orders:
+            raise AssemblyError("effective-close flatness not established; venue equity at the close required")
+        flat_basis = "DAILY_FLATTEN_CONFIRMED_NO_LATER_FILLS"
     dash_balance = _decimal(dashboard_balance, "dashboard balance")
     dash_threshold = _decimal(dashboard_threshold, "dashboard threshold")
     peak = max(ledger.peak, net_equity)
@@ -375,8 +382,12 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
         "effective_close_utc": _iso(row.closes_at), "source_publication_utc": None,
         "operator_signed_utc": _iso(operator_signed_utc), "report_timezone": report_tz.key,
         "inception_utc": _iso(inception_utc),
-        "equity": {"net_equity": str(net_equity), "basis": "NET_OF_TRADING_COSTS", "at_effective_close": "FLAT",
-                   "flatness_basis": flat_basis, "equity_at_effective_close": None, "valuation_basis": None},
+        "equity": {"net_equity": str(net_equity), "basis": "NET_OF_TRADING_COSTS",
+                   "at_effective_close": "FLAT" if not historical else "VENUE_BALANCE_ROW",
+                   "flatness_basis": flat_basis,
+                   "equity_at_effective_close": None if not historical else str(net_equity),
+                   "valuation_basis": None if not historical else
+                   f"venue account-balance-history row for trade date {session_day_for_row.isoformat()}"},
         "ledger": {"predecessor_net_equity": str(predecessor_equity), "gross_trade_pnl": str(bucket["gross"]),
                    "trading_costs": {k: str(v) for k, v in bucket["costs"].items()},
                    "adjustments_abs_total": str(ledger.adjustments_abs_total), "unknown_rows": ledger.unknown_rows,

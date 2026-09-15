@@ -86,9 +86,12 @@ def _utc(text: object, label: str) -> datetime:
     if not isinstance(text, str) or not text.endswith("Z"):
         raise CalendarError(f"{label}: expected UTC 'Z' timestamp, got {text!r}")
     try:
-        return datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        value = datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
     except ValueError as exc:
         raise CalendarError(f"{label}: {exc}") from exc
+    if value.second:
+        raise CalendarError(f"{label}: clock-defined boundaries must fall on a whole minute")
+    return value
 
 
 def _local(text: object, tz: ZoneInfo, label: str) -> datetime:
@@ -109,6 +112,8 @@ def _local(text: object, tz: ZoneInfo, label: str) -> datetime:
         raise CalendarError(f"{label}: nonexistent local time {text} (DST gap)")
     if fold0.utcoffset() != value.utcoffset():
         raise CalendarError(f"{label}: offset {value.utcoffset()} disagrees with {tz.key}")
+    if fold0.second or fold0.microsecond:
+        raise CalendarError(f"{label}: clock-defined boundaries must fall on a whole minute")
     return fold0
 
 
