@@ -72,14 +72,24 @@ effort and raise a CRITICAL operator notification when evidence cannot be writte
 ([M1 ADR](../../../docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) item 6); and
 edit-time hooks and report-only scanners fail open for the completed edit while *emitting a
 finding* ([skill lifecycle](../../../scripts/README.md); the Sentinel `preregistration_scan` in
-`ops/sentinel/scan.py`). The test that separates doctrine from band-aid, all three required:
+`ops/sentinel/scan.py`). The test that separates doctrine from band-aid keeps the *protected action* and the *diagnostic*
+apart — all three required of a new or reviewed path:
 
 1. the open path is named in an owner — ADR, README, or the function's own docstring;
 2. taking the open path emits a visible finding, notification or non-zero status somewhere a
-   human reads;
-3. it never converts a failure into a success exit code or an empty-but-valid artifact.
+   human reads, and the diagnostic's own status stays distinct from a clean result: "NOT CHECKED /
+   could not run" is never reported as "checked, none found" (the SKIP-versus-PASS convention in
+   `scripts/check_skill_deploy_sync.py`);
+3. the protected action may proceed — an edit completes, a report-only scan does not block a
+   commit, a risk-reducing exit relays — but a *fix* never converts the failure it was written for
+   into a success exit code or an empty-but-valid artifact.
 
-A `pass` that satisfies none of the three is a band-aid whatever the comment above it says.
+Under that reading the edit hook passes (owner: the skill-lifecycle README; validator failures go
+to stderr; the edit proceeds). An existing documented path is grandfathered by its owner, not by
+this test — where it conflates "could not run" with "none found", as the Sentinel's `no git → []`
+in `ops/sentinel/scan.py` does, it is not a template for new code, and tightening it is its owner's
+separate change, never a drive-by inside a fix PR. A `pass` that has no owner, no finding and turns
+a failure into success is a band-aid whatever the comment above it says.
 
 ## Procedure
 

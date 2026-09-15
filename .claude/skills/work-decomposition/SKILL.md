@@ -54,7 +54,7 @@ imported numbers as calibration candidates — record the firing when one bites,
 | More than **one context window** of work | One CC session; after compaction the summary keeps the plan and loses the detail the gate needs | One child per session-sized deliverable, each with its own resume handoff |
 | **Multiple independent deliverables** | §1 "What CC is being asked to produce" bullets that do not consume each other's outputs | One child per deliverable |
 | **Internal sequencing** — step N's input is step N−1's output, which does not exist yet | §2 Step 2.x chains whose later specs cannot be frozen until earlier steps return | Cut at the first output that must exist before the next spec can be frozen |
-| **Worst-case iterations exceed the Rule 2 budget** for the unit's loop class (INNER 3 / OUTER 8 / STRATEGIC 3 — [canon §15](../../../docs/methodology/inqhiori-canon.md)) | Attempt-and-check cycles | The tripwire would fire mid-unit; cut so each child's worst case fits its own budget |
+| **Worst-case iterations exceed the Rule 2 budget** for the unit's loop class (INNER 3 / OUTER 8 / STRATEGIC 3 — [canon §15](../../../docs/methodology/inqhiori-canon.md)) | Attempt-and-check cycles | The tripwire would fire mid-unit. Cutting does not mint budget: the parent's budget is allocated across the children and their worst cases must sum inside it; a sum that exceeds it is the parent's tripwire firing at cut time — a structured stop and, for OUTER / STRATEGIC, the owner's extension authority before anything is dispatched ([Rule 2 ADR](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md)) |
 | A `BLOCKED — scope-problem` return, or a **second** `NEEDS_CONTEXT` bounce on the same packet | brief-authoring check 8; the fleet loop's §6 rule ("two bounces means the spec wasn't freezable", recorded in `cursor-fleet`) | The packet was mis-sized or mis-routed; re-cut before any re-dispatch |
 
 Dated repo instances of the output this skill prescribes: the 2026-08-25 first-look residuals
@@ -75,9 +75,14 @@ That umbrella is the reference shape for this skill's work-shaped output.
 2. **One named verification** the child's own return can run — a gate id, a pytest node,
    `check_brief` on a path, a `--check` mode (fable-method Step 1: name the actual gate). A child
    that cannot name its gate is not a unit yet.
-3. **Independently revertible** — one PR, one revert, and every sibling still passes its own gate.
-4. **Fits one session with margin** — worst-case iterations inside its Rule 2 budget; no step
-   whose detail must survive a compaction.
+3. **Independently revertible** — one PR, one revert, and every *parallel* sibling still passes
+   its own gate. A child on an explicit *depends-on* edge reverts leaf-first: reverting an upstream
+   child means reverting its dependents first, in reverse dependency order, which the manifest's
+   edges make explicit. A revert that would silently break a sibling with no edge to it means the
+   footprint or the edge is wrong.
+4. **Fits one session with margin** — worst-case iterations inside the budget allocated to it
+   from the parent's Rule 2 budget (never a fresh budget of its own); no step whose detail must
+   survive a compaction.
 5. **Disjoint file footprint** from every parallel sibling (the fleet loop's §1 rule), or an
    explicit *depends-on* edge that makes it sequential. `docs/SESSIONS.md`, `STATE.md`, boards and
    index files are reserved to the parent's integration commit.
@@ -110,11 +115,17 @@ inline under the session's own checklist (fable-method Step 4.4).
    cycles — a cycle means one boundary is wrong. Sequence for **incremental integration**: merge in
    dependency order with the fast gates between merges, never one end-of-track consolidation.
 4. **Write the parent manifest** before anything is dispatched — one row per child:
-   `child · owner/lane · branch · footprint · depends-on · status`, statuses
-   `STUB / QUEUED / DISPATCHED / RETURNED / MERGED / OVERTAKEN` (`STUB` = not yet freezable;
-   nothing is dispatched from a stub). The parent lists every child; a child absent from the
-   manifest does not exist. This is the anti-duplication device: before any session opens work in
-   the area, the manifest says who holds it.
+   `child · owner/lane · branch · footprint · depends-on · budget · status`. Lifecycle statuses
+   `STUB / QUEUED / DISPATCHED / RETURNED / MERGED / OVERTAKEN / WITHDRAWN` (`STUB` = not yet
+   freezable; nothing is dispatched from a stub). `RETURNED` always carries the four-state return
+   and its disposition — `RETURNED (DONE)`, `RETURNED (DONE_WITH_CONCERNS — <concern>)`,
+   `RETURNED (NEEDS_CONTEXT — re-anchor 1 of 1 | re-cut)`, `RETURNED (BLOCKED — <sub-case>)` — so
+   the row says whether work is still owed; a child never stays `DISPATCHED` after its return, and
+   a `NEEDS_CONTEXT` child goes back to `QUEUED` only once, then is re-cut. The `budget` column
+   holds each child's share of the parent's Rule 2 budget and the column sums inside it. The
+   parent lists every child; a child absent from the manifest does not exist. This is the
+   anti-duplication device: before any session opens work in the area, the manifest says who holds
+   it.
 5. **Route each child** to the lane its size and shape earn: 2+ frozen implementation packets →
    parallel worker sessions (Claude Code or Codex) under one umbrella brief and claim manifest,
    per the fleet loop recorded in `cursor-fleet`; one frozen build above the handoff-overhead
@@ -151,9 +162,13 @@ blur of them. The protocol treats the input as an environment to query, not a do
 
 ### Protocol (six steps, in order)
 
-1. **Size before reading.** Count files, lines and bytes before opening anything:
-   `git ls-files <dir> | wc -l`, `wc -l`, `ls -lh`. Cold stores are search-excluded — an empty
-   `rg` is not "nothing there"; use `rg --no-ignore` or `git show` per fable-method Step 2.1.
+1. **Size before reading.** Count files, lines and bytes of the candidate set before opening
+   anything, with the candidates passed explicitly: `git ls-files <dir-or-glob> | wc -l` (files),
+   `git ls-files -z <dir-or-glob> | xargs -0 wc -l` (lines, with a total), and
+   `git ls-files -z <dir-or-glob> | xargs -0 wc -c` (bytes, with a total). A bare `wc` or `ls`
+   measures stdin or the working directory, not the candidates. Cold stores are search-excluded —
+   an empty `rg` is not "nothing there"; use `rg --no-ignore` or `git show` per fable-method
+   Step 2.1.
 2. **Filter.** Search before reading a directory; never list a tree recursively as a substitute
    for a query. Chain filters (path glob → content pattern → file type) until what remains is the
    candidate set.
@@ -162,12 +177,20 @@ blur of them. The protocol treats the input as an environment to query, not a do
 4. **Recurse at depth 1.** One sub-agent (`Agent` / `Explore`, or a `Workflow` script) per batch,
    each with a self-contained brief — the files, the question, the output schema. Launch **one
    parallel wave**, then merge. Sub-agents answer; they never spawn sub-agents, and no two
-   sub-agents query the same content.
+   sub-agents query the same content. For a **pairwise or multi-hop** question the batch brief
+   asks for a *comparable claim inventory* under one schema (each ADR's rulings on the shared
+   axis, each caller's argument values), never the final verdict — two conflicting sources in
+   different batches would otherwise both return "no finding" and the contradiction would vanish
+   in the merge.
 5. **Verify** the merged answer on a smaller window: extract the minimal evidence behind each
    load-bearing line and re-open it. Settle a disagreement between batches with a targeted
    re-read of the disputed span — never by raising depth or re-running the wave.
 6. **Synthesise** programmatically — aggregate the structured returns, deduplicate, categorise —
-   then write the answer with `file:line` references.
+   then write the answer with `file:line` references. For pairwise or multi-hop questions the
+   synthesis includes a **cross-batch join**: compare the inventories against each other (in the
+   orchestrator's context, or by one further agent that reads only the inventories, never the
+   sources — depth stays 1 relative to the sources) and adjudicate every pair the join flags with
+   a targeted re-read of both endpoints.
 
 Sub-agent brief, minimum viable:
 
@@ -186,6 +209,8 @@ Do not: open files outside the batch; spawn agents; summarise beyond the schema
 - MUST keep depth at 1; MUST write the batch count before launch; one wave, then merge.
 - MUST spot-check the synthesis against sources before answering.
 - NEVER run the same query over the same content in two sub-agents; partition once.
+- MUST, for a pairwise or multi-hop question, collect per-batch inventories and run the cross-batch
+  join; disjoint batches alone cannot see a relationship whose endpoints sit in different batches.
 
 The repo's existing fan-outs are instances of this protocol, not exceptions to it:
 [`handoff-verify-panel`](../../workflows/handoff-verify-panel.js) and
