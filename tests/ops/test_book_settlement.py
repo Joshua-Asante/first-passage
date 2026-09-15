@@ -1,0 +1,537 @@
+"""Attended settlement owner: signed one-use challenge -> verified package -> exactly one SettledClose.
+
+All account values are synthetic. The calendar is the ratified September file; the consumer is the
+real size_book_request. Signing uses the operator-side library; verification is the rail's own.
+"""
+import json
+import sqlite3
+import threading
+from copy import deepcopy
+from dataclasses import replace
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal
+from pathlib import Path
+
+import pytest
+
+from book_policy import candidate_book_protection_policy
+from book_session_calendar import load_ratified_calendar
+from book_settlement import (
+    CHALLENGE_LIFETIME, CONTRACT, PACKAGE_SCHEMA, Receipt, Refusal, SettlementError, SettlementStore,
+    canonical_bytes, sha256_hex,
+)
+from book_sizing_context import SettledClose, size_book_request
+from c1_signal_daemon.book_protocol import Mode
+from test_tradeify_sizing_integration import inputs
+
+cryptography = pytest.importorskip("cryptography")
+from cryptography.hazmat.primitives import serialization  # noqa: E402
+from cryptography.hazmat.primitives.asymmetric import ed25519  # noqa: E402
+
+REPO = Path(__file__).resolve().parents[2]
+CAL_DIR = REPO / "ops" / "calendars"
+CALENDAR = load_ratified_calendar(CAL_DIR / "book_session_calendar_2026-09.json",
+                                  overlay_path=CAL_DIR / "book_closure_overlay.json",
+                                  ratified_path=CAL_DIR / "RATIFIED.json", repo_root=REPO)
+POLICY = candidate_book_protection_policy()
+POLICY_DIGEST = "b" * 64
+ACCOUNT = "synthetic-account"
+B7_SESSION = "tradeify-account-day:2026-09-11"
+B7_CLOSE = datetime(2026, 9, 11, 21, tzinfo=timezone.utc)
+S14 = "tradeify-account-day:2026-09-14"
+S15 = "tradeify-account-day:2026-09-15"
+S16 = "tradeify-account-day:2026-09-16"
+NOW14 = datetime(2026, 9, 14, 21, 10, tzinfo=timezone.utc)   # ten minutes after the 09-14 close
+
+
+def utc(value: datetime) -> str:
+    return value.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+class Operator:
+    def __init__(self):
+        self.key = ed25519.Ed25519PrivateKey.generate()
+        self.key_id = self.key.public_key().public_bytes(serialization.Encoding.Raw,
+                                                          serialization.PublicFormat.Raw).hex()
+
+    def sign(self, envelope: dict) -> bytes:
+        return self.key.sign(canonical_bytes(envelope))
+
+
+def b7_seal(*, balance="100000", peak="100000", valid_until="2026-09-13T18:00:00-04:00", failing=False) -> bytes:
+    checks = {f"C{i}": "pass" for i in range(1, 11)}
+    if failing:
+        checks["C8"] = "fail"
+    return json.dumps({
+        "values": {"balance": balance, "equity": balance, "trailing_threshold": str(Decimal(peak) - 3000)},
+        "derived": {"historical_eod_peak": peak, "valid_until": valid_until},
+        "evidence": {"E1": {"sha256": "1" * 64}, "E2": {"sha256": "2" * 64}, "E3": {"sha256": "3" * 64}},
+        "checks": checks, "seal_timestamp": "2026-09-12T10:00:00-04:00",
+    }).encode("utf-8")
+
+
+def boot(tmp_path, operator, now=NOW14, scopes=("submit_account_close", "record_only")):
+    return SettlementStore.boot(tmp_path / "settlement.sqlite", ACCOUNT,
+                                trusted_keys={operator.key_id: list(scopes)},
+                                calendar_digest=CALENDAR.calendar_digest, policy_digest=POLICY_DIGEST, now=now)
+
+
+def seated(tmp_path, operator, now=NOW14):
+    store = boot(tmp_path, operator, now)
+    receipt = store.bootstrap_b7(b7_seal(), session_id=B7_SESSION, effective_close_utc=B7_CLOSE,
+                                 policy=POLICY, now=datetime(2026, 9, 12, 14, tzinfo=timezone.utc))
+    assert isinstance(receipt, Receipt) and receipt.origin == "B7"
+    return store, receipt
+
+
+def package(head: Receipt, session_id: str, now: datetime, *, gross="250.00", prior_tx=(), net=None,
+            flatness="DAILY_FLATTEN_CONFIRMED_NO_LATER_FILLS") -> tuple[dict, dict[str, bytes]]:
+    row = CALENDAR.schedule_for(session_id)
+    costs = {"commission": "4.00", "exchange": "1.20", "clearing": "0.30", "nfa": "0.04"}
+    net_equity = Decimal(head.equity) + Decimal(gross) - sum(Decimal(v) for v in costs.values())
+    if net is not None:
+        net_equity = Decimal(net)
+    peak = max(Decimal(head.peak), net_equity)
+    captured = utc(now - timedelta(minutes=5))
+    files = {"dashboard.png": b"dash-" + session_id.encode(), "positions.csv": b"pos-" + session_id.encode(),
+             "balance_history.csv": b"bal-" + session_id.encode(), "cash_history.csv": b"cash-" + session_id.encode(),
+             "inception.pdf": b"inception-evidence"}
+    txs = [dict(t) for t in prior_tx] + \
+          [{"id": f"tx-{session_id[-5:]}-{i}", "sha256": sha256_hex(f"row-{session_id}-{i}".encode())} for i in range(2)]
+    pkg = {
+        "schema": PACKAGE_SCHEMA, "contract": CONTRACT, "account_id": ACCOUNT, "venue": "Tradeify_Select_100K",
+        "session_id": session_id, "predecessor_session_id": head.session_id,
+        "predecessor_package_sha256": head.package_sha256, "calendar_digest": CALENDAR.calendar_digest,
+        "policy_digest": POLICY_DIGEST, "effective_close_utc": utc(row.closes_at),
+        "source_publication_utc": None, "operator_signed_utc": utc(now - timedelta(minutes=1)),
+        "report_timezone": "America/New_York", "inception_utc": "2026-08-20T13:00:00Z",
+        "equity": {"net_equity": str(net_equity), "basis": "NET_OF_TRADING_COSTS", "at_effective_close": "FLAT",
+                   "flatness_basis": flatness, "equity_at_effective_close": None, "valuation_basis": None},
+        "ledger": {"predecessor_net_equity": head.equity, "gross_trade_pnl": gross, "trading_costs": costs,
+                   "adjustments_abs_total": "0", "unknown_rows": 0, "unlinked_fee_rows": 0,
+                   "transactions": txs, "revisions": [],
+                   "coverage": {"window_limit_days": 14, "windows": [
+                       {"from_utc": "2026-08-20T13:00:00Z", "to_utc": "2026-09-03T13:00:00Z", "rows": 3, "complete": True},
+                       {"from_utc": "2026-09-03T00:00:00Z", "to_utc": captured, "rows": 4, "complete": True}]}},
+        "dashboard": {"balance": str(net_equity), "trailing_threshold": str(peak - 3000), "captured_utc": captured},
+        "positions": {"open_positions": 0, "working_orders": 0, "captured_utc": captured},
+        "sources": [{"role": r, "file": f, "sha256": sha256_hex(files[f]), "captured_utc": captured if r != "inception" else "2026-08-20T13:05:00Z"}
+                    for r, f in (("dashboard", "dashboard.png"), ("positions", "positions.csv"),
+                                 ("balance_history", "balance_history.csv"), ("cash_history", "cash_history.csv"),
+                                 ("inception", "inception.pdf"))],
+        "attestations": {"reflects_effective_close": True, "costs_included_once": True,
+                         "no_known_pending_correction": True, "no_conflicting_observation": True},
+        "unresolved_runtime_requests": [],
+    }
+    return pkg, files
+
+
+def challenge(store, pkg, *, target, now, scope="submit_account_close", permission="RUNNING", generation=1):
+    env = store.issue_challenge(scope=scope, target_session_id=target, proposed_session_id=pkg["session_id"],
+                                package_sha256=sha256_hex(canonical_bytes(pkg)), halt_generation=generation,
+                                permission=permission, calendar=CALENDAR, now=now)
+    assert isinstance(env, dict), env
+    return env
+
+
+def submit(store, operator, env, pkg, files, now, generation=1, on_halt=None, key_id=None, signature=None):
+    return store.submit(envelope=env, signature=signature if signature is not None else operator.sign(env),
+                        key_id=key_id or operator.key_id, package=pkg, sources=files, halt_generation=generation,
+                        policy=POLICY, calendar=CALENDAR, now=now, on_halt=on_halt)
+
+
+# ---------------------------------------------------------------- happy path and consumer agreement
+
+
+def test_signed_close_becomes_exactly_one_settled_close_the_consumer_accepts(tmp_path):
+    """Challenge -> signed envelope -> verified package -> durable SettledClose -> size_book_request passes."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    assert env["expires_utc"] == utc(NOW14 + CHALLENGE_LIFETIME)
+    receipt = submit(store, operator, env, pkg, files, NOW14)
+    assert isinstance(receipt, Receipt), receipt
+    assert receipt.session_id == S14 and receipt.equity == "100244.46" and receipt.peak == "100244.46"
+    assert receipt.mode_next == Mode.NORMAL.value and receipt.grants_activation is False
+    close, mode = store.settled_close()
+    assert close == SettledClose(S14, CALENDAR.schedule_for(S14).closes_at, 100244.46, 100244.46, receipt.package_sha256)
+    assert mode is Mode.NORMAL
+    # Consumer: the 09-15 session names 09-14 as its prior; the store's close satisfies it.
+    now = datetime(2026, 9, 15, 13, 30, tzinfo=timezone.utc)
+    session = CALENDAR.session_for(now, expected_digest=CALENDAR.calendar_digest).session
+    request, context, binding = inputs(protected=False)
+    binding = replace(binding, session=session, settlement=close, policy_digest=POLICY_DIGEST)
+    context = replace(context, session_id=S15, calendar_digest=CALENDAR.calendar_digest, settled=close,
+                      mode=mode, policy_digest=POLICY_DIGEST, as_of=now, valid_until=now + timedelta(seconds=30))
+    assert not size_book_request(request, context=context, binding=binding, policy=POLICY, now=now).halt
+    # Same challenge again: consumed, no second acceptance, no state advance.
+    again = submit(store, operator, env, pkg, files, NOW14 + timedelta(seconds=5))
+    assert again == Refusal("challenge_consumed")
+    assert store.status()["rows"] == 2
+
+
+def test_protected_mode_derives_from_the_shared_policy_on_the_ratcheted_peak(tmp_path):
+    """A close 1% below the EOD peak yields PROTECTED for the next session; peak never falls."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14, gross="-994.46")      # 100000 - 994.46 - 5.54 = 99000
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    receipt = submit(store, operator, env, pkg, files, NOW14)
+    assert receipt.equity == "99000.00" and receipt.peak == "100000" and receipt.mode_next == Mode.PROTECTED.value
+
+
+def test_second_close_chains_on_the_first_and_history_must_be_retained(tmp_path):
+    """Predecessor digest, prior equity and retained transaction identities all bind the next close."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg1, files1 = package(head, S14, NOW14)
+    r1 = submit(store, operator, challenge(store, pkg1, target=S15, now=NOW14), pkg1, files1, NOW14)
+    now15 = NOW14 + timedelta(days=1)
+    
+    pkg2, files2 = package(r1, S15, now15, prior_tx=pkg1["ledger"]["transactions"])
+    r2 = submit(store, operator, challenge(store, pkg2, target=S16, now=now15), pkg2, files2, now15)
+    assert isinstance(r2, Receipt) and r2.session_id == S15
+    assert store.settled_close()[0].session_id == S15
+    # A close that drops or alters an earlier retained transaction is refused.
+    pkg3, files3 = package(r2, S16, now15 + timedelta(days=1))          # omits prior ids entirely
+    refusal = submit(store, operator, challenge(store, pkg3, target="tradeify-account-day:2026-09-17",
+                                                now=now15 + timedelta(days=1)), pkg3, files3, now15 + timedelta(days=1))
+    assert refusal == Refusal("history_changed")
+
+
+# ---------------------------------------------------------------- authentication and challenge
+
+
+def test_unknown_key_wrong_scope_and_bad_signature_refuse_without_state_change(tmp_path):
+    """Only an enrolled key with the envelope's scope, over exactly these bytes, is accepted."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    stranger = Operator()
+    assert submit(store, operator, env, pkg, files, NOW14, key_id=stranger.key_id,
+                  signature=stranger.sign(env)) == Refusal("unknown_key_or_scope")
+    bad = bytearray(operator.sign(env))
+    bad[3] ^= 1
+    assert submit(store, operator, env, pkg, files, NOW14, signature=bytes(bad)) == Refusal("bad_signature")
+    tampered = dict(env, expires_utc=utc(NOW14 + timedelta(hours=5)))
+    assert submit(store, operator, tampered, pkg, files, NOW14, signature=operator.sign(tampered)) == \
+        Refusal("challenge_mismatch")
+    assert store.status()["rows"] == 1
+    # record_only-only key cannot submit a current close.
+    limited = Operator()
+    (tmp_path / "b").mkdir()
+    store2 = boot(tmp_path / "b", limited, scopes=("record_only",))
+    store2.bootstrap_b7(b7_seal(), session_id=B7_SESSION, effective_close_utc=B7_CLOSE, policy=POLICY,
+                        now=datetime(2026, 9, 12, 14, tzinfo=timezone.utc))
+    env2 = challenge(store2, pkg, target=S15, now=NOW14)
+    assert submit(store2, limited, env2, pkg, files, NOW14) == Refusal("unknown_key_or_scope")
+
+
+def test_challenge_expiry_boot_generation_and_evidence_binding(tmp_path):
+    """300 s or the target cutoff, whichever is earlier; boot, generation and package bytes are bound."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    assert submit(store, operator, env, pkg, files, NOW14 + timedelta(seconds=300)) == Refusal("challenge_expired")
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    assert submit(store, operator, env, pkg, files, NOW14, generation=2) == Refusal("stale_boot_generation_or_digest")
+    changed = deepcopy(pkg)
+    changed["ledger"]["gross_trade_pnl"] = "260.00"
+    assert submit(store, operator, env, changed, files, NOW14) == Refusal("evidence_changed")
+    # Expiry is capped by the target session's risk-add cutoff.
+    late = datetime(2026, 9, 15, 19, 43, tzinfo=timezone.utc)      # two minutes before 15:45 ET cutoff
+    env_late = store.issue_challenge(scope="submit_account_close", target_session_id=S15, proposed_session_id=S14,
+                                     package_sha256=sha256_hex(canonical_bytes(pkg)), halt_generation=1,
+                                     permission="RUNNING", calendar=CALENDAR, now=late)
+    assert env_late["expires_utc"] == "2026-09-15T19:45:00Z"
+    assert store.issue_challenge(scope="submit_account_close", target_session_id=S15, proposed_session_id=S14,
+                                 package_sha256=sha256_hex(canonical_bytes(pkg)), halt_generation=1,
+                                 permission="RUNNING", calendar=CALENDAR,
+                                 now=datetime(2026, 9, 15, 19, 46, tzinfo=timezone.utc)) == Refusal("target_cutoff_passed")
+    assert store.issue_challenge(scope="submit_account_close", target_session_id="tradeify-account-day:2026-09-08",
+                                 proposed_session_id="tradeify-account-day:2026-09-07",
+                                 package_sha256=sha256_hex(canonical_bytes(pkg)), halt_generation=1,
+                                 permission="RUNNING", calendar=CALENDAR, now=NOW14) == Refusal("target_session_unavailable")
+
+
+def test_concurrent_submissions_accept_exactly_once(tmp_path):
+    """Two writers racing on one challenge: one receipt, one refusal, one chain row."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    signature = operator.sign(env)
+    results = []
+
+    def worker():
+        results.append(submit(store, operator, env, pkg, files, NOW14, signature=signature))
+
+    threads = [threading.Thread(target=worker) for _ in range(4)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert sum(isinstance(r, Receipt) for r in results) == 1
+    assert all(r == Refusal("challenge_consumed") for r in results if not isinstance(r, Receipt))
+    assert store.status()["rows"] == 2
+
+
+# ---------------------------------------------------------------- ordering, duplicates, corrections
+
+
+def test_duplicate_and_out_of_order_closes_refuse_and_demand_a_halt(tmp_path):
+    """TB-S1: a duplicate or out-of-order settlement halts; nothing regresses."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    halts = []
+    pkg, files = package(head, S14, NOW14)
+    r1 = submit(store, operator, challenge(store, pkg, target=S15, now=NOW14), pkg, files, NOW14)
+    dup, dfiles = package(head, S14, NOW14)                   # same session again, fresh challenge
+    dup["predecessor_session_id"], dup["predecessor_package_sha256"] = r1.session_id, r1.package_sha256
+    env = challenge(store, dup, target=S15, now=NOW14 + timedelta(minutes=1))
+    assert submit(store, operator, env, dup, dfiles, NOW14 + timedelta(minutes=1),
+                  on_halt=lambda i, r: halts.append((i, r))) == Refusal("duplicate_settlement", halt_required=True)
+    skip, sfiles = package(r1, S16, NOW14 + timedelta(days=2))       # skips 09-15
+    env = challenge(store, skip, target="tradeify-account-day:2026-09-17", now=NOW14 + timedelta(days=2))
+    assert submit(store, operator, env, skip, sfiles, NOW14 + timedelta(days=2),
+                  on_halt=lambda i, r: halts.append((i, r))) == Refusal("out_of_order_settlement", halt_required=True)
+    assert [r for _, r in halts] == ["protection", "protection"]
+    assert store.settled_close()[0].session_id == S14
+
+
+def test_revision_of_an_accepted_record_invalidates_dependents_and_halts(tmp_path):
+    """Both versions are retained; dependent closes and open challenges are voided; no forward acceptance."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg1, files1 = package(head, S14, NOW14)
+    r1 = submit(store, operator, challenge(store, pkg1, target=S15, now=NOW14), pkg1, files1, NOW14)
+    now15 = NOW14 + timedelta(days=1)
+    pkg2, files2 = package(r1, S15, now15, prior_tx=pkg1["ledger"]["transactions"])
+    submit(store, operator, challenge(store, pkg2, target=S16, now=now15), pkg2, files2, now15)
+    halts = []
+    revised = deepcopy(pkg1)
+    revised["ledger"]["transactions"][0]["sha256"] = "f" * 64
+    assert store.record_revision(session_id=S14, revised_package=revised, now=now15,
+                                 on_halt=lambda i, r: halts.append(i)) == Refusal("accepted_record_revised", halt_required=True)
+    assert halts == ["settlement:revision:" + S14]
+    assert store.settled_close() == Refusal("chain_invalidated")
+    assert store.status()["invalidated"] is True and store.status()["rows"] == 3
+    pkg3, files3 = package(r1, S16, now15 + timedelta(days=1))
+    assert store.issue_challenge(scope="submit_account_close", target_session_id="tradeify-account-day:2026-09-17",
+                                 proposed_session_id=S16, package_sha256=sha256_hex(canonical_bytes(pkg3)),
+                                 halt_generation=1, permission="RUNNING", calendar=CALENDAR,
+                                 now=now15 + timedelta(days=1)) == Refusal("chain_invalidated")
+    with sqlite3.connect(tmp_path / "settlement.sqlite") as db:
+        kinds = sorted(k for (k,) in db.execute("SELECT kind FROM packages"))
+        assert kinds == ["ACCOUNT_CLOSE", "ACCOUNT_CLOSE", "B7_SEAL", "REVISION"]
+
+
+# ---------------------------------------------------------------- restart, tamper and restore
+
+
+def test_restart_begins_restore_pending_voids_open_challenges_and_keeps_the_chain(tmp_path):
+    """A restored owner accepts nothing until the durable chain is reconciled; a lost receipt is read-only."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    r1 = submit(store, operator, challenge(store, pkg, target=S15, now=NOW14), pkg, files, NOW14)
+    now15 = NOW14 + timedelta(days=1)
+    pkg2, files2 = package(r1, S15, now15, prior_tx=pkg["ledger"]["transactions"])
+    env_open = challenge(store, pkg2, target=S16, now=now15)
+    restored = boot(tmp_path, operator, now=now15 + timedelta(minutes=1))
+    assert restored.status()["restore_pending"] is True and restored.status()["rows"] == 2
+    assert restored.settled_close() == Refusal("restore_reconciliation_required")
+    assert submit(restored, operator, env_open, pkg2, files2, now15 + timedelta(minutes=2)) == \
+        Refusal("restore_reconciliation_required")
+    assert restored.reconcile_restore(now15 + timedelta(minutes=3)) == {"rows": 2, "invalidated": False}
+    assert restored.settled_close()[0].session_id == S14
+    # The pre-restart challenge is void: a new boot is a new owner.
+    assert submit(restored, operator, env_open, pkg2, files2, now15 + timedelta(minutes=4)) == \
+        Refusal("challenge_consumed")
+    # The old handle is fenced.
+    with pytest.raises(SettlementError):
+        store.status()
+
+
+def test_tampered_chain_row_is_detected_on_boot(tmp_path):
+    """Editing an accepted equity in the database breaks the hash chain; the owner refuses to boot."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    submit(store, operator, challenge(store, pkg, target=S15, now=NOW14), pkg, files, NOW14)
+    with sqlite3.connect(tmp_path / "settlement.sqlite") as db:
+        db.execute("UPDATE chain SET equity='999999' WHERE seq=2")
+    with pytest.raises(SettlementError, match="integrity"):
+        boot(tmp_path, operator, now=NOW14 + timedelta(hours=1))
+
+
+def test_changed_digests_or_keys_across_restart_are_refused(tmp_path):
+    """The durable owner is bound to the ratified calendar, the policy and the enrolled keys."""
+    operator = Operator()
+    seated(tmp_path, operator)
+    with pytest.raises(SettlementError, match="changed"):
+        SettlementStore.boot(tmp_path / "settlement.sqlite", ACCOUNT, trusted_keys={operator.key_id: ["record_only"]},
+                             calendar_digest=CALENDAR.calendar_digest, policy_digest=POLICY_DIGEST, now=NOW14)
+    with pytest.raises(SettlementError, match="changed"):
+        SettlementStore.boot(tmp_path / "settlement.sqlite", ACCOUNT,
+                             trusted_keys={operator.key_id: ["submit_account_close", "record_only"]},
+                             calendar_digest="e" * 64, policy_digest=POLICY_DIGEST, now=NOW14)
+
+
+# ---------------------------------------------------------------- B7 bootstrap and record-only catch-up
+
+
+def test_b7_bootstrap_is_initial_only_and_checked(tmp_path):
+    """The sealed snapshot seats the head once; failed checks, expiry or a seated chain refuse."""
+    operator = Operator()
+    store = boot(tmp_path, operator)
+    at = datetime(2026, 9, 12, 14, tzinfo=timezone.utc)
+    assert store.settled_close() == Refusal("chain_not_seated")
+    assert store.bootstrap_b7(b7_seal(failing=True), session_id=B7_SESSION, effective_close_utc=B7_CLOSE,
+                              policy=POLICY, now=at) == Refusal("seal_checks")
+    assert store.bootstrap_b7(b7_seal(), session_id=B7_SESSION, effective_close_utc=B7_CLOSE, policy=POLICY,
+                              now=datetime(2026, 9, 13, 22, 1, tzinfo=timezone.utc)) == Refusal("seal_expired")
+    assert store.bootstrap_b7(b7_seal(), session_id=B7_SESSION, effective_close_utc=B7_CLOSE - timedelta(days=3),
+                              policy=POLICY, now=at) == Refusal("effective_close_outside_seal_window")
+    receipt = store.bootstrap_b7(b7_seal(balance="98500", peak="100000"), session_id=B7_SESSION,
+                                 effective_close_utc=B7_CLOSE, policy=POLICY, now=at)
+    assert receipt.origin == "B7" and receipt.mode_next == Mode.PROTECTED.value
+    close, mode = store.settled_close()
+    assert close.session_id == B7_SESSION and close.equity == 98500.0 and mode is Mode.PROTECTED
+    assert store.bootstrap_b7(b7_seal(), session_id=B7_SESSION, effective_close_utc=B7_CLOSE, policy=POLICY,
+                              now=at) == Refusal("chain_already_seated")
+
+
+def test_record_only_catch_up_accepts_missed_sessions_in_order_while_halted(tmp_path):
+    """Historical closes use fresh record_only challenges, no target, predecessor order, and grant nothing."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    late = datetime(2026, 9, 16, 12, tzinfo=timezone.utc)
+    pkg14, f14 = package(head, S14, late)
+    assert store.issue_challenge(scope="record_only", target_session_id=None, proposed_session_id=S14,
+                                 package_sha256=sha256_hex(canonical_bytes(pkg14)), halt_generation=3,
+                                 permission="RUNNING", calendar=CALENDAR, now=late) == Refusal("record_only_requires_halted")
+    env = challenge(store, pkg14, target=None, now=late, scope="record_only", permission="HALTED", generation=3)
+    assert env["expires_utc"] == utc(late + CHALLENGE_LIFETIME) and env["target_session_id"] is None
+    r14 = submit(store, operator, env, pkg14, f14, late, generation=3)
+    assert isinstance(r14, Receipt) and r14.grants_activation is False
+    pkg15, f15 = package(r14, S15, late, prior_tx=pkg14["ledger"]["transactions"])
+    env = challenge(store, pkg15, target=None, now=late, scope="record_only", permission="HALTED", generation=3)
+    r15 = submit(store, operator, env, pkg15, f15, late, generation=3)
+    assert isinstance(r15, Receipt)
+    status = store.status()
+    assert status["head"]["session_id"] == S15 and status["grants_activation"] is False and status["grants_resume"] is False
+
+
+# ---------------------------------------------------------------- package refusals
+
+
+def _mutate(pkg, files, mutation, now):
+    if mutation == "stale_evidence":
+        for src in pkg["sources"]:
+            if src["role"] == "dashboard":
+                src["captured_utc"] = utc(now - timedelta(minutes=31))
+    elif mutation == "future_capture":
+        pkg["positions"]["captured_utc"] = utc(now + timedelta(minutes=1))
+        for src in pkg["sources"]:
+            if src["role"] == "positions":
+                src["captured_utc"] = utc(now + timedelta(minutes=1))
+    elif mutation == "cash_adjustments_present":
+        pkg["ledger"]["adjustments_abs_total"] = "200.00"          # +100 deposit, -100 withdrawal
+    elif mutation == "unclassified_ledger_rows":
+        pkg["ledger"]["unlinked_fee_rows"] = 1
+    elif mutation == "ledger_arithmetic":
+        pkg["ledger"]["trading_costs"]["commission"] = "8.00"      # double-counted commission
+    elif mutation == "dashboard_disagreement":
+        pkg["dashboard"]["trailing_threshold"] = str(Decimal(pkg["dashboard"]["trailing_threshold"]) - 50)
+    elif mutation == "source_bytes_mismatch":
+        files["cash_history.csv"] = b"different bytes"
+    elif mutation == "source_role_missing":
+        pkg["sources"] = [s for s in pkg["sources"] if s["role"] != "balance_history"]
+    elif mutation == "coverage_gap":
+        pkg["ledger"]["coverage"]["windows"][1]["from_utc"] = "2026-09-04T00:00:00Z"
+    elif mutation == "coverage_gap_at_inception":
+        pkg["ledger"]["coverage"]["windows"][0]["from_utc"] = "2026-08-21T00:00:00Z"
+    elif mutation == "coverage_window_span":
+        pkg["ledger"]["coverage"]["windows"][0]["to_utc"] = "2026-09-05T13:00:00Z"
+    elif mutation == "coverage_window_limit":
+        pkg["ledger"]["coverage"]["window_limit_days"] = 365
+    elif mutation == "coverage_window_incomplete":
+        pkg["ledger"]["coverage"]["windows"][1]["complete"] = False
+    elif mutation == "coverage_ends_before_capture":
+        pkg["ledger"]["coverage"]["windows"][1]["to_utc"] = utc(now - timedelta(minutes=20))
+    elif mutation == "transaction_revision_detected":
+        pkg["ledger"]["revisions"] = [{"id": "tx-09-14-0"}]
+    elif mutation == "duplicate_transaction_id":
+        pkg["ledger"]["transactions"].append(dict(pkg["ledger"]["transactions"][0]))
+    elif mutation == "effective_close_not_session_close":
+        pkg["effective_close_utc"] = "2026-09-14T20:30:00Z"
+    elif mutation == "flatness_uncertain":
+        pkg["unresolved_runtime_requests"] = ["op-77"]
+    elif mutation == "venue_equity_at_close":
+        pkg["equity"]["flatness_basis"] = "VENUE_EQUITY_AT_CLOSE"    # without venue equity/valuation basis
+    elif mutation == "attestation_incomplete":
+        pkg["attestations"]["no_known_pending_correction"] = False
+    elif mutation == "wrong_account":
+        pkg["account_id"] = "someone-else"
+    elif mutation == "digest_mismatch":
+        pkg["policy_digest"] = "c" * 64
+    elif mutation == "predecessor_mismatch":
+        pkg["predecessor_package_sha256"] = "9" * 64
+    elif mutation == "package_keys":
+        pkg["note"] = "extra"
+    elif mutation == "report_timezone":
+        pkg["report_timezone"] = "UTC-4"
+    elif mutation == "operator_signed_in_future":
+        pkg["operator_signed_utc"] = utc(now + timedelta(seconds=30))
+    else:
+        raise AssertionError(mutation)
+
+
+@pytest.mark.parametrize("mutation", [
+    "stale_evidence", "future_capture", "cash_adjustments_present", "unclassified_ledger_rows",
+    "ledger_arithmetic", "dashboard_disagreement", "source_bytes_mismatch", "source_role_missing",
+    "coverage_gap", "coverage_gap_at_inception", "coverage_window_span", "coverage_window_limit",
+    "coverage_window_incomplete", "coverage_ends_before_capture", "transaction_revision_detected",
+    "duplicate_transaction_id", "effective_close_not_session_close", "flatness_uncertain",
+    "venue_equity_at_close", "attestation_incomplete", "wrong_account", "digest_mismatch",
+    "predecessor_mismatch", "package_keys", "report_timezone", "operator_signed_in_future",
+])
+def test_defective_packages_are_refused_by_name_without_state_advance(tmp_path, mutation):
+    """Every contract refusal is a named value; the challenge stays issued and the chain unchanged."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    _mutate(pkg, files, mutation, NOW14)
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    result = submit(store, operator, env, pkg, files, NOW14)
+    assert result == Refusal(mutation), result
+    assert store.status()["rows"] == 1
+    with sqlite3.connect(tmp_path / "settlement.sqlite") as db:
+        assert db.execute("SELECT status FROM challenges WHERE challenge_id=?", (env["challenge_id"],)).fetchone()[0] == "ISSUED"
+
+
+def test_venue_equity_basis_accepts_carried_boundary_with_valuation(tmp_path):
+    """When flatness at the close is not established, venue-backed equity with its basis is required."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14, flatness="VENUE_EQUITY_AT_CLOSE")
+    pkg["equity"]["at_effective_close"] = "CARRIED"
+    pkg["equity"]["equity_at_effective_close"] = pkg["equity"]["net_equity"]
+    pkg["equity"]["valuation_basis"] = "venue balance/equity history row at 17:00 ET settlement marks"
+    pkg["unresolved_runtime_requests"] = ["op-late-close"]
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    assert isinstance(submit(store, operator, env, pkg, files, NOW14), Receipt)
+
+
+def test_offsetting_adjustments_refuse_despite_zero_net(tmp_path):
+    """Sum of absolute adjustments, never the signed net, decides refusal."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    pkg["ledger"]["adjustments_abs_total"] = "2.00"
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    assert submit(store, operator, env, pkg, files, NOW14) == Refusal("cash_adjustments_present")

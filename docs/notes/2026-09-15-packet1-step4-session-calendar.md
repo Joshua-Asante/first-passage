@@ -15,7 +15,7 @@ No runtime activation, live permission, deployment or resumption authority is gr
 
 Code: `ops/c1_rail/book_session_calendar.py` (loader and `BookSession` producer),
 `scripts/author_book_session_calendar.py` (authoring tool for the monthly extension),
-`tests/ops/test_book_session_calendar.py` (55 tests).
+`tests/ops/test_book_session_calendar.py` (64 tests).
 
 **Path decision.** The Track B umbrella's TB-C1 claim named
 `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/` for the forward file and overlay; the
@@ -68,7 +68,7 @@ risk; it never invents a fallback session.
 
 ## Verification
 
-- `tests/ops/test_book_session_calendar.py`: 55 passed. Covers byte pinning of all four files,
+- `tests/ops/test_book_session_calendar.py`: 64 passed. Covers byte pinning of all four files,
   deterministic regeneration from the authoring tool, the umbrella-owed checks (both files parse,
   no forward row at or before the frozen D19 window end 2026-09-02, overlay rows flagged
   `overrides_d19: true`, coverage reaches the horizon), §5 derivations, every refusal reason,
@@ -81,8 +81,8 @@ risk; it never invents a fallback session.
 
 - No historical legality or matching-hour claim for any date before 2026-09-03. D19 remains
   date membership only; the 296-check archival inventory stays `INCOMPLETE_NOT_RUNTIME_INPUT`.
-- No runtime binding yet: the account identity is `BOUND_AT_RUNTIME`, and the trusted config
-  does not yet pin `650e8aab…`. Pinning is the ratification act.
+- No runtime binding yet: the account identity is `BOUND_AT_RUNTIME`. The tracked ratification
+  row is the pin the loader enforces; the activation-time volume-config pin is Packet 6.
 - No scheduler, `AccountClock` or replay integration (Packet 2). This record supplies the
   producer those consumers will call.
 

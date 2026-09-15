@@ -241,6 +241,16 @@ permitted; 2026-09-07 and 2026-09-08 are denied. The artifacts live under
 `ops/calendars/` because the rail consumes them. Ratification pins the digest in
 the runtime's trusted configuration; the monthly extension is due before
 2026-09-30. No activation or historical legality claim follows from this step.
+
+**Step 5 implemented 2026-09-15 on synthetic evidence; live producer qualification
+not started.** The [Step 5 record](../../notes/2026-09-15-packet1-step5-settlement-owner.md)
+binds `ops/c1_rail/book_settlement.py` (durable single-writer settled-close chain,
+one-use 300-second signed challenge, full package verification, B7 bootstrap,
+record-only catch-up, revision invalidation, restart reconciliation) and
+`ops/c1_rail/ed25519_verify.py`, with 49 tests including consumer agreement through
+`size_book_request`. Open: the operator's actual reports and signing key, the package
+assembler from those report formats, account qualification and TB-I3 integration.
+No close is accepted and nothing grants activation or resumption.
 Do not spend
 another broad implementation pass on a producer
 whose required evidence is unavailable. A failed feasibility check produces an
