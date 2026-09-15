@@ -14,7 +14,6 @@ deadlines of the current row remain available through ``schedule_for``.
 from __future__ import annotations
 
 import hashlib
-import json
 import re
 from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta, timezone
@@ -22,13 +21,14 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from book_sizing_context import BookSession
-from calendar_evidence import halt_evidence, index_captures, require_halt_evidence
+from calendar_evidence import halt_evidence, index_captures, read_json_object, require_halt_evidence
 
 SCHEMA = "book_session_calendar/v1"
 OVERLAY_SCHEMA = "book_closure_overlay/v1"
 EVIDENCE_SCHEMA_V1 = "forward_session_source_captures/v1"
 EVIDENCE_SCHEMA_V2 = "forward_session_source_captures/v2"
 EVIDENCE_V1_WARNING = "evidence_schema_v1_no_product_coverage"
+_V1_CALENDAR_DIGEST = "650e8aab4166f74a988675a3f3dfa2dbd21c1c1b342777ac37d65aacea9d6f2f"
 RATIFICATION_SCHEMA = "calendar_ratification/v1"
 _RATIFICATION_KEYS = frozenset({
     "calendar_id", "calendar_file", "calendar_sha256", "closure_overlay_file",
@@ -144,7 +144,7 @@ def _minutes(value: object, label: str) -> timedelta:
 def _read(path: Path) -> tuple[bytes, dict]:
     data = path.read_bytes()
     try:
-        payload = json.loads(data)
+        payload = read_json_object(data)
     except ValueError as exc:
         raise CalendarError(f"{path}: not JSON ({exc})") from exc
     if not isinstance(payload, dict):
@@ -191,6 +191,7 @@ class SessionCalendar:
     review_due: datetime
     rows: tuple[SessionSchedule, ...]
     products: tuple[str, ...]
+    generated_at: datetime
     evidence_warning: str | None = None   # set when the evidence file predates per-capture product coverage
     ratified_at: datetime | None = None  # absent on a validation-only load
 
@@ -383,6 +384,7 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
                             f"extra={sorted(set(payload) - _TOP_KEYS)})")
     if payload["schema"] != SCHEMA:
         raise CalendarError("calendar: wrong schema")
+    generated = _utc_event(payload["generated_utc"], "calendar.generated_utc")
     if not isinstance(payload["calendar_id"], str) or not payload["calendar_id"].strip():
         raise CalendarError("calendar: calendar_id required")
     if isinstance(payload["version"], bool) or not isinstance(payload["version"], int) or payload["version"] < 1:
@@ -422,8 +424,8 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
     evidence_bytes = evidence_path.read_bytes()
     if hashlib.sha256(evidence_bytes).hexdigest() != sources["evidence_sha256"]:
         raise CalendarError("calendar: evidence_sha256 does not match the evidence file bytes")
-    evidence = json.loads(evidence_bytes)
     try:
+        evidence = read_json_object(evidence_bytes)
         capture_index = index_captures(evidence)
         halts = halt_evidence(evidence_bytes, capture_index)
     except ValueError as exc:
@@ -440,6 +442,9 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
             coverage[c["id"]] = frozenset(covered)
         evidence_warning = None
     elif evidence_schema == EVIDENCE_SCHEMA_V1:
+        # The pinned calendar itself transitively pins the exact evidence digest.
+        if hashlib.sha256(data).hexdigest() != _V1_CALENDAR_DIGEST:
+            raise CalendarError("calendar: v1 evidence is restricted to the pinned September calendar")
         coverage = None                      # v1 captures carry no product coverage; every decision warns
         evidence_warning = EVIDENCE_V1_WARNING
     else:
@@ -522,7 +527,7 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
         calendar_id=payload["calendar_id"], calendar_digest=hashlib.sha256(data).hexdigest(),
         overlay_digest=overlay_digest, timezone=tz_name, coverage_start=start, coverage_end=end,
         review_due=review_due, rows=tuple(rows), products=tuple(sorted(products)),
-        evidence_warning=evidence_warning,
+        evidence_warning=evidence_warning, generated_at=generated,
     )
 
 
@@ -576,4 +581,7 @@ def load_ratified_calendar(path: Path, *, overlay_path: Path, ratified_path: Pat
               _utc(row["coverage_end_utc"], "coverage_end_utc"))
     if bounds != (calendar.coverage_start, calendar.coverage_end):
         raise CalendarError("ratification_coverage_mismatch")
-    return replace(calendar, ratified_at=_utc_event(row["ratified_utc"], "ratified_utc"))
+    ratified = _utc_event(row["ratified_utc"], "ratified_utc")
+    if ratified < calendar.generated_at:
+        raise CalendarError("ratification_precedes_generation")
+    return replace(calendar, ratified_at=ratified)

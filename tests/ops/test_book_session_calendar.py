@@ -49,6 +49,11 @@ def load():
 
 def synthetic_ratified(tmp_path, path=CALENDAR, overlay=OVERLAY, repo=REPO):
     """Explicit test authority predating synthetic admissions; never changes operator records."""
+    if path == CALENDAR:
+        path, overlay, repo, _ = calendar_fixture(
+            tmp_path, first=date(2026, 9, 3), last=date(2026, 9, 30),
+            denials={date(2026, 9, 7): author.Denial("HOLIDAY", "synthetic", **LABOR_DAY),
+                     date(2026, 9, 8): author.Denial("UNCERTAIN_ADJACENT", "synthetic")})
     cal = load_session_calendar(path, overlay_path=overlay, repo_root=repo)
     payload = json.loads(RATIFIED.read_bytes())
     payload["ratifications"][0].update(
@@ -68,7 +73,7 @@ LABOR_DAY = dict(halts_local={"6J": "17:00", "MGC": "14:30", "MYM": "13:00", "MN
                  source_ids=("cme-ui-labor-2026", "cme-globex-2026-holiday-schedule"))
 
 
-def calendar_fixture(tmp_path, *, first, last, denials=(), generated="2026-09-15T00:00:00Z"):
+def calendar_fixture(tmp_path, *, first, last, denials=(), generated=None):
     """Author a synthetic calendar through the real authoring tool into a tmp repo layout."""
     sys.path.insert(0, str(REPO / "scripts"))
     try:
@@ -79,9 +84,20 @@ def calendar_fixture(tmp_path, *, first, last, denials=(), generated="2026-09-15
     evidence_dir = repo / "ops" / "calendars" / "evidence"
     evidence_dir.mkdir(parents=True)
     evidence_path = evidence_dir / EVIDENCE.name
-    evidence_path.write_bytes(EVIDENCE.read_bytes())
+    evidence = json.loads(EVIDENCE.read_bytes())
+    evidence["schema"] = "forward_session_source_captures/v2"
+    for capture in evidence["captures"]:
+        capture["products"] = ([capture["id"].removeprefix("cme-spec-")]
+                               if capture["id"].startswith("cme-spec-") else ["6J", "MGC", "MYM", "MNQ"])
+        if capture["id"] == "cme-ui-labor-2026":
+            capture["matching_halts"] = [
+                {"account_date": "2026-09-07", "product": code, "matching_close_utc": close}
+                for code, close in [("6J", "2026-09-07T21:00:00Z"), ("MGC", "2026-09-07T18:30:00Z"),
+                                    ("MYM", "2026-09-07T17:00:00Z"), ("MNQ", "2026-09-07T17:00:00Z")]]
+    rewrite(evidence_path, evidence)
     overlay_path = repo / "ops" / "calendars" / "book_closure_overlay.json"
     overlay_path.write_bytes(OVERLAY.read_bytes())
+    generated = generated or (first - timedelta(days=2)).isoformat() + "T00:00:00Z"
     payload = author.build_calendar(first, last, dict(denials), evidence_path, generated, "synthetic/forward")
     payload["sources"]["evidence_file"] = "ops/calendars/evidence/" + EVIDENCE.name
     path = repo / "ops" / "calendars" / "synthetic.json"
@@ -95,22 +111,22 @@ def rewrite(path, payload):
 
 def test_ratification_preserves_second_precision_audit_time(tmp_path):
     payload = json.loads(RATIFIED.read_bytes())
-    payload["ratifications"][0]["ratified_utc"] = "2026-09-15T10:26:30Z"
+    payload["ratifications"][0]["ratified_utc"] = "2026-09-15T10:46:30Z"
     path = tmp_path / "ratified.json"
     rewrite(path, payload)
     calendar = load_ratified_calendar(CALENDAR, overlay_path=OVERLAY, ratified_path=path, repo_root=REPO)
     assert calendar.calendar_digest == CALENDAR_SHA256
-    assert load_ratifications(path)[CALENDAR_SHA256]["ratified_utc"] == "2026-09-15T10:26:30Z"
+    assert load_ratifications(path)[CALENDAR_SHA256]["ratified_utc"] == "2026-09-15T10:46:30Z"
 
 
 @pytest.mark.parametrize("delta,permitted", [(-1, False), (0, True), (1, True)])
 def test_admission_begins_at_ratification_instant(tmp_path, delta, permitted):
     payload = json.loads(RATIFIED.read_bytes())
-    payload["ratifications"][0]["ratified_utc"] = "2026-09-15T10:26:30Z"
+    payload["ratifications"][0]["ratified_utc"] = "2026-09-15T10:46:30Z"
     path = tmp_path / "ratified.json"
     rewrite(path, payload)
     cal = load_ratified_calendar(CALENDAR, overlay_path=OVERLAY, ratified_path=path, repo_root=REPO)
-    at = datetime(2026, 9, 15, 10, 26, 30, tzinfo=timezone.utc)
+    at = datetime(2026, 9, 15, 10, 46, 30, tzinfo=timezone.utc)
     decision = cal.session_for(at + timedelta(microseconds=delta))
     assert decision.permitted is permitted
     assert decision.refusal == (None if permitted else "calendar_not_yet_ratified")
@@ -282,7 +298,7 @@ def test_denied_days_stay_in_the_prior_session_chain_and_consumer_agrees(tmp_pat
     settled_skip = replace(settled_ok, session_id="tradeify-account-day:2026-09-04")
     good_binding = replace(binding, session=decision.session, settlement=settled_ok)
     good_context = replace(context, session_id=decision.session.session_id,
-                           calendar_digest=CALENDAR_SHA256, settled=settled_ok,
+                           calendar_digest=cal.calendar_digest, settled=settled_ok,
                            as_of=now, valid_until=now + timedelta(seconds=30))
     assert not size_book_request(request, context=good_context, binding=good_binding, policy=POLICY, now=now).halt
     bad_binding = replace(good_binding, settlement=settled_skip)
@@ -777,3 +793,100 @@ def test_author_cli_loads_shared_validation_and_refuses_wrong_holiday(tmp_path):
                               cwd=tmp_path, capture_output=True, text=True)
     assert ordinary.returncode == 0, ordinary.stderr
     assert len(json.loads(out.read_bytes())["sessions"]) == 2
+
+
+@pytest.mark.parametrize("change", ["calendar_bytes", "future_horizon", "evidence_bytes"])
+def test_v1_compatibility_cannot_authorize_another_artifact(tmp_path, change):
+    if change == "future_horizon":
+        path, overlay, repo, payload = calendar_fixture(tmp_path, first=date(2026, 10, 1), last=date(2026, 10, 2))
+        evidence_path = repo / payload["sources"]["evidence_file"]
+        evidence_path.write_bytes(EVIDENCE.read_bytes())
+        payload["sources"]["evidence_sha256"] = EVIDENCE_SHA256
+    else:
+        repo = tmp_path
+        overlay = OVERLAY
+        path = tmp_path / "calendar.json"
+        payload = json.loads(CALENDAR.read_bytes())
+        evidence_path = repo / payload["sources"]["evidence_file"]
+        evidence_path.parent.mkdir(parents=True)
+        evidence_path.write_bytes(EVIDENCE.read_bytes())
+        if change == "calendar_bytes":
+            payload["authoring_note"] += " changed"
+        else:
+            evidence_path.write_bytes(EVIDENCE.read_bytes() + b"\n")
+            payload["sources"]["evidence_sha256"] = sha256(evidence_path.read_bytes()).hexdigest()
+    rewrite(path, payload)
+    with pytest.raises(CalendarError, match="v1.*pinned September"):
+        load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+
+
+@pytest.mark.parametrize("ratified", ["2026-09-15T10:39:59Z", "2026-09-15T10:40:00Z", "2026-09-15T10:40:01Z"])
+def test_ratification_cannot_precede_calendar_generation(tmp_path, ratified):
+    payload = json.loads(RATIFIED.read_bytes())
+    payload["ratifications"][0]["ratified_utc"] = ratified
+    path = tmp_path / "ratified.json"
+    rewrite(path, payload)
+    if ratified < "2026-09-15T10:40:00Z":
+        with pytest.raises(CalendarError, match="ratification_precedes_generation"):
+            load_ratified_calendar(CALENDAR, overlay_path=OVERLAY, ratified_path=path, repo_root=REPO)
+    else:
+        cal = load_ratified_calendar(CALENDAR, overlay_path=OVERLAY, ratified_path=path, repo_root=REPO)
+        assert cal.generated_at == datetime(2026, 9, 15, 10, 40, tzinfo=timezone.utc)
+
+
+@pytest.mark.parametrize("generated", [None, "not-a-time", "2026-09-15T10:40:00", "2026-09-15T10:40:30Z"])
+def test_generation_timestamp_is_validated_with_second_precision(tmp_path, generated):
+    path, overlay, repo, payload = _v2_fixture(tmp_path)
+    payload["generated_utc"] = generated
+    rewrite(path, payload)
+    if generated == "2026-09-15T10:40:30Z":
+        cal = load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+        assert cal.generated_at == datetime(2026, 9, 15, 10, 40, 30, tzinfo=timezone.utc)
+    else:
+        with pytest.raises(CalendarError, match="generated_utc"):
+            load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+
+
+@pytest.mark.parametrize("extra", [
+    ["--deny", "2026-09-07", "UNCERTAIN_ADJACENT", "conflict"],
+    ["--deny", "2026-09-07", "HOLIDAY", "same"],
+    ["--halts", "2026-09-07", "6J=17:00,MGC=14:30,MYM=13:00,MNQ=13:00", "cme-ui-labor-2026"],
+    ["--halts", "2026-09-08", "6J=17:00,MGC=14:30,MYM=13:00,MNQ=13:00", "cme-ui-labor-2026"],
+])
+def test_cli_refuses_duplicate_or_unbound_schedule_arguments(tmp_path, extra):
+    out = tmp_path / "calendar.json"
+    out.write_bytes(b"existing output")
+    args = ["--first", "2026-09-07", "--last", "2026-09-08", "--evidence", str(EVIDENCE),
+            "--out", str(out), "--deny", "2026-09-07", "HOLIDAY", "synthetic",
+            "--halts", "2026-09-07", "6J=17:00,MGC=14:30,MYM=13:00,MNQ=13:00", "cme-ui-labor-2026"]
+    with pytest.raises((ValueError, SystemExit)):
+        author.main(args + extra)
+    assert out.read_bytes() == b"existing output"
+
+
+def test_duplicate_product_halt_is_not_resolved_by_order():
+    with pytest.raises(ValueError, match="duplicate"):
+        author.parse_halts("6J=13:00,6J=17:00,MGC=14:30,MYM=13:00,MNQ=13:00")
+
+
+@pytest.mark.parametrize("artifact", ["calendar", "evidence", "overlay", "ratification"])
+def test_duplicate_json_keys_refuse_before_normalization(tmp_path, artifact):
+    path, overlay, repo, payload = _v2_fixture(tmp_path)
+    if artifact == "calendar":
+        path.write_bytes(path.read_bytes().replace(b'"permission":', b'"permission": "DENIED", "permission":', 1))
+        operation = lambda: load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+    elif artifact == "evidence":
+        evidence_path = repo / payload["sources"]["evidence_file"]
+        evidence_path.write_bytes(evidence_path.read_bytes().replace(b'"id":', b'"id": "conflict", "id":', 1))
+        payload["sources"]["evidence_sha256"] = sha256(evidence_path.read_bytes()).hexdigest()
+        rewrite(path, payload)
+        operation = lambda: load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+    elif artifact == "overlay":
+        overlay.write_bytes(overlay.read_bytes().replace(b'"overrides_d19":', b'"overrides_d19": false, "overrides_d19":', 1))
+        operation = lambda: load_closure_overlay(overlay)
+    else:
+        ratified = tmp_path / "ratified.json"
+        ratified.write_bytes(RATIFIED.read_bytes().replace(b'"ratified_utc":', b'"ratified_utc": "2026-09-15T09:00:00Z", "ratified_utc":', 1))
+        operation = lambda: load_ratifications(ratified)
+    with pytest.raises(CalendarError, match="duplicate JSON key"):
+        operation()

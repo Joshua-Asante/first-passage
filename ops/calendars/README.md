@@ -163,6 +163,11 @@ record and retains `ratified_at`. Otherwise-valid admission refuses with
 instant. At the exact instant, normal schedule rules apply. Historical lookup
 and protective deadlines remain available before ratification.
 
+Generation and ratification are ordered events: the loader parses and retains
+`generated_utc` with second precision, and refuses a selected ratification whose
+`ratified_utc` precedes it. Equality is allowed. Valid historical schedules may
+predate generation; this does not authorize historical admission.
+
 This component is extracted under the approved
 [PR 395 split](../../docs/superpowers/specs/2026-09-15-pr395-component-split.md).
 Its legacy source evidence warning remains visible; extracting the calendar
@@ -220,9 +225,25 @@ SHA-256 `56951e1527af20966dea64130bf8d0a1dccb9bc011bd6e0501282faa549fcba5`
 binds the quoted `cme-ui-labor-2026` observations to September 7 only. It grants
 no evidence for any other date or changed evidence bytes. The v1 warning stays
 visible, and the pinned calendar and evidence remain byte-for-byte reproducible.
+The v1 exception is also restricted to the exact pinned September **calendar**
+digest `650e8aab4166f74a988675a3f3dfa2dbd21c1c1b342777ac37d65aacea9d6f2f`,
+which transitively pins the evidence bytes. A future or modified v1-backed
+calendar is refused on load, even if a ratification record names it. Extensions
+must supply v2 product coverage. Authoring a candidate alone never establishes
+its loadability or admission authority.
 Future holiday extensions still need separately qualified CME trade-date input;
 this validation does not supply that missing authoring capability.
 
 Delayed product opens affect admission only. A returned `BookSession.opens_at`
 always remains the account-day open, preserving the sizing consumer's requirement
 that the prior settlement precede the current account session.
+
+### Reject ambiguity before parsing erases it
+
+Calendar, evidence, overlay and ratification JSON reject duplicate object keys,
+including nested keys. They cannot silently select the last occurrence. The
+authoring CLI likewise refuses duplicate `--deny` dates, duplicate `--halts`
+dates and repeated product clocks inside one halt argument. Every `--halts`
+date must bind to a `HOLIDAY` or `SHORTENED` denial; unused halt arguments are
+errors. These checks run before the output file is written, preserving any
+existing output when an input conflicts.

@@ -36,7 +36,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "core"))
-from calendar_evidence import halt_evidence, index_captures, require_halt_evidence
+from calendar_evidence import halt_evidence, index_captures, read_json_object, require_halt_evidence
 
 SCHEMA = "book_session_calendar/v1"
 TZ_NAME = "America/New_York"
@@ -100,6 +100,8 @@ def parse_halts(text: str) -> dict:
         code, _, clock = item.strip().partition("=")
         if code not in PRODUCTS or not re.fullmatch(r"\d{2}:\d{2}", clock):
             raise ValueError(f"bad halt spec {item!r}; expected e.g. MYM=13:00")
+        if code in out:
+            raise ValueError(f"duplicate product halt: {code}")
         out[code] = clock
     if set(out) != set(PRODUCTS):
         raise ValueError("every product needs a halt clock")
@@ -223,7 +225,7 @@ def build_row(day: date, *, denial: Denial | None, evidence_ids: set[str]) -> di
 def build_calendar(first: date, last: date, denials: dict[date, Denial],
                    evidence_path: Path, generated_utc: str, calendar_id: str) -> dict:
     evidence_bytes = evidence_path.read_bytes()
-    evidence = json.loads(evidence_bytes)
+    evidence = read_json_object(evidence_bytes)
     captures = index_captures(evidence)
     evidence_ids = set(captures)
     halts = halt_evidence(evidence_bytes, captures)
@@ -303,12 +305,22 @@ def main(argv=None) -> int:
     parser.add_argument("--calendar-id", default=None)
     parser.add_argument("--generated-utc", default=None)
     args = parser.parse_args(argv)
-    halts = {date.fromisoformat(d): (parse_halts(h), tuple(s.split(","))) for d, h, s in args.halts}
+    halts = {}
+    for d, h, s in args.halts:
+        day = date.fromisoformat(d)
+        if day in halts:
+            parser.error(f"duplicate --halts date: {day}")
+        halts[day] = (parse_halts(h), tuple(s.split(",")))
     denials = {}
     for d, reason, note in args.deny:
         day = date.fromisoformat(d)
+        if day in denials:
+            parser.error(f"duplicate --deny date: {day}")
         h, ids = halts.get(day, (None, None))
         denials[day] = Denial(reason, note, h, ids)
+    for day in halts:
+        if day not in denials or denials[day].reason not in ("HOLIDAY", "SHORTENED"):
+            parser.error(f"--halts date {day} must bind to a HOLIDAY/SHORTENED denial")
     generated = args.generated_utc or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     calendar_id = args.calendar_id or f"tradeify-select-100k/forward/{args.first.isoformat()}..{args.last.isoformat()}"
     payload = build_calendar(args.first, args.last, denials, args.evidence, generated, calendar_id)

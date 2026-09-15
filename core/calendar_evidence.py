@@ -1,6 +1,7 @@
 """Pure capture identity and date-scoped halt evidence for calendar authoring/loading."""
 from datetime import date, datetime, timezone
 from hashlib import sha256
+import json
 from zoneinfo import ZoneInfo
 
 
@@ -8,6 +9,22 @@ from zoneinfo import ZoneInfo
 # This compatibility mapping belongs only to these exact bytes, never to an ID alone.
 _LEGACY_DIGEST = "56951e1527af20966dea64130bf8d0a1dccb9bc011bd6e0501282faa549fcba5"
 _LEGACY_HALTS = {"6J": "21:00", "MGC": "18:30", "MYM": "17:00", "MNQ": "17:00"}
+
+
+def read_json_object(data: bytes) -> dict:
+    """Reject ambiguous objects before JSON normalization can erase duplicate keys."""
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"duplicate JSON key: {key}")
+            result[key] = value
+        return result
+
+    payload = json.loads(data, object_pairs_hook=unique_object)
+    if not isinstance(payload, dict):
+        raise ValueError("expected a JSON object")
+    return payload
 
 
 def index_captures(evidence: dict) -> dict[str, dict]:
