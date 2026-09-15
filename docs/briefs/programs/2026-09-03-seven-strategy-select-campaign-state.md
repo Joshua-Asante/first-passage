@@ -3876,7 +3876,7 @@ carries. This section records those rulings as the campaign's authority; the umb
 | O-5 | Protected / lifecycle sizing law: **law B (risk-scaled, the sizing host's law) for Striker MYM**; **law A (quantity-floor) for Vanguard MGC**, whose WATCH tiers are restricted to zero; Aegis and ORB are fixed-quantity legs. |
 | O-6 | Striker add law: `floor(executed_base × 250%)`; the protected Striker ceiling of 22 base + 55 add = 77 micro-equivalents is **accepted**, and TB-S1 re-derives the D-B8 protected-capacity cases (protected Aegis at 30 micro-equivalents can require a takeover). Vanguard keeps `max(1, round(base × 80%))`; ORB keeps one-for-one adds. |
 | O-7 | The two new ORB exports (one contract; scale-in on / off) are produced with the chart Properties margin long/short at 0 %, attested in their Properties capture. |
-| O-8 | Vanguard's post-holiday no-trade artefact is **kept as captured** for this attempt. |
+| O-8 | Vanguard's post-holiday no-trade artefact is **kept as captured** for this attempt. Narrowed 2026-09-15 (operator-ratified): the latch mechanism is unchanged; its date membership is the provider-observed reset set, qualified through 2026-09-03 — see the [umbrella](../handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md#september-15--o-8-narrowed-by-the-step-3-provider-reset-correction-operator-ratified). |
 | O-9 | Effective-input provenance: (a) re-capture the five Inputs tabs per §47a if the charts still exist, else (b) accept the reconstructed set as RECONSTRUCTED with a per-export Inputs/Properties capture for every OP-1 export; never a manifest rewrite. |
 
 **Effect.** The TB-R2 export menu is **frozen** ([read §3](../../notes/2026-09-12-track-b-scaling-faithfulness-read.md):
