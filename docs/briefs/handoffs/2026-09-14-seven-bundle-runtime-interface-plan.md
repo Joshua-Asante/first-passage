@@ -39,3 +39,23 @@ Proposed `SettledAccountClose`: account identity, prior venue-session identity, 
 Replay producer derives terminal session cash/peak from continuous simulated fills and costs and labels it simulated. It cannot serve as live settled-account evidence. Both consumers refuse a missing/wrong-session/incomplete close; do not carry forward a stale mode or substitute a product settlement quote. TB-T1 binds private evidence; TB-I3 consumes validated live state and TB-I2 consumes validated simulated state through the same typed semantics.
 
 These proposed interfaces name the required producers and refusal boundaries. They do not certify any provider, broaden an approved dataset or waive formal intake, parity or live gates. Durable recovery implementation can continue independently while the evidence-contract amendments are prepared.
+
+
+## September 15 amendment — separate provider coverage and session legality
+
+The operator authorized the [calendar/parity separation amendment](../../notes/2026-09-15-calendar-parity-separation-amendment.md).
+It controls the current Packet 1 acceptance method over earlier requirements in
+this record to classify every historical gap through exchange calendars.
+Provider-data coverage requires complete, source-bound provider bar evidence,
+exact ordered timestamp/OHLCV agreement and accepted initialization; matching
+trades or shared omissions alone do not establish it. Unexplained shared provider
+gaps do not assert exchange closure and remain blocking for any dependent
+legality, fill or completeness claim. Existing evidence and verdicts are preserved;
+a newly reviewed admission contract is required before using the amended method.
+
+The first forward release uses a versioned September 3–30, 2026 file of qualified
+ordinary sessions, denying holiday, shortened and uncertain adjacent sessions.
+Missing/expired coverage halts new risk; safe flattening, protective/recovery
+ownership, prior-account-session chronology across denied days, settlement,
+separate resumption and activation gates remain required. D19 stays immutable
+historical date membership only. Step 3 and Packet 1 are not closed by this change.

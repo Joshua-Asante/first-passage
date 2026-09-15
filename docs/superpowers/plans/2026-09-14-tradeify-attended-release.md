@@ -174,22 +174,27 @@ acceptance. Preserve the implemented/tested components and existing evidence.
    under D17/D32. O-P's inactive add inputs are supported by pinned-source control
    flow and equal fresh panels at captured/pinned settings. Original exports stay
    unchanged. See [Step 2 evidence](../../notes/2026-09-15-packet1-execution-domain.md#packet-1-step-2--orb-summary-reconciliation).
-3. **Close startup and coverage.** Establish the deep-backtest calculation origin,
-   each adapter's required startup history and exact panel endpoints. Classify
-   missing bars against the accepted session evidence from step 4; do not silently
-   truncate trades or backfill with invented bars. Exit: reviewed coverage reports
-   binding panel bytes, source settings and the complete comparison interval.
-4. **Accept and implement the shared calendar.** Reuse immutable D19 through
-   2026-09-02 for its accepted historical date-membership purpose only. Produce
-   separately identified forward rows for 2026-09-03 through 2026-09-30 from
-   retained official product schedules and venue guidance. Bind product/session
-   identities and every matching boundary/deadline actually consumed. Historical
-   matching or missing-bar claims require their own supporting evidence; D19
-   cannot supply times or prove exchange closure. Keep typed book no-trade overlays
-   for 2023-04-07, 2025-01-09 and 2026-04-03 separate from exchange market states.
-   Supply the existing `BookSession` consumer. Exit: source review plus executable
-   early-close, DST, closure/reopen and absent/expired-coverage refusals. Step 3's
-   gap classification completes once these rows are accepted.
+3. **Close startup and provider-data coverage.** Apply the operator-authorized
+   [calendar/parity amendment](../../notes/2026-09-15-calendar-parity-separation-amendment.md).
+   Bind the calculation origin/endpoints, complete provider bar exports and
+   source/settings/initial state to the exact ordered Python input. Resolve every
+   timestamp/OHLCV discrepancy; matching trades alone are insufficient. Retain
+   shared provider gaps without inventing bars or claiming exchange closure.
+   Exit: independently reviewed provider coverage and initialization reports;
+   calendar evidence remains required wherever a dependent claim consumes it.
+4. **Accept and implement the bounded session calendar.** Preserve immutable D19
+   for historical date membership only and the separate typed policy overlays.
+   Use a versioned file for September 3–30, 2026 permitting only qualified ordinary
+   sessions; deny holiday, shortened and uncertain adjacent sessions. Bind every
+   product/account boundary and deadline actually consumed, including safe
+   flattening before denied sessions and prior-account-session chronology across
+   non-trading days. Supply verified `BookSession` values; missing or expired
+   coverage halts new risk without abandoning protective/recovery ownership.
+   Review extensions monthly and apply digest/freeze/activation requirements.
+   Exit: source review and executable permitted/denied-session, DST, boundary,
+   stale/missing coverage and prior-close checks. Historical legality claims
+   retain their own evidence requirements. No universal historical gap-to-calendar
+   join is a prerequisite for provider-data coverage under the amendment.
 5. **Complete settlement ingestion through its real consumer.** Using the producer
    established in step 1, bind authenticated submission and retained evidence to
    the exact account/prior session; verify contents before producing `SettledClose`.
@@ -209,27 +214,17 @@ acceptance. Preserve the implemented/tested components and existing evidence.
    and every Packet 1 acceptance item supported by evidence. Prepare the commit/PR
    handoff; Packet 2 and live gates are not completion substitutes.
 
-Step 3 is in progress: the initial four-panel inventory is retained in the
-[execution-domain record](../../notes/2026-09-15-packet1-execution-domain.md#step-3--initial-panel-and-startup-audit-2026-09-15).
-All four panel hashes and structural checks pass; 6J starts 23 hours later than
-the other panels. Calculation-origin proof and per-case startup binding remain
-open; every gap is unclassified pending accepted calendar evidence in Step 4.
-The seven new exports plus Aegis/Vanguard references have complete event pairs
-and unique event-to-bar matches; all 3,632 captured trade holds have uninterrupted
-15-minute panel coverage. Gaps while flat still require classification for
-indicator continuity. The retained 6J prefix produces identical diagnostic closed
-  trades. The operator has now attested its unchanged chart/harness provenance;
-  a separate 94,893-row derivative retains the original panel and adds 88 bars.
-Seven fresh XLSX reports now bind the MYM/MNQ declared backtesting ranges to
-explicit timestamps and reproduce all 6,346 original event rows across all 17
-columns; independent review accepted that bounded evidence. Nine-case startup
-observations and an exact queue of 4,142 product-specific gaps are retained.
-  Fresh Aegis/Vanguard XLSX reports bind their declared ranges too: Vanguard's
-  676 rows match exactly; Aegis's 242 rows have 30 specifically explained
-  notional-value serialization differences, retained without relaxing comparison.
-  Historical source/settings provenance, endpoint inclusion, complete
-initial-state binding and Step 4's source-backed gap classifications still block
-Step 3 closure. The current execution-domain acceptance disposition is controlling.
+Step 3 remains in progress. The
+[execution-domain record](../../notes/2026-09-15-packet1-execution-domain.md)
+retains the panel inventories, nine-reference event coverage, seven exact fresh
+report comparisons and the reviewed Aegis/Vanguard report reconciliation. The
+attested 6J derivative adds 88 retained bars without replacing the original panel.
+The [amendment](../../notes/2026-09-15-calendar-parity-separation-amendment.md)
+supersedes the earlier universal gap-classification prerequisite. No prior OPEN
+record becomes PASS: complete provider-input agreement, source/settings and
+initialization binding, endpoint evidence and a newly reviewed admission contract
+remain required. Session legality and calendar/settlement acceptance still gate
+Packet 1 and runtime permission separately.
 Do not spend
 another broad implementation pass on a producer
 whose required evidence is unavailable. A failed feasibility check produces an
