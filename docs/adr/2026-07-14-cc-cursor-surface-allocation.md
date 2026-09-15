@@ -29,6 +29,8 @@ retires with the Cursor lane; the surviving general rule is restated in §2 belo
 
 ---
 
+<a id="2--decision"></a>
+
 ## Decision
 
 Work is routed between **surfaces** by a four-question test, with an authored handoff brief as
@@ -163,6 +165,14 @@ rules Rule 7 assigns to one.
 
 ## §8 — Disposition of the prior decision's clauses and addenda
 
+> **Two HTML anchors in this file are load-bearing and must not be removed:**
+> `#2--decision` (the slug of the pre-revision `## §2 — Decision` heading) and
+> `#addendum-2026-09-04-disable-notify-cursor`. The 2026-09-15 revision dropped both
+> headings and broke two live incoming links — `docs/SESSIONS.md:424` and the Track B
+> [campaign state](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md).
+> The SESSIONS citation sits in a merged entry that `sessions-append-only` forbids
+> editing, so the anchor is pinned here rather than the caller repointed.
+
 Every clause of the 2026-07-14 body and its six addenda, dispositioned per
 [ceremony tiering](2026-08-08-adr-ceremony-tiering.md) ("disposition each obligation as retained,
 discharged, superseded or explicitly retired"). Full prior text at blob
@@ -193,7 +203,7 @@ discharged, superseded or explicitly retired"). Full prior text at blob
 | Addendum 2026-08-29 #1 (Codex native GitHub review) | **Retained and now load-bearing** — Codex's account-level review is a surviving surface's review path. Its standing bar — *this repo's CI grants Codex no write/push credential without a superseding ADR* — **survives the Cursor retirement unchanged**; nothing here relaxes it. |
 | Addendum 2026-08-29 #1, "relay findings to Cursor's Cloud Agent" | **Explicitly retired** — the relay target is gone. Findings are addressed by the coordinator or a Codex/Claude Code worker. |
 | Addendum 2026-08-29 #2 (proactive dispatch; lightweight GitHub-issue + `@cursor` format) | **Split.** Proactive-dispatch authority is **retained** (above). The lightweight issue format is **retained in shape** — a complete issue body in place of a full brief for small precedented fixes — but its `@cursor` dispatch step is **explicitly retired**; dispatch is to a Codex or Claude Code worker. |
-| Addendum 2026-09-04 (`notify-cursor.yml` auto-ping disabled) and its revert trigger ("operator asks to turn the ping back on"; restore `on:` events from `4f3ddc6`) | **Explicitly retired, not left standing.** The workflow is deleted by this revision's sweep; the revert trigger is unreachable and is discharged rather than carried as a dead obligation. Retrieval via [`TOMBSTONES.md`](TOMBSTONES.md#2026-09-15-cursor-agent-retirement). |
+| <a id="addendum-2026-09-04-disable-notify-cursor"></a>Addendum 2026-09-04 (`notify-cursor.yml` auto-ping disabled) and its revert trigger ("operator asks to turn the ping back on"; restore `on:` events from `4f3ddc6`) | **Explicitly retired, not left standing.** The workflow is deleted by this revision's sweep; the revert trigger is unreachable and is discharged rather than carried as a dead obligation. Retrieval via [`TOMBSTONES.md`](TOMBSTONES.md#2026-09-15-cursor-agent-retirement). |
 
 ### Deliberately retained (not over-swept)
 
