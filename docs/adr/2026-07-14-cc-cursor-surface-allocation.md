@@ -6,13 +6,13 @@
 **Retain-until:** none
 **Format:** concise — converted from the original full format by the 2026-09-15 revision, which consolidated §0–§10 and six addenda into Decision / Grounds / Current owner plus the §8 disposition table. Prior full-format text at the blob pinned below.
 **Decision date:** 2026-07-14
-**Revision:** 2026-09-15 — **PROPOSED, pending operator ratification.** Retires Cursor as a
-worker surface and rescopes this decision to the surviving surfaces (Claude Code, Codex);
-consolidates the six 2026-07-16 → 2026-09-04 addenda into the §8 disposition table. Prior
-decision text, in full and unedited, at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`
+**Revision:** 2026-09-15 — **RATIFIED** by the operator in-session ("execute my decisions").
+Retires Cursor as a worker surface and rescopes this decision to the surviving surfaces
+(Claude Code, Codex); consolidates the six 2026-07-16 → 2026-09-04 addenda into the §8
+disposition table. This revised text is the effective decision. Prior decision text, in full
+and unedited, at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`
 (`git show 0bcd6699fd683a18b9493e25bb053797dcf4fafe`), commit
-`b448e2b6f852a49c2a46e278ade95a4c4e2c4c54`. Until the operator ratifies, the prior text is the
-effective decision.
+`b448e2b6f852a49c2a46e278ade95a4c4e2c4c54`.
 **Supersedes:** `2026-08-14-cc-cursor-autonomous-loop.md` full — its entire subject (Cursor
 dispatch without chip approval, `cursor/*` webhook detection, and auto-merge on a binary gate)
 retires with the Cursor lane; the surviving general rule is restated in §2 below.
@@ -22,10 +22,10 @@ retires with the Cursor lane; the surviving general rule is restated in §2 belo
 [`cc_handoff` template](../../.claude/skills/brief-authoring/references/cc_handoff.md) (producer-side contract)
 **Layer:** infrastructure
 
-> ⚠ **REVISION PROPOSED 2026-09-15 — Cursor is retired as a worker surface.** The body below is
-> the rescoped decision, not the 2026-07-14 text. It is **not yet operator-ratified**; until it
-> is, the effective decision is the prior text at the blob pinned above. The clause-by-clause
-> record of what survived, what was restated and what retired is §8.
+> ⚠ **REVISED 2026-09-15 — Cursor is retired as a worker surface.** The body below is the
+> rescoped decision, not the 2026-07-14 text, and is **operator-ratified and effective**. The
+> clause-by-clause record of what survived, what was restated and what retired is §8. The
+> pre-revision text is pinned at the blob in the header.
 
 ---
 
@@ -107,8 +107,8 @@ retirement of the skill that stated them:
   dispatch pointer carries the brief's commit SHA so a worker can detect a re-freeze (2026-09-04
   defect; `docs/SESSIONS.md`).
 
-**Effective:** the 2026-07-14 decision on acceptance; the 2026-09-15 rescoping on operator
-ratification of this revision.
+**Effective:** the 2026-07-14 decision on acceptance; the 2026-09-15 rescoping on the
+operator's same-day in-session ratification.
 **Scope:** task routing between the coordinator and worker surfaces on this repo. Other external
 surfaces (web advisors, claude.ai) keep their existing gates; this ADR does not re-govern them.
 
@@ -201,6 +201,8 @@ discharged, superseded or explicitly retired"). Full prior text at blob
 | Addendum 2026-08-14 (auto-merge narrowing) | **Explicitly retired** with its parent mechanism. See the `2026-08-14` ADR's own retirement. |
 | Addendum 2026-08-23 (automatic Claude judgment review) | **Already self-superseded 2026-08-29** — the mechanism never fired (`GITHUB_TOKEN`-authored comments do not trigger workflow runs) and its files were deleted then. No live obligation. |
 | Addendum 2026-08-29 #1 (Codex native GitHub review) | **Retained and now load-bearing** — Codex's account-level review is a surviving surface's review path. Its standing bar — *this repo's CI grants Codex no write/push credential without a superseding ADR* — **survives the Cursor retirement unchanged**; nothing here relaxes it. |
+| Addendum 2026-08-29 #1 — **its revert trigger**: a rolling 8-week window in which Codex's native review is demonstrably lower-signal than Claude's on the same class of PR, or the operator disables the `chatgpt.com/codex/settings/code-review` toggle for this repo (operator-judged, logged in `docs/SESSIONS.md`) | **Retained.** Revert action unchanged and still correct: none in this tree — the mechanism is account-level, so reverting is toggling that setting off, not editing this repo. |
+| Addendum 2026-08-29 #2 — **its revert trigger**: two proactively-dispatched tasks in a rolling 8-week window turn out to have needed operator judgment the coordinator lacked (wrong root cause, misjudged scope, a spec that was not actually frozen) | **Retained**, re-scoped to the surviving worker surfaces. Revert action: back to per-task "dispatch this" confirmation before any worker dispatch. |
 | Addendum 2026-08-29 #1, "relay findings to Cursor's Cloud Agent" | **Explicitly retired** — the relay target is gone. Findings are addressed by the coordinator or a Codex/Claude Code worker. |
 | Addendum 2026-08-29 #2 (proactive dispatch; lightweight GitHub-issue + `@cursor` format) | **Split.** Proactive-dispatch authority is **retained** (above). The lightweight issue format is **retained in shape** — a complete issue body in place of a full brief for small precedented fixes — but its `@cursor` dispatch step is **explicitly retired**; dispatch is to a Codex or Claude Code worker. |
 | <a id="addendum-2026-09-04-disable-notify-cursor"></a>Addendum 2026-09-04 (`notify-cursor.yml` auto-ping disabled) and its revert trigger ("operator asks to turn the ping back on"; restore `on:` events from `4f3ddc6`) | **Explicitly retired, not left standing.** The workflow is deleted by this revision's sweep; the revert trigger is unreachable and is discharged rather than carried as a dead obligation. Retrieval via [`TOMBSTONES.md`](TOMBSTONES.md#2026-09-15-cursor-agent-retirement). |
@@ -216,11 +218,15 @@ missed sweep:
   disposable Cursor cloud checkout, bytes lost). The guard costs nothing and still fires if
   the lane is ever restored. `.github/workflows/manifest-check.yml`'s matching comment is
   that incident's record.
-- **The `cursor` alternation in both copies of `check_brief.py`'s type-inference regex.** It is
-  pipeline-consumed: two frozen historical briefs self-declare `**Brief type:** Cursor handoff`
-  (`docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md`,
-  `docs/briefs/handoffs/2026-07-24-cursor-handoff-agent-surface-posture-sync.md`). Removing it
-  would silently reclassify those records. The regex reads history; it authorizes nothing.
+- **The `cursor` alternation in both copies of `check_brief.py`'s type-inference regex.**
+  Retained as inert tolerance for two frozen historical briefs that self-declare
+  `**Brief type:** Cursor handoff`. **Correction (2026-09-15, adversarial review):** an earlier
+  draft of this section claimed removing the alternation "would silently reclassify those
+  records." That was **false** and is corrected here rather than quietly dropped — `infer_type`
+  also matches on filename, and both briefs carry `cursor-handoff` in their names, so removal was
+  measured to change zero classifications across all 858 markdown files. The alternation stays
+  because it is harmless and costs nothing, not because anything depends on it. The regex reads
+  history; it authorizes nothing.
 - **`lab/research_utils/msl_preflight.py`'s ripgrep fallback** to a Cursor *editor* install
   path. It is a guarded filesystem probe reached only when `rg` is absent from `PATH`, with no
   agent semantics; removing it could only reduce robustness on a host that still has the editor.
@@ -228,6 +234,30 @@ missed sweep:
 Dated Cursor attributions in instrument ledgers, `lab/CATALOG.md`, `PORT_MANIFEST.sha256`,
 `docs/SESSIONS.md`, closures and superseded specs are historical record and are **not** swept —
 history stays, per the reader-intercept principle this revision relies on.
+
+## §4 — Falsifier (revert trigger), restated surface-agnostically
+
+Both limbs survive the retirement; only "Cursor" becomes "a worker". Restored here
+because the 2026-09-15 consolidation carried their *thresholds* into the §8 table but
+dropped their revert **actions** and their check schedule — a falsifier without a
+stated consequence is the failure mode this repo has a lesson for.
+
+**Revert trigger (either limb):**
+
+1. **Allocation-caused defects** — over any rolling 8-week window, ≥2 merged
+   worker-built PRs carry defects traceable to *spec-interpretation judgment* (the
+   worker resolved an ambiguity instead of bouncing `NEEDS_CONTEXT`) rather than to
+   spec error.
+2. **Overhead exceeds value** — ≥3 consecutive handoffs where authoring and verifying
+   the brief demonstrably cost more session time than the gated build
+   (operator-judged, logged in `docs/SESSIONS.md`).
+
+**Revert action:** limb 1 → supersede with a tightened rule (narrower worker scope, or
+mandatory coordinator re-verification of every worker diff hunk); limb 2 → carve the
+affected task class back to the coordinator by superseding ADR — **do not silently stop
+writing briefs.**
+
+**Trigger check schedule:** rides the standing quarterly programme review.
 
 ## §9 — Operator actions this repo cannot perform
 
@@ -245,6 +275,23 @@ here, in the hot record, so the retirement is not mistaken for complete at the a
 Neither blocks ratification. A third item is the operator's alone: the **Cursor row in the
 [subscription ledger](../pursuits/SUBSCRIPTION_LEDGER.md)** still records a cancellation date and
 final charges as not supplied. That is an operator reconfirmation, not an agent edit.
+
+### In-flight work this revision interacts with (2026-09-15)
+
+Two PRs were open against `main` when this revision landed. Neither is editable from this
+branch; both need a pass at merge time:
+
+- **[#402](https://github.com/Joshua-Asante/first-passage/pull/402)** amends
+  `.claude/skills/cursor-fleet/SKILL.md`, which this revision **deletes** at operator
+  instruction. Whichever lands second conflicts. The deletion is the operator's ruling and
+  should win; #402's substance (a brief's review round is part of the freeze, and the dispatch
+  pointer carries the frozen SHA) is **already carried** in §Decision's orchestration rules, so
+  nothing of it is lost by closing it against the deletion.
+- **[#401](https://github.com/Joshua-Asante/first-passage/pull/401)** adds a
+  `work-decomposition` skill whose line 19 reads "retired by operator instruction on 2026-09-15
+  (**retirement record pending**)". **This revision is that record** — the pointer resolves here
+  once both land. #401 also makes pointer edits to `cursor-fleet`, which will need re-homing to
+  this ADR for the same reason.
 
 ## §10 — Audit hooks (runnable)
 
@@ -311,4 +358,4 @@ Mechanical form checks do not establish semantic equivalence or ratification.
 | 2026-08-29 | Addendum RATIFIED — Codex second look via its native GitHub integration | Joshua |
 | 2026-08-29 | Second addendum RATIFIED — proactive dispatch; lightweight issue format | Joshua |
 | 2026-09-04 | Addendum RATIFIED — `notify-cursor.yml` auto-ping disabled | Joshua |
-| 2026-09-15 | **Revision PROPOSED** — Cursor retired as a worker surface; decision rescoped to Claude Code + Codex; six addenda consolidated into the §8 disposition table; `2026-08-14-cc-cursor-autonomous-loop.md` superseded in full. Prior text at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`. **Pending operator ratification.** | Claude Code (drafted at operator instruction, not yet ratified) |
+| 2026-09-15 | **Revision RATIFIED** — Cursor retired as a worker surface; decision rescoped to Claude Code + Codex; six addenda consolidated into the §8 disposition table; `2026-08-14-cc-cursor-autonomous-loop.md` superseded in full. Prior text at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`. §4 falsifier restated; two 2026-08-29 revert triggers restored and one false retention claim corrected after adversarial review. | Joshua (in-session ratification) + Claude Code |

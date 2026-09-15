@@ -2,7 +2,7 @@
 
 # ADR — CC/Cursor autonomous loop: dispatch without approval, merge without operator go under a binary gate
 
-**Status:** `Superseded`
+**Status:** `Superseded` — RATIFIED 2026-09-15.
 **Superseded-by:** `2026-07-14-cc-cursor-surface-allocation.md`
 **Superseded-in-part-by:** none
 **Supersedes:** none — **withdrawn 2026-09-15.** This ADR formerly superseded `2026-07-14-cc-cursor-surface-allocation.md` in part, narrowing its §2 return-contract line and its §5 "merging on green tests" forbidden move to admit the binary auto-merge gate below. That narrowing is withdrawn with this ADR's retirement: both clauses revert to their unnarrowed form at the parent. Prior header text at blob `26c65f5f626e15824bd79feb8311ef6c25ad0c7f`.
@@ -12,7 +12,7 @@
 **Related:** [`2026-07-14-cc-cursor-surface-allocation.md`](../../adr/2026-07-14-cc-cursor-surface-allocation.md) (parent, routing test unchanged) · `.claude/skills/fable-judge/SKILL.md` (adjudication instrument) · `scripts/dispatch_cursor.ps1` (dispatch mechanism, unchanged) · `C:\Users\joshu\.claude\scheduled-tasks\daily-repo-truth-sync\SKILL.md` (existing GitHub-state-check precedent)
 **Layer:** infrastructure
 
-> ⚠ **RETIRED — REVISION PROPOSED 2026-09-15 (pending operator ratification).** Nothing below is
+> ⚠ **RETIRED — RATIFIED 2026-09-15.** Nothing below is
 > live. Cursor is retired as a worker surface, so this ADR's three automated steps (dispatch
 > without chip approval, `cursor/*` webhook detection, auto-merge on the binary gate) have no
 > referent. **Merge authority returns to the operator with no automated exception** — the §2
@@ -177,7 +177,7 @@ git log -1 --format='%h %ci' -- docs/adr/2026-07-14-cc-cursor-surface-allocation
 
 <a id="11--retirement-2026-09-15-proposed"></a>
 
-## §11 — Retirement (2026-09-15, PROPOSED — pending operator ratification)
+## §11 — Retirement (2026-09-15, RATIFIED — operator, in-session)
 
 **Trigger:** operator instruction, in-session 2026-09-15 — *"cursor is being retired altogether,
 we will no longer be incorporating cursor agents. it will be just claude and codex."* Already

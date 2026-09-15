@@ -1,6 +1,6 @@
 # ADR — CC/Cursor autonomous loop: dispatch without approval, merge without operator go under a binary gate
 
-**Status:** `Superseded` — **PROPOSED 2026-09-15, pending operator ratification.** Until the operator ratifies, the prior Accepted decision stands; prior hot body at blob `26c65f5f626e15824bd79feb8311ef6c25ad0c7f`.
+**Status:** `Superseded` — **RATIFIED 2026-09-15** (operator, in-session). Prior hot body at blob `26c65f5f626e15824bd79feb8311ef6c25ad0c7f`.
 **Decision date:** 2026-08-14
 **Supersedes:** none
 **Superseded-by:** `2026-07-14-cc-cursor-surface-allocation.md`

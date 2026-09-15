@@ -87,11 +87,12 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_66 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_76 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
 | `scripts/_build_lessons_index.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/agent_handoff.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/archive_lab_analysis.py` | governance | `lab-catalog` (path-conditional) | — |
 | `scripts/archive_strategy.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/audit_notice_grade_k_correction.py` | lab | `notice-grade-k-correction` (audit) | — |
@@ -131,9 +132,17 @@ _66 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/cost_geometry_pregate.py` | lab | — | manual/local only, not in gates.yml |
 | `scripts/diff_econ_calendar.py` | lab | — | manual/local only, not in gates.yml |
 | `scripts/event_study_read.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/evidence_store/__init__.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/evidence_store/__main__.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/evidence_store/audit.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/evidence_store/beliefs.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/evidence_store/model.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/evidence_store/retrieval.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/evidence_store/store.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/find_owner.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/gate_fire_log.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/gate_manifest.py` | governance | — | gate runner (reads gates.yml); not itself a gated id; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/guard_shell_command.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/import_skill_from_cache.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/instrument_profiles.py` | governance | `instrument-profiles` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/layer_bootstrap.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
@@ -149,6 +158,7 @@ _66 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/research_asset_registry.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/retire_adr.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/roll_sessions.py` | governance | `sessions-order` (path-conditional); `sessions-append-only` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/seal_account_snapshot.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/session_divergence_hook.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/sync_liveness_indexes.py` | governance | `sync-liveness` (audit) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/sync_pine_to_worktree.py` | governance | — | manual/local only, not in gates.yml |

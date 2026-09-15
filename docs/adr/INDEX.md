@@ -155,4 +155,4 @@
 | 2026-08-05-avenue-a-generate-confirm-route.md | Superseded | 2026-08-05 | none | Superseded |
 | 2026-08-10-implied-sr-plausibility-gate.md | Superseded | 2026-08-10 | none | Superseded |
 | 2026-08-12-msl-implied-sr-disclosure-not-kill.md | Superseded | 2026-08-12 | none | Superseded |
-| 2026-08-14-cc-cursor-autonomous-loop.md | Superseded | 2026-08-14 | none | **PROPOSED 2026-09-15, pending operator ratification.** Until the operator ratifies, the prior Accepted decision stands; prior hot body at blob `26c65f5f626e15824bd79feb8311ef6c25ad0c7f`. |
+| 2026-08-14-cc-cursor-autonomous-loop.md | Superseded | 2026-08-14 | none | **RATIFIED 2026-09-15** (operator, in-session). Prior hot body at blob `26c65f5f626e15824bd79feb8311ef6c25ad0c7f`. |

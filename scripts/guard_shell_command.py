@@ -29,14 +29,17 @@ hook's message recommended it as the safe alternative — a warn-class gate that
 fires on its own recommended path teaches the operator to click through. Plain
 ``--force`` and ``-f`` still ask.
 
-**Not wired by default.** CLAUDE.md §Continuous improvement item 6 ("do not edit
-standing instructions unless the user requests it") governs `.claude/settings.json`,
-so the Cursor retirement ports the logic without changing hook behavior. To
-enable it on the Claude surface, the operator adds a `PreToolUse` entry:
+**Wiring.** Registered as a `PreToolUse` Bash hook in
+`.claude/settings.json` at the operator's 2026-09-15 instruction to execute the
+retirement decisions. The entry is:
 
     {"matcher": "Bash",
      "hooks": [{"type": "command",
                 "command": "python \\"$CLAUDE_PROJECT_DIR/scripts/guard_shell_command.py\\""}]}
+
+Output contract: Claude Code's PreToolUse shape
+(`hookSpecificOutput.permissionDecision`), NOT Cursor's `permission` key — see
+`_emit`. Stdin carries the command at `tool_input.command`.
 
 Contract (unchanged from the original): read a JSON payload on stdin, write a
 decision JSON on stdout. Fail-open — any parse error yields ``allow``, so an
@@ -120,12 +123,26 @@ def classify(cmd: str) -> tuple[str, str, str]:
 
 
 def _emit(permission: str, agent_msg: str = "", user_msg: str = "") -> None:
-    out: dict = {"permission": permission}
-    if agent_msg:
-        out["agentMessage"] = agent_msg
+    """Write Claude Code's PreToolUse decision contract.
+
+    NOT Cursor's `{"permission", "agentMessage", "userMessage"}` shape — that was
+    carried over verbatim in the first draft of this port and would have been
+    ignored by Claude Code, making the documented wiring a silent no-op. Caught by
+    adversarial review of the retirement PR before the hook was ever wired.
+
+    Claude Code reads `hookSpecificOutput.permissionDecision` (allow|deny|ask),
+    with `permissionDecisionReason` shown to the user and `additionalContext`
+    passed to the model. Exit 0 means "parse this JSON".
+    """
+    block: dict = {
+        "hookEventName": "PreToolUse",
+        "permissionDecision": permission,
+    }
     if user_msg:
-        out["userMessage"] = user_msg
-    sys.stdout.write(json.dumps(out))
+        block["permissionDecisionReason"] = user_msg
+    if agent_msg:
+        block["additionalContext"] = agent_msg
+    sys.stdout.write(json.dumps({"hookSpecificOutput": block}))
 
 
 def main() -> int:

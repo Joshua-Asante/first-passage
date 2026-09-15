@@ -111,7 +111,8 @@ def test_malformed_stdin_fails_open(mod, monkeypatch, capsys):
     """Fail-open is the contract: a parse error must never block a command."""
     monkeypatch.setattr(sys, "stdin", io.StringIO("{not json"))
     assert mod.main() == 0
-    assert json.loads(capsys.readouterr().out) == {"permission": "allow"}
+    out = json.loads(capsys.readouterr().out)
+    assert out["hookSpecificOutput"]["permissionDecision"] == "allow"
 
 
 def test_end_to_end_ask_via_stdin(mod, monkeypatch, capsys):
@@ -120,18 +121,53 @@ def test_end_to_end_ask_via_stdin(mod, monkeypatch, capsys):
     )
     assert mod.main() == 0
     out = json.loads(capsys.readouterr().out)
-    assert out["permission"] == "ask"
-    assert out["agentMessage"]
-    assert out["userMessage"]
+    block = out["hookSpecificOutput"]
+    assert block["permissionDecision"] == "ask"
+    assert block["permissionDecisionReason"]
+    assert block["additionalContext"]
 
 
-def test_guard_is_not_silently_unreachable(mod):
-    """The wiring is an operator election; the docstring must say so.
+def test_emits_claude_not_cursor_decision_shape(mod, monkeypatch, capsys):
+    """The whole hook is inert if it emits Cursor's contract.
 
-    An unwired gate that nobody knows is unwired is the failure this repo has a
-    named lesson for. If someone wires it, this test still passes — it pins the
-    honesty of the record, not the absence of wiring.
+    The first draft of this port carried `.cursor/hooks/before_shell.py`'s
+    `{"permission", "agentMessage", "userMessage"}` shape over verbatim. Claude
+    Code reads `hookSpecificOutput.permissionDecision`, so that draft would have
+    been a silent no-op once wired. Adversarial review caught it before wiring;
+    this test is what stops it coming back.
     """
-    text = GUARD.read_text(encoding="utf-8")
-    assert "Not wired by default" in text
-    assert "PreToolUse" in text
+    monkeypatch.setattr(
+        sys, "stdin", io.StringIO(json.dumps({"tool_input": {"command": "git status"}}))
+    )
+    assert mod.main() == 0
+    out = json.loads(capsys.readouterr().out)
+    assert set(out) == {"hookSpecificOutput"}, "top level must be hookSpecificOutput only"
+    block = out["hookSpecificOutput"]
+    assert block["hookEventName"] == "PreToolUse"
+    assert block["permissionDecision"] in {"allow", "deny", "ask"}
+    # Cursor's keys must not reappear at either level.
+    for dead in ("permission", "agentMessage", "userMessage"):
+        assert dead not in out
+        assert dead not in block
+
+
+def test_guard_is_actually_wired(mod):
+    """An unwired gate nobody knows is unwired is a named failure class here.
+
+    The guard was ported unwired, then registered at the operator's instruction.
+    This pins that the registration exists and points at this script, so the
+    discipline cannot be silently lost a second way.
+    """
+    settings = json.loads(
+        (REPO / ".claude" / "settings.json").read_text(encoding="utf-8")
+    )
+    pre = settings.get("hooks", {}).get("PreToolUse", [])
+    entries = [
+        h.get("command", "")
+        for group in pre
+        if group.get("matcher") == "Bash"
+        for h in group.get("hooks", [])
+    ]
+    assert any("guard_shell_command.py" in c for c in entries), (
+        "guard_shell_command.py is not registered as a PreToolUse Bash hook"
+    )

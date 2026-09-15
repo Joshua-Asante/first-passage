@@ -185,11 +185,24 @@ def test_timeout_captures_session_and_needs_reconciliation(harness):
     assert harness.run('sleep', '--timeout-seconds', '0.5').returncode == 1
     record, = harness.records()
     assert record['state'] == 'TIMED_OUT'
-    # Since the provider default became 'claude' (2026-09-15), the runner mints a
-    # fresh session id and passes it as --session-id; the worker echoes that back
-    # rather than a fixture constant. Pin the round-trip, not the literal.
+    # Since the provider default became 'claude' (2026-09-15) the runner MINTS the
+    # session id and passes it as --session-id, so asserting record == that value is
+    # vacuous: it holds even for a provider that emits nothing at all. (An earlier
+    # revision of this test did exactly that; adversarial review caught it.) Pin the
+    # property that actually matters -- the id was CAPTURED FROM THE PROVIDER STREAM
+    # -- by requiring the same id in the recorded stdout.jsonl init event.
     launched = json.loads((harness.workspace / 'argv.json').read_text())
-    assert record['session_id'] == launched[launched.index('--session-id') + 1]
+    minted = launched[launched.index('--session-id') + 1]
+    assert record['session_id'] == minted
+    receipt_dir = next(
+        d for d in handoff_root(harness.workspace).glob('*') if (d / 'record.json').is_file()
+    )
+    stream = (receipt_dir / 'stdout.jsonl').read_text(encoding='utf-8')
+    captured = [json.loads(l) for l in stream.splitlines() if l.strip()]
+    assert any(e.get('session_id') == minted for e in captured), (
+        'session_id was not observed in the provider stream; the assertion above '
+        'would pass even for a provider that emitted nothing'
+    )
     assert record['child_pid']
     assert harness.run('ok', '--resume-request', record['request_id']).returncode == 2
     assert harness.action('reconcile', record['request_id']).returncode == 2
