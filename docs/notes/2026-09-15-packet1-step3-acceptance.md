@@ -54,7 +54,11 @@ relevant symbol, 15-minute ETH, adjustment and settlement settings as the probes
 Their timeframes were restored after read-only settlement-setting inspection.
 The helper models reset equivalence classes; it is not an exchange calendar or
 qualification of later dates. D19 and the separate early-close policy list remain
-unchanged.
+unchanged. The O-8 ruling was narrowed to this corrected date membership and
+**ratified by the operator on 2026-09-15** ("ratify O-8 narrowing"); the owners are
+the [rail extension spec](../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md)
+and the [Track B umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md).
+This acceptance therefore rests on a ratified contract, not a pending one.
 
 A second Pine oracle confirms that paid entry commissions reduce equity while
 positions are still open. The candidate Striker adapter now subtracts remaining
