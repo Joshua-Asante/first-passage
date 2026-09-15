@@ -659,3 +659,15 @@ Missing/expired coverage halts new risk; safe flattening, protective/recovery
 ownership, prior-account-session chronology across denied days, settlement,
 separate resumption and activation gates remain required. D19 stays immutable
 historical date membership only. Step 3 and Packet 1 are not closed by this change.
+
+## September 15 — TB-C1 forward calendar and overlay landed under `ops/calendars/`
+
+The TB-C1 forward session file, typed closure overlay and source captures were
+implemented under `ops/calendars/` rather than the `lab/analysis/...` path named in
+the claim manifest above, because the rail consumes them and `lab` cannot be imported
+by `ops`. The owed tracked test is `tests/ops/test_book_session_calendar.py` (both
+files parse, no forward row inside the frozen D19 window, overlay rows carry
+`overrides_d19: true`, coverage reaches the horizon). Digests, sources, denied
+sessions and remaining ratification are in the
+[Step 4 record](../../notes/2026-09-15-packet1-step4-session-calendar.md). Nothing
+here admits a bundle, grants activation or changes D19.

@@ -229,6 +229,18 @@ the reviewed candidate identities. Historical evidence remains in the
 Next is Step 4 calendar permission, followed by Step 5 settlement and Step 6
 finite-margin/shared-law checks and combined bundle admission. These and live
 activation retain their separate gates.
+
+**Step 4 implemented 2026-09-15, pending independent review and digest ratification.**
+The [Step 4 record](../../notes/2026-09-15-packet1-step4-session-calendar.md) binds
+the versioned September 3–30 session file (`ops/calendars/book_session_calendar_2026-09.json`,
+`650e8aab…`), the typed closure overlay, the captured Tradeify/CME sources, the
+`ops/c1_rail/book_session_calendar.py` producer and 55 executable checks: permitted
+and denied sessions, §5 derivations, DST mapping, boundary, stale/missing coverage
+and prior-close chronology through denied days. Eighteen ordinary sessions are
+permitted; 2026-09-07 and 2026-09-08 are denied. The artifacts live under
+`ops/calendars/` because the rail consumes them. Ratification pins the digest in
+the runtime's trusted configuration; the monthly extension is due before
+2026-09-30. No activation or historical legality claim follows from this step.
 Do not spend
 another broad implementation pass on a producer
 whose required evidence is unavailable. A failed feasibility check produces an
