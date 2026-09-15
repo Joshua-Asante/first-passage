@@ -118,3 +118,12 @@ deployment, resumption or historical legality.
   own per-product halts and the capture ids that evidence them (`--halts`), or it refuses.
   The September file reproduces byte-for-byte under the new interface (digest unchanged).
 
+## Evidence schema v2 — 2026-09-15
+
+Source-capture files gain schema `forward_session_source_captures/v2`, in which every capture
+declares the `products` it covers; the loader then requires every product row, permitted or
+denied, to cite a covering capture. The ratified September file remains under v1 (no
+re-ratification), and every session decision on it carries the warning
+`evidence_schema_v1_no_product_coverage`. The October extension must be authored under v2, with
+each holiday's halts, capture ids and CME trade date supplied explicitly to the authoring tool.
+

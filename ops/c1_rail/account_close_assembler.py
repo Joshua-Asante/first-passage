@@ -276,8 +276,15 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
              session_id: str, predecessor_session_id: str, predecessor_package_sha256: str,
              calendar: SessionCalendar, policy_digest: str, report_tz: ZoneInfo,
              operator_signed_utc: datetime, attestations: dict, unresolved_runtime_requests: list,
-             open_positions: int, working_orders: int, scope: str) -> tuple[dict, dict, dict]:
-    """Return (package, sources bytes by file, figures-free qualification report)."""
+             open_positions: int, working_orders: int, scope: str,
+             close_equity: SourceFile | None = None, close_equity_value: str | None = None) -> tuple[dict, dict, dict]:
+    """Return (package, sources bytes by file, figures-free qualification report).
+
+    ``scope`` is the signed challenge scope. A historical close (``record_only``) requires
+    ``close_equity``: a separately captured venue source showing account equity at that close, and
+    the operator-typed value it shows. No such venue report is known today, so historical catch-up
+    refuses by design until one exists (invariant A7/V11).
+    """
     if scope not in ("submit_account_close", "record_only"):
         raise AssemblyError("scope must be submit_account_close or record_only")
     historical = scope == "record_only"
@@ -338,9 +345,12 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
         raise AssemblyError("open_positions and working_orders must be typed non-negative integers")
     if historical:
         # Historical catch-up: the fresh full history legitimately contains fills from later missed
-        # sessions, so flatness cannot be inferred from their absence. The venue's own balance row for
-        # this trade date is the venue-backed equity at that close (basis VENUE_EQUITY_AT_CLOSE).
-        # A fill inside the 17:00-18:00 ET break is already refused by reconcile() as outside any session.
+        # sessions, so flatness cannot be inferred from their absence, and a balance row is cash, not
+        # equity, if a position was carried. Only venue-backed close equity establishes the close.
+        if close_equity is None or close_equity.role != "close_equity" or close_equity_value is None:
+            raise AssemblyError("historical close equity evidence required for record_only")
+        if _decimal(close_equity_value, "close equity") != net_equity:
+            raise AssemblyError("venue close equity disagrees with the reconciled cash balance; boundary not flat")
         flat_basis = "VENUE_EQUITY_AT_CLOSE"
     else:
         # Flat at the effective close follows only when the account is flat at capture AND no fill
@@ -352,7 +362,7 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
     dash_balance = _decimal(dashboard_balance, "dashboard balance")
     dash_threshold = _decimal(dashboard_threshold, "dashboard threshold")
     peak = max(ledger.peak, net_equity)
-    all_files = cash + [balance, dashboard, positions, orders, inception]
+    all_files = cash + [balance, dashboard, positions, orders, inception] +         ([close_equity] if close_equity is not None else [])
     captured = {f.name: f.captured_utc for f in all_files}
     windows = []
     for win in sorted(cash, key=lambda f: f.window_from):
@@ -383,11 +393,12 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
         "operator_signed_utc": _iso(operator_signed_utc), "report_timezone": report_tz.key,
         "inception_utc": _iso(inception_utc),
         "equity": {"net_equity": str(net_equity), "basis": "NET_OF_TRADING_COSTS",
-                   "at_effective_close": "FLAT" if not historical else "VENUE_BALANCE_ROW",
+                   "at_effective_close": "FLAT" if not historical else "VENUE_EQUITY",
                    "flatness_basis": flat_basis,
                    "equity_at_effective_close": None if not historical else str(net_equity),
                    "valuation_basis": None if not historical else
-                   f"venue account-balance-history row for trade date {session_day_for_row.isoformat()}"},
+                   f"venue close-equity capture {close_equity.name} for trade date "
+                   f"{session_day_for_row.isoformat()}, corroborated by the balance-history row"},
         "ledger": {"predecessor_net_equity": str(predecessor_equity), "gross_trade_pnl": str(bucket["gross"]),
                    "trading_costs": {k: str(v) for k, v in bucket["costs"].items()},
                    "adjustments_abs_total": str(ledger.adjustments_abs_total), "unknown_rows": ledger.unknown_rows,
@@ -398,7 +409,8 @@ def assemble(*, account_id: str, cash: list[SourceFile], balance: SourceFile, da
         "positions": {"open_positions": open_positions, "working_orders": working_orders,
                       "captured_utc": _iso(positions.captured_utc)},
         "sources": [{"role": f.role, "file": f.name, "sha256": sha256_hex(f.data), "captured_utc": _iso(f.captured_utc)}
-                    for f in [latest_cash, balance, dashboard, positions, orders, inception]] +
+                    for f in [latest_cash, balance, dashboard, positions, orders, inception]
+                    + ([close_equity] if close_equity is not None else [])] +
                    [{"role": f"cash_history:{f.window_from.isoformat()}..{f.window_to.isoformat()}", "file": f.name,
                      "sha256": sha256_hex(f.data), "captured_utc": _iso(f.captured_utc)}
                     for f in sorted(cash, key=lambda f: f.window_from) if f is not latest_cash],

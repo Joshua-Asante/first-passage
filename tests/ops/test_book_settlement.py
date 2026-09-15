@@ -128,7 +128,7 @@ def package(head: Receipt, session_id: str, now: datetime, *, gross="250.00", pr
         "session_id": session_id, "predecessor_session_id": head.session_id,
         "predecessor_package_sha256": head.package_sha256, "calendar_digest": CALENDAR.calendar_digest,
         "policy_digest": POLICY_DIGEST, "effective_close_utc": utc(row.closes_at),
-        "source_publication_utc": None, "operator_signed_utc": utc(now - timedelta(minutes=1)),
+        "source_publication_utc": None, "operator_signed_utc": utc(now),
         "report_timezone": "America/New_York", "inception_utc": "2026-08-20T13:00:00Z",
         "equity": {"net_equity": str(net_equity), "basis": "NET_OF_TRADING_COSTS", "at_effective_close": "FLAT",
                    "flatness_basis": flatness, "equity_at_effective_close": None, "valuation_basis": None},
@@ -630,9 +630,20 @@ def test_defective_packages_are_refused_by_name_without_state_advance(tmp_path, 
     _mutate(pkg, files, mutation, NOW14)
     env = challenge(store, pkg, target=S15, now=NOW14)
     result = submit(store, operator, env, pkg, files, NOW14)
-    expected = {"flatness_uncertain_open_position": "flatness_uncertain", "capture_time_unbound_positions": "capture_time_unbound",
+    expected = {"flatness_uncertain_open_position": "flatness_uncertain",
+                "capture_time_unbound": "chronology:capture_time_unbound",
+                "capture_time_unbound_positions": "chronology:capture_time_unbound",
                 "source_role_missing_orders": "source_role_missing", "transactions_bad_digest": "transactions",
-                "transactions_int_id": "transactions"}
+                "transactions_int_id": "transactions", "stale_evidence": "chronology:stale_evidence",
+                "future_capture": "chronology:capture_in_future", "coverage_gap": "chronology:coverage_gap",
+                "coverage_gap_at_inception": "chronology:coverage_gap_at_inception",
+                "coverage_window_span": "chronology:coverage_window_span",
+                "coverage_window_limit": "chronology:coverage_window_limit",
+                "coverage_window_incomplete": "chronology:coverage_window_incomplete",
+                "coverage_ends_before_capture": "chronology:coverage_end_not_capture",
+                "operator_signed_in_future": "chronology:signed_after_receipt",
+                "capture_before_effective_close": "chronology:capture_before_effective_close",
+                "source_publication_utc": "chronology:publication_after_receipt"}
     assert result == Refusal(expected.get(mutation, mutation)), result
     assert store.status()["rows"] == 1
     with sqlite3.connect(tmp_path / "settlement.sqlite") as db:
@@ -644,9 +655,12 @@ def test_venue_equity_basis_accepts_carried_boundary_with_valuation(tmp_path):
     operator = Operator()
     store, head = seated(tmp_path, operator)
     pkg, files = package(head, S14, NOW14, flatness="VENUE_EQUITY_AT_CLOSE")
-    pkg["equity"]["at_effective_close"] = "CARRIED"
+    files["close_equity.png"] = b"venue equity view at the 09-14 close"
+    pkg["sources"].append({"role": "close_equity", "file": "close_equity.png", "sha256": sha256_hex(files["close_equity.png"]),
+                           "captured_utc": utc(NOW14 - timedelta(minutes=5))})
+    pkg["equity"]["at_effective_close"] = "VENUE_EQUITY"
     pkg["equity"]["equity_at_effective_close"] = pkg["equity"]["net_equity"]
-    pkg["equity"]["valuation_basis"] = "venue balance/equity history row at 17:00 ET settlement marks"
+    pkg["equity"]["valuation_basis"] = "venue close-equity capture close_equity.png at the 17:00 ET close"
     pkg["unresolved_runtime_requests"] = ["op-late-close"]
     env = challenge(store, pkg, target=S15, now=NOW14)
     assert isinstance(submit(store, operator, env, pkg, files, NOW14), Receipt)
@@ -812,3 +826,53 @@ def test_key_bound_to_another_account_is_refused(tmp_path):
     path.write_bytes(json.dumps(raw).encode("utf-8"))
     with pytest.raises(SettlementError, match="account_binding"):
         load_operator_keys(path)
+
+
+def test_state_row_tamper_is_detected(tmp_path):
+    """The state row carries authority and safety flags; an edit refuses every read (O1)."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    with sqlite3.connect(tmp_path / "settlement.sqlite") as db:
+        db.execute("UPDATE state SET invalidated='0', restore_pending='0', trusted_keys=?",
+                   (json.dumps({Operator().key_id: ["submit_account_close"]}),))
+    with pytest.raises(SettlementError, match="state integrity"):
+        store.status()
+
+
+def test_resolve_invalidation_reseats_the_chain_under_a_reviewed_reconciliation(tmp_path):
+    """Revision -> INVALIDATED -> reviewed resolution supersedes the revised rows and re-seats the head (O3)."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg1, files1 = package(head, S14, NOW14)
+    r1 = submit(store, operator, challenge(store, pkg1, target=S15, now=NOW14), pkg1, files1, NOW14)
+    now15 = NOW14 + timedelta(days=1)
+    pkg2, files2 = package(r1, S15, now15, prior_tx=pkg1["ledger"]["transactions"])
+    submit(store, operator, challenge(store, pkg2, target=S16, now=now15), pkg2, files2, now15)
+    revised = deepcopy(pkg2)
+    revised["ledger"]["transactions"][-1]["sha256"] = "f" * 64
+    store.record_revision(session_id=S15, revised_package=revised, now=now15)
+    assert store.status()["phase"] == "INVALIDATED"
+    assert store.resolve_invalidation(review_sha256="1" * 64, reviewed_by="", now=now15) == Refusal("review_record_required")
+    result = store.resolve_invalidation(review_sha256="1" * 64, reviewed_by="packet0_review", now=now15)
+    assert result == {"head": S14, "superseded_from_seq": 3, "restore_pending": True}
+    assert store.settled_close() == Refusal("restore_reconciliation_required")
+    store.reconcile_restore(now15)
+    close, _ = store.settled_close()
+    assert close.session_id == S14 and store.status()["phase"] == "ACCEPTING"
+    with sqlite3.connect(tmp_path / "settlement.sqlite") as db:
+        assert db.execute("SELECT COUNT(*) FROM superseded_chain").fetchone()[0] == 1
+        assert db.execute("SELECT COUNT(*) FROM packages WHERE kind='REVISION'").fetchone()[0] == 1
+    pkg2b, files2b = package(r1, S15, now15, prior_tx=pkg1["ledger"]["transactions"], scope="record_only")
+    env = challenge(store, pkg2b, target=None, now=now15, scope="record_only", permission="HALTED")
+    assert isinstance(submit(store, operator, env, pkg2b, files2b, now15), Receipt)
+    assert store.resolve_invalidation(review_sha256="1" * 64, reviewed_by="packet0_review", now=now15) == Refusal("chain_not_invalidated")
+
+
+def test_revising_the_b7_head_needs_a_new_seal(tmp_path):
+    """A revision at the seated head cannot be reconciled in place; only a fresh B7 seal re-seats it."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    store.record_revision(session_id=B7_SESSION, revised_package={"changed": True}, now=NOW14)
+    result = store.resolve_invalidation(review_sha256="1" * 64, reviewed_by="packet0_review", now=NOW14)
+    assert result == Refusal("b7_head_revised_reseal_required")
+

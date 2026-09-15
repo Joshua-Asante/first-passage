@@ -1,7 +1,7 @@
 # Packet 1 Step 5 — attended settlement owner (producer to consumer)
 
-Status: **IMPLEMENTED against the approved contract; producer QUALIFIED on the operator's actual
-reports (2026-09-15); operator key ENROLLED; independent review still owed.** Base: PR #394 head plus
+Status: **REBUILT 2026-09-15 against an explicit invariant table after five Codex review rounds;
+producer QUALIFIED on the operator's actual reports; operator key ENROLLED; independent review owed.** Base: PR #394 head plus
 Step 4. Owner: Packet 1 coordinator (TB-T1 ongoing) → TB-I3 integration. No production close
 has been accepted, and nothing here grants activation, resumption or deployment.
 
@@ -100,9 +100,9 @@ verdicts:
 | Store path | qualification head seated, challenge issued, signed submission accepted, `mode_next = normal` |
 | Consumer | `size_book_request` for session 09-15 with the produced `SettledClose`: no halt |
 
-Package SHA-256 `c239fd3581dc9ac83edc9397a5489bd16a586cfd8158c3f8fd733e41ca293dce` (re-run after the
-third review fold; earlier packages `72b0c65d…` and `261b4578…` predate transaction provenance and the
-scope/basis fields); outputs and
+Package SHA-256 `ee6ed065e3d5` prefix (re-run after the rebuild; earlier packages `72b0c65d…`,
+`261b4578…` and `c239fd35…` predate transaction provenance, the scope/basis fields and the single
+chronology invariant); outputs and
 the figures-free `qualification-report.json` are retained under the same private folder.
 
 Limits recorded with the run: the store head was seated from the reconciled predecessor
@@ -228,4 +228,36 @@ Re-qualification after the fold: unchanged verdicts; package digest `c239fd35…
 
 Re-qualification after the fold (report 2026-09-15T15:18:54Z): unchanged verdicts and package
 digest `c239fd35…`.
+
+## Rebuild — 2026-09-15
+
+Five Codex rounds on PR #395 (12, 11, 5, 3, 9 findings) showed the folds were fixing examples,
+not the rules behind them (Codex root-cause read, endorsed by the operator: evidence labels
+treated as proof; related fields validated separately; an incomplete durable-state lifecycle;
+over-generalized calendar assumptions). The owner was rebuilt from the
+[invariant table](2026-09-15-packet1-step5-invariant-table.md): `verify_package` is an ordered
+list of thirteen named invariants over the whole record (one chronology invariant covers every
+timestamp the package and challenge carry, refusals `chronology:<detail>`); `SettlementStore`
+has a phased, integrity-hashed state row with one transition function (EMPTY → SEATED →
+ACCEPTING; any → INVALIDATED on revision; INVALIDATED → re-seated only through
+`resolve_invalidation` under a reviewed reconciliation, with superseded rows retained);
+enrolment rotation and digest rotation across restart are audited events; retained package and
+source bytes are re-verified on every read.
+
+Decisions delegated by the operator and taken here:
+
+- **Historical close equity.** No venue report seen so far shows account equity at a past close
+  (balance history and cash history are cash figures; "Client Statements" is absent from the
+  report menu). A historical close therefore requires a separately captured `close_equity`
+  source and the operator-typed value it shows, equal to the reconciled equity; `record_only`
+  refuses without it. Historical catch-up is blocked by design until such a producer exists.
+- **Calendar evidence schema.** Source captures gain schema v2 with per-capture `products`; under
+  v2 every product row, permitted or denied, must cite a capture covering that product. The
+  ratified September file stays under v1 and every decision on it carries the warning
+  `evidence_schema_v1_no_product_coverage`; the October extension is authored under v2.
+
+Verification after the rebuild: `tests/ops` 1834 passed, 15 skipped; boundaries OK; real-report
+qualification re-passes (verifier clean, signed submission accepted, consumer no halt) with the
+September 14 no-activity session on the corroborated basis. The earlier review-fold sections
+above are historical; the invariant table is the current statement of what is enforced.
 

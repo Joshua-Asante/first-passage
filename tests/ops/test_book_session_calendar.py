@@ -497,3 +497,70 @@ def test_late_product_open_delays_admission_until_every_market_is_open(tmp_path)
     assert cal.session_for(et(2026, 9, 14, 19)).refusal == "before_product_open"
     decision = cal.session_for(et(2026, 9, 14, 20, 30))
     assert decision.permitted and decision.session.opens_at == datetime(2026, 9, 15, 0, tzinfo=timezone.utc)
+
+
+# ---------------------------------------------------------------- evidence schema v1 / v2
+
+
+def test_september_loads_under_evidence_v1_with_a_warning_on_every_decision():
+    """The ratified September file predates product coverage; every decision says so."""
+    cal = load()
+    assert cal.evidence_warning == "evidence_schema_v1_no_product_coverage"
+    for now in (et(2026, 9, 15, 9), et(2026, 9, 7, 9), et(2026, 9, 12, 12)):
+        assert "evidence_schema_v1_no_product_coverage" in cal.session_for(now).warnings
+
+
+def _v2_fixture(tmp_path, products_by_id=None):
+    """A v2 evidence file: every capture declares the products it covers."""
+    path, overlay, repo, payload = calendar_fixture(tmp_path, first=date(2026, 9, 14), last=date(2026, 9, 18))
+    evidence_path = repo / "ops" / "calendars" / "evidence" / EVIDENCE.name
+    ev = json.loads(evidence_path.read_bytes())
+    ev["schema"] = "forward_session_source_captures/v2"
+    defaults = {"cme-spec-6J": ["6J"], "cme-spec-MGC": ["MGC"], "cme-spec-MYM": ["MYM"], "cme-spec-MNQ": ["MNQ"]}
+    for c in ev["captures"]:
+        c["products"] = (products_by_id or {}).get(c["id"], defaults.get(c["id"], ["6J", "MGC", "MYM", "MNQ"]))
+    data = json.dumps(ev, indent=2).encode("utf-8")
+    evidence_path.write_bytes(data)
+    payload["sources"]["evidence_sha256"] = sha256(data).hexdigest()
+    rewrite(path, payload)
+    return path, overlay, repo, payload
+
+
+def test_evidence_v2_binds_every_product_row_to_a_covering_capture(tmp_path):
+    """Under v2 a product row, permitted or denied, must cite a capture that covers that product."""
+    path, overlay, repo, payload = _v2_fixture(tmp_path)
+    cal = load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+    assert cal.evidence_warning is None and "evidence_schema_v1_no_product_coverage" not in cal.session_for(et(2026, 9, 15, 9)).warnings
+    # The holiday-schedule capture covers all four products; make it cover none of MGC and cite only it.
+    path, overlay, repo, payload = _v2_fixture(tmp_path / "b", {"cme-globex-2026-holiday-schedule": ["6J", "MYM", "MNQ"]})
+    payload["sessions"][1]["products"]["MGC"]["source_ids"] = ["cme-globex-2026-holiday-schedule"]
+    payload["sessions"][1]["products"]["MGC"]["qualified"] = False
+    payload["sessions"][1]["permission"] = "DENIED"
+    payload["sessions"][1]["denial_reason"] = "UNCERTAIN_ADJACENT"
+    payload["sessions"][1]["denial_note"] = "synthetic"
+    rewrite(path, payload)
+    with pytest.raises(CalendarError, match="no cited capture covers product MGC"):
+        load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+
+
+def test_evidence_v2_capture_without_products_is_refused(tmp_path):
+    """A v2 capture must declare its products; an unknown evidence schema refuses outright."""
+    path, overlay, repo, payload = _v2_fixture(tmp_path)
+    evidence_path = repo / "ops" / "calendars" / "evidence" / EVIDENCE.name
+    ev = json.loads(evidence_path.read_bytes())
+    del ev["captures"][0]["products"]
+    data = json.dumps(ev, indent=2).encode("utf-8")
+    evidence_path.write_bytes(data)
+    payload["sources"]["evidence_sha256"] = sha256(data).hexdigest()
+    rewrite(path, payload)
+    with pytest.raises(CalendarError, match="must declare the products"):
+        load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+    ev["captures"][0]["products"] = ["6J"]
+    ev["schema"] = "forward_session_source_captures/v9"
+    data = json.dumps(ev, indent=2).encode("utf-8")
+    evidence_path.write_bytes(data)
+    payload["sources"]["evidence_sha256"] = sha256(data).hexdigest()
+    rewrite(path, payload)
+    with pytest.raises(CalendarError, match="unknown evidence schema"):
+        load_session_calendar(path, overlay_path=overlay, repo_root=repo)
+

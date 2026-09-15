@@ -242,12 +242,21 @@ def test_no_activity_session_without_a_venue_row_is_corroborated_not_copied():
 def test_historical_catch_up_tolerates_later_session_fills_with_venue_equity():
     """record_only for an earlier session accepts later-session fills; the venue row is the equity basis."""
     cash, files, bal1, bal2 = synthetic()
-    now = datetime(2026, 9, 15, 11, 25, tzinfo=timezone.utc)
+    close_equity = SourceFile("close_equity", "close_equity.png", b"venue equity at the 09-10 close", CAPTURE)
+    with pytest.raises(AssemblyError, match="close equity evidence required"):
+        build(cash, files, bal1, bal2, session_id="tradeify-account-day:2026-09-10",
+              predecessor_session_id="tradeify-account-day:2026-09-09", scope="record_only")
+    with pytest.raises(AssemblyError, match="boundary not flat"):
+        build(cash, files, bal1, bal2, session_id="tradeify-account-day:2026-09-10",
+              predecessor_session_id="tradeify-account-day:2026-09-09", scope="record_only",
+              close_equity=close_equity, close_equity_value=str(bal1 + 1))
     package, sources, report = build(cash, files, bal1, bal2, session_id="tradeify-account-day:2026-09-10",
-                                     predecessor_session_id="tradeify-account-day:2026-09-09", scope="record_only")
+                                     predecessor_session_id="tradeify-account-day:2026-09-09", scope="record_only",
+                                     close_equity=close_equity, close_equity_value=str(bal1))
     assert package["scope"] == "record_only" and package["settlement_basis"] == "VENUE_ROW"
     assert package["equity"]["flatness_basis"] == "VENUE_EQUITY_AT_CLOSE"
-    assert package["equity"]["equity_at_effective_close"] == str(bal1) and "2026-09-10" in package["equity"]["valuation_basis"]
+    assert package["equity"]["equity_at_effective_close"] == str(bal1) and "close_equity.png" in package["equity"]["valuation_basis"]
+    assert any(s["role"] == "close_equity" for s in package["sources"]) and "close_equity.png" in sources
     assert report["session"]["later_fills_after_close"] == 1          # the 09-14 trade
     broken = [replace(c) for c in cash]
     extra, _ = trade_rows(100000000900, "09/10/2026 16:30:00", "1.00", str(bal1))    # 17:30 ET, inside the break

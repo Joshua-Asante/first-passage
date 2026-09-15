@@ -25,6 +25,9 @@ from book_sizing_context import BookSession
 
 SCHEMA = "book_session_calendar/v1"
 OVERLAY_SCHEMA = "book_closure_overlay/v1"
+EVIDENCE_SCHEMA_V1 = "forward_session_source_captures/v1"
+EVIDENCE_SCHEMA_V2 = "forward_session_source_captures/v2"
+EVIDENCE_V1_WARNING = "evidence_schema_v1_no_product_coverage"
 RATIFICATION_SCHEMA = "calendar_ratification/v1"
 _RATIFICATION_KEYS = frozenset({
     "calendar_id", "calendar_file", "calendar_sha256", "closure_overlay_file",
@@ -182,6 +185,7 @@ class SessionCalendar:
     review_due: datetime
     rows: tuple[SessionSchedule, ...]
     products: tuple[str, ...]
+    evidence_warning: str | None = None   # set when the evidence file predates per-capture product coverage
 
     def schedule_for(self, session_id: str) -> SessionSchedule | None:
         for row in self.rows:
@@ -208,6 +212,8 @@ class SessionCalendar:
         if expected_digest is not None and expected_digest != self.calendar_digest:
             return SessionDecision(None, "calendar_digest_mismatch", None, self.calendar_digest)
         warnings: list[str] = []
+        if self.evidence_warning:
+            warnings.append(self.evidence_warning)
         if now >= self.review_due:
             warnings.append("calendar_review_due")
         if now < self.coverage_start:
@@ -232,7 +238,8 @@ class SessionCalendar:
 
 
 def _verify_row(row: dict, index: int, *, tz: ZoneInfo, venue: dict, rule: dict,
-                products: dict, source_ids: set[str], overlay_dates: frozenset[date]) -> SessionSchedule:
+                products: dict, source_ids: set[str], overlay_dates: frozenset[date],
+                coverage: dict[str, frozenset[str]] | None = None) -> SessionSchedule:
     label = f"sessions[{index}]"
     if not isinstance(row, dict) or set(row) != _ROW_KEYS:
         missing = _ROW_KEYS - set(row) if isinstance(row, dict) else _ROW_KEYS
@@ -315,6 +322,8 @@ def _verify_row(row: dict, index: int, *, tz: ZoneInfo, venue: dict, rule: dict,
             raise CalendarError(f"{plabel}: source_ids must name captured sources")
         if prow["qualified"] and not set(products[code].get("source_ids", [])) <= set(prow["source_ids"]):
             raise CalendarError(f"{plabel}: a qualified product row must cite its own product's declared sources")
+        if coverage is not None and not any(code in coverage.get(s, frozenset()) for s in prow["source_ids"]):
+            raise CalendarError(f"{plabel}: no cited capture covers product {code}")
         m_close = _utc(prow["matching_close_utc"], f"{plabel}.matching_close_utc")
         if prow["matching_open_utc"] is not None:
             m_open = _utc(prow["matching_open_utc"], f"{plabel}.matching_open_utc")
@@ -403,7 +412,25 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
     if hashlib.sha256(evidence_bytes).hexdigest() != sources["evidence_sha256"]:
         raise CalendarError("calendar: evidence_sha256 does not match the evidence file bytes")
     evidence = json.loads(evidence_bytes)
-    captured_ids = {c["id"] for c in evidence.get("captures", [])}
+    captures = evidence.get("captures", [])
+    if not isinstance(captures, list) or not captures or any(not isinstance(c, dict) or not isinstance(c.get("id"), str)
+                                                              for c in captures):
+        raise CalendarError("calendar: evidence captures")
+    captured_ids = {c["id"] for c in captures}
+    evidence_schema = evidence.get("schema")
+    if evidence_schema == EVIDENCE_SCHEMA_V2:
+        coverage: dict[str, frozenset[str]] | None = {}
+        for c in captures:
+            covered = c.get("products")
+            if not isinstance(covered, list) or not covered or any(p not in {"6J", "MGC", "MYM", "MNQ"} for p in covered):
+                raise CalendarError(f"calendar: capture {c['id']} must declare the products it covers")
+            coverage[c["id"]] = frozenset(covered)
+        evidence_warning = None
+    elif evidence_schema == EVIDENCE_SCHEMA_V1:
+        coverage = None                      # v1 captures carry no product coverage; every decision warns
+        evidence_warning = EVIDENCE_V1_WARNING
+    else:
+        raise CalendarError("calendar: unknown evidence schema")
     if set(sources["ids"]) != captured_ids:
         raise CalendarError("calendar: sources.ids must equal the evidence capture ids")
     for spec in products.values():
@@ -420,7 +447,7 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
     rows: list[SessionSchedule] = []
     for index, raw in enumerate(rows_raw):
         row = _verify_row(raw, index, tz=tz, venue=venue, rule=rule, products=products,
-                          source_ids=captured_ids, overlay_dates=overlay_dates)
+                          source_ids=captured_ids, overlay_dates=overlay_dates, coverage=coverage)
         if index == 0:
             if raw["predecessor_in_file"] is not False:
                 raise CalendarError("sessions[0]: predecessor_in_file must be false")
@@ -474,6 +501,7 @@ def load_session_calendar(path: Path, *, overlay_path: Path, repo_root: Path) ->
         calendar_id=payload["calendar_id"], calendar_digest=hashlib.sha256(data).hexdigest(),
         overlay_digest=overlay_digest, timezone=tz_name, coverage_start=start, coverage_end=end,
         review_due=review_due, rows=tuple(rows), products=tuple(sorted(products)),
+        evidence_warning=evidence_warning,
     )
 
 
