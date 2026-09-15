@@ -63,9 +63,9 @@ Private data and frozen bars are not regenerable merely because a catalog entry 
 | `tests/` | Cross-layer integration suite, exempt from application import boundaries |
 | `discovery_manifests/` | Lab search-contract output, anchored at repository root |
 | `deploy/` | Ops packaging for listener and daemon, using root build context; no Python files currently |
-| `.claude/`, `.cursor/`, `.agents/`, `.github/` | Harness, editor, skill and CI entry points at their expected locations |
+| `.claude/`, `.agents/`, `.github/` | Harness, skill and CI entry points at their expected locations |
 | `.gitignore`, `.gitattributes`, `LICENSE`, `.markdownlint.json` | VCS, publication and formatting policy |
-| `.rgignore`, `.cursorignore`, `.cursorindexingignore` | Search/index exclusions; absence in default search is not absence of evidence |
+| `.rgignore` | Search exclusion, sole owner since the 2026-09-15 Cursor retirement; absence in default search is not absence of evidence |
 | `.dockerignore` | Root-context allow-list excluding private sources, vendor data, research and Git history from hosted images |
 
 The listener and daemon have separate deployment definitions and volumes under

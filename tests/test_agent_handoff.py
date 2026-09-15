@@ -162,7 +162,12 @@ def test_resume_checks_packet_and_uses_saved_session(harness):
     assert harness.run('ok', '--mode', 'plan').returncode == 0
     record, = harness.records()
     assert harness.run('ok', '--resume-session', 'unknown').returncode == 2
-    assert harness.run('ok', '--provider', 'claude', '--resume-request', record['request_id']).returncode == 2
+    # The resume guard has three limbs (provider / workspace / packet). Its
+    # provider limb was exercised here by resuming a cursor-launched request as
+    # claude; with Cursor retired 2026-09-15 there is only one provider, so that
+    # limb is unreachable from the CLI (argparse rejects any other value). The
+    # guard itself is retained in scripts/agent_handoff.py for a future second
+    # provider. The packet limb is exercised immediately below.
     original = harness.packet.read_text()
     harness.packet.write_text('changed scope')
     assert harness.run('ok', '--resume-request', record['request_id']).returncode == 2
@@ -180,7 +185,11 @@ def test_timeout_captures_session_and_needs_reconciliation(harness):
     assert harness.run('sleep', '--timeout-seconds', '0.5').returncode == 1
     record, = harness.records()
     assert record['state'] == 'TIMED_OUT'
-    assert record['session_id'] == 'fixture-session'
+    # Since the provider default became 'claude' (2026-09-15), the runner mints a
+    # fresh session id and passes it as --session-id; the worker echoes that back
+    # rather than a fixture constant. Pin the round-trip, not the literal.
+    launched = json.loads((harness.workspace / 'argv.json').read_text())
+    assert record['session_id'] == launched[launched.index('--session-id') + 1]
     assert record['child_pid']
     assert harness.run('ok', '--resume-request', record['request_id']).returncode == 2
     assert harness.action('reconcile', record['request_id']).returncode == 2
@@ -307,15 +316,24 @@ def test_flood_cannot_starve_timeout(harness):
 
 
 def test_copy_rejected_before_mutating_unresolved_workspace(harness):
-    if not shutil.which('pwsh'):
-        pytest.skip('PowerShell is unavailable')
-    assert harness.run('empty').returncode == 1
+    """--copy must be rejected before anything is written into the workspace.
+
+    Re-targeted 2026-09-15: this previously drove the runner through
+    `scripts/dispatch_cursor.ps1`, deleted with the Cursor lane
+    (docs/adr/2026-07-14-cc-cursor-surface-allocation.md, Revision 2026-09-15).
+    The property under test was never the wrapper's — it belongs to
+    agent_handoff.py's ordering: validate the copy spec before mutating an
+    unresolved workspace. Exercising the runner directly also drops the pwsh
+    skip, so this now actually runs on POSIX CI instead of silently skipping.
+    """
     destination = harness.workspace / 'copied.txt'
-    result = subprocess.run(['pwsh', '-NoProfile', '-File', str(RUNNER.with_name('dispatch_cursor.ps1')),
-                             '-Workspace', str(harness.workspace), '-Pointer', str(harness.packet),
-                             '-Copy', str(harness.packet) + '::copied.txt', '-AgentCmd', sys.executable],
-                            capture_output=True, text=True, timeout=15)
+    assert harness.run('empty').returncode == 1          # leaves an unresolved receipt
+    result = harness.run('empty', '--copy', str(harness.packet) + '::copied.txt')
     assert result.returncode != 0
+    # Pin the REASON, not just non-zero: an earlier draft of this re-target
+    # passed vacuously on 'Request ID must be a UUID' without ever reaching the
+    # copy path. The unresolved-receipt guard is the property under test.
+    assert 'unresolved request' in result.stderr.lower()
     assert not destination.exists()
 
 
@@ -447,7 +465,7 @@ def test_cancel_before_launch_skips_provider(harness, monkeypatch):
 
 @pytest.mark.skipif(os.name == 'nt', reason='POSIX process groups')
 def test_surviving_descendant_blocks_returned(harness):
-    harness.worker.write_text('import json, re, subprocess, sys, time, pathlib\nprompt = sys.argv[-1]\nrid = re.search(r\'Request ID: ([\\w-]+)\', prompt).group(1)\nsha = re.search(r\'Packet SHA256: (\\w+)\', prompt).group(1)\nsid = \'fixture-session\'\nprint(json.dumps({\'type\': \'system\', \'subtype\': \'init\', \'session_id\': sid}), flush=True)\nsubprocess.Popen([sys.executable, \'-c\', "import signal, time, pathlib; signal.signal(signal.SIGTERM, signal.SIG_IGN); pathlib.Path(\'ready\').write_text(\'1\'); time.sleep(60)"])\nwhile not pathlib.Path(\'ready\').exists():\n    time.sleep(0.05)\nbody = {\'request_id\': rid, \'packet_sha256\': sha, \'status\': \'DONE\', \'summary\': \'done\', \'artifacts\': [], \'checks\': []}\nprint(json.dumps({\'type\': \'result\', \'subtype\': \'success\', \'session_id\': sid, \'result\': json.dumps(body)}), flush=True)\n')
+    harness.worker.write_text('import json, re, subprocess, sys, time, pathlib\nargs = sys.argv[1:]\nprompt = sys.argv[-1]\nrid = re.search(r\'Request ID: ([\\w-]+)\', prompt).group(1)\nsha = re.search(r\'Packet SHA256: (\\w+)\', prompt).group(1)\nsid = args[args.index(\'--resume\')+1] if \'--resume\' in args else (args[args.index(\'--session-id\')+1] if \'--session-id\' in args else \'fixture-session\')\nprint(json.dumps({\'type\': \'system\', \'subtype\': \'init\', \'session_id\': sid}), flush=True)\nsubprocess.Popen([sys.executable, \'-c\', "import signal, time, pathlib; signal.signal(signal.SIGTERM, signal.SIG_IGN); pathlib.Path(\'ready\').write_text(\'1\'); time.sleep(60)"])\nwhile not pathlib.Path(\'ready\').exists():\n    time.sleep(0.05)\nbody = {\'request_id\': rid, \'packet_sha256\': sha, \'status\': \'DONE\', \'summary\': \'done\', \'artifacts\': [], \'checks\': []}\nprint(json.dumps({\'type\': \'result\', \'subtype\': \'success\', \'session_id\': sid, \'result\': json.dumps(body)}), flush=True)\n')
     result = harness.run()
     assert result.returncode == 1, result.stdout + result.stderr
     record, = harness.records()

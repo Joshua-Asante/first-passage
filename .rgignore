@@ -1,6 +1,8 @@
 # Agent/rg search exclude — LTM cold corpus (git-tracked; still Readable by path).
-# Keep in sync with .cursorindexingignore. Do NOT put these in .cursorignore
-# (that would best-effort block Cursor from opening CATALOG-resolved paths).
+# Sole owner of this exclusion list since 2026-09-15: `.cursorindexingignore`
+# carried a byte-identical copy and was removed with the Cursor retirement
+# (docs/adr/2026-07-14-cc-cursor-surface-allocation.md, Revision 2026-09-15).
+# Nothing is lost — rg honours this file on every surviving surface.
 # Force-search: rg --no-ignore  (NOT --no-ignore-vcs — that still respects this file)
 
 lab/archive/

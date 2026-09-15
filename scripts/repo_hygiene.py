@@ -243,7 +243,7 @@ def build_report() -> HygieneReport:
     for orphan in report.orphan_worktree_dirs:
         report.warnings.append(
             f"Orphan worktree dir (not in `git worktree list`): {orphan} "
-            "— close Cursor handles, then remove manually / robocopy empty-dir trick on Windows."
+            "— close any editor/agent handles, then remove manually / robocopy empty-dir trick on Windows."
         )
     return report
 

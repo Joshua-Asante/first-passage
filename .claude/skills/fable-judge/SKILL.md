@@ -1,6 +1,6 @@
 ---
 name: fable-judge
-description: Adversarial verification of finished work — a "done" report is a set of claims, not evidence. Use AFTER any agent, advisor, Cursor session, subagent, or PR claims work is complete. Triggers on "judge this work", "verify what it did", "did that actually work?", adjudicating a Cursor-implemented spec (CC adjudicates per the 2026-07-14 CC/Cursor surface-allocation ADR), reviewing a PR authored elsewhere, or accepting a RESULTS/closure verdict produced outside this session. Re-runs claimed verifications, diffs actual vs declared scope, hunts repo-specific frauds, delivers VERIFIED / VERIFIED WITH CAVEATS / REFUTED. Post-execution sibling of handoff-verify (pre-execution packet gate) and verify-source (single value/claim). Judging changes nothing — read and run only.
+description: Adversarial verification of finished work — a "done" report is a set of claims, not evidence. Use AFTER any agent, advisor, worker session, subagent, or PR claims work is complete. Triggers on "judge this work", "verify what it did", "did that actually work?", adjudicating a worker-implemented frozen spec (the coordinator adjudicates per the 2026-07-14 worker-surface-allocation ADR), reviewing a PR authored elsewhere, or accepting a RESULTS/closure verdict produced outside this session. Re-runs claimed verifications, diffs actual vs declared scope, hunts repo-specific frauds, delivers VERIFIED / VERIFIED WITH CAVEATS / REFUTED. Post-execution sibling of handoff-verify (pre-execution packet gate) and verify-source (single value/claim). Judging changes nothing — read and run only.
 ---
 
 # fable-judge — adversarial verification of finished work
@@ -9,7 +9,7 @@ Adapted 2026-07-15 from `Sahir619/fable-method@88b5cf3` (`skills/fable-judge/`);
 
 The stance is fixed: **a report is a set of claims, not evidence. Nothing is believed that was not observed.** The most documented failure of agentic work is claiming success regardless of reality — and this repo has its own incident on file: `feedback_web_advisor_handoff_confabulates_repo_state` ("I stamped <path>" — nothing was stamped) plus the §7 review-skip lesson (load-bearing validator reasoning lived only in a review section that was skipped).
 
-Position in the gate family: `handoff-verify` gates an instruction packet **before** acting; `verify-source` gates a single borrowed value; **this skill gates a completed-work claim after acting.** It is the mechanical form of CC's adjudicator role under `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` — a Cursor-implemented frozen spec is not merged on its own report.
+Position in the gate family: `handoff-verify` gates an instruction packet **before** acting; `verify-source` gates a single borrowed value; **this skill gates a completed-work claim after acting.** It is the mechanical form of the coordinator's adjudicator role under `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` — a worker-implemented frozen spec is not merged on its own report.
 
 ## Procedure
 

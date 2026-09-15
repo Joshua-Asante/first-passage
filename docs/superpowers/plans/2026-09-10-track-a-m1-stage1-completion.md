@@ -88,7 +88,7 @@ Lane C (ceremony)   [A3 + A5 + A6 all DONE] ──► A7 attended Stage 1 dry-ru
 ## 3. Division of labor
 
 Routing test is [`2026-07-14-cc-cursor-surface-allocation.md`](../../adr/2026-07-14-cc-cursor-surface-allocation.md)
-§2 (historical allocation: 0: local-only deps; 1: doctrine/locked surface → Claude; 2: frozen spec → Cursor/Codex;
+§2 (routing tests: 0: local-only deps; 1: doctrine/locked surface → Claude; 2: frozen spec → a worker (Codex; Cursor retired 2026-09-15);
 3: overhead threshold). Codex is the standing PR reviewer for every PR below regardless of author.
 
 | Sub-track | Surface | Why (routing test) | Local-only deps | Return artifact | Parent review |
@@ -96,8 +96,8 @@ Routing test is [`2026-07-14-cc-cursor-surface-allocation.md`](../../adr/2026-07
 | A0 merge #332, #334 | Operator | Merge is operator-gated on rail surfaces (auto-merge ADR forbidden list). | — | merge SHAs | none |
 | A1 signal-source decision packet | **Astra** | Authors an ADR addendum (test 1). Web research allowed; no signups, no spend. | archive reads only | PROPOSED addendum to the S2b build ADR with scored options; operator ratifies | spec + quality |
 | A1r record the ratification | **Astra** (parent) | Docs-only edit of the A1 addendum status line plus the M1 ADR amendment when the option needs one (test 1); the operator's ruling becomes on-disk state that A6 checks. | none | PR replacing `PROPOSED` with the dated ruling | operator merge |
-| A1b implement the ratified input | **Codex** (or Cursor) | Frozen spec from the merged A1r text; daemon-side code plus the validation-script expectations named in §3.1; Codex authored #332 and holds its design. Brief: [A1b handoff](../../briefs/handoffs/2026-09-11-track-a-a1b-codex-operator-input-implementation.md) (authored 2026-09-11 from §3.1 and the ratified option D text; adds Linux check D11 for the one-shot chain). | none | PR on `codex/*` | Astra evidence review + Codex review |
-| A2 Linux image validation | **Cursor** (or Codex) | Frozen spec; new workflow + script; no judgment calls. | none — GitHub Actions has Docker | PR adding `.github/workflows/c1-image-validation.yml` + `scripts/c1_image_validation.sh`; green run URL | spec + quality; parent re-runs the workflow |
+| A1b implement the ratified input | **Codex** | Frozen spec from the merged A1r text; daemon-side code plus the validation-script expectations named in §3.1; Codex authored #332 and holds its design. Brief: [A1b handoff](../../briefs/handoffs/2026-09-11-track-a-a1b-codex-operator-input-implementation.md) (authored 2026-09-11 from §3.1 and the ratified option D text; adds Linux check D11 for the one-shot chain). | none | PR on `codex/*` | Astra evidence review + Codex review |
+| A2 Linux image validation | **Codex** (re-targeted 2026-09-15; Cursor retired) | Frozen spec; new workflow + script; no judgment calls. | none — GitHub Actions has Docker | PR adding `.github/workflows/c1-image-validation.yml` + `scripts/c1_image_validation.sh`; green run URL | spec + quality; parent re-runs the workflow |
 | A3 recovery-path attestation | **Astra** + operator | Governed note; needs Fly read access and the private archive; operator attests access. | fly auth; archive clone | readiness record §A3 | spec + quality |
 | A4 deployment-readiness review | **Astra** | Judgment-heavy review of live host state; governed note. | fly auth | readiness record §A4 with per-item GO/NO-GO | spec + quality |
 | A5 listener deploy (disarmed) | **Astra** | Live-safety surface; the 2026-08-02 grant covers `fly deploy`; migration apply needs the operator's flat attestation. | fly auth | acceptance JSON `fixture_hashes` refresh + notes entry; readiness record §A5 | spec + quality + consolidated |
@@ -110,7 +110,7 @@ Handoff briefs (dispatch in this order; each is self-contained):
 
 - [A1 — Astra: signal-source decision packet](../../briefs/handoffs/2026-09-10-track-a-a1-claude-signal-source-decision-packet.md)
 - [A1b — Codex: implement the ratified input (option D)](../../briefs/handoffs/2026-09-11-track-a-a1b-codex-operator-input-implementation.md)
-- [A2 — Cursor: Linux image validation](../../briefs/handoffs/2026-09-10-track-a-a2-cursor-linux-image-validation.md)
+- [A2 — Linux image validation](../../briefs/handoffs/2026-09-10-track-a-a2-cursor-linux-image-validation.md) (filename keeps its dated identifier; spawn target re-targeted to Codex 2026-09-15)
 - [A3 — Astra: recovery-path attestation](../../briefs/handoffs/2026-09-10-track-a-a3-claude-recovery-path-attestation.md)
 - [A4 — Astra: deployment-readiness review](../../briefs/handoffs/2026-09-10-track-a-a4-claude-deployment-readiness-review.md)
 - [A5 — Astra: listener deploy, disarmed](../../briefs/handoffs/2026-09-10-track-a-a5-claude-listener-deploy-disarmed.md)
