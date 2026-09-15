@@ -119,11 +119,16 @@ not start on an un-intaken export (umbrella D-B10, TB-R3).
 
 ## §4 — TB-W1 warm-up requirements (public summary; private inventory on the primary checkout)
 
-**2026-09-15 qualification caveat:** the origin equality and "no pre-window bars
-are owed" conclusion below are reopened by Packet 1 Step 3. The cited run dates
-do not yet establish the exact first calculation bar. A retained 6J prefix
-candidate has been found, but neither a splice nor revised startup boundary is
-accepted. See the [current evidence and remaining checks](2026-09-15-packet1-execution-domain.md#step-3--initial-panel-and-startup-audit-2026-09-15).
+**2026-09-15 qualification caveat (updated after Step 3 acceptance):** the origin
+equality and "no pre-window bars are owed" conclusion below were reopened by
+Packet 1 Step 3 and are superseded for the 6J leg. The accepted 6J input is the
+separately attested 88-bar-prefix derivative, not the original 23:00Z first
+session; the other three legs retain the 2022-09-01 00:00Z origin. Cold
+initialization for all nine references is bound by the
+[Step 3 acceptance record](2026-09-15-packet1-step3-acceptance.md); the
+[historical audit trail](2026-09-15-packet1-execution-domain.md#step-3--initial-panel-and-startup-audit-2026-09-15)
+is evidence only. The accepted boundary is a Step 3 replay claim, not warm-restart
+or live-recovery acceptance.
 
 - **Replay / parity warm-up boundary = the panel origin** (2022-09-01 00:00Z; 6J 2022-09-01 23:00Z,
   its own first session). The TradingView deep-backtest runs started at the same origin
