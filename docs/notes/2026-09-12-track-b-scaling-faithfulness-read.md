@@ -130,8 +130,10 @@ initialization for all nine references is bound by the
 is evidence only. The accepted boundary is a Step 3 replay claim, not warm-restart
 or live-recovery acceptance.
 
-- **Replay / parity warm-up boundary = the panel origin** (2022-09-01 00:00Z; 6J 2022-09-01 23:00Z,
-  its own first session). The TradingView deep-backtest runs started at the same origin
+- **Replay / parity warm-up boundary = the panel origin** (2022-09-01 00:00Z on all four legs;
+  for 6J this is the attested 88-bar-prefix derivative accepted in Step 3 on 2026-09-15, which
+  supersedes the 23:00Z first-session boundary this bullet recorded on 2026-09-12). The
+  TradingView deep-backtest runs started at the same origin
   (campaign-state §47 (e) run span), the ports start cold at the same bar, and parity is exact from
   the first captured trade on all four legs — so **no pre-window bars are owed** for TB-I2 or TB-E1.
   A scoring window starting after the origin inherits this state; a window that starts *before* the
