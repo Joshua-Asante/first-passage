@@ -49,7 +49,7 @@ Dated repo burns this gate would have caught at the fix:
 |---|---|
 | "Fix", "make it pass", "green the CI", a red required check on a PR you own | Gate before the first edit. |
 | The first error is `TypeError` / `None` / `KeyError` / `JSONDecodeError` / schema or parse failure | Treat it as a symptom; trace up to who produced the value. |
-| "Flaky", "intermittent", "passes on re-run" | A race, an ordering dependence or an environment difference. A retry hides it; code-defect-debugging 1.1 says the intermittence *is* the question. |
+| "Flaky", "intermittent", "passes on re-run" | A race, an ordering dependence or an environment difference. A retry hides it; code-defect-debugging 1.1 says the intermittence *is* the question. Not this row: an *evidence-backed* infrastructure failure — a runner, service or network outage read from the job log — which `babysit` step 4 reruns with the reason recorded and no code change. "It passed the second time" is not that evidence. |
 | Reviewing a diff (Codex round, `fable-judge`, a fleet return) that adds a guard, default, retry, broad `except`, `check=False`, `errors="ignore"` or a looser schema | Ask for the named mechanism; without one the change is REFUTED on that ground. |
 | A hook, startup path, boot-time cache, restore/migration, worker pool, background refresher or rewriter is anywhere in the suspect path | Run the first-unintended-write hunt below. |
 
@@ -94,11 +94,13 @@ a failure into success is a band-aid whatever the comment above it says.
 ## Procedure
 
 1. **State the observed failure concretely.** Exact error text, assertion or log line; the
-   command that produced it; the commit. Any deterministic defect — a wrong value *or* a crash —
-   runs `code-defect-debugging` Phase 1 first (deterministic reproduction, expected-value
-   authority, git anchors; its §0 routes script crashes to itself) and comes back here for the
-   trace and the fix gate. This step stands alone only at review time, or when Phase 1 has
-   already run.
+   command that produced it; the commit. A deterministic defect in this repo's Python or shell
+   code — a wrong value *or* a crash — runs `code-defect-debugging` Phase 1 first (deterministic
+   reproduction, expected-value authority, git anchors; its §0 routes script crashes to itself)
+   and comes back here for the trace and the fix gate. A Pine defect never enters that Phase 1:
+   `code-defect-debugging` §0 routes Pine to `pinescript-v6`, which runs this gate in its own
+   runtime. This step stands alone at review time, when Phase 1 has already run, or when the
+   failing artifact is not code (a doc gate, a manifest, a hook payload).
 2. **Reconstruct the intended contract.** Three sentences: the expected behaviour; the invariant
    it rests on; what definitely did *not* happen. The contract comes from the read source under
    fable-method's `INTENT` authority order (operator > ADR/LOCK > tests > current code), never
@@ -109,8 +111,12 @@ a failure into success is a band-aid whatever the comment above it says.
      site → the line that threw → who called it → what value was passed at each level → where the
      bad value originated → what changed there (`git log -1 -- <file>`, `git log -S<token>`, the
      last-known-good diff). When you cannot read it, instrument: at the site log the value, the
-     cwd, the relevant env var and `traceback.format_stack()`; run **once**, read the whole
-     capture, then reason (code-defect-debugging Phase 2's run-once rule).
+     cwd, the *name* and presence of the relevant env var and `traceback.format_stack()`; run
+     **once**, read the whole capture, then reason (code-defect-debugging Phase 2's run-once
+     rule). Never log an env var's value: a token, password, DSN or API key written to a test
+     or CI log is a leak (fable-method Step 4.6, CLAUDE.md: never touch secrets). When two
+     candidate values must be told apart, log a fingerprint (length plus a hash prefix), never
+     the bytes.
    - **First-unintended-write hunt** — state-shaped bugs, a wrong value present and nobody
      obviously wrote it. Ask whether the write, mutation or request should have happened at all.
      List the canonical source of truth and every competing one (Rule 7;
@@ -167,7 +173,7 @@ mode 14).
 | "Exit 0 on a missing dependency is friendlier." | It reported an empty result as success. |
 | "Hooks fail open, so mine can." | Hooks are documented and emit a finding. Yours does neither. |
 | "Root-causing is overkill for a one-liner." | The one-liner is where M-23 hid for four days. |
-| "The test is flaky, mark it." | fable-method 4.6 and the babysit posture: a failing test is never an infra flake. |
+| "The test is flaky, mark it." | fable-method 4.6: a deterministic failure is never labelled flaky without investigation. `babysit` step 4 reruns only an infrastructure-only failure with the outage evidence recorded; "passes on re-run" is a race, not an outage. |
 
 ## Red flags
 
@@ -175,7 +181,7 @@ mode 14).
   `errors="ignore"` or a wider schema, landing in the same PR as the failure it makes disappear.
 - A fix commit message or PR description with no mechanism in it.
 - The first error named as the cause: "KeyError on X — fixed with `.get`".
-- "Flaky" in a PR description.
+- "Flaky" in a PR description with no infrastructure evidence behind it.
 - A regression test that would also pass on the pre-fix code, or a test pin edited in a fix PR.
 - A script or hook that "handles" a missing executable, file or credential by exiting 0.
 - A fallback path with no owner and no finding.
@@ -190,7 +196,8 @@ mode 14).
 | `blast-radius` | After the fix: sweep the owners and mirrors that still restate the pre-fix behaviour. |
 | Rule 7, firm-constants single-source ADR, M-24 | The in-repo single-source-of-truth owners. When the mechanism is duplicated truth, consolidate to the owner, then return here for the regression check. |
 | `fable-judge` | Review-time use: a returned fix with no named mechanism is REFUTED on that ground, whatever its tests say. |
-| `pinescript-v6` | A Pine defect runs the same gate in that skill's runtime. |
+| `pinescript-v6` | Owns Pine defects end to end (`code-defect-debugging` §0 routes them there, never to its own Phase 1); it runs this gate in its own runtime. |
+| `babysit` | CI repair: its step 4 reruns an infrastructure-only failure with the outage evidence recorded and no code change; every other failing check reaches this gate before an edit. |
 | `brief-authoring` lesson capture | A class-failure graduates to a lesson (code-defect-debugging §6.6). |
 
 ## Provenance — what was imported, what was dropped

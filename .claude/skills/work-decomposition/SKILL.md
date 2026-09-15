@@ -15,11 +15,11 @@ into children that each fit one session or one packet) and **input-shaped** (cut
 the input does not fit one context). It produces sized units and a manifest; it does not build,
 dispatch implementation workers, or adjudicate; the input-shaped protocol below does run read-only
 sub-agent waves inside the session, which is evidence gathering, not work dispatch. Worker surfaces
-are Claude Code sessions and Codex; Cursor agents were
-retired by operator instruction on 2026-09-15 (retirement record pending), so the fleet
+are Claude Code sessions and Codex tasks; the Cursor worker lane was retired by operator
+instruction on 2026-09-15 ([surface-allocation ADR, 2026-09-15 addendum](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-15-ratified-same-day--operator-cursor-agents-are-retired-as-a-worker-surface--cursor-worker-lane-retired-worker-sessions-are-claude-code-and-codex)), so the fleet
 orchestration mechanics recorded in `cursor-fleet` — umbrella brief, claim manifest, disjoint
 footprints, dispatch-time Phase-0, integration order — carry over surface-agnostically while its
-`cursor/*` branch and CLI dispatch mechanics do not.
+`cursor/*` branch and CLI dispatch mechanics are historical.
 
 Provenance: adapted 2026-09-15 from three external drafts — `troykelly/claude-skills`
 issue-decomposition (oversize thresholds, child-quality checklist, dependency status),
@@ -94,7 +94,7 @@ That umbrella is the reference shape for this skill's work-shaped output.
    with the orchestrating Claude session; a child on a locked surface (core anchor code, Pine,
    ADRs / pre-registrations / `CLAUDE.md` / `STATE.md`) stays there regardless of size. The
    [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md) tests 1–2
-   record the rule; its Cursor lane is retired, the rule is not. Never launder a judgment task into
+   record the rule; its Cursor lane is retired (2026-09-15 addendum), the rule is not. Never launder a judgment task into
    a "small packet".
 
 Name each child `<verb> <object> so that <observable outcome>` — "Add the closure-overlay test so
@@ -183,8 +183,9 @@ blur of them. The protocol treats the input as an environment to query, not a do
    a date range, or a line range of one file — in **disjoint batches**. When the trigger is file
    count, batches of 5–10 files; when the trigger is one oversized file, batches are its sections
    or line ranges; when the trigger is a pairwise or multi-hop question over two to four sources,
-   one batch per source (or per pair) is correct and no batch is padded with unrelated files to
-   reach a count. Write the batch count down before launching anything.
+   one batch per source is correct — the pairs are formed in the cross-batch join (step 6), never
+   by a batch that re-reads a source another batch holds — and no batch is padded with unrelated
+   files to reach a count. Write the batch count down before launching anything.
 4. **Recurse at depth 1.** One sub-agent (`Agent` / `Explore`, or a `Workflow` script) per batch,
    each with a self-contained brief — the files, the question, the output schema. Launch **one
    parallel wave**, then merge. Sub-agents answer; they never spawn sub-agents, and no two
@@ -269,7 +270,7 @@ fits the question; author an ad-hoc wave only when none does.
 |---|---|
 | `question-decomposition` | A question with too many axes → that skill; work with too many parts → this one. A bundled question inside an oversize brief goes there first — the cut lines often follow the axes. |
 | `refine-question` | If the parent's done cannot be stated in two sentences, refine before decomposing. |
-| `cursor-fleet` | Records the fleet orchestration loop that consumes this skill's manifest and children when 2+ packets are frozen implementation — umbrella brief, claim manifest, dispatch-time Phase-0, integration order. Worker surfaces are now Claude Code and Codex (Cursor retired 2026-09-15); its `cursor/*` branch and CLI mechanics no longer apply. Its §1 "disjoint footprints" rule is the atomic test's point 5 applied at dispatch. |
+| `cursor-fleet` | Records the fleet orchestration loop that consumes this skill's manifest and children when 2+ packets are frozen implementation — umbrella brief, claim manifest, dispatch-time Phase-0, integration order. Worker surfaces are Claude Code sessions and Codex tasks (Cursor lane retired 2026-09-15, recorded in the surface-allocation ADR); its `cursor/*` branch and CLI mechanics are historical. Its §1 "disjoint footprints" rule is the atomic test's point 5 applied at dispatch. |
 | `brief-authoring` | Authors each child as a `cc_handoff` brief; check 8's `BLOCKED — scope-problem` sub-case sends the packet back here for re-cutting. |
 | `handoff-verify` / `handoff-verify-panel` | Pre-dispatch verification of a child; the panel is the input-shaped protocol applied to a many-claim packet. |
 | `task-routing` | Picks local vs cloud per child after the cut. |

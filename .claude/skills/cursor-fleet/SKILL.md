@@ -1,19 +1,21 @@
 ---
 name: cursor-fleet
-description: Use when a task decomposes into 2+ independent, spec-freezable IMPLEMENTATION packets — CC stays the ORCHESTRATOR (decompose, freeze specs, own the claim manifest, review, integrate, adjudicate) and Cursor agents are the WORKERS (their tokens, not Claude's). Triggers on "cursor fleet", "fan out to cursor", "team of agents", "parallel implementation", or any multi-packet build where solo CC execution would burn context on mechanical work. NOT for read-only research/verification fan-out (that is Claude-side Workflow/subagents), NOT for single builds (plain CC/Cursor handoff per the surface-allocation ADR), NOT for locked-surface work (ADR test 1 routes core/Pine/doctrine to CC solo, always).
+description: Use when a task decomposes into 2+ independent, spec-freezable IMPLEMENTATION packets — CC stays the ORCHESTRATOR (decompose, freeze specs, own the claim manifest, review, integrate, adjudicate) and worker sessions are the WORKERS (Claude Code sessions or Codex tasks; the Cursor worker lane was retired by operator instruction 2026-09-15, recorded in the surface-allocation ADR's addendum of that date). Triggers on "cursor fleet", "fleet", "fan out the packets", "team of agents", "parallel implementation", or any multi-packet build where solo CC execution would burn context on mechanical work. NOT for read-only research/verification fan-out (that is Claude-side Workflow/subagents), NOT for single builds (one worker handoff per the surface-allocation ADR), NOT for locked-surface work (ADR test 1 routes core/Pine/doctrine to CC solo, always).
 ---
 
-# Cursor Fleet — CC orchestrates, Cursor implements in parallel
+# Cursor Fleet — CC orchestrates, worker sessions implement in parallel
 
 Extends `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` from one-build-at-a-time to N parallel workers under one orchestrator. **Every ADR clause still binds per packet** — this skill adds the orchestration layer, it never relaxes the routing tests, the handoff contract, or "no commit/merge without operator go." Every rule below exists because of a dated failure — the week of 2026-07-18→24 unless the ledger dates it otherwise; the friction ledger at the bottom is the why.
+
+**Worker surface (2026-09-15).** The Cursor worker lane is retired by operator instruction, recorded in the ADR's 2026-09-15 addendum. Workers are Claude Code sessions opened on a `cc_handoff` brief and Codex tasks carrying the same §0 / §0.5 / §5 / §6 content; return branches are `claude/*` or `codex/*`. The loop below is surface-agnostic and stands unchanged; the skill keeps its name, and the `cursor/*` branch names and `cursor-agent` CLI mechanics in the friction ledger are the dated history the rules came from, not the current dispatch path. Sizing the packets is `work-decomposition`'s.
 
 ## Routing — three lanes, pick one
 
 | Work shape | Lane | Why |
 |---|---|---|
 | Read-only research / verification / review fan-out | **Claude subagents (Workflow/Agent tool)** — protocol: `work-decomposition` §Input-shaped (size, filter, batch, depth-1 wave, spot-check) | No branch overhead, results return in-context; e.g. the 14-agent Algorithm review (2026-07-24) |
-| One implementation build | **Single Cursor handoff** (ADR flow) or CC solo below the test-3 threshold | Fleet overhead is pure waste at N=1 |
-| 2+ independent, spec-freezable implementation packets, each ADR-tests-0–2 clean, jointly clearing test 3 | **THIS SKILL** | CC context goes to judgment (decompose/freeze/review); Cursor tokens go to mechanical build |
+| One implementation build | **Single worker handoff** (ADR flow: a `cc_handoff` brief to a Claude Code session, or a Codex task) or CC solo below the test-3 threshold | Fleet overhead is pure waste at N=1 |
+| 2+ independent, spec-freezable implementation packets, each ADR-tests-0–2 clean, jointly clearing test 3 | **THIS SKILL** | CC context goes to judgment (decompose/freeze/review); worker tokens go to mechanical build |
 
 Hard disqualifiers for any packet: touches ADR test-1 locked surfaces (core anchor code, Pine, ADRs/pre-regs/CLAUDE.md/STATE.md); spec cannot be frozen without judgment calls mid-build; needs gitignored vendor bytes or secrets in a cloud environment (test 0 → local dispatch or CC).
 
@@ -23,9 +25,9 @@ Hard disqualifiers for any packet: touches ADR test-1 locked surfaces (core anch
 
 **2. One umbrella handoff brief, N packet appendices.** The umbrella is a real `docs/briefs/handoffs/` brief passing `check_brief` (satisfies the ADR handoff contract once, amortizing test-3 overhead across the fleet). Each packet appendix carries exactly four load-bearing elements, nothing more:
    - **Phase-0 staleness check** — the packet's premises as runnable commands, with the explicit no-op condition ("if already fixed on main → return DONE, cite the commit"). This is what caught all three overtakes on 2026-07-24; it is the single most load-bearing line in the packet.
-   - **Frozen scope** — exact files, exact edits or acceptance tests; §0.5-style recommended defaults for any ambiguity (Cursor never resolves ambiguity — it bounces `NEEDS_CONTEXT`).
+   - **Frozen scope** — exact files, exact edits or acceptance tests; §0.5-style recommended defaults for any ambiguity (a worker never resolves ambiguity — it bounces `NEEDS_CONTEXT`).
    - **Forbidden moves** — the locked surfaces this packet runs near, plus "no writes outside your file footprint."
-   - **Return contract** — `cursor/*` branch named `cursor/<fleet-slug>-p<N>`, PR per packet, tests green, four-state status (`DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED`).
+   - **Return contract** — one branch per packet named `<surface>/<fleet-slug>-p<N>` (`claude/…` or `codex/…`), PR per packet, tests green, four-state status (`DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED`).
 
 **3. Claim manifest before dispatch.** The umbrella brief carries a dispatch table: packet → branch → files → status (QUEUED / DISPATCHED / RETURNED / MERGED / OVERTAKEN). The orchestrator owns it; it is the anti-duplication device — before ANY session (including a future you) opens work in this area, the manifest says who holds it.
 
@@ -37,7 +39,7 @@ Hard disqualifiers for any packet: touches ADR test-1 locked surfaces (core anch
 
 **5. Dispatch mechanics (the honest constraints):**
    - Follow the [shared CLI execution contract](../brief-authoring/references/cc_handoff.md#cli-execution-contract-when-dispatching-through-a-cli). Check the installed CLI and current approval result; historical classifier failures are not a universal ban on direct dispatch. A wrapper does not grant authority or bypass a denial. Carry applicable operator authorization forward and capture each worker's process result before retrying.
-   - One worktree per packet; workers branch `cursor/<fleet-slug>-p<N>` from CURRENT `origin/main`, never from another packet's branch.
+   - One worktree per packet; workers branch `<surface>/<fleet-slug>-p<N>` from CURRENT `origin/main`, never from another packet's branch.
    - Worktree gotchas apply to workers: bare worktrees fail catalog/data gates (doc-only packets commit via doc sub-gates); CRLF pins matter for `.dockerignore`/hash-gated files; `sync_skills` never runs from a worktree.
    - Point each worker at the umbrella brief path + its packet letter + **the commit SHA at which the brief was frozen** (the post-review-round freeze, never the as-first-opened commit). A worker whose pointer SHA no longer matches the brief on `main` returns `NEEDS_CONTEXT` rather than building — a stale pointer is a stale spec, and building it anyway is how a withdrawn packet gets built (2026-09-04f, packet B). The packet must be self-contained enough to survive `handoff-verify` (the 2026-07-24 price-capture handoff bounced `NEEDS_CONTEXT` once for exactly this; re-anchoring cost a round-trip).
 
@@ -75,7 +77,7 @@ Hard disqualifiers for any packet: touches ADR test-1 locked surfaces (core anch
 ## Hand-offs
 
 - Sizing an oversize task into packets, the per-packet atomic test, and re-cutting after a second `NEEDS_CONTEXT` bounce → `work-decomposition`
-- Packet authoring structure → `brief-authoring` (cc_handoff template, §0.5 Cursor variant)
+- Packet authoring structure → `brief-authoring` (cc_handoff template, §0.5 worker variant)
 - Consuming/verifying any packet before dispatch → `handoff-verify`
 - Post-return adjudication of load-bearing claims → `fable-judge`
 - Routing doubt on any single packet → the ADR's tests 0–3, verbatim

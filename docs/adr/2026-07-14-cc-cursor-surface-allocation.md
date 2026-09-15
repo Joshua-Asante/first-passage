@@ -192,6 +192,7 @@ git log -1 --format='%h %ci' -- docs/operational_rules.md .claude/skills/handoff
 | 2026-08-23 | Addendum RATIFIED — see below (automatic Claude judgment review on Cursor-first / opted-in PRs; review-only) | Joshua (chat: wire automatic Claude review on judgment-heavy PRs, especially Cursor-scoped) |
 | 2026-08-29 | Addendum RATIFIED — see below (Codex second look, landed as Codex's native GitHub code-review integration at the account level, not a repo workflow; a first repo-workflow design and an adversarial fable-judge mode were both built and dropped in the same session before merge) | Joshua (chat: "I have been having Cursor prompt Claudebot for reviews on PRs, this can go to Codex instead"; corrected same session after asking Codex directly and enabling its native GitHub integration) |
 | 2026-08-29 | Second addendum RATIFIED — see below (§2 test 3 clarified as proactive dispatch authority, not just an eligibility label; lightweight GitHub-issue + `@cursor` handoff format codified for small precedented fixes) | Joshua (asked whether a memory update was needed for automatic Cursor routing; `AskUserQuestion` fork put to the operator directly — ruled: full proactive routing) |
+| 2026-09-15 | Addendum RATIFIED — see below (Cursor worker lane retired; worker sessions are Claude Code and Codex; `cursor-fleet` frontmatter, title, routing table and return contract updated in PR #401) | Joshua (in-session instruction 2026-09-15; `AskUserQuestion` fork on PR #401 — ruled: record it in the owning ADR) |
 
 ---
 
@@ -324,3 +325,17 @@ Still governed by tests 1–3 and the substance of the handoff contract (Phase-0
 **Forbidden:** re-adding `issue_comment` / `pull_request_review` triggers to `notify-cursor.yml` without a superseding note here.
 
 **Revert trigger:** operator asks to turn the ping back on. Restore the previous `on:` events from git history (`4f3ddc6`) and drop `if: false`.
+
+## Addendum (2026-09-15, RATIFIED same day — operator: Cursor agents are retired as a worker surface) — Cursor worker lane retired; worker sessions are Claude Code and Codex
+
+**Reads:** §2 above (routing tests 0–3 and the handoff contract); this file's 2026-08-29 addenda (proactive dispatch, the lightweight issue format) and 2026-09-04 addendum (auto-ping off); `.claude/skills/cursor-fleet/SKILL.md` @ `origin/main` `242992b` (frontmatter and routing table name Cursor agents as the workers); `.claude/skills/work-decomposition/SKILL.md` on PR #401 (routes children to Claude Code and Codex on the operator's instruction, "retirement record pending" until this addendum).
+
+**Trigger:** operator instruction in session, 2026-09-15: Cursor agents are retired as an implementation surface. PR #401 carried the instruction into `work-decomposition` without a record here; Codex's third review round on that PR found `cursor-fleet` still declaring Cursor as the worker for the same task shape. This addendum is the record; the operator ratified recording it here in the same session.
+
+**What changes:** the worker surface named in §2 test 3 ("Above threshold and spec-frozen → Cursor") and in the handoff contract's return line (`cursor/*` branch) is retired. A frozen build above the handoff-overhead threshold now goes to a **worker session**: a Claude Code session opened on a `cc_handoff` brief, or a Codex task carrying the same §0 / §0.5 / §5 / §6 content. Return branches are `claude/*` or `codex/*`. The 2026-08-29 proactive-dispatch ruling carries over to those surfaces: once tests 0–3 select a worker session, CC dispatches without a per-task go. The lightweight GitHub-issue format survives without its `@cursor` mention. `cursor-fleet`'s orchestration loop — umbrella brief, claim manifest, disjoint footprints, dispatch-time Phase-0, integration order — is surface-agnostic and stands; its frontmatter, title, routing table and return-contract lines are updated in PR #401, and its `cursor/*` naming and `cursor-agent` CLI mechanics are historical. The `cc_handoff` template's §0.5 "Cursor variant" (recommended defaults a worker applies unless Phase-0 contradicts them) is renamed the worker variant in the same PR; its content is unchanged.
+
+**What does not change:** tests 0–2 and their locked-surface exclusions; test 3's threshold; the handoff contract's brief, Phase-0, forbidden-moves and review-before-merge requirements; the 2026-08-14 autonomous-loop narrowing; Codex's native review at the account level; the 2026-09-04 `notify-cursor.yml` disablement.
+
+**Not done here:** the wider retirement — `task-routing`'s wording, `.cursor/` rules and hooks, `scripts/dispatch_cursor.ps1`, `notify-cursor.yml`, pursuit a6 and the subscription ledger — is separate work; this addendum authorizes none of it.
+
+**Revert trigger:** the operator reinstates Cursor as a worker surface. Restore test 3's reading and `cursor-fleet`'s frontmatter, title, routing table and return-contract lines from git history at this addendum's commit.
