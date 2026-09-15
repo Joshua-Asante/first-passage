@@ -21,7 +21,7 @@ owner's signed submission path; component tests alone do not establish acceptanc
   durable corruption must continue to raise `SettlementError`.
 - [x] Restore the historical enrollment provenance without changing enrollment;
   align version guidance and test the affected owner/component suites.
-- [ ] Integrate repaired upstream components, verify source-backed calculations
+- [x] Integrate repaired upstream components, verify source-backed calculations
   and halt-required refusals through signed submission, and independently review
   the combined change before publishing. Actual venue qualification stays open.
 
@@ -155,13 +155,15 @@ resolution, restart, and B7 weekday/DST boundaries. This is code-level evidence.
 Actual report filter semantics, historical close equity, and live admission
 qualification remain owed. No deployment or activation is authorized here.
 
-Validation on the owner component: **1,990 operations tests passed, 15 skipped**,
-with two upstream seaborn deprecation warnings. An independent reviewer accepted
-the scope after reproducing the revision/readmission collision and rechecking
-its repair; their focused owner run passed **162 tests**. Hosted CI is recorded
-on the component PR separately.
+## Current review evidence
 
-That count describes the prior `524fac1` revision. The current owner repair
-reproduced 23 failures, then passed 185 owner tests; a further older-store
-compatibility regression also passes (53 focused repair tests). Combined
-source-derived calculation and B7 inventory verification remain in progress.
+The combined operations suite passed **2,165 tests, 15 skipped**, with two upstream
+seaborn warnings. After the final correction-priority change, all **258 affected
+calculator, assembler and owner tests passed**. Required commit gates passed.
+
+Independent review accepted calendar, ingestion, calculation and owner repairs.
+Review additionally reproduced a historical deletion hidden by row counts and a
+halt callback rolling back quarantine; both regressions now pass. The owner's
+independent restart/callback reproduction confirms the quarantined close remains
+unavailable and original correction bytes remain retained. Hosted CI is tracked
+on the component PRs; these results do not establish live source qualification.
