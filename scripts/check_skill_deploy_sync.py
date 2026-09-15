@@ -38,6 +38,27 @@ resolved deploy root does not exist AT ALL, this script now prints a SKIP
 message and exits 0 -- explicitly NOT a pass, just nothing to check here.
 When the root DOES exist and a cited script is genuinely missing under it,
 the real check is unchanged: exit 1, drift listed.
+
+Second route to the same false-fail (2026-09-15): managed remote sessions
+(Claude Code on the web) DO have a ~/.claude/skills/ directory, but it is
+harness-owned -- observed contents were only `session-start-hook/` and
+`synced/<uuid>_<uuid>/...` (the plugin marketplace's own copy of skills
+such as brief-authoring). Nothing under that root was published by
+scripts/sync_skills.py, so `brief-authoring/scripts/check_brief.py` was
+absent directly under it, the root-exists test above took the real-check
+branch, and `gate_manifest.py --tier check` exited 1 on an unmodified
+`main` checkout. The SKIP decision therefore keys on whether THIS REPO'S
+deployed bundle is present -- at least one ADR-cited skill has a directory
+DIRECTLY under the root (see cited_skill_dirs_present) -- not on whether
+the root exists. A root holding only foreign entries SKIPs (NOT CHECKED);
+a root that has a cited skill's directory but lacks the cited script still
+fails (exit 1, drift listed); a partial bundle (some cited skills present,
+others absent) is drift, not a skip. The marker-file alternative (have
+sync_skills.py stamp the target and SKIP when the stamp is absent) was
+rejected: every bundle published before the marker existed -- including
+the operator's live one -- would silently SKIP until republished, and
+external cloud sync can rewrite the target without preserving a marker
+(scripts/README.md#skill-lifecycle already records that limit).
 """
 import os
 import re
@@ -54,6 +75,20 @@ def find_cited_skill_scripts(adr_dir: Path) -> set[tuple[str, str]]:
         for skill, script in CITATION_RE.findall(text):
             cited.add((skill, script))
     return cited
+
+
+def cited_skill_dirs_present(
+    home_skills: Path, cited: set[tuple[str, str]]
+) -> list[str]:
+    """ADR-cited skills that have a directory DIRECTLY under the deploy root.
+
+    This is the SKIP / real-check decision (2026-09-15): an empty list means
+    the root is not this repo's deployed bundle (harness-owned entries only,
+    e.g. a managed remote container), so there is nothing to compare
+    against. Nested copies (synced/<uuid>/<skill>/) deliberately do not
+    count -- they are not a sync_skills.py release.
+    """
+    return sorted({skill for skill, _ in cited if (home_skills / skill).is_dir()})
 
 
 def main(argv: list[str]) -> int:
@@ -82,6 +117,29 @@ def main(argv: list[str]) -> int:
             "(`python scripts/check_skill_deploy_sync.py`) on a machine "
             "where the deployed bundle already exists. Publication is not "
             "required to perform this check."
+        )
+        return 0
+
+    cited_skills = sorted({skill for skill, _ in cited})
+    if not cited_skill_dirs_present(home_skills, cited):
+        try:
+            entries = sorted(p.name for p in home_skills.iterdir())
+        except OSError:
+            entries = []
+        shown = ", ".join(entries[:8]) + (", ..." if len(entries) > 8 else "")
+        print(
+            f"SKIP: deploy target {home_skills} exists but holds none of the "
+            f"ADR-cited skill directories ({', '.join(cited_skills)}) directly "
+            f"under it (top-level entries: {shown or '<empty>'}). That root is "
+            "not this repo's deployed bundle -- e.g. a managed remote "
+            "container's harness-owned ~/.claude/skills/ (session-start-hook/, "
+            "synced/<uuid>/... marketplace copies), which no sync_skills.py "
+            "release ever populated. NOT CHECKED, not a pass -- this gate "
+            "cannot compare against a bundle that was never published here. "
+            "Re-run this existence checker "
+            "(`python scripts/check_skill_deploy_sync.py`) on a machine where "
+            "the deployed bundle already exists. Publication is not required "
+            "to perform this check."
         )
         return 0
 

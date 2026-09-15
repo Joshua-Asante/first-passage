@@ -47,6 +47,19 @@ vacuous always-pass check.
      docstring: "Explicit --target is the sole destination" — no home
      add-on). Neither the AppData target nor ~/.claude/skills/ is ever
      touched by this test.
+
+2026-09-15 fix (second route to the same false-fail): managed remote
+sessions (Claude Code on the web) DO have ~/.claude/skills/, but it is
+harness-owned -- only `session-start-hook/` and the plugin marketplace's
+`synced/<uuid>_<uuid>/<skill>/` copies -- and nothing under it was
+published by sync_skills.py. The root-exists test alone took the
+real-check branch and red-lined `gate_manifest.py --tier check` on an
+unmodified main checkout. The SKIP decision now keys on whether at least
+one ADR-cited skill has a directory DIRECTLY under the root.
+`test_root_with_only_unrelated_dirs_skips_not_passes` pins the SKIP;
+`test_partial_bundle_is_drift_not_skip` pins that the decision is
+"any cited skill dir present", never "all present", so a partial deploy
+still fails as drift.
 """
 import os
 import shutil
@@ -115,6 +128,76 @@ def test_missing_deployed_file_fails(monkeypatch, tmp_path):
     assert "brief-authoring" in result.stdout
     assert "--revision" in result.stdout and "--target" in result.stdout
     assert "Run: python scripts/sync_skills.py" not in result.stdout
+
+
+def test_root_with_only_unrelated_dirs_skips_not_passes(tmp_path):
+    """2026-09-15 fix regression: the deploy root EXISTS but holds only
+    harness-owned entries -- the exact managed-remote-container condition
+    (`/root/.claude/skills/` with `session-start-hook/` and the plugin
+    marketplace's `synced/<uuid>_<uuid>/<skill>/` copies, nothing published
+    by sync_skills.py). The gate must SKIP (exit 0, says NOT CHECKED), not
+    take the real-check branch and red-line `gate_manifest.py --tier check`
+    on an unmodified main checkout. The nested marketplace copy of the
+    cited script is planted deliberately: existing SOMEWHERE beneath the
+    root must not count as this repo's deployed bundle."""
+    root = tmp_path / "home_skills"
+    (root / "session-start-hook").mkdir(parents=True)
+    nested = (
+        root / "synced" / "0f9a3c1e-uuid_7b2d4e6f-uuid"
+        / "brief-authoring" / "scripts"
+    )
+    nested.mkdir(parents=True)
+    (nested / "check_brief.py").write_text("# marketplace copy\n", encoding="utf-8")
+    assert not (root / "brief-authoring").exists()
+    result = subprocess.run(
+        [sys.executable, "scripts/check_skill_deploy_sync.py"],
+        capture_output=True, text=True, cwd=REPO_ROOT,
+        env={**os.environ, "HOME_SKILLS_DEPLOY_TARGET_OVERRIDE": str(root)},
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    out = result.stdout
+    assert "SKIP" in out and "NOT CHECKED" in out
+    assert "OK:" not in out
+    assert "DRIFT" not in out
+    assert "session-start-hook" in out and "synced" in out
+    assert "check_skill_deploy_sync.py" in out
+    assert "Publication is not required" in out
+    assert "python scripts/sync_skills.py" not in out
+
+
+def test_partial_bundle_is_drift_not_skip(tmp_path):
+    """Mutation guard on the 2026-09-15 SKIP decision: it asks whether ANY
+    cited skill has a directory directly under the root, never whether ALL
+    do. With alpha/ deployed and beta/ absent (plus a foreign entry that
+    must not flip the decision), the gate must take the real-check branch
+    and report beta as drift -- an implementation that skipped whenever
+    some cited skill was missing would hide exactly the partial-deploy
+    defect this gate exists to catch."""
+    adr_dir = tmp_path / "adr"
+    adr_dir.mkdir()
+    (adr_dir / "fake.md").write_text(
+        "Run `~/.claude/skills/alpha/scripts/one.py` then "
+        "`~/.claude/skills/beta/scripts/two.py`.\n",
+        encoding="utf-8",
+    )
+    root = tmp_path / "home_skills"
+    (root / "alpha" / "scripts").mkdir(parents=True)
+    (root / "alpha" / "scripts" / "one.py").write_text("# ok\n", encoding="utf-8")
+    (root / "session-start-hook").mkdir()
+    assert not (root / "beta").exists()
+    result = subprocess.run(
+        [sys.executable, "scripts/check_skill_deploy_sync.py"],
+        capture_output=True, text=True, cwd=REPO_ROOT,
+        env={
+            **os.environ,
+            "ADR_DIR_OVERRIDE": str(adr_dir),
+            "HOME_SKILLS_DEPLOY_TARGET_OVERRIDE": str(root),
+        },
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "SKIP" not in result.stdout
+    assert "beta/scripts/two.py" in result.stdout
+    assert "alpha/scripts/one.py" not in result.stdout
 
 
 def test_multiple_missing_scripts_are_all_reported(tmp_path):

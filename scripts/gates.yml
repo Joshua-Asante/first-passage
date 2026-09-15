@@ -287,6 +287,18 @@ gates:
   # deploy target exists locally and the cited script is genuinely missing
   # from it -- see scripts/check_skill_deploy_sync.py's own docstring and
   # tests/scripts/test_check_skill_deploy_sync.py.
+  #
+  # 2026-09-15 second route to the same false-fail: managed remote sessions
+  # (Claude Code on the web) DO have ~/.claude/skills/, but it is
+  # harness-owned (session-start-hook/ and synced/<uuid>_<uuid>/...
+  # marketplace copies) and nothing under it was published by
+  # sync_skills.py, so the root-exists test took the real-check branch and
+  # `gate_manifest.py --tier check` exited 1 on an unmodified main checkout.
+  # The SKIP decision now keys on whether at least one ADR-cited skill has
+  # a directory DIRECTLY under the root (this repo's bundle), not on whether
+  # the root exists. A root holding only foreign entries SKIPs; a root with
+  # brief-authoring/ but no scripts/check_brief.py still exits 1; a partial
+  # bundle is drift, not a skip.
   - id: skill-deploy-sync
     tier: always
     cmd:
