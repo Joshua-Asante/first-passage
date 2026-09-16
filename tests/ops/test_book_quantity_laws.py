@@ -3,7 +3,7 @@ from fractions import Fraction
 
 import pytest
 
-import book_policy as policy
+import c1_rail.book_policy as policy
 from c1_signal_daemon.book_protocol import Mode
 
 

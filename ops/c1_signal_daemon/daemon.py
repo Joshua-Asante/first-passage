@@ -15,11 +15,16 @@ from pathlib import Path
 # Standalone-run bootstrap (mirror c1_rail_http_server).
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _DAEMON_DIR = Path(__file__).resolve().parent
-for _p in (str(_REPO_ROOT / "ops"), str(_DAEMON_DIR), str(_REPO_ROOT)):
+for _p in (str(_REPO_ROOT / "ops"), str(_DAEMON_DIR),
+           str(_REPO_ROOT / "ops" / "c1_rail"), str(_REPO_ROOT / "core"),
+           str(_REPO_ROOT)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
 from c1_signal_daemon.evaluate_loop import EvaluateLoop  # noqa: E402
+# Import-closed and image-validated, but deliberately absent from config/CLI
+# construction until actual-close evidence and live-route acceptance exist.
+from c1_signal_daemon.book_evaluate_loop import FourLegEvaluateLoop  # noqa: E402,F401
 from c1_signal_daemon.http_status import serve_health  # noqa: E402
 from c1_signal_daemon.listener_client import ListenerClient  # noqa: E402
 from c1_signal_daemon.m1_stage1 import M1Coordinator  # noqa: E402

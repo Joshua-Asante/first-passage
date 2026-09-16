@@ -221,6 +221,21 @@ def test_docker_failure_emits_every_result(shell, tmp_path, target, expected, fa
               for key in expected]
     assert lines[:-1] == wanted, result.stdout + result.stderr
     assert result.returncode == 1, result.stdout + result.stderr
+    if failure == "runtime":
+        for image, key, directory in (("listener", "L2", "c1_rail"),
+                                      ("daemon", "D2", "c1_signal_daemon")):
+            if target not in (image, "all"):
+                continue
+            dockerfile = (ROOT / "deploy" / directory / "Dockerfile").read_text()
+            copied = []
+            for line in dockerfile.replace("\\\n", " ").splitlines():
+                if line.startswith("COPY "):
+                    tokens = line.split()[1:]
+                    destination = tokens[-1].removeprefix("./").rstrip("/")
+                    copied.extend("/app/" + destination + "/" + Path(src).name
+                                  for src in tokens[:-1])
+            expected_files = (logs / f"{key}_expected.txt").read_text().splitlines()
+            assert sorted(expected_files) == sorted(copied)
     if failure == "post_copy" and target != "daemon":
         assert "injected Docker failure: cp" in (logs / "L5b.post.err").read_text(
             encoding="utf-8",

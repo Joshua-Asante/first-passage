@@ -73,6 +73,14 @@ An added or removed historical transaction also requires reconciliation; unchang
 IDs alone do not establish an unchanged history.
 This does not weaken TB-S1's duplicate/out-of-order settlement refusal.
 
+The verifier re-derives machine-readable cash and balance claims from the bound
+original reports; internally consistent package totals alone are insufficient.
+For the first close after B7, the owner requires a retained parseable E3 cash
+report matching the authenticated seal, with explicit frozen report timezone and
+ending equity reconciled to the sealed equity. Absent that baseline, the first
+close refuses; a new submission cannot establish its own historical baseline.
+An opaque E3 statement remains insufficient for machine-readable continuity.
+
 Record the displayed report timezone and retain both raw and normalized timestamps.
 Reject ambiguous or nonexistent local times unless the source resolves the offset.
 Account-wide evidence includes all instruments and manual activity, not only book
@@ -142,7 +150,12 @@ repository and evidence files.
 
 The runtime issues a short-lived, one-use challenge bound to account, owner boot
 epoch, current halt generation, proposed session/predecessor, contract/calendar/
-policy digests and evidence-package digest. The operator signs that exact envelope.
+policy digests and evidence-package digest. After reviewing that challenge, the operator
+adds the actual `operator_signed_utc` and signs the complete returned envelope.
+The evidence package never contains a predicted signing time. The owner verifies
+the signature over every field and matches the issued challenge after removing
+only that added timestamp; issue <= signing <= receipt < expiry. The signed
+envelope, signature and key id are retained with the immutable acceptance event.
 Approved challenge lifetime is 300 seconds from server issue time (a new protocol
 choice, not an existing runtime setting or a claim about source freshness).
 For a current-session submission, `target_session_id` identifies the next session
@@ -183,10 +196,20 @@ activation/resume and qualified reconciliation gates.
 Never overwrite accepted evidence or feed an old corrected session through the
 normal forward-only settlement path. A changed prior record invalidates dependent
 settlements, modes and unused activation/resume approvals and halts new risk.
-Preserve both versions and the dependency chain. Resolution needs reviewed
+Preserve both versions, their declared original source bytes and the dependency chain.
+A correction observation has its own versioned record digest, so the exact revised
+package may subsequently be accepted under a fresh challenge after reconciliation.
+A previously superseded package can likewise be reused only after its retained
+bytes and current acceptance invariants are verified. Resolution needs reviewed
 reconciliation and separate resumption; it does not rewrite historical actions.
 A restore begins halted and must reconcile its durable chain and challenge state
 before accepting another close. No second account writer is permitted.
+
+Detected history corrections in signed submission use that same durable
+invalidation path, retaining the observation and original source bytes before
+notifying the halt owner. If the refusal cannot identify the earliest affected
+close, quarantine starts at B7 and requires separately reviewed reseal/recovery.
+Notification failure cannot roll back quarantine; restore cannot clear it.
 
 ## Required acceptance traces
 
@@ -215,3 +238,11 @@ protocol through the real durable account owner before accepting any close.
 Actual account inception/complete-history and close-update evidence remain required;
 today's sample reports do not discharge them. A reviewed contract is not a qualified
 producer, and a qualified producer is not deployment approval.
+
+### Implementation status — 2026-09-15
+
+The owner-side protocol above is implemented in `ops/c1_rail/book_settlement.py` with
+`ops/c1_rail/ed25519_verify.py`; see the
+[owner component record](../notes/2026-09-15-account-close-owner-component.md) for the exact
+refusal set, tests and remaining qualification. This status line changes no
+requirement of this contract.

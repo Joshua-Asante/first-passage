@@ -1,0 +1,169 @@
+# Account-close durable owner component
+
+Fourth component of the approved #395 split, following calendar #396, evidence
+#398 and pure calculation #399. This component serializes acceptance and retains
+its evidence; the calculator alone only proposes a close.
+
+## Current review repair plan
+
+Coordinator owns combined acceptance across the component stack. Starting owner
+revision: `524fac1`. The source-to-calculation repair in #399 must reach this
+owner's signed submission path; component tests alone do not establish acceptance.
+
+- [x] Reproduce deletion/edit of authority rotation events and naive restore
+  clocks through real SQLite restart/read paths. Bind all audit events in the
+  history digest, updating the anchor atomically with every event; refuse old
+  store formats unchanged rather than blessing unauthenticated prior events.
+- [x] Reproduce an accepted empty source followed by correction, and preserve
+  its exact bytes during invalidation, reviewed resolution and restart.
+- [x] Reproduce malformed canonical package/envelope values and out-of-range
+  B7 numbers. Refuse caller data before storage mutation or policy conversion;
+  durable corruption must continue to raise `SettlementError`.
+- [x] Restore the historical enrollment provenance without changing enrollment;
+  align version guidance and test the affected owner/component suites.
+- [x] Integrate repaired upstream components, verify source-backed calculations
+  and halt-required refusals through signed submission, and independently review
+  the combined change before publishing. Actual venue qualification stays open.
+
+### Source-derived verification and B7 handoff
+
+The calculator reparses the bound cash and balance reports, derives their
+inventory and economics, and compares them with the package claims. Historical
+catch-up compares the current dashboard with the full-history ending balance;
+the accepted peak still ratchets only through the proposed historical close.
+Publication must precede the dependent captures.
+
+`bootstrap_b7(..., cash_history_bytes=..., report_timezone=...)` can retain the
+original full-history cash CSV named by the seal's E3 evidence. Its bytes must
+match the authenticated seal's E3 digest, every row must belong to the account
+and precede the effective close, and its reconciled ending balance must equal
+the sealed equity. Duplicate transactions, unknown/adjustment rows and unlinked
+costs refuse. The peak remains the sealed dashboard-derived value.
+
+The report timezone is explicit bootstrap metadata, frozen under the history
+digest alongside the seal binding. Subsequent packages must use that timezone;
+neither inventory nor timezone is inferred from a fresh first-close package.
+The owner rechecks the original bytes on reads/restart and re-derives the initial
+inventory for first-close verification. This adds no query-completeness claim:
+E3's inception-through-capture coverage remains the seal's evidence obligation.
+
+An opaque statement or absent original E3 CSV cannot provide this machine-readable
+baseline. B7 may still seat without the optional report, but a first subsequent
+close then refuses `predecessor_inventory_required`. A separately reviewed fresh
+bootstrap is required; there is no operation to attach or bless a replacement
+baseline after seating. Actual E3 format/timezone qualification remains open.
+
+### Durable quarantine for detected history corrections
+
+A signed submission reporting changed prior inventory, transaction revisions or
+a changed report timezone is retained as a correction observation with its source
+bytes, signed envelope and signature. In the same transaction the owner invalidates
+the chain and voids unused challenges. Since these refusal values do not establish
+the earliest affected close, the boundary is conservatively the B7 head; a
+separately reviewed reseal/recovery is required. Restore reconciliation cannot
+make the prior close available again. Ordinary invalid input still refuses without
+advancing the accepted chain; acceptance and invalidation are distinct outcomes.
+
+Halt notifications run after the SQLite transaction commits and closes. A failed
+notification cannot roll back retained evidence or reopen the quarantined chain.
+
+## Signing without a dependency cycle
+
+1. Assemble the evidence package (`account_close_package/v3`). It contains capture
+   times and attestations, but no predicted operator signing time.
+2. The owner issues `settlement_challenge/v2`, bound to the package digest and the
+   current account, boot, generation, scope, sessions and policy/calendar digests.
+3. On the operator device, review the package and challenge. Immediately before
+   signing, call `settlement_signing.signing_envelope(challenge, signed_at=...)`
+   with the current timezone-aware time. It adds `operator_signed_utc` without
+   changing the issued challenge. Sign the canonical bytes of the entire result
+   with the enrolled Ed25519 private key.
+4. Submit that signed envelope unchanged with signature, key id, package and
+   original source bytes. The owner checks the signature over every field, then
+   matches the issued challenge after removing only `operator_signed_utc`.
+5. The owner checks `issue <= signing <= receipt < expiry`; the pure verifier
+   checks `capture <= issue` and the other evidence chronology. Acceptance retains
+   the full signed envelope, signature and key id in the history-bound event.
+
+Example on the operator device (the private key is already provisioned and stays
+outside the repository/runtime):
+
+```python
+import json
+from datetime import datetime, timezone
+from settlement_signing import signing_envelope
+
+reply = signing_envelope(challenge, signed_at=datetime.now(timezone.utc))
+message = json.dumps(reply, sort_keys=True, separators=(",", ":"),
+                     ensure_ascii=False, allow_nan=False).encode("utf-8")
+signature = private_key.sign(message)
+# Pass reply as submit(envelope=reply, signature=signature, ...).
+```
+
+Signing time remains operator-attested, not a trusted external clock. Clock
+uncertainty refuses. No changes to the 300-second challenge or 30-minute source
+freshness limits, signature authority, protection policy or activation gates.
+
+## Corrections keep their source bytes
+
+`record_revision(session_id=..., revised_package=..., sources=..., now=...)`
+requires the correction record's `account_id` and `session_id`, a nonempty source
+manifest, and exactly those original bytes. Every source binds `file`, `sha256`
+and `account_id`; normal complete revised packages retain their richer source
+metadata. Missing, mismatched, duplicated or undeclared sources refuse before
+state changes. Timestamps supplied to the owner must be aware.
+
+A correction is evidence that an accepted record is wrong, not an accepted
+replacement close. It may contain contradictory economics or partial diagnostic
+evidence; it cannot advance the close chain. The owner atomically retains it and
+its sources, invalidates dependent closes, voids unused challenges and requests
+a halt. This also supports a B7 correction record, whose resolution still needs
+a separate reseal workflow.
+
+Revision observations use a `settlement_revision/v1` wrapper containing the
+exact revised package and source manifest. This gives the observation its own
+digest without colliding with later acceptance of that same corrected package.
+Previously superseded identical packages are reused only after verifying retained
+content; each new acceptance still needs a fresh signature and current checks.
+
+Every chain read verifies original and revised source bytes, including after
+resolution moves the affected closes to the superseded archive and after restart.
+The shared history digest covers revisions and all audit events, including
+reconciliation, signed acceptance, authority rotation and restore. Each event
+updates the anchor in its existing transaction. Reconciliation does not erase
+either version or grant resumption. Corrections retain exact bytes, including
+empty files that were previously accepted; they cannot silently discard them.
+
+## B7 boundary
+
+The effective close must be exactly 17:00 ET on the named weekday. `valid_until`
+must equal 18:00 ET that day, or Sunday 18:00 ET after Friday. Derive this in the
+ET timezone before converting to UTC: DST weekends can span 48 or 50 elapsed
+hours. The existing ordering requires every capture and seal at or after the
+close, at or before receipt, with receipt strictly before reopen.
+
+## Versioning and acceptance limits
+
+Store schema is v4; older stores refuse unchanged pending a reviewed migration.
+Packages v1/v2 and challenge v1 are not silently upgraded. Reassemble fresh
+packages and issue fresh challenges. Retained history is never rewritten to
+manufacture compliance with the stronger protocol.
+
+Synthetic tests cover actual Ed25519 signing, delayed construction/issue/signing,
+tampering, replay, concurrent submissions, source retention, invalidation,
+resolution, restart, and B7 weekday/DST boundaries. This is code-level evidence.
+Actual report filter semantics, historical close equity, and live admission
+qualification remain owed. No deployment or activation is authorized here.
+
+## Current review evidence
+
+The combined operations suite passed **2,165 tests, 15 skipped**, with two upstream
+seaborn warnings. After the final correction-priority change, all **258 affected
+calculator, assembler and owner tests passed**. Required commit gates passed.
+
+Independent review accepted calendar, ingestion, calculation and owner repairs.
+Review additionally reproduced a historical deletion hidden by row counts and a
+halt callback rolling back quarantine; both regressions now pass. The owner's
+independent restart/callback reproduction confirms the quarantined close remains
+unavailable and original correction bytes remain retained. Hosted CI is tracked
+on the component PRs; these results do not establish live source qualification.

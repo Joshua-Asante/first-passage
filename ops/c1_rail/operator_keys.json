@@ -1,0 +1,17 @@
+{
+  "schema": "operator_signing_keys/v1",
+  "note": "Enrolled operator PUBLIC keys for the attended settlement contract. Public keys only; the private key never leaves the operator's device and is never stored in this repository, the daemon or any evidence file. Rows are appended, never edited; revoke by appending a row with revoked_utc.",
+  "keys": [
+    {
+      "key_id": "1f75cea0c36941f8964d393490b6886bcbcdb010b4bc67dd45e925d1a04604aa",
+      "algorithm": "ed25519",
+      "scopes": ["submit_account_close", "record_only"],
+      "account_binding": "BOUND_AT_RUNTIME",
+      "enrolled_by": "operator",
+      "enrolled_utc": "2026-09-15T12:05:00Z",
+      "instruction": "confirm (public key hex read from the operator's terminal and confirmed in chat, 2026-09-15)",
+      "record": "docs/notes/2026-09-15-packet1-step5-settlement-owner.md",
+      "revoked_utc": null
+    }
+  ]
+}

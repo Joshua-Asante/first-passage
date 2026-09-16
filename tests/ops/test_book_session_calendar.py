@@ -10,11 +10,11 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from book_session_calendar import (
+from c1_rail.book_session_calendar import (
     CalendarError, SessionDecision, load_closure_overlay, load_ratifications,
     load_ratified_calendar, load_session_calendar,
 )
-from book_sizing_context import BookSession, SettledClose, size_book_request
+from c1_rail.book_sizing_context import BookSession, SettledClose, size_book_request
 from test_tradeify_sizing_integration import POLICY, inputs
 
 REPO = Path(__file__).resolve().parents[2]
@@ -267,7 +267,8 @@ def test_permitted_session_binds_identity_window_and_digest():
     assert decision.refusal is None
     assert decision.session == BookSession(
         "tradeify-account-day:2026-09-15", "tradeify-account-day:2026-09-14",
-        et(2026, 9, 14, 18), et(2026, 9, 15, 15, 45), et(2026, 9, 15, 17), CALENDAR_SHA256)
+        et(2026, 9, 14, 18), et(2026, 9, 15, 15, 45), et(2026, 9, 15, 17), CALENDAR_SHA256,
+        et(2026, 9, 15, 15, 55), et(2026, 9, 15, 16))
     assert decision.session.opens_at.tzinfo is timezone.utc   # UTC instants; ET mapping verified at load
 
 

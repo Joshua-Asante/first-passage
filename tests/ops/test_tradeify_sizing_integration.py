@@ -5,10 +5,10 @@ from fractions import Fraction
 
 import pytest
 
-from book_policy import BOOK_LEGS, candidate_book_protection_policy
+from c1_rail.book_policy import BOOK_LEGS, candidate_book_protection_policy
 from c1_sizing_host_reference import C1SizingHostReference
 from c1_signal_daemon.book_protocol import Mode
-from book_sizing_context import (
+from c1_rail.book_sizing_context import (
     BookAccountContext, BookExposure, BookSession, BookSizingBinding,
     BookSizingRequest, SettledClose,
 )
@@ -54,7 +54,7 @@ def decide(host, request, context, binding, **kwargs):
 def test_verified_fingerprints_feed_host_and_operation_capacity(host):
     """Synthetic artifact owners, real serializer/verifier/host/reducer chain."""
     from pathlib import Path
-    from book_capacity import CapacityState, Event, Fill, Reserve, Terminal, apply_event, project_capacity
+    from c1_rail.book_capacity import CapacityState, Event, Fill, Reserve, Terminal, apply_event, project_capacity
     from policy_fingerprint import (
         REQUIRED_COMPONENTS, build_shared_manifest, canonical_config_bytes,
         sha256_bytes, verify_shared_manifest,
@@ -100,7 +100,7 @@ def test_verified_fingerprints_feed_host_and_operation_capacity(host):
 
 
 def test_capacity_projection_preserves_evidence_and_blocks_real_host(host):
-    from book_capacity import CapacityState, Event, Reserve, apply_event, project_capacity
+    from c1_rail.book_capacity import CapacityState, Event, Reserve, apply_event, project_capacity
 
     request, context, binding = inputs()
     state = CapacityState(context.account_id, context.owner_epoch)
@@ -117,7 +117,7 @@ def test_capacity_projection_preserves_evidence_and_blocks_real_host(host):
 
 
 def test_capacity_projection_does_not_erase_existing_obligations(host):
-    from book_capacity import CapacityState, project_capacity
+    from c1_rail.book_capacity import CapacityState, project_capacity
 
     request, context, binding = inputs()
     context = replace(context, blocks=("transition",), pending_operation_ids=("existing",))
@@ -127,7 +127,7 @@ def test_capacity_projection_does_not_erase_existing_obligations(host):
 
 
 def test_empty_capacity_projection_reaches_shared_sizing_laws(host):
-    from book_capacity import CapacityState, project_capacity
+    from c1_rail.book_capacity import CapacityState, project_capacity
 
     request, context, binding = inputs()
     projected = project_capacity(CapacityState(context.account_id, context.owner_epoch), context)
@@ -373,7 +373,7 @@ def test_fresh_host_rejects_mismatched_restored_context(tmp_path, field, value):
 
 
 def transition_fixture():
-    from book_capacity import CapacityState, Event, Reserve, Fill, Terminal, apply_event
+    from c1_rail.book_capacity import CapacityState, Event, Reserve, Fill, Terminal, apply_event
 
     state = CapacityState("synthetic-account", "boot-2")
     facts = (Reserve("orb-base", "orb_mnq_v7", "SYNTHETIC-MNQ", 1),
@@ -386,7 +386,7 @@ def transition_fixture():
 
 
 def test_transition_blocks_until_terminal_and_never_resizes_carried_position(host):
-    from book_capacity import (Event, Terminal, apply_event, exposures,
+    from c1_rail.book_capacity import (Event, Terminal, apply_event, exposures,
                                ProtectionTransition, project_transition)
     state = transition_fixture()
     request, context, binding = inputs()
@@ -419,7 +419,7 @@ def test_transition_blocks_until_terminal_and_never_resizes_carried_position(hos
     {"operation_ids": ("unknown",)}, {"operation_ids": ("orb-add", "orb-add")},
     {"mode": Mode.NORMAL}])
 def test_transition_invalid_binding_fails_closed(changes):
-    from book_capacity import ProtectionTransition, project_transition
+    from c1_rail.book_capacity import ProtectionTransition, project_transition
     state = transition_fixture()
     _, context, _ = inputs()
     transition = ProtectionTransition(state.account_id, state.owner_epoch, context.session_id,
@@ -430,7 +430,7 @@ def test_transition_invalid_binding_fails_closed(changes):
 
 @pytest.mark.parametrize("terminal_status", ["filled", "cancelled", "rejected"])
 def test_transition_fill_race_retains_carried_quantity_and_unknown_blocks(terminal_status):
-    from book_capacity import (Event, Fill, Terminal, apply_event, exposures,
+    from c1_rail.book_capacity import (Event, Fill, Terminal, apply_event, exposures,
                                ProtectionTransition, project_transition)
     state = transition_fixture()
     _, context, _ = inputs()
@@ -452,7 +452,7 @@ def test_transition_fill_race_retains_carried_quantity_and_unknown_blocks(termin
 
 
 def test_transition_requires_every_captured_add_to_be_terminal():
-    from book_capacity import (Event, Reserve, Terminal, apply_event,
+    from c1_rail.book_capacity import (Event, Reserve, Terminal, apply_event,
                                ProtectionTransition, project_transition)
     state = transition_fixture()
     _, context, _ = inputs()

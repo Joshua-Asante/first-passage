@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from book_capacity import (
+from c1_rail.book_capacity import (
     CapacityState, Event, Reserve, Fill, Terminal, Reduction, Quiescence,
     CompleteTakeover, apply_event, exposures, used_micro,
 )

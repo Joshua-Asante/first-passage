@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 import copy
 from datetime import datetime
 
-from book_policy import leg as leg_spec
+from c1_rail.book_policy import leg as leg_spec
 from book_protocol import Bracket
 
 from .broker import BAR, STALENESS_WINDOW, Clock
