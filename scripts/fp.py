@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import nullcontext
+import importlib.util
 from datetime import datetime, timezone
 import json
 import os
@@ -131,44 +133,60 @@ def main(argv: list[str] | None = None) -> int:
         parser.error('--workers applies only to pytest commands')
     root = Path(__file__).resolve().parents[1]
     try:
-        selection = options.env if options.env is not None else os.environ.get("FP_OPS_ENV")
-        environment = resolve_environment(root, selection)
-        python, child_env, report = prepare(root, environment)
-        if options.command == "doctor":
-            print(f"Checkout: {root}\nEnvironment: {environment}\nPython: {report['python']} "
-                  f"({report['version']})\nLocked packages matched: {report['locked_packages']}\n"
-                  f"Optional signing dependency: {report['signing']}")
-            return 0
-        commands = {
-            "python": [],
-            "test": ["-m", "pytest", "tests/"],
-            "test-ops": ["-m", "pytest", "tests/ops/"],
-            "check": ["scripts/gate_manifest.py", "--tier", "check"],
-        }
-        command = [str(python), *commands[options.command], *options.args]
-        if not (pytest_task or options.command == 'check'):
-            return subprocess.call(command, cwd=root, env=child_env)
-        identity = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:12]
-        output = root / '.cache' / 'fp-verification' / identity
-        output.parent.mkdir(parents=True, exist_ok=True)
-        metadata = output.with_suffix('.environment.json')
-        report['workers'] = options.workers
-        report['locked_requirements'] = locked_requirements(root / 'requirements-ops.lock')
-        metadata.write_text(json.dumps(report, indent=2), encoding='utf-8')
-        if pytest_task:
-            if options.workers:
-                command += ['-n', str(options.workers), '--dist=loadscope']
-            elif options.workers == 0:
-                command += ['-n', '0']
-            if not any(a in ('--junitxml', '--junit-xml') or a.startswith(('--junitxml=', '--junit-xml=')) for a in options.args):
-                command += ['--junitxml=' + str(output / 'junit.xml')]
-        with tempfile.TemporaryDirectory(prefix='fp-pytest-') as scratch:
-            if pytest_task and not any(a == '--basetemp' or a.startswith('--basetemp=') for a in options.args):
-                command += ['--basetemp=' + str(Path(scratch) / 'pytest')]
-            return subprocess.call([str(python), '-I', str(root / 'scripts/record_verification.py'),
-                                    '--repo', str(root), '--output', str(output),
-                                    '--allow-ignored-output', '--metadata', str(metadata), '--', *command],
-                                   cwd=root, env=child_env)
+        record = None
+        if pytest_task or options.command == 'check':
+            spec = importlib.util.spec_from_file_location('fp_recorder', root / 'scripts/record_verification.py')
+            recorder = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(recorder)
+            identity = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:12]
+            output = root / '.cache' / 'fp-verification' / identity
+            record = recorder.RunRecord(root, output, [options.command, *options.args], allow_ignored=True)
+        with record if record is not None else nullcontext():
+            if record is not None:
+                record.begin()
+            selection = options.env if options.env is not None else os.environ.get("FP_OPS_ENV")
+            environment = resolve_environment(root, selection)
+            python, child_env, report = prepare(root, environment)
+            if options.command == "doctor":
+                print(f"Checkout: {root}\nEnvironment: {environment}\nPython: {report['python']} "
+                      f"({report['version']})\nLocked packages matched: {report['locked_packages']}\n"
+                      f"Optional signing dependency: {report['signing']}")
+                return 0
+            commands = {
+                "python": [],
+                "test": ["-m", "pytest", "tests/"],
+                "test-ops": ["-m", "pytest", "tests/ops/"],
+                "check": ["scripts/gate_manifest.py", "--tier", "check"],
+            }
+            command = [str(python), *commands[options.command], *options.args]
+            if record is None:
+                return subprocess.call(command, cwd=root, env=child_env)
+            report['workers'] = options.workers
+            report['locked_requirements'] = locked_requirements(root / 'requirements-ops.lock')
+            record.data['metadata'] = report
+            reports = []
+            if pytest_task:
+                if options.workers is not None:
+                    command += ['-n', str(options.workers)]
+                    if options.workers:
+                        command += ['--dist=loadscope']
+                destination = None
+                for index, argument in enumerate(options.args):
+                    if argument in ('--junitxml', '--junit-xml'):
+                        if index + 1 == len(options.args):
+                            raise ValueError('JUnit destination is missing')
+                        destination = options.args[index + 1]
+                    elif argument.startswith(('--junitxml=', '--junit-xml=')):
+                        destination = argument.split('=', 1)[1]
+                if destination is None:
+                    destination = str(output / 'junit.xml')
+                    command += ['--junitxml=' + destination]
+                reports = [(root / destination).resolve()]
+            with tempfile.TemporaryDirectory(prefix='fp-pytest-') as scratch:
+                if pytest_task and not any(a == '--basetemp' or a.startswith('--basetemp=') for a in options.args):
+                    command += ['--basetemp=' + str(Path(scratch) / 'pytest')]
+                record.execute(command, env=child_env, reports=reports)
+        return record.data['verification_exit_code']
     except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
         print(f"fp: {exc}", file=sys.stderr)
         return 2

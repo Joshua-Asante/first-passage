@@ -13,9 +13,12 @@ Omit `-Build` to reuse the local image. Add `-Workers 2` to opt into the already
 installed pytest-xdist runner (0/default is serial; maximum 8; `loadscope`
 distribution). Measure the same selection before choosing a worker count.
 Use `-TestPath @('tests/ops/test_book_takeover_phases.py')`
-to select tests. The wrapper locates per-user Docker Desktop even when the
-current shell has an older PATH, temporarily exposes its credential helper,
-and restores PATH when it finishes. Start Docker Desktop before running it.
+to select tests. The PowerShell entry point delegates to the standard-library
+`scripts/docker_verification.py` runner, which locates per-user Docker Desktop
+even with an older PATH and exposes its credential helper only to child processes.
+Start Docker Desktop before running it. Tests use the cached local image; the
+runner does not use Docker Build Cloud, Scout, hosted runners or paid services.
+Only explicit `-Build` requests build/pull dependencies.
 
 The build context contains only the Dockerfile and two dependency files. Tests
 run with networking disabled and source mounted read-only. Temporary SQLite
@@ -33,8 +36,19 @@ not an exact reproduction of GitHub's `ubuntu-latest` runner.
 hashes, source fingerprints before/after, lockfile hash, command, image/runtime
 metadata, timestamps, process exit code, JUnit counts and artifact hashes.
 `stdout.txt`, `stderr.txt`, `junit.xml` and `coverage.json` retain raw results.
-Exit zero is accepted only if the command succeeds, output capture completes,
-and the source stays stable. Do not edit, stage or commit during a recorded run.
+Records are reserved before Docker preflight and atomically finalized. Setup
+failures are `not_started`; only `completed` is acceptance. Exit zero additionally
+requires complete output, valid fresh JUnit, stable source and confirmed cleanup.
+Do not edit, stage or commit during a recorded run.
+
+Each container gets a unique run label; the test container ID is retained in
+`container.cid`. On completion, failure or handled interruption, the runner checks
+ownership before removing exact IDs and asks Docker to confirm their absence.
+It can recover by label when creation's response/CID was lost. Cleanup failure is
+recorded and cannot pass. A hard kill cannot run cleanup: its last `running` record
+remains incomplete and may require removing the matching owned container manually.
+`setup.log` and `setup_commands` retain preflight, creation and cleanup evidence.
+These records never authorize removing containers belonging to another run.
 Ignored files are outside the source fingerprint; these tests must not rely on
 ignored data. The recorder does not snapshot external services or secrets.
 

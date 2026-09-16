@@ -76,6 +76,28 @@ def test_workers_are_opt_in_and_recorded(checkout, ops_env):
     assert '--dist=loadscope' in record['command']
 
 
+def test_setup_failure_has_not_started_record(checkout):
+    result = launch(checkout, '--env', str(checkout / 'missing'), 'test', '-q')
+    assert result.returncode != 0
+    records = list((checkout / '.cache/fp-verification').glob('*/record.json'))
+    assert len(records) == 1
+    record = json.loads(records[0].read_text())
+    assert record['status'] == 'not_started' and record['exit_code'] is None
+    assert record['verification_exit_code'] != 0 and record['error']
+
+
+def test_custom_junit_is_preserved_and_retained(checkout, ops_env, tmp_path):
+    (checkout / 'test_custom.py').write_text('def test_ok():\n    assert True\n')
+    report = tmp_path / 'custom report.xml'
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest',
+                    'test_custom.py', '--junitxml', str(report), '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    saved = next((checkout / '.cache/fp-verification').glob('*/record.json'))
+    record = json.loads(saved.read_text())
+    assert record['test_summary']['passed'] == 1
+    assert (saved.parent / record['junit'][0]['file']).read_bytes() == report.read_bytes()
+
+
 def launch(root, *args, env=None):
     process_env = os.environ.copy()
     process_env.pop("FP_OPS_ENV", None)

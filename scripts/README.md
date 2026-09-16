@@ -60,12 +60,24 @@ remain visible and are retained alongside `record.json`. The record identifies
 the exact command, interpreter, locked versions, commit, dirty diff, hashes of
 tracked/nonignored untracked files, before/after source state, duration and exit
 status. Pytest adds `junit.xml` with counts, failures and skip reasons. An explicit
-user JUnit destination is preserved; that report is not copied into the default
-evidence directory. Gate results remain in the full stdout/stderr logs.
+user JUnit destination is preserved and its bytes are also retained in the evidence
+directory. Expected reports must exist, be refreshed by the run, parse correctly,
+and have counts consistent with testcase outcomes. `test_summary` contains collected,
+passed, failed, error and skipped counts; report errors prevent acceptance.
+Gate results remain in the full stdout/stderr logs and do not require JUnit.
+
+Schema version 2 reserves `record.json` before environment checks, then atomically
+replaces it as the run advances through `not_started`, `running`, and a final
+`completed`, `failed`, or `interrupted` state. A setup failure stays `not_started`
+with its error and nonzero verification result. A hard kill can leave `running`
+with a null result; that is incomplete evidence. A missing bootstrap interpreter
+or unwritable evidence directory cannot produce a record and fails visibly.
 
 The printed record path is the evidence to cite. Child failure codes are retained;
 a successful child with source drift returns 3, and incomplete output capture
-returns 4. Pipe draining stops three seconds after the direct child exits if a
+returns 4. Invalid expected reports return 5, failed Docker cleanup returns 6,
+and interruption returns 130. Only `completed` with verification exit zero is
+acceptance. Pipe draining stops three seconds after the direct child exits if a
 descendant retains its handles; the record then rejects acceptance. The recorder
 does not kill unrelated/background descendants. Keep files, index and HEAD stable
 while checking. Ignored inputs and external services are not fingerprinted;

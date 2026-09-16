@@ -7,6 +7,8 @@ import importlib.util
 import io
 import os
 import signal
+import time
+import pytest
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'scripts' / 'record_verification.py'
 
@@ -134,3 +136,110 @@ def test_inherited_pipe_does_not_block_record_creation(tmp_path):
     record = json.loads((output / 'record.json').read_text())
     assert record['exit_code'] == 0 and not record['capture_complete']
     assert record['capture_errors']
+
+
+def test_running_record_exists_before_child_work(tmp_path):
+    repo = make_repo(tmp_path)
+    output = tmp_path / 'live-record'
+    result = run(repo, output, 'import json; from pathlib import Path; '
+                 f'r=json.loads(Path({str(output / "record.json")!r}).read_text()); '
+                 'assert r["status"] == "running"; assert r["verification_exit_code"] is None')
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads((output / 'record.json').read_text())['status'] == 'completed'
+
+
+@pytest.mark.parametrize('content,accepted', [
+    (None, False), ('broken XML', False),
+    ('<testsuite tests="3" failures="0" errors="0" skipped="0"><testcase name="a"/></testsuite>', False),
+    ('<testsuites><testsuite tests="2" failures="0" errors="0" skipped="1"><testcase name="a"/><testcase name="b"><skipped message="private input absent"/></testcase></testsuite></testsuites>', True),
+    ('<testsuites><testsuite tests="2" failures="0" errors="0" skipped="1"><testsuite tests="2" failures="0" errors="0" skipped="1"><testcase name="a"/><testcase name="b"><skipped message="private input absent"/></testcase></testsuite></testsuite></testsuites>', True),
+    ('<testsuite tests="1" failures="1" errors="0" skipped="0"><testcase name="a"><failure/></testcase></testsuite>', False),
+])
+def test_expected_report_is_retained_and_validated(tmp_path, content, accepted):
+    repo = make_repo(tmp_path)
+    output = tmp_path / 'report-run'
+    report = tmp_path / 'custom.xml'
+    code = ('pass' if content is None else
+            f'from pathlib import Path; Path({str(report)!r}).write_text({content!r})')
+    result = subprocess.run([sys.executable, str(SCRIPT), '--repo', str(repo),
+                             '--output', str(output), '--junit-report', str(report),
+                             '--', sys.executable, '-c', code], capture_output=True, text=True)
+    record = json.loads((output / 'record.json').read_text())
+    assert (result.returncode == 0) == accepted
+    assert record['exit_code'] == 0
+    if accepted:
+        assert record['test_summary'] == dict(collected=2, passed=1, failed=0, errors=0, skipped=1)
+        assert (output / record['junit'][0]['file']).read_text() == content
+    else:
+        assert record['report_errors'] and record['status'] == 'failed'
+
+
+def test_stale_report_cannot_satisfy_success(tmp_path):
+    repo = make_repo(tmp_path)
+    report = tmp_path / 'old.xml'
+    report.write_text('<testsuite tests="0" failures="0" errors="0" skipped="0"/>')
+    output = tmp_path / 'stale'
+    result = subprocess.run([sys.executable, str(SCRIPT), '--repo', str(repo),
+                             '--output', str(output), '--junit-report', str(report),
+                             '--', sys.executable, '-c', 'pass'], capture_output=True, text=True)
+    record = json.loads((output / 'record.json').read_text())
+    assert result.returncode != 0 and record['report_errors']
+
+
+def test_interruption_and_atomic_finalization(tmp_path, monkeypatch):
+    spec = importlib.util.spec_from_file_location('record_lifecycle', SCRIPT)
+    recorder = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(recorder)
+    assert hasattr(recorder, 'RunRecord'), 'shared durable lifecycle is missing'
+    repo = make_repo(tmp_path)
+    output = tmp_path / 'interrupted'
+    with recorder.RunRecord(repo, output, ['requested']) as record:
+        record.begin()
+        raise KeyboardInterrupt
+    saved = json.loads((output / 'record.json').read_text())
+    assert saved['status'] == 'interrupted' and saved['verification_exit_code'] == 130
+    before = (output / 'record.json').read_bytes()
+    monkeypatch.setattr(recorder.os, 'replace', lambda *args: (_ for _ in ()).throw(OSError('replace failed')))
+    record.data['status'] = 'completed'
+    with pytest.raises(OSError):
+        record.persist()
+    assert (output / 'record.json').read_bytes() == before
+
+
+def test_hard_kill_leaves_running_record_not_success(tmp_path):
+    repo = make_repo(tmp_path)
+    output = tmp_path / 'killed'
+    pid_file = tmp_path / 'child.pid'
+    code = ('import os,time; from pathlib import Path; '
+            f'Path({str(pid_file)!r}).write_text(str(os.getpid())); time.sleep(60)')
+    process = subprocess.Popen([sys.executable, str(SCRIPT), '--repo', str(repo),
+                                '--output', str(output), '--', sys.executable, '-c', code],
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        deadline = time.monotonic() + 15
+        while not pid_file.exists() and time.monotonic() < deadline:
+            time.sleep(0.05)
+        assert pid_file.exists()
+        process.kill()
+        process.wait(timeout=5)
+        record = json.loads((output / 'record.json').read_text())
+        assert record['status'] == 'running' and record['verification_exit_code'] is None
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait(timeout=5)
+        if pid_file.exists():
+            try:
+                os.kill(int(pid_file.read_text()), signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+
+
+def test_initial_snapshot_failure_is_recorded(tmp_path):
+    repo = tmp_path / 'not-a-repository'
+    repo.mkdir()
+    output = tmp_path / 'snapshot-error'
+    result = run(repo, output, 'pass')
+    record = json.loads((output / 'record.json').read_text())
+    assert result.returncode != 0 and record['status'] == 'not_started'
+    assert record['before'] is None and record['error']
