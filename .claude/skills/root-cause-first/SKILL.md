@@ -1,6 +1,6 @@
 ---
 name: root-cause-first
-description: Use at the moment a fix is about to be written or reviewed — "fix this", "make the test pass", "green the CI", "it's flaky, add a retry", "just guard it", "wrap it in try/except", "widen the parser", a diff that adds a None-check, default, retry, broad except or looser schema, or a hook/daemon/script that "handles" an error by exiting 0 — and whenever the first visible error is a TypeError, None, KeyError, schema or parse error, which is a symptom until the upstream mechanism is named. Bans the band-aid moves until the root cause is stated in one sentence, prescribes the backward call-chain trace and the first-unintended-write hunt, and requires a ROOT CAUSE / FIX / VERIFICATION block with a regression test that reproduces the original failure (or, for an unmodifiable external source, captured evidence plus a consumer-side test). Encodes the repo's designed fail-open doctrines (risk-reduction exits on the rail, report-only hooks) so the ban never contradicts them. Gate layered on code-defect-debugging, which owns reproduction and boundary logging; sibling of verify-source and fable-method's INTENT line. Changes no strategy parameters, allocations, dd_protection constants, or MC calibration.
+description: Use at the moment a fix is about to be written or reviewed — "fix this", "make the test pass", "green the CI", "it's flaky, add a retry", "just guard it", "wrap it in try/except", "widen the parser", a diff that adds a None-check, default, retry, broad except or looser schema, or a hook/daemon/script that "handles" an error by exiting 0 — and whenever the first visible error is a TypeError, None, KeyError, schema or parse error, which is a symptom until the upstream mechanism is named. Bans the band-aid moves until the root cause is stated in one sentence, prescribes the backward call-chain trace and the first-unintended-write hunt, and requires a ROOT CAUSE / FIX / VERIFICATION block with before/after evidence in the strongest form the artifact admits (a regression test that reproduces the original failure for repository code; captured evidence plus a consumer-side test for an unmodifiable external source; a checker's failing-then-clean run for a non-code artifact). Encodes the repo's designed fail-open doctrines (risk-reduction exits on the rail, report-only hooks) so the ban never contradicts them. Gate layered on code-defect-debugging, which owns reproduction and boundary logging; sibling of verify-source and fable-method's INTENT line. Changes no strategy parameters, allocations, dd_protection constants, or MC calibration.
 ---
 
 # root-cause-first — name the mechanism before you touch the code
@@ -136,15 +136,19 @@ a failure into success is a band-aid whatever the comment above it says.
    over a downstream contract; never make a contract more permissive unless the observed payload
    is proven intended in the final design. An architectural concern found on the way goes to a
    Notice log or ADR candidate, not into the fix.
-7. **Verify against the original failure.** For a fix that lands in repository code: a
-   regression test that reproduces the original symptom, fails on the pre-fix code and passes
-   after. For a defect in an unmodifiable external source (the TradingView JPY case,
-   `code-defect-debugging` §7): no repository test can reproduce the upstream symptom, so the
-   verification is the captured failing evidence — the offending input and the observed wrong
-   output, pinned where the consumer-side rule is recorded — plus a consumer-side test that fails
-   when the rule is absent (`code-defect-debugging` Phase 4 item 7). Then the surrounding gates
-   (fable-method Step 5b); then the `TWINS:` sweep, extended per M-24 to independent
-   re-encodings that share no identifier with the fixed site.
+7. **Verify against the original failure.** One rule for every artifact step 1 admits: evidence
+   that the original symptom reproduces *before* the fix and is absent *after* it, in the
+   strongest form the artifact admits — never a synthetic check that would also pass on the
+   pre-fix state. The form follows from where the defect lives, not from a list of cases:
+
+   | Defect lives in | Strongest form the artifact admits |
+   |---|---|
+   | Repository code (Python, shell) | A regression test that reproduces the original symptom, fails on the pre-fix code and passes after. |
+   | An unmodifiable external source (the TradingView JPY case, `code-defect-debugging` §7) | No repository test can reproduce the upstream symptom: the captured failing evidence — the offending input and the observed wrong output, pinned where the consumer-side rule is recorded — plus a consumer-side test that fails when the rule is absent (`code-defect-debugging` Phase 4 item 7). |
+   | A repository artifact that is not code — a doc a gate reads, a manifest, a hook payload, a ledger row | The checker that consumes the artifact, run before (flagging the defect) and after (clean), both outputs captured. Where no checker consumes it: the before/after excerpt of the artifact beside the reader it misled, plus the gate that now covers it if one was added. A fix with neither is a claim, not a verification. |
+
+   Then the surrounding gates (fable-method Step 5b); then the `TWINS:` sweep, extended per
+   M-24 to independent re-encodings that share no identifier with the fixed site.
 8. **Defense after the cause, never instead of it.** With the mechanism fixed, layered validation
    at the boundaries the bad value crossed is welcome. Its failure mode is the owning path's
    documented policy, not a blanket rule. On a fail-closed path the added layer fails closed —
@@ -165,13 +169,13 @@ In the fix report and the PR description, beside fable-method's `INTENT:` and `T
 ```
 ROOT CAUSE: <one mechanism — input or state, site, operation, consequence>
 FIX: <what changed, where, at which layer; the band-aids rejected and why>
-VERIFICATION: <regression test node that reproduced the symptom; gates run; remaining risk>
+VERIFICATION: <before/after evidence in step 7's form for the artifact — test node, captured evidence, or checker run; gates run; remaining risk>
 ```
 
 A fix report without the first line is a symptom fix by definition. A `VERIFICATION:` line that
-names neither a test failing on the pre-fix code nor, for an external-source defect, the
-captured evidence and the consumer-side test, is verification theater (fable-method failure
-mode 14).
+names no before/after evidence in the form step 7 gives for the artifact — a test failing on the
+pre-fix code, captured external evidence plus a consumer-side test, or a checker's
+failing-then-clean run — is verification theater (fable-method failure mode 14).
 
 ## Rationalizations — STOP if you think one
 
@@ -217,7 +221,7 @@ mode 14).
 | Source rule | Disposition here |
 |---|---|
 | root-cause-first banned moves (optional chaining, catch-and-continue, retry/timeout inflation, parser widening, default-on-error, unexplained fix) | Imported; JavaScript idioms mapped to their Python shapes; two repo-native rows added (pin edits, correction factors) |
-| root-cause-first seven-step workflow and `Root cause / Fix / Verification` answer shape | Imported; the shape sits beside fable-method's existing artifact lines |
+| root-cause-first seven-step workflow and `Root cause / Fix / Verification` answer shape | Imported; the shape sits beside fable-method's existing artifact lines. The upstream's regression-test-only verification is restated as a rule over artifacts (before/after evidence in the strongest form the artifact admits), because step 1 admits non-code artifacts that no test can reproduce |
 | root-cause-tracing five-step backward trace and instrumentation | Imported; `console.error` becomes a value-plus-stack capture read once |
 | defense-in-depth layered validation | Imported as step 8, with the explicit "after, never instead" ordering; the layer's failure mode follows the owning path's policy — fail closed by default, the three-part fail-open test where an owner holds one — rather than the upstream's unconditional fail-closed |
 | root-cause-finder intent chain, first-unintended-write, hidden-write audit, "do not widen the contract" | Imported; its fifteen-field output format compressed to the three-line block plus the contract's three sentences |
