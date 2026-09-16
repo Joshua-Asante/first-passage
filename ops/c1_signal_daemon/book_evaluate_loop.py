@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import threading
 
-from c1_signal_daemon.book_runtime import FourLegRuntime, LEG_ORDER
+from c1_signal_daemon.book_runtime import FourLegRuntime, LEG_ORDER, BAR_PERIOD, BAR_SLACK
 from c1_signal_daemon.feed import Bar
 
 
@@ -29,6 +29,7 @@ class FourLegEvaluateLoop:
     def step(self, *, now):
         """Poll once; return completed barrier dispatches, or ``None``."""
         with self._step_lock:
+            self.runtime.owner.check_source_silence(now=now, max_silence=2 * BAR_PERIOD + BAR_SLACK)
             self.runtime.advance_schedule(now=now)
             for bar_time in self.runtime.pending_bar_times:
                 self.runtime.expire_barrier(bar_time, now=now)

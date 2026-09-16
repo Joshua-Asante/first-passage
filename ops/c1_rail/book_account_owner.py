@@ -25,6 +25,7 @@ from .book_account_lock import AccountSerializer
 from .book_capacity import (
     CapacityState,
     CompleteTakeover,
+    RetireTakeover,
     Event as CapacityEvent,
     Fill as CapacityFill,
     Reduction,
@@ -188,6 +189,7 @@ class BrokerCommand:
     order_symbol: str
     authority: str
     generation: int
+    action: OrderIntent | BracketAmend | Cancel
     target_operation_id: str | None = None
 
 
@@ -255,6 +257,7 @@ _SCHEMA = {
                              "body TEXT NOT NULL, digest TEXT NOT NULL",
     "close_reservations": "operation_id TEXT PRIMARY KEY, allocations TEXT NOT NULL, "
                           "status TEXT NOT NULL",
+    "feed_watch": "session_id TEXT PRIMARY KEY, started_at TEXT NOT NULL",
 }
 
 _SETTLEMENT_TABLES = {
@@ -313,6 +316,13 @@ class BookAccountOwner:
                            (owner.binding["session"].session_id, raw,
                             hashlib.sha256(raw.encode("utf-8")).hexdigest()))
             else:
+                # Older offline owners have no feed clock. Migration grants no
+                # new freshness: use the bound session open as a conservative anchor.
+                if "feed_watch" not in tables and (set(_SCHEMA) - {"feed_watch"}).issubset(tables):
+                    db.execute("CREATE TABLE feed_watch (" + _SCHEMA["feed_watch"] + ")")
+                    db.execute("INSERT INTO feed_watch VALUES (?, ?)",
+                               (owner.binding["session"].session_id,
+                                owner.binding["session"].opens_at.isoformat()))
                 owner._validate_schema(db)
                 owner._settlement_attachment_state(db)
                 state = owner._state(db)
@@ -612,6 +622,8 @@ class BookAccountOwner:
                 fact = CapacityFill(**data)
             elif fact_type == "terminal":
                 fact = Terminal(**data)
+            elif fact_type == "retire_takeover":
+                fact = RetireTakeover(**data)
             elif fact_type == "reduction":
                 fact = Reduction(data["reduction_id"], data["close_request_id"],
                                  tuple(tuple(row) for row in data["allocations"]))
@@ -718,6 +730,28 @@ class BookAccountOwner:
         with self._transaction() as db:
             row = next(item for item in exposures(self._capacity(db)) if item.leg_id == leg_id)
             return row.confirmed, row.reserved
+
+    def check_source_silence(self, *, now, max_silence):
+        """Retain startup monitoring and fence total silence in session coverage."""
+        _time(now)
+        session = self.binding["session"]
+        if not session.opens_at <= now < session.closes_at:
+            return
+        with self.serializer.acquire(), self._transaction() as db:
+            if self._state(db)["authority"] == "INTERVENTION":
+                return
+            db.execute("INSERT OR IGNORE INTO feed_watch VALUES (?, ?)",
+                       (session.session_id, now.isoformat()))
+            anchor = datetime.fromisoformat(db.execute(
+                "SELECT started_at FROM feed_watch WHERE session_id=?",
+                (session.session_id,)).fetchone()[0])
+            times = [datetime.fromisoformat(row[0]) for row in db.execute(
+                "SELECT bar_time FROM barriers WHERE session_id=?", (session.session_id,))]
+            if times:
+                anchor = max(times)
+            if now > anchor + max_silence:
+                self._halt_db(db, "feed-silence:" + session.session_id + ":" + anchor.isoformat(),
+                              "feed", now)
 
     def record_partial_bar(self, leg_id, bar_time, body, *, acquired_at):
         """Durably retain one member of a four-leg barrier before returning."""
@@ -885,6 +919,12 @@ class BookAccountOwner:
         need a durable rejection to retire the intent.  Transient takeover and
         duplicate-operation responses are deliberately excluded by the runtime.
         """
+        with self.serializer.acquire(), self._transaction() as db:
+            return self._record_local_refusal_db(db, action, reason, now=now,
+                operation_id=operation_id, boundary_time=boundary_time)
+
+    def _record_local_refusal_db(self, db, action, reason, *, now,
+                                 operation_id=None, boundary_time=None):
         _time(now)
         _text(reason, "local refusal")
         if not isinstance(action, (OrderIntent, BracketAmend, Cancel)):
@@ -900,25 +940,24 @@ class BookAccountOwner:
         event = ExecutionEvent("reject", action.leg_id, boundary_time,
                                order_id=order_id, detail=reason)
         raw = _body(asdict(event))
-        with self.serializer.acquire(), self._transaction() as db:
-            previous = db.execute(
-                "SELECT body, delivered, boundary_time FROM feedback WHERE fact_id=?",
-                (fact_id,),
-            ).fetchone()
-            expected = (raw, 0, boundary_time.isoformat())
-            if previous is not None:
-                if previous[0] != raw or previous[2] != boundary_time.isoformat():
-                    self._halt_db(db, "local-refusal-conflict:" + fact_id,
-                                  "identity", now)
-                    raise AccountOwnerError("conflicting local refusal identity")
-                return () if previous[1] else (event,)
-            db.execute(
-                "INSERT INTO feedback(fact_id, body, delivered, boundary_time) "
-                "VALUES (?, ?, 0, ?)",
-                (fact_id, raw, boundary_time.isoformat()),
-            )
-            self._append_timeline(db, "feedback", fact_id, now)
-            return (event,)
+        previous = db.execute(
+            "SELECT body, delivered, boundary_time FROM feedback WHERE fact_id=?",
+            (fact_id,),
+        ).fetchone()
+        expected = (raw, 0, boundary_time.isoformat())
+        if previous is not None:
+            if previous[0] != raw or previous[2] != boundary_time.isoformat():
+                self._halt_db(db, "local-refusal-conflict:" + fact_id,
+                              "identity", now)
+                raise AccountOwnerError("conflicting local refusal identity")
+            return () if previous[1] else (event,)
+        db.execute(
+            "INSERT INTO feedback(fact_id, body, delivered, boundary_time) "
+            "VALUES (?, ?, 0, ?)",
+            (fact_id, raw, boundary_time.isoformat()),
+        )
+        self._append_timeline(db, "feedback", fact_id, now)
+        return (event,)
 
     def observable_accounting(self):
         """Stable replay comparison, excluding boot- and attempt-local UUIDs."""
@@ -1202,15 +1241,17 @@ class BookAccountOwner:
                     generation = db.execute(
                         "SELECT generation FROM operations WHERE operation_id=?",
                         (operation_id,)).fetchone()[0]
+                    refusal = None
                     if (state["permission"] != "RUNNING" or state["authority"] != "NORMAL"
                             or generation != state["generation"]
                             or not session.opens_at <= now < session.risk_add_cutoff):
-                        return DispatchResult(operation_id, 0, refusal_reason="risk_add_not_authorized")
-                    if not self.binding["as_of"] <= now < self.binding["valid_until"]:
-                        return DispatchResult(operation_id, 0,
-                                              refusal_reason="stale_or_future_account_evidence")
-                    if now - self.binding["as_of"] > self.binding["max_evidence_age"]:
-                        return DispatchResult(operation_id, 0, refusal_reason="stale_account_evidence")
+                        refusal = "risk_add_not_authorized"
+                    elif not self.binding["as_of"] <= now < self.binding["valid_until"]:
+                        refusal = "stale_or_future_account_evidence"
+                    elif now - self.binding["as_of"] > self.binding["max_evidence_age"]:
+                        refusal = "stale_account_evidence"
+                    if refusal is not None:
+                        return self._retire_takeover_db(db, action, refusal, now)
                     db.execute("UPDATE operations SET status='reserved' WHERE operation_id=?",
                                (operation_id,))
                 elif isinstance(action, OrderIntent) and action.kind in ("entry", "add"):
@@ -1271,6 +1312,7 @@ class BookAccountOwner:
                     getattr(action, "kind", type(action).__name__.lower()),
                     getattr(getattr(action, "side", None), "value", None), quantity,
                     leg(action.leg_id).order_symbol, state["authority"], state["generation"],
+                    replace(action, qty=quantity) if isinstance(action, OrderIntent) else action,
                     action.order_id if isinstance(action, Cancel) else None,
                 )
                 db.execute("INSERT INTO attempts VALUES (?, ?, 'UNKNOWN', ?, ?, NULL)",
@@ -1336,6 +1378,7 @@ class BookAccountOwner:
                 self._halt_db(db, "schedule-missing:" + session.session_id, "schedule", now)
             return ()
         actions = []
+        retired = []
         with self._thread, self._transaction() as db:
             state = self._state(db)
             if state["authority"] == "INTERVENTION":
@@ -1345,6 +1388,11 @@ class BookAccountOwner:
                          SchedulePhase.DEADLINE) and state["authority"] == "NORMAL":
                 db.execute("UPDATE owner_state SET permission='HALTED', authority='SCHEDULED_EXIT', "
                            "generation=generation+1")
+                for raw, in tuple(db.execute(
+                        "SELECT body FROM operations WHERE status='takeover_pending'")):
+                    retired.append(self._retire_takeover_db(
+                        db, self._restore_intent(raw), "risk_add_not_authorized", now))
+                capacity = self._capacity(db)
                 for operation in capacity.operations:
                     if (operation.status == "active" and operation.terminal is None
                             and operation.request.leg_id in {row.leg_id for row in BOOK_LEGS}):
@@ -1358,7 +1406,7 @@ class BookAccountOwner:
                                                       "scheduled_flatten", now)
                         if action is not None:
                             actions.append(action)
-        results = tuple(self._dispatch_locked(action, now=now) for action in actions)
+        results = tuple(retired) + tuple(self._dispatch_locked(action, now=now) for action in actions)
         if phase is SchedulePhase.DEADLINE:
             with self._thread, self._transaction() as db:
                 if self._state(db)["authority"] == "SCHEDULED_EXIT":
@@ -1422,9 +1470,38 @@ class BookAccountOwner:
                 return results, False
             return results, True
 
+    @staticmethod
+    def _restore_intent(raw):
+        from c1_signal_daemon.book_protocol import Bracket, FillTiming, Side
+        value = json.loads(raw)
+        value["side"] = Side(value["side"])
+        value["timing"] = FillTiming(value["timing"])
+        if value["bar_time"] is not None:
+            value["bar_time"] = datetime.fromisoformat(value["bar_time"])
+        if value["bracket"] is not None:
+            value["bracket"] = Bracket(**value["bracket"])
+        if value["scope_fill_ids"] is not None:
+            value["scope_fill_ids"] = tuple(value["scope_fill_ids"])
+        return OrderIntent(**value)
+
+    def _retire_takeover_db(self, db, action, reason, now):
+        identity = action.order_id
+        if db.execute("SELECT 1 FROM attempts WHERE operation_id=?", (identity,)).fetchone():
+            raise AccountOwnerError("cannot locally retire an attempted takeover")
+        operation = next(o for o in self._capacity(db).operations
+                         if o.request.operation_id == identity)
+        if operation.status == "takeover":
+            self._append_capacity(db, "retire_takeover", RetireTakeover(identity), now,
+                                  event_id="takeover-refused:" + identity)
+        else:
+            self._append_capacity(db, "terminal", Terminal(identity, "rejected", 0), now,
+                                  event_id="takeover-refused:" + identity)
+        db.execute("UPDATE operations SET status='terminal' WHERE operation_id=?", (identity,))
+        events = self._record_local_refusal_db(db, action, reason, now=now)
+        return DispatchResult(identity, 0, refusal_reason=reason, confirmed_events=events)
+
     def resume_takeover(self, *, now):
         """Advance retained controls and dispatch an admitted, unattempted takeover."""
-        from c1_signal_daemon.book_protocol import Bracket, FillTiming, Side
 
         with self.serializer.acquire():
             controls, _completed = self._advance_takeover_locked(now=now)
@@ -1437,16 +1514,7 @@ class BookAccountOwner:
             for identity, raw in rows:
                 if identity not in ready:
                     continue
-                value = json.loads(raw)
-                value["side"] = Side(value["side"])
-                value["timing"] = FillTiming(value["timing"])
-                if value["bar_time"] is not None:
-                    value["bar_time"] = datetime.fromisoformat(value["bar_time"])
-                if value["bracket"] is not None:
-                    value["bracket"] = Bracket(**value["bracket"])
-                if value["scope_fill_ids"] is not None:
-                    value["scope_fill_ids"] = tuple(value["scope_fill_ids"])
-                results.append(self._dispatch_locked(OrderIntent(**value), now=now))
+                results.append(self._dispatch_locked(self._restore_intent(raw), now=now))
             return tuple(results)
 
     def _halt_db(self, db, incident_id, reason, now):

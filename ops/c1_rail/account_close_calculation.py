@@ -111,6 +111,8 @@ def _v1_shape(c: _Ctx):
         return "package_schema"
     if set(p) != _PACKAGE_KEYS:
         return "package_keys"
+    if not isinstance(p["settlement_basis"], str):
+        return "settlement_basis"
     for key, allowed in (("equity", _EQUITY_KEYS), ("ledger", _LEDGER_KEYS), ("attestations", _ATTESTATIONS)):
         if not isinstance(p[key], dict) or set(p[key]) != allowed:
             return f"{key}_keys"

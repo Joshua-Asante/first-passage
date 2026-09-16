@@ -152,6 +152,9 @@ class FourLegRuntime:
         reason = result.refusal_reason
         if reason is None or reason in ("takeover_pending", "duplicate_operation"):
             return ()
+        if any(event.event == "reject" and event.order_id == result.operation_id
+               for event in result.confirmed_events):
+            return ()
         return self.owner.record_local_refusal(action, reason, now=now,
                                                operation_id=result.operation_id,
                                                boundary_time=boundary_time)
