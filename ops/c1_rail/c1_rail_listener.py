@@ -55,7 +55,7 @@ from c1_rail_telemetry import (
 from c1_sizing_host_reference import C1SizingHostReference, SizingDecision
 from crosstrade_payload import build_crosstrade_payload, send_to_crosstrade
 import m1_stage1_contract as m1_test
-from book_policy import BOOK_LEGS
+from c1_rail.book_policy import BOOK_LEGS
 from book_halt import BookHaltStore
 
 INSTRUMENT_SYMBOLS: dict[str, str] = {

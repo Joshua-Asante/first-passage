@@ -52,7 +52,7 @@ for _p in (str(_REPO_ROOT / "core"), str(_RAIL_DIR)):
         sys.path.insert(0, _p)
 
 from book_halt import BookHaltStore
-from book_policy import BOOK_LEGS
+from c1_rail.book_policy import BOOK_LEGS
 from c1_rail_listener import arming_expiry_reason, handle_signal  # noqa: E402
 from c1_rail_telemetry import (  # noqa: E402
     EventLedger,

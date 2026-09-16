@@ -281,7 +281,7 @@ class C1SizingHostReference:
         The pure dependency closure is packaged with the host; the listener still
         uses process_signal and cannot route book orders through this method.
         """
-        from book_sizing_context import size_book_request  # pylint: disable=import-outside-toplevel
+        from c1_rail.book_sizing_context import size_book_request  # pylint: disable=import-outside-toplevel
         return size_book_request(request, policy=policy, context=context,
                                  binding=binding, now=now)
 

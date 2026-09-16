@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 import threading
 
-from book_policy import BOOK_LEGS, is_protected
+from c1_rail.book_policy import BOOK_LEGS, is_protected
 from c1_rail.book_account_owner import AccountOwnerError, BookAccountOwner
 from c1_rail.c1_rail_listener import handle_book_action
 from c1_signal_daemon.book_adapters import AdapterRegistry
