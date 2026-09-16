@@ -298,6 +298,14 @@ class BookAccountOwner:
                 db.execute("INSERT INTO owner_state VALUES (1, ?, ?, ?, 1, 'HALTED', "
                            "'INTERVENTION', 0)",
                            (owner.account, str(uuid4()), str(uuid4())))
+                attachment_body = _body({
+                    "account": owner.account, "status": "NEVER_ATTACHED",
+                })
+                db.execute(
+                    "INSERT INTO settlement_attachment VALUES (1, ?, ?)",
+                    (attachment_body,
+                     hashlib.sha256(attachment_body.encode("utf-8")).hexdigest()),
+                )
                 record = _binding_record(owner.binding)
                 raw = _body(record)
                 db.execute("INSERT INTO runtime_bindings(session_id, body, digest) VALUES (?, ?, ?)",
@@ -305,6 +313,7 @@ class BookAccountOwner:
                             hashlib.sha256(raw.encode("utf-8")).hexdigest()))
             else:
                 owner._validate_schema(db)
+                owner._settlement_attachment_state(db)
                 state = owner._state(db)
                 if state["account"] != owner.account:
                     raise AccountOwnerError("account owner mismatch")
@@ -404,6 +413,35 @@ class BookAccountOwner:
         if not set(_SCHEMA).issubset(names) or not names.issubset(set(_SCHEMA) | _SETTLEMENT_TABLES):
             raise AccountOwnerError("invalid account owner schema")
 
+    def _settlement_attachment_state(self, db):
+        rows = db.execute(
+            "SELECT singleton, body, digest FROM settlement_attachment").fetchall()
+        if len(rows) != 1:
+            raise AccountOwnerError("settlement attachment authority unavailable")
+        singleton, raw, digest = rows[0]
+        if (singleton != 1 or not isinstance(raw, str)
+                or hashlib.sha256(raw.encode("utf-8")).hexdigest() != digest):
+            raise AccountOwnerError("settlement attachment integrity failure")
+        try:
+            body = json.loads(raw)
+        except (TypeError, ValueError):
+            raise AccountOwnerError("settlement attachment integrity failure") from None
+        status = body.get("status") if isinstance(body, dict) else None
+        expected = ({"account", "status"} if status == "NEVER_ATTACHED"
+                    else {"account", "status", "attached_utc"})
+        if (status not in ("NEVER_ATTACHED", "ATTACHED") or set(body) != expected
+                or body.get("account") != self.account
+                or (status == "ATTACHED" and not isinstance(body.get("attached_utc"), str))):
+            raise AccountOwnerError("settlement attachment identity mismatch")
+        tables = {row[0] for row in db.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'")}
+        required = _SETTLEMENT_TABLES - {"sqlite_sequence"}
+        present = tables & required
+        if ((status == "ATTACHED" and present != required)
+                or (status == "NEVER_ATTACHED" and present)):
+            raise AccountOwnerError("settlement attachment/state mismatch")
+        return status
+
     @contextmanager
     def _settlement_transaction(self, *, create=False):
         active = getattr(self._settlement_local, "db", None)
@@ -459,6 +497,8 @@ class BookAccountOwner:
         if self.settlement_store is None:
             raise AccountOwnerError("settlement store is not attached")
         with self._unified_settlement_transaction() as db:
+            if self._settlement_attachment_state(db) != "ATTACHED":
+                raise AccountOwnerError("settlement verifier is not durably attached")
             state = self._state(db)
             return self.settlement_store.issue_challenge(
                 scope=scope, target_session_id=target_session_id,
@@ -472,6 +512,8 @@ class BookAccountOwner:
         if self.settlement_store is None:
             raise AccountOwnerError("settlement store is not attached")
         with self._unified_settlement_transaction() as db:
+            if self._settlement_attachment_state(db) != "ATTACHED":
+                raise AccountOwnerError("settlement verifier is not durably attached")
             state = self._state(db)
             result = self.settlement_store.submit(
                 envelope=envelope, signature=signature, key_id=key_id,
@@ -489,6 +531,8 @@ class BookAccountOwner:
         if self.settlement_store is None:
             raise AccountOwnerError("settlement store is not attached")
         with self._unified_settlement_transaction() as db:
+            if self._settlement_attachment_state(db) != "ATTACHED":
+                raise AccountOwnerError("settlement verifier is not durably attached")
             result = self.settlement_store.record_revision(
                 session_id=session_id, revised_package=revised_package,
                 sources=sources, now=now, on_halt=None)
@@ -499,14 +543,17 @@ class BookAccountOwner:
         return result
 
     def _validate_settlement_binding(self, db, now):
+        attachment_state = self._settlement_attachment_state(db)
         if self.settlement_store is None:
-            attached = db.execute(
-                "SELECT 1 FROM settlement_attachment WHERE singleton=1").fetchone()
-            if attached is not None:
+            if attachment_state == "ATTACHED":
                 self._halt_db(db, "settlement-verifier-unavailable:" + now.isoformat(),
                               "protection", now)
                 return "settlement_verifier_unavailable"
             return None
+        if attachment_state != "ATTACHED":
+            self._halt_db(db, "settlement-attachment-invalid:" + now.isoformat(),
+                          "protection", now)
+            return "settlement_attachment_invalid"
         result = self.settlement_store.settled_close_from(db)
         if not isinstance(result, tuple):
             self._halt_db(db, "settlement-unavailable:" + now.isoformat(),
@@ -520,6 +567,10 @@ class BookAccountOwner:
         return None
 
     def _state(self, db):
+        # Attachment state is part of the account authority, not an optional
+        # settlement-side cache. Every account read/mutation validates it so
+        # corruption after boot cannot wait for a caller to reopen the verifier.
+        self._settlement_attachment_state(db)
         rows = db.execute("SELECT * FROM owner_state").fetchall()
         if len(rows) != 1:
             raise AccountOwnerError("invalid account owner state")

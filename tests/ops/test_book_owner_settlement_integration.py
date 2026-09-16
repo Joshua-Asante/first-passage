@@ -97,7 +97,8 @@ def test_lost_settlement_tables_cannot_repeat_first_owner_attachment(tmp_path):
         for table in sorted(_SETTLEMENT_TABLES - {"sqlite_sequence"}):
             db.execute(f"DROP TABLE {table}")
 
-    with pytest.raises(SettlementError, match="settlement state unavailable"):
+    with pytest.raises((SettlementError, AccountOwnerError),
+                       match="settlement (state unavailable|attachment/state mismatch)"):
         owner.open_settlement(trusted_keys={KEY_ID: ["submit_account_close"]}, now=NOW)
 
 
@@ -113,6 +114,57 @@ def test_restart_cannot_bypass_attached_settlement_verifier(tmp_path):
 
     assert restarted.permission == "HALTED"
     assert restarted.authority == "INTERVENTION"
+
+
+def test_missing_attachment_record_is_not_never_attached(tmp_path):
+    owner, _store = integrated(tmp_path)
+    with sqlite3.connect(owner.path) as db:
+        db.execute("DELETE FROM settlement_attachment")
+
+    with pytest.raises(AccountOwnerError, match="attachment authority unavailable"):
+        BookAccountOwner.boot(
+            owner.path, "synthetic-account", binding=binding(),
+            synthetic_broker=SyntheticBroker([]),
+        )
+
+
+@pytest.mark.parametrize("status", ["NEVER_ATTACHED", "ATTACHED"])
+def test_attachment_state_must_match_settlement_tables(tmp_path, status):
+    owner = BookAccountOwner.boot(
+        tmp_path / "owner.sqlite", "synthetic-account", binding=binding(),
+        synthetic_broker=SyntheticBroker([]),
+    )
+    if status == "ATTACHED":
+        body = json.dumps(
+            {"account": "synthetic-account", "status": status,
+             "attached_utc": NOW.isoformat()},
+            sort_keys=True, separators=(",", ":"))
+    else:
+        owner.open_settlement(
+            trusted_keys={KEY_ID: ["submit_account_close"]}, now=NOW)
+        body = json.dumps(
+            {"account": "synthetic-account", "status": status},
+            sort_keys=True, separators=(",", ":"))
+    with sqlite3.connect(owner.path) as db:
+        db.execute(
+            "UPDATE settlement_attachment SET body=?, digest=? WHERE singleton=1",
+            (body, sha256_hex(body.encode())),
+        )
+
+    with pytest.raises(AccountOwnerError, match="attachment/state mismatch"):
+        BookAccountOwner.boot(
+            owner.path, "synthetic-account", binding=binding(),
+            synthetic_broker=SyntheticBroker([]),
+        )
+
+
+def test_attachment_corruption_after_boot_blocks_activation(tmp_path):
+    owner, _store = integrated(tmp_path)
+    with sqlite3.connect(owner.path) as db:
+        db.execute("UPDATE settlement_attachment SET digest='broken'")
+
+    with pytest.raises(AccountOwnerError, match="attachment integrity failure"):
+        owner.activate_synthetic(now=datetime(2026, 9, 15, 14, tzinfo=timezone.utc))
 
 
 def test_signed_synthetic_close_flows_through_unified_owner_into_listener_sizing(tmp_path):

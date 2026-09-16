@@ -402,23 +402,28 @@ class SettlementStore:
                     raise SettlementError("settlement attachment authority unavailable")
                 attachment_rows = db.execute(
                     "SELECT singleton, body, digest FROM settlement_attachment").fetchall()
-                if len(attachment_rows) > 1:
+                if len(attachment_rows) != 1:
                     raise SettlementError("invalid settlement attachment authority")
-                if attachment_rows:
-                    singleton, attachment_body, attachment_digest = attachment_rows[0]
-                    if (singleton != 1
-                            or sha256_hex(attachment_body.encode("utf-8")) != attachment_digest):
-                        raise SettlementError("settlement attachment integrity failure")
-                    try:
-                        attachment = json.loads(attachment_body)
-                    except (TypeError, ValueError):
-                        raise SettlementError("settlement attachment integrity failure") from None
-                    if (set(attachment) != {"account", "attached_utc"}
-                            or attachment["account"] != account
-                            or not isinstance(attachment["attached_utc"], str)):
-                        raise SettlementError("settlement attachment identity mismatch")
+                singleton, attachment_body, attachment_digest = attachment_rows[0]
+                if (singleton != 1
+                        or sha256_hex(attachment_body.encode("utf-8")) != attachment_digest):
+                    raise SettlementError("settlement attachment integrity failure")
+                try:
+                    attachment = json.loads(attachment_body)
+                except (TypeError, ValueError):
+                    raise SettlementError("settlement attachment integrity failure") from None
+                status = attachment.get("status") if isinstance(attachment, dict) else None
+                expected = ({"account", "status"} if status == "NEVER_ATTACHED"
+                            else {"account", "status", "attached_utc"})
+                if (status not in ("NEVER_ATTACHED", "ATTACHED")
+                        or set(attachment) != expected or attachment["account"] != account
+                        or (status == "ATTACHED"
+                            and not isinstance(attachment.get("attached_utc"), str))):
+                    raise SettlementError("settlement attachment identity mismatch")
             if "state" not in tables:
-                if (existed and not tables) or (tables and not unified) or attachment is not None:
+                if ((existed and not tables) or (tables and not unified)
+                        or (attachment is not None
+                            and attachment["status"] != "NEVER_ATTACHED")):
                     raise SettlementError("settlement state unavailable")
                 cls._create(db)
                 values = {"version": STORE_VERSION, "account": account, "boot_id": store.boot_id, "calendar_digest": calendar_digest,
@@ -430,14 +435,15 @@ class SettlementStore:
                 store._event(db, "boot", None, {"boot_id": store.boot_id, "fresh": True}, now)
                 if unified:
                     attachment_body = json.dumps(
-                        {"account": account, "attached_utc": _iso(now)},
+                        {"account": account, "status": "ATTACHED",
+                         "attached_utc": _iso(now)},
                         sort_keys=True, separators=(",", ":"))
                     db.execute(
-                        "INSERT INTO settlement_attachment VALUES (1, ?, ?)",
+                        "UPDATE settlement_attachment SET body=?, digest=? WHERE singleton=1",
                         (attachment_body, sha256_hex(attachment_body.encode("utf-8"))),
                     )
             else:
-                if unified and attachment is None:
+                if unified and attachment["status"] != "ATTACHED":
                     raise SettlementError("settlement attachment authority unavailable")
                 old = store._state(db, check_boot=False)
                 store._chain(db)
