@@ -43,16 +43,21 @@ Thumbs.db
 .idea/
 *.swp
 
-# Cursor blast-radius edit ledger (per-conversation; ephemeral)
+# Retired Cursor blast-radius edit ledger — MIGRATION ARMOR, deliberately retained.
+# The hooks were deleted 2026-09-15, but git does not remove ignored files, so any clone
+# that ran them still has untracked per-conversation state here. Dropping this rule would
+# surface `?? .cursor/` on those clones and can block clean-worktree checks. Same treatment
+# as the telemetry.jsonl rule below. Safe to delete once no clone carries the directory.
 .cursor/hooks/state/
 
 # Hookify local rules — per-clone agent guardrails (claude-plugins-official
 # hookify plugin). `.local.md` = machine-local by convention; not shared via git.
 .claude/*.local.md
 
-# Orphan Cursor user-rule audit log (SOE Labs / SOPHIE "Audit Everything"
-# rule wrote root telemetry.jsonl; rode into 4441c72 as a side effect).
-# Removed from tracking 2026-07-15; ignore in case a local agent regenerates it.
+# Orphan agent user-rule audit log (SOE Labs / SOPHIE "Audit Everything" rule
+# wrote root telemetry.jsonl; rode into 4441c72 as a side effect). Removed from
+# tracking 2026-07-15. The Cursor rule that wrote it retired 2026-09-15; the
+# ignore is retained deliberately, in case any local agent regenerates the file.
 telemetry.jsonl
 
 # Codex agent-harness files are local-only by default. The explicitly allowlisted

@@ -10,7 +10,7 @@ prior work.
 | [`programs/`](programs/) | Dated program/slate/plan/ruling/review leftovers and GSUB inventories — new files of this class land here, not at root |
 | [`closures/`](closures/) | Hot closures |
 | [`pre-registration/`](pre-registration/) | Frozen contracts |
-| [`handoffs/`](handoffs/) | CC / Cursor handoff briefs |
+| [`handoffs/`](handoffs/) | Coordinator / worker handoff briefs |
 | [`rnd-pipeline/`](rnd-pipeline/) | Discovery-campaign scoping briefs |
 
 Older closures: [`../ltm/README.md`](../ltm/README.md) + `git log`.

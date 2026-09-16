@@ -127,7 +127,7 @@ def archived_headings(root: Path) -> set[str]:
     ``ARCHIVE_REL``.
 
     Read from the working tree, not git history: ``docs/ltm/`` is excluded
-    from search-index tools (``.rgignore`` / ``.cursorindexingignore``) but
+    from search-index tools (``.rgignore``) but
     is still an ordinary tracked file on disk, so a plain read is the
     reliable path here — the same reason the live SESSIONS.md itself is
     read from disk rather than via git.

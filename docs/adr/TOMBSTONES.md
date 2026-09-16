@@ -5,6 +5,53 @@ retain their original archive retrieval instructions. A tombstone records histor
 not renewed permission; the linked current owner governs present work.
 
 
+<a id="2026-09-15-cursor-agent-retirement"></a>
+
+## 2026-09-15 Cursor agent retirement (RATIFIED — operator, in-session)
+
+Operator instruction 2026-09-15: *"cursor is being retired altogether, we will no longer be
+incorporating cursor agents. it will be just claude and codex."* Already ruled for one campaign
+as D-B6 (2026-09-11) and preceded by the 2026-09-10 removal from recurring spend
+([`d16`](../pursuits/d16-cursor-subscription.md)). Current owner of the surviving rules:
+[`2026-07-14-cc-cursor-surface-allocation.md`](2026-07-14-cc-cursor-surface-allocation.md),
+Revision 2026-09-15 (§Decision, §8 disposition table, §9 operator actions).
+
+**No ADR file was removed.** `2026-08-14-cc-cursor-autonomous-loop.md` was superseded in full and
+converted to the standard hot-stub/cold-body form; its body is live at
+`docs/ltm/adr/2026-08-14-cc-cursor-autonomous-loop.md`, not deleted. The rows below are the
+**non-ADR** artifacts removed by the sweep. This tombstone records history, not renewed
+permission: retrieval does not revive the Cursor lane.
+
+All blobs are reachable from commit `242992b741dc44485b491aab45075ab44e1b34ef`
+(`git show <blob>` retrieves any row directly).
+
+| Removed path | Disposition / current owner | Immutable blob |
+|---|---|---|
+| `.claude/skills/cursor-fleet/SKILL.md` | Deleted at operator instruction. Orchestration loop restated surface-agnostically in the owning ADR's §Decision; local-only gate owned by `task-routing`; dated friction ledger remains in `docs/SESSIONS.md` and the programme audits. Residual map: [`a6`](../pursuits/a6-cursor-fleet-worker-capability.md) R1–R6. | `56f728a47d39c9a3eb172858df85f7f6ed679775` |
+| `.cursor/hooks/before_shell.py` | **Migrated, not dropped** — the only hook whose discipline had no surviving owner. Ported to [`scripts/guard_shell_command.py`](../../scripts/guard_shell_command.py) with tests; wiring is an operator election (CLAUDE.md §Continuous improvement item 6). | `01021d30db9063344ed3ce617dc6e9bcecb1bca7` |
+| `.cursor/hooks/after_file_edit.py` | Adapter remapping Cursor's payload into `scripts/lock_event_hook.py` + `scripts/sync_skills_hook.py`, both still registered in `.claude/settings.json`. Adapter-only; no discipline lost. | `5854d9d5465d85d67945095ed43610196e5faaa4` |
+| `.cursor/hooks/blast_radius_stop.py` | Mirror of the Claude-side `warn-blast-radius` rule, which is the primary and survives. | `720a749e46ca5c24d65d4743149179771cfd4f68` |
+| `.cursor/hooks/blast_radius_ledger.py` | Ledger helper for the above; state dir was gitignored. | `2faa02b48a66255f96e39d16694ecd875ac09e0c` |
+| `.cursor/hooks/record_edit.py` | Ledger writer for the above. | `0af7a25080ffe58457a32ddd466a27723697c87a` |
+| `.cursor/hooks.json` | Cursor hook registration only. | `041d4c17ef5af5a6e035c07d209ab323934ee2b6` |
+| `.cursor/environment.json` | Cursor cloud provisioning (pip install + `scripts/install_hooks.sh`). No surviving surface reads it; Codex/Claude provisioning is not repo-owned. | `56e1b66a1c8777d5181437f8fc0e0e3fafa48d52` |
+| `.cursor/settings.json` | Cursor editor plugin toggle. | `f9d35f82874f76e7d31e566b4316d9c5718fc6b9` |
+| `.cursor/rules/agent-conduct.mdc` | Derived mirror; owner `CLAUDE.md` + `docs/operational_rules.md`. | `8080e1617a4f4f1026a6ab66ae9e8996761bc095` |
+| `.cursor/rules/clean-code.mdc` | Derived mirror; generic style guidance. | `525af59832007da0ac30d73ce559010e9f79ec55` |
+| `.cursor/rules/code-style-consistency.mdc` | Derived mirror; generic style guidance. | `0ae753b4c2f8ae2fecd33080fe482bb28e27c7b5` |
+| `.cursor/rules/git-workflow.mdc` | Derived mirror; the `--no-verify` bar's owner is `CLAUDE.md` §Vendor-data integrity gate, and its enforcement moved to `scripts/guard_shell_command.py`. | `5e66fd18506377e1eec7aa936c497ec7ffdc7a76` |
+| `.cursor/rules/locked-params.mdc` | Derived mirror; owner `CLAUDE.md` §Protection / §Strategy Reference and `core/dd_protection.py`. | `1e355ec9320109957a248307680f4ea5c1d62cfb` |
+| `.cursor/rules/search-ltm.mdc` | Derived mirror; owner `CLAUDE.md` §Architecture ("an empty `rg` result is not evidence of no prior work") and `.rgignore`. | `208759224db2754e6c54c7138d9a83702c5f881f` |
+| `.cursor/rules/session-discipline.mdc` | Derived mirror. Every clause named its own surviving owner; the `repo_retrieve.py` **`ASSISTIVE-ONLY` suspension** it carried is owned by [`Q-XMEM-1`](../briefs/Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) §Limb B and the [Limb-B RESULTS](../../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md), and is enforced in code at `scripts/check_advisor_dedup.py`. **The suspension stays in force**; only the mirror is gone. | `37bf9293e0ef07fbc7247ab558096727a5554a91` |
+| `.cursor/rules/session-log.mdc` | Derived mirror; owner `docs/SESSIONS.md` living header + `docs/operational_rules.md` §7. | `41a98a50fffaa7c49bd0149de20e411c6fc465df` |
+| `.cursorignore` | Cursor AI access-block list (venv/cache noise). No surviving surface reads it. | `d94bcdfab156f62fd57ba24a7afc4984fc0278eb` |
+| `.cursorindexingignore` | Its three exclusion patterns (`lab/archive/`, `docs/ltm/`, `core/strategies/_archive/`) are identical to `.rgignore`'s, which survives as sole owner; the two files' header comments differed, so they were **not** byte-identical — an earlier wording here and in the commit message said they were, corrected 2026-09-15. Nothing load-bearing was unique to this file. | `ef99cf49aacf63c502c349eda52d7c12669db8cb` |
+| `scripts/dispatch_cursor.ps1` | Cursor CLI wrapper. `scripts/dispatch_claude.ps1` survives; `agent_handoff.py --provider` is now `claude`-only. Its `-Slug`/`-Copy`/`-ForceCommands` options retired with it (`--copy` remains on the runner). | `bbc81e04a55cd2f1c068b5975ae34305f27fa3ca` |
+| `scripts/test_dispatch_cursor.ps1` | PowerShell wrapper check for the above. | `f4b3884965713286951c947077ecfef3f381f386` |
+| `.github/workflows/notify-cursor.yml` | Auto-`@cursor` ping, already `if: false` + `workflow_dispatch`-only since the 2026-09-04 addendum. Its revert trigger ("operator asks to turn the ping back on") is **explicitly retired, not carried** — unreachable once the lane is gone. Replaced by a test pinning the file's absence. | `3852cfd023bacf4e3a8d344e0e716e64a7e127a4` |
+| `tests/scripts/test_after_file_edit_cursor_hook.py` | Tested the deleted adapter; retired with it, not skipped. It asserted only that `scripts/lock_event_hook.py` and `scripts/sync_skills_hook.py` exist on the path the adapter computed — not their behaviour. **Correction 2026-09-15:** an earlier wording implied those hooks keep dedicated test coverage elsewhere; `lock_event_hook.py` has none (only structural assertions in `test_check_boundaries.py` and `test_repo_map_scripts_table.py`). Retiring this file therefore removes a path-existence check and no behavioural coverage. | `7adcad48906bfe7a6d5916e97c943412e1e925ea` |
+
+
 ## 2026-09-08 ox-alpha lens retirement
 
 Operator direction 2026-09-08: delete the ox-alpha ADR; the stealth ox-alpha

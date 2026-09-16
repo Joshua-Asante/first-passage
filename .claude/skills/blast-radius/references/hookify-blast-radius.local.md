@@ -26,4 +26,6 @@ Report-first. Fix clear silent restatements and stale one-line pointers owed
 by this change. Do **not** restate canonical values (Rule 7). Skip if the turn
 was read-only or only touched the blast-radius skill/hooks themselves.
 
-Cursor mirrors this via `.cursor/hooks/blast_radius_stop.py` (stop follow-up).
+This rule is the sole carrier of the stop nudge. Cursor mirrored it via
+`.cursor/hooks/blast_radius_stop.py` until the 2026-09-15 Cursor retirement removed
+that harness; the discipline was never Cursor's to own.

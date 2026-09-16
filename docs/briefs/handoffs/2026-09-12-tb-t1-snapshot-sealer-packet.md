@@ -3,7 +3,7 @@
 **Type:** cc_handoff
 **Date:** 2026-09-12
 **Parent session:** Tradeify portfolio coordinator, dispatch 1 ([record](../../notes/2026-09-12-tradeify-portfolio-coordinator-dispatch-1.md))
-**Spawn target:** Codex local (D-B6: Cursor is not a lane)
+**Spawn target:** Codex local (D-B6: Cursor is not a lane; generalised repo-wide by the 2026-09-15 Cursor retirement)
 **Repo:** `Joshua-Asante/first-passage` — primary checkout `C:\Users\joshu\multi_firm_operations`
 **Parent packet:** [Track B umbrella](2026-09-10-track-b-qualify-accepted-book-umbrella.md) TB-T1 stub (claim manifest row TB-T1)
 **Governing contract:** [account-snapshot seal contract](../../spec/2026-09-12-tradeify-account-snapshot-seal-contract.md) (PROPOSED; the packet implements it verbatim)

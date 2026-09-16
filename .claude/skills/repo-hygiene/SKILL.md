@@ -7,7 +7,7 @@ description: Use when pruning merged branches, cleaning git worktrees, clearing 
 
 ## Why this exists
 
-Hygiene sessions on 2026-07-06, 2026-07-11, and 2026-07-12 repeatedly rediscovered the same debris: squash-merged locals invisible to `git branch --merged`, orphan dirs under `.claude/worktrees/`, Cursor file locks on Windows, and a primary tree left on a spent topic branch after merge. This skill is the playbook; `scripts/repo_hygiene.py` is the mechanical scout.
+Hygiene sessions on 2026-07-06, 2026-07-11, and 2026-07-12 repeatedly rediscovered the same debris: squash-merged locals invisible to `git branch --merged`, orphan dirs under `.claude/worktrees/`, editor/agent file locks on Windows, and a primary tree left on a spent topic branch after merge. This skill is the playbook; `scripts/repo_hygiene.py` is the mechanical scout.
 
 ## Hard rules
 
@@ -38,7 +38,7 @@ Read: primary vs `origin/main` lag, linked worktrees, orphan dirs, merged-local 
 | Local branch, PR merged, not checked out | Candidate for `git branch -d` after confirm |
 | Local branch, "keep" previously requested | Leave; re-confirm with new evidence before deleting |
 | Linked worktree, branch merged + clean | Candidate for `git worktree remove` then `git branch -d` |
-| Orphan dir under `.claude/worktrees/` | Close Cursor handles → remove dir; `git worktree prune` |
+| Orphan dir under `.claude/worktrees/` | Close any editor/agent handles → remove dir; `git worktree prune` |
 | Primary on spent topic, behind `origin/main` | Checkout/ff `main` first; then prune |
 
 ### 3. Confirm + delete (one at a time)
