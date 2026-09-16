@@ -214,3 +214,19 @@ def test_ready_takeover_rechecks_evidence_freshness(tmp_path, expired):
     account.observe(BrokerFact.terminal("entry:orb_mnq_v7", "cancelled", 0, late), now=late)
     account.resume_takeover(now=late)
     assert not any(c.operation_id == aegis.order_id for c in account.synthetic_broker.commands)
+
+
+@pytest.mark.parametrize("status,cumulative", [("accepted", 1), ("filled", 1), ("cancelled", True)])
+def test_invalid_close_terminal_cannot_release_a_flatten_remainder(tmp_path, status, cumulative):
+    account, route = filled_owner(tmp_path)
+    account.dispatch(intent(), now=NOW)
+    start = SESSION.flatten_start
+    account.advance_schedule(now=start)
+    close_id = route.commands[-1].operation_id
+    account.observe(BrokerFact.fill("partial", close_id, "dj30_mym_p250", "flat", 1,
+        100, start, entry_execution_id="base-fill"), now=start)
+    account.observe(BrokerFact.terminal(close_id, status, cumulative, start), now=start)
+    account.advance_schedule(now=start + timedelta(seconds=1))
+    assert account.authority == "INTERVENTION"
+    assert len(route.commands) == 2
+    assert account.exposure("dj30_mym_p250") == (2, 0)

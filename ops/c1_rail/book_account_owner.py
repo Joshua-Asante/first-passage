@@ -1556,7 +1556,11 @@ class BookAccountOwner:
                     consumed = sum(quantity for reduction in self._capacity(db).reductions
                                    if reduction.close_request_id == fact.operation_id
                                    for _identity, quantity in reduction.allocations)
-                    if fact.cumulative_filled != consumed:
+                    allocated = sum(quantity for _identity, quantity in json.loads(close_row[0]))
+                    if (fact.status not in ("filled", "cancelled", "rejected")
+                            or type(fact.cumulative_filled) is not int
+                            or fact.cumulative_filled != consumed
+                            or (fact.status == "filled" and consumed != allocated)):
                         self._halt_db(db, "close-terminal-gap:" + fact.fact_id,
                                       "execution", now)
                         db.execute("INSERT INTO broker_facts VALUES (?, ?, NULL)",
