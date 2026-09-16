@@ -1,6 +1,6 @@
 # PR 409 bounded execution correction
 
-Status: DESIGN APPROVED by the operator in the 2026-09-16 Codex conversation. Implementation and acceptance remain outstanding.
+Status: DESIGN APPROVED by the operator in the 2026-09-16 Codex conversation. Slice A implementation and local verification are recorded in the [Slice A execution evidence](../superpowers/plans/2026-09-16-pr409-ingress-correction.md#final-slice-a-acceptance--2026-09-16). Slices B-D implementation and whole-PR acceptance remain outstanding.
 
 Integration owner: the coordinating implementer of PR 409. Individual slice completion does not establish whole-PR acceptance.
 

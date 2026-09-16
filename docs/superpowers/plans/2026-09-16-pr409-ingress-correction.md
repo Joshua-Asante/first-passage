@@ -74,7 +74,7 @@ If persistence fails, propagate the storage failure, abort the current batch/sen
 
 Do not introduce a universal bar-price tick-alignment requirement, coerce numeric strings, reject legitimate off-tick brackets, move rounding before stop-crossing evaluation, or use validation to infer protection health.
 
-- [ ] Add failing integration tests before writing validators. Representative tests using existing synthetic fixtures:
+- [x] Add failing integration tests before writing validators. Representative tests using existing synthetic fixtures:
 
 ```python
 @pytest.mark.parametrize("changes", [
@@ -108,12 +108,12 @@ def test_bad_trigger_halts_before_reservation(tmp_path, price):
 
 Import runtime_owner/inert_adapters/bars from `test_four_leg_runtime`; owner/intent from `test_book_account_owner`; import NOW from the fixture matching the case. Use the real owner, SQLite journal, and runtime rather than mocked validation success.
 
-- [ ] Run `python -m pytest tests/ops/test_book_ingress_validation.py -q -p no:cacheprovider --tb=short`. Record failures showing retained invalid partials/sends or an unfenced exception, not merely a missing proposed helper.
-- [ ] Implement the pure rules and safe owner incident transaction. Call bar validation before runtime serialization and in the loop's invalid-source-value path. Call action validation before `_body(asdict(action))` in direct dispatch.
-- [ ] Validate each raw return from both `set_mode` and `on_bar` before extending a batch, sorting with `_sort_actions`, or serializing with `_action_body`. Require a list/tuple container and validate every member; None, a generator, a scalar, or an untyped member is a protocol violation. Then validate the complete batch before `record_barrier_actions` and before dispatching any member. Persist its diagnostic if any member fails. Do not silently discard the bad action and send the remainder.
-- [ ] Add the branch-specific assertions: wrong types in timestamps/scopes/brackets never escape as an unfenced TypeError; action failure preserves prior valid input history without marking the barrier dispatched; all prior broker obligations remain retained.
-- [ ] Run the focused file and `tests/ops/test_four_leg_runtime.py tests/ops/test_book_account_owner.py tests/ops/test_pr409_owner_lifecycle.py tests/ops/test_pr409_review2.py tests/ops/test_pr409_review3.py` once the new tests pass. Investigate semantic changes rather than rewriting expectations for convenience.
-- [ ] Independently review producer -> validation -> diagnostic/fence -> reservation/send boundaries and commit only this tested deliverable.
+- [x] Run `python -m pytest tests/ops/test_book_ingress_validation.py -q -p no:cacheprovider --tb=short`. Record failures showing retained invalid partials/sends or an unfenced exception, not merely a missing proposed helper.
+- [x] Implement the pure rules and safe owner incident transaction. Call bar validation before runtime serialization and in the loop's invalid-source-value path. Call action validation before `_body(asdict(action))` in direct dispatch.
+- [x] Validate each raw return from both `set_mode` and `on_bar` before extending a batch, sorting with `_sort_actions`, or serializing with `_action_body`. Require a list/tuple container and validate every member; None, a generator, a scalar, or an untyped member is a protocol violation. Then validate the complete batch before `record_barrier_actions` and before dispatching any member. Persist its diagnostic if any member fails. Do not silently discard the bad action and send the remainder.
+- [x] Add the branch-specific assertions: wrong types in timestamps/scopes/brackets never escape as an unfenced TypeError; action failure preserves prior valid input history without marking the barrier dispatched; all prior broker obligations remain retained.
+- [x] Run the focused file and `tests/ops/test_four_leg_runtime.py tests/ops/test_book_account_owner.py tests/ops/test_pr409_owner_lifecycle.py tests/ops/test_pr409_review2.py tests/ops/test_pr409_review3.py` once the new tests pass. Investigate semantic changes rather than rewriting expectations for convenience.
+- [x] Independently review producer -> validation -> diagnostic/fence -> reservation/send boundaries and commit only this tested deliverable.
 
 ## Task 2: Failure/replay and valid-semantic compatibility are proven
 
@@ -121,22 +121,22 @@ Import runtime_owner/inert_adapters/bars from `test_four_leg_runtime`; owner/int
 
 **Dependencies:** Task 1's validator and incident interface. No new protection or resume API is introduced here.
 
-- [ ] Add malformed output tests for both `set_mode` and `on_bar`: a None container, an untyped member, an unknown leg, and a valid intent followed by an invalid bracket. Assert the validation fence happens before sorting/serialization, zero commands and reservations for the entire batch, a retained incident, and no completed dispatch marker. Include Fraction/Decimal action prices to prove no string-valued price reaches the journal/send.
-- [ ] Add a diagnostic-redelivery test using the same trusted boundary identity and a later acquisition time. Assert one incident generation increment and no send.
-- [ ] Add a storage-failure test at incident persistence: after failure, restore database availability and attempt a valid action on the same owner. Assert zero sends and explicit local suppression; do not assert a durable incident for the failed write. A fresh boot remains halted.
-- [ ] Add restart/replay after a durable invalid-input incident. Assert authority stays INTERVENTION, no invalid bar/action reaches adapters, no resend, and unresolved preexisting attempts are still present. Preserve a failed/incomplete action boundary as such rather than inventing an empty successful batch.
-- [ ] Add valid vectors for off-tick stop triggers/brackets, long/short directional rounding, trigger crossing before existing quantization, zero trail activation with positive offset, legitimate bare entry, and partial-fill quantities. Compare real emitted payloads and emulator outcomes to explicit existing expected values. Do not replace these with a validator-only PASS assertion.
-- [ ] Run `python -m pytest tests/ops/test_book_ingress_validation.py tests/ops/test_tv_broker_emulator.py tests/ops/test_four_leg_runtime.py -q -p no:cacheprovider --tb=short` and review changed failure/replay paths before committing.
+- [x] Add malformed output tests for both `set_mode` and `on_bar`: a None container, an untyped member, an unknown leg, and a valid intent followed by an invalid bracket. Assert the validation fence happens before sorting/serialization, zero commands and reservations for the entire batch, a retained incident, and no completed dispatch marker. Include Fraction/Decimal action prices to prove no string-valued price reaches the journal/send.
+- [x] Add a diagnostic-redelivery test using the same trusted boundary identity and a later acquisition time. Assert one incident generation increment and no send.
+- [x] Add a storage-failure test at incident persistence: after failure, restore database availability and attempt a valid action on the same owner. Assert zero sends and explicit local suppression; do not assert a durable incident for the failed write. A fresh boot remains halted.
+- [x] Add restart/replay after a durable invalid-input incident. Assert authority stays INTERVENTION, no invalid bar/action reaches adapters, no resend, and unresolved preexisting attempts are still present. Preserve a failed/incomplete action boundary as such rather than inventing an empty successful batch.
+- [x] Add valid vectors for off-tick stop triggers/brackets, long/short directional rounding, trigger crossing before existing quantization, zero trail activation with positive offset, legitimate bare entry, and partial-fill quantities. Compare real emitted payloads and emulator outcomes to explicit existing expected values. Do not replace these with a validator-only PASS assertion.
+- [x] Run `python -m pytest tests/ops/test_book_ingress_validation.py tests/ops/test_tv_broker_emulator.py tests/ops/test_four_leg_runtime.py -q -p no:cacheprovider --tb=short` and review changed failure/replay paths before committing.
 
 ## Task 3: Package and accept Slice A without overstating PR completion
 
 **Files:** inspect/update `deploy/c1_signal_daemon/Dockerfile` and `deploy/c1_rail/Dockerfile` only if their explicit copy sets need the new module; update the matching `LISTENER_FILES` and `DAEMON_FILES` inventories in `scripts/c1_image_validation.sh`; tests `tests/ops/test_c1_signal_daemon_image_manifest.py`, `tests/ops/test_c1_rail_image_manifest.py`, and `tests/scripts/test_c1_image_validation.py`; this plan/spec for evidence links.
 
-- [ ] Verify both image import closures include the shared validator and the runtime-validation inventories exactly match each image's COPY set. Run `python -m pytest tests/ops/test_c1_signal_daemon_image_manifest.py tests/ops/test_c1_rail_image_manifest.py tests/scripts/test_c1_image_validation.py -q -p no:cacheprovider --tb=short`; do not weaken the inventories to pass.
-- [ ] Run `python -m pytest tests/ops -q -p no:cacheprovider --tb=short` and `python scripts/gate_manifest.py --tier check`. In this Windows environment use `C:/Program Files/Python313/python.exe` and `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` if needed, recording that configuration with results.
-- [ ] Independently review the complete slice against V1-V7 and the original failing cases. Explicitly disclose that B-D remain outstanding.
+- [x] Verify both image import closures include the shared validator and the runtime-validation inventories exactly match each image's COPY set. Run `python -m pytest tests/ops/test_c1_signal_daemon_image_manifest.py tests/ops/test_c1_rail_image_manifest.py tests/scripts/test_c1_image_validation.py -q -p no:cacheprovider --tb=short`; do not weaken the inventories to pass.
+- [x] Run `python -m pytest tests/ops -q -p no:cacheprovider --tb=short` and `python scripts/gate_manifest.py --tier check`. In this Windows environment use `C:/Program Files/Python313/python.exe` and `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` if needed, recording that configuration with results.
+- [x] Independently review the complete slice against V1-V7 and the original failing cases. Explicitly disclose that B-D remain outstanding.
 - [ ] On authorized PR update, run normal commit/push hooks and check CI on the actual head. Keep production activation and deployment out of scope.
-- [ ] Record revision-bound results, skips and environment limitations. Slice A passes only if every malformed input is refused before its first forbidden effect, durable failure/restart behavior holds, and valid semantic vectors are unchanged.
+- [x] Record revision-bound results, skips and environment limitations. Slice A passes only if every malformed input is refused before its first forbidden effect, durable failure/restart behavior holds, and valid semantic vectors are unchanged.
 
 ## Next design gates
 
@@ -146,7 +146,7 @@ Before Slice B implementation, specify the durable protection-owner schema and c
 
 Integration workspace: `.worktrees/phase2-four-leg-execution`, branch
 `codex/phase2-four-leg-execution`, refreshed base/head `fc7cdc781c892207abdbfe0b7d9a4c7f046aa816`.
-All implementation evidence below applies to the uncommitted Slice A working tree.
+Historical evidence below applies to the Slice A working tree subsequently committed as `26636b8`. Final acceptance evidence follows below.
 No PR update, production activation, or deployment occurred.
 
 - Initial integration reproduction: 28 failures against the unchanged executable baseline,
@@ -184,8 +184,7 @@ emulator accepts zero and calculates a stop at the tracked extreme after activat
 The operator requested discussion before changing the contract. No validator relaxation,
 strategy parameter change, adapter change, or test-expectation rewrite has been made.
 An earlier conversational description as a floating-point offset was incorrect and was
-corrected after inspecting the actual emitted value. Slice A acceptance and commit remain
-pending this decision. Slices B-D remain entirely outstanding; this does not establish PR
+corrected after inspecting the actual emitted value. At this checkpoint, Slice A acceptance and commit were pending this decision; the operator decision and final acceptance below supersede that provisional status. Slices B-D remain entirely outstanding; this does not establish PR
 409 merge readiness or live capability.
 
 ### Operator decision â€” 2026-09-16
@@ -197,3 +196,46 @@ rejection for its zero-offset output; a separate positive-offset adapter case wi
 retain the fixed-base admission assertion. This is an authorized contract correction,
 not an adapter or strategy-parameter change. All 23 packaging tests passed after the
 Docker build-context allowlist correction.
+
+
+## Final Slice A acceptance — 2026-09-16
+
+Implementation commit: `26636b8760530f2752b6571681eeb81e7f89e665` (normal commit hooks passed).
+Final acceptance includes the follow-up test/documentation commit containing this section.
+Production modules are unchanged from `26636b8`.
+
+The operator retained zero-offset rejection. Both unchanged real-adapter outputs are now
+covered: synthetic half-range 1 produces offset 0 and is durably rejected before any
+operation, attempt or command; half-range 10 produces offset 4, preserves its bracket,
+and admits the same fixed-base quantity 1. The offset is derived from range, not absolute
+price. No rounding clamp, strategy parameter change, or validator relaxation was made.
+The broader intended strategy treatment of zero offsets remains unqualified; Slice A
+continues to reject them pending separate evidence and approval.
+
+Final verification (Windows, Python 3.13, plugin autoload disabled):
+
+- Full `tests/ops`: **2387 passed, 15 skipped, 2 warnings**, exit 0. Skips: 12 private
+  adapter/parity input cases and 3 private Striker cases; warnings are third-party plotting
+  deprecations. Output retained locally in `tmp-slice-a-ops-final.txt`.
+- Focused ingress/emulator/runtime/owner/lifecycle/review regression set: **209 passed**.
+- Synthetic ingress suite with nonexistent `FP_PORT_ROOT` and imports of `cryptography`
+  and `nacl` explicitly blocked: **68 passed**. No private/signing capability is required
+  by these new runtime regressions.
+- Image import-closure/build-context/manifest suite: **23 passed**; includes both exact
+  Docker COPY sets and runtime inventories. No packaging bytes changed after that run.
+- Repository `gate_manifest.py --tier check`: **exit 0**, with documented absent private
+  data/catalog notices. Commit hooks also check layer boundaries and Python 3.11 syntax floor;
+  execution under a Python 3.11 interpreter was not performed.
+- Independent review accepted `fc7cdc7..26636b8` plus the final two-case ORB regression.
+  Its demonstrated retained-partial defect was fixed and verified; no actionable Slice A
+  findings remain.
+
+Scoped invariant disposition: V1 is established for malformed fresh/retained bars and
+fresh adapter/direct actions; diagnostic redelivery and failure preservation exercise
+Slice A's V4/V5/V6 obligations; unchanged payload/emulator vectors exercise V7. Structural
+leg/scope checks support V3 without claiming state-dependent ownership. This does not
+establish the broader V2-V6 protection, occurrence, takeover, activation or migration
+requirements reserved to B-D.
+
+The PR-update checkbox is intentionally not executed: the operator requested local commits,
+not push/deployment. No current remote-head CI or whole-PR readiness is claimed.

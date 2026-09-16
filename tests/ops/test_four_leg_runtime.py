@@ -348,7 +348,9 @@ def test_accepted_private_runtime_identities_load_and_cross_the_durable_barrier(
     assert account.retained_barriers[0]["completed"] is True
 
 
-def test_accepted_private_orb_trigger_reaches_shared_fixed_base(tmp_path, accepted_private_ports):
+@pytest.mark.parametrize("half_range, expected_offset", [(1, 0), (10, 4)])
+def test_accepted_private_orb_trigger_reaches_shared_fixed_base(
+        tmp_path, accepted_private_ports, half_range, expected_offset):
     from c1_signal_daemon.pine_ta import ET
 
     adapter = load_book_adapters()["orb_mnq_v7"]
@@ -356,15 +358,28 @@ def test_accepted_private_orb_trigger_reaches_shared_fixed_base(tmp_path, accept
     start = datetime(2026, 9, 15, 9, 0, tzinfo=ET)
     for offset in range(0, 75, 15):
         instant = (start + timedelta(minutes=offset)).astimezone(timezone.utc)
-        actions.extend(adapter.on_bar(Bar(instant, 100, 101, 99, 100, 10)))
+        actions.extend(adapter.on_bar(Bar(instant, 100, 100 + half_range,
+                                          100 - half_range, 100, 10)))
     entries = [action for action in actions if getattr(action, "kind", None) == "entry"]
     assert entries and entries[0].qty == 1
 
+    assert entries[0].bracket.trail_offset_ticks == expected_offset
     account = owner(tmp_path, [BrokerResult("accepted")])
-    result = account.dispatch(entries[0], now=NOW)
-
-    assert result.refusal_reason is None
-    assert account.synthetic_broker.commands[0].quantity == 1
+    if expected_offset == 0:
+        # Slice A deliberately refuses a rounded-to-zero trailing distance.
+        # Keep this real producer vector; do not clamp or rewrite its payload.
+        with pytest.raises(AccountOwnerError, match="trailing_pair"):
+            account.dispatch(entries[0], now=NOW)
+        assert account.authority == "INTERVENTION"
+        assert account.incidents
+        assert account.observable_accounting()["operations"] == ()
+        assert account.unresolved_attempts == ()
+        assert account.synthetic_broker.commands == []
+    else:
+        result = account.dispatch(entries[0], now=NOW)
+        assert result.refusal_reason is None
+        assert account.synthetic_broker.commands[0].quantity == 1
+        assert account.synthetic_broker.commands[0].action.bracket == entries[0].bracket
 
 
 def test_schedule_and_feedback_are_replay_equivalent_after_same_bar_contention(tmp_path):
