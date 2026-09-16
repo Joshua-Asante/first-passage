@@ -132,5 +132,5 @@ Default after a hook nudge: **report + fix clear silent restatements and stale o
 | Surface | Path | Notes |
 |---|---|---|
 | Skill (tracked) | `.claude/skills/blast-radius/` | Auto-discovered by the Claude Code skill loader |
-| Stop nudge (tracked) | [`references/hookify-blast-radius.local.md`](references/hookify-blast-radius.local.md) | Sole carrier since 2026-09-15; the Cursor stop-hook mirror retired with that harness |
+| Stop nudge (template, tracked) | [`references/hookify-blast-radius.local.md`](references/hookify-blast-radius.local.md) | A hookify rule *template*: nothing fires from it until the per-clone copy below is installed. The automatic, always-on stop nudge retired with the Cursor harness on 2026-09-15 and has no tracked Claude-side replacement; wiring a tracked Stop hook is an operator election (CLAUDE.md §Continuous improvement item 6). Until the copy is installed, run this skill by hand after substantive edits. (Corrected 2026-09-16: an earlier row called this the "sole carrier".) |
 | Claude hookify (local) | copy `references/hookify-blast-radius.local.md` → `.claude/hookify.blast-radius.local.md` | `.local.md` is gitignored by convention — install once per clone |

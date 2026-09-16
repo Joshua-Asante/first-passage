@@ -23,11 +23,12 @@ converted to the standard hot-stub/cold-body form; its body is live at
 permission: retrieval does not revive the Cursor lane.
 
 All blobs are reachable from commit `242992b741dc44485b491aab45075ab44e1b34ef`
-(`git show <blob>` retrieves any row directly).
+(`git show <blob>` retrieves any row directly), except the `cursor-fleet` row's, which is
+reachable from `ffb813f` — `main`'s last commit before the retirement merged.
 
 | Removed path | Disposition / current owner | Immutable blob |
 |---|---|---|
-| `.claude/skills/cursor-fleet/SKILL.md` | Deleted at operator instruction. Orchestration loop restated surface-agnostically in the owning ADR's §Decision; local-only gate owned by `task-routing`; dated friction ledger remains in `docs/SESSIONS.md` and the programme audits. Residual map: [`a6`](../pursuits/a6-cursor-fleet-worker-capability.md) R1–R6. | `56f728a47d39c9a3eb172858df85f7f6ed679775` |
+| `.claude/skills/cursor-fleet/SKILL.md` | Deleted at operator instruction. Orchestration loop restated surface-agnostically in the owning ADR's §Decision; local-only gate owned by `task-routing`; dated friction ledger remains in `docs/SESSIONS.md` and the programme audits. Residual map: [`a6`](../pursuits/a6-cursor-fleet-worker-capability.md) R1–R6. **Pin corrected 2026-09-16:** the blob is the final body `main` held before the retirement merged (`ffb813f`), carrying #402's review-round-as-freeze and frozen-SHA rules; the blob first pinned, `56f728a47d39c9a3eb172858df85f7f6ed679775`, is the earlier body the retirement branch deleted and lacks them. | `c47af2217fae0bdeb6ccc3e17cea3bdd6c70fd29` |
 | `.cursor/hooks/before_shell.py` | **Migrated, not dropped** — the only hook whose discipline had no surviving owner. Ported to [`scripts/guard_shell_command.py`](../../scripts/guard_shell_command.py) with tests; wiring is an operator election (CLAUDE.md §Continuous improvement item 6). | `01021d30db9063344ed3ce617dc6e9bcecb1bca7` |
 | `.cursor/hooks/after_file_edit.py` | Adapter remapping Cursor's payload into `scripts/lock_event_hook.py` + `scripts/sync_skills_hook.py`, both still registered in `.claude/settings.json`. Adapter-only; no discipline lost. | `5854d9d5465d85d67945095ed43610196e5faaa4` |
 | `.cursor/hooks/blast_radius_stop.py` | Mirror of the Claude-side `warn-blast-radius` rule, which is the primary and survives. | `720a749e46ca5c24d65d4743149179771cfd4f68` |

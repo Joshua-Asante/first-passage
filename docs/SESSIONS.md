@@ -45,6 +45,16 @@ historical number by merge commit or branch name, never by number alone. Owner:
 ---
 
 
+## 2026-09-16a — Retirement landed and wired; #401 skills merged; ADR post-merge corrections
+
+- **Focus:** close the loop on the Cursor retirement and the #401 skill imports — record the ratified-and-wired state that `2026-09-15a`'s `Open / next` still showed as pending, and land the post-merge corrections that Codex's review of #401 surfaced on #405's content.
+- **State (corrects `2026-09-15a` `Open / next`):** the surface-allocation revision is **ratified** (ADR header `Revision: 2026-09-15 — RATIFIED`) and the shell guard is **registered** in `.claude/settings.json`; neither is pending. [first-passage#405](https://github.com/Joshua-Asante/first-passage/pull/405) merged `dc10172`; [first-passage#401](https://github.com/Joshua-Asante/first-passage/pull/401) (`work-decomposition`, `root-cause-first`) merged `b8e4034` after five Codex rounds.
+- **Judgment:** (1) #401 was stacked on #405 so its citations would resolve, and Codex reviewed the stacked diff before #405 landed — four of the five round-5 findings were #405 content. Corrected here, on the owner, rather than folded into #401; the review-timing lesson (request review on a stacked branch only after the parent lands) is recorded in memory. (2) `root-cause-first` step 7 was rewritten from an enumeration of artifact classes to one rule — before/after evidence in the strongest form the artifact admits — because step 1 admits non-code artifacts that no test reproduces.
+- **Shipped (this PR, in place and dated 2026-09-16):** [surface-allocation ADR](adr/2026-07-14-cc-cursor-surface-allocation.md) — the lightweight dispatch issue scoped as an exception to handoff-contract item 1 carrying items 2–5 and an explicit launch action; proactive dispatch authority composed with `task-routing`'s cloud GO; orchestration-clause back-pointer to `work-decomposition`; in-flight note resolved; §10 hook 2b audits the field value (the bare pattern returned six hits, four of them explanatory carriers) · [TOMBSTONES](adr/TOMBSTONES.md) — `cursor-fleet` re-pinned to `main`'s final body `c47af22` (the pinned `56f728a` predated #402) · [blast-radius](../.claude/skills/blast-radius/SKILL.md) install table no longer claims an active stop nudge.
+- **Open / next:** a tracked Claude-side Stop hook for the blast-radius nudge is an operator election (CLAUDE.md §Continuous improvement item 6), not claimed by anyone; nothing else pending from this thread.
+
+---
+
 ## 2026-09-15a — Cursor retired as a worker surface: ADR revision (not a new ADR) + surface sweep
 
 - **Focus:** Execute the operator's in-session instruction ("cursor is being retired altogether… it will be just claude and codex") as one PR: record the decision, sweep the live Cursor surfaces under the Rule 16 retention test, and leave every governance disposition `PROPOSED` for ratification. [first-passage#405](https://github.com/Joshua-Asante/first-passage/pull/405).

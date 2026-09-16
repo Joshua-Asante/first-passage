@@ -87,13 +87,38 @@ about which vendor runs the session, so all four survive the retirement unchange
   merge; `NEEDS_CONTEXT` gets one re-anchor and re-dispatch, then falls back to the coordinator
   (two bounces means the spec was not freezable and the packet was mis-routed).
 
+**Scoped exception — the lightweight dispatch issue** (2026-08-29 addendum #2, retained in shape
+by §8; scoped 2026-09-16 after post-merge review). For a small, precedented fix, a complete
+GitHub-issue body stands in place of item 1's `docs/briefs/**` brief only when it carries items
+2–5 in full: the §0 read-report-before-code requirement with the `NEEDS_CONTEXT` bounce, the §5
+forbidden moves naming the nearby locked surfaces, the test-0 vendor-bytes/secret declaration with
+its confirmed-present check, and the four-state return contract. `check_brief.py` does not run on
+an issue; its place is taken by the coordinator's own pre-dispatch read of the issue body against
+[`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md), recorded in the issue. An issue
+missing any of these is not a lightweight brief but an unfrozen spec, and test 2 keeps it with the
+coordinator. The launch action is the orchestrator opening a worker session against the issue (a
+Claude Code session pointed at it, or a Codex task created from it); an issue with no session
+opened on it dispatches nothing.
+
+**Proactive dispatch and the environment GO compose; neither removes the other** (2026-09-16
+clarification). Test 3's proactive reading — act, don't merely label — is authority over the
+*dispatch decision*: an eligible packet is dispatched without a per-task "dispatch this"
+confirmation. It is not authority over the *environment*. A worker routed to a cloud environment
+still needs [`task-routing`](../../.claude/skills/task-routing/SKILL.md)'s GO (its step 3) unless
+the operator already chose the environment for that work (its step 1); a proactive dispatch to a
+worker session on the operator's own machine needs neither.
+
 **Merge authority is the operator's, with no automated exception.** The 2026-08-14 binary
 auto-merge gate is retired with the mechanism it drove (§8). Neither a green CI run, nor a clean
 automated review, nor an adjudication verdict is merge authority.
 
 **Orchestrating more than one worker at a time.** When work decomposes into 2+ independent
 spec-freezable packets, the coordinator owns the claim manifest and every packet still clears
-tests 0–3 individually. Three rules carried enough dated failure evidence to survive the
+tests 0–3 individually. How the work is cut — the oversize tells, the six-point atomic-unit
+test, the parent manifest and its lifecycle, and the re-cut after a second `NEEDS_CONTEXT` — is
+owned by [`work-decomposition`](../../.claude/skills/work-decomposition/SKILL.md) (back-pointer
+added 2026-09-16); this clause governs what happens to the children it produces. Three rules
+carried enough dated failure evidence to survive the
 retirement of the skill that stated them:
 
 - **Disjoint file footprints.** No two packets touch the same file. `docs/SESSIONS.md`,
@@ -318,12 +343,17 @@ branch; both need a pass at merge time:
   instruction. Whichever lands second conflicts. The deletion is the operator's ruling and
   should win; #402's substance (a brief's review round is part of the freeze, and the dispatch
   pointer carries the frozen SHA) is **already carried** in §Decision's orchestration rules, so
-  nothing of it is lost by closing it against the deletion.
+  nothing of it is lost by closing it against the deletion. **Resolved 2026-09-16:** #402 had
+  merged first (`c86a0a0`, 2026-09-15); the conflict was settled at this revision's merge by
+  carrying its two rules here and deleting the skill (`a9f3a9f`). TOMBSTONES now pins the final
+  body `main` held (`c47af22…`, with #402's rules) — the `56f728a…` first pinned predated #402.
 - **[#401](https://github.com/Joshua-Asante/first-passage/pull/401)** adds a
   `work-decomposition` skill whose line 19 reads "retired by operator instruction on 2026-09-15
   (**retirement record pending**)". **This revision is that record** — the pointer resolves here
   once both land. #401 also makes pointer edits to `cursor-fleet`, which will need re-homing to
-  this ADR for the same reason.
+  this ADR for the same reason. **Resolved 2026-09-16:** #401 was re-pointed to this clause and
+  TOMBSTONES before merge (its `cursor-fleet` edits dropped in `430eefe`) and merged as
+  `b8e4034`; the back-pointer in §Decision closes the loop.
 
 ## §10 — Audit hooks (runnable)
 
@@ -354,15 +384,18 @@ rg -n -i "@cursor|cursor/\*|dispatch_cursor|cursor\[bot\]|cursor-agent" .claude 
 #     docs/briefs/handoffs/2026-09-11-track-a-a1b-... at "Status: dispatch now" still reading
 #     "Spawn target: Codex (or Cursor)" while hooks 1-2 reported clean: they scan only
 #     .claude/ scripts/ .github/, so a dispatchable brief was outside them.
-rg -n -i "spawn target.*cursor" docs/briefs docs/superpowers
-# Expected, as of 2026-09-15, exactly two hits, both spent and both verified as such:
+rg -n -i '^\*\*spawn target:\*\*.*cursor' docs/briefs docs/superpowers \
+  | grep -viE 'not cursor|not a lane|retire|re-?target'
+# The FIELD VALUE is what is audited. The bare pattern matched six lines on 2026-09-16 — the two
+# historical targets below plus four explanatory carriers (briefs re-targeted away from Cursor
+# that say so, and one that says "NOT Cursor-eligible"); the filter drops the carriers. A brief
+# that still OFFERS Cursor — "Codex (or Cursor)" — carries none of those words and stays a hit.
+# Expected, as of 2026-09-16, exactly two hits, both spent and both verified as such:
 #   docs/briefs/handoffs/2026-07-24-cursor-handoff-agent-surface-posture-sync.md
 #     -- its own banner reads "STATUS 2026-07-24: DISCHARGED - DO NOT DISPATCH";
 #   docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md
 #     -- no DISCHARGED line, but discharged BY DELIVERY: its deliverable exists at
 #     lab/discovery/lifecycle_call1/, whose __init__.py:12 cites this brief as its handoff.
-# (A third hit, the 2026-07-24 core-dead-code-prune brief, matches only because it says
-#  "NOT Cursor-eligible" -- it routes AWAY from the retired surface, which is correct.)
 # Any hit on a brief that is still dispatchable is a finding.
 
 # 3. Worker branches use a surviving namespace. Ask the remote: `git branch -a` sees only refs
