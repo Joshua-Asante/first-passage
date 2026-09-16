@@ -145,6 +145,12 @@ class FourLegRuntime:
     def _deliver(self, result):
         self._deliver_events(result.confirmed_events)
 
+    def _retain_local_refusal(self, action, result, *, now):
+        reason = result.refusal_reason
+        if reason is None or reason in ("takeover_pending", "duplicate_operation"):
+            return ()
+        return self.owner.record_local_refusal(action, reason, now=now)
+
     def deliver_confirmed(self, result):
         """Deliver owner-committed broker facts to adapters and checkpoint them."""
         with self._application_lock:
@@ -229,9 +235,11 @@ class FourLegRuntime:
                 if completed:
                     result = handle_book_action(action, self.owner, now=now)
             results.append(result)
-            if result.confirmed_events and self.crash_after_dispatch:
+            local_feedback = self._retain_local_refusal(action, result, now=now)
+            if (result.confirmed_events or local_feedback) and self.crash_after_dispatch:
                 raise SimulatedRuntimeCrash("fact committed before adapter feedback")
             self._deliver(result)
+            self._deliver_events(local_feedback)
         self.owner.complete_barrier(bar.ts)
         del self._pending[bar.ts]
         return tuple(results)

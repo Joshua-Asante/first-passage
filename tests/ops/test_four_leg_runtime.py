@@ -139,6 +139,31 @@ def test_same_bar_capacity_winner_is_independent_of_arrival_order(tmp_path, arri
     ]
     assert [command.leg_id for command in account.synthetic_broker.commands] == ["aegis_6j"]
     assert account.exposure("aegis_6j") == (0, 8)
+    for leg_id in LEGS[1:]:
+        assert runtime.adapters[leg_id].events == [
+            ("reject", "entry:" + leg_id, None)
+        ]
+
+
+def test_local_capacity_refusals_are_durable_adapter_feedback(tmp_path):
+    account = owner(tmp_path, [BrokerResult("accepted")])
+    runtime = FourLegRuntime(account, adapters())
+    for leg_id in LEGS:
+        runtime.on_completed_bar(leg_id, bars()[leg_id], now=NOW)
+
+    assert account.pending_feedback == ()
+    assert len(account.all_feedback) == 3
+
+    restarted = BookAccountOwner.boot(
+        account.path, "synthetic-account", binding=binding(),
+        synthetic_broker=SyntheticBroker([]),
+    )
+    fresh = adapters()
+    FourLegRuntime.recover(restarted, fresh)
+
+    for leg_id in LEGS[1:]:
+        assert fresh[leg_id].events == [("reject", "entry:" + leg_id, None)]
+    assert restarted.synthetic_broker.commands == []
 
 
 def test_fact_commit_before_feedback_recovers_without_resend(tmp_path):

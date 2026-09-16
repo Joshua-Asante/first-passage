@@ -44,6 +44,7 @@ from book_sizing_context import (
     SettledClose,
     size_book_request,
 )
+from book_schedule import ScheduleError, SchedulePhase, classify_schedule
 from c1_signal_daemon.book_adapters import ADAPTER_BY_LEG
 from c1_signal_daemon.book_protocol import (
     BracketAmend,
@@ -804,6 +805,45 @@ class BookAccountOwner:
             db.execute("UPDATE feedback SET delivered=1, checkpoint=? WHERE fact_id=?",
                        (raw, fact_id))
 
+    def record_local_refusal(self, action, reason, *, now):
+        """Retain one final owner refusal as adapter feedback before delivery.
+
+        Local policy/capacity decisions have no broker fact, but adapters still
+        need a durable rejection to retire the intent.  Transient takeover and
+        duplicate-operation responses are deliberately excluded by the runtime.
+        """
+        _time(now)
+        _text(reason, "local refusal")
+        if not isinstance(action, (OrderIntent, BracketAmend, Cancel)):
+            raise AccountOwnerError("typed book action required")
+        order_id = action.order_id
+        boundary_time = getattr(action, "bar_time", None) or now
+        _time(boundary_time, "local refusal boundary")
+        identity = _body({"action": asdict(action), "reason": reason})
+        fact_id = "local-refusal:" + hashlib.sha256(identity.encode("utf-8")).hexdigest()
+        event = ExecutionEvent("reject", action.leg_id, boundary_time,
+                               order_id=order_id, detail=reason)
+        raw = _body(asdict(event))
+        with self.serializer.acquire(), self._transaction() as db:
+            previous = db.execute(
+                "SELECT body, delivered, boundary_time FROM feedback WHERE fact_id=?",
+                (fact_id,),
+            ).fetchone()
+            expected = (raw, 0, boundary_time.isoformat())
+            if previous is not None:
+                if previous[0] != raw or previous[2] != boundary_time.isoformat():
+                    self._halt_db(db, "local-refusal-conflict:" + fact_id,
+                                  "identity", now)
+                    raise AccountOwnerError("conflicting local refusal identity")
+                return () if previous[1] else (event,)
+            db.execute(
+                "INSERT INTO feedback(fact_id, body, delivered, boundary_time) "
+                "VALUES (?, ?, 0, ?)",
+                (fact_id, raw, boundary_time.isoformat()),
+            )
+            self._append_timeline(db, "feedback", fact_id, now)
+            return (event,)
+
     def observable_accounting(self):
         """Stable replay comparison, excluding boot- and attempt-local UUIDs."""
         with self._transaction() as db:
@@ -1132,7 +1172,9 @@ class BookAccountOwner:
         """Apply cutoff, scheduled flatten and deadline using the bound session clock."""
         _time(now)
         session = self.binding["session"]
-        if session.flatten_start is None or session.own_flat_deadline is None:
+        try:
+            phase = classify_schedule(session, now)
+        except ScheduleError:
             self.halt("schedule-missing:" + session.session_id, "schedule", now=now)
             return ()
         actions = []
@@ -1141,7 +1183,8 @@ class BookAccountOwner:
             if state["authority"] == "INTERVENTION":
                 return ()
             capacity = self._capacity(db)
-            if now >= session.risk_add_cutoff and state["authority"] == "NORMAL":
+            if phase in (SchedulePhase.CUTOFF, SchedulePhase.FLATTEN,
+                         SchedulePhase.DEADLINE) and state["authority"] == "NORMAL":
                 db.execute("UPDATE owner_state SET permission='HALTED', authority='SCHEDULED_EXIT', "
                            "generation=generation+1")
                 for operation in capacity.operations:
@@ -1149,7 +1192,7 @@ class BookAccountOwner:
                             and operation.request.leg_id in {row.leg_id for row in BOOK_LEGS}):
                         actions.append(Cancel(operation.request.leg_id,
                                               operation.request.operation_id))
-            if now >= session.flatten_start:
+            if phase in (SchedulePhase.FLATTEN, SchedulePhase.DEADLINE):
                 for exposure in exposures(capacity):
                     if exposure.confirmed:
                         operation_id = "scheduled-flat:" + session.session_id + ":" + exposure.leg_id
@@ -1159,7 +1202,7 @@ class BookAccountOwner:
                             bar_time=now, reason="scheduled_flatten",
                         ))
         results = tuple(self.dispatch(action, now=now) for action in actions)
-        if now >= session.own_flat_deadline:
+        if phase is SchedulePhase.DEADLINE:
             with self.serializer.acquire(), self._thread, self._transaction() as db:
                 if self._state(db)["authority"] == "SCHEDULED_EXIT":
                     capacity = self._capacity(db)

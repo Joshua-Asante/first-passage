@@ -11,12 +11,12 @@ at the primary checkout's ports). Missing ports are reported, never faked.
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
 import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from types import ModuleType
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PORT_ROOT = _REPO_ROOT / "ops" / "c1_signal_daemon" / "ports"
@@ -110,22 +110,28 @@ def load_port(leg_id: str):
     path = port_path(leg_id)
     if not path.is_file():
         raise FileNotFoundError(f"private port for {leg_id!r} not found at {path}")
+    source = path.read_bytes()
+    if hashlib.sha256(source).hexdigest() != spec_row.runtime_sha256:
+        raise ValueError(f"port {path} does not match the accepted runtime identity")
     for p in (str(_REPO_ROOT / "ops"), str(_REPO_ROOT / "core")):
         if p not in sys.path:
             sys.path.insert(0, p)
-    spec = importlib.util.spec_from_file_location(f"fp_port_{spec_row.module}", path)
-    module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
-    sys.modules[spec.name] = module   # dataclasses resolve annotations via sys.modules
-    spec.loader.exec_module(module)
+    module_name = f"fp_port_{spec_row.module}"
+    module = ModuleType(module_name)
+    module.__file__ = str(path)
+    module.__package__ = ""
+    sys.modules[module_name] = module  # dataclasses resolve annotations via sys.modules
+    try:
+        exec(compile(source, str(path), "exec"), module.__dict__)
+    except Exception:
+        sys.modules.pop(module_name, None)
+        raise
     if getattr(module, "LEG_ID", None) != leg_id:
         raise ValueError(f"port {path} declares LEG_ID {getattr(module, 'LEG_ID', None)!r}, "
                          f"expected {leg_id!r}")
     if getattr(module, "PINE_SHA256", None) != spec_row.pine_sha256:
         raise ValueError(f"port {path} declares PINE_SHA256 {getattr(module, 'PINE_SHA256', None)!r}, "
                          f"expected {spec_row.pine_sha256!r}")
-    if port_sha256(leg_id) != spec_row.runtime_sha256:
-        raise ValueError(f"port {path} does not match the accepted runtime identity")
     return module
 
 
@@ -134,9 +140,10 @@ def load_book_adapters(*, mode=None):
     from c1_signal_daemon.book_protocol import Mode
     mode = Mode.NORMAL if mode is None else Mode(mode)
     inputs_path = port_root() / "effective_inputs.json"
-    if hashlib.sha256(inputs_path.read_bytes()).hexdigest() != EFFECTIVE_INPUTS_SHA256:
+    inputs_bytes = inputs_path.read_bytes()
+    if hashlib.sha256(inputs_bytes).hexdigest() != EFFECTIVE_INPUTS_SHA256:
         raise ValueError("effective input bytes do not match the accepted identity")
-    values = json.loads(inputs_path.read_text(encoding="utf-8"))
+    values = json.loads(inputs_bytes.decode("utf-8"))
     if set(values) != {"_note"} | set(ADAPTER_BY_LEG):
         raise ValueError("effective input registry is incomplete")
     result = {}
