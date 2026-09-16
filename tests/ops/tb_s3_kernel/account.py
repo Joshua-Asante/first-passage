@@ -2,8 +2,8 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from book_policy import TakeoverPlan
-from book_policy import leg as leg_spec
+from c1_rail.book_policy import TakeoverPlan
+from c1_rail.book_policy import leg as leg_spec
 from book_protocol import OrderIntent
 
 from .broker import STALENESS_WINDOW

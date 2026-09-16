@@ -11,8 +11,8 @@ consumer-local counter. Broker fact IDs retain immutable execution identity.
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 
-from book_policy import ACCOUNT_MICRO_CAP, BOOK_LEGS, leg
-from book_sizing_context import BookAccountContext, BookExposure
+from .book_policy import ACCOUNT_MICRO_CAP, BOOK_LEGS, leg
+from .book_sizing_context import BookAccountContext, BookExposure
 from c1_signal_daemon.book_protocol import Mode
 
 
@@ -62,13 +62,19 @@ class CompleteTakeover:
 
 
 @dataclass(frozen=True)
+class RetireTakeover:
+    """Owner withdrawal of an unattempted priority request, not broker evidence."""
+    operation_id: str
+
+
+@dataclass(frozen=True)
 class Event:
     event_id: str
     sequence: int
     as_of: datetime
     account_id: str
     owner_epoch: str
-    fact: Reserve | Fill | Terminal | Reduction | CompleteTakeover
+    fact: Reserve | Fill | Terminal | Reduction | CompleteTakeover | RetireTakeover
 
 
 @dataclass(frozen=True)
@@ -281,6 +287,16 @@ def _complete(state, fact, sequence):
                    completed_takeovers=state.completed_takeovers + (fact,))
 
 
+def _retire_takeover(state, fact):
+    operation = _operation(state, fact.operation_id)
+    _require(state.takeover is not None and state.takeover.operation_id == fact.operation_id
+             and operation.status == "takeover" and operation.terminal is None
+             and _filled(state, fact.operation_id) == 0, "invalid takeover retirement")
+    result = _replace_operation(state, replace(operation, status="refused"))
+    return replace(result, takeover=None,
+                   blocks=tuple(b for b in result.blocks if b != "takeover:" + fact.operation_id))
+
+
 def apply_event(state: CapacityState, event: Event, *, now: datetime,
                 max_age: timedelta) -> CapacityState:
     """Return new retained state. Invalid evidence adds a block, never a release.
@@ -305,7 +321,8 @@ def apply_event(state: CapacityState, event: Event, *, now: datetime,
                  and isinstance(max_age, timedelta) and max_age > timedelta(0)
                  and timedelta(0) <= now - event.as_of <= max_age, "stale evidence")
         fact = event.fact
-        handlers = {Reserve: _reserve, Fill: _fill, Terminal: _terminal, Reduction: _reduce}
+        handlers = {Reserve: _reserve, Fill: _fill, Terminal: _terminal, Reduction: _reduce,
+                    RetireTakeover: _retire_takeover}
         if type(fact) is CompleteTakeover:
             result = _complete(state, fact, event.sequence)
         else:

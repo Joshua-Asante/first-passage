@@ -17,8 +17,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Callable
 
-from book_policy import BOOK_LEGS, CapacityDecision, CapacityLedger, TakeoverPlan
-from book_policy import leg as leg_spec
+from c1_rail.book_policy import BOOK_LEGS, CapacityDecision, CapacityLedger, TakeoverPlan
+from c1_rail.book_policy import leg as leg_spec
 from book_protocol import Bracket, OrderIntent, Side
 
 from .broker import (BAR, STALENESS_WINDOW, Clock, Evidence, Execution, FakeBroker,

@@ -1,0 +1,132 @@
+"""Frozen recognized historical layouts; never infer a layout from version alone."""
+
+SOURCE_MANIFESTS = {1: {'revision': 'fc7cdc781c892207abdbfe0b7d9a4c7f046aa816',
+     'schema': {'attempts': 'attempt_id TEXT PRIMARY KEY, operation_id TEXT NOT NULL UNIQUE, state TEXT NOT '
+                            'NULL, generation INTEGER NOT NULL, body TEXT NOT NULL, observation TEXT',
+                'barriers': 'bar_time TEXT PRIMARY KEY, session_id TEXT NOT NULL, mode TEXT NOT NULL, body '
+                            'TEXT NOT NULL, actions TEXT, completed INTEGER NOT NULL DEFAULT 0',
+                'broker_facts': 'fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, feedback TEXT',
+                'capacity_events': 'sequence INTEGER PRIMARY KEY, event_id TEXT NOT NULL UNIQUE, as_of TEXT '
+                                   'NOT NULL, fact_type TEXT NOT NULL, body TEXT NOT NULL',
+                'close_reservations': 'operation_id TEXT PRIMARY KEY, allocations TEXT NOT NULL, status TEXT '
+                                      'NOT NULL',
+                'feed_watch': 'session_id TEXT PRIMARY KEY, started_at TEXT NOT NULL',
+                'feedback': 'fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, delivered INTEGER NOT NULL '
+                            'DEFAULT 0, checkpoint TEXT, boundary_time TEXT',
+                'incidents': 'incident_id TEXT PRIMARY KEY, reason TEXT NOT NULL, at TEXT NOT NULL, '
+                             'generation INTEGER NOT NULL',
+                'operations': 'operation_id TEXT PRIMARY KEY, leg_id TEXT NOT NULL, order_symbol TEXT NOT '
+                              'NULL, kind TEXT NOT NULL, requested INTEGER, quantity INTEGER, session_id '
+                              'TEXT NOT NULL, generation INTEGER NOT NULL, created_at TEXT NOT NULL, status '
+                              'TEXT NOT NULL, body TEXT NOT NULL',
+                'owner_state': 'schema INTEGER NOT NULL, account TEXT NOT NULL, account_epoch TEXT NOT NULL, '
+                               'boot_id TEXT NOT NULL, generation INTEGER NOT NULL, permission TEXT NOT '
+                               'NULL, authority TEXT NOT NULL, sequence INTEGER NOT NULL',
+                'partial_bars': 'bar_time TEXT NOT NULL, leg_id TEXT NOT NULL, body TEXT NOT NULL, '
+                                'acquired_at TEXT NOT NULL, PRIMARY KEY(bar_time, leg_id)',
+                'protection_state': 'session_id TEXT PRIMARY KEY, mode TEXT NOT NULL, operation_ids TEXT NOT '
+                                    'NULL, generation INTEGER NOT NULL',
+                'runtime_actors': 'boot_id TEXT PRIMARY KEY, kind TEXT NOT NULL, body TEXT NOT NULL',
+                'runtime_bindings': 'sequence INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL '
+                                    'UNIQUE, body TEXT NOT NULL, digest TEXT NOT NULL UNIQUE',
+                'settlement_attachment': 'singleton INTEGER PRIMARY KEY CHECK(singleton=1), body TEXT NOT '
+                                         'NULL, digest TEXT NOT NULL',
+                'timeline': 'sequence INTEGER PRIMARY KEY, kind TEXT NOT NULL, ref_id TEXT NOT NULL UNIQUE, '
+                            'acquired_at TEXT NOT NULL'}},
+ 2: {'revision': '567a583a3da4e752d9cadb979c3a0aee74eb6925',
+     'schema': {'action_occurrences': 'key TEXT PRIMARY KEY, envelope TEXT NOT NULL, source TEXT NOT NULL, '
+                                      'scope TEXT, result TEXT, state TEXT NOT NULL, prepared_at TEXT NOT '
+                                      'NULL, generation INTEGER NOT NULL, boot_id TEXT NOT NULL',
+                'attempts': 'attempt_id TEXT PRIMARY KEY, operation_id TEXT NOT NULL UNIQUE, state TEXT NOT '
+                            'NULL, generation INTEGER NOT NULL, body TEXT NOT NULL, observation TEXT',
+                'barriers': 'bar_time TEXT PRIMARY KEY, session_id TEXT NOT NULL, mode TEXT NOT NULL, body '
+                            'TEXT NOT NULL, actions TEXT, completed INTEGER NOT NULL DEFAULT 0',
+                'broker_facts': 'fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, feedback TEXT',
+                'capacity_events': 'sequence INTEGER PRIMARY KEY, event_id TEXT NOT NULL UNIQUE, as_of TEXT '
+                                   'NOT NULL, fact_type TEXT NOT NULL, body TEXT NOT NULL',
+                'close_reservations': 'operation_id TEXT PRIMARY KEY, allocations TEXT NOT NULL, status TEXT '
+                                      'NOT NULL',
+                'feed_watch': 'session_id TEXT PRIMARY KEY, started_at TEXT NOT NULL',
+                'feedback': 'fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, delivered INTEGER NOT NULL '
+                            'DEFAULT 0, checkpoint TEXT, boundary_time TEXT',
+                'incidents': 'incident_id TEXT PRIMARY KEY, reason TEXT NOT NULL, at TEXT NOT NULL, '
+                             'generation INTEGER NOT NULL',
+                'operations': 'operation_id TEXT PRIMARY KEY, leg_id TEXT NOT NULL, order_symbol TEXT NOT '
+                              'NULL, kind TEXT NOT NULL, requested INTEGER, quantity INTEGER, session_id '
+                              'TEXT NOT NULL, generation INTEGER NOT NULL, created_at TEXT NOT NULL, status '
+                              'TEXT NOT NULL, body TEXT NOT NULL',
+                'owner_state': 'schema INTEGER NOT NULL, account TEXT NOT NULL, account_epoch TEXT NOT NULL, '
+                               'boot_id TEXT NOT NULL, generation INTEGER NOT NULL, permission TEXT NOT '
+                               'NULL, authority TEXT NOT NULL, sequence INTEGER NOT NULL',
+                'partial_bars': 'bar_time TEXT NOT NULL, leg_id TEXT NOT NULL, body TEXT NOT NULL, '
+                                'acquired_at TEXT NOT NULL, PRIMARY KEY(bar_time, leg_id)',
+                'protection_facts': 'fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, kind TEXT NOT NULL',
+                'protection_operations': 'operation_id TEXT PRIMARY KEY, occurrence_key TEXT NOT NULL, '
+                                         'owner_id TEXT NOT NULL, body TEXT NOT NULL',
+                'protection_owners': 'owner_id TEXT PRIMARY KEY, entry_fill_id TEXT NOT NULL UNIQUE, body '
+                                     'TEXT NOT NULL',
+                'protection_state': 'session_id TEXT PRIMARY KEY, mode TEXT NOT NULL, operation_ids TEXT NOT '
+                                    'NULL, generation INTEGER NOT NULL',
+                'protection_streams': 'stream_id TEXT PRIMARY KEY, body TEXT NOT NULL',
+                'runtime_actors': 'boot_id TEXT PRIMARY KEY, kind TEXT NOT NULL, body TEXT NOT NULL',
+                'runtime_bindings': 'sequence INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL '
+                                    'UNIQUE, body TEXT NOT NULL, digest TEXT NOT NULL UNIQUE',
+                'settlement_attachment': 'singleton INTEGER PRIMARY KEY CHECK(singleton=1), body TEXT NOT '
+                                         'NULL, digest TEXT NOT NULL',
+                'timeline': 'sequence INTEGER PRIMARY KEY, kind TEXT NOT NULL, ref_id TEXT NOT NULL UNIQUE, '
+                            'acquired_at TEXT NOT NULL'}},
+ 3: {'revision': 'b5fdde8b89aaab6bccc37d2850f9ec14da314819',
+     'schema': {'action_occurrences': 'key TEXT PRIMARY KEY, envelope TEXT NOT NULL, source TEXT NOT NULL, '
+                                      'scope TEXT, result TEXT, state TEXT NOT NULL, prepared_at TEXT NOT '
+                                      'NULL, generation INTEGER NOT NULL, boot_id TEXT NOT NULL',
+                'attempts': 'attempt_id TEXT PRIMARY KEY, operation_id TEXT NOT NULL UNIQUE, state TEXT NOT '
+                            'NULL, generation INTEGER NOT NULL, body TEXT NOT NULL, observation TEXT',
+                'barriers': 'bar_time TEXT PRIMARY KEY, session_id TEXT NOT NULL, mode TEXT NOT NULL, body '
+                            'TEXT NOT NULL, actions TEXT, completed INTEGER NOT NULL DEFAULT 0',
+                'broker_facts': 'fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, feedback TEXT',
+                'capacity_events': 'sequence INTEGER PRIMARY KEY, event_id TEXT NOT NULL UNIQUE, as_of TEXT '
+                                   'NOT NULL, fact_type TEXT NOT NULL, body TEXT NOT NULL',
+                'close_reservations': 'operation_id TEXT PRIMARY KEY, allocations TEXT NOT NULL, status TEXT '
+                                      'NOT NULL',
+                'feed_watch': 'session_id TEXT PRIMARY KEY, started_at TEXT NOT NULL',
+                'feedback': 'fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, delivered INTEGER NOT NULL '
+                            'DEFAULT 0, checkpoint TEXT, boundary_time TEXT',
+                'incidents': 'incident_id TEXT PRIMARY KEY, reason TEXT NOT NULL, at TEXT NOT NULL, '
+                             'generation INTEGER NOT NULL',
+                'operations': 'operation_id TEXT PRIMARY KEY, leg_id TEXT NOT NULL, order_symbol TEXT NOT '
+                              'NULL, kind TEXT NOT NULL, requested INTEGER, quantity INTEGER, session_id '
+                              'TEXT NOT NULL, generation INTEGER NOT NULL, created_at TEXT NOT NULL, status '
+                              'TEXT NOT NULL, body TEXT NOT NULL',
+                'owner_state': 'schema INTEGER NOT NULL, account TEXT NOT NULL, account_epoch TEXT NOT NULL, '
+                               'boot_id TEXT NOT NULL, generation INTEGER NOT NULL, permission TEXT NOT '
+                               'NULL, authority TEXT NOT NULL, sequence INTEGER NOT NULL',
+                'partial_bars': 'bar_time TEXT NOT NULL, leg_id TEXT NOT NULL, body TEXT NOT NULL, '
+                                'acquired_at TEXT NOT NULL, PRIMARY KEY(bar_time, leg_id)',
+                'protection_facts': 'fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, kind TEXT NOT NULL',
+                'protection_operations': 'operation_id TEXT PRIMARY KEY, occurrence_key TEXT NOT NULL, '
+                                         'owner_id TEXT NOT NULL, body TEXT NOT NULL',
+                'protection_owners': 'owner_id TEXT PRIMARY KEY, entry_fill_id TEXT NOT NULL UNIQUE, body '
+                                     'TEXT NOT NULL',
+                'protection_state': 'session_id TEXT PRIMARY KEY, mode TEXT NOT NULL, operation_ids TEXT NOT '
+                                    'NULL, generation INTEGER NOT NULL',
+                'protection_streams': 'stream_id TEXT PRIMARY KEY, body TEXT NOT NULL',
+                'runtime_actors': 'boot_id TEXT PRIMARY KEY, kind TEXT NOT NULL, body TEXT NOT NULL',
+                'runtime_bindings': 'sequence INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL '
+                                    'UNIQUE, body TEXT NOT NULL, digest TEXT NOT NULL UNIQUE',
+                'settlement_attachment': 'singleton INTEGER PRIMARY KEY CHECK(singleton=1), body TEXT NOT '
+                                         'NULL, digest TEXT NOT NULL',
+                'takeover_children': 'operation_id TEXT PRIMARY KEY, takeover_id TEXT NOT NULL, '
+                                     'occurrence_key TEXT NOT NULL UNIQUE, kind TEXT NOT NULL, target TEXT '
+                                     'NOT NULL, body TEXT NOT NULL',
+                'takeover_events': 'event_id TEXT PRIMARY KEY, operation_id TEXT NOT NULL, ordinal INTEGER '
+                                   'NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL, UNIQUE(operation_id, '
+                                   'ordinal)',
+                'takeover_inventory': 'fact_id TEXT PRIMARY KEY, stream_id TEXT NOT NULL, sequence INTEGER '
+                                      'NOT NULL, body TEXT NOT NULL, disposition TEXT NOT NULL, '
+                                      'UNIQUE(stream_id, sequence)',
+                'takeover_plans': 'operation_id TEXT PRIMARY KEY, occurrence_key TEXT NOT NULL UNIQUE, body '
+                                  'TEXT NOT NULL',
+                'takeover_reads': 'read_id TEXT PRIMARY KEY, operation_id TEXT NOT NULL, body TEXT NOT NULL',
+                'takeover_streams': 'stream_id TEXT PRIMARY KEY, body TEXT NOT NULL',
+                'timeline': 'sequence INTEGER PRIMARY KEY, kind TEXT NOT NULL, ref_id TEXT NOT NULL UNIQUE, '
+                            'acquired_at TEXT NOT NULL'}}}

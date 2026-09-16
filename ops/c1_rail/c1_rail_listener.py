@@ -55,7 +55,7 @@ from c1_rail_telemetry import (
 from c1_sizing_host_reference import C1SizingHostReference, SizingDecision
 from crosstrade_payload import build_crosstrade_payload, send_to_crosstrade
 import m1_stage1_contract as m1_test
-from book_policy import BOOK_LEGS
+from c1_rail.book_policy import BOOK_LEGS
 from book_halt import BookHaltStore
 
 INSTRUMENT_SYMBOLS: dict[str, str] = {
@@ -76,6 +76,67 @@ class RailAction:
     event_id: str | None = None
     order_id: str | None = None
     transport_state: str | None = None  # not_attempted|accepted|failed|unknown
+
+
+def handle_book_action(action, owner, *, occurrence=None, now):
+    """Route a typed four-leg mutation through the listener-owned serializer.
+
+    This is the offline Phase-2 boundary.  The owner has no production route;
+    its only sender is the explicit ``SyntheticBroker`` Python test seam.
+    """
+    from c1_rail.book_account_owner import BookAccountOwner
+
+    if not isinstance(owner, BookAccountOwner):
+        raise TypeError("typed BookAccountOwner required")
+    return owner.dispatch(action, occurrence=occurrence, now=now)
+
+
+def handle_book_takeover_inventory(snapshot, runtime, *, now):
+    """Offline typed inventory enters through the serialized runtime boundary."""
+    return runtime.observe_takeover_inventory(snapshot, now=now)
+
+
+def handle_book_protection(snapshot, owner, runtime=None, *, now):
+    """Commit offline working-order evidence without granting send authority."""
+    from c1_rail.book_account_owner import BookAccountOwner
+    if not isinstance(owner, BookAccountOwner):
+        raise TypeError("typed BookAccountOwner required")
+    if runtime is not None:
+        from c1_signal_daemon.book_runtime import FourLegRuntime
+        if not isinstance(runtime, FourLegRuntime):
+            raise TypeError("typed four-leg runtime required")
+        if runtime.owner is not owner:
+            raise ValueError("runtime/account owner mismatch")
+        return runtime.observe_protection(snapshot, now=now)
+    return owner.observe_protection(snapshot, now=now)
+
+
+def handle_book_protection_execution(event, owner, runtime, *, now):
+    """Commit protective fills, then serialize adapter feedback; never resume."""
+    from c1_rail.book_account_owner import BookAccountOwner
+    from c1_signal_daemon.book_runtime import FourLegRuntime
+    if not isinstance(owner, BookAccountOwner) or not isinstance(runtime, FourLegRuntime):
+        raise TypeError("typed owner and four-leg runtime required")
+    if runtime.owner is not owner:
+        raise ValueError("runtime/account owner mismatch")
+    return runtime.observe_protection_execution(event, now=now)
+
+
+def handle_book_fact(fact, owner, runtime, *, now):
+    """Commit asynchronous broker evidence, then checkpoint adapter feedback.
+
+    The listener owns the ingress edge; the account owner remains the sole
+    writer and the daemon runtime only sees facts after that durable commit.
+    No HTTP route exposes this offline Phase-2 seam.
+    """
+    from c1_rail.book_account_owner import BookAccountOwner
+    from c1_signal_daemon.book_runtime import FourLegRuntime
+
+    if not isinstance(owner, BookAccountOwner) or not isinstance(runtime, FourLegRuntime):
+        raise TypeError("typed owner and four-leg runtime required")
+    if runtime.owner is not owner:
+        raise ValueError("runtime/account owner mismatch")
+    return runtime.observe_fact(fact, now=now)
 
 
 def _leg_action(signal_type: str) -> tuple[str, str]:
@@ -193,12 +254,13 @@ def handle_signal(
         return RailAction(decision=decision, sent=False, dry_run=dry_run is True,
                           event_id=eid, transport_state="not_attempted")
 
-    # Four-leg book orders cannot bypass the not-yet-qualified runtime by
-    # omitting its store. Legacy deployments are unchanged unless configured.
-    if is_risk_add and (book_halt is not None or payload.get("leg_id") in
-                        {leg.leg_id for leg in BOOK_LEGS}):
+    # No four-leg mutation, including exit/flat, may bypass the typed durable
+    # owner through the legacy B1/CrossTrade path. Legacy non-book deployments
+    # remain unchanged unless their old halt store is explicitly configured.
+    is_fixed_book = payload.get("leg_id") in {leg.leg_id for leg in BOOK_LEGS}
+    if is_fixed_book or (is_risk_add and book_halt is not None):
         reason = (book_halt.rejection_reason() if book_halt is not None else
-                  "book runtime unavailable; durable halt gate required")
+                  "book runtime unavailable; typed durable owner required")
         decision = SizingDecision(
             leg_id=str(payload.get("leg_id", "<absent>")),
             signal_type=str(payload.get("signal_type", "<absent>")),

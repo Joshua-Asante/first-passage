@@ -398,3 +398,14 @@ def test_durable_book_halt_preserves_legacy_close_path(host, tmp_path, dry_run):
     assert result.sent is (not dry_run)
     assert len(sender.calls) == (0 if dry_run else 1)
     assert store.snapshot()["permission"] == "HALTED"
+
+
+@pytest.mark.parametrize("signal_type", ["entry", "add", "exit", "flat"])
+def test_fixed_book_cannot_mutate_through_legacy_sender(host, signal_type):
+    sender = _CapturingSender()
+    payload = {**entry_payload(leg_id="aegis_6j"), "signal_type": signal_type}
+    result = handle_signal(payload, host, current_equity=E_FIRM,
+                           config=_config(dry_run=False), sender=sender)
+    assert result.decision.halt is True
+    assert "typed durable owner" in result.decision.halt_reason
+    assert sender.calls == []

@@ -9,6 +9,7 @@ DOCKERFILE = REPO_ROOT / "deploy" / "c1_signal_daemon" / "Dockerfile"
 _ENTRYPOINTS = (
     REPO_ROOT / "ops" / "c1_signal_daemon" / "daemon.py",
     REPO_ROOT / "ops" / "c1_signal_daemon" / "evaluate_loop.py",
+    REPO_ROOT / "ops" / "c1_signal_daemon" / "book_evaluate_loop.py",
     REPO_ROOT / "ops" / "c1_signal_daemon" / "m1_stage1_control.py",
 )
 
@@ -43,7 +44,13 @@ def _repo_import_names(path: Path) -> set[str]:
     names: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.ImportFrom) and node.module:
-            names.add(node.module)
+            if node.level:
+                package = path.parent.relative_to(REPO_ROOT / "ops").parts
+                keep = len(package) - node.level + 1
+                if keep >= 0:
+                    names.add(".".join((*package[:keep], *node.module.split("."))))
+            else:
+                names.add(node.module)
         elif isinstance(node, ast.Import):
             for alias in node.names:
                 names.add(alias.name)

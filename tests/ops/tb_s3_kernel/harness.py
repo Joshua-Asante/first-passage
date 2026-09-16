@@ -6,7 +6,7 @@ import copy
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from book_policy import leg as leg_spec
+from c1_rail.book_policy import leg as leg_spec
 from book_protocol import Bracket, OrderIntent
 
 from .broker import BAR, SUPPORTED, Clock, FakeBroker

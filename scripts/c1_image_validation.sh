@@ -66,6 +66,7 @@ LISTENER_FILES=(
   /app/core/dd_protection.py
   /app/core/firm_rules.py
   /app/core/historical_challenge.py
+  /app/core/calendar_evidence.py
   /app/core/lib/atomic_io.py
   /app/core/lib/file_lock.py
   /app/core/lib/mvd.py
@@ -76,6 +77,25 @@ LISTENER_FILES=(
   /app/ops/c1_rail/book_policy.py
   /app/ops/c1_rail/book_sizing_context.py
   /app/ops/c1_rail/book_halt.py
+  /app/ops/c1_rail/book_account_lock.py
+  /app/ops/c1_rail/book_account_owner.py
+  /app/ops/c1_rail/book_capacity.py
+  /app/ops/c1_rail/book_protection.py
+  /app/ops/c1_rail/book_protection_owner.py
+  /app/ops/c1_rail/book_takeover.py
+  /app/ops/c1_rail/book_bootstrap.py
+  /app/ops/c1_rail/book_migration.py
+  /app/ops/c1_rail/book_migration_schema.py
+  /app/ops/c1_rail/book_takeover_owner.py
+  /app/ops/c1_rail/book_schedule.py
+  /app/ops/c1_rail/book_session_calendar.py
+  /app/ops/c1_rail/book_settlement.py
+  /app/ops/c1_rail/account_close_calculation.py
+  /app/ops/c1_rail/account_close_evidence.py
+  /app/ops/c1_rail/account_close_ledger.py
+  /app/ops/c1_rail/ed25519_verify.py
+  /app/ops/c1_rail/settlement_signing.py
+  /app/ops/c1_rail/operator_keys.json
   /app/ops/c1_rail/c1_rail_arm.py
   /app/ops/c1_rail/c1_rail_http_server.py
   /app/ops/c1_rail/c1_rail_listener.py
@@ -87,18 +107,62 @@ LISTENER_FILES=(
   /app/ops/c1_rail/m1_stage1_agent_input.py
   /app/ops/c1_rail/m1_stage1_control.py
   /app/ops/c1_signal_daemon/__init__.py
+  /app/ops/c1_signal_daemon/book_validation.py
   /app/ops/c1_signal_daemon/book_protocol.py
+  /app/ops/c1_signal_daemon/book_runtime.py
+  /app/ops/c1_signal_daemon/book_adapters.py
   /app/ops/c1_signal_daemon/feed.py
   /app/scripts/validate_c1_monitoring_acceptance.py
 )
 
 DAEMON_FILES=(
+  /app/core/dd_geometry.py
+  /app/core/dd_protection.py
+  /app/core/firm_rules.py
+  /app/core/historical_challenge.py
+  /app/core/calendar_evidence.py
+  /app/core/lib/atomic_io.py
+  /app/core/lib/file_lock.py
+  /app/core/lib/mvd.py
+  /app/core/lib/validation.py
+  /app/core/lifecycle.py
   /app/ops/c1_rail/__init__.py
+  /app/ops/c1_rail/book_policy.py
+  /app/ops/c1_rail/book_sizing_context.py
+  /app/ops/c1_rail/book_halt.py
+  /app/ops/c1_rail/book_account_lock.py
+  /app/ops/c1_rail/book_account_owner.py
+  /app/ops/c1_rail/book_capacity.py
+  /app/ops/c1_rail/book_protection.py
+  /app/ops/c1_rail/book_protection_owner.py
+  /app/ops/c1_rail/book_takeover.py
+  /app/ops/c1_rail/book_bootstrap.py
+  /app/ops/c1_rail/book_migration.py
+  /app/ops/c1_rail/book_migration_schema.py
+  /app/ops/c1_rail/book_takeover_owner.py
+  /app/ops/c1_rail/book_schedule.py
+  /app/ops/c1_rail/book_session_calendar.py
+  /app/ops/c1_rail/book_settlement.py
+  /app/ops/c1_rail/account_close_calculation.py
+  /app/ops/c1_rail/account_close_evidence.py
+  /app/ops/c1_rail/account_close_ledger.py
+  /app/ops/c1_rail/ed25519_verify.py
+  /app/ops/c1_rail/settlement_signing.py
+  /app/ops/c1_rail/operator_keys.json
+  /app/ops/c1_rail/c1_rail_listener.py
+  /app/ops/c1_rail/c1_rail_telemetry.py
+  /app/ops/c1_rail/c1_sizing_host_reference.py
+  /app/ops/c1_rail/crosstrade_payload.py
   /app/ops/c1_rail/m1_stage1_contract.py
   /app/ops/c1_rail/m1_stage1_agent_input.py
   /app/ops/c1_signal_daemon/__init__.py
   /app/ops/c1_signal_daemon/__main__.py
   /app/ops/c1_signal_daemon/b1_payload.py
+  /app/ops/c1_signal_daemon/book_validation.py
+  /app/ops/c1_signal_daemon/book_protocol.py
+  /app/ops/c1_signal_daemon/book_adapters.py
+  /app/ops/c1_signal_daemon/book_runtime.py
+  /app/ops/c1_signal_daemon/book_evaluate_loop.py
   /app/ops/c1_signal_daemon/daemon.py
   /app/ops/c1_signal_daemon/evaluate_loop.py
   /app/ops/c1_signal_daemon/feed.py

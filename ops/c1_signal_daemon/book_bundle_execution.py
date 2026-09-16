@@ -13,7 +13,7 @@ from fractions import Fraction
 from c1_rail.book_policy import (
     ACCOUNT_MICRO_CAP, add_quantity, entry_quantities, leg, require_policy,
 )
-from c1_signal_daemon.book_protocol import ExecutionEvent, Mode, OrderIntent, Side
+from c1_signal_daemon.book_protocol import BracketAmend, Cancel, ExecutionEvent, Mode, OrderIntent, Side
 
 
 @dataclass(frozen=True)
@@ -126,6 +126,9 @@ class BundleExecution:
         self.confirmed_base = 0
         self._base_order = None
         self._pending = {}
+        # Reduction identities accept terminal feedback without reserving risk
+        # or participating in entry/add sizing.
+        self._pending_reductions = {}
         self._lots = {}
         self._seen_fills = set()
 
@@ -142,6 +145,13 @@ class BundleExecution:
         for action in actions:
             require(action.leg_id == self.leg_id, "action_identity_mismatch")
             if not isinstance(action, OrderIntent) or action.kind not in ("entry", "add"):
+                if isinstance(action, OrderIntent) and action.kind in ("exit", "flat"):
+                    reduction = (action.kind, action.qty, action.scope_fill_ids)
+                    previous = self._pending_reductions.get(action.order_id)
+                    require(previous is None or previous == reduction,
+                            "pending_order_redefinition")
+                    require(action.order_id not in self._pending, "pending_order_redefinition")
+                    self._pending_reductions[action.order_id] = reduction
                 out.append(action)
                 continue
             if action.kind == "entry":
@@ -163,6 +173,7 @@ class BundleExecution:
                     detail="shared_sizing_zero"))
                 continue
             previous = self._pending.get(action.order_id)
+            require(action.order_id not in self._pending_reductions, "pending_order_redefinition")
             require(previous is None or previous == (action.kind, qty), "pending_order_redefinition")
             reserved = sum(n for oid, (_, n) in self._pending.items() if oid != action.order_id)
             require((self.open_quantity + reserved + qty) * leg(self.leg_id).micro_equiv <= cfg.cap_alloc,
@@ -174,8 +185,10 @@ class BundleExecution:
     def on_execution(self, event):
         require(event.leg_id == self.leg_id, "event_identity_mismatch")
         if event.event in ("cancel", "reject"):
-            require(event.order_id in self._pending, "unknown_terminal_order")
-            del self._pending[event.order_id]
+            pending = (self._pending if event.order_id in self._pending
+                       else self._pending_reductions)
+            require(event.order_id in pending, "unknown_terminal_order")
+            del pending[event.order_id]
         elif event.event == "fill":
             fill = event.fill
             require(fill is not None and fill.leg_id == self.leg_id, "missing_or_wrong_fill")
@@ -203,6 +216,17 @@ class BundleExecution:
                     del self._lots[fill.entry_fill_id]
                 else:
                     self._lots[fill.entry_fill_id] = remaining - fill.qty
+                reduction = self._pending_reductions.get(fill.order_id)
+                if reduction is not None:
+                    kind, requested, scope = reduction
+                    # Quantity-less closes bind their size at dispatch, after
+                    # earlier queued reductions may have consumed this scope.
+                    exhausted = not any(scope is None or identity in scope
+                                        for identity in self._lots)
+                    if exhausted or (requested is not None and fill.qty >= requested):
+                        del self._pending_reductions[fill.order_id]
+                    elif requested is not None:
+                        self._pending_reductions[fill.order_id] = (kind, requested - fill.qty, scope)
             self._seen_fills.add(fill.fill_id)
         else:
             raise ValueError("unsupported_execution_event")
@@ -210,6 +234,19 @@ class BundleExecution:
             self.confirmed_base = 0
             self._base_order = None
         # This is the original broker event, including actual size/fees/PnL inputs.
+        self.adapter.on_execution(event)
+
+    def on_control_refusal(self, action, event):
+        """Apply a durable control refusal correlated to its original action.
+
+        A refused cancellation is not cancellation of its target entry. The
+        runtime supplies this correlation from committed feedback metadata;
+        ordinary terminal events still require a pending order identity.
+        """
+        require(isinstance(action, (Cancel, BracketAmend))
+                and action.leg_id == self.leg_id == event.leg_id
+                and event.event == "reject" and event.fill is None,
+                "invalid_control_refusal")
         self.adapter.on_execution(event)
 
     def checkpoint(self):

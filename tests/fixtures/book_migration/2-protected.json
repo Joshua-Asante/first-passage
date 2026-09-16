@@ -1,0 +1,361 @@
+{
+  "logical_digest": "36658f97d71c28cf255285c0823bd4527d0fdf65b51b920d7849a17791ce9fee",
+  "source_revision": "567a583a3da4e752d9cadb979c3a0aee74eb6925",
+  "source_version": 2,
+  "tables": {
+    "action_occurrences": {
+      "columns": [
+        "key",
+        "envelope",
+        "source",
+        "scope",
+        "result",
+        "state",
+        "prepared_at",
+        "generation",
+        "boot_id"
+      ],
+      "rows": [
+        [
+          "02956f39858ee3413f39eb35735316604a6dc4afe3af016c3cef159ac7973adb",
+          "{\"account\":\"synthetic-account\",\"account_epoch\":\"d9df0009-fdb8-462e-bfb7-d65ca660ec18\",\"event_id\":\"entry-1\",\"ordinal\":0,\"producer\":\"direct\",\"session_id\":\"tradeify-account-day:2026-09-15\"}",
+          "{\"type\":\"OrderIntent\",\"value\":{\"bar_time\":\"2026-09-15T14:00:00+00:00\",\"bracket\":null,\"kind\":\"entry\",\"leg_id\":\"dj30_mym_p250\",\"oca_group\":null,\"order_id\":\"entry-1\",\"order_type\":\"market\",\"price\":null,\"qty\":5,\"reason\":\"\",\"scope_fill_ids\":null,\"side\":\"buy\",\"stop_dist_pts\":24,\"timing\":\"this_close\"}}",
+          null,
+          "{\"attempt_id\":\"804841ca-6233-458a-a355-f37285d6e2a6\",\"confirmed_events\":[],\"operation_id\":\"entry-1\",\"quantity\":3,\"refusal_reason\":null,\"transport_state\":\"accepted\"}",
+          "complete",
+          "2026-09-15T14:00:00+00:00",
+          1,
+          "8178d9e6-a467-449a-bb68-4142856dd111"
+        ]
+      ],
+      "sql": "CREATE TABLE action_occurrences (key TEXT PRIMARY KEY, envelope TEXT NOT NULL, source TEXT NOT NULL, scope TEXT, result TEXT, state TEXT NOT NULL, prepared_at TEXT NOT NULL, generation INTEGER NOT NULL, boot_id TEXT NOT NULL)"
+    },
+    "attempts": {
+      "columns": [
+        "attempt_id",
+        "operation_id",
+        "state",
+        "generation",
+        "body",
+        "observation"
+      ],
+      "rows": [
+        [
+          "804841ca-6233-458a-a355-f37285d6e2a6",
+          "entry-1",
+          "ACCEPTED",
+          1,
+          "{\"action\":{\"bar_time\":\"2026-09-15T14:00:00+00:00\",\"bracket\":null,\"kind\":\"entry\",\"leg_id\":\"dj30_mym_p250\",\"oca_group\":null,\"order_id\":\"entry-1\",\"order_type\":\"market\",\"price\":null,\"qty\":3,\"reason\":\"\",\"scope_fill_ids\":null,\"side\":\"buy\",\"stop_dist_pts\":24,\"timing\":\"this_close\"},\"attempt_id\":\"804841ca-6233-458a-a355-f37285d6e2a6\",\"authority\":\"NORMAL\",\"generation\":1,\"kind\":\"entry\",\"leg_id\":\"dj30_mym_p250\",\"occurrence\":{\"account\":\"synthetic-account\",\"account_epoch\":\"d9df0009-fdb8-462e-bfb7-d65ca660ec18\",\"event_id\":\"entry-1\",\"ordinal\":0,\"producer\":\"direct\",\"session_id\":\"tradeify-account-day:2026-09-15\"},\"operation_id\":\"entry-1\",\"order_symbol\":\"MYM1!\",\"protection_change\":null,\"quantity\":3,\"side\":\"buy\",\"target_operation_id\":null}",
+          "{\"facts\":[],\"state\":\"accepted\"}"
+        ]
+      ],
+      "sql": "CREATE TABLE attempts (attempt_id TEXT PRIMARY KEY, operation_id TEXT NOT NULL UNIQUE, state TEXT NOT NULL, generation INTEGER NOT NULL, body TEXT NOT NULL, observation TEXT)"
+    },
+    "barriers": {
+      "columns": [
+        "bar_time",
+        "session_id",
+        "mode",
+        "body",
+        "actions",
+        "completed"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE barriers (bar_time TEXT PRIMARY KEY, session_id TEXT NOT NULL, mode TEXT NOT NULL, body TEXT NOT NULL, actions TEXT, completed INTEGER NOT NULL DEFAULT 0)"
+    },
+    "broker_facts": {
+      "columns": [
+        "fact_id",
+        "body",
+        "feedback"
+      ],
+      "rows": [
+        [
+          "base",
+          "{\"as_of\":\"2026-09-15T14:00:00.100000+00:00\",\"cumulative_filled\":null,\"entry_execution_id\":null,\"fact_id\":\"base\",\"kind\":\"fill\",\"leg_id\":\"dj30_mym_p250\",\"operation_id\":\"entry-1\",\"order_kind\":\"entry\",\"price\":100,\"quantity\":3,\"status\":null}",
+          "{\"bar_time\":\"2026-09-15T14:00:00.100000+00:00\",\"detail\":\"\",\"event\":\"fill\",\"fill\":{\"bar_time\":\"2026-09-15T14:00:00.100000+00:00\",\"commission\":0.0,\"entry_fill_id\":null,\"fill_id\":\"base\",\"kind\":\"entry\",\"leg_id\":\"dj30_mym_p250\",\"order_id\":\"entry-1\",\"price\":100,\"qty\":3,\"reason\":\"\",\"side\":\"buy\"},\"leg_id\":\"dj30_mym_p250\",\"order_id\":\"entry-1\"}"
+        ]
+      ],
+      "sql": "CREATE TABLE broker_facts (fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, feedback TEXT)"
+    },
+    "capacity_events": {
+      "columns": [
+        "sequence",
+        "event_id",
+        "as_of",
+        "fact_type",
+        "body"
+      ],
+      "rows": [
+        [
+          1,
+          "reserve:entry-1",
+          "2026-09-15T14:00:00+00:00",
+          "reserve",
+          "{\"leg_id\":\"dj30_mym_p250\",\"operation_id\":\"entry-1\",\"order_symbol\":\"MYM1!\",\"quantity\":3}"
+        ],
+        [
+          2,
+          "fill:base",
+          "2026-09-15T14:00:00.100000+00:00",
+          "fill",
+          "{\"execution_id\":\"base\",\"operation_id\":\"entry-1\",\"quantity\":3}"
+        ]
+      ],
+      "sql": "CREATE TABLE capacity_events (sequence INTEGER PRIMARY KEY, event_id TEXT NOT NULL UNIQUE, as_of TEXT NOT NULL, fact_type TEXT NOT NULL, body TEXT NOT NULL)"
+    },
+    "close_reservations": {
+      "columns": [
+        "operation_id",
+        "allocations",
+        "status"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE close_reservations (operation_id TEXT PRIMARY KEY, allocations TEXT NOT NULL, status TEXT NOT NULL)"
+    },
+    "feed_watch": {
+      "columns": [
+        "session_id",
+        "started_at"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE feed_watch (session_id TEXT PRIMARY KEY, started_at TEXT NOT NULL)"
+    },
+    "feedback": {
+      "columns": [
+        "fact_id",
+        "body",
+        "delivered",
+        "checkpoint",
+        "boundary_time"
+      ],
+      "rows": [
+        [
+          "base",
+          "{\"bar_time\":\"2026-09-15T14:00:00.100000+00:00\",\"detail\":\"\",\"event\":\"fill\",\"fill\":{\"bar_time\":\"2026-09-15T14:00:00.100000+00:00\",\"commission\":0.0,\"entry_fill_id\":null,\"fill_id\":\"base\",\"kind\":\"entry\",\"leg_id\":\"dj30_mym_p250\",\"order_id\":\"entry-1\",\"price\":100,\"qty\":3,\"reason\":\"\",\"side\":\"buy\"},\"leg_id\":\"dj30_mym_p250\",\"order_id\":\"entry-1\"}",
+          0,
+          null,
+          "2026-09-15T14:00:00.100000+00:00"
+        ]
+      ],
+      "sql": "CREATE TABLE feedback (fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, delivered INTEGER NOT NULL DEFAULT 0, checkpoint TEXT, boundary_time TEXT)"
+    },
+    "incidents": {
+      "columns": [
+        "incident_id",
+        "reason",
+        "at",
+        "generation"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE incidents (incident_id TEXT PRIMARY KEY, reason TEXT NOT NULL, at TEXT NOT NULL, generation INTEGER NOT NULL)"
+    },
+    "operations": {
+      "columns": [
+        "operation_id",
+        "leg_id",
+        "order_symbol",
+        "kind",
+        "requested",
+        "quantity",
+        "session_id",
+        "generation",
+        "created_at",
+        "status",
+        "body"
+      ],
+      "rows": [
+        [
+          "entry-1",
+          "dj30_mym_p250",
+          "MYM1!",
+          "entry",
+          5,
+          3,
+          "tradeify-account-day:2026-09-15",
+          1,
+          "2026-09-15T14:00:00+00:00",
+          "attempted",
+          "{\"bar_time\":\"2026-09-15T14:00:00+00:00\",\"bracket\":null,\"kind\":\"entry\",\"leg_id\":\"dj30_mym_p250\",\"oca_group\":null,\"order_id\":\"entry-1\",\"order_type\":\"market\",\"price\":null,\"qty\":5,\"reason\":\"\",\"scope_fill_ids\":null,\"side\":\"buy\",\"stop_dist_pts\":24,\"timing\":\"this_close\"}"
+        ]
+      ],
+      "sql": "CREATE TABLE operations (operation_id TEXT PRIMARY KEY, leg_id TEXT NOT NULL, order_symbol TEXT NOT NULL, kind TEXT NOT NULL, requested INTEGER, quantity INTEGER, session_id TEXT NOT NULL, generation INTEGER NOT NULL, created_at TEXT NOT NULL, status TEXT NOT NULL, body TEXT NOT NULL)"
+    },
+    "owner_state": {
+      "columns": [
+        "schema",
+        "account",
+        "account_epoch",
+        "boot_id",
+        "generation",
+        "permission",
+        "authority",
+        "sequence"
+      ],
+      "rows": [
+        [
+          2,
+          "synthetic-account",
+          "d9df0009-fdb8-462e-bfb7-d65ca660ec18",
+          "8178d9e6-a467-449a-bb68-4142856dd111",
+          1,
+          "RUNNING",
+          "NORMAL",
+          3
+        ]
+      ],
+      "sql": "CREATE TABLE owner_state (schema INTEGER NOT NULL, account TEXT NOT NULL, account_epoch TEXT NOT NULL, boot_id TEXT NOT NULL, generation INTEGER NOT NULL, permission TEXT NOT NULL, authority TEXT NOT NULL, sequence INTEGER NOT NULL)"
+    },
+    "partial_bars": {
+      "columns": [
+        "bar_time",
+        "leg_id",
+        "body",
+        "acquired_at"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE partial_bars (bar_time TEXT NOT NULL, leg_id TEXT NOT NULL, body TEXT NOT NULL, acquired_at TEXT NOT NULL, PRIMARY KEY(bar_time, leg_id))"
+    },
+    "protection_facts": {
+      "columns": [
+        "fact_id",
+        "body",
+        "kind"
+      ],
+      "rows": [
+        [
+          "synthetic-protection:1",
+          "{\"account\":\"synthetic-account\",\"account_epoch\":\"d9df0009-fdb8-462e-bfb7-d65ca660ec18\",\"as_of\":\"2026-09-15T14:00:00.200000+00:00\",\"complete\":true,\"fact_id\":\"synthetic-protection:1\",\"orders\":[],\"positions\":[[\"base\",3]],\"resolved_operations\":[[\"entry-1\",\"applied\"]],\"scope_legs\":[\"dj30_mym_p250\",\"orb_mnq_v7\"],\"sequence\":1,\"stream_id\":\"synthetic-protection\"}",
+          "snapshot"
+        ]
+      ],
+      "sql": "CREATE TABLE protection_facts (fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, kind TEXT NOT NULL)"
+    },
+    "protection_operations": {
+      "columns": [
+        "operation_id",
+        "occurrence_key",
+        "owner_id",
+        "body"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE protection_operations (operation_id TEXT PRIMARY KEY, occurrence_key TEXT NOT NULL, owner_id TEXT NOT NULL, body TEXT NOT NULL)"
+    },
+    "protection_owners": {
+      "columns": [
+        "owner_id",
+        "entry_fill_id",
+        "body"
+      ],
+      "rows": [
+        [
+          "protection:base",
+          "base",
+          "{\"broker_order_ids\":[],\"consumed\":false,\"deadline\":null,\"desired\":null,\"entry_fill_id\":\"base\",\"ever_protected\":false,\"evidence_at\":\"2026-09-15T14:00:00.200000+00:00\",\"evidence_fact\":\"synthetic-protection:1\",\"leg_id\":\"dj30_mym_p250\",\"observed\":null,\"order_symbol\":\"MYM1!\",\"original_qty\":3,\"owner_id\":\"protection:base\",\"pending_operation\":null,\"quantity\":0,\"revision\":0,\"side\":\"buy\",\"trail_active\":false,\"trail_anchor\":null}"
+        ]
+      ],
+      "sql": "CREATE TABLE protection_owners (owner_id TEXT PRIMARY KEY, entry_fill_id TEXT NOT NULL UNIQUE, body TEXT NOT NULL)"
+    },
+    "protection_state": {
+      "columns": [
+        "session_id",
+        "mode",
+        "operation_ids",
+        "generation"
+      ],
+      "rows": [
+        [
+          "tradeify-account-day:2026-09-15",
+          "protected",
+          "[]",
+          1
+        ]
+      ],
+      "sql": "CREATE TABLE protection_state (session_id TEXT PRIMARY KEY, mode TEXT NOT NULL, operation_ids TEXT NOT NULL, generation INTEGER NOT NULL)"
+    },
+    "protection_streams": {
+      "columns": [
+        "stream_id",
+        "body"
+      ],
+      "rows": [
+        [
+          "synthetic-protection",
+          "{\"as_of\":\"2026-09-15T14:00:00.200000+00:00\",\"fact_id\":\"synthetic-protection:1\",\"scope\":[\"dj30_mym_p250\",\"orb_mnq_v7\"],\"sequence\":1}"
+        ]
+      ],
+      "sql": "CREATE TABLE protection_streams (stream_id TEXT PRIMARY KEY, body TEXT NOT NULL)"
+    },
+    "runtime_actors": {
+      "columns": [
+        "boot_id",
+        "kind",
+        "body"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE runtime_actors (boot_id TEXT PRIMARY KEY, kind TEXT NOT NULL, body TEXT NOT NULL)"
+    },
+    "runtime_bindings": {
+      "columns": [
+        "sequence",
+        "session_id",
+        "body",
+        "digest"
+      ],
+      "rows": [
+        [
+          1,
+          "tradeify-account-day:2026-09-15",
+          "{\"as_of\":\"2026-09-15T13:59:59+00:00\",\"cap_allocations\":{\"aegis_6j\":80,\"dj30_mym_p250\":80,\"orb_mnq_v7\":80,\"vanguard_mgc\":80},\"effective_inputs_sha256\":\"9d4d4e1d622a3fb0ae37b7b20f8bdf960244f9e66b5d88ded79db4de6089dade\",\"historical_effective_inputs_sha256\":\"66406dee955fa69f237fde60eacdd24259a08d5320352d98e59889acaa18158d\",\"lifecycle_tiers\":{\"aegis_6j\":\"AUTHORIZED\",\"dj30_mym_p250\":\"AUTHORIZED\",\"orb_mnq_v7\":\"AUTHORIZED\",\"vanguard_mgc\":\"AUTHORIZED\"},\"max_evidence_age_seconds\":30.0,\"phase1_admission\":{\"accepted_run\":\"8ddf727b38b3044ad2c0e8cb05330933f94b9fb8c9f21be38dbeff41d7ad75e0\",\"admission_contract\":\"4f027af56f18c119c18b24f6f867ecb0a64188085ea7a8a95c18b0a77d0e9dde\",\"independent_review\":\"dd9c5e7296535a934b973df7ec0ff8b87c6c3554fc092822820f633588654cfd\",\"run_py\":\"2ea9e16911214ebac0eaba840b6aab90b784cf2623d937ce91be91261053ff2b\"},\"policy\":{\"provenance\":\"CANDIDATE - unadmitted; operator selection 2026-09-10 (docs/notes/2026-09-10-tradeify-protection-selection.md); admission only via umbrella D-B11 (TB-P2 ADR, TB-D0 registry row after TB-E1)\",\"reference_mode\":\"trailing\",\"scale\":0.4,\"trigger\":0.01},\"policy_digest\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"risk_dollars\":{\"dj30_mym_p250\":100},\"runtime_identities\":{\"aegis_6j\":{\"pine_sha256\":\"db78ecba95ae78aca14501a5eaccfda2a42164d83cac12321cb7f293a9adca7c\",\"runtime_sha256\":\"11763740bc3fdcc8b9e94cb0b465823aec202cd8333379c46878185db5e9e84f\"},\"dj30_mym_p250\":{\"pine_sha256\":\"712cf395396568ce22ae43f1f15b085eaba23acf1b85502abb92129f277fffd7\",\"runtime_sha256\":\"efd479b6b4c7eeaa7d8df3f40f36593f87d96b9d5f512dc79c4dd9b0520211f4\"},\"orb_mnq_v7\":{\"pine_sha256\":\"176c4f70c67d58053c4d3b8170d0a9be3733bc6b76b1e2f928bd7a877be052a3\",\"runtime_sha256\":\"b1f4e573009e62b976013e08e7ef2784497d840f490f04e3878fdaef553f317d\"},\"vanguard_mgc\":{\"pine_sha256\":\"af26899ca94bb0e9ee26d09e0176b6b94bba2f5da252399ce4d899fe7e3bad15\",\"runtime_sha256\":\"e6a03d04c65a19e7fde71103560a229630c3663f445676f06622feec4e9157a3\"}},\"session\":{\"calendar_digest\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"closes_at\":\"2026-09-15T16:00:00+00:00\",\"flatten_start\":\"2026-09-15T15:10:00+00:00\",\"opens_at\":\"2026-09-15T13:00:00+00:00\",\"own_flat_deadline\":\"2026-09-15T15:15:00+00:00\",\"prior_session_id\":\"tradeify-account-day:2026-09-14\",\"risk_add_cutoff\":\"2026-09-15T15:00:00+00:00\",\"session_id\":\"tradeify-account-day:2026-09-15\"},\"settlement\":{\"as_of\":\"2026-09-15T12:59:00+00:00\",\"equity\":98500.0,\"peak\":100000.0,\"seal_digest\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"session_id\":\"tradeify-account-day:2026-09-14\"},\"snapshot_digest\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"valid_until\":\"2026-09-15T14:05:00+00:00\"}",
+          "592c4ca6d5f178d2482dc9886a7d3bc82515678ff3f81a2fa194bd127ecd9de9"
+        ]
+      ],
+      "sql": "CREATE TABLE runtime_bindings (sequence INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL UNIQUE, body TEXT NOT NULL, digest TEXT NOT NULL UNIQUE)"
+    },
+    "settlement_attachment": {
+      "columns": [
+        "singleton",
+        "body",
+        "digest"
+      ],
+      "rows": [
+        [
+          1,
+          "{\"account\":\"synthetic-account\",\"status\":\"NEVER_ATTACHED\"}",
+          "32a12a3bb1f8b65edd27811ba24706b4b607d3f4c3523e8550392b9d45bbf100"
+        ]
+      ],
+      "sql": "CREATE TABLE settlement_attachment (singleton INTEGER PRIMARY KEY CHECK(singleton=1), body TEXT NOT NULL, digest TEXT NOT NULL)"
+    },
+    "sqlite_sequence": {
+      "columns": [
+        "name",
+        "seq"
+      ],
+      "rows": [
+        [
+          "runtime_bindings",
+          1
+        ]
+      ],
+      "sql": "CREATE TABLE sqlite_sequence(name,seq)"
+    },
+    "timeline": {
+      "columns": [
+        "sequence",
+        "kind",
+        "ref_id",
+        "acquired_at"
+      ],
+      "rows": [
+        [
+          3,
+          "feedback",
+          "base",
+          "2026-09-15T14:00:00.100000+00:00"
+        ]
+      ],
+      "sql": "CREATE TABLE timeline (sequence INTEGER PRIMARY KEY, kind TEXT NOT NULL, ref_id TEXT NOT NULL UNIQUE, acquired_at TEXT NOT NULL)"
+    }
+  }
+}
