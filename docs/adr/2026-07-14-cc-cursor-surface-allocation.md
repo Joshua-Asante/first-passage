@@ -274,18 +274,37 @@ writing briefs.**
 
 ## §9 — Operator actions this repo cannot perform
 
-Two Cursor mechanisms live outside this tree and are unaffected by merging the sweep. Recorded
-here, in the hot record, so the retirement is not mistaken for complete at the account level:
+Three Cursor residues sit outside what a file edit can reach, so merging the sweep could not touch
+them. Recorded here, in the hot record, so the retirement is not mistaken for complete at the
+account level. **Items 1 and 2 verified already gone on 2026-09-15** (same-day follow-up session,
+run on the operator's machine and account):
 
 1. **The GitHub webhook trigger** created under the now-superseded autonomous-loop ADR (routine
-   `trig_012nvuH7jqmjFUFgoFVpZ6RP`, firing unfiltered on `pull_request: opened`). It is an
-   account-level routine, not a repo file — merging this revision removes its *authority*, not
-   the trigger. The operator should delete or disable it.
-2. **`daily-repo-truth-sync`**, the operator-machine scheduled task whose step 2 classifies
-   `cursor/*` branches SPENT / CARRIES-WORK / UNKNOWN. Report-only and now a no-op against an
-   empty namespace, but stale.
+   `trig_012nvuH7jqmjFUFgoFVpZ6RP`, firing unfiltered on `pull_request: opened`) — an
+   account-level routine, not a repo file. **Deleted.** `RemoteTrigger get` on the id returns
+   HTTP 404 `Trigger not found` from the same account whose 2026-08-15 session transcript holds
+   the routine's API record; `list_runs` shows zero sessions against a `52 */6 * * *` cron that
+   would have produced ~4/day; and all 30 `cursor/*` PRs opened after 2026-08-14 were merged by
+   the operator or `app/cursor`, never by the routine. The API's `list` returns only the 20
+   newest routines and does not page, so the earlier "not in the listing" was uninformative
+   either way — the resource-level 404 is the evidence. Nothing to disable. One residual check
+   only the operator can make: the routines page at `claude.ai/code/routines`, confirming no
+   *other* routine carries a GitHub event source on `first-passage` (a routine object exposes no
+   event-source field, so the API cannot answer this).
+2. **`daily-repo-truth-sync`**, the operator-machine scheduled task whose step 2 classified
+   `cursor/*` branches SPENT / CARRIES-WORK / UNKNOWN. **Deleted.** The desktop scheduler
+   reports `taskDeleted: true` (42 runs; last 2026-09-14 00:59Z). Its `SKILL.md` remains under
+   `~/.claude/scheduled-tasks/` as the scheduler's documented post-delete residue, not a live
+   task. Nothing to prune.
+3. **Four spent `cursor/*` refs still on `origin`** — a remote deletion, not a file edit, so the
+   sweep could not perform it (and §10 hook 3 read "empty" from an unfetched checkout):
+   `cursor/research-asset-registry-0ba4` (#315 merged), `cursor/scripts-side-2026-09-04-p3`
+   (#303 merged), `cursor/windows-handoff-job-accounting-7785` (#326 merged) — each an ancestor
+   of `main` — and `cursor/scripts-side-2026-09-04-p2` (#304 closed unmerged, "Packet B was
+   withdrawn before dispatch"), one commit ahead holding the withdrawn diff, which stays
+   reachable from the PR after deletion. Operator: `git push origin --delete <ref>` ×4.
 
-Neither blocks ratification. A third item is the operator's alone: the **Cursor row in the
+None of this blocks ratification. A fourth item is the operator's alone: the **Cursor row in the
 [subscription ledger](../pursuits/SUBSCRIPTION_LEDGER.md)** still records a cancellation date and
 final charges as not supplied. That is an operator reconfirmation, not an agent edit.
 
@@ -346,9 +365,12 @@ rg -n -i "spawn target.*cursor" docs/briefs docs/superpowers
 #  "NOT Cursor-eligible" -- it routes AWAY from the retired surface, which is correct.)
 # Any hit on a brief that is still dispatchable is a finding.
 
-# 3. Worker branches use a surviving namespace.
-git branch -a --format='%(refname:short)' | grep -i '^cursor/\|/cursor/'
-# Expected: empty (verified empty at authoring: no cursor/* branch exists locally or on origin).
+# 3. Worker branches use a surviving namespace. Ask the remote: `git branch -a` sees only refs
+#    this checkout has fetched, which is how the authoring pass read "empty" while origin held
+#    four (the same unfetched-branch trap the #401 search fell into — SESSIONS 2026-09-15a).
+git ls-remote --heads origin 'cursor/*'
+# Expected: empty once the §9 item-3 refs are deleted. Verified 2026-09-15: exactly the four
+# spent refs named in §9 item 3. Any ref not in that list is a finding.
 
 # 4. The retirement did not silently drop the surviving clauses' owners.
 test -f .claude/skills/task-routing/SKILL.md \
