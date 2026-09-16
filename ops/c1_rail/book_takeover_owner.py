@@ -365,7 +365,11 @@ class TakeoverOwnerMixin:
                 expected = {fid: qty for leg_id in snap.scope_legs for fid, qty in
                             self._open_fill_quantities(db, leg_id, subtract_reservations=False).items() if qty}
                 _require(actual == expected and dict(snap.protection.positions) == actual, 'position inventory mismatch')
+                protection_seen = db.execute('SELECT 1 FROM protection_facts WHERE fact_id=?',
+                                             (snap.protection.fact_id,)).fetchone()
                 _require(self._apply_protection_snapshot_db(db, snap.protection, now=now), 'protection inventory mismatch')
+                if not protection_seen:
+                    events.extend(self._reconcile_close_protection_db(db, snap.protection, now=now))
                 # A complete inventory must include every admitted working remainder unless terminal.
                 working = {r.operation_id: r.remaining for r in snap.working_orders}
                 for op in capacity.operations:

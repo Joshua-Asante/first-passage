@@ -7,8 +7,8 @@ and confirmed feedback only; it never resends a broker command.
 """
 from __future__ import annotations
 
-from dataclasses import asdict
-from datetime import datetime, timedelta
+from dataclasses import asdict, replace
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 import threading
 from uuid import uuid4
@@ -17,7 +17,7 @@ from c1_rail.book_policy import BOOK_LEGS, is_protected
 from c1_rail.book_account_owner import AccountOwnerError, BookAccountOwner
 from c1_rail.c1_rail_listener import handle_book_action
 from c1_signal_daemon.book_adapters import AdapterRegistry
-from c1_signal_daemon.book_protocol import ExecutionEvent, Fill, Mode
+from c1_signal_daemon.book_protocol import ExecutionEvent, Fill, Mode, OrderIntent
 from c1_signal_daemon.feed import Bar
 from c1_signal_daemon.book_validation import InputViolation, validate_action, validate_bar
 
@@ -117,11 +117,42 @@ class FourLegRuntime:
             instant = datetime.fromisoformat(retained["bar_time"])
             self._pending.setdefault(instant, {})[retained["leg_id"]] = self._validated_retained_bar(
                 retained["body"], boundary=instant, leg_id=retained["leg_id"])
+        self._validate_retained_chronology()
+
+    def _validate_retained_chronology(self):
+        sessions = self.owner.retained_sessions
+        boundaries = {session_id: set() for session_id in sessions}
+        try:
+            for retained in self.owner.retained_barriers:
+                times = boundaries[retained["session_id"]]
+                instant = datetime.fromisoformat(retained["bar_time"])
+                if instant in times:
+                    raise ValueError("duplicate retained boundary instant")
+                times.add(instant)
+            for instant in self._pending:
+                matches = [session_id for session_id, session in sessions.items()
+                           if datetime.fromisoformat(session["opens_at"]) <= instant
+                           < datetime.fromisoformat(session["closes_at"])]
+                if len(matches) != 1:
+                    raise ValueError("partial has no unique session")
+                boundaries[matches[0]].add(instant)
+            for session_id, times in boundaries.items():
+                expected = datetime.fromisoformat(sessions[session_id]["opens_at"])
+                close = datetime.fromisoformat(sessions[session_id]["closes_at"])
+                for instant in sorted(times):
+                    if instant != expected or instant >= close:
+                        raise ValueError("retained history skips a boundary")
+                    expected += BAR_PERIOD
+        except (KeyError, TypeError, ValueError):
+            self.owner.halt("retained-bar-sequence", "barrier", now=self.owner.binding["as_of"])
+            raise AccountOwnerError("noncontiguous retained bar boundary") from None
 
     def _validated_retained_bar(self, data, *, boundary, leg_id):
         try:
             bar = _bar(data)
             violation = validate_bar(bar)
+            if violation is None and bar.ts != boundary:
+                violation = InputViolation("boundary_identity", "ts")
         except (KeyError, TypeError, ValueError, AttributeError):
             violation = InputViolation("type", "bar")
         if type(leg_id) is not str or leg_id not in _LEG_RANK:
@@ -146,7 +177,7 @@ class FourLegRuntime:
             settlement.equity, settlement.peak, self.owner.binding["policy"]
         ) else Mode.NORMAL
 
-    def _validated_actions(self, actions, *, boundary, source, now):
+    def _validated_actions(self, actions, *, boundary, source, now, leg_id=None):
         violation = None
         ordinal = "container"
         if type(actions) not in (list, tuple):
@@ -154,6 +185,11 @@ class FourLegRuntime:
         else:
             for index, action in enumerate(actions):
                 violation = validate_action(action)
+                if violation is None and leg_id is not None and action.leg_id != leg_id:
+                    violation = InputViolation("source_identity", "leg_id")
+                if (violation is None and isinstance(action, OrderIntent)
+                        and action.bar_time != boundary):
+                    violation = InputViolation("boundary_identity", "bar_time")
                 if violation is not None:
                     ordinal = str(index)
                     break
@@ -173,7 +209,7 @@ class FourLegRuntime:
         if mode != self._mode:
             for leg_id in LEG_ORDER:
                 actions.extend(self._validated_actions(self.adapters[leg_id].set_mode(mode),
-                    boundary=boundary, source="set_mode:" + leg_id, now=now))
+                    boundary=boundary, source="set_mode:" + leg_id, now=now, leg_id=leg_id))
             self._mode = mode
         return actions
 
@@ -206,7 +242,7 @@ class FourLegRuntime:
 
     def _retain_local_refusal(self, action, result, *, now, boundary_time=None):
         reason = result.refusal_reason
-        if reason is None or reason in ("takeover_pending", "duplicate_operation", "awaiting_evidence"):
+        if reason is None or reason in ("takeover_pending", "duplicate_operation", "awaiting_evidence", "close_pending"):
             return ()
         if any(event.event == "reject" and event.order_id == result.operation_id
                for event in result.confirmed_events):
@@ -232,6 +268,17 @@ class FourLegRuntime:
             self._deliver_events(events)
             for result in self.owner.resume_takeover(now=now):
                 self._deliver(result)
+            for result in self.owner.resume_closes(now=now):
+                self._deliver(result)
+            return events
+
+    def observe_protection(self, snapshot, *, now):
+        """Reconcile residual protection before releasing feedback and queues."""
+        with self._application_lock:
+            events = self.owner.observe_protection(snapshot, now=now)
+            self._deliver_events(events)
+            for result in self.owner.resume_closes(now=now):
+                self._deliver(result)
             return events
 
     def observe_protection_execution(self, event, *, now):
@@ -239,6 +286,8 @@ class FourLegRuntime:
         with self._application_lock:
             events = self.owner.observe_protection_execution(event, now=now)
             self._deliver_events(events)
+            for result in self.owner.resume_closes(now=now):
+                self._deliver(result)
             return events
 
     def observe_takeover_inventory(self, snapshot, *, now):
@@ -247,6 +296,8 @@ class FourLegRuntime:
             events = self.owner.observe_takeover_inventory(snapshot, now=now)
             self._deliver_events(events)
             for result in self.owner.resume_takeover(now=now):
+                self._deliver(result)
+            for result in self.owner.resume_closes(now=now):
                 self._deliver(result)
             return events
 
@@ -264,6 +315,9 @@ class FourLegRuntime:
             raise AccountOwnerError("invalid bar: " + violation.code + ":" + violation.field)
         if not isinstance(now, datetime) or now.utcoffset() is None:
             raise AccountOwnerError("acquisition time must be timezone-aware")
+        # Equivalent aware timestamps name one occurrence, independently of
+        # provider timezone and the order in which the four legs arrive.
+        bar = replace(bar, ts=bar.ts.astimezone(timezone.utc))
         session = self.owner.binding["session"]
         if (bar.ts < session.opens_at or bar.ts >= session.closes_at
                 or bar.ts > now or now > bar.ts + BAR_PERIOD + BAR_SLACK):
@@ -272,9 +326,11 @@ class FourLegRuntime:
         single_body = _jsonable(asdict(bar))
         retained_barriers = self.owner.retained_barriers
         retained_same = next((row for row in retained_barriers
-                              if row["bar_time"] == bar.ts.isoformat()), None)
+                              if datetime.fromisoformat(row["bar_time"]) == bar.ts), None)
         if retained_same is not None:
-            if retained_same["body"].get(leg_id) != single_body:
+            retained_bar = self._validated_retained_bar(retained_same["body"].get(leg_id),
+                boundary=bar.ts, leg_id=leg_id)
+            if retained_bar != bar:
                 self.owner.halt("bar-conflict:" + bar.ts.isoformat(), "barrier", now=now)
                 raise AccountOwnerError("conflicting bar identity")
             return None
@@ -282,6 +338,11 @@ class FourLegRuntime:
                           for row in retained_barriers
                           if row["session_id"] == session.session_id]
         known_times = retained_times + list(self._pending)
+        # Bar.ts is the bar-open timestamp used by the Pine adapters. Without
+        # retained history, only the session's first bar may seed their state.
+        if not known_times and bar.ts != session.opens_at:
+            self.owner.halt("bar-sequence:" + bar.ts.isoformat(), "barrier", now=now)
+            raise AccountOwnerError("noncontiguous first bar boundary")
         if known_times:
             latest = max(known_times)
             invalid = bar.ts < latest
@@ -308,7 +369,7 @@ class FourLegRuntime:
         actions = self._mode_actions(mode, boundary=bar.ts, now=now)
         for ordered_leg in LEG_ORDER:
             actions.extend(self._validated_actions(self.adapters[ordered_leg].on_bar(slot[ordered_leg]),
-                boundary=bar.ts, source="on_bar:" + ordered_leg, now=now))
+                boundary=bar.ts, source="on_bar:" + ordered_leg, now=now, leg_id=ordered_leg))
         self._validated_actions(actions, boundary=bar.ts, source="batch", now=now)
         actions = self._sort_actions(actions)
         occurrences = [self.owner.make_occurrence("runtime", bar.ts.isoformat(), ordinal)
@@ -380,7 +441,7 @@ class FourLegRuntime:
 
     def advance_schedule(self, *, now):
         with self._application_lock:
-            results = self.owner.advance_schedule(now=now)
+            results = self.owner.advance_schedule(now=now) + self.owner.resume_closes(now=now)
             for result in results:
                 self._deliver(result)
             return results
@@ -429,7 +490,7 @@ class FourLegRuntime:
                 actions = runtime._mode_actions(Mode(retained["mode"]), boundary=boundary, now=boundary)
                 for leg_id in LEG_ORDER:
                     actions.extend(runtime._validated_actions(adapters[leg_id].on_bar(bars[leg_id]),
-                        boundary=boundary, source="on_bar:" + leg_id, now=boundary))
+                        boundary=boundary, source="on_bar:" + leg_id, now=boundary, leg_id=leg_id))
                 runtime._validated_actions(actions, boundary=boundary, source="batch", now=boundary)
                 rebuilt = [dict(_action_body(action), occurrence=asdict(owner.make_occurrence(
                     "runtime", boundary.isoformat(), ordinal)))

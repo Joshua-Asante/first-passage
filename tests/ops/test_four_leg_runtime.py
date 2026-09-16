@@ -39,7 +39,7 @@ from book_bootstrap_fixtures import BootstrapBroker, activate_fresh
 def binding(*, protected=False):
     session = BookSession(
         "tradeify-account-day:2026-09-15", "tradeify-account-day:2026-09-14",
-        NOW - timedelta(hours=1), NOW + timedelta(hours=1),
+        NOW, NOW + timedelta(hours=1),
         NOW + timedelta(hours=2), "c" * 64,
         NOW + timedelta(hours=1, minutes=10),
         NOW + timedelta(hours=1, minutes=15),
@@ -53,7 +53,7 @@ def binding(*, protected=False):
         "policy": candidate_book_protection_policy(),
         "policy_digest": "d" * 64,
         "snapshot_digest": "a" * 64,
-        "as_of": NOW - timedelta(seconds=1),
+        "as_of": NOW,
         "valid_until": NOW + timedelta(minutes=5),
         "max_evidence_age": timedelta(seconds=30),
         "lifecycle_tiers": {leg: "AUTHORIZED" for leg in LEGS},
@@ -78,7 +78,7 @@ class Adapter:
     def on_bar(self, bar):
         self.bars.append(bar.ts.isoformat())
         self.history.append(("bar", bar.ts.isoformat()))
-        return list(self.actions)
+        return list(self.actions) if len(self.bars) == 1 else []
 
     def on_execution(self, event):
         self.events.append((event.event, event.order_id,
@@ -263,7 +263,7 @@ def test_daemon_loop_expires_missing_bar_without_external_coordinator(tmp_path):
     assert account.retained_partial_bars == ()
 
 
-def test_daemon_loop_advances_schedule_without_feed_or_external_coordinator(tmp_path):
+def test_daemon_loop_missing_session_history_remains_intervention_at_cutoff(tmp_path):
     class EmptySource:
         def poll(self):
             return None
@@ -277,7 +277,8 @@ def test_daemon_loop_advances_schedule_without_feed_or_external_coordinator(tmp_
 
     assert result is None
     assert account.permission == "HALTED"
-    assert account.authority == "SCHEDULED_EXIT"
+    assert account.authority == "INTERVENTION"
+    assert any(incident["reason"] == "feed" for incident in account.incidents)
     assert account.synthetic_broker.commands == []
 
 
@@ -444,14 +445,14 @@ def test_recovery_uses_each_retained_barriers_mode_not_current_session_mode(tmp_
     protected["session"] = replace(
         protected["session"], session_id="tradeify-account-day:2026-09-16",
         prior_session_id=normal["session"].session_id,
-        opens_at=next_now - timedelta(hours=1), risk_add_cutoff=next_now + timedelta(hours=1),
+        opens_at=next_now, risk_add_cutoff=next_now + timedelta(hours=1),
         flatten_start=next_now + timedelta(hours=1, minutes=10),
         own_flat_deadline=next_now + timedelta(hours=1, minutes=15),
         closes_at=next_now + timedelta(hours=2))
     protected["settlement"] = replace(
         protected["settlement"], session_id=normal["session"].session_id,
         as_of=next_now - timedelta(hours=2))
-    protected["as_of"] = next_now - timedelta(seconds=1)
+    protected["as_of"] = next_now
     protected["valid_until"] = next_now + timedelta(minutes=5)
     restarted = BookAccountOwner.boot(
         account.path, "synthetic-account", binding=protected,

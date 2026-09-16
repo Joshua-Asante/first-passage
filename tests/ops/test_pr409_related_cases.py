@@ -45,12 +45,14 @@ def test_close_refuses_live_entry_remainder_until_terminal(tmp_path, kind, scope
 
 
 def test_runtime_cancel_and_exit_batch_reports_refusal_and_recovers(tmp_path):
-    account, broker = owner(tmp_path, [BrokerResult('accepted'), BrokerResult('accepted')])
+    from test_four_leg_runtime import owner as runtime_owner, binding as runtime_binding
+    account = runtime_owner(tmp_path, [BrokerResult('accepted'), BrokerResult('accepted')], protected=True)
+    broker = account.synthetic_broker
     actions = [Cancel('dj30_mym_p250', 'base'), replace(intent('exit'), kind='exit', side=Side.SELL, qty=None)]
     class BatchAdapter(Adapter):
         def on_bar(self, bar):
             super().on_bar(bar)
-            return [intent()] if len(self.bars) == 1 else actions
+            return [intent()] if len(self.bars) == 1 else [actions[0], replace(actions[1], bar_time=bar.ts)]
     def adapters():
         values = inert_adapters()
         values['dj30_mym_p250'] = BatchAdapter('dj30_mym_p250')
@@ -66,7 +68,7 @@ def test_runtime_cancel_and_exit_batch_reports_refusal_and_recovers(tmp_path):
     assert results[-1].refusal_reason == 'entry_remainder_pending'
     assert [c.kind for c in broker.commands] == ['entry', 'cancel']
     assert ('reject', 'exit', None) in registry['dj30_mym_p250'].events
-    restarted = BookAccountOwner.boot(account.path, account.account, binding=binding(), synthetic_broker=broker)
+    restarted = BookAccountOwner.boot(account.path, account.account, binding=runtime_binding(protected=True), synthetic_broker=broker)
     recovered = FourLegRuntime.recover(restarted, adapters())
     assert recovered.adapters['dj30_mym_p250'].events == registry['dj30_mym_p250'].events
     assert restarted.exposure('dj30_mym_p250') == (1, 2)

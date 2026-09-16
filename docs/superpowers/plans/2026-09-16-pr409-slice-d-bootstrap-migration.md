@@ -285,3 +285,55 @@ checkpoint, these changes were uncommitted and remote CI had not validated them.
 The subsequent operator request authorizes committing and pushing this patch to
 PR 409 and requesting a Codex review. The local evidence above applies to the
 code being committed; post-push CI and review are separate checks.
+
+### Runtime and close reconciliation follow-up on `5b948ca` — 2026-09-16
+
+Integration owner: coordinating implementer. A completed bar must extend the
+bound session's contiguous history and every resulting order must name that
+exact boundary and producing leg. An ordinary close is not reconciled while
+its residual attached orders remain unproven; another close on that symbol
+must wait. Fully filled terminal evidence does not mean cancellation.
+
+| Related path or input | Shared rule | Disposition and evidence |
+| --- | --- | --- |
+| First live bar, resumed session, retained complete/partial history | No missing opening or intervening boundaries | Runtime checks from persisted session open; watchdog anchors session open, not process start. Chronology regressions include restart and invalid retained history. |
+| `on_bar` and `set_mode` actions | Order timestamps and leg identity belong to the producing barrier | Exact timestamp/leg validation; missing, prior, future and cross-leg variants rejected before dispatch. |
+| Equivalent timezone spellings and retained payload timestamps | One instant names one bar occurrence | UTC live normalization, instant-based duplicate comparison, retained payload checks and duplicate-history refusal. |
+| Protected partial/full close, cancellation after partial execution | Accounting changes on observed fill; adapter feedback waits for complete residual evidence | Durable held feedback and `awaiting_protection`; complete fresh reads release ordered events, missing evidence expires to intervention. |
+| Duplicate old snapshot, delayed fill, pending attachment | An earlier receipt is not proof of the new residual state | Duplicate reads cannot release new obligations; pending protection queues closes until confirmed. |
+| Protective execution and takeover inventory | All complete inventory consumers share close reconciliation | Reconcile held ordinary fills before protective feedback; takeover inventories include held feedback only after successful fresh protection validation. |
+| Same-symbol close overlap, new arrivals ahead of queued demand | Only one in-flight close; preserve queue order | Durable `close_pending` occurrences reserve nothing; common allocator enforces FIFO and runtime fact/protection/schedule callbacks resume eligible demands. |
+| Repeated scheduled flatten, restart, authority generation | Replay must not resend or invent a different action for the same occurrence | Reuse queued scheduled source; restart retains halted authority and evidence obligations; cutoff retires superseded queued demands explicitly. |
+| Filled entry/close terminal and strict adapter consumer | Terminal fill evidence is not a cancellation instruction | Retain valid terminal in broker journal without adapter event; real strict execution reducer and unknown-attempt clearing regressions. |
+
+Initial close regressions: 8 failed. Runtime chronology failures reproduced
+before repair, including timezone duplicate behavior. Independent close review
+reproduced the stale-snapshot variant and accepted its repair with edge tests.
+Final verification and publication evidence will be recorded below.
+
+The branch predates the operations launcher present in the parent checkout.
+For final verification, its launcher files were copied here as untracked tooling
+and excluded from this patch. `./fp.ps1 doctor` selected the shared isolated
+operations environment, Python 3.13.2, and matched all 62 locked distributions
+(optional cryptography 50.0.1). Earlier diagnostic runs used Python 3.14; final
+results below use the validated environment and this checkout's sources.
+
+Verification above `5b948ca4419d5367862bc4e5d37c8ea222f6105c`:
+
+- `./fp.ps1 test-ops -q -p no:cacheprovider --tb=short`: **2,758 passed,
+  15 skipped**, four dependency deprecation warnings, exit 0 (215.59s).
+- After the final protective-execution queue callback and its additional
+  regression, all four new regression files passed: **41 passed**, exit 0
+  (9.94s). This refresh covers the final code; the full run began before that
+  final two-line callback change and additional test.
+- `./fp.ps1 check`: exit 0; existing absent private-data/Pine and historical
+  documentation advisories remain. Python 3.11 grammar parsing passed for
+  all 15 changed/new Python files; this is not a Python 3.11 runtime claim.
+- Targeted Pylint with repository import roots: only unchanged E0213 on
+  `_boot_locked(owner)`, exit 2. No clean lint claim. `git diff --check` passed.
+- Independent close review accepted the bounded changes after reproducing
+  the duplicate-snapshot and cutoff-generation variants. Takeover final
+  revalidation already checks unresolved attempts account-wide and invalidates
+  proof after operation changes; no extra admission rule was required there.
+- Remote PR head was rechecked at `5b948ca` before publication. Tests are
+  offline synthetic; no production activation, deployment or merge occurred.

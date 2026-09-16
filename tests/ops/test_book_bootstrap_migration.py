@@ -15,6 +15,13 @@ import json
 FIXTURES = Path(__file__).parents[1] / 'fixtures/book_migration'
 
 
+def normal_binding():
+    """Keep frozen migration snapshots bound to their original session clock."""
+    historical = binding()
+    historical["settlement"] = replace(historical["settlement"], equity=100_000.0)
+    return historical
+
+
 def restore_fixture(path, name):
     fixture = json.loads((FIXTURES / name).read_text())
     tables = fixture['tables']
@@ -36,7 +43,6 @@ def restore_fixture(path, name):
 @pytest.mark.parametrize('scenario', ['empty', 'filled', 'pending_takeover', 'completed_takeover', 'amend_accepted', 'amend_unknown'])
 def test_conversion_preserves_source_rows_and_never_rearms(tmp_path, version, scenario):
     from c1_rail.book_migration import migrate_book_owner
-    from test_four_leg_runtime import binding as normal_binding
     path = tmp_path / 'owner.sqlite'
     fixture = restore_fixture(path, f'{version}-{scenario}.json')
     result = migrate_book_owner(path, 'synthetic-account', now=NOW)
@@ -152,7 +158,6 @@ def test_restart_before_first_activation_consumes_freshness(tmp_path):
 @pytest.mark.parametrize('damage', ['bootstrap', 'read', 'read_body', 'migration_record', 'legacy_fill', 'legacy_operation'])
 def test_current_missing_authority_record_is_corruption(tmp_path, damage):
     from c1_rail.book_migration import migrate_book_owner
-    from test_four_leg_runtime import binding as normal_binding
     if damage in ('migration_record', 'legacy_fill', 'legacy_operation'):
         path = tmp_path / 'owner.sqlite'
         restore_fixture(path, '1-filled.json')
@@ -191,7 +196,6 @@ def test_interrupted_migration_is_original_or_complete_target(tmp_path, cut):
 def test_late_legacy_fill_extends_quarantine_without_inventing_protection(tmp_path):
     from c1_rail.book_migration import migrate_book_owner
     from c1_rail.book_account_owner import BrokerFact
-    from test_four_leg_runtime import binding as normal_binding
     path = tmp_path / 'owner.sqlite'
     restore_fixture(path, '1-filled.json')
     migrate_book_owner(path, 'synthetic-account', now=NOW)
@@ -237,7 +241,6 @@ def test_failed_bootstrap_storage_latches_send_suppression(tmp_path):
 
 def test_schema_three_cannot_quarantine_a_missing_takeover_plan(tmp_path):
     from c1_rail.book_migration import migrate_book_owner, add_obligation
-    from test_four_leg_runtime import binding as normal_binding
     path = tmp_path / 'owner.sqlite'
     fixture = restore_fixture(path, '3-pending_takeover.json')
     result = migrate_book_owner(path, 'synthetic-account', now=NOW)
@@ -267,7 +270,6 @@ def test_attached_settlement_migration_preserves_blob_sources_and_sealed_chain(t
 def test_unprovable_legacy_protection_execution_is_retained_without_accounting(tmp_path):
     from c1_rail.book_migration import migrate_book_owner
     from c1_rail.book_protection import ProtectionExecution, ProtectionSnapshot
-    from test_four_leg_runtime import binding as normal_binding
     path = tmp_path / 'owner.sqlite'
     restore_fixture(path, '1-filled.json')
     migrate_book_owner(path, 'synthetic-account', now=NOW)
@@ -328,7 +330,6 @@ def test_current_schema_does_not_accept_weakened_identity_constraints(tmp_path):
 @pytest.mark.parametrize('version', [1, 2])
 def test_quarantined_takeover_has_no_inventory_or_send_continuation(tmp_path, version):
     from c1_rail.book_migration import migrate_book_owner
-    from test_four_leg_runtime import binding as normal_binding
     from c1_rail.book_account_owner import SyntheticBroker
     path = tmp_path / 'owner.sqlite'
     restore_fixture(path, f'{version}-pending_takeover.json')
@@ -343,7 +344,6 @@ def test_quarantined_takeover_has_no_inventory_or_send_continuation(tmp_path, ve
 @pytest.mark.parametrize('table', ['attempts', 'broker_facts', 'feedback', 'capacity_events', 'action_occurrences'])
 def test_original_migrated_history_cannot_disappear(tmp_path, table):
     from c1_rail.book_migration import migrate_book_owner
-    from test_four_leg_runtime import binding as normal_binding
     path = tmp_path / 'owner.sqlite'
     restore_fixture(path, '2-filled.json')
     migrate_book_owner(path, 'synthetic-account', now=NOW)
@@ -383,7 +383,7 @@ def test_migrated_feedback_replays_and_checkpoints_without_sends(tmp_path, versi
     from c1_rail.book_account_owner import SyntheticBroker
     from c1_signal_daemon.book_runtime import FourLegRuntime
     from c1_signal_daemon.book_protocol import Mode
-    from test_four_leg_runtime import binding as normal_binding, inert_adapters
+    from test_four_leg_runtime import inert_adapters
     path = tmp_path / 'owner.sqlite'
     restore_fixture(path, f'{version}-filled.json')
     migrate_book_owner(path, 'synthetic-account', now=NOW)

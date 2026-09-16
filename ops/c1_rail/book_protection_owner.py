@@ -173,6 +173,7 @@ class ProtectionOwnerMixin:
 
     def _check_protection_deadlines_locked(self, *, now):
         with self._transaction() as db:
+            self._check_close_protection_deadlines_db(db, now=now)
             for row in self._protection_rows(db).values():
                 if row['deadline'] and now >= datetime.fromisoformat(row['deadline']):
                     self._protection_fault(db, 'deadline:' + row['pending_operation'], now)
@@ -239,7 +240,7 @@ class ProtectionOwnerMixin:
     def observe_protection(self, snapshot, *, now):
         with self.serializer.acquire():
             try:
-                self._observe_protection_locked(snapshot, now=now)
+                return self._observe_protection_locked(snapshot, now=now)
             except Exception:
                 self._input_send_suppressed = True
                 raise
@@ -249,8 +250,10 @@ class ProtectionOwnerMixin:
         if not self._snapshot_shape(snapshot):
             self._record_input_incident_locked('protection-input:' + str(uuid4()),
                 InputViolation('type', 'protection_snapshot'), source='protection', now=now)
-            return
+            return ()
         with self._transaction() as db:
+            previously_seen = db.execute('SELECT 1 FROM protection_facts WHERE fact_id=?',
+                                        (snapshot.fact_id,)).fetchone()
             db.execute('SAVEPOINT protection_read')
             if not self._apply_protection_snapshot_db(db, snapshot, now=now):
                 db.execute('ROLLBACK TO protection_read')
@@ -260,6 +263,9 @@ class ProtectionOwnerMixin:
                 self._protection_fault(db, 'invalid-snapshot:' + snapshot.fact_id, now)
             else:
                 db.execute('RELEASE protection_read')
+                if not previously_seen:
+                    return self._reconcile_close_protection_db(db, snapshot, now=now)
+        return ()
 
     def _apply_protection_snapshot_db(self, db, snapshot, *, now):
         raw = _dump(asdict(snapshot))
@@ -492,7 +498,7 @@ class ProtectionOwnerMixin:
                 if any(owners[i]['consumed'] for i in ids):
                     return DispatchResult(parent, 0, refusal_reason='consumed_protection')
                 if any(owners[i]['pending_operation'] for i in ids) or db.execute(
-                        "SELECT 1 FROM close_reservations c JOIN operations o USING(operation_id) WHERE c.status='active' AND o.leg_id=?",
+                        "SELECT 1 FROM operations WHERE kind IN ('exit','flat') AND status!='terminal' AND leg_id=?",
                         (action.leg_id,)).fetchone():
                     return DispatchResult(parent, 0, refusal_reason='amend_deferred')
                 prepared = datetime.fromisoformat(record[1])
@@ -695,7 +701,7 @@ class ProtectionOwnerMixin:
                         self._protection_fault(db, 'execution-snapshot:' + event.fact_id, now)
                         return ()
                     db.execute('INSERT INTO protection_facts VALUES (?, ?, ?)', (event.fact_id, raw, 'execution'))
-                    events = []
+                    events = list(self._reconcile_close_protection_db(db, event.snapshot, now=now))
                     for index, (fid, qty) in enumerate(event.allocations):
                         fact_id = event.fact_id + ':' + str(index)
                         fill = Fill(fact_id, 'protective:' + event.fact_id, row['leg_id'], 'exit',

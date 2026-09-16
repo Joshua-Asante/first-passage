@@ -96,11 +96,18 @@ def handle_book_takeover_inventory(snapshot, runtime, *, now):
     return runtime.observe_takeover_inventory(snapshot, now=now)
 
 
-def handle_book_protection(snapshot, owner, *, now):
+def handle_book_protection(snapshot, owner, runtime=None, *, now):
     """Commit offline working-order evidence without granting send authority."""
     from c1_rail.book_account_owner import BookAccountOwner
     if not isinstance(owner, BookAccountOwner):
         raise TypeError("typed BookAccountOwner required")
+    if runtime is not None:
+        from c1_signal_daemon.book_runtime import FourLegRuntime
+        if not isinstance(runtime, FourLegRuntime):
+            raise TypeError("typed four-leg runtime required")
+        if runtime.owner is not owner:
+            raise ValueError("runtime/account owner mismatch")
+        return runtime.observe_protection(snapshot, now=now)
     return owner.observe_protection(snapshot, now=now)
 
 

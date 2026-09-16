@@ -48,9 +48,14 @@ def test_invalid_price_is_fenced_before_capacity_and_feedback(tmp_path, price, k
 
 def test_bracket_refusal_is_durable_and_replays(tmp_path):
     amend = BracketAmend("orb_mnq_v7", Bracket(stop=100))
+    from test_four_leg_runtime import Adapter
+    class RepeatingAmendAdapter(Adapter):
+        def on_bar(self, bar):
+            super().on_bar(bar)
+            return [amend]
     def registry():
         values = inert_adapters()
-        values["orb_mnq_v7"].actions = [amend]
+        values["orb_mnq_v7"] = RepeatingAmendAdapter("orb_mnq_v7")
         return values
     account = runtime_owner(tmp_path, [])
     account.halt("operator", "operator", now=NOW)

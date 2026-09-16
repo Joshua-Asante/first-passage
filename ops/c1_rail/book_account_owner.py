@@ -744,6 +744,13 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                               "ORDER BY rowid"))
 
     @property
+    def retained_sessions(self):
+        """Session clocks bound to the retained runtime history."""
+        with self._transaction() as db:
+            return {identity: json.loads(raw)['session'] for identity, raw in db.execute(
+                'SELECT session_id,body FROM runtime_bindings')}
+
+    @property
     def unresolved_attempts(self):
         with self._transaction() as db:
             self._capacity(db)
@@ -755,7 +762,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             "SELECT a.attempt_id, a.operation_id FROM attempts a "
             "JOIN operations o ON o.operation_id=a.operation_id "
             "WHERE (a.state='UNKNOWN' AND o.status NOT IN ('terminal','observed')) "
-            "OR o.status IN ('reserved','attempted','takeover_pending') "
+            "OR o.status IN ('reserved','attempted','takeover_pending','awaiting_protection') "
             "ORDER BY a.rowid"))
 
     def _ordinary_unknown_orders_db(self, db, *, now):
@@ -835,10 +842,9 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             if self._state(db)["authority"] == "INTERVENTION":
                 return
             db.execute("INSERT OR IGNORE INTO feed_watch VALUES (?, ?)",
-                       (session.session_id, now.isoformat()))
-            anchor = datetime.fromisoformat(db.execute(
-                "SELECT started_at FROM feed_watch WHERE session_id=?",
-                (session.session_id,)).fetchone()[0])
+                       (session.session_id, session.opens_at.isoformat()))
+            # Startup time cannot erase missing history earlier in the session.
+            anchor = session.opens_at
             times = [datetime.fromisoformat(row[0]) for row in db.execute(
                 "SELECT bar_time FROM barriers WHERE session_id=?", (session.session_id,))]
             if times:
@@ -1161,7 +1167,111 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                     quantities[identity] -= quantity - consumed.get(identity, 0)
         return quantities
 
-    def _reserve_close(self, db, action):
+    def _pending_close_feedback_db(self, db, operation_id=None):
+        rows = []
+        for identity, raw, feedback in db.execute(
+                'SELECT b.fact_id,b.body,b.feedback FROM broker_facts b '
+                'LEFT JOIN feedback f ON f.fact_id=b.fact_id '
+                'WHERE b.feedback IS NOT NULL AND f.fact_id IS NULL ORDER BY b.rowid'):
+            fact = json.loads(raw)
+            if operation_id is not None and fact['operation_id'] != operation_id:
+                continue
+            event = json.loads(feedback)
+            if event is not None and (fact['order_kind'] in ('exit', 'flat') or
+                    db.execute("SELECT 1 FROM operations WHERE operation_id=? AND kind IN ('exit','flat')",
+                               (fact['operation_id'],)).fetchone()):
+                rows.append((identity, fact, event))
+        return rows
+
+    def _close_needs_protection_db(self, db, leg_id):
+        return any(row['leg_id'] == leg_id and not row['consumed'] and
+                   (row['ever_protected'] or row['pending_operation'] is not None)
+                   for row in self._protection_rows(db).values())
+
+    def _check_close_protection_deadlines_db(self, db, *, now):
+        from .book_protection_owner import PROTECTION_PERIOD
+        for identity, fact, _event in self._pending_close_feedback_db(db):
+            if now >= datetime.fromisoformat(fact['as_of']) + PROTECTION_PERIOD:
+                self._protection_fault(db, 'close-deadline:' + identity, now)
+
+    def _reconcile_close_protection_db(self, db, snapshot, *, now):
+        """Release held feedback only after a verified complete residual read."""
+        if not snapshot.complete:
+            return ()
+        pending = self._pending_close_feedback_db(db)
+        events = []
+        operations = dict.fromkeys(fact['operation_id'] for _identity, fact, event in pending
+                                   if event['leg_id'] in snapshot.scope_legs)
+        for operation_id in operations:
+            rows = [row for row in pending if row[1]['operation_id'] == operation_id]
+            leg_id = rows[0][2]['leg_id']
+            if any(row['leg_id'] == leg_id and row['pending_operation'] is not None
+                   for row in self._protection_rows(db).values()):
+                continue
+            prepared = db.execute('SELECT created_at FROM operations WHERE operation_id=?',
+                                  (operation_id,)).fetchone()[0]
+            if (snapshot.as_of <= datetime.fromisoformat(prepared) or
+                    any(snapshot.as_of <= datetime.fromisoformat(fact['as_of'])
+                        for _identity, fact, _event in rows)):
+                continue
+            for identity, fact, event in rows:
+                raw = _body(event)
+                db.execute('INSERT INTO feedback(fact_id,body,delivered,boundary_time) VALUES (?,?,0,?)',
+                           (identity, raw, event['bar_time']))
+                self._append_timeline(db, 'feedback', identity, now)
+                restored = self._restore_dispatch_result(_body(dict(operation_id=operation_id,
+                    quantity=0, confirmed_events=[event])))
+                events.extend(restored.confirmed_events)
+            reservation = db.execute('SELECT status FROM close_reservations WHERE operation_id=?',
+                                     (operation_id,)).fetchone()[0]
+            db.execute('UPDATE operations SET status=? WHERE operation_id=?',
+                       ('attempted' if reservation == 'active' else 'terminal', operation_id))
+        return tuple(events)
+
+    def resume_closes(self, *, now):
+        """Resume durable queued demands in order, only within their original boot."""
+        with self.serializer.acquire():
+            with self._transaction() as db:
+                state = self._state(db)
+                if state['authority'] == 'INTERVENTION':
+                    return ()
+                rows = tuple(db.execute("SELECT envelope,source FROM action_occurrences "
+                    "WHERE state='close_pending' AND boot_id=? AND generation=? ORDER BY rowid",
+                    (state['boot_id'], state['generation'])))
+            results = []
+            for envelope, raw in rows:
+                action = self._restore_intent(_body(json.loads(raw)['value']))
+                result = self._dispatch_locked(action, occurrence=ActionOccurrence(**json.loads(envelope)), now=now)
+                if result.refusal_reason not in (None, 'close_pending', 'duplicate_operation'):
+                    with self._transaction() as db:
+                        events = self._record_local_refusal_db(db, action, result.refusal_reason, now=now,
+                                                              operation_id=result.operation_id)
+                    result = replace(result, confirmed_events=result.confirmed_events + events)
+                results.append(result)
+            return tuple(results)
+
+    def _reserve_close(self, db, action, occurrence):
+        # The pending mutation's requested quantity cannot be reconciled after
+        # a concurrent reduction changes its residual broker order.
+        if any(row['leg_id'] == action.leg_id and row['pending_operation'] is not None
+               for row in self._protection_rows(db).values()):
+            return None, 'close_pending'
+        # A newly arriving demand cannot jump an older queued close when the
+        # preceding order just completed but its callback has not drained yet.
+        key = occurrence_key(occurrence)
+        state = self._state(db)
+        for prior_key, source in db.execute(
+                "SELECT key,source FROM action_occurrences WHERE state='close_pending' "
+                "AND boot_id=? AND generation=? AND rowid < "
+                "(SELECT rowid FROM action_occurrences WHERE key=?) ORDER BY rowid",
+                (state['boot_id'], state['generation'], key)):
+            prior = json.loads(source)['value']
+            if prior_key != key and leg(prior['leg_id']).order_symbol == leg(action.leg_id).order_symbol:
+                return None, 'close_pending'
+        if db.execute("SELECT 1 FROM operations WHERE order_symbol=? "
+                      "AND kind IN ('exit','flat') AND status!='terminal'",
+                      (leg(action.leg_id).order_symbol,)).fetchone():
+            return None, 'close_pending'
         # A cancel receipt cannot prove that the risk-increasing remainder is
         # gone. Enforce this at the common allocator for adapter, direct,
         # schedule and takeover closes, before binding any reduction quantity.
@@ -1243,7 +1353,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                          and set(source_value) == {"type", "value"}
                          and source_value["type"] in ("OrderIntent", "BracketAmend", "Cancel")
                          and isinstance(source_value["value"], dict)
-                         and state in ("prepared", "awaiting_evidence", "takeover_pending", "complete")
+                         and state in ("prepared", "awaiting_evidence", "takeover_pending", "close_pending", "complete")
                          and type(generation) is int and generation > 0 and bool(boot_id))
                 _time(datetime.fromisoformat(prepared_at))
                 if scope is not None and not isinstance(json.loads(scope), list):
@@ -1337,7 +1447,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                     db.execute("UPDATE action_occurrences SET result=?, state='complete' WHERE key=?",
                                (_body(asdict(retained)), key))
                     return retained
-                continuation = (previous[2] in ("awaiting_evidence", "takeover_pending")
+                continuation = (previous[2] in ("awaiting_evidence", "takeover_pending", "close_pending")
                                 and previous[3] == state["generation"] and previous[4] == state["boot_id"]
                                 and not attempt)
                 if not continuation:
@@ -1372,7 +1482,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
         else:
             result = self._dispatch_action_locked(action, occurrence=occurrence, operation_id=operation_id, now=now)
         with self._transaction() as db:
-            disposition = result.refusal_reason if result.refusal_reason in ("awaiting_evidence", "takeover_pending") else "complete"
+            disposition = result.refusal_reason if result.refusal_reason in ("awaiting_evidence", "takeover_pending", "close_pending") else "complete"
             db.execute("UPDATE action_occurrences SET result=?,state=? WHERE key=?", (_body(asdict(result)), disposition, key))
         return result
 
@@ -1452,6 +1562,9 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                         return DispatchResult(operation_id, 0, refusal_reason="risk_add_not_authorized")
                     if self._ordinary_unknown_orders_db(db, now=now):
                         return DispatchResult(operation_id, 0, refusal_reason="unknown_order")
+                    if db.execute("SELECT 1 FROM operations WHERE kind IN ('exit','flat') "
+                                  "AND status!='terminal'").fetchone():
+                        return DispatchResult(operation_id, 0, refusal_reason='close_unreconciled')
                     request, context, sized_binding = self._context(db, action, now)
                     decision = size_book_request(request, context=context, binding=sized_binding,
                                                  policy=self.binding["policy"], now=now)
@@ -1484,7 +1597,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                 elif isinstance(action, OrderIntent):
                     if state["authority"] not in ("NORMAL", "SCHEDULED_EXIT"):
                         return DispatchResult(operation_id, 0, refusal_reason="mutation_not_authorized")
-                    allocations, close_refusal = self._reserve_close(db, action)
+                    allocations, close_refusal = self._reserve_close(db, action, occurrence)
                     if close_refusal is not None:
                         return DispatchResult(operation_id, 0, refusal_reason=close_refusal)
                     quantity = sum(row[1] for row in allocations)
@@ -1557,6 +1670,10 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
         if quantity <= 0:
             return None
         identity = root_id if not rows else prefix + str(len(rows))
+        for raw, in db.execute("SELECT source FROM action_occurrences WHERE state='close_pending'"):
+            value = json.loads(raw)['value']
+            if value.get('order_id') == identity:
+                return self._restore_intent(_body(value))
         return OrderIntent(identity, leg_id, "flat", opposite(leg(leg_id).entry_side),
                            quantity, bar_time=now, reason=reason)
 
@@ -1585,6 +1702,19 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                          SchedulePhase.DEADLINE) and state["authority"] == "NORMAL":
                 db.execute("UPDATE owner_state SET permission='HALTED', authority='SCHEDULED_EXIT', "
                            "generation=generation+1")
+                for key, raw in tuple(db.execute(
+                        "SELECT key,source FROM action_occurrences WHERE state='close_pending' "
+                        "AND boot_id=? AND generation=? ORDER BY rowid",
+                        (state['boot_id'], state['generation']))):
+                    action = self._restore_intent(_body(json.loads(raw)['value']))
+                    reason = 'scheduled_operation_required'
+                    events = self._record_local_refusal_db(db, action, reason, now=now,
+                                                          operation_id=action.order_id)
+                    result = DispatchResult(action.order_id, 0, refusal_reason=reason,
+                                            confirmed_events=events)
+                    db.execute("UPDATE action_occurrences SET state='complete',result=? WHERE key=?",
+                               (_body(asdict(result)), key))
+                    retired.append(result)
                 for raw, in tuple(db.execute(
                         "SELECT body FROM operations WHERE status='takeover_pending'")):
                     retired.append(self._retire_takeover_db(
@@ -1759,6 +1889,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                              if isinstance(boundary_time or fact.as_of, datetime)
                              else json.loads(operation_body).get("bar_time"))
             feedback = None
+            hold_close = False
             if fact.kind == "fill" and fact.order_kind in ("entry", "add"):
                 capacity_fact = CapacityFill(fact.fact_id, fact.operation_id, fact.quantity)
                 capacity = self._append_capacity(db, "fill", capacity_fact, fact.as_of,
@@ -1812,6 +1943,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                                (fact.operation_id,))
                     db.execute("UPDATE operations SET status='terminal' WHERE operation_id=?",
                                (fact.operation_id,))
+                hold_close = self._close_needs_protection_db(db, leg_id)
             elif fact.kind == "terminal":
                 if operation_kind in ("cancel", "bracketamend"):
                     if fact.status != "rejected" or type(fact.cumulative_filled) is not int \
@@ -1852,17 +1984,19 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                     db.execute("UPDATE operations SET status='terminal' WHERE operation_id=?",
                                (fact.operation_id,))
                     capacity = self._capacity(db)
+                    hold_close = bool(self._pending_close_feedback_db(db, fact.operation_id))
                 else:
                     terminal = Terminal(fact.operation_id, fact.status, fact.cumulative_filled)
                     capacity = self._append_capacity(db, "terminal", terminal, fact.as_of,
                                                      event_id=fact.fact_id)
                     db.execute("UPDATE operations SET status='terminal' WHERE operation_id=?",
                                (fact.operation_id,))
-                feedback = ExecutionEvent(
-                    "reject" if fact.status == "rejected" else "cancel",
-                    leg_id, fact.as_of, order_id=fact.operation_id,
-                    detail=fact.status,
-                )
+                if fact.status != "filled":
+                    feedback = ExecutionEvent(
+                        "reject" if fact.status == "rejected" else "cancel",
+                        leg_id, fact.as_of, order_id=fact.operation_id,
+                        detail=fact.status,
+                    )
             else:
                 self._halt_db(db, "invalid-fact:" + fact.fact_id, "execution", now)
                 db.execute("INSERT INTO broker_facts VALUES (?, ?, NULL)", (fact.fact_id, raw))
@@ -1885,9 +2019,14 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                     if json.loads(control_body)["order_id"] == fact.operation_id:
                         db.execute("UPDATE operations SET status='observed' WHERE operation_id=?",
                                    (control_id,))
-            feedback_raw = _body(asdict(feedback))
+            if hold_close:
+                db.execute("UPDATE operations SET status='awaiting_protection' WHERE operation_id=?",
+                           (fact.operation_id,))
+            feedback_raw = _body(asdict(feedback) if feedback is not None else None)
             db.execute("INSERT INTO broker_facts VALUES (?, ?, ?)",
                        (fact.fact_id, raw, feedback_raw))
+            if feedback is None or hold_close:
+                return ()
             db.execute("INSERT INTO feedback(fact_id, body, delivered, boundary_time) VALUES (?, ?, 0, ?)",
                        (fact.fact_id, feedback_raw, boundary_time))
             self._append_timeline(db, "feedback", fact.fact_id, now)

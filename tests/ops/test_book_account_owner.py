@@ -195,7 +195,7 @@ def test_close_reservation_prevents_duplicate_or_excess_reduction(tmp_path):
         scope_fill_ids=("execution-1",), bar_time=NOW), occurrence=account.make_occurrence("direct", "test_book_account_owner:189"), now=NOW)
 
     assert first.transport_state == "accepted", first
-    assert duplicate.refusal_reason == "zero_exposure"
+    assert duplicate.refusal_reason == "close_pending"
     assert [command.operation_id for command in route.commands] == ["base", "exit-1"]
 
 

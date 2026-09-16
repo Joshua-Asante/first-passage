@@ -92,6 +92,11 @@ def test_source_silence_revokes_scheduled_exit_authority(tmp_path):
     account = owner(tmp_path, [])
     loop = FourLegEvaluateLoop(sources={leg: EmptySource() for leg in LEGS},
                                runtime=FourLegRuntime(account, inert_adapters()))
+    from test_four_leg_runtime import bars
+    for minutes in (0, 15, 30):
+        at = NOW + timedelta(minutes=minutes)
+        for leg_id, bar in bars().items():
+            loop.runtime.on_completed_bar(leg_id, replace(bar, ts=at), now=at)
     cutoff = account.binding["session"].risk_add_cutoff
     loop.step(now=cutoff - timedelta(minutes=25))
     loop.step(now=cutoff)
