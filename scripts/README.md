@@ -168,9 +168,12 @@ operational-reference skills and `pinescript-v6` remain exempt.
 The [PostToolUse skill hook](sync_skills_hook.py), registered in
 [settings](../.claude/settings.json), runs both validators on skill edits and
 reports their actual outcomes and a pending explicit release. It never publishes
-or creates backups, including from worktrees. Missing/failing validators exit 2;
-the [Cursor adapter](../.cursor/hooks/after_file_edit.py) surfaces failures while
-remaining fail-open for the completed edit. Malformed/unrelated hook input is benign.
+or creates backups, including from worktrees. Missing/failing validators exit 2,
+surfaced directly by that registration while remaining fail-open for the completed
+edit. Malformed/unrelated hook input is benign. (A Cursor `afterFileEdit` adapter
+previously forwarded this for that surface; it retired with the Cursor lane —
+[worker-surface allocation](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md),
+Revision 2026-09-15.)
 
 [`import_skill_from_cache.py`](import_skill_from_cache.py) remains a missing-source
 recovery exception: copy one named skill byte-for-byte only when its repository

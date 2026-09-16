@@ -1,8 +1,9 @@
 # Cursor — SUBTRACT (removed from active recurring spend)
 
 **Class:** (d) meta-belt (subscription) · **Standing:** SUBTRACT — removed from active
-recurring spend by operator instruction 2026-09-10. Cancellation date and final charges
-were not supplied. Current cost/status belongs to the
+recurring spend by operator instruction 2026-09-10; operator confirmed 2026-09-15 that the
+subscription is fully terminated and no final or prorated charge landed. The cancellation date
+was not supplied and remains open (ledger change log, 2026-09-15). Current cost/status belongs to the
 [subscription ledger](SUBSCRIPTION_LEDGER.md). This updates the subscription record;
 it does not retire unrelated tooling or historical work.
 

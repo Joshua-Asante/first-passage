@@ -8,9 +8,11 @@ that an explicit release is pending. This hook never invokes
 sync_skills.py publication and never creates backups.
 
 Malformed stdin and unrelated edits stay benign (exit 0). Missing or
-failing validators are visible and exit 2 — Cursor's after_file_edit
-adapter forwards that stderr. A missing validator is never reported as
-passed.
+failing validators are visible and exit 2; the Claude PostToolUse
+registration in .claude/settings.json surfaces that stderr directly. (A
+Cursor afterFileEdit adapter used to forward it for that surface; it
+retired with the Cursor lane on 2026-09-15.) A missing validator is
+never reported as passed.
 """
 from __future__ import annotations
 

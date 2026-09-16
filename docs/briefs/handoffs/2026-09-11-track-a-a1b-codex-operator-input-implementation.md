@@ -3,7 +3,7 @@
 **Type:** cc_handoff (frozen-spec implementation; Codex variant with parent-recommended defaults)
 **Date:** 2026-09-11
 **Status:** dispatch now — A1r merged 2026-09-11 (PR #340), A2 listener half merged (PR #339); the daemon half of A2 re-runs on this PR automatically (the workflow is path-filtered on `ops/c1_signal_daemon/**`)
-**Spawn target:** Codex (or Cursor) — `codex/*` branch, PR, no merge; Codex is also the standing reviewer of the PR
+**Spawn target:** Codex — `codex/*` branch, PR, no merge; Codex is also the standing reviewer of the PR. (Authored 2026-09-11 as "Codex (or Cursor)"; the Cursor alternative is removed by the 2026-09-15 retirement — [worker-surface allocation](../../adr/2026-07-14-cc-cursor-surface-allocation.md), Revision 2026-09-15. The frozen spec below is unchanged.)
 **Parent:** [Track A plan](../../superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md) §3.1 (must-cover list) · parent adjudicates with fable-judge, then Codex review
 **Authority:** code and tests only. No Fly access, no deploy, no volume write, no ceremony, no secrets, no new runtime dependency. `contract_sha256()` inputs, the listener B1 contract, the `accept_bar` window (`60 ≤ now − bar.ts ≤ 150`) and the manifest window (`60 < expires − target ≤ 150`) do not change.
 

@@ -2,7 +2,9 @@
 
 **Status:** ACTIVE · Board B1–B3 + B8 ratified 2026-08-12 · authorizes nothing beyond charter steps ($0 · K=0) · **this document is the claim manifest** for the program — the orchestrator session is its only writer.
 **Objective:** run the [MSL charter](../../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) loop over the [first slate](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-12-msl-first-slate.md) until one candidate clears TNEC-1 N-ACT…N-SIZE or the program stops honestly — against the **2026-11-08** TNEC-1 FALSIFIED clock (four-firms ADR §4 demotion clause; TNEC-1 adds no second clock).
-**Layering:** Board (operator) → Managers (CC sessions, judgment) → Workers (Cursor packets = mechanical builds; Claude subagents = read-only verification fan-outs; operator = the only TV/venue actor). Surface allocation per [ADR 2026-07-14](../../adr/2026-07-14-cc-cursor-surface-allocation.md): Pine and doctrine never fleet; lab tooling may.
+> ⚠ **Cursor retired 2026-09-15** ([worker-surface allocation](../../adr/2026-07-14-cc-cursor-surface-allocation.md), Revision 2026-09-15). This plan's worker lane is **Codex**; `scripts/dispatch_cursor.ps1`, its allow-rule and the `cursor-fleet` skill are deleted. Ratified board rows and MERGED outcomes below are left as the historical record they are; the §7 fleet falsifier survives surface-agnostically (see its row). Branch prefix for new packets: `codex/msl-p<N>`.
+
+**Layering:** Board (operator) → Managers (CC sessions, judgment) → Workers (worker packets = mechanical builds; Claude subagents = read-only verification fan-outs; operator = the only TV/venue actor). Surface allocation per [ADR 2026-07-14](../../adr/2026-07-14-cc-cursor-surface-allocation.md): Pine and doctrine never fleet; lab tooling may.
 
 ---
 
@@ -12,7 +14,7 @@
 |---|---|---|---|
 | B1 | ✅ **RATIFIED 2026-08-12** — [ratification ADR](../../adr/2026-08-12-msl-sourcing-channel-ratification.md): **R-CHANNEL** ☑ MSL joins §2-C L2 · **R-FRAMING** ☑ §2.1 governs · **R-REQSCOPE** ☑ do not bind composition (Req 1a + EM0–EM5 + TNEC-1 stand) | everything | first |
 | B2 | ✅ **Elect slate order C2 → C3 → C1** (serialized) | P3 | with B1 |
-| B3 | ✅ **Wrapper + allow-rule** — `scripts/dispatch_cursor.ps1` allow-listed in `.claude/settings.json` (raw `cursor-agent` / `agent.cmd` still blocked; never work around) | P2 | before P2 dispatch |
+| B3 | ✅ **Wrapper + allow-rule** — `scripts/dispatch_cursor.ps1` allow-listed in `.claude/settings.json` (raw `cursor-agent` / `agent.cmd` still blocked; never work around). **Discharged and retired 2026-09-15:** the script and its allow-rule are deleted with the Cursor lane; `scripts/dispatch_claude.ps1` is the surviving wrapper. Ratified text left intact. | P2 | before P2 dispatch |
 | B4 | Per-card G0 GO (freeze pre-registration; the only step that turns a card into a candidate) | P3.x | per card |
 | B5 | TV runbook execution + CSV export (S2: no login automation; Downloads→local copy). **Chokepoint rule: the runbook must link the step 2–5 artifacts (dedup block · door-check record · screens table · G0 PR#) — refuse the TV seat if any is missing** (this is how the charter's FALSIFIED(process) condition gets detected) | P3.x step 7 | per candidate |
 | B6 | Verdict ratification per candidate: kill→registry / survive→TNEC intake | P3.x → P5 | per candidate |
@@ -24,7 +26,7 @@
 | ID | Session | Does | Fans out | Done when |
 |---|---|---|---|---|
 | P1 | **Ratification pack** | Adversarial review of charter+slate+plan BEFORE operator ratifies (the 2026-07-28 lesson: a checker-green brief carried 6 BLOCKERs); apply fixes; draft the full-tier compact ratification ADR for B1 | Claude-subagent review workflow (read-only) | ADR draft + reviewed artifacts on a PR |
-| P2 | **Tooling orchestrator** | Freeze specs for the three worker packets (§3), each carrying a one-line frozen solo-build estimate at dispatch (feeds the §7 fleet falsifier); run the cursor-fleet loop (claim manifest §6, disjoint footprints, dispatch-moment staleness checks); review diffs; integrate | Cursor workers W-A/W-B/W-C | all three packets green on their acceptance anchors (W-A, W-B **and** W-C) |
+| P2 | **Tooling orchestrator** | Freeze specs for the three worker packets (§3), each carrying a one-line frozen solo-build estimate at dispatch (feeds the §7 fleet falsifier); run the fleet loop (claim manifest §6, disjoint footprints, dispatch-moment staleness checks — owner since 2026-09-15 is the [worker-surface allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md) §Decision); review diffs; integrate | workers W-A/W-B/W-C | all three packets green on their acceptance anchors (W-A, W-B **and** W-C) |
 | P3.x | **Campaign manager (one per slate card, serialized)** | Charter steps 1–8 + [5a](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-14-msl-explore-stage-5a.md) (steps 1–4 pre-GO; the operator's B4 GO gates step 5's G0 freeze and everything after): Stage-0 pins → dedup/door-check (executed) → $0 screens → cheap falsifier → G0 freeze (on B4) → **explore confirm (5a)** → **Pine CC-solo** → runbook for B5 → ingest export → survivor MC → TNEC verdict string → closure/registry or intake packet | Claude-subagent dedup/graveyard sweep; NO Cursor (Pine + judgment) | TNEC verdict string **or** pre-screen rejection recorded + registry/intake artifact merged |
 | P4 | **Verification** (invoked, not scheduled) | `fable-judge` any landed claim that matters if wrong (tool acceptance anchors, first verdict string); `blast-radius` after doc-landing sessions | Claude subagents | VERIFIED/REFUTED note attached to the claim |
 | P5 | **Post-survivor** (exists only if a candidate survives) | TNEC-1 intake packet → operator GO chain (M1 RESOLVED + per-session GO + LEG_MAP release ruling — none of which this program touches) | — | out of MSL scope; deploy chain owns it |
@@ -35,7 +37,7 @@
 
 **Claude subagents (read-only, in-session):** dedup/graveyard sweeps per card · adversarial review panels (P1, P4) · never author repo state.
 **Operator-only actions:** everything in §1; plus TV compile is the real Pine gate (`pine_lint` passes code TV rejects — CE10237 precedent).
-**Cursor packets (P2; all `lab/`-side, no locked surfaces, disjoint footprints):**
+**Worker packets (P2; all `lab/`-side, no locked surfaces, disjoint footprints):**
 
 | Packet | Builds | Acceptance (frozen in the packet spec) |
 |---|---|---|
@@ -43,7 +45,7 @@
 | W-B `msl_score` | **Adapter, not a new MC** (reuse-don't-rewrite): TV trade-list CSV → daily-panel rows (`date`, `pnl_usd`, `intraday_low` — the existing input contract) → `lab/research_utils/nsurv_channel.py::score_nsurv` (single construct; intraday-honest, full + both halves) / `book_score.py` (composed, landed PR #764) → TNEC verdict string JSON. The only new logic is the TV-export→panel conversion (Entry/Exit pairing). **Honesty rule:** an `intraday_low` reconstructed from trade closes omits within-trade open excursion — such a series carries the **LOWER BOUND** label even though the channel will score it, **unless** TV's per-trade Run-up/Drawdown columns are present and used to bound within-trade excursion. Geometry: consume `firm_rules` as-is (`dd_lock_offset_usd` corrected default since 2026-08-04 — verify, never re-patch) | **Primary anchor: the channel's own test pins** (`tests/test_nsurv_channel.py` exact headline_bust fixtures). The ORB k=2 **77.01% ±1.0pp** cross-harness pin is optional and requires git-history retrieval (`run_t2_intraday_bust.py` + panel were pruned — RESULTS-only at HEAD). Plus a hand-paired TV-export fixture round-trips exactly, incl. the LOWER BOUND label branch |
 | W-C `tv_static_equity` | Util: TV export (compounded) → static-equity per-trade series for param compares | Matches a hand-recomputed known export; flagged divergence on a compounded fixture |
 
-Packet discipline: umbrella handoff brief once (amortized), four-state returns, `cursor/msl-p<N>` branches from current `origin/main`, no writes outside footprint, no SESSIONS/STATE writes. Two `NEEDS_CONTEXT` bounces on a packet ⇒ that packet reverts to CC-solo (it wasn't freezable).
+Packet discipline: umbrella handoff brief once (amortized), four-state returns, `codex/msl-p<N>` branches from current `origin/main` (`cursor/` until 2026-09-15), no writes outside footprint, no SESSIONS/STATE writes. Two `NEEDS_CONTEXT` bounces on a packet ⇒ that packet reverts to CC-solo (it wasn't freezable).
 
 ## §4 Sequence (dependencies, not dates)
 
@@ -98,10 +100,10 @@ Each manager chat ends by handing the Board chat one line: `MSL <session-id> <DO
 - **Three Stage-1 deaths without any G0** (§6 counter) ⇒ Board review of the slate-generation method — the earlier rung of the yield ladder, not a substitute for it (not an automatic stop: cheap kills are the win, but three straight means cards are being authored into known-dead space).
 - **Charter FALSIFIED(yield-conversion) WATCH rung fires** ([survival-limb ADR](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-14-msl-yield-falsifier-survival-limb.md), added 2026-08-14: **6 consecutive G0 freezes** with **zero cards reaching step 6 Pine-authored**) ⇒ mandatory Board review of the explore-stage screen calibration — not an automatic stop, mirrors the Three-Stage-1-deaths rung above.
 - **Charter FALSIFIED(yield-conversion) hard rung fires** (same ADR: **10 consecutive G0 freezes** with **zero TNEC-1 survivors**, or **8 calendar weeks** from first G0 [2026-08-12] with **zero TNEC-1 survivors** given **≥4 G0 freezes**) ⇒ channel closes pending a superseding ADR — same consequence as FALSIFIED(yield) above.
-- **Cursor-fleet falsifier** (2 fleets in 8 weeks with integration cost > the packet's frozen solo estimate — recorded per packet at dispatch per the P2 row — or a spec-interpretation defect lands) ⇒ revert tooling to single-dispatch/CC-solo.
+- **Fleet falsifier** (surface-agnostic; worded "Cursor-fleet" until 2026-09-15 — the measurement is integration cost, not vendor) (2 fleets in 8 weeks with integration cost > the packet's frozen solo estimate — recorded per packet at dispatch per the P2 row — or a spec-interpretation defect lands) ⇒ revert tooling to single-dispatch/CC-solo.
 - **2026-11-08** with no N-clear candidate ⇒ TNEC-1 FALSIFIED clause governs; MSL closes with it (no second clock, no extension by re-framing).
 - **Anti-goalpost clause** (verbatim from the withdrawal ADR, governing here): a result that misses a threshold narrowly is a miss — "that framing is the degeneration move this ADR exists to block."
 
 ## §8 Cost envelope
 
-$0 and K=0 through every Stage 0–1; K_intrinsic per axis declared at each G0 (banks are disclosure, not gate); Cursor tokens on W-A/W-B/W-C only; no data pulls planned (TV exports + existing panels); operator TV time is the scarce resource — the entire pre-TV pipeline exists to protect it.
+$0 and K=0 through every Stage 0–1; K_intrinsic per axis declared at each G0 (banks are disclosure, not gate); worker tokens on W-A/W-B/W-C only; no data pulls planned (TV exports + existing panels); operator TV time is the scarce resource — the entire pre-TV pipeline exists to protect it.

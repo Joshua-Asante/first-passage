@@ -458,9 +458,9 @@ def executable_command(provider, override):
         if not isinstance(command, list) or not command or not all(isinstance(x, str) and x for x in command):
             raise HandoffError('--command-json must be a nonempty executable/argument array')
         return command
-    candidate = shutil.which('agent' if provider == 'cursor' else 'claude')
-    if not candidate and os.name == 'nt':
-        candidate = str(Path(os.environ['LOCALAPPDATA']) / 'cursor-agent/agent.ps1') if provider == 'cursor' else str(Path.home() / '.local/bin/claude.exe')
+    candidate = shutil.which(provider)
+    if not candidate and os.name == 'nt' and provider == 'claude':
+        candidate = str(Path.home() / '.local/bin/claude.exe')
     if not candidate or not Path(candidate).is_file():
         raise HandoffError(f'{provider} executable not found; supply --command-json')
     return [candidate]
@@ -485,23 +485,15 @@ def windows_command(command):
 
 
 def cli_args(args, prompt, session, fresh_session):
-    result = ['-p', '--output-format', 'stream-json']
-    if args.provider == 'cursor':
-        result += ['--workspace', str(args.workspace), '--trust']
-        if args.mode in ('plan', 'ask'):
-            result += ['--mode', args.mode]
-        if args.force_commands:
-            result += ['--force']
-    else:
-        result += ['--verbose']
-        if args.mode == 'plan':
-            result += ['--permission-mode', 'plan']
-        elif args.mode == 'ask':
-            result += ['--tools', 'Read,Glob,Grep', '--allowedTools', 'Read,Glob,Grep']
-        if args.allowed_tools:
-            result += ['--allowedTools', args.allowed_tools]
-        if fresh_session:
-            result += ['--session-id', fresh_session]
+    result = ['-p', '--output-format', 'stream-json', '--verbose']
+    if args.mode == 'plan':
+        result += ['--permission-mode', 'plan']
+    elif args.mode == 'ask':
+        result += ['--tools', 'Read,Glob,Grep', '--allowedTools', 'Read,Glob,Grep']
+    if args.allowed_tools:
+        result += ['--allowedTools', args.allowed_tools]
+    if fresh_session:
+        result += ['--session-id', fresh_session]
     for root in args.add_dir:
         result += ['--add-dir', root]
     if session:
@@ -1227,6 +1219,10 @@ def run(args):
             if len(matches) != 1:
                 raise HandoffError('Resume requires exactly one local, latest request receipt; unrecorded session IDs are refused')
             parent = matches[0]
+            # Three limbs. The provider limb is dormant since 2026-09-15 (Cursor
+            # retired; 'claude' is the only choice argparse accepts) and is kept
+            # so it re-arms automatically if a second provider is ever added.
+            # The workspace and packet limbs are live.
             if parent['provider'] != args.provider or parent['workspace'] != str(workspace) or parent['packet_sha256'] != packet_hash:
                 raise HandoffError('Resume provider/workspace/packet mismatch; reconcile the changed scope first')
             if not parent.get('session_id'):
@@ -1443,7 +1439,7 @@ def main(argv=None):
     parser.add_argument('action', choices=['run', 'status', 'cancel', 'reconcile'])
     parser.add_argument('--workspace', type=Path, required=True)
     parser.add_argument('--request-id')
-    parser.add_argument('--provider', choices=['cursor', 'claude'], default='cursor')
+    parser.add_argument('--provider', choices=['claude'], default='claude')
     parser.add_argument('--pointer')
     parser.add_argument('--input', action='append', default=[])
     parser.add_argument('--copy', action='append', default=[])
@@ -1470,8 +1466,11 @@ def main(argv=None):
             args.workspace = workspace_input.resolve(strict=True)
             if not args.pointer or not 0 < args.timeout_seconds < float('inf'):
                 raise HandoffError('A packet path and a finite positive timeout are required')
-            if args.force_commands and (args.provider != 'cursor' or args.mode != 'execute'):
-                raise HandoffError('--force-commands is only valid for Cursor execution')
+            if args.force_commands:
+                raise HandoffError(
+                    '--force-commands was Cursor-only and retired with that lane '
+                    '(docs/adr/2026-07-14-cc-cursor-surface-allocation.md, Revision 2026-09-15)'
+                )
             if args.allowed_tools and (args.provider != 'claude' or args.mode != 'execute'):
                 raise HandoffError('--allowed-tools is only valid for Claude execution')
             if args.resume_request and args.resume_session:

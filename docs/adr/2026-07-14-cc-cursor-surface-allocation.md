@@ -1,182 +1,399 @@
-# ADR — CC/Cursor surface allocation: CC designs and adjudicates, Cursor implements frozen specs
+# ADR — Worker-surface allocation: the coordinator designs and adjudicates, workers implement frozen specs
 
 **Status:** Accepted (ratified 2026-07-14)
 **Superseded-by:** none
-**Superseded-in-part-by:** `2026-08-14-cc-cursor-autonomous-loop.md` - narrows the "no commit/merge without operator go" return-contract line and the "Merging on green tests without CC/operator review" forbidden move to admit a binary auto-merge gate; the routing test, handoff contract, and locked-surface exclusions stand unchanged.
+**Superseded-in-part-by:** none
 **Retain-until:** none
+**Format:** concise — converted from the original full format by the 2026-09-15 revision, which consolidated §0–§10 and six addenda into Decision / Grounds / Current owner plus the §8 disposition table. Prior full-format text at the blob pinned below.
 **Decision date:** 2026-07-14
-**Authors:** Joshua + Claude Code
-**Supersedes:** — (codifies existing practice; no prior ADR owns surface allocation)
-**Related:** `docs/ltm/briefs/rnd-pipeline/2026-07-13-cursor-handoff-prop-survivor-scoring-harness.md` (worked example of the handoff contract) | `.claude/skills/handoff-verify/SKILL.md` (consumer-side gate) | brief-authoring skill (producer-side templates)
+**Revision:** 2026-09-15 — **RATIFIED** by the operator in-session ("execute my decisions").
+Retires Cursor as a worker surface and rescopes this decision to the surviving surfaces
+(Claude Code, Codex); consolidates the six 2026-07-16 → 2026-09-04 addenda into the §8
+disposition table. This revised text is the effective decision. Prior decision text, in full
+and unedited, at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`
+(`git show 0bcd6699fd683a18b9493e25bb053797dcf4fafe`), commit
+`b448e2b6f852a49c2a46e278ade95a4c4e2c4c54`.
+**Supersedes:** `2026-08-14-cc-cursor-autonomous-loop.md` full — its entire subject (Cursor
+dispatch without chip approval, `cursor/*` webhook detection, and auto-merge on a binary gate)
+retires with the Cursor lane; the surviving general rule is restated in §2 below.
+**Authors:** Joshua + Claude Code (2026-07-14); revision Joshua + Claude Code (2026-09-15)
+**Related:** [`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md) (consumer-side gate) ·
+[`task-routing`](../../.claude/skills/task-routing/SKILL.md) (canonical local-vs-cloud checklist) ·
+[`cc_handoff` template](../../.claude/skills/brief-authoring/references/cc_handoff.md) (producer-side contract)
 **Layer:** infrastructure
 
----
-
-## §0 — Rule 0 reads (production-source verification)
-
-Files read **before** authoring this ADR (all anchors verified `git log -1 -- <path>` on 2026-07-14):
-
-- `docs/operational_rules.md` — anchor `83ba1b2` (2026-07-12). Rule-maintenance clause read: new *operational rules* require a paid-for failure; this decision is therefore an ADR, not a Rule 13.
-- `.claude/skills/handoff-verify/SKILL.md` — anchor `f133976` (2026-07-12). The consumer-side Phase-0 gate already exists and names "Cursor Phase-0 handoff" as a trigger.
-- `docs/ltm/briefs/rnd-pipeline/2026-07-13-cursor-handoff-prop-survivor-scoring-harness.md` — anchor `4d5704b` (2026-07-13). Read §0/§0.5/§1/§2 in full — the most mature Cursor handoff to date (7/7 `check_brief`; §0 read-report requirement; §0.5 halt-on-ambiguity with parent-recommended defaults; explicit forbidden moves; "No commit/merge without Joshua's go").
-- `docs/SESSIONS.md` — anchor `b6e604a` (2026-07-14). Cursor-tagged entries read: 2026-07-13 survivor-scoring harness (15/15 tests green first pass, parallel with CC closing DISC-CAMP-0); 2026-07-13 Stage-4→7 drivers; 2026-07-12 Stage-7 realism engine + trackB; 2026-07-06 Cursor code-audit response (16-agent adversarial verification of external findings before acceptance).
-- `CLAUDE.md` — anchor `b6e604a` (2026-07-14). §Methodology references (link-target surface for §6) and §Key Principle (locked-surface definition).
-- `git log --oneline --all --since=2026-06-20` — division-of-labor evidence: `claude/*` branches author preregs/briefs/ADRs/closures and run adjudication; `cursor/*` branches (PRs #344, #348–350, #360, #364, #366–367) build harnesses/drivers from CC-authored handoff briefs.
-
-**Explicitly non-load-bearing input:** a vendor-sourced CC-vs-Cursor performance comparison supplied in-session (Composer token-throughput figures, Merkle-tree indexing claims, speed tables). Treated as unverified marketing material per `verify-source` discipline. This ADR's grounds are the repo-observed evidence above; if every vendor claim were false, the decision would stand unchanged.
+> ⚠ **REVISED 2026-09-15 — Cursor is retired as a worker surface.** The body below is the
+> rescoped decision, not the 2026-07-14 text, and is **operator-ratified and effective**. The
+> clause-by-clause record of what survived, what was restated and what retired is §8. The
+> pre-revision text is pinned at the blob in the header.
 
 ---
 
-## §1 — Context
+<a id="2--decision"></a>
 
-Since 2026-07-06 the repo has run a two-surface workflow without a written rule: Claude Code sessions (with the skill stack — Rule 0, brief-authoring, strategy-validation, verify-source, handoff-verify — plus persistent memory and doctrine context) author the pre-registrations, handoff briefs, ADRs, and closure adjudications; Cursor sessions execute frozen implementation specs on `cursor/*` branches and return PRs. The pattern has produced four clean lands in eight days (Stage-7 realism engine, trackB temporal-consistency, Stage-4→7 drivers, prop survivor-scoring harness — the last 15/15 tests green on first PR) and zero locked-surface incidents. The counter-pattern is also documented: external instruction packets confabulate repo state when not gated (`feedback_web_advisor_handoff_confabulates_repo_state`, multi-fire through 2026-07-11), which is why `handoff-verify` exists.
+## Decision
 
-The allocation currently lives in operator habit and session precedent. Unwritten, it will drift under exactly the pressure the vendor comparison applies: "Cursor is faster, hand it more" — including, eventually, a judgment-heavy or locked-surface task where speed is the wrong criterion.
+Work is routed between **surfaces** by a four-question test, with an authored handoff brief as
+the mechanical eligibility gate. The **coordinator** designs, specifies and adjudicates;
+**workers** implement frozen specs and never merge.
 
-**Decision driver (one sentence):** the split is working and undocumented — codify it before a convenience-routed task crosses a locked surface or skips the handoff gate.
+**Surfaces, as of the 2026-09-15 revision:** the coordinator is a Claude Code session. Workers
+are Claude Code sessions and Codex. **Cursor is retired** — no Cursor lane, no `@cursor`
+dispatch, no dispatch-chip approvals, no `cursor/*` branches, no `cursor[bot]` allow-listing.
+New worker branches use `codex/` or `claude/`. This is an operator scope election (in-session,
+2026-09-15: *"cursor is being retired altogether, we will no longer be incorporating cursor
+agents. it will be just claude and codex"*), already ruled for one campaign as
+[D-B6](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) on 2026-09-11
+and applied repo-wide here. It carries no falsifier and no review cadence: there is no
+measurement that would reinstate a surface the operator has removed from spend.
 
----
+**Routing test (apply in order).** The tests are about the *work* and the *environment*, not
+about which vendor runs the session, so all four survive the retirement unchanged:
 
-## §2 — Decision
+0. **Does Phase-0 reading require bytes or credentials not verifiably present in the dispatch
+   environment?** Specifically (a) any path under `core/data/tv_exports/**`,
+   `core/data/bar_data/**`, `core/data/external/**` (gitignored vendor data), or (b) any API
+   key or secret. If yes and unconfirmed-present in the target environment → **local**, full
+   stop, regardless of how 1–3 resolve. This binds every remaining surface: Claude Code and
+   Codex each have local and cloud modes, and a cloud checkout structurally lacks gitignored
+   bytes unless staged for *that* dispatch. Canonical checklist owner:
+   [`task-routing`](../../.claude/skills/task-routing/SKILL.md).
+1. **Does the task author doctrine or touch a locked/governed surface?** (ADRs, Pre-Qs,
+   pre-registrations, closures, lifecycle state, `CLAUDE.md`/`STATE.md`/memory; any *edit* to
+   `core/` anchor-path code — `dd_protection.py`, `firm_rules.py`, `portfolio_mc.py`,
+   `core/mc/*`, `lifecycle.py`, `dd_geometry.py` — or Pine.) → **coordinator**, full stop.
+   Read-only imports of `core/` from `lab/` code are fine on any surface.
+2. **Is the spec frozen?** Binary acceptance gates, resolved ambiguities, enumerated forbidden
+   moves, no judgment calls expected mid-build. If not → the coordinator either does the work
+   or freezes the spec first. A worker never resolves a spec ambiguity unilaterally; it bounces
+   `NEEDS_CONTEXT`.
+3. **Does the build clear the handoff-overhead threshold?** If the build is smaller than the
+   brief (rule of thumb: < ~1 focused hour, or fewer than ~3 files touched), it stays on
+   whichever surface is already open. Above threshold and spec-frozen → dispatch to a worker.
 
-**Decision:** Work is routed between surfaces by a three-question test, with an authored handoff brief as the mechanical eligibility gate for Cursor. CC designs, specifies, and adjudicates; Cursor implements frozen specs.
+**Handoff contract (all five required for worker eligibility):**
 
-**Routing test (apply in order):**
-
-0. **(Added 2026-07-16 addendum — RATIFIED 2026-07-16, see dated Addendum below.) Does Phase-0 reading require bytes or credentials not verifiably present in the dispatch environment?** Specifically: (a) any path under `core/data/tv_exports/**`, `core/data/bar_data/**`, `core/data/external/**` (gitignored vendor data — a cloud checkout has these only if manually staged there for *this* session), or (b) any API key/secret (e.g. the databento key). If yes and unconfirmed-present in the target surface → **local**, full stop, regardless of how questions 1–3 would resolve. See Addendum for the incidents that motivated this and the confirmed-present bar a handoff brief must clear to dispatch to cloud anyway.
-1. **Does the task author doctrine or touch a locked/governed surface?** (ADRs, Pre-Qs, pre-registrations, closures, lifecycle state, `CLAUDE.md`/`STATE.md`/memory; any *edit* to `core/` anchor-path code — `dd_protection.py`, `firm_rules.py`, `portfolio_mc.py`, `core/mc/*`, `lifecycle.py`, `dd_geometry.py` — or Pine.) → **CC**, full stop. Read-only imports of `core/` from `lab/` code are fine on either surface.
-2. **Is the spec frozen?** Binary acceptance gates, resolved ambiguities (§0.5-style defaults), enumerated forbidden moves, no judgment calls expected mid-build. If not → **CC** either does the work or freezes the spec first. Cursor never resolves a spec ambiguity unilaterally; it bounces `NEEDS_CONTEXT`.
-3. **Does the build clear the handoff-overhead threshold?** Authoring + verifying a compliant brief costs a real fraction of a session. If the build is smaller than the brief (rule of thumb: < ~1 focused hour, or fewer than ~3 files touched), it stays on whichever surface is already open — default CC. Above threshold and spec-frozen → **Cursor**.
-
-**Handoff contract (all four required for Cursor eligibility):**
-
-- A handoff brief under `docs/briefs/**` passing `check_brief.py` (producer side: brief-authoring skill; the 2026-07-13 survivor-scoring brief is the reference example).
-- §0 Phase-0 reads with a **read-report-before-code** requirement and `NEEDS_CONTEXT` bounce on any contradiction; Cursor runs the `handoff-verify` checklist as that Phase 0 (consumer side).
+- A handoff brief under `docs/briefs/**` passing `check_brief.py`.
+- §0 Phase-0 reads with a **read-report-before-code** requirement and a `NEEDS_CONTEXT` bounce
+  on any contradiction; the worker runs the [`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md)
+  checklist as that Phase 0.
 - §5 forbidden moves naming the locked surfaces the task runs near.
-- Return contract: `cursor/*` branch, PR with tests green, **no commit/merge without operator go**; the PR is reviewed in a CC session under receiving-code-review discipline (or by the operator directly) before merge.
-- **(Added 2026-07-16 addendum — RATIFIED 2026-07-16.)** §0 Phase-0 reads state explicitly whether any read touches a gitignored vendor-data path or a secret (test 0 above), and if so, name the confirmed-present staging/credential check performed for *this* dispatch — not a prior one, not a general belief the bytes/key exist "somewhere."
+- §0 states explicitly whether any read touches a gitignored vendor-data path or a secret
+  (test 0), and if so names the confirmed-present staging/credential check performed for *this*
+  dispatch — not a prior one, not a general belief the bytes or key exist "somewhere."
+- **Return contract:** a worker branch (`codex/*` or `claude/*`), a PR with tests green, and a
+  four-state status — `DONE` / `DONE_WITH_CONCERNS` / `NEEDS_CONTEXT` / `BLOCKED`. **No commit
+  or merge without the operator.** `DONE_WITH_CONCERNS` is adjudicated by the coordinator before
+  merge; `NEEDS_CONTEXT` gets one re-anchor and re-dispatch, then falls back to the coordinator
+  (two bounces means the spec was not freezable and the packet was mis-routed).
 
-**Effective:** upon acceptance.
-**Scope:** all task routing between Claude Code and Cursor on this repo. Other external surfaces (web advisors, claude.ai) keep their existing gates (`handoff-verify`, repo-context priming); this ADR does not re-govern them.
+**Merge authority is the operator's, with no automated exception.** The 2026-08-14 binary
+auto-merge gate is retired with the mechanism it drove (§8). Neither a green CI run, nor a clean
+automated review, nor an adjudication verdict is merge authority.
 
----
+**Orchestrating more than one worker at a time.** When work decomposes into 2+ independent
+spec-freezable packets, the coordinator owns the claim manifest and every packet still clears
+tests 0–3 individually. Three rules carried enough dated failure evidence to survive the
+retirement of the skill that stated them:
 
-## §3 — Alternatives considered
+- **Disjoint file footprints.** No two packets touch the same file. `docs/SESSIONS.md`,
+  `STATE.md`, campaign-state files, and all board/index files are **reserved to the
+  coordinator's integration commit** — the single-writer rule. Workers never write them.
+- **Dispatch-moment Phase-0 re-check, not authoring-moment.** Re-verify each packet's premises
+  against current `origin/main` at dispatch, with an explicit no-op condition ("if already fixed
+  on main → return DONE, cite the commit"). Three artifacts were overtaken between authoring and
+  dispatch on 2026-07-24 alone.
+- **A brief's review round is part of the freeze, not a track running alongside the builds.** The
+  umbrella brief's pre-dispatch review must have COMPLETED and any re-freeze it produced must be
+  merged to `main` **before the first packet is dispatched**. Dispatching from the brief as first
+  opened is a forbidden move.
+- **The dispatch pointer carries the brief's frozen SHA** — the post-review-round freeze, never
+  the as-first-opened commit. A worker whose pointer SHA no longer matches the brief on `main`
+  returns `NEEDS_CONTEXT` rather than building: a stale pointer is a stale spec, and building it
+  anyway is how a withdrawn packet gets built.
 
-| Alternative | Why ruled out |
+  Both rules are paid for by SESSIONS `2026-09-04f`: all three workers were fired from `af0203f`
+  while the review was still running; the re-freeze withdrew packet B (built anyway, #304 closed
+  without merge) and moved packet C's guard mid-build (C falsified, fix round C1 owed). Relay lag,
+  not worker error — the workers had no SHA to notice the drift by. Ratified as
+  [#402](https://github.com/Joshua-Asante/first-passage/pull/402) against the `cursor-fleet`
+  skill on 2026-09-15 and carried here verbatim in substance when that skill was deleted the same
+  day; nothing of #402 is lost.
+
+**Effective:** the 2026-07-14 decision on acceptance; the 2026-09-15 rescoping on the
+operator's same-day in-session ratification.
+**Scope:** task routing between the coordinator and worker surfaces on this repo. Other external
+surfaces (web advisors, claude.ai) keep their existing gates; this ADR does not re-govern them.
+
+## Grounds
+
+**For the original allocation (2026-07-14, unchanged in substance).** Since 2026-07-06 the repo
+ran a two-surface workflow without a written rule, producing four clean lands in eight days and
+zero locked-surface incidents. The counter-pattern is also documented: external instruction
+packets confabulate repo state when not gated
+(`feedback_web_advisor_handoff_confabulates_repo_state`, multi-fire through 2026-07-11), which is
+why `handoff-verify` exists. Unwritten, the allocation would drift under speed pressure until a
+judgment-heavy or locked-surface task crossed a line. Routing by "code vs docs" was rejected as
+the wrong axis in both directions: a mechanical `SESSIONS.md` entry was successfully handed off,
+while `dd_geometry.py` — code — was correctly kept in-session because it sits on a governed
+surface. Spec-completeness and surface-proximity predict outcomes; artifact type does not. A
+vendor-supplied CC-vs-Cursor performance comparison offered at the time was treated as
+unverified marketing material and is explicitly non-load-bearing: the decision would stand
+unchanged if every vendor claim were false.
+
+**For the 2026-09-15 retirement.** The operator removed Cursor from recurring spend on
+2026-09-10 ([`d16`](../pursuits/d16-cursor-subscription.md), `SUBTRACT`;
+[subscription ledger](../pursuits/SUBSCRIPTION_LEDGER.md)), and on 2026-09-11 ruled for Track B
+that "Cursor is not a lane… packets marked Cursor-eligible go to Codex local"
+([D-B6](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md)). The
+2026-09-15 instruction generalises that to the repo. A surface with no subscription cannot be
+dispatched to, so leaving the lane documented as live would leave the routing test describing a
+destination that does not exist — the drift this ADR was written to prevent, pointing the other
+way.
+
+**Why this is a revision and not a new ADR.** The subject of this record *is* surface
+allocation; retiring one of the two surfaces is a change of scope to this decision, not a
+different decision. [ADR ceremony tiering](2026-08-08-adr-ceremony-tiering.md) (revised
+2026-09-08) provides exactly this mechanism — "approved changes update effective decision text
+with a dated revision and immutable prior version" — and explicitly retired the rule requiring
+"new sibling ADRs for every amendment." A third file on this subject would have continued the
+corpus growth that policy revision exists to stop, and would have created a second owner for
+rules Rule 7 assigns to one.
+
+## Current owner
+
+- **This ADR** owns the routing test, the handoff contract, the return contract and merge
+  authority.
+- [`task-routing`](../../.claude/skills/task-routing/SKILL.md) owns the canonical local-only
+  (test 0) checklist. One owner: this ADR states the test, that skill holds the list.
+- [`cc_handoff.md`](../../.claude/skills/brief-authoring/references/cc_handoff.md) owns the
+  producer-side brief template, including the §0.75 local-only dependency block and the
+  recommended-defaults pattern for resolving ambiguity ahead of a frozen-spec dispatch.
+- [`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md) owns the consumer-side
+  Phase-0 gate.
+- [`TOMBSTONES.md`](TOMBSTONES.md#2026-09-15-cursor-agent-retirement) owns retrieval of the
+  artifacts removed by the retirement sweep.
+- `docs/SESSIONS.md` and the programme audits own the dated failure evidence behind the
+  orchestration rules; this ADR states the rules, not the incident log.
+
+## §8 — Disposition of the prior decision's clauses and addenda
+
+> **Two HTML anchors in this file are load-bearing and must not be removed:**
+> `#2--decision` (the slug of the pre-revision `## §2 — Decision` heading) and
+> `#addendum-2026-09-04-disable-notify-cursor`. The 2026-09-15 revision dropped both
+> headings and broke two live incoming links — `docs/SESSIONS.md:424` and the Track B
+> [campaign state](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md).
+> The SESSIONS citation sits in a merged entry that `sessions-append-only` forbids
+> editing, so the anchor is pinned here rather than the caller repointed.
+
+Every clause of the 2026-07-14 body and its six addenda, dispositioned per
+[ceremony tiering](2026-08-08-adr-ceremony-tiering.md) ("disposition each obligation as retained,
+discharged, superseded or explicitly retired"). Full prior text at blob
+`0bcd6699fd683a18b9493e25bb053797dcf4fafe`.
+
+| Prior clause | Disposition |
 |---|---|
-| Route by "code vs docs" | Wrong axis both directions: a mechanical `SESSIONS.md` entry was successfully Cursor-handed (2026-07-12 brief), while `dd_geometry.py` — code — was correctly CC-built because it sits on a governed surface. Spec-completeness and surface-proximity predict outcomes; artifact type doesn't. |
-| Everything stays in CC (status quo ante 2026-07) | Forfeits demonstrated parallel throughput: on 2026-07-13 Cursor built the survivor-scoring harness while CC closed DISC-CAMP-0 in the same window. Also spends CC context budget on mechanical TDD that a frozen spec fully determines. |
-| Hand Cursor all implementation, including `core/` edits | Locked-surface edits carry Rule-0/anchor obligations (byte-identical-under-`ACTIVE_FIRM=FXIFY` proofs, MC pin regression, manifest gates) that are enforced by the CC skill stack and session doctrine. No incident yet precisely because this line hasn't been crossed; the ADR exists to keep it that way. |
-| Adopt the vendor comparison as the routing rationale | Its claims are unverifiable marketing material (token throughput, indexing internals) and — decisively — they argue about *speed*, which is not the failure axis this repo cares about. The observed failure axis is spec-state confabulation and locked-surface discipline. Grounding doctrine in vendor claims violates `verify-source`. |
-| Run a formal head-to-head benchmark before codifying | Cost without decision value: eight days of natural-experiment evidence already exists in git history, and the falsifier (§4) keeps collecting it for free. |
+| §2 routing test 0 (local-only dependency pre-check, 2026-07-16 addendum) | **Retained**, surface-agnostic. Binds Claude Code and Codex equally; checklist owner is `task-routing`. |
+| §2 routing test 1 (locked/governed surface → coordinator) | **Retained** verbatim in substance. No surface exception, no size exception. |
+| §2 routing test 2 (spec frozen; never resolve ambiguity unilaterally) | **Retained**, "Cursor" → "a worker". |
+| §2 routing test 3 (handoff-overhead threshold) | **Retained**. Its 2026-08-29 reading as *proactive dispatch authority* (act, don't merely label) is also retained. |
+| §2 handoff contract, items 1–3 and 5 (brief passing `check_brief`; §0 read-report + `NEEDS_CONTEXT`; §5 forbidden moves; vendor-bytes/secret declaration) | **Retained** unchanged. |
+| §2 return contract, "no commit/merge without operator go" | **Retained, and restored to its unnarrowed form** — the 2026-08-14 narrowing retires with its mechanism. |
+| §2 return contract, `cursor/*` branch | **Superseded** — worker branches are `codex/*` or `claude/*`. |
+| Four-state return taxonomy (`DONE`/`DONE_WITH_CONCERNS`/`NEEDS_CONTEXT`/`BLOCKED`) | **Retained** and promoted into §Decision; it was previously stated only by the deleted `cursor-fleet` skill. |
+| §4 falsifier limb 1 (≥2 judgment-defect PRs in 8 weeks) | **Retained**, re-scoped to worker PRs on any surviving surface. |
+| §4 falsifier limb 2 (overhead exceeds value, ≥3 consecutive handoffs) | **Retained**, surface-agnostic. |
+| §5 forbidden move — verbal-spec handoffs | **Retained**. The containment is the brief, whatever the worker. |
+| §5 forbidden move — scope-creep via adjacency | **Retained**. |
+| §5 forbidden move — merging on green tests without review | **Retained**, unnarrowed (see above). |
+| §5 forbidden move — retro-fitting a brief after the build | **Retained**. |
+| §5 forbidden move — quoting the vendor comparison's numbers in routing arguments | **Explicitly retired** — the comparison was Cursor-vs-CC and has no remaining referent. Its *principle* (don't ground routing doctrine in vendor marketing) is generic and survives under `verify-source`. |
+| §6 downstream artifacts; §7 implementation plan (Phases 0–3) | **Discharged** 2026-07-14/16. Completed maintenance acts; no standing obligation. |
+| §10 audit hooks (cursor-branch merge/locked-surface sweeps) | **Superseded** by §10 below — the old hooks scan a branch namespace that no longer exists. |
+| Addendum 2026-07-16 (Step 0 + 5th contract item) | **Folded into §Decision above**; binding, not an appendix. |
+| Addendum 2026-08-14 (auto-merge narrowing) | **Explicitly retired** with its parent mechanism. See the `2026-08-14` ADR's own retirement. |
+| Addendum 2026-08-23 (automatic Claude judgment review) | **Already self-superseded 2026-08-29** — the mechanism never fired (`GITHUB_TOKEN`-authored comments do not trigger workflow runs) and its files were deleted then. No live obligation. |
+| Addendum 2026-08-29 #1 (Codex native GitHub review) | **Retained and now load-bearing** — Codex's account-level review is a surviving surface's review path. Its standing bar — *this repo's CI grants Codex no write/push credential without a superseding ADR* — **survives the Cursor retirement unchanged**; nothing here relaxes it. |
+| Addendum 2026-08-29 #1 — **its revert trigger**: a rolling 8-week window in which Codex's native review is demonstrably lower-signal than Claude's on the same class of PR, or the operator disables the `chatgpt.com/codex/settings/code-review` toggle for this repo (operator-judged, logged in `docs/SESSIONS.md`) | **Retained.** Revert action unchanged and still correct: none in this tree — the mechanism is account-level, so reverting is toggling that setting off, not editing this repo. |
+| Addendum 2026-08-29 #2 — **its revert trigger**: two proactively-dispatched tasks in a rolling 8-week window turn out to have needed operator judgment the coordinator lacked (wrong root cause, misjudged scope, a spec that was not actually frozen) | **Retained**, re-scoped to the surviving worker surfaces. Revert action: back to per-task "dispatch this" confirmation before any worker dispatch. |
+| Addendum 2026-08-29 #1, "relay findings to Cursor's Cloud Agent" | **Explicitly retired** — the relay target is gone. Findings are addressed by the coordinator or a Codex/Claude Code worker. |
+| Addendum 2026-08-29 #2 (proactive dispatch; lightweight GitHub-issue + `@cursor` format) | **Split.** Proactive-dispatch authority is **retained** (above). The lightweight issue format is **retained in shape** — a complete issue body in place of a full brief for small precedented fixes — but its `@cursor` dispatch step is **explicitly retired**; dispatch is to a Codex or Claude Code worker. |
+| <a id="addendum-2026-09-04-disable-notify-cursor"></a>Addendum 2026-09-04 (`notify-cursor.yml` auto-ping disabled) and its revert trigger ("operator asks to turn the ping back on"; restore `on:` events from `4f3ddc6`) | **Explicitly retired, not left standing.** The workflow is deleted by this revision's sweep; the revert trigger is unreachable and is discharged rather than carried as a dead obligation. Retrieval via [`TOMBSTONES.md`](TOMBSTONES.md#2026-09-15-cursor-agent-retirement). |
 
----
+### Deliberately retained (not over-swept)
 
-## §4 — Falsifier (revert trigger)
+Three Cursor-named things survive on purpose; a future reader should not treat them as a
+missed sweep:
+
+- **`scripts/check_pine_manifest.py`'s `cursoragent@cursor.com` author denylist.** Dormant —
+  that identity can no longer appear — but retained as cheap anti-re-entry armor for the
+  incident it encodes (commit `66c2a14`/PR #574: a Pine manifest pin authored from a
+  disposable Cursor cloud checkout, bytes lost). The guard costs nothing and still fires if
+  the lane is ever restored. `.github/workflows/manifest-check.yml`'s matching comment is
+  that incident's record.
+- **The `cursor` alternation in both copies of `check_brief.py`'s type-inference regex.**
+  Retained as inert tolerance for two frozen historical briefs that self-declare
+  `**Brief type:** Cursor handoff`. **Correction (2026-09-15, adversarial review):** an earlier
+  draft of this section claimed removing the alternation "would silently reclassify those
+  records." That was **false** and is corrected here rather than quietly dropped — `infer_type`
+  also matches on filename, and both briefs carry `cursor-handoff` in their names, so removal was
+  measured to change zero classifications across all 858 markdown files. The alternation stays
+  because it is harmless and costs nothing, not because anything depends on it. The regex reads
+  history; it authorizes nothing.
+- **`lab/research_utils/msl_preflight.py`'s ripgrep fallback** to a Cursor *editor* install
+  path. It is a guarded filesystem probe reached only when `rg` is absent from `PATH`, with no
+  agent semantics; removing it could only reduce robustness on a host that still has the editor.
+
+Dated Cursor attributions in instrument ledgers, `lab/CATALOG.md`, `PORT_MANIFEST.sha256`,
+`docs/SESSIONS.md`, closures and superseded specs are historical record and are **not** swept —
+history stays, per the reader-intercept principle this revision relies on.
+
+## §4 — Falsifier (revert trigger), restated surface-agnostically
+
+Both limbs survive the retirement; only "Cursor" becomes "a worker". Restored here
+because the 2026-09-15 consolidation carried their *thresholds* into the §8 table but
+dropped their revert **actions** and their check schedule — a falsifier without a
+stated consequence is the failure mode this repo has a lesson for.
 
 **Revert trigger (either limb):**
 
-1. **Allocation-caused defects:** over any rolling 8-week window, ≥2 merged Cursor-built PRs are found to carry defects traceable to *spec-interpretation judgment* (Cursor resolved an ambiguity instead of bouncing `NEEDS_CONTEXT`) rather than spec error. That is the exact failure class this allocation claims to contain; two instances mean the containment doesn't work.
-2. **Overhead exceeds value:** ≥3 consecutive handoffs where authoring + verifying the brief demonstrably cost more session time than the gated build (operator-judged, logged in `SESSIONS.md`). The split is then net-negative for that task class.
+1. **Allocation-caused defects** — over any rolling 8-week window, ≥2 merged
+   worker-built PRs carry defects traceable to *spec-interpretation judgment* (the
+   worker resolved an ambiguity instead of bouncing `NEEDS_CONTEXT`) rather than to
+   spec error.
+2. **Overhead exceeds value** — ≥3 consecutive handoffs where authoring and verifying
+   the brief demonstrably cost more session time than the gated build
+   (operator-judged, logged in `docs/SESSIONS.md`).
 
-**Revert action:** limb 1 → supersede with a tightened rule (narrower Cursor scope or mandatory CC re-verification of every Cursor diff hunk); limb 2 → carve the affected task class back into CC by superseding ADR — do not silently stop writing briefs.
+**Revert action:** limb 1 → supersede with a tightened rule (narrower worker scope, or
+mandatory coordinator re-verification of every worker diff hunk); limb 2 → carve the
+affected task class back to the coordinator by superseding ADR — **do not silently stop
+writing briefs.**
 
-**Trigger check schedule:** ride the standing 2026-08-08 review (already carries the lifecycle/regime/prop-program checks), then quarterly with it.
+**Trigger check schedule:** rides the standing quarterly programme review.
 
----
+## §9 — Operator actions this repo cannot perform
 
-## §5 — Forbidden moves (under this ADR)
+Three Cursor residues sit outside what a file edit can reach, so merging the sweep could not touch
+them. Recorded here, in the hot record, so the retirement is not mistaken for complete at the
+account level. **Items 1 and 2 verified already gone on 2026-09-15** (same-day follow-up session,
+run on the operator's machine and account):
 
-- **Verbal-spec handoffs** ("it's just a harness, I'll describe it in the Cursor chat") — genuinely tempting for mid-size tasks where the brief feels like ceremony; ruled out because the confabulation failure class is documented and multi-fire, and the brief *is* the containment.
-- **Scope-creep via adjacency** — Cursor is in `lab/` and the fix "obviously" belongs three lines inside `core/mc/simulation.py`; ruled out — that edit re-routes to CC under test 1 regardless of size. The survivor-scoring brief's "landed inputs — call them, don't re-touch" line is the template.
-- **Merging on green tests without CC/operator review** — tempting because Cursor's test suites have been clean; ruled out per receiving-code-review discipline (2026-07-06 session: external findings verified adversarially before acceptance — the same standard applies to external code).
-- **Retro-fitting a brief after the build** to make the record compliant — self-attestation, same class as Rule 8 sub-rule 7's same-commit pre-registration.
-- **Quoting the vendor comparison's numbers in future routing arguments** — if a speed claim matters to a future decision, measure it on this repo's tasks.
+1. **The GitHub webhook trigger** created under the now-superseded autonomous-loop ADR (routine
+   `trig_012nvuH7jqmjFUFgoFVpZ6RP`, firing unfiltered on `pull_request: opened`) — an
+   account-level routine, not a repo file. **Deleted.** `RemoteTrigger get` on the id returns
+   HTTP 404 `Trigger not found` from the same account whose 2026-08-15 session transcript holds
+   the routine's API record; `list_runs` shows zero sessions against a `52 */6 * * *` cron that
+   would have produced ~4/day; and all 30 `cursor/*` PRs opened after 2026-08-14 were merged by
+   the operator or `app/cursor`, never by the routine. The API's `list` returns only the 20
+   newest routines and does not page, so the earlier "not in the listing" was uninformative
+   either way — the resource-level 404 is the evidence. Nothing to disable. One residual check
+   only the operator can make: the routines page at `claude.ai/code/routines`, confirming no
+   *other* routine carries a GitHub event source on `first-passage` (a routine object exposes no
+   event-source field, so the API cannot answer this).
+2. **`daily-repo-truth-sync`**, the operator-machine scheduled task whose step 2 classified
+   `cursor/*` branches SPENT / CARRIES-WORK / UNKNOWN. **Deleted.** The desktop scheduler
+   reports `taskDeleted: true` (42 runs; last 2026-09-14 00:59Z). Its `SKILL.md` remains under
+   `~/.claude/scheduled-tasks/` as the scheduler's documented post-delete residue, not a live
+   task. Nothing to prune.
+3. **Four spent `cursor/*` refs still on `origin`** — a remote deletion, not a file edit, so the
+   sweep could not perform it (and §10 hook 3 read "empty" from an unfetched checkout):
+   `cursor/research-asset-registry-0ba4` (#315 merged), `cursor/scripts-side-2026-09-04-p3`
+   (#303 merged), `cursor/windows-handoff-job-accounting-7785` (#326 merged) — each an ancestor
+   of `main` — and `cursor/scripts-side-2026-09-04-p2` (#304 closed unmerged, "Packet B was
+   withdrawn before dispatch"), one commit ahead holding the withdrawn diff, which stays
+   reachable from the PR after deletion. Operator: `git push origin --delete <ref>` ×4.
 
----
+None of this blocks ratification. A fourth item is the operator's alone: the **Cursor row in the
+[subscription ledger](../pursuits/SUBSCRIPTION_LEDGER.md)** still records a cancellation date and
+final charges as not supplied. That is an operator reconfirmation, not an agent edit.
 
-## §6 — Consequences
+### In-flight work this revision interacts with (2026-09-15)
 
-**Positive:**
-- Parallel throughput becomes a rule, not a habit: CC session time concentrates on design, spec-freezing, and adjudication — the work the skill stack and memory actually differentiate.
-- Cursor's demonstrated failure mode (acting on stale/confabulated repo state) stays contained by a gate that already exists and has fired correctly.
+Two PRs were open against `main` when this revision landed. Neither is editable from this
+branch; both need a pass at merge time:
 
-**Negative (real cost):**
-- Brief-authoring overhead per handoff — the survivor-scoring brief is ~200 lines and took a real fraction of a session. Test 3 exists to keep this cost from being paid on tasks too small to amortize it.
-- Two-surface coordination: worktree/branch hygiene load (already visible — repo-hygiene skill exists because of it).
-
-**Risks:**
-- Spec-freeze quality becomes a single point of failure: a wrong-but-frozen spec is executed faithfully and wrongly. Mitigation: §0.5 halt-on-ambiguity defaults + Cursor's standing license to bounce `NEEDS_CONTEXT` + CC-side PR review as the second look.
-- The threshold heuristic in test 3 is a judgment call and will be argued at the margin; the falsifier's limb 2 is the pressure valve.
-
-**Downstream artifacts (on acceptance):**
-- `CLAUDE.md` §Methodology references — add one link line pointing here (routing rule discoverability; Rule 7: this ADR is the canonical owner, CLAUDE.md links).
-- brief-authoring skill `references/cc_handoff.md` — flag (do not silently edit): the 2026-07-12/13 Cursor briefs added a §0.5 halt-on-ambiguity section the template lacks; per the skill's own "recent working example wins" rule, the template needs a Cursor-variant update through the skill-authoring path.
-- `docs/SESSIONS.md` — session entry linking this ADR.
-
----
-
-## §7 — Implementation plan
-
-Mostly policy. Mechanical edits on acceptance only:
-
-- **Phase 0** — re-verify §0 anchors at ratification time (`git log -1` on the five files).
-- **Phase 1** — add the `CLAUDE.md` link line; append the SESSIONS entry.
-- **Phase 2** — raise the cc_handoff-template §0.5 gap through the skill-authoring path (repo copy first, per `feedback_skill_amendments_via_authoring_path`).
-- **Phase 3** — flip status to `Accepted` with a dated ratification note.
-
----
+- **[#402](https://github.com/Joshua-Asante/first-passage/pull/402)** amends
+  `.claude/skills/cursor-fleet/SKILL.md`, which this revision **deletes** at operator
+  instruction. Whichever lands second conflicts. The deletion is the operator's ruling and
+  should win; #402's substance (a brief's review round is part of the freeze, and the dispatch
+  pointer carries the frozen SHA) is **already carried** in §Decision's orchestration rules, so
+  nothing of it is lost by closing it against the deletion.
+- **[#401](https://github.com/Joshua-Asante/first-passage/pull/401)** adds a
+  `work-decomposition` skill whose line 19 reads "retired by operator instruction on 2026-09-15
+  (**retirement record pending**)". **This revision is that record** — the pointer resolves here
+  once both land. #401 also makes pointer edits to `cursor-fleet`, which will need re-homing to
+  this ADR for the same reason.
 
 ## §10 — Audit hooks (runnable)
 
 ```bash
-# Every cursor/* merge since acceptance has a corresponding handoff brief:
-git log --merges --oneline --since=2026-07-14 | grep -i "cursor/"
-ls docs/briefs/handoffs/*cursor* docs/briefs/rnd-pipeline/*cursor* 2>/dev/null
-# Expected: every merged cursor/* branch maps to a brief dated at or before its first commit.
+# 1. No Cursor harness, dispatch script or workflow survives in the tree.
+git ls-files .cursor scripts/dispatch_cursor.ps1 scripts/test_dispatch_cursor.ps1 \
+             .github/workflows/notify-cursor.yml .claude/skills/cursor-fleet
+# Expected after ratification: empty.
 
-# No Cursor-branch commit touches a locked surface:
-git log --all --oneline --since=2026-07-14 --author=. --branches="cursor/*" -- core/dd_protection.py core/firm_rules.py core/portfolio_mc.py core/mc/ core/lifecycle.py core/dd_geometry.py
-# Expected: empty.
+# 2. No live agent-facing surface still names a Cursor lane, dispatch or branch namespace.
+#    Three carriers are deliberately excluded and are the ONLY permitted hits:
+#      - comment lines recording why the lane is gone;
+#      - scripts/agent_handoff.md's retirement note in prose;
+#      - scripts/check_pine_manifest.py's `cursoragent@cursor.com` author denylist, retained as
+#        dormant anti-re-entry armor for the PR #574 incident (bytes lost to a Cursor cloud agent).
+#    Any OTHER hit is a finding.
+rg -n -i "@cursor|cursor/\*|dispatch_cursor|cursor\[bot\]|cursor-agent" .claude scripts .github \
+  | grep -vE ':[0-9]+: *#' \
+  | grep -v '^scripts/agent_handoff.md:' \
+  | grep -v '^scripts/check_pine_manifest.py:'
+# Verified empty at authoring (2026-09-15). The workflow half is additionally pinned
+# mechanically by tests/test_claude_review_workflows.py::test_no_workflow_dispatches_cursor.
+# Historical citations in docs/adr/, docs/SESSIONS.md, docs/notes/ and lab/ARCHIVED.json are
+# deliberately out of scope — history is not swept.
 
-# Brief compliance (run per new handoff):
-python C:/Users/joshu/.claude/skills/brief-authoring/scripts/check_brief.py <new-brief>.md --type cc_handoff
+# 2b. No LIVE handoff brief still offers the retired surface as a spawn target.
+#     Scope widened 2026-09-15 after a Codex review found
+#     docs/briefs/handoffs/2026-09-11-track-a-a1b-... at "Status: dispatch now" still reading
+#     "Spawn target: Codex (or Cursor)" while hooks 1-2 reported clean: they scan only
+#     .claude/ scripts/ .github/, so a dispatchable brief was outside them.
+rg -n -i "spawn target.*cursor" docs/briefs docs/superpowers
+# Expected, as of 2026-09-15, exactly two hits, both spent and both verified as such:
+#   docs/briefs/handoffs/2026-07-24-cursor-handoff-agent-surface-posture-sync.md
+#     -- its own banner reads "STATUS 2026-07-24: DISCHARGED - DO NOT DISPATCH";
+#   docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md
+#     -- no DISCHARGED line, but discharged BY DELIVERY: its deliverable exists at
+#     lab/discovery/lifecycle_call1/, whose __init__.py:12 cites this brief as its handoff.
+# (A third hit, the 2026-07-24 core-dead-code-prune brief, matches only because it says
+#  "NOT Cursor-eligible" -- it routes AWAY from the retired surface, which is correct.)
+# Any hit on a brief that is still dispatchable is a finding.
 
-# §4 limb-1 evidence sweep (at each quarterly check):
-grep -in "cursor" docs/SESSIONS.md | grep -in "defect\|redesign\|NEEDS_CONTEXT"
-# Adjudicate hits against the two falsifier limbs; log the verdict in the review entry.
+# 3. Worker branches use a surviving namespace. Ask the remote: `git branch -a` sees only refs
+#    this checkout has fetched, which is how the authoring pass read "empty" while origin held
+#    four (the same unfetched-branch trap the #401 search fell into — SESSIONS 2026-09-15a).
+git ls-remote --heads origin 'cursor/*'
+# Expected: empty once the §9 item-3 refs are deleted. Verified 2026-09-15: exactly the four
+# spent refs named in §9 item 3. Any ref not in that list is a finding.
+
+# 4. The retirement did not silently drop the surviving clauses' owners.
+test -f .claude/skills/task-routing/SKILL.md \
+  && test -f .claude/skills/brief-authoring/references/cc_handoff.md \
+  && test -f .claude/skills/handoff-verify/SKILL.md && echo "owners present"
+python scripts/check_skill_refs.py --all
+# Expected: "owners present" and a clean skill-refs pass.
+
+# 5. Falsifier limb-1 evidence sweep (at each quarterly check).
+grep -in "worker\|packet" docs/SESSIONS.md | grep -in "defect\|redesign\|NEEDS_CONTEXT"
+# Adjudicate hits against the two §4 limbs; log the verdict in the review entry.
 ```
-
----
 
 ## Verification
 
 ```bash
-# Discipline checks (mechanical)
-python C:/Users/joshu/.claude/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-07-14-cc-cursor-surface-allocation.md --type adr
-
-# Production-source verification (Rule 0 confirmation)
-git log -1 --format='%h %ci' -- docs/operational_rules.md .claude/skills/handoff-verify/SKILL.md docs/ltm/briefs/rnd-pipeline/2026-07-13-cursor-handoff-prop-survivor-scoring-harness.md docs/SESSIONS.md CLAUDE.md
+python .claude/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-07-14-cc-cursor-surface-allocation.md --type adr
+python scripts/check_adr_graph.py
+python scripts/check_skill_refs.py --all
+git show 0bcd6699fd683a18b9493e25bb053797dcf4fafe   # prior decision text, unedited
 ```
 
-§6 downstream sweep executed at ratification (same commit): `CLAUDE.md` §Methodology references link added; `docs/SESSIONS.md` entry appended. `references/cc_handoff.md` §0.5 template gap remains an open follow-up (skill-authoring path, not a mechanical edit) — tracked here, not silently fixed.
-
----
-
-## Addendum (2026-07-16, RATIFIED same day — operator chat directive "Step-0 cloud-dispatch addendum: ratify") — local-only dependency pre-check
-
-**Trigger:** three cloud→local bounces in the 48h window 2026-07-15/16, each costing a full build→halt→local-continuation cycle (branch/worktree repackaging, not just a re-run):
-
-- **Class-S C1 G0–G8 scoring** (07-15): cloud run → `NEEDS_CONTEXT` — gitignored CME CSVs (`15d8b`/`beabf`) absent from the cloud checkout; re-run locally on the same branch.
-- **Class-S C1 regime-robustness rider** (07-15→16): same cause, same day — the session's own SESSIONS.md record notes "same gitignored absence as the first scoring cloud pass" — required a harness-PR/local-branch split (`#387` + `cursor/class-s-c1-regime-local-1713`) plus a later worktree repackage to land results.
-- **H-OD-1 Stage-1/2** (07-16): Cursor cloud `BLOCKED — capability-problem` (no databento key in that environment) → ran locally.
-
-**Root cause:** the three-question routing test asks about *surface* (locked/governed code, spec freeze, overhead threshold) but never asks about the *dispatch environment's contents*. `core/data/tv_exports/**`, `core/data/bar_data/**`, `core/data/external/**` are gitignored by standing policy (CLAUDE.md §Public-clone posture — personal export OK, redistribution not); a Cursor cloud checkout structurally cannot have those bytes unless someone staged them there by hand for that session, and that staging state doesn't transfer between cloud sessions or get verified before dispatch. The same blindness applies to secrets — a key being configured in Cursor Runtime Secrets for one project/session is not evidence it is present in the environment a specific dispatch runs in.
-
-**Decision:** add routing-test **Step 0** (inserted into §2 above) and a 5th required handoff-contract item, both **binding as of ratification (2026-07-16)**. This closure targets a distinct failure class from the two named in §4 (judgment defects, overhead-exceeds-value) — dispatch-environment blindness, not spec quality — so it is handled here by addendum rather than by firing the existing falsifier.
-
-**Downstream artifact (executed at ratification):** `.claude/skills/brief-authoring/references/cc_handoff.md` §0.75 "Local-only dependency check" block implements Step 0 (drafted same session as this addendum; its DRAFT marker flipped to ratified in the same commit as this ratification).
+Mechanical form checks do not establish semantic equivalence or ratification.
 
 ---
 
@@ -185,142 +402,11 @@ git log -1 --format='%h %ci' -- docs/operational_rules.md .claude/skills/handoff
 | Date | Change | By |
 |---|---|---|
 | 2026-07-14 | Initial authoring | Joshua + Claude Code |
-| 2026-07-14 | Ratified — status `Proposed` → `Accepted`; §6 downstream sweep executed (CLAUDE.md link, SESSIONS entry) | Joshua |
-| 2026-07-16 | Addendum drafted (DRAFT — pending ratification) — routing-test Step 0 + handoff-contract 5th item, local-only dependency pre-check, after three cloud→local bounces in 48h | Claude Code (drafted at operator request, not yet ratified) |
-| 2026-07-16 | Addendum RATIFIED — Step 0 + handoff-contract 5th item now binding; `cc_handoff.md` §0.75 marker flipped in the same commit | Joshua (chat directive: "Step-0 cloud-dispatch addendum: ratify") |
-| 2026-08-14 | Addendum RATIFIED — see below (narrows §2 return-contract + §5 forbidden-move on merge) | Joshua (explicit ruling, in-session) |
-| 2026-08-23 | Addendum RATIFIED — see below (automatic Claude judgment review on Cursor-first / opted-in PRs; review-only) | Joshua (chat: wire automatic Claude review on judgment-heavy PRs, especially Cursor-scoped) |
-| 2026-08-29 | Addendum RATIFIED — see below (Codex second look, landed as Codex's native GitHub code-review integration at the account level, not a repo workflow; a first repo-workflow design and an adversarial fable-judge mode were both built and dropped in the same session before merge) | Joshua (chat: "I have been having Cursor prompt Claudebot for reviews on PRs, this can go to Codex instead"; corrected same session after asking Codex directly and enabling its native GitHub integration) |
-| 2026-08-29 | Second addendum RATIFIED — see below (§2 test 3 clarified as proactive dispatch authority, not just an eligibility label; lightweight GitHub-issue + `@cursor` handoff format codified for small precedented fixes) | Joshua (asked whether a memory update was needed for automatic Cursor routing; `AskUserQuestion` fork put to the operator directly — ruled: full proactive routing) |
-
----
-
-## Addendum (2026-08-14, RATIFIED same day — operator ruling, in-session) — dispatch and merge narrowed by a sibling ADR
-
-**Trigger:** operator direction to reduce manual involvement in CC/Cursor coordination, following a same-session incident (5 of 7 dispatch chips silently auto-dismissed before reaching the operator's UI, discovered only when the operator asked why they'd seen just two).
-
-**What changes:** [`2026-08-14-cc-cursor-autonomous-loop.md`](2026-08-14-cc-cursor-autonomous-loop.md) supersedes-in-part two lines in this ADR:
-- §2 return contract, "no commit/merge without operator go" → narrowed to *without operator go, unless the sibling ADR's binary auto-merge gate clears in full* (fable-judge `VERIFIED` exactly + full gate battery + full `pytest` + a mechanical forbidden-surface-path check + a compliant handoff brief).
-- §5 forbidden move "Merging on green tests without CC/operator review" → narrowed the same way. "Green tests" alone was never sufficient even under the new ADR; the full gate requires an unambiguous adjudication verdict, not just passing CI.
-
-**What does not change:** the §2 routing test (which tasks are Cursor-eligible at all, including the locked-surface exclusion) is untouched. The chip-approval step for *dispatch* also narrows under the sibling ADR (chips become the exception path, not the default), but that is a separate clause recorded there, not here — this addendum only tracks what the sibling ADR takes from *this* file's text.
-
-**Why an addendum and not an edit:** per Rule 14 / Trap #12, this ADR's ratified body stays byte-unedited below this line. The narrowing is real and load-bearing, so it gets a proper cross-referenced record here, not silent supersession discoverable only from the other file.
-
----
-
-<a id="addendum-2026-08-23-judgment-review"></a>
-
-## Addendum (2026-08-23, RATIFIED same day — operator chat: wire automatic Claude review on judgment-heavy PRs) — review request, not merge
-
-**Reads (before authoring):** `.github/workflows/claude.yml` `53a8968` (2026-08-23, `allowed_bots: "cursor"`; triggers only on comments/reviews/issues containing `@claude` — **not** on `pull_request` opened). This file `027a729` (public-clone seed; §2 return contract still says the PR is reviewed in a CC session). Sibling [`2026-08-14-cc-cursor-autonomous-loop.md`](2026-08-14-cc-cursor-autonomous-loop.md) `027a729` (auto-merge is a **separate** binary gate; this addendum does not touch it). Cheap falsifier: a Cursor-scoped judgment PR today gets a Claude look only if someone comments `@claude`.
-
-**Trigger:** operator asked to wire an automatic Claude review request on PRs that need an extra level of judgment, especially when the work is scoped on Cursor first instead of in Claude Code. That is the exact gap the §2 return contract named ("reviewed in a CC session") and left as a manual mention.
-
-**Routing note:** this addendum was implemented on a `cursor/*` branch at that same operator direction, with no CC-frozen handoff brief. That is a **one-packet exception** to §2 routing test 1 (doctrine → CC, full stop). It does not widen Cursor's doctrine-authoring eligibility. The mechanism installed here is the catch for the same class of PR going forward. Recorded because the first adjudication pass on this introducing PR named the violation (run `32672196619`).
-
-**What changes:** a review-only GitHub Action requests a Claude adjudication pass when **all** of the following hold, implemented by `scripts/check_claude_judgment_review.py` + `.github/workflows/claude-judgment-review.yml`:
-
-1. The PR is **not** a draft.
-2. No prior `<!-- claude-judgment-review -->` comment exists (idempotent; re-review stays the existing `@claude` mention).
-3. At least one opt-in matches:
-   - label `claude-review`, or
-   - body token `claude-review: judgment` (case-insensitive), or
-   - head branch starts with `cursor/` **and** the diff touches a judgment surface (doctrine / governed `core/` / rail / skills / workflows — see the script's `JUDGMENT_*` lists).
-
-Events: `opened`, `ready_for_review`, `reopened`, `labeled` (label must be `claude-review`). **Not** `synchronize`. `pull_request`, not `pull_request_target`. Never `*`. The request **posts `@claude`** (plus the marker) as `github-actions[bot]`; `claude.yml` on the **default branch** allow-lists `cursor,github-actions` and runs the review. That hop exists because a direct `pull_request` invocation of `anthropics/claude-code-action` **self-skips** on any PR that edits `.github/workflows/` (observed on this introducing PR, run `32672069340`: "workflow validation skip… will begin working once you merge"). Workflow diffs are themselves a judgment surface, so the mention path on `main` is the one that still fires.
-
-**What does not change:**
-- The §2 routing test (which tasks are Cursor-eligible) is untouched.
-- The 2026-08-14 auto-merge gate is untouched. This addendum does not merge, does not green-wash CI, and does not satisfy gate (a) `fable-judge VERIFIED`.
-- Tests-only / lab-harness `cursor/*` chores do not auto-fire.
-- Human / `claude/*` PRs do not auto-fire unless labeled or body-tokened (CC is already in the room).
-- No STATE queue row. No sixth root doc. $0.
-
-**Forbidden:** treating a Claude review comment as merge authority; firing on every push; widening `allowed_bots` to `*`; using `pull_request_target`; auto-requesting on every `cursor/*` PR regardless of surface; invoking `claude-code-action` directly from the `pull_request` workflow (that path skips on workflow diffs).
-
-**Revert trigger:** either (1) a tests-only `cursor/*` PR receives an automatic request, or (2) a `cursor/*` PR that edits `docs/adr/**` (non-draft, first look) does not. Both are mechanically checkable from the predicate tests + one live workflow run.
-
-**Superseded 2026-08-29 (below): this addendum's mechanism never actually fired.** `claude-judgment-review.yml` posts its `@claude` request using the default `${{ github.token }}` (as `github-actions[bot]`). GitHub Actions does not trigger new workflow runs from events authored by the default `GITHUB_TOKEN` — a documented loop-prevention safeguard. Confirmed via the live Actions run history for `claude.yml` (91 runs inspected, all `conclusion: skipped`; the specific `@claude review this PR...` comment posted on PR #203 at 2026-08-29T21:16:45Z has no corresponding `claude.yml` run at all in that history). This was true for every `cursor_judgment_surface` PR back through at least PR #178 — not a today-only defect. See the 2026-08-29 addendum's closing note for the removal this produced.
-
----
-
-<a id="addendum-2026-08-29-codex-judgment-review"></a>
-
-## Addendum (2026-08-29, RATIFIED same day — operator chat: "I have been having Cursor prompt Claudebot for reviews on PRs, this can go to Codex instead") — Codex second look, via its native GitHub integration, not a repo workflow
-
-**Reads (before authoring, in order — the record of a self-correction, not edited away per Rule 14):** this ADR `4f3ddc6` (2026-08-24, addendum above). `.github/workflows/claude-judgment-review.yml` / `scripts/check_claude_judgment_review.py` / `.github/workflows/claude.yml` / `.github/workflows/notify-cursor.yml` (same anchor). `codex --help` / `codex exec review --help` / `codex login --help` run locally against the installed `@openai/codex` CLI (v0.151.0). **First design (superseded within this same session, before merge):** a `codex-judgment-review.yml` workflow running `codex exec review` directly in CI, authenticated via a `CODEX_ACCESS_TOKEN` repo secret (`codex login --with-access-token`) — built on the belief that Codex, unlike Claude, has no GitHub-App listener at all. **Correction:** the operator asked Codex directly about the secret; Codex answered that `CODEX_ACCESS_TOKEN` is not part of its documented setup and pointed at its own native GitHub code-review integration instead. Verified independently (not taken on Codex's self-report alone) via `WebSearch` against `developers.openai.com/codex/use-cases/github-code-reviews`, `learn.chatgpt.com/docs/third-party/github`, and `github.com/openai/codex-action` (direct `WebFetch` to `developers.openai.com` is blocked by this session's egress proxy, so corroboration ran through search-result snippets of those pages, not a full fetch) — confirmed: Codex ships a hosted, account-level GitHub App integration (enable at `chatgpt.com/codex/settings/code-review`, zero repo secrets), and a *separate* official `openai/codex-action@v1` for CI use, which takes `openai-api-key: ${{ secrets.OPENAI_API_KEY }}` — never `CODEX_ACCESS_TOKEN`. The operator then connected GitHub and turned on automatic reviews for open PRs on this repo through that native integration, independent of anything in this repo's tree.
-
-**Trigger (two, same session):** (1) redirect the existing Cursor-PR auto-review-request mechanism (2026-08-23 addendum above) from Claude to Codex — a second, independently-trained reviewer is more likely to catch a blind spot Claude's own review shares. (2) the correction above — the mechanism for (1) is not a repo workflow at all.
-
-**What changes:** nothing in this repo's tree, net of this addendum. `codex-judgment-review.yml`, `scripts/check_codex_judgment_review.py`, and its test are deleted (they were added and removed within the same open PR, before merge — `git log --follow` on the PR branch is the record, not a live file). `notify-cursor.yml` and `claude.yml` revert to their pre-2026-08-29 state **with one exception**: `claude.yml`'s `allowed_bots` stays narrowed to `cursor` (dropping `github-actions`) — that entry's sole cited purpose was posting `@claude` for the old `claude-judgment-review.yml` flow, which is retired either way (retargeted to Codex, then the retarget itself moved off-repo); grep confirms no other caller, so there is nothing to restore it for.
-
-**Where Codex review actually lives now:** entirely outside this repo's tracked files, at the account level.
-- **Enable/disable/scope:** `chatgpt.com/codex/settings/code-review` — per-repo toggle, "automatic reviews" vs manual-only. Currently **on** for `first-passage`, operator-enabled 2026-08-29.
-- **Manual trigger:** comment `@codex review` on any PR.
-- **Customize what it looks at:** a `## Code Review Rules` section in the `AGENTS.md` closest to the governed code — repo-wide or path-scoped, not a per-PR toggle. No `AGENTS.md` exists in this repo yet; adding one (and whether its rules should echo any of `CLAUDE.md`'s judgment-surface list) is unscoped follow-up, not part of this addendum.
-- **Scope by default:** P0/P1 issues only (high-priority risks), not an exhaustive lint pass.
-- **Fix path:** commenting `@codex fix it` starts a new cloud chat that implements the fix and updates the PR directly — this is Codex's own hosted agent, authorized by the operator's own GitHub App install and ChatGPT/Codex account, invoked per-PR by an explicit mention. It is **not** a credential this repo's CI holds, and it is **not** what the "write access, considered and declined" paragraph below is about — that paragraph is about whether *this repo's tree* provisions Codex a standing push credential, which it still does not.
-
-**Write access in this repo's CI, considered and declined (unchanged from the first pass — the ruling, not the mechanism, is what survives):** the operator asked, ambiguously, for "Codex can implement fixes and update the PR." Put to the operator directly (`AskUserQuestion`): give Codex its own push credential and a `workspace-write` sandbox in a repo-owned workflow, or keep any repo-side Codex invocation read-only and relay findings to Cursor's Cloud Agent (already write-capable, already pinged via `notify-cursor.yml`). **Ruled: relay to Cursor.** This repo's tree grants Codex no write/push credential and never invokes it outside a read-only sandbox — moot for now since the tree invokes Codex not at all, but binding if a future repo-side Codex workflow is ever added.
-
-**Adversarial fable-judge mode, proposed then dropped:** the same session's operator directive also asked for an on-demand adversarial review on high-stakes PRs "shipped here," using `fable-judge` as the lens. Built as a repo-workflow custom-prompt mode (`adversarial-review` label piping `.claude/skills/fable-judge/SKILL.md` into `codex exec review -`), then dropped in the same correction pass: the native integration has no per-PR custom-prompt equivalent (`AGENTS.md` review rules are repo/path-scoped, not per-PR), and duplicating a second review path on top of the now-live native one was judged not worth a fresh `OPENAI_API_KEY` secret and a CI job. If wanted later: `@codex review` with adversarial framing typed inline in the mention comment, or a narrow `openai/codex-action@v1`-based workflow scoped only to that mode — not attempted here.
-
-**Cost note:** Claude's flow draws from the Claude Max/Pro subscription's included usage — $0 marginal, metered separately from API billing. Codex's native integration draws on whatever plan backs the connected ChatGPT/Codex account (matching "I have subscribed") — not independently verified here as $0-marginal; no repo-side spend either way, since no workflow or secret exists in this tree.
-
-**What does not change:**
-- The §2 routing test (which tasks are Cursor-eligible) is untouched.
-- The 2026-08-14 auto-merge gate is untouched.
-- `claude.yml`'s manual `@claude`-mention capability for human/cursor commenters is untouched.
-- No STATE queue row. No sixth root doc. No repo secret. $0 repo-side spend.
-
-**Forbidden:** treating a Codex review or `@codex fix it` commit as merge authority; adding a repo-side Codex workflow with `pull_request_target`; granting Codex a write/push credential *in this repo's CI* without a superseding ADR (the native integration's own `@codex fix it` is the operator's account-level tool, not this repo's grant, and is unaffected by that bar); re-adding `github-actions` to `claude.yml`'s `allowed_bots` without a live caller.
-
-**Revert trigger:** a rolling 8-week window in which Codex's native review is demonstrably lower-signal than Claude's on the same class of PR, or the operator disables the `chatgpt.com/codex/settings/code-review` toggle for this repo (operator-judged, logged in `SESSIONS.md`). Revert action: none needed in this repo's tree either way — the mechanism lives entirely at the account level, so "reverting" is toggling that setting off, not editing this repo.
-
-**Closing note, same day: the 2026-08-23 mechanism this addendum retargeted was never actually firing, so it is removed outright rather than kept as a Codex-targeted (or any-targeted) repo workflow.** `claude-judgment-review.yml` posts its request comment via the default `${{ github.token }}`, and GitHub Actions does not trigger new workflow runs from `GITHUB_TOKEN`-authored events — a documented loop-prevention safeguard, not a today-only bug. Confirmed against the live Actions run history for `claude.yml`: 91 runs inspected, every one `conclusion: skipped`; the actual `@claude review this PR...` comment posted on PR #203 (2026-08-29T21:16:45Z) produced no `claude.yml` run at all. This has been true since at least PR #178 — every `cursor_judgment_surface` auto-request across that whole window posted a comment that could never wake the listener it was requesting. Operator instruction, same session: remove it, not repair or retarget it again. `.github/workflows/claude-judgment-review.yml`, `scripts/check_claude_judgment_review.py`, and its test are deleted (this addendum's own `codex-judgment-review.yml` redesign was already deleted above — nothing under either name survives). `claude.yml`'s general `@claude`-mention listener is untouched; only the automatic request is gone. No STATE queue row. No ADR-9 revert needed for the 2026-08-23 addendum above (its own §Revert-trigger paragraph, restored to its correct place in this same edit, is superseded by this note rather than fired — the predicate never worked, so its falsifier conditions were never a live measurement).
-
----
-
-<a id="addendum-2026-08-29-proactive-cursor-dispatch"></a>
-
-## Addendum (2026-08-29, RATIFIED same day — operator: proactive Cursor dispatch, no per-task approval needed) — §2 test 3 clarified as an act, not just a label
-
-**Reads:** §2 above (routing test, especially test 3's "Above threshold and spec-frozen → Cursor" line); §Handoff contract above; this file's other 2026-08-29 addendum above (the live-tested issue #202 → PR #203 → Codex-review loop, same session, same PR). No memory-write tool or local `MEMORY.md` file is available in this remote session — checked directly: no tool exposes a memory write, `~/.claude/` on disk carries no memory file, and `/remember` is a client-side slash command this session cannot invoke. Recorded here instead, which is the more durable, discoverable home per this repo's own stance that memory is assistive-only and ADRs are canonical (`CLAUDE.md` §Key Principle; `docs/SESSIONS.md` header).
-
-**Trigger:** operator asked whether a memory update was needed so well-scoped mechanical tasks get routed to Cursor automatically going forward. Put the real fork to the operator directly (`AskUserQuestion`): remember the dispatch mechanics only (still wait for a per-task go-ahead) vs. full proactive routing (CC dispatches on its own once a task clears the existing eligibility test). **Ruled: full proactive routing.**
-
-**What changes:** §2 test 3's "Above threshold and spec-frozen → Cursor" is now read as an instruction to act, not merely a label. Once CC determines — per tests 1–3, themselves unchanged — that a task is Cursor-eligible, CC dispatches it without waiting for a per-task "dispatch this" from the operator: open the handoff (brief or the lightweight issue format below), post it, and report the outcome once Cursor's PR and its review land. This does not relax tests 1–3: a locked/governed surface, an unfrozen spec, or a build too small to clear the handoff-overhead threshold still keep the work on whichever surface is already open (default CC), exactly as before.
-
-**New: a lightweight dispatch format for small precedented fixes**, alongside the existing `cc_handoff.md` brief and the local `dispatch_cursor.ps1` CLI path — validated live this session (issue #202 → Cursor's Cloud Agent opened PR #203 in ~7 minutes: correct fix, regression tests, and the requested `validate()` check; Codex's native review came back clean). Use it instead of a full `docs/briefs/handoffs/*.md` brief when the task is small, ungoverned, and matches an established pattern (e.g., the fourth instance of a bug family already fixed the same way three times) — the full brief's Phase-0/§0.5/forbidden-moves ceremony is disproportionate at that size, per this ADR's own test 3 rationale:
-
-1. Open a GitHub issue with the complete problem statement, root cause, concrete fix approach, and test expectations — everything a `cc_handoff.md` §1/§2 would carry, as an issue body instead of a brief file.
-2. Comment `@cursor <implementation instruction, referencing precedent PRs if any>` to dispatch Cursor's Cloud Agent.
-3. Watch for the resulting PR. Codex's native GitHub integration reviews it automatically (or `@codex review` to nudge it directly); `notify-cursor.yml` relays any findings back to Cursor via `@cursor` for it to address.
-4. Report the outcome — PR link, CI status, review findings and whether they were addressed — once the loop settles.
-
-Still governed by tests 1–3 and the substance of the handoff contract (Phase-0 equivalent = the issue's own root-cause section; forbidden-moves equivalent = stating scope explicitly in the issue body) — this is a lighter-weight *format* for small tasks, not an exemption from the routing test or the return contract. CC and Cursor still do not merge; the operator does, per `CLAUDE.md`'s live-execution posture and this session's own framing ("the only surfaces I should need to open are Claude Code and Chrome to merge directly").
-
-**What does not change:** tests 1–3 of the §2 routing test; the locked-surface exclusion (test 1, full stop, no exception for size or precedent); the handoff contract's substance for larger or novel work (still the full `cc_handoff.md` brief); the return contract (no commit/merge without the operator); the 2026-08-14 auto-merge gate.
-
-**Forbidden:** dispatching a task that fails test 1 (locked/governed surface) or test 2 (spec not actually frozen) because it "feels small"; skipping the issue's own root-cause/spec content to save time — the lightweight format is lighter in *ceremony*, not in *rigor*; an underspecified issue reproduces the exact spec-interpretation-judgment risk test 2 exists to prevent; treating a clean Codex review or a green CI as merge authority; merging or pushing to `main` without the operator.
-
-**Revert trigger:** two proactively-dispatched tasks in a rolling 8-week window turn out to have needed operator judgment CC lacked (wrong root cause, misjudged scope, a spec that was not actually frozen) — same shape as the original ADR's §4 limb 1. Revert action: back to per-task "dispatch this" confirmation before any Cursor dispatch.
-
----
-
-<a id="addendum-2026-09-04-disable-notify-cursor"></a>
-
-## Addendum (2026-09-04, RATIFIED same day — operator: "the github action for claude is triggering cursor too quickly, i want to turn that trigger off") — notify-cursor auto-ping disabled
-
-**Reads:** `.github/workflows/notify-cursor.yml` @ `4f3ddc6` (2026-08-24) — posted `@cursor the review above is complete` on every `claude[bot]` PR comment/review except the in-progress ack. `.github/workflows/claude.yml` @ `499cde9` (2026-08-29) — `@claude` mention listener only; does not ping Cursor. `tests/test_claude_review_workflows.py` @ `4ba7fb1` (2026-08-29) — pinned the in-progress skip. This ADR's 2026-08-29 addenda (the live instruction that `notify-cursor.yml` relays findings).
-
-**Trigger:** operator — Claude's review Action was kicking a Cursor Cloud Agent too quickly via the auto-`@cursor` comment.
-
-**What changes:** `notify-cursor.yml` no longer fires on `issue_comment` or `pull_request_review`. The job is `if: false` and `workflow_dispatch`-only. Auto-`@cursor` after a Claude review is off. A human or CC can still mention `@cursor` by hand. `claude.yml` is untouched.
-
-**What does not change:** the §2 routing test; Codex's native GitHub review (account-level); `claude.yml`'s `@claude` mention listener; the 2026-08-29 ruling that this repo's CI grants Codex no write/push credential (relay to Cursor is now a manual mention, not an auto-comment). The 2026-08-29 lightweight-dispatch step 3 that named `notify-cursor.yml` as the relay is historical; this addendum is the current-state pointer.
-
-**Forbidden:** re-adding `issue_comment` / `pull_request_review` triggers to `notify-cursor.yml` without a superseding note here.
-
-**Revert trigger:** operator asks to turn the ping back on. Restore the previous `on:` events from git history (`4f3ddc6`) and drop `if: false`.
+| 2026-07-14 | Ratified — status `Proposed` → `Accepted`; §6 downstream sweep executed | Joshua |
+| 2026-07-16 | Addendum RATIFIED — routing-test Step 0 + handoff-contract 5th item | Joshua |
+| 2026-08-14 | Addendum RATIFIED — auto-merge narrowing (sibling ADR) | Joshua |
+| 2026-08-23 | Addendum RATIFIED — automatic Claude judgment review (review-only) | Joshua |
+| 2026-08-29 | Addendum RATIFIED — Codex second look via its native GitHub integration | Joshua |
+| 2026-08-29 | Second addendum RATIFIED — proactive dispatch; lightweight issue format | Joshua |
+| 2026-09-04 | Addendum RATIFIED — `notify-cursor.yml` auto-ping disabled | Joshua |
+| 2026-09-15 | **Revision RATIFIED** — Cursor retired as a worker surface; decision rescoped to Claude Code + Codex; six addenda consolidated into the §8 disposition table; `2026-08-14-cc-cursor-autonomous-loop.md` superseded in full. Prior text at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`. §4 falsifier restated; two 2026-08-29 revert triggers restored and one false retention claim corrected after adversarial review. | Joshua (in-session ratification) + Claude Code |
