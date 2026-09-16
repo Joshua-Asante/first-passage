@@ -665,7 +665,8 @@ class BookAccountOwner:
         return tuple(db.execute(
             "SELECT a.attempt_id, a.operation_id FROM attempts a "
             "JOIN operations o ON o.operation_id=a.operation_id "
-            "WHERE a.state='UNKNOWN' OR o.status IN ('reserved','attempted','takeover_pending') "
+            "WHERE (a.state='UNKNOWN' AND o.status NOT IN ('terminal','observed')) "
+            "OR o.status IN ('reserved','attempted','takeover_pending') "
             "ORDER BY a.rowid"))
 
     def status(self):
@@ -1010,15 +1011,18 @@ class BookAccountOwner:
             self._halt_db(db, incident_id, reason, now)
 
     def _base_evidence(self, db, leg_id):
-        row = db.execute("SELECT operation_id, requested FROM operations WHERE leg_id=? "
-                         "AND kind='entry' ORDER BY rowid LIMIT 1", (leg_id,)).fetchone()
-        if row is None:
-            return None, 0, 0
         capacity = self._capacity(db)
-        confirmed = sum(f.quantity for f in capacity.fills if f.operation_id == row[0])
-        return row[0], row[1], confirmed
+        remaining = self._open_fill_quantities(db, leg_id, subtract_reservations=False)
+        for identity, requested in db.execute(
+                "SELECT operation_id, requested FROM operations WHERE leg_id=? "
+                "AND kind='entry' ORDER BY rowid DESC", (leg_id,)):
+            confirmed = sum(remaining.get(f.execution_id, 0) for f in capacity.fills
+                            if f.operation_id == identity)
+            if confirmed:
+                return identity, requested, confirmed
+        return None, 0, 0
 
-    def _open_fill_quantities(self, db, leg_id):
+    def _open_fill_quantities(self, db, leg_id, *, subtract_reservations=True):
         capacity = self._capacity(db)
         operation_legs = {operation.request.operation_id: operation.request.leg_id
                           for operation in capacity.operations}
@@ -1030,6 +1034,8 @@ class BookAccountOwner:
                           for identity, quantity in reduction.allocations
                           if identity == fill.execution_id)
             quantities[fill.execution_id] = fill.quantity - reduced
+        if not subtract_reservations:
+            return quantities
         for close_id, raw in db.execute(
                 "SELECT operation_id, allocations FROM close_reservations WHERE status='active'"):
             consumed = {identity: 0 for identity, _quantity in json.loads(raw)}
@@ -1109,13 +1115,36 @@ class BookAccountOwner:
         return request, context, binding
 
     def dispatch(self, action, *, now):
+        with self.serializer.acquire():
+            return self._dispatch_locked(action, now=now)
+
+    def _dispatch_locked(self, action, *, now):
         _time(now)
         if not isinstance(action, (OrderIntent, BracketAmend, Cancel)):
             raise AccountOwnerError("typed book action required")
         action_body = _body(asdict(action))
         operation_id = (action.order_id if isinstance(action, OrderIntent) else
                         "control:" + hashlib.sha256(action_body.encode("utf-8")).hexdigest()[:24])
-        with self.serializer.acquire(), self._thread:
+        if isinstance(action, Cancel) and action.order_id is None:
+            # The protocol's all-pending scope is a snapshot of explicit owned
+            # targets, never an unscoped transport command. The caller holds the
+            # account serializer through expansion and every child dispatch.
+            with self._transaction() as db:
+                targets = tuple(o.request.operation_id for o in self._capacity(db).operations
+                                if o.request.leg_id == action.leg_id
+                                and o.status == "active" and o.terminal is None)
+            results = tuple(self._dispatch_locked(Cancel(action.leg_id, target), now=now)
+                            for target in targets)
+            states = {result.transport_state for result in results}
+            transport = next((state for state in ("unknown", "rejected", "accepted")
+                              if state in states), "not_attempted")
+            refusal = next((result.refusal_reason for result in results
+                            if result.refusal_reason not in (None, "duplicate_operation")), None)
+            return DispatchResult(operation_id, 0, transport_state=transport,
+                                  refusal_reason=refusal,
+                                  confirmed_events=tuple(event for result in results
+                                                         for event in result.confirmed_events))
+        with self._thread:
             with self._transaction() as db:
                 state = self._state(db)
                 settlement_refusal = self._validate_settlement_binding(db, now)
@@ -1141,7 +1170,38 @@ class BookAccountOwner:
                                                   refusal_reason="takeover_pending")
                     else:
                         return DispatchResult(operation_id, existing[1], refusal_reason="duplicate_operation")
+                if isinstance(action, OrderIntent):
+                    expected = leg(action.leg_id).entry_side
+                    if action.kind in ("exit", "flat"):
+                        expected = opposite(expected)
+                    if action.side is not expected:
+                        return DispatchResult(operation_id, 0, refusal_reason="order_side_mismatch")
+                if isinstance(action, Cancel):
+                    target = db.execute(
+                        "SELECT leg_id, kind, status FROM operations WHERE operation_id=?",
+                        (action.order_id,)).fetchone()
+                    pending = next((o for o in self._capacity(db).operations
+                                    if o.request.operation_id == action.order_id), None)
+                    if (target is None or target[0] != action.leg_id
+                            or target[1] not in ("entry", "add")
+                            or target[2] not in ("reserved", "attempted")
+                            or pending is None or pending.status != "active"
+                            or pending.terminal is not None):
+                        return DispatchResult(operation_id, 0, refusal_reason="invalid_cancel_target")
                 if ready_takeover:
+                    session = self.binding["session"]
+                    generation = db.execute(
+                        "SELECT generation FROM operations WHERE operation_id=?",
+                        (operation_id,)).fetchone()[0]
+                    if (state["permission"] != "RUNNING" or state["authority"] != "NORMAL"
+                            or generation != state["generation"]
+                            or not session.opens_at <= now < session.risk_add_cutoff):
+                        return DispatchResult(operation_id, 0, refusal_reason="risk_add_not_authorized")
+                    if not self.binding["as_of"] <= now < self.binding["valid_until"]:
+                        return DispatchResult(operation_id, 0,
+                                              refusal_reason="stale_or_future_account_evidence")
+                    if now - self.binding["as_of"] > self.binding["max_evidence_age"]:
+                        return DispatchResult(operation_id, 0, refusal_reason="stale_account_evidence")
                     db.execute("UPDATE operations SET status='reserved' WHERE operation_id=?",
                                (operation_id,))
                 elif isinstance(action, OrderIntent) and action.kind in ("entry", "add"):
@@ -1228,23 +1288,43 @@ class BookAccountOwner:
                 db.execute("UPDATE attempts SET state=?, observation=? WHERE attempt_id=?",
                            (result.state.upper(), _body({"state": result.state,
                                                         "facts": [f.fact_id for f in result.facts]}), attempt_id))
-                if result.facts and isinstance(action, (Cancel, BracketAmend)):
+                if result.facts and isinstance(action, BracketAmend):
                     db.execute("UPDATE operations SET status='observed' WHERE operation_id=?",
                                (operation_id,))
             return DispatchResult(operation_id, quantity, attempt_id, result.state,
                                   confirmed_events=tuple(events))
 
+    def _flatten_action(self, db, root_id, leg_id, reason, now):
+        """Keep an unresolved close intact; allocate a new identity for its remainder."""
+        prefix = root_id + ":remainder:"
+        rows = tuple(db.execute(
+            "SELECT operation_id, status FROM operations WHERE operation_id=? "
+            "OR substr(operation_id, 1, ?)=?", (root_id, len(prefix), prefix)))
+        if any(status != "terminal" for _identity, status in rows):
+            return None
+        quantity = sum(self._open_fill_quantities(db, leg_id).values())
+        if quantity <= 0:
+            return None
+        identity = root_id if not rows else prefix + str(len(rows))
+        return OrderIntent(identity, leg_id, "flat", opposite(leg(leg_id).entry_side),
+                           quantity, bar_time=now, reason=reason)
+
     def advance_schedule(self, *, now):
+        with self.serializer.acquire():
+            return self._advance_schedule_locked(now=now)
+
+    def _advance_schedule_locked(self, *, now):
         """Apply cutoff, scheduled flatten and deadline using the bound session clock."""
         _time(now)
         session = self.binding["session"]
         try:
             phase = classify_schedule(session, now)
         except ScheduleError:
-            self.halt("schedule-missing:" + session.session_id, "schedule", now=now)
+            with self._transaction() as db:
+                self._halt_db(db, "schedule-missing:" + session.session_id, "schedule", now)
             return ()
         actions = []
-        with self.serializer.acquire(), self._thread, self._transaction() as db:
+        with self._thread, self._transaction() as db:
             state = self._state(db)
             if state["authority"] == "INTERVENTION":
                 return ()
@@ -1262,14 +1342,13 @@ class BookAccountOwner:
                 for exposure in exposures(capacity):
                     if exposure.confirmed:
                         operation_id = "scheduled-flat:" + session.session_id + ":" + exposure.leg_id
-                        actions.append(OrderIntent(
-                            operation_id, exposure.leg_id, "flat",
-                            opposite(leg(exposure.leg_id).entry_side), exposure.confirmed,
-                            bar_time=now, reason="scheduled_flatten",
-                        ))
-        results = tuple(self.dispatch(action, now=now) for action in actions)
+                        action = self._flatten_action(db, operation_id, exposure.leg_id,
+                                                      "scheduled_flatten", now)
+                        if action is not None:
+                            actions.append(action)
+        results = tuple(self._dispatch_locked(action, now=now) for action in actions)
         if phase is SchedulePhase.DEADLINE:
-            with self.serializer.acquire(), self._thread, self._transaction() as db:
+            with self._thread, self._transaction() as db:
                 if self._state(db)["authority"] == "SCHEDULED_EXIT":
                     capacity = self._capacity(db)
                     unresolved = bool(self._unresolved_attempt_rows(db))
@@ -1280,10 +1359,14 @@ class BookAccountOwner:
         return results
 
     def advance_takeover(self, *, now):
+        with self.serializer.acquire():
+            return self._advance_takeover_locked(now=now)
+
+    def _advance_takeover_locked(self, *, now):
         """Drive only a retained Aegis priority takeover; incidents revoke it."""
         _time(now)
         actions = []
-        with self.serializer.acquire(), self._thread, self._transaction() as db:
+        with self._thread, self._transaction() as db:
             state = self._state(db)
             capacity = self._capacity(db)
             if state["authority"] != "NORMAL" or capacity.takeover is None:
@@ -1296,13 +1379,13 @@ class BookAccountOwner:
                                           operation.request.operation_id))
             for exposure in exposures(capacity):
                 if exposure.leg_id in displaced and exposure.confirmed:
-                    actions.append(OrderIntent(
-                        "takeover-flat:" + capacity.takeover.operation_id + ":" + exposure.leg_id,
-                        exposure.leg_id, "flat", opposite(leg(exposure.leg_id).entry_side),
-                        exposure.confirmed, bar_time=now, reason="aegis_takeover",
-                    ))
-        results = tuple(self.dispatch(action, now=now) for action in actions)
-        with self.serializer.acquire(), self._thread, self._transaction() as db:
+                    action = self._flatten_action(
+                        db, "takeover-flat:" + capacity.takeover.operation_id + ":" + exposure.leg_id,
+                        exposure.leg_id, "aegis_takeover", now)
+                    if action is not None:
+                        actions.append(action)
+        results = tuple(self._dispatch_locked(action, now=now) for action in actions)
+        with self._thread, self._transaction() as db:
             state = self._state(db)
             capacity = self._capacity(db)
             if state["authority"] != "NORMAL" or capacity.takeover is None:
@@ -1326,6 +1409,33 @@ class BookAccountOwner:
                               "execution", now)
                 return results, False
             return results, True
+
+    def resume_takeover(self, *, now):
+        """Advance retained controls and dispatch an admitted, unattempted takeover."""
+        from c1_signal_daemon.book_protocol import Bracket, FillTiming, Side
+
+        with self.serializer.acquire():
+            controls, _completed = self._advance_takeover_locked(now=now)
+            with self._transaction() as db:
+                capacity = self._capacity(db)
+                ready = {o.request.operation_id for o in capacity.operations if o.status == "active"}
+                rows = tuple(db.execute(
+                    "SELECT operation_id, body FROM operations WHERE status='takeover_pending'"))
+            results = list(controls)
+            for identity, raw in rows:
+                if identity not in ready:
+                    continue
+                value = json.loads(raw)
+                value["side"] = Side(value["side"])
+                value["timing"] = FillTiming(value["timing"])
+                if value["bar_time"] is not None:
+                    value["bar_time"] = datetime.fromisoformat(value["bar_time"])
+                if value["bracket"] is not None:
+                    value["bracket"] = Bracket(**value["bracket"])
+                if value["scope_fill_ids"] is not None:
+                    value["scope_fill_ids"] = tuple(value["scope_fill_ids"])
+                results.append(self._dispatch_locked(OrderIntent(**value), now=now))
+            return tuple(results)
 
     def _halt_db(self, db, incident_id, reason, now):
         state = self._state(db)
@@ -1479,6 +1589,13 @@ class BookAccountOwner:
                 self._halt_db(db, "capacity-fact:" + fact.fact_id, "execution", now)
                 db.execute("INSERT INTO broker_facts VALUES (?, ?, NULL)", (fact.fact_id, raw))
                 return ()
+            if fact.kind == "terminal" and operation_kind in ("entry", "add"):
+                for control_id, control_body in tuple(db.execute(
+                        "SELECT operation_id, body FROM operations "
+                        "WHERE kind='cancel' AND leg_id=? AND status='attempted'", (leg_id,))):
+                    if json.loads(control_body)["order_id"] == fact.operation_id:
+                        db.execute("UPDATE operations SET status='observed' WHERE operation_id=?",
+                                   (control_id,))
             feedback_raw = _body(asdict(feedback))
             db.execute("INSERT INTO broker_facts VALUES (?, ?, ?)",
                        (fact.fact_id, raw, feedback_raw))

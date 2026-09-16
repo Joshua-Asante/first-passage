@@ -169,6 +169,8 @@ class FourLegRuntime:
         with self._application_lock:
             events = self.owner.observe(fact, now=now)
             self._deliver_events(events)
+            for result in self.owner.resume_takeover(now=now):
+                self._deliver(result)
             return events
 
     def on_completed_bar(self, leg_id, bar, *, now):

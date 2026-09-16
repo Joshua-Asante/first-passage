@@ -2,6 +2,7 @@
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import os
 import sqlite3
 import threading
 
@@ -315,16 +316,24 @@ def test_runtime_replay_of_identical_bars_and_facts_has_same_observable_state(tm
     assert run(tmp_path / "runtime", LEGS) == run(tmp_path / "replay", tuple(reversed(LEGS)))
 
 
-def test_accepted_private_runtime_identities_load_and_cross_the_durable_barrier(tmp_path, monkeypatch):
+@pytest.fixture
+def accepted_private_ports(monkeypatch):
     repo = Path(__file__).resolve().parents[2]
-    primary = repo if repo.name == "multi_firm_operations" else repo.parents[1]
-    private_root = (primary / "lab" / "analysis" / "c1" /
+    primary = repo.parents[1] if repo.parent.name == ".worktrees" else repo
+    configured = os.environ.get("FP_PORT_ROOT")
+    private_root = Path(configured) if configured else (primary / "lab" / "analysis" / "c1" /
                     "tradeify_seven_strategy_phase1_2026-09" / "inputs" /
                     "private_overrides" / "op1" / "2026-09-14-seven" /
                     "step3-coverage" / "corrected-ports")
+    if not configured and not private_root.exists():
+        pytest.skip("accepted private runtime inputs are absent from this checkout")
     assert (private_root / "effective_inputs.json").is_file(), private_root
     monkeypatch.setenv("FP_PORT_ROOT", str(private_root))
+    return private_root
 
+
+def test_accepted_private_runtime_identities_load_and_cross_the_durable_barrier(
+        tmp_path, accepted_private_ports):
     actual = load_book_adapters()
     assert set(actual) == set(LEGS)
     assert {row.leg_id: port_sha256(row.leg_id) for row in ADAPTERS} == {
@@ -339,16 +348,9 @@ def test_accepted_private_runtime_identities_load_and_cross_the_durable_barrier(
     assert account.retained_barriers[0]["completed"] is True
 
 
-def test_accepted_private_orb_trigger_reaches_shared_fixed_base(tmp_path, monkeypatch):
+def test_accepted_private_orb_trigger_reaches_shared_fixed_base(tmp_path, accepted_private_ports):
     from c1_signal_daemon.pine_ta import ET
 
-    repo = Path(__file__).resolve().parents[2]
-    primary = repo if repo.name == "multi_firm_operations" else repo.parents[1]
-    private_root = (primary / "lab" / "analysis" / "c1" /
-                    "tradeify_seven_strategy_phase1_2026-09" / "inputs" /
-                    "private_overrides" / "op1" / "2026-09-14-seven" /
-                    "step3-coverage" / "corrected-ports")
-    monkeypatch.setenv("FP_PORT_ROOT", str(private_root))
     adapter = load_book_adapters()["orb_mnq_v7"]
     actions = []
     start = datetime(2026, 9, 15, 9, 0, tzinfo=ET)
