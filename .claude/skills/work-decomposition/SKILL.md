@@ -175,12 +175,21 @@ blur of them. The protocol treats the input as an environment to query, not a do
 ### Protocol (six steps, in order)
 
 1. **Size before reading.** Count files, lines and bytes of the candidate set before opening
-   anything, with the candidates passed explicitly: `git ls-files <dir-or-glob> | wc -l` (files),
-   `git ls-files -z <dir-or-glob> | xargs -0 wc -l` (lines, with a total), and
-   `git ls-files -z <dir-or-glob> | xargs -0 wc -c` (bytes, with a total). A bare `wc` or `ls`
-   measures stdin or the working directory, not the candidates. Cold stores are search-excluded —
-   an empty `rg` is not "nothing there"; use `rg --no-ignore` or `git show` per fable-method
-   Step 2.1.
+   anything, with the candidates passed explicitly and enumerated from the working tree, not the
+   index: `git ls-files -c -o -- <dir-or-glob> | wc -l` (files),
+   `git ls-files -c -o -z -- <dir-or-glob> | xargs -0 wc -l` (lines, with a total), and
+   `git ls-files -c -o -z -- <dir-or-glob> | xargs -0 wc -c` (bytes, with a total). `-c -o`
+   without `--exclude-standard` lists tracked, untracked *and* gitignored files. A plain
+   `git ls-files` lists only the index, and the inputs this repo keeps local are exactly what the
+   index omits — the vendor CSV trees under `core/data/tv_exports/**`, `core/data/bar_data/` and
+   `core/data/external/`, and the research `inputs/` copies under `lab/analysis/` — so an
+   index-only count reads a directory of large exports as its tracked README and manifests and
+   skips decomposition (on 2026-09-16 `core/data/tv_exports` counted 2 files in the index against
+   37 on disk). If the operand is broad enough to sweep build debris (`__pycache__`, `.venv`),
+   narrow the glob; never add `--exclude-standard`, which drops the ignored inputs again. A bare
+   `wc` or `ls` measures stdin or the working directory, not the candidates. Cold stores are
+   search-excluded — an empty `rg` is not "nothing there"; use `rg --no-ignore` or `git show` per
+   fable-method Step 2.1.
 2. **Filter.** Search before reading a directory; never list a tree recursively as a substitute
    for a query. Chain filters (path glob → content pattern → file type) until what remains is the
    candidate set.

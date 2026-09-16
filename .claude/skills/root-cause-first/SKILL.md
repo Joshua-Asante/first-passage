@@ -146,11 +146,17 @@ a failure into success is a band-aid whatever the comment above it says.
    (fable-method Step 5b); then the `TWINS:` sweep, extended per M-24 to independent
    re-encodings that share no identifier with the fixed site.
 8. **Defense after the cause, never instead of it.** With the mechanism fixed, layered validation
-   at the boundaries the bad value crossed is welcome, and it fails *closed*: the layer-boundaries
-   ADR's "unresolved first-party imports fail closed"
-  ([ADR](../../../docs/adr/2026-06-05-monorepo-layer-boundaries.md)), the arming interlock in
-   `ops/c1_rail/c1_rail_arm.py`. The same layer added *before* step 4 is row one or two of the
-   banned table.
+   at the boundaries the bad value crossed is welcome. Its failure mode is the owning path's
+   documented policy, not a blanket rule. On a fail-closed path the added layer fails closed —
+   the layer-boundaries ADR's "unresolved first-party imports fail closed"
+   ([ADR](../../../docs/adr/2026-06-05-monorepo-layer-boundaries.md)), the arming interlock in
+   `ops/c1_rail/c1_rail_arm.py`, any risk-add on the rail. On a designed fail-open path that
+   passes the three-part test above — a risk-reducing exit, an edit-time hook, a report-only
+   scanner — the added layer keeps that path's shape: it emits its finding with a status distinct
+   from clean and lets the protected action proceed; a validation that blocks the completed edit
+   or the relaying exit has changed the owner's policy, which is the owner's separate change, not
+   part of the fix. A new layer with no owner naming it fail-open fails closed. The same layer
+   added *before* step 4 is row one or two of the banned table.
 
 ## Answer shape
 
@@ -213,7 +219,7 @@ mode 14).
 | root-cause-first banned moves (optional chaining, catch-and-continue, retry/timeout inflation, parser widening, default-on-error, unexplained fix) | Imported; JavaScript idioms mapped to their Python shapes; two repo-native rows added (pin edits, correction factors) |
 | root-cause-first seven-step workflow and `Root cause / Fix / Verification` answer shape | Imported; the shape sits beside fable-method's existing artifact lines |
 | root-cause-tracing five-step backward trace and instrumentation | Imported; `console.error` becomes a value-plus-stack capture read once |
-| defense-in-depth layered validation | Imported as step 8, with the repo's fail-closed framing and the explicit "after, never instead" ordering |
+| defense-in-depth layered validation | Imported as step 8, with the explicit "after, never instead" ordering; the layer's failure mode follows the owning path's policy — fail closed by default, the three-part fail-open test where an owner holds one — rather than the upstream's unconditional fail-closed |
 | root-cause-finder intent chain, first-unintended-write, hidden-write audit, "do not widen the contract" | Imported; its fifteen-field output format compressed to the three-line block plus the contract's three sentences |
 | ssot-enforcer (paired with root-cause-first upstream) | **Not imported** — Rule 7, the firm-constants ADR, `blast-radius` and lesson M-24 already own single-source-of-truth here |
 | A blanket "no fallback, ever" reading | **Transformed** — the rail's risk-reduction fail-open and report-only hooks are doctrine; the three-part designed-fail-open test carries them |
