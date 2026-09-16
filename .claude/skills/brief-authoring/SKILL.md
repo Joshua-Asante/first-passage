@@ -108,7 +108,7 @@ The six checks above apply to inquire / full ADR / handoff per the matrix. The f
 - `DONE_WITH_CONCERNS` — the work completed but the spawn flagged correctness or scope doubts the parent should resolve before accepting. This state captures the case where every gate passed but the spawn noticed something off-pattern.
 - `NEEDS_CONTEXT` vs `BLOCKED` — a missing input that can be supplied (`NEEDS_CONTEXT`, re-dispatch) is structurally different from an unresolvable obstruction (`BLOCKED`, escalate or decompose). Conflating them as "FAILED" loses the disposition.
 
-`BLOCKED` further decomposes into four sub-cases: context-problem (re-dispatch with more context), capability-problem (re-dispatch with stronger model or human), scope-problem (decompose into smaller tasks), plan-itself-wrong (escalate to parent session). Without these sub-cases the spawn surfaces "I'm stuck" without disposition guidance.
+`BLOCKED` further decomposes into four sub-cases: context-problem (re-dispatch with more context), capability-problem (re-dispatch with stronger model or human), scope-problem (decompose into smaller tasks — the oversize tells, atomic-unit test and parent manifest are the `work-decomposition` skill's), plan-itself-wrong (escalate to parent session). Without these sub-cases the spawn surfaces "I'm stuck" without disposition guidance.
 
 **9. Spec-compliance audit separate from quality audit.** Parent-session review of returned work is two passes, not one:
 - **Spec compliance:** did the spawn build EXACTLY what §1/§2 specified — nothing missing, nothing added? This is the scope-creep check. The spawn that quietly added a "while I was in there" refactor or a "just to be safe" extra check has failed spec compliance even if the work is good.
