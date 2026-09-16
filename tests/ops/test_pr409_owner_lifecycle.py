@@ -124,7 +124,7 @@ def test_cancel_all_expands_only_pending_targets_of_its_leg(tmp_path):
 
 
 def test_async_takeover_completes_and_sends_retained_aegis_once(tmp_path):
-    # The inherited flat-before-entry-terminal expectation violated correction §5.
+    # The inherited flat-before-entry-terminal expectation violated correction section 5.
     from test_book_takeover_phases import TakeoverScenario
     s = TakeoverScenario(tmp_path)
     s.poll()
