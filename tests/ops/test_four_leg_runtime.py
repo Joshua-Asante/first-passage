@@ -239,6 +239,24 @@ def test_daemon_loop_expires_missing_bar_without_external_coordinator(tmp_path):
     assert account.retained_partial_bars == ()
 
 
+def test_daemon_loop_advances_schedule_without_feed_or_external_coordinator(tmp_path):
+    class EmptySource:
+        def poll(self):
+            return None
+
+    account = owner(tmp_path, [])
+    runtime = FourLegRuntime(account, adapters())
+    sources = {leg_id: EmptySource() for leg_id in LEGS}
+
+    result = FourLegEvaluateLoop(sources=sources, runtime=runtime).step(
+        now=account.binding["session"].risk_add_cutoff)
+
+    assert result is None
+    assert account.permission == "HALTED"
+    assert account.authority == "SCHEDULED_EXIT"
+    assert account.synthetic_broker.commands == []
+
+
 def test_skipped_complete_boundary_halts_before_next_barrier_dispatch(tmp_path):
     account = owner(tmp_path, [])
     runtime = FourLegRuntime(account, inert_adapters())

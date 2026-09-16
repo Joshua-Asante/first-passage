@@ -29,6 +29,7 @@ class FourLegEvaluateLoop:
     def step(self, *, now):
         """Poll once; return completed barrier dispatches, or ``None``."""
         with self._step_lock:
+            self.runtime.advance_schedule(now=now)
             for bar_time in self.runtime.pending_bar_times:
                 self.runtime.expire_barrier(bar_time, now=now)
             if self.runtime.owner.authority == "INTERVENTION":
