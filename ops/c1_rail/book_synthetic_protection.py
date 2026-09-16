@@ -332,7 +332,17 @@ class SyntheticProtectionBroker(SyntheticBroker):
             identity = f'{execution_id or "close:" + command.operation_id}:{lot.fill_id}'
             facts.append(BrokerFact.fill(identity, command.operation_id,
                 lot.leg_id, command.kind, take, price, at, entry_execution_id=lot.fill_id))
+            owner_id = 'protection:' + lot.fill_id
+            order = self._orders.get(owner_id)
+            if order is not None and lot.remaining:
+                self._orders[owner_id] = replace(order, quantity=min(order.quantity, lot.remaining))
             if not lot.remaining:
+                self._orders.pop('protection:' + lot.fill_id, None)
+                lot.consumed = True
+        # Explicit closes clean up exhausted origins on this leg, including
+        # sibling owners retained by an earlier protective FIFO execution.
+        for lot in self._lots.values():
+            if lot.leg_id == command.leg_id and not lot.remaining:
                 self._orders.pop('protection:' + lot.fill_id, None)
                 lot.consumed = True
         self._cap_orders()

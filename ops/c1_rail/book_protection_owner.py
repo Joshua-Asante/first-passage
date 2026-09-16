@@ -101,6 +101,9 @@ class ProtectionOwnerMixin:
                         or type(row['ever_protected']) is not bool
                         or type(row['quantity']) is not int or row['quantity'] < 0
                         or type(row['revision']) is not int or row['revision'] < 0
+                        or type(row.get('close_evidence_sequence', 0)) is not int
+                        or not 0 <= row.get('close_evidence_sequence', 0) <= db.execute(
+                            'SELECT COALESCE(MAX(sequence),0) FROM capacity_events').fetchone()[0]
                         or type(row['trail_active']) is not bool
                         or type(row['broker_order_ids']) is not list
                         or any(not _identity(item) for item in row['broker_order_ids'])
@@ -267,6 +270,47 @@ class ProtectionOwnerMixin:
                     return self._reconcile_close_protection_db(db, snapshot, now=now)
         return ()
 
+    def _close_protection_evidence_db(self, db):
+        """Scope residuals at ordinary closes, before subsequent FIFO fills."""
+        close_rows, remaining = [], {}
+        fill_legs = {row['entry_fill_id']: row['leg_id']
+                     for row in self._protection_rows(db).values()}
+        capacity_sequence = 0
+        for sequence, fact_type, body in db.execute(
+                'SELECT sequence,fact_type,body FROM capacity_events ORDER BY sequence'):
+            capacity_sequence = sequence
+            fact = json.loads(body)
+            if fact_type == 'fill':
+                remaining[fact['execution_id']] = fact['quantity']
+            elif fact_type == 'reduction':
+                for fid, qty in fact['allocations']:
+                    remaining[fid] -= qty
+            close_leg = (db.execute(
+                "SELECT leg_id FROM operations WHERE operation_id=? AND kind IN ('exit','flat')",
+                (fact['close_request_id'],)).fetchone() if fact_type == 'reduction' else None)
+            if close_leg:
+                residual = {fid: remaining[fid] for fid, _qty in fact['allocations']}
+                # Like the qualified emulator's explicit close transition,
+                # remove same-leg owners whose origins were exhausted earlier
+                # by FIFO. Later FIFO exhaustion is not retroactive cleanup.
+                residual.update({fid: 0 for fid, qty in remaining.items()
+                                 if qty == 0 and fill_legs.get(fid) == close_leg[0]})
+                close_rows.append((sequence, fact['reduction_id'], residual))
+        # Older journals lack the cursor, but retain unreconciled close facts.
+        pending_close_ids = {identity for identity, _fact, _event
+                             in self._pending_close_feedback_db(db)}
+        return capacity_sequence, close_rows, pending_close_ids
+
+    @staticmethod
+    def _scoped_protection_limits(row, evidence):
+        _sequence, close_rows, pending_close_ids = evidence
+        return [residual[row['entry_fill_id']]
+                for sequence, reduction_id, residual in close_rows
+                if row['entry_fill_id'] in residual and
+                (sequence > row['close_evidence_sequence']
+                 if 'close_evidence_sequence' in row
+                 else reduction_id in pending_close_ids)]
+
     def _apply_protection_snapshot_db(self, db, snapshot, *, now):
         raw = _dump(asdict(snapshot))
         previous = db.execute('SELECT body,kind FROM protection_facts WHERE fact_id=?', (snapshot.fact_id,)).fetchone()
@@ -328,10 +372,13 @@ class ProtectionOwnerMixin:
         if not snapshot.complete:
             return True
         resolved = dict(snapshot.resolved_operations)
+        close_evidence = self._close_protection_evidence_db(db)
+        capacity_sequence = close_evidence[0]
         valid = True
         for identity, old in owners.items():
             if old['leg_id'] not in snapshot.scope_legs or old['consumed']:
                 continue
+            scoped_limits = self._scoped_protection_limits(old, close_evidence)
             row = observed.get(identity)
             pending = ops.get(old['pending_operation'])
             postdates = pending and snapshot.as_of > datetime.fromisoformat(pending['prepared_at'])
@@ -372,11 +419,7 @@ class ProtectionOwnerMixin:
             if row is None:
                 coverage = sum(q for fid, q in expected.items()
                                if owners.get('protection:' + fid, {}).get('leg_id') == old['leg_id'])
-                closed_original = expected.get(old['entry_fill_id'], 0) == 0 and any(
-                    any(fid == old['entry_fill_id'] for fid, _ in reduction.allocations)
-                    and db.execute("SELECT 1 FROM operations WHERE operation_id=? AND kind IN ('exit','flat')",
-                                   (reduction.close_request_id,)).fetchone()
-                    for reduction in self._capacity(db).reductions)
+                closed_original = bool(scoped_limits) and min(scoped_limits) == 0
                 if (coverage == 0 or closed_original) and old['observed'] is not None and pending is None:
                     old.update(consumed=True, observed=None, quantity=0, broker_order_ids=[])
                 elif old['observed'] is not None and not (pending and pending.get('status') == 'applied'
@@ -402,6 +445,8 @@ class ProtectionOwnerMixin:
                 if not pending or pending['status'] != 'applied':
                     coverage = sum(q for fid, q in expected.items()
                                    if owners.get('protection:' + fid, {}).get('leg_id') == old['leg_id'])
+                    if scoped_limits:
+                        coverage = min(coverage, min(scoped_limits))
                     if (old['observed'] is not None and (row.effective != bracket_from_dict(old['observed'])
                             or row.revision != old['revision']
                             or row.quantity != min(old['quantity'], coverage)
@@ -422,6 +467,7 @@ class ProtectionOwnerMixin:
                            broker_order_ids=list(row.broker_order_ids), revision=row.revision,
                            trail_active=row.trail_active, trail_anchor=row.trail_anchor,
                            last_operation_id=row.operation_id, ever_protected=True)
+            old['close_evidence_sequence'] = capacity_sequence
             old['evidence_at'], old['evidence_fact'] = snapshot.as_of.isoformat(), snapshot.fact_id
             self._put_protection(db, old)
         return valid
@@ -653,9 +699,18 @@ class ProtectionOwnerMixin:
                                    (event.fact_id, raw, 'legacy_unresolved'))
                         return ()
                     row = owners.get(event.owner_id)
+                    available = (self._open_fill_quantities(db, row['leg_id'], subtract_reservations=False)
+                                 if row is not None else {})
+                    # A close may already have resized this order at the broker
+                    # before its residual snapshot arrives. Validate the next
+                    # protective fill against that effective pre-fill quantity.
+                    quantity = (min(row['quantity'], sum(available.values()),
+                                    *self._scoped_protection_limits(
+                                        row, self._close_protection_evidence_db(db)))
+                                if row is not None else 0)
                     valid = (row is not None and not row['consumed'] and row['observed'] is not None
                              and event.account == state['account'] and event.account_epoch == state['account_epoch']
-                             and event.broker_order_id in row['broker_order_ids'] and event.quantity <= row['quantity']
+                             and event.broker_order_id in row['broker_order_ids'] and event.quantity <= quantity
                              and timedelta(0) <= now - event.as_of <= PROTECTION_PERIOD
                              and row['evidence_at'] is not None
                              and event.as_of >= datetime.fromisoformat(row['evidence_at'])
@@ -666,7 +721,7 @@ class ProtectionOwnerMixin:
                     expected = []
                     if valid:
                         remaining = event.quantity
-                        for fid, qty in self._open_fill_quantities(db, row['leg_id'], subtract_reservations=False).items():
+                        for fid, qty in available.items():
                             take = min(remaining, max(0, qty))
                             if take:
                                 expected.append((fid, take))
@@ -678,7 +733,7 @@ class ProtectionOwnerMixin:
                     after = {o.owner_id: o for o in event.snapshot.orders}
                     trigger = after.get(event.owner_id)
                     if (event.terminal and trigger is not None or not event.terminal and
-                            (trigger is None or trigger.quantity != row['quantity'] - event.quantity)):
+                            (trigger is None or trigger.quantity != quantity - event.quantity)):
                         self._protection_fault(db, 'execution-remainder:' + event.fact_id, now)
                         return ()
                     # Savepoint allows a failed residual snapshot to keep only its
@@ -693,7 +748,7 @@ class ProtectionOwnerMixin:
                         row.update(consumed=True, observed=None, quantity=0, broker_order_ids=[])
                         self._put_protection(db, row)
                     else:
-                        row['quantity'] -= event.quantity
+                        row['quantity'] = quantity - event.quantity
                         self._put_protection(db, row)
                     if not self._apply_protection_snapshot_db(db, event.snapshot, now=now):
                         db.execute('ROLLBACK TO protection_execution')

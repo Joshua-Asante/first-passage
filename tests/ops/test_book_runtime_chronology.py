@@ -156,3 +156,68 @@ def test_recovery_cannot_replay_two_retained_spellings_of_one_instant(tmp_path):
     with pytest.raises(AccountOwnerError, match="noncontiguous"):
         FourLegRuntime.recover(account, inert_adapters())
     assert account.authority == "INTERVENTION"
+
+
+@pytest.mark.parametrize("offset", [0, -4])
+def test_recovery_rejects_partial_at_completed_boundary(tmp_path, offset):
+    account = owner(tmp_path, [])
+    complete(FourLegRuntime(account, inert_adapters()))
+    instant = NOW.astimezone(timezone(timedelta(hours=offset)))
+    body = dict(ts=instant.isoformat(), open=100, high=101, low=99, close=100, volume=10)
+    account.record_partial_bar(LEGS[0], instant, body, acquired_at=instant)
+
+    with pytest.raises(AccountOwnerError, match="noncontiguous"):
+        FourLegRuntime.recover(account, inert_adapters())
+    assert account.authority == "INTERVENTION"
+    assert account.synthetic_broker.commands == []
+
+
+@pytest.mark.parametrize("close", [100, 101])
+def test_recovery_rejects_duplicate_partial_leg_in_equivalent_timezones(tmp_path, close):
+    account = owner(tmp_path, [])
+    body = dict(ts=NOW.isoformat(), open=100, high=101, low=99, close=100, volume=10)
+    account.record_partial_bar(LEGS[0], NOW, body, acquired_at=NOW)
+    equivalent = NOW.astimezone(timezone(timedelta(hours=-4)))
+    duplicate = dict(body, ts=equivalent.isoformat(), close=close)
+    account.record_partial_bar(LEGS[0], equivalent, duplicate, acquired_at=equivalent)
+
+    with pytest.raises(AccountOwnerError, match="noncontiguous"):
+        FourLegRuntime.recover(account, inert_adapters())
+    assert account.authority == "INTERVENTION"
+    assert account.synthetic_broker.commands == []
+
+
+def test_recovery_keeps_distinct_partial_legs_and_completes_next_boundary(tmp_path):
+    account = owner(tmp_path, [])
+    runtime = FourLegRuntime(account, inert_adapters())
+    complete(runtime)
+    instant = NOW + timedelta(minutes=15)
+    equivalent = instant.astimezone(timezone(timedelta(hours=-4)))
+    for leg, timestamp in zip(LEGS[:2], (instant, equivalent)):
+        runtime.on_completed_bar(leg, Bar(timestamp, 100, 101, 99, 100, 10), now=instant)
+
+    recovered = FourLegRuntime.recover(account, inert_adapters())
+    assert recovered.pending_bar_times == (instant,)
+    for leg in LEGS[2:]:
+        recovered.on_completed_bar(leg, Bar(instant, 100, 101, 99, 100, 10), now=instant)
+    complete(recovered, NOW + timedelta(minutes=30))
+    assert recovered.pending_bar_times == ()
+    assert len(account.retained_barriers) == 3
+    assert account.retained_partial_bars == ()
+    assert recovered.adapters[LEGS[0]].bars == [
+        NOW.isoformat(), instant.isoformat(), (NOW + timedelta(minutes=30)).isoformat()]
+    assert account.synthetic_broker.commands == []
+
+
+@pytest.mark.parametrize("mixed", [False, True])
+def test_recovery_rejects_partial_keys_that_cannot_resume_in_utc(tmp_path, mixed):
+    account = owner(tmp_path, [])
+    equivalent = NOW.astimezone(timezone(timedelta(hours=-4)))
+    for leg, instant in zip(LEGS[:2], (NOW if mixed else equivalent, equivalent)):
+        body = dict(ts=instant.isoformat(), open=100, high=101, low=99, close=100, volume=10)
+        account.record_partial_bar(leg, instant, body, acquired_at=instant)
+
+    with pytest.raises(AccountOwnerError, match="noncontiguous"):
+        FourLegRuntime.recover(account, inert_adapters())
+    assert account.authority == "INTERVENTION"
+    assert account.synthetic_broker.commands == []

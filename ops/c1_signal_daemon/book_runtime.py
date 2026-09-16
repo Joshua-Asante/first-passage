@@ -113,13 +113,14 @@ class FourLegRuntime:
         # restores this set, even when the retained batch is awaiting evidence.
         self._prepared_here = set()
         self._mode = None
-        for retained in owner.retained_partial_bars:
+        partials = owner.retained_partial_bars
+        self._validate_retained_chronology(partials)
+        for retained in partials:
             instant = datetime.fromisoformat(retained["bar_time"])
             self._pending.setdefault(instant, {})[retained["leg_id"]] = self._validated_retained_bar(
                 retained["body"], boundary=instant, leg_id=retained["leg_id"])
-        self._validate_retained_chronology()
 
-    def _validate_retained_chronology(self):
+    def _validate_retained_chronology(self, partials):
         sessions = self.owner.retained_sessions
         boundaries = {session_id: set() for session_id in sessions}
         try:
@@ -129,13 +130,30 @@ class FourLegRuntime:
                 if instant in times:
                     raise ValueError("duplicate retained boundary instant")
                 times.add(instant)
-            for instant in self._pending:
+            partial_times = set()
+            partial_identities = set()
+            for retained in partials:
+                instant = datetime.fromisoformat(retained["bar_time"])
+                identity = (instant, retained["leg_id"])
+                if identity in partial_identities:
+                    raise ValueError("duplicate retained partial identity")
+                partial_identities.add(identity)
+                # Live ingestion uses canonical UTC keys. The owner's promotion
+                # and expiry transactions match those persisted keys as text.
+                if (instant.utcoffset() is None or retained["bar_time"]
+                        != instant.astimezone(timezone.utc).isoformat()):
+                    raise ValueError("retained partial key cannot resume in UTC")
+                partial_times.add(instant)
+            for instant in partial_times:
                 matches = [session_id for session_id, session in sessions.items()
                            if datetime.fromisoformat(session["opens_at"]) <= instant
                            < datetime.fromisoformat(session["closes_at"])]
                 if len(matches) != 1:
                     raise ValueError("partial has no unique session")
-                boundaries[matches[0]].add(instant)
+                times = boundaries[matches[0]]
+                if instant in times:
+                    raise ValueError("partial duplicates retained boundary instant")
+                times.add(instant)
             for session_id, times in boundaries.items():
                 expected = datetime.fromisoformat(sessions[session_id]["opens_at"])
                 close = datetime.fromisoformat(sessions[session_id]["closes_at"])

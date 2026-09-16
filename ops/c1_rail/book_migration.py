@@ -57,6 +57,49 @@ def logical_source(db):
             for name, sql in db.execute("SELECT name,sql FROM sqlite_master WHERE type='table' ORDER BY name")}
 
 
+def _held_close_feedback(db, capacity, identity, body):
+    """A held event must have an unreconciled close and accepted reduction proof."""
+    if db.execute("SELECT 1 FROM timeline WHERE kind='feedback' AND ref_id=?", (identity,)).fetchone():
+        return False
+    row = db.execute("SELECT o.kind,o.status,c.status FROM operations o "
+                     "JOIN close_reservations c USING(operation_id) WHERE operation_id=?",
+                     (body['operation_id'],)).fetchone()
+    if row is None or row[0] not in ('exit', 'flat') or row[1] != 'awaiting_protection':
+        return False
+    reductions = [r for r in capacity.reductions if r.close_request_id == body['operation_id']]
+    if body['kind'] == 'fill':
+        return body['order_kind'] == row[0] and any(
+            r.reduction_id == identity and r.allocations == ((body['entry_execution_id'], body['quantity']),)
+            for r in reductions)
+    return (body['kind'] == 'terminal' and body['status'] in ('cancelled', 'rejected')
+            and row[2] == body['status'] and bool(reductions)
+            and body['cumulative_filled'] == sum(q for r in reductions for _fid, q in r.allocations))
+
+
+def _legacy_eventless_terminal(db, capacity, identity, body):
+    """Read the prior v4 JSON-null spelling without rewriting retained facts."""
+    if body['kind'] != 'terminal' or body['status'] != 'filled' or type(body['cumulative_filled']) is not int:
+        return False
+    operation = db.execute('SELECT kind,quantity,status FROM operations WHERE operation_id=?',
+                           (body['operation_id'],)).fetchone()
+    if operation is None or operation[1] != body['cumulative_filled'] or operation[2] not in ('terminal', 'awaiting_protection'):
+        return False
+    if operation[0] in ('entry', 'add'):
+        proof = db.execute("SELECT body,as_of FROM capacity_events WHERE event_id=? AND fact_type='terminal'",
+                           (identity,)).fetchone()
+        return (proof is not None and proof[1] == body['as_of']
+                and json.loads(proof[0]) == dict(operation_id=body['operation_id'],
+                    status='filled', cumulative_filled=body['cumulative_filled'])
+                and any(o.request.operation_id == body['operation_id'] and o.terminal is not None
+                        and o.terminal.status == 'filled' and o.terminal.cumulative_filled == operation[1]
+                        for o in capacity.operations))
+    close = db.execute('SELECT status FROM close_reservations WHERE operation_id=?',
+                       (body['operation_id'],)).fetchone()
+    return (operation[0] in ('exit', 'flat') and close == ('filled',)
+            and sum(q for r in capacity.reductions if r.close_request_id == body['operation_id']
+                    for _fid, q in r.allocations) == operation[1])
+
+
 def validate_records(owner, db, version):
     from .book_account_owner import _time
     from .book_policy import leg
@@ -109,7 +152,14 @@ def validate_records(owner, db, version):
         body = json.loads(raw)
         _require(body['fact_id'] == identity and body['operation_id'] in operations, 'broker fact ' + identity)
         _time(datetime.fromisoformat(body['as_of']))
-        _require(event is None or feedback.get(identity) == event, 'fact feedback ' + identity)
+        if event is not None and json.loads(event) is None:
+            _require(version == 4 and identity not in feedback
+                     and not db.execute("SELECT 1 FROM timeline WHERE kind='feedback' AND ref_id=?", (identity,)).fetchone()
+                     and _legacy_eventless_terminal(db, capacity, identity, body), 'eventless terminal ' + identity)
+            continue
+        held = (version == 4 and event is not None and identity not in feedback
+                and _held_close_feedback(db, capacity, identity, body))
+        _require(event is None or feedback.get(identity) == event or held, 'fact feedback ' + identity)
         if event is not None:
             emitted = json.loads(event)
             _require(emitted['order_id'] == body['operation_id'] and emitted['leg_id'] == operations[body['operation_id']][0]

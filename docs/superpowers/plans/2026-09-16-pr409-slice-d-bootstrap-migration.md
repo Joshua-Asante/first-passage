@@ -337,3 +337,69 @@ Verification above `5b948ca4419d5367862bc4e5d37c8ea222f6105c`:
   proof after operation changes; no extra admission rule was required there.
 - Remote PR head was rechecked at `5b948ca` before publication. Tests are
   offline synthetic; no production activation, deployment or merge occurred.
+
+### Review follow-up on `d14d74f` — 2026-09-16
+
+The three new findings share journal-consumer and identity assumptions missed
+by the preceding case map. Accepted broker facts, held adapter events, and
+emitted events are distinct states. Protection quantity follows explicit close
+allocations while protective fills retain the separate FIFO rule. Completed and
+partial bar identities must remain distinct before any in-memory consolidation.
+
+| Related case | Shared rule | Disposition |
+| --- | --- | --- |
+| Filled terminal after versions 1/2/3 conversion | No event is SQL NULL, not an emitted JSON value | Store SQL NULL; repeat conversion remains read-only and idempotent. Previous v4 JSON-null records remain readable only with valid filled-terminal proof and no emitted-event timeline. |
+| UNKNOWN and aged ACCEPTED entry/add attempts | Feedback absence cannot determine fact acceptance | Resolve from matching broker/capacity terminal identity, time and payload plus reducer-accepted terminal state. Stale, incomplete and non-postdating facts retain the fence. |
+| Held partial/full close and cancellation after partial fill | Deliberately deferred feedback is not missing emitted feedback | Migration accepts only an awaiting-protection close with accepted reduction evidence; a preexisting feedback timeline prevents masking deleted emitted events. |
+| Scoped partial/full explicit close with sibling protection | The close must resize its allocated owner | Validate scoped residual quantities at the relevant reduction sequence; synthetic producer now actually resizes partial scoped orders. |
+| Protective FIFO before or after explicit close, delayed observation, restart | Origin-lot remainder alone does not describe surviving FIFO protection | Preserve FIFO coverage, distinguish newly reconciled explicit closes with a capacity sequence cursor, and use held fact identities for older rows without the cursor. No timestamp-only inference. |
+| Completed/partial overlap, duplicate same-leg partials, timezone aliases | Raw durable identity must be checked before dictionary/set collapse | Reject duplicate identities during construction. Canonical distinct-leg partials recover and complete; historical noncanonical partial keys fail closed because text-key promotion/expiry cannot safely resume them. No history rewrite. |
+
+Initial journal regression run: 6 failed, 4 passed. Initial runtime run: 6 failed,
+19 passed. Scoped-close producer and consumer failures were reproduced separately.
+Independent journal review accepted the changes with 24 focused tests passing.
+Final combined verification is recorded below once complete.
+
+Independent protection review additionally reproduced a same-owner partial
+protective execution after an unobserved scoped close: the pre-execution
+remainder check still used the pre-close quantity. The common residual rule
+must govern both snapshot reconciliation and the protective execution's initial
+quantity check. The separate regression covers partial and terminal execution
+plus overstated quantity. Earlier full runs were superseded while this repair
+was in progress and are not acceptance evidence.
+
+The inverse ordering (FIFO, then an explicit scoped close) also reproduced
+overlapping protection in the synthetic producer. The pinned emulator's
+`_close_scope` removes zero-lot owners after an explicit close, including a
+sibling whose origin was exhausted by an earlier FIFO fill; `_fill_exit` alone
+does not. The repair records this removal eligibility at the explicit close's
+sequence and applies the same rule to the producer. A later FIFO exhaustion
+cannot retrospectively authorize removal, and unrelated legs are excluded.
+
+If FIFO leaves a nonzero origin with different working protection quantity,
+certain partial explicit closes cannot preserve both the pinned cleanup rule
+and I7. Before reserving or sending, the common close allocator models the
+qualified residual transition: remaining working protection cannot exceed
+residual exposure or lose more defined coverage than the quantity closed.
+Otherwise it returns `close_capability_problem`, following K2's required
+capability block rather than transferring/cancelling an owner under invented
+semantics. Full flatten remains a supported nearby transition; bare lots do not
+acquire new protection requirements.
+
+Final review-6 acceptance on `d14d74f` plus the final working-tree changes:
+
+- Validated launcher environment: Python 3.13.2, 62 matched locked packages.
+- `./fp.ps1 test-ops -q -p no:cacheprovider --tb=short`: **2,803 passed,
+  15 skipped**, four dependency deprecation warnings, exit 0 (181.10s).
+  This run includes all final production changes and all 44 new regressions.
+- `./fp.ps1 check`: exit 0. Existing absent private-data/Pine and historical
+  documentation advisories remain.
+- Independent bounded journal and protection reviews accepted the repaired
+  cases. Final protection edge suite: **6 passed** (2.61s), including both
+  pre-dispatch capability refusals and the subsequent valid full flatten.
+- Python 3.11 grammar parsing passed for all nine changed/new Python files;
+  this is not a Python 3.11 runtime claim.
+- Targeted Pylint with `ops` and `core` import roots reports only unchanged
+  E0213 on `_boot_locked(owner)`, exit 2. No clean lint claim.
+- `git diff --check` passed. PR head remained `d14d74f` before publication.
+  Tests are offline synthetic; no deployment, live activation or merge.

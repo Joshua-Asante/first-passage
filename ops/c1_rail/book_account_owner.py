@@ -769,6 +769,21 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
         """Derive the account fence from durable attempts, never transport receipts alone."""
         from c1_signal_daemon.book_runtime import BAR_PERIOD
         unresolved = []
+        # Feedback is optional: a filled terminal emits no adapter event. Only
+        # terminals accepted by the capacity reducer can resolve an attempt;
+        # rejected/stale raw broker facts must not clear the account fence.
+        terminals = {op.request.operation_id: asdict(op.terminal)
+                     for op in self._capacity(db).operations if op.terminal is not None}
+        accepted = []
+        for raw, at, terminal_raw in db.execute(
+                "SELECT b.body,c.as_of,c.body FROM broker_facts b JOIN capacity_events c "
+                "ON c.event_id=b.fact_id WHERE c.fact_type='terminal'"):
+            fact, terminal = json.loads(raw), json.loads(terminal_raw)
+            if (fact['kind'] == 'terminal' and fact['as_of'] == at
+                    and terminal == terminals.get(fact['operation_id'])
+                    and terminal == dict(operation_id=fact['operation_id'],
+                                         status=fact['status'], cumulative_filled=fact['cumulative_filled'])):
+                accepted.append((fact['operation_id'], datetime.fromisoformat(at)))
         for identity, outcome, created in db.execute(
                 "SELECT o.operation_id,a.state,o.created_at FROM operations o "
                 "JOIN attempts a USING(operation_id) WHERE o.kind IN ('entry','add')"):
@@ -777,10 +792,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                 continue
             if outcome != 'UNKNOWN' and now < prepared + BAR_PERIOD:
                 continue
-            resolved = any(fact['kind'] == 'terminal' and fact['operation_id'] == identity
-                           and datetime.fromisoformat(fact['as_of']) > prepared
-                           for raw, feedback in db.execute('SELECT body,feedback FROM broker_facts')
-                           if feedback is not None for fact in (json.loads(raw),))
+            resolved = any(operation_id == identity and at > prepared for operation_id, at in accepted)
             if not resolved:
                 unresolved.append(identity)
         return tuple(unresolved)
@@ -1304,6 +1316,30 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                 break
         if remaining or not allocations:
             return None, "close_allocation_incomplete"
+        # Preserve the qualified explicit-close owner transition. After FIFO,
+        # a partial close can otherwise leave more working protection than
+        # residual exposure. That mapping is a capability problem, not license
+        # to transfer or cancel an unrelated surviving owner's protection.
+        allocated = dict(allocations)
+        residual = {identity: quantity - allocated.get(identity, 0)
+                    for identity, quantity in self._open_fill_quantities(
+                        db, action.leg_id, subtract_reservations=False).items()}
+        coverage = sum(residual.values())
+        protection = 0
+        defined_before = 0
+        for row in self._protection_rows(db).values():
+            if row['leg_id'] != action.leg_id or row['consumed'] or row['observed'] is None:
+                continue
+            defined_before += row['quantity']
+            identity = row['entry_fill_id']
+            if residual.get(identity, 0) == 0:
+                continue  # Explicit-close cleanup differs from protective FIFO.
+            quantity = min(row['quantity'], coverage)
+            if identity in allocated:
+                quantity = min(quantity, residual[identity])
+            protection += quantity
+        if not max(0, defined_before - requested) <= protection <= coverage:
+            return None, 'close_capability_problem'
         db.execute("INSERT INTO close_reservations VALUES (?, ?, 'active')",
                    (action.order_id, _body(allocations)))
         return tuple(allocations), None
@@ -2022,7 +2058,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             if hold_close:
                 db.execute("UPDATE operations SET status='awaiting_protection' WHERE operation_id=?",
                            (fact.operation_id,))
-            feedback_raw = _body(asdict(feedback) if feedback is not None else None)
+            feedback_raw = _body(asdict(feedback)) if feedback is not None else None
             db.execute("INSERT INTO broker_facts VALUES (?, ?, ?)",
                        (fact.fact_id, raw, feedback_raw))
             if feedback is None or hold_close:
