@@ -1,0 +1,708 @@
+{
+  "logical_digest": "962e8fc4a6873eea6ba540b20d6648d138242b61015a840acc2960d195ab909a",
+  "source_revision": "b5fdde8b89aaab6bccc37d2850f9ec14da314819",
+  "source_version": 3,
+  "tables": {
+    "action_occurrences": {
+      "columns": [
+        "key",
+        "envelope",
+        "source",
+        "scope",
+        "result",
+        "state",
+        "prepared_at",
+        "generation",
+        "boot_id"
+      ],
+      "rows": [
+        [
+          "914c6f7f28780074a9f0c2054d3acb6ec5a97f84e7cfcce63f1e2f4b8f028b32",
+          "{\"account\":\"synthetic-account\",\"account_epoch\":\"84b2d7d3-1358-4573-a139-fa0a774f30d0\",\"event_id\":\"test_book_owner_settlement_integration:236\",\"ordinal\":0,\"producer\":\"direct\",\"session_id\":\"tradeify-account-day:2026-09-15\"}",
+          "{\"type\":\"OrderIntent\",\"value\":{\"bar_time\":\"2026-09-15T14:00:00+00:00\",\"bracket\":null,\"kind\":\"entry\",\"leg_id\":\"dj30_mym_p250\",\"oca_group\":null,\"order_id\":\"base\",\"order_type\":\"market\",\"price\":null,\"qty\":5,\"reason\":\"\",\"scope_fill_ids\":null,\"side\":\"buy\",\"stop_dist_pts\":24,\"timing\":\"this_close\"}}",
+          null,
+          "{\"attempt_id\":\"b53c376c-73e2-4784-af52-ddd36be8f451\",\"confirmed_events\":[],\"operation_id\":\"base\",\"quantity\":8,\"refusal_reason\":null,\"transport_state\":\"accepted\"}",
+          "complete",
+          "2026-09-15T14:00:00+00:00",
+          2,
+          "476faba9-6e45-4dbc-8f97-fde6b1adaa41"
+        ]
+      ],
+      "sql": "CREATE TABLE action_occurrences (key TEXT PRIMARY KEY, envelope TEXT NOT NULL, source TEXT NOT NULL, scope TEXT, result TEXT, state TEXT NOT NULL, prepared_at TEXT NOT NULL, generation INTEGER NOT NULL, boot_id TEXT NOT NULL)"
+    },
+    "attempts": {
+      "columns": [
+        "attempt_id",
+        "operation_id",
+        "state",
+        "generation",
+        "body",
+        "observation"
+      ],
+      "rows": [
+        [
+          "b53c376c-73e2-4784-af52-ddd36be8f451",
+          "base",
+          "ACCEPTED",
+          2,
+          "{\"action\":{\"bar_time\":\"2026-09-15T14:00:00+00:00\",\"bracket\":null,\"kind\":\"entry\",\"leg_id\":\"dj30_mym_p250\",\"oca_group\":null,\"order_id\":\"base\",\"order_type\":\"market\",\"price\":null,\"qty\":8,\"reason\":\"\",\"scope_fill_ids\":null,\"side\":\"buy\",\"stop_dist_pts\":24,\"timing\":\"this_close\"},\"attempt_id\":\"b53c376c-73e2-4784-af52-ddd36be8f451\",\"authority\":\"NORMAL\",\"generation\":2,\"kind\":\"entry\",\"leg_id\":\"dj30_mym_p250\",\"occurrence\":{\"account\":\"synthetic-account\",\"account_epoch\":\"84b2d7d3-1358-4573-a139-fa0a774f30d0\",\"event_id\":\"test_book_owner_settlement_integration:236\",\"ordinal\":0,\"producer\":\"direct\",\"session_id\":\"tradeify-account-day:2026-09-15\"},\"operation_id\":\"base\",\"order_symbol\":\"MYM1!\",\"protection_change\":null,\"quantity\":8,\"side\":\"buy\",\"target_operation_id\":null}",
+          "{\"facts\":[],\"state\":\"accepted\"}"
+        ]
+      ],
+      "sql": "CREATE TABLE attempts (attempt_id TEXT PRIMARY KEY, operation_id TEXT NOT NULL UNIQUE, state TEXT NOT NULL, generation INTEGER NOT NULL, body TEXT NOT NULL, observation TEXT)"
+    },
+    "b7_history": {
+      "columns": [
+        "seal_sha256",
+        "report_timezone"
+      ],
+      "rows": [
+        [
+          "e8f3e66aad90cde45744774ed87da93fd754505f308d8305cfee9d7dd83f21ae",
+          "America/New_York"
+        ]
+      ],
+      "sql": "CREATE TABLE b7_history (seal_sha256 TEXT PRIMARY KEY, report_timezone TEXT)"
+    },
+    "barriers": {
+      "columns": [
+        "bar_time",
+        "session_id",
+        "mode",
+        "body",
+        "actions",
+        "completed"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE barriers (bar_time TEXT PRIMARY KEY, session_id TEXT NOT NULL, mode TEXT NOT NULL, body TEXT NOT NULL, actions TEXT, completed INTEGER NOT NULL DEFAULT 0)"
+    },
+    "broker_facts": {
+      "columns": [
+        "fact_id",
+        "body",
+        "feedback"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE broker_facts (fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, feedback TEXT)"
+    },
+    "capacity_events": {
+      "columns": [
+        "sequence",
+        "event_id",
+        "as_of",
+        "fact_type",
+        "body"
+      ],
+      "rows": [
+        [
+          1,
+          "reserve:base",
+          "2026-09-15T14:00:00+00:00",
+          "reserve",
+          "{\"leg_id\":\"dj30_mym_p250\",\"operation_id\":\"base\",\"order_symbol\":\"MYM1!\",\"quantity\":8}"
+        ]
+      ],
+      "sql": "CREATE TABLE capacity_events (sequence INTEGER PRIMARY KEY, event_id TEXT NOT NULL UNIQUE, as_of TEXT NOT NULL, fact_type TEXT NOT NULL, body TEXT NOT NULL)"
+    },
+    "chain": {
+      "columns": [
+        "seq",
+        "session_id",
+        "predecessor_session_id",
+        "package_sha256",
+        "equity",
+        "peak",
+        "as_of_utc",
+        "mode_next",
+        "origin",
+        "scope",
+        "accepted_utc",
+        "status",
+        "row_hash"
+      ],
+      "rows": [
+        [
+          1,
+          "tradeify-account-day:2026-09-11",
+          "",
+          "e8f3e66aad90cde45744774ed87da93fd754505f308d8305cfee9d7dd83f21ae",
+          "100000",
+          "100000",
+          "2026-09-11T21:00:00Z",
+          "normal",
+          "B7",
+          "",
+          "2026-09-12T14:00:00Z",
+          "ACCEPTED",
+          "edbd539d5707e17abb945ca27d4e155c424f4903140ae022204f5aa50804c1d6"
+        ],
+        [
+          2,
+          "tradeify-account-day:2026-09-14",
+          "tradeify-account-day:2026-09-11",
+          "2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32",
+          "100244.46",
+          "100244.46",
+          "2026-09-14T21:00:00Z",
+          "normal",
+          "ACCOUNT_CLOSE",
+          "submit_account_close",
+          "2026-09-14T21:10:00Z",
+          "ACCEPTED",
+          "01d4ff314c034d911420758dc04fde5eef1206703b9f89383a0d55ab5596975a"
+        ]
+      ],
+      "sql": "CREATE TABLE chain (seq INTEGER PRIMARY KEY, session_id TEXT UNIQUE, predecessor_session_id TEXT, package_sha256 TEXT, equity TEXT, peak TEXT, as_of_utc TEXT, mode_next TEXT, origin TEXT, scope TEXT, accepted_utc TEXT, status TEXT, row_hash TEXT)"
+    },
+    "challenges": {
+      "columns": [
+        "challenge_id",
+        "envelope_sha256",
+        "envelope_json",
+        "scope",
+        "issued_utc",
+        "expires_utc",
+        "status",
+        "consumed_utc"
+      ],
+      "rows": [
+        [
+          "87d7e32f-8b8b-47d0-bd49-7678e3811c8a",
+          "c5361c8d8dba6e62ff1f922c3b327ef5d2f414fdeb46240751c2ba973adbe668",
+          "{\"account\": \"synthetic-account\", \"boot_id\": \"5f3d53d2-c821-4dc2-ab8c-13f6f8d28842\", \"calendar_digest\": \"650e8aab4166f74a988675a3f3dfa2dbd21c1c1b342777ac37d65aacea9d6f2f\", \"challenge_id\": \"87d7e32f-8b8b-47d0-bd49-7678e3811c8a\", \"contract\": \"docs/spec/2026-09-15-tradeify-attended-settlement-contract.md\", \"expires_utc\": \"2026-09-14T21:15:00Z\", \"halt_generation\": 1, \"issued_utc\": \"2026-09-14T21:10:00Z\", \"package_sha256\": \"2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32\", \"policy_digest\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"predecessor_package_sha256\": \"e8f3e66aad90cde45744774ed87da93fd754505f308d8305cfee9d7dd83f21ae\", \"predecessor_session_id\": \"tradeify-account-day:2026-09-11\", \"proposed_session_id\": \"tradeify-account-day:2026-09-14\", \"schema\": \"settlement_challenge/v2\", \"scope\": \"submit_account_close\", \"target_session_id\": \"tradeify-account-day:2026-09-15\"}",
+          "submit_account_close",
+          "2026-09-14T21:10:00Z",
+          "2026-09-14T21:15:00Z",
+          "CONSUMED",
+          "2026-09-14T21:10:00Z"
+        ]
+      ],
+      "sql": "CREATE TABLE challenges (challenge_id TEXT PRIMARY KEY, envelope_sha256 TEXT, envelope_json TEXT, scope TEXT, issued_utc TEXT, expires_utc TEXT, status TEXT, consumed_utc TEXT)"
+    },
+    "close_reservations": {
+      "columns": [
+        "operation_id",
+        "allocations",
+        "status"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE close_reservations (operation_id TEXT PRIMARY KEY, allocations TEXT NOT NULL, status TEXT NOT NULL)"
+    },
+    "events": {
+      "columns": [
+        "seq",
+        "kind",
+        "session_id",
+        "detail",
+        "utc"
+      ],
+      "rows": [
+        [
+          1,
+          "boot",
+          null,
+          "{\"boot_id\": \"5f3d53d2-c821-4dc2-ab8c-13f6f8d28842\", \"fresh\": true}",
+          "2026-09-12T14:00:00Z"
+        ],
+        [
+          2,
+          "b7_bootstrap",
+          "tradeify-account-day:2026-09-11",
+          "{\"mode_next\": \"normal\", \"seal_sha256\": \"e8f3e66aad90cde45744774ed87da93fd754505f308d8305cfee9d7dd83f21ae\"}",
+          "2026-09-12T14:00:00Z"
+        ],
+        [
+          3,
+          "challenge_issued",
+          "tradeify-account-day:2026-09-14",
+          "{\"challenge_id\": \"87d7e32f-8b8b-47d0-bd49-7678e3811c8a\", \"scope\": \"submit_account_close\"}",
+          "2026-09-14T21:10:00Z"
+        ],
+        [
+          4,
+          "close_accepted",
+          "tradeify-account-day:2026-09-14",
+          "{\"key_id\": \"023038e4dcadf5ec8178b162ea0c454010be627664eee61a74a4e4236503bf3c\", \"mode_next\": \"normal\", \"receipt_id\": \"c30207fb-9a85-406e-8310-f4edb7186676\", \"scope\": \"submit_account_close\", \"signature\": \"20065d09073f6499737092a137186a11671fd903d594314befcdce622dc2d2adaeb924b699f5a8f6a7a4b3c7490106fb125c58714904f6df5108df372e8e2905\", \"signed_envelope\": {\"account\": \"synthetic-account\", \"boot_id\": \"5f3d53d2-c821-4dc2-ab8c-13f6f8d28842\", \"calendar_digest\": \"650e8aab4166f74a988675a3f3dfa2dbd21c1c1b342777ac37d65aacea9d6f2f\", \"challenge_id\": \"87d7e32f-8b8b-47d0-bd49-7678e3811c8a\", \"contract\": \"docs/spec/2026-09-15-tradeify-attended-settlement-contract.md\", \"expires_utc\": \"2026-09-14T21:15:00Z\", \"halt_generation\": 1, \"issued_utc\": \"2026-09-14T21:10:00Z\", \"operator_signed_utc\": \"2026-09-14T21:10:00Z\", \"package_sha256\": \"2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32\", \"policy_digest\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"predecessor_package_sha256\": \"e8f3e66aad90cde45744774ed87da93fd754505f308d8305cfee9d7dd83f21ae\", \"predecessor_session_id\": \"tradeify-account-day:2026-09-11\", \"proposed_session_id\": \"tradeify-account-day:2026-09-14\", \"schema\": \"settlement_challenge/v2\", \"scope\": \"submit_account_close\", \"target_session_id\": \"tradeify-account-day:2026-09-15\"}}",
+          "2026-09-14T21:10:00Z"
+        ],
+        [
+          5,
+          "boot",
+          null,
+          "{\"boot_id\": \"476faba9-6e45-4dbc-8f97-fde6b1adaa41\", \"fresh\": false, \"voided_challenges\": 0}",
+          "2026-09-15T13:59:00Z"
+        ],
+        [
+          6,
+          "restore_reconciled",
+          "tradeify-account-day:2026-09-14",
+          "{\"rows\": 2}",
+          "2026-09-15T13:59:01Z"
+        ]
+      ],
+      "sql": "CREATE TABLE events (seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT, session_id TEXT, detail TEXT, utc TEXT)"
+    },
+    "feed_watch": {
+      "columns": [
+        "session_id",
+        "started_at"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE feed_watch (session_id TEXT PRIMARY KEY, started_at TEXT NOT NULL)"
+    },
+    "feedback": {
+      "columns": [
+        "fact_id",
+        "body",
+        "delivered",
+        "checkpoint",
+        "boundary_time"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE feedback (fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, delivered INTEGER NOT NULL DEFAULT 0, checkpoint TEXT, boundary_time TEXT)"
+    },
+    "incidents": {
+      "columns": [
+        "incident_id",
+        "reason",
+        "at",
+        "generation"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE incidents (incident_id TEXT PRIMARY KEY, reason TEXT NOT NULL, at TEXT NOT NULL, generation INTEGER NOT NULL)"
+    },
+    "operations": {
+      "columns": [
+        "operation_id",
+        "leg_id",
+        "order_symbol",
+        "kind",
+        "requested",
+        "quantity",
+        "session_id",
+        "generation",
+        "created_at",
+        "status",
+        "body"
+      ],
+      "rows": [
+        [
+          "base",
+          "dj30_mym_p250",
+          "MYM1!",
+          "entry",
+          5,
+          8,
+          "tradeify-account-day:2026-09-15",
+          2,
+          "2026-09-15T14:00:00+00:00",
+          "attempted",
+          "{\"bar_time\":\"2026-09-15T14:00:00+00:00\",\"bracket\":null,\"kind\":\"entry\",\"leg_id\":\"dj30_mym_p250\",\"oca_group\":null,\"order_id\":\"base\",\"order_type\":\"market\",\"price\":null,\"qty\":5,\"reason\":\"\",\"scope_fill_ids\":null,\"side\":\"buy\",\"stop_dist_pts\":24,\"timing\":\"this_close\"}"
+        ]
+      ],
+      "sql": "CREATE TABLE operations (operation_id TEXT PRIMARY KEY, leg_id TEXT NOT NULL, order_symbol TEXT NOT NULL, kind TEXT NOT NULL, requested INTEGER, quantity INTEGER, session_id TEXT NOT NULL, generation INTEGER NOT NULL, created_at TEXT NOT NULL, status TEXT NOT NULL, body TEXT NOT NULL)"
+    },
+    "owner_state": {
+      "columns": [
+        "schema",
+        "account",
+        "account_epoch",
+        "boot_id",
+        "generation",
+        "permission",
+        "authority",
+        "sequence"
+      ],
+      "rows": [
+        [
+          3,
+          "synthetic-account",
+          "84b2d7d3-1358-4573-a139-fa0a774f30d0",
+          "476faba9-6e45-4dbc-8f97-fde6b1adaa41",
+          2,
+          "RUNNING",
+          "NORMAL",
+          1
+        ]
+      ],
+      "sql": "CREATE TABLE owner_state (schema INTEGER NOT NULL, account TEXT NOT NULL, account_epoch TEXT NOT NULL, boot_id TEXT NOT NULL, generation INTEGER NOT NULL, permission TEXT NOT NULL, authority TEXT NOT NULL, sequence INTEGER NOT NULL)"
+    },
+    "packages": {
+      "columns": [
+        "package_sha256",
+        "session_id",
+        "kind",
+        "package_json",
+        "source_digests",
+        "received_utc"
+      ],
+      "rows": [
+        [
+          "e8f3e66aad90cde45744774ed87da93fd754505f308d8305cfee9d7dd83f21ae",
+          "tradeify-account-day:2026-09-11",
+          "B7_SEAL",
+          "{\"values\": {\"balance\": \"100000\", \"equity\": \"100000\", \"trailing_threshold\": \"97000\", \"prior_trade_days\": 3, \"prior_max_day_profit\": \"0\", \"consistency_display_pct\": \"0\", \"profit_target_display\": \"6000\", \"cash_adjustments_total\": \"0\", \"token_trade_fill_dates\": [], \"positions_export_shows_flat\": true, \"working_orders_count\": 0}, \"derived\": {\"original_basis\": \"100000\", \"historical_eod_peak\": \"100000\", \"at_high_water_mark\": true, \"carried_drawdown\": \"0\", \"valid_until\": \"2026-09-13T18:00:00-04:00\"}, \"evidence\": {\"E1\": {\"path\": \"dash.png\", \"sha256\": \"1111111111111111111111111111111111111111111111111111111111111111\", \"captured_at\": \"2026-09-12T09:00:00-04:00\"}, \"E2\": {\"path\": \"pos.csv\", \"sha256\": \"2222222222222222222222222222222222222222222222222222222222222222\", \"captured_at\": \"2026-09-12T09:01:00-04:00\"}, \"E3\": {\"path\": \"cash.csv\", \"sha256\": \"053f50d0a2314fca9e09a645823268bcb49d6130cf1f9900f25dc9eb887a783a\", \"captured_at\": \"2026-09-12T09:02:00-04:00\"}}, \"checks\": {\"C1\": \"pass\", \"C2\": \"pass\", \"C3\": \"pass\", \"C4\": \"pass\", \"C5\": \"pass\", \"C6\": \"pass\", \"C7\": \"pass\", \"C8\": \"pass\", \"C9\": \"pass\", \"C10\": \"pass\"}, \"seal_timestamp\": \"2026-09-12T10:00:00-04:00\", \"tool_sha256\": \"7777777777777777777777777777777777777777777777777777777777777777\", \"contract\": \"docs/spec/2026-09-12-tradeify-account-snapshot-seal-contract.md\"}",
+          "{\"cash.csv\": \"053f50d0a2314fca9e09a645823268bcb49d6130cf1f9900f25dc9eb887a783a\"}",
+          "2026-09-12T14:00:00Z"
+        ],
+        [
+          "2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32",
+          "tradeify-account-day:2026-09-14",
+          "ACCOUNT_CLOSE",
+          "{\"account_id\":\"synthetic-account\",\"attestations\":{\"costs_included_once\":true,\"no_conflicting_observation\":true,\"no_known_pending_correction\":true,\"reflects_effective_close\":true},\"calendar_digest\":\"650e8aab4166f74a988675a3f3dfa2dbd21c1c1b342777ac37d65aacea9d6f2f\",\"contract\":\"docs/spec/2026-09-15-tradeify-attended-settlement-contract.md\",\"dashboard\":{\"balance\":\"100244.46\",\"captured_utc\":\"2026-09-14T21:05:00Z\",\"trailing_threshold\":\"97244.46\"},\"effective_close_utc\":\"2026-09-14T21:00:00Z\",\"equity\":{\"at_effective_close\":\"FLAT\",\"basis\":\"NET_OF_TRADING_COSTS\",\"equity_at_effective_close\":null,\"flatness_basis\":\"DAILY_FLATTEN_CONFIRMED_NO_LATER_FILLS\",\"net_equity\":\"100244.46\",\"valuation_basis\":null},\"inception_utc\":\"2026-08-20T13:00:00Z\",\"ledger\":{\"adjustments_abs_total\":\"0\",\"coverage\":{\"window_limit_days\":14,\"windows\":[{\"complete\":true,\"file\":\"cash_history_0.csv\",\"from_utc\":\"2026-08-20T04:00:00Z\",\"rows\":1,\"to_utc\":\"2026-09-03T04:00:00Z\"},{\"complete\":true,\"file\":\"cash_history.csv\",\"from_utc\":\"2026-09-02T04:00:00Z\",\"rows\":5,\"to_utc\":\"2026-09-14T21:05:00Z\"}]},\"gross_trade_pnl\":\"250.00\",\"predecessor_net_equity\":\"100000\",\"revisions\":[],\"trading_costs\":{\"clearing\":\"0.30\",\"commission\":\"4.00\",\"exchange\":\"1.20\",\"nfa\":\"0.04\"},\"transactions\":[{\"id\":\"1\",\"session_id\":\"tradeify-account-day:2026-08-20\",\"sha256\":\"74c60a3c4411623398b42dd123c393f36d014736a8c4f0cf8b101fa4cc81a4e6\"},{\"id\":\"202609140\",\"session_id\":\"tradeify-account-day:2026-09-14\",\"sha256\":\"3bc8e78f48a872ec87c948f62b2215093f8bffae8578dbd548a16b44dd5c9fb6\"},{\"id\":\"202609141\",\"session_id\":\"tradeify-account-day:2026-09-14\",\"sha256\":\"510bfe97aad737c5457554966cab1d267cded86c62a8ab014ba80cac8a6ded44\"},{\"id\":\"202609142\",\"session_id\":\"tradeify-account-day:2026-09-14\",\"sha256\":\"3ada4e16ad501fe8d60150a2f4bfb3e3a8cb7f8a88ca649e5fb6186aa78ab005\"},{\"id\":\"202609143\",\"session_id\":\"tradeify-account-day:2026-09-14\",\"sha256\":\"d67577d322ae0eb01225bc73f873484f4d87b1fcb7e1eb90404c1bca3503a5c7\"},{\"id\":\"202609144\",\"session_id\":\"tradeify-account-day:2026-09-14\",\"sha256\":\"98c474bba4620d078f40bae851609c22e5a8d6d5cc57ca7934a198e0f83db6a2\"}],\"unknown_rows\":0,\"unlinked_fee_rows\":0},\"policy_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"positions\":{\"captured_utc\":\"2026-09-14T21:05:00Z\",\"open_positions\":0,\"working_orders\":0},\"predecessor_package_sha256\":\"e8f3e66aad90cde45744774ed87da93fd754505f308d8305cfee9d7dd83f21ae\",\"predecessor_session_id\":\"tradeify-account-day:2026-09-11\",\"report_timezone\":\"America/New_York\",\"schema\":\"account_close_package/v3\",\"scope\":\"submit_account_close\",\"session_id\":\"tradeify-account-day:2026-09-14\",\"settlement_basis\":\"VENUE_ROW\",\"source_publication_utc\":null,\"sources\":[{\"account_id\":\"synthetic-account\",\"captured_utc\":\"2026-09-14T21:05:00Z\",\"file\":\"dashboard.png\",\"role\":\"dashboard\",\"sha256\":\"c73232f9ae1a2e0992bbb9575446e0de845c3c4976d059adb6bb9b0d5bc59340\"},{\"account_id\":\"synthetic-account\",\"captured_utc\":\"2026-09-14T21:05:00Z\",\"file\":\"positions.csv\",\"role\":\"positions\",\"sha256\":\"965124e026d170a23e8e07bbaf294678f3a08ca3d86f19b65131292889aa4a33\"},{\"account_id\":\"synthetic-account\",\"captured_utc\":\"2026-09-14T21:05:00Z\",\"file\":\"orders.csv\",\"role\":\"orders\",\"sha256\":\"e07b86567aa46e1c35a60f0952fc2b3b6f81bfdb5d7270e2083a3dcdb74b8824\"},{\"account_id\":\"synthetic-account\",\"captured_utc\":\"2026-09-14T21:05:00Z\",\"file\":\"balance_history.csv\",\"role\":\"balance_history\",\"sha256\":\"0ce875778a942bc67c2f9e82b4529ad413e5efa98da3f89c319fe0c68f44153b\"},{\"account_id\":\"synthetic-account\",\"captured_utc\":\"2026-09-14T21:05:00Z\",\"file\":\"cash_history.csv\",\"role\":\"cash_history\",\"sha256\":\"31dbc155fb43e2d957d2d70d405691b94c4f6c5a73a070911b087172e41a923b\"},{\"account_id\":\"synthetic-account\",\"captured_utc\":\"2026-08-20T13:05:00Z\",\"file\":\"inception.pdf\",\"role\":\"inception\",\"sha256\":\"fd1378fef691fefbac3c589145eb29fc5e2fdc88e7b6c5d12b93cb7f6f0a967c\"},{\"account_id\":\"synthetic-account\",\"captured_utc\":\"2026-09-14T21:05:00Z\",\"file\":\"cash_history_0.csv\",\"role\":\"cash_history:0\",\"sha256\":\"053f50d0a2314fca9e09a645823268bcb49d6130cf1f9900f25dc9eb887a783a\"}],\"unresolved_runtime_requests\":[],\"venue\":\"Tradeify_Select_100K\"}",
+          "{\"balance_history.csv\": \"0ce875778a942bc67c2f9e82b4529ad413e5efa98da3f89c319fe0c68f44153b\", \"cash_history.csv\": \"31dbc155fb43e2d957d2d70d405691b94c4f6c5a73a070911b087172e41a923b\", \"cash_history_0.csv\": \"053f50d0a2314fca9e09a645823268bcb49d6130cf1f9900f25dc9eb887a783a\", \"dashboard.png\": \"c73232f9ae1a2e0992bbb9575446e0de845c3c4976d059adb6bb9b0d5bc59340\", \"inception.pdf\": \"fd1378fef691fefbac3c589145eb29fc5e2fdc88e7b6c5d12b93cb7f6f0a967c\", \"orders.csv\": \"e07b86567aa46e1c35a60f0952fc2b3b6f81bfdb5d7270e2083a3dcdb74b8824\", \"positions.csv\": \"965124e026d170a23e8e07bbaf294678f3a08ca3d86f19b65131292889aa4a33\"}",
+          "2026-09-14T21:10:00Z"
+        ]
+      ],
+      "sql": "CREATE TABLE packages (package_sha256 TEXT PRIMARY KEY, session_id TEXT, kind TEXT, package_json TEXT, source_digests TEXT, received_utc TEXT)"
+    },
+    "partial_bars": {
+      "columns": [
+        "bar_time",
+        "leg_id",
+        "body",
+        "acquired_at"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE partial_bars (bar_time TEXT NOT NULL, leg_id TEXT NOT NULL, body TEXT NOT NULL, acquired_at TEXT NOT NULL, PRIMARY KEY(bar_time, leg_id))"
+    },
+    "protection_facts": {
+      "columns": [
+        "fact_id",
+        "body",
+        "kind"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE protection_facts (fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, kind TEXT NOT NULL)"
+    },
+    "protection_operations": {
+      "columns": [
+        "operation_id",
+        "occurrence_key",
+        "owner_id",
+        "body"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE protection_operations (operation_id TEXT PRIMARY KEY, occurrence_key TEXT NOT NULL, owner_id TEXT NOT NULL, body TEXT NOT NULL)"
+    },
+    "protection_owners": {
+      "columns": [
+        "owner_id",
+        "entry_fill_id",
+        "body"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE protection_owners (owner_id TEXT PRIMARY KEY, entry_fill_id TEXT NOT NULL UNIQUE, body TEXT NOT NULL)"
+    },
+    "protection_state": {
+      "columns": [
+        "session_id",
+        "mode",
+        "operation_ids",
+        "generation"
+      ],
+      "rows": [
+        [
+          "tradeify-account-day:2026-09-15",
+          "normal",
+          "[]",
+          2
+        ]
+      ],
+      "sql": "CREATE TABLE protection_state (session_id TEXT PRIMARY KEY, mode TEXT NOT NULL, operation_ids TEXT NOT NULL, generation INTEGER NOT NULL)"
+    },
+    "protection_streams": {
+      "columns": [
+        "stream_id",
+        "body"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE protection_streams (stream_id TEXT PRIMARY KEY, body TEXT NOT NULL)"
+    },
+    "receipts": {
+      "columns": [
+        "receipt_id",
+        "session_id",
+        "package_sha256",
+        "accepted_utc"
+      ],
+      "rows": [
+        [
+          "880dce67-57b9-445c-a208-1b67a57f2556",
+          "tradeify-account-day:2026-09-11",
+          "e8f3e66aad90cde45744774ed87da93fd754505f308d8305cfee9d7dd83f21ae",
+          "2026-09-12T14:00:00Z"
+        ],
+        [
+          "c30207fb-9a85-406e-8310-f4edb7186676",
+          "tradeify-account-day:2026-09-14",
+          "2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32",
+          "2026-09-14T21:10:00Z"
+        ]
+      ],
+      "sql": "CREATE TABLE receipts (receipt_id TEXT PRIMARY KEY, session_id TEXT, package_sha256 TEXT, accepted_utc TEXT)"
+    },
+    "runtime_actors": {
+      "columns": [
+        "boot_id",
+        "kind",
+        "body"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE runtime_actors (boot_id TEXT PRIMARY KEY, kind TEXT NOT NULL, body TEXT NOT NULL)"
+    },
+    "runtime_bindings": {
+      "columns": [
+        "sequence",
+        "session_id",
+        "body",
+        "digest"
+      ],
+      "rows": [
+        [
+          1,
+          "tradeify-account-day:2026-09-14",
+          "{\"as_of\":\"2026-09-14T13:59:59+00:00\",\"cap_allocations\":{\"aegis_6j\":80,\"dj30_mym_p250\":80,\"orb_mnq_v7\":80,\"vanguard_mgc\":80},\"effective_inputs_sha256\":\"9d4d4e1d622a3fb0ae37b7b20f8bdf960244f9e66b5d88ded79db4de6089dade\",\"historical_effective_inputs_sha256\":\"66406dee955fa69f237fde60eacdd24259a08d5320352d98e59889acaa18158d\",\"lifecycle_tiers\":{\"aegis_6j\":\"AUTHORIZED\",\"dj30_mym_p250\":\"AUTHORIZED\",\"orb_mnq_v7\":\"AUTHORIZED\",\"vanguard_mgc\":\"AUTHORIZED\"},\"max_evidence_age_seconds\":30.0,\"phase1_admission\":{\"accepted_run\":\"8ddf727b38b3044ad2c0e8cb05330933f94b9fb8c9f21be38dbeff41d7ad75e0\",\"admission_contract\":\"4f027af56f18c119c18b24f6f867ecb0a64188085ea7a8a95c18b0a77d0e9dde\",\"independent_review\":\"dd9c5e7296535a934b973df7ec0ff8b87c6c3554fc092822820f633588654cfd\",\"run_py\":\"2ea9e16911214ebac0eaba840b6aab90b784cf2623d937ce91be91261053ff2b\"},\"policy\":{\"provenance\":\"CANDIDATE - unadmitted; operator selection 2026-09-10 (docs/notes/2026-09-10-tradeify-protection-selection.md); admission only via umbrella D-B11 (TB-P2 ADR, TB-D0 registry row after TB-E1)\",\"reference_mode\":\"trailing\",\"scale\":0.4,\"trigger\":0.01},\"policy_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"risk_dollars\":{\"dj30_mym_p250\":100},\"runtime_identities\":{\"aegis_6j\":{\"pine_sha256\":\"db78ecba95ae78aca14501a5eaccfda2a42164d83cac12321cb7f293a9adca7c\",\"runtime_sha256\":\"11763740bc3fdcc8b9e94cb0b465823aec202cd8333379c46878185db5e9e84f\"},\"dj30_mym_p250\":{\"pine_sha256\":\"712cf395396568ce22ae43f1f15b085eaba23acf1b85502abb92129f277fffd7\",\"runtime_sha256\":\"efd479b6b4c7eeaa7d8df3f40f36593f87d96b9d5f512dc79c4dd9b0520211f4\"},\"orb_mnq_v7\":{\"pine_sha256\":\"176c4f70c67d58053c4d3b8170d0a9be3733bc6b76b1e2f928bd7a877be052a3\",\"runtime_sha256\":\"b1f4e573009e62b976013e08e7ef2784497d840f490f04e3878fdaef553f317d\"},\"vanguard_mgc\":{\"pine_sha256\":\"af26899ca94bb0e9ee26d09e0176b6b94bba2f5da252399ce4d899fe7e3bad15\",\"runtime_sha256\":\"e6a03d04c65a19e7fde71103560a229630c3663f445676f06622feec4e9157a3\"}},\"session\":{\"calendar_digest\":\"650e8aab4166f74a988675a3f3dfa2dbd21c1c1b342777ac37d65aacea9d6f2f\",\"closes_at\":\"2026-09-14T16:00:00+00:00\",\"flatten_start\":\"2026-09-14T15:10:00+00:00\",\"opens_at\":\"2026-09-14T13:00:00+00:00\",\"own_flat_deadline\":\"2026-09-14T15:15:00+00:00\",\"prior_session_id\":\"tradeify-account-day:2026-09-11\",\"risk_add_cutoff\":\"2026-09-14T15:00:00+00:00\",\"session_id\":\"tradeify-account-day:2026-09-14\"},\"settlement\":{\"as_of\":\"2026-09-11T21:00:00+00:00\",\"equity\":100000.0,\"peak\":100000.0,\"seal_digest\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"session_id\":\"tradeify-account-day:2026-09-11\"},\"snapshot_digest\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"valid_until\":\"2026-09-14T14:05:00+00:00\"}",
+          "c4da49931efc0a3bb439c56855b53e3b6e64d4ec5b7bc28ae34d7affa244fc0a"
+        ],
+        [
+          2,
+          "tradeify-account-day:2026-09-15",
+          "{\"as_of\":\"2026-09-15T13:59:59+00:00\",\"cap_allocations\":{\"aegis_6j\":80,\"dj30_mym_p250\":80,\"orb_mnq_v7\":80,\"vanguard_mgc\":80},\"effective_inputs_sha256\":\"9d4d4e1d622a3fb0ae37b7b20f8bdf960244f9e66b5d88ded79db4de6089dade\",\"historical_effective_inputs_sha256\":\"66406dee955fa69f237fde60eacdd24259a08d5320352d98e59889acaa18158d\",\"lifecycle_tiers\":{\"aegis_6j\":\"AUTHORIZED\",\"dj30_mym_p250\":\"AUTHORIZED\",\"orb_mnq_v7\":\"AUTHORIZED\",\"vanguard_mgc\":\"AUTHORIZED\"},\"max_evidence_age_seconds\":30.0,\"phase1_admission\":{\"accepted_run\":\"8ddf727b38b3044ad2c0e8cb05330933f94b9fb8c9f21be38dbeff41d7ad75e0\",\"admission_contract\":\"4f027af56f18c119c18b24f6f867ecb0a64188085ea7a8a95c18b0a77d0e9dde\",\"independent_review\":\"dd9c5e7296535a934b973df7ec0ff8b87c6c3554fc092822820f633588654cfd\",\"run_py\":\"2ea9e16911214ebac0eaba840b6aab90b784cf2623d937ce91be91261053ff2b\"},\"policy\":{\"provenance\":\"CANDIDATE - unadmitted; operator selection 2026-09-10 (docs/notes/2026-09-10-tradeify-protection-selection.md); admission only via umbrella D-B11 (TB-P2 ADR, TB-D0 registry row after TB-E1)\",\"reference_mode\":\"trailing\",\"scale\":0.4,\"trigger\":0.01},\"policy_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"risk_dollars\":{\"dj30_mym_p250\":100},\"runtime_identities\":{\"aegis_6j\":{\"pine_sha256\":\"db78ecba95ae78aca14501a5eaccfda2a42164d83cac12321cb7f293a9adca7c\",\"runtime_sha256\":\"11763740bc3fdcc8b9e94cb0b465823aec202cd8333379c46878185db5e9e84f\"},\"dj30_mym_p250\":{\"pine_sha256\":\"712cf395396568ce22ae43f1f15b085eaba23acf1b85502abb92129f277fffd7\",\"runtime_sha256\":\"efd479b6b4c7eeaa7d8df3f40f36593f87d96b9d5f512dc79c4dd9b0520211f4\"},\"orb_mnq_v7\":{\"pine_sha256\":\"176c4f70c67d58053c4d3b8170d0a9be3733bc6b76b1e2f928bd7a877be052a3\",\"runtime_sha256\":\"b1f4e573009e62b976013e08e7ef2784497d840f490f04e3878fdaef553f317d\"},\"vanguard_mgc\":{\"pine_sha256\":\"af26899ca94bb0e9ee26d09e0176b6b94bba2f5da252399ce4d899fe7e3bad15\",\"runtime_sha256\":\"e6a03d04c65a19e7fde71103560a229630c3663f445676f06622feec4e9157a3\"}},\"session\":{\"calendar_digest\":\"650e8aab4166f74a988675a3f3dfa2dbd21c1c1b342777ac37d65aacea9d6f2f\",\"closes_at\":\"2026-09-15T16:00:00+00:00\",\"flatten_start\":\"2026-09-15T15:10:00+00:00\",\"opens_at\":\"2026-09-15T13:00:00+00:00\",\"own_flat_deadline\":\"2026-09-15T15:15:00+00:00\",\"prior_session_id\":\"tradeify-account-day:2026-09-14\",\"risk_add_cutoff\":\"2026-09-15T15:00:00+00:00\",\"session_id\":\"tradeify-account-day:2026-09-15\"},\"settlement\":{\"as_of\":\"2026-09-14T21:00:00+00:00\",\"equity\":100244.46,\"peak\":100244.46,\"seal_digest\":\"2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32\",\"session_id\":\"tradeify-account-day:2026-09-14\"},\"snapshot_digest\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"valid_until\":\"2026-09-15T14:05:00+00:00\"}",
+          "83db7e216bb33c49bbb3d685f833e5043ac823929e0700e9d2f75a95d432e476"
+        ]
+      ],
+      "sql": "CREATE TABLE runtime_bindings (sequence INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL UNIQUE, body TEXT NOT NULL, digest TEXT NOT NULL UNIQUE)"
+    },
+    "settlement_attachment": {
+      "columns": [
+        "singleton",
+        "body",
+        "digest"
+      ],
+      "rows": [
+        [
+          1,
+          "{\"account\":\"synthetic-account\",\"attached_utc\":\"2026-09-12T14:00:00Z\",\"status\":\"ATTACHED\"}",
+          "128703472368649b4711516204067fa2071dbbd81ddac9d8fbc67214b979fe63"
+        ]
+      ],
+      "sql": "CREATE TABLE settlement_attachment (singleton INTEGER PRIMARY KEY CHECK(singleton=1), body TEXT NOT NULL, digest TEXT NOT NULL)"
+    },
+    "sources": {
+      "columns": [
+        "package_sha256",
+        "file",
+        "sha256",
+        "data"
+      ],
+      "rows": [
+        [
+          "e8f3e66aad90cde45744774ed87da93fd754505f308d8305cfee9d7dd83f21ae",
+          "cash.csv",
+          "053f50d0a2314fca9e09a645823268bcb49d6130cf1f9900f25dc9eb887a783a",
+          {
+            "sqlite_blob_hex": "4163636f756e742c5472616e73616374696f6e2049442c54696d657374616d702c446174652c44656c74612c416d6f756e742c43617368204368616e676520547970652c43757272656e63792c436f6e74726163740a73796e7468657469632d6163636f756e742c312c30382f32302f323032362030393a30303a30302c323032362d30382d32302c3130303030302e30302c3130303030302e30302c46756e64205472616e73616374696f6e2c5553442c0a"
+          }
+        ],
+        [
+          "2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32",
+          "dashboard.png",
+          "c73232f9ae1a2e0992bbb9575446e0de845c3c4976d059adb6bb9b0d5bc59340",
+          {
+            "sqlite_blob_hex": "646173682d74726164656966792d6163636f756e742d6461793a323032362d30392d3134"
+          }
+        ],
+        [
+          "2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32",
+          "positions.csv",
+          "965124e026d170a23e8e07bbaf294678f3a08ca3d86f19b65131292889aa4a33",
+          {
+            "sqlite_blob_hex": "706f732d74726164656966792d6163636f756e742d6461793a323032362d30392d3134"
+          }
+        ],
+        [
+          "2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32",
+          "orders.csv",
+          "e07b86567aa46e1c35a60f0952fc2b3b6f81bfdb5d7270e2083a3dcdb74b8824",
+          {
+            "sqlite_blob_hex": "6f72642d74726164656966792d6163636f756e742d6461793a323032362d30392d3134"
+          }
+        ],
+        [
+          "2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32",
+          "balance_history.csv",
+          "0ce875778a942bc67c2f9e82b4529ad413e5efa98da3f89c319fe0c68f44153b",
+          {
+            "sqlite_blob_hex": "4163636f756e742049442c4163636f756e74204e616d652c547261646520446174652c546f74616c20416d6f756e742c546f74616c205265616c697a656420504e4c0a31323334352c73796e7468657469632d6163636f756e742c323032362d30382d32302c3130303030302e30302c300a31323334352c73796e7468657469632d6163636f756e742c323032362d30392d31312c3130303030302c300a31323334352c73796e7468657469632d6163636f756e742c323032362d30392d31342c3130303234342e34362c300a"
+          }
+        ],
+        [
+          "2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32",
+          "cash_history.csv",
+          "31dbc155fb43e2d957d2d70d405691b94c4f6c5a73a070911b087172e41a923b",
+          {
+            "sqlite_blob_hex": "4163636f756e742c5472616e73616374696f6e2049442c54696d657374616d702c446174652c44656c74612c416d6f756e742c43617368204368616e676520547970652c43757272656e63792c436f6e74726163740a73796e7468657469632d6163636f756e742c3230323630393134302c30392f31342f323032362031323a30303a30302c323032362d30392d31342c2d342e30302c39393939362e30302c436f6d6d697373696f6e2c5553442c4d594d55360a73796e7468657469632d6163636f756e742c3230323630393134312c30392f31342f323032362031323a30303a30302c323032362d30392d31342c2d312e32302c39393939342e38302c45786368616e6765204665652c5553442c4d594d55360a73796e7468657469632d6163636f756e742c3230323630393134322c30392f31342f323032362031323a30303a30302c323032362d30392d31342c2d302e33302c39393939342e35302c436c656172696e67204665652c5553442c4d594d55360a73796e7468657469632d6163636f756e742c3230323630393134332c30392f31342f323032362031323a30303a30302c323032362d30392d31342c2d302e30342c39393939342e34362c4e6661204665652c5553442c4d594d55360a73796e7468657469632d6163636f756e742c3230323630393134342c30392f31342f323032362031323a30303a30302c323032362d30392d31342c3235302e30302c3130303234342e34362c5472616465205061697265642c5553442c4d594d55360a"
+          }
+        ],
+        [
+          "2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32",
+          "inception.pdf",
+          "fd1378fef691fefbac3c589145eb29fc5e2fdc88e7b6c5d12b93cb7f6f0a967c",
+          {
+            "sqlite_blob_hex": "696e63657074696f6e2d65766964656e6365"
+          }
+        ],
+        [
+          "2b3f196bb7aae29d9f5dc5768c951b7280916a8be60ea482befa9d29023c7e32",
+          "cash_history_0.csv",
+          "053f50d0a2314fca9e09a645823268bcb49d6130cf1f9900f25dc9eb887a783a",
+          {
+            "sqlite_blob_hex": "4163636f756e742c5472616e73616374696f6e2049442c54696d657374616d702c446174652c44656c74612c416d6f756e742c43617368204368616e676520547970652c43757272656e63792c436f6e74726163740a73796e7468657469632d6163636f756e742c312c30382f32302f323032362030393a30303a30302c323032362d30382d32302c3130303030302e30302c3130303030302e30302c46756e64205472616e73616374696f6e2c5553442c0a"
+          }
+        ]
+      ],
+      "sql": "CREATE TABLE sources (package_sha256 TEXT, file TEXT, sha256 TEXT, data BLOB, PRIMARY KEY (package_sha256, file))"
+    },
+    "sqlite_sequence": {
+      "columns": [
+        "name",
+        "seq"
+      ],
+      "rows": [
+        [
+          "runtime_bindings",
+          2
+        ],
+        [
+          "events",
+          6
+        ]
+      ],
+      "sql": "CREATE TABLE sqlite_sequence(name,seq)"
+    },
+    "state": {
+      "columns": [
+        "version",
+        "account",
+        "boot_id",
+        "calendar_digest",
+        "policy_digest",
+        "trusted_keys",
+        "restore_pending",
+        "invalidated",
+        "phase",
+        "invalidated_from_seq",
+        "history_sha256",
+        "state_hash"
+      ],
+      "rows": [
+        [
+          "4",
+          "synthetic-account",
+          "476faba9-6e45-4dbc-8f97-fde6b1adaa41",
+          "650e8aab4166f74a988675a3f3dfa2dbd21c1c1b342777ac37d65aacea9d6f2f",
+          "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "{\"023038e4dcadf5ec8178b162ea0c454010be627664eee61a74a4e4236503bf3c\": [\"submit_account_close\", \"record_only\"]}",
+          "0",
+          "0",
+          "ACCEPTING",
+          "0",
+          "34a7dbd2c31c749ddba92c8218f82ba9c306eeda89ff593617fb9af6a635c356",
+          "9a01364d1b2fa48f0717c3ed850fcd671031bf7d149caaaa6192a84fa35a2702"
+        ]
+      ],
+      "sql": "CREATE TABLE state (version TEXT, account TEXT, boot_id TEXT, calendar_digest TEXT, policy_digest TEXT, trusted_keys TEXT, restore_pending TEXT, invalidated TEXT, phase TEXT, invalidated_from_seq TEXT, history_sha256 TEXT, state_hash TEXT)"
+    },
+    "superseded_chain": {
+      "columns": [
+        "seq",
+        "session_id",
+        "predecessor_session_id",
+        "package_sha256",
+        "equity",
+        "peak",
+        "as_of_utc",
+        "mode_next",
+        "origin",
+        "scope",
+        "accepted_utc",
+        "status",
+        "superseded_utc",
+        "review_sha256"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE superseded_chain (seq INTEGER, session_id TEXT, predecessor_session_id TEXT, package_sha256 TEXT, equity TEXT, peak TEXT, as_of_utc TEXT, mode_next TEXT, origin TEXT, scope TEXT, accepted_utc TEXT, status TEXT, superseded_utc TEXT, review_sha256 TEXT)"
+    },
+    "takeover_children": {
+      "columns": [
+        "operation_id",
+        "takeover_id",
+        "occurrence_key",
+        "kind",
+        "target",
+        "body"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE takeover_children (operation_id TEXT PRIMARY KEY, takeover_id TEXT NOT NULL, occurrence_key TEXT NOT NULL UNIQUE, kind TEXT NOT NULL, target TEXT NOT NULL, body TEXT NOT NULL)"
+    },
+    "takeover_events": {
+      "columns": [
+        "event_id",
+        "operation_id",
+        "ordinal",
+        "kind",
+        "body"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE takeover_events (event_id TEXT PRIMARY KEY, operation_id TEXT NOT NULL, ordinal INTEGER NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL, UNIQUE(operation_id, ordinal))"
+    },
+    "takeover_inventory": {
+      "columns": [
+        "fact_id",
+        "stream_id",
+        "sequence",
+        "body",
+        "disposition"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE takeover_inventory (fact_id TEXT PRIMARY KEY, stream_id TEXT NOT NULL, sequence INTEGER NOT NULL, body TEXT NOT NULL, disposition TEXT NOT NULL, UNIQUE(stream_id, sequence))"
+    },
+    "takeover_plans": {
+      "columns": [
+        "operation_id",
+        "occurrence_key",
+        "body"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE takeover_plans (operation_id TEXT PRIMARY KEY, occurrence_key TEXT NOT NULL UNIQUE, body TEXT NOT NULL)"
+    },
+    "takeover_reads": {
+      "columns": [
+        "read_id",
+        "operation_id",
+        "body"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE takeover_reads (read_id TEXT PRIMARY KEY, operation_id TEXT NOT NULL, body TEXT NOT NULL)"
+    },
+    "takeover_streams": {
+      "columns": [
+        "stream_id",
+        "body"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE takeover_streams (stream_id TEXT PRIMARY KEY, body TEXT NOT NULL)"
+    },
+    "timeline": {
+      "columns": [
+        "sequence",
+        "kind",
+        "ref_id",
+        "acquired_at"
+      ],
+      "rows": [],
+      "sql": "CREATE TABLE timeline (sequence INTEGER PRIMARY KEY, kind TEXT NOT NULL, ref_id TEXT NOT NULL UNIQUE, acquired_at TEXT NOT NULL)"
+    }
+  }
+}

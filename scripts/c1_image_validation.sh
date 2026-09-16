@@ -83,6 +83,9 @@ LISTENER_FILES=(
   /app/ops/c1_rail/book_protection.py
   /app/ops/c1_rail/book_protection_owner.py
   /app/ops/c1_rail/book_takeover.py
+  /app/ops/c1_rail/book_bootstrap.py
+  /app/ops/c1_rail/book_migration.py
+  /app/ops/c1_rail/book_migration_schema.py
   /app/ops/c1_rail/book_takeover_owner.py
   /app/ops/c1_rail/book_schedule.py
   /app/ops/c1_rail/book_session_calendar.py
@@ -133,6 +136,9 @@ DAEMON_FILES=(
   /app/ops/c1_rail/book_protection.py
   /app/ops/c1_rail/book_protection_owner.py
   /app/ops/c1_rail/book_takeover.py
+  /app/ops/c1_rail/book_bootstrap.py
+  /app/ops/c1_rail/book_migration.py
+  /app/ops/c1_rail/book_migration_schema.py
   /app/ops/c1_rail/book_takeover_owner.py
   /app/ops/c1_rail/book_schedule.py
   /app/ops/c1_rail/book_session_calendar.py

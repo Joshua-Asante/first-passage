@@ -34,6 +34,8 @@ NOW = datetime(2026, 9, 15, 14, tzinfo=timezone.utc)
 LEGS = ("aegis_6j", "dj30_mym_p250", "vanguard_mgc", "orb_mnq_v7")
 
 
+from book_bootstrap_fixtures import BootstrapBroker, activate_fresh
+
 def binding(*, protected=False):
     session = BookSession(
         "tradeify-account-day:2026-09-15", "tradeify-account-day:2026-09-14",
@@ -120,11 +122,13 @@ def bars():
 
 
 def owner(tmp_path, results, *, protected=False):
+    from c1_rail.book_synthetic_protection import SyntheticProtectionBroker
     result = BookAccountOwner.boot(
         tmp_path / "owner.sqlite", "synthetic-account",
         binding=binding(protected=protected),
-        synthetic_broker=SyntheticBroker(results),
+        synthetic_broker=SyntheticProtectionBroker(results, account='synthetic-account', account_epoch='unbound', at=NOW),
     )
+    result.synthetic_broker.account_epoch = result.make_occurrence('direct', 'fixture-bind').account_epoch
     result.activate_synthetic(now=NOW)
     return result
 
@@ -176,7 +180,7 @@ def test_local_capacity_refusals_are_durable_adapter_feedback(tmp_path):
 
     restarted = BookAccountOwner.boot(
         account.path, "synthetic-account", binding=binding(),
-        synthetic_broker=SyntheticBroker([]),
+        synthetic_broker=BootstrapBroker([]),
     )
     fresh = adapters()
     FourLegRuntime.recover(restarted, fresh)
@@ -197,7 +201,7 @@ def test_fact_commit_before_feedback_recovers_without_resend(tmp_path):
 
     restarted = BookAccountOwner.boot(
         tmp_path / "owner.sqlite", "synthetic-account", binding=binding(),
-        synthetic_broker=SyntheticBroker([]),
+        synthetic_broker=BootstrapBroker([]),
     )
     fresh = adapters()
     recovered = FourLegRuntime.recover(restarted, fresh)
@@ -230,7 +234,7 @@ def test_partial_barrier_survives_restart_and_expires_without_dispatch(tmp_path)
 
     restarted = BookAccountOwner.boot(
         account.path, "synthetic-account", binding=binding(),
-        synthetic_broker=SyntheticBroker([]))
+        synthetic_broker=BootstrapBroker([]))
     recovered = FourLegRuntime(restarted, adapters())
     recovered.expire_barrier(NOW, now=NOW + timedelta(minutes=15, seconds=31))
 
@@ -417,7 +421,7 @@ def test_delivered_feedback_checkpoint_replays_on_restart_without_resend(tmp_pat
 
     restarted = BookAccountOwner.boot(
         tmp_path / "owner.sqlite", "synthetic-account", binding=binding(),
-        synthetic_broker=SyntheticBroker([]))
+        synthetic_broker=BootstrapBroker([]))
     fresh = adapters()
     FourLegRuntime.recover(restarted, fresh)
     assert fresh["aegis_6j"].events == [("fill", "entry:aegis_6j", "fill-aegis")]
@@ -429,8 +433,8 @@ def test_recovery_uses_each_retained_barriers_mode_not_current_session_mode(tmp_
     normal["settlement"] = replace(normal["settlement"], equity=100_000.0)
     account = BookAccountOwner.boot(
         tmp_path / "owner.sqlite", "synthetic-account", binding=normal,
-        synthetic_broker=SyntheticBroker([]))
-    account.activate_synthetic(now=NOW)
+        synthetic_broker=BootstrapBroker([]))
+    activate_fresh(account, now=NOW)
     runtime = FourLegRuntime(account, inert_adapters())
     for leg_id in LEGS:
         runtime.on_completed_bar(leg_id, bars()[leg_id], now=NOW)
@@ -451,16 +455,19 @@ def test_recovery_uses_each_retained_barriers_mode_not_current_session_mode(tmp_
     protected["valid_until"] = next_now + timedelta(minutes=5)
     restarted = BookAccountOwner.boot(
         account.path, "synthetic-account", binding=protected,
-        synthetic_broker=SyntheticBroker([]))
+        synthetic_broker=BootstrapBroker([]))
     fresh = inert_adapters()
     recovered = FourLegRuntime.recover(restarted, fresh)
     assert {adapter.mode for adapter in fresh.values()} == {Mode.NORMAL}
-    restarted.activate_synthetic(now=next_now)
+    with pytest.raises(AccountOwnerError, match='entitlement'):
+        restarted.activate_synthetic(now=next_now)
     for leg_id in LEGS:
         recovered.on_completed_bar(
             leg_id, Bar(next_now, 102, 103, 101, 102, 12), now=next_now)
     assert restarted.retained_barriers[-1]["session_id"] == protected["session"].session_id
     assert restarted.retained_barriers[-1]["mode"] == Mode.PROTECTED.value
+    assert restarted.permission == 'HALTED'
+    assert restarted.synthetic_broker.commands == []
 
 
 def test_daemon_loop_listener_and_async_fact_share_one_account_authority(tmp_path):
@@ -505,7 +512,7 @@ def test_delayed_async_feedback_replays_after_later_bar_in_acquisition_order(tmp
 
     restarted = BookAccountOwner.boot(
         account.path, "synthetic-account", binding=binding(),
-        synthetic_broker=SyntheticBroker([]))
+        synthetic_broker=BootstrapBroker([]))
     fresh = adapters()
     FourLegRuntime.recover(restarted, fresh)
     assert fresh["aegis_6j"].history == live_history
@@ -568,7 +575,7 @@ def test_corrupt_retained_adapter_checkpoint_halts_recovery(tmp_path):
 
     restarted = BookAccountOwner.boot(
         account.path, "synthetic-account", binding=binding(),
-        synthetic_broker=SyntheticBroker([]))
+        synthetic_broker=BootstrapBroker([]))
     with pytest.raises(AccountOwnerError, match="checkpoint"):
         FourLegRuntime.recover(restarted, adapters())
     assert restarted.authority == "INTERVENTION"

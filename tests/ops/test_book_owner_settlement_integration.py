@@ -231,13 +231,23 @@ def test_signed_synthetic_close_flows_through_unified_owner_into_listener_sizing
         now=datetime(2026, 9, 15, 13, 59, tzinfo=timezone.utc),
     )
     next_store.reconcile_restore(datetime(2026, 9, 15, 13, 59, 1, tzinfo=timezone.utc))
-    next_owner.activate_synthetic(now=datetime(2026, 9, 15, 14, tzinfo=timezone.utc))
+    at = datetime(2026, 9, 15, 14, tzinfo=timezone.utc)
+    with pytest.raises(AccountOwnerError, match='entitlement'):
+        next_owner.activate_synthetic(now=at)
+    # Preserve settled-close sizing coverage independently from send authority.
+    from c1_rail.book_sizing_context import size_book_request
+    with next_owner._transaction() as db:
+        request, context, sizing_binding = next_owner._context(db, intent(), at)
+    decision = size_book_request(request, context=context, binding=sizing_binding,
+                                policy=next_binding['policy'], now=at)
+    assert decision.qty_out == 8
 
     result = handle_book_action(intent(), next_owner, occurrence=next_owner.make_occurrence("direct", "test_book_owner_settlement_integration:236"), now=datetime(2026, 9, 15, 14, tzinfo=timezone.utc))
 
-    assert result.refusal_reason is None
-    assert result.quantity == 8
-    assert result.transport_state == "accepted"
+    assert result.refusal_reason is not None
+    assert result.transport_state == "not_attempted"
+    assert next_owner.permission == 'HALTED'
+    assert next_owner.synthetic_broker.commands == []
 
 
 def test_revision_and_account_intervention_commit_before_failing_notification(tmp_path):

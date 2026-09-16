@@ -84,7 +84,9 @@ class ProtectionOwnerMixin:
             operations = self._protection_operations(db)
             fills = {f.execution_id: f for f in self._capacity(db).fills}
             indexed = dict(db.execute('SELECT owner_id,entry_fill_id FROM protection_owners'))
-            if set(indexed.values()) != set(fills):
+            from .book_migration import legacy_ids
+            legacy = legacy_ids(db, 'fill') if getattr(self, '_read_schema_version', 4) == 4 else set()
+            if set(indexed.values()) & legacy or set(indexed.values()) | legacy != set(fills):
                 raise ValueError('missing original protection owner')
             for identity, row in owners.items():
                 if (identity != row['owner_id'] or row['entry_fill_id'] not in fills
@@ -631,6 +633,13 @@ class ProtectionOwnerMixin:
                         return ()
                     state = self._state(db)
                     owners = self._protection_rows(db)
+                    from .book_migration import legacy_ids
+                    legacy_fills = legacy_ids(db, 'fill')
+                    if (event.account == state['account'] and event.account_epoch == state['account_epoch']
+                            and any(fid in legacy_fills for fid, _qty in event.allocations)):
+                        db.execute('INSERT INTO protection_facts VALUES (?, ?, ?)',
+                                   (event.fact_id, raw, 'legacy_unresolved'))
+                        return ()
                     row = owners.get(event.owner_id)
                     valid = (row is not None and not row['consumed'] and row['observed'] is not None
                              and event.account == state['account'] and event.account_epoch == state['account_epoch']

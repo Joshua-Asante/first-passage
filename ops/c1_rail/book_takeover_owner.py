@@ -80,7 +80,9 @@ class TakeoverOwnerMixin:
             capacity = self._capacity(db)
             required = {o.request.operation_id for o in capacity.operations if o.status == 'takeover'}
             required.update(c.operation_id for c in capacity.completed_takeovers)
-            _require(required <= plans.keys(), 'missing takeover plan')
+            from .book_migration import legacy_ids
+            legacy = legacy_ids(db, 'takeover') if getattr(self, '_read_schema_version', 4) == 4 else set()
+            _require(not legacy & plans.keys() and required <= plans.keys() | legacy, 'missing takeover plan')
             for identity, raw in plans.items():
                 plan = json.loads(raw)
                 fields = {'record_version', 'account', 'account_epoch', 'boot_id', 'generation', 'session_id',
@@ -204,6 +206,10 @@ class TakeoverOwnerMixin:
                 return None
             identity = rows[0][0]
             plan = self._takeover_plan_db(db, identity)
+            if plan is None:
+                # A source-bound legacy obligation is retained, never upgraded
+                # into a fabricated C read scope or quiescence proof.
+                return None
             cursor = db.execute('SELECT body FROM takeover_streams').fetchone()
             sequence = json.loads(cursor[0])['sequence'] if cursor else 0
             read = InventoryRead(str(uuid4()), ActionOccurrence(**plan['occurrence']), tuple(plan['displaced']), now, sequence)

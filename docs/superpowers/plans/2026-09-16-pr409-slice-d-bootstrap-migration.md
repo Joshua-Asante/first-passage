@@ -22,7 +22,7 @@
 
 ## 1. Dependency and current findings
 
-This is a **provisional interface-level plan**, grounded at `567a583`. C is not implemented or committed. Its proposed schema 3 must be reconciled against the actual C commit before D's detailed conversion code/fixtures can be finalized. Version 4 below is a proposed D target, conditional on C shipping schema 3. This document authorizes no implementation, migration execution, commits, push or production activity. The coordinating implementer owns combined A–D acceptance.
+Originally a provisional interface-level plan grounded at `567a583`. The user subsequently requested “commit and push, then implement slice d.” C was committed and pushed to PR 409 as `b5fdde8b89aaab6bccc37d2850f9ec14da314819`, and D is implemented against that exact schema 3. Sections 2–6 retain the proposed design/checklist as planning history; section 7 records the concrete implementation, reconciliations and verification. D targets schema 4 and remains local until separately integrated. The coordinating implementer owns combined A–D acceptance.
 
 Joshua confirmed during this session that A and B are pushed to PR 409, superseding the original handoff's unpushed status. Current remote SHA and CI were not independently verified; see C's grounding record.
 
@@ -166,3 +166,45 @@ Read-only ordinary facts may update known legacy accounting through existing ide
 Reviewed against current creation/activation and B original-owner validation, plus historical schema 1 at `fc7cdc7`. The important design corrections are explicit creation entitlement, inventory-proven emptiness, no-op versus recovery separation, and a migration-bound quarantine exception that cannot repair missing current records. Failure and restart retain obligations and no send authority.
 
 No implementation tests or migrations were run. C's committed schema, exact legacy fixture exports and executable converter validation remain dependencies for finalizing D; they are intentionally not represented as available. The handoff's documentation-only authorization is the reason this work stops at plans.
+
+## 7. Implementation and acceptance record — 2026-09-16
+
+The later user instruction authorized implementation. Base is committed C `b5fdde8`; the work remains in `phase2-four-leg-execution`. No live account, deployment or recovery operation is involved. Conversions execute only on disposable synthetic fixture copies during tests.
+
+### Actual schema and interfaces
+
+Schema 4 retains all schema-3 tables and adds the proposed `bootstrap_identity`, `migration_records` and `legacy_obligations`, plus `bootstrap_reads(read_id PRIMARY KEY, body NOT NULL)`. Bootstrap reads use their own purpose-specific table so C's root-bound read/proof contract remains unchanged. Missing current structures or weakened SQL constraints fail recognition; boot does not migrate or repair. Supported legacy source layouts and revisions are frozen in `book_migration_schema.py` and mirrored in the fixture manifest.
+
+`activate_synthetic(now=...)` now consumes a fresh creation entitlement exactly once. Creation existence is checked inside the canonical serializer. Restart invalidates even an unused entitlement; incident invalidation shares the incident transaction. The initial proof is a synchronous `SyntheticProtectionBroker.read_bootstrap_inventory` call under the same serializer/transaction. Equal synthetic timestamps are permitted for this synchronous read because the read is executed after creation and before consumption, with a newly bound read identity; C's asynchronous strictly-postdating rule is unchanged. Complete typed outer and nested protection inventory must cover all four legs and contain no positions, working orders, request history or broker facts. The receipt-only `SyntheticBroker` cannot bootstrap.
+
+Creation/activation identity binds account/epoch/boot/generation/session and the binding digest. The durable read is decoded through the same complete contract used at admission. A RUNNING/NORMAL repeat is a read-only no-op only for the same consumed identity and still-current binding. It does not issue cancellations or renew evidence. Restarts, incidents, rollover and migration cannot reactivate. Existing carried-position and signed-settlement tests preserve their sizing/accounting checks separately while asserting no recovery send. SQLite failures remain latched locally even after storage becomes available again.
+
+The explicit API is `book_migration.migrate_book_owner(path, account, now=..., crash_at=None) -> MigrationResult`; `crash_at` is an offline fault-injection seam. It accepts no broker or activation authority. Recognition validates exact SQL constraints, retained bindings, state/capacity/operation/attempt/fact/feedback relationships and the applicable B/C journals before writing. Attached settlement chains and source BLOBs are validated without booting their store. Canonical audit JSON represents BLOBs as `{"sqlite_blob_hex": "..."}` while live SQLite bytes remain untouched.
+
+Conversion runs transactional DDL, writes a deterministic source-digest-bound migration identity, preserves original rows, rotates boot/generation and leaves HALTED/INTERVENTION with permanently ineligible bootstrap identity. Pre-commit interruption rolls back; post-commit retry validates the target and returns the original migration ID without writes. Subsequent boot validates required original history against the immutable source archive, allowing only documented outcome/checkpoint updates and appended observations.
+
+Only schema-1 fills may lack normal original protection owners; every such fill receives an unresolved source-bound obligation. All original schema-1 operations remain explicitly quarantined, including accepted/unknown legacy controls and unresolved attempts. Only schema-1/2 takeovers may have legacy evidence gaps. The required quarantine set is derived from source records, so deleting an obligation or inventing a schema-3 exemption is corruption. Late schema-1 entry fills extend quarantine instead of creating B protection ownership. Unprovable protective executions are retained as diagnostic facts without changing exposure. Regular `status()` exposes unresolved obligations and their migration provenance.
+
+### Revision-bound fixture evidence
+
+`tests/fixtures/book_migration/` contains logical exports made using original public APIs from `fc7cdc7`, `567a583` and `b5fdde8`, never by downgrading a current database. Each export includes the full source revision, exact SQL, column order, raw rows and canonical logical digest. Cases cover empty/filled state, pending/completed takeover, legacy accepted/unknown amendments, prepared B amendments, consumed B owners with separately pending accepted/unknown amendments, and a populated attached settlement chain. The test loader reconstructs exact SQLite values without invoking owner boot before conversion.
+
+### Review and verification
+
+Independent review drove additional regressions for contradictory nested bootstrap exposure, deleted/forged quarantine, wrapped storage errors, cross-record source corruption, settlement BLOBs, missing original migrated history and incomplete retained proof identities. Failing-before logs are retained in `tmp-slice-d-bootstrap-red.txt`, `tmp-slice-d-migration-red.txt`, `tmp-slice-d-review-red.txt` and `tmp-slice-d-review2-red.txt`. Final review disposition and verification results are recorded below after the final tree passes.
+
+Final independent code review accepted the integrated D contracts with no remaining blockers. The final pass independently ran 83 D tests and additionally verified that an accepted historical resolution survives later unrelated snapshots, while a rejected snapshot cannot justify clearing a pending obligation. Migration preserves original attempts and frozen occurrence scopes in full, preserves protection operation provenance except observed status, and prevents unresolved deadlines from being renewed. Qualifying resolution evidence is found among retained accepted snapshots rather than relying on the latest evidence pointer.
+
+The final focused D suite passed 83 tests. Synthetic integrated C/D/protection/ingress/emulator coverage with `cryptography` and `nacl` imports deliberately blocked passed 303 tests. Both image manifests and image-validation script tests passed 23 tests. Check-tier repository gates returned 0; documented absent private Pine/data trees remained skips/warnings. UTF-8 decoding and Python 3.11 grammar parsing passed for all 15 changed/new Python files; local runtime tests used Python 3.13.2, not Python 3.11.
+
+Task-created historical source archives were preserved outside the repository at `C:/Temp/pr409-slice-d-source-evidence/` after the import-boundary gate correctly discovered their duplicate source trees. No project gate was weakened. Source exports, failing-before logs and final verification logs remain separate evidence.
+
+Slice C was pushed as `b5fdde8`, followed by encoding-only repair `83f06ac`: an invalid byte in an existing regression comment caused Astroid's fatal parse failure. The repair changes only that comment to ASCII and was independently parsed before push. Slice D remains an uncommitted local implementation above that head; remote CI does not validate D. No merge, deployment, live conversion or recovery rearm has been performed.
+
+Final complete operations run: `python -m pytest tests/ops -q -p no:cacheprovider --tb=short` passed **2,630 tests, 15 skipped**, with two existing seaborn deprecation warnings, in 153.19 seconds (`tmp-slice-d-ops-final.txt`). This run includes the final retained-resolution helper and the positive historical replay regression. `git diff --check` also passed. The 303-test signing-disabled result and independent 83-test D review apply to the same final implementation.
+
+Remote Slice C final check snapshot: head `83f06acb9554df65b5fdbb86990d913465a42a4a`, all actual CI checks passed (Pylint, Python 3.11 pytest, both images, skills and Semgrep). CodeRabbit reports its manual-review-required skip as successful; this is not an additional code-review acceptance. PR remains open and mergeable. These remote results apply to committed C only.
+
+### Integration authorization
+
+The subsequent user request authorized committing and pushing Slice D and posting a Codex review request on PR #409. The local verification and independent review above apply to the implementation being committed. Historical statements that D was uncommitted describe the preceding acceptance checkpoint.

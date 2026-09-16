@@ -26,6 +26,7 @@ from c1_signal_daemon.book_validation import InputViolation, validate_action
 from .book_protection import ActionOccurrence, ProtectionChange, occurrence_key
 from .book_protection_owner import ProtectionOwnerMixin
 from .book_takeover_owner import TakeoverOwnerMixin
+from .book_bootstrap import BootstrapOwnerMixin
 from .book_account_lock import AccountSerializer
 from .book_capacity import (
     CapacityState,
@@ -270,6 +271,10 @@ _SCHEMA = {
     "protection_facts": "fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, kind TEXT NOT NULL",
     "protection_streams": "stream_id TEXT PRIMARY KEY, body TEXT NOT NULL",
     "feed_watch": "session_id TEXT PRIMARY KEY, started_at TEXT NOT NULL",
+    "bootstrap_identity": "singleton INTEGER PRIMARY KEY CHECK(singleton=1), body TEXT NOT NULL",
+    "bootstrap_reads": "read_id TEXT PRIMARY KEY, body TEXT NOT NULL",
+    "migration_records": "migration_id TEXT PRIMARY KEY, source_version INTEGER NOT NULL, source_digest TEXT NOT NULL, target_version INTEGER NOT NULL, body TEXT NOT NULL",
+    "legacy_obligations": "obligation_id TEXT PRIMARY KEY, source_table TEXT NOT NULL, source_id TEXT NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL, UNIQUE(source_table, source_id, kind)",
     "takeover_plans": "operation_id TEXT PRIMARY KEY, occurrence_key TEXT NOT NULL UNIQUE, body TEXT NOT NULL",
     "takeover_events": "event_id TEXT PRIMARY KEY, operation_id TEXT NOT NULL, ordinal INTEGER NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL, UNIQUE(operation_id, ordinal)",
     "takeover_children": "operation_id TEXT PRIMARY KEY, takeover_id TEXT NOT NULL, occurrence_key TEXT NOT NULL UNIQUE, kind TEXT NOT NULL, target TEXT NOT NULL, body TEXT NOT NULL",
@@ -284,7 +289,7 @@ _SETTLEMENT_TABLES = {
 }
 
 
-class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
+class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerMixin):
     """Single durable account writer; production transport is intentionally absent."""
 
     def __init__(self, path, account, binding, synthetic_broker, crash_at=None):
@@ -310,8 +315,12 @@ class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
     def boot(cls, path, account, *, binding, synthetic_broker=None, crash_at=None):
         owner = cls(path, account, binding, synthetic_broker, crash_at)
         owner.path.parent.mkdir(parents=True, exist_ok=True)
+        with owner.serializer.acquire():
+            return owner._boot_locked()
+
+    def _boot_locked(owner):
         existed = owner.path.exists()
-        with owner.serializer.acquire(), owner._transaction(create=True) as db:
+        with owner._transaction(create=True) as db:
             tables = {row[0] for row in db.execute(
                 "SELECT name FROM sqlite_master WHERE type='table'")}
             if not tables:
@@ -319,7 +328,7 @@ class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
                     raise AccountOwnerError("account owner state unavailable")
                 for name, fields in _SCHEMA.items():
                     db.execute(f"CREATE TABLE {name} ({fields})")
-                db.execute("INSERT INTO owner_state VALUES (3, ?, ?, ?, 1, 'HALTED', "
+                db.execute("INSERT INTO owner_state VALUES (4, ?, ?, ?, 1, 'HALTED', "
                            "'INTERVENTION', 0)",
                            (owner.account, str(uuid4()), str(uuid4())))
                 attachment_body = _body({
@@ -335,11 +344,12 @@ class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
                 db.execute("INSERT INTO runtime_bindings(session_id, body, digest) VALUES (?, ?, ?)",
                            (owner.binding["session"].session_id, raw,
                             hashlib.sha256(raw.encode("utf-8")).hexdigest()))
+                owner._new_bootstrap_db(db)
             else:
                 version = db.execute("SELECT schema FROM owner_state").fetchall()
-                if version in ([(1,)], [(2,)]):
+                if version in ([(1,)], [(2,)], [(3,)]):
                     raise AccountOwnerError("legacy schema requires explicit migration")
-                if version != [(3,)]:
+                if version != [(4,)]:
                     raise AccountOwnerError("invalid account owner schema version")
                 owner._validate_schema(db)
                 owner._settlement_attachment_state(db)
@@ -371,6 +381,7 @@ class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
                         "INSERT INTO runtime_bindings(session_id, body, digest) VALUES (?, ?, ?)",
                         (owner.binding["session"].session_id, raw,
                          hashlib.sha256(raw.encode("utf-8")).hexdigest()))
+                owner._invalidate_bootstrap_db(db, 'restart')
                 db.execute("UPDATE owner_state SET boot_id=?, generation=generation+1, "
                            "permission='HALTED', authority='INTERVENTION'", (str(uuid4()),))
             current = owner._state(db)
@@ -378,6 +389,7 @@ class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
             owner._validate_occurrence_state_db(db)
             owner._validate_protection_state_db(db)
             owner._validate_takeover_state_db(db)
+            owner._bootstrap_db(db)
             owner._actor_boot_id = current["boot_id"]
         return owner
 
@@ -455,6 +467,8 @@ class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
             actual_columns = tuple(row[1] for row in db.execute(f"PRAGMA table_info({name})"))
             if actual_columns != expected:
                 raise AccountOwnerError("invalid account owner schema columns: " + name)
+        from .book_migration import validate_layout
+        validate_layout(db, _SCHEMA)
 
     def _settlement_attachment_state(self, db):
         rows = db.execute(
@@ -623,7 +637,7 @@ class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
         if len(rows) != 1:
             raise AccountOwnerError("invalid account owner state")
         schema, account, epoch, boot, generation, permission, authority, sequence = rows[0]
-        if (schema != 3 or account != self.account or not epoch or not boot
+        if (schema != getattr(self, '_read_schema_version', 4) or account != self.account or not epoch or not boot
                 or type(generation) is not int or generation < 1
                 or permission not in ("HALTED", "RUNNING")
                 or authority not in ("NORMAL", "SCHEDULED_EXIT", "INTERVENTION")
@@ -723,12 +737,15 @@ class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
         """Pure validated read."""
         with self._transaction() as db:
             state = self._state(db)
+            self._bootstrap_db(db)
             capacity = self._capacity(db)
             actor = db.execute("SELECT kind FROM runtime_actors WHERE boot_id=?",
                                (state["boot_id"],)).fetchone()
             return {**state, "exposures": tuple((row.leg_id, row.confirmed, row.reserved)
                                                 for row in exposures(capacity)),
                     "unresolved_attempts": tuple(row[0] for row in self._unresolved_attempt_rows(db)),
+                    "legacy_obligations": tuple(dict(obligation_id=r[0], source_table=r[1], source_id=r[2],
+                        kind=r[3], **json.loads(r[4])) for r in db.execute('SELECT * FROM legacy_obligations ORDER BY obligation_id')),
                     "runtime_actor_kind": actor[0] if actor else None,
                     "runtime_binding_digest": db.execute(
                         "SELECT digest FROM runtime_bindings ORDER BY sequence DESC LIMIT 1").fetchone()[0]}
@@ -1008,74 +1025,17 @@ class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
             }
 
     def activate_synthetic(self, *, now):
-        """Test-only activation; no production/config/HTTP route exposes this method."""
-        _time(now, "activation time")
-        if self.synthetic_broker is None:
-            raise AccountOwnerError("synthetic activation requires SyntheticBroker")
-        cancels = []
-        with self.serializer.acquire(), self._transaction() as db:
-            state = self._state(db)
-            settlement_refusal = self._validate_settlement_binding(db, now)
-            if settlement_refusal is not None:
-                raise AccountOwnerError(settlement_refusal)
-            if now < self.binding["session"].opens_at or now >= self.binding["session"].risk_add_cutoff:
-                raise AccountOwnerError("outside synthetic risk-add window")
-            if self._capacity(db).blocks:
-                raise AccountOwnerError("capacity state blocked")
-            desired = (Mode.PROTECTED if is_protected(
-                self.binding["settlement"].equity, self.binding["settlement"].peak,
-                self.binding["policy"]) else Mode.NORMAL)
-            retained = db.execute(
-                "SELECT session_id, mode, operation_ids, generation FROM protection_state "
-                "ORDER BY rowid DESC LIMIT 1").fetchone()
-            session_id = self.binding["session"].session_id
-            if retained is None:
-                db.execute("INSERT INTO protection_state VALUES (?, ?, '[]', ?)",
-                           (session_id, desired.value, state["generation"]))
-            elif retained[0] == session_id:
-                if retained[1] != desired.value:
-                    self._halt_db(db, "intraday-mode-change:" + session_id,
-                                  "protection", now)
-                    raise AccountOwnerError("settlement-driven mode changed intraday")
-                pending_ids = tuple(json.loads(retained[2]))
-                if pending_ids:
-                    capacity = self._capacity(db)
-                    pending = tuple(identity for identity in pending_ids if next(
-                        operation for operation in capacity.operations
-                        if operation.request.operation_id == identity).terminal is None)
-                    if pending:
-                        if retained[3] != state["generation"]:
-                            raise AccountOwnerError("protection cancellation recovery required")
-                        db.execute("UPDATE owner_state SET permission='HALTED', authority='NORMAL'")
-                        cancels = [Cancel("orb_mnq_v7", identity) for identity in pending]
-            else:
-                capacity = self._capacity(db)
-                pending = ()
-                if retained[1] == Mode.NORMAL.value and desired is Mode.PROTECTED:
-                    pending = tuple(operation.request.operation_id for operation in capacity.operations
-                                    if operation.request.leg_id == "orb_mnq_v7"
-                                    and db.execute("SELECT kind FROM operations WHERE operation_id=?",
-                                                   (operation.request.operation_id,)).fetchone()[0] == "add"
-                                    and operation.status == "active" and operation.terminal is None)
-                db.execute("INSERT INTO protection_state VALUES (?, ?, ?, ?)",
-                           (session_id, desired.value, _body(pending), state["generation"]))
-                if pending:
-                    db.execute("UPDATE owner_state SET permission='HALTED', authority='NORMAL'")
-                    cancels = [Cancel("orb_mnq_v7", identity) for identity in pending]
-            if not cancels:
-                db.execute("UPDATE owner_state SET permission='RUNNING', authority='NORMAL'")
-                return replace_dict(state, permission="RUNNING", authority="NORMAL")
-        for cancel in cancels:
-            self.dispatch(cancel, occurrence=self.make_occurrence(
-                "mode", session_id + ":" + desired.value + ":cancel:" + cancel.order_id), now=now)
-        with self.serializer.acquire(), self._transaction() as db:
-            capacity = self._capacity(db)
-            if any(next(operation for operation in capacity.operations
-                        if operation.request.operation_id == cancel.order_id).terminal is None
-                   for cancel in cancels):
-                raise AccountOwnerError("protection cancellation remains unresolved")
-            db.execute("UPDATE owner_state SET permission='RUNNING', authority='NORMAL'")
-            return self._state(db)
+        """One-use, inventory-proven offline bootstrap; never incident recovery."""
+        try:
+            return self._activate_bootstrap(now=now)
+        except (AccountOwnerError, sqlite3.Error, OSError) as exc:
+            cause = exc
+            while cause is not None:
+                if isinstance(cause, (sqlite3.Error, OSError)):
+                    self._input_send_suppressed = True
+                    break
+                cause = cause.__cause__
+            raise
 
     def halt(self, incident_id, reason, *, now):
         _text(incident_id, "incident")
@@ -1681,6 +1641,7 @@ class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
             db.execute("UPDATE owner_state SET permission='HALTED', authority='INTERVENTION', "
                        "generation=generation+?", (1 if inserted else 0,))
             if inserted:
+                self._invalidate_bootstrap_db(db, 'incident:' + incident_id)
                 for identity, in tuple(db.execute('SELECT operation_id FROM takeover_plans')):
                     if self._takeover_phase_db(db, identity) not in ('ATTEMPTED', 'RETIRED'):
                         self._takeover_event_db(db, identity, 'HALT', now, incident_id=incident_id)
@@ -1857,7 +1818,9 @@ class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
                 db.execute("INSERT INTO broker_facts VALUES (?, ?, NULL)", (fact.fact_id, raw))
                 return ()
             if fact.kind == "fill" and fact.order_kind in ("entry", "add"):
-                self._register_protection_fill_db(db, fact, operation_body)
+                from .book_migration import quarantine_late_fill
+                if not quarantine_late_fill(db, fact):
+                    self._register_protection_fill_db(db, fact, operation_body)
             if fact.kind == "terminal" and operation_kind in ("entry", "add"):
                 for control_id, control_body in tuple(db.execute(
                         "SELECT operation_id, body FROM operations "

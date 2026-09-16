@@ -12,6 +12,7 @@ from c1_signal_daemon.book_runtime import FourLegRuntime
 from test_four_leg_runtime import NOW, binding, entry, inert_adapters
 from test_pr409_owner_lifecycle import filled_owner
 from test_book_account_owner import intent
+from book_bootstrap_fixtures import BootstrapBroker, activate_fresh
 
 
 class EmptySource:
@@ -21,6 +22,7 @@ class EmptySource:
 
 @pytest.mark.parametrize("completed", [False, True])
 @pytest.mark.parametrize("rebuild", [False, True])
+
 def test_total_source_silence_expires_without_a_partial_barrier(tmp_path, completed, rebuild):
     from c1_signal_daemon.book_evaluate_loop import FourLegEvaluateLoop
     from test_four_leg_runtime import owner, bars, LEGS
@@ -44,7 +46,7 @@ def test_total_source_silence_expires_without_a_partial_barrier(tmp_path, comple
     assert account.permission == "HALTED"
     assert account.synthetic_broker.commands == []
     restarted = BookAccountOwner.boot(account.path, account.account, binding=binding(),
-                                     synthetic_broker=SyntheticBroker([]))
+                                     synthetic_broker=BootstrapBroker([]))
     assert restarted.authority == "INTERVENTION"
     with sqlite3.connect(account.path) as db:
         assert db.execute("SELECT reason FROM incidents WHERE reason='feed'").fetchall() == [("feed",)]
@@ -58,8 +60,8 @@ def test_expired_takeover_releases_capacity_and_delivers_rejection(tmp_path, exp
     if expired == "cutoff":
         bound["valid_until"] = NOW + timedelta(hours=2)
     account = BookAccountOwner.boot(tmp_path / "owner.sqlite", "synthetic-account",
-        binding=bound, synthetic_broker=SyntheticBroker([]))
-    account.activate_synthetic(now=NOW)
+        binding=bound, synthetic_broker=BootstrapBroker([]))
+    activate_fresh(account, now=NOW)
     runtime = FourLegRuntime(account, inert_adapters())
     runtime._mode_actions(Mode.NORMAL)
     account.dispatch(entry("orb_mnq_v7", 1), occurrence=account.make_occurrence("direct", "test_pr409_review3:65"), now=NOW)
@@ -79,7 +81,7 @@ def test_expired_takeover_releases_capacity_and_delivers_rejection(tmp_path, exp
     assert account.authority == ("INTERVENTION" if expired == "valid_until" else "SCHEDULED_EXIT")
     operations = account.observable_accounting()["operations"]
     restarted = BookAccountOwner.boot(account.path, account.account, binding=bound,
-                                     synthetic_broker=SyntheticBroker([]))
+                                     synthetic_broker=BootstrapBroker([]))
     assert restarted.exposure("aegis_6j") == (0, 0)
     assert restarted.observable_accounting()["operations"] == operations
 
@@ -124,7 +126,7 @@ def test_schema_two_missing_source_watch_is_corruption(tmp_path):
     before = account.path.read_bytes()
     with pytest.raises(AccountOwnerError, match="schema"):
         BookAccountOwner.boot(account.path, account.account, binding=binding(),
-                              synthetic_broker=SyntheticBroker([]))
+                              synthetic_broker=BootstrapBroker([]))
     assert account.path.read_bytes() == before
 
 

@@ -13,6 +13,8 @@ from test_four_leg_runtime import (
 )
 
 
+from book_bootstrap_fixtures import BootstrapBroker, activate_fresh
+
 def filled_owner(tmp_path):
     return owner(tmp_path, [BrokerResult("accepted", (
         BrokerFact.fill("base-fill", "base", "dj30_mym_p250", "entry", 3, 100, NOW),
@@ -197,8 +199,8 @@ def test_ready_takeover_rechecks_evidence_freshness(tmp_path, expired):
     if expired == "valid_until":
         bound["max_evidence_age"] = timedelta(hours=1)
     account = BookAccountOwner.boot(tmp_path / "owner.sqlite", "synthetic-account",
-                                   binding=bound, synthetic_broker=SyntheticBroker([]))
-    account.activate_synthetic(now=NOW)
+                                   binding=bound, synthetic_broker=BootstrapBroker([]))
+    activate_fresh(account, now=NOW)
     account.dispatch(entry("orb_mnq_v7", 1), occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:210"), now=NOW)
     aegis = entry("aegis_6j", 8)
     assert account.dispatch(aegis, occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:212"), now=NOW).refusal_reason == "takeover_pending"

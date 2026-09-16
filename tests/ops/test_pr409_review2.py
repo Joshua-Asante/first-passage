@@ -124,6 +124,7 @@ def test_definitive_rejection_releases_only_its_own_reservation(tmp_path, kind):
 
 @pytest.mark.parametrize("activate", [False, True])
 def test_record_only_requires_halted_at_submission(tmp_path, activate):
+    from c1_rail.book_synthetic_protection import SyntheticProtectionBroker
     operator = Operator()
     bound = binding()
     # An offline owner window containing the submission instant lets this test
@@ -137,8 +138,10 @@ def test_record_only_requires_halted_at_submission(tmp_path, activate):
         equity=100000, peak=100000, seal_digest=sha256_hex(b7_seal()))
     bound["policy_digest"] = "b" * 64
     bound["as_of"], bound["valid_until"] = NOW14 - timedelta(seconds=1), NOW14 + timedelta(minutes=5)
+    route = SyntheticProtectionBroker(account='synthetic-account', account_epoch='unbound', at=NOW14)
     account = BookAccountOwner.boot(tmp_path / "owner.sqlite", "synthetic-account", binding=bound,
-                                    synthetic_broker=SyntheticBroker([]))
+                                    synthetic_broker=route)
+    route.account_epoch = account.make_occurrence('direct', 'fixture-bind').account_epoch
     store = account.open_settlement(trusted_keys={operator.key_id: ["record_only"]}, now=NOW14)
     head = seat(store, b7_seal())
     proposed, sources = package(head, S14, NOW14, scope="record_only")

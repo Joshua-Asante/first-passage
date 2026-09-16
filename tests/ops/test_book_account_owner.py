@@ -45,6 +45,8 @@ SETTLED = SettledClose(
 )
 
 
+from book_bootstrap_fixtures import BootstrapBroker, activate_fresh
+
 def binding():
     return {
         "session": SESSION,
@@ -85,13 +87,15 @@ def intent(order_id="base", *, kind="entry", qty=5):
 
 
 def owner(tmp_path, results):
-    route = SyntheticBroker(results)
+    from c1_rail.book_synthetic_protection import SyntheticProtectionBroker
+    route = SyntheticProtectionBroker(results, account='synthetic-account', account_epoch='unbound', at=NOW)
     result = BookAccountOwner.boot(
         tmp_path / "owner.sqlite",
         "synthetic-account",
         binding=binding(),
         synthetic_broker=route,
     )
+    route.account_epoch = result.make_occurrence('direct', 'fixture-bind').account_epoch
     result.activate_synthetic(now=NOW)
     return result, route
 
@@ -103,7 +107,7 @@ def test_existing_empty_account_database_is_not_reinitialized(tmp_path):
     with pytest.raises(AccountOwnerError, match="state unavailable"):
         BookAccountOwner.boot(
             path, "synthetic-account", binding=binding(),
-            synthetic_broker=SyntheticBroker([]),
+            synthetic_broker=BootstrapBroker([]),
         )
 
     assert path.read_bytes() == b""
@@ -122,7 +126,7 @@ def test_transport_acceptance_never_creates_fill_credit_and_restart_retains_rese
         tmp_path / "owner.sqlite",
         "synthetic-account",
         binding=binding(),
-        synthetic_broker=SyntheticBroker([]),
+        synthetic_broker=BootstrapBroker([]),
     )
     assert restarted.permission == "HALTED"
     assert restarted.exposure("dj30_mym_p250") == (0, 3)
@@ -153,9 +157,9 @@ def test_zero_sizing_is_an_ordinary_refusal_not_an_incident(tmp_path):
     data["lifecycle_tiers"] = dict(data["lifecycle_tiers"], vanguard_mgc="RETIRED")
     account = BookAccountOwner.boot(
         tmp_path / "owner.sqlite", "synthetic-account", binding=data,
-        synthetic_broker=SyntheticBroker([]),
+        synthetic_broker=BootstrapBroker([]),
     )
-    account.activate_synthetic(now=NOW)
+    activate_fresh(account, now=NOW)
     action = OrderIntent("v", "vanguard_mgc", "entry", Side.BUY, 2, bar_time=NOW)
     outcome = handle_book_action(action, account, occurrence=account.make_occurrence("direct", "test_book_account_owner:160"), now=NOW)
 
@@ -305,10 +309,10 @@ def test_ambiguous_cutoff_cancel_is_retained_and_deadline_revokes_all_sends(tmp_
     assert len(route.commands) == before
 
 
-def test_protected_session_cancels_resting_orb_add_without_resizing_carried_fill(tmp_path):
+def test_protected_session_restart_preserves_carried_fill_and_pending_add_without_rearm(tmp_path):
     normal = binding()
     normal["settlement"] = replace(SETTLED, equity=100_000.0)
-    route = SyntheticBroker([
+    route = BootstrapBroker([
         BrokerResult("accepted", (
             BrokerFact.fill("orb-fill", "orb-base", "orb_mnq_v7", "entry", 1,
                             100.0, NOW),
@@ -318,7 +322,7 @@ def test_protected_session_cancels_resting_orb_add_without_resizing_carried_fill
     ])
     account = BookAccountOwner.boot(tmp_path / "owner.sqlite", "synthetic-account",
                                     binding=normal, synthetic_broker=route)
-    account.activate_synthetic(now=NOW)
+    activate_fresh(account, now=NOW)
     handle_book_action(OrderIntent("orb-base", "orb_mnq_v7", "entry", Side.BUY, 1,
                                    bar_time=NOW), account, occurrence=account.make_occurrence("direct", "test_book_account_owner:318"), now=NOW)
     handle_book_action(OrderIntent("orb-add", "orb_mnq_v7", "add", Side.BUY, 3,
@@ -339,18 +343,17 @@ def test_protected_session_cancels_resting_orb_add_without_resizing_carried_fill
                                       as_of=next_now - timedelta(hours=2))
     protected["as_of"] = next_now - timedelta(seconds=1)
     protected["valid_until"] = next_now + timedelta(minutes=5)
-    cancel_route = SyntheticBroker([
+    cancel_route = BootstrapBroker([
         BrokerResult("accepted", (BrokerFact.terminal("orb-add", "cancelled", 0,
                                                        next_now),)),
     ])
     restarted = BookAccountOwner.boot(tmp_path / "owner.sqlite", "synthetic-account",
                                       binding=protected, synthetic_broker=cancel_route)
-    restarted.activate_synthetic(now=next_now)
-
-    assert cancel_route.commands[0].kind == "cancel"
-    assert cancel_route.commands[0].target_operation_id == "orb-add"
-    assert restarted.exposure("orb_mnq_v7") == (1, 0)
-    assert restarted.permission == "RUNNING"
+    with pytest.raises(AccountOwnerError, match='entitlement'):
+        restarted.activate_synthetic(now=next_now)
+    assert cancel_route.commands == []
+    assert restarted.exposure("orb_mnq_v7") == (1, 1)
+    assert restarted.permission == "HALTED"
 
 
 def test_aegis_takeover_waits_for_displaced_leg_quiescence_before_send(tmp_path):
@@ -378,19 +381,19 @@ def test_aegis_takeover_waits_for_displaced_leg_quiescence_before_send(tmp_path)
     ("after_send", 1, 1),
 ])
 def test_crash_cuts_retain_obligation_and_never_retry_on_boot(tmp_path, cut, commands, attempts):
-    route = SyntheticBroker([BrokerResult("accepted", (
+    route = BootstrapBroker([BrokerResult("accepted", (
         BrokerFact.fill("remote-fill", "base", "dj30_mym_p250", "entry", 1,
                         100.0, NOW),
     ))])
     account = BookAccountOwner.boot(
         tmp_path / "owner.sqlite", "synthetic-account", binding=binding(),
         synthetic_broker=route, crash_at=cut)
-    account.activate_synthetic(now=NOW)
+    activate_fresh(account, now=NOW)
     with pytest.raises(SimulatedOwnerCrash):
         account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_book_account_owner:407"), now=NOW)
     assert len(route.commands) == commands
 
-    recovery_route = SyntheticBroker([])
+    recovery_route = BootstrapBroker([])
     restarted = BookAccountOwner.boot(
         tmp_path / "owner.sqlite", "synthetic-account", binding=binding(),
         synthetic_broker=recovery_route)
@@ -404,7 +407,7 @@ def test_fresh_boot_fences_the_previous_owner_actor(tmp_path):
     old, old_route = owner(tmp_path, [])
     fresh = BookAccountOwner.boot(
         tmp_path / "owner.sqlite", "synthetic-account", binding=binding(),
-        synthetic_broker=SyntheticBroker([]))
+        synthetic_broker=BootstrapBroker([]))
     with pytest.raises(AccountOwnerError, match="stale account owner boot"):
         old.dispatch(intent(), occurrence=old.make_occurrence("direct", "test_book_account_owner:426"), now=NOW)
     with pytest.raises(AccountOwnerError, match="stale account owner boot"):
@@ -433,5 +436,5 @@ def test_same_session_runtime_binding_cannot_be_replaced_on_restart(tmp_path):
     with pytest.raises(AccountOwnerError, match="binding changed within session"):
         BookAccountOwner.boot(
             account.path, "synthetic-account", binding=changed,
-            synthetic_broker=SyntheticBroker([]))
+            synthetic_broker=BootstrapBroker([]))
     assert account.status()["runtime_binding_digest"] == retained_digest

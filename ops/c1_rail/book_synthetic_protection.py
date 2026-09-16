@@ -192,10 +192,18 @@ class SyntheticProtectionBroker(SyntheticBroker):
         self._outcomes[operation_id] = 'applied'
         return (fact,)
 
+    def read_bootstrap_inventory(self, request: InventoryRead):
+        """Synchronous offline read at the current synthetic clock, without a send."""
+        return self._read_inventory(request, bootstrap=True)
+
     def read_inventory(self, request: InventoryRead):
+        return self._read_inventory(request, bootstrap=False)
+
+    def _read_inventory(self, request: InventoryRead, *, bootstrap):
         if (request.occurrence.account, request.occurrence.account_epoch) != (self.account, self.account_epoch):
             raise ValueError('foreign inventory read')
-        if self.drop_reads or self._clock is None or self._clock <= request.prepared_at:
+        if (self.drop_reads or self._clock is None or self._clock < request.prepared_at
+                or not bootstrap and self._clock == request.prepared_at):
             return None
         self._inventory_sequence += 1
         legs = request.scope_legs
