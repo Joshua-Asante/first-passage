@@ -62,7 +62,9 @@ make audit          # report-only diagnostics
 make validate       # data manifests + pine
 ```
 
-Install hooks once per clone: `bash scripts/install_hooks.sh`.
+Install hooks once per clone: `bash scripts/install_hooks.sh`. Install the
+check dependencies first; see
+[Installing the check dependencies](#installing-the-check-dependencies).
 
 Per-script layer classification is owned by
 `check_boundaries.py`'s `SCRIPTS_LAYER` (fallback **governance**). The
@@ -75,6 +77,42 @@ python scripts/check_repo_map_scripts_table.py --check
 ```
 
 Do not hand-edit the table. `--check` is not wired into `gates.yml`.
+
+### Installing the check dependencies
+
+Local clones and CI install the hash-pinned lock with:
+
+```text
+python -m pip install --require-hashes -r requirements-ops.lock
+```
+
+On a Debian-based remote container, such as Claude Code on the web, that
+command can abort before it installs anything (observed 2026-09-15):
+
+```text
+ERROR: Cannot uninstall PyYAML 6.0.1, RECORD file not found. Hint: The package was installed by debian.
+```
+
+Apt-owned packages in `/usr/lib/python3/dist-packages` carry no pip RECORD, so
+pip cannot uninstall one whose version differs from a lock pin, and the whole
+run stops. `markdown_it` then stays missing and the check tier cannot run.
+PyYAML is only the first collision; a per-package fix does not hold. Use this
+once per fresh container:
+
+```text
+python -m pip install --require-hashes --ignore-installed -r requirements-ops.lock
+```
+
+Hash checking stays on. Every pin is written to
+`/usr/local/lib/python3.X/dist-packages`, which precedes the apt copies on
+`sys.path`; no apt-owned file is touched. Add `--break-system-packages` only if
+pip reports `externally-managed-environment`. After one such run the plain
+command is a no-op on that container; after a lock bump on a reused container,
+use the plain command. Do not change the lock pins to match the apt versions.
+GitHub Actions runners use `setup-python` and never see this. If the install
+should be automatic on Claude Code on the web, it belongs in that environment's
+setup script, which runs once and is cached, not in a SessionStart hook in
+[`settings.json`](../.claude/settings.json).
 
 ## Skill lifecycle
 
@@ -145,10 +183,15 @@ release. Deployed-only extras need triage, not automatic deletion/import;
 `notion-mcp-api-patterns` remains [archived](../docs/pursuits/d6-notion-mcp-api-patterns-user-skill.md).
 
 [`check_skill_deploy_sync.py`](check_skill_deploy_sync.py) checks existence of
-literal ADR-cited deployed scripts, not equality: no deployment root is `SKIP` /
-`NOT CHECKED`; an existing root missing a cited script fails. Re-running this
-check against an existing bundle requires no publication. Any repair release
-requires the explicit reviewed-revision/target procedure above.
+literal ADR-cited deployed scripts, not equality. It is `SKIP` / `NOT CHECKED`
+when there is no deployment root, or when the root holds none of this repo's
+skill directories, cited or not, directly under it (a managed remote
+container's harness-owned `~/.claude/skills/`, for example); nested
+marketplace copies do not count as the bundle. A root that has any repo
+skill's directory but lacks a cited script fails, including a bundle that
+lost the cited skill itself, and a partial bundle is drift, not a skip. Re-running
+this check against an existing bundle requires no publication. Any repair
+release requires the explicit reviewed-revision/target procedure above.
 
 The June 4 quarterly expected-10-skills / old-name reread is retired, not passed
 ([record](../docs/adr/TOMBSTONES.md#2026-09-08-brief-and-skill-governance)). Live
