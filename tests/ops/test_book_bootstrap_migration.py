@@ -367,14 +367,14 @@ def test_retained_bootstrap_proof_requires_all_inventory_identities(tmp_path, fi
 
 
 @pytest.mark.parametrize('field,value', [('cap_allocations', 999), ('lifecycle_tiers', 'UNKNOWN')])
-def test_fresh_bootstrap_validates_admission_binding(tmp_path, field, value):
-    from book_bootstrap_fixtures import BootstrapBroker, activate_fresh
+def test_fresh_boot_rejects_invalid_admission_binding_before_retention(tmp_path, field, value):
+    from book_bootstrap_fixtures import BootstrapBroker
     bound = binding()
     bound[field] = dict(bound[field], vanguard_mgc=value)
-    account = BookAccountOwner.boot(tmp_path / 'owner.sqlite', 'synthetic-account', binding=bound, synthetic_broker=BootstrapBroker())
+    path = tmp_path / 'owner.sqlite'
     with pytest.raises(AccountOwnerError):
-        activate_fresh(account)
-    assert account.permission == 'HALTED'
+        BookAccountOwner.boot(path, 'synthetic-account', binding=bound, synthetic_broker=BootstrapBroker())
+    assert not path.exists()
 
 
 @pytest.mark.parametrize('version', [1, 2, 3])

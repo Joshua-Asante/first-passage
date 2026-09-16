@@ -8,6 +8,7 @@ attempts, facts and reservations remain owned.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from contextlib import closing, contextmanager, nullcontext
 from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timedelta
@@ -42,7 +43,9 @@ from .book_capacity import (
     exposures,
     project_capacity,
 )
-from .book_policy import BOOK_LEGS, is_protected, leg
+from .book_policy import (
+    ACCOUNT_MICRO_CAP, BOOK_LEGS, _positive_risk, is_protected, leg, lifecycle_multiplier,
+)
 from .book_sizing_context import (
     BookAccountContext,
     BookExposure,
@@ -428,11 +431,33 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             _time(binding[key], key)
         if binding["valid_until"] <= binding["as_of"]:
             raise AccountOwnerError("invalid evidence validity window")
-        if set(binding["lifecycle_tiers"]) != {row.leg_id for row in BOOK_LEGS}:
+        # Validate and snapshot every per-leg map before it is retained or used
+        # to grant bootstrap authority. A shallow copy still aliases callers.
+        binding = dict(binding)
+        for key in ("lifecycle_tiers", "cap_allocations", "risk_dollars"):
+            if not isinstance(binding[key], Mapping):
+                raise AccountOwnerError(f"{key} must be a mapping")
+            binding[key] = dict(binding[key])
+        leg_ids = {row.leg_id for row in BOOK_LEGS}
+        if set(binding["lifecycle_tiers"]) != leg_ids:
             raise AccountOwnerError("complete lifecycle binding required")
-        if set(binding["cap_allocations"]) != {row.leg_id for row in BOOK_LEGS}:
+        if set(binding["cap_allocations"]) != leg_ids:
             raise AccountOwnerError("complete allocation binding required")
-        return dict(binding)
+        if not set(binding["risk_dollars"]) <= leg_ids:
+            raise AccountOwnerError("unknown risk-dollar leg")
+        try:
+            for tier in binding["lifecycle_tiers"].values():
+                if not isinstance(tier, str):
+                    raise ValueError("lifecycle tier must be a string")
+                lifecycle_multiplier(tier)
+            for allocation in binding["cap_allocations"].values():
+                if type(allocation) is not int or not 0 <= allocation <= ACCOUNT_MICRO_CAP:
+                    raise ValueError("invalid cap allocation")
+            for risk in binding["risk_dollars"].values():
+                _positive_risk(risk, "risk_dollars")
+        except (ValueError, TypeError, OverflowError) as exc:
+            raise AccountOwnerError(str(exc)) from exc
+        return binding
 
     @contextmanager
     def _transaction(self, *, create=False):
@@ -1137,6 +1162,12 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
         return quantities
 
     def _reserve_close(self, db, action):
+        # A cancel receipt cannot prove that the risk-increasing remainder is
+        # gone. Enforce this at the common allocator for adapter, direct,
+        # schedule and takeover closes, before binding any reduction quantity.
+        if any(row.leg_id == action.leg_id and row.reserved
+               for row in exposures(self._capacity(db))):
+            return None, "entry_remainder_pending"
         available = self._open_fill_quantities(db, action.leg_id)
         if action.scope_fill_ids is not None:
             if len(set(action.scope_fill_ids)) != len(action.scope_fill_ids):

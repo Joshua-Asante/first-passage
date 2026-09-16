@@ -223,3 +223,65 @@ Independent review accepted the changes after reproducing and correcting a tempo
 Focused integration: 208 passed across review4, owner lifecycle, review3, bootstrap/migration and takeover phases. Unified malformed-key regressions: 2 passed. Check-tier repository gates returned 0, with the existing absent private Pine/data warnings. Final full-suite evidence follows below.
 
 Final reviewed tree: full operations **2,651 passed, 15 skipped**, two existing seaborn warnings, 181.88s; signing-disabled integrated execution **313 passed**, 73.96s. Local interpreter Python 3.13.2; check-tier gates and diff whitespace check passed. No live transport or deployment was used.
+
+### Related-case follow-up on `17aa7ec` — 2026-09-16
+
+Integration owner: the coordinating implementer. The latest three review findings
+share two bounded failure families. A close must not allocate exposure while a
+same-leg entry/add has an executable remainder: cancellation transport status is
+not terminal evidence. Configuration and package boundaries must establish the
+types their consumers rely on before retaining authority or performing lookups;
+validated mutable caller maps must not remain aliased after boot.
+
+| Related path or input | Shared rule | Disposition and evidence |
+| --- | --- | --- |
+| Adapter/direct exit and flat, explicit fill scope | Live entry/add remainder can recreate exposure after close | Common `_reserve_close` checks retained same-leg reserved capacity before allocating; accepted, unknown and rejected cancellation tests retain exposure until terminal evidence. |
+| Unfilled/partially filled add; no cancellation yet | Another same-leg risk order can still fill | Same common guard, including scoped closes of the earlier base. |
+| Fully filled entry without a separate terminal; unrelated-leg live order | No executable remainder for the closing leg | Valid nearby cases remain admissible; no account-wide close prohibition. |
+| Scheduled and takeover closes | Same allocation owner, with additional evidence prerequisites | Existing scheduler terminal gate and takeover complete-inventory phases retained; shared allocator adds defense at final allocation. |
+| Duplicate occurrence, new evaluation, restart | Refusal identity and reservations survive reconstruction | Same occurrence retains refusal; new occurrence after terminal can size from reconciled late fills. Runtime batch regression replays the refusal and retained exposure after boot. |
+| Settlement and nested flatness bases | Set lookup requires a scalar string | Existing settlement-basis guard retained; flatness-basis guard added at package shape boundary. Missing equity keys already return `equity_keys`. |
+| Venue equity valuation basis | Evidence description must be text, not a coerced collection | Reject list/object filename representations; legitimate daily-flat `None` remains supported. |
+| Standalone calculation, signed store and unified owner | Malformed package must return a refusal without accepting a close or raising a storage error | Pure and signed entry-point regressions; signed imports are local to signing tests. |
+| Lifecycle, allocation and risk maps | Consumers index/get per-leg mappings, not iterables of keys | Validate all three as mappings and copy them before retention; lifecycle and allocation still require all legs, risk remains sparse. Validate values with existing policy laws; Decimal/Fraction risks preserved. |
+| Caller mutation after boot | Runtime sizing must use the retained validated binding | Detached map copies keep later mutation from changing quantity or retained digest; plain dict and Mapping implementations tested. |
+| Source rows, coverage windows and transaction identities | Adjacent nested strings used as mapping keys | Existing validators type-check strings before membership/indexing in `account_close_evidence` and `_v10_transactions`; no change required. |
+
+Execution checklist:
+
+- [x] Trace governing implementation and consumers before patching; no sizing constants or strategy parameters changed.
+- [x] Reproduce direct-close, nested-equity and binding failures against the original code; initial corrected boundary run: 49 failed, 11 passed (two integration fixtures subsequently corrected).
+- [x] Fix the common close allocator and the two input boundaries; initial focused integration: 149 passed.
+- [x] Run final related cases, full operations, required repository gates and independent review; results below.
+
+Commands: `python -m pytest tests/ops -q -p no:cacheprovider --tb=short` and
+`python scripts/gate_manifest.py --tier check`. Tests are offline synthetic; no
+production capability, merge or deployment claim follows from this evidence.
+
+Final local evidence (working-tree changes above `17aa7ecb94f27fd9690391977af7c7f8f8fa7206`,
+Python 3.14; remote head rechecked unchanged):
+
+- Final operations run: **2,718 passed, 15 skipped**, two existing seaborn
+  deprecation warnings, exit 0, 151.18 seconds (`tmp-related-ops-final.txt`).
+- Final related-case file: **67 passed**, including all six signing cases.
+  Signing-disabled run: **61 passed, 6 skipped**, so runtime cases do not depend
+  on the optional cryptography package.
+- Check-tier gates: exit 0 (`tmp-related-gates.txt`); existing absent-private-data,
+  absent Pine and historical documentation advisories remain.
+- Python 3.11 grammar parsing passed for all five changed/new Python files;
+  `git diff --check` passed. This is grammar compatibility, not a Python 3.11
+  runtime result.
+- Targeted Pylint with repository import roots reports only the unchanged
+  `_boot_locked(owner)` E0213 naming diagnostic already present in the base.
+  It returned exit 2; a clean lint run is not claimed.
+- Independent read-only review accepted the complete changes and subsequently
+  checked the three updated legacy test expectations. The two invalid-binding
+  tests now assert rejection before database creation; the valid partial-close
+  fixture supplies terminal cancellation evidence first. The reviewer did not
+  independently execute the full suite.
+
+All discovered in-scope paths have a disposition. At the local acceptance
+checkpoint, these changes were uncommitted and remote CI had not validated them.
+The subsequent operator request authorizes committing and pushing this patch to
+PR 409 and requesting a Codex review. The local evidence above applies to the
+code being committed; post-push CI and review are separate checks.

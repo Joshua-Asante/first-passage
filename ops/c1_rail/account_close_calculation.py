@@ -116,6 +116,8 @@ def _v1_shape(c: _Ctx):
     for key, allowed in (("equity", _EQUITY_KEYS), ("ledger", _LEDGER_KEYS), ("attestations", _ATTESTATIONS)):
         if not isinstance(p[key], dict) or set(p[key]) != allowed:
             return f"{key}_keys"
+    if not isinstance(p["equity"]["flatness_basis"], str):
+        return "flatness_basis"
     if not isinstance(p["dashboard"], dict) or set(p["dashboard"]) != {"balance", "trailing_threshold", "captured_utc"}:
         return "dashboard_keys"
     if not isinstance(p["positions"], dict) or set(p["positions"]) != {"open_positions", "working_orders", "captured_utc"}:
@@ -366,8 +368,9 @@ def _v11_close_equity(c: _Ctx):
             return "flatness_uncertain"
         return None
     venue_equity = _decimal(equity["equity_at_effective_close"])
-    if venue_equity is None or venue_equity != c.net_equity or not str(equity["valuation_basis"] or "").strip() \
-            or "close_equity" not in c.roles or c.roles["close_equity"]["file"] not in str(equity["valuation_basis"]):
+    if venue_equity is None or venue_equity != c.net_equity or not isinstance(equity["valuation_basis"], str) \
+            or not equity["valuation_basis"].strip() or "close_equity" not in c.roles \
+            or c.roles["close_equity"]["file"] not in equity["valuation_basis"]:
         return "venue_equity_at_close"
     return None
 

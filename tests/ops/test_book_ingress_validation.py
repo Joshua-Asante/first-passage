@@ -202,6 +202,7 @@ def test_zero_trailing_activation_bare_entry_and_partial_quantity(tmp_path):
     assert fills(engine.process_bar(bar(1, 100, 102, 99, 100)))[0].price == 100.75
     account, route = owner(tmp_path, [BrokerResult("accepted", (
         BrokerFact.fill("partial", "base", "dj30_mym_p250", "entry", 1, 100, NOW),
+        BrokerFact.terminal("base", "cancelled", 1, NOW),
     )), BrokerResult("accepted")])
     account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_book_ingress_validation:206"), now=NOW)
     assert route.commands[0].action.bracket is None
@@ -211,7 +212,7 @@ def test_zero_trailing_activation_bare_entry_and_partial_quantity(tmp_path):
     assert result.quantity == 1
     assert route.commands[1].action.qty == 1
     assert route.commands[1].action.scope_fill_ids == ("partial",)
-    assert account.exposure("dj30_mym_p250") == (1, 2)
+    assert account.exposure("dj30_mym_p250") == (1, 0)
 
 
 @pytest.mark.parametrize("changes", [
