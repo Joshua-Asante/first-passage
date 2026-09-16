@@ -500,6 +500,12 @@ class BookAccountOwner:
 
     def _validate_settlement_binding(self, db, now):
         if self.settlement_store is None:
+            attached = db.execute(
+                "SELECT 1 FROM settlement_attachment WHERE singleton=1").fetchone()
+            if attached is not None:
+                self._halt_db(db, "settlement-verifier-unavailable:" + now.isoformat(),
+                              "protection", now)
+                return "settlement_verifier_unavailable"
             return None
         result = self.settlement_store.settled_close_from(db)
         if not isinstance(result, tuple):

@@ -101,6 +101,20 @@ def test_lost_settlement_tables_cannot_repeat_first_owner_attachment(tmp_path):
         owner.open_settlement(trusted_keys={KEY_ID: ["submit_account_close"]}, now=NOW)
 
 
+def test_restart_cannot_bypass_attached_settlement_verifier(tmp_path):
+    owner, _store = integrated(tmp_path)
+    restarted = BookAccountOwner.boot(
+        owner.path, "synthetic-account", binding=binding(),
+        synthetic_broker=SyntheticBroker([]),
+    )
+
+    with pytest.raises(AccountOwnerError, match="settlement_verifier_unavailable"):
+        restarted.activate_synthetic(now=datetime(2026, 9, 15, 14, tzinfo=timezone.utc))
+
+    assert restarted.permission == "HALTED"
+    assert restarted.authority == "INTERVENTION"
+
+
 def test_signed_synthetic_close_flows_through_unified_owner_into_listener_sizing(tmp_path):
     operator = Operator()
     initial = binding()
