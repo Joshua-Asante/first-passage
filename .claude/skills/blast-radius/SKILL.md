@@ -1,6 +1,6 @@
 ---
 name: blast-radius
-description: After editing docs, ADRs, posture lines, STATE, skills, catalogs, or other linked judgments, surface the blast radius — owners and mirrors that may still restate the prior finding. Use when stopping after substantive edits, when the Cursor stop hook or Claude hookify nudge fires, or on "tidy", "blast radius", "propagate", "grep-sweep", "source-of-truth fracture". Report-first; repair only clear silent restatements owed by this turn. Sibling of fable-judge (claims vs artifacts), brief-authoring Phase 2 (ADR/lock authoring sweep), and Rule 6 skew-audit (lock windows). Does not touch Pine, dd_protection constants, or allocations.
+description: After editing docs, ADRs, posture lines, STATE, skills, catalogs, or other linked judgments, surface the blast radius — owners and mirrors that may still restate the prior finding. Use when stopping after substantive edits, when the Claude hookify nudge fires, or on "tidy", "blast radius", "propagate", "grep-sweep", "source-of-truth fracture". Report-first; repair only clear silent restatements owed by this turn. Sibling of fable-judge (claims vs artifacts), brief-authoring Phase 2 (ADR/lock authoring sweep), and Rule 6 skew-audit (lock windows). Does not touch Pine, dd_protection constants, or allocations.
 ---
 
 # blast-radius — surface linked drift after a change
@@ -40,7 +40,7 @@ Search for each **old** token (and the decision slug if any) across:
 
 ```bash
 # adapt tokens from the diff
-rg -n --hidden -g '!.git' -g '!.cursor/hooks/state' "<old-token>" \
+rg -n --hidden -g '!.git' "<old-token>" \
   CLAUDE.md STATE.md PIPELINES.md REPO_MAP.md README.md \
   docs/ .claude/skills/ lab/CATALOG.md ops/instruments/ core/strategies/
 ```
@@ -131,6 +131,6 @@ Default after a hook nudge: **report + fix clear silent restatements and stale o
 
 | Surface | Path | Notes |
 |---|---|---|
-| Skill (tracked) | `.claude/skills/blast-radius/` | Auto-discovered by CC/Cursor skill loaders |
-| Cursor stop + edit ledger (tracked) | `.cursor/hooks.json` → `record_edit.py` + `blast_radius_stop.py` | `loop_limit: 1`; state under `.cursor/hooks/state/` (gitignored) |
+| Skill (tracked) | `.claude/skills/blast-radius/` | Auto-discovered by the Claude Code skill loader |
+| Stop nudge (tracked) | [`references/hookify-blast-radius.local.md`](references/hookify-blast-radius.local.md) | Sole carrier since 2026-09-15; the Cursor stop-hook mirror retired with that harness |
 | Claude hookify (local) | copy `references/hookify-blast-radius.local.md` → `.claude/hookify.blast-radius.local.md` | `.local.md` is gitignored by convention — install once per clone |

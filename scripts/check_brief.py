@@ -480,6 +480,12 @@ _HANDOFF_READY_BRIEF_RE = re.compile(
 # Genuine CC/Cursor handoff self-declaration. `(?!-ready)` keeps
 # "CC-handoff-ready" (the Inquire-style qualifier) from counting.
 _HANDOFF_DECL_RE = re.compile(
+# `cursor` stays in this alternation after the 2026-09-15 Cursor retirement:
+# two FROZEN historical briefs self-declare `**Brief type:** Cursor handoff`
+# (docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md,
+#  docs/briefs/handoffs/2026-07-24-cursor-handoff-agent-surface-posture-sync.md).
+# Dropping it would silently reclassify those records. The regex reads history;
+# it does not authorize a Cursor lane.
     r"\b(?:cc[/\s-]*cursor|cursor|cc)[\s-]+handoff\b(?!-ready)",
     re.IGNORECASE,
 )

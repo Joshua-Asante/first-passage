@@ -1,8 +1,8 @@
 ---
 name: task-routing
 description: >-
-  Routes Cursor Task/subagent work to local vs cloud from dependency checks.
-  Use automatically before launching a Task (or any subagent spawn that picks
+  Routes Task/subagent work to local vs cloud from dependency checks. Use
+  automatically before launching a Task (or any subagent spawn that picks
   environment), and when choosing whether work should run locally or in the cloud.
 ---
 
@@ -48,6 +48,11 @@ Action: launching local | waiting for cloud GO
 
 ## Related
 
-`cursor-fleet`'s per-packet dispatch gate re-applies this same local-only checklist (its own "Test 0
-per packet" step) at dispatch time for each Cursor-fleet packet — this skill is the canonical home
-for that checklist; a change here should be checked against that step too.
+This skill is the **canonical home** for the local-only checklist. Any multi-packet dispatch
+re-applies it per packet at dispatch time, not once at authoring time — the dispatch-moment
+re-check is the load-bearing part, because a packet's environment premises go stale between
+authoring and dispatch.
+
+The retired `cursor-fleet` skill carried that per-packet restatement; it is removed with the
+Cursor lane ([worker-surface allocation](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md),
+Revision 2026-09-15). Nothing was lost: the checklist itself never moved from here.

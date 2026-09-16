@@ -1,9 +1,9 @@
-# Cursor handoff — Track A / A2: Linux image validation for the c1 listener and daemon
+# Worker handoff — Track A / A2: Linux image validation for the c1 listener and daemon
 
-**Type:** cc_handoff (frozen-spec implementation; Cursor variant with recommended defaults)
+**Type:** cc_handoff (frozen-spec implementation; recommended-defaults variant)
 **Date:** 2026-09-10
 **Status:** dispatch after PR #332 and PR #334 are merged; re-run the daemon half after A1b merges
-**Spawn target:** Cursor (or Codex) — `cursor/*` branch, PR, no merge
+**Spawn target:** Codex — `codex/*` branch, PR, no merge. (Authored 2026-09-10 naming Cursor; re-targeted 2026-09-15 when Cursor was retired as a worker surface — [worker-surface allocation](../../adr/2026-07-14-cc-cursor-surface-allocation.md), Revision 2026-09-15. The frozen spec below is unchanged.)
 **Parent:** [Track A plan](../../superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md) §3 · parent re-runs the workflow and reviews
 **Authority:** no Fly access, no deploy, no secrets. This PR adds a GitHub Actions workflow and a script; it changes no image, no `ops/` code, and no acceptance artifact.
 
@@ -40,7 +40,7 @@ Anchor each with `git log -1 --format=%h -- <path>`.
 
 PR #332 validated its 33-file change on Windows with five Docker COPY-subset import checks and states plainly: "An actual Linux image build was not performed." Two code paths in that change execute only on POSIX — the parent-directory `fsync` in `atomic_json` / `atomic_write` and the `fcntl.flock` branches of the ceremony locks — and the in-container arming interlock has never been exercised on the new listener image. Track A cannot deploy either image without this evidence.
 
-**Deliverables (one PR, `cursor/*` branch):**
+**Deliverables (one PR, `codex/*` branch):**
 
 1. `.github/workflows/c1-image-validation.yml` — one job per image (`listener`, `daemon`), each calling the script below with a target argument; artifacts: container logs and the pass/fail table.
 2. `scripts/c1_image_validation.sh` — bash, runnable on any Linux host with Docker (`./scripts/c1_image_validation.sh listener|daemon|all`), every check a named step printing `PASS <id>` / `FAIL <id>` and exiting non-zero on any FAIL. No check may be skipped silently.
