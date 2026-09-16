@@ -7,7 +7,7 @@ description: Use this skill whenever Joshua suspects a deterministic code defect
 
 Narrow skill for deterministic code defects in the `first_passage` Python/shell stack. Sibling to `inqhiori` (structural / statistical investigation) and `ooda-loop` (tactical / recoverable / tempo). Filling a real gap: the existing methodology skills are wrong tools for "why is this function returning the wrong number" — they would treat a code bug as if it were a falsifiable hypothesis, demand a Pre-Q gate, and waste budget on investigation discipline that doesn't apply to deterministic code.
 
-The 4-phase structure is adapted from `obra/superpowers:systematic-debugging`. The adaptation: Joshua's stack has no unit-test scaffold to run RED-GREEN-REFACTOR against, and code defects are validated against historical CSV ground truth + Monte Carlo invariants, not against assertions. Phases 1–3 transfer directly; Phase 4 is reshaped around his actual verification gates.
+The 4-phase structure is adapted from `obra/superpowers:systematic-debugging`. The adaptation as first written (2026-04): the stack then had no unit-test scaffold to run RED-GREEN-REFACTOR against, so code defects were validated against historical CSV ground truth + Monte Carlo invariants. `tests/` has since grown a pytest suite (`make test`), so Phase 4 now also requires a regression test that reproduces the original failure (item 7). Phases 1–3 transfer directly; Phase 4 is reshaped around the actual verification gates.
 
 ---
 
@@ -56,7 +56,7 @@ The "authority" matters. Expected values come from one of: (a) a reference imple
 
 ## 2. Phase 2 — Component-boundary logging
 
-The load-bearing technique. Adapted from `systematic-debugging`. The principle: instrument every component boundary in the suspect path, run once to gather evidence, then analyze the evidence to identify which component is failing.
+The load-bearing technique for wrong-value bugs. Adapted from `systematic-debugging`. For crash-shaped bugs (an exception raised deep in a call chain) and state-shaped bugs (a wrong value with no obvious writer), `root-cause-first`'s backward call-chain trace and first-unintended-write hunt replace or precede this forward pass. The principle: instrument every component boundary in the suspect path, run once to gather evidence, then analyze the evidence to identify which component is failing.
 
 **For the `first_passage` stack specifically, component boundaries are:**
 
@@ -115,7 +115,7 @@ Once the failing component is identified, form a hypothesis about WHY it fails. 
 
 ## 4. Phase 4 — Fix and verification
 
-Once the hypothesis is confirmed, the fix follows. Joshua's stack has no unit-test framework to RED-GREEN-REFACTOR against, so verification is structured around the existing gates instead.
+Once the hypothesis is confirmed, the fix follows — through `root-cause-first`'s band-aid gate: a guard, default, retry, broad `except`, `check=False` or widened parser is not a fix until the mechanism is named in one sentence, and the report carries its `ROOT CAUSE:` / `FIX:` / `VERIFICATION:` block. Verification is structured around the existing gates plus the regression test in item 7.
 
 **Fix discipline:**
 
@@ -130,6 +130,8 @@ Once the hypothesis is confirmed, the fix follows. Joshua's stack has no unit-te
 5. **Diff scope check.** Diff the fix against HEAD. Files modified should match the fix's logical scope exactly. Any surprise file changes are forbidden-move leakage at the IDE level.
 
 6. **Twin sweep.** A defect found at one site is presumed to recur wherever the construct was copied, until a search says otherwise. Name the exact wrong construct (the expression, not the symptom), `rg` the whole repo for it, and record verbatim in the report: `TWINS: searched <pattern> — found <N> other sites: <files|none>`. Fix them or list them; a completeness claim with no search behind it is verification theater. Grounding: the `daily_loss_pct: None` division TypeError lived at four sites (`dd_protection.py`, `core/mc/modes.py`, `core/mc/simulation.py`, `core/mc/preflight.py`) and was fixed as a class in PR #356 only because all four were swept. (Adopted 2026-07-15 from the fable-method port; port record is in the private archive.)
+
+7. **Regression test pins the original failure.** A fix that lands in repository code lands with a test that reproduces the Phase 1.1 symptom, fails on the pre-fix code and passes after — not a test of the fix's new behaviour in isolation. Grounding: fleet Packet C (`docs/SESSIONS.md` 2026-09-04f) guarded `scripts/repo_hygiene.py`'s subprocess call and shipped no missing-`git` test, so `git` absent exited 0 with an empty report; the fix round removed the guard and `test_build_report_without_git_raises` in `tests/test_repo_hygiene.py` now pins the raise. A fix PR whose only test would also pass on the pre-fix code has not verified anything. When the confirmed defect lives in an unmodifiable external source (the JPY case in §7: TradingView's own calculation), the fix is a consumer-side rule and its verification is two artifacts instead: the captured failing evidence (the offending input and the observed wrong output, pinned where the rule is recorded) and a consumer-side test that fails when the rule is absent — the guard rejects the offending input class — plus the lesson capture in §6.6. A synthetic test that does not exercise the original failure is theater in either case.
 
 ---
 
@@ -197,6 +199,7 @@ When this skill exits — either because the bug is fixed, or because §0 select
 | `prop-firm-challenge` | The "bug" is actually a live-ops or Rule-0 fact (the dd_protection rule is doing what it's supposed to do; the user's expectation was wrong) |
 | `brief-authoring` lesson capture | A class-failure (>2 hours, identifies a category of bug not a one-off) graduates to the lessons registry |
 | `brief-authoring` ADR | Phase 4.5 architecture concern that warrants a structural decision artifact |
+| `root-cause-first` | At the moment of writing or reviewing the fix — the band-aid gate, the one-sentence mechanism, the backward trace / hidden-write hunt, and the `ROOT CAUSE:` / `FIX:` / `VERIFICATION:` block |
 | `trade-csv-reconcile` | The bug turns out to be data-quality, not code |
 
 ---
