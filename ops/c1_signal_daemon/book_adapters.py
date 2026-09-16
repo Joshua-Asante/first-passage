@@ -61,20 +61,27 @@ ADAPTERS: tuple[AdapterSpec, ...] = (
 )
 ADAPTER_BY_LEG: dict[str, AdapterSpec] = {a.leg_id: a for a in ADAPTERS}
 
-# Digest of the private ``effective_inputs.json`` (reconstructed 2026-09-03 capture
-# inputs; docs/notes/2026-09-11-track-b-adapters-and-book-rules.md). The loader
-# refuses any other bytes; re-pin only with a recorded reason.
+# Digest of the historical private ``effective_inputs.json`` (reconstructed
+# 2026-09-03 capture inputs).  These accepted bytes remain immutable provenance.
 EFFECTIVE_INPUTS_SHA256 = "66406dee955fa69f237fde60eacdd24259a08d5320352d98e59889acaa18158d"
+
+# Phase-2 runtime successor: preserve every historical input, but bind ORB's
+# executable base quantity to the shared fixed-book law before constructing the
+# adapter.  The digest is over canonical effective values after that derivation;
+# it is deliberately distinct from the historical source-byte identity above.
+RUNTIME_EFFECTIVE_INPUTS_SHA256 = "9d4d4e1d622a3fb0ae37b7b20f8bdf960244f9e66b5d88ded79db4de6089dade"
 
 
 class AdapterRegistry(dict):
     """Adapter mapping carrying the loader receipt checked at runtime bind."""
 
-    def __init__(self, values, *, kind, runtime_identities, effective_inputs_sha256):
+    def __init__(self, values, *, kind, runtime_identities, effective_inputs_sha256,
+                 historical_effective_inputs_sha256=None):
         super().__init__(values)
         self.kind = kind
         self.runtime_identities = dict(runtime_identities)
         self.effective_inputs_sha256 = effective_inputs_sha256
+        self.historical_effective_inputs_sha256 = historical_effective_inputs_sha256
 
 
 def synthetic_adapter_registry(values):
@@ -84,6 +91,7 @@ def synthetic_adapter_registry(values):
         runtime_identities={leg_id: type(adapter).__name__
                             for leg_id, adapter in values.items()},
         effective_inputs_sha256="synthetic",
+        historical_effective_inputs_sha256="synthetic",
     )
 
 
@@ -146,9 +154,21 @@ def load_book_adapters(*, mode=None):
     values = json.loads(inputs_bytes.decode("utf-8"))
     if set(values) != {"_note"} | set(ADAPTER_BY_LEG):
         raise ValueError("effective input registry is incomplete")
+    # The historical ORB chart ran a quantity incompatible with the ratified
+    # fixed-book base.  Preserve its source bytes above, then derive the reviewed
+    # runtime successor from the shared law rather than editing private history.
+    from c1_rail.book_policy import leg
+    runtime_values = json.loads(json.dumps(values))
+    runtime_values["orb_mnq_v7"]["adapter"]["qty"] = leg(
+        "orb_mnq_v7").normal_base_values[0]
+    runtime_bytes = json.dumps(
+        runtime_values, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    ).encode("utf-8")
+    if hashlib.sha256(runtime_bytes).hexdigest() != RUNTIME_EFFECTIVE_INPUTS_SHA256:
+        raise ValueError("derived runtime input identity does not match the reviewed successor")
     result = {}
     for spec_row in ADAPTERS:
-        row = values[spec_row.leg_id]
+        row = runtime_values[spec_row.leg_id]
         if not isinstance(row, dict) or set(row) != {"adapter", "emulator", "qty_scale"}:
             raise ValueError("effective input row is incomplete")
         module = load_port(spec_row.leg_id)
@@ -160,5 +180,6 @@ def load_book_adapters(*, mode=None):
                          "runtime_sha256": row.runtime_sha256}
             for row in ADAPTERS
         },
-        effective_inputs_sha256=EFFECTIVE_INPUTS_SHA256,
+        effective_inputs_sha256=RUNTIME_EFFECTIVE_INPUTS_SHA256,
+        historical_effective_inputs_sha256=EFFECTIVE_INPUTS_SHA256,
     )

@@ -36,7 +36,8 @@ COPY ops/c1_rail/__init__.py ops/c1_rail/m1_stage1_contract.py \
      ops/c1_rail/crosstrade_payload.py ops/c1_rail/book_policy.py \
      ops/c1_rail/book_sizing_context.py ops/c1_rail/book_halt.py \
      ops/c1_rail/book_account_lock.py ops/c1_rail/book_account_owner.py \
-     ops/c1_rail/book_capacity.py ops/c1_rail/book_session_calendar.py \
+     ops/c1_rail/book_capacity.py ops/c1_rail/book_schedule.py \
+     ops/c1_rail/book_session_calendar.py \
      ops/c1_rail/book_settlement.py ops/c1_rail/account_close_calculation.py \
      ops/c1_rail/account_close_evidence.py ops/c1_rail/account_close_ledger.py \
      ops/c1_rail/ed25519_verify.py ops/c1_rail/settlement_signing.py \

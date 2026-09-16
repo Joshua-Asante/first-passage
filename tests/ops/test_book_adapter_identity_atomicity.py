@@ -82,6 +82,13 @@ def test_effective_inputs_are_parsed_from_the_verified_snapshot(tmp_path, monkey
     monkeypatch.setattr(Path, "read_bytes", read_then_change)
     monkeypatch.setattr(book_adapters, "load_port", lambda leg_id: SimpleNamespace(
         build=lambda **values: SimpleNamespace(leg_id=leg_id, **values)))
+    runtime_values = json.loads(accepted_bytes)
+    runtime_values["orb_mnq_v7"]["adapter"]["qty"] = 1
+    runtime_bytes = json.dumps(
+        runtime_values, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    ).encode()
+    monkeypatch.setattr(
+        book_adapters, "RUNTIME_EFFECTIVE_INPUTS_SHA256", _digest(runtime_bytes))
 
     loaded = book_adapters.load_book_adapters()
 

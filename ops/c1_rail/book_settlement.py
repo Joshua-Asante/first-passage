@@ -396,7 +396,7 @@ class SettlementStore:
         with store._tx(create=True) as db:
             tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             if "state" not in tables:
-                if tables and "owner_state" not in tables:
+                if (existed and not tables) or (tables and "owner_state" not in tables):
                     raise SettlementError("settlement state unavailable")
                 cls._create(db)
                 values = {"version": STORE_VERSION, "account": account, "boot_id": store.boot_id, "calendar_digest": calendar_digest,

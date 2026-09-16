@@ -124,12 +124,15 @@ class FourLegRuntime:
     @staticmethod
     def _sort_actions(actions):
         # Risk reductions/cancels are serialized before risk-add; within a class
-        # the accepted D-B8 leg priority is the only winner-selection order.
-        kind_rank = {"exit": 0, "flat": 0, "Cancel": 0, "BracketAmend": 1,
-                     "entry": 2, "add": 3}
+        # the accepted D-B8 leg priority chooses the capacity winner. Entry
+        # precedes add only as a same-leg tie-break, never across leg priority.
+        class_rank = {"exit": 0, "flat": 0, "Cancel": 0, "BracketAmend": 1,
+                      "entry": 2, "add": 2}
+        subtype_rank = {"entry": 0, "add": 1}
         return sorted(actions, key=lambda action: (
-            kind_rank.get(getattr(action, "kind", type(action).__name__), 9),
+            class_rank.get(getattr(action, "kind", type(action).__name__), 9),
             _LEG_RANK[action.leg_id],
+            subtype_rank.get(getattr(action, "kind", type(action).__name__), 0),
             getattr(action, "order_id", "") or "",
         ))
 

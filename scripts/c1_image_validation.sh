@@ -98,6 +98,7 @@ LISTENER_FILES=(
   /app/ops/c1_rail/crosstrade_payload.py
   /app/ops/c1_rail/m1_stage1_contract.py
   /app/ops/c1_rail/m1_stage1_agent_input.py
+  /app/ops/c1_rail/book_schedule.py
   /app/ops/c1_rail/m1_stage1_control.py
   /app/ops/c1_signal_daemon/__init__.py
   /app/ops/c1_signal_daemon/book_protocol.py

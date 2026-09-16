@@ -105,6 +105,21 @@ def boot(tmp_path, operator, now=NOW14, scopes=("submit_account_close", "record_
                                 calendar_digest=CALENDAR.calendar_digest, policy_digest=POLICY_DIGEST, now=now)
 
 
+def test_existing_empty_standalone_database_is_not_initialized_as_fresh_authority(tmp_path):
+    operator = Operator()
+    path = tmp_path / "settlement.sqlite"
+    path.touch()
+
+    with pytest.raises(SettlementError, match="state unavailable"):
+        SettlementStore.boot(
+            path, ACCOUNT, trusted_keys={operator.key_id: ["submit_account_close"]},
+            calendar_digest=CALENDAR.calendar_digest, policy_digest=POLICY_DIGEST,
+            now=NOW14,
+        )
+
+    assert path.read_bytes() == b""
+
+
 def seated(tmp_path, operator, now=NOW14):
     store = boot(tmp_path, operator, now)
     receipt = seat(store, b7_seal())

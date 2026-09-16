@@ -95,7 +95,9 @@ PHASE1_ADMISSION_IDENTITIES = {
 
 
 def _binding_record(binding):
-    from c1_signal_daemon.book_adapters import ADAPTERS, EFFECTIVE_INPUTS_SHA256
+    from c1_signal_daemon.book_adapters import (
+        ADAPTERS, EFFECTIVE_INPUTS_SHA256, RUNTIME_EFFECTIVE_INPUTS_SHA256,
+    )
     session = binding["session"]
     settlement = binding["settlement"]
     policy = binding["policy"]
@@ -117,7 +119,8 @@ def _binding_record(binding):
                          "runtime_sha256": row.runtime_sha256}
             for row in ADAPTERS
         },
-        "effective_inputs_sha256": EFFECTIVE_INPUTS_SHA256,
+        "historical_effective_inputs_sha256": EFFECTIVE_INPUTS_SHA256,
+        "effective_inputs_sha256": RUNTIME_EFFECTIVE_INPUTS_SHA256,
         "phase1_admission": PHASE1_ADMISSION_IDENTITIES,
     }
 
@@ -281,10 +284,13 @@ class BookAccountOwner:
     def boot(cls, path, account, *, binding, synthetic_broker=None, crash_at=None):
         owner = cls(path, account, binding, synthetic_broker, crash_at)
         owner.path.parent.mkdir(parents=True, exist_ok=True)
+        existed = owner.path.exists()
         with owner.serializer.acquire(), owner._transaction(create=True) as db:
             tables = {row[0] for row in db.execute(
                 "SELECT name FROM sqlite_master WHERE type='table'")}
             if not tables:
+                if existed:
+                    raise AccountOwnerError("account owner state unavailable")
                 for name, fields in _SCHEMA.items():
                     db.execute(f"CREATE TABLE {name} ({fields})")
                 db.execute("INSERT INTO owner_state VALUES (1, ?, ?, ?, 1, 'HALTED', "
@@ -313,7 +319,8 @@ class BookAccountOwner:
                     previous = json.loads(retained[1])
                     current = json.loads(raw)
                     immutable = ("policy", "policy_digest", "lifecycle_tiers", "cap_allocations",
-                                 "risk_dollars", "runtime_identities", "effective_inputs_sha256",
+                                 "risk_dollars", "runtime_identities",
+                                 "historical_effective_inputs_sha256", "effective_inputs_sha256",
                                  "phase1_admission")
                     if (owner.binding["session"].prior_session_id != retained[0]
                             or owner.binding["settlement"].session_id != retained[0]
@@ -1301,6 +1308,13 @@ class BookAccountOwner:
                 self._halt_db(db, "unknown-fact:" + fact.fact_id, "execution", now)
                 return ()
             leg_id, operation_kind, operation_body = operation
+            if (fact.kind == "fill"
+                    and (fact.leg_id != leg_id or fact.order_kind != operation_kind)):
+                db.execute("INSERT INTO broker_facts VALUES (?, ?, NULL)",
+                           (fact.fact_id, raw))
+                self._halt_db(db, "fact-identity:" + fact.fact_id,
+                              "execution", now)
+                return ()
             boundary_time = ((boundary_time or fact.as_of).isoformat()
                              if isinstance(boundary_time or fact.as_of, datetime)
                              else json.loads(operation_body).get("bar_time"))

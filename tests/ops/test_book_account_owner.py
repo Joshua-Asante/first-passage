@@ -96,6 +96,19 @@ def owner(tmp_path, results):
     return result, route
 
 
+def test_existing_empty_account_database_is_not_reinitialized(tmp_path):
+    path = tmp_path / "owner.sqlite"
+    path.touch()
+
+    with pytest.raises(AccountOwnerError, match="state unavailable"):
+        BookAccountOwner.boot(
+            path, "synthetic-account", binding=binding(),
+            synthetic_broker=SyntheticBroker([]),
+        )
+
+    assert path.read_bytes() == b""
+
+
 def test_transport_acceptance_never_creates_fill_credit_and_restart_retains_reservation(tmp_path):
     account, route = owner(tmp_path, [BrokerResult("accepted")])
     outcome = handle_book_action(intent(), account, now=NOW)
@@ -222,6 +235,27 @@ def test_stale_or_conflicting_broker_fact_retains_reservation_and_halts(tmp_path
     assert account.permission == "HALTED"
     assert account.authority == "INTERVENTION"
     assert account.incidents[-1]["reason"] == "execution"
+
+
+@pytest.mark.parametrize(("leg_id", "order_kind"), [
+    ("vanguard_mgc", "entry"),
+    ("dj30_mym_p250", "add"),
+])
+def test_fill_identity_conflict_retains_reservation_without_feedback(
+        tmp_path, leg_id, order_kind):
+    account, _ = owner(tmp_path, [BrokerResult("accepted")])
+    handle_book_action(intent(), account, now=NOW)
+
+    feedback = account.observe(
+        BrokerFact.fill("conflicting-fill", "base", leg_id, order_kind,
+                        1, 100.0, NOW),
+        now=NOW,
+    )
+
+    assert feedback == ()
+    assert account.exposure("dj30_mym_p250") == (0, 3)
+    assert account.pending_feedback == ()
+    assert account.authority == "INTERVENTION"
 
 
 def test_cutoff_keeps_only_scheduled_exit_authority_and_flatten_uses_confirmed_facts(tmp_path):

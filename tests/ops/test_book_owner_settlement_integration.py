@@ -1,14 +1,22 @@
 """The repaired close verifier and runtime owner share one writer boundary."""
 import json
-from datetime import datetime, timezone
+from dataclasses import replace
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from c1_rail.book_policy import candidate_book_protection_policy
-from c1_rail.book_settlement import Receipt, Refusal, sha256_hex
+from c1_rail.book_settlement import Receipt, Refusal, canonical_bytes, sha256_hex
 from c1_rail.book_settlement import SettlementStore
-from c1_rail.book_account_owner import AccountOwnerError, BookAccountOwner, SyntheticBroker
-from test_book_account_owner import binding
+from c1_rail.book_account_owner import (
+    AccountOwnerError, BookAccountOwner, BrokerResult, SyntheticBroker,
+)
+from c1_rail.c1_rail_listener import handle_book_action
+from test_book_account_owner import binding, intent
+from test_book_settlement import (
+    CALENDAR, NOW14, Operator, S14, S15, b7_seal, package, seat,
+)
+from settlement_signing import signing_envelope
 
 
 KEY_ID = "1f75cea0c36941f8964d393490b6886bcbcdb010b4bc67dd45e925d1a04604aa"
@@ -70,6 +78,73 @@ def test_shared_database_boot_does_not_arm_and_survives_owner_restart(tmp_path):
         trusted_keys={KEY_ID: ["submit_account_close", "record_only"]}, now=NOW)
     assert restarted.permission == "HALTED"
     assert restored_store.status()["restore_pending"] is True
+
+
+def test_signed_synthetic_close_flows_through_unified_owner_into_listener_sizing(tmp_path):
+    operator = Operator()
+    initial = binding()
+    initial_session = replace(
+        initial["session"], session_id=S14, prior_session_id=SESSION,
+        calendar_digest=CALENDAR.calendar_digest,
+        opens_at=initial["session"].opens_at - timedelta(days=1),
+        risk_add_cutoff=initial["session"].risk_add_cutoff - timedelta(days=1),
+        flatten_start=initial["session"].flatten_start - timedelta(days=1),
+        own_flat_deadline=initial["session"].own_flat_deadline - timedelta(days=1),
+        closes_at=initial["session"].closes_at - timedelta(days=1),
+    )
+    initial["session"] = initial_session
+    initial["policy_digest"] = "b" * 64
+    initial["settlement"] = replace(
+        initial["settlement"], session_id=SESSION, as_of=CLOSE,
+        equity=100_000.0, peak=100_000.0,
+    )
+    initial["as_of"] -= timedelta(days=1)
+    initial["valid_until"] -= timedelta(days=1)
+    owner = BookAccountOwner.boot(
+        tmp_path / "owner.sqlite", "synthetic-account", binding=initial,
+        synthetic_broker=SyntheticBroker([]),
+    )
+    store = owner.open_settlement(
+        trusted_keys={operator.key_id: ["submit_account_close", "record_only"]},
+        now=NOW,
+    )
+    head = seat(store, b7_seal())
+    proposed, sources = package(head, S14, NOW14)
+    raw = owner.issue_settlement_challenge(
+        scope="submit_account_close", target_session_id=S15,
+        proposed_session_id=S14,
+        package_sha256=sha256_hex(canonical_bytes(proposed)),
+        calendar=CALENDAR, now=NOW14,
+    )
+    envelope = signing_envelope(raw, signed_at=NOW14)
+    receipt = owner.submit_settlement(
+        envelope=envelope, signature=operator.sign(envelope), key_id=operator.key_id,
+        package=proposed, sources=sources, calendar=CALENDAR, now=NOW14,
+    )
+    assert isinstance(receipt, Receipt) and receipt.grants_activation is False
+    settled, _mode = store.settled_close()
+
+    next_binding = binding()
+    next_binding["session"] = replace(
+        next_binding["session"], calendar_digest=CALENDAR.calendar_digest)
+    next_binding["policy_digest"] = "b" * 64
+    next_binding["settlement"] = settled
+    next_owner = BookAccountOwner.boot(
+        owner.path, "synthetic-account", binding=next_binding,
+        synthetic_broker=SyntheticBroker([BrokerResult("accepted")]),
+    )
+    next_store = next_owner.open_settlement(
+        trusted_keys={operator.key_id: ["submit_account_close", "record_only"]},
+        now=datetime(2026, 9, 15, 13, 59, tzinfo=timezone.utc),
+    )
+    next_store.reconcile_restore(datetime(2026, 9, 15, 13, 59, 1, tzinfo=timezone.utc))
+    next_owner.activate_synthetic(now=datetime(2026, 9, 15, 14, tzinfo=timezone.utc))
+
+    result = handle_book_action(intent(), next_owner, now=datetime(2026, 9, 15, 14, tzinfo=timezone.utc))
+
+    assert result.refusal_reason is None
+    assert result.quantity == 8
+    assert result.transport_state == "accepted"
 
 
 def test_revision_and_account_intervention_commit_before_failing_notification(tmp_path):

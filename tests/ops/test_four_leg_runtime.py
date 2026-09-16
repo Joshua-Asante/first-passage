@@ -94,6 +94,13 @@ def entry(leg_id, qty, *, stop=1):
                        bar_time=NOW)
 
 
+def add(leg_id, qty, *, stop=1):
+    side = Side.SELL if leg_id == "aegis_6j" else Side.BUY
+    return OrderIntent("add:" + leg_id, leg_id, "add", side, qty,
+                       timing=FillTiming.THIS_CLOSE, stop_dist_pts=stop,
+                       bar_time=NOW)
+
+
 def adapters():
     return synthetic_adapter_registry({
         "aegis_6j": Adapter("aegis_6j", [entry("aegis_6j", 8)]),
@@ -143,6 +150,18 @@ def test_same_bar_capacity_winner_is_independent_of_arrival_order(tmp_path, arri
         assert runtime.adapters[leg_id].events == [
             ("reject", "entry:" + leg_id, None)
         ]
+
+
+def test_same_bar_risk_adds_use_leg_priority_before_entry_add_tiebreak():
+    ordered = FourLegRuntime._sort_actions([
+        entry("dj30_mym_p250", 5, stop=24),
+        add("aegis_6j", 1),
+    ])
+
+    assert [(action.leg_id, action.kind) for action in ordered] == [
+        ("aegis_6j", "add"),
+        ("dj30_mym_p250", "entry"),
+    ]
 
 
 def test_local_capacity_refusals_are_durable_adapter_feedback(tmp_path):
@@ -318,6 +337,32 @@ def test_accepted_private_runtime_identities_load_and_cross_the_durable_barrier(
         result = runtime.on_completed_bar(leg_id, bars()[leg_id], now=NOW)
     assert result == ()
     assert account.retained_barriers[0]["completed"] is True
+
+
+def test_accepted_private_orb_trigger_reaches_shared_fixed_base(tmp_path, monkeypatch):
+    from c1_signal_daemon.pine_ta import ET
+
+    repo = Path(__file__).resolve().parents[2]
+    primary = repo if repo.name == "multi_firm_operations" else repo.parents[1]
+    private_root = (primary / "lab" / "analysis" / "c1" /
+                    "tradeify_seven_strategy_phase1_2026-09" / "inputs" /
+                    "private_overrides" / "op1" / "2026-09-14-seven" /
+                    "step3-coverage" / "corrected-ports")
+    monkeypatch.setenv("FP_PORT_ROOT", str(private_root))
+    adapter = load_book_adapters()["orb_mnq_v7"]
+    actions = []
+    start = datetime(2026, 9, 15, 9, 0, tzinfo=ET)
+    for offset in range(0, 75, 15):
+        instant = (start + timedelta(minutes=offset)).astimezone(timezone.utc)
+        actions.extend(adapter.on_bar(Bar(instant, 100, 101, 99, 100, 10)))
+    entries = [action for action in actions if getattr(action, "kind", None) == "entry"]
+    assert entries and entries[0].qty == 1
+
+    account = owner(tmp_path, [BrokerResult("accepted")])
+    result = account.dispatch(entries[0], now=NOW)
+
+    assert result.refusal_reason is None
+    assert account.synthetic_broker.commands[0].quantity == 1
 
 
 def test_schedule_and_feedback_are_replay_equivalent_after_same_bar_contention(tmp_path):
