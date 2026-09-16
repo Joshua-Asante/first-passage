@@ -19,6 +19,7 @@ from pathlib import Path
 import sqlite3
 import threading
 from uuid import uuid4
+from lib.validation import require_finite_number
 
 from .book_account_lock import AccountSerializer
 from .book_capacity import (
@@ -509,12 +510,17 @@ class BookAccountOwner:
 
     def submit_settlement(self, *, envelope, signature, key_id, package, sources,
                           calendar, now, on_halt=None):
+        from .book_settlement import Refusal
+
         if self.settlement_store is None:
             raise AccountOwnerError("settlement store is not attached")
         with self._unified_settlement_transaction() as db:
             if self._settlement_attachment_state(db) != "ATTACHED":
                 raise AccountOwnerError("settlement verifier is not durably attached")
             state = self._state(db)
+            if (isinstance(envelope, dict) and envelope.get("scope") == "record_only"
+                    and state["permission"] != "HALTED"):
+                return Refusal("record_only_requires_halted")
             result = self.settlement_store.submit(
                 envelope=envelope, signature=signature, key_id=key_id,
                 package=package, sources=sources, halt_generation=state["generation"],
@@ -872,7 +878,7 @@ class BookAccountOwner:
             db.execute("UPDATE feedback SET delivered=1, checkpoint=? WHERE fact_id=?",
                        (raw, fact_id))
 
-    def record_local_refusal(self, action, reason, *, now):
+    def record_local_refusal(self, action, reason, *, now, operation_id=None, boundary_time=None):
         """Retain one final owner refusal as adapter feedback before delivery.
 
         Local policy/capacity decisions have no broker fact, but adapters still
@@ -883,10 +889,13 @@ class BookAccountOwner:
         _text(reason, "local refusal")
         if not isinstance(action, (OrderIntent, BracketAmend, Cancel)):
             raise AccountOwnerError("typed book action required")
-        order_id = action.order_id
-        boundary_time = getattr(action, "bar_time", None) or now
+        order_id = (operation_id if isinstance(action, BracketAmend) else action.order_id)
+        if isinstance(action, BracketAmend):
+            _text(order_id, "refused control operation")
+        boundary_time = getattr(action, "bar_time", None) or boundary_time or now
         _time(boundary_time, "local refusal boundary")
-        identity = _body({"action": asdict(action), "reason": reason})
+        identity = _body({"action": asdict(action), "reason": reason,
+                          "boundary_time": boundary_time})
         fact_id = "local-refusal:" + hashlib.sha256(identity.encode("utf-8")).hexdigest()
         event = ExecutionEvent("reject", action.leg_id, boundary_time,
                                order_id=order_id, detail=reason)
@@ -1280,14 +1289,17 @@ class BookAccountOwner:
             if self.crash_at == "after_send":
                 raise SimulatedOwnerCrash("after transport before fact journal")
             events = []
-            for fact in result.facts:
+            facts = result.facts
+            if result.state == "rejected" and not facts:
+                facts = (BrokerFact.terminal(operation_id, "rejected", 0, now),)
+            for fact in facts:
                 events.extend(self._observe_locked(
                     fact, now=now,
                     boundary_time=getattr(action, "bar_time", None) or now))
             with self._transaction() as db:
                 db.execute("UPDATE attempts SET state=?, observation=? WHERE attempt_id=?",
                            (result.state.upper(), _body({"state": result.state,
-                                                        "facts": [f.fact_id for f in result.facts]}), attempt_id))
+                                                        "facts": [f.fact_id for f in facts]}), attempt_id))
                 if result.facts and isinstance(action, BracketAmend):
                     db.execute("UPDATE operations SET status='observed' WHERE operation_id=?",
                                (operation_id,))
@@ -1458,6 +1470,15 @@ class BookAccountOwner:
             with self._transaction() as db:
                 self._halt_db(db, "fact-time:" + str(uuid4()), "execution", now)
             return ()
+        if fact.kind == "fill":
+            try:
+                price = require_finite_number(fact.price, field="fill price", strictly_positive=True)
+                if type(fact.price) not in (int, float):
+                    fact = replace(fact, price=price)
+            except (ValueError, TypeError, OverflowError):
+                with self._transaction() as db:
+                    self._halt_db(db, "invalid-fill-price:" + str(fact.fact_id), "execution", now)
+                return ()
         with self._transaction() as db:
             previous = db.execute("SELECT body, feedback FROM broker_facts WHERE fact_id=?",
                                   (fact.fact_id,)).fetchone()
@@ -1542,7 +1563,17 @@ class BookAccountOwner:
                     db.execute("UPDATE operations SET status='terminal' WHERE operation_id=?",
                                (fact.operation_id,))
             elif fact.kind == "terminal":
-                if operation_kind in ("exit", "flat"):
+                if operation_kind in ("cancel", "bracketamend"):
+                    if fact.status != "rejected" or type(fact.cumulative_filled) is not int \
+                            or fact.cumulative_filled != 0:
+                        self._halt_db(db, "invalid-control-terminal:" + fact.fact_id,
+                                      "execution", now)
+                        db.execute("INSERT INTO broker_facts VALUES (?, ?, NULL)", (fact.fact_id, raw))
+                        return ()
+                    db.execute("UPDATE operations SET status='terminal' WHERE operation_id=?",
+                               (fact.operation_id,))
+                    capacity = self._capacity(db)
+                elif operation_kind in ("exit", "flat"):
                     close_row = db.execute(
                         "SELECT allocations, status FROM close_reservations WHERE operation_id=?",
                         (fact.operation_id,)).fetchone()

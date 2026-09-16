@@ -35,6 +35,9 @@ CAL_DIR = REPO / "ops" / "calendars"
 CALENDAR = load_ratified_calendar(CAL_DIR / "book_session_calendar_2026-09.json",
                                   overlay_path=CAL_DIR / "book_closure_overlay.json",
                                   ratified_path=CAL_DIR / "RATIFIED.json", repo_root=REPO)
+# These synthetic B7 receipts predate the real artifact's September ratification.
+# Model prior ratification explicitly; never claim this is its historical timestamp.
+CALENDAR = replace(CALENDAR, ratified_at=datetime(2026, 1, 1, tzinfo=timezone.utc))
 POLICY = candidate_book_protection_policy()
 POLICY_DIGEST = "b" * 64
 ACCOUNT = "synthetic-account"
@@ -89,14 +92,14 @@ def b7_seal(*, balance="100000", peak="100000", valid_until="2026-09-13T18:00:00
 
 
 def seat(store, seal: bytes, *, now=datetime(2026, 9, 12, 14, tzinfo=timezone.utc), tool=TOOL_SHA256,
-         session_id=None, close=None, expected=None, retain_history=True):
+         session_id=None, close=None, expected=None, retain_history=True, calendar=CALENDAR):
     kwargs = {}
     if retain_history and session_id is None and close is None:
         kwargs = {"cash_history_bytes": b7_cash_history(json.loads(seal)["values"]["balance"]),
                   "report_timezone": "America/New_York"}
     return store.bootstrap_b7(seal, expected_seal_sha256=expected or sha256_hex(seal), expected_tool_sha256=tool,
                               session_id=session_id or B7_SESSION, effective_close_utc=close or B7_CLOSE,
-                              policy=POLICY, now=now, **kwargs)
+                              policy=POLICY, now=now, calendar=calendar, **kwargs)
 
 
 def boot(tmp_path, operator, now=NOW14, scopes=("submit_account_close", "record_only")):

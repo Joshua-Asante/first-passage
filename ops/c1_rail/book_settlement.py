@@ -500,7 +500,8 @@ class SettlementStore:
     def bootstrap_b7(self, seal_bytes: bytes, *, expected_seal_sha256: str, expected_tool_sha256: str,
                      session_id: str, effective_close_utc: datetime, policy: ProtectionPolicy,
                      now: datetime, cash_history_bytes: bytes | None = None,
-                     report_timezone: str | None = None) -> Receipt | Refusal:
+                     report_timezone: str | None = None,
+                     calendar: SessionCalendar | None = None) -> Receipt | Refusal:
         """Seat the chain head from the authenticated B7 snapshot; distinct from any later close."""
         policy = require_policy(policy)
         if not _aware(now) or not _aware(effective_close_utc):
@@ -578,6 +579,22 @@ class SettlementStore:
                 return Refusal("restore_reconciliation_required")
             if state["phase"] != "EMPTY" or self._chain(db):
                 return Refusal("chain_already_seated")
+            if not isinstance(calendar, SessionCalendar):
+                return Refusal("calendar_required")
+            if calendar.calendar_digest != state["calendar_digest"]:
+                return Refusal("calendar_digest_mismatch")
+            if not _aware(calendar.ratified_at) or calendar.ratified_at > now:
+                return Refusal("calendar_not_ratified")
+            session = calendar.schedule_for(session_id)
+            if session is None:
+                return Refusal("calendar_session_unavailable")
+            if session.closes_at != effective_close_utc:
+                return Refusal("effective_close_not_session_close")
+            successors = tuple(row for row in calendar.rows if row.prior_session_id == session_id)
+            if len(successors) != 1:
+                return Refusal("calendar_successor_unavailable")
+            if successors[0].opens_at != expiry:
+                return Refusal("seal_reopen_mismatch")
             digest = sha256_hex(seal_bytes)
             declared = {}
             if cash_history_bytes is not None:

@@ -39,12 +39,15 @@ def test_thursday_close_cannot_use_friday_captures(tmp_path):
     ("2026-03-06T22:00:00Z", "2026-03-06T17:10:00-05:00", "2026-03-06T17:15:00-05:00",
      "2026-03-08T18:00:00-04:00", "2026-03-06T22:16:00Z"),
 ])
-def test_b7_boundary_uses_local_reopen_across_dst(tmp_path, close, captured, sealed, expiry, received):
+def test_b7_boundary_requires_calendar_coverage_including_dst(tmp_path, close, captured, sealed, expiry, received):
     store = boot(tmp_path, Operator())
     result = seat(store, boundary_seal(captured, sealed, expiry),
                   close=datetime.fromisoformat(close), session_id="tradeify-account-day:" + close[:10],
                   now=datetime.fromisoformat(received))
-    assert isinstance(result, Receipt), result
+    if close.startswith("2026-09"):
+        assert isinstance(result, Receipt), result
+    else:
+        assert result == Refusal("calendar_session_unavailable")
 
 
 def revised_close(tmp_path):
@@ -301,7 +304,7 @@ def _seat_with_history(store, data, *, report_timezone="America/New_York", expec
     return store.bootstrap_b7(seal, expected_seal_sha256=sha256_hex(seal), expected_tool_sha256=TOOL_SHA256,
         session_id=B7_SESSION, effective_close_utc=B7_CLOSE, policy=POLICY,
         now=datetime(2026, 9, 12, 14, tzinfo=timezone.utc),
-        cash_history_bytes=data, report_timezone=report_timezone)
+        cash_history_bytes=data, report_timezone=report_timezone, calendar=CALENDAR)
 
 
 @pytest.mark.parametrize("mutation", ["source_edit", "source_delete", "timezone_edit", "binding_delete"])

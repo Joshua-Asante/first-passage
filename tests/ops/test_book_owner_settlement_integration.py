@@ -16,7 +16,7 @@ from c1_rail.book_account_owner import (
     SyntheticBroker,
 )
 from c1_rail.c1_rail_listener import handle_book_action
-from test_book_account_owner import binding, intent
+from test_book_account_owner import binding as owner_binding, intent
 from test_book_settlement import (
     CALENDAR, NOW14, Operator, S14, S15, b7_seal, package, seat,
 )
@@ -28,6 +28,12 @@ TOOL = "7" * 64
 SESSION = "tradeify-account-day:2026-09-11"
 CLOSE = datetime(2026, 9, 11, 21, tzinfo=timezone.utc)
 NOW = datetime(2026, 9, 12, 14, tzinfo=timezone.utc)
+
+
+def binding():
+    result = owner_binding()
+    result["session"] = replace(result["session"], calendar_digest=CALENDAR.calendar_digest)
+    return result
 
 
 def seal_bytes():
@@ -90,7 +96,7 @@ def test_lost_settlement_tables_cannot_repeat_first_owner_attachment(tmp_path):
         seal_bytes(), expected_seal_sha256=sha256_hex(seal_bytes()),
         expected_tool_sha256=TOOL, session_id=SESSION,
         effective_close_utc=CLOSE, policy=candidate_book_protection_policy(),
-        now=NOW,
+        now=NOW, calendar=CALENDAR,
     )
     assert isinstance(receipt, Receipt)
     with sqlite3.connect(owner.path) as db:
@@ -240,7 +246,7 @@ def test_revision_and_account_intervention_commit_before_failing_notification(tm
     receipt = store.bootstrap_b7(
         seal, expected_seal_sha256=sha256_hex(seal), expected_tool_sha256=TOOL,
         session_id=SESSION, effective_close_utc=CLOSE,
-        policy=candidate_book_protection_policy(), now=NOW,
+        policy=candidate_book_protection_policy(), now=NOW, calendar=CALENDAR,
     )
     assert isinstance(receipt, Receipt)
     evidence = b"synthetic corrected observation"
