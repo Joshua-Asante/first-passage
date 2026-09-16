@@ -142,10 +142,15 @@ release. Deployed-only extras need triage, not automatic deletion/import;
 `notion-mcp-api-patterns` remains [archived](../docs/pursuits/d6-notion-mcp-api-patterns-user-skill.md).
 
 [`check_skill_deploy_sync.py`](check_skill_deploy_sync.py) checks existence of
-literal ADR-cited deployed scripts, not equality: no deployment root is `SKIP` /
-`NOT CHECKED`; an existing root missing a cited script fails. Re-running this
-check against an existing bundle requires no publication. Any repair release
-requires the explicit reviewed-revision/target procedure above.
+literal ADR-cited deployed scripts, not equality. It is `SKIP` / `NOT CHECKED`
+when there is no deployment root, or when the root holds none of this repo's
+skill directories, cited or not, directly under it (a managed remote
+container's harness-owned `~/.claude/skills/`, for example); nested
+marketplace copies do not count as the bundle. A root that has any repo
+skill's directory but lacks a cited script fails, including a bundle that
+lost the cited skill itself, and a partial bundle is drift, not a skip. Re-running
+this check against an existing bundle requires no publication. Any repair
+release requires the explicit reviewed-revision/target procedure above.
 
 The June 4 quarterly expected-10-skills / old-name reread is retired, not passed
 ([record](../docs/adr/TOMBSTONES.md#2026-09-08-brief-and-skill-governance)). Live
