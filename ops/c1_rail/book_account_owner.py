@@ -21,6 +21,8 @@ import threading
 from uuid import uuid4
 from lib.validation import require_finite_number
 
+from c1_signal_daemon.book_validation import InputViolation, validate_action
+
 from .book_account_lock import AccountSerializer
 from .book_capacity import (
     CapacityState,
@@ -1058,6 +1060,33 @@ class BookAccountOwner:
                 raise AccountOwnerError("conflicting incident identity")
             self._halt_db(db, incident_id, reason, now)
 
+    def record_input_incident(self, incident_id: str, violation: InputViolation,
+                              *, source: str, now: datetime) -> None:
+        """Commit a bounded diagnostic and authority fence without encoding input."""
+        with self.serializer.acquire():
+            self._record_input_incident_locked(incident_id, violation, source=source, now=now)
+
+    def _record_input_incident_locked(self, incident_id, violation, *, source, now):
+        _text(incident_id, "incident")
+        _time(now)
+        diagnostic = _canonical({"source": source, "code": violation.code,
+                                 "field": violation.field})
+        conflict = False
+        try:
+            with self._transaction() as db:
+                previous = db.execute("SELECT reason FROM incidents WHERE incident_id=?",
+                                      (incident_id,)).fetchone()
+                if previous and previous[0] != diagnostic:
+                    conflict = True
+                    self._halt_db(db, "input-conflict:" + incident_id, "identity", now)
+                else:
+                    self._halt_db(db, incident_id, diagnostic, now)
+        except Exception:
+            self._input_send_suppressed = True
+            raise
+        if conflict:
+            raise AccountOwnerError("conflicting input incident identity")
+
     def _base_evidence(self, db, leg_id):
         capacity = self._capacity(db)
         remaining = self._open_fill_quantities(db, leg_id, subtract_reservations=False)
@@ -1168,11 +1197,18 @@ class BookAccountOwner:
 
     def _dispatch_locked(self, action, *, now):
         _time(now)
-        if not isinstance(action, (OrderIntent, BracketAmend, Cancel)):
-            raise AccountOwnerError("typed book action required")
+        if getattr(self, "_input_send_suppressed", False):
+            raise AccountOwnerError("local send suppression after input incident storage failure")
+        violation = validate_action(action)
+        if violation is not None:
+            self._record_input_incident_locked("input:" + str(uuid4()), violation,
+                                       source="direct", now=now)
+            raise AccountOwnerError("invalid action: " + violation.code + ":" + violation.field)
         action_body = _body(asdict(action))
         operation_id = (action.order_id if isinstance(action, OrderIntent) else
                         "control:" + hashlib.sha256(action_body.encode("utf-8")).hexdigest()[:24])
+        if isinstance(action, (OrderIntent, BracketAmend)) and action.scope_fill_ids == ():
+            return DispatchResult(operation_id, 0, refusal_reason="empty_scope")
         if isinstance(action, Cancel) and action.order_id is None:
             # The protocol's all-pending scope is a snapshot of explicit owned
             # targets, never an unscoped transport command. The caller holds the

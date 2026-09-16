@@ -11,6 +11,7 @@ from dataclasses import asdict
 from datetime import datetime, timedelta
 from enum import Enum
 import threading
+from uuid import uuid4
 
 from c1_rail.book_policy import BOOK_LEGS, is_protected
 from c1_rail.book_account_owner import AccountOwnerError, BookAccountOwner
@@ -18,6 +19,7 @@ from c1_rail.c1_rail_listener import handle_book_action
 from c1_signal_daemon.book_adapters import AdapterRegistry
 from c1_signal_daemon.book_protocol import ExecutionEvent, Fill, Mode
 from c1_signal_daemon.feed import Bar
+from c1_signal_daemon.book_validation import InputViolation, validate_action, validate_bar
 
 
 BAR_PERIOD = timedelta(minutes=15)
@@ -95,7 +97,22 @@ class FourLegRuntime:
         self._mode = None
         for retained in owner.retained_partial_bars:
             instant = datetime.fromisoformat(retained["bar_time"])
-            self._pending.setdefault(instant, {})[retained["leg_id"]] = _bar(retained["body"])
+            self._pending.setdefault(instant, {})[retained["leg_id"]] = self._validated_retained_bar(
+                retained["body"], boundary=instant, leg_id=retained["leg_id"])
+
+    def _validated_retained_bar(self, data, *, boundary, leg_id):
+        try:
+            bar = _bar(data)
+            violation = validate_bar(bar)
+        except (KeyError, TypeError, ValueError, AttributeError):
+            violation = InputViolation("type", "bar")
+        if type(leg_id) is not str or leg_id not in _LEG_RANK:
+            violation = InputViolation("known_identity", "leg_id")
+        if violation is not None:
+            self.owner.record_input_incident("input:retained:" + boundary.isoformat(),
+                violation, source="replay", now=self.owner.binding["as_of"])
+            raise AccountOwnerError("invalid retained bar")
+        return bar
 
     @property
     def pending_feedback(self):
@@ -111,13 +128,34 @@ class FourLegRuntime:
             settlement.equity, settlement.peak, self.owner.binding["policy"]
         ) else Mode.NORMAL
 
-    def _mode_actions(self, mode):
+    def _validated_actions(self, actions, *, boundary, source, now):
+        violation = None
+        ordinal = "container"
+        if type(actions) not in (list, tuple):
+            violation = InputViolation("container", "actions")
+        else:
+            for index, action in enumerate(actions):
+                violation = validate_action(action)
+                if violation is not None:
+                    ordinal = str(index)
+                    break
+        if violation is not None:
+            identity = "input:" + self.owner.binding["session"].session_id + ":" + boundary.isoformat() + ":" + source + ":" + ordinal
+            self.owner.record_input_incident(identity, violation, source=source, now=now)
+            raise AccountOwnerError("invalid adapter output: " + violation.code + ":" + violation.field)
+        return actions
+
+    def _mode_actions(self, mode, *, boundary=None, now=None):
         if not isinstance(mode, Mode):
             raise ValueError("typed protection mode required")
+        # Direct mode application has no completed-bar occurrence identity.
+        now = now if now is not None else self.owner.binding["as_of"]
+        boundary = boundary if boundary is not None else now
         actions = []
         if mode != self._mode:
             for leg_id in LEG_ORDER:
-                actions.extend(self.adapters[leg_id].set_mode(mode))
+                actions.extend(self._validated_actions(self.adapters[leg_id].set_mode(mode),
+                    boundary=boundary, source="set_mode:" + leg_id, now=now))
             self._mode = mode
         return actions
 
@@ -183,10 +221,15 @@ class FourLegRuntime:
             return self._on_completed_bar(leg_id, bar, now=now)
 
     def _on_completed_bar(self, leg_id, bar, *, now):
-        if leg_id not in _LEG_RANK or not isinstance(bar, Bar):
-            raise ValueError("typed known-leg bar required")
-        if bar.ts.utcoffset() is None or now.utcoffset() is None:
-            raise ValueError("bar and acquisition times must be timezone-aware")
+        violation = validate_bar(bar)
+        if type(leg_id) is not str or leg_id not in _LEG_RANK:
+            violation = InputViolation("known_identity", "leg_id")
+        if violation is not None:
+            self.owner.record_input_incident("input:" + str(uuid4()), violation,
+                                             source="bar", now=now)
+            raise AccountOwnerError("invalid bar: " + violation.code + ":" + violation.field)
+        if not isinstance(now, datetime) or now.utcoffset() is None:
+            raise AccountOwnerError("acquisition time must be timezone-aware")
         session = self.owner.binding["session"]
         if (bar.ts < session.opens_at or bar.ts >= session.closes_at
                 or bar.ts > now or now > bar.ts + BAR_PERIOD + BAR_SLACK):
@@ -228,9 +271,11 @@ class FourLegRuntime:
         mode = self._desired_mode()
         self.owner.record_barrier(
             bar.ts, body, session_id=session.session_id, mode=mode)
-        actions = self._mode_actions(mode)
+        actions = self._mode_actions(mode, boundary=bar.ts, now=now)
         for ordered_leg in LEG_ORDER:
-            actions.extend(self.adapters[ordered_leg].on_bar(slot[ordered_leg]))
+            actions.extend(self._validated_actions(self.adapters[ordered_leg].on_bar(slot[ordered_leg]),
+                boundary=bar.ts, source="on_bar:" + ordered_leg, now=now))
+        self._validated_actions(actions, boundary=bar.ts, source="batch", now=now)
         actions = self._sort_actions(actions)
         action_body = [_action_body(action) for action in actions]
         self.owner.record_barrier_actions(bar.ts, action_body)
@@ -294,10 +339,16 @@ class FourLegRuntime:
                 retained = barriers.get(item["ref_id"])
                 if retained is None:
                     raise AccountOwnerError("timeline references unknown barrier")
-                bars = {leg_id: _bar(retained["body"][leg_id]) for leg_id in LEG_ORDER}
-                actions = runtime._mode_actions(Mode(retained["mode"]))
+                boundary = datetime.fromisoformat(retained["bar_time"])
+                bars = {leg_id: runtime._validated_retained_bar(retained["body"][leg_id],
+                    boundary=boundary, leg_id=leg_id) for leg_id in LEG_ORDER}
+                if retained["actions"] is None:
+                    raise AccountOwnerError("incomplete retained action boundary")
+                actions = runtime._mode_actions(Mode(retained["mode"]), boundary=boundary, now=boundary)
                 for leg_id in LEG_ORDER:
-                    actions.extend(adapters[leg_id].on_bar(bars[leg_id]))
+                    actions.extend(runtime._validated_actions(adapters[leg_id].on_bar(bars[leg_id]),
+                        boundary=boundary, source="on_bar:" + leg_id, now=boundary))
+                runtime._validated_actions(actions, boundary=boundary, source="batch", now=boundary)
                 rebuilt = [_action_body(action) for action in runtime._sort_actions(actions)]
                 if retained["actions"] != rebuilt:
                     owner.halt("replay-conflict:" + retained["bar_time"], "identity",

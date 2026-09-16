@@ -54,7 +54,7 @@ COPY core/lib/atomic_io.py core/lib/file_lock.py core/lib/mvd.py \
      core/lib/validation.py ./core/lib/
 
 # Pure TB-I1 sizing dependencies. Packaging does not route or authorize book orders.
-COPY ops/c1_signal_daemon/__init__.py ops/c1_signal_daemon/book_protocol.py \
+COPY ops/c1_signal_daemon/__init__.py ops/c1_signal_daemon/book_validation.py ops/c1_signal_daemon/book_protocol.py \
      ops/c1_signal_daemon/book_adapters.py ops/c1_signal_daemon/book_runtime.py \
      ops/c1_signal_daemon/feed.py ./ops/c1_signal_daemon/
 

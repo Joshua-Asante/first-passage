@@ -40,8 +40,6 @@ class FourLegEvaluateLoop:
                 bar = self.sources[leg_id].poll()
                 if bar is None:
                     continue
-                if not isinstance(bar, Bar):
-                    raise TypeError("completed-bar source returned an untyped value")
                 result = self.runtime.on_completed_bar(leg_id, bar, now=now)
                 if result is not None:
                     completed = result

@@ -18,7 +18,7 @@ COPY ops/c1_signal_daemon/__init__.py ops/c1_signal_daemon/__main__.py \
      ops/c1_signal_daemon/heartbeat.py ops/c1_signal_daemon/http_status.py \
      ops/c1_signal_daemon/listener_client.py \
      ops/c1_signal_daemon/operator_input_source.py \
-     ops/c1_signal_daemon/book_protocol.py \
+     ops/c1_signal_daemon/book_validation.py ops/c1_signal_daemon/book_protocol.py \
      ops/c1_signal_daemon/book_adapters.py \
      ops/c1_signal_daemon/book_runtime.py \
      ops/c1_signal_daemon/book_evaluate_loop.py \
