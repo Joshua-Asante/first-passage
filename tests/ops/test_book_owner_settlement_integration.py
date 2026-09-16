@@ -233,7 +233,7 @@ def test_signed_synthetic_close_flows_through_unified_owner_into_listener_sizing
     next_store.reconcile_restore(datetime(2026, 9, 15, 13, 59, 1, tzinfo=timezone.utc))
     next_owner.activate_synthetic(now=datetime(2026, 9, 15, 14, tzinfo=timezone.utc))
 
-    result = handle_book_action(intent(), next_owner, now=datetime(2026, 9, 15, 14, tzinfo=timezone.utc))
+    result = handle_book_action(intent(), next_owner, occurrence=next_owner.make_occurrence("direct", "test_book_owner_settlement_integration:236"), now=datetime(2026, 9, 15, 14, tzinfo=timezone.utc))
 
     assert result.refusal_reason is None
     assert result.quantity == 8

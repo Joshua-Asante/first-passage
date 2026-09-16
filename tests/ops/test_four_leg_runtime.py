@@ -369,14 +369,14 @@ def test_accepted_private_orb_trigger_reaches_shared_fixed_base(
         # Slice A deliberately refuses a rounded-to-zero trailing distance.
         # Keep this real producer vector; do not clamp or rewrite its payload.
         with pytest.raises(AccountOwnerError, match="trailing_pair"):
-            account.dispatch(entries[0], now=NOW)
+            account.dispatch(entries[0], occurrence=account.make_occurrence("direct", "test_four_leg_runtime:372"), now=NOW)
         assert account.authority == "INTERVENTION"
         assert account.incidents
         assert account.observable_accounting()["operations"] == ()
         assert account.unresolved_attempts == ()
         assert account.synthetic_broker.commands == []
     else:
-        result = account.dispatch(entries[0], now=NOW)
+        result = account.dispatch(entries[0], occurrence=account.make_occurrence("direct", "test_four_leg_runtime:379"), now=NOW)
         assert result.refusal_reason is None
         assert account.synthetic_broker.commands[0].quantity == 1
         assert account.synthetic_broker.commands[0].action.bracket == entries[0].bracket
@@ -524,7 +524,7 @@ def test_async_fact_commit_cannot_overtake_live_bar_application(tmp_path):
             return super().on_bar(bar)
 
     account = owner(tmp_path, [BrokerResult("accepted")])
-    account.dispatch(entry("aegis_6j", 8), now=NOW)
+    account.dispatch(entry("aegis_6j", 8), occurrence=account.make_occurrence("direct", "test_four_leg_runtime:527"), now=NOW)
     values = {leg_id: Adapter(leg_id) for leg_id in LEGS}
     values["aegis_6j"] = BlockingAdapter("aegis_6j")
     runtime = FourLegRuntime(account, synthetic_adapter_registry(values))

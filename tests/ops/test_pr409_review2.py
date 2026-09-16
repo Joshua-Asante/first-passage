@@ -26,12 +26,12 @@ from c1_rail.book_settlement import SettlementStore
 @pytest.mark.parametrize("kind", ["entry", "flat"])
 def test_invalid_price_is_fenced_before_capacity_and_feedback(tmp_path, price, kind):
     account, route = filled_owner(tmp_path)
-    account.dispatch(intent(), now=NOW)
+    account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_pr409_review2:29"), now=NOW)
     if kind == "entry":
-        account.dispatch(replace(intent("orb"), leg_id="orb_mnq_v7", qty=1), now=NOW)
+        account.dispatch(replace(intent("orb"), leg_id="orb_mnq_v7", qty=1), occurrence=account.make_occurrence("direct", "test_pr409_review2:31"), now=NOW)
         fact = BrokerFact.fill("bad", "orb", "orb_mnq_v7", "entry", 1, price, NOW)
     else:
-        account.dispatch(replace(intent("flat", kind="flat", qty=1), side=Side.SELL), now=NOW)
+        account.dispatch(replace(intent("flat", kind="flat", qty=1), side=Side.SELL), occurrence=account.make_occurrence("direct", "test_pr409_review2:34"), now=NOW)
         fact = BrokerFact.fill("bad", "flat", "dj30_mym_p250", "flat", 1, price, NOW,
                                entry_execution_id="base-fill")
     before = account.observable_accounting()["exposures"]
@@ -64,10 +64,13 @@ def test_bracket_refusal_is_durable_and_replays(tmp_path):
     for leg_id in LEGS:
         runtime.on_completed_bar(leg_id, replace(bars()[leg_id], ts=later), now=later)
     assert account.pending_feedback == ()
+    expected_events = list(runtime.adapters["orb_mnq_v7"].events)
+    assert len(expected_events) == 2
+    assert expected_events[0][1] != expected_events[1][1]
     restarted = BookAccountOwner.boot(account.path, account.account, binding=runtime_binding(),
                                      synthetic_broker=SyntheticBroker([]))
     recovered = FourLegRuntime.recover(restarted, registry())
-    assert recovered.adapters["orb_mnq_v7"].events == [event, event]
+    assert recovered.adapters["orb_mnq_v7"].events == expected_events
 
 
 @pytest.mark.parametrize("kind", ["entry", "flat", "cancel", "bracket"])
@@ -76,19 +79,32 @@ def test_definitive_rejection_releases_only_its_own_reservation(tmp_path, kind):
     if kind == "entry":
         action = intent()
     elif kind == "cancel":
-        account.dispatch(intent(), now=NOW)
+        account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_pr409_review2:79"), now=NOW)
         action = Cancel("dj30_mym_p250", "base")
     elif kind == "bracket":
-        action = BracketAmend("dj30_mym_p250", Bracket(stop=99))
+        from book_occurrence_fixtures import bare_protection_owner, prepare_protection
+        # A real first attachment is rejected; entry exposure must stay owned.
+        account, route = bare_protection_owner(tmp_path / "protected")
+        route.queue(BrokerResult("rejected"))
+        action = BracketAmend("dj30_mym_p250", Bracket(stop=99), ("base-fill",))
+        result = prepare_protection(account, route, action, "rejected-first-attachment")
+        assert result.transport_state == "rejected"
+        assert account.exposure("dj30_mym_p250") == (3, 0)
+        assert account.authority == "INTERVENTION"
+        assert account.protection_owners[0].pending_operation is not None
+        restarted = BookAccountOwner.boot(account.path, account.account, binding=binding(), synthetic_broker=route)
+        assert restarted.exposure("dj30_mym_p250") == (3, 0)
+        assert restarted.protection_owners[0].pending_operation is not None
+        return
     else:
         route.queue(BrokerResult("accepted", (
             BrokerFact.fill("base-fill", "base", "dj30_mym_p250", "entry", 3, 100, NOW),
             BrokerFact.terminal("base", "filled", 3, NOW),
         )))
-        account.dispatch(intent(), now=NOW)
+        account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_pr409_review2:88"), now=NOW)
         action = replace(intent("flat", kind="flat", qty=3), side=Side.SELL)
     route.queue(BrokerResult("rejected"))
-    result = account.dispatch(action, now=NOW)
+    result = account.dispatch(action, occurrence=account.make_occurrence("direct", "test_pr409_review2:91"), now=NOW)
     assert len(result.confirmed_events) == 1
     event = result.confirmed_events[0]
     assert event.event == "reject"
@@ -96,7 +112,7 @@ def test_definitive_rejection_releases_only_its_own_reservation(tmp_path, kind):
     expected = {"entry": (0, 0), "flat": (3, 0), "cancel": (0, 3), "bracket": (0, 0)}[kind]
     assert account.exposure("dj30_mym_p250") == expected
     if kind == "flat":
-        retry = account.dispatch(replace(action, order_id="retry"), now=NOW)
+        retry = account.dispatch(replace(action, order_id="retry"), occurrence=account.make_occurrence("direct", "test_pr409_review2:99"), now=NOW)
         assert retry.refusal_reason is None and retry.quantity == 3
     elif kind in ("entry", "bracket"):
         account.advance_schedule(now=SESSION.own_flat_deadline)
@@ -241,7 +257,7 @@ def test_control_refusal_deduplicates_retries_within_one_bar(tmp_path):
 
 def test_accepted_real_price_stays_numeric_in_durable_feedback(tmp_path):
     account, _route = owner(tmp_path, [])
-    account.dispatch(intent(), now=NOW)
+    account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_pr409_review2:244"), now=NOW)
     fact = BrokerFact.fill("real-price", "base", "dj30_mym_p250", "entry", 1, Fraction(1, 4), NOW)
     events = account.observe(fact, now=NOW)
     assert events[0].fill.price == 0.25

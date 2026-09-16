@@ -78,7 +78,7 @@ class RailAction:
     transport_state: str | None = None  # not_attempted|accepted|failed|unknown
 
 
-def handle_book_action(action, owner, *, now):
+def handle_book_action(action, owner, *, occurrence=None, now):
     """Route a typed four-leg mutation through the listener-owned serializer.
 
     This is the offline Phase-2 boundary.  The owner has no production route;
@@ -88,7 +88,26 @@ def handle_book_action(action, owner, *, now):
 
     if not isinstance(owner, BookAccountOwner):
         raise TypeError("typed BookAccountOwner required")
-    return owner.dispatch(action, now=now)
+    return owner.dispatch(action, occurrence=occurrence, now=now)
+
+
+def handle_book_protection(snapshot, owner, *, now):
+    """Commit offline working-order evidence without granting send authority."""
+    from c1_rail.book_account_owner import BookAccountOwner
+    if not isinstance(owner, BookAccountOwner):
+        raise TypeError("typed BookAccountOwner required")
+    return owner.observe_protection(snapshot, now=now)
+
+
+def handle_book_protection_execution(event, owner, runtime, *, now):
+    """Commit protective fills, then serialize adapter feedback; never resume."""
+    from c1_rail.book_account_owner import BookAccountOwner
+    from c1_signal_daemon.book_runtime import FourLegRuntime
+    if not isinstance(owner, BookAccountOwner) or not isinstance(runtime, FourLegRuntime):
+        raise TypeError("typed owner and four-leg runtime required")
+    if runtime.owner is not owner:
+        raise ValueError("runtime/account owner mismatch")
+    return runtime.observe_protection_execution(event, now=now)
 
 
 def handle_book_fact(fact, owner, runtime, *, now):

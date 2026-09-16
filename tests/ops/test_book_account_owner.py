@@ -111,7 +111,7 @@ def test_existing_empty_account_database_is_not_reinitialized(tmp_path):
 
 def test_transport_acceptance_never_creates_fill_credit_and_restart_retains_reservation(tmp_path):
     account, route = owner(tmp_path, [BrokerResult("accepted")])
-    outcome = handle_book_action(intent(), account, now=NOW)
+    outcome = handle_book_action(intent(), account, occurrence=account.make_occurrence("direct", "test_book_account_owner:114"), now=NOW)
 
     assert outcome.transport_state == "accepted"
     assert outcome.confirmed_events == ()
@@ -132,7 +132,7 @@ def test_transport_acceptance_never_creates_fill_credit_and_restart_retains_rese
 def test_partial_fill_and_duplicate_fact_use_confirmed_base_once(tmp_path):
     fill = BrokerFact.fill("execution-1", "base", "dj30_mym_p250", "entry", 1, 100.0, NOW)
     account, _ = owner(tmp_path, [BrokerResult("accepted", (fill, fill))])
-    base = handle_book_action(intent(), account, now=NOW)
+    base = handle_book_action(intent(), account, occurrence=account.make_occurrence("direct", "test_book_account_owner:135"), now=NOW)
 
     assert [event.fill.qty for event in base.confirmed_events] == [1]
     assert account.exposure("dj30_mym_p250") == (1, 2)
@@ -143,7 +143,7 @@ def test_partial_fill_and_duplicate_fact_use_confirmed_base_once(tmp_path):
     account.activate_synthetic(now=NOW + timedelta(seconds=1))
     account.synthetic_broker.queue(BrokerResult("accepted"))
     add = handle_book_action(intent("add-1", kind="add", qty=12), account,
-                             now=NOW + timedelta(seconds=1))
+                             occurrence=account.make_occurrence("direct", "test_book_account_owner:145"), now=NOW + timedelta(seconds=1))
     assert add.quantity == 2
     assert account.exposure("dj30_mym_p250") == (1, 2)
 
@@ -157,7 +157,7 @@ def test_zero_sizing_is_an_ordinary_refusal_not_an_incident(tmp_path):
     )
     account.activate_synthetic(now=NOW)
     action = OrderIntent("v", "vanguard_mgc", "entry", Side.BUY, 2, bar_time=NOW)
-    outcome = handle_book_action(action, account, now=NOW)
+    outcome = handle_book_action(action, account, occurrence=account.make_occurrence("direct", "test_book_account_owner:160"), now=NOW)
 
     assert outcome.refusal_reason == "zero_size"
     assert account.permission == "RUNNING"
@@ -169,7 +169,7 @@ def test_flat_without_confirmed_exposure_is_an_ordinary_no_send(tmp_path):
     account, route = owner(tmp_path, [])
     action = OrderIntent("empty-flat", "dj30_mym_p250", "flat", Side.SELL,
                          None, bar_time=NOW)
-    outcome = account.dispatch(action, now=NOW)
+    outcome = account.dispatch(action, occurrence=account.make_occurrence("direct", "test_book_account_owner:172"), now=NOW)
     assert outcome.refusal_reason == "zero_exposure"
     assert route.commands == []
     assert account.permission == "RUNNING"
@@ -182,30 +182,34 @@ def test_close_reservation_prevents_duplicate_or_excess_reduction(tmp_path):
         BrokerResult("accepted", (filled, BrokerFact.terminal("base", "cancelled", 2, NOW))),
         BrokerResult("accepted"),
     ])
-    handle_book_action(intent(qty=5), account, now=NOW)
+    handle_book_action(intent(qty=5), account, occurrence=account.make_occurrence("direct", "test_book_account_owner:185"), now=NOW)
     first = account.dispatch(OrderIntent(
         "exit-1", "dj30_mym_p250", "exit", Side.SELL, 2,
-        scope_fill_ids=("execution-1",), bar_time=NOW), now=NOW)
+        scope_fill_ids=("execution-1",), bar_time=NOW), occurrence=account.make_occurrence("direct", "test_book_account_owner:186"), now=NOW)
     duplicate = account.dispatch(OrderIntent(
         "exit-2", "dj30_mym_p250", "exit", Side.SELL, None,
-        scope_fill_ids=("execution-1",), bar_time=NOW), now=NOW)
+        scope_fill_ids=("execution-1",), bar_time=NOW), occurrence=account.make_occurrence("direct", "test_book_account_owner:189"), now=NOW)
 
     assert first.transport_state == "accepted", first
     assert duplicate.refusal_reason == "zero_exposure"
     assert [command.operation_id for command in route.commands] == ["base", "exit-1"]
 
 
-def test_unresolved_control_attempt_forces_intervention_at_flat_deadline(tmp_path):
-    account, route = owner(tmp_path, [BrokerResult("unknown")])
-    outcome = account.dispatch(
-        BracketAmend("dj30_mym_p250", Bracket(stop=99.0)), now=NOW)
+def test_unknown_protection_attempt_fences_before_flat_deadline(tmp_path):
+    from book_occurrence_fixtures import bare_protection_owner, prepare_protection
+    account, route = bare_protection_owner(tmp_path)
+    route.queue(BrokerResult("unknown"))
+    outcome = prepare_protection(account, route,
+        BracketAmend("dj30_mym_p250", Bracket(stop=99.0), ("base-fill",)), "unknown-attachment")
     assert outcome.transport_state == "unknown"
-    assert account.unresolved_attempts == (outcome.attempt_id,)
-
+    assert outcome.attempt_id in account.unresolved_attempts
+    assert account.authority == "INTERVENTION"
+    count = len(route.commands)
     account.advance_schedule(now=SESSION.own_flat_deadline)
     assert account.authority == "INTERVENTION"
-    assert account.incidents[-1]["reason"] == "schedule"
-    assert len(route.commands) == 1
+    assert account.incidents[-1]["reason"] == "protection"
+    assert len(route.commands) == count
+    assert account.exposure("dj30_mym_p250") == (3, 0)
 
 
 def test_incident_fences_every_later_mutation_and_status_reads_are_pure(tmp_path):
@@ -214,7 +218,7 @@ def test_incident_fences_every_later_mutation_and_status_reads_are_pure(tmp_path
     assert account.status() == before
 
     account.halt("incident-1", "execution", now=NOW)
-    refused = handle_book_action(intent("second"), account, now=NOW)
+    refused = handle_book_action(intent("second"), account, occurrence=account.make_occurrence("direct", "test_book_account_owner:217"), now=NOW)
 
     assert refused.refusal_reason == "intervention_fence"
     assert account.authority == "INTERVENTION"
@@ -224,7 +228,7 @@ def test_incident_fences_every_later_mutation_and_status_reads_are_pure(tmp_path
 
 def test_stale_or_conflicting_broker_fact_retains_reservation_and_halts(tmp_path):
     account, _ = owner(tmp_path, [BrokerResult("accepted")])
-    handle_book_action(intent(), account, now=NOW)
+    handle_book_action(intent(), account, occurrence=account.make_occurrence("direct", "test_book_account_owner:227"), now=NOW)
     account.observe(
         BrokerFact.fill("execution-1", "base", "dj30_mym_p250", "entry", 1, 100.0,
                         NOW - timedelta(minutes=1)),
@@ -244,7 +248,7 @@ def test_stale_or_conflicting_broker_fact_retains_reservation_and_halts(tmp_path
 def test_fill_identity_conflict_retains_reservation_without_feedback(
         tmp_path, leg_id, order_kind):
     account, _ = owner(tmp_path, [BrokerResult("accepted")])
-    handle_book_action(intent(), account, now=NOW)
+    handle_book_action(intent(), account, occurrence=account.make_occurrence("direct", "test_book_account_owner:247"), now=NOW)
 
     feedback = account.observe(
         BrokerFact.fill("conflicting-fill", "base", leg_id, order_kind,
@@ -264,13 +268,13 @@ def test_cutoff_keeps_only_scheduled_exit_authority_and_flatten_uses_confirmed_f
     account, route = owner(tmp_path, [
         BrokerResult("accepted", (fill, BrokerFact.terminal("base", "cancelled", 1, NOW))),
     ])
-    handle_book_action(intent(), account, now=NOW)
+    handle_book_action(intent(), account, occurrence=account.make_occurrence("direct", "test_book_account_owner:267"), now=NOW)
 
     account.advance_schedule(now=SESSION.risk_add_cutoff)
     assert account.permission == "HALTED"
     assert account.authority == "SCHEDULED_EXIT"
     assert handle_book_action(intent("late"), account,
-                              now=SESSION.risk_add_cutoff).refusal_reason == "risk_add_not_authorized"
+                              occurrence=account.make_occurrence("direct", "test_book_account_owner:272"), now=SESSION.risk_add_cutoff).refusal_reason == "risk_add_not_authorized"
 
     flat_id = "scheduled-flat:" + SESSION.session_id + ":dj30_mym_p250"
     route.queue(BrokerResult("accepted", (
@@ -285,7 +289,7 @@ def test_cutoff_keeps_only_scheduled_exit_authority_and_flatten_uses_confirmed_f
 
 def test_ambiguous_cutoff_cancel_is_retained_and_deadline_revokes_all_sends(tmp_path):
     account, route = owner(tmp_path, [BrokerResult("accepted"), BrokerResult("unknown")])
-    handle_book_action(intent(), account, now=NOW)
+    handle_book_action(intent(), account, occurrence=account.make_occurrence("direct", "test_book_account_owner:288"), now=NOW)
 
     cutoff = account.advance_schedule(now=SESSION.risk_add_cutoff)
     assert len(cutoff) == 1
@@ -316,9 +320,9 @@ def test_protected_session_cancels_resting_orb_add_without_resizing_carried_fill
                                     binding=normal, synthetic_broker=route)
     account.activate_synthetic(now=NOW)
     handle_book_action(OrderIntent("orb-base", "orb_mnq_v7", "entry", Side.BUY, 1,
-                                   bar_time=NOW), account, now=NOW)
+                                   bar_time=NOW), account, occurrence=account.make_occurrence("direct", "test_book_account_owner:318"), now=NOW)
     handle_book_action(OrderIntent("orb-add", "orb_mnq_v7", "add", Side.BUY, 3,
-                                   bar_time=NOW), account, now=NOW)
+                                   bar_time=NOW), account, occurrence=account.make_occurrence("direct", "test_book_account_owner:320"), now=NOW)
     assert account.exposure("orb_mnq_v7") == (1, 1)
 
     next_now = NOW + timedelta(days=1)
@@ -369,18 +373,18 @@ def test_aegis_takeover_waits_for_displaced_leg_quiescence_before_send(tmp_path)
                                     binding=normal, synthetic_broker=route)
     account.activate_synthetic(now=NOW)
     account.dispatch(OrderIntent("orb-base", "orb_mnq_v7", "entry", Side.BUY, 1,
-                                 bar_time=NOW), now=NOW)
+                                 bar_time=NOW), occurrence=account.make_occurrence("direct", "test_book_account_owner:371"), now=NOW)
     aegis = OrderIntent("aegis-entry", "aegis_6j", "entry", Side.SELL, 8,
                         bar_time=NOW)
 
-    pending = account.dispatch(aegis, now=NOW)
+    pending = account.dispatch(aegis, occurrence=account.make_occurrence("direct", "test_book_account_owner:376"), now=NOW)
     assert pending.refusal_reason == "takeover_pending"
     assert [command.operation_id for command in route.commands] == ["orb-base"]
 
     controls, completed = account.advance_takeover(now=NOW)
     assert completed is True
     assert controls[0].operation_id == flat_id
-    accepted = account.dispatch(aegis, now=NOW)
+    accepted = account.dispatch(aegis, occurrence=account.make_occurrence("direct", "test_book_account_owner:383"), now=NOW)
     assert accepted.transport_state == "accepted"
     assert [command.operation_id for command in route.commands] == [
         "orb-base", flat_id, "aegis-entry"
@@ -404,7 +408,7 @@ def test_crash_cuts_retain_obligation_and_never_retry_on_boot(tmp_path, cut, com
         synthetic_broker=route, crash_at=cut)
     account.activate_synthetic(now=NOW)
     with pytest.raises(SimulatedOwnerCrash):
-        account.dispatch(intent(), now=NOW)
+        account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_book_account_owner:407"), now=NOW)
     assert len(route.commands) == commands
 
     recovery_route = SyntheticBroker([])
@@ -423,7 +427,7 @@ def test_fresh_boot_fences_the_previous_owner_actor(tmp_path):
         tmp_path / "owner.sqlite", "synthetic-account", binding=binding(),
         synthetic_broker=SyntheticBroker([]))
     with pytest.raises(AccountOwnerError, match="stale account owner boot"):
-        old.dispatch(intent(), now=NOW)
+        old.dispatch(intent(), occurrence=old.make_occurrence("direct", "test_book_account_owner:426"), now=NOW)
     with pytest.raises(AccountOwnerError, match="stale account owner boot"):
         old.activate_synthetic(now=NOW)
     assert old_route.commands == []

@@ -54,6 +54,21 @@ def _action_body(action):
     return {"type": type(action).__name__, "value": _jsonable(asdict(action))}
 
 
+def _retained_action(body):
+    from c1_signal_daemon.book_protocol import Bracket, BracketAmend, Cancel, OrderIntent, Side, FillTiming
+    value = dict(body["value"])
+    if value.get("bracket") is not None:
+        value["bracket"] = Bracket(**value["bracket"])
+    if value.get("scope_fill_ids") is not None:
+        value["scope_fill_ids"] = tuple(value["scope_fill_ids"])
+    if body["type"] == "OrderIntent":
+        value["side"] = Side(value["side"])
+        value["timing"] = FillTiming(value["timing"])
+        if value.get("bar_time") is not None:
+            value["bar_time"] = datetime.fromisoformat(value["bar_time"])
+    return {"OrderIntent": OrderIntent, "BracketAmend": BracketAmend, "Cancel": Cancel}[body["type"]](**value)
+
+
 def _bar(data):
     return Bar(datetime.fromisoformat(data["ts"]), data["open"], data["high"],
                data["low"], data["close"], data["volume"])
@@ -94,6 +109,9 @@ class FourLegRuntime:
         self.crash_after_dispatch = bool(crash_after_dispatch)
         self._application_lock = threading.RLock()
         self._pending = {}
+        # Only boundaries prepared by this runtime may continue. Recovery never
+        # restores this set, even when the retained batch is awaiting evidence.
+        self._prepared_here = set()
         self._mode = None
         for retained in owner.retained_partial_bars:
             instant = datetime.fromisoformat(retained["bar_time"])
@@ -188,7 +206,7 @@ class FourLegRuntime:
 
     def _retain_local_refusal(self, action, result, *, now, boundary_time=None):
         reason = result.refusal_reason
-        if reason is None or reason in ("takeover_pending", "duplicate_operation"):
+        if reason is None or reason in ("takeover_pending", "duplicate_operation", "awaiting_evidence"):
             return ()
         if any(event.event == "reject" and event.order_id == result.operation_id
                for event in result.confirmed_events):
@@ -214,6 +232,13 @@ class FourLegRuntime:
             self._deliver_events(events)
             for result in self.owner.resume_takeover(now=now):
                 self._deliver(result)
+            return events
+
+    def observe_protection_execution(self, event, *, now):
+        """Commit protective execution before serialized adapter delivery."""
+        with self._application_lock:
+            events = self.owner.observe_protection_execution(event, now=now)
+            self._deliver_events(events)
             return events
 
     def on_completed_bar(self, leg_id, bar, *, now):
@@ -277,18 +302,22 @@ class FourLegRuntime:
                 boundary=bar.ts, source="on_bar:" + ordered_leg, now=now))
         self._validated_actions(actions, boundary=bar.ts, source="batch", now=now)
         actions = self._sort_actions(actions)
-        action_body = [_action_body(action) for action in actions]
+        occurrences = [self.owner.make_occurrence("runtime", bar.ts.isoformat(), ordinal)
+                       for ordinal in range(len(actions))]
+        action_body = [dict(_action_body(action), occurrence=asdict(occurrence))
+                       for action, occurrence in zip(actions, occurrences)]
         self.owner.record_barrier_actions(bar.ts, action_body)
+        self._prepared_here.add(bar.ts)
 
         results = []
-        for action in actions:
-            result = handle_book_action(action, self.owner, now=now)
+        for action, occurrence in zip(actions, occurrences):
+            result = handle_book_action(action, self.owner, occurrence=occurrence, now=now)
             if result.refusal_reason == "takeover_pending":
                 control_results, completed = self.owner.advance_takeover(now=now)
                 for control in control_results:
                     self._deliver(control)
                 if completed:
-                    result = handle_book_action(action, self.owner, now=now)
+                    result = handle_book_action(action, self.owner, occurrence=occurrence, now=now)
             results.append(result)
             local_feedback = self._retain_local_refusal(action, result, now=now,
                                                         boundary_time=bar.ts)
@@ -296,9 +325,49 @@ class FourLegRuntime:
                 raise SimulatedRuntimeCrash("fact committed before adapter feedback")
             self._deliver(result)
             self._deliver_events(local_feedback)
-        self.owner.complete_barrier(bar.ts)
-        del self._pending[bar.ts]
+        if not any(result.refusal_reason == "awaiting_evidence" for result in results):
+            self.owner.complete_barrier(bar.ts)
+            del self._pending[bar.ts]
+            self._prepared_here.discard(bar.ts)
         return tuple(results)
+
+    def redeliver_prepared_boundary(self, bar_time, *, now):
+        """Continue only same-runtime, unattempted evidence waits from disk."""
+        from c1_rail.book_protection import ActionOccurrence
+        with self._application_lock:
+            if bar_time not in self._prepared_here:
+                return ()
+            if (not isinstance(now, datetime) or now.utcoffset() is None
+                    or now < bar_time or now > bar_time + BAR_PERIOD + BAR_SLACK):
+                raise AccountOwnerError("prepared boundary continuation time is invalid")
+            retained = next(row for row in self.owner.retained_barriers
+                            if row["bar_time"] == bar_time.isoformat())
+            results = []
+            waiting = False
+            for ordinal, body in enumerate(retained["actions"]):
+                occurrence = ActionOccurrence(**body["occurrence"])
+                if occurrence != self.owner.make_occurrence("runtime", bar_time.isoformat(), ordinal):
+                    self.owner.halt("occurrence-replay:" + bar_time.isoformat(), "identity", now=now)
+                    raise AccountOwnerError("retained occurrence does not replay")
+                state = self.owner.occurrence_state(occurrence)
+                if state is None or state["state"] == "prepared":
+                    raise AccountOwnerError("retained batch has an undispatched member")
+                if state["state"] != "awaiting_evidence" or state["attempted"]:
+                    continue
+                action = _retained_action(body)
+                result = handle_book_action(action, self.owner, occurrence=occurrence, now=now)
+                results.append(result)
+                waiting |= result.refusal_reason == "awaiting_evidence"
+                local = self._retain_local_refusal(action, result, now=now, boundary_time=bar_time)
+                if (result.confirmed_events or local) and self.crash_after_dispatch:
+                    raise SimulatedRuntimeCrash("fact committed before adapter feedback")
+                self._deliver(result)
+                self._deliver_events(local)
+            if not waiting:
+                self.owner.complete_barrier(bar_time)
+                self._pending.pop(bar_time, None)
+                self._prepared_here.discard(bar_time)
+            return tuple(results)
 
     def advance_schedule(self, *, now):
         with self._application_lock:
@@ -309,6 +378,10 @@ class FourLegRuntime:
 
     def expire_barrier(self, bar_time, *, now):
         with self._application_lock:
+            # A complete, retained batch waiting for protection evidence is no
+            # longer a partial input barrier. Its deadline belongs to the owner.
+            if bar_time in self._prepared_here:
+                return
             if bar_time in self._pending and now > bar_time + BAR_PERIOD + BAR_SLACK:
                 self.owner.expire_partial_barrier(bar_time, now=now)
                 del self._pending[bar_time]
@@ -349,7 +422,9 @@ class FourLegRuntime:
                     actions.extend(runtime._validated_actions(adapters[leg_id].on_bar(bars[leg_id]),
                         boundary=boundary, source="on_bar:" + leg_id, now=boundary))
                 runtime._validated_actions(actions, boundary=boundary, source="batch", now=boundary)
-                rebuilt = [_action_body(action) for action in runtime._sort_actions(actions)]
+                rebuilt = [dict(_action_body(action), occurrence=asdict(owner.make_occurrence(
+                    "runtime", boundary.isoformat(), ordinal)))
+                    for ordinal, action in enumerate(runtime._sort_actions(actions))]
                 if retained["actions"] != rebuilt:
                     owner.halt("replay-conflict:" + retained["bar_time"], "identity",
                                now=datetime.fromisoformat(retained["bar_time"]))

@@ -62,9 +62,9 @@ def test_expired_takeover_releases_capacity_and_delivers_rejection(tmp_path, exp
     account.activate_synthetic(now=NOW)
     runtime = FourLegRuntime(account, inert_adapters())
     runtime._mode_actions(Mode.NORMAL)
-    account.dispatch(entry("orb_mnq_v7", 1), now=NOW)
+    account.dispatch(entry("orb_mnq_v7", 1), occurrence=account.make_occurrence("direct", "test_pr409_review3:65"), now=NOW)
     action = entry("aegis_6j", 8)
-    assert account.dispatch(action, now=NOW).refusal_reason == "takeover_pending"
+    assert account.dispatch(action, occurrence=account.make_occurrence("direct", "test_pr409_review3:67"), now=NOW).refusal_reason == "takeover_pending"
     late = {"age": NOW + timedelta(seconds=31), "valid_until": bound["valid_until"],
             "cutoff": bound["session"].risk_add_cutoff}[expired]
     runtime.observe_fact(BrokerFact.terminal("entry:orb_mnq_v7", "cancelled", 0, late), now=late)
@@ -113,17 +113,18 @@ def test_outside_session_poll_does_not_start_or_expire_feed_clock(tmp_path):
     assert account.authority == "SCHEDULED_EXIT"
 
 
-def test_existing_owner_migrates_source_watch_without_freshness_credit(tmp_path):
+def test_schema_two_missing_source_watch_is_corruption(tmp_path):
     from test_four_leg_runtime import owner
+    from c1_rail.book_account_owner import AccountOwnerError
+    import pytest
     account = owner(tmp_path, [])
     with sqlite3.connect(account.path) as db:
-        db.execute("DROP TABLE feed_watch")  # Exact legacy schema before this repair.
-    restarted = BookAccountOwner.boot(account.path, account.account, binding=binding(),
-                                     synthetic_broker=SyntheticBroker([]))
-    assert restarted.authority == "INTERVENTION"
-    with sqlite3.connect(account.path) as db:
-        assert db.execute("SELECT started_at FROM feed_watch").fetchone() == (
-            restarted.binding["session"].opens_at.isoformat(),)
+        db.execute("DROP TABLE feed_watch")
+    before = account.path.read_bytes()
+    with pytest.raises(AccountOwnerError, match="schema"):
+        BookAccountOwner.boot(account.path, account.account, binding=binding(),
+                              synthetic_broker=SyntheticBroker([]))
+    assert account.path.read_bytes() == before
 
 
 def test_cutoff_retires_takeover_before_displaced_terminal(tmp_path):
@@ -131,9 +132,9 @@ def test_cutoff_retires_takeover_before_displaced_terminal(tmp_path):
     account = owner(tmp_path, [])
     runtime = FourLegRuntime(account, inert_adapters())
     runtime._mode_actions(Mode.NORMAL)
-    account.dispatch(entry("orb_mnq_v7", 1), now=NOW)
+    account.dispatch(entry("orb_mnq_v7", 1), occurrence=account.make_occurrence("direct", "test_pr409_review3:134"), now=NOW)
     action = entry("aegis_6j", 8)
-    assert account.dispatch(action, now=NOW).refusal_reason == "takeover_pending"
+    assert account.dispatch(action, occurrence=account.make_occurrence("direct", "test_pr409_review3:136"), now=NOW).refusal_reason == "takeover_pending"
     cutoff = account.binding["session"].risk_add_cutoff
     runtime.advance_schedule(now=cutoff)
     assert any(row["body"]["order_id"] == action.order_id for row in account.all_feedback)
@@ -154,12 +155,19 @@ def test_broker_command_and_journal_preserve_normalized_action(tmp_path, kind):
     if kind == "stop":
         action = replace(intent(), order_type="stop", price=101, bracket=levels,
                          oca_group="breakout", reason="synthetic stop")
+    elif kind == "bracket":
+        from book_occurrence_fixtures import bare_protection_owner, prepare_protection
+        from c1_rail.book_account_owner import BrokerResult
+        account, route = bare_protection_owner(tmp_path / "protection")
+        route.queue(BrokerResult("accepted"))
+        action = BracketAmend("dj30_mym_p250", levels, ("base-fill",))
     else:
-        account.dispatch(intent(), now=NOW)
+        account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_pr409_review3:158"), now=NOW)
         action = (BracketAmend("dj30_mym_p250", levels, ("base-fill",)) if kind == "bracket"
                   else replace(intent("close", kind="exit", qty=None), side=Side.SELL,
                                scope_fill_ids=("base-fill",), reason="scoped close"))
-    result = account.dispatch(action, now=NOW)
+    result = (prepare_protection(account, route, action, "roundtrip-bracket") if kind == "bracket" else
+              account.dispatch(action, occurrence=account.make_occurrence("direct", "test_pr409_review3:162"), now=NOW))
     assert result.refusal_reason is None
     command = route.commands[-1]
     expected = action if kind == "bracket" else replace(action, qty=result.quantity)

@@ -80,6 +80,8 @@ LISTENER_FILES=(
   /app/ops/c1_rail/book_account_lock.py
   /app/ops/c1_rail/book_account_owner.py
   /app/ops/c1_rail/book_capacity.py
+  /app/ops/c1_rail/book_protection.py
+  /app/ops/c1_rail/book_protection_owner.py
   /app/ops/c1_rail/book_schedule.py
   /app/ops/c1_rail/book_session_calendar.py
   /app/ops/c1_rail/book_settlement.py
@@ -126,6 +128,8 @@ DAEMON_FILES=(
   /app/ops/c1_rail/book_account_lock.py
   /app/ops/c1_rail/book_account_owner.py
   /app/ops/c1_rail/book_capacity.py
+  /app/ops/c1_rail/book_protection.py
+  /app/ops/c1_rail/book_protection_owner.py
   /app/ops/c1_rail/book_schedule.py
   /app/ops/c1_rail/book_session_calendar.py
   /app/ops/c1_rail/book_settlement.py

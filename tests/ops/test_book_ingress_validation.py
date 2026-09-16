@@ -35,7 +35,7 @@ def test_bad_bar_halts_before_partial_or_adapter(tmp_path, changes):
 def test_bad_trigger_halts_before_reservation(tmp_path, price):
     account, route = owner(tmp_path, [])
     with pytest.raises(AccountOwnerError):
-        account.dispatch(replace(intent(), order_type="stop", price=price), now=NOW)
+        account.dispatch(replace(intent(), order_type="stop", price=price), occurrence=account.make_occurrence("direct", "test_book_ingress_validation:38"), now=NOW)
     assert account.authority == "INTERVENTION"
     assert account.observable_accounting()["operations"] == ()
     assert account.unresolved_attempts == ()
@@ -90,13 +90,13 @@ def test_failed_incident_commit_latches_suppression_after_storage_recovers(tmp_p
     with sqlite3.connect(account.path) as db:
         db.execute("CREATE TRIGGER fail_fence BEFORE UPDATE ON owner_state BEGIN SELECT RAISE(ABORT, 'storage failure'); END")
     with pytest.raises(AccountOwnerError, match="state unavailable"):
-        account.dispatch(replace(intent(), price=float("nan")), now=NOW)
+        account.dispatch(replace(intent(), price=float("nan")), occurrence=account.make_occurrence("direct", "test_book_ingress_validation:93"), now=NOW)
     with sqlite3.connect(account.path) as db:
         db.execute("DROP TRIGGER fail_fence")
     assert account.incidents == ()
     assert account.status()["permission"] == "RUNNING"
     with pytest.raises(AccountOwnerError, match="local send suppression"):
-        account.dispatch(intent(), now=NOW)
+        account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_book_ingress_validation:99"), now=NOW)
     assert route.commands == []
     fresh = BookAccountOwner.boot(account.path, "synthetic-account", binding=binding(), synthetic_broker=SyntheticBroker([]))
     assert fresh.permission == "HALTED"
@@ -106,7 +106,7 @@ def test_invalid_output_restart_retains_attempt_and_incomplete_boundary(tmp_path
     from c1_rail.book_account_owner import BookAccountOwner, BrokerResult, SyntheticBroker
     from test_four_leg_runtime import binding
     account = runtime_owner(tmp_path, [BrokerResult("accepted")])
-    prior = account.dispatch(intent(), now=NOW)
+    prior = account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_book_ingress_validation:109"), now=NOW)
     adapters = inert_adapters()
     adapters[LEG_ORDER[0]].actions = [BracketAmend("orb_mnq_v7", "bad")]
     runtime = FourLegRuntime(account, adapters)
@@ -145,7 +145,7 @@ def test_other_malformed_adapter_outputs(tmp_path, method, factory):
 
 def test_empty_amend_scope_is_explicit_no_target(tmp_path):
     account, route = owner(tmp_path, [])
-    result = account.dispatch(BracketAmend("dj30_mym_p250", Bracket(stop=99), ()), now=NOW)
+    result = account.dispatch(BracketAmend("dj30_mym_p250", Bracket(stop=99), ()), occurrence=account.make_occurrence("direct", "test_book_ingress_validation:148"), now=NOW)
     assert result.transport_state == "not_attempted"
     assert result.refusal_reason == "empty_scope"
     assert account.observable_accounting()["operations"] == ()
@@ -163,7 +163,7 @@ def test_off_tick_bracket_payload_and_directional_emulator_rounding(tmp_path, si
     # uses the long leg; emulator independently exercises both rounding directions.
     if side == "buy":
         account = runtime_owner(tmp_path, [BrokerResult("accepted")])
-        account.dispatch(action, now=NOW)
+        account.dispatch(action, occurrence=account.make_occurrence("direct", "test_book_ingress_validation:166"), now=NOW)
         assert account.synthetic_broker.commands[0].action.bracket.stop == 98.30
     from c1_signal_daemon.book_validation import validate_action
     assert validate_action(action) is None
@@ -180,7 +180,7 @@ def test_off_tick_trigger_is_not_rounded_before_crossing(tmp_path):
     from c1_signal_daemon.book_protocol import FillTiming
     action = entry("off-tick", price=100.1, order_type="stop", timing=FillTiming.THIS_CLOSE)
     account = runtime_owner(tmp_path, [BrokerResult("accepted")])
-    account.dispatch(action, now=NOW)
+    account.dispatch(action, occurrence=account.make_occurrence("direct", "test_book_ingress_validation:183"), now=NOW)
     sent = account.synthetic_broker.commands[0].action
     assert sent.price == 100.1
     engine = emu()
@@ -203,11 +203,11 @@ def test_zero_trailing_activation_bare_entry_and_partial_quantity(tmp_path):
     account, route = owner(tmp_path, [BrokerResult("accepted", (
         BrokerFact.fill("partial", "base", "dj30_mym_p250", "entry", 1, 100, NOW),
     )), BrokerResult("accepted")])
-    account.dispatch(intent(), now=NOW)
+    account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_book_ingress_validation:206"), now=NOW)
     assert route.commands[0].action.bracket is None
     assert route.commands[0].quantity == 3
     result = account.dispatch(replace(intent("partial-exit", kind="exit", qty=1),
-                                      side=Side.SELL, scope_fill_ids=("partial",)), now=NOW)
+                                      side=Side.SELL, scope_fill_ids=("partial",)), occurrence=account.make_occurrence("direct", "test_book_ingress_validation:209"), now=NOW)
     assert result.quantity == 1
     assert route.commands[1].action.qty == 1
     assert route.commands[1].action.scope_fill_ids == ("partial",)
@@ -233,7 +233,7 @@ def test_malformed_typed_action_fields_are_fenced(tmp_path, changes):
         object.__setattr__(action, field, value)
     account, route = owner(tmp_path, [])
     with pytest.raises(AccountOwnerError):
-        account.dispatch(action, now=NOW)
+        account.dispatch(action, occurrence=account.make_occurrence("direct", "test_book_ingress_validation:236"), now=NOW)
     assert account.authority == "INTERVENTION"
     assert account.incidents
     assert account.observable_accounting()["operations"] == ()

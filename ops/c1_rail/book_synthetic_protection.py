@@ -1,0 +1,240 @@
+"""Offline broker with independent positions, orders and explicit synthetic time."""
+from dataclasses import dataclass, replace
+from datetime import datetime
+import math
+
+from c1_signal_daemon.book_protocol import Bracket, OrderIntent, Side
+from c1_signal_daemon.book_adapters import ADAPTER_BY_LEG
+from c1_rail.book_account_owner import BrokerCommand, BrokerFact, BrokerResult, SyntheticBroker
+from c1_rail.book_protection import (
+    ObservedProtection, ProtectionExecution, ProtectionRead, ProtectionSnapshot,
+    changed_components, has_components, normalize_bracket,
+)
+
+
+@dataclass
+class _Lot:
+    fill_id: str
+    leg_id: str
+    symbol: str
+    side: Side
+    remaining: int
+    price: float
+    consumed: bool = False
+
+
+class SyntheticProtectionBroker(SyntheticBroker):
+    """Receipt never applies a command. Only explicit synthetic stimuli mutate state."""
+
+    def __init__(self, results=(), *, account, account_epoch, mintick=.25,
+                 stream_id='synthetic-protection', at=None):
+        super().__init__(results)
+        self.account, self.account_epoch = account, account_epoch
+        self.stream_id, self.mintick = stream_id, mintick
+        self._clock = None
+        self._sequence = 0
+        self._pending = {}
+        self._outcomes = {}
+        self._lots = {}
+        self._orders = {}
+        self._filled = {}
+        self._facts = {}
+        self._prices = {}
+        self.drop_reads = False
+        if at is not None:
+            self.advance(at)
+
+    @property
+    def now(self):
+        return self._clock
+
+    def advance(self, at: datetime):
+        if not isinstance(at, datetime) or at.tzinfo is None or at.utcoffset() is None:
+            raise ValueError('aware synthetic time required')
+        if self._clock is not None and at < self._clock:
+            raise ValueError('synthetic clock cannot move backward')
+        self._clock = at
+
+    def _tick(self, leg):
+        adapter = ADAPTER_BY_LEG.get(leg)
+        if adapter is not None:
+            return adapter.mintick
+        return self.mintick[leg] if isinstance(self.mintick, dict) else self.mintick
+
+    def send(self, command: BrokerCommand) -> BrokerResult:
+        if command.operation_id in self._pending:
+            raise ValueError('duplicate operation send')
+        occurrence = command.occurrence
+        if occurrence is not None and (occurrence.account != self.account or
+                                        occurrence.account_epoch != self.account_epoch):
+            raise ValueError('foreign occurrence')
+        result = super().send(command)
+        self._pending[command.operation_id] = command
+        if result.state == 'rejected':
+            self._outcomes[command.operation_id] = 'rejected'
+        return result
+
+    def apply(self, operation_id: str, *, outcome: str, at: datetime):
+        if outcome not in ('applied', 'rejected'):
+            raise ValueError('invalid application outcome')
+        command = self._pending[operation_id]
+        if operation_id in self._outcomes:
+            if self._outcomes[operation_id] != outcome:
+                raise ValueError('conflicting application outcome')
+            self.advance(at)
+            return
+        self.advance(at)
+        if outcome == 'rejected':
+            self._outcomes[operation_id] = outcome
+            return
+        change = command.protection_change
+        if change is not None:
+            target = change.target
+            lot = self._lots[target.entry_fill_id]
+            if target.owner_id != 'protection:' + lot.fill_id or (target.leg_id, target.order_symbol, target.side) != (lot.leg_id, lot.symbol, lot.side):
+                raise ValueError('foreign protection target')
+            if lot.consumed:
+                raise ValueError('consumed protection cannot be attached')
+            old = self._orders.get(target.owner_id)
+            expected = changed_components(old.effective if old else None, change.effective)
+            if expected != change.changed_components:
+                raise ValueError('component mutation does not match actual state')
+            coverage = self._coverage(lot)
+            if type(target.quantity) is not int or target.quantity <= 0 or target.quantity > coverage:
+                raise ValueError('invalid protection coverage')
+            if old is None and (target.primitive != 'attach' or target.quantity != lot.remaining):
+                raise ValueError('attachment requires surviving bare lot')
+            if old is not None and (target.primitive != 'amend' or target.quantity != old.quantity):
+                raise ValueError('amendment cannot invent quantity reduction')
+            if has_components(change.effective):
+                self._orders[target.owner_id] = ObservedProtection(
+                    target.owner_id, lot.fill_id, lot.leg_id, lot.symbol,
+                    old.broker_order_ids if old else ('synthetic:' + target.owner_id,),
+                    operation_id, old.revision + 1 if old else 1, target.quantity,
+                    change.effective, old.trail_active if old else False,
+                    old.trail_anchor if old else None)
+            else:
+                self._orders.pop(target.owner_id, None)
+        elif isinstance(command.action, OrderIntent) and command.kind in ('exit', 'flat'):
+            self._close(command, at)
+        self._outcomes[operation_id] = outcome
+
+    def execute_entry(self, operation_id, *, fill_id, quantity, price, at):
+        command = self._pending[operation_id]
+        if command.kind not in ('entry', 'add') or self._outcomes.get(operation_id) == 'rejected':
+            raise ValueError('entry is not executable')
+        self._validate_fill(quantity, price)
+        if fill_id in self._lots or quantity + self._filled.get(operation_id, 0) > command.quantity:
+            raise ValueError('duplicate or excessive entry fill')
+        self.advance(at)
+        lot = _Lot(fill_id, command.leg_id, command.order_symbol, Side(command.side), quantity, price)
+        self._lots[fill_id] = lot
+        self._filled[operation_id] = self._filled.get(operation_id, 0) + quantity
+        bracket = normalize_bracket(command.action.bracket, lot.side, self._tick(lot.leg_id))
+        if has_components(bracket):
+            owner_id = 'protection:' + fill_id
+            self._orders[owner_id] = ObservedProtection(owner_id, fill_id, lot.leg_id, lot.symbol,
+                ('synthetic:' + owner_id,), operation_id, 1, quantity, bracket, False, None)
+        self._outcomes[operation_id] = 'applied'
+        return BrokerFact.fill(fill_id, operation_id, lot.leg_id, command.kind, quantity, price, at)
+
+    @staticmethod
+    def _validate_fill(quantity, price):
+        if type(quantity) is not int or quantity <= 0 or type(price) not in (int, float) or not math.isfinite(price):
+            raise ValueError('invalid fill')
+
+    def _coverage(self, lot):
+        return sum(other.remaining for other in self._lots.values()
+                   if (other.leg_id, other.symbol, other.side) == (lot.leg_id, lot.symbol, lot.side))
+
+    def _snapshot(self, legs):
+        self._sequence += 1
+        return ProtectionSnapshot(f'{self.stream_id}:{self._sequence}', self.account, self.account_epoch,
+            self.stream_id, self._sequence, self._clock, tuple(legs), True,
+            tuple(order for order in self._orders.values() if order.leg_id in legs),
+            tuple((lot.fill_id, lot.remaining) for lot in self._lots.values() if lot.leg_id in legs and lot.remaining),
+            tuple((op, result) for op, result in self._outcomes.items() if self._pending[op].leg_id in legs))
+
+    def read_protection(self, request: ProtectionRead):
+        if (request.occurrence.account, request.occurrence.account_epoch) != (self.account, self.account_epoch):
+            raise ValueError('foreign protection read')
+        if self.drop_reads or self._clock is None or self._clock <= request.prepared_at:
+            return None
+        return self._snapshot(request.scope_legs)
+
+    def execute_protection(self, owner_id, *, quantity, price, terminal, at):
+        self._validate_fill(quantity, price)
+        order = self._orders[owner_id]
+        lot = self._lots[order.entry_fill_id]
+        if type(terminal) is not bool or quantity > order.quantity or quantity > self._coverage(lot):
+            raise ValueError('invalid protection execution coverage')
+        if not terminal and quantity == order.quantity:
+            raise ValueError('exhausted order must be terminal')
+        self.advance(at)
+        remaining, allocations = quantity, []
+        for other in self._lots.values():
+            if (other.leg_id, other.symbol, other.side) != (lot.leg_id, lot.symbol, lot.side):
+                continue
+            take = min(other.remaining, remaining)
+            if take:
+                other.remaining -= take
+                remaining -= take
+                allocations.append((other.fill_id, take))
+        if terminal:
+            del self._orders[owner_id]
+            lot.consumed = True
+        else:
+            self._orders[owner_id] = replace(order, quantity=order.quantity - quantity)
+        self._cap_orders()
+        snapshot = self._snapshot((lot.leg_id,))
+        return ProtectionExecution('execution:' + snapshot.fact_id, self.account, self.account_epoch,
+            owner_id, order.broker_order_ids[0], at, quantity, price, tuple(allocations), terminal, snapshot)
+
+    def _cap_orders(self):
+        for owner_id, order in tuple(self._orders.items()):
+            coverage = self._coverage(self._lots[order.entry_fill_id])
+            if not coverage:
+                del self._orders[owner_id]
+                self._lots[order.entry_fill_id].consumed = True
+            elif order.quantity > coverage:
+                self._orders[owner_id] = replace(order, quantity=coverage)
+
+    def _close(self, command, at):
+        if command.leg_id not in self._prices:
+            raise ValueError('explicit market price required for close')
+        price = self._prices[command.leg_id]
+        selected = [lot for lot in self._lots.values() if lot.leg_id == command.leg_id and
+                    (command.action.scope_fill_ids is None or lot.fill_id in command.action.scope_fill_ids)]
+        remaining = command.quantity if command.quantity is not None else sum(lot.remaining for lot in selected)
+        facts = []
+        for lot in selected:
+            take = min(lot.remaining, remaining)
+            if not take:
+                continue
+            lot.remaining -= take
+            remaining -= take
+            facts.append(BrokerFact.fill(f'close:{command.operation_id}:{lot.fill_id}', command.operation_id,
+                lot.leg_id, command.kind, take, price, at, entry_execution_id=lot.fill_id))
+            if not lot.remaining:
+                self._orders.pop('protection:' + lot.fill_id, None)
+                lot.consumed = True
+        self._cap_orders()
+        self._facts[command.operation_id] = tuple(facts)
+
+    def result_facts(self, operation_id):
+        return self._facts.get(operation_id, ())
+
+    def mark_price(self, leg_id, price, *, at):
+        """Advance trailing state using an explicit market-price observation."""
+        self._validate_fill(1, price)
+        self.advance(at)
+        self._prices[leg_id] = price
+        for owner_id, order in tuple(self._orders.items()):
+            if order.leg_id != leg_id or order.effective.trail_activation_ticks is None:
+                continue
+            lot = self._lots[order.entry_fill_id]
+            direction = 1 if lot.side == Side.BUY else -1
+            active = order.trail_active or direction * (price - lot.price) >= order.effective.trail_activation_ticks * self._tick(leg_id)
+            if active:
+                anchor = price if order.trail_anchor is None else (max(order.trail_anchor, price) if direction == 1 else min(order.trail_anchor, price))
+                self._orders[owner_id] = replace(order, trail_active=True, trail_anchor=anchor)

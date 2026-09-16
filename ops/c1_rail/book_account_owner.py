@@ -23,6 +23,8 @@ from lib.validation import require_finite_number
 
 from c1_signal_daemon.book_validation import InputViolation, validate_action
 
+from .book_protection import ActionOccurrence, ProtectionChange, occurrence_key
+from .book_protection_owner import ProtectionOwnerMixin
 from .book_account_lock import AccountSerializer
 from .book_capacity import (
     CapacityState,
@@ -193,6 +195,8 @@ class BrokerCommand:
     generation: int
     action: OrderIntent | BracketAmend | Cancel
     target_operation_id: str | None = None
+    occurrence: ActionOccurrence | None = None
+    protection_change: ProtectionChange | None = None
 
 
 class SyntheticBroker:
@@ -259,6 +263,11 @@ _SCHEMA = {
                              "body TEXT NOT NULL, digest TEXT NOT NULL",
     "close_reservations": "operation_id TEXT PRIMARY KEY, allocations TEXT NOT NULL, "
                           "status TEXT NOT NULL",
+    "action_occurrences": "key TEXT PRIMARY KEY, envelope TEXT NOT NULL, source TEXT NOT NULL, scope TEXT, result TEXT, state TEXT NOT NULL, prepared_at TEXT NOT NULL, generation INTEGER NOT NULL, boot_id TEXT NOT NULL",
+    "protection_owners": "owner_id TEXT PRIMARY KEY, entry_fill_id TEXT NOT NULL UNIQUE, body TEXT NOT NULL",
+    "protection_operations": "operation_id TEXT PRIMARY KEY, occurrence_key TEXT NOT NULL, owner_id TEXT NOT NULL, body TEXT NOT NULL",
+    "protection_facts": "fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, kind TEXT NOT NULL",
+    "protection_streams": "stream_id TEXT PRIMARY KEY, body TEXT NOT NULL",
     "feed_watch": "session_id TEXT PRIMARY KEY, started_at TEXT NOT NULL",
 }
 
@@ -268,7 +277,7 @@ _SETTLEMENT_TABLES = {
 }
 
 
-class BookAccountOwner:
+class BookAccountOwner(ProtectionOwnerMixin):
     """Single durable account writer; production transport is intentionally absent."""
 
     def __init__(self, path, account, binding, synthetic_broker, crash_at=None):
@@ -301,7 +310,7 @@ class BookAccountOwner:
                     raise AccountOwnerError("account owner state unavailable")
                 for name, fields in _SCHEMA.items():
                     db.execute(f"CREATE TABLE {name} ({fields})")
-                db.execute("INSERT INTO owner_state VALUES (1, ?, ?, ?, 1, 'HALTED', "
+                db.execute("INSERT INTO owner_state VALUES (2, ?, ?, ?, 1, 'HALTED', "
                            "'INTERVENTION', 0)",
                            (owner.account, str(uuid4()), str(uuid4())))
                 attachment_body = _body({
@@ -318,13 +327,11 @@ class BookAccountOwner:
                            (owner.binding["session"].session_id, raw,
                             hashlib.sha256(raw.encode("utf-8")).hexdigest()))
             else:
-                # Older offline owners have no feed clock. Migration grants no
-                # new freshness: use the bound session open as a conservative anchor.
-                if "feed_watch" not in tables and (set(_SCHEMA) - {"feed_watch"}).issubset(tables):
-                    db.execute("CREATE TABLE feed_watch (" + _SCHEMA["feed_watch"] + ")")
-                    db.execute("INSERT INTO feed_watch VALUES (?, ?)",
-                               (owner.binding["session"].session_id,
-                                owner.binding["session"].opens_at.isoformat()))
+                version = db.execute("SELECT schema FROM owner_state").fetchall()
+                if version == [(1,)]:
+                    raise AccountOwnerError("legacy schema requires explicit migration")
+                if version != [(2,)]:
+                    raise AccountOwnerError("invalid account owner schema version")
                 owner._validate_schema(db)
                 owner._settlement_attachment_state(db)
                 state = owner._state(db)
@@ -359,6 +366,8 @@ class BookAccountOwner:
                            "permission='HALTED', authority='INTERVENTION'", (str(uuid4()),))
             current = owner._state(db)
             owner._capacity(db)
+            owner._validate_occurrence_state_db(db)
+            owner._validate_protection_state_db(db)
             owner._actor_boot_id = current["boot_id"]
         return owner
 
@@ -425,6 +434,13 @@ class BookAccountOwner:
         names = set(actual)
         if not set(_SCHEMA).issubset(names) or not names.issubset(set(_SCHEMA) | _SETTLEMENT_TABLES):
             raise AccountOwnerError("invalid account owner schema")
+        for name, fields in _SCHEMA.items():
+            # Column order is durable: inserts deliberately use positional values.
+            columns = fields.split(", PRIMARY KEY(")[0]
+            expected = tuple(part.strip().split()[0] for part in columns.split(","))
+            actual_columns = tuple(row[1] for row in db.execute(f"PRAGMA table_info({name})"))
+            if actual_columns != expected:
+                raise AccountOwnerError("invalid account owner schema columns: " + name)
 
     def _settlement_attachment_state(self, db):
         rows = db.execute(
@@ -593,7 +609,7 @@ class BookAccountOwner:
         if len(rows) != 1:
             raise AccountOwnerError("invalid account owner state")
         schema, account, epoch, boot, generation, permission, authority, sequence = rows[0]
-        if (schema != 1 or account != self.account or not epoch or not boot
+        if (schema != 2 or account != self.account or not epoch or not boot
                 or type(generation) is not int or generation < 1
                 or permission not in ("HALTED", "RUNNING")
                 or authority not in ("NORMAL", "SCHEDULED_EXIT", "INTERVENTION")
@@ -1036,7 +1052,8 @@ class BookAccountOwner:
                 db.execute("UPDATE owner_state SET permission='RUNNING', authority='NORMAL'")
                 return replace_dict(state, permission="RUNNING", authority="NORMAL")
         for cancel in cancels:
-            self.dispatch(cancel, now=now)
+            self.dispatch(cancel, occurrence=self.make_occurrence(
+                "mode", session_id + ":" + desired.value + ":cancel:" + cancel.order_id), now=now)
         with self.serializer.acquire(), self._transaction() as db:
             capacity = self._capacity(db)
             if any(next(operation for operation in capacity.operations
@@ -1191,43 +1208,153 @@ class BookAccountOwner:
         )
         return request, context, binding
 
-    def dispatch(self, action, *, now):
-        with self.serializer.acquire():
-            return self._dispatch_locked(action, now=now)
+    def _validate_occurrence_state_db(self, db):
+        for key, envelope, source, scope, result, state, prepared_at, generation, boot_id in db.execute(
+                "SELECT * FROM action_occurrences"):
+            try:
+                occurrence = ActionOccurrence(**json.loads(envelope))
+                source_value = json.loads(source)
+                valid = (occurrence_key(occurrence) == key and occurrence.account == self.account
+                         and set(source_value) == {"type", "value"}
+                         and source_value["type"] in ("OrderIntent", "BracketAmend", "Cancel")
+                         and isinstance(source_value["value"], dict)
+                         and state in ("prepared", "awaiting_evidence", "takeover_pending", "complete")
+                         and type(generation) is int and generation > 0 and bool(boot_id))
+                _time(datetime.fromisoformat(prepared_at))
+                if scope is not None and not isinstance(json.loads(scope), list):
+                    valid = False
+                if result is not None:
+                    self._restore_dispatch_result(result)
+                elif state != "prepared":
+                    valid = False
+                if not valid:
+                    raise ValueError("invalid retained occurrence")
+            except (ValueError, TypeError, KeyError) as exc:
+                raise AccountOwnerError("invalid retained occurrence") from exc
 
-    def _dispatch_locked(self, action, *, now):
+    def make_occurrence(self, producer, event_id, ordinal=0):
+        """Bind caller-supplied provenance to this account's durable identity."""
+        with self._transaction() as db:
+            state = self._state(db)
+        return ActionOccurrence(self.account, state["account_epoch"],
+                                self.binding["session"].session_id, producer, event_id, ordinal)
+
+    @staticmethod
+    def _occurrence_attempt_db(db, key, operation_id):
+        return db.execute("SELECT a.attempt_id, a.state FROM attempts a WHERE a.operation_id=? "
+                          "OR a.operation_id IN (SELECT operation_id FROM protection_operations WHERE occurrence_key=?) "
+                          "OR substr(a.operation_id,1,?)=? ORDER BY a.rowid DESC LIMIT 1",
+                          (operation_id, key, len("control:" + key + ":"), "control:" + key + ":")).fetchone()
+
+    def occurrence_state(self, occurrence):
+        with self._transaction() as db:
+            row = db.execute("SELECT state, boot_id, generation, result FROM action_occurrences WHERE key=?",
+                             (occurrence_key(occurrence),)).fetchone()
+            if row is None:
+                return None
+            result = json.loads(row[3]) if row[3] else {}
+            attempted = bool(result.get("attempt_id")) or bool(self._occurrence_attempt_db(
+                db, occurrence_key(occurrence), result.get("operation_id")))
+            return dict(state=row[0], boot_id=row[1], generation=row[2], attempted=attempted)
+
+    @staticmethod
+    def _restore_dispatch_result(raw):
+        from c1_signal_daemon.book_protocol import Side
+        value = json.loads(raw)
+        events = []
+        for item in value.pop("confirmed_events", ()):
+            item["bar_time"] = datetime.fromisoformat(item["bar_time"])
+            if item.get("fill"):
+                fill = item["fill"]
+                fill["bar_time"] = datetime.fromisoformat(fill["bar_time"])
+                fill["side"] = Side(fill["side"])
+                item["fill"] = Fill(**fill)
+            events.append(ExecutionEvent(**item))
+        return DispatchResult(**value, confirmed_events=tuple(events))
+
+    def dispatch(self, action, *, occurrence=None, now):
+        try:
+            with self.serializer.acquire():
+                return self._dispatch_locked(action, occurrence=occurrence, now=now)
+        except AccountOwnerError:
+            self._input_send_suppressed = True
+            raise
+
+    def _dispatch_locked(self, action, *, occurrence=None, now):
         _time(now)
         if getattr(self, "_input_send_suppressed", False):
             raise AccountOwnerError("local send suppression after input incident storage failure")
         violation = validate_action(action)
         if violation is not None:
             self._record_input_incident_locked("input:" + str(uuid4()), violation,
-                                       source="direct", now=now)
+                                              source="direct", now=now)
             raise AccountOwnerError("invalid action: " + violation.code + ":" + violation.field)
+        if occurrence is None:
+            return DispatchResult(getattr(action, "order_id", None) or "", 0,
+                                  refusal_reason="source_occurrence_required")
+        try:
+            key = occurrence_key(occurrence)
+        except (TypeError, ValueError) as exc:
+            raise AccountOwnerError("invalid source occurrence") from exc
+        self._check_protection_deadlines_locked(now=now)
+        operation_id = action.order_id if isinstance(action, OrderIntent) else "control:" + key
+        source = _body({"type": type(action).__name__, "value": asdict(action)})
+        with self._transaction() as db:
+            state = self._state(db)
+            previous = db.execute("SELECT source,result,state,generation,boot_id FROM action_occurrences WHERE key=?", (key,)).fetchone()
+            if previous is not None:
+                if previous[0] != source:
+                    self._halt_db(db, "occurrence-conflict:" + key, "identity", now)
+                    return DispatchResult(operation_id, 0, refusal_reason="occurrence_conflict")
+                attempt = self._occurrence_attempt_db(db, key, operation_id)
+                if attempt and previous[2] in ("awaiting_evidence", "takeover_pending"):
+                    retained = DispatchResult(operation_id, 0, attempt[0], attempt[1].lower(), "retained_attempt")
+                    db.execute("UPDATE action_occurrences SET result=?, state='complete' WHERE key=?",
+                               (_body(asdict(retained)), key))
+                    return retained
+                continuation = (previous[2] in ("awaiting_evidence", "takeover_pending")
+                                and previous[3] == state["generation"] and previous[4] == state["boot_id"]
+                                and not attempt)
+                if not continuation:
+                    return (self._restore_dispatch_result(previous[1]) if previous[1] else
+                            DispatchResult(operation_id, 0, refusal_reason="retained_preparation"))
+            else:
+                if (occurrence.account != self.account or occurrence.account_epoch != state["account_epoch"]
+                        or occurrence.session_id != self.binding["session"].session_id):
+                    self._halt_db(db, "occurrence-binding:" + key, "identity", now)
+                    return DispatchResult(operation_id, 0, refusal_reason="occurrence_binding_conflict")
+                db.execute("INSERT INTO action_occurrences VALUES (?, ?, ?, NULL, NULL, 'prepared', ?, ?, ?)",
+                           (key, _body(asdict(occurrence)), source, now.isoformat(), state["generation"], state["boot_id"]))
+        if isinstance(action, BracketAmend):
+            result = self._dispatch_protection_locked(action, occurrence, key, now=now)
+        elif isinstance(action, Cancel) and action.order_id is None:
+            with self._transaction() as db:
+                row = db.execute("SELECT scope FROM action_occurrences WHERE key=?", (key,)).fetchone()
+                if row[0] is None:
+                    targets = tuple(o.request.operation_id for o in self._capacity(db).operations
+                                    if o.request.leg_id == action.leg_id and o.status == "active" and o.terminal is None)
+                    db.execute("UPDATE action_occurrences SET scope=? WHERE key=?", (_body(targets), key))
+                else:
+                    targets = tuple(json.loads(row[0]))
+            results = tuple(self._dispatch_action_locked(Cancel(action.leg_id, target), occurrence=occurrence,
+                             operation_id=operation_id + ":" + str(index), now=now)
+                            for index, target in enumerate(targets))
+            states = {item.transport_state for item in results}
+            result = DispatchResult(operation_id, 0,
+                transport_state=next((item for item in ("unknown", "rejected", "accepted") if item in states), "not_attempted"),
+                refusal_reason=next((item.refusal_reason for item in results if item.refusal_reason not in (None, "duplicate_operation")), None),
+                confirmed_events=tuple(event for item in results for event in item.confirmed_events))
+        else:
+            result = self._dispatch_action_locked(action, occurrence=occurrence, operation_id=operation_id, now=now)
+        with self._transaction() as db:
+            disposition = result.refusal_reason if result.refusal_reason in ("awaiting_evidence", "takeover_pending") else "complete"
+            db.execute("UPDATE action_occurrences SET result=?,state=? WHERE key=?", (_body(asdict(result)), disposition, key))
+        return result
+
+    def _dispatch_action_locked(self, action, *, occurrence, operation_id, now):
         action_body = _body(asdict(action))
-        operation_id = (action.order_id if isinstance(action, OrderIntent) else
-                        "control:" + hashlib.sha256(action_body.encode("utf-8")).hexdigest()[:24])
         if isinstance(action, (OrderIntent, BracketAmend)) and action.scope_fill_ids == ():
             return DispatchResult(operation_id, 0, refusal_reason="empty_scope")
-        if isinstance(action, Cancel) and action.order_id is None:
-            # The protocol's all-pending scope is a snapshot of explicit owned
-            # targets, never an unscoped transport command. The caller holds the
-            # account serializer through expansion and every child dispatch.
-            with self._transaction() as db:
-                targets = tuple(o.request.operation_id for o in self._capacity(db).operations
-                                if o.request.leg_id == action.leg_id
-                                and o.status == "active" and o.terminal is None)
-            results = tuple(self._dispatch_locked(Cancel(action.leg_id, target), now=now)
-                            for target in targets)
-            states = {result.transport_state for result in results}
-            transport = next((state for state in ("unknown", "rejected", "accepted")
-                              if state in states), "not_attempted")
-            refusal = next((result.refusal_reason for result in results
-                            if result.refusal_reason not in (None, "duplicate_operation")), None)
-            return DispatchResult(operation_id, 0, transport_state=transport,
-                                  refusal_reason=refusal,
-                                  confirmed_events=tuple(event for result in results
-                                                         for event in result.confirmed_events))
         with self._thread:
             with self._transaction() as db:
                 state = self._state(db)
@@ -1236,6 +1363,9 @@ class BookAccountOwner:
                     return DispatchResult(operation_id, 0, refusal_reason=settlement_refusal)
                 if state["authority"] == "INTERVENTION":
                     return DispatchResult(operation_id, 0, refusal_reason="intervention_fence")
+                if (state["authority"] == "SCHEDULED_EXIT" and occurrence.producer != "schedule"
+                        and not (isinstance(action, OrderIntent) and action.kind in ("entry", "add"))):
+                    return DispatchResult(operation_id, 0, refusal_reason="scheduled_operation_required")
                 existing = db.execute("SELECT body, quantity, status FROM operations WHERE operation_id=?",
                                       (operation_id,)).fetchone()
                 ready_takeover = False
@@ -1350,6 +1480,7 @@ class BookAccountOwner:
                     leg(action.leg_id).order_symbol, state["authority"], state["generation"],
                     replace(action, qty=quantity) if isinstance(action, OrderIntent) else action,
                     action.order_id if isinstance(action, Cancel) else None,
+                    occurrence,
                 )
                 db.execute("INSERT INTO attempts VALUES (?, ?, 'UNKNOWN', ?, ?, NULL)",
                            (attempt_id, operation_id, state["generation"], _body(asdict(command))))
@@ -1378,9 +1509,6 @@ class BookAccountOwner:
                 db.execute("UPDATE attempts SET state=?, observation=? WHERE attempt_id=?",
                            (result.state.upper(), _body({"state": result.state,
                                                         "facts": [f.fact_id for f in facts]}), attempt_id))
-                if result.facts and isinstance(action, BracketAmend):
-                    db.execute("UPDATE operations SET status='observed' WHERE operation_id=?",
-                               (operation_id,))
             return DispatchResult(operation_id, quantity, attempt_id, result.state,
                                   confirmed_events=tuple(events))
 
@@ -1442,7 +1570,10 @@ class BookAccountOwner:
                                                       "scheduled_flatten", now)
                         if action is not None:
                             actions.append(action)
-        results = tuple(retired) + tuple(self._dispatch_locked(action, now=now) for action in actions)
+        results = tuple(retired) + tuple(self._dispatch_locked(
+            action, occurrence=self.make_occurrence("schedule", session.session_id + ":" +
+                (action.order_id if isinstance(action, OrderIntent) else "cancel:" + action.order_id)),
+            now=now) for action in actions)
         if phase is SchedulePhase.DEADLINE:
             with self._thread, self._transaction() as db:
                 if self._state(db)["authority"] == "SCHEDULED_EXIT":
@@ -1467,6 +1598,7 @@ class BookAccountOwner:
             capacity = self._capacity(db)
             if state["authority"] != "NORMAL" or capacity.takeover is None:
                 return (), False
+            takeover_id = capacity.takeover.operation_id
             displaced = capacity.takeover.displaced
             for operation in capacity.operations:
                 if (operation.request.leg_id in displaced and operation.status == "active"
@@ -1480,7 +1612,10 @@ class BookAccountOwner:
                         exposure.leg_id, "aegis_takeover", now)
                     if action is not None:
                         actions.append(action)
-        results = tuple(self._dispatch_locked(action, now=now) for action in actions)
+        results = tuple(self._dispatch_locked(
+            action, occurrence=self.make_occurrence("takeover", takeover_id + ":" +
+                (action.order_id if isinstance(action, OrderIntent) else "cancel:" + action.order_id)),
+            now=now) for action in actions)
         with self._thread, self._transaction() as db:
             state = self._state(db)
             capacity = self._capacity(db)
@@ -1550,15 +1685,26 @@ class BookAccountOwner:
             for identity, raw in rows:
                 if identity not in ready:
                     continue
-                results.append(self._dispatch_locked(self._restore_intent(raw), now=now))
+                with self._transaction() as db:
+                    occurrence_row = next((row for row in db.execute(
+                        "SELECT envelope, source FROM action_occurrences WHERE state='takeover_pending'")
+                        if json.loads(row[1])["value"].get("order_id") == identity), None)
+                if occurrence_row is None:
+                    raise AccountOwnerError("takeover source occurrence missing")
+                occurrence = ActionOccurrence(**json.loads(occurrence_row[0]))
+                results.append(self._dispatch_locked(self._restore_intent(raw), occurrence=occurrence, now=now))
             return tuple(results)
 
     def _halt_db(self, db, incident_id, reason, now):
-        state = self._state(db)
-        inserted = db.execute("INSERT OR IGNORE INTO incidents VALUES (?, ?, ?, ?)",
-                              (incident_id, reason, now.isoformat(), state["generation"])).rowcount
-        db.execute("UPDATE owner_state SET permission='HALTED', authority='INTERVENTION', "
-                   "generation=generation+?", (1 if inserted else 0,))
+        try:
+            state = self._state(db)
+            inserted = db.execute("INSERT OR IGNORE INTO incidents VALUES (?, ?, ?, ?)",
+                                  (incident_id, reason, now.isoformat(), state["generation"])).rowcount
+            db.execute("UPDATE owner_state SET permission='HALTED', authority='INTERVENTION', "
+                       "generation=generation+?", (1 if inserted else 0,))
+        except (sqlite3.Error, OSError, AccountOwnerError):
+            self._input_send_suppressed = True
+            raise
 
     def observe(self, fact, *, now):
         with self.serializer.acquire():
@@ -1728,6 +1874,8 @@ class BookAccountOwner:
                 self._halt_db(db, "capacity-fact:" + fact.fact_id, "execution", now)
                 db.execute("INSERT INTO broker_facts VALUES (?, ?, NULL)", (fact.fact_id, raw))
                 return ()
+            if fact.kind == "fill" and fact.order_kind in ("entry", "add"):
+                self._register_protection_fill_db(db, fact, operation_body)
             if fact.kind == "terminal" and operation_kind in ("entry", "add"):
                 for control_id, control_body in tuple(db.execute(
                         "SELECT operation_id, body FROM operations "

@@ -130,3 +130,16 @@ Acceptance matrix: malformed OHLCV/actions; invalid and stale targets; duplicate
 Every slice needs failing-before/passing-after evidence and independent review. Correct the prior takeover test's forbidden intermediate expectation with the contract cited. Full acceptance additionally requires operations tests, repository gates, and current CI. Do not add counts from overlapping suites or equate passing synthetic tests with live capability.
 
 Falsifier: if any trace sends before its evidence/authority prerequisites, changes qualified strategy semantics, loses an obligation, or creates fresh-send authority from replay/activation, the correction is not accepted even when its regression suite passes.
+
+### Slice B local implementation record (2026-09-16)
+
+Slice B now implements occurrence-bound dispatch, original protection ownership,
+independent synthetic working-order evidence, protective FIFO execution accounting,
+confirmation deadlines and the schema-2 recognition boundary. The [implementation
+record](../superpowers/plans/2026-09-16-pr409-protection-correction.md#7-implementation-and-acceptance-record-2026-09-16)
+contains the tests and review findings. Zero trailing offsets remain rejected.
+
+This establishes the bounded offline slice only. C's takeover ordering and D's
+activation restrictions/legacy migration remain outstanding; existing synthetic
+activation is not qualified as incident or restart recovery. No live producer,
+deployment, remote CI acceptance or PR merge readiness is claimed.
