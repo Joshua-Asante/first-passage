@@ -38,6 +38,7 @@ COPY ops/c1_rail/__init__.py ops/c1_rail/m1_stage1_contract.py \
      ops/c1_rail/book_account_lock.py ops/c1_rail/book_account_owner.py \
      ops/c1_rail/book_capacity.py ops/c1_rail/book_schedule.py \
      ops/c1_rail/book_protection.py ops/c1_rail/book_protection_owner.py \
+     ops/c1_rail/book_takeover.py ops/c1_rail/book_takeover_owner.py \
      ops/c1_rail/book_session_calendar.py \
      ops/c1_rail/book_settlement.py ops/c1_rail/account_close_calculation.py \
      ops/c1_rail/account_close_evidence.py ops/c1_rail/account_close_ledger.py \

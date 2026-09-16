@@ -10,6 +10,9 @@ from c1_rail.book_protection import (
     ObservedProtection, ProtectionExecution, ProtectionRead, ProtectionSnapshot,
     changed_components, has_components, normalize_bracket,
 )
+from c1_rail.book_takeover import (
+    AccountInventory, InventoryPosition, InventoryRead, RequestOutcome, WorkingOrder,
+)
 
 
 @dataclass
@@ -40,6 +43,12 @@ class SyntheticProtectionBroker(SyntheticBroker):
         self._filled = {}
         self._facts = {}
         self._prices = {}
+        self._working = {}
+        self._entry_operations = {}
+        self._terminals = {}
+        self._inventory_sequence = 0
+        self._history = {}
+        self._close_execution_ids = set()
         self.drop_reads = False
         if at is not None:
             self.advance(at)
@@ -72,6 +81,8 @@ class SyntheticProtectionBroker(SyntheticBroker):
         self._pending[command.operation_id] = command
         if result.state == 'rejected':
             self._outcomes[command.operation_id] = 'rejected'
+            if command.kind in ('entry', 'add', 'exit', 'flat'):
+                self._terminal(command.operation_id, 'rejected', self._clock)
         return result
 
     def apply(self, operation_id: str, *, outcome: str, at: datetime):
@@ -86,6 +97,9 @@ class SyntheticProtectionBroker(SyntheticBroker):
         self.advance(at)
         if outcome == 'rejected':
             self._outcomes[operation_id] = outcome
+            if command.kind in ('entry', 'add', 'exit', 'flat'):
+                self._working.pop(operation_id, None)
+                self._terminal(operation_id, 'rejected', at)
             return
         change = command.protection_change
         if change is not None:
@@ -117,11 +131,17 @@ class SyntheticProtectionBroker(SyntheticBroker):
                 self._orders.pop(target.owner_id, None)
         elif isinstance(command.action, OrderIntent) and command.kind in ('exit', 'flat'):
             self._close(command, at)
+            self._terminal(operation_id, 'filled', at)
+        elif command.kind in ('entry', 'add'):
+            self._set_working(command)
+        elif command.kind == 'cancel':
+            self.apply_cancel(operation_id, at=at)
         self._outcomes[operation_id] = outcome
 
     def execute_entry(self, operation_id, *, fill_id, quantity, price, at):
         command = self._pending[operation_id]
-        if command.kind not in ('entry', 'add') or self._outcomes.get(operation_id) == 'rejected':
+        if (command.kind not in ('entry', 'add') or self._outcomes.get(operation_id) == 'rejected'
+                or operation_id in self._terminals):
             raise ValueError('entry is not executable')
         self._validate_fill(quantity, price)
         if fill_id in self._lots or quantity + self._filled.get(operation_id, 0) > command.quantity:
@@ -129,6 +149,7 @@ class SyntheticProtectionBroker(SyntheticBroker):
         self.advance(at)
         lot = _Lot(fill_id, command.leg_id, command.order_symbol, Side(command.side), quantity, price)
         self._lots[fill_id] = lot
+        self._entry_operations[fill_id] = operation_id
         self._filled[operation_id] = self._filled.get(operation_id, 0) + quantity
         bracket = normalize_bracket(command.action.bracket, lot.side, self._tick(lot.leg_id))
         if has_components(bracket):
@@ -136,7 +157,89 @@ class SyntheticProtectionBroker(SyntheticBroker):
             self._orders[owner_id] = ObservedProtection(owner_id, fill_id, lot.leg_id, lot.symbol,
                 ('synthetic:' + owner_id,), operation_id, 1, quantity, bracket, False, None)
         self._outcomes[operation_id] = 'applied'
-        return BrokerFact.fill(fill_id, operation_id, lot.leg_id, command.kind, quantity, price, at)
+        fact = BrokerFact.fill(fill_id, operation_id, lot.leg_id, command.kind, quantity, price, at)
+        self._history[fact.fact_id] = fact
+        self._set_working(command)
+        if self._filled[operation_id] == command.quantity:
+            self._terminal(operation_id, 'filled', at)
+        return fact
+
+    def _set_working(self, command):
+        remaining = command.quantity - self._filled.get(command.operation_id, 0)
+        if remaining:
+            self._working[command.operation_id] = WorkingOrder('synthetic:' + command.operation_id,
+                command.operation_id, command.leg_id, command.order_symbol, command.kind, remaining)
+        else:
+            self._working.pop(command.operation_id, None)
+
+    def _terminal(self, operation_id, status, at):
+        if operation_id not in self._terminals:
+            fact = BrokerFact.terminal(operation_id, status, self._filled.get(operation_id, 0), at)
+            self._terminals[operation_id] = fact
+            self._history[fact.fact_id] = fact
+        return self._terminals[operation_id]
+
+    def apply_cancel(self, operation_id, *, at):
+        command = self._pending[operation_id]
+        if command.kind != 'cancel' or self._outcomes.get(operation_id) == 'rejected':
+            raise ValueError('cancel is not applicable')
+        self.advance(at)
+        target = command.target_operation_id
+        if target not in self._pending or self._pending[target].kind not in ('entry', 'add'):
+            raise ValueError('unknown cancel target')
+        self._working.pop(target, None)
+        fact = self._terminal(target, 'cancelled', at)
+        self._outcomes[operation_id] = 'applied'
+        return (fact,)
+
+    def read_inventory(self, request: InventoryRead):
+        if (request.occurrence.account, request.occurrence.account_epoch) != (self.account, self.account_epoch):
+            raise ValueError('foreign inventory read')
+        if self.drop_reads or self._clock is None or self._clock <= request.prepared_at:
+            return None
+        self._inventory_sequence += 1
+        legs = request.scope_legs
+        requests = []
+        for op, command in self._pending.items():
+            if command.leg_id not in legs:
+                continue
+            target = command.target_operation_id if command.kind == 'cancel' else op
+            terminal = self._terminals.get(target)
+            requests.append(RequestOutcome(op, command.attempt_id, command.target_operation_id,
+                self._outcomes.get(op, 'pending'), terminal.fact_id if terminal else None))
+        return AccountInventory(f'{self.stream_id}:inventory:{self._inventory_sequence}',
+            self.account, self.account_epoch, self.stream_id + ':inventory', self._inventory_sequence,
+            request.read_id, self._clock, legs, True,
+            tuple(InventoryPosition(lot.fill_id, self._entry_operations[lot.fill_id], lot.leg_id,
+                  lot.symbol, lot.side.value, lot.remaining) for lot in self._lots.values()
+                  if lot.leg_id in legs and lot.remaining),
+            tuple(order for order in self._working.values() if order.leg_id in legs),
+            self._snapshot(legs), tuple(requests),
+            tuple(fact for fact in self._history.values()
+                  if self._pending[fact.operation_id].leg_id in legs))
+
+    def execute_close(self, operation_id, *, execution_id, quantity, price, terminal, at):
+        command = self._pending[operation_id]
+        if (command.kind not in ('exit', 'flat') or operation_id in self._terminals
+                or self._outcomes.get(operation_id) == 'rejected'):
+            raise ValueError('close is not executable')
+        self._validate_fill(quantity, price)
+        if (type(terminal) is not bool or not isinstance(execution_id, str) or not execution_id
+                or execution_id in self._close_execution_ids
+                or self._filled.get(operation_id, 0) + quantity > command.quantity):
+            raise ValueError('invalid close execution')
+        self.advance(at)
+        self._prices[command.leg_id] = price
+        self._close(replace(command, quantity=quantity), at, execution_id=execution_id)
+        self._close_execution_ids.add(execution_id)
+        self._outcomes[operation_id] = 'applied'
+        self._set_working(command)
+        facts = self._facts[operation_id]
+        if terminal:
+            self._working.pop(operation_id, None)
+            status = 'filled' if self._filled[operation_id] == command.quantity else 'cancelled'
+            facts += (self._terminal(operation_id, status, at),)
+        return facts
 
     @staticmethod
     def _validate_fill(quantity, price):
@@ -199,13 +302,18 @@ class SyntheticProtectionBroker(SyntheticBroker):
             elif order.quantity > coverage:
                 self._orders[owner_id] = replace(order, quantity=coverage)
 
-    def _close(self, command, at):
+    def _close(self, command, at, execution_id=None):
         if command.leg_id not in self._prices:
             raise ValueError('explicit market price required for close')
         price = self._prices[command.leg_id]
         selected = [lot for lot in self._lots.values() if lot.leg_id == command.leg_id and
                     (command.action.scope_fill_ids is None or lot.fill_id in command.action.scope_fill_ids)]
         remaining = command.quantity if command.quantity is not None else sum(lot.remaining for lot in selected)
+        if sum(lot.remaining for lot in selected) < remaining:
+            raise ValueError('close exceeds surviving inventory')
+        if any(f'{execution_id or "close:" + command.operation_id}:{lot.fill_id}' in self._history
+               for lot in selected if lot.remaining):
+            raise ValueError('duplicate close execution')
         facts = []
         for lot in selected:
             take = min(lot.remaining, remaining)
@@ -213,13 +321,16 @@ class SyntheticProtectionBroker(SyntheticBroker):
                 continue
             lot.remaining -= take
             remaining -= take
-            facts.append(BrokerFact.fill(f'close:{command.operation_id}:{lot.fill_id}', command.operation_id,
+            identity = f'{execution_id or "close:" + command.operation_id}:{lot.fill_id}'
+            facts.append(BrokerFact.fill(identity, command.operation_id,
                 lot.leg_id, command.kind, take, price, at, entry_execution_id=lot.fill_id))
             if not lot.remaining:
                 self._orders.pop('protection:' + lot.fill_id, None)
                 lot.consumed = True
         self._cap_orders()
         self._facts[command.operation_id] = tuple(facts)
+        self._filled[command.operation_id] = self._filled.get(command.operation_id, 0) + sum(f.quantity for f in facts)
+        self._history.update((f.fact_id, f) for f in facts)
 
     def result_facts(self, operation_id):
         return self._facts.get(operation_id, ())

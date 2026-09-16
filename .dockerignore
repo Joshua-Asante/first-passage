@@ -36,6 +36,8 @@ ops/**
 !ops/c1_rail/book_capacity.py
 !ops/c1_rail/book_protection.py
 !ops/c1_rail/book_protection_owner.py
+!ops/c1_rail/book_takeover.py
+!ops/c1_rail/book_takeover_owner.py
 !ops/c1_rail/book_schedule.py
 !ops/c1_rail/book_session_calendar.py
 !ops/c1_rail/book_settlement.py

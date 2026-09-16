@@ -124,35 +124,27 @@ def test_cancel_all_expands_only_pending_targets_of_its_leg(tmp_path):
 
 
 def test_async_takeover_completes_and_sends_retained_aegis_once(tmp_path):
-    account = normal_owner(tmp_path, [])
-    adapters = inert_adapters()
-    runtime = FourLegRuntime(account, adapters)
-    runtime._mode_actions(Mode.NORMAL)
-    runtime.deliver_confirmed(account.dispatch(entry("orb_mnq_v7", 1), occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:131"), now=NOW))
-    runtime.observe_fact(BrokerFact.fill("orb-fill", "entry:orb_mnq_v7",
-        "orb_mnq_v7", "entry", 1, 100, NOW), now=NOW)
-    aegis = entry("aegis_6j", 8)
-    assert account.dispatch(aegis, occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:135"), now=NOW).refusal_reason == "takeover_pending"
-    controls, done = account.advance_takeover(now=NOW)
-    assert not done
-    for result in controls:
-        runtime.deliver_confirmed(result)
-    route = account.synthetic_broker
-    flat = next(c for c in route.commands if c.kind == "flat")
-    # Cancellation arrives first: the already pending close must not be rebuilt.
-    runtime.observe_fact(BrokerFact.terminal("entry:orb_mnq_v7", "filled", 1,
-        NOW + timedelta(seconds=1)), now=NOW + timedelta(seconds=1))
-    assert account.authority == "NORMAL"
-    assert len([c for c in route.commands if c.kind == "flat"]) == 1
-    fact = BrokerFact.fill("orb-close", flat.operation_id, "orb_mnq_v7", "flat",
-        1, 100, NOW + timedelta(seconds=2), entry_execution_id="orb-fill")
-    runtime.observe_fact(fact, now=NOW + timedelta(seconds=2))
-    runtime.observe_fact(fact, now=NOW + timedelta(seconds=3))
-    assert [c.operation_id for c in route.commands].count(aegis.order_id) == 1
-    assert account.exposure("aegis_6j") == (0, 8)
-    assert account.exposure("orb_mnq_v7") == (0, 0)
-    assert account.authority == "NORMAL"
-    assert account.pending_feedback == ()
+    # The inherited flat-before-entry-terminal expectation violated correction §5.
+    from test_book_takeover_phases import TakeoverScenario
+    s = TakeoverScenario(tmp_path)
+    s.poll()
+    assert [c.kind for c in s.broker.commands] == ['entry', 'cancel']
+    s.poll()
+    assert not any(c.kind == 'flat' for c in s.broker.commands)
+    cancel = s.broker.commands[-1]
+    s.broker.apply_cancel(cancel.operation_id, at=s.tick())
+    s.poll()
+    flat = s.broker.commands[-1]
+    assert flat.kind == 'flat'
+    s.broker.execute_close(flat.operation_id, execution_id='close', quantity=1,
+                           price=100, terminal=True, at=s.tick())
+    snapshot = s.poll()
+    s.runtime.observe_takeover_inventory(snapshot, now=s.tick())
+    assert [c.operation_id for c in s.broker.commands].count(s.root.order_id) == 1
+    assert s.owner.exposure('aegis_6j') == (0, 8)
+    assert s.owner.exposure(s.leg) == (0, 0)
+    assert s.owner.authority == 'NORMAL'
+    assert s.owner.pending_feedback == ()
 
 
 @pytest.mark.parametrize("transport", ["accepted", "unknown"])

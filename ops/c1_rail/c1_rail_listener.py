@@ -91,6 +91,11 @@ def handle_book_action(action, owner, *, occurrence=None, now):
     return owner.dispatch(action, occurrence=occurrence, now=now)
 
 
+def handle_book_takeover_inventory(snapshot, runtime, *, now):
+    """Offline typed inventory enters through the serialized runtime boundary."""
+    return runtime.observe_takeover_inventory(snapshot, now=now)
+
+
 def handle_book_protection(snapshot, owner, *, now):
     """Commit offline working-order evidence without granting send authority."""
     from c1_rail.book_account_owner import BookAccountOwner

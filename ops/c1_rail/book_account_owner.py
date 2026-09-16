@@ -8,7 +8,7 @@ attempts, facts and reservations remain owned.
 """
 from __future__ import annotations
 
-from contextlib import closing, contextmanager
+from contextlib import closing, contextmanager, nullcontext
 from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -25,6 +25,7 @@ from c1_signal_daemon.book_validation import InputViolation, validate_action
 
 from .book_protection import ActionOccurrence, ProtectionChange, occurrence_key
 from .book_protection_owner import ProtectionOwnerMixin
+from .book_takeover_owner import TakeoverOwnerMixin
 from .book_account_lock import AccountSerializer
 from .book_capacity import (
     CapacityState,
@@ -269,6 +270,12 @@ _SCHEMA = {
     "protection_facts": "fact_id TEXT PRIMARY KEY, body TEXT NOT NULL, kind TEXT NOT NULL",
     "protection_streams": "stream_id TEXT PRIMARY KEY, body TEXT NOT NULL",
     "feed_watch": "session_id TEXT PRIMARY KEY, started_at TEXT NOT NULL",
+    "takeover_plans": "operation_id TEXT PRIMARY KEY, occurrence_key TEXT NOT NULL UNIQUE, body TEXT NOT NULL",
+    "takeover_events": "event_id TEXT PRIMARY KEY, operation_id TEXT NOT NULL, ordinal INTEGER NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL, UNIQUE(operation_id, ordinal)",
+    "takeover_children": "operation_id TEXT PRIMARY KEY, takeover_id TEXT NOT NULL, occurrence_key TEXT NOT NULL UNIQUE, kind TEXT NOT NULL, target TEXT NOT NULL, body TEXT NOT NULL",
+    "takeover_reads": "read_id TEXT PRIMARY KEY, operation_id TEXT NOT NULL, body TEXT NOT NULL",
+    "takeover_inventory": "fact_id TEXT PRIMARY KEY, stream_id TEXT NOT NULL, sequence INTEGER NOT NULL, body TEXT NOT NULL, disposition TEXT NOT NULL, UNIQUE(stream_id, sequence)",
+    "takeover_streams": "stream_id TEXT PRIMARY KEY, body TEXT NOT NULL",
 }
 
 _SETTLEMENT_TABLES = {
@@ -277,7 +284,7 @@ _SETTLEMENT_TABLES = {
 }
 
 
-class BookAccountOwner(ProtectionOwnerMixin):
+class BookAccountOwner(TakeoverOwnerMixin, ProtectionOwnerMixin):
     """Single durable account writer; production transport is intentionally absent."""
 
     def __init__(self, path, account, binding, synthetic_broker, crash_at=None):
@@ -288,7 +295,9 @@ class BookAccountOwner(ProtectionOwnerMixin):
                 isinstance(synthetic_broker, SyntheticBroker) and synthetic_broker.synthetic):
             raise AccountOwnerError("only the explicit SyntheticBroker test seam is supported")
         self.synthetic_broker = synthetic_broker
-        if crash_at not in (None, "after_reservation", "before_send", "after_send"):
+        if crash_at not in (None, "after_reservation", "before_send", "after_send",
+                            'takeover:PLAN', 'takeover:CONFIRM_CANCELLATIONS',
+                            'takeover:CLOSE_DISPLACED', 'takeover:REVALIDATE', 'takeover:ATTEMPTED', 'takeover:RETIRED'):
             raise AccountOwnerError("unknown synthetic crash cut")
         self.crash_at = crash_at
         self.settlement_store = None
@@ -310,7 +319,7 @@ class BookAccountOwner(ProtectionOwnerMixin):
                     raise AccountOwnerError("account owner state unavailable")
                 for name, fields in _SCHEMA.items():
                     db.execute(f"CREATE TABLE {name} ({fields})")
-                db.execute("INSERT INTO owner_state VALUES (2, ?, ?, ?, 1, 'HALTED', "
+                db.execute("INSERT INTO owner_state VALUES (3, ?, ?, ?, 1, 'HALTED', "
                            "'INTERVENTION', 0)",
                            (owner.account, str(uuid4()), str(uuid4())))
                 attachment_body = _body({
@@ -328,9 +337,9 @@ class BookAccountOwner(ProtectionOwnerMixin):
                             hashlib.sha256(raw.encode("utf-8")).hexdigest()))
             else:
                 version = db.execute("SELECT schema FROM owner_state").fetchall()
-                if version == [(1,)]:
+                if version in ([(1,)], [(2,)]):
                     raise AccountOwnerError("legacy schema requires explicit migration")
-                if version != [(2,)]:
+                if version != [(3,)]:
                     raise AccountOwnerError("invalid account owner schema version")
                 owner._validate_schema(db)
                 owner._settlement_attachment_state(db)
@@ -368,6 +377,7 @@ class BookAccountOwner(ProtectionOwnerMixin):
             owner._capacity(db)
             owner._validate_occurrence_state_db(db)
             owner._validate_protection_state_db(db)
+            owner._validate_takeover_state_db(db)
             owner._actor_boot_id = current["boot_id"]
         return owner
 
@@ -422,6 +432,10 @@ class BookAccountOwner(ProtectionOwnerMixin):
                 db.execute("BEGIN IMMEDIATE")
                 yield db
                 db.commit()
+                phase = getattr(self, '_takeover_committed_phase', None)
+                self._takeover_committed_phase = None
+                if phase is not None and self.crash_at == 'takeover:' + phase:
+                    raise SimulatedOwnerCrash('after durable takeover phase ' + phase)
         except AccountOwnerError:
             raise
         except (sqlite3.Error, OSError, ValueError, TypeError) as exc:
@@ -436,7 +450,7 @@ class BookAccountOwner(ProtectionOwnerMixin):
             raise AccountOwnerError("invalid account owner schema")
         for name, fields in _SCHEMA.items():
             # Column order is durable: inserts deliberately use positional values.
-            columns = fields.split(", PRIMARY KEY(")[0]
+            columns = fields.split(", PRIMARY KEY(")[0].split(", UNIQUE(")[0]
             expected = tuple(part.strip().split()[0] for part in columns.split(","))
             actual_columns = tuple(row[1] for row in db.execute(f"PRAGMA table_info({name})"))
             if actual_columns != expected:
@@ -609,7 +623,7 @@ class BookAccountOwner(ProtectionOwnerMixin):
         if len(rows) != 1:
             raise AccountOwnerError("invalid account owner state")
         schema, account, epoch, boot, generation, permission, authority, sequence = rows[0]
-        if (schema != 2 or account != self.account or not epoch or not boot
+        if (schema != 3 or account != self.account or not epoch or not boot
                 or type(generation) is not int or generation < 1
                 or permission not in ("HALTED", "RUNNING")
                 or authority not in ("NORMAL", "SCHEDULED_EXIT", "INTERVENTION")
@@ -1416,6 +1430,8 @@ class BookAccountOwner(ProtectionOwnerMixin):
                         refusal = "stale_or_future_account_evidence"
                     elif now - self.binding["as_of"] > self.binding["max_evidence_age"]:
                         refusal = "stale_account_evidence"
+                    if refusal is None:
+                        refusal = self._revalidate_takeover_db(db, operation_id, now=now)
                     if refusal is not None:
                         return self._retire_takeover_db(db, action, refusal, now)
                     db.execute("UPDATE operations SET status='reserved' WHERE operation_id=?",
@@ -1446,6 +1462,8 @@ class BookAccountOwner(ProtectionOwnerMixin):
                                     now.isoformat(),
                                     "takeover_pending" if operation.status == "takeover" else "refused",
                                     action_body))
+                        if operation.status == 'takeover':
+                            self._publish_takeover_db(db, action, occurrence, quantity, now)
                         return DispatchResult(
                             operation_id, quantity if operation.status == "takeover" else 0,
                             refusal_reason=("takeover_pending" if operation.status == "takeover"
@@ -1486,6 +1504,8 @@ class BookAccountOwner(ProtectionOwnerMixin):
                            (attempt_id, operation_id, state["generation"], _body(asdict(command))))
                 db.execute("UPDATE operations SET status='attempted' WHERE operation_id=?",
                            (operation_id,))
+                if ready_takeover:
+                    self._takeover_event_db(db, operation_id, 'ATTEMPTED', now, attempt_id=attempt_id)
             if self.crash_at == "before_send":
                 raise SimulatedOwnerCrash("after attempt journal before send")
             if self.synthetic_broker is None:
@@ -1587,59 +1607,11 @@ class BookAccountOwner(ProtectionOwnerMixin):
 
     def advance_takeover(self, *, now):
         with self.serializer.acquire():
-            return self._advance_takeover_locked(now=now)
-
-    def _advance_takeover_locked(self, *, now):
-        """Drive only a retained Aegis priority takeover; incidents revoke it."""
-        _time(now)
-        actions = []
-        with self._thread, self._transaction() as db:
-            state = self._state(db)
-            capacity = self._capacity(db)
-            if state["authority"] != "NORMAL" or capacity.takeover is None:
-                return (), False
-            takeover_id = capacity.takeover.operation_id
-            displaced = capacity.takeover.displaced
-            for operation in capacity.operations:
-                if (operation.request.leg_id in displaced and operation.status == "active"
-                        and operation.terminal is None):
-                    actions.append(Cancel(operation.request.leg_id,
-                                          operation.request.operation_id))
-            for exposure in exposures(capacity):
-                if exposure.leg_id in displaced and exposure.confirmed:
-                    action = self._flatten_action(
-                        db, "takeover-flat:" + capacity.takeover.operation_id + ":" + exposure.leg_id,
-                        exposure.leg_id, "aegis_takeover", now)
-                    if action is not None:
-                        actions.append(action)
-        results = tuple(self._dispatch_locked(
-            action, occurrence=self.make_occurrence("takeover", takeover_id + ":" +
-                (action.order_id if isinstance(action, OrderIntent) else "cancel:" + action.order_id)),
-            now=now) for action in actions)
-        with self._thread, self._transaction() as db:
-            state = self._state(db)
-            capacity = self._capacity(db)
-            if state["authority"] != "NORMAL" or capacity.takeover is None:
-                return results, False
-            displaced = capacity.takeover.displaced
-            clear = all(row.confirmed == 0 and row.reserved == 0
-                        for row in exposures(capacity) if row.leg_id in displaced)
-            terminal = all(operation.terminal is not None for operation in capacity.operations
-                           if operation.status == "active"
-                           and operation.request.leg_id in displaced)
-            if not clear or not terminal:
-                return results, False
-            next_sequence = capacity.sequence + 1
-            proof = Quiescence(next_sequence, displaced, 0, 0, 0, 0)
-            complete = CompleteTakeover(capacity.takeover.operation_id, proof)
-            capacity = self._append_capacity(
-                db, "takeover", complete, now,
-                event_id="takeover-complete:" + capacity.takeover.operation_id)
-            if capacity.blocks:
-                self._halt_db(db, "takeover-proof:" + complete.operation_id,
-                              "execution", now)
-                return results, False
-            return results, True
+            try:
+                return self._advance_takeover_locked(now=now)
+            except Exception:
+                self._input_send_suppressed = True
+                raise
 
     @staticmethod
     def _restore_intent(raw):
@@ -1668,6 +1640,8 @@ class BookAccountOwner(ProtectionOwnerMixin):
             self._append_capacity(db, "terminal", Terminal(identity, "rejected", 0), now,
                                   event_id="takeover-refused:" + identity)
         db.execute("UPDATE operations SET status='terminal' WHERE operation_id=?", (identity,))
+        if self._takeover_plan_db(db, identity) is not None:
+            self._takeover_event_db(db, identity, 'RETIRED', now, reason=reason)
         events = self._record_local_refusal_db(db, action, reason, now=now)
         return DispatchResult(identity, 0, refusal_reason=reason, confirmed_events=events)
 
@@ -1675,25 +1649,29 @@ class BookAccountOwner(ProtectionOwnerMixin):
         """Advance retained controls and dispatch an admitted, unattempted takeover."""
 
         with self.serializer.acquire():
-            controls, _completed = self._advance_takeover_locked(now=now)
-            with self._transaction() as db:
-                capacity = self._capacity(db)
-                ready = {o.request.operation_id for o in capacity.operations if o.status == "active"}
-                rows = tuple(db.execute(
-                    "SELECT operation_id, body FROM operations WHERE status='takeover_pending'"))
-            results = list(controls)
-            for identity, raw in rows:
-                if identity not in ready:
-                    continue
+            try:
+                controls, _completed = self._advance_takeover_locked(now=now)
                 with self._transaction() as db:
-                    occurrence_row = next((row for row in db.execute(
-                        "SELECT envelope, source FROM action_occurrences WHERE state='takeover_pending'")
-                        if json.loads(row[1])["value"].get("order_id") == identity), None)
-                if occurrence_row is None:
-                    raise AccountOwnerError("takeover source occurrence missing")
-                occurrence = ActionOccurrence(**json.loads(occurrence_row[0]))
-                results.append(self._dispatch_locked(self._restore_intent(raw), occurrence=occurrence, now=now))
-            return tuple(results)
+                    capacity = self._capacity(db)
+                    ready = {o.request.operation_id for o in capacity.operations if o.status == "active"}
+                    rows = tuple(db.execute(
+                        "SELECT operation_id, body FROM operations WHERE status='takeover_pending'"))
+                results = list(controls)
+                for identity, raw in rows:
+                    if identity not in ready:
+                        continue
+                    with self._transaction() as db:
+                        occurrence_row = next((row for row in db.execute(
+                            "SELECT envelope, source FROM action_occurrences WHERE state='takeover_pending'")
+                            if json.loads(row[1])["value"].get("order_id") == identity), None)
+                    if occurrence_row is None:
+                        raise AccountOwnerError("takeover source occurrence missing")
+                    occurrence = ActionOccurrence(**json.loads(occurrence_row[0]))
+                    results.append(self._dispatch_locked(self._restore_intent(raw), occurrence=occurrence, now=now))
+                return tuple(results)
+            except Exception:
+                self._input_send_suppressed = True
+                raise
 
     def _halt_db(self, db, incident_id, reason, now):
         try:
@@ -1702,6 +1680,10 @@ class BookAccountOwner(ProtectionOwnerMixin):
                                   (incident_id, reason, now.isoformat(), state["generation"])).rowcount
             db.execute("UPDATE owner_state SET permission='HALTED', authority='INTERVENTION', "
                        "generation=generation+?", (1 if inserted else 0,))
+            if inserted:
+                for identity, in tuple(db.execute('SELECT operation_id FROM takeover_plans')):
+                    if self._takeover_phase_db(db, identity) not in ('ATTEMPTED', 'RETIRED'):
+                        self._takeover_event_db(db, identity, 'HALT', now, incident_id=incident_id)
         except (sqlite3.Error, OSError, AccountOwnerError):
             self._input_send_suppressed = True
             raise
@@ -1710,14 +1692,14 @@ class BookAccountOwner(ProtectionOwnerMixin):
         with self.serializer.acquire():
             return self._observe_locked(fact, now=now, boundary_time=fact.as_of)
 
-    def _observe_locked(self, fact, *, now, boundary_time=None):
+    def _observe_locked(self, fact, *, now, boundary_time=None, db=None):
         if not isinstance(fact, BrokerFact):
             raise AccountOwnerError("typed broker fact required")
         _time(now)
         try:
             _time(fact.as_of, "fact time")
         except AccountOwnerError:
-            with self._transaction() as db:
+            with (self._transaction() if db is None else nullcontext(db)) as db:
                 self._halt_db(db, "fact-time:" + str(uuid4()), "execution", now)
             return ()
         if fact.kind == "fill":
@@ -1726,10 +1708,10 @@ class BookAccountOwner(ProtectionOwnerMixin):
                 if type(fact.price) not in (int, float):
                     fact = replace(fact, price=price)
             except (ValueError, TypeError, OverflowError):
-                with self._transaction() as db:
+                with (self._transaction() if db is None else nullcontext(db)) as db:
                     self._halt_db(db, "invalid-fill-price:" + str(fact.fact_id), "execution", now)
                 return ()
-        with self._transaction() as db:
+        with (self._transaction() if db is None else nullcontext(db)) as db:
             previous = db.execute("SELECT body, feedback FROM broker_facts WHERE fact_id=?",
                                   (fact.fact_id,)).fetchone()
             raw = _body(asdict(fact))

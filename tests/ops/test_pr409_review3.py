@@ -75,7 +75,8 @@ def test_expired_takeover_releases_capacity_and_delivers_rejection(tmp_path, exp
     assert not any(c.operation_id == action.order_id for c in account.synthetic_broker.commands)
     account.resume_takeover(now=late)
     account.advance_schedule(now=bound["session"].own_flat_deadline)
-    assert account.authority == "SCHEDULED_EXIT"
+    # Rev9: authorization expiry before cutoff revokes scheduled authority too.
+    assert account.authority == ("INTERVENTION" if expired == "valid_until" else "SCHEDULED_EXIT")
     operations = account.observable_accounting()["operations"]
     restarted = BookAccountOwner.boot(account.path, account.account, binding=bound,
                                      synthetic_broker=SyntheticBroker([]))

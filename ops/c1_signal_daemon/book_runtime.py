@@ -241,6 +241,15 @@ class FourLegRuntime:
             self._deliver_events(events)
             return events
 
+    def observe_takeover_inventory(self, snapshot, *, now):
+        """Apply complete broker evidence before qualified takeover continuation."""
+        with self._application_lock:
+            events = self.owner.observe_takeover_inventory(snapshot, now=now)
+            self._deliver_events(events)
+            for result in self.owner.resume_takeover(now=now):
+                self._deliver(result)
+            return events
+
     def on_completed_bar(self, leg_id, bar, *, now):
         with self._application_lock:
             return self._on_completed_bar(leg_id, bar, now=now)

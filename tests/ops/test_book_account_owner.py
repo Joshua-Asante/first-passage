@@ -354,43 +354,22 @@ def test_protected_session_cancels_resting_orb_add_without_resizing_carried_fill
 
 
 def test_aegis_takeover_waits_for_displaced_leg_quiescence_before_send(tmp_path):
-    normal = binding()
-    normal["settlement"] = replace(SETTLED, equity=100_000.0)
-    flat_id = "takeover-flat:aegis-entry:orb_mnq_v7"
-    route = SyntheticBroker([
-        BrokerResult("accepted", (
-            BrokerFact.fill("orb-fill", "orb-base", "orb_mnq_v7", "entry", 1,
-                            100.0, NOW),
-            BrokerFact.terminal("orb-base", "filled", 1, NOW),
-        )),
-        BrokerResult("accepted", (
-            BrokerFact.fill("orb-flat", flat_id, "orb_mnq_v7", "flat", 1,
-                            99.0, NOW, entry_execution_id="orb-fill"),
-        )),
-        BrokerResult("accepted"),
-    ])
-    account = BookAccountOwner.boot(tmp_path / "owner.sqlite", "synthetic-account",
-                                    binding=normal, synthetic_broker=route)
-    account.activate_synthetic(now=NOW)
-    account.dispatch(OrderIntent("orb-base", "orb_mnq_v7", "entry", Side.BUY, 1,
-                                 bar_time=NOW), occurrence=account.make_occurrence("direct", "test_book_account_owner:371"), now=NOW)
-    aegis = OrderIntent("aegis-entry", "aegis_6j", "entry", Side.SELL, 8,
-                        bar_time=NOW)
-
-    pending = account.dispatch(aegis, occurrence=account.make_occurrence("direct", "test_book_account_owner:376"), now=NOW)
-    assert pending.refusal_reason == "takeover_pending"
-    assert [command.operation_id for command in route.commands] == ["orb-base"]
-
-    controls, completed = account.advance_takeover(now=NOW)
-    assert completed is True
-    assert controls[0].operation_id == flat_id
-    accepted = account.dispatch(aegis, occurrence=account.make_occurrence("direct", "test_book_account_owner:383"), now=NOW)
-    assert accepted.transport_state == "accepted"
-    assert [command.operation_id for command in route.commands] == [
-        "orb-base", flat_id, "aegis-entry"
-    ]
-    assert account.exposure("orb_mnq_v7") == (0, 0)
-    assert account.exposure("aegis_6j") == (0, 8)
+    # Correction section 5: local flat accounting is not a broker inventory.
+    from test_book_takeover_phases import TakeoverScenario
+    s = TakeoverScenario(tmp_path, leg='orb_mnq_v7', qty=1, fill=1)
+    controls, completed = s.owner.advance_takeover(now=s.now)
+    assert not completed and controls == ()
+    assert [c.kind for c in s.broker.commands] == ['entry']
+    s.poll()
+    flat = s.broker.commands[-1]
+    assert flat.kind == 'flat' and flat.quantity == 1
+    s.broker.execute_close(flat.operation_id, execution_id='orb-flat', quantity=1,
+                           price=99, terminal=True, at=s.tick())
+    assert not any(c.operation_id == s.root.order_id for c in s.broker.commands)
+    s.poll()
+    assert [c.kind for c in s.broker.commands] == ['entry', 'flat', 'entry']
+    assert s.owner.exposure('orb_mnq_v7') == (0, 0)
+    assert s.owner.exposure('aegis_6j') == (0, 8)
 
 
 @pytest.mark.parametrize("cut,commands,attempts", [
