@@ -250,6 +250,8 @@ _SCHEMA = {
     "runtime_bindings": "sequence INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL UNIQUE, "
                         "body TEXT NOT NULL, digest TEXT NOT NULL UNIQUE",
     "runtime_actors": "boot_id TEXT PRIMARY KEY, kind TEXT NOT NULL, body TEXT NOT NULL",
+    "settlement_attachment": "singleton INTEGER PRIMARY KEY CHECK(singleton=1), "
+                             "body TEXT NOT NULL, digest TEXT NOT NULL",
     "close_reservations": "operation_id TEXT PRIMARY KEY, allocations TEXT NOT NULL, "
                           "status TEXT NOT NULL",
 }

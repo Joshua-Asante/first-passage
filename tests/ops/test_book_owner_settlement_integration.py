@@ -1,15 +1,19 @@
 """The repaired close verifier and runtime owner share one writer boundary."""
 import json
+import sqlite3
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from c1_rail.book_policy import candidate_book_protection_policy
-from c1_rail.book_settlement import Receipt, Refusal, canonical_bytes, sha256_hex
+from c1_rail.book_settlement import (
+    Receipt, Refusal, SettlementError, canonical_bytes, sha256_hex,
+)
 from c1_rail.book_settlement import SettlementStore
 from c1_rail.book_account_owner import (
-    AccountOwnerError, BookAccountOwner, BrokerResult, SyntheticBroker,
+    _SETTLEMENT_TABLES, AccountOwnerError, BookAccountOwner, BrokerResult,
+    SyntheticBroker,
 )
 from c1_rail.c1_rail_listener import handle_book_action
 from test_book_account_owner import binding, intent
@@ -78,6 +82,23 @@ def test_shared_database_boot_does_not_arm_and_survives_owner_restart(tmp_path):
         trusted_keys={KEY_ID: ["submit_account_close", "record_only"]}, now=NOW)
     assert restarted.permission == "HALTED"
     assert restored_store.status()["restore_pending"] is True
+
+
+def test_lost_settlement_tables_cannot_repeat_first_owner_attachment(tmp_path):
+    owner, store = integrated(tmp_path)
+    receipt = store.bootstrap_b7(
+        seal_bytes(), expected_seal_sha256=sha256_hex(seal_bytes()),
+        expected_tool_sha256=TOOL, session_id=SESSION,
+        effective_close_utc=CLOSE, policy=candidate_book_protection_policy(),
+        now=NOW,
+    )
+    assert isinstance(receipt, Receipt)
+    with sqlite3.connect(owner.path) as db:
+        for table in sorted(_SETTLEMENT_TABLES - {"sqlite_sequence"}):
+            db.execute(f"DROP TABLE {table}")
+
+    with pytest.raises(SettlementError, match="settlement state unavailable"):
+        owner.open_settlement(trusted_keys={KEY_ID: ["submit_account_close"]}, now=NOW)
 
 
 def test_signed_synthetic_close_flows_through_unified_owner_into_listener_sizing(tmp_path):

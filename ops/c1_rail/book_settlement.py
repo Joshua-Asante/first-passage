@@ -395,8 +395,30 @@ class SettlementStore:
         keys_json = json.dumps(trusted_keys, sort_keys=True)
         with store._tx(create=True) as db:
             tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            unified = "owner_state" in tables
+            attachment = None
+            if unified:
+                if "settlement_attachment" not in tables:
+                    raise SettlementError("settlement attachment authority unavailable")
+                attachment_rows = db.execute(
+                    "SELECT singleton, body, digest FROM settlement_attachment").fetchall()
+                if len(attachment_rows) > 1:
+                    raise SettlementError("invalid settlement attachment authority")
+                if attachment_rows:
+                    singleton, attachment_body, attachment_digest = attachment_rows[0]
+                    if (singleton != 1
+                            or sha256_hex(attachment_body.encode("utf-8")) != attachment_digest):
+                        raise SettlementError("settlement attachment integrity failure")
+                    try:
+                        attachment = json.loads(attachment_body)
+                    except (TypeError, ValueError):
+                        raise SettlementError("settlement attachment integrity failure") from None
+                    if (set(attachment) != {"account", "attached_utc"}
+                            or attachment["account"] != account
+                            or not isinstance(attachment["attached_utc"], str)):
+                        raise SettlementError("settlement attachment identity mismatch")
             if "state" not in tables:
-                if (existed and not tables) or (tables and "owner_state" not in tables):
+                if (existed and not tables) or (tables and not unified) or attachment is not None:
                     raise SettlementError("settlement state unavailable")
                 cls._create(db)
                 values = {"version": STORE_VERSION, "account": account, "boot_id": store.boot_id, "calendar_digest": calendar_digest,
@@ -406,7 +428,17 @@ class SettlementStore:
                 db.execute("INSERT INTO state VALUES (" + ",".join("?" * (len(_STATE_FIELDS) + 1)) + ")",
                            tuple(values[f] for f in _STATE_FIELDS) + (cls._state_hash(values),))
                 store._event(db, "boot", None, {"boot_id": store.boot_id, "fresh": True}, now)
+                if unified:
+                    attachment_body = json.dumps(
+                        {"account": account, "attached_utc": _iso(now)},
+                        sort_keys=True, separators=(",", ":"))
+                    db.execute(
+                        "INSERT INTO settlement_attachment VALUES (1, ?, ?)",
+                        (attachment_body, sha256_hex(attachment_body.encode("utf-8"))),
+                    )
             else:
+                if unified and attachment is None:
+                    raise SettlementError("settlement attachment authority unavailable")
                 old = store._state(db, check_boot=False)
                 store._chain(db)
                 voided = db.execute("UPDATE challenges SET status='VOIDED_RESTART' WHERE status='ISSUED'").rowcount
