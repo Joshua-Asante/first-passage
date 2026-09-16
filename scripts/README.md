@@ -1,5 +1,57 @@
 # `scripts/` — gates and discipline CLIs
 
+## Local operations launcher
+
+Use the launcher from the checkout you intend to test. In PowerShell 7.3+:
+
+```powershell
+.\fp.ps1 doctor
+.\fp.ps1 test-ops -q
+.\fp.ps1 test -q -k gate_manifest
+.\fp.ps1 check
+.\fp.ps1 python -m pytest tests/test_fp_launcher.py -q
+.\fp.ps1 python -m pip check
+```
+
+The portable equivalent is `python -I scripts/fp.py doctor` (or any command
+above). Bootstrap Python needs only its standard library. Tasks use the selected
+operations virtual environment, not bootstrap Python. The launcher always runs
+tasks from its own checkout root, even when invoked by absolute path elsewhere.
+
+Environment selection, in order:
+
+1. `--env PATH` before the command, e.g. `.\fp.ps1 --env C:\envs\fp-ops doctor`.
+2. `FP_OPS_ENV`, if set.
+3. This checkout's `tmp/ops-env`.
+4. For a linked Git worktree without a local environment, the main checkout's
+   `tmp/ops-env`.
+
+Relative explicit paths resolve from the invoking directory. Invalid explicit
+or existing local environments fail rather than falling back. The launcher does
+not use `.venv`, install packages, or modify global PATH. Create a separate venv
+with a supported Python and install `requirements-ops.lock` with `--require-hashes`
+if an environment is missing. Select it with `--env` or `FP_OPS_ENV`.
+
+Before each command, the launcher checks that the interpreter starts, the venv
+excludes system site-packages, and all locked distribution versions match this
+checkout. `doctor` reports the interpreter, matched package count, and optional
+signing dependency. This is a version check, not a package-file integrity check,
+full import test, or guarantee of matching CI's operating system/Python version.
+
+Child processes receive the venv executable directory first on PATH, VIRTUAL_ENV,
+and disabled user site-packages; inherited PYTHONHOME/PYTHONPATH are removed.
+The caller's shell remains unchanged. Python gates explicitly use the gate
+runner's `sys.executable`, because Windows may resolve bare `python` subprocess
+names to a base installation before consulting PATH. Custom Python scripts
+should also use `sys.executable` for nested Python, or resolve an executable
+explicitly with `shutil.which`; the launcher cannot rewrite arbitrary scripts.
+
+`test` runs `tests/`, `test-ops` runs `tests/ops/`, and `check` invokes the existing
+manifest runner with `--tier check`. Subsequent arguments pass through unchanged;
+use `python -m pytest <paths>` for an exact test selection. Child exit status is
+returned; launcher setup failures return 2. Environment version mismatches block
+execution, so use the selected interpreter directly to repair its dependencies.
+
 ## Gate composition and admission
 
 Composition authority is [`gates.yml`](gates.yml) via
