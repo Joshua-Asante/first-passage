@@ -48,7 +48,7 @@ def test_packaged_book_boundary_imports_without_checkout(tmp_path):
 import sys
 from pathlib import Path
 root = Path(sys.argv[1])
-sys.path[:0] = [str(root / 'core'), str(root / 'ops' / 'c1_rail')]
+sys.path[:0] = [str(root / 'ops'), str(root / 'core'), str(root / 'ops' / 'c1_rail')]
 from c1_sizing_host_reference import C1SizingHostReference
 host = C1SizingHostReference(root / 'absent', root / 'absent', root / 'absent')
 result = host.process_book_signal(None, policy=None, context=None, binding=None, now=None)

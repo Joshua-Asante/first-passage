@@ -104,7 +104,7 @@ def package(head, session_id: str, now: datetime, *, gross="250.00", prior_tx=()
 
 
 def _bind_csv_reports(pkg, files, head, gross, prior_tx):
-    from account_close_evidence import CASH_COLUMNS, BALANCE_COLUMNS
+    from c1_rail.account_close_evidence import CASH_COLUMNS, BALANCE_COLUMNS
     tz = ZoneInfo(pkg["report_timezone"])
     rows = [list(_RAW_ROWS[t["sha256"]]) for t in prior_tx if t["sha256"] in _RAW_ROWS]
     def add(tid, ts, delta, running, kind, contract="MYMU6"):
@@ -158,7 +158,7 @@ def _bind_csv_reports(pkg, files, head, gross, prior_tx):
 
 def b7_cash_history(balance="100000", session_id="tradeify-account-day:2026-09-11"):
     """Synthetic sealed E3 rows, matching the subsequent fixture's funding identity."""
-    from account_close_evidence import CASH_COLUMNS
+    from c1_rail.account_close_evidence import CASH_COLUMNS
     rows = [[ACCOUNT, "1", "08/20/2026 09:00:00", "2026-08-20", "100000.00", "100000.00", "Fund Transaction", "USD", ""]]
     if Decimal(balance) != Decimal("100000"):
         day = datetime.fromisoformat(session_id.split(":")[1])

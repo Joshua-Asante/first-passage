@@ -47,7 +47,7 @@ from pathlib import Path
 # parents[2] = repo root (this file lives under ops/c1_rail/).
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _RAIL_DIR = Path(__file__).resolve().parent
-for _p in (str(_REPO_ROOT / "core"), str(_RAIL_DIR)):
+for _p in (str(_REPO_ROOT / "ops"), str(_REPO_ROOT / "core"), str(_RAIL_DIR)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
@@ -281,7 +281,15 @@ class C1SizingHostReference:
         The pure dependency closure is packaged with the host; the listener still
         uses process_signal and cannot route book orders through this method.
         """
-        from c1_rail.book_sizing_context import size_book_request  # pylint: disable=import-outside-toplevel
+        try:
+            from c1_rail.book_sizing_context import size_book_request  # pylint: disable=import-outside-toplevel
+        except ModuleNotFoundError as exc:
+            # The container installs this directory as a flat module root.  Only
+            # fall back when the package itself is absent; never mask a missing
+            # dependency inside the packaged implementation.
+            if exc.name != "c1_rail":
+                raise
+            from book_sizing_context import size_book_request  # pylint: disable=import-outside-toplevel
         return size_book_request(request, policy=policy, context=context,
                                  binding=binding, now=now)
 

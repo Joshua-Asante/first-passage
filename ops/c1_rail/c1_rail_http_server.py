@@ -47,7 +47,7 @@ from pathlib import Path
 # parents[2] = repo root (this file lives under ops/c1_rail/).
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _RAIL_DIR = Path(__file__).resolve().parent
-for _p in (str(_REPO_ROOT / "core"), str(_RAIL_DIR)):
+for _p in (str(_REPO_ROOT / "ops"), str(_REPO_ROOT / "core"), str(_RAIL_DIR)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 

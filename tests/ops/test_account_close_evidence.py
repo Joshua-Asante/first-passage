@@ -173,7 +173,7 @@ def csv_bytes(columns, cells):
 
 
 def parse_money_export(kind, money="1000", arity=0):
-    from account_close_evidence import CASH_COLUMNS, BALANCE_COLUMNS, parse_balance_history
+    from c1_rail.account_close_evidence import CASH_COLUMNS, BALANCE_COLUMNS, parse_balance_history
     if kind == "cash":
         cells = [ACCOUNT, "1", "11/10/2026 10:00:00", "2026-11-10", money, "100001", "Trade Paired", "USD", ""]
         columns = CASH_COLUMNS
@@ -216,7 +216,7 @@ def test_export_money_preserves_valid_currency_and_grouping(kind, money, expecte
 
 
 def sealed_report(mutation=None):
-    from account_close_evidence import CASH_COLUMNS
+    from c1_rail.account_close_evidence import CASH_COLUMNS
     cells = [ACCOUNT, "1", "10/01/2026 10:00:00", "2026-10-01", "1", "100001", "Trade Paired", "USD", ""]
     if mutation == "arity":
         cells.append("surplus")
@@ -230,7 +230,7 @@ def sealed_report(mutation=None):
 
 
 def test_sealed_cash_report_parses_history_without_query_window_claims():
-    from account_close_evidence import parse_cash_report
+    from c1_rail.account_close_evidence import parse_cash_report
     rows = parse_cash_report(sealed_report(), report_tz=ZoneInfo("UTC"), captured_utc=NOW, account_id=ACCOUNT)
     assert len(rows) == 1
     assert rows[0].transaction_id == "1"
@@ -240,13 +240,13 @@ def test_sealed_cash_report_parses_history_without_query_window_claims():
 
 @pytest.mark.parametrize("mutation", ["arity", "money", "account", "capture"])
 def test_sealed_cash_report_keeps_cash_row_boundary_checks(mutation):
-    from account_close_evidence import parse_cash_report
+    from c1_rail.account_close_evidence import parse_cash_report
     with pytest.raises(AssemblyError):
         parse_cash_report(sealed_report(mutation), report_tz=ZoneInfo("UTC"), captured_utc=NOW, account_id=ACCOUNT)
 
 
 @pytest.mark.parametrize("account", [None, ""])
 def test_sealed_cash_report_requires_account_binding(account):
-    from account_close_evidence import parse_cash_report
+    from c1_rail.account_close_evidence import parse_cash_report
     with pytest.raises(AssemblyError, match="account"):
         parse_cash_report(sealed_report(), report_tz=ZoneInfo("UTC"), captured_utc=NOW, account_id=account)

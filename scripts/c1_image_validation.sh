@@ -80,6 +80,7 @@ LISTENER_FILES=(
   /app/ops/c1_rail/book_account_lock.py
   /app/ops/c1_rail/book_account_owner.py
   /app/ops/c1_rail/book_capacity.py
+  /app/ops/c1_rail/book_schedule.py
   /app/ops/c1_rail/book_session_calendar.py
   /app/ops/c1_rail/book_settlement.py
   /app/ops/c1_rail/account_close_calculation.py
