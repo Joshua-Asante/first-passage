@@ -11,3 +11,5 @@
 - Keep the separately pinned research environment separate. The operations launcher does not replace it.
 - When project Python starts another Python process, use `sys.executable` rather than a bare `python` command, especially on Windows.
 - Report the command, interpreter, tested revision or working-tree state, and actual results. A pre-existing gate failure must be disclosed; do not describe the complete gate suite as passing.
+- Launcher pytest and `check` commands automatically retain evidence under `.cache/fp-verification/`; cite the printed `record.json` when reporting verification. Check `verification_exit_code`, `source_stable`, and actual test/gate results. Keep source and Git state unchanged while a recorded check runs.
+- For independent pytest cases, opt into the installed xdist runner with `--workers 2` before the launcher command. Select the affected tests first; worker count is not a substitute for related-case coverage. Docker sequence checks use `tools/local_verification/run.ps1` and record evidence automatically too.

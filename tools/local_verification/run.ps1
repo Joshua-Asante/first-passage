@@ -1,13 +1,18 @@
 #requires -Version 7.3
 param(
-    [Parameter(Mandatory)][string]$EvidencePath,
+    [string]$EvidencePath,
     [switch]$Build,
+    [ValidateRange(0, 8)][int]$Workers = 0,
     [string[]]$TestPath = @('tests/ops/test_book_takeover_phases.py', 'tests/ops/test_book_account_owner.py', 'tests/ops/test_four_leg_runtime.py', 'tests/ops/test_book_close_reconciliation.py', 'tests/ops/test_book_close_review_edges.py', 'tests/ops/test_book_runtime_chronology.py', 'tests/ops/test_book_runtime_close_feedback.py', 'tests/test_record_verification.py', 'tests/sequence_verification/book_event_sequences.py')
 )
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandArgumentPassing = 'Standard'
 $PSNativeCommandUseErrorActionPreference = $false
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+if (-not $EvidencePath) {
+    $identity = [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ') + '-' + [guid]::NewGuid().ToString('N')
+    $EvidencePath = Join-Path $repo ".cache/fp-docker-verification/$identity"
+}
 $EvidencePath = [IO.Path]::GetFullPath($EvidencePath)
 $metadataPath = $EvidencePath + '.environment.json'
 if ((Test-Path -LiteralPath $EvidencePath) -or (Test-Path -LiteralPath $metadataPath)) { throw 'Choose a new evidence path; prior evidence is preserved.' }
@@ -37,11 +42,13 @@ try {
     $runtimeData = $runtime | ConvertFrom-Json
     if ($runtimeData.lock_sha256 -ne (Get-FileHash (Join-Path $repo 'requirements-ops.lock')).Hash -or $runtimeData.extra_sha256 -ne (Get-FileHash (Join-Path $PSScriptRoot 'requirements-extra.txt')).Hash) { throw 'Image dependency files differ from this checkout. Rebuild with -Build.' }
     New-Item -ItemType Directory -Path (Split-Path $metadataPath) -Force | Out-Null
-    @{image_id=$image; runtime=$runtimeData; base_image='python:3.11-slim-bookworm@sha256:528257d48c1da0dcecc2e725d1ae34498d60c965f1241e39cd6a85a8859bdf84'} | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $metadataPath
+    @{image_id=$image; runtime=$runtimeData; workers=$Workers; base_image='python:3.11-slim-bookworm@sha256:528257d48c1da0dcecc2e725d1ae34498d60c965f1241e39cd6a85a8859bdf84'} | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $metadataPath
     $dockerArgs = @($docker, 'run', '--rm', '--network', 'none', '--mount', "type=bind,source=$repo,target=/repo,readonly", '--mount', "type=bind,source=$EvidencePath,target=/evidence", '--tmpfs', '/tmp:exec,size=2g', '--env', 'COVERAGE_FILE=/evidence/.coverage', $image, 'python', '-m', 'pytest')
     $dockerArgs += $TestPath
+    $dockerArgs += @('-n', "$Workers")
+    if ($Workers -gt 0) { $dockerArgs += '--dist=loadscope' }
     $dockerArgs += @('-q', '-p', 'no:cacheprovider', '--tb=short', '--hypothesis-show-statistics', '--basetemp=/tmp/pytest', '--junitxml=/evidence/junit.xml', '--cov=c1_rail.book_account_owner', '--cov=c1_rail.book_takeover_owner', '--cov=c1_signal_daemon.book_runtime', '--cov-branch', '--cov-report=json:/evidence/coverage.json')
-    & $python -I (Join-Path $repo 'scripts/record_verification.py') --repo $repo --output $EvidencePath --metadata $metadataPath -- @dockerArgs
+    & $python -I (Join-Path $repo 'scripts/record_verification.py') --repo $repo --output $EvidencePath --allow-ignored-output --metadata $metadataPath -- @dockerArgs
     $verificationExit = $LASTEXITCODE
 } finally {
     $env:PATH = $oldPath

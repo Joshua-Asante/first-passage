@@ -3,11 +3,16 @@
 Run from this checkout using PowerShell 7.3 or newer:
 
 ```powershell
-.\tools\local_verification\run.ps1 -Build -EvidencePath C:\Users\joshu\multi_firm_operations\tmp\event-sequence-evidence\run-001
+.\tools\local_verification\run.ps1 -Build
 ```
 
-Choose a new evidence directory outside the source checkout for every run. Omit
-`-Build` to reuse the local image. Use `-TestPath @('tests/ops/test_book_takeover_phases.py')`
+Evidence is automatically stored in a unique ignored
+`.cache/fp-docker-verification/<timestamp-id>/` directory. Alternatively provide
+`-EvidencePath <new external directory>`; existing evidence is never overwritten.
+Omit `-Build` to reuse the local image. Add `-Workers 2` to opt into the already
+installed pytest-xdist runner (0/default is serial; maximum 8; `loadscope`
+distribution). Measure the same selection before choosing a worker count.
+Use `-TestPath @('tests/ops/test_book_takeover_phases.py')`
 to select tests. The wrapper locates per-user Docker Desktop even when the
 current shell has an older PATH, temporarily exposes its credential helper,
 and restores PATH when it finishes. Start Docker Desktop before running it.
@@ -28,7 +33,8 @@ not an exact reproduction of GitHub's `ubuntu-latest` runner.
 hashes, source fingerprints before/after, lockfile hash, command, image/runtime
 metadata, timestamps, process exit code, JUnit counts and artifact hashes.
 `stdout.txt`, `stderr.txt`, `junit.xml` and `coverage.json` retain raw results.
-Exit zero is accepted only if the command succeeds and the source stays stable.
+Exit zero is accepted only if the command succeeds, output capture completes,
+and the source stays stable. Do not edit, stage or commit during a recorded run.
 Ignored files are outside the source fingerprint; these tests must not rely on
 ignored data. The recorder does not snapshot external services or secrets.
 

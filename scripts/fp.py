@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
 import re
 import subprocess
 import sys
+import tempfile
+from uuid import uuid4
 
 
 # Executed by the selected interpreter, not by the bootstrap Python on PATH.
@@ -115,11 +118,17 @@ def main(argv: list[str] | None = None) -> int:
     """Validate and run a task without changing the invoking shell's environment."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--env", help="operations venv directory (before the command); defaults to FP_OPS_ENV")
+    parser.add_argument('--workers', type=int, choices=range(0, 9),
+                        help='Opt-in pytest workers, 0 through 8; nonzero uses loadscope')
     parser.add_argument("command", choices=("doctor", "python", "test", "test-ops", "check"))
     parser.add_argument("args", nargs=argparse.REMAINDER, help="arguments passed unchanged to the command")
     options = parser.parse_args(argv)
     if options.command == "doctor" and options.args:
         parser.error("doctor does not accept additional arguments")
+    pytest_task = options.command in ('test', 'test-ops') or (
+        options.command == 'python' and options.args[:2] == ['-m', 'pytest'])
+    if options.workers is not None and not pytest_task:
+        parser.error('--workers applies only to pytest commands')
     root = Path(__file__).resolve().parents[1]
     try:
         selection = options.env if options.env is not None else os.environ.get("FP_OPS_ENV")
@@ -136,8 +145,30 @@ def main(argv: list[str] | None = None) -> int:
             "test-ops": ["-m", "pytest", "tests/ops/"],
             "check": ["scripts/gate_manifest.py", "--tier", "check"],
         }
-        return subprocess.call([str(python), *commands[options.command], *options.args],
-                               cwd=root, env=child_env)
+        command = [str(python), *commands[options.command], *options.args]
+        if not (pytest_task or options.command == 'check'):
+            return subprocess.call(command, cwd=root, env=child_env)
+        identity = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:12]
+        output = root / '.cache' / 'fp-verification' / identity
+        output.parent.mkdir(parents=True, exist_ok=True)
+        metadata = output.with_suffix('.environment.json')
+        report['workers'] = options.workers
+        report['locked_requirements'] = locked_requirements(root / 'requirements-ops.lock')
+        metadata.write_text(json.dumps(report, indent=2), encoding='utf-8')
+        if pytest_task:
+            if options.workers:
+                command += ['-n', str(options.workers), '--dist=loadscope']
+            elif options.workers == 0:
+                command += ['-n', '0']
+            if not any(a in ('--junitxml', '--junit-xml') or a.startswith(('--junitxml=', '--junit-xml=')) for a in options.args):
+                command += ['--junitxml=' + str(output / 'junit.xml')]
+        with tempfile.TemporaryDirectory(prefix='fp-pytest-') as scratch:
+            if pytest_task and not any(a == '--basetemp' or a.startswith('--basetemp=') for a in options.args):
+                command += ['--basetemp=' + str(Path(scratch) / 'pytest')]
+            return subprocess.call([str(python), '-I', str(root / 'scripts/record_verification.py'),
+                                    '--repo', str(root), '--output', str(output),
+                                    '--allow-ignored-output', '--metadata', str(metadata), '--', *command],
+                                   cwd=root, env=child_env)
     except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
         print(f"fp: {exc}", file=sys.stderr)
         return 2

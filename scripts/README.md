@@ -52,6 +52,38 @@ use `python -m pytest <paths>` for an exact test selection. Child exit status is
 returned; launcher setup failures return 2. Environment version mismatches block
 execution, so use the selected interpreter directly to repair its dependencies.
 
+### Automatic verification evidence
+
+`test`, `test-ops`, `python -m pytest ...`, and `check` automatically create a
+unique ignored `.cache/fp-verification/<timestamp-id>/` directory. Output streams
+remain visible and are retained alongside `record.json`. The record identifies
+the exact command, interpreter, locked versions, commit, dirty diff, hashes of
+tracked/nonignored untracked files, before/after source state, duration and exit
+status. Pytest adds `junit.xml` with counts, failures and skip reasons. An explicit
+user JUnit destination is preserved; that report is not copied into the default
+evidence directory. Gate results remain in the full stdout/stderr logs.
+
+The printed record path is the evidence to cite. Child failure codes are retained;
+a successful child with source drift returns 3, and incomplete output capture
+returns 4. Pipe draining stops three seconds after the direct child exits if a
+descendant retains its handles; the record then rejects acceptance. The recorder
+does not kill unrelated/background descendants. Keep files, index and HEAD stable
+while checking. Ignored inputs and external services are not fingerprinted;
+records describe the selected run, not all repository behavior. These local
+artifacts are not committed or uploaded automatically. `doctor` and arbitrary
+Python commands do not create verification records.
+
+For faster focused feedback, use the existing pytest-xdist installation:
+
+```powershell
+.\fp.ps1 --workers 2 python -m pytest tests/test_record_verification.py tests/test_fp_launcher.py -q
+```
+
+Workers are opt-in, bounded from 0 through 8, and use `loadscope` to group each
+module/class on one worker. Use 0 for serial execution. Startup overhead and
+imbalanced modules can outweigh parallelism; measure the same selection before
+choosing workers. Tests with shared resources may need serial execution.
+
 ## Gate composition and admission
 
 Composition authority is [`gates.yml`](gates.yml) via

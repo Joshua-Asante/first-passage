@@ -40,11 +40,40 @@ def checkout(tmp_path):
     launcher = SOURCE / "scripts/fp.py"
     assert launcher.is_file(), "operations launcher has not been implemented"
     shutil.copy2(launcher, root / "scripts/fp.py")
+    shutil.copy2(SOURCE / "scripts/record_verification.py", root / "scripts/record_verification.py")
     shutil.copy2(SOURCE / "scripts/gate_manifest.py", root / "scripts/gate_manifest.py")
     (root / "requirements-ops.lock").write_text(
         f"pytest=={importlib.metadata.version('pytest')}\n", encoding="utf-8"
     )
+    (root / '.gitignore').write_text('.cache/\n__pycache__/\n.pytest_cache/\n')
+    subprocess.run(['git', 'init', '-q', str(root)], check=True)
+    subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
+    subprocess.run(['git', '-C', str(root), '-c', 'user.name=Test',
+                    '-c', 'user.email=test@example.invalid', 'commit', '-qm', 'fixture'], check=True)
     return root
+
+
+@pytest.mark.parametrize('fails', [False, True])
+def test_pytest_automatically_records_actual_result(checkout, ops_env, fails):
+    (checkout / 'test_example.py').write_text('def test_value():\n    assert ' + str(not fails) + '\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_example.py', '-q')
+    assert result.returncode == int(fails), result.stderr
+    records = list((checkout / '.cache/fp-verification').glob('*/record.json'))
+    assert len(records) == 1
+    record = json.loads(records[0].read_text())
+    assert record['exit_code'] == int(fails) and record['source_stable']
+    assert record['junit'][0]['suites'][0]['failures'] == str(int(fails))
+    assert Path(record['metadata']['python']).samefile(Path(ops_env) / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python'))
+    assert 'test_example.py' in record['before']['files']
+
+
+def test_workers_are_opt_in_and_recorded(checkout, ops_env):
+    (checkout / 'test_parallel.py').write_text('def test_worker():\n    import os\n    assert os.environ["PYTEST_XDIST_WORKER"].startswith("gw")\n')
+    result = launch(checkout, '--env', ops_env, '--workers', '2', 'python', '-m', 'pytest', 'test_parallel.py', '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert record['metadata']['workers'] == 2
+    assert '--dist=loadscope' in record['command']
 
 
 def launch(root, *args, env=None):
@@ -170,6 +199,7 @@ def test_default_selection_finds_main_checkout_from_linked_worktree(checkout, tm
     metadata = common / "worktrees" / "linked"
     metadata.mkdir(parents=True)
     (metadata / "commondir").write_text("../..\n", encoding="utf-8")
+    (checkout / '.git').rename(checkout / '.git-fixture-metadata')
     (checkout / ".git").write_text(f"gitdir: {metadata}\n", encoding="utf-8")
     expected = main / "tmp/ops-env"
     expected.mkdir(parents=True)
