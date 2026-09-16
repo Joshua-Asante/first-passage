@@ -108,7 +108,7 @@ def test_invalid_cancel_target_never_sends(tmp_path, target):
 
 
 def test_cancel_all_expands_only_pending_targets_of_its_leg(tmp_path):
-    account, route = owner(tmp_path, [])
+    account, route = owner(tmp_path, [BrokerResult('accepted')]*2)
     account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:110"), now=NOW)
     account.dispatch(OrderIntent("orb", "orb_mnq_v7", "entry", Side.BUY, 1), occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:111"), now=NOW)
     result = account.dispatch(Cancel("orb_mnq_v7"), occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:112"), now=NOW)
@@ -170,14 +170,16 @@ def test_scheduled_flatten_handles_late_entry_fill(tmp_path):
     account.observe(BrokerFact.fill("late-one", "base", "dj30_mym_p250", "entry",
         1, 100, start), now=start)
     account.advance_schedule(now=start)
-    first = route.commands[-1]
-    account.observe(BrokerFact.fill("close-one", first.operation_id, "dj30_mym_p250",
-        "flat", 1, 100, start, entry_execution_id="late-one"), now=start)
+    assert [command.kind for command in route.commands] == ['entry', 'cancel']
     account.observe(BrokerFact.fill("late-two", "base", "dj30_mym_p250", "entry",
         2, 100, start), now=start)
     account.advance_schedule(now=start + timedelta(seconds=1))
-    assert route.commands[-1].operation_id != first.operation_id
-    assert route.commands[-1].quantity == 2
+    assert [command.kind for command in route.commands] == ['entry', 'cancel']
+    account.observe(BrokerFact.terminal('base', 'filled', 3, start+timedelta(seconds=2)),
+                    now=start+timedelta(seconds=2))
+    account.advance_schedule(now=start+timedelta(seconds=2))
+    assert route.commands[-1].kind == 'flat'
+    assert route.commands[-1].quantity == 3
     assert account.authority == "SCHEDULED_EXIT"
 
 
@@ -199,7 +201,7 @@ def test_ready_takeover_rechecks_evidence_freshness(tmp_path, expired):
     if expired == "valid_until":
         bound["max_evidence_age"] = timedelta(hours=1)
     account = BookAccountOwner.boot(tmp_path / "owner.sqlite", "synthetic-account",
-                                   binding=bound, synthetic_broker=BootstrapBroker([]))
+                                   binding=bound, synthetic_broker=BootstrapBroker([BrokerResult('accepted')]))
     activate_fresh(account, now=NOW)
     account.dispatch(entry("orb_mnq_v7", 1), occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:210"), now=NOW)
     aegis = entry("aegis_6j", 8)

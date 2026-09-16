@@ -682,6 +682,8 @@ class SettlementStore:
         """Exactly-once acceptance; refusals cannot advance closes and corrections quarantine history."""
         if not _aware(now):
             return Refusal("invalid_now")
+        if not isinstance(key_id, str) or not re.fullmatch(r"[0-9a-f]{64}", key_id):
+            return Refusal("unknown_key_or_scope")
         policy = require_policy(policy)
         if not isinstance(envelope, dict) or envelope.get("schema") != CHALLENGE_SCHEMA:
             return Refusal("envelope_schema")

@@ -208,3 +208,18 @@ Remote Slice C final check snapshot: head `83f06acb9554df65b5fdbb86990d913465a42
 ### Integration authorization
 
 The subsequent user request authorized committing and pushing Slice D and posting a Codex review request on PR #409. The local verification and independent review above apply to the implementation being committed. Historical statements that D was uncommitted describe the preceding acceptance checkpoint.
+
+### Post-D Codex review repairs — 2026-09-16
+
+Review of `0e2f654` reported four defects; integration starts from `847b6b0`, the owner's subsequent documentation-only merge from main. Each defect was reproduced against the original implementation before repair.
+
+- Settlement submission rejects noncanonical signing key IDs before a mapping lookup; arrays/objects return `unknown_key_or_scope` without an exception, state change or owner storage-failure latch.
+- Protection snapshots bound the sum of executable owner quantities per leg to evidenced remaining exposure. Original owner identity and FIFO semantics remain separate; no protection is automatically cancelled or reassigned.
+- Scheduled flattening waits for every same-leg entry/add to become terminal. Late fills are included before the flat is sized, and unresolved cancellation at the own-flat deadline retains exposure under INTERVENTION without an unsafe flat.
+- New risk is refused account-wide for UNKNOWN ordinary attempts or accepted attempts unresolved for one 15-minute bar. The fence is derived from retained attempt/fact history, holds reservations, covers takeover revalidation and protection loosening, and clears only when every owning attempt has accepted terminal evidence strictly after preparation. Restart still retains HALTED/INTERVENTION authority. Before/equal-time terminal evidence cannot clear an aged attempt; unsupported general inventory recovery is not inferred from a receipt.
+
+Independent review accepted the changes after reproducing and correcting a temporal shortcut for accepted attempts. Review regressions cover multiple pending owners, clearing only one, terminal timing, restart, scheduled cutoff/flatten/deadline, aggregate protection, and malformed keys through standalone and unified settlement APIs. The original lifecycle tests now explicitly supply accepted receipts when their scenario needs two concurrent pending orders; their prior empty queues returned UNKNOWN. The old scheduled-flat-before-terminal expectation was replaced with terminal-first reconciliation.
+
+Focused integration: 208 passed across review4, owner lifecycle, review3, bootstrap/migration and takeover phases. Unified malformed-key regressions: 2 passed. Check-tier repository gates returned 0, with the existing absent private Pine/data warnings. Final full-suite evidence follows below.
+
+Final reviewed tree: full operations **2,651 passed, 15 skipped**, two existing seaborn warnings, 181.88s; signing-disabled integrated execution **313 passed**, 73.96s. Local interpreter Python 3.13.2; check-tier gates and diff whitespace check passed. No live transport or deployment was used.

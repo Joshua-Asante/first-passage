@@ -292,6 +292,11 @@ class ProtectionOwnerMixin:
         if snapshot.complete and any(positions.get(fid, 0) != qty for fid, qty in expected.items()):
             fault = 'position-completeness'
         observed = {r.owner_id: r for r in snapshot.orders}
+        for leg_id in snapshot.scope_legs:
+            coverage = sum(q for fid, q in expected.items()
+                           if owners.get('protection:' + fid, {}).get('leg_id') == leg_id)
+            if sum(row.quantity for row in snapshot.orders if row.leg_id == leg_id) > coverage:
+                fault = 'overlapping-protection'
         for identity, row in observed.items():
             old = owners.get(identity)
             if (old is None or old['consumed'] or row.entry_fill_id != old['entry_fill_id']
@@ -432,6 +437,7 @@ class ProtectionOwnerMixin:
                     or now - self.binding['as_of'] > self.binding['max_evidence_age']
                     or any(self.binding['lifecycle_tiers'][row['leg_id']] != 'AUTHORIZED' for row in rows)
                     or self._capacity(db).blocks
+                    or self._ordinary_unknown_orders_db(db, now=now)
                     or db.execute("SELECT 1 FROM attempts a JOIN operations o USING(operation_id) "
                                   "WHERE a.state='UNKNOWN' AND o.status NOT IN ('terminal','observed')").fetchone()):
                 return 'risk_add_not_authorized'

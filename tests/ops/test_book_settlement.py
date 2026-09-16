@@ -1103,3 +1103,15 @@ def test_older_store_is_refused_without_rewriting_its_evidence(tmp_path):
     with pytest.raises(SettlementError, match="reviewed migration required"):
         boot(tmp_path, Operator())
     assert path.read_bytes() == before
+
+@pytest.mark.parametrize('key_id', [[], {}, ['key'], {'key': 'value'}, None, 123, '', 'A'*64, 'g'*64])
+def test_malformed_signing_key_identifier_refuses_without_writing(tmp_path, key_id):
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    env = challenge(store, pkg, target=S15, now=NOW14)
+    before = store.path.read_bytes()
+    result = store.submit(envelope=env, package=pkg, sources=files, key_id=key_id, signature=operator.sign(env),
+                          calendar=CALENDAR, policy=POLICY, now=NOW14, halt_generation=1)
+    assert result == Refusal('unknown_key_or_scope')
+    assert store.path.read_bytes() == before

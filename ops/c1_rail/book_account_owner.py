@@ -733,6 +733,26 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             "OR o.status IN ('reserved','attempted','takeover_pending') "
             "ORDER BY a.rowid"))
 
+    def _ordinary_unknown_orders_db(self, db, *, now):
+        """Derive the account fence from durable attempts, never transport receipts alone."""
+        from c1_signal_daemon.book_runtime import BAR_PERIOD
+        unresolved = []
+        for identity, outcome, created in db.execute(
+                "SELECT o.operation_id,a.state,o.created_at FROM operations o "
+                "JOIN attempts a USING(operation_id) WHERE o.kind IN ('entry','add')"):
+            prepared = datetime.fromisoformat(created)
+            if outcome == 'REJECTED':
+                continue
+            if outcome != 'UNKNOWN' and now < prepared + BAR_PERIOD:
+                continue
+            resolved = any(fact['kind'] == 'terminal' and fact['operation_id'] == identity
+                           and datetime.fromisoformat(fact['as_of']) > prepared
+                           for raw, feedback in db.execute('SELECT body,feedback FROM broker_facts')
+                           if feedback is not None for fact in (json.loads(raw),))
+            if not resolved:
+                unresolved.append(identity)
+        return tuple(unresolved)
+
     def status(self):
         """Pure validated read."""
         with self._transaction() as db:
@@ -1399,6 +1419,8 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                 elif isinstance(action, OrderIntent) and action.kind in ("entry", "add"):
                     if state["permission"] != "RUNNING" or state["authority"] != "NORMAL":
                         return DispatchResult(operation_id, 0, refusal_reason="risk_add_not_authorized")
+                    if self._ordinary_unknown_orders_db(db, now=now):
+                        return DispatchResult(operation_id, 0, refusal_reason="unknown_order")
                     request, context, sized_binding = self._context(db, action, now)
                     decision = size_book_request(request, context=context, binding=sized_binding,
                                                  policy=self.binding["policy"], now=now)
@@ -1545,6 +1567,10 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             if phase in (SchedulePhase.FLATTEN, SchedulePhase.DEADLINE):
                 for exposure in exposures(capacity):
                     if exposure.confirmed:
+                        if any(operation.request.leg_id == exposure.leg_id
+                               and operation.status == 'active' and operation.terminal is None
+                               for operation in capacity.operations):
+                            continue
                         operation_id = "scheduled-flat:" + session.session_id + ":" + exposure.leg_id
                         action = self._flatten_action(db, operation_id, exposure.leg_id,
                                                       "scheduled_flatten", now)

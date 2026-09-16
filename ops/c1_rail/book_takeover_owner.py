@@ -551,6 +551,8 @@ class TakeoverOwnerMixin:
         from .book_account_owner import _binding_record, MAX_FACT_AGE
         state = self._state(db)
         plan = self._takeover_plan_db(db, operation_id)
+        if self._ordinary_unknown_orders_db(db, now=now):
+            return 'unknown_order'
         if (not plan or self._takeover_phase_db(db, operation_id) != 'REVALIDATE'
                 or plan['boot_id'] != state['boot_id'] or plan['generation'] != state['generation']
                 or state['authority'] != 'NORMAL' or state['permission'] != 'RUNNING'):

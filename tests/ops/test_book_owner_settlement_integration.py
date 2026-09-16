@@ -299,3 +299,19 @@ def test_settlement_boot_rechecks_owner_actor_after_boot_id_capture(tmp_path, mo
     with pytest.raises(AccountOwnerError, match="stale account owner boot"):
         stale.open_settlement(
             trusted_keys={KEY_ID: ["submit_account_close", "record_only"]}, now=NOW)
+
+@pytest.mark.parametrize('key_id', [[], {}])
+def test_malformed_signing_key_is_a_refusal_not_owner_storage_failure(tmp_path, key_id):
+    operator = Operator()
+    account = BookAccountOwner.boot(tmp_path/'owner.sqlite', 'synthetic-account', binding=binding())
+    store = account.open_settlement(trusted_keys={operator.key_id: ['submit_account_close', 'record_only']}, now=NOW)
+    head = seat(store, b7_seal())
+    proposed, sources = package(head, S14, NOW14)
+    raw = account.issue_settlement_challenge(scope='submit_account_close', target_session_id=S15,
+        proposed_session_id=S14, package_sha256=sha256_hex(canonical_bytes(proposed)), calendar=CALENDAR, now=NOW14)
+    envelope = signing_envelope(raw, signed_at=NOW14)
+    before = account.path.read_bytes()
+    result = account.submit_settlement(envelope=envelope, signature=operator.sign(envelope), key_id=key_id,
+        package=proposed, sources=sources, calendar=CALENDAR, now=NOW14)
+    assert result == Refusal('unknown_key_or_scope')
+    assert account.path.read_bytes() == before

@@ -6,7 +6,7 @@ import sqlite3
 
 import pytest
 
-from c1_rail.book_account_owner import BookAccountOwner, BrokerFact, SyntheticBroker
+from c1_rail.book_account_owner import BookAccountOwner, BrokerFact, BrokerResult, SyntheticBroker
 from c1_signal_daemon.book_protocol import Bracket, BracketAmend, Mode, Side
 from c1_signal_daemon.book_runtime import FourLegRuntime
 from test_four_leg_runtime import NOW, binding, entry, inert_adapters
@@ -60,7 +60,7 @@ def test_expired_takeover_releases_capacity_and_delivers_rejection(tmp_path, exp
     if expired == "cutoff":
         bound["valid_until"] = NOW + timedelta(hours=2)
     account = BookAccountOwner.boot(tmp_path / "owner.sqlite", "synthetic-account",
-        binding=bound, synthetic_broker=BootstrapBroker([]))
+        binding=bound, synthetic_broker=BootstrapBroker([BrokerResult('accepted')]))
     activate_fresh(account, now=NOW)
     runtime = FourLegRuntime(account, inert_adapters())
     runtime._mode_actions(Mode.NORMAL)
@@ -132,7 +132,7 @@ def test_schema_two_missing_source_watch_is_corruption(tmp_path):
 
 def test_cutoff_retires_takeover_before_displaced_terminal(tmp_path):
     from test_four_leg_runtime import owner
-    account = owner(tmp_path, [])
+    account = owner(tmp_path, [BrokerResult('accepted')])
     runtime = FourLegRuntime(account, inert_adapters())
     runtime._mode_actions(Mode.NORMAL)
     account.dispatch(entry("orb_mnq_v7", 1), occurrence=account.make_occurrence("direct", "test_pr409_review3:134"), now=NOW)
