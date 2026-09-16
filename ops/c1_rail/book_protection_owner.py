@@ -672,6 +672,7 @@ class ProtectionOwnerMixin:
             try:
                 self._check_protection_deadlines_locked(now=now)
                 if (type(event) is not ProtectionExecution or not self._snapshot_shape(event.snapshot)
+                        or event.fact_id == event.snapshot.fact_id
                         or not all(_identity(x) for x in (event.fact_id, event.account, event.account_epoch,
                                                          event.owner_id, event.broker_order_id))
                         or not _aware(event.as_of) or type(event.quantity) is not int or event.quantity <= 0
@@ -688,6 +689,18 @@ class ProtectionOwnerMixin:
                     if previous:
                         if previous[0] != raw:
                             self._protection_fault(db, 'execution-conflict:' + event.fact_id, now)
+                        return ()
+                    # A protective execution atomically appends several journal
+                    # records. Detect their occupied identities before mutation,
+                    # so an ingress conflict cannot roll back its own incident.
+                    if (db.execute('SELECT 1 FROM capacity_events WHERE event_id=?',
+                                   ('protection-fill:' + event.fact_id,)).fetchone()
+                            or any(db.execute('SELECT 1 FROM feedback WHERE fact_id=? '
+                                              'UNION ALL SELECT 1 FROM broker_facts WHERE fact_id=?',
+                                              (event.fact_id + ':' + str(index),
+                                               event.fact_id + ':' + str(index))).fetchone()
+                                   for index in range(len(event.allocations)))):
+                        self._protection_fault(db, 'execution-identity:' + event.fact_id, now)
                         return ()
                     state = self._state(db)
                     owners = self._protection_rows(db)

@@ -248,12 +248,22 @@ class FourLegRuntime:
 
     def _deliver_events(self, events):
         for event in events:
-            self.adapters[event.leg_id].on_execution(event)
             fact_id = event.fill.fill_id if event.fill else next(
                 fact for fact, raw in self.owner.pending_feedback
                 if raw.get("order_id") == event.order_id)
+            raw = next(raw for fact, raw in self.owner.pending_feedback if fact == fact_id)
+            self._apply_feedback(self.adapters[event.leg_id], event, raw)
             self.owner.commit_feedback(
                 fact_id, self.adapters[event.leg_id].checkpoint(), now=event.bar_time)
+
+    @staticmethod
+    def _apply_feedback(adapter, event, raw):
+        control = raw.get("refused_control")
+        handler = getattr(adapter, "on_control_refusal", None)
+        if control is not None and handler is not None:
+            handler(_retained_action(control), event)
+        else:
+            adapter.on_execution(event)
 
     def _deliver(self, result):
         self._deliver_events(result.confirmed_events)
@@ -483,7 +493,7 @@ class FourLegRuntime:
 
         def replay_feedback(row):
             event = _feedback(row["body"])
-            adapters[event.leg_id].on_execution(event)
+            runtime._apply_feedback(adapters[event.leg_id], event, row["body"])
             checkpoint = _jsonable(adapters[event.leg_id].checkpoint())
             if row["delivered"]:
                 if row["checkpoint"] != checkpoint:

@@ -37,6 +37,15 @@ class FourLegEvaluateLoop:
             if self.runtime.owner.authority == "INTERVENTION":
                 return None
             completed = None
+            # Evidence can arrive between polls. Finish same-runtime prepared
+            # batches before admitting a later completed-bar boundary; recovery
+            # remains fenced by the runtime's continuation ownership check.
+            for bar_time in self.runtime.pending_bar_times:
+                result = self.runtime.redeliver_prepared_boundary(bar_time, now=now)
+                if result:
+                    completed = result
+            if self.runtime.owner.authority == "INTERVENTION":
+                return completed
             for leg_id in LEG_ORDER:
                 bar = self.sources[leg_id].poll()
                 if bar is None:

@@ -1041,24 +1041,33 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
         _text(reason, "local refusal")
         if not isinstance(action, (OrderIntent, BracketAmend, Cancel)):
             raise AccountOwnerError("typed book action required")
-        order_id = (operation_id if isinstance(action, BracketAmend) else action.order_id)
-        if isinstance(action, BracketAmend):
+        order_id = (operation_id if isinstance(action, (BracketAmend, Cancel)) else action.order_id)
+        if isinstance(action, (BracketAmend, Cancel)):
             _text(order_id, "refused control operation")
         boundary_time = getattr(action, "bar_time", None) or boundary_time or now
         _time(boundary_time, "local refusal boundary")
-        identity = _body({"action": asdict(action), "reason": reason,
-                          "boundary_time": boundary_time})
+        identity_body = {"action": asdict(action), "reason": reason,
+                         "boundary_time": boundary_time}
+        # Equal control bodies at different batch ordinals own different
+        # operation IDs and therefore different rejection events.
+        if isinstance(action, (BracketAmend, Cancel)):
+            identity_body["operation_id"] = operation_id
+        identity = _body(identity_body)
         fact_id = "local-refusal:" + hashlib.sha256(identity.encode("utf-8")).hexdigest()
         event = ExecutionEvent("reject", action.leg_id, boundary_time,
                                order_id=order_id, detail=reason)
-        raw = _body(asdict(event))
+        feedback_body = asdict(event)
+        if isinstance(action, (BracketAmend, Cancel)):
+            feedback_body["refused_control"] = {"type": type(action).__name__,
+                                                "value": asdict(action)}
+        raw = _body(feedback_body)
         previous = db.execute(
             "SELECT body, delivered, boundary_time FROM feedback WHERE fact_id=?",
             (fact_id,),
         ).fetchone()
         expected = (raw, 0, boundary_time.isoformat())
         if previous is not None:
-            if previous[0] != raw or previous[2] != boundary_time.isoformat():
+            if previous[0] not in (raw, _body(asdict(event))) or previous[2] != boundary_time.isoformat():
                 self._halt_db(db, "local-refusal-conflict:" + fact_id,
                               "identity", now)
                 raise AccountOwnerError("conflicting local refusal identity")
@@ -1903,6 +1912,9 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                 if previous[0] != raw:
                     self._halt_db(db, "fact-conflict:" + fact.fact_id, "execution", now)
                 return ()
+            if db.execute('SELECT 1 FROM feedback WHERE fact_id=?', (fact.fact_id,)).fetchone():
+                self._halt_db(db, "fact-identity-conflict:" + fact.fact_id, "execution", now)
+                return ()
             if not timedelta(0) <= now - fact.as_of <= MAX_FACT_AGE:
                 db.execute("INSERT INTO broker_facts VALUES (?, ?, NULL)", (fact.fact_id, raw))
                 self._halt_db(db, "stale-fact:" + fact.fact_id, "execution", now)
@@ -1914,6 +1926,13 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                 self._halt_db(db, "unknown-fact:" + fact.fact_id, "execution", now)
                 return ()
             leg_id, operation_kind, operation_body = operation
+            capacity_id = (("fill:" if operation_kind in ("entry", "add") else "reduction:")
+                           + fact.fact_id if fact.kind == "fill" else fact.fact_id)
+            if ((fact.kind == 'fill' or operation_kind in ('entry', 'add'))
+                    and db.execute('SELECT 1 FROM capacity_events WHERE event_id=?',
+                                   (capacity_id,)).fetchone()):
+                self._halt_db(db, "fact-identity-conflict:" + fact.fact_id, "execution", now)
+                return ()
             if (fact.kind == "fill"
                     and (fact.leg_id != leg_id or fact.order_kind != operation_kind)):
                 db.execute("INSERT INTO broker_facts VALUES (?, ?, NULL)",
@@ -2058,7 +2077,12 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             if hold_close:
                 db.execute("UPDATE operations SET status='awaiting_protection' WHERE operation_id=?",
                            (fact.operation_id,))
-            feedback_raw = _body(asdict(feedback)) if feedback is not None else None
+            feedback_body = asdict(feedback) if feedback is not None else None
+            if feedback_body is not None and operation_kind in ('cancel', 'bracketamend'):
+                feedback_body['refused_control'] = {
+                    'type': 'Cancel' if operation_kind == 'cancel' else 'BracketAmend',
+                    'value': json.loads(operation_body)}
+            feedback_raw = _body(feedback_body) if feedback_body is not None else None
             db.execute("INSERT INTO broker_facts VALUES (?, ?, ?)",
                        (fact.fact_id, raw, feedback_raw))
             if feedback is None or hold_close:

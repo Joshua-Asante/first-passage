@@ -403,3 +403,66 @@ Final review-6 acceptance on `d14d74f` plus the final working-tree changes:
   E0213 on `_boot_locked(owner)`, exit 2. No clean lint claim.
 - `git diff --check` passed. PR head remained `d14d74f` before publication.
   Tests are offline synthetic; no deployment, live activation or merge.
+
+### Review follow-up on `dfa4394` — 2026-09-16
+
+The newest findings expose three consumer boundaries: evidence waits must be
+continued by the actual evaluate loop, composite execution identities must be
+reserved before any transaction writes, and adapter feedback must distinguish
+risk-order terminals from refused controls.
+
+| Related case | Shared rule | Disposition |
+| --- | --- | --- |
+| Delayed BracketAmend evidence in the loop | Same-runtime prepared boundaries must finish before newer input | Continue existing runtime-owned waits after deadline/authority checks and before source polling; no adapter reevaluation or duplicate send. |
+| Reconstruction/restart and expired waits | Continuation is not permission to replay a broker send | Existing same-instance ownership and intervention checks remain; regressions exercise both reconstruction and reboot. |
+| Execution ID equals embedded snapshot ID | Composite evidence must not collide within its transaction | Reject malformed ingress with a durable incident before applying the snapshot. |
+| Generated capacity/feedback IDs collide with accepted facts | An identity conflict must not roll back the intervention itself | Preflight occupied journal identities before mutation; include held ordinary-close feedback claims and reverse arrival order. |
+| Exit/flat local refusal through BundleExecution | A known reducing intent can terminate without entering the sizing reservation reducer | Track reducing intents separately; reject unknown terminals, retire partial/full outcomes, replay retained refusal once. |
+| Cancel/BracketAmend local refusal | Refusing a control is not terminating its target risk order | Preserve durable action correlation for dedicated control-refusal delivery; verification pending integration. |
+
+Protection identity reproduction: three failures (embedded, generated feedback,
+generated capacity), two passing nearby cases before repair. Initial fix passed
+21 protection tests and then 31 protection/journal/close tests. Loop reproduction:
+two failures/two passes before repair; final five loop cases pass. Final combined
+evidence follows after integration; these subsets are not PR completion claims.
+
+The identity family also reproduced held close feedback colliding with generated
+protective feedback and the reverse arrival order. Both now refuse before
+mutation with durable intervention, rather than rolling back or hiding a held
+fact behind an unrelated feedback row. Distinct close-terminal/capacity-table
+IDs remain valid when the terminal does not write a capacity event.
+
+Strict-adapter review extended control handling to both local and broker
+refusals. Metadata retains the refused control action, and live delivery/replay
+use the same correlated hook. Local controls identify their own operation, not
+the target entry; source-adapter inspection confirmed that ORB removes pending
+entry IDs on rejection, so this distinction is required beyond the sizing
+wrapper. Equal controls at different ordinals retain distinct refusal IDs.
+The checkpoint schema stays unchanged; reduction tracking reconstructs from
+the existing action and feedback timeline, including historical checkpoints.
+
+Independent reviews accepted identity/metadata and loop/control integration.
+The first full run was stopped when a final queued quantity-less reduction
+counter case was identified; it is not final acceptance evidence.
+
+The queued quantity-less close follow-up is resolved: the wrapper keeps the
+original quantity/scope and retires only the executing reduction when that scope
+is exhausted. Regressions cover whole-leg and scoped exhaustion with sibling
+lots and other queued demands retained. Two regressions failed before this
+change; 36 focused tests passed afterward. Independent final review accepted.
+
+Final review-7 acceptance on `dfa4394` plus all final working-tree changes:
+
+- `./fp.ps1 doctor`: validated Python 3.13.2 and 62 locked packages.
+- `./fp.ps1 test-ops -q -p no:cacheprovider --tb=short`: **2,836 passed,
+  15 skipped**, four dependency deprecation warnings, exit 0 (218.12s).
+  Includes all final production bytes and 33 added regressions.
+- `./fp.ps1 check`: exit 0 on final production changes; existing private-data,
+  absent Pine and historical documentation advisories remain.
+- Targeted Pylint with repository import roots: only unchanged E0213 on
+  `_boot_locked(owner)`, exit 2. No clean lint claim. Python 3.11 grammar
+  parsing passed for all ten changed/new Python files (runtime was 3.13.2).
+- Independent reviews accepted identity conflicts, metadata consumers,
+  loop continuation, control/refusal replay, and final queued-close retirement.
+- `git diff --check` passed; remote PR head remained `dfa4394` before publication.
+  Validation is offline synthetic; no live activation, deployment or merge.
