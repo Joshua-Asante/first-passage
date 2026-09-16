@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal
-from book_policy import FIRM_RULES, TIER
-from account_close_evidence import AssemblyError, CashRow, COST_TYPES, TRADE_TYPE, FUND_TYPE, ET, account_session_date, session_id_for
+from .book_policy import FIRM_RULES, TIER
+from .account_close_evidence import AssemblyError, CashRow, COST_TYPES, TRADE_TYPE, FUND_TYPE, ET, account_session_date, session_id_for
 
 STARTING_BALANCE = Decimal(str(FIRM_RULES[TIER]["starting_balance"]))
 

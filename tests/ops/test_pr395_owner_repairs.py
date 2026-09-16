@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from book_settlement import Receipt, Refusal, SettlementError, canonical_bytes, sha256_hex
+from c1_rail.book_settlement import Receipt, Refusal, SettlementError, canonical_bytes, sha256_hex
 from test_book_settlement import (
     Operator, boot, seated, seat, b7_seal, package, challenge, submit, utc,
     NOW14, S14, S15, POLICY, CALENDAR,
@@ -195,7 +195,7 @@ def test_operator_envelope_builder_records_aware_time_without_mutating_challenge
 @pytest.mark.parametrize("mutation", ["delete", "edit"])
 @pytest.mark.parametrize("reader", ["status", "boot"])
 def test_authority_audit_corruption_blocks_reads_and_restart(tmp_path, kind, mutation, reader):
-    from book_settlement import SettlementStore
+    from c1_rail.book_settlement import SettlementStore
     from test_book_settlement import ACCOUNT, POLICY_DIGEST
     operator = Operator()
     store, _ = seated(tmp_path, operator)
@@ -276,7 +276,7 @@ def test_uncanonical_caller_values_are_refusals_not_store_faults(tmp_path, value
 
 
 def test_pre_audit_integrity_store_refused_without_rewriting(tmp_path):
-    from book_settlement import SettlementStore, _STATE_FIELDS
+    from c1_rail.book_settlement import SettlementStore, _STATE_FIELDS
     operator = Operator()
     store, _ = seated(tmp_path, operator)
     with sqlite3.connect(store.path) as db:

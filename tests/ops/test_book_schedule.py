@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from book_sizing_context import BookSession
+from c1_rail.book_sizing_context import BookSession
 from c1_rail.book_schedule import ScheduleError, SchedulePhase, classify_schedule
 
 

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from book_policy import CapacityError, CapacityLedger, PolicyMismatch, is_protected, scaled_quantity
+from c1_rail.book_policy import CapacityError, CapacityLedger, PolicyMismatch, is_protected, scaled_quantity
 from c1_signal_daemon.book_parity import ExportTrade, PortTrade, compare, load_effective_inputs
 from c1_signal_daemon.book_protocol import Bracket, FillTiming, Mode, OrderIntent, Side
 from c1_signal_daemon.feed import Bar

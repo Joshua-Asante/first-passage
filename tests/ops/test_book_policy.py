@@ -12,7 +12,7 @@ from fractions import Fraction
 
 import pytest
 
-from book_policy import (
+from c1_rail.book_policy import (
     ACCOUNT_MICRO_CAP,
     BOOK_LEGS,
     BookProtectionClock,

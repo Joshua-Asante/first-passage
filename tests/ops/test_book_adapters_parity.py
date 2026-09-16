@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from book_policy import candidate_book_protection_policy, leg, leg_quantities
+from c1_rail.book_policy import candidate_book_protection_policy, leg, leg_quantities
 from c1_signal_daemon.book_adapters import ADAPTERS, ADAPTER_BY_LEG, load_port, port_available
 from c1_signal_daemon.book_parity import (
     bar_data_dir, load_effective_inputs, load_panel, locate_export, parity_for, run_leg,

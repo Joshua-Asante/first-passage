@@ -14,13 +14,13 @@ from pathlib import Path
 
 import pytest
 
-from book_policy import candidate_book_protection_policy
-from book_session_calendar import load_ratified_calendar
-from book_settlement import (
+from c1_rail.book_policy import candidate_book_protection_policy
+from c1_rail.book_session_calendar import load_ratified_calendar
+from c1_rail.book_settlement import (
     CHALLENGE_LIFETIME, CONTRACT, PACKAGE_SCHEMA, Receipt, Refusal, SettlementError, SettlementStore,
     canonical_bytes, load_operator_keys, sha256_hex,
 )
-from book_sizing_context import SettledClose, size_book_request
+from c1_rail.book_sizing_context import SettledClose, size_book_request
 from c1_signal_daemon.book_protocol import Mode
 from test_tradeify_sizing_integration import inputs
 from settlement_signing import signing_envelope

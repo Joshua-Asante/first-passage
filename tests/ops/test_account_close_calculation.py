@@ -5,10 +5,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from account_close_calculation import calculate_close, ProposedClose, Refusal, canonical_bytes
-from account_close_evidence import sha256_hex
+from c1_rail.account_close_calculation import calculate_close, ProposedClose, Refusal, canonical_bytes
+from c1_rail.account_close_evidence import sha256_hex
 from account_close_test_support import ACCOUNT, CALENDAR, POLICY_DIGEST, package, utc, b7_previous_package
-from book_policy import candidate_book_protection_policy
+from c1_rail.book_policy import candidate_book_protection_policy
 from c1_signal_daemon.book_protocol import Mode
 
 POLICY = candidate_book_protection_policy()

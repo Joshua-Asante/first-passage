@@ -7,13 +7,13 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from account_close_assembler import (
+from c1_rail.account_close_assembler import (
     AssemblyError, SourceFile, account_session_date, assemble, parse_cash_windows, reconcile,
 )
-from book_policy import candidate_book_protection_policy
-from book_session_calendar import load_ratified_calendar
-from account_close_calculation import canonical_bytes, sha256_hex, verify_package
-from book_sizing_context import SettledClose, size_book_request
+from c1_rail.book_policy import candidate_book_protection_policy
+from c1_rail.book_session_calendar import load_ratified_calendar
+from c1_rail.account_close_calculation import canonical_bytes, sha256_hex, verify_package
+from c1_rail.book_sizing_context import SettledClose, size_book_request
 from c1_signal_daemon.book_protocol import Mode
 from test_tradeify_sizing_integration import inputs
 
@@ -84,7 +84,7 @@ def synthetic():
 
 def predecessor_inventory():
     """Independent synthetic sealed history before the first close under test."""
-    from account_close_ledger import transactions_for
+    from c1_rail.account_close_ledger import transactions_for
     cash, _, _, _ = synthetic()
     rows, _ = parse_cash_windows(cash, report_tz=CT)
     return {"report_timezone": CT.key, "ledger": {"transactions": [t for t in transactions_for(rows)

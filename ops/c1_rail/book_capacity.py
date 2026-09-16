@@ -11,8 +11,8 @@ consumer-local counter. Broker fact IDs retain immutable execution identity.
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 
-from book_policy import ACCOUNT_MICRO_CAP, BOOK_LEGS, leg
-from book_sizing_context import BookAccountContext, BookExposure
+from .book_policy import ACCOUNT_MICRO_CAP, BOOK_LEGS, leg
+from .book_sizing_context import BookAccountContext, BookExposure
 from c1_signal_daemon.book_protocol import Mode
 
 

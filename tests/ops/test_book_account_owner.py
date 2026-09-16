@@ -12,8 +12,8 @@ from c1_rail.book_account_owner import (
     SyntheticBroker,
     SimulatedOwnerCrash,
 )
-from book_policy import candidate_book_protection_policy
-from book_sizing_context import BookSession, SettledClose
+from c1_rail.book_policy import candidate_book_protection_policy
+from c1_rail.book_sizing_context import BookSession, SettledClose
 from c1_rail.c1_rail_listener import handle_book_action
 from c1_signal_daemon.book_protocol import (
     Bracket,

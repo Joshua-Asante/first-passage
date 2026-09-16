@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from fractions import Fraction
 
-from book_policy import (
+from .book_policy import (
     ACCOUNT_MICRO_CAP, BOOK_LEGS, PolicyAbsent, PolicyMismatch, add_quantity,
     as_mode, entry_quantities, is_protected, leg, lifecycle_multiplier, require_policy,
 )

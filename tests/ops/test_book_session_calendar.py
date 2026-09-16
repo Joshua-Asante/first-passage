@@ -10,11 +10,11 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from book_session_calendar import (
+from c1_rail.book_session_calendar import (
     CalendarError, SessionDecision, load_closure_overlay, load_ratifications,
     load_ratified_calendar, load_session_calendar,
 )
-from book_sizing_context import BookSession, SettledClose, size_book_request
+from c1_rail.book_sizing_context import BookSession, SettledClose, size_book_request
 from test_tradeify_sizing_integration import POLICY, inputs
 
 REPO = Path(__file__).resolve().parents[2]

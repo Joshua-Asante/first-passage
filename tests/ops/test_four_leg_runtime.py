@@ -7,8 +7,8 @@ import threading
 
 import pytest
 
-from book_policy import candidate_book_protection_policy
-from book_sizing_context import BookSession, SettledClose
+from c1_rail.book_policy import candidate_book_protection_policy
+from c1_rail.book_sizing_context import BookSession, SettledClose
 from c1_rail.book_account_owner import (
     AccountOwnerError,
     BookAccountOwner,

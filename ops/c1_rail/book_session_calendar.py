@@ -20,7 +20,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from book_sizing_context import BookSession
+from .book_sizing_context import BookSession
 from calendar_evidence import halt_evidence, index_captures, read_json_object, require_halt_evidence
 
 SCHEMA = "book_session_calendar/v1"

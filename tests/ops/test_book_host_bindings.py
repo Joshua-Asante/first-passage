@@ -5,7 +5,7 @@ import pytest
 
 import lifecycle
 import c1_sizing_host_reference as host_module
-from book_policy import BOOK_LEGS
+from c1_rail.book_policy import BOOK_LEGS
 
 
 EXPECTED = {

@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 
 
-from book_policy import TakeoverPlan
+from c1_rail.book_policy import TakeoverPlan
 
 
 from book_protocol import Bracket
