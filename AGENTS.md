@@ -1,5 +1,14 @@
 # First Passage agent instructions
 
+## Configuration as code
+
+- Default to configuration as code for new or changed configuration, especially configuration used more than once.
+- Define reusable configuration objects once in a canonical source; consumers reference or compose those objects rather than repeat their values or maintain copied configurations.
+- Separate shared configuration, product or environment variants, and instance-specific bindings. Make overrides explicit and validate the resolved configuration at its consumption boundary.
+- Keep secrets outside versioned configuration; configuration objects should reference credentials rather than embed them.
+- For deployment configurations, preserve the identity/version of the resolved configuration so validation and activation refer to the same configuration.
+- Apply this default as work touches configuration; it does not by itself authorize a repository-wide migration or changes to accepted policy behavior.
+
 ## Python environment and local checks
 
 - Before project Python work, run `.\fp.ps1 doctor` from the checkout being tested.

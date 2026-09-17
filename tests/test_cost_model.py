@@ -287,15 +287,36 @@ def test_closed_world_index_micro_missing_from_specs_is_a_finding(monkeypatch):
     assert any("MNQ" in f for f in findings)
 
 
-def test_closed_world_index_micro_no_commission_overlap_is_a_finding(monkeypatch):
-    monkeypatch.setattr(
-        cost_model,
-        "NO_COMMISSION_ROW_INSTRUMENTS",
-        cost_model.NO_COMMISSION_ROW_INSTRUMENTS | {"MNQ"},
-    )
+def test_closed_world_invalid_commission_category_is_a_finding(monkeypatch):
+    assert hasattr(cost_model, "COMMISSION_BINDINGS"), "explicit commission bindings missing"
+    monkeypatch.setitem(cost_model.COMMISSION_BINDINGS, "MNQ", "index_micro|unavailable")
     findings = cost_model.closed_world_findings()
     assert findings
     assert any("MNQ" in f for f in findings)
+    with pytest.raises(ValueError, match="invalid commission category"):
+        cost_model.resolve_commission(next(iter(cost_model.FIRM_RULES)), "MNQ")
+
+
+def test_instrument_geometry_has_one_core_owner():
+    import importlib.util
+    path = REPO / "core/instrument_specs.py"
+    assert path.is_file(), "core geometry owner missing"
+    spec = importlib.util.spec_from_file_location("geometry_probe", path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    expected = [("MES", 5.0, .25, 1.25), ("MNQ", 2.0, .25, .50),
+                ("MYM", .50, 1.0, .50), ("M2K", 5.0, .10, .50),
+                ("MGC", 10.0, .10, 1.0), ("ES", 50.0, .25, 12.50),
+                ("NQ", 20.0, .25, 5.0), ("YM", 5.0, 1.0, 5.0),
+                ("RTY", 50.0, .10, 5.0), ("GC", 100.0, .10, 10.0),
+                ("NG", 10000.0, .001, 10.0), ("MNG", 1000.0, .001, 1.0)]
+    for owner in (module, cost_model):
+        assert list(owner.INSTRUMENT_SPECS) == [row[0] for row in expected]
+        for symbol, *values in expected:
+            row = owner.INSTRUMENT_SPECS[symbol]
+            assert [row.multiplier, row.tick_size, row.tick_value] == values
+            assert all(type(v) is float for v in (row.multiplier, row.tick_size, row.tick_value))
 
 
 def test_closed_world_cli_exits_zero_on_live_module():

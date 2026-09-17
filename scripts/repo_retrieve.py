@@ -40,6 +40,7 @@ import sqlite3
 import subprocess
 import sys
 from pathlib import Path
+from dataclasses import dataclass
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gate_fire_log import log_fire  # noqa: E402
@@ -47,23 +48,31 @@ from gate_fire_log import log_fire  # noqa: E402
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_DB = REPO / ".cache" / "repo_retrieve.sqlite"
 
-# Hot surfaces only. LTM / archive bodies are excluded by construction.
-# Documentation only -- collect_chunks() below hardcodes each path/glob
-# directly and does not consult this tuple; kept in sync by hand.
-HOT_FILES = (
-    "lab/CATALOG.md",
-    "docs/briefs/INDEX.md",
-    "docs/briefs/*.md",
-    "docs/briefs/programs/*.md",
-    "docs/briefs/closures/*.md",
-    "docs/rejected_candidates.md",
-    "docs/SESSIONS.md",
-    "STATE.md",
-    "docs/adr/*.md",
-    "docs/notes/audits/**/*.md",
-    "docs/methodology/*.md",
-    "docs/spec/*.md",
+# Hot surfaces only; archives are excluded by construction. Order is observable.
+@dataclass(frozen=True)
+class CorpusSource:
+    pattern: str
+    mode: str
+    limit: int | None = None
+    omit_section: str | None = None
+
+
+CORPUS_SOURCES = (
+    CorpusSource("lab/CATALOG.md", "catalog", omit_section="## In flight"),
+    CorpusSource("docs/briefs/INDEX.md", "heading_h2"),
+    CorpusSource("docs/rejected_candidates.md", "heading_h3"),
+    CorpusSource("docs/SESSIONS.md", "heading_h2", 24),
+    CorpusSource("STATE.md", "heading_h2"),
+    # Preserve existing membership, including INDEX/TOMBSTONES (see execution record).
+    CorpusSource("docs/adr/*.md", "header_lines", 24),
+    CorpusSource("docs/briefs/closures/*.md", "header_lines", 20),
+    CorpusSource("docs/briefs/*.md", "header_lines", 24),
+    CorpusSource("docs/briefs/programs/*.md", "header_lines", 24),
+    CorpusSource("docs/notes/audits/**/*.md", "header_lines", 24),
+    CorpusSource("docs/methodology/*.md", "header_lines", 24),
+    CorpusSource("docs/spec/*.md", "header_lines", 24),
 )
+
 
 H3 = re.compile(r"^###\s+")
 H2 = re.compile(r"^##\s+")
@@ -114,101 +123,44 @@ def chunk_by_heading(rel: str, text: str, heading_re: re.Pattern[str]) -> list[d
     return chunks
 
 
-def collect_chunks(repo: Path) -> list[dict[str, str]]:
+def _collect_source(repo: Path, source: CorpusSource) -> list[dict[str, str]]:
+    if source.mode not in {"catalog", "heading_h2", "heading_h3", "header_lines"}:
+        raise ValueError(f"unsupported corpus mode: {source.mode}")
+    if source.limit is not None and (type(source.limit) is not int or source.limit <= 0):
+        raise ValueError("corpus limit must be a positive integer")
+    if (source.mode == "catalog" and source.limit is not None
+            or source.mode == "header_lines" and source.limit is None
+            or source.omit_section is not None and source.mode != "catalog"):
+        raise ValueError("invalid corpus mode/limit/section combination")
     chunks: list[dict[str, str]] = []
-
-    catalog = repo / "lab" / "CATALOG.md"
-    if catalog.is_file():
-        # Drop ## In flight before H3 chunking *and* the row loop. Otherwise
-        # the pre-### preamble chunk still carries every In-flight row
-        # (Codex P2 on #280). Hot-bodies copies stay the retrieval unit.
-        catalog_text = _omit_h2_section(_read(catalog), "## In flight")
-        chunks.extend(chunk_by_heading("lab/CATALOG.md", catalog_text, H3))
-        for line in catalog_text.splitlines():
-            if line.startswith("|") and ("ACTIVE" in line or "HOLD" in line):
-                cells = [c.strip() for c in line.strip("|").split("|")]
-                if cells and cells[0] not in {"slug", "---"}:
-                    chunks.append(_chunk("lab/CATALOG.md", cells[0], line))
-
-    index = repo / "docs" / "briefs" / "INDEX.md"
-    if index.is_file():
-        chunks.extend(chunk_by_heading("docs/briefs/INDEX.md", _read(index), H2))
-
-    rejected = repo / "docs" / "rejected_candidates.md"
-    if rejected.is_file():
-        chunks.extend(chunk_by_heading("docs/rejected_candidates.md", _read(rejected), H3))
-
-    sessions = repo / "docs" / "SESSIONS.md"
-    if sessions.is_file():
-        sess_chunks = chunk_by_heading("docs/SESSIONS.md", _read(sessions), H2)
-        chunks.extend(sess_chunks[:24])  # newest-first file; keep a working window
-
-    state = repo / "STATE.md"
-    if state.is_file():
-        chunks.extend(chunk_by_heading("STATE.md", _read(state), H2))
-
-    adr_dir = repo / "docs" / "adr"
-    if adr_dir.is_dir():
-        for path in sorted(adr_dir.glob("*.md")):
-            if path.name.upper() == "INDEX.md" or path.name.upper() == "TOMBSTONES.md":
-                continue
-            lines = _read(path).splitlines()[:24]
-            heading = next((l for l in lines if H1.match(l)), path.name)
-            chunks.append(_chunk(f"docs/adr/{path.name}", heading, "\n".join(lines)))
-
-    closures = repo / "docs" / "briefs" / "closures"
-    if closures.is_dir():
-        for path in sorted(closures.glob("*.md")):
-            lines = _read(path).splitlines()[:20]
-            heading = next((l for l in lines if H1.match(l)), path.name)
-            chunks.append(
-                _chunk(f"docs/briefs/closures/{path.name}", heading, "\n".join(lines))
-            )
-
-    # 2026-08-15 v3 remeasurement widening (one-revision cap per
-    # docs/briefs/pre-registration/2026-08-15-fts5-delete-falsifier-prereg-v3.md):
-    # the Run A reachability ceiling (23/34 = 0.676) sat below the 0.70 floor
-    # regardless of ranking quality, because brief bodies, methodology, spec,
-    # and the (2026-08-15-restored) audit-note lineage were entirely absent
-    # from the corpus. Added here, still truncated, still excluding
-    # docs/ltm/ and lab/archive/ per the Q-XMEM-1 Limb B denylist.
-    briefs_dir = repo / "docs" / "briefs"
-    if briefs_dir.is_dir():
-        for path in sorted(briefs_dir.glob("*.md")):
-            lines = _read(path).splitlines()[:24]
-            heading = next((l for l in lines if H1.match(l)), path.name)
-            chunks.append(_chunk(f"docs/briefs/{path.name}", heading, "\n".join(lines)))
-        programs_dir = briefs_dir / "programs"
-        if programs_dir.is_dir():
-            for path in sorted(programs_dir.glob("*.md")):
-                lines = _read(path).splitlines()[:24]
-                heading = next((l for l in lines if H1.match(l)), path.name)
-                rel = path.relative_to(repo).as_posix()
-                chunks.append(_chunk(rel, heading, "\n".join(lines)))
-
-    audits_dir = repo / "docs" / "notes" / "audits"
-    if audits_dir.is_dir():
-        for path in sorted(audits_dir.rglob("*.md")):
-            rel = path.relative_to(repo).as_posix()
-            lines = _read(path).splitlines()[:24]
-            heading = next((l for l in lines if H1.match(l)), path.name)
+    for path in sorted(repo.glob(source.pattern)):
+        # Literal sources required files; glob sources historically also read
+        # matching directories through _read's empty-on-OSError behavior.
+        if not any(c in source.pattern for c in "*?[") and not path.is_file():
+            continue
+        rel = path.relative_to(repo).as_posix()
+        text = _read(path)
+        if source.mode == "header_lines":
+            lines = text.splitlines()[:source.limit]
+            heading = next((line for line in lines if H1.match(line)), path.name)
             chunks.append(_chunk(rel, heading, "\n".join(lines)))
+        else:
+            if source.omit_section is not None:
+                text = _omit_h2_section(text, source.omit_section)
+            heading_re = H2 if source.mode == "heading_h2" else H3
+            chunks.extend(chunk_by_heading(rel, text, heading_re)[:source.limit])
+            if source.mode == "catalog":
+                for line in text.splitlines():
+                    if line.startswith("|") and ("ACTIVE" in line or "HOLD" in line):
+                        cells = [c.strip() for c in line.strip("|").split("|")]
+                        if cells and cells[0] not in {"slug", "---"}:
+                            chunks.append(_chunk(rel, cells[0], line))
+    return chunks
 
-    methodology_dir = repo / "docs" / "methodology"
-    if methodology_dir.is_dir():
-        for path in sorted(methodology_dir.glob("*.md")):
-            lines = _read(path).splitlines()[:24]
-            heading = next((l for l in lines if H1.match(l)), path.name)
-            chunks.append(_chunk(f"docs/methodology/{path.name}", heading, "\n".join(lines)))
 
-    spec_dir = repo / "docs" / "spec"
-    if spec_dir.is_dir():
-        for path in sorted(spec_dir.glob("*.md")):
-            lines = _read(path).splitlines()[:24]
-            heading = next((l for l in lines if H1.match(l)), path.name)
-            chunks.append(_chunk(f"docs/spec/{path.name}", heading, "\n".join(lines)))
-
-    return [c for c in chunks if c["text"].strip()]
+def collect_chunks(repo: Path) -> list[dict[str, str]]:
+    return [chunk for source in CORPUS_SOURCES for chunk in _collect_source(repo, source)
+            if chunk["text"].strip()]
 
 
 def connect(db_path: Path) -> sqlite3.Connection:

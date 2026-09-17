@@ -30,6 +30,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from link_policy import (LINK_RE, HISTORICAL_LINE_RE, markdown_links, link_target,
+                         is_gitignored, looks_like_path as _looks_like_path,
+                         DOCUMENT_EXTENSIONS as KNOWN_EXTS)
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 DEFAULT_GLOBS = (
@@ -38,22 +43,6 @@ DEFAULT_GLOBS = (
     "ops/**/*.md",
     "lab/**/*.md",
 )
-
-LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
-HISTORICAL_LINE_RE = re.compile(r"git\s+show|pre-prune-", re.IGNORECASE)
-KNOWN_EXTS = (
-    ".py", ".md", ".toml", ".pine", ".json", ".yml", ".yaml",
-    ".sh", ".bat", ".csv", ".txt", ".html",
-)
-
-
-def _looks_like_path(path_part: str) -> bool:
-    """Skip notation/anchors mistaken for paths (e.g. [r0](r0))."""
-    if "/" in path_part or path_part.startswith("."):
-        return True
-    lower = path_part.lower()
-    return any(lower.endswith(ext) for ext in KNOWN_EXTS)
-
 
 _SKIP_PARTS = {
     ".git",
@@ -75,16 +64,7 @@ def _is_gitignored(target: str, repo_root: Path) -> bool:
     cached = _GITIGNORE_CACHE.get(key)
     if cached is not None:
         return cached
-    try:
-        result = subprocess.run(
-            ["git", "check-ignore", "--quiet", target],
-            cwd=repo_root,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        hit = result.returncode == 0
-    except (OSError, subprocess.SubprocessError):
-        hit = False
+    hit = is_gitignored(target, repo_root)
     _GITIGNORE_CACHE[key] = hit
     return hit
 
@@ -117,27 +97,8 @@ def check_file(doc_path: Path, repo_root: Path) -> list[str]:
     misses: list[str] = []
     text = doc_path.read_text(encoding="utf-8", errors="replace")
     rel_doc = doc_path.relative_to(repo_root).as_posix()
-    for m in LINK_RE.finditer(text):
-        target = m.group(1).strip()
-        if " " in target:
-            target = target.split(" ", 1)[0]
-        path_part = target.split("#", 1)[0]
-        if not path_part:
-            continue
-        if path_part.startswith(("http://", "https://", "mailto:", "tel:")):
-            continue
-        if not _looks_like_path(path_part):
-            continue
-        line_start = text.rfind("\n", 0, m.start()) + 1
-        line_end = text.find("\n", m.end())
-        line = text[line_start : line_end if line_end != -1 else len(text)]
-        if HISTORICAL_LINE_RE.search(line):
-            continue
-        candidate = doc_path.parent / path_part
-        try:
-            candidate_resolved = candidate.resolve()
-        except OSError:
-            candidate_resolved = candidate
+    for m, target, path_part in markdown_links(text, require_path_shape=True):
+        candidate_resolved = link_target(doc_path, repo_root, path_part, "document")
         if candidate_resolved.exists():
             continue
         ignore_probe = path_part
@@ -167,18 +128,8 @@ def scan(
     links_checked = 0
     for path in files:
         text = path.read_text(encoding="utf-8", errors="replace")
-        for m in LINK_RE.finditer(text):
-            target = m.group(1).strip()
-            if " " in target:
-                target = target.split(" ", 1)[0]
-            path_part = target.split("#", 1)[0]
-            if not path_part:
-                continue
-            if path_part.startswith(("http://", "https://", "mailto:", "tel:")):
-                continue
-            if not _looks_like_path(path_part):
-                continue
-            links_checked += 1
+        links_checked += sum(1 for _ in markdown_links(
+            text, require_path_shape=True, skip_history=False))
         misses.extend(check_file(path, repo_root))
     return misses, len(files), links_checked
 

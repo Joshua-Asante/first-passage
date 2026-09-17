@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """check_cost_model_closed_world.py — SSOT Phase 3 partition gate.
 
-Hard-fails when lab/discovery/cost_model.py's three instrument sets drift:
-INDEX_MICRO must be a subset of INSTRUMENT_SPECS; every SPECS key must sit
-in INDEX_MICRO or NO_COMMISSION; those two sets must be disjoint.
+Hard-fails when geometry lacks commission classification, a priced symbol lacks
+geometry, or an explicit commission binding names an invalid category.
 
 Does not join ops/instruments ledgers. Does not add commission dollars.
 Classified lab so the discovery.cost_model import is a legal lab→lab edge.

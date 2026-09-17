@@ -77,63 +77,42 @@ import sys
 from pathlib import Path
 from typing import NamedTuple
 
+import importlib.util
+
+_engine_spec = importlib.util.spec_from_file_location("brief_checks", Path(__file__).resolve().parent.parent / ".claude/skills/brief-authoring/scripts/brief_checks.py")
+_engine = importlib.util.module_from_spec(_engine_spec)
+_engine_spec.loader.exec_module(_engine)
+REPO_PATH_PREFIXES = _engine.REPO_PATH_PREFIXES
+REPO_PATH_EXTS = _engine.REPO_PATH_EXTS
+_SECTION_RE = _engine._SECTION_RE
+_FENCE_RE = _engine._FENCE_RE
+_INLINE_CODE_RE = _engine._INLINE_CODE_RE
+_MD_LINK_RE = _engine._MD_LINK_RE
+_LIST_ITEM_RE = _engine._LIST_ITEM_RE
+_HYPOTHESIS_RE = _engine._HYPOTHESIS_RE
+_FALSIFIER_RE = _engine._FALSIFIER_RE
+_REVERT_TRIGGER_RE = _engine._REVERT_TRIGGER_RE
+_IF_THEN_RE = _engine._IF_THEN_RE
+_REJECT_ACCEPT_RE = _engine._REJECT_ACCEPT_RE
+_VERDICT_RE = _engine._VERDICT_RE
+_HANDOFF_STATUS_TOKENS = _engine._HANDOFF_STATUS_TOKENS
+_COMMIT_ANCHOR_RE = _engine._COMMIT_ANCHOR_RE
+_DATE_ANCHOR_RE = _engine._DATE_ANCHOR_RE
+_BARE_PATH_TOKEN_RE = _engine._BARE_PATH_TOKEN_RE
+_LIGHT_TIER_RE = _engine._LIGHT_TIER_RE
+_CONCISE_ADR_RE = _engine._CONCISE_ADR_RE
+_GENERAL_REQUIRED = _engine.GENERAL_REQUIRED
+_header_block = _engine._header_block
+is_light_tier = _engine.is_light_tier
+_mask_fences = _engine._mask_fences
+split_sections = _engine.split_sections
+_looks_like_repo_path = _engine._looks_like_repo_path
+_section0_cites_repo_path = _engine._section0_cites_repo_path
+_section0_has_anchor = _engine._section0_has_anchor
+Violation = _engine.Violation
+
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
-
-# Repo top-level dirs that mark a token as a concrete repo path in §0.
-REPO_PATH_PREFIXES = (
-    "docs/", "config/", "ops/", "core/", "lab/", "data/", "tests/", "scripts/",
-    ".claude/", "archive/", "analysis/", "strategies/", "reports/",
-)
-# File extensions that also mark a token as a concrete repo path.
-REPO_PATH_EXTS = (
-    ".py", ".md", ".toml", ".pine", ".json", ".yml", ".yaml",
-    ".sh", ".bat", ".csv",
-)
-
-# Section heading: matches both "## §0 — Rule 0" and a bare "## 0. ..." /
-# "## Section 0" style. The canonical brief uses "§N"; we accept the loose forms
-# so a brief authored slightly off-template still parses.
-_SECTION_RE = re.compile(
-    r"^\s{0,3}#{1,4}\s+"            # markdown heading marker
-    r"(?:§\s*|section\s+|sec\.\s*)?" # optional "§" / "Section" prefix
-    r"(?P<num>\d+(?:\.\d+)?)"       # the number, e.g. 0, 4, 0.5, 2.6
-    r"\b",
-    re.IGNORECASE | re.MULTILINE,
-)
-
-# Fenced code block (```...```), used to detect runnable §10 audit hooks.
-_FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
-# Inline-code span, used to pick repo-path tokens out of §0 prose.
-_INLINE_CODE_RE = re.compile(r"`([^`]+)`")
-# Markdown link target.
-_MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
-# A markdown list item (bullet or ordered).
-_LIST_ITEM_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+\S", re.MULTILINE)
-
-# §4 hypothesis / falsifier wording.
-_HYPOTHESIS_RE = re.compile(r"\bH\s*:|\bhypothesis\b|^\s*\*?\*?H\b", re.IGNORECASE | re.MULTILINE)
-_FALSIFIER_RE = re.compile(r"\bfalsifi", re.IGNORECASE)  # falsifier / falsified / falsification
-
-# §4 ALTERNATIVE canonical framings (added 2026-08-09, ADR
-# `2026-08-09-rejection-register-topology-and-bar-wiring.md` sibling fix).
-# The canonical ADR template states its §4 as "**Revert trigger:** …" and the
-# canonical lock/cc_handoff templates use if/then or reject-accept-if wording —
-# none of which contains a literal "H:" or "falsifi*" token. The old paired-token
-# requirement therefore HARD-failed the skill's own templates (6 of 7 measured
-# 2026-08-09), which is a checker defect, not a template defect. §4 is satisfied
-# by the paired tokens OR by any of these framings.
-_REVERT_TRIGGER_RE = re.compile(r"\brevert\s+trigger\b", re.IGNORECASE)
-_IF_THEN_RE = re.compile(r"\bif\b[^.\n]{0,200}?\bthen\b", re.IGNORECASE | re.DOTALL)
-_REJECT_ACCEPT_RE = re.compile(r"\b(reject|accept)\b[^.\n]{0,40}\bif\b", re.IGNORECASE)
-
-# §6 binary-verdict wording (soft nudge only).
-_VERDICT_RE = re.compile(r"\bRESOLVED\b|\bFALSIFIED\b|\bAMBIGUOUS\b")
-
-# CC-handoff status-return taxonomy (SKILL.md pattern #8).
-_HANDOFF_STATUS_TOKENS = ("DONE", "DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKED")
-
-# Required section numbers per brief type.
-_GENERAL_REQUIRED = ("0", "1", "4", "5", "6", "10")
 REQUIRED_SECTIONS = {
     "adr":     _GENERAL_REQUIRED,
     "brief":   _GENERAL_REQUIRED,
@@ -182,32 +161,6 @@ SKILL_ONLY_TYPES = frozenset(_TYPE_ALIASES)
 # cc_handoff/handoff, generic.
 _UNMODELED_CONTRACT_TYPES = frozenset({"lock", "notice", "lesson", "audit"})
 
-# LIGHT-tier decision records (ADR `2026-08-08-adr-ceremony-tiering.md`) declare
-# `**Tier:** light` in the header block and deliberately carry NO numbered
-# sections — the ratified shape is Decision / Grounds / Reads / Gate / Boundary,
-# body capped at 300 words. Applying the full §0–§10 ADR contract to one reports
-# 6 HARD violations on a correctly-formed record. Same defect class as
-# _UNMODELED_CONTRACT_TYPES, found 2026-08-09 while authoring the first light ADR.
-_LIGHT_TIER_RE = re.compile(r"^\*\*Tier:\*\*\s*light\b", re.IGNORECASE | re.MULTILINE)
-_CONCISE_ADR_RE = re.compile(r"^\*\*Format:\*\*\s*concise\b", re.IGNORECASE | re.MULTILINE)
-
-
-def _header_block(text: str) -> str:
-    """Return the markdown header (everything before the first `## ` heading).
-
-    Shared by light-tier detection and type inference so a later prose mention
-    of a header field cannot flip either classification."""
-    return re.split(r"^## ", text, maxsplit=1, flags=re.MULTILINE)[0]
-
-
-def is_light_tier(text: str) -> bool:
-    """True if this artifact declares itself a light-tier decision record.
-
-    Only the header region counts — the boundary is the first `## ` heading, so
-    a later prose mention of `**Tier:** light` (e.g. an ADR *about* the tiering
-    convention quoting it) is not miscounted as a self-declaration."""
-    return bool(_LIGHT_TIER_RE.search(_header_block(text)))
-
 
 # Closure is accepted so a copied `--type closure` does not argparse-die;
 # main() delegates to check_closure_disposition.py and does not run §0–§10.
@@ -225,60 +178,6 @@ def _normalize_type(brief_type: str) -> str:
     if brief_type in _INTERNAL_TYPES:
         return brief_type
     return _TYPE_ALIASES.get(brief_type, "generic")
-
-
-class Violation(NamedTuple):
-    """One well-formedness finding. Mirrors validate_params.py's Violation."""
-    severity: str   # "HARD" or "WARN"
-    section: str     # e.g. "§4" or "§10"
-    message: str
-
-    def __str__(self) -> str:
-        return f"{self.severity}: {self.section} | {self.message}"
-
-
-# ── Section parsing ────────────────────────────────────────────
-
-def _mask_fences(text: str) -> str:
-    """Return `text` with fenced code-block *content* blanked out, length and
-    newlines preserved. Headings are located on this masked copy so that a
-    `# 1. ...` comment INSIDE a ```bash audit-hook fence is not mistaken for a
-    section heading — the failure that truncated §10 before its closing fence."""
-    def _blank(m: re.Match) -> str:
-        return re.sub(r"[^\n]", " ", m.group(0))
-    return _FENCE_RE.sub(_blank, text)
-
-
-def split_sections(text: str) -> dict[str, str]:
-    """Return {section_number: body_text} for every detected heading.
-
-    A section's body is everything from its heading up to (but excluding) the
-    next heading at the same-or-shallower depth — approximated here as the text
-    up to the next *section heading* of any number. Good enough for presence and
-    emptiness checks; we do not need a full markdown tree.
-
-    Heading positions are found on a fence-masked copy (offsets preserved) so
-    fenced code content never registers as a heading; bodies are then sliced
-    from the ORIGINAL text so §10's runnable-hook check sees the real fences.
-    """
-    matches = list(_SECTION_RE.finditer(_mask_fences(text)))
-    sections: dict[str, str] = {}
-    for i, m in enumerate(matches):
-        num = m.group("num")
-        start = m.end()
-        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
-        body = text[start:end]
-        # Drop the remainder of the heading line (the section *title*, e.g.
-        # "— Falsifiable hypothesis") so it never leaks into content checks —
-        # otherwise a §4 titled "Falsifiable hypothesis" trivially satisfies the
-        # falsifier regex on its own title.
-        nl = body.find("\n")
-        body = body[nl + 1:] if nl != -1 else ""
-        # First occurrence wins (a number repeated, e.g. two "§2.x", keeps §2's
-        # first body — but we only key on top-level required numbers anyway).
-        if num not in sections:
-            sections[num] = body
-    return sections
 
 
 def _is_empty_body(body: str) -> bool:
@@ -299,161 +198,25 @@ def _is_empty_body(body: str) -> bool:
     return placeholder_only in ("tbd", "na", "none", "tba", "todo")
 
 
-# ── Token extraction for §0 ────────────────────────────────────
+_checks = _engine.NumberedChecks(_is_empty_body)
+_check_required_sections = _checks._check_required_sections
+_check_section0_paths = _checks._check_section0_paths
+_check_falsifiable_hypothesis = _checks._check_falsifiable_hypothesis
+_check_forbidden_moves = _checks._check_forbidden_moves
+_check_fenced_section = _checks._check_fenced_section
+_check_gate_verdicts = _checks._check_gate_verdicts
+_check_handoff_extras = _checks._check_handoff_extras
 
-def _looks_like_repo_path(token: str) -> bool:
-    token = token.strip()
-    if "/" not in token:
-        return False
-    low = token.lower()
-    if low.startswith(("http://", "https://", "mailto:")):
-        return False
-    if token.startswith(REPO_PATH_PREFIXES):
-        return True
-    return token.endswith(REPO_PATH_EXTS)
-
-
-# §0 anchor (ADR 2026-08-20-rule0-anchor-verification-and-triage-discipline.md
-# Phase 1): commit hash, ISO date, or "last-modified". Presence only — not
-# that the hash is current (a stale-but-real anchor is legitimate).
-_COMMIT_ANCHOR_RE = re.compile(r"\b[0-9a-f]{7,40}\b")
-_DATE_ANCHOR_RE = re.compile(
-    r"last[- ]modified|\b20\d{2}-\d{2}-\d{2}\b",
-    re.IGNORECASE,
-)
-_BARE_PATH_TOKEN_RE = re.compile(r"[A-Za-z0-9_./\-]+")
-
-
-def _section0_cites_repo_path(body: str) -> bool:
-    """True if §0 names at least one concrete repo path (SKILL.md check #1)."""
-    for m in _MD_LINK_RE.finditer(body):
-        target = m.group(1).split(" ", 1)[0].split("#", 1)[0]
-        if _looks_like_repo_path(target):
-            return True
-    for m in _INLINE_CODE_RE.finditer(body):
-        tok = m.group(1).strip()
-        # A command-with-args inline span may embed a path; check each word.
-        for word in tok.split():
-            word = word.split("#", 1)[0]
-            if _looks_like_repo_path(word):
-                return True
-    for word in _BARE_PATH_TOKEN_RE.findall(body):
-        if _looks_like_repo_path(word.split("#", 1)[0]):
-            return True
-    return False
-
-
-def _section0_has_anchor(body: str) -> bool:
-    """True if §0 carries a hash-shaped or date / last-modified anchor."""
-    return bool(_COMMIT_ANCHOR_RE.search(body) or _DATE_ANCHOR_RE.search(body))
 
 
 # ── Individual checks ──────────────────────────────────────────
 
 def _check_required_present(sections: dict[str, str], brief_type: str) -> list[Violation]:
-    """Required sections present; present-but-empty downgraded to WARN.
-
-    Provenance: SKILL.md "The six load-bearing discipline checks" enumerate
-    §0/§4/§5/§6/§10; trap #8 adds §1 (doctrine linkage). Empty-but-present is
-    SKILL.md trap #1 (ceremonial sections)."""
-    out: list[Violation] = []
-    for num in REQUIRED_SECTIONS[brief_type]:
-        if num not in sections:
-            out.append(Violation("HARD", f"§{num}", "required section missing"))
-        elif _is_empty_body(sections[num]):
-            out.append(Violation("WARN", f"§{num}",
-                                  "section present but empty / placeholder (ceremonial)"))
-    return out
-
-
-def _check_section0_paths(sections: dict[str, str]) -> list[Violation]:
-    """§0 must cite a repo path *and* an adjacent-section anchor (ADR 2026-08-20)."""
-    body = sections.get("0")
-    if body is None or _is_empty_body(body):
-        return []  # missing/empty already reported by the presence check
-    if not _section0_cites_repo_path(body):
-        return [Violation("HARD", "§0",
-                          "Rule-0 reads cite no concrete repo path "
-                          "(need e.g. `dd_protection.py` or `docs/adr/...`)")]
-    if not _section0_has_anchor(body):
-        return [Violation("HARD", "§0",
-                          "Rule-0 path citation has no anchor "
-                          "(commit hash or date / last-modified)")]
-    return []
-
-
-def _check_falsifiable_hypothesis(sections: dict[str, str]) -> list[Violation]:
-    """§4 needs an H: statement AND a falsifier clause (SKILL.md check #2)."""
-    body = sections.get("4")
-    if body is None or _is_empty_body(body):
-        return []  # presence check owns missing/empty
-    # Canonical-template framings that carry a falsifier without the literal
-    # token pair. Any one of these satisfies §4 on its own.
-    if (_REVERT_TRIGGER_RE.search(body)
-            or _IF_THEN_RE.search(body)
-            or _REJECT_ACCEPT_RE.search(body)):
-        return []
-    out: list[Violation] = []
-    if not _HYPOTHESIS_RE.search(body):
-        out.append(Violation("HARD", "§4",
-                            "no hypothesis statement (expected 'H:'/'hypothesis', "
-                            "a 'Revert trigger', an if/then, or a reject/accept-if)"))
-    if not _FALSIFIER_RE.search(body):
-        out.append(Violation("HARD", "§4",
-                            "no falsifier clause (expected 'Falsifier' / 'falsified', "
-                            "a 'Revert trigger', an if/then, or a reject/accept-if)"))
-    return out
-
-
-def _check_forbidden_moves(sections: dict[str, str]) -> list[Violation]:
-    """§5 must list at least one forbidden move (SKILL.md check #3, trap #4)."""
-    body = sections.get("5")
-    if body is None or _is_empty_body(body):
-        return []
-    if not _LIST_ITEM_RE.search(body):
-        return [Violation("HARD", "§5",
-                          "no forbidden moves listed (expected a bullet/numbered list)")]
-    return []
+    return _check_required_sections(sections, REQUIRED_SECTIONS[brief_type])
 
 
 def _check_audit_hooks(sections: dict[str, str]) -> list[Violation]:
-    """§10 must contain a fenced code block — a runnable hook (SKILL.md check #6)."""
-    body = sections.get("10")
-    if body is None or _is_empty_body(body):
-        return []
-    if not _FENCE_RE.search(body):
-        return [Violation("HARD", "§10",
-                          "no runnable audit hook (expected a fenced ``` code block)")]
-    return []
-
-
-def _check_gate_verdicts(sections: dict[str, str]) -> list[Violation]:
-    """§6 SHOULD use binary RESOLVED/FALSIFIED/AMBIGUOUS verdicts. Soft nudge:
-    WARN only (SKILL.md check #4 names this discipline but the binary-vs-vague
-    judgment is human; the keyword presence is the mechanical proxy)."""
-    body = sections.get("6")
-    if body is None or _is_empty_body(body):
-        return []
-    if not _VERDICT_RE.search(body):
-        return [Violation("WARN", "§6",
-                          "no binary verdict keyword "
-                          "(RESOLVED / FALSIFIED / AMBIGUOUS) — gate may be vague")]
-    return []
-
-
-def _check_handoff_extras(sections: dict[str, str]) -> list[Violation]:
-    """CC-handoff-only: §0.5 clarifying-Qs (pattern #7, presence owned elsewhere)
-    and the §6 four-state status taxonomy (pattern #8)."""
-    out: list[Violation] = []
-    body6 = sections.get("6")
-    if body6 is not None and not _is_empty_body(body6):
-        present = [t for t in _HANDOFF_STATUS_TOKENS if t in body6]
-        if len(present) < len(_HANDOFF_STATUS_TOKENS):
-            missing = [t for t in _HANDOFF_STATUS_TOKENS if t not in present]
-            out.append(Violation("HARD", "§6",
-                                "CC-handoff status taxonomy incomplete; missing "
-                                + ", ".join(missing)))
-    return out
+    return _check_fenced_section(sections, "10")
 
 
 # ── Type inference ─────────────────────────────────────────────

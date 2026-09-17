@@ -36,6 +36,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from link_policy import (LINK_RE, HISTORICAL_LINE_RE, markdown_links, link_target,
+                         is_gitignored, looks_like_path as _looks_like_path,
+                         DOCUMENT_EXTENSIONS as KNOWN_EXTS)
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # The five root orientation docs. Resolution is against REPO_ROOT — correct here
@@ -43,27 +48,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DOCS = ("README.md", "CLAUDE.md", "PIPELINES.md", "REPO_MAP.md", "STATE.md")
 
 # [text](target) — non-greedy text, target up to the first ')'
-LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
-
-# Lines citing an evicted blob on purpose — skip (the target is not meant to be
-# on disk). `git show pre-prune-2026-06-05:<path>` is the repo's retrieval idiom.
-HISTORICAL_LINE_RE = re.compile(r"git\s+show|pre-prune-", re.IGNORECASE)
-
-
 def _is_gitignored(target: str, repo_root: Path) -> bool:
     """True if `target` is a gitignored path (legit absence on a clone/CI).
 
     Tolerant of git being absent (returns False → treat as a real miss)."""
-    try:
-        result = subprocess.run(
-            ["git", "check-ignore", "--quiet", target],
-            cwd=repo_root,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        return result.returncode == 0
-    except (OSError, subprocess.SubprocessError):
-        return False
+    return is_gitignored(target, repo_root)
 
 
 def check_doc(doc_path: Path, repo_root: Path) -> list[str]:
@@ -72,23 +61,8 @@ def check_doc(doc_path: Path, repo_root: Path) -> list[str]:
         return [f"{doc_path.name}: doc itself does not exist"]
     misses: list[str] = []
     text = doc_path.read_text(encoding="utf-8", errors="replace")
-    for m in LINK_RE.finditer(text):
-        target = m.group(1).strip()
-        # Strip a markdown title: [text](path "title") — keep only the path.
-        if " " in target:
-            target = target.split(" ", 1)[0]
-        path_part = target.split("#", 1)[0]  # drop #anchor
-        if not path_part:
-            continue  # pure in-page anchor
-        if path_part.startswith(("http://", "https://", "mailto:", "tel:")):
-            continue
-        # Skip lines that deliberately cite an evicted blob.
-        line_start = text.rfind("\n", 0, m.start()) + 1
-        line_end = text.find("\n", m.end())
-        line = text[line_start : line_end if line_end != -1 else len(text)]
-        if HISTORICAL_LINE_RE.search(line):
-            continue
-        if (repo_root / path_part).exists():
+    for m, target, path_part in markdown_links(text):
+        if link_target(doc_path, repo_root, path_part, "repo").exists():
             continue
         if _is_gitignored(path_part, repo_root):
             continue
