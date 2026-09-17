@@ -111,17 +111,20 @@ def test_signed_composition_uses_real_source_dispatch_replay_and_g5_across_reope
     with pytest.raises(ValueError):
         authenticate_result(result,wrong_attempt,trusted_keys=producer_keys,now=NOW,
             trust_domain=setup.domain)
-    commit_authenticated_result(store,authenticated,trusted_keys=producer_keys,now=NOW,
+    committed_receipt=commit_authenticated_result(store,authenticated,trusted_keys=producer_keys,now=NOW,
         trust_domain=setup.domain)
     committed_events=store.events()
-    with pytest.raises(ValueError,match='journal binding'):
-        commit_authenticated_result(store,authenticated,trusted_keys=producer_keys,now=NOW,
-            trust_domain=setup.domain)
+    assert commit_authenticated_result(store,authenticated,trusted_keys=producer_keys,now=NOW,
+        trust_domain=setup.domain)==committed_receipt
     assert store.events()==committed_events
     reopened=AttemptStore.open(store.path,campaign_id=store.campaign_id,
         contract_digest=setup.contract.contract_sha256,trust_domain_sha256=setup.domain.sha256,
         boot_id='TEST_ONLY-boot-2',now=NOW)
     assert reopened.result('TB_E1')['manifest_bytes']==raw
+    reopened_events=reopened.events()
+    assert commit_authenticated_result(reopened,authenticated,trusted_keys=producer_keys,now=NOW,
+        trust_domain=setup.domain)==committed_receipt
+    assert reopened.events()==reopened_events
     seal_payload=e1_seal_payload(authenticated,sealed_utc=NOW)
     record=_result_signature(setup,scope='SEAL_E1_PASS',subject=sha(seal_payload),
         attempt_id=store.campaign_id,key_id='test-seal')

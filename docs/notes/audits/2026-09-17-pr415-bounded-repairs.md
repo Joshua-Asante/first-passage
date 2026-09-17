@@ -87,3 +87,15 @@ changed. The independent launcher run (`20260917T192949Z-e06cce52cb3b`) passed
 62 tests with the same 3 Windows symlink skips. Repository gates passed in
 `20260917T192513Z-c066d324a713`, with 3 unittest skips and disclosed absent
 private-data/Pine checks. The final combined run follows the test-import repair.
+
+The broader run on clean `69e59c9` completed with 622 passes and one failure
+(`20260917T202904Z-4a86ddbcef5d`). The sole failure was the older full-composition
+test explicitly expecting identical public commit retries to fail. Its assertion
+now requires the same receipt and unchanged events before and after journal reopen,
+while preserving the subsequent G5 sealing checks. The corrected full-composition
+case passed in `20260917T204728Z-dd6ad4c363a1`, with completed, source-stable,
+complete-capture evidence and no report errors. Its existing pytest `record_property`
+/xunit2 warning remains advisory. No production code changed after `69e59c9`.
+Hosted CI on that commit independently reported the same sole assertion failure,
+with 6,132 passes, 57 skips and 48 passing subtests. Final hosted verification is
+run on the follow-up test correction and reported on the PR.
