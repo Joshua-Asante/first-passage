@@ -117,6 +117,29 @@ def test_unloaded_deferred_first_party_import_cannot_claim_closure(tmp_path,monk
         collect_runtime_inventory(contract,loaded_modules=modules,retained_source_bytes=raw)
 
 
+@pytest.mark.parametrize('statement', ['from . import child', 'from c1_rail.fixture_pkg import child'])
+def test_unloaded_package_submodule_requires_inventory(tmp_path, monkeypatch, statement):
+    package = 'c1_rail.fixture_pkg'
+    contract, modules, raw = fixture(tmp_path, monkeypatch, {
+        package: 'VALUE=7\n',
+        package + '.root': f'def execute():\n {statement}\n return child.VALUE\n',
+    }, paths={package: 'ops/c1_rail/fixture_pkg/__init__.py'})
+    (tmp_path/'ops/c1_rail/fixture_pkg/child.py').write_text('VALUE=8\n')
+    monkeypatch.delitem(sys.modules, package + '.child', raising=False)
+    with pytest.raises(ValueError, match='dependency.*child.*inventory'):
+        collect_runtime_inventory(contract, loaded_modules=modules, retained_source_bytes=raw)
+
+
+def test_deferred_package_symbol_is_not_mistaken_for_submodule(tmp_path, monkeypatch):
+    package = 'c1_rail.fixture_pkg'
+    contract, modules, raw = fixture(tmp_path, monkeypatch, {
+        package: 'VALUE=7\n',
+        package + '.root': 'def execute():\n from . import VALUE\n return VALUE\n',
+    }, paths={package: 'ops/c1_rail/fixture_pkg/__init__.py'})
+    receipt = collect_runtime_inventory(contract, loaded_modules=modules, retained_source_bytes=raw)
+    assert next(row for row in receipt.modules if row.module_name.endswith('.root')).dependencies == (package,)
+
+
 def test_distinct_module_with_same_origin_alias_is_rejected(tmp_path,monkeypatch):
     from types import ModuleType
     contract,modules,raw=fixture(tmp_path,monkeypatch,{'c1_rail.fixture_root':'VALUE=7\n'})

@@ -22,7 +22,7 @@ from scripts.certification_power import max_certifying_busts, min_certifying_pas
 from .adjudication import DecisionRules, adjudicate_stage
 
 from .model import PathOutcome
-from .runtime_inventory import RuntimeInventoryReceipt
+from .runtime_inventory import RuntimeInventoryReceipt, revalidate_runtime_inventory
 
 
 def _closure_identity(sources):
@@ -160,7 +160,7 @@ def _verify_retained_executable_modules(by_module, required_modules, decision_mo
             state_globals = {
                 'c1_rail.qualification.contract': {'_ISSUED_CONTRACTS'},
                 'c1_rail.qualification.trust_domain': {'_ISSUED'},
-                'c1_rail.qualification.production': {'_ISSUED_EXECUTORS', '_EXECUTOR_PROVIDERS'},
+                'c1_rail.qualification.production': {'_ISSUED_EXECUTORS'},
                 'c1_rail.qualification.production_source': {'_SOURCE_ISSUED', '_SOURCE_TOKEN'},
                 'c1_rail.qualification.attempt': {'_VALIDATED_RESULT_TOKEN'},
                 'c1_rail.book_account_lock': {'_REGISTRY', '_REGISTRY_LOCK'},
@@ -227,6 +227,10 @@ def _verify_runtime_inventory(contract, receipt, dependencies):
             raise ValueError('runtime dependency globals differ from observed module')
         if getattr(module, value.__name__, None) is not value:
             raise ValueError('runtime dependency object differs from observed module')
+    if domain is not None:
+        # A receipt is source data, not an issuance capability. Recollect the
+        # actual import closure instead of trusting its declared edge list.
+        revalidate_runtime_inventory(contract, receipt)
     _verify_retained_executable_modules(by_module, required_modules, decision_modules)
 
 

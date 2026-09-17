@@ -10,7 +10,7 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass, fields, is_dataclass
 from datetime import date, datetime, time, timedelta, timezone
-from decimal import Decimal
+from decimal import Decimal, DecimalException
 from enum import Enum
 import hashlib
 import io
@@ -100,6 +100,44 @@ def _json(raw):
     def reject(value):
         raise ValueError('nonfinite retained JSON value')
     return json.loads(raw.decode('utf-8-sig'), object_pairs_hook=unique, parse_constant=reject)
+
+
+def _cost_terms(raw):
+    """Decode the signed primary-source capture into per-side USD commissions."""
+    doc = _json(raw)
+    if type(doc) is not dict or set(doc) != {'source_url', 'page_date', 'observed_date', 'totals_include', 'rows'}:
+        raise ValueError('complete closed cost capture fields required')
+    if (doc['source_url'] != 'https://help.tradeify.co/en/articles/10468315-trading-commission-fees'
+            or doc['totals_include'] != 'exchange, NFA, clearing, and commission'):
+        raise ValueError('cost capture must retain the supported primary source and total-fee units')
+    for field in ('page_date', 'observed_date'):
+        value = doc[field]
+        if type(value) is not str or date.fromisoformat(value).isoformat() != value:
+            raise ValueError('cost capture dates must be explicit ISO dates')
+    rows = doc['rows']
+    expected_symbols = {spec.symbol for spec in ADAPTERS}
+    if type(rows) is not list or len(rows) != len(expected_symbols):
+        raise ValueError('exact four-symbol commission rows required')
+    by_symbol = {}
+    for row in rows:
+        if type(row) is not dict or set(row) != {'symbol', 'round_trip_usd'}:
+            raise ValueError('closed symbol/round-trip USD cost row required')
+        symbol, amount = row['symbol'], row['round_trip_usd']
+        if type(symbol) is not str or symbol not in expected_symbols or symbol in by_symbol:
+            raise ValueError('each supported cost symbol must occur exactly once')
+        if type(amount) is not str:
+            raise ValueError('round-trip USD cost must be an explicit decimal string')
+        try:
+            cost = Decimal(amount)
+            if not cost.is_finite() or cost < 0:
+                raise ValueError('round-trip USD cost must be finite and nonnegative')
+            per_side = float(cost / 2)
+        except (DecimalException, OverflowError) as exc:
+            raise ValueError('round-trip USD cost cannot be represented for replay') from exc
+        if not isfinite(per_side) or (cost > 0 and per_side == 0):
+            raise ValueError('round-trip USD cost cannot be represented for replay')
+        by_symbol[symbol] = per_side
+    return by_symbol
 
 
 @dataclass(frozen=True)
@@ -763,18 +801,14 @@ class ProductionSource:
             raise ValueError('covered production source population differs from frozen FULL index')
         quotes = parse_schedule_execution_evidence(snapshots['schedule_execution_evidence'])
         quotes.validate_supplied(prepared.panels)
-        costs = _json(snapshots['cost_model'])
-        cost_rows = costs.get('rows', [])
-        by_symbol = {row['symbol']: Decimal(row['round_trip_usd'])/2 for row in cost_rows}
-        if len(cost_rows) != 4 or set(by_symbol) != {spec.symbol for spec in ADAPTERS} or any(not value.is_finite() or value < 0 for value in by_symbol.values()):
-            raise ValueError('exact four-symbol finite venue commission schedule required')
+        by_symbol = _cost_terms(snapshots['cost_model'])
         instruments = []
         for spec in ADAPTERS:
             emulator = settings[spec.leg_id]['emulator']
             if 'slippage_ticks' not in emulator or type(emulator.get('orders_on_close')) is not bool:
                 raise ValueError('explicit approved emulator slippage and close timing required')
             instruments.append((spec.leg_id, Instrument(spec.mintick, spec.pointvalue, emulator['slippage_ticks'],
-                                                       float(by_symbol[spec.symbol]), emulator['orders_on_close'])))
+                                                       by_symbol[spec.symbol], emulator['orders_on_close'])))
         result = object.__new__(cls)
         fields = dict(contract=contract, prepared=prepared, sessions=sessions, adjacent=coverage.adjacent, clock=clock,
                       covered_until=clock.coverage_end+timedelta(days=1), tail_covered=tail,

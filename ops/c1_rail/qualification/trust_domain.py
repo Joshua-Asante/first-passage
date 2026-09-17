@@ -146,6 +146,34 @@ _PRODUCTION_CODE={
     'qualification_certification_power':'scripts.certification_power',
     **{role:'fp_qualification_port_'+leg for role,leg in _PORT_ROLES.items()},
 }
+# Compiled first-party execution closure, including deferred imports and package
+# initializers. The runtime collector also rederives imports: this declaration
+# cannot turn an omitted transitive dependency into an accepted data artifact.
+_PRODUCTION_CODE.update({
+    'runtime_dependency__'+name.replace('.','__'):name
+    for name in (
+        'c1_rail', 'c1_rail.account_close_calculation', 'c1_rail.account_close_evidence',
+        'c1_rail.account_close_ledger', 'c1_rail.book_account_lock',
+        'c1_rail.book_bootstrap', 'c1_rail.book_capacity', 'c1_rail.book_migration',
+        'c1_rail.book_migration_schema', 'c1_rail.book_policy', 'c1_rail.book_protection',
+        'c1_rail.book_protection_owner', 'c1_rail.book_schedule', 'c1_rail.book_session_calendar',
+        'c1_rail.book_settlement', 'c1_rail.book_sizing_context', 'c1_rail.book_takeover',
+        'c1_rail.book_takeover_owner', 'c1_rail.ed25519_verify', 'c1_rail.qualification',
+        'c1_rail.qualification.attempt', 'c1_rail.qualification.blocks',
+        'c1_rail.qualification.clock', 'c1_rail.qualification.contract',
+        'c1_rail.qualification.panel', 'c1_rail.qualification.preflight',
+        'c1_rail.qualification.production', 'c1_rail.qualification.production_source',
+        'c1_rail.qualification.provider', 'c1_rail.qualification.runner',
+        'c1_rail.qualification.runtime_inventory', 'c1_rail.qualification.sessions',
+        'c1_rail.qualification.trust_domain', 'c1_rail.settlement_signing',
+        'c1_signal_daemon', 'c1_signal_daemon.book_adapters', 'c1_signal_daemon.book_protocol',
+        'c1_signal_daemon.book_validation', 'c1_signal_daemon.feed', 'c1_signal_daemon.pine_ta',
+        'c1_signal_daemon.tv_broker_emulator', 'calendar_evidence', 'dd_geometry',
+        'dd_protection', 'firm_rules', 'historical_challenge', 'lib.atomic_io',
+        'lib.file_lock', 'lib.mvd', 'lib.validation', 'lifecycle', 'mc', 'mc.ingest',
+        'mc.modes', 'mc.preflight', 'mc.simulation', 'tv_schema',
+    )
+})
 PRODUCTION_TRUST_POLICY=TrustDomainPolicy('OPERATOR',False,
     tuple(sorted(set(REQUIRED_ARTIFACT_ROLES)|set(_PRODUCTION_CODE))),_PRODUCTION_CODE,True,
     ACCEPTED_HISTORICAL_PINS,{spec.leg_id:PortRuntimePin(spec.leg_id,spec.runtime_sha256,spec.pine_sha256) for spec in ADAPTERS})

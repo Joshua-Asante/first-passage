@@ -156,6 +156,12 @@ def _execute_e1(contract, *, store, executor, preflight_binding,
         domain=require_validated_trust_domain(executor._trust_domain)
         if contract.trust_domain is not domain or synthetic is not domain.permits_synthetic:
             raise ValueError('concrete executor trust domain differs')
+    def check_budget():
+        # The same cumulative clock covers controller and serialization work.
+        # Recording-only synthetic executors do not issue production budgets.
+        if type(executor) is ProductionExecutor:
+            executor._budget()
+
     if store.contract_digest!=contract.contract_sha256:
         raise ValueError('journal contract differs')
     domain_sha=contract.trust_domain_sha256
@@ -175,6 +181,7 @@ def _execute_e1(contract, *, store, executor, preflight_binding,
         raise ValueError('exact depth approval digest required')
     reserved_at=now()
     authorize(reserved_at)
+    check_budget()
     store.reserve('TB_E1',preflight_binding,now=reserved_at)
     claim=store.claimed_reservation('TB_E1')
     started_at=now()
@@ -201,7 +208,11 @@ def _execute_e1(contract, *, store, executor, preflight_binding,
               'horizon_sessions':contract.replay.horizon_sessions,
               'seed_inputs':[json.loads(seed.canonical_bytes) for seed in seeds],
               'extra':extra}
-        return store.start_checkpoint_once(checkpoint,claim,canonical_bytes(plan),now=dispatched_at)
+        plan_bytes=canonical_bytes(plan)
+        check_budget()
+        dispatched=store.start_checkpoint_once(checkpoint,claim,plan_bytes,now=dispatched_at)
+        check_budget()
+        return dispatched
 
     def decisions():
         return adjudicate_e1_outcomes(contract,outcomes,inventory)
@@ -221,7 +232,9 @@ def _execute_e1(contract, *, store, executor, preflight_binding,
             'path_inventory':[row for row in inventory['records'] if row['stage'] in retained_stages],
             'outcomes':{s:{p:[_outcome(row) for row in rows] for p,rows in pops.items()}
                         for s,pops in outcomes.items() if s in retained_stages},'extra':{} if extra is None else extra})
+        check_budget()
         stored=store.complete_checkpoint(checkpoint,dispatched,receipt,now=now())
+        check_budget()
         if stored!=receipt:raise ValueError('durable checkpoint receipt differs')
         receipts.append((checkpoint,receipt))
 
@@ -242,9 +255,11 @@ def _execute_e1(contract, *, store, executor, preflight_binding,
             for row in stage_rows]}))
 
     def result():
-        return E1Execution(contract.contract_sha256,domain_sha,
+        execution=E1Execution(contract.contract_sha256,domain_sha,
             tuple((s,tuple(pops.items())) for s,pops in outcomes.items()),canonical_bytes(inventory),
             tuple(inputs.items()),tuple(receipts),tuple(decisions().items()),synthetic)
+        check_budget()
+        return execution
 
     seeds=_stage_seeds(contract,'n1',synthetic)
     issued=dispatch('N1',seeds)

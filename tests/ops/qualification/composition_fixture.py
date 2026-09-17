@@ -167,14 +167,15 @@ def build_artifacts(root):
         'accepted_contract_sha256':digest(payloads['step3_admission_contract']),'evidence_index_v4_sha256':digest(payloads['step3_evidence_index'])})
     payloads['step6_admission_contract']=encoded({'schema':'book-bundle-admissions-v1',
         'bundles':{name:{} for name in ('O-N','O-P','S-P','S-W1','S-W1P','S-W2','S-W2P')}})
-    payloads['cost_model']=encoded({'rows':[{'symbol':symbol,'round_trip_usd':cost} for symbol,cost in [('6J','6.20'),('MNQ','1.82'),('MYM','1.82'),('MGC','2.12')]]})
+    from pathlib import Path
+    payloads['cost_model']=(Path(__file__).resolve().parents[3]/'lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/tradeify_commission_schedule.json').read_bytes()
     paths={role:'synthetic/'+role+'.bin' for role in payloads}
     for role,raw in payloads.items():
         path=root/paths[role];path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(raw)
     return ArtifactFixture(payloads,paths,populations,binding,pine)
 
 
-def verified_domain(fixture):
+def verified_domain(fixture, *, confirmation_depth=60):
     """Issue a real signed TEST_ONLY profile for these exact retained identities."""
     from test_trust_domain import case, NOW
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
@@ -187,8 +188,8 @@ def verified_domain(fixture):
     private={key:Ed25519PrivateKey.generate() for key in ('test-freeze','test-producer','test-seal')}
     keys={key:TrustedApprovalKey(key,value.public_key().public_bytes(serialization.Encoding.Raw,serialization.PublicFormat.Raw),'TEST_ONLY') for key,value in private.items()}
     counts=doc['workload_policy']['stage_population_depths']
-    counts['N2']={'FULL':[60]}
-    counts['PART_B']={population:[60] for population in ('H1','H2')}
+    counts['N2']={'FULL':[confirmation_depth]}
+    counts['PART_B']={population:[confirmation_depth] for population in ('H1','H2')}
     workload=QualificationWorkloadPolicy(counts,5,5,6,2,4,2)
     identities=fixture.identity_fields()
     code={row.role:row.name for row in fixture.ordinary_modules}
@@ -208,7 +209,7 @@ def verified_domain(fixture):
     return domain,private,keys
 
 
-def contract_document(fixture, domain):
+def contract_document(fixture, domain, *, decision_alpha='0.05'):
     """Exact contract proposal, signed only by the fixture's TEST_ONLY key."""
     from test_contract import _document
     doc=_document()
@@ -227,14 +228,16 @@ def contract_document(fixture, domain):
     replay=doc['replay']
     replay.update(horizon_sessions=5,speed_horizon_sessions=5,root_rng_namespace='TEST_ONLY/composition-fixture/v1')
     replay['decision_rules']['speed_horizon_sessions']=5
+    replay['decision_rules']['alpha']=decision_alpha
     counts=domain.workload_policy.stage_population_depths
-    depths={'LEGALITY':1,'N1':2,'N2':60,'PART_B':60,'PART_A':2,'N3':2}
+    confirmation_depth=counts['N2']['FULL'][0]
+    depths={'LEGALITY':1,'N1':2,'N2':confirmation_depth,'PART_B':confirmation_depth,'PART_A':2,'N3':2}
     for stage in replay['stages']:
         stage['population_counts']={p:list(values) for p,values in counts[stage['name']].items()}
         stage['exact_depth']=depths[stage['name']]
         if stage['name']=='N1':stage['max_failures_per_population']=0
     replay['part_a'].update(initial_panels=2,expanded_panels=4,paths_per_population_per_panel=2)
-    replay['budget'].update(n1_paths=6,n2_paths=180,part_a_initial_paths=4,part_a_expanded_paths=8,n3_paths=6)
+    replay['budget'].update(n1_paths=6,n2_paths=3*confirmation_depth,part_a_initial_paths=4,part_a_expanded_paths=8,n3_paths=6)
     doc['result_plan']['required_output_roles']=['private-result','public-projection']
     doc['result_plan']['permitted_optional_output_roles']=[]
     doc['result_plan']['adjudicator_closure_sha256']=digest(encoded({'schema':'qualification-adjudicator-closure/v1','sources':hashes}))
@@ -271,7 +274,7 @@ class VerifiedComposition:
         return {role:sys.modules[name] for role,name in self.domain.runtime_code_roles.items()}
 
 
-def build_verified_composition(root):
+def build_verified_composition(root, *, confirmation_depth=60, decision_alpha='0.05'):
     """Real G1→retained source→loader composition under signed TEST_ONLY context."""
     import sys
     from test_contract import NOW
@@ -279,8 +282,8 @@ def build_verified_composition(root):
     from c1_rail.qualification.production_source import ProductionSource
     from c1_rail.qualification.runtime_inventory import collect_runtime_inventory
     fixture=build_artifacts(root).with_runtime_artifacts(root)
-    domain,private,keys=verified_domain(fixture)
-    document=contract_document(fixture,domain)
+    domain,private,keys=verified_domain(fixture,confirmation_depth=confirmation_depth)
+    document=contract_document(fixture,domain,decision_alpha=decision_alpha)
     raw=encoded(document)
     approval=signed_approval(raw,private['test-freeze'],key_id='test-freeze',scope='FREEZE_F1')
     retained={role:(root/path).read_bytes() for role,path in fixture.paths.items()}

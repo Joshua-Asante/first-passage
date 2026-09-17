@@ -27,7 +27,7 @@ def test_complete_live_runtime_can_bind_adjudicator(tmp_path, monkeypatch):
     for owner, name in targets:
         with monkeypatch.context() as changed:
             changed.setattr(owner, name, lambda *args, **kwargs: None)
-            with pytest.raises(ValueError, match='runtime dependency'):
+            with pytest.raises(ValueError, match='dependency|imported function'):
                 bound.verify_for(setup.contract)
         bound.verify_for(setup.contract)
     policy = sys.modules['c1_rail.book_policy']

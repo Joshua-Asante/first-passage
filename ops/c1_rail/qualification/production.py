@@ -24,12 +24,10 @@ class _ExecutorBinding:
 
 
 _ISSUED_EXECUTORS={}
-_EXECUTOR_PROVIDERS={}
 
 
 def _forget_executor(identity):
     _ISSUED_EXECUTORS.pop(identity,None)
-    _EXECUTOR_PROVIDERS.pop(identity,None)
 
 
 def _initial_state(contract):
@@ -211,32 +209,40 @@ class ProductionExecutor:
 
     def run_stage(self,stage,dispatch):
         self._admit(dispatch,stage.upper())
-        identity=id(self)
-        if identity not in _EXECUTOR_PROVIDERS:
+        try:
+            # Construct from the admitted source for this dispatch. A mutable
+            # process-global cache must never select the replay implementation.
             reference=weakref.ref(self)
             def replay(path):
                 executor=reference()
                 if executor is None:
                     raise ValueError('issuing executor no longer exists')
                 return executor._replay(path)
-            _EXECUTOR_PROVIDERS[identity]=_ReplayProvider(self.source.sessions,self.source.adjacent,
+            provider=_ReplayProvider(self.source.sessions,self.source.adjacent,
                 block_sessions=self.contract.replay.inner_block_sessions,
                 path_start_date=self.source.path_start_date,replay=replay)
-        return _run_stage(_stage_request(self.contract,stage,self._budget()),_EXECUTOR_PROVIDERS[identity],
-                          initial_state=self.initial_state,synthetic=self._checked_domain().permits_synthetic)
+            return _run_stage(_stage_request(self.contract,stage,self._budget()),provider,
+                              initial_state=self.initial_state,synthetic=self._checked_domain().permits_synthetic)
+        finally:
+            # Kernel evaluation and result aggregation happen after _replay.
+            self._budget()
 
     def run_part_a(self,dispatch,full_pass_rate):
         self._admit(dispatch,'PART_A')
         def proof(panel):
             self._budget()
-            result=self.source.proof(panel)
+            try:
+                return self.source.proof(panel)
+            finally:
+                self._budget()
+        try:
+            return _run_part_a(_part_a_request(self.contract,self.source.path_start_date,self._budget()),
+                self.source.sessions,adjacent=self.source.adjacent,covered_until=self.source.covered_until,
+                tail_covered=self.source.tail_covered,proof_provider=proof,replay_provider=self._replay,
+                initial_state=self.initial_state,full_pass_rate=float(full_pass_rate),
+                synthetic=self._checked_domain().permits_synthetic)
+        finally:
             self._budget()
-            return result
-        return _run_part_a(_part_a_request(self.contract,self.source.path_start_date,self._budget()),
-            self.source.sessions,adjacent=self.source.adjacent,covered_until=self.source.covered_until,
-            tail_covered=self.source.tail_covered,proof_provider=proof,replay_provider=self._replay,
-            initial_state=self.initial_state,full_pass_rate=float(full_pass_rate),
-            synthetic=self._checked_domain().permits_synthetic)
 
 
 def _composition_executor(contract,source,store):

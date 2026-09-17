@@ -149,8 +149,15 @@ def collect_runtime_inventory(contract, *, loaded_modules, retained_source_bytes
         if path in by_origin and (alias!=by_origin[path] or module is not loaded_modules[by_name[by_origin[path]]]):
             raise ValueError('same-origin sys.modules alias is forbidden')
 
+    def local_source_exists(name):
+        relative=Path(*name.split('.'))
+        return any((base/relative.with_suffix('.py')).is_file() or (base/relative/'__init__.py').is_file()
+                   for base in (repository,repository/'core',repository/'ops',repository/'lab',repository/'governance'))
+
     def first_party(name):
         if name in by_name or name in _PORT_MODULES.values() or name.split('.')[0] in _FIRST_PARTY:return True
+        # Deferred flat core imports may not yet have an entry in sys.modules.
+        if local_source_exists(name):return True
         module=sys.modules.get(name)
         if type(module) is not ModuleType or not getattr(module,'__file__',None):return False
         try:
@@ -166,6 +173,14 @@ def collect_runtime_inventory(contract, *, loaded_modules, retained_source_bytes
             if dependency not in by_name:
                 raise ValueError(f'first-party dependency {dependency} absent from loaded code inventory')
             dependencies.add(dependency)
+        # Executable package initializers belong to the same closure; namespace
+        # packages without source do not introduce a code role.
+        for count in range(1,len(name.split('.'))):
+            parent='.'.join(name.split('.')[:count])
+            relative=Path(*parent.split('.'))/'__init__.py'
+            if any((base/relative).is_file() for base in
+                   (repository,repository/'core',repository/'ops',repository/'lab',repository/'governance')):
+                require(parent)
         for value in tuple(vars(module).values()):
             if type(value) is ModuleType:require(value.__name__)
             elif isinstance(value,(FunctionType,type)):
@@ -211,7 +226,7 @@ def collect_runtime_inventory(contract, *, loaded_modules, retained_source_bytes
                 if base:require(base)
                 for alias in node.names:
                     candidate=base+'.'+alias.name
-                    if candidate in sys.modules:require(candidate)
+                    if candidate in sys.modules or local_source_exists(candidate):require(candidate)
             elif isinstance(node,ast.Call):
                 call=node.func
                 label=call.id if isinstance(call,ast.Name) else call.attr if isinstance(call,ast.Attribute) else ''
@@ -221,3 +236,26 @@ def collect_runtime_inventory(contract, *, loaded_modules, retained_source_bytes
                                                sources[path],tuple(sorted(dependencies)),tuple(sorted(dynamic_sites))))
     return RuntimeInventoryReceipt(contract.contract_sha256,tuple(sorted(observations,key=lambda r:r.role)),
         tuple(sorted(data,key=lambda r:r.role)),tuple(sorted(contract.runtime_load_sha256.items())))
+
+
+def revalidate_runtime_inventory(contract, receipt):
+    """Reobserve a signed contract's complete closure at the consuming boundary."""
+    if type(receipt) is not RuntimeInventoryReceipt:
+        raise TypeError('exact runtime inventory receipt required')
+    artifacts={item.role:item for item in contract.artifacts}
+    roots=set()
+    for row in receipt.modules:
+        if row.role in _PORT_MODULES:
+            relative=Path(artifacts[row.role].path)
+            if relative.is_absolute() or '..' in relative.parts or not relative.parts:
+                raise ValueError('canonical retained port path required')
+            roots.add(Path(row.origin).parents[len(relative.parts)-1])
+    if len(roots)>1:
+        raise ValueError('runtime inventory port roots differ')
+    retained={row.role:row.source_bytes for row in (*receipt.modules,*receipt.data_bindings)}
+    observed=collect_runtime_inventory(contract,
+        loaded_modules={row.role:sys.modules.get(row.module_name) for row in receipt.modules},
+        retained_source_bytes=retained,artifact_root=next(iter(roots),None))
+    if observed!=receipt:
+        raise ValueError('runtime dependency closure differs from current observation')
+    return observed
