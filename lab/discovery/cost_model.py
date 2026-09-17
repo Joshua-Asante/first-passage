@@ -26,8 +26,10 @@ from typing import Iterable, Literal, Sequence
 
 try:
     from firm_rules import FIRM_RULES
+    from instrument_specs import INSTRUMENT_SPECS, InstrumentSpec
 except ImportError:  # pragma: no cover
     from core.firm_rules import FIRM_RULES
+    from core.instrument_specs import INSTRUMENT_SPECS, InstrumentSpec
 
 SlipConvention = Literal["per_side", "total_rt"]
 SLIP_CONVENTIONS: frozenset[str] = frozenset({"per_side", "total_rt"})
@@ -37,54 +39,16 @@ BP_PER_UNIT = 10_000.0
 
 # FIRM_RULES[firm_key]["cost_per_side_usd"] is the index-micro all-in row.
 # Applying it to products without a row is the rates_ev_zf_recon defect shape.
-INDEX_MICRO_COMMISSION_INSTRUMENTS: frozenset[str] = frozenset(
-    {"MES", "MNQ", "MYM", "M2K"}
-)
-NO_COMMISSION_ROW_INSTRUMENTS: frozenset[str] = frozenset(
-    {
-        "ZN",
-        "ZB",
-        "ZF",
-        "CL",
-        "NG",
-        "6E",
-        # SPECS keys that already raise via the catch-all — named so the
-        # closed-world partition cannot drift again (SSOT Phase 3).
-        "MGC",
-        "ES",
-        "NQ",
-        "YM",
-        "RTY",
-        "GC",
-        "MNG",
-    }
-)
-
-
-@dataclass(frozen=True)
-class InstrumentSpec:
-    symbol: str
-    multiplier: float
-    tick_size: float
-    tick_value: float
-
-
-# Sourced to proxy-discipline.md (+ standard CME parent/energy specs for
-# campaigns that score on those notionals). MYM tick_size = 1.00.
-INSTRUMENT_SPECS: dict[str, InstrumentSpec] = {
-    "MES": InstrumentSpec("MES", 5.0, 0.25, 1.25),
-    "MNQ": InstrumentSpec("MNQ", 2.0, 0.25, 0.50),
-    "MYM": InstrumentSpec("MYM", 0.50, 1.0, 0.50),
-    "M2K": InstrumentSpec("M2K", 5.0, 0.10, 0.50),
-    "MGC": InstrumentSpec("MGC", 10.0, 0.10, 1.00),
-    "ES": InstrumentSpec("ES", 50.0, 0.25, 12.50),
-    "NQ": InstrumentSpec("NQ", 20.0, 0.25, 5.00),
-    "YM": InstrumentSpec("YM", 5.0, 1.0, 5.00),
-    "RTY": InstrumentSpec("RTY", 50.0, 0.10, 5.00),
-    "GC": InstrumentSpec("GC", 100.0, 0.10, 10.00),
-    "NG": InstrumentSpec("NG", 10_000.0, 0.001, 10.00),
-    "MNG": InstrumentSpec("MNG", 1_000.0, 0.001, 1.00),
+COMMISSION_BINDINGS: dict[str, str] = {
+    **dict.fromkeys(("MES", "MNQ", "MYM", "M2K"), "index_micro"),
+    **dict.fromkeys(("ZN", "ZB", "ZF", "CL", "NG", "6E", "MGC", "ES", "NQ",
+                     "YM", "RTY", "GC", "MNG"), "unavailable"),
 }
+# Compatibility views, never a second authored classification.
+INDEX_MICRO_COMMISSION_INSTRUMENTS = frozenset(
+    s for s, category in COMMISSION_BINDINGS.items() if category == "index_micro")
+NO_COMMISSION_ROW_INSTRUMENTS = frozenset(
+    s for s, category in COMMISSION_BINDINGS.items() if category == "unavailable")
 
 
 @dataclass(frozen=True)
@@ -139,13 +103,13 @@ def _require_slip_convention(slip_convention: str) -> SlipConvention:
 
 def closed_world_findings() -> list[str]:
     """Intra-module partition: every SPECS key is classified; every priced
-    index-micro has a spec; the two commission sets are disjoint.
+    index-micro has a spec; each binding has one valid category.
 
     Does not join ``ops/instruments`` ledgers (many are unpriced by design).
     """
     specs = set(INSTRUMENT_SPECS)
-    index_micro = set(INDEX_MICRO_COMMISSION_INSTRUMENTS)
-    no_row = set(NO_COMMISSION_ROW_INSTRUMENTS)
+    index_micro = {s for s, c in COMMISSION_BINDINGS.items() if c == "index_micro"}
+    no_row = {s for s, c in COMMISSION_BINDINGS.items() if c == "unavailable"}
     findings: list[str] = []
     missing_specs = sorted(index_micro - specs)
     if missing_specs:
@@ -159,12 +123,9 @@ def closed_world_findings() -> list[str]:
             "INSTRUMENT_SPECS key(s) in neither INDEX_MICRO nor "
             "NO_COMMISSION: " + ", ".join(unclassified)
         )
-    overlap = sorted(index_micro & no_row)
-    if overlap:
-        findings.append(
-            "INDEX_MICRO intersect NO_COMMISSION nonempty: "
-            + ", ".join(overlap)
-        )
+    for symbol, category in COMMISSION_BINDINGS.items():
+        if category not in {"index_micro", "unavailable"}:
+            findings.append(f"invalid commission category for {symbol}: {category!r}")
     return findings
 
 
@@ -184,9 +145,10 @@ def resolve_commission(firm_key: str, instrument: str) -> float:
         raise KeyError(
             f"unknown firm_key {firm_key!r}; not in FIRM_RULES"
         )
-    if instrument in NO_COMMISSION_ROW_INSTRUMENTS or (
-        instrument not in INDEX_MICRO_COMMISSION_INSTRUMENTS
-    ):
+    category = COMMISSION_BINDINGS.get(instrument, "unavailable")
+    if category not in {"index_micro", "unavailable"}:
+        raise ValueError(f"invalid commission category for {instrument}: {category!r}")
+    if category == "unavailable":
         raise ValueError(
             f"no commission row for {instrument} at {firm_key}: "
             f"FIRM_RULES cost_per_side_usd is the index-micro row only; "

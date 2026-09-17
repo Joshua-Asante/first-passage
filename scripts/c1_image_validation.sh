@@ -65,6 +65,7 @@ LISTENER_FILES=(
   /app/core/dd_geometry.py
   /app/core/dd_protection.py
   /app/core/firm_rules.py
+  /app/core/instrument_specs.py
   /app/core/historical_challenge.py
   /app/core/calendar_evidence.py
   /app/core/lib/atomic_io.py

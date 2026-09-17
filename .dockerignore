@@ -82,6 +82,7 @@ core/**
 !core/dd_protection.py
 !core/dd_geometry.py
 !core/firm_rules.py
+!core/instrument_specs.py
 !core/historical_challenge.py
 !core/calendar_evidence.py
 !core/lifecycle.py

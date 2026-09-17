@@ -135,7 +135,7 @@ gates:
   - id: cost-model-closed-world
     tier: path-conditional
     when:
-      staged_regex: '^(lab/discovery/cost_model[.]py|tests/test_cost_model[.]py|scripts/check_cost_model_closed_world[.]py)$'
+      staged_regex: '^(core/instrument_specs[.]py|lab/discovery/cost_model[.]py|tests/test_cost_model[.]py|scripts/check_cost_model_closed_world[.]py)$'
     cmd:
       - python
       - scripts/check_cost_model_closed_world.py

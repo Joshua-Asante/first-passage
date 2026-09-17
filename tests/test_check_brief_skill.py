@@ -41,6 +41,35 @@ def test_skill_side_file_exists_and_loads():
     assert _CB_PATH.exists(), "skill-side check_brief.py must exist in-repo (Task 1)"
 
 
+def test_shared_engine_preserves_placeholder_profiles():
+    assert (_CB_PATH.parent / "brief_checks.py").is_file(), "shared engine missing"
+    repo_path = _CB_PATH.parents[4] / "scripts/check_brief.py"
+    spec = importlib.util.spec_from_file_location("repo_brief_profile", repo_path)
+    repo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(repo)
+    sections = {"0": "[instructional placeholder]"}
+    assert repo._check_section0_paths(sections)[0].severity == "HARD"
+    assert cb._check_section0_paths(sections) == []
+
+
+def test_standalone_skill_copy(tmp_path):
+    import shutil
+    import subprocess
+    import sys
+    bundle = tmp_path / "bundle"
+    shutil.copytree(_CB_PATH.parent.parent, bundle, ignore=shutil.ignore_patterns("__pycache__"))
+    script = bundle / "scripts/check_brief.py"
+    for args in (["--list-checks"], ["--self-test"], [str(tmp_path / "missing.md")], [str(bundle)]):
+        result = subprocess.run([sys.executable, "-I", "-X", "utf8", str(script), *args], cwd=tmp_path,
+                                capture_output=True, text=True, encoding="utf-8")
+        if args[0] == "--self-test":
+            assert result.returncode == 0, result.stdout + result.stderr
+            assert "SELF-TEST SKIP" not in result.stdout
+            assert "ALL PASS" in result.stdout
+        else:
+            assert result.returncode == (0 if args[0] == "--list-checks" else 2), result.stderr
+
+
 # ── general contract (inquire/adr/cc_handoff) — same as repo-side, must ──
 # ── keep working since this file is a from-scratch reimplementation ─────
 
