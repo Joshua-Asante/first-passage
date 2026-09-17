@@ -4,7 +4,7 @@ import errno
 import importlib
 import json
 import stat
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 import sys
 import subprocess
@@ -305,7 +305,62 @@ def provisioning_attempt(tmp_path, monkeypatch):
     monkeypatch.setattr(host, 'run', run)
     monkeypatch.setattr(host, 'create_process_group', lambda root: root / 'fake-cgroup')
     monkeypatch.setattr(host, 'run_owned', lambda group, command, **kwargs: run(command))
+    original_iterdir = Path.iterdir
+    monkeypatch.setattr(Path, 'iterdir', lambda path:
+                        iter(()) if path == Path('/proc') else original_iterdir(path))
     return host, config_path, reservation
+
+
+@pytest.mark.parametrize('role', ['qclient', 'qexec', 'qg5'])
+@pytest.mark.parametrize('uid_field', range(4))
+def test_provision_refuses_live_role_uid_before_publication(
+        provisioning_attempt, monkeypatch, role, uid_field):
+    host, config_path, reservation = provisioning_attempt
+    config = json.loads(config_path.read_bytes())
+    config['uid_start'] = 62000
+    config_path.write_text(json.dumps(config))
+    uid = {'qclient': 62000, 'qexec': 62001, 'qg5': 62002}[role]
+    process = host.ROOT / 'proc/123'
+    process.mkdir(parents=True)
+    uids = [0, 0, 0, 0]
+    uids[uid_field] = uid
+    (process / 'status').write_text('Name:\tlingering\nUid:\t' + '\t'.join(map(str, uids)) + '\n')
+    locked = False
+    @contextmanager
+    def reservation_lock():
+        nonlocal locked
+        locked = True
+        try:
+            yield reservation
+        finally:
+            locked = False
+    original_iterdir = Path.iterdir
+    def iterdir(path):
+        if path == Path('/proc'):
+            assert locked, 'live UID check must hold the host-wide identity lock'
+            return iter([process])
+        return original_iterdir(path)
+    monkeypatch.setattr(Path, 'iterdir', iterdir)
+    monkeypatch.setattr(host, 'identity_reservation', reservation_lock)
+    output = host.ROOT / 'manifest-output'
+    with pytest.raises(ValueError, match='active test principal'):
+        host.provision(host.ROOT, manifest_output=output)
+    assert not (host.ROOT / 'runs').exists()
+    assert not output.exists()
+    assert host.reservation_owner(reservation) is None
+
+
+def test_provision_ignores_unrelated_and_exited_processes(provisioning_attempt, monkeypatch):
+    host, _, _ = provisioning_attempt
+    process = host.ROOT / 'proc/123'
+    process.mkdir(parents=True)
+    (process / 'status').write_text('Uid:\t61999\t61999\t61999\t61999\n')
+    original_iterdir = Path.iterdir
+    monkeypatch.setattr(Path, 'iterdir', lambda path:
+                        iter([process, process.parent / '124']) if path == Path('/proc')
+                        else original_iterdir(path))
+    with pytest.raises(ValueError, match='stop before identities'):
+        host.provision(host.ROOT)
 
 
 def test_config_probe_drift_is_rejected_before_creating_run(provisioning_attempt, monkeypatch):

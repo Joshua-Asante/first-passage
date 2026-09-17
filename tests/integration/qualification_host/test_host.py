@@ -185,6 +185,38 @@ def owned_cleanup_fixture(installed, monkeypatch):
         shutil.rmtree(root)
 
 
+@pytest.mark.parametrize('role', ['qclient', 'qexec', 'qg5'])
+def test_provision_rejects_live_uid_without_account(owned_cleanup_fixture, role):
+    import grp
+    import pwd
+    host, root, _, manifest = owned_cleanup_fixture
+    uid = manifest['roles'][role]
+    with pytest.raises(KeyError):
+        pwd.getpwuid(uid)
+    with pytest.raises(KeyError):
+        grp.getgrgid(uid)
+    def drop():
+        os.setgroups([])
+        os.setgid(uid)
+        os.setuid(uid)
+    process = subprocess.Popen(['/usr/bin/sleep', '60'], preexec_fn=drop)
+    parent = root / 'candidate-runs'
+    output = root / 'manifest-output'
+    config = {**manifest['host_config'], 'parent': str(parent)}
+    try:
+        with host.identity_reservation() as reservation:
+            prior = reservation.read_bytes()
+            with pytest.raises(ValueError, match='active test principal'):
+                host.provision_reserved(host.ROOT, config, 'unused', {}, reservation, output)
+            assert reservation.read_bytes() == prior
+        assert not parent.exists()
+        assert not output.exists()
+        assert process.poll() is None
+    finally:
+        process.terminate()
+        process.wait(timeout=5)
+
+
 @pytest.mark.parametrize('failure', ['writable-hop', 'unowned-link', 'cycle', 'dangling', None])
 @pytest.mark.parametrize('relative', [False, True])
 def test_real_executable_symlink_chain(owned_cleanup_fixture, failure, relative):

@@ -389,6 +389,10 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
     import grp
     import pwd
     roles = resolve_roles(config)
+    # Deleted accounts can leave processes holding their numeric credentials.
+    # Reject those UIDs under the reservation lock before publishing or creating
+    # anything that would grant the lingering processes access to this run.
+    require_inactive_principals(set(roles.values()))
     # Existing names/IDs are not ours, even if they look like an earlier test.
     for name, uid in roles.items():
         for lookup, value in ((pwd.getpwnam, name), (grp.getgrnam, name),

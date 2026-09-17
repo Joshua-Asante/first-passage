@@ -83,6 +83,9 @@ launcher doctor immediately after installation. It never modifies a developer's
 shared operations/research environment. Run identity is a random private manifest,
 not a directory prefix, familiar account name or image tag. Existing qclient,
 qexec, qg5 names or reserved numeric IDs cause refusal. Only the newly created
+roles may use their configured numeric UIDs: setup rejects any live process
+holding one of those UIDs, even without an account entry, under the host-wide
+identity lock before publishing a manifest or creating resources. Only the new
 qexec receives Docker group membership. Accounts have locked authentication,
 no home directory and a non-login shell. Actual UID/group access probes execute
 in separate processes after dropping supplementary groups, GID and UID.
