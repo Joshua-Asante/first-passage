@@ -55,9 +55,16 @@ permissions:
   contents: read
 
 jobs:
-  listener:
+  # One matrix job, one leg per image; `name` keeps the check names `listener`
+  # and `daemon` that the two former copies of this block produced.
+  image:
+    name: ${{ matrix.service }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false  # the two images are independent verdicts
+      matrix:
+        service: [listener, daemon]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Cache pip wheels (ops lock)
@@ -67,53 +74,13 @@ jobs:
           key: c1-image-val-pip-${{ hashFiles('requirements-ops.lock') }}
           restore-keys: |
             c1-image-val-pip-
-      - name: Validate listener image
-        run: ./scripts/c1_image_validation.sh listener
-      - name: Upload listener logs
+      - name: Validate ${{ matrix.service }} image
+        run: ./scripts/c1_image_validation.sh ${{ matrix.service }}
+      - name: Upload ${{ matrix.service }} logs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: c1-image-validation-listener
-          # Curated evidence only — bind-mount *_data dirs are root-owned and
-          # break upload-artifact zip creation when included wholesale.
-          path: |
-            /tmp/c1_image_validation/*.log
-            /tmp/c1_image_validation/*.status
-            /tmp/c1_image_validation/*.arm
-            /tmp/c1_image_validation/*.second
-            /tmp/c1_image_validation/*.txt
-            /tmp/c1_image_validation/*.err
-            /tmp/c1_image_validation/*.out
-            /tmp/c1_image_validation/*.assert
-            /tmp/c1_image_validation/*.events
-            /tmp/c1_image_validation/*.state
-            /tmp/c1_image_validation/*.get
-            /tmp/c1_image_validation/*.plan
-            /tmp/c1_image_validation/*.apply
-            /tmp/c1_image_validation/*.health
-            /tmp/c1_image_validation/*.py
-            /tmp/c1_image_validation/*.cid
-          if-no-files-found: warn
-
-  daemon:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - name: Cache pip wheels (ops lock)
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-        with:
-          path: ~/.cache/pip
-          key: c1-image-val-pip-${{ hashFiles('requirements-ops.lock') }}
-          restore-keys: |
-            c1-image-val-pip-
-      - name: Validate daemon image
-        run: ./scripts/c1_image_validation.sh daemon
-      - name: Upload daemon logs
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: c1-image-validation-daemon
+          name: c1-image-validation-${{ matrix.service }}
           # Curated evidence only — bind-mount *_data dirs are root-owned and
           # break upload-artifact zip creation when included wholesale.
           path: |
