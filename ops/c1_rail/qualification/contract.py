@@ -23,6 +23,7 @@ from ..ed25519_verify import is_strong_public_key, verify as verify_ed25519
 
 
 SCHEMA = "frozen_qualification_contract/v1"
+ACTIVE_SCHEMA = "frozen_qualification_contract/v2"
 APPROVAL_SCHEMA = "qualification_approval/v1"
 APPROVAL_PAYLOAD_SCHEMA = "qualification_approval_payload/v1"
 FREEZE_SCOPE = "FREEZE_F1"
@@ -209,6 +210,7 @@ class ValidatedFrozenContract:
     approval: ApprovalRecord
     trust_domain: object
     trust_domain_sha256: str
+    policy_sha256: str | None = None
 
     @property
     def stage_specs(self) -> Mapping[str, StageSpec]:
@@ -439,6 +441,7 @@ def validate_frozen_contract(
     *,
     now: datetime,
     trust_domain: object | None = None,
+    qualification_policy_bytes: bytes | None = None,
 ) -> ValidatedFrozenContract:
     """Validate retained bytes and return immutable runner inputs.
 
@@ -446,15 +449,17 @@ def validate_frozen_contract(
     """
     if type(contract_bytes) is not bytes or type(freeze_approval_bytes) is not bytes:
         raise ContractValidationError("contract and approval require immutable bytes")
-    doc = _fields(parse_canonical_json(contract_bytes, label="contract"), {
+    parsed = parse_canonical_json(contract_bytes, label="contract")
+    if type(parsed) is not dict or parsed.get('schema') not in (SCHEMA, ACTIVE_SCHEMA):
+        raise ContractValidationError('unsupported frozen contract schema')
+    active = parsed['schema'] == ACTIVE_SCHEMA
+    doc = _fields(parsed, {
         "schema", "contract_id", "artifacts", "dependencies", "runtime_load_trace",
         "role_owners", "clocks", "populations", "coverage", "historical_pins",
         "effective_settings", "replay", "initial_state", "authority",
         "approval_policy", "result_plan",
         "trust_domain_sha256",
-    }, label="contract")
-    if doc["schema"] != SCHEMA:
-        raise ContractValidationError("unsupported frozen contract schema")
+    } | ({'policy_sha256'} if active else set()), label="contract")
     contract_id = _text(doc["contract_id"], label="contract_id")
     domain = None
     if trust_domain is not None:
@@ -463,6 +468,17 @@ def validate_frozen_contract(
             domain = require_validated_trust_domain(trust_domain)
         except Exception as exc:
             raise ContractValidationError(f"trust domain is not validator-issued: {exc}") from exc
+    if (active and domain is None) or (domain is not None and active != (domain.schema == 'qualification_trust_domain/v2')):
+        raise ContractValidationError('contract schema differs from trust domain schema')
+    semantic_policy = None
+    if active:
+        from .policy import parse_policy, validate_contract_semantics, required_output_roles as policy_roles, _document
+        from .policy_sources import require_installed_policy
+        semantic_policy = parse_policy(qualification_policy_bytes)
+        require_installed_policy(semantic_policy)
+        if domain.policy_sha256 != semantic_policy.sha256:
+            raise ContractValidationError('POLICY_IDENTITY_MISMATCH')
+        validate_contract_semantics(doc, semantic_policy, workload_policy=domain.workload_policy)
     expected_artifact_authority = (
         "TEST_ONLY" if domain is not None and domain.authority_class == "TEST_ONLY"
         else "PRODUCTION_REVIEWED"
@@ -493,6 +509,13 @@ def validate_frozen_contract(
     if domain is not None and roles != set(domain.required_artifact_roles):
         raise ContractValidationError("artifact role inventory differs from the signed trust domain")
     artifacts_by_role = {row.role: row for row in artifacts}
+    if active:
+        release = artifacts_by_role.get('execution_release')
+        policy_artifact = artifacts_by_role.get('qualification_policy')
+        if release is None or release.sha256 != domain.execution_release_sha256:
+            raise ContractValidationError('execution release differs from signed domain')
+        if policy_artifact is None or policy_artifact.sha256 != semantic_policy.sha256:
+            raise ContractValidationError('qualification policy artifact differs from installed policy')
     accepted_historical = (dict(domain.accepted_historical_pins) if domain is not None
                            else dict(ACCEPTED_HISTORICAL_PINS))
     for role, accepted_sha256 in accepted_historical.items():
@@ -846,22 +869,28 @@ def validate_frozen_contract(
     if domain is not None and tuple(enrolled_keys) != domain.freeze_key_ids:
         raise ContractValidationError("freeze key enrollment differs from the signed trust domain")
 
-    result_plan = _fields(doc["result_plan"], {
-        "required_output_roles", "permitted_optional_output_roles", "adjudicator_role",
-        "adjudicator_closure_sha256",
-    }, label="result_plan")
-    output_sets: list[tuple[str, ...]] = []
-    for field in ("required_output_roles", "permitted_optional_output_roles"):
-        values = result_plan[field]
-        if (not isinstance(values, list) or any(not isinstance(value, str) or not value for value in values)
-                or values != sorted(set(values))):
-            raise ContractValidationError(f"{field} must be a sorted unique role set")
-        output_sets.append(tuple(values))
-    required_output_roles, optional_output_roles = output_sets
-    if not required_output_roles or set(required_output_roles) & set(optional_output_roles):
-        raise ContractValidationError("result output roles must be required and disjoint")
-    if result_plan["adjudicator_role"] != "qualification_adjudicator":
-        raise ContractValidationError("result plan must bind the qualification adjudicator role")
+    if active:
+        result_plan = _fields(doc['result_plan'], {'policy_sha256','adjudicator_closure_sha256'}, label='result_plan')
+        resolved = _document(semantic_policy)
+        required_output_roles = policy_roles(semantic_policy,stages=tuple(resolved['stage_order']),completion='COMPLETE',verdict='PASS')
+        optional_output_roles = tuple(resolved['optional_artifact_roles'])
+    else:
+        result_plan = _fields(doc["result_plan"], {
+            "required_output_roles", "permitted_optional_output_roles", "adjudicator_role",
+            "adjudicator_closure_sha256",
+        }, label="result_plan")
+        output_sets: list[tuple[str, ...]] = []
+        for field in ("required_output_roles", "permitted_optional_output_roles"):
+            values = result_plan[field]
+            if (not isinstance(values, list) or any(not isinstance(value, str) or not value for value in values)
+                    or values != sorted(set(values))):
+                raise ContractValidationError(f"{field} must be a sorted unique role set")
+            output_sets.append(tuple(values))
+        required_output_roles, optional_output_roles = output_sets
+        if not required_output_roles or set(required_output_roles) & set(optional_output_roles):
+            raise ContractValidationError("result output roles must be required and disjoint")
+        if result_plan["adjudicator_role"] != "qualification_adjudicator":
+            raise ContractValidationError("result plan must bind the qualification adjudicator role")
     if "qualification_adjudicator" not in runtime:
         raise ContractValidationError("closed runtime inventory lacks qualification adjudicator")
     adjudicator_subject = canonical_json_bytes({
@@ -910,6 +939,7 @@ def validate_frozen_contract(
         approval=approval,
         trust_domain=domain,
         trust_domain_sha256=trust_domain_sha256,
+        policy_sha256=semantic_policy.sha256 if active else None,
     )
     identity = id(result)
     _ISSUED_CONTRACTS[identity] = (

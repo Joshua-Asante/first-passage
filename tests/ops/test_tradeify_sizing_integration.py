@@ -55,7 +55,7 @@ def test_verified_fingerprints_feed_host_and_operation_capacity(host):
     """Synthetic artifact owners, real serializer/verifier/host/reducer chain."""
     from pathlib import Path
     from c1_rail.book_capacity import CapacityState, Event, Fill, Reserve, Terminal, apply_event, project_capacity
-    from policy_fingerprint import (
+    from c1_rail.policy_fingerprint import (
         REQUIRED_COMPONENTS, build_shared_manifest, canonical_config_bytes,
         sha256_bytes, verify_shared_manifest,
     )
@@ -342,7 +342,7 @@ def test_host_threads_risk_before_floor_instead_of_normal_integer(host):
                                          (99000.06, Mode.NORMAL)])
 def test_settlement_clock_to_session_host_and_invalid_ordering(host, equity, expected):
     from datetime import date
-    from book_policy import BookProtectionClock
+    from c1_rail.book_policy import BookProtectionClock
 
     clock = BookProtectionClock(POLICY, 100000, 100000)
     assert clock.mode_for(date(2026, 9, 11)) is Mode.NORMAL
@@ -477,7 +477,7 @@ def test_transition_requires_every_captured_add_to_be_terminal():
 @pytest.mark.parametrize("tier", ["AUTHORIZED", "WATCH-1", "WATCH-2", "RETIRED"])
 def test_rp_adapter_normal_entry_shared_admission_matches_host(host, leg_id, adapter_normal,
                                                               protected, tier):
-    from book_policy import entry_quantities, leg
+    from c1_rail.book_policy import entry_quantities, leg
     from c1_signal_daemon.book_protocol import OrderIntent, Bracket
 
     bracket = Bracket(stop=90, limit=110, trail_activation_ticks=8, trail_offset_ticks=4)
@@ -505,7 +505,7 @@ def test_rp_adapter_normal_entry_shared_admission_matches_host(host, leg_id, ada
     ("dj30_mym_p250", 55, 3), ("vanguard_mgc", 2, 1), ("orb_mnq_v7", 1, 1)])
 @pytest.mark.parametrize("protected", [False, True])
 def test_rp_add_uses_confirmed_base_not_adapter_add(host, leg_id, normal_add, confirmed, protected):
-    from book_policy import add_quantity, leg
+    from c1_rail.book_policy import add_quantity, leg
     from c1_signal_daemon.book_protocol import OrderIntent
 
     intent = OrderIntent("adapter-add", leg_id, "add", leg(leg_id).entry_side, normal_add)

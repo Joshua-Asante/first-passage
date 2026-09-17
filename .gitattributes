@@ -101,3 +101,6 @@ scripts/install_hooks.sh text eol=lf
 ops/calendars/book_session_calendar_*.json text eol=lf
 ops/calendars/book_closure_overlay.json text eol=lf
 ops/calendars/evidence/*.json text eol=lf
+
+# Qualification host inputs are byte-hashed across platforms.
+tools/qualification_verification/* text eol=lf

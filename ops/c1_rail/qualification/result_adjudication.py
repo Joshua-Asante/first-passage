@@ -330,10 +330,19 @@ def adjudicate_e1_outcomes(contract, outcomes, inventory):
     order=('LEGALITY','N1','N2','PART_B','PART_A')
     if tuple(outcomes)!=order[:len(outcomes)] or not outcomes or outcomes['LEGALITY']!={}:
         raise ValueError('ordered E1 stage prefix required')
+    return {'LEGALITY': 'PASS', **adjudicate_replay_outcomes(
+        contract, {name: rows for name, rows in outcomes.items() if name != 'LEGALITY'}, inventory)}
+
+
+def adjudicate_replay_outcomes(contract, outcomes, inventory):
+    """Unchanged replay decisions, without supplying a legality assertion."""
+    order = ('N1', 'N2', 'PART_B', 'PART_A')
+    if tuple(outcomes) != order[:len(outcomes)]:
+        raise ValueError('ordered replay stage prefix required')
     frozen=contract.replay.decision_rules
     rules=DecisionRules(frozen.failure_ceiling,frozen.alpha,
                         frozen.speed_target,frozen.speed_horizon_sessions)
-    decisions={'LEGALITY':'PASS'}
+    decisions={}
     if 'N1' in outcomes:
         run=SimpleNamespace(stage='n1',populations=tuple(outcomes['N1'].items()))
         decisions['N1']='PASS' if adjudicate_stage(run,rules).status=='CONTINUE' else 'FAIL'

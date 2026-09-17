@@ -19,7 +19,7 @@ def digest(raw):
 PORT_ROLES = dict(zip(LEG_IDS, ('aegis_runtime_port','striker_runtime_port','vanguard_runtime_port','orb_runtime_port')))
 
 
-def port_bytes(leg, pine_sha256):
+def port_bytes(leg, pine_sha256, *, idle=False):
     return f'''# Explicit synthetic composition fixture; no accepted production identity.
 from types import SimpleNamespace
 from zoneinfo import ZoneInfo
@@ -41,7 +41,7 @@ class Adapter:
             self.position += event.fill.qty * (1 if event.fill.side is Side.BUY else -1)
     def on_bar(self, bar):
         self.bar_count += 1
-        if LEG_ID != 'orb_mnq_v7':
+        if {idle!r} or LEG_ID != 'orb_mnq_v7':
             return []
         local = bar.ts.astimezone(ZoneInfo('America/New_York'))
         if local.hour == 9 and local.minute == 0 and not self.position:
@@ -92,11 +92,11 @@ class ArtifactFixture:
         return ArtifactFixture(payloads,paths,self.populations,self.source_binding,self.pine_sha256,modules)
 
 
-def build_artifacts(root):
+def build_artifacts(root, *, idle=False):
     payloads = {role:encoded({'synthetic_fixture':role}) for role in REQUIRED_ARTIFACT_ROLES}
     pine = {leg:digest(('synthetic-pine:'+leg).encode()) for leg in LEG_IDS}
     for leg in LEG_IDS:
-        payloads[PORT_ROLES[leg]]=port_bytes(leg,pine[leg])
+        payloads[PORT_ROLES[leg]]=port_bytes(leg,pine[leg],idle=idle)
     days=[]
     current=date(2024,1,2)
     while current<date(2024,9,1):

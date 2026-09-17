@@ -572,10 +572,15 @@ def prepare_production_inputs(contract, *, artifact_root):
 
 
 def _prepare_domain_inputs(contract, *, artifact_root, domain):
+    retained = _read_retained_artifacts(contract.artifacts, artifact_root)
+    return _derive_retained_inputs(contract, retained=retained, domain=domain)
+
+
+def _derive_retained_inputs(contract, *, retained, domain):
+    """Derive all source inputs from one verified retained byte snapshot."""
     from c1_signal_daemon.book_adapters import _qualification_domain
     if _qualification_domain(contract) is not domain:
         raise ValueError('source preparation domain differs from exact contract domain')
-    retained = _read_retained_artifacts(contract.artifacts, artifact_root)
     snapshots, _, trace = _qualification_snapshots(contract, retained)
     by_role = {row.role: row for row in contract.artifacts}
     for role, digest in domain.accepted_historical_pins.items():
@@ -745,11 +750,28 @@ class ProductionSource:
 
     @classmethod
     def _build_domain(cls, contract, *, artifact_root, domain):
+        prepared = _prepare_domain_inputs(contract, artifact_root=artifact_root, domain=domain)
+        return cls._build_from_prepared(contract, prepared, domain=domain)
+
+    @classmethod
+    def _build_from_prepared(cls, contract, prepared, *, domain):
+        """Internal reuse of the exact retained snapshot checked by admission."""
+        from c1_signal_daemon.book_adapters import _qualification_domain
         from c1_signal_daemon.book_adapters import _load_domain_adapters
         from .panel import build_panel, CoverageReport, Exclusion
         from .replay import Instrument
-        prepared = _prepare_domain_inputs(contract, artifact_root=artifact_root, domain=domain)
+        if (type(prepared) is not PreparedProductionInputs
+                or prepared.contract_sha256 != contract.contract_sha256
+                or _qualification_domain(contract) is not domain):
+            raise ValueError('prepared source contract/domain mismatch')
         retained = dict(prepared.retained_bytes)
+        derived = _derive_retained_inputs(contract, retained=retained, domain=domain)
+        if _execution_snapshot(prepared) != _execution_snapshot(derived):
+            raise ValueError('prepared source derived state mismatch')
+        prepared = derived
+        _, _, trace = _qualification_snapshots(contract, retained)
+        if trace != prepared.load_trace:
+            raise ValueError('prepared source retained trace mismatch')
         snapshots = {role: retained[path] for role, path, _ in prepared.load_trace}
         digests = {role: digest for role, _, digest in prepared.load_trace}
         required = {'source_startup_policy', 'source_calendar', 'source_calendar_review', 'population_index', 'population_index_review',

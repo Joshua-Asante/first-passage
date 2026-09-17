@@ -19,6 +19,9 @@ from c1_signal_daemon.book_adapters import ADAPTERS
 
 
 SCHEMA='qualification_trust_domain/v1'
+ACTIVE_SCHEMA='qualification_trust_domain/v2'
+_EXECUTION_FIELDS={'execution_key_ids','execution_service_id','execution_release_sha256',
+                   'required_attested_checkpoints','policy_sha256'}
 _PORT_ROLES={'aegis_runtime_port':'aegis_6j','striker_runtime_port':'dj30_mym_p250',
              'vanguard_runtime_port':'vanguard_mgc','orb_runtime_port':'orb_mnq_v7'}
 _STAGES={'LEGALITY':(),'N1':('FULL','H1','H2'),'N2':('FULL',),
@@ -207,6 +210,11 @@ class QualificationTrustDomain:
     workload_policy: QualificationWorkloadPolicy
     canonical_bytes: bytes
     sha256: str
+    execution_key_ids: tuple[str,...] = ()
+    execution_service_id: str | None = None
+    execution_release_sha256: str | None = None
+    required_attested_checkpoints: tuple[str,...] = ()
+    policy_sha256: str | None = None
 
 
 def _workload_dict(workload):
@@ -241,7 +249,7 @@ def _require_compiled_policy_unchanged(policy,*,compiled=PRODUCTION_TRUST_POLICY
 
 
 def _domain_dict(domain):
-    return {'schema':domain.schema,'domain_id':domain.domain_id,'authority_class':domain.authority_class,
+    doc = {'schema':domain.schema,'domain_id':domain.domain_id,'authority_class':domain.authority_class,
         'permits_synthetic':domain.permits_synthetic,'freeze_key_ids':list(domain.freeze_key_ids),
         'result_key_ids':list(domain.result_key_ids),'seal_key_ids':list(domain.seal_key_ids),
         'trusted_key_sha256':dict(domain.trusted_key_sha256),
@@ -250,6 +258,11 @@ def _domain_dict(domain):
         'port_runtime_pins':{leg:{'leg_id':pin.leg_id,'runtime_sha256':pin.runtime_sha256,'pine_sha256':pin.pine_sha256}
                              for leg,pin in domain.port_runtime_pins.items()},
         'effective_settings_sha256':domain.effective_settings_sha256,'workload_policy':_workload_dict(domain.workload_policy)}
+    if domain.schema == ACTIVE_SCHEMA:
+        doc.update(execution_key_ids=list(domain.execution_key_ids),execution_service_id=domain.execution_service_id,
+                   execution_release_sha256=domain.execution_release_sha256,policy_sha256=domain.policy_sha256,
+                   required_attested_checkpoints=list(domain.required_attested_checkpoints))
+    return doc
 
 
 def require_validated_trust_domain(domain):
@@ -286,15 +299,28 @@ def validate_qualification_trust_domain(domain_bytes,approval_bytes,trusted_keys
     if type(domain_bytes) is not bytes or type(approval_bytes) is not bytes:
         raise TypeError('domain and approval require immutable bytes')
     if policy.authority_class not in ('OPERATOR','TEST_ONLY'):raise ValueError('unsupported policy authority')
+    parsed=parse_canonical_json(domain_bytes,label='trust domain')
+    if type(parsed) is not dict or parsed.get('schema') not in (SCHEMA,ACTIVE_SCHEMA):
+        raise ValueError('unsupported trust domain schema')
+    active=parsed['schema']==ACTIVE_SCHEMA
     fields=set(QualificationTrustDomain.__dataclass_fields__)-{'canonical_bytes','sha256'}
-    doc=_fields(parse_canonical_json(domain_bytes,label='trust domain'),fields)
-    if doc['schema']!=SCHEMA:raise ValueError('unsupported trust domain schema')
+    if not active:fields-=_EXECUTION_FIELDS
+    doc=_fields(parsed,fields)
     if doc['authority_class']!=policy.authority_class or doc['permits_synthetic'] is not policy.permits_synthetic:
         raise ValueError('domain authority/synthetic policy differs')
     if policy.authority_class=='TEST_ONLY' and policy.permits_synthetic is not True:
         raise ValueError('composition policy must remain TEST_ONLY synthetic')
     domain_id=_text(doc['domain_id'])
-    keys_by_scope={name:_names(doc[name]) for name in ('freeze_key_ids','result_key_ids','seal_key_ids')}
+    key_roles=('freeze_key_ids','result_key_ids','seal_key_ids')+(('execution_key_ids',) if active else ())
+    keys_by_scope={name:_names(doc[name]) for name in key_roles}
+    if active:
+        _text(doc['execution_service_id']);_hash(doc['execution_release_sha256']);_hash(doc['policy_sha256'])
+        if doc['required_attested_checkpoints']!=['N1','N2','PART_A']:
+            raise ValueError('complete ordered attested checkpoint requirement differs')
+        seen=set()
+        for names in keys_by_scope.values():
+            if seen.intersection(names):raise ValueError('signing role ID separation required')
+            seen.update(names)
     enrolled=set().union(*keys_by_scope.values())
     key_fingerprints=doc['trusted_key_sha256']
     if type(key_fingerprints) is not dict or set(key_fingerprints)!=enrolled:
@@ -308,9 +334,18 @@ def validate_qualification_trust_domain(domain_bytes,approval_bytes,trusted_keys
         if type(key.public_key) is not bytes or hashlib.sha256(key.public_key).hexdigest()!=key_fingerprints[key_id]:
             raise ValueError('domain key fingerprint differs from actual trusted public key')
         if key.revoked_at is not None and key.revoked_at<=now:raise ValueError('domain key revoked')
-    _require_separate_result_seal_keys(policy.authority_class,
-        keys_by_scope['result_key_ids'], keys_by_scope['seal_key_ids'], key_fingerprints)
+    if active:
+        seen=set()
+        for names in keys_by_scope.values():
+            actual={key_fingerprints[name] for name in names}
+            if seen.intersection(actual):raise ValueError('signing public key separation required')
+            seen.update(actual)
+    else:
+        _require_separate_result_seal_keys(policy.authority_class,
+            keys_by_scope['result_key_ids'], keys_by_scope['seal_key_ids'], key_fingerprints)
     roles=_names(doc['required_artifact_roles'])
+    if active and not {'qualification_policy','execution_release'} <= set(roles):
+        raise ValueError('v2 policy and release artifact roles required')
     if not set(policy.required_roles)<=set(roles):raise ValueError('mandatory artifact role omitted')
     historical=doc['accepted_historical_pins']
     if type(historical) is not dict or historical!=dict(policy.accepted_historical_pins):
@@ -351,9 +386,11 @@ def validate_qualification_trust_domain(domain_bytes,approval_bytes,trusted_keys
         expected_contract_sha256=digest,now=now,allow_test_authority=policy.authority_class=='TEST_ONLY')
     if approval.authority_class!=policy.authority_class or approval.key_id not in keys_by_scope['freeze_key_ids']:
         raise ValueError('domain binding signer not enrolled for freeze authority')
-    domain=QualificationTrustDomain(SCHEMA,domain_id,policy.authority_class,policy.permits_synthetic,
+    domain=QualificationTrustDomain(doc['schema'],domain_id,policy.authority_class,policy.permits_synthetic,
         keys_by_scope['freeze_key_ids'],keys_by_scope['result_key_ids'],keys_by_scope['seal_key_ids'],
-        _mapping(key_fingerprints),_mapping(historical),roles,_mapping(code),pins,settings,workload,domain_bytes,digest)
+        _mapping(key_fingerprints),_mapping(historical),roles,_mapping(code),pins,settings,workload,domain_bytes,digest,
+        keys_by_scope.get('execution_key_ids',()),doc.get('execution_service_id'),doc.get('execution_release_sha256'),
+        tuple(doc.get('required_attested_checkpoints',())),doc.get('policy_sha256'))
     if canonical_json_bytes(_domain_dict(domain))!=domain_bytes:raise ValueError('domain normalization differs from retained bytes')
     identity=id(domain)
     _ISSUED[identity]=(weakref.ref(domain,lambda ref:_ISSUED.pop(identity,None)),domain_bytes)
