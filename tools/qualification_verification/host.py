@@ -25,7 +25,8 @@ IDENTITY_STATE = Path('/var/lib/fp-qualification-identities')
 
 
 def load_config():
-    return json.loads((ROOT / 'tools/qualification_verification/host.json').read_bytes())
+    raw = (ROOT / 'tools/qualification_verification/host.json').read_bytes()
+    return json.loads(raw), hashlib.sha256(raw).hexdigest()
 
 
 def resolve_roles(config):
@@ -223,15 +224,15 @@ def host_facts(config):
 
 
 def provision(source, *, manifest_output=None):
-    config = load_config()
+    config, config_sha256 = load_config()
     validate_inputs(source, config)
     facts = host_facts(config)
     with identity_reservation() as reservation:
         require_available_reservation(reservation)
-        return provision_reserved(source, config, facts, reservation, manifest_output)
+        return provision_reserved(source, config, config_sha256, facts, reservation, manifest_output)
 
 
-def provision_reserved(source, config, facts, reservation, manifest_output):
+def provision_reserved(source, config, config_sha256, facts, reservation, manifest_output):
     """Caller holds the host-wide identity reservation lock throughout setup."""
     import grp
     import pwd
@@ -255,16 +256,24 @@ def provision_reserved(source, config, facts, reservation, manifest_output):
     root.mkdir(mode=0o711)
     manifest = {'schema': 'qualification_host_ownership/v2', 'run_id': root.name,
                 'root': str(root), 'state': 'provisioning', 'resources': [],
-                'host_config_sha256': hashlib.sha256((ROOT / 'tools/qualification_verification/host.json').read_bytes()).hexdigest(),
+                'host_config_sha256': config_sha256,
                 'host_config': config, 'facts': facts, 'roles': roles, 'source': snapshot(source)}
     manifest_path = root / 'ownership.json'
     save(manifest_path, manifest, exclusive=True)
-    write_reservation(reservation, {'run_id': root.name, 'manifest': str(manifest_path)})
+    # Publish a usable recovery path before reserving identities. Failed output
+    # creation/writing must not strand an unadvertised host-wide reservation.
     if manifest_output is not None:
         fd = os.open(manifest_output, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
-        with os.fdopen(fd, 'w') as stream:
-            stream.write(str(manifest_path) + '\n')
+        try:
+            with os.fdopen(fd, 'w') as stream:
+                stream.write(str(manifest_path) + '\n')
+                stream.flush()
+                os.fsync(stream.fileno())
+        except BaseException:
+            manifest_output.unlink()
+            raise
     print(f'Private ownership manifest: {manifest_path}', flush=True)
+    write_reservation(reservation, {'run_id': root.name, 'manifest': str(manifest_path)})
     with ownership_lock(root):
         try:
             def own(item):

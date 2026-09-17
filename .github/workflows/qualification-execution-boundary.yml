@@ -5,6 +5,7 @@ name: Qualification disposable host readiness
 on:
   pull_request:
     paths:
+      - '.gitattributes'
       - 'tools/qualification_verification/**'
       - 'scripts/qualification_boundary_*.py'
       - 'scripts/fp.py'
