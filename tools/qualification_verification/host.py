@@ -22,6 +22,10 @@ from scripts.qualification_boundary_environment import TRUST_MODEL, protected, r
 from scripts.record_verification import snapshot
 
 ROLES = ('qclient', 'qexec', 'qg5')
+REQUIRED_LOCKS = frozenset({
+    'requirements-ops.lock',
+    'tools/qualification_verification/requirements-signing.lock',
+})
 # These names are shared host-wide, even across installation-layout variants.
 IDENTITY_STATE = Path('/var/lib/fp-qualification-identities')
 CGROUP_ROOT = Path('/sys/fs/cgroup')
@@ -54,6 +58,8 @@ def validate_inputs(source, config):
     if config['schema'] != 'qualification_test_host/v1':
         raise ValueError('host schema')
     resolve_roles(config)
+    if not isinstance(config.get('locks'), dict) or set(config['locks']) != REQUIRED_LOCKS:
+        raise ValueError('host configuration must identify every required lock')
     for relative, expected in config['locks'].items():
         path = resource_path(source, relative)
         if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
@@ -107,6 +113,17 @@ def require_inactive_principals(uids):
         uid_line = next(line for line in values if line.startswith('Uid:'))
         if set(map(int, uid_line.split()[1:])) & uids:
             raise ValueError('active test principal')
+
+
+def validate_owned_user(user, item, run_id, groups):
+    """Reject identity drift, including changes to supplementary groups."""
+    if (user.pw_uid != item['id'] or user.pw_gid != item['id']
+            or user.pw_gecos != run_id):
+        raise ValueError('user ownership mismatch')
+    memberships = {group.gr_name for group in groups if item['name'] in group.gr_mem}
+    expected = {'docker'} if item['name'] == 'qexec' else set()
+    if memberships != expected:
+        raise ValueError('user supplementary groups changed')
 
 
 def validate_resources(manifest, root):
@@ -290,8 +307,16 @@ def host_facts(config):
             'packages': run(['/usr/bin/dpkg-query', '-W', '-f=${Package}=${Version}\n']),
             'images': run([config['docker'], '--host', 'unix:///var/run/docker.sock',
                            'image', 'ls', '--no-trunc', '--format', '{{json .}}']),
+            # Container commands and labels may contain administrator secrets.
+            # The public inventory needs only opaque daemon-assigned identities.
             'containers': run([config['docker'], '--host', 'unix:///var/run/docker.sock',
-                               'ps', '-a', '--no-trunc', '--format', '{{json .}}'])}
+                               'ps', '-a', '--no-trunc', '--format', '{{json .ID}}'])}
+
+
+def boundary_containers(config, run_id):
+    """Find resources using the Docker executable retained for this host run."""
+    return run([config['docker'], '--host', 'unix:///var/run/docker.sock',
+                'ps', '-aq', '--filter', 'label=fp.qualification.host=' + run_id])
 
 
 def provision(source, *, manifest_output=None):
@@ -468,8 +493,7 @@ def cleanup(manifest_path):
             require_inactive_principals(uids)
             # Boundary containers/services are not produced by this host-only slice.
             # Any later producer must extend this manifest before enabling acceptance.
-            containers = run(['/usr/bin/docker', '--host', 'unix:///var/run/docker.sock',
-                              'ps', '-aq', '--filter', 'label=fp.qualification.host=' + root.name])
+            containers = boundary_containers(manifest['host_config'], root.name)
             if containers:
                 raise ValueError('boundary containers require boundary-owned cleanup')
             for item in manifest['resources']:
@@ -482,8 +506,7 @@ def cleanup(manifest_path):
                         except KeyError:
                             continue
                         raise ValueError('UID reused')
-                    if user.pw_uid != item['id'] or user.pw_gecos != root.name:
-                        raise ValueError('user ownership mismatch')
+                    validate_owned_user(user, item, root.name, grp.getgrall())
                 elif item['kind'] == 'group':
                     try:
                         group = grp.getgrnam(item['name'])

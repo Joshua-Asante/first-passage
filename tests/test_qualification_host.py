@@ -30,6 +30,15 @@ def test_host_config_matches_committed_lock_bytes():
     host.validate_inputs(ROOT, host.load_config()[0])
 
 
+@pytest.mark.parametrize('locks', [{}, {'requirements-ops.lock': '0' * 64},
+                                    {**host_module().load_config()[0]['locks'], 'extra.lock': '0' * 64}])
+def test_host_config_requires_exactly_the_consumed_locks(locks):
+    host = host_module()
+    config = {**host.load_config()[0], 'locks': locks}
+    with pytest.raises(ValueError, match='every required lock'):
+        host.validate_inputs(ROOT, config)
+
+
 @pytest.mark.parametrize('relative', ['../outside', '/etc/passwd', 'data/../../outside', '.', ''])
 def test_cleanup_manifest_cannot_name_escape_or_root(tmp_path, relative):
     host = host_module()
@@ -82,6 +91,65 @@ def test_public_observations_exclude_private_manifest_fields():
     assert 'resources' not in report and 'private_future_field' not in report
 
 
+def test_host_facts_exports_only_container_ids(monkeypatch):
+    host = host_module()
+    config = host.load_config()[0]
+    commands = []
+
+    def observed_run(command):
+        commands.append(command)
+        if 'version' in command:
+            return json.dumps({'Version': config['docker_version']})
+        if command[0] == config['python']:
+            return config['python_version']
+        if command[:2] == ['/usr/bin/dpkg-query', '-W']:
+            return config['docker_package_version'] if config['docker_package'] in command else ''
+        return ''
+
+    monkeypatch.setattr(host, 'administrator', lambda: None)
+    monkeypatch.setattr(host.platform, 'freedesktop_os_release',
+                        lambda: {'ID': config['os_id'], 'VERSION_ID': config['os_release']})
+    monkeypatch.setattr(host.platform, 'machine', lambda: config['architecture'])
+    monkeypatch.setattr(host.platform, 'release', lambda: 'test-kernel')
+    monkeypatch.setattr(host, 'run', observed_run)
+    host.host_facts(config)
+    container_command = next(command for command in commands if 'ps' in command)
+    assert container_command[-1] == '{{json .ID}}'
+    assert '.Command' not in container_command[-1] and '.Labels' not in container_command[-1]
+
+
+def test_cleanup_uses_retained_docker_executable(monkeypatch):
+    host = host_module()
+    commands = []
+    monkeypatch.setattr(host, 'run', lambda command: commands.append(command) or '')
+    host.boundary_containers({'docker': '/opt/qualified/docker'}, 'run-id')
+    assert commands == [['/opt/qualified/docker', '--host', 'unix:///var/run/docker.sock',
+                         'ps', '-aq', '--filter', 'label=fp.qualification.host=run-id']]
+
+
+@pytest.mark.parametrize(('name', 'memberships'), [
+    ('qclient', []), ('qg5', []), ('qexec', ['docker']),
+])
+def test_cleanup_accepts_only_expected_role_group_memberships(name, memberships):
+    host = host_module()
+    uid = host.resolve_roles(host.load_config()[0])[name]
+    user = SimpleNamespace(pw_uid=uid, pw_gid=uid, pw_gecos='run')
+    groups = [SimpleNamespace(gr_name=group, gr_mem=[name]) for group in memberships]
+    host.validate_owned_user(user, {'kind': 'user', 'name': name, 'id': uid}, 'run', groups)
+
+
+@pytest.mark.parametrize(('name', 'memberships'), [
+    ('qclient', ['disk']), ('qg5', ['docker']), ('qexec', []), ('qexec', ['docker', 'disk']),
+])
+def test_cleanup_rejects_changed_role_group_memberships(name, memberships):
+    host = host_module()
+    uid = host.resolve_roles(host.load_config()[0])[name]
+    user = SimpleNamespace(pw_uid=uid, pw_gid=uid, pw_gecos='run')
+    groups = [SimpleNamespace(gr_name=group, gr_mem=[name]) for group in memberships]
+    with pytest.raises(ValueError, match='supplementary groups'):
+        host.validate_owned_user(user, {'kind': 'user', 'name': name, 'id': uid}, 'run', groups)
+
+
 def test_cleanup_accepts_resolved_nondefault_identity_ids(tmp_path):
     host = host_module()
     config = {**host.load_config()[0], 'uid_start': 62000}
@@ -125,10 +193,16 @@ def test_old_manifest_cannot_retire_another_runs_identities(tmp_path):
 def provisioning_attempt(tmp_path, monkeypatch):
     """Exercise publication with real files, stopping before privileged creation."""
     host = host_module()
-    config = {**host.load_config()[0], 'parent': str(tmp_path / 'runs'), 'locks': {}}
+    lock_bytes = b'approved'
+    locks = {relative: hashlib.sha256(lock_bytes).hexdigest() for relative in host.REQUIRED_LOCKS}
+    config = {**host.load_config()[0], 'parent': str(tmp_path / 'runs'), 'locks': locks}
     config_path = tmp_path / 'tools/qualification_verification/host.json'
     config_path.parent.mkdir(parents=True)
     config_path.write_text(json.dumps(config))
+    for relative in host.REQUIRED_LOCKS:
+        lock = tmp_path / relative
+        lock.parent.mkdir(parents=True, exist_ok=True)
+        lock.write_bytes(lock_bytes)
     monkeypatch.setattr(host, 'ROOT', tmp_path)
     reservation = tmp_path / 'reservation.json'
     def missing(_):
@@ -143,7 +217,7 @@ def provisioning_attempt(tmp_path, monkeypatch):
     def save(path, data, **kwargs):
         path.write_text(json.dumps(data))
     monkeypatch.setattr(host, 'save', save)
-    monkeypatch.setattr(host, 'snapshot', lambda source: {'files': {}})
+    monkeypatch.setattr(host, 'snapshot', lambda source: {'files': dict(locks)})
     monkeypatch.setattr(host.os, 'O_NOFOLLOW', getattr(host.os, 'O_NOFOLLOW', 0), raising=False)
     def run(command):
         if command[0] == '/usr/bin/findmnt':
@@ -211,14 +285,15 @@ def test_probe_time_lock_drift_is_rejected_before_reservation(provisioning_attem
     lock.parent.mkdir(parents=True, exist_ok=True)
     lock.write_bytes(b'approved')
     config = json.loads(config_path.read_bytes())
-    config['locks'] = {relative: hashlib.sha256(b'approved').hexdigest()}
+    config['locks'][relative] = hashlib.sha256(b'approved').hexdigest()
     config_path.write_text(json.dumps(config))
     def drift(config):
         lock.write_bytes(b'unapproved')
         return {}
     monkeypatch.setattr(host, 'host_facts', drift)
     monkeypatch.setattr(host, 'snapshot', lambda source:
-                        {'files': {relative: hashlib.sha256(lock.read_bytes()).hexdigest()}})
+                        {'files': {name: hashlib.sha256((source / name).read_bytes()).hexdigest()
+                                   for name in host.REQUIRED_LOCKS}})
     with pytest.raises(ValueError, match='lock'):
         host.provision(host.ROOT)
     assert host.reservation_owner(reservation) is None
@@ -233,12 +308,12 @@ def test_staged_locks_are_checked_before_environment_activation(provisioning_att
     lock.write_bytes(b'approved')
     digest = hashlib.sha256(b'approved').hexdigest()
     config = json.loads(config_path.read_bytes())
-    config['locks'] = {relative: digest}
+    config['locks'][relative] = digest
     config_path.write_text(json.dumps(config))
     def snapshot(source):
         for staged in (host.ROOT / 'runs').glob('*/code/' + relative):
             staged.write_bytes(b'tampered after copy')
-        return {'files': {relative: digest}}
+        return {'files': dict(config['locks'])}
     monkeypatch.setattr(host, 'snapshot', snapshot)
     monkeypatch.setattr(host.os, 'chown', lambda *args: None, raising=False)
     def execute(group, command, **kwargs):
