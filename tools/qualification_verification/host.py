@@ -126,7 +126,7 @@ def resource_path(root, relative):
     return result
 
 
-def inspect_tree(path):
+def inspect_tree(path, *, allow_initial_venv_alias=False):
     if path.is_symlink():
         raise ValueError('resource link')
     if not path.exists():
@@ -137,6 +137,13 @@ def inspect_tree(path):
         for entry in [Path(directory), *(Path(directory) / name for name in dirs + files)]:
             info = entry.lstat()
             if stat.S_ISLNK(info.st_mode):
+                # venv --copies still creates this convenience alias. A killed
+                # setup can leave it behind before the normal unlink. Walk and
+                # rmtree never follow it; permit only this exact private alias.
+                if (allow_initial_venv_alias and entry == path / 'lib64'
+                        and info.st_uid == info.st_gid == 0 and os.readlink(entry) == 'lib'):
+                    result.append(entry)
+                    continue
                 raise ValueError('resource link')
             if info.st_dev != device or os.path.ismount(entry):
                 raise ValueError('resource mount')
@@ -146,7 +153,7 @@ def inspect_tree(path):
     return result
 
 
-def validate_owned_tree(path, uid, *, allow_initial_owner=False):
+def validate_owned_tree(path, uid, *, allow_initial_owner=False, allow_initial_venv_alias=False):
     if path.exists():
         info = path.stat()
         if info.st_uid != uid:
@@ -157,7 +164,7 @@ def validate_owned_tree(path, uid, *, allow_initial_owner=False):
                        and not any(path.iterdir()))
             if not initial:
                 raise ValueError('tree owner mismatch')
-    inspect_tree(path)
+    inspect_tree(path, allow_initial_venv_alias=allow_initial_venv_alias)
 
 
 def require_inactive_principals(uids):
@@ -603,6 +610,8 @@ def cleanup(manifest_path):
                     path = resource_path(root, item['path'])
                     validate_owned_tree(path, item['uid'], allow_initial_owner=(
                         item['path'] in ('data', 'scratch')
+                        and manifest.get('state') in ('provisioning', 'setup_failed')),
+                        allow_initial_venv_alias=(item['path'] == 'env'
                         and manifest.get('state') in ('provisioning', 'setup_failed')))
             # Validate everything before removing anything; never follow a link.
             cleanup_group = None

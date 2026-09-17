@@ -101,6 +101,9 @@ For interrupted setup, cleanup also accepts the empty root-owned `0700` intermed
 of `data` or `scratch` creation before ownership transfer. This exception applies
 only to provisioning/failed setup; populated trees, unexpected owners or modes,
 and completed-host ownership drift still fail closed.
+Incomplete setup may also retain venv's root-owned `env/lib64 -> lib` alias.
+Cleanup validates that exact alias and unlinks it with the environment tree
+without following it; other links and completed-host aliases remain rejected.
 Cleanup creates a process group only when an existing account needs a deletion
 command. A never-used empty group can be removed without `cgroup.kill`; populated
 groups still require successful termination before retirement. This permits

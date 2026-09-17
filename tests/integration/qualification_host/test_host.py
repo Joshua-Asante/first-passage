@@ -284,6 +284,42 @@ def test_real_executable_symlink_chain(owned_cleanup_fixture, failure, relative)
         directory_link.unlink()
 
 
+def test_cleanup_after_kill_before_venv_alias_removal(owned_cleanup_fixture):
+    import select
+    host, root, path, manifest = owned_cleanup_fixture
+    env = root / 'env'
+    manifest['state'] = 'provisioning'
+    manifest['resources'] = [{'kind': 'tree', 'path': 'env', 'uid': 0}]
+    host.save(path, manifest)
+    script = '''
+import sys, venv
+venv.EnvBuilder(with_pip=False, symlinks=False).create(sys.argv[1])
+print('created', flush=True)
+sys.stdin.read()
+'''
+    child = subprocess.Popen([sys.executable, '-I', '-c', script, str(env)],
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    try:
+        assert select.select([child.stdout], [], [], 20)[0], 'venv did not complete'
+        assert child.stdout.readline().strip() == 'created'
+        child.kill()
+        child.wait(timeout=5)
+        assert (env / 'lib64').is_symlink()
+        assert os.readlink(env / 'lib64') == 'lib'
+        result = host.cleanup(path)
+        assert result['ok'], result
+        assert not env.exists()
+        assert host.reservation_owner(host.IDENTITY_STATE / 'reservation.json') is None
+        assert host.cleanup(path)['already_retired']
+    finally:
+        if child.poll() is None:
+            child.kill()
+            child.wait(timeout=5)
+        # Preserve the fixture's strict tree validation if this regression fails.
+        if (env / 'lib64').is_symlink():
+            (env / 'lib64').unlink()
+
+
 @pytest.mark.parametrize('failure', ['mkdir', 'kill'])
 def test_failed_initial_cgroup_creation_does_not_strand_reservation(
         owned_cleanup_fixture, monkeypatch, failure):

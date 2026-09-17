@@ -589,6 +589,39 @@ def test_empty_registered_cgroup_without_kill_can_be_retired(tmp_path, monkeypat
     assert not group.exists()
 
 
+@pytest.mark.parametrize('drift', [None, 'target', 'owner', 'group', 'name', 'ready'])
+def test_cleanup_recovers_only_initial_venv_alias(cleanup_attempt, monkeypatch, drift):
+    host, path, manifest, reservation = cleanup_attempt
+    env = path.parent / 'env'
+    env.mkdir()
+    (env / 'lib').mkdir()
+    alias = env / ('other' if drift == 'name' else 'lib64')
+    # Model symlink metadata for Windows; Linux host tests use a real venv.
+    alias.write_text('alias')
+    manifest['state'] = 'host_ready_boundary_unconfigured' if drift == 'ready' else 'provisioning'
+    manifest['resources'] = [{'kind': 'tree', 'path': 'env', 'uid': env.stat().st_uid}]
+    host.save(path, manifest)
+    original_lstat, original_readlink = Path.lstat, host.os.readlink
+    monkeypatch.setattr(Path, 'lstat', lambda target:
+        SimpleNamespace(st_mode=stat.S_IFLNK | 0o777,
+            st_uid=61000 if drift == 'owner' else 0,
+            st_gid=61000 if drift == 'group' else 0) if target == alias
+        else original_lstat(target))
+    monkeypatch.setattr(host.os, 'readlink', lambda target:
+        ('../outside' if drift == 'target' else 'lib') if target == alias
+        else original_readlink(target))
+    result = host.cleanup(path)
+    if drift is None:
+        assert result['ok'], result
+        assert not env.exists()
+        assert host.reservation_owner(reservation) is None
+        assert host.cleanup(path)['already_retired']
+    else:
+        assert not result['ok']
+        assert alias.exists()
+        assert host.reservation_owner(reservation) is not None
+
+
 def test_populated_cgroup_without_kill_still_blocks_retirement(tmp_path, monkeypatch):
     host = host_module()
     group = tmp_path / 'populated-group'
