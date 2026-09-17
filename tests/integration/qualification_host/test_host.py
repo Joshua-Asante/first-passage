@@ -255,7 +255,7 @@ if sys.argv[5] == 'provision':
 else:
     import pwd
     from types import SimpleNamespace
-    pwd.getpwnam = lambda name: SimpleNamespace(pw_uid=62000, pw_gecos=root.name)
+    pwd.getpwnam = lambda name: SimpleNamespace(pw_uid=62000, pw_gid=62000, pw_gecos=root.name)
     original = host.run_owned
     def delayed_account_command(group, argv, **kwargs):
         assert argv == ['/usr/sbin/userdel', 'qclient']
