@@ -54,6 +54,7 @@ def finish_checkpoints(store):
             checkpoint, parent, canonical({"checkpoint": checkpoint}),
             now=NOW + timedelta(seconds=index * 2),
         )
+        store.consume_checkpoint_dispatch(dispatch)
         store.complete_checkpoint(
             checkpoint, dispatch, canonical({"checkpoint": checkpoint, "status": "PASS"}),
             now=NOW + timedelta(seconds=index * 2 + 1),
@@ -328,6 +329,7 @@ def test_e1_checkpoints_are_ordered_once_only_and_bound_to_parent(tmp_path):
             "N1", parent, canonical({"checkpoint": "N1"}), now=NOW
         )
     receipt = canonical({"checkpoint": "N1", "status": "PASS"})
+    store.consume_checkpoint_dispatch(dispatch)
     assert store.complete_checkpoint("N1", dispatch, receipt, now=NOW) == receipt
     assert store.complete_checkpoint("N1", dispatch, receipt, now=NOW) == receipt
     with pytest.raises(AttemptConflict, match="completion"):
@@ -351,6 +353,20 @@ def test_checkpoint_dispatch_capability_is_exact_once_and_not_recreated_on_resta
     restarted = open_store(tmp_path, boot_id="boot-B")
     with pytest.raises(AttemptConflict, match="freshly issued"):
         restarted.consume_checkpoint_dispatch(dispatch)
+
+
+def test_checkpoint_cannot_complete_without_durable_consumption(tmp_path):
+    store = open_store(tmp_path)
+    parent, _ = reserve_and_start(store)
+    dispatch = store.start_checkpoint_once('N1', parent, canonical({'checkpoint':'N1'}), now=NOW)
+    receipt = canonical({'checkpoint':'N1', 'status':'PASS'})
+    with pytest.raises(TransitionError, match='consum'):
+        store.complete_checkpoint('N1', dispatch, receipt, now=NOW)
+    assert store.checkpoints()[0]['state'] == 'STARTED_IN_DOUBT'
+    store.consume_checkpoint_dispatch(dispatch)
+    assert store.complete_checkpoint('N1', dispatch, receipt, now=NOW) == receipt
+    reopened = open_store(tmp_path, boot_id='boot-B')
+    assert reopened.complete_checkpoint('N1', dispatch, receipt, now=NOW) == receipt
 
 
 def test_result_commit_requires_completed_checkpoints_and_authenticated_claim(tmp_path):
@@ -403,6 +419,7 @@ def test_authenticated_terminal_n1_prefix_commits_without_fake_later_checkpoints
             checkpoint, parent, canonical({"checkpoint": checkpoint}),
             now=NOW + timedelta(seconds=index * 2),
         )
+        store.consume_checkpoint_dispatch(dispatch)
         store.complete_checkpoint(
             checkpoint, dispatch, canonical({"checkpoint": checkpoint, "status": "FAIL"}),
             now=NOW + timedelta(seconds=index * 2 + 1),
@@ -433,3 +450,18 @@ def test_read_only_inspect_does_not_rotate_boot_or_append_event(tmp_path):
     assert view["status"] == before == after
     assert view["stages"][0]["state"] == "UNRESERVED"
     assert before["event_count"] == 2
+
+
+@pytest.mark.parametrize('tamper', ['erase_consumption', 'old_schema'])
+def test_reopen_rejects_missing_consumption_proof(tmp_path, tamper):
+    store = open_store(tmp_path)
+    reserve_and_start(store)
+    finish_checkpoints(store)
+    with sqlite3.connect(store.path) as db:
+        if tamper == 'erase_consumption':
+            db.execute("UPDATE checkpoints SET consumed=0 WHERE checkpoint='N1'")
+        else:
+            db.execute('ALTER TABLE checkpoints DROP COLUMN consumed')
+            db.execute('UPDATE campaign SET schema_version=2')
+    with pytest.raises(AttemptCorrupt, match='consumption|schema'):
+        open_store(tmp_path, boot_id='boot-B')

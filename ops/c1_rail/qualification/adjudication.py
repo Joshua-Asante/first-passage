@@ -1,6 +1,7 @@
 """Pure fixed-depth decisions using the reviewed certification-count calculator."""
 from dataclasses import dataclass
 from fractions import Fraction
+from decimal import Decimal
 from math import isfinite
 
 from scripts.certification_power import max_certifying_busts, min_certifying_passes
@@ -9,9 +10,9 @@ from .model import PathOutcome, positive_int
 
 @dataclass(frozen=True)
 class DecisionRules:
-    failure_ceiling: float
-    alpha: float
-    speed_target: float
+    failure_ceiling: float | Decimal
+    alpha: float | Decimal
+    speed_target: float | Decimal
     speed_horizon_sessions: int
 
     def __post_init__(self):
@@ -47,7 +48,7 @@ def adjudicate_stage(run, rules: DecisionRules):
         if run.stage=='n1':
             cutoff=int(len(rows)*Fraction(str(rules.failure_ceiling)))
         else:
-            cutoff=max_certifying_busts(len(rows),float(rules.failure_ceiling),rules.alpha)
+            cutoff=max_certifying_busts(len(rows),rules.failure_ceiling,rules.alpha)
         cutoffs.append((name,cutoff))
         passed &= count<=cutoff
     speed=None

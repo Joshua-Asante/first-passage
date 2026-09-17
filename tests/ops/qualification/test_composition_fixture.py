@@ -30,6 +30,13 @@ def test_complete_live_runtime_can_bind_adjudicator(tmp_path, monkeypatch):
             with pytest.raises(ValueError, match='runtime dependency'):
                 bound.verify_for(setup.contract)
         bound.verify_for(setup.contract)
+    policy = sys.modules['c1_rail.book_policy']
+    for name, value in [('CANDIDATE_TRIGGER', '0.5'), ('CANDIDATE_SCALE', '0.9')]:
+        with monkeypatch.context() as changed:
+            changed.setattr(policy, name, value)
+            with pytest.raises(ValueError, match='runtime dependency'):
+                bound.verify_for(setup.contract)
+        bound.verify_for(setup.contract)
 
 
 def test_retained_fixture_is_self_consistent_and_uses_actual_source_schemas(tmp_path):

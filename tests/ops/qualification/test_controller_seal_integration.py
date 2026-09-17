@@ -17,10 +17,12 @@ def test_real_controller_receipts_are_accepted_by_g5(tmp_path):
     frozen,raw,outputs,_,_,_,runtime,preflight,approval,keys=result_case()
     class Executor:
         def run_stage(self,stage,dispatch):
+            store.consume_checkpoint_dispatch(dispatch)
             depth=frozen.stage_specs[stage.upper()].exact_depth
             rows=tuple(PathOutcome('PASS',1,None,()) for _ in range(depth))
             return StageRun(stage,tuple((name,rows) for name in ('FULL','H1','H2')),0.,0.,True)
         def run_part_a(self,dispatch,full_pass_rate):
+            store.consume_checkpoint_dispatch(dispatch)
             rows=tuple(PathOutcome('PASS',1,None,()) for _ in range(frozen.replay.part_a.paths_per_population_per_panel))
             panels=tuple(SyntheticPanelResult(index,frozen.populations['FULL'],rows) for index in range(frozen.replay.part_a.initial_panels))
             return SyntheticPartAResult(panels,1.,1.,False,True,None,0.,0.,0.,True)

@@ -13,6 +13,7 @@ import math
 from dataclasses import dataclass, fields, is_dataclass
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
+from fractions import Fraction
 from types import MappingProxyType
 from typing import Any, Mapping
 import weakref
@@ -712,7 +713,7 @@ def validate_frozen_contract(
     if any(not Decimal(0) < value < Decimal(1) for value in (
             decision_rules.failure_ceiling, decision_rules.alpha, decision_rules.speed_target)):
         raise ContractValidationError("decision probabilities must be inside (0,1)")
-    expected_n1_cutoff = int(Decimal(n1.exact_depth) * decision_rules.failure_ceiling)
+    expected_n1_cutoff = int(n1.exact_depth * Fraction(decision_rules.failure_ceiling))
     if n1.max_failures_per_population != expected_n1_cutoff:
         raise ContractValidationError("N1 cutoff does not match the reviewed certification calculator")
 

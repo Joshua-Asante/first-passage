@@ -64,6 +64,9 @@ class Store:
         assert self.checkpoints[name].state=='STARTED_IN_DOUBT'
         self.checkpoints[name].state='COMPLETED';self.checkpoints[name].receipt=receipt
         self.log.append(('complete',name));return receipt
+    def consume_checkpoint_dispatch(self, dispatch):
+        assert self.checkpoints[dispatch.checkpoint].state == 'STARTED_IN_DOUBT'
+        return dispatch
 
 
 class Executor:
@@ -306,12 +309,14 @@ class G2Executor:
         row=next(r for r in self.store.checkpoints() if r['checkpoint']==name)
         assert row['state']=='STARTED_IN_DOUBT'
         assert row['dispatch_event_digest']==dispatch.dispatch_event_digest
+        self.store.consume_checkpoint_dispatch(dispatch)
         self.calls.append(name)
         self.fixture.store.checkpoints[name]=NS(state='STARTED_IN_DOUBT')
         return self.fixture.run_stage(stage,dispatch)
     def run_part_a(self,dispatch,full_pass_rate):
         row=next(r for r in self.store.checkpoints() if r['checkpoint']=='PART_A')
         assert row['state']=='STARTED_IN_DOUBT'
+        self.store.consume_checkpoint_dispatch(dispatch)
         self.calls.append('PART_A')
         self.fixture.store.checkpoints['PART_A']=NS(state='STARTED_IN_DOUBT')
         return self.fixture.run_part_a(dispatch,full_pass_rate)

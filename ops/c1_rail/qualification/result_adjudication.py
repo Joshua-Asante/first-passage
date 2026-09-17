@@ -14,6 +14,9 @@ import json
 import marshal
 import sys
 from types import FunctionType, ModuleType
+from typing import TypeVar, get_args, get_origin
+from fractions import Fraction
+import re
 
 from scripts.certification_power import max_certifying_busts, min_certifying_passes
 from .adjudication import DecisionRules, adjudicate_stage
@@ -61,6 +64,17 @@ def _same_executable_value(actual, expected, module_globals, reference_globals, 
                 and _same_executable_value(vars(actual), vars(expected), module_globals, reference_globals, seen))
     if type(actual) is not type(expected):
         return False
+    if isinstance(expected, TypeVar):
+        return all(_same_executable_value(getattr(actual, key), getattr(expected, key),
+                                         module_globals, reference_globals, seen)
+                   for key in ('__name__', '__bound__', '__constraints__',
+                               '__covariant__', '__contravariant__'))
+    if isinstance(expected, re.Pattern):
+        return (actual.pattern, actual.flags) == (expected.pattern, expected.flags)
+    if get_origin(expected) is not None:
+        return (get_origin(actual) is get_origin(expected)
+                and _same_executable_value(get_args(actual), get_args(expected),
+                                           module_globals, reference_globals, seen))
     if isinstance(expected, FunctionType):
         if actual.__code__ != expected.__code__:
             return False
@@ -75,9 +89,16 @@ def _same_executable_value(actual, expected, module_globals, reference_globals, 
                                       module_globals, reference_globals, seen):
             return False
         left, right = actual.__closure__ or (), expected.__closure__ or ()
-        return len(left) == len(right) and all(_same_executable_value(
-            a.cell_contents, b.cell_contents, module_globals, reference_globals, seen)
-            for a, b in zip(left, right))
+        provenance_registry = (
+            reference_globals['__name__'] == 'c1_rail.qualification.seal'
+            and expected.__qualname__ in (
+                '_validation_provenance_registry.<locals>.register',
+                '_validation_provenance_registry.<locals>.require'))
+        return len(left) == len(right) and all(
+            (type(a.cell_contents) is dict and type(b.cell_contents) is dict)
+            if provenance_registry and key == 'issued' else _same_executable_value(
+                a.cell_contents, b.cell_contents, module_globals, reference_globals, seen)
+            for key, a, b in zip(expected.__code__.co_freevars, left, right))
     if isinstance(expected, type):
         if expected.__module__ != reference_globals['__name__']:
             return actual is expected
@@ -107,7 +128,7 @@ def _same_executable_value(actual, expected, module_globals, reference_globals, 
         return actual.keys() == expected.keys() and all(_same_executable_value(
             actual[name], value, module_globals, reference_globals, seen)
             for name, value in expected.items())
-    if isinstance(expected, (str, int, float, bool, bytes, set, frozenset, date, timedelta, Decimal, Path)) or expected is None:
+    if isinstance(expected, (str, int, float, bool, bytes, set, frozenset, date, timedelta, Decimal, Fraction, Path)) or expected is None:
         return actual == expected
     return actual is expected
 
@@ -119,8 +140,8 @@ def _verify_retained_executable_modules(by_module, required_modules, decision_mo
     and dataclass constructors from verified bytes. It never replaces live
     modules or executes a qualification path. All frozen modules' functions,
     classes, defaults and imported executable bindings are checked. Decision
-    modules additionally bind all globals; other modules retain live issuance
-    registries and package child imports rather than resetting them.
+    globals are checked, with explicit exceptions for mutable issuance and lock
+    state. Policy constants and configuration containers are never exempted.
     """
     for name in required_modules:
         module = sys.modules[name]
@@ -136,7 +157,16 @@ def _verify_retained_executable_modules(by_module, required_modules, decision_mo
         for key, expected in reference.items():
             if key.startswith('__'):
                 continue
-            if name not in decision_modules and not isinstance(expected, (FunctionType, type)):
+            state_globals = {
+                'c1_rail.qualification.contract': {'_ISSUED_CONTRACTS'},
+                'c1_rail.qualification.trust_domain': {'_ISSUED'},
+                'c1_rail.qualification.production': {'_ISSUED_EXECUTORS', '_EXECUTOR_PROVIDERS'},
+                'c1_rail.qualification.production_source': {'_SOURCE_ISSUED', '_SOURCE_TOKEN'},
+                'c1_rail.qualification.attempt': {'_VALIDATED_RESULT_TOKEN'},
+                'c1_rail.book_account_lock': {'_REGISTRY', '_REGISTRY_LOCK'},
+                'c1_signal_daemon.m1_stage1_state': {'_mutexes', '_mutex_guard'},
+            }
+            if key in state_globals.get(name, ()) and key in live and type(live[key]) is type(expected):
                 continue
             if key not in live or not _same_executable_value(
                     live[key], expected, live, reference, set()):
@@ -282,8 +312,8 @@ def adjudicate_e1_outcomes(contract, outcomes, inventory):
     if tuple(outcomes)!=order[:len(outcomes)] or not outcomes or outcomes['LEGALITY']!={}:
         raise ValueError('ordered E1 stage prefix required')
     frozen=contract.replay.decision_rules
-    rules=DecisionRules(frozen.failure_ceiling,float(frozen.alpha),
-                        float(frozen.speed_target),frozen.speed_horizon_sessions)
+    rules=DecisionRules(frozen.failure_ceiling,frozen.alpha,
+                        frozen.speed_target,frozen.speed_horizon_sessions)
     decisions={'LEGALITY':'PASS'}
     if 'N1' in outcomes:
         run=SimpleNamespace(stage='n1',populations=tuple(outcomes['N1'].items()))
@@ -292,7 +322,7 @@ def adjudicate_e1_outcomes(contract, outcomes, inventory):
         if type(rows) is not tuple or not rows or any(type(row) is not PathOutcome for row in rows):
             raise ValueError('typed immutable confirmation outcomes required')
         return sum(row.status!='PASS' for row in rows)<=max_certifying_busts(
-            len(rows),float(rules.failure_ceiling),rules.alpha)
+            len(rows),rules.failure_ceiling,rules.alpha)
     if 'N2' in outcomes:
         if decisions['N1']!='PASS':
             raise ValueError('evidence continues after failed N1 screen')

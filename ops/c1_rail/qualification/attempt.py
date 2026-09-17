@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterator
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 STAGES = ("TB_E1", "TB_E2_N3")
 E1_CHECKPOINTS = ("N1", "CUTOFF", "N2", "PART_A")
 OUTCOMES = ("PASS", "FAILURE", "UNRESOLVED")
@@ -186,6 +186,7 @@ _SCHEMA = {
     ),
     "checkpoints": (
         ("checkpoint", "TEXT", 0, 1), ("ordinal", "INTEGER", 1, 0),
+        ("consumed", "INTEGER", 1, 0),
         ("state", "TEXT", 1, 0), ("binding", "BLOB", 0, 0),
         ("parent_reservation_event_digest", "TEXT", 0, 0),
         ("dispatch_sequence", "INTEGER", 0, 0),
@@ -361,6 +362,7 @@ class AttemptStore:
             )""",
             """CREATE TABLE checkpoints (
                 checkpoint TEXT PRIMARY KEY, ordinal INTEGER NOT NULL UNIQUE,
+                consumed INTEGER NOT NULL DEFAULT 0,
                 state TEXT NOT NULL, binding BLOB,
                 parent_reservation_event_digest TEXT,
                 dispatch_sequence INTEGER, dispatch_event_digest TEXT,
@@ -437,6 +439,10 @@ class AttemptStore:
             raise AttemptCorrupt("E1 checkpoint inventory is invalid")
         seen_incomplete = False
         for row in checkpoints:
+            if (row['consumed'] not in (0, 1)
+                    or (row['state'] == 'PENDING' and row['consumed'])
+                    or (row['state'] == 'COMPLETED' and not row['consumed'])):
+                raise AttemptCorrupt('checkpoint consumption state is invalid')
             if row["state"] not in ("PENDING", "STARTED_IN_DOUBT", "COMPLETED"):
                 raise AttemptCorrupt("checkpoint state is invalid")
             if row["state"] != "COMPLETED":
@@ -782,7 +788,8 @@ class AttemptStore:
         if issued is not dispatch:
             raise AttemptConflict(
                 "checkpoint dispatch was not freshly issued by this store instance")
-        with self._read() as db:
+        with self._write() as db:
+            self._ensure_mutable(self._campaign(db))
             if self._campaign(db)["boot_id"] != self.boot_id:
                 raise BootFenceError("boot identity has been superseded")
             row = db.execute(
@@ -799,8 +806,9 @@ class AttemptStore:
                 dispatch.parent_reservation_event_digest, dispatch.binding_sha256,
                 dispatch.dispatch_sequence, dispatch.dispatch_event_digest,
             )
-            if row["state"] != "STARTED_IN_DOUBT" or actual != expected:
+            if row["state"] != "STARTED_IN_DOUBT" or actual != expected or row['consumed']:
                 raise AttemptConflict("checkpoint dispatch differs from durable dispatch")
+            db.execute('UPDATE checkpoints SET consumed=1 WHERE checkpoint=?', (dispatch.checkpoint,))
         self._issued_checkpoint_dispatches.pop(dispatch.checkpoint)
         return dispatch
 
@@ -823,6 +831,8 @@ class AttemptStore:
                     return bytes(row["receipt"])
                 raise AttemptConflict("checkpoint completion differs from the durable receipt")
             self._ensure_mutable(self._campaign(db))
+            if not row['consumed']:
+                raise TransitionError('checkpoint execution capability must be consumed before completion')
             expected = (
                 self.campaign_id, self.contract_digest, checkpoint,
                 row["parent_reservation_event_digest"],

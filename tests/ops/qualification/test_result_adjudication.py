@@ -125,6 +125,21 @@ def test_n1_preserves_exact_signed_decimal_cutoff(ceiling, expected):
     assert adjudicate_e1_outcomes(contract, outcomes, {'records': []})['N1'] == expected
 
 
+@pytest.mark.parametrize('ceiling, expected', [
+    ('0.049999999999999999', 'FAIL'), ('0.05', 'PASS'),
+])
+def test_confirmation_preserves_exact_signed_probabilities(ceiling, expected):
+    from c1_rail.qualification.result_adjudication import adjudicate_e1_outcomes
+    rules = SimpleNamespace(failure_ceiling=Decimal(ceiling), alpha=Decimal('.95'),
+                            speed_target=Decimal('.5'), speed_horizon_sessions=200)
+    contract = SimpleNamespace(replay=SimpleNamespace(decision_rules=rules))
+    rows = (PathOutcome('PASS', 1, None, ()),)
+    outcomes = {'LEGALITY': {}, 'N1': {name: rows for name in ('FULL', 'H1', 'H2')},
+                'N2': {'FULL': rows}, 'PART_B': {'H1': rows, 'H2': rows}}
+    decisions = adjudicate_e1_outcomes(contract, outcomes, {'records': []})
+    assert decisions['N2'] == decisions['PART_B'] == expected
+
+
 @pytest.mark.parametrize('when', ['before_freeze', 'after_freeze'])
 def test_dispatcher_rejects_replaced_runner_evaluator(monkeypatch, when):
     import c1_rail.qualification.result_adjudication as module
@@ -276,7 +291,8 @@ def test_dispatcher_rejects_outcome_changing_executable_drift(monkeypatch, when,
         replacement = lambda contract, outcomes, inventory: {'LEGALITY': 'PASS', 'N1': 'PASS'}
         monkeypatch.setattr(module.adjudicate_e1_outcomes, '__code__', replacement.__code__)
     elif changed == 'binomial_helper':
-        monkeypatch.setattr(certification, '_iter_lower_cdf', lambda n, p: ((n, 0.0),))
+        replacement = lambda n, ceiling=.05, alpha=.05: n
+        monkeypatch.setattr(certification.max_certifying_busts, '__code__', replacement.__code__)
     elif changed == 'rules_constructor':
         def altered_rules(self, failure_ceiling, alpha, speed_target, speed_horizon_sessions):
             object.__setattr__(self, 'failure_ceiling', .99)
@@ -323,3 +339,19 @@ def test_later_stage_evidence_after_failure_is_refused(failed_stage):
         outcomes['PART_A']={'REGIME':evidence([20]*100)[0]}
     with pytest.raises(ValueError,match='after failed'):
         adjudicate_e1_outcomes(contract,outcomes,{'records':[]})
+
+
+@pytest.mark.parametrize('target,alpha,expected', [
+    ('.500000000000000001', '.5', 'FAIL'),
+    ('.5', '.499999999999999999', 'FAIL'),
+    ('.5', '.5', 'PASS'),
+])
+def test_speed_confirmation_preserves_signed_decimal_boundary(target, alpha, expected):
+    from c1_rail.qualification.result_adjudication import adjudicate_e1_outcomes
+    rules = SimpleNamespace(failure_ceiling=Decimal('.9'), alpha=Decimal(alpha),
+                            speed_target=Decimal(target), speed_horizon_sessions=200)
+    contract = SimpleNamespace(replay=SimpleNamespace(decision_rules=rules))
+    passed = (PathOutcome('PASS', 20, None, ()),)
+    outcomes = {'LEGALITY': {}, 'N1': {p: passed for p in ('FULL', 'H1', 'H2')},
+                'N2': {'FULL': passed}}
+    assert adjudicate_e1_outcomes(contract, outcomes, {'records': []})['N2'] == expected

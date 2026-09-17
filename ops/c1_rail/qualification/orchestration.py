@@ -257,6 +257,7 @@ def _execute_e1(contract, *, store, executor, preflight_binding,
                        'max_failures_per_population':contract.stage_specs[name].max_failures_per_population}
                       for name in ('N2','PART_B')]}
     issued=dispatch('CUTOFF',extra=cutoff)
+    store.consume_checkpoint_dispatch(issued)
     complete('CUTOFF',issued,extra=cutoff)
     if decisions()['N1']!='PASS':return result()
 
