@@ -118,7 +118,8 @@ def test_roles_reject_shared_or_root_identity(monkeypatch, uids):
     monkeypatch.setitem(sys.modules, 'pwd', SimpleNamespace(getpwuid=lambda uid:
                         SimpleNamespace(pw_name=f'q{uid}', pw_gid=uid)))
     monkeypatch.setitem(sys.modules, 'grp', SimpleNamespace(getgrgid=lambda gid:
-                        SimpleNamespace(gr_name=f'q{gid}')))
+                        SimpleNamespace(gr_name=f'q{gid}'), getgrnam=lambda name:
+                        SimpleNamespace(gr_gid=999)))
     monkeypatch.setattr(env.os, 'getgrouplist', lambda name, gid: [gid], raising=False)
     with pytest.raises(ValueError):
         env.identities({'roles': uids})
@@ -131,3 +132,46 @@ def test_readiness_cannot_omit_its_privileged_supervisor_assumption():
     report.pop('trust_model', None)
     with pytest.raises(ValueError, match='trust model'):
         env.require_environment(report)
+
+
+@pytest.mark.parametrize('role', ['qclient', 'qexec', 'qg5'])
+@pytest.mark.parametrize('change', ['extra-disk', 'wrong-primary', 'valid'])
+def test_roles_require_exact_group_sets(monkeypatch, role, change):
+    import sys
+    from types import SimpleNamespace
+    env = environment()
+    uids = {'qclient': 11, 'qexec': 12, 'qg5': 13}
+    names = {uid: name for name, uid in uids.items()}
+    def user(uid):
+        return SimpleNamespace(pw_name=names[uid],
+                               pw_gid=6 if names[uid] == role and change == 'wrong-primary' else uid)
+    def groups(name, gid):
+        result = [gid] + ([999] if name == 'qexec' else [])
+        return result + ([6] if name == role and change == 'extra-disk' else [])
+    monkeypatch.setitem(sys.modules, 'pwd', SimpleNamespace(getpwuid=user))
+    monkeypatch.setitem(sys.modules, 'grp', SimpleNamespace(
+        getgrnam=lambda name: SimpleNamespace(gr_gid=999),
+        getgrgid=lambda gid: SimpleNamespace(gr_name='disk' if gid == 6 else names.get(gid, 'docker'))))
+    monkeypatch.setattr(env.os, 'getgrouplist', groups, raising=False)
+    if change == 'valid':
+        result = env.identities({'roles': uids})
+        assert result['qclient']['groups'] == [11]
+        assert result['qexec']['groups'] == [12, 999]
+        assert result['qg5']['groups'] == [13]
+    else:
+        with pytest.raises(ValueError, match='group'):
+            env.identities({'roles': uids})
+
+
+def test_execution_role_requires_docker_membership(monkeypatch):
+    import sys
+    from types import SimpleNamespace
+    env = environment()
+    monkeypatch.setitem(sys.modules, 'pwd', SimpleNamespace(getpwuid=lambda uid:
+                        SimpleNamespace(pw_name='qexec', pw_gid=uid)))
+    monkeypatch.setitem(sys.modules, 'grp', SimpleNamespace(
+        getgrnam=lambda name: SimpleNamespace(gr_gid=999),
+        getgrgid=lambda gid: SimpleNamespace(gr_name='qexec')))
+    monkeypatch.setattr(env.os, 'getgrouplist', lambda name, gid: [gid], raising=False)
+    with pytest.raises(ValueError, match='group'):
+        env.identities({'roles': {'qexec': 12, 'qclient': 11, 'qg5': 13}})

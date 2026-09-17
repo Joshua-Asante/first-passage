@@ -82,6 +82,8 @@ qexec receives Docker group membership. Accounts have locked authentication,
 no home directory and a non-login shell. Actual UID/group access probes execute
 in separate processes after dropping supplementary groups, GID and UID.
 
+Setup binds the source snapshot's lock digests to the loaded configuration and
+checks the staged locks again before creating or installing the environment.
 Setup reserves the ownership manifest before each resource operation. It retains
 failed setup state and diagnostics; the CI `always()` cleanup step, or the explicit
 command below, retires verifiably owned resources. No worker, service or release
@@ -133,12 +135,28 @@ must fail. Current signing/key validity remains distinct from historical facts.
 
 ## Cleanup, migration and rollback
 
-Ownership schema v2 retains the resolved host configuration and exact role IDs.
+Ownership schema v3 retains the resolved host configuration and exact role IDs,
+and requires the owned subprocess lifecycle below.
 Cleanup validates each name/ID binding against that retained configuration, so a
 later configuration update cannot strand a previously provisioned installation.
-Legacy v1 manifests are diagnostic evidence only for this version; use the v1
-tooling or external VM-owner retirement rather than guessing their reservation
-ownership. No live v1 test host is carried forward by the ephemeral CI jobs.
+Legacy v1/v2 manifests do not prove that subprocesses have stopped; use external
+VM-owner retirement instead of certifying cleanup with the new tooling. No live
+legacy test host is carried forward by the ephemeral CI jobs.
+
+The disposable host must expose writable administrator-owned cgroup v2 at
+`/sys/fs/cgroup`, including `cgroup.kill`. Before any mutating subprocess runs,
+the orchestrator durably registers an exact per-run cgroup in private
+`process-groups.json`; the child joins it before executing its payload. Descendants
+inherit that membership even if they create a new session. These are host setup
+and cleanup utilities, not qualification worker containers or services.
+
+Cleanup kills every registered cgroup and removes it before touching account or
+filesystem resources. A removed cgroup rejects a delayed child's entry, so that
+child cannot execute its payload. Cleanup's account-management commands use a
+fresh registered cgroup too; retries stop surviving cleanup children before
+continuing. Group names are never reused. Failure to kill/remove any group keeps
+the identity reservation and prevents retirement. Registrations survive with the
+private ownership metadata; they are not exported as public observations.
 
 One administrator-owned reservation at `/var/lib/fp-qualification-identities`
 serializes collision checks, creation and retirement of the shared account names
@@ -157,7 +175,7 @@ sudo /usr/bin/python3 -I tools/qualification_verification/cleanup.py \
 Cleanup validates root-owned private metadata and every resource before removal.
 It refuses active principal processes, changed owners/IDs, shared groups, links,
 mounts and unsupported resource kinds. It removes only exact recorded trees and
-newly created identities, then writes a new immutable linked cleanup receipt.
+newly created identities, stops cleanup children, then writes a new immutable linked cleanup receipt.
 Missing resources are idempotent success. Private ownership metadata, public
 non-secret evidence and prior receipts remain; original run records are not
 rewritten. A hard kill leaves an incomplete run; cleanup cannot promote it to

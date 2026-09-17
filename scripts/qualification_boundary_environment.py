@@ -100,14 +100,15 @@ def identities(doc):
     result = {}
     if set(doc['roles']) != {'qclient', 'qexec', 'qg5'}:
         raise ValueError('three roles required')
+    docker_gid = grp.getgrnam('docker').gr_gid
     for role, uid in doc['roles'].items():
         if type(uid) is not int or uid <= 0:
             raise ValueError('non-root UID required')
         user = pwd.getpwuid(uid)
         groups = sorted(os.getgrouplist(user.pw_name, user.pw_gid))
-        if any(grp.getgrgid(gid).gr_name in ('sudo', 'wheel', 'admin', 'lxd', 'incus-admin')
-               for gid in groups):
-            raise ValueError('privileged supplementary group')
+        expected_groups = {uid, docker_gid} if role == 'qexec' else {uid}
+        if user.pw_gid != uid or docker_gid in doc['roles'].values() or set(groups) != expected_groups:
+            raise ValueError('unexpected primary or supplementary group')
         result[role] = {'uid': uid, 'gid': user.pw_gid, 'groups': groups}
     if len(set(doc['roles'].values())) != 3:
         raise ValueError('role UIDs must differ')

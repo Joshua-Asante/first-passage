@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import errno
 from contextlib import contextmanager
 import hashlib
 import json
@@ -12,6 +13,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import time
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -22,6 +24,8 @@ from scripts.record_verification import snapshot
 ROLES = ('qclient', 'qexec', 'qg5')
 # These names are shared host-wide, even across installation-layout variants.
 IDENTITY_STATE = Path('/var/lib/fp-qualification-identities')
+CGROUP_ROOT = Path('/sys/fs/cgroup')
+PROCESS_STOP_TIMEOUT = 30
 
 
 def load_config():
@@ -145,6 +149,73 @@ def save(path, data, *, exclusive=False, mode=0o600):
         os.close(directory)
 
 
+def process_groups(root):
+    """Only this run's exact registered process groups are eligible for retirement."""
+    registry = root / 'process-groups.json'
+    if not registry.exists():
+        return []  # No child can launch before the first registration is durable.
+    doc = json.loads(protected(registry).read_bytes())
+    if not isinstance(doc, list) or any(not isinstance(item, str) or len(item) != 32
+            or any(c not in '0123456789abcdef' for c in item) for item in doc):
+        raise ValueError('invalid process group registry')
+    return [CGROUP_ROOT / ('fp-qualification-' + root.name + '-' + item) for item in doc]
+
+
+def create_process_group(root):
+    protected(CGROUP_ROOT)
+    if not (CGROUP_ROOT / 'cgroup.controllers').is_file():
+        raise ValueError('cgroup v2 required')
+    group_id = uuid4().hex
+    group = CGROUP_ROOT / ('fp-qualification-' + root.name + '-' + group_id)
+    if group.exists():
+        raise ValueError('pre-existing process group')
+    prior = process_groups(root)
+    save(root / 'process-groups.json', [p.name.rsplit('-', 1)[1] for p in prior] + [group_id])
+    group.mkdir()
+    if not (group / 'cgroup.kill').is_file():
+        raise ValueError('cgroup.kill required')
+    return group
+
+
+# A child may survive a killed caller before this code runs. Its payload still
+# cannot execute unless it joins the owned group; removal closes late entry.
+ENTER_PROCESS_GROUP = '''
+import os, sys
+fd = os.open(sys.argv[1], os.O_WRONLY)
+try:
+    os.write(fd, b'0')
+finally:
+    os.close(fd)
+os.execv(sys.argv[2], sys.argv[2:])
+'''
+
+
+def run_owned(group, command, *, capture_output=True, timeout=30, interpreter=None):
+    result = subprocess.run([interpreter or sys.executable, '-I', '-c', ENTER_PROCESS_GROUP,
+        str(group / 'cgroup.procs'), *command], check=True, text=True,
+        capture_output=capture_output, timeout=timeout,
+        env={'PATH': '/usr/sbin:/usr/bin:/sbin:/bin', 'HOME': '/nonexistent',
+             'PIP_DISABLE_PIP_VERSION_CHECK': '1'})
+    return result.stdout.strip() if capture_output else ''
+
+
+def stop_process_groups(root):
+    for group in process_groups(root):
+        deadline = time.monotonic() + PROCESS_STOP_TIMEOUT
+        while group.exists():
+            protected(group)
+            # Kernel kill covers descendants, including concurrent forks. Never
+            # reuse a removed group name, even for cleanup's own child commands.
+            with (group / 'cgroup.kill').open('w') as stream:
+                stream.write('1')
+            try:
+                group.rmdir()
+            except OSError as exc:
+                if exc.errno != errno.EBUSY or time.monotonic() >= deadline:
+                    raise
+                time.sleep(0.05)
+
+
 @contextmanager
 def ownership_lock(root):
     import fcntl
@@ -254,10 +325,13 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
         raise ValueError('native ext4 required')
     root = parent / uuid4().hex
     root.mkdir(mode=0o711)
-    manifest = {'schema': 'qualification_host_ownership/v2', 'run_id': root.name,
+    source_snapshot = snapshot(source)
+    if any(source_snapshot['files'].get(name) != digest for name, digest in config['locks'].items()):
+        raise ValueError('lock digest mismatch in source snapshot')
+    manifest = {'schema': 'qualification_host_ownership/v3', 'run_id': root.name,
                 'root': str(root), 'state': 'provisioning', 'resources': [],
                 'host_config_sha256': config_sha256,
-                'host_config': config, 'facts': facts, 'roles': roles, 'source': snapshot(source)}
+                'host_config': config, 'facts': facts, 'roles': roles, 'source': source_snapshot}
     manifest_path = root / 'ownership.json'
     save(manifest_path, manifest, exclusive=True)
     # Publish a usable recovery path before reserving identities. Failed output
@@ -276,17 +350,20 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
     write_reservation(reservation, {'run_id': root.name, 'manifest': str(manifest_path)})
     with ownership_lock(root):
         try:
+            process_group = create_process_group(root)
+            def execute(command, **kwargs):
+                return run_owned(process_group, command, **kwargs)
             def own(item):
                 manifest['resources'].append(item)
                 save(manifest_path, manifest)
             for name, uid in roles.items():
                 own({'kind': 'group', 'name': name, 'id': uid})
-                run(['/usr/sbin/groupadd', '--gid', str(uid), name])
+                execute(['/usr/sbin/groupadd', '--gid', str(uid), name])
                 own({'kind': 'user', 'name': name, 'id': uid})
-                run(['/usr/sbin/useradd', '--uid', str(uid), '--gid', str(uid),
+                execute(['/usr/sbin/useradd', '--uid', str(uid), '--gid', str(uid),
                      '--no-create-home', '--no-log-init', '--home-dir', '/nonexistent',
                      '--shell', '/usr/sbin/nologin', '--comment', root.name, name])
-            run(['/usr/sbin/usermod', '--append', '--groups', 'docker', 'qexec'])
+            execute(['/usr/sbin/usermod', '--append', '--groups', 'docker', 'qexec'])
             for relative, uid, mode in (('code', 0, 0o755), ('env', 0, 0o755),
                     ('data', manifest['roles']['qexec'], 0o700), ('keys', 0, 0o755),
                     ('scratch', manifest['roles']['qexec'], 0o700)):
@@ -309,18 +386,19 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
                     raise ValueError('source drift during staging')
             if snapshot(source) != manifest['source']:
                 raise ValueError('source drift during staging')
+            validate_inputs(root / 'code', config)
             python = root / 'env/bin/python'
-            run([config['python'], '-I', '-m', 'venv', '--copies', '--without-pip', str(root / 'env')])
+            execute([config['python'], '-I', '-m', 'venv', '--copies', '--without-pip', str(root / 'env')])
             # venv's convenience alias is not needed; retained trees reject links.
             alias = root / 'env/lib64'
             if alias.is_symlink() and os.readlink(alias) == 'lib':
                 alias.unlink()
             # The system pip only installs into this new, owned environment.
-            subprocess.run([config['python'], '-I', '-m', 'pip', '--python', str(python),
+            execute([config['python'], '-I', '-m', 'pip', '--python', str(python),
                 'install', '--require-hashes', '--only-binary=:all:', '-r', str(root / 'code/requirements-ops.lock'),
-                '-r', str(root / 'code/tools/qualification_verification/requirements-signing.lock')], check=True,
-                env={'PATH': '/usr/bin:/bin', 'HOME': '/nonexistent', 'PIP_DISABLE_PIP_VERSION_CHECK': '1'})
-            run([str(python), '-I', str(root / 'code/scripts/fp.py'), '--env', str(root / 'env'), 'doctor'])
+                '-r', str(root / 'code/tools/qualification_verification/requirements-signing.lock')],
+                capture_output=False, timeout=None)
+            execute([str(python), '-I', str(root / 'code/scripts/fp.py'), '--env', str(root / 'env'), 'doctor'])
             key_code = ('from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey; '
                         'from pathlib import Path; import sys; '
                         'Path(sys.argv[1]).write_bytes(Ed25519PrivateKey.generate().private_bytes_raw())')
@@ -330,13 +408,14 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
                 uid = manifest['roles'][name]
                 os.chown(directory, uid, uid)
                 key = directory / 'TEST_ONLY.key'
-                run([str(python), '-I', '-c', key_code, str(key)])
+                execute([str(python), '-I', '-c', key_code, str(key)])
                 key.chmod(0o400); os.chown(key, uid, uid)
-            manifest['state'] = 'host_ready_boundary_unconfigured'
             manifest['runtime'] = {'python': str(python), 'version': config['python_version'],
-                'packages': json.loads(run([str(python), '-I', '-c',
+                'packages': json.loads(execute([str(python), '-I', '-c',
                     'import importlib.metadata as m, json; '
                     'print(json.dumps(sorted((d.metadata["Name"], d.version) for d in m.distributions())))']))}
+            stop_process_groups(root)
+            manifest['state'] = 'host_ready_boundary_unconfigured'
             save(manifest_path, manifest)
             save(root / 'evidence/host-observations.json', public_observations(manifest),
                  exclusive=True, mode=0o400)
@@ -358,7 +437,7 @@ def cleanup(manifest_path):
     root = manifest_path.parent
     with identity_reservation() as reservation, ownership_lock(root):
         manifest = json.loads(manifest_path.read_bytes())
-        if (manifest.get('schema') != 'qualification_host_ownership/v2'
+        if (manifest.get('schema') != 'qualification_host_ownership/v3'
                 or manifest.get('root') != str(root) or manifest.get('run_id') != root.name
                 or root.parent != Path(manifest['host_config']['parent']) or len(root.name) != 32
                 or any(c not in '0123456789abcdef' for c in root.name)):
@@ -366,7 +445,8 @@ def cleanup(manifest_path):
         validate_resources(manifest, root)
         receipt = {'schema': 'qualification_host_cleanup/v1', 'run_id': root.name,
                    'manifest_sha256': hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
-                   'removed': [], 'retained': ['ownership.json', 'evidence', 'owner.lock', 'retired.json'],
+                   'removed': [], 'retained': ['ownership.json', 'evidence', 'owner.lock', 'retired.json',
+                                               'process-groups.json'],
                    'failures': [], 'ok': False}
         try:
             retired = root / 'retired.json'
@@ -383,6 +463,7 @@ def cleanup(manifest_path):
                 save(root / ('cleanup-' + uuid4().hex + '.json'), receipt, exclusive=True, mode=0o400)
                 return receipt
             require_reservation_owner(reservation, manifest_path, manifest)
+            stop_process_groups(root)
             uids = {r['id'] for r in manifest['resources'] if r['kind'] == 'user'}
             require_inactive_principals(uids)
             # Boundary containers/services are not produced by this host-only slice.
@@ -420,6 +501,7 @@ def cleanup(manifest_path):
                     path = resource_path(root, item['path'])
                     validate_owned_tree(path, item['uid'])
             # Validate everything before removing anything; never follow a link.
+            cleanup_group = create_process_group(root)
             for item in reversed(manifest['resources']):
                 if item['kind'] == 'tree':
                     path = resource_path(root, item['path'])
@@ -430,16 +512,19 @@ def cleanup(manifest_path):
                         pwd.getpwnam(item['name'])
                     except KeyError:
                         continue
-                    run(['/usr/sbin/userdel', item['name']])
+                    run_owned(cleanup_group, ['/usr/sbin/userdel', item['name']],
+                              interpreter=manifest['host_config']['python'])
                 else:
                     try:
                         grp.getgrnam(item['name'])
                     except KeyError:
                         continue
-                    run(['/usr/sbin/groupdel', item['name']])
+                    run_owned(cleanup_group, ['/usr/sbin/groupdel', item['name']],
+                              interpreter=manifest['host_config']['python'])
                 receipt['removed'].append(item)
             # The locks provide exclusivity. Atomic publication prevents a hard
             # kill from leaving a partial authoritative retirement certificate.
+            stop_process_groups(root)
             save(retired, {'manifest_sha256': receipt['manifest_sha256']}, mode=0o400)
             write_reservation(reservation, None)
             receipt['ok'] = True

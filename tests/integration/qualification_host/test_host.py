@@ -59,7 +59,7 @@ def test_installed_source_and_runtime_are_protected(installed):
     observations = json.loads((path.parent / 'evidence/host-observations.json').read_bytes())
     assert observations['source_commit'] == manifest['source']['commit']
     assert observations['runtime']['packages'] == manifest['runtime']['packages']
-    assert observations['facts']['docker']['Version'] == '28.0.4'
+    assert observations['facts']['docker']['Version'] == manifest['host_config']['docker_version']
     import hashlib
     for relative, expected in manifest['source']['files'].items():
         if expected == 'deleted':
@@ -127,7 +127,7 @@ def owned_cleanup_fixture(installed, monkeypatch):
     state = root / 'reservation-state'
     monkeypatch.setattr(host, 'IDENTITY_STATE', state)
     config = {**installed[1]['host_config'], 'uid_start': 62000}
-    manifest = {'schema': 'qualification_host_ownership/v2', 'run_id': root.name,
+    manifest = {'schema': 'qualification_host_ownership/v3', 'run_id': root.name,
                 'root': str(root), 'host_config': config, 'roles': host.resolve_roles(config),
                 'resources': []}
     path = root / 'ownership.json'
@@ -137,6 +137,7 @@ def owned_cleanup_fixture(installed, monkeypatch):
     try:
         yield host, root, path, manifest
     finally:
+        host.stop_process_groups(root)
         assert root.parent == parent and root.resolve() == root
         host.inspect_tree(root)
         shutil.rmtree(root)
@@ -227,3 +228,113 @@ with host.identity_reservation() as reservation:
             child.wait(timeout=5)
         for stream in (child.stdin, child.stdout, child.stderr):
             stream.close()
+
+
+@pytest.mark.parametrize('phase', ['provision', 'cleanup'])
+def test_cleanup_kills_orphan_child_and_grandchild_before_retirement(owned_cleanup_fixture, monkeypatch, phase):
+    import select
+    host, root, path, manifest = owned_cleanup_fixture
+    if phase == 'cleanup':
+        (root / 'env').mkdir()
+        (root / 'env/barrier-python').touch()
+        manifest['resources'] = [{'kind': 'user', 'name': 'qclient', 'id': 62000},
+                                 {'kind': 'tree', 'path': 'env', 'uid': 0}]
+        host.save(path, manifest)
+    script = '''
+import sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from tools.qualification_verification import host
+host.IDENTITY_STATE = Path(sys.argv[2])
+root = Path(sys.argv[3])
+command = [sys.executable, '-I', '-c', sys.argv[4], str(root)]
+if sys.argv[5] == 'provision':
+    with host.identity_reservation(), host.ownership_lock(root):
+        group = host.create_process_group(root)
+        host.run_owned(group, command, capture_output=False, timeout=None)
+else:
+    import pwd
+    from types import SimpleNamespace
+    pwd.getpwnam = lambda name: SimpleNamespace(pw_uid=62000, pw_gecos=root.name)
+    original = host.run_owned
+    def delayed_account_command(group, argv, **kwargs):
+        assert argv == ['/usr/sbin/userdel', 'qclient']
+        assert not (root / 'env').exists()
+        return original(group, command, capture_output=False, timeout=None, **kwargs)
+    host.run_owned = delayed_account_command
+    # Model cleanup launched from its own environment, now removed before userdel.
+    sys.executable = str(root / 'env/barrier-python')
+    result = host.cleanup(root / 'ownership.json')
+    if not result['ok']:
+        raise RuntimeError(result)
+'''
+    payload = '''
+import os, subprocess, sys, time
+from pathlib import Path
+root = Path(sys.argv[1])
+grandchild = subprocess.Popen([sys.executable, '-I', '-c',
+    'import time; time.sleep(120)'], start_new_session=True)
+(root / 'child-pids').write_text(str(os.getpid()) + ' ' + str(grandchild.pid))
+print('children running', flush=True)
+while not (root / 'release-child').exists():
+    time.sleep(0.01)
+(root / 'recreated-after-cleanup').write_text('unsafe')
+'''
+    parent = subprocess.Popen([sys.executable, '-I', '-c', script, str(host.ROOT),
+        str(host.IDENTITY_STATE), str(root), payload, phase], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    try:
+        assert select.select([parent.stdout], [], [], 15)[0], 'child did not start'
+        line = parent.stdout.readline().strip()
+        assert line == 'children running', line
+        pids = list(map(int, (root / 'child-pids').read_text().split()))
+        parent.kill()
+        parent.wait(timeout=5)
+        if phase == 'cleanup':
+            import pwd
+            def missing(name):
+                raise KeyError(name)
+            monkeypatch.setattr(pwd, 'getpwnam', missing)
+        result = host.cleanup(path)
+        assert result['ok'], result
+        assert host.reservation_owner(host.IDENTITY_STATE / 'reservation.json') is None
+        for pid in pids:
+            status = Path(f'/proc/{pid}/status')
+            assert not status.exists() or 'State:\tZ' in status.read_text()
+        (root / 'release-child').touch()
+        assert not (root / 'recreated-after-cleanup').exists()
+        assert all(not group.exists() for group in host.process_groups(root))
+    finally:
+        if parent.poll() is None:
+            parent.kill()
+            parent.wait(timeout=5)
+        host.stop_process_groups(root)
+        parent.stdout.close()
+        parent.stderr.close()
+
+
+def test_retirement_closes_late_child_entry(owned_cleanup_fixture):
+    host, root, path, _ = owned_cleanup_fixture
+    group = host.create_process_group(root)
+    assert host.cleanup(path)['ok']
+    sentinel = root / 'late-payload'
+    with pytest.raises(subprocess.CalledProcessError):
+        host.run_owned(group, [sys.executable, '-I', '-c',
+            'from pathlib import Path; import sys; Path(sys.argv[1]).touch()', str(sentinel)])
+    assert not sentinel.exists()
+
+
+def test_process_cleanup_failure_keeps_resources_and_reservation(owned_cleanup_fixture, monkeypatch):
+    host, root, path, manifest = owned_cleanup_fixture
+    (root / 'code').mkdir()
+    manifest['resources'] = [{'kind': 'tree', 'path': 'code', 'uid': 0}]
+    host.save(path, manifest)
+    original = host.stop_process_groups
+    def denied(root):
+        raise PermissionError('cannot stop owned children')
+    monkeypatch.setattr(host, 'stop_process_groups', denied)
+    assert not host.cleanup(path)['ok']
+    assert (root / 'code').exists()
+    assert not (root / 'retired.json').exists()
+    assert host.reservation_owner(host.IDENTITY_STATE / 'reservation.json') is not None
+    monkeypatch.setattr(host, 'stop_process_groups', original)
+    assert host.cleanup(path)['ok']

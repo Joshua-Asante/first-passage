@@ -5,6 +5,7 @@ import json
 from contextlib import nullcontext
 from pathlib import Path
 import sys
+import subprocess
 from types import SimpleNamespace
 import pytest
 
@@ -149,6 +150,8 @@ def provisioning_attempt(tmp_path, monkeypatch):
             return 'ext4'
         raise ValueError('stop before identities')
     monkeypatch.setattr(host, 'run', run)
+    monkeypatch.setattr(host, 'create_process_group', lambda root: root / 'fake-cgroup')
+    monkeypatch.setattr(host, 'run_owned', lambda group, command, **kwargs: run(command))
     return host, config_path, reservation
 
 
@@ -198,3 +201,80 @@ def test_setup_failure_keeps_advertised_cleanup_path(provisioning_attempt, capsy
     assert owner['manifest'] in capsys.readouterr().out
     if output:
         assert output.read_text().strip() == owner['manifest']
+
+
+@pytest.mark.parametrize('relative', ['requirements-ops.lock',
+                                     'tools/qualification_verification/requirements-signing.lock'])
+def test_probe_time_lock_drift_is_rejected_before_reservation(provisioning_attempt, monkeypatch, relative):
+    host, config_path, reservation = provisioning_attempt
+    lock = host.ROOT / relative
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    lock.write_bytes(b'approved')
+    config = json.loads(config_path.read_bytes())
+    config['locks'] = {relative: hashlib.sha256(b'approved').hexdigest()}
+    config_path.write_text(json.dumps(config))
+    def drift(config):
+        lock.write_bytes(b'unapproved')
+        return {}
+    monkeypatch.setattr(host, 'host_facts', drift)
+    monkeypatch.setattr(host, 'snapshot', lambda source:
+                        {'files': {relative: hashlib.sha256(lock.read_bytes()).hexdigest()}})
+    with pytest.raises(ValueError, match='lock'):
+        host.provision(host.ROOT)
+    assert host.reservation_owner(reservation) is None
+
+
+@pytest.mark.parametrize('relative', ['requirements-ops.lock',
+                                     'tools/qualification_verification/requirements-signing.lock'])
+def test_staged_locks_are_checked_before_environment_activation(provisioning_attempt, monkeypatch, relative):
+    host, config_path, _ = provisioning_attempt
+    lock = host.ROOT / relative
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    lock.write_bytes(b'approved')
+    digest = hashlib.sha256(b'approved').hexdigest()
+    config = json.loads(config_path.read_bytes())
+    config['locks'] = {relative: digest}
+    config_path.write_text(json.dumps(config))
+    def snapshot(source):
+        for staged in (host.ROOT / 'runs').glob('*/code/' + relative):
+            staged.write_bytes(b'tampered after copy')
+        return {'files': {relative: digest}}
+    monkeypatch.setattr(host, 'snapshot', snapshot)
+    monkeypatch.setattr(host.os, 'chown', lambda *args: None, raising=False)
+    def execute(group, command, **kwargs):
+        assert command[0].startswith('/usr/sbin/'), 'environment activation preceded lock validation'
+        return ''
+    monkeypatch.setattr(host, 'run_owned', execute)
+    with pytest.raises(ValueError, match='lock digest'):
+        host.provision(host.ROOT)
+
+
+@pytest.mark.parametrize('exists', [False, True])
+def test_child_payload_requires_successful_group_entry(tmp_path, exists):
+    if exists and sys.platform != 'linux':
+        pytest.skip('successful POSIX exec is verified on the disposable Linux hosts')
+    host = host_module()
+    group = tmp_path / 'group'
+    group.mkdir()
+    if exists:
+        (group / 'cgroup.procs').touch()
+    sentinel = tmp_path / 'payload-ran'
+    command = [sys.executable, '-I', '-c',
+               'from pathlib import Path; import sys; Path(sys.argv[1]).touch()', str(sentinel)]
+    if exists:
+        host.run_owned(group, command)
+        assert (group / 'cgroup.procs').read_bytes() == b'0'
+        assert sentinel.exists()
+    else:
+        with pytest.raises(subprocess.CalledProcessError):
+            host.run_owned(group, command)
+        assert not sentinel.exists()
+
+
+@pytest.mark.parametrize('registry', [['../unrelated'], ['/sys/fs/cgroup'], [None], {}])
+def test_process_registry_rejects_unowned_targets(tmp_path, monkeypatch, registry):
+    host = host_module()
+    (tmp_path / 'process-groups.json').write_text(json.dumps(registry))
+    monkeypatch.setattr(host, 'protected', lambda path: path)
+    with pytest.raises(ValueError, match='process group registry'):
+        host.stop_process_groups(tmp_path)
