@@ -10,6 +10,7 @@ on:
       - 'scripts/qualification_boundary_*.py'
       - 'scripts/fp.py'
       - 'scripts/record_verification.py'
+      - 'scripts/pytest_*.py'
       - 'pyproject.toml'
       - 'tests/conftest.py'
       - 'tests/integration/conftest.py'

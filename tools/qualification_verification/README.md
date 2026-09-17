@@ -81,6 +81,8 @@ qexec, qg5 names or reserved numeric IDs cause refusal. Only the newly created
 qexec receives Docker group membership. Accounts have locked authentication,
 no home directory and a non-login shell. Actual UID/group access probes execute
 in separate processes after dropping supplementary groups, GID and UID.
+Readiness requires each primary GID to equal its configured UID, no supplementary
+groups for qclient/qg5, and only the Docker supplementary group for qexec.
 
 Setup binds the source snapshot's lock digests to the loaded configuration and
 checks the staged locks again before creating or installing the environment.

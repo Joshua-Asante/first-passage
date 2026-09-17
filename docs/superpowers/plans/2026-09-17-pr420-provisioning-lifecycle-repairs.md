@@ -40,3 +40,20 @@
 | Provisioning to retirement | Account commands, venv, pip and key generation; child and descendant; late spawn; cleanup interruption | One shared execution barrier; real process/cgroup tests; reservation retained on failure |
 | OS role identity | Every role; unexpected membership; missing Docker; wrong primary GID | Exact-set checks, valid nearby cases and real UID readiness |
 | Canonical host version | Docker observation versus retained config | Existing installed-host assertion reads the retained value |
+
+## Implementation review
+
+The implementation uses a private durable process-group registry and a unique
+cgroup generation for every provisioning/cleanup attempt. Cleanup account
+commands share the same barrier and use the retained system Python because the
+owned environment may already have been deleted. The Linux regression covers
+both provisioning-parent and cleanup-parent hard kills with child/grandchild
+survivors, late entry, failure to stop children and cleanup retry.
+
+Independent review found the deleted-interpreter case and missing cleanup-child
+regression; both were repaired and the bounded re-review accepted them. Before
+rebasing, Windows Python 3.13.2 focused checks passed (59 passed, two Linux-only
+skips) and repository gates passed. Real Linux and final rebased verification
+remain required. The main-branch conflict was documentation-only: both independent
+scripts/README.md additions are retained. Readiness triggers now include the
+shared pytest adapters introduced/used by the updated launcher.
