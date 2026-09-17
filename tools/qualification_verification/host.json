@@ -1,0 +1,20 @@
+{
+  "schema": "qualification_test_host/v1",
+  "os_id": "ubuntu",
+  "os_release": "24.04",
+  "architecture": "x86_64",
+  "filesystem": "ext4",
+  "python": "/usr/bin/python3",
+  "python_version": "3.12.3",
+  "docker": "/usr/bin/docker",
+  "docker_version": "28.0.4",
+  "docker_package": "docker-ce",
+  "docker_package_version": "5:28.0.4-1~ubuntu.24.04~noble",
+  "parent": "/var/lib/fp-qualification-tests",
+  "uid_start": 61000,
+  "locks": {
+    "requirements-ops.lock": "9aa7c17c82a71cb862dd33180f6f06aa855a662ae03489fcb72f87cb03f82017",
+    "tools/qualification_verification/requirements-signing.lock": "079146edc8347e0ef2751c6ececfe8adc4f8ed765492f52c395961c4b4a31d2b"
+  },
+  "qualification_acceptance": "blocked_pending_boundary_integration"
+}
