@@ -51,6 +51,14 @@ def snapshot(repo):
             'lock_sha256': files.get('requirements-ops.lock'), 'files': files}
 
 
+def external_file_identity(path):
+    """Bind the lexical selection, symlink ancestors, resolved target and bytes."""
+    path = Path(path)
+    links = {str(p): os.readlink(p) for p in (path, *path.parents) if p.is_symlink()}
+    return dict(sha256=digest(path.read_bytes()), resolved_path=str(path.resolve(strict=True)),
+                symlinks=links)
+
+
 def report_identity(path):
     if not path.exists():
         return None
@@ -128,7 +136,7 @@ class RunRecord:
     def track_external_files(self, paths):
         """Measure explicit files only, not their import/data dependency closure."""
         self.data['external_files'] = dict(
-            before={str(p): digest(p.read_bytes()) for p in sorted(set(paths))},
+            before={str(p): external_file_identity(p) for p in sorted(set(paths))},
             after=None, stable=False,
             scope='Explicit external files only; supporting imports/data are outside the source inventory')
         self.persist()
@@ -278,9 +286,9 @@ class RunRecord:
         external = self.data.get('external_files')
         if external is not None:
             try:
-                external['after'] = {p: digest(Path(p).read_bytes()) for p in external['before']}
+                external['after'] = {p: external_file_identity(p) for p in external['before']}
                 external['stable'] = external['before'] == external['after']
-            except OSError as external_error:
+            except (OSError, RuntimeError) as external_error:
                 external['error'] = str(external_error)
         code = (130 if interrupted else self.data['exit_code']) or (
             2 if exc is not None or not self.started_child else

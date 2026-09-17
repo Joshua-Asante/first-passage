@@ -467,3 +467,21 @@ remove. Ambient launcher root discovery is retired; direct pytest callers, the
 JUnit adapter, Docker ownership/cleanup, suite defaults and historical records
 are retained. Rollback reverts code while retaining old/new evidence; records
 with the original root-selection defect remain unsuitable for their claimed scope.
+
+Argument files (`@path`, including nested files and `PYTEST_ADDOPTS`) are expanded
+before checkout validation and external-file inventory. They follow pytest's
+one-argument-per-line convention and resolve relative paths from the selected
+checkout. The recorded child command contains expanded arguments, and external
+argument files are also inventoried. Cycles, more than 16 nesting levels, files
+over 1,000,000 characters and expansion over 100,000 arguments fail before launch.
+Equivalent `--rootdir` values use pytest's environment-variable expansion before
+comparison. A JUnit destination overlapping a selected file (including symlink
+or hardlink aliases) is rejected before it can overwrite source. External-file
+identities retain the lexical selection, link/ancestor-link targets, resolved
+path and content digest; retargeting or deleting a selected link rejects acceptance.
+
+Configured `addopts` (including `-o addopts=...`) is materialized once, using
+pytest's precedence, into the validated recorded command. The launcher clears
+pytest's later implicit addopts expansion to prevent hidden file selections.
+JUnit paths use pytest's variable/home expansion. Existing `--log-file` values
+are treated as outputs too, with the same source-overlap rejection.
