@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import deque
 import errno
 from contextlib import contextmanager
 import hashlib
@@ -76,12 +77,36 @@ def validate_executable_paths(config):
 
 
 def protected_executable(value):
-    path = Path(value)
-    # Ubuntu's python3 is a system-owned symlink. Protect both the directory
-    # controlling that alias and its resolved executable, without PATH lookup.
-    protected(path.parent)
-    target = protected(path.resolve(strict=True))
-    if not target.is_file() or not os.access(target, os.X_OK):
+    requested = Path(value)
+    if not requested.is_absolute():
+        raise ValueError('absolute executable path required')
+    path = protected(Path(requested.anchor))
+    pending = deque(requested.parts[1:])
+    links = 0
+    # Resolve one component at a time: resolve() would hide writable intermediate
+    # directories and symlinks. Check directories before processing any '..'.
+    while pending:
+        part = pending.popleft()
+        if part == '..':
+            path = path.parent
+            continue
+        candidate = path / part
+        info = candidate.lstat()
+        if stat.S_ISLNK(info.st_mode):
+            links += 1
+            if info.st_uid != 0 or links > 40:
+                raise ValueError('unprotected or cyclic executable symlink')
+            target = Path(os.readlink(candidate))
+            if target.is_absolute():
+                path = protected(Path(target.anchor))
+                pending.extendleft(reversed(target.parts[1:]))
+            else:
+                pending.extendleft(reversed(target.parts))
+        else:
+            path = protected(candidate)
+            if pending and not stat.S_ISDIR(info.st_mode):
+                raise ValueError('executable ancestor must be a directory')
+    if not path.is_file() or not os.access(path, os.X_OK):
         raise ValueError('regular executable required')
 
 
@@ -248,15 +273,18 @@ def stop_process_groups(root):
         deadline = time.monotonic() + PROCESS_STOP_TIMEOUT
         while group.exists():
             protected(group)
-            # Kernel kill covers descendants, including concurrent forks. Never
-            # reuse a removed group name, even for cleanup's own child commands.
-            with (group / 'cgroup.kill').open('w') as stream:
-                stream.write('1')
             try:
+                # The kernel permits removal only when empty. This also retires
+                # a never-used group on kernels without cgroup.kill, and closes
+                # late entry without a separate racy population check.
                 group.rmdir()
             except OSError as exc:
                 if exc.errno != errno.EBUSY or time.monotonic() >= deadline:
                     raise
+                # Kernel kill covers descendants, including concurrent forks.
+                # A populated group without kill support still fails closed.
+                with (group / 'cgroup.kill').open('w') as stream:
+                    stream.write('1')
                 time.sleep(0.05)
 
 
@@ -452,6 +480,10 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
             alias = root / 'env/lib64'
             if alias.is_symlink() and os.readlink(alias) == 'lib':
                 alias.unlink()
+            runtime_version = execute([str(python), '-I', '-c',
+                                       'import platform; print(platform.python_version())'])
+            if runtime_version != config['python_version']:
+                raise ValueError('copied Python patch mismatch')
             # The system pip only installs into this new, owned environment.
             execute([config['python'], '-I', '-m', 'pip', '--python', str(python),
                 'install', '--require-hashes', '--only-binary=:all:', '-r', str(root / 'code/requirements-ops.lock'),
@@ -469,7 +501,7 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
                 key = directory / 'TEST_ONLY.key'
                 execute([str(python), '-I', '-c', key_code, str(key)])
                 key.chmod(0o400); os.chown(key, uid, uid)
-            manifest['runtime'] = {'python': str(python), 'version': config['python_version'],
+            manifest['runtime'] = {'python': str(python), 'version': runtime_version,
                 'packages': json.loads(execute([str(python), '-I', '-c',
                     'import importlib.metadata as m, json; '
                     'print(json.dumps(sorted((d.metadata["Name"], d.version) for d in m.distributions())))']))}
@@ -559,7 +591,7 @@ def cleanup(manifest_path):
                     path = resource_path(root, item['path'])
                     validate_owned_tree(path, item['uid'])
             # Validate everything before removing anything; never follow a link.
-            cleanup_group = create_process_group(root)
+            cleanup_group = None
             for item in reversed(manifest['resources']):
                 if item['kind'] == 'tree':
                     path = resource_path(root, item['path'])
@@ -570,6 +602,8 @@ def cleanup(manifest_path):
                         pwd.getpwnam(item['name'])
                     except KeyError:
                         continue
+                    if cleanup_group is None:
+                        cleanup_group = create_process_group(root)
                     run_owned(cleanup_group, ['/usr/sbin/userdel', item['name']],
                               interpreter=manifest['host_config']['python'])
                 else:
@@ -577,6 +611,8 @@ def cleanup(manifest_path):
                         grp.getgrnam(item['name'])
                     except KeyError:
                         continue
+                    if cleanup_group is None:
+                        cleanup_group = create_process_group(root)
                     run_owned(cleanup_group, ['/usr/sbin/groupdel', item['name']],
                               interpreter=manifest['host_config']['python'])
                 receipt['removed'].append(item)

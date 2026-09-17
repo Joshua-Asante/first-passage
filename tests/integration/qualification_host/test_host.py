@@ -98,6 +98,9 @@ def test_installed_source_and_runtime_are_protected(installed):
     observations = json.loads((path.parent / 'evidence/host-observations.json').read_bytes())
     assert observations['source_commit'] == manifest['source']['commit']
     assert observations['runtime']['packages'] == manifest['runtime']['packages']
+    runtime_version = run([str(path.parent / 'env/bin/python'), '-I', '-c',
+                           'import platform; print(platform.python_version())'])
+    assert observations['runtime']['version'] == runtime_version == manifest['host_config']['python_version']
     assert observations['facts']['docker']['Version'] == manifest['host_config']['docker_version']
     import hashlib
     for relative, expected in manifest['source']['files'].items():
@@ -180,6 +183,69 @@ def owned_cleanup_fixture(installed, monkeypatch):
         assert root.parent == parent and root.resolve() == root
         host.inspect_tree(root)
         shutil.rmtree(root)
+
+
+@pytest.mark.parametrize('failure', ['writable-hop', 'unowned-link', 'cycle', 'dangling', None])
+@pytest.mark.parametrize('relative', [False, True])
+def test_real_executable_symlink_chain(owned_cleanup_fixture, failure, relative):
+    host, root, _, manifest = owned_cleanup_fixture
+    (root / 'bin').mkdir()
+    aliases = root / 'aliases'
+    aliases.mkdir()
+    directory_link = root / 'directory-link'
+    directory_link.symlink_to(aliases, target_is_directory=True)
+    first = root / 'bin/python'
+    middle = aliases / 'current'
+    first_target = root / 'directory-link/current'
+    first.symlink_to(os.path.relpath(first_target, first.parent) if relative else first_target)
+    target = first if failure == 'cycle' else root / 'missing' if failure == 'dangling' else Path(
+        manifest['host_config']['python'])
+    middle.symlink_to(os.path.relpath(target, middle.parent) if relative else target)
+    try:
+        if failure == 'writable-hop':
+            aliases.chmod(0o777)
+        elif failure == 'unowned-link':
+            os.chown(middle, 62000, 62000, follow_symlinks=False)
+        if failure:
+            with pytest.raises((ValueError, FileNotFoundError)):
+                host.protected_executable(str(first))
+        else:
+            host.protected_executable(str(first))
+    finally:
+        aliases.chmod(0o755)
+        first.unlink()
+        middle.unlink()
+        directory_link.unlink()
+
+
+@pytest.mark.parametrize('failure', ['mkdir', 'kill'])
+def test_failed_initial_cgroup_creation_does_not_strand_reservation(
+        owned_cleanup_fixture, monkeypatch, failure):
+    host, root, path, _ = owned_cleanup_fixture
+    original_mkdir, original_is_file, original_open = Path.mkdir, Path.is_file, Path.open
+    def mkdir(target, *args, **kwargs):
+        if failure == 'mkdir' and target.parent == host.CGROUP_ROOT:
+            raise PermissionError('cgroup creation denied')
+        return original_mkdir(target, *args, **kwargs)
+    def is_file(target):
+        if failure == 'kill' and target.name == 'cgroup.kill':
+            return False
+        return original_is_file(target)
+    def open_file(target, *args, **kwargs):
+        if failure == 'kill' and target.name == 'cgroup.kill':
+            raise FileNotFoundError('cgroup.kill unavailable')
+        return original_open(target, *args, **kwargs)
+    monkeypatch.setattr(Path, 'mkdir', mkdir)
+    monkeypatch.setattr(Path, 'is_file', is_file)
+    monkeypatch.setattr(Path, 'open', open_file)
+    with pytest.raises((PermissionError, ValueError)):
+        host.create_process_group(root)
+    assert host.process_groups(root), 'registration must precede cgroup creation'
+    result = host.cleanup(path)
+    assert result['ok'], result
+    assert all(not group.exists() for group in host.process_groups(root))
+    assert host.reservation_owner(host.IDENTITY_STATE / 'reservation.json') is None
+    assert host.cleanup(path)['already_retired']
 
 
 def test_cleanup_reads_manifest_after_obtaining_locks(owned_cleanup_fixture, monkeypatch):

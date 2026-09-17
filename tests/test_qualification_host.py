@@ -1,7 +1,9 @@
 """Host input/ownership validation must fail before making privileged changes."""
 import hashlib
+import errno
 import importlib
 import json
+import stat
 from contextlib import nullcontext
 from pathlib import Path
 import sys
@@ -57,7 +59,7 @@ def test_executable_requires_protected_parent_and_resolved_target(tmp_path, monk
             host.protected_executable(str(executable))
     else:
         host.protected_executable(str(executable))
-        assert checked == [tmp_path, executable.resolve()]
+        assert tmp_path in checked and checked[-1] == executable
 
 
 def test_executable_cannot_be_a_directory(tmp_path, monkeypatch):
@@ -65,6 +67,41 @@ def test_executable_cannot_be_a_directory(tmp_path, monkeypatch):
     monkeypatch.setattr(host, 'protected', lambda path: path)
     with pytest.raises(ValueError, match='executable'):
         host.protected_executable(str(tmp_path))
+
+
+@pytest.mark.parametrize('failure', ['writable-hop', 'unowned-link', 'cycle', None])
+@pytest.mark.parametrize('relative', [False, True])
+def test_executable_validates_intermediate_symlink_hops(tmp_path, monkeypatch, failure, relative):
+    host = host_module()
+    target = tmp_path / 'actual.exe'
+    target.write_bytes(b'approved')
+    target.chmod(0o755)
+    first = tmp_path / 'bin/python'
+    middle = tmp_path / 'aliases/current'
+    first.parent.mkdir()
+    middle.parent.mkdir()
+    links = {first: middle, middle: first if failure == 'cycle' else target}
+    original_stat, original_resolve = Path.lstat, Path.resolve
+    # Model POSIX links where the Windows development host cannot create them;
+    # the disposable-host tests exercise the same cases with real links.
+    monkeypatch.setattr(Path, 'lstat', lambda path, *a, **kw:
+        SimpleNamespace(st_mode=stat.S_IFLNK | 0o777,
+                        st_uid=1000 if path == middle and failure == 'unowned-link' else 0)
+        if path in links else original_stat(path, *a, **kw))
+    monkeypatch.setattr(Path, 'resolve', lambda path, *a, **kw:
+                        target if path in links else original_resolve(path, *a, **kw))
+    monkeypatch.setattr(host.os, 'readlink', lambda path:
+        host.os.path.relpath(links[path], path.parent) if relative else str(links[path]))
+    def protected(path):
+        if failure == 'writable-hop' and middle.parent in (path, *path.parents):
+            raise ValueError('unprotected path')
+        return path
+    monkeypatch.setattr(host, 'protected', protected)
+    if failure:
+        with pytest.raises(ValueError, match='unprotected|symlink'):
+            host.protected_executable(str(first))
+    else:
+        host.protected_executable(str(first))
 
 
 @pytest.mark.parametrize('locks', [{}, {'requirements-ops.lock': '0' * 64},
@@ -364,6 +401,121 @@ def test_staged_locks_are_checked_before_environment_activation(provisioning_att
     monkeypatch.setattr(host, 'run_owned', execute)
     with pytest.raises(ValueError, match='lock digest'):
         host.provision(host.ROOT)
+
+
+@pytest.mark.parametrize('observed', ['3.12.3', '3.12.4', ''])
+def test_copied_interpreter_is_observed_before_installation(provisioning_attempt, monkeypatch, observed):
+    host, _, _ = provisioning_attempt
+    commands = []
+    original_snapshot = host.snapshot
+    monkeypatch.setattr(host, 'snapshot', lambda source:
+        {**original_snapshot(source), 'commit': 'candidate', 'fingerprint': 'snapshot'})
+    monkeypatch.setattr(host.os, 'chown', lambda *args: None, raising=False)
+    monkeypatch.setattr(host, 'stop_process_groups', lambda root: None)
+    original_is_symlink, original_readlink = Path.is_symlink, host.os.readlink
+    # Model venv's lib64 alias on Windows as well as Linux, so rejecting the
+    # interpreter cannot leave an alias which manifest-scoped cleanup rejects.
+    monkeypatch.setattr(Path, 'is_symlink', lambda path:
+                        path.exists() if path.name == 'lib64' else original_is_symlink(path))
+    monkeypatch.setattr(host.os, 'readlink', lambda path:
+                        'lib' if path.name == 'lib64' else original_readlink(path))
+    def execute(group, command, **kwargs):
+        commands.append(command)
+        if 'venv' in command:
+            (Path(command[-1]) / 'lib64').write_bytes(b'lib')
+        if 'import platform; print(platform.python_version())' in command:
+            assert command[0].endswith('env' + host.os.sep + 'bin' + host.os.sep + 'python')
+            assert not (Path(command[0]).parents[1] / 'lib64').exists()
+            return observed
+        if any('Ed25519PrivateKey' in arg for arg in command):
+            Path(command[-1]).write_bytes(b'test-only')
+        if any('importlib.metadata' in arg for arg in command):
+            return '[]'
+        return ''
+    monkeypatch.setattr(host, 'run_owned', execute)
+    if observed != '3.12.3':
+        with pytest.raises(ValueError, match='Python patch mismatch'):
+            host.provision(host.ROOT)
+        assert not any('pip' in command for command in commands)
+    else:
+        manifest_path = host.provision(host.ROOT)
+        manifest = json.loads(manifest_path.read_bytes())
+        assert manifest['runtime']['version'] == observed
+        probe = next(i for i, command in enumerate(commands)
+                     if 'import platform; print(platform.python_version())' in command)
+        assert probe < next(i for i, command in enumerate(commands) if 'pip' in command)
+
+
+@pytest.fixture
+def cleanup_attempt(provisioning_attempt, monkeypatch):
+    host, _, reservation = provisioning_attempt
+    with pytest.raises(ValueError, match='stop before identities'):
+        host.provision(host.ROOT)
+    path = Path(host.reservation_owner(reservation)['manifest'])
+    manifest = json.loads(path.read_bytes())
+    manifest['resources'] = []
+    host.save(path, manifest)
+    original_stat = Path.stat
+    monkeypatch.setattr(Path, 'stat', lambda target, *a, **kw:
+        SimpleNamespace(st_mode=stat.S_IFREG | 0o600) if target == path
+        else original_stat(target, *a, **kw))
+    monkeypatch.setattr(host, 'administrator', lambda: None)
+    monkeypatch.setattr(host, 'validate_host_executables', lambda config: None)
+    monkeypatch.setattr(host, 'require_inactive_principals', lambda uids: None)
+    monkeypatch.setattr(host, 'boundary_containers', lambda config, run_id: '')
+    return host, path, manifest, reservation
+
+
+@pytest.mark.parametrize('resources', ['empty', 'tree', 'absent-accounts'])
+def test_cleanup_without_account_commands_needs_no_new_cgroup(cleanup_attempt, monkeypatch, resources):
+    host, path, manifest, reservation = cleanup_attempt
+    if resources == 'tree':
+        (path.parent / 'code').mkdir()
+        manifest['resources'] = [{'kind': 'tree', 'path': 'code', 'uid': 0}]
+    elif resources == 'absent-accounts':
+        manifest['resources'] = [{'kind': 'group', 'name': 'qclient', 'id': 61000},
+                                 {'kind': 'user', 'name': 'qclient', 'id': 61000}]
+    host.save(path, manifest)
+    def denied(root):
+        raise PermissionError('cgroup creation unavailable')
+    monkeypatch.setattr(host, 'create_process_group', denied)
+    result = host.cleanup(path)
+    assert result['ok'], result
+    assert host.reservation_owner(reservation) is None
+    assert not (path.parent / 'code').exists()
+    assert host.cleanup(path)['already_retired']
+
+
+def test_empty_registered_cgroup_without_kill_can_be_retired(tmp_path, monkeypatch):
+    host = host_module()
+    group = tmp_path / 'empty-group'
+    group.mkdir()
+    monkeypatch.setattr(host, 'process_groups', lambda root: [group])
+    monkeypatch.setattr(host, 'protected', lambda path: path)
+    host.stop_process_groups(tmp_path)
+    assert not group.exists()
+
+
+def test_populated_cgroup_without_kill_still_blocks_retirement(tmp_path, monkeypatch):
+    host = host_module()
+    group = tmp_path / 'populated-group'
+    group.mkdir()
+    monkeypatch.setattr(host, 'process_groups', lambda root: [group])
+    monkeypatch.setattr(host, 'protected', lambda path: path)
+    original_rmdir, original_open = Path.rmdir, Path.open
+    def rmdir(path):
+        if path == group:
+            raise OSError(errno.EBUSY, 'populated cgroup')
+        return original_rmdir(path)
+    def open_file(path, *args, **kwargs):
+        if path == group / 'cgroup.kill':
+            raise FileNotFoundError('kill unavailable')
+        return original_open(path, *args, **kwargs)
+    monkeypatch.setattr(Path, 'rmdir', rmdir)
+    monkeypatch.setattr(Path, 'open', open_file)
+    with pytest.raises(FileNotFoundError):
+        host.stop_process_groups(tmp_path)
+    assert group.exists()
 
 
 @pytest.mark.parametrize('exists', [False, True])

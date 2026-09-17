@@ -39,8 +39,10 @@ x64 glibc wheel is admitted. Changed locks or installed versions fail setup;
 there is no ambient PATH selection, cache fallback, system package upgrade or
 Docker configuration change. Package installation targets a new owned venv only.
 Configured Python and Docker commands must be absolute paths. Setup and cleanup
-check their protected parent directories and executable targets, allowing the
-protected system Python symlink.
+check every directory and symlink hop through to the executable target, allowing
+protected system aliases but rejecting unowned links and writable intermediate
+directories. The copied venv interpreter must report the configured Python patch
+before package installation; runtime evidence retains that observed version.
 
 The hosted runner label is **not an immutable OS image**. The manifest records
 actual OS/kernel/package inventory, Docker server identity, existing image IDs,
@@ -92,6 +94,10 @@ checks the staged locks again before creating or installing the environment.
 Failed manifest publication removes the unreserved run directory. Cleanup allows
 qexec's Docker enrollment to be absent after interrupted setup, while rejecting
 unexpected supplementary groups; readiness still requires Docker enrollment.
+Cleanup creates a process group only when an existing account needs a deletion
+command. A never-used empty group can be removed without `cgroup.kill`; populated
+groups still require successful termination before retirement. This permits
+cleanup after initial cgroup creation fails without weakening child isolation.
 Setup reserves the ownership manifest before each resource operation. It retains
 failed setup state and diagnostics; the CI `always()` cleanup step, or the explicit
 command below, retires verifiably owned resources. No worker, service or release
