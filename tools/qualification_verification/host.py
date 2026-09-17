@@ -16,17 +16,29 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from scripts.qualification_boundary_environment import protected, run
+from scripts.qualification_boundary_environment import TRUST_MODEL, protected, run
 from scripts.record_verification import snapshot
+
+ROLES = ('qclient', 'qexec', 'qg5')
+# These names are shared host-wide, even across installation-layout variants.
+IDENTITY_STATE = Path('/var/lib/fp-qualification-identities')
 
 
 def load_config():
     return json.loads((ROOT / 'tools/qualification_verification/host.json').read_bytes())
 
 
+def resolve_roles(config):
+    first = config['uid_start']
+    if type(first) is not int or first <= 0 or first + len(ROLES) >= 2**32:
+        raise ValueError('invalid identity configuration')
+    return {name: first + index for index, name in enumerate(ROLES)}
+
+
 def public_observations(manifest):
     """Explicit export allowlist, separate from private resource ownership."""
     return {'schema': 'qualification_host_observations/v1',
+            'trust_model': TRUST_MODEL,
             **{name: manifest[name] for name in ('run_id', 'host_config_sha256',
                 'facts', 'runtime', 'roles')},
             'source_commit': manifest['source']['commit'],
@@ -36,6 +48,7 @@ def public_observations(manifest):
 def validate_inputs(source, config):
     if config['schema'] != 'qualification_test_host/v1':
         raise ValueError('host schema')
+    resolve_roles(config)
     for relative, expected in config['locks'].items():
         path = resource_path(source, relative)
         if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
@@ -101,9 +114,10 @@ def validate_resources(manifest, root):
             resource_path(root, item['path'])
             identity = kind, item['path']
         elif kind in ('user', 'group'):
-            if set(item) != {'kind', 'name', 'id'} or item['name'] not in ('qclient', 'qexec', 'qg5'):
+            if set(item) != {'kind', 'name', 'id'} or item['name'] not in ROLES:
                 raise ValueError('invalid identity resource')
-            if type(item['id']) is not int or not 61000 <= item['id'] <= 61002:
+            expected = resolve_roles(manifest['host_config'])
+            if manifest['roles'] != expected or type(item['id']) is not int or item['id'] != expected[item['name']]:
                 raise ValueError('invalid identity resource')
             identity = kind, item['name']
         else:
@@ -141,6 +155,43 @@ def ownership_lock(root):
         os.close(fd)
 
 
+@contextmanager
+def identity_reservation():
+    """Serialize host-wide name/ID collision checks, creation and retirement."""
+    administrator()
+    protected(IDENTITY_STATE.parent)
+    IDENTITY_STATE.mkdir(mode=0o700, exist_ok=True)
+    protected(IDENTITY_STATE)
+    with ownership_lock(IDENTITY_STATE):
+        yield IDENTITY_STATE / 'reservation.json'
+
+
+def reservation_owner(path):
+    if not path.exists():
+        return None
+    doc = json.loads(path.read_bytes())
+    if doc.get('schema') != 'qualification_identity_reservation/v1' or 'owner' not in doc:
+        raise ValueError('invalid identity reservation')
+    return doc['owner']
+
+
+def require_available_reservation(path):
+    if reservation_owner(path) is not None:
+        raise ValueError('host identities are reserved; clean up the owning manifest first')
+
+
+def require_reservation_owner(path, manifest_path, manifest):
+    expected = {'run_id': manifest['run_id'], 'manifest': str(manifest_path)}
+    owner = reservation_owner(path)
+    # A crash between manifest creation and reservation cannot own resources.
+    if owner != expected and not (owner is None and not manifest['resources']):
+        raise ValueError('identity reservation owner mismatch')
+
+
+def write_reservation(path, owner):
+    save(path, {'schema': 'qualification_identity_reservation/v1', 'owner': owner})
+
+
 def administrator():
     if platform.system() != 'Linux' or os.geteuid() != 0:
         raise ValueError('Linux administrator required')
@@ -172,16 +223,23 @@ def host_facts(config):
 
 
 def provision(source, *, manifest_output=None):
-    import grp
-    import pwd
     config = load_config()
     validate_inputs(source, config)
     facts = host_facts(config)
+    with identity_reservation() as reservation:
+        require_available_reservation(reservation)
+        return provision_reserved(source, config, facts, reservation, manifest_output)
+
+
+def provision_reserved(source, config, facts, reservation, manifest_output):
+    """Caller holds the host-wide identity reservation lock throughout setup."""
+    import grp
+    import pwd
+    roles = resolve_roles(config)
     # Existing names/IDs are not ours, even if they look like an earlier test.
-    for index, name in enumerate(('qclient', 'qexec', 'qg5')):
+    for name, uid in roles.items():
         for lookup, value in ((pwd.getpwnam, name), (grp.getgrnam, name),
-                              (pwd.getpwuid, config['uid_start'] + index),
-                              (grp.getgrgid, config['uid_start'] + index)):
+                              (pwd.getpwuid, uid), (grp.getgrgid, uid)):
             try:
                 lookup(value)
             except KeyError:
@@ -195,12 +253,13 @@ def provision(source, *, manifest_output=None):
         raise ValueError('native ext4 required')
     root = parent / uuid4().hex
     root.mkdir(mode=0o711)
-    manifest = {'schema': 'qualification_host_ownership/v1', 'run_id': root.name,
+    manifest = {'schema': 'qualification_host_ownership/v2', 'run_id': root.name,
                 'root': str(root), 'state': 'provisioning', 'resources': [],
                 'host_config_sha256': hashlib.sha256((ROOT / 'tools/qualification_verification/host.json').read_bytes()).hexdigest(),
-                'facts': facts, 'roles': {}, 'source': snapshot(source)}
+                'host_config': config, 'facts': facts, 'roles': roles, 'source': snapshot(source)}
     manifest_path = root / 'ownership.json'
     save(manifest_path, manifest, exclusive=True)
+    write_reservation(reservation, {'run_id': root.name, 'manifest': str(manifest_path)})
     if manifest_output is not None:
         fd = os.open(manifest_output, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
         with os.fdopen(fd, 'w') as stream:
@@ -211,16 +270,13 @@ def provision(source, *, manifest_output=None):
             def own(item):
                 manifest['resources'].append(item)
                 save(manifest_path, manifest)
-            for index, name in enumerate(('qclient', 'qexec', 'qg5')):
-                uid = config['uid_start'] + index
+            for name, uid in roles.items():
                 own({'kind': 'group', 'name': name, 'id': uid})
                 run(['/usr/sbin/groupadd', '--gid', str(uid), name])
                 own({'kind': 'user', 'name': name, 'id': uid})
                 run(['/usr/sbin/useradd', '--uid', str(uid), '--gid', str(uid),
                      '--no-create-home', '--no-log-init', '--home-dir', '/nonexistent',
                      '--shell', '/usr/sbin/nologin', '--comment', root.name, name])
-                manifest['roles'][name] = uid
-                save(manifest_path, manifest)
             run(['/usr/sbin/usermod', '--append', '--groups', 'docker', 'qexec'])
             for relative, uid, mode in (('code', 0, 0o755), ('env', 0, 0o755),
                     ('data', manifest['roles']['qexec'], 0o700), ('keys', 0, 0o755),
@@ -291,19 +347,33 @@ def cleanup(manifest_path):
     if manifest_path.name != 'ownership.json' or manifest_path.stat().st_mode & 0o077:
         raise ValueError('private ownership manifest required')
     root = manifest_path.parent
-    manifest = json.loads(manifest_path.read_bytes())
-    if (manifest.get('schema') != 'qualification_host_ownership/v1'
-            or manifest.get('root') != str(root) or manifest.get('run_id') != root.name
-            or root.parent != Path(load_config()['parent']) or len(root.name) != 32
-            or any(c not in '0123456789abcdef' for c in root.name)):
-        raise ValueError('ownership identity mismatch')
-    validate_resources(manifest, root)
-    receipt = {'schema': 'qualification_host_cleanup/v1', 'run_id': root.name,
-               'manifest_sha256': hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
-               'removed': [], 'retained': ['ownership.json', 'evidence', 'owner.lock'],
-               'failures': [], 'ok': False}
-    with ownership_lock(root):
+    with identity_reservation() as reservation, ownership_lock(root):
+        manifest = json.loads(manifest_path.read_bytes())
+        if (manifest.get('schema') != 'qualification_host_ownership/v2'
+                or manifest.get('root') != str(root) or manifest.get('run_id') != root.name
+                or root.parent != Path(manifest['host_config']['parent']) or len(root.name) != 32
+                or any(c not in '0123456789abcdef' for c in root.name)):
+            raise ValueError('ownership identity mismatch')
+        validate_resources(manifest, root)
+        receipt = {'schema': 'qualification_host_cleanup/v1', 'run_id': root.name,
+                   'manifest_sha256': hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+                   'removed': [], 'retained': ['ownership.json', 'evidence', 'owner.lock', 'retired.json'],
+                   'failures': [], 'ok': False}
         try:
+            retired = root / 'retired.json'
+            if retired.exists():
+                prior = json.loads(protected(retired).read_bytes())
+                if prior != {'manifest_sha256': receipt['manifest_sha256']}:
+                    raise ValueError('retirement identity mismatch')
+                # A prior completed cleanup owns no current identities. It must
+                # never inspect/remove a replacement run using the same IDs.
+                if reservation_owner(reservation) == {'run_id': root.name, 'manifest': str(manifest_path)}:
+                    write_reservation(reservation, None)
+                receipt['ok'] = True
+                receipt['already_retired'] = True
+                save(root / ('cleanup-' + uuid4().hex + '.json'), receipt, exclusive=True, mode=0o400)
+                return receipt
+            require_reservation_owner(reservation, manifest_path, manifest)
             uids = {r['id'] for r in manifest['resources'] if r['kind'] == 'user'}
             require_inactive_principals(uids)
             # Boundary containers/services are not produced by this host-only slice.
@@ -359,6 +429,10 @@ def cleanup(manifest_path):
                         continue
                     run(['/usr/sbin/groupdel', item['name']])
                 receipt['removed'].append(item)
+            # The locks provide exclusivity. Atomic publication prevents a hard
+            # kill from leaving a partial authoritative retirement certificate.
+            save(retired, {'manifest_sha256': receipt['manifest_sha256']}, mode=0o400)
+            write_reservation(reservation, None)
             receipt['ok'] = True
         except (OSError, ValueError, subprocess.SubprocessError) as exc:
             receipt['failures'].append(type(exc).__name__ + ': ' + str(exc) if isinstance(exc, ValueError)

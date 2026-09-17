@@ -6,6 +6,23 @@ release/image fixture producer, and launch-to-G5 integration suite are not prese
 on the base revision. `--test-only` fails closed until that owner integrates them.
 No same-UID test, parser double or generic Docker result can replace that milestone.
 
+## Trust boundary
+
+The selected boundary design trusts the administrator **and qexec**. Docker daemon
+control gives qexec root-equivalent host authority: it can mount host files into a
+container and bypass direct filesystem denials, including access to the qg5 result
+key. This implementation does not confine a malicious/compromised qexec. qexec must
+run only approved supervisor code, with no general Docker RPC exposed to qclient.
+See [Docker daemon security](https://docs.docker.com/engine/security/#docker-daemon-attack-surface).
+
+Permission reports identify their scope as `direct_os_access_only`, declare
+unrestricted daemon-mediated qexec access, and retain the explicit
+`trusted_administrator_and_privileged_qexec/v1` trust model. Readiness reports that
+omit this assumption are rejected. qclient/qg5 Docker denial remains required;
+direct credential separation checks detect accidental permission weakening, not
+an isolation boundary against the privileged supervisor. A constrained broker or
+separate daemon would require a different supervisor trust and launch design.
+
 ## Supported target and reproducibility
 
 Use a fresh GitHub-hosted `ubuntu-24.04` x64 VM, or an administrator-supplied
@@ -115,6 +132,22 @@ cleanup interruption/restart and owned container/service absence. Critical skips
 must fail. Current signing/key validity remains distinct from historical facts.
 
 ## Cleanup, migration and rollback
+
+Ownership schema v2 retains the resolved host configuration and exact role IDs.
+Cleanup validates each name/ID binding against that retained configuration, so a
+later configuration update cannot strand a previously provisioned installation.
+Legacy v1 manifests are diagnostic evidence only for this version; use the v1
+tooling or external VM-owner retirement rather than guessing their reservation
+ownership. No live v1 test host is carried forward by the ephemeral CI jobs.
+
+One administrator-owned reservation at `/var/lib/fp-qualification-identities`
+serializes collision checks, creation and retirement of the shared account names
+across all installation roots. Its durable owner survives process termination;
+only the owning manifest can retire a partial setup. Both global and per-run
+locks are acquired before cleanup reads current ownership state. An atomically
+published retirement certificate makes retry safe even after resource deletion
+or identity reuse by a later run. Global reservation bookkeeping is retained for
+the disposable VM owner; it is never removed by per-run cleanup.
 
 ```bash
 sudo /usr/bin/python3 -I tools/qualification_verification/cleanup.py \

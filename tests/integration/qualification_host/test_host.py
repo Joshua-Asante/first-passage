@@ -114,3 +114,116 @@ def test_cleanup_refuses_wrong_tree_owner(installed):
     finally:
         uid = manifest['roles']['qexec']
         os.chown(data, uid, uid)
+
+@pytest.fixture
+def owned_cleanup_fixture(installed, monkeypatch):
+    """Real disposable files/locks, no additional identities or authority keys."""
+    import shutil
+    from uuid import uuid4
+    from tools.qualification_verification import host
+    parent = installed[0].parent.parent
+    root = parent / uuid4().hex
+    root.mkdir(mode=0o711)
+    state = root / 'reservation-state'
+    monkeypatch.setattr(host, 'IDENTITY_STATE', state)
+    config = {**installed[1]['host_config'], 'uid_start': 62000}
+    manifest = {'schema': 'qualification_host_ownership/v2', 'run_id': root.name,
+                'root': str(root), 'host_config': config, 'roles': host.resolve_roles(config),
+                'resources': []}
+    path = root / 'ownership.json'
+    host.save(path, manifest, exclusive=True)
+    with host.identity_reservation() as reservation:
+        host.write_reservation(reservation, {'run_id': root.name, 'manifest': str(path)})
+    try:
+        yield host, root, path, manifest
+    finally:
+        assert root.parent == parent and root.resolve() == root
+        host.inspect_tree(root)
+        shutil.rmtree(root)
+
+
+def test_cleanup_reads_manifest_after_obtaining_locks(owned_cleanup_fixture, monkeypatch):
+    from contextlib import contextmanager
+    host, root, path, manifest = owned_cleanup_fixture
+    original_lock = host.ownership_lock
+    @contextmanager
+    def complete_provision_before_lock(target):
+        if target == root and not manifest['resources']:
+            (root / 'code').mkdir()
+            (root / 'code/owned-file').write_text('remove after reservation')
+            manifest['resources'].append({'kind': 'tree', 'path': 'code', 'uid': 0})
+            host.save(path, manifest)
+        with original_lock(target):
+            yield
+    monkeypatch.setattr(host, 'ownership_lock', complete_provision_before_lock)
+    result = host.cleanup(path)
+    assert result['ok'], result
+    assert not (root / 'code').exists()
+    assert host.reservation_owner(host.IDENTITY_STATE / 'reservation.json') is None
+
+
+def test_interrupted_retirement_can_resume_and_stale_cleanup_cannot_touch_replacement(
+        owned_cleanup_fixture, monkeypatch):
+    host, root, path, manifest = owned_cleanup_fixture
+    (root / 'code').mkdir()
+    manifest['resources'] = [{'kind': 'tree', 'path': 'code', 'uid': 0}]
+    host.save(path, manifest)
+    original_replace = host.os.replace
+    def interrupt_publication(source, destination):
+        if destination == root / 'retired.json':
+            raise KeyboardInterrupt()
+        return original_replace(source, destination)
+    monkeypatch.setattr(host.os, 'replace', interrupt_publication)
+    with pytest.raises(KeyboardInterrupt):
+        host.cleanup(path)
+    assert not (root / 'code').exists()
+    assert not (root / 'retired.json').exists()
+    with pytest.raises(ValueError, match='reserved'):
+        host.require_available_reservation(host.IDENTITY_STATE / 'reservation.json')
+    monkeypatch.setattr(host.os, 'replace', original_replace)
+    assert host.cleanup(path)['ok']
+    replacement = {'run_id': 'another-run', 'manifest': '/another-run/ownership.json'}
+    with host.identity_reservation() as reservation:
+        host.write_reservation(reservation, replacement)
+    assert host.cleanup(path)['already_retired']
+    assert host.reservation_owner(host.IDENTITY_STATE / 'reservation.json') == replacement
+
+
+def test_two_real_processes_cannot_reserve_same_identities_after_hard_kill(
+        owned_cleanup_fixture):
+    import select
+    host, root, _, _ = owned_cleanup_fixture
+    with host.identity_reservation() as reservation:
+        host.write_reservation(reservation, None)
+    script = '''
+import sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from tools.qualification_verification import host
+host.IDENTITY_STATE = Path(sys.argv[2])
+with host.identity_reservation() as reservation:
+    host.require_available_reservation(reservation)
+    host.write_reservation(reservation, {'run_id': 'interrupted', 'manifest': '/interrupted/ownership.json'})
+    print('reserved', flush=True)
+    sys.stdin.read()
+'''
+    child = subprocess.Popen([sys.executable, '-I', '-c', script, str(host.ROOT), str(host.IDENTITY_STATE)],
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    try:
+        assert select.select([child.stdout], [], [], 10)[0], 'child did not reach reservation'
+        assert child.stdout.readline().strip() == 'reserved'
+        with pytest.raises(BlockingIOError):
+            with host.identity_reservation():
+                pytest.fail('second provisioner acquired live reservation')
+        child.kill()
+        child.wait(timeout=5)
+        with host.identity_reservation() as reservation:
+            with pytest.raises(ValueError, match='reserved'):
+                host.require_available_reservation(reservation)
+            assert host.reservation_owner(reservation)['run_id'] == 'interrupted'
+    finally:
+        if child.poll() is None:
+            child.kill()
+            child.wait(timeout=5)
+        for stream in (child.stdin, child.stdout, child.stderr):
+            stream.close()

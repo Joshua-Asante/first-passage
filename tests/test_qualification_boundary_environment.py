@@ -122,3 +122,12 @@ def test_roles_reject_shared_or_root_identity(monkeypatch, uids):
     monkeypatch.setattr(env.os, 'getgrouplist', lambda name, gid: [gid], raising=False)
     with pytest.raises(ValueError):
         env.identities({'roles': uids})
+
+
+def test_readiness_cannot_omit_its_privileged_supervisor_assumption():
+    env = environment()
+    report = env.new_report()
+    report.update(ready=True, checks={name: {'ok': True} for name in env.REQUIRED})
+    report.pop('trust_model', None)
+    with pytest.raises(ValueError, match='trust model'):
+        env.require_environment(report)

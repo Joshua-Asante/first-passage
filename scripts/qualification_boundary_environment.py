@@ -15,6 +15,7 @@ import sys
 import tempfile
 
 SCHEMA = 'qualification_environment/v1'
+TRUST_MODEL = 'trusted_administrator_and_privileged_qexec/v1'
 REQUIRED = frozenset(('linux', 'administrator', 'execution_profile', 'instance',
     'signing', 'peer_credentials', 'roles', 'trusted_roots', 'permissions',
     'native_storage', 'docker', 'image', 'profile_binding', 'evidence', 'scratch'))
@@ -22,6 +23,7 @@ REQUIRED = frozenset(('linux', 'administrator', 'execution_profile', 'instance',
 
 def new_report():
     return {'schema': SCHEMA, 'purpose': 'environment_readiness', 'ready': False,
+            'trust_model': TRUST_MODEL,
             'checks': {}, 'failures': [], 'python': sys.version.split()[0],
             'interpreter': sys.executable, 'platform': platform.platform()}
 
@@ -43,6 +45,8 @@ def check(report, name, probe):
 
 
 def require_environment(report):
+    if report.get('trust_model') != TRUST_MODEL:
+        raise ValueError('Environment trust model must explicitly include privileged qexec')
     failures = report.get('failures', [])
     checks = report.get('checks', {})
     missing = sorted(name for name in REQUIRED if checks.get(name, {}).get('ok') is not True)
@@ -156,7 +160,9 @@ def permissions(doc, roles):
             observation.update(role=role, action=action, path=doc[field], expected=role == owner)
             observations.append(observation)
     # Retain all denial observations even when one permission is weakened.
-    return {'ok': all(o['allowed'] == o['expected'] for o in observations), 'probes': observations}
+    return {'ok': all(o['allowed'] == o['expected'] for o in observations), 'probes': observations,
+            'scope': 'direct_os_access_only', 'trust_model': TRUST_MODEL,
+            'qexec_daemon_mediated_access_is_unrestricted': True}
 
 
 def trusted_roots(doc):

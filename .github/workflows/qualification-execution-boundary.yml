@@ -7,6 +7,11 @@ on:
     paths:
       - 'tools/qualification_verification/**'
       - 'scripts/qualification_boundary_*.py'
+      - 'scripts/fp.py'
+      - 'scripts/record_verification.py'
+      - 'pyproject.toml'
+      - 'tests/conftest.py'
+      - 'tests/integration/conftest.py'
       - 'tests/test_qualification_*.py'
       - 'tests/integration/qualification_host/**'
       - 'requirements-ops.lock'
