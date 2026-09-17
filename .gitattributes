@@ -89,6 +89,10 @@ deploy/c1_rail/Dockerfile text eol=lf
 requirements-ops.lock text eol=lf
 tools/local_verification/requirements-extra.txt text eol=lf
 
+# Git executes these as POSIX shell even on Windows; installers copy their bytes.
+scripts/githooks/* text eol=lf
+scripts/install_hooks.sh text eol=lf
+
 # TB-C1 forward session files, the typed closure overlay and their source captures
 # are byte-pinned by SHA-256 in tests/ops/test_book_session_calendar.py and by the
 # operator's digest ratification; the rail loader hashes on-disk bytes.

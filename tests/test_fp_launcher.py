@@ -41,6 +41,7 @@ def checkout(tmp_path):
     assert launcher.is_file(), "operations launcher has not been implemented"
     shutil.copy2(launcher, root / "scripts/fp.py")
     shutil.copy2(SOURCE / "scripts/record_verification.py", root / "scripts/record_verification.py")
+    shutil.copy2(SOURCE / "scripts/pytest_junit_subtests.py", root / "scripts/pytest_junit_subtests.py")
     shutil.copy2(SOURCE / "scripts/gate_manifest.py", root / "scripts/gate_manifest.py")
     (root / "requirements-ops.lock").write_text(
         f"pytest=={importlib.metadata.version('pytest')}\n", encoding="utf-8"
@@ -74,6 +75,23 @@ def test_workers_are_opt_in_and_recorded(checkout, ops_env):
     record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
     assert record['metadata']['workers'] == 2
     assert '--dist=loadscope' in record['command']
+
+
+@pytest.mark.parametrize('workers', [0, 2])
+def test_subtests_have_individual_verified_outcomes(checkout, ops_env, workers):
+    (checkout / 'test_subtests.py').write_text(
+        'import unittest\n'
+        'class TestCases(unittest.TestCase):\n'
+        '    def test_values(self):\n'
+        '        for value in (1, 2):\n'
+        '            with self.subTest(label="same"):\n'
+        '                self.assertGreater(value, 0)\n', encoding='utf-8')
+    result = launch(checkout, '--env', ops_env, '--workers', str(workers),
+                    'python', '-m', 'pytest', 'test_subtests.py', '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert record['test_summary'] == dict(collected=3, passed=3, failed=0, errors=0, skipped=0)
+    assert record['report_errors'] == [] and record['source_stable']
 
 
 def test_setup_failure_has_not_started_record(checkout):

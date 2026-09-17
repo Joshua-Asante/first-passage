@@ -151,7 +151,8 @@ def main(argv=None):
                     *(options.test_path or DEFAULT_TESTS), '-n', str(options.workers)]
                 if options.workers:
                     arguments += ['--dist=loadscope']
-                arguments += ['-q', '-p', 'no:cacheprovider', '--tb=short', '--hypothesis-show-statistics',
+                arguments += ['-q', '-p', 'no:cacheprovider', '-p', 'scripts.pytest_junit_subtests',
+                    '--tb=short', '--hypothesis-show-statistics',
                     '--basetemp=/tmp/pytest', '--junitxml=/evidence/junit.xml', '--cov=c1_rail.book_account_owner',
                     '--cov=c1_rail.book_takeover_owner', '--cov=c1_signal_daemon.book_runtime',
                     '--cov-branch', '--cov-report=json:/evidence/coverage.json']

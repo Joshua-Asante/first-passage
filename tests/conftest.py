@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+import shutil
 
 import pandas as pd
 import pytest
@@ -17,6 +18,33 @@ os.environ["PYTHONPATH"] = os.pathsep.join(
 )
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
+
+
+@pytest.fixture
+def isolated_home(tmp_path, monkeypatch):
+    """Opt-in process-test storage, outside each test's worker workspace.
+
+    Both Python on Windows and POSIX shells must see the same home. Production
+    cache selection stays unchanged; pytest/launcher own these temporary files.
+    """
+    home = tmp_path / 'home'
+    home.mkdir()
+    monkeypatch.setenv('HOME', home.as_posix())
+    monkeypatch.setenv('USERPROFILE', str(home))
+    monkeypatch.setenv('XDG_CACHE_HOME', str(home / '.cache'))
+    return home
+
+
+@pytest.fixture
+def shell():
+    """Use Git Bash on Windows, rather than the unrelated WSL launcher."""
+    executable = (
+        Path(os.environ.get('ProgramFiles', 'C:/Program Files')) / 'Git/bin/bash.exe'
+        if os.name == 'nt' else shutil.which('bash')
+    )
+    if not executable or not Path(executable).exists():
+        pytest.skip('Bash is required for shell integration tests')
+    return str(executable)
 
 
 @pytest.fixture
