@@ -18,7 +18,6 @@ from c1_rail.qualification.contract import (
     ACCEPTED_HISTORICAL_PINS,
     ContractValidationError,
     ObservedBindings,
-    REQUIRED_ARTIFACT_ROLES,
     TrustedApprovalKey,
     canonical_json_bytes,
     require_validated_frozen_contract,
@@ -35,8 +34,9 @@ def _sha(label: str) -> str:
 
 
 def _document() -> dict:
+    from c1_rail.qualification.trust_domain import PRODUCTION_TRUST_POLICY
     sessions = ["s1", "s2", "s3", "s4", "s5"]
-    roles = tuple(sorted(REQUIRED_ARTIFACT_ROLES))
+    roles = PRODUCTION_TRUST_POLICY.required_roles
     artifact_sha256 = {role: _sha(role) for role in roles}
     artifact_sha256.update(ACCEPTED_HISTORICAL_PINS)
     artifact_sha256["effective_settings_successor"] = _sha("reviewed-settings-successor")
