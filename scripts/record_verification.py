@@ -6,6 +6,7 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -15,6 +16,10 @@ import threading
 import time
 from uuid import uuid4
 import xml.etree.ElementTree as ET
+
+
+PROGRESS_INTERVAL_SECONDS = 30.0
+MAX_PROGRESS_BYTES = 160_000
 
 
 def digest(data):
@@ -44,6 +49,14 @@ def snapshot(repo):
             'diff_sha256': digest(git(repo, 'diff', '--binary', 'HEAD')),
             'fingerprint': digest(json.dumps(files, sort_keys=True).encode()),
             'lock_sha256': files.get('requirements-ops.lock'), 'files': files}
+
+
+def external_file_identity(path):
+    """Bind the lexical selection, symlink ancestors, resolved target and bytes."""
+    path = Path(path)
+    links = {str(p): os.readlink(p) for p in (path, *path.parents) if p.is_symlink()}
+    return dict(sha256=digest(path.read_bytes()), resolved_path=str(path.resolve(strict=True)),
+                symlinks=links)
 
 
 def report_identity(path):
@@ -79,7 +92,11 @@ def junit_summary(root):
 class RunRecord:
     """One owner reserves, updates and finalizes a run; incomplete is never success."""
 
-    def __init__(self, repo, output, requested_command, *, allow_ignored=False):
+    def __init__(self, repo, output, requested_command, *, allow_ignored=False,
+                 progress_interval=PROGRESS_INTERVAL_SECONDS):
+        if not math.isfinite(progress_interval) or progress_interval <= 0:
+            raise ValueError('Progress interval must be positive and finite')
+        self.progress_interval = progress_interval
         self.repo, self.output = Path(repo).resolve(), Path(output).resolve()
         if self.output.is_relative_to(self.repo):
             if not allow_ignored or subprocess.run(
@@ -115,6 +132,44 @@ class RunRecord:
     def begin(self):
         self.data['before'] = snapshot(self.repo)
         self.persist()
+
+    def track_external_files(self, paths):
+        """Measure explicit files only, not their import/data dependency closure."""
+        self.data['external_files'] = dict(
+            before={str(p): external_file_identity(p) for p in sorted(set(paths))},
+            after=None, stable=False,
+            scope='Explicit external files only; supporting imports/data are outside the source inventory')
+        self.persist()
+
+    def heartbeat(self):
+        activity = 'test activity unavailable'
+        try:
+            with (self.output / 'progress.json').open('rb') as source:
+                raw = source.read(MAX_PROGRESS_BYTES + 1)
+            if len(raw) > MAX_PROGRESS_BYTES:
+                raise ValueError('Oversized progress')
+            progress = json.loads(raw)
+            observed = progress['observed_at']
+            started = datetime.fromisoformat(self.data['started_at']).timestamp()
+            if (progress['run_id'] != self.data['run_id'] or
+                    not isinstance(observed, (float, int)) or
+                    not started <= observed <= time.time() + 1):
+                raise ValueError('Stale progress')
+            completed, collected = progress['completed'], progress['collected']
+            active = progress['active_nodeids']
+            if (type(completed) is not int or completed < 0 or
+                    (collected is not None and (type(collected) is not int or collected < 0)) or
+                    not isinstance(active, list) or not all(isinstance(s, str) for s in active)):
+                raise ValueError('Invalid progress')
+            activity = (f'observed completed={completed}, collected={collected}, '
+                        f'active={json.dumps([s[:200] for s in active[:5]], ensure_ascii=True)}, '
+                        f'observation age={time.time() - observed:.0f}s (advisory)')
+        except (OSError, ValueError, KeyError, TypeError):
+            pass
+        try:
+            print(f'[verification progress] elapsed={time.monotonic() - self.clock:.1f}s; {activity}', flush=True)
+        except OSError:
+            pass
 
     def execute(self, command, *, env=None, reports=()):
         command = [str(part) for part in command]
@@ -164,7 +219,15 @@ class RunRecord:
             for thread in threads:
                 thread.start()
             try:
-                self.data['exit_code'] = process.wait()
+                next_heartbeat = time.monotonic() + self.progress_interval
+                while True:
+                    try:
+                        self.data['exit_code'] = process.wait(timeout=min(.25, self.progress_interval))
+                        break
+                    except subprocess.TimeoutExpired:
+                        if time.monotonic() >= next_heartbeat:
+                            self.heartbeat()
+                            next_heartbeat = time.monotonic() + self.progress_interval
             except BaseException:
                 process.terminate()
                 try:
@@ -220,12 +283,19 @@ class RunRecord:
             self.data['source_stable'] = self.data['before'] is not None and self.data['before'] == self.data['after']
         except Exception as snapshot_error:
             self.data['after'] = {'snapshot_error': str(snapshot_error)}
+        external = self.data.get('external_files')
+        if external is not None:
+            try:
+                external['after'] = {p: external_file_identity(p) for p in external['before']}
+                external['stable'] = external['before'] == external['after']
+            except (OSError, RuntimeError) as external_error:
+                external['error'] = str(external_error)
         code = (130 if interrupted else self.data['exit_code']) or (
             2 if exc is not None or not self.started_child else
             4 if not self.data['capture_complete'] else
             5 if self.data['report_errors'] else
             6 if self.data.get('cleanup', {}).get('ok') is False else
-            3 if not self.data['source_stable'] else 0)
+            3 if not self.data['source_stable'] or (external is not None and not external['stable']) else 0)
         self.data.update(verification_exit_code=code,
                          status='interrupted' if interrupted else ('not_started' if not self.started_child else ('failed' if code else 'completed')),
                          finished_at=datetime.now(timezone.utc).isoformat(),
@@ -246,6 +316,7 @@ def main(argv=None):
     parser.add_argument('--repo', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--metadata', type=Path)
+    parser.add_argument('--progress-interval', type=float, default=PROGRESS_INTERVAL_SECONDS)
     parser.add_argument('--allow-ignored-output', action='store_true')
     parser.add_argument('--junit-report', action='append', default=[], type=Path)
     parser.add_argument('command', nargs=argparse.REMAINDER)
@@ -254,7 +325,8 @@ def main(argv=None):
     if not command:
         parser.error('A command is required after --')
     try:
-        with RunRecord(args.repo, args.output, command, allow_ignored=args.allow_ignored_output) as record:
+        with RunRecord(args.repo, args.output, command, allow_ignored=args.allow_ignored_output,
+                       progress_interval=args.progress_interval) as record:
             record.begin()
             if args.metadata:
                 record.data['metadata'] = json.loads(args.metadata.read_text(encoding='utf-8-sig'))

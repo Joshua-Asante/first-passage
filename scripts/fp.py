@@ -9,9 +9,11 @@ import json
 import os
 from pathlib import Path
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
+import tomllib
 from uuid import uuid4
 
 
@@ -116,6 +118,115 @@ def prepare(root: Path, environment: Path) -> tuple[Path, dict[str, str], dict]:
     return python, child_env, report
 
 
+def expand_pytest_argument_files(root: Path, args: list[str]) -> tuple[list[str], set[Path]]:
+    """Match pytest's one-argument-per-line files, before any validation."""
+    files = set()
+    remaining = 100_000
+
+    def expand(arguments, stack):
+        nonlocal remaining
+        result = []
+        for argument in arguments:
+            remaining -= 1
+            if remaining < 0:
+                raise ValueError('Pytest argument file expansion exceeds 100000 arguments')
+            if not argument.startswith('@'):
+                result.append(argument)
+                continue
+            path = root / argument[1:]
+            identity = path.resolve()
+            if identity in stack or len(stack) >= 16:
+                raise ValueError(f'Cyclic or excessively nested pytest argument file: {path}')
+            with path.open('r', encoding=sys.getfilesystemencoding(),
+                           errors=sys.getfilesystemencodeerrors()) as source:
+                content = source.read(1_000_001)
+            if len(content) > 1_000_000:
+                raise ValueError(f'Pytest argument file exceeds 1000000 characters: {path}')
+            files.add(path)
+            # Like argparse, nested relative paths resolve from pytest's cwd,
+            # not from the containing argument file's directory.
+            result.extend(expand(content.splitlines(), (*stack, identity)))
+        return result
+
+    return expand(args, ()), files
+
+
+def configured_pytest_arguments(root: Path, args: list[str]) -> list[str]:
+    """Materialize pytest's single addopts layer so inputs cannot hide in it."""
+    config = tomllib.loads((root / 'pyproject.toml').read_text(encoding='utf-8'))
+    table = config.get('tool', {}).get('pytest', {})
+    native = {key: value for key, value in table.items() if key != 'ini_options'}
+    legacy = table.get('ini_options', {})
+    if native and legacy:
+        raise ValueError('Cannot combine native pytest configuration and ini_options')
+    value = (native or legacy).get('addopts', [])
+    iterator = iter(args)
+    for argument in iterator:
+        if argument == '--':
+            break
+        override = None
+        if argument in ('-o', '--override-ini'):
+            override = next(iterator, '')
+        elif argument.startswith('--override-ini='):
+            override = argument.split('=', 1)[1]
+        elif argument.startswith('-o') and not argument.startswith('--'):
+            override = argument[2:].removeprefix('=')
+        if override is not None:
+            name, separator, selected = override.partition('=')
+            if separator and name.strip() == 'addopts':
+                value = selected
+    if isinstance(value, str):
+        return shlex.split(value)
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise ValueError('Pytest addopts must be a string or list of strings')
+    return value
+
+
+def pytest_report_selection(args: list[str]) -> tuple[list[str], dict[str, str]]:
+    """Separate output option values from possible source paths, honoring --."""
+    inputs = []
+    outputs = {}
+    iterator = iter(args)
+    for argument in iterator:
+        if argument == '--':
+            inputs.extend(iterator)
+            break
+        key, separator, value = argument.partition('=')
+        if key in ('--junitxml', '--junit-xml', '--log-file'):
+            if not separator:
+                value = next(iterator, '')
+            if not value:
+                raise ValueError(f'{key} destination is missing')
+            outputs['junit' if key != '--log-file' else 'log'] = value
+        else:
+            inputs.append(argument)
+    return inputs, outputs
+
+
+def pytest_configuration_args(root: Path, args: list[str]) -> list[str]:
+    """Normalize checkout selection and reject competing explicit selections."""
+    result = []
+    iterator = iter(args)
+    for argument in iterator:
+        if argument == '--':
+            result.extend([argument, *iterator])
+            break
+        key, separator, value = argument.partition('=')
+        if key in ('-c', '--config-file', '--rootdir'):
+            if not separator:
+                value = next(iterator, '')
+        elif argument.startswith('-c') and not argument.startswith('--'):
+            key, value = '-c', argument[2:]
+        else:
+            result.append(argument)
+            continue
+        expected = root if key == '--rootdir' else root / 'pyproject.toml'
+        comparable = os.path.expandvars(value) if key == '--rootdir' else value
+        if not value or (root / comparable).resolve() != expected.resolve():
+            raise ValueError(f'Conflicting pytest {key}: expected {expected}, got {value!r}')
+    return ['-c', str(root / 'pyproject.toml'), '--rootdir=' + str(root), *result]
+
+
 def main(argv: list[str] | None = None) -> int:
     """Validate and run a task without changing the invoking shell's environment."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -166,27 +277,52 @@ def main(argv: list[str] | None = None) -> int:
             record.data['metadata'] = report
             reports = []
             if pytest_task:
-                command += ['-p', 'scripts.pytest_junit_subtests']
+                # Parse ambient arguments once, so they cannot silently override
+                # the checkout contract or escape the recorded command.
+                ambient = shlex.split(child_env.pop('PYTEST_ADDOPTS', ''))
+                expanded, argument_files = expand_pytest_argument_files(root, [*ambient, *command[3:]])
+                configured, config_files = expand_pytest_argument_files(
+                    root, configured_pytest_arguments(root, expanded))
+                argument_files |= config_files
+                # Suppress pytest's later addopts expansion: it is now explicit.
+                command[3:] = pytest_configuration_args(root, [*configured, *expanded])
+                report.update(pytest_config=str(root / 'pyproject.toml'), pytest_root=str(root))
+                input_args, output_options = pytest_report_selection(command[3:])
+                destination = output_options.get('junit')
+                source_candidates = {
+                    Path(os.path.abspath(root / arg.split('::', 1)[0]))
+                    for arg in input_args if not arg.startswith('-')
+                    and (root / arg.split('::', 1)[0]).is_file()
+                } | argument_files
+                trailing = []
+                if '--' in command:
+                    delimiter = command.index('--')
+                    trailing, command = command[delimiter:], command[:delimiter]
+                pytest_options = command[3:]
+                command += ['-o', 'addopts=', '-p', 'scripts.pytest_junit_subtests', '-p', 'scripts.pytest_progress']
+                child_env['FP_PYTEST_PROGRESS_DIR'] = str(output)
+                child_env['FP_PYTEST_PROGRESS_RUN'] = record.data['run_id']
                 if options.workers is not None:
                     command += ['-n', str(options.workers)]
                     if options.workers:
                         command += ['--dist=loadscope']
-                destination = None
-                for index, argument in enumerate(options.args):
-                    if argument in ('--junitxml', '--junit-xml'):
-                        if index + 1 == len(options.args):
-                            raise ValueError('JUnit destination is missing')
-                        destination = options.args[index + 1]
-                    elif argument.startswith(('--junitxml=', '--junit-xml=')):
-                        destination = argument.split('=', 1)[1]
                 if destination is None:
                     destination = str(output / 'junit.xml')
                     command += ['--junitxml=' + destination]
-                reports = [(root / destination).resolve()]
+                reports = [(root / os.path.expanduser(os.path.expandvars(destination))).resolve()]
+                outputs = [*reports]
+                if 'log' in output_options:
+                    outputs.append((root / output_options['log']).resolve())
+                if any(p.resolve() == out or (out.exists() and p.samefile(out))
+                       for p in source_candidates for out in outputs):
+                    raise ValueError('Pytest output overlaps a selected source or argument file')
+                record.track_external_files({p for p in source_candidates
+                                             if not p.is_relative_to(root) or
+                                             not p.resolve().is_relative_to(root)})
             with tempfile.TemporaryDirectory(prefix='fp-pytest-') as scratch:
-                if pytest_task and not any(a == '--basetemp' or a.startswith('--basetemp=') for a in options.args):
+                if pytest_task and not any(a == '--basetemp' or a.startswith('--basetemp=') for a in pytest_options):
                     command += ['--basetemp=' + str(Path(scratch) / 'pytest')]
-                record.execute(command, env=child_env, reports=reports)
+                record.execute(command + (trailing if pytest_task else []), env=child_env, reports=reports)
         return record.data['verification_exit_code']
     except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
         print(f"fp: {exc}", file=sys.stderr)

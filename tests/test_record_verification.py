@@ -243,3 +243,103 @@ def test_initial_snapshot_failure_is_recorded(tmp_path):
     record = json.loads((output / 'record.json').read_text())
     assert result.returncode != 0 and record['status'] == 'not_started'
     assert record['before'] is None and record['error']
+
+@pytest.mark.parametrize('mutate_baseline', [False, True])
+def test_overlapping_checkouts_preserve_measured_identity(tmp_path, mutate_baseline):
+    baseline = make_repo(tmp_path)
+    candidate = tmp_path / 'candidate'
+    subprocess.run(['git', 'clone', '-q', str(baseline), str(candidate)], check=True)
+    (candidate / 'input.txt').write_text('candidate revision')
+    subprocess.run(['git', '-C', str(candidate), '-c', 'user.name=Test',
+                    '-c', 'user.email=test@example.invalid', 'commit', '-qam', 'candidate'], check=True)
+    release = tmp_path / 'release'
+    processes = []
+    outputs = [tmp_path / 'baseline-evidence', tmp_path / 'candidate-evidence']
+    try:
+        for repo, output in zip([baseline, candidate], outputs):
+            ready = output.with_suffix('.ready')
+            code = ('from pathlib import Path; import time; '
+                    f'Path({str(ready)!r}).touch(); '
+                    f'\nwhile not Path({str(release)!r}).exists(): time.sleep(.02)')
+            processes.append(subprocess.Popen([sys.executable, str(SCRIPT), '--repo', str(repo),
+                '--output', str(output), '--', sys.executable, '-c', code],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+        deadline = time.monotonic() + 20
+        while not all(p.with_suffix('.ready').exists() for p in outputs):
+            assert time.monotonic() < deadline
+            time.sleep(.02)
+        (candidate / 'input.txt').write_text('implementation advances')
+        if mutate_baseline:
+            (baseline / 'input.txt').write_text('baseline drift')
+        release.touch()
+        codes = [p.wait(timeout=20) for p in processes]
+        assert codes == [3 if mutate_baseline else 0, 3]
+        records = [json.loads((p / 'record.json').read_text()) for p in outputs]
+        assert records[0]['source_root'] != records[1]['source_root']
+        assert records[0]['before']['commit'] != records[1]['before']['commit']
+        assert records[0]['source_stable'] == (not mutate_baseline)
+    finally:
+        release.touch()
+        for process in processes:
+            if process.poll() is None:
+                process.kill()
+                process.wait(timeout=5)
+
+
+@pytest.mark.parametrize('exit_code', [0, 7])
+def test_quiet_child_heartbeat_precedes_exit_and_stays_out_of_logs(tmp_path, exit_code):
+    repo = make_repo(tmp_path)
+    output = tmp_path / 'heartbeat'
+    with subprocess.Popen([sys.executable, str(SCRIPT), '--repo', str(repo), '--output', str(output),
+            '--progress-interval', '.2', '--', sys.executable, '-c',
+            f'import time; time.sleep(2); print("child only"); raise SystemExit({exit_code})'],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
+        lines = []
+        for line in process.stdout:
+            lines.append(line)
+            if '[verification progress]' in line:
+                assert process.poll() is None
+                break
+        else:
+            pytest.fail('No heartbeat before child exit: ' + ''.join(lines) + process.stderr.read())
+        stdout, stderr = process.communicate(timeout=15)
+        assert process.returncode == exit_code, stderr
+    assert 'test activity unavailable' in ''.join(lines)
+    assert (output / 'stdout.txt').read_text().strip() == 'child only'
+    record = json.loads((output / 'record.json').read_text())
+    assert record['verification_exit_code'] == exit_code
+
+@pytest.mark.parametrize('payload', ['{broken', '{"run_id":"old", "observed_at":0}', '[]'])
+def test_corrupt_progress_cannot_accept_failed_child(tmp_path, payload):
+    repo = make_repo(tmp_path)
+    output = tmp_path / 'bad-progress'
+    code = ('from pathlib import Path; import time; '
+            f'Path({str(output / "progress.json")!r}).write_text({payload!r}); '
+            'time.sleep(.6); raise SystemExit(7)')
+    result = subprocess.run([sys.executable, str(SCRIPT), '--repo', str(repo), '--output', str(output),
+        '--progress-interval', '.1', '--', sys.executable, '-c', code], capture_output=True, text=True)
+    assert result.returncode == 7, result.stdout + result.stderr
+    assert 'test activity unavailable' in result.stdout
+    assert json.loads((output / 'record.json').read_text())['status'] == 'failed'
+
+
+def test_interruption_terminates_waiting_real_child(tmp_path):
+    repo = make_repo(tmp_path)
+    output = tmp_path / 'interrupt-child'
+    driver = tmp_path / 'driver.py'
+    driver.write_text('import importlib.util, sys, threading, _thread\n'
+        f'spec = importlib.util.spec_from_file_location("recorder", {str(SCRIPT)!r})\n'
+        'm = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)\n'
+        f'with m.RunRecord({str(repo)!r}, {str(output)!r}, ["wait"], progress_interval=.1) as r:\n'
+        '    r.begin()\n'
+        '    timer = threading.Timer(.8, _thread.interrupt_main); timer.start()\n'
+        '    try:\n'
+        '        r.execute([sys.executable, "-c", "import time; print(\'ready\', flush=True); time.sleep(60)"])\n'
+        '    finally:\n'
+        '        timer.cancel()\n'
+        'sys.exit(r.data["verification_exit_code"])\n')
+    result = subprocess.run([sys.executable, str(driver)], capture_output=True, text=True, timeout=20)
+    assert result.returncode == 130, result.stdout + result.stderr
+    record = json.loads((output / 'record.json').read_text())
+    assert record['status'] == 'interrupted' and record['capture_complete']
+    assert (output / 'stdout.txt').read_text().strip() == 'ready'
