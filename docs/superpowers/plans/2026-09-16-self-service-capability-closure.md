@@ -1,5 +1,7 @@
 # Self-Service Capability Closure Implementation Plan
 
+> **Investigatory proposal, 2026-09-17 UTC:** The [proposed bounded platform-protection ADR](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md) supplies a hypothetical alternative for the next ATM design assessment. It changes no effective authority or capability verdict. Evaluate current qualification against accepted contracts; mark any dependency on the proposed exception AMENDMENT_REQUIRED until explicit acceptance and governing-contract propagation. Preserve uncertain-request blocks and the no-same-session design restriction.
+
 > **For agentic workers:** Execute with superpowers:executing-plans; use superpowers:subagent-driven-development when bounded delegation is useful and authorized. Preserve the behavioral contract and integration owner. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Resolve the incumbent account's settlement, request-recovery and normal-execution gaps using existing access, retained records and bounded consumer rehearsals, without making support replies the critical path.
