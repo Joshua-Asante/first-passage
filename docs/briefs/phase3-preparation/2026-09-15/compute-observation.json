@@ -1,0 +1,89 @@
+{
+  "artifact_class": "DRAFT_PREPARATION_NOT_FROZEN_NOT_QUALIFICATION",
+  "created_utc": "2026-09-16T00:14:14.903010+00:00",
+  "runtime": {
+    "implementation": "CPython",
+    "version": "3.12.14",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "executable_sha256": "2204195cec25879507d958a8b6949add67091244b8b4da9cf3672f993548fa49"
+  },
+  "source_sha256": {
+    "scripts/certification_power.py": "4cb7851ec91077c574f5fc20d461cbfe37651b86e3a95942b1cdef262ff7de15",
+    "tests/test_certification_power.py": "8ba7adb484b3849976b17140dfc1ee19910524935eac074d54372a7b2efc0227",
+    "ops/c1_rail/policy_fingerprint.py": "45214014035aa2f8ebe484dfe71b288cfa4440efcfc795ecbba3becae293d5eb",
+    "tests/ops/test_policy_fingerprint.py": "cc4d5f9b0b820a4f2a2044f84c2704800fb3bd71d108fe9850b1ecd11f1212ba",
+    "tests/ops/fixtures/policy_fingerprint_vectors.json": "bbf977f78d88e55b36f16e6b121fd61aafbb72e8fcbb739c29faf0ab2f0a264d",
+    "core/dd_geometry.py": "2195f93501758a8a0366e333c57522a243dd200ad752fd97df88920bdf5fac60",
+    "core/dd_protection.py": "b05f50ef572c2df8a289be1c4a411fa5aea8c0089885658952724913d0f76470",
+    "core/firm_rules.py": "aea6abaa175d2da8352be63bd603c82f28e9d1df1c8956f5fb9a37598f09f49b",
+    "core/lifecycle.py": "0a70785dada705b6ea1e6b0951ad0caaa00944bd8a3b49b5d9d3a365c83eaf87",
+    "core/mc/simulation.py": "4c4a332506bc52ae488ac1cf4fe46b5865a2cc90fcca66f713fdc42b842fa857",
+    "core/mc/preflight.py": "4c328bbfcc23a1a0ccf5e3dd9d711e1056a10bb76e2e07aeb2a82a9ad73956a8",
+    "ops/c1_rail/book_policy.py": "ffcd3aab3e74235e60c711f266f884f96874072c3d84d0b3e1d25d67abd8567a",
+    "ops/c1_rail/book_capacity.py": "0a115f4a02dc49af35d1dc08344799cb733155f334939f1a1433c7937d913d25",
+    "ops/c1_rail/book_sizing_context.py": "7ccef4dcae2691a947b3321bf8036739bb3f0758dff428d0ec2213ca2a377cf0",
+    "ops/c1_rail/book_session_calendar.py": "19c6770d8f648ef3333634d28c04d2e35e2ece0949e169dfc81f1e446cc177af",
+    "ops/c1_signal_daemon/book_protocol.py": "37d1cd7885604f198c88fe6ae3d792e0b42416b37caf7bfc0afa53a8475375e8",
+    "ops/c1_signal_daemon/feed.py": "b94e43c0e3410a82d9a25c05f4e3f84e278a3840e7eddc8452ceb4e038148e35",
+    "ops/c1_signal_daemon/pine_ta.py": "7816638aec5a456e4fc8bbde7e52120466686e58465f3a7f1d0a0d311753d69c",
+    "ops/c1_signal_daemon/tv_broker_emulator.py": "6b6c4cb30639b1a32ec733565894563f42a29d3be30c898a25031dc7bc4a7b7c",
+    "requirements-ops.lock": "cedbcfb14f91edf73f98872734341445d41e8bb01662c130e16c40d179267fc7",
+    "requirements-research.lock": "0cda563a4eebe1860348bd0c7a3490fba4ebdfb5ee695ed788e83de6797efc47"
+  },
+  "preparation_script_sha256": "63c3f35d1fdde17eb176eab6ae00352821a40c43f00d9c04ee26c64d920df8f2",
+  "design_only": [
+    {
+      "assumed_failure_rate": 0.03,
+      "assumed_pass_by_200": 0.65,
+      "n_per_population": 970,
+      "failure_limb_power": 0.9386202050110997,
+      "speed_limb_power": 0.9999999999999979,
+      "joint_power_frechet": 0.8158606150332969,
+      "max_failures": 37,
+      "min_pass_by_200": 512
+    },
+    {
+      "assumed_failure_rate": 0.03,
+      "assumed_pass_by_200": 0.6,
+      "n_per_population": 970,
+      "failure_limb_power": 0.9386202050110997,
+      "speed_limb_power": 0.9999977289657431,
+      "joint_power_frechet": 0.8158583439990421,
+      "max_failures": 37,
+      "min_pass_by_200": 512
+    },
+    {
+      "assumed_failure_rate": 0.02,
+      "assumed_pass_by_200": 0.6,
+      "n_per_population": 390,
+      "failure_limb_power": 0.9471837752635365,
+      "speed_limb_power": 0.9896355590293069,
+      "joint_power_frechet": 0.8311868848199163,
+      "max_failures": 12,
+      "min_pass_by_200": 212
+    }
+  ],
+  "candidate_seed64_hex_not_consumed": {
+    "n1": "3b6703de180cd7a3",
+    "n2": "04aa31d0f99d8164",
+    "n3": "913c1a2c6484edf1"
+  },
+  "benchmark": {
+    "namespace": "phase3-preparation/synthetic-component-benchmark/v1",
+    "sessions": 25,
+    "bars_per_session": 92,
+    "generic_brokers": 4,
+    "repeats": 3,
+    "seconds": [
+      0.5923552000022028,
+      0.6290196999980253,
+      0.6794353000004776
+    ],
+    "median_seconds": 0.6290196999980253,
+    "max_seconds": 0.6794353000004776,
+    "scaled_500_session_component_seconds": 13.588706000009552,
+    "e1_worst_43510_component_hours": 164.23461057233766,
+    "n3_2910_component_hours": 10.984204016674388,
+    "limitation": "Component proxy only; excludes actual adapters, account/replay/MC, I/O, warmup and bootstrap. Not a runtime bound or F1 budget proof."
+  }
+}

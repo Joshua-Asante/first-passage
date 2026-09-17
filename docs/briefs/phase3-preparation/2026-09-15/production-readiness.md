@@ -1,0 +1,41 @@
+# Production route and remaining evidence
+
+Status: implementation and combined review in progress. This is a freeze candidate, not F1 approval, qualification evidence, admission, or live authority.
+
+## Source factory implementation checkpoint
+
+`ProductionSource.build(contract, artifact_root=...)` now reads retained artifact bytes, verifies historical admission and scoped successor reviews, constructs the source calendar and population index, and loads fresh qualification adapters from verified port bytes. The historical loader remains unchanged. Provider-slot provenance checks the qualified generation; shared absence is diagnostic. Exact date and exclusion accounting prevents silently changing the source population. Striker risk stays Decimal through shared sizing.
+
+Independent bounded review accepted source SHA256 `8d7b67682b31d5f33f10bfc85140c693a325ba8e6ada58cf4126100f6a87772c` and adapter-loader SHA256 `1c81e4b18f3936c786fe5c985ed89b7ba87231d78b88e249d895acf1a315254b`: 43 source/loader/controller integration tests passed. A separate combined qualification run passed 240 tests on CPython 3.13.2 in 20.88 seconds. These are synthetic engineering checks; runtime-inventory review and final G5 acceptance are separate.
+
+Phase1 found that altered validated-receipt fields could authenticate under an unchanged signed digest at checkpoint `1465c36`. The repair landed as `2e28b5a` with controller reconciliation `b8f929d`. Phase1 independently confirmed all four unchanged regressions and eight stronger same-issued-object claim/seal mutations pass; its follow-up `51db916` is integrated as `9864f65`. This closes that receipt-binding defect, not final combined G5 acceptance. Runtime execution binding and the full signed test-domain composition remain under integration.
+
+## Factory obligations
+
+| Requirement | Required fact and retained capability | Classification and implementation | Owner / consuming gate |
+|---|---|---|---|
+| S2 RC3 continuous state; P1 §9 initial account | Accepted port constructors and full-origin historical input exist. No accepted rule requires a historical snapshot at every resampled splice. | Engineering: instantiate once per path, preserve indicators, paper state, confirmed execution state and account state across every splice. Explicit proposed startup policy below; arbitrary-start parity is not inherited from Step3. | Phase3 / startup review and F1 |
+| S2 RC7 active-window coverage | Pinned port control flow and settings identify each source-time session window. Expected leg timestamps are the observed four-panel union restricted to that window; signals or trades do not define active coverage. | Engineering: derive Aegis ET window, Striker fixed UTC session when enabled, Vanguard ET session and weekday rule, and ORB ET window. Retain out-of-window bars for indicators. A provider-bound slot index checks consumed-input integrity; it does not create a full scheduled-active-window completeness law. | Phase3 / source-panel construction |
+| S2 RC5 sizing and S1 candidate C=80 | Striker exposes account size, risk percentage and intent stop distance; Vanguard exposes evolving normal base. | Engineering plus frozen policy: supply unrounded risk dollars and per-contract stop risk to shared sizing. Never invert a rounded source quantity. Explicit AUTHORIZED lifecycle and request ceilings; shared ledger remains authoritative. | Phase3 / F1 settings and replay |
+| S2 RC8 and TB-S3 §5 schedule | D19 membership, typed policy overlays, reset evidence and regular-session sources each have limited applicability. D19 alone does not supply mandatory venue close V. | Engineering: typed source-date rows, source/product mappings and evidence references; derive D, cutoff and flatten through the shared law. Evidence: missing actual deadline facts block their consuming dates. September deployment permission does not certify historical dates. No universal archive or complete-tape reconstruction requirement. | Calendar/evidence producer / scheduled replay |
+| S2 RC4/RC6/RC8 exact intrabar action | Retained M15 OHLCV does not establish an exact 15:55 or other nonbar quote or the pre/post-boundary chronology. | Engineering: serialized evidence and verifier for exact source intervals and split segments. Genuine evidence/model decision: supply source-bound finer chronology with reviewed mapping, or ratify an explicit timing/fill model. Until then refuse; do not interpolate, reuse a next-bar price, or promote synthetic split fixtures to market facts. | Programme and source producer / F1 and replay |
+| Fixed ORB base1 versus historical settings | Historical settings digest `66406…` remains the accepted historical reference and captures ORB quantity2. | Engineering: separate qualification loader for verified successor bytes, preserving the historical API. Evidence: reviewed successor settings and review must be supplied; no fallback to the old quantity. | Settings producer / G1 and adapter loader |
+| Runtime identity and one-attempt control | Existing accepted historical receipts have bounded historical scope. New source/runtime bytes and transitive dependencies differ. | Engineering: exact byte snapshots, canonical module identities, complete retained closure, durable dispatch and authenticated results. New affected acceptance remains necessary. | Phase2/Phase3/Phase1 / G1, G2 and G5 |
+
+## Explicit startup and allocation proposal
+
+The coordinator's candidate uses each accepted per-port cold constructor exactly once at assembled-path start, its own configured paper initial capital, zero positions/orders, and the pristine E1 account. It carries state through every splice. It adds no unscored economic prelude, fixed generic warmup, or historical checkpoint injection. Native readiness evolves from the assembled bars, and early nontrading sessions stay in the denominator.
+
+The admitted 6J 88-bar prefix retains its historical source role. It is not automatically prepended to every sampled block. Step3 acceptance establishes full-origin reference replay, not arbitrary first-sampled-date equivalence. Phase1 found no direct S1/P1/S2 conflict in this candidate, while requiring the startup model and impact to remain explicit before F1.
+
+Decision-bearing lifecycle is AUTHORIZED with NORMAL/PROTECTED policy modes. WATCH/RETIRED remain parity and monitoring cases. Candidate per-leg request ceilings are80 **micro equivalents**, subject to one shared account cap80 including confirmed positions and reservations. A6J contract consumes10 micro equivalents; the other contracts consume1. Other-leg ceilings are redundant request envelopes, not sizing targets or four separate capital allocations. Striker's S1 C=80 is distinct from source chart caps and the global capacity ledger. None of these proposed offline settings changes the live registry or allocation.
+
+## Evidence distinction
+
+Exchange-closed, policy-denied and unknown source dates are different typed dispositions. A missing schedule is not evidence of exchange closure. Provider coverage exclusions do not imply a reconstructed full exchange tape, and excluded source dates do not silently become contiguous bootstrap neighbors.
+
+Slot evidence distinguishes a qualified-provider observation lost in consumption, a cross-leg miss on the observed union, and absence across every qualified provider input. Only the applicable integrity/RC7 rule controls exclusion. Shared absence remains a diagnostic and blocks a concrete dependent fill, schedule or legality claim when necessary; it does not assert exchange closure. An entirely missing expected source session has an explicit unresolved disposition. A stronger completeness law would require an amendment.
+
+S2 RC1 explicitly requires margin-off qualification emulators, and its acceptance limits exclude the TradingView margin branch (O-7). The historical ORB chart margin setting remains historical provenance; it does not override this replay law. Per-leg paper equity and venue costs still follow their separately specified rules.
+
+Engineering schemas can be implemented and tested without claiming their future contents are true. The frozen artifact inventory, scoped evidence reviews and operator approvals must bind the actual production bytes. Synthetic keys, fixtures and benchmark outcomes cannot supply that authority.

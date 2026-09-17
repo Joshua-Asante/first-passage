@@ -30,9 +30,14 @@ re-issue (amend) the bracket every bar exactly as Pine re-calls
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Protocol, Union
+
+# Shared completed-bar clock. Account owners consume the same timing law
+# without importing the runtime coordinator and its listener dependencies.
+BAR_PERIOD = timedelta(minutes=15)
+BAR_SLACK = timedelta(seconds=30)
 
 from c1_signal_daemon.feed import Bar
 

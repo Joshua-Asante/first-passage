@@ -60,6 +60,10 @@ COPY ops/c1_signal_daemon/__init__.py ops/c1_signal_daemon/book_validation.py op
      ops/c1_signal_daemon/book_adapters.py ops/c1_signal_daemon/book_runtime.py \
      ops/c1_signal_daemon/feed.py ./ops/c1_signal_daemon/
 
+# Shared adapter loader's stdlib qualification contract dependency.
+COPY ops/c1_rail/qualification/__init__.py ops/c1_rail/qualification/contract.py \
+     ops/c1_rail/qualification/trust_domain.py ./ops/c1_rail/qualification/
+
 # The M1 acceptance artifact — read by ops/c1_rail/c1_rail_arm.py's arming interlock
 # (ADR 2026-07-22 Addendum 2026-07-31b: dry_run=false may not be set while M1
 # is not RESOLVED). This is the ONE docs/ path in the image, and it is here

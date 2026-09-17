@@ -210,6 +210,11 @@ class TVBrokerEmulator:
         if intent.leg_id != self.leg_id:
             raise ValueError(f"intent for {intent.leg_id!r} sent to {self.leg_id!r} emulator")
         if intent.kind in ("exit", "flat"):
+            # Resolve native closes against confirmed scope at registration.
+            # A stale/empty close must not survive to target a future entry.
+            if not any(o.lot_qty > 0 and (intent.scope_fill_ids is None
+                       or fid in intent.scope_fill_ids) for fid, o in self._open.items()):
+                return []
             bad = self._close_side_mismatch(intent)
             if bad:
                 self.rejected.append(intent)

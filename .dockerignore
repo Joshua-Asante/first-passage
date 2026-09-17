@@ -48,6 +48,10 @@ ops/**
 !ops/c1_rail/account_close_evidence.py
 !ops/c1_rail/account_close_ledger.py
 !ops/c1_rail/ed25519_verify.py
+!ops/c1_rail/qualification
+!ops/c1_rail/qualification/__init__.py
+!ops/c1_rail/qualification/contract.py
+!ops/c1_rail/qualification/trust_domain.py
 !ops/c1_rail/settlement_signing.py
 !ops/c1_rail/operator_keys.json
 !ops/c1_rail/m1_stage1_contract.py

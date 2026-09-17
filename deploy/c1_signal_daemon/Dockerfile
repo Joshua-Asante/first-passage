@@ -47,6 +47,11 @@ COPY ops/c1_rail/__init__.py ops/c1_rail/m1_stage1_contract.py \
 
 COPY core/dd_protection.py core/dd_geometry.py core/firm_rules.py core/lifecycle.py \
      core/historical_challenge.py core/calendar_evidence.py ./core/
+
+# Shared adapter loader's stdlib qualification contract dependency.
+COPY ops/c1_rail/qualification/__init__.py ops/c1_rail/qualification/contract.py \
+     ops/c1_rail/qualification/trust_domain.py ./ops/c1_rail/qualification/
+
 COPY core/lib/atomic_io.py core/lib/file_lock.py core/lib/mvd.py \
      core/lib/validation.py ./core/lib/
 

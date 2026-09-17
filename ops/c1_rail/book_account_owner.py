@@ -767,7 +767,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
 
     def _ordinary_unknown_orders_db(self, db, *, now):
         """Derive the account fence from durable attempts, never transport receipts alone."""
-        from c1_signal_daemon.book_runtime import BAR_PERIOD
+        from c1_signal_daemon.book_protocol import BAR_PERIOD
         unresolved = []
         # Feedback is optional: a filled terminal emits no adapter event. Only
         # terminals accepted by the capacity reducer can resolve an attempt;
