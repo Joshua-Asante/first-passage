@@ -4,9 +4,9 @@ Present path ownership and import rules. [PIPELINES.md](PIPELINES.md) describes
 handoffs; [STATE.md](STATE.md) carries current priorities. The
 [boundaries ADR](docs/adr/2026-06-05-monorepo-layer-boundaries.md) owns the design.
 
-`scripts/check_boundaries.py` enforces its Python maps, not this prose.
-`scripts/repo_map_layers.yml` mirrors those maps and
-`scripts/check_repo_map_layers.py` checks equality; update both in one change.
+`scripts/check_boundaries.py` enforces the layer maps it loads from
+`scripts/repo_map_layers.yml` — the single definition — not this prose;
+`scripts/check_repo_map_layers.py` validates that file's schema.
 For removed paths, use [lab/ARCHIVED.json](lab/ARCHIVED.json) and
 [archive retrieval](docs/ltm/README.md). Old migration tables remain in Git history.
 
@@ -76,18 +76,19 @@ change: the scanner's default is governance.
 ### §2.1 — `scripts/` per-file layer (root-resident; recorded for the scanner)
 
 `scripts/` stays at root but its files are classified. Layer comes from
-`check_boundaries.py`'s `SCRIPTS_LAYER`; anything not in that dict falls back
-to **governance** via `layer_of_file()`. The scanner does **not** load this
-table. The P5 gate ([`check_repo_map_layers.py`](scripts/check_repo_map_layers.py))
-compares `SCRIPTS_LAYER` to [`repo_map_layers.yml`](scripts/repo_map_layers.yml),
-not this table. Gate composition is owned by [`gates.yml`](scripts/gates.yml)
-and is not changed by regenerating this section.
+`scripts_layer` in [`repo_map_layers.yml`](scripts/repo_map_layers.yml) — the
+single definition `check_boundaries.py` loads as `SCRIPTS_LAYER`; anything not
+listed there falls back to **governance** via `layer_of_file()`. The scanner
+does **not** load this table. The layer gate
+([`check_repo_map_layers.py`](scripts/check_repo_map_layers.py)) validates that
+file's schema, not this table. Gate composition is owned by
+[`gates.yml`](scripts/gates.yml) and is not changed by regenerating this section.
 
 Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_76 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_80 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
@@ -96,6 +97,7 @@ _76 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/archive_lab_analysis.py` | governance | `lab-catalog` (path-conditional) | — |
 | `scripts/archive_strategy.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/audit_notice_grade_k_correction.py` | lab | `notice-grade-k-correction` (audit) | — |
+| `scripts/author_book_session_calendar.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/beta_cohesion_read.py` | lab | — | manual/local only, not in gates.yml |
 | `scripts/certification_power.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_adr_graph.py` | governance | `adr-graph` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
@@ -131,6 +133,7 @@ _76 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_supersession_placement.py` | governance | `supersession-placement` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/cost_geometry_pregate.py` | lab | — | manual/local only, not in gates.yml |
 | `scripts/diff_econ_calendar.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/docker_verification.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/event_study_read.py` | lab | — | manual/local only, not in gates.yml |
 | `scripts/evidence_store/__init__.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/evidence_store/__main__.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
@@ -140,6 +143,7 @@ _76 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/evidence_store/retrieval.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/evidence_store/store.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/find_owner.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/fp.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/gate_fire_log.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/gate_manifest.py` | governance | — | gate runner (reads gates.yml); not itself a gated id; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/guard_shell_command.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
@@ -153,6 +157,7 @@ _76 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/parse_econ_export.py` | lab | — | manual/local only, not in gates.yml |
 | `scripts/pine_check.py` | governance | — | manual/local only, not in gates.yml |
 | `scripts/pine_lint.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/record_verification.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/repo_hygiene.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/repo_retrieve.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/research_asset_registry.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
@@ -180,8 +185,8 @@ standalone module commands need the relevant root on `PYTHONPATH`.
 The import-boundary scanner resolves repository-qualified imports and the flat
 roots `core`, `lab`, `ops`, `ops/c1_rail`, `ops/c1_signal_daemon`, and `scripts`
 (the latter supports direct script execution). These roots mirror pytest and
-script bootstraps; `FLAT_IMPORT_ROOTS` in `scripts/check_boundaries.py` is checked
-against `scripts/repo_map_layers.yml`. Imported submodules are resolved to their
+script bootstraps; `flat_import_roots` in `scripts/repo_map_layers.yml` is the
+definition `scripts/check_boundaries.py` loads. Imported submodules are resolved to their
 actual paths, including mixed-layer scripts. Cross-layer name collisions fail
 with candidate paths; same-layer duplicates remain legal. Unknown external
 roots are ignored, while unresolved imports under known first-party roots fail.
@@ -211,9 +216,10 @@ the governance→lab import prohibition.
 ## §3 — How `check_boundaries.py` resolves a file's layer
 
 Application prefixes select core/lab/ops. Governance prefixes and the default
-select governance; `SCRIPTS_LAYER` supplies exceptions for root-resident scripts.
-`tests/` is exempt. Read the actual Python maps and their YAML mirror before
-changing classification; the generated table above is a view, not scanner input.
+select governance; `scripts_layer` supplies exceptions for root-resident scripts.
+`tests/` is exempt. All four maps are read from `scripts/repo_map_layers.yml` at
+import; edit that file to change a classification. The generated table above is
+a view, not scanner input.
 
 ## §4 — Seam dispositions (settled; ADR §8)
 
@@ -233,6 +239,6 @@ python scripts/check_repo_map_layers.py
 python scripts/check_repo_map_scripts_table.py --check
 ```
 
-These check Python boundaries, equality of the enforced maps and their YAML
-mirror, and freshness of the script inventory respectively. They do not classify
+These check Python boundaries, the layer-map file's schema, and freshness of
+the script inventory respectively. They do not classify
 every non-Python artifact or certify that a path may be deleted.

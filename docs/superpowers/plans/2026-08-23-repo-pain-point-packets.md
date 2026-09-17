@@ -179,6 +179,8 @@ Do not reopen P1 as a packet.
 
 **Falsifier:** a prefix exists in `APP_LAYER_PREFIX` and not in the machine block (or the reverse) and `make check` is green. — **cleared**.
 
+> **2026-09-17:** superseded — the YAML sibling became the single definition the scanner loads at import, and the compare gate became a schema gate; the "keep the hard-coded dicts" instruction no longer applies. Owner: [boundaries ADR §2.3 amendment 2026-09-17](../../adr/2026-06-05-monorepo-layer-boundaries.md#23--enforcement-mechanism).
+
 ---
 
 ## Second wave — first-look residuals (plans only, 2026-08-23 evening)

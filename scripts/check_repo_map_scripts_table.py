@@ -2,21 +2,22 @@
 """Emit / check the REPO_MAP.md §2.1 scripts table.
 
 Row set: ``git ls-files 'scripts/*.py'``.
-Layer: ``check_boundaries.py`` ``SCRIPTS_LAYER`` (fallback governance).
+Layer: ``scripts/repo_map_layers.yml`` ``scripts_layer`` (fallback governance) —
+the same single definition ``check_boundaries.py`` loads, read through its
+loader so this table can never disagree with the scanner.
 Gate wiring: ``scripts/gates.yml`` (id, tier, load-bearing flags).
 
 This is a documentation generator. It does **not** change gate composition
 (``gates.yml`` remains the sole owner). ``--check`` is available locally and
 is not wired into ``gates.yml``.
 
-Sibling of ``check_repo_map_layers.py`` (P5 map-compare). That gate stays a
-dict↔YAML compare; this script owns the human-readable §2.1 table so the
-section cannot drift into hand-maintained prose again.
+Sibling of ``check_repo_map_layers.py`` (the layer-map schema gate); this
+script owns the human-readable §2.1 table so the section cannot drift into
+hand-maintained prose again.
 """
 from __future__ import annotations
 
 import argparse
-import ast
 import importlib.util
 import subprocess
 import sys
@@ -24,6 +25,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 BOUNDARIES = REPO / "scripts" / "check_boundaries.py"
+LAYERS_YML = REPO / "scripts" / "repo_map_layers.yml"
 GATES_YML = REPO / "scripts" / "gates.yml"
 REPO_MAP = REPO / "REPO_MAP.md"
 GATE_MANIFEST = REPO / "scripts" / "gate_manifest.py"
@@ -47,30 +49,27 @@ _SECTION_HEADING = "### §2.1 — `scripts/` per-file layer (root-resident; reco
 
 _INTRO = """\
 `scripts/` stays at root but its files are classified. Layer comes from
-`check_boundaries.py`'s `SCRIPTS_LAYER`; anything not in that dict falls back
-to **governance** via `layer_of_file()`. The scanner does **not** load this
-table. The P5 gate ([`check_repo_map_layers.py`](scripts/check_repo_map_layers.py))
-compares `SCRIPTS_LAYER` to [`repo_map_layers.yml`](scripts/repo_map_layers.yml),
-not this table. Gate composition is owned by [`gates.yml`](scripts/gates.yml)
-and is not changed by regenerating this section.
+`scripts_layer` in [`repo_map_layers.yml`](scripts/repo_map_layers.yml) — the
+single definition `check_boundaries.py` loads as `SCRIPTS_LAYER`; anything not
+listed there falls back to **governance** via `layer_of_file()`. The scanner
+does **not** load this table. The layer gate
+([`check_repo_map_layers.py`](scripts/check_repo_map_layers.py)) validates that
+file's schema, not this table. Gate composition is owned by
+[`gates.yml`](scripts/gates.yml) and is not changed by regenerating this section.
 
 Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 """
 
 
-def _load_scripts_layer(path: Path) -> dict[str, str]:
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    for node in tree.body:
-        if not isinstance(node, ast.Assign) or len(node.targets) != 1:
-            continue
-        name = node.targets[0]
-        if isinstance(name, ast.Name) and name.id == "SCRIPTS_LAYER":
-            value = ast.literal_eval(node.value)
-            if not isinstance(value, dict):
-                raise ValueError("SCRIPTS_LAYER is not a dict")
-            return {str(k): str(v) for k, v in value.items()}
-    raise ValueError(f"{path} has no SCRIPTS_LAYER assignment")
+def _load_scripts_layer(layers_yml: Path) -> dict[str, str]:
+    """``scripts_layer`` from the layer-map file, via the scanner's own loader."""
+    spec = importlib.util.spec_from_file_location("check_boundaries", BOUNDARIES)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {BOUNDARIES}")
+    cb = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cb)
+    return dict(cb.load_layer_maps(layers_yml)["scripts_layer"])
 
 
 def _load_gate_manifest():
@@ -190,10 +189,10 @@ def render_section(rows: list[tuple[str, str, str, str]]) -> str:
 def collect(
     *,
     repo: Path,
-    boundaries: Path,
+    layers: Path,
     gates_yml: Path,
 ) -> list[tuple[str, str, str, str]]:
-    scripts_layer = _load_scripts_layer(boundaries)
+    scripts_layer = _load_scripts_layer(layers)
     gm = _load_gate_manifest()
     data = gm.load_manifest(gates_yml)
     by_script = gates_by_script(list(data.get("gates") or []))
@@ -231,7 +230,8 @@ def extract_generated_block(text: str) -> str | None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=REPO)
-    parser.add_argument("--boundaries", type=Path, default=None)
+    parser.add_argument("--layers", type=Path, default=None,
+                        help="layer-map file (default scripts/repo_map_layers.yml)")
     parser.add_argument("--gates", type=Path, default=None)
     parser.add_argument("--repo-map", type=Path, default=None)
     mode = parser.add_mutually_exclusive_group()
@@ -240,12 +240,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
-    boundaries = args.boundaries or (root / "scripts" / "check_boundaries.py")
+    layers = args.layers or (root / "scripts" / "repo_map_layers.yml")
     gates_yml = args.gates or (root / "scripts" / "gates.yml")
     repo_map = args.repo_map or (root / "REPO_MAP.md")
 
     try:
-        rows = collect(repo=root, boundaries=boundaries, gates_yml=gates_yml)
+        rows = collect(repo=root, layers=layers, gates_yml=gates_yml)
         section = render_section(rows)
         block = render_generated_block(rows)
     except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as exc:
@@ -278,7 +278,7 @@ def main(argv: list[str] | None = None) -> int:
         if existing.replace("\r\n", "\n") != block:
             print(
                 "repo-map-scripts-table: FAIL — §2.1 table drift vs "
-                "SCRIPTS_LAYER + gates.yml + git ls-files. "
+                "repo_map_layers.yml scripts_layer + gates.yml + git ls-files. "
                 "Run: python scripts/check_repo_map_scripts_table.py --write",
                 file=sys.stderr,
             )

@@ -162,10 +162,11 @@ Install hooks once per clone: `bash scripts/install_hooks.sh`. Install the
 check dependencies first; see
 [Installing the check dependencies](#installing-the-check-dependencies).
 
-Per-script layer classification is owned by
-`check_boundaries.py`'s `SCRIPTS_LAYER` (fallback **governance**). The
-human-readable table in [`REPO_MAP.md`](../REPO_MAP.md) §2.1 is generated
-from that dict + [`gates.yml`](gates.yml) + `git ls-files 'scripts/*.py'`:
+Per-script layer classification is owned by `scripts_layer` in
+[`repo_map_layers.yml`](repo_map_layers.yml) (fallback **governance**), the
+single layer-map definition `check_boundaries.py` loads. The human-readable
+table in [`REPO_MAP.md`](../REPO_MAP.md) §2.1 is generated from that file +
+[`gates.yml`](gates.yml) + `git ls-files 'scripts/*.py'`:
 
 ```text
 python scripts/check_repo_map_scripts_table.py --write

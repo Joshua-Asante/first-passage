@@ -250,7 +250,10 @@ gates:
       - scripts/check_docs_runtime_inventory.py
       - --check
 
-  # HARD: check_boundaries layer maps must match scripts/repo_map_layers.yml (P5).
+  # HARD: scripts/repo_map_layers.yml — the single layer-map definition
+  # check_boundaries.py loads at import — must satisfy its schema (P5, single-
+  # source since 2026-09-17). check_boundaries.py stays in the trigger because
+  # the loader lives there.
   - id: repo-map-layers
     tier: path-conditional
     when:

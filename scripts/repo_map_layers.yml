@@ -1,19 +1,24 @@
-# Machine block for REPO_MAP.md ↔ check_boundaries.py coupling (P5).
-# Keep in lockstep with scripts/check_boundaries.py:
-#   APP_LAYER_PREFIX, GOVERNANCE_PREFIXES, SCRIPTS_LAYER, FLAT_IMPORT_ROOTS
-# Do not parse REPO_MAP.md free prose — this file is the compare target.
+# Repository layer maps — the single definition (ADR 2026-06-05 §2.3). Loaded by
+# check_boundaries.py (scanner) and check_repo_map_scripts_table.py (REPO_MAP
+# §2.1); schema-gated by check_repo_map_layers.py (`repo-map-layers`).
 
+# Application layers: the directory IS the layer.
 app_layer_prefix:
   core/: core
   lab/: lab
   ops/: ops
 
+# Root-resident governance prefixes; any other root-resident .py is governance too.
 governance_prefixes:
   - docs/
   - .claude/
   - .github/
 
+# scripts/ is root-resident but mixed-layer: module stem -> layer. Unlisted
+# stems fall back to governance (check_boundaries.layer_of_file).
 scripts_layer:
+  # governance — discipline / gates
+  # (check_brief_evidence_coverage retired 2026-06-08 — ADR 2026-05-16-fixture-test-requirement Amendment)
   check_brief: governance
   archive_lab_analysis: governance
   check_boundaries: governance
@@ -22,11 +27,13 @@ scripts_layer:
   check_skill_refs: governance
   check_path_liveness: governance
   pine_check: governance
+  # parse_bar_export imports core/bar_export_loader only (governance->core legal)
   parse_bar_export: governance
   check_skills_no_constants: governance
   verify_lock_anchors: governance
   sync_pine_to_worktree: governance
   sync_skills: governance
+  # lab — research
   mc_user_guardian: lab
   beta_cohesion_read: lab
   audit_notice_grade_k_correction: lab
@@ -36,8 +43,12 @@ scripts_layer:
   check_cost_model_closed_world: lab
   parse_econ_export: lab
   diff_econ_calendar: lab
+  # ops — live-ops tooling (run_ecr / preprocess_pine_ecr_logs retired 2026-07-11)
   lock_event_hook: ops
 
+# Import roots that are flat in practice (pyproject pythonpath,
+# scripts/layer_bootstrap.py, the rail entry points, direct scripts/*.py
+# execution) — REPO_MAP.md §2.2.
 flat_import_roots:
   - core
   - lab
