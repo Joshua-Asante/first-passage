@@ -169,6 +169,19 @@ def test_check_tier_dry_run_includes_path_conditional():
         assert gid_cmd_fragment in out
 
 
+@pytest.mark.parametrize("path", [
+    "core/instrument_specs.py",
+    "lab/discovery/cost_model.py",
+    "tests/test_cost_model.py",
+    "scripts/check_cost_model_closed_world.py",
+])
+def test_instrument_owners_trigger_partition_gate(monkeypatch, path):
+    monkeypatch.setattr(gm, "staged_names", lambda: [path])
+    data = gm.load_manifest(MANIFEST)
+    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
+    assert "cost-model-closed-world" in selected
+
+
 def test_check_tier_selects_ci_composition_ids():
     """CI gate-manifest.yml calls --tier check; every always/path-conditional
     id plus forced data-manifests must be selected. pursuit-records was

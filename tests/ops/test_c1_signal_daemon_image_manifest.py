@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import ast
 from pathlib import Path
+from image_manifest_support import ImageTestProfile, copied_python_paths, import_closure
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DOCKERFILE = REPO_ROOT / "deploy" / "c1_signal_daemon" / "Dockerfile"
@@ -12,31 +13,6 @@ _ENTRYPOINTS = (
     REPO_ROOT / "ops" / "c1_signal_daemon" / "book_evaluate_loop.py",
     REPO_ROOT / "ops" / "c1_signal_daemon" / "m1_stage1_control.py",
 )
-
-
-def _dockerfile_copied_py_paths(dockerfile: Path) -> set[str]:
-    logical_lines: list[str] = []
-    buf = ""
-    for raw in dockerfile.read_text(encoding="utf-8").splitlines():
-        stripped = raw.rstrip()
-        if stripped.endswith("\\"):
-            buf += stripped[:-1] + " "
-            continue
-        buf += stripped
-        logical_lines.append(buf.strip())
-        buf = ""
-
-    copied: set[str] = set()
-    for line in logical_lines:
-        if not line.startswith("COPY "):
-            continue
-        tokens = line.split()[1:]
-        if len(tokens) < 2:
-            continue
-        for src in tokens[:-1]:
-            if src.endswith(".py") and src.startswith("ops/"):
-                copied.add(src)
-    return copied
 
 
 def _repo_import_names(path: Path) -> set[str]:
@@ -78,19 +54,17 @@ def _resolve_c1_signal_module(mod: str) -> Path | None:
     return None
 
 
+def _profile(dockerfile=DOCKERFILE, entrypoints=_ENTRYPOINTS):
+    return ImageTestProfile(dockerfile, entrypoints, ("ops/",),
+                            _repo_import_names, _resolve_c1_signal_module, resolve_paths=False)
+
+
+def _dockerfile_copied_py_paths(dockerfile: Path) -> set[str]:
+    return copied_python_paths(_profile(dockerfile=dockerfile))
+
+
 def _closure(entry: Path) -> set[Path]:
-    seen: set[Path] = set()
-    stack = [entry]
-    while stack:
-        path = stack.pop()
-        if path in seen or not path.is_file():
-            continue
-        seen.add(path)
-        for mod in _repo_import_names(path):
-            resolved = _resolve_c1_signal_module(mod)
-            if resolved is not None and resolved not in seen:
-                stack.append(resolved)
-    return seen
+    return import_closure(_profile(entrypoints=(entry,)))
 
 
 def test_daemon_dockerfile_covers_import_closure():
@@ -112,3 +86,30 @@ def test_daemon_build_context_allows_packaged_files():
     allowed = {line[1:] for line in (REPO_ROOT / ".dockerignore").read_text().splitlines()
                if line.startswith("!")}
     assert _dockerfile_copied_py_paths(DOCKERFILE) <= allowed
+
+
+def test_relative_package_closure_detects_missing_copy(tmp_path, monkeypatch):
+    monkeypatch.setattr(__import__(__name__), "REPO_ROOT", tmp_path)
+    package = tmp_path / "ops/c1_signal_daemon"
+    (package / "nested").mkdir(parents=True)
+    entry = package / "entry.py"
+    entry.write_text("from .nested import value\n", encoding="utf-8")
+    init = package / "nested/__init__.py"
+    init.write_text("from ..leaf import value\n", encoding="utf-8")
+    leaf = package / "leaf.py"
+    leaf.write_text("value = 1\n", encoding="utf-8")
+    dockerfile = tmp_path / "Dockerfile"
+    dockerfile.write_text("COPY ops/c1_signal_daemon/entry.py /app/\n", encoding="utf-8")
+    closure = _closure(entry)
+    assert closure == {entry, init, leaf}
+    assert {p.relative_to(tmp_path).as_posix() for p in closure} - _dockerfile_copied_py_paths(dockerfile) == {
+        "ops/c1_signal_daemon/nested/__init__.py", "ops/c1_signal_daemon/leaf.py"}
+
+
+def test_copy_profile_preserves_service_prefixes(tmp_path):
+    dockerfile = tmp_path / "Dockerfile"
+    dockerfile.write_text("COPY core/a.py ops/b.py /app/\n", encoding="utf-8")
+    assert _dockerfile_copied_py_paths(dockerfile) == {"ops/b.py"}
+    from dataclasses import replace
+    assert copied_python_paths(replace(_profile(dockerfile=dockerfile),
+                                       copy_prefixes=("core/", "ops/"))) == {"core/a.py", "ops/b.py"}

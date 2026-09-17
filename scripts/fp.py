@@ -166,6 +166,7 @@ def main(argv: list[str] | None = None) -> int:
             record.data['metadata'] = report
             reports = []
             if pytest_task:
+                command += ['-p', 'scripts.pytest_junit_subtests']
                 if options.workers is not None:
                     command += ['-n', str(options.workers)]
                     if options.workers:

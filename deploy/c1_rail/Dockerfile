@@ -51,7 +51,7 @@ COPY ops/c1_rail/c1_rail_http_server.py ops/c1_rail/c1_rail_listener.py \
      ops/c1_rail/c1_rail_slippage.py ops/c1_rail/__init__.py \
      ./ops/c1_rail/
 COPY core/dd_protection.py core/dd_geometry.py core/firm_rules.py core/lifecycle.py \
-     core/historical_challenge.py core/calendar_evidence.py ./core/
+     core/historical_challenge.py core/calendar_evidence.py core/instrument_specs.py ./core/
 COPY core/lib/atomic_io.py core/lib/file_lock.py core/lib/mvd.py \
      core/lib/validation.py ./core/lib/
 

@@ -11,6 +11,8 @@ import shutil
 
 import pytest
 
+pytestmark = pytest.mark.usefixtures('isolated_home')
+
 RUNNER = Path(__file__).resolve().parents[1] / 'scripts/agent_handoff.py'
 _spec = importlib.util.spec_from_file_location('agent_handoff', RUNNER)
 AH = importlib.util.module_from_spec(_spec)
@@ -419,7 +421,7 @@ def test_cancellation_kills_descendant_when_leader_exits(harness):
 
 
 
-def test_receipts_live_outside_workspace(harness):
+def test_receipts_live_outside_workspace(harness, isolated_home):
     assert harness.run().returncode == 0
     record, = harness.records()
     root = handoff_root(harness.workspace)
@@ -429,6 +431,8 @@ def test_receipts_live_outside_workspace(harness):
     assert not (harness.workspace / '.agent-handoffs' / record['request_id']).exists()
     assert (root / record['request_id'] / 'record.json').is_file()
     assert root.is_relative_to(Path.home() / '.cache' / 'agent-handoffs')
+    assert root.is_relative_to(isolated_home)
+    assert not root.is_relative_to(harness.workspace)
 
 
 def test_streaming_digest_matches_bytes(tmp_path):
@@ -532,7 +536,8 @@ def test_nonzero_exit_terminates_surviving_descendants(harness):
     child = "import signal,time,pathlib,os; signal.signal(signal.SIGTERM, signal.SIG_IGN); pathlib.Path('ready').write_text(str(os.getpid())); time.sleep(60)"
     harness.worker.write_text(
         "import json, subprocess, sys, time, pathlib\n"
-        "print(json.dumps({'type':'system','subtype':'init','session_id':'fixture-session'}), flush=True)\n"
+        "sid = sys.argv[sys.argv.index('--session-id') + 1]\n"
+        "print(json.dumps({'type':'system','subtype':'init','session_id':sid}), flush=True)\n"
         "subprocess.Popen([sys.executable, '-c', " + repr(child) + "])\n"
         "while not pathlib.Path('ready').exists():\n"
         "    time.sleep(0.05)\n"
@@ -1034,7 +1039,7 @@ def test_windows_job_tracks_descendant_after_leader_exits(harness):
         "prompt = sys.argv[-1]\n"
         "rid = re.search(r'Request ID: ([\\w-]+)', prompt).group(1)\n"
         "sha = re.search(r'Packet SHA256: (\\w+)', prompt).group(1)\n"
-        "sid = 'fixture-session'\n"
+        "sid = sys.argv[sys.argv.index('--session-id') + 1]\n"
         "print(json.dumps({'type':'system','subtype':'init','session_id':sid}), flush=True)\n"
         "subprocess.Popen([sys.executable, '-c', " + repr(child) + "])\n"
         "while not pathlib.Path('child-ready').exists():\n"

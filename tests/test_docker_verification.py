@@ -83,6 +83,35 @@ def test_foreign_cid_is_never_removed(tmp_path, monkeypatch):
     assert not record.data['cleanup']['ok'] and record.data['verification_exit_code'] != 0
 
 
+@pytest.mark.parametrize('workers', [0, 2])
+def test_every_worker_mode_requests_complete_reports(tmp_path, monkeypatch, workers):
+    module = runner()
+    repo = make_repo(tmp_path)
+    extra = repo / 'tools/local_verification/requirements-extra.txt'
+    extra.parent.mkdir(parents=True)
+    extra.write_text('extra')
+    (repo / 'requirements-ops.lock').write_text('lock')
+    monkeypatch.setattr(module, 'ROOT', repo)
+    monkeypatch.setattr(module, 'find_docker', lambda explicit: sys.executable)
+    def preflight(owner, arguments, **kwargs):
+        if arguments[0] == 'run':
+            return json.dumps({'lock_sha256': module.recorder.digest(b'lock'),
+                               'extra_sha256': module.recorder.digest(b'extra')})
+        return '' if arguments[0] == 'ps' else 'fixture'
+    commands = []
+    def capture_create(owner, arguments):
+        commands.append(arguments)
+        raise RuntimeError('stop at container boundary')
+    monkeypatch.setattr(module.DockerOwner, 'call', preflight)
+    monkeypatch.setattr(module.DockerOwner, 'create', capture_create)
+    assert module.main(['--output', str(tmp_path / 'evidence'), '--workers', str(workers)]) != 0
+    command, = commands
+    for required in ('scripts.pytest_junit_subtests', '--junitxml=/evidence/junit.xml',
+                     '--cov-report=json:/evidence/coverage.json', '--basetemp=/tmp/pytest'):
+        assert required in command
+    assert ('--dist=loadscope' in command) == bool(workers)
+
+
 @pytest.mark.skipif(os.environ.get('FP_TEST_DOCKER') != '1', reason='explicit local Docker integration opt-in')
 @pytest.mark.parametrize('boundary', ['attach', 'create-response'])
 def test_real_interruption_removes_owned_container_only(tmp_path, monkeypatch, boundary):
