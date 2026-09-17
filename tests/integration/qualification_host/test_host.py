@@ -56,6 +56,10 @@ def test_permission_weakening_is_detected(installed):
 def test_installed_source_and_runtime_are_protected(installed):
     path, manifest, doc = installed
     assert trusted_roots(doc)
+    observations = json.loads((path.parent / 'evidence/host-observations.json').read_bytes())
+    assert observations['source_commit'] == manifest['source']['commit']
+    assert observations['runtime']['packages'] == manifest['runtime']['packages']
+    assert observations['facts']['docker']['Version'] == '28.0.4'
     import hashlib
     for relative, expected in manifest['source']['files'].items():
         if expected == 'deleted':

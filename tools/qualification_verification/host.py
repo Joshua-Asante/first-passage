@@ -24,6 +24,15 @@ def load_config():
     return json.loads((ROOT / 'tools/qualification_verification/host.json').read_bytes())
 
 
+def public_observations(manifest):
+    """Explicit export allowlist, separate from private resource ownership."""
+    return {'schema': 'qualification_host_observations/v1',
+            **{name: manifest[name] for name in ('run_id', 'host_config_sha256',
+                'facts', 'runtime', 'roles')},
+            'source_commit': manifest['source']['commit'],
+            'source_fingerprint': manifest['source']['fingerprint']}
+
+
 def validate_inputs(source, config):
     if config['schema'] != 'qualification_test_host/v1':
         raise ValueError('host schema')
@@ -264,6 +273,8 @@ def provision(source, *, manifest_output=None):
                     'import importlib.metadata as m, json; '
                     'print(json.dumps(sorted((d.metadata["Name"], d.version) for d in m.distributions())))']))}
             save(manifest_path, manifest)
+            save(root / 'evidence/host-observations.json', public_observations(manifest),
+                 exclusive=True, mode=0o400)
         except BaseException as exc:
             manifest['state'] = 'setup_failed'
             manifest['failure'] = type(exc).__name__

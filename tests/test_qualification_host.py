@@ -60,3 +60,19 @@ def test_cleanup_tree_refuses_link_without_removing_target(tmp_path):
     with pytest.raises(ValueError, match='link'):
         host.inspect_tree(tree)
     assert target.read_text() == 'keep'
+
+
+def test_public_observations_exclude_private_manifest_fields():
+    host = host_module()
+    manifest = {'run_id': 'a' * 32, 'host_config_sha256': 'b' * 64,
+                'facts': {'python': '3.12.3', 'docker': {'Version': '28.0.4'}},
+                'runtime': {'packages': [['cryptography', '50.0.1']]},
+                'roles': {'qclient': 61000, 'qexec': 61001, 'qg5': 61002},
+                'source': {'commit': 'c' * 40, 'fingerprint': 'd' * 64},
+                'resources': [{'path': '/private/TEST_ONLY.key'}],
+                'private_future_field': 'do not export'}
+    assert hasattr(host, 'public_observations'), 'non-secret host inventory export is missing'
+    report = host.public_observations(manifest)
+    assert report['runtime']['packages'] == [['cryptography', '50.0.1']]
+    assert report['facts']['docker']['Version'] == '28.0.4'
+    assert 'resources' not in report and 'private_future_field' not in report

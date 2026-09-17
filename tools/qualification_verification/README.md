@@ -31,6 +31,11 @@ claim. Validate fresh hosts twice before accepting a new configuration. The CI
 matrix performs two independent host-readiness runs; it does not enable a required
 qualification acceptance check.
 
+`evidence/host-observations.json` exports the observed package/runtime inventory,
+Docker/image inventory, role UIDs and source/configuration identities through an
+explicit allowlist. The private resource-ownership manifest and credentials are
+excluded; this evidence survives hosted-VM destruction as a CI artifact.
+
 ## Administrator commands
 
 Run from an exact candidate checkout on that disposable host:
