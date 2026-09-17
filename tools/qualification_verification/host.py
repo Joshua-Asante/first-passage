@@ -58,12 +58,37 @@ def validate_inputs(source, config):
     if config['schema'] != 'qualification_test_host/v1':
         raise ValueError('host schema')
     resolve_roles(config)
+    validate_executable_paths(config)
     if not isinstance(config.get('locks'), dict) or set(config['locks']) != REQUIRED_LOCKS:
         raise ValueError('host configuration must identify every required lock')
     for relative, expected in config['locks'].items():
         path = resource_path(source, relative)
         if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
             raise ValueError('lock digest mismatch: ' + relative)
+
+
+def validate_executable_paths(config):
+    for name in ('python', 'docker'):
+        value = config.get(name)
+        if (not isinstance(value, str) or not PurePosixPath(value).is_absolute()
+                or '..' in PurePosixPath(value).parts or '\\' in value or '\0' in value):
+            raise ValueError('absolute executable path required: ' + name)
+
+
+def protected_executable(value):
+    path = Path(value)
+    # Ubuntu's python3 is a system-owned symlink. Protect both the directory
+    # controlling that alias and its resolved executable, without PATH lookup.
+    protected(path.parent)
+    target = protected(path.resolve(strict=True))
+    if not target.is_file() or not os.access(target, os.X_OK):
+        raise ValueError('regular executable required')
+
+
+def validate_host_executables(config):
+    validate_executable_paths(config)
+    for name in ('python', 'docker'):
+        protected_executable(config[name])
 
 
 def resource_path(root, relative):
@@ -122,7 +147,9 @@ def validate_owned_user(user, item, run_id, groups):
         raise ValueError('user ownership mismatch')
     memberships = {group.gr_name for group in groups if item['name'] in group.gr_mem}
     expected = {'docker'} if item['name'] == 'qexec' else set()
-    if memberships != expected:
+    # An interrupted setup may not have enrolled qexec in Docker yet. Missing
+    # intended authority is safe to retire; additional authority is drift.
+    if not memberships <= expected:
         raise ValueError('user supplementary groups changed')
 
 
@@ -288,6 +315,7 @@ def administrator():
 
 def host_facts(config):
     administrator()
+    validate_host_executables(config)
     release = platform.freedesktop_os_release()
     if (release['ID'], release['VERSION_ID'], platform.machine()) != (
             config['os_id'], config['os_release'], config['architecture']):
@@ -306,7 +334,7 @@ def host_facts(config):
             'docker_package': package, 'kernel': platform.release(),
             'packages': run(['/usr/bin/dpkg-query', '-W', '-f=${Package}=${Version}\n']),
             'images': run([config['docker'], '--host', 'unix:///var/run/docker.sock',
-                           'image', 'ls', '--no-trunc', '--format', '{{json .}}']),
+                           'image', 'ls', '--no-trunc', '--format', '{{json .ID}}']),
             # Container commands and labels may contain administrator secrets.
             # The public inventory needs only opaque daemon-assigned identities.
             'containers': run([config['docker'], '--host', 'unix:///var/run/docker.sock',
@@ -348,29 +376,35 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
     protected(parent)
     if run(['/usr/bin/findmnt', '-n', '-o', 'FSTYPE', '-T', str(parent)]) != config['filesystem']:
         raise ValueError('native ext4 required')
-    root = parent / uuid4().hex
-    root.mkdir(mode=0o711)
     source_snapshot = snapshot(source)
     if any(source_snapshot['files'].get(name) != digest for name, digest in config['locks'].items()):
         raise ValueError('lock digest mismatch in source snapshot')
+    if source_snapshot['files'].get('tools/qualification_verification/host.json') != config_sha256:
+        raise ValueError('host config digest mismatch in source snapshot')
+    root = parent / uuid4().hex
+    root.mkdir(mode=0o711)
     manifest = {'schema': 'qualification_host_ownership/v3', 'run_id': root.name,
                 'root': str(root), 'state': 'provisioning', 'resources': [],
                 'host_config_sha256': config_sha256,
                 'host_config': config, 'facts': facts, 'roles': roles, 'source': source_snapshot}
     manifest_path = root / 'ownership.json'
-    save(manifest_path, manifest, exclusive=True)
-    # Publish a usable recovery path before reserving identities. Failed output
-    # creation/writing must not strand an unadvertised host-wide reservation.
-    if manifest_output is not None:
-        fd = os.open(manifest_output, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
-        try:
-            with os.fdopen(fd, 'w') as stream:
-                stream.write(str(manifest_path) + '\n')
-                stream.flush()
-                os.fsync(stream.fileno())
-        except BaseException:
-            manifest_output.unlink()
-            raise
+    try:
+        save(manifest_path, manifest, exclusive=True)
+        # Publish recovery before reservation. No resources or children exist
+        # yet, so failures here can roll back this exact unreserved run root.
+        if manifest_output is not None:
+            fd = os.open(manifest_output, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+            try:
+                with os.fdopen(fd, 'w') as stream:
+                    stream.write(str(manifest_path) + '\n')
+                    stream.flush()
+                    os.fsync(stream.fileno())
+            except BaseException:
+                manifest_output.unlink()
+                raise
+    except BaseException:
+        shutil.rmtree(root)
+        raise
     print(f'Private ownership manifest: {manifest_path}', flush=True)
     write_reservation(reservation, {'run_id': root.name, 'manifest': str(manifest_path)})
     with ownership_lock(root):
@@ -489,6 +523,7 @@ def cleanup(manifest_path):
                 return receipt
             require_reservation_owner(reservation, manifest_path, manifest)
             stop_process_groups(root)
+            validate_host_executables(manifest['host_config'])
             uids = {r['id'] for r in manifest['resources'] if r['kind'] == 'user'}
             require_inactive_principals(uids)
             # Boundary containers/services are not produced by this host-only slice.

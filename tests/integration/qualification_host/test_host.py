@@ -53,6 +53,45 @@ def test_permission_weakening_is_detected(installed):
         data.chmod(original)
 
 
+def test_incomplete_docker_enrollment_is_retirable_but_not_ready(installed):
+    import grp
+    import pwd
+    from tools.qualification_verification import host
+    path, manifest, doc = installed
+    # Exercise the real intermediate useradd -> usermod state, restoring it
+    # before the other readiness checks or final host retirement run.
+    run(['/usr/bin/gpasswd', '--delete', 'qexec', 'docker'])
+    try:
+        user = pwd.getpwnam('qexec')
+        host.validate_owned_user(user,
+            {'kind': 'user', 'name': 'qexec', 'id': manifest['roles']['qexec']},
+            path.parent.name, grp.getgrall())
+        with pytest.raises(ValueError, match='group'):
+            identities(doc)
+    finally:
+        run(['/usr/sbin/usermod', '--append', '--groups', 'docker', 'qexec'])
+    assert identities(doc)['qexec']['uid'] == manifest['roles']['qexec']
+
+
+def test_host_executable_protection_and_system_alias(installed):
+    from tools.qualification_verification import host
+    path, manifest, _ = installed
+    host.validate_host_executables(manifest['host_config'])
+    executable = path.parent / 'evidence/unsafe-executable'
+    executable.write_text('#!/bin/sh\nexit 0\n')
+    try:
+        executable.chmod(0o777)
+        with pytest.raises(ValueError, match='unprotected'):
+            host.protected_executable(str(executable))
+        executable.chmod(0o600)
+        with pytest.raises(ValueError, match='executable'):
+            host.protected_executable(str(executable))
+        executable.chmod(0o700)
+        host.protected_executable(str(executable))
+    finally:
+        executable.unlink()
+
+
 def test_installed_source_and_runtime_are_protected(installed):
     path, manifest, doc = installed
     assert trusted_roots(doc)

@@ -38,6 +38,9 @@ its cffi/pycparser dependencies come from the existing operations lock. Only the
 x64 glibc wheel is admitted. Changed locks or installed versions fail setup;
 there is no ambient PATH selection, cache fallback, system package upgrade or
 Docker configuration change. Package installation targets a new owned venv only.
+Configured Python and Docker commands must be absolute paths. Setup and cleanup
+check their protected parent directories and executable targets, allowing the
+protected system Python symlink.
 
 The hosted runner label is **not an immutable OS image**. The manifest records
 actual OS/kernel/package inventory, Docker server identity, existing image IDs,
@@ -84,8 +87,11 @@ in separate processes after dropping supplementary groups, GID and UID.
 Readiness requires each primary GID to equal its configured UID, no supplementary
 groups for qclient/qg5, and only the Docker supplementary group for qexec.
 
-Setup binds the source snapshot's lock digests to the loaded configuration and
+Setup binds the source snapshot's configuration and lock digests to the loaded configuration and
 checks the staged locks again before creating or installing the environment.
+Failed manifest publication removes the unreserved run directory. Cleanup allows
+qexec's Docker enrollment to be absent after interrupted setup, while rejecting
+unexpected supplementary groups; readiness still requires Docker enrollment.
 Setup reserves the ownership manifest before each resource operation. It retains
 failed setup state and diagnostics; the CI `always()` cleanup step, or the explicit
 command below, retires verifiably owned resources. No worker, service or release

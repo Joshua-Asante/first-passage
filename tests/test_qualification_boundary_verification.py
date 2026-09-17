@@ -77,7 +77,7 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
         return {'status': 'retired'}
 
     monkeypatch.setattr(module.platform, 'system', lambda: 'Linux')
-    monkeypatch.setattr(module.os, 'geteuid', lambda: 0)
+    monkeypatch.setattr(module.os, 'geteuid', lambda: 0, raising=False)
     monkeypatch.setattr(module, 'protected', lambda path: path)
     monkeypatch.setattr(module, 'RunRecord', Record)
     monkeypatch.setattr(module, 'ownership_lock', observed_lock)
