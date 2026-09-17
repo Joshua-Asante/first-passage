@@ -41,11 +41,13 @@ def checkout(tmp_path):
     assert launcher.is_file(), "operations launcher has not been implemented"
     shutil.copy2(launcher, root / "scripts/fp.py")
     shutil.copy2(SOURCE / "scripts/record_verification.py", root / "scripts/record_verification.py")
+    shutil.copy2(SOURCE / "scripts/pytest_progress.py", root / "scripts/pytest_progress.py")
     shutil.copy2(SOURCE / "scripts/pytest_junit_subtests.py", root / "scripts/pytest_junit_subtests.py")
     shutil.copy2(SOURCE / "scripts/gate_manifest.py", root / "scripts/gate_manifest.py")
     (root / "requirements-ops.lock").write_text(
         f"pytest=={importlib.metadata.version('pytest')}\n", encoding="utf-8"
     )
+    (root / 'pyproject.toml').write_text('[tool.pytest.ini_options]\n')
     (root / '.gitignore').write_text('.cache/\n__pycache__/\n.pytest_cache/\n')
     subprocess.run(['git', 'init', '-q', str(root)], check=True)
     subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
@@ -283,3 +285,259 @@ def test_powershell_native_error_preference_preserves_exit_status(checkout, ops_
         cwd=checkout, env=env, capture_output=True, text=True, check=False,
     )
     assert result.returncode == 17, result.stderr
+
+@pytest.mark.parametrize('route', [('python', '-m', 'pytest'), ('test',), ('test-ops',)])
+def test_external_tests_use_checkout_configuration(checkout, ops_env, route):
+    for folder, value in [(checkout.parent, 'PARENT'), (checkout, 'CHECKOUT')]:
+        (folder / 'imports').mkdir()
+        (folder / 'imports/sentinel.py').write_text(f'VALUE = {value!r}\n')
+        (folder / 'pyproject.toml').write_text('[tool.pytest.ini_options]\npythonpath = ["imports"]\n')
+    (checkout / 'tests/ops').mkdir(parents=True)
+    external = checkout.parent / 'test_external.py'
+    external.write_text('from sentinel import VALUE\ndef test_root():\n    assert VALUE == "CHECKOUT"\n')
+    result = launch(checkout, '--env', ops_env, *route, str(external), '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    saved = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert saved['metadata']['pytest_config'] == str(checkout / 'pyproject.toml')
+    assert saved['metadata']['pytest_root'] == str(checkout)
+    assert saved['external_files']['before'][str(external)]
+    assert saved['external_files']['stable']
+
+
+@pytest.mark.parametrize('option', ['-c', '-c=', '--rootdir', '--rootdir='])
+@pytest.mark.parametrize('equivalent', [False, True])
+def test_explicit_pytest_configuration(checkout, ops_env, option, equivalent):
+    (checkout / 'pyproject.toml').write_text('[tool.pytest.ini_options]\n')
+    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
+    target = checkout if equivalent else checkout.parent
+    if option.startswith('-c'):
+        target = target / 'pyproject.toml'
+        if not equivalent:
+            target.write_text('[tool.pytest.ini_options]\n')
+    args = [option + str(target)] if option.endswith('=') else [option, str(target)]
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_ok.py', *args, '-q')
+    assert (result.returncode == 0) == equivalent, result.stdout + result.stderr
+    if not equivalent:
+        assert 'conflicting pytest' in result.stderr.lower()
+
+
+def test_mutated_external_test_cannot_pass_verification(checkout, ops_env):
+    (checkout / 'pyproject.toml').write_text('[tool.pytest.ini_options]\n')
+    external = checkout.parent / 'test_mutates.py'
+    external.write_text('from pathlib import Path\ndef test_mutation():\n    Path(__file__).write_text("# changed")\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', str(external), '-q')
+    assert result.returncode != 0
+    saved = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert saved['exit_code'] == 0 and saved['source_stable']
+    assert not saved['external_files']['stable']
+
+
+def test_existing_custom_junit_is_output_not_external_source(checkout, ops_env):
+    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
+    report = checkout.parent / 'old.xml'
+    report.write_text('old output')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest',
+                    'test_ok.py', '--junitxml', str(report), '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_delimited_external_selection_preserves_launcher_options(checkout, ops_env):
+    external = checkout.parent / 'test_outside.py'
+    external.write_text('def test_ok():\n    pass\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '-q', '--', str(external))
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_deliberate_overrides_are_retained(checkout, ops_env):
+    (checkout / 'alternate').mkdir()
+    (checkout / 'alternate/sentinel.py').write_text('VALUE = "OVERRIDE"\n')
+    (checkout / 'test_override.py').write_text('from sentinel import VALUE\ndef test_ok():\n    assert VALUE == "OVERRIDE"\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_override.py',
+                    '-o', 'pythonpath=alternate', '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    saved = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert 'pythonpath=alternate' in saved['command']
+
+
+def test_environment_config_conflict_is_rejected(checkout, ops_env):
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '-q',
+                    env={'PYTEST_ADDOPTS': '--rootdir=..'})
+    assert result.returncode != 0 and 'Conflicting pytest' in result.stderr
+
+@pytest.mark.parametrize('hidden', ['--rootdir=..', '-c\n../pyproject.toml'])
+def test_argument_files_cannot_bypass_checkout_contract(checkout, ops_env, hidden):
+    (checkout.parent / 'pyproject.toml').write_text('[tool.pytest.ini_options]\n')
+    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
+    (checkout / 'nested.args').write_text(hidden + '\ntest_ok.py\n')
+    (checkout / 'outer.args').write_text('@nested.args\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '@outer.args', '-q')
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert 'Conflicting pytest' in result.stderr
+
+
+def test_argument_file_external_tests_are_measured(checkout, ops_env):
+    external = checkout.parent / 'test_from_args.py'
+    external.write_text('from pathlib import Path\ndef test_mutate():\n    Path(__file__).write_text("changed")\n')
+    args = checkout.parent / 'selection.args'
+    args.write_text(str(external) + '\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '@' + str(args), '-q')
+    assert result.returncode != 0, result.stdout + result.stderr
+    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert record['exit_code'] == 0 and not record['external_files']['stable']
+
+
+@pytest.mark.parametrize('option', ['--junit-xml', '--junitxml='])
+def test_external_test_cannot_be_its_own_report(checkout, ops_env, option):
+    external = checkout.parent / 'test_overlap.py'
+    original = 'def test_ok():\n    pass\n'
+    external.write_text(original)
+    args = [option + str(external)] if option.endswith('=') else [option, str(external)]
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', str(external), *args, '-q')
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert external.read_text() == original
+    assert 'overlap' in result.stderr.lower()
+
+
+@pytest.mark.parametrize('syntax', ['$FP_TEST_CHECKOUT', '${FP_TEST_CHECKOUT}'])
+def test_root_variables_are_expanded_before_comparison(checkout, ops_env, syntax):
+    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_ok.py', '-q',
+                    env={'FP_TEST_CHECKOUT': str(checkout), 'PYTEST_ADDOPTS': '--rootdir=' + syntax})
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+@pytest.mark.parametrize('retarget', [False, True])
+def test_retargeted_external_symlink_cannot_pass(checkout, ops_env, retarget):
+    link = checkout.parent / 'test_selected.py'
+    old = checkout.parent / 'original.py'
+    new = checkout.parent / 'replacement.py'
+    old.write_text('from pathlib import Path\ndef test_retarget():\n'
+                   f'    p = Path({str(link)!r})\n    p.unlink()\n    p.symlink_to({str(new)!r})\n')
+    if not retarget:
+        old.write_text('def test_unchanged():\n    pass\n')
+    new.write_text(old.read_text())
+    try:
+        link.symlink_to(old)
+    except OSError:
+        pytest.skip('Symlink creation unavailable')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', str(link), '-q')
+    assert (result.returncode == 0) == (not retarget), result.stdout + result.stderr
+    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert record['exit_code'] == 0
+    assert record['external_files']['stable'] == (not retarget)
+    assert str(link) in record['external_files']['before']
+
+@pytest.mark.parametrize('overlap', [False, True])
+@pytest.mark.parametrize('syntax', ['variable', 'home'])
+def test_expanded_report_destinations(checkout, ops_env, overlap, syntax):
+    external = checkout.parent / 'test_report_path.py'
+    original = 'def test_ok():\n    pass\n'
+    external.write_text(original)
+    report = external if overlap else checkout.parent / 'result.xml'
+    value = '$FP_REPORT' if syntax == 'variable' else '~/' + report.name
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', str(external),
+                    '--junitxml=' + value, '-q', env={'FP_REPORT': str(report),
+                    'HOME': str(checkout.parent), 'USERPROFILE': str(checkout.parent)})
+    assert external.read_text() == original
+    assert (result.returncode == 0) == (not overlap), result.stdout + result.stderr
+    if overlap:
+        assert 'overlap' in result.stderr.lower()
+    else:
+        assert report.is_file()
+
+
+def test_hardlinked_report_cannot_overwrite_external_test(checkout, ops_env):
+    external = checkout.parent / 'test_hardlink.py'
+    original = 'def test_ok():\n    pass\n'
+    external.write_text(original)
+    report = checkout.parent / 'alias.xml'
+    os.link(external, report)
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', str(external),
+                    '--junitxml', str(report), '-q')
+    assert result.returncode != 0 and 'overlap' in result.stderr.lower()
+    assert external.read_text() == original
+
+
+@pytest.mark.parametrize('invalid', ['cycle', 'missing'])
+def test_invalid_argument_files_fail_before_pytest(checkout, ops_env, invalid):
+    if invalid == 'cycle':
+        (checkout / 'args.txt').write_text('@args.txt\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '@args.txt')
+    assert result.returncode != 0
+    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert record['status'] == 'not_started' and record['exit_code'] is None
+    assert record['error']
+
+
+def test_nested_argument_files_from_environment_are_recorded(checkout, ops_env):
+    external = checkout.parent / 'test_argument_ok.py'
+    external.write_text('def test_ok():\n    pass\n')
+    inner = checkout.parent / 'inner.args'
+    inner.write_text('--rootdir\n' + str(checkout) + '\n' + str(external) + '\n')
+    (checkout / 'outer.args').write_text('@' + str(inner) + '\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '-q',
+                    env={'PYTEST_ADDOPTS': '@outer.args'})
+    assert result.returncode == 0, result.stdout + result.stderr
+    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert str(external) in record['external_files']['before']
+    assert str(inner) in record['external_files']['before']
+    assert not any(a.startswith('@') for a in record['command'])
+
+
+@pytest.mark.parametrize('entry', ['config', 'override'])
+def test_configured_argument_files_cannot_hide_external_mutation(checkout, ops_env, entry):
+    external = checkout.parent / 'test_configured.py'
+    external.write_text('from pathlib import Path\ndef test_mutate():\n    Path(__file__).write_text("changed")\n')
+    (checkout / 'args.txt').write_text(str(external) + '\n')
+    if entry == 'config':
+        (checkout / 'pyproject.toml').write_text('[tool.pytest.ini_options]\naddopts = "@args.txt"\n')
+        args = []
+    else:
+        args = ['-o', 'addopts=@args.txt']
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', *args, '-q')
+    assert result.returncode != 0, result.stdout + result.stderr
+    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert record['exit_code'] == 0 and not record['external_files']['stable']
+    assert str(external) in record['external_files']['before']
+
+
+def test_existing_log_output_is_not_external_source(checkout, ops_env):
+    (checkout / 'test_logged.py').write_text('def test_ok():\n    import logging\n    logging.warning("observed")\n')
+    log = checkout.parent / 'existing.log'
+    log.write_text('old output')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_logged.py',
+                    '--log-file', str(log), '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert 'observed' in log.read_text()
+
+@pytest.mark.parametrize('option', ['-o', '-o=', '--override-ini='])
+def test_effective_addopts_override_precedes_config(checkout, ops_env, option):
+    (checkout / 'pyproject.toml').write_text('[tool.pytest.ini_options]\naddopts = "--rootdir=.."\n')
+    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
+    (checkout / 'args.txt').write_text('test_ok.py\n')
+    value = 'addopts=@args.txt'
+    args = [option + value] if option.endswith('=') else [option, value]
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', *args, '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_native_addopts_is_expanded_only_once(checkout, ops_env):
+    (checkout / 'pyproject.toml').write_text('[tool.pytest]\naddopts = ["-o", "addopts=@does-not-exist", "test_ok.py"]\n')
+    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_argument_file_preserves_symlink_parent_semantics(checkout, ops_env):
+    target = checkout.parent / 'target'
+    (target / 'sub').mkdir(parents=True)
+    link = checkout / 'link'
+    try:
+        link.symlink_to(target / 'sub', target_is_directory=True)
+    except OSError:
+        pytest.skip('Symlink creation unavailable')
+    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
+    (checkout / 'args.txt').write_text('--rootdir=..\n')
+    (target / 'args.txt').write_text('test_ok.py\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '@link/../args.txt', '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
