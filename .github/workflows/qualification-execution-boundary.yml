@@ -1,0 +1,69 @@
+name: Qualification disposable host readiness
+
+# Host readiness only. Required boundary acceptance is not cut over until the
+# real service, approved fixture producer and launch-to-G5 selection are integrated.
+on:
+  pull_request:
+    paths:
+      - 'tools/qualification_verification/**'
+      - 'scripts/qualification_boundary_*.py'
+      - 'tests/test_qualification_*.py'
+      - 'tests/integration/qualification_host/**'
+      - 'requirements-ops.lock'
+      - '.github/workflows/qualification-execution-boundary.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host-readiness:
+    name: Disposable host readiness (${{ matrix.host }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        host: [1, 2]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Provision protected TEST_ONLY host
+        run: |
+          sudo /bin/bash tools/qualification_verification/provision.sh \
+            --manifest-output "$RUNNER_TEMP/qualification-manifest"
+      - name: Doctor and real host permission tests
+        run: |
+          manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+          host_root="$(dirname "$manifest")"
+          sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
+          sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python \
+            scripts/qualification_boundary_verification.py --host-only --manifest "$manifest"
+      - name: Idempotent owned cleanup and export non-secret evidence
+        if: always()
+        run: |
+          if ! test -f "$RUNNER_TEMP/qualification-manifest"; then
+            echo 'Setup failed before ownership reservation; no resources to retire.'
+            exit 0
+          fi
+          manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+          host_root="$(dirname "$manifest")"
+          set +e
+          sudo /usr/bin/python3 -I tools/qualification_verification/cleanup.py --manifest "$manifest"
+          cleanup_status=$?
+          set -e
+          mkdir -p "$RUNNER_TEMP/qualification-evidence"
+          if sudo test -d "$host_root/evidence"; then
+            sudo cp -a "$host_root/evidence/." "$RUNNER_TEMP/qualification-evidence/"
+          fi
+          sudo find "$host_root" -maxdepth 1 -type f -name 'cleanup-*.json' \
+            -exec cp -- '{}' "$RUNNER_TEMP/qualification-evidence/" \;
+          sudo chown -R "$(id -u):$(id -g)" "$RUNNER_TEMP/qualification-evidence"
+          exit "$cleanup_status"
+      - name: Retain host-readiness evidence (no keys or private manifest)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: qualification-host-readiness-${{ matrix.host }}
+          path: ${{ runner.temp }}/qualification-evidence/
+          if-no-files-found: warn
+          retention-days: 14
