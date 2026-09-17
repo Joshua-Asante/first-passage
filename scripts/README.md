@@ -485,3 +485,12 @@ pytest's precedence, into the validated recorded command. The launcher clears
 pytest's later implicit addopts expansion to prevent hidden file selections.
 JUnit paths use pytest's variable/home expansion. Existing `--log-file` values
 are treated as outputs too, with the same source-overlap rejection.
+
+### Disposable qualification host
+
+[The disposable Linux host tooling](../tools/qualification_verification/README.md)
+provides administrator-owned TEST_ONLY installations, real role-access probes and
+manifest-scoped cleanup. `qualification_boundary_environment.py` owns prerequisite
+inspection; `qualification_boundary_verification.py` reuses RunRecord and rejects
+critical skips. Host readiness is separate from launch-to-G5 acceptance, which
+remains blocked on the boundary implementation and its approved fixture producer.
