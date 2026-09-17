@@ -471,7 +471,8 @@ def test_cleanup_without_account_commands_needs_no_new_cgroup(cleanup_attempt, m
     host, path, manifest, reservation = cleanup_attempt
     if resources == 'tree':
         (path.parent / 'code').mkdir()
-        manifest['resources'] = [{'kind': 'tree', 'path': 'code', 'uid': 0}]
+        manifest['resources'] = [{'kind': 'tree', 'path': 'code',
+                                 'uid': (path.parent / 'code').stat().st_uid}]
     elif resources == 'absent-accounts':
         manifest['resources'] = [{'kind': 'group', 'name': 'qclient', 'id': 61000},
                                  {'kind': 'user', 'name': 'qclient', 'id': 61000}]
