@@ -48,6 +48,8 @@ def main(argv=None):
                                        'ownership_manifest': str(manifest_path),
                                        'host_config_sha256': manifest['host_config_sha256']}
             try:
+                # Keep cleanup outside this context: cleanup acquires a new open file
+                # description for the same non-reentrant flock.
                 with ownership_lock(manifest_path.parent):
                     record.begin()
                     if record.data['before'] != manifest['source']:
@@ -67,6 +69,7 @@ def main(argv=None):
                                     '-q', '--tb=short', f'--junitxml={report}'], env=env, reports=[report])
                     require_tests(record.data['test_summary'])
             finally:
+                # The ownership_lock context has exited, including on check failure.
                 record.data['cleanup'] = cleanup(manifest_path)
         return record.data['verification_exit_code']
     except (OSError, ValueError) as exc:

@@ -1,4 +1,5 @@
 """Boundary wrapper must reject unsupported setups before running any tests."""
+from contextlib import contextmanager
 import importlib
 import json
 from pathlib import Path
@@ -30,3 +31,57 @@ def test_nonlinux_entry_point_fails_without_provisioning(monkeypatch):
     module = runner()
     monkeypatch.setattr(module.platform, 'system', lambda: 'Windows')
     assert module.main(['--test-only']) != 0
+
+
+def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatch):
+    module = runner()
+    manifest_path = tmp_path / 'run' / 'ownership.json'
+    manifest_path.parent.mkdir()
+    manifest_path.write_text(json.dumps({
+        'host_config_sha256': 'configured',
+        'source': {'commit': 'candidate'},
+    }))
+    events = []
+
+    @contextmanager
+    def observed_lock(root):
+        assert root == manifest_path.parent
+        events.append('lock-enter')
+        try:
+            yield
+        finally:
+            events.append('lock-exit')
+
+    class Record:
+        def __init__(self, *_args):
+            self.data = {'before': {'commit': 'candidate'}}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def begin(self):
+            events.append('begin')
+
+        def execute(self, *_args, **_kwargs):
+            self.data['test_summary'] = {
+                'collected': 1, 'passed': 1, 'failed': 0, 'errors': 0, 'skipped': 0,
+            }
+            self.data['verification_exit_code'] = 0
+
+    def observed_cleanup(path):
+        assert path == manifest_path
+        events.append('cleanup')
+        return {'status': 'retired'}
+
+    monkeypatch.setattr(module.platform, 'system', lambda: 'Linux')
+    monkeypatch.setattr(module.os, 'geteuid', lambda: 0)
+    monkeypatch.setattr(module, 'protected', lambda path: path)
+    monkeypatch.setattr(module, 'RunRecord', Record)
+    monkeypatch.setattr(module, 'ownership_lock', observed_lock)
+    monkeypatch.setattr(module, 'cleanup', observed_cleanup)
+
+    assert module.main(['--host-only', '--manifest', str(manifest_path)]) == 0
+    assert events == ['lock-enter', 'begin', 'lock-exit', 'cleanup']
