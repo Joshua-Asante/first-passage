@@ -149,6 +149,10 @@ def data_conditional_active(gate: dict, *, force: bool) -> bool:
 
 
 def run_cmd(cmd: list[str], *, dry_run: bool) -> int:
+    # Windows may resolve bare python against the base interpreter's directory
+    # before PATH, even from a venv. Keep manifest Python gates on this runtime.
+    if cmd and cmd[0] in {"python", "python3", "python.exe"}:
+        cmd = [sys.executable, *cmd[1:]]
     print("+", " ".join(cmd), flush=True)
     if dry_run:
         return 0

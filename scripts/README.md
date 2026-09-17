@@ -1,5 +1,101 @@
 # `scripts/` — gates and discipline CLIs
 
+## Local operations launcher
+
+Use the launcher from the checkout you intend to test. In PowerShell 7.3+:
+
+```powershell
+.\fp.ps1 doctor
+.\fp.ps1 test-ops -q
+.\fp.ps1 test -q -k gate_manifest
+.\fp.ps1 check
+.\fp.ps1 python -m pytest tests/test_fp_launcher.py -q
+.\fp.ps1 python -m pip check
+```
+
+The portable equivalent is `python -I scripts/fp.py doctor` (or any command
+above). Bootstrap Python needs only its standard library. Tasks use the selected
+operations virtual environment, not bootstrap Python. The launcher always runs
+tasks from its own checkout root, even when invoked by absolute path elsewhere.
+
+Environment selection, in order:
+
+1. `--env PATH` before the command, e.g. `.\fp.ps1 --env C:\envs\fp-ops doctor`.
+2. `FP_OPS_ENV`, if set.
+3. This checkout's `tmp/ops-env`.
+4. For a linked Git worktree without a local environment, the main checkout's
+   `tmp/ops-env`.
+
+Relative explicit paths resolve from the invoking directory. Invalid explicit
+or existing local environments fail rather than falling back. The launcher does
+not use `.venv`, install packages, or modify global PATH. Create a separate venv
+with a supported Python and install `requirements-ops.lock` with `--require-hashes`
+if an environment is missing. Select it with `--env` or `FP_OPS_ENV`.
+
+Before each command, the launcher checks that the interpreter starts, the venv
+excludes system site-packages, and all locked distribution versions match this
+checkout. `doctor` reports the interpreter, matched package count, and optional
+signing dependency. This is a version check, not a package-file integrity check,
+full import test, or guarantee of matching CI's operating system/Python version.
+
+Child processes receive the venv executable directory first on PATH, VIRTUAL_ENV,
+and disabled user site-packages; inherited PYTHONHOME/PYTHONPATH are removed.
+The caller's shell remains unchanged. Python gates explicitly use the gate
+runner's `sys.executable`, because Windows may resolve bare `python` subprocess
+names to a base installation before consulting PATH. Custom Python scripts
+should also use `sys.executable` for nested Python, or resolve an executable
+explicitly with `shutil.which`; the launcher cannot rewrite arbitrary scripts.
+
+`test` runs `tests/`, `test-ops` runs `tests/ops/`, and `check` invokes the existing
+manifest runner with `--tier check`. Subsequent arguments pass through unchanged;
+use `python -m pytest <paths>` for an exact test selection. Child exit status is
+returned; launcher setup failures return 2. Environment version mismatches block
+execution, so use the selected interpreter directly to repair its dependencies.
+
+### Automatic verification evidence
+
+`test`, `test-ops`, `python -m pytest ...`, and `check` automatically create a
+unique ignored `.cache/fp-verification/<timestamp-id>/` directory. Output streams
+remain visible and are retained alongside `record.json`. The record identifies
+the exact command, interpreter, locked versions, commit, dirty diff, hashes of
+tracked/nonignored untracked files, before/after source state, duration and exit
+status. Pytest adds `junit.xml` with counts, failures and skip reasons. An explicit
+user JUnit destination is preserved and its bytes are also retained in the evidence
+directory. Expected reports must exist, be refreshed by the run, parse correctly,
+and have counts consistent with testcase outcomes. `test_summary` contains collected,
+passed, failed, error and skipped counts; report errors prevent acceptance.
+Gate results remain in the full stdout/stderr logs and do not require JUnit.
+
+Schema version 2 reserves `record.json` before environment checks, then atomically
+replaces it as the run advances through `not_started`, `running`, and a final
+`completed`, `failed`, or `interrupted` state. A setup failure stays `not_started`
+with its error and nonzero verification result. A hard kill can leave `running`
+with a null result; that is incomplete evidence. A missing bootstrap interpreter
+or unwritable evidence directory cannot produce a record and fails visibly.
+
+The printed record path is the evidence to cite. Child failure codes are retained;
+a successful child with source drift returns 3, and incomplete output capture
+returns 4. Invalid expected reports return 5, failed Docker cleanup returns 6,
+and interruption returns 130. Only `completed` with verification exit zero is
+acceptance. Pipe draining stops three seconds after the direct child exits if a
+descendant retains its handles; the record then rejects acceptance. The recorder
+does not kill unrelated/background descendants. Keep files, index and HEAD stable
+while checking. Ignored inputs and external services are not fingerprinted;
+records describe the selected run, not all repository behavior. These local
+artifacts are not committed or uploaded automatically. `doctor` and arbitrary
+Python commands do not create verification records.
+
+For faster focused feedback, use the existing pytest-xdist installation:
+
+```powershell
+.\fp.ps1 --workers 2 python -m pytest tests/test_record_verification.py tests/test_fp_launcher.py -q
+```
+
+Workers are opt-in, bounded from 0 through 8, and use `loadscope` to group each
+module/class on one worker. Use 0 for serial execution. Startup overhead and
+imbalanced modules can outweigh parallelism; measure the same selection before
+choosing workers. Tests with shared resources may need serial execution.
+
 ## Gate composition and admission
 
 Composition authority is [`gates.yml`](gates.yml) via
