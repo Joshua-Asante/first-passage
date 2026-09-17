@@ -542,6 +542,43 @@ def test_cleanup_without_account_commands_needs_no_new_cgroup(cleanup_attempt, m
     assert host.cleanup(path)['already_retired']
 
 
+@pytest.mark.parametrize('relative', ['data', 'scratch'])
+@pytest.mark.parametrize('state', ['provisioning', 'setup_failed'])
+@pytest.mark.parametrize('drift', [None, 'owner', 'group', 'mode', 'contents', 'ready'])
+def test_cleanup_recovers_only_empty_initial_role_tree(
+        cleanup_attempt, monkeypatch, relative, state, drift):
+    host, path, manifest, reservation = cleanup_attempt
+    tree = path.parent / relative
+    tree.mkdir(mode=0o700)
+    if drift == 'contents':
+        (tree / 'unexpected').write_text('retain')
+    manifest['state'] = 'host_ready_boundary_unconfigured' if drift == 'ready' else state
+    manifest['resources'] = [{'kind': 'tree', 'path': relative, 'uid': 61001}]
+    host.save(path, manifest)
+    original_stat = Path.stat
+    # Windows cannot create Linux owners/modes. Keep real files and cleanup;
+    # model only the metadata left between the privileged mkdir and chown.
+    def metadata(target, *args, **kwargs):
+        if target == tree and kwargs.get('follow_symlinks') is not False:
+            info = original_stat(target, *args, **kwargs)
+            return SimpleNamespace(st_uid=61000 if drift == 'owner' else 0,
+                st_gid=61000 if drift == 'group' else 0,
+                st_mode=stat.S_IFDIR | (0o755 if drift == 'mode' else 0o700),
+                st_dev=info.st_dev)
+        return original_stat(target, *args, **kwargs)
+    monkeypatch.setattr(Path, 'stat', metadata)
+    result = host.cleanup(path)
+    if drift is None:
+        assert result['ok'], result
+        assert not tree.exists()
+        assert host.reservation_owner(reservation) is None
+        assert host.cleanup(path)['already_retired']
+    else:
+        assert not result['ok']
+        assert tree.exists()
+        assert host.reservation_owner(reservation) is not None
+
+
 def test_empty_registered_cgroup_without_kill_can_be_retired(tmp_path, monkeypatch):
     host = host_module()
     group = tmp_path / 'empty-group'

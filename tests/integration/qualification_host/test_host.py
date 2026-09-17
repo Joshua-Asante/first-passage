@@ -217,6 +217,40 @@ def test_provision_rejects_live_uid_without_account(owned_cleanup_fixture, role)
         process.wait(timeout=5)
 
 
+@pytest.mark.parametrize('relative', ['data', 'scratch'])
+def test_cleanup_after_kill_between_role_tree_mkdir_and_chown(owned_cleanup_fixture, relative):
+    import select
+    host, root, path, manifest = owned_cleanup_fixture
+    tree = root / relative
+    manifest['state'] = 'provisioning'
+    manifest['resources'] = [{'kind': 'tree', 'path': relative, 'uid': 62001}]
+    host.save(path, manifest)
+    script = '''
+import sys
+from pathlib import Path
+Path(sys.argv[1]).mkdir(mode=0o700)
+print('created', flush=True)
+sys.stdin.read()
+'''
+    child = subprocess.Popen([sys.executable, '-I', '-c', script, str(tree)],
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    try:
+        assert select.select([child.stdout], [], [], 10)[0], 'mkdir did not complete'
+        assert child.stdout.readline().strip() == 'created'
+        child.kill()
+        child.wait(timeout=5)
+        assert tree.stat().st_uid == tree.stat().st_gid == 0
+        result = host.cleanup(path)
+        assert result['ok'], result
+        assert not tree.exists()
+        assert host.reservation_owner(host.IDENTITY_STATE / 'reservation.json') is None
+        assert host.cleanup(path)['already_retired']
+    finally:
+        if child.poll() is None:
+            child.kill()
+            child.wait(timeout=5)
+
+
 @pytest.mark.parametrize('failure', ['writable-hop', 'unowned-link', 'cycle', 'dangling', None])
 @pytest.mark.parametrize('relative', [False, True])
 def test_real_executable_symlink_chain(owned_cleanup_fixture, failure, relative):

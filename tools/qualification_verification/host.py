@@ -146,9 +146,17 @@ def inspect_tree(path):
     return result
 
 
-def validate_owned_tree(path, uid):
-    if path.exists() and path.stat().st_uid != uid:
-        raise ValueError('tree owner mismatch')
+def validate_owned_tree(path, uid, *, allow_initial_owner=False):
+    if path.exists():
+        info = path.stat()
+        if info.st_uid != uid:
+            # mkdir precedes chown during setup. Only that empty, private
+            # administrator-owned intermediate is safe to retire on retry.
+            initial = (allow_initial_owner and info.st_uid == info.st_gid == 0
+                       and stat.S_ISDIR(info.st_mode) and stat.S_IMODE(info.st_mode) == 0o700
+                       and not any(path.iterdir()))
+            if not initial:
+                raise ValueError('tree owner mismatch')
     inspect_tree(path)
 
 
@@ -593,7 +601,9 @@ def cleanup(manifest_path):
                         raise ValueError('group has unrelated consumer')
                 else:
                     path = resource_path(root, item['path'])
-                    validate_owned_tree(path, item['uid'])
+                    validate_owned_tree(path, item['uid'], allow_initial_owner=(
+                        item['path'] in ('data', 'scratch')
+                        and manifest.get('state') in ('provisioning', 'setup_failed')))
             # Validate everything before removing anything; never follow a link.
             cleanup_group = None
             for item in reversed(manifest['resources']):

@@ -97,6 +97,10 @@ checks the staged locks again before creating or installing the environment.
 Failed manifest publication removes the unreserved run directory. Cleanup allows
 qexec's Docker enrollment to be absent after interrupted setup, while rejecting
 unexpected supplementary groups; readiness still requires Docker enrollment.
+For interrupted setup, cleanup also accepts the empty root-owned `0700` intermediate
+of `data` or `scratch` creation before ownership transfer. This exception applies
+only to provisioning/failed setup; populated trees, unexpected owners or modes,
+and completed-host ownership drift still fail closed.
 Cleanup creates a process group only when an existing account needs a deletion
 command. A never-used empty group can be removed without `cgroup.kill`; populated
 groups still require successful termination before retirement. This permits
