@@ -1,4 +1,4 @@
-# Local verification only; does not alter the operations or research locks.
+# Shared hosted/local verification; does not alter the operations or research locks.
 hypothesis==6.168.0
 sortedcontainers==2.4.0
 pytest-cov==7.0.0

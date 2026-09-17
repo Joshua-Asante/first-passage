@@ -3,7 +3,7 @@ from datetime import date
 import hashlib
 import os
 import weakref
-from dataclasses import dataclass
+from types import MappingProxyType
 from time import perf_counter, process_time
 
 from mc.simulation import EvaluationState
@@ -12,22 +12,47 @@ from .part_a import SyntheticPartARequest, _run_part_a
 from .provider import _ReplayProvider
 
 
-@dataclass(frozen=True)
-class _ExecutorBinding:
-    reference: object
-    contract: object
-    source: object
-    store: object
-    domain: object
-    wall_start: float
-    cpu_start: float
+class _ExecutorBinding(tuple):
+    """Immutable issuance data, including the original cumulative clocks."""
+    __slots__ = ()
+
+    def __new__(cls, reference, contract, source, store, domain, wall_start, cpu_start):
+        return tuple.__new__(cls, (reference, contract, source, store, domain, wall_start, cpu_start))
+
+    reference = property(lambda self: self[0])
+    contract = property(lambda self: self[1])
+    source = property(lambda self: self[2])
+    store = property(lambda self: self[3])
+    domain = property(lambda self: self[4])
+    wall_start = property(lambda self: self[5])
+    cpu_start = property(lambda self: self[6])
 
 
-_ISSUED_EXECUTORS={}
+def _executor_registry():
+    # The published inventory is read-only and is not the budget authority.
+    # This prevents record replacement/mutation, not arbitrary interpreter
+    # introspection. Protected execution still requires the service boundary.
+    issued = {}
+
+    def register(executor, contract, source, store, domain):
+        identity = id(executor)
+        if identity in issued:
+            raise ValueError('executor is already initialized; budget cannot reset')
+
+        def forget(reference):
+            if reference() is None and issued.get(identity, (None,))[0] is reference:
+                issued.pop(identity)
+
+        issued[identity] = _ExecutorBinding(weakref.ref(executor, forget),
+            contract, source, store, domain, perf_counter(), process_time())
+
+    def lookup(identity):
+        return issued.get(identity)
+
+    return MappingProxyType(issued), register, lookup
 
 
-def _forget_executor(identity):
-    _ISSUED_EXECUTORS.pop(identity,None)
+_ISSUED_EXECUTORS, _register_executor, _executor_binding = _executor_registry()
 
 
 def _initial_state(contract):
@@ -117,7 +142,7 @@ class ProductionExecutor:
         from .contract import require_validated_frozen_contract
         from .production_source import ProductionSource
         from .trust_domain import require_validated_trust_domain
-        issued=_ISSUED_EXECUTORS.get(id(self))
+        issued=_executor_binding(id(self))
         if issued is not None and issued.reference() is self:
             raise ValueError('executor is already initialized; budget and provider cannot reset')
         require_validated_frozen_contract(contract)
@@ -134,10 +159,7 @@ class ProductionExecutor:
         self.contract,self.source,self.store=contract,source,store
         self._trust_domain=domain
         self._consumed=set()
-        identity=id(self)
-        _ISSUED_EXECUTORS[identity]=_ExecutorBinding(
-            weakref.ref(self,lambda ref:_forget_executor(identity)),
-            contract,source,store,domain,perf_counter(),process_time())
+        _register_executor(self,contract,source,store,domain)
 
     @property
     def initial_state(self):
@@ -150,7 +172,7 @@ class ProductionExecutor:
         from .production_source import ProductionSource
         from .attempt import AttemptStore
         from .trust_domain import require_validated_trust_domain
-        binding=_ISSUED_EXECUTORS.get(id(self))
+        binding=_executor_binding(id(self))
         if (binding is None or binding.reference() is not self
                 or self.contract is not binding.contract
                 or self.source is not binding.source or type(self.source) is not ProductionSource
@@ -167,7 +189,7 @@ class ProductionExecutor:
 
     def _budget(self):
         self._checked_domain()
-        binding=_ISSUED_EXECUTORS[id(self)]
+        binding=_executor_binding(id(self))
         budget=self.contract.replay.budget
         remaining=budget.maximum_wall_seconds-(perf_counter()-binding.wall_start)
         if remaining<=0 or process_time()-binding.cpu_start>budget.maximum_cpu_seconds:

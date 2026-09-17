@@ -901,7 +901,11 @@ class AttemptStore:
                     "WHERE m.stage=?", (stage,),
                 ).fetchone()
                 if row["outcome"] == outcome and saved is not None and bytes(saved[0]) == manifest:
-                    return bytes(saved[1])
+                    receipt = json.loads(bytes(saved[1]))
+                    if (receipt.get("result_producer_scope") == validation_claim.producer_scope
+                            and receipt.get("result_attestation_digest") == validation_claim.attestation_digest
+                            and receipt.get("result_stages") == list(validation_claim.result_stages)):
+                        return bytes(saved[1])
                 raise AttemptConflict("result differs from the completed durable result")
             self._ensure_mutable(self._campaign(db))
             if row["state"] != "STARTED_IN_DOUBT":

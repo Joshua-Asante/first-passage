@@ -211,6 +211,34 @@ def test_result_manifest_and_receipt_commit_atomically_and_lost_receipt_recovers
         )
 
 
+@pytest.mark.parametrize('changed', [
+    {'attestation_digest': 'e' * 64},
+    {'producer_scope': 'ROTATED_RESULT_VALIDATOR'},
+    {'result_stages': ('LEGALITY', 'N1')},
+])
+@pytest.mark.parametrize('reopen', [False, True])
+def test_completed_retry_requires_exact_authentication_identity(tmp_path, changed, reopen):
+    store = open_store(tmp_path)
+    reserve_and_start(store)
+    manifest = canonical({'status': 'PASS'})
+    receipt = validated_commit(store, 'TB_E1', manifest, outcome='PASS', now=NOW)
+    if reopen:
+        store = open_store(tmp_path)
+    events = store.events()
+    fields = dict(campaign_id=store.campaign_id, contract_digest=store.contract_digest,
+                  stage='TB_E1', manifest_sha256=hashlib.sha256(manifest).hexdigest(),
+                  outcome='PASS', producer_scope='TEST_ONLY_RESULT_VALIDATOR',
+                  attestation_digest='c' * 64,
+                  result_stages=('LEGALITY', 'N1', 'N2', 'PART_B', 'PART_A'))
+    fields.update(changed)
+    claim = _issue_validated_result_claim(**fields)
+    with pytest.raises(AttemptConflict, match='result'):
+        store._commit_validated_result('TB_E1', manifest, outcome='PASS',
+                                      validation_claim=claim, now=NOW)
+    assert store.result('TB_E1')['receipt_bytes'] == receipt
+    assert store.events() == events
+
+
 def test_failed_receipt_insert_rolls_back_manifest_and_stage_transition(tmp_path):
     store = open_store(tmp_path)
     reserve_and_start(store)

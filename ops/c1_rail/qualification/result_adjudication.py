@@ -94,9 +94,14 @@ def _same_executable_value(actual, expected, module_globals, reference_globals, 
             and expected.__qualname__ in (
                 '_validation_provenance_registry.<locals>.register',
                 '_validation_provenance_registry.<locals>.require'))
+        executor_registry = (
+            reference_globals['__name__'] == 'c1_rail.qualification.production'
+            and expected.__qualname__ in (
+                '_executor_registry.<locals>.register',
+                '_executor_registry.<locals>.lookup'))
         return len(left) == len(right) and all(
             (type(a.cell_contents) is dict and type(b.cell_contents) is dict)
-            if provenance_registry and key == 'issued' else _same_executable_value(
+            if (provenance_registry or executor_registry) and key == 'issued' else _same_executable_value(
                 a.cell_contents, b.cell_contents, module_globals, reference_globals, seen)
             for key, a, b in zip(expected.__code__.co_freevars, left, right))
     if isinstance(expected, type):

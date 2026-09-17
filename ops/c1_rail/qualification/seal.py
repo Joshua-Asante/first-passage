@@ -137,7 +137,10 @@ def _require_attempt_store_binding(
         raise ResultValidationError("attempt journal binding cannot be verified") from exc
     if claim.reservation_event_digest != result.attempt_reservation_event_digest:
         raise ResultValidationError("attempt journal binding differs")
-    if precommit:
+    # A completed retry is checked against the durable manifest and full
+    # authentication identity under the commit lock. Its journal necessarily
+    # differs from the precommit snapshot, including after a boot-fence event.
+    if precommit and attempt_store.result("TB_E1") is None:
         if (status["event_head"] != result.attempt_journal_event_head
                 or status["event_count"] != result.attempt_journal_event_count):
             raise ResultValidationError("attempt journal binding differs")
@@ -927,7 +930,7 @@ def _reauthenticate(
     result: AuthenticatedResult, *, trusted_keys: Mapping[str, TrustedResultKey],
     now: datetime, trust_domain: object,
 ) -> AuthenticatedResult:
-    if not isinstance(result, AuthenticatedResult):
+    if type(result) is not AuthenticatedResult:
         raise ResultValidationError("authenticated result is required")
     verified = authenticate_result(
         result.result, result.canonical_bytes, trusted_keys=trusted_keys, now=now,
@@ -943,7 +946,7 @@ def authenticated_result_claim(
     now: datetime, trust_domain: object,
 ) -> ValidatedResultClaim:
     """Adapt an externally authenticated envelope to the journal commit boundary."""
-    _reauthenticate(
+    result = _reauthenticate(
         result, trusted_keys=trusted_keys, now=now,
         trust_domain=trust_domain,
     )
@@ -989,6 +992,8 @@ def commit_authenticated_result(
 ) -> bytes:
     """Reauthenticate and atomically commit the exact G5 envelope to G2."""
     domain = require_validated_trust_domain(trust_domain)
+    result = _reauthenticate(
+        result, trusted_keys=trusted_keys, now=now, trust_domain=domain)
     if (result.trust_domain_sha256 != domain.sha256
             or attempt_store.trust_domain_sha256 != domain.sha256):
         raise ResultValidationError("commit trust domain differs")
@@ -1037,7 +1042,7 @@ def seal_e1_pass(
     trust_domain: object,
 ) -> bytes:
     domain = require_validated_trust_domain(trust_domain)
-    _reauthenticate(
+    result = _reauthenticate(
         result, trusted_keys=result_trusted_keys, now=now,
         trust_domain=domain,
     )

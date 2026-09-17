@@ -4,6 +4,25 @@ Acceptance remains paused pending PR 420 and real execution-boundary integration
 This change does not establish executor-completion provenance or same-process isolation.
 No production qualification, production signing keys, deployment or host provisioning is involved.
 
+## Follow-up review of 9923449
+
+The four findings posted on the latest reviewed head were reproduced and repaired
+in this same isolated worktree. This follow-up preserves the acceptance pause above.
+
+| Related case | Disposition |
+| --- | --- |
+| Replaced CPU/wall origins | The public executor inventory is a read-only view. Budget checks use a privately owned issuance registry; rebinding the public view cannot change their authority. Issued bindings are immutable tuples, including against `object.__setattr__`. Duplicate initialization cannot restart the clocks. This is bounded mutation prevention, not protection against arbitrary interpreter introspection or execution-completion proof. |
+| Signing dependency configuration | Hosted tests install the canonical `tools/local_verification/requirements-extra.txt`, also used by the local verification image. The workflow no longer owns a duplicate cryptography pin. |
+| Completed-result identity | An identical manifest/outcome is insufficient: producer scope, authentication digest and ordered stage inventory must also match the durable receipt. Changed identities raise `AttemptConflict` without journal writes, including after reopen. |
+| Public lost-receipt recovery | Independent review found the precommit snapshot check prevented every public retry. Snapshot checks now apply only before a result is committed; completed retries reach the transactional identity comparison. Exact authenticated retries survive journal reopen and boot rotation; a newly signed authentication for the same result conflicts. |
+| Authentication object substitution | Claim, commit and seal boundaries require the exact `AuthenticatedResult` class and consume the freshly reauthenticated object. Tests reject subclass equality attacks independently at each boundary, and prove a caller-controlled digest field's equality cannot determine the claim digest. |
+
+Reproduction records under `.cache/fp-verification/`: the original twelve cases
+all failed as expected in `20260917T201645Z-3b2542c6f4bb`; fourteen focused cases
+passed in `20260917T201950Z-ac6f98594451`. Public retry cases then reproduced the
+related gap in `20260917T202217Z-371dc6905994` (two expected failures). Final
+revision-bound verification and hosted results are reported in the PR follow-up.
+
 ## Baseline and workflow
 
 Refreshed PR 415 head: `319ce56978d58156b13f0da474ce249f8e9e4d61`.

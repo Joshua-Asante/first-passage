@@ -27,6 +27,54 @@ def _meters(monkeypatch):
     return readings
 
 
+@pytest.mark.parametrize('resource', ['cpu', 'wall'])
+def test_issued_budget_origin_cannot_be_replaced(budget_setup, tmp_path, monkeypatch, resource):
+    setup = budget_setup
+    _, store, _ = _preflight(setup, tmp_path)
+    readings = _meters(monkeypatch)
+    executor = production._composition_executor(setup.contract, setup.source, store)
+    binding = production._ISSUED_EXECUTORS[id(executor)]
+    readings[resource] = getattr(setup.contract.replay.budget, f'maximum_{resource}_seconds') + 1
+    # A producer may read the inventory, but cannot replace an issued record.
+    with pytest.raises((TypeError, AttributeError)):
+        production._ISSUED_EXECUTORS[id(executor)] = production._ExecutorBinding(
+            binding.reference, binding.contract, binding.source, binding.store,
+            binding.domain, readings['wall'], readings['cpu'])
+    with pytest.raises(runner.NeedsContext, match='budget'):
+        executor._budget()
+
+
+def test_issued_budget_origin_cannot_be_mutated(budget_setup, tmp_path, monkeypatch):
+    setup = budget_setup
+    _, store, _ = _preflight(setup, tmp_path)
+    readings = _meters(monkeypatch)
+    executor = production._composition_executor(setup.contract, setup.source, store)
+    binding = production._ISSUED_EXECUTORS[id(executor)]
+    readings['wall'] = setup.contract.replay.budget.maximum_wall_seconds + 1
+    with pytest.raises((TypeError, AttributeError)):
+        object.__setattr__(binding, 'wall_start', readings['wall'])
+    with pytest.raises(runner.NeedsContext, match='budget'):
+        executor._budget()
+
+
+def test_rebinding_inventory_cannot_reset_budget_or_reinitialize(budget_setup, tmp_path, monkeypatch):
+    from types import MappingProxyType
+
+    setup = budget_setup
+    _, store, _ = _preflight(setup, tmp_path)
+    readings = _meters(monkeypatch)
+    executor = production._composition_executor(setup.contract, setup.source, store)
+    binding = production._ISSUED_EXECUTORS[id(executor)]
+    readings['cpu'] = setup.contract.replay.budget.maximum_cpu_seconds + 1
+    forged = production._ExecutorBinding(binding.reference, binding.contract, binding.source,
+        binding.store, binding.domain, readings['wall'], readings['cpu'])
+    monkeypatch.setattr(production, '_ISSUED_EXECUTORS', MappingProxyType({id(executor): forged}))
+    with pytest.raises(runner.NeedsContext, match='budget'):
+        executor._budget()
+    with pytest.raises(ValueError, match='already initialized'):
+        executor._initialize(setup.contract, setup.source, store, setup.domain)
+
+
 def _fast_replay(monkeypatch):
     """Replace expensive strategy/broker execution, preserving its typed output.
 
