@@ -2,7 +2,7 @@
 from decimal import Decimal, ROUND_CEILING
 from types import SimpleNamespace
 from dataclasses import dataclass
-from dataclasses import field
+from dataclasses import field, Field
 from dataclasses import is_dataclass
 from collections.abc import Mapping
 from enum import Enum
@@ -13,7 +13,7 @@ import __future__
 import json
 import marshal
 import sys
-from types import FunctionType, ModuleType
+from types import FunctionType, ModuleType, MemberDescriptorType, GetSetDescriptorType
 from typing import TypeVar, get_args, get_origin
 from fractions import Fraction
 import re
@@ -106,14 +106,21 @@ def _same_executable_value(actual, expected, module_globals, reference_globals, 
                 expected.__module__, expected.__qualname__) or not _same_executable_value(
                     actual.__bases__, expected.__bases__, module_globals, reference_globals, seen):
             return False
-        # Include added hooks such as __getattribute__, not just known methods.
-        def methods(cls):
-            return {name: value for name, value in vars(cls).items()
-                    if isinstance(value, (FunctionType, staticmethod, classmethod, property))}
-        left, right = methods(actual), methods(expected)
+        # Inspect raw namespaces, never invoking descriptors. Generated layout
+        # entries still participate: an injected data descriptor shadows instance
+        # fields even when every method's bytecode remains unchanged.
+        left, right = vars(actual), vars(expected)
         return left.keys() == right.keys() and all(_same_executable_value(
             left[name], value, module_globals, reference_globals, seen)
+            if name != '_abc_impl' else (type(left[name]) is type(value)
+                                        and type(value).__module__ == '_abc')
             for name, value in right.items())
+    if isinstance(expected, (MemberDescriptorType, GetSetDescriptorType)):
+        return (actual.__name__ == expected.__name__ and _same_executable_value(
+            actual.__objclass__, expected.__objclass__, module_globals, reference_globals, seen))
+    if isinstance(expected, Field) or type(expected).__name__ == '_DataclassParams':
+        return all(_same_executable_value(getattr(actual, name), getattr(expected, name),
+            module_globals, reference_globals, seen) for name in type(expected).__slots__)
     if isinstance(expected, (staticmethod, classmethod)):
         return _same_executable_value(actual.__func__, expected.__func__,
                                       module_globals, reference_globals, seen)
@@ -134,7 +141,10 @@ def _same_executable_value(actual, expected, module_globals, reference_globals, 
 
 
 def _verify_retained_executable_modules(by_module, required_modules, decision_modules):
-    """Bind every frozen code module to retained executable definitions.
+    """Detect drift in frozen code modules against retained definitions.
+
+    This is not isolation from arbitrary code in this interpreter and does not
+    prove that these definitions remained unchanged during an earlier execution.
 
     Evaluating module definitions in a private namespace reconstructs functions
     and dataclass constructors from verified bytes. It never replaces live

@@ -260,7 +260,16 @@ def require_validated_trust_domain(domain):
     raw=canonical_json_bytes(_domain_dict(domain))
     if raw!=issued[1] or domain.canonical_bytes!=raw or domain.sha256!=hashlib.sha256(raw).hexdigest():
         raise ValueError('validated trust domain fields changed')
+    _require_separate_result_seal_keys(domain.authority_class, domain.result_key_ids,
+        domain.seal_key_ids, domain.trusted_key_sha256)
     return domain
+
+
+def _require_separate_result_seal_keys(authority, results, seals, fingerprints):
+    if authority == 'OPERATOR' and (
+            set(results) & set(seals) or
+            {fingerprints[key] for key in results} & {fingerprints[key] for key in seals}):
+        raise ValueError('result and seal authorities require distinct IDs and public keys')
 
 
 def require_trusted_domain_key(domain,key_id,public_key):
@@ -299,6 +308,8 @@ def validate_qualification_trust_domain(domain_bytes,approval_bytes,trusted_keys
         if type(key.public_key) is not bytes or hashlib.sha256(key.public_key).hexdigest()!=key_fingerprints[key_id]:
             raise ValueError('domain key fingerprint differs from actual trusted public key')
         if key.revoked_at is not None and key.revoked_at<=now:raise ValueError('domain key revoked')
+    _require_separate_result_seal_keys(policy.authority_class,
+        keys_by_scope['result_key_ids'], keys_by_scope['seal_key_ids'], key_fingerprints)
     roles=_names(doc['required_artifact_roles'])
     if not set(policy.required_roles)<=set(roles):raise ValueError('mandatory artifact role omitted')
     historical=doc['accepted_historical_pins']

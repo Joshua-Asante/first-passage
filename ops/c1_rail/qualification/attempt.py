@@ -971,6 +971,31 @@ class AttemptStore:
             "validated result commits are controller-private; use the authenticated G5 commit boundary"
         )
 
+    def _commit_e1_seal(self, seal_bytes: bytes, *, manifest_bytes: bytes,
+                        authentication_sha256: str, now: datetime) -> bytes:
+        """Serialize G5's verified seal with VOID using the journal write lock.
+
+        This records an externally verified seal, not execution provenance.
+        Historical records survive invalidation; VOID forbids issuing even an
+        identical seal again. A retry while VALID returns the existing bytes.
+        """
+        seal = _canonical_input(seal_bytes, 'E1 seal')
+        manifest = _canonical_input(manifest_bytes, 'result manifest')
+        with self._write() as db:
+            if self._campaign(db)['validity'] != 'VALID':
+                raise TransitionError('VOID attempt cannot issue an E1 seal')
+            row = db.execute('SELECT s.outcome,m.body,r.body FROM stages s '
+                'JOIN manifests m USING(stage) JOIN receipts r USING(stage) '
+                "WHERE s.stage='TB_E1' AND s.state='COMPLETED'").fetchone()
+            if (row is None or row[0] != 'PASS' or bytes(row[1]) != manifest
+                    or json.loads(row[2]).get('result_attestation_digest') != authentication_sha256):
+                raise AttemptConflict('authenticated PASS is not committed in the durable journal')
+            saved = db.execute("SELECT body FROM events WHERE kind='E1_SEALED' ORDER BY seq").fetchall()
+            if any(_canonical(json.loads(row[0])['seal']) == seal for row in saved):
+                return seal
+            self._append_event(db, 'E1_SEALED', {'seal': json.loads(seal)}, _instant(now))
+        return seal
+
     def void(self, reason: str, *, now: datetime) -> dict[str, Any]:
         reason = _identifier(reason, "void reason")
         timestamp = _instant(now)

@@ -103,7 +103,7 @@ def path_inventory(path_rows, frozen):
                     "stage": stage,
                     "population": population,
                     "path_index": index,
-                    "panel_id": (f"panel-{flat_index // frozen.replay.part_a.paths_per_population_per_panel:03d}"
+                    "panel_id": (panel_record(frozen,flat_index // frozen.replay.part_a.paths_per_population_per_panel)["panel_id"]
                                  if stage == "PART_A" else None),
                     "seed_input_sha256": sha(canonical_json_bytes(
                         checkpoint_seed_input(
@@ -119,21 +119,18 @@ def path_inventory(path_rows, frozen):
 
 
 def checkpoint_seed_input(frozen, stage, population, path_index, panel_index):
-    controller_stage = "n1" if stage == "N1" else "n2"
-    return {
-        "schema": "qualification-seed-input/v1",
-        "contract_sha256": frozen.contract_sha256,
-        "trust_domain_sha256": frozen.trust_domain_sha256,
-        "root_rng_namespace": frozen.replay.root_rng_namespace,
-        "stage": controller_stage,
-        "population": population,
-        "panel_index": panel_index,
-        "path_index": path_index,
-        "purpose": "path",
-        "synthetic": True,
-        "seed": int(sha(f"{stage}:{population}:{panel_index}:{path_index}".encode())[:16], 16),
-        "source_session_ids_sha256": sha(population.encode()),
-    }
+    from c1_rail.qualification.orchestration import seed_input
+    return __import__('json').loads(seed_input(frozen,
+        stage='n1' if stage=='N1' else 'n2',
+        population='FULL' if stage=='PART_A' else population,
+        panel_index=panel_index,path_index=path_index,synthetic=True).canonical_bytes)
+
+
+def panel_record(frozen,index):
+    from c1_rail.qualification.orchestration import panel_identity
+    source=tuple(frozen.populations['FULL'])
+    identity=panel_identity(frozen,SimpleNamespace(index=index,source_session_ids=source))
+    return dict(panel_index=index,panel_id=identity,source_session_ids=list(source))
 
 
 def checkpoint_plan(checkpoint, inventory_document, frozen, exact_approval):
@@ -144,10 +141,13 @@ def checkpoint_plan(checkpoint, inventory_document, frozen, exact_approval):
     seed_inputs = [
         checkpoint_seed_input(
             frozen, row["stage"], row["population"], row["path_index"],
-            int(row["panel_id"].split("-")[-1])
+            index // frozen.replay.part_a.paths_per_population_per_panel
             if row["panel_id"] is not None else None)
-        for row in inventory_document["records"] if row["stage"] in stages
+        for index,row in enumerate([r for r in inventory_document["records"] if r["stage"] in stages])
     ]
+    if checkpoint=='PART_A':
+        from c1_rail.qualification.orchestration import _part_a_seeds
+        seed_inputs=[__import__('json').loads(s.canonical_bytes) for s in _part_a_seeds(frozen,True)]
     return {
         "schema": "e1_checkpoint_plan/v1",
         "checkpoint": checkpoint,
@@ -157,7 +157,9 @@ def checkpoint_plan(checkpoint, inventory_document, frozen, exact_approval):
         "exact_depth_approval_sha256": exact_approval,
         "horizon_sessions": frozen.replay.horizon_sessions,
         "seed_inputs": seed_inputs,
-        "extra": None,
+        "extra": ({'initial_panels':frozen.replay.part_a.initial_panels,
+                   'expanded_panels':frozen.replay.part_a.expanded_panels}
+                  if checkpoint=='PART_A' else None),
     }
 
 
@@ -352,7 +354,9 @@ def validate(case, *, mutate_checkpoint_plan=None):
                 if row["stage"] in retained_stages
             ],
             "outcomes": {stage: normalized.get(stage, {}) for stage in retained_stages},
-            "extra": {},
+            "extra": ({'panels':[panel_record(frozen,i) for i in range(
+                len(paths['PART_A']['REGIME'])//frozen.replay.part_a.paths_per_population_per_panel)]}
+                if checkpoint=='PART_A' else {}),
         }) if state == "COMPLETED" else None)
         checkpoint_snapshot.append({
             "checkpoint": checkpoint, "state": state,

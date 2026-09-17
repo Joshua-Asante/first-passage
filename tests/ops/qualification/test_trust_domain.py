@@ -129,6 +129,11 @@ def operator_case():
         part_a_initial_panels=100,part_a_expanded_panels=200)
     doc['workload_policy']['stage_population_depths']['PART_A']['REGIME']=[100,200]
     keys={'test':replace(keys['test'],authority_class='OPERATOR')}
+    seal=Ed25519PrivateKey.generate().public_key().public_bytes(
+        serialization.Encoding.Raw,serialization.PublicFormat.Raw)
+    keys['seal']=TrustedApprovalKey('seal',seal,'OPERATOR')
+    doc['seal_key_ids']=['seal']
+    doc['trusted_key_sha256']['seal']=hashlib.sha256(seal).hexdigest()
     return doc,policy,private,keys
 
 

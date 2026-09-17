@@ -15,6 +15,7 @@ from .contract import (
 )
 from .attempt import (
     AttemptStore, StageClaim, ValidatedResultClaim, _issue_validated_result_claim,
+    AttemptJournalError,
 )
 from .preflight import (
     PreflightReceipt, _is_reparse_point, preflight_binding_bytes,
@@ -242,6 +243,17 @@ def _validate_checkpoint_plan_inputs(
             or (plan["extra"] is not None and not isinstance(plan["extra"], dict))):
         raise ResultValidationError("checkpoint plan identity or execution policy differs")
     path_seed_digests: list[str] = []
+    # Derive the complete authorized inventory from F1, not from caller rows.
+    # These are the same canonical stream-address producers used at dispatch.
+    from .orchestration import _stage_seeds, _part_a_seeds
+    expected_seeds = (
+        _stage_seeds(contract, 'n1', synthetic) if checkpoint == 'N1' else
+        _stage_seeds(contract, 'n2', synthetic) if checkpoint == 'N2' else
+        _part_a_seeds(contract, synthetic) if checkpoint == 'PART_A' else ())
+    if canonical_json_bytes(plan['seed_inputs']) != canonical_json_bytes([
+            parse_canonical_json(seed.canonical_bytes, label='derived seed')
+            for seed in expected_seeds]):
+        raise ResultValidationError('checkpoint plan seed inputs differ from frozen derivation')
     for raw in plan["seed_inputs"]:
         seed = _fields(raw, {
             "schema", "contract_sha256", "root_rng_namespace", "stage",
@@ -279,6 +291,38 @@ def _validate_checkpoint_plan_inputs(
     if not matches:
         raise ResultValidationError(
             "checkpoint plan seed inputs differ from retained result inputs")
+
+
+def _validate_part_a_panels(contract, extra, inventory_records):
+    """Bind the retained panel order and source membership to frozen FULL.
+
+    This validates declared panel evidence, not execution of the sampler.
+    """
+    from types import SimpleNamespace
+    from .orchestration import panel_identity
+    extra = _fields(extra, {'panels'}, 'Part A panel evidence')
+    panels = extra['panels']
+    spec = contract.replay.part_a
+    records = [row for row in inventory_records if row['stage'] == 'PART_A']
+    if (type(panels) is not list or len(panels) not in
+            (spec.initial_panels, spec.expanded_panels)
+            or len(records) != len(panels) * spec.paths_per_population_per_panel):
+        raise ResultValidationError('Part A panel inventory differs from frozen depth')
+    full = contract.populations['FULL']
+    for index, panel in enumerate(panels):
+        panel = _fields(panel, {'panel_index', 'panel_id', 'source_session_ids'}, 'Part A panel')
+        sources = panel['source_session_ids']
+        if (type(panel['panel_index']) is not int or panel['panel_index'] != index
+                or type(sources) is not list or len(sources) != len(full)
+                or any(type(source) is not str or source not in full for source in sources)):
+            raise ResultValidationError('Part A panel source membership or order differs')
+        identity = panel_identity(contract, SimpleNamespace(index=index, source_session_ids=tuple(sources)))
+        if panel['panel_id'] != identity:
+            raise ResultValidationError('Part A panel source identity differs')
+        offset = index * spec.paths_per_population_per_panel
+        if any(row['panel_id'] != identity or row['population'] != 'REGIME' or row['path_index'] != path
+               for path, row in enumerate(records[offset:offset + spec.paths_per_population_per_panel])):
+            raise ResultValidationError('Part A panel path binding differs')
 
 
 def _expected_stage_counts(contract: Any) -> Mapping[str, Mapping[str, tuple[int, ...]]]:
@@ -727,6 +771,8 @@ def validate_result_envelope(
                     or not isinstance(receipt["extra"], dict)):
                 raise ResultValidationError("checkpoint retained evidence shape differs")
             checkpoint_receipts[name] = receipt
+            if name == 'PART_A':
+                _validate_part_a_panels(contract, receipt['extra'], inventory_records)
     try:
         decisions = adjudicator(path_outcomes, path_inventory)
     except Exception as exc:
@@ -1018,13 +1064,19 @@ def seal_e1_pass(
         trusted_keys=trusted_keys, now=now, trust_domain=domain,
         enrolled_key_ids=domain.seal_key_ids,
     )
-    return canonical_json_bytes({
+    sealed = canonical_json_bytes({
         "schema": SEAL_SCHEMA,
         "payload": parse_canonical_json(payload_bytes, label="seal payload"),
         "seal_record_sha256": hashlib.sha256(seal_record_bytes).hexdigest(),
         "seal_key_id": key_id,
         "trust_domain_sha256": domain.sha256,
     })
+    try:
+        return attempt_store._commit_e1_seal(sealed,
+            manifest_bytes=result.result.canonical_bytes,
+            authentication_sha256=result.authentication_sha256, now=now)
+    except AttemptJournalError as exc:
+        raise ResultValidationError(str(exc)) from exc
 
 
 __all__ = [
