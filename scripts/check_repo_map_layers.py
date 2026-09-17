@@ -1,145 +1,120 @@
 #!/usr/bin/env python3
-"""Fail if check_boundaries.py layer maps drift from scripts/repo_map_layers.yml.
+"""Schema gate for scripts/repo_map_layers.yml — the single layer-map definition.
 
-P5 of the 2026-08-23 pain-point charter. Does **not** make check_boundaries
-import REPO_MAP.md — the scanner keeps hard-coded dicts; this gate compares them
-to the machine sibling YAML.
+Gate id ``repo-map-layers`` (path-conditional, scripts/gates.yml). The scanner
+(scripts/check_boundaries.py) loads the same file at import, so there is no
+second copy to drift; this gate turns a bad edit into a readable verdict instead
+of a scanner traceback: required sections and types, prefixes end with ``/``,
+layers are known, an app prefix names its own directory, every
+``scripts_layer`` stem is a tracked ``scripts/<stem>.py`` (a stale override is
+dead configuration), and every prefix / flat root is a directory.
+
+History: created 2026-08-23 (pain-point packet P5) as a dict<->YAML drift
+compare while the scanner kept hard-coded copies; single-source since
+2026-09-17 (docs/adr/2026-06-05-monorepo-layer-boundaries.md §2.3 amendment).
 """
 from __future__ import annotations
 
 import argparse
-import ast
 import sys
 from pathlib import Path
 
-try:
-    import yaml
-except ImportError:  # stdlib-only fallback: minimal subset via safe_load not required
-    yaml = None  # type: ignore
+import yaml
 
 REPO = Path(__file__).resolve().parent.parent
-BOUNDARIES = REPO / "scripts" / "check_boundaries.py"
 LAYERS_YML = REPO / "scripts" / "repo_map_layers.yml"
+LAYERS = ("core", "governance", "lab", "ops")
+SECTIONS = {
+    "app_layer_prefix": dict,
+    "governance_prefixes": list,
+    "scripts_layer": dict,
+    "flat_import_roots": list,
+}
 
 
-def _load_boundaries_maps(path: Path) -> dict:
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    out: dict = {}
-    for node in tree.body:
-        if not isinstance(node, ast.Assign) or len(node.targets) != 1:
+def schema_problems(data: object) -> list[str]:
+    """Shape and value rules that need only the parsed file."""
+    if not isinstance(data, dict):
+        return ["top level is not a mapping"]
+    out: list[str] = []
+    for name, kind in SECTIONS.items():
+        value = data.get(name)
+        if not isinstance(value, kind) or not value:
+            out.append(f"{name}: missing or not a non-empty {kind.__name__}")
             continue
-        name = node.targets[0]
-        if not isinstance(name, ast.Name):
-            continue
-        if name.id not in (
-            "APP_LAYER_PREFIX",
-            "GOVERNANCE_PREFIXES",
-            "SCRIPTS_LAYER",
-            "FLAT_IMPORT_ROOTS",
-        ):
-            continue
-        out[name.id] = ast.literal_eval(node.value)
-    missing = {"APP_LAYER_PREFIX", "GOVERNANCE_PREFIXES", "SCRIPTS_LAYER", "FLAT_IMPORT_ROOTS"} - set(out)
-    if missing:
-        raise ValueError(f"check_boundaries.py missing assignments: {sorted(missing)}")
+        atoms = [*value.keys(), *value.values()] if kind is dict else list(value)
+        if not all(isinstance(x, str) and x for x in atoms):
+            out.append(f"{name}: every key and value must be a non-empty plain string")
+    out.extend(f"unknown section '{name}'" for name in set(data) - set(SECTIONS))
+    if out:
+        return out
+    app = data["app_layer_prefix"]
+    for prefix, layer in app.items():
+        if layer not in LAYERS or layer == "governance":
+            out.append(f"app_layer_prefix: '{prefix}' maps to unknown application layer '{layer}'")
+        elif prefix != f"{layer}/":
+            out.append(f"app_layer_prefix: '{prefix}' must be '{layer}/' (the dir is the layer)")
+    for prefix in data["governance_prefixes"]:
+        if not prefix.endswith("/"):
+            out.append(f"governance_prefixes: '{prefix}' must end with '/'")
+        if prefix in app:
+            out.append(f"governance_prefixes: '{prefix}' is already an application prefix")
+    for stem, layer in data["scripts_layer"].items():
+        if layer not in LAYERS:
+            out.append(f"scripts_layer: '{stem}' maps to unknown layer '{layer}'")
+        if not stem.isidentifier():
+            out.append(f"scripts_layer: '{stem}' is not a module stem (no path, no .py)")
+    for root in data["flat_import_roots"]:
+        if root.startswith("/") or root.endswith("/"):
+            out.append(f"flat_import_roots: '{root}' must be a relative dir without a trailing '/'")
+    for name in ("governance_prefixes", "flat_import_roots"):
+        seen: set[str] = set()
+        for item in data[name]:
+            if item in seen:
+                out.append(f"{name}: duplicate entry '{item}'")
+            seen.add(item)
     return out
 
 
-def _load_yml(path: Path) -> dict:
-    text = path.read_text(encoding="utf-8")
-    if yaml is not None:
-        data = yaml.safe_load(text)
-    else:
-        data = _parse_simple_yml(text)
-    if not isinstance(data, dict):
-        raise ValueError(f"{path} did not parse to a mapping")
-    return data
-
-
-def _parse_simple_yml(text: str) -> dict:
-    """Minimal YAML subset for this file only (no PyYAML required)."""
-    app: dict[str, str] = {}
-    gov: list[str] = []
-    roots: list[str] = []
-    scripts: dict[str, str] = {}
-    section: str | None = None
-    for raw in text.splitlines():
-        line = raw.split("#", 1)[0].rstrip()
-        if not line.strip():
-            continue
-        if not line.startswith(" ") and line.endswith(":"):
-            section = line[:-1].strip()
-            continue
-        if section == "app_layer_prefix" and ":" in line:
-            k, v = line.strip().split(":", 1)
-            app[k.strip()] = v.strip()
-        elif section == "governance_prefixes" and line.strip().startswith("- "):
-            gov.append(line.strip()[2:].strip())
-        elif section == "flat_import_roots" and line.strip().startswith("- "):
-            roots.append(line.strip()[2:].strip())
-        elif section == "scripts_layer" and ":" in line:
-            k, v = line.strip().split(":", 1)
-            scripts[k.strip()] = v.strip()
-    return {
-        "app_layer_prefix": app,
-        "governance_prefixes": gov,
-        "flat_import_roots": roots,
-        "scripts_layer": scripts,
-    }
-
-
-def compare(boundaries: dict, yml: dict) -> list[str]:
-    problems: list[str] = []
-    app_b = boundaries["APP_LAYER_PREFIX"]
-    app_y = yml.get("app_layer_prefix") or {}
-    if app_b != app_y:
-        problems.append(
-            f"APP_LAYER_PREFIX drift: boundaries={app_b!r} yml={app_y!r}"
-        )
-    gov_b = tuple(boundaries["GOVERNANCE_PREFIXES"])
-    gov_y = tuple(yml.get("governance_prefixes") or ())
-    if gov_b != gov_y:
-        problems.append(
-            f"GOVERNANCE_PREFIXES drift: boundaries={gov_b!r} yml={gov_y!r}"
-        )
-    roots_b = tuple(boundaries["FLAT_IMPORT_ROOTS"])
-    roots_y = tuple(yml.get("flat_import_roots") or ())
-    if roots_b != roots_y:
-        problems.append(f"FLAT_IMPORT_ROOTS drift: boundaries={roots_b!r} yml={roots_y!r}")
-    scr_b = boundaries["SCRIPTS_LAYER"]
-    scr_y = yml.get("scripts_layer") or {}
-    if scr_b != scr_y:
-        only_b = sorted(set(scr_b) - set(scr_y))
-        only_y = sorted(set(scr_y) - set(scr_b))
-        both = sorted(
-            k for k in set(scr_b) & set(scr_y) if scr_b[k] != scr_y[k]
-        )
-        problems.append(
-            "SCRIPTS_LAYER drift: "
-            f"only_in_boundaries={only_b} only_in_yml={only_y} "
-            f"value_mismatch={both}"
-        )
-    return problems
+def repository_problems(data: dict, repo_root: Path) -> list[str]:
+    """Rules that need the tree: overrides name tracked scripts; roots and prefixes are dirs."""
+    out: list[str] = []
+    for stem in data["scripts_layer"]:
+        if stem.isidentifier() and not (repo_root / "scripts" / f"{stem}.py").is_file():
+            out.append(f"scripts_layer: no scripts/{stem}.py for override '{stem}'")
+    for name in ("app_layer_prefix", "governance_prefixes", "flat_import_roots"):
+        for entry in data[name]:
+            if not (repo_root / entry).is_dir():
+                out.append(f"{name}: '{entry}' is not a directory under {repo_root}")
+    return out
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Exit 1 with every violation listed; 0 with a one-line summary."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--boundaries", type=Path, default=BOUNDARIES)
     parser.add_argument("--yml", type=Path, default=LAYERS_YML)
+    parser.add_argument("--repo-root", type=Path, default=REPO,
+                        help="tree for the existence checks (tests point tmp copies at it)")
     args = parser.parse_args(argv)
     try:
-        boundaries = _load_boundaries_maps(args.boundaries)
-        yml = _load_yml(args.yml)
-    except (OSError, ValueError, SyntaxError) as exc:
-        print(f"repo-map-layers: FAIL — {exc}", file=sys.stderr)
+        with args.yml.open(encoding="utf-8") as fh:
+            data = yaml.safe_load(fh)
+    except (OSError, yaml.YAMLError) as exc:
+        print(f"repo-map-layers: FAIL — cannot load {args.yml}: {exc}", file=sys.stderr)
         return 1
-    problems = compare(boundaries, yml)
+    problems = schema_problems(data)
+    if not problems:
+        problems = repository_problems(data, args.repo_root.resolve())
     if problems:
-        print("repo-map-layers: FAIL — maps drift", file=sys.stderr)
+        print(f"repo-map-layers: FAIL — {args.yml} breaks the layer-map schema", file=sys.stderr)
         for p in problems:
             print(f"  - {p}", file=sys.stderr)
         return 1
-    print("repo-map-layers: OK — check_boundaries maps match repo_map_layers.yml")
+    print("repo-map-layers: OK — "
+          f"{len(data['app_layer_prefix'])} app prefixes, "
+          f"{len(data['governance_prefixes'])} governance prefixes, "
+          f"{len(data['scripts_layer'])} script overrides, "
+          f"{len(data['flat_import_roots'])} flat roots")
     return 0
 
 

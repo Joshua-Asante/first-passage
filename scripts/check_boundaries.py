@@ -27,7 +27,9 @@ ops/) are physically relocated; governance is root-resident (docs/, .claude/,
 .github/, scripts/, root files) because moving it breaks tooling (REPO_MAP §2).
 `tests/` is contract-EXEMPT (a single suite imports core+lab+ops at once,
 ADR §8 Q-c). `scripts/` is root-resident but mixed-layer — classified per
-REPO_MAP §2.1 (the dict below). `.claude/worktrees/<name>/` is also EXEMPT: a
+`scripts/repo_map_layers.yml` (`scripts_layer`; REPO_MAP §2.1). The layer maps
+themselves live only in that file and are loaded below at import
+(`load_layer_maps`). `.claude/worktrees/<name>/` is also EXEMPT: a
 git worktree checked out there is a full, independent repo copy with its own
 core/lab/ops/tests — without this exemption its nested `tests/*.py` sits under
 a `.claude/` (governance) prefix instead of a bare `tests/` prefix, so the scan
@@ -55,6 +57,8 @@ import ast
 import sys
 from pathlib import Path
 
+import yaml
+
 # Floor shared with pyproject requires-python / CI matrix / .venv-research.
 MIN_PYTHON = (3, 11)
 
@@ -63,36 +67,27 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 EXEMPT_PREFIXES = ("tests/", "archive/", ".claude/worktrees/", ".worktrees/",
                    ".venv/", ".venv-research/", "venv/", "env/",
                    "third_party/")  # venv-class: untracked vendor / study trees
-APP_LAYER_PREFIX = {"core/": "core", "lab/": "lab", "ops/": "ops"}
-GOVERNANCE_PREFIXES = ("docs/", ".claude/", ".github/")
 
-# scripts/ is root-resident, mixed-layer (REPO_MAP §2.1).
-SCRIPTS_LAYER = {
-    # governance — discipline / gates
-    # (check_brief_evidence_coverage retired 2026-06-08 — ADR 2026-05-16-fixture-test-requirement Amendment)
-    "check_brief": "governance",
-    "archive_lab_analysis": "governance",
-    "check_boundaries": "governance", "check_data_manifests": "governance",
-    "check_pine_manifest": "governance", "check_skill_refs": "governance",
-    "check_path_liveness": "governance", "pine_check": "governance",
-    # parse_bar_export imports core/bar_export_loader only (governance->core legal)
-    "parse_bar_export": "governance",
-    "check_skills_no_constants": "governance",
-    "verify_lock_anchors": "governance", "sync_pine_to_worktree": "governance",
-    "sync_skills": "governance",
-    # lab — research
-    "mc_user_guardian": "lab",
-    "beta_cohesion_read": "lab",
-    "audit_notice_grade_k_correction": "lab",
-    "event_study_read": "lab",
-    "pine_lint": "lab",
-    "cost_geometry_pregate": "lab",
-    "check_cost_model_closed_world": "lab",
-    "parse_econ_export": "lab",
-    "diff_econ_calendar": "lab",
-    # ops — live-ops tooling (run_ecr / preprocess_pine_ecr_logs retired 2026-07-11)
-    "lock_event_hook": "ops",
-}
+# The layer maps have ONE definition, scripts/repo_map_layers.yml (ADR
+# 2026-06-05 §2.3, 2026-09-17), loaded at import. Resolved next to this file
+# because the tests re-root the scan; schema-gated by check_repo_map_layers.py.
+LAYER_MAPS_PATH = Path(__file__).resolve().parent / "repo_map_layers.yml"
+
+
+def load_layer_maps(path: Path = LAYER_MAPS_PATH) -> dict:
+    """The committed maps; shape and value rules belong to check_repo_map_layers.py."""
+    with path.open(encoding="utf-8") as fh:
+        return yaml.safe_load(fh)
+
+
+_LAYER_MAPS = load_layer_maps()
+APP_LAYER_PREFIX: dict[str, str] = dict(_LAYER_MAPS["app_layer_prefix"])
+GOVERNANCE_PREFIXES: tuple[str, ...] = tuple(_LAYER_MAPS["governance_prefixes"])
+# scripts/ is root-resident, mixed-layer (REPO_MAP §2.1); unlisted stems are governance.
+SCRIPTS_LAYER: dict[str, str] = dict(_LAYER_MAPS["scripts_layer"])
+# Import roots used by pyproject.toml, scripts/layer_bootstrap.py and the rail
+# entry points (REPO_MAP §2.2).
+FLAT_IMPORT_ROOTS: tuple[str, ...] = tuple(_LAYER_MAPS["flat_import_roots"])
 
 LEGAL_EDGES = {
     ("governance", "core"),
@@ -115,11 +110,6 @@ def layer_of_file(rel: str) -> str | None:
     if rel.startswith(GOVERNANCE_PREFIXES):
         return "governance"
     return "governance"  # other root-resident .py (none after the move)
-
-
-# Import roots used by pyproject.toml, scripts/layer_bootstrap.py and the rail
-# entry points. Mirror in repo_map_layers.yml and REPO_MAP section 2.2.
-FLAT_IMPORT_ROOTS = ("core", "lab", "ops", "ops/c1_rail", "ops/c1_signal_daemon", "scripts")
 
 
 def build_index() -> tuple[dict[str, tuple[str, ...]], list[tuple[str, tuple[str, ...]]]]:
