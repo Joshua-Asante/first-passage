@@ -1,6 +1,6 @@
 # Self-Service Capability Closure Implementation Plan
 
-> **Design amendment, 2026-09-17 UTC:** The [bounded platform-protection incident contract](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md) directs the next design assessment. Reassess ordinary ATM before custom protection infrastructure; retain uncertain-request blocks and no same-session strategy reactivation. Existing capability evidence remains valid within its scope, but this plan's incident assumptions need reconciliation before implementation. The amendment does not qualify any route.
+> **Investigatory proposal, 2026-09-17 UTC:** The [proposed bounded platform-protection ADR](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md) supplies a hypothetical alternative for the next ATM design assessment. It changes no effective authority or capability verdict. Evaluate current qualification against accepted contracts; mark any dependency on the proposed exception AMENDMENT_REQUIRED until explicit acceptance and governing-contract propagation. Preserve uncertain-request blocks and the no-same-session design restriction.
 
 > **For agentic workers:** Execute with superpowers:executing-plans; use superpowers:subagent-driven-development when bounded delegation is useful and authorized. Preserve the behavioral contract and integration owner. Steps use checkbox (`- [ ]`) syntax for tracking.
 

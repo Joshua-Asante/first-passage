@@ -1,6 +1,6 @@
 # Tradeify settlement and ambiguous-order feasibility
 
-> **Design amendment, 2026-09-17 UTC:** The [bounded platform-protection incident contract](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md) records the operator-directed revision: fence new strategy commands, allow only qualified pre-existing protection through isolated signal/control failures, retain uncertain-order blocks and prohibit same-session strategy reactivation. Reassess ordinary ATM plus a thin bridge under that boundary. Full governing-contract propagation is pending; no capability verdict or deployment approval changes here.
+> **Investigatory proposal, 2026-09-17 UTC:** The [proposed bounded platform-protection ADR](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md) records a candidate exception for assessing ordinary ATM plus a thin bridge. This notice does not amend this approved design or the governing incident contract. Any qualification depending on that exception remains AMENDMENT_REQUIRED until explicit acceptance and propagation. Uncertain-order blocks, the no-same-session design restriction and existing release gates remain; no capability verdict or deployment approval changes here.
 
 Date: 2026-09-16. Status: **OPERATOR-APPROVED BASE DESIGN; EVENING EXTENSION FOR REVIEW**.
 

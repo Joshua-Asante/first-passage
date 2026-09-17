@@ -7,7 +7,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Authors:** Joshua (direction) + Codex (assessment).
-**Amends:** The incident authority interpretation in the halt/resume contract and Phase 5 plan. Retains no same-session strategy reactivation.
+**Proposes to amend:** The incident authority interpretation in the halt/resume contract and Phase 5 plan. Retains the no-same-session strategy-reactivation design restriction; no effective contract changes yet.
 **Layer:** execution.
 
 ## §0 — Rule 0 reads and verification anchors
@@ -17,8 +17,8 @@ Read before authoring:
 - `ops/c1_rail/book_account_owner.py` at commit `b4aa8efb0ee8f6d40b5aa332d5bb850bfa8b68ac`: `_dispatch_action_locked` refuses `INTERVENTION`; `_halt_db` retains a durable halt and invalidates bootstrap authority; production transport is unavailable outside the explicit synthetic seam. `git diff b4aa8ef 95b37af -- ops/c1_rail/book_account_owner.py ops/c1_rail/book_policy.py` is empty.
 - `ops/c1_rail/book_policy.py` at that same commit: fixed-book policy, sizing and protected-rule definitions inspected. This amendment changes none of those constants or allocation rules.
 - `docs/spec/2026-09-14-tb-s3-halt-resume-contract.md` at `95b37afaad319cbebf421f8a89fa9e6d1e2bd732`: incident revokes normal and scheduled runtime sends; provider managers are separately inventoried actors. The current code and contract do not implement this amendment.
-- `docs/briefs/phase4-preparation/2026-09-16/capability-decision.md`, execution update in `.worktrees/self-service-capability-closure`, inspected 2026-09-17 at worktree HEAD `95b37af`: local R1 qualified; whole-route N1 and R2–R5 unproven; inline triggered trail and cancel/replace have scoped incompatibilities. This newer record supersedes the primary checkout's older assessment where stated. No new private acquisition was performed here.
-- Primary-checkout feasibility design and Phase 5 plan, inspected 2026-09-17, are untracked working documents. Primary HEAD is `c2e6eb2cbe159b60fdff7873b9e96aef943c46df`; it predates the referenced account-owner code. Do not use it as the qualified runtime baseline.
+- [Capability decision](../briefs/phase4-preparation/2026-09-16/capability-decision.md) at commit `95b37afaad319cbebf421f8a89fa9e6d1e2bd732`, inspected 2026-09-17: local R1 qualified; whole-route N1 and R2–R5 unproven; inline triggered trail and cancel/replace have scoped incompatibilities. No new private acquisition was performed here.
+- [Feasibility design](../superpowers/specs/2026-09-16-tradeify-settlement-order-feasibility-design.md) and [Phase 5 plan](../superpowers/plans/2026-09-16-phase5-attended-operations.md): published with this ADR at reachable commit `32a71bd6f27dcfc75d11b39c9db7cbaa7727bebb`. Original drafting used local copies; those local checkout identities are not verification anchors. Use the committed sources and checks below for reproduction.
 
 Primary NinjaTrader documentation inspected 2026-09-17:
 
@@ -32,7 +32,9 @@ Requiring every platform modification to stop on every incident made programmati
 
 **Decision driver:** select the smallest platform-supported execution behavior and assess its economic differences before specifying another custom subsystem.
 
-## §2 — Decision and replacement incident language
+## §2 — Proposed decision and replacement incident language
+
+**Effectiveness gate:** The following is candidate contract text for investigation, not an effective exception. Operator direction to reconsider the design and permission to publish do not establish acceptance of these detailed semantics. The accepted halt/resume and rail contracts continue to govern implementation and capability verdicts. Only after explicit acceptance and propagation to the governing owners may this text authorize dependent behavior; until then, record such dependencies as AMENDMENT_REQUIRED rather than QUALIFIED under the proposed exception.
 
 On an incident, durably stop new strategy commands for the account session. Do not re-enable strategy activity in that same account session, including after flatness, reconciliation, restart, restore, feed recovery or civil-date rollover. Fresh later-session authorization retains the existing settlement, identity, reconciliation and readiness gates.
 
@@ -63,9 +65,9 @@ Attended intervention begins on the alert; it does not mean waiting indefinitely
 
 | Alternative | Disposition |
 |---|---|
-| Stop every platform mutation after any incident | Superseded as the design objective for qualified signal/control faults; retains unnecessary pause coupling |
+| Stop every platform mutation after any incident | Proposed replacement for qualified signal/control faults; current governing requirements remain effective pending acceptance and propagation |
 | Continue anything called protective | Rejected: uncertain identity/quantity and duplicate exits can create exposure |
-| Custom trailing manager now | Deferred: missing pause capability no longer justifies it; only a demonstrated remaining economic/capability gap can justify added machinery |
+| Custom trailing manager now | Defer the design choice while assessing the proposed exception; pause requirements are not waived in current qualification |
 | Ordinary ATM plus thin command-and-observation bridge | Preferred candidate for qualification, not yet a sufficient or selected production route |
 
 The bridge retains one durable owner for admission, session restrictions, command attempts and uncertainty. It translates already authorized commands, binds platform identities, collects order/execution/manager observations with coverage limits, and alerts. It does not reproduce native trailing logic or claim exactly-once execution from local deduplication. Fence at the last strategy-command dispatch boundary, including downstream queues/reconnect replay; a dead daemon alone is not a fence. Already transmitted requests retain their possible effects.
@@ -101,19 +103,19 @@ Required trace assertions: daemon loss after established bracket leaves only aut
 
 ## §6 — Consequences and propagation
 
-The benefit is a smaller candidate execution bridge and removal of programmatic ATM pause as a universal requirement. The cost is explicit dependence on the selected platform manager and an attended intervention procedure while its state may continue changing. This contract does not promise prevention of every late fill or bound incident losses.
+If accepted and propagated, the benefit would be a smaller candidate execution bridge and removal of programmatic ATM pause as a universal requirement. The cost would be explicit dependence on the selected platform manager and an attended intervention procedure while its state may continue changing. The proposal does not promise prevention of every late fill or bound incident losses.
 
 Before implementation, propagate the authority split and no-same-session restriction together into the accepted halt/resume contract, rail E1/E2/E3 and L2 mappings, feasibility design, Phase 4/5/6 acceptance lists, arming/operating procedure and CAP-20260916. Preserve historical evidence and keep CAP as the capability-verdict owner. This amendment does not upgrade any CAP verdict.
 
-The primary-checkout planning documents receive a precedence notice pointing here. Full governing-contract propagation remains pending on a current accepted baseline; those files are absent from this older checkout. This ADR therefore remains Proposed, rather than claiming a reconciled implemented contract. The operator's design direction is recorded and needs no repeat permission to continue document reconciliation.
+The four planning/design documents carry investigatory notices, not precedence overrides. The governing contracts are present in this branch but have not been amended. This ADR remains Proposed and changes no current permission or acceptance criterion. Continued design reconciliation is within the operator's request; making the resulting exception effective requires explicit acceptance and propagation.
 
 ## §7 — Next bounded work
 
-Design/evidence only: select the exact ordinary ATM candidate, map the existing portfolio actions to its supported behavior, and return the §3 table with precise gaps and economic differences. First test the decisive separation of signal failure from ATM operation in an isolated authorized rehearsal, then the partial-fill/unknown-order cases. Do not build a custom trailing service merely to satisfy the superseded pause requirement. No new order drill, host change or deployment was performed in this task.
+Design/evidence only: select the exact ordinary ATM candidate, map the existing portfolio actions to its supported behavior, and return the §3 table with precise gaps and economic differences. Keep current-contract qualification separate from prospective qualification under this proposal. First test the decisive separation of signal failure from ATM operation in an isolated authorized rehearsal, then the partial-fill/unknown-order cases. Defer the custom-trailing design choice until this assessment; no current pause requirement is waived. No new order drill, host change or deployment was performed in this task.
 
 ## §10 — Audit hooks
 
-From the primary checkout:
+From a checkout containing this ADR:
 
 ```powershell
 git diff b4aa8ef 95b37af -- ops/c1_rail/book_account_owner.py ops/c1_rail/book_policy.py
@@ -121,14 +123,25 @@ git diff b4aa8ef 95b37af -- ops/c1_rail/book_account_owner.py ops/c1_rail/book_p
 git show 95b37af:docs/spec/2026-09-14-tb-s3-halt-resume-contract.md | Select-String 'INTERVENTION permits no new runtime broker mutations'
 # Expected: old contract present; full propagation is explicitly pending.
 rg -l '2026-09-17-bounded-platform-protection-incident-contract' docs/superpowers/plans/2026-09-16-phase5-attended-operations.md docs/superpowers/plans/2026-09-16-phase4-real-capability-qualification.md docs/superpowers/plans/2026-09-16-self-service-capability-closure.md docs/superpowers/specs/2026-09-16-tradeify-settlement-order-feasibility-design.md
-# Expected: all four planning documents contain the amendment notice.
+# Expected: all four planning documents contain the investigatory notice.
 ```
 
 ## Verification
 
-Run the brief-authoring mechanical checker through the operations launcher after `fp.ps1 doctor`. These checks validate the document structure and source/precedence anchors only; they do not qualify ATM or runtime behavior. No runtime suite is required for this documentation-only assessment.
+The earlier local-working-copy 5/5 result is withdrawn as evidence for the published artifact: its checkout and external checker were not portable verification anchors. Review repairs are based on reachable commit `32a71bd6f27dcfc75d11b39c9db7cbaa7727bebb` (original ADR blob `cf7503f2b627416ab78a3e5f67b8c49c17bf3ba2`). Final verification is posted to PR 416 after the repair commit, with the exact committed revision and ADR blob, avoiding a self-referential hash in this file.
 
-Executed 2026-09-17 on primary HEAD `c2e6eb2` plus these uncommitted documentation edits: `./fp.ps1 doctor` passed (62 locked packages matched); `./fp.ps1 python C:/Users/joshu/.codex/plugins/cache/personal/superpowers/6.3.0+codex.20260913005651/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md --type adr` passed 5/5 checks. Interpreter: `C:/Users/joshu/multi_firm_operations/tmp/ops-env/Scripts/python.exe`, Python 3.13.2. All three §10 source/reference checks produced their expected results. The no-index whitespace comparison against NUL emitted no whitespace-error diagnostics (exit 1 denotes the new-file difference; Git also warned of future LF-to-CRLF conversion). No runtime or complete gate-suite pass is claimed.
+Reproduce on that committed revision using repository-owned tooling:
+
+```powershell
+.\fp.ps1 doctor
+.\fp.ps1 python .claude/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md --type adr
+.\fp.ps1 python scripts/check_adr_graph.py
+git rev-parse HEAD
+git rev-parse HEAD:docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md
+git rev-parse HEAD:.claude/skills/brief-authoring/scripts/check_brief.py
+```
+
+These checks validate document structure and source references, not ATM capability or runtime behavior. No runtime or complete gate-suite pass is claimed.
 
 ## Change history
 

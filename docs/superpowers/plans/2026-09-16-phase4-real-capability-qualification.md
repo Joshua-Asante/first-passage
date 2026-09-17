@@ -1,6 +1,6 @@
 # Phase 4 Real Capability Qualification Implementation Plan
 
-> **Design amendment, 2026-09-17 UTC:** Apply the [bounded platform-protection incident contract](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md) when reassessing normal primitives and incident behavior. Qualify ordinary ATM plus a thin command-and-observation bridge before proposing custom trailing infrastructure. Programmatic ATM pause is no longer a universal requirement; uncertainty, protection identity/quantity, economic fidelity and no-same-session reactivation remain gates. Governing-contract propagation is pending.
+> **Investigatory proposal, 2026-09-17 UTC:** Assess ordinary ATM plus a thin bridge against the hypothetical boundary in the [proposed bounded platform-protection ADR](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md). The ADR grants no effective exception and removes no current qualification requirement. Continue to use the accepted contracts for qualification verdicts; any capability that depends on the proposed exception remains AMENDMENT_REQUIRED until explicit acceptance and governing-contract propagation. Keep that prospective assessment separate from production qualification.
 
 > **For agentic workers:** Execute with superpowers:executing-plans; use superpowers:subagent-driven-development when bounded delegation is useful and authorized. Preserve the behavioral contract and integration owner. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -10,7 +10,7 @@
 
 **Tech Stack:** Existing Python signal daemon and listener, retained observations and durable journals, settlement verifier, instrument records, policy/runtime fingerprint tooling, pytest and private evidence files. No new service, evidence database, route failover or general workflow engine.
 
-**Spec:** [Deployment phase breakdown](2026-09-15-deployment-phase-breakdown.md), [Phase 3 plan](2026-09-16-phase3-simplified-qualification.md), and the approved [settlement/order-feasibility design, PR 411](https://github.com/Joshua-Asante/first-passage/pull/411). Read the accepted successors of the Track B umbrella, rail-extension contract, attended-settlement contract and Track A A9 funding checkpoint before execution. Their inspected copies reside in `.worktrees/phase3-f1-preparation` and `.worktrees/tradeify-feasibility-design`; those worktrees are references, not execution baselines.
+**Spec:** [Settlement/order-feasibility design](../specs/2026-09-16-tradeify-settlement-order-feasibility-design.md), [Track B umbrella](../../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md), [final-validation preregistration](../../briefs/pre-registration/2026-09-12-track-b-final-validation-prereg.md), [rail-extension contract](../../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md), [attended-settlement contract](../../spec/2026-09-15-tradeify-attended-settlement-contract.md), and [Track A plan and A9 funding checkpoint](2026-09-10-track-a-m1-stage1-completion.md). These committed owners supply the E1/seal, D0 admission, separate D1/ORB decision, execution and funding prerequisites. Pin their accepted revisions and actual completion evidence before execution; a document's presence does not prove approval or completion. Local phase-summary drafts and worktree paths are not prerequisites.
 
 ## Global Constraints
 

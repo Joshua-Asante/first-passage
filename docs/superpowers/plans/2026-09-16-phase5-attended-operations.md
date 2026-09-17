@@ -1,6 +1,6 @@
 # Phase 5 Attended Operations Implementation Plan
 
-> **Design amendment, 2026-09-17 UTC:** Read the [bounded platform-protection incident contract](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md) before implementing this plan. Its operator-directed authority split replaces the blanket platform-pause objective below: new strategy commands stay fenced; specifically qualified pre-existing protection may continue through isolated signal/control faults. Unknown orders stay blocked and same-session strategy reactivation remains prohibited. Full governing-contract propagation and route qualification are pending; the older acceptance wording below is not an implementation-ready reconciled contract.
+> **Investigatory proposal, 2026-09-17 UTC:** The [proposed bounded platform-protection ADR](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md) describes a possible authority split for assessment only. It does not replace the accepted incident fence or authorize continuing protection. Explicit acceptance and governing-contract propagation must precede dependent implementation or acceptance traces. The no-same-session design restriction and uncertain-order blocks remain part of the proposed release; this notice grants no runtime authority.
 
 > **For agentic workers:** Execute with superpowers:executing-plans; use superpowers:subagent-driven-development when bounded delegation is useful and authorized. Preserve the behavioral contract and integration owner. Steps use checkbox (`- [ ]`) syntax for tracking.
 
