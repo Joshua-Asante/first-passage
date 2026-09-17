@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -116,6 +117,29 @@ def prepare(root: Path, environment: Path) -> tuple[Path, dict[str, str], dict]:
     return python, child_env, report
 
 
+def pytest_configuration_args(root: Path, args: list[str]) -> list[str]:
+    """Normalize checkout selection and reject competing explicit selections."""
+    result = []
+    iterator = iter(args)
+    for argument in iterator:
+        if argument == '--':
+            result.extend([argument, *iterator])
+            break
+        key, separator, value = argument.partition('=')
+        if key in ('-c', '--config-file', '--rootdir'):
+            if not separator:
+                value = next(iterator, '')
+        elif argument.startswith('-c') and not argument.startswith('--'):
+            key, value = '-c', argument[2:]
+        else:
+            result.append(argument)
+            continue
+        expected = root if key == '--rootdir' else root / 'pyproject.toml'
+        if not value or (root / value).resolve() != expected.resolve():
+            raise ValueError(f'Conflicting pytest {key}: expected {expected}, got {value!r}')
+    return ['-c', str(root / 'pyproject.toml'), '--rootdir=' + str(root), *result]
+
+
 def main(argv: list[str] | None = None) -> int:
     """Validate and run a task without changing the invoking shell's environment."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -166,27 +190,46 @@ def main(argv: list[str] | None = None) -> int:
             record.data['metadata'] = report
             reports = []
             if pytest_task:
-                command += ['-p', 'scripts.pytest_junit_subtests']
+                # Parse ambient arguments once, so they cannot silently override
+                # the checkout contract or escape the recorded command.
+                ambient = shlex.split(child_env.pop('PYTEST_ADDOPTS', ''))
+                command[3:] = pytest_configuration_args(root, [*ambient, *command[3:]])
+                report.update(pytest_config=str(root / 'pyproject.toml'), pytest_root=str(root))
+                external_candidates = {
+                    (root / arg.split('::', 1)[0]).resolve()
+                    for arg in command[3:] if not arg.startswith('-')
+                    and (root / arg.split('::', 1)[0]).is_file()
+                    and not (root / arg.split('::', 1)[0]).resolve().is_relative_to(root)
+                }
+                trailing = []
+                if '--' in command:
+                    delimiter = command.index('--')
+                    trailing, command = command[delimiter:], command[:delimiter]
+                pytest_options = command[3:]
+                command += ['-p', 'scripts.pytest_junit_subtests', '-p', 'scripts.pytest_progress']
+                child_env['FP_PYTEST_PROGRESS_DIR'] = str(output)
+                child_env['FP_PYTEST_PROGRESS_RUN'] = record.data['run_id']
                 if options.workers is not None:
                     command += ['-n', str(options.workers)]
                     if options.workers:
                         command += ['--dist=loadscope']
                 destination = None
-                for index, argument in enumerate(options.args):
+                for index, argument in enumerate(pytest_options):
                     if argument in ('--junitxml', '--junit-xml'):
-                        if index + 1 == len(options.args):
+                        if index + 1 == len(pytest_options):
                             raise ValueError('JUnit destination is missing')
-                        destination = options.args[index + 1]
+                        destination = pytest_options[index + 1]
                     elif argument.startswith(('--junitxml=', '--junit-xml=')):
                         destination = argument.split('=', 1)[1]
                 if destination is None:
                     destination = str(output / 'junit.xml')
                     command += ['--junitxml=' + destination]
                 reports = [(root / destination).resolve()]
+                record.track_external_files(external_candidates - set(reports))
             with tempfile.TemporaryDirectory(prefix='fp-pytest-') as scratch:
                 if pytest_task and not any(a == '--basetemp' or a.startswith('--basetemp=') for a in options.args):
                     command += ['--basetemp=' + str(Path(scratch) / 'pytest')]
-                record.execute(command, env=child_env, reports=reports)
+                record.execute(command + (trailing if pytest_task else []), env=child_env, reports=reports)
         return record.data['verification_exit_code']
     except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
         print(f"fp: {exc}", file=sys.stderr)

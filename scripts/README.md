@@ -380,3 +380,90 @@ Risk/sizing, validation, gate composition, brief compliance, research dedup and 
 oversight remain with their existing code/skill/rule owners. Removing a review mechanism
 does not weaken those controls or commission new reviewer roles. New functions need
 demonstrated coverage; do not assume every judgment can be reduced to a mechanical check.
+
+### Checkout configuration and external tests
+
+All launcher pytest routes (`test`, `test-ops`, `python -m pytest`) supply
+`-c <selected checkout>/pyproject.toml` and `--rootdir=<selected checkout>`.
+Equivalent explicit split/equals options are accepted and normalized; conflicting
+options fail before pytest starts. Relative options resolve from that checkout,
+even when invoked from another directory. `PYTEST_ADDOPTS` is expanded into the
+recorded command and subject to the same checks. Deliberate `-o` overrides remain
+available and recorded. This selects pytest configuration/import roots; it does
+not sandbox imports or prohibit deliberate import-path overrides.
+
+Explicit external test files, including `file.py::test_name` selections, have
+SHA-256 hashes recorded before and after execution. A changed or missing file
+prevents acceptance (exit 3). External supporting imports/data and directory
+contents are outside that inventory unless separately captured. Existing custom
+JUnit destinations are outputs, not source inputs. An unchanged scratch test does
+not establish an unchanged dependency closure.
+
+### Advisory progress
+
+The recorder prints a heartbeat every 30 seconds while a child is running. Missing,
+invalid or stale observations say `test activity unavailable`. Observed active IDs,
+completed count, collected count and observation age describe pytest activity;
+completed does not mean passed, and elapsed time never triggers termination.
+`--progress-interval` on the generic recorder can change the positive finite
+interval; the launcher uses the recorder's canonical default.
+
+The launcher explicitly loads `scripts.pytest_progress` and passes its unique run
+identity/evidence directory. Each xdist worker atomically writes its own
+`progress-gw*.json`. The controller aggregates distinct node IDs from forwarded
+pytest hooks into `progress.json`; it never needs competing worker writes to that
+file. Completion is observed after teardown, including setup failures and skips.
+Worker crashes can leave active/incomplete worker snapshots. Counts and IDs are
+advisory, never acceptance evidence. Snapshots retain at most 64 active and 64
+completed IDs, 200 characters each, with a truncation flag; exact final outcomes
+still come from validated JUnit. Supervisor heartbeats are excluded from retained
+child stdout/stderr. Existing pipe draining, interruption and cleanup rules remain.
+
+### Separate baseline and implementation checkouts
+
+Resolve and verify an exact baseline before creating isolation. Prefer native
+worktree tooling when available; otherwise, from the parent repository:
+
+```powershell
+$baseline = git rev-parse --verify 'origin/main^{commit}'
+git show --no-patch --format=fuller $baseline
+git check-ignore .worktrees
+git worktree add --detach .worktrees/test-baseline $baseline
+git worktree add -b codex/my-change .worktrees/my-change $baseline
+```
+
+Use unique owned paths. Register each baseline's absolute path, commit, owning
+run and evidence directory in the task's retained evidence ledger. Invoke each
+checkout's own launcher from that checkout:
+
+```powershell
+.\fp.ps1 doctor
+.\fp.ps1 --workers 2 python -m pytest tests/test_fp_launcher.py tests/test_record_verification.py -q --tb=short
+```
+
+Each doctor must validate that checkout's lock. A shared validated environment is
+allowed only while unchanged throughout both runs; dependency changes require
+separate environments. Start with the affected baseline selection. Run a broad
+baseline only to resolve a concrete attribution question. Baseline work can run
+while implementation proceeds in the other tree, if CPU/memory contention permits.
+Never edit the measured checkout, its index or HEAD during a run. During development,
+run affected tests; after edits stop, run planned regressions and required gates.
+Baseline evidence applies only to its recorded revision, inputs and environment;
+it is never candidate acceptance evidence.
+
+Before removing a baseline, require a terminal run, no live child, retained
+finalized evidence outside the worktree and a clean owned tree (including review
+of ignored resources). Then use `git worktree remove <exact registered path>`.
+Never force-remove dirty or unowned worktrees. Reconcile interrupted/uncertain
+runs first; retaining an owned baseline with its evidence is safe.
+
+Caller inventory for this migration: `fp.ps1` delegates to `scripts/fp.py`;
+`tools/local_verification/run.ps1` delegates to `scripts/docker_verification.py`,
+which invokes pytest directly. Make test targets and GitHub test workflows also
+invoke pytest directly and retain their existing environment contracts. The generic
+recorder continues to accept arbitrary commands without pytest argument injection.
+No maintained launcher config workaround or older progress plugin was found to
+remove. Ambient launcher root discovery is retired; direct pytest callers, the
+JUnit adapter, Docker ownership/cleanup, suite defaults and historical records
+are retained. Rollback reverts code while retaining old/new evidence; records
+with the original root-selection defect remain unsuitable for their claimed scope.

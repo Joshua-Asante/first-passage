@@ -63,3 +63,18 @@ bounded evidence, not proof that every execution sequence or PR behavior is safe
 For an arbitrary local command, invoke `scripts/record_verification.py --repo
 <checkout> --output <new external directory> -- <command> <arguments>` using the
 operations launcher where available. It uses only the Python standard library.
+
+## Baseline attribution and local feedback
+
+Use the [separate baseline/implementation workflow](../../scripts/README.md#separate-baseline-and-implementation-checkouts)
+for fixed-revision comparisons. Each checkout validates its own lock with doctor;
+shared environments remain unchanged during runs. Baseline results are reusable
+only for recorded inputs and never qualify the candidate. Keep the measured
+source, index and HEAD unchanged; retain evidence before removing any owned clean
+worktree with `git worktree remove`.
+
+The shared recorder emits a 30-second supervisor heartbeat separately from child
+logs. This direct Docker pytest route does not load the local launcher's progress
+plugin, so its heartbeat reports test activity unavailable. JUnit, source stability,
+complete capture and confirmed owned cleanup still determine acceptance. Generic
+recorded commands likewise gain no pytest-only argument injection.

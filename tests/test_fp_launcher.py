@@ -41,11 +41,13 @@ def checkout(tmp_path):
     assert launcher.is_file(), "operations launcher has not been implemented"
     shutil.copy2(launcher, root / "scripts/fp.py")
     shutil.copy2(SOURCE / "scripts/record_verification.py", root / "scripts/record_verification.py")
+    shutil.copy2(SOURCE / "scripts/pytest_progress.py", root / "scripts/pytest_progress.py")
     shutil.copy2(SOURCE / "scripts/pytest_junit_subtests.py", root / "scripts/pytest_junit_subtests.py")
     shutil.copy2(SOURCE / "scripts/gate_manifest.py", root / "scripts/gate_manifest.py")
     (root / "requirements-ops.lock").write_text(
         f"pytest=={importlib.metadata.version('pytest')}\n", encoding="utf-8"
     )
+    (root / 'pyproject.toml').write_text('[tool.pytest.ini_options]\n')
     (root / '.gitignore').write_text('.cache/\n__pycache__/\n.pytest_cache/\n')
     subprocess.run(['git', 'init', '-q', str(root)], check=True)
     subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
@@ -283,3 +285,81 @@ def test_powershell_native_error_preference_preserves_exit_status(checkout, ops_
         cwd=checkout, env=env, capture_output=True, text=True, check=False,
     )
     assert result.returncode == 17, result.stderr
+
+@pytest.mark.parametrize('route', [('python', '-m', 'pytest'), ('test',), ('test-ops',)])
+def test_external_tests_use_checkout_configuration(checkout, ops_env, route):
+    for folder, value in [(checkout.parent, 'PARENT'), (checkout, 'CHECKOUT')]:
+        (folder / 'imports').mkdir()
+        (folder / 'imports/sentinel.py').write_text(f'VALUE = {value!r}\n')
+        (folder / 'pyproject.toml').write_text('[tool.pytest.ini_options]\npythonpath = ["imports"]\n')
+    (checkout / 'tests/ops').mkdir(parents=True)
+    external = checkout.parent / 'test_external.py'
+    external.write_text('from sentinel import VALUE\ndef test_root():\n    assert VALUE == "CHECKOUT"\n')
+    result = launch(checkout, '--env', ops_env, *route, str(external), '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    saved = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert saved['metadata']['pytest_config'] == str(checkout / 'pyproject.toml')
+    assert saved['metadata']['pytest_root'] == str(checkout)
+    assert saved['external_files']['before'][str(external)]
+    assert saved['external_files']['stable']
+
+
+@pytest.mark.parametrize('option', ['-c', '-c=', '--rootdir', '--rootdir='])
+@pytest.mark.parametrize('equivalent', [False, True])
+def test_explicit_pytest_configuration(checkout, ops_env, option, equivalent):
+    (checkout / 'pyproject.toml').write_text('[tool.pytest.ini_options]\n')
+    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
+    target = checkout if equivalent else checkout.parent
+    if option.startswith('-c'):
+        target = target / 'pyproject.toml'
+        if not equivalent:
+            target.write_text('[tool.pytest.ini_options]\n')
+    args = [option + str(target)] if option.endswith('=') else [option, str(target)]
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_ok.py', *args, '-q')
+    assert (result.returncode == 0) == equivalent, result.stdout + result.stderr
+    if not equivalent:
+        assert 'conflicting pytest' in result.stderr.lower()
+
+
+def test_mutated_external_test_cannot_pass_verification(checkout, ops_env):
+    (checkout / 'pyproject.toml').write_text('[tool.pytest.ini_options]\n')
+    external = checkout.parent / 'test_mutates.py'
+    external.write_text('from pathlib import Path\ndef test_mutation():\n    Path(__file__).write_text("# changed")\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', str(external), '-q')
+    assert result.returncode != 0
+    saved = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert saved['exit_code'] == 0 and saved['source_stable']
+    assert not saved['external_files']['stable']
+
+
+def test_existing_custom_junit_is_output_not_external_source(checkout, ops_env):
+    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
+    report = checkout.parent / 'old.xml'
+    report.write_text('old output')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest',
+                    'test_ok.py', '--junitxml', str(report), '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_delimited_external_selection_preserves_launcher_options(checkout, ops_env):
+    external = checkout.parent / 'test_outside.py'
+    external.write_text('def test_ok():\n    pass\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '-q', '--', str(external))
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_deliberate_overrides_are_retained(checkout, ops_env):
+    (checkout / 'alternate').mkdir()
+    (checkout / 'alternate/sentinel.py').write_text('VALUE = "OVERRIDE"\n')
+    (checkout / 'test_override.py').write_text('from sentinel import VALUE\ndef test_ok():\n    assert VALUE == "OVERRIDE"\n')
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_override.py',
+                    '-o', 'pythonpath=alternate', '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    saved = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
+    assert 'pythonpath=alternate' in saved['command']
+
+
+def test_environment_config_conflict_is_rejected(checkout, ops_env):
+    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '-q',
+                    env={'PYTEST_ADDOPTS': '--rootdir=..'})
+    assert result.returncode != 0 and 'Conflicting pytest' in result.stderr
