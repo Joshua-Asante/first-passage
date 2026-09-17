@@ -325,7 +325,10 @@ class BookReplay:
             "reject", intent.leg_id, bar.ts, order_id=intent.order_id, detail=reason))
 
     def _flatten(self, k, bar, reason):
-        self._cancel_pending(k, Cancel(k), bar)
+        # Scheduler supersedes every working order, including queued closes.
+        # Pine's unscoped Cancel intentionally only cancels entry/add orders.
+        for order_id in self.brokers[k].pending_order_ids():
+            self._cancel_pending(k, Cancel(k, order_id), bar)
         pos = self.brokers[k].position()
         if pos:
             self._submit(k, [OrderIntent(f"{reason}:{self._index}:{k}", k, "flat",

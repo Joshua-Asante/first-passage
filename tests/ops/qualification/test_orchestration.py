@@ -251,14 +251,39 @@ def test_missing_required_expansion_refuses_receipt_without_more_draws():
 
 def test_expired_authorization_before_n2_dispatch_does_not_invoke_it():
     calls=[]
-    def authorize():
+    def authorize(instant):
         calls.append(1)
-        if len(calls)==4:raise ValueError('expired approval')
+        if len(calls)==5:raise ValueError('expired approval')
     store=Store()
     with pytest.raises(ValueError,match='expired approval'):
         run(store,Executor(store),authorize=authorize)
     assert 'N2' not in store.checkpoints
     assert ('callback','N2') not in store.log
+
+
+def test_each_durable_start_uses_its_authorized_instant():
+    from datetime import timedelta
+    authorized = []
+    ticks = iter(NOW + timedelta(microseconds=n) for n in range(100))
+    def authorize(instant):
+        authorized.append(instant)
+    class TimedStore(Store):
+        def reserve(self, *args, now):
+            assert now == authorized[-1]
+            return super().reserve(*args, now=now)
+        def start_once(self, *args, now):
+            assert now == authorized[-1]
+            return super().start_once(*args, now=now)
+        def start_checkpoint_once(self, *args, now):
+            assert now == authorized[-1]
+            return super().start_checkpoint_once(*args, now=now)
+    store = TimedStore()
+    _execute_e1(contract(), store=store, executor=Executor(store),
+        preflight_binding=canonical_bytes({'attempt_id':store.campaign_id,
+            'contract_sha256':store.contract_digest, 'trust_domain_sha256':'d'*64}),
+        exact_depth_approval_sha256='c'*64, now=lambda:next(ticks), synthetic=True,
+        authorize=authorize)
+    assert len(authorized) == 6
 
 
 def test_receipt_write_failure_leaves_completed_work_in_doubt_not_rerunnable():

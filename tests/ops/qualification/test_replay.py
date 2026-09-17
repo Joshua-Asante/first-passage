@@ -83,6 +83,27 @@ def first_entry(adapter, bar):
     return entry(adapter, bar) if len(adapter.bars) == 1 else []
 
 
+@pytest.mark.parametrize('kind', ['exit', 'flat'])
+def test_scheduler_flatten_retires_queued_close_with_feedback(kind):
+    def emit(adapter, bar):
+        if len(adapter.bars) == 1:
+            return entry(adapter, bar)
+        if len(adapter.bars) == 2:
+            return [OrderIntent('queued-close', adapter.leg_id, kind, Side.SELL, None,
+                                timing=FillTiming.NEXT_OPEN)]
+        return []
+    session = path_session(prices=[(100, 100, 100, 100)] * 3)
+    origin = session.source.bars[0].source_bar_time
+    schedule = SessionSchedule(origin + timedelta(minutes=20), origin + timedelta(minutes=30),
+                               origin + timedelta(minutes=35))
+    session = replace(session, source=replace(session.source, schedule=schedule))
+    replay, adapters = engine({'orb_mnq_v7': emit})
+    result = replay.run((session,))
+    assert result.sessions[0].end_edge.is_flat
+    assert any(e.event == 'cancel' and e.order_id == 'queued-close'
+               for e in adapters['orb_mnq_v7'].feedback)
+
+
 def test_replay_close_entry_first_bar_has_only_fees_then_adverse_next_bar():
     replay, adapters = engine({"orb_mnq_v7": first_entry})
     result = replay.run((path_session(),))

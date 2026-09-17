@@ -47,7 +47,7 @@ def adjudicate_stage(run, rules: DecisionRules):
         if run.stage=='n1':
             cutoff=int(len(rows)*Fraction(str(rules.failure_ceiling)))
         else:
-            cutoff=max_certifying_busts(len(rows),rules.failure_ceiling,rules.alpha)
+            cutoff=max_certifying_busts(len(rows),float(rules.failure_ceiling),rules.alpha)
         cutoffs.append((name,cutoff))
         passed &= count<=cutoff
     speed=None

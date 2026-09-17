@@ -139,6 +139,7 @@ _PRODUCTION_CODE={
     'replay_kernel':'c1_rail.qualification.replay','path_sampler':'c1_rail.qualification.paths',
     'rng_allocation':'c1_rail.qualification.regime','part_a_runner':'c1_rail.qualification.part_a',
     'qualification_adjudicator':'c1_rail.qualification.result_adjudication',
+    'qualification_sealer':'c1_rail.qualification.seal',
     'listener_account_owner':'c1_rail.book_account_owner',
     'qualification_adjudication_rules':'c1_rail.qualification.adjudication',
     'qualification_model':'c1_rail.qualification.model',

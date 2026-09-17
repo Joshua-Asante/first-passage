@@ -156,6 +156,15 @@ def test_generic_validator_cannot_replace_compiled_production_policy():
             policy=replace(policy,production_workload_required=False),now=NOW)
 
 
+def test_production_domain_cannot_omit_sealer_code_role():
+    doc, policy, private, keys = operator_case()
+    doc['runtime_code_roles'].pop('qualification_sealer', None)
+    doc['required_artifact_roles'] = [role for role in doc['required_artifact_roles']
+                                      if role != 'qualification_sealer']
+    with pytest.raises(ValueError, match='role'):
+        production_trust_domain(*signed(doc, private), keys, now=NOW)
+
+
 def test_wrong_signing_key_cannot_validate_matching_declared_key_id():
     doc,policy,private,keys=case()
     with pytest.raises(ValueError,match='signature'):

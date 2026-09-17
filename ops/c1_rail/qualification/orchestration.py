@@ -139,7 +139,7 @@ def _validate_stage(run, stage, seeds, synthetic):
 
 
 def _execute_e1(contract, *, store, executor, preflight_binding,
-                exact_depth_approval_sha256, now, synthetic, authorize=lambda:None):
+                exact_depth_approval_sha256, now, synthetic, authorize=lambda instant:None):
     """Private recording seam; callers receive evidence, never a seal.
 
     No exception is caught: a callback/receipt failure leaves its durable
@@ -173,10 +173,13 @@ def _execute_e1(contract, *, store, executor, preflight_binding,
     if (type(exact_depth_approval_sha256) is not str or len(exact_depth_approval_sha256)!=64
             or any(c not in '0123456789abcdef' for c in exact_depth_approval_sha256)):
         raise ValueError('exact depth approval digest required')
-    authorize()
-    store.reserve('TB_E1',preflight_binding,now=now())
+    reserved_at=now()
+    authorize(reserved_at)
+    store.reserve('TB_E1',preflight_binding,now=reserved_at)
     claim=store.claimed_reservation('TB_E1')
-    store.start_once('TB_E1',claim,now=now())
+    started_at=now()
+    authorize(started_at)
+    store.start_once('TB_E1',claim,now=started_at)
     claim=store.claimed_reservation('TB_E1')
     store.verify_claim(claim,require_state='STARTED_IN_DOUBT')
     outcomes={'LEGALITY':{}}
@@ -188,7 +191,8 @@ def _execute_e1(contract, *, store, executor, preflight_binding,
     receipts=[]
 
     def dispatch(checkpoint,seeds=(),extra=None):
-        authorize()
+        dispatched_at=now()
+        authorize(dispatched_at)
         store.verify_claim(claim,require_state='STARTED_IN_DOUBT')
         plan={'schema':'e1_checkpoint_plan/v1','checkpoint':checkpoint,
               'contract_sha256':contract.contract_sha256,'synthetic':synthetic,
@@ -197,7 +201,7 @@ def _execute_e1(contract, *, store, executor, preflight_binding,
               'horizon_sessions':contract.replay.horizon_sessions,
               'seed_inputs':[json.loads(seed.canonical_bytes) for seed in seeds],
               'extra':extra}
-        return store.start_checkpoint_once(checkpoint,claim,canonical_bytes(plan),now=now())
+        return store.start_checkpoint_once(checkpoint,claim,canonical_bytes(plan),now=dispatched_at)
 
     def decisions():
         return adjudicate_e1_outcomes(contract,outcomes,inventory)
@@ -349,10 +353,10 @@ def _run_bound_e1(contract, *, source, store, preflight, exact_depth_approval_by
             or preflight.exact_depth_approval.authority_class!=domain.authority_class
             or store.trust_domain_sha256!=domain.sha256):
         raise ValueError('preflight or journal trust domain differs')
-    def authorize():
+    def authorize(instant):
         revalidate_e1_preflight(contract,preflight,exact_depth_approval_bytes=exact_depth_approval_bytes,
-                               trusted_keys=trusted_keys,now=now(),trust_domain=domain)
-    authorize()
+                               trusted_keys=trusted_keys,now=instant,trust_domain=domain)
+    authorize(now())
     executor=(_composition_executor(contract,source,store) if domain.permits_synthetic
               else ProductionExecutor(contract,source,store))
     return _execute_e1(contract,store=store,executor=executor,

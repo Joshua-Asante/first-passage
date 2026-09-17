@@ -3,8 +3,13 @@ from decimal import Decimal, ROUND_CEILING
 from types import SimpleNamespace
 from dataclasses import dataclass
 from dataclasses import field
+from dataclasses import is_dataclass
+from collections.abc import Mapping
+from enum import Enum
+from datetime import date, timedelta
 from pathlib import Path
 import hashlib
+import __future__
 import json
 import marshal
 import sys
@@ -46,6 +51,14 @@ def _same_executable_value(actual, expected, module_globals, reference_globals, 
     if pair in seen:
         return True
     seen.add(pair)
+    if isinstance(expected, Enum):
+        return (isinstance(actual, Enum) and actual.name == expected.name
+                and _same_executable_value(type(actual), type(expected), module_globals, reference_globals, seen)
+                and _same_executable_value(actual.value, expected.value, module_globals, reference_globals, seen))
+    if not isinstance(expected, type) and is_dataclass(expected):
+        return (is_dataclass(actual)
+                and _same_executable_value(type(actual), type(expected), module_globals, reference_globals, seen)
+                and _same_executable_value(vars(actual), vars(expected), module_globals, reference_globals, seen))
     if type(actual) is not type(expected):
         return False
     if isinstance(expected, FunctionType):
@@ -68,8 +81,9 @@ def _same_executable_value(actual, expected, module_globals, reference_globals, 
     if isinstance(expected, type):
         if expected.__module__ != reference_globals['__name__']:
             return actual is expected
-        if (actual.__module__, actual.__qualname__, actual.__bases__) != (
-                expected.__module__, expected.__qualname__, expected.__bases__):
+        if (actual.__module__, actual.__qualname__) != (
+                expected.__module__, expected.__qualname__) or not _same_executable_value(
+                    actual.__bases__, expected.__bases__, module_globals, reference_globals, seen):
             return False
         # Include added hooks such as __getattribute__, not just known methods.
         def methods(cls):
@@ -89,39 +103,49 @@ def _same_executable_value(actual, expected, module_globals, reference_globals, 
     if isinstance(expected, (tuple, list)):
         return len(actual) == len(expected) and all(_same_executable_value(
             a, b, module_globals, reference_globals, seen) for a, b in zip(actual, expected))
-    if isinstance(expected, dict):
+    if isinstance(expected, Mapping):
         return actual.keys() == expected.keys() and all(_same_executable_value(
             actual[name], value, module_globals, reference_globals, seen)
             for name, value in expected.items())
-    if isinstance(expected, (str, int, float, bool, bytes, set, frozenset)) or expected is None:
+    if isinstance(expected, (str, int, float, bool, bytes, set, frozenset, date, timedelta, Decimal, Path)) or expected is None:
         return actual == expected
     return actual is expected
 
 
-def _verify_retained_executable_modules(by_module, required_modules):
-    """Bind decision modules to retained definitions, not their current code.
+def _verify_retained_executable_modules(by_module, required_modules, decision_modules):
+    """Bind every frozen code module to retained executable definitions.
 
     Evaluating module definitions in a private namespace reconstructs functions
     and dataclass constructors from verified bytes. It never replaces live
-    modules or executes a qualification path. Checking every definition in these
-    decision dependency modules also covers transitive local helpers and their
-    imported bindings; there is no hand-maintained helper allowlist.
+    modules or executes a qualification path. All frozen modules' functions,
+    classes, defaults and imported executable bindings are checked. Decision
+    modules additionally bind all globals; other modules retain live issuance
+    registries and package child imports rather than resetting them.
     """
     for name in required_modules:
         module = sys.modules[name]
         row = by_module[name]
-        reference = {'__name__': name, '__package__': module.__package__,
-                     '__file__': row.origin}
-        exec(compile(row.source_bytes, row.origin, 'exec', dont_inherit=True), reference)
         live = vars(module)
+        reference = {'__name__': name, '__package__': module.__package__,
+                     '__file__': module.__file__}
+        # Compile the complete module: conditional imports affect generated
+        # bytecode too. Registries are reconstructed privately, never installed.
+        flags = __future__.annotations.compiler_flag if name.startswith('fp_qualification_port_') else 0
+        exec(compile(row.source_bytes, module.__file__, 'exec', flags=flags,
+                     dont_inherit=True), reference)
         for key, expected in reference.items():
             if key.startswith('__'):
+                continue
+            if name not in decision_modules and not isinstance(expected, (FunctionType, type)):
                 continue
             if key not in live or not _same_executable_value(
                     live[key], expected, live, reference, set()):
                 raise ValueError(f'runtime dependency executable differs from retained source: {name}.{key}')
         # A newly injected global can shadow a builtin consumed by verified code.
-        if any(key not in reference and not key.startswith('__') for key in live):
+        if any(key not in reference and not key.startswith('__')
+               and not (isinstance(value, ModuleType) and value.__name__ == name + '.' + key
+                        and sys.modules.get(value.__name__) is value)
+               for key, value in live.items()):
             raise ValueError(f'runtime dependency globals differ from retained source: {name}')
 
 
@@ -134,9 +158,14 @@ def _verify_runtime_inventory(contract, receipt, dependencies):
     by_module = {row.module_name: row for row in receipt.modules}
     if len(by_module) != len(receipt.modules):
         raise ValueError('runtime inventory module names are not unique')
+    domain = getattr(contract, 'trust_domain', None)
+    if domain is not None and {row.role: row.module_name for row in receipt.modules} != dict(domain.runtime_code_roles):
+        raise ValueError('runtime inventory code roles differ from frozen trust domain')
     required_modules = {value.__module__ for _, value in dependencies}
+    decision_modules = set(required_modules)
     if not required_modules.issubset(by_module):
         raise ValueError('runtime inventory omits adjudicator dependency modules')
+    required_modules = set(by_module)
     own = by_module.get(__name__)
     if own is None or own.role != 'qualification_adjudicator':
         raise ValueError('runtime inventory adjudicator role differs')
@@ -146,7 +175,14 @@ def _verify_runtime_inventory(contract, receipt, dependencies):
         module = sys.modules.get(module_name)
         if type(module) is not ModuleType:
             raise ValueError('runtime inventory dependency module is not loaded')
-        origin = Path(getattr(module, '__file__', '')).resolve(strict=True)
+        module_file = Path(getattr(module, '__file__', ''))
+        if not module_file.is_absolute() and module_name.startswith('fp_qualification_port_'):
+            artifact = next(item for item in contract.artifacts if item.role == row.role)
+            if module_file.as_posix() != Path(artifact.path).as_posix():
+                raise ValueError('runtime inventory port origin differs')
+            origin = Path(row.origin).resolve(strict=True)
+        else:
+            origin = module_file.resolve(strict=True)
         if origin != Path(row.origin).resolve(strict=True) or str(origin) in observed_origins:
             raise ValueError('runtime inventory dependency origin differs or aliases')
         observed_origins.add(str(origin))
@@ -161,7 +197,7 @@ def _verify_runtime_inventory(contract, receipt, dependencies):
             raise ValueError('runtime dependency globals differ from observed module')
         if getattr(module, value.__name__, None) is not value:
             raise ValueError('runtime dependency object differs from observed module')
-    _verify_retained_executable_modules(by_module, required_modules)
+    _verify_retained_executable_modules(by_module, required_modules, decision_modules)
 
 
 @dataclass(frozen=True)
@@ -246,7 +282,7 @@ def adjudicate_e1_outcomes(contract, outcomes, inventory):
     if tuple(outcomes)!=order[:len(outcomes)] or not outcomes or outcomes['LEGALITY']!={}:
         raise ValueError('ordered E1 stage prefix required')
     frozen=contract.replay.decision_rules
-    rules=DecisionRules(float(frozen.failure_ceiling),float(frozen.alpha),
+    rules=DecisionRules(frozen.failure_ceiling,float(frozen.alpha),
                         float(frozen.speed_target),frozen.speed_horizon_sessions)
     decisions={'LEGALITY':'PASS'}
     if 'N1' in outcomes:
@@ -256,7 +292,7 @@ def adjudicate_e1_outcomes(contract, outcomes, inventory):
         if type(rows) is not tuple or not rows or any(type(row) is not PathOutcome for row in rows):
             raise ValueError('typed immutable confirmation outcomes required')
         return sum(row.status!='PASS' for row in rows)<=max_certifying_busts(
-            len(rows),rules.failure_ceiling,rules.alpha)
+            len(rows),float(rules.failure_ceiling),rules.alpha)
     if 'N2' in outcomes:
         if decisions['N1']!='PASS':
             raise ValueError('evidence continues after failed N1 screen')

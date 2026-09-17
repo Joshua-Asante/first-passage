@@ -7,7 +7,7 @@ from c1_rail.qualification.model import PathOutcome
 from c1_rail.qualification.result_adjudication import adjudicate_panel_inventory
 
 
-def dispatcher_runtime(module):
+def dispatcher_runtime(module, extra_modules=None):
     import hashlib
     import c1_rail.qualification.adjudication as adjudication
     import c1_rail.qualification.model as model
@@ -22,6 +22,7 @@ def dispatcher_runtime(module):
         'qualification_model': model,
         'qualification_certification_power': certification,
     }
+    role_modules.update(extra_modules or {})
     retained = {role: __import__('pathlib').Path(value.__file__).read_bytes()
                 for role, value in role_modules.items()}
     retained['another_runtime_role'] = b'retained'
@@ -109,6 +110,39 @@ def test_n1_terminal_prefix_needs_no_later_draws():
     rows=(PathOutcome('UNRESOLVED',None,'horizon_cap',()),)*200
     assert adjudicate_e1_outcomes(contract,{'LEGALITY':{},'N1':{name:rows for name in ('FULL','H1','H2')}},
                                  {'records':[]})=={'LEGALITY':'PASS','N1':'FAIL'}
+
+
+@pytest.mark.parametrize('ceiling, expected', [
+    ('0.0049999999999999999', 'FAIL'), ('0.005', 'PASS'),
+])
+def test_n1_preserves_exact_signed_decimal_cutoff(ceiling, expected):
+    from c1_rail.qualification.result_adjudication import adjudicate_e1_outcomes
+    rules = SimpleNamespace(failure_ceiling=Decimal(ceiling), alpha=Decimal('.05'),
+                            speed_target=Decimal('.5'), speed_horizon_sessions=200)
+    contract = SimpleNamespace(replay=SimpleNamespace(decision_rules=rules))
+    rows = (PathOutcome('PASS', 1, None, ()),) * 199 + (PathOutcome('FAILURE', None, 'fixture', ()),)
+    outcomes = {'LEGALITY': {}, 'N1': {name: rows for name in ('FULL', 'H1', 'H2')}}
+    assert adjudicate_e1_outcomes(contract, outcomes, {'records': []})['N1'] == expected
+
+
+@pytest.mark.parametrize('when', ['before_freeze', 'after_freeze'])
+def test_dispatcher_rejects_replaced_runner_evaluator(monkeypatch, when):
+    import c1_rail.qualification.result_adjudication as module
+    import c1_rail.qualification.runner as runner
+    import hashlib
+    retained, receipt = dispatcher_runtime(module, {'path_runner': runner})
+    sources = {role: hashlib.sha256(raw).hexdigest() for role, raw in retained.items()}
+    contract = SimpleNamespace(runtime_load_sha256=sources,
+        adjudicator_sha256=module._closure_identity(sources), contract_sha256='a' * 64)
+    dispatcher = None
+    if when == 'after_freeze':
+        dispatcher = module.frozen_adjudicator(contract, retained_source_bytes=retained, runtime_inventory=receipt)
+    monkeypatch.setattr(runner, 'evaluate_replay', lambda *args, **kwargs: PathOutcome('PASS', 1, None, ()))
+    with pytest.raises(ValueError, match='runtime dependency|runtime inventory'):
+        if dispatcher:
+            dispatcher.verify_for(contract)
+        else:
+            module.frozen_adjudicator(contract, retained_source_bytes=retained, runtime_inventory=receipt)
 
 
 def test_dispatcher_binds_complete_retained_runtime_and_own_source():

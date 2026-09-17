@@ -9,6 +9,29 @@ from c1_rail.qualification.production_source import (
 )
 
 
+def test_complete_live_runtime_can_bind_adjudicator(tmp_path, monkeypatch):
+    from composition_fixture import build_verified_composition
+    from c1_rail.qualification.result_adjudication import frozen_adjudicator
+    setup = build_verified_composition(tmp_path)
+    bound = frozen_adjudicator(setup.contract, retained_source_bytes=setup.retained_source_bytes,
+                              runtime_inventory=setup.runtime_inventory)
+    bound.verify_for(setup.contract)
+    import sys
+    targets = [
+        (sys.modules['c1_rail.qualification.runner'], 'evaluate_replay'),
+        (sys.modules['c1_rail.qualification.replay'].BookReplay, 'run'),
+        (sys.modules['c1_rail.qualification.production'].ProductionExecutor, 'run_stage'),
+        (sys.modules['c1_rail.qualification.seal'], 'seal_e1_pass'),
+        (sys.modules['fp_qualification_port_orb_mnq_v7'].Adapter, 'on_bar'),
+    ]
+    for owner, name in targets:
+        with monkeypatch.context() as changed:
+            changed.setattr(owner, name, lambda *args, **kwargs: None)
+            with pytest.raises(ValueError, match='runtime dependency'):
+                bound.verify_for(setup.contract)
+        bound.verify_for(setup.contract)
+
+
 def test_retained_fixture_is_self_consistent_and_uses_actual_source_schemas(tmp_path):
     fixture = build_artifacts(tmp_path)
     raw = fixture.payloads
