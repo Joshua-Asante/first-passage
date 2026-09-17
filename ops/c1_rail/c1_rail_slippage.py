@@ -45,6 +45,8 @@ for _p in (str(_REPO_ROOT / "core"), str(_RAIL_DIR)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+from instrument_specs import INSTRUMENT_SPECS
+
 from c1_rail_telemetry import (  # noqa: E402
     BrokerEvidence,
     EventLedger,
@@ -63,9 +65,9 @@ PANEL_ADD_OFFSET_PTS: Mapping[str, float] = {
 }
 
 # One mintick in index points — used to express excess in ticks.
+LEG_INSTRUMENTS = {"dj30_mym": "MYM", "nas100_mnq": "MNQ"}
 TICK_SIZE_PTS: Mapping[str, float] = {
-    "dj30_mym": 1.00,
-    "nas100_mnq": 0.25,
+    leg: INSTRUMENT_SPECS[symbol].tick_size for leg, symbol in LEG_INSTRUMENTS.items()
 }
 
 # Pre-declared actionable threshold: persistent MYM add excess ≥ 1 tick.

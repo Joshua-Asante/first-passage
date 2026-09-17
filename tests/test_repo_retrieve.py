@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import pytest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -12,6 +13,52 @@ _SPEC = importlib.util.spec_from_file_location(
 rr = importlib.util.module_from_spec(_SPEC)
 sys.modules[_SPEC.name] = rr
 _SPEC.loader.exec_module(rr)
+
+
+def test_corpus_order_limits_and_existing_adr_membership(tmp_path):
+    files = ["lab/CATALOG.md", "docs/briefs/INDEX.md",
+             "docs/rejected_candidates.md", "docs/SESSIONS.md", "STATE.md",
+             "docs/adr/INDEX.md", "docs/adr/TOMBSTONES.md", "docs/adr/a.md",
+             "docs/briefs/closures/a.md", "docs/briefs/a.md",
+             "docs/briefs/programs/a.md", "docs/notes/audits/nested/a.md",
+             "docs/methodology/a.md", "docs/spec/a.md", "docs/ltm/a.md",
+             "lab/archive/a.md"]
+    for rel in files:
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# marker\n" + "\n".join(map(str, range(30))), encoding="utf-8")
+    (tmp_path / files[0]).write_text(
+        "## In flight\n| hidden | ACTIVE |\n## Live\n### rows\n"
+        "| active | ACTIVE |\n| hold | HOLD |\n", encoding="utf-8")
+    (tmp_path / files[3]).write_text(
+        "".join(f"## session{i}\nbody{i}\n" for i in range(25)), encoding="utf-8")
+    chunks = rr.collect_chunks(tmp_path)
+    expected_paths = ([files[0]] * 4 + files[1:3] + [files[3]] * 24
+                      + [files[4]] + [p.as_posix() for p in sorted(map(Path, files[5:8]))]
+                      + [files[8]] + [p.as_posix() for p in sorted(map(Path, [files[1], files[9]]))]
+                      + files[10:14])
+    assert [c["path"] for c in chunks] == expected_paths
+    assert [c["heading"] for c in chunks[:4]] == [files[0], "### rows", "active", "hold"]
+    assert not any("hidden" in c["text"] or "body24" in c["text"] for c in chunks)
+    for c in chunks:
+        if c["path"] in files[5:14] and c["path"] != files[1]:
+            limit = 20 if "closures/" in c["path"] else 24
+            assert c["text"].splitlines() == ["# marker", "# marker", *map(str, range(limit - 1))]
+    db = tmp_path / "index.sqlite"
+    assert rr.rebuild(tmp_path, db) == len(chunks)
+    assert rr.query(db, "session23", limit=1)[0][0] == files[3]
+
+
+def test_corpus_configuration_drives_collection_and_rejects_invalid_modes(tmp_path, monkeypatch):
+    assert hasattr(rr, "CorpusSource"), "collector needs a canonical source declaration"
+    (tmp_path / "custom.md").write_text("## custom\nneedle", encoding="utf-8")
+    monkeypatch.setattr(rr, "CORPUS_SOURCES", (rr.CorpusSource("custom.md", "heading_h2"),))
+    assert rr.collect_chunks(tmp_path) == [{"path": "custom.md", "heading": "## custom",
+                                         "text": "## custom\nneedle"}]
+    for mode, limit in [("unknown", None), ("heading_h2", 0), ("header_lines", None),
+                        ("catalog", 1), ("heading_h3", -1)]:
+        with pytest.raises(ValueError):
+            rr._collect_source(tmp_path, rr.CorpusSource("absent.md", mode, limit))
 
 
 def _mini_repo(tmp_path: Path) -> Path:

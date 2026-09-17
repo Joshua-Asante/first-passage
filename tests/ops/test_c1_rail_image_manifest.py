@@ -21,6 +21,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from image_manifest_support import ImageTestProfile, copied_python_paths, import_closure
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DOCKERFILE = REPO_ROOT / "deploy" / "c1_rail" / "Dockerfile"
@@ -35,6 +36,7 @@ _ENTRYPOINTS = (
     REPO_ROOT / "ops" / "c1_rail" / "c1_rail_http_server.py",
     REPO_ROOT / "ops" / "c1_rail" / "m1_stage1_control.py",
     REPO_ROOT / "ops" / "c1_rail" / "c1_rail_arm.py",
+    REPO_ROOT / "ops" / "c1_rail" / "c1_rail_slippage.py",
 )
 
 
@@ -53,42 +55,12 @@ from c1_sizing_host_reference import C1SizingHostReference
 host = C1SizingHostReference(root / 'absent', root / 'absent', root / 'absent')
 result = host.process_book_signal(None, policy=None, context=None, binding=None, now=None)
 assert result.halt and result.qty_out == 0 and result.submit is False
+from c1_rail_slippage import TICK_SIZE_PTS
+assert TICK_SIZE_PTS == {"dj30_mym": 1.0, "nas100_mnq": 0.25}
 """
     result = subprocess.run([sys.executable, "-I", "-c", script, str(tmp_path)],
                             cwd=tmp_path, capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr
-
-
-def _dockerfile_copied_py_paths(dockerfile: Path) -> set[str]:
-    """Parse COPY sources that are ops/ or core/ `.py` files.
-
-    Joins `\\`-continued lines the way Dockerfiles are written in this repo,
-    then takes every source token before the destination.
-    """
-    logical_lines: list[str] = []
-    buf = ""
-    for raw in dockerfile.read_text(encoding="utf-8").splitlines():
-        stripped = raw.rstrip()
-        if stripped.endswith("\\"):
-            buf += stripped[:-1] + " "
-            continue
-        buf += stripped
-        logical_lines.append(buf.strip())
-        buf = ""
-
-    copied: set[str] = set()
-    for line in logical_lines:
-        if not line.startswith("COPY "):
-            continue
-        tokens = line.split()[1:]
-        if len(tokens) < 2:
-            continue
-        for src in tokens[:-1]:
-            if src.endswith(".py") and (
-                src.startswith("ops/") or src.startswith("core/")
-            ):
-                copied.add(src)
-    return copied
 
 
 def _repo_import_names(path: Path) -> set[str]:
@@ -125,22 +97,17 @@ def _resolve_repo_module(mod: str) -> Path | None:
     return None
 
 
+def _profile(dockerfile=DOCKERFILE, entrypoints=_ENTRYPOINTS):
+    return ImageTestProfile(dockerfile, entrypoints, ("ops/", "core/"),
+                            _repo_import_names, _resolve_repo_module, resolve_paths=True)
+
+
+def _dockerfile_copied_py_paths(dockerfile: Path) -> set[str]:
+    return copied_python_paths(_profile(dockerfile=dockerfile))
+
+
 def _import_closure(entrypoints: tuple[Path, ...]) -> set[Path]:
-    """BFS over repo-local imports starting at `entrypoints`."""
-    seen: set[Path] = set()
-    queue = [p.resolve() for p in entrypoints]
-    while queue:
-        path = queue.pop()
-        if path in seen:
-            continue
-        if not path.is_file():
-            continue
-        seen.add(path)
-        for mod in _repo_import_names(path):
-            resolved = _resolve_repo_module(mod)
-            if resolved is not None:
-                queue.append(resolved.resolve())
-    return seen
+    return import_closure(_profile(entrypoints=entrypoints))
 
 
 def _repo_rel(path: Path) -> str:
