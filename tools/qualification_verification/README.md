@@ -25,7 +25,7 @@ separate daemon would require a different supervisor trust and launch design.
 
 ## Supported target and reproducibility
 
-Use a fresh GitHub-hosted `ubuntu-24.04` x64 VM, or an administrator-supplied
+Use a fresh GitHub-hosted `ubuntu-24.04` x64 VM, or a fresh administrator-supplied
 Ubuntu 24.04 x64 VM with native ext4 and its own Docker Engine. The public
 repository already uses Actions. Standard hosted Linux runners are fresh VMs
 and free for public repositories ([GitHub documentation](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)).
@@ -99,8 +99,9 @@ qexec's Docker enrollment to be absent after interrupted setup, while rejecting
 unexpected supplementary groups; readiness still requires Docker enrollment.
 For interrupted setup, cleanup also accepts the empty root-owned `0700` intermediate
 of `data` or `scratch` creation before ownership transfer. This exception applies
-only to provisioning/failed setup; populated trees, unexpected owners or modes,
-and completed-host ownership drift still fail closed.
+only to provisioning/failed setup. A tree whose UID differs from the recorded UID
+must satisfy those exact initial-owner conditions; otherwise cleanup rejects it.
+When the UID matches, cleanup does not currently validate the tree's GID or mode.
 Incomplete setup may also retain venv's root-owned `env/lib64 -> lib` alias.
 Cleanup validates that exact alias and unlinks it with the environment tree
 without following it; other links and completed-host aliases remain rejected.
@@ -197,8 +198,9 @@ sudo /usr/bin/python3 -I tools/qualification_verification/cleanup.py \
 ```
 
 Cleanup validates root-owned private metadata and every resource before removal.
-It refuses active principal processes, changed owners/IDs, shared groups, links,
-mounts and unsupported resource kinds. It removes only exact recorded trees and
+It refuses active principal processes, changed account IDs or tree UIDs (apart
+from the documented initial-owner exception), shared role groups, unexpected
+links, mounts and unsupported resource kinds. It removes only exact recorded trees and
 newly created identities, stops cleanup children, then writes a new immutable linked cleanup receipt.
 Missing resources are idempotent success. Private ownership metadata, public
 non-secret evidence and prior receipts remain; original run records are not
@@ -207,6 +209,14 @@ success. A concurrent setup/cleanup lock prevents competing administrators from
 retiring a reserved host. Unexpected boundary containers block cleanup until their
 owner supplies exact-ID lifecycle integration. There is no prune, wildcard resource
 removal, shared-image deletion, Docker reset or implicit VM destruction.
+
+Cleanup does not detect GID or permission-mode drift on a tree whose recorded
+UID still matches. Do not broaden access to or repurpose these disposable run
+directories for unrelated files: recursive cleanup treats their contents as
+run-owned. Canonical tree UID/GID/mode retention and cleanup validation are
+tracked in [#424](https://github.com/Joshua-Asante/first-passage/issues/424)
+before shared/reused-host operation. Current acceptance is for fresh disposable
+hosts with the administrator and qexec trust assumptions above.
 
 Cutover inventory: no real boundary workflow/runner existed on base `24acf9a`.
 This is new capability; no old consumers or resources are eligible for retirement.
