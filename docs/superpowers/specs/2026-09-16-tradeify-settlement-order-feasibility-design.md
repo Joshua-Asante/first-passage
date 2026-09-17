@@ -1,11 +1,18 @@
 # Tradeify settlement and ambiguous-order feasibility
 
-Date: 2026-09-16. Status: **OPERATOR-APPROVED DESIGN**.
+Date: 2026-09-16. Status: **OPERATOR-APPROVED BASE DESIGN; EVENING EXTENSION FOR REVIEW**.
 
 Approval: Joshua instructed, “I approve this design. commit it and open a pr”.
 This approves the design and its publication. Implementation, reconciliation of
 the affected governing contracts, actual capability qualification and live
 authorization remain separate; this document changes no runtime behavior.
+
+Extension authority: Joshua subsequently instructed, "Close the
+production-feasibility gaps described in #411, add the evening approval
+requirement to the operating design". Section 6.1 records that requirement and
+its proposed detailed contract. Earlier approval does not ratify these new
+mechanics or amend production authority implicitly. Investigation results are in
+the [capability decision record](../../notes/2026-09-16-tradeify-production-feasibility-decision.md).
 
 Purpose: determine whether the incumbent account and execution route can support
 the accepted portfolio, then select the smallest feasible attended release.
@@ -40,6 +47,14 @@ behavior. Actual capability tests that transmit orders remain separately scoped
 and operator-executed. Existing approvals are reused within their actual scope.
 
 ## 2. Ground truth and authority
+
+**Execution update:** PR #409 merged as
+`845fb13ed2141482649627f5b78a51f4cadbd61d`, final branch head
+`3cf42e43f4f41f0b1e66d7510d2c55cda57c21b9`. Section 6.1 and the decision record
+use an isolated worktree at that merge. Base design: PR #411 at
+`d7709adb7d3816b3beaf44506d56138f3ae6f067`. Historical drafting references below
+retain their provenance; the extension reads the merged source/contracts.
+No earlier validation count is represented as a fresh test run.
 
 PR [409](https://github.com/Joshua-Asante/first-passage/pull/409), published head
 `567a583a3da4e752d9cadb979c3a0aee74eb6925`, is the integration reference observed
@@ -138,9 +153,12 @@ effect and an exact proposed amendment rather than weakening the verifier.
 ### 4.3 Source routes, in order
 
 **A — Existing historical evidence (preferred).** Locate an account-accessible
-close/equity report or balance plus contemporaneous flatness evidence; combine
-with the already available cash ledger. Reuse retained reports and query only
-the missing facts. A historical report must identify the relevant close rather
+close/equity report or balance plus contemporaneous flatness evidence. Reuse
+retained reports for provenance and comparison only. Before qualification or any
+current or record-only submission, newly capture the required reports and query
+the complete cash history from inception through capture, comparing prior history
+for added, removed or revised transactions. Missing close facts require their own
+source evidence. A historical report must identify the relevant close rather
 than merely displaying the latest balance.
 
 **B — Prospective attended capture.** If historical retrieval fails, determine
@@ -255,9 +273,18 @@ source semantics. Missing actual evidence remains UNPROVEN.
 |---|---|---|---|
 | Qualified | Qualified | Qualified | Candidate for the minimal attended release below; all other existing qualification/live gates still apply. |
 | Qualified only through proposed amendment | Any | Any | Review exact amendment and revalidate affected consumers first; no live readiness claim. |
+| Qualified | Amendment required | Any | No live release; approve the exact recovery amendment and revalidate affected producers/consumers before reevaluating this table. |
+| Qualified | Qualified | Amendment required | No fixed-book release; approve the exact normal-execution amendment and requalify affected execution/replay behavior before reevaluating this table. |
 | Qualified | Unproven or unsupported | Any | Observation/offline engineering only; no live first session justified by promising never to resume. |
 | Unproven or unsupported | Any | Any | No live release on the current settlement protocol. |
 | Qualified | Qualified | Unproven or unsupported | No fixed-book release; resolve route or explicitly revise/requalify the affected execution contract. |
+
+Read rows from top to bottom; the first matching row selects the disposition.
+"Amendment required" includes `AMENDMENT_REQUIRED` for any member of the grouped
+capability column. A recovery group with both unproven and amendment-required rows
+therefore takes the amendment disposition, but all remaining gaps still block live
+release. Approval alone does not change a row to qualified: collect the amended
+contract's evidence, revalidate affected consumers and reevaluate every capability.
 
 **Minimal attended profile:**
 
@@ -298,14 +325,110 @@ It does not remove the producer work needed for normal operation or safe inciden
 closure. It makes no availability or response-time guarantee beyond the qualified
 services and existing attended contract.
 
+### 6.1 Evening approval and automatic scheduled activation
+
+**Requirement:** Joshua reviews the completed session and updates around 18:00
+`America/New_York`, approves one identified upcoming trading session, and needs
+no routine morning interaction. Joshua is reachable by phone and available for
+incident platform intervention. At evening review, confirm platform/alert access
+and availability for the authorized window. Retain acknowledgment/escalation
+targets and prove actual phone delivery. Continuous screen presence is not required.
+
+18:00 follows daylight saving time, not fixed UTC-05:00. Use the approved calendar
+to show the target account-session ID, local/UTC boundaries, execution window and
+expiry. Tradeify's ordinary account day starts at 18:00, so approval then can
+cover the just-opened session containing the next morning. Do not add another
+session at midnight or infer weekday/holiday mappings. Activation follows the
+existing qualified strategy/calendar schedule; this adds no morning-only window.
+
+**Recommended mechanism:** keep the existing services running. Complete updates
+and intended disarmed deployment/restart before approval. The existing account
+owner retains one-use conditional consent bound to the current boot and halt
+generation, then evaluates it at the permitted start without another click.
+Do not schedule a daily restart or keep a generally armed configuration. Unexpected
+restart invalidates pending consent; surviving that restart is not selected for
+the first release. First-ever launch retains its separate B7/n3/GO sequence.
+
+The evening screen groups these steps but preserves their distinct authority:
+
+1. Assemble the finished-close evidence and accept it using the existing signed
+   settlement challenge/receipt. Retain source facts, freshness and attestation
+   requirements. A report missing at 18:00 prevents completed evening approval;
+   do not pre-sign unknown future facts or silently postpone signing to morning.
+2. Validate any update and complete its applicable qualification/release admission.
+   Show exact image/config, portfolio/policy, calendar, feed/route and predecessor
+   settlement identities. Strategy changes do not inherit the old release GO.
+3. Sign conditional authorization naming account/epoch, boot, generation, those
+   identities, accepted settlement digest, target session, not-before time,
+   activation deadline and expiry at or before the existing entry cutoff. Include
+   nonce, signing identity and incident availability. Reject invalid/missing bounds.
+
+Consent authorizes **later verification**, not reuse of evening observations as
+fresh morning evidence. At activation, qualified read-only producers supply current
+account scope, zero gross positions, no working/protective orphan orders, resolution
+of previous requests and coverage of intervening activity/corrections. The listener
+also checks settlement continuity, exact identities/GO, calendar, feed/warm-up/
+barrier/control health, notification health and incident-session restrictions.
+If any required fact needs manual morning collection, the no-morning requirement
+is not qualified. Expected feed arrival is not an account change; unexplained
+manual/provider activity or corrected history invalidates approval.
+
+Only the serialized account owner consumes consent and records the fresh evidence
+digest and durable effective-activation acknowledgment before risk admission. The
+service records fulfillment of conditions; it cannot create an operator signature.
+The UI/scheduler requests evaluation but cannot grant permission. Duplicate requests
+return the retained outcome. Concurrent halt/revocation wins; uncertain activation
+commit or restart remains HALTED rather than retrying into trading.
+
+| Event | Required result |
+|---|---|
+| Evening approval; feed not expected open yet | HALTED/pending until the named eligibility boundary; off-session silence is not an invented fault. |
+| Fresh checks pass inside the authorized start window | Consume once, record acknowledgment, start at the next complete eligible bar without replaying missed signals. |
+| Missing/stale evidence or failed preflight by activation deadline | No trading; send exact blockers to the phone. Expiry does not permit a late start. |
+| Unexpected restart, incident, revocation, changed bound identities/settlement, unexplained account activity | Invalidate pending consent, retain obligations, require new eligible approval. |
+| Incident after activation | Fence runtime mutations, notify Joshua and end automated trading for that account session. |
+| Repair, reconciliation and ordinary disarm finish | Prepare the next eligible session's approval; never resume the incident session or clear uncertainty on rollover. |
+
+Diagnostics assemble one incident record automatically: outstanding requests,
+observed exposure, evidence age, identity, fault and exact recovery blockers.
+Bounded read-only retries may be automatic. Repair must not replay ambiguous
+mutations, weaken evidence or silently change the approved image. Joshua performs
+required platform actions. Once recovery is verified, present the next eligible
+session's approval with the evidence already assembled; do not ask the operator
+to gather logs or repeat completed diagnostics. Acknowledge remains separate from
+approval. Single-screen recovery is not a promise of one-click platform repair.
+
+**Timing gate:** measure source availability, collection, review/signing and receipt
+around 18:00. Retain receipt-age bounds. If complete evidence is routinely unavailable
+then, report the measured conflict and a concrete source/timing alternative. A
+provider update window is not proof of readiness. No collection job or notification
+service is configured by this document.
+
+**Integration owed:** replace rev9 section 4's no-future-preapproval clause with
+this narrow mechanism and its same-session resume permission with #411's restriction.
+Reconcile sections 3/7, rail-extension S8/S9 and R-N/R-M, the arming procedure's
+subsequent-session dependency, replay incident tests and Phase 5/6 plans together.
+Keep planned disarmed initial boot distinct from unexpected restart through verified
+state, not a caller's `planned` label. Later-session GO validity/current-state rules
+remain an explicit owner dependency. No new B7 or n3 is implied by routine approval.
+This extension does not silently supersede the governing contracts.
+
+**Acceptance traces:** evening approval to healthy morning without interaction;
+approval at/after 18:00; weekend/holiday/DST; late report; correction/manual order
+after approval; stale/replayed consent; halt race; lost activation reply; restart
+before/after consumption; phone failure/escalation; incident repair with same-session
+refusal; later-session approval only after reconciliation/disarm; initial-launch
+separation. Exercise actual listener/config/evidence boundaries and an attended
+phone drill. Synthetic success proves only consumer behavior, not real capabilities.
+
 ## 7. Contract delta and integration boundary
 
 | Owner/component | Proposed treatment |
 |---|---|
-| PR 409 account owner, runtime and settlement integration | Finish/review under existing scope. Reuse accepted successor; no requested edits, rollback or new acceptance burden from this draft. |
+| PR 409 account owner, runtime and settlement integration | Reuse merged `845fb13` and retained acceptance. Later-session authorization is follow-up work; synthetic bootstrap is not a production activation API. |
 | Settlement contract, `account_close_evidence.py`, `account_close_calculation.py`, `book_settlement.py` | Preserve interface and acceptance law. Add only qualified source adapters/procedures in later implementation. Any new anchor/evidence law is a separate exact amendment. |
 | Rail extension E1/E2/E3/K1 and L2 | Retain. Capability gaps are decision outputs; do not disguise them as serializer fields or provider guarantees. |
-| Halt/resume rev9 sections 4 and 7 | Approved design restriction: incident-session reactivation refused; future-session activation still requires every retained gate. Reconcile the governing owner and affected tests in the subsequent implementation work. |
+| Halt/resume rev9 sections 3, 4 and 7 | Approved base restriction: incident-session reactivation refused. Section 6.1 proposes narrow evening consent and later automatic verification; reconcile the no-future-preapproval clause and attendance wording before implementation. |
 | Runtime owner and activation/config owner | Later implementation persists incident-session restriction through restore and verifies actual activation. No new permission owner. |
 | Replay/qualification | Preserve portfolio and normal schedule. Document impact of changed incident-resume availability; retain existing separation of outage integration scenarios from economic sampling. Do not invent outage frequencies or rerun outcome-bearing samples without their authority. |
 | Release checklist/operating procedure | Reference the accepted capability record and changed session behavior; reuse unaffected evidence and approvals. |
