@@ -10,7 +10,7 @@ Tradeify eval-phase drawdown-lock constant, so future campaigns stop hand-rollin
 
 Steps:
 
-1. **Rule 0.** Read in full before any design: `core/firm_rules.py:340-370` (the
+1. **Rule 0.** Read in full before any design: `core/firm_rules.py:272-328` (the
    `DEFECT FOUND 2026-07-22, APPLIED 2026-08-04` comment block — the constant itself is
    **already fixed**, default is `1_000_000.0`/unreachable); the M-23 and M-24 lesson
    entries in full (`docs/methodology/lessons/methodology_lessons.md`); at minimum two
@@ -108,7 +108,7 @@ drive-by fix bundled into this migration.
 
 Reads: [2026-08-03 gate-stack audit §5.1 F3](../notes/audits/programme-audit/2026-08-03-gate-stack-audit.md) ·
 [M-23 / M-24 lessons](../methodology/lessons/methodology_lessons.md) ·
-`core/firm_rules.py:340-370` · [regime_robustness_gate.md Implementation notes](../methodology/regime_robustness_gate.md)
+`core/firm_rules.py:272-328` · [regime_robustness_gate.md Implementation notes](../methodology/regime_robustness_gate.md)
 (the sibling "library-graduation clause" — already discharged, for `core/mc/modes.py::_run_half_panel`;
 **do not conflate the two** — that graduation covers the half-panel regime-robustness
 pattern, this spec covers the dd_lock_offset_usd attestation pattern; they are different

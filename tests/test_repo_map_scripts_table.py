@@ -1,4 +1,4 @@
-"""REPO_MAP.md §2.1 table is generated from SCRIPTS_LAYER + gates.yml + git ls-files."""
+"""REPO_MAP.md §2.1 table is generated from repo_map_layers.yml scripts_layer + gates.yml + git ls-files."""
 from __future__ import annotations
 
 import importlib.util
@@ -32,7 +32,7 @@ def test_live_rows_cover_every_tracked_script():
     inv = _load()
     rows = inv.collect(
         repo=REPO,
-        boundaries=REPO / "scripts" / "check_boundaries.py",
+        layers=REPO / "scripts" / "repo_map_layers.yml",
         gates_yml=REPO / "scripts" / "gates.yml",
     )
     assert [r[0] for r in rows] == _git_scripts()
@@ -41,10 +41,10 @@ def test_live_rows_cover_every_tracked_script():
 
 def test_layer_matches_scripts_layer_fallback():
     inv = _load()
-    layer = inv._load_scripts_layer(REPO / "scripts" / "check_boundaries.py")
+    layer = inv._load_scripts_layer(REPO / "scripts" / "repo_map_layers.yml")
     rows = inv.collect(
         repo=REPO,
-        boundaries=REPO / "scripts" / "check_boundaries.py",
+        layers=REPO / "scripts" / "repo_map_layers.yml",
         gates_yml=REPO / "scripts" / "gates.yml",
     )
     for rel, got, _gate, notes in rows:
@@ -64,7 +64,7 @@ def test_wired_gate_ids_exist_in_gates_yml():
     known = {g["id"] for g in data["gates"]}
     rows = inv.collect(
         repo=REPO,
-        boundaries=REPO / "scripts" / "check_boundaries.py",
+        layers=REPO / "scripts" / "repo_map_layers.yml",
         gates_yml=REPO / "scripts" / "gates.yml",
     )
     for rel, _layer, gate_cell, notes in rows:
@@ -85,7 +85,7 @@ def test_exit_zero_and_stats_notes():
         r[0]: r
         for r in inv.collect(
             repo=REPO,
-            boundaries=REPO / "scripts" / "check_boundaries.py",
+            layers=REPO / "scripts" / "repo_map_layers.yml",
             gates_yml=REPO / "scripts" / "gates.yml",
         )
     }
