@@ -66,6 +66,22 @@ and have counts consistent with testcase outcomes. `test_summary` contains colle
 passed, failed, error and skipped counts; report errors prevent acceptance.
 Gate results remain in the full stdout/stderr logs and do not require JUnit.
 
+Recorded local and Docker pytest commands load `scripts.pytest_junit_subtests`.
+The locked pytest 9.1.1 producer counts subtests but otherwise reuses their
+parent's XML node. This adapter emits separate, uniquely named testcase elements
+for those outcomes and retains ordinary parent/setup/teardown reporting. The
+recorder still rejects mismatched counts and contradictory outcomes. Its summary
+counts JUnit testcases, including subtests; pytest's terminal summary reports
+parent tests and subtests separately. Custom JUnit destinations remain supported.
+The adapter uses the pinned pytest producer API; run its process regressions when
+updating pytest. Reports are retained as produced, not repaired after validation.
+
+Agent-handoff and image fault-injection process tests opt into `isolated_home`.
+Their Python and shell children share temporary home/cache storage outside the
+worker workspace. This changes test environments only; production receipts and
+locks still use the real home directory. Fixture environment overrides are
+restored afterward, and the launcher owns temporary-tree cleanup.
+
 Schema version 2 reserves `record.json` before environment checks, then atomically
 replaces it as the run advances through `not_started`, `running`, and a final
 `completed`, `failed`, or `interrupted` state. A setup failure stays `not_started`
@@ -158,9 +174,23 @@ make audit          # report-only diagnostics
 make validate       # data manifests + pine
 ```
 
-Install hooks once per clone: `bash scripts/install_hooks.sh`. Install the
-check dependencies first; see
-[Installing the check dependencies](#installing-the-check-dependencies).
+Install or refresh hooks using `bash scripts/install_hooks.sh` (Git Bash on
+Windows), or `scripts/install_hooks.bat` on Windows. Shell hook templates and
+the shell installer are LF-pinned for fresh Windows checkouts.
+
+All four hooks bootstrap through `python -I scripts/fp.py` from the checkout
+where Git invoked them. Bootstrap Python needs only stdlib; check consumers use
+that checkout's validated operations environment. Run `fp.ps1 doctor` first and
+see [Local operations launcher](#local-operations-launcher) for environment
+selection. Blocking hooks refuse an invalid environment. Advisory post-merge
+prints an explicit warning and makes no repair when its environment preflight
+fails; it cannot undo an already completed merge.
+
+Installed hooks live in the common Git directory and affect linked worktrees.
+Updating templates does not silently overwrite installed hooks. Before
+refreshing them, ensure active checkouts contain the launcher and have a valid
+environment; older checkouts without it will fail explicitly. Installation
+tests use disposable repositories and do not change your shared installed hooks.
 
 Per-script layer classification is owned by `scripts_layer` in
 [`repo_map_layers.yml`](repo_map_layers.yml) (fallback **governance**), the

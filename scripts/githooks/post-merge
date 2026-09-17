@@ -26,6 +26,13 @@
 ROOT="$(git rev-parse --show-toplevel)" || exit 0
 cd "$ROOT" || exit 0
 
+# A post-merge notice cannot undo the merge. Expose environment failures before
+# the advisory checks suppress their normal diagnostics or mutate session prose.
+if ! python -I scripts/fp.py doctor >/dev/null; then
+  echo "WARNING: post-merge checks did not run; repair the operations environment." >&2
+  exit 0
+fi
+
 # (1) Incoming Pine-pin provenance (2026-07-31). `.pine` is gitignored, so a pin
 # authored on a disposable checkout (cloud agent / runner) is unverifiable the
 # moment that machine is torn down — the bad8068d... case, where the "active
@@ -45,13 +52,13 @@ cd "$ROOT" || exit 0
 # PR is fresh, is the difference between re-pinning from a source that still
 # exists and reconstructing one that does not.
 if git rev-parse --verify -q ORIG_HEAD >/dev/null; then
-  if ! python scripts/check_pine_manifest.py --check-pin-provenance --base ORIG_HEAD 2>/dev/null; then
+  if ! python -I scripts/fp.py python scripts/check_pine_manifest.py --check-pin-provenance --base ORIG_HEAD 2>/dev/null; then
     echo ""
     echo "WARNING: this merge brought in a Pine pin made on a disposable checkout."
     echo "         Those bytes are gitignored and are almost certainly already lost."
     echo "         Do NOT delete or weaken the pin. While the authoring PR is still"
     echo "         fresh, recover the .pine from it and re-pin from THIS machine:"
-    echo "           python scripts/check_pine_manifest.py --check-pin-provenance --base ORIG_HEAD"
+    echo "           python -I scripts/fp.py python scripts/check_pine_manifest.py --check-pin-provenance --base ORIG_HEAD"
     echo "         If the bytes are gone, reconstruct from the predecessor edition and"
     echo "         record it as a reconstruction, not a recovery (cf. bad8068d...)."
     echo ""
@@ -69,7 +76,7 @@ fi
 # local limb that sees a GitHub-side PR merge, and it cannot block — by the time
 # it runs the duplicate is already on main, so the warning has to be loud and
 # name the manual fix.
-if ! python scripts/roll_sessions.py --check-order --root "$ROOT" 2>/dev/null | grep -q "duplicate session label"; then
+if ! python -I scripts/fp.py python scripts/roll_sessions.py --check-order --root "$ROOT" 2>/dev/null | grep -q "duplicate session label"; then
   :
 else
   echo ""
@@ -77,16 +84,16 @@ else
   echo "         label. Session letters are allocated at write time with no"
   echo "         reservation, so two concurrent sessions can pick the same one"
   echo "         (2026-08-08f, 2026-08-09g). merge=union keeps both sides."
-  python scripts/roll_sessions.py --check-order --root "$ROOT" 2>/dev/null \
+  python -I scripts/fp.py python scripts/roll_sessions.py --check-order --root "$ROOT" 2>/dev/null \
     | grep "duplicate session label" | sed 's/^/         /'
   echo "         Renumber the later entry by hand — --reorder cannot fix this."
   echo ""
 fi
 
-CHECK="$(python scripts/roll_sessions.py --normalize --reorder --dry-run --root "$ROOT" 2>/dev/null)"
+CHECK="$(python -I scripts/fp.py python scripts/roll_sessions.py --normalize --reorder --dry-run --root "$ROOT" 2>/dev/null)"
 case "$CHECK" in
   *"changed"*)
-    python scripts/roll_sessions.py --normalize --reorder --root "$ROOT" >/dev/null
+    python -I scripts/fp.py python scripts/roll_sessions.py --normalize --reorder --root "$ROOT" >/dev/null
     echo ""
     echo "NOTE: docs/SESSIONS.md had union-merge debris (separators and/or entry"
     echo "      order) — repaired in the working tree, NOT committed. Review with:"

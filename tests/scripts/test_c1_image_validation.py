@@ -17,6 +17,8 @@ import types
 
 import pytest
 
+pytestmark = pytest.mark.usefixtures('isolated_home')
+
 
 ROOT = Path(__file__).resolve().parents[2]
 LISTENER = "L1 L2 L3 L4 L5a L5b L6 L6b L7 L8 L9".split()
@@ -114,18 +116,6 @@ def test_d11_wait_refuses_a_missed_window():
     probe = d11_probe()
     with pytest.raises(AssertionError, match="missed injection checkpoint"):
         probe.wait_until(0, latest=1)
-
-
-@pytest.fixture
-def shell():
-    """Use Git Bash on Windows, rather than the unrelated WSL launcher."""
-    executable = (
-        Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "Git/bin/bash.exe"
-        if os.name == "nt" else shutil.which("bash")
-    )
-    if not executable or not Path(executable).exists():
-        pytest.skip("Bash is required for the Linux image harness")
-    return str(executable)
 
 
 @pytest.mark.parametrize("failure,target,expected", [

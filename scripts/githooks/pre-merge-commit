@@ -21,6 +21,6 @@
 ROOT="$(git rev-parse --show-toplevel)" || exit 0
 cd "$ROOT" || exit 0
 
-python scripts/roll_sessions.py --check-order --root "$ROOT" || exit 1
-python scripts/roll_sessions.py --check-append-only --root "$ROOT" || exit 1
+python -I scripts/fp.py python scripts/roll_sessions.py --check-order --root "$ROOT" || exit 1
+python -I scripts/fp.py python scripts/roll_sessions.py --check-append-only --root "$ROOT" || exit 1
 exit 0

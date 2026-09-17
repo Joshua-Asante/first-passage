@@ -3,8 +3,8 @@
 # hooks (vendor SHA256SUMS validation; governance-surface push-collision gate;
 # SESSIONS.md union-merge debris normalization + duplicate-label gate).
 #
-# Windows: PowerShell `bash` is WSL, not Git Bash — this file is CRLF; prefer
-# scripts/install_hooks.bat (same warning as CLAUDE.md §Vendor-data integrity).
+# Windows: PowerShell `bash` is WSL, not Git Bash; use Git Bash explicitly or
+# scripts/install_hooks.bat. Shell templates and this installer are LF-pinned.
 #
 # pre-merge-commit is separate from pre-commit on purpose: pre-commit does not
 # run when git auto-creates a merge commit (measured 2026-08-09), which is
