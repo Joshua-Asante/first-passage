@@ -13,6 +13,11 @@ offers a host-readiness-only substitute. Final record acceptance additionally
 requires completion, zero exits, unchanged source, complete capture, valid report
 and artifact hashes, canonical manifest identity and successful owned cleanup.
 Offline exact-revision verification also requires a clean checkout at that SHA.
+The manifest has `text eol=lf` pinned in `.gitattributes`: its SHA-256 is
+`84c35fb57d708eb1785996a95a5fd21dce11dcf843d73f7a82a377242b081e30`.
+This avoids Windows checkout translation changing offline evidence comparisons.
+The local LF bytes and the tested Linux commit's manifest have the same Git blob
+`358698b9fe857443176fa44f95cb1236ef9b9ce4`; the EOL pin changes no Linux bytes.
 
 ## Review-family dispositions
 
@@ -64,6 +69,10 @@ Python 3.14.3 separately; that is not the operations interpreter.
   **97 passed, one Windows symlink-privilege skip**, record
   `20260918T144248Z-0fd831db136f`. Unchanged broad-suite results remain applicable;
   no all-green rerun of the full 1098-case command is claimed.
+  Broad-run source fingerprint:
+  `a2b9cd6acca7b9f059c3a50a8c4c5de76b1fd37ca9026de79cf2fea19a4b44c0`;
+  corrected-selection fingerprint:
+  `2fe480611614dd3e3192d40b00adb97814f2a77b0fb4a83e3735ad6f22038052`.
 - `./fp.ps1 check`: exit 0, record `20260918T141541Z-f71f7403c46f`;
   72 evidence-store cases, three existing skips, private Pine/heavy-data absence
   disclosed by the gates. No private-data acceptance is claimed.
@@ -120,4 +129,68 @@ code; final remote acceptance remains subject to the records below.
 
 ## Linux acceptance
 
-Pending the identified candidate's two-host run and retained-record audit.
+[Run 35358450882](https://github.com/Joshua-Asante/first-passage/actions/runs/35358450882)
+passed on both fresh Ubuntu hosts at **`f3099bb5a1675e8cee8177656d0fa24502ce6a86`**.
+Each host: **621 collected, 621 passed, zero failures/errors/skips**. Both records
+are completed, zero-exit, source-stable, capture-complete, free of capture/report
+errors, and have successful owned cleanup. Both source checkouts were clean with
+fingerprint `b24cfe4a35a585b9c9f7b5ba8fa1cc422b3232c4ceb2e94144aad74477bf6cab`.
+
+| Host | Record | Journal SHA-256 |
+| --- | --- | --- |
+| 1 | [b9632b17ef644cdb91f71eccee242752](../../../.cache/qualification-linux/35358450882/qualification-host-readiness-1/b9632b17ef644cdb91f71eccee242752/record.json) | `44d2a680fdf03fa9d1956cb02ee8d6ba3947155d7278d303d010c8ab4b98966e` |
+| 2 | [468e5d5c45314eeaa3a366f21175b98b](../../../.cache/qualification-linux/35358450882/qualification-host-readiness-2/468e5d5c45314eeaa3a366f21175b98b/record.json) | `ebf59ed8b6f48d27c82ee11766dde832dcba5e3f1b3506cd5119887ea4def0e3` |
+
+The workflow used operations Python **3.12.3**, selected by each checkout's
+launcher after doctor, and ran:
+
+```sh
+sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python \
+  scripts/qualification_boundary_verification.py --test-only --manifest "$manifest"
+```
+
+The owned-process-group child invoked `python -m pytest -c <checkout>/pyproject.toml
+--rootdir=<checkout> -o addopts= -n 0 -p scripts.pytest_qualification_inventory
+-p scripts.pytest_junit_subtests --qualification-collection=<record>/collection.json
+<manifest-selected-files> -q --tb=short --junitxml=<record>/junit.xml`.
+Each record retains the full argv and exact interpreter path. The retained
+collection, manifest, JUnit and invariant decision all agree.
+
+The offline CLI returned `passed: true` separately for each downloaded record:
+
+```text
+C:/Python314/python.exe -I scripts/fp.py python -m scripts.check_qualification_invariants
+  --record .cache/qualification-linux/35358450882/<host>/<record>/record.json
+  --expected-revision f3099bb5a1675e8cee8177656d0fa24502ce6a86
+```
+
+The [combined retained-evidence audit](../../../.cache/qualification-linux/35358450882/invariant-lifecycle-audit.json)
+also passed via `C:/Python314/python.exe -I scripts/fp.py python
+.cache/audit_invariant_lifecycle.py .cache/qualification-linux/35358450882
+f3099bb5a1675e8cee8177656d0fa24502ce6a86`. Per host it checked 27 executions,
+one reservation and at most one actual start per attempt, complete event chains
+and object hashes, original receipt/authentication bindings, 11 attempt-bound
+checkpoint controls, all four writer orders, and both permission identities.
+Actual client UID 61000 had 10 probes; actual worker UID 65532 had 12 probes,
+including positive reads and denied key/journal/code/socket access as applicable.
+
+Both hosts used profile SHA-256
+`f238d5a1ff126fbe289c69e6c6022f82c5bea24969c6b9833181eebccb379348`, policy SHA-256
+`41646a3ce77f03a83ba8a4ad4dd9d0aa865f150cab7b6f1928895cbc60c0d4df`, and base image
+`python@sha256:afc139a0a640942491ec481ad8dda10f2c5b753f5c969393b12480155fe15a63`.
+The audit recomputed profile identity, located the hash-verified retained policy,
+and matched every worker-image/release code hash to the recorded candidate source.
+
+| Host | Worker image | Environment report SHA-256 |
+| --- | --- | --- |
+| 1 | `sha256:4684d7f889919256fc434a82d4b5a7bc22f5565c1f99947ba85a5fd321429731` | `9fd40bd0960fdd8f8017bf5bde6a25b1c1c919e06b3c14b5d8695f87c49f26f1` |
+| 2 | `sha256:22c33ce8f86cbeaa36d8eac5eadda6d753623571cb29c1fa65aaf103ba3d9c30` | `e2077e635f8ba8022ad67ab7491d99a57743d1f5d499a8ceef6ee5b85af50526` |
+
+Raw records, collection, reports, journals, objects, controls and permission
+reports remain under `.cache/qualification-linux/35358450882`; both workflow
+artifacts retain the same non-secret host evidence for 14 days. Local evidence
+and both mutation copies are preserved. The final documentation/EOL-pin commit
+changes no runtime/test/manifest blob verified by this Linux run.
+
+The selected invariant-gate outcome is verified. Full-campaign and production
+prerequisites remain open. No PR, merge or deployment was performed.

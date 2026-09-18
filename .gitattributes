@@ -104,3 +104,4 @@ ops/calendars/evidence/*.json text eol=lf
 
 # Qualification host inputs are byte-hashed across platforms.
 tools/qualification_verification/* text eol=lf
+tests/ops/qualification/invariant_manifest.json text eol=lf

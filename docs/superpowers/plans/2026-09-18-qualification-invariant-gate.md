@@ -24,11 +24,16 @@ The manifest supplies exact test identities and producer/consumer obligations fo
 - [x] Populate exact IDs from collected tests, review their behavioral coverage, and bind the canonical manifest into CI.
 - [x] Disable product-basis, registry, and role-content validation separately in disposable copies; require the intended assertion to fail and retain exact diffs/reports.
 - [x] Run the planned focused suite and gates; independent review of enforcement and unchanged consumers.
-- [ ] Run the identified candidate on two fresh Linux hosts, audit records, publish the scoped evidence and return.
+- [x] Run the identified candidate on two fresh Linux hosts, audit records, publish the scoped evidence and return.
 
 Local checkpoint: 621 exact critical IDs; broad run1096passed/1fixture failure/1Windows
 skip retained as failed; corrected affected selection97passed/1Windows skip;
 repository check passed. All three mutations killed on intended assertions with
 valid controls and byte-exact retained patch hashes/restoration. Independent review
 findings resolved. See the [evidence audit](../../notes/audits/2026-09-18-qualification-invariant-gate.md)
-for commands, records, limitations and the pending two-host acceptance boundary.
+for commands, records and limitations. Candidate `f3099bb` passed run35358450882:
+621/621 per host, zero skips/errors/failures, completed stable records and successful
+cleanup. Offline canonical verification and combined lifecycle/permission/identity
+audit passed for both hosts. Final documentation and the manifest LF checkout pin
+change no tested Linux runtime bytes. Selected outcome complete; production and
+full-campaign acceptance remain outside this handoff.
