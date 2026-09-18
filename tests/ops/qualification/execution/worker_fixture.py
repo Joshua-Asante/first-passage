@@ -18,7 +18,7 @@ def run_fixture_worker(input_dir, *, execution_id, now):
     return result.stdout
 
 
-def main():
+def compute():
     """Run real computation with only the fixture's historical admission clock."""
     repository = Path(__file__).resolve().parents[4]
     config = tomllib.loads((repository / 'pyproject.toml').read_text(encoding='utf-8'))
@@ -31,5 +31,21 @@ def main():
     sys.stdout.buffer.flush()
 
 
+def main():
+    if sys.argv[1] == '--compute':
+        del sys.argv[1]
+        compute()
+        return 0
+    # Linux vfork/exec can retain the original pytest address space's peak RSS.
+    # This interpreter has a fresh, small address space. A second process gets
+    # new resource accounting based on that space before project imports occur.
+    # Keep the inner timeout below the caller's so it kills/reaps its own worker.
+    result = subprocess.run(
+        [sys.executable, '-I', str(Path(__file__).resolve()), '--compute', *sys.argv[1:]],
+        timeout=110, check=False,
+    )
+    return result.returncode
+
+
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())
