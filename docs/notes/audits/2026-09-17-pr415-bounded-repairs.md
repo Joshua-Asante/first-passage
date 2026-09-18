@@ -1,8 +1,17 @@
 # PR 415 bounded qualification repairs
 
-Acceptance remains paused pending PR 420 and real execution-boundary integration.
-This change does not establish executor-completion provenance or same-process isolation.
-No production qualification, production signing keys, deployment or host provisioning is involved.
+Current disposition: this is the historical PR415 repair record. PR420 has merged;
+remaining execution-provenance and structural findings are carried by the stacked
+`codex/qualification-structural-closure` branch. See the
+[current handoff](2026-09-17-qualification-structural-closure-handoff.md).
+The successor retires public legacy authority and implements a TEST_ONLY N1 route;
+it does not validate full qualification. Acceptance remains HELD, including the
+latest stopped-worker and inconsistent OOM verification results.
+
+At the repair checkpoint below, acceptance was paused pending PR420 and real
+execution-boundary integration. Those repairs did not establish executor-completion
+provenance or same-process isolation. No production qualification, production
+signing keys, deployment or host provisioning was involved in that repair slice.
 
 ## Follow-up review of 9923449
 
