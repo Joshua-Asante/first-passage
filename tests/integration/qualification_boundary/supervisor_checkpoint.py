@@ -23,12 +23,21 @@ fired = False
 
 def trace(frame, event, _argument):
     global fired
+    # CPython 3.12 can write inspected frame locals back while tracing an
+    # inlined comprehension. Never inspect unrelated frames or line events.
+    if fired or event != 'call' or frame.f_globals.get('__name__') != modules[checkpoint]:
+        return None
     matched = (frame.f_code.co_name == checkpoint
                and frame.f_globals.get('__name__') == modules[checkpoint])
-    container = frame.f_locals.get('container_id')
+    container = None
     if checkpoint == 'start_and_capture':
-        target = frame.f_locals.get('fn')
+        if frame.f_code.co_name != 'submit':
+            return None
         caller = frame.f_back
+        if (caller is None or caller.f_code.co_name != '_execute'
+                or caller.f_globals.get('__name__') != 'c1_rail.qualification.execution.service'):
+            return None
+        target = frame.f_locals.get('fn')
         # Stop the execution thread before it submits capture. Stopping inside
         # the capture thread can suspend an already pending docker inspect and
         # expire its unrelated subprocess deadline while the service is paused.
@@ -40,6 +49,8 @@ def trace(frame, event, _argument):
                    and caller.f_globals.get('__name__') == 'c1_rail.qualification.execution.service')
         if matched:
             container = frame.f_locals['args'][0]
+    elif matched:
+        container = frame.f_locals.get('container_id')
     if not fired and event == 'call' and matched:
         fired = True
         sys.settrace(None)
@@ -51,7 +62,7 @@ def trace(frame, event, _argument):
             stream.flush()
             os.fsync(stream.fileno())
         os.kill(os.getpid(), signal.SIGSTOP)
-    return trace
+    return None
 
 
 threading.settrace(trace)
