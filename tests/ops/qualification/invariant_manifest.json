@@ -509,7 +509,8 @@
       "tests/ops/qualification/execution/test_request_concurrency.py::test_incomplete_peer_cannot_serialize_other_connections",
       "tests/ops/qualification/execution/test_request_concurrency.py::test_request_admission_is_bounded_until_a_handler_completes",
       "tests/ops/qualification/execution/test_transport.py::test_complete_frame_with_finite_deadline_is_accepted",
-      "tests/ops/qualification/execution/test_transport.py::test_dripping_frame_cannot_extend_connection_deadline"
+      "tests/ops/qualification/execution/test_transport.py::test_dripping_frame_cannot_extend_connection_deadline",
+      "tests/ops/qualification/execution/test_worker_fixture_isolation.py::test_captured_fixture_does_not_inherit_parent_peak_memory"
     ],
     "evidence_kind": "executed pytest JUnit; real protected Linux process/UID/container evidence where integration nodes are named"
   },
