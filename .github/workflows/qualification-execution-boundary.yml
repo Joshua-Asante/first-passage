@@ -1,37 +1,25 @@
-name: Qualification disposable host readiness
+name: Qualification invariant gate
 
-# Host readiness only. Required boundary acceptance is not cut over until the
-# real service, approved fixture producer and launch-to-G5 selection are integrated.
+# Both fresh hosts must execute the canonical critical-case manifest. Host-only
+# readiness remains a local diagnostic, never a substitute for this CI gate.
 on:
   pull_request:
-    paths:
-      - '.gitattributes'
-      - 'tools/qualification_verification/**'
-      - 'scripts/qualification_boundary_*.py'
-      - 'scripts/fp.py'
-      - 'scripts/record_verification.py'
-      - 'scripts/pytest_*.py'
-      - 'pyproject.toml'
-      - 'tests/conftest.py'
-      - 'tests/integration/conftest.py'
-      - 'tests/test_qualification_*.py'
-      - 'tests/integration/qualification_host/**'
-      - 'requirements-ops.lock'
-      - 'tools/local_verification/requirements-extra.txt'
-      - '.github/workflows/qualification-execution-boundary.yml'
+    paths-ignore:
+      - '**/*.md'
+      - '.claude/**'
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - '.claude/**'
   workflow_dispatch:
-    inputs:
-      boundary:
-        description: 'Run incremental real N1 capture diagnostics (qualification acceptance held)'
-        type: boolean
-        default: false
 
 permissions:
   contents: read
 
 jobs:
   host-readiness:
-    name: Disposable host readiness (${{ matrix.host }})
+    name: Qualification invariants (${{ matrix.host }})
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     strategy:
@@ -44,17 +32,13 @@ jobs:
         run: |
           sudo /bin/bash tools/qualification_verification/provision.sh \
             --manifest-output "$RUNNER_TEMP/qualification-manifest"
-      - name: Doctor and real host permission tests
-        env:
-          BOUNDARY: ${{ inputs.boundary }}
+      - name: Doctor and canonical invariant gate
         run: |
           manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
           host_root="$(dirname "$manifest")"
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
-          mode=--host-only
-          if test "$BOUNDARY" = true; then mode=--test-only; fi
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python \
-            scripts/qualification_boundary_verification.py "$mode" --manifest "$manifest"
+            scripts/qualification_boundary_verification.py --test-only --manifest "$manifest"
       - name: Idempotent owned cleanup and export non-secret evidence
         if: always()
         run: |

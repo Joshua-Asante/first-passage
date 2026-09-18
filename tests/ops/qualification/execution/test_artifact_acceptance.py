@@ -84,6 +84,44 @@ def test_rehashed_artifact_substitution_rejected(captured_case,monkeypatch,role)
             expected_revision=6,journal_snapshot_bytes=snapshot)
 
 
+def test_coherent_valid_role_content_still_must_equal_captured_reconstruction(captured_case, monkeypatch):
+    evidence = inspect(captured_case, monkeypatch)
+    outputs = dict(evidence.output_bytes_by_role)
+    stage = json.loads(outputs['n1_result'])
+    # Keep the entire proposed schema and every linked digest consistent. Only
+    # the claimed outcome-array identity differs from the real captured bytes.
+    stage['outcome_array_sha256'] = 'f' * 64
+    outputs['n1_result'] = encoded(stage)
+    doc = json.loads(evidence.result_bytes)
+    entry = next(row for row in doc['outputs'] if row['role'] == 'n1_result')
+    entry.update(sha256=sha256(outputs['n1_result']), byte_length=len(outputs['n1_result']))
+    doc['stage_results'][1]['output_sha256'] = sha256(outputs['n1_result'])
+    context, case, attestation, artifacts, snapshot = captured_case
+    g5 = importlib.import_module('c1_rail.qualification.execution.g5')
+    with pytest.raises(ValueError, match='EVIDENCE_SEMANTIC_MISMATCH'):
+        g5.validate_result_envelope_v2(context, encoded(doc), attestations={'N1': attestation},
+            artifacts=artifacts, output_bytes_by_role=outputs, expected_attempt_id=context.attempt_id,
+            current_keys=case['keys'], expected_revision=6, journal_snapshot_bytes=snapshot)
+
+
+@pytest.mark.parametrize('change', ['v1', 'missing_attestation', 'full_pass', 'later_stage'])
+def test_active_v2_consumer_rejects_legacy_or_unattested_full_campaign(captured_case, monkeypatch, change):
+    evidence = inspect(captured_case, monkeypatch)
+    context, case, attestation, artifacts, snapshot = captured_case
+    doc = json.loads(evidence.result_bytes)
+    attestations = {'N1': attestation}
+    if change == 'v1': doc['schema'] = 'qualification_result_envelope/v1'
+    elif change == 'missing_attestation': attestations = {}
+    elif change == 'full_pass': doc.update(completion='COMPLETE', verdict='PASS')
+    else: doc['stage_results'].append(dict(stage='N2', status='PASS'))
+    g5 = importlib.import_module('c1_rail.qualification.execution.g5')
+    with pytest.raises(ValueError, match='EXECUTION_ATTESTATION_REQUIRED|UNSUPPORTED_ATTESTED_CHECKPOINT_SET'):
+        g5.validate_result_envelope_v2(context, encoded(doc), attestations=attestations,
+            artifacts=artifacts, output_bytes_by_role=evidence.output_bytes_by_role,
+            expected_attempt_id=context.attempt_id, current_keys=case['keys'],
+            expected_revision=6, journal_snapshot_bytes=snapshot)
+
+
 def test_historical_inspection_survives_expiry_without_new_authority(captured_case,monkeypatch):
     from datetime import timedelta
     from dataclasses import replace

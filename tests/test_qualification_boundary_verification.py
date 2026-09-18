@@ -67,10 +67,7 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
             events.append('begin')
 
         def execute(self, command, **_kwargs):
-            selection='tests/integration/qualification_host' if mode=='--host-only' else 'tests/integration/qualification_boundary'
-            assert selection in command
-            if mode=='--test-only':
-                assert self.data['metadata']['qualification_acceptance']=='held_pending_lifecycle_cutover_and_invariant_gate'
+            assert 'tests/integration/qualification_host' in command
             self.data['test_summary'] = {
                 'collected': 1, 'passed': 1, 'failed': 0, 'errors': 0, 'skipped': 0,
             }
@@ -89,6 +86,12 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
     monkeypatch.setattr(module, 'cleanup', observed_cleanup)
     monkeypatch.setattr(module,'create_process_group',lambda root:root/'group')
     monkeypatch.setattr(module,'owned_command',lambda group,command,interpreter:command)
+    def gate(record, *_args, **_kwargs):
+        events.append('invariants')
+        record.data['test_summary'] = dict(collected=1, passed=1, failed=0, errors=0, skipped=0)
+        record.data['verification_exit_code'] = 0
+    monkeypatch.setattr(module, 'execute_manifest', gate)
+    monkeypatch.setattr(module, 'validate_record', lambda *_args: dict(passed=True))
 
     assert module.main([mode, '--manifest', str(manifest_path)]) == 0
-    assert events == ['lock-enter', 'begin', 'lock-exit', 'cleanup']
+    assert events == ['lock-enter', 'begin', *(['invariants'] if mode == '--test-only' else []), 'lock-exit', 'cleanup']

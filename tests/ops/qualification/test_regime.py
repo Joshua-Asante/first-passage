@@ -8,6 +8,24 @@ from c1_rail.qualification.regime import domain_seed, outer_ranges, sample_outer
 from c1_rail.qualification.model import EdgeState, LEG_IDS
 
 
+@pytest.mark.parametrize('stage,population,panel,purpose,synthetic,expected', [
+    ('n1', 'FULL', None, 'path', True, 10869960941191221317),
+    ('n2', 'FULL', None, 'path', True, 16680443631751632303),
+    ('n2', 'H1', None, 'path', True, 9336804477932117438),
+    ('n2', 'H2', None, 'path', True, 3618746143287651863),
+    ('n2', 'FULL', 0, 'outer', True, 13146302970672992108),
+    ('n2', 'FULL', 0, 'path', True, 10488125420488757711),
+    ('probe', 'FULL', None, 'probe', True, 15606350617355802045),
+    ('n1', 'FULL', None, 'path', False, 6141804469570060787),
+])
+def test_seed_vectors_cover_existing_stage_and_probe_consumers(stage, population, panel, purpose, synthetic, expected):
+    # Independently hashed literal JSON tuples using the documented v2 address
+    # order. No production seed helper supplies the expected value. Covers N1,
+    # N2 FULL, Part B halves, Part A outer/inner, probe and authority separation.
+    assert domain_seed(root='test', stage=stage, population=population, panel_index=panel,
+                       path_index=0, purpose=purpose, synthetic=synthetic) == expected
+
+
 def monthly():
     return tuple(SimpleNamespace(source_session_date=date(2024, m, 1), session_id=str(m)) for m in range(1, 13))
 

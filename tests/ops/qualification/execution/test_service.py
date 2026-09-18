@@ -5,6 +5,38 @@ import pytest
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
 
 
+@pytest.mark.parametrize('consumer', ['service', 'worker', 'g5'])
+def test_n1_consumers_refuse_operator_context_after_admission(tmp_path, monkeypatch, consumer):
+    """Unit authority guard, not evidence of an installed OPERATOR execution."""
+    from types import SimpleNamespace
+    module = importlib.import_module('c1_rail.qualification.execution.' + consumer)
+    context = SimpleNamespace(bundle_sha256='a' * 64, attempt_id='operator-refusal',
+        domain=SimpleNamespace(authority_class='OPERATOR', permits_synthetic=False),
+        bundle_dir=tmp_path, installed_release=b'unit-release')
+    # Isolate the consuming guard after the admission adapter returns. Real
+    # signed admission and installed TEST_ONLY paths have separate cases.
+    monkeypatch.setattr(module, 'verify_bundle', lambda *_args: context)
+    with pytest.raises(ValueError, match='N1_ONLY release forbids production execution'):
+        if consumer == 'service':
+            instance = object.__new__(module.ExecutionService)
+            instance.root = tmp_path
+            instance.release = context.installed_release
+            instance.keys = lambda: {}
+            instance._context(context.bundle_sha256, at=None)
+        elif consumer == 'worker':
+            monkeypatch.setattr(module, 'read_regular', lambda *_args, **_kwargs: encoded({'authority_class': 'OPERATOR'}))
+            monkeypatch.setattr(module, 'load_keys', lambda *_args, **_kwargs: {})
+            module.run_worker(tmp_path, execution_id='operator-refusal')
+        else:
+            from c1_rail.qualification.journal_snapshot import encode_assessment_snapshot
+            snapshot = encode_assessment_snapshot(attempt_id=context.attempt_id,
+                contract_sha256='b' * 64, trust_domain_sha256='c' * 64,
+                policy_sha256='d' * 64, validity='VALID', campaign_revision=1,
+                event_head='e' * 64, executions=[])
+            module.validate_n1_evidence(context, b'', {}, expected_attempt_id=context.attempt_id,
+                current_keys={}, expected_revision=1, journal_snapshot_bytes=snapshot)
+
+
 @pytest.mark.parametrize('operation', ['COMPLETE_CHECKPOINT', 'SIGN', 'CONSUME', 'SET_VERDICT'])
 def test_unrecognized_authority_operation_is_rejected_before_dispatch(operation):
     service = importlib.import_module('c1_rail.qualification.execution.service')

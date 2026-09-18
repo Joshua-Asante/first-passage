@@ -1,15 +1,16 @@
 """Account for explicit qualification invariants using actual retained JUnit.
 
-This checks coverage and report integrity, not behavioral adequacy or recorder
-validity. The coordinator must separately require a completed, source-stable run,
-complete capture, successful cleanup and the appropriate real Linux evidence.
+Report parsing checks coverage, never behavioral adequacy. The execution wrapper
+and retained-record verifier also require source, capture and cleanup validity.
 """
 from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
+import sys
 import xml.etree.ElementTree as ET
 
 from scripts.record_verification import junit_summary
@@ -249,3 +250,104 @@ def validate_manifest(manifest_bytes: bytes, *, collected_nodeids: set[str],
             diagnostic(node, failed, 'testcase or subtest failed/errored')
     return dict(passed=not (missing or skipped or failed), missing=sorted(missing),
                 skipped=sorted(skipped), failed=sorted(failed))
+
+
+CANONICAL_MANIFEST = Path('tests/ops/qualification/invariant_manifest.json')
+
+
+def execute_manifest(record, manifest_path, *, env=None, wrap_command=None):
+    """Run files selected by one manifest, then require every exact critical ID."""
+    raw = Path(manifest_path).read_bytes()
+    required = _manifest(raw)
+    manifest_relative = Path(manifest_path).resolve().relative_to(record.repo).as_posix()
+    record.data['metadata'].update(invariant_manifest_sha256=hashlib.sha256(raw).hexdigest(),
+                                  invariant_manifest_path=manifest_relative)
+    (record.output / 'invariant_manifest.json').write_bytes(raw)
+    collection = record.output / 'collection.json'
+    report = record.output / 'junit.xml'
+    # Collect files rather than just the listed cases: a removed/renamed case is
+    # diagnosed against actual collection, even if all remaining tests pass.
+    files = sorted({node.split('::', 1)[0] for node in required})
+    command = [sys.executable, '-m', 'pytest', '-c', str(record.repo / 'pyproject.toml'),
+               '--rootdir=' + str(record.repo), '-o', 'addopts=', '-n', '0',
+               '-p', 'scripts.pytest_qualification_inventory',
+               '-p', 'scripts.pytest_junit_subtests',
+               '--qualification-collection=' + str(collection),
+               *files, '-q', '--tb=short', '--junitxml=' + str(report)]
+    environment = dict(os.environ if env is None else env)
+    for name in ('PYTEST_ADDOPTS', 'PYTEST_XDIST_WORKER', 'PYTEST_XDIST_WORKER_COUNT', 'PYTEST_XDIST_TESTRUNUID'):
+        environment.pop(name, None)
+    source = str(Path(__file__).resolve().parents[1])
+    environment['PYTHONPATH'] = os.pathsep.join(filter(None, [source, environment.get('PYTHONPATH')]))
+    record.execute(wrap_command(command) if wrap_command else command, env=environment, reports=[report])
+    result = _verify_reports(raw, record.output)
+    (record.output / 'invariants.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+    record.data['invariants'] = result
+    if not result['passed']:
+        raise ValueError('Qualification invariants failed: ' + json.dumps(result))
+
+
+def _verify_reports(raw, root):
+    try:
+        inventory = json.loads((root / 'collection.json').read_bytes(), object_pairs_hook=_closed_pairs)
+        if (set(inventory) != {'schema', 'nodeids'} or inventory['schema'] != 'qualification_collection/v1'
+                or type(inventory['nodeids']) is not list
+                or len(set(inventory['nodeids'])) != len(inventory['nodeids'])):
+            raise ValueError('invalid collection inventory')
+        return validate_manifest(raw, collected_nodeids=set(inventory['nodeids']),
+                                 junit_paths=(root / 'junit.xml',), evidence_root=root)
+    except (OSError, ValueError, TypeError) as exc:
+        return dict(passed=False, missing=[], skipped=[], failed=['collection: ' + str(exc)])
+
+
+def validate_record(record_path, manifest_bytes, *, expected_revision=None):
+    """Recheck exported evidence; a green report cannot override an invalid run."""
+    try:
+        path = Path(record_path).resolve(strict=True)
+        record = json.loads(path.read_bytes(), object_pairs_hook=_closed_pairs)
+        if (record['schema_version'] != 2 or record['status'] != 'completed'
+                or any(type(record[key]) is not int or record[key] != 0
+                       for key in ('exit_code', 'verification_exit_code'))
+                or record['source_stable'] is not True or record['before'] != record['after']
+                or record['capture_complete'] is not True or record['capture_errors'] or record['report_errors']
+                or record['cleanup']['ok'] is not True or record['cleanup']['failures']):
+            raise ValueError('recorder status, source, capture, reports or cleanup is invalid')
+        if expected_revision is not None and (record['before']['commit'] != expected_revision
+                                              or record['before']['status'] != ''):
+            raise ValueError('recorded source is not the clean required candidate')
+        digest = hashlib.sha256(manifest_bytes).hexdigest()
+        metadata = record['metadata']
+        if (metadata['invariant_manifest_sha256'] != digest
+                or record['before']['files'][metadata['invariant_manifest_path']] != digest):
+            raise ValueError('manifest differs from measured candidate')
+        root = path.parent
+        if not {'collection.json', 'junit.xml', 'invariants.json', 'invariant_manifest.json'} <= record['artifacts'].keys():
+            raise ValueError('required gate artifacts absent')
+        for name, expected in record['artifacts'].items():
+            artifact = (root / name).resolve(strict=True)
+            if not artifact.is_relative_to(root) or hashlib.sha256(artifact.read_bytes()).hexdigest() != expected:
+                raise ValueError('record artifact identity differs: ' + name)
+        if (root / 'invariant_manifest.json').read_bytes() != manifest_bytes:
+            raise ValueError('retained manifest differs')
+        result = _verify_reports(manifest_bytes, root)
+        if result != record['invariants'] or result != json.loads((root / 'invariants.json').read_bytes()):
+            raise ValueError('recorded invariant decision differs from evidence')
+        return result
+    except (OSError, ValueError, KeyError, TypeError, RecursionError) as exc:
+        return dict(passed=False, missing=[], skipped=[], failed=['record: ' + str(exc)])
+
+
+def main(argv=None):
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--record', type=Path, required=True)
+    parser.add_argument('--expected-revision', required=True)
+    args = parser.parse_args(argv)
+    manifest = Path(__file__).resolve().parents[1] / CANONICAL_MANIFEST
+    result = validate_record(args.record, manifest.read_bytes(), expected_revision=args.expected_revision)
+    print(json.dumps(result, indent=2))
+    return 0 if result['passed'] else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

@@ -11,6 +11,7 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.record_verification import RunRecord
+from scripts.check_qualification_invariants import CANONICAL_MANIFEST, execute_manifest, validate_record
 from scripts.qualification_boundary_environment import inspect_environment, require_environment
 from tools.qualification_verification.host import cleanup, ownership_lock, protected,create_process_group,owned_command
 
@@ -48,8 +49,8 @@ def main(argv=None):
                                        'ownership_manifest': str(manifest_path),
                                        'host_config_sha256': manifest['host_config_sha256']}
             if args.test_only:
-                record.data['metadata'].update(acceptance_scope='incremental_N1_capture',
-                    qualification_acceptance='held_pending_lifecycle_cutover_and_invariant_gate')
+                record.data['metadata'].update(acceptance_scope='TEST_ONLY_N1_invariants',
+                    qualification_acceptance='requires_completed_invariant_gate')
             try:
                 # Keep cleanup outside this context: cleanup acquires a new open file
                 # description for the same non-reentrant flock.
@@ -62,15 +63,23 @@ def main(argv=None):
                     report = output / 'junit.xml'
                     env = os.environ.copy()
                     env['FP_QUALIFICATION_HOST_MANIFEST'] = str(manifest_path)
-                    selection='tests/integration/qualification_host' if args.host_only else 'tests/integration/qualification_boundary'
-                    command=[sys.executable, '-m', 'pytest', selection,'-q', '--tb=short', f'--junitxml={report}']
                     if args.test_only:
-                        command=owned_command(create_process_group(manifest_path.parent),command,sys.executable)
-                    record.execute(command, env=env, reports=[report])
+                        group = create_process_group(manifest_path.parent)
+                        execute_manifest(record, ROOT / CANONICAL_MANIFEST, env=env,
+                            wrap_command=lambda command: owned_command(group, command, sys.executable))
+                    else:
+                        command=[sys.executable, '-m', 'pytest', 'tests/integration/qualification_host',
+                                 '-q', '--tb=short', f'--junitxml={report}']
+                        record.execute(command, env=env, reports=[report])
                     require_tests(record.data['test_summary'])
             finally:
                 # The ownership_lock context has exited, including on check failure.
                 record.data['cleanup'] = cleanup(manifest_path)
+        if args.test_only:
+            result = validate_record(output / 'record.json', (ROOT / CANONICAL_MANIFEST).read_bytes())
+            if not result['passed']:
+                print(json.dumps(result), file=sys.stderr)
+                return record.data['verification_exit_code'] or 2
         return record.data['verification_exit_code']
     except (OSError, ValueError) as exc:
         print(f'Failed setup: {exc}', file=sys.stderr)
