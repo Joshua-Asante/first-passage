@@ -276,3 +276,85 @@ def test_real_approval_expiry_cannot_issue_new_authority_but_preserves_retry(rea
         assert void['validity']=='VOID'
     finally:
         os.chown(credential,original.st_uid,original.st_gid)
+
+# TEST_ONLY caller: keep the original client/peer verification and frame limits.
+# Only the in-flight COMMIT socket gets a longer initial deadline for SIGSTOP.
+COMMIT_WAIT_DRIVER = r'''
+import json
+from pathlib import Path
+import runpy
+import socket
+import sys
+code, attempt, wait_seconds = Path(sys.argv[1]), sys.argv[2], float(sys.argv[3])
+release = json.loads((code / 'qualification-installation/release.json').read_bytes())
+if release['authority_class'] != 'TEST_ONLY' or release['production_execution']:
+    raise SystemExit('commit wait driver requires TEST_ONLY installation')
+sys.dont_write_bytecode = True
+sys.path[:0] = [str(code / part) for part in ('ops', 'core', 'lab', 'governance', '')]
+from c1_rail.qualification.execution import client
+original_request, original_socket = client.request, socket.socket
+
+class CommitSocket(socket.socket):
+    def settimeout(self, seconds):
+        if not getattr(self, '_configured', False):
+            self._configured = True
+            seconds = wait_seconds
+        return super().settimeout(seconds)
+
+def request(socket_path, operation, fields):
+    if operation != 'COMMIT_N1_RESULT':
+        return original_request(socket_path, operation, fields)
+    socket.socket = CommitSocket
+    try:
+        return original_request(socket_path, operation, fields)
+    finally:
+        socket.socket = original_socket
+
+client.request = request
+sys.argv = [str(code / 'bootstrap.py'), 'g5', '--attempt-id', attempt]
+runpy.run_path(sys.argv[0], run_name='__main__')
+'''
+
+
+def test_real_approval_expiry_during_commit_reconstruction_rejects_acceptance(real_boundary):
+    from tools.qualification_verification import host
+    boundary = real_boundary
+    valid_seconds = 60
+    bundle = boundary.prepare(idle=True, depth_valid_seconds=valid_seconds)
+    attempt = bundle['attempt_id']
+    boundary.restart(checkpoint='commit_authority')
+    boundary.submit(bundle)
+    attested = boundary.wait(attempt)
+    original_events = boundary.events(attempt)
+    original_starts = boundary.starts(attested['container_id'])
+    assert len(original_starts) == 1
+    command = boundary.identity('qg5', [boundary.python, '-I', '-c', COMMIT_WAIT_DRIVER,
+        str(boundary.code), attempt, str(valid_seconds + 30)])
+    with ThreadPoolExecutor(max_workers=1) as callers:
+        response = callers.submit(host.run_owned, boundary.group, command,
+            interpreter=boundary.python, timeout=valid_seconds + 90)
+        try:
+            before, receipt, stopped = _checkpoint(boundary, bundle, 'ATTESTED')
+            assert receipt['checkpoint'] == 'commit_authority'
+            assert receipt['container_id'] == attested['container_id']
+            assert before['execution_id'] == attested['execution_id']
+            expiry = datetime.fromisoformat(bundle['depth_expires_at'].replace('Z', '+00:00'))
+            stopped_at = datetime.now(timezone.utc)
+            assert stopped_at < expiry, 'approval must still be valid after actual reconstruction'
+            time.sleep(max(0, (expiry - datetime.now(timezone.utc)).total_seconds()) + .2)
+            host.save(boundary.output / (attempt + '-commit-authority-expiry.json'),
+                dict(execution_id=before['execution_id'], barrier=receipt, process_state=stopped,
+                    stopped_at=stopped_at.isoformat(), depth_expires_at=bundle['depth_expires_at'],
+                    resumed_at=datetime.now(timezone.utc).isoformat()))
+        finally:
+            boundary.service.send_signal(signal.SIGCONT)
+        with pytest.raises(subprocess.CalledProcessError) as rejected:
+            response.result(timeout=valid_seconds + 90)
+    assert 'approval is not valid at verification time' in (rejected.value.stderr or '')
+    after = boundary.status(attempt)
+    assert after['state'] == 'ATTESTED' and after['execution_id'] == attested['execution_id']
+    assert after['attestation_sha256'] == attested['attestation_sha256']
+    assert after['attestation_count'] == 1 and after['launch_intent_count'] == 1
+    assert 'result_sha256' not in after
+    assert boundary.events(attempt) == original_events
+    assert boundary.starts(after['container_id']) == original_starts

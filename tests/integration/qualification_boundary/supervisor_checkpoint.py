@@ -15,6 +15,7 @@ modules = {
     'record_container': 'c1_rail.qualification.execution.store',
     'start_and_capture': 'concurrent.futures.thread',
     'archive_capture': 'c1_rail.qualification.execution.archive',
+    'commit_authority': 'c1_rail.qualification.execution.service',
 }
 if checkpoint not in modules:
     raise SystemExit('unknown administrator checkpoint')
@@ -49,6 +50,20 @@ def trace(frame, event, _argument):
                    and caller.f_globals.get('__name__') == 'c1_rail.qualification.execution.service')
         if matched:
             container = frame.f_locals['args'][0]
+    elif checkpoint == 'commit_authority':
+        if frame.f_code.co_name != 'now':
+            return None
+        caller = frame.f_back
+        if (caller is None or caller.f_code.co_name != '_commit'
+                or caller.f_globals.get('__name__') != modules[checkpoint]):
+            return None
+        # The first _commit clock call precedes reconstruction. Only stop after
+        # the real verifier has returned evidence and before selecting commit time.
+        values = caller.f_locals
+        if values.get('evidence') is None:
+            return None
+        matched = True
+        container = values['status']['container_id']
     elif matched:
         container = frame.f_locals.get('container_id')
     if not fired and event == 'call' and matched:
