@@ -35,6 +35,7 @@ from c1_rail.qualification.execution.transport import receive
 with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as peer:
     peer.settimeout(30); peer.connect(sys.argv[2])
     peer.sendall(encode_frame(sys.argv[3].encode(),limit=1048576))
+    peer.shutdown(socket.SHUT_WR)
     sys.stdout.buffer.write(receive(peer,limit=1048576))
 '''
 
@@ -82,9 +83,10 @@ class Boundary:
             self.config['socket_path'],encoded(document).decode()])
         return json.loads(host.run_owned(self.group,command,interpreter=self.python,timeout=60))
 
-    def prepare(self,*,idle):
+    def prepare(self,*,idle,fault=None,depth_valid_seconds=14400):
         attempt='linux-'+uuid4().hex
-        return self.admin('prepare','--attempt',attempt,*(['--idle'] if idle else []))
+        return self.admin('prepare','--attempt',attempt,*(['--idle'] if idle else []),
+            *(['--fault',fault] if fault else []),'--depth-valid-seconds',str(depth_valid_seconds))
 
     def submit(self,bundle):
         return json.loads(self.request('SUBMIT_N1',attempt_id=bundle['attempt_id'],bundle_sha256=bundle['bundle_sha256']))
@@ -110,6 +112,20 @@ class Boundary:
 
     def fetch(self,attempt,digest):
         return self.request('FETCH',role='qg5',attempt_id=attempt,object_sha256=digest)
+
+    def events(self,attempt):
+        import sqlite3
+        journal=self.root/'data/journal.sqlite'
+        with sqlite3.connect(journal.as_uri()+'?mode=ro',uri=True) as connection:
+            rows=[json.loads(row[0]) for row in connection.execute(
+                'SELECT body FROM events WHERE attempt_id=? ORDER BY sequence',(attempt,))]
+        host.save(self.output/(attempt+'-events.json'),rows)
+        return rows
+
+    def worker_log(self,execution_id):
+        raw=(self.root/'data/spool'/execution_id/'stderr.log').read_bytes()
+        (self.output/(execution_id+'-worker.stderr')).write_bytes(raw)
+        return raw
 
     def inspect(self,container):
         row=json.loads(host.run([self.manifest['host_config']['docker'],'--host','unix:///var/run/docker.sock',

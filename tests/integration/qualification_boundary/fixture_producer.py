@@ -32,12 +32,12 @@ def fresh_keys(*, execution_seed=None, result_seed=None):
     return private, public, registry
 
 
-def approve(raw, private, scope, *, contract_sha256=None, current=None):
+def approve(raw, private, scope, *, contract_sha256=None, current=None,valid_seconds=14400):
     current = current or datetime.now(timezone.utc)
     payload = dict(schema='qualification_approval_payload/v1', scope=scope, subject_sha256=sha256(raw),
         contract_sha256=contract_sha256 or sha256(raw), authority_class='TEST_ONLY',
         issued_at=(current - timedelta(minutes=5)).isoformat().replace('+00:00', 'Z'),
-        expires_at=(current + timedelta(hours=4)).isoformat().replace('+00:00', 'Z'))
+        expires_at=(current + timedelta(seconds=valid_seconds)).isoformat().replace('+00:00', 'Z'))
     return encoded(dict(schema='qualification_approval/v1', payload=payload, signature=dict(
         algorithm='Ed25519', key_id='test-freeze', value_b64=base64.b64encode(private['test-freeze'].sign(encoded(payload))).decode())))
 
@@ -65,10 +65,35 @@ def release_document(repo, profile, image, keys):
         trusted_key_sha256={key: sha256(value.public_key) for key, value in keys.items()})
 
 
-def build_real_bundle(root, *, repo, release, private, keys, attempt_id, idle=False, budget=None):
+def build_real_bundle(root, *, repo, release, private, keys, attempt_id, idle=False, budget=None,
+                      fault=None,depth_valid_seconds=14400):
     current = datetime.now(timezone.utc)
     policy_raw=build_qualification_policy()
     fixture = build_artifacts(root, idle=idle)
+    if fault is not None:
+        # These signed synthetic strategy programs cause actual worker faults.
+        # They never manufacture PathOutcome, capture or qualification evidence.
+        effects={
+            'stop':'os.kill(os.getpid(), signal.SIGSTOP)',
+            'exit_zero':'os._exit(0)',
+            'cpu':'end=time.process_time()+2\n    while time.process_time()<end: pass',
+            'wall':'time.sleep(2)',
+            'memory':'bytearray(1500000000)',
+        }
+        if fault not in effects: raise ValueError('unknown TEST_ONLY worker fault')
+        role='orb_runtime_port'
+        raw=fixture.payloads[role]
+        marker=b'    def on_bar(self, bar):\n'
+        if raw.count(marker)!=1: raise ValueError('synthetic port hook differs')
+        raw=raw.replace(marker,marker+b'        _boundary_fault()\n')
+        raw+=('''\n_boundary_fault_seen=False
+def _boundary_fault():
+    global _boundary_fault_seen
+    if _boundary_fault_seen: return
+    _boundary_fault_seen=True
+    import os, signal, time
+    '''+effects[fault]+'\n').encode()
+        fixture=replace(fixture,payloads=dict(fixture.payloads,**{role:raw}))
     release_doc = json.loads(release)
     modules = tuple(SimpleNamespace(role=role, name=row['module'], path=row['path'],
         source_bytes=(repo / row['path']).read_bytes()) for role, row in release_doc['ordinary_code'].items())
@@ -98,6 +123,8 @@ def build_real_bundle(root, *, repo, release, private, keys, attempt_id, idle=Fa
                                            maximum_memory_bytes=900000000)
     if budget:
         contract_doc['replay']['budget'].update(budget)
+    if fault in ('cpu','wall'):
+        contract_doc['replay']['budget']['maximum_'+fault+'_seconds']=1
     contract_raw = encoded(contract_doc)
     freeze = approve(contract_raw, private, 'FREEZE_F1', current=current)
     observed = ObservedBindings({fixture.paths[role]: sha256(raw) for role, raw in fixture.payloads.items()},
@@ -107,7 +134,8 @@ def build_real_bundle(root, *, repo, release, private, keys, attempt_id, idle=Fa
     extra = dict(contract=contract_raw, freeze_approval=freeze, trust_domain=domain_raw,
         domain_approval=domain_approval, release_approval=approve(release, private, 'APPROVE_EXECUTION_RELEASE', current=current),
         exact_depth_approval=approve(exact_depth_subject(contract, attempt_id=attempt_id), private,
-            'APPROVE_E1_EXACT_DEPTH', contract_sha256=contract.contract_sha256, current=current))
+            'APPROVE_E1_EXACT_DEPTH', contract_sha256=contract.contract_sha256, current=current,
+            valid_seconds=depth_valid_seconds))
     payloads = dict(fixture.payloads, **extra)
     paths = dict(fixture.paths, **{role: 'authority/' + role + '.json' for role in extra})
     for role, raw in payloads.items():

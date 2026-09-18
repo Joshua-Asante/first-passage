@@ -71,7 +71,7 @@ def install(root,manifest,image):
     return dict(installation_root=str(installation),image_id=image)
 
 
-def prepare(root,attempt,idle):
+def prepare(root,attempt,idle,*,fault=None,depth_valid_seconds=14400):
     private={name:Ed25519PrivateKey.from_private_bytes(base64.b64decode(value))
         for name,value in json.loads((root/'keys/test-authority.json').read_bytes()).items()}
     keys={name:TrustedApprovalKey(name,key.public_key().public_bytes_raw(),'TEST_ONLY') for name,key in private.items()}
@@ -80,9 +80,12 @@ def prepare(root,attempt,idle):
     from c1_rail.qualification.execution.protocol import identity
     identity(attempt)
     source=root/'keys/retained'/attempt
-    bundle=build_real_bundle(source,repo=CODE,release=release,private=private,keys=keys,attempt_id=attempt,idle=idle)
+    bundle=build_real_bundle(source,repo=CODE,release=release,private=private,keys=keys,attempt_id=attempt,idle=idle,
+        fault=fault,depth_valid_seconds=depth_valid_seconds)
     digest=stage_bundle(source,instance_config=(installation/'supervisor.json').read_bytes())
-    return dict(attempt_id=attempt,bundle_sha256=digest,contract_sha256=bundle['contract'].contract_sha256)
+    expires=json.loads(bundle['payloads']['exact_depth_approval'])['payload']['expires_at']
+    return dict(attempt_id=attempt,bundle_sha256=digest,contract_sha256=bundle['contract'].contract_sha256,
+        depth_expires_at=expires)
 
 
 def main():
@@ -91,6 +94,8 @@ def main():
     parser.add_argument('--manifest',type=Path,required=True)
     parser.add_argument('--image'); parser.add_argument('--attempt'); parser.add_argument('--idle',action='store_true')
     parser.add_argument('--contract'); parser.add_argument('--reason')
+    parser.add_argument('--fault',choices=['stop','exit_zero','cpu','memory','wall'])
+    parser.add_argument('--depth-valid-seconds',type=int,default=14400)
     args=parser.parse_args()
     path=host.protected(args.manifest); root=path.parent
     manifest=json.loads(path.read_bytes())
@@ -104,7 +109,8 @@ def main():
         approval=approve(subject,private,'VOID_QUALIFICATION_ATTEMPT',contract_sha256=args.contract)
         result=dict(operator_approval_bytes=base64.b64encode(approval).decode())
     else:
-        result=install(root,manifest,args.image) if args.operation=='install' else prepare(root,args.attempt,args.idle)
+        result=install(root,manifest,args.image) if args.operation=='install' else prepare(root,args.attempt,args.idle,
+            fault=args.fault,depth_valid_seconds=args.depth_valid_seconds)
     sys.stdout.buffer.write(encoded(result))
 
 
