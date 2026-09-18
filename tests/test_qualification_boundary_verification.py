@@ -70,7 +70,7 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
             selection='tests/integration/qualification_host' if mode=='--host-only' else 'tests/integration/qualification_boundary'
             assert selection in command
             if mode=='--test-only':
-                assert self.data['metadata']['qualification_acceptance']=='held_pending_lifecycle_cutover_and_invariant_gate'
+                assert self.data['metadata']['qualification_acceptance']=='coordinator_review_required'
             self.data['test_summary'] = {
                 'collected': 1, 'passed': 1, 'failed': 0, 'errors': 0, 'skipped': 0,
             }
@@ -79,12 +79,13 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
     def observed_cleanup(path):
         assert path == manifest_path
         events.append('cleanup')
-        return {'status': 'retired'}
+        return {'ok': True}
 
     monkeypatch.setattr(module.platform, 'system', lambda: 'Linux')
     monkeypatch.setattr(module.os, 'geteuid', lambda: 0, raising=False)
     monkeypatch.setattr(module, 'protected', lambda path: path)
     monkeypatch.setattr(module, 'RunRecord', Record)
+    monkeypatch.setattr(module, 'require_invariants', lambda *args: {'passed': True})
     monkeypatch.setattr(module, 'ownership_lock', observed_lock)
     monkeypatch.setattr(module, 'cleanup', observed_cleanup)
     monkeypatch.setattr(module,'create_process_group',lambda root:root/'group')
@@ -92,3 +93,23 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
 
     assert module.main([mode, '--manifest', str(manifest_path)]) == 0
     assert events == ['lock-enter', 'begin', 'lock-exit', 'cleanup']
+
+
+def test_invariant_gate_requires_actual_reports(tmp_path):
+    from scripts.qualification_boundary_verification import require_invariants
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from test_qualification_invariant_manifest import manifest, NODE
+    raw = json.dumps(manifest()).encode()
+    collection = tmp_path / 'collected.json'
+    collection.write_text(json.dumps([NODE]))
+    with pytest.raises(ValueError, match='Qualification invariants'):
+        require_invariants(raw, collection, tmp_path / 'missing.xml', tmp_path)
+    diagnostics = json.loads((tmp_path / 'invariants.json').read_bytes())
+    assert not diagnostics['passed']
+
+
+@pytest.mark.parametrize('counts', [{'ok': False}, {}, {'ok': 1}])
+def test_cleanup_must_be_explicitly_successful(counts):
+    with pytest.raises(ValueError, match='cleanup'):
+        runner().require_cleanup(counts)

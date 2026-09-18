@@ -263,3 +263,24 @@ def test_manifest_cannot_weaken_explicit_inventory(tmp_path, kind):
     if kind == 'duplicate_node': doc[0]['test_nodeids'] *= 2
     result = check(tmp_path, document=doc)
     assert not result['passed'] and result['failed']
+
+
+def test_canonical_manifest_has_all_owned_families():
+    from scripts.check_qualification_invariants import _manifest
+    path = Path(__file__).parent / 'ops/qualification/invariant_manifest.json'
+    required = _manifest(path.read_bytes())
+    assert required
+    assert any(node.startswith('tests/integration/qualification_boundary/') for node in required)
+
+
+def test_actual_collection_plugin_records_selected_nodes(tmp_path):
+    import subprocess
+    import sys
+    root = Path(__file__).resolve().parents[1]
+    (tmp_path / 'test_selected.py').write_text('def test_present(): pass\n')
+    driver = 'import sys; sys.path.insert(0, sys.argv[1]); import pytest; raise SystemExit(pytest.main(sys.argv[2:]))'
+    result = subprocess.run([sys.executable, '-c', driver, str(root),
+        'test_selected.py', '-q', '-o', 'addopts=', '-p', 'scripts.pytest_qualification_collection',
+        '--qualification-collection=collected.json'], cwd=tmp_path, capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads((tmp_path / 'collected.json').read_bytes()) == ['test_selected.py::test_present']
