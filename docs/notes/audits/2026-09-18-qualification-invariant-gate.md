@@ -87,3 +87,59 @@ completed, exit 0, stable source and complete capture. Evidence-store tests: 72
 run, 3 existing skips. Missing private Pine sources/data/heavy artifacts remain
 unverified; the gate emitted its existing absent-tree advisories. No gate failure
 was observed. `git diff --check` passed.
+
+## Bounded QPLAN vector follow-up
+
+The coordinator authorized a separate missing-vector follow-up after the initial
+handoff. No production code or seed/probability formula changed. New fixed seed
+fixtures retain literal ASCII preimages and SHA-256-derived integer seeds, generated
+independently with standard-library hashing and no imports from qualification code.
+Tests consume frozen integers; they do not generate expected values by calling the
+production seed helper.
+
+`test_seed_probability_vectors.py` now checks the actual stage runner's separate
+probe/FULL/H1/H2 seeds for N1/N2/N3 under both synthetic and qualification domain
+discriminators, retained seed identities and source-population digests, orchestration
+stage plans, Part A pilot outer/inner and four-panel outer/path streams, retained
+Part A plans, and the representative Part A benchmark's outer/inner streams.
+All are consistency-only fixtures; internal qualification-domain mechanics tests
+confer no production execution authority and do not enable N3 or E1.
+
+New probability vectors exercise actual N1 screening and N2/N3 confirmation
+consumers. At n=4,p=1/2 the exact binomial coefficients are (1,4,6,4,1)/16;
+alpha=5/16 therefore permits one failure and requires three fast passes. Cases
+pin each cutoff and the adjacent failure/speed outcome. N1 checks the exact
+one-quarter boundary and a Decimal value immediately below it. Existing fixed
+calculator/binomial, retained-result Decimal, Part B separation and Part A
+percentile/expansion vectors are selected for mandatory QPLAN inclusion rather
+than duplicated.
+
+`./fp.ps1 python -m pytest tests/ops/qualification/test_seed_probability_vectors.py
+ tests/ops/qualification/test_part_a.py tests/ops/qualification/test_adjudication.py
+ tests/ops/qualification/test_result_adjudication.py tests/test_certification_power.py
+ -q --tb=short -p scripts.pytest_qualification_collection
+ --qualification-collection=.cache/task9-vectors-collected.json`:
+169 passed, zero skips, record `20260918T154725Z-06d69e2ca564`, completed,
+exit 0, stable source, complete capture. Interpreter remains launcher Python 3.13.2.
+Initial test record `20260918T154621Z-9a47815d4ac8` had six failures from a
+transcription error in the H2 literal digest; independent SHA-256 of the literal
+ASCII `["b"]` corrected that fixture. This was not a production defect.
+
+Coordinator integration owns merging `.cache/task9-qplan-additions.json` into
+QPLAN-01: those exact IDs came from the passing execution above. This closes the
+specific missing qualification seed/probability consumer vectors identified in
+the initial handoff, subject to final manifest integration and independent review.
+The preparation-only `prepare_compute` report is not a qualification seed producer;
+its probability helper behavior is covered by the existing calculator vectors.
+
+Branch-protection clarification: the workflow schedules real boundary jobs for all
+PRs and makes their status fail closed. Successful final jobs are evidence for PR
+readiness without changing settings. Enforcing a merge prohibition additionally
+requires a repository administrator's ruleset/branch-protection setting requiring
+`Qualification execution boundary (1)` and `Qualification execution boundary (2)`.
+No branch-protection setting was inspected or changed in this handoff.
+
+Follow-up repository gate `./fp.ps1 check`: record
+`20260918T154855Z-28559e1c4a78`, completed, exit 0, stable source and complete
+capture; 72 evidence-store tests with 3 existing skips and unchanged absent
+private-source/data/heavy-artifact advisories. `git diff --check` passed.
