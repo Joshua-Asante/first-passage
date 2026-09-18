@@ -501,6 +501,7 @@
       "tests/ops/qualification/execution/test_checkpoint_trace.py::test_commit_checkpoint_waits_for_completed_reconstruction[False]",
       "tests/ops/qualification/execution/test_checkpoint_trace.py::test_commit_checkpoint_waits_for_completed_reconstruction[True]",
       "tests/ops/qualification/execution/test_checkpoint_trace.py::test_commit_transport_extends_only_initial_socket_deadline",
+      "tests/ops/qualification/execution/test_checkpoint_trace.py::test_linux_checkpoint_stops_calling_thread_before_clock_sample",
       "tests/ops/qualification/execution/test_checkpoint_trace.py::test_trace_ignores_other_executor_calls_before_reading_locals[absent_caller]",
       "tests/ops/qualification/execution/test_checkpoint_trace.py::test_trace_ignores_other_executor_calls_before_reading_locals[wrong_caller_function]",
       "tests/ops/qualification/execution/test_checkpoint_trace.py::test_trace_ignores_other_executor_calls_before_reading_locals[wrong_caller_module]",
