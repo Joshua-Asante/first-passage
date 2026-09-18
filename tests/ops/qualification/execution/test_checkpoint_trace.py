@@ -57,8 +57,8 @@ def test_trace_records_exact_container_and_triggers_once(tmp_path, checkpoint):
     receipt = tmp_path / 'receipt.json'
     trace, scope = callback(checkpoint, receipt=receipt, json=json,
         sys=SimpleNamespace(settrace=lambda value: calls.append(('sys', value))),
-        threading=SimpleNamespace(settrace=lambda value: calls.append(('threading', value))),
-        signal=SimpleNamespace(SIGSTOP=19),
+        threading=SimpleNamespace(settrace=lambda value: calls.append(('threading', value)), get_ident=lambda: 456),
+        signal=SimpleNamespace(SIGSTOP=19, pthread_kill=lambda tid, sig: calls.append(('stop', tid, sig))),
         os=SimpleNamespace(getpid=lambda: 123, fsync=os.fsync,
             kill=lambda pid, sig: calls.append(('stop', pid, sig))))
     frame = SimpleNamespace(f_code=SimpleNamespace(co_name=checkpoint),
@@ -78,7 +78,7 @@ def test_trace_records_exact_container_and_triggers_once(tmp_path, checkpoint):
     assert trace(frame, 'call', None) is None
     assert trace(frame, 'call', None) is None
     assert json.loads(receipt.read_bytes()) == dict(checkpoint=checkpoint, pid=123, container_id='exact-container')
-    assert calls == [('sys', None), ('threading', None), ('stop', 123, 19)]
+    assert calls == [('sys', None), ('threading', None), ('stop', 456, 19)]
 
 @pytest.mark.parametrize('case', ['wrong_function', 'absent_caller', 'wrong_caller_function', 'wrong_caller_module'])
 def test_commit_checkpoint_checks_call_chain_before_reading_locals(case):
@@ -120,3 +120,70 @@ def test_commit_transport_extends_only_initial_socket_deadline():
         assert connection.gettimeout() == 90
         connection.settimeout(4)
         assert connection.gettimeout() == 4
+
+
+STOP_ORDER_DRIVER = r'''
+import ast
+from datetime import datetime, timezone
+import json
+import os
+from pathlib import Path
+import signal
+import sys
+import threading
+checkpoint_path, receipt, sampled = map(Path, sys.argv[1:])
+tree = ast.parse(checkpoint_path.read_text())
+mapping = next(node.value for node in tree.body if isinstance(node, ast.Assign)
+    and any(isinstance(target, ast.Name) and target.id == 'modules' for target in node.targets))
+function = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'trace')
+scope = dict(checkpoint='commit_authority', modules=ast.literal_eval(mapping), fired=False,
+    receipt=receipt, json=json, os=os, signal=signal, sys=sys, threading=threading)
+exec(compile(ast.Module(body=[function], type_ignores=[]), str(checkpoint_path), 'exec'), scope)
+# A minimal caller exercises the actual driver without claiming service evidence.
+caller = dict(__name__='c1_rail.qualification.execution.service',
+    datetime=datetime, timezone=timezone, sampled=sampled)
+exec('def now():\n return datetime.now(timezone.utc)\n'
+     'def _commit():\n evidence = object()\n status = {"container_id": "ordering-probe"}\n'
+     ' committed_at = now()\n sampled.write_text(committed_at.isoformat())\n', caller)
+threading.settrace(scope['trace'])
+thread = threading.Thread(target=caller['_commit'])
+thread.start()
+thread.join()
+'''
+
+
+def test_linux_checkpoint_stops_calling_thread_before_clock_sample(tmp_path):
+    from datetime import datetime, timezone
+    import signal
+    import subprocess
+    import sys
+    import time
+    if sys.platform != 'linux':
+        pytest.skip('actual Linux thread-directed SIGSTOP ordering')
+    driver = Path(__file__).resolve().parents[4] / 'tests/integration/qualification_boundary/supervisor_checkpoint.py'
+    receipt, sampled = tmp_path / 'receipt.json', tmp_path / 'sampled.txt'
+    process = subprocess.Popen([sys.executable, '-I', '-c', STOP_ORDER_DRIVER,
+        str(driver), str(receipt), str(sampled)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    try:
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            if receipt.exists() and process.poll() is None:
+                state = next(line for line in (Path('/proc') / str(process.pid) / 'status').read_text().splitlines()
+                             if line.startswith('State:'))
+                if state.split()[1] == 'T':
+                    break
+            time.sleep(.01)
+        else:
+            pytest.fail('driver did not reach a stopped Linux process')
+        assert json.loads(receipt.read_bytes())['pid'] == process.pid
+        assert not sampled.exists(), 'traced caller advanced before the stop took effect'
+        resumed_at = datetime.now(timezone.utc)
+        process.send_signal(signal.SIGCONT)
+        stdout, stderr = process.communicate(timeout=10)
+        assert process.returncode == 0, stdout + stderr
+        assert datetime.fromisoformat(sampled.read_text()) >= resumed_at
+    finally:
+        if process.poll() is None:
+            process.send_signal(signal.SIGCONT)
+            process.kill()
+            process.wait(timeout=10)

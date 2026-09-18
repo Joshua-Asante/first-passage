@@ -349,7 +349,8 @@ def test_real_approval_expiry_during_commit_reconstruction_rejects_acceptance(re
         finally:
             boundary.service.send_signal(signal.SIGCONT)
         with pytest.raises(subprocess.CalledProcessError) as rejected:
-            response.result(timeout=valid_seconds + 90)
+            unexpected = response.result(timeout=valid_seconds + 90)
+            host.save(boundary.output / (attempt + '-unexpected-commit-response.json'), json.loads(unexpected))
     assert 'approval is not valid at verification time' in (rejected.value.stderr or '')
     after = boundary.status(attempt)
     assert after['state'] == 'ATTESTED' and after['execution_id'] == attested['execution_id']

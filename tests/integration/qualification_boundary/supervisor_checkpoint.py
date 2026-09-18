@@ -76,7 +76,9 @@ def trace(frame, event, _argument):
             json.dump(document, stream)
             stream.flush()
             os.fsync(stream.fileno())
-        os.kill(os.getpid(), signal.SIGSTOP)
+        # A process-directed stop can reach another thread first and let this
+        # callback return. Target the caller so its clock cannot advance first.
+        signal.pthread_kill(threading.get_ident(), signal.SIGSTOP)
     return None
 
 
