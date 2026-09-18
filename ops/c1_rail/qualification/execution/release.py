@@ -11,13 +11,15 @@ from .files import fsync_directory, read_regular
 from .keys import load_keys
 from .protocol import fields, sha256
 from .runtime import observe_runtime, protected_path, installed_code_root
+from tools.qualification_verification.container_ownership import host_identity
 
 INSTANCE_FIELDS = {'schema', 'authority_class', 'installation_root', 'data_root', 'daemon_data_root',
-    'socket_path', 'socket_gid', 'client_uid', 'service_uid', 'g5_uid', 'operator_uid', 'execution_credential'}
+    'socket_path', 'socket_gid', 'client_uid', 'service_uid', 'g5_uid', 'operator_uid', 'execution_credential','host_run_id'}
 
 
 def parse_instance(raw):
     config = fields(parse_canonical_json(raw, label='instance'), INSTANCE_FIELDS)
+    host_identity(config['host_run_id'])
     if config['schema'] != 'qualification_execution_instance/v1' or config['authority_class'] not in ('TEST_ONLY', 'OPERATOR'):
         raise ValueError('instance schema/authority differs')
     for name in ('installation_root', 'data_root', 'daemon_data_root', 'socket_path', 'execution_credential'):

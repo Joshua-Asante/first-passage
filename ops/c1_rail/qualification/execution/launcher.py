@@ -14,10 +14,11 @@ import time
 from ..contract import canonical_json_bytes as encoded
 from .admission import WORKER_ENTRYPOINT
 from .protocol import CapturedOutput, digest, identity
+from tools.qualification_verification.container_ownership import HOST_LABEL, EXECUTION_LABEL, host_identity, owned_containers
 
 DOCKER = '/usr/bin/docker'
 ENDPOINT = 'unix:///var/run/docker.sock'
-LABEL = 'org.first-passage.qualification.execution'
+LABEL = EXECUTION_LABEL
 
 
 def docker_environment():
@@ -38,12 +39,13 @@ def _run(*args):
     return result.stdout
 
 
-def create_arguments(context, *, execution_id, input_dir, profile):
+def create_arguments(context, *, execution_id, input_dir, profile, host_run_id):
     identity(execution_id)
     source = str(Path(input_dir).absolute())
     if ',' in source or '\n' in source:
         raise ValueError('unsafe input mount')
     return ['create', '--name=qexec-' + execution_id, '--label=' + LABEL + '=' + execution_id,
+        '--label=' + HOST_LABEL + '=' + host_identity(host_run_id),
         '--network=' + profile.network, '--read-only', '--cap-drop=ALL',
         '--security-opt=no-new-privileges:true', '--ipc=' + profile.ipc_mode,
         '--restart=' + profile.restart, '--user=' + str(profile.worker_uid) + ':' + str(profile.worker_uid),
@@ -56,8 +58,9 @@ def create_arguments(context, *, execution_id, input_dir, profile):
         '--execution-id', execution_id, '--input=/input']
 
 
-def create_worker(context, *, execution_id, input_dir, profile):
-    container = _run(*create_arguments(context, execution_id=execution_id, input_dir=input_dir, profile=profile)).decode('ascii').strip()
+def create_worker(context, *, execution_id, input_dir, profile, host_run_id):
+    container = _run(*create_arguments(context, execution_id=execution_id, input_dir=input_dir, profile=profile,
+                                      host_run_id=host_run_id)).decode('ascii').strip()
     return digest(container)
 
 
@@ -69,11 +72,31 @@ def _inspect(container_id):
     return rows[0]
 
 
-def inspect_worker(container_id, *, context, profile):
+def find_owned_worker(execution_id, *, host_run_id, image_id, release_sha256):
+    """Discover an interrupted create using the durable dispatch enrollment."""
+    identity(execution_id)
+    host_identity(host_run_id)
+    candidates = _run('ps', '--all', '--quiet', '--no-trunc',
+        '--filter=label=' + HOST_LABEL + '=' + host_run_id,
+        '--filter=label=' + LABEL + '=' + execution_id).decode('ascii').splitlines()
+    if not candidates:
+        return None
+    if len(candidates) != 1:
+        raise ValueError('owned container inventory ambiguous')
+    row = _inspect(candidates[0])
+    owned = owned_containers([row], [dict(execution_id=execution_id,
+        container_id=None, release_sha256=release_sha256)], run_id=host_run_id,
+        image_id=image_id, release_sha256=release_sha256)
+    return owned[0]
+
+
+def inspect_worker(container_id, *, context, profile, host_run_id):
     row = _inspect(container_id)
     host, config = row['HostConfig'], row['Config']
     execution_id = config.get('Labels', {}).get(LABEL)
     identity(execution_id)
+    if config.get('Labels',{}).get(HOST_LABEL) != host_identity(host_run_id) or row['Name'] != '/qexec-'+execution_id:
+        raise ValueError('effective worker ownership differs')
     expected_host = dict(NetworkMode='none', ReadonlyRootfs=True, CapDrop=['ALL'], CapAdd=None,
         Privileged=False, PidMode='', IpcMode='private', Memory=profile.memory_bytes,
         MemorySwap=profile.memory_bytes, PidsLimit=profile.pids_limit,

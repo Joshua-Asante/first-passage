@@ -9,11 +9,11 @@ def instance():
         installation_root='/opt/qualification/installation', data_root='/var/lib/qualification',
         daemon_data_root='/var/lib/qualification', socket_path='/run/qualification/service.sock',
         socket_gid=31000, client_uid=31001, service_uid=31002, g5_uid=31003, operator_uid=0,
-        execution_credential='/etc/qualification/execution/key.json')
+        execution_credential='/etc/qualification/execution/key.json',host_run_id='a'*32)
 
 
 @pytest.mark.parametrize('name,value', [('service_uid', 0), ('g5_uid', 31002), ('socket_gid', True),
-                                      ('installation_root', 'relative'), ('command', 'sh')])
+                                      ('installation_root', 'relative'), ('command', 'sh'),('host_run_id','foreign')])
 def test_instance_rejects_unsafe_or_unknown_bindings(name, value):
     doc = instance()
     doc[name] = value

@@ -13,6 +13,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+from tools.qualification_verification.role_policy import ROLES, ROLE_GROUPS
 
 SCHEMA = 'qualification_environment/v1'
 TRUST_MODEL = 'trusted_administrator_and_privileged_qexec/v1'
@@ -59,7 +60,7 @@ def require_environment(report):
 def load_profile(raw):
     # Optional until the boundary owner lands its implementation. Absence is a
     # named failed prerequisite, never a replacement profile or acceptance skip.
-    module = importlib.import_module('ops.c1_rail.qualification.execution.profile')
+    module = importlib.import_module('c1_rail.qualification.execution.profile')
     return module.parse_profile(raw)
 
 
@@ -98,7 +99,7 @@ def identities(doc):
     import grp
     import pwd
     result = {}
-    if set(doc['roles']) != {'qclient', 'qexec', 'qg5'}:
+    if set(doc['roles']) != set(ROLES):
         raise ValueError('three roles required')
     docker_gid = grp.getgrnam('docker').gr_gid
     for role, uid in doc['roles'].items():
@@ -106,7 +107,8 @@ def identities(doc):
             raise ValueError('non-root UID required')
         user = pwd.getpwuid(uid)
         groups = sorted(os.getgrouplist(user.pw_name, user.pw_gid))
-        expected_groups = {uid, docker_gid} if role == 'qexec' else {uid}
+        expected_groups = {uid} | {doc['roles'][group] if group in doc['roles'] else grp.getgrnam(group).gr_gid
+                                   for group in ROLE_GROUPS[role]}
         if user.pw_gid != uid or docker_gid in doc['roles'].values() or set(groups) != expected_groups:
             raise ValueError('unexpected primary or supplementary group')
         result[role] = {'uid': uid, 'gid': user.pw_gid, 'groups': groups}

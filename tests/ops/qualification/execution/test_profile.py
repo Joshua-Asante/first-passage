@@ -1,5 +1,7 @@
 """All launcher consumers use one validated resolved isolation profile."""
 import importlib
+import json
+from pathlib import Path
 from c1_rail.qualification.contract import canonical_json_bytes
 import pytest
 
@@ -9,14 +11,7 @@ def profile_module():
 
 
 def document():
-    return dict(schema='qualification_execution_profile/v1', protocol_version=1,
-                supported_checkpoints=['N1'], capability='N1_ONLY', production_execution=False,
-                input_byte_limit=100000000, output_byte_limit=10000000,
-                log_byte_limit=1000000, rpc_byte_limit=15000000,
-                worker_uid=65532, memory_bytes=1000000000, pids_limit=64,
-                scratch_bytes=10000000, admission_seconds=60, capture_seconds=10,
-                network='none', read_only=True, capabilities=[], no_new_privileges=True,
-                privileged=False, pid_mode='private', ipc_mode='private', restart='no')
+    return json.loads((Path(__file__).resolve().parents[4]/'deploy/qualification/test-profile.json').read_bytes())
 
 
 @pytest.mark.parametrize('field,value', [

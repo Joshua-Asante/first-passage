@@ -216,13 +216,13 @@ def test_cleanup_uses_retained_docker_executable(monkeypatch):
     host = host_module()
     commands = []
     monkeypatch.setattr(host, 'run', lambda command: commands.append(command) or '')
-    host.boundary_containers({'docker': '/opt/qualified/docker'}, 'run-id')
+    host.boundary_containers({'docker': '/opt/qualified/docker'}, 'a'*32)
     assert commands == [['/opt/qualified/docker', '--host', 'unix:///var/run/docker.sock',
-                         'ps', '-aq', '--filter', 'label=fp.qualification.host=run-id']]
+                         'ps', '-aq', '--no-trunc', '--filter', 'label=fp.qualification.host='+'a'*32]]
 
 
 @pytest.mark.parametrize(('name', 'memberships'), [
-    ('qclient', []), ('qg5', []), ('qexec', ['docker']), ('qexec', []),
+    ('qclient', []), ('qg5', []), ('qg5',['qclient']), ('qexec', ['docker']), ('qexec', []),
 ])
 def test_cleanup_accepts_only_expected_role_group_memberships(name, memberships):
     host = host_module()
@@ -557,6 +557,34 @@ def test_cleanup_without_account_commands_needs_no_new_cgroup(cleanup_attempt, m
     assert host.reservation_owner(reservation) is None
     assert not (path.parent / 'code').exists()
     assert host.cleanup(path)['already_retired']
+
+
+def test_cleanup_docker_mutations_join_owned_cgroup(cleanup_attempt,monkeypatch):
+    host,path,_,_=cleanup_attempt
+    group=path.parent/'cleanup-group'
+    calls=[]
+    monkeypatch.setattr(host,'boundary_cleanup_plan',lambda *args:dict(containers=['a'*64],images=['sha256:'+'b'*64]))
+    monkeypatch.setattr(host,'create_process_group',lambda root:group)
+    monkeypatch.setattr(host,'run_owned',lambda owner,command,**kwargs:calls.append((owner,command)))
+    result=host.cleanup(path)
+    assert result['ok']
+    assert len(calls)==2 and all(owner==group for owner,_ in calls)
+    assert calls[0][1][-3:]==['--force','--','a'*64]
+    assert calls[1][1][-3:]==['rm','--','sha256:'+'b'*64]
+
+
+def test_cleanup_group_member_requires_manifest_owned_account(cleanup_attempt,monkeypatch):
+    host,path,manifest,_=cleanup_attempt
+    manifest['resources']=[dict(kind='group',name='qclient',id=61000)]
+    host.save(path,manifest)
+    group=SimpleNamespace(gr_name='qclient',gr_gid=61000,gr_mem=['qg5'])
+    monkeypatch.setattr(sys.modules['grp'],'getgrnam',lambda name:group)
+    monkeypatch.setattr(sys.modules['pwd'],'getpwall',lambda:[],raising=False)
+    removed=[]
+    monkeypatch.setattr(host,'run_owned',lambda *args,**kwargs:removed.append(args))
+    result=host.cleanup(path)
+    assert not result['ok'] and not removed
+    assert 'member' in ' '.join(result['failures'])
 
 
 @pytest.mark.parametrize('relative', ['data', 'scratch'])

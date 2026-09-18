@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.record_verification import RunRecord
 from scripts.qualification_boundary_environment import inspect_environment, require_environment
-from tools.qualification_verification.host import cleanup, ownership_lock, protected
+from tools.qualification_verification.host import cleanup, ownership_lock, protected,create_process_group,owned_command
 
 
 def require_tests(counts):
@@ -47,6 +47,9 @@ def main(argv=None):
             record.data['metadata'] = {'purpose': 'host_readiness' if args.host_only else 'boundary_acceptance',
                                        'ownership_manifest': str(manifest_path),
                                        'host_config_sha256': manifest['host_config_sha256']}
+            if args.test_only:
+                record.data['metadata'].update(acceptance_scope='incremental_N1_capture',
+                    qualification_acceptance='held_pending_lifecycle_cutover_and_invariant_gate')
             try:
                 # Keep cleanup outside this context: cleanup acquires a new open file
                 # description for the same non-reentrant flock.
@@ -54,19 +57,16 @@ def main(argv=None):
                     record.begin()
                     if record.data['before'] != manifest['source']:
                         raise ValueError('Candidate source differs from provisioned snapshot')
-                    if not args.host_only:
-                        if not args.instance or not args.profile:
-                            raise ValueError('Boundary fixture producer missing: protected instance/profile required')
-                        report = inspect_environment(args.instance, protected(args.profile).read_bytes())
-                        (output / 'environment.json').write_text(json.dumps(report, indent=2) + '\n')
-                        require_environment(report)
-                        raise ValueError('Boundary acceptance integration unavailable: canonical fixture producer, '
-                                         'release/image enrollment and launch-to-G5 suite must be integrated by boundary owner')
+                    if args.instance or args.profile:
+                        raise ValueError('Canonical fixture producer owns instance/profile bindings')
                     report = output / 'junit.xml'
                     env = os.environ.copy()
                     env['FP_QUALIFICATION_HOST_MANIFEST'] = str(manifest_path)
-                    record.execute([sys.executable, '-m', 'pytest', 'tests/integration/qualification_host',
-                                    '-q', '--tb=short', f'--junitxml={report}'], env=env, reports=[report])
+                    selection='tests/integration/qualification_host' if args.host_only else 'tests/integration/qualification_boundary'
+                    command=[sys.executable, '-m', 'pytest', selection,'-q', '--tb=short', f'--junitxml={report}']
+                    if args.test_only:
+                        command=owned_command(create_process_group(manifest_path.parent),command,sys.executable)
+                    record.execute(command, env=env, reports=[report])
                     require_tests(record.data['test_summary'])
             finally:
                 # The ownership_lock context has exited, including on check failure.

@@ -1,9 +1,11 @@
 # Disposable qualification test host
 
-This is a **host-readiness implementation**, not completed qualification-boundary
-acceptance. The boundary service, canonical ExecutionProfile, approved TEST_ONLY
-release/image fixture producer, and launch-to-G5 integration suite are not present
-on the base revision. `--test-only` fails closed until that owner integrates them.
+This remains **incomplete qualification-boundary acceptance**. The default run
+checks host readiness. `--test-only` now selects the incremental real N1 capture
+suite with its canonical profile, protected TEST_ONLY fixture installer and image
+builder. Records explicitly hold qualification acceptance pending the complete
+lifecycle, legacy cutover and invariant gate. No passing incremental run closes
+Tasks 6–9 by itself.
 No same-UID test, parser double or generic Docker result can replace that milestone.
 
 ## Trust boundary
@@ -92,8 +94,10 @@ identity lock before publishing a manifest or creating resources. Only the new
 qexec receives Docker group membership. Accounts have locked authentication,
 no home directory and a non-login shell. Actual UID/group access probes execute
 in separate processes after dropping supplementary groups, GID and UID.
-Readiness requires each primary GID to equal its configured UID, no supplementary
-groups for qclient/qg5, and only the Docker supplementary group for qexec.
+Readiness requires each primary GID to equal its configured UID. Canonical
+`role_policy.py` permits no supplementary groups for qclient, the Docker group
+for qexec, and qclient's socket-access group for qg5. It grants qg5 no access to
+qexec's private data or credentials.
 
 Setup binds the source snapshot's configuration and lock digests to the loaded configuration and
 checks the staged locks again before creating or installing the environment.
@@ -144,15 +148,17 @@ After integration, the supported launcher entry remains:
 ```bash
 python -I scripts/fp.py doctor
 python -I scripts/fp.py python scripts/qualification_boundary_verification.py --test-only \
-  --manifest /absolute/private/ownership.json \
-  --instance /absolute/protected/instance.json --profile /absolute/protected/profile.json
+  --manifest /absolute/private/ownership.json
 ```
 
-The current wrapper retains the preflight, then rejects boundary acceptance even
-if readiness passes. The integration owner must replace that explicit blocker
-with the real unchanged acceptance selection, add launch/inspection/event evidence,
-verify staged-source identity and extend exact container/service ownership cleanup.
-Do not remove it merely because host-readiness tests pass.
+The administrator fixture producer owns the installed instance/profile; caller
+substitutions are rejected. The incremental suite builds the worker from an exact
+source allowlist, resolves the Python base to a content digest, installs the shared
+hash-locked dependencies and records build identity. The original Python base and
+daemon build cache remain for disposal with the fresh VM; cleanup never prunes
+shared daemon resources. The workflow's manual `boundary` input selects this suite
+on two fresh hosts. Its result is diagnostic until the outstanding acceptance
+requirements below are complete.
 
 Still required from the boundary owner: losing and passing N1 through G5;
 fabrication rejection; duplicate/concurrent submission; restart/no-redraw;
@@ -175,8 +181,10 @@ The disposable host must expose writable administrator-owned cgroup v2 at
 `/sys/fs/cgroup`, including `cgroup.kill`. Before any mutating subprocess runs,
 the orchestrator durably registers an exact per-run cgroup in private
 `process-groups.json`; the child joins it before executing its payload. Descendants
-inherit that membership even if they create a new session. These are host setup
-and cleanup utilities, not qualification worker containers or services.
+inherit that membership even if they create a new session. `start_owned` applies
+the same registration-before-launch rule to installed service children. Docker
+cleanup commands also run in a registered group; worker containers have separate
+exact identity validation.
 
 Cleanup kills every registered cgroup and removes it before touching account or
 filesystem resources. A removed cgroup rejects a delayed child's entry, so that
@@ -209,8 +217,12 @@ Missing resources are idempotent success. Private ownership metadata, public
 non-secret evidence and prior receipts remain; original run records are not
 rewritten. A hard kill leaves an incomplete run; cleanup cannot promote it to
 success. A concurrent setup/cleanup lock prevents competing administrators from
-retiring a reserved host. Unexpected boundary containers block cleanup until their
-owner supplies exact-ID lifecycle integration. There is no prune, wildcard resource
+retiring a reserved host. A private boundary registry records build intent before
+image creation and binds the completed image to its signed release. Cleanup checks
+container IDs, host/execution labels, exact names, image IDs and durable journal
+dispatch membership before removal. Image retirement requires the exact build
+identity and refuses remaining consumers. Unexpected containers block cleanup.
+There is no prune, wildcard resource
 removal, shared-image deletion, Docker reset or implicit VM destruction.
 
 Cleanup does not detect GID or permission-mode drift on a tree whose recorded

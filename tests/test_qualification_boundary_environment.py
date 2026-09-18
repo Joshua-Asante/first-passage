@@ -146,7 +146,7 @@ def test_roles_require_exact_group_sets(monkeypatch, role, change):
         return SimpleNamespace(pw_name=names[uid],
                                pw_gid=6 if names[uid] == role and change == 'wrong-primary' else uid)
     def groups(name, gid):
-        result = [gid] + ([999] if name == 'qexec' else [])
+        result = [gid] + ([999] if name == 'qexec' else [11] if name == 'qg5' else [])
         return result + ([6] if name == role and change == 'extra-disk' else [])
     monkeypatch.setitem(sys.modules, 'pwd', SimpleNamespace(getpwuid=user))
     monkeypatch.setitem(sys.modules, 'grp', SimpleNamespace(
@@ -157,7 +157,7 @@ def test_roles_require_exact_group_sets(monkeypatch, role, change):
         result = env.identities({'roles': uids})
         assert result['qclient']['groups'] == [11]
         assert result['qexec']['groups'] == [12, 999]
-        assert result['qg5']['groups'] == [13]
+        assert result['qg5']['groups'] == [11,13]
     else:
         with pytest.raises(ValueError, match='group'):
             env.identities({'roles': uids})

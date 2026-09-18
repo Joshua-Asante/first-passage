@@ -17,7 +17,7 @@ from .evidence import parse_worker_result
 from .files import fsync_directory, read_regular
 from .g5 import validate_result_envelope_v2
 from .keys import load_keys
-from .launcher import create_worker, inspect_worker, start_and_capture, stop_owned_worker
+from .launcher import create_worker, find_owned_worker, inspect_worker, start_and_capture, stop_owned_worker
 from .plan import derive_n1_plan
 from .protocol import decode_base64, encode_frame, fields, parse_request, sha256
 from .signing import sign_captured
@@ -232,8 +232,10 @@ class ExecutionService:
                 _write(input_root, 'bundle/' + item['path'], context.retained_bytes[item['role']])
             fsync_directory(input_root)
             daemon_input = Path(self.config['daemon_data_root']) / 'inputs' / execution_id
-            container = create_worker(context, execution_id=execution_id, input_dir=daemon_input, profile=self.profile)
-            inspected = parse_canonical_json(inspect_worker(container, context=context, profile=self.profile), label='inspection')
+            container = create_worker(context, execution_id=execution_id, input_dir=daemon_input, profile=self.profile,
+                                      host_run_id=self.config['host_run_id'])
+            inspected = parse_canonical_json(inspect_worker(container, context=context, profile=self.profile,
+                host_run_id=self.config['host_run_id']), label='inspection')
             if inspected['execution_id'] != execution_id or inspected['input_source'] != str(daemon_input):
                 raise ValueError('created container binding differs')
             record = self.store.record_container(execution_id, container, expected_revision=status['revision'])
@@ -245,7 +247,8 @@ class ExecutionService:
                 capture_future = capture_executor.submit(start_and_capture, container, spool_dir=self.root / 'spool' / execution_id,
                     profile=self.profile, maximum_wall_seconds=context.contract.replay.budget.maximum_wall_seconds)
                 while True:
-                    inspected = parse_canonical_json(inspect_worker(container, context=context, profile=self.profile), label='inspection')
+                    inspected = parse_canonical_json(inspect_worker(container, context=context, profile=self.profile,
+                        host_run_id=self.config['host_run_id']), label='inspection')
                     state = inspected['state']
                     if state['StartedAt'] and not state['StartedAt'].startswith('0001-'):
                         break
@@ -261,7 +264,8 @@ class ExecutionService:
             output = next(iter(artifacts.values()))
             parsed = parse_worker_result(output, context=context, execution_id=execution_id, plan_bytes=plan)
             self.store.archive_object(execution_id, 'worker_result', output)
-            inspected = parse_canonical_json(inspect_worker(container, context=context, profile=self.profile), label='inspection')
+            inspected = parse_canonical_json(inspect_worker(container, context=context, profile=self.profile,
+                host_run_id=self.config['host_run_id']), label='inspection')
             state = inspected['state']
             facts = encoded(dict(schema='qualification_capture/v1', container_id=container,
                 service_id=context.domain.execution_service_id, profile_sha256=self.profile.sha256,
@@ -290,14 +294,19 @@ class ExecutionService:
     def recover_service(self):
         self.recovery_issues = {}
         for row in self.store.execution_rows():
-            if row['validity'] == 'VOID' and row['container_id']:
-                self._stop_recovering(row['container_id'],row['execution_id'])
             if row['state'] in ('DISPATCHED', 'START_INTENT', 'RUNNING'):
                 self.store.record_abort(row['execution_id'], 'uncertain execution after service restart', uncertain=True)
-                if row['container_id']:
-                    self._stop_recovering(row['container_id'],row['execution_id'])
-            elif row['state'] in ('IN_DOUBT','ABORTED') and row['container_id']:
-                self._stop_recovering(row['container_id'],row['execution_id'])
+            if row['validity'] == 'VOID' or row['state'] in ('DISPATCHED','START_INTENT','RUNNING','IN_DOUBT','ABORTED'):
+                try:
+                    container = row['container_id']
+                    if container is None:
+                        release = parse_canonical_json(self.release,label='installed release')
+                        container = find_owned_worker(row['execution_id'],host_run_id=self.config['host_run_id'],
+                            image_id=release['worker_image_digest'],release_sha256=row['release_sha256'])
+                    if container is not None:
+                        self._stop_recovering(container,row['execution_id'])
+                except (ValueError,OSError,subprocess.SubprocessError):
+                    self.recovery_issues[row['execution_id']] = 'CLEANUP_PENDING'
             elif row['state'] == 'CAPTURED' and row['validity'] == 'VALID':
                 try:
                     sign_captured(row['execution_id'], store=self.store, credential_reference=self.config['execution_credential'])

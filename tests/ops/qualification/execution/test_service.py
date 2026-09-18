@@ -57,3 +57,28 @@ def test_recovery_persists_uncertainty_before_failed_container_cleanup(tmp_path,
     before=store.status(record.attempt_id)
     instance.recover_service()
     assert store.status(record.attempt_id)==before
+
+
+def test_recovery_discovers_unrecorded_owned_container_without_redraw(tmp_path,monkeypatch):
+    from test_store import reserved
+    service=importlib.import_module('c1_rail.qualification.execution.service')
+    store,record,_=reserved(tmp_path)
+    instance=object.__new__(service.ExecutionService)
+    instance.store=store
+    instance.config={'host_run_id':'a'*32}
+    instance.release=encoded({'worker_image_digest':'sha256:'+'b'*64})
+    found=[]
+    def find(execution_id,**kwargs):
+        assert store.execution_rows()[0]['state']=='IN_DOUBT'
+        assert kwargs['host_run_id']=='a'*32 and kwargs['image_id']=='sha256:'+'b'*64
+        found.append(execution_id)
+        return 'c'*64
+    stopped=[]
+    monkeypatch.setattr(service,'find_owned_worker',find,raising=False)
+    monkeypatch.setattr(service,'stop_owned_worker',lambda container,**kwargs:stopped.append(container))
+    instance.recover_service()
+    assert found==[record.execution_id] and stopped==['c'*64]
+    assert b'"launch_intent_count":0' in store.status(record.attempt_id)
+    before=store.status(record.attempt_id)
+    instance.recover_service()
+    assert found==[record.execution_id]*2 and store.status(record.attempt_id)==before
