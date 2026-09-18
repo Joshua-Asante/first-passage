@@ -7,6 +7,7 @@ import pytest
 from bundle_fixture import build_bundle
 from test_contract import NOW
 from test_worker import stage_input
+from worker_fixture import run_fixture_worker
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
 from c1_rail.qualification.execution.protocol import decode_frame,sha256
 from c1_rail.qualification.journal_snapshot import encode_assessment_snapshot
@@ -17,10 +18,8 @@ def captured_case(tmp_path_factory):
     root=tmp_path_factory.mktemp('g5-unit')
     case=build_bundle(root/'bundle',idle=True)
     context=stage_input(root,case)
-    worker=importlib.import_module('c1_rail.qualification.execution.worker')
-    with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(worker,'utc_now',lambda:NOW)
-        raw=decode_frame(worker.run_worker(root,execution_id='g5-fixture'),limit=context.profile.output_byte_limit)
+    raw=decode_frame(run_fixture_worker(root,execution_id='g5-fixture',now=NOW),
+                     limit=context.profile.output_byte_limit)
     plan=(root/'plan.json').read_bytes()
     doc=json.loads(raw)
     instant=NOW.isoformat().replace('+00:00','Z')
