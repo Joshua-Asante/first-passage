@@ -13,7 +13,7 @@ if release['authority_class'] != 'TEST_ONLY' or release['production_execution']:
     raise SystemExit('checkpoint driver requires synthetic TEST_ONLY installation')
 modules = {
     'record_container': 'c1_rail.qualification.execution.store',
-    'start_and_capture': 'c1_rail.qualification.execution.launcher',
+    'start_and_capture': 'concurrent.futures.thread',
     'archive_capture': 'c1_rail.qualification.execution.archive',
 }
 if checkpoint not in modules:
@@ -23,13 +23,29 @@ fired = False
 
 def trace(frame, event, _argument):
     global fired
-    if (not fired and event == 'call' and frame.f_code.co_name == checkpoint
-            and frame.f_globals.get('__name__') == modules[checkpoint]):
+    matched = (frame.f_code.co_name == checkpoint
+               and frame.f_globals.get('__name__') == modules[checkpoint])
+    container = frame.f_locals.get('container_id')
+    if checkpoint == 'start_and_capture':
+        target = frame.f_locals.get('fn')
+        caller = frame.f_back
+        # Stop the execution thread before it submits capture. Stopping inside
+        # the capture thread can suspend an already pending docker inspect and
+        # expire its unrelated subprocess deadline while the service is paused.
+        matched = (frame.f_code.co_name == 'submit'
+                   and frame.f_globals.get('__name__') == modules[checkpoint]
+                   and getattr(target, '__module__', '') == 'c1_rail.qualification.execution.launcher'
+                   and getattr(target, '__name__', '') == 'start_and_capture'
+                   and caller is not None and caller.f_code.co_name == '_execute'
+                   and caller.f_globals.get('__name__') == 'c1_rail.qualification.execution.service')
+        if matched:
+            container = frame.f_locals['args'][0]
+    if not fired and event == 'call' and matched:
         fired = True
         sys.settrace(None)
         threading.settrace(None)
         document = dict(checkpoint=checkpoint, pid=os.getpid(),
-                        container_id=frame.f_locals.get('container_id'))
+                        container_id=container)
         with receipt.open('x') as stream:
             json.dump(document, stream)
             stream.flush()
