@@ -410,7 +410,11 @@ class ExecutionStore:
             validity=row['validity'], revision=row['revision'], plan_sha256=row['plan_sha256'],
             attestation_sha256=row['attestation_sha256'], container_id=row['container_id'],
             launch_intent_count=kinds.count('START_INTENT'), attestation_count=kinds.count('ATTESTED'),
-            next_checkpoint='UNSUPPORTED')
+              next_checkpoint='UNSUPPORTED')
+        preflight=connection.execute('SELECT sha256 FROM execution_objects WHERE execution_id=? AND role=?',
+            (row['execution_id'],'preflight')).fetchone()
+        if preflight is not None:
+            status['preflight_sha256']=preflight[0]
         assessment = connection.execute('SELECT * FROM assessments WHERE execution_id=?', (row['execution_id'],)).fetchone()
         if assessment is not None:
             result = parse_canonical_json(self.fetch(attempt_id, assessment['result_sha256']), label='committed result')

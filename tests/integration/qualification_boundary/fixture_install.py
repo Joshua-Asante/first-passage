@@ -47,6 +47,7 @@ def install(root,manifest,image):
         for name,key in private.items()}),mode=0o400)
     socket_root=root/'keys/socket'; socket_root.mkdir(mode=0o750)
     os.chown(socket_root,roles['qexec'],roles['qclient'])
+    socket_root.chmod(0o2750)
     scratch=root/'keys/qg5/scratch'; scratch.mkdir(mode=0o700); os.chown(scratch,roles['qg5'],roles['qg5'])
     config=dict(schema='qualification_execution_instance/v1',authority_class='TEST_ONLY',host_run_id=root.name,
         installation_root=str(installation),data_root=str(root/'data'),daemon_data_root=str(root/'data'),

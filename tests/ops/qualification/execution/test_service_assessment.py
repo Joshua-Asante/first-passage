@@ -166,7 +166,10 @@ def test_reservation_retains_admission_instant_for_later_cancellation(dispatch,c
     future=NOW+timedelta(days=365)
     clock=iter((NOW,future))
     monkeypatch.setattr(service,'now',lambda:next(clock))
-    instance.handle_request(1002,encoded(dict(operation='SUBMIT_N1',attempt_id=attempt,bundle_sha256=context.bundle_sha256)))
+    submission=json.loads(instance.handle_request(1002,encoded(dict(operation='SUBMIT_N1',attempt_id=attempt,bundle_sha256=context.bundle_sha256))))
+    preflight=json.loads(fresh.fetch(attempt,submission['preflight_sha256']))
+    assert preflight['schema']=='e1_preflight_binding/v2'
+    assert preflight['output_identity']['execution_id']==submission['execution_id']
     new_dispatch=(fresh,attempt,evidence,authentication,instance,call,commit)
     request=_void_request(new_dispatch,captured_case,future)
     monkeypatch.setattr(service,'now',lambda:future)

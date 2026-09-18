@@ -19,6 +19,7 @@ from .g5 import validate_result_envelope_v2
 from .keys import load_keys
 from .launcher import create_worker, find_owned_worker, inspect_worker, start_and_capture, stop_owned_worker
 from .plan import derive_n1_plan
+from .preflight import build_binding
 from .protocol import decode_base64, encode_frame, fields, parse_request, sha256
 from .signing import sign_captured
 from .store import ExecutionStore
@@ -72,7 +73,8 @@ class ExecutionService:
         socket_parent = Path(config['socket_path']).parent
         info = socket_parent.lstat()
         if (not stat.S_ISDIR(info.st_mode) or info.st_uid != config['service_uid']
-                or info.st_gid != config['socket_gid'] or info.st_mode & 0o027):
+                or info.st_gid != config['socket_gid'] or info.st_mode & 0o027
+                or not info.st_mode & stat.S_ISGID):
             raise ValueError('protected service socket directory required')
         self.release = read_regular(self.installation, 'release.json', limit=16 * 1024 * 1024)
         from .profile import parse_profile
@@ -114,6 +116,7 @@ class ExecutionService:
                     except KeyError:
                         existed = False
                     record = self.store.reserve(request_bytes, plan, now=admitted_at)
+                    self.store.archive_object(record.execution_id,'preflight',build_binding(context,record,plan))
                     self.store.archive_object(record.execution_id, 'bundle_index', context.retained_bundle_index)
                     for name, raw in context.retained_bytes.items():
                         self.store.archive_object(record.execution_id, 'context_' + name, raw)
@@ -141,7 +144,7 @@ class ExecutionService:
                 with self.store.transaction() as connection:
                     roles = {row[0] for row in connection.execute('SELECT role FROM execution_objects WHERE execution_id=? AND sha256=?',
                         (execution_id, request['object_sha256']))}
-                if not roles.intersection({'attestation'}):
+                if not roles.intersection({'attestation','preflight'}):
                     raise ValueError('ARTIFACT_PRIVATE')
             try:
                 return self.store.fetch(attempt, request['object_sha256'])
@@ -326,7 +329,9 @@ class ExecutionService:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server:
             server.bind(str(path))
             path.chmod(0o660)
-            os.chown(path, -1, self.config['socket_gid'])
+            info=path.lstat()
+            if info.st_uid!=self.config['service_uid'] or info.st_gid!=self.config['socket_gid']:
+                raise ValueError('bound socket did not inherit protected identity')
             server.listen(16)
             while True:
                 connection, _ = server.accept()

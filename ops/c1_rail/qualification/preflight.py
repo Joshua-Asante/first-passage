@@ -15,6 +15,7 @@ from .contract import (
     ValidatedFrozenContract,
     canonical_json_bytes,
     require_validated_frozen_contract,
+    parse_canonical_json,
     verify_detached_approval,
 )
 from .trust_domain import require_trusted_domain_key, require_validated_trust_domain
@@ -92,6 +93,8 @@ def validate_e1_preflight(
 ) -> PreflightReceipt:
     """Verify the second decision and atomically reserve a never-used root."""
     subject = exact_depth_subject(contract, attempt_id=attempt_id)
+    if parse_canonical_json(contract.canonical_bytes,label='contract')['schema']=='frozen_qualification_contract/v2':
+        raise PreflightError('SERVICE_OWNED_PREFLIGHT_REQUIRED')
     try:
         domain = require_validated_trust_domain(trust_domain)
     except Exception as exc:
@@ -143,6 +146,9 @@ def revalidate_e1_preflight(
     trust_domain: object,
 ) -> PreflightReceipt:
     """Reverify retained approval bytes without creating or changing the root."""
+    contract=require_validated_frozen_contract(contract)
+    if parse_canonical_json(contract.canonical_bytes,label='contract')['schema']=='frozen_qualification_contract/v2':
+        raise PreflightError('SERVICE_OWNED_PREFLIGHT_REQUIRED')
     if not isinstance(receipt, PreflightReceipt):
         raise PreflightError("typed preflight receipt is required")
     try:
