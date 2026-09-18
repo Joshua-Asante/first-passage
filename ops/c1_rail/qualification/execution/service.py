@@ -31,6 +31,34 @@ def now():
     return datetime.now(timezone.utc)
 
 
+RPC_CONNECTION_LIMIT = 4
+
+
+class BoundedConnections:
+    """Limit active handlers and admission; never accumulate queued requests."""
+    def __init__(self, handler, *, limit):
+        self.handler = handler
+        self.slots = threading.BoundedSemaphore(limit)
+        self.pool = ThreadPoolExecutor(max_workers=limit, thread_name_prefix='qualification-rpc')
+
+    def submit(self, connection):
+        self.slots.acquire()
+        try:
+            result = self.pool.submit(self.handler, connection)
+        except BaseException:
+            self.slots.release()
+            connection.close()
+            raise
+        result.add_done_callback(lambda _: self.slots.release())
+        return result
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.pool.shutdown(wait=True)
+
+
 def permitted(role, operation):
     return operation in {'client': {'SUBMIT_N1', 'STATUS', 'FETCH'},
         'g5': {'STATUS', 'FETCH', 'SNAPSHOT', 'STORE_ARTIFACT', 'STORE_RESULT', 'COMMIT_N1_RESULT'},
@@ -332,26 +360,29 @@ class ExecutionService:
             info=path.lstat()
             if info.st_uid!=self.config['service_uid'] or info.st_gid!=self.config['socket_gid']:
                 raise ValueError('bound socket did not inherit protected identity')
-            server.listen(16)
-            while True:
-                connection, _ = server.accept()
-                with connection:
-                    connection.settimeout(self.profile.capture_seconds)
-                    try:
-                        _, uid, _ = struct.unpack('3i', connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize('3i')))
-                        raw = receive(connection, limit=self.profile.rpc_byte_limit)
-                        result = self.handle_request(uid, raw)
-                        response = encoded(dict(ok=True, data_b64=base64.b64encode(result).decode('ascii')))
-                    except (ValueError, KeyError, OSError, RecursionError) as exc:
-                        response = encoded(dict(ok=False, error=str(exc)[:1024]))
-                    if len(response) > self.profile.rpc_byte_limit:
-                        response = encoded(dict(ok=False, error='RESPONSE_EXCEEDS_PROFILE_LIMIT'))
-                    try:
-                        connection.sendall(encode_frame(response, limit=self.profile.rpc_byte_limit))
-                    except OSError:
-                        # A disconnected untrusted peer cannot terminate the
-                        # supervisor or cancel an already-reserved execution.
-                        continue
+            server.listen(RPC_CONNECTION_LIMIT)
+            with BoundedConnections(self._handle_connection, limit=RPC_CONNECTION_LIMIT) as connections:
+                while True:
+                    connection, _ = server.accept()
+                    connections.submit(connection)
+
+    def _handle_connection(self, connection):
+        with connection:
+            connection.settimeout(self.profile.capture_seconds)
+            try:
+                _, uid, _ = struct.unpack('3i', connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize('3i')))
+                raw = receive(connection, limit=self.profile.rpc_byte_limit)
+                result = self.handle_request(uid, raw)
+                response = encoded(dict(ok=True, data_b64=base64.b64encode(result).decode('ascii')))
+            except (ValueError, KeyError, OSError, RecursionError) as exc:
+                response = encoded(dict(ok=False, error=str(exc)[:1024]))
+            if len(response) > self.profile.rpc_byte_limit:
+                response = encoded(dict(ok=False, error='RESPONSE_EXCEEDS_PROFILE_LIMIT'))
+            try:
+                connection.sendall(encode_frame(response, limit=self.profile.rpc_byte_limit))
+            except OSError:
+                # Disconnection cannot cancel a durable reservation or commit.
+                pass
 
 
 def main():

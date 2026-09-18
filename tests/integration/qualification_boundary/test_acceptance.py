@@ -1,7 +1,11 @@
 """Actual launch -> capture -> G5 assertions; no outcome or process doubles."""
 import json
 from concurrent.futures import ThreadPoolExecutor
+import subprocess
+import time
 import pytest
+
+from tools.qualification_verification import host
 
 
 @pytest.mark.parametrize('idle,completion,verdict',[(True,'COMPLETE','FAIL'),(False,'PARTIAL','NONE')])
@@ -39,6 +43,24 @@ def test_concurrent_duplicate_submit_reserves_and_launches_once(real_boundary):
     state=boundary.wait(bundle['attempt_id'])
     assert state['launch_intent_count']==1 and state['attestation_count']==1
     assert len(boundary.starts(state['container_id']))==1
+
+
+def test_incomplete_peer_cannot_block_an_authorized_request(real_boundary):
+    boundary=real_boundary
+    driver=('import socket,sys,time; '
+        'peer=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); peer.connect(sys.argv[1]); '
+        'peer.sendall(bytes.fromhex("000000107b")); print("ready",flush=True); time.sleep(15)')
+    command=boundary.identity('qclient',[boundary.python,'-I','-c',driver,boundary.config['socket_path']])
+    peer=host.start_owned(boundary.root,command,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+        interpreter=boundary.python)
+    try:
+        assert peer.stdout.readline().strip()==b'ready'
+        started=time.monotonic()
+        response=boundary.raw_request(dict(operation='SIGN',attempt_id='fabricated'))
+        assert time.monotonic()-started < 5
+        assert response==dict(ok=False,error='UNKNOWN_OPERATION')
+    finally:
+        peer.kill(); peer.wait(timeout=15)
 
 
 @pytest.mark.parametrize('operation',['COMPLETE_CHECKPOINT','SIGN','SET_VERDICT'])

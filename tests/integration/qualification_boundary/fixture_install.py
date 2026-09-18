@@ -97,7 +97,7 @@ def main():
     parser.add_argument('--manifest',type=Path,required=True)
     parser.add_argument('--image'); parser.add_argument('--attempt'); parser.add_argument('--idle',action='store_true')
     parser.add_argument('--contract'); parser.add_argument('--reason')
-    parser.add_argument('--fault',choices=['stop','exit_zero','cpu','memory','wall'])
+    parser.add_argument('--fault',choices=['stop','partial_output','exit_zero','cpu','memory','wall'])
     parser.add_argument('--depth-valid-seconds',type=int,default=14400)
     args=parser.parse_args()
     path=host.protected(args.manifest); root=path.parent

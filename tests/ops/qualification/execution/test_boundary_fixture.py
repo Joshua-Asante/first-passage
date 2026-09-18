@@ -26,7 +26,7 @@ def test_real_fixture_binds_current_signed_policy_and_actual_role_closures(tmp_p
     admit_source(context.contract,artifact_root=context.bundle_dir,policy=context.policy)
 
 
-@pytest.mark.parametrize('fault',['stop','exit_zero','cpu','memory','wall'])
+@pytest.mark.parametrize('fault',['stop','partial_output','exit_zero','cpu','memory','wall'])
 def test_fault_fixture_is_signed_and_admitted_before_actual_worker_failure(tmp_path,fault):
     spec=importlib.util.spec_from_file_location('qualification_fault_fixture',
         ROOT/'tests/integration/qualification_boundary/fixture_producer.py')

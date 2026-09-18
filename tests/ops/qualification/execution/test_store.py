@@ -5,6 +5,7 @@ import importlib
 import json
 from pathlib import Path
 import sqlite3
+from threading import Event
 
 import pytest
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
@@ -150,6 +151,54 @@ def test_void_after_capture_prevents_publication(tmp_path):
     with pytest.raises(ValueError, match='VOID'):
         store.publish_attestation(record.execution_id, envelope, expected_revision=record.revision)
     assert json.loads(store.status(record.attempt_id))['validity'] == 'VOID'
+
+
+class _ObservedConnection:
+    def __init__(self, connection, attempted):
+        self._connection = connection
+        self._attempted = attempted
+
+    def execute(self, statement, *arguments):
+        if statement == 'BEGIN IMMEDIATE':
+            self._attempted.set()
+        return self._connection.execute(statement, *arguments)
+
+    def __getattr__(self, name):
+        return getattr(self._connection, name)
+
+
+@pytest.mark.parametrize('first', ['void', 'publication'])
+def test_void_and_attestation_publication_serialize_in_both_orders(tmp_path, first):
+    store, record, envelope = captured(tmp_path)
+    second = store_at(tmp_path / 'journal.sqlite')
+    attempted = Event()
+    original_connect = second._connect
+    second._connect = lambda: _ObservedConnection(original_connect(), attempted)
+
+    def publish(target):
+        return target.publish_attestation(
+            record.execution_id, envelope, expected_revision=record.revision)
+
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        with store.transaction():
+            if first == 'void':
+                store.void(record.attempt_id, 'unit invalidation', b'{"validated":true}', now=NOW)
+                operation = lambda: publish(second)
+            else:
+                publish(store)
+                operation = lambda: second.void(
+                    record.attempt_id, 'unit invalidation', b'{"validated":true}', now=NOW)
+            future = pool.submit(operation)
+            assert attempted.wait(2), 'second writer never attempted BEGIN IMMEDIATE'
+        if first == 'void':
+            with pytest.raises(ValueError, match='VOID'):
+                future.result(timeout=2)
+        else:
+            assert json.loads(future.result(timeout=2))['validity'] == 'VOID'
+    status = json.loads(store_at(tmp_path / 'journal.sqlite').status(record.attempt_id))
+    assert status['validity'] == 'VOID'
+    assert status['attestation_count'] == (first == 'publication')
+    assert status['launch_intent_count'] == 1
 
 
 def test_concurrent_publication_has_only_one_completion_event(tmp_path):

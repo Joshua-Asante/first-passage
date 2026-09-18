@@ -145,13 +145,17 @@ class Boundary:
         host.save(self.output/(container+'-'+event+'-events.json'),rows)
         return rows
 
-    def restart(self):
+    def restart(self, *, checkpoints=None):
         if self.service is not None and self.service.poll() is None:
             self.service.kill(); self.service.wait(timeout=15)
         stdout=(self.output/('supervisor-'+uuid4().hex+'.stdout')).open('wb')
         stderr=(self.output/('supervisor-'+uuid4().hex+'.stderr')).open('wb')
         self.streams.extend([stdout,stderr])
-        self.service=host.start_owned(self.root,self.identity('qexec',[self.python,'-I',str(self.code/'bootstrap.py'),'supervisor']),
+        command=[self.python,'-I',str(self.code/'bootstrap.py'),'supervisor']
+        if checkpoints is not None:
+            command=[self.python,'-I',str(self.code/'tests/integration/qualification_boundary/checkpoint_supervisor.py'),
+                     str(checkpoints)]
+        self.service=host.start_owned(self.root,self.identity('qexec',command),
             stdout=stdout,stderr=stderr,interpreter=self.python)
         deadline=time.monotonic()+60
         while time.monotonic()<deadline:
@@ -165,6 +169,41 @@ class Boundary:
                 time.sleep(.1)
             else: time.sleep(.1)
         raise AssertionError('protected supervisor startup expired')
+
+    def checkpoints(self, *, observe, pause):
+        directory=self.root/'keys'/('checkpoints-'+uuid4().hex)
+        directory.mkdir(mode=0o700)
+        os.chown(directory,self.roles['qexec'],self.roles['qexec'])
+        control=self.root/'code'/('checkpoint-'+uuid4().hex+'.json')
+        control.write_bytes(encoded(dict(directory=str(directory),observe=observe,pause=pause)))
+        control.chmod(0o444)
+        self.restart(checkpoints=control)
+        return directory
+
+    def checkpoint(self, directory, name):
+        marker=directory/(name+'.json')
+        deadline=time.monotonic()+90
+        while time.monotonic()<deadline:
+            if marker.exists():
+                try: result=json.loads(marker.read_bytes())
+                except json.JSONDecodeError:
+                    time.sleep(.01); continue
+                assert result['pid']==self.service.pid and result['uid']==self.roles['qexec']
+                host.save(self.output/(directory.name+'-'+name+'.json'),result)
+                return result
+            if self.service.poll() is not None:
+                raise AssertionError('checkpoint supervisor exited')
+            time.sleep(.01)
+        raise AssertionError('checkpoint not observed: '+name)
+
+    def release_checkpoint(self, directory, name):
+        (directory/(name+'.release')).touch()
+
+    def void(self, bundle):
+        reason='TEST_ONLY lifecycle cancellation'
+        approval=self.admin('void-approval','--attempt',bundle['attempt_id'],
+            '--contract',bundle['contract_sha256'],'--reason',reason)
+        return json.loads(self.request('VOID',role='administrator',attempt_id=bundle['attempt_id'],reason=reason,**approval))
 
     def close(self):
         if self.service is not None and self.service.poll() is None:
