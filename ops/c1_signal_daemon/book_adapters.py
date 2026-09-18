@@ -183,3 +183,136 @@ def load_book_adapters(*, mode=None):
         effective_inputs_sha256=RUNTIME_EFFECTIVE_INPUTS_SHA256,
         historical_effective_inputs_sha256=EFFECTIVE_INPUTS_SHA256,
     )
+
+
+@dataclass(frozen=True)
+class QualificationAdapterLoad:
+    """Fresh adapter objects and immutable trace of the consumed byte inventory."""
+
+    registry: AdapterRegistry
+    load_trace: tuple[tuple[str, str, str], ...]
+
+
+def _unique_settings(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError('duplicate effective-settings JSON key')
+        result[key] = value
+    return result
+
+
+def _qualification_snapshots(contract, retained_bytes):
+    """Pure byte verification; this helper does not confer contract authority."""
+    expected_paths = {row.path for row in contract.artifacts}
+    expected_roles = {row.role for row in contract.artifacts}
+    if len(expected_paths) != len(contract.artifacts) or len(expected_roles) != len(contract.artifacts):
+        raise ValueError('duplicate qualification artifact paths or roles')
+    if set(retained_bytes) != expected_paths or set(contract.runtime_load_sha256) != expected_roles:
+        raise ValueError('qualification inventory must be an exact closed-world match')
+    normalized = [os.path.normcase(os.path.abspath(row.path)) for row in contract.artifacts]
+    if len(set(normalized)) != len(normalized):
+        raise ValueError('qualification artifact path aliases are forbidden')
+    snapshots, trace = {}, []
+    for row in contract.artifacts:
+        raw = retained_bytes[row.path]
+        if type(raw) is not bytes:
+            raise ValueError('immutable retained bytes required')
+        digest = hashlib.sha256(raw).hexdigest()
+        if digest != row.sha256 or digest != contract.runtime_load_sha256[row.role]:
+            raise ValueError('qualification retained/runtime artifact digest mismatch')
+        snapshots[row.role] = raw
+        trace.append((row.role, row.path, digest))
+    raw = snapshots.get('effective_settings_successor')
+    if raw is None or hashlib.sha256(raw).hexdigest() != contract.effective_settings_sha256:
+        raise ValueError('reviewed effective-settings successor digest missing or mismatched')
+    if contract.effective_settings_sha256 == EFFECTIVE_INPUTS_SHA256:
+        raise ValueError('historical ORB settings cannot be qualification settings')
+    def reject_constant(value):
+        raise ValueError('nonfinite effective-settings JSON value')
+    values = json.loads(raw.decode('utf-8'), object_pairs_hook=_unique_settings, parse_constant=reject_constant)
+    if set(values) != {'_note'} | set(ADAPTER_BY_LEG):
+        raise ValueError('effective-settings registry is incomplete')
+    for leg in ADAPTER_BY_LEG:
+        row = values[leg]
+        if not isinstance(row, dict) or set(row) != {'adapter', 'emulator', 'qty_scale'} or not isinstance(row['adapter'], dict):
+            raise ValueError('effective-settings row is incomplete')
+    qty = values['orb_mnq_v7']['adapter'].get('qty')
+    if type(qty) is not int or qty != 1:
+        raise ValueError('qualification ORB fixed normal base must be one')
+    return snapshots, values, tuple(trace)
+
+
+def load_qualification_adapters(contract, *, retained_bytes):
+    """Load only G1-approved immutable successor settings and accepted ports.
+
+    Historical ``load_book_adapters`` remains unchanged. No file is reopened,
+    no pyc is consulted, and every retained byte is verified before execution.
+    The caller must obtain the contract through the ordinary G1 verifier.
+    """
+    domain = _qualification_domain(contract)
+    if domain.authority_class != 'OPERATOR' or domain.permits_synthetic:
+        raise ValueError('production G1-validated frozen contract required')
+    return _load_domain_adapters(contract, retained_bytes=retained_bytes, domain=domain)
+
+
+def _qualification_domain(contract):
+    from c1_rail.qualification.contract import ValidatedFrozenContract, require_validated_frozen_contract
+    if type(contract) is not ValidatedFrozenContract:
+        raise ValueError('exact G1-validated frozen contract required')
+    require_validated_frozen_contract(contract)
+    from c1_rail.qualification.trust_domain import QualificationTrustDomain, require_validated_trust_domain
+    domain = getattr(contract, 'trust_domain', None)
+    if type(domain) is not QualificationTrustDomain or contract.approval.authority_class != domain.authority_class:
+        raise ValueError('validated contract trust domain required')
+    require_validated_trust_domain(domain)
+    if getattr(contract, 'trust_domain_sha256', None) != domain.sha256:
+        raise ValueError('contract trust domain digest differs')
+    if contract.effective_settings_sha256 != domain.effective_settings_sha256:
+        raise ValueError('contract settings differ from trust domain')
+    return domain
+
+
+def _load_composition_adapters(contract, *, retained_bytes):
+    """Internal TEST_ONLY composition entry; never exposed by production CLI."""
+    domain = _qualification_domain(contract)
+    if domain.authority_class != 'TEST_ONLY' or not domain.permits_synthetic:
+        raise ValueError('TEST_ONLY composition contract domain required')
+    return _load_domain_adapters(contract, retained_bytes=retained_bytes, domain=domain)
+
+
+def _load_domain_adapters(contract, *, retained_bytes, domain):
+    from c1_signal_daemon.book_protocol import Mode
+    if _qualification_domain(contract) is not domain:
+        raise ValueError('adapter domain differs from exact contract domain')
+    if __name__ != 'c1_signal_daemon.book_adapters':
+        raise ValueError('qualification adapter module alias is forbidden')
+    snapshots, settings, trace = _qualification_snapshots(contract, retained_bytes)
+    roles = {'aegis_6j': 'aegis_runtime_port', 'dj30_mym_p250': 'striker_runtime_port',
+             'vanguard_mgc': 'vanguard_runtime_port', 'orb_mnq_v7': 'orb_runtime_port'}
+    paths = {row.role: row.path for row in contract.artifacts}
+    for spec_row in ADAPTERS:
+        raw = snapshots.get(roles[spec_row.leg_id])
+        if raw is None or hashlib.sha256(raw).hexdigest() != domain.port_runtime_pins[spec_row.leg_id].runtime_sha256:
+            raise ValueError('qualification port differs from accepted corrected runtime')
+    result = {}
+    for spec_row in ADAPTERS:
+        role = roles[spec_row.leg_id]
+        module_name = f'fp_qualification_port_{spec_row.module}'
+        module = ModuleType(module_name)
+        module.__file__ = paths[role]
+        module.__package__ = ''
+        sys.modules[module_name] = module
+        try:
+            exec(compile(snapshots[role], paths[role], 'exec'), module.__dict__)
+            if getattr(module, 'LEG_ID', None) != spec_row.leg_id or getattr(module, 'PINE_SHA256', None) != domain.port_runtime_pins[spec_row.leg_id].pine_sha256:
+                raise ValueError('qualification port declared identity mismatch')
+            result[spec_row.leg_id] = module.build(mode=Mode.NORMAL, **settings[spec_row.leg_id]['adapter'])
+        except Exception:
+            sys.modules.pop(module_name, None)
+            raise
+    registry = AdapterRegistry(result, kind='synthetic' if domain.permits_synthetic else 'accepted',
+        runtime_identities={row.leg_id: {'pine_sha256': domain.port_runtime_pins[row.leg_id].pine_sha256,
+                                      'runtime_sha256': domain.port_runtime_pins[row.leg_id].runtime_sha256} for row in ADAPTERS},
+        effective_inputs_sha256=contract.effective_settings_sha256)
+    return QualificationAdapterLoad(registry, trace)

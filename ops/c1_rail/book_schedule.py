@@ -52,3 +52,26 @@ def classify_schedule(session, now: datetime) -> SchedulePhase:
     # late scheduler tick must not turn unresolved obligations back into a
     # harmless generic CLOSED state.
     return SchedulePhase.DEADLINE
+
+
+def classify_execution_phase(*, cutoff: datetime, flatten_start: datetime,
+                             own_flat_deadline: datetime, now: datetime) -> SchedulePhase:
+    """Classify the three evidence-bound execution instants.
+
+    Qualification replay can call this without inventing venue open/close
+    metadata.  Source coverage and price evidence remain separate obligations.
+    """
+    instants = (cutoff, flatten_start, own_flat_deadline)
+    if (not isinstance(now, datetime) or now.utcoffset() is None
+            or any(not isinstance(value, datetime) or value.utcoffset() is None
+                   for value in instants)):
+        raise ScheduleError("execution schedule clock must be timezone-aware")
+    if not all(left < right for left, right in zip(instants, instants[1:])):
+        raise ScheduleError("execution schedule boundaries must be strictly ordered")
+    if now < cutoff:
+        return SchedulePhase.RISK_ADD
+    if now < flatten_start:
+        return SchedulePhase.CUTOFF
+    if now < own_flat_deadline:
+        return SchedulePhase.FLATTEN
+    return SchedulePhase.DEADLINE

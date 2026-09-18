@@ -84,6 +84,8 @@ docs/mc_anchor_history.md merge=union
 # cleaner as LF. Pinned to LF so any clone builds the c1 rail image correctly.
 .dockerignore text eol=lf
 deploy/c1_rail/Dockerfile text eol=lf
+# The Linux validation harness can mount a Windows checkout read-only.
+scripts/c1_image_validation.sh text eol=lf
 
 # Local verification compares dependency files byte-for-byte with the cached image.
 requirements-ops.lock text eol=lf

@@ -216,3 +216,47 @@ def test_tv_daily_key_merges_holiday_sessions():
     assert tv_daily_key(at(2024, 12, 25, 18)) == date(2024, 12, 26)  # Christmas evening reopen -> 12-26's bar
     assert tv_daily_key(at(2023, 7, 3, 18)) == date(2023, 7, 5)      # July 4 has no bar; Mon 18:00 starts Wed's
     assert tv_daily_key(at(2026, 9, 15, 18)) == date(2026, 9, 16)    # ordinary Tuesday evening
+
+
+def test_empty_close_scope_never_creates_a_working_order():
+    for timing in (FillTiming.THIS_CLOSE, FillTiming.NEXT_OPEN):
+        e = emu()
+        assert e.submit([flat("empty", timing)], bar(0, 100, 100, 100, 100)) == []
+        assert e.pending_order_ids() == []
+        e.submit([entry("live", timing=FillTiming.THIS_CLOSE)], bar(0, 100, 100, 100, 100))
+        for qty in (None, 1):
+            stale = OrderIntent("stale", LEG, "exit", Side.SELL, qty,
+                                timing=timing, scope_fill_ids=("already-closed",))
+            assert e.submit([stale], bar(0, 100, 100, 100, 100)) == []
+            assert e.pending_order_ids() == [] and e.position() == 1
+
+
+def test_same_batch_market_entry_then_close_uses_actual_registration_state():
+    for timing in (FillTiming.THIS_CLOSE, FillTiming.NEXT_OPEN):
+        e = emu()
+        got = e.submit([entry("base", timing=FillTiming.THIS_CLOSE), flat("close", timing)],
+                       bar(0, 100, 100, 100, 100))
+        if timing is FillTiming.NEXT_OPEN:
+            assert e.pending_order_ids() == ["close"]
+            got += e.process_bar(bar(1, 100, 100, 100, 100))
+        assert [f.order_id for f in fills(got)] == ["base", "close"]
+        assert e.position() == 0 and e.pending_order_ids() == []
+
+
+def test_cancelled_entry_followed_by_empty_close_cannot_acquire_a_future_lot():
+    e = emu()
+    got = e.submit([entry("cancelled", timing=FillTiming.THIS_CLOSE), Cancel(LEG), flat("empty")],
+                   bar(0, 100, 100, 100, 100))
+    assert fills(got) == [] and e.pending_order_ids() == []
+    e.submit([entry("future")], bar(1, 100, 100, 100, 100))
+    assert [f.kind for f in fills(e.process_bar(bar(2, 100, 100, 100, 100)))] == ["entry"]
+    assert e.position() == 1
+
+
+def test_wrong_side_exit_of_actual_scope_still_rejects():
+    e = emu()
+    e.submit([entry("base", timing=FillTiming.THIS_CLOSE)], bar(0, 100, 100, 100, 100))
+    wrong = OrderIntent("wrong", LEG, "exit", Side.BUY, None)
+    events = e.submit([wrong], bar(0, 100, 100, 100, 100))
+    assert len(events) == 1 and events[0].event == "reject"
+    assert e.position() == 1 and e.pending_order_ids() == []

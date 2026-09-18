@@ -69,7 +69,14 @@ def _repo_import_names(path: Path) -> set[str]:
     names: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.ImportFrom) and node.module:
-            names.add(node.module)
+            if node.level:
+                root = REPO_ROOT / 'ops' if path.is_relative_to(REPO_ROOT / 'ops') else REPO_ROOT
+                package = path.parent.relative_to(root).parts
+                keep = len(package) - node.level + 1
+                if keep >= 0:
+                    names.add('.'.join((*package[:keep], *node.module.split('.'))))
+            else:
+                names.add(node.module)
         elif isinstance(node, ast.Import):
             for alias in node.names:
                 names.add(alias.name)
@@ -163,3 +170,9 @@ def test_packaged_files_are_allowed_in_build_context():
     allowed = {line[1:] for line in (REPO_ROOT / ".dockerignore").read_text().splitlines()
                if line.startswith("!")}
     assert _dockerfile_copied_py_paths(DOCKERFILE) <= allowed
+
+
+def test_listener_closure_follows_relative_qualification_dependencies():
+    closure = _import_closure((REPO_ROOT / 'ops/c1_rail/qualification/contract.py',))
+    assert REPO_ROOT / 'ops/c1_rail/qualification/policy.py' in closure
+    assert REPO_ROOT / 'ops/c1_rail/qualification/policy_sources.py' in closure

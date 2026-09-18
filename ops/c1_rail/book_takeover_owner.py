@@ -551,7 +551,7 @@ class TakeoverOwnerMixin:
         return tuple(sorted(pending))
 
     def _revalidate_takeover_db(self, db, operation_id, *, now):
-        from c1_signal_daemon.book_runtime import BAR_PERIOD, BAR_SLACK
+        from c1_signal_daemon.book_protocol import BAR_PERIOD, BAR_SLACK
         from .book_account_owner import _binding_record, MAX_FACT_AGE
         state = self._state(db)
         plan = self._takeover_plan_db(db, operation_id)

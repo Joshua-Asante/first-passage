@@ -18,6 +18,7 @@ import argparse
 import math
 from collections.abc import Iterator
 from fractions import Fraction
+from decimal import Decimal
 
 DEFAULT_CEILING = 0.05
 DEFAULT_ALPHA = 0.05
@@ -130,6 +131,20 @@ def max_certifying_busts(
     _require_n(n)
     _require_open_unit("ceiling", ceiling)
     _require_open_unit("alpha", alpha)
+    if isinstance(ceiling, (Decimal, Fraction)) or isinstance(alpha, (Decimal, Fraction)):
+        # Signed qualification probabilities retain their exact decimal value.
+        p, a = Fraction(ceiling), Fraction(alpha)
+        q = 1 - p
+        mass = q ** n
+        cumulative = Fraction(0)
+        best = -1
+        for k in range(n + 1):
+            cumulative += mass
+            if cumulative > a:
+                break
+            best = k
+            mass *= Fraction(n - k, k + 1) * p / q
+        return best
     best = -1
     for k, cdf in _iter_lower_cdf(n, ceiling):
         if cdf <= alpha:

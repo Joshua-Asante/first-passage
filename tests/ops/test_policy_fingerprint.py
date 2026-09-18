@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 
-MODULE = "policy_fingerprint"
+MODULE = "c1_rail.policy_fingerprint"
 VECTORS = Path(__file__).parent / "fixtures/policy_fingerprint_vectors.json"
 POLICY = {"instance_key": "tradeify_portfolio@Tradeify_Select_100K",
           "reference_mode": "trailing", "scale": "0.4", "trigger": "0.01"}
@@ -24,7 +24,7 @@ SOURCES = ("core/dd_protection.py", "core/firm_rules.py", "core/lifecycle.py",
 
 @pytest.fixture
 def fp():
-    return __import__(MODULE) if importlib.util.find_spec(MODULE) is not None else None
+    return importlib.import_module(MODULE) if importlib.util.find_spec(MODULE) is not None else None
 
 
 @pytest.fixture
@@ -232,7 +232,7 @@ def test_inventory_cannot_silently_omit_or_reclassify_a_component(fp):
 
 
 def test_actual_geometry_full_source_manifest_and_candidate(fp):
-    from book_policy import candidate_book_protection_policy
+    from c1_rail.book_policy import candidate_book_protection_policy
 
     root = Path(__file__).resolve().parents[2]
     policy = candidate_book_protection_policy()

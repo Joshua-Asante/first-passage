@@ -8,7 +8,7 @@ and confirmed feedback only; it never resends a broker command.
 from __future__ import annotations
 
 from dataclasses import asdict, replace
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from enum import Enum
 import threading
 from uuid import uuid4
@@ -17,13 +17,13 @@ from c1_rail.book_policy import BOOK_LEGS, is_protected
 from c1_rail.book_account_owner import AccountOwnerError, BookAccountOwner
 from c1_rail.c1_rail_listener import handle_book_action
 from c1_signal_daemon.book_adapters import AdapterRegistry
-from c1_signal_daemon.book_protocol import ExecutionEvent, Fill, Mode, OrderIntent
+from c1_signal_daemon.book_protocol import (
+    BAR_PERIOD, BAR_SLACK, ExecutionEvent, Fill, Mode, OrderIntent,
+)
 from c1_signal_daemon.feed import Bar
 from c1_signal_daemon.book_validation import InputViolation, validate_action, validate_bar
 
 
-BAR_PERIOD = timedelta(minutes=15)
-BAR_SLACK = timedelta(seconds=30)
 LEG_ORDER = tuple(row.leg_id for row in sorted(BOOK_LEGS, key=lambda row: row.priority))
 _LEG_RANK = {leg_id: index for index, leg_id in enumerate(LEG_ORDER)}
 

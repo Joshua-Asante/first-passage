@@ -32,6 +32,23 @@ def test_host_config_matches_committed_lock_bytes():
     host.validate_inputs(ROOT, host.load_config()[0])
 
 
+def test_signing_installation_uses_canonical_shared_version():
+    host = host_module()
+    shared = (ROOT / 'tools/local_verification/requirements-extra.txt').read_bytes()
+    hashes = json.dumps({'schema':'qualification_signing_wheel/v1','package':'cryptography','sha256':'a'*64}).encode()
+    actual = host.signing_requirements(shared, hashes)
+    pin = next(line for line in shared.decode().splitlines() if line.startswith('cryptography=='))
+    assert actual == (pin + ' --hash=sha256:' + 'a'*64 + '\n').encode()
+    assert host.signing_requirements(b'cryptography==99.1.2\n', hashes).startswith(b'cryptography==99.1.2 ')
+
+
+@pytest.mark.parametrize('shared', [b'',b'cryptography>=1\n',b'cryptography==1.2.3\ncryptography==2.3.4\n'])
+def test_signing_requirement_rejects_missing_or_ambiguous_version(shared):
+    host = host_module()
+    with pytest.raises(ValueError, match='canonical signing pin'):
+        host.signing_requirements(shared,b'{"package":"cryptography","schema":"qualification_signing_wheel/v1","sha256":"' + b'a'*64 + b'"}')
+
+
 @pytest.mark.parametrize('field', ['python', 'docker'])
 @pytest.mark.parametrize('value', ['python3', './docker', '/usr/../tmp/tool', '', None, 42])
 def test_config_rejects_ambient_executable_selection(field, value):
@@ -199,13 +216,13 @@ def test_cleanup_uses_retained_docker_executable(monkeypatch):
     host = host_module()
     commands = []
     monkeypatch.setattr(host, 'run', lambda command: commands.append(command) or '')
-    host.boundary_containers({'docker': '/opt/qualified/docker'}, 'run-id')
+    host.boundary_containers({'docker': '/opt/qualified/docker'}, 'a'*32)
     assert commands == [['/opt/qualified/docker', '--host', 'unix:///var/run/docker.sock',
-                         'ps', '-aq', '--filter', 'label=fp.qualification.host=run-id']]
+                         'ps', '-aq', '--no-trunc', '--filter', 'label=fp.qualification.host='+'a'*32]]
 
 
 @pytest.mark.parametrize(('name', 'memberships'), [
-    ('qclient', []), ('qg5', []), ('qexec', ['docker']), ('qexec', []),
+    ('qclient', []), ('qg5', []), ('qg5',['qclient']), ('qexec', ['docker']), ('qexec', []),
 ])
 def test_cleanup_accepts_only_expected_role_group_memberships(name, memberships):
     host = host_module()
@@ -270,8 +287,8 @@ def test_old_manifest_cannot_retire_another_runs_identities(tmp_path):
 def provisioning_attempt(tmp_path, monkeypatch):
     """Exercise publication with real files, stopping before privileged creation."""
     host = host_module()
-    lock_bytes = b'approved'
-    locks = {relative: hashlib.sha256(lock_bytes).hexdigest() for relative in host.REQUIRED_LOCKS}
+    lock_payloads = {relative:(ROOT / relative).read_bytes() for relative in host.REQUIRED_LOCKS}
+    locks = {relative: hashlib.sha256(raw).hexdigest() for relative,raw in lock_payloads.items()}
     config = {**host.load_config()[0], 'parent': str(tmp_path / 'runs'), 'locks': locks}
     config_path = tmp_path / 'tools/qualification_verification/host.json'
     config_path.parent.mkdir(parents=True)
@@ -279,7 +296,7 @@ def provisioning_attempt(tmp_path, monkeypatch):
     for relative in host.REQUIRED_LOCKS:
         lock = tmp_path / relative
         lock.parent.mkdir(parents=True, exist_ok=True)
-        lock.write_bytes(lock_bytes)
+        lock.write_bytes(lock_payloads[relative])
     monkeypatch.setattr(host, 'ROOT', tmp_path)
     reservation = tmp_path / 'reservation.json'
     def missing(_):
@@ -411,7 +428,7 @@ def test_setup_failure_keeps_advertised_cleanup_path(provisioning_attempt, capsy
 
 
 @pytest.mark.parametrize('relative', ['requirements-ops.lock',
-                                     'tools/qualification_verification/requirements-signing.lock'])
+                                     'tools/local_verification/requirements-extra.txt', 'tools/qualification_verification/signing-wheel.json'])
 def test_probe_time_lock_drift_is_rejected_before_reservation(provisioning_attempt, monkeypatch, relative):
     host, config_path, reservation = provisioning_attempt
     lock = host.ROOT / relative
@@ -433,7 +450,7 @@ def test_probe_time_lock_drift_is_rejected_before_reservation(provisioning_attem
 
 
 @pytest.mark.parametrize('relative', ['requirements-ops.lock',
-                                     'tools/qualification_verification/requirements-signing.lock'])
+                                     'tools/local_verification/requirements-extra.txt', 'tools/qualification_verification/signing-wheel.json'])
 def test_staged_locks_are_checked_before_environment_activation(provisioning_attempt, monkeypatch, relative):
     host, config_path, _ = provisioning_attempt
     lock = host.ROOT / relative
@@ -540,6 +557,34 @@ def test_cleanup_without_account_commands_needs_no_new_cgroup(cleanup_attempt, m
     assert host.reservation_owner(reservation) is None
     assert not (path.parent / 'code').exists()
     assert host.cleanup(path)['already_retired']
+
+
+def test_cleanup_docker_mutations_join_owned_cgroup(cleanup_attempt,monkeypatch):
+    host,path,_,_=cleanup_attempt
+    group=path.parent/'cleanup-group'
+    calls=[]
+    monkeypatch.setattr(host,'boundary_cleanup_plan',lambda *args:dict(containers=['a'*64],images=['sha256:'+'b'*64]))
+    monkeypatch.setattr(host,'create_process_group',lambda root:group)
+    monkeypatch.setattr(host,'run_owned',lambda owner,command,**kwargs:calls.append((owner,command)))
+    result=host.cleanup(path)
+    assert result['ok']
+    assert len(calls)==2 and all(owner==group for owner,_ in calls)
+    assert calls[0][1][-3:]==['--force','--','a'*64]
+    assert calls[1][1][-3:]==['rm','--','sha256:'+'b'*64]
+
+
+def test_cleanup_group_member_requires_manifest_owned_account(cleanup_attempt,monkeypatch):
+    host,path,manifest,_=cleanup_attempt
+    manifest['resources']=[dict(kind='group',name='qclient',id=61000)]
+    host.save(path,manifest)
+    group=SimpleNamespace(gr_name='qclient',gr_gid=61000,gr_mem=['qg5'])
+    monkeypatch.setattr(sys.modules['grp'],'getgrnam',lambda name:group)
+    monkeypatch.setattr(sys.modules['pwd'],'getpwall',lambda:[],raising=False)
+    removed=[]
+    monkeypatch.setattr(host,'run_owned',lambda *args,**kwargs:removed.append(args))
+    result=host.cleanup(path)
+    assert not result['ok'] and not removed
+    assert 'member' in ' '.join(result['failures'])
 
 
 @pytest.mark.parametrize('relative', ['data', 'scratch'])

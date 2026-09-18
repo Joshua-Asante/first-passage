@@ -95,6 +95,11 @@ LISTENER_FILES=(
   /app/ops/c1_rail/account_close_evidence.py
   /app/ops/c1_rail/account_close_ledger.py
   /app/ops/c1_rail/ed25519_verify.py
+  /app/ops/c1_rail/qualification/__init__.py
+  /app/ops/c1_rail/qualification/contract.py
+  /app/ops/c1_rail/qualification/policy.py
+  /app/ops/c1_rail/qualification/policy_sources.py
+  /app/ops/c1_rail/qualification/trust_domain.py
   /app/ops/c1_rail/settlement_signing.py
   /app/ops/c1_rail/operator_keys.json
   /app/ops/c1_rail/c1_rail_arm.py
@@ -148,6 +153,11 @@ DAEMON_FILES=(
   /app/ops/c1_rail/account_close_evidence.py
   /app/ops/c1_rail/account_close_ledger.py
   /app/ops/c1_rail/ed25519_verify.py
+  /app/ops/c1_rail/qualification/__init__.py
+  /app/ops/c1_rail/qualification/contract.py
+  /app/ops/c1_rail/qualification/policy.py
+  /app/ops/c1_rail/qualification/policy_sources.py
+  /app/ops/c1_rail/qualification/trust_domain.py
   /app/ops/c1_rail/settlement_signing.py
   /app/ops/c1_rail/operator_keys.json
   /app/ops/c1_rail/c1_rail_listener.py

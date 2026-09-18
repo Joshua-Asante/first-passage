@@ -10,7 +10,9 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import platform
+import re
 import shutil
+import sqlite3
 import stat
 import subprocess
 import sys
@@ -21,11 +23,13 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from scripts.qualification_boundary_environment import TRUST_MODEL, protected, run
 from scripts.record_verification import snapshot
+from tools.qualification_verification.container_ownership import HOST_LABEL, BUILD_LABEL, host_identity, owned_containers
+from tools.qualification_verification.role_policy import ROLES, ROLE_GROUPS, owned_group_members
 
-ROLES = ('qclient', 'qexec', 'qg5')
 REQUIRED_LOCKS = frozenset({
     'requirements-ops.lock',
-    'tools/qualification_verification/requirements-signing.lock',
+    'tools/local_verification/requirements-extra.txt',
+    'tools/qualification_verification/signing-wheel.json',
 })
 # These names are shared host-wide, even across installation-layout variants.
 IDENTITY_STATE = Path('/var/lib/fp-qualification-identities')
@@ -36,6 +40,20 @@ PROCESS_STOP_TIMEOUT = 30
 def load_config():
     raw = (ROOT / 'tools/qualification_verification/host.json').read_bytes()
     return json.loads(raw), hashlib.sha256(raw).hexdigest()
+
+
+def signing_requirements(shared_bytes, wheel_bytes):
+    """Resolve the sole version owner with a separately reviewed Linux wheel hash."""
+    pins = [line.strip() for line in shared_bytes.decode('utf-8').splitlines()
+            if line.strip().lower().startswith('cryptography')]
+    if len(pins) != 1 or re.fullmatch(r'cryptography==[0-9]+\.[0-9]+\.[0-9]+', pins[0]) is None:
+        raise ValueError('one exact canonical signing pin required')
+    wheel = json.loads(wheel_bytes)
+    if (type(wheel) is not dict or set(wheel) != {'schema','package','sha256'}
+            or wheel['schema'] != 'qualification_signing_wheel/v1' or wheel['package'] != 'cryptography'
+            or type(wheel['sha256']) is not str or re.fullmatch('[0-9a-f]{64}',wheel['sha256']) is None):
+        raise ValueError('reviewed signing wheel identity required')
+    return (pins[0] + ' --hash=sha256:' + wheel['sha256'] + '\n').encode('ascii')
 
 
 def resolve_roles(config):
@@ -186,7 +204,7 @@ def validate_owned_user(user, item, run_id, groups):
             or user.pw_gecos != run_id):
         raise ValueError('user ownership mismatch')
     memberships = {group.gr_name for group in groups if item['name'] in group.gr_mem}
-    expected = {'docker'} if item['name'] == 'qexec' else set()
+    expected = set(ROLE_GROUPS[item['name']])
     # An interrupted setup may not have enrolled qexec in Docker yet. Missing
     # intended authority is safe to retire; additional authority is drift.
     if not memberships <= expected:
@@ -274,12 +292,26 @@ os.execv(sys.argv[2], sys.argv[2:])
 '''
 
 
+def owned_command(group, command, interpreter):
+    return [interpreter or sys.executable, '-I', '-c', ENTER_PROCESS_GROUP,
+            str(group / 'cgroup.procs'), *command]
+
+
+def owned_environment():
+    return {'PATH': '/usr/sbin:/usr/bin:/sbin:/bin', 'HOME': '/nonexistent',
+            'PIP_DISABLE_PIP_VERSION_CHECK': '1'}
+
+
+def start_owned(root, command, *, stdout, stderr, interpreter=None):
+    group=create_process_group(root)
+    return subprocess.Popen(owned_command(group,command,interpreter),stdin=subprocess.DEVNULL,
+                            stdout=stdout,stderr=stderr,env=owned_environment())
+
+
 def run_owned(group, command, *, capture_output=True, timeout=30, interpreter=None):
-    result = subprocess.run([interpreter or sys.executable, '-I', '-c', ENTER_PROCESS_GROUP,
-        str(group / 'cgroup.procs'), *command], check=True, text=True,
+    result = subprocess.run(owned_command(group,command,interpreter), check=True, text=True,
         capture_output=capture_output, timeout=timeout,
-        env={'PATH': '/usr/sbin:/usr/bin:/sbin:/bin', 'HOME': '/nonexistent',
-             'PIP_DISABLE_PIP_VERSION_CHECK': '1'})
+        env=owned_environment())
     return result.stdout.strip() if capture_output else ''
 
 
@@ -387,7 +419,87 @@ def host_facts(config):
 def boundary_containers(config, run_id):
     """Find resources using the Docker executable retained for this host run."""
     return run([config['docker'], '--host', 'unix:///var/run/docker.sock',
-                'ps', '-aq', '--filter', 'label=fp.qualification.host=' + run_id])
+                'ps', '-aq', '--no-trunc', '--filter', 'label=' + HOST_LABEL + '=' + host_identity(run_id)])
+
+
+def boundary_registry(root):
+    doc = json.loads(protected(root/'boundary-resources.json').read_bytes())
+    if (type(doc) is not dict or set(doc) != {'schema','run_id','build_id','image_id','release_sha256'}
+            or doc['schema'] != 'qualification_boundary_ownership/v1' or doc['run_id'] != root.name):
+        raise ValueError('boundary ownership registry differs')
+    host_identity(doc['run_id']); host_identity(doc['build_id'])
+    for field,pattern in (('image_id','sha256:[0-9a-f]{64}'),('release_sha256','[0-9a-f]{64}')):
+        value=doc[field]
+        if value is not None and (type(value) is not str or re.fullmatch(pattern,value) is None):
+            raise ValueError('boundary ownership identity differs')
+    if (doc['image_id'] is None) != (doc['release_sha256'] is None):
+        raise ValueError('incomplete boundary enrollment')
+    return doc
+
+
+def begin_boundary_build(root):
+    """Publish ownership before any image builder or service child is started."""
+    administrator(); protected(root)
+    doc=dict(schema='qualification_boundary_ownership/v1',run_id=host_identity(root.name),
+             build_id=uuid4().hex,image_id=None,release_sha256=None)
+    save(root/'boundary-resources.json',doc,exclusive=True,mode=0o400)
+    return doc
+
+
+def enroll_boundary(root, *, image_id, release_bytes):
+    administrator(); protected(root)
+    doc=boundary_registry(root)
+    if doc['image_id'] is not None or type(image_id) is not str or re.fullmatch('sha256:[0-9a-f]{64}',image_id) is None:
+        raise ValueError('immutable boundary enrollment required')
+    doc.update(image_id=image_id,release_sha256=hashlib.sha256(release_bytes).hexdigest())
+    save(root/'boundary-resources.json',doc,mode=0o400)
+
+
+def owned_journal(path, uid):
+    info=path.lstat()
+    if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_uid != uid
+            or info.st_mode & 0o077 or path.resolve() != path):
+        raise ValueError('protected owned execution journal required')
+    return path
+
+
+def boundary_cleanup_plan(root, manifest):
+    """Inspect only; caller stops owned cgroups/principals before reading SQL."""
+    config=manifest['host_config']
+    containers=boundary_containers(config,root.name).split()
+    if not (root/'boundary-resources.json').exists():
+        if containers:
+            raise ValueError('boundary containers require boundary-owned cleanup')
+        return dict(containers=[],images=[])
+    registry=boundary_registry(root)
+    docker=[config['docker'],'--host','unix:///var/run/docker.sock']
+    container_ids=[]
+    if containers:
+        if registry['image_id'] is None or any(re.fullmatch('[0-9a-f]{64}',value) is None for value in containers):
+            raise ValueError('unenrolled boundary containers')
+        journal=owned_journal(root/'data/journal.sqlite',manifest['roles']['qexec'])
+        with sqlite3.connect(journal.as_uri()+'?mode=ro',uri=True) as connection:
+            connection.row_factory=sqlite3.Row
+            connection.execute('PRAGMA query_only=ON')
+            executions=[dict(row) for row in connection.execute('SELECT execution_id,container_id,release_sha256 FROM executions')]
+        rows=json.loads(run([*docker,'inspect','--type=container',*containers]))
+        if type(rows) is not list or sorted(row.get('Id') for row in rows) != sorted(containers):
+            raise ValueError('boundary container discovery differs')
+        container_ids=list(owned_containers(rows,executions,run_id=root.name,
+            image_id=registry['image_id'],release_sha256=registry['release_sha256']))
+    images=run([*docker,'image','ls','--all','--quiet','--no-trunc','--filter','label='+HOST_LABEL+'='+root.name]).split()
+    image_ids=[]
+    for image_id in sorted(set(images)):
+        if re.fullmatch('sha256:[0-9a-f]{64}',image_id) is None:
+            raise ValueError('boundary image discovery differs')
+        rows=json.loads(run([*docker,'image','inspect',image_id]))
+        if (type(rows) is not list or len(rows)!=1 or rows[0].get('Id')!=image_id
+                or rows[0].get('Config',{}).get('Labels',{}).get(HOST_LABEL)!=root.name
+                or rows[0]['Config']['Labels'].get(BUILD_LABEL)!=registry['build_id']
+                or registry['image_id'] not in (None,image_id)):
+            raise ValueError('boundary image ownership differs')
+        image_ids.append(image_id)
+    return dict(containers=container_ids,images=image_ids)
 
 
 def provision(source, *, manifest_output=None):
@@ -469,7 +581,9 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
                 execute(['/usr/sbin/useradd', '--uid', str(uid), '--gid', str(uid),
                      '--no-create-home', '--no-log-init', '--home-dir', '/nonexistent',
                      '--shell', '/usr/sbin/nologin', '--comment', root.name, name])
-            execute(['/usr/sbin/usermod', '--append', '--groups', 'docker', 'qexec'])
+            for name,groups in ROLE_GROUPS.items():
+                if groups:
+                    execute(['/usr/sbin/usermod', '--append', '--groups', ','.join(groups), name])
             for relative, uid, mode in (('code', 0, 0o755), ('env', 0, 0o755),
                     ('data', manifest['roles']['qexec'], 0o700), ('keys', 0, 0o755),
                     ('scratch', manifest['roles']['qexec'], 0o700)):
@@ -504,9 +618,16 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
             if runtime_version != config['python_version']:
                 raise ValueError('copied Python patch mismatch')
             # The system pip only installs into this new, owned environment.
+            signing_bytes = signing_requirements(
+                (root / 'code/tools/local_verification/requirements-extra.txt').read_bytes(),
+                (root / 'code/tools/qualification_verification/signing-wheel.json').read_bytes())
+            signing_path = root / 'env/signing-requirements.txt'
+            with signing_path.open('xb') as output:
+                output.write(signing_bytes)
+            signing_path.chmod(0o400)
             execute([config['python'], '-I', '-m', 'pip', '--python', str(python),
                 'install', '--require-hashes', '--only-binary=:all:', '-r', str(root / 'code/requirements-ops.lock'),
-                '-r', str(root / 'code/tools/qualification_verification/requirements-signing.lock')],
+                '-r', str(signing_path)],
                 capture_output=False, timeout=None)
             execute([str(python), '-I', str(root / 'code/scripts/fp.py'), '--env', str(root / 'env'), 'doctor'])
             key_code = ('from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey; '
@@ -521,6 +642,7 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
                 execute([str(python), '-I', '-c', key_code, str(key)])
                 key.chmod(0o400); os.chown(key, uid, uid)
             manifest['runtime'] = {'python': str(python), 'version': runtime_version,
+                'signing_requirements_sha256': hashlib.sha256(signing_bytes).hexdigest(),
                 'packages': json.loads(execute([str(python), '-I', '-c',
                     'import importlib.metadata as m, json; '
                     'print(json.dumps(sorted((d.metadata["Name"], d.version) for d in m.distributions())))']))}
@@ -556,7 +678,7 @@ def cleanup(manifest_path):
         receipt = {'schema': 'qualification_host_cleanup/v1', 'run_id': root.name,
                    'manifest_sha256': hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
                    'removed': [], 'retained': ['ownership.json', 'evidence', 'owner.lock', 'retired.json',
-                                               'process-groups.json'],
+                                               'process-groups.json','boundary-resources.json'],
                    'failures': [], 'ok': False}
         try:
             retired = root / 'retired.json'
@@ -577,11 +699,7 @@ def cleanup(manifest_path):
             validate_host_executables(manifest['host_config'])
             uids = {r['id'] for r in manifest['resources'] if r['kind'] == 'user'}
             require_inactive_principals(uids)
-            # Boundary containers/services are not produced by this host-only slice.
-            # Any later producer must extend this manifest before enabling acceptance.
-            containers = boundary_containers(manifest['host_config'], root.name)
-            if containers:
-                raise ValueError('boundary containers require boundary-owned cleanup')
+            boundary = boundary_cleanup_plan(root,manifest)
             for item in manifest['resources']:
                 if item['kind'] == 'user':
                     try:
@@ -602,8 +720,17 @@ def cleanup(manifest_path):
                         except KeyError:
                             continue
                         raise ValueError('GID reused')
-                    if group.gr_gid != item['id'] or group.gr_mem:
+                    if group.gr_gid != item['id'] or not set(group.gr_mem) <= owned_group_members(item['name']):
                         raise ValueError('group shared or replaced')
+                    owned_users={resource['name']:resource for resource in manifest['resources'] if resource['kind']=='user'}
+                    for member in group.gr_mem:
+                        if member not in owned_users:
+                            raise ValueError('group member is not owned by this manifest')
+                        try:
+                            user=pwd.getpwnam(member)
+                        except KeyError as exc:
+                            raise ValueError('group member identity missing') from exc
+                        validate_owned_user(user,owned_users[member],root.name,grp.getgrall())
                     if any(p.pw_gid == item['id'] and p.pw_uid not in uids for p in pwd.getpwall()):
                         raise ValueError('group has unrelated consumer')
                 else:
@@ -614,7 +741,15 @@ def cleanup(manifest_path):
                         allow_initial_venv_alias=(item['path'] == 'env'
                         and manifest.get('state') in ('provisioning', 'setup_failed')))
             # Validate everything before removing anything; never follow a link.
-            cleanup_group = None
+            docker=[manifest['host_config']['docker'],'--host','unix:///var/run/docker.sock']
+            cleanup_group = create_process_group(root) if boundary['containers'] or boundary['images'] else None
+            for container in boundary['containers']:
+                run_owned(cleanup_group,[*docker,'rm','--force','--',container],interpreter=manifest['host_config']['python'])
+                receipt['removed'].append(dict(kind='container',id=container))
+            for image_id in boundary['images']:
+                # No force: an unrelated remaining consumer must block retirement.
+                run_owned(cleanup_group,[*docker,'image','rm','--',image_id],interpreter=manifest['host_config']['python'])
+                receipt['removed'].append(dict(kind='image',id=image_id))
             for item in reversed(manifest['resources']):
                 if item['kind'] == 'tree':
                     path = resource_path(root, item['path'])
@@ -645,7 +780,7 @@ def cleanup(manifest_path):
             save(retired, {'manifest_sha256': receipt['manifest_sha256']}, mode=0o400)
             write_reservation(reservation, None)
             receipt['ok'] = True
-        except (OSError, ValueError, subprocess.SubprocessError) as exc:
+        except (OSError, ValueError, sqlite3.Error, subprocess.SubprocessError) as exc:
             receipt['failures'].append(type(exc).__name__ + ': ' + str(exc) if isinstance(exc, ValueError)
                                        else type(exc).__name__)
         save(root / ('cleanup-' + uuid4().hex + '.json'), receipt, exclusive=True, mode=0o400)
