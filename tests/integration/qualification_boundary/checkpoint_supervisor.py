@@ -42,7 +42,7 @@ def main():
         marker = directory / (name + '.json')
         try:
             with marker.open('x') as stream:
-                json.dump(dict(checkpoint=name, pid=os.getpid(), uid=os.geteuid(),
+                json.dump(dict(attempt_id=rules['attempt_id'],checkpoint=name, pid=os.getpid(), uid=os.geteuid(),
                                thread=threading.get_ident(), monotonic_ns=time.monotonic_ns()), stream)
                 stream.flush()
                 os.fsync(stream.fileno())

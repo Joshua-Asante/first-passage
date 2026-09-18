@@ -170,13 +170,15 @@ class Boundary:
             else: time.sleep(.1)
         raise AssertionError('protected supervisor startup expired')
 
-    def checkpoints(self, *, observe, pause):
+    def checkpoints(self, *, attempt_id, observe, pause):
         directory=self.root/'keys'/('checkpoints-'+uuid4().hex)
         directory.mkdir(mode=0o700)
         os.chown(directory,self.roles['qexec'],self.roles['qexec'])
         control=self.root/'code'/('checkpoint-'+uuid4().hex+'.json')
-        control.write_bytes(encoded(dict(directory=str(directory),observe=observe,pause=pause)))
+        rules=dict(attempt_id=attempt_id,directory=str(directory),observe=observe,pause=pause)
+        control.write_bytes(encoded(rules))
         control.chmod(0o444)
+        host.save(self.output/(attempt_id+'-checkpoint-control.json'),rules)
         self.restart(checkpoints=control)
         return directory
 

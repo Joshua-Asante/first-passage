@@ -68,3 +68,22 @@ reporting present validity and eligibility separately.
   capture recovery, VOID/publication, VOID/commit, lost acknowledgment and expiry
   preserve the existing single-attempt journal rule. Permission tests probe both
   qclient and the real running container UID. Linux evidence remains pending.
+
+## Final local evidence and outstanding permission
+
+- Clean revision `605c23a`: the full execution selection passed **226 tests**
+  using the same operations interpreter, record
+  `20260918T041142Z-27225522003c` (completed, exit 0, stable source, complete
+  capture, no report errors). The only subsequent changes bind administrator
+  checkpoint evidence to its attempt and require the exact race event sequence.
+- Final Python syntax/collection and `git diff --check` validate the test-only
+  changes; they do not establish Linux execution acceptance.
+- Automatic approval review rejected pushing this branch to the public GitHub
+  remote and dispatching the two-host workflow: it requires explicit user
+  authorization for external export/execution. Approval was requested; no push or
+  dispatch occurred. Real Linux verification and Task 8 acceptance remain open.
+- Focused self-review covered the request dispatcher and its store/signing/G5
+  consumers. No independent reviewer or combined release acceptance is claimed.
+- The user subsequently explicitly approved the named branch push and two-host
+  Linux verification. Proceed with that authorization; execution results remain
+  pending until the recorder and cleanup evidence have been inspected.

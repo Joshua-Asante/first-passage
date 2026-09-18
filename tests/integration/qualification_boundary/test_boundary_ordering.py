@@ -11,7 +11,7 @@ import pytest
 def test_simultaneous_submissions_contend_before_single_reservation(real_boundary):
     boundary = real_boundary
     bundle = boundary.prepare(idle=True)
-    directory = boundary.checkpoints(observe=['SUBMIT_N1.locked', 'SUBMIT_ENTERED.2'],
+    directory = boundary.checkpoints(attempt_id=bundle['attempt_id'],observe=['SUBMIT_N1.locked', 'SUBMIT_ENTERED.2'],
                                      pause=['SUBMIT_N1.locked'])
     try:
         with ThreadPoolExecutor(max_workers=2) as pool:
@@ -41,7 +41,7 @@ def test_simultaneous_submissions_contend_before_single_reservation(real_boundar
 def test_death_after_reservation_before_scheduling_never_launches_on_retry(real_boundary):
     boundary = real_boundary
     bundle = boundary.prepare(idle=True)
-    directory = boundary.checkpoints(observe=['SUBMIT_N1.committed'], pause=['SUBMIT_N1.committed'])
+    directory = boundary.checkpoints(attempt_id=bundle['attempt_id'],observe=['SUBMIT_N1.committed'], pause=['SUBMIT_N1.committed'])
     try:
         with ThreadPoolExecutor(max_workers=1) as pool:
             response = pool.submit(boundary.submit, bundle)
@@ -106,7 +106,7 @@ def test_void_and_acceptance_have_both_real_writer_orders(real_boundary, operati
     winner = 'VOID' if first == 'VOID' else operation
     observe = [operation + suffix for suffix in ('.before', '.attempt', '.locked', '.committed')]
     observe += ['VOID.locked', 'VOID_STATUS.attempt', 'PUBLISH.finished']
-    directory = boundary.checkpoints(observe=observe, pause=[operation + '.before', winner + '.locked'])
+    directory = boundary.checkpoints(attempt_id=attempt,observe=observe, pause=[operation + '.before', winner + '.locked'])
     try:
         boundary.submit(bundle)
         with ThreadPoolExecutor(max_workers=2) as pool:
@@ -145,6 +145,12 @@ def test_void_and_acceptance_have_both_real_writer_orders(real_boundary, operati
         assert state['validity'] == 'VOID' and state['launch_intent_count'] == 1
         assert len(boundary.starts(state['container_id'])) == 1
         kinds = [row['kind'] for row in events]
+        expected = ['DISPATCHED', 'CONTAINER', 'START_INTENT', 'RUNNING', 'CAPTURED']
+        if operation == 'COMMIT' or first == 'ACCEPT':
+            expected.append('ATTESTED')
+        if operation == 'COMMIT' and first == 'ACCEPT':
+            expected.append('ASSESSMENT')
+        assert kinds == [*expected, 'VOID']
         assert kinds.count('DISPATCHED') == kinds.count('START_INTENT') == kinds.count('CAPTURED') == 1
         if operation == 'PUBLISH':
             assert state['attestation_count'] == int(first == 'ACCEPT')
@@ -175,7 +181,7 @@ def test_void_and_acceptance_have_both_real_writer_orders(real_boundary, operati
 def test_death_at_durable_checkpoint_preserves_one_execution(real_boundary, checkpoint, expected, intents):
     boundary = real_boundary
     bundle = boundary.prepare(idle=True)
-    directory = boundary.checkpoints(observe=[checkpoint], pause=[checkpoint])
+    directory = boundary.checkpoints(attempt_id=bundle['attempt_id'],observe=[checkpoint], pause=[checkpoint])
     try:
         reserved = boundary.submit(bundle)
         boundary.checkpoint(directory, checkpoint)
@@ -211,7 +217,7 @@ def test_death_at_durable_checkpoint_preserves_one_execution(real_boundary, chec
 def test_expiration_between_start_intent_and_actual_start_never_accepts(real_boundary):
     boundary = real_boundary
     bundle = boundary.prepare(idle=True, depth_valid_seconds=30)
-    directory = boundary.checkpoints(observe=['START_INTENT'], pause=['START_INTENT'])
+    directory = boundary.checkpoints(attempt_id=bundle['attempt_id'],observe=['START_INTENT'], pause=['START_INTENT'])
     try:
         boundary.submit(bundle)
         boundary.checkpoint(directory, 'START_INTENT')
@@ -238,7 +244,7 @@ def test_expiration_between_start_intent_and_actual_start_never_accepts(real_bou
 def test_lost_commit_acknowledgment_returns_original_receipt_after_death(real_boundary):
     boundary = real_boundary
     bundle = boundary.prepare(idle=True)
-    directory = boundary.checkpoints(observe=['COMMIT.committed'], pause=['COMMIT.committed'])
+    directory = boundary.checkpoints(attempt_id=bundle['attempt_id'],observe=['COMMIT.committed'], pause=['COMMIT.committed'])
     try:
         boundary.submit(bundle)
         state = boundary.wait(bundle['attempt_id'])
