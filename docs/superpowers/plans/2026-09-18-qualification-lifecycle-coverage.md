@@ -35,9 +35,9 @@ Task 9, full-campaign execution, production qualification, deployment or merge.
 
 - [x] Enable bounded concurrent RPC handling; verify duplicates/conflicts locally.
 - [x] Add administrator-only process/transaction timing checkpoints in test code.
-- [ ] Exercise durable interruptions, lost acknowledgments, expiry and both races.
-- [ ] Probe actual client UID and running worker filesystem/socket permissions.
-- [ ] Run focused local checks and two disposable Linux jobs; inspect retained
+- [x] Exercise durable interruptions, lost acknowledgments, expiry and both races.
+- [x] Probe actual client UID and running worker filesystem/socket permissions.
+- [x] Run focused local checks and two disposable Linux jobs; inspect retained
   records, review the diff and record the acceptance limits.
 
 The supervisor owns reservation, worker identity and state; SQLite serializes
@@ -69,19 +69,19 @@ reporting present validity and eligibility separately.
   preserve the existing single-attempt journal rule. Permission tests probe both
   qclient and the real running container UID. Linux evidence remains pending.
 
-## Final local evidence and outstanding permission
+## Local evidence and authorization history
 
 - Clean revision `605c23a`: the full execution selection passed **226 tests**
   using the same operations interpreter, record
   `20260918T041142Z-27225522003c` (completed, exit 0, stable source, complete
-  capture, no report errors). The only subsequent changes bind administrator
-  checkpoint evidence to its attempt and require the exact race event sequence.
+  capture, no report errors). Subsequent code changes affect only Linux checkpoint
+  evidence and assertions, including the actual-start expiry comparison below.
 - Final Python syntax/collection and `git diff --check` validate the test-only
   changes; they do not establish Linux execution acceptance.
 - Automatic approval review rejected pushing this branch to the public GitHub
   remote and dispatching the two-host workflow: it requires explicit user
-  authorization for external export/execution. Approval was requested; no push or
-  dispatch occurred. Real Linux verification and Task 8 acceptance remain open.
+  authorization for external export/execution. Approval was requested; at that
+  checkpoint no push or dispatch occurred and real Linux verification was open.
 - Focused self-review covered the request dispatcher and its store/signing/G5
   consumers. No independent reviewer or combined release acceptance is claimed.
 - The user subsequently explicitly approved the named branch push and two-host
@@ -101,3 +101,25 @@ The test now checks intent authorization before expiry, daemon start at/after
 expiry, and the complete DISPATCHED -> CONTAINER -> START_INTENT -> IN_DOUBT
 history, excluding RUNNING and acceptance. Production behavior is unchanged.
 Retain the failed records; rerun both hosts before accepting the outcome.
+
+## Verified return checkpoint
+
+Corrected run [35307206216](https://github.com/Joshua-Asante/first-passage/actions/runs/35307206216)
+at clean **`9cd2e99f58a13136e89f3b29c83cbedad41aee9a`** passed **34/34 cases on
+each of two fresh Ubuntu hosts**, with zero failures/errors/skips, operations
+Python 3.12.3, stable source, complete capture, no capture/report errors and
+successful owned cleanup. The downloaded audit verified all event/object hashes,
+27 single-reservation attempts per host with at most one actual start each,
+original receipt identities, four competing writer orders and both permission
+identities. The failed first run remains explicitly failed and retained.
+
+The [verification report](../../notes/audits/2026-09-18-qualification-lifecycle-permissions.md)
+records exact commands, interpreter/revision details, artifact locations, hashes,
+local gate limitations and the trust boundary. The production/local execution
+test bytes remain those covered by the clean 226-test local run; the two-host run
+covers the final Linux test changes. Final follow-up edits are documentation only.
+
+This bounded lifecycle/permission outcome is implemented and verified; no external
+prerequisite remains for it. Return at this checkpoint. Task 9, independent
+combined review, overall qualification acceptance, full-campaign execution,
+production activation and merge remain outside this handoff.
