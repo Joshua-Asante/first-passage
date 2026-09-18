@@ -87,7 +87,8 @@ def test_real_approval_expiry_between_intent_and_start_rejects_execution(real_bo
                      resumed_at=datetime.now(timezone.utc).isoformat()))
         finally:
             boundary.service.send_signal(signal.SIGCONT)
-        response.result(timeout=60)
+        try: response.result(timeout=60)
+        except subprocess.CalledProcessError: pass  # The process barrier can delay acknowledgment.
     failed=boundary.wait(attempt,states=('IN_DOUBT',))
     assert failed['execution_id']==before['execution_id']
     assert failed['attestation_count']==0 and failed['launch_intent_count']==1
@@ -96,9 +97,10 @@ def test_real_approval_expiry_between_intent_and_start_rejects_execution(real_bo
     started=datetime.fromisoformat(inspection['State']['StartedAt'].replace('Z','+00:00'))
     assert started>expiry and len(boundary.starts(failed['container_id']))==1
     events=boundary.events(attempt)
-    assert any('depth' in row['data'].get('reason','').lower() for row in events)
+    assert any('approval is not valid at verification time' in row['data'].get('reason','') for row in events)
     boundary.restart()
-    assert boundary.submit(bundle)['execution_id']==failed['execution_id']
+    with pytest.raises(subprocess.CalledProcessError): boundary.submit(bundle)
+    assert boundary.status(attempt)['execution_id']==failed['execution_id']
     assert boundary.events(attempt)==events
     with pytest.raises(subprocess.CalledProcessError): boundary.assess(attempt)
     assert 'result_sha256' not in boundary.status(attempt)
