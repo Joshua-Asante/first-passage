@@ -87,6 +87,7 @@ def test_real_running_worker_and_supervisor_death_never_redraw(real_boundary):
             if state.split()[1]=='T': break
         time.sleep(.05)
     else: pytest.fail('signed synthetic worker did not reach its actual SIGSTOP checkpoint')
+    assert b'TEST_ONLY worker fault: stop\n' in boundary.worker_log(running['execution_id'])
     from tools.qualification_verification import host
     host.save(boundary.output/(attempt+'-stopped-worker.json'),dict(container=inspection,pid=pid,process_state=state))
     boundary.service.kill(); boundary.service.wait(timeout=15)
@@ -111,6 +112,7 @@ def test_real_worker_failure_has_no_attestation_acceptance_or_redraw(real_bounda
     assert failed['attestation_count']==0 and failed['launch_intent_count']==1
     inspection=boundary.inspect(failed['container_id'])
     log=boundary.worker_log(failed['execution_id'])
+    assert ('TEST_ONLY worker fault: '+fault+'\n').encode() in log
     if fault=='exit_zero':
         assert inspection['State']['ExitCode']==0 and inspection['State']['OOMKilled'] is False
         assert any('frame' in row['data'].get('reason','').lower() for row in boundary.events(attempt))

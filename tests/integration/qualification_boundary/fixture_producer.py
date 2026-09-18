@@ -16,6 +16,8 @@ from c1_rail.qualification.preflight import exact_depth_subject
 from c1_rail.qualification.trust_domain import _composition_test_trust_policy, validate_qualification_trust_domain
 from c1_rail.qualification.execution.runtime import observe_runtime
 from c1_rail.qualification.execution.protocol import sha256
+from c1_rail.qualification.execution.admission import verify_bundle
+from c1_rail.qualification.source_admission import admit_source
 from c1_rail.qualification.policy_sources import build_qualification_policy
 from composition_fixture import build_artifacts, verified_domain, contract_document, encoded
 
@@ -69,7 +71,7 @@ def build_real_bundle(root, *, repo, release, private, keys, attempt_id, idle=Fa
                       fault=None,depth_valid_seconds=14400):
     current = datetime.now(timezone.utc)
     policy_raw=build_qualification_policy()
-    fixture = build_artifacts(root, idle=idle)
+    port_transform = None
     if fault is not None:
         # These signed synthetic strategy programs cause actual worker faults.
         # They never manufacture PathOutcome, capture or qualification evidence.
@@ -81,19 +83,19 @@ def build_real_bundle(root, *, repo, release, private, keys, attempt_id, idle=Fa
             'memory':'bytearray(1500000000)',
         }
         if fault not in effects: raise ValueError('unknown TEST_ONLY worker fault')
-        role='orb_runtime_port'
-        raw=fixture.payloads[role]
-        marker=b'    def on_bar(self, bar):\n'
-        if raw.count(marker)!=1: raise ValueError('synthetic port hook differs')
-        raw=raw.replace(marker,marker+b'        _boundary_fault()\n')
-        raw+=('''\n_boundary_fault_seen=False
+        def port_transform(leg,raw):
+            if leg!='orb_mnq_v7': return raw
+            marker=b'    def on_bar(self, bar):\n'
+            if raw.count(marker)!=1: raise ValueError('synthetic port hook differs')
+            raw=raw.replace(marker,marker+b'        _boundary_fault()\n')
+            return raw+('''\n_boundary_fault_seen=False
 def _boundary_fault():
     global _boundary_fault_seen
     if _boundary_fault_seen: return
     _boundary_fault_seen=True
     import os, signal, time
-    '''+effects[fault]+'\n').encode()
-        fixture=replace(fixture,payloads=dict(fixture.payloads,**{role:raw}))
+    '''+f'os.write(2, {("TEST_ONLY worker fault: "+fault+chr(10)).encode()!r})\n    '+effects[fault]+'\n').encode()
+    fixture = build_artifacts(root, idle=idle, port_transform=port_transform)
     release_doc = json.loads(release)
     modules = tuple(SimpleNamespace(role=role, name=row['module'], path=row['path'],
         source_bytes=(repo / row['path']).read_bytes()) for role, row in release_doc['ordinary_code'].items())
@@ -146,4 +148,9 @@ def _boundary_fault():
         entries=[dict(role=role, path=paths[role], sha256=sha256(payloads[role]), byte_length=len(payloads[role]))
                  for role in sorted(payloads)]))
     (root / 'index.json').write_bytes(index)
-    return dict(root=root, index=index, contract=contract, domain=domain, payloads=payloads, paths=paths)
+    # Exercise the worker's real admission path before the administrator stages
+    # anything for dispatch. This constructs sources without replaying on_bar.
+    context=verify_bundle(root,release,keys,datetime.now(timezone.utc))
+    admitted=admit_source(context.contract,artifact_root=root,policy=context.policy)
+    return dict(root=root, index=index, contract=contract, domain=domain, payloads=payloads, paths=paths,
+        source_admission=admitted.source_admission_bytes,legality=admitted.legality_bytes)

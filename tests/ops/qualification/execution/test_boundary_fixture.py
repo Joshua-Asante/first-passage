@@ -3,6 +3,7 @@ from datetime import datetime,timezone
 import importlib.util
 from pathlib import Path
 from c1_rail.qualification.execution.admission import verify_bundle
+from c1_rail.qualification.source_admission import admit_source
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
 from test_profile import document
 import pytest
@@ -22,6 +23,7 @@ def test_real_fixture_binds_current_signed_policy_and_actual_role_closures(tmp_p
     assert context.contract.policy_sha256==context.policy.sha256
     assert context.attempt_id=='fixture-current'
     assert context.release.document['runtime_manifests']['worker']!=context.release.document['runtime_manifests']['g5']
+    admit_source(context.contract,artifact_root=context.bundle_dir,policy=context.policy)
 
 
 @pytest.mark.parametrize('fault',['stop','exit_zero','cpu','memory','wall'])
@@ -36,3 +38,7 @@ def test_fault_fixture_is_signed_and_admitted_before_actual_worker_failure(tmp_p
     context=verify_bundle(bundle['root'],release,keys,datetime.now(timezone.utc))
     assert context.attempt_id=='fixture-fault'
     assert (context.exact_depth_approval.expires_at-context.exact_depth_approval.issued_at).total_seconds()==390
+    # Admission builds the real retained source, but never calls on_bar: the
+    # destructive fault must remain dormant until the protected worker replays.
+    admitted=admit_source(context.contract,artifact_root=context.bundle_dir,policy=context.policy)
+    admitted.source.verify_for(context.contract)

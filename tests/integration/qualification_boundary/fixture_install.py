@@ -82,6 +82,9 @@ def prepare(root,attempt,idle,*,fault=None,depth_valid_seconds=14400):
     source=root/'keys/retained'/attempt
     bundle=build_real_bundle(source,repo=CODE,release=release,private=private,keys=keys,attempt_id=attempt,idle=idle,
         fault=fault,depth_valid_seconds=depth_valid_seconds)
+    # Administrator pre-dispatch diagnostics, not protected worker attestation.
+    write(root/'evidence'/f'{attempt}-source-admission.json',bundle['source_admission'])
+    write(root/'evidence'/f'{attempt}-legality.json',bundle['legality'])
     digest=stage_bundle(source,instance_config=(installation/'supervisor.json').read_bytes())
     expires=json.loads(bundle['payloads']['exact_depth_approval'])['payload']['expires_at']
     return dict(attempt_id=attempt,bundle_sha256=digest,contract_sha256=bundle['contract'].contract_sha256,

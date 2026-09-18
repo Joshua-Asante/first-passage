@@ -92,11 +92,13 @@ class ArtifactFixture:
         return ArtifactFixture(payloads,paths,self.populations,self.source_binding,self.pine_sha256,modules)
 
 
-def build_artifacts(root, *, idle=False):
+def build_artifacts(root, *, idle=False, port_transform=None):
     payloads = {role:encoded({'synthetic_fixture':role}) for role in REQUIRED_ARTIFACT_ROLES}
     pine = {leg:digest(('synthetic-pine:'+leg).encode()) for leg in LEG_IDS}
     for leg in LEG_IDS:
-        payloads[PORT_ROLES[leg]]=port_bytes(leg,pine[leg],idle=idle)
+        raw=port_bytes(leg,pine[leg],idle=idle)
+        # Finalize source bytes before deriving historical and population pins.
+        payloads[PORT_ROLES[leg]]=port_transform(leg,raw) if port_transform else raw
     days=[]
     current=date(2024,1,2)
     while current<date(2024,9,1):
