@@ -176,3 +176,18 @@ The user approved the corrected commit and job dispatch. Push succeeded. Both jo
 Source-pin consistency is repaired. Complete five-fault verification remains incomplete. The stop driver waits on buffered stderr that is not flushed until capture EOF; both exported stop logs were empty and no observed-stop receipt exists. A buffer-independent readiness observation is needed. Host2 memory reached its fault marker and exited137 but Docker reported OOMKilled=false; kernel/cgroup OOM evidence and exit ordering need investigation before accepting it. Do not treat missing host2 memory start-event export as zero starts, or its unexecuted retry assertions as verified.
 
 Branch HEAD67b93dd is pushed. No further code changes or runs were made after this result. Plan/handoff updates remain local; unused concurrency work is preserved. Acceptance HELD, synthetic N1_ONLY ceiling unchanged. Return this failed verification checkpoint before selecting the next bounded readiness/OOM investigation.
+
+### Five-fault readiness/OOM repair — bounded execution
+
+**Selected outcome:** Verify stop, zero-exit, CPU, wall and confirmed memory OOM on both fresh disposable Linux hosts.
+**Prerequisites:** PR425 base `6590b61`; prior run `35299214700` and its retained inspections. Existing dirty lifecycle work is excluded in separate worktree `qualification-fault-verification`.
+**Ownership:** This task owns fault repair and evidence; the PR425 coordinator retains combined qualification acceptance.
+**Verification:** Local launcher/fixture regressions, then the existing real `--test-only` workflow on both Ubuntu hosts; require actual stopped state, OOMKilled plus ordered OOM/die events, one launch, no attestation/result, exact retry and successful cleanup. Retain source identity and reports.
+**Checkpoint:** Record local checks and fresh hosted run evidence here before handoff.
+**Return boundary:** Return the five-fault result; no lifecycle expansion, invariant-gate acceptance, draft removal, merge, or production qualification.
+
+Confirmed readiness cause: worker uses `os.write(2, ...)`, but launcher buffers its file until EOF. Per-chunk flush fixes the shared capture owner without changing final fsync or log limits. Regression `test_capture_exposes_stderr_before_worker_eof` failed with an empty live log before the fix. Related cases: all five callbacks share capture; normal EOF retains flush/fsync; bounded log/output rejection is unchanged.
+
+Historical host2 memory cause remains unconfirmed: container `27279ed72cff826c7d0f063fcbf8a83837e8077531e14078b3ec684486bf1526` exited137 after 3.116 seconds, OOMKilled=false, no retained kernel/cgroup events. No claim of OOM is made for that run. Host pressure from a single 1.5 GB allocation is a hypothesis, not a finding. The canonical TEST_ONLY profile now limits the worker to256 MB, contract memory budget derives from that profile, and the fault charges paced1 MB resident chunks capped at about twice the limit. Fresh acceptance additionally requires an OOM event before die; kernel/oomd diagnostics are exported for future ambiguous deaths.
+
+Local evidence: operations Python3.13.2 at `C:/Users/joshu/multi_firm_operations/tmp/ops-env/Scripts/python.exe`; doctor matched62 locked packages. `./fp.ps1 --workers 2 python -m pytest tests/ops/qualification/execution/test_launcher.py tests/ops/qualification/execution/test_profile.py tests/ops/qualification/execution/test_boundary_fixture.py -q --tb=short`:29passed; record `20260918T031851Z-6d15a0e93674`, completed/exit0/stable. Red regression record `20260918T031746Z-19fcfa8456fc` failed at the expected live-log assertion. Hosted acceptance remains pending.

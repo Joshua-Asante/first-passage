@@ -128,7 +128,13 @@ def test_real_worker_failure_has_no_attestation_acceptance_or_redraw(real_bounda
         assert inspection['State']['ExitCode']==0 and inspection['State']['OOMKilled'] is False
         assert any('frame' in row['data'].get('reason','').lower() for row in boundary.events(attempt))
     elif fault=='memory':
+        oom_events=boundary.docker_events(failed['container_id'],'oom')
+        boundary.docker_events(failed['container_id'],'kill')
+        die_events=boundary.docker_events(failed['container_id'],'die')
         assert inspection['State']['OOMKilled'] is True
+        assert inspection['State']['ExitCode']==137
+        assert oom_events and die_events
+        assert oom_events[-1]['timeNano'] <= die_events[-1]['timeNano']
     else:
         assert b'CPU/wall budget' in log and inspection['State']['ExitCode']!=0
     before=boundary.events(attempt)

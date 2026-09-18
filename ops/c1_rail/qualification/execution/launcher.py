@@ -151,6 +151,8 @@ def start_and_capture(container_id, *, spool_dir, profile, maximum_wall_seconds)
                         if logged > profile.log_byte_limit:
                             raise ValueError('worker stderr exceeds limit')
                         log.write(chunk)
+                        # Readiness observers must see short diagnostics before EOF.
+                        log.flush()
             log.flush()
             os.fsync(log.fileno())
         process.wait(timeout=profile.capture_seconds)

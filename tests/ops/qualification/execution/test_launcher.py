@@ -40,6 +40,51 @@ def test_archive_requires_daemon_success(tmp_path):
         archive.archive_capture(CapturedOutput('a' * 64, b'\x00\x00\x00\x02{}', 0, True, 1), archive_dir=tmp_path)
 
 
+def test_capture_exposes_stderr_before_worker_eof(tmp_path, monkeypatch):
+    """Buffered capture hides readiness while a worker waits to be stopped."""
+    launcher = importlib.import_module('c1_rail.qualification.execution.launcher')
+    marker = b'TEST_ONLY worker fault: stop\n'
+    source = tmp_path / 'stderr-source'
+    source.write_bytes(marker)
+    stdout = (tmp_path / 'stdout-source').open('w+b')
+    stderr = source.open('rb')
+    process = SimpleNamespace(stdout=stdout, stderr=stderr, returncode=0,
+                              wait=lambda **kw: 0, kill=lambda: None)
+    spool = tmp_path / 'capture'
+
+    class Selector:
+        def __init__(self):
+            self.streams = {}
+            self.read_once = False
+
+        def register(self, stream, _events, data):
+            self.streams[stream] = SimpleNamespace(fileobj=stream, data=data)
+
+        def get_map(self):
+            return self.streams
+
+        def select(self, **kw):
+            if self.read_once:
+                assert (spool / 'stderr.log').read_bytes() == marker
+            self.read_once = True
+            return [(key, 1) for key in self.streams.values()]
+
+        def unregister(self, stream):
+            del self.streams[stream]
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(launcher.subprocess, 'Popen', lambda *a, **kw: process)
+    monkeypatch.setattr(launcher, '_command', lambda *a: ['fake-docker', *a])
+    monkeypatch.setattr(launcher.selectors, 'DefaultSelector', Selector)
+    monkeypatch.setattr(launcher, '_inspect', lambda cid: dict(State=dict(
+        Running=False, Status='exited', ExitCode=0, OOMKilled=False)))
+    result = launcher.start_and_capture('a' * 64, spool_dir=spool,
+        profile=parse_profile(encoded(document())), maximum_wall_seconds=1)
+    assert result.exit_code == 0
+
+
 @pytest.mark.parametrize('foreign', [False,True])
 def test_orphan_discovery_requires_exact_name_labels_and_image(monkeypatch,foreign):
     import json

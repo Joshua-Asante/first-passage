@@ -134,12 +134,15 @@ class Boundary:
         return row
 
     def starts(self,container):
+        return self.docker_events(container, 'start')
+
+    def docker_events(self,container,event):
         raw=host.run_owned(self.group,[self.manifest['host_config']['docker'],'--host','unix:///var/run/docker.sock',
             'events','--since=0','--until='+str(time.time()),'--filter=type=container',
-            '--filter=container='+container,'--filter=event=start','--format={{json .}}'],interpreter=self.python)
+            '--filter=container='+container,'--filter=event='+event,'--format={{json .}}'],interpreter=self.python)
         rows=[json.loads(line) for line in raw.splitlines()]
-        assert all(row['Actor']['ID']==container and row['Action']=='start' for row in rows)
-        host.save(self.output/(container+'-start-events.json'),rows)
+        assert all(row['Actor']['ID']==container and row['Action']==event for row in rows)
+        host.save(self.output/(container+'-'+event+'-events.json'),rows)
         return rows
 
     def restart(self):

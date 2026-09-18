@@ -71,6 +71,8 @@ def build_real_bundle(root, *, repo, release, private, keys, attempt_id, idle=Fa
                       fault=None,depth_valid_seconds=14400):
     current = datetime.now(timezone.utc)
     policy_raw=build_qualification_policy()
+    release_doc = json.loads(release)
+    memory_limit = release_doc['profile']['memory_bytes']
     port_transform = None
     if fault is not None:
         # These signed synthetic strategy programs cause actual worker faults.
@@ -82,7 +84,11 @@ def build_real_bundle(root, *, repo, release, private, keys, attempt_id, idle=Fa
             'exit_zero':'os._exit(0)',
             'cpu':'end=time.process_time()+2\n    while time.process_time()<end: pass',
             'wall':'time.sleep(2)',
-            'memory':'bytearray(1500000000)',
+            # Charge small resident chunks, bounded by the approved container
+            # limit. An absent cgroup limit must fail, never exhaust the host.
+            'memory':('chunks=[]\n    for _ in range('+str(2*memory_limit//1048576+1)+'):\n'
+                      '        chunks.append(bytearray(1048576))\n        time.sleep(0.01)\n'
+                      '    raise RuntimeError("TEST_ONLY cgroup memory limit did not kill worker")'),
         }
         if fault not in effects: raise ValueError('unknown TEST_ONLY worker fault')
         def port_transform(leg,raw):
@@ -98,7 +104,6 @@ def _boundary_fault():
     import os, signal, time
     '''+f'os.write(2, {("TEST_ONLY worker fault: "+fault+chr(10)).encode()!r})\n    '+effects[fault]+'\n').encode()
     fixture = build_artifacts(root, idle=idle, port_transform=port_transform)
-    release_doc = json.loads(release)
     modules = tuple(SimpleNamespace(role=role, name=row['module'], path=row['path'],
         source_bytes=(repo / row['path']).read_bytes()) for role, row in release_doc['ordinary_code'].items())
     fixture = replace(fixture, ordinary_modules=modules,
@@ -124,7 +129,7 @@ def _boundary_fault():
     contract_doc['result_plan']=dict(policy_sha256=sha256(policy_raw),
         adjudicator_closure_sha256=contract_doc['result_plan']['adjudicator_closure_sha256'])
     contract_doc['replay']['budget'].update(maximum_wall_seconds=180, maximum_cpu_seconds=120,
-                                           maximum_memory_bytes=900000000)
+                                           maximum_memory_bytes=memory_limit*9//10)
     if budget:
         contract_doc['replay']['budget'].update(budget)
     if fault in ('cpu','wall'):

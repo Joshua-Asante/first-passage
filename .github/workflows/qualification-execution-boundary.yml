@@ -69,6 +69,9 @@ jobs:
           cleanup_status=$?
           set -e
           mkdir -p "$RUNNER_TEMP/qualification-evidence"
+          # Preserve the distinction between cgroup OOM and external SIGKILL.
+          sudo journalctl --dmesg -b --no-pager > "$RUNNER_TEMP/qualification-evidence/kernel.log" 2>&1 || true
+          sudo journalctl -b -u systemd-oomd --no-pager > "$RUNNER_TEMP/qualification-evidence/oomd.log" 2>&1 || true
           if sudo test -d "$host_root/evidence"; then
             sudo cp -a "$host_root/evidence/." "$RUNNER_TEMP/qualification-evidence/"
           fi
