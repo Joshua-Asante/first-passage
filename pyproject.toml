@@ -51,3 +51,8 @@ testpaths = ["tests"]
 # No "governance" entry: that layer is root-resident by design and has no
 # directory (REPO_MAP.md §1) — the token was a no-op and was dropped 2026-07-31.
 pythonpath = ["core", "lab", "ops", "ops/c1_rail", "ops/c1_signal_daemon", "."]
+
+[tool.pylint.main]
+# Match the layer roots used by tests and executable bootstraps. The editable
+# install carries dependencies only, so pylint cannot infer these module roots.
+init-hook = "import pathlib, sys, tomllib; sys.path[:0] = [str(pathlib.Path(p).resolve()) for p in tomllib.loads(pathlib.Path('pyproject.toml').read_text(encoding='utf-8'))['tool']['pytest']['ini_options']['pythonpath']]"
