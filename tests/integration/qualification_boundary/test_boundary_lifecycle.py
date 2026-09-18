@@ -5,9 +5,103 @@ import os
 from pathlib import Path
 import subprocess
 import time
+import signal
+import sqlite3
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime,timezone
 
 import pytest
+
+
+def _checkpoint(boundary, bundle, expected_state):
+    deadline=time.monotonic()+90
+    while time.monotonic()<deadline:
+        if boundary.checkpoint_receipt.exists():
+            process=Path('/proc')/str(boundary.service.pid)/'status'
+            stopped=next(line for line in process.read_text().splitlines() if line.startswith('State:'))
+            if stopped.split()[1]=='T': break
+        time.sleep(.05)
+    else: pytest.fail('supervisor never reached actual process barrier')
+    receipt=json.loads(boundary.checkpoint_receipt.read_bytes())
+    assert receipt['pid']==boundary.service.pid
+    journal=boundary.root/'data/journal.sqlite'
+    with sqlite3.connect(journal.as_uri()+'?mode=ro',uri=True) as database:
+        database.row_factory=sqlite3.Row
+        before=dict(database.execute('SELECT * FROM executions WHERE attempt_id=?',
+            (bundle['attempt_id'],)).fetchone())
+    assert before['state']==expected_state
+    return before,receipt,stopped
+
+
+@pytest.mark.parametrize('checkpoint', ['record_container', 'start_and_capture', 'archive_capture'])
+def test_real_prepublication_process_death_never_redraws(real_boundary, checkpoint):
+    boundary=real_boundary
+    bundle=boundary.prepare(idle=True)
+    boundary.restart(checkpoint=checkpoint)
+    with ThreadPoolExecutor(max_workers=1) as callers:
+        response=callers.submit(boundary.submit,bundle)
+        try:
+            before,receipt,stopped=_checkpoint(boundary,bundle,{'record_container':'DISPATCHED',
+                'start_and_capture':'START_INTENT','archive_capture':'RUNNING'}[checkpoint])
+            assert receipt['checkpoint']==checkpoint
+            from tools.qualification_verification import host
+            host.save(boundary.output/(bundle['attempt_id']+'-process-interruption.json'),
+                dict(checkpoint=checkpoint,execution_id=before['execution_id'],state=before['state'],
+                     process_state=stopped,signal='SIGKILL',barrier=receipt))
+        finally:
+            boundary.service.kill(); boundary.service.wait(timeout=15)
+        try: response.result(timeout=15)
+        except subprocess.CalledProcessError: pass  # Lost acknowledgment is expected.
+    boundary.restart()
+    state=boundary.wait(bundle['attempt_id'],states=('IN_DOUBT',))
+    assert state['execution_id']==before['execution_id'] and state['attestation_count']==0
+    container=before['container_id'] or receipt['container_id']
+    assert not boundary.inspect(container)['State']['Running']
+    starts=boundary.starts(container)
+    assert len(starts)==(1 if checkpoint=='archive_capture' else 0)
+    assert state['launch_intent_count']==(0 if checkpoint=='record_container' else 1)
+    events=boundary.events(bundle['attempt_id'])
+    assert boundary.submit(bundle)['execution_id']==state['execution_id']
+    assert boundary.events(bundle['attempt_id'])==events
+    with pytest.raises(subprocess.CalledProcessError): boundary.assess(bundle['attempt_id'])
+    assert 'result_sha256' not in boundary.status(bundle['attempt_id'])
+
+
+def test_real_approval_expiry_between_intent_and_start_rejects_execution(real_boundary):
+    boundary=real_boundary
+    bundle=boundary.prepare(idle=True,depth_valid_seconds=60)
+    attempt=bundle['attempt_id']
+    boundary.restart(checkpoint='start_and_capture')
+    with ThreadPoolExecutor(max_workers=1) as callers:
+        response=callers.submit(boundary.submit,bundle)
+        try:
+            before,receipt,stopped=_checkpoint(boundary,bundle,'START_INTENT')
+            assert receipt['checkpoint']=='start_and_capture'
+            assert not boundary.starts(before['container_id'])
+            expiry=datetime.fromisoformat(bundle['depth_expires_at'].replace('Z','+00:00'))
+            time.sleep(max(0,(expiry-datetime.now(timezone.utc)).total_seconds())+.2)
+            from tools.qualification_verification import host
+            host.save(boundary.output/(attempt+'-prestart-expiry.json'),
+                dict(execution_id=before['execution_id'],barrier=receipt,process_state=stopped,
+                     depth_expires_at=bundle['depth_expires_at'],
+                     resumed_at=datetime.now(timezone.utc).isoformat()))
+        finally:
+            boundary.service.send_signal(signal.SIGCONT)
+        response.result(timeout=60)
+    failed=boundary.wait(attempt,states=('IN_DOUBT',))
+    assert failed['execution_id']==before['execution_id']
+    assert failed['attestation_count']==0 and failed['launch_intent_count']==1
+    inspection=boundary.inspect(failed['container_id'])
+    assert not inspection['State']['Running']
+    started=datetime.fromisoformat(inspection['State']['StartedAt'].replace('Z','+00:00'))
+    assert started>expiry and len(boundary.starts(failed['container_id']))==1
+    events=boundary.events(attempt)
+    assert any('depth' in row['data'].get('reason','').lower() for row in events)
+    boundary.restart()
+    assert boundary.submit(bundle)['execution_id']==failed['execution_id']
+    assert boundary.events(attempt)==events
+    with pytest.raises(subprocess.CalledProcessError): boundary.assess(attempt)
+    assert 'result_sha256' not in boundary.status(attempt)
 
 
 def test_captured_execution_survives_signer_denial_and_service_death(real_boundary):

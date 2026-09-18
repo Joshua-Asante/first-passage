@@ -145,13 +145,18 @@ class Boundary:
         host.save(self.output/(container+'-'+event+'-events.json'),rows)
         return rows
 
-    def restart(self):
+    def restart(self, *, checkpoint=None):
         if self.service is not None and self.service.poll() is None:
             self.service.kill(); self.service.wait(timeout=15)
         stdout=(self.output/('supervisor-'+uuid4().hex+'.stdout')).open('wb')
         stderr=(self.output/('supervisor-'+uuid4().hex+'.stderr')).open('wb')
         self.streams.extend([stdout,stderr])
-        self.service=host.start_owned(self.root,self.identity('qexec',[self.python,'-I',str(self.code/'bootstrap.py'),'supervisor']),
+        command=[self.python,'-I',str(self.code/'bootstrap.py'),'supervisor']
+        if checkpoint is not None:
+            self.checkpoint_receipt=self.root/'data'/('checkpoint-'+uuid4().hex+'.json')
+            command=[self.python,'-I',str(self.code/'tests/integration/qualification_boundary/supervisor_checkpoint.py'),
+                     str(self.code),checkpoint,str(self.checkpoint_receipt)]
+        self.service=host.start_owned(self.root,self.identity('qexec',command),
             stdout=stdout,stderr=stderr,interpreter=self.python)
         deadline=time.monotonic()+60
         while time.monotonic()<deadline:

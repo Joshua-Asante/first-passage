@@ -1,7 +1,9 @@
 """Atomic store consistency; service signature/UID authority is tested separately."""
 import base64
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 import json
+from threading import Event
 import pytest
 from test_artifact_acceptance import captured_case
 from test_contract import NOW
@@ -86,6 +88,50 @@ def test_stale_snapshot_cannot_first_commit(assessed_inputs):
     with pytest.raises(ValueError,match='VOID|snapshot'):
         store.commit_assessment(evidence,authentication,now=NOW)
     assert 'result_sha256' not in json.loads(store.status(attempt))
+
+
+class _ObservedConnection:
+    def __init__(self, connection, attempted):
+        self._connection = connection
+        self._attempted = attempted
+
+    def execute(self, statement, *arguments):
+        if statement == 'BEGIN IMMEDIATE':
+            self._attempted.set()
+        return self._connection.execute(statement, *arguments)
+
+    def __getattr__(self, name):
+        return getattr(self._connection, name)
+
+
+@pytest.mark.parametrize('first', ['void', 'commit'])
+def test_void_and_first_commit_serialize_in_both_orders(assessed_inputs, first):
+    store,attempt,evidence,authentication=assessed_inputs
+    second=ExecutionStore(store.path)
+    attempted=Event()
+    original_connect=second._connect
+    second._connect=lambda:_ObservedConnection(original_connect(),attempted)
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        with store.transaction():
+            if first=='void':
+                store.void(attempt,'unit cancellation',b'{"validated":true}',now=NOW)
+                operation=lambda:second.commit_assessment(evidence,authentication,now=NOW)
+            else:
+                receipt=json.loads(store.commit_assessment(evidence,authentication,now=NOW))['receipt']
+                operation=lambda:second.void(attempt,'unit cancellation',b'{"validated":true}',now=NOW)
+            future=pool.submit(operation)
+            assert attempted.wait(2),'second writer never attempted BEGIN IMMEDIATE'
+        if first=='void':
+            with pytest.raises(ValueError,match='VOID|snapshot'):
+                future.result(timeout=2)
+        else:
+            assert json.loads(future.result(timeout=2))['validity']=='VOID'
+            retry=json.loads(ExecutionStore(store.path).commit_assessment(evidence,authentication,now=NOW))
+            assert retry['receipt']==receipt and retry['historical'] is True
+    status=json.loads(ExecutionStore(store.path).status(attempt))
+    assert status['validity']=='VOID'
+    assert ('result_sha256' in status) is (first=='commit')
+    assert status['launch_intent_count']==1
 
 
 def test_hash_mismatch_cannot_first_commit(assessed_inputs):

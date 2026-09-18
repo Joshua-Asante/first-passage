@@ -26,9 +26,34 @@ from .store import ExecutionStore
 from .transport import receive
 from .verification import utc_instant, verify_role_signature
 
+RPC_CONNECTION_LIMIT = 16
 
 def now():
     return datetime.now(timezone.utc)
+
+
+class BoundedConnections:
+    """Bound both active handlers and pending admission, never an unbounded queue."""
+    def __init__(self,handler,*,limit):
+        self.handler=handler
+        self.slots=threading.BoundedSemaphore(limit)
+        self.pool=ThreadPoolExecutor(max_workers=limit,thread_name_prefix='qualification-rpc')
+
+    def submit(self,connection):
+        self.slots.acquire()
+        try:
+            result=self.pool.submit(self.handler,connection)
+        except BaseException:
+            self.slots.release()
+            raise
+        result.add_done_callback(lambda _:self.slots.release())
+        return result
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self,*exc):
+        self.pool.shutdown(wait=True)
 
 
 def permitted(role, operation):
@@ -332,26 +357,33 @@ class ExecutionService:
             info=path.lstat()
             if info.st_uid!=self.config['service_uid'] or info.st_gid!=self.config['socket_gid']:
                 raise ValueError('bound socket did not inherit protected identity')
-            server.listen(16)
-            while True:
-                connection, _ = server.accept()
-                with connection:
-                    connection.settimeout(self.profile.capture_seconds)
+            server.listen(RPC_CONNECTION_LIMIT)
+            with BoundedConnections(self._serve_connection, limit=RPC_CONNECTION_LIMIT) as handlers:
+                while True:
+                    connection, _ = server.accept()
                     try:
-                        _, uid, _ = struct.unpack('3i', connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize('3i')))
-                        raw = receive(connection, limit=self.profile.rpc_byte_limit)
-                        result = self.handle_request(uid, raw)
-                        response = encoded(dict(ok=True, data_b64=base64.b64encode(result).decode('ascii')))
-                    except (ValueError, KeyError, OSError, RecursionError) as exc:
-                        response = encoded(dict(ok=False, error=str(exc)[:1024]))
-                    if len(response) > self.profile.rpc_byte_limit:
-                        response = encoded(dict(ok=False, error='RESPONSE_EXCEEDS_PROFILE_LIMIT'))
-                    try:
-                        connection.sendall(encode_frame(response, limit=self.profile.rpc_byte_limit))
-                    except OSError:
-                        # A disconnected untrusted peer cannot terminate the
-                        # supervisor or cancel an already-reserved execution.
-                        continue
+                        handlers.submit(connection)
+                    except BaseException:
+                        connection.close()
+                        raise
+
+    def _serve_connection(self, connection):
+        with connection:
+            connection.settimeout(self.profile.capture_seconds)
+            try:
+                _, uid, _ = struct.unpack('3i', connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize('3i')))
+                raw = receive(connection, limit=self.profile.rpc_byte_limit)
+                result = self.handle_request(uid, raw)
+                response = encoded(dict(ok=True, data_b64=base64.b64encode(result).decode('ascii')))
+            except (ValueError, KeyError, OSError, RecursionError) as exc:
+                response = encoded(dict(ok=False, error=str(exc)[:1024]))
+            if len(response) > self.profile.rpc_byte_limit:
+                response = encoded(dict(ok=False, error='RESPONSE_EXCEEDS_PROFILE_LIMIT'))
+            try:
+                connection.sendall(encode_frame(response, limit=self.profile.rpc_byte_limit))
+            except OSError:
+                # Peer disconnect cannot cancel an already-reserved execution.
+                pass
 
 
 def main():

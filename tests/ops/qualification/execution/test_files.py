@@ -1,6 +1,9 @@
 """Staged bytes cannot follow aliases or escape their protected root."""
 import importlib
 import os
+from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -44,3 +47,52 @@ def test_archive_rechecks_existing_bytes_and_never_overwrites(tmp_path):
     with pytest.raises(ValueError, match='archive'):
         module.archive_bytes(tmp_path, b'original')
     assert (tmp_path / digest).read_bytes() == b'changed!'
+
+
+@pytest.mark.parametrize('after_publication', [False, True])
+def test_archive_recovers_process_death_at_publication(tmp_path, after_publication):
+    """A dead publisher must leave neither an unreadable digest nor temp debris."""
+    driver = '''
+import os, sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1] + '/ops')
+sys.path.insert(0, sys.argv[1] + '/core')
+from c1_rail.qualification.execution.files import archive_bytes
+after = sys.argv[3] == 'True'
+def interrupted(function):
+    def publish(*args, **kwargs):
+        if after:
+            function(*args, **kwargs)
+        os._exit(71)
+    return publish
+os.link = interrupted(os.link)
+os.replace = interrupted(os.replace)
+archive_bytes(Path(sys.argv[2]), b'original')
+'''
+    repo = Path(__file__).resolve().parents[4]
+    archive = tmp_path / 'objects'
+    result = subprocess.run([sys.executable, '-c', driver, str(repo), str(archive),
+                             str(after_publication)], check=False, capture_output=True, timeout=20)
+    assert result.returncode == 71, result.stderr.decode()
+    module = files()
+    digest = module.archive_bytes(archive, b'original')
+    assert module.read_regular(archive, digest, limit=8) == b'original'
+    assert (archive / digest).stat().st_nlink == 1
+    assert [path.name for path in archive.iterdir()] == [digest]
+
+
+def test_archive_retry_reestablishes_directory_durability(tmp_path, monkeypatch):
+    module = files()
+    digest = module.archive_bytes(tmp_path, b'original')
+    synced = []
+    monkeypatch.setattr(module, 'fsync_directory', lambda root: synced.append(root))
+    assert module.archive_bytes(tmp_path, b'original') == digest
+    assert synced == [tmp_path.parent, tmp_path]
+
+
+def test_concurrent_archive_publishers_keep_one_immutable_object(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        digests = list(pool.map(lambda _: files().archive_bytes(tmp_path, b'original'), range(8)))
+    assert len(set(digests)) == 1
+    assert files().read_regular(tmp_path, digests[0], limit=8) == b'original'
