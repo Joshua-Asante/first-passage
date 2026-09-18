@@ -1,6 +1,6 @@
 """Service dispatch over real store/context/signatures; no OS isolation claim."""
 import base64
-from datetime import timedelta
+from datetime import datetime,timedelta
 import json
 import shutil
 import pytest
@@ -58,6 +58,52 @@ def test_fresh_commit_after_expiry_rejects_without_acceptance(dispatch,monkeypat
     monkeypatch.setattr(service,'now',lambda:NOW+timedelta(days=365))
     with pytest.raises(ValueError): call('COMMIT_N1_RESULT',**request)
     assert 'result_sha256' not in json.loads(store.status(attempt))
+
+
+@pytest.mark.parametrize('offset_us', [-1,0,1])
+def test_commit_revalidates_approval_at_recorded_instant(dispatch,captured_case,monkeypatch,offset_us):
+    store,attempt,_,_,_,call,request=dispatch
+    _,case,*_=captured_case
+    expiry=datetime.fromisoformat(json.loads(case['payloads']['exact_depth_approval'])['payload']['expires_at'].replace('Z','+00:00'))
+    committed_at=expiry+timedelta(microseconds=offset_us)
+    validate=service.validate_result_envelope_v2
+    def delayed_validation(*args,**kwargs):
+        evidence=validate(*args,**kwargs)
+        monkeypatch.setattr(service,'now',lambda:committed_at)
+        return evidence
+    monkeypatch.setattr(service,'validate_result_envelope_v2',delayed_validation)
+    before=store.status(attempt)
+    if offset_us>=0:
+        with pytest.raises(ValueError,match='approval'):
+            call('COMMIT_N1_RESULT',**request)
+        assert store.status(attempt)==before
+        with pytest.raises(ValueError,match='published member'):
+            store.fetch(attempt,request['envelope_sha256'])
+    else:
+        response=json.loads(call('COMMIT_N1_RESULT',**request))
+        assert response['current_policy_eligible'] is True
+        assert response['receipt']['committed_at_utc']==committed_at.isoformat().replace('+00:00','Z')
+        monkeypatch.setattr(service,'now',lambda:expiry)
+        retry=json.loads(call('COMMIT_N1_RESULT',**request))
+        assert retry['receipt']==response['receipt'] and retry['historical'] is True
+        assert retry['current_policy_eligible'] is False
+
+
+def test_commit_reloads_revocation_after_reconstruction(dispatch,monkeypatch):
+    store,attempt,_,_,_,call,request=dispatch
+    validate=service.validate_result_envelope_v2
+    def revoke_after_validation(*args,**kwargs):
+        evidence=validate(*args,**kwargs)
+        path=store.installation_dir/'keys.json'
+        registry=json.loads(path.read_bytes())
+        next(row for row in registry['keys'] if row['key_id']=='test-producer')['revoked_at']=NOW.isoformat().replace('+00:00','Z')
+        path.write_bytes(encoded(registry))
+        return evidence
+    monkeypatch.setattr(service,'validate_result_envelope_v2',revoke_after_validation)
+    before=store.status(attempt)
+    with pytest.raises(ValueError,match='revok'):
+        call('COMMIT_N1_RESULT',**request)
+    assert store.status(attempt)==before
 
 
 def test_changed_authentication_conflicts_on_historical_service_route(dispatch,monkeypatch):

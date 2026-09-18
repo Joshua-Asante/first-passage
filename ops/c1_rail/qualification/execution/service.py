@@ -240,7 +240,12 @@ class ExecutionService:
             evidence = validate_result_envelope_v2(context,result,attestations={'N1':attestation},artifacts=artifacts,
                 output_bytes_by_role=outputs,expected_attempt_id=attempt,current_keys=keys,
                 expected_revision=status['revision'],journal_snapshot_bytes=snapshot)
-            response = parse_canonical_json(self.store.commit_assessment(evidence,authentication,now=now()),label='commit receipt')
+            # Reconstruction can outlive approval or key authority. Validate the
+            # exact instant retained in the first commit, using freshly loaded keys.
+            committed_at = now()
+            context, keys = self.store.context(execution_id,now=committed_at)
+            verify_role_signature(auth,context=context,current_keys=keys,role='result')
+            response = parse_canonical_json(self.store.commit_assessment(evidence,authentication,now=committed_at),label='commit receipt')
             response['current_policy_eligible'] = True
             return encoded(response)
     def _execute(self, execution_id):
