@@ -105,7 +105,7 @@ def test_signed_test_domain_cannot_enter_public_production_executor():
     frozen=object.__new__(ValidatedFrozenContract)
     object.__setattr__(frozen,'trust_domain',domain)
     object.__setattr__(frozen,'approval',SimpleNamespace(authority_class='TEST_ONLY'))
-    with pytest.raises(TypeError,match='operator-validated'):
+    with pytest.raises(ValueError,match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
         ProductionExecutor(frozen,object(),object())
 
 

@@ -216,7 +216,7 @@ def test_result_authentication_rejects_receipt_fields_changed_after_validation(m
         result, private, schema="qualification_result_authentication/v1",
         scope="ATTEST_E1_RESULT", subject=result.result_sha256, authority="test-producer")
     keys = {"test-producer": helper.key(private, "test-producer", "TEST_ONLY", "ATTEST_E1_RESULT")}
-    seal.authenticate_result(result, attestation, trusted_keys=keys, now=helper.NOW, trust_domain=domain)
+    seal.inspect_result_authentication(result, attestation, trusted_keys=keys, now=helper.NOW, trust_domain=domain)
     changes = {
         "verdict": {"verdict": "FAIL"},
         "completion": {"completion": "PARTIAL"},
@@ -225,7 +225,7 @@ def test_result_authentication_rejects_receipt_fields_changed_after_validation(m
     }
     altered = replace(result, **changes[mutation])
     with pytest.raises(seal.ResultValidationError):
-        seal.authenticate_result(altered, attestation, trusted_keys=keys, now=helper.NOW, trust_domain=domain)
+        seal.inspect_result_authentication(altered, attestation, trusted_keys=keys, now=helper.NOW, trust_domain=domain)
 
 
 def _exact_binomial_cdf(n, count, probability):
@@ -307,10 +307,12 @@ def test_authenticated_consumers_recheck_canonical_receipt_fields(boundary, fiel
     attestation = helper.signed_record(result, private, schema="qualification_result_authentication/v1",
         scope="ATTEST_E1_RESULT", subject=result.result_sha256, authority="test-producer")
     keys = {"test-producer": helper.key(private, "test-producer", "TEST_ONLY", "ATTEST_E1_RESULT")}
-    authenticated = seal.authenticate_result(result, attestation, trusted_keys=keys, now=helper.NOW, trust_domain=domain)
+    authenticated = seal.inspect_result_authentication(result, attestation, trusted_keys=keys, now=helper.NOW, trust_domain=domain)
     store = AttemptStore(Path(result.attempt_journal_path), result.attempt_id,
                          result.contract_sha256, "boot-1", domain.sha256)
-    seal.commit_authenticated_result(store, authenticated, trusted_keys=keys, now=helper.NOW, trust_domain=domain)
+    before = store.events()
+    with pytest.raises(seal.ResultValidationError, match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
+        seal.commit_authenticated_result(store, authenticated, trusted_keys=keys, now=helper.NOW, trust_domain=domain)
     signing_key = fixture.private_keys["test-seal"]
     record = helper.signed_record(result, signing_key, schema="e1_qualification_seal/v1",
         scope="SEAL_E1_PASS", subject=_digest(seal.e1_seal_payload(authenticated, sealed_utc=helper.NOW)),
@@ -324,13 +326,18 @@ def test_authenticated_consumers_recheck_canonical_receipt_fields(boundary, fiel
             trusted_keys=seal_keys, now=helper.NOW, result_trusted_keys=keys, attempt_store=store,
             trust_domain=domain)
 
-    consume()  # A valid unchanged committed result reaches this exact boundary.
+    seal._reauthenticate(authenticated, trusted_keys=keys, now=helper.NOW, trust_domain=domain)
+    with pytest.raises(seal.ResultValidationError, match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
+        consume()
     changed = {"verdict": "FAIL", "completion": "PARTIAL", "canonical_bytes": b"{}",
                "stage_output_sha256": {**result.stage_output_sha256, "PART_A": "f" * 64}}
     previous = getattr(result, field)
     try:
         object.__setattr__(result, field, changed[field])
         with pytest.raises(seal.ResultValidationError, match="canonical|receipt"):
+            seal._reauthenticate(authenticated, trusted_keys=keys, now=helper.NOW, trust_domain=domain)
+        with pytest.raises(seal.ResultValidationError, match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
             consume()
+        assert store.events() == before
     finally:
         object.__setattr__(result, field, previous)

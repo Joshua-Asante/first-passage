@@ -13,7 +13,7 @@ import pytest
 
 
 _SIGNED_CASES = {
-    "test_signed_composition_uses_real_source_dispatch_replay_and_g5_across_reopen",
+    "test_historical_composition_preserves_replay_but_cannot_issue_authority",
     "test_real_composition_receipt_failure_survives_reopen_without_another_dispatch",
     "test_signed_composition_rejects_retained_bytes_and_import_alias_substitution",
     "test_independently_signed_composition_domains_cannot_be_crosswired",

@@ -27,6 +27,10 @@ from c1_rail.qualification.seal import (
     AuthenticatedResult,
     ResultValidationError,
     TrustedResultKey,
+    inspect_result_authentication,
+    _reauthenticate,
+    _require_attempt_store_binding,
+    _verify_external_record,
     authenticate_result,
     authenticated_result_claim,
     commit_authenticated_result,
@@ -428,7 +432,40 @@ def key(private, key_id, authority, scope):
     return TrustedResultKey(key_id, public, authority, (scope,))
 
 
-def test_complete_exact_pass_authenticates_and_seals_without_authority_grants():
+def _historical_claim(authenticated, *, trusted_keys, now, trust_domain):
+    """Fixture-only v3 store input; never a protected execution capability."""
+    from c1_rail.qualification.attempt import _issue_validated_result_claim
+    verified = _reauthenticate(authenticated, trusted_keys=trusted_keys, now=now,
+                              trust_domain=trust_domain)
+    result = verified.result
+    assert result.completion == 'COMPLETE' and result.verdict == 'PASS'
+    return _issue_validated_result_claim(
+        campaign_id=result.attempt_id, contract_digest=result.contract_sha256,
+        stage='TB_E1', manifest_sha256=result.result_sha256, outcome='PASS',
+        producer_scope='ATTEST_E1_RESULT', attestation_digest=verified.authentication_sha256,
+        result_stages=tuple(result.stage_output_sha256))
+
+
+def _historical_commit(store, authenticated, *, trusted_keys, now, trust_domain):
+    """Exercise the old private journal mechanics, not the retired G5 route."""
+    _require_attempt_store_binding(authenticated.result, store, precommit=True)
+    claim = _historical_claim(authenticated, trusted_keys=trusted_keys, now=now,
+                            trust_domain=trust_domain)
+    return store._commit_validated_result('TB_E1', authenticated.result.canonical_bytes,
+                                         outcome='PASS', validation_claim=claim, now=now)
+
+
+def _inspect_historical_seal(authenticated, record, *, trusted_keys, trust_domain):
+    """Read-only signature verification; does not commit or issue a seal."""
+    return _verify_external_record(
+        record, schema='e1_qualification_seal/v1', scope='SEAL_E1_PASS',
+        subject_sha256=sha(e1_seal_payload(authenticated, sealed_utc=NOW)),
+        contract_sha256=authenticated.result.contract_sha256,
+        attempt_id=authenticated.result.attempt_id, trusted_keys=trusted_keys,
+        now=NOW, trust_domain=trust_domain, enrolled_key_ids=trust_domain.seal_key_ids)
+
+
+def test_historical_complete_pass_signatures_inspect_but_active_authority_is_retired():
     result = validate(result_case())
     producer_private = context(result).private_keys["test-producer"]
     attestation = signed_record(
@@ -438,12 +475,12 @@ def test_complete_exact_pass_authenticates_and_seals_without_authority_grants():
         "test-producer": key(producer_private, "test-producer", "TEST_ONLY",
                         "ATTEST_E1_RESULT")
     }
-    authenticated = authenticate_result(
+    authenticated = inspect_result_authentication(
         result, attestation, trusted_keys=producer_keys, now=NOW, trust_domain=context(result).domain)
-    claim = authenticated_result_claim(
+    claim = _historical_claim(
         authenticated, trusted_keys=producer_keys, now=NOW, trust_domain=context(result).domain)
     assert claim.outcome == "PASS"
-    assert verify_authenticated_result_claim(
+    assert not verify_authenticated_result_claim(
         authenticated, claim, trusted_keys=producer_keys, now=NOW, trust_domain=context(result).domain)
     attempt_store = AttemptStore(
         Path(result.attempt_journal_path), result.attempt_id,
@@ -453,45 +490,59 @@ def test_complete_exact_pass_authenticates_and_seals_without_authority_grants():
     seal_record = signed_record(
         result, seal_private, schema="e1_qualification_seal/v1", scope="SEAL_E1_PASS",
         subject=sha(payload), authority="test-seal")
-    with pytest.raises(ResultValidationError, match="not committed"):
+    before = attempt_store.events()
+    with pytest.raises(ResultValidationError, match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
+        authenticate_result(result, attestation, trusted_keys=producer_keys, now=NOW,
+                            trust_domain=context(result).domain)
+    with pytest.raises(ResultValidationError, match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
+        authenticated_result_claim(authenticated, trusted_keys=producer_keys, now=NOW,
+                                   trust_domain=context(result).domain)
+    with pytest.raises(ResultValidationError, match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
+        commit_authenticated_result(attempt_store, authenticated, trusted_keys=producer_keys,
+                                    now=NOW, trust_domain=context(result).domain)
+    with pytest.raises(ResultValidationError, match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
         seal_e1_pass(
             authenticated, seal_record, sealed_utc=NOW,
             trusted_keys={"test-seal": key(seal_private, "test-seal", "TEST_ONLY",
                                       "SEAL_E1_PASS")}, now=NOW,
             result_trusted_keys=producer_keys, attempt_store=attempt_store,
         trust_domain=context(result).domain)
-    commit_authenticated_result(
+    assert attempt_store.events() == before
+    _historical_commit(
         attempt_store, authenticated, trusted_keys=producer_keys, now=NOW, trust_domain=context(result).domain)
 
-    sealed = seal_e1_pass(
-        authenticated, seal_record, sealed_utc=NOW,
+    assert _inspect_historical_seal(
+        authenticated, seal_record,
         trusted_keys={"test-seal": key(seal_private, "test-seal", "TEST_ONLY",
-                                  "SEAL_E1_PASS")}, now=NOW,
-        result_trusted_keys=producer_keys, attempt_store=attempt_store,
-        trust_domain=context(result).domain)
+                                  "SEAL_E1_PASS")},
+        trust_domain=context(result).domain) == 'test-seal'
+    before = attempt_store.events()
+    with pytest.raises(ResultValidationError, match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
+        seal_e1_pass(authenticated, seal_record, sealed_utc=NOW,
+            trusted_keys={'test-seal': key(seal_private, 'test-seal', 'TEST_ONLY', 'SEAL_E1_PASS')},
+            now=NOW, result_trusted_keys=producer_keys, attempt_store=attempt_store,
+            trust_domain=context(result).domain)
+    assert attempt_store.events() == before
+    sealed = payload
     assert b'"grants_activation":false' in sealed
     assert b'"grants_admission":false' in sealed
     assert b'"grants_deployment":false' in sealed
     assert b'"grants_n3":false' in sealed
 
 
-def test_authentication_refuses_publicly_reconstructed_validated_result():
+def test_historical_authentication_refuses_reconstructed_validated_result():
     result = validate(result_case())
-    private = context(result).private_keys["test-producer"]
-    attestation = signed_record(
-        result, private, schema="qualification_result_authentication/v1",
-        scope="ATTEST_E1_RESULT", subject=result.result_sha256,
-        authority="test-producer")
-    keys = {"test-producer": key(private, "test-producer", "TEST_ONLY",
-                            "ATTEST_E1_RESULT")}
-
-    reconstructed = replace(result, verdict="FAIL")
-    with pytest.raises(ResultValidationError, match="validator-issued"):
-        authenticate_result(reconstructed, attestation, trusted_keys=keys, now=NOW, trust_domain=context(result).domain)
+    fixture = context(result)
+    private = fixture.private_keys['test-producer']
+    attestation = signed_record(result, private, schema='qualification_result_authentication/v1',
+        scope='ATTEST_E1_RESULT', subject=result.result_sha256, authority='test-producer')
+    keys = {'test-producer': key(private, 'test-producer', 'TEST_ONLY', 'ATTEST_E1_RESULT')}
+    with pytest.raises(ResultValidationError, match='validator-issued'):
+        inspect_result_authentication(replace(result, verdict='FAIL'), attestation,
+            trusted_keys=keys, now=NOW, trust_domain=fixture.domain)
 
 
-@pytest.mark.parametrize('boundary', ['claim', 'commit', 'seal'])
-def test_authentication_subclass_cannot_supply_unverified_digest(boundary):
+def test_historical_authentication_subclass_cannot_supply_unverified_digest():
     class ForgedAuthentication(AuthenticatedResult):
         def __eq__(self, other):
             return True
@@ -505,44 +556,15 @@ def test_authentication_subclass_cannot_supply_unverified_digest(boundary):
     attestation = signed_record(result, private, schema='qualification_result_authentication/v1',
         scope='ATTEST_E1_RESULT', subject=result.result_sha256, authority='test-producer')
     keys = {'test-producer': key(private, 'test-producer', 'TEST_ONLY', 'ATTEST_E1_RESULT')}
-    authenticated = authenticate_result(result, attestation, trusted_keys=keys,
+    authenticated = inspect_result_authentication(result, attestation, trusted_keys=keys,
         now=NOW, trust_domain=fixture.domain)
     forged = ForgedAuthentication(result, 'f' * 64, authenticated.key_id,
                                   attestation, fixture.domain.sha256)
-    store = AttemptStore(Path(result.attempt_journal_path), result.attempt_id,
-                         result.contract_sha256, 'boot-1', result.trust_domain_sha256)
-    if boundary == 'seal':
-        # Construct the attack's receipt directly so the seal boundary is
-        # exercised independently of the claim/commit rejection.
-        from c1_rail.qualification.attempt import _issue_validated_result_claim
-        claim = _issue_validated_result_claim(campaign_id=result.attempt_id,
-            contract_digest=result.contract_sha256, stage='TB_E1',
-            manifest_sha256=result.result_sha256, outcome='PASS',
-            producer_scope='ATTEST_E1_RESULT', attestation_digest='f' * 64,
-            result_stages=tuple(result.stage_output_sha256))
-        store._commit_validated_result('TB_E1', result.canonical_bytes, outcome='PASS',
-                                      validation_claim=claim, now=NOW)
-    before = store.events()
     with pytest.raises(ResultValidationError, match='authenticated result'):
-        if boundary == 'claim':
-            authenticated_result_claim(forged, trusted_keys=keys, now=NOW,
-                                       trust_domain=fixture.domain)
-        elif boundary == 'commit':
-            commit_authenticated_result(store, forged, trusted_keys=keys, now=NOW,
-                                        trust_domain=fixture.domain)
-        else:
-            seal_private = fixture.private_keys['test-seal']
-            record = signed_record(result, seal_private, schema='e1_qualification_seal/v1',
-                scope='SEAL_E1_PASS', subject=sha(e1_seal_payload(forged, sealed_utc=NOW)),
-                authority='test-seal')
-            seal_e1_pass(forged, record, sealed_utc=NOW,
-                trusted_keys={'test-seal': key(seal_private, 'test-seal', 'TEST_ONLY', 'SEAL_E1_PASS')},
-                now=NOW, result_trusted_keys=keys, attempt_store=store,
-                trust_domain=fixture.domain)
-    assert store.events() == before
+        _reauthenticate(forged, trusted_keys=keys, now=NOW, trust_domain=fixture.domain)
 
 
-def test_claim_consumes_verified_digest_even_with_caller_controlled_field_equality():
+def test_historical_reauthentication_consumes_verified_digest_despite_field_equality():
     class EqualDigest(str):
         def __eq__(self, other):
             return True
@@ -555,14 +577,14 @@ def test_claim_consumes_verified_digest_even_with_caller_controlled_field_equali
     keys = {'test-producer': key(private, 'test-producer', 'TEST_ONLY', 'ATTEST_E1_RESULT')}
     supplied = AuthenticatedResult(result, EqualDigest('f' * 64), 'test-producer',
                                    attestation, fixture.domain.sha256)
-    claim = authenticated_result_claim(supplied, trusted_keys=keys, now=NOW,
+    claim = _historical_claim(supplied, trusted_keys=keys, now=NOW,
                                        trust_domain=fixture.domain)
     assert type(claim.attestation_digest) is str
     assert claim.attestation_digest == sha(attestation)
 
 
 @pytest.mark.parametrize('refresh_authentication', [False, True])
-def test_public_commit_retry_preserves_exact_authentication_after_restart(refresh_authentication):
+def test_historical_v3_private_commit_retry_preserves_exact_authentication_after_restart(refresh_authentication):
     import json
     from c1_rail.qualification.attempt import AttemptConflict
 
@@ -572,11 +594,11 @@ def test_public_commit_retry_preserves_exact_authentication_after_restart(refres
     attestation = signed_record(result, private, schema='qualification_result_authentication/v1',
         scope='ATTEST_E1_RESULT', subject=result.result_sha256, authority='test-producer')
     keys = {'test-producer': key(private, 'test-producer', 'TEST_ONLY', 'ATTEST_E1_RESULT')}
-    authenticated = authenticate_result(result, attestation, trusted_keys=keys,
+    authenticated = inspect_result_authentication(result, attestation, trusted_keys=keys,
         now=NOW, trust_domain=fixture.domain)
     store = AttemptStore(Path(result.attempt_journal_path), result.attempt_id,
                          result.contract_sha256, 'boot-1', result.trust_domain_sha256)
-    receipt = commit_authenticated_result(store, authenticated, trusted_keys=keys,
+    receipt = _historical_commit(store, authenticated, trusted_keys=keys,
         now=NOW, trust_domain=fixture.domain)
     reopened = AttemptStore.open(store.path, campaign_id=result.attempt_id,
         contract_digest=result.contract_sha256, trust_domain_sha256=fixture.domain.sha256,
@@ -587,13 +609,13 @@ def test_public_commit_retry_preserves_exact_authentication_after_restart(refres
         document['payload']['issued_utc'] = '2026-09-15T19:30:00Z'
         document['signature']['value_b64'] = base64.b64encode(
             private.sign(canonical_json_bytes(document['payload']))).decode()
-        refreshed = authenticate_result(result, canonical_json_bytes(document),
+        refreshed = inspect_result_authentication(result, canonical_json_bytes(document),
             trusted_keys=keys, now=NOW, trust_domain=fixture.domain)
         with pytest.raises(AttemptConflict, match='result'):
-            commit_authenticated_result(reopened, refreshed, trusted_keys=keys,
+            _historical_commit(reopened, refreshed, trusted_keys=keys,
                 now=NOW, trust_domain=fixture.domain)
     else:
-        assert commit_authenticated_result(reopened, authenticated, trusted_keys=keys,
+        assert _historical_commit(reopened, authenticated, trusted_keys=keys,
             now=NOW, trust_domain=fixture.domain) == receipt
     assert reopened.events() == before
     assert reopened.result('TB_E1')['receipt_bytes'] == receipt
@@ -617,7 +639,7 @@ def test_authenticated_result_cannot_move_to_a_lookalike_journal(tmp_path):
         authority="test-producer")
     keys = {"test-producer": key(private, "test-producer", "TEST_ONLY",
                             "ATTEST_E1_RESULT")}
-    authenticated = authenticate_result(
+    authenticated = inspect_result_authentication(
         result, attestation, trusted_keys=keys, now=NOW, trust_domain=context(result).domain)
     copied_path = tmp_path / "lookalike.sqlite"
     shutil.copyfile(result.attempt_journal_path, copied_path)
@@ -625,7 +647,7 @@ def test_authenticated_result_cannot_move_to_a_lookalike_journal(tmp_path):
         copied_path, result.attempt_id, result.contract_sha256, "boot-1", result.trust_domain_sha256)
 
     with pytest.raises(ResultValidationError, match="journal binding"):
-        commit_authenticated_result(
+        _historical_commit(
             lookalike, authenticated, trusted_keys=keys, now=NOW, trust_domain=context(result).domain)
 
 
@@ -744,21 +766,21 @@ def test_producer_cannot_self_issue_seal_and_test_keys_are_explicit():
         scope='ATTEST_E1_RESULT', subject=result.result_sha256, authority='test-producer')
     producer_key = key(private, 'test-producer', 'TEST_ONLY', 'ATTEST_E1_RESULT')
     keys = {'test-producer': producer_key}
-    authenticated = authenticate_result(result, attestation, trusted_keys=keys,
+    authenticated = inspect_result_authentication(result, attestation, trusted_keys=keys,
         now=NOW, trust_domain=domain)
     store = AttemptStore(Path(result.attempt_journal_path), result.attempt_id,
         result.contract_sha256, 'boot-1', domain.sha256)
-    commit_authenticated_result(store, authenticated, trusted_keys=keys,
+    _historical_commit(store, authenticated, trusted_keys=keys,
         now=NOW, trust_domain=domain)
     payload = e1_seal_payload(authenticated, sealed_utc=NOW)
     forged_scope = signed_record(result, private, schema='e1_qualification_seal/v1',
         scope='SEAL_E1_PASS', subject=sha(payload), authority='test-producer')
     with pytest.raises(ResultValidationError, match='key/scope|authority'):
-        seal_e1_pass(authenticated, forged_scope, sealed_utc=NOW, trusted_keys=keys,
-            now=NOW, result_trusted_keys=keys, attempt_store=store, trust_domain=domain)
+        _inspect_historical_seal(authenticated, forged_scope, trusted_keys=keys,
+                                 trust_domain=domain)
     with pytest.raises(ResultValidationError, match='authority'):
-        authenticate_result(result, attestation, trusted_keys={
+        inspect_result_authentication(result, attestation, trusted_keys={
             'test-producer': replace(producer_key, authority_class='RESULT_PRODUCER')},
             now=NOW, trust_domain=domain)
-    assert authenticate_result(result, attestation, trusted_keys=keys,
+    assert inspect_result_authentication(result, attestation, trusted_keys=keys,
         now=NOW, trust_domain=domain).key_id == 'test-producer'

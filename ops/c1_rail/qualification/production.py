@@ -132,10 +132,7 @@ class ProductionExecutor:
     __slots__=('contract','source','store','_trust_domain','_consumed','__weakref__')
 
     def __init__(self,contract,source,store):
-        from .contract import ValidatedFrozenContract
-        if type(contract) is not ValidatedFrozenContract or contract.approval.authority_class!='OPERATOR':
-            raise TypeError('production requires operator-validated frozen contract')
-        self._initialize(contract,source,store,_execution_domain(contract,'OPERATOR'))
+        raise ValueError('LEGACY_QUALIFICATION_INSPECTION_ONLY: production executor retired')
 
     def _initialize(self,contract,source,store,domain):
         from .attempt import AttemptStore
@@ -147,6 +144,8 @@ class ProductionExecutor:
             raise ValueError('executor is already initialized; budget and provider cannot reset')
         require_validated_frozen_contract(contract)
         domain=require_validated_trust_domain(domain)
+        if not domain.permits_synthetic:
+            raise ValueError('LEGACY_QUALIFICATION_INSPECTION_ONLY: production executor retired')
         if contract.trust_domain is not domain:
             raise ValueError('executor domain differs from validated contract')
         if type(source) is not ProductionSource or type(store) is not AttemptStore:

@@ -82,3 +82,29 @@ def test_recovery_discovers_unrecorded_owned_container_without_redraw(tmp_path,m
     before=store.status(record.attempt_id)
     instance.recover_service()
     assert found==[record.execution_id]*2 and store.status(record.attempt_id)==before
+
+
+def test_signed_nonempty_registry_never_reserves_or_schedules_worker(tmp_path,monkeypatch):
+    import threading
+    from types import SimpleNamespace
+    from bundle_fixture import build_bundle
+    from test_legality_evidence import NONEMPTY
+    from test_contract import NOW
+    from c1_rail.qualification.execution.store import ExecutionStore
+    from c1_rail.qualification.execution.protocol import sha256
+    service=importlib.import_module('c1_rail.qualification.execution.service')
+    case=build_bundle(tmp_path/'staging',idle=True,geometry_bytes=NONEMPTY)
+    root=tmp_path/'service'; (root/'bundles').mkdir(parents=True)
+    bundle_sha=sha256(case['index'])
+    case['root'].rename(root/'bundles'/bundle_sha)
+    instance=object.__new__(service.ExecutionService)
+    instance.root=root; instance.release=case['release']; instance.authority='TEST_ONLY'
+    instance.roles={1001:'client'}; instance.dispatch_lock=threading.Lock()
+    instance.store=ExecutionStore(root/'journal.sqlite')
+    scheduled=[]
+    instance.executor=SimpleNamespace(submit=lambda *args:scheduled.append(args))
+    monkeypatch.setattr(instance,'keys',lambda:case['keys'])
+    monkeypatch.setattr(service,'now',lambda:NOW)
+    with pytest.raises(ValueError,match='LEGALITY_REGISTRY_NOT_EMPTY'):
+        instance.handle_request(1001,encoded(dict(operation='SUBMIT_N1',attempt_id=case['attempt_id'],bundle_sha256=bundle_sha)))
+    assert scheduled==[] and instance.store.execution_rows()==[]

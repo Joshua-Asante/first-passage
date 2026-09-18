@@ -290,22 +290,8 @@ def _execute_e1(contract, *, store, executor, preflight_binding,
 
 def run_production_e1(contract, *, source, store, preflight, exact_depth_approval_bytes,
                       trusted_keys, now):
-    """Execute only through verified contracts and the concrete production route.
-
-    ``now`` is a clock callable so approval expiry is rechecked at each durable
-    dispatch. This entry point performs no signing or automatic result commit.
-    """
-    from .contract import ValidatedFrozenContract
-    from .preflight import PreflightReceipt
-    from .production import _execution_domain
-    if type(contract) is not ValidatedFrozenContract or type(preflight) is not PreflightReceipt:
-        raise TypeError('exact validated contract and preflight receipt required')
-    if contract.approval.authority_class!='OPERATOR' or preflight.exact_depth_approval.authority_class!='OPERATOR':
-        raise ValueError('production operator authority required')
-    domain=_execution_domain(contract,'OPERATOR')
-    return _run_bound_e1(contract,source=source,store=store,preflight=preflight,
-        exact_depth_approval_bytes=exact_depth_approval_bytes,trusted_keys=trusted_keys,
-        now=now,domain=domain)
+    """Retired active route; first protected release permits synthetic N1 only."""
+    raise ValueError('LEGACY_QUALIFICATION_INSPECTION_ONLY: in-process production execution retired')
 
 
 def _run_composition_e1(contract, *, source, store, preflight, exact_depth_approval_bytes,
@@ -325,9 +311,11 @@ def _run_composition_e1(contract, *, source, store, preflight, exact_depth_appro
 def _run_bound_e1(contract, *, source, store, preflight, exact_depth_approval_bytes,
                   trusted_keys, now, domain):
     from .preflight import preflight_binding_bytes, revalidate_e1_preflight
-    from .production import ProductionExecutor, _composition_executor
+    from .production import _composition_executor
     from .trust_domain import require_validated_trust_domain
     domain=require_validated_trust_domain(domain)
+    if not domain.permits_synthetic:
+        raise ValueError('LEGACY_QUALIFICATION_INSPECTION_ONLY: production execution retired')
     if (contract.trust_domain is not domain or preflight.trust_domain_sha256!=domain.sha256
             or preflight.exact_depth_approval.authority_class!=domain.authority_class
             or store.trust_domain_sha256!=domain.sha256):
@@ -336,8 +324,7 @@ def _run_bound_e1(contract, *, source, store, preflight, exact_depth_approval_by
         revalidate_e1_preflight(contract,preflight,exact_depth_approval_bytes=exact_depth_approval_bytes,
                                trusted_keys=trusted_keys,now=instant,trust_domain=domain)
     authorize(now())
-    executor=(_composition_executor(contract,source,store) if domain.permits_synthetic
-              else ProductionExecutor(contract,source,store))
+    executor=_composition_executor(contract,source,store)
     return _execute_e1(contract,store=store,executor=executor,
         preflight_binding=preflight_binding_bytes(preflight),
         exact_depth_approval_sha256=preflight.exact_depth_approval.approval_sha256,

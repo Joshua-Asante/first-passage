@@ -906,11 +906,12 @@ def _verify_external_record(
     return key.key_id
 
 
-def authenticate_result(
+def inspect_result_authentication(
     result: ValidatedResult, authentication_bytes: bytes, *,
     trusted_keys: Mapping[str, TrustedResultKey], now: datetime,
     trust_domain: object,
 ) -> AuthenticatedResult:
+    """Inspect historical v1 consistency; this value grants no active authority."""
     domain = require_validated_trust_domain(trust_domain)
     _revalidate_validated_result(result)
     if result.trust_domain_sha256 != domain.sha256:
@@ -926,13 +927,17 @@ def authenticate_result(
                                key_id, bytes(authentication_bytes), domain.sha256)
 
 
+def authenticate_result(result, authentication_bytes, *, trusted_keys, now, trust_domain):
+    raise ResultValidationError('LEGACY_QUALIFICATION_INSPECTION_ONLY: legacy authentication is inspection-only')
+
+
 def _reauthenticate(
     result: AuthenticatedResult, *, trusted_keys: Mapping[str, TrustedResultKey],
     now: datetime, trust_domain: object,
 ) -> AuthenticatedResult:
     if type(result) is not AuthenticatedResult:
         raise ResultValidationError("authenticated result is required")
-    verified = authenticate_result(
+    verified = inspect_result_authentication(
         result.result, result.canonical_bytes, trusted_keys=trusted_keys, now=now,
         trust_domain=trust_domain,
     )
@@ -945,29 +950,7 @@ def authenticated_result_claim(
     result: AuthenticatedResult, *, trusted_keys: Mapping[str, TrustedResultKey],
     now: datetime, trust_domain: object,
 ) -> ValidatedResultClaim:
-    """Adapt an externally authenticated envelope to the journal commit boundary."""
-    result = _reauthenticate(
-        result, trusted_keys=trusted_keys, now=now,
-        trust_domain=trust_domain,
-    )
-    verdict_to_outcome = {
-        "PASS": "PASS",
-        "FAIL": "FAILURE",
-        "AMBIGUOUS": "UNRESOLVED",
-        "BLOCKED": "UNRESOLVED",
-        "VOID": "UNRESOLVED",
-    }
-    if result.result.completion != "COMPLETE" or result.result.verdict not in verdict_to_outcome:
-        raise ResultValidationError("only a complete authenticated result may enter the journal")
-    return _issue_validated_result_claim(
-        campaign_id=result.result.attempt_id,
-        contract_digest=result.result.contract_sha256,
-        stage="TB_E1", manifest_sha256=result.result.result_sha256,
-        outcome=verdict_to_outcome[result.result.verdict],
-        producer_scope="ATTEST_E1_RESULT",
-        attestation_digest=result.authentication_sha256,
-        result_stages=tuple(result.result.stage_output_sha256),
-    )
+    raise ResultValidationError('LEGACY_QUALIFICATION_INSPECTION_ONLY: legacy authority retired')
 
 
 def verify_authenticated_result_claim(
@@ -975,7 +958,7 @@ def verify_authenticated_result_claim(
     trusted_keys: Mapping[str, TrustedResultKey], now: datetime,
     trust_domain: object,
 ) -> bool:
-    """Return true only for the exact claim derived from authenticated bytes."""
+    """Legacy claims cannot grant authority after the v2 cutover."""
     try:
         return claim == authenticated_result_claim(
             result, trusted_keys=trusted_keys, now=now,
@@ -990,22 +973,7 @@ def commit_authenticated_result(
     trusted_keys: Mapping[str, TrustedResultKey], now: datetime,
     trust_domain: object,
 ) -> bytes:
-    """Reauthenticate and atomically commit the exact G5 envelope to G2."""
-    domain = require_validated_trust_domain(trust_domain)
-    result = _reauthenticate(
-        result, trusted_keys=trusted_keys, now=now, trust_domain=domain)
-    if (result.trust_domain_sha256 != domain.sha256
-            or attempt_store.trust_domain_sha256 != domain.sha256):
-        raise ResultValidationError("commit trust domain differs")
-    _require_attempt_store_binding(result.result, attempt_store, precommit=True)
-    claim = authenticated_result_claim(
-        result, trusted_keys=trusted_keys, now=now,
-        trust_domain=domain,
-    )
-    return attempt_store._commit_validated_result(
-        "TB_E1", result.result.canonical_bytes, outcome=claim.outcome,
-        validation_claim=claim, now=now,
-    )
+    raise ResultValidationError('LEGACY_QUALIFICATION_INSPECTION_ONLY: legacy authority retired')
 
 
 def e1_seal_payload(result: AuthenticatedResult, *, sealed_utc: datetime) -> bytes:
@@ -1041,52 +1009,12 @@ def seal_e1_pass(
     attempt_store: AttemptStore,
     trust_domain: object,
 ) -> bytes:
-    domain = require_validated_trust_domain(trust_domain)
-    result = _reauthenticate(
-        result, trusted_keys=result_trusted_keys, now=now,
-        trust_domain=domain,
-    )
-    if attempt_store.trust_domain_sha256 != domain.sha256:
-        raise ResultValidationError("seal journal trust domain differs")
-    _require_attempt_store_binding(result.result, attempt_store, precommit=False)
-    committed = attempt_store.result("TB_E1")
-    if (committed is None or committed["manifest_bytes"] != result.result.canonical_bytes
-            or committed["manifest_digest"] != result.result.result_sha256
-            or committed["outcome"] != "PASS"):
-        raise ResultValidationError("authenticated PASS is not committed in the durable journal")
-    try:
-        committed_receipt = parse_canonical_json(
-            committed["receipt_bytes"], label="attempt result receipt")
-    except Exception as exc:
-        raise ResultValidationError("attempt result receipt is invalid") from exc
-    if committed_receipt.get("result_attestation_digest") != result.authentication_sha256:
-        raise ResultValidationError("attempt result receipt authentication differs")
-    payload_bytes = e1_seal_payload(result, sealed_utc=sealed_utc)
-    key_id = _verify_external_record(
-        seal_record_bytes, schema=SEAL_SCHEMA, scope="SEAL_E1_PASS",
-        subject_sha256=hashlib.sha256(payload_bytes).hexdigest(),
-        contract_sha256=result.result.contract_sha256, attempt_id=result.result.attempt_id,
-        trusted_keys=trusted_keys, now=now, trust_domain=domain,
-        enrolled_key_ids=domain.seal_key_ids,
-    )
-    sealed = canonical_json_bytes({
-        "schema": SEAL_SCHEMA,
-        "payload": parse_canonical_json(payload_bytes, label="seal payload"),
-        "seal_record_sha256": hashlib.sha256(seal_record_bytes).hexdigest(),
-        "seal_key_id": key_id,
-        "trust_domain_sha256": domain.sha256,
-    })
-    try:
-        return attempt_store._commit_e1_seal(sealed,
-            manifest_bytes=result.result.canonical_bytes,
-            authentication_sha256=result.authentication_sha256, now=now)
-    except AttemptJournalError as exc:
-        raise ResultValidationError(str(exc)) from exc
+    raise ResultValidationError('LEGACY_QUALIFICATION_INSPECTION_ONLY: legacy authority retired')
 
 
 __all__ = [
     "AuthenticatedResult", "ResultValidationError", "TrustedResultKey",
-    "ValidatedResult", "authenticate_result", "authenticated_result_claim",
+    "ValidatedResult", "authenticate_result", "inspect_result_authentication", "authenticated_result_claim",
     "commit_authenticated_result", "e1_seal_payload", "seal_e1_pass", "validate_result_envelope",
     "verify_authenticated_result_claim",
 ]

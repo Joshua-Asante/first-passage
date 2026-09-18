@@ -43,6 +43,16 @@ def test_concurrent_duplicate_submit_reserves_and_launches_once(real_boundary):
 
 @pytest.mark.parametrize('operation',['COMPLETE_CHECKPOINT','SIGN','SET_VERDICT'])
 def test_public_client_cannot_supply_execution_authority(real_boundary,operation):
-    import subprocess
-    with pytest.raises(subprocess.CalledProcessError):
-        real_boundary.request(operation,attempt_id='fabricated')
+    response=real_boundary.raw_request(dict(operation=operation,attempt_id='fabricated'))
+    assert response['ok'] is False
+    assert response['error']=='UNKNOWN_OPERATION'
+
+
+@pytest.mark.parametrize('operation,fields',[
+    ('STORE_ARTIFACT',dict(role='n1_result',bytes_b64='e30=')),
+    ('STORE_RESULT',dict(envelope_bytes_b64='e30=')),
+    ('COMMIT_N1_RESULT',dict(envelope_sha256='f'*64,authentication_bytes='e30=')),
+])
+def test_real_client_uid_cannot_enter_g5_acceptance(real_boundary,operation,fields):
+    response=real_boundary.raw_request(dict(operation=operation,attempt_id='fabricated',**fields))
+    assert response==dict(ok=False,error='PEER_NOT_AUTHORIZED')

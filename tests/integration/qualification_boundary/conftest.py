@@ -26,6 +26,18 @@ doc=json.loads(sys.argv[3]); operation=doc.pop('operation')
 sys.stdout.buffer.write(request(Path(sys.argv[2]),operation,doc))
 '''
 
+RAW_DRIVER='''import json,socket,sys
+from pathlib import Path
+root=Path(sys.argv[1]); sys.dont_write_bytecode=True
+sys.path[:0]=[str(root/p) for p in ('ops','core','lab','governance','')]
+from c1_rail.qualification.execution.protocol import encode_frame
+from c1_rail.qualification.execution.transport import receive
+with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as peer:
+    peer.settimeout(30); peer.connect(sys.argv[2])
+    peer.sendall(encode_frame(sys.argv[3].encode(),limit=1048576))
+    sys.stdout.buffer.write(receive(peer,limit=1048576))
+'''
+
 
 class Boundary:
     def __init__(self,path):
@@ -64,6 +76,11 @@ class Boundary:
 
     def status(self,attempt):
         return json.loads(self.request('STATUS',attempt_id=attempt))
+
+    def raw_request(self,document,*,role='qclient'):
+        command=self.identity(role,[self.python,'-I','-c',RAW_DRIVER,str(self.code),
+            self.config['socket_path'],encoded(document).decode()])
+        return json.loads(host.run_owned(self.group,command,interpreter=self.python,timeout=60))
 
     def prepare(self,*,idle):
         attempt='linux-'+uuid4().hex
@@ -153,7 +170,7 @@ class Boundary:
         host.save(self.output/'export-scope.json',dict(authority_class='TEST_ONLY',inputs='synthetic',private_credentials=False))
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def real_boundary():
     configured=os.environ.get('FP_QUALIFICATION_HOST_MANIFEST')
     if not configured: pytest.skip('explicit disposable Linux acceptance run required')

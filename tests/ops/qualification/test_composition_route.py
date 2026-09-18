@@ -47,14 +47,14 @@ def _preflight(setup,tmp_path):
     return preflight,store,approval
 
 
-def test_signed_composition_uses_real_source_dispatch_replay_and_g5_across_reopen(tmp_path,record_property):
+def test_historical_composition_preserves_replay_but_cannot_issue_authority(tmp_path,record_property):
     from composition_fixture import build_verified_composition
     from test_contract import NOW
     from c1_rail.qualification.orchestration import _run_composition_e1,run_production_e1
     from c1_rail.qualification.runtime_inventory import collect_runtime_inventory
     from c1_rail.qualification.result_adjudication import frozen_adjudicator
     from c1_rail.qualification.attempt import AttemptStore
-    from c1_rail.qualification.seal import (validate_result_envelope,authenticate_result,
+    from c1_rail.qualification.seal import (validate_result_envelope,inspect_result_authentication,
         commit_authenticated_result,e1_seal_payload,seal_e1_pass)
     input_root=tmp_path/'TEST_ONLY-inputs'
     setup=build_verified_composition(input_root)
@@ -97,34 +97,29 @@ def test_signed_composition_uses_real_source_dispatch_replay_and_g5_across_reope
     substituted_auth=_result_signature(setup,scope='ATTEST_E1_RESULT',subject=result.result_sha256,
         attempt_id=store.campaign_id,key_id='test-producer',private_key=replacement)
     with pytest.raises(ValueError):
-        authenticate_result(result,substituted_auth,
+        inspect_result_authentication(result,substituted_auth,
             trusted_keys=_result_key(setup,'test-producer','ATTEST_E1_RESULT',replacement),
             now=NOW,trust_domain=setup.domain)
     assert store.result('TB_E1') is None
     producer_keys=_result_key(setup,'test-producer','ATTEST_E1_RESULT')
     authentication=_result_signature(setup,scope='ATTEST_E1_RESULT',subject=result.result_sha256,
         attempt_id=store.campaign_id,key_id='test-producer')
-    authenticated=authenticate_result(result,authentication,trusted_keys=producer_keys,now=NOW,
+    authenticated=inspect_result_authentication(result,authentication,trusted_keys=producer_keys,now=NOW,
         trust_domain=setup.domain)
     wrong_attempt=_result_signature(setup,scope='ATTEST_E1_RESULT',subject=result.result_sha256,
         attempt_id='different-attempt',key_id='test-producer')
     with pytest.raises(ValueError):
-        authenticate_result(result,wrong_attempt,trusted_keys=producer_keys,now=NOW,
+        inspect_result_authentication(result,wrong_attempt,trusted_keys=producer_keys,now=NOW,
             trust_domain=setup.domain)
-    committed_receipt=commit_authenticated_result(store,authenticated,trusted_keys=producer_keys,now=NOW,
-        trust_domain=setup.domain)
-    committed_events=store.events()
-    assert commit_authenticated_result(store,authenticated,trusted_keys=producer_keys,now=NOW,
-        trust_domain=setup.domain)==committed_receipt
-    assert store.events()==committed_events
+    before=store.events()
+    with pytest.raises(ValueError,match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
+        commit_authenticated_result(store,authenticated,trusted_keys=producer_keys,now=NOW,
+            trust_domain=setup.domain)
+    assert store.events()==before and store.result('TB_E1') is None
     reopened=AttemptStore.open(store.path,campaign_id=store.campaign_id,
         contract_digest=setup.contract.contract_sha256,trust_domain_sha256=setup.domain.sha256,
         boot_id='TEST_ONLY-boot-2',now=NOW)
-    assert reopened.result('TB_E1')['manifest_bytes']==raw
-    reopened_events=reopened.events()
-    assert commit_authenticated_result(reopened,authenticated,trusted_keys=producer_keys,now=NOW,
-        trust_domain=setup.domain)==committed_receipt
-    assert reopened.events()==reopened_events
+    assert reopened.result('TB_E1') is None
     seal_payload=e1_seal_payload(authenticated,sealed_utc=NOW)
     record=_result_signature(setup,scope='SEAL_E1_PASS',subject=sha(seal_payload),
         attempt_id=store.campaign_id,key_id='test-seal')
@@ -134,22 +129,19 @@ def test_signed_composition_uses_real_source_dispatch_replay_and_g5_across_reope
         seal_e1_pass(authenticated,substituted_seal,sealed_utc=NOW,
             trusted_keys=_result_key(setup,'test-seal','SEAL_E1_PASS',replacement),now=NOW,
             result_trusted_keys=producer_keys,attempt_store=reopened,trust_domain=setup.domain)
-    sealed=seal_e1_pass(authenticated,record,sealed_utc=NOW,
-        trusted_keys=_result_key(setup,'test-seal','SEAL_E1_PASS'),now=NOW,
-        result_trusted_keys=producer_keys,attempt_store=reopened,trust_domain=setup.domain)
-    assert seal_e1_pass(authenticated,record,sealed_utc=NOW,
-        trusted_keys=_result_key(setup,'test-seal','SEAL_E1_PASS'),now=NOW,
-        result_trusted_keys=producer_keys,attempt_store=reopened,trust_domain=setup.domain)==sealed
+    with pytest.raises(ValueError,match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
+        seal_e1_pass(authenticated,record,sealed_utc=NOW,
+            trusted_keys=_result_key(setup,'test-seal','SEAL_E1_PASS'),now=NOW,
+            result_trusted_keys=producer_keys,attempt_store=reopened,trust_domain=setup.domain)
     record_property('synthetic_result_sha256',result.result_sha256)
-    record_property('synthetic_seal_sha256',sha(sealed))
     record_property('synthetic_runtime_inventory_sha256',sha(runtime))
     record_property('synthetic_reopened_event_head',reopened.status()['event_head'])
-    payload=json.loads(sealed)['payload']
+    payload=json.loads(seal_payload)
     assert payload['trust_domain_sha256']==setup.domain.sha256
     assert all(payload[name] is False for name in (
         'grants_activation','grants_admission','grants_deployment','grants_n3'))
     with pytest.raises((TypeError,ValueError)):
-        authenticate_result(result,authentication,trusted_keys=producer_keys,now=NOW)
+        inspect_result_authentication(result,authentication,trusted_keys=producer_keys,now=NOW)
 
 
 def test_real_composition_receipt_failure_survives_reopen_without_another_dispatch(tmp_path,monkeypatch):

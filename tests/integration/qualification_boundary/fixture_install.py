@@ -87,16 +87,24 @@ def prepare(root,attempt,idle):
 
 def main():
     parser=argparse.ArgumentParser()
-    parser.add_argument('operation',choices=['install','prepare'])
+    parser.add_argument('operation',choices=['install','prepare','void-approval'])
     parser.add_argument('--manifest',type=Path,required=True)
     parser.add_argument('--image'); parser.add_argument('--attempt'); parser.add_argument('--idle',action='store_true')
+    parser.add_argument('--contract'); parser.add_argument('--reason')
     args=parser.parse_args()
     path=host.protected(args.manifest); root=path.parent
     manifest=json.loads(path.read_bytes())
     protected_path(CODE)
     if CODE!=root/'code' or manifest['run_id']!=root.name:
         raise ValueError('fixture must run from canonical protected source staging')
-    result=install(root,manifest,args.image) if args.operation=='install' else prepare(root,args.attempt,args.idle)
+    if args.operation=='void-approval':
+        private={name:Ed25519PrivateKey.from_private_bytes(base64.b64decode(value))
+            for name,value in json.loads((root/'keys/test-authority.json').read_bytes()).items()}
+        subject=encoded(dict(attempt_id=args.attempt,reason=args.reason,contract_sha256=args.contract))
+        approval=approve(subject,private,'VOID_QUALIFICATION_ATTEMPT',contract_sha256=args.contract)
+        result=dict(operator_approval_bytes=base64.b64encode(approval).decode())
+    else:
+        result=install(root,manifest,args.image) if args.operation=='install' else prepare(root,args.attempt,args.idle)
     sys.stdout.buffer.write(encoded(result))
 
 

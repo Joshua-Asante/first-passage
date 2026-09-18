@@ -48,30 +48,41 @@ def test_unmodified_model_verifies():
         {model.__name__}, set())
 
 @pytest.mark.parametrize('when',['before_seal','after_validation'])
-def test_committed_pass_cannot_seal_after_void(monkeypatch,when):
+def test_historical_v3_committed_pass_cannot_seal_after_void(monkeypatch,when):
     import test_seal as t
-    from c1_rail.qualification.attempt import AttemptStore
-    original=t.seal_e1_pass
-    commit=AttemptStore._commit_e1_seal
-    if when=='after_validation':
-        def invalidate_at_commit(self,*args,**kwargs):
-            self.void('evidence invalidated',now=t.NOW)
-            return commit(self,*args,**kwargs)
-    def invalidate_then_seal(*args,**kwargs):
-        store=kwargs['attempt_store']
-        if store.result('TB_E1') is not None:
-            if when=='after_validation':
-                monkeypatch.setattr(AttemptStore,'_commit_e1_seal',invalidate_at_commit)
-            if when=='before_seal':store.void('evidence invalidated',now=t.NOW)
-            with pytest.raises(t.ResultValidationError,match='VOID|valid'):
-                original(*args,**kwargs)
-            # End the existing positive scenario after checking actual rejection.
-            raise Stopped
-        return original(*args,**kwargs)
-    class Stopped(Exception): pass
-    monkeypatch.setattr(t,'seal_e1_pass',invalidate_then_seal)
-    with pytest.raises(Stopped):
-        t.test_complete_exact_pass_authenticates_and_seals_without_authority_grants()
+    from c1_rail.qualification.attempt import AttemptStore, TransitionError
+    result = t.validate(t.result_case())
+    fixture = t.context(result)
+    private = fixture.private_keys['test-producer']
+    record = t.signed_record(result, private, schema='qualification_result_authentication/v1',
+        scope='ATTEST_E1_RESULT', subject=result.result_sha256, authority='test-producer')
+    keys = {'test-producer': t.key(private, 'test-producer', 'TEST_ONLY', 'ATTEST_E1_RESULT')}
+    authenticated = t.inspect_result_authentication(result, record, trusted_keys=keys,
+        now=t.NOW, trust_domain=fixture.domain)
+    store = AttemptStore(Path(result.attempt_journal_path), result.attempt_id,
+        result.contract_sha256, 'boot-1', result.trust_domain_sha256)
+    t._historical_commit(store, authenticated, trusted_keys=keys, now=t.NOW,
+                         trust_domain=fixture.domain)
+    seal_private = fixture.private_keys['test-seal']
+    payload = t.e1_seal_payload(authenticated, sealed_utc=t.NOW)
+    seal_record = t.signed_record(result, seal_private, schema='e1_qualification_seal/v1',
+        scope='SEAL_E1_PASS', subject=t.sha(payload), authority='test-seal')
+    if when == 'before_seal':
+        store.void('evidence invalidated', now=t.NOW)
+    # Signature inspection is read-only and remains possible for VOID history.
+    assert t._inspect_historical_seal(authenticated, seal_record,
+        trusted_keys={'test-seal': t.key(seal_private, 'test-seal', 'TEST_ONLY', 'SEAL_E1_PASS')},
+        trust_domain=fixture.domain) == 'test-seal'
+    if when == 'after_validation':
+        commit = AttemptStore._commit_e1_seal
+        def invalidate_at_commit(self, *args, **kwargs):
+            self.void('evidence invalidated', now=t.NOW)
+            return commit(self, *args, **kwargs)
+        monkeypatch.setattr(AttemptStore, '_commit_e1_seal', invalidate_at_commit)
+    with pytest.raises(TransitionError, match='VOID'):
+        store._commit_e1_seal(payload, manifest_bytes=result.canonical_bytes,
+            authentication_sha256=authenticated.authentication_sha256, now=t.NOW)
+    assert not any(event['kind'] == 'E1_SEALED' for event in store.events())
 
 
 @pytest.mark.parametrize('kind',['seed','panel'])

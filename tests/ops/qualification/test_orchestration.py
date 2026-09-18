@@ -208,7 +208,7 @@ def test_checkpoint_receipt_input_digests_are_checkpoint_local():
 def test_public_production_route_rejects_recording_contract_before_dispatch():
     from c1_rail.qualification.orchestration import run_production_e1
     store=Store()
-    with pytest.raises(TypeError,match='exact validated contract'):
+    with pytest.raises(ValueError,match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
         run_production_e1(contract(),source=object(),store=store,preflight=object(),
             exact_depth_approval_bytes=b'',trusted_keys={},now=lambda:NOW)
     assert store.state=='UNRESERVED' and store.log==[]
@@ -223,7 +223,7 @@ def test_public_production_route_rejects_test_authority_before_dispatch():
     object.__setattr__(fake,'approval',NS(authority_class='TEST_ONLY'))
     receipt=PreflightReceipt('test-attempt','a'*64,'d'*64,'b'*64,NS(authority_class='TEST_ONLY'),'unused')
     store=Store()
-    with pytest.raises(ValueError,match='operator authority'):
+    with pytest.raises(ValueError,match='LEGACY_QUALIFICATION_INSPECTION_ONLY'):
         run_production_e1(fake,source=object(),store=store,preflight=receipt,
             exact_depth_approval_bytes=b'',trusted_keys={},now=lambda:NOW)
     assert store.state=='UNRESERVED' and store.log==[]
