@@ -87,3 +87,17 @@ reporting present validity and eligibility separately.
 - The user subsequently explicitly approved the named branch push and two-host
   Linux verification. Proceed with that authorization; execution results remain
   pending until the recorder and cleanup evidence have been inspected.
+
+## First Linux run
+
+Run `35306380360`, revision `82ee3ef`, completed on both fresh Ubuntu hosts with
+33 passed / 1 failed / 0 skipped each. The sole failure was the new expiry test's
+diagnostic substring (`expired` versus the validator's `not valid at verification
+time`). Both records are stable/complete and owned cleanup succeeded. All four
+writer orders, real process interruptions, concurrent admission, lost commit
+acknowledgment, original retries and both permission identities passed.
+
+The test now checks intent authorization before expiry, daemon start at/after
+expiry, and the complete DISPATCHED -> CONTAINER -> START_INTENT -> IN_DOUBT
+history, excluding RUNNING and acceptance. Production behavior is unchanged.
+Retain the failed records; rerun both hosts before accepting the outcome.

@@ -230,7 +230,12 @@ def test_expiration_between_start_intent_and_actual_start_never_accepts(real_bou
         assert 'result_sha256' not in state
         assert len(boundary.starts(state['container_id'])) == 1
         events = boundary.events(bundle['attempt_id'])
-        assert any('expired' in row['data'].get('reason', '').lower() for row in events)
+        intent = next(row for row in events if row['kind'] == 'START_INTENT')
+        authorized = datetime.fromisoformat(intent['data']['authorized_at_utc'].replace('Z', '+00:00'))
+        inspection = boundary.inspect(state['container_id'])
+        started = datetime.fromisoformat(inspection['State']['StartedAt'].replace('Z', '+00:00'))
+        assert authorized < expiry <= started
+        assert [row['kind'] for row in events] == ['DISPATCHED', 'CONTAINER', 'START_INTENT', 'IN_DOUBT']
         boundary.restart()
         with pytest.raises(subprocess.CalledProcessError):
             boundary.submit(bundle)
