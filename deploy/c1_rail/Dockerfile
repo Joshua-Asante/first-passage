@@ -62,6 +62,7 @@ COPY ops/c1_signal_daemon/__init__.py ops/c1_signal_daemon/book_validation.py op
 
 # Shared adapter loader's stdlib qualification contract dependency.
 COPY ops/c1_rail/qualification/__init__.py ops/c1_rail/qualification/contract.py \
+     ops/c1_rail/qualification/policy.py ops/c1_rail/qualification/policy_sources.py \
      ops/c1_rail/qualification/trust_domain.py ./ops/c1_rail/qualification/
 
 # The M1 acceptance artifact — read by ops/c1_rail/c1_rail_arm.py's arming interlock

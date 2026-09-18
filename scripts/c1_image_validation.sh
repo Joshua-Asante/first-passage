@@ -97,6 +97,8 @@ LISTENER_FILES=(
   /app/ops/c1_rail/ed25519_verify.py
   /app/ops/c1_rail/qualification/__init__.py
   /app/ops/c1_rail/qualification/contract.py
+  /app/ops/c1_rail/qualification/policy.py
+  /app/ops/c1_rail/qualification/policy_sources.py
   /app/ops/c1_rail/qualification/trust_domain.py
   /app/ops/c1_rail/settlement_signing.py
   /app/ops/c1_rail/operator_keys.json
@@ -153,6 +155,8 @@ DAEMON_FILES=(
   /app/ops/c1_rail/ed25519_verify.py
   /app/ops/c1_rail/qualification/__init__.py
   /app/ops/c1_rail/qualification/contract.py
+  /app/ops/c1_rail/qualification/policy.py
+  /app/ops/c1_rail/qualification/policy_sources.py
   /app/ops/c1_rail/qualification/trust_domain.py
   /app/ops/c1_rail/settlement_signing.py
   /app/ops/c1_rail/operator_keys.json

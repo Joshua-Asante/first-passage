@@ -50,6 +50,7 @@ COPY core/dd_protection.py core/dd_geometry.py core/firm_rules.py core/lifecycle
 
 # Shared adapter loader's stdlib qualification contract dependency.
 COPY ops/c1_rail/qualification/__init__.py ops/c1_rail/qualification/contract.py \
+     ops/c1_rail/qualification/policy.py ops/c1_rail/qualification/policy_sources.py \
      ops/c1_rail/qualification/trust_domain.py ./ops/c1_rail/qualification/
 
 COPY core/lib/atomic_io.py core/lib/file_lock.py core/lib/mvd.py \
