@@ -32,6 +32,23 @@ def test_host_config_matches_committed_lock_bytes():
     host.validate_inputs(ROOT, host.load_config()[0])
 
 
+def test_signing_installation_uses_canonical_shared_version():
+    host = host_module()
+    shared = (ROOT / 'tools/local_verification/requirements-extra.txt').read_bytes()
+    hashes = json.dumps({'schema':'qualification_signing_wheel/v1','package':'cryptography','sha256':'a'*64}).encode()
+    actual = host.signing_requirements(shared, hashes)
+    pin = next(line for line in shared.decode().splitlines() if line.startswith('cryptography=='))
+    assert actual == (pin + ' --hash=sha256:' + 'a'*64 + '\n').encode()
+    assert host.signing_requirements(b'cryptography==99.1.2\n', hashes).startswith(b'cryptography==99.1.2 ')
+
+
+@pytest.mark.parametrize('shared', [b'',b'cryptography>=1\n',b'cryptography==1.2.3\ncryptography==2.3.4\n'])
+def test_signing_requirement_rejects_missing_or_ambiguous_version(shared):
+    host = host_module()
+    with pytest.raises(ValueError, match='canonical signing pin'):
+        host.signing_requirements(shared,b'{"package":"cryptography","schema":"qualification_signing_wheel/v1","sha256":"' + b'a'*64 + b'"}')
+
+
 @pytest.mark.parametrize('field', ['python', 'docker'])
 @pytest.mark.parametrize('value', ['python3', './docker', '/usr/../tmp/tool', '', None, 42])
 def test_config_rejects_ambient_executable_selection(field, value):
@@ -270,8 +287,8 @@ def test_old_manifest_cannot_retire_another_runs_identities(tmp_path):
 def provisioning_attempt(tmp_path, monkeypatch):
     """Exercise publication with real files, stopping before privileged creation."""
     host = host_module()
-    lock_bytes = b'approved'
-    locks = {relative: hashlib.sha256(lock_bytes).hexdigest() for relative in host.REQUIRED_LOCKS}
+    lock_payloads = {relative:(ROOT / relative).read_bytes() for relative in host.REQUIRED_LOCKS}
+    locks = {relative: hashlib.sha256(raw).hexdigest() for relative,raw in lock_payloads.items()}
     config = {**host.load_config()[0], 'parent': str(tmp_path / 'runs'), 'locks': locks}
     config_path = tmp_path / 'tools/qualification_verification/host.json'
     config_path.parent.mkdir(parents=True)
@@ -279,7 +296,7 @@ def provisioning_attempt(tmp_path, monkeypatch):
     for relative in host.REQUIRED_LOCKS:
         lock = tmp_path / relative
         lock.parent.mkdir(parents=True, exist_ok=True)
-        lock.write_bytes(lock_bytes)
+        lock.write_bytes(lock_payloads[relative])
     monkeypatch.setattr(host, 'ROOT', tmp_path)
     reservation = tmp_path / 'reservation.json'
     def missing(_):
@@ -411,7 +428,7 @@ def test_setup_failure_keeps_advertised_cleanup_path(provisioning_attempt, capsy
 
 
 @pytest.mark.parametrize('relative', ['requirements-ops.lock',
-                                     'tools/qualification_verification/requirements-signing.lock'])
+                                     'tools/local_verification/requirements-extra.txt', 'tools/qualification_verification/signing-wheel.json'])
 def test_probe_time_lock_drift_is_rejected_before_reservation(provisioning_attempt, monkeypatch, relative):
     host, config_path, reservation = provisioning_attempt
     lock = host.ROOT / relative
@@ -433,7 +450,7 @@ def test_probe_time_lock_drift_is_rejected_before_reservation(provisioning_attem
 
 
 @pytest.mark.parametrize('relative', ['requirements-ops.lock',
-                                     'tools/qualification_verification/requirements-signing.lock'])
+                                     'tools/local_verification/requirements-extra.txt', 'tools/qualification_verification/signing-wheel.json'])
 def test_staged_locks_are_checked_before_environment_activation(provisioning_attempt, monkeypatch, relative):
     host, config_path, _ = provisioning_attempt
     lock = host.ROOT / relative

@@ -1,6 +1,6 @@
 """Active plan adapter over the shared pure N1 derivation."""
 from ..checkpoint_plan import derive_n1_plan as _derive
-from ..orchestration import seed_input, SeedInput
+from ..seed_identity import seed_input, SeedInput
 from ..policy import parse_policy
 from ..policy_sources import build_qualification_policy
 

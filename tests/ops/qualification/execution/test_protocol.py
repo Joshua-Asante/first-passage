@@ -43,3 +43,18 @@ def test_truncation_and_oversize_fail_closed(raw):
 
 def test_one_bounded_frame_roundtrips_exact_bytes():
     assert protocol().decode_frame(protocol().encode_frame(b'{}', limit=2), limit=2) == b'{}'
+
+
+def test_snapshot_and_artifact_requests_have_closed_shapes():
+    from c1_rail.qualification.contract import canonical_json_bytes as encoded
+    assert protocol().parse_request(encoded(dict(operation='SNAPSHOT',attempt_id='a')))['operation']=='SNAPSHOT'
+    row=dict(operation='STORE_ARTIFACT',attempt_id='a',role='n1_result',bytes_b64='e30=')
+    assert protocol().parse_request(encoded(row))==row
+    for changes in (dict(path='/tmp/key'),dict(role='private-result'),dict(bytes_b64='not base64')):
+        with pytest.raises(ValueError): protocol().parse_request(encoded(dict(row,**changes)))
+
+
+def test_deep_untrusted_json_is_rejected_without_recursion_escape():
+    raw=b'['*1500+b'0'+b']'*1500
+    with pytest.raises(ValueError):
+        protocol().decode_frame(struct.pack('!I',len(raw))+raw,limit=4096)

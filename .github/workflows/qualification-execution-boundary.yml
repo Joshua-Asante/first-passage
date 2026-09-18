@@ -17,6 +17,7 @@ on:
       - 'tests/test_qualification_*.py'
       - 'tests/integration/qualification_host/**'
       - 'requirements-ops.lock'
+      - 'tools/local_verification/requirements-extra.txt'
       - '.github/workflows/qualification-execution-boundary.yml'
   workflow_dispatch:
 

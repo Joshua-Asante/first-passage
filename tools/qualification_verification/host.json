@@ -14,7 +14,8 @@
   "uid_start": 61000,
   "locks": {
     "requirements-ops.lock": "9aa7c17c82a71cb862dd33180f6f06aa855a662ae03489fcb72f87cb03f82017",
-    "tools/qualification_verification/requirements-signing.lock": "079146edc8347e0ef2751c6ececfe8adc4f8ed765492f52c395961c4b4a31d2b"
+    "tools/local_verification/requirements-extra.txt": "f9214dba2b34f6d4de287e0cef9b3f3e478d153c1b4a237ea509263e7f319acd",
+    "tools/qualification_verification/signing-wheel.json": "89bafc33cab0e868f52e44ac2cd07fbd2ca7aa22579aadfbcfba5e8526840eff"
   },
   "qualification_acceptance": "blocked_pending_boundary_integration"
 }

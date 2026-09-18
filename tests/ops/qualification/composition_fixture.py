@@ -274,14 +274,14 @@ class VerifiedComposition:
         return {role:sys.modules[name] for role,name in self.domain.runtime_code_roles.items()}
 
 
-def build_verified_composition(root, *, confirmation_depth=60, decision_alpha='0.05'):
+def build_verified_composition(root, *, confirmation_depth=60, decision_alpha='0.05', idle=False):
     """Real G1→retained source→loader composition under signed TEST_ONLY context."""
     import sys
     from test_contract import NOW
     from c1_rail.qualification.contract import validate_frozen_contract, ObservedBindings
     from c1_rail.qualification.production_source import ProductionSource
     from c1_rail.qualification.runtime_inventory import collect_runtime_inventory
-    fixture=build_artifacts(root).with_runtime_artifacts(root)
+    fixture=build_artifacts(root,idle=idle).with_runtime_artifacts(root)
     domain,private,keys=verified_domain(fixture,confirmation_depth=confirmation_depth)
     document=contract_document(fixture,domain,decision_alpha=decision_alpha)
     raw=encoded(document)

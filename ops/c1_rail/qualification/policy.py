@@ -6,11 +6,19 @@ bytes. No code-owner imports, signing, source execution or persistence live here
 from dataclasses import dataclass
 from decimal import Decimal
 import hashlib
+from types import MappingProxyType
 
 from .contract import (
     canonical_json_bytes, parse_canonical_json, _decimal, _fields,
     _positive_int, _sha256, _text,
 )
+
+STAGE_ARTIFACT_ROLES = MappingProxyType({'LEGALITY':'legality_result','N1':'n1_result',
+    'N2':'n2_result','PART_B':'part_b_result','PART_A':'part_a_result'})
+BASE_ARTIFACT_ROLES = ('attempt_journal','path_inventory','runtime_load_trace')
+CHECKPOINT_GROUPS = MappingProxyType({'N1':('N1',),'CUTOFF':(),'N2':('N2','PART_B'),'PART_A':('PART_A',)})
+ATTESTED_CHECKPOINTS = tuple(name for name,stages in CHECKPOINT_GROUPS.items() if stages)
+N1_ARTIFACT_ROLES = tuple(sorted((*BASE_ARTIFACT_ROLES,*(STAGE_ARTIFACT_ROLES[stage] for stage in ('LEGALITY','N1')))))
 
 
 def _policy_document(*, tier, basis, owners):
@@ -23,10 +31,9 @@ def _policy_document(*, tier, basis, owners):
         'stage_order': ['LEGALITY', 'N1', 'N2', 'PART_B', 'PART_A'],
         'stage_populations': {'LEGALITY': [], 'N1': ['FULL', 'H1', 'H2'],
                               'N2': ['FULL'], 'PART_B': ['H1', 'H2'], 'PART_A': ['REGIME']},
-        'checkpoint_groups': {'N1': ['N1'], 'CUTOFF': [], 'N2': ['N2', 'PART_B'], 'PART_A': ['PART_A']},
-        'stage_artifact_roles': {'LEGALITY': 'legality_result', 'N1': 'n1_result',
-                                 'N2': 'n2_result', 'PART_B': 'part_b_result', 'PART_A': 'part_a_result'},
-        'base_artifact_roles': ['attempt_journal', 'path_inventory', 'runtime_load_trace'],
+        'checkpoint_groups': {name:list(stages) for name,stages in CHECKPOINT_GROUPS.items()},
+        'stage_artifact_roles': dict(STAGE_ARTIFACT_ROLES),
+        'base_artifact_roles': list(BASE_ARTIFACT_ROLES),
         'optional_artifact_roles': ['diagnostics_private'],
         'source_owner_sha256': owners,
     }

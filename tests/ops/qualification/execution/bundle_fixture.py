@@ -35,7 +35,8 @@ def build_bundle(root, *, idle=False, geometry_bytes=None):
     sources = {row['module']: dict(path=row['path'], sha256=row['sha256']) for row in ordinary.values()}
     repo = Path(__file__).resolve().parents[4]
     runtime = dict(python_version=platform.python_version(), platform=sys.platform,
-                   dependency_lock_sha256=digest((repo / 'requirements-ops.lock').read_bytes()), sources=sources)
+                   dependency_lock_sha256=digest((repo / 'requirements-ops.lock').read_bytes()),
+                   signing_configuration_sha256=digest((repo / 'tools/local_verification/requirements-extra.txt').read_bytes()), sources=sources)
     key_roles = dict(freeze=['test-freeze'], result=['test-producer'], seal=['test-seal'], execution=['test-execution'])
     release_doc = dict(schema='qualification_execution_release/v1', release_id='unit-release',
         qualification_policy_sha256=digest(policy_raw),source_owner_sha256=json.loads(policy_raw)['source_owner_sha256'],

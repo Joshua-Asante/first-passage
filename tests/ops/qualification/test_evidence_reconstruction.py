@@ -53,7 +53,7 @@ def captured_case(tmp_path_factory):
     c, domain = signed_source_case(root)
     p = parse_policy(build_qualification_policy())
     admitted = admit_source(c, artifact_root=root, policy=p)
-    runtime = dict(python_version='3.13.2',platform='win32',dependency_lock_sha256='d'*64,
+    runtime = dict(python_version='3.13.2',platform='win32',dependency_lock_sha256='d'*64,signing_configuration_sha256='e'*64,
                    sources={'consistency.fixture': {'path':'fixture.py','sha256':'e'*64}})
     release = dict(schema='qualification_execution_release/v1',service_id='fixture-service',
         capability='N1_ONLY',production_execution=False,qualification_policy_sha256=p.sha256,
@@ -247,3 +247,29 @@ def test_incomplete_release_is_not_reconstruction_input(captured_case, field):
     rebind_capture(args)
     with pytest.raises(ValueError, match='closed schema'):
         build_n1_evidence(**args)
+
+
+@pytest.mark.parametrize('kind', ['bytes','dict','proxy_bytes','value','evidence'])
+def test_evidence_comparison_cannot_use_overloaded_equality(captured_case,kind):
+    from types import MappingProxyType
+    from c1_rail.qualification.evidence import build_n1_evidence,compare_n1_evidence,InspectedEvidence
+    good=build_n1_evidence(**captured_case)
+    called=[]
+    class EqualBytes(bytes):
+        def __eq__(self,other): called.append('bytes'); return True
+        def __ne__(self,other): called.append('bytes'); return False
+    class EqualDict(dict):
+        def __eq__(self,other): called.append('dict'); return True
+    class EqualEvidence(InspectedEvidence):
+        def __eq__(self,other): called.append('evidence'); return True
+    outputs=dict(good.output_bytes_by_role)
+    raw=good.envelope_bytes
+    if kind=='bytes': raw=EqualBytes(raw)
+    elif kind=='dict': outputs=EqualDict(outputs)
+    elif kind in ('value','proxy_bytes'):
+        outputs['n1_result']=EqualBytes(outputs['n1_result'])
+        if kind=='proxy_bytes': outputs=MappingProxyType(outputs)
+    proposed=(EqualEvidence if kind=='evidence' else InspectedEvidence)(raw,outputs)
+    with pytest.raises(ValueError,match='EVIDENCE_SEMANTIC_MISMATCH'):
+        compare_n1_evidence(proposed,expected=good)
+    assert called==[]

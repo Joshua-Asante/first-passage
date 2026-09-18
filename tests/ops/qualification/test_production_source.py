@@ -330,12 +330,9 @@ def test_signed_flat_source_builds_and_replays_without_unused_quotes(monkeypatch
     """Customize generated inputs before signing; production functions stay real."""
     import composition_fixture as fixture_module
     from c1_rail.qualification.paths import PathAssembler
-    original_port=fixture_module.port_bytes
     original_builder=fixture_module.build_artifacts
-    def inert_port(*args):
-        return original_port(*args).replace(b"if LEG_ID != 'orb_mnq_v7':",b'if True:')
-    def empty_evidence(root):
-        fixture=original_builder(root)
+    def empty_evidence(root, **kwargs):
+        fixture=original_builder(root, **kwargs)
         role='schedule_execution_evidence'
         fixture.payloads[role]=fixture_module.encoded({'schema':'qualification-schedule-execution/v1','rows':[]})
         review=json.loads(fixture.payloads[role+'_review'])
@@ -344,9 +341,8 @@ def test_signed_flat_source_builds_and_replays_without_unused_quotes(monkeypatch
         for name in (role,role+'_review'):
             (root/fixture.paths[name]).write_bytes(fixture.payloads[name])
         return fixture
-    monkeypatch.setattr(fixture_module,'port_bytes',inert_port)
     monkeypatch.setattr(fixture_module,'build_artifacts',empty_evidence)
-    verified=fixture_module.build_verified_composition(tmp_path)
+    verified=fixture_module.build_verified_composition(tmp_path,idle=True)
     source=verified.source
     path=PathAssembler(source.path_start_date).assemble((source.sessions[:5],),horizon_sessions=5)
     replay=source.replay(path)

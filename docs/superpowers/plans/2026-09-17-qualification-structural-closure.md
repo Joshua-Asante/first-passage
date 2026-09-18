@@ -302,7 +302,7 @@ G5/signing/store into the pure evidence module.
 **Interfaces:** Produces `build_stage_artifact` and role-content comparison used by
 `build_n1_evidence` in Task 4. All documents use spec section 7's closed schemas.
 
-- [ ] Write a parameterized role test for both N1 terminal/progress cases and the
+- [x] Write a parameterized role test for both N1 terminal/progress cases and the
   future complete prefix. N1 requires exactly five mandatory roles; complete E1
   requires eight. Test all single mandatory-role omissions and all later-stage
   additions to N1. No fixture-specific `private-result` role is accepted.
@@ -316,19 +316,19 @@ def test_n1_prefix_requires_real_evidence_roles(completion, verdict):
         'attempt_journal','legality_result','n1_result','path_inventory','runtime_load_trace')
 ```
 
-- [ ] Normalize captured outcome arrays using the existing exact outcome fields,
+- [x] Normalize captured outcome arrays using the existing exact outcome fields,
   preserving ordering and diagnostics. Compute counts and outcome hash from these
   bytes. Adjudicate through unchanged Decimal statistical helpers; do not accept
   a caller decision argument to `build_stage_artifact`.
-- [ ] Bind stage input-plan digest, policy/contract/domain identity and path inventory.
+- [x] Bind stage input-plan digest, policy/contract/domain identity and path inventory.
   `prior_stage_outcomes` is empty for N1; later schema tests supply the exact earlier
   stage arrays, including N2 FULL outcomes needed for the Part A sanity comparison.
   Reject absent or incompatible prerequisite arrays. For Part A schema tests preserve panel-major ordering, exact inverse-ECDF behavior
   and expansion rules; do not introduce active Part A execution support.
-- [ ] Build a correct N1 result, replace its contents while recomputing the manifest
+- [x] Build a correct N1 result, replace its contents while recomputing the manifest
   hash/length, and require semantic mismatch. Cover swapped stage roles, altered
   population order and unrelated runtime trace. Include valid byte-for-byte artifacts.
-- [ ] Assert source legality must parse/verify and cannot be replaced by `{}` or
+- [x] Assert source legality must parse/verify and cannot be replaced by `{}` or
   a claimed PASS. Keep each rejection reason specific to the violated relationship.
 
 Run: `./fp.ps1 python -m pytest tests/ops/qualification/test_evidence_artifacts.py tests/ops/qualification/test_result_adjudication.py tests/ops/qualification/test_checkpoint_validation.py tests/test_certification_power.py -q --tb=short`.
@@ -363,17 +363,17 @@ reject duplicate checkpoints, missing identities and incompatible state/hash pai
 Snapshot objects describe state, not signature authority; only the real service
 produces authoritative snapshots in Task 6.
 
-- [ ] Write fixed snapshot-byte vectors, including VOID, duplicate execution and
+- [x] Write fixed snapshot-byte vectors, including VOID, duplicate execution and
   wrong attempt rejection. Explicitly exclude future commit, envelope and snapshot
   self-digests. Keep the serializer's own expected vector handwritten.
-- [ ] Implement `build_n1_evidence` from the shared interface: check plan/outcome/
+- [x] Implement `build_n1_evidence` from the shared interface: check plan/outcome/
   legality/runtime/attestation structural bindings; derive stage decision; derive
   required roles; serialize snapshot and stage artifacts; construct the exact closed
   v2 envelope in design section 7. Stage output hashes now identify the role artifact;
   outcome-array hashes live inside it. Derive producer/times from protected release
   and captured attestation, not the current client clock. N1 completion time does
   not imply campaign completion. Reject previous-result chaining in this release.
-- [ ] Implement `compare_n1_evidence` as exact envelope byte equality plus exact
+- [x] Implement `compare_n1_evidence` as exact envelope byte equality plus exact
   role-to-bytes equality after strict parsing. No overloaded Python equality or
   subclass-controlled field influences acceptance.
 
@@ -396,10 +396,10 @@ source admission, deterministic sample outcome bytes and a schema-valid fixture
 attestation/snapshot. Its tests do not claim protected execution or sign production
 results. Task 7 replaces its producers with actual capture for acceptance tests.
 
-- [ ] Test runtime, journal and legality substitutions, missing/surplus output roles,
+- [x] Test runtime, journal and legality substitutions, missing/surplus output roles,
   malformed JSON and wrong counts. Include both FAIL and CONTINUE from real mechanics
   fixtures where available; invalid supplied verdict cannot override reconstruction.
-- [ ] Ensure the pure module cannot import execution signer/service/archive/store.
+- [x] Ensure the pure module cannot import execution signer/service/archive/store.
   Record library completion separately from the active-boundary acceptance status.
 
 Run: `./fp.ps1 python -m pytest tests/ops/qualification/test_journal_snapshot.py tests/ops/qualification/test_evidence_reconstruction.py tests/ops/qualification/test_evidence_artifacts.py -q --tb=short`.
@@ -767,3 +767,29 @@ scope. They cannot be closed by this N1-only plan or silently inherited from v1.
 - Task 2 final combined regression: 195 passed in 106.71s using `./fp.ps1 --workers 2 python -m pytest tests/ops/qualification/test_legality_evidence.py tests/ops/qualification/test_evidence_reconstruction.py tests/ops/qualification/test_evidence_artifacts.py tests/ops/qualification/test_journal_snapshot.py tests/ops/qualification/test_production_source.py tests/ops/test_policy_fingerprint.py -q --tb=short`, record `20260917T223903Z-03e72c945aa0`: completed/exit 0, source stable, capture complete, no report errors. Independent review found prepared-input substitution; reproduced changed unquoted volumes with unchanged retained hashes, then fixed by canonical derivation/comparison from the same retained snapshot before issuance.
 - Tasks 3–4 implemented in part; strict envelope/artifact self-comparison regressions pass (58 tests, record `20260917T224210Z-9697f8458402`). Complete N1 plan reconstruction added: eight coherently rehashed workload/probe/source-proof mutations first failed, then all 30 reconstruction cases passed (`20260917T224510Z-2d253f3784db`). Complete release/attestation schemas and signed wiring remain open; do not treat Tasks 3–4 as accepted.
 - Host harness imported selectively from updated `c2ae5bf` (host files only, not older product code). No host provision, CI dispatch, protected execution or active acceptance has occurred in this checkout.
+### Reconciliation and implementation checkpoint (23:28 UTC)
+
+- Merged refreshed `origin/main` (`5cda6f4`, including PR420) into this isolated branch at `6be024ae2ef6ad14af98ff67fd95c3aa12af7346`. PR420 remains the canonical host harness. The old baseline statement above records earlier inspection, not current main. Main checkout and prototype worktrees remain preserved.
+- The user's implementation handoff supersedes planning-only banners in these documents. No deployment, production keys, full-campaign execution or merge-to-main is authorized.
+- Removed the host harness's duplicated signing version: `tools/local_verification/requirements-extra.txt` owns the pin; protected staged inputs plus `signing-wheel.json` derive the hash-locked installation requirement. Host unit selection: 154 passed, 2 platform skips (`20260917T230712Z-d27afa195cf7`). Those skips establish no Linux acceptance.
+- Task 3/4 library reconstruction now uses complete closed release/attestation schemas, complete independently derived plans, exact role bytes and logical snapshots. Canonical policy owns stage/artifact/checkpoint inventories. Tasks remain open pending full checklist reconciliation and active integration.
+- Task 5 signed v2 admission implementation validates installed policy, original approvals, disjoint keys, full role bindings and real static registry bytes. Signed wrong-basis/role override tests reach semantic rejection. Bundle/verification selection: 14 passed (`20260917T225946Z-afdd5a19e439`). Runtime installation, active preflight/cutover and launch-count evidence remain open.
+- Task 6 library work: durable schema-v4 store, candidate-only artifact membership, unchanged revision on snapshot/storage, actual retained-source worker admission, budgeted original N1 replay, framed archive rejection. Compute/worker parity selection: 8 passed in 68.57s (`20260917T231258Z-b401b3cea657`). Archive: 6 passed (`20260917T231732Z-e7e19e824ff4`). Independent review found boolean path indices accepted by Python equality; actual-output regression reproduced DID NOT RAISE, then canonical byte comparison passed (`20260917T231900Z-2d774cc60ee0`).
+- Worker closure test exposed legacy orchestration/attempt imports through seed derivation. Extracted unchanged canonical seed identity into `seed_identity.py`, shared by legacy and new callers. Runtime/seed-vector/reconstruction selection: 80 passed (`20260917T232049Z-0acc07e973f9`). This is source-inventory verification, not installed-image acceptance.
+- Task 7 library work: G5 revalidates original signed capture/current context, compares worker observations, and reconstructs all five artifacts. Coherently rehashed substitutions reject: 7 passed (`20260917T232341Z-0bddcb662490`). Fixture signatures are explicitly consistency-only.
+- Atomic store commit compares current snapshot under writer lock, promotes exact candidate artifacts, retains an acyclic immutable receipt, and checks exact retry identity before fresh validity/revision checks. Reopen/VOID preserves receipt; changed authentication conflicts. Store/atomic selection: 24 passed (`20260917T232713Z-f624ce958f43`). Public transport, current eligibility, approval-expiry retrieval and real process restart remain open.
+- All commands above used this checkout's `./fp.ps1 --workers 2 python -m pytest <named selections> -q --tb=short`, interpreter `C:/Users/joshu/multi_firm_operations/tmp/ops-env/Scripts/python.exe` (3.13.2). Records through `232341Z` inspected completed/exit 0/stable source/complete capture/no report errors. Atomic record inspection remains due. `./fp.ps1 check` at earlier source passed (`20260917T230311Z-45337f01b731`), including 72 unittest cases / 3 skips; it is not a current full-suite result.
+- Still open: protected signer/service/G5 entrypoints, canonical-host owned container/service cleanup, real worker image/install, Linux capture and public acceptance, v1 retirement, lifecycle/concurrency, invariant gate/mutations and combined independent review. `--test-only` remains blocked. qexec's Docker access remains root-equivalent; use fresh hosts; issue424 GID/mode drift remains deferred. Acceptance remains held, N1_ONLY ceiling unchanged.
+
+### Library and service checkpoint (2026-09-18 00:17 UTC)
+
+- Tasks 3–4 semantic-library checklist completed; this does not establish protected capture. Added populated ATTESTED/VOID handwritten snapshot vectors, revision ordering, later-stage prerequisite/Part A expansion and ordering cases, complete-prefix role omissions and concrete-container equality rejection.
+- Implemented protected-entrypoint code for bootstrap, runtime measurement, credentials, native Docker launch/capture, supervisor, G5 and bounded peer-checked client. These entrypoints have not yet been installed or exercised on the disposable Linux target.
+- G5 historical inspection returns no authority. Public service exact retries return the original stored authentication/receipt and separate current validity/eligibility, including expiry and VOID. Fresh acceptance still revalidates current approvals and enrolled keys.
+- Independent review exposed malformed candidate inventory/deep JSON failures, CAPTURED startup recovery failure and cleanup-before-uncertainty ordering. Regressions reproduced each; strict parsing, per-attempt recovery and durable uncertainty before cleanup now pass focused tests.
+- VOID uses historical enrollment only to identify the original cancellation authority, then verifies a new approval with current time, revocation and exact original public-key fingerprints. Failed Docker cleanup leaves durable VOID and separately reports CLEANUP_PENDING; recovery retries cleanup. The admission/reservation timestamp mismatch was reproduced, then fixed by using one verified instant under the writer transaction.
+- Combined regression command: `./fp.ps1 --workers 2 python -m pytest tests/ops/qualification tests/test_certification_power.py tests/test_qualification_host.py -q --tb=short`. Record `20260917T234729Z-831325c64ee9`: 1013 passed, 4 failed, 2 platform skips in 1102.72s; failed status with stable source/complete capture. Three failures were fixture keyword drift; the fourth detected four missing ordinary dependency declarations. Declarations now include policy, policy_sources, seed_identity and policy_fingerprint. The flat-source fixture now selects explicit idle behavior instead of obsolete text replacement.
+- Expanded corrective selection (artifact/reconstruction/snapshot/cost/closure/flat-source/service-assessment files): 184 passed in 82.86s, record `20260918T001301Z-c85000e701e1`. Latest service/assessment selection: 25 passed in 54.29s, record `20260918T001555Z-d618162b57e4`. Both inspected completed/exit 0/stable source/complete capture/no report errors. These correct all four combined-run failures; the complete combined suite has not been rerun at this state.
+- All commands used this checkout's launcher and Python 3.13.2 at `C:/Users/joshu/multi_firm_operations/tmp/ops-env/Scripts/python.exe`. Prior focused green records through `20260917T234633Z-b6e4709e8bc3` were also inspected stable/complete with zero report errors. Red records remain retained as failure evidence, not acceptance.
+- Still open: real Linux installation/image and process/container capture, owned cleanup integration, active preflight/v1 retirement, real lifecycle/race conformance, invariant gate/mutations and combined independent acceptance review. `--test-only` remains blocked. No protected-release acceptance, full PASS/seal, OPERATOR execution, deployment or merge-to-main is claimed.
+- Repository gates `./fp.ps1 check` passed at this checkpoint (`20260918T001824Z-f07e6a90c97b`), completed/exit zero/stable source/complete capture/no report errors. The evidence-store child ran 72 tests with 3 skips. Existing absent private Pine/data and heavy-analysis-artifact advisories remain; these gates do not verify those absent inputs.

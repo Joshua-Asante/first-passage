@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import platform
+import re
 import shutil
 import stat
 import subprocess
@@ -25,7 +26,8 @@ from scripts.record_verification import snapshot
 ROLES = ('qclient', 'qexec', 'qg5')
 REQUIRED_LOCKS = frozenset({
     'requirements-ops.lock',
-    'tools/qualification_verification/requirements-signing.lock',
+    'tools/local_verification/requirements-extra.txt',
+    'tools/qualification_verification/signing-wheel.json',
 })
 # These names are shared host-wide, even across installation-layout variants.
 IDENTITY_STATE = Path('/var/lib/fp-qualification-identities')
@@ -36,6 +38,20 @@ PROCESS_STOP_TIMEOUT = 30
 def load_config():
     raw = (ROOT / 'tools/qualification_verification/host.json').read_bytes()
     return json.loads(raw), hashlib.sha256(raw).hexdigest()
+
+
+def signing_requirements(shared_bytes, wheel_bytes):
+    """Resolve the sole version owner with a separately reviewed Linux wheel hash."""
+    pins = [line.strip() for line in shared_bytes.decode('utf-8').splitlines()
+            if line.strip().lower().startswith('cryptography')]
+    if len(pins) != 1 or re.fullmatch(r'cryptography==[0-9]+\.[0-9]+\.[0-9]+', pins[0]) is None:
+        raise ValueError('one exact canonical signing pin required')
+    wheel = json.loads(wheel_bytes)
+    if (type(wheel) is not dict or set(wheel) != {'schema','package','sha256'}
+            or wheel['schema'] != 'qualification_signing_wheel/v1' or wheel['package'] != 'cryptography'
+            or type(wheel['sha256']) is not str or re.fullmatch('[0-9a-f]{64}',wheel['sha256']) is None):
+        raise ValueError('reviewed signing wheel identity required')
+    return (pins[0] + ' --hash=sha256:' + wheel['sha256'] + '\n').encode('ascii')
 
 
 def resolve_roles(config):
@@ -504,9 +520,16 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
             if runtime_version != config['python_version']:
                 raise ValueError('copied Python patch mismatch')
             # The system pip only installs into this new, owned environment.
+            signing_bytes = signing_requirements(
+                (root / 'code/tools/local_verification/requirements-extra.txt').read_bytes(),
+                (root / 'code/tools/qualification_verification/signing-wheel.json').read_bytes())
+            signing_path = root / 'env/signing-requirements.txt'
+            with signing_path.open('xb') as output:
+                output.write(signing_bytes)
+            signing_path.chmod(0o400)
             execute([config['python'], '-I', '-m', 'pip', '--python', str(python),
                 'install', '--require-hashes', '--only-binary=:all:', '-r', str(root / 'code/requirements-ops.lock'),
-                '-r', str(root / 'code/tools/qualification_verification/requirements-signing.lock')],
+                '-r', str(signing_path)],
                 capture_output=False, timeout=None)
             execute([str(python), '-I', str(root / 'code/scripts/fp.py'), '--env', str(root / 'env'), 'doctor'])
             key_code = ('from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey; '
@@ -521,6 +544,7 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
                 execute([str(python), '-I', '-c', key_code, str(key)])
                 key.chmod(0o400); os.chown(key, uid, uid)
             manifest['runtime'] = {'python': str(python), 'version': runtime_version,
+                'signing_requirements_sha256': hashlib.sha256(signing_bytes).hexdigest(),
                 'packages': json.loads(execute([str(python), '-I', '-c',
                     'import importlib.metadata as m, json; '
                     'print(json.dumps(sorted((d.metadata["Name"], d.version) for d in m.distributions())))']))}

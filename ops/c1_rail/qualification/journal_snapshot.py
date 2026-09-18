@@ -2,7 +2,7 @@
 import re
 from .contract import canonical_json_bytes, parse_canonical_json, _fields, _sha256, _positive_int
 
-CHECKPOINTS = ('N1', 'N2', 'PART_A')
+from .policy import ATTESTED_CHECKPOINTS as CHECKPOINTS
 EXECUTION_STATES = ('PENDING', 'DISPATCHED', 'START_INTENT', 'RUNNING', 'CAPTURED', 'ATTESTED', 'ABORTED', 'IN_DOUBT')
 
 
@@ -31,6 +31,8 @@ def parse_assessment_snapshot(raw: bytes) -> dict:
             raise ValueError('SNAPSHOT_EXECUTION_STATE_MISMATCH')
         _identity(row['execution_id'])
         _positive_int(row['execution_revision'], label='execution revision', allow_zero=True)
+        if row['execution_revision'] > doc['campaign_revision']:
+            raise ValueError('SNAPSHOT_REVISION_MISMATCH')
         _sha256(row['plan_sha256'], label='plan')
         if row['state'] == 'ATTESTED':
             _sha256(row['attestation_sha256'], label='attestation')

@@ -22,8 +22,8 @@ def _build(tmp_path, monkeypatch, payload):
     # Replace the artifact before real domain/contract signing; all production
     # loading, schema parsing and instrument construction remain real.
     original = composition_fixture.build_artifacts
-    def artifacts(root):
-        fixture = original(root)
+    def artifacts(root, **kwargs):
+        fixture = original(root, **kwargs)
         raw = payload if isinstance(payload, bytes) else composition_fixture.encoded(payload)
         fixture.payloads['cost_model'] = raw
         (root / fixture.paths['cost_model']).write_bytes(raw)

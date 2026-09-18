@@ -14,18 +14,9 @@ from types import MappingProxyType
 
 from .model import PathOutcome
 from .part_a import SyntheticPanelResult, SyntheticPartAResult
-from .regime import domain_seed
+from .seed_identity import SeedInput, seed_input, canonical_bytes, _sha
 from .result_adjudication import adjudicate_e1_outcomes
 from .runner import StageRun
-
-
-def canonical_bytes(value):
-    return json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=False,
-                      allow_nan=False).encode('utf-8')
-
-
-def _sha(value):
-    return hashlib.sha256(value).hexdigest()
 
 
 def _outcome(row):
@@ -33,19 +24,6 @@ def _outcome(row):
         raise TypeError('exact immutable PathOutcome required')
     return {'status':row.status,'sessions_to_pass':row.sessions_to_pass,
             'failure_reason':row.failure_reason,'diagnostics':[list(p) for p in row.diagnostics]}
-
-
-@dataclass(frozen=True)
-class SeedInput:
-    population: str
-    path_index: int
-    panel_index: int | None
-    purpose: str
-    canonical_bytes: bytes
-
-    @property
-    def sha256(self):
-        return _sha(self.canonical_bytes)
 
 
 @dataclass(frozen=True)
@@ -67,21 +45,6 @@ class E1Execution:
     def path_outcomes(self):
         return MappingProxyType({stage:MappingProxyType(dict(populations))
                                  for stage,populations in self.outcomes})
-
-
-def seed_input(contract, *, stage, population, panel_index, path_index,
-               synthetic, purpose='path'):
-    """Bind actual shared RNG call arguments and frozen source pool identity."""
-    root=contract.replay.root_rng_namespace
-    seed=domain_seed(root=root,stage=stage,population=population,panel_index=panel_index,
-                     path_index=path_index,synthetic=synthetic,purpose=purpose)
-    raw=canonical_bytes({'schema':'qualification-seed-input/v1',
-        'contract_sha256':contract.contract_sha256,'root_rng_namespace':root,
-        'trust_domain_sha256':contract.trust_domain_sha256,
-        'stage':stage,'population':population,'panel_index':panel_index,
-        'path_index':path_index,'purpose':purpose,'synthetic':synthetic,'seed':seed,
-        'source_session_ids_sha256':_sha(canonical_bytes(list(contract.populations[population])))})
-    return SeedInput(population,path_index,panel_index,purpose,raw)
 
 
 def panel_identity(contract, panel):

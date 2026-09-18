@@ -73,11 +73,12 @@ def parse_release(raw):
     runtimes = fields(doc['runtime_manifests'], PROCESS_ROLES)
     covered = set()
     for runtime in runtimes.values():
-        fields(runtime, {'python_version','platform','dependency_lock_sha256','sources'})
+        fields(runtime, {'python_version','platform','dependency_lock_sha256','signing_configuration_sha256','sources'})
         if type(runtime['python_version']) is not str or re.fullmatch(r'3\.\d+\.\d+',runtime['python_version']) is None:
             raise ValueError('exact Python patch version required')
         if runtime['platform'] not in ('linux','win32'): raise ValueError('observed platform required')
         digest(runtime['dependency_lock_sha256'])
+        digest(runtime['signing_configuration_sha256'])
         if type(runtime['sources']) is not dict or not runtime['sources']:
             raise ValueError('runtime source closure required')
         for name,row in runtime['sources'].items():

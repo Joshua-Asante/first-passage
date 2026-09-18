@@ -33,7 +33,10 @@ Provider VM creation and paid infrastructure are outside this harness.
 
 [host.json](host.json) is the single host configuration. It pins the required
 system Python patch, Docker server/package version, installation root and raw
-lockfile hashes. The signing wheel hash was resolved from PyPI's 50.0.1 release;
+dependency input hashes. The signing version comes solely from
+`tools/local_verification/requirements-extra.txt`; `signing-wheel.json` supplies
+the reviewed Linux wheel hash without repeating that version. Provisioning derives
+the hash-locked pip requirement from those protected inputs and records its digest;
 its cffi/pycparser dependencies come from the existing operations lock. Only the
 x64 glibc wheel is admitted. Changed locks or installed versions fail setup;
 there is no ambient PATH selection, cache fallback, system package upgrade or

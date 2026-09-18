@@ -157,6 +157,8 @@ def parse_execution_attestation(raw):
 REQUEST_FIELDS = {
     'SUBMIT_N1': ('attempt_id', 'bundle_sha256'),
     'STATUS': ('attempt_id',),
+    'SNAPSHOT': ('attempt_id',),
+    'STORE_ARTIFACT': ('attempt_id','role','bytes_b64'),
     'FETCH': ('attempt_id', 'object_sha256'),
     'STORE_RESULT': ('attempt_id', 'envelope_bytes_b64'),
     'COMMIT_N1_RESULT': ('attempt_id', 'envelope_sha256', 'authentication_bytes'),
@@ -164,8 +166,28 @@ REQUEST_FIELDS = {
 }
 
 
+def _bounded_document(raw, *, label):
+    # Bound syntax depth before calling recursive JSON machinery. Brackets in
+    # strings (including base64 values) do not contribute to document nesting.
+    depth, quoted, escaped = 0, False, False
+    for value in raw:
+        if quoted:
+            if escaped: escaped = False
+            elif value == 92: escaped = True
+            elif value == 34: quoted = False
+        elif value == 34: quoted = True
+        elif value in (91,123):
+            depth += 1
+            if depth > 128: raise ValueError('protocol JSON nesting exceeds limit')
+        elif value in (93,125): depth -= 1
+    try:
+        return parse_canonical_json(raw,label=label)
+    except RecursionError as exc:
+        raise ValueError('protocol JSON nesting exceeds parser limit') from exc
+
+
 def parse_request(raw: bytes) -> JsonObject:
-    doc = parse_canonical_json(raw, label='execution request')
+    doc = _bounded_document(raw, label='execution request')
     if type(doc) is not dict or type(doc.get('operation')) is not str or doc['operation'] not in REQUEST_FIELDS:
         raise ValueError('UNKNOWN_OPERATION')
     fields(doc, ('operation', *REQUEST_FIELDS[doc['operation']]))
@@ -173,8 +195,12 @@ def parse_request(raw: bytes) -> JsonObject:
     for name, value in doc.items():
         if name.endswith('_sha256'):
             digest(value)
-        elif name in ('envelope_bytes_b64', 'authentication_bytes', 'operator_approval_bytes'):
+        elif name in ('envelope_bytes_b64', 'authentication_bytes', 'operator_approval_bytes','bytes_b64'):
             decode_base64(value)
+    if doc['operation'] == 'STORE_ARTIFACT':
+        from ..policy import N1_ARTIFACT_ROLES
+        if type(doc['role']) is not str or doc['role'] not in N1_ARTIFACT_ROLES:
+            raise ValueError('unsupported artifact role')
     if 'reason' in doc and (type(doc['reason']) is not str or not doc['reason'].strip()
                             or len(doc['reason']) > 1024):
         raise ValueError('bounded invalidation reason required')
@@ -185,7 +211,7 @@ def encode_frame(raw: bytes, *, limit: int) -> bytes:
     positive(limit)
     if type(raw) is not bytes or not 0 < len(raw) <= min(limit, 2**32 - 1):
         raise ValueError('frame size exceeds limit')
-    parse_canonical_json(raw, label='frame')
+    _bounded_document(raw, label='frame')
     return struct.pack('!I', len(raw)) + raw
 
 
@@ -196,5 +222,5 @@ def decode_frame(raw: bytes, *, limit: int) -> bytes:
     length = struct.unpack('!I', raw[:4])[0]
     if not 0 < length <= limit or len(raw) != length + 4:
         raise ValueError('frame size, truncation or trailing frame')
-    parse_canonical_json(raw[4:], label='frame')
+    _bounded_document(raw[4:], label='frame')
     return raw[4:]

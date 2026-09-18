@@ -18,7 +18,7 @@ def release_case():
     domain, _, private, keys = v2_case()
     profile = document()
     roles = {role: domain[role + '_key_ids'] for role in ('freeze', 'result', 'seal', 'execution')}
-    runtime = {'python_version': '3.13.2', 'platform': 'win32', 'dependency_lock_sha256': 'b' * 64,
+    runtime = {'python_version': '3.13.2', 'platform': 'win32', 'dependency_lock_sha256': 'b' * 64, 'signing_configuration_sha256': 'c' * 64,
                'sources': {'c1_rail.qualification.execution.protocol': {
                    'path': 'ops/c1_rail/qualification/execution/protocol.py', 'sha256': 'c' * 64}}}
     doc = dict(schema='qualification_execution_release/v1', release_id='test-release',

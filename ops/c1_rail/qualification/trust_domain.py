@@ -164,6 +164,8 @@ _PRODUCTION_CODE.update({
         'c1_rail.book_takeover_owner', 'c1_rail.ed25519_verify', 'c1_rail.qualification',
         'c1_rail.qualification.attempt', 'c1_rail.qualification.blocks',
         'c1_rail.qualification.clock', 'c1_rail.qualification.contract',
+        'c1_rail.qualification.policy', 'c1_rail.qualification.policy_sources',
+        'c1_rail.qualification.seed_identity', 'c1_rail.policy_fingerprint',
         'c1_rail.qualification.panel', 'c1_rail.qualification.preflight',
         'c1_rail.qualification.production', 'c1_rail.qualification.production_source',
         'c1_rail.qualification.provider', 'c1_rail.qualification.runner',
@@ -314,8 +316,9 @@ def validate_qualification_trust_domain(domain_bytes,approval_bytes,trusted_keys
     key_roles=('freeze_key_ids','result_key_ids','seal_key_ids')+(('execution_key_ids',) if active else ())
     keys_by_scope={name:_names(doc[name]) for name in key_roles}
     if active:
+        from .policy import ATTESTED_CHECKPOINTS
         _text(doc['execution_service_id']);_hash(doc['execution_release_sha256']);_hash(doc['policy_sha256'])
-        if doc['required_attested_checkpoints']!=['N1','N2','PART_A']:
+        if doc['required_attested_checkpoints']!=list(ATTESTED_CHECKPOINTS):
             raise ValueError('complete ordered attested checkpoint requirement differs')
         seen=set()
         for names in keys_by_scope.values():

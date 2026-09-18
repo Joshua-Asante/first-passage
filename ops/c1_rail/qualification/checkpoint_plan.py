@@ -2,7 +2,7 @@
 import hashlib
 
 from .contract import canonical_json_bytes, parse_canonical_json, _sha256, _text
-from .orchestration import seed_input
+from .seed_identity import seed_input
 from .policy import _document
 
 

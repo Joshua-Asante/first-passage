@@ -12,8 +12,8 @@ from .execution.release_schema import parse_release
 from .journal_snapshot import parse_assessment_snapshot
 from .legality import geometry_role, parse_source_admission
 from .model import PathOutcome
-from .orchestration import seed_input
-from .policy import _document, required_output_roles
+from .seed_identity import seed_input
+from .policy import _document, required_output_roles, N1_ARTIFACT_ROLES
 from .result_adjudication import adjudicate_replay_outcomes
 
 
@@ -27,6 +27,54 @@ def _hash(raw):
 class InspectedEvidence:
     envelope_bytes: bytes
     output_bytes_by_role: Mapping[str, bytes]
+
+
+def parse_proposed_artifact(role, raw):
+    """Validate one candidate's closed shape; commitment still requires reconstruction."""
+    if role == 'attempt_journal':
+        return parse_assessment_snapshot(raw)
+    shapes = {
+        'legality_result': ('qualification_legality_result/v1', {'schema','contract_sha256','trust_domain_sha256','policy_sha256',
+            'geometry_source_sha256','source_admission_sha256','check_id','status'}),
+        'n1_result': ('qualification_stage_result/v1', {'schema','contract_sha256','trust_domain_sha256','policy_sha256',
+            'stage','input_plan_sha256','outcome_array_sha256','decision','population_counts'}),
+        'path_inventory': ('qualification_path_inventory/v1', {'schema','trust_domain_sha256','records'}),
+        'runtime_load_trace': ('qualification_runtime_trace/v2', {'schema','execution_release_sha256','profile_sha256',
+            'worker_image_digest','runtime_manifest_sha256','execution_id','execution_attestation_sha256','worker_load_manifest'}),
+    }
+    if role not in shapes:
+        raise ValueError('OUTPUT_ROLE_MISMATCH')
+    schema,names = shapes[role]
+    doc = _fields(parse_canonical_json(raw,label=role), names,label=role)
+    if doc['schema'] != schema: raise ValueError('ARTIFACT_SCHEMA_MISMATCH')
+    for name,value in doc.items():
+        if name.endswith('_sha256'): _sha256(value,label=name)
+    if role == 'legality_result' and (doc['status'] != 'PASS' or doc['check_id'] != 'PRE_ADMISSION_REGISTRY_EMPTY'):
+        raise ValueError('EVIDENCE_LEGALITY_MISMATCH')
+    if role == 'n1_result':
+        counts = _fields(doc['population_counts'], {'FULL','H1','H2'},label='population counts')
+        if doc['stage'] != 'N1' or doc['decision'] not in ('PASS','FAIL') or any(type(n) is not int or n < 1 for n in counts.values()):
+            raise ValueError('EVIDENCE_STAGE_MISMATCH')
+    if role == 'path_inventory':
+        if type(doc['records']) is not list or not doc['records']: raise ValueError('PATH_INVENTORY_MISMATCH')
+        for row in doc['records']:
+            _fields(row, {'stage','population','path_index','panel_id','seed_input_sha256','outcome_sha256'},label='path record')
+            if (row['stage'] != 'N1' or row['population'] not in ('FULL','H1','H2')
+                    or type(row['path_index']) is not int or row['path_index'] < 0 or row['panel_id'] is not None):
+                raise ValueError('PATH_INVENTORY_MISMATCH')
+            _sha256(row['seed_input_sha256'],label='seed'); _sha256(row['outcome_sha256'],label='outcome')
+    if role == 'runtime_load_trace':
+        if type(doc['execution_id']) is not str or not doc['execution_id']: raise ValueError('invalid execution identity')
+        if type(doc['worker_image_digest']) is not str or re.fullmatch('sha256:[0-9a-f]{64}',doc['worker_image_digest']) is None:
+            raise ValueError('invalid image identity')
+        if type(doc['worker_load_manifest']) is not list or not doc['worker_load_manifest']: raise ValueError('invalid load manifest')
+        for row in doc['worker_load_manifest']:
+            _fields(row, {'role','sha256'},label='load role')
+            if type(row['role']) is not str or not row['role']: raise ValueError('invalid load role')
+            _sha256(row['sha256'],label='loaded bytes')
+        roles = [row['role'] for row in doc['worker_load_manifest']]
+        if roles != sorted(set(roles)): raise ValueError('invalid load role order')
+    return doc
 
 
 def validate_output_roles(policy, roles, *, stages, completion, verdict):
@@ -285,7 +333,7 @@ def _inspect_n1_envelope(value):
         raise ValueError('invalid N1 assessment')
     attestations = _fields(doc['execution_attestations'], {'N1'}, label='attestations')
     _sha256(attestations['N1'], label='N1 attestation')
-    roles = ('attempt_journal','legality_result','n1_result','path_inventory','runtime_load_trace')
+    roles = N1_ARTIFACT_ROLES
     if set(value.output_bytes_by_role) != set(roles) or type(doc['outputs']) is not list:
         raise ValueError('invalid N1 roles')
     expected_outputs = [dict(role=role,sha256=_hash(value.output_bytes_by_role[role]),
@@ -296,7 +344,7 @@ def _inspect_n1_envelope(value):
             raise ValueError('invalid byte length')
     if doc['outputs'] != expected_outputs:
         raise ValueError('output bindings mismatch')
-    artifacts = {role:parse_canonical_json(raw,label=role) for role,raw in value.output_bytes_by_role.items()}
+    artifacts = {role:parse_proposed_artifact(role,raw) for role,raw in value.output_bytes_by_role.items()}
     snapshot = parse_assessment_snapshot(value.output_bytes_by_role['attempt_journal'])
     if (type(doc['journal_revision']) is not int or doc['journal_revision'] != snapshot['campaign_revision']
             or snapshot['validity'] != 'VALID'):
