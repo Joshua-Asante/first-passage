@@ -76,7 +76,9 @@ def build_real_bundle(root, *, repo, release, private, keys, attempt_id, idle=Fa
         # These signed synthetic strategy programs cause actual worker faults.
         # They never manufacture PathOutcome, capture or qualification evidence.
         effects={
-            'stop':'os.kill(os.getpid(), signal.SIGSTOP)',
+            # PID-namespace init ignores self-SIGSTOP. Hold at the marked
+            # callback until the Linux administrator stops the exact container.
+            'stop':'time.sleep(120)',
             'exit_zero':'os._exit(0)',
             'cpu':'end=time.process_time()+2\n    while time.process_time()<end: pass',
             'wall':'time.sleep(2)',

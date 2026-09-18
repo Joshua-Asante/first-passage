@@ -77,19 +77,30 @@ def test_real_running_worker_and_supervisor_death_never_redraw(real_boundary):
     boundary=real_boundary
     bundle=boundary.prepare(idle=True,fault='stop'); attempt=bundle['attempt_id']
     boundary.submit(bundle); running=boundary.wait(attempt,states=('RUNNING',))
+    from tools.qualification_verification import host
+    signal_sent=False
     deadline=time.monotonic()+60
     while time.monotonic()<deadline:
         inspection=boundary.inspect(running['container_id'])
         pid=inspection['State']['Pid']
         if pid:
+            if not signal_sent:
+                try: log=boundary.worker_log(running['execution_id'])
+                except FileNotFoundError: log=b''
+                if b'TEST_ONLY worker fault: stop\n' in log:
+                    assert inspection['Id']==running['container_id']
+                    host.run_owned(boundary.group,[boundary.manifest['host_config']['docker'],
+                        '--host','unix:///var/run/docker.sock','kill','--signal=SIGSTOP',
+                        running['container_id']],interpreter=boundary.python)
+                    signal_sent=True
             process=Path('/proc')/str(pid)/'status'
             state=next(line for line in process.read_text().splitlines() if line.startswith('State:'))
-            if state.split()[1]=='T': break
+            if signal_sent and state.split()[1]=='T': break
         time.sleep(.05)
     else: pytest.fail('signed synthetic worker did not reach its actual SIGSTOP checkpoint')
     assert b'TEST_ONLY worker fault: stop\n' in boundary.worker_log(running['execution_id'])
-    from tools.qualification_verification import host
-    host.save(boundary.output/(attempt+'-stopped-worker.json'),dict(container=inspection,pid=pid,process_state=state))
+    host.save(boundary.output/(attempt+'-stopped-worker.json'),dict(container=inspection,pid=pid,
+        process_state=state,signal='SIGSTOP',sender_uid=os.geteuid(),execution_id=running['execution_id']))
     boundary.service.kill(); boundary.service.wait(timeout=15)
     boundary.restart()
     stopped=boundary.wait(attempt,states=('IN_DOUBT',))
