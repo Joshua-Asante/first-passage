@@ -343,8 +343,8 @@
   },
   {
     "id": "QEXEC-01",
-    "requirement": "Real losing and continuing N1 reach protected capture and G5; public fabrication cannot authorize completion.",
-    "owner": "execution/service.py",
+    "requirement": "Real losing and continuing N1 reach protected capture and G5; public fabrication cannot authorize completion. Retained worker measurements include payload construction, validation and framing; final serialization remains budget-enforced.",
+    "owner": "execution/service.py and execution/worker.py",
     "producer": "protected supervisor launch/capture and execution attestation",
     "consumer": "G5 assessment and result authentication",
     "test_nodeids": [
@@ -356,7 +356,13 @@
       "tests/integration/qualification_boundary/test_acceptance.py::test_real_client_uid_cannot_enter_g5_acceptance[STORE_ARTIFACT-fields0]",
       "tests/integration/qualification_boundary/test_acceptance.py::test_real_client_uid_cannot_enter_g5_acceptance[STORE_RESULT-fields1]",
       "tests/integration/qualification_boundary/test_acceptance.py::test_real_n1_retains_exact_adjudicated_capture[False-PARTIAL-NONE]",
-      "tests/integration/qualification_boundary/test_acceptance.py::test_real_n1_retains_exact_adjudicated_capture[True-COMPLETE-FAIL]"
+      "tests/integration/qualification_boundary/test_acceptance.py::test_real_n1_retains_exact_adjudicated_capture[True-COMPLETE-FAIL]",
+      "tests/ops/qualification/execution/test_worker.py::test_final_observation_serialization_overrun_cannot_return_result[cpu]",
+      "tests/ops/qualification/execution/test_worker.py::test_final_observation_serialization_overrun_cannot_return_result[memory]",
+      "tests/ops/qualification/execution/test_worker.py::test_final_observation_serialization_overrun_cannot_return_result[wall]",
+      "tests/ops/qualification/execution/test_worker.py::test_retained_observations_include_completed_payload_work[encode_frame]",
+      "tests/ops/qualification/execution/test_worker.py::test_retained_observations_include_completed_payload_work[encode_worker_result]",
+      "tests/ops/qualification/execution/test_worker.py::test_retained_observations_include_completed_payload_work[parse_worker_result]"
     ],
     "evidence_kind": "executed pytest JUnit; real protected Linux process/UID/container evidence where integration nodes are named"
   },

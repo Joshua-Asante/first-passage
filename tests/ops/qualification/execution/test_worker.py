@@ -73,3 +73,54 @@ def test_capture_parser_rejects_boolean_path_indices(tmp_path,monkeypatch):
         with pytest.raises(ValueError,match='path inventory'):
             parse_worker_result(encoded(doc),context=context,execution_id='worker-fixture',plan_bytes=plan)
         doc['path_inventory']['records'][index]['path_index'] = index
+
+
+@pytest.mark.parametrize('phase', ['encode_worker_result','parse_worker_result','encode_frame'])
+def test_retained_observations_include_completed_payload_work(tmp_path,monkeypatch,phase):
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    budget = importlib.import_module('c1_rail.qualification.execution.budget')
+    monkeypatch.setattr(worker,'utc_now',lambda:NOW)
+    case = build_bundle(tmp_path/'bundle',idle=True)
+    context = stage_input(tmp_path,case)
+    meter = dict(wall=0,cpu=0,memory=1024)
+    monkeypatch.setattr(budget,'perf_counter_ns',lambda:meter['wall'])
+    monkeypatch.setattr(budget,'process_time_ns',lambda:meter['cpu'])
+    monkeypatch.setattr(budget,'peak_memory_bytes',lambda:meter['memory'])
+    original = getattr(worker,phase)
+    def measured_payload_work(*args,**kwargs):
+        result = original(*args,**kwargs)
+        meter.update(wall=123456,cpu=654321,memory=32768)
+        return result
+    monkeypatch.setattr(worker,phase,measured_payload_work)
+    raw = decode_frame(worker.run_worker(tmp_path,execution_id='worker-fixture'),limit=context.profile.output_byte_limit)
+    assert json.loads(raw)['observations'] == dict(worker_compute_wall_ns=123456,
+        worker_cpu_ns=654321,worker_peak_memory_bytes=32768)
+
+
+@pytest.mark.parametrize('metric', ['wall','cpu','memory'])
+def test_final_observation_serialization_overrun_cannot_return_result(tmp_path,monkeypatch,metric):
+    from c1_rail.qualification.runner import NeedsContext
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    budget = importlib.import_module('c1_rail.qualification.execution.budget')
+    monkeypatch.setattr(worker,'utc_now',lambda:NOW)
+    case = build_bundle(tmp_path/'bundle',idle=True)
+    context = stage_input(tmp_path,case)
+    meter = dict(wall=0,cpu=0,memory=1024)
+    monkeypatch.setattr(budget,'perf_counter_ns',lambda:meter['wall'])
+    monkeypatch.setattr(budget,'process_time_ns',lambda:meter['cpu'])
+    monkeypatch.setattr(budget,'peak_memory_bytes',lambda:meter['memory'])
+    limits = dict(wall=context.contract.replay.budget.maximum_wall_seconds*1000000000,
+        cpu=context.contract.replay.budget.maximum_cpu_seconds*1000000000,
+        memory=context.contract.replay.budget.maximum_memory_bytes)
+    original = worker.encode_frame
+    calls = 0
+    def late_overrun(*args,**kwargs):
+        nonlocal calls
+        result = original(*args,**kwargs)
+        calls += 1
+        if calls == 2:
+            meter[metric] = limits[metric]+1
+        return result
+    monkeypatch.setattr(worker,'encode_frame',late_overrun)
+    with pytest.raises(NeedsContext,match='budget'):
+        worker.run_worker(tmp_path,execution_id='worker-fixture')

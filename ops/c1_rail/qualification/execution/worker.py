@@ -2,7 +2,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 
-from ..contract import parse_canonical_json
+from ..contract import canonical_json_bytes, parse_canonical_json
 from ..source_admission import admit_source
 from .admission import verify_bundle
 from .budget import BudgetGuard
@@ -42,10 +42,17 @@ def run_worker(input_dir: Path, *, execution_id: str) -> bytes:
     observations = budget.check_and_measure()
     observations.pop('remaining_wall_seconds')
     raw = encode_worker_result(context, execution_id, plan, run, observations,admitted=admitted)
-    parse_worker_result(raw, context=context, execution_id=execution_id, plan_bytes=plan)
+    captured = parse_worker_result(raw, context=context, execution_id=execution_id, plan_bytes=plan)
     frame = encode_frame(raw, limit=context.profile.output_byte_limit)
-    # Encoding, output validation and aggregation are included, even though the
-    # reported observation precedes the final envelope encoding by a few calls.
+    # Retain a real measurement after construction, validation and full framing.
+    # Release the provisional buffers before serializing the updated document.
+    del raw, frame
+    observations = budget.check_and_measure()
+    observations.pop('remaining_wall_seconds')
+    captured.document['observations'] = observations
+    frame = encode_frame(canonical_json_bytes(captured.document), limit=context.profile.output_byte_limit)
+    # Stamping the measurement cannot include its own serialization cost in the
+    # retained sample, but that final work must still satisfy every budget.
     budget.check_and_measure()
     return frame
 
