@@ -561,8 +561,6 @@ class LinuxCampaignRuntime:
         self._realize_payload_quota(enrollment, spec['payload']['CPUQuotaPerSecUSec'],
             remaining_wall_ns=remaining_wall_ns, budget_cpu_ns=work['limits']['cpu_ns'] - orchestration_cpu_ns)
 
-    PAYLOAD_REALIZE_SECONDS = 1
-
     def _realize_payload_quota(self, enrollment, quota_usec, *, remaining_wall_ns, budget_cpu_ns):
         """The payload slice's cpu.max must exist and equal the derived rate.
 
@@ -571,13 +569,21 @@ class LinuxCampaignRuntime:
         the caller's 10 s controller wall even after the 5 s busctl ceiling.
         """
         payload = _scope_path(self.parent, enrollment['scopes']['payload_slice'])
-        deadline = time.monotonic() + self.PAYLOAD_REALIZE_SECONDS
-        while not (payload / 'cpu.max').exists():
-            if time.monotonic() >= deadline:
-                raise ValueError('payload slice CPU quota was not realized: ' + str(payload))
-            time.sleep(0.02)
-        return verify_payload_cpu_max(_read_counter(payload / 'cpu.max'), quota_usec=quota_usec,
+        return verify_payload_cpu_max(_realized_payload_cpu_max(payload), quota_usec=quota_usec,
             remaining_wall_ns=remaining_wall_ns, budget_cpu_ns=budget_cpu_ns)
+
+
+PAYLOAD_REALIZE_SECONDS = 1
+
+
+def _realized_payload_cpu_max(payload):
+    """Bounded wait for the manager to realize the payload slice, then its cpu.max bytes."""
+    deadline = time.monotonic() + PAYLOAD_REALIZE_SECONDS
+    while not (payload / 'cpu.max').exists():
+        if time.monotonic() >= deadline:
+            raise ValueError('payload slice CPU quota was not realized: ' + str(payload))
+        time.sleep(0.02)
+    return _read_counter(payload / 'cpu.max')
 
     def observation(self, state, work, enrollment):
         # A live/unavailable payload is never represented by a final CPU sample.
@@ -960,7 +966,7 @@ def _verify_payload_quota(runtime, enrollment, state, work, deadline_ns):
     remaining_wall_ns = deadline_ns - clock(observe_campaign_clock())['boottime_ns']
     if remaining_wall_ns <= 0:
         raise ValueError('original deadline reached before payload start')
-    return verify_payload_cpu_max(_read_counter(payload / 'cpu.max'), remaining_wall_ns=remaining_wall_ns,
+    return verify_payload_cpu_max(_realized_payload_cpu_max(payload), remaining_wall_ns=remaining_wall_ns,
         budget_cpu_ns=work['limits']['cpu_ns'] - state['profile']['orchestration_cpu_ns'][work['phase']])
 
 
@@ -985,7 +991,10 @@ def _resume_ready(pid):
     from this point on is queued by the kernel, never dropped by the container
     init's default disposition."""
     import signal
-    status = Path('/proc/' + str(pid) + '/status').read_text()
+    try:
+        status = Path('/proc/' + str(pid) + '/status').read_text()
+    except FileNotFoundError:
+        return False  # Gone since the inspection; the next poll sees the exit.
     line = next((line for line in status.splitlines() if line.startswith('SigBlk:')), None)
     if line is None:
         raise ValueError('process signal mask unavailable')
