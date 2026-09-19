@@ -67,9 +67,7 @@ class Boundary:
             # The installer's own diagnostics are the only record of a refusal;
             # run_owned captures them, so surface the tail in the test report.
             raise AssertionError('fixture_install '+operation+' '+' '.join(arguments)+' exited '+str(exc.returncode)
-                +'
---- installer stderr (tail) ---
-'+(exc.stderr or '')[-6000:]) from exc
+                +'\n--- installer stderr (tail) ---\n'+(exc.stderr or '')[-6000:]) from exc
         return json.loads(result)
 
     def identity(self,role,command):
