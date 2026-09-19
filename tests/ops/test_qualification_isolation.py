@@ -52,14 +52,20 @@ def test_qualification_suite_in_clean_process(request, record_property):
     failure = None
     # Generated source fixtures must stay outside the checkout: source gates
     # deliberately inspect Python files even when Git ignores their directory.
+    # The child is a serial run of the whole qualification suite, so its
+    # timeout is a hang bound, not a performance gate. CI measured 1,079 s
+    # (2026-09-19 13:21) and 1,538 s (16:20, same tests, slower runner) under
+    # the former 1,800 s cap; runner variance alone must not fail this test.
+    child_timeout = 3600
     with tempfile.TemporaryDirectory(prefix="fp-qualification-") as scratch, output.open(
             "w", encoding="utf-8") as stream:
         command.append("--basetemp=" + str(Path(scratch) / "pytest"))
         record_property("qualification_child_command", repr(command))
+        record_property("qualification_child_timeout_s", child_timeout)
         try:
             completed = subprocess.run(
                 command, cwd=repository, env=environment, stdout=stream,
-                stderr=subprocess.STDOUT, timeout=1800, check=False)
+                stderr=subprocess.STDOUT, timeout=child_timeout, check=False)
             if completed.returncode:
                 failure = f"child pytest exited {completed.returncode}"
         except (OSError, subprocess.TimeoutExpired) as exc:

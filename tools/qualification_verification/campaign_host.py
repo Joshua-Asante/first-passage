@@ -4,8 +4,11 @@ import json
 from pathlib import Path
 import subprocess
 import time
-from . import host
-from .container_ownership import campaign_host_slice as _scope, campaign_scopes
+from tools.qualification_verification import host
+from tools.qualification_verification.container_ownership import (
+    campaign_host_slice as _scope,
+    campaign_scopes,
+)
 
 POLKIT_RULES = Path('/etc/polkit-1/rules.d')
 CGROUP_ROOT = Path('/sys/fs/cgroup')
