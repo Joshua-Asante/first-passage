@@ -492,3 +492,23 @@ def test_work_named_controller_is_not_mistaken_for_a_control_slot(tmp_path, monk
         assert not store._recovery_pending(store._budget(c, ATTEMPT))
     assert submit(service, schedule(work_id='controller', role='probe_seal', probe='controller_cpu'))['historical'] is True
     ExecutionStore(store.store.path)
+
+
+def test_private_route_refuses_a_queued_cancellation_before_construction(tmp_path, monkeypatch):
+    """S2-G2 barrier at the warm route: nothing is funded, constructed or launched while an operator body is queued."""
+    store = enrolled(tmp_path)
+    service = warm(store, monkeypatch)
+    cancel = encoded(dict(schema='qualification_campaign_request/v2', operation='VOID', attempt_id=ATTEMPT,
+                          reason='stop', operator_approval_bytes='eA=='))
+    store.queue_diagnostic_void(cancel)
+    with pytest.raises(ValueError, match='cancellation pending'):
+        submit(service)
+    assert Runtime.constructed == [] and service.timers.armed == []
+    with store.store.transaction() as c:
+        assert c.execute('SELECT count(*) FROM full_campaign_bootstraps').fetchone()[0] == 0
+        assert not any(w['work_id'] == 'worker' for w in store._budget(c, ATTEMPT)['works'])
+    store.void(cancel, now=NOW)
+    refused = submit(service)
+    assert refused['schema'] == 'qualification_campaign_scheduler_status/v1' and refused['validity'] == 'VOID'
+    assert Runtime.constructed == []
+    ExecutionStore(store.store.path)
