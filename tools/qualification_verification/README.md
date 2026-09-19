@@ -162,6 +162,13 @@ host is never reused. The `Qualification S2 supervision` workflow runs it on
 `workflow_dispatch` or on pull requests touching the qualification surface; its
 record is diagnostic evidence for the coordinator, not an acceptance check.
 
+The polkit rule the S2 installer writes authorizes qexec for
+`org.freedesktop.systemd1.manage-units` when the action carries no `unit`
+detail (systemd's `StartTransientUnit` check passes none) or when the unit name
+carries this run's slice prefix. A transient start therefore cannot be bound to
+the prefix by polkit; this stays inside the recorded trust model, under which
+qexec is already root-equivalent through the Docker daemon.
+
 ```bash
 sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python   scripts/qualification_boundary_verification.py --s2 --manifest "$manifest"
 ```

@@ -71,9 +71,16 @@ def install(root, manifest, profile_bytes):
         raise ValueError('owned host identity differs')
     scope = _scope(run_id)
     prefix = scope[:-6]
+    # StartTransientUnit is authorized by systemd's generic manage-units check
+    # with no "unit" detail (dbus-manager.c), so the lookup is undefined there
+    # and a dereference makes polkit skip the rule; unit-scoped actions
+    # (start/stop/kill of an existing unit) keep the prefix bound. qexec is
+    # already root-equivalent under the recorded trust model (README).
     rule = ('polkit.addRule(function(action, subject) {\n'
-        ' if (action.id == "org.freedesktop.systemd1.manage-units" && subject.user == "qexec" &&\n'
-        '     action.lookup("unit").indexOf("' + prefix + '") == 0) return polkit.Result.YES;\n'
+        ' if (action.id != "org.freedesktop.systemd1.manage-units" || subject.user != "qexec") return polkit.Result.NOT_HANDLED;\n'
+        ' var unit = action.lookup("unit");\n'
+        ' if (unit === undefined || unit.indexOf("' + prefix + '") == 0) return polkit.Result.YES;\n'
+        ' return polkit.Result.NOT_HANDLED;\n'
         '});\n').encode()
     path = POLKIT_RULES / ('49-' + prefix + '.rules')
     enrollment = dict(schema='qualification_campaign_host/v1', host_run_id=run_id, scope=scope,

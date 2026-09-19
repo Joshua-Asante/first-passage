@@ -63,7 +63,11 @@ def test_enrollment_uses_only_manager_properties_and_leaves_oom_group_to_the_man
     assert saved == {str(campaign_host.enrollment_path(root)): enrollment}
     assert campaign_host.enrollment_path(root) == root / 'code' / 'qualification-installation' / 'campaign-host.json'
     assert enrollment['memory_bytes'] == 256000000 and enrollment['scope'].endswith('.slice')
-    assert (tmp_path / 'rules.d' / ('49-' + enrollment['scope'][:-6] + '.rules')).read_bytes().startswith(b'polkit.addRule')
+    rule = (tmp_path / 'rules.d' / ('49-' + enrollment['scope'][:-6] + '.rules')).read_text()
+    assert rule.startswith('polkit.addRule')
+    # StartTransientUnit carries no "unit" detail: the rule must not dereference it.
+    assert 'unit === undefined' in rule and 'indexOf("' + enrollment['scope'][:-6] + '")' in rule
+    assert 'subject.user != "qexec"' in rule and 'action.lookup("unit").indexOf' not in rule
 
 
 def test_manager_refusal_surfaces_busctl_stderr(tmp_path, monkeypatch):
