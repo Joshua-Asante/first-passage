@@ -108,6 +108,7 @@ def test_guardian_start_command_ends_option_parsing_before_dash_prefixed_values(
     assert all(not item.startswith('-') for item in CAMPAIGN_BUS_START[CAMPAIGN_BUS_START.index('--') + 1:])
     scopes = campaign_scopes('host1', 'attempt-1', 'work-1')
     spec = guardian_unit_spec(scopes, attempt_id='attempt-1', work_id='work-1', code_root='/opt/qualification',
-        interpreter='/opt/ops/bin/python', uid=61001, orchestration_cpu_ns=20_000_000_000, remaining_wall_ns=20_000_000_000)
+        interpreter='/opt/ops/bin/python', uid=61001, orchestration_cpu_ns=20_000_000_000, remaining_wall_ns=20_000_000_000,
+        cpu_ns=120_000_000_000, deadline_boottime_ns=1_000_000_000_000)
     arguments = manager_start_arguments(scopes, spec)
     assert {'-I', '--attempt', '--work'} <= set(arguments)

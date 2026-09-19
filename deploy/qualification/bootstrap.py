@@ -16,6 +16,47 @@ if len(sys.argv) < 2 or sys.argv[1] not in ('worker', 'supervisor', 'g5', 'campa
     raise SystemExit('fixed process role required')
 role = sys.argv.pop(1)
 sys.dont_write_bytecode = True
+if role == 'campaign_guardian':
+    # The original absolute BOOTTIME deadline is enforced by a kernel SIGKILL
+    # timer from here, before any campaign import or construction; the guardian
+    # later re-derives the same instant from its durable reservation and refuses
+    # a differing argv. An already-past absolute timer fires at once, so queued
+    # or late starts and expired work need no further path. Standard library and
+    # ctypes only; the layout is the supported x86_64 ABI.
+    import ctypes
+    import platform
+    import signal
+    import time
+    if platform.machine() != 'x86_64':
+        raise SystemExit('supported Linux x86_64 timer ABI required')
+    try:
+        deadline = sys.argv[sys.argv.index('--deadline-boottime-ns') + 1]
+    except (ValueError, IndexError):
+        raise SystemExit('fixed guardian deadline argument required') from None
+    if not deadline.isascii() or not deadline.isdigit() or int(deadline) <= 0:
+        raise SystemExit('fixed guardian deadline argument required')
+    deadline = int(deadline)
+
+    class Event(ctypes.Structure):
+        _fields_ = [('value', ctypes.c_void_p), ('signo', ctypes.c_int),
+                    ('notify', ctypes.c_int), ('padding', ctypes.c_byte * 48)]
+
+    class Timespec(ctypes.Structure):
+        _fields_ = [('seconds', ctypes.c_long), ('nanoseconds', ctypes.c_long)]
+
+    class TimerSpec(ctypes.Structure):
+        _fields_ = [('interval', Timespec), ('value', Timespec)]
+    libc = ctypes.CDLL('libc.so.6', use_errno=True)
+    timer = ctypes.c_void_p()
+    event = Event(None, signal.SIGKILL, 0)
+    specification = TimerSpec(Timespec(0, 0), Timespec(*divmod(deadline, 10**9)))
+    if libc.timer_create(time.CLOCK_BOOTTIME, ctypes.byref(event), ctypes.byref(timer)):
+        raise SystemExit('guardian deadline timer_create failed: ' + str(ctypes.get_errno()))
+    if libc.timer_settime(timer, 1, ctypes.byref(specification), None):
+        raise SystemExit('guardian absolute deadline failed: ' + str(ctypes.get_errno()))
+    if time.clock_gettime_ns(time.CLOCK_BOOTTIME) >= deadline:
+        # Armed anyway: the kernel delivers an elapsed absolute timer immediately.
+        raise SystemExit('original deadline passed before guardian bootstrap')
 sys.path[:0] = [str(ROOT / part) for part in ('ops', 'core', 'lab', 'governance', '')]
 if role == 'campaign_control':
     # This private child has no independent authority. Close the parent-death
