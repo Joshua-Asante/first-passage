@@ -26,10 +26,10 @@ CREATE TABLE IF NOT EXISTS full_campaign_objects (
 '''
 
 
-from .campaign_funding import FundingStore, SCHEMA as FUNDING_SCHEMA
+from .campaign_funding import FundingStoreMixin, SCHEMA as FUNDING_SCHEMA
 
 
-class CampaignStore(FundingStore):
+class CampaignStore(FundingStoreMixin):
     def __init__(self, store):
         self.store = store
 
