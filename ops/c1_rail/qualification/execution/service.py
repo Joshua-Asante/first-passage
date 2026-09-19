@@ -117,16 +117,21 @@ class ExecutionService:
     def _context(self, bundle_digest, *, at):
         context = verify_bundle(self.root / 'bundles' / bundle_digest, self.release, self.keys(), at)
         if context.bundle_sha256 != bundle_digest or context.domain.authority_class != 'TEST_ONLY':
-            raise ValueError('N1_ONLY release forbids production execution or substituted bundle')
+            raise ValueError('protected release forbids production execution or substituted bundle')
         return context
 
     def handle_request(self, peer_uid, request_bytes):
+        wire = parse_canonical_json(request_bytes, label='request')
+        if type(wire) is dict and 'schema' in wire:
+            return self._campaign_request(peer_uid, request_bytes)
         request = parse_request(request_bytes)
         operation, attempt = request['operation'], request['attempt_id']
         role = self.roles.get(peer_uid)
         if not permitted(role, operation):
             raise ValueError('PEER_NOT_AUTHORIZED')
         if operation == 'SUBMIT_N1':
+            if parse_canonical_json(self.release, label='release')['capability'] != 'N1_ONLY':
+                raise ValueError('N1 submit requires N1_ONLY release')
             with self.dispatch_lock:
                 with self.store.transaction():
                     admitted_at = now()
@@ -203,6 +208,65 @@ class ExecutionService:
                 self._stop_recovering(status['container_id'],execution_id)
             return receipt
         raise ValueError('UNKNOWN_OPERATION')
+
+    def _campaign_request(self, peer_uid, raw):
+        from .campaign_protocol import parse_campaign_request, permitted as campaign_permitted
+        from .campaign_store import CampaignStore
+        from .release_schema import parse_release
+        from .plan import derive_campaign_plan_from_context
+        request = parse_campaign_request(raw)
+        operation, attempt = request['operation'], request['attempt_id']
+        if not campaign_permitted(self.roles.get(peer_uid), operation):
+            raise ValueError('PEER_NOT_AUTHORIZED')
+        release = parse_release(self.release)
+        if release['capability'] != 'FULL_E1':
+            raise ValueError('FULL_E1 installed release required')
+        campaigns = CampaignStore(self.store)
+        with self.store.transaction():
+            if operation == 'SUBMIT_E1':
+                status = campaigns.retry(raw)
+                if status is None:
+                    context = self._context(request['bundle_sha256'], at=now())
+                    if context.attempt_id != attempt:
+                        raise ValueError('approved campaign attempt differs')
+                    plan = derive_campaign_plan_from_context(context)
+                    # Plan materialization takes time. Revalidate the retained exact
+                    # inputs at commit time; a fresh staging read cannot replace them.
+                    from .admission import verify_retained_bundle
+                    admitted_at = now()
+                    context = verify_retained_bundle(context.retained_bundle_index,
+                        context.retained_bytes, self.release, self.keys(), admitted_at)
+                    status = campaigns.admit(raw, context, plan, now=admitted_at)
+            elif operation == 'STATUS':
+                status = campaigns.status(attempt)
+            elif operation == 'FETCH_PLAN_CHUNK':
+                return campaigns.chunk(request)
+            elif operation == 'VOID':
+                retry = campaigns.void_retry(raw)
+                if retry is not None:
+                    return retry
+                objects = campaigns.objects(attempt)
+                domain = parse_canonical_json(objects['context_trust_domain'], label='original enrollment')
+                contract_sha = campaigns.status(attempt)['receipt']['contract_sha256']
+                keys = self.keys()
+                approval = verify_detached_approval(decode_base64(request['operator_approval_bytes']),
+                    trusted_keys=keys, expected_scope='VOID_QUALIFICATION_ATTEMPT',
+                    expected_subject_sha256=sha256(encoded(dict(attempt_id=attempt,
+                        reason=request['reason'], contract_sha256=contract_sha))),
+                    expected_contract_sha256=contract_sha, now=now(), allow_test_authority=True)
+                if (approval.authority_class != 'TEST_ONLY' or approval.key_id not in domain['freeze_key_ids']
+                        or sha256(keys[approval.key_id].public_key) != domain['trusted_key_sha256'][approval.key_id]):
+                    raise ValueError('VOID authority is not enrolled')
+                return campaigns.void(raw, now=now())
+            eligible = False
+            if status['validity'] == 'VALID':
+                try:
+                    campaigns.context(attempt, self.release, self.keys(), now=now())
+                    eligible = True
+                except (ValueError, KeyError, OSError):
+                    pass
+            status['current_policy_eligible'] = eligible
+            return encoded(status)
 
     def _eligible(self, execution_id):
         try:

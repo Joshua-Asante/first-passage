@@ -71,7 +71,7 @@ second queue here. Registry backfill debt is enumerated by
 Owners retain canonical criteria; rows below are pointers. Delete discharged
 rows rather than retaining completion narratives. A gated row does not grant GO.
 
-### Weekly — recurring (rolling; next deadline **2026-09-18**, bucket 09-14→09-18)
+### Weekly — recurring (rolling; next deadline **2026-09-25**, bucket 09-21→09-25)
 
 - **Operator-placed account-preservation trade:** at least one per Mon–Fri week.
   No agent places it; the rail stays disarmed. A missed venue week risks account
@@ -81,21 +81,17 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   the operator confirmed placement on Thursday, 2026-09-10, and reported that
   it had already been recorded with Claude. This is the operator's attestation;
   the private compliance record is unavailable in this checkout and was not
-  independently verified.
-- **Week 09-14→09-18 — MISSED, not discharged:** on 2026-09-19 the operator
-  confirmed that **no qualifying account-preservation trade was placed** in that
-  bucket. The recurring deadline above is therefore **deliberately not advanced**:
-  STATE's own rule is to advance only *after coverage is attested*, and coverage
-  was not attested — it was missed. `state-currency` stays FAIL as the standing
-  signal, which blocks merges repo-wide by design; do not green it by rolling the
-  date. A missed venue week risks account deletion, so escalation, any remedy, and
-  the decision to resume the rolling cadence are the operator's alone. No agent
-  places the trade.
+  independently verified. On 2026-09-19, the operator confirmed that no
+  preservation trade was placed during 09-14→09-18 and reported that the
+  account remains active. That week is recorded as missed, not covered;
+  active status is operator-reported and not independently verified.
+  Week 09-21→09-25 is open; the next deadline is 09-25.
 - **Earlier record still owed:** week 08-31→09-04 was operator-attested on
   09-04 and restated on 09-05; the exact trade day remains unresolved between
   09-02/09-03, and its private ledger row remains unverified.
   [Campaign record §15](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#15-d20--the-acceleration-ruling-2026-09-04-deploy-at-the-phase-3-commit)
-  retains that history. Advance the recurring deadline after coverage is
+  retains that history. Preserve missed-week records when advancing the
+  recurring schedule; record coverage only when it is
   attested; `daily-repo-truth-sync` reads this board's dated obligations.
 
 ### Monthly — recurring (rolling; next deadline **2026-09-21**)

@@ -16,7 +16,8 @@ from test_profile import document as profile_document
 from c1_rail.qualification.policy_sources import build_qualification_policy
 
 
-def build_bundle(root, *, idle=False, geometry_bytes=None):
+def build_bundle(root, *, idle=False, geometry_bytes=None, workload=None,
+                 attempt_id=None, root_rng_namespace=None, capability='N1_ONLY'):
     policy_raw = build_qualification_policy()
     fixture = build_artifacts(root, idle=idle).with_runtime_artifacts(root)
     if geometry_bytes is not None:
@@ -30,6 +31,9 @@ def build_bundle(root, *, idle=False, geometry_bytes=None):
     keys['test-execution'] = TrustedApprovalKey('test-execution', private['test-execution'].public_key().public_bytes(
         serialization.Encoding.Raw, serialization.PublicFormat.Raw), 'TEST_ONLY')
     profile = profile_document()
+    if capability == 'FULL_E1':
+        profile.update(schema='qualification_execution_profile/v2', protocol_version=2,
+            capability='FULL_E1', supported_checkpoints=[], dispatch_enabled=False)
     ordinary = {row.role: dict(module=row.name, path=row.path, sha256=digest(row.source_bytes))
                 for row in fixture.ordinary_modules}
     sources = {row['module']: dict(path=row['path'], sha256=row['sha256']) for row in ordinary.values()}
@@ -49,10 +53,16 @@ def build_bundle(root, *, idle=False, geometry_bytes=None):
         worker_entrypoint=['/opt/ops/bin/python', '-I', '/opt/qualification/bootstrap.py', 'worker'],
         port_roles=['aegis_runtime_port', 'orb_runtime_port', 'striker_runtime_port', 'vanguard_runtime_port'],
         key_roles=key_roles, trusted_key_sha256={key: digest(value.public_key) for key, value in keys.items()})
+    if capability == 'FULL_E1':
+        release_doc.update(schema='qualification_execution_release/v2', capability='FULL_E1',
+            dispatch_enabled=False)
     release = encoded(release_doc)
     fixture = replace(fixture, payloads=dict(fixture.payloads, execution_release=release,qualification_policy=policy_raw),
                       paths=dict(fixture.paths, execution_release='authority/release.json',qualification_policy='authority/policy.json'))
+    from c1_rail.qualification.trust_domain import _workload_dict
+    workload = old.workload_policy if workload is None else workload
     doc = json.loads(old.canonical_bytes)
+    doc['workload_policy'] = _workload_dict(workload)
     doc.update(schema='qualification_trust_domain/v2', execution_key_ids=['test-execution'],
         policy_sha256=digest(policy_raw),
         execution_service_id='test-service', execution_release_sha256=digest(release),
@@ -61,7 +71,7 @@ def build_bundle(root, *, idle=False, geometry_bytes=None):
     policy = _composition_test_trust_policy(accepted_historical_pins=old.accepted_historical_pins,
         required_artifact_roles=tuple(sorted(fixture.payloads)), runtime_code_roles=old.runtime_code_roles,
         port_runtime_pins=old.port_runtime_pins, effective_settings_sha256=old.effective_settings_sha256,
-        workload_policy=old.workload_policy)
+        workload_policy=workload)
     domain_raw = encoded(doc)
     def approve(raw, scope, contract_sha256=None):
         return signed_approval(raw, private['test-freeze'], key_id='test-freeze', scope=scope,
@@ -73,13 +83,39 @@ def build_bundle(root, *, idle=False, geometry_bytes=None):
     contract_doc['policy_sha256'] = digest(policy_raw)
     contract_doc['result_plan'] = dict(policy_sha256=digest(policy_raw),
         adjudicator_closure_sha256=contract_doc['result_plan']['adjudicator_closure_sha256'])
+    # Variants still pass ordinary domain/contract signature validation below.
+    replay = contract_doc['replay']
+    if root_rng_namespace is not None:
+        replay['root_rng_namespace'] = root_rng_namespace
+    replay.update(horizon_sessions=workload.horizon_sessions,
+                  inner_block_sessions=workload.inner_block_sessions,
+                  outer_months=workload.outer_months)
+    for stage in replay['stages']:
+        counts = workload.stage_population_depths[stage['name']]
+        stage['population_counts'] = {pop: list(values) for pop, values in counts.items()}
+        stage['exact_depth'] = (1 if stage['name'] == 'LEGALITY' else
+            workload.part_a_paths_per_population_per_panel if stage['name'] == 'PART_A'
+            else next(iter(counts.values()))[0])
+        if stage['name'] == 'N1':
+            from decimal import Decimal
+            stage['max_failures_per_population'] = int(
+                stage['exact_depth'] * Decimal(replay['decision_rules']['failure_ceiling']))
+    for name in ('initial_panels', 'expanded_panels', 'paths_per_population_per_panel'):
+        replay['part_a'][name] = getattr(workload, 'part_a_' + name)
+    counts = workload.stage_population_depths
+    replay['budget'].update(
+        n1_paths=sum(values[0] for values in counts['N1'].values()),
+        n2_paths=sum(values[0] for stage in ('N2', 'PART_B') for values in counts[stage].values()),
+        n3_paths=sum(values[0] for values in counts['N3'].values()),
+        part_a_initial_paths=workload.part_a_initial_panels * workload.part_a_paths_per_population_per_panel,
+        part_a_expanded_paths=workload.part_a_expanded_panels * workload.part_a_paths_per_population_per_panel)
     contract_raw = encoded(contract_doc)
     freeze = approve(contract_raw, 'FREEZE_F1')
     observed = ObservedBindings({fixture.paths[r]: digest(b) for r, b in fixture.payloads.items()},
         {r: digest(b) for r, b in fixture.payloads.items()}, domain.effective_settings_sha256, 1)
     contract = validate_frozen_contract(contract_raw, freeze, keys, observed, now=NOW, trust_domain=domain,
         qualification_policy_bytes=policy_raw)
-    attempt_id = 'synthetic-idle' if idle else 'synthetic-trading'
+    attempt_id = attempt_id or ('synthetic-idle' if idle else 'synthetic-trading')
     extra = dict(contract=contract_raw, freeze_approval=freeze, trust_domain=domain_raw,
                  domain_approval=domain_approval, release_approval=approve(release, 'APPROVE_EXECUTION_RELEASE'),
                  exact_depth_approval=approve(exact_depth_subject(contract, attempt_id=attempt_id),
