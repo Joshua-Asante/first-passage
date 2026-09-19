@@ -18,6 +18,7 @@ from ..evidence import parse_proposed_artifact, InspectedEvidence, compare_n1_ev
 from ..policy import N1_ARTIFACT_ROLES
 from .files import archive_bytes, read_regular
 from .campaign_store import CampaignStore, SCHEMA as CAMPAIGN_SCHEMA, BUDGET_SCHEMA
+from .campaign_funding import SCHEMA as FUNDING_SCHEMA
 from .protocol import ExecutionRecord, ValidatedEvidence, digest, fields, identity, parse_request, sha256
 
 _SCHEMA = '''
@@ -97,7 +98,7 @@ class ExecutionStore:
         connection = self._connect()
         try:
             version = connection.execute('PRAGMA user_version').fetchone()[0]
-            if version not in (0, 4, 5, 6):
+            if version not in (0, 4, 5, 6, 7):
                 raise ValueError('unsupported journal schema; no in-flight migration')
             if version == 0:
                 if connection.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchone():
@@ -113,7 +114,7 @@ class ExecutionStore:
             reference = sqlite3.connect(':memory:')
             try:
                 version = connection.execute('PRAGMA user_version').fetchone()[0]
-                reference.executescript(_SCHEMA + (CAMPAIGN_SCHEMA if version >= 5 else '') + (BUDGET_SCHEMA if version == 6 else ''))
+                reference.executescript(_SCHEMA + (CAMPAIGN_SCHEMA if version >= 5 else '') + (BUDGET_SCHEMA if version >= 6 else '') + (FUNDING_SCHEMA if version == 7 else ''))
                 query = 'SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name'
                 expected = reference.execute(query).fetchall()
                 actual = [tuple(row) for row in connection.execute(query)]
@@ -134,7 +135,7 @@ class ExecutionStore:
         reference = sqlite3.connect(':memory:')
         try:
             reference.executescript(_SCHEMA + (CAMPAIGN_SCHEMA if version >= 5 else '') +
-                                    (BUDGET_SCHEMA if version == 6 else ''))
+                                    (BUDGET_SCHEMA if version >= 6 else '') + (FUNDING_SCHEMA if version == 7 else ''))
             query = 'SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name'
             if [tuple(row) for row in connection.execute(query)] != reference.execute(query).fetchall():
                 raise ValueError('unsupported journal schema layout; no migration')

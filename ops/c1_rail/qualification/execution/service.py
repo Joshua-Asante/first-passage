@@ -488,6 +488,11 @@ class ExecutionService:
                 exists = connection.execute("SELECT 1 FROM sqlite_master WHERE name='full_campaign_budgets'").fetchone()
                 attempts = [] if exists is None else [row[0] for row in connection.execute('SELECT attempt_id FROM full_campaign_budgets')]
             for attempt in attempts:
+                with self.store.transaction() as connection:
+                    funding = campaigns._funding(connection, attempt)
+                if funding is not None:
+                    self.recovery_issues[attempt + ':funding'] = ('FUNDING_PENDING' if funding['bootstrap_pending_work_id'] is not None or funding['terminal_overlay'] is not None else 'FUNDING_RUNTIME_NOT_ENABLED')
+                    continue  # R2a persistence cannot activate or resume a controller.
                 state = parse_canonical_json(campaigns.budget_snapshot(attempt), label='recovery budget')
                 if state['profile']['schema'] != 'qualification_campaign_budget_profile/v2':
                     continue  # Historical S1/dormant records gain no runtime ownership.

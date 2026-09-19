@@ -26,7 +26,10 @@ CREATE TABLE IF NOT EXISTS full_campaign_objects (
 '''
 
 
-class CampaignStore:
+from .campaign_funding import FundingStore, SCHEMA as FUNDING_SCHEMA
+
+
+class CampaignStore(FundingStore):
     def __init__(self, store):
         self.store = store
 
@@ -122,7 +125,7 @@ class CampaignStore:
         with self.store.transaction() as connection:
             state = self._budget(connection, attempt)
             self._work(state, work_id)
-            if state['profile']['schema'] != 'qualification_campaign_budget_profile/v2':
+            if state['profile']['schema'] not in ('qualification_campaign_budget_profile/v2', 'qualification_campaign_budget_profile/v3'):
                 raise ValueError('installed metered control slots required')
             spent = connection.execute('SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role=?', (attempt, role)).fetchone() is not None
             if spent:
@@ -144,7 +147,7 @@ class CampaignStore:
                     import secrets
                     token = secrets.token_bytes(32) if recovery_owner_token is None else recovery_owner_token
                     self._validate_recovery_token(token)
-                    state['schema'] = 'qualification_campaign_budget_snapshot/v4'
+                    state['schema'] = 'qualification_campaign_budget_snapshot/v5' if state['profile']['schema'] == 'qualification_campaign_budget_profile/v3' else 'qualification_campaign_budget_snapshot/v4'
                     state.setdefault('dispatches', [])
                     state.setdefault('recoveries', []).append(dict(work_id=work_id,
                         claim_sha256=sha256(raw), owner_sha256=sha256(token),
@@ -195,7 +198,7 @@ class CampaignStore:
             current, deadline = self._dispatch_clock(connection, state, work, clock_source)
             refused = state['state'] not in ('PROVISIONAL', 'BOUND')
             if not refused:
-                state['schema'] = 'qualification_campaign_budget_snapshot/v4'
+                state['schema'] = 'qualification_campaign_budget_snapshot/v5' if state['profile']['schema'] == 'qualification_campaign_budget_profile/v3' else 'qualification_campaign_budget_snapshot/v4'
                 state.setdefault('recoveries', [])
                 state.setdefault('dispatches', []).append(dict(work_id=work_id, role=role,
                     owner_sha256=owner, started_clock=current, acknowledged_clock=None))
@@ -232,7 +235,7 @@ class CampaignStore:
             if row is None or row['owner_sha256'] != sha256(token):
                 raise ValueError('dispatch owner differs')
             if row['acknowledged_clock'] is not None:
-                return self.budget_snapshot(attempt_id)
+                return self._negative_budget_response(connection, state)
             current = clock(clock_source())
             before = state['state']
             self._observe_clock(state, current)
@@ -279,7 +282,7 @@ class CampaignStore:
             if row['completion_bytes_b64'] is not None:
                 if self._raw(row['completion_bytes_b64']) != completion_bytes:
                     raise ValueError('immutable recovery completion differs')
-                return self.budget_snapshot(attempt_id)
+                return self._negative_budget_response(connection, state)
             if (row['observations_bytes_b64'] is None or doc['claim_sha256'] != row['claim_sha256']
                     or doc['observations_sha256'] != sha256(self._raw(row['observations_bytes_b64']))):
                 raise ValueError('committed recovery facts required')
@@ -335,7 +338,7 @@ class CampaignStore:
         attempt = request['attempt_id']
         with self.store.transaction() as connection:
             state = self._budget(connection, attempt)
-            if state['profile']['schema'] != 'qualification_campaign_budget_profile/v2' or len(raw) > state['profile']['record_byte_limit']:
+            if state['profile']['schema'] not in ('qualification_campaign_budget_profile/v2', 'qualification_campaign_budget_profile/v3') or len(raw) > state['profile']['record_byte_limit']:
                 raise ValueError('bounded metered cancellation required')
             prior = connection.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'", (attempt,)).fetchone()
             if prior is not None and bytes(prior[0]) != raw:
@@ -351,6 +354,15 @@ class CampaignStore:
         with self.store.transaction() as connection:
             row = self.row(attempt)
             saved = connection.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role='diagnostic_receipt'", (attempt,)).fetchone()
+            funding = self._funding(connection, attempt)
+            if funding is not None:
+                return dict(schema='qualification_campaign_status/v2',validity=funding['validity'],
+                    state='METERED_INSPECTION_REQUIRED' if funding['bootstrap_pending_work_id'] is not None or funding['terminal_overlay'] is not None else funding['state'],
+                    receipt=None if saved is None else parse_canonical_json(bytes(saved[0]),label='diagnostic receipt'),
+                    settled_cpu_ns=funding['settled_cpu_ns'],reserved_cpu_ns=funding['reserved_cpu_ns'],remaining_cpu_ns=funding['remaining_cpu_ns'],
+                    historical=True,current_policy_eligible=False,dispatch_enabled=False,
+                    void_pending=row['validity']=='VALID' and saved is None and connection.execute(
+                        "SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'",(attempt,)).fetchone() is not None)
             budget = connection.execute('SELECT substr(snapshot_bytes,1,?) FROM full_campaign_budgets WHERE attempt_id=?',
                                         (PLAN_CHUNK_LIMIT + 1, attempt)).fetchone()
             if budget is None:
@@ -396,6 +408,7 @@ class CampaignStore:
                 if prior['receipt']['plan_sha256'] != sha256(plan):
                     raise ValueError('immutable diagnostic plan differs')
                 return prior
+            self._funding_gate(connection, attempt)
             state = self._budget(connection, attempt)
             if (state['profile'] != context.release.document['campaign_budget_profile']
                     or state['profile']['installed_profile_sha256'] != context.profile.sha256):
@@ -466,6 +479,8 @@ class CampaignStore:
             row = self.row(request['attempt_id'])
             plan = connection.execute("SELECT sha256,byte_length,substr(body,?,?) AS chunk FROM full_campaign_objects WHERE attempt_id=? AND role='plan'",
                 (request['offset'] + 1, request['length'], request['attempt_id'])).fetchone()
+            if plan is None:
+                raise ValueError('campaign has no admitted plan')
             if plan['sha256'] != request['object_sha256']:
                 raise ValueError('campaign plan membership differs')
             total, offset = plan['byte_length'], request['offset']
@@ -498,7 +513,7 @@ class CampaignStore:
                 validity='VOID', request_sha256=sha256(request_bytes), voided_at_utc=instant(now)))
             connection.execute("UPDATE full_campaigns SET validity='VOID',void_request=?,void_receipt=? WHERE attempt_id=?",
                 (request_bytes, receipt, request['attempt_id']))
-            if connection.execute('PRAGMA user_version').fetchone()[0] == 6:
+            if connection.execute('PRAGMA user_version').fetchone()[0] in (6, 7):
                 exists = connection.execute('SELECT 1 FROM full_campaign_budgets WHERE attempt_id=?', (request['attempt_id'],)).fetchone()
                 if exists:
                     state = self._budget(connection, request['attempt_id'])
@@ -509,7 +524,7 @@ class CampaignStore:
         from .protocol import identity
         identity(attempt)
         from ..journal_snapshot import parse_campaign_budget_snapshot
-        if connection.execute('PRAGMA user_version').fetchone()[0] != 6:
+        if connection.execute('PRAGMA user_version').fetchone()[0] not in (6, 7):
             raise ValueError('no metered campaign')
         row = connection.execute('SELECT snapshot_bytes FROM full_campaign_budgets WHERE attempt_id=?', (attempt,)).fetchone()
         if row is None:
@@ -544,8 +559,12 @@ class CampaignStore:
         state.update(settled_cpu_ns=sum(settled), reserved_cpu_ns=sum(reserved),
                      remaining_cpu_ns=remaining_cpu(cap, settled, reserved))
 
-    def _save_budget(self, connection, state, kind, *, authority):
+    def _save_budget(self, connection, state, kind, *, authority, funding_transfer=None):
         from ..journal_snapshot import encode_campaign_budget_snapshot
+        if kind != 'BEGIN_ADMISSION':
+            self._validate_funding_predecessor(connection, state)
+        if funding_transfer is not None and kind != 'MATERIALIZE_BOOTSTRAP':
+            raise ValueError('funding transfer requires materialization')
         self._totals(state)
         state['validity'] = self.row(state['attempt_id'])['validity']
         previous = state['event_head']
@@ -564,11 +583,15 @@ class CampaignStore:
                            (state['attempt_id'], raw))
         connection.execute('INSERT INTO full_campaign_budget_events VALUES(?,?,?,?,?)',
                            (state['attempt_id'], state['accounting_revision'], body, previous, head))
-        return raw
+        self._project_funding(connection, state, enroll=kind == 'BEGIN_ADMISSION', transfer=funding_transfer)
+        return self._negative_budget_response(connection, state)
 
-    def _check_budget(self, state, expected_revision, *, allow_recovery_pending=False, dispatch_owner=None):
+    def _check_budget(self, state, expected_revision, *, allow_recovery_pending=False, dispatch_owner=None, negative_transition=False):
         from .campaign_budget import integer, dispatch_pending
         integer(expected_revision)
+        if not negative_transition:
+            with self.store.transaction() as connection:
+                self._funding_gate(connection, state['attempt_id'])
         if not allow_recovery_pending and self._recovery_pending(state):
             raise ValueError('campaign recovery pending')
         if not allow_recovery_pending and dispatch_pending(state, dispatch_owner):
@@ -624,6 +647,11 @@ class CampaignStore:
                     if statement.strip():
                         connection.execute(statement)
                 connection.execute('PRAGMA user_version=6')
+            if profile['schema'] == 'qualification_campaign_budget_profile/v3' and connection.execute('PRAGMA user_version').fetchone()[0] == 6:
+                self.store.validate_layout(connection, 6)
+                for statement in FUNDING_SCHEMA.split(';'):
+                    if statement.strip(): connection.execute(statement)
+                connection.execute('PRAGMA user_version=7')
             receipt = encoded(dict(schema='qualification_campaign_provisional_intent/v1',
                 attempt_id=attempt, request_sha256=sha256(request_bytes), profile_sha256=sha256(profile_bytes),
                 start_clock=started, dispatch_enabled=False))
@@ -634,7 +662,7 @@ class CampaignStore:
             work = dict(work_id='admission', phase='ADMISSION', limits=limits,
                 input_sha256=sha256(request_bytes), reservation_bytes_b64=self._b64(reservation),
                 state='RESERVED', transitions=[], observation_bytes_b64=None, charge_cpu_ns=0)
-            version = 'v2' if profile['schema'] == 'qualification_campaign_budget_profile/v2' else 'v1'
+            version = 'v2' if profile['schema'] in ('qualification_campaign_budget_profile/v2', 'qualification_campaign_budget_profile/v3') else 'v1'
             snapshot_version = 'v3' if version == 'v2' else 'v1'
             state = dict(schema='qualification_campaign_budget_snapshot/' + snapshot_version, attempt_id=attempt,
                 request_sha256=sha256(request_bytes), profile=profile, budget=None,
@@ -643,6 +671,8 @@ class CampaignStore:
                 authority_head='0'*64, event_head='0'*64, campaign_scope_id=None,
                 memory_peak_bytes=0, oom_events=0, works=[work],
                 settled_cpu_ns=0, reserved_cpu_ns=0, remaining_cpu_ns=0)
+            if profile['schema'] == 'qualification_campaign_budget_profile/v3':
+                state.update(schema='qualification_campaign_budget_snapshot/v5', recoveries=[], dispatches=[])
             return self._save_budget(connection, state, 'BEGIN_ADMISSION', authority=True)
 
     def bind_budget(self, attempt_id, contract_budget_bytes, *, expected_revision, clock_bytes=None) -> bytes:
@@ -652,7 +682,7 @@ class CampaignStore:
         binding = budget(contract_budget_bytes)
         with self.store.transaction() as connection:
             state = self._budget(connection, attempt_id)
-            if fresh_clock is not None and state['profile']['schema'] != 'qualification_campaign_budget_profile/v2':
+            if fresh_clock is not None and state['profile']['schema'] not in ('qualification_campaign_budget_profile/v2', 'qualification_campaign_budget_profile/v3'):
                 raise ValueError('fresh binding clock requires profile v2')
             if state['budget'] is not None:
                 if encoded(state['budget']) != contract_budget_bytes:
@@ -661,7 +691,7 @@ class CampaignStore:
                     self._check_budget(state, expected_revision)
                     self._observe_clock(state, fresh_clock)
                     return self._save_budget(connection, state, 'BIND_BUDGET_CLOCK', authority=True)
-                return self.budget_snapshot(attempt_id)
+                return self._negative_budget_response(connection, state)
             self._check_budget(state, expected_revision)
             if fresh_clock is not None:
                 self._observe_clock(state, fresh_clock)
@@ -717,7 +747,7 @@ class CampaignStore:
             if existing is not None:
                 if existing['phase'] != phase or self._raw(existing['reservation_bytes_b64']) != limits_bytes:
                     raise ValueError('work reservation identity conflict')
-                return self.budget_snapshot(attempt_id)
+                return self._negative_budget_response(connection, state)
             self._check_budget(state, expected_revision)
             if state['state'] != 'BOUND' or phase not in state['profile']['phases']:
                 raise ValueError('bound budget and installed phase required')
@@ -765,6 +795,8 @@ class CampaignStore:
         if doc['memory_peak_bytes'] is None or doc['oom_events'] is None:
             self._terminal(state, 'BUDGET_UNCERTAIN')
         if doc['memory_peak_bytes'] is not None:
+            if doc['memory_peak_bytes'] < state['memory_peak_bytes']:
+                self._terminal(state, 'BUDGET_UNCERTAIN')
             state['memory_peak_bytes'] = max(state['memory_peak_bytes'], doc['memory_peak_bytes'])
         if doc['oom_events'] is not None:
             if doc['oom_events'] < state['oom_events']:
@@ -783,7 +815,7 @@ class CampaignStore:
             if work['observation_bytes_b64'] is not None:
                 if self._raw(work['observation_bytes_b64']) != observations_bytes:
                     raise ValueError('settlement observation conflict')
-                return self.budget_snapshot(attempt_id)
+                return self._negative_budget_response(connection, state)
             previous_state = state['state']
             self._observe_clock(state, doc['clock'])
             intent = next(parse_canonical_json(self._raw(t), label='start') for t in work['transitions'] if parse_canonical_json(self._raw(t), label='start')['state'] == 'START_INTENT')
@@ -814,8 +846,8 @@ class CampaignStore:
                 if previous['state'] == target:
                     if self._raw(saved) != transition_bytes:
                         raise ValueError('immutable work transition conflict')
-                    return self.budget_snapshot(attempt_id)
-            self._check_budget(state, expected_revision, allow_recovery_pending=target in ('IN_DOUBT', 'ABORTED'))
+                    return self._negative_budget_response(connection, state)
+            self._check_budget(state, expected_revision, allow_recovery_pending=target in ('IN_DOUBT', 'ABORTED'), negative_transition=target in ('IN_DOUBT', 'ABORTED'))
             if work['state'] not in allowed[target]:
                 raise ValueError('illegal work transition; no reexecution')
             retry_of = self._retry_parent(work)
@@ -904,13 +936,14 @@ class CampaignStore:
                 owner = self._recovery_owner(state, work_id, recovery_owner_token)
                 owner['observations_bytes_b64'] = self._b64(observations_bytes)
             if encoded(state) == before:
-                return self.budget_snapshot(attempt_id)
+                return self._negative_budget_response(connection, state)
             return self._save_budget(connection, state, 'RECOVER_WORK',
                 authority=state['state'] != old_state or (changed_work and self._retry_parent(work) is None))
 
     def budget_snapshot(self, attempt_id) -> bytes:
         from ..journal_snapshot import encode_campaign_budget_snapshot
         with self.store.transaction() as connection:
+            self._funding_gate(connection, attempt_id)
             return encode_campaign_budget_snapshot(self._budget(connection, attempt_id))
 
     def _budget_integrity(self, connection):
@@ -919,6 +952,8 @@ class CampaignStore:
         from .campaign_budget import budget, clock
         for row in connection.execute('SELECT * FROM full_campaign_budgets'):
             state = parse_campaign_budget_snapshot(bytes(row['snapshot_bytes']))
+            if state['profile']['schema'] == 'qualification_campaign_budget_profile/v3' and connection.execute('PRAGMA user_version').fetchone()[0] != 7:
+                raise ValueError('funding profile requires database v7')
             owner = self.row(row['attempt_id'])
             receipt = parse_canonical_json(owner['receipt_bytes'], label='provisional receipt')
             expected_receipt = encoded(dict(schema='qualification_campaign_provisional_intent/v1',
@@ -1013,8 +1048,9 @@ class CampaignStore:
                 raise ValueError('diagnostic plan binding differs')
 
     def integrity(self, connection):
-        if connection.execute('PRAGMA user_version').fetchone()[0] == 6:
+        if connection.execute('PRAGMA user_version').fetchone()[0] in (6, 7):
             self._budget_integrity(connection)
+            self._funding_integrity(connection)
         for row in connection.execute('SELECT * FROM full_campaigns'):
             if connection.execute('SELECT 1 FROM campaigns WHERE attempt_id=?', (row['attempt_id'],)).fetchone():
                 raise ValueError('cross-capability attempt collision')
@@ -1028,7 +1064,7 @@ class CampaignStore:
                     pending = parse_campaign_request(retained.pop('pending_void'))
                     if (pending['schema'] != 'qualification_campaign_request/v2' or pending['operation'] != 'VOID'
                             or pending['attempt_id'] != row['attempt_id']
-                            or state['profile']['schema'] != 'qualification_campaign_budget_profile/v2'):
+                            or state['profile']['schema'] not in ('qualification_campaign_budget_profile/v2', 'qualification_campaign_budget_profile/v3')):
                         raise ValueError('pending cancellation binding differs')
                 for name in tuple(retained):
                     if name.startswith('supervision_control_'):

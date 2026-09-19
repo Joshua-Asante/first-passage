@@ -73,14 +73,14 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
     Full snapshot byte equality is not the publication freshness predicate.
     """
     document = parse_canonical_json(raw, label='campaign budget snapshot')
-    revised = type(document) is dict and document.get('schema') == 'qualification_campaign_budget_snapshot/v4'
+    revised = type(document) is dict and document.get('schema') in ('qualification_campaign_budget_snapshot/v4', 'qualification_campaign_budget_snapshot/v5')
     doc = _fields(document, {
         'schema', 'attempt_id', 'request_sha256', 'profile', 'budget', 'start_clock',
         'last_clock', 'deadline_boottime_ns', 'state', 'validity', 'authority_revision',
         'accounting_revision', 'authority_head', 'event_head', 'campaign_scope_id',
         'memory_peak_bytes', 'oom_events', 'works', 'settled_cpu_ns', 'reserved_cpu_ns',
         'remaining_cpu_ns'} | ({'recoveries', 'dispatches'} if revised else set()), label='campaign budget snapshot')
-    if doc['schema'] not in ('qualification_campaign_budget_snapshot/v1', 'qualification_campaign_budget_snapshot/v2', 'qualification_campaign_budget_snapshot/v3', 'qualification_campaign_budget_snapshot/v4'):
+    if doc['schema'] not in ('qualification_campaign_budget_snapshot/v1', 'qualification_campaign_budget_snapshot/v2', 'qualification_campaign_budget_snapshot/v3', 'qualification_campaign_budget_snapshot/v4', 'qualification_campaign_budget_snapshot/v5'):
         raise ValueError('campaign budget snapshot schema required')
     if doc['state'] not in CAMPAIGN_BUDGET_STATES or doc['validity'] not in ('VALID', 'VOID'):
         raise ValueError('campaign budget state differs')
@@ -94,8 +94,10 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
     from .execution.profile import parse_campaign_budget_profile
     from .execution.protocol import decode_base64, fields
     parse_campaign_budget_profile(canonical_json_bytes(doc['profile']))
-    if (doc['profile']['schema'] == 'qualification_campaign_budget_profile/v2') != (doc['schema'] in ('qualification_campaign_budget_snapshot/v3', 'qualification_campaign_budget_snapshot/v4')):
+    if (doc['profile']['schema'] in ('qualification_campaign_budget_profile/v2', 'qualification_campaign_budget_profile/v3')) != (doc['schema'] in ('qualification_campaign_budget_snapshot/v3', 'qualification_campaign_budget_snapshot/v4', 'qualification_campaign_budget_snapshot/v5')):
         raise ValueError('profile requires compatible snapshot version')
+    if (doc['profile']['schema'] == 'qualification_campaign_budget_profile/v3') != (doc['schema'] == 'qualification_campaign_budget_snapshot/v5'):
+        raise ValueError('funding profile requires snapshot v5')
     clock(canonical_json_bytes(doc['start_clock']))
     clock(canonical_json_bytes(doc['last_clock']))
     if doc['campaign_scope_id'] is not None:
@@ -125,7 +127,7 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
             keys.add('signing_retry_of')
         fields(reservation, keys)
         if 'signing_retry_of' in reservation:
-            if doc['schema'] not in ('qualification_campaign_budget_snapshot/v2', 'qualification_campaign_budget_snapshot/v3', 'qualification_campaign_budget_snapshot/v4'):
+            if doc['schema'] not in ('qualification_campaign_budget_snapshot/v2', 'qualification_campaign_budget_snapshot/v3', 'qualification_campaign_budget_snapshot/v4', 'qualification_campaign_budget_snapshot/v5'):
                 raise ValueError('signing retry requires snapshot v2')
             _identity(reservation['signing_retry_of'])
         clock(canonical_json_bytes(reservation['clock']))

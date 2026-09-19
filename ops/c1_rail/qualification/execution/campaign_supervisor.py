@@ -15,8 +15,7 @@ from ..contract import canonical_json_bytes as encoded, parse_canonical_json
 from .campaign_budget import clock, integer
 from .protocol import fields, identity, sha256
 
-WORK_ROLES = ('admission', 'probe_worker', 'probe_g5', 'probe_result', 'probe_seal')
-PROBES = ('noop', 'cpu', 'descendants', 'memory', 'wall', 'intent', 'controller_cpu')
+from .campaign_funding import WORK_ROLES, PROBES, WORK_PHASES
 
 
 def parse_work_manifest(raw):
@@ -99,7 +98,7 @@ def prepare_campaign_work(campaigns, attempt, work_id, *, host_run_id, manifest_
     with campaigns.store.transaction() as connection:
         state = campaigns._budget(connection, attempt)
         work = campaigns._work(state, work_id)
-        expected_phase = {'admission': 'ADMISSION', 'probe_worker': 'N1', 'probe_g5': 'N1_G5', 'probe_result': 'RESULT', 'probe_seal': 'SEAL'}[manifest['role']]
+        expected_phase = WORK_PHASES[manifest['role']]
         if work['phase'] != expected_phase:
             raise ValueError('installed role phase differs')
         if manifest['role'] != 'admission' and campaigns._retry_parent(work) is None and work['input_sha256'] != sha256(manifest_bytes):
@@ -207,7 +206,7 @@ def _recover_campaign_work(context, reservation_bytes, *, attempt_id, work_id, r
     from .campaign_store import CampaignStore
     from .protocol import decode_base64
     campaigns = CampaignStore(context.store)
-    state = parse_canonical_json(campaigns.budget_snapshot(attempt_id), label='recovery budget')
+    state = parse_canonical_json(campaigns.recovery_budget_snapshot(attempt_id, work_id, recovery_owner_token), label='recovery budget')
     work = campaigns._work(state, work_id)
     if decode_base64(work['reservation_bytes_b64']) != reservation_bytes:
         raise ValueError('recovery reservation identity differs')
@@ -248,7 +247,7 @@ def _recover_campaign_work(context, reservation_bytes, *, attempt_id, work_id, r
 
 
 def _complete_recovery(campaigns, attempt, work_id, cleanup_bytes, token):
-    state = parse_canonical_json(campaigns.budget_snapshot(attempt), label='recovered budget')
+    state = parse_canonical_json(campaigns.recovery_budget_snapshot(attempt, work_id, token), label='recovered budget')
     row = next(r for r in state['recoveries'] if r['work_id'] == work_id)
     cleanup = parse_supervision_event(cleanup_bytes)
     from .protocol import decode_base64

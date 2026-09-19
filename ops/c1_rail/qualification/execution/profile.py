@@ -61,6 +61,8 @@ def parse_profile(raw: bytes) -> ExecutionProfile:
             supported_checkpoints=[], capability='FULL_E1', dispatch_enabled=False)
     if doc.get('schema') == 'qualification_execution_profile/v3':
         fixed = dict(_DIAGNOSTIC_FIXED)
+    if doc.get('schema') == 'qualification_execution_profile/v4':
+        fixed = dict(_DIAGNOSTIC_FIXED, schema='qualification_execution_profile/v4', protocol_version=4)
     fields(doc, (*fixed, *_LIMITS))
     for name, value in fixed.items():
         if type(doc[name]) is not type(value) or doc[name] != value:
@@ -89,11 +91,14 @@ def parse_campaign_budget_profile(raw: bytes) -> dict:
     from .campaign_budget import PHASES, limits, integer
     from .protocol import digest
     doc = parse_canonical_json(raw, label='campaign budget profile')
-    revised = type(doc) is dict and doc.get('schema') == 'qualification_campaign_budget_profile/v2'
+    funded = type(doc) is dict and doc.get('schema') == 'qualification_campaign_budget_profile/v3'
+    revised = type(doc) is dict and doc.get('schema') in ('qualification_campaign_budget_profile/v2', 'qualification_campaign_budget_profile/v3')
     fields(doc, {'schema', 'installed_profile_sha256', 'phases', 'record_byte_limit'} |
-           ({'orchestration_cpu_ns'} if revised else set()))
-    if doc['schema'] not in ('qualification_campaign_budget_profile/v1', 'qualification_campaign_budget_profile/v2'):
+           ({'orchestration_cpu_ns'} if revised else set()) | ({'funding_intents'} if funded else set()))
+    if doc['schema'] not in ('qualification_campaign_budget_profile/v1', 'qualification_campaign_budget_profile/v2', 'qualification_campaign_budget_profile/v3'):
         raise ValueError('campaign budget profile schema required')
+    if funded and doc['funding_intents'] != 'qualification_campaign_funding/v1':
+        raise ValueError('installed funding intent schema required')
     digest(doc['installed_profile_sha256'])
     integer(doc['record_byte_limit'], positive=True)
     fields(doc['phases'], PHASES)
@@ -119,12 +124,14 @@ def diagnostic_budget_profile(profile_bytes):
     from .campaign_budget import PHASES
     from ..contract import canonical_json_bytes as encoded
     profile = parse_profile(profile_bytes)
-    if profile.values['schema'] != 'qualification_execution_profile/v3':
+    if profile.values['schema'] not in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4'):
         raise ValueError('fresh diagnostic execution profile required')
     result = dict(schema='qualification_campaign_budget_profile/v2',
         installed_profile_sha256=profile.sha256, record_byte_limit=131072,
         phases={phase: dict(_DIAGNOSTIC_PHASE, memory_bytes=profile.memory_bytes) for phase in PHASES},
         orchestration_cpu_ns={phase: _DIAGNOSTIC_CONTROLLER_CPU_NS for phase in PHASES})
+    if profile.values['schema'] == 'qualification_execution_profile/v4':
+        result.update(schema='qualification_campaign_budget_profile/v3', funding_intents='qualification_campaign_funding/v1')
     parse_campaign_budget_profile(encoded(result))
     return result
 
@@ -137,3 +144,12 @@ def diagnostic_execution_profile(base_bytes):
     raw = encoded(result)
     parse_profile(raw)
     return parse_canonical_json(raw, label='resolved diagnostic profile')
+
+
+def funded_diagnostic_execution_profile(base_bytes):
+    """Persistence-only successor; runtime release activation remains disabled."""
+    from ..contract import canonical_json_bytes as encoded
+    result = diagnostic_execution_profile(base_bytes)
+    result.update(schema='qualification_execution_profile/v4', protocol_version=4)
+    parse_profile(encoded(result))
+    return result

@@ -136,3 +136,21 @@ class CampaignBudgetModel:
     @property
     def remaining(self):
         return self.cap - (self.reservation if self.charge is None else self.charge)
+
+class FundingIntentModel:
+    """Independent allowance/one-owner model, with no production imports."""
+    def __init__(self,cap,phase,initial):
+        self.cap=cap; self.phase=phase; self.reserved=initial
+        self.pending=False; self.claimed=False; self.valid=True
+    def claim(self):
+        if self.claimed or not self.valid: return False
+        if self.cap-self.reserved<self.phase: return False
+        self.reserved+=self.phase; self.pending=True; self.claimed=True
+        return True
+    def void(self): self.valid=False
+    def materialize(self):
+        if not self.pending: return False
+        self.pending=False
+        return True
+    @property
+    def can_publish(self): return self.valid and not self.pending

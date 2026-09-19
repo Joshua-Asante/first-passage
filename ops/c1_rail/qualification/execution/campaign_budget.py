@@ -111,7 +111,7 @@ def transition(raw, attempt_id, work_id):
 
 def observation(raw, *, attempt_id, work_id, phase, profile):
     """Canonical raw-counter evidence and distinct installed conservative charge."""
-    revised = profile['schema'] == 'qualification_campaign_budget_profile/v2'
+    revised = profile['schema'] in ('qualification_campaign_budget_profile/v2', 'qualification_campaign_budget_profile/v3')
     doc = fields(parse_canonical_json(raw, label='trusted campaign observation'), {
         'schema', 'attempt_id', 'work_id', 'clock', 'campaign_scope_id', 'work_scope_id',
         'cpu_ns', 'memory_peak_bytes', 'oom_events'} |
@@ -161,7 +161,7 @@ def recovery_completion(raw, *, attempt_id, work_id):
 def validate_recoveries(state):
     from .protocol import decode_base64, sha256
     rows = state['recoveries']
-    if type(rows) is not list or (not rows and not state['dispatches']):
+    if type(rows) is not list or (not rows and not state['dispatches'] and state['schema'] != 'qualification_campaign_budget_snapshot/v5'):
         raise ValueError('versioned recovery records required')
     works = {w['work_id']: w for w in state['works']}
     identities = []

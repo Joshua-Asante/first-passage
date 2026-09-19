@@ -44,6 +44,8 @@ def parse_release(raw):
     owners = fields(doc['source_owner_sha256'], {'book_policy','firm_rules','policy_fingerprint'})
     for value in owners.values(): digest(value)
     profile = parse_profile(canonical_json_bytes(doc['profile']))
+    if profile.values['schema'] == 'qualification_execution_profile/v4':
+        raise ValueError('funding profile is persistence-only; runtime release not enabled')
     if diagnostic:
         from .profile import parse_campaign_budget_profile
         budget_profile = parse_campaign_budget_profile(canonical_json_bytes(doc['campaign_budget_profile']))
