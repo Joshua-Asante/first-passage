@@ -7,9 +7,23 @@ this registration's one-revision cap, beats the `rg` incumbent decisively (limb 
 does not clear the frozen 0.70 recall floor (limb 1 FAIL).
 **Pre-registration:** [`2026-08-15-fts5-delete-falsifier-prereg-v3.md`](../../../../docs/briefs/pre-registration/2026-08-15-fts5-delete-falsifier-prereg-v3.md),
 frozen at commit `228c84e`, **before** either run below
-**Harness:** [`remeasure.py`](remeasure.py) — reuses the 2026-07-27 falsifier's frozen
+**Harness:** [`remeasure.py`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/limb_b_remeasure_2026-08/remeasure.py) (archived off-tree — see Reproduce) — reuses the 2026-07-27 falsifier's frozen
 fixture-construction rule verbatim; imports and calls `scripts/repo_retrieve.py`'s own
 `rebuild()`/`query()` directly (measured = shipped; no reimplementation)
+
+**Annotation 2026-09-19 — blob provenance; the verdict below no longer binds the shipped
+artifact.** Every figure in this file was measured against `scripts/repo_retrieve.py` blob
+`041535ab9c327dece90053009dde5faf0c4ad654` (Run B). That is **not what ships now**: `561d8d7`
+(2026-09-17, on `main`) restructured `collect_chunks()` into the ordered `CORPUS_SOURCES`
+declarations, and the shipped blob is `a6fc6ba4e4e25d1a62d68256d2b0fe37543f2f14`. Under this
+registration's **Measured = shipped** clause, an edit to corpus or chunking logic voids the
+verdict's binding categorically — so **these numbers may not be cited as attaching to current
+`repo_retrieve.py`**, including in any future re-authorisation argument. The refactor was
+contract-preserving by design and `tests/test_repo_retrieve.py` passes 11/11, so no behaviour
+regression is claimed or implied; equally, **no recall number has been re-measured against the
+new blob**. Recovering a live number needs a fresh registration, which is an operator act. The
+verdict, the numbers and the disposition below are unchanged by this annotation. See the
+[drift audit](../../../../docs/notes/audits/2026-09-19-limb-b-measured-shipped-drift.md).
 
 ---
 
@@ -135,6 +149,12 @@ Per the frozen v3 table, trigger 2 (`ASSISTIVE-ONLY`):
   an operator-paced decision, not a consequence of this measurement.
 
 ## Reproduce
+
+`remeasure.py` is **archived off-tree**, not present in this checkout: `lab/ARCHIVED.json`
+lists it under `removed_files` for this study, retrievable from `first-passage-archive` at
+`5d47b4dc`. Retrieve it there before running the command below. Note also that the command
+would now measure the **superseded** blob noted in the 2026-09-19 annotation above, so its
+output would not reproduce this file's verdict binding.
 
 ```bash
 python lab/analysis/harvest/limb_b_remeasure_2026-08/remeasure.py .

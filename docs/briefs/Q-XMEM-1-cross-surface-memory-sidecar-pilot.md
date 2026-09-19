@@ -1,6 +1,6 @@
 # [Q-XMEM-1] — Cross-surface agent-memory sidecar pilot
 
-**Status:** `CLOSED — SUBTRACT 2026-08-19` — GRAND-tier pursuit-layer SUBTRACT (GSUB-2 Phase 3); architecture retained as a ready-to-run design, not deleted; re-entry requires a genuine dated cross-surface-memory-invisibility incident. Closure: [`closures/Q-XMEM-1-closure-subtract.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-XMEM-1-closure-subtract.md).
+**Status:** `REOPENED — pursuit re-entry 2026-09-19 (operator ruling)`. Prior standing was `CLOSED — SUBTRACT 2026-08-19` — GRAND-tier pursuit-layer SUBTRACT (GSUB-2 Phase 3); architecture was retained as a ready-to-run design, not deleted. Re-entry armour named a genuine dated cross-surface-memory-invisibility incident as the out-of-frame evidence; **this reopen rests on the operator's ruling, and no such incident is cited here** — see the 2026-09-19 addendum. Re-entry is **pursuit-layer only** and authorises no build, install, spend or quarantine lift. Closure: [`closures/Q-XMEM-1-closure-subtract.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-XMEM-1-closure-subtract.md).
 **Authored:** 2026-07-16
 **Amended:** 2026-07-16 (v1.1, pre-T0) — critical review (`claude/q-xmem-1-briefs-review`): ledger-skip gate hole closed (=1 was verdict-less); locked strategy parameters added to denylist; contamination audit upgraded from token-grep to full-export read (Trap M-AHF); hosting limb restated around the extraction-LLM boundary + explicit-add-only frozen; benefit limb tightened to operator-confirmed; Phase-3/§6 verdict-date conflict fixed. **No T0, no install, no memories existed at amendment time — this is a pre-registration revision, not Known Trap #12.** **Amended again:** 2026-08-15 (v1.2, still pre-T0) — Limb B repo-local FTS addendum below. §4 / §6 / Mem0 Phase 0–4 unchanged. Still no memories. **Amended again (later same day):** Limb B re-measured `ASSISTIVE-ONLY` under a fresh frozen pre-registration after a governance-belt audit found the original "Landed" claim didn't match measured recall — see the second 2026-08-15 addendum below.
 **Closed:** 2026-08-19 (GSUB-2 Phase 3; PARKED 2026-08-09 GSUB-1 Phase 3 preceded it).
@@ -211,7 +211,7 @@ Two retrieval limbs, one brief:
 | Limb | What | Status after this addendum |
 |---|---|---|
 | **A — Mem0 soft-scratch** | Original Phase 0–4 / §6. Cross-surface prefs and path pointers. Local extractor/embedder or explicit-add-only. | **Unpaid.** T0 starts only on explicit operator GO. Do not install Mem0 in this land. |
-| **B — repo-local FTS** | Sqlite FTS5 over **hot git surfaces only**: `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/rejected_candidates.md`, closures (H1 + header), ADR titles/status, `docs/SESSIONS.md` (newest window), `STATE.md` queue, plus (v3, 2026-08-15) brief bodies, `docs/notes/audits/**`, `docs/methodology/`, `docs/spec/`. Index gitignored (`.cache/`). | **`ASSISTIVE-ONLY` — re-measured 2026-08-15.** `scripts/repo_retrieve.py` (`--rebuild` / `--query`). Beats the `rg` incumbent decisively; below the frozen 0.70 recall floor even after the one permitted corpus widening. **Final under the v3 registration — not re-authorized as a sub-rule 8/10 attestation source.** See [`RESULTS`](../../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md). |
+| **B — repo-local FTS** | Sqlite FTS5 over **hot git surfaces only**: `lab/CATALOG.md`, `docs/briefs/INDEX.md`, `docs/rejected_candidates.md`, closures (H1 + header), ADR titles/status, `docs/SESSIONS.md` (newest window), `STATE.md` queue, plus (v3, 2026-08-15) brief bodies, `docs/notes/audits/**`, `docs/methodology/`, `docs/spec/`. Index gitignored (`.cache/`). | **`ASSISTIVE-ONLY` — re-measured 2026-08-15.** `scripts/repo_retrieve.py` (`--rebuild` / `--query`). Beats the `rg` incumbent decisively; below the frozen 0.70 recall floor even after the one permitted corpus widening. **Final under the v3 registration — not re-authorized as a sub-rule 8/10 attestation source.** **Blob provenance (annotated 2026-09-19):** measured against blob `041535ab…`; `561d8d7` (2026-09-17) restructured `collect_chunks()` and the shipped blob is now `a6fc6ba4…`, which voids the v3 *Measured = shipped* binding — the recall figures may not be cited as attaching to current `repo_retrieve.py`, and none has been re-measured. See [`RESULTS`](../../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md) · [drift audit](../notes/audits/2026-09-19-limb-b-measured-shipped-drift.md). |
 | **C — local-embedder vector** | Same corpus and denylist as Limb B. Local embedder only (§5 edge boundary). New dep only after a Rule 2 cost dry-run. | **Live question, not authorized.** Limb B's own pre-named trigger ("build only if Limb B is in use and still misses") is now met by the v3 result — but building still requires a Rule 2 cost dry-run first, an operator-paced decision this measurement does not supply. |
 
 Limb B is **not** a Rule-7 owner, not a SESSIONS/ledger substitute, and not citeable in any §0. It does **not** ingest `docs/ltm/` or `lab/archive/` bodies. It does **not** start T0 and does **not** store memories.
@@ -245,3 +245,34 @@ is the pointer; do not restate the recall numbers here.
 - [x] §8 pre-registration **committed** before T0 (v1.0 `fd71074`; v1.1 amendment `1d4a866`)
 - [x] §10 audit hooks are runnable commands
 - [x] `check_brief.py` PASS (skill-side 6/6; repo-side well-formed 2026-07-16; re-run post-v1.1)
+
+---
+
+## Addendum 2026-09-19 — pursuit re-entry (operator ruling); scope strictly bounded
+
+**Ruling.** The operator ruled on 2026-09-19 that Q-XMEM-1 re-entry is warranted. That lifts the
+2026-08-19 GSUB-2 pursuit-layer `SUBTRACT`: standing exploration may resume. The ruling was given
+in a session whose original dispatch (an external reranking investigation) could not be executed —
+see the [disposition](handoffs/2026-09-19-jev-experimentation-disposition.md).
+
+**The re-entry armour's evidence is not supplied here.** The pursuit record's armour names "a
+genuine dated cross-surface-memory-invisibility incident" as the out-of-frame evidence for
+re-entry. This addendum records the operator's ruling as the authority for reopening; it does
+**not** cite such an incident, and none has been independently established. If the armour is to be
+satisfied on its own terms rather than by ruling alone, that dated incident is still owed.
+
+**What this does NOT authorise.** Re-entry restores the pursuit layer only — the same layer the
+SUBTRACT dispositioned. Per GSUB-2 §5, the SUBTRACT never reached into this pilot's own content,
+so reopening it does not reach in either. Unchanged and still requiring their own gates:
+
+| Item | Status after this ruling |
+|---|---|
+| Limb A (Mem0) T0 / install | **Unchanged — unpaid, not started.** Explicit operator GO still required; do not install. |
+| Limb C (local-embedder vector) | **Unchanged — live question, not authorised.** Still gated on a Rule 2 cost dry-run first. |
+| `repo_retrieve.py` as a sub-rule 8/10 attestation source | **Unchanged — still not re-authorised.** The `ASSISTIVE-ONLY` disposition stands, and its figures no longer bind the shipped blob ([drift audit](../notes/audits/2026-09-19-limb-b-measured-shipped-drift.md)); restoring it needs a fresh registration and a real measurement, not this ruling. |
+| `_fts_companion` in `scripts/check_advisor_dedup.py` | **Unchanged — stays disabled.** |
+| External/paid rerankers or retrieval services | **Not authorised.** No credential, data-transfer or spend scope is granted here. |
+| §4 / §5 / §6 architecture and forbidden moves | **Unchanged and still binding**, including sidecar-as-owner, ledger-skip, LTM ingest, §0 citation, auto-ingest and restated lock numbers. |
+
+**No measurement accompanies this addendum.** Nothing was re-measured, re-registered, built or
+installed under this ruling, and no recall number anywhere in this brief has been refreshed.
