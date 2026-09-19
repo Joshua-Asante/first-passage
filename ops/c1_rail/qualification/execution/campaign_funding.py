@@ -100,6 +100,18 @@ def _decode(raw,limit):
         if doc['signing_retry_of'] is not None: identity(doc['signing_retry_of'])
     return doc
 
+def _overlay_clock(current,retained):
+    """last_clock under a terminal overlay is monotone within one boot.
+
+    The claim path persists this value and the projection reconstructs it, so
+    both must apply the same rule. An incomparable (changed-boot or unavailable)
+    or backward observed clock survives only as the overlay fact.
+    """
+    if (current['boot_id']==retained['boot_id'] and current['boottime_ns'] is not None
+            and retained['boottime_ns'] is not None and current['boottime_ns']<retained['boottime_ns']):
+        return retained
+    return current
+
 def _put(connection,table,attempt,doc,work=None,request=None):
     raw=encoded(doc)
     if table=='full_campaign_funding':
@@ -169,9 +181,7 @@ class FundingStore:
         if len(doc['signing_work_ids'])>1: raise ValueError('ambiguous signing authority')
         if overlay is not None:
             doc['state']=overlay['state']
-            current=doc['last_clock']; retained=overlay['clock']
-            if current['boot_id']==retained['boot_id'] and current['boottime_ns'] is not None and retained['boottime_ns'] is not None and current['boottime_ns']<retained['boottime_ns']:
-                doc['last_clock']=retained
+            doc['last_clock']=_overlay_clock(doc['last_clock'],overlay['clock'])
         if pending is not None:
             with self.store.transaction() as c:
                 retained=self._bootstrap(c,state['attempt_id'],pending)
@@ -300,7 +310,8 @@ class FundingStore:
             elif observed['boottime_ns']>=doc['deadline_boottime_ns'] or ceiling['cpu_ns']>doc['remaining_cpu_ns']:
                 terminal='BUDGET_EXHAUSTED'
             if terminal is not None:
-                doc.update(state=terminal,last_clock=observed,terminal_overlay=dict(state=terminal,clock=observed))
+                doc.update(state=terminal,last_clock=_overlay_clock(doc['last_clock'],observed),
+                    terminal_overlay=dict(state=terminal,clock=observed))
                 _put(c,'full_campaign_funding',attempt,doc)
                 return None,self.scheduler_status(attempt)
             token=secrets.token_bytes(32)

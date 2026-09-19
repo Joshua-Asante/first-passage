@@ -5,7 +5,7 @@ from c1_rail.qualification.contract import canonical_json_bytes as encoded
 from c1_rail.qualification.execution.campaign_store import CampaignStore
 from c1_rail.qualification.execution.store import ExecutionStore
 from test_campaign_budget import ATTEMPT, profile, clock, request, contract_budget, snap, start
-from test_campaign_scheduler import schedule
+from scheduler_fixture import schedule
 
 
 def enrolled(tmp_path):
@@ -351,6 +351,36 @@ def test_terminal_overlay_does_not_erase_newer_negative_clock(tmp_path):
         assert doc['last_clock']==clock(deadline+1)
         assert doc['terminal_overlay'] is not None
     with pytest.raises(ValueError,match='funding'): store.budget_snapshot(ATTEMPT)
+    ExecutionStore(store.store.path)
+
+
+def uncertain_clocks():
+    unavailable=clock(11); unavailable['boottime_ns']=None
+    return [pytest.param(clock(11,boot='boot-2'),id='changed_boot'),pytest.param(clock(9),id='backward'),
+        pytest.param(unavailable,id='unavailable')]
+
+
+@pytest.mark.parametrize('observed',uncertain_clocks())
+def test_uncertain_clock_refusal_survives_reopen_and_negative_recovery(tmp_path,observed):
+    store=enrolled(tmp_path)
+    before=snap(store)['last_clock']
+    token,status=store.claim_scheduler_bootstrap(schedule(),encoded(observed))
+    assert token is None and json.loads(status)['state']=='BUDGET_UNCERTAIN'
+    reopened=CampaignStore(ExecutionStore(store.store.path))
+    assert json.loads(reopened.scheduler_status(ATTEMPT))['state']=='BUDGET_UNCERTAIN'
+    with store.store.transaction() as c:
+        doc=store._funding(c,ATTEMPT)
+        assert doc['terminal_overlay']==dict(state='BUDGET_UNCERTAIN',clock=observed)
+        # An incomparable or backward clock is retained as the overlay fact only;
+        # it never moves the monotone last_clock (same rule as reconstruction).
+        assert doc['last_clock']==before
+    reopened.recover_work(ATTEMPT,'admission',encoded(clock(12)))
+    with store.store.transaction() as c:
+        doc=store._funding(c,ATTEMPT)
+        assert doc['state']=='BUDGET_UNCERTAIN' and doc['last_clock']==clock(12)
+        assert doc['terminal_overlay']==dict(state='BUDGET_UNCERTAIN',clock=observed)
+    with pytest.raises(ValueError,match='funding'): reopened.budget_snapshot(ATTEMPT)
+    assert reopened.claim_scheduler_bootstrap(schedule(),encoded(clock(13)))[0] is None
     ExecutionStore(store.store.path)
 
 
