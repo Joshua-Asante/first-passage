@@ -262,7 +262,10 @@ class CampaignStore(FundingStoreMixin):
         # omitting the new projection. No successful completion is fabricated.
         known = {r['claim_sha256'] for r in state.get('recoveries', ())}
         with self.store.transaction() as connection:
-            rows = connection.execute("SELECT body,sha256 FROM full_campaign_objects WHERE attempt_id=? AND role LIKE 'supervision_control_%'", (state['attempt_id'],))
+            # GLOB, not LIKE: LIKE's '_' wildcard also matched 'supervision_controller'
+            # (an enrollment object for a work named 'controller'), whose body has no
+            # 'data' (S2 run 35459484982, KeyError 'data').
+            rows = connection.execute("SELECT body,sha256 FROM full_campaign_objects WHERE attempt_id=? AND role GLOB 'supervision_control_*'", (state['attempt_id'],))
             for raw, identity in rows:
                 event = parse_canonical_json(bytes(raw), label='control claim')
                 if event['data']['slot'] == 'RECOVERY_OWNER' and identity not in known:

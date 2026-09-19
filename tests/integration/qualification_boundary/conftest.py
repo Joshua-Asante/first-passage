@@ -42,6 +42,12 @@ with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as peer:
 '''
 
 
+class ClientProcessError(subprocess.CalledProcessError):
+    """CalledProcessError whose message carries the captured client stderr tail."""
+    def __str__(self):
+        return super().__str__()+'\n--- client stderr (tail) ---\n'+(self.stderr or '')[-4000:]
+
+
 class Boundary:
     def __init__(self,path):
         self.path=path; self.root=path.parent
@@ -60,8 +66,14 @@ class Boundary:
         self.service=None; self.streams=[]; self.restart()
 
     def admin(self,operation,*arguments):
-        result=host.run_owned(self.group,[self.python,'-I',str(self.code/'tests/integration/qualification_boundary/fixture_install.py'),
-            operation,'--manifest',str(self.path),*arguments],interpreter=self.python,timeout=180)
+        try:
+            result=host.run_owned(self.group,[self.python,'-I',str(self.code/'tests/integration/qualification_boundary/fixture_install.py'),
+                operation,'--manifest',str(self.path),*arguments],interpreter=self.python,timeout=180)
+        except subprocess.CalledProcessError as exc:
+            # The installer's own diagnostics are the only record of a refusal;
+            # run_owned captures them, so surface the tail in the test report.
+            raise AssertionError('fixture_install '+operation+' '+' '.join(arguments)+' exited '+str(exc.returncode)
+                +'\n--- installer stderr (tail) ---\n'+(exc.stderr or '')[-6000:]) from exc
         return json.loads(result)
 
     def identity(self,role,command):
@@ -75,7 +87,12 @@ class Boundary:
         command=[self.python,'-I','-c',CLIENT_DRIVER,str(self.code),self.config['socket_path'],
                  encoded(dict(operation=operation,**fields)).decode()]
         if role!='administrator': command=self.identity(role,command)
-        raw=host.run_owned(self.group,command,interpreter=self.python,timeout=60)
+        try:
+            raw=host.run_owned(self.group,command,interpreter=self.python,timeout=60)
+        except subprocess.CalledProcessError as exc:
+            # The client raises the service's refusal text; run_owned captures it.
+            # Callers such as restart() still catch CalledProcessError and read .stderr.
+            raise ClientProcessError(exc.returncode,exc.cmd,exc.output,exc.stderr) from exc
         return raw.encode()
 
     def status(self,attempt):

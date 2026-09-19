@@ -89,7 +89,10 @@ def test_s2_sequential_roles_share_one_allowance(real_boundary):
 def test_s2_two_descendants_exhaust_owned_cpu(real_boundary):
     boundary=real_boundary; attempt=admit(boundary)
     probe(boundary,attempt,'descendants',kind='descendants')
-    state=wait(boundary,attempt,lambda s:s['state'].startswith('BUDGET_') or s['state']=='IN_DOUBT')
+    # The guardian marks IN_DOUBT, kills the payload, then settles the measured
+    # charge once absence is proven; the charge exists only after settlement.
+    state=wait(boundary,attempt,lambda s:s['state'].startswith('BUDGET_') or
+        (s['state']=='IN_DOUBT' and work(s,'descendants')['observation_bytes_b64'] is not None))
     assert state['state']=='IN_DOUBT'
     assert work(state,'descendants')['charge_cpu_ns']>=work(state,'descendants')['limits']['cpu_ns']
     boundary.restart()
@@ -148,7 +151,11 @@ def test_s2_kernel_bounds_guardian_cpu_before_recovery(real_boundary):
     host.save(boundary.output/(attempt+'-guardian-limit.json'),facts)
     assert facts['ActiveState']=='failed' and facts['ExecMainStatus']=='9'
     assert facts['LimitCPU']==facts['LimitCPUSoft']=='13'
-    assert 13_000_000_000<=int(facts['CPUUsageNSec'])<=14_000_000_000
+    # RLIMIT_CPU is enforced by the kernel on its own tick; the manager's
+    # CPUUsageNSec is a separate cgroup sample taken after the kill and can sit
+    # a few ms under the limit (run 35463688322: 12.998549 s). Allow one
+    # scheduler tick below, never above the granularity margin.
+    assert 13_000_000_000-10_000_000<=int(facts['CPUUsageNSec'])<=14_000_000_000
     boundary.restart()
     assert work(snapshot(boundary,attempt),'controller')['state']=='IN_DOUBT'
 
