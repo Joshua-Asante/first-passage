@@ -94,3 +94,16 @@ def test_foreign_run_identity_is_refused_before_any_side_effect(tmp_path, monkey
     with pytest.raises(ValueError, match='identity differs'):
         campaign_host.install(root, {'run_id': 'b' * 32}, json.dumps({'memory_bytes': 1}).encode())
     assert calls == [] and saved == {}
+
+
+def test_guardian_start_command_ends_option_parsing_before_dash_prefixed_values():
+    """busctl permutes options: '--' must precede 'call' or ExecStart's '-I'/'--attempt' are read as busctl flags."""
+    from tools.qualification_verification.container_ownership import CAMPAIGN_BUS_START, campaign_scopes
+    from c1_rail.qualification.execution.campaign_supervisor import guardian_unit_spec, manager_start_arguments
+    assert CAMPAIGN_BUS_START.index('--') < CAMPAIGN_BUS_START.index('call')
+    assert all(not item.startswith('-') for item in CAMPAIGN_BUS_START[CAMPAIGN_BUS_START.index('--') + 1:])
+    scopes = campaign_scopes('host1', 'attempt-1', 'work-1')
+    spec = guardian_unit_spec(scopes, attempt_id='attempt-1', work_id='work-1', code_root='/opt/qualification',
+        interpreter='/opt/ops/bin/python', uid=61001, orchestration_cpu_ns=20_000_000_000, remaining_wall_ns=20_000_000_000)
+    arguments = manager_start_arguments(scopes, spec)
+    assert {'-I', '--attempt', '--work'} <= set(arguments)

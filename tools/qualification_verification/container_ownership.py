@@ -69,6 +69,9 @@ def campaign_scopes(run_id, attempt, work):
     return dict(campaign_slice=campaign+'.slice',work_slice=scoped+'.slice',payload_slice=scoped+'-payload.slice',
                 guardian_unit=parent+'guardian'+hashlib.sha256(identity).hexdigest()+'.service')
 
-CAMPAIGN_BUS_START = ('/usr/bin/busctl', '--system', '--no-pager', '--timeout=5s', 'call',
+# '--' ends busctl's option parsing: GNU getopt permutes, so the guardian's
+# ExecStart values ('-I', '--attempt', '--work') would otherwise be read as
+# busctl options ("invalid option -- 'I'", first --s2 run 35456019676).
+CAMPAIGN_BUS_START = ('/usr/bin/busctl', '--system', '--no-pager', '--timeout=5s', '--', 'call',
     'org.freedesktop.systemd1', '/org/freedesktop/systemd1', 'org.freedesktop.systemd1.Manager',
     'StartTransientUnit', 'ssa(sv)a(sa(sv))')
