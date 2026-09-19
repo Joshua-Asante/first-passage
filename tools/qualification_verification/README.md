@@ -43,8 +43,10 @@ its cffi/pycparser dependencies come from the existing operations lock. Only the
 x64 glibc wheel is admitted. Changed locks or installed versions fail setup;
 there is no ambient PATH selection, cache fallback, system package upgrade or
 Docker configuration change. Package installation targets a new owned venv only.
-Configured Python and Docker commands must be absolute paths. Setup and cleanup
-check every directory and symlink hop through to the executable target, allowing
+Configured Python and Docker commands must be absolute paths. Setup, cleanup and
+the boundary preflight share one executable rule (`protected_executable` in
+`scripts/qualification_boundary_environment.py`, re-imported by `host.py`): every
+directory and symlink hop through to the executable target is checked, allowing
 protected system aliases but rejecting unowned links and writable intermediate
 directories. The copied venv interpreter must report the configured Python patch
 before package installation; runtime evidence retains that observed version.
@@ -134,8 +136,20 @@ in either disposable Linux job.
 
 ## Boundary integration contract and unresolved acceptance
 
-`scripts/qualification_boundary_environment.py` exposes `inspect_environment`
-and `require_environment`. The closed `qualification_test_instance/v1` document
+`scripts/qualification_boundary_environment.py` exposes
+`inspect_environment(instance_path, profile_bytes, *, host_config)` and
+`require_environment`. `host_config` is the ownership manifest's retained
+`host_config` (the fixture passes `manifest['host_config']`); the preflight never
+reloads the checkout's `host.json` and never resolves a client through `PATH`.
+Its `docker_client` check validates the configured `docker` executable with the
+shared protected-executable rule before `docker version` and `docker image
+inspect` run through it and the instance's fixed local socket; a missing,
+malformed or unprotected client fails readiness without being invoked, and the
+`docker`/`image` checks are then absent rather than passed. The `image`
+observation retains only the opaque worker content ID (`{"id": ...}`);
+`RepoDigests`/`RepoTags` name registries and repositories and never enter
+`evidence/boundary/environment.json`, which CI exports with the rest of
+`evidence/`. The closed `qualification_test_instance/v1` document
 is administrator-owned and supplies `authority_class: TEST_ONLY`, the three role
 UIDs, trusted roots, data/key/scratch/evidence paths, fixed local Docker socket,
 worker content ID and canonical profile hash. The boundary fixture producer must

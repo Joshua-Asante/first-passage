@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-from collections import deque
 import errno
 from contextlib import contextmanager
 import hashlib
@@ -21,7 +20,8 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from scripts.qualification_boundary_environment import TRUST_MODEL, protected, run
+from scripts.qualification_boundary_environment import (EXECUTABLES, TRUST_MODEL, protected,
+    protected_executable, run, validate_executable_paths)
 from scripts.record_verification import snapshot
 from tools.qualification_verification.container_ownership import HOST_LABEL, BUILD_LABEL, host_identity, owned_containers
 from tools.qualification_verification.role_policy import ROLES, ROLE_GROUPS, owned_group_members
@@ -86,51 +86,9 @@ def validate_inputs(source, config):
             raise ValueError('lock digest mismatch: ' + relative)
 
 
-def validate_executable_paths(config):
-    for name in ('python', 'docker'):
-        value = config.get(name)
-        if (not isinstance(value, str) or not PurePosixPath(value).is_absolute()
-                or '..' in PurePosixPath(value).parts or '\\' in value or '\0' in value):
-            raise ValueError('absolute executable path required: ' + name)
-
-
-def protected_executable(value):
-    requested = Path(value)
-    if not requested.is_absolute():
-        raise ValueError('absolute executable path required')
-    path = protected(Path(requested.anchor))
-    pending = deque(requested.parts[1:])
-    links = 0
-    # Resolve one component at a time: resolve() would hide writable intermediate
-    # directories and symlinks. Check directories before processing any '..'.
-    while pending:
-        part = pending.popleft()
-        if part == '..':
-            path = path.parent
-            continue
-        candidate = path / part
-        info = candidate.lstat()
-        if stat.S_ISLNK(info.st_mode):
-            links += 1
-            if info.st_uid != 0 or links > 40:
-                raise ValueError('unprotected or cyclic executable symlink')
-            target = Path(os.readlink(candidate))
-            if target.is_absolute():
-                path = protected(Path(target.anchor))
-                pending.extendleft(reversed(target.parts[1:]))
-            else:
-                pending.extendleft(reversed(target.parts))
-        else:
-            path = protected(candidate)
-            if pending and not stat.S_ISDIR(info.st_mode):
-                raise ValueError('executable ancestor must be a directory')
-    if not path.is_file() or not os.access(path, os.X_OK):
-        raise ValueError('regular executable required')
-
-
 def validate_host_executables(config):
     validate_executable_paths(config)
-    for name in ('python', 'docker'):
+    for name in EXECUTABLES:
         protected_executable(config[name])
 
 

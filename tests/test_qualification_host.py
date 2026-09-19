@@ -20,6 +20,11 @@ def host_module():
     return importlib.import_module(name)
 
 
+def environment_module():
+    """Owns `protected` and `protected_executable`; host re-imports both by name."""
+    return importlib.import_module('scripts.qualification_boundary_environment')
+
+
 def test_changed_lock_is_rejected_before_provisioning(tmp_path):
     host = host_module()
     (tmp_path / 'requirements-ops.lock').write_text('tampered')
@@ -70,7 +75,7 @@ def test_executable_requires_protected_parent_and_resolved_target(tmp_path, monk
         if path == (tmp_path if reject == 'parent' else executable if reject == 'target' else None):
             raise ValueError('unprotected path')
         return path
-    monkeypatch.setattr(host, 'protected', protection)
+    monkeypatch.setattr(environment_module(), 'protected', protection)
     if reject:
         with pytest.raises(ValueError, match='unprotected'):
             host.protected_executable(str(executable))
@@ -81,7 +86,7 @@ def test_executable_requires_protected_parent_and_resolved_target(tmp_path, monk
 
 def test_executable_cannot_be_a_directory(tmp_path, monkeypatch):
     host = host_module()
-    monkeypatch.setattr(host, 'protected', lambda path: path)
+    monkeypatch.setattr(environment_module(), 'protected', lambda path: path)
     with pytest.raises(ValueError, match='executable'):
         host.protected_executable(str(tmp_path))
 
@@ -113,7 +118,7 @@ def test_executable_validates_intermediate_symlink_hops(tmp_path, monkeypatch, f
         if failure == 'writable-hop' and middle.parent in (path, *path.parents):
             raise ValueError('unprotected path')
         return path
-    monkeypatch.setattr(host, 'protected', protected)
+    monkeypatch.setattr(environment_module(), 'protected', protected)
     if failure:
         with pytest.raises(ValueError, match='unprotected|symlink'):
             host.protected_executable(str(first))
