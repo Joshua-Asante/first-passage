@@ -396,6 +396,14 @@ class FundingStoreMixin:
             amount = saved['limits']['cpu_ns']
             doc['reserved_cpu_ns'] += amount
             doc['remaining_cpu_ns'] = max(0, doc['remaining_cpu_ns'] - amount)
+        # Charged cancellation authentication attempts (one-use object rows) are
+        # settled controller CPU of this campaign, absent from the snapshot's
+        # per-work totals; the claim path applies the identical arithmetic.
+        with self.store.transaction() as c:
+            charged = self.void_authentication_charge(c, state['attempt_id'])
+        if charged:
+            doc['settled_cpu_ns'] += charged
+            doc['remaining_cpu_ns'] = max(0, doc['remaining_cpu_ns'] - charged)
         return doc, rows
 
     def _validate_materialized_coverage(self, c, attempt):
@@ -541,6 +549,9 @@ class FundingStoreMixin:
             doc = self._funding(c, attempt)
             if doc is None:
                 raise ValueError('fresh funding enrollment required')
+            # A queued operator cancellation bars this new-work grant outright,
+            # before or after the receipt (coordinator ruling 2026-09-19).
+            self._cancellation_barrier(c, attempt, admitted_only=False)
             if (
                 doc['state'] != 'BOUND'
                 or doc['validity'] != 'VALID'
