@@ -17,7 +17,7 @@ from c1_rail.qualification.policy_sources import build_qualification_policy
 
 
 def build_bundle(root, *, idle=False, geometry_bytes=None, workload=None,
-                 attempt_id=None, root_rng_namespace=None, capability='N1_ONLY'):
+                 attempt_id=None, root_rng_namespace=None, capability='N1_ONLY', diagnostic=False):
     policy_raw = build_qualification_policy()
     fixture = build_artifacts(root, idle=idle).with_runtime_artifacts(root)
     if geometry_bytes is not None:
@@ -34,6 +34,11 @@ def build_bundle(root, *, idle=False, geometry_bytes=None, workload=None,
     if capability == 'FULL_E1':
         profile.update(schema='qualification_execution_profile/v2', protocol_version=2,
             capability='FULL_E1', supported_checkpoints=[], dispatch_enabled=False)
+    if diagnostic:
+        from c1_rail.qualification.execution.profile import diagnostic_execution_profile
+        if capability != 'FULL_E1':
+            raise ValueError('diagnostic requires FULL_E1 fixture')
+        profile = diagnostic_execution_profile(encoded(profile))
     ordinary = {row.role: dict(module=row.name, path=row.path, sha256=digest(row.source_bytes))
                 for row in fixture.ordinary_modules}
     sources = {row['module']: dict(path=row['path'], sha256=row['sha256']) for row in ordinary.values()}
@@ -56,6 +61,10 @@ def build_bundle(root, *, idle=False, geometry_bytes=None, workload=None,
     if capability == 'FULL_E1':
         release_doc.update(schema='qualification_execution_release/v2', capability='FULL_E1',
             dispatch_enabled=False)
+    if diagnostic:
+        from c1_rail.qualification.execution.profile import diagnostic_budget_profile
+        release_doc.update(schema='qualification_execution_release/v3',
+            campaign_budget_profile=diagnostic_budget_profile(encoded(profile)))
     release = encoded(release_doc)
     fixture = replace(fixture, payloads=dict(fixture.payloads, execution_release=release,qualification_policy=policy_raw),
                       paths=dict(fixture.paths, execution_release='authority/release.json',qualification_policy='authority/policy.json'))

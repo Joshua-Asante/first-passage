@@ -222,6 +222,15 @@ class ExecutionService:
         if release['capability'] != 'FULL_E1':
             raise ValueError('FULL_E1 installed release required')
         campaigns = CampaignStore(self.store)
+        if release['schema'] == 'qualification_execution_release/v3':
+            if operation == 'SUBMIT_E1' and request['schema'] != 'qualification_campaign_request/v2':
+                raise ValueError('fresh versioned diagnostic admission required')
+            if request['schema'] != 'qualification_campaign_request/v2':
+                raise ValueError('diagnostic installation requires versioned historical requests')
+            if request['schema'] == 'qualification_campaign_request/v2':
+                return self._diagnostic_campaign_request(campaigns, request, raw, release)
+        elif request['schema'] == 'qualification_campaign_request/v2':
+            raise ValueError('installed diagnostic release required')
         with self.store.transaction():
             if operation == 'SUBMIT_E1':
                 status = campaigns.retry(raw)
@@ -267,6 +276,87 @@ class ExecutionService:
                     pass
             status['current_policy_eligible'] = eligible
             return encoded(status)
+
+    def _diagnostic_campaign_request(self, campaigns, request, raw, release):
+        from .campaign_supervisor import observe_campaign_clock, run_campaign_work, controller_cpu_guard
+        operation, attempt = request['operation'], request['attempt_id']
+        if operation == 'SUBMIT_E1':
+            with self.dispatch_lock, controller_cpu_guard():
+                try:
+                    existing = campaigns.row(attempt)
+                except KeyError:
+                    existing = None
+                if existing is not None:
+                    if bytes(existing['request_bytes']) != raw:
+                        raise ValueError('immutable diagnostic admission request differs')
+                    return encoded(campaigns.diagnostic_status(attempt))
+                state = parse_canonical_json(campaigns.begin_admission(raw,
+                    encoded(release['campaign_budget_profile']), observe_campaign_clock()), label='provisional budget')
+                reservation = decode_base64(state['works'][0]['reservation_bytes_b64'])
+                manifest = encoded(dict(schema='qualification_campaign_work_manifest/v1', attempt_id=attempt,
+                    work_id='admission', role='admission', probe='noop'))
+                return run_campaign_work(self, reservation, manifest)
+        if operation == 'STATUS':
+            return encoded(campaigns.diagnostic_status(attempt))
+        if operation == 'FETCH_PLAN_CHUNK':
+            if campaigns.diagnostic_status(attempt)['receipt'] is None:
+                raise ValueError('diagnostic admission has no retained plan')
+            return campaigns.chunk(request)
+        if operation == 'VOID':
+            with self.store.transaction():
+                retry = campaigns.void_retry(raw)
+                if retry is not None:
+                    return retry
+                objects = campaigns.objects(attempt)
+                if 'context_trust_domain' not in objects:
+                    return campaigns.queue_diagnostic_void(raw)
+                domain = parse_canonical_json(objects['context_trust_domain'], label='original enrollment')
+                contract_sha = campaigns.diagnostic_status(attempt)['receipt']['contract_sha256']
+                keys = self.keys()
+                approval = verify_detached_approval(decode_base64(request['operator_approval_bytes']),
+                    trusted_keys=keys, expected_scope='VOID_QUALIFICATION_ATTEMPT',
+                    expected_subject_sha256=sha256(encoded(dict(attempt_id=attempt,
+                        reason=request['reason'], contract_sha256=contract_sha))),
+                    expected_contract_sha256=contract_sha, now=now(), allow_test_authority=True)
+                if (approval.authority_class != 'TEST_ONLY' or approval.key_id not in domain['freeze_key_ids']
+                        or sha256(keys[approval.key_id].public_key) != domain['trusted_key_sha256'][approval.key_id]):
+                    raise ValueError('VOID authority is not enrolled')
+                return campaigns.void(raw, now=now())
+        raise ValueError('UNKNOWN_OPERATION')
+
+    def schedule_campaign_probe(self, attempt, work_id, role, probe='noop', *, signing_retry_of=None):
+        """Private installed caller only; no RPC dispatch operation exposes this."""
+        from .campaign_store import CampaignStore
+        from .campaign_supervisor import parse_work_manifest, observe_campaign_clock, run_campaign_work, controller_cpu_guard, arm_boottime_deadline
+        from .campaign_budget import clock
+        import resource
+        if resource.getrlimit(resource.RLIMIT_CPU) != (1, 1):
+            raise ValueError('private scheduler must have the installed hard CPU bound')
+        campaigns = CampaignStore(self.store)
+        with self.dispatch_lock, controller_cpu_guard():
+            state = parse_canonical_json(campaigns.budget_snapshot(attempt), label='probe budget')
+            arm_boottime_deadline(state['deadline_boottime_ns'])
+            if self.profile.values['schema'] != 'qualification_execution_profile/v3':
+                raise ValueError('fresh diagnostic installation required')
+            manifest = encoded(dict(schema='qualification_campaign_work_manifest/v1', attempt_id=attempt,
+                work_id=work_id, role=role, probe=probe))
+            parse_work_manifest(manifest)
+            phase = {'probe_worker': 'N1', 'probe_g5': 'N1_G5', 'probe_result': 'RESULT', 'probe_seal': 'SEAL'}[role]
+            reservation = dict(limits=state['profile']['phases'][phase], clock=clock(observe_campaign_clock()),
+                               input_sha256=sha256(manifest))
+            if signing_retry_of is not None:
+                parent = campaigns._work(state, signing_retry_of)
+                intent = campaigns._signing_intent(parent)
+                if intent is None:
+                    raise ValueError('fixed parent signing intent required')
+                reservation.update(signing_retry_of=signing_retry_of,
+                    input_sha256=sha256(decode_base64(intent['data']['payload_bytes_b64'])))
+            raw = encoded(reservation)
+            state = parse_canonical_json(campaigns.reserve_work(attempt, work_id, phase, raw,
+                expected_revision=state['authority_revision']), label='probe reservation')
+            if state['state'] != 'BOUND' or state['validity'] != 'VALID':
+                return encoded(campaigns.diagnostic_status(attempt))
+            return run_campaign_work(self, raw, manifest)
 
     def _eligible(self, execution_id):
         try:
@@ -390,6 +480,28 @@ class ExecutionService:
 
     def recover_service(self):
         self.recovery_issues = {}
+        from .campaign_store import CampaignStore
+        from .campaign_supervisor import recover_campaign_work
+        if self.profile.values['schema'] == 'qualification_execution_profile/v3':
+            campaigns = CampaignStore(self.store)
+            with self.store.transaction() as connection:
+                exists = connection.execute("SELECT 1 FROM sqlite_master WHERE name='full_campaign_budgets'").fetchone()
+                attempts = [] if exists is None else [row[0] for row in connection.execute('SELECT attempt_id FROM full_campaign_budgets')]
+            for attempt in attempts:
+                with self.store.transaction() as connection:
+                    funding = campaigns._funding(connection, attempt)
+                if funding is not None:
+                    self.recovery_issues[attempt + ':funding'] = ('FUNDING_PENDING' if funding['bootstrap_pending_work_id'] is not None or funding['terminal_overlay'] is not None else 'FUNDING_RUNTIME_NOT_ENABLED')
+                    continue  # R2a persistence cannot activate or resume a controller.
+                state = parse_canonical_json(campaigns.budget_snapshot(attempt), label='recovery budget')
+                if state['profile']['schema'] != 'qualification_campaign_budget_profile/v2':
+                    continue  # Historical S1/dormant records gain no runtime ownership.
+                for work in state['works']:
+                    try:
+                        recover_campaign_work(self, decode_base64(work['reservation_bytes_b64']),
+                                              attempt_id=attempt, work_id=work['work_id'])
+                    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
+                        self.recovery_issues[attempt + ':' + work['work_id']] = 'RECOVERY_PENDING'
         for row in self.store.execution_rows():
             if row['state'] in ('DISPATCHED', 'START_INTENT', 'RUNNING'):
                 self.store.record_abort(row['execution_id'], 'uncertain execution after service restart', uncertain=True)
@@ -462,3 +574,6 @@ def main():
     release = read_regular(Path(config['installation_root']), 'release.json', limit=16 * 1024 * 1024)
     measure_runtime(installed_code_root(), 'supervisor', release)
     ExecutionService(config).serve()
+
+
+from .campaign_supervisor import guardian_main as campaign_guardian_main

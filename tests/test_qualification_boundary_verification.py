@@ -33,7 +33,7 @@ def test_nonlinux_entry_point_fails_without_provisioning(monkeypatch):
     assert module.main(['--test-only']) != 0
 
 
-@pytest.mark.parametrize('mode',['--host-only','--test-only'])
+@pytest.mark.parametrize('mode',['--host-only','--test-only','--s2'])
 def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatch,mode):
     module = runner()
     manifest_path = tmp_path / 'run' / 'ownership.json'
@@ -67,7 +67,8 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
             events.append('begin')
 
         def execute(self, command, **_kwargs):
-            selection='tests/integration/qualification_host' if mode=='--host-only' else 'tests/integration/qualification_boundary'
+            selection=('tests/integration/qualification_host' if mode=='--host-only' else
+                module.S2_CASES if mode=='--s2' else 'tests/integration/qualification_boundary')
             assert selection in command
             if mode=='--test-only':
                 assert self.data['metadata']['qualification_acceptance']=='coordinator_review_required'
@@ -85,7 +86,7 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
     monkeypatch.setattr(module.os, 'geteuid', lambda: 0, raising=False)
     monkeypatch.setattr(module, 'protected', lambda path: path)
     monkeypatch.setattr(module, 'RunRecord', Record)
-    monkeypatch.setattr(module, 'require_invariants', lambda *args: {'passed': True})
+    monkeypatch.setattr(module, 'require_invariants', lambda *args, **kwargs: {'passed': True})
     monkeypatch.setattr(module, 'ownership_lock', observed_lock)
     monkeypatch.setattr(module, 'cleanup', observed_cleanup)
     monkeypatch.setattr(module,'create_process_group',lambda root:root/'group')

@@ -48,7 +48,8 @@ class Boundary:
         self.output=self.root/'evidence/boundary'; self.output.mkdir(mode=0o700)
         self.group=host.create_process_group(self.root)
         self.image=build_worker(self.root,self.manifest)
-        self.admin('install','--image',self.image)
+        self.diagnostic = os.environ.get('FP_QUALIFICATION_S2') == '1'
+        self.admin('install','--image',self.image,*(['--diagnostic'] if self.diagnostic else []))
         self.installation=self.code/'qualification-installation'
         self.config=json.loads((self.installation/'supervisor.json').read_bytes())
         report=inspect_environment(self.installation/'test-instance.json',(self.installation/'profile.json').read_bytes())
@@ -146,6 +147,18 @@ class Boundary:
         return rows
 
     def restart(self, *, checkpoint=None):
+        if self.diagnostic:
+            from tools.qualification_verification import campaign_host
+            campaign_host.restart(self.root,self.manifest,self.python,self.code/'bootstrap.py')
+            deadline=time.monotonic()+60
+            while time.monotonic()<deadline:
+                try:
+                    response=self.raw_request(dict(schema='qualification_campaign_request/v2', operation='STATUS',
+                        attempt_id='readiness-probe'))
+                    if response.get('ok') is False and response.get('error') == repr('readiness-probe'): return
+                except (OSError,subprocess.SubprocessError): pass
+                time.sleep(.1)
+            raise AssertionError('diagnostic supervisor startup expired')
         if self.service is not None and self.service.poll() is None:
             self.service.kill(); self.service.wait(timeout=15)
         stdout=(self.output/('supervisor-'+uuid4().hex+'.stdout')).open('wb')
@@ -172,6 +185,9 @@ class Boundary:
         raise AssertionError('protected supervisor startup expired')
 
     def close(self):
+        if self.diagnostic:
+            from tools.qualification_verification import campaign_host
+            campaign_host.cleanup(self.root,self.manifest)
         if self.service is not None and self.service.poll() is None:
             self.service.kill(); self.service.wait(timeout=15)
         for stream in self.streams: stream.close()

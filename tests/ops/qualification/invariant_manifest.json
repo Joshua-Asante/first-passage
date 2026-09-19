@@ -362,7 +362,14 @@
       "tests/ops/qualification/execution/test_worker.py::test_final_observation_serialization_overrun_cannot_return_result[wall]",
       "tests/ops/qualification/execution/test_worker.py::test_retained_observations_include_completed_payload_work[encode_frame]",
       "tests/ops/qualification/execution/test_worker.py::test_retained_observations_include_completed_payload_work[encode_worker_result]",
-      "tests/ops/qualification/execution/test_worker.py::test_retained_observations_include_completed_payload_work[parse_worker_result]"
+      "tests/ops/qualification/execution/test_worker.py::test_retained_observations_include_completed_payload_work[parse_worker_result]",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_sequential_roles_share_one_allowance",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_two_descendants_exhaust_owned_cpu",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_fixed_intent_retry_is_charged_separately",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_guardian_death_recovers_before_cleanup",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_original_deadline_survives_service_downtime",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_shared_memory_oom_is_retained_last",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_kernel_bounds_guardian_cpu_before_recovery"
     ],
     "evidence_kind": "executed pytest JUnit; real protected Linux process/UID/container evidence where integration nodes are named"
   },

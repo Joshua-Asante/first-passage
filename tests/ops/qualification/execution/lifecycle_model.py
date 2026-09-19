@@ -78,13 +78,18 @@ class LifecycleModel:
 
 class CampaignBudgetModel:
     """SQL-free allowance/recovery reference with opaque simulated identities."""
-    def __init__(self, cap, reservation):
+    def __init__(self, cap, reservation, *, overhead=0):
         self.cap = cap
+        self.overhead = overhead
         self.reservation = reservation
         self.state = 'RESERVED'
         self.validity = 'VALID'
         self.terminal = False
         self.charge = None
+        self.recovery_pending = False
+        self.recovery_spent = False
+        self.recovery_observed = False
+        self.continuation_required = False
 
     def apply(self, action, charge=None):
         if action == 'reopen':
@@ -92,20 +97,36 @@ class CampaignBudgetModel:
         if action == 'void':
             self.validity = 'VOID'
             return True
+        if action == 'recovery_claim':
+            if self.recovery_spent:
+                if not self.recovery_pending:
+                    self.continuation_required = True
+                self.recovery_pending = True
+                return False
+            self.recovery_pending = self.recovery_spent = True
+            return True
+        if action == 'recovery_complete':
+            if not self.recovery_pending or not self.recovery_observed or self.continuation_required:
+                return False
+            self.recovery_pending = False
+            return True
         if action == 'recover':
+            if self.recovery_pending:
+                self.recovery_observed = True
             if self.state in ('START_INTENT', 'RUNNING'):
                 self.state = 'IN_DOUBT'
                 self.terminal = True
-                self.charge = self.reservation if charge is None else charge
+                self.charge = self.reservation if charge is None else charge + self.overhead
             elif self.state == 'CAPTURED':
-                self.charge = self.reservation if charge is None else charge
+                self.charge = self.reservation if charge is None else charge + self.overhead
                 self.terminal = charge is None
             return True
-        if self.validity != 'VALID' or self.terminal:
+        if self.validity != 'VALID' or self.terminal or self.recovery_pending:
             return False
         next_state = {('RESERVED', 'intent'): 'START_INTENT',
                       ('START_INTENT', 'running'): 'RUNNING',
-                      ('RUNNING', 'capture'): 'CAPTURED'}
+                      ('RUNNING', 'capture'): 'CAPTURED',
+                      ('CAPTURED', 'complete'): 'COMPLETED'}
         target = next_state.get((self.state, action))
         if target is None:
             return False
@@ -115,3 +136,21 @@ class CampaignBudgetModel:
     @property
     def remaining(self):
         return self.cap - (self.reservation if self.charge is None else self.charge)
+
+class FundingIntentModel:
+    """Independent allowance/one-owner model, with no production imports."""
+    def __init__(self,cap,phase,initial):
+        self.cap=cap; self.phase=phase; self.reserved=initial
+        self.pending=False; self.claimed=False; self.valid=True
+    def claim(self):
+        if self.claimed or not self.valid: return False
+        if self.cap-self.reserved<self.phase: return False
+        self.reserved+=self.phase; self.pending=True; self.claimed=True
+        return True
+    def void(self): self.valid=False
+    def materialize(self):
+        if not self.pending: return False
+        self.pending=False
+        return True
+    @property
+    def can_publish(self): return self.valid and not self.pending

@@ -69,3 +69,6 @@ def main():
     measure_runtime(installed_code_root(), 'worker', release)
     sys.stdout.buffer.write(run_worker(Path(args.input), execution_id=args.execution_id))
     sys.stdout.buffer.flush()
+
+
+from .campaign_probe import main as campaign_probe_main

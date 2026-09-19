@@ -56,7 +56,7 @@ def release_document(repo, profile, image, keys):
                    'c1_rail.qualification.regime': 'rng_allocation'}
     ordinary = {assignments.get(name, 'runtime_dependency__' + name.replace('.', '__')):
         dict(module=name, **row) for name, row in sorted(sources.items())}
-    return dict(schema='qualification_execution_release/v1', release_id='linux-test-n1',
+    result = dict(schema='qualification_execution_release/v1', release_id='linux-test-n1',
         qualification_policy_sha256=sha256(policy),source_owner_sha256=json.loads(policy)['source_owner_sha256'],
         profile=profile, profile_sha256=sha256(encoded(profile)), authority_class='TEST_ONLY',
         service_id='linux-test-service', capability='N1_ONLY', production_execution=False,
@@ -65,6 +65,13 @@ def release_document(repo, profile, image, keys):
         port_roles=['aegis_runtime_port', 'orb_runtime_port', 'striker_runtime_port', 'vanguard_runtime_port'],
         key_roles=dict(freeze=['test-freeze'], result=['test-producer'], seal=['test-seal'], execution=['test-execution']),
         trusted_key_sha256={key: sha256(value.public_key) for key, value in keys.items()})
+
+    if profile['schema'] == 'qualification_execution_profile/v3':
+        from c1_rail.qualification.execution.profile import diagnostic_budget_profile
+        result.update(schema='qualification_execution_release/v3', capability='FULL_E1', dispatch_enabled=False,
+                      campaign_budget_profile=diagnostic_budget_profile(encoded(profile)))
+    return result
+
 
 
 def build_real_bundle(root, *, repo, release, private, keys, attempt_id, idle=False, budget=None,
@@ -130,6 +137,8 @@ def _boundary_fault():
         adjudicator_closure_sha256=contract_doc['result_plan']['adjudicator_closure_sha256'])
     contract_doc['replay']['budget'].update(maximum_wall_seconds=180, maximum_cpu_seconds=120,
                                            maximum_memory_bytes=memory_limit*9//10)
+    if release_doc['schema'] == 'qualification_execution_release/v3':
+        contract_doc['replay']['budget'].update(maximum_wall_seconds=10000, maximum_cpu_seconds=10000, maximum_memory_bytes=memory_limit)
     if budget:
         contract_doc['replay']['budget'].update(budget)
     if fault in ('cpu','wall'):

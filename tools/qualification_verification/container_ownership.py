@@ -47,3 +47,28 @@ def owned_containers(rows, executions, *, run_id, image_id, release_sha256):
         return tuple(sorted(result))
     except (KeyError,TypeError) as exc:
         raise ValueError('owned container inventory malformed') from exc
+
+def campaign_host_slice(run_id):
+    """Shared identity producer for diagnostic runtime and administrator cleanup."""
+    import hashlib
+    if type(run_id) is not str or re.fullmatch('[A-Za-z0-9][A-Za-z0-9_.-]{0,127}',run_id) is None:
+        raise ValueError('campaign host identity differs')
+    return 'fpq' + hashlib.sha256(run_id.encode()).hexdigest()[:16] + '.slice'
+
+
+def campaign_scopes(run_id, attempt, work):
+    import hashlib
+    import json
+    for value in (attempt,work):
+        if type(value) is not str or re.fullmatch('[A-Za-z0-9][A-Za-z0-9_.-]{0,127}',value) is None:
+            raise ValueError('campaign work identity differs')
+    parent=campaign_host_slice(run_id)[:-6]
+    campaign=parent+'-'+hashlib.sha256(attempt.encode()).hexdigest()[:24]
+    scoped=campaign+'-'+hashlib.sha256(work.encode()).hexdigest()[:24]
+    identity=json.dumps([run_id,attempt,work],separators=(',',':'),ensure_ascii=False).encode()
+    return dict(campaign_slice=campaign+'.slice',work_slice=scoped+'.slice',payload_slice=scoped+'-payload.slice',
+                guardian_unit=parent+'guardian'+hashlib.sha256(identity).hexdigest()+'.service')
+
+CAMPAIGN_BUS_START = ('/usr/bin/busctl', '--system', '--no-pager', '--timeout=5s', 'call',
+    'org.freedesktop.systemd1', '/org/freedesktop/systemd1', 'org.freedesktop.systemd1.Manager',
+    'StartTransientUnit', 'ssa(sv)a(sa(sv))')

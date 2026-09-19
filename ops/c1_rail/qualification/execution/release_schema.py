@@ -23,12 +23,14 @@ def parse_release(raw):
     doc = parse_canonical_json(raw,label='execution release')
     if type(doc) is not dict:
         raise ValueError('closed schema object required')
-    campaign = doc.get('schema') == 'qualification_execution_release/v2'
+    diagnostic = doc.get('schema') == 'qualification_execution_release/v3'
+    campaign = diagnostic or doc.get('schema') == 'qualification_execution_release/v2'
     fields(doc, {
         'schema','release_id','profile','profile_sha256','authority_class','service_id',
         'capability','production_execution','worker_image_digest','runtime_manifests',
         'ordinary_code','worker_entrypoint','port_roles','key_roles','trusted_key_sha256',
-        'qualification_policy_sha256','source_owner_sha256'} | ({'dispatch_enabled'} if campaign else set()))
+        'qualification_policy_sha256','source_owner_sha256'} | ({'dispatch_enabled'} if campaign else set()) |
+        ({'campaign_budget_profile'} if diagnostic else set()))
     if campaign:
         if (doc['capability'] != 'FULL_E1' or doc['authority_class'] != 'TEST_ONLY'
                 or doc['production_execution'] is not False or doc['dispatch_enabled'] is not False):
@@ -42,6 +44,17 @@ def parse_release(raw):
     owners = fields(doc['source_owner_sha256'], {'book_policy','firm_rules','policy_fingerprint'})
     for value in owners.values(): digest(value)
     profile = parse_profile(canonical_json_bytes(doc['profile']))
+    if profile.values['schema'] == 'qualification_execution_profile/v4':
+        raise ValueError('funding profile is persistence-only; runtime release not enabled')
+    if diagnostic:
+        from .profile import parse_campaign_budget_profile
+        budget_profile = parse_campaign_budget_profile(canonical_json_bytes(doc['campaign_budget_profile']))
+        if (profile.values['schema'] != 'qualification_execution_profile/v3'
+                or budget_profile['schema'] != 'qualification_campaign_budget_profile/v2'
+                or budget_profile['installed_profile_sha256'] != profile.sha256):
+            raise ValueError('diagnostic installed budget/profile binding differs')
+    elif profile.values['schema'] == 'qualification_execution_profile/v3':
+        raise ValueError('diagnostic profile requires release v3')
     if profile.capability != doc['capability']:
         raise ValueError('release profile capability differs')
     if digest(doc['profile_sha256']) != profile.sha256:
