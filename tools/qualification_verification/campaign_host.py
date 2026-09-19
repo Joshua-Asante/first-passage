@@ -3,9 +3,49 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import time
 from . import host
 from .container_ownership import campaign_host_slice as _scope, campaign_scopes
 
+POLKIT_RULES = Path('/etc/polkit-1/rules.d')
+CGROUP_ROOT = Path('/sys/fs/cgroup')
+SLICE_REALIZE_SECONDS = 5
+
+
+def _start_common_slice(scope, memory_bytes):
+    """Create the common memory slice with the manager's own properties only.
+
+    systemd exposes no property for the kernel's memory.oom.group attribute
+    (a non-existent name makes the manager reject the whole call), so group
+    OOM termination is set on the realized cgroup by _realize_common_slice.
+    """
+    properties = [('MemoryMax', 't', str(memory_bytes)), ('MemorySwapMax', 't', '0'),
+                  ('MemoryAccounting', 'b', 'true'), ('CPUAccounting', 'b', 'true')]
+    command = ['/usr/bin/busctl', '--system', '--timeout=5s', 'call', 'org.freedesktop.systemd1',
+        '/org/freedesktop/systemd1', 'org.freedesktop.systemd1.Manager', 'StartTransientUnit',
+        'ssa(sv)a(sa(sv))', scope, 'fail', str(len(properties)),
+        *(item for row in properties for item in row), '0']
+    try:
+        host.run(command)
+    except subprocess.CalledProcessError as exc:
+        # The manager's refusal text is the only diagnostic; never lose it.
+        raise ValueError('common memory slice enrollment failed: ' + (exc.stderr or '').strip()[-2000:]) from exc
+
+
+def _realize_common_slice(scope, memory_bytes):
+    """Wait for the manager to realize the slice, then pin the attributes the runtime checks."""
+    group = CGROUP_ROOT / scope
+    deadline = time.monotonic() + SLICE_REALIZE_SECONDS
+    while not (group / 'memory.max').exists():
+        if time.monotonic() >= deadline:
+            raise ValueError('common memory slice was not realized: ' + str(group))
+        time.sleep(0.05)
+    (group / 'memory.oom.group').write_text('1')
+    observed = {name: (group / name).read_text().strip() for name in ('memory.max', 'memory.swap.max', 'memory.oom.group')}
+    expected = {'memory.max': str(memory_bytes), 'memory.swap.max': '0', 'memory.oom.group': '1'}
+    if observed != expected:
+        raise ValueError('common memory slice attributes differ: ' + json.dumps(observed, sort_keys=True))
+    return observed
 
 
 def install(root, manifest, profile_bytes):
@@ -21,7 +61,7 @@ def install(root, manifest, profile_bytes):
         ' if (action.id == "org.freedesktop.systemd1.manage-units" && subject.user == "qexec" &&\n'
         '     action.lookup("unit").indexOf("' + prefix + '") == 0) return polkit.Result.YES;\n'
         '});\n').encode()
-    path = Path('/etc/polkit-1/rules.d') / ('49-' + prefix + '.rules')
+    path = POLKIT_RULES / ('49-' + prefix + '.rules')
     enrollment = dict(schema='qualification_campaign_host/v1', host_run_id=run_id, scope=scope,
         memory_bytes=memory_bytes, profile_sha256=hashlib.sha256(profile_bytes).hexdigest(), rule_path=str(path), rule_sha256=hashlib.sha256(rule).hexdigest())
     host.save(root / 'campaign-host.json', enrollment, exclusive=True, mode=0o444)
@@ -29,11 +69,8 @@ def install(root, manifest, profile_bytes):
     with path.open('xb') as stream:
         stream.write(rule)
     path.chmod(0o644)
-    host.run(['/usr/bin/busctl', '--system', '--timeout=5s', 'call', 'org.freedesktop.systemd1',
-        '/org/freedesktop/systemd1', 'org.freedesktop.systemd1.Manager', 'StartTransientUnit',
-        'ssa(sv)a(sa(sv))', scope, 'fail', '5', 'MemoryMax', 't', str(memory_bytes),
-        'MemorySwapMax', 't', '0', 'MemoryOOMGroup', 'b', 'true',
-        'MemoryAccounting', 'b', 'true', 'CPUAccounting', 'b', 'true', '0'])
+    _start_common_slice(scope, memory_bytes)
+    _realize_common_slice(scope, memory_bytes)
     return enrollment
 
 
