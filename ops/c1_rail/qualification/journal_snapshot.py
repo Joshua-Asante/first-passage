@@ -72,13 +72,15 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
     those values and the CURRENT ledger together inside ExecutionStore's lock.
     Full snapshot byte equality is not the publication freshness predicate.
     """
-    doc = _fields(parse_canonical_json(raw, label='campaign budget snapshot'), {
+    document = parse_canonical_json(raw, label='campaign budget snapshot')
+    revised = type(document) is dict and document.get('schema') == 'qualification_campaign_budget_snapshot/v4'
+    doc = _fields(document, {
         'schema', 'attempt_id', 'request_sha256', 'profile', 'budget', 'start_clock',
         'last_clock', 'deadline_boottime_ns', 'state', 'validity', 'authority_revision',
         'accounting_revision', 'authority_head', 'event_head', 'campaign_scope_id',
         'memory_peak_bytes', 'oom_events', 'works', 'settled_cpu_ns', 'reserved_cpu_ns',
-        'remaining_cpu_ns'}, label='campaign budget snapshot')
-    if doc['schema'] not in ('qualification_campaign_budget_snapshot/v1', 'qualification_campaign_budget_snapshot/v2'):
+        'remaining_cpu_ns'} | ({'recoveries', 'dispatches'} if revised else set()), label='campaign budget snapshot')
+    if doc['schema'] not in ('qualification_campaign_budget_snapshot/v1', 'qualification_campaign_budget_snapshot/v2', 'qualification_campaign_budget_snapshot/v3', 'qualification_campaign_budget_snapshot/v4'):
         raise ValueError('campaign budget snapshot schema required')
     if doc['state'] not in CAMPAIGN_BUDGET_STATES or doc['validity'] not in ('VALID', 'VOID'):
         raise ValueError('campaign budget state differs')
@@ -92,6 +94,8 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
     from .execution.profile import parse_campaign_budget_profile
     from .execution.protocol import decode_base64, fields
     parse_campaign_budget_profile(canonical_json_bytes(doc['profile']))
+    if (doc['profile']['schema'] == 'qualification_campaign_budget_profile/v2') != (doc['schema'] in ('qualification_campaign_budget_snapshot/v3', 'qualification_campaign_budget_snapshot/v4')):
+        raise ValueError('profile requires compatible snapshot version')
     clock(canonical_json_bytes(doc['start_clock']))
     clock(canonical_json_bytes(doc['last_clock']))
     if doc['campaign_scope_id'] is not None:
@@ -121,22 +125,17 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
             keys.add('signing_retry_of')
         fields(reservation, keys)
         if 'signing_retry_of' in reservation:
-            if doc['schema'] != 'qualification_campaign_budget_snapshot/v2':
+            if doc['schema'] not in ('qualification_campaign_budget_snapshot/v2', 'qualification_campaign_budget_snapshot/v3', 'qualification_campaign_budget_snapshot/v4'):
                 raise ValueError('signing retry requires snapshot v2')
             _identity(reservation['signing_retry_of'])
         clock(canonical_json_bytes(reservation['clock']))
         if reservation['limits'] != work['limits'] or reservation['input_sha256'] != work['input_sha256']:
             raise ValueError('reservation identity differs')
         if work['observation_bytes_b64'] is not None:
-            observation = fields(parse_canonical_json(decode_base64(work['observation_bytes_b64']), label='observation'), {'schema', 'attempt_id', 'work_id', 'clock', 'campaign_scope_id', 'work_scope_id', 'cpu_ns', 'memory_peak_bytes', 'oom_events'})
-            if observation['schema'] != 'qualification_campaign_observation/v1' or observation['attempt_id'] != doc['attempt_id'] or observation['work_id'] != work['work_id']:
-                raise ValueError('observation identity differs')
-            clock(canonical_json_bytes(observation['clock']))
-            _identity(observation['campaign_scope_id']); _identity(observation['work_scope_id'])
-            for key in ('cpu_ns', 'memory_peak_bytes', 'oom_events'):
-                if observation[key] is not None:
-                    integer(observation[key])
-            expected_charge = work['limits']['cpu_ns'] if observation['cpu_ns'] is None else observation['cpu_ns']
+            from .execution.campaign_budget import observation as parse_observation, observation_charge
+            observation = parse_observation(decode_base64(work['observation_bytes_b64']),
+                attempt_id=doc['attempt_id'], work_id=work['work_id'], phase=work['phase'], profile=doc['profile'])
+            expected_charge = observation_charge(observation, work['limits'])
             if work['charge_cpu_ns'] != expected_charge:
                 raise ValueError('settlement charge differs')
         elif work['charge_cpu_ns'] != 0:
@@ -174,6 +173,10 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
             item = parse_canonical_json(decode_base64(raw_transition), label='retry transition')
             if item['state'] not in ('START_INTENT', 'RUNNING', 'COMPLETED'):
                 raise ValueError('signing retry transition differs')
+    if revised:
+        from .execution.campaign_budget import validate_recoveries, validate_dispatches
+        validate_recoveries(doc)
+        validate_dispatches(doc)
     if [w['work_id'] for w in doc['works']] != sorted(identities):
         raise ValueError('canonical work order required')
     return doc

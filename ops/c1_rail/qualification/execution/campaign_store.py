@@ -4,6 +4,7 @@ Only the protected service supplies verified contexts and trusted observations.
 Private metered intents do not activate a release or launch a process.
 """
 import base64
+from contextlib import contextmanager
 import uuid
 
 from ..contract import canonical_json_bytes as encoded, parse_canonical_json
@@ -102,6 +103,353 @@ class CampaignStore:
                 connection.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
                     (attempt, role, sha256(raw), len(raw), raw))
             return self.status(attempt)
+
+    def claim_supervision_control(self, attempt, work_id, slot, clock_bytes, *, recovery_owner_token=None):
+        """Start a new active control operation, never a historical replay.
+
+        Recovery claims/denials commit independently. A lost owner cannot resume;
+        a new recovery need after completion creates an unfunded durable barrier.
+        """
+        from .campaign_supervisor import parse_supervision_event
+        from .campaign_budget import clock
+        if slot == 'RECOVERY_OWNER' and getattr(self.store._local, 'connection', None) is not None:
+            raise ValueError('active recovery claim requires independent transaction')
+        raw = encoded(dict(schema='qualification_campaign_supervision_event/v1', attempt_id=attempt,
+            work_id=work_id, kind='CONTROL', clock=clock(clock_bytes), data=dict(slot=slot)))
+        parse_supervision_event(raw)
+        role = 'supervision_control_' + sha256(encoded([work_id, slot]))
+        spent = False
+        with self.store.transaction() as connection:
+            state = self._budget(connection, attempt)
+            self._work(state, work_id)
+            if state['profile']['schema'] != 'qualification_campaign_budget_profile/v2':
+                raise ValueError('installed metered control slots required')
+            spent = connection.execute('SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role=?', (attempt, role)).fetchone() is not None
+            if spent:
+                if slot == 'RECOVERY_OWNER':
+                    recovery = next((r for r in state.get('recoveries', ()) if r['work_id'] == work_id), None)
+                    if recovery is not None and recovery['completion_bytes_b64'] is not None and not recovery['continuation_required']:
+                        before = state['state']
+                        recovery['continuation_required'] = True
+                        self._observe_clock(state, clock(clock_bytes))
+                        self._save_budget(connection, state, 'RECOVERY_CONTINUATION_REQUIRED', authority=state['state'] != before)
+            else:
+                if slot != 'RECOVERY_OWNER':
+                    if recovery_owner_token is not None:
+                        raise ValueError('only recovery has an owner token')
+                    self._check_budget(state, state['authority_revision'])
+                else:
+                    # Omission deliberately creates an uncompletable claim.
+                    # Production supplies an ephemeral, never persisted token.
+                    import secrets
+                    token = secrets.token_bytes(32) if recovery_owner_token is None else recovery_owner_token
+                    self._validate_recovery_token(token)
+                    state['schema'] = 'qualification_campaign_budget_snapshot/v4'
+                    state.setdefault('dispatches', [])
+                    state.setdefault('recoveries', []).append(dict(work_id=work_id,
+                        claim_sha256=sha256(raw), owner_sha256=sha256(token),
+                        observations_bytes_b64=None, completion_bytes_b64=None, continuation_required=False))
+                    state['recoveries'].sort(key=lambda row: row['work_id'])
+                    self._save_budget(connection, state, 'RECOVERY_CLAIM', authority=False)
+                connection.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
+                                   (attempt, role, sha256(raw), len(raw), raw))
+        # Refusal follows commit, including the negative continuation marker.
+        if spent:
+            raise ValueError('control slot already spent; no unmetered retry')
+        return raw
+
+    def _dispatch_clock(self, connection, state, work, clock_source):
+        from .campaign_budget import clock
+        current = clock(clock_source())  # Sample while the serialized decision is held.
+        before = state['state']
+        self._observe_clock(state, current)
+        reservation = parse_canonical_json(self._raw(work['reservation_bytes_b64']), label='reservation')
+        deadline = min(state['deadline_boottime_ns'], reservation['clock']['boottime_ns'] + work['limits']['wall_ns'])
+        if current['boottime_ns'] is not None and current['boottime_ns'] >= deadline:
+            self._terminal(state, 'BUDGET_EXHAUSTED')
+        self._save_budget(connection, state, 'DISPATCH_CLOCK', authority=state['state'] != before)
+        return current, deadline
+
+    @contextmanager
+    def launch_gate(self, attempt_id, work_id, clock_source, *, role='guardian'):
+        """Commit uncertainty before an effect; serialize only its bounded request.
+
+        The live caller alone may acknowledge acceptance. Losing it leaves a
+        durable barrier, even when every post-effect database write fails.
+        """
+        import secrets
+        if getattr(self.store._local, 'connection', None) is not None:
+            raise ValueError('launch gate requires independent transaction')
+        if role not in ('guardian', 'payload'):
+            raise ValueError('fixed dispatch role required')
+        token = secrets.token_bytes(32)
+        owner = sha256(token)
+        with self.store.transaction() as connection:
+            state = self._budget(connection, attempt_id)
+            work = self._work(state, work_id)
+            self._check_budget(state, state['authority_revision'])
+            if work['state'] not in ('START_INTENT', 'RUNNING') or work['observation_bytes_b64'] is not None:
+                raise ValueError('durable unconsumed start intent required')
+            if any(r['work_id'] == work_id and r['role'] == role for r in state.get('dispatches', ())):
+                raise ValueError('dispatch already spent; no relaunch')
+            current, deadline = self._dispatch_clock(connection, state, work, clock_source)
+            refused = state['state'] not in ('PROVISIONAL', 'BOUND')
+            if not refused:
+                state['schema'] = 'qualification_campaign_budget_snapshot/v4'
+                state.setdefault('recoveries', [])
+                state.setdefault('dispatches', []).append(dict(work_id=work_id, role=role,
+                    owner_sha256=owner, started_clock=current, acknowledged_clock=None))
+                state['dispatches'].sort(key=lambda r: (r['work_id'], r['role']))
+                self._save_budget(connection, state, 'DISPATCH_PENDING', authority=False)
+        if refused:
+            raise ValueError('original dispatch deadline or clock is terminal')
+        with self.store.transaction() as connection:
+            state = self._budget(connection, attempt_id)
+            work = self._work(state, work_id)
+            self._check_budget(state, state['authority_revision'], dispatch_owner=owner)
+            if work['state'] not in ('START_INTENT', 'RUNNING') or work['observation_bytes_b64'] is not None:
+                raise ValueError('durable unconsumed start intent required')
+            current, deadline = self._dispatch_clock(connection, state, work, clock_source)
+            refused = state['state'] not in ('PROVISIONAL', 'BOUND')
+            if not refused:
+                yield dict(token=token, clock=current, deadline_boottime_ns=deadline)
+        if refused:
+            raise ValueError('original dispatch deadline or clock is terminal')
+
+    def acknowledge_dispatch(self, attempt_id, work_id, role, token, clock_source):
+        """Record bounded request acceptance, never application completion.
+
+        This clears only its owner's marker, including a late acknowledgement;
+        recovery, VOID and terminal facts are unchanged and still gate authority.
+        """
+        from .campaign_budget import clock
+        self._validate_recovery_token(token)
+        if getattr(self.store._local, 'connection', None) is not None:
+            raise ValueError('dispatch acknowledgement requires independent transaction')
+        with self.store.transaction() as connection:
+            state = self._budget(connection, attempt_id)
+            row = next((r for r in state.get('dispatches', ()) if r['work_id'] == work_id and r['role'] == role), None)
+            if row is None or row['owner_sha256'] != sha256(token):
+                raise ValueError('dispatch owner differs')
+            if row['acknowledged_clock'] is not None:
+                return self.budget_snapshot(attempt_id)
+            current = clock(clock_source())
+            before = state['state']
+            self._observe_clock(state, current)
+            row['acknowledged_clock'] = current
+            return self._save_budget(connection, state, 'DISPATCH_ACKNOWLEDGED', authority=state['state'] != before)
+
+    @staticmethod
+    def _validate_recovery_token(token):
+        if type(token) is not bytes or len(token) != 32:
+            raise ValueError('ephemeral recovery owner token required')
+
+    def _recovery_owner(self, state, work_id, token):
+        self._validate_recovery_token(token)
+        row = next((r for r in state.get('recoveries', ()) if r['work_id'] == work_id), None)
+        if row is None or row['owner_sha256'] != sha256(token):
+            raise ValueError('recovery owner differs')
+        return row
+
+    def _recovery_pending(self, state):
+        from .campaign_budget import recovery_pending
+        if recovery_pending(state):
+            return True
+        # Historical v3 claims remain readable but cannot acquire authority by
+        # omitting the new projection. No successful completion is fabricated.
+        known = {r['claim_sha256'] for r in state.get('recoveries', ())}
+        with self.store.transaction() as connection:
+            rows = connection.execute("SELECT body,sha256 FROM full_campaign_objects WHERE attempt_id=? AND role LIKE 'supervision_control_%'", (state['attempt_id'],))
+            for raw, identity in rows:
+                event = parse_canonical_json(bytes(raw), label='control claim')
+                if event['data']['slot'] == 'RECOVERY_OWNER' and identity not in known:
+                    return True
+        return False
+
+    def complete_recovery(self, attempt_id, work_id, completion_bytes, *, recovery_owner_token):
+        """Clear only this live owner's barrier after committed facts and absence."""
+        from .campaign_budget import recovery_completion
+        from .campaign_supervisor import parse_supervision_event
+        doc = recovery_completion(completion_bytes, attempt_id=attempt_id, work_id=work_id)
+        if getattr(self.store._local, 'connection', None) is not None:
+            raise ValueError('recovery completion must commit independently')
+        with self.store.transaction() as connection:
+            state = self._budget(connection, attempt_id)
+            row = self._recovery_owner(state, work_id, recovery_owner_token)
+            if row['completion_bytes_b64'] is not None:
+                if self._raw(row['completion_bytes_b64']) != completion_bytes:
+                    raise ValueError('immutable recovery completion differs')
+                return self.budget_snapshot(attempt_id)
+            if (row['observations_bytes_b64'] is None or doc['claim_sha256'] != row['claim_sha256']
+                    or doc['observations_sha256'] != sha256(self._raw(row['observations_bytes_b64']))):
+                raise ValueError('committed recovery facts required')
+            saved = connection.execute('SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role=?',
+                (attempt_id, 'supervision_event_' + doc['cleanup_event_sha256'])).fetchone()
+            if saved is None:
+                raise ValueError('durable cleanup absence required')
+            cleanup = parse_supervision_event(bytes(saved[0]))
+            if (cleanup['work_id'] != work_id or cleanup['attempt_id'] != attempt_id or cleanup['kind'] != 'CLEANUP'
+                    or cleanup['data']['status'] != 'ABSENT' or cleanup['clock'] != doc['clock']):
+                raise ValueError('owned cleanup absence differs')
+            before = state['state']
+            self._observe_clock(state, doc['clock'])
+            row['completion_bytes_b64'] = self._b64(completion_bytes)
+            return self._save_budget(connection, state, 'RECOVERY_COMPLETE', authority=state['state'] != before)
+
+    def retain_supervision_event(self, raw):
+        from .campaign_supervisor import parse_supervision_event
+        event = parse_supervision_event(raw)
+        with self.store.transaction() as connection:
+            state = self._budget(connection, event['attempt_id'])
+            self._work(state, event['work_id'])
+            if len(raw) > state['profile']['record_byte_limit']:
+                raise ValueError('supervision event exceeds storage bound')
+            role = 'supervision_event_' + sha256(raw)
+            connection.execute('INSERT OR IGNORE INTO full_campaign_objects VALUES(?,?,?,?,?)',
+                (event['attempt_id'], role, sha256(raw), len(raw), raw))
+
+    def retain_supervision(self, attempt, work_id, raw):
+        from .campaign_supervisor import parse_enrollment
+        enrollment = parse_enrollment(raw)
+        if enrollment['attempt_id'] != attempt or enrollment['work_id'] != work_id:
+            raise ValueError('supervision enrollment identity differs')
+        with self.store.transaction() as connection:
+            state = self._budget(connection, attempt)
+            self._work(state, work_id)
+            if len(raw) > state['profile']['record_byte_limit']:
+                raise ValueError('supervision enrollment exceeds storage bound')
+            role = 'supervision_' + work_id
+            prior = connection.execute('SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role=?', (attempt, role)).fetchone()
+            if prior is not None:
+                if bytes(prior[0]) != raw:
+                    raise ValueError('immutable supervision enrollment differs')
+                return
+            connection.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
+                               (attempt, role, sha256(raw), len(raw), raw))
+
+    def queue_diagnostic_void(self, raw):
+        """Operator-role transport queues one bounded request, granting no authority."""
+        request = parse_campaign_request(raw)
+        if request['schema'] != 'qualification_campaign_request/v2' or request['operation'] != 'VOID':
+            raise ValueError('versioned diagnostic cancellation required')
+        attempt = request['attempt_id']
+        with self.store.transaction() as connection:
+            state = self._budget(connection, attempt)
+            if state['profile']['schema'] != 'qualification_campaign_budget_profile/v2' or len(raw) > state['profile']['record_byte_limit']:
+                raise ValueError('bounded metered cancellation required')
+            prior = connection.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'", (attempt,)).fetchone()
+            if prior is not None and bytes(prior[0]) != raw:
+                raise ValueError('pending cancellation differs')
+            if prior is None:
+                connection.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
+                    (attempt, 'pending_void', sha256(raw), len(raw), raw))
+            return encoded(self.diagnostic_status(attempt))
+
+    def diagnostic_status(self, attempt):
+        """Bounded historical projection; never reconstructs current eligibility."""
+        from .campaign_protocol import PLAN_CHUNK_LIMIT
+        with self.store.transaction() as connection:
+            row = self.row(attempt)
+            saved = connection.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role='diagnostic_receipt'", (attempt,)).fetchone()
+            budget = connection.execute('SELECT substr(snapshot_bytes,1,?) FROM full_campaign_budgets WHERE attempt_id=?',
+                                        (PLAN_CHUNK_LIMIT + 1, attempt)).fetchone()
+            if budget is None:
+                raise ValueError('no diagnostic metered history')
+            state = parse_canonical_json(bytes(budget[0]), label='budget projection') if len(budget[0]) <= PLAN_CHUNK_LIMIT else {}
+            return dict(schema='qualification_campaign_status/v2', validity=row['validity'],
+                state=state.get('state', 'METERED_INSPECTION_REQUIRED'),
+                receipt=None if saved is None else parse_canonical_json(bytes(saved[0]), label='diagnostic receipt'),
+                settled_cpu_ns=state.get('settled_cpu_ns'), reserved_cpu_ns=state.get('reserved_cpu_ns'),
+                remaining_cpu_ns=state.get('remaining_cpu_ns'), historical=True,
+                current_policy_eligible=False, dispatch_enabled=False,
+                void_pending=row['validity']=='VALID' and saved is None and connection.execute(
+                    "SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'", (attempt,)).fetchone() is not None)
+
+    def finish_diagnostic_admission(self, request_bytes, context, plan, observations_bytes, *, now, trusted_keys=None):
+        """Trusted guardian only: settle/refuse or atomically retain admission.
+
+        A refusal returns normally so terminal facts commit. Expensive retained
+        revalidation and source proof belong in charged guardian work before this
+        call; transport never constructs a verified context or supplies counters.
+        """
+        from .store import instant
+        request = parse_campaign_request(request_bytes)
+        document = parse_canonical_json(plan, label='campaign plan')
+        if (request['schema'] != 'qualification_campaign_request/v2'
+                or context.release.document['schema'] != 'qualification_execution_release/v3'
+                or context.attempt_id != request['attempt_id']
+                or context.bundle_sha256 != request['bundle_sha256']
+                or document['attempt_id'] != context.attempt_id
+                or document['source_bundle_sha256'] != context.bundle_sha256
+                or document['execution_release_sha256'] != context.release.sha256
+                or document['contract_sha256'] != context.contract.contract_sha256
+                or document['budget'] != parse_canonical_json(context.contract.canonical_bytes, label='frozen contract')['replay']['budget']
+                or len(plan) > min(_CAMPAIGN_MAX_BYTES, context.profile.input_byte_limit)):
+            raise ValueError('diagnostic admission binding differs')
+        attempt = context.attempt_id
+        with self.store.transaction() as connection:
+            owner = self.row(attempt)
+            if owner['request_bytes'] != request_bytes:
+                raise ValueError('immutable diagnostic admission request differs')
+            prior = self.diagnostic_status(attempt)
+            if prior['receipt'] is not None:
+                if prior['receipt']['plan_sha256'] != sha256(plan):
+                    raise ValueError('immutable diagnostic plan differs')
+                return prior
+            state = self._budget(connection, attempt)
+            if (state['profile'] != context.release.document['campaign_budget_profile']
+                    or state['profile']['installed_profile_sha256'] != context.profile.sha256):
+                raise ValueError('installed diagnostic profile differs')
+            pending = connection.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'", (attempt,)).fetchone()
+            if pending is not None and owner['validity'] == 'VALID':
+                from ..contract import verify_detached_approval
+                from .protocol import decode_base64
+                if trusted_keys is None:
+                    raise ValueError('fresh cancellation authentication required')
+                cancel_raw = bytes(pending[0])
+                cancel = parse_campaign_request(cancel_raw)
+                domain = parse_canonical_json(context.domain.canonical_bytes, label='enrolled domain')
+                approval = verify_detached_approval(decode_base64(cancel['operator_approval_bytes']),
+                    trusted_keys=trusted_keys, expected_scope='VOID_QUALIFICATION_ATTEMPT',
+                    expected_subject_sha256=sha256(encoded(dict(attempt_id=attempt, reason=cancel['reason'],
+                        contract_sha256=context.contract.contract_sha256))),
+                    expected_contract_sha256=context.contract.contract_sha256, now=now, allow_test_authority=True)
+                if (approval.authority_class != 'TEST_ONLY' or approval.key_id not in domain['freeze_key_ids']
+                        or sha256(trusted_keys[approval.key_id].public_key) != domain['trusted_key_sha256'][approval.key_id]):
+                    raise ValueError('pending cancellation authority is not enrolled')
+                self.void(cancel_raw, now=now)
+                owner = self.row(attempt)
+            from .campaign_budget import dispatch_pending
+            if dispatch_pending(state):
+                return self.diagnostic_status(attempt)
+            if self._recovery_pending(state):
+                return self.diagnostic_status(attempt)
+            if state['state'] == 'PROVISIONAL' and owner['validity'] == 'VALID':
+                self.bind_budget(attempt, encoded(document['budget']), expected_revision=state['authority_revision'])
+            state = parse_canonical_json(self.settle_work(attempt, 'admission', observations_bytes), label='settled admission')
+            if state['state'] != 'BOUND' or state['validity'] != 'VALID':
+                return self.diagnostic_status(attempt)
+            clock = parse_canonical_json(observations_bytes, label='observation')['clock']
+            state = parse_canonical_json(self.record_work_transition(attempt, 'admission', encoded(dict(
+                schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id='admission',
+                state='COMPLETED', clock=clock, data={})), expected_revision=state['authority_revision']), label='admission completion')
+            if state['state'] != 'BOUND' or state['validity'] != 'VALID':
+                return self.diagnostic_status(attempt)
+            receipt = encoded(dict(schema='qualification_campaign_admission_receipt/v2',
+                campaign_id=owner['campaign_id'], attempt_id=attempt, state='ADMITTED_DIAGNOSTIC',
+                authority_class='TEST_ONLY', dispatch_enabled=False, request_sha256=sha256(request_bytes),
+                bundle_sha256=context.bundle_sha256, plan_sha256=sha256(plan), plan_byte_length=len(plan),
+                contract_sha256=context.contract.contract_sha256, trust_domain_sha256=context.domain.sha256,
+                execution_release_sha256=context.release.sha256, profile_sha256=context.profile.sha256,
+                policy_sha256=context.policy.sha256, budget_sha256=sha256(encoded(document['budget'])),
+                budget_profile_sha256=sha256(encoded(state['profile'])), start_clock=state['start_clock'],
+                settled_cpu_ns=state['settled_cpu_ns'], admitted_at_utc=instant(now)))
+            objects = {'diagnostic_receipt': receipt, 'plan': plan, 'bundle_index': context.retained_bundle_index,
+                       **{'context_' + role: raw for role, raw in context.retained_bytes.items()}}
+            for role, raw in objects.items():
+                connection.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
+                                   (attempt, role, sha256(raw), len(raw), raw))
+            return self.diagnostic_status(attempt)
 
     def context(self, attempt, installed_release, keys, *, now):
         from .admission import verify_retained_bundle
@@ -218,9 +566,13 @@ class CampaignStore:
                            (state['attempt_id'], state['accounting_revision'], body, previous, head))
         return raw
 
-    def _check_budget(self, state, expected_revision):
-        from .campaign_budget import integer
+    def _check_budget(self, state, expected_revision, *, allow_recovery_pending=False, dispatch_owner=None):
+        from .campaign_budget import integer, dispatch_pending
         integer(expected_revision)
+        if not allow_recovery_pending and self._recovery_pending(state):
+            raise ValueError('campaign recovery pending')
+        if not allow_recovery_pending and dispatch_pending(state, dispatch_owner):
+            raise ValueError('campaign dispatch pending')
         if expected_revision != state['authority_revision']:
             raise ValueError('campaign authority revision conflict')
         if self.row(state['attempt_id'])['validity'] != 'VALID':
@@ -282,7 +634,9 @@ class CampaignStore:
             work = dict(work_id='admission', phase='ADMISSION', limits=limits,
                 input_sha256=sha256(request_bytes), reservation_bytes_b64=self._b64(reservation),
                 state='RESERVED', transitions=[], observation_bytes_b64=None, charge_cpu_ns=0)
-            state = dict(schema='qualification_campaign_budget_snapshot/v1', attempt_id=attempt,
+            version = 'v2' if profile['schema'] == 'qualification_campaign_budget_profile/v2' else 'v1'
+            snapshot_version = 'v3' if version == 'v2' else 'v1'
+            state = dict(schema='qualification_campaign_budget_snapshot/' + snapshot_version, attempt_id=attempt,
                 request_sha256=sha256(request_bytes), profile=profile, budget=None,
                 start_clock=started, last_clock=started, deadline_boottime_ns=deadline,
                 state='PROVISIONAL', validity='VALID', authority_revision=0, accounting_revision=0,
@@ -291,17 +645,26 @@ class CampaignStore:
                 settled_cpu_ns=0, reserved_cpu_ns=0, remaining_cpu_ns=0)
             return self._save_budget(connection, state, 'BEGIN_ADMISSION', authority=True)
 
-    def bind_budget(self, attempt_id, contract_budget_bytes, *, expected_revision) -> bytes:
-        from .campaign_budget import budget, integer
+    def bind_budget(self, attempt_id, contract_budget_bytes, *, expected_revision, clock_bytes=None) -> bytes:
+        from .campaign_budget import budget, integer, clock
         integer(expected_revision)
+        fresh_clock = None if clock_bytes is None else clock(clock_bytes)
         binding = budget(contract_budget_bytes)
         with self.store.transaction() as connection:
             state = self._budget(connection, attempt_id)
+            if fresh_clock is not None and state['profile']['schema'] != 'qualification_campaign_budget_profile/v2':
+                raise ValueError('fresh binding clock requires profile v2')
             if state['budget'] is not None:
                 if encoded(state['budget']) != contract_budget_bytes:
                     raise ValueError('immutable budget binding conflict')
+                if fresh_clock is not None:
+                    self._check_budget(state, expected_revision)
+                    self._observe_clock(state, fresh_clock)
+                    return self._save_budget(connection, state, 'BIND_BUDGET_CLOCK', authority=True)
                 return self.budget_snapshot(attempt_id)
             self._check_budget(state, expected_revision)
+            if fresh_clock is not None:
+                self._observe_clock(state, fresh_clock)
             ceilings = state['profile']['phases'].values()
             cap = binding['maximum_cpu_seconds'] * 10**9
             if (sum(p['cpu_ns'] for p in ceilings) > cap or
@@ -377,7 +740,7 @@ class CampaignStore:
             if state['state'] == 'BOUND':
                 if any(w['state'] in ('SIGNING_INTENT', 'SIGNED') and w['work_id'] != retry_of for w in state['works']):
                     raise ValueError('authority-changing work is serialized during signing')
-                if retry_of is not None:
+                if retry_of is not None and state['schema'] == 'qualification_campaign_budget_snapshot/v1':
                     state['schema'] = 'qualification_campaign_budget_snapshot/v2'
                 state['works'].append(dict(work_id=work_id, phase=phase, limits=specification['limits'],
                     input_sha256=specification['input_sha256'], reservation_bytes_b64=self._b64(limits_bytes),
@@ -387,20 +750,9 @@ class CampaignStore:
                 authority=retry_of is None or state['state'] != 'BOUND')
 
     def _observation(self, state, work, raw):
-        from .campaign_budget import clock, integer
-        from .protocol import fields, identity
-        doc = fields(parse_canonical_json(raw, label='trusted campaign observation'), {
-            'schema', 'attempt_id', 'work_id', 'clock', 'campaign_scope_id', 'work_scope_id',
-            'cpu_ns', 'memory_peak_bytes', 'oom_events'})
-        if (doc['schema'] != 'qualification_campaign_observation/v1' or
-                doc['attempt_id'] != state['attempt_id'] or doc['work_id'] != work['work_id']):
-            raise ValueError('observation identity differs')
-        clock(encoded(doc['clock']))
-        for key in ('campaign_scope_id', 'work_scope_id'):
-            identity(doc[key])
-        for key in ('cpu_ns', 'memory_peak_bytes', 'oom_events'):
-            if doc[key] is not None:
-                integer(doc[key])
+        from .campaign_budget import observation
+        doc = observation(raw, attempt_id=state['attempt_id'], work_id=work['work_id'],
+                          phase=work['phase'], profile=state['profile'])
         intents = [parse_canonical_json(self._raw(t), label='transition') for t in work['transitions']]
         start = next((t for t in intents if t['state'] == 'START_INTENT'), None)
         if start is None or any(doc[k] != start['data'][k] for k in ('campaign_scope_id', 'work_scope_id')):
@@ -408,6 +760,8 @@ class CampaignStore:
         return doc
 
     def _observe_resources(self, state, doc):
+        if doc.get('termination_known') is False:
+            self._terminal(state, 'BUDGET_UNCERTAIN')
         if doc['memory_peak_bytes'] is None or doc['oom_events'] is None:
             self._terminal(state, 'BUDGET_UNCERTAIN')
         if doc['memory_peak_bytes'] is not None:
@@ -437,7 +791,8 @@ class CampaignStore:
                     doc['clock']['boottime_ns'] - intent['clock']['boottime_ns'] >= work['limits']['wall_ns']):
                 self._terminal(state, 'BUDGET_EXHAUSTED')
             work['observation_bytes_b64'] = self._b64(observations_bytes)
-            work['charge_cpu_ns'] = work['limits']['cpu_ns'] if doc['cpu_ns'] is None else doc['cpu_ns']
+            from .campaign_budget import observation_charge
+            work['charge_cpu_ns'] = observation_charge(doc, work['limits'])
             if any(doc[key] is None for key in ('cpu_ns', 'memory_peak_bytes', 'oom_events')):
                 self._terminal(state, 'BUDGET_UNCERTAIN')
             self._observe_resources(state, doc)
@@ -460,7 +815,7 @@ class CampaignStore:
                     if self._raw(saved) != transition_bytes:
                         raise ValueError('immutable work transition conflict')
                     return self.budget_snapshot(attempt_id)
-            self._check_budget(state, expected_revision)
+            self._check_budget(state, expected_revision, allow_recovery_pending=target in ('IN_DOUBT', 'ABORTED'))
             if work['state'] not in allowed[target]:
                 raise ValueError('illegal work transition; no reexecution')
             retry_of = self._retry_parent(work)
@@ -503,7 +858,7 @@ class CampaignStore:
             work['transitions'].append(self._b64(transition_bytes))
             return self._save_budget(connection, state, target, authority=retry_of is None and target != 'SIGNED')
 
-    def recover_work(self, attempt_id, work_id, observations_bytes) -> bytes:
+    def recover_work(self, attempt_id, work_id, observations_bytes, *, recovery_owner_token=None) -> bytes:
         """Commit current recovery facts independently of immutable settlement.
 
         RESERVED takes a clock. Started work takes an attributed observation;
@@ -517,6 +872,10 @@ class CampaignStore:
         with self.store.transaction() as connection:
             state = self._budget(connection, attempt_id)
             work = self._work(state, work_id)
+            if recovery_owner_token is not None:
+                owner = self._recovery_owner(state, work_id, recovery_owner_token)
+                if owner['completion_bytes_b64'] is not None:
+                    raise ValueError('completed recovery cannot resume active work')
             before = encoded(state)
             old_state = state['state']
             if work['state'] == 'RESERVED':
@@ -541,6 +900,9 @@ class CampaignStore:
                 else:
                     work['state'] = 'IN_DOUBT'
                     self._terminal(state, 'IN_DOUBT')
+            if recovery_owner_token is not None:
+                owner = self._recovery_owner(state, work_id, recovery_owner_token)
+                owner['observations_bytes_b64'] = self._b64(observations_bytes)
             if encoded(state) == before:
                 return self.budget_snapshot(attempt_id)
             return self._save_budget(connection, state, 'RECOVER_WORK',
@@ -574,6 +936,25 @@ class CampaignStore:
             clock(encoded(state['start_clock'])); clock(encoded(state['last_clock']))
             if state['budget'] is not None:
                 budget(encoded(state['budget']))
+            from .campaign_budget import recovery_completion
+            from .campaign_supervisor import parse_supervision_event
+            for recovery in state.get('recoveries', ()):
+                role = 'supervision_control_' + sha256(encoded([recovery['work_id'], 'RECOVERY_OWNER']))
+                claim = connection.execute('SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role=?',
+                                           (state['attempt_id'], role)).fetchone()
+                if claim is None or sha256(bytes(claim[0])) != recovery['claim_sha256']:
+                    raise ValueError('recovery claim projection differs')
+                if recovery['completion_bytes_b64'] is not None:
+                    completion = recovery_completion(self._raw(recovery['completion_bytes_b64']),
+                        attempt_id=state['attempt_id'], work_id=recovery['work_id'])
+                    cleanup = connection.execute('SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role=?',
+                        (state['attempt_id'], 'supervision_event_' + completion['cleanup_event_sha256'])).fetchone()
+                    if cleanup is None:
+                        raise ValueError('recovery completion cleanup absent')
+                    event = parse_supervision_event(bytes(cleanup[0]))
+                    if (event['work_id'] != recovery['work_id'] or event['kind'] != 'CLEANUP'
+                            or event['data']['status'] != 'ABSENT' or event['clock'] != completion['clock']):
+                        raise ValueError('recovery completion cleanup differs')
             previous, authority_head, revision, authority_revision = '0'*64, '0'*64, 0, 0
             saved = None
             for event in connection.execute('SELECT * FROM full_campaign_budget_events WHERE attempt_id=? ORDER BY sequence', (row['attempt_id'],)):
@@ -602,6 +983,35 @@ class CampaignStore:
             if totals != {k: state[k] for k in totals}:
                 raise ValueError('budget arithmetic integrity differs')
 
+    def _diagnostic_integrity(self, owner, state, objects):
+        receipt = parse_canonical_json(objects['diagnostic_receipt'], label='diagnostic receipt')
+        plan = parse_canonical_json(objects['plan'], label='diagnostic plan')
+        index = parse_canonical_json(objects['bundle_index'], label='diagnostic bundle')
+        work = self._work(state, 'admission')
+        if (receipt['schema'] != 'qualification_campaign_admission_receipt/v2'
+                or receipt['state'] != 'ADMITTED_DIAGNOSTIC' or receipt['dispatch_enabled'] is not False
+                or receipt['attempt_id'] != owner['attempt_id'] or receipt['campaign_id'] != owner['campaign_id']
+                or receipt['request_sha256'] != sha256(owner['request_bytes'])
+                or receipt['bundle_sha256'] != sha256(objects['bundle_index'])
+                or receipt['plan_sha256'] != sha256(objects['plan'])
+                or receipt['plan_byte_length'] != len(objects['plan'])
+                or receipt['budget_sha256'] != sha256(encoded(plan['budget']))
+                or plan['budget'] != parse_canonical_json(objects['context_contract'], label='retained contract')['replay']['budget']
+                or receipt['budget_profile_sha256'] != sha256(encoded(state['profile']))
+                or receipt['profile_sha256'] != state['profile']['installed_profile_sha256']
+                or receipt['start_clock'] != state['start_clock']
+                or work['state'] != 'COMPLETED' or work['observation_bytes_b64'] is None):
+            raise ValueError('diagnostic admission integrity differs')
+        if set(objects) != {'diagnostic_receipt', 'plan', 'bundle_index'} | {'context_' + entry['role'] for entry in index['entries']}:
+            raise ValueError('diagnostic retained inventory differs')
+        for entry in index['entries']:
+            raw = objects['context_' + entry['role']]
+            if sha256(raw) != entry['sha256'] or len(raw) != entry['byte_length']:
+                raise ValueError('diagnostic retained input differs')
+        for name in ('contract_sha256', 'trust_domain_sha256', 'execution_release_sha256', 'policy_sha256'):
+            if receipt[name] != plan[name]:
+                raise ValueError('diagnostic plan binding differs')
+
     def integrity(self, connection):
         if connection.execute('PRAGMA user_version').fetchone()[0] == 6:
             self._budget_integrity(connection)
@@ -612,8 +1022,36 @@ class CampaignStore:
             receipt = parse_canonical_json(row['receipt_bytes'], label='campaign receipt')
             if receipt.get('schema') == 'qualification_campaign_provisional_intent/v1':
                 state = self._budget(connection, row['attempt_id'])
-                if self.objects(row['attempt_id']):
-                    raise ValueError('provisional intent cannot claim admitted objects')
+                retained = self.objects(row['attempt_id'])
+                from .campaign_supervisor import parse_enrollment, parse_supervision_event
+                if 'pending_void' in retained:
+                    pending = parse_campaign_request(retained.pop('pending_void'))
+                    if (pending['schema'] != 'qualification_campaign_request/v2' or pending['operation'] != 'VOID'
+                            or pending['attempt_id'] != row['attempt_id']
+                            or state['profile']['schema'] != 'qualification_campaign_budget_profile/v2'):
+                        raise ValueError('pending cancellation binding differs')
+                for name in tuple(retained):
+                    if name.startswith('supervision_control_'):
+                        event = parse_supervision_event(retained.pop(name))
+                        if (event['kind'] != 'CONTROL' or event['attempt_id'] != row['attempt_id']
+                                or name != 'supervision_control_' + sha256(encoded([event['work_id'], event['data']['slot']]))):
+                            raise ValueError('durable control slot binding differs')
+                        self._work(state, event['work_id'])
+                    elif name.startswith('supervision_event_'):
+                        raw_event = retained.pop(name)
+                        event = parse_supervision_event(raw_event)
+                        if event['attempt_id'] != row['attempt_id'] or name != 'supervision_event_' + sha256(raw_event):
+                            raise ValueError('supervision event projection differs')
+                        self._work(state, event['work_id'])
+                    elif name.startswith('supervision_'):
+                        enrollment = parse_enrollment(retained.pop(name))
+                        if enrollment['attempt_id'] != row['attempt_id'] or name != 'supervision_' + enrollment['work_id']:
+                            raise ValueError('supervision enrollment projection differs')
+                        self._work(state, enrollment['work_id'])
+                if retained:
+                    if 'diagnostic_receipt' not in retained:
+                        raise ValueError('provisional intent cannot claim admitted objects')
+                    self._diagnostic_integrity(row, state, retained)
                 if row['validity'] == 'VOID':
                     if type(row['void_request']) is not bytes or type(row['void_receipt']) is not bytes:
                         raise ValueError('metered VOID receipt absent')

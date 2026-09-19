@@ -1,5 +1,6 @@
 """Closed service dispatch tests; OS peer authentication is tested on Linux."""
 import importlib
+from types import SimpleNamespace
 
 import pytest
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
@@ -31,6 +32,7 @@ def test_capture_recovery_signing_failure_leaves_history_available(tmp_path,monk
     store,record,_=captured(tmp_path)
     instance=object.__new__(service.ExecutionService)
     instance.store=store
+    instance.profile=SimpleNamespace(values={'schema': 'qualification_execution_profile/v1'})
     instance.config={'execution_credential':'/protected/key'}
     def failed_sign(*args,**kwargs): raise ValueError('expired fixture approval')
     monkeypatch.setattr(service,'sign_captured',failed_sign)
@@ -49,6 +51,7 @@ def test_recovery_persists_uncertainty_before_failed_container_cleanup(tmp_path,
     record=store.record_start_intent(record.execution_id,expected_revision=record.revision,now=NOW)
     instance=object.__new__(service.ExecutionService)
     instance.store=store
+    instance.profile=SimpleNamespace(values={'schema': 'qualification_execution_profile/v1'})
     def failed_stop(*args,**kwargs): raise ValueError('daemon unavailable')
     monkeypatch.setattr(service,'stop_owned_worker',failed_stop)
     instance.recover_service()
@@ -65,6 +68,7 @@ def test_recovery_discovers_unrecorded_owned_container_without_redraw(tmp_path,m
     store,record,_=reserved(tmp_path)
     instance=object.__new__(service.ExecutionService)
     instance.store=store
+    instance.profile=SimpleNamespace(values={'schema': 'qualification_execution_profile/v1'})
     instance.config={'host_run_id':'a'*32}
     instance.release=encoded({'worker_image_digest':'sha256:'+'b'*64})
     found=[]

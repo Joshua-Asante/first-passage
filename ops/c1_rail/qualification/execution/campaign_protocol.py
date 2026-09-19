@@ -22,7 +22,7 @@ def parse_campaign_request(raw: bytes) -> dict:
             or doc['operation'] not in _OPERATION_FIELDS):
         raise ValueError('UNKNOWN_OPERATION')
     fields(doc, {'schema', 'operation', 'attempt_id'} | _OPERATION_FIELDS[doc['operation']])
-    if doc['schema'] != CAMPAIGN_REQUEST_SCHEMA:
+    if doc['schema'] not in (CAMPAIGN_REQUEST_SCHEMA, 'qualification_campaign_request/v2'):
         raise ValueError('unsupported campaign request schema')
     identity(doc['attempt_id'])
     if doc['operation'] == 'SUBMIT_E1':

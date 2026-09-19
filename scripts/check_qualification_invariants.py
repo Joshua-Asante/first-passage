@@ -158,7 +158,8 @@ def _report_bytes(path, root):
 
 
 def validate_manifest(manifest_bytes: bytes, *, collected_nodeids: set[str],
-                      junit_paths: tuple[Path, ...], evidence_root: Path) -> dict:
+                      junit_paths: tuple[Path, ...], evidence_root: Path,
+                      required_nodeids: set[str] | None = None) -> dict:
     """Return fail-closed, deduplicated invariant/node diagnostics.
 
     A passing subtest is never a substitute for its parent's completion. Failed,
@@ -170,6 +171,10 @@ def validate_manifest(manifest_bytes: bytes, *, collected_nodeids: set[str],
     missing, skipped, failed = set(), set(), set()
     try:
         required = _manifest(manifest_bytes)
+        if required_nodeids is not None:
+            if type(required_nodeids) is not set or not required_nodeids or not required_nodeids <= required.keys():
+                raise ValueError('nonempty explicit subset of canonical nodes required')
+            required = {node: required[node] for node in required_nodeids}
         if type(collected_nodeids) is not set:
             raise ValueError('collected_nodeids must be an explicit set')
         collected = {_nodeid(node) for node in collected_nodeids}
@@ -248,4 +253,5 @@ def validate_manifest(manifest_bytes: bytes, *, collected_nodeids: set[str],
         if tags.intersection({'failure', 'error'}):
             diagnostic(node, failed, 'testcase or subtest failed/errored')
     return dict(passed=not (missing or skipped or failed), missing=sorted(missing),
-                skipped=sorted(skipped), failed=sorted(failed))
+                skipped=sorted(skipped), failed=sorted(failed),
+                **({} if required_nodeids is None else dict(scope='selected_nodes', required_nodeids=sorted(required_nodeids))))

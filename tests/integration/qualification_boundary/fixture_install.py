@@ -32,7 +32,7 @@ def write(path,raw,*,uid=0,gid=None,mode=0o444):
     os.chown(path,uid,uid if gid is None else gid); path.chmod(mode)
 
 
-def install(root,manifest,image):
+def install(root,manifest,image,*,diagnostic=False):
     private,keys,registry=fresh_keys(execution_seed=(root/'keys/qexec/TEST_ONLY.key').read_bytes(),
                                    result_seed=(root/'keys/qg5/TEST_ONLY.key').read_bytes())
     roles=manifest['roles']; installation=CODE/'qualification-installation'
@@ -55,6 +55,12 @@ def install(root,manifest,image):
         service_uid=roles['qexec'],g5_uid=roles['qg5'],operator_uid=0,
         execution_credential=str(root/'keys/qexec/credential.json'))
     profile=json.loads((CODE/'deploy/qualification/test-profile.json').read_bytes())
+    if diagnostic:
+        from c1_rail.qualification.execution.profile import diagnostic_execution_profile
+        from tools.qualification_verification import campaign_host
+        profile = diagnostic_execution_profile(encoded(profile))
+        config.update(schema='qualification_execution_instance/v2', seal_probe_uid=65531)
+        campaign_host.install(root,manifest,encoded(profile))
     release=encoded(release_document(CODE,profile,image,keys))
     install_release(release,approve(release,private,'APPROVE_EXECUTION_RELEASE'),instance_config=encoded(config))
     write(installation/'g5.json',encoded(dict(installation_root=str(installation),socket_path=config['socket_path'],
@@ -95,6 +101,7 @@ def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('operation',choices=['install','prepare','void-approval'])
     parser.add_argument('--manifest',type=Path,required=True)
+    parser.add_argument('--diagnostic',action='store_true')
     parser.add_argument('--image'); parser.add_argument('--attempt'); parser.add_argument('--idle',action='store_true')
     parser.add_argument('--contract'); parser.add_argument('--reason')
     parser.add_argument('--fault',choices=['stop','exit_zero','cpu','memory','wall'])
@@ -112,7 +119,7 @@ def main():
         approval=approve(subject,private,'VOID_QUALIFICATION_ATTEMPT',contract_sha256=args.contract)
         result=dict(operator_approval_bytes=base64.b64encode(approval).decode())
     else:
-        result=install(root,manifest,args.image) if args.operation=='install' else prepare(root,args.attempt,args.idle,
+        result=install(root,manifest,args.image,diagnostic=args.diagnostic) if args.operation=='install' else prepare(root,args.attempt,args.idle,
             fault=args.fault,depth_valid_seconds=args.depth_valid_seconds)
     sys.stdout.buffer.write(encoded(result))
 

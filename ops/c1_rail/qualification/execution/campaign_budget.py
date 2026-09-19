@@ -107,3 +107,119 @@ def transition(raw, attempt_id, work_id):
     else:
         fields(data, set())
     return doc
+
+
+def observation(raw, *, attempt_id, work_id, phase, profile):
+    """Canonical raw-counter evidence and distinct installed conservative charge."""
+    revised = profile['schema'] == 'qualification_campaign_budget_profile/v2'
+    doc = fields(parse_canonical_json(raw, label='trusted campaign observation'), {
+        'schema', 'attempt_id', 'work_id', 'clock', 'campaign_scope_id', 'work_scope_id',
+        'cpu_ns', 'memory_peak_bytes', 'oom_events'} |
+        ({'orchestration_charge_cpu_ns', 'termination_known'} if revised else set()))
+    schema = 'qualification_campaign_observation/v2' if revised else 'qualification_campaign_observation/v1'
+    if doc['schema'] != schema or doc['attempt_id'] != attempt_id or doc['work_id'] != work_id:
+        raise ValueError('observation identity or version differs')
+    clock(encoded(doc['clock']))
+    identity(doc['campaign_scope_id']); identity(doc['work_scope_id'])
+    for key in ('cpu_ns', 'memory_peak_bytes', 'oom_events'):
+        if doc[key] is not None:
+            integer(doc[key])
+    if revised:
+        if type(doc['termination_known']) is not bool:
+            raise ValueError('trusted termination fact required')
+        integer(doc['orchestration_charge_cpu_ns'], positive=True)
+        if doc['orchestration_charge_cpu_ns'] != profile['orchestration_cpu_ns'][phase]:
+            raise ValueError('full installed orchestration charge required')
+    return doc
+
+
+def observation_charge(doc, reservation):
+    # Unknown work consumes the total reservation, never reservation + overhead.
+    if doc['cpu_ns'] is None:
+        return reservation['cpu_ns']
+    return integer(doc['cpu_ns'] + doc.get('orchestration_charge_cpu_ns', 0))
+
+
+def recovery_pending(state):
+    """Temporary recovery barriers are separate from irreversible budget facts."""
+    return any(row['completion_bytes_b64'] is None or row['continuation_required'] for row in state.get('recoveries', ()))
+
+
+def recovery_completion(raw, *, attempt_id, work_id):
+    doc = fields(parse_canonical_json(raw, label='recovery completion'), {
+        'schema', 'attempt_id', 'work_id', 'claim_sha256', 'observations_sha256',
+        'cleanup_event_sha256', 'clock'})
+    if (doc['schema'] != 'qualification_campaign_recovery_completion/v1'
+            or doc['attempt_id'] != attempt_id or doc['work_id'] != work_id):
+        raise ValueError('recovery completion identity differs')
+    for name in ('claim_sha256', 'observations_sha256', 'cleanup_event_sha256'):
+        digest(doc[name])
+    clock(encoded(doc['clock']))
+    return doc
+
+
+def validate_recoveries(state):
+    from .protocol import decode_base64, sha256
+    rows = state['recoveries']
+    if type(rows) is not list or (not rows and not state['dispatches']):
+        raise ValueError('versioned recovery records required')
+    works = {w['work_id']: w for w in state['works']}
+    identities = []
+    for row in rows:
+        fields(row, {'work_id', 'claim_sha256', 'owner_sha256',
+                     'observations_bytes_b64', 'completion_bytes_b64', 'continuation_required'})
+        identity(row['work_id']); digest(row['claim_sha256']); digest(row['owner_sha256'])
+        if type(row['continuation_required']) is not bool:
+            raise ValueError('strict continuation barrier required')
+        if row['continuation_required'] and row['completion_bytes_b64'] is None:
+            raise ValueError('continuation barrier requires historical completion')
+        if row['work_id'] not in works:
+            raise ValueError('recovery work absent')
+        identities.append(row['work_id'])
+        raw = None
+        if row['observations_bytes_b64'] is not None:
+            raw = decode_base64(row['observations_bytes_b64'])
+            work = works[row['work_id']]
+            # Recovery facts are historical: a RESERVED clock remains a
+            # clock after a later abort or a post-completion first dispatch.
+            fact = parse_canonical_json(raw, label='recovery facts')
+            if type(fact) is dict and fact.get('schema') == 'qualification_campaign_clock/v1':
+                clock(raw)
+            else:
+                observation(raw, attempt_id=state['attempt_id'], work_id=work['work_id'],
+                            phase=work['phase'], profile=state['profile'])
+        if row['completion_bytes_b64'] is not None:
+            completed = recovery_completion(decode_base64(row['completion_bytes_b64']),
+                attempt_id=state['attempt_id'], work_id=row['work_id'])
+            if raw is None or completed['claim_sha256'] != row['claim_sha256'] or completed['observations_sha256'] != sha256(raw):
+                raise ValueError('recovery completion facts differ')
+    if identities != sorted(set(identities)):
+        raise ValueError('canonical unique recovery order required')
+
+
+def dispatch_pending(state, owner_sha256=None):
+    return any(row['acknowledged_clock'] is None and row['owner_sha256'] != owner_sha256
+               for row in state.get('dispatches', ()))
+
+
+def validate_dispatches(state):
+    rows = state['dispatches']
+    if type(rows) is not list:
+        raise ValueError('versioned dispatch records required')
+    works = {w['work_id']: w for w in state['works']}
+    identities = []
+    owners = set()
+    for row in rows:
+        fields(row, {'work_id', 'role', 'owner_sha256', 'started_clock', 'acknowledged_clock'})
+        identity(row['work_id']); digest(row['owner_sha256'])
+        if row['work_id'] not in works or row['role'] not in ('guardian', 'payload'):
+            raise ValueError('dispatch identity differs')
+        if row['owner_sha256'] in owners:
+            raise ValueError('dispatch owner must be unique')
+        owners.add(row['owner_sha256'])
+        clock(encoded(row['started_clock']))
+        if row['acknowledged_clock'] is not None:
+            clock(encoded(row['acknowledged_clock']))
+        identities.append((row['work_id'], row['role']))
+    if identities != sorted(set(identities)):
+        raise ValueError('canonical unique dispatch order required')

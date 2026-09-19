@@ -18,9 +18,11 @@ INSTANCE_FIELDS = {'schema', 'authority_class', 'installation_root', 'data_root'
 
 
 def parse_instance(raw):
-    config = fields(parse_canonical_json(raw, label='instance'), INSTANCE_FIELDS)
+    config = parse_canonical_json(raw, label='instance')
+    diagnostic = type(config) is dict and config.get('schema') == 'qualification_execution_instance/v2'
+    fields(config, INSTANCE_FIELDS | ({'seal_probe_uid'} if diagnostic else set()))
     host_identity(config['host_run_id'])
-    if config['schema'] != 'qualification_execution_instance/v1' or config['authority_class'] not in ('TEST_ONLY', 'OPERATOR'):
+    if config['schema'] not in ('qualification_execution_instance/v1', 'qualification_execution_instance/v2') or config['authority_class'] not in ('TEST_ONLY', 'OPERATOR'):
         raise ValueError('instance schema/authority differs')
     for name in ('installation_root', 'data_root', 'daemon_data_root', 'socket_path', 'execution_credential'):
         if (type(config[name]) is not str or not PurePosixPath(config[name]).is_absolute()
@@ -29,6 +31,8 @@ def parse_instance(raw):
     values = [config[name] for name in ('client_uid', 'service_uid', 'g5_uid', 'operator_uid')]
     if any(type(value) is not int or value < 0 for value in values) or len(set(values)) != 4 or config['service_uid'] == 0 or config['g5_uid'] == 0:
         raise ValueError('distinct nonroot service/G5 identities required')
+    if diagnostic and (type(config['seal_probe_uid']) is not int or config['seal_probe_uid'] <= 0 or config['seal_probe_uid'] in values):
+        raise ValueError('distinct harmless seal probe UID required')
     if type(config['socket_gid']) is not int or config['socket_gid'] < 0:
         raise ValueError('socket group required')
     return config
@@ -57,7 +61,9 @@ def install_release(manifest_bytes, approval_bytes, *, instance_config):
     keys = load_keys(read_regular(root, 'keys.json', limit=1024 * 1024), authority_class=config['authority_class'])
     release = verify_release(manifest_bytes, approval_bytes, keys, now=datetime.now(timezone.utc),
                              installation_authority=config['authority_class'])
-    if release.profile.worker_uid in (0, config['service_uid'], config['g5_uid']):
+    if (release.document['schema'] == 'qualification_execution_release/v3') != (config['schema'] == 'qualification_execution_instance/v2'):
+        raise ValueError('diagnostic instance/release versions must agree')
+    if release.profile.worker_uid in (0, config['service_uid'], config['g5_uid'], config.get('seal_probe_uid')):
         raise ValueError('worker identity must be separate from host authorities')
     code_root = installed_code_root()
     protected_path(code_root)

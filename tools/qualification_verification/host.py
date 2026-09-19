@@ -696,6 +696,8 @@ def cleanup(manifest_path):
                 return receipt
             require_reservation_owner(reservation, manifest_path, manifest)
             stop_process_groups(root)
+            from tools.qualification_verification.campaign_host import cleanup as cleanup_campaign_host
+            cleanup_campaign_host(root, manifest, retire=True)
             validate_host_executables(manifest['host_config'])
             uids = {r['id'] for r in manifest['resources'] if r['kind'] == 'user'}
             require_inactive_principals(uids)

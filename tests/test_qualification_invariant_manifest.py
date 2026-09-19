@@ -284,3 +284,18 @@ def test_actual_collection_plugin_records_selected_nodes(tmp_path):
         '--qualification-collection=collected.json'], cwd=tmp_path, capture_output=True, text=True)
     assert result.returncode == 0, result.stdout + result.stderr
     assert json.loads((tmp_path / 'collected.json').read_bytes()) == ['test_selected.py::test_present']
+
+def test_explicit_subset_reports_its_scope_and_never_waives_selected_failures(tmp_path):
+    other='tests/ops/qualification/test_boundary.py::test_other'
+    raw=json.dumps(manifest(nodes=(NODE,other))).encode()
+    result=validate_manifest(raw,collected_nodeids={NODE},junit_paths=(report(tmp_path),),
+                             evidence_root=tmp_path,required_nodeids={NODE})
+    assert result['passed'] and result['scope']=='selected_nodes'
+    assert result['required_nodeids']==[NODE]
+    assert not validate_manifest(raw,collected_nodeids={NODE},junit_paths=(report(tmp_path),),
+                                 evidence_root=tmp_path)['passed']
+    for selected in (set(),{'tests/unknown.py::test_invented'}):
+        assert not validate_manifest(raw,collected_nodeids={NODE},junit_paths=(report(tmp_path),),
+            evidence_root=tmp_path,required_nodeids=selected)['passed']
+    assert not validate_manifest(raw,collected_nodeids={NODE},junit_paths=(report(tmp_path,cases=[case(outcome='skipped')]),),
+        evidence_root=tmp_path,required_nodeids={NODE})['passed']
