@@ -7,6 +7,11 @@ from .profile import parse_profile
 from .protocol import fields, digest, identity, sha256
 
 PORT_ROLES = ('aegis_runtime_port','orb_runtime_port','striker_runtime_port','vanguard_runtime_port')
+DIAGNOSTIC_RELEASE = 'qualification_execution_release/v3'
+# The only revision whose installation opens the funded private scheduler
+# route: execution profile/v4 + budget profile/v3 + full snapshot/v5. It keeps
+# every v3 restriction: FULL_E1, TEST_ONLY, probes only, no statistical dispatch.
+EXECUTABLE_DIAGNOSTIC_RELEASE = 'qualification_execution_release/v4'
 PROCESS_ROLES = ('supervisor','worker','g5')
 KEY_ROLES = ('freeze','result','seal','execution')
 WORKER_ENTRYPOINT = ('/opt/ops/bin/python','-I','/opt/qualification/bootstrap.py','worker')
@@ -23,7 +28,8 @@ def parse_release(raw):
     doc = parse_canonical_json(raw,label='execution release')
     if type(doc) is not dict:
         raise ValueError('closed schema object required')
-    diagnostic = doc.get('schema') == 'qualification_execution_release/v3'
+    executable = doc.get('schema') == EXECUTABLE_DIAGNOSTIC_RELEASE
+    diagnostic = executable or doc.get('schema') == DIAGNOSTIC_RELEASE
     campaign = diagnostic or doc.get('schema') == 'qualification_execution_release/v2'
     fields(doc, {
         'schema','release_id','profile','profile_sha256','authority_class','service_id',
@@ -44,13 +50,14 @@ def parse_release(raw):
     owners = fields(doc['source_owner_sha256'], {'book_policy','firm_rules','policy_fingerprint'})
     for value in owners.values(): digest(value)
     profile = parse_profile(canonical_json_bytes(doc['profile']))
-    if profile.values['schema'] == 'qualification_execution_profile/v4':
+    if profile.values['schema'] == 'qualification_execution_profile/v4' and not executable:
         raise ValueError('funding profile is persistence-only; runtime release not enabled')
     if diagnostic:
         from .profile import parse_campaign_budget_profile
         budget_profile = parse_campaign_budget_profile(canonical_json_bytes(doc['campaign_budget_profile']))
-        if (profile.values['schema'] != 'qualification_execution_profile/v3'
-                or budget_profile['schema'] != 'qualification_campaign_budget_profile/v2'
+        expected = (('qualification_execution_profile/v4', 'qualification_campaign_budget_profile/v3') if executable
+                    else ('qualification_execution_profile/v3', 'qualification_campaign_budget_profile/v2'))
+        if ((profile.values['schema'], budget_profile['schema']) != expected
                 or budget_profile['installed_profile_sha256'] != profile.sha256):
             raise ValueError('diagnostic installed budget/profile binding differs')
     elif profile.values['schema'] == 'qualification_execution_profile/v3':

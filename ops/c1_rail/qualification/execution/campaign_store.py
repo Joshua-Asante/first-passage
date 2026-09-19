@@ -388,7 +388,7 @@ class CampaignStore(FundingStoreMixin):
         request = parse_campaign_request(request_bytes)
         document = parse_canonical_json(plan, label='campaign plan')
         if (request['schema'] != 'qualification_campaign_request/v2'
-                or context.release.document['schema'] != 'qualification_execution_release/v3'
+                or context.release.document['schema'] not in ('qualification_execution_release/v3', 'qualification_execution_release/v4')
                 or context.attempt_id != request['attempt_id']
                 or context.bundle_sha256 != request['bundle_sha256']
                 or document['attempt_id'] != context.attempt_id

@@ -19,3 +19,69 @@ def test_instance_rejects_unsafe_or_unknown_bindings(name, value):
     doc[name] = value
     with pytest.raises(ValueError):
         parse_instance(encoded(doc))
+
+
+def funded_release(tmp_path, **changes):
+    import json
+    from bundle_fixture import build_bundle
+    from c1_rail.qualification.execution.protocol import sha256
+    case = build_bundle(tmp_path / 'staged', capability='FULL_E1', funded=True)
+    doc = json.loads(case['release'])
+    doc.update(changes)
+    if 'profile' in changes:
+        doc['profile_sha256'] = sha256(encoded(doc['profile']))
+    return doc
+
+
+def test_executable_diagnostic_release_pairs_funded_profile_without_dispatch(tmp_path):
+    from c1_rail.qualification.execution.release_schema import parse_release, EXECUTABLE_DIAGNOSTIC_RELEASE
+    from c1_rail.qualification.execution.profile import parse_profile
+    from c1_rail.qualification.execution.service import schedule_eligibility
+    release = parse_release(encoded(funded_release(tmp_path)))
+    assert release['schema'] == EXECUTABLE_DIAGNOSTIC_RELEASE == 'qualification_execution_release/v4'
+    assert release['profile']['schema'] == 'qualification_execution_profile/v4'
+    assert release['campaign_budget_profile']['schema'] == 'qualification_campaign_budget_profile/v3'
+    assert release['capability'] == 'FULL_E1' and release['dispatch_enabled'] is False
+    assert release['production_execution'] is False and release['profile']['dispatch_enabled'] is False
+    assert schedule_eligibility(release, parse_profile(encoded(release['profile']))) is True
+
+
+@pytest.mark.parametrize('field,value', [('dispatch_enabled', True), ('production_execution', True),
+                                         ('authority_class', 'OPERATOR'), ('capability', 'N1_ONLY')])
+def test_executable_diagnostic_release_keeps_every_v3_restriction(tmp_path, field, value):
+    from c1_rail.qualification.execution.release_schema import parse_release
+    with pytest.raises(ValueError):
+        parse_release(encoded(funded_release(tmp_path, **{field: value})))
+
+
+@pytest.mark.parametrize('older', ['qualification_execution_release/v3', 'qualification_execution_release/v2',
+                                   'qualification_execution_release/v1'])
+def test_older_release_literals_still_refuse_the_funded_profile(tmp_path, older):
+    """release_schema keeps the persistence-only refusal for every literal but v4."""
+    from c1_rail.qualification.execution.release_schema import parse_release
+    doc = funded_release(tmp_path, schema=older)
+    if older.endswith('/v1'):
+        doc.update(capability='N1_ONLY'); doc.pop('dispatch_enabled'); doc.pop('campaign_budget_profile')
+    elif older.endswith('/v2'):
+        doc.pop('campaign_budget_profile')
+    with pytest.raises(ValueError, match='persistence-only|unsupported'):
+        parse_release(encoded(doc))
+
+
+def test_executable_release_refuses_unfunded_profile_or_budget_pairing(tmp_path):
+    import json
+    from bundle_fixture import build_bundle
+    from c1_rail.qualification.execution.release_schema import parse_release
+    from c1_rail.qualification.execution.profile import diagnostic_execution_profile, diagnostic_budget_profile
+    from c1_rail.qualification.execution.service import schedule_eligibility
+    from c1_rail.qualification.execution.profile import parse_profile
+    doc = funded_release(tmp_path)
+    old_profile = diagnostic_execution_profile(encoded(doc['profile']))
+    with pytest.raises(ValueError, match='binding differs'):
+        parse_release(encoded(funded_release(tmp_path / 'b', profile=old_profile,
+                                             campaign_budget_profile=diagnostic_budget_profile(encoded(old_profile)))))
+    with pytest.raises(ValueError, match='binding differs'):
+        parse_release(encoded(dict(doc, campaign_budget_profile=diagnostic_budget_profile(encoded(old_profile)))))
+    v3 = json.loads(build_bundle(tmp_path / 'v3', capability='FULL_E1', diagnostic=True)['release'])
+    assert parse_release(encoded(v3))['schema'] == 'qualification_execution_release/v3'
+    assert schedule_eligibility(v3, parse_profile(encoded(v3['profile']))) is False
