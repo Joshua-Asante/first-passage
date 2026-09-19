@@ -274,6 +274,12 @@ def run_campaign_work(context, reservation_bytes, input_manifest_bytes):
     enrollment = prepare_campaign_work(campaigns, attempt, work_id,
         host_run_id=context.config['host_run_id'], manifest_bytes=input_manifest_bytes,
         clock_bytes=observe_campaign_clock())
+    return _launch(context, campaigns, state, work, enrollment, reservation_bytes)
+
+
+def _launch(context, campaigns, state, work, enrollment, reservation_bytes):
+    """Physical start of one durably prepared work; failure takes the R1 recovery path."""
+    attempt, work_id = state['attempt_id'], work['work_id']
     try:
         runtime = getattr(context, 'campaign_runtime', None) or LinuxCampaignRuntime(context)
         runtime.start(state, work, enrollment)
@@ -284,6 +290,31 @@ def run_campaign_work(context, reservation_bytes, input_manifest_bytes):
             raise recovery_error from launch_error
         raise
     return encoded(campaigns.diagnostic_status(attempt))
+
+
+def launch_prepared_campaign_work(context, reservation_bytes, enrollment_bytes):
+    """Consume one committed funded intent; START_OWNER is never claimed again.
+
+    Only the live producer holding the materialized reservation reaches this
+    tail. Runtime construction, the physical start and the R1 launch_gate ->
+    acknowledge_dispatch sequence all follow the funding commit. The absolute
+    campaign deadline is armed only for this tail and retired on every exit.
+    """
+    from .campaign_store import CampaignStore
+    from .protocol import decode_base64
+    campaigns = CampaignStore(context.store)
+    enrollment = parse_enrollment(enrollment_bytes)
+    attempt, work_id = enrollment['attempt_id'], enrollment['work_id']
+    state = parse_canonical_json(campaigns.budget_snapshot(attempt), label='prepared work budget')
+    work = campaigns._work(state, work_id)
+    if decode_base64(work['reservation_bytes_b64']) != reservation_bytes:
+        raise ValueError('work reservation identity differs')
+    if work['state'] != 'START_INTENT' or work['observation_bytes_b64'] is not None:
+        raise ValueError('materialized start intent required; no relaunch')
+    reservation = parse_canonical_json(reservation_bytes, label='materialized reservation')
+    deadline = min(state['deadline_boottime_ns'], reservation['clock']['boottime_ns'] + work['limits']['wall_ns'])
+    with owned_boottime_deadline(deadline):
+        return _launch(context, campaigns, state, work, enrollment, reservation_bytes)
 
 def _unit_properties(properties):
     result = [str(len(properties))]
@@ -602,6 +633,23 @@ from contextlib import contextmanager
 
 
 @contextmanager
+def owned_boottime_deadline(deadline_ns):
+    """Absolute deadline owned by one shared-qexec tail; retired in finally.
+
+    A completed or failed request leaves no timer that could kill later work.
+    This covers only the active launch tail, not the guardian's own timer and
+    not the interval before guardian bootstrap (R4 remains open).
+    """
+    import ctypes
+    libc, timer = arm_boottime_deadline(deadline_ns)
+    try:
+        yield
+    finally:
+        if libc.timer_delete(timer):
+            raise OSError(ctypes.get_errno(), 'owned deadline retirement failed')
+
+
+@contextmanager
 def controller_cpu_guard():
     """Bound the current shared-qexec admission handler, including journal IO.
 
@@ -689,7 +737,7 @@ def guardian_main():
     if os.geteuid() != config['service_uid']:
         raise ValueError('guardian OS role differs')
     context = ExecutionService(config)
-    if context.profile.values['schema'] != 'qualification_execution_profile/v3':
+    if context.profile.values['schema'] not in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4'):
         raise ValueError('diagnostic guardian requires fresh installed revision')
     campaigns = CampaignStore(context.store)
     state = parse_canonical_json(campaigns.budget_snapshot(args.attempt), label='guardian budget')

@@ -56,9 +56,11 @@ def install(root,manifest,image,*,diagnostic=False):
         execution_credential=str(root/'keys/qexec/credential.json'))
     profile=json.loads((CODE/'deploy/qualification/test-profile.json').read_bytes())
     if diagnostic:
-        from c1_rail.qualification.execution.profile import diagnostic_execution_profile
+        # S2 acceptance runs the funded private route, so the diagnostic host
+        # installs the execution-capable revision (profile/v4, release/v4).
+        from c1_rail.qualification.execution.profile import funded_diagnostic_execution_profile
         from tools.qualification_verification import campaign_host
-        profile = diagnostic_execution_profile(encoded(profile))
+        profile = funded_diagnostic_execution_profile(encoded(profile))
         config.update(schema='qualification_execution_instance/v2', seal_probe_uid=65531)
         campaign_host.install(root,manifest,encoded(profile))
     release=encoded(release_document(CODE,profile,image,keys))

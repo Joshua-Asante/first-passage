@@ -14,6 +14,8 @@ from scripts.qualification_boundary_environment import inspect_environment,requi
 from tools.qualification_verification import host
 from c1_rail.qualification.execution.image import build_worker
 from tools.qualification_verification.role_policy import ROLE_GROUPS
+# Generic socket/framing modules are loaded here, before any fork.
+import private_route
 
 
 CLIENT_DRIVER='''import json,sys
@@ -80,9 +82,27 @@ class Boundary:
         return json.loads(self.request('STATUS',attempt_id=attempt))
 
     def raw_request(self,document,*,role='qclient'):
+        """Public historical retries only; the schedule schema never rides this exec."""
+        if type(document) is dict and document.get('schema')==private_route.SCHEDULE_SCHEMA:
+            raise ValueError('private route requires the bounded transport child')
         command=self.identity(role,[self.python,'-I','-c',RAW_DRIVER,str(self.code),
             self.config['socket_path'],encoded(document).decode()])
         return json.loads(host.run_owned(self.group,command,interpreter=self.python,timeout=60))
+
+    def schedule(self,document,*,role='qexec'):
+        """Private route: one pre-encoded frame through a forked transport child.
+
+        The child adopts the role identity before connecting and moves bytes
+        only; the warm service funds, materializes and launches. A non-service
+        role is used solely to prove the route refuses it.
+        """
+        import grp
+        frame=private_route.schedule_frame(document)
+        uid=self.roles[role]
+        groups=[grp.getgrnam(name).gr_gid for name in ROLE_GROUPS[role]]
+        reply=private_route.forked_exchange(frame,socket_path=self.config['socket_path'],
+            uid=uid,gid=uid,groups=groups,timeout=60)
+        return json.loads(reply)
 
     def prepare(self,*,idle,fault=None,depth_valid_seconds=14400):
         attempt='linux-'+uuid4().hex

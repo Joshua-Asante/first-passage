@@ -11,14 +11,14 @@ import threading
 import time
 
 from ..contract import canonical_json_bytes as encoded, parse_canonical_json, verify_detached_approval
-from .admission import verify_bundle
+from .admission import verify_bundle, verify_retained_bundle
 from .archive import archive_capture
 from .evidence import parse_worker_result
 from .files import fsync_directory, read_regular
 from .g5 import validate_result_envelope_v2
 from .keys import load_keys
 from .launcher import create_worker, find_owned_worker, inspect_worker, start_and_capture, stop_owned_worker
-from .plan import derive_n1_plan
+from .plan import derive_n1_plan, derive_campaign_plan_from_context
 from .preflight import build_binding
 from .protocol import decode_base64, encode_frame, fields, parse_request, sha256
 from .signing import sign_captured
@@ -27,6 +27,9 @@ from .transport import receive
 from .verification import utc_instant, verify_role_signature
 
 RPC_CONNECTION_LIMIT = 16
+SCHEDULE_SCHEMA = 'qualification_campaign_schedule_request/v1'
+SCHEDULE_BYTE_LIMIT = 1024  # framing bound for the service-peer private route
+EXECUTABLE_DIAGNOSTIC_RELEASE = 'qualification_execution_release/v4'
 
 def now():
     return datetime.now(timezone.utc)
@@ -69,6 +72,13 @@ def uid_roles(config):
     return dict(zip(values, ('client', 'g5', 'operator', 'service')))
 
 
+def schedule_eligibility(release, profile):
+    """Fixed at startup: only the execution-capable diagnostic revision opens the route."""
+    return (type(release) is dict and release.get('schema') == EXECUTABLE_DIAGNOSTIC_RELEASE
+            and release.get('capability') == 'FULL_E1' and release.get('dispatch_enabled') is False
+            and profile.values['schema'] == 'qualification_execution_profile/v4')
+
+
 def _write(root, relative, raw):
     path = root / relative
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o755)
@@ -106,6 +116,9 @@ class ExecutionService:
         release = parse_canonical_json(self.release, label='installed release')
         self.profile = parse_profile(encoded(release['profile']))
         self.authority = release['authority_class']
+        # Private scheduler eligibility is fixed at startup from the installed
+        # release; no request re-reads or re-parses the release to decide it.
+        self.schedule_eligible = schedule_eligibility(release, self.profile)
         self.store = ExecutionStore(self.root / 'journal.sqlite', installation_dir=self.installation)
         self.dispatch_lock = threading.Lock()
         self.recovery_issues = {}
@@ -122,6 +135,8 @@ class ExecutionService:
 
     def handle_request(self, peer_uid, request_bytes):
         wire = parse_canonical_json(request_bytes, label='request')
+        if type(wire) is dict and wire.get('schema') == SCHEDULE_SCHEMA:
+            return self._schedule_request(peer_uid, request_bytes)
         if type(wire) is dict and 'schema' in wire:
             return self._campaign_request(peer_uid, request_bytes)
         request = parse_request(request_bytes)
@@ -210,19 +225,15 @@ class ExecutionService:
         raise ValueError('UNKNOWN_OPERATION')
 
     def _campaign_request(self, peer_uid, raw):
-        from .campaign_protocol import parse_campaign_request, permitted as campaign_permitted
-        from .campaign_store import CampaignStore
-        from .release_schema import parse_release
-        from .plan import derive_campaign_plan_from_context
-        request = parse_campaign_request(raw)
+        request = campaign_protocol.parse_campaign_request(raw)
         operation, attempt = request['operation'], request['attempt_id']
-        if not campaign_permitted(self.roles.get(peer_uid), operation):
+        if not campaign_protocol.permitted(self.roles.get(peer_uid), operation):
             raise ValueError('PEER_NOT_AUTHORIZED')
-        release = parse_release(self.release)
+        release = release_schema.parse_release(self.release)
         if release['capability'] != 'FULL_E1':
             raise ValueError('FULL_E1 installed release required')
-        campaigns = CampaignStore(self.store)
-        if release['schema'] == 'qualification_execution_release/v3':
+        campaigns = campaign_store.CampaignStore(self.store)
+        if release['schema'] in ('qualification_execution_release/v3', EXECUTABLE_DIAGNOSTIC_RELEASE):
             if operation == 'SUBMIT_E1' and request['schema'] != 'qualification_campaign_request/v2':
                 raise ValueError('fresh versioned diagnostic admission required')
             if request['schema'] != 'qualification_campaign_request/v2':
@@ -241,7 +252,6 @@ class ExecutionService:
                     plan = derive_campaign_plan_from_context(context)
                     # Plan materialization takes time. Revalidate the retained exact
                     # inputs at commit time; a fresh staging read cannot replace them.
-                    from .admission import verify_retained_bundle
                     admitted_at = now()
                     context = verify_retained_bundle(context.retained_bundle_index,
                         context.retained_bytes, self.release, self.keys(), admitted_at)
@@ -278,10 +288,9 @@ class ExecutionService:
             return encoded(status)
 
     def _diagnostic_campaign_request(self, campaigns, request, raw, release):
-        from .campaign_supervisor import observe_campaign_clock, run_campaign_work, controller_cpu_guard
         operation, attempt = request['operation'], request['attempt_id']
         if operation == 'SUBMIT_E1':
-            with self.dispatch_lock, controller_cpu_guard():
+            with self.dispatch_lock, campaign_supervisor.controller_cpu_guard():
                 try:
                     existing = campaigns.row(attempt)
                 except KeyError:
@@ -291,11 +300,11 @@ class ExecutionService:
                         raise ValueError('immutable diagnostic admission request differs')
                     return encoded(campaigns.diagnostic_status(attempt))
                 state = parse_canonical_json(campaigns.begin_admission(raw,
-                    encoded(release['campaign_budget_profile']), observe_campaign_clock()), label='provisional budget')
+                    encoded(release['campaign_budget_profile']), campaign_supervisor.observe_campaign_clock()), label='provisional budget')
                 reservation = decode_base64(state['works'][0]['reservation_bytes_b64'])
                 manifest = encoded(dict(schema='qualification_campaign_work_manifest/v1', attempt_id=attempt,
                     work_id='admission', role='admission', probe='noop'))
-                return run_campaign_work(self, reservation, manifest)
+                return campaign_supervisor.run_campaign_work(self, reservation, manifest)
         if operation == 'STATUS':
             return encoded(campaigns.diagnostic_status(attempt))
         if operation == 'FETCH_PLAN_CHUNK':
@@ -324,39 +333,29 @@ class ExecutionService:
                 return campaigns.void(raw, now=now())
         raise ValueError('UNKNOWN_OPERATION')
 
-    def schedule_campaign_probe(self, attempt, work_id, role, probe='noop', *, signing_retry_of=None):
-        """Private installed caller only; no RPC dispatch operation exposes this."""
-        from .campaign_store import CampaignStore
-        from .campaign_supervisor import parse_work_manifest, observe_campaign_clock, run_campaign_work, controller_cpu_guard, arm_boottime_deadline
-        from .campaign_budget import clock
-        import resource
-        if resource.getrlimit(resource.RLIMIT_CPU) != (1, 1):
-            raise ValueError('private scheduler must have the installed hard CPU bound')
-        campaigns = CampaignStore(self.store)
-        with self.dispatch_lock, controller_cpu_guard():
-            state = parse_canonical_json(campaigns.budget_snapshot(attempt), label='probe budget')
-            arm_boottime_deadline(state['deadline_boottime_ns'])
-            if self.profile.values['schema'] != 'qualification_execution_profile/v3':
-                raise ValueError('fresh diagnostic installation required')
-            manifest = encoded(dict(schema='qualification_campaign_work_manifest/v1', attempt_id=attempt,
-                work_id=work_id, role=role, probe=probe))
-            parse_work_manifest(manifest)
-            phase = {'probe_worker': 'N1', 'probe_g5': 'N1_G5', 'probe_result': 'RESULT', 'probe_seal': 'SEAL'}[role]
-            reservation = dict(limits=state['profile']['phases'][phase], clock=clock(observe_campaign_clock()),
-                               input_sha256=sha256(manifest))
-            if signing_retry_of is not None:
-                parent = campaigns._work(state, signing_retry_of)
-                intent = campaigns._signing_intent(parent)
-                if intent is None:
-                    raise ValueError('fixed parent signing intent required')
-                reservation.update(signing_retry_of=signing_retry_of,
-                    input_sha256=sha256(decode_base64(intent['data']['payload_bytes_b64'])))
-            raw = encoded(reservation)
-            state = parse_canonical_json(campaigns.reserve_work(attempt, work_id, phase, raw,
-                expected_revision=state['authority_revision']), label='probe reservation')
-            if state['state'] != 'BOUND' or state['validity'] != 'VALID':
-                return encoded(campaigns.diagnostic_status(attempt))
-            return run_campaign_work(self, raw, manifest)
+    def _schedule_request(self, peer_uid, raw):
+        """Closed private route: the warm service is the only campaign intent producer.
+
+        Nothing campaign-specific is imported, constructed or launched until
+        claim_scheduler_bootstrap has durably funded this one-use operation from
+        the original allowance. A refused or duplicate claim returns compact
+        historical status and has no effect; only the returned token proceeds to
+        materialization and then to the prepared-launch tail. The 1 s / 10 s
+        controller guard consumes START_OWNER's existing allowance.
+        """
+        if peer_uid != self.config['service_uid']:
+            raise ValueError('PEER_NOT_AUTHORIZED')
+        if not self.schedule_eligible:
+            raise ValueError('installed execution-capable diagnostic release required')
+        campaigns = campaign_store.CampaignStore(self.store)
+        with self.dispatch_lock, campaign_supervisor.controller_cpu_guard():
+            token, status = campaigns.claim_scheduler_bootstrap(raw, campaign_supervisor.observe_campaign_clock())
+            if token is None:
+                return status
+            request = campaign_funding.parse_request(raw)
+            reservation, enrollment = campaigns.materialize_scheduler_bootstrap(
+                request['attempt_id'], request['work_id'], token, self.config['host_run_id'])
+            return campaign_supervisor.launch_prepared_campaign_work(self, reservation, enrollment)
 
     def _eligible(self, execution_id):
         try:
@@ -480,10 +479,8 @@ class ExecutionService:
 
     def recover_service(self):
         self.recovery_issues = {}
-        from .campaign_store import CampaignStore
-        from .campaign_supervisor import recover_campaign_work
-        if self.profile.values['schema'] == 'qualification_execution_profile/v3':
-            campaigns = CampaignStore(self.store)
+        if self.profile.values['schema'] in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4'):
+            campaigns = campaign_store.CampaignStore(self.store)
             with self.store.transaction() as connection:
                 exists = connection.execute("SELECT 1 FROM sqlite_master WHERE name='full_campaign_budgets'").fetchone()
                 attempts = [] if exists is None else [row[0] for row in connection.execute('SELECT attempt_id FROM full_campaign_budgets')]
@@ -491,14 +488,21 @@ class ExecutionService:
                 with self.store.transaction() as connection:
                     funding = campaigns._funding(connection, attempt)
                 if funding is not None:
-                    self.recovery_issues[attempt + ':funding'] = ('FUNDING_PENDING' if funding['bootstrap_pending_work_id'] is not None or funding['terminal_overlay'] is not None else 'FUNDING_RUNTIME_NOT_ENABLED')
-                    continue  # R2a persistence cannot activate or resume a controller.
+                    # Restart never materializes a pending intent or resumes a
+                    # controller for a funded attempt (single-lifetime posture).
+                    if funding['bootstrap_pending_work_id'] is not None or funding['terminal_overlay'] is not None:
+                        self.recovery_issues[attempt + ':funding'] = 'FUNDING_PENDING'
+                    elif self.profile.values['schema'] == 'qualification_execution_profile/v3':
+                        self.recovery_issues[attempt + ':funding'] = 'FUNDING_RUNTIME_NOT_ENABLED'
+                    else:
+                        self.recovery_issues[attempt + ':funding'] = 'FUNDING_NO_RESTART_OWNERSHIP'
+                    continue
                 state = parse_canonical_json(campaigns.budget_snapshot(attempt), label='recovery budget')
                 if state['profile']['schema'] != 'qualification_campaign_budget_profile/v2':
                     continue  # Historical S1/dormant records gain no runtime ownership.
                 for work in state['works']:
                     try:
-                        recover_campaign_work(self, decode_base64(work['reservation_bytes_b64']),
+                        campaign_supervisor.recover_campaign_work(self, decode_base64(work['reservation_bytes_b64']),
                                               attempt_id=attempt, work_id=work['work_id'])
                     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
                         self.recovery_issues[attempt + ':' + work['work_id']] = 'RECOVERY_PENDING'
@@ -553,7 +557,10 @@ class ExecutionService:
             connection.settimeout(self.profile.capture_seconds)
             try:
                 _, uid, _ = struct.unpack('3i', connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize('3i')))
-                raw = receive(connection, limit=self.profile.rpc_byte_limit)
+                # The service identity has no public operation; its only request
+                # is the bounded private schedule frame, rejected in framing.
+                limit = SCHEDULE_BYTE_LIMIT if uid == self.config['service_uid'] else self.profile.rpc_byte_limit
+                raw = receive(connection, limit=limit)
                 result = self.handle_request(uid, raw)
                 response = encoded(dict(ok=True, data_b64=base64.b64encode(result).decode('ascii')))
             except (ValueError, KeyError, OSError, RecursionError) as exc:
@@ -576,4 +583,12 @@ def main():
     ExecutionService(config).serve()
 
 
-from .campaign_supervisor import guardian_main as campaign_guardian_main
+# Campaign-specific modules are loaded once at service startup, never lazily
+# on a first private request (R2 contract bullet 8). Referenced by module so
+# tests may substitute adapters at call time. Placed after the class to keep
+# the existing guardian -> service import direction.
+import ctypes  # noqa: E402,F401  (kernel timer ABI used by every guarded request)
+from . import campaign_budget, campaign_funding, campaign_protocol, campaign_store, campaign_supervisor, release_schema  # noqa: E402,F401
+from .. import journal_snapshot, source_admission  # noqa: E402,F401
+from tools.qualification_verification import container_ownership  # noqa: E402,F401
+from .campaign_supervisor import guardian_main as campaign_guardian_main  # noqa: E402

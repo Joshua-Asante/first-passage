@@ -147,7 +147,7 @@ def diagnostic_execution_profile(base_bytes):
 
 
 def funded_diagnostic_execution_profile(base_bytes):
-    """Persistence-only successor; runtime release activation remains disabled."""
+    """Funded successor; only release_schema's execution-capable revision installs it."""
     from ..contract import canonical_json_bytes as encoded
     result = diagnostic_execution_profile(base_bytes)
     result.update(schema='qualification_execution_profile/v4', protocol_version=4)
