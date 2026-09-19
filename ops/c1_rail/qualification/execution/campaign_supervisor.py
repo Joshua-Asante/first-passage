@@ -454,9 +454,11 @@ class LinuxCampaignRuntime:
                     pass  # Original failure drives durable recovery; no success claim.
             raise
         if process.returncode != 0 or len(stdout) > 65536 or len(stderr) > 65536:
-            raise ValueError('bounded system-manager operation failed')
+            # The manager's or control child's refusal text is the only diagnostic.
+            raise ValueError('bounded system-manager operation failed (exit ' + str(process.returncode) + '): '
+                             + stderr[-300:].decode('utf-8', 'replace').strip())
         if re.fullmatch(rb'o "/org/freedesktop/systemd1/job/[0-9]+"\n?', stdout) is None:
-            raise ValueError('system-manager job acknowledgement differs')
+            raise ValueError('system-manager job acknowledgement differs: ' + stdout[-200:].decode('utf-8', 'replace').strip())
         campaigns.acknowledge_dispatch(enrollment['attempt_id'], enrollment['work_id'],
             'guardian', permit['token'], observe_campaign_clock)
         return stdout
