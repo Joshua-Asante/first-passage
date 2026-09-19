@@ -20,12 +20,20 @@ def _source_path(value):
 
 
 def parse_release(raw):
-    doc = fields(parse_canonical_json(raw,label='execution release'), {
+    doc = parse_canonical_json(raw,label='execution release')
+    if type(doc) is not dict:
+        raise ValueError('closed schema object required')
+    campaign = doc.get('schema') == 'qualification_execution_release/v2'
+    fields(doc, {
         'schema','release_id','profile','profile_sha256','authority_class','service_id',
         'capability','production_execution','worker_image_digest','runtime_manifests',
         'ordinary_code','worker_entrypoint','port_roles','key_roles','trusted_key_sha256',
-        'qualification_policy_sha256','source_owner_sha256'})
-    if (doc['schema'] != 'qualification_execution_release/v1'
+        'qualification_policy_sha256','source_owner_sha256'} | ({'dispatch_enabled'} if campaign else set()))
+    if campaign:
+        if (doc['capability'] != 'FULL_E1' or doc['authority_class'] != 'TEST_ONLY'
+                or doc['production_execution'] is not False or doc['dispatch_enabled'] is not False):
+            raise ValueError('unsupported admission-only campaign release')
+    elif (doc['schema'] != 'qualification_execution_release/v1'
             or doc['authority_class'] not in ('TEST_ONLY','OPERATOR')
             or doc['capability'] != 'N1_ONLY' or doc['production_execution'] is not False):
         raise ValueError('unsupported execution release')
@@ -34,6 +42,8 @@ def parse_release(raw):
     owners = fields(doc['source_owner_sha256'], {'book_policy','firm_rules','policy_fingerprint'})
     for value in owners.values(): digest(value)
     profile = parse_profile(canonical_json_bytes(doc['profile']))
+    if profile.capability != doc['capability']:
+        raise ValueError('release profile capability differs')
     if digest(doc['profile_sha256']) != profile.sha256:
         raise ValueError('execution profile identity differs')
     if type(doc['worker_image_digest']) is not str or re.fullmatch('sha256:[0-9a-f]{64}',doc['worker_image_digest']) is None:
