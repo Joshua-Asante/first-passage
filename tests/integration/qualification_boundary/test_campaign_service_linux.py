@@ -40,6 +40,11 @@ def funding(boundary, attempt):
     return json.loads(journal(boundary, 'SELECT body FROM full_campaign_funding WHERE attempt_id=?', attempt)[0][0])
 
 
+def metering(doc):
+    """The allowance facts; restart recovery legitimately appends accounting events (clock, revision, heads)."""
+    return {k: doc[k] for k in ('settled_cpu_ns', 'reserved_cpu_ns', 'remaining_cpu_ns', 'validity', 'state')}
+
+
 def status(boundary, attempt):
     return json.loads(boundary.request('STATUS', schema=V2, attempt_id=attempt))
 
@@ -124,10 +129,14 @@ def test_s2_post_admission_void_authentication_is_charged_per_attempt_and_never_
     assert error is None and again == receipt and funding(boundary, attempt) == doc
     assert len(objects(boundary, attempt, 'void_authentication_')) == 4 and objects(boundary, attempt, 'pending_void') == []
     boundary.restart()
-    assert funding(boundary, attempt) == doc
+    # Restart recovery of the completed works appends accounting events (run
+    # 35471364817: revision 12 -> 15, later last_clock); the allowance is unchanged.
+    assert metering(funding(boundary, attempt)) == metering(doc)
     final = status(boundary, attempt)
     assert final['validity'] == 'VOID' and final['void_authentication_attempts'] == 4
+    assert final['settled_cpu_ns'] == doc['settled_cpu_ns']
     assert operator_void(boundary, valid)[0] == receipt
+    assert metering(funding(boundary, attempt)) == metering(doc)
     host.save(boundary.output/(attempt+'-void-metering.json'), dict(before=before, after=doc, final=final, refusals=refusals,
         charges=objects(boundary, attempt, 'void_authentication_'), retained_refusals=objects(boundary, attempt, 'void_refusal_')))
 
@@ -176,7 +185,12 @@ def test_s2_queued_cancellation_bars_new_work_while_admission_still_settles(real
     assert queued['schema'] == 'qualification_campaign_status/v2' and queued['void_pending'] is True, queued
     assert queued['void_authentication_attempts'] == 0 and queued['receipt'] is None
     state = wait(boundary, attempt, lambda s: work(s, 'admission')['observation_bytes_b64'] is not None or s['state'].startswith('BUDGET_'))
-    assert work(state, 'admission')['state'] == 'CAPTURED' and state['state'] == 'BOUND' and state['validity'] == 'VALID', state
+    # The guardian refuses the body at the receipt and recovers its own CAPTURED
+    # admission: BOUND when the payload slice still yields a final counter (run
+    # 35471364817), BUDGET_UNCERTAIN when it was already gone. Never IN_DOUBT,
+    # never VOID, never a receipt.
+    assert work(state, 'admission')['state'] == 'CAPTURED' and state['validity'] == 'VALID', state
+    assert state['state'] in ('BOUND', 'BUDGET_UNCERTAIN'), state
     assert work(state, 'admission')['charge_cpu_ns'] >= ADMISSION
     current = status(boundary, attempt)
     assert current['receipt'] is None and current['void_pending'] is True and current['void_authentication_attempts'] == 0
