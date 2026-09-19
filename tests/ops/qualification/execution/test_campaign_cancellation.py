@@ -398,6 +398,47 @@ def test_pre_admission_body_never_blocks_the_admission_guardian_and_is_authentic
     ExecutionStore(instance.store.path)
 
 
+@pytest.mark.parametrize('kind', ['forged', 'unenrolled'])
+def test_refused_pre_admission_body_is_retained_cleared_and_admission_still_completes(tmp_path, monkeypatch, kind):
+    """Coordinator addendum (1): a pre-admission refusal is a retained fact under the admission's own charge, never an admission failure."""
+    from c1_rail.qualification.execution.campaign_store import VOID_ADMISSION_REFUSAL_PREFIX
+    from c1_rail.qualification.execution.plan import derive_campaign_plan_from_context
+    instance, case = funded_service(tmp_path, monkeypatch)
+    attempt = case['attempt_id']
+    raw = request(case)
+    assert json.loads(instance.handle_request(CLIENT, raw))['state'] == 'PROVISIONAL'
+    context = verified_context(instance, case)
+    body = (void_request(case, context, private=Ed25519PrivateKey.generate()) if kind == 'forged'
+            else void_request(case, context, key_id='test-producer'))
+    queued = json.loads(instance.handle_request(OPERATOR, body))
+    assert queued['void_pending'] is True and queued['receipt'] is None
+    campaigns = CampaignStore(instance.store)
+    plan = derive_campaign_plan_from_context(context)
+    result = campaigns.finish_diagnostic_admission(raw, context, plan, admission_observation(case), now=NOW, trusted_keys=case['keys'])
+    # Admission completed normally: receipt, BOUND, VALID, the admission charge only.
+    assert result['receipt'] is not None and result['state'] == 'BOUND' and result['validity'] == 'VALID'
+    assert result['settled_cpu_ns'] == ADMISSION_CHARGE and result['void_authentication_attempts'] == 0
+    assert result['void_pending'] is False and result['void_refusal']
+    if kind == 'unenrolled':
+        assert result['void_refusal'] == 'pending cancellation authority is not enrolled'
+    assert objects(instance, case, 'pending_void') == []
+    assert objects(instance, case, VOID_AUTHENTICATION_PREFIX) == [] and objects(instance, case, VOID_REFUSAL_PREFIX) == []
+    assert objects(instance, case, VOID_ADMISSION_REFUSAL_PREFIX) == [VOID_ADMISSION_REFUSAL_PREFIX + '000001']
+    refusal = json.loads(campaigns.retained_object(attempt, VOID_ADMISSION_REFUSAL_PREFIX + '000001'))
+    assert refusal['request_sha256'] == sha256(body) and refusal['sequence'] == 1
+    assert campaigns.void_retry(body) is None
+    # The route is open again and the same body, now post-admission, is charged and refused.
+    with pytest.raises(ValueError):
+        instance.handle_request(OPERATOR, body)
+    current = status(instance, case)
+    assert current['validity'] == 'VALID' and current['void_authentication_attempts'] == 1
+    assert current['settled_cpu_ns'] == ADMISSION_CHARGE + CHARGE
+    assert objects(instance, case, VOID_REFUSAL_PREFIX) == [VOID_REFUSAL_PREFIX + '000001']
+    # A valid approval still ends it.
+    assert json.loads(instance.handle_request(OPERATOR, void_request(case, context)))['validity'] == 'VOID'
+    ExecutionStore(instance.store.path)
+
+
 def test_persistence_only_release_queues_and_never_authenticates(tmp_path, monkeypatch):
     """release/v3 has no funding projection to charge: fail-closed, the body waits."""
     instance, case = running(tmp_path, monkeypatch, diagnostic=True)
@@ -561,6 +602,38 @@ def test_retry_never_launches_unless_the_admission_is_resumable(tmp_path, monkey
     else:
         assert label == 'ADMISSION_UNSTARTED'
         assert snapshot(restarted, case)['recoveries'] == []
+    ExecutionStore(instance.store.path)
+
+
+@pytest.mark.parametrize('condition', ['deadline', 'boot'])
+def test_restart_terminalises_an_expired_unstarted_admission_without_a_slot(tmp_path, monkeypatch, condition):
+    """Coordinator addendum (2): past the deadline or on another boot the budget ends honestly, ownerless and effect-free."""
+    instance, case = funded_service(tmp_path, monkeypatch)
+    crash_after_begin_admission(instance, case, monkeypatch)
+    attempt = case['attempt_id']
+    before = snapshot(instance, case)
+    if condition == 'deadline':
+        monkeypatch.setattr(supervisor, 'observe_campaign_clock', lambda: encoded(clock(before['deadline_boottime_ns'])))
+    else:
+        monkeypatch.setattr(supervisor, 'observe_campaign_clock', lambda: encoded(clock(12, boot='boot-2')))
+    restarted = fresh_service(instance)
+    restarted.campaign_runtime = Runtime(restarted)
+    restarted.recover_service()
+    assert restarted.recovery_issues == {attempt + ':admission': 'ADMISSION_UNSTARTED'}
+    state = snapshot(restarted, case)
+    assert state['state'] == ('BUDGET_EXHAUSTED' if condition == 'deadline' else 'BUDGET_UNCERTAIN')
+    assert state['validity'] == 'VALID' and state['works'][0]['state'] == 'RESERVED' and state['works'][0]['transitions'] == []
+    assert state['recoveries'] == [] and state['dispatches'] == [] and control_slots(restarted, case) == []
+    assert state['settled_cpu_ns'] == before['settled_cpu_ns'] and state['reserved_cpu_ns'] == before['reserved_cpu_ns']
+    assert Runtime.started == []
+    # The exact retry is status only, and a second restart changes nothing further.
+    reply = json.loads(restarted.handle_request(CLIENT, request(case)))
+    assert reply['state'] == state['state'] and Runtime.started == []
+    again = fresh_service(instance)
+    again.campaign_runtime = Runtime(again)
+    again.recover_service()
+    assert again.recovery_issues == {attempt + ':admission': 'ADMISSION_UNSTARTED'}
+    assert snapshot(again, case)['accounting_revision'] == state['accounting_revision']
     ExecutionStore(instance.store.path)
 
 

@@ -34,8 +34,12 @@ from .campaign_funding import FundingStoreMixin, SCHEMA as FUNDING_SCHEMA, PROFI
 # projection; the outcome is a VOID receipt or a retained refusal object.
 VOID_AUTHENTICATION_SCHEMA = 'qualification_campaign_void_authentication/v1'
 VOID_REFUSAL_SCHEMA = 'qualification_campaign_void_refusal/v1'
+VOID_ADMISSION_REFUSAL_SCHEMA = 'qualification_campaign_void_admission_refusal/v1'
 VOID_AUTHENTICATION_PREFIX = 'void_authentication_'
 VOID_REFUSAL_PREFIX = 'void_refusal_'
+# A pre-admission body is authenticated under the guardian's charged admission
+# work; its refusal is retained without a charge object and pairs with nothing.
+VOID_ADMISSION_REFUSAL_PREFIX = 'void_admission_refusal_'
 CANCELLATION_PENDING = 'campaign cancellation pending; new authority unavailable'
 
 
@@ -66,12 +70,12 @@ def parse_void_authentication(raw):
     return doc
 
 
-def parse_void_refusal(raw):
+def parse_void_refusal(raw, *, schema=VOID_REFUSAL_SCHEMA):
     from .protocol import fields, identity, digest
     from .campaign_budget import clock, integer
     doc = fields(parse_canonical_json(raw, label='cancellation refusal'),
                  {'schema', 'attempt_id', 'sequence', 'request_sha256', 'reason', 'clock'})
-    if doc['schema'] != VOID_REFUSAL_SCHEMA:
+    if doc['schema'] != schema:
         raise ValueError('cancellation refusal schema required')
     identity(doc['attempt_id']); digest(doc['request_sha256'])
     integer(doc['sequence'], positive=True); clock(encoded(doc['clock']))
@@ -461,6 +465,30 @@ class CampaignStore(FundingStoreMixin):
             result.append(doc)
         return result
 
+    def _void_admission_refusals(self, connection, attempt):
+        rows = connection.execute('SELECT role, body FROM full_campaign_objects WHERE attempt_id=? AND role GLOB ? ORDER BY role',
+                                  (attempt, VOID_ADMISSION_REFUSAL_PREFIX + '*'))
+        result = []
+        for role, raw in rows:
+            doc = parse_void_refusal(bytes(raw), schema=VOID_ADMISSION_REFUSAL_SCHEMA)
+            if doc['attempt_id'] != attempt or role != _void_role(VOID_ADMISSION_REFUSAL_PREFIX, doc['sequence']):
+                raise ValueError('admission cancellation refusal binding differs')
+            result.append(doc)
+        if [doc['sequence'] for doc in result] != list(range(1, len(result) + 1)):
+            raise ValueError('admission cancellation refusal sequence differs')
+        return result
+
+    def _refuse_admission_void(self, connection, attempt, request_bytes, reason, clock_doc):
+        """Retain a pre-admission refusal (charged under the admission work) and clear the body."""
+        sequence = len(self._void_admission_refusals(connection, attempt)) + 1
+        refusal = encoded(dict(schema=VOID_ADMISSION_REFUSAL_SCHEMA, attempt_id=attempt, sequence=sequence,
+            request_sha256=sha256(request_bytes), reason=(reason or 'refused')[:1024], clock=clock_doc))
+        parse_void_refusal(refusal, schema=VOID_ADMISSION_REFUSAL_SCHEMA)
+        connection.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
+                           (attempt, _void_role(VOID_ADMISSION_REFUSAL_PREFIX, sequence), sha256(refusal), len(refusal), refusal))
+        connection.execute("DELETE FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void' AND body=?",
+                           (attempt, request_bytes))
+
     def void_authentication_charge(self, connection, attempt):
         """Settled controller CPU already spent on cancellation authentication."""
         return sum(doc['charge_cpu_ns'] for doc in self._void_authentications(connection, attempt))
@@ -575,14 +603,20 @@ class CampaignStore(FundingStoreMixin):
                          (attempt, *roles)).fetchone():
                 return None
             funding = self._funding(c, attempt)
-            observed = clock(clock_source())
-            resumable = (row['validity'] == 'VALID' and state['state'] == 'PROVISIONAL'
+            clock_bytes = clock_source()
+            observed = clock(clock_bytes)
+            # Expired: the original admission deadline has passed, the boot changed
+            # or the trusted clock is unavailable. Nothing can ever launch it; the
+            # same observation makes the budget terminal through recover_work.
+            expired = (observed['boottime_ns'] is None or observed['boot_id'] != state['start_clock']['boot_id']
+                       or observed['boottime_ns'] >= state['deadline_boottime_ns'])
+            resumable = (row['validity'] == 'VALID' and state['state'] == 'PROVISIONAL' and not expired
                 and (funding is None or (funding['bootstrap_pending_work_id'] is None and funding['terminal_overlay'] is None))
                 and not self._recovery_pending(state) and not dispatch_pending(state)
-                and observed['boottime_ns'] is not None and observed['boot_id'] == state['start_clock']['boot_id']
                 and state['last_clock']['boottime_ns'] is not None
-                and state['last_clock']['boottime_ns'] <= observed['boottime_ns'] < state['deadline_boottime_ns'])
-            return dict(resumable=resumable, reservation_bytes=self._raw(work['reservation_bytes_b64']))
+                and state['last_clock']['boottime_ns'] <= observed['boottime_ns'])
+            return dict(resumable=resumable, expired=expired and row['validity'] == 'VALID' and state['state'] in ('PROVISIONAL', 'BOUND'),
+                        clock_bytes=clock_bytes, reservation_bytes=self._raw(work['reservation_bytes_b64']))
 
     def diagnostic_status(self, attempt):
         """Bounded historical projection; never reconstructs current eligibility."""
@@ -594,7 +628,9 @@ class CampaignStore(FundingStoreMixin):
             # A queued body is reported whenever it awaits authentication, before
             # or after the receipt; the charged attempt count and the last retained
             # refusal let the operator read why validity is still VALID.
-            refusals = self._void_refusals(connection, attempt)
+            # Post-admission refusals always follow admission ones, so the last of
+            # either kind is the most recent.
+            refusals = self._void_refusals(connection, attempt) or self._void_admission_refusals(connection, attempt)
             cancellation = dict(
                 void_pending=self._cancellation_pending(connection, attempt),
                 void_authentication_attempts=len(self._void_authentications(connection, attempt)),
@@ -662,16 +698,24 @@ class CampaignStore(FundingStoreMixin):
                 cancel_raw = bytes(pending[0])
                 cancel = parse_campaign_request(cancel_raw)
                 domain = parse_canonical_json(context.domain.canonical_bytes, label='enrolled domain')
-                approval = verify_detached_approval(decode_base64(cancel['operator_approval_bytes']),
-                    trusted_keys=trusted_keys, expected_scope='VOID_QUALIFICATION_ATTEMPT',
-                    expected_subject_sha256=sha256(encoded(dict(attempt_id=attempt, reason=cancel['reason'],
-                        contract_sha256=context.contract.contract_sha256))),
-                    expected_contract_sha256=context.contract.contract_sha256, now=now, allow_test_authority=True)
-                if (approval.authority_class != 'TEST_ONLY' or approval.key_id not in domain['freeze_key_ids']
-                        or sha256(trusted_keys[approval.key_id].public_key) != domain['trusted_key_sha256'][approval.key_id]):
-                    raise ValueError('pending cancellation authority is not enrolled')
-                self.void(cancel_raw, now=now)
-                owner = self.row(attempt)
+                # Authenticated under this charged admission work. A refusal is a
+                # retained fact, never an admission failure: the body is cleared
+                # and admission continues; only a verified enrolled key sets VOID.
+                try:
+                    approval = verify_detached_approval(decode_base64(cancel['operator_approval_bytes']),
+                        trusted_keys=trusted_keys, expected_scope='VOID_QUALIFICATION_ATTEMPT',
+                        expected_subject_sha256=sha256(encoded(dict(attempt_id=attempt, reason=cancel['reason'],
+                            contract_sha256=context.contract.contract_sha256))),
+                        expected_contract_sha256=context.contract.contract_sha256, now=now, allow_test_authority=True)
+                    if (approval.authority_class != 'TEST_ONLY' or approval.key_id not in domain['freeze_key_ids']
+                            or sha256(trusted_keys[approval.key_id].public_key) != domain['trusted_key_sha256'][approval.key_id]):
+                        raise ValueError('pending cancellation authority is not enrolled')
+                except (ValueError, KeyError) as refusal:
+                    self._refuse_admission_void(connection, attempt, cancel_raw, str(refusal)[:1024],
+                                                parse_canonical_json(observations_bytes, label='observation')['clock'])
+                else:
+                    self.void(cancel_raw, now=now)
+                    owner = self.row(attempt)
             from .campaign_budget import dispatch_pending
             if dispatch_pending(state):
                 return self.diagnostic_status(attempt)
@@ -1328,6 +1372,17 @@ class CampaignStore(FundingStoreMixin):
                         if (refusal['attempt_id'] != row['attempt_id'] or name != _void_role(VOID_REFUSAL_PREFIX, refusal['sequence'])
                                 or charge is None or charge['request_sha256'] != refusal['request_sha256']):
                             raise ValueError('cancellation refusal binding differs')
+                # Pre-admission refusals are charged under the admission work: no
+                # charge object, a contiguous sequence of their own, funded or not.
+                admission_refusals = []
+                for name in tuple(retained):
+                    if name.startswith(VOID_ADMISSION_REFUSAL_PREFIX):
+                        refusal = parse_void_refusal(retained.pop(name), schema=VOID_ADMISSION_REFUSAL_SCHEMA)
+                        if refusal['attempt_id'] != row['attempt_id'] or name != _void_role(VOID_ADMISSION_REFUSAL_PREFIX, refusal['sequence']):
+                            raise ValueError('admission cancellation refusal binding differs')
+                        admission_refusals.append(refusal['sequence'])
+                if sorted(admission_refusals) != list(range(1, len(admission_refusals) + 1)):
+                    raise ValueError('admission cancellation refusal sequence differs')
                 for name in tuple(retained):
                     if name.startswith('supervision_control_'):
                         event = parse_supervision_event(retained.pop(name))

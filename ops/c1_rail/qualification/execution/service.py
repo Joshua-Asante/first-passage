@@ -558,6 +558,13 @@ class ExecutionService:
                         # first launch. Reported only; this grants nothing.
                         unstarted = campaigns.inspect_unstarted_admission(attempt, campaign_supervisor.observe_campaign_clock)
                         if unstarted is not None:
+                            if unstarted['expired']:
+                                # Past the admission deadline or on another boot nothing can
+                                # ever launch it and no guardian will ever authenticate a
+                                # queued body: the same clock observation ends the budget
+                                # honestly (BUDGET_EXHAUSTED / BUDGET_UNCERTAIN) through the
+                                # ownerless RESERVED recovery path — no slot, no OS effect.
+                                campaigns.recover_work(attempt, 'admission', unstarted['clock_bytes'])
                             self.recovery_issues[attempt + ':admission'] = (
                                 'ADMISSION_RESUMABLE' if unstarted['resumable'] else 'ADMISSION_UNSTARTED')
                             continue

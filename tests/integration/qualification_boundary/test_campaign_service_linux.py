@@ -173,10 +173,12 @@ def test_s2_queued_cancellation_bars_new_work_while_admission_still_settles(real
     boundary = real_boundary
     assert boundary.diagnostic
     evidence = {}
-    # (a) Forged body queued before the receipt: the guardian refuses it at the
-    # receipt and recovers; the campaign stays BOUND without a receipt, the body
-    # stays pending (attempts 0, never charged), and the barrier alone refuses
-    # new work on an otherwise fundable campaign.
+    # (a) Forged body queued before the receipt. While it is pending the private
+    # route is barred outright (before any state check), with no bootstrap row,
+    # no work and no unit. The guardian then refuses the body under its own
+    # charged admission work: the refusal is retained, the body cleared, and the
+    # admission completes normally with a receipt — validity stays VALID and no
+    # authentication charge object exists.
     bundle = boundary.prepare(idle=True); attempt = bundle['attempt_id']
     fields = dict(schema=V2, request_id='diagnostic', attempt_id=attempt, bundle_sha256=bundle['bundle_sha256'])
     reason = 'TEST_ONLY queued cancellation'
@@ -184,25 +186,33 @@ def test_s2_queued_cancellation_bars_new_work_while_admission_still_settles(real
     queued, submitted = queue_during_admission(boundary, fields, void_fields(attempt, reason, forged(approval)))
     assert queued['schema'] == 'qualification_campaign_status/v2' and queued['void_pending'] is True, queued
     assert queued['void_authentication_attempts'] == 0 and queued['receipt'] is None
-    state = wait(boundary, attempt, lambda s: work(s, 'admission')['observation_bytes_b64'] is not None or s['state'].startswith('BUDGET_'))
-    # The guardian refuses the body at the receipt and recovers its own CAPTURED
-    # admission: BOUND when the payload slice still yields a final counter (run
-    # 35471364817), BUDGET_UNCERTAIN when it was already gone. Never IN_DOUBT,
-    # never VOID, never a receipt.
-    assert work(state, 'admission')['state'] == 'CAPTURED' and state['validity'] == 'VALID', state
-    assert state['state'] in ('BOUND', 'BUDGET_UNCERTAIN'), state
-    assert work(state, 'admission')['charge_cpu_ns'] >= ADMISSION
-    current = status(boundary, attempt)
-    assert current['receipt'] is None and current['void_pending'] is True and current['void_authentication_attempts'] == 0
     refused = boundary.schedule(schedule_document(attempt, 'barred'))
-    assert refused['ok'] is False and 'cancellation pending' in refused['error'], refused
-    assert 'barred' not in units(boundary)
-    assert journal(boundary, 'SELECT work_id FROM full_campaign_bootstraps WHERE attempt_id=?', attempt) == []
-    assert not any(w['work_id'] == 'barred' for w in snapshot(boundary, attempt)['works'])
-    # The exact retry before a receipt is transport only: still pending, still uncharged.
+    if refused['ok'] is False:
+        assert 'cancellation pending' in refused['error'], refused
+    else:
+        # The receipt landed before the route request: the refusal must have
+        # cleared the body by then, which the assertions below verify.
+        assert json.loads(base64.b64decode(refused['data_b64']))['schema'] == 'qualification_campaign_status/v2', refused
+    assert 'barred' not in units(boundary) or refused['ok'] is True
+    state = wait(boundary, attempt, lambda s: work(s, 'admission')['state'] == 'COMPLETED' or s['state'].startswith('BUDGET_'))
+    assert work(state, 'admission')['state'] == 'COMPLETED' and state['state'] == 'BOUND' and state['validity'] == 'VALID', state
+    assert work(state, 'admission')['charge_cpu_ns'] == ADMISSION
+    current = status(boundary, attempt)
+    assert current['receipt'] is not None and current['void_pending'] is False and current['void_authentication_attempts'] == 0
+    assert current['void_refusal'], current
+    assert objects(boundary, attempt, 'void_admission_refusal_') == ['void_admission_refusal_000001']
+    assert objects(boundary, attempt, 'void_authentication_') == [] and objects(boundary, attempt, 'pending_void') == []
+    if refused['ok'] is False:
+        assert journal(boundary, 'SELECT work_id FROM full_campaign_bootstraps WHERE attempt_id=?', attempt) == []
+        assert not any(w['work_id'] == 'barred' for w in snapshot(boundary, attempt)['works'])
+    # The same forged body after the receipt takes the funded path: one 2 s charge, still VALID.
     again, error = operator_void(boundary, void_fields(attempt, reason, forged(approval)))
-    assert error is None and again['void_pending'] is True and again['void_authentication_attempts'] == 0
-    evidence['forged'] = dict(queued=queued, submitted=submitted, settled=work(state, 'admission')['charge_cpu_ns'], refused=refused)
+    assert again is None and error, (again, error)
+    after = status(boundary, attempt)
+    assert after['validity'] == 'VALID' and after['void_authentication_attempts'] == 1 and after['void_pending'] is False
+    assert funding(boundary, attempt)['settled_cpu_ns'] == ADMISSION + CHARGE
+    evidence['forged'] = dict(queued=queued, submitted=submitted, refused=refused, receipt_state=state['state'],
+                              refusal=current['void_refusal'], post_receipt_attempts=after['void_authentication_attempts'])
     # (b) Valid body queued before the receipt: authenticated by the guardian
     # under its own charged admission work; the admission settles, VOID is
     # recorded without a receipt, and nothing was charged to authentication.
