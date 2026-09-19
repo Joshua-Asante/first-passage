@@ -2493,3 +2493,150 @@ def test_nonzero_probe_exit_is_refused_instead_of_an_illegal_abort(tmp_path, mon
     assert [e['data']['pid'] for e in _events(store, 'PROCESS')] == [4242]
     probe = next(w for w in snap(store)['works'] if w['work_id'] == 'probe')
     assert probe['state'] == 'RUNNING' and probe['observation_bytes_b64'] is None
+
+
+def _vanishing_scene(tmp_path, monkeypatch):
+    """A RUNNING probe whose container exits after the guardian retains its
+    identity but before the next cgroup read, so the /proc entry vanishes."""
+    from types import SimpleNamespace
+    from test_campaign_budget import transition
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    from c1_rail.qualification.execution.protocol import sha256
+
+    store = metered(tmp_path, started=False)
+    manifest = {
+        'schema': 'qualification_campaign_work_manifest/v1',
+        'attempt_id': ATTEMPT,
+        'work_id': 'probe',
+        'role': 'probe_worker',
+        'probe': 'noop',
+    }
+    raw = encoded(
+        {'limits': profile()['phases']['N1'], 'clock': clock(11), 'input_sha256': sha256(encoded(manifest))}
+    )
+    store.reserve_work(ATTEMPT, 'probe', 'N1', raw, expected_revision=snap(store)['authority_revision'])
+    enrollment = supervisor.prepare_campaign_work(
+        store, ATTEMPT, 'probe', host_run_id='host1', manifest_bytes=encoded(manifest), clock_bytes=encoded(clock(12))
+    )
+    transition(store, 'probe', 'RUNNING', 13)
+    state = snap(store)
+    work = next(w for w in state['works'] if w['work_id'] == 'probe')
+    scopes = enrollment['scopes']
+    body = {
+        'Image': 'sha256:' + 'a' * 64,
+        'User': '61001:61001',
+        'Entrypoint': ['fixed'],
+        'Cmd': ['noop'],
+        'HostConfig': {'CgroupParent': scopes['payload_slice']},
+    }
+    parent = Path('/sys/fs/cgroup') / supervisor.host_slice('host1')
+    chain = '/'.join([parent.name, scopes['campaign_slice'], scopes['work_slice'], scopes['payload_slice']])
+    container_cgroup = '/' + chain + '/docker-' + 'f' * 64 + '.scope'
+    flags = {'cgroup_calls': 0, 'gone': False}
+
+    class Runtime:
+        def __init__(self):
+            self.parent = parent
+
+        def observation(self, state, work, enrollment):
+            doc = json.loads(observation(work='probe', cpu=20, t=14))
+            doc.update(schema='qualification_campaign_observation/v2', orchestration_charge_cpu_ns=10,
+                       termination_known=True, campaign_scope_id=scopes['campaign_slice'],
+                       work_scope_id=scopes['payload_slice'])
+            return encoded(doc)
+
+    class Docker:
+        def __init__(self):
+            self.calls = []
+
+        def call(self, method, path, body_arg=None):
+            self.calls.append((method, path))
+            if path == '/info':
+                return {'CgroupDriver': 'systemd'}
+            if '/create?' in path:
+                return {'Id': 'f' * 64}
+            if path.endswith('/start') or path.endswith('kill?signal=SIGUSR1') or method == 'DELETE':
+                return None
+            if path.endswith('/json'):
+                running = not flags['gone']
+                return {'Image': body['Image'], 'Config': body, 'HostConfig': body['HostConfig'],
+                        'State': {'Running': running, 'Pid': 4242 if running else 0, 'ExitCode': 0}}
+            raise AssertionError('unexpected Docker call ' + method + ' ' + path)
+
+    def process_cgroup(pid='self'):
+        flags['cgroup_calls'] += 1
+        if flags['cgroup_calls'] >= 2:
+            flags['gone'] = True  # The container exits between this inspect and the read.
+            raise FileNotFoundError('/proc/' + str(pid) + '/cgroup')
+        return container_cgroup
+
+    docker = Docker()
+    monkeypatch.setattr(supervisor, 'DockerControl', lambda: docker)
+    monkeypatch.setattr(supervisor, 'probe_container_body', lambda *args: body)
+    monkeypatch.setattr(supervisor, 'observe_campaign_clock', lambda: encoded(clock(14)))
+    monkeypatch.setattr(supervisor, '_process_cgroup', process_cgroup)
+    monkeypatch.setattr(supervisor, '_payload_processes', lambda group: ['4242'])
+    monkeypatch.setattr(supervisor, '_process_identity', lambda pid_text: (1000, 61001, container_cgroup))
+    monkeypatch.setattr(supervisor, '_read_counter', lambda path: b'usage_usec 0\n')
+    monkeypatch.setattr(supervisor.time, 'sleep', lambda seconds: None)
+    return store, Runtime(), state, work, enrollment, manifest, docker, flags
+
+
+def test_run_probe_tolerates_container_vanishing_between_inspect_and_read(tmp_path, monkeypatch):
+    """The vanished-cgroup read never raises into the guardian failure handler
+    (regression for the run 35469217005 4/41 inspect->read hang)."""
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+
+    store, runtime, state, work, enrollment, manifest, docker, flags = _vanishing_scene(tmp_path, monkeypatch)
+    supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
+    assert flags['gone'] and flags['cgroup_calls'] == 2  # the read raised, was tolerated, re-inspected
+    assert [e['data']['uid'] for e in _events(store, 'PROCESS')] == [61001]
+    assert _events(store, 'PROCESS_UNOBSERVED') == []
+    probe = next(w for w in snap(store)['works'] if w['work_id'] == 'probe')
+    assert probe['state'] == 'COMPLETED' and probe['observation_bytes_b64'] is not None
+
+
+def test_recover_campaign_work_refuses_to_spend_slot_on_never_started_work(tmp_path, monkeypatch):
+    """A RESERVED admission with no enrollment produced no OS effect; recovery must
+    report status without claiming the one-use RECOVERY_OWNER slot."""
+    from types import SimpleNamespace
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    from c1_rail.qualification.execution.protocol import sha256
+
+    store = metered(tmp_path, started=False)  # admission is RESERVED, never prepared
+    assert snap(store)['works'][0]['state'] == 'RESERVED'
+    owner_role = 'supervision_control_' + sha256(encoded(['admission', 'RECOVERY_OWNER']))
+    assert owner_role not in store.objects(ATTEMPT)
+
+    class ForbiddenRuntime:
+        def observation(self, *args):
+            raise AssertionError('never-started work must not be inspected')
+
+        def cleanup(self, *args):
+            raise AssertionError('never-started work must not be cleaned up')
+
+    context = SimpleNamespace(store=store.store, campaign_runtime=ForbiddenRuntime(), recovery_issues={})
+    monkeypatch.setattr(supervisor, 'observe_campaign_clock', lambda: encoded(clock(13)))
+    reservation = base64.b64decode(snap(store)['works'][0]['reservation_bytes_b64'])
+    result = json.loads(supervisor.recover_campaign_work(context, reservation, attempt_id=ATTEMPT, work_id='admission'))
+    assert result['schema'] == 'qualification_campaign_status/v2'
+    assert owner_role not in store.objects(ATTEMPT)  # the one-use slot was never spent
+    assert snap(store)['works'][0]['state'] == 'RESERVED' and snap(store)['reserved_cpu_ns'] == 60
+    # A genuinely started work is unaffected: the slot is still claimed for it.
+    from test_campaign_budget import transition
+    transition(store, 'admission', 'START_INTENT', 12,
+               dict(campaign_scope_id='parent-1', work_scope_id='scope-admission'))
+    store.claim_supervision_control(ATTEMPT, 'admission', 'RECOVERY_OWNER', encoded(clock(14)))
+    with pytest.raises(ValueError, match='control slot already spent'):
+        supervisor.recover_campaign_work(context, reservation, attempt_id=ATTEMPT, work_id='admission')
+
+
+def test_linux_runtime_exposes_its_observation_and_cleanup_methods():
+    """A module-level def wedged into the class body silently orphans the methods
+    below it: it compiles and the mock-runtime tests pass, but the real adapter
+    loses observation/cleanup and the host admission guardian hangs (run 35472701398).
+    """
+    from c1_rail.qualification.execution.campaign_supervisor import LinuxCampaignRuntime
+    for name in ('__init__', '_control', 'start', 'observation', 'cleanup'):
+        member = LinuxCampaignRuntime.__dict__.get(name)
+        assert callable(member), name + ' is not a method of LinuxCampaignRuntime'

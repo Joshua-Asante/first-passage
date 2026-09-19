@@ -6,24 +6,29 @@ import time
 RESUME_WAIT_SECONDS = 30
 
 
-def _await_resume():
-    """Pause until the guardian has retained this process's alive-verified identity.
+def block_resume_signal():
+    """First act of any supervised payload entrypoint: block SIGUSR1 (and install a
+    no-op handler so a stray post-resume signal cannot terminate the process).
 
-    SIGUSR1 is blocked first, as the process's first act: a container init (PID 1
-    in its namespace) holds a blocked signal pending regardless of disposition,
-    so a resume the guardian sends after retaining the identity is consumed here
-    and never lost, even if it arrives before this wait is armed. Without a
-    resume the probe ends non-zero inside the bound; a work that was never
-    observed alive is never credited, so skipping this wait gains nothing.
+    A container init (PID 1 in its namespace) holds a blocked signal pending
+    regardless of disposition, so a resume the guardian sends after retaining the
+    identity is consumed by the later wait and never lost. S3's real worker
+    entrypoint reuses this and await_resume; keep them here, importable by worker.
     """
-    import signal
-    signal.sigtimedwait({signal.SIGUSR1}, RESUME_WAIT_SECONDS)
-
-
-def _block_resume_signal():
     import signal
     signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGUSR1})
     signal.signal(signal.SIGUSR1, lambda *_: None)
+
+
+def await_resume():
+    """Pause until the guardian resumes this process; returns None on timeout.
+
+    Skipping this wait gains nothing: a work that was never observed alive is
+    never credited, and a probe that does not wait simply ends non-zero inside
+    the bound.
+    """
+    import signal
+    return signal.sigtimedwait({signal.SIGUSR1}, RESUME_WAIT_SECONDS)
 
 
 def _burn():
@@ -33,11 +38,11 @@ def _burn():
 
 
 def main():
-    _block_resume_signal()  # First act: no resume the guardian sends can be dropped.
+    block_resume_signal()  # First act: no resume the guardian sends can be dropped.
     parser = argparse.ArgumentParser()
     parser.add_argument('--probe', choices=('noop', 'cpu', 'descendants', 'memory', 'wall', 'intent'), required=True)
     probe = parser.parse_args().probe
-    if _await_resume() is None:
+    if await_resume() is None:
         raise SystemExit('supervisor resume signal absent')
     if probe in ('noop', 'intent'):
         pass  # Identity was retained before the resume; nothing else to do.

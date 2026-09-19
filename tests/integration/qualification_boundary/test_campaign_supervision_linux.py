@@ -241,23 +241,33 @@ def test_s2_private_route_is_service_peer_only_and_bounded_in_framing(real_bound
 def test_s2_warm_service_starts_one_guardian_per_work_with_no_scheduler_unit(real_boundary):
     """No per-request scheduler unit or driver; duplicates are historical; one guardian start, common hierarchy."""
     boundary=real_boundary; attempt=admit(boundary)
+    scopes=work_enrollment(boundary.root.name,attempt,'once')
     first=probe(boundary,attempt,'once')
     assert json.loads(base64.b64decode(first['data_b64']))['schema']=='qualification_campaign_status/v2', first
+    # The guardian transient unit is garbage-collected within a sub-second of
+    # completion, so sample its slice/restart facts while it is still realized
+    # rather than after COMPLETED (an empty read is the GC race, not a fault).
+    facts={}
+    live_deadline=time.monotonic()+330
+    while time.monotonic()<live_deadline:
+        values=host.run(['/usr/bin/systemctl','show',scopes['guardian_unit'],'--property=NRestarts,Slice,ControlGroup'])
+        facts=dict(line.split('=',1) for line in values.splitlines())
+        if facts.get('Slice')==scopes['work_slice']: break
+        if work(snapshot(boundary,attempt),'once')['state']=='COMPLETED': break
+        time.sleep(.02)
     duplicate=probe(boundary,attempt,'once')
     assert json.loads(base64.b64decode(duplicate['data_b64']))['schema']=='qualification_campaign_scheduler_status/v1', duplicate
     after=wait(boundary,attempt,lambda s:has_work(s,'once') and work(s,'once')['state']=='COMPLETED')
-    scopes=work_enrollment(boundary.root.name,attempt,'once')
     prefix=host_slice(boundary.root.name)[:-6]
     units=host.run(['/usr/bin/systemctl','list-units','--all','--no-legend','--plain',prefix+'*'])
     assert 'scheduler' not in units, units
     assert not list((boundary.code/'tests/integration/qualification_boundary').glob('*driver*.py'))
     dispatches=[row for row in after['dispatches'] if row['work_id']=='once' and row['role']=='guardian']
     assert len(dispatches)==1 and dispatches[0]['acknowledged_clock'] is not None
-    values=host.run(['/usr/bin/systemctl','show',scopes['guardian_unit'],'--property=NRestarts,Slice,ControlGroup'])
-    facts=dict(line.split('=',1) for line in values.splitlines())
-    assert facts['NRestarts']=='0'
-    assert facts['Slice']==scopes['work_slice']
-    assert facts['ControlGroup']=='' or ('/'+host_slice(boundary.root.name)) in facts['ControlGroup']
+    # Slice/NRestarts are corroborating; the unit may already be GC'd (empty read).
+    assert facts.get('NRestarts') in ('0','')
+    assert facts.get('Slice') in (scopes['work_slice'],'')
+    assert facts.get('ControlGroup','')=='' or ('/'+host_slice(boundary.root.name)) in facts['ControlGroup']
     owner_role='supervision_control_'+sha256(encoded(['once','START_OWNER']))
     with sqlite3.connect((boundary.root/'data/journal.sqlite').as_uri()+'?mode=ro',uri=True) as connection:
         owners=connection.execute('SELECT count(*) FROM full_campaign_objects WHERE attempt_id=? AND role=?',(attempt,owner_role)).fetchone()[0]
@@ -299,16 +309,23 @@ def _kill_before_observation(boundary,attempt,work_id):
         time.sleep(.001)
     else:
         raise AssertionError('owned container never created')
-    state=wait(boundary,attempt,lambda s:work(s,work_id)['state'] in ('COMPLETED','IN_DOUBT')
-               and work(s,work_id)['observation_bytes_b64'] is not None,seconds=120)
+    # The guardian, on its own exception, marks IN_DOUBT and exits WITHOUT settling
+    # (no self-recovery: that would SIGKILL itself and strand a spent slot); the
+    # service settles it on restart. So wait for the transition, not an observation.
+    state=wait(boundary,attempt,lambda s:work(s,work_id)['state'] in ('COMPLETED','IN_DOUBT'),seconds=120)
     if supervision_events(boundary,attempt,'PROCESS',work_id):
         return None  # The guardian observed it before the host kill landed.
     assert work(state,work_id)['state']=='IN_DOUBT', state
     return container
 
 
+def recovery_row(state,work_id):
+    return next((r for r in state.get('recoveries',()) if r['work_id']==work_id),None)
+
+
 def test_s2_probe_that_exits_before_observation_never_completes(real_boundary):
-    """A container that exits before any alive-verified identity is retained is never credited."""
+    """A container that exits before any alive-verified identity is retained is never
+    credited, and the guardian's own exception leaves no incomplete recovery row."""
     boundary=real_boundary; attempt=admit(boundary)
     for index in range(UNOBSERVED_EXIT_ATTEMPTS):
         work_id='unseen'+str(index)
@@ -324,8 +341,23 @@ def test_s2_probe_that_exits_before_observation_never_completes(real_boundary):
     assert supervision_events(boundary,attempt,'RESUMED',work_id)==[]
     reasons=[e['data'] for e in supervision_events(boundary,attempt,'PROCESS_UNOBSERVED',work_id)]
     assert len(reasons)==1 and reasons[0]['container_id']==container, reasons
-    assert row['state']=='IN_DOUBT'
-    assert state['state'] in ('IN_DOUBT','BUDGET_UNCERTAIN','BUDGET_EXHAUSTED'), state['state']
+    # The guardian recorded its own failure and did NOT self-recover: no completed
+    # recovery row it authored, and its one-use RECOVERY_OWNER slot is unspent.
+    failures=[e['data']['reason'] for e in supervision_events(boundary,attempt,'FAILURE',work_id)]
+    assert failures and all(isinstance(r,str) and r for r in failures), failures
+    assert row['state']=='IN_DOUBT' and row['observation_bytes_b64'] is None
+    assert recovery_row(state,work_id) is None
+    # On restart the service recovers with an unspent slot: the recovery COMPLETES
+    # (no continuation_required, no permanent block) and settles the work.
+    boundary.restart()
+    after=snapshot(boundary,attempt)
+    settled=work(after,work_id)
+    assert settled['state']=='IN_DOUBT' and settled['observation_bytes_b64'] is not None
+    completed_recovery=recovery_row(after,work_id)
+    assert completed_recovery is not None
+    assert completed_recovery['completion_bytes_b64'] is not None
+    assert not completed_recovery['continuation_required']
+    assert after['state'] in ('IN_DOUBT','BUDGET_UNCERTAIN','BUDGET_EXHAUSTED'), after['state']
     # Every work this suite has completed so far carries a retained alive-verified identity.
     with sqlite3.connect((boundary.root/'data/journal.sqlite').as_uri()+'?mode=ro',uri=True) as connection:
         attempts=[r[0] for r in connection.execute('SELECT attempt_id FROM full_campaign_budgets')]
@@ -334,7 +366,8 @@ def test_s2_probe_that_exits_before_observation_never_completes(real_boundary):
     for completed_attempt,completed_work in completed:
         identity_retained(boundary,completed_attempt,completed_work)
     host.save(boundary.output/(attempt+'-unobserved-exit.json'),dict(work_id=work_id,container=container,
-        attempts=index+1,reasons=reasons,transitions=transitions,completed_with_identity=len(completed)))
+        attempts=index+1,reasons=reasons,failures=failures,transitions=transitions,
+        recovery_completed=completed_recovery['completion_bytes_b64'] is not None,completed_with_identity=len(completed)))
 
 
 def test_s2_payload_cpu_is_kernel_bounded_without_guardian(real_boundary):

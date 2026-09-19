@@ -255,6 +255,11 @@ def parse_supervision_event(raw):
         from .protocol import digest
         fields(doc['data'], {'container_id', 'exit_code'})
         digest(doc['data']['container_id']); integer(doc['data']['exit_code'])
+    elif doc['kind'] == 'FAILURE':
+        # A guardian's own exception, recorded before it exits without self-recovering.
+        fields(doc['data'], {'reason'})
+        if type(doc['data']['reason']) is not str or not doc['data']['reason'] or len(doc['data']['reason']) > 4096:
+            raise ValueError('bounded guardian failure reason required')
     else:
         raise ValueError('unsupported supervision event')
     return doc
@@ -561,20 +566,6 @@ class LinuxCampaignRuntime:
         # realized cpu.max is verified from inside the live guardian, before any
         # payload process exists (guardian_main -> _verify_payload_quota).
 
-
-PAYLOAD_REALIZE_SECONDS = 5
-RESUME_SIGNAL_SENDS = 25
-
-
-def _realized_payload_cpu_max(payload):
-    """Bounded wait for the manager to realize the payload slice, then its cpu.max bytes."""
-    deadline = time.monotonic() + PAYLOAD_REALIZE_SECONDS
-    while not (payload / 'cpu.max').exists():
-        if time.monotonic() >= deadline:
-            raise ValueError('payload slice CPU quota was not realized: ' + str(payload))
-        time.sleep(0.02)
-    return _read_counter(payload / 'cpu.max')
-
     def observation(self, state, work, enrollment):
         # A live/unavailable payload is never represented by a final CPU sample.
         # Recovery consequently spends the reservation before destructive cleanup.
@@ -661,6 +652,20 @@ def _realized_payload_cpu_max(payload):
                 return
             time.sleep(.025)
         raise ValueError('owned process absence remains uncertain')
+
+
+PAYLOAD_REALIZE_SECONDS = 5
+RESUME_SIGNAL_SENDS = 25
+
+
+def _realized_payload_cpu_max(payload):
+    """Bounded wait for the manager to realize the payload slice, then its cpu.max bytes."""
+    deadline = time.monotonic() + PAYLOAD_REALIZE_SECONDS
+    while not (payload / 'cpu.max').exists():
+        if time.monotonic() >= deadline:
+            raise ValueError('payload slice CPU quota was not realized: ' + str(payload))
+        time.sleep(0.02)
+    return _read_counter(payload / 'cpu.max')
 
 
 class DockerControl:
@@ -856,12 +861,13 @@ def guardian_main():
     now_clock = clock(observe_campaign_clock())
     try:
         deadline = guardian_deadline(state, work, reservation, args.deadline_boottime_ns)
-    except ValueError:
+    except ValueError as mismatch:
         # The armed argv instant is not this reservation's: durable uncertainty, then exit.
-        recover_campaign_work(context, reservation_bytes, attempt_id=args.attempt, work_id=args.work)
+        _guardian_self_failure(context, campaigns, enrollment, args.attempt, args.work, mismatch)
         raise
     if now_clock['boot_id'] != state['start_clock']['boot_id'] or now_clock['boottime_ns'] >= deadline:
-        recover_campaign_work(context, reservation_bytes, attempt_id=args.attempt, work_id=args.work)
+        _guardian_self_failure(context, campaigns, enrollment, args.attempt, args.work,
+                               ValueError('original deadline reached before guardian dispatch'))
         return
     # Kept beside the bootstrap timer: a second absolute timer at the same
     # instant is harmless and this one survives any future bootstrap change.
@@ -920,10 +926,13 @@ def guardian_main():
         else:
             _verify_payload_quota(runtime, enrollment, state, work, deadline)
             _run_probe(context, campaigns, runtime, state, work, enrollment, manifest)
-    except BaseException:
-        # Durable uncertainty/no-redraw precedes cleanup; systemd's independent
-        # BindsTo interlock also retires payload if SIGKILL prevents this handler.
-        recover_campaign_work(context, reservation_bytes, attempt_id=args.attempt, work_id=args.work)
+    except BaseException as failure:
+        # The guardian never recovers its own work (that would SIGKILL itself
+        # mid-cleanup and strand a spent recovery slot): commit uncertainty,
+        # retain the cause, retire the payload, and re-raise. systemd's BindsTo
+        # interlock retires the payload slice and the service recovers with an
+        # unspent slot.
+        _guardian_self_failure(context, campaigns, enrollment, args.attempt, args.work, failure)
         raise
 
 
@@ -947,6 +956,35 @@ def probe_container_body(context, enrollment, manifest):
             CgroupParent=enrollment['scopes']['payload_slice'],
             LogConfig={'Type': 'none', 'Config': {}},
             Tmpfs={'/tmp': 'rw,noexec,nosuid,nodev,size=' + str(context.profile.scratch_bytes)}))
+
+
+def _guardian_self_failure(context, campaigns, enrollment, attempt, work_id, failure):
+    """The guardian's own exception path: commit uncertainty, never self-recover.
+
+    A guardian that called recover_campaign_work on its own work would claim the
+    one-use RECOVERY_OWNER slot and then have LinuxCampaignRuntime.cleanup SIGKILL
+    every pid in the guardian cgroup -- itself -- before _complete_recovery ran,
+    leaving an incomplete recovery row and a spent slot that permanently blocks
+    the attempt. Instead: best-effort mark IN_DOUBT (no slot), retain the cause,
+    best-effort retire the payload container, and let the caller re-raise. BindsTo
+    retires the payload slice on exit and the service's own recovery -- with an
+    unspent slot -- proves absence of the whole work group.
+    """
+    try:
+        state = parse_canonical_json(campaigns.budget_snapshot(attempt), label='guardian failure budget')
+        if campaigns._work(state, work_id)['state'] in ('START_INTENT', 'RUNNING'):
+            _transition(campaigns, attempt, work_id, 'IN_DOUBT', {})
+    except (OSError, ValueError, RuntimeError, sqlite3.Error):
+        pass  # A terminal or unreadable work is already durable; never mask the original failure.
+    try:
+        reason = (type(failure).__name__ + ': ' + str(failure))[:4096] or type(failure).__name__
+        _retain_event(campaigns, attempt, work_id, 'FAILURE', dict(reason=reason))
+    except (OSError, ValueError, RuntimeError, sqlite3.Error):
+        pass
+    try:
+        DockerControl().call('POST', '/containers/fpqs2-' + sha256(encoded(enrollment)) + '/kill?signal=KILL')
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
+        pass  # No container yet, already gone, or BindsTo will retire the slice on exit.
 
 
 def _verify_payload_quota(runtime, enrollment, state, work, deadline_ns):
@@ -1017,10 +1055,24 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
         row = docker.call('GET', '/containers/' + container + '/json')
         if row['State']['Running']:
             pid = row['State']['Pid']
-            actual = Path('/sys/fs/cgroup') / _process_cgroup(pid).lstrip('/')
-            if not actual.is_relative_to(payload) or actual == payload:
+            try:
+                actual = Path('/sys/fs/cgroup') / _process_cgroup(pid).lstrip('/')
+                escaped = not actual.is_relative_to(payload) or actual == payload
+                members = [] if escaped else _payload_processes(actual)
+                usage = _kernel_pairs(_read_counter(payload / 'cpu.stat')).get('usage_usec', 0) * 1000
+            except OSError:
+                # The container exited between this inspect and the /proc or cgroup
+                # read, so its pid/cgroup entries vanished. Re-inspect: a genuinely
+                # live container with unreadable accounting is a real fault, but an
+                # exited one takes the ordinary absence path on the next turn -- it
+                # must never raise into guardian_main's failure handler.
+                if docker.call('GET', '/containers/' + container + '/json')['State']['Running']:
+                    raise
+                time.sleep(.05)
+                continue
+            if escaped:
                 raise ValueError('running container escaped payload accounting')
-            for pid_text in _payload_processes(actual):
+            for pid_text in members:
                 observed_identity = _process_identity(pid_text)
                 if observed_identity is None:
                     continue
@@ -1037,15 +1089,21 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
             # pending until the wait consumes it. The exact instant the probe arms
             # the block is unobservable, so USR1 is re-sent for a bounded window
             # (the probe collapses the pending duplicates); the RESUMED event is
-            # retained once, after the identity, on the first send.
+            # retained once, after the identity, on the first send. A container that
+            # exited before the send is handled by the absence path, not a raise.
             if (not stopping and resume_sends < RESUME_SIGNAL_SENDS
                     and any(seen == str(pid) for seen, _ in seen_pids)):
-                docker.call('POST', '/containers/' + container + '/kill?signal=SIGUSR1')
-                if resume_sends == 0:
-                    _retain_event(campaigns, state['attempt_id'], work['work_id'], 'RESUMED',
-                                  dict(container_id=container, pid=int(pid)))
-                resume_sends += 1
-            if not stopping and _kernel_pairs(_read_counter(payload / 'cpu.stat')).get('usage_usec', 0) * 1000 >= budget_cpu:
+                try:
+                    docker.call('POST', '/containers/' + container + '/kill?signal=SIGUSR1')
+                except ValueError:
+                    if docker.call('GET', '/containers/' + container + '/json')['State']['Running']:
+                        raise
+                else:
+                    if resume_sends == 0:
+                        _retain_event(campaigns, state['attempt_id'], work['work_id'], 'RESUMED',
+                                      dict(container_id=container, pid=int(pid)))
+                    resume_sends += 1
+            if not stopping and usage >= budget_cpu:
                 _transition(campaigns, state['attempt_id'], work['work_id'], 'IN_DOUBT', {})
                 docker.call('POST', '/containers/' + container + '/kill?signal=KILL')
                 stopping = True
@@ -1089,12 +1147,28 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
 
 
 def recover_campaign_work(context, reservation_bytes, *, attempt_id, work_id):
-    """One bounded recovery owner; destructive retries need an unspent slot."""
+    """One bounded recovery owner; destructive retries need an unspent slot.
+
+    A work still RESERVED with no enrollment never reached START_INTENT and so
+    produced no OS effect (prepare_campaign_work commits the enrollment and the
+    START_INTENT transition atomically). Spending the one-use RECOVERY_OWNER slot
+    to record its absence is noise that would block a later genuine recovery, so
+    refuse before the claim and report status instead.
+    """
     from .campaign_store import CampaignStore
     import secrets
+    campaigns = CampaignStore(context.store)
+    with campaigns.store.transaction() as connection:
+        state = campaigns._budget(connection, attempt_id)
+        work = campaigns._work(state, work_id)
+        enrolled = connection.execute(
+            'SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role=?',
+            (attempt_id, 'supervision_' + work_id)).fetchone() is not None
+    if work['state'] == 'RESERVED' and not enrolled:
+        return encoded(campaigns.diagnostic_status(attempt_id))
     with controller_cpu_guard():
         token = secrets.token_bytes(32)
-        CampaignStore(context.store).claim_supervision_control(attempt_id, work_id,
+        campaigns.claim_supervision_control(attempt_id, work_id,
             'RECOVERY_OWNER', observe_campaign_clock(), recovery_owner_token=token)
         return _recover_campaign_work(context, reservation_bytes, attempt_id=attempt_id, work_id=work_id,
                                       recovery_owner_token=token)
