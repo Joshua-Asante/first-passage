@@ -84,25 +84,101 @@ coordinator acceptance. Excludes implementation, changing other tasks, productio
 runs, signatures, provider contact/spend, broker actions, deployment and activation.
 No automatic advance into B1.
 
-- [ ] Refresh the active E1 task's accepted head, unfinished repairs and evidence;
+- [x] Refresh the active E1 task's accepted head, unfinished repairs and evidence;
   distinguish code written, locally accepted, Linux-verified and production-ready.
-- [ ] Map reusable `qualification/checkpoint_plan.py`, `policy.py`,
+- [x] Map reusable `qualification/checkpoint_plan.py`, `policy.py`,
   `policy_sources.py`, `evidence.py`, `journal_snapshot.py`, replay/Part A and
   `execution/{compute,worker,g5,store,campaign_store,profile}.py` responsibilities.
   These are starting paths, not permission to edit them.
-- [ ] Map batch launch/capture/commit to exact existing interfaces. Name new fixed
+- [x] Map batch launch/capture/commit to exact existing interfaces. Name new fixed
   entrypoint, release schema and resource-wrapper work; do not assume direct legacy
   `ProductionExecutor` or `run_production_e1` is admissible.
-- [ ] Resolve release, resource, interruption, result authority and n3 contract
+- [x] Resolve release, resource, interruption, result authority and n3 contract
   deltas against governing owners. Flag anything requiring a changed statistical
   or economic decision instead of silently broadening this design.
-- [ ] Compare remaining outcome-sized work and verification for both choices,
+- [x] Compare remaining outcome-sized work and verification for both choices,
   including already completed S2 improvements and migration effort. Provide
   effort ranges only where supported, with assumptions and confidence.
-- [ ] Recommend service or batch. If batch saves no demonstrable work, retain the
+- [x] Recommend service or batch. If batch saves no demonstrable work, retain the
   service and still take manual-operations and concurrency savings.
-- [ ] Return the decision and the next single outcome's proposed handoff. Await
+- [x] Return the decision and the next single outcome's proposed handoff. Await
   that assignment rather than implementing from this roadmap.
+
+### B0 decision — 2026-09-19
+
+**Retain the protected service; the operator-launched batch is not adopted.**
+Compared read-only: accepted service `main@97d0319` (S1 accepted via
+[PR #428](https://github.com/Joshua-Asante/first-passage/pull/428), merged
+2026-09-19 11:29Z) against the S2 candidate
+[PR #429](https://github.com/Joshua-Asante/first-passage/pull/429) `@8aa5753`
+(INCOMPLETE / NOT ACCEPTED by its own record: R1 and R2a locally accepted, R2b
+unassigned, R3/R4 open, no Linux run, installed release hash or image digest).
+No runtime suite was executed; source inspection only. Coordinator: Joshua.
+
+Grounds, bound to source at `8aa5753`:
+
+1. The batch's main claimed saving — one lifetime, terminal interruption, no
+   automatic restart — is already the incumbent's accepted posture (S2-R1
+   liveness restriction; `execution/service.py:481-523` `recover_service`
+   relaunches nothing). About 1,000 of #429's 2,244 non-test lines are durable
+   *anti*-continuation barriers a batch also needs. Nothing to remove.
+2. Everything that dominates the remaining schedule is identical on both paths
+   and unbuilt: no N2/Part A adapter exists (`execution/compute.py` is N1-only,
+   called solely by `execution/worker.py:41`); the only v2 evidence builder
+   accepts `N1_ONLY` releases only (`qualification/evidence.py:202`) while campaign
+   admission requires `FULL_E1` (`execution/campaign_store.py:73`); the execution
+   store is schema-locked to one N1 checkpoint per attempt
+   (`execution/store.py:30-36`); no commit, seal, ADJUDICATED/COMMITTED/SEALED
+   state or function exists; `execution/compute.py:16` refuses n3. R4, all Linux
+   evidence, the production-class release and n3 are owed equally.
+3. What the batch removes is small (client campaign ops `SUBMIT_E1`/
+   `FETCH_PLAN_CHUNK`, `client.py:55-94` reassembly, the transport half of
+   R2b — about 300 lines); what it adds is a new versioned release
+   schema/capability/authority path, bootstrap role, entrypoint + registry,
+   launch-approval scope, receipt export, the five owner amendments in the design
+   table, re-review of accepted S1/R1/R2a under a changed lifecycle, and porting
+   the service-keyed tests (`test_campaign_supervision.py` 1,344 lines). Two
+   design assumptions are contradicted by source: a single pre-validation envelope
+   cannot be contract-derived (`execution/campaign_store.py:678-712` needs
+   `contract.replay.budget`; the service's two-tier `begin_admission` →
+   `bind_budget` is what any path gets), and "VOID in the same transaction as
+   commit/seal eligibility" has no commit or seal to bind to. The design also
+   inverts the role model (`execution/campaign_protocol.py:45-47`: operator may
+   only STATUS/VOID).
+
+Taken inside the service (the fallback this handoff prescribes): (a) the only
+campaign submitter for the first attended release is the local operator/admin
+client in the existing `client` role over the Unix socket — no remote transport
+is claimed or tested; (b) single-lifetime is recorded as the first-release
+posture — interrupted means terminal pending operator disposition, and no
+funded-continuation design is owed before launch; (c) R3 is narrowed to a
+bounded, still key-authenticated operator-local VOID; (d) manual daily report
+export/review and manual incident recovery stay in O2/attended operations.
+
+Conflicts and defects returned to the coordinator: #429 is not self-contained
+(`tests/ops/qualification/execution/test_campaign_funding.py:8` imports the
+unpublished `test_campaign_scheduler.py`; the `Tests` workflow fails at
+collection); `Pylint` red on #429 only (new import cycles among the S2 modules);
+the design's §Grounding is two merges stale (`c2e6eb2`, dirty `c77aac4`); the N1
+Linux boundary runs on every PR but is exercised, not retained (no in-tree
+evidence hash; not a required merge check); no test asserts the S2 cgroup is
+empty after cleanup and no seal-race test exists. Verification state at
+`8aa5753`: the N1_ONLY boundary is real-Linux on two hosts per PR; every S1/S2
+suite is SQLite-real but OS-simulated (`test_campaign_supervision.py:16-21` nulls
+`controller_cpu_guard`); the S2 Linux file has never run anywhere.
+
+What would flip the decision: R2b's Linux evidence showing the warm-service
+intent producer cannot be bounded — then the operator-launched single process is
+the repair, using this design's reservation/envelope contract. The B1 row above
+is therefore discharged by S3–S8 of the
+[execution-slices plan](2026-09-18-full-e1-execution-slices.md), not by a
+separate synthetic batch; B2, B4, O1, O2 and L1 remain as written.
+
+**Next single outcome (assigned 2026-09-19):**
+[S2-R2b handoff](../../briefs/handoffs/2026-09-19-full-e1-s2-r2b-warm-service-scheduler.md)
+— warm installed service as the sole intent producer, operator-local client only;
+R3/R4, Linux acceptance and S3 excluded. Sequence after: R4 → S2 Linux evidence
+and combined review → S3.
 
 ## Implementation verification to preserve in later handoffs
 
