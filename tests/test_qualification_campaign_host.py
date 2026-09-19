@@ -59,7 +59,8 @@ def test_enrollment_uses_only_manager_properties_and_pins_group_oom_on_the_slice
     assert triples[triples.index('MemoryMax') + 2] == '256000000'
     group = tmp_path / 'cgroup' / enrollment['scope']
     assert (group / 'memory.oom.group').read_text() == '1'
-    assert saved == {str(root / 'campaign-host.json'): enrollment}
+    assert saved == {str(campaign_host.enrollment_path(root)): enrollment}
+    assert campaign_host.enrollment_path(root) == root / 'code' / 'qualification-installation' / 'campaign-host.json'
     assert enrollment['memory_bytes'] == 256000000 and enrollment['scope'].endswith('.slice')
     assert (tmp_path / 'rules.d' / ('49-' + enrollment['scope'][:-6] + '.rules')).read_bytes().startswith(b'polkit.addRule')
 

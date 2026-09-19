@@ -401,7 +401,8 @@ class LinuxCampaignRuntime:
         import json
         from .files import read_regular
         from .runtime import protected_path
-        enrollment_path = Path(context.config['data_root']).parent / 'campaign-host.json'
+        # Beside release.json: the run root is not readable by the service identity.
+        enrollment_path = Path(context.config['installation_root']) / 'campaign-host.json'
         protected_path(enrollment_path)
         installed = json.loads(read_regular(enrollment_path.parent, enrollment_path.name, limit=65536))
         if (installed['schema'] != 'qualification_campaign_host/v1'

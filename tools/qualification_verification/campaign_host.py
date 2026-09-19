@@ -12,6 +12,16 @@ CGROUP_ROOT = Path('/sys/fs/cgroup')
 SLICE_REALIZE_SECONDS = 5
 
 
+def enrollment_path(root):
+    """The enrollment lives beside release.json, in the directory the service already pins.
+
+    The run root is created 0o711 (it holds the private ownership manifest), so
+    read_regular's O_DIRECTORY pin on it fails for the service identity; the
+    installation directory is root-owned 0o755 and read the same way at startup.
+    """
+    return Path(root) / 'code' / 'qualification-installation' / 'campaign-host.json'
+
+
 def _start_common_slice(scope, memory_bytes):
     """Create the common memory slice with the manager's own properties only.
 
@@ -64,7 +74,7 @@ def install(root, manifest, profile_bytes):
     path = POLKIT_RULES / ('49-' + prefix + '.rules')
     enrollment = dict(schema='qualification_campaign_host/v1', host_run_id=run_id, scope=scope,
         memory_bytes=memory_bytes, profile_sha256=hashlib.sha256(profile_bytes).hexdigest(), rule_path=str(path), rule_sha256=hashlib.sha256(rule).hexdigest())
-    host.save(root / 'campaign-host.json', enrollment, exclusive=True, mode=0o444)
+    host.save(enrollment_path(root), enrollment, exclusive=True, mode=0o444)
     # Ownership is durable before either privileged side effect.
     with path.open('xb') as stream:
         stream.write(rule)
@@ -75,7 +85,7 @@ def install(root, manifest, profile_bytes):
 
 
 def restart(root, manifest, interpreter, bootstrap):
-    enrollment = json.loads(host.protected(root / 'campaign-host.json').read_bytes())
+    enrollment = json.loads(host.protected(enrollment_path(root)).read_bytes())
     unit = enrollment['scope'][:-6] + 'supervisor.service'
     subprocess.run(['/usr/bin/systemctl', '--system', '--no-ask-password', 'stop', unit],
                    stdin=subprocess.DEVNULL, capture_output=True, timeout=15, check=False)
@@ -87,7 +97,7 @@ def restart(root, manifest, interpreter, bootstrap):
 
 def cleanup(root, manifest, *, retire=False):
     """Stop only enrolled S2 scope, verify absence, retain manager observations."""
-    path = root / 'campaign-host.json'
+    path = enrollment_path(root)
     if not path.exists():
         return
     enrollment = json.loads(host.protected(path).read_bytes())
