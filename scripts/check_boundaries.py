@@ -40,7 +40,13 @@ site-packages is third-party code, not a contract party — scanning it AST-pars
 thousands of vendored files on every pre-commit run, and any vendored module
 with a bare `import cli` / `import analysis` (names in the first-party index)
 would be misread as an illegal governance->ops/lab edge (2026-07-10 finding,
-databento research-venv integration).
+databento research-venv integration). `recovery/` is EXEMPT for the same
+reason: it is the untracked, local-only root for checksummed evidence packets
+(`docs/ltm/README.md` retrieval guidance), which may carry byte-for-byte copies
+of test sources that legitimately import ops/ — nothing imports a packet, so
+it is not a contract party; scanning it misread a recovered
+`tests/...` copy as an illegal governance->ops edge (2026-09-19 finding,
+R2b pre-dispatch recovery packet).
 
 Resolution catches plain `import X`, `from X import Y`, aliased, and lazy/
 in-function forms (ast.walk visits every node — the in-function import is exactly
@@ -66,7 +72,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 EXEMPT_PREFIXES = ("tests/", "archive/", ".claude/worktrees/", ".worktrees/",
                    ".venv/", ".venv-research/", "venv/", "env/",
-                   "third_party/")  # venv-class: untracked vendor / study trees
+                   "third_party/",  # venv-class: untracked vendor / study trees
+                   "recovery/")  # untracked evidence packets (see docstring)
 
 # The layer maps have ONE definition, scripts/repo_map_layers.yml (ADR
 # 2026-06-05 §2.3, 2026-09-17), loaded at import. Resolved next to this file
