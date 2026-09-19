@@ -118,6 +118,8 @@ class CampaignStore:
             row = self.row(request['attempt_id'])
             plan = connection.execute("SELECT sha256,byte_length,substr(body,?,?) AS chunk FROM full_campaign_objects WHERE attempt_id=? AND role='plan'",
                 (request['offset'] + 1, request['length'], request['attempt_id'])).fetchone()
+            if plan is None:
+                raise ValueError('campaign has no admitted plan')
             if plan['sha256'] != request['object_sha256']:
                 raise ValueError('campaign plan membership differs')
             total, offset = plan['byte_length'], request['offset']
@@ -411,6 +413,8 @@ class CampaignStore:
         if doc['memory_peak_bytes'] is None or doc['oom_events'] is None:
             self._terminal(state, 'BUDGET_UNCERTAIN')
         if doc['memory_peak_bytes'] is not None:
+            if doc['memory_peak_bytes'] < state['memory_peak_bytes']:
+                self._terminal(state, 'BUDGET_UNCERTAIN')
             state['memory_peak_bytes'] = max(state['memory_peak_bytes'], doc['memory_peak_bytes'])
         if doc['oom_events'] is not None:
             if doc['oom_events'] < state['oom_events']:

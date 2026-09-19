@@ -580,3 +580,39 @@ def test_signing_retry_reservation_and_void_both_sqlite_orderings(tmp_path, void
     assert any(w['work_id'] == 'retry' for w in result['works']) is (not void_first)
     if not void_first:
         with pytest.raises(ValueError): start(store, 'retry', 19)
+
+@pytest.mark.parametrize('path', ['settlement', 'recovery'])
+@pytest.mark.parametrize('peak,want', [(49, 'BUDGET_UNCERTAIN'), (50, 'BOUND'), (51, 'BOUND')])
+def test_parent_peak_continuity_survives_restart(tmp_path, path, peak, want):
+    store = opened(tmp_path)
+    start(store)
+    capture(store)
+    store.settle_work(ATTEMPT, 'admission', observation(t=13))
+    store = CampaignStore(ExecutionStore(store.store.path))
+    if path == 'settlement':
+        transition(store, 'admission', 'COMPLETED', 14)
+        reserve(store, t=15)
+        start(store, 'n1', 16)
+        current = json.loads(observation('n1', t=17))
+        current['memory_peak_bytes'] = peak
+        store.settle_work(ATTEMPT, 'n1', encoded(current))
+    else:
+        current = json.loads(observation(t=14))
+        current['memory_peak_bytes'] = peak
+        store.recover_work(ATTEMPT, 'admission', encoded(current))
+    result = snap(CampaignStore(ExecutionStore(store.store.path)))
+    assert result['state'] == want
+    assert result['memory_peak_bytes'] == max(50, peak)
+    if want == 'BUDGET_UNCERTAIN':
+        with pytest.raises(ValueError):
+            reserve(store, work='later', t=18)
+
+
+@pytest.mark.parametrize('bind', [False, True])
+def test_plan_fetch_without_admitted_plan_is_bounded_rejection(tmp_path, bind):
+    store = opened(tmp_path, bind=bind)
+    store = CampaignStore(ExecutionStore(store.store.path))
+    before = store.budget_snapshot(ATTEMPT)
+    with pytest.raises(ValueError, match='plan'):
+        store.chunk(dict(attempt_id=ATTEMPT, object_sha256='a' * 64, offset=0, length=1))
+    assert store.budget_snapshot(ATTEMPT) == before
