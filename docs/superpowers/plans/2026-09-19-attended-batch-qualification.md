@@ -180,6 +180,14 @@ separate synthetic batch; B2, B4, O1, O2 and L1 remain as written.
 R3/R4, Linux acceptance and S3 excluded. Sequence after: R4 → S2 Linux evidence
 and combined review → S3.
 
+Independent source-bound review, same day and same selection, from a second
+coordinator session: [audit note](../../notes/audits/2026-09-19-b0-path-comparison-source-bound-review.md).
+It carries the refreshed state table, reuse map, interface trace, contract deltas,
+remaining-work comparison and corrections owed, including two the R2b handoff needs
+before dispatch: the red-test file's only surviving copy is commit `1ef91be` (the
+checkout its §0.5 (A) names was emptied on 2026-09-19), and the R2a records are lost,
+so the handoff's Step 2.1 record becomes the source-bound R2a baseline.
+
 ## Implementation verification to preserve in later handoffs
 
 B1 must exercise genuine compute, independent decisions and result/seal together;

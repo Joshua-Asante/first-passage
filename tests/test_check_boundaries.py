@@ -47,6 +47,7 @@ _spec.loader.exec_module(cb)
     ("third_party/study_clone/pkg/x.py", None),  # untracked vendor / study tree exempt
     ("venv/lib/python3.11/site-packages/x.py", None),  # bare venv/ variant exempt
     ("env/Scripts/activate_this.py", None),            # env/ variant exempt
+    ("recovery/full-e1-r2b-predispatch-20260919/test_campaign_scheduler.py", None),  # untracked evidence packet exempt (2026-09-19 fix)
     ("docs/adr/x.py", "governance"),        # governance prefix
     ("root_module.py", "governance"),       # bare root-resident .py → governance
     ("scripts/check_boundaries.py", "governance"),   # SCRIPTS_LAYER → governance
