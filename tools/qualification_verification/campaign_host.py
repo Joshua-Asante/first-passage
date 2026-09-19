@@ -26,8 +26,8 @@ def _start_common_slice(scope, memory_bytes):
     """Create the common memory slice with the manager's own properties only.
 
     systemd exposes no property for the kernel's memory.oom.group attribute
-    (a non-existent name makes the manager reject the whole call), so group
-    OOM termination is set on the realized cgroup by _realize_common_slice.
+    (a non-existent name makes the manager reject the whole call) and rewrites
+    the attribute itself on every realization; see _realize_common_slice.
     """
     properties = [('MemoryMax', 't', str(memory_bytes)), ('MemorySwapMax', 't', '0'),
                   ('MemoryAccounting', 'b', 'true'), ('CPUAccounting', 'b', 'true')]
@@ -43,16 +43,20 @@ def _start_common_slice(scope, memory_bytes):
 
 
 def _realize_common_slice(scope, memory_bytes):
-    """Wait for the manager to realize the slice, then pin the attributes the runtime checks."""
+    """Wait for the manager to realize the slice, then verify the attributes the runtime checks.
+
+    memory.oom.group is not pinned here: the manager rewrites it on every
+    realization (1 only for OOMPolicy=kill service/scope units), so a slice
+    cannot carry it; the guardian unit's OOMPolicy=kill provides group kill.
+    """
     group = CGROUP_ROOT / scope
     deadline = time.monotonic() + SLICE_REALIZE_SECONDS
     while not (group / 'memory.max').exists():
         if time.monotonic() >= deadline:
             raise ValueError('common memory slice was not realized: ' + str(group))
         time.sleep(0.05)
-    (group / 'memory.oom.group').write_text('1')
-    observed = {name: (group / name).read_text().strip() for name in ('memory.max', 'memory.swap.max', 'memory.oom.group')}
-    expected = {'memory.max': str(memory_bytes), 'memory.swap.max': '0', 'memory.oom.group': '1'}
+    observed = {name: (group / name).read_text().strip() for name in ('memory.max', 'memory.swap.max')}
+    expected = {'memory.max': str(memory_bytes), 'memory.swap.max': '0'}
     if observed != expected:
         raise ValueError('common memory slice attributes differ: ' + json.dumps(observed, sort_keys=True))
     return observed

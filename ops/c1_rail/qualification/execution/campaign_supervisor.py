@@ -414,8 +414,11 @@ class LinuxCampaignRuntime:
             raise ValueError('installed common memory limit differs')
         if (self.parent / 'memory.swap.max').read_text().strip() != '0':
             raise ValueError('common scope must disable swap')
-        if (self.parent / 'memory.oom.group').read_text().strip() != '1':
-            raise ValueError('common scope requires group OOM termination')
+        # memory.oom.group is owned by the system manager: it rewrites the
+        # attribute on every realization and sets 1 only for OOMPolicy=kill
+        # service/scope units (the guardian), never for a slice. Group OOM
+        # termination therefore lives on the guardian unit and the payload's
+        # BindsTo interlock; the common slice carries the limit and the counters.
 
     def _control(self, command, *, enrollment):
         import subprocess

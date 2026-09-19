@@ -1,4 +1,4 @@
-"""S2 campaign-host enrollment: manager call carries real properties only; oom.group is pinned on the realized slice.
+"""S2 campaign-host enrollment: manager call carries real properties only; slice limit/swap verified once realized.
 
 The first real --s2 run (2026-09-19, Actions 35453843198) failed inside
 StartTransientUnit because the call named MemoryOOMGroup, which systemd does
@@ -44,7 +44,7 @@ def _realizing_manager(tmp_path, calls, *, memory_max='256000000'):
     return run
 
 
-def test_enrollment_uses_only_manager_properties_and_pins_group_oom_on_the_slice(tmp_path, monkeypatch):
+def test_enrollment_uses_only_manager_properties_and_leaves_oom_group_to_the_manager(tmp_path, monkeypatch):
     calls = []
     saved, root = _fake_host(monkeypatch, tmp_path, _realizing_manager(tmp_path, calls))
     enrollment = campaign_host.install(root, {'run_id': ROOT_ID}, json.dumps({'memory_bytes': 256000000}).encode())
@@ -58,7 +58,8 @@ def test_enrollment_uses_only_manager_properties_and_pins_group_oom_on_the_slice
     assert names == ['MemoryMax', 'MemorySwapMax', 'MemoryAccounting', 'CPUAccounting']
     assert triples[triples.index('MemoryMax') + 2] == '256000000'
     group = tmp_path / 'cgroup' / enrollment['scope']
-    assert (group / 'memory.oom.group').read_text() == '1'
+    # Untouched: the system manager owns memory.oom.group and would revert a write.
+    assert (group / 'memory.oom.group').read_text() == '0\n'
     assert saved == {str(campaign_host.enrollment_path(root)): enrollment}
     assert campaign_host.enrollment_path(root) == root / 'code' / 'qualification-installation' / 'campaign-host.json'
     assert enrollment['memory_bytes'] == 256000000 and enrollment['scope'].endswith('.slice')
