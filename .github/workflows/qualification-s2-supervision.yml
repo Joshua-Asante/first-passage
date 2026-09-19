@@ -1,0 +1,100 @@
+name: Qualification S2 supervision
+
+# Targeted S2 OS evidence on one fresh disposable host: real cgroup/CPU/memory/
+# BOOTTIME enforcement, guardian death and service-downtime recovery, and the
+# funded private scheduler route (warm service, forked transport child). This is
+# diagnostic evidence for the coordinator's acceptance, never acceptance itself,
+# and it is not a required merge check. The suite runs alone with one worker;
+# its last case deliberately exhausts the common memory group, so every run gets
+# its own VM and nothing here is reused.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'ops/c1_rail/qualification/**'
+      - 'tests/integration/qualification_boundary/**'
+      - 'tools/qualification_verification/**'
+      - 'deploy/qualification/**'
+      - 'scripts/qualification_boundary_*.py'
+      - 'scripts/record_verification.py'
+      - 'scripts/check_qualification_invariants.py'
+      - 'tests/ops/qualification/invariant_manifest.json'
+      - 'requirements-ops.lock'
+      - '.github/workflows/qualification-s2-supervision.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qualification-s2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  s2-supervision:
+    name: Qualification S2 supervision (single fresh host)
+    runs-on: ubuntu-24.04
+    # Nine admissions plus the 305 s downtime case and bounded waits; well under
+    # this ceiling on a hosted runner, but never a fast check.
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Provision protected TEST_ONLY host
+        run: |
+          sudo /bin/bash tools/qualification_verification/provision.sh \
+            --manifest-output "$RUNNER_TEMP/qualification-manifest"
+      - name: Record host facts the S2 route depends on
+        # cgroup v2 with cgroup.kill, systemd as PID 1, polkit for the qexec
+        # manage-units rule, and Docker's systemd cgroup driver (the guardian
+        # refuses cgroupfs; no automatic switch). Recorded before the run so a
+        # refusal can be read against the actual host, not inferred.
+        run: |
+          mkdir -p "$RUNNER_TEMP/qualification-evidence"
+          {
+            echo "cgroup_controllers=$(cat /sys/fs/cgroup/cgroup.controllers)"
+            echo "cgroup_kill_present=$(test -f /sys/fs/cgroup/init.scope/cgroup.kill && echo yes || echo no)"
+            echo "pid1=$(ps -o comm= -p 1)"
+            echo "polkitd=$(systemctl is-active polkit || true)"
+            echo "docker_cgroup_driver=$(sudo /usr/bin/docker --host unix:///var/run/docker.sock info --format '{{.CgroupDriver}}')"
+            echo "docker_cgroup_version=$(sudo /usr/bin/docker --host unix:///var/run/docker.sock info --format '{{.CgroupVersion}}')"
+          } | tee "$RUNNER_TEMP/qualification-evidence/s2-host-facts.txt"
+      - name: Doctor and targeted S2 supervision run
+        run: |
+          manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+          host_root="$(dirname "$manifest")"
+          sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
+          sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python \
+            scripts/qualification_boundary_verification.py --s2 --manifest "$manifest"
+      - name: Idempotent owned cleanup and export non-secret evidence
+        if: always()
+        run: |
+          if ! test -f "$RUNNER_TEMP/qualification-manifest"; then
+            echo 'Setup failed before ownership reservation; no resources to retire.'
+            exit 0
+          fi
+          manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+          host_root="$(dirname "$manifest")"
+          set +e
+          sudo /usr/bin/python3 -I tools/qualification_verification/cleanup.py --manifest "$manifest"
+          cleanup_status=$?
+          set -e
+          mkdir -p "$RUNNER_TEMP/qualification-evidence"
+          # Preserve the distinction between cgroup OOM and external SIGKILL, and
+          # keep the system manager's view of the guardian/payload units.
+          sudo journalctl --dmesg -b --no-pager > "$RUNNER_TEMP/qualification-evidence/kernel.log" 2>&1 || true
+          sudo journalctl -b -u systemd-oomd --no-pager > "$RUNNER_TEMP/qualification-evidence/oomd.log" 2>&1 || true
+          sudo journalctl -b -o short-iso --no-pager _COMM=systemd > "$RUNNER_TEMP/qualification-evidence/systemd-units.log" 2>&1 || true
+          if sudo test -d "$host_root/evidence"; then
+            sudo cp -a "$host_root/evidence/." "$RUNNER_TEMP/qualification-evidence/"
+          fi
+          sudo find "$host_root" -maxdepth 1 -type f -name 'cleanup-*.json' \
+            -exec cp -- '{}' "$RUNNER_TEMP/qualification-evidence/" \;
+          sudo chown -R "$(id -u):$(id -g)" "$RUNNER_TEMP/qualification-evidence"
+          exit "$cleanup_status"
+      - name: Retain S2 invariant evidence (no keys or private manifest)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: qualification-s2-supervision
+          path: ${{ runner.temp }}/qualification-evidence/
+          if-no-files-found: warn
+          retention-days: 14
