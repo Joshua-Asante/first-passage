@@ -101,9 +101,33 @@ _CONTEXT_ROLES = {'contract', 'trust_domain', 'freeze_approval', 'domain_approva
 def verify_bundle(bundle_dir: Path, installed_release: bytes, trusted_keys: dict, now) -> ExecutionContext:
     """Reconstruct context from original staged bytes; never import retained ports."""
     root = Path(bundle_dir)
+    return _verify_bundle(root, installed_release, trusted_keys, now,
+        lambda path, limit: read_regular(root, path, limit=limit))
+
+
+def verify_retained_bundle(index_raw, retained, installed_release, trusted_keys, now):
+    index = fields(parse_canonical_json(index_raw, label='retained index'), {'schema', 'attempt_id', 'entries'})
+    by_path = {'index.json': index_raw}
+    for row in index['entries']:
+        fields(row, {'role', 'path', 'sha256', 'byte_length'})
+        relative_parts(row['path'])
+        if row['path'] in by_path or row['role'] not in retained:
+            raise ValueError('retained inventory differs')
+        by_path[row['path']] = retained[row['role']]
+    if set(retained) != {row['role'] for row in index['entries']}:
+        raise ValueError('retained inventory differs')
+    def read(path, limit):
+        raw = by_path[path]
+        if type(raw) is not bytes or len(raw) > limit:
+            raise ValueError('retained bytes exceed bound')
+        return raw
+    return _verify_bundle(Path('.'), installed_release, trusted_keys, now, read)
+
+
+def _verify_bundle(root, installed_release, trusted_keys, now, read):
     installed = parse_canonical_json(installed_release, label='installed release')
     profile = parse_profile(canonical_json_bytes(installed['profile']))
-    index_raw = read_regular(root, 'index.json', limit=profile.input_byte_limit)
+    index_raw = read('index.json', profile.input_byte_limit)
     index = fields(parse_canonical_json(index_raw, label='retained bundle index'), {'schema', 'attempt_id', 'entries'})
     if index['schema'] != 'qualification_retained_bundle/v1':
         raise ValueError('retained bundle schema differs')
@@ -122,7 +146,7 @@ def verify_bundle(bundle_dir: Path, installed_release: bytes, trusted_keys: dict
         total += entry['byte_length']
         if total > profile.input_byte_limit:
             raise ValueError('retained bundle byte limit exceeded')
-        raw = read_regular(root, entry['path'], limit=max(1, entry['byte_length']))
+        raw = read(entry['path'], max(1, entry['byte_length']))
         if len(raw) != entry['byte_length'] or sha256(raw) != entry['sha256']:
             raise ValueError('retained artifact identity or length differs')
         by_role[entry['role']] = entry

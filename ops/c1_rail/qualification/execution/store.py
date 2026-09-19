@@ -17,6 +17,7 @@ from ..journal_snapshot import encode_assessment_snapshot
 from ..evidence import parse_proposed_artifact, InspectedEvidence, compare_n1_evidence
 from ..policy import N1_ARTIFACT_ROLES
 from .files import archive_bytes, read_regular
+from .campaign_store import CampaignStore, SCHEMA as CAMPAIGN_SCHEMA, BUDGET_SCHEMA
 from .protocol import ExecutionRecord, ValidatedEvidence, digest, fields, identity, parse_request, sha256
 
 _SCHEMA = '''
@@ -96,13 +97,13 @@ class ExecutionStore:
         connection = self._connect()
         try:
             version = connection.execute('PRAGMA user_version').fetchone()[0]
-            if version not in (0, 4):
+            if version not in (0, 4, 5, 6):
                 raise ValueError('unsupported journal schema; no in-flight migration')
             if version == 0:
                 if connection.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchone():
                     raise ValueError('unknown journal schema; no migration')
                 connection.execute('PRAGMA journal_mode=WAL')
-                connection.executescript('BEGIN IMMEDIATE;\n' + _SCHEMA + '\nPRAGMA user_version=4;\nCOMMIT;')
+                connection.executescript('BEGIN IMMEDIATE;\n' + _SCHEMA + CAMPAIGN_SCHEMA + '\nPRAGMA user_version=5;\nCOMMIT;')
                 os.chmod(self.path, 0o600)
         finally:
             connection.close()
@@ -111,7 +112,8 @@ class ExecutionStore:
             # prototype with the same version number is not a valid journal.
             reference = sqlite3.connect(':memory:')
             try:
-                reference.executescript(_SCHEMA)
+                version = connection.execute('PRAGMA user_version').fetchone()[0]
+                reference.executescript(_SCHEMA + (CAMPAIGN_SCHEMA if version >= 5 else '') + (BUDGET_SCHEMA if version == 6 else ''))
                 query = 'SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name'
                 expected = reference.execute(query).fetchall()
                 actual = [tuple(row) for row in connection.execute(query)]
@@ -120,7 +122,24 @@ class ExecutionStore:
             finally:
                 reference.close()
             self._integrity(connection)
+            if version == 4:
+                for statement in CAMPAIGN_SCHEMA.split(';'):
+                    if statement.strip(): connection.execute(statement)
+                connection.execute('PRAGMA user_version=5')
+            CampaignStore(self).integrity(connection)
 
+    @staticmethod
+    def validate_layout(connection, version):
+        """Recheck exact predecessor inside lazy migration's write lock."""
+        reference = sqlite3.connect(':memory:')
+        try:
+            reference.executescript(_SCHEMA + (CAMPAIGN_SCHEMA if version >= 5 else '') +
+                                    (BUDGET_SCHEMA if version == 6 else ''))
+            query = 'SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name'
+            if [tuple(row) for row in connection.execute(query)] != reference.execute(query).fetchall():
+                raise ValueError('unsupported journal schema layout; no migration')
+        finally:
+            reference.close()
     def _connect(self):
         connection = sqlite3.connect(self.path, isolation_level=None, timeout=30)
         connection.row_factory = sqlite3.Row
@@ -217,6 +236,8 @@ class ExecutionStore:
                 if row['request_bytes'] != request_bytes or row['plan_bytes'] != plan_bytes:
                     raise ValueError('approved attempt binding conflict')
                 return self._record(row)
+            if connection.execute('SELECT 1 FROM full_campaigns WHERE attempt_id=?', (request['attempt_id'],)).fetchone():
+                raise ValueError('FULL_E1 attempt cannot enter N1 execution')
             execution_id = str(uuid.uuid4())
             connection.execute('INSERT INTO campaigns VALUES(?,?,?,?,?,?,?,?)',
                 (request['attempt_id'], plan['contract_sha256'], plan['trust_domain_sha256'], 'VALID', None, '0' * 64, 0,plan['policy_sha256']))
