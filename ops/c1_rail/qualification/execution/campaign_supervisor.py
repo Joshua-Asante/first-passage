@@ -556,24 +556,14 @@ class LinuxCampaignRuntime:
             deadline_boottime_ns=deadline)
         from tools.qualification_verification.container_ownership import CAMPAIGN_BUS_START
         self._control([*CAMPAIGN_BUS_START, *manager_start_arguments(enrollment['scopes'], spec)], enrollment=enrollment)
-        # Fail closed on the realized rate, as __init__ does for the memory limit.
-        # A refusal here takes the R1 recovery path, which retires the guardian.
-        self._realize_payload_quota(enrollment, spec['payload']['CPUQuotaPerSecUSec'],
-            remaining_wall_ns=remaining_wall_ns, budget_cpu_ns=work['limits']['cpu_ns'] - orchestration_cpu_ns)
-
-    def _realize_payload_quota(self, enrollment, quota_usec, *, remaining_wall_ns, budget_cpu_ns):
-        """The payload slice's cpu.max must exist and equal the derived rate.
-
-        The slice is pulled in by the guardian's Wants and ordered after it, so
-        it realizes moments after the queued job reply; the wait stays well inside
-        the caller's 10 s controller wall even after the 5 s busctl ceiling.
-        """
-        payload = _scope_path(self.parent, enrollment['scopes']['payload_slice'])
-        return verify_payload_cpu_max(_realized_payload_cpu_max(payload), quota_usec=quota_usec,
-            remaining_wall_ns=remaining_wall_ns, budget_cpu_ns=budget_cpu_ns)
+        # The payload slice is ordered After the guardian and pulled in by its
+        # Wants, so it is not realized when this queued-job reply returns; the
+        # realized cpu.max is verified from inside the live guardian, before any
+        # payload process exists (guardian_main -> _verify_payload_quota).
 
 
-PAYLOAD_REALIZE_SECONDS = 1
+PAYLOAD_REALIZE_SECONDS = 5
+RESUME_SIGNAL_SENDS = 25
 
 
 def _realized_payload_cpu_max(payload):
@@ -986,21 +976,6 @@ def _process_identity(pid_text):
     return int(stat_fields[19]), uid, cgroup
 
 
-def _resume_ready(pid):
-    """The fixed probe blocks SIGUSR1 before its bounded wait, so a resume sent
-    from this point on is queued by the kernel, never dropped by the container
-    init's default disposition."""
-    import signal
-    try:
-        status = Path('/proc/' + str(pid) + '/status').read_text()
-    except FileNotFoundError:
-        return False  # Gone since the inspection; the next poll sees the exit.
-    line = next((line for line in status.splitlines() if line.startswith('SigBlk:')), None)
-    if line is None:
-        raise ValueError('process signal mask unavailable')
-    return bool(int(line.split()[1], 16) & (1 << (signal.SIGUSR1 - 1)))
-
-
 def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
     from .protocol import digest
     if manifest['probe'] == 'controller_cpu':
@@ -1026,7 +1001,7 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
     payload = _scope_path(runtime.parent, enrollment['scopes']['payload_slice'])
     budget_cpu = work['limits']['cpu_ns'] - state['profile']['orchestration_cpu_ns'][work['phase']]
     seen_pids = set()
-    resumed = False
+    resume_sends = 0
     stopping = False
     # The guardian's own CPU is charged against its LimitCPU (13 s of the 20 s
     # orchestration bound): a 25 ms loop with a full snapshot parse per turn
@@ -1056,15 +1031,20 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
                     _retain_event(campaigns, state['attempt_id'], work['work_id'], 'PROCESS',
                         dict(pid=int(pid_text), start_ticks=birth, uid=uid, cgroup=cgroup))
                     seen_pids.add((pid_text, birth))
-            # Startup handshake: the fixed probe pauses until its identity has
-            # been retained; the resume follows the durable PROCESS event and
-            # is sent only once the probe has blocked the signal (never dropped).
-            if (not resumed and not stopping and any(seen == str(pid) for seen, _ in seen_pids)
-                    and _resume_ready(pid)):
-                docker.call('POST', '/containers/' + container + '/kill?signal=USR1')
-                _retain_event(campaigns, state['attempt_id'], work['work_id'], 'RESUMED',
-                              dict(container_id=container, pid=int(pid)))
-                resumed = True
+            # Startup handshake: the fixed probe blocks SIGUSR1 as its first act
+            # and pauses in sigtimedwait, so the resume can only follow the durable
+            # PROCESS event and can never be lost — a blocked signal is held
+            # pending until the wait consumes it. The exact instant the probe arms
+            # the block is unobservable, so USR1 is re-sent for a bounded window
+            # (the probe collapses the pending duplicates); the RESUMED event is
+            # retained once, after the identity, on the first send.
+            if (not stopping and resume_sends < RESUME_SIGNAL_SENDS
+                    and any(seen == str(pid) for seen, _ in seen_pids)):
+                docker.call('POST', '/containers/' + container + '/kill?signal=SIGUSR1')
+                if resume_sends == 0:
+                    _retain_event(campaigns, state['attempt_id'], work['work_id'], 'RESUMED',
+                                  dict(container_id=container, pid=int(pid)))
+                resume_sends += 1
             if not stopping and _kernel_pairs(_read_counter(payload / 'cpu.stat')).get('usage_usec', 0) * 1000 >= budget_cpu:
                 _transition(campaigns, state['attempt_id'], work['work_id'], 'IN_DOUBT', {})
                 docker.call('POST', '/containers/' + container + '/kill?signal=KILL')
@@ -1087,7 +1067,7 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
         # A started work has no legal ABORTED transition (ABORTED follows only
         # RESERVED); a non-zero fixed probe is refused onto the same recovery path.
         raise ValueError('fixed probe exited ' + str(exit_code) + (
-            ' before its resume' if not resumed else '') + '; completion refused')
+            ' before its resume' if resume_sends == 0 else '') + '; completion refused')
     state = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='probe final state')
     work = campaigns._work(state, work['work_id'])
     capture = encoded(dict(schema='qualification_campaign_probe_capture/v1',

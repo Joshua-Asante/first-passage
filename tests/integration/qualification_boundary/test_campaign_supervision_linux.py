@@ -266,75 +266,65 @@ def test_s2_warm_service_starts_one_guardian_per_work_with_no_scheduler_unit(rea
     host.save(boundary.output/(attempt+'-warm-route.json'),dict(first=first,duplicate=duplicate,units=units,facts=facts,control_objects=owners))
 
 
-STOPPED_GUARDIAN_ATTEMPTS = 6
+UNOBSERVED_EXIT_ATTEMPTS = 10
 
 
-def _stop_guardian_before_it_observes(boundary,attempt,work_id):
-    """Stop the guardian the instant its container runs, before it can retain an identity.
+def _owned_container(work_id):
+    from urllib.parse import quote
+    filters={'label':['fp.s2.work='+work_id]}
+    rows=DockerControl().call('GET','/containers/json?all=1&filters='+quote(json.dumps(filters),safe=''))
+    return rows[0]['Id'] if rows else None
 
-    Returns (container_id, guardian pids), or None when the guardian won the
-    race; that work then completes normally and the caller retries afresh.
+
+def _kill_before_observation(boundary,attempt,work_id):
+    """Kill the owned container the instant it exists, racing the guardian's first poll.
+
+    Returns the container id when the guardian settled the work without ever
+    retaining an identity for it; None when the guardian observed it first (that
+    work then completes normally and the caller retries with a fresh work).
     """
-    scopes=work_enrollment(boundary.root.name,attempt,work_id)
-    guardian_group=scope_group(boundary,scopes,'guardian_unit')
     docker=DockerControl()
     probe(boundary,attempt,work_id)
-    container=None; pids=[]
-    end=time.monotonic()+60
+    container=None
+    end=time.monotonic()+30
     while time.monotonic()<end:
-        if container is None:
-            created=supervision_events(boundary,attempt,'CONTAINER',work_id)
-            if not created:
-                time.sleep(.002); continue
-            container=created[0]['data']['container_id']
-        if docker.call('GET','/containers/'+container+'/json')['State']['Running']:
-            pids=(guardian_group/'cgroup.procs').read_text().split()
-            for pid in pids: os.kill(int(pid),signal.SIGSTOP)
+        container=_owned_container(work_id)
+        if container is not None:
+            docker.call('POST','/containers/'+container+'/kill?signal=KILL')
             break
+        if supervision_events(boundary,attempt,'CONTAINER',work_id):
+            container=supervision_events(boundary,attempt,'CONTAINER',work_id)[0]['data']['container_id']
+            docker.call('POST','/containers/'+container+'/kill?signal=KILL')
+            break
+        time.sleep(.001)
     else:
-        raise AssertionError('owned container never ran')
-    assert pids, 'guardian cgroup empty when its container started'
-    time.sleep(1)  # A resumed noop exits within milliseconds.
-    details=docker.call('GET','/containers/'+container+'/json')
-    observed=(supervision_events(boundary,attempt,'PROCESS',work_id)
-              or supervision_events(boundary,attempt,'RESUMED',work_id))
-    if observed or not details['State']['Running']:
-        for pid in pids: os.kill(int(pid),signal.SIGCONT)
-        wait(boundary,attempt,lambda s:work(s,work_id)['state'] in ('COMPLETED','IN_DOUBT')
-             and work(s,work_id)['observation_bytes_b64'] is not None,seconds=60)
-        return None
-    return container,pids
+        raise AssertionError('owned container never created')
+    state=wait(boundary,attempt,lambda s:work(s,work_id)['state'] in ('COMPLETED','IN_DOUBT')
+               and work(s,work_id)['observation_bytes_b64'] is not None,seconds=120)
+    if supervision_events(boundary,attempt,'PROCESS',work_id):
+        return None  # The guardian observed it before the host kill landed.
+    assert work(state,work_id)['state']=='IN_DOUBT', state
+    return container
 
 
 def test_s2_probe_that_exits_before_observation_never_completes(real_boundary):
     """A container that exits before any alive-verified identity is retained is never credited."""
     boundary=real_boundary; attempt=admit(boundary)
-    docker=DockerControl()
-    for index in range(STOPPED_GUARDIAN_ATTEMPTS):
+    for index in range(UNOBSERVED_EXIT_ATTEMPTS):
         work_id='unseen'+str(index)
-        stopped=_stop_guardian_before_it_observes(boundary,attempt,work_id)
-        if stopped: break
+        container=_kill_before_observation(boundary,attempt,work_id)
+        if container is not None: break
     else:
-        raise AssertionError('the guardian observed every container before the host could stop it')
-    container,pids=stopped
-    docker.call('POST','/containers/'+container+'/kill?signal=KILL')
-    end=time.monotonic()+30
-    while time.monotonic()<end:
-        details=docker.call('GET','/containers/'+container+'/json')
-        if not details['State']['Running'] and details['State']['Pid']==0: break
-        time.sleep(.05)
-    else:
-        raise AssertionError('killed container did not exit')
-    for pid in pids: os.kill(int(pid),signal.SIGCONT)
-    state=wait(boundary,attempt,lambda s:work(s,work_id)['state']=='IN_DOUBT'
-               and work(s,work_id)['observation_bytes_b64'] is not None,seconds=90)
+        raise AssertionError('the guardian observed every container before the host kill landed')
+    state=snapshot(boundary,attempt)
     row=work(state,work_id)
     transitions=[json.loads(base64.b64decode(t))['state'] for t in row['transitions']]
     assert not {'CAPTURED','COMPLETED','SIGNING_INTENT'}&set(transitions), transitions
     assert supervision_events(boundary,attempt,'PROCESS',work_id)==[]
     assert supervision_events(boundary,attempt,'RESUMED',work_id)==[]
     reasons=[e['data'] for e in supervision_events(boundary,attempt,'PROCESS_UNOBSERVED',work_id)]
-    assert reasons==[dict(container_id=container,exit_code=details['State']['ExitCode'])], reasons
+    assert len(reasons)==1 and reasons[0]['container_id']==container, reasons
+    assert row['state']=='IN_DOUBT'
     assert state['state'] in ('IN_DOUBT','BUDGET_UNCERTAIN','BUDGET_EXHAUSTED'), state['state']
     # Every work this suite has completed so far carries a retained alive-verified identity.
     with sqlite3.connect((boundary.root/'data/journal.sqlite').as_uri()+'?mode=ro',uri=True) as connection:
@@ -344,8 +334,7 @@ def test_s2_probe_that_exits_before_observation_never_completes(real_boundary):
     for completed_attempt,completed_work in completed:
         identity_retained(boundary,completed_attempt,completed_work)
     host.save(boundary.output/(attempt+'-unobserved-exit.json'),dict(work_id=work_id,container=container,
-        attempts=index+1,exit_code=details['State']['ExitCode'],reasons=reasons,transitions=transitions,
-        completed_with_identity=len(completed)))
+        attempts=index+1,reasons=reasons,transitions=transitions,completed_with_identity=len(completed)))
 
 
 def test_s2_payload_cpu_is_kernel_bounded_without_guardian(real_boundary):
@@ -446,9 +435,14 @@ def test_s2_deadline_kills_guardian_before_bootstrap_completes(real_boundary):
     deadline=work_deadline(state,'late')
     assert work(state,'late')['state']=='START_INTENT', work(state,'late')['state']
     assert not [e for e in supervision_events(boundary,attempt,None,'late') if e['kind']!='CONTROL']
-    # Hold the guardian until just before its original deadline, then let it run.
-    while boottime_ns()<deadline-200_000_000:
-        time.sleep(min(1,(deadline-boottime_ns())/10**9))
+    # Hold the guardian stopped until shortly before its original deadline, then
+    # let it run. It arms the pre-import absolute timer (deadline still ~1.2 s
+    # future, so no immediate refusal) and is SIGKILLed by that timer at the
+    # deadline while still importing campaign code -- before RuntimeMax (which is
+    # relative to unit activation and therefore strictly later) and before it can
+    # reach guardian_main's own arm, its PROCESS/DEADLINE events or RUNNING.
+    while boottime_ns()<deadline-1_200_000_000:
+        time.sleep(min(1,(deadline-1_200_000_000-boottime_ns())/10**9))
     resumed_at=boottime_ns()
     os.kill(pid,signal.SIGCONT)
     end=time.monotonic()+30

@@ -2308,7 +2308,7 @@ def test_supervision_event_parser_accepts_deadline_resume_and_unobserved_reasons
             parse_supervision_event(event(kind, data))
 
 
-def _probe_scene(tmp_path, monkeypatch, docker_factory, *, ready=(True,)):
+def _probe_scene(tmp_path, monkeypatch, docker_factory):
     """A RUNNING probe work whose container and /proc facts are simulated."""
     from types import SimpleNamespace
     from test_campaign_budget import transition
@@ -2346,7 +2346,6 @@ def _probe_scene(tmp_path, monkeypatch, docker_factory, *, ready=(True,)):
         [parent.name, scopes['campaign_slice'], scopes['work_slice'], scopes['payload_slice']]
     )
     container_cgroup = '/' + chain + '/docker-' + 'f' * 64 + '.scope'
-    readiness = list(ready)
 
     class Runtime:
         def __init__(self):
@@ -2375,7 +2374,6 @@ def _probe_scene(tmp_path, monkeypatch, docker_factory, *, ready=(True,)):
     monkeypatch.setattr(supervisor, '_process_cgroup', lambda pid='self': container_cgroup)
     monkeypatch.setattr(supervisor, '_payload_processes', lambda group: ['4242'])
     monkeypatch.setattr(supervisor, '_process_identity', lambda pid_text: (1000, 61001, container_cgroup))
-    monkeypatch.setattr(supervisor, '_resume_ready', lambda pid: readiness.pop(0) if len(readiness) > 1 else readiness[0])
     monkeypatch.setattr(supervisor, '_read_counter', read_counter)
     monkeypatch.setattr(supervisor.time, 'sleep', lambda seconds: None)
     context = SimpleNamespace(store=store.store, recovery_issues={})
@@ -2411,13 +2409,15 @@ class _Docker:
         if path.endswith('/start'):
             self.started = True
             return None
-        if path.endswith('kill?signal=USR1'):
-            assert self.started and not self.resumed
-            # Ordering: the durable PROCESS event precedes the resume; RESUMED follows it.
-            self.identity_before_resume = (
-                [e['data']['pid'] for e in _events(self.store, 'PROCESS')],
-                _events(self.store, 'RESUMED'),
-            )
+        if path.endswith('kill?signal=SIGUSR1'):
+            assert self.started
+            if self.identity_before_resume is None:
+                # Ordering on the first send: the durable PROCESS event precedes
+                # the resume; no RESUMED event exists yet at this instant.
+                self.identity_before_resume = (
+                    [e['data']['pid'] for e in _events(self.store, 'PROCESS')],
+                    _events(self.store, 'RESUMED'),
+                )
             self.resumed = True
             return None
         if path.endswith('kill?signal=KILL'):
@@ -2439,20 +2439,18 @@ class _Docker:
         raise AssertionError('unexpected Docker call ' + method + ' ' + path)
 
 
-def test_probe_resume_follows_retained_identity_and_only_once_the_signal_is_blocked(tmp_path, monkeypatch):
+def test_probe_resume_follows_retained_identity_then_completes(tmp_path, monkeypatch):
     from c1_rail.qualification.execution import campaign_supervisor as supervisor
 
-    store, runtime, state, work, enrollment, manifest, docker = _probe_scene(
-        tmp_path, monkeypatch, _Docker, ready=(False, True)
-    )
+    store, runtime, state, work, enrollment, manifest, docker = _probe_scene(tmp_path, monkeypatch, _Docker)
     supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
     pids, resumed_before = docker.identity_before_resume
+    # The identity is durable before the first resume; the RESUMED event follows it.
     assert pids == [4242] and resumed_before == []
-    # The first Running turn saw SIGUSR1 unblocked: identity retained, no resume yet.
-    resume_at = docker.calls.index(('POST', '/containers/' + 'f' * 64 + '/kill?signal=USR1'))
+    resume_at = docker.calls.index(('POST', '/containers/' + 'f' * 64 + '/kill?signal=SIGUSR1'))
     inspections = [index for index, (method, path) in enumerate(docker.calls) if path.endswith('/json')]
-    # Configuration check, unblocked turn, blocked turn (resume), then the exit inspection.
-    assert len(inspections) == 4 and sum(index < resume_at for index in inspections) == 3
+    # The config check and the first Running turn (identity retained) precede the resume.
+    assert sum(index < resume_at for index in inspections) == 2
     assert [e['data'] for e in _events(store, 'RESUMED')] == [{'container_id': 'f' * 64, 'pid': 4242}]
     assert [e['data']['uid'] for e in _events(store, 'PROCESS')] == [61001]
     final = snap(store)
