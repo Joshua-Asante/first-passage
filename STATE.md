@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-14
+**Last curated:** 2026-09-19
 
 Current priorities, dormant cross-session work, and outstanding obligations.
 Read the queue first, then the linked executable plan; campaign records own
@@ -81,7 +81,16 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   the operator confirmed placement on Thursday, 2026-09-10, and reported that
   it had already been recorded with Claude. This is the operator's attestation;
   the private compliance record is unavailable in this checkout and was not
-  independently verified. Week 09-14→09-18 is open; the next deadline is 09-18.
+  independently verified.
+- **Week 09-14→09-18 — MISSED, not discharged:** on 2026-09-19 the operator
+  confirmed that **no qualifying account-preservation trade was placed** in that
+  bucket. The recurring deadline above is therefore **deliberately not advanced**:
+  STATE's own rule is to advance only *after coverage is attested*, and coverage
+  was not attested — it was missed. `state-currency` stays FAIL as the standing
+  signal, which blocks merges repo-wide by design; do not green it by rolling the
+  date. A missed venue week risks account deletion, so escalation, any remedy, and
+  the decision to resume the rolling cadence are the operator's alone. No agent
+  places the trade.
 - **Earlier record still owed:** week 08-31→09-04 was operator-attested on
   09-04 and restated on 09-05; the exact trade day remains unresolved between
   09-02/09-03, and its private ledger row remains unverified.

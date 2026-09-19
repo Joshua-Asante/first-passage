@@ -1,6 +1,14 @@
-# Q-XMEM-1 cross-surface memory sidecar pilot — SUBTRACT
+# Q-XMEM-1 cross-surface memory sidecar pilot — REOPENED (was SUBTRACT)
 
-**Class:** (c) standing exploration · **Standing:** SUBTRACT
+> **Re-entry 2026-09-19 (operator ruling).** The SUBTRACT below is lifted at the pursuit
+> layer: standing exploration may resume. The ruling is the authority; the armour's dated
+> cross-surface-memory-invisibility incident is **not** cited and remains owed. Re-entry
+> authorises no build, install, spend or quarantine lift — Limb A T0, Limb C, and the
+> `repo_retrieve.py` attestation quarantine all keep their own gates. Scope table:
+> [brief addendum](../briefs/Q-XMEM-1-cross-surface-memory-sidecar-pilot.md#addendum-2026-09-19--pursuit-re-entry-operator-ruling-scope-strictly-bounded).
+> The record below is retained as the superseded disposition.
+
+**Class:** (c) standing exploration · **Standing:** REOPENED 2026-09-19 (prior: SUBTRACT 2026-08-19)
 **Test applied:** existing GSUB-1-permitted test ("outside current Survive/resource bounds"),
 re-applied on updated evidence — see
 [GSUB-2 §7 Phase 2](../briefs/programs/GSUB-2-park-cohort-early-review.md#phase-2--disposition-proposals-test-applied-per-row).
