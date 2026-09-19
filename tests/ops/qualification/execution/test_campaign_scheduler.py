@@ -380,16 +380,70 @@ def test_launch_tail_consumes_only_a_materialized_intent(tmp_path, monkeypatch):
     assert sum(role == 'supervision_control_' + sha256(encoded(['worker', 'START_OWNER'])) for role in objects) == 1
 
 
-def test_restart_under_executable_release_reports_funding_and_never_materializes(tmp_path, monkeypatch):
+class Observed:
+    """Simulated recovery adapter: a terminated payload with known counters."""
+    def __init__(self):
+        self.cleaned = []
+
+    def observation(self, state, w, enrollment):
+        return encoded(dict(schema='qualification_campaign_observation/v2', attempt_id=ATTEMPT, work_id=w['work_id'],
+            clock=clock(12), campaign_scope_id=enrollment['scopes']['campaign_slice'],
+            work_scope_id=enrollment['scopes']['payload_slice'], cpu_ns=20, memory_peak_bytes=50,
+            oom_events=0, termination_known=True, orchestration_charge_cpu_ns=10))
+
+    def cleanup(self, enrollment):
+        self.cleaned.append(enrollment['work_id'])
+
+
+def test_restart_auto_recovers_interrupted_funded_work_and_never_materializes(tmp_path, monkeypatch):
+    """Operator ruling 2026-09-19: funded work interrupted by a restart is recovered, not left for manual disposition."""
     store = enrolled(tmp_path)
     service = warm(store, monkeypatch)
+    monkeypatch.setattr(supervisor, 'launch_prepared_campaign_work', lambda *a, **k: (_ for _ in ()).throw(RuntimeError('crash after commit')))
+    with pytest.raises(RuntimeError):
+        submit(service)
+    assert work(snap(store), 'worker')['state'] == 'START_INTENT'
+    service.campaign_runtime = Observed()
+    service.store = ExecutionStore(store.store.path)
     service.recover_service()
-    assert service.recovery_issues == {ATTEMPT + ':funding': 'FUNDING_NO_RESTART_OWNERSHIP'}
-    store.claim_scheduler_bootstrap(schedule(), encoded(clock(11)))
-    service.recover_service()
-    assert service.recovery_issues == {ATTEMPT + ':funding': 'FUNDING_PENDING'}
-    assert json.loads(store.scheduler_status(ATTEMPT))['pending']
+    reopened = CampaignStore(ExecutionStore(store.store.path))
+    assert service.campaign_runtime.cleaned == ['worker']
+    assert not any(value == 'RECOVERY_PENDING' for value in service.recovery_issues.values())
+    assert work(snap(reopened), 'worker')['state'] == 'IN_DOUBT'
+    assert snap(reopened)['state'] == 'IN_DOUBT'
+    assert work(snap(reopened), 'worker')['charge_cpu_ns'] == 30  # measured 20 + installed orchestration bound 10
     assert Runtime.constructed == []
+    # No redraw: a later claim is refused historically, exactly as after in-process recovery.
+    service.store = reopened.store
+    assert submit(service, schedule(work_id='another'))['schema'] == 'qualification_campaign_scheduler_status/v1'
+    assert Runtime.constructed == []
+
+
+def test_restart_reports_pending_intent_and_leaves_it_unmaterialized(tmp_path, monkeypatch):
+    store = enrolled(tmp_path)
+    service = warm(store, monkeypatch)
+    token, _ = store.claim_scheduler_bootstrap(schedule(), encoded(clock(11)))
+    service.campaign_runtime = Observed()
+    service.recover_service()
+    assert service.recovery_issues[ATTEMPT + ':funding'] == 'FUNDING_PENDING'
+    assert json.loads(store.scheduler_status(ATTEMPT))['pending']
+    with store.store.transaction() as c:
+        assert json.loads(c.execute('SELECT body FROM full_campaign_bootstraps').fetchone()[0])['state'] == 'PENDING'
+        assert [w['work_id'] for w in store._budget(c, ATTEMPT)['works']] == ['admission']
+    assert service.campaign_runtime.cleaned == [] and Runtime.constructed == []
+    with pytest.raises(ValueError, match='funding'):
+        store.budget_snapshot(ATTEMPT)
+    ExecutionStore(store.store.path)
+
+
+def test_persistence_only_installation_still_resumes_nothing(tmp_path, monkeypatch):
+    store = enrolled(tmp_path)
+    service = warm(store, monkeypatch)
+    service.profile = SimpleNamespace(values={'schema': 'qualification_execution_profile/v3'})
+    service.campaign_runtime = Observed()
+    service.recover_service()
+    assert service.recovery_issues == {ATTEMPT + ':funding': 'FUNDING_RUNTIME_NOT_ENABLED'}
+    assert service.campaign_runtime.cleaned == []
 
 
 def test_transport_child_moves_one_bounded_frame_without_campaign_imports(monkeypatch):

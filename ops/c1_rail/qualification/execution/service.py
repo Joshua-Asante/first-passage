@@ -488,18 +488,26 @@ class ExecutionService:
                 with self.store.transaction() as connection:
                     funding = campaigns._funding(connection, attempt)
                 if funding is not None:
-                    # Restart never materializes a pending intent or resumes a
-                    # controller for a funded attempt (single-lifetime posture).
-                    if funding['bootstrap_pending_work_id'] is not None or funding['terminal_overlay'] is not None:
+                    # A pending one-use intent is reported and never materialized;
+                    # its work is not yet in the snapshot, so the loop below cannot
+                    # touch it. A terminal overlay is likewise reported only.
+                    pending = funding['bootstrap_pending_work_id'] is not None or funding['terminal_overlay'] is not None
+                    if pending:
                         self.recovery_issues[attempt + ':funding'] = 'FUNDING_PENDING'
-                    elif self.profile.values['schema'] == 'qualification_execution_profile/v3':
-                        self.recovery_issues[attempt + ':funding'] = 'FUNDING_RUNTIME_NOT_ENABLED'
-                    else:
-                        self.recovery_issues[attempt + ':funding'] = 'FUNDING_NO_RESTART_OWNERSHIP'
-                    continue
-                state = parse_canonical_json(campaigns.budget_snapshot(attempt), label='recovery budget')
-                if state['profile']['schema'] != 'qualification_campaign_budget_profile/v2':
-                    continue  # Historical S1/dormant records gain no runtime ownership.
+                    if self.profile.values['schema'] == 'qualification_execution_profile/v3':
+                        if not pending:
+                            self.recovery_issues[attempt + ':funding'] = 'FUNDING_RUNTIME_NOT_ENABLED'
+                        continue  # R2a persistence alone cannot resume a controller.
+                    # Execution-capable installation: materialized funded work gets
+                    # the same bounded per-work restart recovery as v2 attempts
+                    # (operator ruling 2026-09-19). The funded adapter reads history
+                    # directly; the public snapshot stays refused while pending.
+                    with self.store.transaction() as connection:
+                        state = campaigns._budget(connection, attempt)
+                else:
+                    state = parse_canonical_json(campaigns.budget_snapshot(attempt), label='recovery budget')
+                    if state['profile']['schema'] != 'qualification_campaign_budget_profile/v2':
+                        continue  # Historical S1/dormant records gain no runtime ownership.
                 for work in state['works']:
                     try:
                         campaign_supervisor.recover_campaign_work(self, decode_base64(work['reservation_bytes_b64']),
