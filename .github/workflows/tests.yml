@@ -36,8 +36,21 @@ jobs:
         run: python -m pip install -r tools/local_verification/requirements-extra.txt
       # check_boundaries.py lives in scripts/gates.yml (always) and runs via
       # gate-manifest.yml --tier check (W5 H6 land). Do not re-list it here.
+      # --junitxml keeps per-test timings for the parent run; the qualification
+      # bridge (tests/ops/test_qualification_isolation.py) derives its child's
+      # report root from the parent's xmlpath, so the child's junit.xml and
+      # output.log land beside it. Before 2026-09-19 both were discarded and CI
+      # had no per-test evidence for the 18-25 min child.
       - name: Run pytest
-        run: pytest tests/ -v
+        run: pytest tests/ -v --junitxml="$RUNNER_TEMP/pytest-evidence/junit.xml"
+      - name: Retain pytest evidence (parent junit, qualification child junit/output)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pytest-evidence-${{ matrix.python-version }}
+          path: ${{ runner.temp }}/pytest-evidence/
+          if-no-files-found: warn
+          retention-days: 14
 
   # lab/ research-guardrail job moved to validation-controls.yml
   # (path-filtered to lab/ and its shared core/metadata/ops-lock dependencies).
