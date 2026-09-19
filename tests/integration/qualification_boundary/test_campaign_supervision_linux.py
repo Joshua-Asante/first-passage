@@ -89,7 +89,10 @@ def test_s2_sequential_roles_share_one_allowance(real_boundary):
 def test_s2_two_descendants_exhaust_owned_cpu(real_boundary):
     boundary=real_boundary; attempt=admit(boundary)
     probe(boundary,attempt,'descendants',kind='descendants')
-    state=wait(boundary,attempt,lambda s:s['state'].startswith('BUDGET_') or s['state']=='IN_DOUBT')
+    # The guardian marks IN_DOUBT, kills the payload, then settles the measured
+    # charge once absence is proven; the charge exists only after settlement.
+    state=wait(boundary,attempt,lambda s:s['state'].startswith('BUDGET_') or
+        (s['state']=='IN_DOUBT' and work(s,'descendants')['observation_bytes_b64'] is not None))
     assert state['state']=='IN_DOUBT'
     assert work(state,'descendants')['charge_cpu_ns']>=work(state,'descendants')['limits']['cpu_ns']
     boundary.restart()

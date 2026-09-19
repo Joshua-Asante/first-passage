@@ -128,7 +128,7 @@ def cleanup(root, manifest, *, retire=False):
         import sqlite3
         with sqlite3.connect((root / 'data/journal.sqlite').as_uri() + '?mode=ro', uri=True) as connection:
             enrollments = [json.loads(bytes(row[0])) for row in connection.execute(
-                "SELECT body FROM full_campaign_objects WHERE role LIKE 'supervision_%' AND role NOT LIKE 'supervision_event_%' AND role NOT LIKE 'supervision_control_%'")]
+                "SELECT body FROM full_campaign_objects WHERE role GLOB 'supervision_*' AND NOT role GLOB 'supervision_event_*' AND NOT role GLOB 'supervision_control_*'")]
         for item in enrollments:
             if (item['schema']!='qualification_campaign_supervision/v1' or item['host_run_id']!=root.name
                     or item['scopes']!=campaign_scopes(root.name,item['attempt_id'],item['work_id'])):

@@ -479,3 +479,16 @@ def test_transport_child_moves_one_bounded_frame_without_campaign_imports(monkey
         route.exchange(client, b'x' * 2000, timeout=1)
     source = path.read_text(encoding='utf-8')
     assert 'campaign_store' not in source and 'campaign_supervisor' not in source and 'campaign_funding' not in source
+
+
+def test_work_named_controller_is_not_mistaken_for_a_control_slot(tmp_path, monkeypatch):
+    """SQL LIKE's '_' wildcard made 'supervision_controller' match 'supervision_control_%' (S2 run 35459484982)."""
+    store = enrolled(tmp_path)
+    service = warm(store, monkeypatch)
+    assert submit(service, schedule(work_id='controller', role='probe_seal', probe='controller_cpu'))['schema'] == 'qualification_campaign_status/v2'
+    assert Runtime.constructed == ['controller']
+    assert 'supervision_controller' in store.objects(ATTEMPT)
+    with store.store.transaction() as c:
+        assert not store._recovery_pending(store._budget(c, ATTEMPT))
+    assert submit(service, schedule(work_id='controller', role='probe_seal', probe='controller_cpu'))['historical'] is True
+    ExecutionStore(store.store.path)
