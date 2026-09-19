@@ -108,8 +108,11 @@ unknown-answer and conflicting-version cases need their own measured policy.
 
 Each of these was either live in this session or already bit the prior one.
 
-- **Do not roll the STATE weekly deadline to green CI.** Week 09-14→09-18 is recorded MISSED; the
-  red `state-currency` gate is the signal, not a defect. It blocks merges repo-wide by design.
+- **Do not roll the STATE weekly deadline to green CI.** Advancing the recurring schedule is an
+  operator act that must carry its record. Week 09-14→09-18 was **missed**, and on 2026-09-19 the
+  operator recorded the miss, reported the account still active, and advanced the schedule to
+  2026-09-25 — preserving the missed-week record, which STATE now requires explicitly. That is the
+  shape: never silence `state-currency` by editing the date alone.
 - **Do not cite the v3 recall figures as current.** They bind blob `041535ab…`, not what ships.
 - **Do not treat the Q-XMEM-1 reopen as build authority.** Limb A T0/install, Limb C, the
   `repo_retrieve.py` attestation quarantine and the disabled `_fts_companion` call all keep their
@@ -187,8 +190,9 @@ grep -n -i "xmem\|repo_retrieve\|fts5" lab/CATALOG.md docs/briefs/INDEX.md
 #    first-passage-archive @ 5d47b4dc — see lab/ARCHIVED.json removed_files.
 python -c "import json;print(json.load(open('lab/ARCHIVED.json'))['studies']['limb_b_remeasure_2026-08'])"
 
-# 6. Governance gates before any commit. state-currency is EXPECTED to fail
-#    (week 09-14->09-18 MISSED); every other gate must pass.
+# 6. Governance gates before any commit. Expect a clean exit 0 as of 2026-09-19.
+#    If state-currency fails, a recurring deadline has lapsed -- that is an
+#    operator obligation, never something to fix by editing the date.
 make check
 ```
 
