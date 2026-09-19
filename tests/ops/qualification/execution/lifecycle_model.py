@@ -74,3 +74,44 @@ class LifecycleModel:
             raise ValueError('unknown reference-model action: ' + action)
         self.events += 1
         return 'ACCEPTED'
+
+
+class CampaignBudgetModel:
+    """SQL-free allowance/recovery reference with opaque simulated identities."""
+    def __init__(self, cap, reservation):
+        self.cap = cap
+        self.reservation = reservation
+        self.state = 'RESERVED'
+        self.validity = 'VALID'
+        self.terminal = False
+        self.charge = None
+
+    def apply(self, action, charge=None):
+        if action == 'reopen':
+            return True
+        if action == 'void':
+            self.validity = 'VOID'
+            return True
+        if action == 'recover':
+            if self.state in ('START_INTENT', 'RUNNING'):
+                self.state = 'IN_DOUBT'
+                self.terminal = True
+                self.charge = self.reservation if charge is None else charge
+            elif self.state == 'CAPTURED':
+                self.charge = self.reservation if charge is None else charge
+                self.terminal = charge is None
+            return True
+        if self.validity != 'VALID' or self.terminal:
+            return False
+        next_state = {('RESERVED', 'intent'): 'START_INTENT',
+                      ('START_INTENT', 'running'): 'RUNNING',
+                      ('RUNNING', 'capture'): 'CAPTURED'}
+        target = next_state.get((self.state, action))
+        if target is None:
+            return False
+        self.state = target
+        return True
+
+    @property
+    def remaining(self):
+        return self.cap - (self.reservation if self.charge is None else self.charge)
