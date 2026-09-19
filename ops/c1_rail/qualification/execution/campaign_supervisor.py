@@ -864,9 +864,16 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
     budget_cpu = work['limits']['cpu_ns'] - state['profile']['orchestration_cpu_ns'][work['phase']]
     seen_pids = set()
     stopping = False
+    # The guardian's own CPU is charged against its LimitCPU (13 s of the 20 s
+    # orchestration bound): a 25 ms loop with a full snapshot parse per turn
+    # starved a 100 s two-descendant probe (S2 run 35456732049, killed at
+    # 13.026 s). Poll at 200 ms and re-read authority once per second; the
+    # overshoot is bounded by one interval and the settled charge is measured.
+    authority_checked = 0.0
     while True:
-        if not stopping:
+        if not stopping and time.monotonic() - authority_checked >= 1.0:
             _assert_authority(parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='current probe authority'))
+            authority_checked = time.monotonic()
         row = docker.call('GET', '/containers/' + container + '/json')
         if row['State']['Running']:
             pid = row['State']['Pid']
@@ -892,7 +899,7 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
                 docker.call('POST', '/containers/' + container + '/kill?signal=KILL')
                 stopping = True
                 # Final actual usage is retained only after verified absence.
-            time.sleep(.025)
+            time.sleep(.2)
             continue
         if row['State']['Pid'] != 0:
             raise ValueError('container termination has no process absence proof')
