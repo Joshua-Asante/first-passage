@@ -7,8 +7,10 @@ from pathlib import Path
 import socket
 import struct
 import subprocess
+import sys
 import threading
 import time
+import traceback
 
 from ..contract import canonical_json_bytes as encoded, parse_canonical_json, verify_detached_approval
 from .admission import verify_bundle, verify_retained_bundle
@@ -572,6 +574,10 @@ class ExecutionService:
                 result = self.handle_request(uid, raw)
                 response = encoded(dict(ok=True, data_b64=base64.b64encode(result).decode('ascii')))
             except (ValueError, KeyError, OSError, RecursionError) as exc:
+                if not isinstance(exc, ValueError):
+                    # A refusal is a ValueError; anything else is a defect whose
+                    # only record is this process's stderr (the journal).
+                    traceback.print_exc(file=sys.stderr)
                 response = encoded(dict(ok=False, error=str(exc)[:1024]))
             if len(response) > self.profile.rpc_byte_limit:
                 response = encoded(dict(ok=False, error='RESPONSE_EXCEEDS_PROFILE_LIMIT'))

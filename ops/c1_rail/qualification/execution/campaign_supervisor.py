@@ -401,7 +401,8 @@ class LinuxCampaignRuntime:
         import json
         from .files import read_regular
         from .runtime import protected_path
-        enrollment_path = Path(context.config['data_root']).parent / 'campaign-host.json'
+        # Beside release.json: the run root is not readable by the service identity.
+        enrollment_path = Path(context.config['installation_root']) / 'campaign-host.json'
         protected_path(enrollment_path)
         installed = json.loads(read_regular(enrollment_path.parent, enrollment_path.name, limit=65536))
         if (installed['schema'] != 'qualification_campaign_host/v1'
@@ -413,8 +414,11 @@ class LinuxCampaignRuntime:
             raise ValueError('installed common memory limit differs')
         if (self.parent / 'memory.swap.max').read_text().strip() != '0':
             raise ValueError('common scope must disable swap')
-        if (self.parent / 'memory.oom.group').read_text().strip() != '1':
-            raise ValueError('common scope requires group OOM termination')
+        # memory.oom.group is owned by the system manager: it rewrites the
+        # attribute on every realization and sets 1 only for OOMPolicy=kill
+        # service/scope units (the guardian), never for a slice. Group OOM
+        # termination therefore lives on the guardian unit and the payload's
+        # BindsTo interlock; the common slice carries the limit and the counters.
 
     def _control(self, command, *, enrollment):
         import subprocess
@@ -450,9 +454,11 @@ class LinuxCampaignRuntime:
                     pass  # Original failure drives durable recovery; no success claim.
             raise
         if process.returncode != 0 or len(stdout) > 65536 or len(stderr) > 65536:
-            raise ValueError('bounded system-manager operation failed')
+            # The manager's or control child's refusal text is the only diagnostic.
+            raise ValueError('bounded system-manager operation failed (exit ' + str(process.returncode) + '): '
+                             + stderr[-300:].decode('utf-8', 'replace').strip())
         if re.fullmatch(rb'o "/org/freedesktop/systemd1/job/[0-9]+"\n?', stdout) is None:
-            raise ValueError('system-manager job acknowledgement differs')
+            raise ValueError('system-manager job acknowledgement differs: ' + stdout[-200:].decode('utf-8', 'replace').strip())
         campaigns.acknowledge_dispatch(enrollment['attempt_id'], enrollment['work_id'],
             'guardian', permit['token'], observe_campaign_clock)
         return stdout
@@ -858,9 +864,16 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
     budget_cpu = work['limits']['cpu_ns'] - state['profile']['orchestration_cpu_ns'][work['phase']]
     seen_pids = set()
     stopping = False
+    # The guardian's own CPU is charged against its LimitCPU (13 s of the 20 s
+    # orchestration bound): a 25 ms loop with a full snapshot parse per turn
+    # starved a 100 s two-descendant probe (S2 run 35456732049, killed at
+    # 13.026 s). Poll at 200 ms and re-read authority once per second; the
+    # overshoot is bounded by one interval and the settled charge is measured.
+    authority_checked = 0.0
     while True:
-        if not stopping:
+        if not stopping and time.monotonic() - authority_checked >= 1.0:
             _assert_authority(parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='current probe authority'))
+            authority_checked = time.monotonic()
         row = docker.call('GET', '/containers/' + container + '/json')
         if row['State']['Running']:
             pid = row['State']['Pid']
@@ -886,7 +899,7 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
                 docker.call('POST', '/containers/' + container + '/kill?signal=KILL')
                 stopping = True
                 # Final actual usage is retained only after verified absence.
-            time.sleep(.025)
+            time.sleep(.2)
             continue
         if row['State']['Pid'] != 0:
             raise ValueError('container termination has no process absence proof')
