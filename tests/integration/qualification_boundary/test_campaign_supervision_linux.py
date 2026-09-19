@@ -9,13 +9,19 @@ import base64
 import json
 import os
 from pathlib import Path
+import signal
 import sqlite3
+import subprocess
+import sys
 import time
 import pytest
 from tools.qualification_verification import host
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
-from c1_rail.qualification.execution.campaign_supervisor import work_enrollment, host_slice
+from c1_rail.qualification.execution.campaign_supervisor import (
+    DockerControl, _scope_path, work_enrollment, host_slice)
 from c1_rail.qualification.execution.protocol import sha256
+
+CPU_GRANULARITY_NS = 1_000_000_000  # CAMPAIGN_RESOURCE_SCOPE cpu_granularity_seconds
 
 
 def snapshot(boundary, attempt):
@@ -44,6 +50,44 @@ def wait(boundary,attempt,predicate,seconds=330):
     raise AssertionError('bounded real supervision wait expired')
 
 
+def boottime_ns():
+    return time.clock_gettime_ns(time.CLOCK_BOOTTIME)
+
+
+def work_deadline(state,work_id):
+    """The instant the service put on the guardian argv and the guardian re-derives."""
+    row=work(state,work_id)
+    reservation=json.loads(base64.b64decode(row['reservation_bytes_b64']))
+    return min(state['deadline_boottime_ns'],reservation['clock']['boottime_ns']+row['limits']['wall_ns'])
+
+
+def supervision_events(boundary,attempt,kind=None,work_id=None):
+    with sqlite3.connect((boundary.root/'data/journal.sqlite').as_uri()+'?mode=ro',uri=True) as connection:
+        rows=[json.loads(bytes(row[0])) for row in connection.execute(
+            "SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role GLOB 'supervision_event_*'",(attempt,))]
+    return [row for row in rows if (kind is None or row['kind']==kind) and (work_id is None or row['work_id']==work_id)]
+
+
+def identity_retained(boundary,attempt,work_id):
+    """Completion credit requires a supervisor-retained, alive-verified PROCESS identity."""
+    events=supervision_events(boundary,attempt,'PROCESS',work_id)
+    assert events, 'no alive-verified PROCESS event retained for '+attempt+':'+work_id
+    return events
+
+
+def unit_facts(unit,properties):
+    values=host.run(['/usr/bin/systemctl','show',unit,'--property='+','.join(properties)])
+    return dict(line.split('=',1) for line in values.splitlines())
+
+
+def scope_group(boundary,scopes,key):
+    """Absolute cgroup directory of one enrolled scope beneath the host slice."""
+    parent=Path('/sys/fs/cgroup')/host_slice(boundary.root.name)
+    if key=='guardian_unit':
+        return _scope_path(parent,scopes['work_slice'])/scopes['guardian_unit']
+    return _scope_path(parent,scopes[key])
+
+
 def admit(boundary):
     """The local admin client in the existing client role is the only submitter."""
     assert boundary.diagnostic, 'FP_QUALIFICATION_S2=1 required; never upgrade N1 fixture'
@@ -56,6 +100,10 @@ def admit(boundary):
     assert state['state']=='BOUND', state
     assert state['settled_cpu_ns']==20_000_000_000
     assert json.loads(boundary.request('SUBMIT_E1',**fields))['schema']=='qualification_campaign_status/v2'
+    identity_retained(boundary,bundle['attempt_id'],'admission')
+    # The argv deadline bootstrap armed is the one the guardian verified against the store.
+    deadlines=[e['data']['deadline_boottime_ns'] for e in supervision_events(boundary,bundle['attempt_id'],'DEADLINE','admission')]
+    assert deadlines==[work_deadline(state,'admission')], deadlines
     return bundle['attempt_id']
 
 
@@ -89,14 +137,29 @@ def test_s2_sequential_roles_share_one_allowance(real_boundary):
 def test_s2_two_descendants_exhaust_owned_cpu(real_boundary):
     boundary=real_boundary; attempt=admit(boundary)
     probe(boundary,attempt,'descendants',kind='descendants')
-    # The guardian marks IN_DOUBT, kills the payload, then settles the measured
-    # charge once absence is proven; the charge exists only after settlement.
-    state=wait(boundary,attempt,lambda s:s['state'].startswith('BUDGET_') or
-        (s['state']=='IN_DOUBT' and work(s,'descendants')['observation_bytes_b64'] is not None))
-    assert state['state']=='IN_DOUBT'
-    assert work(state,'descendants')['charge_cpu_ns']>=work(state,'descendants')['limits']['cpu_ns']
+    scopes=work_enrollment(boundary.root.name,attempt,'descendants')
+    # The manager rate-limits the payload slice to budget/wall (cpu.max), so two
+    # burners reach the payload budget no earlier than the original deadline.
+    # Either the guardian's early stop lands in the last granule (IN_DOUBT with
+    # the measured charge) or its absolute timer ends it first and BindsTo
+    # retires the payload; recovery then spends the reservation. Both outcomes
+    # leave the work IN_DOUBT with a charge at or above the reservation.
+    end=time.monotonic()+330
+    while time.monotonic()<end:
+        state=snapshot(boundary,attempt)
+        facts=unit_facts(scopes['guardian_unit'],['ActiveState','Result','ExecMainStatus'])
+        if (state['state'].startswith('BUDGET_') or facts['ActiveState'] in ('failed','inactive')
+                or (state['state']=='IN_DOUBT' and work(state,'descendants')['observation_bytes_b64'] is not None)):
+            break
+        time.sleep(.5)
+    else:
+        raise AssertionError('bounded descendants wait expired')
+    host.save(boundary.output/(attempt+'-descendants-facts.json'),dict(facts=facts,state=state['state']))
     boundary.restart()
-    assert work(snapshot(boundary,attempt),'descendants')['state']=='IN_DOUBT'
+    state=snapshot(boundary,attempt)
+    assert work(state,'descendants')['state']=='IN_DOUBT'
+    assert work(state,'descendants')['charge_cpu_ns']>=work(state,'descendants')['limits']['cpu_ns']
+    assert state['state'] in ('IN_DOUBT','BUDGET_EXHAUSTED','BUDGET_UNCERTAIN'), state['state']
 
 
 def test_s2_fixed_intent_retry_is_charged_separately(real_boundary):
@@ -201,6 +264,219 @@ def test_s2_warm_service_starts_one_guardian_per_work_with_no_scheduler_unit(rea
         intents=connection.execute('SELECT work_id FROM full_campaign_bootstraps WHERE attempt_id=?',(attempt,)).fetchall()
     assert owners==1 and [row[0] for row in intents]==['once']
     host.save(boundary.output/(attempt+'-warm-route.json'),dict(first=first,duplicate=duplicate,units=units,facts=facts,control_objects=owners))
+
+
+STOPPED_GUARDIAN_ATTEMPTS = 6
+
+
+def _stop_guardian_before_it_observes(boundary,attempt,work_id):
+    """Stop the guardian the instant its container runs, before it can retain an identity.
+
+    Returns (container_id, guardian pids), or None when the guardian won the
+    race; that work then completes normally and the caller retries afresh.
+    """
+    scopes=work_enrollment(boundary.root.name,attempt,work_id)
+    guardian_group=scope_group(boundary,scopes,'guardian_unit')
+    docker=DockerControl()
+    probe(boundary,attempt,work_id)
+    container=None; pids=[]
+    end=time.monotonic()+60
+    while time.monotonic()<end:
+        if container is None:
+            created=supervision_events(boundary,attempt,'CONTAINER',work_id)
+            if not created:
+                time.sleep(.002); continue
+            container=created[0]['data']['container_id']
+        if docker.call('GET','/containers/'+container+'/json')['State']['Running']:
+            pids=(guardian_group/'cgroup.procs').read_text().split()
+            for pid in pids: os.kill(int(pid),signal.SIGSTOP)
+            break
+    else:
+        raise AssertionError('owned container never ran')
+    assert pids, 'guardian cgroup empty when its container started'
+    time.sleep(1)  # A resumed noop exits within milliseconds.
+    details=docker.call('GET','/containers/'+container+'/json')
+    observed=(supervision_events(boundary,attempt,'PROCESS',work_id)
+              or supervision_events(boundary,attempt,'RESUMED',work_id))
+    if observed or not details['State']['Running']:
+        for pid in pids: os.kill(int(pid),signal.SIGCONT)
+        wait(boundary,attempt,lambda s:work(s,work_id)['state'] in ('COMPLETED','IN_DOUBT')
+             and work(s,work_id)['observation_bytes_b64'] is not None,seconds=60)
+        return None
+    return container,pids
+
+
+def test_s2_probe_that_exits_before_observation_never_completes(real_boundary):
+    """A container that exits before any alive-verified identity is retained is never credited."""
+    boundary=real_boundary; attempt=admit(boundary)
+    docker=DockerControl()
+    for index in range(STOPPED_GUARDIAN_ATTEMPTS):
+        work_id='unseen'+str(index)
+        stopped=_stop_guardian_before_it_observes(boundary,attempt,work_id)
+        if stopped: break
+    else:
+        raise AssertionError('the guardian observed every container before the host could stop it')
+    container,pids=stopped
+    docker.call('POST','/containers/'+container+'/kill?signal=KILL')
+    end=time.monotonic()+30
+    while time.monotonic()<end:
+        details=docker.call('GET','/containers/'+container+'/json')
+        if not details['State']['Running'] and details['State']['Pid']==0: break
+        time.sleep(.05)
+    else:
+        raise AssertionError('killed container did not exit')
+    for pid in pids: os.kill(int(pid),signal.SIGCONT)
+    state=wait(boundary,attempt,lambda s:work(s,work_id)['state']=='IN_DOUBT'
+               and work(s,work_id)['observation_bytes_b64'] is not None,seconds=90)
+    row=work(state,work_id)
+    transitions=[json.loads(base64.b64decode(t))['state'] for t in row['transitions']]
+    assert not {'CAPTURED','COMPLETED','SIGNING_INTENT'}&set(transitions), transitions
+    assert supervision_events(boundary,attempt,'PROCESS',work_id)==[]
+    assert supervision_events(boundary,attempt,'RESUMED',work_id)==[]
+    reasons=[e['data'] for e in supervision_events(boundary,attempt,'PROCESS_UNOBSERVED',work_id)]
+    assert reasons==[dict(container_id=container,exit_code=details['State']['ExitCode'])], reasons
+    assert state['state'] in ('IN_DOUBT','BUDGET_UNCERTAIN','BUDGET_EXHAUSTED'), state['state']
+    # Every work this suite has completed so far carries a retained alive-verified identity.
+    with sqlite3.connect((boundary.root/'data/journal.sqlite').as_uri()+'?mode=ro',uri=True) as connection:
+        attempts=[r[0] for r in connection.execute('SELECT attempt_id FROM full_campaign_budgets')]
+    completed=[(a,w['work_id']) for a in attempts for w in snapshot(boundary,a)['works'] if w['state']=='COMPLETED']
+    assert completed
+    for completed_attempt,completed_work in completed:
+        identity_retained(boundary,completed_attempt,completed_work)
+    host.save(boundary.output/(attempt+'-unobserved-exit.json'),dict(work_id=work_id,container=container,
+        attempts=index+1,exit_code=details['State']['ExitCode'],reasons=reasons,transitions=transitions,
+        completed_with_identity=len(completed)))
+
+
+def test_s2_payload_cpu_is_kernel_bounded_without_guardian(real_boundary):
+    """With the guardian stopped, cpu.max × RuntimeMax on the payload slice still bounds cumulative payload CPU."""
+    boundary=real_boundary; attempt=admit(boundary)
+    probe(boundary,attempt,'unpolled',kind='descendants')
+    state=wait(boundary,attempt,lambda s:has_work(s,'unpolled') and work(s,'unpolled')['state']=='RUNNING')
+    scopes=work_enrollment(boundary.root.name,attempt,'unpolled')
+    payload=scope_group(boundary,scopes,'payload_slice')
+    row=work(state,'unpolled')
+    budget_cpu_ns=row['limits']['cpu_ns']-state['profile']['orchestration_cpu_ns'][row['phase']]
+    deadline=work_deadline(state,'unpolled')
+    end=time.monotonic()+60
+    while time.monotonic()<end:
+        if (payload.exists() and 'populated 1' in (payload/'cgroup.events').read_text()
+                and supervision_events(boundary,attempt,'RESUMED','unpolled')):
+            break
+        time.sleep(.1)
+    else:
+        raise AssertionError('payload never populated and resumed')
+    quota,period=(payload/'cpu.max').read_text().split()
+    assert quota!='max'
+    # The realized rate over the whole work wall stays within budget plus one granule.
+    assert int(quota)*row['limits']['wall_ns']<=(budget_cpu_ns+CPU_GRANULARITY_NS)*int(period)
+    assert [e['data']['deadline_boottime_ns'] for e in supervision_events(boundary,attempt,'DEADLINE','unpolled')]==[deadline]
+    host.run(['/usr/bin/systemctl','kill','--signal=STOP',scopes['guardian_unit']])
+    stopped_at=boottime_ns()
+    peak=0; samples=0
+    end=time.monotonic()+340
+    while time.monotonic()<end:
+        try:
+            usage=int(dict(line.split() for line in (payload/'cpu.stat').read_text().splitlines())['usage_usec'])*1000
+            peak=max(peak,usage); samples+=1
+        except (OSError,KeyError,ValueError):
+            pass
+        facts=unit_facts(scopes['guardian_unit'],['ActiveState','Result','ExecMainStatus','RuntimeMaxUSec'])
+        if facts['ActiveState'] in ('failed','inactive'): break
+        time.sleep(1)
+    else:
+        raise AssertionError('stopped guardian never ended')
+    ended_at=boottime_ns()
+    host.save(boundary.output/(attempt+'-payload-bound.json'),dict(cpu_max=quota+' '+period,budget_cpu_ns=budget_cpu_ns,
+        peak_payload_cpu_ns=peak,samples=samples,deadline_boottime_ns=deadline,stopped_at=stopped_at,ended_at=ended_at,facts=facts))
+    assert facts['ActiveState']=='failed' and facts['ExecMainStatus']=='9', facts
+    assert stopped_at<deadline<=ended_at<=deadline+15_000_000_000
+    assert budget_cpu_ns//2<=peak<=budget_cpu_ns+CPU_GRANULARITY_NS, peak
+    boundary.restart()
+    after=snapshot(boundary,attempt)
+    settled=work(after,'unpolled')
+    assert settled['state']=='IN_DOUBT'
+    observed=json.loads(base64.b64decode(settled['observation_bytes_b64']))
+    if observed['cpu_ns'] is None:
+        assert settled['charge_cpu_ns']==row['limits']['cpu_ns']  # reservation spent; payload retired by BindsTo
+    else:
+        assert observed['cpu_ns']<=budget_cpu_ns+CPU_GRANULARITY_NS
+        assert settled['charge_cpu_ns']==observed['cpu_ns']+20_000_000_000
+    assert after['state'] in ('IN_DOUBT','BUDGET_UNCERTAIN','BUDGET_EXHAUSTED'), after['state']
+
+
+STOPPER='''import json,os,signal,sys,time
+from pathlib import Path
+group=Path(sys.argv[1]); end=time.monotonic()+float(sys.argv[2])
+while time.monotonic()<end:
+    try: pids=(group/'cgroup.procs').read_text().split()
+    except OSError: pids=[]
+    for pid in pids:
+        try: comm=Path('/proc/'+pid+'/comm').read_text().strip()
+        except OSError: continue
+        if comm.startswith('('): continue  # the manager's child before exec
+        os.kill(int(pid),signal.SIGSTOP)
+        facts={}
+        for name in ('comm','cmdline','timers','status'):
+            try: facts[name]=Path('/proc/'+pid+'/'+name).read_bytes().decode('utf-8','replace')
+            except OSError as exc: facts[name]=repr(exc)
+        print(json.dumps(dict(pid=int(pid),stopped_boottime_ns=time.clock_gettime_ns(time.CLOCK_BOOTTIME),facts=facts)))
+        sys.exit(0)
+    time.sleep(.0005)
+sys.exit(3)
+'''
+
+
+def test_s2_deadline_kills_guardian_before_bootstrap_completes(real_boundary):
+    """A guardian stopped at its first instructions still ends at the original deadline: never RUNNING, no payload."""
+    boundary=real_boundary; attempt=admit(boundary)
+    scopes=work_enrollment(boundary.root.name,attempt,'late')
+    guardian_group=scope_group(boundary,scopes,'guardian_unit')
+    stopper=subprocess.Popen([sys.executable,'-I','-c',STOPPER,str(guardian_group),'120'],
+        stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+    try:
+        probe(boundary,attempt,'late',kind='wall')
+        out,err=stopper.communicate(timeout=120)
+    finally:
+        if stopper.poll() is None: stopper.kill()
+    assert stopper.returncode==0, err[-2000:]
+    stopped=json.loads(out)
+    pid=stopped['pid']
+    state=snapshot(boundary,attempt)
+    deadline=work_deadline(state,'late')
+    assert work(state,'late')['state']=='START_INTENT', work(state,'late')['state']
+    assert not [e for e in supervision_events(boundary,attempt,None,'late') if e['kind']!='CONTROL']
+    # Hold the guardian until just before its original deadline, then let it run.
+    while boottime_ns()<deadline-200_000_000:
+        time.sleep(min(1,(deadline-boottime_ns())/10**9))
+    resumed_at=boottime_ns()
+    os.kill(pid,signal.SIGCONT)
+    end=time.monotonic()+30
+    while time.monotonic()<end:
+        facts=unit_facts(scopes['guardian_unit'],['ActiveState','Result','ExecMainStatus','RuntimeMaxUSec','NRestarts'])
+        if facts['ActiveState'] in ('failed','inactive'): break
+        time.sleep(.05)
+    else:
+        raise AssertionError('guardian outlived its original deadline')
+    ended_at=boottime_ns()
+    payload=scope_group(boundary,scopes,'payload_slice')
+    payload_state='absent' if not payload.exists() else (payload/'cgroup.events').read_text()
+    host.save(boundary.output/(attempt+'-deadline-before-bootstrap.json'),dict(stopped=stopped,deadline_boottime_ns=deadline,
+        resumed_at=resumed_at,ended_at=ended_at,facts=facts,payload=payload_state))
+    # Killed by the process's own absolute timer (Result=signal), not by the manager's later RuntimeMax (timeout).
+    assert facts['ActiveState']=='failed' and facts['ExecMainStatus']=='9' and facts['Result']=='signal', facts
+    assert facts['NRestarts']=='0'
+    assert resumed_at<deadline<=ended_at<=deadline+5_000_000_000
+    after=snapshot(boundary,attempt)
+    assert work(after,'late')['state']=='START_INTENT'
+    assert not [e for e in supervision_events(boundary,attempt,None,'late') if e['kind']!='CONTROL']
+    assert 'populated 1' not in payload_state
+    boundary.restart()
+    final=snapshot(boundary,attempt)
+    assert work(final,'late')['state']=='IN_DOUBT'
+    assert work(final,'late')['charge_cpu_ns']==work(final,'late')['limits']['cpu_ns']
+    assert final['state'] in ('BUDGET_EXHAUSTED','BUDGET_UNCERTAIN','IN_DOUBT'), final['state']
+    assert final['deadline_boottime_ns']==state['deadline_boottime_ns'] and final['start_clock']==state['start_clock']
 
 
 def test_s2_shared_memory_oom_is_retained_last(real_boundary):
