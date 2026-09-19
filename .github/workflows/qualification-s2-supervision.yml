@@ -83,6 +83,9 @@ jobs:
           sudo journalctl --dmesg -b --no-pager > "$RUNNER_TEMP/qualification-evidence/kernel.log" 2>&1 || true
           sudo journalctl -b -u systemd-oomd --no-pager > "$RUNNER_TEMP/qualification-evidence/oomd.log" 2>&1 || true
           sudo journalctl -b -o short-iso --no-pager _COMM=systemd > "$RUNNER_TEMP/qualification-evidence/systemd-units.log" 2>&1 || true
+          # The diagnostic supervisor and guardians run under systemd-run; their
+          # stderr exists only in the journal. A fresh runner's boot journal is small.
+          sudo journalctl -b -o short-iso --no-pager > "$RUNNER_TEMP/qualification-evidence/journal.log" 2>&1 || true
           if sudo test -d "$host_root/evidence"; then
             sudo cp -a "$host_root/evidence/." "$RUNNER_TEMP/qualification-evidence/"
           fi

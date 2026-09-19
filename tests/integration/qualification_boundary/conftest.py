@@ -81,7 +81,12 @@ class Boundary:
         command=[self.python,'-I','-c',CLIENT_DRIVER,str(self.code),self.config['socket_path'],
                  encoded(dict(operation=operation,**fields)).decode()]
         if role!='administrator': command=self.identity(role,command)
-        raw=host.run_owned(self.group,command,interpreter=self.python,timeout=60)
+        try:
+            raw=host.run_owned(self.group,command,interpreter=self.python,timeout=60)
+        except subprocess.CalledProcessError as exc:
+            # The client raises the service's refusal text; run_owned captures it.
+            raise AssertionError(operation+' as '+role+' exited '+str(exc.returncode)
+                +'\n--- client stderr (tail) ---\n'+(exc.stderr or '')[-4000:]) from exc
         return raw.encode()
 
     def status(self,attempt):
