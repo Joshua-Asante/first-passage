@@ -512,3 +512,100 @@ required-check change, no `host.json` edit on the branch; trust model
 half of A's preflight evidence is now real-Linux-green on six hosts. #424: boundary-cycle evidence produced;
 the full `--host-only` ownership/permission/interruption evidence (outcome 1) pending the same unblock;
 final acceptance remains the coordinator's.
+
+### Handoff D executor return — 2026-09-20 UTC: outcome 1 produced on four fresh hosts; registration mechanism proven; outcome 3 returned as a defect finding (protected-path rejection of /opt on the runner image)
+
+Coordinator decision: option 4 — register the workflow via one branch-scoped push trigger, then remove it.
+Executed per the D assignment (the `superpowers:executing-plans` skill again unavailable; steps executed
+directly). C's constraints, inspection recipe and packet shape applied throughout.
+
+**Trigger-edit SHAs and registration evidence.** D0 checkpoint: `origin/main` still `f2606b0`, worktree
+clean at `3b05e88`, doctor OK. D1 = **`f573fb6536e10cf1dd773c710b9346a8b7b14cec`** (trigger block only:
+`on: workflow_dispatch:` + branch-scoped `push:` for this branch; 6 insertions; gates passed on commit;
+message `ci(evidence): temporary branch-scoped push trigger to register the manual host-evidence workflow
+(Handoff D)`, co-author trailer `ZCode GLM-5.3` — the actual executor, not A/B's Claude trailer). D4 =
+**`34f5f7ad3b89e334c9d7db85798d5031c22f4dca`** (6 deletions, exact revert; `git show
+HEAD:.github/workflows/qualification-host-evidence.yml | sha256sum` = `944995c837e48edae4c92cd0d832322701fd6a0922562f315f42177ca5fce28c`,
+byte-identical to the C-delivered blob). Registration: before D, `gh workflow run` and the raw REST
+dispatch both 404 (C return); after the D1 push-triggered run started, the workflow appears as
+**ID 362470213** (state active) and `gh workflow run … --ref <branch>` returned 2xx during the run and
+again after D4 (registration survives the trigger's removal). The post-D4 confirmation dispatch created
+run 35492205735; **cancelled immediately by design** (`gh run cancel`) — recorded, not hidden. No force
+push, no rebase; `f573fb6` remains reachable as the evidence-bound commit.
+
+**Runs.**
+
+| Run | Event | Checked out | Conclusion |
+|---|---|---|---|
+| https://github.com/Joshua-Asante/first-passage/actions/runs/35491877585 | push (D1) | `f573fb6` | failure — host-readiness 1,2 **success**; nondefault-client **failure** (defect below) |
+| https://github.com/Joshua-Asante/first-passage/actions/runs/35491914564 | workflow_dispatch | `f573fb6` | failure — identical: host-readiness 1,2 **success**; nondefault-client failure (same defect) |
+| https://github.com/Joshua-Asante/first-passage/actions/runs/35492205735 | workflow_dispatch | `34f5f7a` | **cancelled** (registration check only) |
+
+Bonus PR-path reruns (not required by D): on the D1 push, Gate manifest success; one S2 run was
+auto-cancelled as redundant when D4 pushed (its D4 successor ran); boundary/Tests/Pylint runs on both
+pushes were in flight at writing time. Faithful status, no action taken on them.
+
+**Outcome 1 (--host-only) — produced, four fresh hosts (2 runs × 2 hosts), all bound to `f573fb6`.**
+Per host: `record.json` under `evidence/<uuid>/` completed, exit 0, `verification_exit_code` 0,
+`source_stable` true, `metadata.purpose == host_readiness`, `host_config_sha256` = branch `host.json`
+(`ddc5a391480fd322…`), `test_summary` **55 collected / 55 passed / 0 failed / 0 skipped** (JUnit total 55,
+node-ID list saved as `_nodeids.txt` per host). Every named case present and passed:
+`test_installed_tree_binding_drift_is_named_and_restorable` ×4 (owner, group, mode, setgid);
+`test_cleanup_after_kill_between_tree_mkdir_and_binding` ×10 — all five trees (`code`, `env`, `data`,
+`keys`, `scratch`) × both umasks, ids rendered `[<tree>-18]` (0o022) and `[<tree>-63]` (0o077) exactly as
+predicted; `test_cleanup_retains_drifted_tree_and_reservation_until_the_binding_is_restored` ×8
+(data/code × group, mode, setgid, owner); `test_legacy_uid_only_records_retire_on_the_producer_owner_and_group`
+×2 (mode, group); `test_tree_creation_preconditions_use_real_umask_and_parent_mode` ×1; plus the
+venv-alias (×1), replacement-reservation (×1), process-cleanup (×2) and reservation family (×11) cases.
+Facts step output, verbatim on every host: `umask 0022` and `/var/lib/fp-qualification-tests` =
+`root:root 755`. Cleanup receipts per host: in-run (embedded in `record.json` and as `cleanup-*.json`)
+`ok: true`, removed 8 — **5 trees, all five-field `{uid, gid, mode, path, kind}`**, + 3 users, `failures: []`;
+workflow second call `ok: true`, removed 0 (already retired); **no `legacy_tree_bindings` key** on any
+freshly provisioned host. Also exported per host: `permission-observations.json`, `host-observations.json`
+(`source_commit == f573fb6…` on all four).
+
+**Outcome 3 (nondefault protected client) — defect finding, preserved, not rerun to green, no fallback
+taken.** Both runs failed identically at the provision step, 0.08 s in, with
+`Host setup/cleanup failed: ValueError: unprotected path`. Diagnosis (evidence-pinned): the preceding
+step succeeded — `install -d`/`install` created `/opt/fp`, `/opt/fp/bin`, `/opt/fp/bin/docker` as
+root:root 0755 and the sed applied (`git diff --stat` in the log: `1 file changed, 1 insertion(+),
+1 deletion(-)`). Provision's only config-dependent protected path is
+`protected_executable('/opt/fp/bin/docker')`; every component below `/opt` was created root-0755 by the
+succeeded step, so the rejected ancestor is **`/opt` itself**: the GitHub runner image build runs
+`chmod -R 777 /opt` (actions/runner-images, `images/ubuntu/scripts/build/configure-system.sh`, lines
+14–15; the same script also widens `/usr/share`, and `install-nodejs.sh` widens `/usr/local/bin`).
+`protected()` in `scripts/qualification_boundary_environment.py` rejects executables reachable through
+group/world-writable or non-root ancestors — mode 0777 & 0o022 ≠ 0 — so **any** `/opt/...` client path is
+correctly refused on this host image, and the C-documented root-owned symlink fallback is defeated by the
+same ancestor. The failing invariant is the security contract working as designed; the defect is the
+assignment-specified location (`/opt/fp/bin/docker`), unsuitable on `ubuntu-24.04` hosted runners — not
+a regression from A or B (their default-client paths pass: `/usr/bin/docker`, green on six hosts in C).
+The jobs died before manifest publication, so no artifacts were produced (`if-no-files-found: warn`);
+the step logs are the evidence (fetched and summarized above). **Smallest candidate fix** (coordinator's
+call, not applied): relocate the copy in the workflow's install step and sed to a clean-ancestry path —
+verified against the image scripts: `/usr/local/fp/bin/docker` (ancestors `/`, `/usr`, `/usr/local`
+root-0755 standard; only the `/usr/local/bin` subtree is widened) or `/var/lib/fp-docker/bin/docker`
+(`/var/lib` untouched by image scripts). Three-line change in `.github/workflows/qualification-host-evidence.yml`;
+the expected `host_config_sha256` for the edited `host.json` changes accordingly (for the `/opt` variant
+it was `d2f1d6bd…`; recompute after choosing the path). Both failure runs are preserved under the D
+evidence directory (logs in this return; artifacts were empty by construction).
+
+**Local preservation.** `C:/Users/joshu/multi_firm_operations/tmp/handoff-423-424/d-linux-evidence-2026-09-20/`:
+`push-run-35491877585/{qualification-host-evidence-1,2}`, `dispatch-run-35491914564/{…,2}` (each with
+`<uuid>/{record.json,junit.xml,_nodeids.txt,stdout,stderr}`, `cleanup-*.json`, `host-observations.json`,
+`host-readiness-facts.txt`, `permission-observations.json`), plus `inspect_d_evidence.py` (the read-only
+inspector whose output the tables above summarize).
+
+**Constraints.** Only the trigger block changed, twice; final head `34f5f7a`'s workflow blob is
+byte-identical to C's (`944995c8…fce28c`). No edits to `host.json` (the nondefault edit lives only in
+runners' disposable checkouts), `scripts/gates.yml`, required checks, `tools/`, `tests/`, `scripts/`.
+Draft PR #437 left open and draft; no merge, no issue closure, no issue comments. Trust model
+`trusted_administrator_and_privileged_qexec/v1` unchanged; no shared/reused-host claims. Standing
+limitation restated: legacy v3 manifests (uid only) validate the producer-determined owner **and group**
+but **not mode**; a green `--host-only` run does not extend it.
+
+**Outstanding.** #424: outcome 1 evidence complete for coordinator review (four fresh hosts, D1-bound,
+55/55, zero skips, umask/parent facts recorded); with C's outcome 2, all of B's real-Linux evidence now
+exists. #423: the default-client preflight half is green (C, six hosts); the nondefault protected-client
+half is one three-line path change away — defect finding returned above, fix assignment is the
+coordinator's. Final acceptance of both issues remains the coordinator's.
