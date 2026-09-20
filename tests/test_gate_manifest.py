@@ -66,6 +66,7 @@ EXPECTED_PATH_CONDITIONAL = {
     # SSOT Phase 3 — cost-model closed-world partition
     "cost-model-closed-world",
     "durable-store-pragmas",
+    "repo-map-scripts-table",
 }
 
 EXPECTED_AUDIT = {

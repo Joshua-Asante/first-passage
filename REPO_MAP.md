@@ -122,7 +122,7 @@ _88 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_push_collision.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_qualification_invariants.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_repo_map_layers.py` | governance | `repo-map-layers` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
-| `scripts/check_repo_map_scripts_table.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_repo_map_scripts_table.py` | governance | `repo-map-scripts-table` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_root_doc_liveness.py` | governance | `root-doc-liveness` (always) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_rule2_trip_log_liveness.py` | governance | `rule2-trip-log-liveness` (audit) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_sessions_queue_bind.py` | governance | `sessions-queue-bind` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
