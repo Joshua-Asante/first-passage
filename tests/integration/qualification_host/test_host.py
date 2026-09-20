@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+import stat
 import subprocess
 import sys
 import pytest
@@ -146,16 +147,40 @@ def test_cleanup_refuses_symlink_escape(installed):
         alias.unlink()
 
 
-def test_cleanup_refuses_wrong_tree_owner(installed):
+def tree_record(host, manifest, relative):
+    return {'kind': 'tree', 'path': relative, **host.resolve_tree_binding(relative, manifest['roles'])}
+
+
+def bind(tree, binding):
+    """Apply a resolved binding with real chown/chmod."""
+    os.chown(tree, binding['uid'], binding['gid'])
+    tree.chmod(int(binding['mode'], 8))
+
+
+@pytest.mark.parametrize('drift', ['owner', 'group', 'mode', 'setgid'])
+def test_installed_tree_binding_drift_is_named_and_restorable(installed, drift):
+    from tools.qualification_verification import host
     path, manifest, _ = installed
     data = path.parent / 'data'
-    os.chown(data, manifest['roles']['qclient'], manifest['roles']['qclient'])
+    binding = host.resolve_tree_binding('data', manifest['roles'])
+    info = data.stat()
+    assert (info.st_uid, info.st_gid, format(stat.S_IMODE(info.st_mode), '04o')) == (
+        binding['uid'], binding['gid'], binding['mode']), 'the installed host is exactly bound'
+    other = manifest['roles']['qclient']
     try:
-        with pytest.raises(ValueError, match='owner mismatch'):
-            validate_owned_tree(data, manifest['roles']['qexec'])
+        if drift == 'owner':
+            os.chown(data, other, binding['gid'])
+        elif drift == 'group':
+            os.chown(data, binding['uid'], other)
+        elif drift == 'mode':
+            data.chmod(0o770)
+        else:
+            data.chmod(0o2700)
+        with pytest.raises(ValueError, match='tree ' + {'setgid': 'mode'}.get(drift, drift) + ' mismatch'):
+            validate_owned_tree(data, binding)
     finally:
-        uid = manifest['roles']['qexec']
-        os.chown(data, uid, uid)
+        bind(data, binding)
+    validate_owned_tree(data, binding)
 
 @pytest.fixture
 def owned_cleanup_fixture(installed, monkeypatch):
@@ -171,7 +196,7 @@ def owned_cleanup_fixture(installed, monkeypatch):
     config = {**installed[1]['host_config'], 'uid_start': 62000}
     manifest = {'schema': 'qualification_host_ownership/v3', 'run_id': root.name,
                 'root': str(root), 'host_config': config, 'roles': host.resolve_roles(config),
-                'resources': []}
+                'tree_bindings': host.tree_bindings_identity(), 'resources': []}
     path = root / 'ownership.json'
     host.save(path, manifest, exclusive=True)
     with host.identity_reservation() as reservation:
@@ -217,29 +242,32 @@ def test_provision_rejects_live_uid_without_account(owned_cleanup_fixture, role)
         process.wait(timeout=5)
 
 
-@pytest.mark.parametrize('relative', ['data', 'scratch'])
-def test_cleanup_after_kill_between_role_tree_mkdir_and_chown(owned_cleanup_fixture, relative):
+@pytest.mark.parametrize('umask', [0o022, 0o077])
+@pytest.mark.parametrize('relative', ['code', 'env', 'data', 'keys', 'scratch'])
+def test_cleanup_after_kill_between_tree_mkdir_and_binding(owned_cleanup_fixture, relative, umask):
+    """Setup creates every tree 0o700 before chmod/chown, whatever the umask."""
     import select
     host, root, path, manifest = owned_cleanup_fixture
     tree = root / relative
     manifest['state'] = 'provisioning'
-    manifest['resources'] = [{'kind': 'tree', 'path': relative, 'uid': 62001}]
+    manifest['resources'] = [tree_record(host, manifest, relative)]
     host.save(path, manifest)
     script = '''
-import sys
-from pathlib import Path
-Path(sys.argv[1]).mkdir(mode=0o700)
+import os, sys
+os.umask(int(sys.argv[2], 8))
+os.mkdir(sys.argv[1], 0o700)
 print('created', flush=True)
 sys.stdin.read()
 '''
-    child = subprocess.Popen([sys.executable, '-I', '-c', script, str(tree)],
+    child = subprocess.Popen([sys.executable, '-I', '-c', script, str(tree), format(umask, 'o')],
                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     try:
         assert select.select([child.stdout], [], [], 10)[0], 'mkdir did not complete'
         assert child.stdout.readline().strip() == 'created'
         child.kill()
         child.wait(timeout=5)
-        assert tree.stat().st_uid == tree.stat().st_gid == 0
+        info = tree.stat()
+        assert (info.st_uid, info.st_gid, stat.S_IMODE(info.st_mode)) == (0, 0, 0o700)
         result = host.cleanup(path)
         assert result['ok'], result
         assert not tree.exists()
@@ -289,11 +317,13 @@ def test_cleanup_after_kill_before_venv_alias_removal(owned_cleanup_fixture):
     host, root, path, manifest = owned_cleanup_fixture
     env = root / 'env'
     manifest['state'] = 'provisioning'
-    manifest['resources'] = [{'kind': 'tree', 'path': 'env', 'uid': 0}]
+    manifest['resources'] = [tree_record(host, manifest, 'env')]
     host.save(path, manifest)
     script = '''
-import sys, venv
+import os, sys, venv
+os.mkdir(sys.argv[1], 0o700)
 venv.EnvBuilder(with_pip=False, symlinks=False).create(sys.argv[1])
+os.chmod(sys.argv[1], 0o755)
 print('created', flush=True)
 sys.stdin.read()
 '''
@@ -357,9 +387,10 @@ def test_cleanup_reads_manifest_after_obtaining_locks(owned_cleanup_fixture, mon
     @contextmanager
     def complete_provision_before_lock(target):
         if target == root and not manifest['resources']:
-            (root / 'code').mkdir()
+            (root / 'code').mkdir(mode=0o755)
+            (root / 'code').chmod(0o755)
             (root / 'code/owned-file').write_text('remove after reservation')
-            manifest['resources'].append({'kind': 'tree', 'path': 'code', 'uid': 0})
+            manifest['resources'].append(tree_record(host, manifest, 'code'))
             host.save(path, manifest)
         with original_lock(target):
             yield
@@ -373,8 +404,9 @@ def test_cleanup_reads_manifest_after_obtaining_locks(owned_cleanup_fixture, mon
 def test_interrupted_retirement_can_resume_and_stale_cleanup_cannot_touch_replacement(
         owned_cleanup_fixture, monkeypatch):
     host, root, path, manifest = owned_cleanup_fixture
-    (root / 'code').mkdir()
-    manifest['resources'] = [{'kind': 'tree', 'path': 'code', 'uid': 0}]
+    (root / 'code').mkdir(mode=0o755)
+    (root / 'code').chmod(0o755)
+    manifest['resources'] = [tree_record(host, manifest, 'code')]
     host.save(path, manifest)
     original_replace = host.os.replace
     def interrupt_publication(source, destination):
@@ -442,10 +474,11 @@ def test_cleanup_kills_orphan_child_and_grandchild_before_retirement(owned_clean
     import select
     host, root, path, manifest = owned_cleanup_fixture
     if phase == 'cleanup':
-        (root / 'env').mkdir()
+        (root / 'env').mkdir(mode=0o755)
+        (root / 'env').chmod(0o755)
         (root / 'env/barrier-python').touch()
         manifest['resources'] = [{'kind': 'user', 'name': 'qclient', 'id': 62000},
-                                 {'kind': 'tree', 'path': 'env', 'uid': 0}]
+                                 tree_record(host, manifest, 'env')]
         host.save(path, manifest)
     script = '''
 import sys
@@ -532,8 +565,9 @@ def test_retirement_closes_late_child_entry(owned_cleanup_fixture):
 
 def test_process_cleanup_failure_keeps_resources_and_reservation(owned_cleanup_fixture, monkeypatch):
     host, root, path, manifest = owned_cleanup_fixture
-    (root / 'code').mkdir()
-    manifest['resources'] = [{'kind': 'tree', 'path': 'code', 'uid': 0}]
+    (root / 'code').mkdir(mode=0o755)
+    (root / 'code').chmod(0o755)
+    manifest['resources'] = [tree_record(host, manifest, 'code')]
     host.save(path, manifest)
     original = host.stop_process_groups
     def denied(root):
@@ -545,3 +579,94 @@ def test_process_cleanup_failure_keeps_resources_and_reservation(owned_cleanup_f
     assert host.reservation_owner(host.IDENTITY_STATE / 'reservation.json') is not None
     monkeypatch.setattr(host, 'stop_process_groups', original)
     assert host.cleanup(path)['ok']
+
+
+@pytest.mark.parametrize('relative', ['data', 'code'])
+@pytest.mark.parametrize('drift', ['group', 'mode', 'setgid', 'owner'])
+def test_cleanup_retains_drifted_tree_and_reservation_until_the_binding_is_restored(
+        owned_cleanup_fixture, relative, drift):
+    """Real chown/chmod drift on a completed host: retained tree, failure receipt, then repair."""
+    host, root, path, manifest = owned_cleanup_fixture
+    tree = root / relative
+    binding = host.resolve_tree_binding(relative, manifest['roles'])
+    os.mkdir(tree, 0o700)
+    bind(tree, binding)
+    (tree / 'placed-later').write_text('retain')
+    manifest['state'] = 'host_ready_boundary_unconfigured'
+    manifest['resources'] = [tree_record(host, manifest, relative)]
+    host.save(path, manifest)
+    other = manifest['roles']['qclient']
+    if drift == 'owner':
+        os.chown(tree, other, binding['gid'])
+    elif drift == 'group':
+        os.chown(tree, binding['uid'], other)
+    elif drift == 'mode':
+        tree.chmod(0o770)
+    else:
+        tree.chmod(int(binding['mode'], 8) | stat.S_ISGID)
+    result = host.cleanup(path)
+    assert not result['ok']
+    assert result['failures'] == ['ValueError: tree ' + {'setgid': 'mode'}.get(drift, drift) + ' mismatch']
+    assert (tree / 'placed-later').read_text() == 'retain'
+    assert not (root / 'retired.json').exists()
+    assert host.reservation_owner(host.IDENTITY_STATE / 'reservation.json') == {
+        'run_id': root.name, 'manifest': str(path)}
+    receipts = sorted(root.glob('cleanup-*.json'))
+    assert len(receipts) == 1 and json.loads(receipts[0].read_bytes())['ok'] is False
+    bind(tree, binding)
+    repaired = host.cleanup(path)
+    assert repaired['ok'], repaired
+    assert not tree.exists()
+    assert host.reservation_owner(host.IDENTITY_STATE / 'reservation.json') is None
+    assert host.cleanup(path)['already_retired']
+
+
+@pytest.mark.parametrize('drift', ['mode', 'group'])
+def test_legacy_uid_only_records_retire_on_the_producer_owner_and_group(owned_cleanup_fixture, drift):
+    """The pre-binding producer ran chown(uid, uid); only its mode was umask-dependent."""
+    host, root, path, manifest = owned_cleanup_fixture
+    tree = root / 'data'
+    uid = manifest['roles']['qexec']
+    os.mkdir(tree, 0o700)
+    os.chown(tree, uid, manifest['roles']['qclient'] if drift == 'group' else uid)
+    tree.chmod(0o770 if drift == 'mode' else 0o700)
+    (tree / 'run-owned').write_text('legacy')
+    del manifest['tree_bindings']
+    manifest['state'] = 'host_ready_boundary_unconfigured'
+    manifest['resources'] = [{'kind': 'tree', 'path': 'data', 'uid': uid}]
+    host.save(path, manifest)
+    result = host.cleanup(path)
+    if drift == 'group':
+        assert not result['ok']
+        assert result['failures'] == ['ValueError: tree group mismatch']
+        assert (tree / 'run-owned').exists()
+        assert host.reservation_owner(host.IDENTITY_STATE / 'reservation.json') is not None
+        os.chown(tree, uid, uid)
+        result = host.cleanup(path)
+    assert result['ok'], result
+    assert result['legacy_tree_bindings'] == ['data']
+    assert not tree.exists()
+    assert host.cleanup(path)['already_retired']
+
+
+def test_tree_creation_preconditions_use_real_umask_and_parent_mode(owned_cleanup_fixture):
+    host, root, _, _ = owned_cleanup_fixture
+    parent = root / 'candidate-parent'
+    parent.mkdir(mode=0o755)
+    parent.chmod(0o755)
+    host.require_deterministic_tree_creation(parent)
+    previous = os.umask(0o177)
+    try:
+        with pytest.raises(ValueError, match='umask'):
+            host.require_deterministic_tree_creation(parent)
+    finally:
+        os.umask(previous)
+    assert os.umask(previous) == previous
+    host.require_deterministic_tree_creation(parent)
+    parent.chmod(0o2755)
+    try:
+        with pytest.raises(ValueError, match='setgid'):
+            host.require_deterministic_tree_creation(parent)
+    finally:
+        parent.chmod(0o755)
+    host.require_deterministic_tree_creation(parent)

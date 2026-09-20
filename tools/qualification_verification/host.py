@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-from collections import deque
 import errno
 from contextlib import contextmanager
 import hashlib
@@ -21,10 +20,12 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from scripts.qualification_boundary_environment import TRUST_MODEL, protected, run
+from scripts.qualification_boundary_environment import (EXECUTABLES, TRUST_MODEL, protected,
+    protected_executable, run, validate_executable_paths)
 from scripts.record_verification import snapshot
 from tools.qualification_verification.container_ownership import HOST_LABEL, BUILD_LABEL, host_identity, owned_containers
-from tools.qualification_verification.role_policy import ROLES, ROLE_GROUPS, owned_group_members
+from tools.qualification_verification.role_policy import (ROLES, ROLE_GROUPS, TREES, owned_group_members,
+    resolve_legacy_tree_owner, resolve_tree_binding, tree_bindings_identity)
 
 REQUIRED_LOCKS = frozenset({
     'requirements-ops.lock',
@@ -86,51 +87,9 @@ def validate_inputs(source, config):
             raise ValueError('lock digest mismatch: ' + relative)
 
 
-def validate_executable_paths(config):
-    for name in ('python', 'docker'):
-        value = config.get(name)
-        if (not isinstance(value, str) or not PurePosixPath(value).is_absolute()
-                or '..' in PurePosixPath(value).parts or '\\' in value or '\0' in value):
-            raise ValueError('absolute executable path required: ' + name)
-
-
-def protected_executable(value):
-    requested = Path(value)
-    if not requested.is_absolute():
-        raise ValueError('absolute executable path required')
-    path = protected(Path(requested.anchor))
-    pending = deque(requested.parts[1:])
-    links = 0
-    # Resolve one component at a time: resolve() would hide writable intermediate
-    # directories and symlinks. Check directories before processing any '..'.
-    while pending:
-        part = pending.popleft()
-        if part == '..':
-            path = path.parent
-            continue
-        candidate = path / part
-        info = candidate.lstat()
-        if stat.S_ISLNK(info.st_mode):
-            links += 1
-            if info.st_uid != 0 or links > 40:
-                raise ValueError('unprotected or cyclic executable symlink')
-            target = Path(os.readlink(candidate))
-            if target.is_absolute():
-                path = protected(Path(target.anchor))
-                pending.extendleft(reversed(target.parts[1:]))
-            else:
-                pending.extendleft(reversed(target.parts))
-        else:
-            path = protected(candidate)
-            if pending and not stat.S_ISDIR(info.st_mode):
-                raise ValueError('executable ancestor must be a directory')
-    if not path.is_file() or not os.access(path, os.X_OK):
-        raise ValueError('regular executable required')
-
-
 def validate_host_executables(config):
     validate_executable_paths(config)
-    for name in ('python', 'docker'):
+    for name in EXECUTABLES:
         protected_executable(config[name])
 
 
@@ -171,17 +130,58 @@ def inspect_tree(path, *, allow_initial_venv_alias=False):
     return result
 
 
-def validate_owned_tree(path, uid, *, allow_initial_owner=False, allow_initial_venv_alias=False):
+# Every tree is created 0o700 by the administrator and then rebound, so this is
+# the only intermediate an interrupted setup can leave on a supported host.
+INITIAL_TREE = {'uid': 0, 'gid': 0, 'mode': '0700'}
+INCOMPLETE_STATES = ('provisioning', 'setup_failed')
+
+
+def require_deterministic_tree_creation(parent):
+    """An owner-masking umask or a setgid parent would make that intermediate unattributable."""
+    umask = os.umask(0)
+    os.umask(umask)
+    if umask & 0o700:
+        raise ValueError('umask must not mask owner permissions')
+    if parent.stat().st_mode & stat.S_ISGID:
+        raise ValueError('setgid parent directory')
+
+
+def observed_binding(info):
+    return {'uid': info.st_uid, 'gid': info.st_gid, 'mode': format(stat.S_IMODE(info.st_mode), '04o')}
+
+
+def tree_binding(item):
+    """The retained binding of a tree record; type-exact so a boolean never passes as 0 or 1."""
+    if not (type(item['uid']) is int and type(item['gid']) is int and type(item['mode']) is str):
+        raise ValueError('invalid tree resource')
+    return {name: item[name] for name in ('uid', 'gid', 'mode')}
+
+
+def validate_owned_tree(path, binding, *, allow_initial_creation=False, allow_initial_venv_alias=False):
+    """Exact top-level owner, group and mode; validation never follows links or recurses policy."""
     if path.exists():
         info = path.stat()
-        if info.st_uid != uid:
-            # mkdir precedes chown during setup. Only that empty, private
-            # administrator-owned intermediate is safe to retire on retry.
-            initial = (allow_initial_owner and info.st_uid == info.st_gid == 0
-                       and stat.S_ISDIR(info.st_mode) and stat.S_IMODE(info.st_mode) == 0o700
-                       and not any(path.iterdir()))
+        observed = observed_binding(info)
+        if observed != binding:
+            # mkdir(0o700) precedes chmod/chown during setup. Only that empty,
+            # private administrator-owned intermediate is safe to retire on retry.
+            initial = (allow_initial_creation and observed == INITIAL_TREE
+                       and stat.S_ISDIR(info.st_mode) and not any(path.iterdir()))
             if not initial:
-                raise ValueError('tree owner mismatch')
+                field = next(name for name in ('uid', 'gid', 'mode') if observed[name] != binding[name])
+                raise ValueError('tree ' + {'uid': 'owner', 'gid': 'group', 'mode': 'mode'}[field] + ' mismatch')
+    inspect_tree(path, allow_initial_venv_alias=allow_initial_venv_alias)
+
+
+def validate_legacy_owned_tree(path, uid, *, allow_initial_owner=False, allow_initial_venv_alias=False):
+    """Pre-binding records: the producer ran chown(uid, uid); its mode was umask-dependent and is not checked."""
+    if path.exists():
+        info = path.stat()
+        if (info.st_uid, info.st_gid) != (uid, uid):
+            initial = (allow_initial_owner and observed_binding(info) == INITIAL_TREE
+                       and stat.S_ISDIR(info.st_mode) and not any(path.iterdir()))
+            if not initial:
+                raise ValueError('tree owner mismatch' if info.st_uid != uid else 'tree group mismatch')
     inspect_tree(path, allow_initial_venv_alias=allow_initial_venv_alias)
 
 
@@ -212,19 +212,43 @@ def validate_owned_user(user, item, run_id, groups):
 
 
 def validate_resources(manifest, root):
+    """Return the paths of legacy (UID-only) tree records; empty for manifests with bindings."""
+    expected_roles = resolve_roles(manifest['host_config'])
+    if manifest['roles'] != expected_roles:
+        raise ValueError('roles do not match the retained host configuration')
+    # Manifests written before tree bindings carry no identity; a manifest that
+    # carries one must match this configuration exactly and use it for every tree.
+    legacy = 'tree_bindings' not in manifest
+    if not legacy and manifest['tree_bindings'] != tree_bindings_identity():
+        raise ValueError('tree binding configuration mismatch')
     seen = set()
+    legacy_trees = []
     for item in manifest['resources']:
         kind = item.get('kind')
         if kind == 'tree':
-            if set(item) != {'kind', 'path', 'uid'} or item['path'] not in ('code', 'env', 'data', 'keys', 'scratch'):
+            if item.get('path') not in TREES:
                 raise ValueError('invalid tree resource')
+            if legacy:
+                if set(item) != {'kind', 'path', 'uid'}:
+                    raise ValueError('invalid tree resource')
+                # The pre-binding producer's owner for this path, from its own table.
+                owner = resolve_legacy_tree_owner(item['path'], manifest['roles'])
+                if type(item['uid']) is not int or item['uid'] != owner:
+                    raise ValueError('inconsistent tree resource')
+                legacy_trees.append(item['path'])
+            else:
+                if set(item) != {'kind', 'path', 'uid', 'gid', 'mode'}:
+                    raise ValueError('invalid tree resource')
+                # The filesystem never vouches for a retained binding: it must be
+                # the canonical resolution for this manifest's roles.
+                if tree_binding(item) != resolve_tree_binding(item['path'], manifest['roles']):
+                    raise ValueError('inconsistent tree binding')
             resource_path(root, item['path'])
             identity = kind, item['path']
         elif kind in ('user', 'group'):
             if set(item) != {'kind', 'name', 'id'} or item['name'] not in ROLES:
                 raise ValueError('invalid identity resource')
-            expected = resolve_roles(manifest['host_config'])
-            if manifest['roles'] != expected or type(item['id']) is not int or item['id'] != expected[item['name']]:
+            if type(item['id']) is not int or item['id'] != expected_roles[item['name']]:
                 raise ValueError('invalid identity resource')
             identity = kind, item['name']
         else:
@@ -233,6 +257,7 @@ def validate_resources(manifest, root):
         if identity in seen:
             raise ValueError('duplicate resource')
         seen.add(identity)
+    return legacy_trees
 
 
 def save(path, data, *, exclusive=False, mode=0o600):
@@ -540,11 +565,12 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
         raise ValueError('lock digest mismatch in source snapshot')
     if source_snapshot['files'].get('tools/qualification_verification/host.json') != config_sha256:
         raise ValueError('host config digest mismatch in source snapshot')
+    require_deterministic_tree_creation(parent)
     root = parent / uuid4().hex
     root.mkdir(mode=0o711)
     manifest = {'schema': 'qualification_host_ownership/v3', 'run_id': root.name,
                 'root': str(root), 'state': 'provisioning', 'resources': [],
-                'host_config_sha256': config_sha256,
+                'host_config_sha256': config_sha256, 'tree_bindings': tree_bindings_identity(),
                 'host_config': config, 'facts': facts, 'roles': roles, 'source': source_snapshot}
     manifest_path = root / 'ownership.json'
     try:
@@ -584,13 +610,15 @@ def provision_reserved(source, config, config_sha256, facts, reservation, manife
             for name,groups in ROLE_GROUPS.items():
                 if groups:
                     execute(['/usr/sbin/usermod', '--append', '--groups', ','.join(groups), name])
-            for relative, uid, mode in (('code', 0, 0o755), ('env', 0, 0o755),
-                    ('data', manifest['roles']['qexec'], 0o700), ('keys', 0, 0o755),
-                    ('scratch', manifest['roles']['qexec'], 0o700)):
-                own({'kind': 'tree', 'path': relative, 'uid': uid})
+            for relative in TREES:
+                binding = resolve_tree_binding(relative, manifest['roles'])
+                own({'kind': 'tree', 'path': relative, **binding})
                 target = root / relative
-                target.mkdir(mode=mode)
-                os.chown(target, uid, uid)
+                # Create private, then rebind explicitly: the retained binding never
+                # depends on the umask, and the only intermediate is root:root 0700.
+                os.mkdir(target, 0o700)
+                os.chmod(target, int(binding['mode'], 8))
+                os.chown(target, binding['uid'], binding['gid'])
             (root / 'evidence').mkdir(mode=0o700)
             for relative in manifest['source']['files']:
                 src = resource_path(source, relative)
@@ -674,13 +702,17 @@ def cleanup(manifest_path):
                 or root.parent != Path(manifest['host_config']['parent']) or len(root.name) != 32
                 or any(c not in '0123456789abcdef' for c in root.name)):
             raise ValueError('ownership identity mismatch')
-        validate_resources(manifest, root)
         receipt = {'schema': 'qualification_host_cleanup/v1', 'run_id': root.name,
                    'manifest_sha256': hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
                    'removed': [], 'retained': ['ownership.json', 'evidence', 'owner.lock', 'retired.json',
                                                'process-groups.json','boundary-resources.json'],
                    'failures': [], 'ok': False}
         try:
+            # A malformed or inconsistent record is a recorded refusal, like drift.
+            legacy_trees = validate_resources(manifest, root)
+            if legacy_trees:
+                # Retired on owner and group only (the producer set both); the mode is unchecked.
+                receipt['legacy_tree_bindings'] = legacy_trees
             retired = root / 'retired.json'
             if retired.exists():
                 prior = json.loads(protected(retired).read_bytes())
@@ -737,11 +769,14 @@ def cleanup(manifest_path):
                         raise ValueError('group has unrelated consumer')
                 else:
                     path = resource_path(root, item['path'])
-                    validate_owned_tree(path, item['uid'], allow_initial_owner=(
-                        item['path'] in ('data', 'scratch')
-                        and manifest.get('state') in ('provisioning', 'setup_failed')),
-                        allow_initial_venv_alias=(item['path'] == 'env'
-                        and manifest.get('state') in ('provisioning', 'setup_failed')))
+                    incomplete = manifest.get('state') in INCOMPLETE_STATES
+                    alias = item['path'] == 'env' and incomplete
+                    if item['path'] in legacy_trees:
+                        validate_legacy_owned_tree(path, item['uid'], allow_initial_venv_alias=alias,
+                            allow_initial_owner=item['path'] in ('data', 'scratch') and incomplete)
+                    else:
+                        validate_owned_tree(path, tree_binding(item), allow_initial_creation=incomplete,
+                                            allow_initial_venv_alias=alias)
             # Validate everything before removing anything; never follow a link.
             docker=[manifest['host_config']['docker'],'--host','unix:///var/run/docker.sock']
             cleanup_group = create_process_group(root) if boundary['containers'] or boundary['images'] else None
