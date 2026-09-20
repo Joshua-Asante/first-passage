@@ -684,13 +684,14 @@ def _retained_process_event(campaigns, attempt, work_id, pid, cgroup, *, t=14):
     only the cgroup, so either shape proves the same thing."""
     base = dict(pid=pid, start_ticks=1, uid=1001, cgroup=cgroup)
     for image in (dict(comm='python', exe='/opt/ops/bin/python'), {}):
+        raw = encoded(dict(
+            schema='qualification_campaign_supervision_event/v1', attempt_id=attempt,
+            work_id=work_id, kind='PROCESS', clock=clock(t), data=dict(base, **image)))
         try:
-            campaigns.retain_supervision_event(encoded(dict(
-                schema='qualification_campaign_supervision_event/v1', attempt_id=attempt,
-                work_id=work_id, kind='PROCESS', clock=clock(t), data=dict(base, **image))))
-            return
+            campaigns.retain_supervision_event(raw)
         except ValueError:
             continue
+        return raw
     raise AssertionError('no accepted PROCESS event shape on this tree')
 
 
@@ -724,7 +725,7 @@ def test_void_queued_in_the_dispatch_window_is_refused_then_recorded_after_termi
         assert refused['void_pending'] is True and refused['validity'] == 'VALID'
         assert refused['void_authentication_attempts'] == 0
         assert funding(instance, case)['settled_cpu_ns'] == ADMISSION_CHARGE  # nothing charged in the window
-    campaigns.acknowledge_dispatch(attempt, 'work', 'payload', gate['token'], lambda: encoded(clock(16)))
+    campaigns.acknowledge_dispatch(attempt, 'work', 'guardian', gate['token'], lambda: encoded(clock(16)))
     # The queued body's barrier fails the started work's next positive step; the
     # guardian's failure shape is the negative IN_DOUBT transition.
     state = json.loads(campaigns.record_work_transition(attempt, 'work', encoded(dict(
@@ -821,8 +822,9 @@ def test_charged_authentications_bound_reserve_work_to_one_allowance_view(tmp_pa
     """S2-G4 A7: the snapshot's remaining is pre-charge; after N charged
     authentication attempts a reservation that still fits the snapshot but not
     the projection's remaining is refused and terminalises the campaign."""
-    # Contract budget 1345 s: admission 20 s, ten 120 s drain phases, 125 s left.
-    instance, case = funded_service(tmp_path, monkeypatch, budget_seconds=1345)
+    # Contract budget 1585 s (>= the 1440 s phase-ceiling sum bind_budget requires):
+    # admission 20 s, twelve 120 s drain phases, 125 s left in the snapshot.
+    instance, case = funded_service(tmp_path, monkeypatch, budget_seconds=1585)
     _, context = admit(instance, case)
     assert drain(instance, case, keep_ns=125 * 10**9) == 125 * 10**9
     forged = void_request(case, context, private=Ed25519PrivateKey.generate())
@@ -844,9 +846,10 @@ def test_charged_authentications_bound_reserve_work_to_one_allowance_view(tmp_pa
 
 
 def test_credit_requires_a_retained_payload_scope_identity_store_side(tmp_path, monkeypatch):
-    """S2-G4 A5: on a funded campaign, CAPTURED/SIGNING_INTENT/COMPLETED require
-    a retained alive-verified PROCESS identity inside the work's enrolled
-    payload slice; the guardian's own identity (outside it) never counts."""
+    """S2-G4 A5: with the supervision observation layer engaged (the guardian's
+    own retained PROCESS identity, outside the payload slice), CAPTURED for an
+    enrolled work requires a retained alive-verified PROCESS identity inside
+    that work's payload slice; the guardian's identity never counts."""
     instance, case = funded_service(tmp_path, monkeypatch)
     _, context = admit(instance, case)
     attempt = case['attempt_id']
@@ -862,30 +865,35 @@ def test_credit_requires_a_retained_payload_scope_identity_store_side(tmp_path, 
     campaigns.retain_supervision(attempt, 'probe', encoded(dict(
         schema='qualification_campaign_supervision/v1', host_run_id='host1', attempt_id=attempt,
         work_id='probe', manifest_bytes_b64=base64.b64encode(manifest).decode('ascii'), scopes=scopes)))
+    chain = '/' + scopes['campaign_slice'] + '/' + scopes['work_slice']
+    # The guardian's own startup identity: in the guardian unit's cgroup, under
+    # the work slice but OUTSIDE the payload slice -- it engages the supervision
+    # layer's rules while proving the guardian, never the payload.
+    _retained_process_event(campaigns, attempt, 'probe', 9999,
+        '/system.slice/' + scopes['work_slice'] + '/' + scopes['guardian_unit'])
     revision = json.loads(campaigns.budget_snapshot(attempt))['authority_revision']
 
     def capture():
         return campaigns.record_work_transition(attempt, 'probe', encoded(dict(
             schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id='probe',
-            state='CAPTURED', clock=clock(16), data={})), expected_revision=revision)
-    # No identity at all: refused.
+            state='CAPTURED', clock=clock(16),
+            data=dict(capture_bytes_b64=base64.b64encode(b'captured').decode()))), expected_revision=revision)
     with pytest.raises(ValueError, match='alive-verified payload identity required'):
         capture()
-    # The guardian's own PROCESS identity is outside the payload slice: refused.
-    _retained_process_event(campaigns, attempt, 'probe', 9999, scopes['guardian_unit'])
-    with pytest.raises(ValueError, match='alive-verified payload identity required'):
-        capture()
-    # A payload-scope identity opens the credit path, and the journal reopens clean.
+    # A payload-scope identity (the container's cgroup under the enrolled
+    # payload slice) opens the credit path, and the journal reopens clean.
     _retained_process_event(campaigns, attempt, 'probe', 4242,
-        scopes['payload_slice'] + '/docker-' + 'f' * 64 + '.scope')
+        chain + '/' + scopes['payload_slice'] + '/docker-' + 'f' * 64 + '.scope')
     state = json.loads(capture())
     assert next(w for w in state['works'] if w['work_id'] == 'probe')['state'] == 'CAPTURED'
     ExecutionStore(instance.store.path)
 
 
 def test_integrity_refuses_credited_work_whose_payload_identity_was_removed(tmp_path, monkeypatch):
-    """S2-G4 A5 walk: a credited work whose payload-scope PROCESS events are gone
-    (a tampered journal) is refused when the journal reopens."""
+    """S2-G4 A5 walk: a credited, enrolled work on a supervised attempt whose
+    payload-scope PROCESS events were removed (a tampered journal -- the
+    guardian's own identity still present, so the layer is engaged) is refused
+    when the journal reopens."""
     import sqlite3
     instance, case = funded_service(tmp_path, monkeypatch)
     _, context = admit(instance, case)
@@ -902,17 +910,21 @@ def test_integrity_refuses_credited_work_whose_payload_identity_was_removed(tmp_
     campaigns.retain_supervision(attempt, 'probe', encoded(dict(
         schema='qualification_campaign_supervision/v1', host_run_id='host1', attempt_id=attempt,
         work_id='probe', manifest_bytes_b64=base64.b64encode(manifest).decode('ascii'), scopes=scopes)))
-    _retained_process_event(campaigns, attempt, 'probe', 4242,
-        scopes['payload_slice'] + '/docker-' + 'f' * 64 + '.scope')
+    chain = '/' + scopes['campaign_slice'] + '/' + scopes['work_slice']
+    _retained_process_event(campaigns, attempt, 'probe', 9999,
+        '/system.slice/' + scopes['work_slice'] + '/' + scopes['guardian_unit'])
+    payload_event = _retained_process_event(campaigns, attempt, 'probe', 4242,
+        chain + '/' + scopes['payload_slice'] + '/docker-' + 'f' * 64 + '.scope')
     state = json.loads(campaigns.record_work_transition(attempt, 'probe', encoded(dict(
         schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id='probe',
-        state='CAPTURED', clock=clock(16), data={})),
+        state='CAPTURED', clock=clock(16),
+        data=dict(capture_bytes_b64=base64.b64encode(b'captured').decode()))),
         expected_revision=json.loads(campaigns.budget_snapshot(attempt))['authority_revision']))
     assert next(w for w in state['works'] if w['work_id'] == 'probe')['state'] == 'CAPTURED'
     ExecutionStore(instance.store.path)  # clean while the identity is retained
     connection = sqlite3.connect(instance.store.path)
-    connection.execute("DELETE FROM full_campaign_objects WHERE attempt_id=? AND role GLOB 'supervision_event_*'",
-                       (attempt,))
+    connection.execute('DELETE FROM full_campaign_objects WHERE attempt_id=? AND role=?',
+                       (attempt, 'supervision_event_' + sha256(payload_event)))
     connection.commit()
     connection.close()
     with pytest.raises(ValueError, match='credited work lacks alive-verified payload identity'):

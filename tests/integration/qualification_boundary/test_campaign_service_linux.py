@@ -247,7 +247,7 @@ def test_s2_queued_cancellation_bars_new_work_while_admission_still_settles(real
     scheduled = boundary.schedule(schedule_document(attempt, 'terminal', kind='wall'))
     assert scheduled['ok'], scheduled
     wait(boundary, attempt, lambda s: has_work(s, 'terminal') and work(s, 'terminal')['state'] == 'RUNNING')
-    settled_before = funding(boundary, attempt)['settled_cpu_ns']
+    remaining_before = funding(boundary, attempt)['remaining_cpu_ns']
     boundary.restart()
     state = wait(boundary, attempt, lambda s: s['state'] == 'IN_DOUBT')
     assert state['validity'] == 'VALID' and work(state, 'terminal')['state'] == 'IN_DOUBT', state
@@ -258,8 +258,11 @@ def test_s2_queued_cancellation_bars_new_work_while_admission_still_settles(real
     assert objects(boundary, attempt, 'pending_void') == []
     current = status(boundary, attempt)
     assert current['validity'] == 'VOID' and current['void_authentication_attempts'] == 0
-    assert funding(boundary, attempt)['settled_cpu_ns'] == settled_before  # the terminal attempt costs nothing
-    evidence['terminal'] = dict(state=state['state'], settled_before=settled_before,
+    # Restart recovery legitimately settles the interrupted work (reserved becomes
+    # settled); the uncharged terminal authentication moves neither term.
+    assert funding(boundary, attempt)['remaining_cpu_ns'] == remaining_before
+    evidence['terminal'] = dict(state=state['state'], remaining_before=remaining_before,
+        remaining_after=funding(boundary, attempt)['remaining_cpu_ns'],
         settled_after=funding(boundary, attempt)['settled_cpu_ns'],
         charges=objects(boundary, attempt, 'void_authentication_'))
     host.save(boundary.output/'s2-queued-cancellation.json', evidence)

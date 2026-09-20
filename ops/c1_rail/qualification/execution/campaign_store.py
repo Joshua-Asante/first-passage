@@ -428,24 +428,47 @@ class CampaignStore(FundingStoreMixin):
                 identities.append(event)
         return identities
 
+    def _supervision_events_present(self, connection, attempt):
+        """True once the attempt's supervision observation layer is engaged.
+
+        The guardian's first act is retaining its own PROCESS identity, so every
+        really supervised attempt carries a PROCESS-kind supervision_event_* row;
+        store-only journals (the compact funding model, the v1/v2 budget model)
+        and recovery-only shapes never do -- their enrollments, control slots and
+        CLEANUP rows alone do not make the rule bind.
+        """
+        rows = connection.execute(
+            "SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role GLOB 'supervision_event_*'",
+            (attempt,))
+        for raw, in rows:
+            event = parse_canonical_json(bytes(raw), label='supervision event')
+            if type(event) is dict and event.get('kind') == 'PROCESS':
+                return True
+        return False
+
     def _require_payload_identity(self, connection, state, work):
         """S2-G4 A5: credit for a container-supervised work needs a retained payload identity.
 
-        Applies to every enrolled work other than the admission (whose guardian
-        is itself the supervised process and which has no container) and, in
-        the funded profile, to every non-admission work: production enrolls a
-        work before its START_INTENT (prepare_campaign_work,
-        materialize_scheduler_bootstrap), so an unenrolled funded work has no
-        legitimate producer. The v1/v2 store-only model has no supervision
-        layer; there the rule binds only to enrolled works.
+        Binds only when the attempt's supervision observation layer is engaged
+        (a retained PROCESS-kind supervision event). Then every enrolled work other
+        than the admission (whose guardian is itself the supervised process and
+        which has no container) and a linked signing retry (a capture-less
+        deterministic production, like the admission) requires at least one
+        alive-verified PROCESS event inside its enrolled payload slice; an
+        unenrolled work has no legitimate credit path there (production enrolls
+        before START_INTENT).
+        The guardian's own PROCESS event is in the guardian unit's cgroup,
+        outside the payload slice; it proves the guardian, never the payload.
+        Event bodies are read only for the keys this rule needs, so a G3-era
+        parser shape difference never matters here.
         """
-        if work['phase'] == 'ADMISSION':
+        if work['phase'] == 'ADMISSION' or self._retry_parent(work) is not None:
+            return
+        if not self._supervision_events_present(connection, state['attempt_id']):
             return
         identities = self._payload_identity(connection, state['attempt_id'], work['work_id'])
         if identities is None:
-            if state['profile']['schema'] == FUNDED_PROFILE:
-                raise ValueError('supervision enrollment required before credit')
-            return
+            raise ValueError('supervision enrollment required before credit')
         if not identities:
             raise ValueError('alive-verified payload identity required before credit')
 
@@ -1584,23 +1607,26 @@ class CampaignStore(FundingStoreMixin):
                             raise ValueError('supervision enrollment projection differs')
                         self._work(state, enrollment['work_id'])
                         payload_slices[enrollment['work_id']] = enrollment['scopes']['payload_slice']
-                # S2-G4 A5: a credited container-supervised work carries at least
-                # one alive-verified PROCESS identity inside its enrolled payload
-                # slice (the guardian's own identity, outside it, never counts).
-                # Same scope as record_work_transition: every enrolled
-                # non-admission work; in the funded profile enrollment itself is
-                # required for credit.
-                for work in state['works']:
-                    if work['phase'] == 'ADMISSION' or work['state'] not in ('CAPTURED', 'SIGNING_INTENT', 'SIGNED', 'COMPLETED'):
-                        continue
-                    payload_slice = payload_slices.get(work['work_id'])
-                    if payload_slice is None:
-                        if state['profile']['schema'] == FUNDED_PROFILE:
+                # S2-G4 A5: on an attempt whose supervision observation layer is
+                # engaged (a retained PROCESS event -- the guardian retains its
+                # own identity before anything else, so every really supervised
+                # attempt has one; recovery-only and store-only journals do
+                # not), a credited container-supervised work carries at least
+                # one alive-verified PROCESS identity inside its enrolled
+                # payload slice (the guardian's own identity, outside it,
+                # never counts) and an unenrolled work has no legitimate
+                # credit path. Same scope as record_work_transition's rule.
+                if process_events:
+                    for work in state['works']:
+                        if (work['phase'] == 'ADMISSION' or self._retry_parent(work) is not None
+                                or work['state'] not in ('CAPTURED', 'SIGNING_INTENT', 'SIGNED', 'COMPLETED')):
+                            continue
+                        payload_slice = payload_slices.get(work['work_id'])
+                        if payload_slice is None:
                             raise ValueError('credited work lacks supervision enrollment')
-                        continue
-                    if not any(e['work_id'] == work['work_id'] and self._under_payload_slice(e['data']['cgroup'], payload_slice)
-                               for e in process_events):
-                        raise ValueError('credited work lacks alive-verified payload identity')
+                        if not any(e['work_id'] == work['work_id'] and self._under_payload_slice(e['data']['cgroup'], payload_slice)
+                                   for e in process_events):
+                            raise ValueError('credited work lacks alive-verified payload identity')
                 if retained:
                     if 'diagnostic_receipt' not in retained:
                         raise ValueError('provisional intent cannot claim admitted objects')

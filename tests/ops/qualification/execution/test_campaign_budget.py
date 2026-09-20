@@ -250,28 +250,39 @@ def test_settled_work_cannot_acquire_credit_after_its_observation(tmp_path):
     credit established before it, are refused by the store independently of the
     guardian (the admission and a linked signing retry keep their capture-less
     productions)."""
+    import base64
+    captured = dict(capture_bytes_b64=base64.b64encode(b'captured').decode())
     store = opened(tmp_path)
-    reserve(store, 'n1')
-    start(store, 'n1')
-    transition(store, 'n1', 'RUNNING')
-    store.settle_work(ATTEMPT, 'n1', observation('n1', 5))
+    # A settled RUNNING work: CAPTURED after the settlement is refused outright
+    # (predecessors still allow it), and so is COMPLETED without credit.
+    reserve(store, 'n1', t=11)
+    start(store, 'n1', t=12)
+    transition(store, 'n1', 'RUNNING', 13)
+    store.settle_work(ATTEMPT, 'n1', observation('n1', 5, 14))
     with pytest.raises(ValueError, match='settled work cannot acquire credit'):
-        transition(store, 'n1', 'CAPTURED', 15)
-    with pytest.raises(ValueError, match='settled work cannot acquire credit'):
-        transition(store, 'n1', 'SIGNING_INTENT', 15, dict(intent_id='i-1',
-            payload_bytes_b64='eA==', key_id='key', signing_at_utc='2026-09-20T00:00:00Z'))
+        transition(store, 'n1', 'CAPTURED', 15, captured)
     with pytest.raises(ValueError, match='completion requires credit'):
         transition(store, 'n1', 'COMPLETED', 16)
     settled = next(w for w in snap(store)['works'] if w['work_id'] == 'n1')
     assert settled['state'] == 'RUNNING' and settled['observation_bytes_b64'] is not None
+    # A settled CAPTURED work: SIGNING_INTENT after the settlement is refused
+    # (predecessors allow CAPTURED -> SIGNING_INTENT).
+    reserve(store, 'n2', 'N2', t=17)
+    start(store, 'n2', t=18)
+    transition(store, 'n2', 'RUNNING', 19)
+    transition(store, 'n2', 'CAPTURED', 20, captured)
+    store.settle_work(ATTEMPT, 'n2', observation('n2', 5, 21))
+    with pytest.raises(ValueError, match='settled work cannot acquire credit'):
+        transition(store, 'n2', 'SIGNING_INTENT', 22, dict(intent_id='i-1',
+            payload_bytes_b64='eA==', key_id='key', signing_at_utc='2026-09-20T00:00:00Z'))
     # A work that never settled is not completed from RUNNING either: credit
     # (CAPTURED/SIGNED) must be established first.
-    reserve(store, 'n2', 'N2')
-    start(store, 'n2')
-    transition(store, 'n2', 'RUNNING')
+    reserve(store, 'n3', 'N1_G5', t=23)
+    start(store, 'n3', t=24)
+    transition(store, 'n3', 'RUNNING', 25)
     with pytest.raises(ValueError, match='completion requires credit'):
-        transition(store, 'n2', 'COMPLETED', 17)
-    assert next(w for w in snap(store)['works'] if w['work_id'] == 'n2')['state'] == 'RUNNING'
+        transition(store, 'n3', 'COMPLETED', 26)
+    assert next(w for w in snap(store)['works'] if w['work_id'] == 'n3')['state'] == 'RUNNING'
 
 
 @pytest.mark.parametrize('work_id', ['control_probe', 'event_probe', 'admission'])
@@ -283,4 +294,5 @@ def test_reserve_work_refuses_identities_that_collide_with_object_roles(tmp_path
     store = opened(tmp_path)
     with pytest.raises(ValueError, match='supervision object role|fixed work identity'):
         reserve(store, work_id)
-    assert all(w['work_id'] != work_id for w in snap(store)['works'])
+    if work_id != 'admission':  # the fixed admission work itself exists by design
+        assert all(w['work_id'] != work_id for w in snap(store)['works'])
