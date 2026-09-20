@@ -60,7 +60,8 @@ class Boundary:
         self.admin('install','--image',self.image,*(['--diagnostic'] if self.diagnostic else []))
         self.installation=self.code/'qualification-installation'
         self.config=json.loads((self.installation/'supervisor.json').read_bytes())
-        report=inspect_environment(self.installation/'test-instance.json',(self.installation/'profile.json').read_bytes())
+        report=inspect_environment(self.installation/'test-instance.json',(self.installation/'profile.json').read_bytes(),
+            host_config=self.manifest['host_config'])
         host.save(self.output/'environment.json',report,exclusive=True)
         require_environment(report)
         self.service=None; self.streams=[]; self.restart()

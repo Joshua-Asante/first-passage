@@ -1,12 +1,14 @@
 """Inspect disposable Linux prerequisites. Never provision or launch a worker."""
 from __future__ import annotations
 
+from collections import deque
+from collections.abc import Mapping
 import hashlib
 import importlib
 import importlib.metadata
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import platform
 import socket
 import stat
@@ -19,7 +21,9 @@ SCHEMA = 'qualification_environment/v1'
 TRUST_MODEL = 'trusted_administrator_and_privileged_qexec/v1'
 REQUIRED = frozenset(('linux', 'administrator', 'execution_profile', 'instance',
     'signing', 'peer_credentials', 'roles', 'trusted_roots', 'permissions',
-    'native_storage', 'docker', 'image', 'profile_binding', 'evidence', 'scratch'))
+    'native_storage', 'docker_client', 'docker', 'image', 'profile_binding', 'evidence', 'scratch'))
+# Host-configured executables; setup, cleanup and this preflight share one rule.
+EXECUTABLES = ('python', 'docker')
 
 
 def new_report():
@@ -74,6 +78,61 @@ def protected(path):
         if stat.S_ISLNK(info.st_mode) or info.st_uid != 0 or info.st_mode & 0o022:
             raise ValueError('unprotected path')
     return path
+
+
+def validate_executable_path(config, name):
+    """One configured executable: an absolute, normalized POSIX path string."""
+    value = config.get(name) if isinstance(config, Mapping) else None
+    if (not isinstance(value, str) or not PurePosixPath(value).is_absolute()
+            or '..' in PurePosixPath(value).parts or '\\' in value or '\0' in value):
+        raise ValueError('absolute executable path required: ' + name)
+    return value
+
+
+def validate_executable_paths(config):
+    for name in EXECUTABLES:
+        validate_executable_path(config, name)
+
+
+def protected_executable(value):
+    requested = Path(value)
+    if not requested.is_absolute():
+        raise ValueError('absolute executable path required')
+    path = protected(Path(requested.anchor))
+    pending = deque(requested.parts[1:])
+    links = 0
+    # Resolve one component at a time: resolve() would hide writable intermediate
+    # directories and symlinks. Check directories before processing any '..'.
+    while pending:
+        part = pending.popleft()
+        if part == '..':
+            path = path.parent
+            continue
+        candidate = path / part
+        info = candidate.lstat()
+        if stat.S_ISLNK(info.st_mode):
+            links += 1
+            if info.st_uid != 0 or links > 40:
+                raise ValueError('unprotected or cyclic executable symlink')
+            target = Path(os.readlink(candidate))
+            if target.is_absolute():
+                path = protected(Path(target.anchor))
+                pending.extendleft(reversed(target.parts[1:]))
+            else:
+                pending.extendleft(reversed(target.parts))
+        else:
+            path = protected(candidate)
+            if pending and not stat.S_ISDIR(info.st_mode):
+                raise ValueError('executable ancestor must be a directory')
+    if not path.is_file() or not os.access(path, os.X_OK):
+        raise ValueError('regular executable required')
+
+
+def configured_docker(host_config):
+    """The retained host configuration selects the Docker client; PATH and literals never do."""
+    executable = validate_executable_path(host_config, 'docker')
+    protected_executable(executable)
+    return executable
 
 
 def read_instance(path):
@@ -191,7 +250,8 @@ def writable_directory(path):
     return path
 
 
-def inspect_environment(instance_path: Path, profile_bytes: bytes) -> dict:
+def inspect_environment(instance_path: Path, profile_bytes: bytes, *, host_config: Mapping) -> dict:
+    """`host_config` is the ownership manifest's retained host configuration."""
     report = new_report()
     linux = check(report, 'linux', lambda: platform.system() == 'Linux')
     administrator = check(report, 'administrator', lambda: hasattr(os, 'geteuid') and os.geteuid() == 0)
@@ -214,14 +274,20 @@ def inspect_environment(instance_path: Path, profile_bytes: bytes) -> dict:
             report['checks']['permissions']['ok'] = False
             report['failures'].append({'name': 'permissions', 'reason': 'access_mismatch'})
     check(report, 'native_storage', lambda: storage(doc))
-    docker = ['/usr/bin/docker', '--host', 'unix://' + doc['docker_socket']]
-    check(report, 'docker', lambda: json.loads(run([*docker, 'version', '--format', '{{json .Server}}'])))
-    def image():
-        observed = json.loads(run([*docker, 'image', 'inspect', doc['worker_image_id']]))
-        if len(observed) != 1 or observed[0]['Id'] != doc['worker_image_id']:
-            raise ValueError('image identity mismatch')
-        return {'id': observed[0]['Id'], 'digests': observed[0].get('RepoDigests', [])}
-    check(report, 'image', image)
+    # An invalid, missing or unprotected client fails readiness before it runs.
+    executable = check(report, 'docker_client', lambda: configured_docker(host_config))
+    if executable:
+        docker = [executable, '--host', 'unix://' + doc['docker_socket']]
+        check(report, 'docker',
+              lambda: json.loads(run([*docker, 'version', '--format', '{{json .Server}}'])))
+        def image():
+            observed = json.loads(run([*docker, 'image', 'inspect', doc['worker_image_id']]))
+            if len(observed) != 1 or observed[0]['Id'] != doc['worker_image_id']:
+                raise ValueError('image identity mismatch')
+            # Retain the opaque content identity only: RepoDigests and RepoTags
+            # name registries and repositories, and this report is exported evidence.
+            return {'id': observed[0]['Id']}
+        check(report, 'image', image)
     check(report, 'profile_binding', lambda: profile is not None and
           hashlib.sha256(profile_bytes).hexdigest() == doc['profile_sha256'])
     check(report, 'evidence', lambda: writable_directory(doc['evidence']))
