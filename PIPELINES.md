@@ -1,7 +1,7 @@
 # PIPELINES — data-flow map (what moves where, and why)
 
 Workflow companion to [REPO_MAP.md](REPO_MAP.md). [STATE.md](STATE.md) owns current
-priorities, [CLAUDE.md](CLAUDE.md#live-execution-posture) owns execution safeguards,
+priorities, [AGENTS.md](AGENTS.md#live-execution-posture) owns execution safeguards,
 and each campaign's implementation plan owns its executable sequence. Statuses
 below describe machinery and its recorded use; they confer no authorization.
 
@@ -124,7 +124,7 @@ and its dated falsifier remain distinct from the bounded Select attempt.
 Python signal daemon → Python listener/sizing host → CrossTrade → Tradovate.
 See [listener deployment](deploy/c1_rail/README.md),
 [daemon deployment](deploy/c1_signal_daemon/README.md), and
-[CLAUDE's posture](CLAUDE.md#live-execution-posture) for operating boundaries.
+[the AGENTS.md posture](AGENTS.md#live-execution-posture) for operating boundaries.
 The account's existence, conditional candidate eligibility, and deployed-book
 authorization are separate facts. `nautilus_trader` remains research-only.
 

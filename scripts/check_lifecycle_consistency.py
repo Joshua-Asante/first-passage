@@ -13,7 +13,7 @@ would notice if only some of them did.
 This gate does NOT try to consolidate the prose (most of the 25+ sites are
 closed ADRs / audit notes / archived session entries — historical record, not
 living state; rewriting their body text would be exactly the "retelling"
-CLAUDE.md's own §Retention warns against). It checks the one thing that IS
+AGENTS.md's own §Retention warns against). It checks the one thing that IS
 mechanically knowable: whether a (TIER, MULTIPLIER) pair a LIVE (non-
 historical) file states is actually consistent with core/lifecycle.py's tier
 ladder and, when the ladder is currently uniform across every strategy (no

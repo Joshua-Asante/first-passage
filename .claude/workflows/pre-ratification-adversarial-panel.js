@@ -71,7 +71,7 @@ const LENSES = [
     build: () => `Adversarially review the brief/ADR/closure at ${targetPath} in the First Passage repo (a futures ` +
       `prop-trading research/ops monorepo), acting as a skeptic whose only job is to catch doctrine misrepresentation. ` +
       `Read the ENTIRE target file first. Then identify every ADR, methodology doc, or prior decision it cites as ` +
-      `authority for a claim (grep docs/adr/, docs/methodology/, STATE.md, CLAUDE.md as needed) and READ THE FULL CITED ` +
+      `authority for a claim (grep docs/adr/, docs/methodology/, STATE.md, AGENTS.md as needed) and READ THE FULL CITED ` +
       `DOCUMENT yourself -- not just the clause the brief quotes. For each citation, check: (a) does the brief's ` +
       `paraphrase/quote match what the source actually says, (b) does the brief omit a qualifying clause, exception, or ` +
       `condition present in the source that would change the conclusion, (c) is the citation even real (does the cited ` +
@@ -265,7 +265,7 @@ const hardBlockLine = hardBlock.scanFailed
     `open, when its own input is missing -- state "Overall disposition: BLOCKED" at the top of your memo and ` +
     `note that this is a coverage failure requiring a re-run, not a substantive finding.`
   : hardBlock.fires
-    ? `\n\nSAFETY-INVARIANT HARD BLOCK: ${targetPath}'s own committed text cites a CLAUDE.md non-negotiable ` +
+    ? `\n\nSAFETY-INVARIANT HARD BLOCK: ${targetPath}'s own committed text cites an AGENTS.md non-negotiable ` +
       `safety invariant (dry_run/armed_until/M1-RESOLVED/arm-not-send). Per ` +
       `scripts/README.md#independent-review, this is a HARD BLOCK on synthesis -- ` +
       `state "Overall disposition: BLOCKED" at the top of your memo regardless of what any lens found, and ` +

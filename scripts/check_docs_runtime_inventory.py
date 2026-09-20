@@ -5,7 +5,7 @@ P3 of the 2026-08-23 pain-point charter. Indexes; does not prune or delete.
 ``--check`` always exits 0 (WARN on drift). Same class as sync-liveness.
 
 Detectors:
-  quoted-path — ``docs/...``, ``CLAUDE.md``, ``STATE.md``, ``PIPELINES.md``,
+  quoted-path — ``docs/...``, ``AGENTS.md``, ``STATE.md``, ``PIPELINES.md``,
   ``REPO_MAP.md`` in source text (comments and docstrings included).
   pathlib-join — `` / "docs" / ...`` chains (Great Prune §4a #4; no full literal).
 """
@@ -23,7 +23,7 @@ DEFAULT_REPORT = REPO / "docs" / "notes" / "audits" / "docs-runtime-inventory.md
 SCAN_ROOTS = ("core", "ops", "lab", "scripts", "tests")
 
 _QUOTED = re.compile(
-    r"(?:docs/[\w][\w./-]*|(?<![\w/])(?:CLAUDE\.md|STATE\.md|PIPELINES\.md|REPO_MAP\.md))"
+    r"(?:docs/[\w][\w./-]*|(?<![\w/])(?:AGENTS\.md|STATE\.md|PIPELINES\.md|REPO_MAP\.md))"
 )
 _SLASH_STR = re.compile(r"""/\s*(['"])([^'"]+)\1""")
 

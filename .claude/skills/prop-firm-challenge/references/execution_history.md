@@ -1,6 +1,6 @@
 # Execution History — FXIFY manual-execution era (RETIRED 2026-06-30)
 
-**HISTORICAL.** This file describes the FXIFY CFD manual-execution operating mode that ran 2026-04 through 2026-06-30, retired per `docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md` (operator executive decision after a 2-day discretionary-tilt episode lost −$4,188.85 at 100%-off-spec against flat systems). Joshua is not currently executing any live trades manually. Preserved because the underlying structure is reusable if/when a manual-execution challenge goes live again — do not treat anything below as current operational state; check CLAUDE.md's "Live-execution posture" section for what's actually active today.
+**HISTORICAL.** This file describes the FXIFY CFD manual-execution operating mode that ran 2026-04 through 2026-06-30, retired per `docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md` (operator executive decision after a 2-day discretionary-tilt episode lost −$4,188.85 at 100%-off-spec against flat systems). Joshua is not currently executing any live trades manually. Preserved because the underlying structure is reusable if/when a manual-execution challenge goes live again — do not treat anything below as current operational state; check AGENTS.md's "Live-execution posture" section for what's actually active today.
 
 ## Manual execution delivery (as it worked, 2026-04 to 2026-06-30)
 

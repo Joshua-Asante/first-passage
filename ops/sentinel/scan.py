@@ -79,12 +79,12 @@ _RETRACTION_CHECKS = (
         "history_needles": ("provisionally retracted", "fixed-1R"),
         "caveat_token": "fixed-1R",
         "summary": (
-            "CLAUDE.md asserts 'p99 DD 0.63pp headroom' with no fixed-1R caveat, but "
+            "AGENTS.md asserts 'p99 DD 0.63pp headroom' with no fixed-1R caveat, but "
             "docs/mc_anchor_history.md (Q-SWAP-2) provisionally retracted that margin to "
             "0.45pp under fixed-1R modeling (M-SWAP-1). Lock criterion still passes (4.55% < 5%)."
         ),
         "next_step": (
-            "Append a fixed-1R caveat + Q-SWAP-2 cross-ref to the headroom line at CLAUDE.md, "
+            "Append a fixed-1R caveat + Q-SWAP-2 cross-ref to the headroom line at AGENTS.md, "
             "mirroring the regime and gross-of-swap caveats already inline."
         ),
     },
@@ -94,7 +94,7 @@ _RETRACTION_CHECKS = (
 def skew_scan(root: Path) -> list[Finding]:
     """Detect canonical claims whose source-of-truth retracted them, uncaveated."""
     findings: list[Finding] = []
-    claude = _read(root, "CLAUDE.md")
+    claude = _read(root, "AGENTS.md")
     history = _read(root, "docs/mc_anchor_history.md")
     lines = claude.splitlines()
     for chk in _RETRACTION_CHECKS:
@@ -109,7 +109,7 @@ def skew_scan(root: Path) -> list[Finding]:
             continue  # already caveated on the claim line -> remediated
         findings.append(Finding(
             id=chk["id"], category="skew", routing="Action",
-            summary=chk["summary"], source=f"CLAUDE.md:{ln}", next_step=chk["next_step"],
+            summary=chk["summary"], source=f"AGENTS.md:{ln}", next_step=chk["next_step"],
         ))
     return findings
 
@@ -121,7 +121,7 @@ def skew_scan(root: Path) -> list[Finding]:
 # Files where dated obligations legitimately live. Curated to avoid ADR-date noise.
 # USDCAD ledger: only the Regime calendar section (session log has many ISO dates).
 _OBLIGATION_FILES = (
-    "CLAUDE.md",
+    "AGENTS.md",
     "docs/notes/audits/rule-2-trip-log.md",
 )
 _USDCAD_LEDGER = "ops/instruments/USDCAD.md"
@@ -466,11 +466,11 @@ def _atomic_slugs(mem_dir: Path) -> set[str]:
 
 def _stale_anchor_findings(mem_dir: Path, files: set[str], repo_root: Path | None) -> list[Finding]:
     """Flag a memory file asserting a non-current MC anchor as 'canonical' with no
-    historical marker. SoT-anchored (compares to CLAUDE.md), fail-open, conservative:
+    historical marker. SoT-anchored (compares to AGENTS.md), fail-open, conservative:
     a file carrying any SUPERSEDED/HISTORICAL marker is never flagged."""
     if repo_root is None:
         return []
-    claude = repo_root / "CLAUDE.md"
+    claude = repo_root / "AGENTS.md"
     if not claude.exists():
         return []
     cm = _ANCHOR_TRIPLE.search(claude.read_text(encoding="utf-8"))
@@ -491,7 +491,7 @@ def _stale_anchor_findings(mem_dir: Path, files: set[str], repo_root: Path | Non
                     id=f"MEM-stale-anchor-{slug}", category="memory", routing="Action",
                     summary=(
                         f"{slug}.md asserts MC anchor {'/'.join(m.groups())} as canonical, but "
-                        f"CLAUDE.md current is {'/'.join(current)}, with no historical marker."
+                        f"AGENTS.md current is {'/'.join(current)}, with no historical marker."
                     ),
                     source=f"{slug}.md",
                     next_step="Reframe as historical (add a SUPERSEDED/HISTORICAL marker) or update to the current anchor.",

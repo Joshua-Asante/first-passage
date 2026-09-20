@@ -20,7 +20,7 @@ Canonical table lives in [`docs/operational_rules.md`](../../../docs/operational
 
 - `STATE.md` — open threads + forward board; decision index is one line + owner link
 - `docs/SESSIONS.md` — narrate + link; no duplicated constants
-- `CLAUDE.md` §Live-execution posture — pointer lines + ADR links (Strategy Reference / Protection blocks are gated owners, not this note)
+- `AGENTS.md` §Live-execution posture — pointer lines + ADR links (Strategy Reference / Protection blocks are gated owners, not this note)
 - `README.md` — entry index; links out
 - `PIPELINES.md` / `REPO_MAP.md` — inventory / path maps; path moves → liveness gate
 - `.claude/skills/**` — pointer-first; skills must not silently restate live constants

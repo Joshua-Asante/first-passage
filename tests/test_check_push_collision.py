@@ -85,7 +85,7 @@ def _seed_repo(root: Path) -> None:
     _git(root, "config", "user.email", "t@example.com")
     _git(root, "config", "user.name", "T")
     _write(root, "docs/SESSIONS.md", _doc([("2026-08-13w", "older")]))
-    _write(root, "CLAUDE.md", "base claude\n")
+    _write(root, "AGENTS.md", "base claude\n")
     _commit(root, "base")
 
 
@@ -167,7 +167,7 @@ def test_sessions_exemption_does_not_mask_claude_collision(tmp_path: Path):
         "docs/SESSIONS.md",
         _doc([("2026-08-13z", "ours"), ("2026-08-13w", "older")]),
     )
-    _write(tmp_path, "CLAUDE.md", "ours claude\n")
+    _write(tmp_path, "AGENTS.md", "ours claude\n")
     _commit(tmp_path, "ours session + claude")
 
     _git(tmp_path, "checkout", "-q", "main")
@@ -176,12 +176,12 @@ def test_sessions_exemption_does_not_mask_claude_collision(tmp_path: Path):
         "docs/SESSIONS.md",
         _doc([("2026-08-13y", "theirs"), ("2026-08-13w", "older")]),
     )
-    _write(tmp_path, "CLAUDE.md", "theirs claude\n")
+    _write(tmp_path, "AGENTS.md", "theirs claude\n")
     _commit(tmp_path, "theirs session + claude")
     _git(tmp_path, "update-ref", "refs/remotes/origin/main", "main")
     _git(tmp_path, "checkout", "-q", "feature")
 
     result = _run_gate(tmp_path)
     assert result.returncode == 1, result.stdout + result.stderr
-    assert "CLAUDE.md" in result.stderr
+    assert "AGENTS.md" in result.stderr
     assert "docs/SESSIONS.md" not in result.stderr

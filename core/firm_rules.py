@@ -38,7 +38,7 @@ def _tiers(product: dict, tiers: dict[str, dict]) -> dict[str, dict]:
 
 
 # Bulenox futures-prop, Option 1 (real-time trailing drawdown, no daily
-# loss limit) — added 2026-07-01 for the futures-prop pivot (see CLAUDE.md
+# loss limit) — added 2026-07-01 for the futures-prop pivot (see AGENTS.md
 # "Live-execution posture"). Read by lab remc harnesses that thread
 # dd_type/starting_balance/etc. into portfolio_mc's firm_kwargs. Requires
 # the 2026-07-01 bust_trailing engine support (core/portfolio_mc.py::
@@ -526,7 +526,7 @@ FIRM_RULES = {
     #   "intraday fluctuations won't affect the drawdown level" describes the
     #   floor's RATCHET, not the breach test, and does NOT license an EOD-only
     #   read -- see Q-FIRMEOD-1 (FALSIFIED) and the standing lower-bound rule in
-    #   CLAUDE.md. Score this tier on the intraday-honest limb, same as Select.
+    #   AGENTS.md. Score this tier on the intraday-honest limb, same as Select.
     #   Re-verification of 10495897 for Growth specifically is OWED (the 2026-08-24
     #   in-browser pass could not reload it; relying on the dated 2026-07-30 read).
     #

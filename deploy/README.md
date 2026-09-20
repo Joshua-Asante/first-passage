@@ -13,7 +13,7 @@ Build context is the **repo root**. Do not collapse the two apps.
 `ops` only dynamically, at a fixed installed root.
 
 Posture (disarmed / no book) is owned by
-[`CLAUDE.md`](../CLAUDE.md) §Live-execution posture.
+[`AGENTS.md`](../AGENTS.md) §Live-execution posture.
 Runbooks in the per-app READMEs are standup only — they do not authorize arming.
 
 Linux image validation (build, inert/disarmed boot, POSIX fsync/flock, arming

@@ -6,7 +6,13 @@
 **Retain-until:** none
 **Format:** concise — converted from the original full format by the 2026-09-15 revision, which consolidated §0–§10 and six addenda into Decision / Grounds / Current owner plus the §8 disposition table. Prior full-format text at the blob pinned below.
 **Decision date:** 2026-07-14
-**Revision:** 2026-09-15 — **RATIFIED** by the operator in-session ("execute my decisions").
+**Revision:** 2026-09-20 — three-seat delegation (executive / coordinator / worker) with a Fable
+escalation lane, the committed-handoff rule, acceptance tests named in the card, and the
+quality-then-attention priority. Operator-directed in-session 2026-09-20 (items 1, 2, 4, 5, 6 of the
+delegation review); ratification pending operator merge of the PR that carries it. Prior (2026-09-15)
+effective text, in full and unedited, at blob `9a55a9c71e5ebebad87bb0bc8cf6332a486f7541`
+(`git show 9a55a9c71e5ebebad87bb0bc8cf6332a486f7541`), commit `4a8067dcba5fe99c27396a61a1aa2043cc9383f7`.
+**Prior revision:** 2026-09-15 — **RATIFIED** by the operator in-session ("execute my decisions").
 Retires Cursor as a worker surface and rescopes this decision to the surviving surfaces
 (Claude Code, Codex); consolidates the six 2026-07-16 → 2026-09-04 addenda into the §8
 disposition table. This revised text is the effective decision. Prior decision text, in full
@@ -16,16 +22,16 @@ and unedited, at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`
 **Supersedes:** `2026-08-14-cc-cursor-autonomous-loop.md` full — its entire subject (Cursor
 dispatch without chip approval, `cursor/*` webhook detection, and auto-merge on a binary gate)
 retires with the Cursor lane; the surviving general rule is restated in §2 below.
-**Authors:** Joshua + Claude Code (2026-07-14); revision Joshua + Claude Code (2026-09-15)
+**Authors:** Joshua + Claude Code (2026-07-14); revisions Joshua + Claude Code (2026-09-15, 2026-09-20)
 **Related:** [`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md) (consumer-side gate) ·
 [`task-routing`](../../.claude/skills/task-routing/SKILL.md) (canonical local-vs-cloud checklist) ·
 [`cc_handoff` template](../../.claude/skills/brief-authoring/references/cc_handoff.md) (producer-side contract)
 **Layer:** infrastructure
 
-> ⚠ **REVISED 2026-09-15 — Cursor is retired as a worker surface.** The body below is the
-> rescoped decision, not the 2026-07-14 text, and is **operator-ratified and effective**. The
-> clause-by-clause record of what survived, what was restated and what retired is §8. The
-> pre-revision text is pinned at the blob in the header.
+> ⚠ **REVISED 2026-09-20 — three seats, one escalation lane, committed handoffs.** The body below
+> is the effective decision text as revised on 2026-09-20 (on top of the 2026-09-15 rescoping that
+> retired Cursor). The clause-by-clause record of what each revision kept, restated or retired is
+> §8. Each revision's pre-revision text is pinned at a blob in the header.
 
 ---
 
@@ -33,19 +39,46 @@ retires with the Cursor lane; the surviving general rule is restated in §2 belo
 
 ## Decision
 
-Work is routed between **surfaces** by a four-question test, with an authored handoff brief as
-the mechanical eligibility gate. The **coordinator** designs, specifies and adjudicates;
-**workers** implement frozen specs and never merge.
+Work is routed between **seats** by a four-question test, with an authored handoff brief as
+the mechanical eligibility gate. The **executive** sets the goal and the next milestone and
+accepts or rejects on evidence; the **coordinator** decomposes, specifies, steers the worker,
+integrates and writes the evidence pack; **workers** implement frozen specs and never merge;
+the **escalation lane** is a budgeted interrupt, not a standing seat; the **operator** owns
+merge and everything irreversible. **Priority order for every routing choice: quality of the
+landed change first, operator attention second. Throughput is not a metric.**
 
-**Surfaces, as of the 2026-09-15 revision:** the coordinator is a Claude Code session. Workers
-are Claude Code sessions and Codex. **Cursor is retired** — no Cursor lane, no `@cursor`
-dispatch, no dispatch-chip approvals, no `cursor/*` branches, no `cursor[bot]` allow-listing.
-New worker branches use `codex/` or `claude/`. This is an operator scope election (in-session,
-2026-09-15: *"cursor is being retired altogether, we will no longer be incorporating cursor
-agents. it will be just claude and codex"*), already ruled for one campaign as
-[D-B6](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) on 2026-09-11
-and applied repo-wide here. It carries no falsifier and no review cadence: there is no
-measurement that would reinstate a surface the operator has removed from spend.
+**Seats, as of the 2026-09-20 revision** (operator's org chart, in-session 2026-09-20):
+
+| Seat | Model / surface | Allowed to do | Not allowed to do |
+|---|---|---|---|
+| **Executive** | Codex ("Astra") | Goal, constraints, next milestone; accept/reject on the evidence pack (diff, test log, reviewer dissent) — never on the coordinator's synthesis alone; independent PR review of the diff against the *goal* (the 2026-08-29 addendum #1 review path, retained) | Author tickets, implement, merge |
+| **Coordinator** | Claude Code, Opus (default effort; raise effort before changing model) | Decompose the milestone into frozen cards, dispatch, steer, adjudicate `DONE_WITH_CONCERNS`, integrate, write the evidence pack and the campaign record | Be the sole signer on a diff whose card it wrote; implement the hard 20 % by default instead of escalating; touch `main` |
+| **Worker** | Z Code (GLM 5.3) sessions; a Claude Code or Codex session may take a packet when the operator routes one there | Bounded implementation, tests, docs and refactors in a worktree against a frozen card; return the four-state status with the evidence the card names | Change architecture, expand scope, resolve a spec ambiguity, write reserved files, merge |
+| **Escalation** | Claude Code, Fable 5.1 | Only on a named trigger (below): milestone adjudication, the rebuild after a second failed round, load-bearing contract authoring | Daily decomposition, worker supervision, a second executive |
+| **Operator** | Joshua | Merge, GO/NO-GO, every irreversible act, arming | — (no model owns these) |
+
+Worker branches use `glm/`, `codex/` or `claude/`. **Cursor stays retired** (2026-09-15) — no
+Cursor lane, no `@cursor` dispatch, no `cursor/*` branches, no `cursor[bot]` allow-listing; that
+election carries no falsifier and no review cadence. The 2026-09-15 text described the
+coordinator as a Claude Code session with Claude Code and Codex as workers; this revision does not
+retire either surface, it names the seat each normally occupies.
+
+**Reviewer ≠ planner.** Whoever wrote the card is never the only signer on the diff it produced.
+The executive's PR review and the operator's merge are the independent signatures; the
+coordinator's adjudication of a worker return is an input to them, not a substitute. The executive
+reviews against its own stated goal, not against the coordinator's cards.
+
+**Committed-handoff rule.** Nothing crosses a seat boundary except as a committed, dated file:
+an executive direction lands in `STATE.md`'s operator queue or the owning campaign plan; a
+coordinator → worker card lands under `docs/briefs/handoffs/**` (or the lightweight issue below)
+at a pinned SHA; a worker return is a pushed branch plus its PR; the coordinator's synthesis lands
+in the campaign record or `docs/SESSIONS.md`. A direction that exists only in a chat, or a packet
+that exists only untracked on a disk, has not been given and is not dispatchable —
+`AGENTS.md` already forbids inferring work from historical dispatches, and a worker cannot tell a
+current chat direction from a stale one. Private evidence follows M-41 (primary checkout, never a
+worktree). This extends the single-writer rule below to every seat boundary. **One permitted
+non-file card:** the lightweight dispatch issue (below), whose freeze is a content hash rather
+than a commit SHA; nothing else is exempt.
 
 **Routing test (apply in order).** The tests are about the *work* and the *environment*, not
 about which vendor runs the session, so all four survive the retirement unchanged:
@@ -59,10 +92,12 @@ about which vendor runs the session, so all four survive the retirement unchange
    bytes unless staged for *that* dispatch. Canonical checklist owner:
    [`task-routing`](../../.claude/skills/task-routing/SKILL.md).
 1. **Does the task author doctrine or touch a locked/governed surface?** (ADRs, Pre-Qs,
-   pre-registrations, closures, lifecycle state, `CLAUDE.md`/`STATE.md`/memory; any *edit* to
+   pre-registrations, closures, lifecycle state, `AGENTS.md`/`STATE.md`/memory; any *edit* to
    `core/` anchor-path code — `dd_protection.py`, `firm_rules.py`, `portfolio_mc.py`,
    `core/mc/*`, `lifecycle.py`, `dd_geometry.py` — or Pine.) → **coordinator**, full stop.
-   Read-only imports of `core/` from `lab/` code are fine on any surface.
+   Read-only imports of `core/` from `lab/` code are fine on any surface. The coordinator may
+   perform that authoring on the escalation lane (trigger 3 below); that changes the model it
+   works on, never the seat that owns the work.
 2. **Is the spec frozen?** Binary acceptance gates, resolved ambiguities, enumerated forbidden
    moves, no judgment calls expected mid-build. If not → the coordinator either does the work
    or freezes the spec first. A worker never resolves a spec ambiguity unilaterally; it bounces
@@ -71,7 +106,7 @@ about which vendor runs the session, so all four survive the retirement unchange
    brief (rule of thumb: < ~1 focused hour, or fewer than ~3 files touched), it stays on
    whichever surface is already open. Above threshold and spec-frozen → dispatch to a worker.
 
-**Handoff contract (all five required for worker eligibility):**
+**Handoff contract (all six required for worker eligibility):**
 
 - A handoff brief under `docs/briefs/**` passing `check_brief.py`.
 - §0 Phase-0 reads with a **read-report-before-code** requirement and a `NEEDS_CONTEXT` bounce
@@ -81,24 +116,43 @@ about which vendor runs the session, so all four survive the retirement unchange
 - §0 states explicitly whether any read touches a gitignored vendor-data path or a secret
   (test 0), and if so names the confirmed-present staging/credential check performed for *this*
   dispatch — not a prior one, not a general belief the bytes or key exist "somewhere."
-- **Return contract:** a worker branch (`codex/*` or `claude/*`), a PR with tests green, and a
+- **Acceptance tests named in the card, before the worker starts.** The card lists the acceptance
+  tests by name and, for each, the property it must violate to fail (falsifier-first, as briefs
+  already do). Tests the worker writes are additional evidence, never the acceptance basis — a
+  worker that writes both the feature and its only tests can encode the defect into green.
+  For contract-driven code the card carries the invariant table (M-38); for anything with orders,
+  positions or shutdown semantics it carries the state model (M-39).
+- **Return contract:** a worker branch (`glm/*`, `codex/*` or `claude/*`), a PR with tests green, and a
   four-state status — `DONE` / `DONE_WITH_CONCERNS` / `NEEDS_CONTEXT` / `BLOCKED`. **No commit
   or merge without the operator.** `DONE_WITH_CONCERNS` is adjudicated by the coordinator before
-  merge; `NEEDS_CONTEXT` gets one re-anchor and re-dispatch, then falls back to the coordinator
-  (two bounces means the spec was not freezable and the packet was mis-routed).
+  merge; `NEEDS_CONTEXT` gets one re-anchor and re-dispatch, then returns to the coordinator
+  (two bounces means the spec was not freezable and the packet was mis-routed). The coordinator
+  owns that return and performs the restart on the escalation lane (trigger 1 below) rather than
+  re-dispatching a third time; see *Ownership and precedence* there.
 
 **Scoped exception — the lightweight dispatch issue** (2026-08-29 addendum #2, retained in shape
-by §8; scoped 2026-09-16 after post-merge review). For a small, precedented fix, a complete
-GitHub-issue body stands in place of item 1's `docs/briefs/**` brief only when it carries items
-2–5 in full: the §0 read-report-before-code requirement with the `NEEDS_CONTEXT` bounce, the §5
-forbidden moves naming the nearby locked surfaces, the test-0 vendor-bytes/secret declaration with
-its confirmed-present check, and the four-state return contract. `check_brief.py` does not run on
-an issue; its place is taken by the coordinator's own pre-dispatch read of the issue body against
-[`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md), recorded in the issue. An issue
-missing any of these is not a lightweight brief but an unfrozen spec, and test 2 keeps it with the
-coordinator. The launch action is the orchestrator opening a worker session against the issue (a
-Claude Code session pointed at it, or a Codex task created from it); an issue with no session
-opened on it dispatches nothing.
+by §8; scoped 2026-09-16 after post-merge review; re-scoped 2026-09-20 to the six-item contract).
+For a small, precedented fix, a complete GitHub-issue body stands in place of item 1's
+`docs/briefs/**` brief only when it carries items 2–6 in full: the §0 read-report-before-code
+requirement with the `NEEDS_CONTEXT` bounce, the §5 forbidden moves naming the nearby locked
+surfaces, the test-0 vendor-bytes/secret declaration with its confirmed-present check, **the
+acceptance tests named before the worker starts — each with the property it must violate to
+fail — exactly as item 5 requires of a brief**, and the four-state return contract.
+`check_brief.py` does not run on an issue; its place is taken by the coordinator's own
+pre-dispatch read of the issue body against
+[`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md), recorded in the issue.
+
+*How an issue's frozen content is preserved.* An issue body is editable and lives outside git, so
+its freeze is a **content hash, not a commit SHA**: the coordinator's pre-dispatch read comment
+records `sha256` of the issue body exactly as read (`gh issue view <n> --json body -q .body |
+sha256sum`) with the read date; the worker recomputes the hash at Phase 0 and returns
+`NEEDS_CONTEXT` on any mismatch, exactly as a stale brief-pointer SHA does; the return PR body and
+the coordinator's integration record cite `#<n> @ sha256:<hash>`. GitHub retains the issue's edit
+history, so the hashed text stays retrievable; an issue edited after the read comment is a new
+card that needs a new read. An issue missing any of items 2–6, or lacking the read comment with
+its hash, is not a lightweight brief but an unfrozen spec, and test 2 keeps it with the
+coordinator. The launch action is the coordinator opening a worker session against the issue; an
+issue with no session opened on it dispatches nothing.
 
 **Proactive dispatch and the environment GO compose; neither removes the other** (2026-09-16
 clarification). Test 3's proactive reading — act, don't merely label — is authority over the
@@ -107,6 +161,39 @@ confirmation. It is not authority over the *environment*. A worker routed to a c
 still needs [`task-routing`](../../.claude/skills/task-routing/SKILL.md)'s GO (its step 3) unless
 the operator already chose the environment for that work (its step 1); a proactive dispatch to a
 worker session on the operator's own machine needs neither.
+
+**Escalation lane (Fable 5.1) — named triggers only.** Fable is not a seat; it is an interrupt
+with a budget (one milestone review per milestone, one unstick per day, unless the operator
+raises it). It fires on exactly these triggers, and the coordinator states the trigger in the
+dispatch:
+
+1. **Two-failure rule.** The same card, or the same module, has failed twice under
+   coordinator + worker (a second `NEEDS_CONTEXT`, a second red acceptance run, or a second
+   review round whose finding count did not fall — M-37/M-38). The restart that `AGENTS.md`
+   §Continuous improvement already requires ("stop, summarize, restart with a cleaner prompt")
+   is taken on Fable as a **rebuild from invariants or from the state model**, not as a third
+   worker retry and not as a third fold. Raising Opus effort is tried first when the failure is
+   a reasoning gap rather than a missing model.
+2. **Milestone adjudication.** Before the operator ratifies a campaign gate, an ADR, a
+   pre-registration or a closure, the refute-first pass that M-42 requires (`fable-judge`,
+   `pre-ratification-adversarial-panel`) runs on Fable. The diff reviewer does not cover this
+   gate (M-47).
+3. **Load-bearing contract authoring.** A card or spec that touches routing test 1's locked
+   surfaces or the rail is authored (or rebuilt after a failed round) on Fable; daily cards are
+   not.
+
+**Ownership and precedence.** The escalation lane is not a seat. Dispatching to it is an act of
+the coordinator, the item stays on the coordinator's board, and the result returns to the
+coordinator for integration and to the executive for the next direction like any other return.
+Wherever older wording in this ADR sends an event to the coordinator — routing test 1's
+"→ coordinator, full stop", the return contract's second `NEEDS_CONTEXT` bounce — and a trigger
+above names Fable for the same event, both hold and this paragraph governs: **the coordinator owns
+the item and executes the named rebuild or authoring on Fable instead of in its default session.**
+No trigger transfers ownership, and none of the three triggers may be read as a worker retry on a
+stronger model.
+
+Fable never takes the coordinator seat, never supervises the worker day to day, and never
+sits beside the executive as a second planner.
 
 **Merge authority is the operator's, with no automated exception.** The 2026-08-14 binary
 auto-merge gate is retired with the mechanism it drove (§8). Neither a green CI run, nor a clean
@@ -145,8 +232,15 @@ retirement of the skill that stated them:
   skill on 2026-09-15 and carried here verbatim in substance when that skill was deleted the same
   day; nothing of #402 is lost.
 
+**Measure and falsifier for the three-seat model.** The existing §4 limbs stand (judgment-defect
+worker PRs; overhead exceeding value). Added: the model is measured on **operator-minutes per
+accepted change** and **defects found after merge**, never on cards closed. If, over a rolling
+8-week window, the Fable lane fires on more than a third of cards, the cards are not being
+frozen and the coordinator seat — not the lane — is the defect to fix; if it never fires while
+post-merge defects recur, the two-failure rule is not being applied.
+
 **Effective:** the 2026-07-14 decision on acceptance; the 2026-09-15 rescoping on the
-operator's same-day in-session ratification.
+operator's same-day in-session ratification; the 2026-09-20 revision on operator merge of its PR.
 **Scope:** task routing between the coordinator and worker surfaces on this repo. Other external
 surfaces (web advisors, claude.ai) keep their existing gates; this ADR does not re-govern them.
 
@@ -176,6 +270,25 @@ dispatched to, so leaving the lane documented as live would leave the routing te
 destination that does not exist — the drift this ADR was written to prevent, pointing the other
 way.
 
+**For the 2026-09-20 three-seat revision.** The operator's working arrangement (Codex executive,
+Opus coordinator, GLM worker) had diverged from this record, which still described Codex as a
+worker and named no GLM surface — so every agent reading the repo followed a chart the operator
+no longer used. The specific gaps were named in-session on 2026-09-20 and ruled on: the record
+mismatch (item 1); the committed-file boundary (item 2, "keeping this boundary is satisfactory");
+cross-harness memory, discharged by migrating M-26 … M-48 into `methodology_lessons.md` (item 3);
+quality before operator attention as the priority (item 4); acceptance tests named before the
+worker starts (item 5); the committed-handoff rule and Fable triggers (item 6). The
+self-grading risk — the coordinator writing the cards, reviewing against them and writing the
+synthesis the executive steers by — is the documented fold-loop failure (M-37, M-38, M-40) seen
+on PRs #360, #395 and #401; reviewer ≠ planner is its structural fix (M-46). Fable is placed as a
+lane rather than a seat because its cost is per-instance and its edge is on long, messy,
+high-reasoning work; vendor benchmark and pricing claims about it were treated as unverified
+and are non-load-bearing, as the 2026-07-14 text did for the Cursor comparison. The fifteen untracked
+handoff packets found in the main checkout's `docs/briefs/handoffs/` on 2026-09-20 (two GLM, one
+Astra, twelve coordinator/operator packets; `git status --short -- docs/briefs/handoffs/`) are the
+committed-handoff rule's first application: each is committed or tombstoned before the next
+dispatch that would rely on it.
+
 **Why this is a revision and not a new ADR.** The subject of this record *is* surface
 allocation; retiring one of the two surfaces is a change of scope to this decision, not a
 different decision. [ADR ceremony tiering](2026-08-08-adr-ceremony-tiering.md) (revised
@@ -187,8 +300,11 @@ rules Rule 7 assigns to one.
 
 ## Current owner
 
-- **This ADR** owns the routing test, the handoff contract, the return contract and merge
-  authority.
+- **This ADR** owns the seat table, the routing test, the handoff contract (including the
+  acceptance-tests-in-the-card item), the committed-handoff rule, the escalation-lane triggers,
+  the return contract and merge authority.
+- [`methodology_lessons.md`](../methodology/lessons/methodology_lessons.md) M-26 … M-48 own the
+  dated failure evidence the seat rules cite; this ADR states the rules, not the incidents.
 - [`task-routing`](../../.claude/skills/task-routing/SKILL.md) owns the canonical local-only
   (test 0) checklist. One owner: this ADR states the test, that skill holds the list.
 - [`cc_handoff.md`](../../.claude/skills/brief-authoring/references/cc_handoff.md) owns the
@@ -244,6 +360,21 @@ discharged, superseded or explicitly retired"). Full prior text at blob
 | Addendum 2026-08-29 #1, "relay findings to Cursor's Cloud Agent" | **Explicitly retired** — the relay target is gone. Findings are addressed by the coordinator or a Codex/Claude Code worker. |
 | Addendum 2026-08-29 #2 (proactive dispatch; lightweight GitHub-issue + `@cursor` format) | **Split.** Proactive-dispatch authority is **retained** (above). The lightweight issue format is **retained in shape** — a complete issue body in place of a full brief for small precedented fixes — but its `@cursor` dispatch step is **explicitly retired**; dispatch is to a Codex or Claude Code worker. |
 | <a id="addendum-2026-09-04-disable-notify-cursor"></a>Addendum 2026-09-04 (`notify-cursor.yml` auto-ping disabled) and its revert trigger ("operator asks to turn the ping back on"; restore `on:` events from `4f3ddc6`) | **Explicitly retired, not left standing.** The workflow is deleted by this revision's sweep; the revert trigger is unreachable and is discharged rather than carried as a dead obligation. Retrieval via [`TOMBSTONES.md`](TOMBSTONES.md#2026-09-15-cursor-agent-retirement). |
+
+### 2026-09-20 revision — disposition of the 2026-09-15 clauses it touches
+
+| 2026-09-15 clause | Disposition |
+|---|---|
+| "Surfaces" paragraph (coordinator = Claude Code; workers = Claude Code and Codex; Cursor retired) | **Superseded** by the seat table. Cursor's retirement and its no-falsifier election are **retained** verbatim in substance. |
+| Routing tests 0–3 | **Retained** unchanged; test 1's `CLAUDE.md` reference updated to `AGENTS.md` (the file was retired the same day). |
+| Handoff contract, five items | **Retained**; a sixth item (acceptance tests named in the card) **added**. |
+| Lightweight dispatch issue (items 2–5 in place of a brief) | **Retained in shape, re-scoped**: must carry items 2–6 including the predeclared acceptance tests; its freeze is the body hash in the coordinator's read comment, the one permitted non-file card under the committed-handoff rule. |
+| Routing test 1 "→ coordinator, full stop"; return contract "two bounces fall back to the coordinator" | **Retained**; *Ownership and precedence* under the escalation lane governs the overlap — the coordinator keeps ownership and performs the named authoring/rebuild on Fable. |
+| Return contract branches `codex/*` / `claude/*` | **Retained**, `glm/*` **added**. |
+| Merge authority is the operator's | **Retained** verbatim. |
+| Orchestration rules (disjoint footprints, dispatch-moment Phase-0, review round part of the freeze, pointer SHA) | **Retained** verbatim; the committed-handoff rule generalises the single-writer rule to every seat boundary. |
+| Addendum 2026-08-29 #1 (Codex native review, retained) | **Retained and re-seated** — it is now the executive's independent signature under reviewer ≠ planner. |
+| `AGENTS.md` §Continuous improvement, "after two failed corrections… restart with a cleaner prompt" (external rule, not this ADR's) | **Bound, not changed** — the restart is where the Fable lane's trigger 1 fires. |
 
 ### Deliberately retained (not over-swept)
 

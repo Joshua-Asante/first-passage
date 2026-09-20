@@ -12,7 +12,7 @@ absent, because it is trusted by default. This skill exists because **no other m
 periodically re-checks the whole Accepted-ADR corpus for continued applicability**:
 
 - **Rule 6 skew-audit** (`docs/operational_rules.md` §6, `.claude/commands/skew-audit.md`) fires
-  only on a strategy version-lock event and checks a narrow target set (`CLAUDE.md`, ADR `Code:`
+  only on a strategy version-lock event and checks a narrow target set (`AGENTS.md`, ADR `Code:`
   pointers, methodology docs) inside a bounded commit window.
 - **programme-audit** runs a Lakatos diagnostic on *programmes* (methodologies as a whole, the
   strategy portfolio as a whole) on a quarterly/semi-annual cadence — it does not visit individual
