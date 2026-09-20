@@ -8,8 +8,9 @@ loader so this table can never disagree with the scanner.
 Gate wiring: ``scripts/gates.yml`` (id, tier, load-bearing flags).
 
 This is a documentation generator. It does **not** change gate composition
-(``gates.yml`` remains the sole owner). ``--check`` is available locally and
-is not wired into ``gates.yml``.
+(``gates.yml`` remains the sole owner). ``--check`` is wired into ``gates.yml``
+as the path-conditional ``repo-map-scripts-table`` gate; on failure regenerate
+with ``--write``.
 
 Sibling of ``check_repo_map_layers.py`` (the layer-map schema gate); this
 script owns the human-readable §2.1 table so the section cannot drift into
