@@ -85,10 +85,15 @@ jobs:
           # The dirty state is recorded in the manifest's source snapshot, so the
           # exported host_config_sha256 differs from the branch's host.json by
           # construction.
-          sudo install -d -m 0755 -o root -g root /opt/fp /opt/fp/bin
-          sudo install -m 0755 -o root -g root /usr/bin/docker /opt/fp/bin/docker
-          sed -i 's#"docker": "/usr/bin/docker"#"docker": "/opt/fp/bin/docker"#' \
+          sudo install -d -m 0755 -o root -g root /var/lib/fp-docker /var/lib/fp-docker/bin
+          sudo install -m 0755 -o root -g root /usr/bin/docker /var/lib/fp-docker/bin/docker
+          sed -i 's#"docker": "/usr/bin/docker"#"docker": "/var/lib/fp-docker/bin/docker"#' \
             tools/qualification_verification/host.json
+          # make the ancestry self-evidencing in the log (D had to argue it from the image scripts)
+          for d in / /var /var/lib /var/lib/fp-docker /var/lib/fp-docker/bin /var/lib/fp-docker/bin/docker; do
+            sudo stat -c '%U:%G %a %n' "$d"
+          done
+          sha256sum tools/qualification_verification/host.json   # expect 6ca065a5…e47e
           git diff --stat
       - name: Provision protected TEST_ONLY host
         run: |
@@ -129,7 +134,7 @@ jobs:
         run: |
           env="$RUNNER_TEMP/qualification-evidence/boundary/environment.json"
           test -f "$env" || { echo "missing exported boundary/environment.json" >&2; exit 1; }
-          jq -e '.checks.docker_client.observed == "/opt/fp/bin/docker"' "$env"
+          jq -e '.checks.docker_client.observed == "/var/lib/fp-docker/bin/docker"' "$env"
           jq -e '.checks.image.observed | keys == ["id"]' "$env"
           ! grep -Eq 'RepoDigests|RepoTags|"digests"' "$env"
           jq -e '.ready == true and (.checks | keys | length) == 16' "$env"
