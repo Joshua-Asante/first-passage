@@ -65,6 +65,7 @@ EXPECTED_PATH_CONDITIONAL = {
     "lifecycle-consistency",
     # SSOT Phase 3 — cost-model closed-world partition
     "cost-model-closed-world",
+    "durable-store-pragmas",
 }
 
 EXPECTED_AUDIT = {

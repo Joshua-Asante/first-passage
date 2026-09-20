@@ -75,6 +75,19 @@ gates:
       - scripts/check_pine_manifest.py
       - --check-pin-provenance
 
+  # Durability invariant for the rail's authoritative SQLite stores. The regex
+  # is deliberately the whole of ops/: the scanner's registry check fires on a
+  # NEW connect site anywhere under ops/, so narrowing it to the six known store
+  # files would make the gate unreachable by exactly the edit it exists to catch
+  # (the reachability rule — scripts/README.md#gate-composition-and-admission).
+  - id: durable-store-pragmas
+    tier: path-conditional
+    when:
+      staged_regex: '^(ops/|scripts/check_durable_store_pragmas[.]py|tests/test_check_durable_store_pragmas[.]py|scripts/gates[.]yml)'
+    cmd:
+      - python
+      - scripts/check_durable_store_pragmas.py
+
   - id: boundaries
     tier: always
     cmd:

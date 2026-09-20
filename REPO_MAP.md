@@ -88,7 +88,7 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_80 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_88 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
@@ -108,6 +108,7 @@ _80 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_cost_model_closed_world.py` | lab | `cost-model-closed-world` (path-conditional) | — |
 | `scripts/check_data_manifests.py` | governance | `data-manifests` (data-conditional) | — |
 | `scripts/check_docs_runtime_inventory.py` | governance | `docs-runtime-inventory` (audit) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_durable_store_pragmas.py` | governance | `durable-store-pragmas` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_falsifier_reachability.py` | governance | `falsifier-reachability-census` (audit) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_governance_prose_control_chars.py` | governance | `governance-prose-control-chars` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_instrument_ledger_coverage.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
@@ -119,6 +120,7 @@ _80 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_pine_manifest.py` | governance | `pine-manifest` (always); `pine-pin-provenance` (always) | — |
 | `scripts/check_pursuit_records.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_push_collision.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_qualification_invariants.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_repo_map_layers.py` | governance | `repo-map-layers` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_repo_map_scripts_table.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_root_doc_liveness.py` | governance | `root-doc-liveness` (always) | layer fallback (not in SCRIPTS_LAYER) |
@@ -150,6 +152,7 @@ _80 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/import_skill_from_cache.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/instrument_profiles.py` | governance | `instrument-profiles` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/layer_bootstrap.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/link_policy.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/lock_event_hook.py` | ops | — | manual/local only, not in gates.yml |
 | `scripts/m1_item5_capture.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/mc_user_guardian.py` | lab | — | manual/local only, not in gates.yml |
@@ -157,6 +160,11 @@ _80 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/parse_econ_export.py` | lab | — | manual/local only, not in gates.yml |
 | `scripts/pine_check.py` | governance | — | manual/local only, not in gates.yml |
 | `scripts/pine_lint.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/pytest_junit_subtests.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/pytest_progress.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/pytest_qualification_collection.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/qualification_boundary_environment.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/qualification_boundary_verification.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/record_verification.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/repo_hygiene.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/repo_retrieve.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
