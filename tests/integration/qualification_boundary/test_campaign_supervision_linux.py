@@ -82,16 +82,55 @@ def payload_process_events(boundary,attempt,work_id):
         if marker in e['data']['cgroup']]
 
 
+INTERPRETER_NAME='python'  # campaign_supervisor.INTERPRETER_NAME: the fixed entrypoint's basename
+
+
+def interpreter_image(event):
+    """A retained PROCESS/RESUMED image names the exec'd interpreter, never runc's init.
+
+    exe is authoritative when the guardian could read the link (its own UID: the
+    admission guardian); the payload runs as a distinct UID, so the ptrace gate
+    refuses /proc/<pid>/exe there and exe is '' -- comm (the basename the kernel
+    set at execve) then carries the image. Run 35494972519 retained a UID-verified
+    pid that was still 'runc:[2:INIT]' and resumed it to death; G3 gates on this.
+    """
+    comm,exe=event['data']['comm'],event['data']['exe']
+    assert isinstance(comm,str) and comm and not comm.startswith('runc:['), event
+    assert isinstance(exe,str), event
+    name=exe.rsplit('/',1)[-1] if exe else comm
+    assert name.startswith(INTERPRETER_NAME), event
+    return comm,exe
+
+
 def identity_retained(boundary,attempt,work_id):
     """Completion credit requires a supervisor-retained, alive-verified PROCESS
     identity: a payload-scope identity for container-supervised probe works; the
-    admission work has no container, so its guardian IS the supervised process."""
+    admission work has no container, so its guardian IS the supervised process.
+    Every retained identity carries the exec'd interpreter image (G3)."""
     if work_id=='admission':
         events=supervision_events(boundary,attempt,'PROCESS',work_id)
     else:
         events=payload_process_events(boundary,attempt,work_id)
     assert events,'no alive-verified PROCESS event retained for '+attempt+':'+work_id
+    for event in events:
+        comm,exe=interpreter_image(event)
+        if work_id=='admission':
+            assert exe, event  # the guardian reads its own link; only foreign UIDs are refused
+    for event in supervision_events(boundary,attempt,'RESUMED',work_id):
+        interpreter_image(event)
     return events
+
+
+def payload_exit_retained(boundary,attempt,work_id):
+    """Docker's terminal State for the work's container, retained by the guardian
+    on every settlement path; bound to the retained CONTAINER event."""
+    containers=[e['data']['container_id'] for e in supervision_events(boundary,attempt,'CONTAINER',work_id)]
+    exits=[e['data'] for e in supervision_events(boundary,attempt,'PAYLOAD_EXIT',work_id)]
+    assert len(containers)==1 and len(exits)==1, (containers,exits)
+    assert exits[0]['container_id']==containers[0], (containers,exits)
+    assert isinstance(exits[0]['exit_code'],int) and isinstance(exits[0]['oom_killed'],bool), exits
+    assert isinstance(exits[0]['finished_at'],str) and exits[0]['finished_at'], exits
+    return exits[0]
 
 
 def unit_facts(unit,properties):
@@ -140,6 +179,7 @@ def probe(boundary,attempt,work_id,role='probe_worker',kind='noop',retry=None):
 def test_s2_sequential_roles_share_one_allowance(real_boundary):
     boundary=real_boundary
     attempt=admit(boundary)
+    images={}
     for work_id,role in [('one','probe_worker'),('two','probe_g5'),('three','probe_result'),('four','probe_seal')]:
         before=snapshot(boundary,attempt)
         probe(boundary,attempt,work_id,role)
@@ -149,6 +189,18 @@ def test_s2_sequential_roles_share_one_allowance(real_boundary):
         assert after['settled_cpu_ns']-before['settled_cpu_ns']==observed['cpu_ns']+20_000_000_000
         assert after['start_clock']==before['start_clock']
         assert after['deadline_boottime_ns']==before['deadline_boottime_ns']
+        # G3: the retained payload identity and the resume both name the exec'd
+        # interpreter, and the credited path retains docker's clean exit.
+        identity_retained(boundary,attempt,work_id)
+        exit_facts=payload_exit_retained(boundary,attempt,work_id)
+        assert exit_facts['exit_code']==0 and not exit_facts['oom_killed'], exit_facts
+        images[work_id]=dict(
+            process=[(e['data']['pid'],e['data']['comm'],e['data']['exe']) for e in payload_process_events(boundary,attempt,work_id)],
+            resumed=[(e['data']['pid'],e['data']['comm'],e['data']['exe']) for e in supervision_events(boundary,attempt,'RESUMED',work_id)],
+            payload_exit=exit_facts)
+    images['admission']=[(e['data']['pid'],e['data']['comm'],e['data']['exe'])
+        for e in supervision_events(boundary,attempt,'PROCESS','admission')]
+    host.save(boundary.output/(attempt+'-payload-images.json'),images)
     boundary.restart()
     assert snapshot(boundary,attempt)['settled_cpu_ns']==after['settled_cpu_ns']
 
@@ -173,7 +225,18 @@ def test_s2_two_descendants_exhaust_owned_cpu(real_boundary):
         time.sleep(.5)
     else:
         raise AssertionError('bounded descendants wait expired')
-    host.save(boundary.output/(attempt+'-descendants-facts.json'),dict(facts=facts,state=state['state']))
+    # G3: whenever the guardian itself settled the work (its overrun stop landed
+    # before its absolute timer), docker's terminal State for the stopped payload
+    # was retained before that settlement -- a stopped payload never exits 0. On
+    # the timer path the guardian died mid-loop and no settlement exists to bind.
+    settled_by_guardian=work(state,'descendants')['observation_bytes_b64'] is not None
+    exit_facts=None
+    if settled_by_guardian:
+        exit_facts=payload_exit_retained(boundary,attempt,'descendants')
+        assert exit_facts['exit_code']!=0, exit_facts
+    identity_retained(boundary,attempt,'descendants')
+    host.save(boundary.output/(attempt+'-descendants-facts.json'),dict(facts=facts,state=state['state'],
+        settled_by_guardian=settled_by_guardian,payload_exit=exit_facts))
     boundary.restart()
     state=snapshot(boundary,attempt)
     assert work(state,'descendants')['state']=='IN_DOUBT'
