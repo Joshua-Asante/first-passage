@@ -15,7 +15,8 @@ from c1_rail.qualification.contract import canonical_json_bytes as encoded
 from c1_rail.qualification.execution import campaign_supervisor as supervisor
 from c1_rail.qualification.execution import service as service_module
 from c1_rail.qualification.execution.campaign_store import (
-    CANCELLATION_PENDING, VOID_AUTHENTICATION_PREFIX, VOID_REFUSAL_PREFIX, CampaignStore)
+    CANCELLATION_PENDING, VOID_AUTHENTICATION_PREFIX, VOID_REFUSAL_PREFIX,
+    VOID_TERMINAL_REFUSAL_PREFIX, CampaignStore)
 from c1_rail.qualification.execution.protocol import sha256
 from c1_rail.qualification.execution.store import ExecutionStore
 from composition_fixture import signed_approval
@@ -350,17 +351,22 @@ def test_negative_transition_proceeds_under_the_barrier_and_leaves_the_body_pend
     campaigns.recover_work(attempt, 'reserved', encoded(clock(16)))
     assert snapshot(instance, case)['state'] == 'BOUND'
     # ABORTED is a negative fact: it commits under the barrier and, being a
-    # campaign terminal, makes the queued body unfundable. No liveness is lost:
-    # nothing positive could follow anyway, and no route forges VOID.
+    # campaign terminal, makes the queued body unfundable -- but never
+    # unrecordable (S2-G4 A1): the terminal-but-VALID campaign authenticates the
+    # body once, uncharged, so the operator's VOID intent is answered instead of
+    # pending forever, and no charge object exists for it.
     state = json.loads(campaigns.record_work_transition(attempt, 'reserved', encoded(dict(
         schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id='reserved',
         state='ABORTED', clock=clock(17), data={})), expected_revision=snapshot(instance, case)['authority_revision']))
     assert state['state'] == 'ABORTED'
-    monkeypatch.setattr(service_module, 'verify_detached_approval',
-                        lambda *a, **k: (_ for _ in ()).throw(AssertionError('authentication on a terminal campaign')))
-    refused = json.loads(instance.handle_request(OPERATOR, valid))
-    assert refused['state'] == 'ABORTED' and refused['validity'] == 'VALID' and refused['void_pending'] is True
-    assert refused['void_authentication_attempts'] == 0
+    receipt = json.loads(instance.handle_request(OPERATOR, valid))
+    assert receipt['validity'] == 'VOID'
+    current = status(instance, case)
+    assert current['state'] == 'ABORTED' and current['void_pending'] is False
+    assert current['void_authentication_attempts'] == 0  # uncharged: no charge object was minted
+    assert objects(instance, case, VOID_AUTHENTICATION_PREFIX) == []
+    assert funding(instance, case)['settled_cpu_ns'] == ADMISSION_CHARGE  # the terminal attempt costs nothing
+    assert campaigns.void_retry(valid) is not None
     ExecutionStore(instance.store.path)
 
 
@@ -666,3 +672,260 @@ def test_resumed_launch_failure_takes_recovery_with_an_unspent_slot(tmp_path, mo
     assert 'supervision_control_' + sha256(encoded(['admission', 'RECOVERY_OWNER'])) in control_slots(instance, case)
     assert json.loads(instance.handle_request(CLIENT, request(case)))['state'] == 'IN_DOUBT'
     ExecutionStore(instance.store.path)
+
+
+# --- S2-G4: store-side invariants (A1, A5, A7) --------------------------------
+
+
+def _retained_process_event(campaigns, attempt, work_id, pid, cgroup, *, t=14):
+    """One retained alive-verified PROCESS identity, in whichever shape the
+    installed parser accepts: G3 adds and requires the process image fields
+    (comm/exe); a pre-G3 parser whitelists them away. The A5 store rule reads
+    only the cgroup, so either shape proves the same thing."""
+    base = dict(pid=pid, start_ticks=1, uid=1001, cgroup=cgroup)
+    for image in (dict(comm='python', exe='/opt/ops/bin/python'), {}):
+        raw = encoded(dict(
+            schema='qualification_campaign_supervision_event/v1', attempt_id=attempt,
+            work_id=work_id, kind='PROCESS', clock=clock(t), data=dict(base, **image)))
+        try:
+            campaigns.retain_supervision_event(raw)
+        except ValueError:
+            continue
+        return raw
+    raise AssertionError('no accepted PROCESS event shape on this tree')
+
+
+def _reserve_and_start(campaigns, attempt, work_id, limits):
+    campaigns.reserve_work(attempt, work_id, 'N1_G5',
+        encoded(dict(limits=limits, clock=clock(13), input_sha256='e' * 64)),
+        expected_revision=json.loads(campaigns.budget_snapshot(attempt))['authority_revision'])
+    scopes = supervisor.work_enrollment('host1', attempt, work_id)
+    campaigns.record_work_transition(attempt, work_id, encoded(dict(
+        schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id=work_id,
+        state='START_INTENT', clock=clock(14),
+        data=dict(campaign_scope_id=scopes['campaign_slice'], work_scope_id=scopes['payload_slice']))),
+        expected_revision=json.loads(campaigns.budget_snapshot(attempt))['authority_revision'])
+    return scopes
+
+
+def test_void_queued_in_the_dispatch_window_is_refused_then_recorded_after_terminalisation(tmp_path, monkeypatch):
+    """PR #436 review A1, end to end: a legitimate VOID that lands while a dispatch
+    row is unacknowledged is refused (the window closes), the pending-cancellation
+    barrier terminalises the started work, and the exact retry authenticates once
+    uncharged on the terminal-but-VALID campaign and records the VOID."""
+    instance, case = funded_service(tmp_path, monkeypatch)
+    _, context = admit(instance, case)
+    attempt = case['attempt_id']
+    campaigns = CampaignStore(instance.store)
+    limits = snapshot(instance, case)['profile']['phases']['N1_G5']
+    _reserve_and_start(campaigns, attempt, 'work', limits)
+    valid = void_request(case, context)
+    with campaigns.launch_gate(attempt, 'work', lambda: encoded(clock(15))) as gate:
+        refused = json.loads(instance.handle_request(OPERATOR, valid))
+        assert refused['void_pending'] is True and refused['validity'] == 'VALID'
+        assert refused['void_authentication_attempts'] == 0
+        assert funding(instance, case)['settled_cpu_ns'] == ADMISSION_CHARGE  # nothing charged in the window
+    campaigns.acknowledge_dispatch(attempt, 'work', 'guardian', gate['token'], lambda: encoded(clock(16)))
+    # The queued body's barrier fails the started work's next positive step; the
+    # guardian's failure shape is the negative IN_DOUBT transition.
+    state = json.loads(campaigns.record_work_transition(attempt, 'work', encoded(dict(
+        schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id='work',
+        state='IN_DOUBT', clock=clock(17), data={})),
+        expected_revision=json.loads(campaigns.budget_snapshot(attempt))['authority_revision']))
+    assert state['state'] == 'IN_DOUBT' and state['validity'] == 'VALID'
+    receipt = json.loads(instance.handle_request(OPERATOR, valid))
+    assert receipt['validity'] == 'VOID'
+    current = status(instance, case)
+    assert current['void_pending'] is False and current['void_authentication_attempts'] == 0
+    assert objects(instance, case, VOID_AUTHENTICATION_PREFIX) == []       # the terminal attempt is uncharged
+    assert objects(instance, case, VOID_TERMINAL_REFUSAL_PREFIX) == []     # and it verified
+    assert objects(instance, case, 'pending_void') == []
+    assert funding(instance, case)['settled_cpu_ns'] == ADMISSION_CHARGE
+    assert campaigns.void_retry(valid) is not None
+    ExecutionStore(instance.store.path)
+
+
+def test_forged_body_on_a_terminal_campaign_is_refused_once_uncharged_and_never_requeued(tmp_path, monkeypatch):
+    """A forged body queued on a terminal-but-VALID campaign gets exactly one
+    uncharged attempt: the refusal is retained by body digest, the body is
+    cleared, the campaign stays VALID, and the same digest can never be queued
+    again -- while a distinct body gets its own single attempt."""
+    instance, case = funded_service(tmp_path, monkeypatch)
+    _, context = admit(instance, case)
+    attempt = case['attempt_id']
+    campaigns = CampaignStore(instance.store)
+    limits = snapshot(instance, case)['profile']['phases']['N1_G5']
+    campaigns.reserve_work(attempt, 'reserved', 'N1_G5',
+        encoded(dict(limits=limits, clock=clock(13), input_sha256='e' * 64)),
+        expected_revision=snapshot(instance, case)['authority_revision'])
+    forged = void_request(case, context, private=Ed25519PrivateKey.generate())
+    campaigns.queue_diagnostic_void(forged)
+    state = json.loads(campaigns.record_work_transition(attempt, 'reserved', encoded(dict(
+        schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id='reserved',
+        state='ABORTED', clock=clock(16), data={})),
+        expected_revision=snapshot(instance, case)['authority_revision']))
+    assert state['state'] == 'ABORTED' and state['validity'] == 'VALID'
+    with pytest.raises(ValueError):  # one uncharged attempt: verified, refused, retained, cleared
+        instance.handle_request(OPERATOR, forged)
+    current = status(instance, case)
+    assert current['validity'] == 'VALID' and current['void_pending'] is False
+    assert objects(instance, case, VOID_AUTHENTICATION_PREFIX) == []
+    assert objects(instance, case, VOID_TERMINAL_REFUSAL_PREFIX) == [
+        VOID_TERMINAL_REFUSAL_PREFIX + sha256(forged)]
+    refusal = json.loads(campaigns.retained_object(attempt, VOID_TERMINAL_REFUSAL_PREFIX + sha256(forged)))
+    assert refusal['sequence'] == 1 and refusal['request_sha256'] == sha256(forged)
+    assert funding(instance, case)['settled_cpu_ns'] == ADMISSION_CHARGE
+    # The same digest is never re-queued on this campaign ...
+    with pytest.raises(ValueError, match='already refused on the terminal campaign'):
+        instance.handle_request(OPERATOR, forged)
+    # ... a distinct body gets its own single uncharged attempt (a valid one).
+    other = json.loads(instance.handle_request(OPERATOR, void_request(case, context, reason='other')))
+    assert other['validity'] == 'VOID'
+    assert len(objects(instance, case, VOID_TERMINAL_REFUSAL_PREFIX)) == 1
+    ExecutionStore(instance.store.path)  # the digest-keyed refusal reopens clean
+
+
+def test_terminal_refusal_tampering_is_rejected_on_reopen(tmp_path, monkeypatch):
+    """The digest-keyed terminal refusals are integrity-checked: a body whose
+    request digest no longer matches its role, or a broken sequence, is refused
+    when the journal reopens."""
+    import sqlite3
+    instance, case = funded_service(tmp_path, monkeypatch)
+    _, context = admit(instance, case)
+    attempt = case['attempt_id']
+    campaigns = CampaignStore(instance.store)
+    limits = snapshot(instance, case)['profile']['phases']['N1_G5']
+    campaigns.reserve_work(attempt, 'reserved', 'N1_G5',
+        encoded(dict(limits=limits, clock=clock(13), input_sha256='e' * 64)),
+        expected_revision=snapshot(instance, case)['authority_revision'])
+    forged = void_request(case, context, private=Ed25519PrivateKey.generate())
+    campaigns.queue_diagnostic_void(forged)
+    campaigns.record_work_transition(attempt, 'reserved', encoded(dict(
+        schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id='reserved',
+        state='ABORTED', clock=clock(16), data={})),
+        expected_revision=snapshot(instance, case)['authority_revision'])
+    with pytest.raises(ValueError):
+        instance.handle_request(OPERATOR, forged)
+    role = VOID_TERMINAL_REFUSAL_PREFIX + sha256(forged)
+    saved = json.loads(campaigns.retained_object(attempt, role))
+    tampered = encoded(dict(saved, request_sha256='f' * 64))
+    connection = sqlite3.connect(instance.store.path)
+    connection.execute('UPDATE full_campaign_objects SET body=? WHERE attempt_id=? AND role=?',
+                       (tampered, attempt, role))
+    connection.commit()
+    connection.close()
+    with pytest.raises(ValueError, match='terminal cancellation refusal binding differs'):
+        CampaignStore(ExecutionStore(instance.store.path))
+
+
+def test_charged_authentications_bound_reserve_work_to_one_allowance_view(tmp_path, monkeypatch):
+    """S2-G4 A7: the snapshot's remaining is pre-charge; after N charged
+    authentication attempts a reservation that still fits the snapshot but not
+    the projection's remaining is refused and terminalises the campaign."""
+    # Contract budget 1585 s (>= the 1440 s phase-ceiling sum bind_budget requires):
+    # admission 20 s, twelve 120 s drain phases, 125 s left in the snapshot.
+    instance, case = funded_service(tmp_path, monkeypatch, budget_seconds=1585)
+    _, context = admit(instance, case)
+    assert drain(instance, case, keep_ns=125 * 10**9) == 125 * 10**9
+    forged = void_request(case, context, private=Ed25519PrivateKey.generate())
+    for _ in range(3):  # 3 x 2 s charged: the projection holds 119 s, the snapshot 125 s
+        with pytest.raises(ValueError):
+            instance.handle_request(OPERATOR, forged)
+    campaigns = CampaignStore(instance.store)
+    limits = snapshot(instance, case)['profile']['phases']['N1_G5']
+    assert snapshot(instance, case)['remaining_cpu_ns'] == 125 * 10**9  # pre-charge view
+    state = json.loads(campaigns.reserve_work(case['attempt_id'], 'overdraft', 'N1_G5',
+        encoded(dict(limits=limits, clock=clock(14), input_sha256='f' * 64)),
+        expected_revision=snapshot(instance, case)['authority_revision']))
+    # A 120 s phase fits the snapshot's 125 s but not the projection's 119 s:
+    # refused (terminal), and the reservation was not granted.
+    assert state['state'] == 'BUDGET_EXHAUSTED'
+    assert all(w['work_id'] != 'overdraft' for w in state['works'])
+    assert funding(instance, case)['remaining_cpu_ns'] == 119 * 10**9  # the authoritative view
+    ExecutionStore(instance.store.path)
+
+
+def test_credit_requires_a_retained_payload_scope_identity_store_side(tmp_path, monkeypatch):
+    """S2-G4 A5: with the supervision observation layer engaged (the guardian's
+    own retained PROCESS identity, outside the payload slice), CAPTURED for an
+    enrolled work requires a retained alive-verified PROCESS identity inside
+    that work's payload slice; the guardian's identity never counts."""
+    instance, case = funded_service(tmp_path, monkeypatch)
+    _, context = admit(instance, case)
+    attempt = case['attempt_id']
+    campaigns = CampaignStore(instance.store)
+    limits = snapshot(instance, case)['profile']['phases']['N1_G5']
+    scopes = _reserve_and_start(campaigns, attempt, 'probe', limits)
+    campaigns.record_work_transition(attempt, 'probe', encoded(dict(
+        schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id='probe',
+        state='RUNNING', clock=clock(15), data={})),
+        expected_revision=json.loads(campaigns.budget_snapshot(attempt))['authority_revision'])
+    manifest = encoded(dict(schema='qualification_campaign_work_manifest/v1', attempt_id=attempt,
+        work_id='probe', role='probe_g5', probe='noop'))
+    campaigns.retain_supervision(attempt, 'probe', encoded(dict(
+        schema='qualification_campaign_supervision/v1', host_run_id='host1', attempt_id=attempt,
+        work_id='probe', manifest_bytes_b64=base64.b64encode(manifest).decode('ascii'), scopes=scopes)))
+    chain = '/' + scopes['campaign_slice'] + '/' + scopes['work_slice']
+    # The guardian's own startup identity: in the guardian unit's cgroup, under
+    # the work slice but OUTSIDE the payload slice -- it engages the supervision
+    # layer's rules while proving the guardian, never the payload.
+    _retained_process_event(campaigns, attempt, 'probe', 9999,
+        '/system.slice/' + scopes['work_slice'] + '/' + scopes['guardian_unit'])
+    revision = json.loads(campaigns.budget_snapshot(attempt))['authority_revision']
+
+    def capture():
+        return campaigns.record_work_transition(attempt, 'probe', encoded(dict(
+            schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id='probe',
+            state='CAPTURED', clock=clock(16),
+            data=dict(capture_bytes_b64=base64.b64encode(b'captured').decode()))), expected_revision=revision)
+    with pytest.raises(ValueError, match='alive-verified payload identity required'):
+        capture()
+    # A payload-scope identity (the container's cgroup under the enrolled
+    # payload slice) opens the credit path, and the journal reopens clean.
+    _retained_process_event(campaigns, attempt, 'probe', 4242,
+        chain + '/' + scopes['payload_slice'] + '/docker-' + 'f' * 64 + '.scope')
+    state = json.loads(capture())
+    assert next(w for w in state['works'] if w['work_id'] == 'probe')['state'] == 'CAPTURED'
+    ExecutionStore(instance.store.path)
+
+
+def test_integrity_refuses_credited_work_whose_payload_identity_was_removed(tmp_path, monkeypatch):
+    """S2-G4 A5 walk: a credited, enrolled work on a supervised attempt whose
+    payload-scope PROCESS events were removed (a tampered journal -- the
+    guardian's own identity still present, so the layer is engaged) is refused
+    when the journal reopens."""
+    import sqlite3
+    instance, case = funded_service(tmp_path, monkeypatch)
+    _, context = admit(instance, case)
+    attempt = case['attempt_id']
+    campaigns = CampaignStore(instance.store)
+    limits = snapshot(instance, case)['profile']['phases']['N1_G5']
+    scopes = _reserve_and_start(campaigns, attempt, 'probe', limits)
+    campaigns.record_work_transition(attempt, 'probe', encoded(dict(
+        schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id='probe',
+        state='RUNNING', clock=clock(15), data={})),
+        expected_revision=json.loads(campaigns.budget_snapshot(attempt))['authority_revision'])
+    manifest = encoded(dict(schema='qualification_campaign_work_manifest/v1', attempt_id=attempt,
+        work_id='probe', role='probe_g5', probe='noop'))
+    campaigns.retain_supervision(attempt, 'probe', encoded(dict(
+        schema='qualification_campaign_supervision/v1', host_run_id='host1', attempt_id=attempt,
+        work_id='probe', manifest_bytes_b64=base64.b64encode(manifest).decode('ascii'), scopes=scopes)))
+    chain = '/' + scopes['campaign_slice'] + '/' + scopes['work_slice']
+    _retained_process_event(campaigns, attempt, 'probe', 9999,
+        '/system.slice/' + scopes['work_slice'] + '/' + scopes['guardian_unit'])
+    payload_event = _retained_process_event(campaigns, attempt, 'probe', 4242,
+        chain + '/' + scopes['payload_slice'] + '/docker-' + 'f' * 64 + '.scope')
+    state = json.loads(campaigns.record_work_transition(attempt, 'probe', encoded(dict(
+        schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id='probe',
+        state='CAPTURED', clock=clock(16),
+        data=dict(capture_bytes_b64=base64.b64encode(b'captured').decode()))),
+        expected_revision=json.loads(campaigns.budget_snapshot(attempt))['authority_revision']))
+    assert next(w for w in state['works'] if w['work_id'] == 'probe')['state'] == 'CAPTURED'
+    ExecutionStore(instance.store.path)  # clean while the identity is retained
+    connection = sqlite3.connect(instance.store.path)
+    connection.execute('DELETE FROM full_campaign_objects WHERE attempt_id=? AND role=?',
+                       (attempt, 'supervision_event_' + sha256(payload_event)))
+    connection.commit()
+    connection.close()
+    with pytest.raises(ValueError, match='credited work lacks alive-verified payload identity'):
+        CampaignStore(ExecutionStore(instance.store.path))
