@@ -92,7 +92,7 @@ def test_manifest_lists_all_always_gates():
     assert "data-manifests" in out
     assert "path-conditional" in out
 
-    # --list is documented (Makefile, CLAUDE.md) as the "hard-gate roster" —
+    # --list is documented (Makefile, AGENTS.md) as the "hard-gate roster" —
     # audit-tier (report-only) diagnostics must not appear by default, or an
     # operator reading that roster sees non-gates mixed into merge enforcement.
     for gid in EXPECTED_AUDIT:

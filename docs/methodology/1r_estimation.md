@@ -55,7 +55,7 @@ So `qty` scales with equity. Realized $ losses scale with equity. Reporting a ba
 
 **Feed:** OANDA XAUUSD via `Guardian_Gold_v5.5_OANDA_XAUUSD_2026-04-25_9ae1f.csv`.
 The canonical lock-of-record portfolio MC was calibrated on the **Pepperstone**
-2022→2026 panel (per CLAUDE.md Protection section). The OANDA panel is used here
+2022→2026 panel (per AGENTS.md Protection section). The OANDA panel is used here
 because it is the only on-disk artefact with the matching v5.5-locked snapshot
 and a clean equity-progression column. The result (median realized loss / equity
 at entry ≈ designed risk) is structural to compounding percent-risk sizing and
@@ -89,7 +89,7 @@ lots × multiplier; therefore `live $-at-risk per trade ≈ balance × baseline_
 — a balance-compounding sizing model.
 
 The live model is therefore equivalent to Pine's `strategy.equity` per-trade
-compounding **at weekly resolution**, not per-trade resolution: per CLAUDE.md
+compounding **at weekly resolution**, not per-trade resolution: per AGENTS.md
 the multiplier "updates weekly when balances update (via `python cli.py update`),
 not daily." Within-week balance drift is not captured by the multiplier.
 Within-week drawdown drift, however, *is* captured by `dd_protection.py`'s 1.5%

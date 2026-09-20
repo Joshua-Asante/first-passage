@@ -3,7 +3,7 @@
 External (non-broker-feed) reference panels used by `lab/` research. The CSV
 **bytes are gitignored** (vendor / third-party TOS: personal export OK,
 redistribution not); only `SHA256SUMS` is tracked. Regen / integrity gate is the
-standard vendor-data flow — see CLAUDE.md **Vendor-data integrity gate**
+standard vendor-data flow — see AGENTS.md **Vendor-data integrity gate**
 (`python scripts/check_data_manifests.py --regenerate --dry-run` → `--regenerate`,
 commit the `SHA256SUMS` delta in the same commit). `check_data_manifests.py` only
 hashes `*.csv` here, so this README does not affect the gate.

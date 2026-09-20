@@ -85,7 +85,7 @@ BUST_KEYS: Tuple[str, ...] = ("bust_daily", "bust_static", "bust_trailing")
 # says otherwise — including the Part A figures, the A2 feasibility map, and the
 # ORB campaign cells. That is a deliberate modelling choice, not an oversight:
 # the operator maintains a standing weekly venue-idle token trade that satisfies
-# the rule when the strategy itself has not fired (CLAUDE.md §Live-execution
+# the rule when the strategy itself has not fired (AGENTS.md §Live-execution
 # posture; one such trade executed 2026-08-12). The choice is PRICED, twice:
 #   * lab/analysis/c1/c1_cadence_inactivity_2026-08-02   — 92.6-97.6% path death
 #   * lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02 — §5c + inactivity_

@@ -38,7 +38,7 @@ def _write(root: Path, rel: str, text: str) -> None:
 # --- Finding shape -------------------------------------------------------- #
 
 def test_finding_shape():
-    f = Finding(id="X", category="skew", routing="Action", summary="s", source="CLAUDE.md:1", next_step="n")
+    f = Finding(id="X", category="skew", routing="Action", summary="s", source="AGENTS.md:1", next_step="n")
     assert f.routing in ROUTING
     assert f.category == "skew"
 
@@ -46,7 +46,7 @@ def test_finding_shape():
 # --- skew_scan (C1) ------------------------------------------------------- #
 
 def test_skew_detects_headroom_retraction(tmp_path):
-    _write(tmp_path, "CLAUDE.md", "anchor: 99.83% pass; p99 DD 0.63pp headroom; tighter than prior.\n")
+    _write(tmp_path, "AGENTS.md", "anchor: 99.83% pass; p99 DD 0.63pp headroom; tighter than prior.\n")
     _write(tmp_path, "docs/mc_anchor_history.md",
            "Q-SWAP-2 ... provisionally retracted ... under fixed-1R modeling (0.45pp).\n")
     findings = skew_scan(tmp_path)
@@ -54,11 +54,11 @@ def test_skew_detects_headroom_retraction(tmp_path):
     assert findings[0].id == "SKEW-headroom-fixed1r"
     assert findings[0].category == "skew"
     assert findings[0].routing == "Action"
-    assert findings[0].source.startswith("CLAUDE.md:")
+    assert findings[0].source.startswith("AGENTS.md:")
 
 
 def test_skew_clean_when_caveat_present(tmp_path):
-    _write(tmp_path, "CLAUDE.md",
+    _write(tmp_path, "AGENTS.md",
            "anchor: 99.83% pass; p99 DD 0.63pp headroom (under fixed-1R per M-SWAP-1: 0.45pp).\n")
     _write(tmp_path, "docs/mc_anchor_history.md",
            "Q-SWAP-2 ... provisionally retracted ... under fixed-1R modeling.\n")
@@ -66,7 +66,7 @@ def test_skew_clean_when_caveat_present(tmp_path):
 
 
 def test_skew_clean_when_no_retraction_in_history(tmp_path):
-    _write(tmp_path, "CLAUDE.md", "anchor: p99 DD 0.63pp headroom.\n")
+    _write(tmp_path, "AGENTS.md", "anchor: p99 DD 0.63pp headroom.\n")
     _write(tmp_path, "docs/mc_anchor_history.md", "no retraction here.\n")
     assert skew_scan(tmp_path) == []
 
@@ -74,7 +74,7 @@ def test_skew_clean_when_no_retraction_in_history(tmp_path):
 # --- obligation_scan (C2 part 1) ------------------------------------------ #
 
 def test_obligation_surfaces_near_date(tmp_path):
-    _write(tmp_path, "CLAUDE.md",
+    _write(tmp_path, "AGENTS.md",
            "Forward revert trigger: run regime-check quarterly (next dates: 2026-08-08, 2026-11-08).\n")
     findings = obligation_scan(tmp_path, asof=date(2026, 6, 23), horizon_days=60)
     assert any("2026-08-08" in f.summary for f in findings)
@@ -83,12 +83,12 @@ def test_obligation_surfaces_near_date(tmp_path):
 
 
 def test_obligation_ignores_far_date(tmp_path):
-    _write(tmp_path, "CLAUDE.md", "review trigger next: 2026-11-08.\n")
+    _write(tmp_path, "AGENTS.md", "review trigger next: 2026-11-08.\n")
     assert obligation_scan(tmp_path, asof=date(2026, 6, 23), horizon_days=60) == []
 
 
 def test_obligation_requires_keyword(tmp_path):
-    _write(tmp_path, "CLAUDE.md", "The lock landed on 2026-08-08 after testing.\n")
+    _write(tmp_path, "AGENTS.md", "The lock landed on 2026-08-08 after testing.\n")
     assert obligation_scan(tmp_path, asof=date(2026, 6, 23), horizon_days=60) == []
 
 
@@ -339,13 +339,13 @@ def test_render_run_empty_is_no_findings():
 
 
 def test_render_run_lists_findings_grouped():
-    f = Finding(id="SKEW-x", category="skew", routing="Action", summary="s", source="CLAUDE.md:80", next_step="n")
+    f = Finding(id="SKEW-x", category="skew", routing="Action", summary="s", source="AGENTS.md:80", next_step="n")
     out = render_run(asof=date(2026, 6, 23), findings=[f])
-    assert "SKEW-x" in out and "Action" in out and "CLAUDE.md:80" in out
+    assert "SKEW-x" in out and "Action" in out and "AGENTS.md:80" in out
 
 
 def test_render_run_is_deterministic():
-    f = Finding(id="OBLIG-2026-08-08", category="obligation", routing="Forward", summary="s", source="CLAUDE.md:82", next_step="n")
+    f = Finding(id="OBLIG-2026-08-08", category="obligation", routing="Forward", summary="s", source="AGENTS.md:82", next_step="n")
     assert render_run(date(2026, 6, 23), [f]) == render_run(date(2026, 6, 23), [f])
 
 

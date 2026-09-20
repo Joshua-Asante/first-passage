@@ -3,7 +3,7 @@
 Research and operations for automated futures strategies: **generate → evaluate →
 deploy → measure → update**. Current priorities are in [STATE.md](STATE.md);
 execution safeguards and the recorded rail posture are in
-[CLAUDE.md](CLAUDE.md#live-execution-posture).
+[AGENTS.md](AGENTS.md#live-execution-posture).
 
 ## Source of truth
 
@@ -12,7 +12,7 @@ The five root documents have separate jobs:
 | File | Job |
 |---|---|
 | [README.md](README.md) | Human entry point and task routing |
-| [CLAUDE.md](CLAUDE.md) | Agent instructions, essential safeguards, and source authority |
+| [AGENTS.md](AGENTS.md) | Agent instructions, essential safeguards, and source authority |
 | [PIPELINES.md](PIPELINES.md) | Workflow, handoffs, and available machinery |
 | [STATE.md](STATE.md) | Current priorities and outstanding obligations |
 | [REPO_MAP.md](REPO_MAP.md) | Present architecture, import boundaries, and module entry points |
@@ -47,5 +47,5 @@ search is not evidence that prior work or source bytes never existed.
 ## Public-clone note
 
 Vendor data, Pine sources, and executable ports of locked strategies are private,
-hash-pinned inputs; see [CLAUDE.md §Public-clone posture](CLAUDE.md#public-clone-posture)
+hash-pinned inputs; see [AGENTS.md §Public-clone posture](AGENTS.md#public-clone-posture)
 for the boundaries and integrity checks.

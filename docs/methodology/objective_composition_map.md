@@ -52,7 +52,7 @@ For each decision class below: the governing instrument(s), each one's denominat
 
 ## Protection sizing (dd_protection trigger/scale)
 
-**Governing instrument:** per-instance `(trigger, scale, reference_mode)` objective template — `docs/adr/2026-07-13-dd-protection-concept-not-constant.md` (Accepted): "minimize P(bust against THAT firm's live barrier) at least sizing intervention, subject to a productivity floor." Survival-denominated. Frozen literals live in `core/dd_protection.py` (human summary: [`CLAUDE.md`](../../CLAUDE.md) §Protection); consumed by c1; new instances require pre-registered re-MC + both-halves regime gate + admitting ADR.
+**Governing instrument:** per-instance `(trigger, scale, reference_mode)` objective template — `docs/adr/2026-07-13-dd-protection-concept-not-constant.md` (Accepted): "minimize P(bust against THAT firm's live barrier) at least sizing intervention, subject to a productivity floor." Survival-denominated. Frozen literals live in `core/dd_protection.py` (human summary: [`AGENTS.md`](../../AGENTS.md) §Protection); consumed by c1; new instances require pre-registered re-MC + both-halves regime gate + admitting ADR.
 
 **Does not overlap** with rung selection, cap allocation, or candidate admission — each is a distinct, explicitly-scoped decision class with its own owning ADR chain (DD trigger/scale calibration → C2 relock → ULP-rounding companion → concept-not-constant, an explicit linear supersession lineage, never a competing pair).
 

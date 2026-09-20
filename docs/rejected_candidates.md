@@ -860,7 +860,7 @@ breadth without risk-weight balance did not shrink the dollar-denominated traili
 standing — the sizing lever passed its own sibling haircut re-MC (WATCH-1 0.50× clears all four
 partitions × both discharge tiers) and **was** the c1 book's sole deployable path at the time
 (2026-07-17 G8 ratification), independent of this fork. ⚠ Both Striker legs were **WITHDRAWN
-2026-08-04** and stay barred from redeploy — there is no live c1 book today; see CLAUDE.md
+2026-08-04** and stay barred from redeploy — there is no live c1 book today; see AGENTS.md
 Live-execution posture. This finding is historical, not a current deployment path. ORB-MNQ-1
 standalone lifecycle standing is unchanged —
 remains `CANDIDATE @ 1.00×` with its own ADMISSION.md caveats; this closure kills only its role

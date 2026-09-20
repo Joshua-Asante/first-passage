@@ -38,7 +38,7 @@ Every entry carries `"content_verified": true|false`:
 |---|---|
 | `id` | Unique key. Full entries use the registry's own ID (`M-21`, `E1`, `F-1`, the standalone-file slug). Stub entries use `<prefix>_<name>` (e.g. `lesson_dsr_floor_k_governed`) — the prefix is the external-pointer class, matching `feedback_*` / `lesson_*` / `project_*` convention. |
 | `class` | `E` \| `M` \| `F` \| `standalone` \| `feedback` \| `lesson` \| `project`. |
-| `status` | `CANDIDATE` \| `PROMOTED` \| `DORMANT` \| `external-unmigrated`. |
+| `status` | `CANDIDATE` \| `PROMOTED` \| `DORMANT` \| `external-unmigrated` \| `migrated`. A `migrated` row is a memory-name **pointer**: its content was transcribed into `methodology_lessons.md` (the `M-N` in its `siblings` / `full_ref`), so in-repo citations of the memory name and the registry entry's `memory_twin` both resolve. It carries no content of its own by design. |
 | `status_note` | Free text: dates, promotion/demotion detail, provenance caveats. |
 | `title`, `one_line_lesson`, `cost_if_repeated` | `null` on stub entries. |
 | `trigger_globs`, `trigger_keywords` | Rough matchers a future forcing-hook could use to surface this lesson when a touched file/keyword looks relevant. Empty on stub entries (no content to derive triggers from). |
@@ -58,6 +58,8 @@ follow-up (`trigger_globs`/`trigger_keywords` are shaped for exactly that), not 
 **Before authoring a new lesson**, grep this file for the topic first — a stub entry
 with a citing file may point you at prior (external) discussion worth chasing down
 before re-deriving from scratch.
+
+**2026-09-20 batch.** M-26 … M-48 were migrated from the Claude-memory store into `methodology_lessons.md` (process / verification / multi-agent review lessons) so that every harness reading the repo — Claude Code, Codex, Z Code — sees them; their memory-name rows are now `migrated` pointers. Research-domain stubs (regime, DSR, MC, instrument findings) remain `external-unmigrated` pending a later batch. The regeneration also repaired cp1252 mojibake (`Δ`, `§`) that the 2026-08-26 Windows generation had written into five entries.
 
 **When a stub entry's content becomes known** (the external store is consulted, or the
 name gets cited again and someone migrates it): promote it to a full entry — populate

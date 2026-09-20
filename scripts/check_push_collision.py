@@ -11,7 +11,7 @@ Measured firings of that class (all three logged in
   2026-07-11  PR #325's planned PR-2 fully mooted by a parallel FXIFY retirement.
   2026-07-14  Q-SFRISK-1 Phase-0 re-derived in parallel; ratified fork abandoned.
   2026-07-24  A §4 discharge was recorded 36 min after `origin/main` WITHDREW it.
-              Only docs/adr/INDEX.md conflicted textually; CLAUDE.md and STATE.md
+              Only docs/adr/INDEX.md conflicted textually; AGENTS.md and STATE.md
               **auto-merged cleanly into a direct self-contradiction** (WITHDRAWN
               on one line, DISCHARGED on another). The git conflict count was not
               a safety signal.
@@ -24,7 +24,7 @@ It is the precise collision condition:
 
 Governance class = the surfaces that carry decision status and are restated in
 several places, so a stale edit reads as authoritative:
-    CLAUDE.md, STATE.md, docs/SESSIONS.md, docs/adr/**,
+    AGENTS.md, STATE.md, docs/SESSIONS.md, docs/adr/**,
     docs/briefs/pre-registration/**,
     docs/ltm/briefs/pre-registration/**,   (widened 2026-08-08)
     docs/spec/PREREG-*,                    (widened 2026-08-08)
@@ -85,7 +85,7 @@ GOVERNANCE_PREFIXES = (
 _PREREG_ROOT = "lab/analysis/"
 _PREREG_STEM = "PREREG"
 GOVERNANCE_FILES = (
-    "CLAUDE.md",
+    "AGENTS.md",
     "STATE.md",
     "docs/SESSIONS.md",
 )

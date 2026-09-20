@@ -567,7 +567,7 @@ def is_older_than_months(decision: date, today: date, months: int) -> bool:
 
 
 _ROOT_DOCS = (
-    "CLAUDE.md",
+    "AGENTS.md",
     "STATE.md",
     "REPO_MAP.md",
     "README.md",
