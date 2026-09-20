@@ -581,9 +581,11 @@ class CampaignStore(FundingStoreMixin):
         returns compact historical status and leaves the queued body in place.
         The charge is settled at claim time from the original allowance and is
         never refunded; the outcome is recorded separately (VOID receipt or
-        retained refusal). Returns (sequence, status); sequence is None when
-        refused (terminal, pending funding/recovery/dispatch, insufficient
-        allowance, VOID already, or no funding projection to charge).
+        retained refusal). Returns (sequence, status): sequence is None when
+        refused (pending funding/recovery/dispatch, insufficient allowance on a
+        fundable campaign, VOID already, or no funding projection to charge);
+        sequence 0 is the uncharged one-use attempt of a terminal-but-VALID
+        campaign (A1); sequence >= 1 is a charged attempt.
         """
         from .campaign_budget import clock
         request = parse_campaign_request(request_bytes)
@@ -600,20 +602,34 @@ class CampaignStore(FundingStoreMixin):
             if not self._admitted(c, attempt):
                 raise ValueError('post-admission cancellation authentication requires a retained receipt')
             doc = self._funding(c, attempt)
-            if (row['validity'] != 'VALID' or doc is None or doc['state'] != 'BOUND'
-                    or doc['terminal_overlay'] is not None or doc['bootstrap_pending_work_id'] is not None
-                    or doc['recovery_pending'] or doc['dispatch_pending'] or bound['cpu_ns'] > doc['remaining_cpu_ns']):
+            # The transient windows keep their refusals: a sibling bootstrap claim,
+            # a recovery or a dispatch closes on its own and the exact retry then
+            # takes one of the outcomes below.
+            if (row['validity'] != 'VALID' or doc is None or doc['bootstrap_pending_work_id'] is not None
+                    or doc['recovery_pending'] or doc['dispatch_pending']):
                 return None, encoded(self.diagnostic_status(attempt))
-            sequence = len(self._void_authentications(c, attempt)) + 1
-            record = encoded(dict(schema=VOID_AUTHENTICATION_SCHEMA, attempt_id=attempt, sequence=sequence,
-                request_sha256=sha256(request_bytes), charge_cpu_ns=bound['cpu_ns'], wall_ns=bound['wall_ns'], clock=observed))
-            parse_void_authentication(record)
-            c.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
-                      (attempt, _void_role(VOID_AUTHENTICATION_PREFIX, sequence), sha256(record), len(record), record))
-            doc.update(settled_cpu_ns=doc['settled_cpu_ns'] + bound['cpu_ns'],
-                       remaining_cpu_ns=doc['remaining_cpu_ns'] - bound['cpu_ns'])
-            _put_funding(c, 'full_campaign_funding', attempt, doc)
-            return sequence, encoded(self.diagnostic_status(attempt))
+            if doc['state'] == 'BOUND' and doc['terminal_overlay'] is None:
+                if bound['cpu_ns'] > doc['remaining_cpu_ns']:
+                    return None, encoded(self.diagnostic_status(attempt))
+                sequence = len(self._void_authentications(c, attempt)) + 1
+                record = encoded(dict(schema=VOID_AUTHENTICATION_SCHEMA, attempt_id=attempt, sequence=sequence,
+                    request_sha256=sha256(request_bytes), charge_cpu_ns=bound['cpu_ns'], wall_ns=bound['wall_ns'], clock=observed))
+                parse_void_authentication(record)
+                c.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
+                          (attempt, _void_role(VOID_AUTHENTICATION_PREFIX, sequence), sha256(record), len(record), record))
+                doc.update(settled_cpu_ns=doc['settled_cpu_ns'] + bound['cpu_ns'],
+                           remaining_cpu_ns=doc['remaining_cpu_ns'] - bound['cpu_ns'])
+                _put_funding(c, 'full_campaign_funding', attempt, doc)
+                return sequence, encoded(self.diagnostic_status(attempt))
+            # S2-G4 A1: a VALID campaign whose budget is terminal or not BOUND
+            # (IN_DOUBT, BUDGET_*, ABORTED, ...) has no allowance to charge and
+            # no positive authority to protect, yet the operator's VOID intent
+            # must remain recordable as a negative fact (spec 2.8; mirrors the
+            # N1_ONLY VOID). One uncharged attempt under the caller's controller
+            # guard: sequence 0 marks it, the outcome is retained by body digest
+            # (refusal) or as the VOID receipt, and the queued body is cleared
+            # either way; re-queueing the same digest is refused at queue time.
+            return 0, encoded(self.diagnostic_status(attempt))
 
     def _charged_attempt(self, connection, attempt, sequence, request_bytes):
         claim = next((r for r in self._void_authentications(connection, attempt) if r['sequence'] == sequence), None)
@@ -624,11 +640,29 @@ class CampaignStore(FundingStoreMixin):
         return claim
 
     def refuse_void_authentication(self, request_bytes, sequence, reason, clock_bytes):
-        """Retain the refusal of one charged attempt and clear the queued body; no refund."""
+        """Retain the refusal of one charged attempt and clear the queued body; no refund.
+
+        Sequence 0 records the outcome of the uncharged terminal-campaign attempt
+        (A1): the refusal is retained keyed by the body digest, so re-queueing
+        the same body on that campaign is refused outright.
+        """
         from .campaign_budget import clock
         request = parse_campaign_request(request_bytes)
         attempt = request['attempt_id']
         with self.store.transaction() as c:
+            if sequence == 0:
+                pending = c.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'", (attempt,)).fetchone()
+                if pending is None or bytes(pending[0]) != request_bytes:
+                    raise ValueError('queued cancellation body required')
+                refusal = encoded(dict(schema=VOID_TERMINAL_REFUSAL_SCHEMA, attempt_id=attempt,
+                    sequence=len(self._void_terminal_refusals(c, attempt)) + 1,
+                    request_sha256=sha256(request_bytes), reason=(reason or 'refused')[:1024], clock=clock(clock_bytes)))
+                parse_void_refusal(refusal, schema=VOID_TERMINAL_REFUSAL_SCHEMA)
+                c.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
+                          (attempt, VOID_TERMINAL_REFUSAL_PREFIX + sha256(request_bytes), sha256(refusal), len(refusal), refusal))
+                c.execute("DELETE FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void' AND body=?",
+                          (attempt, request_bytes))
+                return encoded(self.diagnostic_status(attempt))
             self._charged_attempt(c, attempt, sequence, request_bytes)
             refusal = encoded(dict(schema=VOID_REFUSAL_SCHEMA, attempt_id=attempt, sequence=sequence,
                 request_sha256=sha256(request_bytes), reason=(reason or 'refused')[:1024], clock=clock(clock_bytes)))
@@ -640,10 +674,23 @@ class CampaignStore(FundingStoreMixin):
             return encoded(self.diagnostic_status(attempt))
 
     def complete_void_authentication(self, request_bytes, sequence, *, now):
-        """Record VOID for one charged, verified attempt and clear the queued body."""
+        """Record VOID for one charged, verified attempt and clear the queued body.
+
+        Sequence 0 completes the uncharged terminal-campaign attempt (A1): there
+        is no charge object to bind, so the still-queued body is itself the
+        one-use token.
+        """
         request = parse_campaign_request(request_bytes)
         attempt = request['attempt_id']
         with self.store.transaction() as c:
+            if sequence == 0:
+                pending = c.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'", (attempt,)).fetchone()
+                if pending is None or bytes(pending[0]) != request_bytes:
+                    raise ValueError('queued cancellation body required')
+                receipt = self.void(request_bytes, now=now)
+                c.execute("DELETE FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void' AND body=?",
+                          (attempt, request_bytes))
+                return receipt
             self._charged_attempt(c, attempt, sequence, request_bytes)
             receipt = self.void(request_bytes, now=now)
             c.execute("DELETE FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void' AND body=?",
@@ -1505,6 +1552,16 @@ class CampaignStore(FundingStoreMixin):
                         admission_refusals.append(refusal['sequence'])
                 if sorted(admission_refusals) != list(range(1, len(admission_refusals) + 1)):
                     raise ValueError('admission cancellation refusal sequence differs')
+                # Terminal-campaign refusals (A1) are uncharged: post-admission,
+                # keyed by the body digest, contiguous in their own sequence.
+                for name in tuple(retained):
+                    if name.startswith(VOID_TERMINAL_REFUSAL_PREFIX):
+                        refusal = parse_void_refusal(retained.pop(name), schema=VOID_TERMINAL_REFUSAL_SCHEMA)
+                        if (refusal['attempt_id'] != row['attempt_id']
+                                or name != VOID_TERMINAL_REFUSAL_PREFIX + refusal['request_sha256']
+                                or 'diagnostic_receipt' not in retained):
+                            raise ValueError('terminal cancellation refusal binding differs')
+                self._void_terminal_refusals(connection, row['attempt_id'])
                 payload_slices, process_events = {}, []
                 for name in tuple(retained):
                     if name.startswith('supervision_control_'):

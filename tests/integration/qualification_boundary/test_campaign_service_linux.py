@@ -21,10 +21,10 @@ from c1_rail.qualification.contract import canonical_json_bytes as encoded
 from c1_rail.qualification.execution.campaign_supervisor import work_enrollment, host_slice
 from c1_rail.qualification.execution.protocol import sha256
 try:
-    from test_campaign_supervision_linux import admit, schedule_document, snapshot, wait, work
+    from test_campaign_supervision_linux import admit, has_work, schedule_document, snapshot, wait, work
 except ModuleNotFoundError:  # importlib mode: sibling test modules are not on sys.path
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from test_campaign_supervision_linux import admit, schedule_document, snapshot, wait, work
+    from test_campaign_supervision_linux import admit, has_work, schedule_document, snapshot, wait, work
 
 CHARGE = 2_000_000_000            # control_cpu_seconds + cpu_granularity_seconds
 ADMISSION = 20_000_000_000        # installed orchestration bound, payload cpu 0
@@ -231,6 +231,37 @@ def test_s2_queued_cancellation_bars_new_work_while_admission_still_settles(real
     boundary.restart()
     assert status(boundary, attempt)['validity'] == 'VOID' and status(boundary, attempt)['void_authentication_attempts'] == 0
     evidence['valid'] = dict(queued=queued, submitted=submitted, state=state['state'], later=later)
+    # (c) S2-G4 A1: a VOID queued after the campaign has terminalised is still
+    # recordable. The started wall work is claimed by restart recovery (the
+    # operator-ruled R2b shape): IN_DOUBT work, terminal-but-VALID campaign, and
+    # the operator's body is then authenticated once UNCHARGED under the real
+    # controller guard -- no allowance exists to charge, so no charge object is
+    # minted and the allowance is unchanged by the authentication.
+    bundle = boundary.prepare(idle=True); attempt = bundle['attempt_id']
+    fields = dict(schema=V2, request_id='diagnostic', attempt_id=attempt, bundle_sha256=bundle['bundle_sha256'])
+    submitted = json.loads(boundary.request('SUBMIT_E1', **fields))
+    assert submitted['schema'] == 'qualification_campaign_status/v2', submitted
+    state = wait(boundary, attempt, lambda s: work(s, 'admission')['state'] == 'COMPLETED')
+    contract = status(boundary, attempt)['receipt']['contract_sha256']
+    terminal_reason = 'TEST_ONLY terminal cancellation'
+    scheduled = boundary.schedule(schedule_document(attempt, 'terminal', kind='wall'))
+    assert scheduled['ok'], scheduled
+    wait(boundary, attempt, lambda s: has_work(s, 'terminal') and work(s, 'terminal')['state'] == 'RUNNING')
+    settled_before = funding(boundary, attempt)['settled_cpu_ns']
+    boundary.restart()
+    state = wait(boundary, attempt, lambda s: s['state'] == 'IN_DOUBT')
+    assert state['validity'] == 'VALID' and work(state, 'terminal')['state'] == 'IN_DOUBT', state
+    reply, error = operator_void(boundary, void_fields(attempt, terminal_reason,
+        approval_for(boundary, attempt, contract, terminal_reason)))
+    assert error is None and reply['validity'] == 'VOID', error
+    assert objects(boundary, attempt, 'void_authentication_') == []      # uncharged: no charge object
+    assert objects(boundary, attempt, 'pending_void') == []
+    current = status(boundary, attempt)
+    assert current['validity'] == 'VOID' and current['void_authentication_attempts'] == 0
+    assert funding(boundary, attempt)['settled_cpu_ns'] == settled_before  # the terminal attempt costs nothing
+    evidence['terminal'] = dict(state=state['state'], settled_before=settled_before,
+        settled_after=funding(boundary, attempt)['settled_cpu_ns'],
+        charges=objects(boundary, attempt, 'void_authentication_'))
     host.save(boundary.output/'s2-queued-cancellation.json', evidence)
 
 

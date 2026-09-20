@@ -3,6 +3,7 @@
 import json
 import pytest
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
+from c1_rail.qualification.execution.campaign_funding import parse_request
 from c1_rail.qualification.execution.campaign_store import CampaignStore
 from c1_rail.qualification.execution.store import ExecutionStore
 from test_campaign_budget import ATTEMPT, profile, clock, request, contract_budget, snap, start
@@ -767,3 +768,16 @@ def test_queued_cancellation_refuses_the_claim_before_state_and_is_moot_once_voi
     assert json.loads(store.scheduler_status(ATTEMPT))['validity'] == 'VOID'
     reopened = CampaignStore(ExecutionStore(store.store.path))
     assert reopened.void_retry(cancel) is not None
+
+
+# --- S2-G4 A9-3: the private route refuses colliding work identities ----------
+
+
+@pytest.mark.parametrize('work_id', ['control_probe', 'event_probe', 'admission'])
+def test_scheduler_request_refuses_identities_that_collide_with_object_roles(tmp_path, work_id):
+    """parse_request is the funded producer's entry: a work identity that would
+    collide with a supervision object role (or the fixed admission identity,
+    which only begin_admission mints) never becomes a funded intent."""
+    raw = schedule(attempt_id=ATTEMPT, work_id=work_id)
+    with pytest.raises(ValueError, match='supervision object role|fixed work identity'):
+        parse_request(raw)

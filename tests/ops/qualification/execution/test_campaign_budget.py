@@ -239,3 +239,48 @@ def test_private_snapshot_rejects_invalid_nested_limits(tmp_path):
     value = snap(store)
     value['works'][0]['limits']['cpu_ns'] = True
     with pytest.raises(ValueError): parse_campaign_budget_snapshot(encoded(value))
+
+
+# --- S2-G4: store-side invariants (A2 credit window, A9-3 work identities) ----
+
+
+def test_settled_work_cannot_acquire_credit_after_its_observation(tmp_path):
+    """S2-G4 A2: settlement closes the credit window. CAPTURED and SIGNING_INTENT
+    on a work that already carries a settled observation, and COMPLETED without
+    credit established before it, are refused by the store independently of the
+    guardian (the admission and a linked signing retry keep their capture-less
+    productions)."""
+    store = opened(tmp_path)
+    reserve(store, 'n1')
+    start(store, 'n1')
+    transition(store, 'n1', 'RUNNING')
+    store.settle_work(ATTEMPT, 'n1', observation('n1', 5))
+    with pytest.raises(ValueError, match='settled work cannot acquire credit'):
+        transition(store, 'n1', 'CAPTURED', 15)
+    with pytest.raises(ValueError, match='settled work cannot acquire credit'):
+        transition(store, 'n1', 'SIGNING_INTENT', 15, dict(intent_id='i-1',
+            payload_bytes_b64='eA==', key_id='key', signing_at_utc='2026-09-20T00:00:00Z'))
+    with pytest.raises(ValueError, match='completion requires credit'):
+        transition(store, 'n1', 'COMPLETED', 16)
+    settled = next(w for w in snap(store)['works'] if w['work_id'] == 'n1')
+    assert settled['state'] == 'RUNNING' and settled['observation_bytes_b64'] is not None
+    # A work that never settled is not completed from RUNNING either: credit
+    # (CAPTURED/SIGNED) must be established first.
+    reserve(store, 'n2', 'N2')
+    start(store, 'n2')
+    transition(store, 'n2', 'RUNNING')
+    with pytest.raises(ValueError, match='completion requires credit'):
+        transition(store, 'n2', 'COMPLETED', 17)
+    assert next(w for w in snap(store)['works'] if w['work_id'] == 'n2')['state'] == 'RUNNING'
+
+
+@pytest.mark.parametrize('work_id', ['control_probe', 'event_probe', 'admission'])
+def test_reserve_work_refuses_identities_that_collide_with_object_roles(tmp_path, work_id):
+    """S2-G4 A9-3: 'supervision_' + work_id shares its namespace with the
+    GLOB-queried 'supervision_control_*' / 'supervision_event_*' roles, and the
+    service reserves the fixed 'admission' identity through begin_admission
+    alone; every other producer is refused at this entry."""
+    store = opened(tmp_path)
+    with pytest.raises(ValueError, match='supervision object role|fixed work identity'):
+        reserve(store, work_id)
+    assert all(w['work_id'] != work_id for w in snap(store)['works'])
