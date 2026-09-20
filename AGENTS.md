@@ -15,6 +15,10 @@ the current task; do not infer new work or authorization from historical dispatc
 This is the single instruction file for every agent harness (Claude Code, Codex, or
 any other); there is no `CLAUDE.md`. A `CLAUDE.md §X` citation in a dated record
 reads as `AGENTS.md §X` ([root-doc charter addendum](docs/adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-20--the-agent-constraints-root-is-agentsmd-claudemd-retired)).
+Seats (executive / coordinator / worker / escalation / operator), the committed-handoff rule,
+and the escalation-lane triggers are owned by the
+[surface-allocation ADR](docs/adr/2026-07-14-cc-cursor-surface-allocation.md); dated failure
+evidence behind them is [M-26 … M-48](docs/methodology/lessons/methodology_lessons.md).
 
 Decisions belong with their owning specification, campaign, plan or PR. Create an
 ADR only for durable architecture/governance rationale or authority that needs a
@@ -154,7 +158,8 @@ failure mode:
    instruction count.
 
 After two failed corrections of the same issue, stop, summarize what was
-learned, and restart with a cleaner prompt and explicit verification criteria.
+learned, and restart with a cleaner prompt and explicit verification criteria —
+on the escalation lane the surface-allocation ADR names, not as a third retry.
 
 Where each layer lives here: tests = `tests/` · hooks = [`scripts/gates.yml`](scripts/gates.yml) +
 `scripts/githooks/` + `.claude/hookify.*.local.md` · skills = `.claude/skills/` · this file ·
