@@ -129,8 +129,9 @@ authorization are separate facts. `nautilus_trader` remains research-only.
 fixed-book qualification machinery — contracts, panel and replay, adjudication,
 evidence and seals — with no admission or live authority. Its `execution/`
 subpackage is the separately installed protected service (supervisor, worker,
-independent G5 verification, signing) that runs a genuine TEST_ONLY E1 campaign
-on Linux; `deploy/qualification/bootstrap.py` is its isolated-Python role
+independent G5 verification, signing) that implements the protected execution
+boundary for staged TEST_ONLY qualification on Linux; complete E1 remains under
+development. `deploy/qualification/bootstrap.py` is its isolated-Python role
 launcher and [`tools/qualification_verification/`](tools/qualification_verification/README.md)
 the disposable Ubuntu host. The three `.github/workflows/qualification-*.yml`
 workflows collect boundary, S2 supervision and host evidence for the
