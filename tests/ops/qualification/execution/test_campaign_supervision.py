@@ -2475,9 +2475,19 @@ def test_unobserved_payload_exit_settles_without_completion_and_retains_the_reas
         return _Docker(store, body, exits_before_observation=True)
 
     store, runtime, state, work, enrollment, manifest, docker = _probe_scene(tmp_path, monkeypatch, factory)
+    # Every attempt also retains the GUARDIAN's own startup PROCESS event (cgroup
+    # = the guardian unit, outside the payload slice); it must never satisfy the
+    # payload identity gate (run 35482452099 finding 2).
+    guardian_group = '/' + '/'.join([supervisor.host_slice('host1'),
+        enrollment['scopes']['campaign_slice'], enrollment['scopes']['work_slice'],
+        enrollment['scopes']['guardian_unit']])
+    supervisor._retain_event(store, ATTEMPT, 'probe', 'PROCESS',
+        dict(pid=9999, start_ticks=1, uid=61001, cgroup=guardian_group))
     with pytest.raises(ValueError, match='before any alive-verified process identity'):
         supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
-    assert _events(store, 'PROCESS') == [] and _events(store, 'RESUMED') == []
+    # Only the guardian's event exists: no payload identity was ever retained.
+    assert [e['data']['pid'] for e in _events(store, 'PROCESS')] == [9999]
+    assert _events(store, 'RESUMED') == []
     assert [e['data'] for e in _events(store, 'PROCESS_UNOBSERVED')] == [{'container_id': 'f' * 64, 'exit_code': 0}]
     assert not any(path.endswith('kill?signal=USR1') or method == 'DELETE' for method, path in docker.calls)
     final = snap(store)
@@ -2506,7 +2516,80 @@ def test_nonzero_probe_exit_settles_without_completion(tmp_path, monkeypatch):
     transitions = [json.loads(base64.b64decode(t))['state'] for t in probe['transitions']]
     assert 'CAPTURED' not in transitions and 'COMPLETED' not in transitions and 'ABORTED' not in transitions
     assert probe['observation_bytes_b64'] is not None  # the failure observation is retained
+    # settle_work commits the observation WITHOUT a work-state transition: a
+    # settled non-zero exit stays RUNNING-with-observation and only restart
+    # recovery moves it IN_DOUBT (run 35482452099 'unseen5' -- the Linux wait
+    # predicate must accept this state).
+    assert probe['state'] == 'RUNNING'
     assert docker.calls[-1][0] == 'DELETE'
+
+
+class _LaggingDocker(_Docker):
+    """Docker's Running flag lags the cgroup scope's removal for lag_polls
+    inspections; the container died instantly before any identity (a host kill
+    won the race -- run 35482452099 'unseen4')."""
+
+    def __init__(self, store, body, *, lag_polls):
+        super().__init__(store, body, exits_before_observation=True)
+        self.lag_polls, self.inspects = lag_polls, 0
+
+    def call(self, method, path, body_arg=None):
+        if path.endswith('/json') and self.started:
+            self.inspects += 1
+            running = self.inspects <= self.lag_polls
+            return {
+                'Image': self.body['Image'],
+                'Config': self.body,
+                'HostConfig': self.body['HostConfig'],
+                'State': {'Running': running, 'Pid': 4242 if running else 0,
+                          'ExitCode': 0 if running else 137},
+            }
+        return super().call(method, path, body_arg)
+
+
+def test_run_probe_tolerates_docker_state_lagging_the_scope_removal(tmp_path, monkeypatch):
+    """The scope directory is gone while inspect still says running: a bounded
+    lag falls through to the ordinary absence path (PROCESS_UNOBSERVED refusal)
+    instead of raising on the first lagging re-inspect."""
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+
+    def factory(store, body):
+        return _LaggingDocker(store, body, lag_polls=6)
+
+    store, runtime, state, work, enrollment, manifest, docker = _probe_scene(tmp_path, monkeypatch, factory)
+    vanished = {'calls': 0}
+
+    def flaky_processes(group):
+        vanished['calls'] += 1
+        if vanished['calls'] <= 5:
+            raise FileNotFoundError(group)
+        return ['4242']
+
+    monkeypatch.setattr(supervisor, '_payload_processes', flaky_processes)
+    with pytest.raises(ValueError, match='before any alive-verified process identity'):
+        supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
+    assert docker.inspects >= 6  # lagging re-inspects happened and were tolerated
+    assert vanished['calls'] <= 5  # the reads failed throughout the lag window
+    assert [e['data']['exit_code'] for e in _events(store, 'PROCESS_UNOBSERVED')] == [137]
+
+
+def test_run_probe_raises_after_bounded_docker_state_lag(tmp_path, monkeypatch):
+    """A container inspect PERSISTENTLY reports running while its scope cannot be
+    read: after the bounded lag the original read failure is a real fault."""
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+
+    def factory(store, body):
+        return _LaggingDocker(store, body, lag_polls=10**9)
+
+    store, runtime, state, work, enrollment, manifest, docker = _probe_scene(tmp_path, monkeypatch, factory)
+
+    def always_missing(group):
+        raise FileNotFoundError(group)
+
+    monkeypatch.setattr(supervisor, '_payload_processes', always_missing)
+    with pytest.raises(OSError):
+        supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
+    assert docker.inspects >= 2 * 21  # the guard re-inspected through the whole bound
 
 
 def test_payload_oom_increment_stops_the_container_and_settles_without_completion(tmp_path, monkeypatch):

@@ -68,10 +68,29 @@ def supervision_events(boundary,attempt,kind=None,work_id=None):
     return [row for row in rows if (kind is None or row['kind']==kind) and (work_id is None or row['work_id']==work_id)]
 
 
+def payload_process_events(boundary,attempt,work_id):
+    """Alive-verified PROCESS identities INSIDE the work's payload slice.
+
+    The guardian retains its own startup identity under the same kind/work_id
+    (cgroup = the guardian unit, outside the payload slice); that event proves
+    the guardian, never the payload. Payload identity is proven by an observed
+    cgroup component matching the enrolled payload slice (the container scope
+    beneath it) -- run 35482452099 retained both kinds for one work.
+    """
+    marker='/'+work_enrollment(boundary.root.name,attempt,work_id)['payload_slice']+'/'
+    return [e for e in supervision_events(boundary,attempt,'PROCESS',work_id)
+        if marker in e['data']['cgroup']]
+
+
 def identity_retained(boundary,attempt,work_id):
-    """Completion credit requires a supervisor-retained, alive-verified PROCESS identity."""
-    events=supervision_events(boundary,attempt,'PROCESS',work_id)
-    assert events, 'no alive-verified PROCESS event retained for '+attempt+':'+work_id
+    """Completion credit requires a supervisor-retained, alive-verified PROCESS
+    identity: a payload-scope identity for container-supervised probe works; the
+    admission work has no container, so its guardian IS the supervised process."""
+    if work_id=='admission':
+        events=supervision_events(boundary,attempt,'PROCESS',work_id)
+    else:
+        events=payload_process_events(boundary,attempt,work_id)
+    assert events,'no alive-verified PROCESS event retained for '+attempt+':'+work_id
     return events
 
 
@@ -302,9 +321,14 @@ def _kill_before_observation(boundary,attempt,work_id):
     kills within one poll tick (~1 ms cadence), and treats an 'exited' sighting
     as a lost attempt.
 
+    A lost attempt is one where the guardian retained a PAYLOAD-scope identity
+    (cgroup inside the payload slice) -- never the guardian's own startup
+    PROCESS event, which every attempt retains under the same kind/work_id (run
+    35482452099 discarded four won races that way).
+
     Returns the container id when the guardian settled the work without ever
-    retaining an identity for it; None when the guardian observed it first (that
-    work then completes normally and the caller retries with a fresh work).
+    retaining a payload identity; None when the guardian observed it first (that
+    work then settles without completion credit and the caller retries).
     """
     docker=DockerControl()
     probe(boundary,attempt,work_id)
@@ -326,13 +350,32 @@ def _kill_before_observation(boundary,attempt,work_id):
         time.sleep(.001)
     else:
         raise AssertionError('owned container never reached a running state')
-    # The guardian, on its own exception, marks IN_DOUBT and exits WITHOUT settling
-    # (no self-recovery: that would SIGKILL itself and strand a spent slot); the
-    # service settles it on restart. So wait for the transition, not an observation.
-    state=wait(boundary,attempt,lambda s:work(s,work_id)['state'] in ('COMPLETED','IN_DOUBT'),seconds=120)
-    if supervision_events(boundary,attempt,'PROCESS',work_id):
-        return None  # The guardian observed it before the host kill landed.
-    assert work(state,work_id)['state']=='IN_DOUBT', state
+    # The guardian settles a non-zero exit by committing its OBSERVATION while the
+    # work state itself stays RUNNING -- the IN_DOUBT transition lands at restart
+    # recovery (settle_work never transitions work state; run 35482452099's
+    # 'unseen5' sat settled-RUNNING and timed out a state-only predicate). So the
+    # settled predicate is the observation, plus the two terminal work states.
+    def settled(s):
+        row=work(s,work_id)
+        return row['state'] in ('COMPLETED','IN_DOUBT') or row['observation_bytes_b64'] is not None
+    try:
+        state=wait(boundary,attempt,settled,seconds=120)
+    except AssertionError:
+        # Timeout diagnostics BEFORE any restart/cleanup alters the durable view.
+        scopes=work_enrollment(boundary.root.name,attempt,work_id)
+        diagnostics=dict(state=snapshot(boundary,attempt),events=[
+            dict(kind=e['kind'],utc=e['clock']['utc'],data=e['data'])
+            for e in supervision_events(boundary,attempt,None,work_id)],
+            unit_facts=unit_facts(scopes['guardian_unit'],['ActiveState','Result','ExecMainStatus','SubState']))
+        try:
+            diagnostics['container']=docker.call('GET','/containers/'+container+'/json')
+        except ValueError:
+            diagnostics['container']='unavailable'
+        host.save(boundary.output/(attempt+'-unobserved-timeout.json'),diagnostics)
+        raise
+    if payload_process_events(boundary,attempt,work_id):
+        return None  # The guardian observed the payload before the host kill landed.
+    assert work(state,work_id)['state']=='IN_DOUBT' or work(state,work_id)['observation_bytes_b64'] is not None, state
     return container
 
 
@@ -358,14 +401,21 @@ def test_s2_probe_that_exits_before_observation_never_completes(real_boundary):
     row=work(state,work_id)
     transitions=[json.loads(base64.b64decode(t))['state'] for t in row['transitions']]
     assert not {'CAPTURED','COMPLETED','SIGNING_INTENT'}&set(transitions), transitions
-    assert supervision_events(boundary,attempt,'PROCESS',work_id)==[]
+    # No PAYLOAD identity was ever retained; the guardian's own startup PROCESS
+    # event exists for every attempt and must not satisfy any identity proof.
+    assert payload_process_events(boundary,attempt,work_id)==[]
+    assert supervision_events(boundary,attempt,'PROCESS',work_id), 'guardian self-identity expected'
     assert supervision_events(boundary,attempt,'RESUMED',work_id)==[]
     reasons=[e['data'] for e in supervision_events(boundary,attempt,'PROCESS_UNOBSERVED',work_id)]
-    assert len(reasons)==1 and reasons[0]['container_id']==container, reasons
     # The guardian recorded its own failure and did NOT self-recover: no completed
-    # recovery row it authored, and its one-use RECOVERY_OWNER slot is unspent.
+    # recovery row it authored, and its one-use RECOVERY_OWNER slot is unspent. The
+    # refusal is retained as PROCESS_UNOBSERVED when the guardian reached its
+    # absence path, or as a FAILURE when it crashed even earlier (run 35482452099
+    # 'unseen4': the docker scope vanished mid-read before any identity).
     failures=[e['data']['reason'] for e in supervision_events(boundary,attempt,'FAILURE',work_id)]
     assert failures and all(isinstance(r,str) and r for r in failures), failures
+    if reasons:
+        assert len(reasons)==1 and reasons[0]['container_id']==container, reasons
     assert row['state']=='IN_DOUBT' and row['observation_bytes_b64'] is None
     assert recovery_row(state,work_id) is None
     # On restart the service recovers with an unspent slot: the recovery COMPLETES
@@ -387,7 +437,8 @@ def test_s2_probe_that_exits_before_observation_never_completes(real_boundary):
     for completed_attempt,completed_work in completed:
         identity_retained(boundary,completed_attempt,completed_work)
     host.save(boundary.output/(attempt+'-unobserved-exit.json'),dict(work_id=work_id,container=container,
-        attempts=index+1,reasons=reasons,failures=failures,transitions=transitions,
+        attempts=index+1,refusal='PROCESS_UNOBSERVED' if reasons else 'FAILURE',reasons=reasons,failures=failures,
+        transitions=transitions,
         recovery_completed=completed_recovery['completion_bytes_b64'] is not None,completed_with_identity=len(completed)))
 
 
@@ -421,27 +472,37 @@ def test_s2_payload_cpu_is_kernel_bounded_without_guardian(real_boundary):
     assert [e['data']['deadline_boottime_ns'] for e in supervision_events(boundary,attempt,'DEADLINE','unpolled')]==[deadline]
     # The RESUMED event records the guardian's SEND, not the probe's receipt, and
     # the bounded re-sends that normally cover a send lost before the probe's
-    # block_resume_signal() arm cannot run once the guardian is stopped. Run
-    # 35476561750 stopped the guardian 47 ms after the first send: the kernel
-    # ignored the unhandled SIGUSR1 for the PID-1 init, the probe timed out at
-    # 30 s, the two burners never existed and 0.549 s of interpreter CPU "held"
-    # the bound. So prove the burners are actually consuming their kernel-granted
-    # share -- sustained cpu.stat growth at the quota rate -- BEFORE stopping the
-    # only process that could re-send the resume.
+    # block_resume_signal() arm cannot run once the guardian is stopped. Runs
+    # 35476561750/35478031666 lost the resume (kernel default-ignore for an
+    # unhandled signal to the PID-1 init) and the init timed out at 30 s; run
+    # 35482452099 then showed a single >=150 ms interval of interpreter startup
+    # (0.272->0.553 s) satisfying the old one-interval heuristic. Readiness is
+    # therefore proven by TWO independent host facts before the STOP: (a) the
+    # guardian has alive-verified at least three PAYLOAD-scope identities in the
+    # container scope -- the init plus both burner children, which exist only
+    # after the init actually consumed the resume and forked; and (b) cpu.stat
+    # grew by >=150 ms in each of two consecutive >=1 s intervals, which a
+    # decaying interpreter burst cannot produce (startup totals under 0.6 s).
     burn_deadline=time.monotonic()+90
-    prior=None
+    prior=None; intervals=0; ready_identities=0
     while time.monotonic()<burn_deadline:
+        ready_identities=len(payload_process_events(boundary,attempt,'unpolled'))
         try: usage,stat=_payload_cpu_stat(payload)
         except (OSError,KeyError,ValueError): usage=None
         if usage is not None:
-            if prior is not None and usage-prior[1]>=150_000_000:
-                break  # >=150 ms of CPU in >=1 s: the quota-rate burn is underway.
-            if prior is None or time.monotonic()-prior[0]>=1.0:
+            if prior is not None and time.monotonic()-prior[0]>=1.0:
+                intervals=intervals+1 if usage-prior[1]>=150_000_000 else 0
                 prior=(time.monotonic(),usage)
+            elif prior is None:
+                prior=(time.monotonic(),usage)
+        if ready_identities>=3 and intervals>=2:
+            break
         time.sleep(.2)
     else:
-        raise AssertionError('payload burners never started consuming their quota')
+        raise AssertionError('payload burners never started consuming their quota: identities=%d intervals=%d'
+            %(ready_identities,intervals))
     baseline_ns,baseline_stat=_payload_cpu_stat(payload)
+    baseline_identities=payload_process_events(boundary,attempt,'unpolled')
     host.run(['/usr/bin/systemctl','kill','--signal=STOP',scopes['guardian_unit']])
     stopped_at=boottime_ns()
     peak=baseline_ns; samples=0; populated=0; final_stat=baseline_stat
@@ -460,9 +521,20 @@ def test_s2_payload_cpu_is_kernel_bounded_without_guardian(real_boundary):
         raise AssertionError('stopped guardian never ended')
     ended_at=boottime_ns()
     window_ns=ended_at-stopped_at
+    # Container exit facts before the restart's recovery cleanup can retire them
+    # (the probe's LogConfig is 'none', so no container stderr exists to retain).
+    exit_id,exit_state=_owned_container('unpolled')
+    container_exit='absent'
+    if exit_id is not None:
+        try:
+            container_exit=DockerControl().call('GET','/containers/'+exit_id+'/json')['State']
+        except ValueError:
+            container_exit='unavailable'
     host.save(boundary.output/(attempt+'-payload-bound.json'),dict(cpu_max=quota+' '+period,budget_cpu_ns=budget_cpu_ns,
-        baseline_payload_cpu_ns=baseline_ns,peak_payload_cpu_ns=peak,samples=samples,populated_samples=populated,
-        window_ns=window_ns,final_cpu_stat=final_stat,deadline_boottime_ns=deadline,stopped_at=stopped_at,ended_at=ended_at,facts=facts))
+        baseline_payload_cpu_ns=baseline_ns,baseline_payload_identities=len(baseline_identities),
+        peak_payload_cpu_ns=peak,samples=samples,populated_samples=populated,
+        window_ns=window_ns,final_cpu_stat=final_stat,container_exit=container_exit,
+        deadline_boottime_ns=deadline,stopped_at=stopped_at,ended_at=ended_at,facts=facts))
     assert facts['ActiveState']=='failed' and facts['ExecMainStatus']=='9', facts
     assert stopped_at<deadline<=ended_at<=deadline+15_000_000_000
     # The load-bearing property is the kernel UPPER bound: with the guardian

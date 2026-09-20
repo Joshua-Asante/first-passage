@@ -1045,6 +1045,7 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
     seen_pids = set()
     resume_sends = 0
     stopping = False
+    docker_lagging = 0
     # Stop-on-OOM baseline. memory.oom.group is 1 only on the guardian's own
     # single-task cgroup; the Docker-delegated container scope keeps 0, so a
     # payload OOM kills exactly one victim while the container init survives and
@@ -1077,9 +1078,18 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
                 # read, so its pid/cgroup entries vanished. Re-inspect: a genuinely
                 # live container with unreadable accounting is a real fault, but an
                 # exited one takes the ordinary absence path on the next turn -- it
-                # must never raise into guardian_main's failure handler.
+                # must never raise into guardian_main's failure handler. Docker's
+                # Running flag can briefly lag the cgroup scope's removal (run
+                # 35482452099 work 'unseen4': the scope directory was gone while
+                # inspect still said running): tolerate that bounded lag, then
+                # treat a persistently unreadable running container as the fault
+                # it is.
                 if docker.call('GET', '/containers/' + container + '/json')['State']['Running']:
-                    raise
+                    docker_lagging += 1
+                    if docker_lagging > 20:  # ~1 s at this 50 ms cadence
+                        raise
+                else:
+                    docker_lagging = 0
                 time.sleep(.05)
                 continue
             if escaped:
