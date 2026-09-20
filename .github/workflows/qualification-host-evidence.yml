@@ -8,6 +8,12 @@ name: Qualification host evidence (manual)
 # on a pushed branch under coordinator review only.
 on:
   workflow_dispatch:
+  # Handoff D, temporary: a workflow_dispatch-only file that has never been on
+  # main has no workflow ID (dispatch 404s). One push-triggered run on this
+  # evidence branch registers it; the trigger is removed again in D4.
+  push:
+    branches:
+      - claude/qualification-issues-423-424-88fd15
 
 permissions:
   contents: read
