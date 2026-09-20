@@ -405,3 +405,110 @@ the recorder closed; the tools/tests/README bytes match the records above.
 For each handoff return: checkout path, base and final commit or checksummed working-tree identity, changed-file inventory, behavioral/interface/schema changes, regression evidence, exact commands/interpreter, result counts and skips, verification record paths, remaining dependencies and compatibility limitations. Preserve new source and evidence outside any disposable checkout before it is removed.
 
 The coordinator records A and B as delivered, accepted or blocked separately, checks the complete issue requirements against the final source, and owns any later PR/merge/issue-closure assignment. Closure requires the implementation and verification evidence, not merely this plan or a green unrelated campaign run.
+
+### Handoff C executor return — 2026-09-20 UTC: outcome 2 produced on fresh hosts; outcomes 1 and 3 blocked by a workflow-dispatch platform constraint; one S2 dispatch failure preserved
+
+Coordinator GO received 2026-09-20 for (a) pushing the branch, (b) dispatching the workflows, plus draft PR
+and best-judgment execution. Note: the `superpowers:executing-plans` skill was not available in this
+session; the plan steps were executed directly.
+
+**Checkout and identity.** Worktree `C:/Users/joshu/multi_firm_operations/.claude/worktrees/review-leftover-worktrees-d12e00`,
+branch `claude/qualification-issues-423-424-88fd15`, base chain `f2606b0` → `9680ed2` (A) → `2ff3b5e` (B) →
+**`6cd9ca6`** (Handoff C: `.github/workflows/qualification-host-evidence.yml` only, 143 lines; commit
+`6cd9ca63940054d0209c1a17fe66262688a7c76e`, workflow blob `dbe9a42417d60f9e2a7c8d522724a785e2addbfb`,
+blob sha256 `944995c837e48edae4c92cd0d832322701fd6a0922562f315f42177ca5fce28c`). `git diff --stat
+2ff3b5e..6cd9ca6` = that one file; tools/tests/scripts bytes identical to `2ff3b5e`. `origin/main`
+rechecked before push: no commits in `f2606b0..origin/main`. C0 recheck: doctor OK (`tmp/ops-env`,
+Python 3.13.2, 62 locked packages); B focused suite rerun once → **235 passed / 2 skipped**, record
+`.cache/fp-verification/20260920T041955Z-560d94024f8a` (exit 0, source_stable). `scripts/check_boundaries.py`
+via launcher OK; pre-commit gate manifest passed on the workflow commit. Branch pushed
+`-u origin` (no force); draft PR **#437** opened (authorized). PR-path runs checked out merge commit
+`84fa36f1f8ce40d2ae898cebd42c2b8ba51c81e2` (parents `f2606b0` + `6cd9ca6`); **verified locally that its
+tree equals `6cd9ca6`'s tree**, so PR-path and dispatch runs executed identical content.
+
+**Runs (all on `ubuntu-24.04`).**
+
+| Run | URL | Checked out | Conclusion |
+|---|---|---|---|
+| Boundary dispatch | https://github.com/Joshua-Asante/first-passage/actions/runs/35489412733 | `6cd9ca6` | success (hosts 1, 2) |
+| Boundary PR path | https://github.com/Joshua-Asante/first-passage/actions/runs/35489451474 | `84fa36f` (tree == head) | success (hosts 1, 2) |
+| S2 dispatch | https://github.com/Joshua-Asante/first-passage/actions/runs/35489413703 | `6cd9ca6` | **failure** (defect finding below) |
+| S2 PR path | https://github.com/Joshua-Asante/first-passage/actions/runs/35489451486 | `84fa36f` (tree == head) | success |
+| Tests / Pylint / Gate manifest (PR) | runs/35489451489, /35489451482, /35489451458 | `84fa36f` | all success |
+
+**Outcome 2 (fresh provision → boundary → cleanup) — produced.** All four boundary hosts (dispatch + PR
+path): `record.json` completed, exit 0, `verification_exit_code` 0, `source_stable` true, purpose
+`boundary_acceptance`, scope `N1_ONLY_TEST_ONLY`, invariant manifest sha `ee8c5771b652…`, `test_summary`
+**464 collected / 464 passed / 0 failed / 0 skipped**, `invariants.json` `passed: true`. JUnit total 464 on
+every host; executed inventory: 25 `tests/integration/qualification_boundary` cases plus the required
+ops-qualification nodes, including exactly two `tests/integration/qualification_host/test_host.py` nodes —
+`test_installed_source_and_runtime_are_protected`, `test_real_distinct_uids_and_denied_permissions` (the
+invariant-manifest readiness nodes; the rest of the host suite is `--host-only` and did not run — see
+blocker). Full node-ID list preserved at `<artifact>/<uuid>/_nodeids.txt` in the local copy.
+`host-observations.json`: `host_config_sha256` == branch `host.json` (`ddc5a391480fd322…`) on all hosts;
+`source_commit` as in the table. `boundary/environment.json` on all six qualification hosts (4 boundary +
+2 S2): `ready: true`, exactly 16 checks, `checks.docker_client.observed == "/usr/bin/docker"` (ok),
+`checks.image.observed == {'id': 'sha256:…'}` only, and no `RepoDigests`/`RepoTags`/`"digests"` substring
+anywhere in the file. Cleanup receipts per boundary host: first call `ok: true`, removed 27 (18 containers,
+1 image, 3 users, **5 trees all five-field `{uid, gid, mode, path, kind}`** — `code`/`env`/`keys`
+`0:0 0755`, `data`/`scratch` `61001:61001 0700`), `failures: []`; second (workflow `cleanup.py`) call
+`ok: true`, removed 0 — the idempotent already-retired observable. S2 hosts: same pattern, confirmed
+against the in-run cleanup embedded in `record.json` (`ok: true`, removed 9 incl. the five five-field
+trees; workflow second call `ok: true`, removed 0). No `legacy_tree_bindings` key on any freshly
+provisioned host.
+
+**Defect finding (S2 dispatch run, preserved, not rerun to green).**
+`tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_warm_service_starts_one_guardian_per_work_with_no_scheduler_unit`
+failed at line 196: `assert facts['Slice'] == scopes['work_slice']` → observed `''` (empty) vs expected the
+work-slice name; `systemctl show <guardian_unit> --property=Slice` returned an empty value on that host.
+9 collected / 8 passed / 0 skipped; `require_tests` then rejected the run (`Critical tests missing, failed,
+skipped or malformed`), exit 1; `source_stable` true; cleanup receipts still `ok: true`. Attribution:
+`git diff --stat f2606b0..6cd9ca6` shows the branch did not touch that test file or any S2 supervision
+code (its last change `cf4c6d8` is on main below the base); the same suite passed 9/9 on the PR-path host
+with a byte-identical tree. So: pre-existing S2/systemd-domain failure on one fresh host, not introduced
+by A or B, second data point green. Evidence preserved under `s2-dispatch-failed-35489413703/` (junit,
+record, budget/memory facts, journal, receipts, environment.json). Smallest candidate fix is the
+coordinator's to assign; a re-observation (retry `systemctl show` after a settle, or assert on
+`ControlGroup` fallback) would be my starting hypothesis, not applied.
+
+**Blocker — outcomes 1 (host-only) and 3 (nondefault client) not produced.**
+`qualification-host-evidence.yml` is `workflow_dispatch`-only and has never existed on the default branch.
+GitHub registers workflow files from the default branch only: the file has no workflow ID
+(`GET /actions/workflows` does not list it), `gh workflow run` and a direct
+`POST /actions/workflows/<file>/dispatches` both 404. No dispatch route (UI, CLI, REST, `repository_dispatch`)
+can fire it before the file reaches `main`; a `pull_request` trigger would have been the historical
+mechanism (the retired `33d3ea1` job ran that way) but is explicitly excluded by this plan. Within this
+assignment's constraints (no merge) the executor cannot unblock it. Options for the coordinator:
+(1) smallest — merge a tiny PR adding only `.github/workflows/qualification-host-evidence.yml` to `main`,
+then dispatch from the evidence branch (the branch's tools/tests/scripts are what runs; the workflow file
+on the branch is the one dispatched); (2) authorize a narrowly scoped `pull_request` + paths trigger for a
+temporary evidence pass (contradicts the delivered design); (3) accept outcomes 1 and 3 as not produced
+and record the gap. For option (1), the expected `host_config_sha256` for the nondefault-client run's
+edited `host.json` is precomputed: `d2f1d6bddf08a3813754469af2a29325c09997c00f64b256c1bdeca053d4597c`
+(branch value `ddc5a391480fd322…` + the single sed replacement), so the assertion "differs from the
+branch's host.json by construction" is checkable on arrival. Host umask and `/var/lib/fp-qualification-tests`
+parent mode were **not** recorded (they are captured by the blocked workflow's facts step).
+
+**Commands.** Push: `git push -u origin claude/qualification-issues-423-424-88fd15`. Dispatch:
+`gh workflow run qualification-execution-boundary.yml --ref <branch>`, `…qualification-s2-supervision.yml…`,
+attempted `gh api -X POST …/workflows/qualification-host-evidence.yml/dispatches -f ref=<branch>` (404, see
+blocker). PR: `gh pr create --draft --base main` (#437). Artifacts: `gh run download <id> -D <dir>`.
+
+**Local preservation.** `C:/Users/joshu/multi_firm_operations/tmp/handoff-423-424/c-linux-evidence-2026-09-20/`:
+`boundary-dispatch-35489412733/{qualification-boundary-1,2}`, `boundary-pr-35489451474/{…,2}`,
+`s2-pr-35489451486/qualification-s2-supervision`, `s2-dispatch-failed-35489413703/qualification-s2-supervision`,
+plus `inspect_evidence.py` (the read-only inspection script whose output the numbers above summarize).
+
+**Coverage honesty.** A green badge is evidence only for what JUnit and receipts show executed: the four
+boundary hosts prove the new record shape end-to-end on fresh Linux (provision → fixture build → boundary
+suite → five-field tree retirement → idempotent second cleanup) and the environment-preflight shape with
+the **default** client. They do **not** execute the `--host-only` suite (ownership/permission/interruption
+cases), the nondefault protected client, or the umask/parent-mode observation, and they do not change the
+standing legacy-v3 limitation (owner+group validated, mode not). No merge, no issue closure, no
+required-check change, no `host.json` edit on the branch; trust model
+`trusted_administrator_and_privileged_qexec/v1` unchanged; no shared/reused-host claims.
+
+**Outstanding.** #423: nondefault-client evidence (outcome 3) pending the dispatch unblock; the default-client
+half of A's preflight evidence is now real-Linux-green on six hosts. #424: boundary-cycle evidence produced;
+the full `--host-only` ownership/permission/interruption evidence (outcome 1) pending the same unblock;
+final acceptance remains the coordinator's.
