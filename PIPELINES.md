@@ -12,28 +12,31 @@ below describe machinery and its recorded use; they confer no authorization.
 | P1 | Discovery / research | Available; current queue #1 uses supplied strategies, not a new discovery run | `lab/discovery/`, `lab/research_utils/`, `discovery_manifests/` |
 | P2 | Python → Pine codification bridge | Retired; a future crossing requires a fresh build and identity check | Historical evidence via [archive guidance](docs/ltm/README.md) |
 | P3 | Legacy portfolio Monte Carlo | Legacy CLI idle; shared simulation primitives are reused by current research | `core/mc/`, `core/portfolio_mc.py` |
-| P4 | Firm-specific construction / sizing | Select configuration campaign; follow the [STATE queue](STATE.md) and current plan below | `lab/analysis/c1/`, `core/mc/`, `core/firm_rules.py` |
-| P5 | Execution rail | Built, disarmed; winner implementation/parity precedes deployment | `ops/c1_rail/`, `ops/c1_signal_daemon/`, `deploy/` |
-| P6 | Monitoring | M1 code landed; licensed test-strategy Stage 1 is independent of P4 selection | `ops/c1_rail/c1_rail_telemetry.py`; fill-dependent monitors below |
+| P4 | Firm-specific construction / sizing | Selection closed 2026-09-10 by operator acceptance; Track B qualification of the accepted book is the current handoff (below) | `lab/analysis/c1/`, `core/mc/`, `core/firm_rules.py`, `ops/c1_rail/book_policy.py` |
+| P5 | Execution rail + qualification | Built, disarmed; M1 `RESOLVED` 2026-09-14; Track B qualification, the feed decision and deployment GO precede any deployment | `ops/c1_rail/` (incl. `qualification/`), `ops/c1_signal_daemon/`, `deploy/`, `tools/qualification_verification/` |
+| P6 | Monitoring | M1 `RESOLVED` (A7 attended ceremony + A8 signed acceptance); fill-gated monitors stay dormant | `ops/c1_rail/c1_rail_telemetry.py`; fill-dependent monitors below |
 | X | Governance | Evidence, integrity, and authority checks across every handoff | `scripts/`, `docs/`, manifests |
 
 ### Current campaign handoff
 
-The [Select implementation plan](docs/superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
-owns the current sequence. Its [campaign record](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#52--completed-capture-intake-and-export-provenance-2026-09-05)
-owns evidence, gate dispositions, and operator decisions. Historical phase numbers
-and dispatches in that record are not competing work instructions.
+Configuration selection closed on 2026-09-10 by operator acceptance
+([record](docs/notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure));
+the [Select implementation plan](docs/superpowers/plans/2026-09-02-seven-strategy-tradeify-select-configuration.md)
+is historical. **Track B — qualify the accepted book** (the operator's *Tradeify
+portfolio*) owns the current sequence: the
+[umbrella handoff](docs/briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md)
+routes packets; the [campaign record](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#55--track-b-release--d-b1d-b15-recorded-2026-09-11)
+(§55–§57) owns rulings, evidence and
+[ownership](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#57--astra-tradeify-contract-ownership-and-closeout-routing-2026-09-13);
+the [Protected Full E1 execution-slices plan](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md)
+and its [coordinator handoff](docs/briefs/handoffs/2026-09-19-full-e1-coordinator-handoff.md)
+own the qualification engineering. Consult those for prerequisites and stopping
+rules; neither synthetic E1 evidence nor host readiness constitutes a qualified book.
 
-The plan routes bound sources through faithful sizing, shared-symbol replay and
-used-account simulation, then a statistical freeze, selection, executable-winner
-parity, the sole final validation, and an operator deployment decision. Consult
-the plan for its precise prerequisites and stopping rules; neither complete
-capture coverage nor synthetic engine tests constitute a qualified book.
-Scanner work is separated from campaign delivery by the same owner.
-
-In parallel, M1 item 5 / B7 Stage 1 can use the
-[licensed test strategy](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
-This does not discharge winner-specific parity or authorize arming.
+M1 is `RESOLVED` (2026-09-14: A7 attended ceremony, A8 signed acceptance —
+[record](docs/notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md#a8--signed-acceptance-deployed-re-bake-verified-2026-09-14));
+Track A left the queue. Still separate and owed: the production feed (umbrella
+O-4, deferred 2026-09-11), deployment GO and the arm.
 
 ## P1 — Discovery / research pipeline (Gen-2) — available
 
@@ -111,7 +114,7 @@ standing envelope. P5 owns live quantities; `ops/cli.py` is historical tearsheet
 
 The [four-firm program](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md)
 and its dated falsifier remain distinct from the bounded Select attempt.
-[STATE](STATE.md) tracks that obligation; the current plan above governs execution.
+[STATE](STATE.md) tracks that obligation; the Track B owners above govern execution.
 
 ## P5 — Live execution rail (c1) — BUILT · currently DISARMED
 
@@ -122,12 +125,28 @@ See [listener deployment](deploy/c1_rail/README.md),
 The account's existence, conditional candidate eligibility, and deployed-book
 authorization are separate facts. `nautilus_trader` remains research-only.
 
-## P6 — Monitoring — CFD estate RETIRED; venue-native M1 CODE_LANDED
+**Qualification (Track B, offline).** `ops/c1_rail/qualification/` is the
+fixed-book qualification machinery — contracts, panel and replay, adjudication,
+evidence and seals — with no admission or live authority. Its `execution/`
+subpackage is the separately installed protected service (supervisor, worker,
+independent G5 verification, signing) that runs a genuine TEST_ONLY E1 campaign
+on Linux; `deploy/qualification/bootstrap.py` is its isolated-Python role
+launcher and [`tools/qualification_verification/`](tools/qualification_verification/README.md)
+the disposable Ubuntu host. The three `.github/workflows/qualification-*.yml`
+workflows collect boundary, S2 supervision and host evidence for the
+coordinator's acceptance; they are evidence, never acceptance, and leave the
+required merge status unchanged. The [B0 decision](docs/superpowers/plans/2026-09-19-attended-batch-qualification.md#b0-decision--2026-09-19)
+retained this service over an operator-launched batch. Track B's book owner,
+protection, halt, settlement and takeover modules (`book_*`, `account_close_*`)
+also live in `ops/c1_rail/`; they are offline until a deployment GO.
+
+## P6 — Monitoring — CFD estate RETIRED; venue-native M1 RESOLVED (2026-09-14)
 
 [M1 acceptance](docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json) and its
-[validator](scripts/validate_c1_monitoring_acceptance.py) own monitoring maturity.
-Code landed does not mean RESOLVED. The licensed test strategy can supply item 5
-without a selected book; operator signoff and subsequent arm GO remain separate.
+[validator](scripts/validate_c1_monitoring_acceptance.py) own monitoring maturity;
+status is `RESOLVED` since the [A7/A8 record](docs/notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md#a8--signed-acceptance-deployed-re-bake-verified-2026-09-14).
+`RESOLVED` satisfies only the arming interlock's M1 condition: `dry_run=false`
+still needs the separate operator GO, and no production feed is selected.
 
 [Q-MONSURF-1](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md) distinguishes
 registration-gated idle monitoring, fill-gated capture, and the elective observer.
