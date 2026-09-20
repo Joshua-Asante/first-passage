@@ -610,9 +610,13 @@ def test_s2_deadline_kills_guardian_before_bootstrap_completes(real_boundary):
     # Hold the guardian stopped until shortly before its original deadline, then
     # let it run. It arms the pre-import absolute timer (deadline still ~1.2 s
     # future, so no immediate refusal) and is SIGKILLed by that timer at the
-    # deadline while still importing campaign code -- before RuntimeMax (which is
-    # relative to unit activation and therefore strictly later) and before it can
-    # reach guardian_main's own arm, its PROCESS/DEADLINE events or RUNNING.
+    # deadline -- before RuntimeMax (which is relative to unit activation and
+    # therefore strictly later), before any payload exists and before the work
+    # can leave START_INTENT. How far into guardian_main it gets first is
+    # host-speed dependent: run 35486413008 reached the argv verification
+    # (DEADLINE event) and died in the dispatch-ack wait; runs 35476561750 /
+    # 35478031666 / 35482452099 died still importing. Neither DEADLINE nor the
+    # guardian's own startup PROCESS identity is authority or payload activity.
     while boottime_ns()<deadline-1_200_000_000:
         time.sleep(min(1,(deadline-1_200_000_000-boottime_ns())/10**9))
     resumed_at=boottime_ns()
@@ -627,15 +631,19 @@ def test_s2_deadline_kills_guardian_before_bootstrap_completes(real_boundary):
     ended_at=boottime_ns()
     payload=scope_group(boundary,scopes,'payload_slice')
     payload_state='absent' if not payload.exists() else (payload/'cgroup.events').read_text()
+    late_kinds=sorted({e['kind'] for e in supervision_events(boundary,attempt,None,'late')})
     host.save(boundary.output/(attempt+'-deadline-before-bootstrap.json'),dict(stopped=stopped,deadline_boottime_ns=deadline,
-        resumed_at=resumed_at,ended_at=ended_at,facts=facts,payload=payload_state))
+        resumed_at=resumed_at,ended_at=ended_at,facts=facts,payload=payload_state,supervision_kinds=late_kinds))
     # Killed by the process's own absolute timer (Result=signal), not by the manager's later RuntimeMax (timeout).
     assert facts['ActiveState']=='failed' and facts['ExecMainStatus']=='9' and facts['Result']=='signal', facts
     assert facts['NRestarts']=='0'
     assert resumed_at<deadline<=ended_at<=deadline+5_000_000_000
     after=snapshot(boundary,attempt)
     assert work(after,'late')['state']=='START_INTENT'
-    assert not [e for e in supervision_events(boundary,attempt,None,'late') if e['kind']!='CONTROL']
+    # No payload observation, resume, refusal, cleanup or failure ran; the timer
+    # ended the guardian before any authority or payload activity.
+    assert not {'RESUMED','PROCESS_UNOBSERVED','CLEANUP','FAILURE'}&set(late_kinds), late_kinds
+    assert set(late_kinds)<={'DEADLINE','PROCESS','CONTROL'}, late_kinds
     assert 'populated 1' not in payload_state
     boundary.restart()
     final=snapshot(boundary,attempt)
