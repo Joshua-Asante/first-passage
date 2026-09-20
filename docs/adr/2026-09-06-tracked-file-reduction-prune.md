@@ -1,6 +1,6 @@
 # ADR 2026-09-06 — Tracked-file reduction: present-need survivor set, verified archive preservation
 
-**Status:** `Proposed` — operator (JA) adjudicated the survivor rules and path sets in-session 2026-09-06; merge of the reduction PR is the executed ratification; the §3 archive-push gate is satisfied. **Tier: full** — doctrine limb fires (mass deletion of decision and research records under §16 Retention).
+**Status:** `Accepted` — operator (JA) adjudicated the survivor rules and path sets in-session 2026-09-06; the merge of the reduction PR ([first-passage#316](https://github.com/Joshua-Asante/first-passage/pull/316), `7185ccf`, 2026-09-06) was the executed ratification; the §3 archive-push gate is satisfied. Status corrected from `Proposed` on 2026-09-20 (record maintenance: the stated ratification condition had already occurred; no new ruling). **Tier: full** — doctrine limb fires (mass deletion of decision and research records under §16 Retention).
 **Decision date:** 2026-09-06
 **Authors:** Joshua (direction + adjudication) + Claude Code (path sets, verification, implementation)
 **Supersedes:** none

@@ -56,6 +56,42 @@ historical number by merge commit or branch name, never by number alone. Owner:
 ---
 
 
+## 2026-09-19a — S1 accepted (local semantics); B0 retains the protected service; R2b accepted as funded-scheduler integration only
+
+*Retrospectively recorded 2026-09-20 from the committed ledger and PR records; judgments attributed to their owners.*
+
+- **Focus:** three decisions on the Protected Full E1 slices, all recorded in the [execution-slices ledger](superpowers/plans/2026-09-18-full-e1-execution-slices.md#progress-ledger-and-present-disposition).
+- **Judgment:** (1) **S1 — coordinator ACCEPT for local persisted semantics only** after the two review findings were repaired by the coordinator under the operator's direct assignment (already-settled recovery observes fresh boot/time/resource facts without replacing the immutable charge; fixed-intent signing recovery uses a linked, separately charged retry reservation); independent code review ACCEPT at the final hashes; [first-passage#428](https://github.com/Joshua-Asante/first-passage/pull/428) (`97d0319`). Excludes OS enforcement, stage execution, G5/results/seals and Linux acceptance. (2) **B0 — retain the protected service; the operator-launched batch is not adopted** ([first-passage#430](https://github.com/Joshua-Asante/first-passage/pull/430), [decision](superpowers/plans/2026-09-19-attended-batch-qualification.md#b0-decision--2026-09-19)): compared read-only against `main@97d0319` and the #429 S2 candidate, the batch saved no demonstrable work; the narrowing kept (single-lifetime posture, operator-local client, no batch entrypoint) shaped the R2b dispatch. (3) **R2b — ACCEPTED as the funded scheduler integration only** (operator ruling; [first-passage#433](https://github.com/Joshua-Asante/first-passage/pull/433)): closed service-identity private route funded before construction, `launch_prepared_campaign_work`, release `qualification_execution_release/v4`, owned deadline timer; a same-day operator ruling made funded work interrupted by a service restart auto-recovered. The 9/9 Linux S2 evidence came from stacked [first-passage#434](https://github.com/Joshua-Asante/first-passage/pull/434), whose six pre-existing host-side fixes were also accepted; that evidence accepts nothing beyond those fixes.
+- **Evidence:** ledger entries "S1 coordinator recovery repair closure", "Coordinator acceptance — S2-R2b funded scheduler integration" and "Coordinator acceptance — S2 host-side fixes (PR #434)", each with `fp.ps1` record IDs; S2 CI run 35460338493.
+- **Open / next:** S2 overall INCOMPLETE / NOT ACCEPTED; R3 (post-admission VOID accounting) and R4 (pre-bootstrap absolute deadline) untouched at this point; full-campaign economics unresolved. No S3 dispatch, production authority or deployment.
+
+---
+
+
+## 2026-09-18a — Qualification build-versus-buy: retain the implementation for the N1_ONLY slice
+
+*Retrospectively recorded 2026-09-20 from the committed memo and PR record.*
+
+- **Focus:** scoped review of replacing the qualification execution infrastructure with managed services (conditional Batch/Fargate and Temporal assessments), [first-passage#426](https://github.com/Joshua-Asante/first-passage/pull/426) (`1c2472d`).
+- **Judgment:** the coordinator's recommendation is to **retain the current implementation for completion and six-month maintenance of the protected synthetic N1_ONLY slice**; no replacement experiment is justified by the reviewed evidence. A recommendation only: it granted no migration, implementation or experiment authority, and full-campaign economics remained unresolved. Reopening conditions and the responsibility trace are recorded in the [decision memo](notes/research/2026-09-18-qualification-build-versus-buy.md) and [research record](notes/research/2026-09-18-qualification-build-versus-buy-research.md).
+- **Evidence:** commit-pinned source links, work-package estimates and break-even thresholds in the memo; documentation-only PR, no runtime tests or qualification jobs run.
+- **Open / next:** historical N1 engineering acceptance stays HELD; the memo's reopening conditions are the wake triggers.
+
+---
+
+
+## 2026-09-17a — Capability assessment CAP-20260916 executed; bounded platform-protection incident contract proposed
+
+*Retrospectively recorded 2026-09-20 from the committed records; the proposed exception did not become effective.*
+
+- **Focus:** (1) the bounded self-service capability assessment executed against accepted PR 411 and recorded in [CAP-20260916](briefs/phase4-preparation/2026-09-16/capability-decision.md) — [first-passage#414](https://github.com/Joshua-Asante/first-passage/pull/414) (`63ea701`); (2) the [incident-contract ADR](adr/2026-09-17-bounded-platform-protection-incident-contract.md) published `Proposed` — [first-passage#416](https://github.com/Joshua-Asante/first-passage/pull/416) (`630c677`).
+- **Judgment:** (1) Disposition **BLOCKED FOR LIVE RELEASE**: G0 closed; R1 qualified as a local engineering property only; S1–S5, R2–R5 and the whole-route N1 UNPROVEN, each with a named next owner (operator-supplied inception, close-equity and external-actor inventory; coordinator-sourced report mapping, order/fill exports and terminal protocol). Read-only deployment inspection found listener `dry_run=true`, daemon `emit_enabled=false` and no account-owner/settlement state on either app. (2) The blanket incident fence was pushing the design toward custom trailing infrastructure before platform qualification; the ADR **selects an investigative direction** — fence new strategy commands while a specifically qualified pre-existing platform protection continues within its authorized envelope — as candidate text behind an explicit effectiveness gate. Accepted halt/resume and rail contracts continue to govern; exception-dependent capabilities remain `AMENDMENT_REQUIRED`; ordinary ATM plus a thin bridge is to be reassessed under §7.
+- **Evidence:** settlement/account-owner suites 316 passed and protection/takeover suites 119 passed on base `7c31770` (#414); brief checker exit 0 and ADR graph A1–A8 pass (#416). Private capture batch `CAP-20260916/execution-20260917` holds host/config digests; no account identifiers published.
+- **Open / next:** §7 bounded design work (exact ATM candidate, gap/economics table); propagation to governing contracts only on acceptance. No runtime authority or capability verdict changed.
+
+---
+
+
 ## 2026-09-16a — Retirement landed and wired; #401 skills merged; ADR post-merge corrections
 
 - **Focus:** close the loop on the Cursor retirement and the #401 skill imports — record the ratified-and-wired state that `2026-09-15a`'s `Open / next` still showed as pending, and land the post-merge corrections that Codex's review of #401 surfaced on #405's content.

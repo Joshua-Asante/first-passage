@@ -25,13 +25,16 @@ the [Select implementation plan](docs/superpowers/plans/2026-09-02-seven-strateg
 is historical. **Track B — qualify the accepted book** (the operator's *Tradeify
 portfolio*) owns the current sequence: the
 [umbrella handoff](docs/briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md)
-routes packets; the [campaign record](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#55--track-b-release--d-b1d-b15-recorded-2026-09-11)
-(§55–§57) owns rulings, evidence and
-[ownership](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#57--astra-tradeify-contract-ownership-and-closeout-routing-2026-09-13);
-the [Protected Full E1 execution-slices plan](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md)
-and its [coordinator handoff](docs/briefs/handoffs/2026-09-19-full-e1-coordinator-handoff.md)
-own the qualification engineering. Consult those for prerequisites and stopping
-rules; neither synthetic E1 evidence nor host readiness constitutes a qualified book.
+owns scope, authority and governing gates; the
+[deployment checklist](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md)
+(adopted 2026-09-20) owns the current cross-workstream sequence; the
+[Protected Full E1 execution-slices plan](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md)
+owns qualification engineering requirements and the acceptance ledger; bounded
+handoffs own individual assignments. The [campaign record](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#55--track-b-release--d-b1d-b15-recorded-2026-09-11)
+(§55–§58) owns rulings, evidence and
+[ownership](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#58--campaign-ownership-the-current-coordinating-task-2026-09-20).
+Consult those for prerequisites and stopping rules; neither synthetic E1
+evidence nor host readiness constitutes a qualified book.
 
 M1 is `RESOLVED` (2026-09-14: A7 attended ceremony, A8 signed acceptance —
 [record](docs/notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md#a8--signed-acceptance-deployed-re-bake-verified-2026-09-14));
