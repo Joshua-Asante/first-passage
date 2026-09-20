@@ -249,7 +249,11 @@ def test_s2_queued_cancellation_bars_new_work_while_admission_still_settles(real
     wait(boundary, attempt, lambda s: has_work(s, 'terminal') and work(s, 'terminal')['state'] == 'RUNNING')
     remaining_before = funding(boundary, attempt)['remaining_cpu_ns']
     boundary.restart()
-    state = wait(boundary, attempt, lambda s: s['state'] == 'IN_DOUBT')
+    # Restart recovery settles the interrupted work with the counters it can
+    # still read: the campaign is terminal either way (IN_DOUBT when the slice
+    # survived to be read, BUDGET_UNCERTAIN when the counters were lost with
+    # it) -- the A1 ruling lists every non-BOUND terminal state.
+    state = wait(boundary, attempt, lambda s: s['state'] in ('IN_DOUBT', 'BUDGET_UNCERTAIN', 'BUDGET_EXHAUSTED', 'ABORTED'))
     assert state['validity'] == 'VALID' and work(state, 'terminal')['state'] == 'IN_DOUBT', state
     reply, error = operator_void(boundary, void_fields(attempt, terminal_reason,
         approval_for(boundary, attempt, contract, terminal_reason)))

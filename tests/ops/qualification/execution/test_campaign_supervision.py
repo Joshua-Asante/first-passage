@@ -194,7 +194,37 @@ def test_linked_retry_charges_its_own_bound_without_changing_fixed_intent(
         )
         return encoded(doc)
 
+    def enrolled_payload_identity(work):
+        """S2-G4 A5: the host-faithful preparation for a credited work -- a
+        linked signing retry runs a container on the host like any other work,
+        so it carries an enrollment and a retained alive-verified payload-scope
+        PROCESS identity; the credit rule binds for retries exactly as for any
+        work (the admission is the only exemption). The event shape adapts to
+        the installed parser (G3 adds and requires the process image fields)."""
+        from c1_rail.qualification.execution import campaign_supervisor as supervisor
+        scopes = supervisor.work_enrollment('host1', ATTEMPT, work)
+        manifest = encoded(dict(schema='qualification_campaign_work_manifest/v1',
+            attempt_id=ATTEMPT, work_id=work, role='probe_seal', probe='intent'))
+        store.retain_supervision(ATTEMPT, work, encoded(dict(
+            schema='qualification_campaign_supervision/v1', host_run_id='host1',
+            attempt_id=ATTEMPT, work_id=work,
+            manifest_bytes_b64=base64.b64encode(manifest).decode('ascii'), scopes=scopes)))
+        base = dict(pid=4242, start_ticks=1, uid=61001,
+            cgroup='/' + scopes['campaign_slice'] + '/' + scopes['work_slice'] + '/'
+                   + scopes['payload_slice'] + '/docker-' + 'f' * 64 + '.scope')
+        for image in (dict(comm='python', exe='/opt/ops/bin/python'), {}):
+            raw = encoded(dict(schema='qualification_campaign_supervision_event/v1',
+                attempt_id=ATTEMPT, work_id=work, kind='PROCESS', clock=clock(15),
+                data=dict(base, **image)))
+            try:
+                store.retain_supervision_event(raw)
+            except ValueError:
+                continue
+            return
+        raise AssertionError('no accepted PROCESS event shape on this tree')
+
     reserve('seal', 13)
+    enrolled_payload_identity('seal')
     start(store, 'seal', 14)
     capture(store, 'seal', 15)
     transition(
@@ -229,6 +259,7 @@ def test_linked_retry_charges_its_own_bound_without_changing_fixed_intent(
             recovery_owner_token=RECOVERY_TOKEN,
         )
     reserve('retry', 21, 'seal')
+    enrolled_payload_identity('retry')
     start(store, 'retry', 22)
     store.settle_work(ATTEMPT, 'retry', observed('retry', 23))
     transition(store, 'retry', 'COMPLETED', 24)

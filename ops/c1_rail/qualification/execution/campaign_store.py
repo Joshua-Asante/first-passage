@@ -450,19 +450,22 @@ class CampaignStore(FundingStoreMixin):
         """S2-G4 A5: credit for a container-supervised work needs a retained payload identity.
 
         Binds only when the attempt's supervision observation layer is engaged
-        (a retained PROCESS-kind supervision event). Then every enrolled work other
-        than the admission (whose guardian is itself the supervised process and
-        which has no container) and a linked signing retry (a capture-less
-        deterministic production, like the admission) requires at least one
-        alive-verified PROCESS event inside its enrolled payload slice; an
-        unenrolled work has no legitimate credit path there (production enrolls
-        before START_INTENT).
+        (a retained PROCESS-kind supervision event; the admission guardian
+        retains its own PROCESS identity as its first durable act, so the layer
+        is engaged on every really supervised attempt and dormant only in
+        store-only tests). Then every work other than the admission (whose
+        guardian is itself the supervised process and which has no container)
+        requires an enrollment and at least one alive-verified PROCESS event
+        inside its enrolled payload slice -- a linked signing retry included:
+        on the host it runs a container and retains a payload identity like any
+        other work; an unenrolled work has no legitimate credit path there
+        (production enrolls before START_INTENT).
         The guardian's own PROCESS event is in the guardian unit's cgroup,
         outside the payload slice; it proves the guardian, never the payload.
         Event bodies are read only for the keys this rule needs, so a G3-era
         parser shape difference never matters here.
         """
-        if work['phase'] == 'ADMISSION' or self._retry_parent(work) is not None:
+        if work['phase'] == 'ADMISSION':
             return
         if not self._supervision_events_present(connection, state['attempt_id']):
             return
@@ -1618,7 +1621,7 @@ class CampaignStore(FundingStoreMixin):
                 # credit path. Same scope as record_work_transition's rule.
                 if process_events:
                     for work in state['works']:
-                        if (work['phase'] == 'ADMISSION' or self._retry_parent(work) is not None
+                        if (work['phase'] == 'ADMISSION'
                                 or work['state'] not in ('CAPTURED', 'SIGNING_INTENT', 'SIGNED', 'COMPLETED')):
                             continue
                         payload_slice = payload_slices.get(work['work_id'])
