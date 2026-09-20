@@ -257,9 +257,11 @@ synthesis the executive steers by — is the documented fold-loop failure (M-37,
 on PRs #360, #395 and #401; reviewer ≠ planner is its structural fix (M-46). Fable is placed as a
 lane rather than a seat because its cost is per-instance and its edge is on long, messy,
 high-reasoning work; vendor benchmark and pricing claims about it were treated as unverified
-and are non-load-bearing, as the 2026-07-14 text did for the Cursor comparison. The untracked
-GLM closeout packets found in the main checkout on 2026-09-20 are the committed-handoff rule's
-first application: they are committed or tombstoned before the next GLM dispatch.
+and are non-load-bearing, as the 2026-07-14 text did for the Cursor comparison. The fifteen untracked
+handoff packets found in the main checkout's `docs/briefs/handoffs/` on 2026-09-20 (two GLM, one
+Astra, twelve coordinator/operator packets; `git status --short -- docs/briefs/handoffs/`) are the
+committed-handoff rule's first application: each is committed or tombstoned before the next
+dispatch that would rely on it.
 
 **Why this is a revision and not a new ADR.** The subject of this record *is* surface
 allocation; retiring one of the two surfaces is a change of scope to this decision, not a
