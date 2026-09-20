@@ -203,7 +203,8 @@ python scripts/check_repo_map_scripts_table.py --write
 python scripts/check_repo_map_scripts_table.py --check
 ```
 
-Do not hand-edit the table. `--check` is not wired into `gates.yml`.
+Do not hand-edit the table. `--check` is wired into [`gates.yml`](gates.yml)
+as the path-conditional `repo-map-scripts-table` gate.
 
 ### Installing the check dependencies
 

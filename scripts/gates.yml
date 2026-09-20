@@ -75,6 +75,35 @@ gates:
       - scripts/check_pine_manifest.py
       - --check-pin-provenance
 
+  # Durability invariant for the rail's authoritative SQLite stores. The regex
+  # is deliberately the whole of ops/: the scanner's registry check fires on a
+  # NEW connect site anywhere under ops/, so narrowing it to the six known store
+  # files would make the gate unreachable by exactly the edit it exists to catch
+  # (the reachability rule — scripts/README.md#gate-composition-and-admission).
+  # REPO_MAP §2.1 is generated from repo_map_layers.yml + gates.yml +
+  # `git ls-files 'scripts/*.py'`. It drifted silently by 7 rows because the
+  # generator's --check was never admitted: it meets all three admission
+  # criteria (scripts/README.md#gate-composition-and-admission) — it protects a
+  # changed artifact's integrity, the violating change selects it, and --check
+  # exits 1 on drift. Regex covers all three input sources plus the table.
+  # Fix on failure is `python scripts/check_repo_map_scripts_table.py --write`.
+  - id: repo-map-scripts-table
+    tier: path-conditional
+    when:
+      staged_regex: '^(scripts/[^/]+[.]py|scripts/repo_map_layers[.]yml|scripts/gates[.]yml|REPO_MAP[.]md)'
+    cmd:
+      - python
+      - scripts/check_repo_map_scripts_table.py
+      - --check
+
+  - id: durable-store-pragmas
+    tier: path-conditional
+    when:
+      staged_regex: '^(ops/|scripts/check_durable_store_pragmas[.]py|tests/test_check_durable_store_pragmas[.]py|scripts/gates[.]yml)'
+    cmd:
+      - python
+      - scripts/check_durable_store_pragmas.py
+
   - id: boundaries
     tier: always
     cmd:
