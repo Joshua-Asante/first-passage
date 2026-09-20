@@ -7,7 +7,7 @@ exit/stop geometry, and sizing policy) plus a generation budget G at G0.
 This module owns two things only: schema validation, and the SHA256
 freeze/drift check (audit repair G-D1-FREEZE) -- mirroring the
 PORT_MANIFEST.sha256 pattern already used for locked-strategy ports (root
-CLAUDE.md, Public-clone posture). It does not run the refine loop or score
+AGENTS.md, Public-clone posture). It does not run the refine loop or score
 anything.
 """
 from __future__ import annotations

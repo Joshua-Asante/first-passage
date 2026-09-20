@@ -35,7 +35,7 @@ GOVERNANCE_PREFIXES = (
     "docs/ltm/briefs/pre-registration/",
     "docs/spec/PREREG-",
 )
-GOVERNANCE_FILES = ("CLAUDE.md", "STATE.md", "docs/SESSIONS.md")
+GOVERNANCE_FILES = ("AGENTS.md", "STATE.md", "docs/SESSIONS.md")
 # Campaign-resident frozen prereg bodies (lab/analysis/<theme>/<slug>/PREREG*.md).
 # Basename match, not a glob — see the twin for why.
 _PREREG_ROOT = "lab/analysis/"

@@ -116,14 +116,14 @@ def load_denylist(repo_root: Path) -> Denylist:
         dl.sources.append(str(hist.relative_to(repo_root)))
 
     # MC anchor triple — the historical calibration, denylisted as authority.
-    claude_md = repo_root / "CLAUDE.md"
-    if claude_md.exists():
-        text = claude_md.read_text(encoding="utf-8")
+    agents_md = repo_root / "AGENTS.md"
+    if agents_md.exists():
+        text = agents_md.read_text(encoding="utf-8")
         if m := re.search(r"(\d{2}\.\d{2})% pass / (\d\.\d{2})% bust", text):
             dl.values.update(m.groups())
         if m := re.search(r"p99 DD (\d\.\d{2})%", text):
             dl.values.add(m.group(1))
-        dl.sources.append("CLAUDE.md")
+        dl.sources.append("AGENTS.md")
 
     return dl
 

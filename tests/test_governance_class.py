@@ -37,7 +37,7 @@ GUARDS = pytest.mark.parametrize("guard", [PUSH, SESSION], ids=["push_collision"
 
 IN_CLASS = [
     "STATE.md",
-    "CLAUDE.md",
+    "AGENTS.md",
     "docs/SESSIONS.md",
     "docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md",
     "docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md",

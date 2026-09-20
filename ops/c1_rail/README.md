@@ -1,6 +1,6 @@
 # `ops/c1_rail/` — listener + sizing host
 
-**Disarmed.** Posture is owned by [`CLAUDE.md`](../../CLAUDE.md)
+**Disarmed.** Posture is owned by [`AGENTS.md`](../../AGENTS.md)
 §Live-execution posture. Fly standup:
 [`deploy/c1_rail/README.md`](../../deploy/c1_rail/README.md)
 (standup only — does not authorize arming).

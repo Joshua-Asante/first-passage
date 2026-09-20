@@ -14,7 +14,7 @@ Great Prune T1 pass — recover via `git show pre-prune-2026-08-08:<path>`.
 ## Structural / hub pages
 
 - `288dc0b53c118010afaac75a0be2dd52` — Trading Plan (root) → REPO:docs/ltm/notes/archive/notion/ (children individually mapped; root itself not exported)
-- `32cdc0b53c1181b8a18cce1401a4f8e8` — Command Center → ARCHIVED-AT:docs/ltm/notes/archive/notion/command-center.md (current state: REPO:CLAUDE.md + STATE.md)
+- `32cdc0b53c1181b8a18cce1401a4f8e8` — Command Center → ARCHIVED-AT:docs/ltm/notes/archive/notion/command-center.md (current state: REPO:AGENTS.md + STATE.md)
 - `358dc0b53c11814f8b70c95fd25ec906` — Dev-phase archive → ARCHIVED-AT:docs/ltm/notes/archive/notion/dev-phase-archive.md
 - `35cdc0b53c11819e86fbf4658ab88278` — Framework references → ARCHIVED-AT:docs/ltm/notes/archive/notion/framework-references.md
 
@@ -36,10 +36,10 @@ Great Prune T1 pass — recover via `git show pre-prune-2026-08-08:<path>`.
 ## Command Center current-state pages (§2.4 verified MATCH vs repo)
 
 - `35cdc0b53c1181f2be51c8a8f0078046` — Strategy Lock Reference → ARCHIVED-AT:docs/ltm/notes/archive/notion/strategy-lock-reference.md; CANONICAL:core/strategies/*/{*.pine,LOCK.md} + docs/adr/2026-05-23-allocation-refresh-2.md  *(memory #5)*
-- `35cdc0b53c11813e82fdf5f09f36a459` — Portfolio MC Lock Details → ARCHIVED-AT:docs/ltm/notes/archive/notion/portfolio-mc-lock-details.md; CANONICAL:CLAUDE.md + tests/core/test_mc_anchors.py  *(memory #2, #9)*
+- `35cdc0b53c11813e82fdf5f09f36a459` — Portfolio MC Lock Details → ARCHIVED-AT:docs/ltm/notes/archive/notion/portfolio-mc-lock-details.md; CANONICAL:AGENTS.md + tests/core/test_mc_anchors.py  *(memory #2, #9)*
 - `35cdc0b53c11814d8985d778a92b640f` — Per-Firm Broker Matrix → ARCHIVED-AT:docs/ltm/notes/archive/notion/per-firm-broker-matrix.md; CANONICAL:core/config/params.toml
 - `35cdc0b53c11812dbdd1e84b7e37693f` — Operating Procedures → ARCHIVED-AT:docs/ltm/notes/archive/notion/operating-procedures.md; CANONICAL:docs/operational_rules.md + docs/rule_0.md
-- `35bdc0b53c118175b9eacf4d26c5e1e8` — Weekly Schedule v1.0 (Locked 2026-05-09) → REPO:CLAUDE.md (schedule mirrored in command-center.md); BULK-EXPORT pending (Joshua native)
+- `35bdc0b53c118175b9eacf4d26c5e1e8` — Weekly Schedule v1.0 (Locked 2026-05-09) → REPO:AGENTS.md (schedule mirrored in command-center.md); BULK-EXPORT pending (Joshua native)
 
 ## Loop records / investigations
 
@@ -64,10 +64,10 @@ Great Prune T1 pass — recover via `git show pre-prune-2026-08-08:<path>`.
 
 ## Memory-anchor resolution summary (claude.ai advisor-memory → repo)
 
-- memory **#2** (MC Lock Details) → CLAUDE.md MC anchor + tests/core/test_mc_anchors.py
-- memory **#5** (Strategy Lock Reference) → CLAUDE.md Strategy Reference + core/strategies/*/LOCK.md
+- memory **#2** (MC Lock Details) → AGENTS.md MC anchor + tests/core/test_mc_anchors.py
+- memory **#5** (Strategy Lock Reference) → AGENTS.md Strategy Reference + core/strategies/*/LOCK.md
 - memory **#8** (loop-selection canon) → docs/methodology/inqhiori-canon.md
-- memory **#9** (anchors) → CLAUDE.md + docs/mc_anchor_history.md
+- memory **#9** (anchors) → AGENTS.md + docs/mc_anchor_history.md
 - memory **#13** (Q-roster) → docs/briefs/INDEX.md
 - memory **#16** (role map / three-surfaces) → docs/methodology/archive/notion/methodology-canon.md + docs/adr/2026-06-12-notion-surface-retirement.md
 - memory **#24** (canon §14 read-surface clause) → docs/methodology/inqhiori-canon.md §14
