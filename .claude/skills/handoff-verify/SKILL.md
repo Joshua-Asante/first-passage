@@ -86,6 +86,17 @@ If the handoff freezes a campaign gate (DSR K, placebo clause, SPA family size):
 
 Check the [shared execution contract](../brief-authoring/references/cc_handoff.md#cli-execution-contract-when-dispatching-through-a-cli): requested actions must fit the recorded authority, read/write paths, working directory and worker capabilities. Carry existing authorization forward; report only missing authority or material conflicts. Keep dispatch errors separate from packet-state contradictions, preserving the exact error and using `unknown` when the cause is unproven.
 
+### 8. Card freeze and predeclared acceptance tests (worker dispatches)
+
+For a card dispatched under the surface-allocation ADR's handoff contract:
+
+- **Brief:** the dispatch pointer's SHA matches the brief on `origin/main` (`git rev-parse origin/main:<path>`
+  or the pinned commit). Mismatch → `NEEDS_CONTEXT` (a stale pointer is a stale spec).
+- **Lightweight issue:** recompute `gh issue view <n> --json body -q .body | sha256sum` and compare to the
+  hash in the coordinator's pre-dispatch read comment. Mismatch, or no read comment → `NEEDS_CONTEXT`.
+- **Acceptance tests named** (brief §6.0 or the issue's equivalent table), each with the property it must
+  violate to fail. Absent → `NEEDS_CONTEXT`: the spec is not frozen. Do not substitute tests you write.
+
 ## Output shape
 
 On success, one short block:
@@ -94,6 +105,8 @@ On success, one short block:
 HANDOFF-VERIFY: PASS
 toplevel: <path>
 branch: <name> @ <sha>
+card: <brief path @ sha | #<n> @ sha256:<hash>>
+acceptance: <test names as declared>
 checked: <bullet list of paths/ADRs>
 proceed: <first implementation step>
 ```

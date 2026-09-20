@@ -76,7 +76,9 @@ in the campaign record or `docs/SESSIONS.md`. A direction that exists only in a 
 that exists only untracked on a disk, has not been given and is not dispatchable —
 `AGENTS.md` already forbids inferring work from historical dispatches, and a worker cannot tell a
 current chat direction from a stale one. Private evidence follows M-41 (primary checkout, never a
-worktree). This extends the single-writer rule below to every seat boundary.
+worktree). This extends the single-writer rule below to every seat boundary. **One permitted
+non-file card:** the lightweight dispatch issue (below), whose freeze is a content hash rather
+than a commit SHA; nothing else is exempt.
 
 **Routing test (apply in order).** The tests are about the *work* and the *environment*, not
 about which vendor runs the session, so all four survive the retirement unchanged:
@@ -93,7 +95,9 @@ about which vendor runs the session, so all four survive the retirement unchange
    pre-registrations, closures, lifecycle state, `AGENTS.md`/`STATE.md`/memory; any *edit* to
    `core/` anchor-path code — `dd_protection.py`, `firm_rules.py`, `portfolio_mc.py`,
    `core/mc/*`, `lifecycle.py`, `dd_geometry.py` — or Pine.) → **coordinator**, full stop.
-   Read-only imports of `core/` from `lab/` code are fine on any surface.
+   Read-only imports of `core/` from `lab/` code are fine on any surface. The coordinator may
+   perform that authoring on the escalation lane (trigger 3 below); that changes the model it
+   works on, never the seat that owns the work.
 2. **Is the spec frozen?** Binary acceptance gates, resolved ambiguities, enumerated forbidden
    moves, no judgment calls expected mid-build. If not → the coordinator either does the work
    or freezes the spec first. A worker never resolves a spec ambiguity unilaterally; it bounces
@@ -121,21 +125,34 @@ about which vendor runs the session, so all four survive the retirement unchange
 - **Return contract:** a worker branch (`glm/*`, `codex/*` or `claude/*`), a PR with tests green, and a
   four-state status — `DONE` / `DONE_WITH_CONCERNS` / `NEEDS_CONTEXT` / `BLOCKED`. **No commit
   or merge without the operator.** `DONE_WITH_CONCERNS` is adjudicated by the coordinator before
-  merge; `NEEDS_CONTEXT` gets one re-anchor and re-dispatch, then falls back to the coordinator
-  (two bounces means the spec was not freezable and the packet was mis-routed).
+  merge; `NEEDS_CONTEXT` gets one re-anchor and re-dispatch, then returns to the coordinator
+  (two bounces means the spec was not freezable and the packet was mis-routed). The coordinator
+  owns that return and performs the restart on the escalation lane (trigger 1 below) rather than
+  re-dispatching a third time; see *Ownership and precedence* there.
 
 **Scoped exception — the lightweight dispatch issue** (2026-08-29 addendum #2, retained in shape
-by §8; scoped 2026-09-16 after post-merge review). For a small, precedented fix, a complete
-GitHub-issue body stands in place of item 1's `docs/briefs/**` brief only when it carries items
-2–5 in full: the §0 read-report-before-code requirement with the `NEEDS_CONTEXT` bounce, the §5
-forbidden moves naming the nearby locked surfaces, the test-0 vendor-bytes/secret declaration with
-its confirmed-present check, and the four-state return contract. `check_brief.py` does not run on
-an issue; its place is taken by the coordinator's own pre-dispatch read of the issue body against
-[`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md), recorded in the issue. An issue
-missing any of these is not a lightweight brief but an unfrozen spec, and test 2 keeps it with the
-coordinator. The launch action is the orchestrator opening a worker session against the issue (a
-Claude Code session pointed at it, or a Codex task created from it); an issue with no session
-opened on it dispatches nothing.
+by §8; scoped 2026-09-16 after post-merge review; re-scoped 2026-09-20 to the six-item contract).
+For a small, precedented fix, a complete GitHub-issue body stands in place of item 1's
+`docs/briefs/**` brief only when it carries items 2–6 in full: the §0 read-report-before-code
+requirement with the `NEEDS_CONTEXT` bounce, the §5 forbidden moves naming the nearby locked
+surfaces, the test-0 vendor-bytes/secret declaration with its confirmed-present check, **the
+acceptance tests named before the worker starts — each with the property it must violate to
+fail — exactly as item 5 requires of a brief**, and the four-state return contract.
+`check_brief.py` does not run on an issue; its place is taken by the coordinator's own
+pre-dispatch read of the issue body against
+[`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md), recorded in the issue.
+
+*How an issue's frozen content is preserved.* An issue body is editable and lives outside git, so
+its freeze is a **content hash, not a commit SHA**: the coordinator's pre-dispatch read comment
+records `sha256` of the issue body exactly as read (`gh issue view <n> --json body -q .body |
+sha256sum`) with the read date; the worker recomputes the hash at Phase 0 and returns
+`NEEDS_CONTEXT` on any mismatch, exactly as a stale brief-pointer SHA does; the return PR body and
+the coordinator's integration record cite `#<n> @ sha256:<hash>`. GitHub retains the issue's edit
+history, so the hashed text stays retrievable; an issue edited after the read comment is a new
+card that needs a new read. An issue missing any of items 2–6, or lacking the read comment with
+its hash, is not a lightweight brief but an unfrozen spec, and test 2 keeps it with the
+coordinator. The launch action is the coordinator opening a worker session against the issue; an
+issue with no session opened on it dispatches nothing.
 
 **Proactive dispatch and the environment GO compose; neither removes the other** (2026-09-16
 clarification). Test 3's proactive reading — act, don't merely label — is authority over the
@@ -165,9 +182,18 @@ dispatch:
    surfaces or the rail is authored (or rebuilt after a failed round) on Fable; daily cards are
    not.
 
+**Ownership and precedence.** The escalation lane is not a seat. Dispatching to it is an act of
+the coordinator, the item stays on the coordinator's board, and the result returns to the
+coordinator for integration and to the executive for the next direction like any other return.
+Wherever older wording in this ADR sends an event to the coordinator — routing test 1's
+"→ coordinator, full stop", the return contract's second `NEEDS_CONTEXT` bounce — and a trigger
+above names Fable for the same event, both hold and this paragraph governs: **the coordinator owns
+the item and executes the named rebuild or authoring on Fable instead of in its default session.**
+No trigger transfers ownership, and none of the three triggers may be read as a worker retry on a
+stronger model.
+
 Fable never takes the coordinator seat, never supervises the worker day to day, and never
-sits beside the executive as a second planner. Its result returns to the coordinator for
-integration and to the executive for the next direction, like any other return.
+sits beside the executive as a second planner.
 
 **Merge authority is the operator's, with no automated exception.** The 2026-08-14 binary
 auto-merge gate is retired with the mechanism it drove (§8). Neither a green CI run, nor a clean
@@ -342,6 +368,8 @@ discharged, superseded or explicitly retired"). Full prior text at blob
 | "Surfaces" paragraph (coordinator = Claude Code; workers = Claude Code and Codex; Cursor retired) | **Superseded** by the seat table. Cursor's retirement and its no-falsifier election are **retained** verbatim in substance. |
 | Routing tests 0–3 | **Retained** unchanged; test 1's `CLAUDE.md` reference updated to `AGENTS.md` (the file was retired the same day). |
 | Handoff contract, five items | **Retained**; a sixth item (acceptance tests named in the card) **added**. |
+| Lightweight dispatch issue (items 2–5 in place of a brief) | **Retained in shape, re-scoped**: must carry items 2–6 including the predeclared acceptance tests; its freeze is the body hash in the coordinator's read comment, the one permitted non-file card under the committed-handoff rule. |
+| Routing test 1 "→ coordinator, full stop"; return contract "two bounces fall back to the coordinator" | **Retained**; *Ownership and precedence* under the escalation lane governs the overlap — the coordinator keeps ownership and performs the named authoring/rebuild on Fable. |
 | Return contract branches `codex/*` / `claude/*` | **Retained**, `glm/*` **added**. |
 | Merge authority is the operator's | **Retained** verbatim. |
 | Orchestration rules (disjoint footprints, dispatch-moment Phase-0, review round part of the freeze, pointer SHA) | **Retained** verbatim; the committed-handoff rule generalises the single-writer rule to every seat boundary. |
