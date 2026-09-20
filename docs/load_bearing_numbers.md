@@ -4,8 +4,8 @@
 *every* published bust/pass number, and six figures have a second, historical value somewhere in
 the tree. Each owner named below is the only surface authorized to move its number.
 
-Extracted from [`CLAUDE.md`](../CLAUDE.md) on 2026-09-04 (it landed there 2026-09-03); CLAUDE.md
-now carries a pointer block naming the two rules in one line each.
+Extracted from `CLAUDE.md` on 2026-09-04 (it landed there 2026-09-03; that file is now
+[`AGENTS.md`](../AGENTS.md)); `AGENTS.md` now carries a pointer block naming the two rules in one line each.
 [`operational_rules.md`](operational_rules.md) §7 owns the ownership doctrine, §14 the rule that a
 correction lands where the claim is read.
 

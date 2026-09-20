@@ -28,7 +28,7 @@ def _write(tmp_path: Path, rel: str, text: str) -> Path:
 
 
 def test_clean_correct_restatement_produces_no_findings(tmp_path):
-    _write(tmp_path, "CLAUDE.md", "state: `AUTHORIZED · MECHANISM @ 1.00×`\n")
+    _write(tmp_path, "AGENTS.md", "state: `AUTHORIZED · MECHANISM @ 1.00×`\n")
     assert lc.collect_findings(tmp_path) == []
 
 

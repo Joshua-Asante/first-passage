@@ -114,7 +114,7 @@ a failure into success is a band-aid whatever the comment above it says.
      cwd, the *name* and presence of the relevant env var and `traceback.format_stack()`; run
      **once**, read the whole capture, then reason (code-defect-debugging Phase 2's run-once
      rule). Never log an env var's value: a token, password, DSN or API key written to a test
-     or CI log is a leak (fable-method Step 4.6, CLAUDE.md: never touch secrets). When two
+     or CI log is a leak (fable-method Step 4.6, AGENTS.md: never touch secrets). When two
      candidate values must be told apart, log a fingerprint (length plus a hash prefix), never
      the bytes.
    - **First-unintended-write hunt** — state-shaped bugs, a wrong value present and nobody

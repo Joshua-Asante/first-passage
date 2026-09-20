@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """check_root_doc_liveness.py — root orientation-doc link gate (governance tier).
 
-The five root orientation docs — README.md, CLAUDE.md, PIPELINES.md, REPO_MAP.md,
+The five root orientation docs — README.md, AGENTS.md, PIPELINES.md, REPO_MAP.md,
 STATE.md — are the repo's entry points. They rot in two ways:
 
   1. **Dead links** — a cited path is retired / moved and the markdown link no
@@ -45,7 +45,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # The five root orientation docs. Resolution is against REPO_ROOT — correct here
 # because all five live AT repo root, so file-relative == root-relative for them.
-DEFAULT_DOCS = ("README.md", "CLAUDE.md", "PIPELINES.md", "REPO_MAP.md", "STATE.md")
+DEFAULT_DOCS = ("README.md", "AGENTS.md", "PIPELINES.md", "REPO_MAP.md", "STATE.md")
 
 # [text](target) — non-greedy text, target up to the first ')'
 def _is_gitignored(target: str, repo_root: Path) -> bool:

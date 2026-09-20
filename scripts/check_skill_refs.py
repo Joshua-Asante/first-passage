@@ -94,7 +94,7 @@ REPO_NAV_DIRS = (
     "tests/", ".claude/", "archive/", "analysis/", "strategies/",
     "ops/", "core/", "lab/", "scripts/",
 )
-# Gitignored vendor-data subtrees (public-clone posture, see CLAUDE.md): the CSVs
+# Gitignored vendor-data subtrees (public-clone posture, see AGENTS.md): the CSVs
 # under these are not tracked and are absent on CI / fresh clones, so a skill
 # citing one as an example must not hard-fail — mirrors validate_params.py
 # treating absent Pine as WARN-only. Include both pre-monorepo `data/` and

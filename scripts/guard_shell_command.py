@@ -11,7 +11,7 @@ obligation is resolved, migrated or explicitly retired, never silently lost.
 Two classes are surfaced so the operator confirms before they run:
 
   * **Git hook / signing bypass** — ``--no-verify`` / ``--no-gpg-sign``. Not the
-    standing path (CLAUDE.md §Vendor-data integrity gate: "`git commit
+    standing path (AGENTS.md §Vendor-data integrity gate: "`git commit
     --no-verify` is not the standing path"). A git hook cannot guard this by
     construction — ``--no-verify`` is precisely what skips git hooks — so an
     agent-facing check is the only place the rule can be enforced at all.
