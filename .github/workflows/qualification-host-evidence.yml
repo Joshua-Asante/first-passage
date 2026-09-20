@@ -1,0 +1,143 @@
+name: Qualification host evidence (manual)
+
+# Manual evidence collection for issues #423/#424 on fresh disposable hosts:
+# --host-only ownership/permission/interruption coverage (Handoff B evidence,
+# never boundary acceptance) and one --test-only boundary cycle against a
+# nondefault protected Docker client selected by host.json (Handoff A evidence).
+# Deliberately NOT pull_request-triggered and never a required check; dispatch
+# on a pushed branch under coordinator review only.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host-readiness:
+    name: Host ownership and permission evidence (${{ matrix.host }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        host: [1, 2]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Provision protected TEST_ONLY host
+        run: |
+          sudo /bin/bash tools/qualification_verification/provision.sh \
+            --manifest-output "$RUNNER_TEMP/qualification-manifest"
+      - name: Record host umask and qualification parent facts
+        run: |
+          mkdir -p "$RUNNER_TEMP/qualification-evidence"
+          {
+            printf 'umask\t'
+            sudo sh -c umask
+            printf 'parent\t'
+            sudo stat -c '%U:%G %a' /var/lib/fp-qualification-tests
+          } | tee "$RUNNER_TEMP/qualification-evidence/host-readiness-facts.txt"
+      - name: Doctor and real host permission tests
+        run: |
+          manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+          host_root="$(dirname "$manifest")"
+          sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
+          sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python \
+            scripts/qualification_boundary_verification.py --host-only --manifest "$manifest"
+      - name: Idempotent owned cleanup and export non-secret evidence
+        if: always()
+        run: |
+          if ! test -f "$RUNNER_TEMP/qualification-manifest"; then
+            echo 'Setup failed before ownership reservation; no resources to retire.'
+            exit 0
+          fi
+          manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+          host_root="$(dirname "$manifest")"
+          set +e
+          sudo /usr/bin/python3 -I tools/qualification_verification/cleanup.py --manifest "$manifest"
+          cleanup_status=$?
+          set -e
+          mkdir -p "$RUNNER_TEMP/qualification-evidence"
+          if sudo test -d "$host_root/evidence"; then
+            sudo cp -a "$host_root/evidence/." "$RUNNER_TEMP/qualification-evidence/"
+          fi
+          sudo find "$host_root" -maxdepth 1 -type f -name 'cleanup-*.json' \
+            -exec cp -- '{}' "$RUNNER_TEMP/qualification-evidence/" \;
+          sudo chown -R "$(id -u):$(id -g)" "$RUNNER_TEMP/qualification-evidence"
+          exit "$cleanup_status"
+      - name: Retain host-readiness evidence (no keys or private manifest)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: qualification-host-evidence-${{ matrix.host }}
+          path: ${{ runner.temp }}/qualification-evidence/
+          if-no-files-found: warn
+          retention-days: 14
+
+  boundary-nondefault-client:
+    name: Boundary evidence with nondefault protected Docker client
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Select a nondefault protected Docker client in host.json
+        run: |
+          # TEST_ONLY: this edit lives only in the runner's disposable checkout.
+          # The dirty state is recorded in the manifest's source snapshot, so the
+          # exported host_config_sha256 differs from the branch's host.json by
+          # construction.
+          sudo install -d -m 0755 -o root -g root /opt/fp /opt/fp/bin
+          sudo install -m 0755 -o root -g root /usr/bin/docker /opt/fp/bin/docker
+          sed -i 's#"docker": "/usr/bin/docker"#"docker": "/opt/fp/bin/docker"#' \
+            tools/qualification_verification/host.json
+          git diff --stat
+      - name: Provision protected TEST_ONLY host
+        run: |
+          sudo /bin/bash tools/qualification_verification/provision.sh \
+            --manifest-output "$RUNNER_TEMP/qualification-manifest"
+      - name: Doctor and required real boundary tests
+        run: |
+          manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+          host_root="$(dirname "$manifest")"
+          sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
+          sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python \
+            scripts/qualification_boundary_verification.py --test-only --manifest "$manifest"
+      - name: Idempotent owned cleanup and export non-secret evidence
+        if: always()
+        run: |
+          if ! test -f "$RUNNER_TEMP/qualification-manifest"; then
+            echo 'Setup failed before ownership reservation; no resources to retire.'
+            exit 0
+          fi
+          manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+          host_root="$(dirname "$manifest")"
+          set +e
+          sudo /usr/bin/python3 -I tools/qualification_verification/cleanup.py --manifest "$manifest"
+          cleanup_status=$?
+          set -e
+          mkdir -p "$RUNNER_TEMP/qualification-evidence"
+          # Preserve the distinction between cgroup OOM and external SIGKILL.
+          sudo journalctl --dmesg -b --no-pager > "$RUNNER_TEMP/qualification-evidence/kernel.log" 2>&1 || true
+          sudo journalctl -b -u systemd-oomd --no-pager > "$RUNNER_TEMP/qualification-evidence/oomd.log" 2>&1 || true
+          if sudo test -d "$host_root/evidence"; then
+            sudo cp -a "$host_root/evidence/." "$RUNNER_TEMP/qualification-evidence/"
+          fi
+          sudo find "$host_root" -maxdepth 1 -type f -name 'cleanup-*.json' \
+            -exec cp -- '{}' "$RUNNER_TEMP/qualification-evidence/" \;
+          sudo chown -R "$(id -u):$(id -g)" "$RUNNER_TEMP/qualification-evidence"
+          exit "$cleanup_status"
+      - name: Assert nondefault-client evidence shape
+        run: |
+          env="$RUNNER_TEMP/qualification-evidence/boundary/environment.json"
+          test -f "$env" || { echo "missing exported boundary/environment.json" >&2; exit 1; }
+          jq -e '.checks.docker_client.observed == "/opt/fp/bin/docker"' "$env"
+          jq -e '.checks.image.observed | keys == ["id"]' "$env"
+          ! grep -Eq 'RepoDigests|RepoTags|"digests"' "$env"
+          jq -e '.ready == true and (.checks | keys | length) == 16' "$env"
+      - name: Retain nondefault-client boundary evidence (no keys or private manifest)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: qualification-boundary-nondefault-client
+          path: ${{ runner.temp }}/qualification-evidence/
+          if-no-files-found: warn
+          retention-days: 14
