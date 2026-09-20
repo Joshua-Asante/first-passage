@@ -667,4 +667,12 @@ def test_s2_shared_memory_oom_is_retained_last(real_boundary):
     boundary.restart()
     state=snapshot(boundary,attempt)
     assert state['oom_events']>0
-    assert state['state'] in ('BUDGET_EXHAUSTED','BUDGET_UNCERTAIN')
+    # The OOM ends the campaign from either side of a genuine race: the settle
+    # path derives a budget terminal, and the guardian's stop-on-OOM (first
+    # memory.events increment -> durable IN_DOUBT before the kill, the same
+    # shape as the overrun stop) ends it IN_DOUBT when the stop lands first --
+    # the kernel kills this probe's single-process victim at the same instant
+    # the increment becomes visible to the poll (run 35492219418). The retained
+    # OOM facts are the load-bearing assertion either way; this mirrors the
+    # overrun stop's accepted outcome set in the two-descendants case.
+    assert state['state'] in ('BUDGET_EXHAUSTED','BUDGET_UNCERTAIN','IN_DOUBT'), state['state']
