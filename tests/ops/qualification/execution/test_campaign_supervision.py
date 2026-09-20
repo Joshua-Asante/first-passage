@@ -2362,9 +2362,14 @@ def _probe_scene(tmp_path, monkeypatch, docker_factory):
             )
             return encoded(doc)
 
+    # Mutable so a test can simulate the parent's hierarchical oom_kill increment.
+    memory_events = [b'oom_kill 0\n']
+
     def read_counter(path):
         if path.name == 'cpu.stat':
             return b'usage_usec 0\n'  # metered() phases carry 60 ns; stay under the early stop
+        if path.name == 'memory.events':
+            return memory_events[0]  # the stop-on-OOM baseline and per-poll increment read
         raise AssertionError('unexpected counter read: ' + str(path))
 
     docker = docker_factory(store, body)
@@ -2377,7 +2382,11 @@ def _probe_scene(tmp_path, monkeypatch, docker_factory):
     monkeypatch.setattr(supervisor, '_read_counter', read_counter)
     monkeypatch.setattr(supervisor.time, 'sleep', lambda seconds: None)
     context = SimpleNamespace(store=store.store, recovery_issues={})
-    return store, Runtime(), state, work, enrollment, manifest, docker
+
+    class ProbeRuntime(Runtime):
+        memory = memory_events  # tests flip this to simulate a payload OOM victim
+
+    return store, ProbeRuntime(), state, work, enrollment, manifest, docker
 
 
 def _events(store, kind=None):
@@ -2497,6 +2506,61 @@ def test_nonzero_probe_exit_settles_without_completion(tmp_path, monkeypatch):
     transitions = [json.loads(base64.b64decode(t))['state'] for t in probe['transitions']]
     assert 'CAPTURED' not in transitions and 'COMPLETED' not in transitions and 'ABORTED' not in transitions
     assert probe['observation_bytes_b64'] is not None  # the failure observation is retained
+    assert docker.calls[-1][0] == 'DELETE'
+
+
+def test_payload_oom_increment_stops_the_container_and_settles_without_completion(tmp_path, monkeypatch):
+    """memory.oom.group is 1 only on the guardian's own single-task cgroup, so a
+    payload OOM kills one victim while the container init survives and the payload
+    would run on to its CPU/wall bound (PR #434 review ADVISORY-1). The guardian's
+    poll must stop the payload on the first parent memory.events oom_kill increment
+    -- durable IN_DOUBT before the destructive kill (plan: stop and retain terminal
+    status on overrun/OOM) -- and settlement retains the observation without credit."""
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+
+    class OomDocker(_Docker):
+        """Only a child died at the resume: the init survives until the stop kill."""
+
+        def __init__(self, store, body):
+            super().__init__(store, body, exit_code=137)
+            self.stopped = False
+            self.state_at_kill = None
+            self.oom_flip = None
+
+        def call(self, method, path, body_arg=None):
+            if path.endswith('kill?signal=SIGUSR1'):
+                super().call(method, path, body_arg)
+                if self.oom_flip is not None:
+                    self.oom_flip[0] = b'oom 1\noom_kill 1\n'  # the victim died; the init lives
+                return None
+            if path.endswith('kill?signal=KILL'):
+                self.state_at_kill = next(
+                    w for w in snap(self.store)['works'] if w['work_id'] == 'probe')['state']
+                self.stopped = True
+                return None
+            if path.endswith('/json') and self.started:
+                running = not self.stopped
+                return {
+                    'Image': self.body['Image'],
+                    'Config': self.body,
+                    'HostConfig': self.body['HostConfig'],
+                    'State': {'Running': running, 'Pid': 4242 if running else 0,
+                              'ExitCode': 0 if running else 137},
+                }
+            return super().call(method, path, body_arg)
+
+    def factory(store, body):
+        return OomDocker(store, body)
+
+    store, runtime, state, work, enrollment, manifest, docker = _probe_scene(tmp_path, monkeypatch, factory)
+    docker.oom_flip = runtime.memory
+    supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
+    assert docker.state_at_kill == 'IN_DOUBT'  # durable uncertainty precedes the stop
+    assert _events(store, 'PROCESS_UNOBSERVED') == []  # identity was retained; not the unobserved path
+    probe = next(w for w in snap(store)['works'] if w['work_id'] == 'probe')
+    transitions = [json.loads(base64.b64decode(t))['state'] for t in probe['transitions']]
+    assert transitions == ['START_INTENT', 'RUNNING', 'IN_DOUBT']
+    assert probe['observation_bytes_b64'] is not None  # settled with the OOM observation retained
     assert docker.calls[-1][0] == 'DELETE'
 
 
@@ -2634,6 +2698,67 @@ def test_recover_campaign_work_refuses_to_spend_slot_on_never_started_work(tmp_p
     store.claim_supervision_control(ATTEMPT, 'admission', 'RECOVERY_OWNER', encoded(clock(14)))
     with pytest.raises(ValueError, match='control slot already spent'):
         supervisor.recover_campaign_work(context, reservation, attempt_id=ATTEMPT, work_id='admission')
+
+
+def test_second_restart_skips_completed_recovery_and_keeps_new_work_schedulable(tmp_path, monkeypatch):
+    """Restart recovery of finished history: the first restart completes a recovery
+    row for the completed work; a SECOND restart must not re-claim the one-use
+    RECOVERY_OWNER slot, because the spent-slot claim would flip the completed row
+    to continuation_required and bar the attempt's positive authority for good --
+    while the campaign still has budget and completed works (restart-2 barrier)."""
+    from types import SimpleNamespace
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    from c1_rail.qualification.execution.campaign_budget import recovery_pending
+    from c1_rail.qualification.execution.protocol import sha256
+
+    store, runtime, state, work, enrollment, manifest, docker = _probe_scene(tmp_path, monkeypatch, _Docker)
+    supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
+    before = snap(store)
+    probe_row = next(w for w in before['works'] if w['work_id'] == 'probe')
+    assert probe_row['state'] == 'COMPLETED' and before['state'] == 'BOUND'
+    reservation = base64.b64decode(probe_row['reservation_bytes_b64'])
+
+    class RecoveredRuntime:
+        def __init__(self):
+            self.inspected = 0
+
+        def observation(self, *args):
+            self.inspected += 1
+            return runtime.observation(*args)
+
+        def cleanup(self, *args):
+            return None
+
+    context = SimpleNamespace(store=store.store, campaign_runtime=RecoveredRuntime(), recovery_issues={})
+    monkeypatch.setattr(supervisor, 'observe_campaign_clock', lambda: encoded(clock(20)))
+    first = json.loads(supervisor.recover_campaign_work(context, reservation, attempt_id=ATTEMPT, work_id='probe'))
+    assert first['recoveries'][0]['completion_bytes_b64'] is not None
+    assert not recovery_pending(first) and first['state'] == 'BOUND'
+    assert first['settled_cpu_ns'] == before['settled_cpu_ns']  # no repeated charge
+
+    class ForbiddenRuntime:
+        def observation(self, *args):
+            raise AssertionError('a completed recovery must not be re-observed')
+
+        def cleanup(self, *args):
+            raise AssertionError('a completed recovery must not be re-cleaned')
+
+    context.campaign_runtime = ForbiddenRuntime()
+    monkeypatch.setattr(supervisor, 'observe_campaign_clock', lambda: encoded(clock(21)))
+    second = json.loads(supervisor.recover_campaign_work(context, reservation, attempt_id=ATTEMPT, work_id='probe'))
+    assert second['schema'] == 'qualification_campaign_status/v2'  # status only; nothing re-run
+    durable = snap(store)
+    row = durable['recoveries'][0]
+    assert row['completion_bytes_b64'] is not None and row['continuation_required'] is False
+    assert not recovery_pending(durable) and durable['state'] == 'BOUND'
+    assert context.recovery_issues == {}
+    # Positive authority survives the second restart: fresh work in a fresh
+    # phase (one work per phase) is still reservable.
+    new_manifest = encoded({'schema': 'qualification_campaign_work_manifest/v1', 'attempt_id': ATTEMPT,
+                            'work_id': 'probe2', 'role': 'probe_g5', 'probe': 'noop'})
+    raw = encoded({'limits': profile()['phases']['N1_G5'], 'clock': clock(22), 'input_sha256': sha256(new_manifest)})
+    store.reserve_work(ATTEMPT, 'probe2', 'N1_G5', raw, expected_revision=snap(store)['authority_revision'])
+    assert next(w for w in snap(store)['works'] if w['work_id'] == 'probe2')['state'] == 'RESERVED'
 
 
 def test_linux_runtime_exposes_its_observation_and_cleanup_methods():

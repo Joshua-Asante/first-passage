@@ -496,9 +496,13 @@ class LinuxCampaignRuntime:
             raise ValueError('common scope must disable swap')
         # memory.oom.group is owned by the system manager: it rewrites the
         # attribute on every realization and sets 1 only for OOMPolicy=kill
-        # service/scope units (the guardian), never for a slice. Group OOM
-        # termination therefore lives on the guardian unit and the payload's
-        # BindsTo interlock; the common slice carries the limit and the counters.
+        # service/scope units (the guardian's own single-task cgroup), never for
+        # a slice, and Docker's delegated container scope keeps 0. A payload OOM
+        # is therefore a single-process kill: the guardian's poll reads this
+        # parent's hierarchical memory.events and stops the payload on the first
+        # oom_kill increment (campaign_supervisor._run_probe); BindsTo retires
+        # the payload only when the guardian unit itself ends. The slice carries
+        # the limit and the never-reset counters; settlement retains the facts.
 
     def _control(self, command, *, enrollment):
         import subprocess
@@ -1041,6 +1045,14 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
     seen_pids = set()
     resume_sends = 0
     stopping = False
+    # Stop-on-OOM baseline. memory.oom.group is 1 only on the guardian's own
+    # single-task cgroup; the Docker-delegated container scope keeps 0, so a
+    # payload OOM kills exactly one victim while the container init survives and
+    # the payload would otherwise run on to its CPU or wall bound. The parent
+    # slice's hierarchical memory.events counts every descendant victim, so an
+    # increment over this baseline is the plan's stop-on-OOM: settle uncertainty,
+    # stop the payload, and let settlement retain the OOM facts.
+    oom_baseline = int(_kernel_pairs(_read_counter(runtime.parent / 'memory.events')).get('oom_kill', 0))
     # The guardian's own CPU is charged against its LimitCPU (13 s of the 20 s
     # orchestration bound): a 25 ms loop with a full snapshot parse per turn
     # starved a 100 s two-descendant probe (S2 run 35456732049, killed at
@@ -1103,11 +1115,14 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
                         _retain_event(campaigns, state['attempt_id'], work['work_id'], 'RESUMED',
                                       dict(container_id=container, pid=int(pid)))
                     resume_sends += 1
-            if not stopping and usage >= budget_cpu:
+            if not stopping and (usage >= budget_cpu or int(_kernel_pairs(
+                    _read_counter(runtime.parent / 'memory.events')).get('oom_kill', 0)) > oom_baseline):
+                # Overrun or OOM: durable uncertainty first, then stop the payload;
+                # the final actual usage/OOM facts are retained only after verified
+                # absence, by the settlement below.
                 _transition(campaigns, state['attempt_id'], work['work_id'], 'IN_DOUBT', {})
                 docker.call('POST', '/containers/' + container + '/kill?signal=KILL')
                 stopping = True
-                # Final actual usage is retained only after verified absence.
             time.sleep(.2)
             continue
         if row['State']['Pid'] != 0:
@@ -1148,11 +1163,20 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
 def recover_campaign_work(context, reservation_bytes, *, attempt_id, work_id):
     """One bounded recovery owner; destructive retries need an unspent slot.
 
-    A work still RESERVED with no enrollment never reached START_INTENT and so
-    produced no OS effect (prepare_campaign_work commits the enrollment and the
-    START_INTENT transition atomically). Spending the one-use RECOVERY_OWNER slot
-    to record its absence is noise that would block a later genuine recovery, so
-    refuse before the claim and report status instead.
+    A work still RESERVED with no enrollment and no recovery row never reached
+    START_INTENT and so produced no OS effect (prepare_campaign_work commits the
+    enrollment and the START_INTENT transition atomically). Spending the one-use
+    RECOVERY_OWNER slot to record its absence is noise that would block a later
+    genuine recovery, so refuse before the claim and report status instead; a
+    legacy recovery row on such a work is not noise and keeps the spent-slot
+    refusal. The same status-only skip holds for SETTLED work (completed, or
+    uncertainty already settled by an observation) whose recovery already
+    completed with no continuation need: a service restart must not manufacture
+    a second recovery for finished history -- re-claiming would flip the
+    completed row to continuation_required and bar the attempt's positive
+    authority for good. Unsettled work keeps today's deliberate unfunded
+    barrier: a genuine new destructive need after a completed recovery still
+    finds the spent slot and refuses.
     """
     from .campaign_store import CampaignStore
     import secrets
@@ -1163,7 +1187,12 @@ def recover_campaign_work(context, reservation_bytes, *, attempt_id, work_id):
         enrolled = connection.execute(
             'SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role=?',
             (attempt_id, 'supervision_' + work_id)).fetchone() is not None
-    if work['state'] == 'RESERVED' and not enrolled:
+        recovered = next((r for r in state.get('recoveries', ()) if r['work_id'] == work_id), None)
+    settled = work['state'] == 'COMPLETED' or work['observation_bytes_b64'] is not None
+    if work['state'] == 'RESERVED' and not enrolled and recovered is None:
+        return encoded(campaigns.diagnostic_status(attempt_id))
+    if (settled and recovered is not None and recovered['completion_bytes_b64'] is not None
+            and not recovered['continuation_required']):
         return encoded(campaigns.diagnostic_status(attempt_id))
     with controller_cpu_guard():
         token = secrets.token_bytes(32)

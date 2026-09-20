@@ -280,14 +280,27 @@ UNOBSERVED_EXIT_ATTEMPTS = 10
 
 
 def _owned_container(work_id):
+    """(id, docker lifecycle state) of the one owned container, or (None, None).
+
+    The listing shows the container from `docker create` onward, so its first
+    sighting is usually the 'created' phase -- before the guardian ever starts
+    or observes it.
+    """
     from urllib.parse import quote
     filters={'label':['fp.s2.work='+work_id]}
     rows=DockerControl().call('GET','/containers/json?all=1&filters='+quote(json.dumps(filters),safe=''))
-    return rows[0]['Id'] if rows else None
+    return (rows[0]['Id'],rows[0]['State']) if rows else (None,None)
 
 
 def _kill_before_observation(boundary,attempt,work_id):
-    """Kill the owned container the instant it exists, racing the guardian's first poll.
+    """Kill the owned container while it is RUNNING, racing the guardian's first poll.
+
+    The kill must not fire at the 'created' sighting: docker rejects a kill of a
+    created container (409 no-op -- run 35476561750's unguarded version failed
+    exactly there), and stopping there would systematically hand the race to the
+    guardian, which only observes once the container runs. Waits for 'running',
+    kills within one poll tick (~1 ms cadence), and treats an 'exited' sighting
+    as a lost attempt.
 
     Returns the container id when the guardian settled the work without ever
     retaining an identity for it; None when the guardian observed it first (that
@@ -298,22 +311,21 @@ def _kill_before_observation(boundary,attempt,work_id):
     container=None
     end=time.monotonic()+30
     def kill(cid):
-        # The container may already have exited on its own; a kill of a stopped
-        # container is a cheap no-op for this race, not a failure.
         try:
             docker.call('POST','/containers/'+cid+'/kill?signal=KILL')
         except ValueError:
-            pass
+            pass  # Exited between the sighting and the kill: this attempt lost.
     while time.monotonic()<end:
-        container=_owned_container(work_id)
+        container,state=_owned_container(work_id)
         if container is not None:
-            kill(container); break
-        if supervision_events(boundary,attempt,'CONTAINER',work_id):
-            container=supervision_events(boundary,attempt,'CONTAINER',work_id)[0]['data']['container_id']
-            kill(container); break
+            if state=='running':
+                kill(container); break
+            if state=='exited':
+                break  # Ran and ended before the kill could land; a lost attempt.
+            # 'created': the guardian has not started it yet; keep the race open.
         time.sleep(.001)
     else:
-        raise AssertionError('owned container never created')
+        raise AssertionError('owned container never reached a running state')
     # The guardian, on its own exception, marks IN_DOUBT and exits WITHOUT settling
     # (no self-recovery: that would SIGKILL itself and strand a spent slot); the
     # service settles it on restart. So wait for the transition, not an observation.
@@ -331,8 +343,12 @@ def recovery_row(state,work_id):
 def test_s2_probe_that_exits_before_observation_never_completes(real_boundary):
     """A container that exits before any alive-verified identity is retained is never
     credited, and the guardian's own exception leaves no incomplete recovery row."""
-    boundary=real_boundary; attempt=admit(boundary)
+    boundary=real_boundary
+    # One probe work per phase per campaign ('compute phase already reserved'), so
+    # each shot is a FRESH ADMIT (run 35478031666: the guarded no-op kill let the
+    # guardian observe unseen0 to COMPLETED and the unseen1 retry was refused).
     for index in range(UNOBSERVED_EXIT_ATTEMPTS):
+        attempt=admit(boundary)
         work_id='unseen'+str(index)
         container=_kill_before_observation(boundary,attempt,work_id)
         if container is not None: break
@@ -375,6 +391,11 @@ def test_s2_probe_that_exits_before_observation_never_completes(real_boundary):
         recovery_completed=completed_recovery['completion_bytes_b64'] is not None,completed_with_identity=len(completed)))
 
 
+def _payload_cpu_stat(payload):
+    values=dict(line.split() for line in (payload/'cpu.stat').read_text().splitlines())
+    return int(values['usage_usec'])*1000, values
+
+
 def test_s2_payload_cpu_is_kernel_bounded_without_guardian(real_boundary):
     """With the guardian stopped, cpu.max × RuntimeMax on the payload slice still bounds cumulative payload CPU."""
     boundary=real_boundary; attempt=admit(boundary)
@@ -398,14 +419,38 @@ def test_s2_payload_cpu_is_kernel_bounded_without_guardian(real_boundary):
     # The realized rate over the whole work wall stays within budget plus one granule.
     assert int(quota)*row['limits']['wall_ns']<=(budget_cpu_ns+CPU_GRANULARITY_NS)*int(period)
     assert [e['data']['deadline_boottime_ns'] for e in supervision_events(boundary,attempt,'DEADLINE','unpolled')]==[deadline]
+    # The RESUMED event records the guardian's SEND, not the probe's receipt, and
+    # the bounded re-sends that normally cover a send lost before the probe's
+    # block_resume_signal() arm cannot run once the guardian is stopped. Run
+    # 35476561750 stopped the guardian 47 ms after the first send: the kernel
+    # ignored the unhandled SIGUSR1 for the PID-1 init, the probe timed out at
+    # 30 s, the two burners never existed and 0.549 s of interpreter CPU "held"
+    # the bound. So prove the burners are actually consuming their kernel-granted
+    # share -- sustained cpu.stat growth at the quota rate -- BEFORE stopping the
+    # only process that could re-send the resume.
+    burn_deadline=time.monotonic()+90
+    prior=None
+    while time.monotonic()<burn_deadline:
+        try: usage,stat=_payload_cpu_stat(payload)
+        except (OSError,KeyError,ValueError): usage=None
+        if usage is not None:
+            if prior is not None and usage-prior[1]>=150_000_000:
+                break  # >=150 ms of CPU in >=1 s: the quota-rate burn is underway.
+            if prior is None or time.monotonic()-prior[0]>=1.0:
+                prior=(time.monotonic(),usage)
+        time.sleep(.2)
+    else:
+        raise AssertionError('payload burners never started consuming their quota')
+    baseline_ns,baseline_stat=_payload_cpu_stat(payload)
     host.run(['/usr/bin/systemctl','kill','--signal=STOP',scopes['guardian_unit']])
     stopped_at=boottime_ns()
-    peak=0; samples=0
+    peak=baseline_ns; samples=0; populated=0; final_stat=baseline_stat
     end=time.monotonic()+340
     while time.monotonic()<end:
         try:
-            usage=int(dict(line.split() for line in (payload/'cpu.stat').read_text().splitlines())['usage_usec'])*1000
+            usage,final_stat=_payload_cpu_stat(payload)
             peak=max(peak,usage); samples+=1
+            if 'populated 1' in (payload/'cgroup.events').read_text(): populated+=1
         except (OSError,KeyError,ValueError):
             pass
         facts=unit_facts(scopes['guardian_unit'],['ActiveState','Result','ExecMainStatus','RuntimeMaxUSec'])
@@ -414,15 +459,28 @@ def test_s2_payload_cpu_is_kernel_bounded_without_guardian(real_boundary):
     else:
         raise AssertionError('stopped guardian never ended')
     ended_at=boottime_ns()
+    window_ns=ended_at-stopped_at
     host.save(boundary.output/(attempt+'-payload-bound.json'),dict(cpu_max=quota+' '+period,budget_cpu_ns=budget_cpu_ns,
-        peak_payload_cpu_ns=peak,samples=samples,deadline_boottime_ns=deadline,stopped_at=stopped_at,ended_at=ended_at,facts=facts))
+        baseline_payload_cpu_ns=baseline_ns,peak_payload_cpu_ns=peak,samples=samples,populated_samples=populated,
+        window_ns=window_ns,final_cpu_stat=final_stat,deadline_boottime_ns=deadline,stopped_at=stopped_at,ended_at=ended_at,facts=facts))
     assert facts['ActiveState']=='failed' and facts['ExecMainStatus']=='9', facts
     assert stopped_at<deadline<=ended_at<=deadline+15_000_000_000
     # The load-bearing property is the kernel UPPER bound: with the guardian
     # stopped, cumulative payload CPU never exceeds the reservation plus one
-    # granule. (peak>0 confirms the payload ran; run 35476561750 observed a much
-    # smaller peak than budget -- the bound holds regardless.)
-    assert 0<peak<=budget_cpu_ns+CPU_GRANULARITY_NS, peak
+    # granule. The three discriminating facts below prove the bound was actually
+    # exercised by runnable descendants rather than by an early-exiting payload:
+    # the slice stayed populated for the whole stopped window, the kernel kept
+    # throttling the burners (nr_throttled>0), and cumulative CPU kept growing at
+    # no less than a single burner's floor under the slice rate (>=0.15 of the
+    # window; the quota is a ceiling the kernel enforces, never a guarantee
+    # under host contention).
+    assert peak<=budget_cpu_ns+CPU_GRANULARITY_NS, peak
+    # Every sample saw a populated slice except possibly the last one, which can
+    # race the BindsTo retirement in the same instant the loop observes the unit
+    # failing; and the samples cover the whole stopped window.
+    assert populated>=samples-1 and samples>=window_ns//1_200_000_000, (populated,samples,window_ns)
+    assert int(final_stat['nr_throttled'])>0, final_stat
+    assert peak>=baseline_ns+(15*window_ns)//100, (peak,baseline_ns,window_ns)
     boundary.restart()
     after=snapshot(boundary,attempt)
     settled=work(after,'unpolled')
