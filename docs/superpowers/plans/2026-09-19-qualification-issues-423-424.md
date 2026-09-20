@@ -219,14 +219,14 @@ written after the recorder closed; runtime/test bytes match the final record.
 
 ### Execution steps and acceptance matrix
 
-- [ ] Trace all tree producers, schema readers, cleanup entry points and supported lifecycle states. Define canonical bindings and compatibility handling in the return record before editing persistence.
-- [ ] Add failing completed-host regressions for data and scratch: correct UID with wrong GID; correct UID/GID with group-accessible mode; incorrect UID; all bindings correct. Include another canonical root-owned tree so validation is not special-cased only to qexec trees.
-- [ ] For each drift rejection, verify contents remain, reservation owner remains, failure is recorded and successful retirement is absent. Restore the canonical metadata and retry: cleanup must succeed once and subsequent cleanup must remain idempotent.
-- [ ] Add interruption cases: manifest recorded before mkdir; mkdir before chown; completed chown/mode transition; restrictive-umask creation; incomplete venv alias; partial resource deletion; completed retirement with a replacement run's reservation. Test invalid lookalikes for the initial-owner and alias exceptions.
-- [ ] Add schema/configuration tests proving provisioning retains the same resolved binding cleanup validates, malformed/tampered bindings reject, and the chosen legacy policy supports safe recovery without fabricating authority.
-- [ ] Observe the intended failures, implement the minimal canonical binding/persistence/validation changes, then run the focused suites and existing recovery regressions.
+- [x] Trace all tree producers, schema readers, cleanup entry points and supported lifecycle states. Define canonical bindings and compatibility handling in the return record before editing persistence.
+- [x] Add failing completed-host regressions for data and scratch: correct UID with wrong GID; correct UID/GID with group-accessible mode; incorrect UID; all bindings correct. Include another canonical root-owned tree so validation is not special-cased only to qexec trees.
+- [x] For each drift rejection, verify contents remain, reservation owner remains, failure is recorded and successful retirement is absent. Restore the canonical metadata and retry: cleanup must succeed once and subsequent cleanup must remain idempotent.
+- [x] Add interruption cases: manifest recorded before mkdir; mkdir before chown; completed chown/mode transition; restrictive-umask creation; incomplete venv alias; partial resource deletion; completed retirement with a replacement run's reservation. Test invalid lookalikes for the initial-owner and alias exceptions.
+- [x] Add schema/configuration tests proving provisioning retains the same resolved binding cleanup validates, malformed/tampered bindings reject, and the chosen legacy policy supports safe recovery without fabricating authority.
+- [x] Observe the intended failures, implement the minimal canonical binding/persistence/validation changes, then run the focused suites and existing recovery regressions.
 - [ ] Run real Linux cases on a disposable host with real chown/chmod and interruption/retry behavior. Windows doubles are supplemental. Preserve failed-state resources for diagnosis and recover them only through the supported owned cleanup procedure.
-- [ ] Update documentation, run the final gate and return source/evidence to the coordinator. Distinguish local passing results from outstanding Linux or legacy compatibility evidence.
+- [x] Update documentation, run the final gate and return source/evidence to the coordinator. Distinguish local passing results from outstanding Linux or legacy compatibility evidence.
 
 ```powershell
 ./fp.ps1 python -m pytest tests/test_qualification_host.py tests/test_qualification_boundary_cleanup.py tests/test_qualification_container_ownership.py tests/test_qualification_campaign_host.py -q --tb=short
@@ -237,6 +237,168 @@ git diff --check
 The coordinator performs one final combined focused run covering A and B on the same final source state, extending coverage only for changed consumers or unresolved failures. Report pre-existing gate failures and skips explicitly. Tests requiring Linux must run using the documented installed host procedure, not be counted as passing from a skipped local collection.
 
 **Progress:** Draft only; unassigned until A is reviewed.
+
+### Handoff B assignment and design checkpoint — 2026-09-19 UTC
+
+Assigned by the coordinator after A's delivery ("preserve A's tested changes; report the canonical
+tree-binding design and legacy-manifest recovery policy before changing persistence; return B for
+coordinator review; no push, PR, merge or issue closure"). A was preserved first: local commit
+`9680ed2` on `claude/qualification-issues-423-424-88fd15` (unpushed) plus a copy of A's patch, new files
+and all verification records at `C:/Users/joshu/multi_firm_operations/tmp/handoff-423-424/a-delivered-2026-09-19/`
+(`SHA256SUMS.txt` there matches the delivered identities). #423 stays open pending real Linux evidence.
+
+**Lifecycle trace (verified at 9680ed2).** Single producer: `host.provision_reserved` records
+`{'kind':'tree','path','uid'}` via `own()` (durable `save`) → `mkdir(mode)` → `os.chown(uid, uid)`, with no
+chmod and no umask pin anywhere (sudo's default 022 on the hosted runners is unpinned). Under umask 027/077
+the root-owned trees are created 0750/0700 while data/scratch are umask-invariant 0700. Manifest states are
+exactly `provisioning`, `host_ready_boundary_unconfigured`, `setup_failed` (hand-built fixture manifests
+carry none). No later operation touches the five top-level directories' own metadata (fixture_install,
+campaign_host, image/service/launcher/store only create descendants; the worker's sole bind mount is a
+read-only descendant). Single shape-strict reader: `validate_resources` (`set(item) != {...}`) plus the
+cleanup loop; `campaign_host`, `boundary_cleanup_plan`, `public_observations` and the invariant/record
+tooling never read tree items. Retirement identity is bound to the bytes of `ownership.json`
+(`retired.json`/receipt `manifest_sha256`), so cleanup may never rewrite the manifest. The host-wide identity
+reservation is released only inside cleanup and `provision()` refuses while it is held, so a cleanup that
+rejects a legacy manifest would strand the host, not just the run. `validate_resources` cross-checks
+`manifest['roles']` against `host_config` only in the user/group branch, and `ROLES` has no name for uid 0.
+No CI workflow runs the real-Linux recovery tests: `--test-only`/`--s2` select only two
+`tests/integration/qualification_host` node IDs from the invariant manifest; the whole directory runs only
+under the documented manual `--host-only` procedure.
+
+**Canonical binding shape.** In `tools/qualification_verification/role_policy.py` (the existing shared
+configuration layer for setup, probes and cleanup):
+
+- `TREE_BINDINGS_SCHEMA = 'qualification_tree_bindings/v1'`; `ADMINISTRATOR = 'administrator'` (uid/gid 0,
+  never a provisioned role, never an identity resource).
+- `TREE_BINDINGS`: `code (administrator, administrator, 0o755)`, `env (…, 0o755)`,
+  `data (qexec, qexec, 0o700)`, `keys (…, 0o755)`, `scratch (qexec, qexec, 0o700)` — creation order preserved.
+- `resolve_tree_binding(name, roles) -> {'uid': int, 'gid': int, 'mode': '0755'}`; `mode` is the 12-bit
+  `S_IMODE` as a four-digit octal string (setgid/sticky drift is drift; consistent with the existing exact
+  `S_IMODE == 0o700` checks in host.py and service.py).
+- `tree_bindings_identity() -> {'schema': …, 'sha256': digest of the table}` so an unbumped table edit
+  becomes a named cleanup failure instead of unexplained "drift".
+
+**Persistence.** The manifest gains `tree_bindings` (the identity above) at creation, before any resource.
+Each tree record becomes `{'kind':'tree','path','uid','gid','mode'}`, written by `own()` before creation.
+Creation order per tree: record → `os.mkdir(target, 0o700)` → `chmod(mode)` → `chown(uid, gid)`. The only
+non-final intermediate is therefore root:root/0700/empty for every tree; provisioning refuses an
+owner-masking umask or a setgid parent before creating anything so that intermediate is deterministic.
+
+**Validation (read-side only).** `validate_resources`: `manifest['roles'] == resolve_roles(host_config)`
+for every manifest; exact key sets; `tree_bindings == tree_bindings_identity()`; each retained binding
+equal to `resolve_tree_binding(path, roles)` (a manually edited binding is "inconsistent" even when the
+filesystem matches it). `validate_owned_tree(path, binding, *, allow_initial_creation, allow_initial_venv_alias)`
+compares uid, gid and mode with per-field failure text (`tree owner|group|mode mismatch`); the
+root:root/0700/empty exception now covers all five trees, still only in `provisioning`/`setup_failed`; the
+`env/lib64 -> lib` alias exception is unchanged. All validation precedes deletion; rejection keeps the
+existing path (failure receipt, no `retired.json`, reservation retained, trees untouched).
+
+**Legacy-manifest policy.** Legacy = a v3 manifest without `tree_bindings` whose tree items are exactly
+`{'kind','path','uid'}` (the only shape main ever produced, 2026-09-17 → this change; no live host with one
+is known — CI hosts are destroyed). Grounded in that producer's code (`host.py` 1339604..9680ed2): it owned
+each path by a fixed role (`LEGACY_TREE_OWNERS` in `role_policy.py`) and ran `chown(uid, uid)`, so cleanup
+requires the record's `uid` to be that owner and the tree's owner **and group** to equal it; its
+`mkdir(mode)` was umask-dependent, so the mode is not retained, never synthesized and not checked. The two
+incomplete-state exceptions apply unchanged; mixed shapes reject; retirements are labelled
+`legacy_tree_bindings: [paths]` in the receipt. (Revised during the adversarial review from a UID-only
+legacy check: the group rule is producer-determined, not a default.) Blanket rejection was not chosen
+because it would strand the whole host's identity reservation; a `--accept-legacy-tree-bindings` cleanup
+flag remains available to the coordinator as an override. Residual: an administrator who downgrades a
+bindings-era manifest to the legacy shape loses mode validation only, and the receipt records it.
+
+### Handoff B executor return — 2026-09-20 UTC: delivered for coordinator review, not accepted by the executor
+
+Same checkout and branch; base `9680ed2` (A's local commit on `f2606b0`); B is uncommitted on top. Doctor
+unchanged (`tmp/ops-env/Scripts/python.exe`, Python 3.13.2, 62 locked packages, cryptography 50.0.1).
+
+**Files.** `tools/qualification_verification/role_policy.py` (`TREE_BINDINGS_SCHEMA`, `ADMINISTRATOR`,
+`TREE_BINDINGS`, `TREES`, `LEGACY_TREE_OWNERS`, `principal`, `resolve_tree_binding`,
+`resolve_legacy_tree_owner`, `tree_bindings_identity`); `tools/qualification_verification/host.py`
+(`INITIAL_TREE`, `INCOMPLETE_STATES`, `require_deterministic_tree_creation`, `observed_binding`,
+`tree_binding`, `validate_owned_tree(path, binding, *, allow_initial_creation, allow_initial_venv_alias)`,
+`validate_legacy_owned_tree`, `validate_resources` → legacy paths, provisioning order
+record→`mkdir(0o700)`→`chmod`→`chown` with the precondition before `root.mkdir`, `tree_bindings` in the
+manifest, cleanup loop and receipt `legacy_tree_bindings`, resource validation moved inside the receipt
+try so a malformed/inconsistent record is a recorded refusal); `tools/qualification_verification/README.md`
+(three passages: binding/creation/validation contract, cleanup refusal list, the former UID-only
+limitation replaced by the top-level-binding scope statement); `tests/test_qualification_host.py`
+(helpers `tree_record`, `canonical_metadata`, `model_tree_metadata`, `minimal_manifest`,
+`failure_receipts`, `first_mismatch`; migrated literals; new cases below);
+`tests/integration/qualification_host/test_host.py` (fixture manifest carries `tree_bindings`; records
+migrated and directories bound explicitly; new real-Linux cases below). `campaign_host.py` and every other
+manifest reader needed no change (verified by trace: none reads tree items).
+
+**Schema/interface changes.** Ownership manifest v3 gains `tree_bindings: {schema, sha256}`; tree records
+gain `gid` and `mode` (`"0755"`-style 12-bit octal string). Cleanup receipt `qualification_host_cleanup/v1`
+gains optional `legacy_tree_bindings`. `validate_resources` returns the legacy tree paths.
+`validate_owned_tree` takes a binding mapping instead of a UID (its one direct caller, the integration
+test, updated). Failure texts: `tree owner|group|mode mismatch`, `inconsistent tree binding`,
+`inconsistent tree resource`, `invalid tree resource`, `tree binding configuration mismatch`,
+`roles do not match the retained host configuration`, `umask must not mask owner permissions`,
+`setgid parent directory`.
+
+**Acceptance matrix (unit, Windows doubles via `Path.stat`).** Completed host, data/scratch/code: correct
+→ retired; wrong UID / wrong GID with private mode / group-accessible mode with matching UID+GID /
+setgid → `tree <field> mismatch`, contents and reservation retained, failure receipt, no `retired.json`;
+restore → retired once, then `already_retired`. Weakened record matching the filesystem → recorded
+refusal `inconsistent tree binding`. Twelve malformed/tampered shapes each rejected with their named
+message (including `False`/`0.0` on a root-owned tree, identity digest/schema edits, mixed shapes, roles
+drift). Interruption: recorded-before-mkdir (absent) and partial deletion → idempotent; root:root/0700
+empty for all five trees in `provisioning`/`setup_failed` → retired, and rejected when non-empty, 0750,
+foreign owner/group, or in the ready state; venv alias cases unchanged; completed retirement with a
+replacement reservation untouched. Provisioning double proves record precedes `os.mkdir(…, 0o700)`, then
+`chmod(mode)`, then `chown(uid, gid)`, the retained record equals the canonical resolution, and cleanup
+retires that host. Preconditions: umask 000/022/027/077 accepted; 0177/0277/0477 and a setgid parent
+refused before anything is created. Legacy: producer owner + group validated, mode not, receipt labelled.
+
+**Red → green.** Red (unchanged host.py): **105 failed / 94 passed / 2 skipped**, record
+`.cache/fp-verification/20260920T000403Z-4e2817a7da86` (missing binding API, missing `tree_bindings`,
+new precondition messages). Green on the final source:
+
+```powershell
+./fp.ps1 python -m pytest tests/test_qualification_host.py tests/test_qualification_boundary_cleanup.py tests/test_qualification_container_ownership.py tests/test_qualification_campaign_host.py -q --tb=short
+./fp.ps1 check
+git diff --check
+```
+
+→ **235 passed, 2 skipped** (the two pre-existing Windows skips), record
+`.cache/fp-verification/20260920T033845Z-832d22be43a5/record.json` (completed, exit 0,
+verification_exit_code 0, source_stable, capture complete, no errors; commit `9680ed2`, tracked
+`diff_sha256 321147dec63cfc020604032d528ccfefa1ffba1753e998f91159086733adc8e2`). `./fp.ps1 check` →
+record `20260920T033925Z-292628fa9fa3` completed, exit 0, same diff (its only WARNs are the pre-existing
+absent vendor-data trees of a bare worktree). `git diff --check` clean. A's suites plus both
+`tests/integration` collections on the same tree: 59 passed, 89 skipped (all Linux administrator-host
+gates), record `20260920T033905Z-ebec173a62fe`. `scripts/check_boundaries.py` OK. Whole-repo pylint
+8.04/10. B baseline on `9680ed2` before edits: 154 passed, 2 skipped.
+
+**Adversarial review** (5 lenses, 2 skeptics per finding, 37 agents, 38 single-point mutants of the
+validator/producer all caught by the new tests except test-only gaps): no blocker/major code findings.
+Folded: legacy validation tightened from UID-only to the producer-determined owner **and** group
+(`LEGACY_TREE_OWNERS`, `chown(uid, uid)`), with mode still unchecked; per-case rejection messages in the
+tamper test; the legacy type guard exercised on a uid-0 tree; the identity digest tested as
+table-derived; umask boundaries (077 accepted, 0177/0277/0477 refused); manifest-level refusals now
+produce a failure receipt; a wrong docstring rationale removed. Refuted/out of scope and left as noted:
+a consistent `roles`+`host_config` co-edit re-resolves bindings (root-level tamper under the trust model,
+still masked on real hosts by the account records); a future `TREE_BINDINGS` edit must bump the schema
+and retain the old table or retained manifests become unretirable (documented in `role_policy.py`);
+umask 077 still makes the run root non-traversable for roles (pre-existing, outside the binding).
+
+**Outstanding — real Linux evidence.** Not produced here (no disposable host in this session). The
+real-Linux cases live in `tests/integration/qualification_host/test_host.py` and run only under the
+documented manual procedure (`qualification_boundary_verification.py --host-only --manifest …` on a fresh
+disposable host); no CI workflow selects them. Required there: `test_installed_tree_binding_drift_is_named_and_restorable`
+(installed data tree exactly `qexec:qexec 0700`; owner/group/mode/setgid drift named and restored),
+`test_cleanup_after_kill_between_tree_mkdir_and_binding` (all five trees, umask 022 and 077, intermediate
+`0:0:0700`), `test_cleanup_retains_drifted_tree_and_reservation_until_the_binding_is_restored` (real
+chown/chmod, receipt, repair, idempotence), `test_legacy_uid_only_records_retire_on_the_producer_owner_and_group`,
+`test_tree_creation_preconditions_use_real_umask_and_parent_mode`, the migrated venv-alias and
+retirement/replacement cases, and a full `provision.sh` → boundary → `cleanup.py` cycle on the new record
+shape (both `--test-only` and `--s2` workflows exercise that path on PR). Record the host's umask and
+`config['parent']` mode in that packet.
+
+Return boundary respected: no commit of B, no push, PR, merge or issue closure; the additional
+observations from A remain separate (B's trace found no dependency on them). This entry was written after
+the recorder closed; the tools/tests/README bytes match the records above.
 
 ## Return packet and coordinator disposition
 

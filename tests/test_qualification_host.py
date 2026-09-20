@@ -144,16 +144,145 @@ def test_cleanup_manifest_cannot_name_escape_or_root(tmp_path, relative):
 
 def test_cleanup_manifest_rejects_unknown_resource_kind(tmp_path):
     host = host_module()
-    with pytest.raises(ValueError, match='resource'):
-        host.validate_resources({'resources': [{'kind': 'shell', 'command': 'anything'}]}, tmp_path)
+    manifest = minimal_manifest(host)
+    manifest['resources'] = [{'kind': 'shell', 'command': 'anything'}]
+    with pytest.raises(ValueError, match='unsupported resource'):
+        host.validate_resources(manifest, tmp_path)
+
+
+def tree_record(host, manifest, relative):
+    """The record provisioning retains: the canonical binding resolved from the manifest roles."""
+    return {'kind': 'tree', 'path': relative, **host.resolve_tree_binding(relative, manifest['roles'])}
+
+
+def canonical_metadata(host, manifest, relative):
+    binding = host.resolve_tree_binding(relative, manifest['roles'])
+    return binding['uid'], binding['gid'], int(binding['mode'], 8)
+
+
+def model_tree_metadata(monkeypatch, trees):
+    """Model Linux owner/group/mode for chosen directories through the Path.stat double.
+
+    `trees` maps a directory to (uid, gid, mode); mutate it to model a later
+    metadata repair. Windows cannot create Linux owners or modes itself.
+    """
+    original = Path.stat
+    def metadata(target, *args, **kwargs):
+        if target in trees and kwargs.get('follow_symlinks') is not False:
+            info = original(target, *args, **kwargs)
+            uid, gid, mode = trees[target]
+            return SimpleNamespace(st_uid=uid, st_gid=gid, st_mode=stat.S_IFDIR | mode, st_dev=info.st_dev)
+        return original(target, *args, **kwargs)
+    monkeypatch.setattr(Path, 'stat', metadata)
+
+
+def minimal_manifest(host):
+    config = host.load_config()[0]
+    return {'host_config': config, 'roles': host.resolve_roles(config),
+            'tree_bindings': host.tree_bindings_identity(), 'resources': []}
 
 
 def test_cleanup_manifest_rejects_duplicate_resources(tmp_path):
     host = host_module()
+    manifest = minimal_manifest(host)
+    manifest['resources'] = [tree_record(host, manifest, 'data'), tree_record(host, manifest, 'data')]
     with pytest.raises(ValueError, match='duplicate'):
-        host.validate_resources({'resources': [
-            {'kind': 'tree', 'path': 'data', 'uid': 61001},
-            {'kind': 'tree', 'path': 'data', 'uid': 61001}]}, tmp_path)
+        host.validate_resources(manifest, tmp_path)
+
+
+def test_tree_bindings_are_resolved_from_one_canonical_table():
+    host = host_module()
+    roles = {'qclient': 61000, 'qexec': 61001, 'qg5': 61002}
+    assert host.TREES == ('code', 'env', 'data', 'keys', 'scratch')
+    assert host.resolve_tree_binding('data', roles) == {'uid': 61001, 'gid': 61001, 'mode': '0700'}
+    assert host.resolve_tree_binding('scratch', roles) == {'uid': 61001, 'gid': 61001, 'mode': '0700'}
+    for administered in ('code', 'env', 'keys'):
+        assert host.resolve_tree_binding(administered, roles) == {'uid': 0, 'gid': 0, 'mode': '0755'}
+    with pytest.raises(KeyError):
+        host.resolve_tree_binding('evidence', roles)
+    identity = host.tree_bindings_identity()
+    assert identity['schema'] == 'qualification_tree_bindings/v1'
+    assert len(identity['sha256']) == 64 and identity == host.tree_bindings_identity()
+
+
+def test_tree_bindings_identity_is_derived_from_the_canonical_table(monkeypatch):
+    from tools.qualification_verification import role_policy
+    table = {name: [owner, group, format(mode, '04o')]
+             for name, (owner, group, mode) in role_policy.TREE_BINDINGS.items()}
+    expected = hashlib.sha256(json.dumps(table, sort_keys=True).encode()).hexdigest()
+    assert role_policy.tree_bindings_identity()['sha256'] == expected
+    # An unbumped edit to the table changes the identity, so retained manifests no longer match it.
+    edited = dict(role_policy.TREE_BINDINGS)
+    edited['data'] = ('qexec', 'qexec', 0o770)
+    monkeypatch.setattr(role_policy, 'TREE_BINDINGS', edited)
+    assert role_policy.tree_bindings_identity()['sha256'] != expected
+
+
+REJECTIONS = {'missing-mode': 'invalid tree resource', 'extra-field': 'invalid tree resource',
+              'integer-mode': 'invalid tree resource', 'short-mode': 'inconsistent tree binding',
+              'boolean-uid': 'invalid tree resource', 'unknown-path': 'invalid tree resource',
+              'weakened-gid': 'inconsistent tree binding', 'weakened-mode': 'inconsistent tree binding',
+              'identity-digest': 'tree binding configuration mismatch',
+              'identity-schema': 'tree binding configuration mismatch',
+              'mixed-legacy': 'invalid tree resource', 'roles': 'roles do not match'}
+
+
+@pytest.mark.parametrize('tamper', sorted(REJECTIONS))
+def test_cleanup_rejects_malformed_or_inconsistent_tree_bindings(tmp_path, tamper):
+    """A retained binding must equal the canonical resolution; the filesystem never vouches for it."""
+    host = host_module()
+    manifest = minimal_manifest(host)
+    # False == 0 and True == 1 under ==; a boolean must still be rejected by type.
+    item = tree_record(host, manifest, 'code' if tamper == 'boolean-uid' else 'data')
+    if tamper == 'missing-mode':
+        del item['mode']
+    elif tamper == 'extra-field':
+        item['sticky'] = False
+    elif tamper == 'integer-mode':
+        item['mode'] = 0o700
+    elif tamper == 'short-mode':
+        item['mode'] = '700'
+    elif tamper == 'boolean-uid':
+        item['uid'] = False
+    elif tamper == 'unknown-path':
+        item['path'] = 'evidence'
+    elif tamper == 'weakened-gid':
+        item['gid'] = manifest['roles']['qclient']
+    elif tamper == 'weakened-mode':
+        item['mode'] = '0770'
+    elif tamper == 'identity-digest':
+        manifest['tree_bindings'] = {**manifest['tree_bindings'], 'sha256': 'f' * 64}
+    elif tamper == 'identity-schema':
+        manifest['tree_bindings'] = {**manifest['tree_bindings'], 'schema': 'qualification_tree_bindings/v0'}
+    elif tamper == 'mixed-legacy':
+        manifest['resources'].append({'kind': 'tree', 'path': 'code', 'uid': 0})
+    elif tamper == 'roles':
+        manifest['roles'] = {**manifest['roles'], 'qexec': manifest['roles']['qexec'] + 1}
+    manifest['resources'].insert(0, item)
+    with pytest.raises(ValueError, match=REJECTIONS[tamper]):
+        host.validate_resources(manifest, tmp_path)
+
+
+def test_legacy_manifest_records_are_accepted_only_in_their_exact_historical_shape(tmp_path):
+    host = host_module()
+    manifest = minimal_manifest(host)
+    del manifest['tree_bindings']
+    manifest['resources'] = [{'kind': 'tree', 'path': 'data', 'uid': manifest['roles']['qexec']},
+                             {'kind': 'tree', 'path': 'code', 'uid': 0}]
+    assert host.validate_resources(manifest, tmp_path) == ['data', 'code']
+    manifest['resources'].append(tree_record(host, manifest, 'keys'))
+    with pytest.raises(ValueError, match='invalid tree resource'):
+        host.validate_resources(manifest, tmp_path)
+    # The producer's owner for each path is known; a foreign or non-integer owner is not authority.
+    for uid in (0, manifest['roles']['qclient']):
+        manifest['resources'] = [{'kind': 'tree', 'path': 'data', 'uid': uid}]
+        with pytest.raises(ValueError, match='inconsistent tree resource'):
+            host.validate_resources(manifest, tmp_path)
+    # False == 0 and 0.0 == 0 by value: only the type guard rejects them on a root-owned tree.
+    for uid in (False, 0.0):
+        manifest['resources'] = [{'kind': 'tree', 'path': 'code', 'uid': uid}]
+        with pytest.raises(ValueError, match='inconsistent tree resource'):
+            host.validate_resources(manifest, tmp_path)
 
 
 def test_cleanup_tree_refuses_link_without_removing_target(tmp_path):
@@ -548,8 +677,8 @@ def test_cleanup_without_account_commands_needs_no_new_cgroup(cleanup_attempt, m
     host, path, manifest, reservation = cleanup_attempt
     if resources == 'tree':
         (path.parent / 'code').mkdir()
-        manifest['resources'] = [{'kind': 'tree', 'path': 'code',
-                                 'uid': (path.parent / 'code').stat().st_uid}]
+        manifest['resources'] = [tree_record(host, manifest, 'code')]
+        model_tree_metadata(monkeypatch, {path.parent / 'code': canonical_metadata(host, manifest, 'code')})
     elif resources == 'absent-accounts':
         manifest['resources'] = [{'kind': 'group', 'name': 'qclient', 'id': 61000},
                                  {'kind': 'user', 'name': 'qclient', 'id': 61000}]
@@ -592,31 +721,34 @@ def test_cleanup_group_member_requires_manifest_owned_account(cleanup_attempt,mo
     assert 'member' in ' '.join(result['failures'])
 
 
-@pytest.mark.parametrize('relative', ['data', 'scratch'])
+def failure_receipts(root):
+    return [json.loads(p.read_text()) for p in sorted(root.glob('cleanup-*.json'))]
+
+
+def first_mismatch(observed, binding):
+    """The validator names the first differing field in uid, gid, mode order."""
+    names = ('owner', 'group', 'mode')
+    return next(name for name, a, b in zip(names, observed, binding) if a != b)
+
+
+@pytest.mark.parametrize('relative', ['code', 'env', 'data', 'keys', 'scratch'])
 @pytest.mark.parametrize('state', ['provisioning', 'setup_failed'])
-@pytest.mark.parametrize('drift', [None, 'owner', 'group', 'mode', 'contents', 'ready'])
-def test_cleanup_recovers_only_empty_initial_role_tree(
-        cleanup_attempt, monkeypatch, relative, state, drift):
+@pytest.mark.parametrize('drift', [None, 'owner', 'group', 'restrictive-umask', 'contents', 'ready'])
+def test_cleanup_recovers_only_the_empty_initial_tree(cleanup_attempt, monkeypatch, relative, state, drift):
+    """mkdir(0o700) precedes chmod/chown; only that exact intermediate is retirable on retry."""
     host, path, manifest, reservation = cleanup_attempt
     tree = path.parent / relative
     tree.mkdir(mode=0o700)
     if drift == 'contents':
         (tree / 'unexpected').write_text('retain')
     manifest['state'] = 'host_ready_boundary_unconfigured' if drift == 'ready' else state
-    manifest['resources'] = [{'kind': 'tree', 'path': relative, 'uid': 61001}]
+    manifest['resources'] = [tree_record(host, manifest, relative)]
     host.save(path, manifest)
-    original_stat = Path.stat
     # Windows cannot create Linux owners/modes. Keep real files and cleanup;
     # model only the metadata left between the privileged mkdir and chown.
-    def metadata(target, *args, **kwargs):
-        if target == tree and kwargs.get('follow_symlinks') is not False:
-            info = original_stat(target, *args, **kwargs)
-            return SimpleNamespace(st_uid=61000 if drift == 'owner' else 0,
-                st_gid=61000 if drift == 'group' else 0,
-                st_mode=stat.S_IFDIR | (0o755 if drift == 'mode' else 0o700),
-                st_dev=info.st_dev)
-        return original_stat(target, *args, **kwargs)
-    monkeypatch.setattr(Path, 'stat', metadata)
+    observed = (61000 if drift == 'owner' else 0, 61000 if drift == 'group' else 0,
+                0o750 if drift == 'restrictive-umask' else 0o700)
+    model_tree_metadata(monkeypatch, {tree: observed})
     result = host.cleanup(path)
     if drift is None:
         assert result['ok'], result
@@ -627,6 +759,207 @@ def test_cleanup_recovers_only_empty_initial_role_tree(
         assert not result['ok']
         assert tree.exists()
         assert host.reservation_owner(reservation) is not None
+        assert not (path.parent / 'retired.json').exists()
+        field = first_mismatch(observed, canonical_metadata(host, manifest, relative))
+        assert result['failures'] == ['ValueError: tree ' + field + ' mismatch']
+
+
+@pytest.mark.parametrize('relative', ['data', 'scratch', 'code'])
+@pytest.mark.parametrize('drift', [None, 'owner', 'group', 'mode', 'setgid'])
+def test_cleanup_rejects_completed_tree_binding_drift_and_recovers_after_repair(
+        cleanup_attempt, monkeypatch, relative, drift):
+    """A ready host's tree must match its retained uid, gid and mode exactly before recursive deletion."""
+    host, path, manifest, reservation = cleanup_attempt
+    tree = path.parent / relative
+    tree.mkdir()
+    (tree / 'placed-later').write_text('retain')
+    manifest['state'] = 'host_ready_boundary_unconfigured'
+    manifest['resources'] = [tree_record(host, manifest, relative)]
+    host.save(path, manifest)
+    uid, gid, mode = canonical_metadata(host, manifest, relative)
+    drifted = {'owner': (manifest['roles']['qclient'], gid, mode), 'group': (uid, manifest['roles']['qclient'], mode),
+               'mode': (uid, gid, mode | 0o070), 'setgid': (uid, gid, mode | stat.S_ISGID)}
+    trees = {tree: drifted.get(drift, (uid, gid, mode))}
+    model_tree_metadata(monkeypatch, trees)
+    result = host.cleanup(path)
+    if drift is None:
+        assert result['ok'], result
+        assert not tree.exists()
+        assert host.reservation_owner(reservation) is None
+        return
+    field = first_mismatch(trees[tree], (uid, gid, mode))
+    assert not result['ok']
+    assert result['failures'] == ['ValueError: tree ' + field + ' mismatch']
+    assert (tree / 'placed-later').read_text() == 'retain'
+    assert host.reservation_owner(reservation) == {'run_id': path.parent.name, 'manifest': str(path)}
+    assert not (path.parent / 'retired.json').exists()
+    assert [receipt['ok'] for receipt in failure_receipts(path.parent)] == [False]
+    # Restore the canonical metadata: cleanup succeeds once and stays idempotent.
+    trees[tree] = (uid, gid, mode)
+    repaired = host.cleanup(path)
+    assert repaired['ok'], repaired
+    assert not tree.exists()
+    assert host.reservation_owner(reservation) is None
+    assert host.cleanup(path)['already_retired']
+
+
+@pytest.mark.parametrize('drift', [None, 'group', 'mode', 'owner'])
+def test_legacy_manifest_retires_on_producer_owner_and_group_only(cleanup_attempt, monkeypatch, drift):
+    """Pre-binding v3 records: the producer set gid == uid; the mode was never recorded."""
+    host, path, manifest, reservation = cleanup_attempt
+    tree = path.parent / 'data'
+    tree.mkdir()
+    (tree / 'run-owned').write_text('legacy')
+    manifest['state'] = 'host_ready_boundary_unconfigured'
+    del manifest['tree_bindings']
+    manifest['resources'] = [{'kind': 'tree', 'path': 'data', 'uid': manifest['roles']['qexec']},
+                             {'kind': 'tree', 'path': 'code', 'uid': 0}]
+    host.save(path, manifest)
+    uid = manifest['roles']['qexec']
+    model_tree_metadata(monkeypatch, {tree: (manifest['roles']['qclient'] if drift == 'owner' else uid,
+                                             manifest['roles']['qclient'] if drift == 'group' else uid,
+                                             0o770 if drift == 'mode' else 0o700)})
+    result = host.cleanup(path)
+    if drift in ('owner', 'group'):
+        assert not result['ok']
+        assert result['failures'] == ['ValueError: tree ' + drift + ' mismatch']
+        assert (tree / 'run-owned').exists()
+        assert host.reservation_owner(reservation) is not None
+        assert not (path.parent / 'retired.json').exists()
+        return
+    assert result['ok'], result
+    assert result['legacy_tree_bindings'] == ['data', 'code']
+    assert not tree.exists()
+    assert host.cleanup(path)['already_retired']
+
+
+def test_weakened_binding_matching_the_filesystem_is_a_recorded_refusal(cleanup_attempt, monkeypatch):
+    """An edited record is refused before validation of the tree, with a receipt and nothing touched."""
+    host, path, manifest, reservation = cleanup_attempt
+    tree = path.parent / 'data'
+    tree.mkdir()
+    (tree / 'placed-later').write_text('retain')
+    manifest['state'] = 'host_ready_boundary_unconfigured'
+    weakened = {**tree_record(host, manifest, 'data'), 'gid': manifest['roles']['qclient'], 'mode': '0770'}
+    manifest['resources'] = [weakened]
+    host.save(path, manifest)
+    model_tree_metadata(monkeypatch, {tree: (weakened['uid'], weakened['gid'], 0o770)})
+    result = host.cleanup(path)
+    assert not result['ok']
+    assert result['failures'] == ['ValueError: inconsistent tree binding']
+    assert (tree / 'placed-later').read_text() == 'retain'
+    assert host.reservation_owner(reservation) is not None
+    assert not (path.parent / 'retired.json').exists()
+    assert [receipt['ok'] for receipt in failure_receipts(path.parent)] == [False]
+
+
+def test_cleanup_is_idempotent_over_recorded_but_absent_and_partially_removed_trees(cleanup_attempt, monkeypatch):
+    host, path, manifest, reservation = cleanup_attempt
+    manifest['state'] = 'host_ready_boundary_unconfigured'
+    manifest['resources'] = [tree_record(host, manifest, name) for name in host.TREES]
+    host.save(path, manifest)
+    # A crash after the record but before mkdir leaves no path; an interrupted
+    # deletion leaves some trees gone. Both retire the remainder.
+    present = {name: path.parent / name for name in ('env', 'keys')}
+    for tree in present.values():
+        tree.mkdir()
+    model_tree_metadata(monkeypatch, {tree: canonical_metadata(host, manifest, name)
+                                      for name, tree in present.items()})
+    result = host.cleanup(path)
+    assert result['ok'], result
+    removed = [item['path'] for item in result['removed'] if item['kind'] == 'tree']
+    assert removed == ['scratch', 'keys', 'data', 'env', 'code']
+    assert not any(tree.exists() for tree in present.values())
+    assert host.reservation_owner(reservation) is None
+    replacement = {'run_id': 'b' * 32, 'manifest': str(path.parent.parent / ('b' * 32) / 'ownership.json')}
+    host.write_reservation(reservation, replacement)
+    assert host.cleanup(path)['already_retired']
+    assert host.reservation_owner(reservation) == replacement
+
+
+def test_provisioning_retains_the_binding_that_cleanup_validates(provisioning_attempt, monkeypatch):
+    """Record → mkdir(0o700) → chmod → chown, and the retained record is the canonical resolution."""
+    host, _, reservation = provisioning_attempt
+    def run_owned(group, command, **kwargs):
+        if command[0] in ('/usr/sbin/groupadd', '/usr/sbin/useradd', '/usr/sbin/usermod'):
+            return ''
+        raise ValueError('stop before the environment')
+    monkeypatch.setattr(host, 'run_owned', run_owned)
+    created, applied = [], []
+    original_mkdir = host.os.mkdir
+    def mkdir(target, mode=0o777, **kwargs):
+        target = Path(target)
+        if target.name in host.TREES and (target.parent / 'ownership.json').exists():
+            recorded = json.loads((target.parent / 'ownership.json').read_text())['resources']
+            assert any(item['kind'] == 'tree' and item['path'] == target.name
+                       for item in recorded), 'the durable record precedes creation'
+            created.append((target.name, mode))
+        return original_mkdir(target, mode, **kwargs)
+    monkeypatch.setattr(host.os, 'mkdir', mkdir)
+    monkeypatch.setattr(host.os, 'chmod', lambda target, mode: applied.append(('chmod', Path(target).name, mode)))
+    def chown(target, uid, gid):
+        applied.append(('chown', Path(target).name, uid, gid))
+    monkeypatch.setattr(host.os, 'chown', chown, raising=False)
+    original_path_mkdir = Path.mkdir
+    def stop_after_trees(target, *args, **kwargs):
+        if target.name == 'evidence':
+            raise ValueError('stop after the trees')
+        return original_path_mkdir(target, *args, **kwargs)
+    monkeypatch.setattr(Path, 'mkdir', stop_after_trees)
+    with pytest.raises(ValueError, match='stop after the trees'):
+        host.provision(host.ROOT)
+    path = Path(host.reservation_owner(reservation)['manifest'])
+    manifest = json.loads(path.read_text())
+    assert manifest['state'] == 'setup_failed'
+    assert manifest['tree_bindings'] == host.tree_bindings_identity()
+    assert [item for item in manifest['resources'] if item['kind'] == 'tree'] == [
+        tree_record(host, manifest, name) for name in host.TREES]
+    assert created == [(name, 0o700) for name in host.TREES]
+    expected = []
+    for name in host.TREES:
+        binding = host.resolve_tree_binding(name, manifest['roles'])
+        expected += [('chmod', name, int(binding['mode'], 8)), ('chown', name, binding['uid'], binding['gid'])]
+    assert applied == expected
+    # The same records now drive cleanup of the interrupted host.
+    monkeypatch.setattr(Path, 'mkdir', original_path_mkdir)
+    monkeypatch.setattr(host, 'administrator', lambda: None)
+    monkeypatch.setattr(host, 'validate_host_executables', lambda config: None)
+    monkeypatch.setattr(host, 'require_inactive_principals', lambda uids: None)
+    monkeypatch.setattr(host, 'boundary_containers', lambda config, run_id: '')
+    original_stat = Path.stat
+    monkeypatch.setattr(Path, 'stat', lambda target, *a, **kw:
+        SimpleNamespace(st_mode=stat.S_IFREG | 0o600) if target == path else original_stat(target, *a, **kw))
+    trees = {path.parent / name: canonical_metadata(host, manifest, name) for name in host.TREES}
+    model_tree_metadata(monkeypatch, trees)
+    result = host.cleanup(path)
+    assert result['ok'], result
+    assert not any(tree.exists() for tree in trees)
+    assert host.reservation_owner(reservation) is None
+
+
+@pytest.mark.parametrize('umask', [0o000, 0o022, 0o027, 0o077])
+def test_tree_creation_accepts_every_owner_preserving_umask(tmp_path, monkeypatch, umask):
+    host = host_module()
+    monkeypatch.setattr(host.os, 'umask', lambda mask: umask)
+    host.require_deterministic_tree_creation(tmp_path)
+
+
+@pytest.mark.parametrize('condition', ['umask-0177', 'umask-0277', 'umask-0477', 'setgid-parent'])
+def test_provisioning_refuses_environments_with_an_unattributable_intermediate(
+        provisioning_attempt, monkeypatch, condition):
+    host, _, reservation = provisioning_attempt
+    parent = host.ROOT / 'runs'
+    if condition.startswith('umask'):
+        monkeypatch.setattr(host.os, 'umask', lambda mask, masked=int(condition[6:], 8): masked)
+    else:
+        original_stat = Path.stat
+        monkeypatch.setattr(Path, 'stat', lambda target, *a, **kw:
+            SimpleNamespace(st_mode=stat.S_IFDIR | stat.S_ISGID | 0o755, st_uid=0, st_gid=0)
+            if target == parent else original_stat(target, *a, **kw))
+    with pytest.raises(ValueError, match='umask|setgid'):
+        host.provision(host.ROOT)
+    assert not any(parent.iterdir()), 'nothing is created before the precondition holds'
+    assert host.reservation_owner(reservation) is None
 
 
 def test_empty_registered_cgroup_without_kill_can_be_retired(tmp_path, monkeypatch):
@@ -649,8 +982,9 @@ def test_cleanup_recovers_only_initial_venv_alias(cleanup_attempt, monkeypatch, 
     # Model symlink metadata for Windows; Linux host tests use a real venv.
     alias.write_text('alias')
     manifest['state'] = 'host_ready_boundary_unconfigured' if drift == 'ready' else 'provisioning'
-    manifest['resources'] = [{'kind': 'tree', 'path': 'env', 'uid': env.stat().st_uid}]
+    manifest['resources'] = [tree_record(host, manifest, 'env')]
     host.save(path, manifest)
+    model_tree_metadata(monkeypatch, {env: canonical_metadata(host, manifest, 'env')})
     original_lstat, original_readlink = Path.lstat, host.os.readlink
     monkeypatch.setattr(Path, 'lstat', lambda target:
         SimpleNamespace(st_mode=stat.S_IFLNK | 0o777,

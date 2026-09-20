@@ -106,11 +106,28 @@ checks the staged locks again before creating or installing the environment.
 Failed manifest publication removes the unreserved run directory. Cleanup allows
 qexec's Docker enrollment to be absent after interrupted setup, while rejecting
 unexpected supplementary groups; readiness still requires Docker enrollment.
-For interrupted setup, cleanup also accepts the empty root-owned `0700` intermediate
-of `data` or `scratch` creation before ownership transfer. This exception applies
-only to provisioning/failed setup. A tree whose UID differs from the recorded UID
-must satisfy those exact initial-owner conditions; otherwise cleanup rejects it.
-When the UID matches, cleanup does not currently validate the tree's GID or mode.
+Each top-level owned tree (`code`, `env`, `data`, `keys`, `scratch`) has one canonical
+binding — owner role, group role and mode — in `role_policy.py` (`TREE_BINDINGS`,
+`qualification_tree_bindings/v1`). Setup resolves the binding from the run's roles,
+retains it in the tree's manifest record (`uid`, `gid`, `mode`) together with the
+configuration identity (`tree_bindings`: schema and table digest) before creating
+anything, then creates the directory `0700`, applies the mode and transfers ownership.
+Setup refuses an umask that masks owner bits or a setgid parent, so the only
+intermediate an interrupted setup can leave is an empty root-owned `0700` directory.
+Cleanup validates every retained record against the canonical resolution for the
+manifest's roles (a manually edited binding is a recorded refusal even when the
+filesystem matches it), then compares each tree's actual owner, group and 12-bit mode
+with the record before any recursive deletion; owner, group or mode drift is a named failure
+that retains the tree, its contents and the identity reservation, writes a failure
+receipt and no retirement certificate, and cleanup succeeds once the binding is
+restored. For interrupted setup only (provisioning/failed setup), cleanup also
+accepts that exact empty root-owned `0700` intermediate for any tree.
+Manifests written before tree bindings (v3 records carrying only `uid`) are still
+retirable on what their producer determined: the record's `uid` must be that
+producer's owner for the path (`LEGACY_TREE_OWNERS`), and the tree's owner and
+group must both equal it (the producer ran `chown(uid, uid)`); its mode was
+umask-dependent, is never synthesized, and is not checked. Such retirements are
+listed under `legacy_tree_bindings` in the receipt.
 Incomplete setup may also retain venv's root-owned `env/lib64 -> lib` alias.
 Cleanup validates that exact alias and unlinks it with the environment tree
 without following it; other links and completed-host aliases remain rejected.
@@ -245,8 +262,9 @@ sudo /usr/bin/python3 -I tools/qualification_verification/cleanup.py \
 ```
 
 Cleanup validates root-owned private metadata and every resource before removal.
-It refuses active principal processes, changed account IDs or tree UIDs (apart
-from the documented initial-owner exception), shared role groups, unexpected
+It refuses active principal processes, changed account IDs, tree owner/group/mode
+drift from the retained binding (apart from the documented initial-creation
+exception), shared role groups, unexpected
 links, mounts and unsupported resource kinds. It removes only exact recorded trees and
 newly created identities, stops cleanup children, then writes a new immutable linked cleanup receipt.
 Missing resources are idempotent success. Private ownership metadata, public
@@ -261,13 +279,14 @@ identity and refuses remaining consumers. Unexpected containers block cleanup.
 There is no prune, wildcard resource
 removal, shared-image deletion, Docker reset or implicit VM destruction.
 
-Cleanup does not detect GID or permission-mode drift on a tree whose recorded
-UID still matches. Do not broaden access to or repurpose these disposable run
-directories for unrelated files: recursive cleanup treats their contents as
-run-owned. Canonical tree UID/GID/mode retention and cleanup validation are
-tracked in [#424](https://github.com/Joshua-Asante/first-passage/issues/424)
-before shared/reused-host operation. Current acceptance is for fresh disposable
-hosts with the administrator and qexec trust assumptions above.
+Cleanup validates each top-level tree's retained owner, group and mode before
+recursive deletion ([#424](https://github.com/Joshua-Asante/first-passage/issues/424)).
+That is top-level binding validation, not a policy for every descendant and not a
+defense against a hostile administrator: do not broaden access to or repurpose these
+disposable run directories for unrelated files, because recursive cleanup still
+treats their contents as run-owned. It does not by itself establish shared or
+reused-host support. Current acceptance is for fresh disposable hosts with the
+administrator and qexec trust assumptions above.
 
 Cutover inventory: no real boundary workflow/runner existed on base `24acf9a`.
 This is new capability; no old consumers or resources are eligible for retirement.
