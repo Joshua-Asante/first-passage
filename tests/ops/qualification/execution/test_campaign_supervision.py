@@ -435,6 +435,8 @@ def test_guardian_unit_spec_binds_payload_lifetime_and_limits_controller_process
         uid=61001,
         orchestration_cpu_ns=20_000_000_000,
         remaining_wall_ns=20_000_000_000,
+        cpu_ns=120_000_000_000,
+        deadline_boottime_ns=1_000_000_000_000,
     )
     service = spec['guardian']
     assert service['Slice'] == enrollment['work_slice']
@@ -455,6 +457,8 @@ def test_guardian_unit_spec_binds_payload_lifetime_and_limits_controller_process
             uid=0,
             orchestration_cpu_ns=20_000_000_000,
             remaining_wall_ns=20_000_000_000,
+            cpu_ns=120_000_000_000,
+            deadline_boottime_ns=1_000_000_000_000,
         )
 
 
@@ -588,6 +592,8 @@ def test_manager_message_has_only_fixed_guardian_and_owned_auxiliaries():
         uid=61001,
         orchestration_cpu_ns=20_000_000_000,
         remaining_wall_ns=20_000_000_000,
+        cpu_ns=120_000_000_000,
+        deadline_boottime_ns=1_000_000_000_000,
     )
     args = manager_start_arguments(scopes, spec)
     assert args[:2] == [scopes['guardian_unit'], 'fail']
@@ -2142,3 +2148,500 @@ def test_client_wait_subtracts_spawn_time_from_original_deadline(tmp_path, monke
         lambda: encoded(clock(deadline - 10 if spawned else 12)),
     )
     adapter._control(['fixed-command'], enrollment={'attempt_id': ATTEMPT, 'work_id': 'admission'})
+
+
+# --- S2-G1: kernel-bounded payload CPU, pre-bootstrap deadline, verified identity ---
+# Simulated adapters and fake /proc readers; none of this is Linux enforcement evidence.
+
+
+def _spec(**overrides):
+    from c1_rail.qualification.execution.campaign_supervisor import (
+        guardian_unit_spec,
+        work_enrollment,
+    )
+
+    enrollment = work_enrollment('host1', ATTEMPT, 'probe')
+    kwargs = dict(
+        attempt_id=ATTEMPT,
+        work_id='probe',
+        code_root='/opt/qualification',
+        interpreter='/opt/ops/bin/python',
+        uid=61001,
+        orchestration_cpu_ns=20_000_000_000,
+        remaining_wall_ns=300_000_000_000,
+        cpu_ns=120_000_000_000,
+        deadline_boottime_ns=1_000_000_000_000,
+    )
+    kwargs.update(overrides)
+    return enrollment, guardian_unit_spec(enrollment, **kwargs)
+
+
+def test_payload_cpu_quota_is_derived_from_existing_limits_and_bounds_cumulative_usage():
+    from c1_rail.qualification.execution.campaign_supervisor import (
+        manager_start_arguments,
+        payload_cpu_quota_usec,
+    )
+
+    enrollment, spec = _spec()
+    quota = spec['payload']['CPUQuotaPerSecUSec']
+    # Diagnostic profile: (120 s - 20 s orchestration) over the 300 s wall.
+    assert quota == payload_cpu_quota_usec(100_000_000_000, 300_000_000_000) == 333_333
+    # quota (µs of CPU per wall second) × RuntimeMax never exceeds the payload budget.
+    assert quota * spec['guardian']['RuntimeMaxUSec'] // 1000 <= 100_000_000_000
+    assert spec['guardian']['RuntimeMaxUSec'] == 300_000_000
+    args = manager_start_arguments(enrollment, spec)
+    payload_args = args[args.index(enrollment['payload_slice']) :]
+    index = payload_args.index('CPUQuotaPerSecUSec')
+    assert payload_args[index + 1 : index + 3] == ['t', '333333']
+    assert 'CPUQuotaPerSecUSec' not in args[: args.index(enrollment['payload_slice'])]
+    # A later start shortens the lifetime: the rate rises, the product still holds.
+    _, late = _spec(remaining_wall_ns=50_000_000_000)
+    assert late['payload']['CPUQuotaPerSecUSec'] == 2_000_000
+    assert late['payload']['CPUQuotaPerSecUSec'] * late['guardian']['RuntimeMaxUSec'] // 1000 <= 100_000_000_000
+    with pytest.raises(ValueError, match='positive payload CPU budget'):
+        _spec(cpu_ns=20_000_000_000)
+    with pytest.raises(ValueError, match='positive payload CPU budget'):
+        _spec(cpu_ns=15_000_000_000)
+    with pytest.raises(ValueError, match='below manager resolution'):
+        payload_cpu_quota_usec(1, 10_000_000)
+    for value in (True, 0, -1, '1'):
+        with pytest.raises(ValueError):
+            _spec(deadline_boottime_ns=value)
+        with pytest.raises(ValueError):
+            _spec(cpu_ns=value)
+
+
+def test_realized_payload_cpu_max_is_verified_fail_closed():
+    from c1_rail.qualification.execution.campaign_supervisor import verify_payload_cpu_max
+
+    bound = dict(remaining_wall_ns=300_000_000_000, budget_cpu_ns=100_000_000_000)
+    assert verify_payload_cpu_max(b'33333 100000\n', quota_usec=333_333, **bound) == (33333, 100000)
+    # A manager-adjusted period verifies against the realized period.
+    assert verify_payload_cpu_max(b'333333 1000000\n', quota_usec=333_333, **bound) == (333333, 1000000)
+    # The guardian's bound-only view with a shorter remaining lifetime.
+    assert verify_payload_cpu_max(
+        b'33333 100000\n', remaining_wall_ns=299_000_000_000, budget_cpu_ns=100_000_000_000
+    ) == (33333, 100000)
+    for raw in (b'max 100000\n', b'33333\n', b'', b'-1 100000', b'33333 0', b'0 100000', b'1' * 65, 'x'):
+        with pytest.raises(ValueError):
+            verify_payload_cpu_max(raw, quota_usec=333_333, **bound)
+    with pytest.raises(ValueError, match='differs from derived'):
+        verify_payload_cpu_max(b'33334 100000\n', quota_usec=333_333, **bound)
+    with pytest.raises(ValueError, match='exceeds reservation'):
+        verify_payload_cpu_max(b'40000 100000\n', **bound)
+    with pytest.raises(ValueError, match='exceeds reservation'):
+        verify_payload_cpu_max(
+            b'33333 100000\n', remaining_wall_ns=301_000_000_000, budget_cpu_ns=100_000_000_000
+        )
+
+
+def test_guardian_argv_carries_the_absolute_deadline_and_refuses_a_differing_value():
+    from c1_rail.qualification.execution.campaign_supervisor import guardian_deadline
+
+    _, spec = _spec(deadline_boottime_ns=123_456_789)
+    assert spec['guardian']['ExecStart'][:4] == [
+        '/opt/ops/bin/python',
+        '-I',
+        '/opt/qualification/bootstrap.py',
+        'campaign_guardian',
+    ]
+    assert spec['guardian']['ExecStart'][-2:] == ['--deadline-boottime-ns', '123456789']
+    state = dict(deadline_boottime_ns=1_000_000)
+    work = dict(limits=dict(wall_ns=300_000))
+    reservation = dict(clock=dict(boottime_ns=500_000))
+    assert guardian_deadline(state, work, reservation, 800_000) == 800_000
+    assert guardian_deadline(dict(deadline_boottime_ns=700_000), work, reservation, 700_000) == 700_000
+    for value in (800_001, 799_999, 1_000_000, 0, -1, True, '800000'):
+        with pytest.raises(ValueError):
+            guardian_deadline(state, work, reservation, value)
+
+
+def test_bootstrap_arms_the_absolute_deadline_before_any_campaign_import():
+    """Source-order guard: bootstrap.py refuses to import outside an isolated Linux interpreter."""
+    from c1_rail.qualification.execution import runtime as installed
+
+    source = (Path(installed.installed_code_root()) / 'deploy/qualification/bootstrap.py').read_text(
+        encoding='utf-8'
+    )
+    arm = source.index('timer_settime(')
+    assert source.index("if role == 'campaign_guardian':") < arm
+    assert source.index('--deadline-boottime-ns') < arm
+    assert arm < source.index('sys.path[:0]') < source.index('import importlib')
+    assert 'c1_rail' not in source[:arm] and 'CLOCK_BOOTTIME' in source[:arm]
+    assert 'SIGKILL' in source[:arm]
+    assert source.index('original deadline passed before guardian bootstrap') > arm
+    assert 'environ' not in source
+
+
+def test_supervision_event_parser_accepts_deadline_resume_and_unobserved_reasons():
+    from c1_rail.qualification.execution.campaign_supervisor import parse_supervision_event
+
+    def event(kind, data):
+        return encoded(
+            dict(
+                schema='qualification_campaign_supervision_event/v1',
+                attempt_id=ATTEMPT,
+                work_id='probe',
+                kind=kind,
+                clock=clock(),
+                data=data,
+            )
+        )
+
+    container = 'f' * 64
+    assert parse_supervision_event(event('DEADLINE', {'deadline_boottime_ns': 5}))['kind'] == 'DEADLINE'
+    assert parse_supervision_event(event('RESUMED', {'container_id': container, 'pid': 7}))['kind'] == 'RESUMED'
+    assert (
+        parse_supervision_event(event('PROCESS_UNOBSERVED', {'container_id': container, 'exit_code': 0}))['kind']
+        == 'PROCESS_UNOBSERVED'
+    )
+    for kind, data in [
+        ('DEADLINE', {'deadline_boottime_ns': 0}),
+        ('DEADLINE', {'deadline_boottime_ns': 5, 'extra': 1}),
+        ('RESUMED', {'container_id': 'short', 'pid': 7}),
+        ('RESUMED', {'container_id': container, 'pid': 0}),
+        ('PROCESS_UNOBSERVED', {'container_id': container, 'exit_code': -1}),
+        ('PROCESS_UNOBSERVED', {'container_id': container}),
+        ('RESUME', {'container_id': container, 'pid': 7}),
+    ]:
+        with pytest.raises(ValueError):
+            parse_supervision_event(event(kind, data))
+
+
+def _probe_scene(tmp_path, monkeypatch, docker_factory):
+    """A RUNNING probe work whose container and /proc facts are simulated."""
+    from types import SimpleNamespace
+    from test_campaign_budget import transition
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    from c1_rail.qualification.execution.protocol import sha256
+
+    store = metered(tmp_path, started=False)
+    manifest = {
+        'schema': 'qualification_campaign_work_manifest/v1',
+        'attempt_id': ATTEMPT,
+        'work_id': 'probe',
+        'role': 'probe_worker',
+        'probe': 'noop',
+    }
+    raw = encoded(
+        {'limits': profile()['phases']['N1'], 'clock': clock(11), 'input_sha256': sha256(encoded(manifest))}
+    )
+    store.reserve_work(ATTEMPT, 'probe', 'N1', raw, expected_revision=snap(store)['authority_revision'])
+    enrollment = supervisor.prepare_campaign_work(
+        store, ATTEMPT, 'probe', host_run_id='host1', manifest_bytes=encoded(manifest), clock_bytes=encoded(clock(12))
+    )
+    transition(store, 'probe', 'RUNNING', 13)
+    state = snap(store)
+    work = next(w for w in state['works'] if w['work_id'] == 'probe')
+    scopes = enrollment['scopes']
+    body = {
+        'Image': 'sha256:' + 'a' * 64,
+        'User': '61001:61001',
+        'Entrypoint': ['fixed'],
+        'Cmd': ['noop'],
+        'HostConfig': {'CgroupParent': scopes['payload_slice']},
+    }
+    parent = Path('/sys/fs/cgroup') / supervisor.host_slice('host1')
+    chain = '/'.join(
+        [parent.name, scopes['campaign_slice'], scopes['work_slice'], scopes['payload_slice']]
+    )
+    container_cgroup = '/' + chain + '/docker-' + 'f' * 64 + '.scope'
+
+    class Runtime:
+        def __init__(self):
+            self.parent = parent
+
+        def observation(self, state, work, enrollment):
+            doc = json.loads(observation(work='probe', cpu=20, t=14))
+            doc.update(
+                schema='qualification_campaign_observation/v2',
+                orchestration_charge_cpu_ns=10,
+                termination_known=True,
+                campaign_scope_id=scopes['campaign_slice'],
+                work_scope_id=scopes['payload_slice'],
+            )
+            return encoded(doc)
+
+    def read_counter(path):
+        if path.name == 'cpu.stat':
+            return b'usage_usec 0\n'  # metered() phases carry 60 ns; stay under the early stop
+        raise AssertionError('unexpected counter read: ' + str(path))
+
+    docker = docker_factory(store, body)
+    monkeypatch.setattr(supervisor, 'DockerControl', lambda: docker)
+    monkeypatch.setattr(supervisor, 'probe_container_body', lambda *args: body)
+    monkeypatch.setattr(supervisor, 'observe_campaign_clock', lambda: encoded(clock(14)))
+    monkeypatch.setattr(supervisor, '_process_cgroup', lambda pid='self': container_cgroup)
+    monkeypatch.setattr(supervisor, '_payload_processes', lambda group: ['4242'])
+    monkeypatch.setattr(supervisor, '_process_identity', lambda pid_text: (1000, 61001, container_cgroup))
+    monkeypatch.setattr(supervisor, '_read_counter', read_counter)
+    monkeypatch.setattr(supervisor.time, 'sleep', lambda seconds: None)
+    context = SimpleNamespace(store=store.store, recovery_issues={})
+    return store, Runtime(), state, work, enrollment, manifest, docker
+
+
+def _events(store, kind=None):
+    from c1_rail.qualification.execution.campaign_supervisor import parse_supervision_event
+
+    rows = [
+        parse_supervision_event(raw)
+        for role, raw in store.objects(ATTEMPT).items()
+        if role.startswith('supervision_event_')
+    ]
+    return [row for row in rows if kind is None or row['kind'] == kind]
+
+
+class _Docker:
+    """Fixed lifecycle fake: exits only after the recorded resume signal."""
+
+    def __init__(self, store, body, *, exit_code=0, exits_before_observation=False):
+        self.store, self.body = store, body
+        self.exit_code, self.unobserved = exit_code, exits_before_observation
+        self.calls, self.started, self.resumed = [], False, False
+        self.identity_before_resume = None
+
+    def call(self, method, path, body_arg=None):
+        self.calls.append((method, path))
+        if path == '/info':
+            return {'CgroupDriver': 'systemd'}
+        if '/create?' in path:
+            return {'Id': 'f' * 64}
+        if path.endswith('/start'):
+            self.started = True
+            return None
+        if path.endswith('kill?signal=SIGUSR1'):
+            assert self.started
+            if self.identity_before_resume is None:
+                # Ordering on the first send: the durable PROCESS event precedes
+                # the resume; no RESUMED event exists yet at this instant.
+                self.identity_before_resume = (
+                    [e['data']['pid'] for e in _events(self.store, 'PROCESS')],
+                    _events(self.store, 'RESUMED'),
+                )
+            self.resumed = True
+            return None
+        if path.endswith('kill?signal=KILL'):
+            raise AssertionError('no CPU kill expected')
+        if method == 'DELETE':
+            return None
+        if path.endswith('/json'):
+            running = self.started and not self.unobserved and not self.resumed
+            return {
+                'Image': self.body['Image'],
+                'Config': self.body,
+                'HostConfig': self.body['HostConfig'],
+                'State': {
+                    'Running': running,
+                    'Pid': 4242 if running else 0,
+                    'ExitCode': 0 if running else self.exit_code,
+                },
+            }
+        raise AssertionError('unexpected Docker call ' + method + ' ' + path)
+
+
+def test_probe_resume_follows_retained_identity_then_completes(tmp_path, monkeypatch):
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+
+    store, runtime, state, work, enrollment, manifest, docker = _probe_scene(tmp_path, monkeypatch, _Docker)
+    supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
+    pids, resumed_before = docker.identity_before_resume
+    # The identity is durable before the first resume; the RESUMED event follows it.
+    assert pids == [4242] and resumed_before == []
+    resume_at = docker.calls.index(('POST', '/containers/' + 'f' * 64 + '/kill?signal=SIGUSR1'))
+    inspections = [index for index, (method, path) in enumerate(docker.calls) if path.endswith('/json')]
+    # The config check and the first Running turn (identity retained) precede the resume.
+    assert sum(index < resume_at for index in inspections) == 2
+    assert [e['data'] for e in _events(store, 'RESUMED')] == [{'container_id': 'f' * 64, 'pid': 4242}]
+    assert [e['data']['uid'] for e in _events(store, 'PROCESS')] == [61001]
+    final = snap(store)
+    probe = next(w for w in final['works'] if w['work_id'] == 'probe')
+    assert probe['state'] == 'COMPLETED' and probe['observation_bytes_b64'] is not None
+    assert final['state'] == 'BOUND' and docker.calls[-1][0] == 'DELETE'
+
+
+def test_unobserved_payload_exit_settles_without_completion_and_retains_the_reason(tmp_path, monkeypatch):
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+
+    def factory(store, body):
+        return _Docker(store, body, exits_before_observation=True)
+
+    store, runtime, state, work, enrollment, manifest, docker = _probe_scene(tmp_path, monkeypatch, factory)
+    with pytest.raises(ValueError, match='before any alive-verified process identity'):
+        supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
+    assert _events(store, 'PROCESS') == [] and _events(store, 'RESUMED') == []
+    assert [e['data'] for e in _events(store, 'PROCESS_UNOBSERVED')] == [{'container_id': 'f' * 64, 'exit_code': 0}]
+    assert not any(path.endswith('kill?signal=USR1') or method == 'DELETE' for method, path in docker.calls)
+    final = snap(store)
+    probe = next(w for w in final['works'] if w['work_id'] == 'probe')
+    # No credit of any kind: still RUNNING and unsettled, for the R1 recovery path.
+    assert probe['state'] == 'RUNNING' and probe['observation_bytes_b64'] is None
+    assert all(
+        json.loads(base64.b64decode(t))['state'] not in ('CAPTURED', 'COMPLETED', 'SIGNING_INTENT')
+        for t in probe['transitions']
+    )
+
+
+def test_nonzero_probe_exit_settles_without_completion(tmp_path, monkeypatch):
+    """A non-zero exit (e.g. the OOM kill) settles its observation but is never
+    credited: no CAPTURED/COMPLETED and no illegal ABORTED. It must NOT refuse
+    settlement -- that regressed the shared-memory OOM case to IN_DOUBT."""
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+
+    def factory(store, body):
+        return _Docker(store, body, exit_code=1)
+
+    store, runtime, state, work, enrollment, manifest, docker = _probe_scene(tmp_path, monkeypatch, factory)
+    supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
+    assert [e['data']['pid'] for e in _events(store, 'PROCESS')] == [4242]
+    probe = next(w for w in snap(store)['works'] if w['work_id'] == 'probe')
+    transitions = [json.loads(base64.b64decode(t))['state'] for t in probe['transitions']]
+    assert 'CAPTURED' not in transitions and 'COMPLETED' not in transitions and 'ABORTED' not in transitions
+    assert probe['observation_bytes_b64'] is not None  # the failure observation is retained
+    assert docker.calls[-1][0] == 'DELETE'
+
+
+def _vanishing_scene(tmp_path, monkeypatch):
+    """A RUNNING probe whose container exits after the guardian retains its
+    identity but before the next cgroup read, so the /proc entry vanishes."""
+    from types import SimpleNamespace
+    from test_campaign_budget import transition
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    from c1_rail.qualification.execution.protocol import sha256
+
+    store = metered(tmp_path, started=False)
+    manifest = {
+        'schema': 'qualification_campaign_work_manifest/v1',
+        'attempt_id': ATTEMPT,
+        'work_id': 'probe',
+        'role': 'probe_worker',
+        'probe': 'noop',
+    }
+    raw = encoded(
+        {'limits': profile()['phases']['N1'], 'clock': clock(11), 'input_sha256': sha256(encoded(manifest))}
+    )
+    store.reserve_work(ATTEMPT, 'probe', 'N1', raw, expected_revision=snap(store)['authority_revision'])
+    enrollment = supervisor.prepare_campaign_work(
+        store, ATTEMPT, 'probe', host_run_id='host1', manifest_bytes=encoded(manifest), clock_bytes=encoded(clock(12))
+    )
+    transition(store, 'probe', 'RUNNING', 13)
+    state = snap(store)
+    work = next(w for w in state['works'] if w['work_id'] == 'probe')
+    scopes = enrollment['scopes']
+    body = {
+        'Image': 'sha256:' + 'a' * 64,
+        'User': '61001:61001',
+        'Entrypoint': ['fixed'],
+        'Cmd': ['noop'],
+        'HostConfig': {'CgroupParent': scopes['payload_slice']},
+    }
+    parent = Path('/sys/fs/cgroup') / supervisor.host_slice('host1')
+    chain = '/'.join([parent.name, scopes['campaign_slice'], scopes['work_slice'], scopes['payload_slice']])
+    container_cgroup = '/' + chain + '/docker-' + 'f' * 64 + '.scope'
+    flags = {'cgroup_calls': 0, 'gone': False}
+
+    class Runtime:
+        def __init__(self):
+            self.parent = parent
+
+        def observation(self, state, work, enrollment):
+            doc = json.loads(observation(work='probe', cpu=20, t=14))
+            doc.update(schema='qualification_campaign_observation/v2', orchestration_charge_cpu_ns=10,
+                       termination_known=True, campaign_scope_id=scopes['campaign_slice'],
+                       work_scope_id=scopes['payload_slice'])
+            return encoded(doc)
+
+    class Docker:
+        def __init__(self):
+            self.calls = []
+
+        def call(self, method, path, body_arg=None):
+            self.calls.append((method, path))
+            if path == '/info':
+                return {'CgroupDriver': 'systemd'}
+            if '/create?' in path:
+                return {'Id': 'f' * 64}
+            if path.endswith('/start') or path.endswith('kill?signal=SIGUSR1') or method == 'DELETE':
+                return None
+            if path.endswith('/json'):
+                running = not flags['gone']
+                return {'Image': body['Image'], 'Config': body, 'HostConfig': body['HostConfig'],
+                        'State': {'Running': running, 'Pid': 4242 if running else 0, 'ExitCode': 0}}
+            raise AssertionError('unexpected Docker call ' + method + ' ' + path)
+
+    def process_cgroup(pid='self'):
+        flags['cgroup_calls'] += 1
+        if flags['cgroup_calls'] >= 2:
+            flags['gone'] = True  # The container exits between this inspect and the read.
+            raise FileNotFoundError('/proc/' + str(pid) + '/cgroup')
+        return container_cgroup
+
+    docker = Docker()
+    monkeypatch.setattr(supervisor, 'DockerControl', lambda: docker)
+    monkeypatch.setattr(supervisor, 'probe_container_body', lambda *args: body)
+    monkeypatch.setattr(supervisor, 'observe_campaign_clock', lambda: encoded(clock(14)))
+    monkeypatch.setattr(supervisor, '_process_cgroup', process_cgroup)
+    monkeypatch.setattr(supervisor, '_payload_processes', lambda group: ['4242'])
+    monkeypatch.setattr(supervisor, '_process_identity', lambda pid_text: (1000, 61001, container_cgroup))
+    monkeypatch.setattr(supervisor, '_read_counter', lambda path: b'usage_usec 0\n')
+    monkeypatch.setattr(supervisor.time, 'sleep', lambda seconds: None)
+    return store, Runtime(), state, work, enrollment, manifest, docker, flags
+
+
+def test_run_probe_tolerates_container_vanishing_between_inspect_and_read(tmp_path, monkeypatch):
+    """The vanished-cgroup read never raises into the guardian failure handler
+    (regression for the run 35469217005 4/41 inspect->read hang)."""
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+
+    store, runtime, state, work, enrollment, manifest, docker, flags = _vanishing_scene(tmp_path, monkeypatch)
+    supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
+    assert flags['gone'] and flags['cgroup_calls'] == 2  # the read raised, was tolerated, re-inspected
+    assert [e['data']['uid'] for e in _events(store, 'PROCESS')] == [61001]
+    assert _events(store, 'PROCESS_UNOBSERVED') == []
+    probe = next(w for w in snap(store)['works'] if w['work_id'] == 'probe')
+    assert probe['state'] == 'COMPLETED' and probe['observation_bytes_b64'] is not None
+
+
+def test_recover_campaign_work_refuses_to_spend_slot_on_never_started_work(tmp_path, monkeypatch):
+    """A RESERVED admission with no enrollment produced no OS effect; recovery must
+    report status without claiming the one-use RECOVERY_OWNER slot."""
+    from types import SimpleNamespace
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    from c1_rail.qualification.execution.protocol import sha256
+
+    store = metered(tmp_path, started=False)  # admission is RESERVED, never prepared
+    assert snap(store)['works'][0]['state'] == 'RESERVED'
+    owner_role = 'supervision_control_' + sha256(encoded(['admission', 'RECOVERY_OWNER']))
+    assert owner_role not in store.objects(ATTEMPT)
+
+    class ForbiddenRuntime:
+        def observation(self, *args):
+            raise AssertionError('never-started work must not be inspected')
+
+        def cleanup(self, *args):
+            raise AssertionError('never-started work must not be cleaned up')
+
+    context = SimpleNamespace(store=store.store, campaign_runtime=ForbiddenRuntime(), recovery_issues={})
+    monkeypatch.setattr(supervisor, 'observe_campaign_clock', lambda: encoded(clock(13)))
+    reservation = base64.b64decode(snap(store)['works'][0]['reservation_bytes_b64'])
+    result = json.loads(supervisor.recover_campaign_work(context, reservation, attempt_id=ATTEMPT, work_id='admission'))
+    assert result['schema'] == 'qualification_campaign_status/v2'
+    assert owner_role not in store.objects(ATTEMPT)  # the one-use slot was never spent
+    assert snap(store)['works'][0]['state'] == 'RESERVED' and snap(store)['reserved_cpu_ns'] == 60
+    # A genuinely started work is unaffected: the slot is still claimed for it.
+    from test_campaign_budget import transition
+    transition(store, 'admission', 'START_INTENT', 12,
+               dict(campaign_scope_id='parent-1', work_scope_id='scope-admission'))
+    store.claim_supervision_control(ATTEMPT, 'admission', 'RECOVERY_OWNER', encoded(clock(14)))
+    with pytest.raises(ValueError, match='control slot already spent'):
+        supervisor.recover_campaign_work(context, reservation, attempt_id=ATTEMPT, work_id='admission')
+
+
+def test_linux_runtime_exposes_its_observation_and_cleanup_methods():
+    """A module-level def wedged into the class body silently orphans the methods
+    below it: it compiles and the mock-runtime tests pass, but the real adapter
+    loses observation/cleanup and the host admission guardian hangs (run 35472701398).
+    """
+    from c1_rail.qualification.execution.campaign_supervisor import LinuxCampaignRuntime
+    for name in ('__init__', '_control', 'start', 'observation', 'cleanup'):
+        member = LinuxCampaignRuntime.__dict__.get(name)
+        assert callable(member), name + ' is not a method of LinuxCampaignRuntime'

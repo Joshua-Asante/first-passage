@@ -370,6 +370,11 @@
       "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_original_deadline_survives_service_downtime",
       "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_shared_memory_oom_is_retained_last",
       "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_kernel_bounds_guardian_cpu_before_recovery",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_private_route_is_service_peer_only_and_bounded_in_framing",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_warm_service_starts_one_guardian_per_work_with_no_scheduler_unit",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_probe_that_exits_before_observation_never_completes",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_payload_cpu_is_kernel_bounded_without_guardian",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_deadline_kills_guardian_before_bootstrap_completes",
       "tests/integration/qualification_boundary/test_campaign_service_linux.py::test_s2_post_admission_void_authentication_is_charged_per_attempt_and_never_forged",
       "tests/integration/qualification_boundary/test_campaign_service_linux.py::test_s2_queued_cancellation_bars_new_work_while_admission_still_settles",
       "tests/integration/qualification_boundary/test_campaign_service_linux.py::test_s2_admission_retry_after_service_death_never_double_starts"
