@@ -1121,11 +1121,10 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
         _retain_event(campaigns, state['attempt_id'], work['work_id'], 'PROCESS_UNOBSERVED',
                       dict(container_id=container, exit_code=exit_code))
         raise ValueError('payload exited before any alive-verified process identity; completion refused')
-    if exit_code != 0 and not stopping:
-        # A started work has no legal ABORTED transition (ABORTED follows only
-        # RESERVED); a non-zero fixed probe is refused onto the same recovery path.
-        raise ValueError('fixed probe exited ' + str(exit_code) + (
-            ' before its resume' if resume_sends == 0 else '') + '; completion refused')
+    # A non-zero exit (e.g. the shared-memory OOM kill) still settles its measured
+    # observation -- which retains the OOM and drives the campaign terminal -- but
+    # is never credited: CAPTURED/COMPLETED below are gated on exit_code == 0, and
+    # a started work has no legal ABORTED transition, so it simply stays uncompleted.
     state = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='probe final state')
     work = campaigns._work(state, work['work_id'])
     capture = encoded(dict(schema='qualification_campaign_probe_capture/v1',

@@ -2481,18 +2481,23 @@ def test_unobserved_payload_exit_settles_without_completion_and_retains_the_reas
     )
 
 
-def test_nonzero_probe_exit_is_refused_instead_of_an_illegal_abort(tmp_path, monkeypatch):
+def test_nonzero_probe_exit_settles_without_completion(tmp_path, monkeypatch):
+    """A non-zero exit (e.g. the OOM kill) settles its observation but is never
+    credited: no CAPTURED/COMPLETED and no illegal ABORTED. It must NOT refuse
+    settlement -- that regressed the shared-memory OOM case to IN_DOUBT."""
     from c1_rail.qualification.execution import campaign_supervisor as supervisor
 
     def factory(store, body):
         return _Docker(store, body, exit_code=1)
 
     store, runtime, state, work, enrollment, manifest, docker = _probe_scene(tmp_path, monkeypatch, factory)
-    with pytest.raises(ValueError, match='fixed probe exited 1; completion refused'):
-        supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
+    supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
     assert [e['data']['pid'] for e in _events(store, 'PROCESS')] == [4242]
     probe = next(w for w in snap(store)['works'] if w['work_id'] == 'probe')
-    assert probe['state'] == 'RUNNING' and probe['observation_bytes_b64'] is None
+    transitions = [json.loads(base64.b64decode(t))['state'] for t in probe['transitions']]
+    assert 'CAPTURED' not in transitions and 'COMPLETED' not in transitions and 'ABORTED' not in transitions
+    assert probe['observation_bytes_b64'] is not None  # the failure observation is retained
+    assert docker.calls[-1][0] == 'DELETE'
 
 
 def _vanishing_scene(tmp_path, monkeypatch):
