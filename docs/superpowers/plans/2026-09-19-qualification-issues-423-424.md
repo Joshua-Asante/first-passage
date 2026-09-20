@@ -609,3 +609,67 @@ but **not mode**; a green `--host-only` run does not extend it.
 exists. #423: the default-client preflight half is green (C, six hosts); the nondefault protected-client
 half is one three-line path change away — defect finding returned above, fix assignment is the
 coordinator's. Final acceptance of both issues remains the coordinator's.
+
+### Handoff E executor return — 2026-09-20 UTC: outcome 3 produced on a fresh host with the nondefault protected client at /var/lib/fp-docker/bin/docker; #423 evidence complete
+
+Fix assignment for D's defect finding, executed per the E assignment (skill unavailable as before; steps
+executed directly; C's constraints, inspection recipe and packet shape applied).
+
+**E1 and the edit.** E0: `origin/main` still `f2606b0`, worktree clean at `e6180f5`, doctor OK. E1 =
+**`2ea7f38e869b889502c5acef1f494b6772a11e73`** (message `ci(evidence): nondefault Docker client under
+/var/lib (runner image leaves /opt world-writable) (Handoff E)`, trailer `ZCode GLM-5.3`; gates passed on
+commit; 9 insertions / 4 deletions). Only the `boundary-nondefault-client` job changed: the two `install`
+lines and the `sed` now target `/var/lib/fp-docker/bin/docker`; a six-line `stat -c '%U:%G %a %n'` loop
+over `/`, `/var`, `/var/lib`, `/var/lib/fp-docker`, `/var/lib/fp-docker/bin`,
+`/var/lib/fp-docker/bin/docker` and a `sha256sum tools/qualification_verification/host.json` line make the
+ancestry self-evidencing in the log; the jq assertion now expects
+`"/var/lib/fp-docker/bin/docker"`. No trigger change (`workflow_dispatch:` only), no comment in the file
+named `/opt` (verified: no `/opt` substring remains anywhere in the file). Precomputed edited-config digest
+verified locally before the run: `6ca065a5…e47e`.
+
+**Run.** https://github.com/Joshua-Asante/first-passage/actions/runs/35493514182 (workflow_dispatch, run of
+registered workflow ID 362470213; dispatch 2xx). Checked out `2ea7f38` (confirmed via
+`host-observations.json.source_commit`): **success** —
+`Boundary evidence with nondefault protected Docker client`: **success**;
+`Host ownership and permission evidence (1)` and `(2)`: **success** (bonus outcome-1 reconfirmation: both
+55/55, 0 skipped, `host_readiness`, bound to `2ea7f38`). Artifact: `qualification-boundary-nondefault-client`
+(+ the two host-evidence artifacts), preserved under
+`C:/Users/joshu/multi_firm_operations/tmp/handoff-423-424/e-linux-evidence-2026-09-20/run-35493514182/`
+together with the full 1200-line run log.
+
+**E3 table (all asserted independently on the download, not just the workflow's jq step).**
+`record.json` under `evidence/<uuid>/`: completed, exit 0, `verification_exit_code` 0, `source_stable`
+true, `purpose == boundary_acceptance`, scope `N1_ONLY_TEST_ONLY`, invariant manifest sha `ee8c5771b652…`,
+`test_summary` **464 collected / 464 passed / 0 failed / 0 skipped** — identical counts to C's four
+default-client hosts — and `invariants.json` `passed: true`. `boundary/environment.json`:
+`ready: true`; exactly **16** checks; `checks.docker_client.observed ==
+"/var/lib/fp-docker/bin/docker"` (ok true); `checks.image.observed == {'id': 'sha256:c7ed435b…c20291c'}`
+with the key `id` only; no `RepoDigests`/`RepoTags`/`"digests"` substring anywhere in the file;
+`checks.docker.observed.Version == "28.0.4"` — the copied client reached the daemon and served the whole
+suite, including the worker image build (`build_worker` uses the retained `host_config['docker']`); **no
+fallback exists in the workflow and none was taken** (zero symlink/fallback operations in the log).
+`host-observations.json`: `host_config_sha256 == 6ca065a50131426862c2df0cd32c995fd732c115852972423978d1bddd63e47e`
+— the runner-edited config, differing from the branch's `ddc5a391…` by construction (exactly the one
+`docker` line replaced; the runner's own `sha256sum` output in the log matches this digest verbatim);
+`source_commit == 2ea7f38…`. Cleanup receipts: in-run `ok: true`, removed 27 (18 containers, 1 image, 3
+users, **5 trees all five-field** `{uid, gid, mode, path, kind}`), `failures: []`; workflow second call
+`ok: true`, removed 0 (already retired); no `legacy_tree_bindings`. Ancestry stat lines, verbatim from the
+job log: `root:root 755 /`, `root:root 755 /var`, `root:root 755 /var/lib`,
+`root:root 755 /var/lib/fp-docker`, `root:root 755 /var/lib/fp-docker/bin`,
+`root:root 755 /var/lib/fp-docker/bin/docker` — every ancestor root-owned with no group/other write bits.
+
+**Constraints.** Only the nondefault job's install/sed/assertion lines and its step block changed; no
+trigger, gate, ruleset, `host.json`, `tools/`, `tests/` or `scripts/` edits; no rebase/squash/force-push.
+Draft PR #437 open and draft (the E1 push reran its PR-path workflows — bonus, not required, and not
+inspected here); no merge, no issue closure, no issue comments. The workflow blob at the final head is no
+longer C's `944995c8…` — it is the E1 relocation by coordinator assignment; blob sha256 at
+`2ea7f38` = **`4d151e9f1f39b1d980d8ddd99bace6ee330268b6c0a0d129171dcae2b1695d38`** (differs from
+`944995c8…` exactly by the relocated lines; the E4 docs commit does not touch the workflow). Trust model
+`trusted_administrator_and_privileged_qexec/v1` unchanged; no shared/reused-host claims; the legacy-v3
+limitation stands: records with uid only validate the producer-determined owner **and group**, **not mode**.
+
+**Outstanding.** #423: nothing evidence-wise — the default-client half is green on six hosts (C), the
+nondefault protected-client half is green on this host (E, `2ea7f38`-bound, all five outcome-3 assertions).
+#424: nothing evidence-wise (D outcome 1 ×4 hosts; C outcome 2 ×4 hosts; E bonus ×2 more). Final
+acceptance of both issues, and the C-era S2-dispatch flake (run 35489413703, preserved and attributed),
+remain the coordinator's.
