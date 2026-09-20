@@ -738,7 +738,7 @@ class FundingStoreMixin:
             parse_enrollment(enrollment)
             control = encoded(
                 {
-                    'schema': 'qualification_campaign_supervision_event/v1',
+                    'schema': 'qualification_campaign_supervision_event/v2',
                     'attempt_id': attempt_id,
                     'work_id': work_id,
                     'kind': 'CONTROL',

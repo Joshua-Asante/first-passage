@@ -625,12 +625,25 @@ def test_claim_cannot_point_to_a_valid_but_ineligible_historical_head(tmp_path):
 def test_compact_fixed_signing_retry_preserves_parent_authority_and_own_charge(tmp_path):
     from test_campaign_budget import transition, observation
     from test_campaign_recovery import capture
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
     from c1_rail.qualification.execution.protocol import sha256
 
     store = enrolled(tmp_path)
     raw = schedule(work_id='seal', role='probe_seal')
     token, _ = claim(store, raw)
     _, enrollment = store.materialize_scheduler_bootstrap(ATTEMPT, 'seal', token, 'host1')
+    # S2-G5 R1: this scene enrolls 'seal' (materialize retains the enrollment),
+    # so its credit facts need a retained payload-scope PROCESS identity like
+    # any container-supervised work; the compact model simulates one in the
+    # current producer shape rather than modelling a supervised work without
+    # evidence.
+    scope = json.loads(enrollment)['scopes']
+    store.retain_supervision_event(encoded(dict(
+        schema=supervisor.SUPERVISION_EVENT_V2, attempt_id=ATTEMPT, work_id='seal',
+        kind='PROCESS', clock=clock(11), data=dict(pid=4242, start_ticks=1, uid=1001,
+            comm='python', exe='/opt/ops/bin/python',
+            cgroup='/' + scope['campaign_slice'] + '/' + scope['work_slice'] + '/'
+                   + scope['payload_slice'] + '/docker-' + 'f' * 64 + '.scope'))))
     capture(store, 'seal', 12)
     transition(
         store,

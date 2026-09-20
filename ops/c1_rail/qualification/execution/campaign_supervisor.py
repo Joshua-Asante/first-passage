@@ -215,11 +215,25 @@ def guardian_unit_spec(enrollment, *, attempt_id, work_id, code_root, interprete
                      CPUAccounting=True, MemoryAccounting=True, CPUQuotaPerSecUSec=quota))
 
 
+SUPERVISION_EVENT_V1 = 'qualification_campaign_supervision_event/v1'
+SUPERVISION_EVENT_V2 = 'qualification_campaign_supervision_event/v2'
+
+
 def parse_supervision_event(raw):
+    """Both event versions, each against its own closed shape.
+
+    v1 is the pre-G3 journal contract, byte for byte: PROCESS/RESUMED carry no
+    process image, and no PAYLOAD_EXIT kind exists. Every historical journal
+    (runs through 35493582848) reopens against it unchanged. v2 is the G3
+    evidence shape: PROCESS/RESUMED require the bounded image (comm always,
+    exe possibly '' across the ptrace gate) and it alone carries PAYLOAD_EXIT.
+    Producers emit v2 only; nothing new is ever written in v1.
+    """
     doc = fields(parse_canonical_json(raw, label='supervision event'),
                  {'schema', 'attempt_id', 'work_id', 'kind', 'clock', 'data'})
-    if doc['schema'] != 'qualification_campaign_supervision_event/v1':
+    if doc['schema'] not in (SUPERVISION_EVENT_V1, SUPERVISION_EVENT_V2):
         raise ValueError('supervision event schema required')
+    image = doc['schema'] == SUPERVISION_EVENT_V2
     identity(doc['attempt_id']); identity(doc['work_id']); clock(encoded(doc['clock']))
     if doc['kind'] == 'CONTROL':
         fields(doc['data'], {'slot'})
@@ -230,11 +244,13 @@ def parse_supervision_event(raw):
         if doc['data']['status'] not in ('ABSENT', 'PENDING'):
             raise ValueError('cleanup outcome required')
     elif doc['kind'] == 'PROCESS':
-        fields(doc['data'], {'pid', 'start_ticks', 'uid', 'cgroup', 'comm', 'exe'})
+        fields(doc['data'], {'pid', 'start_ticks', 'uid', 'cgroup', 'comm', 'exe'} if image
+               else {'pid', 'start_ticks', 'uid', 'cgroup'})
         integer(doc['data']['pid'], positive=True); integer(doc['data']['start_ticks'])
         integer(doc['data']['uid'], positive=True)
         _absolute_cgroup(doc['data']['cgroup'])
-        _bounded_image(doc['data']['comm'], doc['data']['exe'])
+        if image:
+            _bounded_image(doc['data']['comm'], doc['data']['exe'])
     elif doc['kind'] == 'CONTAINER':
         from .protocol import digest
         fields(doc['data'], {'container_id', 'name', 'role', 'cgroup_parent'})
@@ -248,11 +264,13 @@ def parse_supervision_event(raw):
         integer(doc['data']['deadline_boottime_ns'], positive=True)
     elif doc['kind'] == 'RESUMED':
         # Retained after the resume signal, so it always follows the PROCESS event;
-        # comm/exe are the init's image at the send (the exec'd interpreter, never runc).
+        # v2 also carries the init's image at the send (the exec'd interpreter, never runc).
         from .protocol import digest
-        fields(doc['data'], {'container_id', 'pid', 'comm', 'exe'})
+        fields(doc['data'], {'container_id', 'pid', 'comm', 'exe'} if image
+               else {'container_id', 'pid'})
         digest(doc['data']['container_id']); integer(doc['data']['pid'], positive=True)
-        _bounded_image(doc['data']['comm'], doc['data']['exe'])
+        if image:
+            _bounded_image(doc['data']['comm'], doc['data']['exe'])
     elif doc['kind'] == 'PROCESS_UNOBSERVED':
         # Why a settled work never completed: no alive-verified identity was retained.
         from .protocol import digest
@@ -261,8 +279,11 @@ def parse_supervision_event(raw):
     elif doc['kind'] == 'PAYLOAD_EXIT':
         # Docker's terminal State for the payload container, retained on every
         # settlement path (credited, non-credited and PROCESS_UNOBSERVED alike) so
-        # a non-zero exit is attributable after the fact.
+        # a non-zero exit is attributable after the fact. v2 only: no v1 journal
+        # ever contained one.
         from .protocol import digest
+        if not image:
+            raise ValueError('payload exit requires the v2 supervision event schema')
         fields(doc['data'], {'container_id', 'exit_code', 'oom_killed', 'finished_at'})
         digest(doc['data']['container_id']); integer(doc['data']['exit_code'])
         if type(doc['data']['oom_killed']) is not bool:
@@ -321,7 +342,8 @@ def _interpreter_image(comm, exe):
 
 
 def _retain_event(campaigns, attempt, work_id, kind, data):
-    raw = encoded(dict(schema='qualification_campaign_supervision_event/v1',
+    # v2 only: the guardian never writes a predecessor-shape event (S2-G5 R2).
+    raw = encoded(dict(schema=SUPERVISION_EVENT_V2,
         attempt_id=attempt, work_id=work_id, kind=kind,
         clock=parse_canonical_json(observe_campaign_clock(), label='clock'), data=data))
     campaigns.retain_supervision_event(raw)

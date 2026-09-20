@@ -195,12 +195,12 @@ def test_linked_retry_charges_its_own_bound_without_changing_fixed_intent(
         return encoded(doc)
 
     def enrolled_payload_identity(work):
-        """S2-G4 A5: the host-faithful preparation for a credited work -- a
+        """S2-G5 R1: the host-faithful preparation for a credited work -- a
         linked signing retry runs a container on the host like any other work,
         so it carries an enrollment and a retained alive-verified payload-scope
-        PROCESS identity; the credit rule binds for retries exactly as for any
-        work (the admission is the only exemption). The event shape adapts to
-        the installed parser (G3 adds and requires the process image fields)."""
+        PROCESS identity; the credit rule binds by enrollment for retries
+        exactly as for any work (the admission is the only exemption). The
+        event is the current producer shape (v2, image-bearing)."""
         from c1_rail.qualification.execution import campaign_supervisor as supervisor
         scopes = supervisor.work_enrollment('host1', ATTEMPT, work)
         manifest = encoded(dict(schema='qualification_campaign_work_manifest/v1',
@@ -209,19 +209,12 @@ def test_linked_retry_charges_its_own_bound_without_changing_fixed_intent(
             schema='qualification_campaign_supervision/v1', host_run_id='host1',
             attempt_id=ATTEMPT, work_id=work,
             manifest_bytes_b64=base64.b64encode(manifest).decode('ascii'), scopes=scopes)))
-        base = dict(pid=4242, start_ticks=1, uid=61001,
+        base = dict(pid=4242, start_ticks=1, uid=61001, comm='python', exe='/opt/ops/bin/python',
             cgroup='/' + scopes['campaign_slice'] + '/' + scopes['work_slice'] + '/'
                    + scopes['payload_slice'] + '/docker-' + 'f' * 64 + '.scope')
-        for image in (dict(comm='python', exe='/opt/ops/bin/python'), {}):
-            raw = encoded(dict(schema='qualification_campaign_supervision_event/v1',
-                attempt_id=ATTEMPT, work_id=work, kind='PROCESS', clock=clock(15),
-                data=dict(base, **image)))
-            try:
-                store.retain_supervision_event(raw)
-            except ValueError:
-                continue
-            return
-        raise AssertionError('no accepted PROCESS event shape on this tree')
+        store.retain_supervision_event(encoded(dict(
+            schema=supervisor.SUPERVISION_EVENT_V2,
+            attempt_id=ATTEMPT, work_id=work, kind='PROCESS', clock=clock(15), data=base)))
 
     reserve('seal', 13)
     enrolled_payload_identity('seal')
@@ -888,7 +881,7 @@ def recovery_completion(store, t=15, work_id='admission'):
     recovery = next(r for r in state['recoveries'] if r['work_id'] == work_id)
     cleanup = encoded(
         {
-            'schema': 'qualification_campaign_supervision_event/v1',
+            'schema': 'qualification_campaign_supervision_event/v2',
             'attempt_id': ATTEMPT,
             'work_id': work_id,
             'kind': 'CLEANUP',
@@ -2305,12 +2298,16 @@ def test_bootstrap_arms_the_absolute_deadline_before_any_campaign_import():
 
 
 def test_supervision_event_parser_accepts_deadline_resume_and_unobserved_reasons():
+    """S2-G5 R2 matrix: v1 is the pre-G3 journal contract (no image fields, no
+    PAYLOAD_EXIT kind) so every historical journal reopens; v2 is the producer
+    shape (image required on PROCESS/RESUMED, PAYLOAD_EXIT carried). Each
+    version is strict about its own closed shape."""
     from c1_rail.qualification.execution.campaign_supervisor import parse_supervision_event
 
-    def event(kind, data):
+    def event(kind, data, schema='qualification_campaign_supervision_event/v2'):
         return encoded(
             dict(
-                schema='qualification_campaign_supervision_event/v1',
+                schema=schema,
                 attempt_id=ATTEMPT,
                 work_id='probe',
                 kind=kind,
@@ -2319,10 +2316,18 @@ def test_supervision_event_parser_accepts_deadline_resume_and_unobserved_reasons
             )
         )
 
+    v1 = 'qualification_campaign_supervision_event/v1'
     container = 'f' * 64
     image = {'comm': 'python3', 'exe': '/opt/ops/bin/python3.13'}
     process = {'pid': 7, 'start_ticks': 1, 'uid': 61001, 'cgroup': '/a/b'}
     exit_facts = {'container_id': container, 'exit_code': 1, 'oom_killed': False, 'finished_at': '2026-09-20T06:45:53.18Z'}
+    # v1 accepts the pre-G3 shapes: image-less PROCESS/RESUMED, and the kinds the
+    # historical journals actually retained (DEADLINE, PROCESS_UNOBSERVED).
+    assert parse_supervision_event(event('DEADLINE', {'deadline_boottime_ns': 5}, v1))['kind'] == 'DEADLINE'
+    assert parse_supervision_event(event('RESUMED', {'container_id': container, 'pid': 7}, v1))['kind'] == 'RESUMED'
+    assert parse_supervision_event(event('PROCESS', process, v1))['kind'] == 'PROCESS'
+    assert parse_supervision_event(event('PROCESS_UNOBSERVED', {'container_id': container, 'exit_code': 0}, v1))['kind'] == 'PROCESS_UNOBSERVED'
+    # v2 requires the image and accepts the new kind.
     assert parse_supervision_event(event('DEADLINE', {'deadline_boottime_ns': 5}))['kind'] == 'DEADLINE'
     assert parse_supervision_event(event('RESUMED', {'container_id': container, 'pid': 7, **image}))['kind'] == 'RESUMED'
     assert parse_supervision_event(event('PROCESS', {**process, **image}))['kind'] == 'PROCESS'
@@ -2338,10 +2343,10 @@ def test_supervision_event_parser_accepts_deadline_resume_and_unobserved_reasons
         ('DEADLINE', {'deadline_boottime_ns': 5, 'extra': 1}),
         ('RESUMED', {'container_id': 'short', 'pid': 7, **image}),
         ('RESUMED', {'container_id': container, 'pid': 0, **image}),
-        ('RESUMED', {'container_id': container, 'pid': 7}),  # the pre-G3 shape: image required
+        ('RESUMED', {'container_id': container, 'pid': 7}),  # v2: the image is required
         ('RESUMED', {'container_id': container, 'pid': 7, **image, 'extra': 1}),
         ('RESUMED', {'container_id': container, 'pid': 7, 'comm': 'x' * 65, 'exe': ''}),
-        ('PROCESS', process),  # the pre-G3 shape: image required
+        ('PROCESS', process),  # v2: the image is required
         ('PROCESS', {**process, **image, 'argv': []}),
         ('PROCESS', {**process, 'comm': '', 'exe': ''}),
         ('PROCESS', {**process, 'comm': 'python', 'exe': 'x' * 4097}),
@@ -2359,6 +2364,19 @@ def test_supervision_event_parser_accepts_deadline_resume_and_unobserved_reasons
     ]:
         with pytest.raises(ValueError):
             parse_supervision_event(event(kind, data))
+    # v1 rejects the v2 shape: the image fields, and the PAYLOAD_EXIT kind.
+    for kind, data in [
+        ('PROCESS', {**process, 'comm': 'python', 'exe': '/opt/ops/bin/python'}),
+        ('PROCESS', {**process, 'comm': 'python', 'exe': ''}),
+        ('RESUMED', {'container_id': container, 'pid': 7, **image}),
+        ('PAYLOAD_EXIT', exit_facts),
+    ]:
+        with pytest.raises(ValueError):
+            parse_supervision_event(event(kind, data, v1))
+    # Unknown schema refused.
+    with pytest.raises(ValueError):
+        parse_supervision_event(event('DEADLINE', {'deadline_boottime_ns': 5},
+                                      'qualification_campaign_supervision_event/v3'))
 
 
 def _probe_scene(tmp_path, monkeypatch, docker_factory):
