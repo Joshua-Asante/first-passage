@@ -7,7 +7,7 @@ number of bounded indexed rows and never decodes the campaign snapshot.
 import secrets
 from ..contract import canonical_json_bytes as encoded, parse_canonical_json
 from .protocol import fields, identity, digest, sha256
-from .campaign_budget import clock, integer, PHASES, dispatch_pending
+from .campaign_budget import clock, integer, PHASES, dispatch_pending, validate_work_id
 
 SCHEMA = '''
 CREATE TABLE IF NOT EXISTS full_campaign_funding (
@@ -53,9 +53,11 @@ def parse_request(raw):
     if doc['probe'] == 'intent' and doc['role'] != 'probe_seal':
         raise ValueError('intent requires seal probe')
     identity(doc['attempt_id'])
-    identity(doc['work_id'])
+    # The private route never names the fixed admission work or an identity
+    # that collides with a supervision object role (S2-G4 A9-3).
+    validate_work_id(doc['work_id'])
     if doc['signing_retry_of'] is not None:
-        identity(doc['signing_retry_of'])
+        validate_work_id(doc['signing_retry_of'])
     return doc
 
 
