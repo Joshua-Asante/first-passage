@@ -147,7 +147,7 @@ def tree_skew(path: Path, root: Path | None = None) -> list[tuple[str, str, str]
     nothing noticed, because this validator only ever checked that the field was
     present. The skew surfaced by hand, during an incident. Returns
     (relpath, pinned, on_tree) per divergence; hashing mirrors the repo's
-    working-tree-bytes convention (CLAUDE.md), so CRLF checkouts hash as CRLF.
+    working-tree-bytes convention (AGENTS.md), so CRLF checkouts hash as CRLF.
     """
     root = root or REPO_ROOT
     data = json.loads(path.read_text(encoding="utf-8"))

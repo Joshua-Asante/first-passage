@@ -2,5 +2,5 @@
 
 [`guard.py`](guard.py) builds the denylist that rejects the historical
 MC-anchor headline as live authority. The three literals it parses live in
-[`CLAUDE.md`](../../CLAUDE.md) §Strategy Reference — reword them only
+[`AGENTS.md`](../../AGENTS.md) §Strategy Reference — reword them only
 alongside this parser.

@@ -10,7 +10,7 @@
 # pin is retained as inert-but-harmless rather than removed with its fixtures;
 # retire all three together if they are ever pruned. Scope kept narrow so
 # vendor-data CRLF hashing under
-# data/tv_exports/, data/bar_data/, data/external/ (see CLAUDE.md "Vendor-data
+# data/tv_exports/, data/bar_data/, data/external/ (see AGENTS.md "Vendor-data
 # integrity gate") is unaffected.
 tests/fixtures/*.jsonl text eol=lf
 

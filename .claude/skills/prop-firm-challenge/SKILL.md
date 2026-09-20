@@ -10,11 +10,11 @@ Operational context for Joshua's locked 4-strategy book (Guardian v5.5, Striker 
 ## Posture — not owned here (rewritten 2026-08-08)
 
 **Rail posture is NOT restated in this file.** Read it from
-[`CLAUDE.md` §Live-execution posture](../../../CLAUDE.md) and the
+[`AGENTS.md` §Live-execution posture](../../../AGENTS.md) and the
 [`c1-rail` skill](../c1-rail/SKILL.md), which are the owners.
 
 The block that stood here was stamped 2026-07-24 and had gone wrong on three counts while still
-carrying a "verify against CLAUDE.md" caveat — a caveat is not a substitute for being right, and a
+carrying a "verify against AGENTS.md" caveat — a caveat is not a substitute for being right, and a
 paragraph a same-day PR edits without fixing is a *maintained* surface, not an acknowledged-stale one.
 For the record, what it got wrong: the signal origin (**S2 ruled it Python-native**, not TV — Pine/TV is
 research/export only); the arm-gate object (**Addendum 2026-07-31b moved the trigger send → ARM**, so
@@ -91,7 +91,7 @@ Two corollaries specific to this operational domain:
 
 FXIFY (historical): DXTrade via Alchemy Markets (CFD) — venue closed. Bulenox tiers force-flatten EOD (no overnight/weekend carry), no daily-loss limit — bust mode is 100% trailing-DD. Bulenox configs remain in `firm_rules.py` for simulation provenance; **no account registered; futures-prop NO-GO**.
 
-**Onboarding a new firm:** add its config to `FIRM_RULES`, then run an **engine-support pre-flight** (many firms have `daily_loss_pct: None` and need bespoke bust branches — see CLAUDE.md Firm Expansion + challenge-era rescope ADR). If the execution feed differs from the locked MC's Pepperstone calibration feed, also run the feed-equivalence pre-flight (`docs/spec/feed_equivalence_discovery_test_LOCKED.md`) before re-MC against that firm's tier key.
+**Onboarding a new firm:** add its config to `FIRM_RULES`, then run an **engine-support pre-flight** (many firms have `daily_loss_pct: None` and need bespoke bust branches — see AGENTS.md Firm Expansion + challenge-era rescope ADR). If the execution feed differs from the locked MC's Pepperstone calibration feed, also run the feed-equivalence pre-flight (`docs/spec/feed_equivalence_discovery_test_LOCKED.md`) before re-MC against that firm's tier key.
 
 ---
 
@@ -99,7 +99,7 @@ FXIFY (historical): DXTrade via Alchemy Markets (CFD) — venue closed. Bulenox 
 
 ### Locked allocations (challenge = funded phase; no re-sizing at pass)
 
-**Not restated here (Rule 7).** Human-readable lock table + versions: [`CLAUDE.md`](../../../CLAUDE.md) §Strategy Reference. Live sizing authority: `core/firm_rules.py` `_BASE_RISK` / `core/dd_protection.py` `BASE_RISK`. Per-strategy mechanics (session/hour filters, SL/TP structure): [`references/strategy_reference.md`](references/strategy_reference.md) (Pine remains source of truth for parameters).
+**Not restated here (Rule 7).** Human-readable lock table + versions: [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference. Live sizing authority: `core/firm_rules.py` `_BASE_RISK` / `core/dd_protection.py` `BASE_RISK`. Per-strategy mechanics (session/hour filters, SL/TP structure): [`references/strategy_reference.md`](references/strategy_reference.md) (Pine remains source of truth for parameters).
 
 Bust attribution under the historical Pepperstone calibration is record-only — `docs/mc_anchor_history.md` (tombstone via `git show pre-prune-2026-08-08:docs/ltm/notes/2026-07-24-pepperstone-executable-anchor-tombstone.md`). Engine regression: `tests/core/test_mc_synthetic_engine.py`.
 
@@ -113,7 +113,7 @@ No funded-phase ramp, no active overlays — challenge and funded phase run iden
 
 For known binary volatility events (central-bank decisions, major scheduled geopolitical releases), Aegis is paused for the session — mean-reversion edge inverts on binary regime breaks. Not a general news filter; applies only to pre-scheduled binary-outcome events. Generic FOMC/NFP/CPI days are NOT binary-event pauses — those are handled by each strategy's existing session/hour filters. Guardian and Striker continue normal operation unless independently flagged.
 
-⚠ **Correction:** Aegis has no live instrument on any venue today — CFD execution (including USDJPY) is retired ([2026-06-30 no-manual-trading/CFD retirement](../../../docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md); [2026-07-11 ops CFD estate retirement](../../../docs/adr/2026-07-11-ops-cfd-estate-retirement.md)), Aegis holds no living `BASE_RISK` key after Phase C ([2026-08-23 coldstore Phase C](../../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md)), and the self-funded Aegis→M6J futures scale path is CLOSED/parked, not active ([2026-07-16 lane close](../../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md)). The paragraph below is durable pause-rule mechanic for a possible future re-open only; see [`CLAUDE.md`](../../../CLAUDE.md) §Strategy Reference for current state.
+⚠ **Correction:** Aegis has no live instrument on any venue today — CFD execution (including USDJPY) is retired ([2026-06-30 no-manual-trading/CFD retirement](../../../docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md); [2026-07-11 ops CFD estate retirement](../../../docs/adr/2026-07-11-ops-cfd-estate-retirement.md)), Aegis holds no living `BASE_RISK` key after Phase C ([2026-08-23 coldstore Phase C](../../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md)), and the self-funded Aegis→M6J futures scale path is CLOSED/parked, not active ([2026-07-16 lane close](../../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md)). The paragraph below is durable pause-rule mechanic for a possible future re-open only; see [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference for current state.
 
 Aegis's live instrument is venue-dependent: USDJPY on CFD venues (locked v4.3); a CME 6J synthetic-spot-inversion prototype exists for futures venues but is **non-canonical** (see `project_aegis_6j_transfer_state` project memory) — do not treat it as a drop-in replacement without re-checking that record.
 
@@ -121,7 +121,7 @@ Aegis's live instrument is venue-dependent: USDJPY on CFD venues (locked v4.3); 
 
 ## Protection system
 
-Single-tier internal drawdown overlay, independent of whichever firm's own DD rule applies. **Literals and logic are not restated here** — read [`core/dd_protection.py`](../../../core/dd_protection.py) and the human summary in [`CLAUDE.md`](../../../CLAUDE.md) §Protection. Decision lineage: [`C2 relock`](../../../docs/adr/2026-05-08-dd-trigger-c2-relock.md) · [`equity-tier deletion`](../../../docs/adr/2026-04-17-equity-tier-deletion.md) · [`concept-not-constant`](../../../docs/adr/2026-07-13-dd-protection-concept-not-constant.md).
+Single-tier internal drawdown overlay, independent of whichever firm's own DD rule applies. **Literals and logic are not restated here** — read [`core/dd_protection.py`](../../../core/dd_protection.py) and the human summary in [`AGENTS.md`](../../../AGENTS.md) §Protection. Decision lineage: [`C2 relock`](../../../docs/adr/2026-05-08-dd-trigger-c2-relock.md) · [`equity-tier deletion`](../../../docs/adr/2026-04-17-equity-tier-deletion.md) · [`concept-not-constant`](../../../docs/adr/2026-07-13-dd-protection-concept-not-constant.md).
 
 **This overlay sits on top of, not instead of, the active firm's own DD rule.** A static-DD firm and a trailing-DD firm bust differently underneath this same overlay — MC modeling must thread the active firm's `dd_type` through (`core/portfolio_mc.py`'s `bust_trailing` vs `bust_static`/`bust_daily` outcomes), not assume one firm's semantics apply everywhere.
 
@@ -129,13 +129,13 @@ Single-tier internal drawdown overlay, independent of whichever firm's own DD ru
 
 - 6 months live data accumulated
 - Any strategy version bump (material strategy change) — re-MC before locking
-- Any allocation change beyond the documented Guardian safe band (see CLAUDE.md Strategy Reference / owning lock ADRs)
+- Any allocation change beyond the documented Guardian safe band (see AGENTS.md Strategy Reference / owning lock ADRs)
 - Any `dd_protection` constant change
 - Any firm/venue switch (new explicit tier key) or new firm onboarded
 
 ### Revert triggers for a second protection tier
 
-⚠ Per [`CLAUDE.md` §Protection](../../../CLAUDE.md): the original equity tier's revert triggers are
+⚠ Per [`AGENTS.md` §Protection](../../../AGENTS.md): the original equity tier's revert triggers are
 **LOST** — reintroducing a second tier needs fresh pre-registration, not a lookup. The candidate
 signals below (drawn from the equity-tier-deletion ADR's unratified notes, never elevated to a
 pre-registered gate) should prompt *starting* that fresh pre-registration, not substitute for it.
@@ -257,7 +257,7 @@ Implemented in `core/portfolio_mc.py`. Answers one question: given locked strate
 
 **Literals not restated here (Rule 7).** Read the pin + panel provenance from
 [`docs/mc_anchor_history.md`](../../../docs/mc_anchor_history.md) and the gated human headline in
-[`CLAUDE.md`](../../../CLAUDE.md) §Strategy Reference (⚠ CLAUDE's three bolded literals are also
+[`AGENTS.md`](../../../AGENTS.md) §Strategy Reference (⚠ AGENTS.md's three bolded literals are also
 parsed by `ops/recall/guard.py` — do not "fix" them in isolation). Engine regression:
 `tests/core/test_mc_synthetic_engine.py`. Tombstone (retired executable pin):
 `git show pre-prune-2026-08-08:docs/ltm/notes/2026-07-24-pepperstone-executable-anchor-tombstone.md`.
@@ -287,7 +287,7 @@ self-funded risk questions need a fresh Pre-Q (hard date per the rescope ADR).
 4. **One trade at a time per strategy.** Aegis max 1/day, Striker respects pyramid rules, Guardian one position.
 5. **Respect the schedule.** Wednesday is Aegis only. Thursday is Guardian only. Don't improvise.
 6. **Export CSVs weekly** for performance tracking, whichever firm/venue is active.
-7. **The portfolio is locked at the parameter axis** — risk% / versions: [`CLAUDE.md`](../../../CLAUDE.md) §Strategy Reference; live authority `core/firm_rules.py` `_BASE_RISK`. Parameter/allocation changes require MC-validated re-locks. Capital **authorization** is a separate revocable axis owned by [`docs/methodology/strategy_lifecycle.md`](../../../docs/methodology/strategy_lifecycle.md) (current tier state lives there / CLAUDE §Strategy Authorization Lifecycle — do not restate here).
+7. **The portfolio is locked at the parameter axis** — risk% / versions: [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference; live authority `core/firm_rules.py` `_BASE_RISK`. Parameter/allocation changes require MC-validated re-locks. Capital **authorization** is a separate revocable axis owned by [`docs/methodology/strategy_lifecycle.md`](../../../docs/methodology/strategy_lifecycle.md) (current tier state lives there / AGENTS.md §Strategy Authorization Lifecycle — do not restate here).
 8. **Audit-first for risk-control decisions.** Read `dd_protection.py` (and any other production risk file) before authoring any decision brief that touches it.
 9. **Headlines drive markets, not physical ground-truth.** No regime overlays built on physical facts. Strategies already adapt to regime through their base signal logic; overlays are redundant. Lesson locked from the Guardian conflict-overlay rejection.
 10. **Do not quote challenge-era pass/bust rates as live probabilities.** The MC pin is historical / regression-only until a successor self-funded risk Pre-Q lands.

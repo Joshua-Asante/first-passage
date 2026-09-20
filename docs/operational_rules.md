@@ -69,7 +69,7 @@ when any locked risk/allocation/`dd_protection` constant changes, immediately
 run a doc/code skew audit before closing the lock commit. The audit checks:
 
 1. **Strategy catalog and root safeguards** — the parameter mirror now lives in
-   `core/strategies/CATALOG.md`; `CLAUDE.md` retains its Protection synopsis and
+   `core/strategies/CATALOG.md`; `AGENTS.md` retains its Protection synopsis and
    machine-read historical MC block. Compare live risk/allocation claims with
    their code owners. Version/risk mentions must match their scope or be marked
    historical; preserve the recall guard's historical literals when updating
@@ -164,18 +164,18 @@ Roles that must **not** restate canonical values:
   historical context; do not add a session stub just to copy the live queue.
   Its header gates full entries on a real judgment call; mechanical output alone
   needs no full entry. The A–D classes and ~40-word targets are retired.
-- **`CLAUDE.md` §Live-execution posture** — a pointer block: the current
+- **`AGENTS.md` §Live-execution posture** — a pointer block: the current
   scale-path picture plus one line + owner link per standing decision. The
   decision narrative lives with its current owner; a new posture
   decision adds one pointer line, not a retelling (demoted 2026-07-16 — see
   edit log). **Narrowed 2026-09-04:** the gated lock surface still resident in
-  `CLAUDE.md` is the **MC-anchor triple** (`ops/recall/guard.py` regex-reads it
+  `AGENTS.md` is the **MC-anchor triple** (`ops/recall/guard.py` regex-reads it
   from that file) and **§Protection**; both are canonical owners, not mirrors,
   and this role note does not apply to them. The §Strategy Reference *table*
   moved to `core/strategies/CATALOG.md`, and the live-value index moved to
-  `docs/load_bearing_numbers.md` — `CLAUDE.md` now links to both.
+  `docs/load_bearing_numbers.md` — `AGENTS.md` now links to both.
 - **`README.md`** — human entry index; links out everywhere. Its public-clone
-  note is a one-liner pointing at `CLAUDE.md` §Public-clone posture (the
+  note is a one-liner pointing at `AGENTS.md` §Public-clone posture (the
   canonical statement).
 
 **STATE currency:** keep `Last curated` at least as recent as the newest dated
@@ -386,10 +386,10 @@ added 2026-07-01; sub-rule 8 added 2026-08-13; sub-rules 9–10 added
 2026-08-15.)_ **[2026-07-01 note:** the repo is now **private** (gh-verified
 `isPrivate: true`); the "repo is public" rationale above is historical. claude.ai
 reaches the repo via its GitHub connector, which supports private repos, so the
-migration rationale is unaffected. See CLAUDE.md §Public-clone posture.**]**
+migration rationale is unaffected. See AGENTS.md §Public-clone posture.**]**
 ⚠ **Superseded 2026-08-14:** the repo went public again
 ([transition ADR](adr/2026-08-14-repo-public-visibility-transition.md)); current
-visibility is owned by CLAUDE.md §Public-clone posture, not this 2026-07-01
+visibility is owned by AGENTS.md §Public-clone posture, not this 2026-07-01
 footnote. Either way claude.ai reaches the repo (directly when public, via the
 GitHub connector when private), so the migration rationale this note defends
 was never at risk.
@@ -398,7 +398,7 @@ was never at risk.
 
 ## 9. Pine-dependent work in a git worktree requires a Pine sync pre-flight
 
-`**/*.pine` is gitignored (the live edge is held privately — CLAUDE.md "Public-clone
+`**/*.pine` is gitignored (the live edge is held privately — AGENTS.md "Public-clone
 posture"). Gitignored files are **not** shared across git worktrees: the locked
 `.pine` live only in the primary checkout. Any worktree from `git worktree add`
 starts with `core/strategies/*/*.pine` **absent**, which silently blocks every
@@ -823,6 +823,7 @@ allocation, `dd_protection`, Pine, or rail touched.
 - **2026-08-08** — ADR ceremony stakes-tiering ratified (pointer only, no rule text changed): full §0–§7 only when a tier-test limb fires. [`ADR`](adr/2026-08-08-adr-ceremony-tiering.md)
 - **2026-08-07** — Rule 15 added (always-on hosting is not the desktop). [`ADR`](adr/2026-08-07-w6-rail-infra-closures.md)
 - **2026-08-07** — Rule 7 / SESSIONS·STATE entry-class direction (W5 — see the prose-target note above §7). [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md)
+- **2026-09-20** — Rule 7 role list: the agent-constraints root guide is `AGENTS.md` (single instruction file for every harness); `CLAUDE.md` retired, body moved verbatim, machine readers repointed, dated records left unrewritten. [`charter ADR addendum`](adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-20--the-agent-constraints-root-is-agentsmd-claudemd-retired)
 - **2026-09-04** — Rule 7 owner table gains a live-value-index row (`docs/load_bearing_numbers.md`) and names `core/strategies/CATALOG.md` §Locked parameter record as the strategy-parameter mirror; the `CLAUDE.md` role note is narrowed to the two gated surfaces that remain resident there (MC-anchor triple + §Protection). [`charter ADR addendum`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-04--consolidation-pass-what-moved-and-what-was-ruled-immovable)
 - **2026-08-07** — Rule 7 owner table drops the retired `params.toml` row.
 - **2026-08-04** — Rule 7 owner table gains a "Per-Q forward disposition" row (each closure's own `## Iterate` block is canonical).

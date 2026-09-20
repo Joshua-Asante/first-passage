@@ -75,7 +75,7 @@ If the work already landed (merged PR, on-disk module, closed RESULTS), return `
 ### 5. Numeric / posture claims
 
 - Challenge-era MC pass/bust rates are **historical / engine pins**, not live probabilities (`docs/adr/2026-07-11-challenge-era-claims-rescope.md`).
-- Live posture is owned by `CLAUDE.md` §Live-execution posture — read it there, never from this file. A handoff is **STALE** if it assumes any of: an open FXIFY challenge; an active Aegis→M6J lane; an unbuilt CrossTrade rail; **the Striker MYM/MNQ legs deployed at Tradeify**; **an armed live book** (both legs withdrawn 2026-08-04; environment = incumbent eval for **new** strategies with rail warm/disarmed — [`S1 ADR`](../../../docs/adr/2026-08-07-loop-s1-environment-ratification.md); F2/F3 closed).
+- Live posture is owned by `AGENTS.md` §Live-execution posture — read it there, never from this file. A handoff is **STALE** if it assumes any of: an open FXIFY challenge; an active Aegis→M6J lane; an unbuilt CrossTrade rail; **the Striker MYM/MNQ legs deployed at Tradeify**; **an armed live book** (both legs withdrawn 2026-08-04; environment = incumbent eval for **new** strategies with rail warm/disarmed — [`S1 ADR`](../../../docs/adr/2026-08-07-loop-s1-environment-ratification.md); F2/F3 closed).
 - Any specific constant (risk %, DD_TRIGGER, anchor): apply `verify-source` (branch currency + open the bytes).
 
 ### 6. Gate reachability (research handoffs only)

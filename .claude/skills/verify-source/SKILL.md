@@ -17,7 +17,7 @@ Trigger when (a) you're about to quote/commit/decide on a value, claim, or premi
 
 | Channel | The trap |
 |---|---|
-| **Branch currency** | You grep a pinned anchor in the checked-out `CLAUDE.md`/file. The branch is behind `origin/main`, where the real canonical was relocked. Reading the source ≠ reading the *current* source. |
+| **Branch currency** | You grep a pinned anchor in the checked-out `AGENTS.md`/file. The branch is behind `origin/main`, where the real canonical was relocked. Reading the source ≠ reading the *current* source. |
 | **Handoff / advisor** | A note says "I updated X / stamped Y / it's committed." That is the label; the bytes are the source. Web-advisor handoffs confabulate repo state. |
 | **Artefact ⊕ pin agreement** | An on-disk results file and its test pin both say X → looks verified. Both can encode the *same* stale or wrong-window artefact. Agreement is consistency, not correctness. |
 | **Export / window** | A DD or metric "defect" that is really an export-window artifact — check the file's first date vs the panel start before calling it real. |
@@ -36,7 +36,7 @@ The check is O(seconds). Time pressure is the trigger for this skill, not an exe
 
 | Rationalization | Reality |
 |---|---|
-| "The checked-out `CLAUDE.md`/file is the source of record." | Only if the branch is current. On a feature branch, verify vs `origin/main` first. |
+| "The checked-out `AGENTS.md`/file is the source of record." | Only if the branch is current. On a feature branch, verify vs `origin/main` first. |
 | "The file and its test pin agree, so it's right." | They can encode the same stale artefact. Consistency ≠ currency ≠ correctness. |
 | "I read it off disk, not from memory — that's Rule-0 satisfied." | Rule-0 is necessary, not sufficient. You read *a* source; confirm it's the *right* one. |
 | "Just need the number, it's quick." | The verify is also quick. Speed is *why* the check exists, not why it's skipped. |

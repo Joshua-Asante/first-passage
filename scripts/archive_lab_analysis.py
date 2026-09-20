@@ -139,7 +139,7 @@ _LIVING_ROOTS = (
     "tests",
 )
 
-_LIVING_FILES = ("CLAUDE.md", "STATE.md")
+_LIVING_FILES = ("AGENTS.md", "STATE.md")
 
 _SKIP_LIVING_PREFIX = "docs/ltm/notes/archive/"
 

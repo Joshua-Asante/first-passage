@@ -45,6 +45,16 @@ historical number by merge commit or branch name, never by number alone. Owner:
 ---
 
 
+## 2026-09-20b — `CLAUDE.md` retired; `AGENTS.md` is the single instruction file for every harness
+
+- **Focus:** operator-direct: consolidate the two instruction files. Premise check first: the files were disjoint, not duplicated — `AGENTS.md` (Codex launcher/verification rules) was invisible to Claude Code, which reads only `CLAUDE.md` when one exists, and `CLAUDE.md` was invisible to Codex. Claude Code CLI updated 2.1.263 → 2.1.278 (native `AGENTS.md` reading needs ≥ 2.1.277).
+- **Shipped:** `CLAUDE.md` body moved verbatim into `AGENTS.md` (MC-anchor triple and §Protection included; `ops/recall/guard.py` repointed alongside, per the file's own parser warning); `CLAUDE.md` deleted with no stub; `.gitignore` no longer ignores the now-canonical `AGENTS.md`; sentinel, root-doc liveness, push-collision, session-divergence, ADR-graph, docs-runtime inventory, `archive_lab_analysis` and their tests renamed; living surfaces (root guides, READMEs, skills, methodology docs, instrument ledgers, code-comment pointers) repointed.
+- **Judgment:** (1) record shape — a dated addendum on the [root-doc charter ADR](adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-20--the-agent-constraints-root-is-agentsmd-claudemd-retired), which owns the five root roles, not a new ADR. (2) ~500 `CLAUDE.md` citations in dated records (ADRs, SESSIONS, briefs, notes, RESULTS, reconciles, archives) are left as written; the addendum carries the redirect. (3) The no-stub choice means sessions that cannot load `AGENTS.md` get no project instructions — operator-accepted.
+- **Open / next:** pull the main checkout to a `CLAUDE.md`-free commit right after merge (worktrees load instruction files from the parent checkout); confirm in the next session that `AGENTS.md loaded` appears at startup.
+
+---
+
+
 ## 2026-09-20a — #423/#424 closed: configured Docker preflight, canonical tree bindings, Linux evidence on fresh hosts
 
 - **Focus:** the two defects deferred from PR #420 with the owner's approval, worked as coordinator-dispatched handoffs A–E in one worktree and merged as [first-passage#437](https://github.com/Joshua-Asante/first-passage/pull/437) (`86d5ed1`). Plan and all executor returns: [2026-09-19-qualification-issues-423-424](superpowers/plans/2026-09-19-qualification-issues-423-424.md) (+ [C](superpowers/plans/2026-09-20-qualification-423-424-linux-evidence.md), [D](superpowers/plans/2026-09-20-qualification-423-424-linux-evidence-d.md), [E](superpowers/plans/2026-09-20-qualification-423-linux-evidence-e.md)).

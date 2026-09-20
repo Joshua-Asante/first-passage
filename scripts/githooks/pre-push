@@ -1,6 +1,6 @@
 #!/bin/sh
 # Pre-push gate. Single check:
-#   1. Governance-surface push collision (CLAUDE.md / STATE.md / docs/SESSIONS.md /
+#   1. Governance-surface push collision (AGENTS.md / STATE.md / docs/SESSIONS.md /
 #      docs/adr/** / docs/briefs/pre-registration/** changed on BOTH sides since the
 #      merge-base with origin/main).
 #
