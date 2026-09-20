@@ -95,6 +95,13 @@ Current formats include diagnostic release/profile v3, budget observation/profil
 
 Keep this PR draft while blockers remain; do not promote or merge it to satisfy a monitoring exit condition. Track remote checks/reviews separately from local acceptance and real Linux evidence. Refresh head/base before edits, preserve concurrent work and retarget after S1 integrates only with the correct ancestry. Read the repository babysit workflow when owning PR maintenance. Review requested changes against the governing scope; report consequential expansion instead of silently implementing the whole remaining roadmap during PR maintenance.
 
-Publication base refresh: S1 tip advanced to `f95837ce74b3204890dd1c8bff3cfce37d48456e` by merging four unrelated epistemic planning documents from main. Publication is planned to incorporate that documentation-only base update; the accepted runtime predecessor remains `430fc72186a0e642c8811be17d459fd87cbf7533`. No S2 runtime/test edits accompany it.
+Publication base refresh: S1 tip advanced to `f95837ce74b3204890dd1c8bff3cfce37d48456e` by merging four unrelated epistemic planning documents from main. Publication incorporates that documentation-only base update; the accepted runtime predecessor remains `430fc72186a0e642c8811be17d459fd87cbf7533`. No S2 runtime/test edits accompany it.
 
 Publication authorization: the user explicitly approved a command-local pre-commit hook bypass after the unchanged overdue STATE.md gate blocked publication. This exception permits the blocked draft commit, not merge readiness or S2 acceptance. No persistent hook configuration or deadline is changed. The failed hook selected system Python 3.14.3 automatically; that run does not substitute for the source-bound operations-environment checks above.
+
+## Published handoff
+
+Draft PR: https://github.com/Joshua-Asante/first-passage/pull/429
+Implementation commit: 292f283. Published head: c77aac476127a31e58ede2c1c0ff03e6406474ce.
+Base: codex/full-e1-s1-durable-budget at f95837ce74b3204890dd1c8bff3cfce37d48456e (PR428).
+The user approved the one-command hook bypass; it was used for the implementation commit only. The documentation-only base merge ran normally. Worktree was clean after publication. Runtime/test/tool/script/deployment bytes still matched the frozen R1 inventory. Initial remote checks were running; no human reviews or inline comments, and CodeRabbit skipped automatic review because the PR is draft. This local publication addendum follows the committed handoff and does not change source acceptance.
