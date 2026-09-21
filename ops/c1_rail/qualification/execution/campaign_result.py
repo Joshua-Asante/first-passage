@@ -419,8 +419,10 @@ def parse_result_receipt(raw, *, attempt_id):
 
 
 # ---------------------------------------------------------------------------
-# Validator-issued evidence (the legacy provenance pattern: a caller cannot
-# construct a VerifiedResult the commit accepts).
+# Validator-issued evidence. VerifiedResult is verified evidence, never a
+# caller-issued capability: the commit re-derives every field from the
+# persisted candidate bytes inside its own transaction, so a forged object
+# cannot carry a lying outcome, prefix or digest chain through T2.
 
 
 @dataclass(frozen=True)
@@ -436,26 +438,10 @@ class VerifiedResult:
     receipt_digests: tuple
 
 
-def _validation_provenance_registry():
-    issued = {}
-
-    def register(value):
-        issued[id(value)] = value
-        return value
-
-    def require(value):
-        if type(value) is not VerifiedResult or issued.get(id(value)) is not value:
-            raise ValueError('validator-issued result provenance is required')
-
-    return register, require
-
-
-_register_verified_result, _require_verified_result = _validation_provenance_registry()
-
-
 def require_verified_result(value):
-    """The public gate the commit path and tests use (provenance, not trust)."""
-    _require_verified_result(value)
+    """Exact-type gate (the deep binding checks live in T2's re-derivation)."""
+    if type(value) is not VerifiedResult:
+        raise ValueError('validator-issued result provenance is required')
 
 
 def _require_live_key(current_keys, key_id, *, role):
@@ -529,12 +515,12 @@ def validate_campaign_result(context, result_bytes, *, attestations, artifacts,
             # Real later-checkpoint custody cannot exist before S4/S5; a row
             # claiming it is a fabrication.
             raise ValueError('later checkpoint custody requires its canonical verifier')
-    return _register_verified_result(VerifiedResult(
+    return VerifiedResult(
         attempt_id=context.attempt_id, result_bytes=result_bytes,
         aggregate_sha256=sha256(result_bytes), outcome=outcome,
         accepted_prefix=tuple(stages), checkpoints=tuple(row['checkpoint'] for row in rows),
         expected_revision=snapshot['campaign_revision'], snapshot_sha256=sha256(snapshot_bytes),
-        receipt_digests=tuple(row['receipt_sha256'] for row in rows)))
+        receipt_digests=tuple(row['receipt_sha256'] for row in rows))
 
 
 # ---------------------------------------------------------------------------
@@ -982,7 +968,7 @@ class ResultStore:
         before its own publication event and the pre-charge budget totals --
         no digest contains itself."""
         from .store import instant
-        _require_verified_result(validated)
+        require_verified_result(validated)
         with self.store.transaction() as connection:
             self._ensure_result_layout(connection)
             row = connection.execute('SELECT snapshot_bytes,intent_bytes,candidate_bytes,'
@@ -1004,10 +990,21 @@ class ResultStore:
                 raise ValueError('signing intent window required')
             intent = parse_result_intent(bytes(row[1]), attempt_id=attempt_id)
             snapshot = parse_result_snapshot(bytes(row[0]), attempt_id=attempt_id)
+            # T2 re-derives every validated field from the persisted candidate
+            # bytes: a forged VerifiedResult cannot lie through this commit.
+            persisted = parse_campaign_result(bytes(row[2]), attempt_id=attempt_id)
+            derived_digests = tuple(item['receipt_sha256'] for item in persisted['checkpoints'])
+            derived_checkpoints = tuple(item['checkpoint'] for item in persisted['checkpoints'])
             if (validated.aggregate_sha256 != sha256(bytes(row[2]))
+                    or validated.result_bytes != bytes(row[2])
+                    or validated.attempt_id != attempt_id
+                    or validated.outcome != persisted['outcome']
+                    or validated.accepted_prefix != tuple(persisted['accepted_prefix'])
+                    or validated.checkpoints != derived_checkpoints
+                    or validated.receipt_digests != derived_digests
                     or validated.snapshot_sha256 != sha256(bytes(row[0]))
                     or validated.expected_revision != snapshot['campaign_revision']):
-                raise ValueError('result snapshot identity differs')
+                raise ValueError('validated result differs from the persisted candidate')
             authentication = self._parse_authentication(authentication_bytes, attempt_id=attempt_id)
             if (authentication['aggregate_sha256'] != validated.aggregate_sha256
                     or authentication['campaign_revision'] != validated.expected_revision
