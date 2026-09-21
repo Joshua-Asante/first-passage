@@ -998,7 +998,7 @@ def guardian_main():
     expected_parent = _scope_path(runtime.parent, enrollment['scopes']['work_slice'])
     if own_group != expected_parent / enrollment['scopes']['guardian_unit']:
         raise ValueError('guardian effective cgroup membership differs')
-    if (own_group / 'pids.max').read_text().strip() != '1':
+    if (own_group / 'pids.max').read_text().strip() != str(guardian_task_bound(manifest)):
         raise ValueError('single-process controller enforcement required')
     spec = guardian_unit_spec(enrollment['scopes'], attempt_id=args.attempt, work_id=args.work,
         code_root=str(installed_code_root()), interpreter=sys.executable, uid=os.geteuid(),
