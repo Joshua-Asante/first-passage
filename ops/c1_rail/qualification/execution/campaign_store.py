@@ -267,9 +267,10 @@ class CheckpointStoreMixin:
             for role, raw in sorted(self.objects(attempt_id).items()):
                 if role.startswith('context_') or role == 'bundle_index':
                     members.append(dict(role='retained_' + role, sha256=sha256(raw), byte_length=len(raw)))
-            staged = connection.execute('SELECT role,sha256,body FROM full_campaign_checkpoint_staged '
-                                        'WHERE attempt_id=? ORDER BY role', (attempt_id,)).fetchall()
-            members.extend(dict(role='staged_' + row[0], sha256=row[1], byte_length=len(bytes(row[2]))) for row in staged)
+            # Staged artifacts are G5 transport, not campaign state: they stay
+            # out of the served snapshot so a candidate's snapshot binding is
+            # stable across its own staging (the fetch path resolves them by
+            # digest from the staging table).
             return members
 
     def fetch_checkpoint_member(self, attempt_id, object_sha256, offset, length):
@@ -1317,6 +1318,12 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             for role, raw in objects.items():
                 connection.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
                                    (attempt, role, sha256(raw), len(raw), raw))
+            # The campaign row's receipt column stops being the private
+            # provisional intent: every later reader (CampaignStore.context and
+            # the funded route's status) must see the admitted diagnostic
+            # receipt without decoding retained objects.
+            connection.execute('UPDATE full_campaigns SET receipt_bytes=? WHERE attempt_id=?',
+                               (receipt, attempt))
             return self.diagnostic_status(attempt)
 
     def context(self, attempt, installed_release, keys, *, now):
@@ -1854,16 +1861,30 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             if state['profile']['schema'] == 'qualification_campaign_budget_profile/v3' and connection.execute('PRAGMA user_version').fetchone()[0] not in (7, 8):
                 raise ValueError('funding profile requires database v7')
             owner = self.row(row['attempt_id'])
-            receipt = parse_canonical_json(owner['receipt_bytes'], label='provisional receipt')
-            expected_receipt = encoded(dict(schema='qualification_campaign_provisional_intent/v1',
-                attempt_id=state['attempt_id'], request_sha256=state['request_sha256'],
-                profile_sha256=sha256(encoded(state['profile'])), start_clock=state['start_clock'],
-                dispatch_enabled=False))
-            if owner['receipt_bytes'] != expected_receipt:
-                raise ValueError('provisional receipt integrity differs')
+            receipt = parse_canonical_json(owner['receipt_bytes'], label='campaign receipt')
+            if receipt['schema'] == 'qualification_campaign_admission_receipt/v2':
+                # The admitted campaign's row carries the diagnostic receipt;
+                # it must be byte-identical to the retained receipt object.
+                saved = connection.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role='diagnostic_receipt'",
+                                           (state['attempt_id'],)).fetchone()
+                if saved is None or bytes(saved[0]) != owner['receipt_bytes']:
+                    raise ValueError('admitted receipt integrity differs')
+            else:
+                expected_receipt = encoded(dict(schema='qualification_campaign_provisional_intent/v1',
+                    attempt_id=state['attempt_id'], request_sha256=state['request_sha256'],
+                    profile_sha256=sha256(encoded(state['profile'])), start_clock=state['start_clock'],
+                    dispatch_enabled=False))
+                if owner['receipt_bytes'] != expected_receipt:
+                    raise ValueError('provisional receipt integrity differs')
+            # The v2 diagnostic receipt binds the budget profile through its own
+            # budget_profile_sha256; its profile_sha256 is the installed
+            # execution profile the admission verified against.
+            profile_binding = (receipt['budget_profile_sha256']
+                               if receipt['schema'] == 'qualification_campaign_admission_receipt/v2'
+                               else receipt['profile_sha256'])
             if (state['attempt_id'] != owner['attempt_id'] or state['validity'] != owner['validity'] or
                     state['request_sha256'] != sha256(owner['request_bytes']) or
-                    receipt['profile_sha256'] != sha256(encoded(state['profile'])) or
+                    profile_binding != sha256(encoded(state['profile'])) or
                     receipt['start_clock'] != state['start_clock']):
                 raise ValueError('metered campaign binding integrity differs')
             parse_campaign_budget_profile(encoded(state['profile']))
@@ -1958,7 +1979,8 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 raise ValueError('cross-capability attempt collision')
             request = parse_campaign_request(row['request_bytes'])
             receipt = parse_canonical_json(row['receipt_bytes'], label='campaign receipt')
-            if receipt.get('schema') == 'qualification_campaign_provisional_intent/v1':
+            if receipt.get('schema') in ('qualification_campaign_provisional_intent/v1',
+                                         'qualification_campaign_admission_receipt/v2'):
                 state = self._budget(connection, row['attempt_id'])
                 retained = self.objects(row['attempt_id'])
                 from .campaign_supervisor import parse_enrollment, parse_supervision_event
@@ -2054,7 +2076,9 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 if retained:
                     if 'diagnostic_receipt' not in retained:
                         raise ValueError('provisional intent cannot claim admitted objects')
-                    self._diagnostic_integrity(row, state, retained)
+                    self._diagnostic_integrity(row, state, dict(retained, diagnostic_receipt=row['receipt_bytes'])
+                                               if bytes(retained['diagnostic_receipt']) != row['receipt_bytes']
+                                               else retained)
                 if row['validity'] == 'VOID':
                     if type(row['void_request']) is not bytes or type(row['void_receipt']) is not bytes:
                         raise ValueError('metered VOID receipt absent')

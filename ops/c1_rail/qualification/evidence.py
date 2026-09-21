@@ -611,6 +611,8 @@ def _inspect_checkpoint_assessment(value):
     for row in thresholds['stages']:
         _fields(row, {'stage','exact_depth','max_failures_per_population'}, label='threshold')
         _positive_int(row['exact_depth'], label='depth')
+        if row['max_failures_per_population'] is not None:
+            _positive_int(row['max_failures_per_population'], label='threshold cap', allow_zero=True)
     if type(doc['artifacts']) is not list:
         raise ValueError('invalid artifact inventory')
     for row in doc['artifacts']:
@@ -725,7 +727,10 @@ def parse_checkpoint_cutoff(raw, *, attempt_id):
     for row in doc['n2_thresholds']:
         fields(row, {'stage', 'exact_depth', 'max_failures_per_population'})
         identity(row['stage']); integer(row['exact_depth'], positive=True)
-        integer(row['max_failures_per_population'])
+        # A workload may leave an N2/PART_B failure cap unset (None); the
+        # binding still pins the stage and its exact depth.
+        if row['max_failures_per_population'] is not None:
+            integer(row['max_failures_per_population'])
     utc(doc['created_utc'])
     return doc
 

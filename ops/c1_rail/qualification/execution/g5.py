@@ -307,9 +307,9 @@ def validate_campaign_checkpoint(context, *, checkpoint, plan_bytes, attestation
     snapshot = parse_canonical_json(snapshot_bytes, label='checkpoint snapshot')
     if snapshot['capture']['attestation_sha256'] != sha256(attestation_bytes):
         raise ValueError('checkpoint snapshot membership differs')
-    return CampaignCheckpointEvidence(inspected.assessment_bytes, dict(inspected.output_bytes_by_role),
+    return CampaignCheckpointEvidence(inspected.envelope_bytes, dict(inspected.output_bytes_by_role),
         snapshot['campaign_revision'], sha256(snapshot_bytes),
-        parse_canonical_json(inspected.assessment_bytes, label='assessment')['decision'])
+        parse_canonical_json(inspected.envelope_bytes, label='assessment')['decision'])
 
 
 def sign_campaign_checkpoint(evidence, *, context, credential_reference, current_keys, work_id):

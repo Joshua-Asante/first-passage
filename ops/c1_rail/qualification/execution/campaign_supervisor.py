@@ -1084,9 +1084,13 @@ def _guardian_bus_call(campaigns, unit, properties):
     import subprocess
     from .runtime import installed_code_root
     from tools.qualification_verification.container_ownership import CAMPAIGN_BUS_START
+    # The properties are already busctl (name, type, value) triples -- the
+    # dict-based _unit_properties encoding does not apply here.
+    arguments = [unit, 'fail', str(len(properties)),
+                 *(item for row in properties for item in row), '0']
     process = subprocess.Popen(['/usr/bin/prlimit', '--cpu=1:1', '--', sys.executable, '-I',
         str(installed_code_root() / 'bootstrap.py'), 'campaign_control', str(os.getpid()),
-        *CAMPAIGN_BUS_START, unit, 'fail', *_unit_properties(properties), '0'],
+        *CAMPAIGN_BUS_START, *arguments],
         stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         env={'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'})
     stdout, stderr = process.communicate(timeout=15)
@@ -1201,9 +1205,13 @@ def _capture_result_document(context, campaigns, state, work, enrollment, manife
     import base64
     from .store import instant
     from .evidence import parse_worker_result
+    from .protocol import decode_frame
     staged_limits = parse_canonical_json((Path(checkpoint_io_paths(enrollment)['in_path']) / 'campaign-limits.json').read_bytes(),
                                           label='staged campaign limits')['limits']
-    captured = parse_worker_result(payload_bytes, context=context, execution_id=manifest['work_id'],
+    # The mount carries the worker's framed output; the archive keeps those
+    # bytes verbatim and the parse works on the decoded document.
+    decoded = decode_frame(payload_bytes, limit=max(1, len(payload_bytes)))
+    captured = parse_worker_result(decoded, context=context, execution_id=manifest['work_id'],
                                    plan_bytes=plan_bytes, campaign_limits=staged_limits)
     image = parse_canonical_json(context.release, label='release')['worker_image_digest']
     from .runtime import observe_runtime
@@ -1342,7 +1350,11 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
         return
     # The capture: exactly the archived bytes from the bounded output mount.
     from .files import read_regular
-    payload_bytes = read_regular(Path(io['out_path']), 'result.frame', limit=output_bound)
+    from .protocol import decode_frame
+    raw_frame = read_regular(Path(io['out_path']), 'result.frame', limit=output_bound)
+    # The archived payload is the worker's canonical document exactly as framed
+    # (the frame is transport, like the N1_ONLY stdout capture).
+    payload_bytes = decode_frame(raw_frame, limit=max(1, len(raw_frame)))
     result, captured = _capture_result_document(context, campaigns, state, work, enrollment, manifest,
                                                 row, payload_bytes, plan_bytes, staged_bytes,
                                                 started_at, finished_at, authorized)

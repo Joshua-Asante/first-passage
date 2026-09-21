@@ -63,7 +63,7 @@ def parse_campaign_request(raw: bytes) -> dict:
             raw = decode_base64(doc['bytes_b64'])
             if not raw or len(raw) > 64 * 1024 * 1024:
                 raise ValueError('bounded staged checkpoint artifact required')
-        else:
+        elif doc['operation'] == 'COMMIT_CHECKPOINT_ASSESSMENT':
             identity(doc['work_id'])
             candidate = decode_base64(doc['candidate_bytes_b64'])
             if not candidate or len(candidate) > 262144:

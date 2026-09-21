@@ -43,6 +43,8 @@ def campaign(tmp_path, monkeypatch, *, t=11):
     instance, case = running(tmp_path, monkeypatch, dispatch=True)
     instance.config = {'host_run_id': 'host1', 'service_uid': SERVICE_UID}
     instance.recovery_issues = {}
+    instance.schedule_eligible = True
+    instance.dispatch_eligible = True
     monkeypatch.setattr(supervisor, 'controller_cpu_guard', nullcontext)
     monkeypatch.setattr(supervisor, 'LinuxCampaignRuntime', Runtime)
     state = {'t': t}
@@ -661,3 +663,135 @@ def test_n1_g5_exhaustion_grants_no_credit(tmp_path, monkeypatch):
     assert final['checkpoints']['N1']['state'] == 'ATTESTED', 'no assessment credit was granted'
     with pytest.raises(ValueError, match='exact checkpoint candidate retry required'):
         commit(instance, candidate)
+
+
+def test_service_commit_checkpoint_on_a_funded_campaign(tmp_path, monkeypatch):
+    """The coordinator's heads-up regression, at wire level: the funded route's
+    T2 calls CampaignStore.context(), which reads the campaign row's receipt --
+    after the admission finish that column must carry the admitted diagnostic
+    receipt, not the provisional intent, or every COMMIT_CHECKPOINT_ASSESSMENT
+    refuses. The full G5 sequence runs through handle_request on a funded
+    campaign with a real worker capture."""
+    import base64
+    import importlib
+    from bundle_fixture import build_bundle
+    from test_campaign_admission import running
+    from c1_rail.qualification.execution import g5 as g5_module
+    from c1_rail.qualification.execution.admission import verify_bundle
+    from c1_rail.qualification.execution.plan import derive_campaign_plan_from_context
+    from c1_rail.qualification.execution.protocol import decode_frame
+    from c1_rail.qualification.checkpoint_plan import derive_checkpoint_plan
+
+    # A dispatch campaign whose capture is a REAL worker frame over its own bundle.
+    worker_module = importlib.import_module('c1_rail.qualification.execution.worker')
+    monkeypatch.setattr(worker_module, 'utc_now', lambda: NOW)
+    instance, case = campaign(tmp_path, monkeypatch)
+    context = verified_context(instance, case)
+    staged = tmp_path / 'worker-input'
+    (staged / 'installation').mkdir(parents=True)
+    (staged / 'bundle').mkdir()
+    from c1_rail.qualification.checkpoint_plan import derive_n1_plan
+    plan_for_worker = derive_n1_plan(context.contract, policy=context.policy,
+        execution_release_sha256=context.domain.execution_release_sha256,
+        attempt_id=context.attempt_id,
+        exact_depth_approval_sha256=context.exact_depth_approval.approval_sha256)
+    (staged / 'plan.json').write_bytes(plan_for_worker)
+    (staged / 'installation' / 'release.json').write_bytes(case['release'])
+    (staged / 'installation' / 'keys.json').write_bytes(encoded(dict(
+        schema='qualification_trusted_keys/v1',
+        keys=[dict(key_id=key.key_id, public_key_b64=base64.b64encode(key.public_key).decode(),
+                   authority_class=key.authority_class, revoked_at=None)
+              for key in case['keys'].values()])))
+    (staged / 'bundle' / 'index.json').write_bytes(context.retained_bundle_index)
+    for row in json.loads(context.retained_bundle_index)['entries']:
+        target = staged / 'bundle' / row['path']
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(context.retained_bytes[row['role']])
+    frame = worker_module.run_worker(staged, execution_id='n1work')
+    payload = decode_frame(frame, limit=context.profile.output_byte_limit)
+    document = json.loads(payload)
+
+    materialized(instance)
+    retained_identity(instance, 'n1work')
+    transition(instance, 'n1work', 'RUNNING')
+    dispatched(instance, 'n1work')
+    release = json.loads(case['release'])
+    scopes = supervisor.work_enrollment('host1', instance.attempt, 'n1work')
+    plan_bytes = derive_checkpoint_plan(store(instance).retained_object(instance.attempt, 'plan'), 'N1', None)
+    result = encoded(dict(schema='qualification_campaign_checkpoint_result/v1',
+        attempt_id=instance.attempt, checkpoint='N1', work_id='n1work', campaign_id='campaign-1',
+        plan_sha256=sha256(plan_bytes), plan_byte_length=len(plan_bytes),
+        payload_sha256=sha256(payload), payload_byte_length=len(payload),
+        worker_execution_id='n1work', container_id='9' * 64,
+        worker_image_digest=release['worker_image_digest'],
+        runtime_manifest_sha256=sha256(encoded(release['runtime_manifests']['worker'])),
+        capture=dict(exit_code=0, oom_killed=False, started_utc='2026-09-21T00:00:01Z',
+                     completed_utc='2026-09-21T00:00:02Z', authorized_at_utc='2026-09-21T00:00:00Z',
+                     campaign_scope_id=scopes['campaign_slice'], work_scope_id=scopes['payload_slice'],
+                     payload_slice=scopes['payload_slice']),
+        limits=dict(cpu_ns=snap(instance)['profile']['phases']['N1']['cpu_ns'],
+                    wall_ns=snap(instance)['profile']['phases']['N1']['wall_ns'],
+                    memory_bytes=snap(instance)['profile']['phases']['N1']['memory_bytes'],
+                    orchestration_cpu_ns=snap(instance)['profile']['orchestration_cpu_ns']['N1']),
+        observations=dict(exit_code=0, oom_killed=False, **document['observations']),
+        created_utc='2026-09-21T00:00:03Z'))
+    capture_transition = encoded(dict(
+        schema='qualification_campaign_work_transition/v1', attempt_id=instance.attempt,
+        work_id='n1work', state='CAPTURED', clock=json.loads(supervisor.observe_campaign_clock()),
+        data=dict(capture_bytes_b64=base64.b64encode(result).decode('ascii'))))
+    store(instance).retain_checkpoint_capture(instance.attempt, 'n1work', result, payload, capture_transition)
+    attestation_payload = dict(schema='qualification_campaign_checkpoint_attestation_payload/v1',
+        scope='ATTEST_CAMPAIGN_CHECKPOINT', attempt_id=instance.attempt, checkpoint='N1',
+        work_id='n1work', result_sha256=sha256(result), payload_sha256=sha256(payload),
+        payload_byte_length=len(payload), plan_sha256=sha256(plan_bytes),
+        execution_release_sha256=sha256(case['release']), profile_sha256=release['profile_sha256'],
+        service_id=release['service_id'], worker_image_digest=release['worker_image_digest'],
+        runtime_manifest_sha256=sha256(encoded(release['runtime_manifests']['worker'])),
+        container_id='9' * 64,
+        capture=dict(exit_code=0, oom_killed=False, campaign_scope_id=scopes['campaign_slice'],
+                     work_scope_id=scopes['payload_slice'], payload_slice=scopes['payload_slice']),
+        observations=dict(exit_code=0, oom_killed=False, **document['observations']),
+        authorized_at_utc='2026-09-21T00:00:00Z', started_utc='2026-09-21T00:00:01Z',
+        completed_utc='2026-09-21T00:00:02Z', campaign_revision=2)
+    attestation = encoded(dict(schema='qualification_campaign_checkpoint_attestation/v1',
+        payload=attestation_payload, signature=dict(algorithm='Ed25519', key_id='test-execution',
+            value_b64=base64.b64encode(case['private']['test-execution'].sign(encoded(attestation_payload))).decode('ascii'))))
+    store(instance).retain_checkpoint_attestation(instance.attempt, attestation,
+        verify=lambda *args, **kwargs: None)
+    settle(instance, 'n1work')
+    transition(instance, 'n1work', 'COMPLETED')
+    materialized(instance, schedule_document(instance, role='n1_g5', work='g5work'))
+    retained_identity(instance, 'g5work')
+    transition(instance, 'g5work', 'RUNNING')
+    dispatched(instance, 'g5work')
+
+    def wire(operation, **values):
+        return instance.handle_request(G5, encoded(dict(
+            schema='qualification_campaign_request/v2', operation=operation,
+            attempt_id=instance.attempt, **values)))
+
+    snapshot_reply = wire('CHECKPOINT_SNAPSHOT', checkpoint='N1')
+    verified = verified_context(instance, case)
+    evidence = g5_module.validate_campaign_checkpoint(context=verified, checkpoint='N1',
+        plan_bytes=plan_bytes, attestation_bytes=attestation,
+        artifacts={'result': result, 'worker_result': payload},
+        snapshot_bytes=snapshot_reply, current_keys=case['keys'])
+    for role, raw in evidence.output_bytes_by_role.items():
+        staged_reply = json.loads(wire('STAGE_CHECKPOINT_ARTIFACT', checkpoint='N1', role=role,
+            bytes_b64=base64.b64encode(raw).decode('ascii')))
+        assert staged_reply == {'artifact_sha256': sha256(raw)}
+    core = json.loads(evidence.assessment_bytes)
+    core['signature'] = dict(algorithm='Ed25519', key_id='test-producer',
+        value_b64=base64.b64encode(case['private']['test-producer'].sign(
+            evidence.assessment_bytes)).decode('ascii'))
+    candidate = encoded(core)
+    g5_module.verify_checkpoint_assessment(candidate, context=verified, current_keys=case['keys'])
+    commit_reply = json.loads(wire('COMMIT_CHECKPOINT_ASSESSMENT', checkpoint='N1', work_id='g5work',
+        candidate_bytes_b64=base64.b64encode(candidate).decode('ascii'),
+        artifacts=[dict(role=role, sha256=sha256(raw))
+                   for role, raw in sorted(evidence.output_bytes_by_role.items())]))
+    receipt = commit_reply['receipt']
+    assert receipt['decision'] == 'CONTINUE' and receipt['campaign_state'] == 'N2_READY'
+    final = snap(instance)
+    assert final['state'] == 'N2_READY'
+    assert final['checkpoints']['N1']['state'] == 'COMMITTED'
