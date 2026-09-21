@@ -1149,13 +1149,11 @@ def worker_container_body(context, enrollment, manifest):
             Binds=[io['in_path'] + ':/input:ro', io['out_path'] + ':/output:rw']))
 
 
-def _stage_worker_input(context, campaigns, enrollment, state, work):
-    """Stage the work's input into the io tmpfs: plan, limits, installation, bundle."""
+def _worker_input_files(context, campaigns, state, work):
+    """The work's staged input manifest: plan, limits, installation, bundle."""
     from .files import read_regular
     from .protocol import decode_base64
     from ..checkpoint_plan import derive_checkpoint_plan
-    io = checkpoint_io_paths(enrollment)
-    in_root = Path(io['in_path'])
     attempt = state['attempt_id']
     plan_bytes = derive_checkpoint_plan(campaigns.retained_object(attempt, 'plan'), 'N1', None)
     objects = campaigns.objects(attempt)
@@ -1177,6 +1175,13 @@ def _stage_worker_input(context, campaigns, enrollment, state, work):
     for role, raw in objects.items():
         if role.startswith('context_'):
             files.append(('bundle/members', role.removeprefix('context_') + '.bin', raw))
+    return files, plan_bytes
+
+
+def _write_worker_input(enrollment, files):
+    """Write the manifest into the mounted input tmpfs; the manager owns the
+    mountpoint creation, so this runs only after the mount units exist."""
+    in_root = Path(checkpoint_io_paths(enrollment)['in_path'])
     staged = 0
     for directory, name, raw in files:
         staged += len(raw)
@@ -1188,7 +1193,7 @@ def _stage_worker_input(context, campaigns, enrollment, state, work):
             import os
             os.fsync(stream.fileno())
         target.chmod(0o444)
-    return staged, plan_bytes
+    return staged
 
 
 def _capture_result_document(context, campaigns, state, work, enrollment, manifest, container_row,
@@ -1238,14 +1243,18 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
     if docker.call('GET', '/info')['CgroupDriver'] != 'systemd':
         raise ValueError('installed Docker cgroup driver differs; no automatic switch')
     io = checkpoint_io_paths(enrollment)
-    staged_bytes, plan_bytes = _stage_worker_input(context, campaigns, enrollment, state, work)
+    files, plan_bytes = _worker_input_files(context, campaigns, state, work)
+    staged_bytes = sum(len(raw) for _, _, raw in files)
     output_bound = context.profile.output_byte_limit
+    # The manager creates the mountpoints; only then may the guardian stage
+    # into the input tmpfs (it cannot mkdir under /var/lib itself).
     _guardian_bus_call(campaigns, io['in_unit'],
                        _io_mount_properties(io['in_path'], size_bytes=staged_bytes + 4096,
                                             uid=context.config['service_uid'], mode=0o755))
     _guardian_bus_call(campaigns, io['out_unit'],
                        _io_mount_properties(io['out_path'], size_bytes=output_bound,
                                             uid=context.profile.worker_uid, mode=0o755))
+    _write_worker_input(enrollment, files)
     name = 'fpqs2-' + sha256(encoded(enrollment))
     body = worker_container_body(context, enrollment, manifest)
     container = digest(docker.call('POST', '/containers/create?name=' + name, body)['Id'])
