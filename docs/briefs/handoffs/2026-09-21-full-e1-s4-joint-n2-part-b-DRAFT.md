@@ -1,7 +1,7 @@
 # GLM handoff — Protected Full E1 / S4 (T03): one joint N2/Part B execution and committed G5 assessment — DRAFT for the operator's rulings
 
 **Type:** cc_handoff (frozen-spec implementation; one executor owns the joint batch, its evidence and the continuation together)
-**Date:** 2026-09-21 (DRAFT — becomes FROZEN when the four decisions in §0.5 are ruled and S3 has merged; anchors are re-taken at the S3 merge head then)
+**Date:** 2026-09-21 (DRAFT — **the four decisions in §0.5 were ruled by the operator on 2026-09-21 (all recommended options)**; becomes FROZEN when S3 has merged and the anchors are re-taken at the S3 merge head)
 **Status:** not dispatchable yet. Predecessor: **S3 accepted and merged** (the S3 packet's acceptance-grade `--s3` run green, the coordinator's acceptance entry in the ledger). Branch `claude/s4-joint-n2` off the S3 merge head; push; no PR until the coordinator says so.
 **Executor:** GLM (single writer for every file in §2; the S3 session's successor, same worktree discipline). **Coordinator:** Claude (rulings, checkpoint C2, integration, acceptance). **Operator:** Joshua (the four decisions below; any further versioned change is a `CHECKPOINT`).
 **Parent:** [execution-slices plan §S4 + the S3 acceptance and C1/C-R entries](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md) · [governing spec](../../superpowers/specs/2026-09-17-protected-full-e1-campaign.md) §2.3 (the N2_READY → PART_A_READY rows; "N2 and PART_B are always assessed together after the complete joint batch"), §2.4, E03/E06/E07/E08/E09 · [S3 packet §7](2026-09-21-full-e1-s3-n1-genuine-capture.md) (the checkpoint family this extends) · [T05 packet §0.5 F3 and §1](2026-09-21-full-e1-t05-result-and-seal.md) (the progression names and the `checkpoint_receipts` row shape S4 must keep).
@@ -17,7 +17,7 @@
 - The two repo constraints both sessions hit on 2026-09-21: the legacy frozen adjudicator's retained-executable walk sweeps live modules — **no module-level mutable state**, and line 3 only on committed bytes (uncommitted edits produce `runtime dependency executable differs from retained source`).
 - Harness: `test_campaign_n1_linux.py` (helpers `admit`, `dispatch`, `wait`, `completed_works`, `payload_identity_events` — reuse), the `--s3` selector and `S3_CASES` (**the N1 file runs before the S2 OOM case; S4's file goes beside it, before that case too**), the workflow's `mode`/`cases` inputs and `DIAGNOSTIC_SUBSET` iteration, `s2_run_evidence.py --expect-head`.
 
-## 0.5. Design decisions for the operator (recommended rulings; constraints once ruled)
+## 0.5. Design decisions (ruled by the operator 2026-09-21 — constraints, not options)
 
 **S4-D1 — Custody widening.** Widen S3's three checkpoint tables from `attempt_id PRIMARY KEY` + `CHECK(checkpoint='N1')` to `PRIMARY KEY(attempt_id, checkpoint)` + `CHECK(checkpoint IN ('N1','N2','PART_A'))` **once**, as DB `user_version` 9 with exact layout validation (the closed three-checkpoint set so S5 needs no further layout change; the service still admits only what the installed release dispatches). Consequence for T05: its result/seal tables become `user_version` 10 at integration (one-line seam in its `_ensure_result_layout`; T05 is accepted after T04 anyway). Column names unchanged (T05's accessor). *Alternative rejected:* per-slice versions 9/10/11 with three migrations.
 
