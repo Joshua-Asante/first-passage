@@ -26,6 +26,15 @@
             "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guard_shell_command.py\""
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guard_open_verification_record.py\""
+          }
+        ]
       }
     ],
     "PostToolUse": [
