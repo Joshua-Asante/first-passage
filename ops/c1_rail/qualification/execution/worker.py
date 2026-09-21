@@ -123,10 +123,15 @@ class PhaseBudgetGuard:
             positive(values[name])
         self.limits = dict(values)
         import time
+        self._remaining_wall_seconds = self.limits['wall_ns'] / 1e9
         self._process = time.process_time_ns
         self._monotonic = time.monotonic_ns
         self._start_cpu = self._process()
         self._start_wall = self._monotonic()
+
+    def remaining_wall_seconds(self):
+        """The compute stack's budgetSeconds probe; the measured remainder."""
+        return self._remaining_wall_seconds
 
     def check_and_measure(self):
         cpu = self._process() - self._start_cpu
@@ -140,5 +145,6 @@ class PhaseBudgetGuard:
             peak = 0
         if peak > self.limits['memory_bytes']:
             raise ValueError('campaign work exceeded its phase memory limit')
+        self._remaining_wall_seconds = max(0.0, (self.limits['wall_ns'] - wall) / 1e9)
         return dict(worker_compute_wall_ns=wall, worker_cpu_ns=cpu,
-                    worker_peak_memory_bytes=peak, remaining_wall_seconds=(self.limits['wall_ns'] - wall) / 1e9)
+                    worker_peak_memory_bytes=peak, remaining_wall_seconds=self._remaining_wall_seconds)
