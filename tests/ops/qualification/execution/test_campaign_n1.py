@@ -456,6 +456,25 @@ def test_v4_service_route_refuses_the_dispatch_roles(tmp_path, monkeypatch):
         service._schedule_request(SERVICE_UID, probe)
 
 
+def test_v5_installation_keeps_the_funded_probe_route(tmp_path, monkeypatch):
+    """The /v5 dispatch revision is a superset of /v4: the funded private route
+    stays open for harmless probe work while dispatch roles need the v5 gate."""
+    service = warm(tmp_path, monkeypatch, eligible=True, dispatch=True)
+    probe = encoded(dict(schema='qualification_campaign_schedule_request/v1',
+        attempt_id='a1', work_id='probe1', role='probe_worker', probe='noop', signing_retry_of=None))
+    try:
+        service._schedule_request(SERVICE_UID, probe)
+    except ValueError as exc:
+        # The route opened (no release refusal); the empty journal refuses.
+        assert 'execution-capable diagnostic release' not in str(exc), exc
+        assert 'installed N1 dispatch release required' not in str(exc), exc
+    service.dispatch_eligible = False
+    with pytest.raises(ValueError, match='installed N1 dispatch release required'):
+        service._schedule_request(SERVICE_UID, schedule_document(instance=None) if False else encoded(
+            dict(schema='qualification_campaign_schedule_request/v1', attempt_id='a1',
+                 work_id='n1work', role='n1_worker', probe='noop', signing_retry_of=None)))
+
+
 def test_full_e1_assessment_family_exists_and_is_closed():
     """Fail-on-base capability: the FULL_E1 assessment builder and comparator
     exist only on this branch (AttributeError on the S2 base) and refuse any

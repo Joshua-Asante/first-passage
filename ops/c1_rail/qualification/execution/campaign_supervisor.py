@@ -1152,6 +1152,7 @@ def worker_container_body(context, enrollment, manifest):
 def _stage_worker_input(context, campaigns, enrollment, state, work):
     """Stage the work's input into the io tmpfs: plan, limits, installation, bundle."""
     from .files import read_regular
+    from .protocol import decode_base64
     from ..checkpoint_plan import derive_checkpoint_plan
     io = checkpoint_io_paths(enrollment)
     in_root = Path(io['in_path'])
@@ -1194,6 +1195,7 @@ def _capture_result_document(context, campaigns, state, work, enrollment, manife
                              payload_bytes, plan_bytes, staged_bytes, started_at, finished_at, authorized):
     import base64
     from .store import instant
+    from .evidence import parse_worker_result
     staged_limits = parse_canonical_json((Path(checkpoint_io_paths(enrollment)['in_path']) / 'campaign-limits.json').read_bytes(),
                                           label='staged campaign limits')['limits']
     captured = parse_worker_result(payload_bytes, context=context, execution_id=manifest['work_id'],
@@ -1231,6 +1233,7 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
     from the bounded output mount, byte-for-byte archive, attestation, CAPTURED,
     settlement -- the probe's supervision loop with the real worker payload."""
     import base64
+    from .protocol import digest
     docker = DockerControl()
     if docker.call('GET', '/info')['CgroupDriver'] != 'systemd':
         raise ValueError('installed Docker cgroup driver differs; no automatic switch')
@@ -1391,6 +1394,7 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
     identities, and settle. The assessment itself is the unit's own work over
     the service socket; credit follows the persisted candidate, never the
     unit's exit status alone."""
+    from .protocol import decode_base64
     from .runtime import installed_code_root
     deadline = min(state['deadline_boottime_ns'],
                    parse_canonical_json(decode_base64(work['reservation_bytes_b64']), label='reservation')['clock']['boottime_ns']

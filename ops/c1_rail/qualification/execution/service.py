@@ -75,10 +75,14 @@ def uid_roles(config):
 
 
 def schedule_eligibility(release, profile):
-    """Fixed at startup: only the execution-capable diagnostic revision opens the route."""
-    return (type(release) is dict and release.get('schema') == EXECUTABLE_DIAGNOSTIC_RELEASE
-            and release.get('capability') == 'FULL_E1' and release.get('dispatch_enabled') is False
-            and profile.values['schema'] == 'qualification_execution_profile/v4')
+    """Fixed at startup: the execution-capable diagnostic revisions open the
+    funded route for harmless probe work. The /v5 dispatch revision is a
+    superset of /v4: it keeps every v4 restriction for probes and additionally
+    admits the two dispatch roles through its own gate."""
+    pairs = ((EXECUTABLE_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v4'),
+             (release_schema.DISPATCH_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v5'))
+    return (type(release) is dict and release.get('capability') == 'FULL_E1'
+            and (release.get('schema'), profile.values['schema']) in pairs)
 
 
 def dispatch_eligibility(release, profile):
