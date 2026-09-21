@@ -1442,7 +1442,7 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
         payload_sha256=parsed_result['payload_sha256'],
         payload_byte_length=parsed_result['payload_byte_length'],
         plan_sha256=parsed_result['plan_sha256'], execution_release_sha256=sha256(context.release),
-        profile_sha256=context.profile.sha256,
+        profile_sha256=verified.profile.sha256,
         service_id=parse_canonical_json(context.release, label='release')['service_id'],
         worker_image_digest=parsed_result['worker_image_digest'],
         runtime_manifest_sha256=parsed_result['runtime_manifest_sha256'],
@@ -1455,12 +1455,12 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
                           **captured.document['observations']),
         authorized_at_utc=authorized, started_utc=started_at, completed_utc=finished_at,
         campaign_revision=budget_state['authority_revision'])
-    attestation = sign_checkpoint_attestation(attestation_payload, context=context,
+    attestation = sign_checkpoint_attestation(attestation_payload, context=verified,
         credential_reference=context.config['execution_credential'], current_keys=context.keys())
 
     def _verify(attempt, result_raw, payload_raw, attestation_raw):
-        from .signing import verify_checkpoint_attestation
-        verify_checkpoint_attestation(attestation_raw, context=context, current_keys=context.keys())
+        from .g5 import verify_checkpoint_attestation
+        verify_checkpoint_attestation(attestation_raw, context=verified, current_keys=context.keys())
         if (parse_canonical_json(attestation_raw, label='attestation')['payload']['result_sha256']
                 != sha256(result_raw) or parse_canonical_json(result_raw, label='result')['payload_sha256']
                 != sha256(payload_raw)):
