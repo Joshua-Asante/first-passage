@@ -240,8 +240,8 @@ python -I scripts/fp.py python scripts/qualification_boundary_verification.py --
 
 `--s2` selects the targeted diagnostic supervision suite
 (`tests/integration/qualification_boundary/test_campaign_supervision_linux.py`)
-on one fresh host: the installer enrolls the campaign host (polkit rule for the
-qexec `manage-units` scope plus the common memory slice) and installs the
+on one fresh host: the installer enrolls the campaign host (qexec's transient-unit
+polkit rule plus the common memory slice) and installs the
 execution-capable diagnostic release, and every probe goes through the warm
 service's funded private route via the forked transport child. The suite runs
 alone with one worker and its last case exhausts the common memory group, so the
@@ -249,12 +249,16 @@ host is never reused. The `Qualification S2 supervision` workflow runs it on
 `workflow_dispatch` or on pull requests touching the qualification surface; its
 record is diagnostic evidence for the coordinator, not an acceptance check.
 
-The polkit rule the S2 installer writes authorizes qexec for
-`org.freedesktop.systemd1.manage-units` when the action carries no `unit`
-detail (systemd's `StartTransientUnit` check passes none) or when the unit name
-carries this run's slice prefix. A transient start therefore cannot be bound to
-the prefix by polkit; this stays inside the recorded trust model, under which
-qexec is already root-equivalent through the Docker daemon.
+Under the accepted polkit rule, qexec can start arbitrary transient units —
+including units that run as `User=root` — because
+`org.freedesktop.systemd1.manage-units` carries no `unit` detail on a transient
+start (systemd's `StartTransientUnit` check passes none), and a named unit is
+authorized only when its name carries this run's slice prefix. Polkit therefore
+contributes no containment for unit starts: whether a started unit joins the
+campaign slice hierarchy rests on the guardian's own code checks and on
+`bootstrap.py`'s fixed `campaign_control` prefix check, not on polkit. This
+stays inside the recorded trust model, under which qexec is already
+root-equivalent through the Docker daemon.
 
 ```bash
 sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python   scripts/qualification_boundary_verification.py --s2 --manifest "$manifest"

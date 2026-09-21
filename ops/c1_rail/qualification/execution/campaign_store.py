@@ -26,7 +26,70 @@ CREATE TABLE IF NOT EXISTS full_campaign_objects (
 '''
 
 
-from .campaign_funding import FundingStoreMixin, SCHEMA as FUNDING_SCHEMA
+from .campaign_funding import FundingStoreMixin, SCHEMA as FUNDING_SCHEMA, PROFILE as FUNDED_PROFILE, _put as _put_funding
+
+# Funded post-admission cancellation authentication (S2-G2, 2026-09-19). A
+# queued operator body is transport, never authority. Each signature check is
+# preceded by one durable, one-use charge object folded into the funding
+# projection; the outcome is a VOID receipt or a retained refusal object.
+VOID_AUTHENTICATION_SCHEMA = 'qualification_campaign_void_authentication/v1'
+VOID_REFUSAL_SCHEMA = 'qualification_campaign_void_refusal/v1'
+VOID_ADMISSION_REFUSAL_SCHEMA = 'qualification_campaign_void_admission_refusal/v1'
+VOID_AUTHENTICATION_PREFIX = 'void_authentication_'
+VOID_REFUSAL_PREFIX = 'void_refusal_'
+# A pre-admission body is authenticated under the guardian's charged admission
+# work; its refusal is retained without a charge object and pairs with nothing.
+VOID_ADMISSION_REFUSAL_PREFIX = 'void_admission_refusal_'
+# S2-G4 A1 (2026-09-20): on a terminal-but-VALID funded campaign there is no
+# allowance to charge and no positive authority to protect, so a queued body is
+# authenticated once, uncharged, under the controller guard. Its refusal is
+# retained under a role keyed by the body digest, which makes "once per
+# distinct body" structural (the queue refuses a digest already refused).
+VOID_TERMINAL_REFUSAL_SCHEMA = 'qualification_campaign_void_terminal_refusal/v1'
+VOID_TERMINAL_REFUSAL_PREFIX = 'void_terminal_refusal_'
+CANCELLATION_PENDING = 'campaign cancellation pending; new authority unavailable'
+TERMINAL_BODY_REFUSED = 'cancellation body already refused on the terminal campaign; no unmetered retry'
+
+
+def void_authentication_bound():
+    """Installed one-use controller charge: control CPU plus its granularity margin, control wall."""
+    from .profile import CAMPAIGN_RESOURCE_SCOPE as policy
+    return dict(cpu_ns=(policy['control_cpu_seconds'] + policy['cpu_granularity_seconds']) * 10**9,
+                wall_ns=policy['control_wall_seconds'] * 10**9)
+
+
+def _void_role(prefix, sequence):
+    from .campaign_budget import integer
+    return prefix + '%06d' % integer(sequence, positive=True)
+
+
+def parse_void_authentication(raw):
+    from .protocol import fields, identity, digest
+    from .campaign_budget import clock, integer
+    doc = fields(parse_canonical_json(raw, label='cancellation charge'),
+                 {'schema', 'attempt_id', 'sequence', 'request_sha256', 'charge_cpu_ns', 'wall_ns', 'clock'})
+    if doc['schema'] != VOID_AUTHENTICATION_SCHEMA:
+        raise ValueError('cancellation charge schema required')
+    identity(doc['attempt_id']); digest(doc['request_sha256'])
+    integer(doc['sequence'], positive=True); clock(encoded(doc['clock']))
+    bound = void_authentication_bound()
+    if doc['charge_cpu_ns'] != bound['cpu_ns'] or doc['wall_ns'] != bound['wall_ns']:
+        raise ValueError('installed cancellation charge differs')
+    return doc
+
+
+def parse_void_refusal(raw, *, schema=VOID_REFUSAL_SCHEMA):
+    from .protocol import fields, identity, digest
+    from .campaign_budget import clock, integer
+    doc = fields(parse_canonical_json(raw, label='cancellation refusal'),
+                 {'schema', 'attempt_id', 'sequence', 'request_sha256', 'reason', 'clock'})
+    if doc['schema'] != schema:
+        raise ValueError('cancellation refusal schema required')
+    identity(doc['attempt_id']); digest(doc['request_sha256'])
+    integer(doc['sequence'], positive=True); clock(encoded(doc['clock']))
+    if type(doc['reason']) is not str or not doc['reason'] or len(doc['reason']) > 1024:
+        raise ValueError('bounded cancellation refusal reason required')
+    return doc
 
 
 class CampaignStore(FundingStoreMixin):
@@ -113,11 +176,11 @@ class CampaignStore(FundingStoreMixin):
         Recovery claims/denials commit independently. A lost owner cannot resume;
         a new recovery need after completion creates an unfunded durable barrier.
         """
-        from .campaign_supervisor import parse_supervision_event
+        from .campaign_supervisor import parse_supervision_event, SUPERVISION_EVENT_V2
         from .campaign_budget import clock
         if slot == 'RECOVERY_OWNER' and getattr(self.store._local, 'connection', None) is not None:
             raise ValueError('active recovery claim requires independent transaction')
-        raw = encoded(dict(schema='qualification_campaign_supervision_event/v1', attempt_id=attempt,
+        raw = encoded(dict(schema=SUPERVISION_EVENT_V2, attempt_id=attempt,
             work_id=work_id, kind='CONTROL', clock=clock(clock_bytes), data=dict(slot=slot)))
         parse_supervision_event(raw)
         role = 'supervision_control_' + sha256(encoded([work_id, slot]))
@@ -333,6 +396,63 @@ class CampaignStore(FundingStoreMixin):
             connection.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
                                (attempt, role, sha256(raw), len(raw), raw))
 
+    @staticmethod
+    def _under_payload_slice(cgroup, payload_slice):
+        """True when a retained absolute cgroup path lies strictly beneath the enrolled payload slice."""
+        from pathlib import PurePosixPath
+        parts = PurePosixPath(cgroup).parts
+        return payload_slice in parts[:-1]
+
+    def _payload_identity(self, connection, attempt, work_id):
+        """Alive-verified PROCESS identities retained for a work, inside its enrolled payload slice.
+
+        Returns None when the work carries no supervision enrollment (there is
+        no payload slice to bind to), otherwise the list of qualifying PROCESS
+        events. The guardian retains its own startup identity under the same
+        kind/work_id, in the guardian unit's cgroup outside the payload slice;
+        that proves the guardian, never the payload, and does not qualify.
+        Event bodies are read only for the keys this rule needs.
+        """
+        from .campaign_supervisor import parse_enrollment
+        saved = connection.execute('SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role=?',
+                                   (attempt, 'supervision_' + work_id)).fetchone()
+        if saved is None:
+            return None
+        payload_slice = parse_enrollment(bytes(saved[0]))['scopes']['payload_slice']
+        identities = []
+        for raw, in connection.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role GLOB 'supervision_event_*'", (attempt,)):
+            event = parse_canonical_json(bytes(raw), label='supervision event')
+            if (type(event) is dict and event.get('kind') == 'PROCESS' and event.get('work_id') == work_id
+                    and type(event.get('data')) is dict and type(event['data'].get('cgroup')) is str
+                    and self._under_payload_slice(event['data']['cgroup'], payload_slice)):
+                identities.append(event)
+        return identities
+
+    def _require_payload_identity(self, connection, state, work):
+        """S2-G5 R1: credit for an enrolled work needs a retained payload identity.
+
+        The authoritative execution contract is the enrollment itself: a retained
+        supervision_<work_id> object exists only because a supervised launch was
+        prepared, so an enrolled non-admission work is by construction a
+        container-supervised work and cannot reach CAPTURED/SIGNING_INTENT/
+        COMPLETED without at least one alive-verified PROCESS event (either
+        event version) inside its enrolled payload slice -- a linked signing
+        retry included: on the host it runs a container like any other work.
+        A work with no enrollment is a persistence-layer object (the S1-era
+        store-only budget model, funding-model unit scenes) and is outside
+        this rule entirely. The guardian's own PROCESS event is in the
+        guardian unit's cgroup, outside the payload slice; it proves the
+        guardian, never the payload. Event bodies are read only for the keys
+        this rule needs, so both event versions bind identically here.
+        """
+        if work['phase'] == 'ADMISSION':
+            return
+        identities = self._payload_identity(connection, state['attempt_id'], work['work_id'])
+        if identities is None:
+            return  # no enrollment: a persistence-layer object, outside the rule
+        if not identities:
+            raise ValueError('alive-verified payload identity required before credit')
+
     def queue_diagnostic_void(self, raw):
         """Operator-role transport queues one bounded request, granting no authority."""
         request = parse_campaign_request(raw)
@@ -347,9 +467,288 @@ class CampaignStore(FundingStoreMixin):
             if prior is not None and bytes(prior[0]) != raw:
                 raise ValueError('pending cancellation differs')
             if prior is None:
+                # A body already refused uncharged on the terminal campaign gets
+                # no second attempt (A1): terminal is permanent and the retained
+                # refusal is its answer. One indexed read; no verification.
+                if connection.execute('SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role=?',
+                                      (attempt, VOID_TERMINAL_REFUSAL_PREFIX + sha256(raw))).fetchone():
+                    raise ValueError(TERMINAL_BODY_REFUSED)
                 connection.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
                     (attempt, 'pending_void', sha256(raw), len(raw), raw))
             return encoded(self.diagnostic_status(attempt))
+
+    def retained_object(self, attempt, role):
+        """One bounded retained object; never the whole inventory."""
+        with self.store.transaction() as connection:
+            self.row(attempt)
+            saved = connection.execute('SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role=?',
+                                       (attempt, role)).fetchone()
+            if saved is None:
+                raise KeyError(role)
+            return bytes(saved[0])
+
+    def _cancellation_pending(self, connection, attempt):
+        """A durable operator body awaiting charged authentication; itself never authority."""
+        if connection.execute("SELECT 1 FROM full_campaigns WHERE attempt_id=? AND validity='VALID'", (attempt,)).fetchone() is None:
+            return False
+        return connection.execute("SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'",
+                                  (attempt,)).fetchone() is not None
+
+    def _admitted(self, connection, attempt):
+        return connection.execute("SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role='diagnostic_receipt'",
+                                  (attempt,)).fetchone() is not None
+
+    def _cancellation_barrier(self, connection, attempt, *, admitted_only):
+        """Coordinator ruling 2026-09-19: a queued cancellation bars new positive authority.
+
+        Fail-closed and transient: the fundable case authenticates the same
+        request immediately; the unfundable case is already terminal or
+        pending. It never sets validity and clears only by charged
+        authentication. Before the receipt the admission guardian itself
+        authenticates the body (finish_diagnostic_admission) and must keep
+        binding and settling to reach that point, so the general gate is
+        scoped to admitted campaigns; the two new-work grants refuse always.
+        """
+        if self._cancellation_pending(connection, attempt) and (not admitted_only or self._admitted(connection, attempt)):
+            raise ValueError(CANCELLATION_PENDING)
+
+    def _void_authentications(self, connection, attempt):
+        rows = connection.execute('SELECT role, body FROM full_campaign_objects WHERE attempt_id=? AND role GLOB ? ORDER BY role',
+                                  (attempt, VOID_AUTHENTICATION_PREFIX + '*'))
+        result = []
+        for role, raw in rows:
+            doc = parse_void_authentication(bytes(raw))
+            if doc['attempt_id'] != attempt or role != _void_role(VOID_AUTHENTICATION_PREFIX, doc['sequence']):
+                raise ValueError('cancellation charge binding differs')
+            result.append(doc)
+        if [doc['sequence'] for doc in result] != list(range(1, len(result) + 1)):
+            raise ValueError('cancellation charge sequence differs')
+        return result
+
+    def _void_refusals(self, connection, attempt):
+        rows = connection.execute('SELECT role, body FROM full_campaign_objects WHERE attempt_id=? AND role GLOB ? ORDER BY role',
+                                  (attempt, VOID_REFUSAL_PREFIX + '*'))
+        result = []
+        for role, raw in rows:
+            doc = parse_void_refusal(bytes(raw))
+            if doc['attempt_id'] != attempt or role != _void_role(VOID_REFUSAL_PREFIX, doc['sequence']):
+                raise ValueError('cancellation refusal binding differs')
+            result.append(doc)
+        return result
+
+    def _void_admission_refusals(self, connection, attempt):
+        rows = connection.execute('SELECT role, body FROM full_campaign_objects WHERE attempt_id=? AND role GLOB ? ORDER BY role',
+                                  (attempt, VOID_ADMISSION_REFUSAL_PREFIX + '*'))
+        result = []
+        for role, raw in rows:
+            doc = parse_void_refusal(bytes(raw), schema=VOID_ADMISSION_REFUSAL_SCHEMA)
+            if doc['attempt_id'] != attempt or role != _void_role(VOID_ADMISSION_REFUSAL_PREFIX, doc['sequence']):
+                raise ValueError('admission cancellation refusal binding differs')
+            result.append(doc)
+        if [doc['sequence'] for doc in result] != list(range(1, len(result) + 1)):
+            raise ValueError('admission cancellation refusal sequence differs')
+        return result
+
+    def _void_terminal_refusals(self, connection, attempt):
+        rows = connection.execute('SELECT role, body FROM full_campaign_objects WHERE attempt_id=? AND role GLOB ? ORDER BY role',
+                                  (attempt, VOID_TERMINAL_REFUSAL_PREFIX + '*'))
+        result = []
+        for role, raw in rows:
+            doc = parse_void_refusal(bytes(raw), schema=VOID_TERMINAL_REFUSAL_SCHEMA)
+            if doc['attempt_id'] != attempt or role != VOID_TERMINAL_REFUSAL_PREFIX + doc['request_sha256']:
+                raise ValueError('terminal cancellation refusal binding differs')
+            result.append(doc)
+        result.sort(key=lambda doc: doc['sequence'])
+        if [doc['sequence'] for doc in result] != list(range(1, len(result) + 1)):
+            raise ValueError('terminal cancellation refusal sequence differs')
+        return result
+
+    def _refuse_admission_void(self, connection, attempt, request_bytes, reason, clock_doc):
+        """Retain a pre-admission refusal (charged under the admission work) and clear the body."""
+        sequence = len(self._void_admission_refusals(connection, attempt)) + 1
+        refusal = encoded(dict(schema=VOID_ADMISSION_REFUSAL_SCHEMA, attempt_id=attempt, sequence=sequence,
+            request_sha256=sha256(request_bytes), reason=(reason or 'refused')[:1024], clock=clock_doc))
+        parse_void_refusal(refusal, schema=VOID_ADMISSION_REFUSAL_SCHEMA)
+        connection.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
+                           (attempt, _void_role(VOID_ADMISSION_REFUSAL_PREFIX, sequence), sha256(refusal), len(refusal), refusal))
+        connection.execute("DELETE FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void' AND body=?",
+                           (attempt, request_bytes))
+
+    def void_authentication_charge(self, connection, attempt):
+        """Settled controller CPU already spent on cancellation authentication."""
+        return sum(doc['charge_cpu_ns'] for doc in self._void_authentications(connection, attempt))
+
+    def claim_void_authentication(self, request_bytes, clock_bytes):
+        """Durably charge one bounded authentication attempt before any verification.
+
+        Mirrors claim_scheduler_bootstrap: bounded reads, one-use, a refusal
+        returns compact historical status and leaves the queued body in place.
+        The charge is settled at claim time from the original allowance and is
+        never refunded; the outcome is recorded separately (VOID receipt or
+        retained refusal). Returns (sequence, status): sequence is None when
+        refused (pending funding/recovery/dispatch, insufficient allowance on a
+        fundable campaign, VOID already, or no funding projection to charge);
+        sequence 0 is the uncharged one-use attempt of a terminal-but-VALID
+        campaign (A1); sequence >= 1 is a charged attempt.
+        """
+        from .campaign_budget import clock
+        request = parse_campaign_request(request_bytes)
+        if request['schema'] != 'qualification_campaign_request/v2' or request['operation'] != 'VOID':
+            raise ValueError('versioned diagnostic cancellation required')
+        observed = clock(clock_bytes)
+        attempt = request['attempt_id']
+        bound = void_authentication_bound()
+        with self.store.transaction() as c:
+            row = self.row(attempt)
+            pending = c.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'", (attempt,)).fetchone()
+            if pending is None or bytes(pending[0]) != request_bytes:
+                raise ValueError('queued cancellation body required')
+            if not self._admitted(c, attempt):
+                raise ValueError('post-admission cancellation authentication requires a retained receipt')
+            doc = self._funding(c, attempt)
+            # The transient windows keep their refusals: a sibling bootstrap claim,
+            # a recovery or a dispatch closes on its own and the exact retry then
+            # takes one of the outcomes below.
+            if (row['validity'] != 'VALID' or doc is None or doc['bootstrap_pending_work_id'] is not None
+                    or doc['recovery_pending'] or doc['dispatch_pending']):
+                return None, encoded(self.diagnostic_status(attempt))
+            if doc['state'] == 'BOUND' and doc['terminal_overlay'] is None:
+                if bound['cpu_ns'] > doc['remaining_cpu_ns']:
+                    return None, encoded(self.diagnostic_status(attempt))
+                sequence = len(self._void_authentications(c, attempt)) + 1
+                record = encoded(dict(schema=VOID_AUTHENTICATION_SCHEMA, attempt_id=attempt, sequence=sequence,
+                    request_sha256=sha256(request_bytes), charge_cpu_ns=bound['cpu_ns'], wall_ns=bound['wall_ns'], clock=observed))
+                parse_void_authentication(record)
+                c.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
+                          (attempt, _void_role(VOID_AUTHENTICATION_PREFIX, sequence), sha256(record), len(record), record))
+                doc.update(settled_cpu_ns=doc['settled_cpu_ns'] + bound['cpu_ns'],
+                           remaining_cpu_ns=doc['remaining_cpu_ns'] - bound['cpu_ns'])
+                _put_funding(c, 'full_campaign_funding', attempt, doc)
+                return sequence, encoded(self.diagnostic_status(attempt))
+            # S2-G4 A1: a VALID campaign whose budget is terminal or not BOUND
+            # (IN_DOUBT, BUDGET_*, ABORTED, ...) has no allowance to charge and
+            # no positive authority to protect, yet the operator's VOID intent
+            # must remain recordable as a negative fact (spec 2.8; mirrors the
+            # N1_ONLY VOID). One uncharged attempt under the caller's controller
+            # guard: sequence 0 marks it, the outcome is retained by body digest
+            # (refusal) or as the VOID receipt, and the queued body is cleared
+            # either way; re-queueing the same digest is refused at queue time.
+            return 0, encoded(self.diagnostic_status(attempt))
+
+    def _charged_attempt(self, connection, attempt, sequence, request_bytes):
+        claim = next((r for r in self._void_authentications(connection, attempt) if r['sequence'] == sequence), None)
+        if claim is None or claim['request_sha256'] != sha256(request_bytes):
+            raise ValueError('charged attempt differs')
+        if any(r['sequence'] == sequence for r in self._void_refusals(connection, attempt)):
+            raise ValueError('charged attempt already resolved')
+        return claim
+
+    def refuse_void_authentication(self, request_bytes, sequence, reason, clock_bytes):
+        """Retain the refusal of one charged attempt and clear the queued body; no refund.
+
+        Sequence 0 records the outcome of the uncharged terminal-campaign attempt
+        (A1): the refusal is retained keyed by the body digest, so re-queueing
+        the same body on that campaign is refused outright.
+        """
+        from .campaign_budget import clock
+        request = parse_campaign_request(request_bytes)
+        attempt = request['attempt_id']
+        with self.store.transaction() as c:
+            if sequence == 0:
+                pending = c.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'", (attempt,)).fetchone()
+                if pending is None or bytes(pending[0]) != request_bytes:
+                    raise ValueError('queued cancellation body required')
+                refusal = encoded(dict(schema=VOID_TERMINAL_REFUSAL_SCHEMA, attempt_id=attempt,
+                    sequence=len(self._void_terminal_refusals(c, attempt)) + 1,
+                    request_sha256=sha256(request_bytes), reason=(reason or 'refused')[:1024], clock=clock(clock_bytes)))
+                parse_void_refusal(refusal, schema=VOID_TERMINAL_REFUSAL_SCHEMA)
+                c.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
+                          (attempt, VOID_TERMINAL_REFUSAL_PREFIX + sha256(request_bytes), sha256(refusal), len(refusal), refusal))
+                c.execute("DELETE FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void' AND body=?",
+                          (attempt, request_bytes))
+                return encoded(self.diagnostic_status(attempt))
+            self._charged_attempt(c, attempt, sequence, request_bytes)
+            refusal = encoded(dict(schema=VOID_REFUSAL_SCHEMA, attempt_id=attempt, sequence=sequence,
+                request_sha256=sha256(request_bytes), reason=(reason or 'refused')[:1024], clock=clock(clock_bytes)))
+            parse_void_refusal(refusal)
+            c.execute('INSERT INTO full_campaign_objects VALUES(?,?,?,?,?)',
+                      (attempt, _void_role(VOID_REFUSAL_PREFIX, sequence), sha256(refusal), len(refusal), refusal))
+            c.execute("DELETE FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void' AND body=?",
+                      (attempt, request_bytes))
+            return encoded(self.diagnostic_status(attempt))
+
+    def complete_void_authentication(self, request_bytes, sequence, *, now):
+        """Record VOID for one charged, verified attempt and clear the queued body.
+
+        Sequence 0 completes the uncharged terminal-campaign attempt (A1): there
+        is no charge object to bind, so the still-queued body is itself the
+        one-use token.
+        """
+        request = parse_campaign_request(request_bytes)
+        attempt = request['attempt_id']
+        with self.store.transaction() as c:
+            if sequence == 0:
+                pending = c.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'", (attempt,)).fetchone()
+                if pending is None or bytes(pending[0]) != request_bytes:
+                    raise ValueError('queued cancellation body required')
+                receipt = self.void(request_bytes, now=now)
+                c.execute("DELETE FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void' AND body=?",
+                          (attempt, request_bytes))
+                return receipt
+            self._charged_attempt(c, attempt, sequence, request_bytes)
+            receipt = self.void(request_bytes, now=now)
+            c.execute("DELETE FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void' AND body=?",
+                      (attempt, request_bytes))
+            return receipt
+
+    def inspect_unstarted_admission(self, attempt, clock_source):
+        """Structurally absent admission: RESERVED and never prepared, so no OS effect exists.
+
+        Returns None unless the admission work is RESERVED with no transition,
+        enrollment, control slot, dispatch row or recovery row (START_INTENT
+        precedes every OS effect, R1). Otherwise samples the trusted clock once
+        and reports whether an exact SUBMIT_E1 retry may perform the first
+        launch now: VALID, PROVISIONAL, no funding/recovery/dispatch pending,
+        same boot, clock not backward and before the admission deadline.
+        Grants nothing by itself. A funded campaign answers the common case
+        (started work) from its bounded funding work row without decoding the
+        snapshot.
+        """
+        from .campaign_budget import clock, dispatch_pending
+        from .campaign_funding import _decode
+        with self.store.transaction() as c:
+            row = self.row(attempt)
+            compact = c.execute("SELECT substr(body,1,2049) FROM full_campaign_funding_works WHERE attempt_id=? AND work_id='admission'",
+                                (attempt,)).fetchone() if self._funding(c, attempt) is not None else None
+            if compact is not None and _decode(bytes(compact[0]), 2048)['state'] != 'RESERVED':
+                return None
+            state = self._budget(c, attempt)
+            work = next((w for w in state['works'] if w['work_id'] == 'admission'), None)
+            if (work is None or work['state'] != 'RESERVED' or work['transitions']
+                    or work['observation_bytes_b64'] is not None
+                    or any(r['work_id'] == 'admission' for r in state.get('dispatches', ()))
+                    or any(r['work_id'] == 'admission' for r in state.get('recoveries', ()))):
+                return None
+            roles = ['supervision_admission'] + ['supervision_control_' + sha256(encoded(['admission', slot]))
+                                                 for slot in ('START_OWNER', 'START_CLIENT', 'RECOVERY_OWNER')]
+            if c.execute('SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role IN (?,?,?,?)',
+                         (attempt, *roles)).fetchone():
+                return None
+            funding = self._funding(c, attempt)
+            clock_bytes = clock_source()
+            observed = clock(clock_bytes)
+            # Expired: the original admission deadline has passed, the boot changed
+            # or the trusted clock is unavailable. Nothing can ever launch it; the
+            # same observation makes the budget terminal through recover_work.
+            expired = (observed['boottime_ns'] is None or observed['boot_id'] != state['start_clock']['boot_id']
+                       or observed['boottime_ns'] >= state['deadline_boottime_ns'])
+            resumable = (row['validity'] == 'VALID' and state['state'] == 'PROVISIONAL' and not expired
+                and (funding is None or (funding['bootstrap_pending_work_id'] is None and funding['terminal_overlay'] is None))
+                and not self._recovery_pending(state) and not dispatch_pending(state)
+                and state['last_clock']['boottime_ns'] is not None
+                and state['last_clock']['boottime_ns'] <= observed['boottime_ns'])
+            return dict(resumable=resumable, expired=expired and row['validity'] == 'VALID' and state['state'] in ('PROVISIONAL', 'BOUND'),
+                        clock_bytes=clock_bytes, reservation_bytes=self._raw(work['reservation_bytes_b64']))
 
     def diagnostic_status(self, attempt):
         """Bounded historical projection; never reconstructs current eligibility."""
@@ -358,14 +757,22 @@ class CampaignStore(FundingStoreMixin):
             row = self.row(attempt)
             saved = connection.execute("SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role='diagnostic_receipt'", (attempt,)).fetchone()
             funding = self._funding(connection, attempt)
+            # A queued body is reported whenever it awaits authentication, before
+            # or after the receipt; the charged attempt count and the last retained
+            # refusal let the operator read why validity is still VALID.
+            # Post-admission refusals always follow admission ones, so the last of
+            # either kind is the most recent.
+            refusals = self._void_refusals(connection, attempt) or self._void_admission_refusals(connection, attempt)
+            cancellation = dict(
+                void_pending=self._cancellation_pending(connection, attempt),
+                void_authentication_attempts=len(self._void_authentications(connection, attempt)),
+                void_refusal=None if not refusals else refusals[-1]['reason'])
             if funding is not None:
                 return dict(schema='qualification_campaign_status/v2',validity=funding['validity'],
                     state='METERED_INSPECTION_REQUIRED' if funding['bootstrap_pending_work_id'] is not None or funding['terminal_overlay'] is not None else funding['state'],
                     receipt=None if saved is None else parse_canonical_json(bytes(saved[0]),label='diagnostic receipt'),
                     settled_cpu_ns=funding['settled_cpu_ns'],reserved_cpu_ns=funding['reserved_cpu_ns'],remaining_cpu_ns=funding['remaining_cpu_ns'],
-                    historical=True,current_policy_eligible=False,dispatch_enabled=False,
-                    void_pending=row['validity']=='VALID' and saved is None and connection.execute(
-                        "SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'",(attempt,)).fetchone() is not None)
+                    historical=True,current_policy_eligible=False,dispatch_enabled=False, **cancellation)
             budget = connection.execute('SELECT substr(snapshot_bytes,1,?) FROM full_campaign_budgets WHERE attempt_id=?',
                                         (PLAN_CHUNK_LIMIT + 1, attempt)).fetchone()
             if budget is None:
@@ -376,9 +783,7 @@ class CampaignStore(FundingStoreMixin):
                 receipt=None if saved is None else parse_canonical_json(bytes(saved[0]), label='diagnostic receipt'),
                 settled_cpu_ns=state.get('settled_cpu_ns'), reserved_cpu_ns=state.get('reserved_cpu_ns'),
                 remaining_cpu_ns=state.get('remaining_cpu_ns'), historical=True,
-                current_policy_eligible=False, dispatch_enabled=False,
-                void_pending=row['validity']=='VALID' and saved is None and connection.execute(
-                    "SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role='pending_void'", (attempt,)).fetchone() is not None)
+                current_policy_eligible=False, dispatch_enabled=False, **cancellation)
 
     def finish_diagnostic_admission(self, request_bytes, context, plan, observations_bytes, *, now, trusted_keys=None):
         """Trusted guardian only: settle/refuse or atomically retain admission.
@@ -425,16 +830,24 @@ class CampaignStore(FundingStoreMixin):
                 cancel_raw = bytes(pending[0])
                 cancel = parse_campaign_request(cancel_raw)
                 domain = parse_canonical_json(context.domain.canonical_bytes, label='enrolled domain')
-                approval = verify_detached_approval(decode_base64(cancel['operator_approval_bytes']),
-                    trusted_keys=trusted_keys, expected_scope='VOID_QUALIFICATION_ATTEMPT',
-                    expected_subject_sha256=sha256(encoded(dict(attempt_id=attempt, reason=cancel['reason'],
-                        contract_sha256=context.contract.contract_sha256))),
-                    expected_contract_sha256=context.contract.contract_sha256, now=now, allow_test_authority=True)
-                if (approval.authority_class != 'TEST_ONLY' or approval.key_id not in domain['freeze_key_ids']
-                        or sha256(trusted_keys[approval.key_id].public_key) != domain['trusted_key_sha256'][approval.key_id]):
-                    raise ValueError('pending cancellation authority is not enrolled')
-                self.void(cancel_raw, now=now)
-                owner = self.row(attempt)
+                # Authenticated under this charged admission work. A refusal is a
+                # retained fact, never an admission failure: the body is cleared
+                # and admission continues; only a verified enrolled key sets VOID.
+                try:
+                    approval = verify_detached_approval(decode_base64(cancel['operator_approval_bytes']),
+                        trusted_keys=trusted_keys, expected_scope='VOID_QUALIFICATION_ATTEMPT',
+                        expected_subject_sha256=sha256(encoded(dict(attempt_id=attempt, reason=cancel['reason'],
+                            contract_sha256=context.contract.contract_sha256))),
+                        expected_contract_sha256=context.contract.contract_sha256, now=now, allow_test_authority=True)
+                    if (approval.authority_class != 'TEST_ONLY' or approval.key_id not in domain['freeze_key_ids']
+                            or sha256(trusted_keys[approval.key_id].public_key) != domain['trusted_key_sha256'][approval.key_id]):
+                        raise ValueError('pending cancellation authority is not enrolled')
+                except (ValueError, KeyError) as refusal:
+                    self._refuse_admission_void(connection, attempt, cancel_raw, str(refusal)[:1024],
+                                                parse_canonical_json(observations_bytes, label='observation')['clock'])
+                else:
+                    self.void(cancel_raw, now=now)
+                    owner = self.row(attempt)
             from .campaign_budget import dispatch_pending
             if dispatch_pending(state):
                 return self.diagnostic_status(attempt)
@@ -595,6 +1008,7 @@ class CampaignStore(FundingStoreMixin):
         if not negative_transition:
             with self.store.transaction() as connection:
                 self._funding_gate(connection, state['attempt_id'])
+                self._cancellation_barrier(connection, state['attempt_id'], admitted_only=True)
         if not allow_recovery_pending and self._recovery_pending(state):
             raise ValueError('campaign recovery pending')
         if not allow_recovery_pending and dispatch_pending(state, dispatch_owner):
@@ -710,7 +1124,9 @@ class CampaignStore(FundingStoreMixin):
                 state['state'] = 'BOUND'
             self._observe_clock(state, state['last_clock'])
             self._totals(state)
-            if state['settled_cpu_ns'] + state['reserved_cpu_ns'] > cap:
+            # Charged authentications require the receipt, which follows this
+            # binding; the term is zero here and kept for the one-view rule (A7).
+            if state['settled_cpu_ns'] + state['reserved_cpu_ns'] + self.void_authentication_charge(connection, attempt_id) > cap:
                 self._terminal(state, 'BUDGET_EXHAUSTED')
             return self._save_budget(connection, state, 'BIND_BUDGET', authority=True)
 
@@ -730,10 +1146,13 @@ class CampaignStore(FundingStoreMixin):
                      if (t := parse_canonical_json(cls._raw(raw), label='transition'))['state'] == 'SIGNING_INTENT'), None)
 
     def reserve_work(self, attempt_id, work_id, phase, limits_bytes, *, expected_revision) -> bytes:
-        from .campaign_budget import clock, limits, integer
+        from .campaign_budget import clock, limits, integer, validate_work_id
         integer(expected_revision)
         from .protocol import fields, identity, digest
-        identity(work_id)
+        # The admission work is reserved only by begin_admission; a work id that
+        # would collide with a supervision object role is refused at this entry
+        # (S2-G4 A9-3), before any state is read.
+        validate_work_id(work_id)
         identity(phase)
         specification = parse_canonical_json(limits_bytes, label='work reservation')
         keys = {'limits', 'clock', 'input_sha256'}
@@ -751,6 +1170,8 @@ class CampaignStore(FundingStoreMixin):
                 if existing['phase'] != phase or self._raw(existing['reservation_bytes_b64']) != limits_bytes:
                     raise ValueError('work reservation identity conflict')
                 return self._negative_budget_response(connection, state)
+            # A new work grant refuses a queued cancellation even before the receipt.
+            self._cancellation_barrier(connection, attempt_id, admitted_only=False)
             self._check_budget(state, expected_revision)
             if state['state'] != 'BOUND' or phase not in state['profile']['phases']:
                 raise ValueError('bound budget and installed phase required')
@@ -768,7 +1189,12 @@ class CampaignStore(FundingStoreMixin):
             if retry_of is None and phase in ('ADMISSION', 'N1', 'N2', 'PART_A') and any(w['phase'] == phase for w in state['works']):
                 raise ValueError('compute phase already reserved; no replacement draws')
             self._observe_clock(state, specification['clock'])
-            if specification['limits']['cpu_ns'] > state['remaining_cpu_ns']:
+            # S2-G4 A7: one allowance view. The snapshot's remaining is
+            # pre-charge; the charged cancellation authentications live in
+            # object rows and the funding projection. A reservation that fits
+            # the snapshot but not the projection is refused the same way the
+            # projection refuses it (terminal, no reservation, never a raise).
+            if specification['limits']['cpu_ns'] > self._remaining_after_charges(connection, state):
                 self._terminal(state, 'BUDGET_EXHAUSTED')
             if state['state'] == 'BOUND':
                 if any(w['state'] in ('SIGNING_INTENT', 'SIGNED') and w['work_id'] != retry_of for w in state['works']):
@@ -872,6 +1298,22 @@ class CampaignStore(FundingStoreMixin):
                 return self._save_budget(connection, state, 'CLOCK_TERMINAL', authority=True)
             if target in ('START_INTENT', 'RUNNING') and work['observation_bytes_b64'] is not None:
                 raise ValueError('settled work cannot resume')
+            # S2-G4 A2: settlement closes the window in which credit can be
+            # established. CAPTURED and SIGNING_INTENT are credit facts the
+            # supervisor records before settling; after the observation is
+            # retained they are refused outright. COMPLETED needs the
+            # settlement (below) and is accepted only for credit established
+            # before it (CAPTURED/SIGNED), or for the two capture-less
+            # productions: the admission (no container; its guardian is the
+            # supervised process) and a linked deterministic signing retry.
+            if target in ('CAPTURED', 'SIGNING_INTENT') and work['observation_bytes_b64'] is not None:
+                raise ValueError('settled work cannot acquire credit')
+            if (target == 'COMPLETED' and work['state'] not in ('CAPTURED', 'SIGNED')
+                    and work['phase'] != 'ADMISSION' and retry_of is None):
+                raise ValueError('completion requires credit established before settlement')
+            # S2-G4 A5: the identity gate, store-side.
+            if target in ('CAPTURED', 'SIGNING_INTENT', 'COMPLETED'):
+                self._require_payload_identity(connection, state, work)
             if target == 'START_INTENT':
                 if state['campaign_scope_id'] not in (None, data['campaign_scope_id']):
                     raise ValueError('common campaign memory scope required')
@@ -943,7 +1385,22 @@ class CampaignStore(FundingStoreMixin):
             return self._save_budget(connection, state, 'RECOVER_WORK',
                 authority=state['state'] != old_state or (changed_work and self._retry_parent(work) is None))
 
+    def _remaining_after_charges(self, connection, state):
+        """The projection's remaining allowance: snapshot remaining less the charged authentications."""
+        return max(0, state['remaining_cpu_ns'] - self.void_authentication_charge(connection, state['attempt_id']))
+
     def budget_snapshot(self, attempt_id) -> bytes:
+        """The campaign's budget snapshot, whose totals are pre-charge.
+
+        `settled_cpu_ns` / `reserved_cpu_ns` / `remaining_cpu_ns` sum the
+        per-work facts only. Charged cancellation authentications (S2-G2) are
+        one-use object rows outside the snapshot; `diagnostic_status`,
+        `scheduler_status` and the funding projection fold them in and are the
+        authoritative allowance view. Every store-side grant (`reserve_work`,
+        `bind_budget`, `claim_scheduler_bootstrap`, `claim_void_authentication`)
+        consults the charged total; a reader of this snapshot's remaining must
+        not treat it as spendable.
+        """
         from ..journal_snapshot import encode_campaign_budget_snapshot
         with self.store.transaction() as connection:
             self._funding_gate(connection, attempt_id)
@@ -1069,6 +1526,47 @@ class CampaignStore(FundingStoreMixin):
                             or pending['attempt_id'] != row['attempt_id']
                             or state['profile']['schema'] not in ('qualification_campaign_budget_profile/v2', 'qualification_campaign_budget_profile/v3')):
                         raise ValueError('pending cancellation binding differs')
+                # Charged cancellation attempts exist only for funded, admitted
+                # campaigns; every refusal pairs with the charge it resolved.
+                charges = {}
+                for name in tuple(retained):
+                    if name.startswith(VOID_AUTHENTICATION_PREFIX):
+                        charge = parse_void_authentication(retained.pop(name))
+                        if (charge['attempt_id'] != row['attempt_id'] or name != _void_role(VOID_AUTHENTICATION_PREFIX, charge['sequence'])
+                                or state['profile']['schema'] != FUNDED_PROFILE or 'diagnostic_receipt' not in retained):
+                            raise ValueError('cancellation charge binding differs')
+                        charges[charge['sequence']] = charge
+                if sorted(charges) != list(range(1, len(charges) + 1)):
+                    raise ValueError('cancellation charge sequence differs')
+                for name in tuple(retained):
+                    if name.startswith(VOID_REFUSAL_PREFIX):
+                        refusal = parse_void_refusal(retained.pop(name))
+                        charge = charges.get(refusal['sequence'])
+                        if (refusal['attempt_id'] != row['attempt_id'] or name != _void_role(VOID_REFUSAL_PREFIX, refusal['sequence'])
+                                or charge is None or charge['request_sha256'] != refusal['request_sha256']):
+                            raise ValueError('cancellation refusal binding differs')
+                # Pre-admission refusals are charged under the admission work: no
+                # charge object, a contiguous sequence of their own, funded or not.
+                admission_refusals = []
+                for name in tuple(retained):
+                    if name.startswith(VOID_ADMISSION_REFUSAL_PREFIX):
+                        refusal = parse_void_refusal(retained.pop(name), schema=VOID_ADMISSION_REFUSAL_SCHEMA)
+                        if refusal['attempt_id'] != row['attempt_id'] or name != _void_role(VOID_ADMISSION_REFUSAL_PREFIX, refusal['sequence']):
+                            raise ValueError('admission cancellation refusal binding differs')
+                        admission_refusals.append(refusal['sequence'])
+                if sorted(admission_refusals) != list(range(1, len(admission_refusals) + 1)):
+                    raise ValueError('admission cancellation refusal sequence differs')
+                # Terminal-campaign refusals (A1) are uncharged: post-admission,
+                # keyed by the body digest, contiguous in their own sequence.
+                for name in tuple(retained):
+                    if name.startswith(VOID_TERMINAL_REFUSAL_PREFIX):
+                        refusal = parse_void_refusal(retained.pop(name), schema=VOID_TERMINAL_REFUSAL_SCHEMA)
+                        if (refusal['attempt_id'] != row['attempt_id']
+                                or name != VOID_TERMINAL_REFUSAL_PREFIX + refusal['request_sha256']
+                                or 'diagnostic_receipt' not in retained):
+                            raise ValueError('terminal cancellation refusal binding differs')
+                self._void_terminal_refusals(connection, row['attempt_id'])
+                payload_slices, process_events = {}, []
                 for name in tuple(retained):
                     if name.startswith('supervision_control_'):
                         event = parse_supervision_event(retained.pop(name))
@@ -1082,11 +1580,35 @@ class CampaignStore(FundingStoreMixin):
                         if event['attempt_id'] != row['attempt_id'] or name != 'supervision_event_' + sha256(raw_event):
                             raise ValueError('supervision event projection differs')
                         self._work(state, event['work_id'])
+                        if event['kind'] == 'PROCESS':
+                            process_events.append(event)
                     elif name.startswith('supervision_'):
                         enrollment = parse_enrollment(retained.pop(name))
                         if enrollment['attempt_id'] != row['attempt_id'] or name != 'supervision_' + enrollment['work_id']:
                             raise ValueError('supervision enrollment projection differs')
                         self._work(state, enrollment['work_id'])
+                        payload_slices[enrollment['work_id']] = enrollment['scopes']['payload_slice']
+                # S2-G5 R1: the identity rule binds by execution contract, not
+                # evidence presence. Every credited work other than the
+                # admission that carries an enrollment (by construction a
+                # container-supervised work -- the enrollment is retained only
+                # by a prepared supervised launch) must hold at least one
+                # alive-verified PROCESS identity (either event version) inside
+                # its enrolled payload slice; the guardian's own identity,
+                # outside it, never counts. Stripping every PROCESS row from a
+                # credited journal therefore fails reopen. An un-enrolled
+                # credited work is a persistence-layer object and is outside
+                # the rule. Same scope as record_work_transition's rule.
+                for work in state['works']:
+                    if (work['phase'] == 'ADMISSION'
+                            or work['state'] not in ('CAPTURED', 'SIGNING_INTENT', 'SIGNED', 'COMPLETED')):
+                        continue
+                    payload_slice = payload_slices.get(work['work_id'])
+                    if payload_slice is None:
+                        continue
+                    if not any(e['work_id'] == work['work_id'] and self._under_payload_slice(e['data']['cgroup'], payload_slice)
+                               for e in process_events):
+                        raise ValueError('credited work lacks alive-verified payload identity')
                 if retained:
                     if 'diagnostic_receipt' not in retained:
                         raise ValueError('provisional intent cannot claim admitted objects')
