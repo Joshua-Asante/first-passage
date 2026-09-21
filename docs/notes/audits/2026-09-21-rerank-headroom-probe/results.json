@@ -1,0 +1,153 @@
+{
+  "kind": "exploratory_readonly_probe",
+  "not_a_run_c": true,
+  "revises_no_verdict": true,
+  "date": "2026-09-21",
+  "repo_head": "abb3914177a8c7db451f6beaa4fe19e6324611ed",
+  "repo_retrieve_blob": "a6fc6ba4e4e25d1a62d68256d2b0fe37543f2f14",
+  "fixture": {
+    "source": "reconstructed from v3 prereg six-step rule; archived harness unavailable",
+    "comparable_to_frozen_R5_0.500": false,
+    "pairs": 87,
+    "reachable_pairs": 52,
+    "drops": {
+      "short_query": 1,
+      "no_resolvable_link": 11,
+      "verbatim_confound": 0,
+      "entries_scanned": 99
+    }
+  },
+  "corpus": {
+    "chunks": 593,
+    "distinct_paths": 382,
+    "indexed_chars": 1449107,
+    "full_chars_of_same_files": 8157418,
+    "indexed_fraction_of_own_files": 0.1776
+  },
+  "reachability": 0.5977,
+  "oracle_ceiling_all_pairs": {
+    "1": {
+      "recall": 0.1034,
+      "oracle_gain_vs_depth5": -0.1149,
+      "rerank_input_tokens_per_query": 610,
+      "fits_one_jev_request": true
+    },
+    "3": {
+      "recall": 0.1954,
+      "oracle_gain_vs_depth5": -0.023,
+      "rerank_input_tokens_per_query": 1832,
+      "fits_one_jev_request": true
+    },
+    "5": {
+      "recall": 0.2184,
+      "oracle_gain_vs_depth5": 0.0,
+      "rerank_input_tokens_per_query": 3054,
+      "fits_one_jev_request": true
+    },
+    "10": {
+      "recall": 0.2874,
+      "oracle_gain_vs_depth5": 0.069,
+      "rerank_input_tokens_per_query": 6109,
+      "fits_one_jev_request": true
+    },
+    "12": {
+      "recall": 0.2989,
+      "oracle_gain_vs_depth5": 0.0805,
+      "rerank_input_tokens_per_query": 7331,
+      "fits_one_jev_request": true
+    },
+    "20": {
+      "recall": 0.2989,
+      "oracle_gain_vs_depth5": 0.0805,
+      "rerank_input_tokens_per_query": 12218,
+      "fits_one_jev_request": true
+    },
+    "50": {
+      "recall": 0.3678,
+      "oracle_gain_vs_depth5": 0.1494,
+      "rerank_input_tokens_per_query": 30546,
+      "fits_one_jev_request": true
+    },
+    "100": {
+      "recall": 0.4368,
+      "oracle_gain_vs_depth5": 0.2184,
+      "rerank_input_tokens_per_query": 61092,
+      "fits_one_jev_request": true
+    },
+    "200": {
+      "recall": 0.5172,
+      "oracle_gain_vs_depth5": 0.2989,
+      "rerank_input_tokens_per_query": 122184,
+      "fits_one_jev_request": false
+    },
+    "593": {
+      "recall": 0.5632,
+      "oracle_gain_vs_depth5": 0.3448,
+      "rerank_input_tokens_per_query": 362276,
+      "fits_one_jev_request": false
+    }
+  },
+  "oracle_ceiling_reachable_only": {
+    "1": {
+      "recall": 0.1731,
+      "oracle_gain_vs_depth5": -0.1923,
+      "rerank_input_tokens_per_query": 610,
+      "fits_one_jev_request": true
+    },
+    "3": {
+      "recall": 0.3269,
+      "oracle_gain_vs_depth5": -0.0385,
+      "rerank_input_tokens_per_query": 1832,
+      "fits_one_jev_request": true
+    },
+    "5": {
+      "recall": 0.3654,
+      "oracle_gain_vs_depth5": 0.0,
+      "rerank_input_tokens_per_query": 3054,
+      "fits_one_jev_request": true
+    },
+    "10": {
+      "recall": 0.4808,
+      "oracle_gain_vs_depth5": 0.1154,
+      "rerank_input_tokens_per_query": 6109,
+      "fits_one_jev_request": true
+    },
+    "12": {
+      "recall": 0.5,
+      "oracle_gain_vs_depth5": 0.1346,
+      "rerank_input_tokens_per_query": 7331,
+      "fits_one_jev_request": true
+    },
+    "20": {
+      "recall": 0.5,
+      "oracle_gain_vs_depth5": 0.1346,
+      "rerank_input_tokens_per_query": 12218,
+      "fits_one_jev_request": true
+    },
+    "50": {
+      "recall": 0.6154,
+      "oracle_gain_vs_depth5": 0.25,
+      "rerank_input_tokens_per_query": 30546,
+      "fits_one_jev_request": true
+    },
+    "100": {
+      "recall": 0.7308,
+      "oracle_gain_vs_depth5": 0.3654,
+      "rerank_input_tokens_per_query": 61092,
+      "fits_one_jev_request": true
+    },
+    "200": {
+      "recall": 0.8654,
+      "oracle_gain_vs_depth5": 0.5,
+      "rerank_input_tokens_per_query": 122184,
+      "fits_one_jev_request": false
+    },
+    "593": {
+      "recall": 0.9423,
+      "oracle_gain_vs_depth5": 0.5769,
+      "rerank_input_tokens_per_query": 362276,
+      "fits_one_jev_request": false
+    }
+  },
+  "never_retrieved_at_any_depth": 0.4368
+}
