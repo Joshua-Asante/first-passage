@@ -5,19 +5,30 @@ import time
 
 RESUME_WAIT_SECONDS = 30
 
+# Readiness token: written to /proc/self/comm after the bootstrap-level resume
+# block is verified, so the guardian can send SIGUSR1 only after the payload
+# itself declared it armed. The interpreter's own comm is 'python...' until
+# then. At most 15 bytes (TASK_COMM_LEN minus the NUL).
+READINESS_TOKEN = 'fpq-armed'
+
 
 def block_resume_signal():
-    """First act of any supervised payload entrypoint: block SIGUSR1 (and install a
-    no-op handler so a stray post-resume signal cannot terminate the process).
+    """Verify the bootstrap-level resume block, then declare readiness.
 
-    A container init (PID 1 in its namespace) holds a blocked signal pending
-    regardless of disposition, so a resume the guardian sends after retaining the
-    identity is consumed by the later wait and never lost. S3's real worker
-    entrypoint reuses this and await_resume; keep them here, importable by worker.
+    bootstrap.py installed the no-op SIGUSR1 handler and blocked the signal
+    for the payload roles before any import that could spawn threads, so every
+    later thread inherited the blocked mask and a resume can only sit pending
+    for the main thread's sigtimedwait. Renaming this process to the fixed
+    token is the declaration the guardian polls /proc/<pid>/comm for: no
+    SIGUSR1 is sent until the token is read back. S3's real worker entrypoint
+    reuses this and await_resume; keep them here, importable by worker.
     """
     import signal
-    signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGUSR1})
-    signal.signal(signal.SIGUSR1, lambda *_: None)
+    if signal.SIGUSR1 not in signal.pthread_sigmask(signal.SIG_BLOCK, set()):
+        raise SystemExit('resume block absent before readiness declaration')
+    # No newline: /proc/self/comm keeps the written bytes as the comm verbatim.
+    with open('/proc/self/comm', 'w') as comm:
+        comm.write(READINESS_TOKEN)
 
 
 def await_resume():
@@ -38,7 +49,7 @@ def _burn():
 
 
 def main():
-    block_resume_signal()  # First act: no resume the guardian sends can be dropped.
+    block_resume_signal()  # The bootstrap block, verified; readiness declared to the guardian.
     parser = argparse.ArgumentParser()
     parser.add_argument('--probe', choices=('noop', 'cpu', 'descendants', 'memory', 'wall', 'intent'), required=True)
     probe = parser.parse_args().probe

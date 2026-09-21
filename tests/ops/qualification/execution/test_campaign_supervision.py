@@ -2321,15 +2321,19 @@ def test_supervision_event_parser_accepts_deadline_resume_and_unobserved_reasons
     image = {'comm': 'python3', 'exe': '/opt/ops/bin/python3.13'}
     process = {'pid': 7, 'start_ticks': 1, 'uid': 61001, 'cgroup': '/a/b'}
     exit_facts = {'container_id': container, 'exit_code': 1, 'oom_killed': False, 'finished_at': '2026-09-20T06:45:53.18Z'}
+    masks = {'sig_blk': '0000000000000400', 'sig_cgt': '0000000000000400'}
+    resumed = {'container_id': container, 'pid': 7, 'comm': 'fpq-armed', 'exe': '',
+               'send_count': 1, 'send_boottime_ns': 14, 'threads': 1, **masks}
     # v1 accepts the pre-G3 shapes: image-less PROCESS/RESUMED, and the kinds the
     # historical journals actually retained (DEADLINE, PROCESS_UNOBSERVED).
     assert parse_supervision_event(event('DEADLINE', {'deadline_boottime_ns': 5}, v1))['kind'] == 'DEADLINE'
     assert parse_supervision_event(event('RESUMED', {'container_id': container, 'pid': 7}, v1))['kind'] == 'RESUMED'
     assert parse_supervision_event(event('PROCESS', process, v1))['kind'] == 'PROCESS'
     assert parse_supervision_event(event('PROCESS_UNOBSERVED', {'container_id': container, 'exit_code': 0}, v1))['kind'] == 'PROCESS_UNOBSERVED'
-    # v2 requires the image and accepts the new kind.
+    # v2 requires the image and accepts the new kind; RESUMED is retained per
+    # send and its comm is the readiness token (S2-G5 addendum).
     assert parse_supervision_event(event('DEADLINE', {'deadline_boottime_ns': 5}))['kind'] == 'DEADLINE'
-    assert parse_supervision_event(event('RESUMED', {'container_id': container, 'pid': 7, **image}))['kind'] == 'RESUMED'
+    assert parse_supervision_event(event('RESUMED', resumed))['kind'] == 'RESUMED'
     assert parse_supervision_event(event('PROCESS', {**process, **image}))['kind'] == 'PROCESS'
     # exe is '' when the ptrace gate refuses a foreign-UID /proc/<pid>/exe (the payload case on the host).
     assert parse_supervision_event(event('PROCESS', {**process, 'comm': 'python', 'exe': ''}))['kind'] == 'PROCESS'
@@ -2341,11 +2345,17 @@ def test_supervision_event_parser_accepts_deadline_resume_and_unobserved_reasons
     for kind, data in [
         ('DEADLINE', {'deadline_boottime_ns': 0}),
         ('DEADLINE', {'deadline_boottime_ns': 5, 'extra': 1}),
-        ('RESUMED', {'container_id': 'short', 'pid': 7, **image}),
-        ('RESUMED', {'container_id': container, 'pid': 0, **image}),
-        ('RESUMED', {'container_id': container, 'pid': 7}),  # v2: the image is required
-        ('RESUMED', {'container_id': container, 'pid': 7, **image, 'extra': 1}),
-        ('RESUMED', {'container_id': container, 'pid': 7, 'comm': 'x' * 65, 'exe': ''}),
+        ('RESUMED', {**resumed, 'container_id': 'short'}),
+        ('RESUMED', {**resumed, 'pid': 0}),
+        ('RESUMED', {'container_id': container, 'pid': 7, **image}),  # the pre-addendum v2 shape: token and send facts required
+        ('RESUMED', {**resumed, 'comm': 'python'}),  # not the readiness token
+        ('RESUMED', {**resumed, 'send_count': 0}),
+        ('RESUMED', {**resumed, 'send_boottime_ns': 0}),
+        ('RESUMED', {**resumed, 'threads': 0}),
+        ('RESUMED', {**resumed, 'sig_blk': '00000000000004000'}),  # mask exceeds the /proc width
+        ('RESUMED', {**resumed, 'sig_cgt': 'not-hex'}),
+        ('RESUMED', {**resumed, 'extra': 1}),
+        ('RESUMED', {'container_id': container, 'pid': 7}),  # v2: image and send facts required
         ('PROCESS', process),  # v2: the image is required
         ('PROCESS', {**process, **image, 'argv': []}),
         ('PROCESS', {**process, 'comm': '', 'exe': ''}),
@@ -2364,11 +2374,12 @@ def test_supervision_event_parser_accepts_deadline_resume_and_unobserved_reasons
     ]:
         with pytest.raises(ValueError):
             parse_supervision_event(event(kind, data))
-    # v1 rejects the v2 shape: the image fields, and the PAYLOAD_EXIT kind.
+    # v1 rejects the v2 shape: the image fields, the send facts, and the PAYLOAD_EXIT kind.
     for kind, data in [
         ('PROCESS', {**process, 'comm': 'python', 'exe': '/opt/ops/bin/python'}),
         ('PROCESS', {**process, 'comm': 'python', 'exe': ''}),
         ('RESUMED', {'container_id': container, 'pid': 7, **image}),
+        ('RESUMED', resumed),
         ('PAYLOAD_EXIT', exit_facts),
     ]:
         with pytest.raises(ValueError):
@@ -2443,10 +2454,12 @@ def _probe_scene(tmp_path, monkeypatch, docker_factory):
             return memory_events[0]  # the stop-on-OOM baseline and per-poll increment read
         raise AssertionError('unexpected counter read: ' + str(path))
 
-    # The host-faithful payload image: comm is the entrypoint's basename after
-    # execve; exe is '' because the guardian's UID cannot read a foreign-UID
-    # /proc/<pid>/exe. Mutable so a test can replay runc's pre-exec init first.
-    images = [('python', '')]
+    # The host-faithful payload image sequence: the interpreter's own comm until
+    # the probe renames itself to the readiness token after arming the block.
+    # exe is '' because the guardian's UID cannot read a foreign-UID
+    # /proc/<pid>/exe. Mutable so a test can replay runc's pre-exec init or the
+    # pre-token interpreter first.
+    images = [('fpq-armed', '')]
 
     docker = docker_factory(store, body)
     monkeypatch.setattr(supervisor, 'DockerControl', lambda: docker)
@@ -2456,6 +2469,9 @@ def _probe_scene(tmp_path, monkeypatch, docker_factory):
     monkeypatch.setattr(supervisor, '_payload_processes', lambda group: ['4242'])
     monkeypatch.setattr(supervisor, '_process_identity',
                         lambda pid_text: (1000, 61001, container_cgroup) + (images.pop(0) if len(images) > 1 else images[0]))
+    # SigBlk and SigCgt carry bit 9 (0x400 = SIGUSR1): the block inherited by
+    # every thread and the bootstrap-installed no-op handler at every send.
+    monkeypatch.setattr(supervisor, '_signal_state', lambda pid_text: (1, '0000000000000400', '0000000000000400'))
     monkeypatch.setattr(supervisor, '_read_counter', read_counter)
     monkeypatch.setattr(supervisor.time, 'sleep', lambda seconds: None)
     context = SimpleNamespace(store=store.store, recovery_issues={})
@@ -2555,10 +2571,12 @@ def test_probe_resume_follows_retained_identity_then_completes(tmp_path, monkeyp
     # The config check and the first Running turn (identity retained) precede the resume.
     assert sum(index < resume_at for index in inspections) == 2
     assert [e['data'] for e in _events(store, 'RESUMED')] == [
-        {'container_id': 'f' * 64, 'pid': 4242, 'comm': 'python', 'exe': ''}
+        {'container_id': 'f' * 64, 'pid': 4242, 'comm': 'fpq-armed', 'exe': '',
+         'send_count': 1, 'send_boottime_ns': 14, 'threads': 1,
+         'sig_blk': '0000000000000400', 'sig_cgt': '0000000000000400'}
     ]
     assert [(e['data']['uid'], e['data']['comm'], e['data']['exe']) for e in _events(store, 'PROCESS')] == [
-        (61001, 'python', '')
+        (61001, 'fpq-armed', '')
     ]
     # The credited path retains docker's terminal State too.
     assert _payload_exit(store) == [
@@ -2573,29 +2591,38 @@ def test_probe_resume_follows_retained_identity_then_completes(tmp_path, monkeyp
 def test_resume_waits_for_the_exec_d_interpreter_never_runc_init(tmp_path, monkeypatch):
     """Run 35494972519 (14/15): runc's init drops to the payload UID before execve,
     so for tens of ms the init pid passes the UID/cgroup check while still being
-    runc -- whose Go runtime dies on SIGUSR1. The resume must wait until the
-    observed init image is the exec'd interpreter; runc's pre-exec init is
-    neither a retained identity nor a resume target."""
+    runc; run 35543486564 (14/15) then falsified the post-exec window too (a
+    resume killed the Python interpreter during startup, before the probe armed
+    its block). The S2-G5 addendum's readiness token closes both: the guardian
+    sends only once the payload itself renamed /proc/<pid>/comm to the fixed
+    token -- after block_resume_signal() ran. runc's pre-exec init and the bare
+    interpreter are neither resume targets nor, for runc, a retained identity."""
     from c1_rail.qualification.execution import campaign_supervisor as supervisor
 
     store, runtime, state, work, enrollment, manifest, docker = _probe_scene(tmp_path, monkeypatch, _Docker)
-    # First observation: runc's init (UID already dropped); second: the interpreter,
-    # here with a readable exe to cover the exe-authoritative branch as well.
-    runtime.images[:] = [('runc:[2:INIT]', '/usr/bin/runc'), ('python3', '/opt/ops/bin/python3.13')]
+    # First observation: runc's init (UID already dropped); second: the bare
+    # interpreter (startup, block not yet armed -- no send); third: the token.
+    runtime.images[:] = [('runc:[2:INIT]', '/usr/bin/runc'), ('python3', '/opt/ops/bin/python3.13'),
+                         ('fpq-armed', '/opt/ops/bin/python3.13')]
     supervisor._run_probe(None, store, runtime, state, work, enrollment, manifest)
     sends = [i for i, (m, p) in enumerate(docker.calls) if p.endswith('kill?signal=SIGUSR1')]
     inspections = [i for i, (m, p) in enumerate(docker.calls) if p.endswith('/json')]
-    # Exactly one send, and only after the config check, the runc turn and the exec'd turn.
-    assert len(sends) == 1 and sum(index < sends[0] for index in inspections) == 3
-    assert [e['data'] for e in _events(store, 'RESUMED')] == [
-        {'container_id': 'f' * 64, 'pid': 4242, 'comm': 'python3', 'exe': '/opt/ops/bin/python3.13'}
-    ]
-    # No PROCESS event names runc; the one retained identity is the exec'd interpreter.
+    # Exactly one send, and only after the config check, the runc turn, the bare
+    # interpreter turn and the token turn: never before the payload declared armed.
+    assert len(sends) == 1 and sum(index < sends[0] for index in inspections) == 4
+    resumed = _events(store, 'RESUMED')
+    assert [e['data']['send_count'] for e in resumed] == [1]
+    assert resumed[0]['data']['comm'] == 'fpq-armed' and resumed[0]['data']['pid'] == 4242
+    # No PROCESS event names runc; the bare interpreter is retained as an identity
+    # and the token rename is retained as its own PROCESS event -- the durable
+    # proof the probe reached the handshake.
     assert [(e['data']['comm'], e['data']['exe']) for e in _events(store, 'PROCESS')] == [
-        ('python3', '/opt/ops/bin/python3.13')
+        ('python3', '/opt/ops/bin/python3.13'), ('fpq-armed', '/opt/ops/bin/python3.13')
     ]
     pids, resumed_before = docker.identity_before_resume
-    assert pids == [4242] and resumed_before == []
+    # Both identities (the bare interpreter, then the token rename) are durable
+    # before the first resume; the RESUMED event follows them.
+    assert pids == [4242, 4242] and resumed_before == []
     probe = next(w for w in snap(store)['works'] if w['work_id'] == 'probe')
     assert probe['state'] == 'COMPLETED' and docker.calls[-1][0] == 'DELETE'
 
@@ -2603,12 +2630,56 @@ def test_resume_waits_for_the_exec_d_interpreter_never_runc_init(tmp_path, monke
 @pytest.mark.parametrize('image', [('runc:[2:INIT]', '/usr/bin/runc'), ('runc:[2:INIT]', ''),
                                    ('runc:[1:CHILD]', ''), ('sh', '/bin/sh'), ('python', '/usr/bin/runc')])
 def test_interpreter_image_gate_never_names_runc_and_prefers_a_readable_exe(image):
+    """S2-G5 addendum: the interpreter-image gate is kept (harmless; never
+    runc) but the send condition additionally requires the probe's readiness
+    token in comm -- which none of the pre-arm images can match, so the
+    guardian cannot signal an unarmed payload by construction. The token is
+    bounded by TASK_COMM_LEN and the v2 parser requires it on RESUMED."""
     from c1_rail.qualification.execution import campaign_supervisor as supervisor
 
-    assert not supervisor._interpreter_image(*image)
+    assert len(supervisor.READINESS_TOKEN) <= 15  # TASK_COMM_LEN minus the NUL
+    assert image[0] != supervisor.READINESS_TOKEN, image  # never a send condition
+    assert not supervisor._interpreter_image(*image), image  # the kept gate excludes these too
     for accepted in [('python', ''), ('python3', ''), ('python', '/opt/ops/bin/python'),
-                     ('python3.13', '/opt/ops/bin/python3.13'), ('runc-lookalike', '/opt/ops/bin/python')]:
+                     ('python3.13', '/opt/ops/bin/python3.13'), ('runc-lookalike', '/opt/ops/bin/python'),
+                     (supervisor.READINESS_TOKEN, ''), (supervisor.READINESS_TOKEN, '/opt/ops/bin/python3.13')]:
         assert supervisor._interpreter_image(*accepted), accepted
+    with pytest.raises(ValueError, match='readiness token required'):
+        supervisor.parse_supervision_event(encoded(dict(
+            schema=supervisor.SUPERVISION_EVENT_V2, attempt_id=ATTEMPT, work_id='probe',
+            kind='RESUMED', clock=clock(),
+            data=dict(container_id='f' * 64, pid=7, comm=image[0], exe=image[1],
+                      send_count=1, send_boottime_ns=5, threads=1,
+                      sig_blk='0000000000000400', sig_cgt='0000000000000400'))))
+
+
+def test_bootstrap_blocks_the_resume_signal_before_any_thread_spawning_import():
+    """Source-order guard (S2-G5 addendum): bootstrap.py installs the no-op
+    SIGUSR1 handler and blocks the signal for the payload roles BEFORE sys.path
+    is built and before any import that can spawn threads -- the worker imports
+    the compute stack and numpy, whose OpenBLAS builds its pool at import, and
+    glibc's pthread_create leaves a sibling briefly unblocked while the leader
+    holds the block (the kernel then takes a fatal-default group exit past the
+    container-init drop: exit 138, run 35543486564). Handler first: a send in
+    the handler-only window is harmlessly ignored."""
+    from c1_rail.qualification.execution import runtime as installed
+
+    source = (Path(installed.installed_code_root()) / 'deploy/qualification/bootstrap.py').read_text(
+        encoding='utf-8'
+    )
+    block = source.index('pthread_sigmask(')
+    assert source.index("if role in ('worker', 'campaign_probe'):") < block
+    assert source.index('signal.signal(signal.SIGUSR1') < block  # handler before block
+    assert block < source.index('sys.path[:0]') < source.index('import importlib')
+    assert 'c1_rail' not in source[:block] and 'SIGUSR1' in source[:block]
+    # Nothing but the signal module is imported between the role check and the
+    # block: no sys.path construction and no import that could spawn threads.
+    preamble = source[source.index('sys.dont_write_bytecode'):block]
+    statements = [line.strip() for line in preamble.splitlines()
+                  if line.strip().startswith(('import ', 'from '))]
+    assert statements == ['import signal'], statements
+    # The guardian's own absolute-deadline arming stays first for its role.
+    assert source.index("if role == 'campaign_guardian':") < source.index('timer_settime(')
 
 
 def test_unobserved_payload_exit_settles_without_completion_and_retains_the_reason(tmp_path, monkeypatch):

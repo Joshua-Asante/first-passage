@@ -16,6 +16,22 @@ if len(sys.argv) < 2 or sys.argv[1] not in ('worker', 'supervisor', 'g5', 'campa
     raise SystemExit('fixed process role required')
 role = sys.argv.pop(1)
 sys.dont_write_bytecode = True
+if role in ('worker', 'campaign_probe'):
+    # The payload's resume safety net, before sys.path and before any import
+    # that can spawn threads (the worker imports the compute stack and numpy,
+    # whose OpenBLAS builds its pool at import). Install the no-op SIGUSR1
+    # handler FIRST -- a resume in the handler-only window is harmlessly
+    # ignored -- then block SIGUSR1 in the leader: every thread created later
+    # inherits the blocked mask, so a guardian resume can only ever sit
+    # pending for the main thread's sigtimedwait. Without this, glibc's
+    # pthread_create briefly leaves a sibling unblocked while the leader holds
+    # the block, and the kernel's fatal-default group exit bypasses the
+    # container-init drop (complete_signal since 4.15: exit 138, run
+    # 35543486564). Standard library only; S3's worker imports numpy first
+    # and is covered by this same block.
+    import signal
+    signal.signal(signal.SIGUSR1, lambda *_: None)
+    signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGUSR1})
 if role == 'campaign_guardian':
     # The original absolute BOOTTIME deadline is enforced by a kernel SIGKILL
     # timer from here, before any campaign import or construction; the guardian

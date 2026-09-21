@@ -82,23 +82,46 @@ def payload_process_events(boundary,attempt,work_id):
         if marker in e['data']['cgroup']]
 
 
-INTERPRETER_NAME='python'  # campaign_supervisor.INTERPRETER_NAME: the fixed entrypoint's basename
+INTERPRETER_NAME='python'  # the fixed entrypoint's basename
+READINESS_TOKEN='fpq-armed'  # campaign_probe.READINESS_TOKEN: comm after the block is armed
 
 
 def interpreter_image(event):
-    """A retained PROCESS/RESUMED image names the exec'd interpreter, never runc's init.
+    """A retained PROCESS image: the interpreter's own comm until the probe
+    renames itself to the readiness token (after block_resume_signal armed the
+    block and handler); never runc's init, whose comm names 'runc:['.
 
-    exe is authoritative when the guardian could read the link (its own UID: the
-    admission guardian); the payload runs as a distinct UID, so the ptrace gate
-    refuses /proc/<pid>/exe there and exe is '' -- comm (the basename the kernel
-    set at execve) then carries the image. Run 35494972519 retained a UID-verified
-    pid that was still 'runc:[2:INIT]' and resumed it to death; G3 gates on this.
+    exe is authoritative when the guardian could read the link (its own UID:
+    the admission guardian); the payload runs as a distinct UID, so the ptrace
+    gate refuses /proc/<pid>/exe there and exe is '' -- comm then carries the
+    image. A PROCESS carrying the token proves the probe reached the handshake.
     """
     comm,exe=event['data']['comm'],event['data']['exe']
     assert isinstance(comm,str) and comm and not comm.startswith('runc:['), event
     assert isinstance(exe,str), event
-    name=exe.rsplit('/',1)[-1] if exe else comm
-    assert name.startswith(INTERPRETER_NAME), event
+    if comm!=READINESS_TOKEN:
+        name=exe.rsplit('/',1)[-1] if exe else comm
+        assert name.startswith(INTERPRETER_NAME), event
+    return comm,exe
+
+
+def resumed_image(event):
+    """Every retained SIGUSR1 send: comm IS the readiness token (the send only
+    ever happens after the payload declared itself armed), and the per-send
+    facts are present -- ordinal, boottime, the target's Threads, and the
+    signal masks of a healthy send: SigBlk bit 9 set (SIGUSR1 blocked, the
+    bootstrap-level mask every thread inherited) and SigCgt bit 9 set (the
+    no-op handler installed before any thread existed) -- the S2-G5 addendum's
+    mechanism evidence."""
+    comm,exe=event['data']['comm'],event['data']['exe']
+    assert comm==READINESS_TOKEN, event
+    assert isinstance(exe,str), event
+    assert isinstance(event['data']['send_count'],int) and event['data']['send_count']>=1, event
+    assert isinstance(event['data']['send_boottime_ns'],int) and event['data']['send_boottime_ns']>0, event
+    assert isinstance(event['data']['threads'],int) and event['data']['threads']>=1, event
+    for mask in ('sig_blk','sig_cgt'):
+        assert isinstance(event['data'][mask],str) and event['data'][mask], event
+        assert int(event['data'][mask],16)&(1<<9), event  # SIGUSR1: blocked and caught
     return comm,exe
 
 
@@ -117,7 +140,7 @@ def identity_retained(boundary,attempt,work_id):
         if work_id=='admission':
             assert exe, event  # the guardian reads its own link; only foreign UIDs are refused
     for event in supervision_events(boundary,attempt,'RESUMED',work_id):
-        interpreter_image(event)
+        resumed_image(event)
     return events
 
 

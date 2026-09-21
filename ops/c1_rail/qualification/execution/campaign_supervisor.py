@@ -16,6 +16,7 @@ from .campaign_budget import clock, integer
 from .protocol import fields, identity, sha256
 
 from .campaign_funding import WORK_ROLES, PROBES, WORK_PHASES
+from .campaign_probe import READINESS_TOKEN
 
 
 def parse_work_manifest(raw):
@@ -263,14 +264,29 @@ def parse_supervision_event(raw):
         fields(doc['data'], {'deadline_boottime_ns'})
         integer(doc['data']['deadline_boottime_ns'], positive=True)
     elif doc['kind'] == 'RESUMED':
-        # Retained after the resume signal, so it always follows the PROCESS event;
-        # v2 also carries the init's image at the send (the exec'd interpreter, never runc).
+        # Retained once per SIGUSR1 send, so a future lethal send is attributable
+        # after the fact: each event carries its ordinal (send_count) and the
+        # boottime of that send, plus the target's Threads/SigBlk/SigCgt read at
+        # the send -- a healthy send shows the readiness block still armed
+        # (SigBlk bit 9) and the no-op handler installed (SigCgt bit 9). v2's
+        # comm is the probe's readiness token: the send only ever happens after
+        # the payload itself declared it armed.
         from .protocol import digest
-        fields(doc['data'], {'container_id', 'pid', 'comm', 'exe'} if image
-               else {'container_id', 'pid'})
-        digest(doc['data']['container_id']); integer(doc['data']['pid'], positive=True)
         if image:
+            fields(doc['data'], {'container_id', 'pid', 'comm', 'exe', 'send_count',
+                                 'send_boottime_ns', 'threads', 'sig_blk', 'sig_cgt'})
+            digest(doc['data']['container_id']); integer(doc['data']['pid'], positive=True)
+            integer(doc['data']['send_count'], positive=True)
+            integer(doc['data']['send_boottime_ns'], positive=True)
+            integer(doc['data']['threads'], positive=True)
+            if doc['data']['comm'] != READINESS_TOKEN:
+                raise ValueError('resume readiness token required')
             _bounded_image(doc['data']['comm'], doc['data']['exe'])
+            _bounded_hex_mask(doc['data']['sig_blk'])
+            _bounded_hex_mask(doc['data']['sig_cgt'])
+        else:
+            fields(doc['data'], {'container_id', 'pid'})
+            digest(doc['data']['container_id']); integer(doc['data']['pid'], positive=True)
     elif doc['kind'] == 'PROCESS_UNOBSERVED':
         # Why a settled work never completed: no alive-verified identity was retained.
         from .protocol import digest
@@ -323,21 +339,32 @@ def _bounded_image(comm, exe):
     return comm, exe
 
 
+def _bounded_hex_mask(value):
+    """A /proc/<pid>/status signal mask: up to 16 lowercase hex digits."""
+    if type(value) is not str or re.fullmatch('[0-9a-f]{1,16}', value) is None:
+        raise ValueError('bounded signal mask required')
+    return value
+
+
 def _pre_exec_init(comm):
     """runc's own init ('runc:[2:INIT]') between its UID drop and execve: not the payload."""
     return comm.startswith('runc:[')
 
 
 def _interpreter_image(comm, exe):
-    """True once the observed image is the exec'd installed interpreter.
+    """True once the observed image is the exec'd interpreter or the probe's
+    readiness token (the interpreter after arming the resume handshake).
 
     exe is authoritative when readable (own-UID processes); across UIDs the
     ptrace gate refuses the link and comm -- the basename the kernel set at
-    execve -- decides. Neither ever names runc's pre-exec init.
+    execve, or the token the probe renamed itself to -- decides. Neither ever
+    names runc's pre-exec init.
     """
     from pathlib import PurePosixPath
     if _pre_exec_init(comm):
         return False
+    if comm == READINESS_TOKEN:
+        return True
     return (PurePosixPath(exe).name if exe else comm).startswith(INTERPRETER_NAME)
 
 
@@ -1022,8 +1049,13 @@ def probe_container_body(context, enrollment, manifest):
     config = context.config
     uid = {'probe_worker': context.profile.worker_uid, 'probe_g5': config['g5_uid'],
            'probe_result': config['g5_uid'], 'probe_seal': config['seal_probe_uid']}[role]
+    from .profile import CAMPAIGN_RESOURCE_SCOPE
     image = parse_canonical_json(context.release, label='installed release')['worker_image_digest']
     return dict(Image=image, User=str(uid) + ':' + str(uid), WorkingDir='/tmp',
+        # Belt, not the fix: the same thread limits the controller environment
+        # imposes, so the payload's compute stack (OpenBLAS inside numpy) builds
+        # no pool at import; the bootstrap-level block is the actual safety net.
+        Env=dict(CAMPAIGN_RESOURCE_SCOPE['controller_environment']),
         Entrypoint=['/opt/ops/bin/python', '-I', '/opt/qualification/bootstrap.py', 'campaign_probe'],
         Cmd=['--probe', manifest['probe']], AttachStdout=False, AttachStderr=False, Tty=False,
         Labels={'fp.s2.host': enrollment['host_run_id'], 'fp.s2.attempt': enrollment['attempt_id'],
@@ -1111,6 +1143,26 @@ def _process_identity(pid_text):
     return int(stat_fields[19]), uid, cgroup, comm, exe
 
 
+def _signal_state(pid_text):
+    """(Threads, SigBlk, SigCgt) of a live process; None once it is gone.
+
+    Read at each resume send: a healthy send has the readiness block still
+    armed on the leader -- SigBlk bit 9 set (SIGUSR1 blocked, inherited by
+    every thread) and SigCgt bit 9 set (the no-op handler installed by
+    bootstrap before any thread existed). That is the evidence the mechanism
+    question needs when a send turns out lethal.
+    """
+    try:
+        status = Path('/proc/' + pid_text + '/status').read_text()
+        fields = dict(line.split(':', 1) for line in status.splitlines()
+                      if line.split(':', 1)[0] in ('Threads', 'SigBlk', 'SigCgt'))
+        return (int(fields['Threads'].strip()),
+                _bounded_hex_mask(fields['SigBlk'].strip()),
+                _bounded_hex_mask(fields['SigCgt'].strip()))
+    except (OSError, ValueError, KeyError):
+        return None
+
+
 def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
     from .protocol import digest
     if manifest['probe'] == 'controller_cpu':
@@ -1135,7 +1187,7 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
         'payload', permit['token'], observe_campaign_clock)
     payload = _scope_path(runtime.parent, enrollment['scopes']['payload_slice'])
     budget_cpu = work['limits']['cpu_ns'] - state['profile']['orchestration_cpu_ns'][work['phase']]
-    seen_pids = set()
+    seen_pids = {}  # (pid_text, start_ticks) -> the comm each retained PROCESS carried
     resume_sends = 0
     stopping = False
     docker_lagging = 0
@@ -1218,39 +1270,50 @@ def _run_probe(context, campaigns, runtime, state, work, enrollment, manifest):
                     # runc's init has already dropped to the payload UID but not yet
                     # exec'd the entrypoint (a window of tens of ms after Running):
                     # it is the runtime, not the payload, so it is neither an
-                    # identity nor a resume target. Go's runtime handles SIGUSR1 as
-                    # fatal, so a resume here killed the container before Python
-                    # ever ran (run 35494972519, 14/15). Poll again.
+                    # identity nor a resume target. Poll again.
                     continue
-                if (pid_text, birth) not in seen_pids:
+                if seen_pids.get((pid_text, birth)) != comm:
+                    # A new (pid, birth) is an alive-verified identity; a changed
+                    # comm for a known one is the probe's readiness declaration
+                    # (python... -> the token), which itself proves the handshake
+                    # was reached and is retained as its own PROCESS event.
                     _retain_event(campaigns, state['attempt_id'], work['work_id'], 'PROCESS',
                         dict(pid=int(pid_text), start_ticks=birth, uid=uid, cgroup=cgroup, comm=comm, exe=exe))
-                    seen_pids.add((pid_text, birth))
+                    seen_pids[(pid_text, birth)] = comm
                 if pid_text == str(pid):
                     init_image = (comm, exe)
-            # Startup handshake: the fixed probe blocks SIGUSR1 as its first act
-            # and pauses in sigtimedwait, so the resume can only follow the durable
-            # PROCESS event and can never be lost — a blocked signal is held
-            # pending until the wait consumes it. That holds only AFTER execve:
-            # the send is gated on the init's image being the exec'd interpreter
-            # (exe basename when readable, else comm), never runc's init. The
-            # exact instant the probe arms the block is unobservable, so USR1 is
-            # re-sent for a bounded window from the first eligible send (the
-            # probe collapses the pending duplicates); the RESUMED event is
-            # retained once, after the identity, on that first send. A container
-            # that exited before the send is handled by the absence path, not a raise.
+            # Startup handshake: bootstrap.py installs the no-op SIGUSR1 handler
+            # and blocks the signal for the payload roles before any import can
+            # spawn threads (OpenBLAS's pool inside the numpy import), and the
+            # probe then renames itself to the fixed readiness token. The
+            # guardian sends ONLY once it reads the token back from
+            # /proc/<pid>/comm -- never into the interpreter-startup or
+            # thread-spawning windows before the block exists (the unblocked
+            # sibling there takes a fatal-default group exit, exit 138, run
+            # 35543486564). The image gate is kept as a harmless second
+            # condition (never runc); the exact instant the probe consumes the
+            # signal in sigtimedwait is still unobservable, so USR1 is re-sent
+            # for a bounded window from the first eligible send (the probe
+            # collapses the pending duplicates); every send is retained as its
+            # own RESUMED event with its ordinal, boottime and the target's
+            # Threads/SigBlk/SigCgt, so a future lethal send is attributable.
             if (not stopping and resume_sends < RESUME_SIGNAL_SENDS
-                    and init_image is not None and _interpreter_image(*init_image)):
-                try:
-                    docker.call('POST', '/containers/' + container + '/kill?signal=SIGUSR1')
-                except ValueError:
-                    if docker.call('GET', '/containers/' + container + '/json')['State']['Running']:
-                        raise
-                else:
-                    if resume_sends == 0:
+                    and init_image is not None and _interpreter_image(*init_image)
+                    and init_image[0] == READINESS_TOKEN):
+                signals = _signal_state(str(pid))
+                if signals is not None:
+                    try:
+                        docker.call('POST', '/containers/' + container + '/kill?signal=SIGUSR1')
+                    except ValueError:
+                        if docker.call('GET', '/containers/' + container + '/json')['State']['Running']:
+                            raise
+                    else:
                         _retain_event(campaigns, state['attempt_id'], work['work_id'], 'RESUMED',
-                                      dict(container_id=container, pid=int(pid), comm=init_image[0], exe=init_image[1]))
-                    resume_sends += 1
+                                      dict(container_id=container, pid=int(pid), comm=init_image[0],
+                                           exe=init_image[1], send_count=resume_sends + 1,
+                                           send_boottime_ns=clock(observe_campaign_clock())['boottime_ns'],
+                                           threads=signals[0], sig_blk=signals[1], sig_cgt=signals[2]))
+                        resume_sends += 1
             if not stopping and (usage >= budget_cpu or int(_kernel_pairs(
                     _read_counter(runtime.parent / 'memory.events')).get('oom_kill', 0)) > oom_baseline):
                 # Overrun or OOM: durable uncertainty first, then stop the payload;
