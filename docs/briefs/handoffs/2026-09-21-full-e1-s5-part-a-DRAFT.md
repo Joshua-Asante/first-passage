@@ -1,7 +1,7 @@
 # GLM handoff — Protected Full E1 / S5 (T04): genuine Part A, preserved expansion prefix and committed G5 decision — DRAFT for the operator's rulings
 
 **Type:** cc_handoff (frozen-spec implementation; one executor owns the engine adaptation, prefix capture and reconstruction)
-**Date:** 2026-09-21 (DRAFT — becomes FROZEN when the three decisions in §0.5 are ruled and S4 has merged; anchors are re-taken at the S4 merge head then)
+**Date:** 2026-09-21 (DRAFT — **the three decisions in §0.5 were ruled by the operator on 2026-09-21 (all recommended options)**; becomes FROZEN when S4 has merged and the anchors are re-taken at the S4 merge head)
 **Status:** not dispatchable yet. Predecessor: **S4 accepted and merged** (joint N2/Part B green on Linux, `PART_A_READY` reached, the coordinator's acceptance entry in the ledger). Branch `claude/s5-part-a` off the S4 merge head; push; no PR until the coordinator says so.
 **Executor:** GLM (single writer for every file in §2). **Coordinator:** Claude (rulings, checkpoint C3, integration, acceptance; **T05 integration follows S5's acceptance** per the amendment). **Operator:** Joshua (the three decisions below; any further versioned change is a `CHECKPOINT`).
 **Parent:** [execution-slices plan §S5 + the S3/S4 acceptance entries](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md) · [governing spec](../../superpowers/specs/2026-09-17-protected-full-e1-campaign.md) §2.3 (PART_A_READY → FULL_PASS_READY), §2.4 (statistical/RNG preservation), E04/E05/E06/E08/E09 · [S4 packet](2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md) (the widened custody and the checkpoint-keyed family this extends) · [T05 packet §0.5 F3](2026-09-21-full-e1-t05-result-and-seal.md) (`PART_A_FAILED` / `FULL_PASS_READY` are the only names S5 may write; T05's `checkpoint_receipts` row shape must keep working for PART_A rows).
@@ -15,7 +15,7 @@
 - Harness: `test_campaign_n2_linux.py` helpers; the selector (S4's placement rule: before the S2 OOM case); subset iteration; `s2_run_evidence.py --expect-head`.
 - Repo constraints: no module-level mutable state (frozen-adjudicator walk); line 3 on committed bytes only.
 
-## 0.5. Design decisions for the operator (recommended rulings; constraints once ruled)
+## 0.5. Design decisions (ruled by the operator 2026-09-21 — constraints, not options)
 
 **S5-D1 — Prefix custody: two durable artifacts from one run.** The single Part A worker writes the **initial-prefix result** to the output mount (fsynced, then read-only by convention) *before* deciding expansion, and the **final result** (initial prefix + appended panels, or initial alone when no expansion is prescribed) after. The guardian archives both byte-for-byte; the checkpoint family's PART_A capture carries both digests, `initial_panels`, `final_panels`, `expansion_required` and the inclusive-tolerance comparison inputs. The byte-identical prefix assertion holds on the archived bytes of one run. A crash after the initial file but before the final file → `IN_DOUBT`, saved bytes retained for inspection only — no panel resume, no replacement pilot, no checkpoint rerun. *Alternative rejected:* reconstructing the prefix by a second replay (the slice forbids it: "capture the prefix from that computation rather than reconstructing it by another replay").
 
