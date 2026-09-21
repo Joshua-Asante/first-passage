@@ -323,7 +323,7 @@ def sign_campaign_checkpoint(evidence, *, context, credential_reference, current
         raise ValueError('G5 campaign credential enrollment differs')
     core = parse_canonical_json(evidence.assessment_bytes, label='assessment core')
     core['signature'] = dict(algorithm='Ed25519', key_id=key_id,
-        value_b64=base64.b64encode(key.sign(canonical_json_bytes(
+        value_b64=base64.b64encode(key.sign(encoded(
             {name: value for name, value in core.items() if name != 'signature'}))).decode('ascii'))
     return canonical_json_bytes(core), verify_checkpoint_assessment
 
