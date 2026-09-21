@@ -1162,8 +1162,12 @@ def worker_container_body(context, enrollment, manifest):
         Entrypoint=['/opt/ops/bin/python', '-I', '/opt/qualification/bootstrap.py', 'worker'],
         Cmd=['--execution-id', manifest['work_id'], '--input', '/input', '--output', '/output',
              '--campaign-limits', 'campaign-limits.json'],
+        # Unlike the harmless probes, the real worker's refusal text is the only
+        # way to attribute a non-zero exit; bounded json logging, never streamed
+        # as capture (the output mount is the capture path).
         HostConfig=dict(body['HostConfig'],
-            Binds=[io['in_path'] + ':/input:ro', io['out_path'] + ':/output:rw']))
+            Binds=[io['in_path'] + ':/input:ro', io['out_path'] + ':/output:rw'],
+            LogConfig={'Type': 'json-file', 'Config': {'max-size': '2m', 'max-file': '1'}}))
 
 
 def _worker_input_files(context, campaigns, state, work):
@@ -1389,8 +1393,19 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
     state = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='worker final state')
     work = campaigns._work(state, work['work_id'])
     if exit_code != 0:
+        # The bounded worker log is the only attribution for a refusal the
+        # output mount cannot carry; it is retained as the failure reason.
+        tail = ''
+        try:
+            tail = docker.call('GET', '/containers/' + container
+                               + '/logs?stdout=1&stderr=1&tail=40', raw=True).decode('utf-8', 'replace')
+        except ValueError:
+            pass
         if work['state'] == 'RUNNING':
             _transition(campaigns, state['attempt_id'], work['work_id'], 'IN_DOUBT', {})
+        _retain_event(campaigns, state['attempt_id'], work['work_id'], 'FAILURE',
+                      dict(reason=('worker exited ' + str(exit_code) + ': '
+                                   + tail[-3600:].strip())[:4096]))
         observed = runtime.observation(state, work, enrollment)
         parse_canonical_json(campaigns.settle_work(state['attempt_id'], work['work_id'], observed), label='settlement')
         docker.call('DELETE', '/containers/' + container + '?v=1')
