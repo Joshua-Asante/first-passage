@@ -5,7 +5,7 @@ import re
 from typing import Mapping
 from types import MappingProxyType
 
-from .contract import canonical_json_bytes, parse_canonical_json, _fields, _sha256, _instant
+from .contract import canonical_json_bytes, parse_canonical_json, _fields, _sha256, _instant, _positive_int
 from .checkpoint_plan import derive_n1_plan
 from .execution.protocol import parse_execution_attestation
 from .execution.release_schema import parse_release
@@ -540,8 +540,11 @@ def build_checkpoint_evidence(*, contract, policy, worker_result_bytes, plan_byt
         worker_load_manifest=worker['runtime_load_manifest']))
     outputs = dict(attempt_journal=checkpoint_snapshot_bytes,legality_result=canonical_json_bytes(legality),
                    n1_result=stage_bytes,path_inventory=path_bytes,runtime_load_trace=runtime_bytes)
+    # The same accepted prefixes the N1_ONLY builder uses: a statistical FAIL
+    # completes the LEGALITY/N1 evidence, a pass is the CONTINUE prefix only.
+    completion,verdict = ('COMPLETE','FAIL') if failed else ('PARTIAL','NONE')
     validate_output_roles(policy,list(outputs),stages=('LEGALITY','N1'),
-                          completion='FAIL' if failed else 'PARTIAL',verdict='FAIL' if failed else 'NONE')
+                          completion=completion,verdict=verdict)
     n1_stage = contract.stage_specs['N1']
     cutoffs = {depth['population']: n1_stage.max_failures_per_population for depth in plan['depths']}
     thresholds = [dict(stage=name, exact_depth=contract.stage_specs[name].exact_depth,
@@ -581,7 +584,8 @@ def _inspect_checkpoint_assessment(value):
     capture = _fields(doc['capture'], {'result_sha256','payload_sha256','attestation_sha256'}, label='capture binding')
     for group in (binding, snapshot, capture):
         for key in group:
-            _sha256(group[key], label=key)
+            if key != 'campaign_revision':
+                _sha256(group[key], label=key)
     if type(doc['stages']) is not list or [row.get('stage') for row in doc['stages']] != ['LEGALITY','N1']:
         raise ValueError('invalid assessment stages')
     for row in doc['stages']:

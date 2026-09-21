@@ -235,8 +235,11 @@ def verify_checkpoint_attestation(raw, *, context, current_keys):
     if sha256(key.public_key) != context.domain.trusted_key_sha256[signature['key_id']]:
         raise ValueError('checkpoint attestation key identity differs')
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-    Ed25519PublicKey.from_public_bytes(key.public_key).verify(
-        decode_base64(signature['value_b64']), encoded(doc['payload']))
+    try:
+        Ed25519PublicKey.from_public_bytes(key.public_key).verify(
+            decode_base64(signature['value_b64']), encoded(doc['payload']))
+    except Exception as exc:
+        raise ValueError('checkpoint attestation signature differs') from exc
     return doc
 
 
@@ -253,8 +256,11 @@ def verify_checkpoint_assessment(raw, *, context, current_keys):
         raise ValueError('checkpoint assessment key identity differs')
     core = {name: value for name, value in doc.items() if name != 'signature'}
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-    Ed25519PublicKey.from_public_bytes(key.public_key).verify(
-        decode_base64(signature['value_b64']), encoded(core))
+    try:
+        Ed25519PublicKey.from_public_bytes(key.public_key).verify(
+            decode_base64(signature['value_b64']), encoded(core))
+    except Exception as exc:
+        raise ValueError('checkpoint assessment signature differs') from exc
     return doc
 
 

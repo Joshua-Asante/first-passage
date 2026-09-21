@@ -1053,6 +1053,7 @@ CHECKPOINT_IO_ROOT = Path('/var/lib/fpq')
 def _mount_unit_name(path):
     """systemd's mount-unit name for an absolute path (the fixed escape)."""
     from pathlib import PurePosixPath
+    path = str(path)
     pure = PurePosixPath(path)
     if not pure.is_absolute() or str(pure) != path:
         raise ValueError('absolute io mount path required')
@@ -1060,11 +1061,15 @@ def _mount_unit_name(path):
 
 
 def checkpoint_io_paths(enrollment):
-    """The work's fixed io mount paths and units, derived from the enrollment."""
+    """The work's fixed io mount paths and units, derived from the enrollment.
+
+    POSIX strings by construction: the unit-name escape and the bind spellings
+    must not depend on the host process's Path flavour.
+    """
     token = sha256(encoded(enrollment))[:24]
-    base = CHECKPOINT_IO_ROOT / ('fpq-' + token)
-    return dict(in_path=str(base / 'in'), out_path=str(base / 'out'),
-                in_unit=_mount_unit_name(base / 'in'), out_unit=_mount_unit_name(base / 'out'))
+    base = '/var/lib/fpq/fpq-' + token
+    return dict(in_path=base + '/in', out_path=base + '/out',
+                in_unit=_mount_unit_name(base + '/in'), out_unit=_mount_unit_name(base + '/out'))
 
 
 def _guardian_bus_call(campaigns, unit, properties):

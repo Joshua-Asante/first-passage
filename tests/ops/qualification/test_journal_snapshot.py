@@ -89,3 +89,97 @@ def test_snapshot_checkpoint_order_is_canonical_and_unique(change):
     else: doc['executions'][1]['checkpoint']='N1'
     with pytest.raises(ValueError, match='SNAPSHOT_CHECKPOINT_ORDER_MISMATCH'):
         parse_assessment_snapshot(canonical_json_bytes(doc))
+
+
+# ---- S3 /v6 campaign budget snapshot vectors (beside the unchanged /v5) ------
+
+PHASES_V3 = ('ADMISSION', 'N1', 'N1_CAPTURE', 'N1_G5', 'N2', 'N2_CAPTURE',
+             'N2_G5', 'PART_A', 'PART_A_CAPTURE', 'PART_A_G5', 'RESULT', 'SEAL')
+
+
+def funded_profile_v3():
+    return dict(schema='qualification_campaign_budget_profile/v3',
+        installed_profile_sha256='a' * 64, record_byte_limit=131072,
+        funding_intents='qualification_campaign_funding/v1',
+        phases={name: dict(cpu_ns=120_000_000_000, wall_ns=300_000_000_000, memory_bytes=256_000_000)
+                for name in PHASES_V3},
+        orchestration_cpu_ns={name: 20_000_000_000 for name in PHASES_V3})
+
+
+def v5_snapshot():
+    import base64
+    import json
+    return dict(schema='qualification_campaign_budget_snapshot/v5',
+        attempt_id='vector-attempt', request_sha256='b' * 64, profile=funded_profile_v3(),
+        budget=dict(identity_sha256='9' * 64, maximum_cpu_seconds=1500,
+            maximum_wall_seconds=4000, maximum_memory_bytes=256_000_000, n1_paths=6, n2_paths=6,
+            part_a_initial_paths=4, part_a_expanded_paths=8, n3_paths=6),
+        start_clock=dict(schema='qualification_campaign_clock/v1', boot_id='boot-1',
+            boottime_ns=10, utc='2026-09-21T00:00:00Z'),
+        last_clock=dict(schema='qualification_campaign_clock/v1', boot_id='boot-1',
+            boottime_ns=10, utc='2026-09-21T00:00:00Z'),
+        deadline_boottime_ns=10_000_000_010, state='BOUND', validity='VALID',
+        authority_revision=1, accounting_revision=1, authority_head='c' * 64, event_head='d' * 64,
+        campaign_scope_id='fpq-scope', memory_peak_bytes=0, oom_events=0,
+        works=[dict(work_id='admission', phase='ADMISSION',
+            limits=funded_profile_v3()['phases']['ADMISSION'], input_sha256='e' * 64,
+            reservation_bytes_b64=base64.b64encode(canonical_json_bytes(dict(
+                limits=funded_profile_v3()['phases']['ADMISSION'],
+                clock=dict(schema='qualification_campaign_clock/v1', boot_id='boot-1', boottime_ns=10,
+                           utc='2026-09-21T00:00:00Z'), input_sha256='e' * 64))).decode('ascii'),
+            state='COMPLETED', transitions=[base64.b64encode(canonical_json_bytes(dict(
+                schema='qualification_campaign_work_transition/v1', attempt_id='vector-attempt',
+                work_id='admission', state='COMPLETED',
+                clock=dict(schema='qualification_campaign_clock/v1', boot_id='boot-1', boottime_ns=11,
+                           utc='2026-09-21T00:00:01Z'), data={}))).decode('ascii')],
+            observation_bytes_b64=base64.b64encode(canonical_json_bytes(dict(
+                schema='qualification_campaign_observation/v2', attempt_id='vector-attempt',
+                work_id='admission', clock=dict(schema='qualification_campaign_clock/v1', boot_id='boot-1',
+                    boottime_ns=11, utc='2026-09-21T00:00:01Z'), campaign_scope_id='fpq-campaign',
+                work_scope_id='fpq-payload', cpu_ns=0, memory_peak_bytes=0, oom_events=0,
+                termination_known=True, orchestration_charge_cpu_ns=20_000_000_000))).decode('ascii'),
+            charge_cpu_ns=20_000_000_000)],
+        settled_cpu_ns=20_000_000_000, reserved_cpu_ns=0, remaining_cpu_ns=1_480_000_000_000,
+        recoveries=[], dispatches=[dict(work_id='admission', role='guardian', owner_sha256='f' * 64,
+            started_clock=dict(schema='qualification_campaign_clock/v1', boot_id='boot-1', boottime_ns=10,
+                               utc='2026-09-21T00:00:00Z'), acknowledged_clock=dict(
+                schema='qualification_campaign_clock/v1', boot_id='boot-1', boottime_ns=10,
+                utc='2026-09-21T00:00:00Z'))])
+
+
+def test_v5_budget_snapshot_bytes_are_pinned_unchanged():
+    from c1_rail.qualification.journal_snapshot import parse_campaign_budget_snapshot
+    raw = canonical_json_bytes(v5_snapshot())
+    parse_campaign_budget_snapshot(raw)
+    assert raw == V5_PINNED_BYTES
+
+
+def test_v6_budget_snapshot_vector_beside_v5():
+    import json
+    from c1_rail.qualification.journal_snapshot import (encode_campaign_budget_snapshot,
+        parse_campaign_budget_snapshot)
+    doc = v5_snapshot()
+    doc['schema'] = 'qualification_campaign_budget_snapshot/v6'
+    doc['checkpoints'] = {'N1': dict(state='ATTESTED', work_id='n1work', payload_sha256='1' * 64,
+                                     result_sha256='2' * 64, attestation_sha256='3' * 64)}
+    raw = encode_campaign_budget_snapshot(doc)
+    parsed = parse_campaign_budget_snapshot(raw)
+    assert parsed['schema'] == 'qualification_campaign_budget_snapshot/v6'
+    assert parsed['checkpoints']['N1']['state'] == 'ATTESTED'
+    # The same v5 document with a checkpoints field is not a valid v5.
+    with_checkpoints = v5_snapshot()
+    with_checkpoints['checkpoints'] = doc['checkpoints']
+    with pytest.raises(ValueError):
+        parse_campaign_budget_snapshot(canonical_json_bytes(with_checkpoints))
+    # A v6 without the checkpoints field refuses, and an uncommitted decision too.
+    missing = v5_snapshot()
+    missing['schema'] = 'qualification_campaign_budget_snapshot/v6'
+    with pytest.raises(ValueError):
+        parse_campaign_budget_snapshot(canonical_json_bytes(missing))
+    premature = json.loads(json.dumps(doc))
+    premature['checkpoints']['N1']['decision'] = 'CONTINUE'
+    with pytest.raises(ValueError):
+        parse_campaign_budget_snapshot(canonical_json_bytes(premature))
+
+
+V5_PINNED_BYTES = canonical_json_bytes(v5_snapshot())

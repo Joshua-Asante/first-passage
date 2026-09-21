@@ -273,3 +273,158 @@ def test_evidence_comparison_cannot_use_overloaded_equality(captured_case,kind):
     with pytest.raises(ValueError,match='EVIDENCE_SEMANTIC_MISMATCH'):
         compare_n1_evidence(proposed,expected=good)
     assert called==[]
+
+
+# ---- S3 FULL_E1 assessment vector beside the N1_ONLY one (GO condition b) ----
+
+@pytest.fixture(scope='module')
+def campaign_captured_case(tmp_path_factory):
+    """The N1_ONLY captured case's own inputs rebuilt as the FULL_E1 family: a
+    /v5 release, a campaign checkpoint attestation and snapshot over the same
+    canonical plan/worker bytes."""
+    root = tmp_path_factory.mktemp('campaign-inspected-source')
+    c, domain = signed_source_case(root)
+    p = parse_policy(build_qualification_policy())
+    admitted = admit_source(c, artifact_root=root, policy=p)
+    runtime = dict(python_version='3.13.2', platform='win32', dependency_lock_sha256='d' * 64,
+                   signing_configuration_sha256='e' * 64,
+                   sources={'consistency.fixture': {'path': 'fixture.py', 'sha256': 'e' * 64}})
+    from c1_rail.qualification.execution.profile import (diagnostic_budget_profile,
+        dispatch_diagnostic_execution_profile)
+    base_profile = dict(schema='qualification_execution_profile/v1', protocol_version=1,
+                        supported_checkpoints=['N1'], capability='N1_ONLY', production_execution=False,
+                        network='none', read_only=True, capabilities=[], no_new_privileges=True,
+                        privileged=False, pid_mode='private', ipc_mode='private', restart='no',
+                        input_byte_limit=100000000, output_byte_limit=10000000, log_byte_limit=1000000,
+                        rpc_byte_limit=15000000, worker_uid=65532, memory_bytes=1000000000, pids_limit=64,
+                        scratch_bytes=10000000, admission_seconds=60, capture_seconds=10)
+    profile = dispatch_diagnostic_execution_profile(encode(base_profile))
+    release = dict(schema='qualification_execution_release/v5', release_id='campaign-vector',
+                   profile=profile, profile_sha256=sha(encode(profile)), authority_class='TEST_ONLY',
+                   qualification_policy_sha256=p.sha256,
+                   source_owner_sha256=json.loads(p.canonical_bytes)['source_owner_sha256'],
+                   service_id='fixture-service', capability='FULL_E1', production_execution=False,
+                   dispatch_enabled=True, dispatch_checkpoints=['N1'],
+                   worker_image_digest='sha256:' + 'e' * 64,
+                   runtime_manifests={name: runtime for name in ('worker', 'g5', 'supervisor')},
+                   ordinary_code={'fixture': dict(module='consistency.fixture', path='fixture.py', sha256='e' * 64)},
+                   worker_entrypoint=['/opt/ops/bin/python', '-I', '/opt/qualification/bootstrap.py', 'worker'],
+                   port_roles=['aegis_runtime_port', 'orb_runtime_port', 'striker_runtime_port', 'vanguard_runtime_port'],
+                   key_roles={role: [role] for role in ('freeze', 'result', 'seal', 'execution')},
+                   trusted_key_sha256={role: str(index) * 64 for index, role in
+                                       enumerate(('freeze', 'result', 'seal', 'execution'), 1)},
+                   campaign_budget_profile=diagnostic_budget_profile(encode(profile)))
+    plan = dict(schema='qualification_checkpoint_plan/v2', checkpoint='N1', attempt_id='attempt-1',
+                contract_sha256=c.contract_sha256, trust_domain_sha256=domain.sha256, policy_sha256=p.sha256,
+                execution_release_sha256=sha(encode(release)), exact_depth_approval_sha256='c' * 64,
+                seed_inputs=[json.loads(seed_input(c, stage='n1', population=pop, panel_index=None,
+                                                   path_index=i, synthetic=True).canonical_bytes)
+                             for pop in ('FULL', 'H1', 'H2') for i in range(2)])
+    original = json.loads(c.canonical_bytes)
+    plan.update(authority_class='TEST_ONLY', depths=[dict(population=pop, depth=2) for pop in ('FULL', 'H1', 'H2')],
+                horizon_sessions=c.replay.horizon_sessions, initial_state_sha256=sha(encode(original['initial_state'])),
+                replay_sha256=sha(encode(original['replay'])), budget=original['replay']['budget'],
+                mechanics_version='tb-s2-rng-v2',
+                source_proofs=[dict(population=pop, horizon_sessions=len(c.populations[pop]),
+                                    source_session_ids_sha256=sha(encode(list(c.populations[pop]))))
+                               for pop in ('FULL', 'H1', 'H2')],
+                probe=json.loads(seed_input(c, stage='probe', population='FULL', panel_index=None,
+                                            path_index=0, synthetic=True).canonical_bytes))
+    populations, records = [], []
+    for pop in ('FULL', 'H1', 'H2'):
+        rows = []
+        for i in range(2):
+            row = dict(status='UNRESOLVED', sessions_to_pass=None, failure_reason='horizon_cap', diagnostics=[])
+            rows.append(row)
+            seed = seed_input(c, stage='n1', population=pop, panel_index=None, path_index=i, synthetic=True)
+            records.append(dict(stage='N1', population=pop, path_index=i, panel_id=None,
+                                seed_input_sha256=seed.sha256, outcome_sha256=sha(encode(row))))
+        populations.append(dict(population=pop, outcomes=rows))
+    worker_result = dict(schema='qualification_worker_result/v1', execution_id='n1work',
+                         plan_sha256=sha(encode(plan)),
+                         source_admission=json.loads(admitted.source_admission_bytes),
+                         legality=json.loads(admitted.legality_bytes), populations=populations,
+                         path_inventory=dict(schema='qualification_path_inventory/v1',
+                                             trust_domain_sha256=domain.sha256, records=records),
+                         runtime_load_manifest=[{'role': role, 'sha256': digest}
+                                                for role, digest in sorted(c.runtime_load_sha256.items())],
+                         observations=dict(worker_compute_wall_ns=1, worker_cpu_ns=1, worker_peak_memory_bytes=1))
+    result = encode(dict(schema='qualification_campaign_checkpoint_result/v1', attempt_id='attempt-1',
+                          checkpoint='N1', work_id='n1work', campaign_id='cid',
+                          plan_sha256=sha(encode(plan)), plan_byte_length=len(encode(plan)),
+                          payload_sha256=sha(encode(worker_result)), payload_byte_length=len(encode(worker_result)),
+                          worker_execution_id='n1work', container_id='9' * 64,
+                          worker_image_digest='sha256:' + 'e' * 64, runtime_manifest_sha256=sha(encode(runtime)),
+                          capture=dict(exit_code=0, oom_killed=False, started_utc='2026-09-15T20:00:00Z',
+                                       completed_utc='2026-09-15T20:00:01Z', authorized_at_utc='2026-09-15T19:59:59Z',
+                                       campaign_scope_id='fpq-c', work_scope_id='fpq-w', payload_slice='fpq-p'),
+                          limits=dict(cpu_ns=120_000_000_000, wall_ns=300_000_000_000, memory_bytes=1000000000,
+                                      orchestration_cpu_ns=20_000_000_000),
+                          observations=dict(exit_code=0, oom_killed=False, worker_compute_wall_ns=1,
+                                            worker_cpu_ns=1, worker_peak_memory_bytes=1),
+                          created_utc='2026-09-15T20:00:02Z'))
+    attestation_payload = dict(schema='qualification_campaign_checkpoint_attestation_payload/v1',
+        scope='ATTEST_CAMPAIGN_CHECKPOINT', attempt_id='attempt-1', checkpoint='N1', work_id='n1work',
+        result_sha256=sha(result), payload_sha256=sha(encode(worker_result)),
+        payload_byte_length=len(encode(worker_result)), plan_sha256=sha(encode(plan)),
+        execution_release_sha256=sha(encode(release)), profile_sha256=release['profile_sha256'],
+        service_id='fixture-service', worker_image_digest='sha256:' + 'e' * 64,
+        runtime_manifest_sha256=sha(encode(runtime)), container_id='9' * 64,
+        capture=dict(exit_code=0, oom_killed=False, campaign_scope_id='fpq-c',
+                     work_scope_id='fpq-w', payload_slice='fpq-p'),
+        observations=dict(exit_code=0, oom_killed=False, worker_compute_wall_ns=1,
+                          worker_cpu_ns=1, worker_peak_memory_bytes=1),
+        authorized_at_utc='2026-09-15T19:59:59Z', started_utc='2026-09-15T20:00:00Z',
+        completed_utc='2026-09-15T20:00:01Z', campaign_revision=5)
+    attestation = encode(dict(schema='qualification_campaign_checkpoint_attestation/v1',
+        payload=attestation_payload,
+        signature=dict(algorithm='Ed25519', key_id='consistency-only',
+                       value_b64=base64.b64encode(bytes(64)).decode('ascii'))))
+    from c1_rail.qualification.journal_snapshot import encode_campaign_checkpoint_snapshot
+    snapshot = encode_campaign_checkpoint_snapshot(attempt_id='attempt-1', checkpoint='N1',
+        contract_sha256=c.contract_sha256, trust_domain_sha256=domain.sha256, policy_sha256=p.sha256,
+        validity='VALID', campaign_revision=5, authority_head='a' * 64, event_head='b' * 64,
+        campaign_state='BOUND',
+        works=[dict(work_id='admission', phase='ADMISSION', state='COMPLETED', settled=True),
+               dict(work_id='n1work', phase='N1', state='COMPLETED', settled=True)],
+        capture=dict(work_id='n1work', result_sha256=sha(result),
+                     payload_sha256=sha(encode(worker_result)), attestation_sha256=sha(attestation)),
+        intent=dict(work_id='g5work', candidate_sha256=None),
+        members=[dict(role=name, sha256=sha(raw), byte_length=len(raw)) for name, raw in
+                 (('plan', encode(plan)), ('result', result), ('payload', encode(worker_result)),
+                  ('attestation', attestation), ('retained_bundle_index', b'index'))])
+    return dict(contract=c, policy=p, worker_result_bytes=encode(worker_result), plan_bytes=encode(plan),
+                checkpoint_attestation_bytes=attestation, checkpoint_snapshot_bytes=snapshot,
+                result_bytes=result, installed_release_bytes=encode(release))
+
+
+def test_campaign_checkpoint_evidence_reconstructs_the_canonical_core(campaign_captured_case):
+    from c1_rail.qualification.evidence import build_checkpoint_evidence, compare_checkpoint_evidence, InspectedEvidence
+    case = campaign_captured_case
+    inspected = build_checkpoint_evidence(contract=case['contract'], policy=case['policy'],
+        worker_result_bytes=case['worker_result_bytes'], plan_bytes=case['plan_bytes'],
+        checkpoint_attestation_bytes=case['checkpoint_attestation_bytes'],
+        checkpoint_snapshot_bytes=case['checkpoint_snapshot_bytes'],
+        installed_release_bytes=case['installed_release_bytes'])
+    compare_checkpoint_evidence(inspected, expected=inspected)
+    core = json.loads(inspected.envelope_bytes)
+    # The vector's paths are all UNRESOLVED: a deterministic FAIL, committed as
+    # the terminal statistical prefix -- never a full-PASS verdict.
+    assert core['n1_decision'] == 'FAIL' and core['decision'] == 'FAILURE'
+    assert core['capture']['attestation_sha256'] == sha(case['checkpoint_attestation_bytes'])
+    assert core['snapshot']['snapshot_sha256'] == sha(case['checkpoint_snapshot_bytes'])
+    assert [row['stage'] for row in core['stages']] == ['LEGALITY', 'N1']
+    assert {row['role'] for row in core['artifacts']} == set(inspected.output_bytes_by_role)
+
+
+def test_campaign_checkpoint_evidence_refuses_substituted_capture(campaign_captured_case):
+    from c1_rail.qualification.evidence import build_checkpoint_evidence
+    case = campaign_captured_case
+    tampered = json.loads(case['worker_result_bytes'])
+    tampered['populations'][0]['outcomes'][0]['status'] = 'PASS'
+    with pytest.raises(ValueError):
+        build_checkpoint_evidence(contract=case['contract'], policy=case['policy'],
+            worker_result_bytes=encode(tampered), plan_bytes=case['plan_bytes'],
+            checkpoint_attestation_bytes=case['checkpoint_attestation_bytes'],
+            checkpoint_snapshot_bytes=case['checkpoint_snapshot_bytes'],
+            installed_release_bytes=case['installed_release_bytes'])

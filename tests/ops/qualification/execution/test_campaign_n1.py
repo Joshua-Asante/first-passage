@@ -465,3 +465,180 @@ def test_full_e1_assessment_family_exists_and_is_closed():
     assert hasattr(evidence, 'compare_checkpoint_evidence')
     with pytest.raises(ValueError, match='EVIDENCE_SEMANTIC_MISMATCH'):
         evidence.compare_checkpoint_evidence('not-inspected', expected='also-not-inspected')
+
+
+# ---- The five §4 negatives (C1 GO condition a) -------------------------------
+
+def _keys_and_context(tmp_path):
+    """A minimal verified-path context: enrolled keys, a fake domain, attempt."""
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    from cryptography.hazmat.primitives import serialization
+    from types import SimpleNamespace
+    private = {name: Ed25519PrivateKey.generate() for name in ('test-execution', 'test-producer', 'wrong-key')}
+    keys = {name: SimpleNamespace(public_key=key.public_key().public_bytes(
+        serialization.Encoding.Raw, serialization.PublicFormat.Raw)) for name, key in private.items()}
+    domain = SimpleNamespace(execution_key_ids=['test-execution'], result_key_ids=['test-producer'],
+        trusted_key_sha256={name: __import__('hashlib').sha256(key.public_key).hexdigest()
+                            for name, key in keys.items()})
+    context = SimpleNamespace(attempt_id='neg-attempt', domain=domain)
+    return private, keys, context
+
+
+def test_wrong_signer_is_refused_on_the_verified_paths():
+    """Wrong signer: an attestation under a non-execution key and an assessment
+    under a non-result key refuse in the g5 verifiers with closed reasons."""
+    from c1_rail.qualification.execution import g5
+    from c1_rail.qualification.contract import canonical_json_bytes as enc
+    import base64
+    private, keys, context = _keys_and_context(None)
+    payload = dict(schema='qualification_campaign_checkpoint_attestation_payload/v1',
+        scope='ATTEST_CAMPAIGN_CHECKPOINT', attempt_id='neg-attempt', checkpoint='N1', work_id='n1work',
+        result_sha256='0' * 64, payload_sha256='1' * 64, payload_byte_length=8, plan_sha256='2' * 64,
+        execution_release_sha256='3' * 64, profile_sha256='4' * 64, service_id='s', worker_image_digest='sha256:' + '5' * 64,
+        runtime_manifest_sha256='6' * 64, container_id='7' * 64,
+        capture=dict(exit_code=0, oom_killed=False, campaign_scope_id='c1', work_scope_id='w1', payload_slice='p1'),
+        observations=dict(exit_code=0, oom_killed=False),
+        authorized_at_utc='2026-09-21T00:00:00Z', started_utc='2026-09-21T00:00:01Z',
+        completed_utc='2026-09-21T00:00:02Z', campaign_revision=1)
+    raw_payload = enc(payload)
+
+    def envelope(key_id, sign_with):
+        return enc(dict(schema='qualification_campaign_checkpoint_attestation/v1', payload=payload,
+            signature=dict(algorithm='Ed25519', key_id=key_id,
+                           value_b64=base64.b64encode(sign_with.sign(raw_payload)).decode('ascii'))))
+
+    g5.verify_checkpoint_attestation(envelope('test-execution', private['test-execution']),
+                                     context=context, current_keys=keys)
+    with pytest.raises(ValueError, match='checkpoint attestation key is not enrolled for execution'):
+        g5.verify_checkpoint_attestation(envelope('wrong-key', private['wrong-key']),
+                                         context=context, current_keys=keys)
+    with pytest.raises(ValueError, match='checkpoint attestation signature differs'):
+        g5.verify_checkpoint_attestation(envelope('test-execution', private['wrong-key']),
+                                         context=context, current_keys=keys)
+    core = dict(schema='qualification_campaign_checkpoint_assessment/v1', attempt_id='neg-attempt',
+        checkpoint='N1', work_id='n1work',
+        binding=dict(contract_sha256='1' * 64, trust_domain_sha256='2' * 64, policy_sha256='5' * 64,
+                     execution_release_sha256='3' * 64),
+        snapshot=dict(campaign_revision=2, authority_head='4' * 64, snapshot_sha256='8' * 64),
+        capture=dict(result_sha256='9' * 64, payload_sha256='a' * 64, attestation_sha256='b' * 64),
+        stages=[dict(stage='LEGALITY', status='PASS', input_sha256='c' * 64, output_sha256='d' * 64, population_counts={}),
+                dict(stage='N1', status='PASS', input_sha256='e' * 64, output_sha256='f' * 64,
+                     population_counts={'FULL': 2})],
+        decision='CONTINUE', n1_decision='PASS', cutoff=dict(checkpoint='N1', n1_cutoffs={'FULL': 0}),
+        n2_thresholds=dict(bound_to='1' * 64, stages=[dict(stage='N2', exact_depth=2, max_failures_per_population=0)]),
+        artifacts=[dict(role='attempt_journal', sha256='0' * 64, byte_length=4)])
+
+    def candidate(key_id, sign_with):
+        signature = dict(algorithm='Ed25519', key_id=key_id,
+                         value_b64=base64.b64encode(sign_with.sign(enc(core))).decode('ascii'))
+        return enc(dict(core, signature=signature))
+
+    g5.verify_checkpoint_assessment(candidate('test-producer', private['test-producer']),
+                                    context=context, current_keys=keys)
+    with pytest.raises(ValueError, match='checkpoint assessment key is not enrolled for results'):
+        g5.verify_checkpoint_assessment(candidate('test-execution', private['test-execution']),
+                                        context=context, current_keys=keys)
+
+
+def test_source_substitution_refuses_at_validation():
+    """Source substitution: validated members are the archived bytes; anything
+    else refuses with the closed membership reason before reconstruction."""
+    from c1_rail.qualification.execution import g5
+    from c1_rail.qualification.contract import canonical_json_bytes as enc
+    import base64
+    private, keys, context = _keys_and_context(None)
+    payload_bytes = b'archived-worker-frame'
+    result_bytes = b'checkpoint-result-document'
+    payload = dict(schema='qualification_campaign_checkpoint_attestation_payload/v1',
+        scope='ATTEST_CAMPAIGN_CHECKPOINT', attempt_id='neg-attempt', checkpoint='N1', work_id='n1work',
+        result_sha256=__import__('hashlib').sha256(result_bytes).hexdigest(),
+        payload_sha256=__import__('hashlib').sha256(payload_bytes).hexdigest(),
+        payload_byte_length=len(payload_bytes), plan_sha256='2' * 64,
+        execution_release_sha256='3' * 64, profile_sha256='4' * 64, service_id='s',
+        worker_image_digest='sha256:' + '5' * 64, runtime_manifest_sha256='6' * 64, container_id='7' * 64,
+        capture=dict(exit_code=0, oom_killed=False, campaign_scope_id='c1', work_scope_id='w1', payload_slice='p1'),
+        observations=dict(exit_code=0, oom_killed=False),
+        authorized_at_utc='2026-09-21T00:00:00Z', started_utc='2026-09-21T00:00:01Z',
+        completed_utc='2026-09-21T00:00:02Z', campaign_revision=1)
+    attestation = enc(dict(schema='qualification_campaign_checkpoint_attestation/v1', payload=payload,
+        signature=dict(algorithm='Ed25519', key_id='test-execution',
+                       value_b64=base64.b64encode(private['test-execution'].sign(enc(payload))).decode('ascii'))))
+    substituted = b'substituted-worker-frame'
+    with pytest.raises(ValueError, match='checkpoint capture membership differs'):
+        g5.validate_campaign_checkpoint(context, checkpoint='N1', plan_bytes=b'plan',
+            attestation_bytes=attestation,
+            artifacts={'result': result_bytes, 'worker_result': substituted},
+            snapshot_bytes=b'snapshot', current_keys=keys)
+    with pytest.raises(ValueError, match='checkpoint capture membership differs'):
+        g5.validate_campaign_checkpoint(context, checkpoint='N1', plan_bytes=b'other-plan',
+            attestation_bytes=attestation,
+            artifacts={'result': result_bytes, 'worker_result': payload_bytes},
+            snapshot_bytes=b'snapshot', current_keys=keys)
+
+
+def test_altered_outcome_candidate_is_refused(tmp_path, monkeypatch):
+    """Altered outcomes: a coherently re-signed candidate whose decision flips
+    the captured facts is never authority -- the persisted candidate is the only
+    one the window accepts, and its cutoff binding refuses the stranger."""
+    instance = g5_claimed(tmp_path, monkeypatch)
+    candidate = persisted_intent(instance)
+    tampered = json.loads(candidate)
+    for stage in tampered['stages']:
+        if stage['stage'] == 'N1':
+            stage['status'] = 'PASS' if stage['status'] == 'FAIL' else 'FAIL'
+    tampered['n1_decision'] = tampered['stages'][1]['status']
+    tampered['decision'] = 'CONTINUE' if tampered['n1_decision'] == 'PASS' else 'FAILURE'
+    tampered['cutoff']['n1_cutoffs'] = {'FULL': 9, 'H1': 9, 'H2': 9}
+    tampered_bytes = encoded(tampered)
+    cutoff = cutoff_document(instance, tampered_bytes)
+    with pytest.raises(ValueError, match='exact checkpoint candidate retry required'):
+        store(instance).commit_checkpoint_assessment(instance.attempt, 'g5work', tampered_bytes, cutoff,
+            now=datetime(2026, 9, 21, tzinfo=timezone.utc),
+            clock_bytes=supervisor.observe_campaign_clock())
+
+
+def test_expired_deadline_refuses_the_commit_without_receipt(tmp_path, monkeypatch):
+    """Expiry at T2: the deadline passed between the intent and the commit; the
+    commit returns no receipt, the campaign is terminal and the family window
+    stays uncommitted."""
+    instance = g5_claimed(tmp_path, monkeypatch)
+    candidate = persisted_intent(instance)
+    state = snap(instance)
+    expired = dict(json.loads(supervisor.observe_campaign_clock()),
+                   boottime_ns=state['deadline_boottime_ns'] + 10**9)
+    response = store(instance).commit_checkpoint_assessment(instance.attempt, 'g5work', candidate,
+        cutoff_document(instance, candidate), now=datetime(2026, 9, 21, tzinfo=timezone.utc),
+        clock_bytes=encoded(expired))
+    assert b'receipt' not in response or json.loads(response).get('receipt') is None
+    final = snap(instance)
+    assert final['state'] == 'BUDGET_EXHAUSTED'
+    assert final['checkpoints']['N1']['state'] == 'ASSESSING'
+    with instance.store.transaction() as connection:
+        row = connection.execute('SELECT receipt_bytes FROM full_campaign_checkpoint_intents '
+                                 'WHERE attempt_id=?', (instance.attempt,)).fetchone()
+    assert row[0] is None, 'no receipt may exist for an expired commit'
+
+
+def test_n1_g5_exhaustion_grants_no_credit(tmp_path, monkeypatch):
+    """N1_G5 exhaustion: a measured overrun of the N1_G5 reservation consumes it
+    whole and terminalises the budget; the assessment window then grants no
+    credit and no commit, and the work settles with the facts retained."""
+    instance = g5_claimed(tmp_path, monkeypatch)
+    ceiling = snap(instance)['profile']['phases']['N1_G5']['cpu_ns']
+    scopes = supervisor.work_enrollment('host1', instance.attempt, 'g5work')
+    overrun = encoded(dict(schema='qualification_campaign_observation/v2', attempt_id=instance.attempt,
+        work_id='g5work', clock=json.loads(supervisor.observe_campaign_clock()),
+        campaign_scope_id=scopes['campaign_slice'], work_scope_id=scopes['payload_slice'],
+        cpu_ns=ceiling, memory_peak_bytes=50, oom_events=0, termination_known=True,
+        orchestration_charge_cpu_ns=snap(instance)['profile']['orchestration_cpu_ns']['N1_G5']))
+    store(instance).settle_work(instance.attempt, 'g5work', overrun)
+    final = snap(instance)
+    assert final['state'] == 'BUDGET_EXHAUSTED'
+    work = next(w for w in final['works'] if w['work_id'] == 'g5work')
+    assert work['charge_cpu_ns'] > work['limits']['cpu_ns'], 'an overrun consumes the whole reservation'
+    candidate = candidate_document(instance)
+    with pytest.raises(ValueError, match='terminal campaign budget'):
+        persisted_intent(instance, candidate)
+    assert final['checkpoints']['N1']['state'] == 'ATTESTED', 'no assessment credit was granted'
+    with pytest.raises(ValueError, match='exact checkpoint candidate retry required'):
+        commit(instance, candidate)
