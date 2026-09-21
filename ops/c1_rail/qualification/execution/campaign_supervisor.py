@@ -1548,7 +1548,7 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
                     pass
                 else:
                     _retain_event(campaigns, state['attempt_id'], work['work_id'], 'RESUMED',
-                        dict(container_id=digest(unit), pid=int(next(iter(seen))), comm=init_image[0],
+                        dict(container_id=digest(unit.encode('ascii')), pid=int(next(iter(seen))), comm=init_image[0],
                              exe=init_image[1], send_count=resumed + 1,
                              send_boottime_ns=clock(observe_campaign_clock())['boottime_ns'],
                              threads=signals[0], sig_blk=signals[1], sig_cgt=signals[2]))
