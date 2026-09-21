@@ -387,3 +387,7 @@ the first.
   `ops/c1_rail/qualification/execution/{campaign_probe,worker,compute,campaign_supervisor,image}.py`,
   `core/mc/simulation.py`, `requirements-ops.lock`,
   `docs/briefs/handoffs/2026-09-20-full-e1-s2-g3-resume-before-exec.md`
+
+## Addendum 2026-09-21 — the healthy-send prediction, corrected by run 35552151992
+
+The prediction "before a healthy send: leader `SigBlk` bit 9 set and `SigCgt` bit 9 set" is half right. On the first integrated run with the send-time masks retained (run 35552151992, merged head `deacbb4`), every payload's **first** send showed `SigBlk=0x0000000000000000` with `SigCgt=0x0000000000000202` and `Threads=1`, and every later re-send showed `SigBlk=0x0000000000000200`. Mechanism: `do_sigtimedwait` (kernel/signal.c) temporarily clears the awaited set from `tsk->blocked` while the task sleeps, keeping the original in `tsk->real_blocked` (which `sig_ignored()` also honours), so the arrival wakes the waiter; `/proc/<pid>/status` `SigBlk` reports `tsk->blocked`, i.e. the temporary mask. The first send is by construction the one that lands during the wait. The invariant that closes the fatal path is therefore `SigCgt` bit 9 on every send (handler installed → `sig_fatal()` false → `complete_signal()` never takes the group-exit branch); `SigBlk` bit 9 is expected only on sends after the wake. `Threads=1` on every send confirms the thread-limit environment kept OpenBLAS single-threaded at send time. The Linux `resumed_image` assertion was over-strict and is corrected accordingly; no production change.

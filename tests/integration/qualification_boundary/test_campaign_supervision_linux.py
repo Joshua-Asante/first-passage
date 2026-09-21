@@ -121,7 +121,19 @@ def resumed_image(event):
     assert isinstance(event['data']['threads'],int) and event['data']['threads']>=1, event
     for mask in ('sig_blk','sig_cgt'):
         assert isinstance(event['data'][mask],str) and event['data'][mask], event
-        assert int(event['data'][mask],16)&(1<<9), event  # SIGUSR1: blocked and caught
+    # The handler is the safety fact: with SIGUSR1 caught, complete_signal's
+    # fatal branch is closed on every send, whatever the blocked mask reads.
+    assert int(event['data']['sig_cgt'],16)&(1<<9), event  # SIGUSR1 caught
+    # The blocked mask is NOT invariant across sends: while the payload sleeps in
+    # sigtimedwait the kernel temporarily removes the awaited set from its
+    # blocked mask (do_sigtimedwait: tsk->blocked &= ~mask, the original kept in
+    # real_blocked) so the arrival wakes it, and /proc/<pid>/status reports that
+    # temporary mask. The first send is the one that lands during the wait, so
+    # its SigBlk may read 0; every later send finds the restored process-wide
+    # block (run 35552151992: send 1 SigBlk=0 / SigCgt=0x202 on all eight
+    # payloads, sends 2-25 SigBlk=0x200).
+    if event['data']['send_count']>1:
+        assert int(event['data']['sig_blk'],16)&(1<<9), event  # SIGUSR1 blocked
     return comm,exe
 
 
