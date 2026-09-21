@@ -174,8 +174,19 @@ def guardian_deadline(state, work, reservation, argv_deadline_ns):
     return deadline
 
 
+def guardian_task_bound(manifest):
+    """Probe guardians stay single-task (S2); a dispatch-work guardian spawns
+    its own campaign_control children for the io mounts and the g5 unit (D2),
+    bounded by the installed control_calls allowance."""
+    return 1 + CAMPAIGN_CONTROL_TASKS if manifest['role'] in ('n1_worker', 'n1_g5') else 1
+
+
+CAMPAIGN_CONTROL_TASKS = 2
+
+
 def guardian_unit_spec(enrollment, *, attempt_id, work_id, code_root, interpreter,
-                       uid, orchestration_cpu_ns, remaining_wall_ns, cpu_ns, deadline_boottime_ns):
+                       uid, orchestration_cpu_ns, remaining_wall_ns, cpu_ns, deadline_boottime_ns,
+                       tasks=1):
     """Fixed command and independent lifecycle properties; no caller command slot.
 
     One controller process, no child processes/threads, so its process CPU limit
@@ -204,7 +215,7 @@ def guardian_unit_spec(enrollment, *, attempt_id, work_id, code_root, interprete
     return dict(guardian=dict(Type='exec', User=str(uid), Slice=enrollment['work_slice'],
         Restart='no', KillMode='control-group', KillSignal=9, SendSIGKILL=True,
         TimeoutStopUSec=1_000_000, RuntimeMaxUSec=remaining_wall_ns // 1000,
-        LimitCPU=cpu_seconds, LimitCPUSoft=cpu_seconds, TasksMax=1,
+        LimitCPU=cpu_seconds, LimitCPUSoft=cpu_seconds, TasksMax=tasks,
         OOMPolicy='kill', NoNewPrivileges=True, CPUAccounting=True, MemoryAccounting=True,
         Wants=[enrollment['payload_slice']],
         Environment=[name+'='+value for name,value in policy['controller_environment'].items()],
@@ -644,6 +655,7 @@ class LinuxCampaignRuntime:
         return stdout
 
     def start(self, state, work, enrollment):
+        from .protocol import decode_base64
         from .runtime import installed_code_root
         current = clock(observe_campaign_clock())
         reservation = parse_canonical_json(__import__('base64').b64decode(work['reservation_bytes_b64']), label='reservation')
@@ -658,7 +670,8 @@ class LinuxCampaignRuntime:
             uid=self.context.config['service_uid'],
             orchestration_cpu_ns=orchestration_cpu_ns,
             remaining_wall_ns=remaining_wall_ns, cpu_ns=work['limits']['cpu_ns'],
-            deadline_boottime_ns=deadline)
+            deadline_boottime_ns=deadline,
+            tasks=guardian_task_bound(parse_work_manifest(decode_base64(enrollment['manifest_bytes_b64']))))
         from tools.qualification_verification.container_ownership import CAMPAIGN_BUS_START
         self._control([*CAMPAIGN_BUS_START, *manager_start_arguments(enrollment['scopes'], spec)], enrollment=enrollment)
         # The payload slice is ordered After the guardian and pulled in by its
@@ -991,7 +1004,7 @@ def guardian_main():
         code_root=str(installed_code_root()), interpreter=sys.executable, uid=os.geteuid(),
         orchestration_cpu_ns=state['profile']['orchestration_cpu_ns'][work['phase']],
         remaining_wall_ns=deadline-now_clock['boottime_ns'], cpu_ns=work['limits']['cpu_ns'],
-        deadline_boottime_ns=deadline)
+        deadline_boottime_ns=deadline, tasks=guardian_task_bound(manifest))
     if resource.getrlimit(resource.RLIMIT_CPU) != (spec['guardian']['LimitCPU'], spec['guardian']['LimitCPU']):
         raise ValueError('guardian effective hard CPU limit differs')
     stat_fields = Path('/proc/self/stat').read_text().rsplit(')', 1)[1].split()
