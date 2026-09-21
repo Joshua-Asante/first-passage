@@ -1514,7 +1514,7 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
     campaigns.acknowledge_dispatch(state['attempt_id'], work['work_id'],
         'payload', permit['token'], observe_campaign_clock)
     group = _scope_path(runtime.parent, enrollment['scopes']['payload_slice']) / unit
-    seen = set()
+    seen = {}
     resumed = 0
     while True:
         current = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='current g5 authority')
