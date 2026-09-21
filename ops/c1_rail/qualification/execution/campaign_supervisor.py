@@ -1409,13 +1409,19 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
         docker.call('DELETE', '/containers/' + container + '?v=1')
         return
     # The capture: exactly the archived bytes from the bounded output mount.
+    # parse_worker_result binds against the verified bundle context (the same
+    # revalidation the admission branch performs), never the service object.
+    from datetime import datetime, timezone
+    verified = context._context(parse_canonical_json(
+        campaigns.row(state['attempt_id'])['request_bytes'], label='original request')['bundle_sha256'],
+        at=datetime.now(timezone.utc))
     from .files import read_regular
     from .protocol import decode_frame
     raw_frame = read_regular(Path(io['out_path']), 'result.frame', limit=output_bound)
     # The archived payload is the worker's canonical document exactly as framed
     # (the frame is transport, like the N1_ONLY stdout capture).
     payload_bytes = decode_frame(raw_frame, limit=max(1, len(raw_frame)))
-    result, captured = _capture_result_document(context, campaigns, state, work, enrollment, manifest,
+    result, captured = _capture_result_document(verified, campaigns, state, work, enrollment, manifest,
                                                 row, payload_bytes, plan_bytes, staged_bytes,
                                                 started_at, finished_at, authorized)
     capture_transition = encoded(dict(
