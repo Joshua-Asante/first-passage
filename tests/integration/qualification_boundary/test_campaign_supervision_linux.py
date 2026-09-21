@@ -673,7 +673,13 @@ while time.monotonic()<end:
     for pid in pids:
         try: comm=Path('/proc/'+pid+'/comm').read_text().strip()
         except OSError: continue
-        if comm.startswith('('): continue  # the manager's child before exec
+        # Stop only the exec'd interpreter. The manager's forked child carries
+        # comm 'systemd' until the manager renames it '(python)' and then
+        # execve sets 'python'; a stop in the first window freezes a pre-exec
+        # child, the manager never sees the exec, and TimeoutStartSec kills the
+        # unit with Result=timeout 90 s later (run 35555309697). Match the
+        # interpreter basename exactly, never "anything without a parenthesis".
+        if comm!=sys.argv[3]: continue
         os.kill(int(pid),signal.SIGSTOP)
         facts={}
         for name in ('comm','cmdline','timers','status'):
@@ -691,7 +697,7 @@ def test_s2_deadline_kills_guardian_before_bootstrap_completes(real_boundary):
     boundary=real_boundary; attempt=admit(boundary)
     scopes=work_enrollment(boundary.root.name,attempt,'late')
     guardian_group=scope_group(boundary,scopes,'guardian_unit')
-    stopper=subprocess.Popen([sys.executable,'-I','-c',STOPPER,str(guardian_group),'120'],
+    stopper=subprocess.Popen([sys.executable,'-I','-c',STOPPER,str(guardian_group),'120','python'],
         stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
     try:
         probe(boundary,attempt,'late',kind='wall')
