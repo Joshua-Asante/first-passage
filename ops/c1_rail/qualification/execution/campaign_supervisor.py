@@ -1518,6 +1518,9 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
     resumed = 0
     while True:
         current = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='current g5 authority')
+        if current['state'] in ('N2_READY', 'N1_FAILED'):
+            # The assessment commit's own terminal outcome: the supervised end.
+            break
         _assert_authority(current)
         if not group.exists() or _kernel_pairs(_read_counter(group / 'cgroup.events')).get('populated') == 0:
             break
@@ -1562,6 +1565,7 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
         work = campaigns._work(state, work['work_id'])
     observed = runtime.observation(state, work, enrollment)
     state = parse_canonical_json(campaigns.settle_work(state['attempt_id'], work['work_id'], observed), label='g5 settlement')
+    work = campaigns._work(state, work['work_id'])
     if (work['state'] in ('SIGNING_INTENT', 'SIGNED') and state['validity'] == 'VALID'
             and state['state'] in ('BOUND', 'N2_READY', 'N1_FAILED')):
         _transition(campaigns, state['attempt_id'], work['work_id'], 'COMPLETED', {})

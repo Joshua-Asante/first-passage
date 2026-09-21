@@ -86,8 +86,12 @@ def test_s3_genuine_pass_reaches_n2_ready(real_boundary):
     assert phases.count('N1') == 1 and not any(p.startswith('N2') or p.startswith('PART_A') for p in phases)
     assert state['checkpoints']['N1']['state'] == 'COMMITTED'
     assert state['checkpoints']['N1']['decision'] == 'CONTINUE'
+    # The admission work is R1's explicit exemption (its guardian is the
+    # supervised process, outside any payload slice); every other completed
+    # work carries a retained payload identity.
     for row in completed_works(state):
-        assert payload_identity_events(boundary, attempt, row['work_id']), row['work_id']
+        if row['work_id'] != 'admission':
+            assert payload_identity_events(boundary, attempt, row['work_id']), row['work_id']
 
 
 def test_s3_genuine_fail_is_terminal(real_boundary):
