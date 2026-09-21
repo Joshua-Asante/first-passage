@@ -1189,9 +1189,14 @@ def _worker_input_files(context, campaigns, state, work):
     files = [('', 'plan.json', plan_bytes), ('', 'campaign-limits.json', limits),
              ('installation', 'release.json', release), ('installation', 'keys.json', keys),
              ('bundle', 'index.json', objects['bundle_index'])]
-    for role, raw in objects.items():
-        if role.startswith('context_'):
-            files.append(('bundle/members', role.removeprefix('context_') + '.bin', raw))
+    # Every retained bundle member lands at the path its own index declares, so
+    # the worker's verify_bundle reads exactly the admitted original layout.
+    index = parse_canonical_json(objects['bundle_index'], label='bundle index')
+    for entry in index['entries']:
+        raw = objects.get('context_' + entry['role'])
+        if raw is None:
+            raise ValueError('retained bundle member absent: ' + entry['role'])
+        files.append(('bundle', entry['path'], raw))
     return files, plan_bytes
 
 
