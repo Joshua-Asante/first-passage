@@ -85,8 +85,9 @@ def main():
             raise SystemExit('supervisor resume signal absent')
     limits = None
     if args.campaign_limits is not None:
-        limits = parse_canonical_json(read_regular(Path(args.input), args.campaign_limits,
-                                                   limit=BOOTSTRAP_BYTE_LIMIT), label='campaign work limits')
+        document = parse_canonical_json(read_regular(Path(args.input), args.campaign_limits,
+                                                     limit=BOOTSTRAP_BYTE_LIMIT), label='campaign work limits')
+        limits = document['limits']
     frame = run_worker(Path(args.input), execution_id=args.execution_id, campaign_limits=limits)
     if args.output is None:
         sys.stdout.buffer.write(frame)
