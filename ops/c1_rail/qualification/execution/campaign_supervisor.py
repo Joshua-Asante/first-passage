@@ -1293,6 +1293,7 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
             or row['HostConfig']['Binds'] != body['HostConfig']['Binds']):
         raise ValueError('effective fixed container configuration differs')
     seen_pids = {}
+    resume_sends = 0
     oom_baseline = int(_kernel_pairs(_read_counter(runtime.parent / 'memory.events')).get('oom_kill', 0))
     stopping = False
     docker_lagging = 0
@@ -1309,6 +1310,7 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
         if row['State']['Running']:
             started_at = row['State']['StartedAt']
             pid = row['State']['Pid']
+            init_image = None
             try:
                 actual = Path('/sys/fs/cgroup') / _process_cgroup(pid).lstrip('/')
                 members = _payload_processes(actual)
@@ -1335,6 +1337,29 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
                     _retain_event(campaigns, state['attempt_id'], work['work_id'], 'PROCESS',
                         dict(pid=int(pid_text), start_ticks=birth, uid=uid, cgroup=cgroup, comm=comm, exe=exe))
                     seen_pids[(pid_text, birth)] = comm
+                if pid_text == str(pid):
+                    init_image = (comm, exe)
+            # The probe's readiness handshake, verbatim: send SIGUSR1 only once
+            # the worker renames itself to the fixed token (the bootstrap-level
+            # block is verified before any compute import), re-sending within
+            # the bounded window while the wait is unconsumed.
+            if (not stopping and resume_sends < RESUME_SIGNAL_SENDS
+                    and init_image is not None and _interpreter_image(*init_image)
+                    and init_image[0] == READINESS_TOKEN):
+                signals = _signal_state(str(pid))
+                if signals is not None:
+                    try:
+                        docker.call('POST', '/containers/' + container + '/kill?signal=SIGUSR1')
+                    except ValueError:
+                        if docker.call('GET', '/containers/' + container + '/json')['State']['Running']:
+                            raise
+                    else:
+                        _retain_event(campaigns, state['attempt_id'], work['work_id'], 'RESUMED',
+                                      dict(container_id=container, pid=int(pid), comm=init_image[0],
+                                           exe=init_image[1], send_count=resume_sends + 1,
+                                           send_boottime_ns=clock(observe_campaign_clock())['boottime_ns'],
+                                           threads=signals[0], sig_blk=signals[1], sig_cgt=signals[2]))
+                        resume_sends += 1
             # Overrun or OOM: durable uncertainty first, then the kill; the final
             # facts are retained only after verified absence by the settlement.
             if not stopping and (usage >= budget_cpu or int(_kernel_pairs(
