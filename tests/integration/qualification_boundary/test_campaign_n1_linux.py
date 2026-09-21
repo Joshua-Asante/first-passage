@@ -71,8 +71,9 @@ def test_s3_genuine_pass_reaches_n2_ready(real_boundary):
     assert boundary.dispatch, 'FP_QUALIFICATION_S3=1 required'
     attempt = admit(boundary, idle=False)
     dispatch(boundary, attempt, 'n1work', 'n1_worker')
-    state = wait(boundary, attempt, lambda s: s.get('checkpoints', {}).get('N1', {}).get('state') == 'ATTESTED'
-                 or s['state'] not in ('BOUND',))
+    state = wait(boundary, attempt, lambda s: (
+        s.get('checkpoints', {}).get('N1', {}).get('state') == 'ATTESTED'
+        and work(s, 'n1work')['state'] == 'COMPLETED') or s['state'] not in ('BOUND',))
     assert state['state'] == 'BOUND', state
     family = state['checkpoints']['N1']
     assert family['work_id'] == 'n1work' and family['state'] == 'ATTESTED'
@@ -94,8 +95,9 @@ def test_s3_genuine_fail_is_terminal(real_boundary):
     assert boundary.dispatch, 'FP_QUALIFICATION_S3=1 required'
     attempt = admit(boundary, idle=True)
     dispatch(boundary, attempt, 'n1work', 'n1_worker')
-    state = wait(boundary, attempt, lambda s: s.get('checkpoints', {}).get('N1', {}).get('state') == 'ATTESTED'
-                 or s['state'] not in ('BOUND',))
+    state = wait(boundary, attempt, lambda s: (
+        s.get('checkpoints', {}).get('N1', {}).get('state') == 'ATTESTED'
+        and work(s, 'n1work')['state'] == 'COMPLETED') or s['state'] not in ('BOUND',))
     dispatch(boundary, attempt, 'g5work', 'n1_g5')
     state = wait(boundary, attempt, lambda s: s['state'] in ('N2_READY', 'N1_FAILED'))
     assert state['state'] == 'N1_FAILED', state
