@@ -21,6 +21,10 @@ def budget(boundary, attempt):
     return json.loads(bytes(row[0]))
 
 
+def has_work(state, work_id):
+    return any(w['work_id'] == work_id for w in state['works'])
+
+
 def work(state, work_id):
     return next(w for w in state['works'] if w['work_id'] == work_id)
 
@@ -54,7 +58,14 @@ def dispatch(boundary, attempt, work_id, role):
     reply = boundary.schedule(dict(schema='qualification_campaign_schedule_request/v1',
         attempt_id=attempt, work_id=work_id, role=role, probe='noop', signing_retry_of=None))
     assert reply['ok'], reply
-    return reply
+    # A compact refusal answers ok with status only; the work must durably exist
+    # before the caller waits on it.
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline:
+        if has_work(budget(boundary, attempt), work_id):
+            return reply
+        time.sleep(.1)
+    raise AssertionError('dispatch refused for ' + work_id + ': ' + json.dumps(reply.get('data_b64', b''))[:400])
 
 
 def completed_works(state):
@@ -123,11 +134,12 @@ def test_s3_guardian_death_mid_n1_is_in_doubt_with_no_capture(real_boundary):
         if killed and work(budget(boundary, attempt), 'n1work')['state'] in ('IN_DOUBT', 'CAPTURED'):
             break
         time.sleep(.1)
-    state = budget(boundary, attempt)
+    state = wait(boundary, attempt, lambda s: work(s, 'n1work')['state'] == 'IN_DOUBT'
+                 or s['state'] not in ('BOUND',), seconds=120)
     assert work(state, 'n1work')['state'] == 'IN_DOUBT', state
     assert 'checkpoints' not in state or 'N1' not in state.get('checkpoints', {}), state
     boundary.restart()
-    final = wait(boundary, attempt, lambda s: s['state'] not in ('BOUND',) or True)
+    final = wait(boundary, attempt, lambda s: work(s, 'n1work')['state'] == 'IN_DOUBT', seconds=120)
     assert work(final, 'n1work')['state'] == 'IN_DOUBT', final
 
 
@@ -144,8 +156,9 @@ def test_s3_g5_unit_death_and_exact_receipt_retry(real_boundary):
     assert boundary.dispatch, 'FP_QUALIFICATION_S3=1 required'
     attempt = admit(boundary, idle=False)
     dispatch(boundary, attempt, 'n1work', 'n1_worker')
-    wait(boundary, attempt, lambda s: s.get('checkpoints', {}).get('N1', {}).get('state') == 'ATTESTED'
-         or s['state'] not in ('BOUND',))
+    wait(boundary, attempt, lambda s: (
+        s.get('checkpoints', {}).get('N1', {}).get('state') == 'ATTESTED'
+        and work(s, 'n1work')['state'] == 'COMPLETED') or s['state'] not in ('BOUND',))
     dispatch(boundary, attempt, 'g5work', 'n1_g5')
     state = wait(boundary, attempt, lambda s: s['state'] in ('N2_READY', 'N1_FAILED'))
     assert state['state'] == 'N2_READY', state
