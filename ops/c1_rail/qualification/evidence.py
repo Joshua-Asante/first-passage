@@ -439,3 +439,199 @@ def compare_n1_evidence(proposed: InspectedEvidence, *, expected: InspectedEvide
             raise ValueError('EVIDENCE_SEMANTIC_MISMATCH') from exc
     if proposed.envelope_bytes != expected.envelope_bytes or dict(proposed.output_bytes_by_role) != dict(expected.output_bytes_by_role):
         raise ValueError('EVIDENCE_SEMANTIC_MISMATCH')
+
+
+
+def build_checkpoint_evidence(*, contract, policy, worker_result_bytes, plan_bytes,
+                              checkpoint_attestation_bytes, checkpoint_snapshot_bytes,
+                              installed_release_bytes) -> InspectedEvidence:
+    """Check the FULL_E1 checkpoint family's captured-byte relationships (D1).
+
+    Mirrors ``build_n1_evidence`` for the campaign family: release /v5, the
+    campaign checkpoint attestation and the campaign checkpoint snapshot are the
+    only accepted shapes, and the canonical assessment core below is the signed
+    candidate's exact unsigned content. Custody (signatures, current keys) is
+    authenticated separately by the G5 driver and the service commit.
+    """
+    from .journal_snapshot import parse_campaign_checkpoint_snapshot
+    from .execution.campaign_store import parse_checkpoint_attestation
+    resolved = _document(policy)
+    release = parse_release(installed_release_bytes)
+    plan = parse_canonical_json(plan_bytes, label='N1 plan')
+    worker = _fields(parse_canonical_json(worker_result_bytes, label='worker result'), {
+        'schema','execution_id','plan_sha256','source_admission','legality','populations',
+        'path_inventory','runtime_load_manifest','observations'}, label='worker result')
+    snapshot = parse_campaign_checkpoint_snapshot(checkpoint_snapshot_bytes)
+    attempt_id = snapshot['attempt_id']
+    attestation = parse_checkpoint_attestation(checkpoint_attestation_bytes, attempt_id=attempt_id)
+    payload = attestation['payload']
+    if (type(release) is not dict or type(plan) is not dict or type(payload) is not dict
+            or release.get('schema') != 'qualification_execution_release/v5'
+            or release.get('capability') != 'FULL_E1' or release.get('production_execution') is not False
+            or release.get('dispatch_enabled') is not True or release.get('dispatch_checkpoints') != ['N1']
+            or release.get('qualification_policy_sha256') != policy.sha256
+            or release.get('source_owner_sha256') != resolved['source_owner_sha256']
+            or plan.get('schema') != 'qualification_checkpoint_plan/v2'
+            or worker['schema'] != 'qualification_worker_result/v1'
+            or payload['work_id'] != worker['execution_id']
+            or snapshot['checkpoint'] != 'N1'):
+        raise ValueError('EVIDENCE_SCHEMA_MISMATCH')
+    for name, expected in {'contract_sha256': contract.contract_sha256,
+                           'trust_domain_sha256': contract.trust_domain_sha256,
+                           'execution_release_sha256': _hash(installed_release_bytes), 'checkpoint': 'N1'}.items():
+        if plan.get(name) != expected:
+            raise ValueError('EVIDENCE_CONTEXT_MISMATCH')
+    if (plan.get('policy_sha256') != policy.sha256 or plan.get('attempt_id') != attempt_id
+            or worker['plan_sha256'] != _hash(plan_bytes) or payload['plan_sha256'] != _hash(plan_bytes)):
+        raise ValueError('EVIDENCE_EXECUTION_MISMATCH')
+    if payload['payload_sha256'] != _hash(worker_result_bytes) or payload['payload_byte_length'] != len(worker_result_bytes):
+        raise ValueError('EVIDENCE_CAPTURE_MISMATCH')
+    expected_plan = derive_n1_plan(contract,policy=policy,execution_release_sha256=_hash(installed_release_bytes),
+        attempt_id=attempt_id,exact_depth_approval_sha256=plan['exact_depth_approval_sha256'])
+    if plan_bytes != expected_plan:
+        raise ValueError('EVIDENCE_PLAN_MISMATCH')
+    admission_bytes = canonical_json_bytes(worker['source_admission'])
+    admission = parse_source_admission(admission_bytes, contract_sha256=contract.contract_sha256,
+                                       domain_sha256=contract.trust_domain_sha256, policy=policy)
+    expected_roles = [{'role': item.role, 'sha256': item.sha256} for item in sorted(contract.artifacts, key=lambda item:item.role)]
+    if (admission['retained_roles'] != expected_roles
+            or admission['effective_settings_sha256'] != contract.effective_settings_sha256
+            or admission['population_sha256'] != {pop: _hash(canonical_json_bytes(list(contract.populations[pop]))) for pop in ('FULL','H1','H2')}):
+        raise ValueError('EVIDENCE_SOURCE_ADMISSION_MISMATCH')
+    geometry = geometry_role(contract.trust_domain.runtime_code_roles)
+    geometry_digest = next(item.sha256 for item in contract.artifacts if item.role == geometry)
+    legality = dict(schema='qualification_legality_result/v1',contract_sha256=contract.contract_sha256,
+        trust_domain_sha256=contract.trust_domain_sha256,policy_sha256=policy.sha256,
+        geometry_source_sha256=geometry_digest,source_admission_sha256=_hash(admission_bytes),
+        check_id='PRE_ADMISSION_REGISTRY_EMPTY',status='PASS')
+    if canonical_json_bytes(worker['legality']) != canonical_json_bytes(legality):
+        raise ValueError('EVIDENCE_LEGALITY_MISMATCH')
+    for name in ('service_id','profile_sha256','worker_image_digest'):
+        if payload.get(name) != release.get(name):
+            raise ValueError('EVIDENCE_RUNTIME_MISMATCH')
+    worker_runtime = _hash(canonical_json_bytes(release['runtime_manifests']['worker']))
+    if (payload.get('runtime_manifest_sha256') != worker_runtime
+            or worker['runtime_load_manifest'] != [{'role':role,'sha256':digest} for role,digest in sorted(contract.runtime_load_sha256.items())]):
+        raise ValueError('EVIDENCE_RUNTIME_MISMATCH')
+    observations = _fields(worker['observations'], {'worker_compute_wall_ns','worker_cpu_ns','worker_peak_memory_bytes'}, label='worker observations')
+    for name,value in observations.items():
+        if type(value) is not int or value < 0 or payload.get('observations',{}).get(name) != value:
+            raise ValueError('EVIDENCE_OBSERVATIONS_MISMATCH')
+    if payload['observations'].get('exit_code') != 0 or payload['observations'].get('oom_killed') is not False:
+        raise ValueError('EVIDENCE_ABNORMAL_EXIT')
+    if _instant(payload['completed_utc'],label='completed') < _instant(payload['started_utc'],label='started'):
+        raise ValueError('EVIDENCE_TIME_MISMATCH')
+    for name,expected in {'attempt_id':attempt_id,'contract_sha256':contract.contract_sha256,
+                          'trust_domain_sha256':contract.trust_domain_sha256,'policy_sha256':policy.sha256}.items():
+        if snapshot[name] != expected:
+            raise ValueError('EVIDENCE_SNAPSHOT_MISMATCH')
+    if (snapshot['capture']['payload_sha256'] != _hash(worker_result_bytes)
+            or snapshot['capture']['result_sha256'] != payload['result_sha256']
+            or snapshot['capture']['attestation_sha256'] != _hash(checkpoint_attestation_bytes)):
+        raise ValueError('EVIDENCE_SNAPSHOT_MEMBERSHIP_MISMATCH')
+    path_bytes = canonical_json_bytes(worker['path_inventory'])
+    stage_bytes = build_stage_artifact(contract=contract,policy=policy,stage='N1',input_plan_sha256=_hash(plan_bytes),
+        outcome_bytes=canonical_json_bytes(worker['populations']),path_inventory_bytes=path_bytes,prior_stage_outcomes={})
+    stage = parse_canonical_json(stage_bytes,label='N1 result')
+    failed = stage['decision'] == 'FAIL'
+    runtime_bytes = canonical_json_bytes(dict(schema='qualification_runtime_trace/v2',
+        execution_release_sha256=_hash(installed_release_bytes),profile_sha256=release['profile_sha256'],
+        worker_image_digest=release['worker_image_digest'],runtime_manifest_sha256=worker_runtime,
+        execution_id=worker['execution_id'],execution_attestation_sha256=_hash(checkpoint_attestation_bytes),
+        worker_load_manifest=worker['runtime_load_manifest']))
+    outputs = dict(attempt_journal=checkpoint_snapshot_bytes,legality_result=canonical_json_bytes(legality),
+                   n1_result=stage_bytes,path_inventory=path_bytes,runtime_load_trace=runtime_bytes)
+    validate_output_roles(policy,list(outputs),stages=('LEGALITY','N1'),
+                          completion='FAIL' if failed else 'PARTIAL',verdict='FAIL' if failed else 'NONE')
+    n1_stage = contract.stage_specs['N1']
+    cutoffs = {depth['population']: n1_stage.max_failures_per_population for depth in plan['depths']}
+    thresholds = [dict(stage=name, exact_depth=contract.stage_specs[name].exact_depth,
+                       max_failures_per_population=contract.stage_specs[name].max_failures_per_population)
+                  for name in ('N2', 'PART_B')]
+    assessment = dict(schema='qualification_campaign_checkpoint_assessment/v1',
+        attempt_id=attempt_id, checkpoint='N1', work_id=worker['execution_id'],
+        binding=dict(contract_sha256=contract.contract_sha256,trust_domain_sha256=contract.trust_domain_sha256,
+                     policy_sha256=policy.sha256,execution_release_sha256=_hash(installed_release_bytes)),
+        snapshot=dict(campaign_revision=snapshot['campaign_revision'],authority_head=snapshot['authority_head'],
+                      snapshot_sha256=_hash(checkpoint_snapshot_bytes)),
+        capture=dict(result_sha256=payload['result_sha256'],payload_sha256=payload['payload_sha256'],
+                     attestation_sha256=_hash(checkpoint_attestation_bytes)),
+        stages=[dict(stage='LEGALITY',status='PASS',input_sha256=_hash(admission_bytes),
+                     output_sha256=_hash(outputs['legality_result']),population_counts={}),
+                dict(stage='N1',status=stage['decision'],input_sha256=_hash(plan_bytes),
+                     output_sha256=_hash(stage_bytes),population_counts=stage['population_counts'])],
+        decision='FAILURE' if failed else 'CONTINUE', n1_decision=stage['decision'],
+        cutoff=dict(checkpoint='N1',n1_cutoffs=cutoffs),
+        n2_thresholds=dict(bound_to=contract.contract_sha256, stages=thresholds),
+        artifacts=[dict(role=role,sha256=_hash(raw),byte_length=len(raw)) for role,raw in sorted(outputs.items())])
+    return InspectedEvidence(canonical_json_bytes(assessment),MappingProxyType(outputs))
+
+
+def _inspect_checkpoint_assessment(value):
+    """Closed-shape check of one proposed/expected assessment core (no signature)."""
+    doc = _fields(parse_canonical_json(value.envelope_bytes, label='checkpoint assessment'), {
+        'schema','attempt_id','checkpoint','work_id','binding','snapshot','capture','stages',
+        'decision','n1_decision','cutoff','n2_thresholds','artifacts'}, label='checkpoint assessment')
+    if (doc['schema'] != 'qualification_campaign_checkpoint_assessment/v1'
+            or doc['checkpoint'] != 'N1' or type(doc['attempt_id']) is not str or not doc['attempt_id']
+            or type(doc['work_id']) is not str or not doc['work_id']):
+        raise ValueError('invalid checkpoint assessment')
+    binding = _fields(doc['binding'], {'contract_sha256','trust_domain_sha256','policy_sha256','execution_release_sha256'}, label='binding')
+    snapshot = _fields(doc['snapshot'], {'campaign_revision','authority_head','snapshot_sha256'}, label='snapshot binding')
+    _positive_int(snapshot['campaign_revision'], label='campaign revision')
+    capture = _fields(doc['capture'], {'result_sha256','payload_sha256','attestation_sha256'}, label='capture binding')
+    for group in (binding, snapshot, capture):
+        for key in group:
+            _sha256(group[key], label=key)
+    if type(doc['stages']) is not list or [row.get('stage') for row in doc['stages']] != ['LEGALITY','N1']:
+        raise ValueError('invalid assessment stages')
+    for row in doc['stages']:
+        _fields(row, {'stage','status','input_sha256','output_sha256','population_counts'}, label='stage result')
+        if row['status'] not in ('PASS','FAIL'):
+            raise ValueError('invalid stage status')
+        _sha256(row['input_sha256'], label='stage input'); _sha256(row['output_sha256'], label='stage output')
+        if type(row['population_counts']) is not dict:
+            raise ValueError('invalid population counts')
+    failed = doc['n1_decision'] == 'FAIL'
+    if (doc['n1_decision'] not in ('PASS','FAIL') or doc['decision'] not in ('CONTINUE','FAILURE')
+            or (doc['decision'] == 'FAILURE') != failed
+            or doc['stages'][1]['status'] != doc['n1_decision']
+            or doc['stages'][0]['status'] != 'PASS'):
+        raise ValueError('invalid assessment decision')
+    cutoff = _fields(doc['cutoff'], {'checkpoint','n1_cutoffs'}, label='cutoff')
+    if cutoff['checkpoint'] != 'N1' or type(cutoff['n1_cutoffs']) is not dict:
+        raise ValueError('invalid N1 cutoff')
+    thresholds = _fields(doc['n2_thresholds'], {'bound_to','stages'}, label='N2 thresholds')
+    _sha256(thresholds['bound_to'], label='threshold binding')
+    if type(thresholds['stages']) is not list:
+        raise ValueError('invalid N2 thresholds')
+    for row in thresholds['stages']:
+        _fields(row, {'stage','exact_depth','max_failures_per_population'}, label='threshold')
+        _positive_int(row['exact_depth'], label='depth')
+    if type(doc['artifacts']) is not list:
+        raise ValueError('invalid artifact inventory')
+    for row in doc['artifacts']:
+        _fields(row, {'role','sha256','byte_length'}, label='artifact')
+        _sha256(row['sha256'], label='artifact bytes'); _positive_int(row['byte_length'], label='artifact length')
+    if set(value.output_bytes_by_role) != {row['role'] for row in doc['artifacts']}:
+        raise ValueError('invalid assessment artifact roles')
+    for row in doc['artifacts']:
+        raw = value.output_bytes_by_role[row['role']]
+        if row['sha256'] != _hash(raw) or row['byte_length'] != len(raw):
+            raise ValueError('assessment artifact binding mismatch')
+    return doc
+
+
+def compare_checkpoint_evidence(proposed: InspectedEvidence, *, expected: InspectedEvidence) -> None:
+    """Exact byte equality of the assessment cores and staged outputs (D1)."""
+    for value in (proposed, expected):
+        if (type(value) is not InspectedEvidence or type(value.envelope_bytes) is not bytes
+                or type(value.output_bytes_by_role) not in (dict,MappingProxyType)
+                or any(type(role) is not str or type(raw) is not bytes for role,raw in value.output_bytes_by_role.items())):
+            raise ValueError('EVIDENCE_SEMANTIC_MISMATCH')
+        try:
+            _inspect_checkpoint_assessment(value)
+        except (ValueError, KeyError, TypeError) as exc:
+            raise ValueError('EVIDENCE_SEMANTIC_MISMATCH') from exc
+    if proposed.envelope_bytes != expected.envelope_bytes or dict(proposed.output_bytes_by_role) != dict(expected.output_bytes_by_role):
+        raise ValueError('EVIDENCE_SEMANTIC_MISMATCH')

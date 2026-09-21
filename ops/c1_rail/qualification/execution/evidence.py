@@ -49,7 +49,14 @@ def encode_worker_result(context, execution_id, plan_bytes, run, observations, *
         path_inventory=path_inventory(json.loads(plan_bytes), populations), observations=observations))
 
 
-def parse_worker_result(raw, *, context, execution_id, plan_bytes):
+def parse_worker_result(raw, *, context, execution_id, plan_bytes, campaign_limits=None):
+    """Validate one captured worker result.
+
+    ``campaign_limits`` (FULL_E1 only, D3) supplies the work's remaining phase
+    limits; the observations are then compared against those limits instead of
+    the contract maxima, exactly as the phase-limited guard enforced them. The
+    N1_ONLY path keeps the contract maxima (``None`` here).
+    """
     if type(raw) is not bytes or len(raw) > context.profile.output_byte_limit:
         raise ValueError('bounded captured result required')
     doc = fields(parse_canonical_json(raw, label='worker result'), {'schema', 'execution_id', 'plan_sha256',
@@ -102,8 +109,16 @@ def parse_worker_result(raw, *, context, execution_id, plan_bytes):
     if any(type(value) is not int or value < 0 for value in observations.values()):
         raise ValueError('worker budget observations must be nonnegative integers')
     budget = context.contract.replay.budget
-    if (observations['worker_compute_wall_ns'] >= budget.maximum_wall_seconds * 1000000000
-            or observations['worker_cpu_ns'] > budget.maximum_cpu_seconds * 1000000000
-            or observations['worker_peak_memory_bytes'] > budget.maximum_memory_bytes):
+    if campaign_limits is None:
+        budget_bound = (budget.maximum_wall_seconds * 1000000000,
+                        budget.maximum_cpu_seconds * 1000000000,
+                        budget.maximum_memory_bytes)
+    else:
+        from .protocol import fields as _closed
+        limits = _closed(campaign_limits, {'cpu_ns', 'wall_ns', 'memory_bytes'})
+        budget_bound = (limits['wall_ns'], limits['cpu_ns'], limits['memory_bytes'])
+    if (observations['worker_compute_wall_ns'] >= budget_bound[0]
+            or observations['worker_cpu_ns'] > budget_bound[1]
+            or observations['worker_peak_memory_bytes'] > budget_bound[2]):
         raise ValueError('worker exceeded frozen budget')
     return CapturedN1(tuple(populations), doc)

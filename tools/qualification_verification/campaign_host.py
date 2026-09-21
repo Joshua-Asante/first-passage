@@ -146,8 +146,23 @@ def cleanup(root, manifest, *, retire=False):
                 raise ValueError('S2 cleanup lacks owned container absence proof')
             observations.append(row)
             host.run([*docker, 'rm', '--', row['Id']])
+    # S3: the checkpoint io tmpfs mounts (transient units under /var/lib/fpq) and
+    # the g5 units are stopped explicitly by the administrator here; a mount unit
+    # is not slice-bound, so the scope stop above does not cover it.
+    units = host.run(['/usr/bin/systemctl', '--system', '--no-pager', '--no-legend', '--all',
+                      '--plain', 'list-units', 'var-lib-fpq-*.mount', '*-payload-g5.service']).splitlines()
+    stopped = []
+    for line in units:
+        name = line.split()[0] if line.split() else ''
+        if name.endswith('.mount') or name.endswith('-g5.service'):
+            host.run(['/usr/bin/systemctl', '--system', '--no-ask-password', 'stop', name])
+            stopped.append(name)
+    remaining = host.run(['/usr/bin/systemctl', '--system', '--no-pager', '--no-legend', '--all',
+                          '--plain', 'list-units', 'var-lib-fpq-*.mount', '*-payload-g5.service']).split()
+    if any(name.endswith(('.mount', '-g5.service')) for name in remaining):
+        raise ValueError('S3 owned units remain after cleanup')
     host.save(root / 'evidence/campaign-cleanup.json', dict(scope=scope, populated=False,
-        stop_exit=result.returncode, containers=observations))
+        stop_exit=result.returncode, containers=observations, stopped_units=stopped))
     if retire:
         rule = Path(enrollment['rule_path'])
         expected_path = Path('/etc/polkit-1/rules.d') / ('49-' + scope[:-6] + '.rules')

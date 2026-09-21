@@ -29,9 +29,15 @@ WORK_PHASES = {
     'probe_g5': 'N1_G5',
     'probe_result': 'RESULT',
     'probe_seal': 'SEAL',
+    # S3 dispatch roles (D2/D4): the genuine N1 compute work and the metered G5
+    # assessment work. Admitted only under the /v5 dispatch release (the service's
+    # startup-fixed gate) and only after the admission work completed.
+    'n1_worker': 'N1',
+    'n1_g5': 'N1_G5',
 }
 WORK_ROLES = tuple(WORK_PHASES)
 PROBES = ('noop', 'cpu', 'descendants', 'memory', 'wall', 'intent', 'controller_cpu')
+DISPATCH_ROLES = ('n1_worker', 'n1_g5')
 PHASE_BY_ROLE = {role: phase for role, phase in WORK_PHASES.items() if role != 'admission'}
 
 
@@ -105,6 +111,8 @@ def _decode(raw, limit):
             'BUDGET_UNCERTAIN',
             'IN_DOUBT',
             'ABORTED',
+            'N2_READY',
+            'N1_FAILED',
         ) or doc['validity'] not in ('VALID', 'VOID'):
             raise ValueError('funding state differs')
         profile = parse_campaign_budget_profile(encoded(doc['profile']))
@@ -280,7 +288,7 @@ class FundingStoreMixin:
 
     def _funding(self, c, attempt):
         identity(attempt)
-        if c.execute('PRAGMA user_version').fetchone()[0] != 7:
+        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8):
             return None
         row = c.execute(
             'SELECT substr(body,1,8193) FROM full_campaign_funding WHERE attempt_id=?', (attempt,)
@@ -438,7 +446,7 @@ class FundingStoreMixin:
     def _validate_funding_predecessor(self, c, state):
         if state['profile']['schema'] != PROFILE:
             return
-        if c.execute('PRAGMA user_version').fetchone()[0] != 7:
+        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8):
             raise ValueError('funding profile requires database v7')
         attempt = state['attempt_id']
         previous = self._funding(c, attempt)
@@ -541,7 +549,7 @@ class FundingStoreMixin:
         observed = clock(clock_bytes)
         attempt, work = request['attempt_id'], request['work_id']
         with self.store.transaction() as c:
-            if c.execute('PRAGMA user_version').fetchone()[0] != 7:
+            if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8):
                 raise ValueError('fresh funding enrollment required')
             existing = self._bootstrap(c, attempt, work)
             if existing is not None:
@@ -572,6 +580,15 @@ class FundingStoreMixin:
             ).fetchone():
                 raise ValueError('scheduler work identity conflict')
             phase = PHASE_BY_ROLE[request['role']]
+            if request['role'] in DISPATCH_ROLES:
+                # Genuine dispatch follows a completed admission (the retained
+                # diagnostic receipt), on the /v5 release the service fixed at
+                # startup; harmless probe dispatch keeps its weaker S2 gate.
+                if request['probe'] != 'noop':
+                    raise ValueError('dispatch roles require the fixed noop probe')
+                if not c.execute("SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role='diagnostic_receipt'",
+                                 (attempt,)).fetchone():
+                    raise ValueError('completed campaign admission required before dispatch')
             parent = request['signing_retry_of']
             if phase in doc['reserved_compute_phases']:
                 raise ValueError('compute phase already reserved')
@@ -788,7 +805,7 @@ class FundingStoreMixin:
             return encoded(state)
 
     def _funding_integrity(self, c, *, attempt_id=None):
-        if c.execute('PRAGMA user_version').fetchone()[0] != 7:
+        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8):
             return
         attempts = (
             [(attempt_id,)]

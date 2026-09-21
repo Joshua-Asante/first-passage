@@ -41,6 +41,30 @@ _CAMPAIGN_MAX_SEED_INPUTS = 100_000
 _CAMPAIGN_MAX_BYTES = 64 * 1024 * 1024
 
 
+def derive_checkpoint_plan(campaign_plan_bytes, checkpoint, predecessor_receipt_bytes):
+    """Canonical bytes of one checkpoint's plan, sliced from the retained campaign plan.
+
+    Pure and closed: `campaign_plan_bytes` must be the retained canonical campaign
+    plan; the returned bytes are the canonical `n1` sub-document exactly as the
+    campaign plan embeds it (byte-identical to ``derive_n1_plan`` for N1). A
+    predecessor receipt is refused for N1 (there is no earlier checkpoint) and
+    required-but-unsupported for any later checkpoint until its slice lands.
+    """
+    if type(campaign_plan_bytes) is not bytes or len(campaign_plan_bytes) > _CAMPAIGN_MAX_BYTES:
+        raise ValueError('bounded retained campaign plan required')
+    doc = parse_canonical_json(campaign_plan_bytes, label='retained campaign plan')
+    if type(doc) is not dict or doc.get('schema') != 'qualification_campaign_plan/v1':
+        raise ValueError('retained canonical campaign plan required')
+    if checkpoint == 'N1':
+        if predecessor_receipt_bytes is not None:
+            raise ValueError('N1 has no predecessor receipt')
+        raw = canonical_json_bytes(doc['n1'])
+        if parse_canonical_json(raw, label='N1 sub-plan').get('checkpoint') != 'N1':
+            raise ValueError('campaign plan N1 sub-document differs')
+        return raw
+    raise ValueError('unsupported checkpoint selection')
+
+
 def _campaign_inputs(contract, policy, execution_release_sha256):
     from .contract import require_validated_frozen_contract
     from .policy import validate_contract_semantics

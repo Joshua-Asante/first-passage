@@ -12,6 +12,10 @@ DIAGNOSTIC_RELEASE = 'qualification_execution_release/v3'
 # route: execution profile/v4 + budget profile/v3 + full snapshot/v5. It keeps
 # every v3 restriction: FULL_E1, TEST_ONLY, probes only, no statistical dispatch.
 EXECUTABLE_DIAGNOSTIC_RELEASE = 'qualification_execution_release/v4'
+# D4: the S3 dispatch revision -- profile/v5 + budget profile/v3 -- the only one
+# whose dispatch_enabled may be True, and only for the closed N1 checkpoint set
+# named by dispatch_checkpoints. v3/v4 keep refusing every dispatch.
+DISPATCH_DIAGNOSTIC_RELEASE = 'qualification_execution_release/v5'
 PROCESS_ROLES = ('supervisor','worker','g5')
 KEY_ROLES = ('freeze','result','seal','execution')
 WORKER_ENTRYPOINT = ('/opt/ops/bin/python','-I','/opt/qualification/bootstrap.py','worker')
@@ -29,17 +33,26 @@ def parse_release(raw):
     if type(doc) is not dict:
         raise ValueError('closed schema object required')
     executable = doc.get('schema') == EXECUTABLE_DIAGNOSTIC_RELEASE
-    diagnostic = executable or doc.get('schema') == DIAGNOSTIC_RELEASE
+    dispatching = doc.get('schema') == DISPATCH_DIAGNOSTIC_RELEASE
+    diagnostic = executable or dispatching or doc.get('schema') == DIAGNOSTIC_RELEASE
     campaign = diagnostic or doc.get('schema') == 'qualification_execution_release/v2'
     fields(doc, {
         'schema','release_id','profile','profile_sha256','authority_class','service_id',
         'capability','production_execution','worker_image_digest','runtime_manifests',
         'ordinary_code','worker_entrypoint','port_roles','key_roles','trusted_key_sha256',
         'qualification_policy_sha256','source_owner_sha256'} | ({'dispatch_enabled'} if campaign else set()) |
+        ({'dispatch_checkpoints'} if dispatching else set()) |
         ({'campaign_budget_profile'} if diagnostic else set()))
     if campaign:
         if (doc['capability'] != 'FULL_E1' or doc['authority_class'] != 'TEST_ONLY'
-                or doc['production_execution'] is not False or doc['dispatch_enabled'] is not False):
+                or doc['production_execution'] is not False):
+            raise ValueError('unsupported admission-only campaign release')
+        if dispatching:
+            # The closed D4 fact pair: dispatch only N1, only on this revision.
+            if (doc['dispatch_enabled'] is not True
+                    or doc['dispatch_checkpoints'] != ['N1']):
+                raise ValueError('dispatch release must enable exactly the N1 checkpoint')
+        elif doc['dispatch_enabled'] is not False:
             raise ValueError('unsupported admission-only campaign release')
     elif (doc['schema'] != 'qualification_execution_release/v1'
             or doc['authority_class'] not in ('TEST_ONLY','OPERATOR')
@@ -50,12 +63,14 @@ def parse_release(raw):
     owners = fields(doc['source_owner_sha256'], {'book_policy','firm_rules','policy_fingerprint'})
     for value in owners.values(): digest(value)
     profile = parse_profile(canonical_json_bytes(doc['profile']))
-    if profile.values['schema'] == 'qualification_execution_profile/v4' and not executable:
+    if (profile.values['schema'] in ('qualification_execution_profile/v4', 'qualification_execution_profile/v5')
+            and not (executable or dispatching)):
         raise ValueError('funding profile is persistence-only; runtime release not enabled')
     if diagnostic:
         from .profile import parse_campaign_budget_profile
         budget_profile = parse_campaign_budget_profile(canonical_json_bytes(doc['campaign_budget_profile']))
         expected = (('qualification_execution_profile/v4', 'qualification_campaign_budget_profile/v3') if executable
+                    else ('qualification_execution_profile/v5', 'qualification_campaign_budget_profile/v3') if dispatching
                     else ('qualification_execution_profile/v3', 'qualification_campaign_budget_profile/v2'))
         if ((profile.values['schema'], budget_profile['schema']) != expected
                 or budget_profile['installed_profile_sha256'] != profile.sha256):

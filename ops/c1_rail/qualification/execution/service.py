@@ -81,6 +81,14 @@ def schedule_eligibility(release, profile):
             and profile.values['schema'] == 'qualification_execution_profile/v4')
 
 
+def dispatch_eligibility(release, profile):
+    """Fixed at startup: only the S3 dispatch revision (D4) admits N1 dispatch roles."""
+    return (type(release) is dict and release.get('schema') == release_schema.DISPATCH_DIAGNOSTIC_RELEASE
+            and release.get('capability') == 'FULL_E1' and release.get('dispatch_enabled') is True
+            and release.get('dispatch_checkpoints') == ['N1']
+            and profile.values['schema'] == 'qualification_execution_profile/v5')
+
+
 def _write(root, relative, raw):
     path = root / relative
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o755)
@@ -121,6 +129,7 @@ class ExecutionService:
         # Private scheduler eligibility is fixed at startup from the installed
         # release; no request re-reads or re-parses the release to decide it.
         self.schedule_eligible = schedule_eligibility(release, self.profile)
+        self.dispatch_eligible = dispatch_eligibility(release, self.profile)
         self.store = ExecutionStore(self.root / 'journal.sqlite', installation_dir=self.installation)
         self.dispatch_lock = threading.Lock()
         self.recovery_issues = {}
@@ -235,7 +244,8 @@ class ExecutionService:
         if release['capability'] != 'FULL_E1':
             raise ValueError('FULL_E1 installed release required')
         campaigns = campaign_store.CampaignStore(self.store)
-        if release['schema'] in ('qualification_execution_release/v3', EXECUTABLE_DIAGNOSTIC_RELEASE):
+        if release['schema'] in ('qualification_execution_release/v3', EXECUTABLE_DIAGNOSTIC_RELEASE,
+                                 release_schema.DISPATCH_DIAGNOSTIC_RELEASE):
             if operation == 'SUBMIT_E1' and request['schema'] != 'qualification_campaign_request/v2':
                 raise ValueError('fresh versioned diagnostic admission required')
             if request['schema'] != 'qualification_campaign_request/v2':
@@ -332,6 +342,21 @@ class ExecutionService:
             if campaigns.diagnostic_status(attempt)['receipt'] is None:
                 raise ValueError('diagnostic admission has no retained plan')
             return campaigns.chunk(request)
+        if operation in campaign_protocol.CHECKPOINT_OPERATIONS:
+            if not self.dispatch_eligible:
+                raise ValueError('installed N1 dispatch release required')
+            if operation == 'CHECKPOINT_SNAPSHOT':
+                return campaigns.checkpoint_snapshot(attempt)
+            if operation == 'FETCH_CHECKPOINT_MEMBER':
+                return campaigns.fetch_checkpoint_member(attempt, request['object_sha256'],
+                                                         request['offset'], request['length'])
+            if operation == 'STAGE_CHECKPOINT_ARTIFACT':
+                raw = decode_base64(request['bytes_b64'])
+                if len(raw) > self.profile.output_byte_limit:
+                    raise ValueError('artifact exceeds profile limit')
+                return encoded(dict(artifact_sha256=campaigns.stage_checkpoint_artifact(
+                    attempt, request['role'], raw)))
+            return self._commit_checkpoint(campaigns, attempt, request)
         if operation == 'VOID':
             # (i) Cheap bounded transport, unmetered: the exact historical retry,
             # single-body byte-bounded queueing and compact status. Serialized
@@ -374,6 +399,89 @@ class ExecutionService:
                     return campaigns.complete_void_authentication(raw, sequence, now=now())
         raise ValueError('UNKNOWN_OPERATION')
 
+    def _commit_checkpoint(self, campaigns, attempt, request):
+        """COMMIT_CHECKPOINT_ASSESSMENT under the service lock.
+
+        T1 persists the g5 work's CAPTURED + SIGNING_INTENT and the durable
+        candidate; T2 independently re-validates the candidate against the
+        service's own retained context and reconstruction, then commits. An
+        exact retry returns the identical receipt with no fresh time/signature.
+        """
+        import base64
+        from ..checkpoint_plan import derive_checkpoint_plan
+        from .campaign_store import (parse_checkpoint_assessment, parse_checkpoint_cutoff,
+            CHECKPOINT_INTENT_SCHEMA)
+        from .g5 import validate_campaign_checkpoint
+        from .signing import verify_checkpoint_assessment
+        from .store import instant
+        work_id = request['work_id']
+        candidate_bytes = decode_base64(request['candidate_bytes_b64'])
+        candidate = parse_checkpoint_assessment(candidate_bytes, attempt_id=attempt)
+        with self.dispatch_lock:
+            with self.store.transaction() as connection:
+                row = connection.execute('SELECT snapshot_bytes,intent_bytes,candidate_bytes,receipt_bytes '
+                    'FROM full_campaign_checkpoint_intents WHERE attempt_id=?', (attempt,)).fetchone()
+            if row is None:
+                snapshot_bytes = campaigns.checkpoint_snapshot(attempt)
+                signing_at = instant(now())
+                intent_bytes = encoded(dict(schema=CHECKPOINT_INTENT_SCHEMA, attempt_id=attempt,
+                    checkpoint='N1', work_id=work_id, key_id=candidate['signature']['key_id'],
+                    signing_at_utc=signing_at, candidate_sha256=sha256(candidate_bytes),
+                    snapshot_sha256=sha256(snapshot_bytes)))
+                capture = encoded(dict(schema='qualification_campaign_g5_capture/v1', attempt_id=attempt,
+                    checkpoint='N1', work_id=work_id, candidate_sha256=sha256(candidate_bytes),
+                    staged=[dict(role=row2['role'], sha256=row2['sha256']) for row2 in request['artifacts']]))
+                capture_transition = encoded(dict(
+                    schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id=work_id,
+                    state='CAPTURED', clock=parse_canonical_json(campaign_supervisor.observe_campaign_clock(), label='clock'),
+                    data=dict(capture_bytes_b64=base64.b64encode(capture).decode('ascii'))))
+                signing_transition = encoded(dict(
+                    schema='qualification_campaign_work_transition/v1', attempt_id=attempt, work_id=work_id,
+                    state='SIGNING_INTENT', clock=parse_canonical_json(campaign_supervisor.observe_campaign_clock(), label='clock'),
+                    data=dict(intent_id=work_id + '-intent', payload_bytes_b64=base64.b64encode(candidate_bytes).decode('ascii'),
+                              key_id=candidate['signature']['key_id'], signing_at_utc=signing_at)))
+                campaigns.persist_checkpoint_intent(attempt, work_id, snapshot_bytes, intent_bytes,
+                    candidate_bytes, capture_transition, signing_transition)
+            elif bytes(row[2]) != candidate_bytes:
+                raise ValueError('exact checkpoint candidate retry required')
+            # T2: the service re-validates against its own retained context.
+            context = campaigns.context(attempt, self.release, self.keys(), now=now())
+            keys = self.keys()
+            verify_checkpoint_assessment(candidate_bytes, context=context, current_keys=keys)
+            family = campaigns.checkpoint_capture(attempt)
+            # The candidate was bound at T1 to that moment's snapshot; T2 re-validates
+            # against exactly those persisted bytes, and the store checks freshness
+            # (current revision/head) inside the commit transaction.
+            snapshot_bytes = bytes(row[1]) if row is not None else snapshot_bytes
+            plan_bytes = derive_checkpoint_plan(campaigns.retained_object(attempt, 'plan'), 'N1', None)
+            evidence = validate_campaign_checkpoint(context, checkpoint='N1', plan_bytes=plan_bytes,
+                attestation_bytes=family['attestation_bytes'],
+                artifacts={'result': family['result_bytes'], 'worker_result': family['payload_bytes']},
+                snapshot_bytes=snapshot_bytes, current_keys=keys)
+            core = parse_canonical_json(candidate_bytes, label='candidate')
+            unsigned = {name: value for name, value in core.items() if name != 'signature'}
+            if encoded(unsigned) != evidence.assessment_bytes:
+                raise ValueError('checkpoint candidate differs from canonical reconstruction')
+            from ..evidence import compare_checkpoint_evidence, InspectedEvidence
+            compare_checkpoint_evidence(InspectedEvidence(evidence.assessment_bytes, evidence.output_bytes_by_role),
+                expected=InspectedEvidence(evidence.assessment_bytes, evidence.output_bytes_by_role))
+            staged = {row2['role']: row2['sha256'] for row2 in request['artifacts']}
+            if staged != {role: sha256(raw) for role, raw in evidence.output_bytes_by_role.items()}:
+                raise ValueError('staged checkpoint artifact inventory differs')
+            with self.store.transaction() as connection:
+                for role, digest_value in staged.items():
+                    if connection.execute('SELECT 1 FROM full_campaign_checkpoint_staged '
+                            'WHERE attempt_id=? AND role=? AND sha256=?', (attempt, role, digest_value)).fetchone() is None:
+                        raise ValueError('staged checkpoint artifact membership differs')
+            cutoff_bytes = encoded(dict(schema='qualification_campaign_cutoff_receipt/v1',
+                attempt_id=attempt, checkpoint='N1', assessment_sha256=sha256(candidate_bytes),
+                decision=core['decision'], n1_cutoffs=core['cutoff']['n1_cutoffs'],
+                n2_thresholds=core['n2_thresholds']['stages'],
+                n2_bound_to=sha256(candidate_bytes), created_utc=instant(now())))
+            parse_checkpoint_cutoff(cutoff_bytes, attempt_id=attempt)
+            return campaigns.commit_checkpoint_assessment(attempt, work_id, candidate_bytes,
+                cutoff_bytes, now=now(), clock_bytes=campaign_supervisor.observe_campaign_clock())
+
     def _schedule_request(self, peer_uid, raw):
         """Closed private route: the warm service is the only campaign intent producer.
 
@@ -386,14 +494,19 @@ class ExecutionService:
         """
         if peer_uid != self.config['service_uid']:
             raise ValueError('PEER_NOT_AUTHORIZED')
-        if not self.schedule_eligible:
+        request = campaign_funding.parse_request(raw)
+        if request['role'] in campaign_funding.DISPATCH_ROLES:
+            # D4: genuine dispatch needs the installed /v5 release; the harmless
+            # probe dispatch keeps the unchanged v4 gate.
+            if not self.dispatch_eligible:
+                raise ValueError('installed N1 dispatch release required')
+        elif not self.schedule_eligible:
             raise ValueError('installed execution-capable diagnostic release required')
         campaigns = campaign_store.CampaignStore(self.store)
         with self.dispatch_lock, campaign_supervisor.controller_cpu_guard():
             token, status = campaigns.claim_scheduler_bootstrap(raw, campaign_supervisor.observe_campaign_clock())
             if token is None:
                 return status
-            request = campaign_funding.parse_request(raw)
             reservation, enrollment = campaigns.materialize_scheduler_bootstrap(
                 request['attempt_id'], request['work_id'], token, self.config['host_run_id'])
             return campaign_supervisor.launch_prepared_campaign_work(self, reservation, enrollment)
@@ -520,7 +633,7 @@ class ExecutionService:
 
     def recover_service(self):
         self.recovery_issues = {}
-        if self.profile.values['schema'] in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4'):
+        if self.profile.values['schema'] in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4', 'qualification_execution_profile/v5'):
             campaigns = campaign_store.CampaignStore(self.store)
             with self.store.transaction() as connection:
                 exists = connection.execute("SELECT 1 FROM sqlite_master WHERE name='full_campaign_budgets'").fetchone()

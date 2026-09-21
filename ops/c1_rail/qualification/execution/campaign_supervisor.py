@@ -952,7 +952,7 @@ def guardian_main():
     if os.geteuid() != config['service_uid']:
         raise ValueError('guardian OS role differs')
     context = ExecutionService(config)
-    if context.profile.values['schema'] not in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4'):
+    if context.profile.values['schema'] not in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4', 'qualification_execution_profile/v5'):
         raise ValueError('diagnostic guardian requires fresh installed revision')
     campaigns = CampaignStore(context.store)
     state = parse_canonical_json(campaigns.budget_snapshot(args.attempt), label='guardian budget')
@@ -1029,6 +1029,11 @@ def guardian_main():
                                               context.release, context.keys(), published_at)
             observed = runtime.observation(state, work, enrollment)
             campaigns.finish_diagnostic_admission(request_bytes, verified, plan, observed, now=published_at, trusted_keys=context.keys())
+        elif manifest['role'] == 'n1_worker':
+            _verify_payload_quota(runtime, enrollment, state, work, deadline)
+            _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifest)
+        elif manifest['role'] == 'n1_g5':
+            _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest)
         else:
             _verify_payload_quota(runtime, enrollment, state, work, deadline)
             _run_probe(context, campaigns, runtime, state, work, enrollment, manifest)
@@ -1042,13 +1047,403 @@ def guardian_main():
         raise
 
 
+CHECKPOINT_IO_ROOT = Path('/var/lib/fpq')
+
+
+def _mount_unit_name(path):
+    """systemd's mount-unit name for an absolute path (the fixed escape)."""
+    from pathlib import PurePosixPath
+    pure = PurePosixPath(path)
+    if not pure.is_absolute() or str(pure) != path:
+        raise ValueError('absolute io mount path required')
+    return '-'.join(part.replace('-', '\\x2d') for part in pure.parts[1:]) + '.mount'
+
+
+def checkpoint_io_paths(enrollment):
+    """The work's fixed io mount paths and units, derived from the enrollment."""
+    token = sha256(encoded(enrollment))[:24]
+    base = CHECKPOINT_IO_ROOT / ('fpq-' + token)
+    return dict(in_path=str(base / 'in'), out_path=str(base / 'out'),
+                in_unit=_mount_unit_name(base / 'in'), out_unit=_mount_unit_name(base / 'out'))
+
+
+def _guardian_bus_call(campaigns, unit, properties):
+    """The guardian's own fixed systemd call through the campaign_control child.
+
+    Same fixed command, prlimit isolation and parent-death wiring as the
+    service-side start; no START_CLIENT claim -- the guardian is already the
+    authorized supervisor of this work, and every call is bounded by its own
+    LimitCPU plus the installed control_calls allowance.
+    """
+    import os
+    import subprocess
+    from .runtime import installed_code_root
+    from tools.qualification_verification.container_ownership import CAMPAIGN_BUS_START
+    process = subprocess.Popen(['/usr/bin/prlimit', '--cpu=1:1', '--', sys.executable, '-I',
+        str(installed_code_root() / 'bootstrap.py'), 'campaign_control', str(os.getpid()),
+        *CAMPAIGN_BUS_START, unit, 'fail', *_unit_properties(properties), '0'],
+        stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        env={'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'})
+    stdout, stderr = process.communicate(timeout=15)
+    if process.returncode != 0 or len(stdout) > 65536 or len(stderr) > 65536:
+        raise ValueError('bounded system-manager operation failed (exit ' + str(process.returncode) + '): '
+                         + stderr[-300:].decode('utf-8', 'replace').strip())
+    if re.fullmatch(rb'o "/org/freedesktop/systemd1/job/[0-9]+"\n?', stdout) is None:
+        raise ValueError('system-manager job acknowledgement differs: ' + stdout[-200:].decode('utf-8', 'replace').strip())
+    return stdout
+
+
+def _io_mount_properties(where, *, size_bytes, uid, mode):
+    return [('What', 's', 'tmpfs'), ('Where', 's', where), ('Type', 's', 'tmpfs'),
+            ('Options', 's', 'rw,size=%d,uid=%d,gid=%d,mode=0%o' % (size_bytes, uid, uid, mode)),
+            ('DefaultDependencies', 'b', 'false')]
+
+
+def g5_unit_spec(enrollment, *, attempt_id, work_id, code_root, interpreter, g5_uid,
+                 orchestration_cpu_ns, remaining_wall_ns, cpu_ns):
+    """D2: the metered qg5 transient unit under the work's payload slice.
+
+    Bounds derive from the N1_G5 phase exactly as ``guardian_unit_spec`` derives
+    the guardian's from its own; the unit dies with the guardian (BindsTo) and
+    its cgroup lies inside the enrolled payload slice, so the store's identity
+    rule binds its retained PROCESS events like any supervised payload.
+    """
+    from pathlib import PurePosixPath
+    identity(attempt_id); identity(work_id)
+    integer(g5_uid, positive=True); integer(orchestration_cpu_ns, positive=True)
+    integer(remaining_wall_ns, positive=True); integer(cpu_ns, positive=True)
+    from .profile import CAMPAIGN_RESOURCE_SCOPE as policy
+    helper_seconds = policy['control_calls'] * (policy['control_cpu_seconds'] + policy['cpu_granularity_seconds'])
+    cpu_seconds = max(1, (cpu_ns - orchestration_cpu_ns) // 10**9 - helper_seconds)
+    quota = payload_cpu_quota_usec(cpu_ns - orchestration_cpu_ns, remaining_wall_ns)
+    for value in (code_root, interpreter):
+        path = PurePosixPath(value)
+        if not path.is_absolute() or '..' in path.parts or str(path) != value:
+            raise ValueError('installed absolute runtime paths required')
+    return dict(g5=dict(Type='exec', User=str(g5_uid), Slice=enrollment['payload_slice'],
+        BindsTo=[enrollment['guardian_unit']], After=[enrollment['guardian_unit']],
+        Restart='no', KillMode='control-group', KillSignal=9, SendSIGKILL=True,
+        TimeoutStopUSec=1_000_000, RuntimeMaxUSec=max(1, remaining_wall_ns // 1000),
+        LimitCPU=cpu_seconds, LimitCPUSoft=cpu_seconds, TasksMax=16,
+        OOMPolicy='kill', NoNewPrivileges=True, CPUAccounting=True, MemoryAccounting=True,
+        CPUQuotaPerSecUSec=quota,
+        Environment=[name + '=' + value for name, value in policy['controller_environment'].items()],
+        ExecStart=[interpreter, '-I', str(PurePosixPath(code_root) / 'bootstrap.py'),
+                   'g5', '--attempt-id', attempt_id, '--campaign-work', work_id]))
+
+
+def worker_container_body(context, enrollment, manifest):
+    """D3: the probe's fixed container body extended with the work's io binds."""
+    body = probe_container_body(context, enrollment, manifest)
+    io = checkpoint_io_paths(enrollment)
+    return dict(body,
+        Entrypoint=['/opt/ops/bin/python', '-I', '/opt/qualification/bootstrap.py', 'worker'],
+        Cmd=['--execution-id', manifest['work_id'], '--input', '/input', '--output', '/output',
+             '--campaign-limits', 'campaign-limits.json'],
+        HostConfig=dict(body['HostConfig'],
+            Binds=[io['in_path'] + ':/input:ro', io['out_path'] + ':/output:rw']))
+
+
+def _stage_worker_input(context, campaigns, enrollment, state, work):
+    """Stage the work's input into the io tmpfs: plan, limits, installation, bundle."""
+    from .files import read_regular
+    from ..checkpoint_plan import derive_checkpoint_plan
+    io = checkpoint_io_paths(enrollment)
+    in_root = Path(io['in_path'])
+    attempt = state['attempt_id']
+    plan_bytes = derive_checkpoint_plan(campaigns.retained_object(attempt, 'plan'), 'N1', None)
+    objects = campaigns.objects(attempt)
+    release = read_regular(Path(context.config['installation_root']), 'release.json', limit=16 * 1024 * 1024)
+    keys = read_regular(Path(context.config['installation_root']), 'keys.json', limit=1024 * 1024)
+    reservation = parse_canonical_json(decode_base64(work['reservation_bytes_b64']), label='reservation')
+    deadline = min(state['deadline_boottime_ns'], reservation['clock']['boottime_ns'] + work['limits']['wall_ns'])
+    now_clock = clock(observe_campaign_clock())
+    remaining_wall_ns = max(10**9, deadline - now_clock['boottime_ns'])
+    limits = encoded(dict(schema='qualification_campaign_work_limits/v1', attempt_id=attempt,
+        work_id=work['work_id'], phase='N1',
+        limits=dict(cpu_ns=work['limits']['cpu_ns'] - state['profile']['orchestration_cpu_ns'][work['phase']],
+                    wall_ns=remaining_wall_ns, memory_bytes=work['limits']['memory_bytes']),
+        orchestration_cpu_ns=state['profile']['orchestration_cpu_ns'][work['phase']],
+        deadline_boottime_ns=deadline))
+    files = [('', 'plan.json', plan_bytes), ('', 'campaign-limits.json', limits),
+             ('installation', 'release.json', release), ('installation', 'keys.json', keys),
+             ('bundle', 'index.json', objects['bundle_index'])]
+    for role, raw in objects.items():
+        if role.startswith('context_'):
+            files.append(('bundle/members', role.removeprefix('context_') + '.bin', raw))
+    staged = 0
+    for directory, name, raw in files:
+        staged += len(raw)
+        target = in_root / directory / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with target.open('xb') as stream:
+            stream.write(raw)
+            stream.flush()
+            import os
+            os.fsync(stream.fileno())
+        target.chmod(0o444)
+    return staged, plan_bytes
+
+
+def _capture_result_document(context, campaigns, state, work, enrollment, manifest, container_row,
+                             payload_bytes, plan_bytes, staged_bytes, started_at, finished_at, authorized):
+    import base64
+    from .store import instant
+    staged_limits = parse_canonical_json((Path(checkpoint_io_paths(enrollment)['in_path']) / 'campaign-limits.json').read_bytes(),
+                                          label='staged campaign limits')['limits']
+    captured = parse_worker_result(payload_bytes, context=context, execution_id=manifest['work_id'],
+                                   plan_bytes=plan_bytes, campaign_limits=staged_limits)
+    image = parse_canonical_json(context.release, label='release')['worker_image_digest']
+    from .runtime import observe_runtime
+    result = encoded(dict(schema='qualification_campaign_checkpoint_result/v1',
+        attempt_id=state['attempt_id'], checkpoint='N1', work_id=manifest['work_id'],
+        campaign_id=campaigns.row(state['attempt_id'])['campaign_id'],
+        plan_sha256=sha256(plan_bytes), plan_byte_length=len(plan_bytes),
+        payload_sha256=sha256(payload_bytes), payload_byte_length=len(payload_bytes),
+        worker_execution_id=manifest['work_id'], container_id=container_row['Id'],
+        worker_image_digest=image,
+        runtime_manifest_sha256=sha256(encoded(parse_canonical_json(context.release, label='release')['runtime_manifests']['worker'])),
+        capture=dict(exit_code=container_row['State']['ExitCode'],
+                     oom_killed=bool(container_row['State']['OOMKilled']),
+                     started_utc=started_at, completed_utc=finished_at,
+                     authorized_at_utc=authorized, campaign_scope_id=enrollment['scopes']['campaign_slice'],
+                     work_scope_id=enrollment['scopes']['payload_slice'],
+                     payload_slice=enrollment['scopes']['payload_slice']),
+        limits=dict(cpu_ns=work['limits']['cpu_ns'], wall_ns=work['limits']['wall_ns'],
+                    memory_bytes=work['limits']['memory_bytes'],
+                    orchestration_cpu_ns=state['profile']['orchestration_cpu_ns'][work['phase']]),
+        observations=dict(exit_code=container_row['State']['ExitCode'],
+                          oom_killed=bool(container_row['State']['OOMKilled']),
+                          **captured.document['observations']),
+        created_utc=instant(__import__('datetime').datetime.now(__import__('datetime').timezone.utc))))
+    return result, captured
+
+
+
+
+def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifest):
+    """The genuine N1 compute work: container with identity + handshake, capture
+    from the bounded output mount, byte-for-byte archive, attestation, CAPTURED,
+    settlement -- the probe's supervision loop with the real worker payload."""
+    import base64
+    docker = DockerControl()
+    if docker.call('GET', '/info')['CgroupDriver'] != 'systemd':
+        raise ValueError('installed Docker cgroup driver differs; no automatic switch')
+    io = checkpoint_io_paths(enrollment)
+    staged_bytes, plan_bytes = _stage_worker_input(context, campaigns, enrollment, state, work)
+    output_bound = context.profile.output_byte_limit
+    _guardian_bus_call(campaigns, io['in_unit'],
+                       _io_mount_properties(io['in_path'], size_bytes=staged_bytes + 4096,
+                                            uid=context.config['service_uid'], mode=0o755))
+    _guardian_bus_call(campaigns, io['out_unit'],
+                       _io_mount_properties(io['out_path'], size_bytes=output_bound,
+                                            uid=context.profile.worker_uid, mode=0o755))
+    name = 'fpqs2-' + sha256(encoded(enrollment))
+    body = worker_container_body(context, enrollment, manifest)
+    container = digest(docker.call('POST', '/containers/create?name=' + name, body)['Id'])
+    _retain_event(campaigns, state['attempt_id'], work['work_id'], 'CONTAINER', dict(
+        container_id=container, name=name, role=manifest['role'],
+        cgroup_parent=enrollment['scopes']['payload_slice']))
+    row = docker.call('GET', '/containers/' + container + '/json')
+    if (row['Image'] != body['Image'] or row['Config']['User'] != body['User']
+            or row['Config']['Entrypoint'] != body['Entrypoint'] or row['Config']['Cmd'] != body['Cmd']
+            or row['HostConfig']['CgroupParent'] != enrollment['scopes']['payload_slice']
+            or row['HostConfig']['Binds'] != body['HostConfig']['Binds']):
+        raise ValueError('effective fixed container configuration differs')
+    seen_pids = {}
+    oom_baseline = int(_kernel_pairs(_read_counter(runtime.parent / 'memory.events')).get('oom_kill', 0))
+    stopping = False
+    docker_lagging = 0
+    budget_cpu = work['limits']['cpu_ns'] - state['profile']['orchestration_cpu_ns'][work['phase']]
+    started_at = authorized = finished_at = None
+    with campaigns.launch_gate(state['attempt_id'], work['work_id'], observe_campaign_clock, role='payload') as permit:
+        authorized = clock(observe_campaign_clock())['utc']
+        docker.call('POST', '/containers/' + container + '/start')
+    campaigns.acknowledge_dispatch(state['attempt_id'], work['work_id'],
+        'payload', permit['token'], observe_campaign_clock)
+    payload_slice = _scope_path(runtime.parent, enrollment['scopes']['payload_slice'])
+    while True:
+        row = docker.call('GET', '/containers/' + container + '/json')
+        if row['State']['Running']:
+            started_at = row['State']['StartedAt']
+            pid = row['State']['Pid']
+            try:
+                actual = Path('/sys/fs/cgroup') / _process_cgroup(pid).lstrip('/')
+                members = _payload_processes(actual)
+                usage = _kernel_pairs(_read_counter(payload_slice / 'cpu.stat')).get('usage_usec', 0) * 1000
+            except OSError:
+                if docker.call('GET', '/containers/' + container + '/json')['State']['Running']:
+                    docker_lagging += 1
+                    if docker_lagging > 20:
+                        raise
+                else:
+                    docker_lagging = 0
+                time.sleep(.05)
+                continue
+            for pid_text in members:
+                observed_identity = _process_identity(pid_text)
+                if observed_identity is None:
+                    continue
+                birth, uid, cgroup, comm, exe = observed_identity
+                if str(uid) != body['User'].split(':')[0]:
+                    raise ValueError('effective role UID differs')
+                if _pre_exec_init(comm):
+                    continue
+                if seen_pids.get((pid_text, birth)) != comm:
+                    _retain_event(campaigns, state['attempt_id'], work['work_id'], 'PROCESS',
+                        dict(pid=int(pid_text), start_ticks=birth, uid=uid, cgroup=cgroup, comm=comm, exe=exe))
+                    seen_pids[(pid_text, birth)] = comm
+            # Overrun or OOM: durable uncertainty first, then the kill; the final
+            # facts are retained only after verified absence by the settlement.
+            if not stopping and (usage >= budget_cpu or int(_kernel_pairs(
+                    _read_counter(runtime.parent / 'memory.events')).get('oom_kill', 0)) > oom_baseline):
+                _transition(campaigns, state['attempt_id'], work['work_id'], 'IN_DOUBT', {})
+                docker.call('POST', '/containers/' + container + '/kill?signal=KILL')
+                stopping = True
+            time.sleep(.2)
+            continue
+        if row['State']['Pid'] != 0:
+            raise ValueError('container termination has no process absence proof')
+        finished_at = row['State']['FinishedAt']
+        break
+    exit_code = integer(row['State']['ExitCode'])
+    _retain_event(campaigns, state['attempt_id'], work['work_id'], 'PAYLOAD_EXIT',
+                  dict(container_id=container, exit_code=exit_code, oom_killed=row['State']['OOMKilled'],
+                       finished_at=row['State']['FinishedAt']))
+    if not seen_pids:
+        _retain_event(campaigns, state['attempt_id'], work['work_id'], 'PROCESS_UNOBSERVED',
+                      dict(container_id=container, exit_code=exit_code))
+        raise ValueError('payload exited before any alive-verified process identity; completion refused')
+    state = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='worker final state')
+    work = campaigns._work(state, work['work_id'])
+    if exit_code != 0:
+        if work['state'] == 'RUNNING':
+            _transition(campaigns, state['attempt_id'], work['work_id'], 'IN_DOUBT', {})
+        observed = runtime.observation(state, work, enrollment)
+        parse_canonical_json(campaigns.settle_work(state['attempt_id'], work['work_id'], observed), label='settlement')
+        docker.call('DELETE', '/containers/' + container + '?v=1')
+        return
+    # The capture: exactly the archived bytes from the bounded output mount.
+    from .files import read_regular
+    payload_bytes = read_regular(Path(io['out_path']), 'result.frame', limit=output_bound)
+    result, captured = _capture_result_document(context, campaigns, state, work, enrollment, manifest,
+                                                row, payload_bytes, plan_bytes, staged_bytes,
+                                                started_at, finished_at, authorized)
+    capture_transition = encoded(dict(
+        schema='qualification_campaign_work_transition/v1', attempt_id=state['attempt_id'],
+        work_id=work['work_id'], state='CAPTURED', clock=clock(observe_campaign_clock()),
+        data=dict(capture_bytes_b64=base64.b64encode(result).decode('ascii'))))
+    campaigns.retain_checkpoint_capture(state['attempt_id'], work['work_id'], result, payload_bytes,
+                                        capture_transition)
+    # The attestation signs exactly the archived capture, with the service's
+    # enrolled execution credential; the store verifies custody on retain.
+    from .signing import sign_checkpoint_attestation
+    budget_state = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='capture budget')
+    parsed_result = parse_canonical_json(result, label='checkpoint result')
+    attestation_payload = dict(
+        schema='qualification_campaign_checkpoint_attestation_payload/v1',
+        scope='ATTEST_CAMPAIGN_CHECKPOINT', attempt_id=state['attempt_id'], checkpoint='N1',
+        work_id=manifest['work_id'], result_sha256=sha256(result),
+        payload_sha256=parsed_result['payload_sha256'],
+        payload_byte_length=parsed_result['payload_byte_length'],
+        plan_sha256=parsed_result['plan_sha256'], execution_release_sha256=sha256(context.release),
+        profile_sha256=context.profile.sha256,
+        service_id=parse_canonical_json(context.release, label='release')['service_id'],
+        worker_image_digest=parsed_result['worker_image_digest'],
+        runtime_manifest_sha256=parsed_result['runtime_manifest_sha256'],
+        container_id=parsed_result['container_id'],
+        capture=dict(exit_code=exit_code, oom_killed=bool(row['State']['OOMKilled']),
+                     campaign_scope_id=enrollment['scopes']['campaign_slice'],
+                     work_scope_id=enrollment['scopes']['payload_slice'],
+                     payload_slice=enrollment['scopes']['payload_slice']),
+        observations=dict(exit_code=exit_code, oom_killed=bool(row['State']['OOMKilled']),
+                          **captured.document['observations']),
+        authorized_at_utc=authorized, started_utc=started_at, completed_utc=finished_at,
+        campaign_revision=budget_state['authority_revision'])
+    attestation = sign_checkpoint_attestation(attestation_payload, context=context,
+        credential_reference=context.config['execution_credential'], current_keys=context.keys())
+
+    def _verify(attempt, result_raw, payload_raw, attestation_raw):
+        from .signing import verify_checkpoint_attestation
+        verify_checkpoint_attestation(attestation_raw, context=context, current_keys=context.keys())
+        if (parse_canonical_json(attestation_raw, label='attestation')['payload']['result_sha256']
+                != sha256(result_raw) or parse_canonical_json(result_raw, label='result')['payload_sha256']
+                != sha256(payload_raw)):
+            raise ValueError('checkpoint attestation capture binding differs')
+
+    campaigns.retain_checkpoint_attestation(state['attempt_id'], attestation, verify=_verify)
+    state = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='attested state')
+    work = campaigns._work(state, work['work_id'])
+    observed = runtime.observation(state, work, enrollment)
+    state = parse_canonical_json(campaigns.settle_work(state['attempt_id'], work['work_id'], observed), label='settlement')
+    if state['state'] == 'BOUND' and state['validity'] == 'VALID':
+        _transition(campaigns, state['attempt_id'], work['work_id'], 'COMPLETED', {})
+    docker.call('DELETE', '/containers/' + container + '?v=1')
+
+
+def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
+    """The metered qg5 unit (D2): start under the payload slice, supervise its
+    identities, and settle. The assessment itself is the unit's own work over
+    the service socket; credit follows the persisted candidate, never the
+    unit's exit status alone."""
+    from .runtime import installed_code_root
+    deadline = min(state['deadline_boottime_ns'],
+                   parse_canonical_json(decode_base64(work['reservation_bytes_b64']), label='reservation')['clock']['boottime_ns']
+                   + work['limits']['wall_ns'])
+    now_clock = clock(observe_campaign_clock())
+    remaining_wall_ns = deadline - now_clock['boottime_ns']
+    spec = g5_unit_spec(enrollment['scopes'], attempt_id=state['attempt_id'], work_id=work['work_id'],
+        code_root=str(installed_code_root()), interpreter=sys.executable,
+        g5_uid=context.config['g5_uid'],
+        orchestration_cpu_ns=state['profile']['orchestration_cpu_ns'][work['phase']],
+        remaining_wall_ns=remaining_wall_ns, cpu_ns=work['limits']['cpu_ns'])
+    unit = enrollment['scopes']['payload_slice'][:-6] + '-g5.service'
+    with campaigns.launch_gate(state['attempt_id'], work['work_id'], observe_campaign_clock, role='payload') as permit:
+        _guardian_bus_call(campaigns, unit, spec['g5'])
+    campaigns.acknowledge_dispatch(state['attempt_id'], work['work_id'],
+        'payload', permit['token'], observe_campaign_clock)
+    group = _scope_path(runtime.parent, enrollment['scopes']['payload_slice']) / unit
+    seen = set()
+    while True:
+        current = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='current g5 authority')
+        _assert_authority(current)
+        if not group.exists() or _kernel_pairs(_read_counter(group / 'cgroup.events')).get('populated') == 0:
+            break
+        for pid_text in _payload_processes(group):
+            if pid_text in seen:
+                continue
+            observed_identity = _process_identity(pid_text)
+            if observed_identity is None:
+                continue
+            birth, uid, cgroup, comm, exe = observed_identity
+            if uid != context.config['g5_uid']:
+                raise ValueError('g5 unit role UID differs')
+            _retain_event(campaigns, state['attempt_id'], work['work_id'], 'PROCESS',
+                dict(pid=int(pid_text), start_ticks=birth, uid=uid, cgroup=cgroup, comm=comm, exe=exe))
+            seen.add(pid_text)
+        time.sleep(.2)
+    state = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='g5 final state')
+    work = campaigns._work(state, work['work_id'])
+    if work['state'] == 'RUNNING':
+        # The unit ended without a persisted candidate: durable uncertainty.
+        _transition(campaigns, state['attempt_id'], work['work_id'], 'IN_DOUBT', {})
+        state = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='g5 in-doubt')
+        work = campaigns._work(state, work['work_id'])
+    observed = runtime.observation(state, work, enrollment)
+    state = parse_canonical_json(campaigns.settle_work(state['attempt_id'], work['work_id'], observed), label='g5 settlement')
+    if (work['state'] in ('SIGNING_INTENT', 'SIGNED') and state['validity'] == 'VALID'
+            and state['state'] in ('BOUND', 'N2_READY', 'N1_FAILED')):
+        _transition(campaigns, state['attempt_id'], work['work_id'], 'COMPLETED', {})
+
+
 def probe_container_body(context, enrollment, manifest):
     role = manifest['role']
     if role not in WORK_ROLES[1:]:
         raise ValueError('installed harmless probe role required')
     config = context.config
     uid = {'probe_worker': context.profile.worker_uid, 'probe_g5': config['g5_uid'],
-           'probe_result': config['g5_uid'], 'probe_seal': config['seal_probe_uid']}[role]
+           'probe_result': config['g5_uid'], 'probe_seal': config['seal_probe_uid'],
+           'n1_worker': context.profile.worker_uid, 'n1_g5': config['g5_uid']}[role]
     from .profile import CAMPAIGN_RESOURCE_SCOPE
     image = parse_canonical_json(context.release, label='installed release')['worker_image_digest']
     return dict(Image=image, User=str(uid) + ':' + str(uid), WorkingDir='/tmp',

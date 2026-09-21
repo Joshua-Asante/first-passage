@@ -207,8 +207,168 @@ def main():
     from .runtime import load_instance,measure_runtime,installed_code_root
     parser=argparse.ArgumentParser()
     parser.add_argument('--attempt-id',required=True)
+    parser.add_argument('--campaign-work')
     args=parser.parse_args()
     config=load_instance(installed_code_root()/'qualification-installation/g5.json')
     release=read_regular(Path(config['installation_root']),'release.json',limit=16*1024*1024)
     measure_runtime(installed_code_root(),'g5',release)
+    if args.campaign_work is not None:
+        from .campaign_probe import await_resume, block_resume_signal
+        block_resume_signal()
+        if await_resume() is None:
+            raise SystemExit('supervisor resume signal absent')
+        sys.stdout.buffer.write(accept_campaign_checkpoint(Path(config['socket_path']),
+            attempt_id=args.attempt_id, work_id=args.campaign_work))
+        sys.stdout.buffer.flush()
+        return
     sys.stdout.buffer.write(accept_n1(Path(config['socket_path']),attempt_id=args.attempt_id))
+
+class CampaignCheckpointEvidence:
+    """The §1 return of validate_campaign_checkpoint: the canonical assessment
+    core plus output bytes, expected revision and snapshot identity."""
+    def __init__(self, assessment_bytes, output_bytes_by_role, expected_revision, snapshot_sha256, decision):
+        self.assessment_bytes = assessment_bytes
+        self.output_bytes_by_role = output_bytes_by_role
+        self.expected_revision = expected_revision
+        self.snapshot_sha256 = snapshot_sha256
+        self.decision = decision
+
+
+def validate_campaign_checkpoint(context, *, checkpoint, plan_bytes, attestation_bytes, artifacts,
+                                 snapshot_bytes, current_keys):
+    """The active G5 adapter's FULL_E1 validation (S3: N1 only).
+
+    Verifies the checkpoint attestation's execution-key signature against the
+    current enrollment, reconstructs the canonical assessment from the actual
+    captured bytes (the D1 builder below this adapter), and validates its own
+    output shape. Never trusts a worker verdict and never reruns draws.
+    """
+    from ..evidence import build_checkpoint_evidence
+    from .signing import verify_checkpoint_attestation
+    if checkpoint != 'N1':
+        raise ValueError('installed checkpoint required')
+    verified = verify_checkpoint_attestation(attestation_bytes, context=context, current_keys=current_keys)
+    payload = verified['payload']
+    result_bytes = artifacts['result']
+    worker_result_bytes = artifacts['worker_result']
+    if (payload['plan_sha256'] != sha256(plan_bytes) or payload['result_sha256'] != sha256(result_bytes)
+            or payload['payload_sha256'] != sha256(worker_result_bytes)):
+        raise ValueError('checkpoint capture membership differs')
+    result = parse_canonical_json(result_bytes, label='checkpoint result')
+    if (result['payload_sha256'] != sha256(worker_result_bytes)
+            or result['plan_sha256'] != sha256(plan_bytes)):
+        raise ValueError('checkpoint result binding differs')
+    inspected = build_checkpoint_evidence(contract=context.contract, policy=context.policy,
+        worker_result_bytes=worker_result_bytes, plan_bytes=plan_bytes,
+        checkpoint_attestation_bytes=attestation_bytes, checkpoint_snapshot_bytes=snapshot_bytes,
+        installed_release_bytes=context.installed_release)
+    from ..evidence import compare_checkpoint_evidence
+    compare_checkpoint_evidence(inspected, expected=inspected)
+    snapshot = parse_canonical_json(snapshot_bytes, label='checkpoint snapshot')
+    if snapshot['capture']['attestation_sha256'] != sha256(attestation_bytes):
+        raise ValueError('checkpoint snapshot membership differs')
+    return CampaignCheckpointEvidence(inspected.assessment_bytes, dict(inspected.output_bytes_by_role),
+        snapshot['campaign_revision'], sha256(snapshot_bytes),
+        parse_canonical_json(inspected.assessment_bytes, label='assessment')['decision'])
+
+
+def sign_campaign_checkpoint(evidence, *, context, credential_reference, current_keys, work_id):
+    """Sign the canonical assessment core with the enrolled result key."""
+    import base64
+    from .credentials import load_credential
+    key_id, authority, key = load_credential(credential_reference)
+    if (authority != context.domain.authority_class or key_id not in context.domain.result_key_ids
+            or key_id not in current_keys
+            or sha256(key.public_key().public_bytes_raw()) != sha256(current_keys[key_id].public_key)):
+        raise ValueError('G5 campaign credential enrollment differs')
+    core = parse_canonical_json(evidence.assessment_bytes, label='assessment core')
+    core['signature'] = dict(algorithm='Ed25519', key_id=key_id,
+        value_b64=base64.b64encode(key.sign(canonical_json_bytes(
+            {name: value for name, value in core.items() if name != 'signature'}))).decode('ascii'))
+    from .signing import verify_checkpoint_assessment
+    return canonical_json_bytes(core), verify_checkpoint_assessment
+
+
+def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id):
+    """The metered qg5 unit's assessment run: fetch actual members, reconstruct,
+    sign, stage and commit -- the N1_ONLY accept_n1 shape over the S3 ops."""
+    import base64
+    import os
+    from pathlib import Path
+    import tempfile
+    from .client import request
+    from .files import read_regular, relative_parts
+    from .keys import load_keys
+    from .runtime import load_instance, installed_code_root
+    config = fields(load_instance(installed_code_root() / 'qualification-installation/g5.json'),
+        {'installation_root', 'socket_path', 'g5_uid', 'scratch_root', 'result_credential'})
+    if str(socket_path) != config['socket_path'] or os.geteuid() != config['g5_uid']:
+        raise ValueError('protected G5 identity/socket differs')
+    release = read_regular(Path(config['installation_root']), 'release.json', limit=16 * 1024 * 1024)
+    authority = parse_canonical_json(release, label='release')['authority_class']
+    keys = load_keys(read_regular(Path(config['installation_root']), 'keys.json', limit=1024 * 1024), authority_class=authority)
+
+    def call(operation, **values):
+        return request(socket_path, operation, dict(attempt_id=attempt_id, **values))
+
+    snapshot = call('CHECKPOINT_SNAPSHOT', checkpoint='N1')
+    parsed_snapshot = parse_canonical_json(snapshot, label='checkpoint snapshot')
+    if parsed_snapshot['intent']['candidate_sha256'] is not None:
+        # An intent is already persisted: the exact retry must reproduce the
+        # identical candidate bytes (deterministic reconstruction and Ed25519).
+        pass
+
+    def fetch(digest_value):
+        from .campaign_protocol import CHECKPOINT_CHUNK_LIMIT
+        from .protocol import decode_base64
+        result = bytearray()
+        total = None
+        while total is None or len(result) < total:
+            length = CHECKPOINT_CHUNK_LIMIT if total is None else min(CHECKPOINT_CHUNK_LIMIT, total - len(result))
+            chunk_doc = parse_canonical_json(call('FETCH_CHECKPOINT_MEMBER',
+                checkpoint='N1', object_sha256=digest_value, offset=len(result), length=length), label='member chunk')
+            if (chunk_doc['schema'] != 'qualification_campaign_checkpoint_chunk/v1'
+                    or chunk_doc['object_sha256'] != digest_value or chunk_doc['offset'] != len(result)):
+                raise ValueError('checkpoint chunk metadata differs')
+            total = chunk_doc['total_byte_length']
+            result.extend(decode_base64(chunk_doc['bytes_b64']))
+        raw = bytes(result)
+        if sha256(raw) != digest_value or len(raw) != total:
+            raise ValueError('fetched checkpoint member identity differs')
+        return raw
+
+    members = {member['role']: member['sha256'] for member in parsed_snapshot['members']}
+    artifacts = {'result': fetch(members['result']), 'worker_result': fetch(members['payload']),
+                 'attestation': fetch(members['attestation'])}
+    plan_bytes = fetch(members['plan'])
+    with tempfile.TemporaryDirectory(dir=config['scratch_root']) as directory:
+        root = Path(directory)
+        index_raw = fetch(members['retained_bundle_index'])
+        (root / 'index.json').write_bytes(index_raw)
+        index = parse_canonical_json(index_raw, label='bundle index')
+        for item in index['entries']:
+            relative_parts(item['path'])
+            path = root / item['path']
+            path.parent.mkdir(parents=True, exist_ok=True)
+            digest_value = next(members['retained_context_' + item['role']] for item2 in index['entries']
+                                if item2['role'] == item['role'])
+            with path.open('xb') as output:
+                output.write(fetch(digest_value))
+        context = verify_bundle(root, release, keys, utc_now())
+        if context.attempt_id != attempt_id:
+            raise ValueError('campaign attempt identity differs')
+        evidence = validate_campaign_checkpoint(context, checkpoint='N1', plan_bytes=plan_bytes,
+            attestation_bytes=artifacts['attestation'], artifacts=artifacts,
+            snapshot_bytes=snapshot, current_keys=keys)
+        candidate_bytes, verifier = sign_campaign_checkpoint(evidence, context=context,
+            credential_reference=config['result_credential'], current_keys=keys, work_id=work_id)
+        verifier(candidate_bytes, context=context, current_keys=keys)
+        for role, raw in evidence.output_bytes_by_role.items():
+            staged = parse_canonical_json(call('STAGE_CHECKPOINT_ARTIFACT', checkpoint='N1', role=role,
+                bytes_b64=base64.b64encode(raw).decode('ascii')), label='staged artifact receipt')
+            if staged != {'artifact_sha256': sha256(raw)}:
+                raise ValueError('staged checkpoint artifact identity differs')
+        proposed = dict(checkpoint='N1', candidate_bytes_b64=base64.b64encode(candidate_bytes).decode('ascii'),
+            artifacts=[dict(role=role, sha256=sha256(raw)) for role, raw in sorted(evidence.output_bytes_by_role.items())],
+            work_id=work_id)
+        return call('COMMIT_CHECKPOINT_ASSESSMENT', **proposed)

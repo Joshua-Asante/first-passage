@@ -92,7 +92,617 @@ def parse_void_refusal(raw, *, schema=VOID_REFUSAL_SCHEMA):
     return doc
 
 
-class CampaignStore(FundingStoreMixin):
+CHECKPOINT_SCHEMA = '''
+CREATE TABLE IF NOT EXISTS full_campaign_checkpoint_captures (
+ attempt_id TEXT PRIMARY KEY REFERENCES full_campaigns(attempt_id),
+ checkpoint TEXT NOT NULL CHECK(checkpoint='N1'),
+ work_id TEXT NOT NULL,
+ result_bytes BLOB NOT NULL CHECK(length(result_bytes)<=262144),
+ payload_bytes BLOB NOT NULL CHECK(length(payload_bytes)<=268435456),
+ attestation_bytes BLOB);
+CREATE TABLE IF NOT EXISTS full_campaign_checkpoint_staged (
+ attempt_id TEXT NOT NULL REFERENCES full_campaigns(attempt_id),
+ role TEXT NOT NULL, sha256 TEXT NOT NULL, body BLOB NOT NULL CHECK(length(body)<=268435456),
+ PRIMARY KEY(attempt_id,role,sha256));
+CREATE TABLE IF NOT EXISTS full_campaign_checkpoint_intents (
+ attempt_id TEXT PRIMARY KEY REFERENCES full_campaigns(attempt_id),
+ checkpoint TEXT NOT NULL CHECK(checkpoint='N1'),
+ work_id TEXT NOT NULL,
+ snapshot_bytes BLOB NOT NULL CHECK(length(snapshot_bytes)<=262144),
+ intent_bytes BLOB NOT NULL CHECK(length(intent_bytes)<=262144),
+ candidate_bytes BLOB NOT NULL CHECK(length(candidate_bytes)<=262144),
+ cutoff_bytes BLOB, receipt_bytes BLOB);
+'''
+
+CHECKPOINT_RESULT_SCHEMA = 'qualification_campaign_checkpoint_result/v1'
+CHECKPOINT_ATTESTATION_SCHEMA = 'qualification_campaign_checkpoint_attestation/v1'
+CHECKPOINT_ASSESSMENT_SCHEMA = 'qualification_campaign_checkpoint_assessment/v1'
+CHECKPOINT_RECEIPT_SCHEMA = 'qualification_campaign_checkpoint_receipt/v1'
+CHECKPOINT_CUTOFF_SCHEMA = 'qualification_campaign_cutoff_receipt/v1'
+CHECKPOINT_INTENT_SCHEMA = 'qualification_campaign_checkpoint_intent/v1'
+
+
+def _stage_row(stage):
+    from .protocol import fields
+    fields(stage, {'stage', 'status', 'input_sha256', 'output_sha256', 'population_counts'})
+    if stage['stage'] not in ('LEGALITY', 'N1') or stage['status'] not in ('PASS', 'FAIL'):
+        raise ValueError('checkpoint assessment stage differs')
+    if type(stage['population_counts']) is not dict or any(
+            type(value) is not int or value < 0 for value in stage['population_counts'].values()):
+        raise ValueError('checkpoint assessment population counts differ')
+    return stage
+
+
+def parse_checkpoint_assessment(raw, *, attempt_id):
+    from .protocol import fields, identity, digest
+    doc = fields(parse_canonical_json(raw, label='checkpoint assessment'), {
+        'schema', 'attempt_id', 'checkpoint', 'work_id', 'binding', 'snapshot', 'capture',
+        'stages', 'decision', 'n1_decision', 'cutoff', 'n2_thresholds', 'artifacts', 'signature'})
+    if doc['schema'] != CHECKPOINT_ASSESSMENT_SCHEMA or doc['attempt_id'] != attempt_id or doc['checkpoint'] != 'N1':
+        raise ValueError('checkpoint assessment binding differs')
+    identity(doc['work_id'])
+    binding = fields(doc['binding'], {'contract_sha256', 'trust_domain_sha256', 'policy_sha256',
+                                      'execution_release_sha256'})
+    snapshot = fields(doc['snapshot'], {'campaign_revision', 'authority_head', 'snapshot_sha256'})
+    from .campaign_budget import integer
+    integer(snapshot['campaign_revision'])
+    capture = fields(doc['capture'], {'result_sha256', 'payload_sha256', 'attestation_sha256'})
+    for group in (binding, snapshot, capture):
+        for name, value in group.items():
+            if name != 'campaign_revision' and value is not None:
+                digest(value)
+    if type(doc['stages']) is not list or len(doc['stages']) != 2:
+        raise ValueError('LEGALITY and N1 stage results required')
+    [_stage_row(stage) for stage in doc['stages']]
+    if [stage['stage'] for stage in doc['stages']] != ['LEGALITY', 'N1']:
+        raise ValueError('checkpoint assessment stage order differs')
+    if doc['decision'] not in ('CONTINUE', 'FAILURE') or doc['n1_decision'] not in ('PASS', 'FAIL'):
+        raise ValueError('checkpoint assessment decision differs')
+    if (doc['decision'] == 'FAILURE') != (doc['n1_decision'] == 'FAIL'):
+        raise ValueError('checkpoint assessment decision consistency differs')
+    cutoff = fields(doc['cutoff'], {'checkpoint', 'n1_cutoffs'})
+    if cutoff['checkpoint'] != 'N1' or type(cutoff['n1_cutoffs']) is not dict:
+        raise ValueError('N1 cutoff binding required')
+    for value in cutoff['n1_cutoffs'].values():
+        from .campaign_budget import integer
+        integer(value)
+    thresholds = fields(doc['n2_thresholds'], {'bound_to', 'stages'})
+    digest(thresholds['bound_to'])
+    if type(thresholds['stages']) is not list:
+        raise ValueError('distinct N2 threshold binding required')
+    if type(doc['artifacts']) is not list:
+        raise ValueError('staged artifact inventory required')
+    for row in doc['artifacts']:
+        fields(row, {'role', 'sha256', 'byte_length'})
+        from .protocol import identity as _identity
+        _identity(row['role']); digest(row['sha256'])
+        from .campaign_budget import integer as _integer
+        _integer(row['byte_length'], positive=True)
+    signature = fields(doc['signature'], {'algorithm', 'key_id', 'value_b64'})
+    if signature['algorithm'] != 'Ed25519':
+        raise ValueError('canonical signing algorithm required')
+    return doc
+
+
+def parse_checkpoint_cutoff(raw, *, attempt_id):
+    from .protocol import fields, digest, identity
+    from .campaign_budget import integer, utc
+    doc = fields(parse_canonical_json(raw, label='checkpoint cutoff receipt'), {
+        'schema', 'attempt_id', 'checkpoint', 'assessment_sha256', 'decision',
+        'n1_cutoffs', 'n2_thresholds', 'n2_bound_to', 'created_utc'})
+    if (doc['schema'] != CHECKPOINT_CUTOFF_SCHEMA or doc['attempt_id'] != attempt_id
+            or doc['checkpoint'] != 'N1' or doc['decision'] not in ('CONTINUE', 'FAILURE')):
+        raise ValueError('checkpoint cutoff binding differs')
+    digest(doc['assessment_sha256']); digest(doc['n2_bound_to'])
+    for value in doc['n1_cutoffs'].values():
+        integer(value)
+    for row in doc['n2_thresholds']:
+        fields(row, {'stage', 'exact_depth', 'max_failures_per_population'})
+        identity(row['stage']); integer(row['exact_depth'], positive=True)
+        integer(row['max_failures_per_population'])
+    utc(doc['created_utc'])
+    return doc
+
+
+def parse_checkpoint_attestation(raw, *, attempt_id):
+    """The closed campaign checkpoint attestation envelope (custody, not signature).
+
+    The payload binds exactly the archived capture bytes; signature verification
+    against enrolled execution keys belongs to the signing/verification owners.
+    """
+    from .protocol import fields, identity, digest
+    doc = fields(parse_canonical_json(raw, label='checkpoint attestation'),
+                 {'schema', 'payload', 'signature'})
+    if doc['schema'] != CHECKPOINT_ATTESTATION_SCHEMA:
+        raise ValueError('checkpoint attestation schema required')
+    payload = fields(doc['payload'], {'schema', 'scope', 'attempt_id', 'checkpoint', 'work_id',
+        'result_sha256', 'payload_sha256', 'payload_byte_length', 'plan_sha256',
+        'execution_release_sha256', 'profile_sha256', 'service_id', 'worker_image_digest',
+        'runtime_manifest_sha256', 'container_id', 'capture', 'observations',
+        'authorized_at_utc', 'started_utc', 'completed_utc', 'campaign_revision'})
+    if (payload['schema'] != 'qualification_campaign_checkpoint_attestation_payload/v1'
+            or payload['scope'] != 'ATTEST_CAMPAIGN_CHECKPOINT' or payload['attempt_id'] != attempt_id
+            or payload['checkpoint'] != 'N1'):
+        raise ValueError('checkpoint attestation binding differs')
+    import re
+    identity(payload['work_id'])
+    for name in ('result_sha256', 'payload_sha256', 'plan_sha256', 'execution_release_sha256',
+                 'profile_sha256', 'runtime_manifest_sha256'):
+        digest(payload[name])
+    digest(payload['container_id'])
+    if type(payload['worker_image_digest']) is not str or re.fullmatch('sha256:[0-9a-f]{64}', payload['worker_image_digest']) is None:
+        raise ValueError('immutable worker image identity required')
+    from .campaign_budget import integer, utc
+    integer(payload['payload_byte_length'], positive=True)
+    integer(payload['campaign_revision'])
+    for name in ('authorized_at_utc', 'started_utc', 'completed_utc'):
+        utc(payload[name])
+    capture = fields(payload['capture'], {'exit_code', 'oom_killed', 'campaign_scope_id',
+                                          'work_scope_id', 'payload_slice'})
+    integer(capture['exit_code'])
+    if type(capture['oom_killed']) is not bool:
+        raise ValueError('capture exit facts required')
+    for name in ('campaign_scope_id', 'work_scope_id', 'payload_slice'):
+        identity(capture[name])
+    if type(payload['observations']) is not dict:
+        raise ValueError('bounded capture observations required')
+    signature = fields(doc['signature'], {'algorithm', 'key_id', 'value_b64'})
+    if signature['algorithm'] != 'Ed25519':
+        raise ValueError('canonical signing algorithm required')
+    return doc
+
+
+def parse_checkpoint_result(raw, *, attempt_id):
+    from .protocol import fields, identity, digest
+    doc = fields(parse_canonical_json(raw, label='checkpoint result'), {
+        'schema', 'attempt_id', 'checkpoint', 'work_id', 'campaign_id', 'plan_sha256',
+        'plan_byte_length', 'payload_sha256', 'payload_byte_length', 'worker_execution_id',
+        'container_id', 'worker_image_digest', 'runtime_manifest_sha256', 'capture',
+        'limits', 'observations', 'created_utc'})
+    if (doc['schema'] != CHECKPOINT_RESULT_SCHEMA or doc['attempt_id'] != attempt_id
+            or doc['checkpoint'] != 'N1'):
+        raise ValueError('checkpoint result binding differs')
+    import re
+    identity(doc['work_id']); identity(doc['worker_execution_id']); identity(doc['campaign_id'])
+    for name in ('plan_sha256', 'payload_sha256', 'runtime_manifest_sha256'):
+        digest(doc[name])
+    digest(doc['container_id'])
+    if type(doc['worker_image_digest']) is not str or re.fullmatch('sha256:[0-9a-f]{64}', doc['worker_image_digest']) is None:
+        raise ValueError('immutable worker image identity required')
+    for name in ('plan_byte_length', 'payload_byte_length'):
+        from .campaign_budget import integer
+        integer(doc[name], positive=True)
+    capture = fields(doc['capture'], {'exit_code', 'oom_killed', 'started_utc', 'completed_utc',
+                                     'authorized_at_utc', 'campaign_scope_id', 'work_scope_id', 'payload_slice'})
+    from .campaign_budget import integer, utc
+    integer(capture['exit_code']); utc(capture['completed_utc']); utc(capture['authorized_at_utc'])
+    if type(capture['oom_killed']) is not bool:
+        raise ValueError('capture exit facts required')
+    for name in ('campaign_scope_id', 'work_scope_id', 'payload_slice'):
+        identity(capture[name])
+    limits = fields(doc['limits'], {'cpu_ns', 'wall_ns', 'memory_bytes', 'orchestration_cpu_ns'})
+    for value in limits.values():
+        from .campaign_budget import integer
+        integer(value, positive=True)
+    if type(doc['observations']) is not dict:
+        raise ValueError('bounded capture observations required')
+    from .campaign_budget import utc as _utc
+    _utc(doc['created_utc'])
+    return doc
+
+
+class CheckpointStoreMixin:
+    """The D1 custody surface: FULL_E1 checkpoint capture, staging, intent and commit.
+
+    Mixed into CampaignStore, which supplies the budget/work projections, the
+    funding gate and the save helpers. Every writer first performs the lazy
+    exact-layout user_version 7 -> 8 migration inside its own transaction; the
+    tables below are the only home for the checkpoint evidence family bytes.
+    """
+
+    def _ensure_checkpoint_layout(self, connection):
+        version = connection.execute('PRAGMA user_version').fetchone()[0]
+        if version == 8:
+            return
+        if version != 7:
+            raise ValueError('checkpoint custody requires database v7')
+        self.store.validate_layout(connection, 7)
+        for statement in CHECKPOINT_SCHEMA.split(';'):
+            if statement.strip():
+                connection.execute(statement)
+        connection.execute('PRAGMA user_version=8')
+
+    def _family(self, budget, checkpoint='N1', **row):
+        """Move the checkpoint family projection; `state` names the family state."""
+        family = dict(budget.get('checkpoints') or {})
+        if set(family) - {'N1'} or (checkpoint in family and family[checkpoint]['work_id'] != row.get('work_id', family[checkpoint]['work_id'])):
+            raise ValueError('checkpoint family identity differs')
+        family[checkpoint] = row
+        budget['schema'] = 'qualification_campaign_budget_snapshot/v6'
+        budget['checkpoints'] = family
+        return budget
+
+    def _require_family(self, state, checkpoint='N1'):
+        family = state.get('checkpoints') or {}
+        if checkpoint not in family:
+            raise ValueError('checkpoint family absent')
+        return family[checkpoint]
+
+    def retain_checkpoint_capture(self, attempt_id, work_id, result_bytes, payload_bytes, capture_transition_bytes):
+        """Archive the finalized capture byte-for-byte and record the work's CAPTURED.
+
+        One transaction: the capture row (result + payload), the snapshot's v6
+        family projection and the work's CAPTURED transition commit together, so
+        a restart either sees the whole family or none of it. An exact retry of
+        the same bytes is idempotent; any difference refuses.
+        """
+        result = parse_checkpoint_result(result_bytes, attempt_id=attempt_id)
+        if result['work_id'] != work_id or sha256(payload_bytes) != result['payload_sha256'] \
+                or result['payload_byte_length'] != len(payload_bytes):
+            raise ValueError('archived payload differs from the checkpoint result')
+        from .campaign_budget import clock, transition as parse_transition
+        document = parse_transition(capture_transition_bytes, attempt_id, work_id)
+        if document['state'] != 'CAPTURED':
+            raise ValueError('capture transition required')
+        with self.store.transaction() as connection:
+            self._ensure_checkpoint_layout(connection)
+            prior = connection.execute('SELECT result_bytes,payload_bytes FROM full_campaign_checkpoint_captures '
+                                       'WHERE attempt_id=?', (attempt_id,)).fetchone()
+            if prior is not None:
+                if (bytes(prior[0]), bytes(prior[1])) != (result_bytes, payload_bytes):
+                    raise ValueError('immutable checkpoint capture differs')
+            state = self._budget(connection, attempt_id)
+            work = self._work(state, work_id)
+            if work['phase'] != 'N1':
+                raise ValueError('checkpoint capture requires the N1 compute work')
+            self.record_work_transition(attempt_id, work_id, capture_transition_bytes,
+                                        expected_revision=state['authority_revision'])
+            state = self._budget(connection, attempt_id)
+            self._family(state, work_id=work_id, state='CAPTURED',
+                         payload_sha256=result['payload_sha256'])
+            if prior is None:
+                connection.execute('INSERT INTO full_campaign_checkpoint_captures VALUES(?,?,?,?,?,?)',
+                    (attempt_id, 'N1', work_id, result_bytes, payload_bytes, None))
+            return self._save_budget(connection, state, 'CHECKPOINT_CAPTURED', authority=False)
+
+    def retain_checkpoint_attestation(self, attempt_id, attestation_bytes, *, verify):
+        """Attest exactly the archived bytes; idempotent on the same signature.
+
+        `verify` re-checks the attestation envelope against the retained capture
+        row and current enrollment (the caller owns signature policy); only the
+        durable family move to ATTESTED lives here.
+        """
+        with self.store.transaction() as connection:
+            self._ensure_checkpoint_layout(connection)
+            row = connection.execute('SELECT work_id,result_bytes,payload_bytes,attestation_bytes '
+                                     'FROM full_campaign_checkpoint_captures WHERE attempt_id=?', (attempt_id,)).fetchone()
+            if row is None:
+                raise ValueError('archived checkpoint capture required')
+            prior = row[3]
+            if prior is not None and bytes(prior) != attestation_bytes:
+                raise ValueError('immutable checkpoint attestation differs')
+            verify(attempt_id, bytes(row[1]), bytes(row[2]), attestation_bytes)
+            state = self._budget(connection, attempt_id)
+            family = self._require_family(state)
+            if prior is not None:
+                return self._negative_budget_response(connection, state)
+            if family['state'] != 'CAPTURED':
+                raise ValueError('checkpoint family state differs')
+            self._family(state, work_id=family['work_id'], state='ATTESTED',
+                         payload_sha256=family['payload_sha256'], result_sha256=sha256(bytes(row[1])),
+                         attestation_sha256=sha256(attestation_bytes))
+            if prior is None:
+                connection.execute('UPDATE full_campaign_checkpoint_captures SET attestation_bytes=? '
+                                   'WHERE attempt_id=?', (attestation_bytes, attempt_id))
+            return self._save_budget(connection, state, 'CHECKPOINT_ATTESTED', authority=False)
+
+    def checkpoint_capture(self, attempt_id):
+        """One bounded family view for the G5-facing snapshot and member fetches."""
+        with self.store.transaction() as connection:
+            if connection.execute('PRAGMA user_version').fetchone()[0] < 8:
+                raise ValueError('no checkpoint family retained')
+            row = connection.execute('SELECT work_id,result_bytes,payload_bytes,attestation_bytes '
+                                     'FROM full_campaign_checkpoint_captures WHERE attempt_id=?', (attempt_id,)).fetchone()
+            if row is None:
+                raise ValueError('no checkpoint family retained')
+            if row[3] is None:
+                raise ValueError('checkpoint family attestation absent')
+            return dict(work_id=row[0], result_bytes=bytes(row[1]), payload_bytes=bytes(row[2]),
+                        attestation_bytes=bytes(row[3]))
+
+    def stage_checkpoint_artifact(self, attempt_id, role, raw):
+        from .protocol import identity
+        identity(role)
+        if len(raw) > 268435456:
+            raise ValueError('staged checkpoint artifact exceeds bound')
+        with self.store.transaction() as connection:
+            self._ensure_checkpoint_layout(connection)
+            self._budget(connection, attempt_id)
+            digest_value = sha256(raw)
+            connection.execute('INSERT OR IGNORE INTO full_campaign_checkpoint_staged VALUES(?,?,?,?)',
+                               (attempt_id, role, digest_value, raw))
+            return digest_value
+
+    def checkpoint_members(self, attempt_id):
+        """The served member inventory: family bytes plus retained inputs, by digest."""
+        from ..checkpoint_plan import derive_checkpoint_plan
+        with self.store.transaction() as connection:
+            self._funding_gate(connection, attempt_id)
+            state = self._budget(connection, attempt_id)
+            self._require_family(state)
+            capture = self.checkpoint_capture(attempt_id)
+            plan_bytes = derive_checkpoint_plan(self.retained_object(attempt_id, 'plan'), 'N1', None)
+            members = [dict(role=name, sha256=sha256(raw), byte_length=len(raw)) for name, raw in (
+                ('plan', plan_bytes), ('result', capture['result_bytes']),
+                ('payload', capture['payload_bytes']), ('attestation', capture['attestation_bytes']))]
+            for role, raw in sorted(self.objects(attempt_id).items()):
+                if role.startswith('context_') or role == 'bundle_index':
+                    members.append(dict(role='retained_' + role, sha256=sha256(raw), byte_length=len(raw)))
+            staged = connection.execute('SELECT role,sha256,body FROM full_campaign_checkpoint_staged '
+                                        'WHERE attempt_id=? ORDER BY role', (attempt_id,)).fetchall()
+            members.extend(dict(role='staged_' + row[0], sha256=row[1], byte_length=len(bytes(row[2]))) for row in staged)
+            return members
+
+    def fetch_checkpoint_member(self, attempt_id, object_sha256, offset, length):
+        """One bounded chunk of one served member; the plan-chunk pattern."""
+        from ..checkpoint_plan import derive_checkpoint_plan
+        from .campaign_protocol import CHECKPOINT_CHUNK_LIMIT
+        from .protocol import digest as parse_digest
+        from .campaign_budget import integer
+        parse_digest(object_sha256)
+        integer(offset); integer(length, positive=True)
+        if length > CHECKPOINT_CHUNK_LIMIT:
+            raise ValueError('bounded integer chunk length required')
+        with self.store.transaction() as connection:
+            self._funding_gate(connection, attempt_id)
+            state = self._budget(connection, attempt_id)
+            self._require_family(state)
+            capture = self.checkpoint_capture(attempt_id)
+            plan_bytes = derive_checkpoint_plan(self.retained_object(attempt_id, 'plan'), 'N1', None)
+            sources = {'plan': plan_bytes, 'result': capture['result_bytes'],
+                       'payload': capture['payload_bytes'], 'attestation': capture['attestation_bytes']}
+            for role, raw in self.objects(attempt_id).items():
+                if role.startswith('context_') or role == 'bundle_index':
+                    sources['retained_' + role] = raw
+            row = connection.execute('SELECT role,body FROM full_campaign_checkpoint_staged '
+                                     'WHERE attempt_id=? AND sha256=?', (attempt_id, object_sha256)).fetchone()
+            if row is not None:
+                sources['staged_' + row[0]] = bytes(row[1])
+            raw = next((value for value in sources.values() if sha256(value) == object_sha256), None)
+            if raw is None:
+                raise ValueError('checkpoint member membership differs')
+            if offset >= len(raw):
+                raise ValueError('chunk offset outside member')
+            chunk = raw[offset:offset + length]
+            return encoded(dict(schema='qualification_campaign_checkpoint_chunk/v1',
+                attempt_id=attempt_id, object_sha256=object_sha256, offset=offset,
+                total_byte_length=len(raw), byte_length=len(chunk),
+                bytes_b64=self._b64(chunk)))
+
+    def checkpoint_snapshot(self, attempt_id, checkpoint='N1'):
+        from ..journal_snapshot import encode_campaign_checkpoint_snapshot
+        with self.store.transaction() as connection:
+            self._funding_gate(connection, attempt_id)
+            state = self._budget(connection, attempt_id)
+            family = self._require_family(state, checkpoint)
+            capture = self.checkpoint_capture(attempt_id)
+            plan = parse_canonical_json(self.retained_object(attempt_id, 'plan'), label='campaign plan')
+            intent = connection.execute('SELECT work_id,candidate_bytes FROM '
+                                        'full_campaign_checkpoint_intents WHERE attempt_id=?', (attempt_id,)).fetchone()
+            return encode_campaign_checkpoint_snapshot(attempt_id=attempt_id, checkpoint=checkpoint,
+                contract_sha256=plan['contract_sha256'], trust_domain_sha256=plan['trust_domain_sha256'],
+                policy_sha256=plan['policy_sha256'], validity=self.row(attempt_id)['validity'],
+                campaign_revision=state['authority_revision'], authority_head=state['authority_head'],
+                event_head=state['event_head'], campaign_state=state['state'],
+                works=[dict(work_id=work['work_id'], phase=work['phase'], state=work['state'],
+                            settled=work['observation_bytes_b64'] is not None) for work in state['works']],
+                capture=dict(work_id=capture['work_id'], result_sha256=sha256(capture['result_bytes']),
+                             payload_sha256=sha256(capture['payload_bytes']),
+                             attestation_sha256=sha256(capture['attestation_bytes'])),
+                intent=dict(work_id=intent[0] if intent is not None else family['work_id'],
+                            candidate_sha256=None if intent is None else sha256(bytes(intent[1]))),
+                members=self.checkpoint_members(attempt_id))
+
+    def _checkpoint_integrity(self, connection):
+        """The D1 family walk: table rows bind to the snapshot's own projection."""
+        from ..journal_snapshot import parse_campaign_checkpoint_snapshot
+        for row in connection.execute('SELECT attempt_id,checkpoint,work_id,result_bytes,payload_bytes,attestation_bytes '
+                                      'FROM full_campaign_checkpoint_captures'):
+            attempt = row[0]
+            state = self._budget(connection, attempt)
+            family = (state.get('checkpoints') or {}).get(row[1])
+            if (family is None or family['work_id'] != row[2]
+                    or family['payload_sha256'] != sha256(bytes(row[4]))
+                    or (row[5] is not None and family.get('attestation_sha256') != sha256(bytes(row[5])))):
+                raise ValueError('checkpoint capture projection differs')
+            parse_checkpoint_result(bytes(row[3]), attempt_id=attempt)
+            if row[5] is not None:
+                parse_checkpoint_attestation(bytes(row[5]), attempt_id=attempt)
+                if family['state'] == 'CAPTURED':
+                    raise ValueError('checkpoint family state differs')
+            elif family['state'] != 'CAPTURED':
+                raise ValueError('checkpoint family state differs')
+        for row in connection.execute('SELECT attempt_id,checkpoint,work_id,snapshot_bytes,intent_bytes,candidate_bytes,cutoff_bytes,receipt_bytes '
+                                      'FROM full_campaign_checkpoint_intents'):
+            attempt = row[0]
+            state = self._budget(connection, attempt)
+            family = (state.get('checkpoints') or {}).get(row[1])
+            if family is None or family.get('assessment_sha256') != (None if row[7] is None else sha256(bytes(row[5]))):
+                raise ValueError('checkpoint intent projection differs')
+            parse_campaign_checkpoint_snapshot(bytes(row[3]))
+            parse_checkpoint_assessment(bytes(row[5]), attempt_id=attempt)
+            if row[7] is not None:
+                if row[6] is None:
+                    raise ValueError('committed checkpoint cutoff absent')
+                parse_checkpoint_cutoff(bytes(row[6]), attempt_id=attempt)
+                receipt = parse_canonical_json(bytes(row[7]), label='receipt')
+                if (receipt['schema'] != CHECKPOINT_RECEIPT_SCHEMA or receipt['attempt_id'] != attempt
+                        or receipt['assessment_sha256'] != sha256(bytes(row[5]))
+                        or receipt['cutoff_sha256'] != sha256(bytes(row[6]))
+                        or family.get('receipt_sha256') != sha256(bytes(row[7]))):
+                    raise ValueError('checkpoint receipt integrity differs')
+        for row in connection.execute('SELECT attempt_id,role,sha256,body FROM full_campaign_checkpoint_staged'):
+            if sha256(bytes(row[3])) != row[2]:
+                raise ValueError('checkpoint staged artifact integrity differs')
+
+    def persist_checkpoint_intent(self, attempt_id, work_id, snapshot_bytes, intent_bytes,
+                                  candidate_bytes, capture_transition_bytes, signing_transition_bytes):
+        """T1 of the D1 commit: the g5 work's CAPTURED + SIGNING_INTENT and the durable
+        candidate, all in one transaction.
+
+        An exact retry of the same candidate is idempotent and returns the
+        persisted projection; a different candidate under a persisted intent
+        refuses (no second signing time, no fresh signature). The candidate and
+        snapshot bytes stay private until :meth:`commit_checkpoint_assessment`.
+        """
+        from ..journal_snapshot import parse_campaign_checkpoint_snapshot
+        from .protocol import fields
+        candidate = parse_checkpoint_assessment(candidate_bytes, attempt_id=attempt_id)
+        snapshot = parse_campaign_checkpoint_snapshot(snapshot_bytes)
+        intent = fields(parse_canonical_json(intent_bytes, label='checkpoint signing intent'),
+                        {'schema', 'attempt_id', 'checkpoint', 'work_id', 'key_id',
+                         'signing_at_utc', 'candidate_sha256', 'snapshot_sha256'})
+        from .campaign_budget import utc
+        if (intent['schema'] != CHECKPOINT_INTENT_SCHEMA or intent['attempt_id'] != attempt_id
+                or intent['checkpoint'] != 'N1' or intent['work_id'] != work_id
+                or intent['candidate_sha256'] != sha256(candidate_bytes)):
+            raise ValueError('checkpoint signing intent binding differs')
+        utc(intent['signing_at_utc'])
+        # The candidate's work_id names the captured N1 work; the intent and
+        # the signing window belong to the assessing N1_G5 work.
+        if (candidate['attempt_id'] != attempt_id or snapshot['attempt_id'] != attempt_id
+                or intent['snapshot_sha256'] != sha256(snapshot_bytes)):
+            raise ValueError('checkpoint signing intent identity differs')
+        with self.store.transaction() as connection:
+            self._ensure_checkpoint_layout(connection)
+            prior = connection.execute('SELECT snapshot_bytes,intent_bytes,candidate_bytes FROM '
+                                       'full_campaign_checkpoint_intents WHERE attempt_id=?', (attempt_id,)).fetchone()
+            if prior is not None:
+                if (bytes(prior[1]), bytes(prior[2])) != (intent_bytes, candidate_bytes):
+                    raise ValueError('immutable checkpoint signing candidate differs')
+                return self._negative_budget_response(connection, self._budget(connection, attempt_id))
+            state = self._budget(connection, attempt_id)
+            work = self._work(state, work_id)
+            if work['phase'] != 'N1_G5':
+                raise ValueError('checkpoint assessment requires the N1_G5 work')
+            family = self._require_family(state)
+            if family['state'] not in ('ATTESTED', 'ASSESSING'):
+                raise ValueError('attested checkpoint family required')
+            from .campaign_budget import transition as parse_transition
+            for raw, expected in ((capture_transition_bytes, 'CAPTURED'), (signing_transition_bytes, 'SIGNING_INTENT')):
+                document = parse_transition(raw, attempt_id, work_id)
+                if document['state'] != expected:
+                    raise ValueError(expected.lower().replace('_', ' ') + ' transition required')
+            # CAPTURED bumps the authority revision; re-read before SIGNING_INTENT.
+            self.record_work_transition(attempt_id, work_id, capture_transition_bytes,
+                                        expected_revision=state['authority_revision'])
+            state = self._budget(connection, attempt_id)
+            self.record_work_transition(attempt_id, work_id, signing_transition_bytes,
+                                        expected_revision=state['authority_revision'])
+            state = self._budget(connection, attempt_id)
+            # The family's work_id stays the captured N1 work; the assessing
+            # N1_G5 work is bound by the intent row below.
+            self._family(state, work_id=family['work_id'], state='ASSESSING',
+                         payload_sha256=family['payload_sha256'], result_sha256=family['result_sha256'],
+                         attestation_sha256=family['attestation_sha256'])
+            connection.execute('INSERT INTO full_campaign_checkpoint_intents VALUES(?,?,?,?,?,?,NULL,NULL)',
+                               (attempt_id, 'N1', work_id, snapshot_bytes, intent_bytes, candidate_bytes))
+            return self._save_budget(connection, state, 'CHECKPOINT_INTENT', authority=False)
+
+    def commit_checkpoint_assessment(self, attempt_id, work_id, candidate_bytes, cutoff_bytes,
+                                     *, now, clock_bytes):
+        """T2 of the D1 commit: validate structurally, commit, advance the campaign.
+
+        Requires the persisted T1 intent with the exact candidate bytes. The
+        committed receipt binds the assessment, cutoff, decision and the intent's
+        own signing instant; the campaign advances to N2_READY on CONTINUE and to
+        N1_FAILED on FAILURE. An exact retry after a lost reply returns the
+        byte-identical persisted receipt (no fresh time or signature).
+        """
+        from .store import instant
+        candidate = parse_checkpoint_assessment(candidate_bytes, attempt_id=attempt_id)
+        cutoff = parse_checkpoint_cutoff(cutoff_bytes, attempt_id=attempt_id)
+        from .campaign_budget import clock as parse_clock
+        with self.store.transaction() as connection:
+            self._ensure_checkpoint_layout(connection)
+            row = connection.execute('SELECT work_id,snapshot_bytes,intent_bytes,candidate_bytes,cutoff_bytes,receipt_bytes '
+                                     'FROM full_campaign_checkpoint_intents WHERE attempt_id=?', (attempt_id,)).fetchone()
+            if row is None or bytes(row[3]) != candidate_bytes:
+                raise ValueError('exact checkpoint candidate retry required')
+            if row[5] is not None:
+                if bytes(row[4] or b'') != cutoff_bytes:
+                    raise ValueError('immutable checkpoint commit differs')
+                return encoded(dict(receipt=parse_canonical_json(bytes(row[5]), label='receipt'),
+                                    validity=self.row(attempt_id)['validity'], historical=True))
+            state = self._budget(connection, attempt_id)
+            work = self._work(state, work_id)
+            if work['phase'] != 'N1_G5' or work['state'] != 'SIGNING_INTENT':
+                raise ValueError('signing intent window required')
+            family = self._require_family(state)
+            if family['state'] != 'ASSESSING':
+                raise ValueError('checkpoint family assessment state differs')
+            intent = parse_canonical_json(bytes(row[2]), label='persisted intent')
+            from ..journal_snapshot import parse_campaign_checkpoint_snapshot as _parse_snapshot
+            persisted_snapshot = _parse_snapshot(bytes(row[1]))
+            if (candidate['snapshot']['snapshot_sha256'] != sha256(bytes(row[1]))
+                    or candidate['snapshot']['campaign_revision'] != persisted_snapshot['campaign_revision']):
+                raise ValueError('assessment snapshot identity differs')
+            # Freshness: the only authority changes since the persisted T1
+            # snapshot may be this intent's own CAPTURED/SIGNING_INTENT events;
+            # anything else (VOID, recovery, another work) refuses the commit.
+            head = state['event_head']
+            guard = 0
+            while head != persisted_snapshot['event_head']:
+                event = connection.execute('SELECT body,previous_sha256 FROM full_campaign_budget_events '
+                                           'WHERE attempt_id=? AND sha256=?', (attempt_id, head)).fetchone()
+                if event is None or (guard := guard + 1) > 64:
+                    raise ValueError('assessment snapshot identity differs')
+                if parse_canonical_json(bytes(event[0]), label='interim event')['kind'] not in (
+                        'CAPTURED', 'SIGNING_INTENT', 'CHECKPOINT_INTENT'):
+                    raise ValueError('assessment snapshot identity differs')
+                head = event[1]
+            if (candidate['capture']['result_sha256'] != family.get('result_sha256')
+                    or candidate['capture']['attestation_sha256'] != family.get('attestation_sha256')
+                    or cutoff['assessment_sha256'] != sha256(candidate_bytes)):
+                raise ValueError('assessment capture binding differs')
+            if self.row(attempt_id)['validity'] != 'VALID' or state['validity'] != 'VALID':
+                raise ValueError('VOID campaign')
+            # Budget freshness at commit: the SIGNED transition below observes the
+            # trusted clock (deadline) inside this same transaction.
+            decision = candidate['decision']
+            receipt = encoded(dict(schema=CHECKPOINT_RECEIPT_SCHEMA, attempt_id=attempt_id,
+                checkpoint='N1', work_id=work_id, campaign_id=self.row(attempt_id)['campaign_id'],
+                assessment_sha256=sha256(candidate_bytes), cutoff_sha256=sha256(cutoff_bytes),
+                decision=decision, campaign_state='N2_READY' if decision == 'CONTINUE' else 'N1_FAILED',
+                signing_at_utc=intent['signing_at_utc'], committed_at_utc=instant(now),
+                intent_sha256=sha256(bytes(row[2]))))
+            parse_canonical_json(receipt, label='receipt')
+            signed_transition = encoded(dict(schema='qualification_campaign_work_transition/v1',
+                attempt_id=attempt_id, work_id=work_id, state='SIGNED',
+                clock=parse_clock(clock_bytes), data=dict(candidate_bytes_b64=self._b64(receipt))))
+            # SIGNED while the campaign is still BOUND (the transition's own gate
+            # refuses terminal budgets); the terminal advance rides this event.
+            self.record_work_transition(attempt_id, work_id, signed_transition,
+                                        expected_revision=state['authority_revision'])
+            state = self._budget(connection, attempt_id)
+            if state['state'] not in ('PROVISIONAL', 'BOUND'):
+                return self._negative_budget_response(connection, state)
+            state['state'] = 'N2_READY' if decision == 'CONTINUE' else 'N1_FAILED'
+            self._family(state, work_id=family['work_id'], state='COMMITTED',
+                         payload_sha256=family['payload_sha256'], result_sha256=family['result_sha256'],
+                         attestation_sha256=family['attestation_sha256'],
+                         assessment_sha256=sha256(candidate_bytes), receipt_sha256=sha256(receipt),
+                         decision=decision)
+            connection.execute('UPDATE full_campaign_checkpoint_intents SET cutoff_bytes=?,receipt_bytes=? '
+                               'WHERE attempt_id=?', (cutoff_bytes, receipt, attempt_id))
+            self._save_budget(connection, state,
+                'CHECKPOINT_COMMITTED' if decision == 'CONTINUE' else 'CHECKPOINT_FAILED',
+                authority=True)
+            return encoded(dict(receipt=parse_canonical_json(receipt, label='receipt'),
+                                validity=self.row(attempt_id)['validity'], historical=False))
+
+
+class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
     def __init__(self, store):
         self.store = store
 
@@ -210,7 +820,7 @@ class CampaignStore(FundingStoreMixin):
                     import secrets
                     token = secrets.token_bytes(32) if recovery_owner_token is None else recovery_owner_token
                     self._validate_recovery_token(token)
-                    state['schema'] = 'qualification_campaign_budget_snapshot/v5' if state['profile']['schema'] == 'qualification_campaign_budget_profile/v3' else 'qualification_campaign_budget_snapshot/v4'
+                    state['schema'] = ('qualification_campaign_budget_snapshot/v6' if 'checkpoints' in state else 'qualification_campaign_budget_snapshot/v5') if state['profile']['schema'] == 'qualification_campaign_budget_profile/v3' else 'qualification_campaign_budget_snapshot/v4'
                     state.setdefault('dispatches', [])
                     state.setdefault('recoveries', []).append(dict(work_id=work_id,
                         claim_sha256=sha256(raw), owner_sha256=sha256(token),
@@ -261,7 +871,7 @@ class CampaignStore(FundingStoreMixin):
             current, deadline = self._dispatch_clock(connection, state, work, clock_source)
             refused = state['state'] not in ('PROVISIONAL', 'BOUND')
             if not refused:
-                state['schema'] = 'qualification_campaign_budget_snapshot/v5' if state['profile']['schema'] == 'qualification_campaign_budget_profile/v3' else 'qualification_campaign_budget_snapshot/v4'
+                state['schema'] = ('qualification_campaign_budget_snapshot/v6' if 'checkpoints' in state else 'qualification_campaign_budget_snapshot/v5') if state['profile']['schema'] == 'qualification_campaign_budget_profile/v3' else 'qualification_campaign_budget_snapshot/v4'
                 state.setdefault('recoveries', [])
                 state.setdefault('dispatches', []).append(dict(work_id=work_id, role=role,
                     owner_sha256=owner, started_clock=current, acknowledged_clock=None))
@@ -796,7 +1406,7 @@ class CampaignStore(FundingStoreMixin):
         request = parse_campaign_request(request_bytes)
         document = parse_canonical_json(plan, label='campaign plan')
         if (request['schema'] != 'qualification_campaign_request/v2'
-                or context.release.document['schema'] not in ('qualification_execution_release/v3', 'qualification_execution_release/v4')
+                or context.release.document['schema'] not in ('qualification_execution_release/v3', 'qualification_execution_release/v4', 'qualification_execution_release/v5')
                 or context.attempt_id != request['attempt_id']
                 or context.bundle_sha256 != request['bundle_sha256']
                 or document['attempt_id'] != context.attempt_id
@@ -929,7 +1539,7 @@ class CampaignStore(FundingStoreMixin):
                 validity='VOID', request_sha256=sha256(request_bytes), voided_at_utc=instant(now)))
             connection.execute("UPDATE full_campaigns SET validity='VOID',void_request=?,void_receipt=? WHERE attempt_id=?",
                 (request_bytes, receipt, request['attempt_id']))
-            if connection.execute('PRAGMA user_version').fetchone()[0] in (6, 7):
+            if connection.execute('PRAGMA user_version').fetchone()[0] in (6, 7, 8):
                 exists = connection.execute('SELECT 1 FROM full_campaign_budgets WHERE attempt_id=?', (request['attempt_id'],)).fetchone()
                 if exists:
                     state = self._budget(connection, request['attempt_id'])
@@ -940,7 +1550,7 @@ class CampaignStore(FundingStoreMixin):
         from .protocol import identity
         identity(attempt)
         from ..journal_snapshot import parse_campaign_budget_snapshot
-        if connection.execute('PRAGMA user_version').fetchone()[0] not in (6, 7):
+        if connection.execute('PRAGMA user_version').fetchone()[0] not in (6, 7, 8):
             raise ValueError('no metered campaign')
         row = connection.execute('SELECT snapshot_bytes FROM full_campaign_budgets WHERE attempt_id=?', (attempt,)).fetchone()
         if row is None:
@@ -1412,7 +2022,7 @@ class CampaignStore(FundingStoreMixin):
         from .campaign_budget import budget, clock
         for row in connection.execute('SELECT * FROM full_campaign_budgets'):
             state = parse_campaign_budget_snapshot(bytes(row['snapshot_bytes']))
-            if state['profile']['schema'] == 'qualification_campaign_budget_profile/v3' and connection.execute('PRAGMA user_version').fetchone()[0] != 7:
+            if state['profile']['schema'] == 'qualification_campaign_budget_profile/v3' and connection.execute('PRAGMA user_version').fetchone()[0] not in (7, 8):
                 raise ValueError('funding profile requires database v7')
             owner = self.row(row['attempt_id'])
             receipt = parse_canonical_json(owner['receipt_bytes'], label='provisional receipt')
@@ -1508,9 +2118,12 @@ class CampaignStore(FundingStoreMixin):
                 raise ValueError('diagnostic plan binding differs')
 
     def integrity(self, connection):
-        if connection.execute('PRAGMA user_version').fetchone()[0] in (6, 7):
+        version = connection.execute('PRAGMA user_version').fetchone()[0]
+        if version in (6, 7, 8):
             self._budget_integrity(connection)
             self._funding_integrity(connection)
+        if version == 8:
+            self._checkpoint_integrity(connection)
         for row in connection.execute('SELECT * FROM full_campaigns'):
             if connection.execute('SELECT 1 FROM campaigns WHERE attempt_id=?', (row['attempt_id'],)).fetchone():
                 raise ValueError('cross-capability attempt collision')

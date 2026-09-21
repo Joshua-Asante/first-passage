@@ -50,6 +50,13 @@ _DIAGNOSTIC_FIXED = MappingProxyType(dict(_FIXED,
     diagnostic_work_enabled=True, docker_cgroup_driver='systemd',
     resource_scope=dict(CAMPAIGN_RESOURCE_SCOPE)))
 
+# D4: the only profile whose installation admits N1 dispatch. dispatch_enabled
+# stays closed to the explicit dispatch_checkpoints set -- N1 alone in S3.
+_DISPATCH_FIXED = MappingProxyType(dict(_DIAGNOSTIC_FIXED,
+    schema='qualification_execution_profile/v5', protocol_version=5,
+    supported_checkpoints=['N1'], dispatch_enabled=True,
+    dispatch_checkpoints=['N1']))
+
 
 def parse_profile(raw: bytes) -> ExecutionProfile:
     doc = parse_canonical_json(raw, label='execution profile')
@@ -63,6 +70,8 @@ def parse_profile(raw: bytes) -> ExecutionProfile:
         fixed = dict(_DIAGNOSTIC_FIXED)
     if doc.get('schema') == 'qualification_execution_profile/v4':
         fixed = dict(_DIAGNOSTIC_FIXED, schema='qualification_execution_profile/v4', protocol_version=4)
+    if doc.get('schema') == 'qualification_execution_profile/v5':
+        fixed = dict(_DISPATCH_FIXED)
     fields(doc, (*fixed, *_LIMITS))
     for name, value in fixed.items():
         if type(doc[name]) is not type(value) or doc[name] != value:
@@ -124,13 +133,14 @@ def diagnostic_budget_profile(profile_bytes):
     from .campaign_budget import PHASES
     from ..contract import canonical_json_bytes as encoded
     profile = parse_profile(profile_bytes)
-    if profile.values['schema'] not in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4'):
+    if profile.values['schema'] not in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4',
+                                        'qualification_execution_profile/v5'):
         raise ValueError('fresh diagnostic execution profile required')
     result = dict(schema='qualification_campaign_budget_profile/v2',
         installed_profile_sha256=profile.sha256, record_byte_limit=131072,
         phases={phase: dict(_DIAGNOSTIC_PHASE, memory_bytes=profile.memory_bytes) for phase in PHASES},
         orchestration_cpu_ns={phase: _DIAGNOSTIC_CONTROLLER_CPU_NS for phase in PHASES})
-    if profile.values['schema'] == 'qualification_execution_profile/v4':
+    if profile.values['schema'] in ('qualification_execution_profile/v4', 'qualification_execution_profile/v5'):
         result.update(schema='qualification_campaign_budget_profile/v3', funding_intents='qualification_campaign_funding/v1')
     parse_campaign_budget_profile(encoded(result))
     return result
@@ -151,5 +161,19 @@ def funded_diagnostic_execution_profile(base_bytes):
     from ..contract import canonical_json_bytes as encoded
     result = diagnostic_execution_profile(base_bytes)
     result.update(schema='qualification_execution_profile/v4', protocol_version=4)
+    parse_profile(encoded(result))
+    return result
+
+
+def dispatch_diagnostic_execution_profile(base_bytes):
+    """The S3 dispatch successor (D4): diagnostic v5 admitting N1 dispatch only.
+
+    Composed exactly like the funded v4 variant from the same validated
+    deployment limits; the only new fixed facts are the dispatch fields.
+    """
+    from ..contract import canonical_json_bytes as encoded
+    result = diagnostic_execution_profile(base_bytes)
+    result.update(schema='qualification_execution_profile/v5', protocol_version=5,
+                  supported_checkpoints=['N1'], dispatch_enabled=True, dispatch_checkpoints=['N1'])
     parse_profile(encoded(result))
     return result
