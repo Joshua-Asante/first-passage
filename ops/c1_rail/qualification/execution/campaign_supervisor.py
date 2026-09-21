@@ -1120,6 +1120,22 @@ def _io_mount_properties(where, *, size_bytes, uid, mode):
                 DefaultDependencies=False)
 
 
+def _guardian_signal_unit(unit, signal_name):
+    """The qg5 unit's resume channel -- the analogue of the probe's docker-kill
+    SIGUSR1. A fixed manager command over a prlimit'd child; the polkit rule
+    authorizes the host-prefixed unit and no argument is caller-supplied."""
+    import os
+    import subprocess
+    from .runtime import installed_code_root
+    # campaign_control refuses anything but StartTransientUnit, so the signal
+    # rides systemctl's own manager path (polkit manage-units, host prefix).
+    result = subprocess.run(['/usr/bin/systemctl', '--system', '--no-ask-password',
+                             'kill', '--signal=' + signal_name, unit],
+                            stdin=subprocess.DEVNULL, capture_output=True, timeout=10)
+    if result.returncode != 0:
+        raise ValueError('unit signal failed: ' + result.stderr.decode('utf-8', 'replace')[-300:])
+
+
 def g5_unit_spec(enrollment, *, attempt_id, work_id, code_root, interpreter, g5_uid,
                  orchestration_cpu_ns, remaining_wall_ns, cpu_ns):
     """D2: the metered qg5 transient unit under the work's payload slice.
@@ -1499,23 +1515,43 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
         'payload', permit['token'], observe_campaign_clock)
     group = _scope_path(runtime.parent, enrollment['scopes']['payload_slice']) / unit
     seen = set()
+    resumed = 0
     while True:
         current = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='current g5 authority')
         _assert_authority(current)
         if not group.exists() or _kernel_pairs(_read_counter(group / 'cgroup.events')).get('populated') == 0:
             break
+        init_image = None
         for pid_text in _payload_processes(group):
-            if pid_text in seen:
-                continue
             observed_identity = _process_identity(pid_text)
             if observed_identity is None:
                 continue
             birth, uid, cgroup, comm, exe = observed_identity
             if uid != context.config['g5_uid']:
                 raise ValueError('g5 unit role UID differs')
-            _retain_event(campaigns, state['attempt_id'], work['work_id'], 'PROCESS',
-                dict(pid=int(pid_text), start_ticks=birth, uid=uid, cgroup=cgroup, comm=comm, exe=exe))
-            seen.add(pid_text)
+            if seen.get(pid_text) != comm:
+                _retain_event(campaigns, state['attempt_id'], work['work_id'], 'PROCESS',
+                    dict(pid=int(pid_text), start_ticks=birth, uid=uid, cgroup=cgroup, comm=comm, exe=exe))
+                seen[pid_text] = comm
+            init_image = (comm, exe)
+        # The readiness handshake, the probe's shape: send only after the unit's
+        # main renamed itself to the fixed token; the unit identity (the unit
+        # name's digest) stands in for the container id in the retained event.
+        if (resumed < RESUME_SIGNAL_SENDS and init_image is not None
+                and _interpreter_image(*init_image) and init_image[0] == READINESS_TOKEN):
+            signals = _signal_state(next(iter(seen)))
+            if signals is not None:
+                try:
+                    _guardian_signal_unit(unit, 'SIGUSR1')
+                except (OSError, ValueError):
+                    pass
+                else:
+                    _retain_event(campaigns, state['attempt_id'], work['work_id'], 'RESUMED',
+                        dict(container_id=digest(unit), pid=int(next(iter(seen))), comm=init_image[0],
+                             exe=init_image[1], send_count=resumed + 1,
+                             send_boottime_ns=clock(observe_campaign_clock())['boottime_ns'],
+                             threads=signals[0], sig_blk=signals[1], sig_cgt=signals[2]))
+                    resumed += 1
         time.sleep(.2)
     state = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='g5 final state')
     work = campaigns._work(state, work['work_id'])
