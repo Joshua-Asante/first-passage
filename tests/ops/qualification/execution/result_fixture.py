@@ -180,6 +180,12 @@ class ResultServiceDouble:
     def dispatch_lock(self):
         return self.instance.dispatch_lock
 
+    def seal_enrollment_context(self, attempt_id):
+        """The S7 signing phase's enrollment context (seam #19: S3's
+        CampaignStore.context refuses metered campaigns at this revision;
+        removed at integration)."""
+        return result_context(self, attempt_id)
+
     def keys(self):
         return self.instance.keys()
 

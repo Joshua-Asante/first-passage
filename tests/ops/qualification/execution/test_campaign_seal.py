@@ -24,7 +24,8 @@ from c1_rail.qualification.execution import seal_service
 from c1_rail.qualification.execution.campaign_seal import SEAL_OPERATIONS
 from c1_rail.qualification.execution.protocol import sha256
 
-from result_fixture import G5_UID, build_candidate, commit_request, prepared, scene, sign_candidate, stage_authentication
+from result_fixture import G5_UID, scene, sign_candidate
+from test_campaign_result_commit import prepared
 
 NOW = datetime(2026, 9, 21, tzinfo=timezone.utc)
 SEAL_KEY = 'test-seal'
@@ -42,18 +43,22 @@ def committed_pass(tmp_path, monkeypatch):
 
 
 def seal_intent(attempt, *, result_bytes, authentication_bytes, receipt_bytes,
-                key_id=SEAL_KEY, signing_at='2026-09-21T03:00:00Z'):
+                key_id=SEAL_KEY, signing_at='2026-09-21T03:00:00Z',
+                release_sha256='3' * 64, domain_sha256='2' * 64):
     return encoded(dict(schema='qualification_campaign_seal_intent/v1',
         attempt_id=attempt, intent_id=attempt + '-seal',
         result_sha256=sha256(result_bytes),
         authentication_sha256=sha256(authentication_bytes),
         result_receipt_sha256=sha256(receipt_bytes),
-        release_sha256='3' * 64, domain_sha256='2' * 64, key_id=key_id,
+        release_sha256=release_sha256, domain_sha256=domain_sha256, key_id=key_id,
         signing_at_utc=signing_at))
 
 
 def seal_eligible_scene(tmp_path, monkeypatch):
-    """committed_pass plus the SEAL reservation and the durable T1 intent."""
+    """committed_pass plus the SEAL reservation and the durable T1 intent
+    (the intent binds the live release/domain digests, as request_seal builds
+    it)."""
+    from result_fixture import result_context
     instance, double, result_bytes, authentication, receipt_bytes = committed_pass(
         tmp_path, monkeypatch)
     seals = campaign_seal.SealStore(double.campaigns)
@@ -64,9 +69,12 @@ def seal_eligible_scene(tmp_path, monkeypatch):
                                clock=clock_doc, input_sha256=sha256(b'seal-input')))
     seals.reserve_seal_work(instance.attempt, 'swork', reservation,
                             expected_revision=state['authority_revision'])
+    context = result_context(double, instance.attempt)
     intent = seal_intent(instance.attempt, result_bytes=result_bytes,
                          authentication_bytes=authentication,
-                         receipt_bytes=receipt_bytes)
+                         receipt_bytes=receipt_bytes,
+                         release_sha256=sha256(double.instance.release),
+                         domain_sha256=context.domain.sha256)
     return instance, double, seals, intent, result_bytes, authentication, receipt_bytes
 
 
@@ -84,7 +92,10 @@ def sign_like_qseal(double, intent, result_bytes, authentication, receipt_bytes)
 def test_pass_only_eligibility(tmp_path, monkeypatch):
     """Only a committed PASS with current validity reaches qseal; a FAIL, an
     uncommitted result and VOID campaigns refuse with reason strings."""
-    instance, double = scene(tmp_path, monkeypatch, n1_decision='FAILURE')
+    instance, double, snapshot, candidate, authentication, request = prepared(
+        tmp_path, monkeypatch, n1_decision='FAILURE')
+    json.loads(double.handle_result_request(G5_UID, request))
+    assert double.results.seal_eligibility(instance.attempt)['reason'] ==         'committed FAIL outcome is never sealed'
     with pytest.raises(ValueError, match='committed FAIL outcome is never sealed'):
         campaign_seal.request_seal(double, instance.attempt)
     instance2, double2, result_bytes, authentication, receipt = committed_pass(
@@ -110,6 +121,8 @@ def test_qseal_recomputes_pass_and_binds_every_digest(tmp_path, monkeypatch):
     assert json.loads(signature)['schema'] == 'qualification_campaign_seal/v1'
     tampered = json.loads(result_bytes)
     tampered['outcome'] = 'FAIL'
+    tampered['stages'][-1]['status'] = 'FAIL'
+    tampered['checkpoints'][-1]['decision'] = 'FAIL'
     with pytest.raises(ValueError, match='committed PASS result required'):
         sign_like_qseal(double, intent, encoded(tampered), authentication, receipt)
     with pytest.raises(ValueError, match='seal intent binding differs'):
@@ -122,11 +135,17 @@ def test_qseal_recomputes_pass_and_binds_every_digest(tmp_path, monkeypatch):
 def test_wrong_role_result_or_domain_refuses(tmp_path, monkeypatch):
     instance, double, seals, intent, result_bytes, authentication, receipt = seal_eligible_scene(
         tmp_path, monkeypatch)
+    # The domain reference lives with the service's enrollment context (seam
+    # #19), so the wrong-domain intent is refused by the service-side
+    # enrollment check the signing phase rechecks before publication.
+    from result_fixture import result_context
     other_domain = json.loads(seal_intent(instance.attempt, result_bytes=result_bytes,
         authentication_bytes=authentication, receipt_bytes=receipt))
     other_domain['domain_sha256'] = '9' * 64
-    with pytest.raises(ValueError, match='seal intent binding differs'):
-        sign_like_qseal(double, encoded(other_domain), result_bytes, authentication, receipt)
+    with pytest.raises(ValueError, match='seal intent domain differs'):
+        campaign_seal.verify_seal_intent(encoded(other_domain),
+                                         result_context(double, instance.attempt),
+                                         double.instance.release)
     wrong_key = json.loads(intent)
     wrong_key['key_id'] = 'test-producer'
     with pytest.raises(ValueError, match='seal key is not enrolled for sealing'):

@@ -48,7 +48,7 @@ SEAL_SCHEMA = '''
 CREATE TABLE IF NOT EXISTS full_campaign_seal_intents (
  attempt_id TEXT PRIMARY KEY REFERENCES full_campaigns(attempt_id),
  intent_bytes BLOB NOT NULL CHECK(length(intent_bytes)<=262144),
- signature_bytes BLOB NOT NULL CHECK(length(signature_bytes)<=65536),
+ signature_bytes BLOB CHECK(length(signature_bytes)<=65536),
  receipt_bytes BLOB);
 '''
 
@@ -566,10 +566,16 @@ class ResultStore:
         from ..journal_snapshot import parse_campaign_budget_snapshot
         return parse_campaign_budget_snapshot(bytes(row[0]))
 
-    def _advance(self, connection, state, kind, *, authority=True):
+    def _advance(self, connection, state, kind, *, authority=True, state_name=None):
         """The _save_budget chain discipline without the v7/v8 funding
         projection (C-R finding: the projection's state enum and version gate
-        are integration seams; the projection stays at its last v8 image)."""
+        are integration seams; the projection stays at its last v8 image).
+
+        ``state_name`` is the coordinator-ruled post-seam behavior: once the
+        canonical state enum admits RESULT_COMMITTED_*/SEALED_PASS, the advance
+        writes the name into the budget snapshot and the family projection is
+        a mirror; on frozen bytes the parser still refuses those names, so the
+        canonical predecessor state is kept (encode falls back)."""
         from ..journal_snapshot import encode_campaign_budget_snapshot
         self.campaigns._totals(state)
         state['validity'] = self.campaigns.row(state['attempt_id'])['validity']
@@ -577,12 +583,23 @@ class ResultStore:
         state['accounting_revision'] += 1
         if authority:
             state['authority_revision'] += 1
+        predecessor = state['state']
+        if state_name is not None:
+            state['state'] = state_name
         body = encoded(dict(kind=kind, authority=authority, snapshot=state))
         head = sha256(previous.encode('ascii') + body)
+        try:
+            raw = encode_campaign_budget_snapshot(state)
+        except ValueError:
+            if state_name is None:
+                raise
+            state['state'] = predecessor
+            body = encoded(dict(kind=kind, authority=authority, snapshot=state))
+            head = sha256(previous.encode('ascii') + body)
+            raw = encode_campaign_budget_snapshot(state)
         state['event_head'] = head
         if authority:
             state['authority_head'] = head
-        raw = encode_campaign_budget_snapshot(state)
         connection.execute('INSERT INTO full_campaign_budgets VALUES(?,?) '
                            'ON CONFLICT(attempt_id) DO UPDATE SET snapshot_bytes=excluded.snapshot_bytes',
                            (state['attempt_id'], raw))
@@ -1055,6 +1072,9 @@ class ResultStore:
             connection.execute('UPDATE full_campaign_result_intents SET authentication_bytes=?,'
                                'receipt_bytes=? WHERE attempt_id=?',
                                (authentication_bytes, receipt, attempt_id))
+            state = self._state(connection, attempt_id)
+            self._advance(connection, state, 'RESULT_COMMITTED', authority=True,
+                          state_name='RESULT_COMMITTED_' + outcome)
             return encoded(dict(receipt=parse_canonical_json(receipt, label='receipt'),
                                 validity=self.campaigns.row(attempt_id)['validity'],
                                 historical=False))
@@ -1089,6 +1109,19 @@ class ResultStore:
             receipt_bytes = bytes(row[0])
             parse_result_receipt(receipt_bytes, attempt_id=attempt_id)
             return receipt_bytes, True, self.campaigns.row(attempt_id)['validity']
+
+    def committed_result(self, attempt_id):
+        """(result_bytes, authentication_bytes, receipt_bytes) of the committed
+        campaign result -- the S7 signing phase's exact input."""
+        with self.store.transaction() as connection:
+            if connection.execute('PRAGMA user_version').fetchone()[0] < 9:
+                raise ValueError('no committed campaign result')
+            row = connection.execute('SELECT candidate_bytes,authentication_bytes,receipt_bytes '
+                                     'FROM full_campaign_result_intents WHERE attempt_id=?',
+                                     (attempt_id,)).fetchone()
+            if row is None or row[1] is None or row[2] is None:
+                raise ValueError('no committed campaign result')
+            return bytes(row[0]), bytes(row[1]), bytes(row[2])
 
     def seal_eligibility(self, attempt_id):
         """The S7-facing eligibility fact (F3): only a currently-valid
