@@ -1233,7 +1233,7 @@ def _capture_result_document(context, campaigns, state, work, enrollment, manife
     # worker's canonical document exactly as archived.
     captured = parse_worker_result(payload_bytes, context=context, execution_id=manifest['work_id'],
                                    plan_bytes=plan_bytes, campaign_limits=staged_limits)
-    image = parse_canonical_json(context.release, label='release')['worker_image_digest']
+    image = parse_canonical_json(context.installed_release, label='release')['worker_image_digest']
     from .runtime import observe_runtime
     result = encoded(dict(schema='qualification_campaign_checkpoint_result/v1',
         attempt_id=state['attempt_id'], checkpoint='N1', work_id=manifest['work_id'],
@@ -1242,7 +1242,7 @@ def _capture_result_document(context, campaigns, state, work, enrollment, manife
         payload_sha256=sha256(payload_bytes), payload_byte_length=len(payload_bytes),
         worker_execution_id=manifest['work_id'], container_id=container_row['Id'],
         worker_image_digest=image,
-        runtime_manifest_sha256=sha256(encoded(parse_canonical_json(context.release, label='release')['runtime_manifests']['worker'])),
+        runtime_manifest_sha256=sha256(encoded(parse_canonical_json(context.installed_release, label='release')['runtime_manifests']['worker'])),
         capture=dict(exit_code=container_row['State']['ExitCode'],
                      oom_killed=bool(container_row['State']['OOMKilled']),
                      started_utc=started_at, completed_utc=finished_at,
