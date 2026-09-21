@@ -325,7 +325,7 @@ def sign_campaign_checkpoint(evidence, *, context, credential_reference, current
     core['signature'] = dict(algorithm='Ed25519', key_id=key_id,
         value_b64=base64.b64encode(key.sign(encoded(
             {name: value for name, value in core.items() if name != 'signature'}))).decode('ascii'))
-    return canonical_json_bytes(core), verify_checkpoint_assessment
+    return encoded(core), verify_checkpoint_assessment
 
 
 def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id):
