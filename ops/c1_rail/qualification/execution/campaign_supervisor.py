@@ -1097,10 +1097,9 @@ def _guardian_bus_call(campaigns, unit, properties):
     import subprocess
     from .runtime import installed_code_root
     from tools.qualification_verification.container_ownership import CAMPAIGN_BUS_START
-    # The properties are already busctl (name, type, value) triples -- the
-    # dict-based _unit_properties encoding does not apply here.
-    arguments = [unit, 'fail', str(len(properties)),
-                 *(item for row in properties for item in row), '0']
+    # The unit's properties arrive as the same dict the service-side start uses;
+    # _unit_properties performs the ssa(sv) encoding for both.
+    arguments = [unit, 'fail', *_unit_properties(properties), '0']
     process = subprocess.Popen(['/usr/bin/prlimit', '--cpu=1:1', '--', sys.executable, '-I',
         str(installed_code_root() / 'bootstrap.py'), 'campaign_control', str(os.getpid()),
         *CAMPAIGN_BUS_START, *arguments],
@@ -1116,9 +1115,9 @@ def _guardian_bus_call(campaigns, unit, properties):
 
 
 def _io_mount_properties(where, *, size_bytes, uid, mode):
-    return [('What', 's', 'tmpfs'), ('Where', 's', where), ('Type', 's', 'tmpfs'),
-            ('Options', 's', 'rw,size=%d,uid=%d,gid=%d,mode=0%o' % (size_bytes, uid, uid, mode)),
-            ('DefaultDependencies', 'b', 'false')]
+    return dict(What='tmpfs', Where=where, Type='tmpfs',
+                Options='rw,size=%d,uid=%d,gid=%d,mode=0%o' % (size_bytes, uid, uid, mode),
+                DefaultDependencies=False)
 
 
 def g5_unit_spec(enrollment, *, attempt_id, work_id, code_root, interpreter, g5_uid,
