@@ -3,7 +3,7 @@
 
 WHY THIS EXISTS
 ---------------
-`**/*.pine` is gitignored (the live edge is held privately — see CLAUDE.md
+`**/*.pine` is gitignored (the live edge is held privately — see AGENTS.md
 "Public-clone posture"). Gitignored / untracked files are NOT shared between git
 worktrees: each worktree has its own working directory, and the locked `.pine`
 files exist only in the **primary** checkout where Joshua keeps them. So any

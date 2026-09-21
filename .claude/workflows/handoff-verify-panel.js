@@ -223,7 +223,7 @@ const DIMENSIONS = [
     key: 'posture_numeric',
     title: 'Live posture + constants',
     guidance:
-      'Live posture is owned by CLAUDE.md section "Live-execution posture" -- read it there, never trust the ' +
+      'Live posture is owned by AGENTS.md section "Live-execution posture" -- read it there, never trust the ' +
       'packet. The packet is STALE (or HARD_FAIL if the plan depends on it) if it assumes any of: an open FXIFY ' +
       'challenge; an active Aegis->M6J lane; an unbuilt CrossTrade rail; the Striker MYM/MNQ legs deployed at ' +
       'Tradeify; an armed live book. Challenge-era MC pass/bust rates are historical pins, not live ' +

@@ -50,7 +50,7 @@ reading it takes is known.
 
 Any one of these means the unit is presumptively too big. The first five rows are imported
 defaults (issue-decomposition) mapped to repo units; the last two are repo-native. Treat the
-imported numbers as calibration candidates — record the firing when one bites, per CLAUDE.md
+imported numbers as calibration candidates — record the firing when one bites, per AGENTS.md
 §Continuous improvement — not as ratified constants.
 
 | Tell | Repo unit | Cut line it usually reveals |
@@ -96,7 +96,7 @@ That umbrella is the reference shape for this skill's work-shaped output.
    index files are reserved to the parent's integration commit.
 6. **Frozen, or explicitly judgment-owned** — a child that needs a judgment call mid-build stays
    with the orchestrating Claude session; a child on a locked surface (core anchor code, Pine,
-   ADRs / pre-registrations / `CLAUDE.md` / `STATE.md`) stays there regardless of size. The
+   ADRs / pre-registrations / `AGENTS.md` / `STATE.md`) stays there regardless of size. The
    [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md) tests 1–2
    record the rule; its Cursor lane is retired (2026-09-15 revision), the rule is not. Never launder a judgment task into
    a "small packet".

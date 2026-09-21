@@ -24,7 +24,7 @@ def test_tmp_tree_quoted_claude_and_pathlib_docs_join(tmp_path):
     (tmp_path / "ops" / "recall").mkdir(parents=True)
     (tmp_path / "ops" / "c1_rail").mkdir(parents=True)
     (tmp_path / "ops" / "recall" / "guard.py").write_text(
-        "claude_md = repo_root / \"CLAUDE.md\"\n",
+        "claude_md = repo_root / \"AGENTS.md\"\n",
         encoding="utf-8",
     )
     (tmp_path / "ops" / "c1_rail" / "c1_rail_arm.py").write_text(
@@ -33,7 +33,7 @@ def test_tmp_tree_quoted_claude_and_pathlib_docs_join(tmp_path):
     )
     hits = inv.scan_tree(tmp_path)
     cited = {h.cited for h in hits}
-    assert "CLAUDE.md" in cited
+    assert "AGENTS.md" in cited
     assert any(c == "docs/notes/x.json" or c.startswith("docs/notes/") for c in cited)
 
 
@@ -42,7 +42,7 @@ def test_real_repo_known_runtime_reads():
     hits = inv.scan_tree(REPO)
     pairs = {(h.source.replace("\\", "/"), h.cited.replace("\\", "/")) for h in hits}
     assert any(
-        src.endswith("ops/recall/guard.py") and cited == "CLAUDE.md"
+        src.endswith("ops/recall/guard.py") and cited == "AGENTS.md"
         for src, cited in pairs
     )
     assert any(
@@ -60,12 +60,12 @@ def test_check_missing_row_warns_and_exits_zero(tmp_path):
     inv = _load()
     (tmp_path / "ops").mkdir()
     (tmp_path / "ops" / "hit.py").write_text(
-        'p = root / "CLAUDE.md"\n',
+        'p = root / "AGENTS.md"\n',
         encoding="utf-8",
     )
     report = tmp_path / "docs" / "notes" / "audits" / "docs-runtime-inventory.md"
     report.parent.mkdir(parents=True)
-    report.write_text("# stale\n\nNo CLAUDE.md row.\n", encoding="utf-8")
+    report.write_text("# stale\n\nNo AGENTS.md row.\n", encoding="utf-8")
     rc = inv.main(["--check", "--root", str(tmp_path), "--report", str(report)])
     assert rc == 0
 
@@ -74,7 +74,7 @@ def test_check_matching_is_clean(tmp_path):
     inv = _load()
     (tmp_path / "ops").mkdir()
     (tmp_path / "ops" / "hit.py").write_text(
-        'p = root / "CLAUDE.md"\n',
+        'p = root / "AGENTS.md"\n',
         encoding="utf-8",
     )
     report = tmp_path / "inv.md"

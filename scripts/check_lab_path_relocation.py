@@ -16,7 +16,7 @@ without belt-churn while the 2026-08-08 quarterly audit still carries a YELLOW
 watch on gate composition. Pass ``--strict`` to exit 1 on findings.
 
 Not wired into ``scripts/gates.yml`` — gate composition is doctrine
-(``CLAUDE.md`` §Gate composition authority). Propose a tier in the landing
+(``AGENTS.md`` §Gate composition authority). Propose a tier in the landing
 report; do not hand-edit the manifest from this script.
 
 Sibling of ``check_path_liveness.py`` (pine-manifest parent dirs only — its

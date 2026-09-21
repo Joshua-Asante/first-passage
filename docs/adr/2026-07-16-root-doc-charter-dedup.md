@@ -79,3 +79,35 @@ Verification: `python scripts/check_root_doc_liveness.py`,
 `python scripts/check_state_currency.py`, `python scripts/check_sessions_queue_bind.py`
 and `python scripts/check_adr_graph.py`. These do not prove semantic equivalence,
 queue-cap/order enforcement or Sentinel schedule coverage; inspect those directly.
+
+## Addendum 2026-09-20 — the agent-constraints root is `AGENTS.md`; `CLAUDE.md` retired
+
+Operator direction 2026-09-20: one instruction file for every agent harness. `CLAUDE.md`
+was deleted and its body moved verbatim into [`AGENTS.md`](../../AGENTS.md), which until
+then carried only the Codex launcher/verification and configuration-as-code rules. The
+"CLAUDE" root role above is now the `AGENTS.md` role; the five-root count is unchanged.
+
+**Grounds.** Claude Code ≥ 2.1.277 reads `AGENTS.md` natively when no `CLAUDE.md` exists
+in or above the working directory; Codex and other harnesses read only `AGENTS.md`. With
+two files each harness saw half the instructions (no content was duplicated between them).
+
+**Consequences.**
+1. The MC-anchor triple and §Protection stay resident in the instruction file, now
+   `AGENTS.md`; `ops/recall/guard.py` reads the triple there. Every machine reader that
+   named `CLAUDE.md` — sentinel skew/obligation/stale-anchor scans, root-doc liveness,
+   push-collision, session-divergence hook, ADR-graph root surfaces, docs-runtime
+   inventory, `archive_lab_analysis` — now names `AGENTS.md`, with their tests.
+2. Living surfaces (root guides, READMEs, skills, methodology docs, instrument ledgers,
+   code-comment pointers) were repointed. Dated records (ADRs, SESSIONS, briefs, notes,
+   RESULTS, reconciles, archives) are **not rewritten**: a `CLAUDE.md §X` citation there
+   reads as `AGENTS.md §X`.
+3. No `@AGENTS.md` stub is kept. Sessions that cannot load `AGENTS.md` (Claude Code
+   < 2.1.277, providers without feature-flag fetch, hooks disabled) receive no project
+   instructions — accepted.
+4. Worktrees under `.claude/worktrees/` also load instruction files from the parent
+   checkout; after merge the main checkout must sit on a `CLAUDE.md`-free commit or
+   worktree sessions keep loading the retired file instead of `AGENTS.md`.
+
+Verification: the gates listed under Current owner plus `python scripts/check_skill_refs.py --all`
+and the governance/script test modules named in the PR. Changes no risk, strategy, Pine or
+live execution authority.

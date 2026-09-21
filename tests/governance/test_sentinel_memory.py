@@ -94,7 +94,7 @@ def test_memory_scan_findings_are_memory_routed(tmp_path):
 def test_memory_scan_flags_stale_anchor_without_marker(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
-    (repo / "CLAUDE.md").write_text("current canonical 99.83/0.17/4.37 anchor\n", encoding="utf-8")
+    (repo / "AGENTS.md").write_text("current canonical 99.83/0.17/4.37 anchor\n", encoding="utf-8")
     mem = tmp_path / "memory"
     _mk(mem, ["- [Anc](anc.md) — hook"],
         {"anc": "This is the new canonical anchor 98.09/0.36/4.73 for the portfolio."})
@@ -104,7 +104,7 @@ def test_memory_scan_flags_stale_anchor_without_marker(tmp_path):
 def test_memory_scan_stale_anchor_silent_with_historical_marker(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
-    (repo / "CLAUDE.md").write_text("canonical 99.83/0.17/4.37 anchor\n", encoding="utf-8")
+    (repo / "AGENTS.md").write_text("canonical 99.83/0.17/4.37 anchor\n", encoding="utf-8")
     mem = tmp_path / "memory"
     _mk(mem, ["- [Anc](anc.md) — hook"],
         {"anc": "HISTORICAL: the 2026-05-08 canonical anchor was 98.09/0.36/4.73 (SUPERSEDED)."})
@@ -114,7 +114,7 @@ def test_memory_scan_stale_anchor_silent_with_historical_marker(tmp_path):
 def test_memory_scan_stale_anchor_silent_when_matches_current(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
-    (repo / "CLAUDE.md").write_text("canonical 99.83/0.17/4.37 anchor\n", encoding="utf-8")
+    (repo / "AGENTS.md").write_text("canonical 99.83/0.17/4.37 anchor\n", encoding="utf-8")
     mem = tmp_path / "memory"
     _mk(mem, ["- [Anc](anc.md) — hook"],
         {"anc": "the current canonical anchor is 99.83/0.17/4.37."})

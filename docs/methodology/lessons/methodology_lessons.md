@@ -1378,11 +1378,197 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 
 ---
 
+## M-26 — A correction lands where the reader reads, not where the author appends
+
+- **Date:** 2026-09-20 (migrated from Claude memory `lesson_corrections_land_where_read`; firings 2026-08-02, two in one session; the gate built in response found four more on its first scan)
+- **Anchor:** a desk card led with a table headed "MEASURED" whose numbers were retracted three paragraphs later; read at the desk the correction inverted into its opposite.
+- **What broke:** the cheapest correction is an appended addendum. Desk cards, RESULTS verdicts and headline tables are consumed top-down under time pressure, so the reader receives the withdrawn number as current. Trap #12 (frozen bodies stay byte-unedited) trained an append reflex that, applied to living documents or without a reader-intercept, sacrifices the reader.
+- **Rule:** frozen artifacts keep the body unedited **and** get a reader-intercept upstream of the impeached claim (head banner or `⚠ SUPERSEDED — see Addendum` directly above the stale table). Living documents are corrected in place at the assertion site; same-session work is never frozen. A withdrawal is complete only after grepping the withdrawn value repo-wide, including artifacts authored the same session. After any correction, re-read the artifact top-down as its consumer would and stop where they would stop.
+- **Mechanism:** `scripts/check_supersession_placement.py` catches only the addendum-shaped subset; the in-section case is judgment (M-27).
+- **Link:** `docs/operational_rules.md` Rule 14; siblings M-27, M-28.
+
+## M-27 — A green gate is not coverage: exit 0 proves the checker ran, not that it can see the failure
+
+- **Date:** 2026-09-20 (migrated from Claude memory `lesson_green_gate_is_not_coverage`; three independent firings 2026-08-08)
+- **Anchor:** `check_skill_refs.py` printed "OK: every cited repo path resolves" over four dead `../../docs/` links because `../`-prefixed tokens were never extracted as candidates; a §10 audit hook printed `SKIP: vendor CSVs not present` and exited 0 permanently; `validate_c1_monitoring_acceptance.py` printed "tree skew: none" with an empty `fixture_hashes` after comparing nothing.
+- **What broke:** a checker written for one incident keeps exiting 0 after the substrate moves; exit codes are cheap to read and coverage is not, so exit codes become the proxy.
+- **Rule:** before trusting a gate ask (1) what failure class it was written for, (2) what its deciding predicate actually inspects, (3) whether (2) can see (1); run it against a planted case where cheap. The empty input set must never produce the strongest green; `SKIP` must not be exit 0 in an artifact self-check; "wired" is not "covering". Piping a checker through `| tail` returns tail's exit code — capture the real one (M-45).
+- **Link:** `scripts/gates.yml` (what is enforced vs merely written); siblings M-26, M-45, `lesson_gate_reachability_preregistration`.
+
+## M-28 — Verify content, not path or ID: a missing path is not missing work
+
+- **Date:** 2026-09-20 (migrated from Claude memory `lesson_verify_content_not_path_or_id`; two firings 2026-08-01)
+- **Anchor:** a branch was reported as carrying un-landed work because `origin/main:docs/SESSIONS.md` had no hit for its test name — the entry had been rolled to `docs/ltm/notes/archive/sessions/`, byte-identical; a brief was flagged orphaned because `git cat-file -e` failed on its path — it had been renamed and closed FALSIFIED.
+- **What broke:** a path-presence or ID test answers "is it here", never "does it exist"; both identifiers go stale independently of the content.
+- **Rule:** take a distinctive prose sentence from the diff and run `rg --no-ignore -l "<sentence>"` over the whole tree. Default search excludes `lab/archive/` and `docs/ltm/`, and the Grep tool has no ignore bypass, so an empty Grep over LTM is not evidence of absence.
+- **Link:** siblings M-31, M-33, `lesson_verify_source_not_label`.
+
+## M-29 — A borrowed number is not a claim until you do the arithmetic that connects it to your decision
+
+- **Date:** 2026-09-20 (migrated from Claude memory `lesson_borrowed_numbers_need_connecting_arithmetic`; Q-GEOFIT-1 session, two defects escaped review)
+- **Anchor:** a sub-agent's 2,000-sim proxy at non-c1 parameters was transcribed into a closure as a signed direction ("anti-clearing, therefore conservative"); a measured 0.55–1.09pp per-cell sd was answered with N = 5 replications against a ±0.5pp tolerance without computing `SE = sd/sqrt(N)`.
+- **What broke:** both errors entered at a transcription boundary — the moment a number moved from someone else's output into the artifact — where attention is lowest and qualifiers are cheapest to drop.
+- **Rule:** at borrow time, in the same edit: convert the finding to your parameters; never state a direction from a proxy run (a proxy establishes "an effect may exist", never its sign); before any N-replication design print `2*SE` against the tolerance and raise N or switch to paired arms if it cannot answer; check sigma before believing a verdict that fires near the tolerance; mark provenance in the artifact as written, and fix the generator, not only the rendered document.
+- **Link:** siblings `lesson_metric_cohort_provenance_binding`, M-32.
+
+## M-30 — Fetch and read `origin/main` before every multi-step build, before push, and before every irreversible or budget-spending step
+
+- **Date:** 2026-09-20 (migrated from Claude memory `feedback_check_origin_main_before_multistep_build`; six firings 2026-07-11 → 2026-08-05)
+- **Anchor:** PR #325 built a planned PR-2 on a stale base while main advanced ~20 commits into the same estate; a §4 discharge was re-asserted 36 minutes after main withdrew it (session worked from local refs, never fetched); an operator ask ("verify the two Tradeify pins") had itself been overtaken by a landed PR; MNQFLOW-1 executed ~2 hours of work from an artifact that had been reset off its branch.
+- **What broke:** a session-start check has a shelf life measured in minutes; parallel sessions land mid-session; a clean `git merge` is not semantic compatibility (two contradictory claims on different lines auto-merge with no conflict).
+- **Rule:** `git fetch origin && git log --oneline origin/main ^HEAD` at the start of any multi-step effort including pure docs work, again before authoring any new brief/spec, before push, and immediately before any irreversible or budget-spending step; when asked to discharge an owed item, grep `origin/main` for its slug first; an orphaned or reset-away commit is evidence, not debris — read the reflog before running it; after any merge touching `AGENTS.md`/`STATE.md`/an ADR, grep the merged result for both sides of the claim.
+- **Link:** SessionStart base-check hook; siblings M-28, M-48.
+
+## M-31 — Verify "owed / missing / never-measured" claims against the campaign's own artifacts before reporting them
+
+- **Date:** 2026-09-20 (migrated from Claude memory `feedback_verify_owed_claims_before_reporting`; 2026-07-26)
+- **Anchor:** an extraction agent flagged ORB-MNQ's commission basis as an owed check; relayed, the operator directed a seven-site restatement; execution-time reads found `RESULTS_stage7.md` Table 1 had already measured all four firms × four slip levels, and the directed restatement would have understated severity.
+- **What broke:** the pipeline verified citations and novelty but nobody verified the "still owed" claim class; an error there round-trips through the operator and returns as authorized wrong work.
+- **Rule:** before reporting any owed/missing claim, grep the campaign directory (`RESULTS_stage*.md`, calibration JSON, addenda) for the measurement; in multi-agent sweeps give the verifier the explicit axis "for every 'owed X', search for X already done".
+- **Link:** siblings M-28, M-33.
+
+## M-32 — A quotation from a reader summary is not a quotation; an attributed claim recalled from memory is not a citation
+
+- **Date:** 2026-09-20 (migrated from Claude memory `feedback_quotes_from_reader_summaries_are_not_quotes`; 2026-08-12, 2026-08-13, 2026-08-22)
+- **Anchor:** two sub-agent summary phrases were written into a charter in quotation marks with registry attribution; neither existed in `docs/rejected_candidates.md`, and one blessed a move the fade spec names forbidden. The web-search summarizer fabricated regulatory events postdating their source's publication date and credited an "83% higher pass rate" to pages that do not contain it. Drafting an ADR from sources read earlier the same session, the author misattributed content three times, each caught only by adversarial review.
+- **What broke:** summaries compress and paraphrase; quotation marks assert byte-level provenance the summary never had; "I read this earlier" is not "I can recall its specific content three sections later".
+- **Rule:** before any quoted string or specific attributed claim (mechanism, scope, count) lands, verify the exact text at the source yourself — `rg` for repo files, a real fetch for URLs — or drop the quotation marks and attribute the paraphrase. Check that a source's claimed dates precede its publication; chase a repeated statistic to its root.
+- **Link:** siblings M-29, M-28, M-42.
+
+## M-33 — Absence in a known location is not absence: a negative existence claim needs a class enumeration
+
+- **Date:** 2026-09-20 (migrated from Claude memory `feedback_absence_in_known_location_is_not_absence`; 2026-08-03)
+- **Anchor:** retiring the Pepperstone data, the backup directory named in the tombstone held 4 CSVs, and the tombstone recorded "no offline rollback copy exists for these 33 files" with re-export as the remedy. A 35/35 hash-verified copy sat in a sibling directory taken the previous day; re-export was impossible because the venue was closed.
+- **What broke:** the path a document names is where the thing was last recorded, not where it is; the remedy was prescribed without checking it was possible.
+- **Rule:** before asserting something does not exist, enumerate the class it would live in (`ls -d <parent>/*/`, a glob, `rg --no-ignore`), never a single-path stat; verify a prescribed remedy is possible; prefer "I found no copy at X; I did not search Y" over "no copy exists".
+- **Link:** siblings M-28, M-31, `lesson_unpriced_branch_search_the_corpus`.
+
+## M-34 — Ratified text edited alongside an authorized change: partition a governance diff by provenance, not by file
+
+- **Date:** 2026-09-20 (migrated from Claude memory `lesson_ratified_text_edited_alongside_authorized_change`; 2026-08-15)
+- **Anchor:** a harvest limb-2 pin-mark PR reproduced every mechanical claim (byte-identical §4 by hash, seven gates green, CI green) and bundled an in-place edit of a `Decision (binding)` line the operator had GO'd hours earlier.
+- **What broke:** a blast-radius table documents the edit the author set out to make; edits made in passing never register as edits, so `BLAST-RADIUS: CLEAN` is evidence about intent, not the diff.
+- **Rule:** when judging a PR that amends a ratified artifact, hash the previously ratified blocks against the ratifying commit (`git show <ratify-sha>:<path> | grep -F '<anchor>' | sha256sum`) and compare, rather than reading the unified diff as one edit.
+- **Link:** siblings M-26, M-42.
+
+## M-35 — A driver-layer fix leaves the kernel default stale
+
+- **Date:** 2026-09-20 (migrated from Claude memory `lesson_driver_layer_fix_leaves_kernel_default_stale`; found 2026-07-31 at the Q-FUNDPOL-1 §8 freeze)
+- **Anchor:** two Tradeify pins were falsified together; the contract ladder got a kernel fix (`funded_scaling.py` single source, `caps=` parameter, six-site sweep) while the payout minimum got only a CLI default plus a `setattr` pin — `gap_stage2_capbound.py` kept `PAYOUT_MIN = 1_000.0` as a module literal gating a floor-lock trigger. Measured weight of the missed half: +2.84pp funded dead-1y alone, +6.29pp with the ladder.
+- **What broke:** an M-24-style sweep is scoped to the constant being fixed; a second constant corrected by a different mechanism gets no sweep of its own. "We verified N pins" is not "N pins are plumbed".
+- **Rule:** when a verification falsifies more than one pin, check each separately for where the fix landed — kernel default vs driver override; grep the kernel's module literals against the verified values; before reusing a "corrected" harness read its module-level constants directly and pin the override in the pre-registration.
+- **Link:** siblings M-23, M-24, `lesson_dedup_attestation_must_be_executed`.
+
+## M-36 — Visible restraint: a deliberate "do not act" goes in the closing brief with its rationale, never as silent absence
+
+- **Date:** 2026-09-20 (migrated from Claude memory `feedback_visible_restraint_in_closing_brief`; 2026-04-29 prop_firm_pipeline Algorithm pass)
+- **Anchor:** S6 (`STARTING_EQUITY` / `PROFIT_TARGET` triplicated across three core files) was real duplication, deliberately not consolidated because it touches Rule-0 files; unrecorded, it would resurface as a fresh candidate in every later pass.
+- **What broke:** restraint decisions are easier to silently reverse than to defend.
+- **Rule:** a closing brief carries three lists at equal prominence — actions landed (with verification), watch-items deliberately not acted (one-line rationale each), and permanently-off-radar items confirmed live. Later passes start from the inherited watch-items plus new surface, not a fresh inventory; before proposing a consolidation near a locked file, grep the prior brief's watch-items.
+- **Link:** `docs/methodology/inqhiori-canon.md`; sibling M-34.
+
+## M-37 — An LLM-reviewer fold loop needs a stopping rule; a non-falling finding count is a missing decision, not review noise
+
+- **Date:** 2026-09-20 (migrated from Claude memory `lesson_llm_reviewer_fold_loop_needs_stopping_rule`; PRs #335 and #336, 2026-09-10/11)
+- **Anchor:** two sessions ran "fold every Codex finding, post `@codex review`, repeat": per-round counts 14, 15, 11, 7, 10, 14, 3, 8 (#336) and 7, 5, 5, 4, 3, 4, 1, 2 (#335); pushback 1 partial of 99; the umbrella doubled 66 KB → 133 KB and grew 18 → 31 packets and 11 → 16 operator decisions, four created by the reviewer. Codex was grounded — every cited line checked out — so the loop was a stopping-rule failure. A Codex "simplify" that replaced the plan and eight briefs with one 167-line plan re-found five defects the deleted briefs had already fixed within ten minutes; reverted.
+- **What broke:** a fix to finding X in round k landed on one surface and the reviewer found the other surfaces still restating the old design in round k+1 (M-26); unchosen conditional branches were specified instead of removed.
+- **Rule:** count findings per round and stop when the count fails to fall for two rounds or the document grows on a "fix" round; triage each finding with M-43 and expect nonzero pushback; route unchosen operator options out of the document before specifying them; end with N one-line folds, an explicit "Open items (recorded, not folded)" section, one reply per thread, and merge — no further review request. A simplification that deletes verified specifics must carry them forward. Never mention `@codex` in a coordination comment.
+- **Link:** siblings M-38, M-39, M-40, M-43, M-47.
+
+## M-38 — Code-review fold loop on contract-driven code: after two rounds, rebuild from the invariant table
+
+- **Date:** 2026-09-20 (migrated from Claude memory `feedback_code_review_fold_loop_rebuild_from_invariants`; PR #395, 2026-09-15; second instance PR #401)
+- **Anchor:** Codex review of `book_settlement.py`, `account_close_assembler.py` and `book_session_calendar.py` produced 12, 11, 5, 3, then 9 findings over five rounds. Root causes (Codex's read, operator-endorsed): evidence labels treated as proof; related fields validated separately; durable-state lifecycle incomplete (chain hashed, mutable row not); calendar shortcuts generalized. On #401, 5 of 11 round 2–3 findings were created by the round 1–2 folds.
+- **What broke:** fixing by example on a contract-driven verifier converges only by luck; every fold was locally correct and globally incomplete.
+- **Rule:** for verifier/owner code implementing a written contract, build the invariant table first (one row per contract claim → one named refusal → one test violating only that invariant); check cross-field claims in one function with the whole record in hand; give durable owners a state machine with one transition function that rewrites and hashes the whole row. Fold at most two review rounds; a third round on the same module means rebuild from the table, then one review round — and tell the operator the rule before round two. Where the contract's evidence does not exist, refuse the feature rather than approximate it with a lookalike field.
+- **Link:** siblings M-37, M-39.
+
+## M-39 — A spec with orders, positions or shutdown semantics is folded only once; the second round rebuilds from a state model and event sequences
+
+- **Date:** 2026-09-20 (migrated from Claude memory `lesson_spec_folds_need_state_model_and_event_sequences`; PR #360 TB-S3 rail spec, 2026-09-12)
+- **Anchor:** three Codex rounds (6 → 6 → 7 findings) after two paragraph-level folds. Operator root cause: interface change under-scoped though the adapter protocol showed it; safety specified per feature (kill, EOD, restart, timeout) with no shared model of positions / working orders / unknown state / risk-reducing vs risk-adding actions; each fold left dependent requirements behind; the acceptance gate checked requirement coverage by test *name*, which green CI cannot falsify for a markdown-only PR. The rebuilt spec's next round still let four compositions conflict (a fallback branch that was a different strategy from the emulator-qualified one; cancel/replace of a protective stop vs "never unprotected").
+- **What broke:** a paragraph fold satisfies the quoted finding and nothing else; the finding count is a missing model.
+- **Rule:** write first (a) a state table with exactly one writer per state and an explicit `UNKNOWN`, (b) action classes with the fail-closed rule for `UNKNOWN`, (c) end-to-end sequences adapter intent → transport → admission → broker outcome → crash recovery with a cut at every step, (d) an event × state matrix for shutdown, EOD, feed failure, restart; derive requirements from those, each citing the sequences it serves. Any live-execution path is checked against the qualified (emulator) semantics — a recorded deviation does not qualify a substitute. Make the gate require executable sequence tests, not test names.
+- **Link:** siblings M-37, M-38.
+
+## M-40 — Stacked PR: request review only after the parent lands, or retarget the child's base
+
+- **Date:** 2026-09-20 (migrated from Claude memory `lesson_stacked_pr_review_request_waits_for_parent`; PR #401, 2026-09-16)
+- **Anchor:** the open parent #405 was merged into #401's branch for tree consistency and `@codex review` posted at once; the diff-based reviewer reviewed all ~70 of #405's files as #401's. Four of the five round-5 findings were #405 content; when #405 merged an hour later they became defects on `main` with no PR owning them.
+- **What broke:** a diff-based reviewer has no notion of a stack; the review-round budget (M-37) was spent on another PR's content.
+- **Rule:** after stacking a child on an unmerged parent, do not request review until the parent lands and `main` is merged back, or retarget the child's base to the parent branch first; triage parent-content findings to the parent's owner on `main` in one follow-up PR, never fold them into the child; before requesting review run `git diff --stat <base>...HEAD` and confirm every file is one this PR owns.
+- **Link:** siblings M-37, M-38.
+
+## M-41 — Private artifacts inside a worktree die with the worktree
+
+- **Date:** 2026-09-20 (migrated from Claude memory `lesson_private_artifacts_in_worktrees_die_with_the_worktree`; third firing 2026-09-10)
+- **Anchor:** the Tradeify seven-strategy campaign's private evidence base (feasibility-screen outputs, the C1–C5 composition spec and approval receipt, a 125-test synthetic replay, canonical ledgers and private overrides) lived under two `.worktrees/*` paths; both were removed during hygiene. Public records retain digests only. Prior firings: the Striker NAS100 MNQ Pine "DESTROYED (worktree loss)" (2026-07-03) and the ORB D5 pin that "died with the VM" (2026-07-31).
+- **What broke:** `.worktrees/` and `.superpowers/sdd/` are gitignored by policy, so `git worktree remove` destroys their private contents silently; nothing lists private contents before removal.
+- **Rule:** private outputs go under the primary checkout's ignored roots (`local_artifacts/`, `inputs/private_overrides/`), never under `.worktrees/*` or `.claude/worktrees/*`; worktree sessions read and write them by absolute path. Before any worktree removal, list `.superpowers/`, `local_artifacts/`, `*.pine`, `*.csv` inside it and stop if non-empty.
+- **Link:** `core/strategies/PORT_MANIFEST.sha256` loss records; the `repo-hygiene` skill.
+
+## M-42 — A green `check_brief.py` is form-only: adversarially review every decision artifact before ratification
+
+- **Date:** 2026-09-20 (migrated from Claude memory `feedback_adversarial_review_before_ratification`; SLR-MYM-1 scoping brief, 2026-07-28)
+- **Anchor:** authored with full §0 Rule-0 reads, verbatim quotes and per-file git anchors, both `check_brief.py` gates 6/6 — a 14-agent refute-first review still returned 14 BLOCKER / 39 MAJOR raw findings. Six applied BLOCKERs invisible to the checkers: a double-applied multiplier (a 16× gate unreachable by construction); §2-C of an ADR cited while §2-A of the same document named the brief's mechanism inadmissible; S1–S6 claimed scored "verbatim", none scored; an N-basis mismatch across stages; the mandatory §R reachability attestation missing; a false bounding claim. The synthesizer's discard function mattered as much: it re-read source and dropped three unfounded reviewer claims, including a fabricated venue min-hold rule.
+- **What broke:** careful authoring plus green mechanical checkers is not enough; the checkers verify form.
+- **Rule:** before ratifying any Pre-Q, ADR, spec or closure, run a refute-first multi-lens pass (the pre-ratification panel workflow when licensed, else sequential fable-judge passes) whose synthesizer adjudicates by re-reading source and discards unfounded findings before reporting. In the three-seat model this is the Fable escalation lane's milestone job.
+- **Link:** `.claude/workflows/pre-ratification-adversarial-panel.js`; siblings M-32, M-34, M-43.
+
+## M-43 — Three questions per reviewer finding: is the flagged text wrong, is the reviewer's fix right, is my fix right
+
+- **Date:** 2026-09-20 (migrated from Claude memory `feedback_three_questions_per_reviewer_finding`; PRs #282/#285, 2026-09-03)
+- **Anchor:** 6 of 15 review findings turned into fresh defects landed inside the "fix" because the reviewer's diagnosis was accepted on its authority, or the author's replacement was assumed right because it addressed the complaint.
+- **What broke:** a reviewer being right about the defect is compatible with being wrong about the replacement; rejecting the reviewer's fix does not make the author's alternative correct.
+- **Rule:** on every finding, before applying it, verify independently against source: (1) is the flagged text actually wrong, (2) is the proposed replacement right, (3) is my replacement right. Passing (1) does not license skipping (2) and (3).
+- **Link:** `lesson_correction_is_a_claim`; siblings M-37, M-42, M-47.
+
+## M-44 — External handoffs narrate repo state that is not true; Rule-0-verify every path and every claimed edit before acting
+
+- **Date:** 2026-09-20 (migrated from Claude memory `feedback_web_advisor_handoff_confabulates_repo_state`; seven instances 2026-06-06 → 2026-07-11)
+- **Anchor:** a handed-off SESSIONS draft referenced three phantom files; an audit revision self-attributed a fix that never landed; an ADR asserted a mirror was "DONE" that did not exist; a rule's identity was built on a confabulated premise; a handoff cited an in-progress Algorithm pass that never existed; a draft lesson billed itself as this lesson's anti-instance while confabulating repo state three times.
+- **What broke:** external instruction packets (web-advisor notes, spawn briefs, Phase-0 packets, Downloads-staged artifacts) are written from memory of a repo they cannot see.
+- **Rule:** before acting on or committing any external handoff, verify every referenced path exists and re-read every claimed edit's target region; treat advisor revisions and self-attributed completions as claims; a handoff that asserts repo state the worker cannot verify returns `NEEDS_CONTEXT`. The `handoff-verify` skill is this rule's checklist.
+- **Link:** `.claude/skills/handoff-verify/SKILL.md`, `.claude/workflows/handoff-verify-panel.js`; sibling M-32.
+
+## M-45 — Capture the test exit code on the next line and confirm the test paths exist before a test → commit → push chain
+
+- **Date:** 2026-09-20 (migrated from Claude memory `feedback_verify_chain_capture_rc_before_commit`; PR #401 round-4 fold, commit `e5f44e8`, 2026-09-16)
+- **Anchor:** `pytest tests/skills … | tail -6 && echo "rc=${PIPESTATUS[0]}" && [ "${PIPESTATUS[0]}" = "0" ] && git commit && git push` committed and pushed a message asserting "skill suites pass" although `tests/skills` does not exist: pytest exited 4, `tail` masked it, and by the guard `PIPESTATUS` referred to the `echo`.
+- **What broke:** a verification claim in a commit message is a claim; a chain that proceeds on a silent non-run makes the message lie, and a pushed message cannot be amended without a force-push.
+- **Rule:** `ls` the test paths before chaining (a wrong path is rc 4, not a visible failure); capture the code immediately (`pytest … ; rc=$?` or `set -o pipefail`); better, run the tests in one call and commit in the next so the evidence is read before the message is written.
+- **Link:** siblings M-27, M-48.
+
+## M-46 — Governance is stress-tested by agent count, not by any one mistake: prefer structural fixes that scale over vigilance fixes that re-pay per instance
+
+- **Date:** 2026-09-20 (migrated from Claude memory `lesson_governance_scale_transition_2026_08_29`; 2026-08-29, ~40 commits / ~30 PRs from Claude sessions, Cursor agents and Codex review in one day)
+- **Anchor:** a stats bug in three scripts, a parser bug fixed four times (once per soft-wrap shape), a dead review-request mechanism, SESSIONS label collisions, PROFILES.md regenerated three times — one root: controls built by one operator working serially, run under several concurrent authors. Same day, REPO_MAP §2.1 was converted from hand-maintained prose to generated-from-source (`f32d8cc`) and never drifted again.
+- **What broke:** concurrency and authorship count are the independent variable; each incident is a serial-authoring assumption once violated.
+- **Rule:** for any new control, convention or artifact shape ask whether it scales with agent count or its cost grows per instance. Generate from source, gate a label to its referent, retain a tested primitive — paid once. "Review harder, remember to check, sweep more thoroughly" re-pays every time and its failure probability compounds with every added author.
+- **Link:** the surface-allocation ADR's seat table; `feedback_parser_fix_sweep_all_wrap_shapes`.
+
+## M-47 — Codex's PR-level review is the adversarial-review step; do not duplicate it in chat before opening the PR
+
+- **Date:** 2026-09-20 (migrated from Claude memory `feedback_codex_pr_review_replaces_inchat_workflow_verification`; operator ruling 2026-08-30)
+- **Anchor:** operator, interrupting an in-chat Workflow launch: "we will get adversarial verification when we open the pr… codex will take care of the adversarial review, we no longer have to conduct it in chat." Earlier in-chat passes had caught real defects, so the ruling is "don't duplicate", not "adds no value".
+- **What broke:** running both is redundant spend on a review that already fires at PR time.
+- **Rule:** for work headed into a PR, go from drafting to commit → push → open/update PR and let the PR review surface issues; in-chat multi-lens review stays available for work not entering a PR cycle and for the ratification gate (M-42), which the diff reviewer does not cover.
+- **Link:** the surface-allocation ADR (2026-08-29 addendum #1, retained); siblings M-37, M-43.
+
+## M-48 — The push is the deliverable: push a landed fix before PR-body prose or long replies
+
+- **Date:** 2026-09-20 (migrated from Claude memory `feedback_push_is_the_deliverable`; PR #282, 2026-09-03)
+- **Anchor:** the PR merged nine minutes before a fix that was sitting locally, waiting on a PR-body refresh that did not matter to the merge decision.
+- **What broke:** body and comment polish are not on the critical path; an unpushed fix behind a body rewrite is a fix that missed its merge window.
+- **Rule:** when a fix is ready and the PR is open, push first and refine the body afterward. For a gate that fails locally, reproduce it in a clean worktree from `origin/main` before diagnosing against local state — "byte-identical on main" cleared four implicated environment artifacts in one session. The rule is about not delaying a *verified* fix (M-45), not about skipping the read.
+- **Link:** siblings M-30, M-45.
+
 ## Versioning & change-log
 
 Relocated here 2026-08-29 (was drifting mid-file, above M-23/M-24, contrary to this section's own
 "maintained at the bottom" convention) — content unedited by the move.
 
+- **2026-09-20:** M-26 through M-48 migrated from the Claude-memory store (process / verification / multi-agent review lessons) in the light format, so every harness reading this repo sees them; each carries its memory twin in `LESSONS_INDEX.jsonl`. Operator direction 2026-09-20 (AGENTS.md single instruction file; three-seat delegation). No retroactive edit to M-7 … M-24.
 - **2026-08-29:** Format spec lightened for entries going forward: light 5-field format (Date /
   Anchor / What broke / Rule / optional Mechanism / Link) replaces the 8-field template + dollar-
   threshold CANDIDATE→PROMOTED state machine, sized for org memory rather than a solo journal.

@@ -66,7 +66,7 @@ md-relative-links:
 # Warn-only: docs cite a dead lab/ path whose tail still exists elsewhere under
 # lab/ (theme-nest / archive relocation rot). Pruned-by-design harnesses do not
 # flag. NOT in scripts/gates.yml — belt-churn YELLOW; wire at `tier: audit`
-# later if it earns a cadence (CLAUDE.md §Gate composition authority).
+# later if it earns a cadence (AGENTS.md §Gate composition authority).
 lab-path-relocation:
 	@python scripts/check_lab_path_relocation.py
 

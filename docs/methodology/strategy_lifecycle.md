@@ -89,7 +89,7 @@ Because the four legs are one beta, decay can arrive **portfolio-wide at once**;
 
 The boundary is **reversibility**, inheriting the repo's existing asymmetry (`dd_protection` computes 0.40× with no sign-off; sizing always rounds **down, never up**).
 
-**Rail caveat (read first):** the c1 rail is **built, warm, and disarmed** — posture owner [`CLAUDE.md`](../../CLAUDE.md) §Live-execution posture · ops routing [`.claude/skills/c1-rail/SKILL.md`](../../.claude/skills/c1-rail/SKILL.md) · environment [`S1 ADR`](../adr/2026-08-07-loop-s1-environment-ratification.md). Manual CFD trading is retired; **no strategy is deployed** (Striker legs withdrawn 2026-08-04). Call 5 binds the rail's autonomy boundary; today "autonomous / fires without the operator" means **"rules-mandated, no fresh in-the-moment judgment"** on the authorization axis — arming / live send remain operator GO + M1 (see c1-rail skill), not this file.
+**Rail caveat (read first):** the c1 rail is **built, warm, and disarmed** — posture owner [`AGENTS.md`](../../AGENTS.md) §Live-execution posture · ops routing [`.claude/skills/c1-rail/SKILL.md`](../../.claude/skills/c1-rail/SKILL.md) · environment [`S1 ADR`](../adr/2026-08-07-loop-s1-environment-ratification.md). Manual CFD trading is retired; **no strategy is deployed** (Striker legs withdrawn 2026-08-04). Call 5 binds the rail's autonomy boundary; today "autonomous / fires without the operator" means **"rules-mandated, no fresh in-the-moment judgment"** on the authorization axis — arming / live send remain operator GO + M1 (see c1-rail skill), not this file.
 
 - **Reversible de-risk → autonomous (rules-mandated):** tier demotions (AUTHORIZED→WATCH-1→WATCH-2), Call-1 firings *on the coded ladder*, and the Call-4 soft flag + 0.5× beta de-risk fire without fresh operator judgment.
 - **`CANDIDATE` Call-1 breach → not autonomous demotion** (`Accepted` 2026-08-21): no reversible rung below AUTHORIZED is coded; mandated action is operator review flag only — [`docs/adr/2026-08-06-candidate-call1-action-on-breach.md`](../adr/2026-08-06-candidate-call1-action-on-breach.md).
@@ -131,9 +131,9 @@ These are locked *tighter* than any parameter, so "living authorization" cannot 
 cd "C:/Users/joshu/multi_firm_operations"
 # The five ratified values live here (canonical owner).
 grep -nE "1\.00×|0\.50×|0\.25×|0\.00×|risk_pct layer|2 of 4|3 of 4|SURVIVAL-ONLY|MECHANISM" docs/methodology/strategy_lifecycle.md
-# Authorization vocabulary is in CLAUDE.md OUTSIDE the LOCKED table. Use DISTINCTIVE
+# Authorization vocabulary is in AGENTS.md OUTSIDE the LOCKED table. Use DISTINCTIVE
 # tokens — a bare grep for WATCH/RETIRED also hits pre-existing prose (Trap M-AHF).
-grep -n "Strategy Authorization Lifecycle\|durability tag\|risk_pct-layer" CLAUDE.md
+grep -n "Strategy Authorization Lifecycle\|durability tag\|risk_pct-layer" AGENTS.md
 # No locked constant edited by the lifecycle work (pre-code-phase).
 git diff --stat HEAD -- core/dd_protection.py core/firm_rules.py core/config/params.toml
 # Call-1 forward trigger registered; Call-4's 2026-08-08 first eval was never run (see Call 4).

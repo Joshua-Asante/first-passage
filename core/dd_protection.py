@@ -277,7 +277,7 @@ def _validate_protection_rule():
     # dd_protection constants are unchanged since. The current 4-strategy
     # *headline* anchor — after the later 2026-05-14 / 2026-05-23 allocation
     # refreshes, which did NOT touch these constants — is 99.83% / 0.17% /
-    # 4.37% per CLAUDE.md and docs/mc_anchor_history.md.)
+    # 4.37% per AGENTS.md and docs/mc_anchor_history.md.)
     # Any future change to either constant must update both the constant AND
     # this literal pin in the same commit, tied to a re-MC run.
     if DD_TRIGGER != 0.015:

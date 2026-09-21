@@ -145,6 +145,22 @@ Per SKILL.md Discipline Check #3: list moves the author genuinely considered or 
 
 ## §6 — Gate + status return taxonomy
 
+### §6.0 — Acceptance tests (named here, before the worker starts)
+
+Required for worker eligibility (surface-allocation ADR handoff contract, item 5). The parent names the
+acceptance tests; tests the worker writes are additional evidence, never the acceptance basis.
+
+| Test (path::name or command) | Property it must violate to FAIL | Owner |
+|---|---|---|
+| `tests/<path>::test_<name>` | `<one sentence: the invariant this test breaks when the change is wrong>` | parent (worker may add, not replace) |
+
+- Contract-driven code: attach the invariant table (one contract claim → one refusal → one test) — M-38.
+- Orders / positions / shutdown semantics: attach the state model and event sequences — M-39.
+- **Lightweight dispatch issue** in place of this brief: the issue body carries this same table; the
+  parent's pre-dispatch read comment records `sha256` of the body as read
+  (`gh issue view <n> --json body -q .body | sha256sum`) and the dispatch cites `#<n> @ sha256:<hash>`.
+  An issue without the table or without the read comment is an unfrozen spec — do not dispatch it.
+
 CC reports back with EXACTLY one of these four statuses (Discipline Check #8). Two-state success/failure collapses distinct epistemic states.
 
 | Status | Meaning | Parent action |

@@ -7,7 +7,7 @@ description: Use this skill whenever Joshua uploads or references a TradingView 
 
 Canonical pipeline for parsing TradingView (and related) trade CSVs, computing headline metrics, and — when a locked-book baseline applies — reconciling against Pine-header backtest anchors. Exists because sessions were re-deriving Entry/Exit pairing, R-pinning, and metric math, and drift surfaced as anchor disagreements (n=209 vs 201, Net P&L 2× from Entry+Exit double-count).
 
-**Mission framing:** live posture is owned by `CLAUDE.md` §Purpose / §Live-execution posture — read it there, not from this line. Pepperstone TV exports were the locked-book historical panel and the feed is retired (2026-08-02); OANDA/Alchemy/DXTrade paths are **historical challenge-era** — keep the traps below so old CSVs do not corrupt analysis, but do **not** route every CSV session through FXIFY/$200K/DXTrade ceremony.
+**Mission framing:** live posture is owned by `AGENTS.md` §Purpose / §Live-execution posture — read it there, not from this line. Pepperstone TV exports were the locked-book historical panel and the feed is retired (2026-08-02); OANDA/Alchemy/DXTrade paths are **historical challenge-era** — keep the traps below so old CSVs do not corrupt analysis, but do **not** route every CSV session through FXIFY/$200K/DXTrade ceremony.
 
 **Source-of-truth hierarchy:** Pine source on disk (authoritative for locked strategies) → Pine-header backtest panel (lock-of-record) → `references/baselines.md` (cached anchors) → memory (lossy). When this skill's baselines disagree with a fresh Pine read, the Pine read wins and `references/baselines.md` needs updating.
 
@@ -129,7 +129,7 @@ implied_risk_pct = (1R_dollars / 200_000) × 100
 scaled_pnl_per_trade = raw_pnl × scale_factor
 ```
 
-Use locked allocations from [`CLAUDE.md`](../../../CLAUDE.md) §Strategy Reference / `core/firm_rules.py` `_BASE_RISK` (not restated here; `references/baselines.md` is PF/WR/Net/DD cache only). **Skip this step** for ORB-MNQ / venue-native research CSVs and for c1 fill dumps — those are not the locked four-strategy challenge book.
+Use locked allocations from [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference / `core/firm_rules.py` `_BASE_RISK` (not restated here; `references/baselines.md` is PF/WR/Net/DD cache only). **Skip this step** for ORB-MNQ / venue-native research CSVs and for c1 fill dumps — those are not the locked four-strategy challenge book.
 
 For historical static-equity challenge measurement, sizing was against initial $200K, NOT compounded equity. TradingView's `strategy.equity` is compounded by default. Live c1 sizing is the rail (`BASE_RISK × DD_SCALE × lifecycle` + integer qty) — never re-derive challenge `$200K` multipliers for Tradovate fills.
 

@@ -252,9 +252,9 @@ Q1, Q5, and Q8 were drafted before the v2 Sources Read declaration block was cod
 
 ## 11. What this does not change
 
-- Strategy parameters / versions / risk%: owners are Pine + gated [`CLAUDE.md`](../../CLAUDE.md) §Strategy Reference (this canon does not restate them).
+- Strategy parameters / versions / risk%: owners are Pine + gated [`AGENTS.md`](../../AGENTS.md) §Strategy Reference (this canon does not restate them).
 - Allocations: [`docs/adr/2026-05-23-allocation-refresh-2.md`](../adr/2026-05-23-allocation-refresh-2.md) · live authority `core/firm_rules.py` `_BASE_RISK`.
-- `dd_protection` literals / rule: [`core/dd_protection.py`](../../core/dd_protection.py) · human summary [`CLAUDE.md`](../../CLAUDE.md) §Protection · C2 relock [`docs/adr/2026-05-08-dd-trigger-c2-relock.md`](../adr/2026-05-08-dd-trigger-c2-relock.md).
+- `dd_protection` literals / rule: [`core/dd_protection.py`](../../core/dd_protection.py) · human summary [`AGENTS.md`](../../AGENTS.md) §Protection · C2 relock [`docs/adr/2026-05-08-dd-trigger-c2-relock.md`](../adr/2026-05-08-dd-trigger-c2-relock.md).
 - Re-MC triggers: unchanged (see prop-firm-challenge skill / owning ADRs — not restated here).
 - BOJ binary-event pause for Aegis around 2026-04-28: unchanged.
 

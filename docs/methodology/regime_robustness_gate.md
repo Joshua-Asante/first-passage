@@ -242,7 +242,7 @@ Steps 4–5 are not part of the brief that ran this gate — they are downstream
   current sizing authority. [Citation history](../adr/TOMBSTONES.md#2026-09-08-citation-pilot).
 - **Observation routing gate**: `docs/methodology/observation_routing.md`
 - **Q-DDP-1 worked example**: retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-DDP-1/recommendation.md`
-- **Locked dd_protection config**: `core/dd_protection.py` (literals owned there; human summary [`CLAUDE.md`](../../CLAUDE.md) §Protection; C2 relock + concept-not-constant ADRs)
+- **Locked dd_protection config**: `core/dd_protection.py` (literals owned there; human summary [`AGENTS.md`](../../AGENTS.md) §Protection; C2 relock + concept-not-constant ADRs)
 - **MC harness**: `core/portfolio_mc.py` (+ `core/mc/`)
 - **Historical MC anchor record**: [`docs/mc_anchor_history.md`](../mc_anchor_history.md) (executable panel pin retired substrate Phase 3; tombstone via `git show pre-prune-2026-08-08:docs/ltm/notes/2026-07-24-pepperstone-executable-anchor-tombstone.md`). **Engine regression (vendor-free):** `tests/core/test_mc_synthetic_engine.py`. Do **not** cite deleted `tests/core/test_mc_anchors.py`. Allocation-refresh-2 override of this gate: [`docs/adr/2026-05-23-allocation-refresh-2.md`](../adr/2026-05-23-allocation-refresh-2.md) §Override.
 
@@ -250,7 +250,7 @@ Steps 4–5 are not part of the brief that ran this gate — they are downstream
 
 ## What this doc does NOT change
 
-- Any locked strategy parameter / version — Pine + [`CLAUDE.md`](../../CLAUDE.md) §Strategy Reference
+- Any locked strategy parameter / version — Pine + [`AGENTS.md`](../../AGENTS.md) §Strategy Reference
 - Any locked allocation — [`allocation-refresh-2`](../adr/2026-05-23-allocation-refresh-2.md) · `core/firm_rules.py` `_BASE_RISK`
 - The locked `dd_protection` config — `core/dd_protection.py` / CLAUDE §Protection
 - The MC harness logic

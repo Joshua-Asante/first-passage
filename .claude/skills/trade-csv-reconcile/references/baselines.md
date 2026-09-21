@@ -21,7 +21,7 @@ the Pine source on disk; this file is a cache for fast reconciliation.
 > 2026-05-23 allocation refresh is the in-repo precedent for one landing without a version bump. On re-arm,
 > steps 1–4 apply **in full**.
 
-> **Repo copy.** This is the in-repo canonical cache at the path CLAUDE.md
+> **Repo copy.** This is the in-repo canonical cache at the path AGENTS.md
 > references. The `trade-csv-reconcile` skill is also installed as a plugin with
 > its own `references/baselines.md` — `scripts/reconcile.py --baseline` reads the
 > *plugin* copy, so until that copy is updated too, a `--baseline` run will report
@@ -51,7 +51,7 @@ TradingView's intra-trade (intrabar) max DD; do not cross-compare the two.
 
 ## Locked allocations / protection / MC pin (mirrors — not owned here)
 
-**Rule 7:** risk% / versions → [`CLAUDE.md`](../../../../CLAUDE.md) §Strategy Reference · `core/firm_rules.py` `_BASE_RISK`.
+**Rule 7:** risk% / versions → [`AGENTS.md`](../../../../AGENTS.md) §Strategy Reference · `core/firm_rules.py` `_BASE_RISK`.
 `dd_protection` literals → `core/dd_protection.py` · CLAUDE §Protection.
 Portfolio MC pin → [`docs/mc_anchor_history.md`](../../../../docs/mc_anchor_history.md) · CLAUDE historical headline · engine `tests/core/test_mc_synthetic_engine.py`.
 Allocation-refresh ADR: [`2026-05-23`](../../../../docs/adr/2026-05-23-allocation-refresh-2.md).
@@ -67,7 +67,7 @@ This file's job below is **per-strategy Pine-header PF/WR/Net/DD/N** for `reconc
 **1R basis:** median loss (architecture: trend-rider, no BE).
 
 Baseline PF/WR/Net/DD/N table and archival vintages: redacted from the public tree — see the
-private operational archive. Reproduces the CLAUDE.md baseline anchor (values not restated here).
+private operational archive. Reproduces the AGENTS.md baseline anchor (values not restated here).
 
 **Notes:**
 - v5.5 delta from v5.4: two hour-block inputs flipped TRUE (all other logic unchanged) — see the

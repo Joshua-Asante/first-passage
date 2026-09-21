@@ -1,7 +1,7 @@
 # `ops/` — operational surface
 
 Imports `core` + root-resident governance. **No strategy is deployed.** Live
-posture is owned by [`CLAUDE.md`](../CLAUDE.md) §Live-execution posture — not
+posture is owned by [`AGENTS.md`](../AGENTS.md) §Live-execution posture — not
 restated here.
 
 | Path | Job |
