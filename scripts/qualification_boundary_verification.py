@@ -20,9 +20,13 @@ INVARIANT_MANIFEST = ROOT / 'tests/ops/qualification/invariant_manifest.json'
 # group, so the service-metering file runs first on the same fresh host.
 S2_CASES = ('tests/integration/qualification_boundary/test_campaign_service_linux.py',
             'tests/integration/qualification_boundary/test_campaign_supervision_linux.py')
-# S3: the full S2 file set plus the genuine N1 capture/G5 file. The N1_ONLY
+# S3: the full S2 file set plus the genuine N1 capture/G5 file. The N1 file
+# runs FIRST: the supervision file's last case deliberately contaminates the
+# common memory group (never-reset oom counters), which would terminalise every
+# later admission's settlement -- the same ordering constraint that already
+# puts the service-metering file ahead of the supervision file. The N1_ONLY
 # --test-only selection is untouched; --s3 is a separate, strictly larger mode.
-S3_CASES = (*S2_CASES, 'tests/integration/qualification_boundary/test_campaign_n1_linux.py')
+S3_CASES = ('tests/integration/qualification_boundary/test_campaign_n1_linux.py', *S2_CASES)
 
 
 def require_cleanup(result):
