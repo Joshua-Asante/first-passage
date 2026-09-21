@@ -151,6 +151,62 @@ wrong-owner refusal, symlink escape refusal, installed source custody and doctor
 Windows unit tests are diagnostic tests only; their symlink skip is not accepted
 in either disposable Linux job.
 
+## Running the S2 workflow as evidence
+
+`.github/workflows/qualification-s2-supervision.yml` provisions one fresh
+`ubuntu-24.04` host, runs every registered S2 node from
+`tests/ops/qualification/invariant_manifest.json` (the files named by `S2_CASES`
+in `scripts/qualification_boundary_verification.py`), enforces the invariants and
+cleanup, and uploads the `qualification-s2-supervision` artifact. A run is about
+25 minutes: 6-8 minutes of provisioning plus three cases that are about 300 s
+each by design (service downtime, deadline-before-bootstrap, two descendants to
+the wall). **A green check mark is not evidence; the artifact is.**
+
+Order of operations for an executor (the two clocks are independent; the
+`s2-linux-run` project skill carries the same procedure for agents):
+
+1. Commit on frozen bytes (`git diff --stat` first) and push the branch.
+2. Dispatch the Linux run **first**, then run the local `fp.ps1` lines while it
+   executes:
+
+   ```bash
+   gh workflow run qualification-s2-supervision.yml --ref <branch>
+   gh run list --workflow=qualification-s2-supervision.yml --branch <branch> --limit 1
+   ```
+
+   Confirm the listed `headSha` is the head you pushed.
+3. Keep the tree frozen until the last local record closes: the recorder hashes
+   the checkout before and after its command and voids the record if any byte
+   changed. The `guard_open_verification_record.py` PreToolUse hook refuses
+   Edit/Write into a checkout with a `running` record; put drafts in the session
+   scratchpad.
+4. Do not push again while a run is in flight: the workflow's per-ref
+   `cancel-in-progress` cancels it, and on a pull-request branch every push
+   refires the path-filtered workflow. Batch docs commits until the run you need
+   has finished. Never dispatch the same SHA twice.
+5. Read the artifact, not the check:
+
+   ```bash
+   python scripts/s2_run_evidence.py <run-id> --expect-head <sha>
+   ```
+
+   It downloads the artifact outside the repository and exits 0 only when
+   `record.json` (completed, exit 0/0, `source_stable`, `capture_complete`,
+   cleanup ok), `invariants.json` (`passed`, every required node) and `junit.xml`
+   (no failures, errors or skips) all hold. Cite the run ID, head SHA, record ID
+   and counts.
+
+A failure on unchanged code is a finding, not flakiness. Before any second
+dispatch, pull the failing work's chain from `boundary/journal.sqlite`
+(`full_campaign_budgets`, `full_campaign_objects` roles `supervision_event_*`),
+line it up against `journal.log`, `kernel.log` and `systemd-units.log`, and
+compare its timing with the last green run's same case; state the cause in one
+sentence with a file and line, fix it, then dispatch once. Worker packets report
+runs as evidence and say "Linux acceptance pending" when no green run exists on
+the final bytes; acceptance needs the integrated pull-request run on the final
+head plus independent review, never a branch run alone. Windows or mocked
+results are never Linux evidence.
+
 ## Boundary integration contract and unresolved acceptance
 
 `scripts/qualification_boundary_environment.py` exposes
@@ -184,8 +240,8 @@ python -I scripts/fp.py python scripts/qualification_boundary_verification.py --
 
 `--s2` selects the targeted diagnostic supervision suite
 (`tests/integration/qualification_boundary/test_campaign_supervision_linux.py`)
-on one fresh host: the installer enrolls the campaign host (polkit rule for the
-qexec `manage-units` scope plus the common memory slice) and installs the
+on one fresh host: the installer enrolls the campaign host (qexec's transient-unit
+polkit rule plus the common memory slice) and installs the
 execution-capable diagnostic release, and every probe goes through the warm
 service's funded private route via the forked transport child. The suite runs
 alone with one worker and its last case exhausts the common memory group, so the
@@ -193,12 +249,16 @@ host is never reused. The `Qualification S2 supervision` workflow runs it on
 `workflow_dispatch` or on pull requests touching the qualification surface; its
 record is diagnostic evidence for the coordinator, not an acceptance check.
 
-The polkit rule the S2 installer writes authorizes qexec for
-`org.freedesktop.systemd1.manage-units` when the action carries no `unit`
-detail (systemd's `StartTransientUnit` check passes none) or when the unit name
-carries this run's slice prefix. A transient start therefore cannot be bound to
-the prefix by polkit; this stays inside the recorded trust model, under which
-qexec is already root-equivalent through the Docker daemon.
+Under the accepted polkit rule, qexec can start arbitrary transient units —
+including units that run as `User=root` — because
+`org.freedesktop.systemd1.manage-units` carries no `unit` detail on a transient
+start (systemd's `StartTransientUnit` check passes none), and a named unit is
+authorized only when its name carries this run's slice prefix. Polkit therefore
+contributes no containment for unit starts: whether a started unit joins the
+campaign slice hierarchy rests on the guardian's own code checks and on
+`bootstrap.py`'s fixed `campaign_control` prefix check, not on polkit. This
+stays inside the recorded trust model, under which qexec is already
+root-equivalent through the Docker daemon.
 
 ```bash
 sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python   scripts/qualification_boundary_verification.py --s2 --manifest "$manifest"

@@ -67,9 +67,16 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
             events.append('begin')
 
         def execute(self, command, **_kwargs):
-            selection=('tests/integration/qualification_host' if mode=='--host-only' else
-                module.S2_CASES if mode=='--s2' else 'tests/integration/qualification_boundary')
-            assert selection in command
+            if mode=='--s2':
+                # Every S2 file, in S2_CASES order (the last supervision case contaminates the host).
+                positions=[command.index(case) for case in module.S2_CASES]
+                assert positions==sorted(positions) and len(module.S2_CASES)>1
+                assert not any(argument.startswith('--ignore=') for argument in command)
+            else:
+                selection='tests/integration/qualification_host' if mode=='--host-only' else 'tests/integration/qualification_boundary'
+                assert selection in command
+                if mode=='--test-only':
+                    assert all('--ignore='+case in command for case in module.S2_CASES)
             if mode=='--test-only':
                 assert self.data['metadata']['qualification_acceptance']=='coordinator_review_required'
             self.data['test_summary'] = {

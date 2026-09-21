@@ -112,3 +112,15 @@ def test_signed_nonempty_registry_never_reserves_or_schedules_worker(tmp_path,mo
     with pytest.raises(ValueError,match='LEGALITY_REGISTRY_NOT_EMPTY'):
         instance.handle_request(1001,encoded(dict(operation='SUBMIT_N1',attempt_id=case['attempt_id'],bundle_sha256=bundle_sha)))
     assert scheduled==[] and instance.store.execution_rows()==[]
+
+
+def test_restart_reports_an_unstarted_admission_and_spends_no_recovery_slot(tmp_path,monkeypatch):
+    """S2-G2: a RESERVED admission with no start intent has no OS effect to recover (R1); the slot stays unspent."""
+    from test_campaign_cancellation import funded_service,crash_after_begin_admission,fresh_service,control_slots,Runtime
+    instance,case=funded_service(tmp_path,monkeypatch)
+    crash_after_begin_admission(instance,case,monkeypatch)
+    restarted=fresh_service(instance)
+    restarted.campaign_runtime=Runtime(restarted)
+    restarted.recover_service()
+    assert restarted.recovery_issues=={case['attempt_id']+':admission':'ADMISSION_RESUMABLE'}
+    assert control_slots(restarted,case)==[]

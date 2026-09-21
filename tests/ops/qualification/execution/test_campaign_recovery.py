@@ -616,3 +616,33 @@ def test_plan_fetch_without_admitted_plan_is_bounded_rejection(tmp_path, bind):
     with pytest.raises(ValueError, match='plan'):
         store.chunk(dict(attempt_id=ATTEMPT, object_sha256='a' * 64, offset=0, length=1))
     assert store.budget_snapshot(ATTEMPT) == before
+
+
+def test_queued_cancellation_bars_new_reservation_but_settlement_and_negative_facts_continue(tmp_path):
+    """S2-G2: reserve_work refuses a queued operator body even before any receipt; nothing negative is barred."""
+    from test_campaign_budget import profile, request
+    config = profile()
+    config.update(schema='qualification_campaign_budget_profile/v2', orchestration_cpu_ns={p: 10 for p in config['phases']})
+    store = CampaignStore(ExecutionStore(tmp_path / 'journal.sqlite'))
+    store.begin_admission(request(), encoded(config), encoded(clock()))
+    store.bind_budget(ATTEMPT, contract_budget(), expected_revision=snap(store)['authority_revision'])
+    start(store)
+    cancel = encoded(dict(schema='qualification_campaign_request/v2', operation='VOID', attempt_id=ATTEMPT,
+                          reason='stop', operator_approval_bytes='eA=='))
+    store.queue_diagnostic_void(cancel)
+    before = snap(store)
+    with pytest.raises(ValueError, match='cancellation pending'):
+        reserve(store)
+    assert snap(store) == before
+    measured = json.loads(observation(t=12))
+    measured.update(schema='qualification_campaign_observation/v2', orchestration_charge_cpu_ns=10, termination_known=True)
+    settled = json.loads(store.settle_work(ATTEMPT, 'admission', encoded(measured)))
+    assert settled['works'][0]['charge_cpu_ns'] == 30 and settled['validity'] == 'VALID' and settled['state'] == 'BOUND'
+    # Recovery of a started, unfinished work is a negative fact (IN_DOUBT): it commits under the barrier.
+    recovered = json.loads(store.recover_work(ATTEMPT, 'admission', encoded(measured)))
+    assert recovered['state'] == 'IN_DOUBT' and recovered['validity'] == 'VALID'
+    assert recovered['works'][0]['charge_cpu_ns'] == 30
+    assert json.loads(store.void(cancel, now=NOW))['validity'] == 'VOID'
+    with pytest.raises(ValueError, match='VOID'):
+        reserve(store, t=14)
+    ExecutionStore(store.store.path)
