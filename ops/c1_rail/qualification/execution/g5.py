@@ -223,6 +223,41 @@ def main():
         return
     sys.stdout.buffer.write(accept_n1(Path(config['socket_path']),attempt_id=args.attempt_id))
 
+def verify_checkpoint_attestation(raw, *, context, current_keys):
+    """The G5-side custody check: execution-key signature over the payload."""
+    from ..evidence import parse_checkpoint_attestation
+    from .protocol import decode_base64
+    doc = parse_checkpoint_attestation(raw, attempt_id=context.attempt_id)
+    signature = doc['signature']
+    if signature['key_id'] not in context.domain.execution_key_ids:
+        raise ValueError('checkpoint attestation key is not enrolled for execution')
+    key = current_keys[signature['key_id']]
+    if sha256(key.public_key) != context.domain.trusted_key_sha256[signature['key_id']]:
+        raise ValueError('checkpoint attestation key identity differs')
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+    Ed25519PublicKey.from_public_bytes(key.public_key).verify(
+        decode_base64(signature['value_b64']), encoded(doc['payload']))
+    return doc
+
+
+def verify_checkpoint_assessment(raw, *, context, current_keys):
+    """The G5 candidate's result-key signature over the assessment core."""
+    from ..evidence import parse_checkpoint_assessment
+    from .protocol import decode_base64, fields
+    doc = parse_checkpoint_assessment(raw, attempt_id=context.attempt_id)
+    signature = fields(doc['signature'], {'algorithm', 'key_id', 'value_b64'})
+    if signature['key_id'] not in context.domain.result_key_ids:
+        raise ValueError('checkpoint assessment key is not enrolled for results')
+    key = current_keys[signature['key_id']]
+    if sha256(key.public_key) != context.domain.trusted_key_sha256[signature['key_id']]:
+        raise ValueError('checkpoint assessment key identity differs')
+    core = {name: value for name, value in doc.items() if name != 'signature'}
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+    Ed25519PublicKey.from_public_bytes(key.public_key).verify(
+        decode_base64(signature['value_b64']), encoded(core))
+    return doc
+
+
 class CampaignCheckpointEvidence:
     """The §1 return of validate_campaign_checkpoint: the canonical assessment
     core plus output bytes, expected revision and snapshot identity."""
@@ -244,7 +279,6 @@ def validate_campaign_checkpoint(context, *, checkpoint, plan_bytes, attestation
     output shape. Never trusts a worker verdict and never reruns draws.
     """
     from ..evidence import build_checkpoint_evidence
-    from .signing import verify_checkpoint_attestation
     if checkpoint != 'N1':
         raise ValueError('installed checkpoint required')
     verified = verify_checkpoint_attestation(attestation_bytes, context=context, current_keys=current_keys)
@@ -285,7 +319,6 @@ def sign_campaign_checkpoint(evidence, *, context, credential_reference, current
     core['signature'] = dict(algorithm='Ed25519', key_id=key_id,
         value_b64=base64.b64encode(key.sign(canonical_json_bytes(
             {name: value for name, value in core.items() if name != 'signature'}))).decode('ascii'))
-    from .signing import verify_checkpoint_assessment
     return canonical_json_bytes(core), verify_checkpoint_assessment
 
 

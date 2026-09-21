@@ -411,8 +411,7 @@ class ExecutionService:
         from ..checkpoint_plan import derive_checkpoint_plan
         from .campaign_store import (parse_checkpoint_assessment, parse_checkpoint_cutoff,
             CHECKPOINT_INTENT_SCHEMA)
-        from .g5 import validate_campaign_checkpoint
-        from .signing import verify_checkpoint_assessment
+        from .g5 import validate_campaign_checkpoint, verify_checkpoint_assessment
         from .store import instant
         work_id = request['work_id']
         candidate_bytes = decode_base64(request['candidate_bytes_b64'])
