@@ -108,3 +108,60 @@ are superseded only within PH1's reviewed domain. P1 itself remains unfrozen.
    reconstruction; missing actual closes remain unresolved for their real consumers.
    Any claim that combined acceptance blocks F1 must identify the exact required
    implementation/evidence gate, not invent a fresh-B7-before-E1 condition.
+
+## Addendum 2026-09-21 — T10 phase 1 evidence status
+
+Per-F phase-1 status from the T10 source/freeze executor (steps 1–3 only; step 4 and phase 2 not performed). Full table, bundle reconciliation, contradiction dispositions and missing producer facts: `docs/notes/2026-09-21-t10-phase1-source-reconciliation.md`. No row above is edited; ACCEPTED means the phase-1-verifiable evidence is in hand, BLOCKED names the missing fact, NOT-PHASE-1 defers to this packet's phase 2 / step 4 or a later stage.
+
+- F01 ACCEPTED — `BOOK_LEGS` four IDs/sides pinned `book_policy.py:179-197` (`ffcd3aab…`, unchanged since d107ebd), no optional leg.
+- F02 ACCEPTED — trailing instance pinned `book_policy.py:65-114`; registry EMPTY; canonical-row freeze remains F1's act.
+- F03 ACCEPTED — revision-bound September 14 first decision reused by reference (EP/U `8101ba49…`/`f94be43e…`).
+- F04 NOT-PHASE-1 — integrated-revision verification is packet phase 2.
+- F05 NOT-PHASE-1 — final adopted head + combined composition acceptance is packet phase 2.
+- F06 BLOCKED — missing fact: proven per-symbol regular-session enumeration 2022-09-01..2026-09-02 (coverage inventory `e2841b62…` is INCOMPLETE_NOT_RUNTIME_INPUT).
+- F07 ACCEPTED-with-STALE-marker — seven bundles retained-accepted by ledger/Step 6/Step 3 references; registry file moved @`87db6b8` with port pins byte-identical; ruling R1 pending.
+- F08 BLOCKED — universal-state coverage map + witnesses owed; historical seven results are not that proof.
+- F09 ACCEPTED — historical WATCH bundles retained; parity-only binding at F1 controls.
+- F10 ACCEPTED — stale-byte refusal verified at HEAD `book_adapters.py:46-47,121-123`; four pins unchanged since d107ebd; movement characterized.
+- F11 ACCEPTED — panel/export digests + warmup pins retained (cold_at_panel_origin, 2022-09-01 origin, four PASS coverage reports); on-changed-engine revalidation owed with that engine's acceptance.
+- F12 ACCEPTED — laws pinned (`book_policy.py:282-331`; `core/lifecycle.py` `0a70785d…`); tests pinned not run; consumer path moved @`7ba7844` and pinned at `724667a2…`.
+- F13 ACCEPTED-law / inputs-unfrozen — capacity law `book_capacity.py` `95381097…` @`a9175a1`; per-leg `cap_alloc` inputs remain DRAFT (80/shared-80); F1 freezes; production 0 until V1.
+- F14 ACCEPTED-clock / traces-owed — `BookProtectionClock` `book_policy.py:414+` unchanged; own-path/cancellation traces owed at F1 (I2).
+- F15 ACCEPTED — all six calendar digests re-verified byte-identical at HEAD, unmoved since 2026-09-15; D19 immutable.
+- F16 NOT-PHASE-1 — cutoff design approved; regenerated parity/fill-at-instant evidence is Phase 2/I2.
+- F17 BLOCKED — exact N/H1/H2 not computable from accepted evidence; ruling R2 (panel-derived vs calendar-derived session index).
+- F18 BLOCKED — horizon 500 covered-session / speed 200 proposed with no extrapolation past 2026-09-30; freeze gated on F17.
+- F19 ACCEPTED — explicit `EvaluationState` `contract.py:77-83` @`1339604`; pristine `tradeify-e1-pristine/v1`; no fresh-B7-before-E1 prerequisite; instance freeze at F1.
+- F20 BLOCKED — three facts still missing: CSV/query timezone+endpoints; Sept-14 boundary equity/flatness; close correction status.
+- F21 NOT-PHASE-1 — fresh used-account snapshot is the Phase 6 / E2 chain.
+- F22 ACCEPTED — emulator pinned at HEAD `2be77bab…` @`7ba7844` (moved: stale-close guard, noted); cost/slippage bytes frozen at F1.
+- F23 NOT-PHASE-1 — final composed runtime acceptance is packet phase 2.
+- F24 BLOCKED — calculator moved since its 150-test record (`4cb7851e…`→`896a5a1f…` @`05029ba`); rerun record owed.
+- F25 ACCEPTED — design assumptions recorded independently of outcomes; frozen at F1.
+- F26 ACCEPTED — design cutoffs (200; ≤10 failures per population) recorded; frozen at F1.
+- F27 ACCEPTED — 970 per population design recorded; n3 not sized from n1/n2; frozen at F1.
+- F28 ACCEPTED — domain-separated seed inputs implemented; root/recipe freeze + seed-label reconciliation at F1; no n3 consumption.
+- F29 ACCEPTED — Part A outer rule accepted; concrete block ledger at F1.
+- F30 BLOCKED — actual qualified joins/panel indices/startup model binding owed (private panels + composed acceptance).
+- F31 ACCEPTED — expansion rule accepted; percentile method freeze at F1.
+- F32 NOT-PHASE-1 — budget is step 4 + the operator's; none approved.
+- F33 NOT-PHASE-1 — second exact-depth decision is a dated post-F1 addendum.
+- F34 BLOCKED — exact session-pool mapping depends on F17's N.
+- F35 BLOCKED — signed full composition + actual legality/source coverage owed.
+- F36 BLOCKED — complete closure under the final reviewed runtime; 6 of 19 supplementary files moved since the ledger.
+- F37 ACCEPTED — `tb-i1-canonical-v1` + vectors; runtime/tool/deps pinned at F1.
+- F38 ACCEPTED — validation helper present; expected-rows authentication is the F1/D0 act (helper identity ≠ approval).
+- F39 ACCEPTED — canonical config + delta tests present; real baseline vectors pinned at F1.
+- F40 NOT-PHASE-1 — E1 seal chain and later; nothing issued.
+- F41 NOT-PHASE-1 — partial-year indices materialized at F1/I2 before results.
+- F42 NOT-PHASE-1 — stress variants accepted at F1/I2.
+- F43 NOT-PHASE-1 — transformation semantics frozen at F1.
+- F44 BLOCKED — exact contract-month seam indices ±2, count M, budgets not yet bound (ACCEPTED_UNMODELED stands).
+- F45 NOT-PHASE-1 — exact variant list frozen at F1 before results.
+- F46 NOT-PHASE-1 — interval method/anchor frozen at F1; n3 quantities later.
+- F47 ACCEPTED — durable journal/checkpoint + terminal-prefix tests implemented; combined authenticated acceptance at F1/E1.
+- F48 ACCEPTED — public/private root separation observed in this reconciliation.
+- F49 NOT-PHASE-1 — final composition/invocation review at F1/E1.
+- F50 NOT-PHASE-1 — pre-reopen readiness binding is packet phase 2 (consumes T07/T08).
+- F51 NOT-PHASE-1 — independent review of the assembled F1 packet is phase 2.
+- F52 NOT-PHASE-1 — D0/D1/V1/live sequence later; no GO inferred.
