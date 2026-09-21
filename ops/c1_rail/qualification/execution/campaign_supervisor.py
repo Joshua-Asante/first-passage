@@ -1257,7 +1257,11 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
     # The manager creates the mountpoints; only then may the guardian stage
     # into the input tmpfs (it cannot mkdir under /var/lib itself).
     _guardian_bus_call(campaigns, io['in_unit'],
-                       _io_mount_properties(io['in_path'], size_bytes=staged_bytes + 4096,
+                       _io_mount_properties(io['in_path'],
+                                            # Page rounding and directory entries need real
+                                            # headroom over the staged byte total or the writes
+                                            # fail with EAGAIN on a full tmpfs.
+                                            size_bytes=staged_bytes + staged_bytes // 2 + 65536,
                                             uid=context.config['service_uid'], mode=0o755))
     _guardian_bus_call(campaigns, io['out_unit'],
                        _io_mount_properties(io['out_path'], size_bytes=output_bound,
