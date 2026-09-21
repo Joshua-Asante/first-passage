@@ -1539,6 +1539,7 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
         # name's digest) stands in for the container id in the retained event.
         if (resumed < RESUME_SIGNAL_SENDS and init_image is not None
                 and _interpreter_image(*init_image) and init_image[0] == READINESS_TOKEN):
+            from .protocol import digest
             signals = _signal_state(next(iter(seen)))
             if signals is not None:
                 try:

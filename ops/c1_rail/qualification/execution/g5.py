@@ -348,7 +348,8 @@ def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id):
     keys = load_keys(read_regular(Path(config['installation_root']), 'keys.json', limit=1024 * 1024), authority_class=authority)
 
     def call(operation, **values):
-        return request(socket_path, operation, dict(attempt_id=attempt_id, **values))
+        return request(socket_path, operation, dict(
+            schema='qualification_campaign_request/v2', attempt_id=attempt_id, **values))
 
     snapshot = call('CHECKPOINT_SNAPSHOT', checkpoint='N1')
     parsed_snapshot = parse_canonical_json(snapshot, label='checkpoint snapshot')
