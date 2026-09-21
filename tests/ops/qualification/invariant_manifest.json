@@ -343,7 +343,7 @@
   },
   {
     "id": "QEXEC-01",
-    "requirement": "Real losing and continuing N1 reach protected capture and G5; public fabrication cannot authorize completion. Retained worker measurements include payload construction, validation and framing; final serialization remains budget-enforced.",
+    "requirement": "Real losing and continuing N1 reach protected capture and G5; public fabrication cannot authorize completion. Retained worker measurements include payload construction, validation and framing; final serialization remains budget-enforced; genuine protected N1 dispatch, capture, independent G5 assessment and terminal progression (PASS -> N2_READY, FAIL -> N1_FAILED) with recovery and identity invariants.",
     "owner": "execution/service.py and execution/worker.py",
     "producer": "protected supervisor launch/capture and execution attestation",
     "consumer": "G5 assessment and result authentication",
@@ -357,27 +357,31 @@
       "tests/integration/qualification_boundary/test_acceptance.py::test_real_client_uid_cannot_enter_g5_acceptance[STORE_RESULT-fields1]",
       "tests/integration/qualification_boundary/test_acceptance.py::test_real_n1_retains_exact_adjudicated_capture[False-PARTIAL-NONE]",
       "tests/integration/qualification_boundary/test_acceptance.py::test_real_n1_retains_exact_adjudicated_capture[True-COMPLETE-FAIL]",
+      "tests/integration/qualification_boundary/test_campaign_n1_linux.py::test_s3_g5_unit_death_and_exact_receipt_retry",
+      "tests/integration/qualification_boundary/test_campaign_n1_linux.py::test_s3_genuine_fail_is_terminal",
+      "tests/integration/qualification_boundary/test_campaign_n1_linux.py::test_s3_genuine_pass_reaches_n2_ready",
+      "tests/integration/qualification_boundary/test_campaign_n1_linux.py::test_s3_guardian_death_mid_n1_is_in_doubt_with_no_capture",
+      "tests/integration/qualification_boundary/test_campaign_service_linux.py::test_s2_admission_retry_after_service_death_never_double_starts",
+      "tests/integration/qualification_boundary/test_campaign_service_linux.py::test_s2_post_admission_void_authentication_is_charged_per_attempt_and_never_forged",
+      "tests/integration/qualification_boundary/test_campaign_service_linux.py::test_s2_queued_cancellation_bars_new_work_while_admission_still_settles",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_deadline_kills_guardian_before_bootstrap_completes",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_fixed_intent_retry_is_charged_separately",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_guardian_death_recovers_before_cleanup",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_kernel_bounds_guardian_cpu_before_recovery",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_original_deadline_survives_service_downtime",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_payload_cpu_is_kernel_bounded_without_guardian",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_private_route_is_service_peer_only_and_bounded_in_framing",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_probe_that_exits_before_observation_never_completes",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_sequential_roles_share_one_allowance",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_shared_memory_oom_is_retained_last",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_two_descendants_exhaust_owned_cpu",
+      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_warm_service_starts_one_guardian_per_work_with_no_scheduler_unit",
       "tests/ops/qualification/execution/test_worker.py::test_final_observation_serialization_overrun_cannot_return_result[cpu]",
       "tests/ops/qualification/execution/test_worker.py::test_final_observation_serialization_overrun_cannot_return_result[memory]",
       "tests/ops/qualification/execution/test_worker.py::test_final_observation_serialization_overrun_cannot_return_result[wall]",
       "tests/ops/qualification/execution/test_worker.py::test_retained_observations_include_completed_payload_work[encode_frame]",
       "tests/ops/qualification/execution/test_worker.py::test_retained_observations_include_completed_payload_work[encode_worker_result]",
-      "tests/ops/qualification/execution/test_worker.py::test_retained_observations_include_completed_payload_work[parse_worker_result]",
-      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_sequential_roles_share_one_allowance",
-      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_two_descendants_exhaust_owned_cpu",
-      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_fixed_intent_retry_is_charged_separately",
-      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_guardian_death_recovers_before_cleanup",
-      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_original_deadline_survives_service_downtime",
-      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_shared_memory_oom_is_retained_last",
-      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_kernel_bounds_guardian_cpu_before_recovery",
-      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_private_route_is_service_peer_only_and_bounded_in_framing",
-      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_warm_service_starts_one_guardian_per_work_with_no_scheduler_unit",
-      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_probe_that_exits_before_observation_never_completes",
-      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_payload_cpu_is_kernel_bounded_without_guardian",
-      "tests/integration/qualification_boundary/test_campaign_supervision_linux.py::test_s2_deadline_kills_guardian_before_bootstrap_completes",
-      "tests/integration/qualification_boundary/test_campaign_service_linux.py::test_s2_post_admission_void_authentication_is_charged_per_attempt_and_never_forged",
-      "tests/integration/qualification_boundary/test_campaign_service_linux.py::test_s2_queued_cancellation_bars_new_work_while_admission_still_settles",
-      "tests/integration/qualification_boundary/test_campaign_service_linux.py::test_s2_admission_retry_after_service_death_never_double_starts"
+      "tests/ops/qualification/execution/test_worker.py::test_retained_observations_include_completed_payload_work[parse_worker_result]"
     ],
     "evidence_kind": "executed pytest JUnit; real protected Linux process/UID/container evidence where integration nodes are named"
   },
@@ -581,18 +585,5 @@
       "tests/test_qualification_authority_boundaries.py::test_legacy_active_entrypoints_require_execution_attestation[seal]"
     ],
     "evidence_kind": "executed pytest JUnit; real protected Linux process/UID/container evidence where integration nodes are named"
-  },
-  {
-    "id": "QN1-01",
-    "requirement": "Genuine protected N1 dispatch, capture, independent G5 assessment and terminal progression (PASS -> N2_READY, FAIL -> N1_FAILED) with recovery and identity invariants.",
-    "owner": "execution/campaign_supervisor.py and execution/service.py",
-    "producer": "fixture_producer dispatch release/profile and the funded schedule route",
-    "consumer": "CampaignStore checkpoint family and journal_snapshot /v6",
-    "test_nodeids": [
-      "tests/integration/qualification_boundary/test_campaign_n1_linux.py::test_s3_genuine_pass_reaches_n2_ready",
-      "tests/integration/qualification_boundary/test_campaign_n1_linux.py::test_s3_genuine_fail_is_terminal",
-      "tests/integration/qualification_boundary/test_campaign_n1_linux.py::test_s3_guardian_death_mid_n1_is_in_doubt_with_no_capture",
-      "tests/integration/qualification_boundary/test_campaign_n1_linux.py::test_s3_g5_unit_death_and_exact_receipt_retry"
-    ]
   }
 ]
