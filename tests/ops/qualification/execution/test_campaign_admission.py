@@ -308,3 +308,16 @@ def test_chunk_offset_cannot_overflow_sqlite_one_based_index():
     with pytest.raises(ValueError):
         parse_campaign_request(message({'attempt_id': 'test'}, 'FETCH_PLAN_CHUNK',
             object_sha256='a'*64, offset=2**63-1, length=1))
+
+
+def test_diagnostic_status_reports_cancellation_metering_and_dormant_status_is_unchanged(tmp_path, monkeypatch):
+    """S2-G2: the metered status carries the queued-body flag, attempt count and last refusal; dormant admission does not."""
+    from test_campaign_cancellation import funded_service, admit, status as diagnostic_status
+    instance, case = funded_service(tmp_path / 'funded', monkeypatch)
+    admit(instance, case)
+    current = diagnostic_status(instance, case)
+    assert current['schema'] == 'qualification_campaign_status/v2'
+    assert current['void_pending'] is False and current['void_authentication_attempts'] == 0 and current['void_refusal'] is None
+    dormant, other = running(tmp_path / 'dormant', monkeypatch)
+    first = json.loads(dormant.handle_request(1001, message(other)))
+    assert first['schema'] == 'qualification_campaign_status/v1' and 'void_pending' not in first

@@ -19,6 +19,29 @@ def integer(value, *, positive=False):
     return value
 
 
+# Retained-object roles derived from a work identity ('supervision_' + work_id)
+# share the namespace with the GLOB-queried 'supervision_control_*' and
+# 'supervision_event_*' roles (_recovery_pending, integrity, campaign_host
+# cleanup). A work named 'control_x' or 'event_x' would be parsed as a control
+# claim or event body. 'admission' is the fixed, service-reserved first work.
+RESERVED_WORK_ID_PREFIXES = ('control_', 'event_')
+FIXED_WORK_IDS = ('admission',)
+
+
+def validate_work_id(value, *, fixed=None):
+    """A canonical work identity that cannot collide with a supervision object role.
+
+    `fixed` names the one fixed identity a caller may use ('admission' for the
+    service's own first work); every other producer is refused it.
+    """
+    identity(value)
+    if value.startswith(RESERVED_WORK_ID_PREFIXES):
+        raise ValueError('work identity collides with a supervision object role')
+    if value in FIXED_WORK_IDS and value != fixed:
+        raise ValueError('fixed work identity is reserved')
+    return value
+
+
 def remaining_cpu(cap, settled, reserved):
     integer(cap, positive=True)
     values = tuple(settled) + tuple(reserved)
