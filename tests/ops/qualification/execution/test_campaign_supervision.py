@@ -2682,6 +2682,30 @@ def test_bootstrap_blocks_the_resume_signal_before_any_thread_spawning_import():
     assert source.index("if role == 'campaign_guardian':") < source.index('timer_settime(')
 
 
+def test_probe_container_body_carries_the_thread_limits_as_a_docker_env_list():
+    """The belt's Env must be the docker create API's list of K=V strings
+    (run 35548558302: a dict is refused by the daemon and no container is ever
+    created); every entry is one of the controller environment's thread
+    limits, and nothing else about the fixed body changes."""
+    from types import SimpleNamespace
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    from c1_rail.qualification.execution.profile import CAMPAIGN_RESOURCE_SCOPE
+
+    context = SimpleNamespace(
+        release=encoded(dict(worker_image_digest='sha256:' + 'a' * 64)),
+        profile=SimpleNamespace(worker_uid=61001, pids_limit=64, memory_bytes=256_000_000, scratch_bytes=67_108_864),
+        config=dict(g5_uid=61002, seal_probe_uid=61003))
+    manifest = dict(role='probe_worker', probe='noop')
+    enrollment = dict(host_run_id='host1', attempt_id=ATTEMPT, work_id='probe',
+                      scopes={'payload_slice': 'fpq-host1-probe-payload.slice'})
+    body = supervisor.probe_container_body(context, enrollment, manifest)
+    assert body['Env'] == [name + '=' + value
+                           for name, value in CAMPAIGN_RESOURCE_SCOPE['controller_environment'].items()]
+    assert all('=' in entry and ' ' not in entry for entry in body['Env'])
+    assert body['Image'] == 'sha256:' + 'a' * 64 and body['User'] == '61001:61001'
+    assert body['HostConfig']['CgroupParent'] == 'fpq-host1-probe-payload.slice'
+
+
 def test_unobserved_payload_exit_settles_without_completion_and_retains_the_reason(tmp_path, monkeypatch):
     from c1_rail.qualification.execution import campaign_supervisor as supervisor
 

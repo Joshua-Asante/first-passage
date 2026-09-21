@@ -1055,7 +1055,10 @@ def probe_container_body(context, enrollment, manifest):
         # Belt, not the fix: the same thread limits the controller environment
         # imposes, so the payload's compute stack (OpenBLAS inside numpy) builds
         # no pool at import; the bootstrap-level block is the actual safety net.
-        Env=dict(CAMPAIGN_RESOURCE_SCOPE['controller_environment']),
+        # The docker create API takes Env as a list of K=V strings, exactly like
+        # the guardian unit's Environment (run 35548558302: a dict is refused
+        # and no container is ever created).
+        Env=[name + '=' + value for name, value in CAMPAIGN_RESOURCE_SCOPE['controller_environment'].items()],
         Entrypoint=['/opt/ops/bin/python', '-I', '/opt/qualification/bootstrap.py', 'campaign_probe'],
         Cmd=['--probe', manifest['probe']], AttachStdout=False, AttachStderr=False, Tty=False,
         Labels={'fp.s2.host': enrollment['host_run_id'], 'fp.s2.attempt': enrollment['attempt_id'],
