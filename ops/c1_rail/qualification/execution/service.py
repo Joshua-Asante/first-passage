@@ -297,16 +297,35 @@ class ExecutionService:
                     existing = campaigns.row(attempt)
                 except KeyError:
                     existing = None
+                manifest = encoded(dict(schema='qualification_campaign_work_manifest/v1', attempt_id=attempt,
+                    work_id='admission', role='admission', probe='noop'))
+                # Attempts whose first launch this process has already delegated to
+                # completion: an exact retry after that never resamples the clock
+                # or re-enters the launcher (the work is no longer RESERVED). The
+                # set is process-local, so a restart keeps the resume path below.
+                delegated = self.__dict__.setdefault('delegated_admissions', set())
                 if existing is not None:
                     if bytes(existing['request_bytes']) != raw:
                         raise ValueError('immutable diagnostic admission request differs')
-                    return encoded(campaigns.diagnostic_status(attempt))
-                state = parse_canonical_json(campaigns.begin_admission(raw,
-                    encoded(release['campaign_budget_profile']), campaign_supervisor.observe_campaign_clock()), label='provisional budget')
-                reservation = decode_base64(state['works'][0]['reservation_bytes_b64'])
-                manifest = encoded(dict(schema='qualification_campaign_work_manifest/v1', attempt_id=attempt,
-                    work_id='admission', role='admission', probe='noop'))
-                return campaign_supervisor.run_campaign_work(self, reservation, manifest)
+                    if attempt in delegated:
+                        return encoded(campaigns.diagnostic_status(attempt))
+                    # An exact retry resumes a structurally absent RESERVED admission
+                    # (service died after begin_admission, before the start intent):
+                    # nothing was started, so the first launch is still safe and
+                    # happens at most once (prepare_campaign_work retains START_INTENT
+                    # before any OS effect; run_campaign_work returns status for any
+                    # other work state). Every other existing state is status only.
+                    unstarted = campaigns.inspect_unstarted_admission(attempt, campaign_supervisor.observe_campaign_clock)
+                    if unstarted is None or not unstarted['resumable']:
+                        return encoded(campaigns.diagnostic_status(attempt))
+                    reservation = unstarted['reservation_bytes']
+                else:
+                    state = parse_canonical_json(campaigns.begin_admission(raw,
+                        encoded(release['campaign_budget_profile']), campaign_supervisor.observe_campaign_clock()), label='provisional budget')
+                    reservation = decode_base64(state['works'][0]['reservation_bytes_b64'])
+                result = campaign_supervisor.run_campaign_work(self, reservation, manifest)
+                delegated.add(attempt)
+                return result
         if operation == 'STATUS':
             return encoded(campaigns.diagnostic_status(attempt))
         if operation == 'FETCH_PLAN_CHUNK':
@@ -314,25 +333,45 @@ class ExecutionService:
                 raise ValueError('diagnostic admission has no retained plan')
             return campaigns.chunk(request)
         if operation == 'VOID':
-            with self.store.transaction():
-                retry = campaigns.void_retry(raw)
-                if retry is not None:
-                    return retry
-                objects = campaigns.objects(attempt)
-                if 'context_trust_domain' not in objects:
-                    return campaigns.queue_diagnostic_void(raw)
-                domain = parse_canonical_json(objects['context_trust_domain'], label='original enrollment')
-                contract_sha = campaigns.diagnostic_status(attempt)['receipt']['contract_sha256']
-                keys = self.keys()
-                approval = verify_detached_approval(decode_base64(request['operator_approval_bytes']),
-                    trusted_keys=keys, expected_scope='VOID_QUALIFICATION_ATTEMPT',
-                    expected_subject_sha256=sha256(encoded(dict(attempt_id=attempt,
-                        reason=request['reason'], contract_sha256=contract_sha))),
-                    expected_contract_sha256=contract_sha, now=now(), allow_test_authority=True)
-                if (approval.authority_class != 'TEST_ONLY' or approval.key_id not in domain['freeze_key_ids']
-                        or sha256(keys[approval.key_id].public_key) != domain['trusted_key_sha256'][approval.key_id]):
-                    raise ValueError('VOID authority is not enrolled')
-                return campaigns.void(raw, now=now())
+            # (i) Cheap bounded transport, unmetered: the exact historical retry,
+            # single-body byte-bounded queueing and compact status. Serialized
+            # with the funded producers so a queued body never races a claim
+            # already in flight; a pre-admission body waits for the admission
+            # guardian, which authenticates it under its own charged work.
+            with self.dispatch_lock:
+                with self.store.transaction():
+                    retry = campaigns.void_retry(raw)
+                    if retry is not None:
+                        return retry
+                    status = campaigns.queue_diagnostic_void(raw)
+                    if parse_canonical_json(status, label='status')['receipt'] is None:
+                        return status
+                # (ii) Signature verification runs only inside a durably funded,
+                # guarded, one-use controller operation charged to the original
+                # allowance. A refused claim returns status with the body still
+                # queued; a failed verification retains its refusal, clears the
+                # body and is never refunded.
+                with campaign_supervisor.controller_cpu_guard():
+                    sequence, status = campaigns.claim_void_authentication(raw, campaign_supervisor.observe_campaign_clock())
+                    if sequence is None:
+                        return status
+                    try:
+                        domain = parse_canonical_json(campaigns.retained_object(attempt, 'context_trust_domain'), label='original enrollment')
+                        contract_sha = campaigns.diagnostic_status(attempt)['receipt']['contract_sha256']
+                        keys = self.keys()
+                        approval = verify_detached_approval(decode_base64(request['operator_approval_bytes']),
+                            trusted_keys=keys, expected_scope='VOID_QUALIFICATION_ATTEMPT',
+                            expected_subject_sha256=sha256(encoded(dict(attempt_id=attempt,
+                                reason=request['reason'], contract_sha256=contract_sha))),
+                            expected_contract_sha256=contract_sha, now=now(), allow_test_authority=True)
+                        if (approval.authority_class != 'TEST_ONLY' or approval.key_id not in domain['freeze_key_ids']
+                                or sha256(keys[approval.key_id].public_key) != domain['trusted_key_sha256'][approval.key_id]):
+                            raise ValueError('VOID authority is not enrolled')
+                    except (ValueError, KeyError) as refusal:
+                        campaigns.refuse_void_authentication(raw, sequence, str(refusal)[:1024],
+                                                             campaign_supervisor.observe_campaign_clock())
+                        raise
+                    return campaigns.complete_void_authentication(raw, sequence, now=now())
         raise ValueError('UNKNOWN_OPERATION')
 
     def _schedule_request(self, peer_uid, raw):
@@ -511,6 +550,24 @@ class ExecutionService:
                     if state['profile']['schema'] != 'qualification_campaign_budget_profile/v2':
                         continue  # Historical S1/dormant records gain no runtime ownership.
                 for work in state['works']:
+                    if work['work_id'] == 'admission' and work['state'] == 'RESERVED' and not work['transitions']:
+                        # START_INTENT precedes every OS effect (R1): a never-prepared
+                        # admission has nothing to recover, and spending the one-use
+                        # RECOVERY_OWNER slot on it would leave a permanent barrier and
+                        # bar the exact SUBMIT_E1 retry that may still perform the
+                        # first launch. Reported only; this grants nothing.
+                        unstarted = campaigns.inspect_unstarted_admission(attempt, campaign_supervisor.observe_campaign_clock)
+                        if unstarted is not None:
+                            if unstarted['expired']:
+                                # Past the admission deadline or on another boot nothing can
+                                # ever launch it and no guardian will ever authenticate a
+                                # queued body: the same clock observation ends the budget
+                                # honestly (BUDGET_EXHAUSTED / BUDGET_UNCERTAIN) through the
+                                # ownerless RESERVED recovery path — no slot, no OS effect.
+                                campaigns.recover_work(attempt, 'admission', unstarted['clock_bytes'])
+                            self.recovery_issues[attempt + ':admission'] = (
+                                'ADMISSION_RESUMABLE' if unstarted['resumable'] else 'ADMISSION_UNSTARTED')
+                            continue
                     try:
                         campaign_supervisor.recover_campaign_work(self, decode_base64(work['reservation_bytes_b64']),
                                               attempt_id=attempt, work_id=work['work_id'])

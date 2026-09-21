@@ -3,6 +3,7 @@
 import json
 import pytest
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
+from c1_rail.qualification.execution.campaign_funding import parse_request
 from c1_rail.qualification.execution.campaign_store import CampaignStore
 from c1_rail.qualification.execution.store import ExecutionStore
 from test_campaign_budget import ATTEMPT, profile, clock, request, contract_budget, snap, start
@@ -624,12 +625,25 @@ def test_claim_cannot_point_to_a_valid_but_ineligible_historical_head(tmp_path):
 def test_compact_fixed_signing_retry_preserves_parent_authority_and_own_charge(tmp_path):
     from test_campaign_budget import transition, observation
     from test_campaign_recovery import capture
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
     from c1_rail.qualification.execution.protocol import sha256
 
     store = enrolled(tmp_path)
     raw = schedule(work_id='seal', role='probe_seal')
     token, _ = claim(store, raw)
     _, enrollment = store.materialize_scheduler_bootstrap(ATTEMPT, 'seal', token, 'host1')
+    # S2-G5 R1: this scene enrolls 'seal' (materialize retains the enrollment),
+    # so its credit facts need a retained payload-scope PROCESS identity like
+    # any container-supervised work; the compact model simulates one in the
+    # current producer shape rather than modelling a supervised work without
+    # evidence.
+    scope = json.loads(enrollment)['scopes']
+    store.retain_supervision_event(encoded(dict(
+        schema=supervisor.SUPERVISION_EVENT_V2, attempt_id=ATTEMPT, work_id='seal',
+        kind='PROCESS', clock=clock(11), data=dict(pid=4242, start_ticks=1, uid=1001,
+            comm='python', exe='/opt/ops/bin/python',
+            cgroup='/' + scope['campaign_slice'] + '/' + scope['work_slice'] + '/'
+                   + scope['payload_slice'] + '/docker-' + 'f' * 64 + '.scope'))))
     capture(store, 'seal', 12)
     transition(
         store,
@@ -736,3 +750,47 @@ def test_materialized_intent_loss_rejects_reopen_and_negative_write(tmp_path):
         ExecutionStore(store.store.path)
     with pytest.raises(ValueError, match='funding'):
         store.recover_work(ATTEMPT, 'admission', encoded(clock(12)))
+
+
+def test_queued_cancellation_refuses_the_claim_before_state_and_is_moot_once_void(tmp_path):
+    """S2-G2 barrier (coordinator ruling 2026-09-19): a queued operator body bars this new-work grant outright."""
+    from test_campaign_budget import NOW
+
+    store = enrolled(tmp_path)
+    cancel = encoded(
+        {
+            'schema': 'qualification_campaign_request/v2',
+            'operation': 'VOID',
+            'attempt_id': ATTEMPT,
+            'reason': 'stop',
+            'operator_approval_bytes': 'eA==',
+        }
+    )
+    queued = json.loads(store.queue_diagnostic_void(cancel))
+    assert queued['void_pending'] is True and queued['void_authentication_attempts'] == 0
+    before = store.budget_snapshot(ATTEMPT)
+    with pytest.raises(ValueError, match='cancellation pending'):
+        claim(store)
+    assert store.budget_snapshot(ATTEMPT) == before
+    with store.store.transaction() as c:
+        assert c.execute('SELECT count(*) FROM full_campaign_bootstraps').fetchone()[0] == 0
+    assert not json.loads(store.scheduler_status(ATTEMPT))['pending']
+    # Only charged authentication clears a body; VOID itself makes it moot.
+    store.void(cancel, now=NOW)
+    assert claim(store)[0] is None
+    assert json.loads(store.scheduler_status(ATTEMPT))['validity'] == 'VOID'
+    reopened = CampaignStore(ExecutionStore(store.store.path))
+    assert reopened.void_retry(cancel) is not None
+
+
+# --- S2-G4 A9-3: the private route refuses colliding work identities ----------
+
+
+@pytest.mark.parametrize('work_id', ['control_probe', 'event_probe', 'admission'])
+def test_scheduler_request_refuses_identities_that_collide_with_object_roles(tmp_path, work_id):
+    """parse_request is the funded producer's entry: a work identity that would
+    collide with a supervision object role (or the fixed admission identity,
+    which only begin_admission mints) never becomes a funded intent."""
+    raw = schedule(attempt_id=ATTEMPT, work_id=work_id)
+    with pytest.raises(ValueError, match='supervision object role|fixed work identity'):
+        parse_request(raw)
