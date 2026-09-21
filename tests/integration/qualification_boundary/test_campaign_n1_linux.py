@@ -124,6 +124,8 @@ def test_s3_guardian_death_mid_n1_is_in_doubt_with_no_capture(real_boundary):
     assert boundary.dispatch, 'FP_QUALIFICATION_S3=1 required'
     attempt = admit(boundary, idle=False)
     dispatch(boundary, attempt, 'n1work', 'n1_worker')
+    # Kill the guardian mid-RUNNING; under A3 only a service restart recovers
+    # the work, so the restart IS the scene's mechanism, not cleanup.
     deadline = time.monotonic() + 30
     killed = False
     while time.monotonic() < deadline:
@@ -131,9 +133,10 @@ def test_s3_guardian_death_mid_n1_is_in_doubt_with_no_capture(real_boundary):
         if work(state, 'n1work')['state'] == 'RUNNING' and not killed:
             _kill_guardian(boundary, state)
             killed = True
-        if killed and work(budget(boundary, attempt), 'n1work')['state'] in ('IN_DOUBT', 'CAPTURED'):
             break
         time.sleep(.1)
+    assert killed, 'guardian never reached RUNNING'
+    boundary.restart()
     state = wait(boundary, attempt, lambda s: work(s, 'n1work')['state'] == 'IN_DOUBT'
                  or s['state'] not in ('BOUND',), seconds=120)
     assert work(state, 'n1work')['state'] == 'IN_DOUBT', state
@@ -170,7 +173,8 @@ def test_s3_g5_unit_death_and_exact_receipt_retry(real_boundary):
     from test_campaign_supervision_linux import schedule_document
     reply = boundary.raw_request(dict(schema='qualification_campaign_request/v2',
         operation='COMMIT_CHECKPOINT_ASSESSMENT', attempt_id=attempt, checkpoint='N1', work_id='g5work',
-        candidate_bytes_b64=base64.b64encode(_candidate(boundary, attempt)).decode('ascii'), artifacts=[]))
+        candidate_bytes_b64=base64.b64encode(_candidate(boundary, attempt)).decode('ascii'), artifacts=[]),
+        role='qg5')
     assert reply.get('ok') is False and 'exact checkpoint candidate retry required' in str(reply.get('error')), reply
 
 
