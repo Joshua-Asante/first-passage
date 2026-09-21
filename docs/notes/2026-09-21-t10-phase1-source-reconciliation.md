@@ -176,3 +176,9 @@ Counts: 24 ACCEPTED (F13 and F14 carry law-accepted / inputs-or-traces-owed spli
 ## Provenance commands (as executed, read-only)
 
 `git log/diff d107ebd..HEAD -- <path>` for `ops/c1_signal_daemon/book_adapters.py`, each supplementary runtime file, `ops/calendars/*`; `sha256sum` of the six calendar artifacts, the 19 supplementary files, inventory files and the calculator; `git show` per registry-touching commit; per-commit blob hashing of `book_adapters.py` across all history (`2299a1aa…` absent). No test, replay, qualification or private-input command was run.
+
+## Rulings — 2026-09-21
+
+- **R1 (coordinator):** reading (a). Registry-file movement with byte-identical port pins and a strengthened stale-byte refusal does **not** void by-reference acceptance. The seven rows are **ACCEPTED-by-reference, movement annotated** (`87db6b8`, `73e28d3`, `7ba7844`; pins unchanged). Two F10 hold items replace the STALE marking: (i) the corrected Striker port `efd479b6…` has no parity run of its own — PR #356's Striker row executed `c81aa59c…` — so its parity rests on the accepted Step 3 contract until a corrected-port parity run exists or the operator accepts Step 3 as sufficient at F1; (ii) `tv_broker_emulator.py` moved at `7ba7844` after the Track B parity run, so that run's fill device is not HEAD's — the on-changed-engine revalidation F11 already owes covers it.
+- **R2 (operator):** **panel-derived.** N and the H1/H2 split are enumerated from the accepted per-leg panels under the shared union grid, annotated by D19 for date membership only; no calendar extrapolation. One bounded, labelled producer run is owed (phase 2 / step 4 scope); the horizon freeze (F18) waits on it.
+- **R5 (operator):** **no** F1 freeze row consumes actual-close evidence; pristine E1 needs no used-account reconstruction. F20's three facts remain T07's (settlement), not an F1 gate; contradiction 5 is closed for F1.
