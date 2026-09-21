@@ -1227,13 +1227,11 @@ def _capture_result_document(context, campaigns, state, work, enrollment, manife
     import base64
     from .store import instant
     from .evidence import parse_worker_result
-    from .protocol import decode_frame
     staged_limits = parse_canonical_json((Path(checkpoint_io_paths(enrollment)['in_path']) / 'campaign-limits.json').read_bytes(),
                                           label='staged campaign limits')['limits']
-    # The mount carries the worker's framed output; the archive keeps those
-    # bytes verbatim and the parse works on the decoded document.
-    decoded = decode_frame(payload_bytes, limit=max(1, len(payload_bytes)))
-    captured = parse_worker_result(decoded, context=context, execution_id=manifest['work_id'],
+    # The caller already decoded the mounted frame; payload_bytes is the
+    # worker's canonical document exactly as archived.
+    captured = parse_worker_result(payload_bytes, context=context, execution_id=manifest['work_id'],
                                    plan_bytes=plan_bytes, campaign_limits=staged_limits)
     image = parse_canonical_json(context.release, label='release')['worker_image_digest']
     from .runtime import observe_runtime
