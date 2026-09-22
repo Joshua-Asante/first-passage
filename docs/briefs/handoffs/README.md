@@ -6,7 +6,7 @@ A packet in this directory is a record of an assignment, its context and its pro
 
 ## Pre-mortem (every multi-loop packet)
 
-Before dispatch, the coordinator adds a pre-mortem section covering loop cost and full-run budget, the decisions the executor will hit (ruled on in one batch before freeze), what would make the work moot, and the measurements the return fills in. The rule is brief-authoring check 11; the S3 draft's §0.6 is the worked example.
+Before dispatch, the coordinator adds a pre-mortem section covering loop cost and full-run budget, the decisions the executor will hit (ruled on in one batch before freeze), what would make the work moot, and the measurements the return fills in. The rule is brief-authoring check 11; its first application is the S4 packet.
 
 ## Status of the September 12–19 packets
 

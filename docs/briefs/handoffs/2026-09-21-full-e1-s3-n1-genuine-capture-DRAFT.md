@@ -15,22 +15,6 @@
 
 **D4 — Release/profile revision (prep Q6, §3).** Every campaign release literal pins `dispatch_enabled=False` and the profile fixed set pins `supported_checkpoints=[]`; opening N1 dispatch touches ≥12 strict consumers and the budget-profile-v3 ↔ snapshot-v5 coupling. **Recommendation:** one new release literal (`qualification_execution_release/v5`) + profile/v5 with `supported_checkpoints=['N1']`, `dispatch_enabled=True` for N1 only, `production_execution=False`; v4 and older keep refusing dispatch; fresh attempts only.
 
-## 0.6. Pre-mortem (coordinator, before freeze — added 2026-09-22)
-
-Written before dispatch so the S2 time sinks are designed out, not rediscovered. Each line is an estimate or an open question until the executor's return replaces it with a measured value.
-
-- **Loop cost.** S2 needed about 20 full hosted runs at about 25 min each (6–8 min provisioning plus three ~300 s cases), with 2–5 rounds per packet. S3 grows the suite from 15 registered nodes to 30 or more (amendment §1) and adds a real worker and a G5 unit, so a full run is estimated at 35–45 min. At S2's round count, 10–20 full runs would be 6–15 hours of hosted wall time. **Budget:** iterate with diagnostic dispatches (`-f cases='<expr>'`, PR #458); use full runs only at the design-freeze checkpoint and at return, and **at most 4 full runs** in the packet. A 5th full run needs a coordinator checkpoint first, not a re-dispatch. Dispatch Linux before starting the Windows lines, freeze the tree while a record is open, and never push while a PR run is in flight; `scripts/guard_s2_runs.py` and `scripts/guard_open_verification_record.py` enforce the last two.
-- **Decisions the executor will hit — rule all of them in one batch before freeze.** In S2, each of these stopped a packet mid-flight (restart ownership, the G4 correction, the two P2 rulings, the G5 14/15 checkpoint). Each item below needs a coordinator recommendation with exact wording to adopt, then one operator sitting:
-  1. **A3** — a service restart destroys running work, including a healthy guardian. Either S3 adds a live-guardian reconciliation path, or it accepts the loss explicitly for N1 (fresh attempts only).
-  2. **A8** — a guardian killed at bootstrap leaves START_INTENT/RUNNING unreconciled. May the schedule route proceed with an unreconciled sibling, or must it refuse?
-  3. **Enrollment chaining (A5)** — the enrollment row is an un-chained retained object. Chain it in S3 (candidate anchor: the chained START_INTENT `work_scope_id`) or defer it with an explicit scope note.
-  4. **A6** — the OOM *stop* half has Windows and one-red-run evidence only. Is that acceptable for S3, or is a host-evidenced stop required?
-  5. **Fixture depth** — depth is reduced by construction under the diagnostic ceilings (prep Q10). Confirm that this is acceptable evidence for the S3 return.
-  6. **D3 identity change** — the shared handshake changes the signed runtime closure and the worker image. Name who records and approves the new identities.
-  7. **Seat** — name the one executor and its surface. One writer per surface; the dual-executor G4 overlap is not repeated.
-- **What would make this moot.** T00 step 1 (`2026-09-22-tradeify-t00-step1-producer-inventory.md`) can return INSUFFICIENT, meaning no faithful producer exists to screen the selected book. By ratification it gates nothing, and S3 does not wait for it. It does bear on whether S3–S8 (about three weeks, amendment §5) are worth building in their current order. **Dispatch T00 step 1 no later than this packet**, so that its answer arrives while S3 is still cheap to redirect.
-- **Measure (return fills these in).** Wall time from dispatch to return; full runs used, and for what; diagnostic runs; rounds; mid-packet checkpoints and their cause. One line in the ledger entry, so the next forecast is calibrated.
-
 ## 1. Interfaces (all ABSENT at f2606b0; produce together, one owner)
 `derive_checkpoint_plan(campaign_plan, 'N1', None) -> bytes` (assert byte-equality with `derive_n1_plan`, prep Q9) · `validate_campaign_checkpoint(...)` in the active G5 adapter · campaign-protocol operations: G5-only snapshot, member-artifact fetch (chunked, the plan-chunk pattern), private staging, `COMMIT_CHECKPOINT_ASSESSMENT`; operator/client ACLs unchanged · the closed checkpoint result/attestation/assessment schema (D1).
 
