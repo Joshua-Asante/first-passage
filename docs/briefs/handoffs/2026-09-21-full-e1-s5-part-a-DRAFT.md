@@ -1,4 +1,4 @@
-# GLM handoff — Protected Full E1 / S5 (T04): genuine Part A, preserved expansion prefix and committed G5 decision — DRAFT for the operator's rulings
+# GLM handoff — Protected Full E1 / S5 (T04): genuine Part A, preserved expansion prefix and committed G5 decision — DRAFT (decisions ruled; freezes on S4's merge)
 
 **Type:** cc_handoff (frozen-spec implementation; one executor owns the engine adaptation, prefix capture and reconstruction)
 **Date:** 2026-09-21 (DRAFT — **the three decisions in §0.5 were ruled by the operator on 2026-09-21 (all recommended options)**; becomes FROZEN when S4 has merged and the anchors are re-taken at the S4 merge head)
