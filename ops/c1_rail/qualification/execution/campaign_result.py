@@ -66,6 +66,23 @@ RESULT_OUTCOME_STATES = ('RESULT_COMMITTED_PASS', 'RESULT_COMMITTED_FAIL')
 REFUSED_BUDGET_STATES = ('IN_DOUBT', 'ABORTED', 'BUDGET_EXHAUSTED', 'BUDGET_UNCERTAIN')
 ROW_DECISIONS = ('CONTINUE', 'FAILURE', 'PASS', 'FAIL')
 RESULT_PHASE = 'RESULT'
+# The SEAL phase's names live beside the RESULT ones because ResultStore's
+# work state machine below is shared by both T05 phases -- the committing
+# qseal work transitions, settles and completes through it exactly as the
+# result work does; campaign_seal imports them.
+SEAL_PHASE = 'SEAL'
+SEALED_PASS = 'SEALED_PASS'
+# S3's a8a983e settlement rule (PR #455 review, Codex P1/P2) carried to the
+# T05 commits: the result/seal commit lands while its unit still runs and the
+# committing work settles afterwards, so a settlement overrun must end
+# authority from the state the commit produced -- RESULT_COMMITTED_{PASS,FAIL}
+# / SEALED_PASS -- and that work must complete there. On frozen bytes the
+# budget snapshot cannot carry those names (the _advance encode fallback), so
+# the statistical predecessor the commit rode is the commit state's frozen
+# stand-in: S3's N2_READY/N1_FAILED today, the F3 terminal names once S4/S5
+# land, the commit states themselves after the enum seam.
+COMMIT_PREDECESSOR_STATES = F3_PREDECESSOR_STATES + ('N2_READY',)
+SEAL_COMMIT_STATES = (SEALED_PASS,)
 # The S7 eligibility this family exposes: only a committed PASS outcome.
 SEAL_ELIGIBLE_STATE = 'RESULT_COMMITTED_PASS'
 
@@ -794,8 +811,11 @@ class ResultStore:
             return encoded(self._advance(connection, state, 'RESERVE_RESULT_WORK', authority=True))
 
     def record_result_transition(self, attempt_id, work_id, transition_bytes, *, expected_revision):
-        """The RESULT work's transitions with S3's gates (idempotency, work
-        state machine, clock observation, identity-gated credit)."""
+        """The RESULT/SEAL works' transitions with S3's gates (idempotency,
+        work state machine, clock observation, identity-gated credit) plus
+        the a8a983e completion rule: the committing work completes in the
+        state its own commit produced; a settlement that ended authority
+        (overrun or uncertainty) refuses the completion."""
         integer(expected_revision)
         doc = parse_transition(transition_bytes, attempt_id, work_id)
         target = doc['state']
@@ -803,8 +823,8 @@ class ResultStore:
             self._ensure_result_layout(connection)
             state = self._state(connection, attempt_id)
             work = self.campaigns._work(state, work_id)
-            if work['phase'] != RESULT_PHASE:
-                raise ValueError('result work required')
+            if work['phase'] not in (RESULT_PHASE, SEAL_PHASE):
+                raise ValueError('result or seal work required')
             for saved in work['transitions']:
                 previous = parse_canonical_json(decode_base64(saved), label='saved transition')
                 if previous['state'] == target:
@@ -836,20 +856,61 @@ class ResultStore:
                 raise ValueError('settled work cannot acquire credit')
             if target == 'COMPLETED' and work['observation_bytes_b64'] is None:
                 raise ValueError('settlement required before finalization')
+            # The a8a983e completion rule (S3's P2): the committing work
+            # completes in the state its own commit produced -- the seal
+            # commit's SEALED_PASS, the result commit's RESULT_COMMITTED_*,
+            # or that state's frozen statistical stand-in. A settlement that
+            # ended authority refuses: the committed receipt is already
+            # history (S3's _check_budget shape).
+            if target == 'COMPLETED' and state['state'] not in self._completion_states(work):
+                raise ValueError('terminal campaign budget')
             work['state'] = target
             work['transitions'].append(self.campaigns._b64(transition_bytes))
             return encoded(self._advance(connection, state, target,
                                          authority=target not in ('IN_DOUBT', 'ABORTED')))
 
+    @staticmethod
+    def _commit_progressions(work):
+        """The campaign states ``work``'s own commit produces: the seal
+        commit's SEALED_PASS or the result commit's RESULT_COMMITTED_{PASS,
+        FAIL}, with the statistical predecessors that stand in for them on
+        frozen bytes (the _advance encode fallback)."""
+        if work['phase'] == SEAL_PHASE:
+            return SEAL_COMMIT_STATES + COMMIT_PREDECESSOR_STATES
+        return RESULT_OUTCOME_STATES + COMMIT_PREDECESSOR_STATES
+
+    @classmethod
+    def _completion_states(cls, work):
+        """The live campaign states in which the committing work may complete:
+        the state its own commit produced (or its frozen stand-in) plus the
+        ordinary live states. An authority-ended state (BUDGET_EXHAUSTED,
+        BUDGET_UNCERTAIN, IN_DOUBT, ABORTED) is not among them."""
+        return ('PROVISIONAL', 'BOUND') + cls._commit_progressions(work)
+
+    @staticmethod
+    def _settlement_terminal(state, reason):
+        """S3's a8a983e _settlement_terminal for the result/seal commits: a
+        work that committed while it ran settles afterwards, and an overrun or
+        uncertain settlement ends authority from the state its own commit
+        produced -- and from that state's frozen statistical stand-in -- not
+        just from PROVISIONAL/BOUND (campaigns._terminal's no-op would leave
+        the successful progression standing). The committed receipt survives
+        as history only."""
+        live = (('PROVISIONAL', 'BOUND') + COMMIT_PREDECESSOR_STATES
+                + RESULT_OUTCOME_STATES + SEAL_COMMIT_STATES)
+        if state['state'] in live:
+            state['state'] = reason
+
     def settle_result_work(self, attempt_id, work_id, observations_bytes):
-        """The guardian's settlement of the result work (S3 settle_work gates,
-        scoped to the RESULT phase)."""
+        """The guardian's settlement of the result/seal work (S3 settle_work
+        gates, scoped to the T05 phases; the committing work settles after
+        its own T2, so its overrun ends authority per _settlement_terminal)."""
         with self.store.transaction() as connection:
             self._ensure_result_layout(connection)
             state = self._state(connection, attempt_id)
             work = self.campaigns._work(state, work_id)
-            if work['phase'] != RESULT_PHASE:
-                raise ValueError('result work required')
+            if work['phase'] not in (RESULT_PHASE, SEAL_PHASE):
+                raise ValueError('result or seal work required')
             doc = self.campaigns._observation(state, work, observations_bytes)
             if work['observation_bytes_b64'] is not None:
                 if decode_base64(work['observation_bytes_b64']) != observations_bytes:
@@ -862,7 +923,7 @@ class ResultStore:
             work['charge_cpu_ns'] = observation_charge(doc, work['limits'])
             self.campaigns._observe_resources(state, doc)
             if work['charge_cpu_ns'] > work['limits']['cpu_ns']:
-                self.campaigns._terminal(state, 'BUDGET_EXHAUSTED')
+                self._settlement_terminal(state, 'BUDGET_EXHAUSTED')
             return encoded(self._advance(connection, state, 'SETTLE_WORK',
                                          authority=state['state'] != previous_state))
 
@@ -1139,6 +1200,13 @@ class ResultStore:
                             state='RESULT_COMMITTED_FAIL')
             if self.campaigns.row(attempt_id)['validity'] != 'VALID':
                 return dict(eligible=False, reason='VOID campaign', state='RESULT_COMMITTED_PASS')
+            # A settlement that ended authority from RESULT_COMMITTED_PASS
+            # (the a8a983e rule) leaves the committed receipt historical
+            # only; the budget state names the refusal, as the eligibility
+            # reader of the predecessor test does.
+            state = self._state(connection, attempt_id)
+            if state['state'] in REFUSED_BUDGET_STATES:
+                return dict(eligible=False, reason=state['state'], state=state['state'])
             return dict(eligible=True, reason=None, state=SEAL_ELIGIBLE_STATE)
 
     def result_integrity(self, connection):
@@ -1247,8 +1315,13 @@ def run_result_g5(context, campaigns, runtime, state, work, enrollment, manifest
     work = campaigns._work(state, work['work_id'])
     with campaigns.store.transaction() as connection:
         family = results._result_family(connection, state['attempt_id'])
+    # The committing work completes in the state its own commit produced; a
+    # settlement that ended authority (overrun/uncertain) skips the
+    # completion -- the receipt is history and the store would refuse it
+    # (S3's _run_n1_g5 tail guard, a8a983e shape).
     if (work['state'] == 'SIGNED' and state['validity'] == 'VALID'
-            and family['state'] == 'COMMITTED'):
+            and family['state'] == 'COMMITTED'
+            and state['state'] in results._completion_states(work)):
         completed = encoded(dict(schema='qualification_campaign_work_transition/v1',
             attempt_id=state['attempt_id'], work_id=work['work_id'], state='COMPLETED',
             clock=state['last_clock'], data={}))

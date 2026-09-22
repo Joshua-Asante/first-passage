@@ -19,7 +19,8 @@ import json
 
 from ..contract import canonical_json_bytes as encoded, parse_canonical_json
 from .campaign_budget import integer, limits as parse_limits, validate_work_id
-from .campaign_result import SEAL_ELIGIBLE_STATE, ResultStore, parse_campaign_result
+from .campaign_result import (REFUSED_BUDGET_STATES, SEAL_ELIGIBLE_STATE, SEAL_PHASE,
+                              SEALED_PASS, ResultStore, parse_campaign_result)
 from .protocol import digest, fields, identity, sha256
 
 SEAL_INTENT_SCHEMA = 'qualification_campaign_seal_intent/v1'
@@ -27,8 +28,6 @@ SEAL_SCHEMA_LITERAL = 'qualification_campaign_seal/v1'
 SEAL_RECEIPT_SCHEMA = 'qualification_campaign_seal_receipt/v1'
 SEAL_OPERATION_SCHEMA = 'qualification_campaign_seal_request/v1'
 
-SEAL_PHASE = 'SEAL'
-SEALED_PASS = 'SEALED_PASS'
 SEAL_OPERATIONS = ('REQUEST_SEAL', 'INSPECT_SEAL')
 _SEAL_OPERATION_FIELDS = {'REQUEST_SEAL': set(), 'INSPECT_SEAL': set()}
 
@@ -124,7 +123,9 @@ class SealStore(ResultStore):
 
     # -- the SEAL-phase work ---------------------------------------------------
     def _seal_predecessor(self, connection, attempt_id):
-        """Only a currently-valid committed PASS outcome may reserve SEAL."""
+        """Only a currently-valid committed PASS outcome whose budget
+        authority still stands may reserve SEAL; a settlement that ended
+        authority (the a8a983e rule) never grants a new seal."""
         if connection.execute('PRAGMA user_version').fetchone()[0] < 9:
             return 'result custody absent'
         if self.campaigns.row(attempt_id)['validity'] != 'VALID':
@@ -136,6 +137,9 @@ class SealStore(ResultStore):
             return 'no committed campaign result'
         if family['outcome'] != 'PASS':
             return 'committed FAIL outcome is never sealed'
+        budget_state = self._state(connection, attempt_id)['state']
+        if budget_state in REFUSED_BUDGET_STATES:
+            return budget_state
         return None
 
     def reserve_seal_work(self, attempt_id, work_id, limits_bytes, *, expected_revision,
@@ -205,7 +209,10 @@ class SealStore(ResultStore):
     def prepare_seal_intent(self, attempt_id, intent_bytes, *, expected_revision):
         """T1 (F5): the fixed intent persisted before any signature. An exact
         retry is idempotent; a different intent under a persisted one refuses.
-        Requires the committed PASS, current validity and the SEAL reservation."""
+        Requires the committed PASS, current validity and the SEAL reservation.
+        The committing qseal work enters the signing window here (the
+        persist_result_intent shape: CAPTURED -> SIGNING_INTENT), so its own
+        T2 can record SIGNED and, after settlement, COMPLETED (a8a983e)."""
         integer(expected_revision)
         intent = parse_seal_intent(intent_bytes, attempt_id=attempt_id)
         with self.store.transaction() as connection:
@@ -222,8 +229,32 @@ class SealStore(ResultStore):
                 raise ValueError('seal predecessor refuses: ' + reason)
             if expected_revision != state['authority_revision']:
                 raise ValueError('campaign authority revision conflict')
-            if not any(w['phase'] == SEAL_PHASE for w in state['works']):
+            work = next((w for w in state['works'] if w['phase'] == SEAL_PHASE), None)
+            if work is None:
                 raise ValueError('SEAL reservation required')
+            # No fresh clock at T1 (the frozen signature carries no clock
+            # source); the fixed intent is the work's capture fact.
+            capture = encoded(dict(schema='qualification_campaign_seal_capture/v1',
+                attempt_id=attempt_id, work_id=work['work_id'],
+                intent_sha256=sha256(intent_bytes)))
+            captured = encoded(dict(schema='qualification_campaign_work_transition/v1',
+                attempt_id=attempt_id, work_id=work['work_id'], state='CAPTURED',
+                clock=state['last_clock'], data=dict(
+                    capture_bytes_b64=self.campaigns._b64(capture))))
+            state = parse_canonical_json(self.record_result_transition(
+                attempt_id, work['work_id'], captured,
+                expected_revision=state['authority_revision']),
+                label='seal captured state')
+            signing = encoded(dict(schema='qualification_campaign_work_transition/v1',
+                attempt_id=attempt_id, work_id=work['work_id'], state='SIGNING_INTENT',
+                clock=state['last_clock'], data=dict(
+                    intent_id=intent['intent_id'],
+                    payload_bytes_b64=self.campaigns._b64(intent_bytes),
+                    key_id=intent['key_id'], signing_at_utc=intent['signing_at_utc'])))
+            state = parse_canonical_json(self.record_result_transition(
+                attempt_id, work['work_id'], signing,
+                expected_revision=state['authority_revision']),
+                label='seal signing state')
             connection.execute('INSERT INTO full_campaign_seal_intents VALUES(?,?,NULL,NULL)',
                                (attempt_id, intent_bytes))
             return encoded(self._advance(connection, state, 'SEAL_INTENT', authority=False))
@@ -299,9 +330,20 @@ class SealStore(ResultStore):
                 signing_at_utc=intent['signing_at_utc'], committed_at_utc=instant(now),
                 intent_sha256=sha256(bytes(row[0]))))
             parse_seal_receipt(receipt, attempt_id=attempt_id)
+            # The committing qseal work's own T2 fact (commit_campaign_result's
+            # SIGNED shape): the seal receipt is the saved candidate, and the
+            # work settles -- and completes -- in the state this commit
+            # produces (a8a983e).
+            signed = encoded(dict(schema='qualification_campaign_work_transition/v1',
+                attempt_id=attempt_id, work_id=work['work_id'], state='SIGNED',
+                clock=state['last_clock'], data=dict(
+                    candidate_bytes_b64=self.campaigns._b64(receipt))))
+            self.record_result_transition(attempt_id, work['work_id'], signed,
+                                          expected_revision=state['authority_revision'])
             connection.execute('UPDATE full_campaign_seal_intents SET signature_bytes=?,'
                                'receipt_bytes=? WHERE attempt_id=?',
                                (signature_bytes, receipt, attempt_id))
+            state = self._state(connection, attempt_id)
             self._advance(connection, state, 'SEAL_COMMITTED', authority=True,
                           state_name=SEALED_PASS)
             return encoded(dict(receipt=parse_canonical_json(receipt, label='receipt'),
@@ -520,7 +562,12 @@ def run_seal_unit(context, campaigns, runtime, state, work, enrollment, manifest
     work = campaigns._work(state, work['work_id'])
     with campaigns.store.transaction() as connection:
         family = seals._seal_family(connection, state['attempt_id'])
-    if work['state'] == 'SIGNED' and state['validity'] == 'VALID' and family == 'SEALED':
+    # The committing work completes in the state its own commit produced; a
+    # settlement that ended authority (overrun/uncertain) skips the
+    # completion -- the receipt is history and the store would refuse it
+    # (S3's _run_n1_g5 tail guard, a8a983e shape).
+    if (work['state'] == 'SIGNED' and state['validity'] == 'VALID' and family == 'SEALED'
+            and state['state'] in seals._completion_states(work)):
         completed = encoded(dict(schema='qualification_campaign_work_transition/v1',
             attempt_id=state['attempt_id'], work_id=work['work_id'], state='COMPLETED',
             clock=state['last_clock'], data={}))
