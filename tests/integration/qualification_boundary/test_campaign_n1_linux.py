@@ -169,13 +169,13 @@ def test_s3_g5_unit_death_and_exact_receipt_retry(real_boundary):
         receipt = connection.execute('SELECT receipt_bytes FROM full_campaign_checkpoint_intents '
                                      'WHERE attempt_id=?', (attempt,)).fetchone()
     assert receipt is not None and receipt[0] is not None
-    # The exact commit retry over the wire returns the byte-identical receipt.
-    from test_campaign_supervision_linux import schedule_document
-    reply = boundary.raw_request(dict(schema='qualification_campaign_request/v2',
-        operation='COMMIT_CHECKPOINT_ASSESSMENT', attempt_id=attempt, checkpoint='N1', work_id='g5work',
-        candidate_bytes_b64=base64.b64encode(_candidate(boundary, attempt)).decode('ascii'), artifacts=[]),
-        role='qg5')
-    assert reply.get('ok') is False and 'exact checkpoint candidate retry required' in str(reply.get('error')), reply
+    # The exact commit retry over the wire returns the byte-identical receipt
+    # (the g5 peer's own client path -- the same identity assess() uses).
+    persisted = json.loads(bytes(receipt[0]))
+    retry = json.loads(boundary.request('COMMIT_CHECKPOINT_ASSESSMENT', role='qg5',
+        schema='qualification_campaign_request/v2', checkpoint='N1', work_id='g5work',
+        candidate_bytes_b64=base64.b64encode(_candidate(boundary, attempt)).decode('ascii'), artifacts=[]))
+    assert retry['receipt'] == persisted and retry['historical'] is True, retry
 
 
 def _candidate(boundary, attempt):
