@@ -11,6 +11,8 @@ import json
 import sqlite3
 import time
 
+import pytest
+
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
 from tools.qualification_verification import host
 
