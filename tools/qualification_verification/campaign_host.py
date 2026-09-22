@@ -149,17 +149,26 @@ def cleanup(root, manifest, *, retire=False):
     # S3: the checkpoint io tmpfs mounts (transient units under /var/lib/fpq) and
     # the g5 units are stopped explicitly by the administrator here; a mount unit
     # is not slice-bound, so the scope stop above does not cover it.
-    units = host.run(['/usr/bin/systemctl', '--system', '--no-pager', '--no-legend', '--all',
-                      '--plain', 'list-units', 'var-lib-fpq-*.mount', '*-payload-g5.service']).splitlines()
+    def _listed_units():
+        rows = host.run(['/usr/bin/systemctl', '--system', '--no-pager', '--no-legend', '--all',
+                         '--plain', 'list-units', 'var-lib-fpq-*.mount', '*-payload-g5.service']).splitlines()
+        return {line.split()[0] for line in rows if line.split()}
     stopped = []
-    for line in units:
-        name = line.split()[0] if line.split() else ''
+    for name in sorted(_listed_units()):
         if name.endswith('.mount') or name.endswith('-g5.service'):
             host.run(['/usr/bin/systemctl', '--system', '--no-ask-password', 'stop', name])
             stopped.append(name)
-    remaining = host.run(['/usr/bin/systemctl', '--system', '--no-pager', '--no-legend', '--all',
-                          '--plain', 'list-units', 'var-lib-fpq-*.mount', '*-payload-g5.service']).split()
-    if any(name.endswith(('.mount', '-g5.service')) for name in remaining):
+    # Stopping a mount unit unmounts asynchronously and a failed transient
+    # unit unloads only after the stop settles; absence is polled bounded like
+    # the container path, never assumed from the stop call returning.
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        remaining = {name for name in _listed_units()
+                     if name.endswith(('.mount', '-g5.service'))}
+        if not remaining:
+            break
+        time.sleep(.25)
+    if remaining:
         raise ValueError('S3 owned units remain after cleanup')
     host.save(root / 'evidence/campaign-cleanup.json', dict(scope=scope, populated=False,
         stop_exit=result.returncode, containers=observations, stopped_units=stopped))
