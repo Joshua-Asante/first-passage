@@ -44,9 +44,15 @@ PHASE_BY_ROLE = {role: phase for role, phase in WORK_PHASES.items() if role != '
 def parse_request(raw):
     if type(raw) is not bytes or len(raw) > 1024:
         raise ValueError('bounded scheduler request required')
+    document = parse_canonical_json(raw, label='scheduler request')
+    if type(document) is dict and 'fault' not in document:
+        # S2-era producers (the accepted supervision suite among them) predate
+        # the diagnostic fault input; an absent fault is absent -- inject it
+        # rather than widen the closed set for them.
+        document = dict(document, fault=None)
     doc = fields(
-        parse_canonical_json(raw, label='scheduler request'),
-        {'schema', 'attempt_id', 'work_id', 'role', 'probe', 'signing_retry_of'} | {'fault'},
+        document,
+        {'schema', 'attempt_id', 'work_id', 'role', 'probe', 'signing_retry_of', 'fault'},
     )
     if (
         doc['schema'] != 'qualification_campaign_schedule_request/v1'
