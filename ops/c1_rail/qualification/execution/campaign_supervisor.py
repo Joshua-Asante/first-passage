@@ -1558,18 +1558,28 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
         time.sleep(.2)
     state = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='g5 final state')
     work = campaigns._work(state, work['work_id'])
-    if work['state'] == 'RUNNING':
-        # The unit ended without a persisted candidate: durable uncertainty.
+    parent = campaigns._retry_parent(work)
+    intent_held = False
+    with context.store.transaction() as connection:
+        intent_held = connection.execute(
+            'SELECT 1 FROM full_campaign_checkpoint_intents WHERE attempt_id=?',
+            (state['attempt_id'],)).fetchone() is not None
+    if work['state'] == 'RUNNING' and parent is None and not intent_held:
+        # The unit ended with no persisted candidate anywhere: durable
+        # uncertainty. An intent-bearing work (T1 done, T2 pending) and a
+        # redelivery retry settle instead -- their outcome is the signing
+        # window's, not an uncertain launch.
         _transition(campaigns, state['attempt_id'], work['work_id'], 'IN_DOUBT', {})
         state = parse_canonical_json(campaigns.budget_snapshot(state['attempt_id']), label='g5 in-doubt')
         work = campaigns._work(state, work['work_id'])
     observed = runtime.observation(state, work, enrollment)
     state = parse_canonical_json(campaigns.settle_work(state['attempt_id'], work['work_id'], observed), label='g5 settlement')
     work = campaigns._work(state, work['work_id'])
-    if (work['state'] in ('SIGNING_INTENT', 'SIGNED') and state['validity'] == 'VALID'
+    if parent is not None:
+        _transition(campaigns, state['attempt_id'], work['work_id'], 'COMPLETED', {})
+    elif (work['state'] == 'SIGNED' and state['validity'] == 'VALID'
             and state['state'] in ('BOUND', 'N2_READY', 'N1_FAILED')):
         _transition(campaigns, state['attempt_id'], work['work_id'], 'COMPLETED', {})
-    parent = campaigns._retry_parent(work)
     if parent is not None and state['state'] == 'BOUND' and state['validity'] == 'VALID':
         # The redelivered retry settled: finalize the interrupted signing with
         # the persisted candidate through the service's own commit path (the
