@@ -23,5 +23,5 @@ cd "$ROOT" || exit 1
 # git passes the pushed refs on stdin; keep them for the S2 guard.
 refs="$(cat)"
 python -I scripts/fp.py python scripts/check_push_collision.py || exit 1
-printf '%s\n' "$refs" | python -I scripts/guard_s2_runs.py pre-push || exit 1
+printf '%s\n' "$refs" | python -I scripts/fp.py python scripts/guard_s2_runs.py pre-push || exit 1
 exit 0
