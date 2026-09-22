@@ -97,9 +97,16 @@ def main(argv=None):
                         if args.s3:
                             required = {node for node in all_required
                                         if node.startswith(tuple(case+'::' for case in selected_cases))}
-                        else:
+                        elif args.s2:
                             required = {node for node in all_required
-                                        if node.startswith(tuple(case+'::' for case in S2_CASES)) == args.s2}
+                                        if node.startswith(tuple(case+'::' for case in S2_CASES))}
+                        else:
+                            # N1_ONLY (--test-only): every registered node outside the S3
+                            # file set (S3_CASES includes the S2 files). The S3 nodes skip
+                            # here by design, and the manifest validator refuses a
+                            # required node that is skipped or never collected.
+                            required = {node for node in all_required
+                                        if not node.startswith(tuple(case+'::' for case in S3_CASES))}
                         record.data['metadata'].update(
                             acceptance_scope=('S3_N1_CAPTURE' if args.s3 else 'S2_DIAGNOSTIC_SUPERVISION' if args.s2 else 'N1_ONLY_TEST_ONLY'),
                             qualification_acceptance='coordinator_review_required',
