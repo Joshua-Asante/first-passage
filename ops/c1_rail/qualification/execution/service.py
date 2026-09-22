@@ -422,7 +422,7 @@ class ExecutionService:
         candidate = parse_checkpoint_assessment(candidate_bytes, attempt_id=attempt)
         with self.dispatch_lock:
             with self.store.transaction() as connection:
-                row = connection.execute('SELECT snapshot_bytes,intent_bytes,candidate_bytes,receipt_bytes '
+                row = connection.execute('SELECT snapshot_bytes,intent_bytes,candidate_bytes,cutoff_bytes,receipt_bytes '
                     'FROM full_campaign_checkpoint_intents WHERE attempt_id=?', (attempt,)).fetchone()
             if row is None:
                 snapshot_bytes = campaigns.checkpoint_snapshot(attempt)
