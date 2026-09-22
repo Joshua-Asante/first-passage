@@ -76,7 +76,8 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
                 selection='tests/integration/qualification_host' if mode=='--host-only' else 'tests/integration/qualification_boundary'
                 assert selection in command
                 if mode=='--test-only':
-                    assert all('--ignore='+case in command for case in module.S2_CASES)
+                    # The whole S3 file set (S2 files included) stays out of N1_ONLY.
+                    assert all('--ignore='+case in command for case in module.S3_CASES)
             if mode=='--test-only':
                 assert self.data['metadata']['qualification_acceptance']=='coordinator_review_required'
             self.data['test_summary'] = {
@@ -121,3 +122,61 @@ def test_invariant_gate_requires_actual_reports(tmp_path):
 def test_cleanup_must_be_explicitly_successful(counts):
     with pytest.raises(ValueError, match='cleanup'):
         runner().require_cleanup(counts)
+
+
+@pytest.mark.parametrize('mode',['--test-only','--s2','--s3'])
+def test_required_nodes_match_the_selected_file_set(tmp_path, monkeypatch, mode):
+    """--test-only must never require a node of the S3 file set: those nodes skip
+    there by design (no FP_QUALIFICATION_S3) and are ignored by the selection, so
+    requiring them fails the required boundary jobs (PR #455, aaf9646)."""
+    module = runner()
+    manifest_path = tmp_path / 'run' / 'ownership.json'
+    manifest_path.parent.mkdir()
+    manifest_path.write_text(json.dumps({'host_config_sha256': 'configured', 'source': {'commit': 'candidate'}}))
+    seen = {}
+
+    class Record:
+        def __init__(self, *_args):
+            self.data = {'before': {'commit': 'candidate'}, 'metadata': {}}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def begin(self):
+            pass
+
+        def execute(self, command, **_kwargs):
+            self.data['test_summary'] = {'collected': 1, 'passed': 1, 'failed': 0, 'errors': 0, 'skipped': 0}
+            self.data['verification_exit_code'] = 0
+
+    def observed_invariants(*_args, required_nodeids, **_kwargs):
+        seen['required'] = set(required_nodeids)
+        return {'passed': True}
+
+    @contextmanager
+    def lock(_root):
+        yield
+
+    monkeypatch.setattr(module.platform, 'system', lambda: 'Linux')
+    monkeypatch.setattr(module.os, 'geteuid', lambda: 0, raising=False)
+    monkeypatch.setattr(module, 'protected', lambda path: path)
+    monkeypatch.setattr(module, 'RunRecord', Record)
+    monkeypatch.setattr(module, 'require_invariants', observed_invariants)
+    monkeypatch.setattr(module, 'ownership_lock', lock)
+    monkeypatch.setattr(module, 'cleanup', lambda path: {'ok': True})
+    monkeypatch.setattr(module, 'create_process_group', lambda root: root / 'group')
+    monkeypatch.setattr(module, 'owned_command', lambda group, command, interpreter: command)
+
+    assert module.main([mode, '--manifest', str(manifest_path)]) == 0
+    registered = module._manifest(module.INVARIANT_MANIFEST.read_bytes())
+    s2 = tuple(case + '::' for case in module.S2_CASES)
+    s3 = tuple(case + '::' for case in module.S3_CASES)
+    expected = {'--test-only': {node for node in registered if not node.startswith(s3)},
+                '--s2': {node for node in registered if node.startswith(s2)},
+                '--s3': {node for node in registered if node.startswith(s3)}}[mode]
+    assert seen['required'] == expected and expected
+    if mode == '--test-only':
+        assert not any(node.startswith(s3) for node in seen['required'])
