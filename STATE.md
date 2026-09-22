@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-21
+**Last curated:** 2026-09-22
 
 Current priorities, dormant cross-session work, and outstanding obligations.
 Read the queue first, then the linked executable plan; campaign records own
@@ -43,6 +43,7 @@ Newest 15 consequences; decision rationale remains with the owner. Older index:
 [archive](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md).
 Retracted verdicts leave this index; their correction stands with its owner.
 
+- **2026-09-22** — Deployment-checklist amendment (2026-09-21) §4 ratified: all five decisions adopted as recommended — T00 step 1 authorized (not dispatched); D-feed as a gate on the T00 verdict and the T10 F1 packet; D-broker conditional on T08 R3; D-codex as the review hybrid; D-sequence with a versioned T02 freeze. No provider, access, spend, deployment or arming granted. [Addendum](docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#addendum-2026-09-22--4-dispositions-ratified-2026-09-22--all-five-adopted-as-recommended-and-the-5-correction-applied)
 - **2026-09-21** — S2 accepted as the enforced work boundary (admission and supervised test work on a real Linux host); five enforcement gaps and two external-review P2 findings closed, #436 merged. No statistical dispatch, installed-release activation or S3 work is authorized by it. [Ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s2-budgeted-admission-and-real-linux-work-supervision-2026-09-21)
 - **2026-09-19** — S2-R2b accepted as the funded-scheduler integration only (closed private route, materialized-intent launch, release v4, owned timer; restart ownership ruled auto-recover). S2 overall remains INCOMPLETE / NOT ACCEPTED; R3/R4 untouched. [Ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s2-r2b-funded-scheduler-integration-2026-09-19)
 - **2026-09-19** — B0: the protected qualification service is retained; the operator-launched batch is not adopted. R2b dispatched under that narrowing. [B0 decision](docs/superpowers/plans/2026-09-19-attended-batch-qualification.md#b0-decision--2026-09-19)
@@ -57,7 +58,6 @@ Retracted verdicts leave this index; their correction stands with its owner.
 - **2026-09-02** — Portable-edge objective and bounded cultivation campaign approved; no candidate/capital authority. [ADR](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md)
 - **2026-09-01** — MOC-wake strategy and source-liveness pursuits closed; no candidate opened. [Closure](docs/notes/2026-09-01-next-vet-intake-decision.md)
 - **2026-09-01** — F1 reversed: a Tradeify discharge counts toward the four-firm program again. [Addendum](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4)
-- **2026-08-31** — ADR-corpus audit fixes and simplifications applied. [Audit](docs/notes/audits/programme-audit/2026-08-31-adr-corpus-audit.md)
 
 ## Dormant cross-session threads
 
@@ -94,12 +94,18 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   recurring schedule; record coverage only when it is
   attested; `daily-repo-truth-sync` reads this board's dated obligations.
 
-### Monthly — recurring (rolling; next deadline **2026-09-21**)
+### Monthly — recurring (rolling; next deadline **2026-10-21**)
 
 - **Subscription reconfirm:** recheck [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md)
   rows d11–d18, record confirmation even when unchanged, and resolve Fly.io/Tradeify
   unknowns if evidence becomes available. Roll monthly on the 21st; the operator
   confirms the figures. [Owner ADR](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md).
+- **Coverage record:** the 2026-09-21 reconfirm is **not attested** as of 2026-09-22 —
+  recorded as missed, not confirmed. The operator's confirmation of rows d11–d18
+  (unchanged or updated) remains owed and is recorded here when given; no figure is
+  asserted by this roll. The schedule advanced on 2026-09-22 so the currency gate
+  reflects the next obligation rather than a stale one (the Weekly row's convention:
+  preserve missed records when advancing; record coverage only when attested).
 
 ### No fixed date / gated
 
