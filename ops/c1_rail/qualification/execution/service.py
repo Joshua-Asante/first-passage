@@ -454,8 +454,9 @@ class ExecutionService:
             family = campaigns.checkpoint_capture(attempt)
             # The candidate was bound at T1 to that moment's snapshot; T2 re-validates
             # against exactly those persisted bytes, and the store checks freshness
-            # (current revision/head) inside the commit transaction.
-            snapshot_bytes = bytes(row[1]) if row is not None else snapshot_bytes
+            # (current revision/head) inside the commit transaction. The row is
+            # (snapshot_bytes, intent_bytes, candidate_bytes, cutoff, receipt).
+            snapshot_bytes = bytes(row[0]) if row is not None else snapshot_bytes
             plan_bytes = derive_checkpoint_plan(campaigns.retained_object(attempt, 'plan'), 'N1', None)
             evidence = validate_campaign_checkpoint(context, checkpoint='N1', plan_bytes=plan_bytes,
                 attestation_bytes=family['attestation_bytes'],
