@@ -57,7 +57,10 @@ class Boundary:
         self.group=host.create_process_group(self.root)
         self.image=build_worker(self.root,self.manifest)
         self.diagnostic = os.environ.get('FP_QUALIFICATION_S2') == '1'
-        self.admin('install','--image',self.image,*(['--diagnostic'] if self.diagnostic else []))
+        self.dispatch = os.environ.get('FP_QUALIFICATION_S3') == '1'
+        self.admin('install','--image',self.image,
+            *(['--diagnostic'] if self.diagnostic or self.dispatch else []),
+            *(['--dispatch'] if self.dispatch else []))
         self.installation=self.code/'qualification-installation'
         self.config=json.loads((self.installation/'supervisor.json').read_bytes())
         report=inspect_environment(self.installation/'test-instance.json',(self.installation/'profile.json').read_bytes(),

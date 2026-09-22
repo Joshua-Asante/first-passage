@@ -9,6 +9,16 @@ name: Qualification S2 supervision
 # its own VM and nothing here is reused.
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Boundary selection: s2 (the fifteen S2 nodes) or s3 (S2 plus the four N1 nodes; the acceptance-grade set)'
+        type: choice
+        options: [s2, s3]
+        default: s3
+      cases:
+        description: 'Diagnostic subset only: a pytest -k expression over the selected files. Empty runs the full selection. A non-empty value marks the record DIAGNOSTIC_SUBSET, which can never be acceptance evidence.'
+        type: string
+        default: ''
   pull_request:
     paths:
       - 'ops/c1_rail/qualification/**'
@@ -57,13 +67,19 @@ jobs:
             echo "docker_cgroup_driver=$(sudo /usr/bin/docker --host unix:///var/run/docker.sock info --format '{{.CgroupDriver}}')"
             echo "docker_cgroup_version=$(sudo /usr/bin/docker --host unix:///var/run/docker.sock info --format '{{.CgroupVersion}}')"
           } | tee "$RUNNER_TEMP/qualification-evidence/s2-host-facts.txt"
-      - name: Doctor and targeted S2 supervision run
+      - name: Doctor and targeted boundary run
         run: |
           manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
           host_root="$(dirname "$manifest")"
+          mode="${{ inputs.mode || 's3' }}"
+          cases="${{ inputs.cases || '' }}"
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
+          args=(--"$mode")
+          if [ -n "$cases" ]; then
+            args+=(--cases "$cases")
+          fi
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python \
-            scripts/qualification_boundary_verification.py --s2 --manifest "$manifest"
+            scripts/qualification_boundary_verification.py "${args[@]}" --manifest "$manifest"
       - name: Idempotent owned cleanup and export non-secret evidence
         if: always()
         run: |

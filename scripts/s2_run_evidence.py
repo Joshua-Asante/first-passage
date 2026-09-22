@@ -63,6 +63,10 @@ def evaluate(dest: Path) -> tuple[bool, dict]:
         "source_stable": record.get("source_stable"),
         "capture_complete": record.get("capture_complete"),
         "cleanup_ok": (record.get("cleanup") or {}).get("ok"),
+        # The only scopes whose green can be read as boundary evidence; a
+        # diagnostic subset (the workflow's `cases` input) names itself and is
+        # refused below regardless of its outcome.
+        "acceptance_scope": (record.get("metadata") or {}).get("acceptance_scope"),
     }
     inv_path = record_dir / "invariants.json"
     if inv_path.exists():
@@ -75,7 +79,8 @@ def evaluate(dest: Path) -> tuple[bool, dict]:
     junit_path = record_dir / "junit.xml"
     facts["junit"] = junit_totals(junit_path) if junit_path.exists() else None
     ok = (
-        facts["status"] == "completed" and facts["exit_code"] == 0 and facts["verification_exit_code"] == 0
+        facts["acceptance_scope"] in ("S2_DIAGNOSTIC_SUPERVISION", "S3_N1_CAPTURE")
+        and facts["status"] == "completed" and facts["exit_code"] == 0 and facts["verification_exit_code"] == 0
         and facts["source_stable"] is True and facts["capture_complete"] is True and facts["cleanup_ok"] is True
         and facts["invariants_passed"] is True and facts["junit"] is not None
         and facts["junit"]["failures"] == 0 and facts["junit"]["errors"] == 0 and facts["junit"]["skipped"] == 0
