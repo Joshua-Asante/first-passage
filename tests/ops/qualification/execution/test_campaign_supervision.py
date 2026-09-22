@@ -2668,7 +2668,7 @@ def test_bootstrap_blocks_the_resume_signal_before_any_thread_spawning_import():
         encoding='utf-8'
     )
     block = source.index('pthread_sigmask(')
-    assert source.index("if role in ('worker', 'campaign_probe'):") < block
+    assert source.index("if role in ('worker', 'campaign_probe', 'g5'):") < block
     assert source.index('signal.signal(signal.SIGUSR1') < block  # handler before block
     assert block < source.index('sys.path[:0]') < source.index('import importlib')
     assert 'c1_rail' not in source[:block] and 'SIGUSR1' in source[:block]

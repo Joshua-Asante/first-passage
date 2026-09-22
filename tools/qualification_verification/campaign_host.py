@@ -146,8 +146,38 @@ def cleanup(root, manifest, *, retire=False):
                 raise ValueError('S2 cleanup lacks owned container absence proof')
             observations.append(row)
             host.run([*docker, 'rm', '--', row['Id']])
+    # S3: the checkpoint io tmpfs mounts (transient units under /var/lib/fpq) and
+    # the g5 units are stopped explicitly by the administrator here; a mount unit
+    # is not slice-bound, so the scope stop above does not cover it.
+    def _listed_units():
+        rows = host.run(['/usr/bin/systemctl', '--system', '--no-pager', '--no-legend', '--all',
+                         '--plain', 'list-units', 'var-lib-fpq-*.mount', '*-payload-g5.service']).splitlines()
+        return {line.split()[0] for line in rows if line.split()}
+    stopped = []
+    for name in sorted(_listed_units()):
+        if name.endswith('.mount') or name.endswith('-g5.service'):
+            host.run(['/usr/bin/systemctl', '--system', '--no-ask-password', 'stop', name])
+            stopped.append(name)
+    # A killed transient unit ends in failed state and the manager keeps it
+    # loaded until reset-failed (CollectMode=inactive-or-failed on the units
+    # garbage-collects most of them; this clears any survivor). Administrator
+    # context, so no polkit change. Then absence is polled bounded -- the
+    # explicit stop and the absence proof both stay.
+    for pattern in ('var-lib-fpq-*.mount', '*-payload-g5.service'):
+        subprocess.run(['/usr/bin/systemctl', '--system', '--no-ask-password',
+                        'reset-failed', pattern], stdin=subprocess.DEVNULL,
+                       capture_output=True, timeout=15, check=False)
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        remaining = {name for name in _listed_units()
+                     if name.endswith(('.mount', '-g5.service'))}
+        if not remaining:
+            break
+        time.sleep(.25)
+    if remaining:
+        raise ValueError('S3 owned units remain after cleanup')
     host.save(root / 'evidence/campaign-cleanup.json', dict(scope=scope, populated=False,
-        stop_exit=result.returncode, containers=observations))
+        stop_exit=result.returncode, containers=observations, stopped_units=stopped))
     if retire:
         rule = Path(enrollment['rule_path'])
         expected_path = Path('/etc/polkit-1/rules.d') / ('49-' + scope[:-6] + '.rules')

@@ -66,8 +66,12 @@ def campaign_scopes(run_id, attempt, work):
     campaign=parent+'-'+hashlib.sha256(attempt.encode()).hexdigest()[:24]
     scoped=campaign+'-'+hashlib.sha256(work.encode()).hexdigest()[:24]
     identity=json.dumps([run_id,attempt,work],separators=(',',':'),ensure_ascii=False).encode()
+    # The S3 g5 transient unit (D2) lives inside the work's payload slice -- a
+    # child of the work slice -- so its retained PROCESS identities bind under
+    # the enrolled payload scope like any supervised payload.
     return dict(campaign_slice=campaign+'.slice',work_slice=scoped+'.slice',payload_slice=scoped+'-payload.slice',
-                guardian_unit=parent+'guardian'+hashlib.sha256(identity).hexdigest()+'.service')
+                guardian_unit=parent+'guardian'+hashlib.sha256(identity).hexdigest()+'.service',
+                g5_unit=scoped+'-payload-g5.service')
 
 # '--' ends busctl's option parsing: GNU getopt permutes, so the guardian's
 # ExecStart values ('-I', '--attempt', '--work') would otherwise be read as

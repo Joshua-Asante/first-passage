@@ -66,12 +66,18 @@ def release_document(repo, profile, image, keys):
         key_roles=dict(freeze=['test-freeze'], result=['test-producer'], seal=['test-seal'], execution=['test-execution']),
         trusted_key_sha256={key: sha256(value.public_key) for key, value in keys.items()})
 
-    if profile['schema'] in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4'):
+    if profile['schema'] in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4',
+                             'qualification_execution_profile/v5'):
         from c1_rail.qualification.execution.profile import diagnostic_budget_profile
-        # profile/v4 pairs the execution-capable release revision and budget profile/v3.
-        revision = 'v4' if profile['schema'].endswith('/v4') else 'v3'
-        result.update(schema='qualification_execution_release/' + revision, capability='FULL_E1', dispatch_enabled=False,
+        # profile/v4 pairs the execution-capable release revision and budget
+        # profile/v3; profile/v5 pairs the S3 dispatch revision (D4) with the
+        # same budget profile and the closed N1 dispatch checkpoint set.
+        revision = 'v5' if profile['schema'].endswith('/v5') else 'v4' if profile['schema'].endswith('/v4') else 'v3'
+        result.update(schema='qualification_execution_release/' + revision, capability='FULL_E1',
+                      dispatch_enabled=revision == 'v5',
                       campaign_budget_profile=diagnostic_budget_profile(encoded(profile)))
+        if revision == 'v5':
+            result.update(dispatch_checkpoints=['N1'])
     return result
 
 
@@ -139,7 +145,8 @@ def _boundary_fault():
         adjudicator_closure_sha256=contract_doc['result_plan']['adjudicator_closure_sha256'])
     contract_doc['replay']['budget'].update(maximum_wall_seconds=180, maximum_cpu_seconds=120,
                                            maximum_memory_bytes=memory_limit*9//10)
-    if release_doc['schema'] in ('qualification_execution_release/v3', 'qualification_execution_release/v4'):
+    if release_doc['schema'] in ('qualification_execution_release/v3', 'qualification_execution_release/v4',
+                                 'qualification_execution_release/v5'):
         contract_doc['replay']['budget'].update(maximum_wall_seconds=10000, maximum_cpu_seconds=10000, maximum_memory_bytes=memory_limit)
     if budget:
         contract_doc['replay']['budget'].update(budget)

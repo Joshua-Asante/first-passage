@@ -8,10 +8,6 @@ cite for a run and exits non-zero unless every one of them holds:
                   source_stable=true, capture_complete=true, cleanup.ok=true
   invariants.json passed=true, and the required node set is reported
   junit.xml       failures=0, errors=0, skipped=0
-  metadata        acceptance_scope=S2_DIAGNOSTIC_SUPERVISION (the full S2 suite)
-
-A `cases` diagnostic dispatch (`--s2-select`, scope DIAGNOSTIC_SUBSET) is never
-evidence: its facts are printed for debugging and the exit code is 3.
 
 Usage (from any checkout with `gh` authenticated):
 
@@ -32,8 +28,6 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ARTIFACT = "qualification-s2-supervision"
-FULL_SCOPE = "S2_DIAGNOSTIC_SUPERVISION"
-DIAGNOSTIC_SCOPE = "DIAGNOSTIC_SUBSET"
 
 
 def run_head(run_id: str) -> dict:
@@ -61,17 +55,18 @@ def evaluate(dest: Path) -> tuple[bool, dict]:
         return False, {"error": f"expected exactly one record.json under {dest}, found {len(records)}"}
     record_dir = records[0].parent
     record = json.loads(records[0].read_text(encoding="utf-8"))
-    metadata = record.get("metadata") or {}
     facts = {
         "record_id": record_dir.name,
-        "acceptance_scope": metadata.get("acceptance_scope"),
-        "s2_select": metadata.get("s2_select"),
         "status": record.get("status"),
         "exit_code": record.get("exit_code"),
         "verification_exit_code": record.get("verification_exit_code"),
         "source_stable": record.get("source_stable"),
         "capture_complete": record.get("capture_complete"),
         "cleanup_ok": (record.get("cleanup") or {}).get("ok"),
+        # The only scopes whose green can be read as boundary evidence; a
+        # diagnostic subset (the workflow's `cases` input) names itself and is
+        # refused below regardless of its outcome.
+        "acceptance_scope": (record.get("metadata") or {}).get("acceptance_scope"),
     }
     inv_path = record_dir / "invariants.json"
     if inv_path.exists():
@@ -84,7 +79,7 @@ def evaluate(dest: Path) -> tuple[bool, dict]:
     junit_path = record_dir / "junit.xml"
     facts["junit"] = junit_totals(junit_path) if junit_path.exists() else None
     ok = (
-        facts["acceptance_scope"] == FULL_SCOPE and facts["s2_select"] is None
+        facts["acceptance_scope"] in ("S2_DIAGNOSTIC_SUPERVISION", "S3_N1_CAPTURE")
         and facts["status"] == "completed" and facts["exit_code"] == 0 and facts["verification_exit_code"] == 0
         and facts["source_stable"] is True and facts["capture_complete"] is True and facts["cleanup_ok"] is True
         and facts["invariants_passed"] is True and facts["junit"] is not None
@@ -106,11 +101,8 @@ def main(argv: list[str] | None = None) -> int:
     dest = args.dest or Path(tempfile.mkdtemp(prefix=f"s2-{args.run_id}-"))
     download(args.run_id, dest)
     ok, facts = evaluate(dest)
-    report = {"ok": ok, "run": head, "artifact_dir": str(dest), "facts": facts}
-    if facts.get("acceptance_scope") == DIAGNOSTIC_SCOPE:
-        report["refused"] = "diagnostic subset run: debugging facts only, never acceptance evidence"
-    print(json.dumps(report, indent=2))
-    return 0 if ok else 3 if "refused" in report else 1
+    print(json.dumps({"ok": ok, "run": head, "artifact_dir": str(dest), "facts": facts}, indent=2))
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":

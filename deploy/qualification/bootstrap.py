@@ -16,7 +16,7 @@ if len(sys.argv) < 2 or sys.argv[1] not in ('worker', 'supervisor', 'g5', 'campa
     raise SystemExit('fixed process role required')
 role = sys.argv.pop(1)
 sys.dont_write_bytecode = True
-if role in ('worker', 'campaign_probe'):
+if role in ('worker', 'campaign_probe', 'g5'):
     # The payload's resume safety net, before sys.path and before any import
     # that can spawn threads (the worker imports the compute stack and numpy,
     # whose OpenBLAS builds its pool at import). Install the no-op SIGUSR1
@@ -32,6 +32,9 @@ if role in ('worker', 'campaign_probe'):
     import signal
     signal.signal(signal.SIGUSR1, lambda *_: None)
     signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGUSR1})
+    # 'g5' joins the payload roles for the campaign mode only: the S3 qg5 unit
+    # calls the same readiness handshake as the worker (D2); an N1_ONLY g5
+    # never waits on it, and the inherited block is inert there.
 if role == 'campaign_guardian':
     # The original absolute BOOTTIME deadline is enforced by a kernel SIGKILL
     # timer from here, before any campaign import or construction; the guardian

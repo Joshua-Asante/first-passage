@@ -8,11 +8,9 @@ name: Qualification S2 supervision
 # its last case deliberately exhausts the common memory group, so every run gets
 # its own VM and nothing here is reused.
 #
-# A dispatch with `cases` set is a labelled DIAGNOSTIC run of that pytest -k
-# subset: the record is marked acceptance_scope=DIAGNOSTIC_SUBSET, the invariant
-# gate still requires every S2 node (so the job fails by design), and
-# scripts/s2_run_evidence.py refuses it. Read its junit.xml for the selected
-# cases; acceptance always needs a full run on the final head.
+# A dispatch with `cases` set is a labelled DIAGNOSTIC run (record scope
+# DIAGNOSTIC_SUBSET, refused by scripts/s2_run_evidence.py); the run-name says so
+# in `gh run list`, which scripts/guard_s2_runs.py reads to exempt it.
 run-name: >-
   ${{ inputs.cases != '' && inputs.cases != null
       && format('S2 DIAGNOSTIC ({0})', inputs.cases)
@@ -20,10 +18,14 @@ run-name: >-
 on:
   workflow_dispatch:
     inputs:
+      mode:
+        description: 'Boundary selection: s2 (the fifteen S2 nodes) or s3 (S2 plus the four N1 nodes; the acceptance-grade set)'
+        type: choice
+        options: [s2, s3]
+        default: s3
       cases:
-        description: 'Diagnostic only: pytest -k expression over the S2 files (empty = full acceptance-grade run)'
+        description: 'Diagnostic subset only: a pytest -k expression over the selected files. Empty runs the full selection. A non-empty value marks the record DIAGNOSTIC_SUBSET, which can never be acceptance evidence.'
         type: string
-        required: false
         default: ''
   pull_request:
     paths:
@@ -74,22 +76,25 @@ jobs:
             echo "docker_cgroup_driver=$(sudo /usr/bin/docker --host unix:///var/run/docker.sock info --format '{{.CgroupDriver}}')"
             echo "docker_cgroup_version=$(sudo /usr/bin/docker --host unix:///var/run/docker.sock info --format '{{.CgroupVersion}}')"
           } | tee "$RUNNER_TEMP/qualification-evidence/s2-host-facts.txt"
-      - name: Doctor and targeted S2 supervision run
+      - name: Doctor and targeted boundary run
         env:
-          # Passed through the environment, never interpolated into the script.
-          S2_SELECT: ${{ inputs.cases }}
+          # Inputs reach the script through the environment, never interpolated
+          # into it: `cases` is free text and this step runs as root.
+          BOUNDARY_MODE: ${{ inputs.mode || 's3' }}
+          BOUNDARY_CASES: ${{ inputs.cases || '' }}
         run: |
           manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
           host_root="$(dirname "$manifest")"
-          select_args=()
-          if [ -n "${S2_SELECT:-}" ]; then
-            echo '::warning title=Diagnostic subset::this run is DIAGNOSTIC_SUBSET and is never acceptance evidence'
-            printf 'cases=%q\n' "$S2_SELECT"
-            select_args=(--s2-select "$S2_SELECT")
-          fi
+          mode="$BOUNDARY_MODE"
+          cases="$BOUNDARY_CASES"
+          case "$mode" in s2|s3) ;; *) echo "unsupported mode: $mode" >&2; exit 2 ;; esac
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
+          args=(--"$mode")
+          if [ -n "$cases" ]; then
+            args+=(--cases "$cases")
+          fi
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python \
-            scripts/qualification_boundary_verification.py --s2 --manifest "$manifest" "${select_args[@]}"
+            scripts/qualification_boundary_verification.py "${args[@]}" --manifest "$manifest"
       - name: Idempotent owned cleanup and export non-secret evidence
         if: always()
         run: |

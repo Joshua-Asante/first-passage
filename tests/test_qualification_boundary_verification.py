@@ -33,9 +33,8 @@ def test_nonlinux_entry_point_fails_without_provisioning(monkeypatch):
     assert module.main(['--test-only']) != 0
 
 
-@pytest.mark.parametrize('mode,extra',[('--host-only',[]),('--test-only',[]),('--s2',[]),
-                                        ('--s2',['--s2-select','deadline and not oom'])])
-def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatch,mode,extra):
+@pytest.mark.parametrize('mode',['--host-only','--test-only','--s2'])
+def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatch,mode):
     module = runner()
     manifest_path = tmp_path / 'run' / 'ownership.json'
     manifest_path.parent.mkdir()
@@ -73,21 +72,12 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
                 positions=[command.index(case) for case in module.S2_CASES]
                 assert positions==sorted(positions) and len(module.S2_CASES)>1
                 assert not any(argument.startswith('--ignore=') for argument in command)
-                metadata=self.data['metadata']
-                if extra:
-                    # Labelled diagnostic: the -k subset runs, the record can never be evidence.
-                    assert command[command.index('-k')+1]=='deadline and not oom'
-                    assert metadata['acceptance_scope']==module.DIAGNOSTIC_SCOPE
-                    assert metadata['qualification_acceptance']=='not_evidence'
-                    assert metadata['s2_select']=='deadline and not oom'
-                else:
-                    assert '-k' not in command and 's2_select' not in metadata
-                    assert metadata['acceptance_scope']=='S2_DIAGNOSTIC_SUPERVISION'
             else:
                 selection='tests/integration/qualification_host' if mode=='--host-only' else 'tests/integration/qualification_boundary'
                 assert selection in command
                 if mode=='--test-only':
-                    assert all('--ignore='+case in command for case in module.S2_CASES)
+                    # The whole S3 file set (S2 files included) stays out of N1_ONLY.
+                    assert all('--ignore='+case in command for case in module.S3_CASES)
             if mode=='--test-only':
                 assert self.data['metadata']['qualification_acceptance']=='coordinator_review_required'
             self.data['test_summary'] = {
@@ -110,7 +100,7 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
     monkeypatch.setattr(module,'create_process_group',lambda root:root/'group')
     monkeypatch.setattr(module,'owned_command',lambda group,command,interpreter:command)
 
-    assert module.main([mode, '--manifest', str(manifest_path), *extra]) == 0
+    assert module.main([mode, '--manifest', str(manifest_path)]) == 0
     assert events == ['lock-enter', 'begin', 'lock-exit', 'cleanup']
 
 
@@ -134,19 +124,59 @@ def test_cleanup_must_be_explicitly_successful(counts):
         runner().require_cleanup(counts)
 
 
-@pytest.mark.parametrize('argv', [
-    ['--test-only', '--s2-select', 'deadline'],
-    ['--host-only', '--s2-select', 'deadline'],
-    ['--s2', '--s2-select', ''],
-    ['--s2', '--s2-select', '   '],
-    ['--s2', '--s2-select', '-p evil'],
-    ['--s2', '--s2-select', 'deadline\nnot oom'],
-    ['--s2', '--s2-select', 'x' * 257],
-])
-def test_diagnostic_selection_is_refused_before_any_host_work(monkeypatch, argv):
+@pytest.mark.parametrize('mode',['--test-only','--s2','--s3'])
+def test_required_nodes_match_the_selected_file_set(tmp_path, monkeypatch, mode):
+    """--test-only must never require a node of the S3 file set: those nodes skip
+    there by design (no FP_QUALIFICATION_S3) and are ignored by the selection, so
+    requiring them fails the required boundary jobs (PR #455, aaf9646)."""
     module = runner()
-    touched = []
-    monkeypatch.setattr(module, 'protected', lambda path: touched.append(path))
-    with pytest.raises(SystemExit) as exc:
-        module.main(argv)
-    assert exc.value.code == 2 and not touched
+    manifest_path = tmp_path / 'run' / 'ownership.json'
+    manifest_path.parent.mkdir()
+    manifest_path.write_text(json.dumps({'host_config_sha256': 'configured', 'source': {'commit': 'candidate'}}))
+    seen = {}
+
+    class Record:
+        def __init__(self, *_args):
+            self.data = {'before': {'commit': 'candidate'}, 'metadata': {}}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def begin(self):
+            pass
+
+        def execute(self, command, **_kwargs):
+            self.data['test_summary'] = {'collected': 1, 'passed': 1, 'failed': 0, 'errors': 0, 'skipped': 0}
+            self.data['verification_exit_code'] = 0
+
+    def observed_invariants(*_args, required_nodeids, **_kwargs):
+        seen['required'] = set(required_nodeids)
+        return {'passed': True}
+
+    @contextmanager
+    def lock(_root):
+        yield
+
+    monkeypatch.setattr(module.platform, 'system', lambda: 'Linux')
+    monkeypatch.setattr(module.os, 'geteuid', lambda: 0, raising=False)
+    monkeypatch.setattr(module, 'protected', lambda path: path)
+    monkeypatch.setattr(module, 'RunRecord', Record)
+    monkeypatch.setattr(module, 'require_invariants', observed_invariants)
+    monkeypatch.setattr(module, 'ownership_lock', lock)
+    monkeypatch.setattr(module, 'cleanup', lambda path: {'ok': True})
+    monkeypatch.setattr(module, 'create_process_group', lambda root: root / 'group')
+    monkeypatch.setattr(module, 'owned_command', lambda group, command, interpreter: command)
+
+    assert module.main([mode, '--manifest', str(manifest_path)]) == 0
+    registered = module._manifest(module.INVARIANT_MANIFEST.read_bytes())
+    s2 = tuple(case + '::' for case in module.S2_CASES)
+    s3 = tuple(case + '::' for case in module.S3_CASES)
+    expected = {'--test-only': {node for node in registered if not node.startswith(s3)},
+                '--s2': {node for node in registered if node.startswith(s2)},
+                '--s3': {node for node in registered if node.startswith(s3)}}[mode]
+    assert seen['required'] == expected and expected
+    if mode == '--test-only':
+        assert not any(node.startswith(s3) for node in seen['required'])
