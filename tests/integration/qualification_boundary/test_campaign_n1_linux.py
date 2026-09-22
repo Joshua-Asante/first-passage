@@ -56,7 +56,7 @@ def admit(boundary, *, idle):
 
 def dispatch(boundary, attempt, work_id, role):
     reply = boundary.schedule(dict(schema='qualification_campaign_schedule_request/v1',
-        attempt_id=attempt, work_id=work_id, role=role, probe='noop', signing_retry_of=None))
+        attempt_id=attempt, work_id=work_id, role=role, probe='noop', signing_retry_of=None, fault=None))
     assert reply['ok'], reply
     # A compact refusal answers ok with status only; the work must durably exist
     # before the caller waits on it.
