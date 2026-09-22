@@ -131,6 +131,17 @@ Track B is the operator's name for qualifying the accepted four-strategy Tradeif
 
 **What is NOT being asked of anyone:** parameter changes to any locked strategy; edits to `DD_TRIGGER` / `DD_SCALE`; re-opening configuration selection; a second simulator; choosing the market-data feed; arming; placing trades; promoting a runner-up; committing Pine, ports, exports, bar panels or account values.
 
+### Ownership routing — operator ruling 2026-09-20 (Rule 7: one owner per fact, not one document for everything)
+
+| Fact class | Owner | Not the owner of |
+|---|---|---|
+| Campaign scope, authority and governing gates (§0.5 rulings, §5 forbidden moves, §6 gate taxonomy, wave gates) | this umbrella | the current sequence of work |
+| Current cross-workstream sequence and dependencies (T01–T0n packets, prerequisites, packet sizing) | [Tradeify deployment checklist](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md) (adopted 2026-09-20 via [first-passage#440](https://github.com/Joshua-Asante/first-passage/pull/440)) | acceptance criteria or authority |
+| Qualification engineering requirements and the acceptance ledger (S1–S8, checkpoint/acceptance entries) | [execution-slices plan](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md) | dispatch order across workstreams |
+| Individual assignments and returns | the bounded handoff for that packet (e.g. [T01](2026-09-20-glm-t01-s2-closeout-g3-worker-launch.md)) | anything outside its return boundary |
+
+The §2 sub-track → packet map below and the 2026-09-13 [closeout](2026-09-13-tradeify-contract-closeout.md) remain the record of the TB-* packets already dispatched; new sequencing is read from the checklist, not re-derived here. Campaign ownership: [campaign record §58](../programs/2026-09-03-seven-strategy-select-campaign-state.md#58--campaign-ownership-the-current-coordinating-task-2026-09-20). This routing grants no GO of any kind.
+
 ---
 
 ## §2 — Execution plan
