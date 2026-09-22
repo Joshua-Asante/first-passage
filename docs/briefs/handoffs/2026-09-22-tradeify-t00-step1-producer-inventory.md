@@ -161,7 +161,7 @@ The emulator's gap is not P5 alone; P1–P4 and P6 are also missing from it. The
 
 **Owed to the coordinator:**
 1. Acceptance of this return. The §3.3 hold was lifted by the operator's instruction rather than a coordinator ruling.
-2. The D-T00 grounds ("the only in-repo replay artifact is the TB-S2 emulator") and the amendment §5 audit hook (`ls lab/analysis/c1/tradeify_book_replay_2026-09/`) are stale with respect to 3′, and the handoffs README still lists T00 as "(ready, not dispatched)". This executor edits only §7, so all three are left for the coordinator.
+2. *Resolved on operator instruction ("fix the three stale statements too", 2026-09-22):* the D-T00 grounds carry a dated correction note (prior sentence preserved); the amendment §5 audit hook now distinguishes TB-I2's absent `lab/` footprint from the relocated `ops/c1_rail/qualification/` replay; and the handoffs README lists T00 as returned. Still stale and not in that instruction: this packet's own header **Status** line ("READY TO DISPATCH, not yet dispatched").
 
 ### 7.6 Probe sources (synthetic; no screen, no MC)
 
