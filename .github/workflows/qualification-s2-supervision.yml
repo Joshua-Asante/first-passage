@@ -7,8 +7,24 @@ name: Qualification S2 supervision
 # and it is not a required merge check. The suite runs alone with one worker;
 # its last case deliberately exhausts the common memory group, so every run gets
 # its own VM and nothing here is reused.
+#
+# A dispatch with `cases` set is a labelled DIAGNOSTIC run of that pytest -k
+# subset: the record is marked acceptance_scope=DIAGNOSTIC_SUBSET, the invariant
+# gate still requires every S2 node (so the job fails by design), and
+# scripts/s2_run_evidence.py refuses it. Read its junit.xml for the selected
+# cases; acceptance always needs a full run on the final head.
+run-name: >-
+  ${{ inputs.cases != '' && inputs.cases != null
+      && format('S2 DIAGNOSTIC ({0})', inputs.cases)
+      || format('Qualification S2 supervision ({0})', github.ref_name) }}
 on:
   workflow_dispatch:
+    inputs:
+      cases:
+        description: 'Diagnostic only: pytest -k expression over the S2 files (empty = full acceptance-grade run)'
+        type: string
+        required: false
+        default: ''
   pull_request:
     paths:
       - 'ops/c1_rail/qualification/**'
@@ -26,7 +42,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: qualification-s2-${{ github.ref }}
+  # A diagnostic dispatch never cancels a full run on the same ref, or vice versa.
+  group: qualification-s2-${{ github.ref }}-${{ inputs.cases != '' && inputs.cases != null && 'diagnostic' || 'full' }}
   cancel-in-progress: true
 
 jobs:
@@ -58,12 +75,21 @@ jobs:
             echo "docker_cgroup_version=$(sudo /usr/bin/docker --host unix:///var/run/docker.sock info --format '{{.CgroupVersion}}')"
           } | tee "$RUNNER_TEMP/qualification-evidence/s2-host-facts.txt"
       - name: Doctor and targeted S2 supervision run
+        env:
+          # Passed through the environment, never interpolated into the script.
+          S2_SELECT: ${{ inputs.cases }}
         run: |
           manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
           host_root="$(dirname "$manifest")"
+          select_args=()
+          if [ -n "${S2_SELECT:-}" ]; then
+            echo '::warning title=Diagnostic subset::this run is DIAGNOSTIC_SUBSET and is never acceptance evidence'
+            printf 'cases=%q\n' "$S2_SELECT"
+            select_args=(--s2-select "$S2_SELECT")
+          fi
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python \
-            scripts/qualification_boundary_verification.py --s2 --manifest "$manifest"
+            scripts/qualification_boundary_verification.py --s2 --manifest "$manifest" "${select_args[@]}"
       - name: Idempotent owned cleanup and export non-secret evidence
         if: always()
         run: |

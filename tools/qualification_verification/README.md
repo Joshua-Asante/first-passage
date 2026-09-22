@@ -196,6 +196,11 @@ Order of operations for an executor (the two clocks are independent; the
    (no failures, errors or skips) all hold. Cite the run ID, head SHA, record ID
    and counts.
 
+   A dispatch with `-f cases='<pytest -k expr>'` is a labelled diagnostic of
+   that subset (`acceptance_scope=DIAGNOSTIC_SUBSET`): its invariant gate
+   fails by design and the script above refuses it with exit 3. Use it to
+   iterate on one case; it is never evidence.
+
 A failure on unchanged code is a finding, not flakiness. Before any second
 dispatch, pull the failing work's chain from `boundary/journal.sqlite`
 (`full_campaign_budgets`, `full_campaign_objects` roles `supervision_event_*`),

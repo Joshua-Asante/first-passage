@@ -33,8 +33,9 @@ def test_nonlinux_entry_point_fails_without_provisioning(monkeypatch):
     assert module.main(['--test-only']) != 0
 
 
-@pytest.mark.parametrize('mode',['--host-only','--test-only','--s2'])
-def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatch,mode):
+@pytest.mark.parametrize('mode,extra',[('--host-only',[]),('--test-only',[]),('--s2',[]),
+                                        ('--s2',['--s2-select','deadline and not oom'])])
+def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatch,mode,extra):
     module = runner()
     manifest_path = tmp_path / 'run' / 'ownership.json'
     manifest_path.parent.mkdir()
@@ -72,6 +73,16 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
                 positions=[command.index(case) for case in module.S2_CASES]
                 assert positions==sorted(positions) and len(module.S2_CASES)>1
                 assert not any(argument.startswith('--ignore=') for argument in command)
+                metadata=self.data['metadata']
+                if extra:
+                    # Labelled diagnostic: the -k subset runs, the record can never be evidence.
+                    assert command[command.index('-k')+1]=='deadline and not oom'
+                    assert metadata['acceptance_scope']==module.DIAGNOSTIC_SCOPE
+                    assert metadata['qualification_acceptance']=='not_evidence'
+                    assert metadata['s2_select']=='deadline and not oom'
+                else:
+                    assert '-k' not in command and 's2_select' not in metadata
+                    assert metadata['acceptance_scope']=='S2_DIAGNOSTIC_SUPERVISION'
             else:
                 selection='tests/integration/qualification_host' if mode=='--host-only' else 'tests/integration/qualification_boundary'
                 assert selection in command
@@ -99,7 +110,7 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
     monkeypatch.setattr(module,'create_process_group',lambda root:root/'group')
     monkeypatch.setattr(module,'owned_command',lambda group,command,interpreter:command)
 
-    assert module.main([mode, '--manifest', str(manifest_path)]) == 0
+    assert module.main([mode, '--manifest', str(manifest_path), *extra]) == 0
     assert events == ['lock-enter', 'begin', 'lock-exit', 'cleanup']
 
 
@@ -121,3 +132,21 @@ def test_invariant_gate_requires_actual_reports(tmp_path):
 def test_cleanup_must_be_explicitly_successful(counts):
     with pytest.raises(ValueError, match='cleanup'):
         runner().require_cleanup(counts)
+
+
+@pytest.mark.parametrize('argv', [
+    ['--test-only', '--s2-select', 'deadline'],
+    ['--host-only', '--s2-select', 'deadline'],
+    ['--s2', '--s2-select', ''],
+    ['--s2', '--s2-select', '   '],
+    ['--s2', '--s2-select', '-p evil'],
+    ['--s2', '--s2-select', 'deadline\nnot oom'],
+    ['--s2', '--s2-select', 'x' * 257],
+])
+def test_diagnostic_selection_is_refused_before_any_host_work(monkeypatch, argv):
+    module = runner()
+    touched = []
+    monkeypatch.setattr(module, 'protected', lambda path: touched.append(path))
+    with pytest.raises(SystemExit) as exc:
+        module.main(argv)
+    assert exc.value.code == 2 and not touched

@@ -20,6 +20,17 @@ INVARIANT_MANIFEST = ROOT / 'tests/ops/qualification/invariant_manifest.json'
 # group, so the service-metering file runs first on the same fresh host.
 S2_CASES = ('tests/integration/qualification_boundary/test_campaign_service_linux.py',
             'tests/integration/qualification_boundary/test_campaign_supervision_linux.py')
+# A `--s2-select` run is a labelled diagnostic: its deselected required nodes fail
+# the invariant gate by design, and s2_run_evidence.py refuses this scope.
+DIAGNOSTIC_SCOPE = 'DIAGNOSTIC_SUBSET'
+MAX_SELECT_CHARS = 256
+
+
+def require_selection(expression):
+    if (type(expression) is not str or not expression.strip() or len(expression) > MAX_SELECT_CHARS
+            or expression.startswith('-') or any(ord(ch) < 32 or ord(ch) == 127 for ch in expression)):
+        raise ValueError(f'--s2-select must be a single-line pytest -k expression of at most {MAX_SELECT_CHARS} characters')
+    return expression
 
 
 def require_cleanup(result):
@@ -57,7 +68,16 @@ def main(argv=None):
     parser.add_argument('--manifest', type=Path)
     parser.add_argument('--instance', type=Path)
     parser.add_argument('--profile', type=Path)
+    parser.add_argument('--s2-select', metavar='EXPR',
+                        help='with --s2 only: pytest -k subset, labelled DIAGNOSTIC_SUBSET and never evidence')
     args = parser.parse_args(argv)
+    if args.s2_select is not None:
+        if not args.s2:
+            parser.error('--s2-select requires --s2')
+        try:
+            require_selection(args.s2_select)
+        except ValueError as exc:
+            parser.error(str(exc))
     if platform.system() != 'Linux' or os.geteuid() != 0:
         print('Failed prerequisite: Linux administrator on a disposable host', file=sys.stderr)
         return 2
@@ -87,6 +107,10 @@ def main(argv=None):
                         record.data['metadata'].update(acceptance_scope='S2_DIAGNOSTIC_SUPERVISION' if args.s2 else 'N1_ONLY_TEST_ONLY',
                             qualification_acceptance='coordinator_review_required',
                             invariant_manifest_sha256=hashlib.sha256(invariant_bytes).hexdigest())
+                        if args.s2_select is not None:
+                            # The full required set stays in force, so this record cannot pass.
+                            record.data['metadata'].update(acceptance_scope=DIAGNOSTIC_SCOPE,
+                                qualification_acceptance='not_evidence', s2_select=args.s2_select)
                     if args.instance or args.profile:
                         raise ValueError('Canonical fixture producer owns instance/profile bindings')
                     report = output / 'junit.xml'
@@ -103,6 +127,8 @@ def main(argv=None):
                             node for node in required if not node.startswith('tests/integration/qualification_boundary/')))
                     command=[sys.executable, '-m', 'pytest', *selection, '-n', '0',
                              '-q', '--tb=short', f'--junitxml={report}']
+                    if args.s2_select is not None:
+                        command += ['-k', args.s2_select]
                     if args.test_only or args.s2:
                         collection = output / 'collected.json'
                         command += ['-p', 'scripts.pytest_qualification_collection',
