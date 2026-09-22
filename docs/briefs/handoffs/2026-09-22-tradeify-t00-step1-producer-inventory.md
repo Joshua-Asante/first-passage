@@ -53,9 +53,9 @@ Building or patching a producer; running any screen, MC or re-MC; drafting or ra
 
 _Required shape (as authored): the ratified D-T00 wording quoted; the operator's §4 answer; the P1–P7 table per candidate with evidence; the verdict (PRODUCER FOUND / INSUFFICIENT); for INSUFFICIENT, the missing set and the build estimate; the condition-4 question restated. No recommendation on step 2 beyond what the table supports._
 
-**Status: NEEDS_CONTEXT.** Returned 2026-09-22 by the Claude Code executor (cloud session), branch `claude/t00-step1-producer-inventory` off `claude/sweet-mccarthy-mviy90` @ `082366c`. Handoff-verify Phase-0: PASS. No cited owner differs between this base and `origin/main` @ `c19573c`. The D-T00 row is ratified. TB-I2's footprint is absent.
+**Status: DONE_WITH_CONCERNS.** Returned 2026-09-22 by the Claude Code executor (cloud session), branch `claude/t00-step1-producer-inventory` off `claude/sweet-mccarthy-mviy90` @ `082366c`. Revised at `4c1161c` (after merging `origin/main` @ `c19573c`) to score candidate 3′. Handoff-verify Phase-0: PASS. No cited owner differs between this base and `origin/main`. The D-T00 row is ratified. TB-I2's footprint is absent.
 
-**Why NEEDS_CONTEXT, not a final verdict.** §3's candidate-4 search found `ops/c1_rail/qualification/`. It is a synchronized four-leg `BookReplay` that emits per-session `intraday_low` and feeds it to `simulate_path`. It is TB-I2's engine, relocated. [`2026-09-15-phase3-qualification-tooling.md`](../../superpowers/plans/2026-09-15-phase3-qualification-tooling.md) line 5 says: "Package is `ops/c1_rail/qualification/`: this corrects the proposed lab placement because the accepted monorepo boundary prohibits lab importing ops." Its classes are the ones the [TB-S2 spec](../../spec/2026-09-12-tradeify-synchronized-replay-spec.md) interface table assigns to TB-I2: `BookReplay`, `SessionRecord`, blocks, paths, `WeekClock`, and the `dd_scale == 1.0` runner. Under §3.3, a finding that TB-I2 exists changes this packet's premise and returns to the coordinator before scoring. That candidate is therefore **inventoried and its existing tests run, but it is not scored P1–P7**. Every other candidate is scored below.
+**How candidate 3′ came to be scored.** §3's candidate-4 search found `ops/c1_rail/qualification/`. It is a synchronized four-leg `BookReplay` that emits per-session `intraday_low` and feeds it to `simulate_path`, and it is TB-I2's engine, relocated. [`2026-09-15-phase3-qualification-tooling.md`](../../superpowers/plans/2026-09-15-phase3-qualification-tooling.md) line 5 says: "Package is `ops/c1_rail/qualification/`: this corrects the proposed lab placement because the accepted monorepo boundary prohibits lab importing ops." Its classes are the ones the [TB-S2 spec](../../spec/2026-09-12-tradeify-synchronized-replay-spec.md) interface table assigns to TB-I2. The first return held it unscored under §3.3. The operator then directed, in session 2026-09-22, verbatim: **"score the qualification replay too"**. That instruction is recorded here as the ruling that lifts the §3.3 hold, and 3′ is scored in §7.4.
 
 ### 7.1 Ratified D-T00 wording (verbatim, [amendment Addendum 2026-09-22](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md), row D-T00)
 
@@ -76,7 +76,12 @@ The §4 question was asked once, as the session's first message. The operator's 
 | R3 | `python -m pytest tests/ops/qualification/test_{replay,runner,sessions,model,paths,blocks}.py` | 85 passed | `20260922T231944Z-dd039131c404` · `a182fe79…d755e13` |
 | R4 | P6 probe (source in §7.6), run as a pytest file | 1 passed; emitted series SHA-256 (`<f8` bytes) `4b2b460b00be3043843dc71e527ce0a9df6f8af1819ad112e1e7c01bbf1c937d` | `20260922T232026Z-6e5a8c525ac3` · `9ad1bc76…17f6d3` |
 
-Records sit under the ignored `.cache/fp-verification/` of the executing clone. All four were taken at `082366c` with a clean tree.
+| R5 | P6 probe on 3′ (source in §7.6), first attempt | **1 failed**: a probe defect. The direct `simulate_path` calls omitted `starting_equity`, so the kernel refused the mismatched `initial_state`. Not a producer result; fixed in R6. | `20260922T233732Z-88e61b835a52` · `d80b3801…cf1eb0c` |
+| R6 | P6 probe on 3′, corrected | 1 passed; emitted series `[-20, 0, 0]`, SHA-256 (`<f8`) `175f9fbf0b8439fef904a669b6032ea4bfdaf47ac7f6fe70aa32868ac2fc3911` | `20260922T233749Z-fc506f3b0481` · `d5435a28…a13cadb` |
+| R7 | P2 probe on 3′ (source in §7.6). The first attempt failed on a fixture that placed the add after the scheduled entry cutoff in both arms (`20260922T233817Z-cd530cc430b6`, not a producer result); this is the corrected run. | 1 passed. Control: ORB add filled (qty 1). After the 2% loss the session is PROTECTED and the add is rejected with `zero policy quantity`. | `20260922T233830Z-93d830992475` · `621662a1…e58713` |
+| R8 | `python -m pytest -v` with the 11 named 3′ node ids cited in §7.4, plus `tests/ops/test_book_policy.py` | 45 passed | `20260922T233849Z-266a23691a44` · `01347666…fb3ef78a` |
+
+Records sit under the ignored `.cache/fp-verification/` of the executing clone. R1–R4 were taken at `082366c` and R5–R8 at `4c1161c`, all with a clean tracked tree. The probe files live in the executor's scratch directory, outside the checkout; their sources are reproduced in §7.6.
 
 ### 7.4 P1–P7 per candidate (the selected four: Aegis 6J, Vanguard MGC, Striker MYM, ORB MNQ)
 
@@ -100,19 +105,32 @@ Public digests that prove what existed: C1–C5 approval revision `bad72266716a3
 | P6 | NOT MET | Emits `ExecutionEvent`/`Fill` only. No equity or excursion series exists, so there is nothing to feed `simulate_path`. |
 | P7 | UNKNOWN | Private ports absent here (R2 skips). Their pins are public: `book_adapters.py:39–62` (runtime SHA-256 per leg) and `:72` (`RUNTIME_EFFECTIVE_INPUTS_SHA256`). The four M15 panels are absent here; pins are in `core/data/bar_data/SHA256SUMS`. |
 
-The emulator's gap is not P5 alone; P1–P4 and P6 are also missing from it. The P1–P4 laws exist and are tested in `book_policy.py`. Composing them with the emulator on one clock is exactly what the unscored candidate 3′ does.
+The emulator's gap is not P5 alone; P1–P4 and P6 are also missing from it. The P1–P4 laws exist and are tested in `book_policy.py`. Composing them with the emulator on one clock is exactly what candidate 3′ does.
 
 **Candidate 3: TB-I2 at its specified footprint.** **ABSENT.** `ls lab/analysis/c1/tradeify_book_replay_2026-09/` → "No such file or directory". No `lab/` file references the path.
 
-**Candidate 3′ (found under §3.4): `ops/c1_rail/qualification/`, TB-I2 relocated.** **FOUND — NOT SCORED (premise change, §3.3).** Inventory only:
-- `replay.py:89–574` `BookReplay`: one shared cash and one clock across the four legs (`:448–574`). It wires `book_policy` sizing (`:357–365`), `CapacityLedger` and `Takeover` (`:372–399`), `BookProtectionClock` mode per session (`:467`), and the `TVBrokerEmulator` per leg (`:118`). Each session's `low` uses lifetime-scoped adverse marks (`:57–86`, `:207–255`, `:517–569`).
-- `model.py:149–163` `SessionRecord.intraday_low` rejects values `> 0`.
-- `sessions.py:19–21` emits the per-session `pnl` / `intraday_low` arrays.
-- `runner.py:20–32` calls `simulate_path(pnl, trigger, 1.0, horizon, intraday_low=low, initial_state=…, **firm_kwargs("Tradeify_Select_100K", …))`.
-- `panel.py:33–37` loads M15 bars against an expected SHA-256.
-- Relevant existing tests passed in R3, including: `test_replay.py:127`, `:226`, `:284`, `:355`, `:377`, `:278`, `:154`, `:639`; `test_runner.py:16 test_kernel_uses_intraday_and_no_second_scaling`.
-- All of this is synthetic. The module docstring says "no loading or qualification authority" (`replay.py:1`), and production execution is gated by the attempt controller ([Phase 3 completion plan](../../superpowers/plans/2026-09-17-phase3-completion-handoff.md) line 31).
-- Its real inputs are the same private ports and panels as candidate 2, none of them present here.
+**Candidate 3′ (found under §3.4, scored on the operator's instruction): `ops/c1_rail/qualification/`, TB-I2 relocated.**
+
+| # | Score | Evidence |
+|---|---|---|
+| P1 | MET | `replay.py:357–365` sizes every admitted entry through `book_policy.entry_quantities` and every add through `add_quantity(confirmed base)`, never through uniform scaling. The production provider `production_source.py:70–89` supplies Striker's unrounded risk (Account Size × risk %, and stop distance × point value). Tests (R8): `test_production_source.py::test_sizing_uses_unrounded_risk_stop_and_explicit_frozen_lifecycle_cap`, `::test_striker_exact_risk_boundary_is_not_rounded_up_through_float`; `test_replay.py::test_striker_rounded_normal_quantity_is_not_risk_input`, `::test_c80_protected_striker_rounds_unscaled_risk_only_after_protection`; `test_book_policy.py::test_protected_and_lifecycle_integer_table`. |
+| P2 | MET | Keyed on protection state: the mode comes from the prior settled close (`replay.py:467`); `add_quantity(mode=…)` returns 0 for ORB and Vanguard when PROTECTED (`book_policy.py:273–275`), and the replay then rejects the add (`replay.py:366–368`); mode transitions deliver the adapters' cancels (`:470–480`). The ORB base stays 1 (`book_policy.py:311–313`). R7 shows it on the replay with a control. Also R8: `test_mode_changes_from_prior_settled_path_close_only`, `test_book_policy.py::test_transition_cancels_only_resting_orb_adds_on_activation`. |
+| P3 | MET | `CapacityLedger.request` (refuse, never clip) at `replay.py:372`; 6J = 10 micro-equivalents, cap 80. R8: `test_barrier_aegis_capacity_precedes_other_legs_and_rejects_without_clip` hits the cap: Aegis fills 8 (= 80 micro-equivalents) and the other three legs are rejected. |
+| P4 | MET | Takeover at `replay.py:373–399`: cancel displaced pending orders, acknowledge, close the whole leg, confirm flat, then settle and admit; admission runs in priority order (`:534`). R8: `test_aegis_whole_leg_takeover_closes_striker_before_entry`, `test_protected_striker_77_displaced_by_protected_aegis_30`, `test_partial_takeover_close_refuses_aegis_and_preserves_remaining_truth`. |
+| P5 | MET | One event loop over path bars for all four legs (`replay.py:489–559`), with one shared `self.cash` and a marked account equity per bar (`:556`). The protection clock settles on account cash (`:570`). R8: `test_crossleg_adverse_marks_sum_without_favorable_netting`. |
+| P6 | MET | R6: the replay's `SessionRecord.intraday_low` series (`model.py:161` rejects values `> 0`) goes through `sessions.session_arrays` → `runner.evaluate_replay` → `simulate_path(dd_scale=1.0)` and is accepted. Absolute lows are refused (`<= 0` error) and a short series is refused (horizon error). **Hand recompute** of session 0 from the fixture bars: ORB and Vanguard each fill 1 contract at the bar-1 close of 100, so the close-only entry contributes 0 on that bar (RC-6 (c)). Bar 2 is (100, 110, 90, 100), with the long adverse mark at the low: 1 × (90 − 100) × point value 1 = −10 per leg, summed without netting = **−20**, equal to the emitted value. R8 also covers `test_runner.py::test_kernel_uses_intraday_and_no_second_scaling`. |
+| P7 | **NOT MET** (public record) | (a) **Private, UNKNOWN from this session:** the four ports at runtime SHA-256 `book_adapters.py:39–62`, effective inputs `:72`, and the four M15 panels pinned in `core/data/bar_data/SHA256SUMS`, none present here. (b) **Reviewed retained artifacts the production path requires before any real replay** (`production_source.py:776–784`, fail-closed): `source_startup_policy`, `source_calendar` (+ review), `population_index` (+ review), `schedule_execution_evidence` (+ review), `cost_model`. The producer itself declares three of these capabilities missing (`PRODUCER_GAPS`, `production_source.py:38–45`: `SOURCE_CALENDAR_CAPABILITY_MISSING`, `SCHEDULE_INTRABAR_CAPABILITY_MISSING`, `STARTUP_POLICY_BINDING_MISSING`). (c) The [schedule-execution-evidence note](../phase3-preparation/2026-09-15/schedule-execution-evidence.md) (2026-09-15) states that real, outcome-bearing paths "remain blocked until provenance and any required model amendment are accepted". It names the only routes as "a newly ratified interpolation/model convention or finer historical execution evidence", and says "No feed purchase is authorized". No later public record of that evidence was found. S3's accepted N1 capture ran on synthetic sources (`composition_fixture`; S3 packet line 47). A private artifact could overturn (a) or (b); (c) is a recorded blocker. |
+
+**What 3′ reproduces, per expression of the selected four** (the D-T00 wording asks for this; laws from `book_policy.py:179–197`, `:279–316`, with integer outcomes pinned by `test_protected_and_lifecycle_integer_table`):
+
+| Expression | Integer sizing | ORB base/add | Capacity | Takeover |
+|---|---|---|---|---|
+| Aegis 6J (short, priority 1) | Fixed 8. PROTECTED gives floor(8 × 0.40) = 3. | n/a (no adds) | 10 micro-equivalents per contract (8 = 80) | The only leg that may displace others |
+| Striker MYM p250 (priority 2) | min(floor(risk × scale / per-contract risk), floor(cap alloc / 3.5)). The scale is applied to unrounded risk before the floor. | Add floor(250%) of the confirmed base, max 1; not refused when protected | 1 per contract | Displaceable as a whole leg (the protected 77 case is tested) |
+| Vanguard MGC (priority 3) | Captured base 1 or 2. PROTECTED gives floor(base × 0.40) = 0, so the leg is off under protection (the accepted D-B10 consequence). | Adds round(80%), max 2; off when protected | 1 per contract | Displaceable |
+| ORB MNQ v7 (priority 4) | Base 1 in both modes | Adds round(100%), max 2, sized from the confirmed base; **0 when protected**, with resting adds cancelled on activation | 1 per contract | Displaceable, lowest priority first |
+
+**Concerns carried with the P1–P6 scores.** They are shown with the real replay, policy, emulator and kernel code, but with **synthetic adapters** (`test_replay.py:17–31`) and synthetic bars. The strategies' own signal logic lives in the private ports and was not exercised; that is part of P7 and of the TB-A parity owed at protected and adds-off sizes. The module's own scope line reads "no loading or qualification authority" (`replay.py:1`).
 
 **Candidate 4a: `lab/analysis/c1/tradeify_book_composition_2026-09/book_grid.py::build_intraday_low_sequenced`.**
 
@@ -132,17 +150,22 @@ The emulator's gap is not P5 alone; P1–P4 and P6 are also missing from it. The
 
 ### 7.5 Verdict
 
-**Over the scored candidates (1, 2, 3, 4a, 4b): INSUFFICIENT.** No candidate has P1–P7 all MET. This follows mechanically from §7.4. **It is not final.** Candidate 3′ is unscored under §3.3, and its inventory matches the producer's shape. The coordinator must rule on the premise before this verdict can stand.
+**INSUFFICIENT.** No candidate has P1–P7 all MET; this follows mechanically from §7.4. The closest is candidate 3′, which meets **P1–P6** and fails only **P7**.
 
-**Smallest missing set, by coordinator ruling (estimates, labelled as such):**
-- **If 3′ is admitted as the step-1 candidate:** no new producer code is identified as missing. What's missing is **P7 inputs plus a real-input scoring run**: the four private ports at the pinned runtime digests; `effective_inputs.json` at `9d4d4e1d…`; the four M15 panels matching `SHA256SUMS`; and adapter parity at protected and adds-off sizes. The [Stage-2 plan](../../superpowers/plans/2026-09-14-stage2-runtime-integration.md) line 21 records export "collection 7/7, acceptance 0/7" as of #382, not re-verified here. The run happens on the operator's primary checkout, under whatever authority the attempt controller requires. **Estimate:** one executor session on that checkout, about 100k–250k tokens, to score P1–P7 with real inputs. P6's hand recompute there needs one real bar-level day.
-- **If 3′ is ruled out of scope:** **TB-S2 emulator + P1–P4 wiring + P5 synchronization + P6 emission**, i.e. building TB-I2 per the spec. **Estimate:** sized by the existing analogue, about 1.2k lines of engine and about 1k lines of tests (`qualification/{replay,paths,blocks,sessions,runner,clock,panel,model}.py`; four test files). Roughly 3–6 agent sessions, 0.5M–1.5M tokens, plus the same P7 inputs. Duplicating 3′ would be the main cost risk.
+**Smallest missing set: candidate 3′ + its P7 inputs.** No producer code is identified as missing. What's missing, in order of lead time:
+1. **Source-instant schedule execution evidence**, or a ratified convention replacing it: the recorded blocker. It needs either finer-than-M15 historical data (no feed purchase is authorized; Databento is retired with no approved replacement, per AGENTS.md "Data source disposition") or an operator-ratified interpolation/model amendment. This is a decision or acquisition, not agent work, so no token estimate is given for it.
+2. **The reviewed source calendar, population index, startup policy and cost model** as retained, reviewed bytes. [T10](2026-09-21-tradeify-t10-source-and-freeze-packet.md) (source and freeze packet) is the packet on record for source/calendar acceptance.
+3. **Private inputs verified against their public pins**: the four ports, effective inputs and the four M15 panels. Also TB-A adapter parity at protected and adds-off sizes; the [Stage-2 plan](../../superpowers/plans/2026-09-14-stage2-runtime-integration.md) line 21 records exports "collection 7/7, acceptance 0/7" as of #382, not re-verified here.
+
+**Build estimate (an estimate, not a measurement):** once items 1–3 exist, scoring P7 and running P6's hand recompute on one real bar-level day is **one executor session on the operator's primary checkout, about 100k–250k tokens**, under whatever authority the attempt controller requires. The TB-S2 emulator route (candidate 2) is no longer the cheaper path. Rebuilding its synchronization would duplicate 3′, roughly 1.2k lines of engine and 1k lines of tests (sized by 3′ itself), and it would still need items 1–3.
 
 **Owed to the coordinator:**
-1. The premise ruling on 3′.
-2. The D-T00 grounds ("the only in-repo replay artifact is the TB-S2 emulator") and the amendment §5 audit hook (`ls lab/analysis/c1/tradeify_book_replay_2026-09/`) are stale with respect to 3′. This executor edits only §7, so both are left for the coordinator.
+1. Acceptance of this return. The §3.3 hold was lifted by the operator's instruction rather than a coordinator ruling.
+2. The D-T00 grounds ("the only in-repo replay artifact is the TB-S2 emulator") and the amendment §5 audit hook (`ls lab/analysis/c1/tradeify_book_replay_2026-09/`) are stale with respect to 3′, and the handoffs README still lists T00 as "(ready, not dispatched)". This executor edits only §7, so all three are left for the coordinator.
 
-### 7.6 P6 probe source (synthetic; no screen, no MC; run as R4)
+### 7.6 Probe sources (synthetic; no screen, no MC)
+
+**R4, the P6 probe on candidate 4a:**
 
 ```python
 import sys, numpy as np, pandas as pd
@@ -160,8 +183,87 @@ simulate_path(realized.reshape(-1, 1), 0.01, 1.0, 3, intraday_low=100_000.0 + lo
 simulate_path(realized.reshape(-1, 1), 0.01, 1.0, 3, intraday_low=low[:-1])      # ValueError (horizon)
 ```
 
+**R6, the P6 probe on candidate 3′** (imports the fixtures of `tests/ops/qualification/test_replay.py`):
+
+```python
+"""T00 step-1 P6 probe for candidate 3' (synthetic fixtures only; no screen, no MC population)."""
+import hashlib, sys
+sys.path[:0] = ["tests/ops/qualification", "ops", "core"]
+import numpy as np
+import pytest
+from test_replay import engine, path_session, first_entry
+from c1_rail.qualification.sessions import session_arrays
+from c1_rail.qualification.runner import evaluate_replay
+from mc.simulation import EvaluationState, simulate_path
+
+
+def test_p6_qualification_emitted_series():
+    # Three contiguous path sessions; ORB and Vanguard enter once (bar close) in session 0.
+    replay, _ = engine({"orb_mnq_v7": first_entry, "vanguard_mgc": first_entry})
+    result = replay.run((path_session(0), path_session(1), path_session(2)))
+    pnl, low = session_arrays(result.sessions)
+    print("emitted intraday_low:", low.tolist(), "pnl:", pnl.ravel().tolist())
+    # Hand recompute, session 0 from the fixture bars: entry fill at bar-1 close 100
+    # (close-only lifetime -> 0 on the entry bar); bar 2 = (100, 110, 90, 100), long adverse at the
+    # low: ORB 1 x (90-100) x pv 1 = -10; Vanguard 1 x (90-100) x pv 1 = -10; summed, no netting = -20.
+    assert low[0] == -20.0 and low[1] == 0.0 and low[2] == 0.0
+    state = EvaluationState(100000, 100000, 100000, 0, 0)
+    # (a) the producer's own consumer path: session_arrays -> evaluate_replay -> simulate_path
+    print("evaluate_replay ->", evaluate_replay(result, initial_state=state))
+    # (b) the kernel's validation directly, dd_scale=1.0 as the runner passes it
+    print("simulate_path ->", simulate_path(pnl, 0.01, 1.0, len(low), intraday_low=low, initial_state=state, starting_equity=100000.0))
+    with pytest.raises(ValueError, match="<= 0.0"):
+        simulate_path(pnl, 0.01, 1.0, len(low), intraday_low=100000.0 + low, initial_state=state, starting_equity=100000.0)
+    with pytest.raises(ValueError, match="cover the horizon"):
+        simulate_path(pnl, 0.01, 1.0, len(low), intraday_low=low[:-1], initial_state=state, starting_equity=100000.0)
+    print("emitted_sha256:", hashlib.sha256(np.asarray(low, dtype="<f8").tobytes()).hexdigest())
+```
+
+**R7, the P2 probe on candidate 3′:**
+
+```python
+"""T00 step-1 P2 probe for candidate 3': ORB adds off while protected, on the replay (synthetic)."""
+import sys
+sys.path[:0] = ["tests/ops/qualification", "ops", "core"]
+from test_replay import engine, path_session, entry
+from c1_signal_daemon.book_protocol import OrderIntent, Side, FillTiming
+from c1_rail.qualification.replay import Instrument
+from c1_rail.book_policy import BOOK_LEGS
+
+
+def run(loss):
+    # Session 0: ORB base entry, then (loss=True) a 20-point drop at pv 100 -> -2000 = 2% of 100k.
+    # Session 1: ORB base entry on its first bar, add on its second bar.
+    def emit(a, b):
+        n = len(a.bars)
+        if n in (1, 4):
+            return entry(a, b)
+        if n == 5:
+            return [OrderIntent("add1", a.leg_id, "add", Side.BUY, 1, timing=FillTiming.THIS_CLOSE, bar_time=b.ts)]
+        return []
+    inst = {s.leg_id: Instrument(1, 100, 0, 0) for s in BOOK_LEGS}
+    p0 = [(100, 100, 100, 100), (100, 100, 80, 80)] if loss else [(100, 100, 100, 100), (100, 100, 100, 100)]
+    last = p0[-1][-1]
+    p1 = [(last,) * 4] * 4
+    replay, adapters = engine({"orb_mnq_v7": emit}, instruments=inst, quotes=lambda *args: last)
+    result = replay.run((path_session(0, prices=p0), path_session(1, prices=p1)))
+    fb = adapters["orb_mnq_v7"].feedback
+    adds = [e.fill.qty for e in fb if e.fill and e.fill.kind == "add"]
+    rejects = [e.detail for e in fb if e.event == "reject"]
+    return [m.value for m in adapters["orb_mnq_v7"].modes], adds, rejects, [r.pnl for r in result.sessions]
+
+
+def test_p2_orb_add_refused_only_when_protected():
+    normal = run(loss=False)
+    protected = run(loss=True)
+    print("control (no loss):", normal)
+    print("after 2% loss   :", protected)
+    assert normal[0] == ["normal", "normal"] and normal[1] == [1] and not normal[2]
+    assert protected[0] == ["normal", "protected"] and protected[1] == [] and "zero policy quantity" in protected[2]
+```
+
 ### 7.7 Condition 4, restated for the operator
 
-**Is T00's screen §4 falsifier evidence for the 2026-11-08 trigger?** If yes, its ceiling, tiers and dating follow the four-firm ADR §4 as frozen. If no, the falsifier needs its own dated re-MC before 2026-11-08, regardless of T00. Step 1 does not bear on this ruling. No step-2 recommendation is made: the table supports none until the coordinator rules on 3′ and P7 is scored with real inputs.
+**Is T00's screen §4 falsifier evidence for the 2026-11-08 trigger?** If yes, its ceiling, tiers and dating follow the four-firm ADR §4 as frozen. If no, the falsifier needs its own dated re-MC before 2026-11-08, regardless of T00. Step 1 does not bear on this ruling. No step-2 recommendation is made: the table supports none until candidate 3′ meets P7 with real inputs.
 
 Not done, as scoped: no producer was built or patched; no screen, MC or re-MC was run; no pre-registration was drafted; no private artifact, account figure or Pine was committed; the seven-entry menu was not scored.
