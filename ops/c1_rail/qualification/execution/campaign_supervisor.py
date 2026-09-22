@@ -1543,10 +1543,7 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
         if (resumed < RESUME_SIGNAL_SENDS and init_image is not None
                 and _interpreter_image(*init_image) and init_image[0] == READINESS_TOKEN):
             signals = _signal_state(next(iter(seen)))
-            if signals is not None and (int(signals[1], 16) or int(signals[2], 16)):
-                # An all-zero mask pair is a dying or reaped process (the g5
-                # unit exits seconds after consuming its resume); there is no
-                # live target to signal and nothing attributable to retain.
+            if signals is not None:
                 try:
                     _guardian_signal_unit(unit, 'SIGUSR1')
                 except (OSError, ValueError):
@@ -1719,15 +1716,28 @@ def _signal_state(pid_text):
     every thread) and SigCgt bit 9 set (the no-op handler installed by
     bootstrap before any thread existed). That is the evidence the mechanism
     question needs when a send turns out lethal.
+
+    A dead or exiting target reports None, for every payload role: a zombie
+    (/proc state Z, its tables already zeroed) or an all-zero SigBlk/SigCgt/
+    SigIgn triple cannot be a live payload -- bootstrap installs the handler
+    before anything else and only block_resume_signal writes the readiness
+    token, so a token-bearing comm is causally downstream of a nonzero SigCgt.
+    Nothing is sent into, and no RESUMED image is retained for, such a
+    target; the invariant then holds for every retained send without
+    tolerating a dead image.
     """
     try:
         status = Path('/proc/' + pid_text + '/status').read_text()
         fields = dict(line.split(':', 1) for line in status.splitlines()
-                      if line.split(':', 1)[0] in ('Threads', 'SigBlk', 'SigCgt'))
-        return (int(fields['Threads'].strip()),
-                _bounded_hex_mask(fields['SigBlk'].strip()),
-                _bounded_hex_mask(fields['SigCgt'].strip()))
-    except (OSError, ValueError, KeyError):
+                      if line.split(':', 1)[0] in ('Threads', 'SigBlk', 'SigCgt', 'SigIgn', 'State'))
+        state = fields['State'].strip().split()[0]
+        blk = _bounded_hex_mask(fields['SigBlk'].strip())
+        cgt = _bounded_hex_mask(fields['SigCgt'].strip())
+        ign = _bounded_hex_mask(fields['SigIgn'].strip())
+        if state == 'Z' or not (int(blk, 16) or int(cgt, 16) or int(ign, 16)):
+            return None
+        return (int(fields['Threads'].strip()), blk, cgt)
+    except (OSError, ValueError, KeyError, IndexError):
         return None
 
 
