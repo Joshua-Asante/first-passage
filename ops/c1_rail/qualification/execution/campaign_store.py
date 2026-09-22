@@ -488,9 +488,13 @@ class CheckpointStoreMixin:
             if (candidate['snapshot']['snapshot_sha256'] != sha256(bytes(row[1]))
                     or candidate['snapshot']['campaign_revision'] != persisted_snapshot['campaign_revision']):
                 raise ValueError('assessment snapshot identity differs')
-            # Freshness: the only authority changes since the persisted T1
-            # snapshot may be this intent's own CAPTURED/SIGNING_INTENT events;
-            # anything else (VOID, recovery, another work) refuses the commit.
+            # Freshness: since the persisted T1 snapshot's head, no FOREIGN
+            # authority may have changed. The intent's own CAPTURED/SIGNING_
+            # INTENT events are authority events by construction, and the exact
+            # redelivery path (the retry work's reserve/start/run/settle and
+            # the dispatch bookkeeping) is non-authority by construction -- the
+            # walk judges each interim event by its own recorded authority flag
+            # plus the intent kinds, and refuses anything else.
             head = state['event_head']
             guard = 0
             while head != persisted_snapshot['event_head']:
@@ -498,8 +502,8 @@ class CheckpointStoreMixin:
                                            'WHERE attempt_id=? AND sha256=?', (attempt_id, head)).fetchone()
                 if event is None or (guard := guard + 1) > 64:
                     raise ValueError('assessment snapshot identity differs')
-                if parse_canonical_json(bytes(event[0]), label='interim event')['kind'] not in (
-                        'CAPTURED', 'SIGNING_INTENT', 'CHECKPOINT_INTENT'):
+                interim = parse_canonical_json(bytes(event[0]), label='interim event')
+                if interim['kind'] not in ('CAPTURED', 'SIGNING_INTENT', 'CHECKPOINT_INTENT') and interim['authority']:
                     raise ValueError('assessment snapshot identity differs')
                 head = event[1]
             if (candidate['capture']['result_sha256'] != family.get('result_sha256')

@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-19
+**Last curated:** 2026-09-22
 
 Current priorities, dormant cross-session work, and outstanding obligations.
 Read the queue first, then the linked executable plan; campaign records own
@@ -94,7 +94,7 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   recurring schedule; record coverage only when it is
   attested; `daily-repo-truth-sync` reads this board's dated obligations.
 
-### Monthly — recurring (rolling; next deadline **2026-09-21**)
+### Monthly — recurring (rolling; next deadline **2026-10-21**)
 
 - **Subscription reconfirm:** recheck [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md)
   rows d11–d18, record confirmation even when unchanged, and resolve Fly.io/Tradeify
