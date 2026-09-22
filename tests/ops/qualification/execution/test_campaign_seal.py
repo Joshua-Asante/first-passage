@@ -55,9 +55,9 @@ def seal_intent(attempt, *, result_bytes, authentication_bytes, receipt_bytes,
 
 
 def seal_eligible_scene(tmp_path, monkeypatch):
-    """committed_pass plus the SEAL reservation and the durable T1 intent
-    (the intent binds the live release/domain digests, as request_seal builds
-    it)."""
+    """committed_pass plus the SEAL reservation (with the guardian's real
+    start transition) driven to RUNNING, and the durable T1 intent (the
+    intent binds the live release/domain digests, as request_seal builds it)."""
     from result_fixture import result_context
     instance, double, result_bytes, authentication, receipt_bytes = committed_pass(
         tmp_path, monkeypatch)
@@ -67,8 +67,20 @@ def seal_eligible_scene(tmp_path, monkeypatch):
     clock_doc = json.loads(supervisor.observe_campaign_clock())
     reservation = encoded(dict(limits=state['profile']['phases']['SEAL'],
                                clock=clock_doc, input_sha256=sha256(b'seal-input')))
+    scopes = supervisor.work_enrollment('host1', instance.attempt, 'swork')
+    start = encoded(dict(schema='qualification_campaign_work_transition/v1',
+        attempt_id=instance.attempt, work_id='swork', state='START_INTENT',
+        clock=clock_doc, data=dict(campaign_scope_id=scopes['campaign_slice'],
+                                   work_scope_id=scopes['payload_slice'])))
     seals.reserve_seal_work(instance.attempt, 'swork', reservation,
-                            expected_revision=state['authority_revision'])
+                            expected_revision=state['authority_revision'],
+                            start_transition_bytes=start)
+    state = json.loads(seals.result_state_bytes(instance.attempt))
+    running = encoded(dict(schema='qualification_campaign_work_transition/v1',
+        attempt_id=instance.attempt, work_id='swork', state='RUNNING',
+        clock=clock_doc, data={}))
+    seals.record_result_transition(instance.attempt, 'swork', running,
+                                   expected_revision=state['authority_revision'])
     context = result_context(double, instance.attempt)
     intent = seal_intent(instance.attempt, result_bytes=result_bytes,
                          authentication_bytes=authentication,
@@ -76,6 +88,34 @@ def seal_eligible_scene(tmp_path, monkeypatch):
                          release_sha256=sha256(double.instance.release),
                          domain_sha256=context.domain.sha256)
     return instance, double, seals, intent, result_bytes, authentication, receipt_bytes
+
+
+def seal_unit_scene(tmp_path, monkeypatch):
+    """seal_eligible_scene with the qseal work's supervision facts: the
+    enrollment and one alive payload-scope PROCESS identity, exactly as the
+    guardian retains them for the unit."""
+    instance, double, seals, intent, result_bytes, authentication, receipt = (
+        seal_eligible_scene(tmp_path, monkeypatch))
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    scopes = supervisor.work_enrollment('host1', instance.attempt, 'swork')
+    seals.retain_result_enrollment(encoded(dict(
+        schema='qualification_campaign_supervision/v1', host_run_id='host1',
+        attempt_id=instance.attempt, work_id='swork',
+        manifest_bytes_b64=base64.b64encode(encoded(dict(
+            # The manifest role WORK_ROLES knows at this revision for the
+            # qseal unit; the seam registers 'seal' beside it.
+            schema='qualification_campaign_work_manifest/v1',
+            attempt_id=instance.attempt, work_id='swork', role='probe_seal',
+            probe='noop'))).decode('ascii'),
+        scopes=scopes)))
+    seals.retain_result_supervision_event(encoded(dict(
+        schema='qualification_campaign_supervision_event/v2',
+        attempt_id=instance.attempt, work_id='swork', kind='PROCESS',
+        clock=json.loads(supervisor.observe_campaign_clock()),
+        data=dict(pid=4243, start_ticks=99, uid=7,
+                  cgroup='/fpq/' + scopes['payload_slice'] + '/payload-scope',
+                  comm='fpq-armed', exe=''))))
+    return instance, double, seals, intent, result_bytes, authentication, receipt
 
 
 def sign_like_qseal(double, intent, result_bytes, authentication, receipt_bytes):
@@ -263,3 +303,60 @@ def test_seal_operations_shape():
         campaign_seal.parse_seal_operation(encoded(dict(
             schema='qualification_campaign_request/v2', operation='SIGN_COMMITTED_PASS',
             attempt_id='a1')))
+
+
+def test_committed_seal_work_settles_within_budget_and_completes(tmp_path, monkeypatch):
+    """The committing SEAL work settles after T2 and completes in the state
+    its own commit produced (S3's a8a983e rule, PR #455 review, carried to
+    T05): SEALED_PASS once the enum seam lands; on frozen bytes the budget
+    snapshot keeps the statistical predecessor N2_READY."""
+    from result_fixture import complete_phase_work, settle_phase_work
+    instance, double, seals, intent, result_bytes, authentication, receipt = (
+        seal_unit_scene(tmp_path, monkeypatch))
+    revision = json.loads(seals.result_state_bytes(instance.attempt))['authority_revision']
+    seals.prepare_seal_intent(instance.attempt, intent, expected_revision=revision)
+    signature = sign_like_qseal(double, intent, result_bytes, authentication, receipt)
+    json.loads(seals.commit_campaign_seal(instance.attempt, intent, signature, now=NOW))
+    state = settle_phase_work(seals, instance.attempt, 'swork', 'SEAL')
+    assert state['state'] == 'N2_READY'
+    state = complete_phase_work(seals, instance.attempt, 'swork')
+    assert state['state'] == 'N2_READY'
+    assert next(w for w in state['works'] if w['work_id'] == 'swork')['state'] == 'COMPLETED'
+    view = json.loads(campaign_seal.inspect_seal(double.campaigns, instance.attempt))
+    assert view['seal_state'] == 'SEALED' and view['receipt'] is not None
+
+
+def test_committed_seal_overrun_blocks_the_sealed_pass(tmp_path, monkeypatch):
+    """An overrun observed when the qseal work settles after T2 permanently
+    blocks authority (spec 2.5 via S3's a8a983e): SEALED_PASS becomes
+    BUDGET_EXHAUSTED, the committing work cannot complete, no new SEAL
+    reservation is granted, and the seal receipt survives as history."""
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    from result_fixture import complete_phase_work, settle_phase_work
+    instance, double, seals, intent, result_bytes, authentication, receipt = (
+        seal_unit_scene(tmp_path, monkeypatch))
+    revision = json.loads(seals.result_state_bytes(instance.attempt))['authority_revision']
+    seals.prepare_seal_intent(instance.attempt, intent, expected_revision=revision)
+    signature = sign_like_qseal(double, intent, result_bytes, authentication, receipt)
+    first = json.loads(seals.commit_campaign_seal(instance.attempt, intent, signature,
+                                                  now=NOW))
+    limit = next(w for w in json.loads(
+        seals.result_state_bytes(instance.attempt))['works']
+        if w['work_id'] == 'swork')['limits']['cpu_ns']
+    state = settle_phase_work(seals, instance.attempt, 'swork', 'SEAL', cpu=limit + 1)
+    assert state['state'] == 'BUDGET_EXHAUSTED'
+    with pytest.raises(ValueError, match='terminal campaign budget'):
+        complete_phase_work(seals, instance.attempt, 'swork')
+    retry = json.loads(seals.commit_campaign_seal(instance.attempt, intent, signature,
+                                                  now=NOW))
+    assert retry['receipt'] == first['receipt'] and retry['historical'] is True
+    assert seals.seal_eligibility(instance.attempt) == dict(
+        eligible=False, reason='BUDGET_EXHAUSTED', state='BUDGET_EXHAUSTED')
+    # The ended authority grants no new SEAL reservation.
+    state = json.loads(seals.result_state_bytes(instance.attempt))
+    reservation = encoded(dict(limits=state['profile']['phases']['SEAL'],
+                               clock=json.loads(supervisor.observe_campaign_clock()),
+                               input_sha256=sha256(b'seal-input-2')))
+    with pytest.raises(ValueError, match='seal predecessor refuses: BUDGET_EXHAUSTED'):
+        seals.reserve_seal_work(instance.attempt, 'swork2', reservation,
+                                expected_revision=state['authority_revision'])

@@ -26,7 +26,8 @@ from c1_rail.qualification.execution.campaign_store import CampaignStore
 from c1_rail.qualification.execution.g5_result import _authentication_core, _sign_authentication
 from c1_rail.qualification.execution.protocol import sha256
 
-from result_fixture import (G5_UID, build_candidate, commit_request, scene,
+from result_fixture import (G5_UID, build_candidate, commit_request,
+                            complete_phase_work, scene, settle_phase_work,
                             sign_candidate, stage_authentication)
 
 NOW = datetime(2026, 9, 21, tzinfo=timezone.utc)
@@ -382,6 +383,49 @@ def test_run_result_g5_signature_matches_the_n1_g5_body():
     assert inspect.signature(campaign_result.run_result_g5) == inspect.signature(_run_n1_g5)
     spec = campaign_result.run_result_g5
     assert spec.__module__ == 'c1_rail.qualification.execution.campaign_result'
+
+
+@pytest.mark.parametrize('n1_decision,through,frozen', [
+    ('CONTINUE', 'PART_A', 'N2_READY'), ('FAILURE', None, 'N1_FAILED')])
+def test_committed_result_settles_within_budget_and_completes(tmp_path, monkeypatch,
+                                                              n1_decision, through, frozen):
+    """The committing RESULT work settles after T2 and completes in the state
+    its own commit produced (S3's a8a983e rule, PR #455 review, carried to
+    T05): on frozen bytes the budget snapshot keeps the statistical
+    predecessor -- N2_READY/N1_FAILED here, the F3 terminal names once S4/S5
+    land, RESULT_COMMITTED_{PASS,FAIL} after the enum seam."""
+    instance, double, snapshot, candidate, authentication, request = prepared(
+        tmp_path, monkeypatch, n1_decision=n1_decision, through=through)
+    json.loads(double.handle_result_request(G5_UID, request))
+    state = settle_phase_work(double.results, instance.attempt, 'rwork', 'RESULT')
+    assert state['state'] == frozen
+    state = complete_phase_work(double.results, instance.attempt, 'rwork')
+    assert state['state'] == frozen
+    assert next(w for w in state['works'] if w['work_id'] == 'rwork')['state'] == 'COMPLETED'
+
+
+@pytest.mark.parametrize('n1_decision,through', [
+    ('CONTINUE', 'PART_A'), ('FAILURE', None)])
+def test_committed_result_overrun_blocks_the_outcome(tmp_path, monkeypatch,
+                                                     n1_decision, through):
+    """An overrun observed when the RESULT work settles after T2 permanently
+    blocks authority (spec 2.5 via S3's a8a983e): the commit's state becomes
+    BUDGET_EXHAUSTED, the committing work cannot complete, the ended
+    authority never reaches the seal, and the receipt survives as history."""
+    instance, double, snapshot, candidate, authentication, request = prepared(
+        tmp_path, monkeypatch, n1_decision=n1_decision, through=through)
+    first = json.loads(double.handle_result_request(G5_UID, request))
+    limit = next(w for w in json.loads(
+        double.results.result_state_bytes(instance.attempt))['works']
+        if w['work_id'] == 'rwork')['limits']['cpu_ns']
+    state = settle_phase_work(double.results, instance.attempt, 'rwork', 'RESULT',
+                              cpu=limit + 1)
+    assert state['state'] == 'BUDGET_EXHAUSTED'
+    with pytest.raises(ValueError, match='terminal campaign budget'):
+        complete_phase_work(double.results, instance.attempt, 'rwork')
+    retry = json.loads(double.handle_result_request(G5_UID, request))
+    assert retry['receipt'] == first['receipt'] and retry['historical'] is True
+    assert double.results.seal_eligibility(instance.attempt)['eligible'] is False
 
 
 def test_synthetic_predecessors_are_labelled_in_every_record(tmp_path, monkeypatch):

@@ -377,3 +377,33 @@ def stage_authentication(double, authentication_bytes):
     pattern, role result_authentication)."""
     return double.results.stage_result_artifact(
         double.instance.attempt, 'result_authentication', authentication_bytes)
+
+
+def phase_observation(results, attempt, work_id, phase, *, cpu=0):
+    """A guardian settlement observation for a RESULT/SEAL-phase work (the
+    n1.settle shape, phase-parameterized for the T05 phases)."""
+    scopes = supervisor.work_enrollment('host1', attempt, work_id)
+    profile = json.loads(results.result_state_bytes(attempt))['profile']
+    return encoded(dict(schema='qualification_campaign_observation/v2',
+        attempt_id=attempt, work_id=work_id,
+        clock=json.loads(supervisor.observe_campaign_clock()),
+        campaign_scope_id=scopes['campaign_slice'], work_scope_id=scopes['payload_slice'],
+        cpu_ns=cpu, memory_peak_bytes=50, oom_events=0, termination_known=True,
+        orchestration_charge_cpu_ns=profile['orchestration_cpu_ns'][phase]))
+
+
+def settle_phase_work(results, attempt, work_id, phase, *, cpu=0):
+    """The guardian's settlement tail for a T05-phase work (S3's a8a983e
+    shape: the committing work settles after its own T2)."""
+    return json.loads(results.settle_result_work(
+        attempt, work_id, phase_observation(results, attempt, work_id, phase, cpu=cpu)))
+
+
+def complete_phase_work(results, attempt, work_id):
+    """The guardian's COMPLETED tail for a settled signing work."""
+    state = json.loads(results.result_state_bytes(attempt))
+    completed = encoded(dict(schema='qualification_campaign_work_transition/v1',
+        attempt_id=attempt, work_id=work_id, state='COMPLETED',
+        clock=json.loads(supervisor.observe_campaign_clock()), data={}))
+    return json.loads(results.record_result_transition(
+        attempt, work_id, completed, expected_revision=state['authority_revision']))

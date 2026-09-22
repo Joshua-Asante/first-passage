@@ -44,6 +44,25 @@ def seal_row(boundary, attempt):
     return None if row is None else json.loads(bytes(row[0]))
 
 
+def committing_work_completed(boundary, attempt, work_id, progressions, seconds=120):
+    """The result/seal work that committed while its unit still ran settles
+    afterwards and completes in the state its own commit produced (S3's
+    a8a983e rule, PR #455 review, carried to T05); a resource-terminal state
+    here would mean the settlement ended authority. ``progressions`` names
+    the commit state and its frozen statistical stand-in."""
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        state = budget(boundary, attempt)
+        row = work(state, work_id)
+        if row['state'] == 'COMPLETED':
+            assert state['state'] in progressions, state
+            assert row['observation_bytes_b64'] is not None and row['charge_cpu_ns'] <= row['limits']['cpu_ns'], row
+            return state
+        assert state['state'] in progressions, state
+        time.sleep(0.1)
+    raise AssertionError('the committing ' + work_id + ' work never completed')
+
+
 def test_n1_fail_result_commits_through_the_real_unit(real_boundary):
     """E02's result leg: a genuine terminal N1 failure reaches an authenticated
     RESULT_COMMITTED_FAIL through the real result-G5 unit (S3 custody alone --
@@ -59,6 +78,10 @@ def test_n1_fail_result_commits_through_the_real_unit(real_boundary):
     family = result_family(boundary, attempt)
     host.save(boundary.output / (attempt + '-result.json'), family)
     assert family == dict(state='COMMITTED', outcome='FAIL'), family
+    # The committing result work settles after T2 and completes in the state
+    # its own commit produced (N1_FAILED, or RESULT_COMMITTED_FAIL after the
+    # enum seam); a terminal state here would mean the settlement overran.
+    committing_work_completed(boundary, attempt, 'rwork', ('N1_FAILED', 'RESULT_COMMITTED_FAIL'))
     # A FAIL result never reaches the seal authority (F3).
     assert seal_row(boundary, attempt) is None
 
@@ -88,6 +111,12 @@ def test_full_pass_result_and_seal_through_the_real_processes(real_boundary):
     family = result_family(boundary, attempt)
     host.save(boundary.output / (attempt + '-result.json'), family)
     assert family == dict(state='COMMITTED', outcome='PASS'), family
+    # The committing result work completes in the state its own commit
+    # produced (FULL_PASS_READY on frozen bytes, the commit/seal states after
+    # the enum seam); the seal may land while it settles, so every
+    # post-commit name is admissible while polling.
+    committing_work_completed(boundary, attempt, 'rwork',
+                              ('FULL_PASS_READY', 'RESULT_COMMITTED_PASS', 'SEALED_PASS'))
     # REQUEST_SEAL travels as the operator peer; the integrated acceptance
     # driver (T06/S8) owns that transport. At acceptance the seal lands as:
     receipt = None
@@ -99,6 +128,10 @@ def test_full_pass_result_and_seal_through_the_real_processes(real_boundary):
         time.sleep(.1)
     host.save(boundary.output / (attempt + '-seal.json'), receipt)
     assert receipt is not None and receipt['schema'] == 'qualification_campaign_seal_receipt/v1'
+    # The committing qseal work completes the same way, in SEALED_PASS (or
+    # its frozen stand-in) with its charge inside the SEAL reservation.
+    committing_work_completed(boundary, attempt, 'swork',
+                              ('FULL_PASS_READY', 'SEALED_PASS', 'RESULT_COMMITTED_PASS'))
 
 
 def test_qseal_runs_on_its_own_principal(real_boundary):
