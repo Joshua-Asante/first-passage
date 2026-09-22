@@ -61,15 +61,15 @@ Adversarial review stays (it found the two P2 findings and three resume races in
 
 ## 4. Operator decisions this amendment needs (tick to ratify)
 
-- [ ] **D-T00** — authorize T00 step 1 (producer inventory, may return INSUFFICIENT); ratify any pre-registration only after step 1 reports a faithful producer with a synchronized intraday series.
-- [ ] **D-feed** — name the production feed provider (or the funding gate that must clear first); T14 provider-specific work is blocked until this is ticked.
-- [ ] **D-broker** — grant the actual Tradovate/CrossTrade order-path access T09 needs (no agent places a trade; the adapter is qualified against real request/fill identities under the existing disarmed posture).
-- [ ] **D-codex** — fund the Codex PR bot, or accept the in-session independent reviewer as the standing review for every packet.
-- [ ] **D-sequence** — accept the T05 parallel build behind the explicit interface freeze and the T06 fold-with-preserved-work.
+- [x] **D-T00** — authorize T00 step 1 (producer inventory, may return INSUFFICIENT); ratify any pre-registration only after step 1 reports a faithful producer with a synchronized intraday series. **— RULED 2026-09-22 (adopted as recommended): TICKED for step 1 only, under conditions 1–4 of the addendum row; see Addendum 2026-09-22.**
+- [x] **D-feed** — name the production feed provider (or the funding gate that must clear first); T14 provider-specific work is blocked until this is ticked. **— RULED 2026-09-22 (adopted as recommended): TICKED as a gate — provider-specific work opens on T00 verdict ∉ {INSUFFICIENT, NO-GO-evidence} AND the T10 phase-2 F1 packet; A′ shortlisted, not applied; see Addendum 2026-09-22.**
+- [x] **D-broker** — grant the actual Tradovate/CrossTrade order-path access T09 needs (no agent places a trade; the adapter is qualified against real request/fill identities under the existing disarmed posture). **— RULED 2026-09-22 (adopted as recommended): TICKED conditionally — granted automatically on T08 R3 = fence exists, void on R3 = none; read-only scope; every drill separately authorized; see Addendum 2026-09-22.**
+- [x] **D-codex** — fund the Codex PR bot, or accept the in-session independent reviewer as the standing review for every packet. **— RULED 2026-09-22 (adopted as recommended): TICKED as the hybrid — separate-session refute-first review per packet; cross-vendor review at acceptance gates only; PR bot not funded; see Addendum 2026-09-22.**
+- [x] **D-sequence** — accept the T05 parallel build behind the explicit interface freeze and the T06 fold-with-preserved-work. **— RULED 2026-09-22 (adopted as recommended): TICKED with two conditions — versioned T02 freeze; E01–E12 ownership table gates T02's checkpoint; see Addendum 2026-09-22.**
 
 ## 5. Provisional timeline
 
-No measured critical path exists yet; this is an estimate to be replaced by measured packet durations. At the S2 pace, with T01b's diagnostic mode inside T02 and T05 in parallel, the spine T02–T06 is roughly three weeks of agent work, and T11, T12 (n3 machinery), T09/T14 integration and T15–T17 remain substantial work beyond it. The external tracks are bounded by the decisions in section 4, not by tokens. The four-firm program falsifier is dated 2026-11-08: a first attended Tradeify session before that date is plausible only if D-feed and D-broker are decided within the next week and nothing in T07/T08 invalidates the route. T00's verdict changes the investment decision, not the schedule.
+No measured critical path exists yet; this is an estimate to be replaced by measured packet durations. At the S2 pace, with T01b's diagnostic mode inside T02 and T05 in parallel, the spine T02–T06 is roughly three weeks of agent work, and T11, T12 (n3 machinery), T09/T14 integration and T15–T17 remain substantial work beyond it. The external tracks are bounded by the decisions in section 4, not by tokens. The four-firm program falsifier is dated 2026-11-08 and is discharged or fired by a dated lab re-MC of a pre-registered candidate (four-firm ADR §4), not by a live session; its measured state is 0-of-4 clearers. D-T00 is the only §4 decision that can bear on that clock, and only if the operator rules T00's screen to be falsifier evidence (Addendum 2026-09-22, D-T00 condition 4); otherwise the falsifier needs its own dated re-MC before 2026-11-08 regardless of §4. D-feed and D-broker set the pace of a first attended session, which the falsifier does not require; that session is bounded by the §4 decisions and by T07/T08's verdicts, not by 2026-11-08. *(Revised in place 2026-09-22 on ratification of Addendum 2026-09-22; prior sentence preserved in its §3.)* T00's verdict changes the investment decision, not the schedule.
 
 ## 6. Verification of this planning artifact
 
@@ -87,9 +87,9 @@ No new test-pass or capability claim is made. T00 is a parallel investment decis
 | T05's freeze must include transaction ownership, VOID serialization, signing recovery, budget accounting | | **Accepted**; written into T05. |
 | One-review ceiling must not leave fixes unreviewed; retain the B0 architecture | | **Accepted**; both written into the review paragraph. |
 | Three-week estimate is provisional | | **Accepted**; section 5 relabelled and scoped. |
-## Addendum 2026-09-22 — §4 dispositions (RECOMMENDED, awaiting operator ruling) and a proposed §5 correction
+## Addendum 2026-09-22 — §4 dispositions (RATIFIED 2026-09-22 — all five adopted as recommended) and the §5 correction (applied)
 
-> **Status: RECOMMENDATION.** Nothing in this addendum ticks a §4 box or grants any authority — no GO, no spend, no access, no dispatch. Authored by the coordinating session after the merge of this amendment (PR #448, `528b3c9`) at the operator's request. **Ratify** by entering a dated, verbatim ruling in each row's *Operator ruling* line and merging; then tick the §4 boxes whose ruling is TICK, with the meaning the row defines. Until then §4 stands as merged (all five unticked) and the 09-20 checklist plus this amendment govern.
+> **Status: RATIFIED 2026-09-22.** Operator ruling, in session 2026-09-22, verbatim: **"Adopt all five as recommended."** Each row's *Wording to adopt* is now in force with the meaning that row defines; the §4 boxes are ticked with a dated pointer each, and the §3 correction is applied to §5 (prior sentence preserved in §3). What this ratification grants is exactly the five wordings and nothing wider: T00 **step 1 only** (no step-2 pre-registration, no screen run); D-feed as a **gate** (no provider named, no signup, no credential staging); D-broker **conditional on T08 R3** (no access granted yet); D-codex as the **hybrid** (no bot funding); D-sequence with its two conditions. No deployment, arming, activation, statistical dispatch or spend is granted; T00 step 1 is authorized, not dispatched — dispatch is the coordinating task's separate act under §58. The recommendation text below is preserved as authored. Prior Status line, for the record: "RECOMMENDATION. Nothing in this addendum ticks a §4 box or grants any authority."
 
 ### 0. Reads (Rule 0). Anchors are `git log -1 --format='%h %as' -- <path>` on `main@528b3c9`.
 
@@ -127,7 +127,7 @@ Each row: recommended disposition · grounds · exact wording to adopt on ratifi
 
 **Wording to adopt.** "D-T00 TICKED for step 1 only. Step 1's producer test uses `simulate_path`'s definition of `intraday_low` — a per-day minimum-equity *excursion* from the day's opening equity, entries `<= 0`, unscaled (`core/mc/simulation.py:325–345`) — as a named acceptance criterion; a producer emitting absolute lows fails it. Step 1 states, per expression of the selected four, what the producer reproduces of integer sizing / ORB base-add / capacity / takeover. Step 2's pre-registration cites `2026-08-26-prop-survivor-scoring-prereg-v2.md` and either adopts it or states why the selected book falls outside it; no second pre-registration for the same falsifier. Condition 4 — the operator rules, before step 2, whether T00's screen is §4 falsifier evidence: if yes, its ceiling, tiers and dating follow the four-firm ADR §4 as frozen; if no, the falsifier needs its own dated re-MC before 2026-11-08 regardless of T00."
 
-**Operator ruling:** _(pending)_
+**Operator ruling:** ADOPTED AS RECOMMENDED — operator, 2026-09-22, in session, verbatim: "Adopt all five as recommended." The *Wording to adopt* above is in force with the meaning this row defines.
 
 #### D-feed — **TICK AS A GATE, not a provider.**
 
@@ -135,7 +135,7 @@ Each row: recommended disposition · grounds · exact wording to adopt on ratifi
 
 **Wording to adopt.** "D-feed TICKED as a gate: provider-specific work opens when **(a)** T00 returns a verdict other than INSUFFICIENT or NO-GO-evidence **and (b)** T10 phase 2 has assembled the F1 packet. A′ remains shortlisted, not applied. T14 provider-neutral work proceeds now and may produce a dated KYC-readiness checklist; no signup, subscription or credential staging before both conditions hold. Whether a refundable deposit counts against the $700 ceiling is an operator reading recorded when (a) and (b) hold, not before."
 
-**Operator ruling:** _(pending)_
+**Operator ruling:** ADOPTED AS RECOMMENDED — operator, 2026-09-22, in session, verbatim: "Adopt all five as recommended." The *Wording to adopt* above is in force with the meaning this row defines.
 
 #### D-broker — **DEFER; make it conditional on T08's R3 verdict.**
 
@@ -143,7 +143,7 @@ Each row: recommended disposition · grounds · exact wording to adopt on ratifi
 
 **Wording to adopt.** "D-broker TICKED conditionally: granted automatically when T08 returns R3 = fence exists, and void if T08 returns R3 = none. Scope: read-only request/order/fill/protection history and CrossTrade webhook identities. Every drill carries its own written authorization. No order-capable credential leaves the operator's hands."
 
-**Operator ruling:** _(pending)_
+**Operator ruling:** ADOPTED AS RECOMMENDED — operator, 2026-09-22, in session, verbatim: "Adopt all five as recommended." The *Wording to adopt* above is in force with the meaning this row defines.
 
 #### D-codex — **HYBRID; neither option as written.**
 
@@ -151,7 +151,7 @@ Each row: recommended disposition · grounds · exact wording to adopt on ratifi
 
 **Wording to adopt.** "D-codex TICKED as a hybrid. **(a)** Default per-packet review at return is an in-session independent review in a *separate* session, refute-first, run through `.claude/skills/pre-ratification-adversarial-panel`. **(b)** Cross-vendor review is required at acceptance gates only — each S-slice coordinator acceptance, T06's integrated run, T15's F1 — via the operator-relayed external Codex path that produced the `14a0e28` findings. **(c)** The Codex PR bot is not funded for per-push review; the D-codex row is re-read if (b)'s relay path stops being available."
 
-**Operator ruling:** _(pending)_
+**Operator ruling:** ADOPTED AS RECOMMENDED — operator, 2026-09-22, in session, verbatim: "Adopt all five as recommended." The *Wording to adopt* above is in force with the meaning this row defines.
 
 #### D-sequence — **TICK, with two conditions.**
 
@@ -161,17 +161,17 @@ Each row: recommended disposition · grounds · exact wording to adopt on ratifi
 
 **Citation grounded.** The review paragraph's "dual-executor overlap of 2026-09-20" is recorded: G4's first worker session stopped with uncommitted WIP (`8c764d8`), a second GLM session completed from those edits, and the operator committed the first-round state as `9727d95` (`execution-slices:567`, `:636`). One firing — under AGENTS.md's promotion rule (high-severity or independently recurring) it stays a candidate lesson, not yet a registry entry; capture it in `docs/methodology/lessons/` on a second firing. The one-writer-per-surface rule and condition (1) above stand on it.
 
-**Operator ruling:** _(pending)_
+**Operator ruling:** ADOPTED AS RECOMMENDED — operator, 2026-09-22, in session, verbatim: "Adopt all five as recommended." The *Wording to adopt* above is in force with the meaning this row defines.
 
-### 3. Proposed §5 correction (NOT applied; ratify with the rows above)
+### 3. §5 correction (APPLIED 2026-09-22 with the rows above; prior wording preserved here)
 
-Replace, in §5: *"The four-firm program falsifier is dated 2026-11-08: a first attended Tradeify session before that date is plausible only if D-feed and D-broker are decided within the next week and nothing in T07/T08 invalidates the route."*
+Replaced, in §5 — prior wording: *"The four-firm program falsifier is dated 2026-11-08: a first attended Tradeify session before that date is plausible only if D-feed and D-broker are decided within the next week and nothing in T07/T08 invalidates the route."*
 
 With: *"The four-firm program falsifier is dated 2026-11-08 and is discharged or fired by a dated lab re-MC of a pre-registered candidate (four-firm ADR §4), not by a live session; its measured state is 0-of-4 clearers. D-T00 is the only §4 decision that can bear on that clock, and only if the operator rules T00's screen to be falsifier evidence (Addendum 2026-09-22, D-T00 condition 4); otherwise the falsifier needs its own dated re-MC before 2026-11-08 regardless of §4. D-feed and D-broker set the pace of a first attended session, which the falsifier does not require; that session is bounded by the §4 decisions and by T07/T08's verdicts, not by 2026-11-08."*
 
 ### 4. Boundary — what this addendum does not do
 
-It ticks no §4 box and edits no §4 or §5 text (§3 is a proposal). It grants no GO, spend, access, signup or dispatch; opens no packet (T00, T09, T14 provider-specific, or any other). It changes no frozen definition, threshold, ceiling, allocation, `dd_protection` constant or MC calibration. It records recommendations for the operator's ruling and nothing more.
+As authored (2026-09-22, pre-ratification) it ticked no §4 box and edited no §4 or §5 text. On ratification the same day the §4 boxes were ticked with dated pointers and §3's correction was applied to §5, prior wording preserved in §3. Beyond the five wordings it grants no GO, spend, access, signup or dispatch; opens no packet (T00, T09, T14 provider-specific, or any other). It changes no frozen definition, threshold, ceiling, allocation, `dd_protection` constant or MC calibration. It records recommendations for the operator's ruling and nothing more.
 
 ### 5. Audit hooks
 
@@ -180,10 +180,12 @@ It ticks no §4 box and edits no §4 or §5 text (§3 is a proposal). It grants 
 grep -n "0-of-4" docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md
 # Expect FROZEN / not-yet-exercised until a candidate is scored under it
 grep -n "^\*\*Status:\*\*" docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md
-# Expect five unticked §4 boxes until ruled
+# Expect 0 unticked after ratification 2026-09-22 (5 before it)
 grep -n "^- \[ \] \*\*D-" docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md
-# Rows still awaiting a ruling
-grep -n "Operator ruling:\*\* _(pending)_" docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md
+# Rows still awaiting a ruling — expect 0 after ratification 2026-09-22
+grep -c "^\*\*Operator ruling:\*\* _(pending)_" docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md
+# Ratification pointers on the §4 lines — expect 5
+grep -c "^- \[x\] \*\*D-.*RULED 2026-09-22" docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md
 # The dual-executor record D-sequence cites; expect execution-slices :636 (acceptance) and :567 (continuation-2 return)
 grep -rn -i "dual-executor" docs/methodology/lessons/ docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md
 # Expect "No such file" until TB-I2 exists; a T00 step-1 return claiming an in-repo synchronized producer must change this
