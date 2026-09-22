@@ -32,7 +32,7 @@ def write(path,raw,*,uid=0,gid=None,mode=0o444):
     os.chown(path,uid,uid if gid is None else gid); path.chmod(mode)
 
 
-def install(root,manifest,image,*,diagnostic=False):
+def install(root,manifest,image,*,diagnostic=False,dispatch=False):
     private,keys,registry=fresh_keys(execution_seed=(root/'keys/qexec/TEST_ONLY.key').read_bytes(),
                                    result_seed=(root/'keys/qg5/TEST_ONLY.key').read_bytes())
     roles=manifest['roles']; installation=CODE/'qualification-installation'
@@ -57,10 +57,13 @@ def install(root,manifest,image,*,diagnostic=False):
     profile=json.loads((CODE/'deploy/qualification/test-profile.json').read_bytes())
     if diagnostic:
         # S2 acceptance runs the funded private route, so the diagnostic host
-        # installs the execution-capable revision (profile/v4, release/v4).
-        from c1_rail.qualification.execution.profile import funded_diagnostic_execution_profile
+        # installs the execution-capable revision (profile/v4, release/v4); S3
+        # installs the dispatch revision (profile/v5, release/v5, N1 only).
+        from c1_rail.qualification.execution.profile import (dispatch_diagnostic_execution_profile,
+            funded_diagnostic_execution_profile)
         from tools.qualification_verification import campaign_host
-        profile = funded_diagnostic_execution_profile(encoded(profile))
+        profile = (dispatch_diagnostic_execution_profile(encoded(profile)) if dispatch
+                   else funded_diagnostic_execution_profile(encoded(profile)))
         config.update(schema='qualification_execution_instance/v2', seal_probe_uid=65531)
         campaign_host.install(root,manifest,encoded(profile))
     release=encoded(release_document(CODE,profile,image,keys))
@@ -104,6 +107,7 @@ def main():
     parser.add_argument('operation',choices=['install','prepare','void-approval'])
     parser.add_argument('--manifest',type=Path,required=True)
     parser.add_argument('--diagnostic',action='store_true')
+    parser.add_argument('--dispatch',action='store_true')
     parser.add_argument('--image'); parser.add_argument('--attempt'); parser.add_argument('--idle',action='store_true')
     parser.add_argument('--contract'); parser.add_argument('--reason')
     parser.add_argument('--fault',choices=['stop','exit_zero','cpu','memory','wall'])
@@ -121,7 +125,7 @@ def main():
         approval=approve(subject,private,'VOID_QUALIFICATION_ATTEMPT',contract_sha256=args.contract)
         result=dict(operator_approval_bytes=base64.b64encode(approval).decode())
     else:
-        result=install(root,manifest,args.image,diagnostic=args.diagnostic) if args.operation=='install' else prepare(root,args.attempt,args.idle,
+        result=install(root,manifest,args.image,diagnostic=args.diagnostic,dispatch=args.dispatch) if args.operation=='install' else prepare(root,args.attempt,args.idle,
             fault=args.fault,depth_valid_seconds=args.depth_valid_seconds)
     sys.stdout.buffer.write(encoded(result))
 

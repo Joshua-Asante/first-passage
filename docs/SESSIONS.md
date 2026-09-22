@@ -45,6 +45,17 @@ historical number by merge commit or branch name, never by number alone. Owner:
 ---
 
 
+## 2026-09-22a — `file_lock` on Windows: the lock file needs no writer, and the acquire now waits instead of giving up
+
+- **Focus:** operator-direct: make the Windows bootstrap in `core/lib/file_lock.py::exclusive_file_lock` race-free (the load-timing flake that #451 worked around in the test by pre-warming the lock), then make the Windows acquire wait the way POSIX `flock` does.
+- **Shipped:** [first-passage#453](https://github.com/Joshua-Asante/first-passage/pull/453) (`c8d3590`) then [first-passage#456](https://github.com/Joshua-Asante/first-passage/pull/456) (`bd54d43`). The one-byte lock-file payload is deleted: Windows byte-range locks may cover a region past end-of-file, so byte 0 of a zero-length file is a valid lock object, and concurrent `open("a+b")` calls do not conflict — nothing writes to the lock file any more. The acquire polls `LK_NBLCK` with 0.5 → 20 ms backoff and no time limit; only `EACCES` (probed as the contention code) is retried. The POSIX branch is byte-identical. `tests/core/test_file_lock.py` holds seven tests, each checked to fail against the implementation it guards.
+- **Judgment:** (1) #453's fix — a `mkstemp` + `os.rename` publish — carried a race of its own: while one process's rename lands on the lock path, a sibling's `open()` hits a sharing violation reported as `PermissionError`. A stress harness measured it at 4 of 2,250 child processes (0.18%); the 30/30 pytest loop that certified #453 had exercised about 270 children, roughly a 40% chance of seeing it. #456 therefore deletes the write rather than re-sequencing it. #453 was merged before the defect surfaced, so #456 is a separate follow-up and its description retracts #453's approach. (2) Dropping `LK_LOCK`'s ten-attempt, roughly ten-second give-up was operator-ruled; an 11 s hold test pins the new behaviour, at the cost of 11 s of wall clock per run.
+- **Evidence:** Windows, `./fp.ps1 pytest -q -p no:cacheprovider`: 30/30 loop runs green with `tests/ops/qualification/execution/test_files.py` (22 passed per run); the harness that exposed #453's race ran 200 rounds / 1,800 children under 6-thread CPU load with 0 child failures, 0 lost updates and 0 non-empty lock files. `make check` exit 0 on `bd54d43`.
+- **Open / next:** #451's lock pre-warm in `tests/ops/qualification/execution/test_files.py` no longer does anything; the session that owns that file can remove it. Post-merge hygiene removed 15 clean worktrees whose work was merged (93 → 78; their branches are kept); 13 merged worktrees holding gitignored evidence and 10 with post-merge commits were left for operator review.
+
+---
+
+
 ## 2026-09-20b — `CLAUDE.md` retired; `AGENTS.md` is the single instruction file for every harness
 
 - **Focus:** operator-direct: consolidate the two instruction files. Premise check first: the files were disjoint, not duplicated — `AGENTS.md` (Codex launcher/verification rules) was invisible to Claude Code, which reads only `CLAUDE.md` when one exists, and `CLAUDE.md` was invisible to Codex. Claude Code CLI updated 2.1.263 → 2.1.278 (native `AGENTS.md` reading needs ≥ 2.1.277).

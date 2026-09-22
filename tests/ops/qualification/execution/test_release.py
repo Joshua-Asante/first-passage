@@ -85,3 +85,53 @@ def test_executable_release_refuses_unfunded_profile_or_budget_pairing(tmp_path)
     v3 = json.loads(build_bundle(tmp_path / 'v3', capability='FULL_E1', diagnostic=True)['release'])
     assert parse_release(encoded(v3))['schema'] == 'qualification_execution_release/v3'
     assert schedule_eligibility(v3, parse_profile(encoded(v3['profile']))) is False
+
+# ---- S3 v5 pinned vectors (C1 GO condition b; extended, never replaced) ------
+
+def dispatch_release(tmp_path, **changes):
+    import json
+    from bundle_fixture import build_bundle
+    case = build_bundle(tmp_path / 'staged', capability='FULL_E1', dispatch=True)
+    document = json.loads(case['release'])
+    document.update(changes)
+    return encoded(document)
+
+
+def test_dispatch_release_pairs_dispatch_profile_with_closed_n1_checkpoint(tmp_path):
+    from c1_rail.qualification.execution.release_schema import (parse_release,
+        DISPATCH_DIAGNOSTIC_RELEASE, EXECUTABLE_DIAGNOSTIC_RELEASE)
+    release = parse_release(dispatch_release(tmp_path))
+    assert release['schema'] == DISPATCH_DIAGNOSTIC_RELEASE == 'qualification_execution_release/v5'
+    assert release['profile']['schema'] == 'qualification_execution_profile/v5'
+    assert release['dispatch_enabled'] is True and release['dispatch_checkpoints'] == ['N1']
+    assert release['campaign_budget_profile']['schema'] == 'qualification_campaign_budget_profile/v3'
+    assert release['production_execution'] is False and release['authority_class'] == 'TEST_ONLY'
+
+
+@pytest.mark.parametrize('field,value', [
+    ('production_execution', True), ('authority_class', 'OPERATOR'), ('capability', 'N1_ONLY'),
+    ('dispatch_checkpoints', ['N1', 'N2']), ('dispatch_checkpoints', []),
+    ('dispatch_enabled', False), ('worker_image_digest', 'not-a-digest')])
+def test_dispatch_release_refuses_open_dispatch_facts(tmp_path, field, value):
+    from c1_rail.qualification.execution.release_schema import parse_release
+    with pytest.raises(ValueError):
+        parse_release(dispatch_release(tmp_path, **{field: value}))
+
+
+def test_v4_with_dispatch_enabled_is_still_refused(tmp_path):
+    """D4's refusal is per-literal: a genuine v4 release with dispatch flipped
+    on refuses, and the untouched v4 beside it still parses."""
+    import json
+    from bundle_fixture import build_bundle
+    from c1_rail.qualification.execution.release_schema import parse_release
+    case = build_bundle(tmp_path / 'staged', capability='FULL_E1', funded=True)
+    document = json.loads(case['release'])
+    assert document['schema'] == 'qualification_execution_release/v4'
+    assert document['dispatch_enabled'] is False
+    parse_release(encoded(document))
+    flipped = dict(document, dispatch_enabled=True)
+    with pytest.raises(ValueError):
+        parse_release(encoded(flipped))
+    with_checkpoints = dict(document, dispatch_checkpoints=['N1'])
+    with pytest.raises(ValueError):
+        parse_release(encoded(with_checkpoints))

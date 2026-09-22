@@ -20,6 +20,15 @@ INVARIANT_MANIFEST = ROOT / 'tests/ops/qualification/invariant_manifest.json'
 # group, so the service-metering file runs first on the same fresh host.
 S2_CASES = ('tests/integration/qualification_boundary/test_campaign_service_linux.py',
             'tests/integration/qualification_boundary/test_campaign_supervision_linux.py')
+# S3: the full S2 file set plus the genuine N1 capture/G5 file. The supervision
+# file stays LAST: its final case deliberately contaminates the common memory
+# group (never-reset oom counters on the host parent the guardian polls), which
+# would terminalise every later admission's settlement at oom_events > 0 -- the
+# same ordering constraint that already puts the service-metering file ahead of
+# it. The service file keeps its established first position and the N1 file
+# runs between them; the poll is not baselined. The N1_ONLY --test-only
+# selection is untouched; --s3 is a separate, strictly larger mode.
+S3_CASES = (S2_CASES[0], 'tests/integration/qualification_boundary/test_campaign_n1_linux.py', S2_CASES[1])
 
 
 def require_cleanup(result):
@@ -53,7 +62,9 @@ def main(argv=None):
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--test-only', action='store_true')
     mode.add_argument('--s2', action='store_true', help='targeted diagnostic supervision, never full E1 acceptance')
+    mode.add_argument('--s3', action='store_true', help='S2 supervision plus genuine N1 capture/G5, never full E1 acceptance')
     mode.add_argument('--host-only', action='store_true', help='host readiness, never boundary acceptance')
+    parser.add_argument('--cases', help='diagnostic subset: a -k expression; the record is marked DIAGNOSTIC_SUBSET and can never be acceptance evidence')
     parser.add_argument('--manifest', type=Path)
     parser.add_argument('--instance', type=Path)
     parser.add_argument('--profile', type=Path)
@@ -79,37 +90,61 @@ def main(argv=None):
                     record.begin()
                     if record.data['before'] != manifest['source']:
                         raise ValueError('Candidate source differs from provisioned snapshot')
-                    if args.test_only or args.s2:
+                    if args.test_only or args.s2 or args.s3:
+                        selected_cases = S3_CASES if args.s3 else S2_CASES
                         invariant_bytes = INVARIANT_MANIFEST.read_bytes()
                         all_required = _manifest(invariant_bytes)
-                        required = {node for node in all_required
-                                    if node.startswith(tuple(case+'::' for case in S2_CASES)) == args.s2}
-                        record.data['metadata'].update(acceptance_scope='S2_DIAGNOSTIC_SUPERVISION' if args.s2 else 'N1_ONLY_TEST_ONLY',
+                        if args.s3:
+                            required = {node for node in all_required
+                                        if node.startswith(tuple(case+'::' for case in selected_cases))}
+                        elif args.s2:
+                            required = {node for node in all_required
+                                        if node.startswith(tuple(case+'::' for case in S2_CASES))}
+                        else:
+                            # N1_ONLY (--test-only): every registered node outside the S3
+                            # file set (S3_CASES includes the S2 files). The S3 nodes skip
+                            # here by design, and the manifest validator refuses a
+                            # required node that is skipped or never collected.
+                            required = {node for node in all_required
+                                        if not node.startswith(tuple(case+'::' for case in S3_CASES))}
+                        record.data['metadata'].update(
+                            acceptance_scope=('S3_N1_CAPTURE' if args.s3 else 'S2_DIAGNOSTIC_SUPERVISION' if args.s2 else 'N1_ONLY_TEST_ONLY'),
                             qualification_acceptance='coordinator_review_required',
                             invariant_manifest_sha256=hashlib.sha256(invariant_bytes).hexdigest())
+                        if args.cases is not None:
+                            if not args.s3:
+                                raise ValueError('--cases is a diagnostic-subset selector for S3 iteration only')
+                            record.data['metadata'].update(acceptance_scope='DIAGNOSTIC_SUBSET',
+                                diagnostic_expression=args.cases)
                     if args.instance or args.profile:
                         raise ValueError('Canonical fixture producer owns instance/profile bindings')
                     report = output / 'junit.xml'
                     env = os.environ.copy()
                     env['FP_QUALIFICATION_HOST_MANIFEST'] = str(manifest_path)
-                    if args.s2: env['FP_QUALIFICATION_S2'] = '1'
+                    if args.s2 or args.s3: env['FP_QUALIFICATION_S2'] = '1'
                     else: env.pop('FP_QUALIFICATION_S2', None)
+                    if args.s3: env['FP_QUALIFICATION_S3'] = '1'
+                    else: env.pop('FP_QUALIFICATION_S3', None)
                     selection=['tests/integration/qualification_host']
-                    if args.test_only or args.s2:
+                    if args.test_only or args.s2 or args.s3:
                         # Run boundary files in full so new lifecycle cases also run.
                         # Exact manifest cases remain mandatory even if renamed/deleted.
-                        selection = ([*S2_CASES] if args.s2 else
-                            ['tests/integration/qualification_boundary', *('--ignore='+case for case in S2_CASES)] + sorted(
+                        selection = ([*selected_cases] if (args.s2 or args.s3) else
+                            ['tests/integration/qualification_boundary', *('--ignore='+case for case in S3_CASES)] + sorted(
                             node for node in required if not node.startswith('tests/integration/qualification_boundary/')))
+                        if args.cases is not None:
+                            selection = ['-k', args.cases, *selection]
                     command=[sys.executable, '-m', 'pytest', *selection, '-n', '0',
                              '-q', '--tb=short', f'--junitxml={report}']
-                    if args.test_only or args.s2:
+                    if args.test_only or args.s2 or args.s3:
                         collection = output / 'collected.json'
                         command += ['-p', 'scripts.pytest_qualification_collection',
                                     f'--qualification-collection={collection}']
                         command=owned_command(create_process_group(manifest_path.parent),command,sys.executable)
                     record.execute(command, env=env, reports=[report])
-                    if args.test_only or args.s2:
+                    if args.cases is not None:
+                        raise ValueError('diagnostic-subset runs can never be acceptance evidence')
+                    if args.test_only or args.s2 or args.s3:
                         record.data['invariants'] = require_invariants(invariant_bytes, collection, report, output, required_nodeids=required)
                     require_tests(record.data['test_summary'])
             finally:
