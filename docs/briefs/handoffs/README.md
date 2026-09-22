@@ -20,4 +20,4 @@ The eleven packets PR #444 committed on 2026-09-20 from previously untracked fil
 | `2026-09-19-glm-s2-enforcement-continuation.md`, `…-glm-s2-linux-diagnostic-steering.md` | COMPLETED — S2 continuations; returns in the execution-slices ledger |
 | `2026-09-19-jev-experimentation-claude.md` | UNRELATED to the Tradeify deployment track; its own status is in its text |
 
-Current bounded assignments on the deployment track (as of 2026-09-21): [S3/T02](2026-09-21-full-e1-s3-n1-genuine-capture-DRAFT.md), [T07](2026-09-21-tradeify-t07-manual-settlement-procedure.md), [T08](2026-09-21-tradeify-t08-broker-protection-feasibility.md), [T10](2026-09-21-tradeify-t10-source-and-freeze-packet.md).
+Current bounded assignments on the deployment track (as of 2026-09-22): [T00 step 1](2026-09-22-tradeify-t00-step1-producer-inventory.md) (ready, not dispatched), [S3/T02](2026-09-21-full-e1-s3-n1-genuine-capture-DRAFT.md), [T07](2026-09-21-tradeify-t07-manual-settlement-procedure.md), [T08](2026-09-21-tradeify-t08-broker-protection-feasibility.md), [T10](2026-09-21-tradeify-t10-source-and-freeze-packet.md).
