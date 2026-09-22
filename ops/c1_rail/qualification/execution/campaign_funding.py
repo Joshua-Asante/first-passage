@@ -600,8 +600,10 @@ class FundingStoreMixin:
                 # startup; harmless probe dispatch keeps its weaker S2 gate.
                 if request['probe'] != 'noop':
                     raise ValueError('dispatch roles require the fixed noop probe')
-                if not c.execute("SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role='diagnostic_receipt'",
-                                 (attempt,)).fetchone():
+                if not c.execute(
+                    "SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role='diagnostic_receipt'",
+                    (attempt,),
+                ).fetchone():
                     raise ValueError('completed campaign admission required before dispatch')
             parent = request['signing_retry_of']
             if phase in doc['reserved_compute_phases']:

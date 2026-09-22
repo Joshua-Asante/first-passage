@@ -158,9 +158,15 @@ def cleanup(root, manifest, *, retire=False):
         if name.endswith('.mount') or name.endswith('-g5.service'):
             host.run(['/usr/bin/systemctl', '--system', '--no-ask-password', 'stop', name])
             stopped.append(name)
-    # Stopping a mount unit unmounts asynchronously and a failed transient
-    # unit unloads only after the stop settles; absence is polled bounded like
-    # the container path, never assumed from the stop call returning.
+    # A killed transient unit ends in failed state and the manager keeps it
+    # loaded until reset-failed (CollectMode=inactive-or-failed on the units
+    # garbage-collects most of them; this clears any survivor). Administrator
+    # context, so no polkit change. Then absence is polled bounded -- the
+    # explicit stop and the absence proof both stay.
+    for pattern in ('var-lib-fpq-*.mount', '*-payload-g5.service'):
+        subprocess.run(['/usr/bin/systemctl', '--system', '--no-ask-password',
+                        'reset-failed', pattern], stdin=subprocess.DEVNULL,
+                       capture_output=True, timeout=15, check=False)
     deadline = time.monotonic() + 10
     while time.monotonic() < deadline:
         remaining = {name for name in _listed_units()
