@@ -1543,7 +1543,10 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
         if (resumed < RESUME_SIGNAL_SENDS and init_image is not None
                 and _interpreter_image(*init_image) and init_image[0] == READINESS_TOKEN):
             signals = _signal_state(next(iter(seen)))
-            if signals is not None:
+            if signals is not None and (int(signals[1], 16) or int(signals[2], 16)):
+                # An all-zero mask pair is a dying or reaped process (the g5
+                # unit exits seconds after consuming its resume); there is no
+                # live target to signal and nothing attributable to retain.
                 try:
                     _guardian_signal_unit(unit, 'SIGUSR1')
                 except (OSError, ValueError):
