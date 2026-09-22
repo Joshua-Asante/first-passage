@@ -187,8 +187,10 @@ def test_s3_g5_unit_death_and_exact_receipt_retry(real_boundary):
             break
         time.sleep(.1)
     assert unit is not None, 'the held intent never became durable'
-    state = wait(boundary, attempt, lambda s: work(s, 'g5work')['state'] == 'SIGNING_INTENT'
-                 or s['state'] not in ('BOUND',), seconds=120)
+    state = wait(boundary, attempt, lambda s: (
+        work(s, 'g5work')['state'] == 'SIGNING_INTENT'
+        and work(s, 'g5work')['observation_bytes_b64'] is not None)
+        or s['state'] not in ('BOUND',), seconds=120)
     assert state['state'] == 'BOUND', state
     settled = work(state, 'g5work')
     assert settled['state'] == 'SIGNING_INTENT' and settled['observation_bytes_b64'] is not None, state
