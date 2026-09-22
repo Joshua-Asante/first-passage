@@ -124,6 +124,8 @@ CAMPAIGN_BUDGET_STATES = (
     'ABORTED',
     'N2_READY',
     'N1_FAILED',
+    'PART_A_READY',
+    'N2_FAILED',
 )
 CAMPAIGN_WORK_STATES = (
     'RESERVED',
@@ -140,8 +142,9 @@ CHECKPOINT_FAMILY_STATES = ('CAPTURED', 'ATTESTED', 'ASSESSING', 'COMMITTED')
 
 
 def _checkpoint_projection(value):
-    """The closed `checkpoints` field of a /v6 snapshot; N1 only in S3 (D1)."""
-    if type(value) is not dict or set(value) - {'N1'}:
+    """The closed `checkpoints` field of a /v6-or-/v7 snapshot; N1 only in S3
+    (D1), N1 plus the joint N2 entry in S4 (T05 F3 names for the advance)."""
+    if type(value) is not dict or set(value) - {'N1', 'N2'}:
         raise ValueError('checkpoint family projection differs')
     for checkpoint, row in value.items():
         required = {'state', 'work_id', 'payload_sha256'}
@@ -149,6 +152,8 @@ def _checkpoint_projection(value):
             required |= {'result_sha256', 'attestation_sha256'}
         if row.get('state') == 'COMMITTED':
             required |= {'assessment_sha256', 'receipt_sha256', 'decision'}
+            if checkpoint == 'N2':
+                required |= {'stage_decisions'}
         _fields(row, required, label='checkpoint family')
         if type(row) is not dict or row['state'] not in CHECKPOINT_FAMILY_STATES:
             raise ValueError('checkpoint family state differs')
@@ -166,6 +171,21 @@ def _checkpoint_projection(value):
             raise ValueError('checkpoint decision requires a committed assessment')
         if row['state'] == 'COMMITTED' and row['decision'] not in ('CONTINUE', 'FAILURE'):
             raise ValueError('committed checkpoint decision differs')
+        if checkpoint == 'N2':
+            decisions = row.get('stage_decisions')
+            if row['state'] == 'COMMITTED':
+                if (
+                    type(decisions) is not dict
+                    or set(decisions) != {'N2', 'PART_B'}
+                    or any(item not in ('PASS', 'FAIL') for item in decisions.values())
+                ):
+                    raise ValueError('committed joint stage decisions differ')
+                if (row['decision'] == 'CONTINUE') != all(
+                    item == 'PASS' for item in decisions.values()
+                ):
+                    raise ValueError('committed joint decision consistency differs')
+            elif decisions is not None:
+                raise ValueError('joint stage decisions require a committed assessment')
     return value
 
 
@@ -182,10 +202,11 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
         'qualification_campaign_budget_snapshot/v4',
         'qualification_campaign_budget_snapshot/v5',
         'qualification_campaign_budget_snapshot/v6',
+        'qualification_campaign_budget_snapshot/v7',
     )
-    dispatched = (
-        type(document) is dict
-        and document.get('schema') == 'qualification_campaign_budget_snapshot/v6'
+    dispatched = type(document) is dict and document.get('schema') in (
+        'qualification_campaign_budget_snapshot/v6',
+        'qualification_campaign_budget_snapshot/v7',
     )
     doc = _fields(
         document,
@@ -223,6 +244,7 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
         'qualification_campaign_budget_snapshot/v4',
         'qualification_campaign_budget_snapshot/v5',
         'qualification_campaign_budget_snapshot/v6',
+        'qualification_campaign_budget_snapshot/v7',
     ):
         raise ValueError('campaign budget snapshot schema required')
     if dispatched:
@@ -258,6 +280,7 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
             'qualification_campaign_budget_snapshot/v4',
             'qualification_campaign_budget_snapshot/v5',
             'qualification_campaign_budget_snapshot/v6',
+            'qualification_campaign_budget_snapshot/v7',
         )
     ):
         raise ValueError('profile requires compatible snapshot version')
@@ -266,6 +289,7 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
         in (
             'qualification_campaign_budget_snapshot/v5',
             'qualification_campaign_budget_snapshot/v6',
+            'qualification_campaign_budget_snapshot/v7',
         )
     ):
         raise ValueError('funding profile requires snapshot v5')
@@ -322,6 +346,7 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
                 'qualification_campaign_budget_snapshot/v4',
                 'qualification_campaign_budget_snapshot/v5',
                 'qualification_campaign_budget_snapshot/v6',
+                'qualification_campaign_budget_snapshot/v7',
             ):
                 raise ValueError('signing retry requires snapshot v2')
             _identity(reservation['signing_retry_of'])
@@ -424,33 +449,62 @@ CAMPAIGN_CHECKPOINT_STATES = (
     'ABORTED',
     'N2_READY',
     'N1_FAILED',
+    'PART_A_READY',
+    'N2_FAILED',
+)
+CAMPAIGN_CHECKPOINT_PHASES = (
+    'ADMISSION',
+    'N1',
+    'N1_CAPTURE',
+    'N1_G5',
+    'N2',
+    'N2_CAPTURE',
+    'N2_G5',
+    'PART_A',
+    'PART_A_CAPTURE',
+    'PART_A_G5',
+    'RESULT',
+    'SEAL',
 )
 
 
 def parse_campaign_checkpoint_snapshot(raw: bytes) -> dict:
-    doc = _fields(
-        parse_canonical_json(raw, label='campaign checkpoint snapshot'),
-        {
-            'schema',
-            'attempt_id',
-            'checkpoint',
-            'contract_sha256',
-            'trust_domain_sha256',
-            'policy_sha256',
-            'validity',
-            'campaign_revision',
-            'authority_head',
-            'event_head',
-            'campaign_state',
-            'works',
-            'capture',
-            'intent',
-            'members',
-        },
-        label='campaign checkpoint snapshot',
-    )
-    if doc['schema'] != CHECKPOINT_SNAPSHOT_SCHEMA or doc['checkpoint'] != 'N1':
+    parsed = parse_canonical_json(raw, label='campaign checkpoint snapshot')
+    required = {
+        'schema',
+        'attempt_id',
+        'checkpoint',
+        'contract_sha256',
+        'trust_domain_sha256',
+        'policy_sha256',
+        'validity',
+        'campaign_revision',
+        'authority_head',
+        'event_head',
+        'campaign_state',
+        'works',
+        'capture',
+        'intent',
+        'members',
+    }
+    if type(parsed) is dict and parsed.get('checkpoint') == 'N2':
+        required |= {'predecessor'}
+    doc = _fields(parsed, required, label='campaign checkpoint snapshot')
+    if (
+        doc['schema'] != CHECKPOINT_SNAPSHOT_SCHEMA
+        or doc['checkpoint'] not in ('N1', 'N2')
+    ):
         raise ValueError('campaign checkpoint snapshot schema required')
+    if doc['checkpoint'] == 'N2':
+        predecessor = _fields(
+            doc['predecessor'],
+            {'checkpoint', 'assessment_sha256', 'receipt_sha256'},
+            label='predecessor binding',
+        )
+        if predecessor['checkpoint'] != 'N1':
+            raise ValueError('predecessor checkpoint differs')
+        _sha256(predecessor['assessment_sha256'], label='predecessor assessment')
+        _sha256(predecessor['receipt_sha256'], label='predecessor receipt')
     _identity(doc['attempt_id'])
     for name in (
         'contract_sha256',
@@ -475,7 +529,7 @@ def parse_campaign_checkpoint_snapshot(raw: bytes) -> dict:
         if (
             work['work_id'] in identities
             or work['state'] not in CAMPAIGN_WORK_STATES
-            or work['phase'] not in ('ADMISSION', 'N1', 'N1_CAPTURE', 'N1_G5', 'RESULT', 'SEAL')
+            or work['phase'] not in CAMPAIGN_CHECKPOINT_PHASES
         ):
             raise ValueError('campaign checkpoint work identity differs')
         if type(work['settled']) is not bool:
@@ -507,6 +561,13 @@ def parse_campaign_checkpoint_snapshot(raw: bytes) -> dict:
             raise ValueError('duplicate checkpoint member role')
         member_ids.add(member['role'])
     required_members = {'plan', 'result', 'payload', 'attestation', 'retained_bundle_index'}
+    if doc['checkpoint'] == 'N2':
+        required_members |= {
+            'predecessor_receipt',
+            'predecessor_assessment',
+            'predecessor_plan',
+            'predecessor_payload',
+        }
     if not required_members <= member_ids:
         raise ValueError('checkpoint member inventory incomplete')
     return doc
@@ -528,25 +589,27 @@ def encode_campaign_checkpoint_snapshot(
     capture,
     intent,
     members,
+    predecessor=None,
 ) -> bytes:
-    raw = canonical_json_bytes(
-        {
-            'schema': CHECKPOINT_SNAPSHOT_SCHEMA,
-            'attempt_id': attempt_id,
-            'checkpoint': checkpoint,
-            'contract_sha256': contract_sha256,
-            'trust_domain_sha256': trust_domain_sha256,
-            'policy_sha256': policy_sha256,
-            'validity': validity,
-            'campaign_revision': campaign_revision,
-            'authority_head': authority_head,
-            'event_head': event_head,
-            'campaign_state': campaign_state,
-            'works': sorted(works, key=lambda row: row['work_id']),
-            'capture': capture,
-            'intent': intent,
-            'members': sorted(members, key=lambda row: row['role']),
-        }
-    )
+    document = {
+        'schema': CHECKPOINT_SNAPSHOT_SCHEMA,
+        'attempt_id': attempt_id,
+        'checkpoint': checkpoint,
+        'contract_sha256': contract_sha256,
+        'trust_domain_sha256': trust_domain_sha256,
+        'policy_sha256': policy_sha256,
+        'validity': validity,
+        'campaign_revision': campaign_revision,
+        'authority_head': authority_head,
+        'event_head': event_head,
+        'campaign_state': campaign_state,
+        'works': sorted(works, key=lambda row: row['work_id']),
+        'capture': capture,
+        'intent': intent,
+        'members': sorted(members, key=lambda row: row['role']),
+    }
+    if checkpoint == 'N2':
+        document['predecessor'] = predecessor
+    raw = canonical_json_bytes(document)
     parse_campaign_checkpoint_snapshot(raw)
     return raw

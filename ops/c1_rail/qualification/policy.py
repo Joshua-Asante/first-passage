@@ -22,10 +22,15 @@ N1_ARTIFACT_ROLES = tuple(sorted((*BASE_ARTIFACT_ROLES,*(STAGE_ARTIFACT_ROLES[st
 
 
 def _policy_document(*, tier, basis, owners):
-    """Single owner of the closed policy schema and fixed semantic inventory."""
+    """Single owner of the closed policy schema and fixed semantic inventory.
+
+    The /v2 identity (S4-D4) marks the joint continuation: only under it may a
+    LEGALITY/N1/N2/PART_B prefix complete PARTIAL/NONE. The pre-S4 document is
+    unpinned history; every installed producer rebuilds /v2 bytes here.
+    """
     return {
         'schema': 'qualification_policy/v1',
-        'policy_id': 'tradeify-e1-pristine/v1',
+        'policy_id': 'tradeify-e1-pristine/v2',
         'product': {'tier': tier, 'original_basis': basis, 'state_class': 'PRISTINE'},
         'pre_admission_registry': 'EMPTY',
         'stage_order': ['LEGALITY', 'N1', 'N2', 'PART_B', 'PART_A'],
@@ -35,6 +40,7 @@ def _policy_document(*, tier, basis, owners):
         'stage_artifact_roles': dict(STAGE_ARTIFACT_ROLES),
         'base_artifact_roles': list(BASE_ARTIFACT_ROLES),
         'optional_artifact_roles': ['diagnostics_private'],
+        'joint_continuation': True,
         'source_owner_sha256': owners,
     }
 
@@ -138,8 +144,10 @@ def validate_contract_semantics(document: dict, policy: QualificationPolicy, *, 
 def required_output_roles(policy: QualificationPolicy, *, stages: tuple[str, ...], completion: str, verdict: str) -> tuple[str, ...]:
     doc = _document(policy)
     order = tuple(doc['stage_order'])
+    joint = doc.get('joint_continuation') is True
     valid = ((stages == order[:2] and (completion, verdict) in {('COMPLETE', 'FAIL'), ('PARTIAL', 'NONE')})
              or (stages == order[:4] and (completion, verdict) == ('COMPLETE', 'FAIL'))
+             or (joint and stages == order[:4] and (completion, verdict) == ('PARTIAL', 'NONE'))
              or (stages == order and completion == 'COMPLETE' and verdict in {'PASS', 'FAIL'}))
     if not valid:
         raise ValueError('UNSUPPORTED_STAGE_ASSESSMENT')

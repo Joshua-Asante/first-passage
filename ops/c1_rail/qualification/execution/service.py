@@ -93,10 +93,12 @@ def schedule_eligibility(release, profile):
     """Fixed at startup: the execution-capable diagnostic revisions open the
     funded route for harmless probe work. The /v5 dispatch revision is a
     superset of /v4: it keeps every v4 restriction for probes and additionally
-    admits the two dispatch roles through its own gate."""
+    admits the two dispatch roles through its own gate; /v6 (S4-D3) supersedes
+    it again for the joint N2 roles."""
     pairs = (
         (EXECUTABLE_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v4'),
         (release_schema.DISPATCH_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v5'),
+        (release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v6'),
     )
     return (
         type(release) is dict
@@ -106,14 +108,30 @@ def schedule_eligibility(release, profile):
 
 
 def dispatch_eligibility(release, profile):
-    """Fixed at startup: only the S3 dispatch revision (D4) admits N1 dispatch roles."""
+    """Fixed at startup: only the dispatch revisions (D4/D3) admit N1 dispatch
+    roles -- each names exactly its own closed checkpoint set."""
     return (
         type(release) is dict
-        and release.get('schema') == release_schema.DISPATCH_DIAGNOSTIC_RELEASE
+        and release.get('schema')
+        in (release_schema.DISPATCH_DIAGNOSTIC_RELEASE, release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE)
         and release.get('capability') == 'FULL_E1'
         and release.get('dispatch_enabled') is True
-        and release.get('dispatch_checkpoints') == ['N1']
-        and profile.values['schema'] == 'qualification_execution_profile/v5'
+        and release.get('dispatch_checkpoints') in (['N1'], ['N1', 'N2'])
+        and profile.values['schema']
+        in ('qualification_execution_profile/v5', 'qualification_execution_profile/v6')
+    )
+
+
+def joint_dispatch_eligibility(release, profile):
+    """Fixed at startup: only the S4 joint dispatch revision (D3) admits the
+    N2 dispatch roles."""
+    return (
+        type(release) is dict
+        and release.get('schema') == release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE
+        and release.get('capability') == 'FULL_E1'
+        and release.get('dispatch_enabled') is True
+        and release.get('dispatch_checkpoints') == ['N1', 'N2']
+        and profile.values['schema'] == 'qualification_execution_profile/v6'
     )
 
 
@@ -167,6 +185,7 @@ class ExecutionService:
         # release; no request re-reads or re-parses the release to decide it.
         self.schedule_eligible = schedule_eligibility(release, self.profile)
         self.dispatch_eligible = dispatch_eligibility(release, self.profile)
+        self.joint_dispatch_eligible = joint_dispatch_eligibility(release, self.profile)
         self.store = ExecutionStore(
             self.root / 'journal.sqlite', installation_dir=self.installation
         )
@@ -329,6 +348,7 @@ class ExecutionService:
             'qualification_execution_release/v3',
             EXECUTABLE_DIAGNOSTIC_RELEASE,
             release_schema.DISPATCH_DIAGNOSTIC_RELEASE,
+            release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE,
         ):
             if (
                 operation == 'SUBMIT_E1'
@@ -471,10 +491,11 @@ class ExecutionService:
             if not self.dispatch_eligible:
                 raise ValueError('installed N1 dispatch release required')
             if operation == 'CHECKPOINT_SNAPSHOT':
-                return campaigns.checkpoint_snapshot(attempt)
+                return campaigns.checkpoint_snapshot(attempt, request['checkpoint'])
             if operation == 'FETCH_CHECKPOINT_MEMBER':
                 return campaigns.fetch_checkpoint_member(
-                    attempt, request['object_sha256'], request['offset'], request['length']
+                    attempt, request['object_sha256'], request['offset'], request['length'],
+                    checkpoint=request['checkpoint'],
                 )
             if operation == 'STAGE_CHECKPOINT_ARTIFACT':
                 raw = decode_base64(request['bytes_b64'])
@@ -483,7 +504,7 @@ class ExecutionService:
                 return encoded(
                     {
                         'artifact_sha256': campaigns.stage_checkpoint_artifact(
-                            attempt, request['role'], raw
+                            attempt, request['role'], raw, checkpoint=request['checkpoint']
                         )
                     }
                 )
@@ -566,7 +587,6 @@ class ExecutionService:
         exact retry returns the identical receipt with no fresh time/signature.
         """
         import base64
-        from ..checkpoint_plan import derive_checkpoint_plan
         from .campaign_store import (
             parse_checkpoint_assessment,
             parse_checkpoint_cutoff,
@@ -576,23 +596,26 @@ class ExecutionService:
         from .store import instant
 
         work_id = request['work_id']
+        checkpoint = request['checkpoint']
         candidate_bytes = decode_base64(request['candidate_bytes_b64'])
         candidate = parse_checkpoint_assessment(candidate_bytes, attempt_id=attempt)
+        if candidate['checkpoint'] != checkpoint:
+            raise ValueError('checkpoint candidate binding differs')
         with self.dispatch_lock:
             with self.store.transaction() as connection:
                 row = connection.execute(
                     'SELECT snapshot_bytes,intent_bytes,candidate_bytes,cutoff_bytes,receipt_bytes '
-                    'FROM full_campaign_checkpoint_intents WHERE attempt_id=?',
-                    (attempt,),
+                    'FROM full_campaign_checkpoint_intents WHERE attempt_id=? AND checkpoint=?',
+                    (attempt, checkpoint),
                 ).fetchone()
             if row is None:
-                snapshot_bytes = campaigns.checkpoint_snapshot(attempt)
+                snapshot_bytes = campaigns.checkpoint_snapshot(attempt, checkpoint)
                 signing_at = instant(now())
                 intent_bytes = encoded(
                     {
                         'schema': CHECKPOINT_INTENT_SCHEMA,
                         'attempt_id': attempt,
-                        'checkpoint': 'N1',
+                        'checkpoint': checkpoint,
                         'work_id': work_id,
                         'key_id': candidate['signature']['key_id'],
                         'signing_at_utc': signing_at,
@@ -604,7 +627,7 @@ class ExecutionService:
                     {
                         'schema': 'qualification_campaign_g5_capture/v1',
                         'attempt_id': attempt,
-                        'checkpoint': 'N1',
+                        'checkpoint': checkpoint,
                         'work_id': work_id,
                         'candidate_sha256': sha256(candidate_bytes),
                         'staged': [
@@ -650,6 +673,7 @@ class ExecutionService:
                     candidate_bytes,
                     capture_transition,
                     signing_transition,
+                    checkpoint=checkpoint,
                 )
                 # TEST_ONLY diagnostic hold (coordinator-authorized E06/E07
                 # window): when the driving work's funded request carried the
@@ -682,29 +706,46 @@ class ExecutionService:
                     bytes(row[3]),
                     now=now(),
                     clock_bytes=campaign_supervisor.observe_campaign_clock(),
+                    checkpoint=checkpoint,
                 )
             # T2: the service re-validates against its own retained context.
             context = campaigns.context(attempt, self.release, self.keys(), now=now())
             keys = self.keys()
             verify_checkpoint_assessment(candidate_bytes, context=context, current_keys=keys)
-            family = campaigns.checkpoint_capture(attempt)
+            family = campaigns.checkpoint_capture(attempt, checkpoint)
             # The candidate was bound at T1 to that moment's snapshot; T2 re-validates
             # against exactly those persisted bytes, and the store checks freshness
             # (current revision/head) inside the commit transaction. The row is
             # (snapshot_bytes, intent_bytes, candidate_bytes, cutoff, receipt).
             snapshot_bytes = bytes(row[0]) if row is not None else snapshot_bytes
-            plan_bytes = derive_checkpoint_plan(
-                campaigns.retained_object(attempt, 'plan'), 'N1', None
-            )
+            plan_bytes = campaigns._checkpoint_plan(attempt, checkpoint)
+            artifacts = {
+                'result': family['result_bytes'],
+                'worker_result': family['payload_bytes'],
+            }
+            if checkpoint == 'N2':
+                predecessor = campaigns.checkpoint_capture(attempt, 'N1')
+                with self.store.transaction() as connection:
+                    committed = connection.execute(
+                        'SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
+                        "WHERE attempt_id=? AND checkpoint='N1'",
+                        (attempt,),
+                    ).fetchone()
+                artifacts.update(
+                    predecessor_receipt=campaigns.checkpoint_receipt(attempt, 'N1'),
+                    predecessor_assessment=bytes(committed[0]),
+                    predecessor_plan=campaigns._checkpoint_plan(attempt, 'N1'),
+                    predecessor_payload=predecessor['payload_bytes'],
+                )
+                verify_checkpoint_assessment(
+                    artifacts['predecessor_assessment'], context=context, current_keys=keys
+                )
             evidence = validate_campaign_checkpoint(
                 context,
-                checkpoint='N1',
+                checkpoint=checkpoint,
                 plan_bytes=plan_bytes,
                 attestation_bytes=family['attestation_bytes'],
-                artifacts={
-                    'result': family['result_bytes'],
-                    'worker_result': family['payload_bytes'],
-                },
+                artifacts=artifacts,
                 snapshot_bytes=snapshot_bytes,
                 current_keys=keys,
             )
@@ -728,25 +769,40 @@ class ExecutionService:
                     if (
                         connection.execute(
                             'SELECT 1 FROM full_campaign_checkpoint_staged '
-                            'WHERE attempt_id=? AND role=? AND sha256=?',
-                            (attempt, role, digest_value),
+                            'WHERE attempt_id=? AND checkpoint=? AND role=? AND sha256=?',
+                            (attempt, checkpoint, role, digest_value),
                         ).fetchone()
                         is None
                     ):
                         raise ValueError('staged checkpoint artifact membership differs')
-            cutoff_bytes = encoded(
-                {
-                    'schema': 'qualification_campaign_cutoff_receipt/v1',
-                    'attempt_id': attempt,
-                    'checkpoint': 'N1',
-                    'assessment_sha256': sha256(candidate_bytes),
-                    'decision': core['decision'],
-                    'n1_cutoffs': core['cutoff']['n1_cutoffs'],
-                    'n2_thresholds': core['n2_thresholds']['stages'],
-                    'n2_bound_to': sha256(candidate_bytes),
-                    'created_utc': instant(now()),
-                }
-            )
+            if checkpoint == 'N2':
+                cutoff_bytes = encoded(
+                    {
+                        'schema': 'qualification_campaign_cutoff_receipt/v1',
+                        'attempt_id': attempt,
+                        'checkpoint': 'N2',
+                        'assessment_sha256': sha256(candidate_bytes),
+                        'decision': core['decision'],
+                        'stage_decisions': core['stage_decisions'],
+                        'stage_thresholds': core['cutoff']['stage_thresholds'],
+                        'predecessor_receipt_sha256': core['predecessor']['receipt_sha256'],
+                        'created_utc': instant(now()),
+                    }
+                )
+            else:
+                cutoff_bytes = encoded(
+                    {
+                        'schema': 'qualification_campaign_cutoff_receipt/v1',
+                        'attempt_id': attempt,
+                        'checkpoint': 'N1',
+                        'assessment_sha256': sha256(candidate_bytes),
+                        'decision': core['decision'],
+                        'n1_cutoffs': core['cutoff']['n1_cutoffs'],
+                        'n2_thresholds': core['n2_thresholds']['stages'],
+                        'n2_bound_to': sha256(candidate_bytes),
+                        'created_utc': instant(now()),
+                    }
+                )
             parse_checkpoint_cutoff(cutoff_bytes, attempt_id=attempt)
             return campaigns.commit_checkpoint_assessment(
                 attempt,
@@ -755,6 +811,7 @@ class ExecutionService:
                 cutoff_bytes,
                 now=now(),
                 clock_bytes=campaign_supervisor.observe_campaign_clock(),
+                checkpoint=checkpoint,
             )
 
     def _schedule_request(self, peer_uid, raw):
@@ -770,9 +827,13 @@ class ExecutionService:
         if peer_uid != self.config['service_uid']:
             raise ValueError('PEER_NOT_AUTHORIZED')
         request = campaign_funding.parse_request(raw)
-        if request['role'] in campaign_funding.DISPATCH_ROLES:
-            # D4: genuine dispatch needs the installed /v5 release; the harmless
-            # probe dispatch keeps the unchanged v4 gate.
+        if request['role'] in campaign_funding.JOINT_DISPATCH_ROLES:
+            # S4-D3: the joint roles need the installed /v6 release.
+            if not self.joint_dispatch_eligible:
+                raise ValueError('installed N2 dispatch release required')
+        elif request['role'] in campaign_funding.DISPATCH_ROLES:
+            # D4: genuine dispatch needs the installed dispatch release; the
+            # harmless probe dispatch keeps the unchanged v4 gate.
             if not self.dispatch_eligible:
                 raise ValueError('installed N1 dispatch release required')
         elif not self.schedule_eligible:
@@ -1012,6 +1073,7 @@ class ExecutionService:
             'qualification_execution_profile/v3',
             'qualification_execution_profile/v4',
             'qualification_execution_profile/v5',
+            'qualification_execution_profile/v6',
         ):
             campaigns = campaign_store.CampaignStore(self.store)
             with self.store.transaction() as connection:

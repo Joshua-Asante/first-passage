@@ -59,7 +59,7 @@ def parse_campaign_request(raw: bytes) -> dict:
         if not approval or len(approval) > 65536:
             raise ValueError('bounded VOID approval required')
     elif doc['operation'] in CHECKPOINT_OPERATIONS:
-        if doc['checkpoint'] != 'N1':
+        if doc['checkpoint'] not in ('N1', 'N2'):
             raise ValueError('installed checkpoint required')
         if doc['operation'] == 'FETCH_CHECKPOINT_MEMBER':
             digest(doc['object_sha256'])

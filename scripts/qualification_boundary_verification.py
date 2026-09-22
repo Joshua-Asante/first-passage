@@ -28,7 +28,11 @@ S2_CASES = ('tests/integration/qualification_boundary/test_campaign_service_linu
 # it. The service file keeps its established first position and the N1 file
 # runs between them; the poll is not baselined. The N1_ONLY --test-only
 # selection is untouched; --s3 is a separate, strictly larger mode.
-S3_CASES = (S2_CASES[0], 'tests/integration/qualification_boundary/test_campaign_n1_linux.py', S2_CASES[1])
+# S4: the joint N2/Part B file joins the S3 set between the N1 file and the
+# supervision file (the OOM case stays last); --test-only excludes it with the
+# rest of the S3/S4 file set, and --s3 sets the joint installation env var.
+S3_CASES = (S2_CASES[0], 'tests/integration/qualification_boundary/test_campaign_n1_linux.py',
+            'tests/integration/qualification_boundary/test_campaign_n2_linux.py', S2_CASES[1])
 
 
 def require_cleanup(result):
@@ -125,6 +129,8 @@ def main(argv=None):
                     else: env.pop('FP_QUALIFICATION_S2', None)
                     if args.s3: env['FP_QUALIFICATION_S3'] = '1'
                     else: env.pop('FP_QUALIFICATION_S3', None)
+                    if args.s3: env['FP_QUALIFICATION_S4'] = '1'
+                    else: env.pop('FP_QUALIFICATION_S4', None)
                     selection=['tests/integration/qualification_host']
                     if args.test_only or args.s2 or args.s3:
                         # Run boundary files in full so new lifecycle cases also run.

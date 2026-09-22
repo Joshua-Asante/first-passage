@@ -117,28 +117,65 @@ def parse_void_refusal(raw, *, schema=VOID_REFUSAL_SCHEMA):
 # The progression states a committed checkpoint assessment produces. The G5
 # work that committed it settles afterwards; that settlement can still end
 # the campaign's authority, and that work completes in these states.
-CHECKPOINT_PROGRESSION_STATES = ('N2_READY', 'N1_FAILED')
+CHECKPOINT_PROGRESSION_STATES = ('N2_READY', 'N1_FAILED', 'PART_A_READY', 'N2_FAILED')
+CHECKPOINT_ADVANCES = {
+    'N1': ('N2_READY', 'N1_FAILED'),
+    'N2': ('PART_A_READY', 'N2_FAILED'),
+}
+CHECKPOINT_TABLES = ('full_campaign_checkpoint_captures', 'full_campaign_checkpoint_staged',
+                     'full_campaign_checkpoint_intents')
+
+
+def widen_checkpoint_layout(connection):
+    """The S4-D1 widening (8 -> 9): rebuild the three checkpoint tables on the
+    composite key, copying rows; N1 bytes are immutable."""
+    for table in CHECKPOINT_TABLES:
+        widened = CHECKPOINT_SCHEMA.split(
+            'CREATE TABLE IF NOT EXISTS ' + table + ' '
+        )[1].split(');')[0]
+        connection.execute('CREATE TABLE ' + table + '_v9 (' + widened + ')')
+        if table == 'full_campaign_checkpoint_staged':
+            connection.execute(
+                'INSERT INTO '
+                + table
+                + '_v9 SELECT attempt_id,\'N1\',role,sha256,body FROM '
+                + table
+            )
+        else:
+            connection.execute('INSERT INTO ' + table + '_v9 SELECT * FROM ' + table)
+        connection.execute('DROP TABLE ' + table)
+        connection.execute('ALTER TABLE ' + table + '_v9 RENAME TO ' + table)
+    connection.execute('PRAGMA user_version=9')
+# Which phases a committed CONTINUE still admits: the next checkpoint's compute,
+# capture and G5 phases only (spec 2.6; the F3 advance names index the rows).
+PROGRESSION_PHASES = {
+    'N2_READY': ('N2', 'N2_CAPTURE', 'N2_G5'),
+}
 
 CHECKPOINT_SCHEMA = '''
 CREATE TABLE IF NOT EXISTS full_campaign_checkpoint_captures (
- attempt_id TEXT PRIMARY KEY REFERENCES full_campaigns(attempt_id),
- checkpoint TEXT NOT NULL CHECK(checkpoint='N1'),
+ attempt_id TEXT NOT NULL REFERENCES full_campaigns(attempt_id),
+ checkpoint TEXT NOT NULL CHECK(checkpoint IN ('N1','N2','PART_A')),
  work_id TEXT NOT NULL,
  result_bytes BLOB NOT NULL CHECK(length(result_bytes)<=262144),
  payload_bytes BLOB NOT NULL CHECK(length(payload_bytes)<=268435456),
- attestation_bytes BLOB);
+ attestation_bytes BLOB,
+ PRIMARY KEY(attempt_id,checkpoint));
 CREATE TABLE IF NOT EXISTS full_campaign_checkpoint_staged (
  attempt_id TEXT NOT NULL REFERENCES full_campaigns(attempt_id),
- role TEXT NOT NULL, sha256 TEXT NOT NULL, body BLOB NOT NULL CHECK(length(body)<=268435456),
- PRIMARY KEY(attempt_id,role,sha256));
+ checkpoint TEXT NOT NULL CHECK(checkpoint IN ('N1','N2','PART_A')),
+ role TEXT NOT NULL, sha256 TEXT NOT NULL,
+ body BLOB NOT NULL CHECK(length(body)<=268435456),
+ PRIMARY KEY(attempt_id,checkpoint,role,sha256));
 CREATE TABLE IF NOT EXISTS full_campaign_checkpoint_intents (
- attempt_id TEXT PRIMARY KEY REFERENCES full_campaigns(attempt_id),
- checkpoint TEXT NOT NULL CHECK(checkpoint='N1'),
+ attempt_id TEXT NOT NULL REFERENCES full_campaigns(attempt_id),
+ checkpoint TEXT NOT NULL CHECK(checkpoint IN ('N1','N2','PART_A')),
  work_id TEXT NOT NULL,
  snapshot_bytes BLOB NOT NULL CHECK(length(snapshot_bytes)<=262144),
  intent_bytes BLOB NOT NULL CHECK(length(intent_bytes)<=262144),
  candidate_bytes BLOB NOT NULL CHECK(length(candidate_bytes)<=262144),
- cutoff_bytes BLOB, receipt_bytes BLOB);
+ cutoff_bytes BLOB, receipt_bytes BLOB,
+ PRIMARY KEY(attempt_id,checkpoint));
 '''
 
 from ..evidence import (
@@ -160,13 +197,20 @@ class CheckpointStoreMixin:
 
     Mixed into CampaignStore, which supplies the budget/work projections, the
     funding gate and the save helpers. Every writer first performs the lazy
-    exact-layout user_version 7 -> 8 migration inside its own transaction; the
-    tables below are the only home for the checkpoint evidence family bytes.
+    exact-layout migrations inside its own transaction (7 -> 8 -> 9; the S4-D1
+    widening at 9 keys every row by (attempt_id, checkpoint)); the tables below
+    are the only home for the checkpoint evidence family bytes.
     """
 
     def _ensure_checkpoint_layout(self, connection):
+        """The lazy exact-layout migrations: 7 -> 8 creates the family, 8 -> 9
+        (S4-D1, once) widens the three tables to the composite checkpoint key --
+        rows are copied, never re-derived; N1 bytes are immutable."""
         version = connection.execute('PRAGMA user_version').fetchone()[0]
+        if version == 9:
+            return
         if version == 8:
+            widen_checkpoint_layout(connection)
             return
         if version != 7:
             raise ValueError('checkpoint custody requires database v7')
@@ -174,18 +218,24 @@ class CheckpointStoreMixin:
         for statement in CHECKPOINT_SCHEMA.split(';'):
             if statement.strip():
                 connection.execute(statement)
-        connection.execute('PRAGMA user_version=8')
+        connection.execute('PRAGMA user_version=9')
 
     def _family(self, budget, checkpoint='N1', **row):
         """Move the checkpoint family projection; `state` names the family state."""
         family = dict(budget.get('checkpoints') or {})
-        if set(family) - {'N1'} or (
+        if set(family) - {'N1', 'N2'} or (
             checkpoint in family
             and family[checkpoint]['work_id'] != row.get('work_id', family[checkpoint]['work_id'])
         ):
             raise ValueError('checkpoint family identity differs')
         family[checkpoint] = row
-        budget['schema'] = 'qualification_campaign_budget_snapshot/v6'
+        # /v6 while only the N1 key exists (S3 bytes unchanged); the joint N2
+        # entry is the /v7 widening (D2: keys subset {N1,N2}, stage_decisions).
+        budget['schema'] = (
+            'qualification_campaign_budget_snapshot/v7'
+            if 'N2' in family
+            else 'qualification_campaign_budget_snapshot/v6'
+        )
         budget['checkpoints'] = family
         return budget
 
@@ -196,18 +246,20 @@ class CheckpointStoreMixin:
         return family[checkpoint]
 
     def retain_checkpoint_capture(
-        self, attempt_id, work_id, result_bytes, payload_bytes, capture_transition_bytes
+        self, attempt_id, work_id, result_bytes, payload_bytes, capture_transition_bytes,
+        *, checkpoint='N1',
     ):
         """Archive the finalized capture byte-for-byte and record the work's CAPTURED.
 
-        One transaction: the capture row (result + payload), the snapshot's v6
-        family projection and the work's CAPTURED transition commit together, so
+        One transaction: the capture row (result + payload), the snapshot's family
+        projection and the work's CAPTURED transition commit together, so
         a restart either sees the whole family or none of it. An exact retry of
         the same bytes is idempotent; any difference refuses.
         """
         result = parse_checkpoint_result(result_bytes, attempt_id=attempt_id)
         if (
-            result['work_id'] != work_id
+            result['checkpoint'] != checkpoint
+            or result['work_id'] != work_id
             or sha256(payload_bytes) != result['payload_sha256']
             or result['payload_byte_length'] != len(payload_bytes)
         ):
@@ -221,16 +273,18 @@ class CheckpointStoreMixin:
             self._ensure_checkpoint_layout(connection)
             prior = connection.execute(
                 'SELECT result_bytes,payload_bytes FROM full_campaign_checkpoint_captures '
-                'WHERE attempt_id=?',
-                (attempt_id,),
+                'WHERE attempt_id=? AND checkpoint=?',
+                (attempt_id, checkpoint),
             ).fetchone()
             if prior is not None:
                 if (bytes(prior[0]), bytes(prior[1])) != (result_bytes, payload_bytes):
                     raise ValueError('immutable checkpoint capture differs')
             state = self._budget(connection, attempt_id)
             work = self._work(state, work_id)
-            if work['phase'] != 'N1':
-                raise ValueError('checkpoint capture requires the N1 compute work')
+            if work['phase'] != ('N1' if checkpoint == 'N1' else 'N2'):
+                raise ValueError('checkpoint capture requires the checkpoint compute work')
+            if checkpoint == 'N2' and self._require_family(state, 'N1')['state'] != 'COMMITTED':
+                raise ValueError('committed N1 predecessor required')
             self.record_work_transition(
                 attempt_id,
                 work_id,
@@ -239,16 +293,17 @@ class CheckpointStoreMixin:
             )
             state = self._budget(connection, attempt_id)
             self._family(
-                state, work_id=work_id, state='CAPTURED', payload_sha256=result['payload_sha256']
+                state, checkpoint, work_id=work_id, state='CAPTURED',
+                payload_sha256=result['payload_sha256'],
             )
             if prior is None:
                 connection.execute(
                     'INSERT INTO full_campaign_checkpoint_captures VALUES(?,?,?,?,?,?)',
-                    (attempt_id, 'N1', work_id, result_bytes, payload_bytes, None),
+                    (attempt_id, checkpoint, work_id, result_bytes, payload_bytes, None),
                 )
             return self._save_budget(connection, state, 'CHECKPOINT_CAPTURED', authority=False)
 
-    def retain_checkpoint_attestation(self, attempt_id, attestation_bytes, *, verify):
+    def retain_checkpoint_attestation(self, attempt_id, attestation_bytes, *, verify, checkpoint='N1'):
         """Attest exactly the archived bytes; idempotent on the same signature.
 
         `verify` re-checks the attestation envelope against the retained capture
@@ -259,8 +314,8 @@ class CheckpointStoreMixin:
             self._ensure_checkpoint_layout(connection)
             row = connection.execute(
                 'SELECT work_id,result_bytes,payload_bytes,attestation_bytes '
-                'FROM full_campaign_checkpoint_captures WHERE attempt_id=?',
-                (attempt_id,),
+                'FROM full_campaign_checkpoint_captures WHERE attempt_id=? AND checkpoint=?',
+                (attempt_id, checkpoint),
             ).fetchone()
             if row is None:
                 raise ValueError('archived checkpoint capture required')
@@ -269,13 +324,14 @@ class CheckpointStoreMixin:
                 raise ValueError('immutable checkpoint attestation differs')
             verify(attempt_id, bytes(row[1]), bytes(row[2]), attestation_bytes)
             state = self._budget(connection, attempt_id)
-            family = self._require_family(state)
+            family = self._require_family(state, checkpoint)
             if prior is not None:
                 return self._negative_budget_response(connection, state)
             if family['state'] != 'CAPTURED':
                 raise ValueError('checkpoint family state differs')
             self._family(
                 state,
+                checkpoint,
                 work_id=family['work_id'],
                 state='ATTESTED',
                 payload_sha256=family['payload_sha256'],
@@ -285,20 +341,20 @@ class CheckpointStoreMixin:
             if prior is None:
                 connection.execute(
                     'UPDATE full_campaign_checkpoint_captures SET attestation_bytes=? '
-                    'WHERE attempt_id=?',
-                    (attestation_bytes, attempt_id),
+                    'WHERE attempt_id=? AND checkpoint=?',
+                    (attestation_bytes, attempt_id, checkpoint),
                 )
             return self._save_budget(connection, state, 'CHECKPOINT_ATTESTED', authority=False)
 
-    def checkpoint_capture(self, attempt_id):
+    def checkpoint_capture(self, attempt_id, checkpoint='N1'):
         """One bounded family view for the G5-facing snapshot and member fetches."""
         with self.store.transaction() as connection:
             if connection.execute('PRAGMA user_version').fetchone()[0] < 8:
                 raise ValueError('no checkpoint family retained')
             row = connection.execute(
                 'SELECT work_id,result_bytes,payload_bytes,attestation_bytes '
-                'FROM full_campaign_checkpoint_captures WHERE attempt_id=?',
-                (attempt_id,),
+                'FROM full_campaign_checkpoint_captures WHERE attempt_id=? AND checkpoint=?',
+                (attempt_id, checkpoint),
             ).fetchone()
             if row is None:
                 raise ValueError('no checkpoint family retained')
@@ -311,7 +367,7 @@ class CheckpointStoreMixin:
                 'attestation_bytes': bytes(row[3]),
             }
 
-    def stage_checkpoint_artifact(self, attempt_id, role, raw):
+    def stage_checkpoint_artifact(self, attempt_id, role, raw, *, checkpoint='N1'):
         from .protocol import identity
 
         identity(role)
@@ -322,23 +378,44 @@ class CheckpointStoreMixin:
             self._budget(connection, attempt_id)
             digest_value = sha256(raw)
             connection.execute(
-                'INSERT OR IGNORE INTO full_campaign_checkpoint_staged VALUES(?,?,?,?)',
-                (attempt_id, role, digest_value, raw),
+                'INSERT OR IGNORE INTO full_campaign_checkpoint_staged VALUES(?,?,?,?,?)',
+                (attempt_id, checkpoint, role, digest_value, raw),
             )
             return digest_value
 
-    def checkpoint_members(self, attempt_id):
-        """The served member inventory: family bytes plus retained inputs, by digest."""
+    def _checkpoint_plan(self, attempt_id, checkpoint='N1'):
+        """The canonical checkpoint plan from the retained campaign plan; the N2
+        slice is bound to this attempt's own committed N1 receipt bytes."""
         from ..checkpoint_plan import derive_checkpoint_plan
 
+        if checkpoint == 'N1':
+            return derive_checkpoint_plan(
+                self.retained_object(attempt_id, 'plan'), 'N1', None
+            )
+        return derive_checkpoint_plan(
+            self.retained_object(attempt_id, 'plan'), 'N2', self.checkpoint_receipt(attempt_id, 'N1')
+        )
+
+    def checkpoint_receipt(self, attempt_id, checkpoint='N1'):
+        """The committed receipt bytes of one checkpoint, or None before T2."""
+        with self.store.transaction() as connection:
+            if connection.execute('PRAGMA user_version').fetchone()[0] < 8:
+                return None
+            row = connection.execute(
+                'SELECT receipt_bytes FROM full_campaign_checkpoint_intents '
+                'WHERE attempt_id=? AND checkpoint=?',
+                (attempt_id, checkpoint),
+            ).fetchone()
+            return None if row is None or row[0] is None else bytes(row[0])
+
+    def checkpoint_members(self, attempt_id, checkpoint='N1'):
+        """The served member inventory: family bytes plus retained inputs, by digest."""
         with self.store.transaction() as connection:
             self._funding_gate(connection, attempt_id)
             state = self._budget(connection, attempt_id)
-            self._require_family(state)
-            capture = self.checkpoint_capture(attempt_id)
-            plan_bytes = derive_checkpoint_plan(
-                self.retained_object(attempt_id, 'plan'), 'N1', None
-            )
+            self._require_family(state, checkpoint)
+            capture = self.checkpoint_capture(attempt_id, checkpoint)
+            plan_bytes = self._checkpoint_plan(attempt_id, checkpoint)
             members = [
                 {'role': name, 'sha256': sha256(raw), 'byte_length': len(raw)}
                 for name, raw in (
@@ -348,6 +425,24 @@ class CheckpointStoreMixin:
                     ('attestation', capture['attestation_bytes']),
                 )
             ]
+            if checkpoint == 'N2':
+                row = connection.execute(
+                    'SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
+                    "WHERE attempt_id=? AND checkpoint='N1'",
+                    (attempt_id,),
+                ).fetchone()
+                if row is None:
+                    raise ValueError('committed N1 predecessor required')
+                predecessors = self.checkpoint_capture(attempt_id, 'N1')
+                members.extend(
+                    {'role': name, 'sha256': sha256(raw), 'byte_length': len(raw)}
+                    for name, raw in (
+                        ('predecessor_receipt', self.checkpoint_receipt(attempt_id, 'N1')),
+                        ('predecessor_assessment', bytes(row[0])),
+                        ('predecessor_plan', self._checkpoint_plan(attempt_id, 'N1')),
+                        ('predecessor_payload', predecessors['payload_bytes']),
+                    )
+                )
             for role, raw in sorted(self.objects(attempt_id).items()):
                 if role.startswith('context_') or role == 'bundle_index':
                     members.append(
@@ -361,8 +456,8 @@ class CheckpointStoreMixin:
             # those bytes, never a fresh signature.
             intent = connection.execute(
                 'SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
-                'WHERE attempt_id=?',
-                (attempt_id,),
+                'WHERE attempt_id=? AND checkpoint=?',
+                (attempt_id, checkpoint),
             ).fetchone()
             if intent is not None:
                 raw = bytes(intent[0])
@@ -371,9 +466,8 @@ class CheckpointStoreMixin:
                 )
             return members
 
-    def fetch_checkpoint_member(self, attempt_id, object_sha256, offset, length):
+    def fetch_checkpoint_member(self, attempt_id, object_sha256, offset, length, *, checkpoint='N1'):
         """One bounded chunk of one served member; the plan-chunk pattern."""
-        from ..checkpoint_plan import derive_checkpoint_plan
         from .campaign_protocol import CHECKPOINT_CHUNK_LIMIT
         from .protocol import digest as parse_digest
         from .campaign_budget import integer
@@ -386,31 +480,43 @@ class CheckpointStoreMixin:
         with self.store.transaction() as connection:
             self._funding_gate(connection, attempt_id)
             state = self._budget(connection, attempt_id)
-            self._require_family(state)
-            capture = self.checkpoint_capture(attempt_id)
-            plan_bytes = derive_checkpoint_plan(
-                self.retained_object(attempt_id, 'plan'), 'N1', None
-            )
+            self._require_family(state, checkpoint)
+            capture = self.checkpoint_capture(attempt_id, checkpoint)
+            plan_bytes = self._checkpoint_plan(attempt_id, checkpoint)
             sources = {
                 'plan': plan_bytes,
                 'result': capture['result_bytes'],
                 'payload': capture['payload_bytes'],
                 'attestation': capture['attestation_bytes'],
             }
+            if checkpoint == 'N2':
+                predecessor = self.checkpoint_capture(attempt_id, 'N1')
+                sources.update(
+                    predecessor_receipt=self.checkpoint_receipt(attempt_id, 'N1'),
+                    predecessor_payload=predecessor['payload_bytes'],
+                    predecessor_plan=self._checkpoint_plan(attempt_id, 'N1'),
+                )
+                row = connection.execute(
+                    'SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
+                    "WHERE attempt_id=? AND checkpoint='N1'",
+                    (attempt_id,),
+                ).fetchone()
+                if row is not None:
+                    sources['predecessor_assessment'] = bytes(row[0])
             for role, raw in self.objects(attempt_id).items():
                 if role.startswith('context_') or role == 'bundle_index':
                     sources['retained_' + role] = raw
             row = connection.execute(
                 'SELECT role,body FROM full_campaign_checkpoint_staged '
-                'WHERE attempt_id=? AND sha256=?',
-                (attempt_id, object_sha256),
+                'WHERE attempt_id=? AND checkpoint=? AND sha256=?',
+                (attempt_id, checkpoint, object_sha256),
             ).fetchone()
             if row is not None:
                 sources['staged_' + row[0]] = bytes(row[1])
             intent = connection.execute(
                 'SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
-                'WHERE attempt_id=?',
-                (attempt_id,),
+                'WHERE attempt_id=? AND checkpoint=?',
+                (attempt_id, checkpoint),
             ).fetchone()
             if intent is not None:
                 sources['candidate'] = bytes(intent[0])
@@ -426,6 +532,7 @@ class CheckpointStoreMixin:
                 {
                     'schema': 'qualification_campaign_checkpoint_chunk/v1',
                     'attempt_id': attempt_id,
+                    'checkpoint': checkpoint,
                     'object_sha256': object_sha256,
                     'offset': offset,
                     'total_byte_length': len(raw),
@@ -441,15 +548,30 @@ class CheckpointStoreMixin:
             self._funding_gate(connection, attempt_id)
             state = self._budget(connection, attempt_id)
             family = self._require_family(state, checkpoint)
-            capture = self.checkpoint_capture(attempt_id)
+            capture = self.checkpoint_capture(attempt_id, checkpoint)
             plan = parse_canonical_json(
                 self.retained_object(attempt_id, 'plan'), label='campaign plan'
             )
             intent = connection.execute(
                 'SELECT work_id,candidate_bytes FROM '
-                'full_campaign_checkpoint_intents WHERE attempt_id=?',
-                (attempt_id,),
+                'full_campaign_checkpoint_intents WHERE attempt_id=? AND checkpoint=?',
+                (attempt_id, checkpoint),
             ).fetchone()
+            predecessor = None
+            if checkpoint == 'N2':
+                committed = connection.execute(
+                    'SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
+                    "WHERE attempt_id=? AND checkpoint='N1'",
+                    (attempt_id,),
+                ).fetchone()
+                receipt = self.checkpoint_receipt(attempt_id, 'N1')
+                if committed is None or receipt is None:
+                    raise ValueError('committed N1 predecessor required')
+                predecessor = {
+                    'checkpoint': 'N1',
+                    'assessment_sha256': sha256(bytes(committed[0])),
+                    'receipt_sha256': sha256(receipt),
+                }
             return encode_campaign_checkpoint_snapshot(
                 attempt_id=attempt_id,
                 checkpoint=checkpoint,
@@ -480,7 +602,8 @@ class CheckpointStoreMixin:
                     'work_id': intent[0] if intent is not None else family['work_id'],
                     'candidate_sha256': None if intent is None else sha256(bytes(intent[1])),
                 },
-                members=self.checkpoint_members(attempt_id),
+                members=self.checkpoint_members(attempt_id, checkpoint),
+                predecessor=predecessor,
             )
 
     def _checkpoint_integrity(self, connection):
@@ -528,18 +651,25 @@ class CheckpointStoreMixin:
                     raise ValueError('committed checkpoint cutoff absent')
                 parse_checkpoint_cutoff(bytes(row[6]), attempt_id=attempt)
                 receipt = parse_canonical_json(bytes(row[7]), label='receipt')
+                advance = CHECKPOINT_ADVANCES[receipt['checkpoint']] if (
+                    receipt['checkpoint'] in CHECKPOINT_ADVANCES
+                ) else None
                 if (
                     receipt['schema'] != CHECKPOINT_RECEIPT_SCHEMA
                     or receipt['attempt_id'] != attempt
+                    or receipt['checkpoint'] != row[1]
                     or receipt['assessment_sha256'] != sha256(bytes(row[5]))
                     or receipt['cutoff_sha256'] != sha256(bytes(row[6]))
+                    or advance is None
+                    or receipt['campaign_state'] not in advance
+                    or (receipt['campaign_state'] == advance[0]) != (receipt['decision'] == 'CONTINUE')
                     or family.get('receipt_sha256') != sha256(bytes(row[7]))
                 ):
                     raise ValueError('checkpoint receipt integrity differs')
         for row in connection.execute(
-            'SELECT attempt_id,role,sha256,body FROM full_campaign_checkpoint_staged'
+            'SELECT attempt_id,checkpoint,role,sha256,body FROM full_campaign_checkpoint_staged'
         ):
-            if sha256(bytes(row[3])) != row[2]:
+            if sha256(bytes(row[4])) != row[3]:
                 raise ValueError('checkpoint staged artifact integrity differs')
 
     def persist_checkpoint_intent(
@@ -551,6 +681,8 @@ class CheckpointStoreMixin:
         candidate_bytes,
         capture_transition_bytes,
         signing_transition_bytes,
+        *,
+        checkpoint='N1',
     ):
         """T1 of the D1 commit: the g5 work's CAPTURED + SIGNING_INTENT and the durable
         candidate, all in one transaction.
@@ -583,17 +715,19 @@ class CheckpointStoreMixin:
         if (
             intent['schema'] != CHECKPOINT_INTENT_SCHEMA
             or intent['attempt_id'] != attempt_id
-            or intent['checkpoint'] != 'N1'
+            or intent['checkpoint'] != checkpoint
             or intent['work_id'] != work_id
             or intent['candidate_sha256'] != sha256(candidate_bytes)
         ):
             raise ValueError('checkpoint signing intent binding differs')
         utc(intent['signing_at_utc'])
-        # The candidate's work_id names the captured N1 work; the intent and
-        # the signing window belong to the assessing N1_G5 work.
+        # The candidate's work_id names the captured compute work; the intent and
+        # the signing window belong to the assessing G5 work of that checkpoint.
         if (
             candidate['attempt_id'] != attempt_id
+            or candidate['checkpoint'] != checkpoint
             or snapshot['attempt_id'] != attempt_id
+            or snapshot['checkpoint'] != checkpoint
             or intent['snapshot_sha256'] != sha256(snapshot_bytes)
         ):
             raise ValueError('checkpoint signing intent identity differs')
@@ -601,8 +735,8 @@ class CheckpointStoreMixin:
             self._ensure_checkpoint_layout(connection)
             prior = connection.execute(
                 'SELECT snapshot_bytes,intent_bytes,candidate_bytes FROM '
-                'full_campaign_checkpoint_intents WHERE attempt_id=?',
-                (attempt_id,),
+                'full_campaign_checkpoint_intents WHERE attempt_id=? AND checkpoint=?',
+                (attempt_id, checkpoint),
             ).fetchone()
             if prior is not None:
                 if (bytes(prior[1]), bytes(prior[2])) != (intent_bytes, candidate_bytes):
@@ -612,11 +746,14 @@ class CheckpointStoreMixin:
                 )
             state = self._budget(connection, attempt_id)
             work = self._work(state, work_id)
-            if work['phase'] != 'N1_G5':
-                raise ValueError('checkpoint assessment requires the N1_G5 work')
-            family = self._require_family(state)
+            g5_phase = 'N1_G5' if checkpoint == 'N1' else 'N2_G5'
+            if work['phase'] != g5_phase:
+                raise ValueError('checkpoint assessment requires the checkpoint g5 work')
+            family = self._require_family(state, checkpoint)
             if family['state'] not in ('ATTESTED', 'ASSESSING'):
                 raise ValueError('attested checkpoint family required')
+            if checkpoint == 'N2' and self._require_family(state, 'N1')['state'] != 'COMMITTED':
+                raise ValueError('committed N1 predecessor required')
             from .campaign_budget import transition as parse_transition
 
             for raw, expected in (
@@ -641,10 +778,11 @@ class CheckpointStoreMixin:
                 expected_revision=state['authority_revision'],
             )
             state = self._budget(connection, attempt_id)
-            # The family's work_id stays the captured N1 work; the assessing
-            # N1_G5 work is bound by the intent row below.
+            # The family's work_id stays the captured compute work; the assessing
+            # G5 work of this checkpoint is bound by the intent row below.
             self._family(
                 state,
+                checkpoint,
                 work_id=family['work_id'],
                 state='ASSESSING',
                 payload_sha256=family['payload_sha256'],
@@ -653,33 +791,37 @@ class CheckpointStoreMixin:
             )
             connection.execute(
                 'INSERT INTO full_campaign_checkpoint_intents VALUES(?,?,?,?,?,?,NULL,NULL)',
-                (attempt_id, 'N1', work_id, snapshot_bytes, intent_bytes, candidate_bytes),
+                (attempt_id, checkpoint, work_id, snapshot_bytes, intent_bytes, candidate_bytes),
             )
             return self._save_budget(connection, state, 'CHECKPOINT_INTENT', authority=False)
 
     def commit_checkpoint_assessment(
-        self, attempt_id, work_id, candidate_bytes, cutoff_bytes, *, now, clock_bytes
+        self, attempt_id, work_id, candidate_bytes, cutoff_bytes, *, now, clock_bytes,
+        checkpoint='N1',
     ):
         """T2 of the D1 commit: validate structurally, commit, advance the campaign.
 
         Requires the persisted T1 intent with the exact candidate bytes. The
         committed receipt binds the assessment, cutoff, decision and the intent's
-        own signing instant; the campaign advances to N2_READY on CONTINUE and to
-        N1_FAILED on FAILURE. An exact retry after a lost reply returns the
-        byte-identical persisted receipt (no fresh time or signature).
+        own signing instant; the campaign advances through this checkpoint's
+        ruled pair (N1: N2_READY/N1_FAILED; N2: PART_A_READY/N2_FAILED). An exact
+        retry after a lost reply returns the byte-identical persisted receipt
+        (no fresh time or signature).
         """
         from .store import instant
 
         candidate = parse_checkpoint_assessment(candidate_bytes, attempt_id=attempt_id)
         cutoff = parse_checkpoint_cutoff(cutoff_bytes, attempt_id=attempt_id)
+        if candidate['checkpoint'] != checkpoint or cutoff['checkpoint'] != checkpoint:
+            raise ValueError('checkpoint commit binding differs')
         from .campaign_budget import clock as parse_clock
 
         with self.store.transaction() as connection:
             self._ensure_checkpoint_layout(connection)
             row = connection.execute(
                 'SELECT work_id,snapshot_bytes,intent_bytes,candidate_bytes,cutoff_bytes,receipt_bytes '
-                'FROM full_campaign_checkpoint_intents WHERE attempt_id=?',
-                (attempt_id,),
+                'FROM full_campaign_checkpoint_intents WHERE attempt_id=? AND checkpoint=?',
+                (attempt_id, checkpoint),
             ).fetchone()
             if row is None or bytes(row[3]) != candidate_bytes:
                 raise ValueError('exact checkpoint candidate retry required')
@@ -695,9 +837,13 @@ class CheckpointStoreMixin:
                 )
             state = self._budget(connection, attempt_id)
             work = self._work(state, work_id)
-            if work['phase'] != 'N1_G5' or work['state'] != 'SIGNING_INTENT':
+            if work['phase'] != ('N1_G5' if checkpoint == 'N1' else 'N2_G5') or work[
+                'state'
+            ] != 'SIGNING_INTENT':
                 raise ValueError('signing intent window required')
-            family = self._require_family(state)
+            family = self._require_family(state, checkpoint)
+            if checkpoint == 'N2' and self._require_family(state, 'N1')['state'] != 'COMMITTED':
+                raise ValueError('committed N1 predecessor required')
             if family['state'] != 'ASSESSING':
                 raise ValueError('checkpoint family assessment state differs')
             intent = parse_canonical_json(bytes(row[2]), label='persisted intent')
@@ -745,21 +891,35 @@ class CheckpointStoreMixin:
             # Budget freshness at commit: the SIGNED transition below observes the
             # trusted clock (deadline) inside this same transaction.
             decision = candidate['decision']
+            advance = CHECKPOINT_ADVANCES[checkpoint]
+            campaign_state = advance[0] if decision == 'CONTINUE' else advance[1]
             receipt = encoded(
-                {
-                    'schema': CHECKPOINT_RECEIPT_SCHEMA,
-                    'attempt_id': attempt_id,
-                    'checkpoint': 'N1',
-                    'work_id': work_id,
-                    'campaign_id': self.row(attempt_id)['campaign_id'],
-                    'assessment_sha256': sha256(candidate_bytes),
-                    'cutoff_sha256': sha256(cutoff_bytes),
-                    'decision': decision,
-                    'campaign_state': 'N2_READY' if decision == 'CONTINUE' else 'N1_FAILED',
-                    'signing_at_utc': intent['signing_at_utc'],
-                    'committed_at_utc': instant(now),
-                    'intent_sha256': sha256(bytes(row[2])),
-                }
+                dict(
+                    {
+                        'schema': CHECKPOINT_RECEIPT_SCHEMA,
+                        'attempt_id': attempt_id,
+                        'checkpoint': checkpoint,
+                        'work_id': work_id,
+                        'campaign_id': self.row(attempt_id)['campaign_id'],
+                        'assessment_sha256': sha256(candidate_bytes),
+                        'cutoff_sha256': sha256(cutoff_bytes),
+                        'decision': decision,
+                        'campaign_state': campaign_state,
+                        'signing_at_utc': intent['signing_at_utc'],
+                        'committed_at_utc': instant(now),
+                        'intent_sha256': sha256(bytes(row[2])),
+                    },
+                    **(
+                        {
+                            'stage_decisions': candidate['stage_decisions'],
+                            'predecessor_receipt_sha256': candidate['predecessor'][
+                                'receipt_sha256'
+                            ],
+                        }
+                        if checkpoint == 'N2'
+                        else {}
+                    ),
+                )
             )
             parse_canonical_json(receipt, label='receipt')
             signed_transition = encoded(
@@ -781,11 +941,16 @@ class CheckpointStoreMixin:
                 expected_revision=state['authority_revision'],
             )
             state = self._budget(connection, attempt_id)
-            if state['state'] not in ('PROVISIONAL', 'BOUND'):
+            # The N2 commit runs in the progression its N1 predecessor produced;
+            # the N1 commit runs in the still-live BOUND budget.
+            if state['state'] not in ('PROVISIONAL', 'BOUND') + (
+                () if checkpoint == 'N1' else ('N2_READY',)
+            ):
                 return self._negative_budget_response(connection, state)
-            state['state'] = 'N2_READY' if decision == 'CONTINUE' else 'N1_FAILED'
+            state['state'] = campaign_state
             self._family(
                 state,
+                checkpoint,
                 work_id=family['work_id'],
                 state='COMMITTED',
                 payload_sha256=family['payload_sha256'],
@@ -794,11 +959,16 @@ class CheckpointStoreMixin:
                 assessment_sha256=sha256(candidate_bytes),
                 receipt_sha256=sha256(receipt),
                 decision=decision,
+                **(
+                    {'stage_decisions': candidate['stage_decisions']}
+                    if checkpoint == 'N2'
+                    else {}
+                ),
             )
             connection.execute(
                 'UPDATE full_campaign_checkpoint_intents SET cutoff_bytes=?,receipt_bytes=? '
-                'WHERE attempt_id=?',
-                (cutoff_bytes, receipt, attempt_id),
+                'WHERE attempt_id=? AND checkpoint=?',
+                (cutoff_bytes, receipt, attempt_id, checkpoint),
             )
             self._save_budget(
                 connection,
@@ -1073,7 +1243,14 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
         with self.store.transaction() as connection:
             state = self._budget(connection, attempt_id)
             work = self._work(state, work_id)
-            self._check_budget(state, state['authority_revision'])
+            self._check_budget(
+                state,
+                state['authority_revision'],
+                progression_checkpoint=(
+                    state['state'] in CHECKPOINT_PROGRESSION_STATES
+                    and work['phase'] in PROGRESSION_PHASES.get(state['state'], ())
+                ),
+            )
             if (
                 work['state'] not in ('START_INTENT', 'RUNNING')
                 or work['observation_bytes_b64'] is not None
@@ -1084,7 +1261,10 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             ):
                 raise ValueError('dispatch already spent; no relaunch')
             current, deadline = self._dispatch_clock(connection, state, work, clock_source)
-            refused = state['state'] not in ('PROVISIONAL', 'BOUND')
+            refused = state['state'] not in ('PROVISIONAL', 'BOUND') and not (
+                state['state'] in CHECKPOINT_PROGRESSION_STATES
+                and work['phase'] in PROGRESSION_PHASES.get(state['state'], ())
+            )
             if not refused:
                 state['schema'] = (
                     (
@@ -1112,14 +1292,25 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
         with self.store.transaction() as connection:
             state = self._budget(connection, attempt_id)
             work = self._work(state, work_id)
-            self._check_budget(state, state['authority_revision'], dispatch_owner=owner)
+            self._check_budget(
+                state,
+                state['authority_revision'],
+                dispatch_owner=owner,
+                progression_checkpoint=(
+                    state['state'] in CHECKPOINT_PROGRESSION_STATES
+                    and work['phase'] in PROGRESSION_PHASES.get(state['state'], ())
+                ),
+            )
             if (
                 work['state'] not in ('START_INTENT', 'RUNNING')
                 or work['observation_bytes_b64'] is not None
             ):
                 raise ValueError('durable unconsumed start intent required')
             current, deadline = self._dispatch_clock(connection, state, work, clock_source)
-            refused = state['state'] not in ('PROVISIONAL', 'BOUND')
+            refused = state['state'] not in ('PROVISIONAL', 'BOUND') and not (
+                state['state'] in CHECKPOINT_PROGRESSION_STATES
+                and work['phase'] in PROGRESSION_PHASES.get(state['state'], ())
+            )
             if not refused:
                 yield {'token': token, 'clock': current, 'deadline_boottime_ns': deadline}
         if refused:
@@ -1931,6 +2122,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 'qualification_execution_release/v3',
                 'qualification_execution_release/v4',
                 'qualification_execution_release/v5',
+                'qualification_execution_release/v6',
             )
             or context.attempt_id != request['attempt_id']
             or context.bundle_sha256 != request['bundle_sha256']
@@ -2191,7 +2383,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
         identity(attempt)
         from ..journal_snapshot import parse_campaign_budget_snapshot
 
-        if connection.execute('PRAGMA user_version').fetchone()[0] not in (6, 7, 8):
+        if connection.execute('PRAGMA user_version').fetchone()[0] not in (6, 7, 8, 9):
             raise ValueError('no metered campaign')
         row = connection.execute(
             'SELECT snapshot_bytes FROM full_campaign_budgets WHERE attempt_id=?', (attempt,)
@@ -2284,6 +2476,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
         dispatch_owner=None,
         negative_transition=False,
         committed_checkpoint=False,
+        progression_checkpoint=False,
     ):
         from .campaign_budget import integer, dispatch_pending
 
@@ -2300,7 +2493,11 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             raise ValueError('campaign authority revision conflict')
         if self.row(state['attempt_id'])['validity'] != 'VALID':
             raise ValueError('VOID campaign')
-        live = ('PROVISIONAL', 'BOUND') + (CHECKPOINT_PROGRESSION_STATES if committed_checkpoint else ())
+        live = ('PROVISIONAL', 'BOUND') + (
+            CHECKPOINT_PROGRESSION_STATES
+            if committed_checkpoint or progression_checkpoint
+            else ()
+        )
         if state['state'] not in live:
             raise ValueError('terminal campaign budget')
 
@@ -2562,8 +2759,17 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 return self._negative_budget_response(connection, state)
             # A new work grant refuses a queued cancellation even before the receipt.
             self._cancellation_barrier(connection, attempt_id, admitted_only=False)
-            self._check_budget(state, expected_revision)
-            if state['state'] != 'BOUND' or phase not in state['profile']['phases']:
+            # The one progression continuation S4 admits: a committed N1 CONTINUE
+            # (N2_READY) opens exactly the next checkpoint's own phases.
+            progression = (
+                phase in PROGRESSION_PHASES.get(state['state'], ())
+            )
+            self._check_budget(
+                state, expected_revision, progression_checkpoint=progression
+            )
+            if (
+                state['state'] != 'BOUND' and not progression
+            ) or phase not in state['profile']['phases']:
                 raise ValueError('bound budget and installed phase required')
             if specification['limits'] != state['profile']['phases'][phase]:
                 raise ValueError('reservation must use installed phase configuration')
@@ -2730,7 +2936,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             completing_checkpoint = (
                 target == 'COMPLETED'
                 and work['state'] == 'SIGNED'
-                and work['phase'] == 'N1_G5'
+                and work['phase'] in ('N1_G5', 'N2_G5')
                 and state['state'] in CHECKPOINT_PROGRESSION_STATES
             )
             self._check_budget(
@@ -2739,6 +2945,10 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 allow_recovery_pending=target in ('IN_DOUBT', 'ABORTED'),
                 negative_transition=target in ('IN_DOUBT', 'ABORTED'),
                 committed_checkpoint=completing_checkpoint,
+                progression_checkpoint=(
+                    state['state'] in CHECKPOINT_PROGRESSION_STATES
+                    and work['phase'] in PROGRESSION_PHASES.get(state['state'], ())
+                ),
             )
             if work['state'] not in allowed[target]:
                 raise ValueError('illegal work transition; no reexecution')
@@ -2776,7 +2986,13 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             ):
                 self._terminal(state, 'BUDGET_EXHAUSTED')
             live = ('PROVISIONAL', 'BOUND') + (
-                CHECKPOINT_PROGRESSION_STATES if completing_checkpoint else ()
+                CHECKPOINT_PROGRESSION_STATES
+                if completing_checkpoint
+                or (
+                    state['state'] in CHECKPOINT_PROGRESSION_STATES
+                    and work['phase'] in PROGRESSION_PHASES.get(state['state'], ())
+                )
+                else ()
             )
             if state['state'] not in live:
                 return self._save_budget(connection, state, 'CLOCK_TERMINAL', authority=True)
@@ -2831,7 +3047,9 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             if target == 'COMPLETED' and work['observation_bytes_b64'] is None:
                 raise ValueError('settlement required before finalization')
             if target in ('IN_DOUBT', 'ABORTED'):
-                self._terminal(state, target)
+                # A mid-work IN_DOUBT ends authority from a progression state
+                # too (A3 inherited): the committed receipt survives as history.
+                self._settlement_terminal(state, target)
             work['state'] = target
             work['transitions'].append(self._b64(transition_bytes))
             return self._save_budget(
@@ -2884,7 +3102,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                     work['state'] = 'ABORTED'
                 else:
                     work['state'] = 'IN_DOUBT'
-                    self._terminal(state, 'IN_DOUBT')
+                    self._settlement_terminal(state, 'IN_DOUBT')
             if recovery_owner_token is not None:
                 owner = self._recovery_owner(state, work_id, recovery_owner_token)
                 owner['observations_bytes_b64'] = self._b64(observations_bytes)

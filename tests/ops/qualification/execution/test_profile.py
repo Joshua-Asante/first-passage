@@ -78,3 +78,40 @@ def test_v4_profile_with_dispatch_enabled_is_still_refused():
         module.parse_profile(canonical_json_bytes(doc))
     doc.update(dispatch_enabled=False, supported_checkpoints=[])
     module.parse_profile(canonical_json_bytes(doc))
+
+
+# ---- S4 v6 joint vectors (D3; beside the v5 pins, never replacing them) ------
+
+
+def test_joint_dispatch_profile_enables_exactly_n1_n2():
+    import importlib
+    module = importlib.import_module('c1_rail.qualification.execution.profile')
+    doc = module.joint_dispatch_diagnostic_execution_profile(canonical_json_bytes(document()))
+    profile = module.parse_profile(canonical_json_bytes(doc))
+    assert profile.values['schema'] == 'qualification_execution_profile/v6'
+    assert profile.supported_checkpoints == ('N1', 'N2')
+    assert profile.dispatch_checkpoints == ('N1', 'N2')
+    assert profile.dispatch_enabled is True and profile.capability == 'FULL_E1'
+    assert profile.production_execution is False
+
+
+@pytest.mark.parametrize('field,value', [
+    ('dispatch_enabled', False), ('dispatch_checkpoints', ['N1']),
+    ('dispatch_checkpoints', ['N1', 'N2', 'PART_A']), ('supported_checkpoints', ['N1']),
+    ('supported_checkpoints', ['N1', 'N2', 'PART_A'])])
+def test_joint_dispatch_profile_refuses_open_dispatch_facts(field, value):
+    import importlib
+    module = importlib.import_module('c1_rail.qualification.execution.profile')
+    doc = module.joint_dispatch_diagnostic_execution_profile(canonical_json_bytes(document()))
+    doc[field] = value
+    with pytest.raises(ValueError):
+        module.parse_profile(canonical_json_bytes(doc))
+
+
+def test_v5_profile_with_the_joint_set_is_still_refused():
+    import importlib
+    module = importlib.import_module('c1_rail.qualification.execution.profile')
+    doc = module.joint_dispatch_diagnostic_execution_profile(canonical_json_bytes(document()))
+    doc.update(schema='qualification_execution_profile/v5', protocol_version=5)
+    with pytest.raises(ValueError):
+        module.parse_profile(canonical_json_bytes(doc))
