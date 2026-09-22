@@ -1,0 +1,41 @@
+# Handoff — Tradeify T07: manual settlement procedure accepted end to end (CAP S1–S5)
+
+**Type:** cc_handoff (evidence-collection + consumer rehearsal; not implementation-first)
+**Date:** 2026-09-21
+**Status:** dispatchable now under existing authority, independent of T01–T06 and of the deployment-checklist amendment (PR #448). Parent packet: [deployment checklist §T07](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md).
+**Executor:** one settlement executor (Claude Code or GLM at the coordinator's choice; the consumer rehearsal half is bounded implementation, the source half is collection). **Operator:** Joshua supplies account-only facts and original report bytes, reviews and signs exact packages; **no agent ever touches the account, and account identifiers and P&L never enter a repo file, a task string or a chat transcript.** **Coordinator:** accepts CAP S1–S5 dispositions.
+**Authority:** read every owner below; write only under the private root and the return section here; implementation is limited to the consumer rehearsal harness named in §3 (tests + synthetic fixtures), never to the settlement contract, the verifier's acceptance rules or signing. A `DONE` status supplies no permission.
+
+## 0. Owners to read first (anchors at `main@abb3914`)
+- `docs/briefs/phase4-preparation/2026-09-16/capability-decision.md` — **CAP-20260916**: the S1–S5 disposition table (:37-41, all UNPROVEN, each row names what Joshua or the coordinator must supply), the "Deployment and chain evidence" and "Actual account observations and capture limitation" sections, the evidence register (E03 retained UI captures, E06 operator statement "none exists"), and the private index / capture tag. This is the predecessor; T07 updates its rows, it does not restart them.
+- `docs/spec/2026-09-15-tradeify-attended-settlement-contract.md` — the governing contract: "Grounding and resolved distinctions", "Evidence package" (incl. "Trading costs versus cash adjustments"), "What counts as an accepted close", "Authenticated submission and durable acceptance", "Corrections and restore", "Required acceptance traces", "Remaining implementation and qualifications" + "Implementation status — 2026-09-15". The contract is not amended by this packet.
+- `docs/notes/2026-09-15-account-timezone-operator-clarification.md`, `docs/notes/2026-09-15-packet1-producer-feasibility.md`, `docs/notes/2026-09-15-packet1-step5-settlement-owner.md`, `docs/notes/2026-09-16-production-capability-inquiries.md`, `docs/notes/2026-09-16-tradeify-production-feasibility-decision.md`, `docs/superpowers/specs/2026-09-16-tradeify-settlement-order-feasibility-design.md`, `docs/briefs/Q-MCLTAS-1-…` (settlement delta extraction scoping).
+- Code (read, then rehearse against): `ops/c1_rail/book_settlement.py` @17aa7ec (`SettlementStore` :174, `Receipt` :64, `load_operator_keys` :119, decimal/UTC parsing helpers), `ops/c1_rail/settlement_signing.py` @d107ebd (`signing_envelope`), `ops/c1_rail/book_account_owner.py` @7ba7844 (the durable owner; `SyntheticBroker` :207 is test-only; production route refuses `production_route_unavailable`), `ops/c1_rail/book_account_lock.py`, `tests/fixtures/book_migration/3-attached_settlement.json` and the existing settlement tests.
+- Standing rules: the settlement contract's "no signature creates missing source facts"; the checklist's "Never replace actual broker/feed/settlement evidence with a mock; keep originals and private financial/account facts in approved private roots"; `lesson_tradeify_trail_enforced_intraday` (EOD figures are lower bounds).
+
+## 1. Selected outcome and return boundary
+**Outcome:** real report originals establish an admissible initial chain and one subsequent close through the verifier/account owner, with a repeatable daily procedure and time — CAP S1–S5 each moved to QUALIFIED with retained original-byte consumer traces, or each left UNPROVEN with the exact missing producer fact named. **Return boundary:** CAP-backed accepted procedure, or a precise blocked producer/contract decision. No account reset, no chain reset, no activation, no route work (that is T08/T09).
+
+## 2. Steps (in order; each returns early on an unsupported decisive fact)
+- [ ] **S5 first — existing accepted-chain status.** Establish whether any production owner/B7 acceptance location or retained receipt exists anywhere (the CAP E06 statement is "none exists" but "does not prove there is no production chain"). Joshua answers the S5 question in the CAP row verbatim; the executor searches every inspected host/data path named in CAP's "Deployment and chain evidence" and records the search. **No silent reset:** if a chain exists, its last accepted close is the predecessor; if none exists, record "no accepted chain" as the predecessor state with the search evidence.
+- [ ] **S2 — report semantics from a primary source.** Resolve the exact Tradovate report timezone (the UI displays CDT; the report-offset → calendar-date mapping is unsourced), session/filter semantics, coverage window, cost rows vs. cash adjustments (the contract's distinction), and correction handling — each from a primary Tradovate/Tradeify source page or from the original export's own header/metadata, with the original bytes retained privately and their SHA-256 recorded. A UI screenshot is not a primary source for offset semantics.
+- [ ] **S1/S3 — collect originals with context.** Joshua exports, through the working download path CAP names, the bounded original full-history cash/report bytes and the predecessor's close-equity/valuation record; the executor receives them only under the private root (path recorded, bytes hashed, never quoted). Reconcile history against the predecessor state; establish close equity, or supported same-boundary flatness, exactly as "What counts as an accepted close" defines it.
+- [ ] **S4 — rehearse the consumer.** Through `SettlementStore` and the owner: (a) isolated anchor ingestion from the original bytes; (b) a subsequent close; (c) correction refusal (a later export that contradicts an accepted close is refused, not merged); (d) restore after crash between acceptance and receipt; (e) the synthetic missing-row / duplicate-row / out-of-order cases from the contract's "Required acceptance traces". Then Joshua reviews and signs the exact admissible package (`signing_envelope`); the executor retains the receipt reference.
+- [ ] **Procedure.** Record the repeatable daily procedure: who exports what, when (the exact local time relative to the session boundary), the verifier commands, expected receipts, and the refusal shapes an operator will see. Time it once end to end.
+
+## 3. Verification
+- Actual original-byte consumer traces for anchor and subsequent close (private root; hashes in the return), plus the synthetic missing/correction/restart cases as repository tests under `tests/ops/` (fixtures synthetic, never derived from real bytes).
+- The updated CAP S1–S5 table (a dated addendum to the CAP record, append-only), each row citing its evidence reference.
+- **No signature creates missing source facts:** a package with an unsourced offset, an unreconciled gap, or an inferred close is not signed; the row stays UNPROVEN with the gap named.
+
+## 4. Checkpoints
+Return promptly on any unsupported decisive source fact (report offset semantics, coverage gap, a contradicting correction, an existing chain with an unrecoverable predecessor). Continue independent collection only; do not implement around a missing fact.
+
+## 5. Operator inputs this packet cannot proceed without
+S5 answer; original exports via the working download path; the predecessor close-equity record (if a chain exists); a review-and-sign session for S4. Each is an account-side act by Joshua; the executor never performs it.
+
+## 6. Forbidden
+Any agent action on the account or platform; account identifiers/P&L in any repo, task or chat text; mocks in place of real bytes for S1–S4; amending the settlement contract; a "provisional" chain; inferring an offset from a UI display; implementing a producer (T09's scope).
+
+## 7. Executor return
+_Pending._ Per CAP row: disposition + evidence reference; the procedure and its measured time; blocked facts with the exact missing producer; hashes of every retained original; repository test IDs and records.

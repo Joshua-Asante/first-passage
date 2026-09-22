@@ -1,0 +1,40 @@
+# Handoff — Tradeify T10: actual source and freeze packet ready (F01–F52 evidence inventory)
+
+**Type:** cc_handoff (evidence reconciliation + inventory; the F1 decision itself is not this packet)
+**Date:** 2026-09-21
+**Status:** dispatchable now under existing authority, alongside T02+; the final inventory consumes T06 and the pre-freeze dependencies (T07/T08 verdicts), so this packet runs in two phases. Parent packet: [deployment checklist §T10](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md).
+**Executor:** one source/freeze executor (Claude Code or GLM; phase 1 is reconciliation against retained artifacts, phase 2 is inventory assembly). **Coordinator:** owns combined freeze readiness. **Operator:** rules the contradictions that need a decision (§2 step 3) and, later, F1 itself.
+**Authority:** read every owner; write a dated append-only addendum to the requirements matrix (per-F evidence status), the freeze inventory document, and the return section. No change to the frozen statistical definitions, the calendar artifacts, the admitted source registry, thresholds, seeds or depths; no F1 approval; no reserved attempt. A `DONE` status supplies no permission.
+
+## 0. Owners to read first (anchors at `main@abb3914`)
+- `docs/briefs/phase3-preparation/2026-09-15/requirements.md` — **the F1 requirements and dependency matrix, F01–F52** (:39-90): each row's governing source key, owner, current evidence, what must be established, and the stage it binds; "Concrete contradictions to resolve" (:92+): port generation (c81aa5… → admitted efd479… at d107ebd), S2 stage coverage, coverage-and-clock (historical pool ends 2026-09-02, forward file begins 09-03 and expires 09-30, proposed horizon 500), budget (no numerical budget approved), actual-evidence-vs-prerequisites (pristine E1 needs no used-account reconstruction).
+- The rest of `docs/briefs/phase3-preparation/2026-09-15/`: `README.md`, `freeze-candidate.md`, `identity-ledger.md`, `compute-depth.md`, `compute-observation.json`, `representative-workloads.json`, `execution.md`, `paused-checkpoint.md`, `phase1-independent-provenance-review.md`, `production-readiness.md` ("Source factory implementation checkpoint", "Factory obligations", "Explicit startup and allocation proposal", "Evidence distinction").
+- `docs/briefs/phase4-preparation/2026-09-16/capability-decision.md` (the route/settlement rows T10 binds in phase 2); `docs/superpowers/plans/2026-09-16-phase3-production-readiness-budget-handoff.md`, `2026-09-16-phase3-simplified-qualification.md`, `2026-09-17-phase3-completion-handoff.md`.
+- Source and parity owners: the seven admission bundles and their formal contract/review/run hashes (F07); the four live ports at `ops/c1_signal_daemon/ports` and the parity evidence (Track B: four ports exact vs. TV exports, PR #356; `lesson_tv_export_parity_semantics`); the admitted source registry and its stale-byte refusal (F10); panel/export digests and warmup pins (F11); calendar/overlay/D19 digests (F06/F15/F16/F17/F18).
+- Standing rules: `docs/load_bearing_numbers.md` before quoting any tier figure; "a real attempt is never used as a benchmark" (checklist T10 Verification); reduced-depth evidence is permitted by the spec but must be labelled.
+
+## 1. Selected outcome and return boundary
+**Outcome:** every F01–F52 prerequisite carries **accepted actual evidence** (with its reference) or an **explicit unresolved blocker** (with the missing producer fact named) — a decision-ready F1 packet. **Return boundary:** the packet, not F1 approval, not a reserved attempt, not a guessed deadline or coverage.
+
+## 2. Steps
+**Phase 1 (now, alongside T02):**
+- [ ] **Reconcile the seven evidence bundles with the four live ports (F07/F10/F11).** For each bundle: the admitted source hash, the port hash it binds, the parity review/run that accepted it, and whether the adopted registry still refuses the stale c81aa5… bytes. Reuse valid admission/parity reviews by reference; re-run nothing that is unchanged. Any bundle whose port or registry moved since its review is marked STALE with the exact commit that moved it.
+- [ ] **Accept source/settings, warm-up, active coverage, calendars and cutoff chronology under their real limitations (F06/F11/F15–F18).** Resolve contradiction 3 (coverage and clock) into a proposal: which calendar artifact drives each clock, the exact usable source-session index N and its H1/H2 split, the horizon (500 business/covered-session days proposed; the speed horizon 200), with **no date extrapolation** past the forward file's expiry. Where the answer needs an operator ruling, write the two admissible readings and stop.
+- [ ] **Canonical inventories and frozen statistical definitions (F01/F02/F12/F13/F14/F19).** Pin the complete book configuration (four IDs/sides in `BOOK_LEGS`, no optional leg), the trailing policy/response row, the quantity/lifecycle laws' consumer path and unchanged-law tests, the per-leg `cap_alloc` inputs, the protection-clock bindings, the explicit `EvaluationState` initial class — each by hash and commit, none by description.
+- [ ] **Representative full-workload measurement (contradiction 4).** Repeat the representative path/proof measurements on the accepted engine at reduced signed TEST_ONLY depths, labelled as such; report controller/proof/runtime cost components separately; **approve no numerical budget** — that is the operator's, informed by this.
+
+**Phase 2 (after T06's integrated candidate and the T07/T08 verdicts):**
+- [ ] **Bind intended route/feed/incident/operations changes to the freeze inventory (F04/F05/F50).** Enumerate the permitted later bindings (V1 deployment, qualified image/B7, sole n3) and the ones that require requalification; consume T07's settlement disposition and T08's route contract as evidence references, not as inferred acceptance.
+- [ ] **Assemble the F1 packet:** the F01–F52 table with per-row status (ACCEPTED with reference / BLOCKED with the missing fact), the contradictions' dispositions, the inventories, the measurements, and the independent-review pointer (F51).
+
+## 3. Verification
+Actual source consumption and parity evidence by hash; source-bound manifests; every measurement authorized and labelled representative. Contradiction 5 binds: a claim that combined acceptance blocks F1 must name the exact implementation/evidence gate, never a fresh-B7-before-E1 condition.
+
+## 4. Checkpoints
+Identify missing producer facts early (a bundle whose original bytes cannot be located, a calendar artifact without its ratification hash, a port whose parity run is absent) and return them as a list before assembling anything on top. Return for an operator ruling on any contradiction with two admissible readings.
+
+## 5. Forbidden
+Guessing a historical deadline or coverage; extrapolating calendars; using a real attempt as a benchmark; approving a budget; changing any frozen definition, hash, threshold, seed or depth; reporting implementation existence as source or F1 acceptance (contradiction 2); the F1 approval itself.
+
+## 7. Executor return
+_Pending._ Phase 1: the F01–F52 status table (evidence references / blockers), the contradiction dispositions and rulings needed, the reconciliation table for the seven bundles, the measurement record IDs. Phase 2: the assembled F1 packet path and its independent-review pointer.
