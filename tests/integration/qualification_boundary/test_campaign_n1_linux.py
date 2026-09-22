@@ -155,6 +155,9 @@ def _kill_guardian(boundary, state):
 
 
 def test_s3_g5_unit_death_and_exact_receipt_retry(real_boundary):
+    """E06/E07: the qg5 unit dies after T1, before T2; a fresh retry unit
+    redelivers the exact candidate and the interrupted signing completes with
+    the persisted instant -- never a fresh time or signature."""
     boundary = real_boundary
     assert boundary.dispatch, 'FP_QUALIFICATION_S3=1 required'
     attempt = admit(boundary, idle=False)
@@ -162,20 +165,73 @@ def test_s3_g5_unit_death_and_exact_receipt_retry(real_boundary):
     wait(boundary, attempt, lambda s: (
         s.get('checkpoints', {}).get('N1', {}).get('state') == 'ATTESTED'
         and work(s, 'n1work')['state'] == 'COMPLETED') or s['state'] not in ('BOUND',))
-    dispatch(boundary, attempt, 'g5work', 'n1_g5')
-    state = wait(boundary, attempt, lambda s: s['state'] in ('N2_READY', 'N1_FAILED'))
+    # (1) Hold the commit open between T1 and T2 (the ruled diagnostic fault),
+    # wait for the durable intent, then kill the real qg5 unit mid-window.
+    dispatch_frozen = boundary.schedule(dict(schema='qualification_campaign_schedule_request/v1',
+        attempt_id=attempt, work_id='g5work', role='n1_g5', probe='noop',
+        signing_retry_of=None, fault='hold_after_intent'))
+    assert dispatch_frozen['ok'], dispatch_frozen
+    deadline = time.monotonic() + 120
+    unit = None
+    while time.monotonic() < deadline:
+        with sqlite3.connect((boundary.root / 'data/journal.sqlite').as_uri() + '?mode=ro', uri=True) as connection:
+            row = connection.execute('SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
+                                     'WHERE attempt_id=?', (attempt,)).fetchone()
+        if row is not None:
+            import subprocess
+            from tools.qualification_verification.container_ownership import campaign_scopes
+            scopes = campaign_scopes(boundary.manifest['run_id'], attempt, 'g5work')
+            unit = scopes['payload_slice'][:-6] + '-g5.service'
+            subprocess.run(['/usr/bin/systemctl', '--system', '--no-ask-password', 'kill',
+                            '--signal=KILL', unit], capture_output=True, check=False)
+            break
+        time.sleep(.1)
+    assert unit is not None, 'the held intent never became durable'
+    state = wait(boundary, attempt, lambda s: work(s, 'g5work')['state'] == 'SIGNING_INTENT'
+                 or s['state'] not in ('BOUND',), seconds=120)
+    assert state['state'] == 'BOUND', state
+    settled = work(state, 'g5work')
+    assert settled['state'] == 'SIGNING_INTENT' and settled['observation_bytes_b64'] is not None, state
+    with sqlite3.connect((boundary.root / 'data/journal.sqlite').as_uri() + '?mode=ro', uri=True) as connection:
+        intent_row, receipt_row = connection.execute(
+            'SELECT intent_bytes,receipt_bytes FROM full_campaign_checkpoint_intents WHERE attempt_id=?',
+            (attempt,)).fetchone()
+    assert intent_row is not None and receipt_row is None, 'no receipt may exist mid-window'
+    persisted_intent = json.loads(bytes(intent_row))
+    # (2) A fresh retry unit redelivers the exact candidate; the interrupted
+    # signing completes with the persisted instant.
+    retry = boundary.schedule(dict(schema='qualification_campaign_schedule_request/v1',
+        attempt_id=attempt, work_id='g5retry', role='n1_g5', probe='noop',
+        signing_retry_of='g5work', fault=None))
+    assert retry['ok'], retry
+    state = wait(boundary, attempt, lambda s: s['state'] in ('N2_READY', 'N1_FAILED'), seconds=330)
     assert state['state'] == 'N2_READY', state
     with sqlite3.connect((boundary.root / 'data/journal.sqlite').as_uri() + '?mode=ro', uri=True) as connection:
-        receipt = connection.execute('SELECT receipt_bytes FROM full_campaign_checkpoint_intents '
-                                     'WHERE attempt_id=?', (attempt,)).fetchone()
-    assert receipt is not None and receipt[0] is not None
-    # The exact commit retry over the wire returns the byte-identical receipt
-    # (the g5 peer's own client path -- the same identity assess() uses).
-    persisted = json.loads(bytes(receipt[0]))
-    retry = json.loads(boundary.request('COMMIT_CHECKPOINT_ASSESSMENT', role='qg5',
-        schema='qualification_campaign_request/v2', attempt_id=attempt, checkpoint='N1', work_id='g5work',
-        candidate_bytes_b64=base64.b64encode(_candidate(boundary, attempt)).decode('ascii'), artifacts=[]))
-    assert retry['receipt'] == persisted and retry['historical'] is True, retry
+        receipt_bytes = connection.execute(
+            'SELECT receipt_bytes FROM full_campaign_checkpoint_intents WHERE attempt_id=?',
+            (attempt,)).fetchone()[0]
+    receipt = json.loads(bytes(receipt_bytes))
+    assert receipt['signing_at_utc'] == persisted_intent['signing_at_utc'], receipt
+    # (3) The exact wire retry as the qg5 peer returns the byte-identical
+    # receipt, historical.
+    retry_reply = json.loads(boundary.request('COMMIT_CHECKPOINT_ASSESSMENT', role='qg5',
+        schema='qualification_campaign_request/v2', attempt_id=attempt, checkpoint='N1',
+        work_id='g5work',
+        candidate_bytes_b64=base64.b64encode(_candidate(boundary, attempt)).decode('ascii'),
+        artifacts=[]))
+    assert retry_reply['receipt'] == receipt and retry_reply['historical'] is True, retry_reply
+    # (4) A different candidate under the persisted intent refuses.
+    tampered = json.loads(_candidate(boundary, attempt))
+    tampered['cutoff']['n1_cutoffs'] = {'FULL': 9, 'H1': 9, 'H2': 9}
+    tampered_bytes = json.dumps(tampered, sort_keys=True, separators=(',', ':')).encode()
+    try:
+        boundary.request('COMMIT_CHECKPOINT_ASSESSMENT', role='qg5',
+            schema='qualification_campaign_request/v2', attempt_id=attempt, checkpoint='N1',
+            work_id='g5work',
+            candidate_bytes_b64=base64.b64encode(tampered_bytes).decode('ascii'), artifacts=[])
+        raise AssertionError('a different candidate under a persisted intent must refuse')
+    except Exception as exc:
+        assert 'exact checkpoint candidate retry required' in str(exc), exc
 
 
 def _candidate(boundary, attempt):

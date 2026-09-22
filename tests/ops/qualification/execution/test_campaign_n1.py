@@ -99,10 +99,10 @@ def snap(instance):
     return json.loads(store(instance).budget_snapshot(attempt))
 
 
-def schedule_document(instance, role='n1_worker', work='n1work', probe='noop'):
+def schedule_document(instance, role='n1_worker', work='n1work', probe='noop', fault=None):
     return encoded(dict(schema='qualification_campaign_schedule_request/v1',
                         attempt_id=instance.attempt, work_id=work, role=role, probe=probe,
-                        signing_retry_of=None))
+                        signing_retry_of=None, fault=fault))
 
 
 def claim(instance, raw=None):
@@ -447,13 +447,13 @@ def test_v4_service_route_refuses_the_dispatch_roles(tmp_path, monkeypatch):
     same request cannot even parse the role)."""
     service = warm(tmp_path, monkeypatch, dispatch=False)
     document = encoded(dict(schema='qualification_campaign_schedule_request/v1',
-        attempt_id='a1', work_id='n1work', role='n1_worker', probe='noop', signing_retry_of=None))
+        attempt_id='a1', work_id='n1work', role='n1_worker', probe='noop', signing_retry_of=None, fault=None))
     with pytest.raises(ValueError, match='installed N1 dispatch release required'):
         service._schedule_request(SERVICE_UID, document)
     service.dispatch_eligible = True
     service.schedule_eligible = False
     probe = encoded(dict(schema='qualification_campaign_schedule_request/v1',
-        attempt_id='a1', work_id='probe1', role='probe_worker', probe='noop', signing_retry_of=None))
+        attempt_id='a1', work_id='probe1', role='probe_worker', probe='noop', signing_retry_of=None, fault=None))
     with pytest.raises(ValueError, match='execution-capable diagnostic release'):
         service._schedule_request(SERVICE_UID, probe)
 
@@ -463,7 +463,7 @@ def test_v5_installation_keeps_the_funded_probe_route(tmp_path, monkeypatch):
     stays open for harmless probe work while dispatch roles need the v5 gate."""
     service = warm(tmp_path, monkeypatch, eligible=True, dispatch=True)
     probe = encoded(dict(schema='qualification_campaign_schedule_request/v1',
-        attempt_id='a1', work_id='probe1', role='probe_worker', probe='noop', signing_retry_of=None))
+        attempt_id='a1', work_id='probe1', role='probe_worker', probe='noop', signing_retry_of=None, fault=None))
     try:
         service._schedule_request(SERVICE_UID, probe)
     except ValueError as exc:
@@ -474,7 +474,7 @@ def test_v5_installation_keeps_the_funded_probe_route(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match='installed N1 dispatch release required'):
         service._schedule_request(SERVICE_UID, schedule_document(instance=None) if False else encoded(
             dict(schema='qualification_campaign_schedule_request/v1', attempt_id='a1',
-                 work_id='n1work', role='n1_worker', probe='noop', signing_retry_of=None)))
+                 work_id='n1work', role='n1_worker', probe='noop', signing_retry_of=None, fault=None)))
 
 
 def test_full_e1_assessment_family_exists_and_is_closed():

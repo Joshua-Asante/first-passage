@@ -1569,6 +1569,28 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
     if (work['state'] in ('SIGNING_INTENT', 'SIGNED') and state['validity'] == 'VALID'
             and state['state'] in ('BOUND', 'N2_READY', 'N1_FAILED')):
         _transition(campaigns, state['attempt_id'], work['work_id'], 'COMPLETED', {})
+    parent = campaigns._retry_parent(work)
+    if parent is not None and state['state'] == 'BOUND' and state['validity'] == 'VALID':
+        # The redelivered retry settled: finalize the interrupted signing with
+        # the persisted candidate through the service's own commit path (the
+        # caller-finalizes-after-retry order the store's serialization rule
+        # demands -- SIGNED never precedes the retry's settlement).
+        with context.store.transaction() as connection:
+            row = connection.execute('SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
+                                     'WHERE attempt_id=?', (state['attempt_id'],)).fetchone()
+        if row is not None:
+            import base64 as _b64
+            candidate = bytes(row[0])
+            core = parse_canonical_json(candidate, label='persisted candidate')
+            request = dict(schema='qualification_campaign_request/v2',
+                operation='COMMIT_CHECKPOINT_ASSESSMENT', attempt_id=state['attempt_id'],
+                checkpoint='N1', work_id=parent,
+                candidate_bytes_b64=_b64.b64encode(candidate).decode('ascii'),
+                artifacts=[dict(role=item['role'], sha256=item['sha256'])
+                           for item in core['artifacts']])
+            from .campaign_protocol import parse_campaign_request
+            context._commit_checkpoint(campaigns, state['attempt_id'],
+                                       parse_campaign_request(encoded(request)))
 
 
 def probe_container_body(context, enrollment, manifest):

@@ -353,10 +353,6 @@ def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id):
 
     snapshot = call('CHECKPOINT_SNAPSHOT', checkpoint='N1')
     parsed_snapshot = parse_canonical_json(snapshot, label='checkpoint snapshot')
-    if parsed_snapshot['intent']['candidate_sha256'] is not None:
-        # An intent is already persisted: the exact retry must reproduce the
-        # identical candidate bytes (deterministic reconstruction and Ed25519).
-        pass
 
     def fetch(digest_value):
         from .campaign_protocol import CHECKPOINT_CHUNK_LIMIT
@@ -397,6 +393,20 @@ def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id):
         context = verify_bundle(root, release, keys, utc_now())
         if context.attempt_id != attempt_id:
             raise ValueError('campaign attempt identity differs')
+        if parsed_snapshot['intent']['candidate_sha256'] is not None:
+            # An intent is already persisted: this unit is the exact
+            # redelivery. Fetch the persisted candidate, verify its signature
+            # still validates under the current enrollment, and hand the
+            # verified bytes back -- the commit is finalized by the
+            # supervising service once this retry work has settled (never a
+            # fresh time or signature here).
+            members = {member['role']: member['sha256'] for member in parsed_snapshot['members']}
+            candidate = fetch(members['candidate'])
+            if sha256(candidate) != parsed_snapshot['intent']['candidate_sha256']:
+                raise ValueError('persisted candidate identity differs')
+            verify_checkpoint_assessment(candidate, context=context, current_keys=keys)
+            return encoded(dict(intent_candidate_sha256=sha256(candidate),
+                                redelivered=True))
         evidence = validate_campaign_checkpoint(context, checkpoint='N1', plan_bytes=plan_bytes,
             attestation_bytes=artifacts['attestation'], artifacts=artifacts,
             snapshot_bytes=snapshot, current_keys=keys)

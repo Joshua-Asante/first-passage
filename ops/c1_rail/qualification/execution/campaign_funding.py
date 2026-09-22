@@ -46,7 +46,7 @@ def parse_request(raw):
         raise ValueError('bounded scheduler request required')
     doc = fields(
         parse_canonical_json(raw, label='scheduler request'),
-        {'schema', 'attempt_id', 'work_id', 'role', 'probe', 'signing_retry_of'},
+        {'schema', 'attempt_id', 'work_id', 'role', 'probe', 'signing_retry_of'} | {'fault'},
     )
     if (
         doc['schema'] != 'qualification_campaign_schedule_request/v1'
@@ -64,6 +64,14 @@ def parse_request(raw):
     validate_work_id(doc['work_id'])
     if doc['signing_retry_of'] is not None:
         validate_work_id(doc['signing_retry_of'])
+    # TEST_ONLY diagnostic fault input (coordinator-authorized for the E06/E07
+    # scene): the only fault holds the assessment commit open between its two
+    # durable transactions so a killed qg5 unit lands in the observable window.
+    # Refused for every role but the g5 dispatch work; absent means absent.
+    if doc['fault'] not in (None, 'hold_after_intent'):
+        raise ValueError('installed diagnostic fault required')
+    if doc['fault'] is not None and doc['role'] != 'n1_g5':
+        raise ValueError('diagnostic fault requires the g5 dispatch role')
     return doc
 
 

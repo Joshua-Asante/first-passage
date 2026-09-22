@@ -270,7 +270,14 @@ class CheckpointStoreMixin:
             # Staged artifacts are G5 transport, not campaign state: they stay
             # out of the served snapshot so a candidate's snapshot binding is
             # stable across its own staging (the fetch path resolves them by
-            # digest from the staging table).
+            # digest from the staging table). The persisted candidate itself
+            # IS served when an intent exists -- an exact retry must redeliver
+            # those bytes, never a fresh signature.
+            intent = connection.execute('SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
+                                        'WHERE attempt_id=?', (attempt_id,)).fetchone()
+            if intent is not None:
+                raw = bytes(intent[0])
+                members.append(dict(role='candidate', sha256=sha256(raw), byte_length=len(raw)))
             return members
 
     def fetch_checkpoint_member(self, attempt_id, object_sha256, offset, length):
@@ -298,6 +305,10 @@ class CheckpointStoreMixin:
                                      'WHERE attempt_id=? AND sha256=?', (attempt_id, object_sha256)).fetchone()
             if row is not None:
                 sources['staged_' + row[0]] = bytes(row[1])
+            intent = connection.execute('SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
+                                        'WHERE attempt_id=?', (attempt_id,)).fetchone()
+            if intent is not None:
+                sources['candidate'] = bytes(intent[0])
             raw = next((value for value in sources.values() if sha256(value) == object_sha256), None)
             if raw is None:
                 raise ValueError('checkpoint member membership differs')

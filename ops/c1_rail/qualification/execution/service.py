@@ -445,6 +445,17 @@ class ExecutionService:
                               key_id=candidate['signature']['key_id'], signing_at_utc=signing_at)))
                 campaigns.persist_checkpoint_intent(attempt, work_id, snapshot_bytes, intent_bytes,
                     candidate_bytes, capture_transition, signing_transition)
+                # TEST_ONLY diagnostic hold (coordinator-authorized E06/E07
+                # window): when the driving work's funded request carried the
+                # fault, the first call stops after T1 -- the intent and its
+                # candidate are durable, the commit waits for the exact retry.
+                bootstrap = None
+                with self.store.transaction() as connection:
+                    saved = connection.execute('SELECT request_bytes FROM full_campaign_bootstraps '
+                                               'WHERE attempt_id=? AND work_id=?', (attempt, work_id)).fetchone()
+                    bootstrap = None if saved is None else campaign_funding.parse_request(bytes(saved[0]))
+                if bootstrap is not None and bootstrap.get('fault') == 'hold_after_intent':
+                    return encoded(dict(intent_persisted=True, candidate_sha256=sha256(candidate_bytes)))
             elif bytes(row[2]) != candidate_bytes:
                 raise ValueError('exact checkpoint candidate retry required')
             elif row[4] is not None:
