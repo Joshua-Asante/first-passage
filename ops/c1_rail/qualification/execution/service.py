@@ -447,6 +447,13 @@ class ExecutionService:
                     candidate_bytes, capture_transition, signing_transition)
             elif bytes(row[2]) != candidate_bytes:
                 raise ValueError('exact checkpoint candidate retry required')
+            elif row[4] is not None:
+                # An exact retry after the receipt: the store returns the
+                # byte-identical receipt against the persisted cutoff; no
+                # re-staging, no fresh signature.
+                return campaigns.commit_checkpoint_assessment(attempt, request['work_id'],
+                    candidate_bytes, bytes(row[3]), now=now(),
+                    clock_bytes=campaign_supervisor.observe_campaign_clock())
             # T2: the service re-validates against its own retained context.
             context = campaigns.context(attempt, self.release, self.keys(), now=now())
             keys = self.keys()
