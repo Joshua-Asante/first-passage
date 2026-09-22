@@ -107,6 +107,23 @@ def payload_identity_events(boundary, attempt, work_id):
     return payload_process_events(boundary, attempt, work_id)
 
 
+def committing_g5_completed(boundary, attempt, progression, seconds=120):
+    """The G5 work that committed the checkpoint settles after T2 and completes
+    in the progression state its commit produced (PR #455 review, Codex P2);
+    a resource-terminal state here would mean the settlement ended authority."""
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        state = budget(boundary, attempt)
+        row = work(state, 'g5work')
+        if row['state'] == 'COMPLETED':
+            assert state['state'] == progression, state
+            assert row['observation_bytes_b64'] is not None and row['charge_cpu_ns'] <= row['limits']['cpu_ns'], row
+            return state
+        assert state['state'] == progression, state
+        time.sleep(0.1)
+    raise AssertionError('the committing g5 work never completed')
+
+
 def test_s3_genuine_pass_reaches_n2_ready(real_boundary):
     boundary = real_boundary
     if not boundary.dispatch:
@@ -139,6 +156,7 @@ def test_s3_genuine_pass_reaches_n2_ready(real_boundary):
     # The admission work is R1's explicit exemption (its guardian is the
     # supervised process, outside any payload slice); every other completed
     # work carries a retained payload identity.
+    state = committing_g5_completed(boundary, attempt, 'N2_READY')
     for row in completed_works(state):
         if row['work_id'] != 'admission':
             assert payload_identity_events(boundary, attempt, row['work_id']), row['work_id']
@@ -163,6 +181,7 @@ def test_s3_genuine_fail_is_terminal(real_boundary):
     state = wait(boundary, attempt, lambda s: s['state'] in ('N2_READY', 'N1_FAILED'))
     assert state['state'] == 'N1_FAILED', state
     assert state['checkpoints']['N1']['decision'] == 'FAILURE'
+    committing_g5_completed(boundary, attempt, 'N1_FAILED')
 
 
 def test_s3_guardian_death_mid_n1_is_in_doubt_with_no_capture(real_boundary):

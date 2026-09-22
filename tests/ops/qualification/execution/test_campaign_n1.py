@@ -636,6 +636,36 @@ def test_commit_fail_reaches_the_terminal_statistical_prefix(tmp_path, monkeypat
     assert state['checkpoints']['N1']['decision'] == 'FAILURE'
 
 
+@pytest.mark.parametrize('decision,terminal', [('CONTINUE', 'N2_READY'), ('FAILURE', 'N1_FAILED')])
+def test_committed_g5_settles_within_budget_and_completes(tmp_path, monkeypatch, decision, terminal):
+    """The committing G5 work settles after T2 and must still complete in the
+    progression state its own commit produced (PR #455 review, Codex P2)."""
+    instance = g5_claimed(tmp_path, monkeypatch)
+    commit(instance, persisted_intent(instance, candidate_document(instance, decision=decision)))
+    settle(instance, 'g5work')
+    transition(instance, 'g5work', 'COMPLETED')
+    state = snap(instance)
+    assert state['state'] == terminal
+    assert next(w for w in state['works'] if w['work_id'] == 'g5work')['state'] == 'COMPLETED'
+
+
+@pytest.mark.parametrize('decision', ['CONTINUE', 'FAILURE'])
+def test_committed_g5_overrun_blocks_the_progression(tmp_path, monkeypatch, decision):
+    """An overrun observed when the G5 work settles after T2 permanently blocks
+    authority (spec 2.5): the progression becomes BUDGET_EXHAUSTED, the work
+    cannot complete, and the receipt survives only as history (Codex P1)."""
+    instance = g5_claimed(tmp_path, monkeypatch)
+    candidate = persisted_intent(instance, candidate_document(instance, decision=decision))
+    receipt = json.loads(commit(instance, candidate))['receipt']
+    limit = next(w for w in snap(instance)['works'] if w['work_id'] == 'g5work')['limits']['cpu_ns']
+    settle(instance, 'g5work', cpu=limit + 1)
+    assert snap(instance)['state'] == 'BUDGET_EXHAUSTED'
+    with pytest.raises(ValueError, match='terminal campaign budget'):
+        transition(instance, 'g5work', 'COMPLETED')
+    retry = json.loads(commit(instance, candidate))
+    assert retry['receipt'] == receipt and retry['historical'] is True
+
+
 def test_stale_revision_or_void_refuses_the_commit(tmp_path, monkeypatch):
     instance = g5_claimed(tmp_path, monkeypatch)
     # A candidate whose snapshot revision is not the persisted T1 revision is

@@ -114,6 +114,11 @@ def parse_void_refusal(raw, *, schema=VOID_REFUSAL_SCHEMA):
     return doc
 
 
+# The progression states a committed checkpoint assessment produces. The G5
+# work that committed it settles afterwards; that settlement can still end
+# the campaign's authority, and that work completes in these states.
+CHECKPOINT_PROGRESSION_STATES = ('N2_READY', 'N1_FAILED')
+
 CHECKPOINT_SCHEMA = '''
 CREATE TABLE IF NOT EXISTS full_campaign_checkpoint_captures (
  attempt_id TEXT PRIMARY KEY REFERENCES full_campaigns(attempt_id),
@@ -2278,6 +2283,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
         allow_recovery_pending=False,
         dispatch_owner=None,
         negative_transition=False,
+        committed_checkpoint=False,
     ):
         from .campaign_budget import integer, dispatch_pending
 
@@ -2294,12 +2300,21 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             raise ValueError('campaign authority revision conflict')
         if self.row(state['attempt_id'])['validity'] != 'VALID':
             raise ValueError('VOID campaign')
-        if state['state'] not in ('PROVISIONAL', 'BOUND'):
+        live = ('PROVISIONAL', 'BOUND') + (CHECKPOINT_PROGRESSION_STATES if committed_checkpoint else ())
+        if state['state'] not in live:
             raise ValueError('terminal campaign budget')
 
     @staticmethod
     def _terminal(state, reason):
         if state['state'] in ('PROVISIONAL', 'BOUND'):
+            state['state'] = reason
+
+    @staticmethod
+    def _settlement_terminal(state, reason):
+        # A settlement closes a work that may have committed a checkpoint while
+        # it ran; its overrun ends authority from that progression too, leaving
+        # the committed receipt as history only.
+        if state['state'] in ('PROVISIONAL', 'BOUND', *CHECKPOINT_PROGRESSION_STATES):
             state['state'] = reason
 
     def _observe_clock(self, state, value):
@@ -2678,16 +2693,16 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 and doc['clock']['boottime_ns'] - intent['clock']['boottime_ns']
                 >= work['limits']['wall_ns']
             ):
-                self._terminal(state, 'BUDGET_EXHAUSTED')
+                self._settlement_terminal(state, 'BUDGET_EXHAUSTED')
             work['observation_bytes_b64'] = self._b64(observations_bytes)
             from .campaign_budget import observation_charge
 
             work['charge_cpu_ns'] = observation_charge(doc, work['limits'])
             if any(doc[key] is None for key in ('cpu_ns', 'memory_peak_bytes', 'oom_events')):
-                self._terminal(state, 'BUDGET_UNCERTAIN')
+                self._settlement_terminal(state, 'BUDGET_UNCERTAIN')
             self._observe_resources(state, doc)
             if work['charge_cpu_ns'] > work['limits']['cpu_ns']:
-                self._terminal(state, 'BUDGET_EXHAUSTED')
+                self._settlement_terminal(state, 'BUDGET_EXHAUSTED')
             return self._save_budget(
                 connection, state, 'SETTLE_WORK', authority=state['state'] != previous_state
             )
@@ -2710,11 +2725,20 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                     if self._raw(saved) != transition_bytes:
                         raise ValueError('immutable work transition conflict')
                     return self._negative_budget_response(connection, state)
+            # The G5 work that committed the checkpoint (SIGNED at T2) completes
+            # after its own settlement in the progression state it produced.
+            completing_checkpoint = (
+                target == 'COMPLETED'
+                and work['state'] == 'SIGNED'
+                and work['phase'] == 'N1_G5'
+                and state['state'] in CHECKPOINT_PROGRESSION_STATES
+            )
             self._check_budget(
                 state,
                 expected_revision,
                 allow_recovery_pending=target in ('IN_DOUBT', 'ABORTED'),
                 negative_transition=target in ('IN_DOUBT', 'ABORTED'),
+                committed_checkpoint=completing_checkpoint,
             )
             if work['state'] not in allowed[target]:
                 raise ValueError('illegal work transition; no reexecution')
@@ -2751,7 +2775,10 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 >= work['limits']['wall_ns']
             ):
                 self._terminal(state, 'BUDGET_EXHAUSTED')
-            if state['state'] not in ('PROVISIONAL', 'BOUND'):
+            live = ('PROVISIONAL', 'BOUND') + (
+                CHECKPOINT_PROGRESSION_STATES if completing_checkpoint else ()
+            )
+            if state['state'] not in live:
                 return self._save_budget(connection, state, 'CLOCK_TERMINAL', authority=True)
             if target in ('START_INTENT', 'RUNNING') and work['observation_bytes_b64'] is not None:
                 raise ValueError('settled work cannot resume')
