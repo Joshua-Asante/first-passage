@@ -123,7 +123,7 @@ def main(argv=None):
                         # Run boundary files in full so new lifecycle cases also run.
                         # Exact manifest cases remain mandatory even if renamed/deleted.
                         selection = ([*selected_cases] if (args.s2 or args.s3) else
-                            ['tests/integration/qualification_boundary', *('--ignore='+case for case in S2_CASES)] + sorted(
+                            ['tests/integration/qualification_boundary', *('--ignore='+case for case in S3_CASES)] + sorted(
                             node for node in required if not node.startswith('tests/integration/qualification_boundary/')))
                         if args.cases is not None:
                             selection = ['-k', args.cases, *selection]
