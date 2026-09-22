@@ -1734,7 +1734,15 @@ def _signal_state(pid_text):
         blk = _bounded_hex_mask(fields['SigBlk'].strip())
         cgt = _bounded_hex_mask(fields['SigCgt'].strip())
         ign = _bounded_hex_mask(fields['SigIgn'].strip())
-        if state == 'Z' or not (int(blk, 16) or int(cgt, 16) or int(ign, 16)):
+        # The causal gate, per the coordinator's ruling: a token-bearing comm
+        # is downstream of the installed no-op handler, so a live target of a
+        # resume ALWAYS shows SigCgt bit 9. A mid-exit target flushes its
+        # caught handlers (cgt) before its blocked mask (blk) -- run
+        # 35730345707's g5retry send#12 showed blk still 0x200 with cgt 0 --
+        # so cgt-bit-9 clear, a zombie state, or an all-zero triple each mean
+        # the target is gone: no send, no retained image.
+        if (state == 'Z' or not (int(blk, 16) or int(cgt, 16) or int(ign, 16))
+                or not int(cgt, 16) & (1 << 9)):
             return None
         return (int(fields['Threads'].strip()), blk, cgt)
     except (OSError, ValueError, KeyError, IndexError):
