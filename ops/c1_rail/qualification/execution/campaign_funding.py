@@ -7,7 +7,7 @@ number of bounded indexed rows and never decodes the campaign snapshot.
 import secrets
 from ..contract import canonical_json_bytes as encoded, parse_canonical_json
 from .protocol import fields, identity, digest, sha256
-from .campaign_budget import clock, integer, PHASES, dispatch_pending
+from .campaign_budget import clock, integer, PHASES, dispatch_pending, validate_work_id
 
 SCHEMA = '''
 CREATE TABLE IF NOT EXISTS full_campaign_funding (
@@ -53,9 +53,11 @@ def parse_request(raw):
     if doc['probe'] == 'intent' and doc['role'] != 'probe_seal':
         raise ValueError('intent requires seal probe')
     identity(doc['attempt_id'])
-    identity(doc['work_id'])
+    # The private route never names the fixed admission work or an identity
+    # that collides with a supervision object role (S2-G4 A9-3).
+    validate_work_id(doc['work_id'])
     if doc['signing_retry_of'] is not None:
-        identity(doc['signing_retry_of'])
+        validate_work_id(doc['signing_retry_of'])
     return doc
 
 
@@ -396,6 +398,14 @@ class FundingStoreMixin:
             amount = saved['limits']['cpu_ns']
             doc['reserved_cpu_ns'] += amount
             doc['remaining_cpu_ns'] = max(0, doc['remaining_cpu_ns'] - amount)
+        # Charged cancellation authentication attempts (one-use object rows) are
+        # settled controller CPU of this campaign, absent from the snapshot's
+        # per-work totals; the claim path applies the identical arithmetic.
+        with self.store.transaction() as c:
+            charged = self.void_authentication_charge(c, state['attempt_id'])
+        if charged:
+            doc['settled_cpu_ns'] += charged
+            doc['remaining_cpu_ns'] = max(0, doc['remaining_cpu_ns'] - charged)
         return doc, rows
 
     def _validate_materialized_coverage(self, c, attempt):
@@ -541,6 +551,9 @@ class FundingStoreMixin:
             doc = self._funding(c, attempt)
             if doc is None:
                 raise ValueError('fresh funding enrollment required')
+            # A queued operator cancellation bars this new-work grant outright,
+            # before or after the receipt (coordinator ruling 2026-09-19).
+            self._cancellation_barrier(c, attempt, admitted_only=False)
             if (
                 doc['state'] != 'BOUND'
                 or doc['validity'] != 'VALID'
@@ -725,7 +738,7 @@ class FundingStoreMixin:
             parse_enrollment(enrollment)
             control = encoded(
                 {
-                    'schema': 'qualification_campaign_supervision_event/v1',
+                    'schema': 'qualification_campaign_supervision_event/v2',
                     'attempt_id': attempt_id,
                     'work_id': work_id,
                     'kind': 'CONTROL',

@@ -16,7 +16,10 @@ from scripts.check_qualification_invariants import _manifest, validate_manifest
 from tools.qualification_verification.host import cleanup, ownership_lock, protected,create_process_group,owned_command
 
 INVARIANT_MANIFEST = ROOT / 'tests/ops/qualification/invariant_manifest.json'
-S2_CASES = 'tests/integration/qualification_boundary/test_campaign_supervision_linux.py'
+# Ordered: the supervision file's last case contaminates the common memory
+# group, so the service-metering file runs first on the same fresh host.
+S2_CASES = ('tests/integration/qualification_boundary/test_campaign_service_linux.py',
+            'tests/integration/qualification_boundary/test_campaign_supervision_linux.py')
 
 
 def require_cleanup(result):
@@ -79,7 +82,8 @@ def main(argv=None):
                     if args.test_only or args.s2:
                         invariant_bytes = INVARIANT_MANIFEST.read_bytes()
                         all_required = _manifest(invariant_bytes)
-                        required = {node for node in all_required if node.startswith(S2_CASES+'::') == args.s2}
+                        required = {node for node in all_required
+                                    if node.startswith(tuple(case+'::' for case in S2_CASES)) == args.s2}
                         record.data['metadata'].update(acceptance_scope='S2_DIAGNOSTIC_SUPERVISION' if args.s2 else 'N1_ONLY_TEST_ONLY',
                             qualification_acceptance='coordinator_review_required',
                             invariant_manifest_sha256=hashlib.sha256(invariant_bytes).hexdigest())
@@ -94,8 +98,8 @@ def main(argv=None):
                     if args.test_only or args.s2:
                         # Run boundary files in full so new lifecycle cases also run.
                         # Exact manifest cases remain mandatory even if renamed/deleted.
-                        selection = ([S2_CASES] if args.s2 else
-                            ['tests/integration/qualification_boundary', '--ignore='+S2_CASES] + sorted(
+                        selection = ([*S2_CASES] if args.s2 else
+                            ['tests/integration/qualification_boundary', *('--ignore='+case for case in S2_CASES)] + sorted(
                             node for node in required if not node.startswith('tests/integration/qualification_boundary/')))
                     command=[sys.executable, '-m', 'pytest', *selection, '-n', '0',
                              '-q', '--tb=short', f'--junitxml={report}']
