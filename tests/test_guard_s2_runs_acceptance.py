@@ -9,7 +9,7 @@ answers only the flags real gh/git would honour (requested --json fields, --limi
 a flag gets the answer real gh would give. Its --jq supports dotted paths on objects
 only: read lists with --json and parse them. Directory arguments are compared as POSIX
 paths with any drive letter dropped, so the suite behaves the same on Windows.
-The finding numbers (F1..F28) refer to the card's §3 table.
+The finding numbers (F1..F32) refer to the card's §3 table.
 """
 import io
 import json
@@ -637,6 +637,41 @@ def test_f9_repo_flag_is_passed_to_every_gh_query(sh):
         else:
             assert _opt(call, "-R", "--repo") == "Joshua-Asante/first-passage", call
     assert not any(c[:1] == ["git"] and "ls-remote" in c for c, _ in sh.calls), "-R names the repo, not origin"
+
+
+@pytest.mark.parametrize("flag", ["-R", "--repo"])
+def test_f30_inherited_repo_flag_before_the_subcommand_is_recognised(sh, flag):
+    repo = f"{flag} Joshua-Asante/first-passage"
+    sh.runs["feat"] = [dispatch_run(status="in_progress", conclusion=None)]
+    assert "cancel" in decide(f"gh {repo} workflow run {WORKFLOW_FILE} --ref feat")
+    sh.runs["feat"] = [dispatch_run(conclusion="failure", rid=101)]
+    sh.views["101"] = sh.runs["feat"][0]
+    assert decide(f"gh {repo} run rerun 101")
+    sh.runs["feat"] = []
+    live_pr(sh, "feat", 462)
+    sh.pr_heads["462"] = "feat"
+    assert decide(f"gh {repo} pr update-branch 462")
+
+
+@pytest.mark.parametrize("fields,refused", [
+    ("-F mode=s3 -f mode=s2", True),     # typed -F wins over raw -f whatever the order: s3 is dispatched
+    ("-f mode=s2 -F mode=s3", True),
+    ("-F mode=s2 -f mode=s3", False),    # s2 is dispatched; a passed s3 run is not s2 coverage
+    ("-f mode=s3 -F mode=s2", False),
+])
+def test_f31_typed_fields_override_raw_fields_regardless_of_order(sh, fields, refused):
+    sh.runs["feat"] = [dispatch_run(mode="s3", conclusion="success")]
+    assert (decide(f"{DISPATCH} {fields}") is not None) is refused, fields
+
+
+@pytest.mark.parametrize("value", ["' '", "'\t'", "'  '"])
+def test_f32_whitespace_only_cases_is_refused(sh, value):
+    # The workflow puts any non-empty `cases` in the diagnostic group, so this would cancel a
+    # live diagnostic run and then run (or be refused) as neither full nor a real subset.
+    reason = decide(f"{DISPATCH} -f mode=s3 -f cases={value}")
+    assert reason and "cases" in reason
+    sh.runs["feat"] = [dispatch_run(status="in_progress", conclusion=None, cases="deadline")]
+    assert decide(f"{DISPATCH} -f mode=s3 -f cases={value}")
 
 
 def test_other_workflows_are_ignored(sh):
