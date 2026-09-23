@@ -607,9 +607,10 @@ def _repo_flag(tokens: list[str]) -> str | None:
     return None
 
 
-_FIELD_FLAG = re.compile(r"--(?:raw-)?field=([^=]+)=(.*)")
-_JOINED_FIELD = re.compile(r"-[fF]([^=]+)=(.*)")
-_JOINED_FIELD_EQ = re.compile(r"-[fF]=(.+)")
+_FIELD_FLAG = re.compile(r"--(raw-)?field=([^=]+)=(.*)")
+_JOINED_FIELD = re.compile(r"-([fF])([^=]+)=(.*)")
+_JOINED_FIELD_EQ = re.compile(r"-([fF])=(.+)")
+_TYPED_FIELD_FLAGS = ("-F", "--field")
 _JOINED_REF = re.compile(r"-r(.+)")
 
 
@@ -619,6 +620,8 @@ def _parse_dispatch(tokens: list[str]) -> dict | None:
     Reads flags as pflag does (`-rX`, `-r=X`, `-fK=V`, `-f=K=V`, `--field=K=V`,
     `--raw-field=K=V`, `-F K=V`), accepts the workflow selector anywhere after
     `run`, and keeps a `--json` dispatch unknown (its inputs cannot be read).
+    gh applies typed `-F/--field` values after raw `-f/--raw-field` ones, so a
+    typed field wins for its key whatever the argument order (F31).
     """
     if len(tokens) < 3 or tokens[1] != "workflow":
         return None
@@ -637,7 +640,8 @@ def _parse_dispatch(tokens: list[str]) -> dict | None:
     if i >= len(tokens) or tokens[i] != "run":
         return None
     tail = tokens[i + 1:]
-    ref, fields, selector, json_inputs = "", {}, None, False
+    ref, selector, json_inputs = "", None, False
+    raw, typed = {}, {}
     idx = 0
     while idx < len(tail):
         arg = tail[idx]
@@ -657,16 +661,16 @@ def _parse_dispatch(tokens: list[str]) -> dict | None:
         elif arg in ("-f", "-F", "--field", "--raw-field"):
             if "=" in following:
                 key, _, value = following.partition("=")
-                fields[key] = value
+                (typed if arg in _TYPED_FIELD_FLAGS else raw)[key] = value
             idx += 1
         elif match := _FIELD_FLAG.fullmatch(arg):
-            fields[match.group(1)] = match.group(2)
+            (raw if match.group(1) else typed)[match.group(2)] = match.group(3)
         elif match := _JOINED_FIELD.fullmatch(arg):
-            fields[match.group(1)] = match.group(2)
+            (typed if match.group(1) == "F" else raw)[match.group(2)] = match.group(3)
         elif match := _JOINED_FIELD_EQ.fullmatch(arg):
-            if "=" in match.group(1):
-                key, _, value = match.group(1).partition("=")
-                fields[key] = value
+            if "=" in match.group(2):
+                key, _, value = match.group(2).partition("=")
+                (typed if match.group(1) == "F" else raw)[key] = value
         elif match := _JOINED_REF.fullmatch(arg):
             ref = match.group(1).removeprefix("=")
         elif arg.startswith("-"):
@@ -676,7 +680,7 @@ def _parse_dispatch(tokens: list[str]) -> dict | None:
         idx += 1
     if selector is None or not _is_workflow(selector):
         return None
-    return {"ref": ref, "fields": fields, "json": json_inputs, "repo": repo}
+    return {"ref": ref, "fields": {**raw, **typed}, "json": json_inputs, "repo": repo}
 
 
 def _parse_rerun(tokens: list[str]) -> tuple[str | None, str | None] | None:
@@ -840,7 +844,14 @@ def _resolve_ref(ref: str, repo: str | None, dir_now: str) -> str:
 def _dispatch_reason(parsed: dict, dir_now: str, pushed: list[str]) -> str | None:
     """Refusal for one parsed `gh workflow run` segment, or None to allow it."""
     mode = str(parsed["fields"].get("mode") or DEFAULT_MODE)
-    cases = str(parsed["fields"].get("cases") or "").strip()
+    cases = str(parsed["fields"].get("cases") or "")
+    if cases and not cases.strip():
+        # The workflow's concurrency group treats any non-empty `cases` as
+        # diagnostic, so this would cancel a live diagnostic run (F32).
+        return ("Refused: `cases` is whitespace only. The workflow would queue it in "
+                "the diagnostic concurrency group (cancelling any live diagnostic run) "
+                "without selecting a subset. Pass a pytest -k expression, or omit "
+                "`cases` for a full run.")
     diagnostic = bool(cases)
     reason: str | None = None
     ref = "" if parsed["json"] else _resolve_ref(parsed["ref"], parsed["repo"],
@@ -898,7 +909,25 @@ def _git_segment(tokens: list[str], state: dict, guarded: bool) -> str | None:
     return _push_reason(resolved, None, dir_now, trust_skip_ci=not state["mover"])
 
 
+def _hoist_repo_flag(tokens: list[str]) -> list[str]:
+    """Move gh's inherited `-R/--repo` from before the subcommand to the end (F30).
+
+    `gh -R owner/repo workflow run …` is valid; every parser below looks for the
+    subcommand at `tokens[1]` and reads `-R` anywhere after it.
+    """
+    head, rest, moved = tokens[:1], tokens[1:], []
+    while rest and rest[0].startswith("-"):
+        if rest[0] in ("-R", "--repo") and len(rest) > 1:
+            moved, rest = [*moved, "-R", rest[1]], rest[2:]
+        elif rest[0].startswith("--repo="):
+            moved, rest = [*moved, "-R", rest[0].split("=", 1)[1]], rest[1:]
+        else:
+            break
+    return [*head, *rest, *moved]
+
+
 def _gh_segment(tokens: list[str], state: dict, guarded: bool) -> str | None:
+    tokens = _hoist_repo_flag(tokens)
     dispatch = _parse_dispatch(tokens)
     if dispatch is not None:
         return _dispatch_reason(dispatch, state["dir"], state["pushed"]) if guarded else None
