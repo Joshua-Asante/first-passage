@@ -20,19 +20,40 @@ One scanner, two modes:
       - substitutions inside double quotes are found anywhere in the word, and
         the ``$(…)`` matcher skips quoted text and heredoc bodies (an apostrophe
         in a heredoc commit message no longer unbalances it);
-      - ``<<<`` is a here-string, not a heredoc; redirection targets and heredoc
-        delimiters are read as quoted words; several heredocs on a line are
-        skipped in order; inside ``(( … ))`` and ``$(( … ))`` arithmetic,
-        ``<<``, ``<`` and ``>`` are operators, never a heredoc or redirection;
+      - ``<<<`` is a here-string, not a heredoc; a redirection target (and a
+        here-string word) is read as a word and then dropped, so a ``$(…)``,
+        backquote or ``<(…)``/``>(…)`` inside it is still re-parsed as the
+        commands bash runs (``echo x > "$(cmd)"``); a redirection with no
+        target raises; ``<(…)``/``>(…)`` process substitutions are words whose
+        bodies are re-parsed;
+      - a heredoc delimiter gets bash's quote removal (``"E\\"F"`` is
+        ``E"F``; ``'E\\F'`` and ``"E\\F"`` keep the backslash; ``E\\F`` is
+        ``EF``), and its body ends only on a line that equals it exactly
+        (leading tabs stripped for ``<<-``); an unquoted delimiter's body joins
+        backslash-newline pairs before that comparison and a quoted one's does
+        not; several heredocs on a line are skipped in order; inside ``$(…)``
+        or ``<(…)`` a line that starts with the delimiter and has a ``)`` later
+        ends the body there and what follows the delimiter is a new command, as
+        bash 5.2 reads ``EOF)"``; inside ``(( … ))`` and
+        ``$(( … ))`` arithmetic, ``<<``, ``<`` and ``>`` are operators, never a
+        heredoc or redirection;
+      - backslash-newline is a line continuation only where bash removes it:
+        in an unquoted word and inside double quotes, never inside single
+        quotes, a quoted heredoc body or a comment (``# note \\`` ends at its
+        newline); a backslash before a carriage return escapes the CR;
       - inside double quotes a backslash escapes only ``$``, a backquote,
         ``"``, ``\\`` and newline, as in bash, so a quoted Windows path such as
         ``"C:\\Program Files\\Git\\cmd\\git.exe"`` keeps its backslashes;
+        ``$'…'`` is decoded with bash's ANSI-C escapes and ``$"…"`` is read as
+        ``"…"``; a quote starts a word even when it is empty, so ``''#`` is a
+        word and not a comment, and an empty quoted word is kept as a token;
       - an unterminated quote, ``$(`` or backquote, and a heredoc whose
         delimiter line never comes, raise `ShellSyntaxError`;
       - `program` splits on backslashes too and casefolds (``GIT.EXE``);
       - `expand` strips leading assignments at every level, reads the options of
         ``sudo``, ``env``, ``timeout``, ``nice``, ``xargs``, ``command``,
-        ``exec`` and ``time`` getopt-style (``sudo -Eu root``, ``timeout -vk 5``),
+        ``exec``, ``nohup`` and ``time`` getopt-style (``sudo -Eu root``,
+        ``timeout -vk 5``, ``nohup -- cmd``),
         splits ``env -S '…'`` into the command it runs, drops ``{``/``}`` and
         ``function name``, re-parses ``eval`` arguments and
         ``find -exec``/``-execdir``/``-ok``/``-okdir`` commands, and finds the
@@ -74,9 +95,14 @@ _EXEC_OPTS = ("a", frozenset())
 _SHELL_LONG_VALUES = frozenset({"--rcfile", "--init-file"})
 _FIND_EXEC = frozenset({"-exec", "-execdir", "-ok", "-okdir"})
 _STRICT_WRAPPERS = {"sudo": _SUDO_OPTS, "nice": _NICE_OPTS, "xargs": _XARGS_OPTS,
-                    "time": _TIME_OPTS, "exec": _EXEC_OPTS, "command": ("", frozenset())}
+                    "time": _TIME_OPTS, "exec": _EXEC_OPTS, "command": ("", frozenset()),
+                    "nohup": ("", frozenset())}
 # inside double quotes a backslash escapes only these; before anything else it stays
 _DQUOTE_ESCAPES = '$`"\\\n'
+# bash's ANSI-C ($'…') escapes: single letters, then octal/hex/unicode codes
+_ANSI_SIMPLE = {"a": "\a", "b": "\b", "e": "\x1b", "E": "\x1b", "f": "\f", "n": "\n",
+                "r": "\r", "t": "\t", "v": "\v", "\\": "\\", "'": "'", '"': '"', "?": "?"}
+_ANSI_CODE = re.compile(r"[0-7]{1,3}|x[0-9A-Fa-f]{1,2}|u[0-9A-Fa-f]{1,4}|U[0-9A-Fa-f]{1,8}")
 
 
 class ShellSyntaxError(ValueError):
@@ -142,6 +168,51 @@ def _backquote_close(text: str, start: int) -> int:
     raise ShellSyntaxError("unterminated backquote")
 
 
+def _ansi_end(text: str, i: int) -> int:
+    """Index just past the `$'…'` string whose opening quote is text[i] (strict)."""
+    i += 1
+    while i < len(text):
+        if text[i] == "\\":
+            i += 2
+            continue
+        if text[i] == "'":
+            return i + 1
+        i += 1
+    raise ShellSyntaxError("unterminated $' quote")
+
+
+def _code_point(code: str) -> str:
+    """The character an ANSI-C octal (`101`), `x41`, `u0041` or `U00000041` code names."""
+    if code[0] in "01234567":
+        return chr(int(code, 8) & 0xFF)
+    value = int(code[1:], 16)
+    return chr(value) if value <= 0x10FFFF else ""
+
+
+def _ansi_c(body: str) -> str:
+    """The value of `$'body'`: bash's ANSI-C escapes decoded, others kept."""
+    out: list[str] = []
+    i = 0
+    while i < len(body):
+        ch, nxt = body[i], body[i + 1:i + 2]
+        if ch != "\\" or not nxt:
+            out.append(ch)
+            i += 1
+        elif nxt in _ANSI_SIMPLE:
+            out.append(_ANSI_SIMPLE[nxt])
+            i += 2
+        elif nxt == "c" and i + 2 < len(body):
+            out.append(chr(ord(body[i + 2]) & 0x1F))  # \cx: control-x
+            i += 3
+        elif match := _ANSI_CODE.match(body, i + 1):
+            out.append(_code_point(match.group()))
+            i = match.end()
+        else:
+            out.append(ch + nxt)
+            i += 2
+    return "".join(out)
+
+
 def _word_end(text: str, i: int) -> int:
     """Index just past the shell word starting at text[i] (strict; quote-aware)."""
     while i < len(text) and text[i] not in _WORD_END:
@@ -150,6 +221,8 @@ def _word_end(text: str, i: int) -> int:
             i = _quote_end(text, i)
         elif ch == "\\":
             i += 2
+        elif ch == "$" and text[i + 1:i + 2] == "'":
+            i = _ansi_end(text, i + 1)
         elif ch == "$" and text[i + 1:i + 2] == "(":
             i = _strict_close(text, i + 2) + 1
         elif ch == "`":
@@ -170,6 +243,9 @@ def _strict_close(text: str, start: int) -> int:
     arithmetic = text[start:start + 1] == "("  # $(( … )): `<<` is a shift there
     while i < len(text):
         ch = text[i]
+        if ch == "$" and text[i + 1:i + 2] == "'":
+            i = _ansi_end(text, i + 1)
+            continue
         if ch in "'\"":
             i = _quote_end(text, i)
             continue
@@ -187,14 +263,15 @@ def _strict_close(text: str, start: int) -> int:
             i += 3
             continue
         if text.startswith("<<", i) and not arithmetic:
-            i, delimiter = _consume_redirection(text, i, strict=True)
-            if delimiter:
-                pending.append(delimiter)
+            i, delimiter = _heredoc_word(text, i)
+            pending.append(delimiter)
             continue
         if ch == "\n" and pending:
             i += 1
             for delimiter in pending:
-                i = _heredoc_end(text, i, delimiter, strict=True)
+                i, cut = _strict_heredoc_end(text, i, delimiter, comsub=True)
+                if cut:  # `EOF)`: the `)` at text[i] closes this substitution
+                    break
             pending.clear()
             continue
         if ch == "(":
@@ -207,15 +284,16 @@ def _strict_close(text: str, start: int) -> int:
     raise ShellSyntaxError("unterminated $(")
 
 
-def _consume_redirection(text: str, i: int, *, strict: bool = False) -> tuple[int, str]:
-    """Skip the redirection starting at text[i]; a heredoc returns its delimiter."""
-    if text[i:i + 2] == "<<" and not (strict and text[i:i + 3] == "<<<"):
+def _consume_redirection(text: str, i: int) -> tuple[int, str]:
+    """Skip the redirection starting at text[i]; a heredoc returns its delimiter.
+
+    Default (card 1) mode only; strict mode reads redirections with
+    `_heredoc_word` and `_redirection_operator_end`.
+    """
+    if text[i:i + 2] == "<<":
         i += 2 + (1 if text[i + 2:i + 3] == "-" else 0)
         while i < len(text) and text[i] in " \t":
             i += 1
-        if strict:
-            end = _word_end(text, i)
-            return end, re.sub(r"[\"'\\]", "", text[i:end])
         word = ""
         while i < len(text) and text[i] not in " \t\n;|&()":
             word += text[i]
@@ -226,30 +304,149 @@ def _consume_redirection(text: str, i: int, *, strict: bool = False) -> tuple[in
         i += 1
     while i < len(text) and text[i] in " \t":
         i += 1
-    if strict:
-        return _word_end(text, i), ""
     while i < len(text) and text[i] not in " \t\n;|()&":
         i += 1
     return i, ""
 
 
-def _heredoc_end(text: str, i: int, delimiter: str, *, strict: bool = False) -> int:
-    """Index after the heredoc body that starts at text[i] (just past a newline).
-
-    Strict mode raises `ShellSyntaxError` when no line ends the body: the rest
-    of the command would otherwise be read as data, and a `<<` that was not a
-    heredoc at all (a shift in `$[ … ]`) would hide every later command.
-    """
+def _heredoc_end(text: str, i: int, delimiter: str) -> int:
+    """Index after the heredoc body that starts at text[i] (default mode only)."""
     while i <= len(text):
         eol = text.find("\n", i)
         if eol < 0:
-            if strict and text[i:].strip() != delimiter:
-                raise ShellSyntaxError(f"here-document {delimiter!r} never ends")
             return len(text)
         if text[i:eol].strip() == delimiter:
             return eol + 1
         i = eol + 1
     return i
+
+
+# --- strict heredocs and redirections -------------------------------------------
+
+def _unquote(word: str) -> tuple[str, bool]:
+    """(delimiter, quoted): bash's quote removal on a heredoc word, and whether any
+    part of it was quoted (a quoted delimiter's body is read literally)."""
+    out: list[str] = []
+    i, quoted = 0, False
+    while i < len(word):
+        ch = word[i]
+        if ch == "\\" and word[i + 1:i + 2] == "\n":
+            i += 2  # a line continuation, not a quote
+        elif ch == "\\":
+            out.append(word[i + 1:i + 2])
+            i, quoted = i + 2, True
+        elif ch == "'":
+            end = word.find("'", i + 1)
+            end = len(word) if end < 0 else end
+            out.append(word[i + 1:end])
+            i, quoted = end + 1, True
+        elif ch == '"':
+            i, quoted = i + 1, True
+            while i < len(word) and word[i] != '"':
+                pair = word[i:i + 2]
+                if pair == "\\\n":
+                    i += 2
+                elif len(pair) == 2 and pair[0] == "\\" and pair[1] in _DQUOTE_ESCAPES:
+                    out.append(pair[1])
+                    i += 2
+                else:
+                    out.append(word[i])
+                    i += 1
+            i += 1
+        else:
+            out.append(ch)
+            i += 1
+    return "".join(out), quoted
+
+
+def _heredoc_word(text: str, i: int) -> tuple[int, tuple[str, bool, bool]]:
+    """(index after the word, (delimiter, quoted, strip tabs)) for the `<<` at text[i].
+
+    Strict mode; raises `ShellSyntaxError` when no delimiter word follows.
+    """
+    dash = text[i + 2:i + 3] == "-"
+    i += 3 if dash else 2
+    while i < len(text) and text[i] in " \t":
+        i += 1
+    end = _word_end(text, i)
+    if end == i:
+        raise ShellSyntaxError("here-document without a delimiter")
+    delimiter, quoted = _unquote(text[i:end])
+    return end, (delimiter, quoted, dash)
+
+
+def _redirection_operator_end(text: str, i: int) -> int:
+    """Index of the target word after the (non-heredoc) redirection operator at text[i]."""
+    i += 1
+    while i < len(text) and text[i] in "<>&":
+        i += 1
+    if text[i - 1] == ">" and text[i:i + 1] == "|":
+        i += 1  # >| writes even under noclobber
+    while i < len(text) and text[i] in " \t":
+        i += 1
+    return i
+
+
+def _continued(text: str, start: int, eol: int) -> bool:
+    """Whether the newline at text[eol] is escaped: an odd run of backslashes before it."""
+    run = 0
+    while eol - run - 1 >= start and text[eol - run - 1] == "\\":
+        run += 1
+    return run % 2 == 1
+
+
+def _join_continuations(line: str) -> str:
+    """`line` with its backslash-newline pairs removed (an escaped backslash stays)."""
+    out: list[str] = []
+    i = 0
+    while i < len(line):
+        if line[i] == "\\" and i + 1 < len(line):
+            if line[i + 1] != "\n":
+                out.append(line[i:i + 2])
+            i += 2
+        else:
+            out.append(line[i])
+            i += 1
+    return "".join(out)
+
+
+def _strict_heredoc_end(text: str, i: int, delimiter: tuple[str, bool, bool], *,
+                        comsub: bool = False, closed: bool = False) -> tuple[int, bool]:
+    """(index after the heredoc body starting at text[i], whether a `)` cut it short).
+
+    The body ends on the first line equal to the delimiter, as bash compares it:
+    exactly, with leading tabs stripped for `<<-`, and — for an unquoted
+    delimiter only — after backslash-newline pairs are joined. Inside `$( … )`
+    or `<( … )` (`comsub`) a line that starts with the delimiter and has a `)`
+    later ends the body after the delimiter, and the returned index is where the
+    scan resumes: bash 5.2 reads `EOF)"` so (with a warning), and runs what
+    follows the delimiter as a new command. `closed` says `text` is such a
+    substitution's body with its closing `)` cut off, so its last line counts
+    as cut when it starts with the delimiter. Raises `ShellSyntaxError` when no
+    line ends the body: the rest of the command would otherwise be read as data,
+    and a `<<` that was not a heredoc at all (a shift in `$[ … ]`) would hide
+    every later command.
+    """
+    word, quoted, dash = delimiter
+    while True:
+        end = text.find("\n", i)
+        while not quoted and end >= 0 and _continued(text, i, end):
+            end = text.find("\n", end + 1)
+        end = len(text) if end < 0 else end
+        line = text[i:end]
+        logical = line if quoted else _join_continuations(line)
+        if dash:
+            logical = logical.lstrip("\t")
+        if logical == word:
+            return min(end + 1, len(text)), False
+        if comsub and logical.startswith(word) and (
+                ")" in logical[len(word):] or (closed and end >= len(text))):
+            if "\n" in line:
+                raise ShellSyntaxError("here-document cut inside a continued line")
+            return end - len(logical) + len(word), True
+        if end >= len(text):
+            raise ShellSyntaxError(f"here-document {word!r} never ends")
+        i = end + 1
 
 
 def _arithmetic_end(text: str, i: int) -> int:
@@ -262,6 +459,9 @@ def _arithmetic_end(text: str, i: int) -> int:
     try:
         while i < len(text):
             ch = text[i]
+            if ch == "$" and text[i + 1:i + 2] == "'":
+                i = _ansi_end(text, i + 1)
+                continue
             if ch in "'\"":
                 i = _quote_end(text, i)
                 continue
@@ -288,7 +488,8 @@ def _arithmetic_end(text: str, i: int) -> int:
 
 # --- the tokenizer ------------------------------------------------------------
 
-def segments(command: str, *, strict: bool = False) -> list[list[str]]:
+def segments(command: str, *, strict: bool = False,
+             closed: bool = False) -> list[list[str]]:
     """Split `command` into shell segments of tokens, quote- and heredoc-aware.
 
     Backslash-newline continuations are joined; newline, `;`, `&&`, `||`, `|`,
@@ -297,23 +498,36 @@ def segments(command: str, *, strict: bool = False) -> list[list[str]]:
     text as one token — callers resolve that token as "the current branch" when
     it names a push destination or a `--ref` — and its body is spliced in as
     segments of its own, because the shell runs it. Strict mode differs as the
-    module docstring lists and raises `ShellSyntaxError` on unreadable input.
+    module docstring lists (it joins continuations while it scans, only where
+    bash does) and raises `ShellSyntaxError` on unreadable input. `closed`
+    (strict) marks `command` as the body of a `$(…)` or `<(…)`/`>(…)` whose
+    closing `)` was cut off, for the `EOF)` heredoc rule.
     """
-    text = command.replace("\\\r\n", "").replace("\\\n", "")
+    text = command if strict else command.replace("\\\r\n", "").replace("\\\n", "")
     out: list[list[str]] = []
     tokens: list[str] = []
     buf: list[str] = []
     deferred: list[list[str]] = []   # strict: substitution bodies, after their segment
-    heredocs: list[str] = []         # delimiters whose bodies start at the next newline
+    heredocs: list = []              # delimiters whose bodies start at the next newline
     arithmetic_end = -1              # strict: end of the `(( … ))` command being read
+    started = False                  # strict: a quote opened the current word
+    target = False                   # strict: the next word is a redirection target
 
     def flush_token() -> None:
-        if buf:
-            tokens.append("".join(buf))
+        nonlocal started, target
+        if buf or started:
+            word = "".join(buf)
             buf.clear()
+            started = False
+            if target:
+                target = False  # a redirection target: its substitutions are deferred
+            else:
+                tokens.append(word)
 
     def flush_segment() -> None:
         flush_token()
+        if target:
+            raise ShellSyntaxError("redirection without a target")
         if tokens:
             out.append(list(tokens))
             tokens.clear()
@@ -324,7 +538,7 @@ def segments(command: str, *, strict: bool = False) -> list[list[str]]:
         """Record the substitution text[i:close + 1] whose body starts at `body`."""
         buf.append(text[i:close + 1])
         if strict:
-            deferred.extend(segments(text[body:close], strict=True))
+            deferred.extend(segments(text[body:close], strict=True, closed=text[i] != "`"))
         else:
             flush_token()
             flush_segment()
@@ -333,7 +547,9 @@ def segments(command: str, *, strict: bool = False) -> list[list[str]]:
 
     def quoted(i: int) -> int:
         """Scan a quoted region into the token buffer; returns the next index."""
+        nonlocal started
         quote = text[i]
+        started = strict  # '' and "" are words (`''#` is not a comment)
         i += 1
         while i < len(text):
             ch = text[i]
@@ -352,6 +568,9 @@ def segments(command: str, *, strict: bool = False) -> list[list[str]]:
             if strict and quote == '"' and ch == "`":
                 i = substitution(i, i + 1, _backquote_close(text, i + 1))
                 continue
+            if strict and quote == '"' and text[i:i + 2] == "\\\n":
+                i += 2  # a line continuation inside double quotes is removed
+                continue
             if quote == '"' and ch == "\\" and strict and text[i + 1:i + 2] not in _DQUOTE_ESCAPES:
                 buf.append(ch)  # "C:\Program Files\Git\cmd\git.exe" keeps its backslashes
                 i += 1
@@ -367,6 +586,7 @@ def segments(command: str, *, strict: bool = False) -> list[list[str]]:
 
     def redirection_step(i: int) -> int | None:
         """Consume a redirection at text[i] (or `&>`), or None if there is none."""
+        nonlocal target
         ch = text[i]
         if i < arithmetic_end and ch in "<>":
             flush_token()  # a comparison or shift inside (( … )), never a heredoc
@@ -377,19 +597,25 @@ def segments(command: str, *, strict: bool = False) -> list[list[str]]:
             flush_token()
             start = i + 1
         elif ch in "<>":
-            if buf and "".join(buf).isdigit():
+            if buf and not started and "".join(buf).isdigit():
                 buf.clear()  # an fd prefix such as the 2 in 2>&1
             else:
                 flush_token()
             start = i
         else:
             return None
-        end, delimiter = _consume_redirection(text, start, strict=strict)
+        if strict:
+            if text.startswith("<<", start) and not text.startswith("<<<", start):
+                end, heredoc = _heredoc_word(text, start)
+                heredocs.append(heredoc)
+                return end
+            # the target is read as the next word, so the commands in its
+            # substitutions are recorded, and then dropped (E1)
+            target = True
+            return _redirection_operator_end(text, start)
+        end, delimiter = _consume_redirection(text, start)
         if delimiter:
-            if strict:
-                heredocs.append(delimiter)
-            else:
-                heredocs[:] = [delimiter]
+            heredocs[:] = [delimiter]
         return end
 
     def separator_step(i: int) -> int | None:
@@ -415,15 +641,35 @@ def segments(command: str, *, strict: bool = False) -> list[list[str]]:
             i += 1
             if ch == "\n" and heredocs:
                 for delimiter in heredocs:
-                    i = _heredoc_end(text, i, delimiter, strict=strict)
+                    if not strict:
+                        i = _heredoc_end(text, i, delimiter)
+                        continue
+                    i, cut = _strict_heredoc_end(text, i, delimiter, comsub=closed,
+                                                 closed=closed)
+                    if cut:  # what follows the delimiter is a new command
+                        break
                 heredocs.clear()
             flush_segment()
             continue
-        if strict and not buf and i >= arithmetic_end and text.startswith("((", i):
+        if strict and text[i:i + 2] == "\\\n":
+            i += 2  # a line continuation: removed before bash reads words
+            continue
+        if strict and not (buf or started) and i >= arithmetic_end and text.startswith("((", i):
             arithmetic_end = _arithmetic_end(text, i)  # its words still split as usual
-        if ch == "#" and not buf:
+        if ch == "#" and not (buf or started):
             newline = text.find("\n", i)
             i = len(text) if newline < 0 else newline
+            continue
+        if strict and ch == "$" and text[i + 1:i + 2] == "'":
+            end = _ansi_end(text, i + 1)
+            buf.append(_ansi_c(text[i + 2:end - 1]))
+            started, i = True, end
+            continue
+        if strict and ch == "$" and text[i + 1:i + 2] == '"':
+            i += 1  # $"…" is a translated "…"
+            continue
+        if strict and ch in "<>" and text[i + 1:i + 2] == "(" and i >= arithmetic_end:
+            i = substitution(i, i + 2, _strict_close(text, i + 2))  # <(…) / >(…)
             continue
         if ch == "$" and text[i + 1:i + 2] == "(":
             close = _strict_close(text, i + 2) if strict else _matching_paren(text, i + 2)

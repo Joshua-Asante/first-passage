@@ -31,7 +31,9 @@ through (A1–A7). `classify()` now tokenizes with the tokenizer
 judges only words in **command position**: each segment after ``sudo``,
 ``env``, ``command``, ``exec``, ``nohup``, ``time``, ``timeout`` (and the other
 runners the tokenizer unwraps) are stripped, the script of ``bash -c``/``sh -c``
-re-parsed, and the body of every ``$(…)`` substitution re-parsed. **Data is
+re-parsed, and the body of every ``$(…)``, backquote and ``<(…)``/``>(…)``
+substitution re-parsed — also inside a redirection target or a ``<<<`` word
+(``echo x > "$(cmd)"`` runs ``cmd``). **Data is
 never a command:** heredoc bodies (also inside a substitution), quoted
 arguments of other programs (``grep``, ``rg``, ``echo``, ``printf``,
 ``git log --grep``, ``git commit -m``) and ``python -c`` strings. A command the
@@ -44,12 +46,15 @@ clusters are read the way git reads them, so a letter inside an option's value
 — ``-mn`` is the message "n" — is not a flag, and neither is the word after a
 long option that takes one — ``--message '-n …'`` is a message):
 
-  * bypass, for ``commit``/``merge``/``push``/``am``/``rebase``/``cherry-pick``/
-    ``revert``: a long option that is a prefix of ``--no-verify`` or
-    ``--no-gpg-sign`` at least 6 characters long; ``-n`` in a ``commit`` short
-    cluster (``-n`` is ``--dry-run`` for push and ``--no-stat`` for merge); a
-    ``-c``/``--config-env`` global option setting ``core.hooksPath`` (any case);
-  * destructive: ``reset`` with a prefix of ``--hard`` of at least 4 characters;
+  * bypass, for ``commit``/``merge``/``pull``/``push``/``am``/``rebase``/
+    ``cherry-pick``/``revert``: a long option that is a prefix of
+    ``--no-verify`` or ``--no-gpg-sign`` at least 6 characters long; ``-n`` in
+    a ``commit`` short cluster (``-n`` is ``--dry-run`` for push and
+    ``--no-stat`` for merge and pull); a ``-c``/``--config-env`` global option
+    setting ``core.hooksPath`` (any case). ``pull`` is beyond E2's list: it
+    merges, so ``git pull --no-verify`` skips the pre-merge-commit hook;
+  * destructive: ``reset`` with a prefix of ``--hard`` (``--h`` already resets
+    hard in git 2.43; the card's E3 said at least 4 characters);
     ``clean -f``/``--force`` (``-n`` alone is a dry run); ``checkout`` with
     ``--`` or ``-f``/``--force``; ``restore`` unless it only touches the index
     (``--staged``/``-S`` without ``--worktree``/``-W``); ``switch -f``/
@@ -131,8 +136,12 @@ DESTRUCTIVE_AGENT_MSG = (
 NO_VERIFY_USER_MSG = "Command bypasses git hooks/signing. Confirm to proceed."
 DESTRUCTIVE_USER_MSG = "Potentially destructive git/fs command. Confirm to proceed."
 
-# git subcommands that run hooks or sign (E2), and the long options that skip them
-HOOKED = frozenset({"commit", "merge", "push", "am", "rebase", "cherry-pick", "revert"})
+# git subcommands that run hooks or sign (E2), and the long options that skip them.
+# `pull` is here because it merges: `git pull --no-verify` skips the
+# pre-merge-commit and commit-msg hooks (`git pull -h`, git 2.43), and this repo
+# installs scripts/githooks/pre-merge-commit.
+HOOKED = frozenset({"commit", "merge", "pull", "push", "am", "rebase", "cherry-pick",
+                    "revert"})
 BYPASS_OPTIONS = ("--no-verify", "--no-gpg-sign")
 # git global options that take the next word as their value
 GIT_GLOBAL_VALUES = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace",
@@ -140,14 +149,14 @@ GIT_GLOBAL_VALUES = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namesp
 # Short options whose value is the rest of the cluster or, when the letter ends
 # the cluster, the next word (git's parse-options; per subcommand).
 SHORT_VALUES = {
-    "commit": "mFCct", "merge": "mFsX", "push": "o", "clean": "e", "checkout": "bB",
-    "switch": "cC", "restore": "s", "branch": "u", "rebase": "sXx",
+    "commit": "mFCct", "merge": "mFsX", "pull": "sXo", "push": "o", "clean": "e",
+    "checkout": "bB", "switch": "cC", "restore": "s", "branch": "u", "rebase": "sXx",
     "cherry-pick": "mX", "revert": "mX",
 }
 # Short options whose optional value can only be joined: the rest of the cluster.
 JOINED_VALUES = {
-    "commit": "uS", "merge": "S", "rebase": "S", "cherry-pick": "S", "revert": "S",
-    "am": "SCp",
+    "commit": "uS", "merge": "S", "pull": "rjS", "rebase": "S", "cherry-pick": "S",
+    "revert": "S", "am": "SCp",
 }
 # Long options whose value may be the next word, so that word is data, never a
 # flag or an operand (`commit --message '-n …'`; per `git <sub> -h`, git 2.43).
@@ -159,6 +168,9 @@ LONG_VALUES = {
                          "--trailer", "--cleanup", "--pathspec-from-file"}),
     "merge": frozenset({"--message", "--file", "--strategy", "--strategy-option",
                         "--cleanup", "--into-name"}),
+    "pull": frozenset({"--strategy", "--strategy-option", "--cleanup", "--upload-pack",
+                       "--depth", "--deepen", "--shallow-since", "--shallow-exclude",
+                       "--refmap", "--server-option", "--negotiation-tip"}),
     "rebase": frozenset({"--onto", "--whitespace", "--exec", "--strategy",
                          "--strategy-option"}),
     "cherry-pick": _PICK_VALUES,
@@ -299,7 +311,8 @@ def _restore_discards(opts: list[tuple[str, str]]) -> bool:
 def _git_destroys(sub: str, opts: list[tuple[str, str]]) -> bool:
     """Whether `git <sub>` with these options discards work (E3)."""
     if sub == "reset":
-        return any(kind == _LONG and _abbrev(word, "--hard", 4) for kind, word in opts)
+        # `--h` is already a hard reset in git 2.43: no other reset option starts with h
+        return any(kind == _LONG and _abbrev(word, "--hard", 3) for kind, word in opts)
     if sub == "clean":
         return _has(opts, "f", ("--force",))
     if sub == "checkout":

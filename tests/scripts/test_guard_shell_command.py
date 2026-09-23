@@ -401,3 +401,198 @@ def test_arithmetic_shift_is_not_a_heredoc(mod, cmd, expected):
 def test_long_option_values_are_data(mod, cmd, expected):
     """Round 1 P3: the word after `--message`/`--file`/… is the option's value."""
     assert mod.classify(cmd)[0] == expected, cmd
+
+
+# --- 2026-09-23 card 2, judge round 2: shapes bash 5.2 runs that the strict read missed
+HARD_FLAG = "--" + "hard"
+NV, DE = "standing path", "git status"  # NO_VERIFY_AGENT_MSG / DESTRUCTIVE_AGENT_MSG
+
+
+def _asks_with(mod, cmd, message):
+    permission, agent_msg, user_msg = mod.classify(cmd)
+    return permission == "ask" and message in agent_msg and bool(user_msg)
+
+
+@pytest.mark.parametrize("cmd,message", [
+    (f'echo x > "$({HARD})"', DE),
+    (f"echo x >$({RMRF} d)", DE),
+    (f"cat < $({HARD})", DE),
+    (f'cat <<< "$({RMRF} d)"', DE),
+    (f"cat <<< $({HARD})", DE),
+    (f"echo x 2>`{RMRF} d`", DE),
+    (f"echo x >> `{HARD}`", DE),
+    (f'echo x &> "$(git commit {NOV} -m x)"', NV),
+    (f"echo x >| $({RMRF} d)", DE),
+    (f"cat < <({RMRF} d)", DE),
+    (f"echo x > >({RMRF} d)", DE),
+    (f"echo x >\n{RMRF} d", DE),  # a redirection with no target is unreadable: fallback
+])
+def test_substitutions_in_redirection_targets_run(mod, cmd, message):
+    """Round 2 P2 (E1): bash runs the `$(…)`, backquote and `<(…)`/`>(…)` inside a
+    redirection target or a `<<<` word, so their bodies are read as commands."""
+    assert _asks_with(mod, cmd, message), cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    f"echo x > '$({RMRF} d)'",            # single quotes: only a file name
+    f"cat <<< '{RMRF} d'",                 # a here-string word is data
+    "echo x > out.txt 2>&1",
+    "cat < <(git log --oneline)",
+    "diff <(git show a:f) <(git show b:f)",
+    f"cat <<'EOF' > \"$(mktemp)\"\n{RMRF} d\nEOF",
+])
+def test_redirection_targets_are_still_data(mod, cmd):
+    """Round 2 P2 neighbours: the target word itself is never a command."""
+    assert mod.classify(cmd)[0] == "allow", cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    f"git pull {NOV}", f"git -C sub pull --rebase {NOV}", "git pull --no-ver",
+    "git -C x pull --no-verif", "git pull --no-gpg", "git -c core.hooksPath=/x pull",
+    f"git pull -s ours {NOV} origin main", f"git pull --depth 1 {NOV}",
+])
+def test_pull_hook_bypass_asks(mod, cmd):
+    """Round 2 P2 (E2): `git pull` merges, so `--no-verify` skips the repo's
+    pre-merge-commit hook (git 2.43 `git pull -h`)."""
+    assert _asks_with(mod, cmd, NV), cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    "git pull -n",                          # pull -n is --no-stat
+    "git pull -rn origin main",             # -r takes the rest of the cluster
+    "git pull --rebase origin main",
+    f"git pull -X '{NOV}' origin main",     # option values, not flags
+    f"git pull --upload-pack '{NOV}' origin",
+    f"git pull --strategy-option '{NOV}' origin",
+    "git pull --no-verify-signatures",
+])
+def test_pull_neighbours_are_allowed(mod, cmd):
+    """Round 2 P2 neighbours: pull's -n and option values are not a bypass."""
+    assert mod.classify(cmd)[0] == "allow", cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    ("git reset --h", "ask"),
+    ("git reset -q --h HEAD~1", "ask"),
+    ("git reset --ha", "ask"),
+    ("git -C x reset --h", "ask"),
+    ("git reset --", "allow"),              # `--` alone ends options
+    ("git reset --soft HEAD~1", "allow"),
+])
+def test_reset_hard_three_character_prefix(mod, cmd, expected):
+    """Round 2 P3 (E3): git 2.43 resets hard on `--h`; no other reset option
+    starts with h."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    (f"nohup -- {RMRF} d", "ask"),
+    (f"nohup -- {HARD}", "ask"),
+    (f"nohup -- git commit {NOV} -m x", "ask"),
+    ("nohup -- sleep 1", "allow"),
+])
+def test_nohup_double_dash_is_unwrapped(mod, cmd, expected):
+    """Round 2 P3 (E1): GNU nohup accepts `--` before the command it runs."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    (f"echo ''#; {RMRF} d", "ask"),
+    (f'echo ""#; {HARD}', "ask"),
+    (f"echo $''#; {RMRF} d", "ask"),
+    (f"echo x #; {RMRF} d", "allow"),
+    (f"echo x;#{RMRF} d", "allow"),
+    (f"git commit -m '' -{'n'}", "ask"),    # an empty quoted word is still a word
+])
+def test_a_quote_starts_a_word(mod, cmd, expected):
+    """Round 2 P3a: `''#` is the word `#`, not a comment, and an empty quoted
+    word stays a token (so `-m ''` does not swallow the next flag)."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    # a quoted heredoc body is literal: a trailing backslash does not join lines
+    (f"cat > a.sh <<'EOF'\nfoo \\\nEOF\n{RMRF} d\ncat > b.sh <<'EOF'\nbar\nEOF", "ask"),
+    # a comment ends at its newline even after a backslash
+    (f"# note \\\n{RMRF} d", "ask"),
+    # an unquoted body joins backslash-newline, so that EOF line is still body
+    (f"cat > a.sh <<EOF\nfoo \\\nEOF\n{RMRF} d\nEOF", "allow"),
+    # an escaped backslash at the end of a line is no continuation
+    (f"cat > a.sh <<EOF\nfoo \\\\\nEOF\n{RMRF} d", "ask"),
+    # continuations still join words, in double quotes and in a -c script
+    (f"git reset \\\n{HARD_FLAG}", "ask"),
+    (f'bash -c "git reset \\\n{HARD_FLAG}"', "ask"),
+    (f"bash -c 'git reset \\\n{HARD_FLAG}'", "ask"),
+    # a backslash before a CR escapes the CR; the newline still ends the command
+    (f"echo \\\r\n{RMRF} d", "ask"),
+])
+def test_line_continuations_join_only_where_bash_joins(mod, cmd, expected):
+    """Round 2 P3b: backslash-newline is removed in words and double quotes only,
+    never in single quotes, quoted heredoc bodies or comments."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    (f'cat <<"E\\"F"\nx\nE"F\n{RMRF} d\nEF', "ask"),     # delimiter is E"F
+    (f'cat <<"E\\F"\nx\nE\\F\n{RMRF} d\nEF', "ask"),      # "E\F" keeps the backslash
+    (f"cat <<E\\F\nx\nEF\n{RMRF} d\nE\\F", "ask"),        # E\F is EF
+    (f"cat <<'E\\F'\n{RMRF} d\nE\\F", "allow"),
+    (f"cat <<E''OF\n{RMRF} d\nEOF", "allow"),
+    # the delimiter line must match exactly, as bash compares it
+    (f"cat <<EOF\nx\n EOF\n{RMRF} d\nEOF", "allow"),     # ' EOF' is body
+    (f"cat <<EOF\nx\n EOF\ndon't\nEOF\n{RMRF} d", "ask"),
+    (f"cat <<EOF\nb\nEOF\r\n{RMRF} d\nEOF", "allow"),    # 'EOF\r' is body
+    (f"cat <<-EOF\n\tx\n\tEOF\n{RMRF} d", "ask"),        # <<- strips tabs
+    (f"cat <<-EOF\n x\n EOF\n{RMRF} d\nEOF", "allow"),    # ... but not spaces
+])
+def test_heredoc_delimiter_quote_removal_and_exact_match(mod, cmd, expected):
+    """Round 2 P3c: the delimiter gets bash's quote removal, and the body ends
+    only on a line equal to it (tabs stripped for `<<-`)."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    (f"git commit -m \"$(cat <<'EOF'\nfix: never {RMRF} docs\nEOF)\"", "allow"),
+    (f"git commit -m \"$(cat <<'EOF'\nfix: x\nEOF)\" {NOV}", "ask"),
+    (f"y=\"$(cat <<'EOF'\nb\nEOF)$({RMRF} d)\"", "ask"),
+    # bash cuts at `EOF x)` and `EOFz)` too, runs `x`/`z` as commands, then
+    # runs the next line; read without the cut, the `EOF` in z's substitution
+    # would end the heredoc and hide it
+    (f"y=\"$(cat <<EOF\nb\nEOF x)\"\n{RMRF} d\nz=\"$(echo\nEOF\n)\"", "ask"),
+    (f"y=\"$(cat <<EOF\nb\nEOFz)\"\n{RMRF} d\nz=\"$(echo\nEOF\n)\"", "ask"),
+    (f"cat <(cat <<EOF\nx\nEOF)\n{RMRF} d", "ask"),           # <( … ) cuts as well
+    (f"y=\"$(cat <<EOF\nb\nEOF x)\"\nz=\"$(echo\nEOF\n)\"", "allow"),
+    (f"cat <<'EOF'\nx\nEOF)\n{RMRF} d", "ask"),   # top level: no cut, unreadable
+])
+def test_heredoc_cut_by_the_closing_paren(mod, cmd, expected):
+    """Round 2 P3 (F29): inside `$( … )` bash 5.2 ends a heredoc on a line that
+    starts with the delimiter and has a `)` later (`EOF)"`, with a warning)."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    (f"bash -c $'{HARD}\\n'", "ask"),
+    ("bash -c $'git reset \\x2d-hard'", "ask"),
+    (f"$'rm' -{'rf'} d", "ask"),
+    (f"printf $'%s\\n' '{RMRF}'", "allow"),
+    (f"echo $'it\\'s {RMRF}'", "allow"),
+    (f'echo $"{RMRF}"', "allow"),
+])
+def test_ansi_c_quoting_is_decoded(mod, cmd, expected):
+    """Round 2 P3 (E1): `$'…'` is read with bash's escapes, so the script of
+    `bash -c $'…'` is re-parsed as bash runs it."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+@pytest.mark.parametrize("command", [
+    f'echo x > "$({HARD})"',
+    f"git pull {NOV}",
+])
+def test_round_two_shapes_ask_through_the_hook(command):
+    """Round 2: the live hook (script path, JSON on stdin) asks on these too."""
+    result = subprocess.run(
+        [sys.executable, str(GUARD)], input=json.dumps({"tool_input": {"command": command}}),
+        capture_output=True, text=True, encoding="utf-8", cwd=REPO, check=False, timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"] == "ask"
