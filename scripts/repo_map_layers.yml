@@ -13,6 +13,11 @@ governance_prefixes:
   - docs/
   - .claude/
   - .github/
+  # deploy/qualification/bootstrap.py and tools/qualification_verification/
+  # (2026-09-20): explicit, matching the prior default. Static first-party
+  # imports are tools/ -> scripts/ only; bootstrap's ops imports are dynamic.
+  - deploy/
+  - tools/
 
 # scripts/ is root-resident but mixed-layer: module stem -> layer. Unlisted
 # stems fall back to governance (check_boundaries.layer_of_file).

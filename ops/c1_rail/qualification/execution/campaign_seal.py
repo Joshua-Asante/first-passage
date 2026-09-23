@@ -20,7 +20,8 @@ import json
 from ..contract import canonical_json_bytes as encoded, parse_canonical_json
 from .campaign_budget import integer, limits as parse_limits, validate_work_id
 from .campaign_result import (REFUSED_BUDGET_STATES, SEAL_ELIGIBLE_STATE, SEAL_PHASE,
-                              SEALED_PASS, ResultStore, parse_campaign_result)
+                              SEALED_PASS, ResultStore, parse_campaign_result,
+                              supervise_unit_to_exit)
 from .protocol import digest, fields, identity, sha256
 
 SEAL_INTENT_SCHEMA = 'qualification_campaign_seal_intent/v1'
@@ -499,7 +500,6 @@ def run_seal_unit(context, campaigns, runtime, state, work, enrollment, manifest
     from . import campaign_supervisor as supervisor
     from .runtime import installed_code_root
     import sys
-    import time
     seals = SealStore(campaigns)
     deadline = min(state['deadline_boottime_ns'],
                    parse_canonical_json(seals.campaigns._raw(work['reservation_bytes_b64']),
@@ -519,31 +519,9 @@ def run_seal_unit(context, campaigns, runtime, state, work, enrollment, manifest
     campaigns.acknowledge_dispatch(state['attempt_id'], work['work_id'], 'payload',
                                    permit['token'], supervisor.observe_campaign_clock)
     group = supervisor._scope_path(runtime.parent, enrollment['scopes']['payload_slice']) / unit
-    seen = set()
-    while True:
-        current = parse_canonical_json(seals.result_state_bytes(state['attempt_id']),
-                                       label='current seal authority')
-        supervisor._assert_authority(current)
-        if not group.exists() or supervisor._kernel_pairs(
-                supervisor._read_counter(group / 'cgroup.events')).get('populated') == 0:
-            break
-        for pid_text in supervisor._payload_processes(group):
-            if pid_text in seen:
-                continue
-            observed_identity = supervisor._process_identity(pid_text)
-            if observed_identity is None:
-                continue
-            birth, uid, cgroup, comm, exe = observed_identity
-            if uid != context.config['seal_probe_uid']:
-                raise ValueError('seal unit role UID differs')
-            seals.retain_result_supervision_event(encoded(dict(
-                schema='qualification_campaign_supervision_event/v2',
-                attempt_id=state['attempt_id'], work_id=work['work_id'], kind='PROCESS',
-                clock=supervisor.clock(supervisor.observe_campaign_clock()),
-                data=dict(pid=int(pid_text), start_ticks=birth, uid=uid, cgroup=cgroup,
-                          comm=comm, exe=exe))))
-            seen.add(pid_text)
-        time.sleep(.2)
+    supervise_unit_to_exit(supervisor, seals, state, work, group, phase=SEAL_PHASE,
+                           uid=context.config['seal_probe_uid'], deadline=deadline,
+                           role='seal')
     state = parse_canonical_json(seals.result_state_bytes(state['attempt_id']),
                                  label='seal final state')
     work = campaigns._work(state, work['work_id'])

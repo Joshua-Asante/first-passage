@@ -44,9 +44,15 @@ PHASE_BY_ROLE = {role: phase for role, phase in WORK_PHASES.items() if role != '
 def parse_request(raw):
     if type(raw) is not bytes or len(raw) > 1024:
         raise ValueError('bounded scheduler request required')
+    document = parse_canonical_json(raw, label='scheduler request')
+    if type(document) is dict and 'fault' not in document:
+        # S2-era producers (the accepted supervision suite among them) predate
+        # the diagnostic fault input; an absent fault is absent -- inject it
+        # rather than widen the closed set for them.
+        document = dict(document, fault=None)
     doc = fields(
-        parse_canonical_json(raw, label='scheduler request'),
-        {'schema', 'attempt_id', 'work_id', 'role', 'probe', 'signing_retry_of'},
+        document,
+        {'schema', 'attempt_id', 'work_id', 'role', 'probe', 'signing_retry_of', 'fault'},
     )
     if (
         doc['schema'] != 'qualification_campaign_schedule_request/v1'
@@ -64,6 +70,14 @@ def parse_request(raw):
     validate_work_id(doc['work_id'])
     if doc['signing_retry_of'] is not None:
         validate_work_id(doc['signing_retry_of'])
+    # TEST_ONLY diagnostic fault input (coordinator-authorized for the E06/E07
+    # scene): the only fault holds the assessment commit open between its two
+    # durable transactions so a killed qg5 unit lands in the observable window.
+    # Refused for every role but the g5 dispatch work; absent means absent.
+    if doc['fault'] not in (None, 'hold_after_intent'):
+        raise ValueError('installed diagnostic fault required')
+    if doc['fault'] is not None and doc['role'] != 'n1_g5':
+        raise ValueError('diagnostic fault requires the g5 dispatch role')
     return doc
 
 
@@ -586,8 +600,10 @@ class FundingStoreMixin:
                 # startup; harmless probe dispatch keeps its weaker S2 gate.
                 if request['probe'] != 'noop':
                     raise ValueError('dispatch roles require the fixed noop probe')
-                if not c.execute("SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role='diagnostic_receipt'",
-                                 (attempt,)).fetchone():
+                if not c.execute(
+                    "SELECT 1 FROM full_campaign_objects WHERE attempt_id=? AND role='diagnostic_receipt'",
+                    (attempt,),
+                ).fetchone():
                     raise ValueError('completed campaign admission required before dispatch')
             parent = request['signing_retry_of']
             if phase in doc['reserved_compute_phases']:

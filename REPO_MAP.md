@@ -43,7 +43,7 @@ The heading is retained for existing references; the table describes current own
 | `lab/analysis/` | Campaign harnesses and evidence at `<theme>/<slug>/` | [lab catalog](lab/CATALOG.md), In flight first |
 | `lab/research_utils/` | Shared research primitives | [research utilities](lab/research_utils/README.md) |
 | `lab/discovery/`, `lab/databento_fetch/` | Search contracts, scoring and cost-gated data acquisition | [discovery](lab/discovery/README.md), [data client](lab/databento_fetch/README.md) |
-| `ops/c1_rail/` | Listener, sizing, payload, telemetry, arm/disarm interfaces | [rail README](ops/c1_rail/README.md) |
+| `ops/c1_rail/` | Listener, sizing, payload, telemetry, arm/disarm interfaces; Track B book owner/protection/halt/settlement modules (`book_*`, `account_close_*`); offline qualification package `qualification/` with its separately installed `execution/` service | [rail README](ops/c1_rail/README.md), `qualification_cli.py` |
 | `ops/c1_signal_daemon/` | Python signal-host package | [daemon README](ops/c1_signal_daemon/README.md) |
 | `ops/instruments/`, `ops/venue_editions/`, `ops/calendars/` | Instrument evidence, venue binding and calendar records | [ops README](ops/README.md) |
 | `ops/sentinel/`, `ops/recall/` | Governance diagnostics and assistive retrieval safeguards | [sentinel](ops/sentinel/README.md), [recall](ops/recall/README.md) |
@@ -62,16 +62,18 @@ Private data and frozen bars are not regenerable merely because a catalog entry 
 | `scripts/` | Mixed layers, listed below; direct scripts resolve repository-relative paths from this location |
 | `tests/` | Cross-layer integration suite, exempt from application import boundaries |
 | `discovery_manifests/` | Lab search-contract output, anchored at repository root |
-| `deploy/` | Ops packaging for listener and daemon, using root build context; no Python files currently |
+| `deploy/` | Fly packaging for listener and daemon (root build context) plus `qualification/bootstrap.py`, the isolated-Python role launcher for installed qualification processes; classified governance in the layer map — its only static first-party import is `tools/`, its `ops` imports are dynamic and outside the scanner |
+| `tools/` | Verification tooling: `qualification_verification/` (disposable Linux TEST_ONLY host) and `local_verification/` (Docker sequence runner); classified governance in the layer map, imports `scripts/` discipline modules only |
 | `.claude/`, `.agents/`, `.github/` | Harness, skill and CI entry points at their expected locations |
 | `.gitignore`, `.gitattributes`, `LICENSE`, `.markdownlint.json` | VCS, publication and formatting policy |
 | `.rgignore` | Search exclusion, sole owner since the 2026-09-15 Cursor retirement; absence in default search is not absence of evidence |
 | `.dockerignore` | Root-context allow-list excluding private sources, vendor data, research and Git history from hosted images |
 
 The listener and daemon have separate deployment definitions and volumes under
-`deploy/`; see their READMEs before operational work. Adding Python beneath
-`deploy/` requires explicitly classifying it in the boundary maps in the same
-change: the scanner's default is governance.
+`deploy/`; see their READMEs before operational work. `deploy/` and `tools/` are
+listed in `governance_prefixes` (2026-09-20); Python added beneath either that
+statically imports `ops/` or `lab/` needs a different classification in the
+same change, since governance may import only `core/`.
 
 ### §2.1 — `scripts/` per-file layer (root-resident; recorded for the scanner)
 
@@ -88,7 +90,7 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_90 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_91 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
@@ -149,6 +151,7 @@ _90 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/gate_fire_log.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/gate_manifest.py` | governance | — | gate runner (reads gates.yml); not itself a gated id; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/guard_open_verification_record.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/guard_s2_runs.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/guard_shell_command.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/import_skill_from_cache.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/instrument_profiles.py` | governance | `instrument-profiles` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
@@ -225,8 +228,9 @@ the governance→lab import prohibition.
 
 ## §3 — How `check_boundaries.py` resolves a file's layer
 
-Application prefixes select core/lab/ops. Governance prefixes and the default
-select governance; `scripts_layer` supplies exceptions for root-resident scripts.
+Application prefixes select core/lab/ops. Governance prefixes (`docs/`, `.claude/`,
+`.github/`, `deploy/`, `tools/`) and the default select governance; `scripts_layer`
+supplies exceptions for root-resident scripts.
 `tests/` is exempt. All four maps are read from `scripts/repo_map_layers.yml` at
 import; edit that file to change a classification. The generated table above is
 a view, not scanner input.

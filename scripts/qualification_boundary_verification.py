@@ -20,9 +20,21 @@ INVARIANT_MANIFEST = ROOT / 'tests/ops/qualification/invariant_manifest.json'
 # group, so the service-metering file runs first on the same fresh host.
 S2_CASES = ('tests/integration/qualification_boundary/test_campaign_service_linux.py',
             'tests/integration/qualification_boundary/test_campaign_supervision_linux.py')
-# S3: the full S2 file set plus the genuine N1 capture/G5 file. The N1_ONLY
-# --test-only selection is untouched; --s3 is a separate, strictly larger mode.
-S3_CASES = (*S2_CASES, 'tests/integration/qualification_boundary/test_campaign_n1_linux.py')
+# S3: the full S2 file set plus the genuine N1 capture/G5 file. The supervision
+# file stays LAST: its final case deliberately contaminates the common memory
+# group (never-reset oom counters on the host parent the guardian polls), which
+# would terminalise every later admission's settlement at oom_events > 0 -- the
+# same ordering constraint that already puts the service-metering file ahead of
+# it. The service file keeps its established first position and the N1 file
+# runs between them; the poll is not baselined. The N1_ONLY --test-only
+# selection is untouched; --s3 is a separate, strictly larger mode.
+S3_CASES = (S2_CASES[0], 'tests/integration/qualification_boundary/test_campaign_n1_linux.py', S2_CASES[1])
+# T05 (S6-S7): the result/seal file needs the integrated T05 seams (result_g5 and
+# seal manifest roles, the seal principal) that no current mode installs, so no
+# selection runs it yet and none of its nodes is registered. Like the S3 files it
+# stays out of N1_ONLY (--test-only), where a skip would fail require_tests; the
+# post-integration selector (T04) names the mode that runs and registers it.
+T05_CASES = ('tests/integration/qualification_boundary/test_campaign_result_seal_linux.py',)
 
 
 def require_cleanup(result):
@@ -51,6 +63,33 @@ def require_tests(counts):
         raise ValueError('Critical tests missing, failed, skipped or malformed')
 
 
+def cases_refusal(args):
+    """Why `--cases` cannot run, or None; checked before any host prerequisite.
+
+    A diagnostic subset exists for S3 iteration only. A whitespace-only value is
+    no selection at all (pytest's -k ignores it and runs everything), and an
+    expression pytest cannot compile would otherwise fail only after the host
+    ran; both are refused here, in seconds.
+    """
+    if args.cases is None:
+        return None
+    if not args.s3:
+        return '--cases is a diagnostic-subset selector for --s3 iteration only'
+    if not args.cases.strip():
+        return '--cases is empty or whitespace-only; omit it to run the full selection'
+    try:
+        # Private API, pinned by requirements-ops.lock: the parser pytest's -k uses.
+        from _pytest.mark.expression import Expression  # pylint: disable=import-outside-toplevel
+    except ImportError as exc:
+        return f'--cases cannot be validated: pytest expression parser unavailable ({exc})'
+    try:
+        Expression.compile(args.cases)
+    except (SyntaxError, RecursionError, MemoryError) as exc:
+        # pytest's parser recurses per nesting level: too deep is as uncompilable.
+        return f'--cases is not a valid pytest -k expression: {type(exc).__name__}: {exc}'
+    return None
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -63,6 +102,10 @@ def main(argv=None):
     parser.add_argument('--instance', type=Path)
     parser.add_argument('--profile', type=Path)
     args = parser.parse_args(argv)
+    refusal = cases_refusal(args)
+    if refusal is not None:
+        print(f'Failed prerequisite: {refusal}', file=sys.stderr)
+        return 2
     if platform.system() != 'Linux' or os.geteuid() != 0:
         print('Failed prerequisite: Linux administrator on a disposable host', file=sys.stderr)
         return 2
@@ -91,9 +134,16 @@ def main(argv=None):
                         if args.s3:
                             required = {node for node in all_required
                                         if node.startswith(tuple(case+'::' for case in selected_cases))}
-                        else:
+                        elif args.s2:
                             required = {node for node in all_required
-                                        if node.startswith(tuple(case+'::' for case in S2_CASES)) == args.s2}
+                                        if node.startswith(tuple(case+'::' for case in S2_CASES))}
+                        else:
+                            # N1_ONLY (--test-only): every registered node outside the S3
+                            # file set (S3_CASES includes the S2 files). The S3 nodes skip
+                            # here by design, and the manifest validator refuses a
+                            # required node that is skipped or never collected.
+                            required = {node for node in all_required
+                                        if not node.startswith(tuple(case+'::' for case in S3_CASES))}
                         record.data['metadata'].update(
                             acceptance_scope=('S3_N1_CAPTURE' if args.s3 else 'S2_DIAGNOSTIC_SUPERVISION' if args.s2 else 'N1_ONLY_TEST_ONLY'),
                             qualification_acceptance='coordinator_review_required',
@@ -117,7 +167,7 @@ def main(argv=None):
                         # Run boundary files in full so new lifecycle cases also run.
                         # Exact manifest cases remain mandatory even if renamed/deleted.
                         selection = ([*selected_cases] if (args.s2 or args.s3) else
-                            ['tests/integration/qualification_boundary', *('--ignore='+case for case in S2_CASES)] + sorted(
+                            ['tests/integration/qualification_boundary', *('--ignore='+case for case in S3_CASES + T05_CASES)] + sorted(
                             node for node in required if not node.startswith('tests/integration/qualification_boundary/')))
                         if args.cases is not None:
                             selection = ['-k', args.cases, *selection]
