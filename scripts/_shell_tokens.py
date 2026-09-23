@@ -1,17 +1,24 @@
-"""_shell_tokens.py — the one shell tokenizer the harness guards share.
+"""_shell_tokens.py — the shell tokenizer module the harness guards share.
 
 Moved 2026-09-23 out of `scripts/guard_s2_runs.py` (card 1, D14) so that
 `scripts/guard_shell_command.py` (card 2, E1) reads commands with the same
-quote-, heredoc- and substitution-aware scanner instead of keeping a second one
+module instead of keeping a copy
 (`docs/briefs/handoffs/2026-09-23-harness-guards-hardening.md` §0 read 2).
 
-One scanner, two modes:
+One module, two scanners: `segments(strict=False)` runs `_default_segments`
+(card 1's loop, with `matching_paren`, `_consume_redirection`, `_heredoc_end`
+and `_skip_word`) and `segments(strict=True)` runs `_strict_segments` (card 2's
+loop, with `_strict_close`, `_heredoc_word`, `_redirection_operator_end` and
+`_strict_heredoc_end`). They share the ANSI-C decoder and the wrapper option
+tables, not their scanning; a fix to one scanner does not reach the other.
 
   * **default** (``strict=False``) — card 1's reading for `guard_s2_runs.py`, as
     of its #470 review round 3 (`guard_s2_runs.py` imports `segments`,
     `expand` and `matching_paren` under its old private names; card 1's
-    acceptance and regression suites pin the result). It is lenient: it never
-    raises, and unterminated input runs to the end of the command.
+    acceptance and regression suites pin the result). It never raises
+    `ShellSyntaxError`: unterminated input runs to the end of the command.
+    (Nesting deeper than Python's recursion limit raises `RecursionError`, as
+    card 1's own tokenizer did; `guard_s2_runs` then fails open.)
 
       - a ``$(…)``/backquote substitution stays inside its word, and its body's
         segments come just before the enclosing segment (the shell runs it
@@ -19,10 +26,16 @@ One scanner, two modes:
         bodies, so the ``$(cat <<'EOF' … EOF)`` commit idiom stays balanced;
       - ``<<<`` is a here-string; a heredoc delimiter drops its quotes and
         backslashes, and several heredocs on a line are skipped in order;
-      - ``$'…'`` is decoded with bash's ANSI-C escapes and ``$"…"`` is read as
-        ``"…"``; an empty quoted word is kept as a token;
-      - `expand` skips wrapper options getopt-style with the same tables strict
-        mode uses (``sudo -u me``, ``time -p``, ``nice -n 5``, ``sudo --``).
+      - ``$'…'`` is decoded with bash's ANSI-C escapes (``\\c`` stops at the
+        closing quote, as in bash) and ``$"…"`` is read as ``"…"``; an empty
+        quoted word is kept as a token, so ``$''#x`` is the word ``#x``;
+      - `expand` skips the options of ``sudo``, ``nice``, ``time``, ``exec``,
+        ``command`` and ``nohup`` getopt-style with the tables strict mode uses
+        (``sudo -u me``, ``time -p``, ``nice -n 5``, ``sudo --``). ``env`` and
+        ``timeout`` keep card 1's readers: only ``env -u``/``--unset`` takes a
+        value, and ``timeout`` drops every dash word and then the duration, so
+        ``timeout -k 5 60 cmd`` and ``env -C dir cmd`` hide ``cmd`` (strict mode
+        reads both).
   * **strict** (``strict=True``) — the shell guard's reading, which must not
     lose a word that follows a command substitution and must know when it could
     not read the command at all (E1 falls back to the raw-string regexes then):
@@ -108,8 +121,8 @@ _EXEC_OPTS = ("a", frozenset())
 _SHELL_LONG_VALUES = frozenset({"--rcfile", "--init-file"})
 _FIND_EXEC = frozenset({"-exec", "-execdir", "-ok", "-okdir"})
 _WRAPPER_OPTS = {"sudo": _SUDO_OPTS, "nice": _NICE_OPTS, "xargs": _XARGS_OPTS,
-                    "time": _TIME_OPTS, "exec": _EXEC_OPTS, "command": ("", frozenset()),
-                    "nohup": ("", frozenset())}
+                 "time": _TIME_OPTS, "exec": _EXEC_OPTS, "command": ("", frozenset()),
+                 "nohup": ("", frozenset())}
 # inside double quotes a backslash escapes only these; before anything else it stays
 _DQUOTE_ESCAPES = '$`"\\\n'
 # bash's ANSI-C ($'…') escapes: single letters, then octal/hex/unicode codes

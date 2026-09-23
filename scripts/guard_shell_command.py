@@ -26,9 +26,9 @@ guard used to `re.search` the raw command string, so it asked on destructive
 text that was only data (a heredoc probe file, a grep pattern, a commit
 message) — and a background agent has nobody to answer that prompt, so its
 tool call never returned (F29) — while real spellings git accepts went
-through (A1–A7). `classify()` now tokenizes with the tokenizer
-`scripts/guard_s2_runs.py` uses (`scripts/_shell_tokens.py`, strict mode) and
-judges only words in **command position**: each segment after ``sudo``,
+through (A1–A7). `classify()` now tokenizes with `scripts/_shell_tokens.py` in
+strict mode (`scripts/guard_s2_runs.py` uses its default mode, a separate
+scanner) and judges only words in **command position**: each segment after ``sudo``,
 ``env``, ``command``, ``exec``, ``nohup``, ``time``, ``timeout`` (and the other
 runners the tokenizer unwraps) are stripped, the script of ``bash -c``/``sh -c``
 re-parsed, and the body of every ``$(…)``, backquote and ``<(…)``/``>(…)``

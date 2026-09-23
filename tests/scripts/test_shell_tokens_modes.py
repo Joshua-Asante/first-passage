@@ -53,3 +53,21 @@ def test_default_mode_decodes_ansi_c_and_keeps_empty_quoted_words():
     """`$'…'` is decoded (an unterminated one runs to the end) and `''` stays a word."""
     assert tokens.segments("git push origin $'fe\\x61t' '' \"\"") == [[*PUSH, "", ""]]
     assert tokens.segments("echo $'unterminated\\tvalue") == [["echo", "unterminated\tvalue"]]
+
+
+@pytest.mark.parametrize("command,first", [
+    ("echo $'\\c'; git push origin feat", ["echo", "\\c"]),
+    ("printf %s $'a\\c\\'b'; git push origin feat", ["printf", "%s", "a\x1c'b"]),
+    ("echo $''#x; git push origin feat", ["echo", "#x"]),
+])
+def test_default_mode_ansi_c_ends_where_bash_ends_it(command, first):
+    """`\\c` never swallows the closing quote and `$''#` is a word, so the push stays visible."""
+    assert tokens.segments(command) == [first, PUSH]
+
+
+@pytest.mark.parametrize("wrapped", [
+    "sudo -R /jail", "sudo --role r", "/usr/bin/time --output t.txt", "nice --adjustment 5",
+])
+def test_default_mode_reads_value_options_from_the_shared_tables(wrapped):
+    """Round 3 read these values as the command; the shared tables skip them."""
+    assert tokens.expand([*wrapped.split(), *PUSH]) == [PUSH]
