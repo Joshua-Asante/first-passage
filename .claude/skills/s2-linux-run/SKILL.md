@@ -5,7 +5,7 @@ description: Use for ANY task that needs Linux evidence from the qualification S
 
 # S2 Linux run — dispatch, read, decide, overlap
 
-The S2 workflow provisions one fresh `ubuntu-24.04` host, runs every registered S2 node from `tests/ops/qualification/invariant_manifest.json` (currently the two files named by `S2_CASES` in `scripts/qualification_boundary_verification.py`), enforces invariants + cleanup, and uploads the `qualification-s2-supervision` artifact. **A green check mark is not evidence; the artifact is.** A run is ~25 min: ~6–8 min provisioning plus three cases that are ~300 s each by design (service downtime, deadline-before-bootstrap, two-descendants to the wall).
+The S2 workflow provisions one fresh `ubuntu-24.04` host, runs one boundary selection, enforces invariants + cleanup, and uploads the `qualification-s2-supervision` artifact. The default mode is **s3**, which runs the files named by `S3_CASES` in `scripts/qualification_boundary_verification.py` (record scope `S3_N1_CAPTURE`, the acceptance-grade set); `-f mode=s2` runs the subset named by `S2_CASES` (scope `S2_DIAGNOSTIC_SUPERVISION`). The required nodes are the registered nodes of `tests/ops/qualification/invariant_manifest.json` inside the selected files, recorded as `invariants.json`'s `required_nodeids`. **A green check mark is not evidence; the artifact is.** A run is ~25 min: ~6–8 min provisioning plus three cases that are ~300 s each by design (service downtime, deadline-before-bootstrap, two-descendants to the wall).
 
 ## 1. Order of operations (saves ~25 min per iteration)
 
@@ -13,9 +13,9 @@ The S2 workflow provisions one fresh `ubuntu-24.04` host, runs every registered 
 2. **Dispatch Linux FIRST**, then run the Windows lines while it executes:
    ```bash
    gh workflow run qualification-s2-supervision.yml --ref <branch>
-   sleep 15 && gh run list --workflow=qualification-s2-supervision.yml --branch <branch> --limit 1 --json databaseId,headSha,status
+   gh run list --workflow=qualification-s2-supervision.yml --event workflow_dispatch --commit <sha> --json databaseId,headSha,displayTitle,status,createdAt
    ```
-   Confirm the `headSha` is your pushed head. Record the run ID in your notes (scratchpad, **not the worktree**).
+   `<sha>` is the full head you pushed. Poll the list (every ~10 s) until a run created after your dispatch appears: its `createdAt` is later than your dispatch and its `displayTitle` names your mode (`[s3]` by default). Do not use a fixed `sleep`, and never take the newest run of a branch listing (`--limit 1`): the pull_request run on the same SHA is sometimes the newer one. Confirm the `headSha` is your pushed head. Record the run ID in your notes (scratchpad, **not the worktree**).
 3. Windows (`./fp.ps1`, PowerShell 7.3+): line 1 (ten execution files, `--workers 2`, zero skips) during iteration; lines 2–3 and `check` only on the final frozen tree. **Nothing may be written into the worktree until the last record closes** — the recorder hashes the tree and voids the record otherwise. Drafts (§7, ledger text) go to the scratchpad.
 4. Do not push again to a branch with a run in flight: the per-ref `cancel-in-progress` concurrency kills it. On a PR branch every push refires the workflow (the path filter applies to the PR's whole change set), so batch docs commits until the run you need has finished.
 5. Never dispatch the same SHA twice. If a second dispatch happens by accident the first is cancelled; cite the survivor.
@@ -25,13 +25,19 @@ Steps 4–5 are enforced by `scripts/guard_s2_runs.py` (Claude PreToolUse hooks 
 ## 2. Reading the artifact (the only acceptance-grade read)
 
 ```bash
-gh run view <id> --json headSha,conclusion,createdAt
+python scripts/s2_run_evidence.py <id> --expect-head <sha>
+python scripts/s2_run_evidence.py <id> --expect-head <sha> --expect-scope S2_DIAGNOSTIC_SUPERVISION
+```
+The reader downloads the artifact outside the repository, prints the facts below and exits 0 only when every one holds. `--expect-scope` names the one record scope that reads ok: `S3_N1_CAPTURE` (the default, an s3 run) or `S2_DIAGNOSTIC_SUPERVISION` (an s2-mode run, only when asked for); `DIAGNOSTIC_SUBSET` and `N1_ONLY_TEST_ONLY` never read ok. `--expect-head` takes 7–40 hex characters in any case, compared as a prefix of `headSha`, and anything else is refused before any gh call. `facts.tested_commit` is the record's `before.commit`, the commit the host measured (missing = not ok). `facts.tested_commit_kind` is `head` for a `workflow_dispatch` run, whose tested commit must equal `headSha`, or `pull_request_merge` for a pull_request run, which tested `refs/pull/N/merge`: the merge commit is printed, and it is never the head's bytes alone.
+The same facts by hand:
+```bash
+gh run view <id> --json headSha,event,conclusion,createdAt
 gh run download <id> -n qualification-s2-supervision -D <scratchpad>/s2-<id>
 ```
 Required facts, all from files under `<scratchpad>/s2-<id>/<record-id>/`:
-- `record.json`: `status=completed`, `exit_code=0`, `verification_exit_code=0`, `source_stable=true`, `capture_complete=true`, `cleanup.ok=true`.
-- `invariants.json`: `passed=true`, `required` = every registered node (15 as of 2026-09-20).
-- `junit.xml`: tests / failures / errors / skipped — **skipped must be 0**.
+- `record.json`: `status=completed`, `exit_code=0`, `verification_exit_code=0`, `source_stable=true`, `capture_complete=true`, `cleanup.ok=true`, `metadata.acceptance_scope` the expected scope, and `before.commit` equal to the run's `headSha` for a dispatch run.
+- `invariants.json`: `passed=true`, and `required_nodeids` (the selection's required nodes: currently 15 for s2 and 19 for s3) is non-empty.
+- `junit.xml`: `tests` at least the number of `required_nodeids`; failures / errors / skipped — **skipped must be 0**.
 Report: run ID, head SHA, record ID, counts, cleanup. A run whose head is not your final bytes proves nothing about them.
 
 Quick failure summary without downloading:
@@ -58,4 +64,5 @@ Known-benign classes so far: `warm_service` `Slice==''` (unit GC within the same
 
 ## 5. Diagnostic subset runs, and faster loops still open
 Iterating on one failing case: `gh workflow run qualification-s2-supervision.yml --ref <branch> -f mode=s3 -f cases='<pytest -k expr>'` (`cases` is accepted in `s3` mode only). The run is titled `S2 DIAGNOSTIC (…)`, its record is `acceptance_scope=DIAGNOSTIC_SUBSET`, and `s2_run_evidence.py` refuses it (`ok: false`) whatever its outcome — read the printed `junit` totals for the selected cases. It runs in its own concurrency group, so it does not cancel a full run on the same ref. Acceptance still needs a full run on the final head.
+A diagnostic run always ends red (exit 2), even when every selected case passed, and two diagnostics on one ref cancel each other (they share the one diagnostic concurrency group).
 Still open (S3-era tooling, not for a worker to improvise): shard the suite across two fresh hosts (OOM case last on its shard); cache the provisioned venv/worker image; move Windows line 3 to a hosted runner once the source-bound recorder runs there.

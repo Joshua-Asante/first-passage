@@ -154,10 +154,14 @@ in either disposable Linux job.
 ## Running the S2 workflow as evidence
 
 `.github/workflows/qualification-s2-supervision.yml` provisions one fresh
-`ubuntu-24.04` host, runs every registered S2 node from
-`tests/ops/qualification/invariant_manifest.json` (the files named by `S2_CASES`
-in `scripts/qualification_boundary_verification.py`), enforces the invariants and
-cleanup, and uploads the `qualification-s2-supervision` artifact. A run is about
+`ubuntu-24.04` host, runs one boundary selection, enforces the invariants and
+cleanup, and uploads the `qualification-s2-supervision` artifact. The default
+mode is s3, which runs the files named by `S3_CASES` in
+`scripts/qualification_boundary_verification.py` (record scope `S3_N1_CAPTURE`);
+`-f mode=s2` runs the subset named by `S2_CASES` (scope
+`S2_DIAGNOSTIC_SUPERVISION`). The required nodes are the registered nodes of
+`tests/ops/qualification/invariant_manifest.json` inside the selected files,
+recorded as `invariants.json`'s `required_nodeids`. A run is about
 25 minutes: 6-8 minutes of provisioning plus three cases that are about 300 s
 each by design (service downtime, deadline-before-bootstrap, two descendants to
 the wall). **A green check mark is not evidence; the artifact is.**
@@ -171,10 +175,15 @@ Order of operations for an executor (the two clocks are independent; the
 
    ```bash
    gh workflow run qualification-s2-supervision.yml --ref <branch>
-   gh run list --workflow=qualification-s2-supervision.yml --branch <branch> --limit 1
+   gh run list --workflow=qualification-s2-supervision.yml --event workflow_dispatch --commit <sha> --json databaseId,headSha,displayTitle,status,createdAt
    ```
 
-   Confirm the listed `headSha` is the head you pushed.
+   `<sha>` is the full head you pushed. Poll the list every few seconds until a
+   run created after your dispatch appears (its `createdAt` is later than your
+   dispatch and its `displayTitle` names your mode), rather than waiting a fixed
+   `sleep`. Never take the newest run of a branch listing (`--limit 1`): the
+   pull-request run on the same SHA is sometimes the newer one. Confirm the
+   listed `headSha` is the head you pushed.
 3. Keep the tree frozen until the last local record closes: the recorder hashes
    the checkout before and after its command and voids the record if any byte
    changed. The `guard_open_verification_record.py` PreToolUse hook refuses
@@ -192,14 +201,22 @@ Order of operations for an executor (the two clocks are independent; the
 
    It downloads the artifact outside the repository and exits 0 only when
    `record.json` (completed, exit 0/0, `source_stable`, `capture_complete`,
-   cleanup ok), `invariants.json` (`passed`, every required node) and `junit.xml`
-   (no failures, errors or skips) all hold. Cite the run ID, head SHA, record ID
-   and counts.
+   cleanup ok, the expected scope, a measured `before.commit`), `invariants.json`
+   (`passed`, and a non-empty `required_nodeids`: the selection's required
+   nodes, currently 15 for s2 and 19 for s3) and `junit.xml` (at least that many
+   tests, no failures, errors or skips) all hold. The expected scope is
+   `S3_N1_CAPTURE` unless `--expect-scope S2_DIAGNOSTIC_SUPERVISION` asks for an
+   s2-mode run. A dispatch run must have measured its head (`tested_commit`
+   equals `headSha`); a pull-request run tested `refs/pull/N/merge`, which the
+   reader prints as `tested_commit_kind: pull_request_merge`. Cite the run ID,
+   head SHA, record ID and counts.
 
    A dispatch with `-f mode=s3 -f cases='<pytest -k expr>'` is a labelled
    diagnostic of that subset (run titled `S2 DIAGNOSTIC (…)`, record scope
    `DIAGNOSTIC_SUBSET`); the script above refuses it whatever its outcome. Use
    it to iterate on one case; it is never evidence.
+   A diagnostic run always ends red (exit 2), even when every selected case
+   passed, and two diagnostics on one ref cancel each other.
 
 A failure on unchanged code is a finding, not flakiness. Before any second
 dispatch, pull the failing work's chain from `boundary/journal.sqlite`
