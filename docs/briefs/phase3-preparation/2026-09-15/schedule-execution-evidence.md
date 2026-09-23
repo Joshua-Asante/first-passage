@@ -18,9 +18,9 @@ Original M15 indicator updates and on_bar calls remain once per completed source
 
 Alternatives requiring separate acceptance include a newly ratified interpolation/model convention or finer historical execution evidence. Previous-close pricing, full-bar-derived invented segments and next-bar flatten would change accepted semantics and are not implicit fallbacks. No feed purchase is authorized. Historical outcome-bearing paths consuming this evidence remain blocked until provenance and any required model amendment are accepted; independent tooling and synthetic tests continue.
 
-## Addendum 2026-09-23 — Path-position bracket convention (PROPOSED; awaiting operator ratification)
+## Addendum 2026-09-23 — Path-position bracket convention (RATIFIED 2026-09-23)
 
-**Status:** PROPOSED, revision 2. Drafted at the operator's direction on 2026-09-23 ("I want to ratify a timing convention to unblock the replay"; the operator chose a bracket over adverse-only and interpolation). Nothing here is in force until the operator ratifies it below. It is the "newly ratified interpolation/model convention" route named above, not finer historical evidence, and it authorizes no build: T00 step 2 remains unratified ([T00 return §7.8](../../handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23)).
+**Status:** RATIFIED 2026-09-23 (revision 2; operator ruling below). Drafted at the operator's direction on 2026-09-23 ("I want to ratify a timing convention to unblock the replay"; the operator chose a bracket over adverse-only and interpolation). It is the "newly ratified interpolation/model convention" route named above, not finer historical evidence, and it authorizes no build: T00 step 2 remains unratified ([T00 return §7.8](../../handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23)).
 
 *Revision 2 (PR #469 review, four P2 findings):* revision 1 re-ordered the bar's extremes, which `BookReplay._split` rejects because it changes the accepted emulator path. It fed run A's lows to both evaluations, which can manufacture agreement. It left pending-only legs undefined. This revision keeps the accepted path, evaluates each run on its own, and defines the pending-only chronologies.
 
@@ -48,4 +48,4 @@ Everything the accepted path reaches before the chosen vertex executes in that r
 
 **Implementation boundary (for a later, separately authorized build).** Each run supplies its vertex splits through the existing `schedule_quotes` provider (`split_bar` / `split_interval`), with `prefix.close` equal to the chosen vertex's price. `_split` validates them unchanged. Provenance records R1 or R2 for every path. Previous-close pricing, next-bar flatten, re-ordered extremes and single-path interpolation remain excluded.
 
-**Operator ratification:** _(pending)_
+**Operator ratification:** RATIFIED — operator, 2026-09-23, in session, verbatim: "ratify the convention and merge 469". Revision 2 is in force as the accepted convention for schedule instants inside an M15 source bar. It authorizes no build; implementation needs its own GO (T00 step 2 remains unratified).
