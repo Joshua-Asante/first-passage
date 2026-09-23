@@ -57,6 +57,32 @@ def require_tests(counts):
         raise ValueError('Critical tests missing, failed, skipped or malformed')
 
 
+def cases_refusal(args):
+    """Why `--cases` cannot run, or None; checked before any host prerequisite.
+
+    A diagnostic subset exists for S3 iteration only. A whitespace-only value is
+    no selection at all (pytest's -k ignores it and runs everything), and an
+    expression pytest cannot compile would otherwise fail only after the host
+    ran; both are refused here, in seconds.
+    """
+    if args.cases is None:
+        return None
+    if not args.s3:
+        return '--cases is a diagnostic-subset selector for --s3 iteration only'
+    if not args.cases.strip():
+        return '--cases is empty or whitespace-only; omit it to run the full selection'
+    try:
+        # Private API, pinned by requirements-ops.lock: the parser pytest's -k uses.
+        from _pytest.mark.expression import Expression  # pylint: disable=import-outside-toplevel
+    except ImportError as exc:
+        return f'--cases cannot be validated: pytest expression parser unavailable ({exc})'
+    try:
+        Expression.compile(args.cases)
+    except SyntaxError as exc:
+        return f'--cases is not a valid pytest -k expression: {exc}'
+    return None
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -69,6 +95,10 @@ def main(argv=None):
     parser.add_argument('--instance', type=Path)
     parser.add_argument('--profile', type=Path)
     args = parser.parse_args(argv)
+    refusal = cases_refusal(args)
+    if refusal is not None:
+        print(f'Failed prerequisite: {refusal}', file=sys.stderr)
+        return 2
     if platform.system() != 'Linux' or os.geteuid() != 0:
         print('Failed prerequisite: Linux administrator on a disposable host', file=sys.stderr)
         return 2
