@@ -42,7 +42,7 @@ The joint replay code and the 125-test synthetic suite have **no published diges
 List first, then hash only candidate files of 2 GB or less. Use `Get-FileHash -Algorithm SHA256 <path>` or `python -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" <path>`. Compare each hash against Step 2.1: record matches exactly, and non-matches by count only. Print no private content into the session or the return.
 
 ## §4 — Falsifiable hypothesis
-**H:** no byte-identical copy of the seven-strategy private evidence survives on the operator's machine. **Falsified if** any file's SHA-256 equals a Step 2.1 digest, and the return is then FOUND. The hypothesis stands (NONE) only when every approved root was searched; an unreachable root makes the return INCOMPLETE, not NONE.
+**H:** no byte-identical copy of the seven-strategy private evidence survives on the operator's machine. **Falsified if** any file's SHA-256 equals a Step 2.1 digest, and the return is then FOUND. The hypothesis stands (NONE) only when every approved root was searched **and no UNVERIFIED candidate was found**. The joint replay and the 125-test suite have no published digest, so a candidate for either cannot be ruled out by hashing. An unreachable root, or any UNVERIFIED candidate awaiting the operator's identification, makes the return INCOMPLETE, not NONE.
 
 ## §5 — Forbidden moves
 - Moving, copying, renaming or deleting any file; writing hash output into new files beside the originals.
@@ -51,7 +51,7 @@ List first, then hash only candidate files of 2 GB or less. Use `Get-FileHash -A
 - Scoring, running or importing the evidence. Scoring against P1–P7 for the selected four is a separate step the operator authorizes after FOUND.
 
 ## §6 — Gate + status return
-Report exactly one of `DONE` / `DONE_WITH_CONCERNS` / `NEEDS_CONTEXT` / `BLOCKED — <sub-case>`. `DONE` carries a verdict of **FOUND** or **NONE**; `DONE_WITH_CONCERNS` carries **INCOMPLETE** (the unreachable roots named). The investigation verdict maps as FOUND → FALSIFIED (H), NONE → RESOLVED (H stands), INCOMPLETE → AMBIGUOUS.
+Report exactly one of `DONE` / `DONE_WITH_CONCERNS` / `NEEDS_CONTEXT` / `BLOCKED — <sub-case>`. `DONE` carries a verdict of **FOUND** or **NONE**. NONE means no published-digest match *and* no UNVERIFIED candidate. `DONE_WITH_CONCERNS` carries **INCOMPLETE**, naming the unreachable roots and every UNVERIFIED candidate that awaits the operator's identification. The investigation verdict maps as FOUND → FALSIFIED (H), NONE → RESOLVED (H stands), INCOMPLETE → AMBIGUOUS.
 
 ## §7 — Executor return
 _Pending._ Required: the status; the verdict; per FOUND row, the path, size, SHA-256 and the Step 2.1 key it matches; UNVERIFIED candidates by path; the roots searched, with commands; the roots unreachable.
