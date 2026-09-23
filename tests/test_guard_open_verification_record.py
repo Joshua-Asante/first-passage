@@ -157,6 +157,30 @@ def test_main_reads_every_target_field(tmp_path, monkeypatch, capsys, field, den
         assert out.strip() == ''
 
 
+@pytest.mark.parametrize('shape,denied', [
+    ('edits_not_objects', True), ('edits_not_a_list', True), ('tool_input_a_list', False),
+    ('payload_a_list', False),
+])
+def test_main_tolerates_malformed_payloads(tmp_path, monkeypatch, capsys, shape, denied):
+    """Round 3 P3: malformed parts are skipped, not fatal; a valid file_path is still judged."""
+    root = checkout(tmp_path)
+    record(root, 'r', 'running', datetime.now(timezone.utc) - timedelta(minutes=1))
+    target = str(root / 'src' / 'x.py')
+    payload = {
+        'edits_not_objects': {'tool_input': {'file_path': target, 'edits': ['x', 3]}},
+        'edits_not_a_list': {'tool_input': {'file_path': target, 'edits': 'x'}},
+        'tool_input_a_list': {'tool_input': [target]},
+        'payload_a_list': [{'tool_input': {'file_path': target}}],
+    }[shape]
+    monkeypatch.setattr('sys.stdin', __import__('io').StringIO(json.dumps(payload)))
+    assert guard.main() == 0
+    out = capsys.readouterr().out
+    if denied:
+        assert json.loads(out)['hookSpecificOutput']['permissionDecision'] == 'deny'
+    else:
+        assert out.strip() == ''
+
+
 def test_main_emits_nothing_when_it_does_not_deny(tmp_path, monkeypatch, capsys):
     """2026-09-23: an allowed write produces no output, so the hook never
     approves anything on the operator's behalf (D15 of the guard hardening)."""

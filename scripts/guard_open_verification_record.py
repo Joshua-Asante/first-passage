@@ -135,10 +135,15 @@ def _emit(permission: str, agent_msg: str = "", user_msg: str = "") -> None:
 
 
 def _targets(data: dict) -> list[str]:
-    tool_input = data.get("tool_input") or {}
+    """Every path a write payload names; malformed parts are skipped, not fatal."""
+    tool_input = data.get("tool_input") if isinstance(data, dict) else None
+    if not isinstance(tool_input, dict):
+        return []
     targets = [str(tool_input.get("file_path", "")), str(tool_input.get("notebook_path", ""))]
-    for edit in tool_input.get("edits", []) or []:
-        targets.append(str(edit.get("file_path", "")))
+    edits = tool_input.get("edits")
+    for edit in edits if isinstance(edits, list) else []:
+        if isinstance(edit, dict):
+            targets.append(str(edit.get("file_path", "")))
     return [t for t in targets if t]
 
 

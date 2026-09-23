@@ -237,7 +237,6 @@ def test_strict_reading_still_asks(mod, cmd):
         "git switch -c fix",
         "git restore --staged --no-worktree f",
         "git push -o +x origin main",     # a push option, not a refspec
-        "git push --force-with-lease --force-if-includes origin x",
         "rm -r -- -f",                    # after --, -f is a path
     ],
 )
@@ -461,14 +460,26 @@ def test_pull_hook_bypass_asks(mod, cmd):
     "git pull -n",                          # pull -n is --no-stat
     "git pull -rn origin main",             # -r takes the rest of the cluster
     "git pull --rebase origin main",
-    f"git pull -X '{NOV}' origin main",     # option values, not flags
-    f"git pull --upload-pack '{NOV}' origin",
-    f"git pull --strategy-option '{NOV}' origin",
-    "git pull --no-verify-signatures",
 ])
 def test_pull_neighbours_are_allowed(mod, cmd):
     """Round 2 P2 neighbours: pull's -n and option values are not a bypass."""
     assert mod.classify(cmd)[0] == "allow", cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    "git push --force-with-lease --force-if-includes origin x",  # contains --force
+    f"git pull -X '{NOV}' origin main",       # option values, but not E1 data
+    f"git pull --upload-pack '{NOV}' origin",
+    f"git pull --strategy-option '{NOV}' origin",
+    f"git pull {NOV}-signatures",             # contains the bypass flag's text
+])
+def test_mains_raw_reading_still_asks_outside_e1_data(mod, cmd):
+    """Operator ruling 2026-09-23 (fail toward asking): main's raw regexes still
+    ask on whatever is not E1 data, so these main-level over-asks stay, although
+    none is a bypass or a force push when read by command position."""
+    assert mod.classify(cmd)[0] == "ask", cmd
+    assert not any(mod._bypasses(w) or mod._destroys(w)  # pylint: disable=protected-access
+                   for w in mod._commands(cmd))  # pylint: disable=protected-access
 
 
 @pytest.mark.parametrize("cmd,expected", [
@@ -596,3 +607,84 @@ def test_round_two_shapes_ask_through_the_hook(command):
     )
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"] == "ask"
+
+
+# --- round 3: fail toward asking (operator ruling 2026-09-23) -----------------------
+
+HARD_H = "git reset " + "--h"  # an abbreviation main's raw regexes cannot see
+
+
+@pytest.mark.parametrize("cmd", [
+    # an unquoted heredoc body runs its substitutions
+    f"cat <<EOF\n$({HARD})\nEOF",
+    f"cat > /dev/null <<EOF\nline $({RMRF} d) here\nEOF",
+    f"cat <<EOF\n`{RMRF} d`\nEOF",
+    f"cat <<EOF\n${{x:-$({RMRF} d)}}\nEOF",
+    f"cat <<-EOF\n\t$({HARD})\n\tEOF",
+    f'echo "$(cat <<EOF\n$({HARD})\nEOF\n)"',
+    # git runs these commands itself
+    f"git submodule foreach {HARD}",
+    f"git submodule foreach '{HARD}'",
+    f"git submodule --quiet foreach '{RMRF} junk'",
+    f"git rebase -q -x '{HARD}' HEAD~1",
+    f"git rebase --exec '{HARD}' main",
+    f"git bisect run {RMRF} d",
+    f"git bisect run sh -c '{HARD}'",
+    # a shell reading its script from stdin, a file or command output
+    f"bash <<'EOF'\n{HARD}\nEOF",
+    f"bash <<EOF\n{RMRF} d\nEOF",
+    f"sh <<<'{HARD}'",
+    f"bash -s <<<'{RMRF} d'",
+    f"echo '{HARD}' | bash",
+    f"printf '%s\\n' '{RMRF} d' | bash",
+    f"cat <<'EOF' | bash\n{HARD}\nEOF",
+    f"echo '{RMRF} d' | sh -s",
+    f"source <(echo '{HARD}')",
+    f". <(echo '{HARD}')",
+    f"bash <(echo '{HARD}')",
+    f"bash -c \"$(printf '{RMRF} d')\"",
+    f"sh -c \"$(echo '{HARD}')\"",
+    f"eval \"$(echo {RMRF} d)\"",
+    # runners outside the wrapper table
+    f"coproc {RMRF} d", f"coproc {{ {RMRF} d; }}", f"coproc NAME {{ {HARD}; }}",
+    f"stdbuf -oL {RMRF} d", f"setsid {HARD}", f"ionice -c3 {RMRF} d",
+    f"taskset -c 0 {HARD}", f"flock /tmp/l -c '{RMRF} d'", f"script -qc '{HARD}' /dev/null",
+    f"$SHELL -c '{HARD}'", f"\"$BASH\" -c '{RMRF} d'", f"${{SHELL}} -c '{HARD}'",
+    # bash expansions a command-position reading cannot see
+    f"git commit -m x {{{NOV},-q}}",
+    f"F={NOV}; git commit $F -m x",
+    f'"$(command -v git)" commit {NOV} -m x',
+    # the three strict-scanner misreads, and --shallow-file (read by position)
+    f'echo "$(case a in a) :;; esac; {HARD})"',
+    f"echo `echo \\`{HARD_H}\\``",
+    f"{{fd}}>/dev/null {HARD_H}",
+    f"git --shallow-file x {HARD_H.split(' ', 1)[1]}",
+    "git --shallow-file x commit -nm x",
+])
+def test_text_bash_runs_asks(mod, cmd):
+    """Round 3 P2s: bash runs each of these, and main's guard asked on them."""
+    assert mod.classify(cmd)[0] == "ask", cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    f"cat <<'EOF' | tee notes.md\n{HARD}\nEOF",       # a quoted heredoc to a non-shell
+    f"python3 - <<'EOF'\nprint('{RMRF}')\nEOF",       # E1: python code is data
+    f"echo x  # {RMRF}",                              # a comment
+    f"git tag -a v1 -m '{HARD} is gone'",             # a tag message
+    f"git merge --message='{NOV} was never used' topic",
+    "git commit -m x --mess -n",                      # --mess is --message: -n is its value
+    f"cat > out.txt <<< 'never {HARD}'",              # a literal here-string to a non-shell
+])
+def test_e1_data_stays_allowed(mod, cmd):
+    """The data main's raw regexes over-asked on (F29) is still blanked first."""
+    assert mod.classify(cmd)[0] == "allow", cmd
+
+
+@pytest.mark.parametrize("inner", [
+    "stdbuf -oL git reset " + "--hard",   # a runner the command reading does not know
+    "cat <<EOF\n$(git reset " + "--hard)\nEOF",
+])
+def test_a_substitution_inside_a_data_word_is_still_code(mod, inner):
+    """Blanking a data word keeps its substitutions: bash runs them."""
+    assert mod.classify(f'echo "$({inner})"')[0] == "ask"
+    assert mod.classify(f'git commit -m "$({inner})"')[0] == "ask"

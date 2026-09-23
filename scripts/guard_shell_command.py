@@ -33,12 +33,24 @@ scanner) and judges only words in **command position**: each segment after ``sud
 runners the tokenizer unwraps) are stripped, the script of ``bash -c``/``sh -c``
 re-parsed, and the body of every ``$(…)``, backquote and ``<(…)``/``>(…)``
 substitution re-parsed — also inside a redirection target or a ``<<<`` word
-(``echo x > "$(cmd)"`` runs ``cmd``). **Data is
-never a command:** heredoc bodies (also inside a substitution), quoted
-arguments of other programs (``grep``, ``rg``, ``echo``, ``printf``,
-``git log --grep``, ``git commit -m``) and ``python -c`` strings. A command the
-tokenizer cannot read (an unterminated quote or substitution) falls back to the
-raw-string regexes below, so unparsable destructive text still asks.
+(``echo x > "$(cmd)"`` runs ``cmd``).
+
+**Fail toward asking (operator ruling 2026-09-23, card 2 round 3).** The
+command-position reading alone missed text bash runs without a readable
+``-c`` script (``bash <<EOF``, ``… | sh``, ``source <(…)``, a ``$(…)`` in an
+unquoted heredoc, runners such as ``stdbuf``/``coproc``, git's own
+``submodule foreach``/``rebase -x``/``bisect run``). So after it, main's
+raw-string regexes below still run over the command with only **proven data**
+blanked: a comment; a heredoc body whose delimiter is quoted, or unquoted with
+no ``$(``, backquote or ``<(``; a literal redirection target or here-string
+word; a quoted argument of ``echo``/``printf``/``grep``/``rg``; a git
+commit/merge/tag message or log ``--grep`` pattern; a ``python -c`` string. A
+``$(…)`` inside such data is code and stays visible. Nothing is blanked when
+the command runs text the guard cannot read (a shell with no ``-c`` script,
+``source``/``.``/``eval``, a command word built from ``$…``), and a command
+the tokenizer cannot read at all (an unterminated quote or substitution, a
+``case`` inside ``$(…)``) gets the raw regexes whole. The guard therefore asks
+wherever main's guard asked, except on that data (F29).
 
 What asks (git global options such as ``-C``, ``-c``, ``--no-pager``,
 ``--git-dir=``, ``--work-tree=`` are skipped to find the subcommand; option
@@ -100,11 +112,13 @@ import re
 import sys
 
 try:  # imported as `scripts.guard_shell_command` (tests, repo root on sys.path)
-    from scripts._shell_tokens import ShellSyntaxError, expand, program, segments
+    from scripts._shell_tokens import SHELLS, ShellSyntaxError, Word, expand, program, segments
 except ImportError:  # run as `python scripts/guard_shell_command.py`: scripts/ is sys.path[0]
-    from _shell_tokens import ShellSyntaxError, expand, program, segments
+    from _shell_tokens import SHELLS, ShellSyntaxError, Word, expand, program, segments
 
-# The raw-string reading: used only when the tokenizer cannot read the command.
+# The raw-string reading: main's guard before card 2. It asks on any match left
+# after proven data is blanked (`_residual`), and on the whole command when the
+# tokenizer cannot read it or the command runs text the guard cannot read.
 NO_VERIFY = re.compile(r"--no-verify|--no-gpg-sign")
 DESTRUCTIVE = re.compile(
     r"git\s+reset\s+--hard"
@@ -145,7 +159,14 @@ HOOKED = frozenset({"commit", "merge", "pull", "push", "am", "rebase", "cherry-p
 BYPASS_OPTIONS = ("--no-verify", "--no-gpg-sign")
 # git global options that take the next word as their value
 GIT_GLOBAL_VALUES = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace",
-                               "--config-env", "--super-prefix", "--attr-source"})
+                               "--config-env", "--super-prefix", "--attr-source",
+                               "--shallow-file"})
+# Programs whose quoted arguments are only printed or matched (E1's examples).
+DATA_PROGRAMS = frozenset({"echo", "printf", "grep", "egrep", "fgrep", "rg"})
+# git subcommands whose -m/--message value is a message, and those whose --grep
+# value is a pattern.
+MESSAGE_SUBS = frozenset({"commit", "merge", "tag"})
+GREP_SUBS = frozenset({"log", "shortlog", "rev-list"})
 # Short options whose value is the rest of the cluster or, when the letter ends
 # the cluster, the next word (git's parse-options; per subcommand).
 SHORT_VALUES = {
@@ -226,7 +247,8 @@ def _options(args: list[str], sub: str = "") -> list[tuple[str, str]]:
             out.append((_END, arg))
         elif arg.startswith("--"):
             out.append((_LONG, arg))
-            if arg in long_values:
+            # git reads a unique prefix of a long option as the option itself
+            if arg in long_values or len([n for n in long_values if _abbrev(arg, n)]) == 1:
                 i += 1
         else:
             for pos, letter in enumerate(arg[1:], 1):
@@ -342,12 +364,109 @@ def _destroys(words: list[str]) -> bool:
     return sub is not None and _git_destroys(sub, _options(args, sub))
 
 
-def _commands(cmd: str) -> list[list[str]]:
-    """Every command the shell would run for `cmd`, wrappers stripped (strict read)."""
+def _commands(cmd: str, bodies: list | None = None) -> list[list[str]]:
+    """Every command the shell would run for `cmd`, wrappers stripped (strict read).
+
+    With `bodies`, words carry their source spans and heredoc bodies are collected.
+    """
     found: list[list[str]] = []
-    for segment in segments(cmd, strict=True):
+    for segment in segments(cmd, strict=True, bodies=bodies):
         found.extend(words for words in expand(segment, strict=True) if words)
     return found
+
+
+# --- fail toward asking (operator ruling 2026-09-23) --------------------------
+
+def _runs_unread_text(words: list[str]) -> bool:
+    """Whether this command runs text the guard cannot read as commands.
+
+    A shell with no `-c` script (it reads stdin — a heredoc, a here-string, a
+    pipe — or a file or `<(…)`), `source`/`.`/`eval` (whose strict re-parse
+    leaves a substituted word), and a command word built from `$…` or a
+    backquote. `expand` has already replaced `bash -c '…'` by its script's
+    commands, so a shell still standing here has no readable script.
+    """
+    first = words[0]
+    if "$" in first or "`" in first:
+        return True
+    return program(first, strict=True) in SHELLS | {"source", ".", "eval"}
+
+
+def _git_data(words: list[str], index: int) -> bool:
+    """Whether words[index] is a git commit/merge/tag message or a log --grep pattern."""
+    _, sub, args = _git_parts(words)
+    first = len(words) - len(args)
+    if sub is None or index < first:
+        return False
+    word, prev = words[index], words[index - 1] if index > first else ""
+    if sub in MESSAGE_SUBS:
+        return (word.startswith("--") and _abbrev(word.split("=", 1)[0], "--message")
+                and "=" in word) \
+            or (bool(re.fullmatch(r"-[A-Za-z]*m", prev)) or _abbrev(prev, "--message")) \
+            or bool(re.match(r"-[A-Za-z]*m.", word))
+    if sub in GREP_SUBS:
+        return word.startswith("--grep=") or prev == "--grep"
+    return False
+
+
+_RUNS = re.compile(r"\$\(|`|[<>]\(")  # text bash would run inside an expanding word
+
+
+def _dropped_is_data(literal: bool, text: str, kind: str) -> bool:
+    """Whether text the tokenizer dropped (see `segments`' `bodies`) is only data.
+
+    A comment; a heredoc body whose delimiter was quoted, or with no `$(`,
+    backquote or `<(`; a redirection target or here-string word with none of
+    those outside single quotes (a quote inside an unquoted heredoc body is
+    only a character, so that stripping applies to words alone).
+    """
+    if kind == "substitution":
+        return False
+    if literal:
+        return True
+    if kind == "target":
+        text = re.sub(r"'[^']*'", "", text)
+    return not _RUNS.search(text)
+
+
+def _data_spans(commands: list[list[str]], bodies: list) -> list[tuple[int, int]]:
+    """Source spans that are only data: E1's data, and nothing that bash executes.
+
+    Dropped text that `_dropped_is_data` accepts; a quoted argument of an
+    echo/printf/grep/rg; a git commit/merge/tag message or log --grep pattern;
+    a `python -c` string.
+    """
+    spans = [(start, end) for start, end, literal, text, kind in bodies
+             if _dropped_is_data(literal, text, kind)]
+    for words in commands:
+        name = program(words[0], strict=True)
+        spans += [(word.start, word.end) for index, word in enumerate(words[1:], 1)
+                  if isinstance(word, Word) and _is_data_word(name, words, index)]
+    return spans
+
+
+def _is_data_word(name: str, words: list[str], index: int) -> bool:
+    """Whether words[index] of a `name` command is only printed, matched or run as Python."""
+    if name in DATA_PROGRAMS:
+        return words[index].quoted
+    if name == "git":
+        return _git_data(words, index)
+    return name.startswith("python") and bool(re.fullmatch(r"-[A-Za-z]*c", words[index - 1]))
+
+
+def _residual(cmd: str, data: list[tuple[int, int]], bodies: list) -> str:
+    """`cmd` with its data blanked (same length, so nothing else moves).
+
+    A substitution inside a data word is code: it is restored, and only the
+    data inside it (a quoted heredoc, a printf argument) is blanked again. The
+    spans nest, so applying them outermost first gets every level right.
+    """
+    marks = [(start, end, True) for start, end in data]
+    marks += [(start, end, False) for start, end, _, _, kind in bodies if kind == "substitution"]
+    chars = list(cmd)
+    for start, end, blank in sorted(marks, key=lambda mark: mark[0] - mark[1]):
+        chars[start:end] = " " * (end - start) if blank else cmd[start:end]
+    return "".join(chars)
 
 
 def _classify_text(cmd: str) -> tuple[str, str, str]:
@@ -360,18 +479,27 @@ def _classify_text(cmd: str) -> tuple[str, str, str]:
 
 
 def classify(cmd: str) -> tuple[str, str, str]:
-    """Return (permission, agent_message, user_message) for one command."""
+    """Return (permission, agent_message, user_message) for one command.
+
+    Fail toward asking: the command-position reading asks on its own (E2/E3),
+    and main's raw-string reading still asks on whatever is left once proven
+    data is blanked. So the guard asks at least where main's guard did, except
+    on E1's data (F29).
+    """
     if not cmd:
         return "allow", "", ""
+    bodies: list = []
     try:
-        commands = _commands(cmd)
+        commands = _commands(cmd, bodies)
     except (ShellSyntaxError, IndexError, RecursionError):
         return _classify_text(cmd)
     if any(_bypasses(words) for words in commands):
         return "ask", NO_VERIFY_AGENT_MSG, NO_VERIFY_USER_MSG
     if any(_destroys(words) for words in commands):
         return "ask", DESTRUCTIVE_AGENT_MSG, DESTRUCTIVE_USER_MSG
-    return "allow", "", ""
+    if any(_runs_unread_text(words) for words in commands):
+        return _classify_text(cmd)
+    return _classify_text(_residual(cmd, _data_spans(commands, bodies), bodies))
 
 
 def _emit(permission: str, agent_msg: str = "", user_msg: str = "") -> None:

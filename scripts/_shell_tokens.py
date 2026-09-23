@@ -74,7 +74,21 @@ tables, not their scanning; a fix to one scanner does not reach the other.
         ``"…"``; a quote starts a word even when it is empty, so ``''#`` is a
         word and not a comment, and an empty quoted word is kept as a token;
       - an unterminated quote, ``$(`` or backquote, and a heredoc whose
-        delimiter line never comes, raise `ShellSyntaxError`;
+        delimiter line never comes, raise `ShellSyntaxError`; so does a
+        ``case`` inside ``$(…)``, whose pattern ``)`` the matcher cannot tell
+        from the closing one;
+      - a nested backquote body is un-escaped as bash does (``\\```, ``\\$``
+        and ``\\\\``) before it is re-parsed, and a named-fd redirection
+        (``{fd}>file``) is a redirection, not the command word;
+      - with a ``bodies`` list, each word is a `Word` that remembers its source
+        span and whether it was quoted, and every piece of text the scanner
+        drops is appended to ``bodies`` as (start, end, literal, text, kind):
+        a heredoc body (``literal`` when its delimiter was quoted), a
+        redirection target or here-string word, and a comment; so is each
+        command substitution's source (kind ``substitution``), which is code
+        even inside a quoted word — so a caller can tell data from commands by
+        position (words inside a backquote body or a re-parsed ``bash -c``
+        script carry no span);
       - `program` splits on backslashes too and casefolds (``GIT.EXE``);
       - `expand` strips leading assignments at every level, reads the options of
         ``sudo``, ``env``, ``timeout``, ``nice``, ``xargs``, ``command``,
@@ -133,6 +147,29 @@ _ANSI_CODE = re.compile(r"[0-7]{1,3}|x[0-9A-Fa-f]{1,2}|u[0-9A-Fa-f]{1,4}|U[0-9A-
 
 class ShellSyntaxError(ValueError):
     """A strict read met a command the shell would reject or keep reading."""
+
+
+class Word(str):
+    """A strict-mode token with its source span in the command `segments` read.
+
+    `start`/`end` index that command string; `quoted` says the word's source
+    contains a quote. Compares, hashes and prints as the plain string.
+    """
+
+    start: int
+    end: int
+    quoted: bool
+
+    def __new__(cls, text: str, start: int, end: int, quoted: bool):
+        word = super().__new__(cls, text)
+        word.start, word.end, word.quoted = start, end, quoted
+        return word
+
+
+# a `case` word in a `$(…)` body: its `pat)` would read as the closing paren
+_CASE_WORD = re.compile(r"case[ \t\n]")
+_NAMED_FD = re.compile(r"\{[A-Za-z_][A-Za-z0-9_]*\}")
+_BACKQUOTE_ESCAPE = re.compile(r"\\([$`\\])")
 
 
 # --- scanning helpers ---------------------------------------------------------
@@ -313,6 +350,9 @@ def _strict_close(text: str, start: int) -> int:
             newline = text.find("\n", i)
             i = len(text) if newline < 0 else newline
             continue
+        if (not arithmetic and _CASE_WORD.match(text, i)
+                and (i == start or text[i - 1] in " \t\n;|&(")):
+            raise ShellSyntaxError("case inside $(…)")
         if text.startswith("<<<", i):
             i += 3
             continue
@@ -572,8 +612,8 @@ def _arithmetic_end(text: str, i: int) -> int:
 
 # --- the tokenizer ------------------------------------------------------------
 
-def segments(command: str, *, strict: bool = False,
-             closed: bool = False) -> list[list[str]]:
+def segments(command: str, *, strict: bool = False, closed: bool = False,
+             bodies: list | None = None) -> list[list[str]]:
     """Split `command` into shell segments of tokens, quote- and heredoc-aware.
 
     Newline, `;`, `&&`, `||`, `|`, `&`, `(` and `)` separate segments;
@@ -585,10 +625,12 @@ def segments(command: str, *, strict: bool = False,
     The modes differ as the module docstring lists; strict mode raises
     `ShellSyntaxError` on unreadable input. `closed` (strict) marks `command` as
     the body of a `$(…)` or `<(…)`/`>(…)` whose closing `)` was cut off, for the
-    `EOF)` heredoc rule.
+    `EOF)` heredoc rule. `bodies` (strict) asks for source spans: words become
+    `Word`s and each dropped text (heredoc body, redirection target or
+    here-string word, comment) is appended as (start, end, literal, text, kind).
     """
     if strict:
-        return _strict_segments(command, closed=closed)
+        return _strict_segments(command, closed=closed, bodies=bodies)
     return _default_segments(command)
 
 
@@ -733,8 +775,12 @@ def _default_segments(command: str) -> list[list[str]]:
     return out
 
 
-def _strict_segments(command: str, closed: bool = False) -> list[list[str]]:
-    """Strict-mode `segments` (card 2, E1): raises `ShellSyntaxError` when unreadable."""
+def _strict_segments(command: str, closed: bool = False, *, bodies: list | None = None,
+                     offset: int = 0) -> list[list[str]]:
+    """Strict-mode `segments` (card 2, E1): raises `ShellSyntaxError` when unreadable.
+
+    `offset` is where `command` starts in the string the caller's spans index.
+    """
     text = command
     out: list[list[str]] = []
     tokens: list[str] = []
@@ -744,17 +790,26 @@ def _strict_segments(command: str, closed: bool = False) -> list[list[str]]:
     arithmetic_end = -1              # end of the `(( … ))` command being read
     started = False                  # a quote opened the current word
     target = False                   # the next word is a redirection target
+    word_start = -1                  # where the current word began (spans)
 
     def flush_token() -> None:
-        nonlocal started, target
+        nonlocal started, target, word_start
         if buf or started:
             word = "".join(buf)
             buf.clear()
             started = False
             if target:
                 target = False  # a redirection target: its substitutions are deferred
+                if bodies is not None:
+                    bodies.append((offset + word_start, offset + i, False,
+                                   text[word_start:i], "target"))
+            elif bodies is not None:
+                source = text[word_start:i]
+                tokens.append(Word(word, offset + word_start, offset + i,
+                                   "'" in source or '"' in source))
             else:
                 tokens.append(word)
+        word_start = -1
 
     def flush_segment() -> None:
         flush_token()
@@ -769,7 +824,15 @@ def _strict_segments(command: str, closed: bool = False) -> list[list[str]]:
     def substitution(i: int, body: int, close: int) -> int:
         """Record the substitution text[i:close + 1] whose body starts at `body`."""
         buf.append(text[i:close + 1])
-        deferred.extend(_strict_segments(text[body:close], closed=text[i] != "`"))
+        if bodies is not None:
+            bodies.append((offset + i, offset + close + 1, False, text[i:close + 1],
+                           "substitution"))
+        if text[i] == "`":  # bash un-escapes \` \$ \\ first; the copy has no spans
+            inner = _BACKQUOTE_ESCAPE.sub(r"\1", text[body:close])
+            deferred.extend(_strict_segments(inner))
+        else:
+            deferred.extend(_strict_segments(text[body:close], closed=True, bodies=bodies,
+                                             offset=offset + body))
         return close + 1
 
     def quoted(i: int) -> int:
@@ -815,8 +878,9 @@ def _strict_segments(command: str, closed: bool = False) -> list[list[str]]:
             flush_token()
             start = i + 1
         elif ch in "<>":
-            if buf and not started and "".join(buf).isdigit():
-                buf.clear()  # an fd prefix such as the 2 in 2>&1
+            fd = "".join(buf)
+            if buf and not started and (fd.isdigit() or _NAMED_FD.fullmatch(fd)):
+                buf.clear()  # an fd prefix such as the 2 in 2>&1, or {fd}>
             else:
                 flush_token()
             start = i
@@ -854,13 +918,19 @@ def _strict_segments(command: str, closed: bool = False) -> list[list[str]]:
             i += 1
             if ch == "\n" and heredocs:
                 for delimiter in heredocs:
+                    body_start = i
                     i, cut = _strict_heredoc_end(text, i, delimiter, comsub=closed,
                                                  closed=closed)
+                    if bodies is not None:
+                        bodies.append((offset + body_start, offset + i, delimiter[1],
+                                       text[body_start:i], "heredoc"))
                     if cut:  # what follows the delimiter is a new command
                         break
                 heredocs.clear()
             flush_segment()
             continue
+        if word_start < 0:
+            word_start = i
         if text[i:i + 2] == "\\\n":
             i += 2  # a line continuation: removed before bash reads words
             continue
@@ -868,7 +938,10 @@ def _strict_segments(command: str, closed: bool = False) -> list[list[str]]:
             arithmetic_end = _arithmetic_end(text, i)  # its words still split as usual
         if ch == "#" and not (buf or started):
             newline = text.find("\n", i)
-            i = len(text) if newline < 0 else newline
+            end = len(text) if newline < 0 else newline
+            if bodies is not None:
+                bodies.append((offset + i, offset + end, True, text[i:end], "comment"))
+            i = end
             continue
         if ch == "$" and text[i + 1:i + 2] == "'":
             end = _ansi_end(text, i + 1)
