@@ -279,20 +279,63 @@ def _heredoc_end(text: str, i: int, delimiter: str) -> int:
     return i
 
 
+_ANSI_SIMPLE = {"a": "\a", "b": "\b", "e": "\x1b", "E": "\x1b", "f": "\f", "n": "\n",
+                "r": "\r", "t": "\t", "v": "\v", "\\": "\\", "'": "'", '"': '"', "?": "?"}
+
+
+def _ansi_c(text: str, i: int, buf: list[str]) -> int:
+    """Decode a bash `$'…'` body starting at text[i] into buf; returns the next index."""
+    while i < len(text):
+        ch = text[i]
+        if ch == "'":
+            return i + 1
+        if ch != "\\" or i + 1 >= len(text):
+            buf.append(ch)
+            i += 1
+            continue
+        esc = text[i + 1]
+        if esc in _ANSI_SIMPLE:
+            buf.append(_ANSI_SIMPLE[esc])
+            i += 2
+            continue
+        width = {"x": 2, "u": 4, "U": 8}.get(esc)
+        if width:
+            digits = re.match(r"[0-9a-fA-F]{1,%d}" % width, text[i + 2:])
+            if digits:
+                buf.append(chr(int(digits.group(0), 16)))
+                i += 2 + len(digits.group(0))
+                continue
+        octal = re.match(r"[0-7]{1,3}", text[i + 1:])
+        if octal:
+            buf.append(chr(int(octal.group(0), 8) & 0xFF))
+            i += 1 + len(octal.group(0))
+            continue
+        if esc == "c" and i + 2 < len(text):
+            buf.append(chr(ord(text[i + 2]) & 0x1F))
+            i += 3
+            continue
+        buf.append("\\" + esc)
+        i += 2
+    return i
+
+
 def _segments(command: str) -> list[list[str]]:
     """Split `command` into shell segments of tokens, quote- and heredoc-aware.
 
     Backslash-newline continuations are joined; newline, `;`, `&&`, `||`, `|`,
     `&`, `(` and `)` separate segments; redirections and heredoc bodies are
-    dropped. A `$(…)` (or backquote) command substitution leaves its source
-    text as one token — callers resolve that token as "the current branch" when
-    it names a push destination or a `--ref` — and its body is spliced in as
-    segments of its own, because the shell runs it.
+    dropped. A `$(…)` (or backquote) command substitution stays part of the
+    word it appears in — callers resolve such a token as "the current branch"
+    when it names a push destination or a `--ref` — and its body is emitted as
+    segments of its own just before the enclosing command, because the shell
+    runs it first. The rest of the enclosing command is kept (a substitution
+    never ends it). `$'…'` (ANSI-C) and `$"…"` (locale) quoting are decoded.
     """
     text = command.replace("\\\r\n", "").replace("\\\n", "")
     segments: list[list[str]] = []
     tokens: list[str] = []
     buf: list[str] = []
+    subs: list[list[str]] = []  # substitution bodies, emitted before their command
 
     def flush_token() -> None:
         if buf:
@@ -301,9 +344,25 @@ def _segments(command: str) -> list[list[str]]:
 
     def flush_segment() -> None:
         flush_token()
+        if subs:
+            segments.extend(subs)
+            subs.clear()
         if tokens:
             segments.append(list(tokens))
             tokens.clear()
+
+    def substitution(i: int) -> int:
+        """Keep the `$(…)`/backquote source at text[i] in the word; queue its body."""
+        if text[i] == "`":
+            close = text.find("`", i + 1)
+            close = len(text) - 1 if close < 0 else close
+            body = text[i + 1:close]
+        else:
+            close = _matching_paren(text, i + 2)
+            body = text[i + 2:close]
+        buf.append(text[i:close + 1])
+        subs.extend(_segments(body))
+        return close + 1
 
     def quoted(i: int) -> int:
         """Scan a quoted region into the token buffer; returns the next index."""
@@ -313,18 +372,9 @@ def _segments(command: str) -> list[list[str]]:
             ch = text[i]
             if ch == quote:
                 return i + 1
-            if quote == '"' and ch == "$" and text[i + 1:i + 2] == "(" and not buf:
-                # A substitution standing as the whole quoted word: keep its
-                # source as the token and splice its body in as segments.
-                close = _matching_paren(text, i + 2)
-                buf.append(text[i:close + 1])
-                flush_token()
-                flush_segment()
-                segments.extend(_segments(text[i + 2:close]))
-                i = close + 1
-                if text[i:i + 1] == quote:
-                    i += 1
-                return i
+            if quote == '"' and ((ch == "$" and text[i + 1:i + 2] == "(") or ch == "`"):
+                i = substitution(i)
+                continue
             if quote == '"' and ch == "\\" and i + 1 < len(text):
                 buf.append(text[i + 1])
                 i += 2
@@ -386,22 +436,14 @@ def _segments(command: str) -> list[list[str]]:
             newline = text.find("\n", i)
             i = len(text) if newline < 0 else newline
             continue
-        if ch == "$" and text[i + 1:i + 2] == "(":
-            close = _matching_paren(text, i + 2)
-            buf.append(text[i:close + 1])
-            flush_token()
-            flush_segment()
-            segments.extend(_segments(text[i + 2:close]))
-            i = close + 1
+        if ch == "$" and text[i + 1:i + 2] == "'":
+            i = _ansi_c(text, i + 2, buf)
             continue
-        if ch == "`":
-            close = text.find("`", i + 1)
-            close = len(text) - 1 if close < 0 else close
-            buf.append(text[i:close + 1])
-            flush_token()
-            flush_segment()
-            segments.extend(_segments(text[i + 1:close]))
-            i = close + 1
+        if ch == "$" and text[i + 1:i + 2] == '"':
+            i = quoted(i + 1)
+            continue
+        if (ch == "$" and text[i + 1:i + 2] == "(") or ch == "`":
+            i = substitution(i)
             continue
         if ch in "'\"":
             i = quoted(i)
@@ -443,6 +485,17 @@ def _override_on_segment(tokens: list[str]) -> bool:
         if token == OVERRIDE:
             return True
     return False
+
+
+def _leading_gh_repo(tokens: list[str]) -> str | None:
+    """GH_REPO set by the segment's own leading assignments, if any."""
+    value = None
+    for token in tokens:
+        if not _is_assignment(token):
+            break
+        if token.startswith("GH_REPO="):
+            value = token.split("=", 1)[1] or None
+    return value
 
 
 def _shell_script(tokens: list[str]) -> str | None:
@@ -597,105 +650,173 @@ def _is_workflow(selector: str) -> bool:
         or selector.endswith(f"/{WORKFLOW_FILE}")
 
 
-def _repo_flag(tokens: list[str]) -> str | None:
-    args = tokens[1:]
-    for i, arg in enumerate(args):
-        if arg in ("-R", "--repo") and i + 1 < len(args):
-            return args[i + 1]
-        if arg.startswith("--repo="):
-            return arg.split("=", 1)[1]
-    return None
+# gh flags that take a value when spaced (`-R x`); cobra's command lookup skips
+# these values, so a leaf's flags may stand before the group or leaf word (F30).
+_GH_VALUE_FLAGS = frozenset({"-R", "--repo", "-r", "--ref", "-f", "-F", "--field",
+                             "--raw-field", "-j", "--job"})
+UNKNOWN = object()  # an input the guard cannot read (`-F key=@-`, an unreadable file; D10)
 
 
-_FIELD_FLAG = re.compile(r"--(raw-)?field=([^=]+)=(.*)")
-_JOINED_FIELD = re.compile(r"-([fF])([^=]+)=(.*)")
-_JOINED_FIELD_EQ = re.compile(r"-([fF])=(.+)")
+class _FileInput(str):
+    """A typed `-F key=@path` value: gh sends the file's bytes, read at dispatch time."""
+
+
+def _gh_command(tokens: list[str]) -> tuple[str, str, list[str]] | None:
+    """(group, leaf, rest) for a gh segment, the way cobra finds the command.
+
+    Flags (and a spaced flag's value) are not command words wherever they stand;
+    the first two words are the group and the leaf, and everything else keeps
+    its original order for the leaf's parser. A help request is no command.
+    """
+    words, rest, i = [], [], 1
+    while i < len(tokens):
+        token = tokens[i]
+        if token == "--":
+            rest.extend(tokens[i:])
+            break
+        if token in ("-h", "--help"):
+            return None
+        if token.startswith("-") and len(token) > 1:
+            rest.append(token)
+            if token in _GH_VALUE_FLAGS and i + 1 < len(tokens):
+                rest.append(tokens[i + 1])
+                i += 1
+        elif len(words) < 2:
+            words.append(token)
+        else:
+            rest.append(token)
+        i += 1
+    if len(words) < 2:
+        return None
+    return words[0], words[1], rest
+
+
+def _flag_values(rest: list[str], short: str, long: str) -> list[tuple[int, str]]:
+    """(index, value) for every pflag spelling of one flag, in order.
+
+    Spellings: `-X v`, `-Xv`, `-X=v`, `--long v`, `--long=v`.
+    """
+    found, i = [], 0
+    while i < len(rest):
+        arg = rest[i]
+        if arg in (short, long) and i + 1 < len(rest):
+            found.append((i, rest[i + 1]))
+            i += 2
+            continue
+        if arg.startswith(long + "="):
+            found.append((i, arg.split("=", 1)[1]))
+        elif arg.startswith(short) and len(arg) > len(short) and not arg.startswith("--"):
+            found.append((i, arg[len(short):].removeprefix("=")))
+        i += 1
+    return found
+
+
+def _repo_of(rest: list[str]) -> str | None:
+    """The repository gh uses: the last `-R/--repo` in any spelling (pflag)."""
+    values = _flag_values(rest, "-R", "--repo")
+    return values[-1][1] if values else None
+
+
+def _positionals(rest: list[str]) -> list[str]:
+    """Non-flag words of `rest`, skipping every spaced flag value."""
+    out, i = [], 0
+    while i < len(rest):
+        arg = rest[i]
+        if arg == "--":
+            out.extend(rest[i + 1:])
+            break
+        if arg.startswith("-") and len(arg) > 1:
+            i += 2 if arg in _GH_VALUE_FLAGS else 1
+            continue
+        out.append(arg)
+        i += 1
+    return out
+
+
+_FIELD_FLAG = re.compile(r"--(raw-)?field=([^=]+)=(.*)", re.DOTALL)
+_JOINED_FIELD = re.compile(r"-([fF])([^=]+)=(.*)", re.DOTALL)
+_JOINED_FIELD_EQ = re.compile(r"-([fF])=(.+)", re.DOTALL)
 _TYPED_FIELD_FLAGS = ("-F", "--field")
-_JOINED_REF = re.compile(r"-r(.+)")
+
+
+def _dispatch_fields(rest: list[str]) -> dict:
+    """Workflow inputs as gh sends them: typed `-F/--field` over raw `-f/--raw-field`.
+
+    gh applies typed fields after raw ones, so a typed value wins for its key
+    whatever the argument order (F31); within one kind the last one wins. A
+    typed value starting with `@` is read from a file by gh (`@-` is stdin);
+    it is kept as a _FileInput and resolved against the segment's directory.
+    """
+    raw, typed = {}, {}
+
+    def put(kind: str, key: str, value: str) -> None:
+        if kind == "typed":
+            typed[key] = _FileInput(value[1:]) if value.startswith("@") else value
+        else:
+            raw[key] = value
+
+    i = 0
+    while i < len(rest):
+        arg = rest[i]
+        following = rest[i + 1] if i + 1 < len(rest) else ""
+        if arg in ("-f", "-F", "--field", "--raw-field"):
+            if "=" in following:
+                key, _, value = following.partition("=")
+                put("typed" if arg in _TYPED_FIELD_FLAGS else "raw", key, value)
+            i += 2
+            continue
+        if match := _FIELD_FLAG.fullmatch(arg):
+            put("raw" if match.group(1) else "typed", match.group(2), match.group(3))
+        elif match := _JOINED_FIELD.fullmatch(arg):
+            put("typed" if match.group(1) == "F" else "raw", match.group(2), match.group(3))
+        elif match := _JOINED_FIELD_EQ.fullmatch(arg):
+            if "=" in match.group(2):
+                key, _, value = match.group(2).partition("=")
+                put("typed" if match.group(1) == "F" else "raw", key, value)
+        i += 1
+    return {**raw, **typed}
 
 
 def _parse_dispatch(tokens: list[str]) -> dict | None:
     """The dispatch a `gh workflow run` segment describes, or None for others.
 
     Reads flags as pflag does (`-rX`, `-r=X`, `-fK=V`, `-f=K=V`, `--field=K=V`,
-    `--raw-field=K=V`, `-F K=V`), accepts the workflow selector anywhere after
-    `run`, and keeps a `--json` dispatch unknown (its inputs cannot be read).
-    gh applies typed `-F/--field` values after raw `-f/--raw-field` ones, so a
-    typed field wins for its key whatever the argument order (F31).
+    `--raw-field=K=V`, `-F K=V`), finds the command the way cobra does (flags
+    may stand before `workflow` or `run`), accepts the workflow selector
+    anywhere, and keeps a `--json` dispatch unknown (its inputs cannot be read).
     """
-    if len(tokens) < 3 or tokens[1] != "workflow":
+    command = _gh_command(tokens)
+    if command is None or command[:2] != ("workflow", "run"):
         return None
-    i, repo = 2, None
-    while i < len(tokens) and tokens[i] != "run":
-        if tokens[i] in ("-R", "--repo") and i + 1 < len(tokens):
-            repo = tokens[i + 1]
-            i += 2
-        elif tokens[i].startswith("--repo="):
-            repo = tokens[i].split("=", 1)[1]
-            i += 1
-        elif tokens[i].startswith("-"):
-            i += 1
-        else:
-            return None
-    if i >= len(tokens) or tokens[i] != "run":
-        return None
-    tail = tokens[i + 1:]
-    ref, selector, json_inputs = "", None, False
-    raw, typed = {}, {}
-    idx = 0
-    while idx < len(tail):
-        arg = tail[idx]
-        following = tail[idx + 1] if idx + 1 < len(tail) else ""
-        if arg == "--json" or arg.startswith("--json="):
-            json_inputs = True
-        elif arg in ("-r", "--ref"):
-            ref = following
-            idx += 1
-        elif arg in ("-R", "--repo"):
-            repo = following
-            idx += 1
-        elif arg.startswith("--ref="):
-            ref = arg.split("=", 1)[1]
-        elif arg.startswith("--repo="):
-            repo = arg.split("=", 1)[1]
-        elif arg in ("-f", "-F", "--field", "--raw-field"):
-            if "=" in following:
-                key, _, value = following.partition("=")
-                (typed if arg in _TYPED_FIELD_FLAGS else raw)[key] = value
-            idx += 1
-        elif match := _FIELD_FLAG.fullmatch(arg):
-            (raw if match.group(1) else typed)[match.group(2)] = match.group(3)
-        elif match := _JOINED_FIELD.fullmatch(arg):
-            (typed if match.group(1) == "F" else raw)[match.group(2)] = match.group(3)
-        elif match := _JOINED_FIELD_EQ.fullmatch(arg):
-            if "=" in match.group(2):
-                key, _, value = match.group(2).partition("=")
-                (typed if match.group(1) == "F" else raw)[key] = value
-        elif match := _JOINED_REF.fullmatch(arg):
-            ref = match.group(1).removeprefix("=")
-        elif arg.startswith("-"):
-            pass
-        elif selector is None:
-            selector = arg
-        idx += 1
+    rest = command[2]
+    refs = _flag_values(rest, "-r", "--ref")
+    selector = next(iter(_positionals(rest)), None)
     if selector is None or not _is_workflow(selector):
         return None
-    return {"ref": ref, "fields": {**raw, **typed}, "json": json_inputs, "repo": repo}
+    json_inputs = any(arg == "--json" or arg.startswith("--json=") for arg in rest)
+    return {"ref": refs[-1][1] if refs else "", "fields": _dispatch_fields(rest),
+            "json": json_inputs, "repo": _repo_of(rest)}
 
 
-def _parse_rerun(tokens: list[str]) -> tuple[str | None, str | None] | None:
-    if len(tokens) < 4 or tokens[1] != "run" or tokens[2] != "rerun":
+def _parse_rerun(tokens: list[str]) -> tuple[str | None, str | None, str | None] | None:
+    """(run id, repo, job id) for `gh run rerun [<run-id>] [--job <job-id>]`."""
+    command = _gh_command(tokens)
+    if command is None or command[:2] != ("run", "rerun"):
         return None
-    run_id = next((t for t in tokens[3:] if t.isdigit()), None)
-    return run_id, _repo_flag(tokens)
+    rest = command[2]
+    run_id = next((t for t in _positionals(rest) if t.isdigit()), None)
+    jobs = _flag_values(rest, "-j", "--job")
+    job = jobs[-1][1] if jobs and jobs[-1][1].isdigit() else None
+    return run_id, _repo_of(rest), job
 
 
 def _parse_update_branch(tokens: list[str]) -> tuple[str | None, str | None] | None:
-    if len(tokens) < 3 or tokens[1] != "pr" or "update-branch" not in tokens[2:]:
+    command = _gh_command(tokens)
+    if command is None or command[:2] != ("pr", "update-branch"):
         return None
-    rest = tokens[tokens.index("update-branch") + 1:]
-    number = next((t for t in rest if t.isdigit()), None)
-    return number, _repo_flag(tokens)
+    rest = command[2]
+    number = next((t for t in _positionals(rest) if t.isdigit()), None)
+    return number, _repo_of(rest)
 
 
 # --- gh / git access (fail open) ----------------------------------------------
@@ -780,16 +901,35 @@ def _default_branch(repo: str | None, cwd: str | None) -> str:
     return (out or "").strip().removeprefix("origin/")
 
 
+def _api_repo(repo: str) -> tuple[list[str], str]:
+    """(`--hostname` args, OWNER/REPO) for a `-R` value: [HOST/]OWNER/REPO or a URL."""
+    text = re.sub(r"^[a-z]+://", "", repo.strip()).removesuffix(".git").strip("/")
+    parts = [part for part in text.split("/") if part]
+    host = parts[-3] if len(parts) >= 3 else ""
+    owner_repo = "/".join(parts[-2:])
+    return (["--hostname", host] if host and host != "github.com" else []), owner_repo
+
+
 def _remote_sha(repo: str | None, ref: str, cwd: str | None) -> str:
     if re.fullmatch(r"[0-9a-f]{40}", ref):
         return ref
     ref = ref.removeprefix("refs/heads/")
     if repo:
-        out = _run(["gh", "api", f"repos/{repo}/commits/{ref}", "--jq", ".sha"],
+        host, owner_repo = _api_repo(repo)
+        out = _run(["gh", "api", *host, f"repos/{owner_repo}/commits/{ref}", "--jq", ".sha"],
                    cwd=cwd)
         return out.strip() if out and out.strip() else ""
     out = _run(["git", "ls-remote", "origin", f"refs/heads/{ref}"], cwd=cwd)
     return out.split()[0] if out and out.split() else ""
+
+
+def _job_run_id(repo: str | None, job: str, cwd: str | None) -> str | None:
+    """The run a `gh run rerun --job <id>` belongs to (D11), or None if unknown."""
+    host, owner_repo = _api_repo(repo) if repo else ([], "{owner}/{repo}")
+    out = _run(["gh", "api", *host, f"repos/{owner_repo}/actions/jobs/{job}",
+                "--jq", ".run_id"], cwd=cwd)
+    value = (out or "").strip()
+    return value if value.isdigit() else None
 
 
 def _current_branch(cwd: str | None) -> str:
@@ -841,10 +981,28 @@ def _resolve_ref(ref: str, repo: str | None, dir_now: str) -> str:
     return _default_branch(repo, dir_now)
 
 
+def _input_value(value, dir_now: str):
+    """A field value as gh sends it: a `@path` typed field reads the file (F31)."""
+    if not isinstance(value, _FileInput):
+        return value
+    if str(value) in ("", "-"):
+        return UNKNOWN  # stdin (or nothing): unknowable before the command runs
+    path = _join_dir(dir_now or ".", str(value))
+    try:
+        with open(path, "rb") as handle:
+            return handle.read(1 << 16).decode("utf-8", errors="replace")
+    except OSError:
+        return UNKNOWN
+
+
 def _dispatch_reason(parsed: dict, dir_now: str, pushed: list[str]) -> str | None:
     """Refusal for one parsed `gh workflow run` segment, or None to allow it."""
-    mode = str(parsed["fields"].get("mode") or DEFAULT_MODE)
-    cases = str(parsed["fields"].get("cases") or "")
+    mode_value = _input_value(parsed["fields"].get("mode"), dir_now)
+    cases_value = _input_value(parsed["fields"].get("cases"), dir_now)
+    if cases_value is UNKNOWN:
+        return None  # gh reads it from a file: the concurrency group is unknowable (D10)
+    mode = mode_value if mode_value is UNKNOWN else str(mode_value or DEFAULT_MODE)
+    cases = str(cases_value or "")
     if cases and not cases.strip():
         # The workflow's concurrency group treats any non-empty `cases` as
         # diagnostic, so this would cancel a live diagnostic run (F32).
@@ -857,14 +1015,14 @@ def _dispatch_reason(parsed: dict, dir_now: str, pushed: list[str]) -> str | Non
     ref = "" if parsed["json"] else _resolve_ref(parsed["ref"], parsed["repo"],
                                                  dir_now)
     runs = None
-    if not parsed["json"] and mode in ("s2", "s3") and ref:
+    if not parsed["json"] and (mode is UNKNOWN or mode in ("s2", "s3")) and ref:
         runs = _gh_runs(parsed["repo"], branch=ref, event="workflow_dispatch",
                         cwd=dir_now)
     if diagnostic and mode == "s2":
         reason = S2_CASES_NOTE
     elif runs is not None:
         reason = dispatch_cancel_refusal(ref, runs, diagnostic=diagnostic)
-        if reason is None and not diagnostic and ref not in pushed:
+        if reason is None and not diagnostic and mode is not UNKNOWN and ref not in pushed:
             sha = _remote_sha(parsed["repo"], ref, dir_now)
             reason = dispatch_redundancy_refusal(sha, runs, mode=mode) if sha else None
     return reason
@@ -909,38 +1067,30 @@ def _git_segment(tokens: list[str], state: dict, guarded: bool) -> str | None:
     return _push_reason(resolved, None, dir_now, trust_skip_ci=not state["mover"])
 
 
-def _hoist_repo_flag(tokens: list[str]) -> list[str]:
-    """Move gh's inherited `-R/--repo` from before the subcommand to the end (F30).
-
-    `gh -R owner/repo workflow run …` is valid; every parser below looks for the
-    subcommand at `tokens[1]` and reads `-R` anywhere after it.
-    """
-    head, rest, moved = tokens[:1], tokens[1:], []
-    while rest and rest[0].startswith("-"):
-        if rest[0] in ("-R", "--repo") and len(rest) > 1:
-            moved, rest = [*moved, "-R", rest[1]], rest[2:]
-        elif rest[0].startswith("--repo="):
-            moved, rest = [*moved, "-R", rest[0].split("=", 1)[1]], rest[1:]
-        else:
-            break
-    return [*head, *rest, *moved]
-
-
-def _gh_segment(tokens: list[str], state: dict, guarded: bool) -> str | None:
-    tokens = _hoist_repo_flag(tokens)
+def _gh_segment(tokens: list[str], state: dict, guarded: bool,
+                gh_repo: str | None = None) -> str | None:
+    """Refusal for one gh segment; `gh_repo` is GH_REPO in effect for it (F30/D8)."""
+    default_repo = gh_repo or state.get("gh_repo")
     dispatch = _parse_dispatch(tokens)
     if dispatch is not None:
+        dispatch["repo"] = dispatch["repo"] or default_repo
         return _dispatch_reason(dispatch, state["dir"], state["pushed"]) if guarded else None
     rerun = _parse_rerun(tokens)
     if rerun is not None:
-        return _rerun_reason(rerun[0], rerun[1], state["dir"]) if guarded else None
+        run_id, repo, job = rerun
+        repo = repo or default_repo
+        if not run_id and job:
+            run_id = _job_run_id(repo, job, state["dir"])
+        return _rerun_reason(run_id, repo, state["dir"]) if guarded else None
     update = _parse_update_branch(tokens)
     if update is not None:
-        return _update_branch_reason(update[0], update[1], state["dir"]) if guarded else None
+        return _update_branch_reason(update[0], update[1] or default_repo,
+                                     state["dir"]) if guarded else None
     return None
 
 
-def _eval_segment(tokens: list[str], state: dict, self_override: bool) -> str | None:
+def _eval_segment(tokens: list[str], state: dict, self_override: bool,
+                  gh_repo: str | None = None) -> str | None:
     head = os.path.basename(tokens[0]).removesuffix(".exe")
     if head == "cd":
         state["dir"] = _join_dir(state["dir"], tokens[1] if len(tokens) > 1 else "")
@@ -948,24 +1098,32 @@ def _eval_segment(tokens: list[str], state: dict, self_override: bool) -> str | 
     if head == "export":
         if OVERRIDE in tokens[1:]:
             state["export_override"] = True
+        for token in tokens[1:]:
+            if token.startswith("GH_REPO="):
+                state["gh_repo"] = token.split("=", 1)[1] or None
+        return None
+    if head == "unset" and "GH_REPO" in tokens[1:]:
+        state["gh_repo"] = None
         return None
     guarded = not (self_override or state["export_override"])
     if head == "git":
         return _git_segment(tokens, state, guarded)
     if head == "gh":
-        return _gh_segment(tokens, state, guarded)
+        return _gh_segment(tokens, state, guarded, gh_repo)
     return None
 
 
 def refusal_for_command(command: str, cwd: str | None = None) -> str | None:
     """Reason to refuse `command` run from `cwd`, or None when it may run."""
     state = {"dir": (cwd or "").replace("\\", "/"), "pushed": [],
-             "mover": False, "export_override": False}
+             "mover": False, "export_override": False,
+             "gh_repo": os.environ.get("GH_REPO") or None}
     for raw in _segments(command):
         self_override = _override_on_segment(raw)
+        gh_repo = _leading_gh_repo(raw)
         for tokens in _expand(_strip_assignments(raw)):
             if tokens:
-                reason = _eval_segment(tokens, state, self_override)
+                reason = _eval_segment(tokens, state, self_override, gh_repo)
                 if reason:
                     return reason
     return None

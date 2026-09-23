@@ -170,8 +170,14 @@ def test_rerun_of_a_pr_run_cancels_only_the_same_pr():
      [["git", "push", "-u", "origin", "HEAD"], ["tail", "-5"]]),
     ("echo hi\ngit push origin feat", [["echo", "hi"], ["git", "push", "origin", "feat"]]),
     ("git push -u origin \\\n  feat", [["git", "push", "-u", "origin", "feat"]]),
-    ("out=$(git push origin feat 2>&1)", [["out=$(git push origin feat 2>&1)"],
-                                          ["git", "push", "origin", "feat"]]),
+    # The shell runs a substitution before its enclosing command.
+    ("out=$(git push origin feat 2>&1)", [["git", "push", "origin", "feat"],
+                                          ["out=$(git push origin feat 2>&1)"]]),
+    # A substitution never ends its command: later words stay in it.
+    ('gh workflow run F --ref "$(git branch --show-current)" -f cases=x',
+     [["git", "branch", "--show-current"],
+      ["gh", "workflow", "run", "F", "--ref", "$(git branch --show-current)", "-f", "cases=x"]]),
+    ("echo $'a\\tb' $\"c\"", [["echo", "a\tb", "c"]]),
     ("git push origin wip:feat $BRANCH", [["git", "push", "origin", "wip:feat", "$BRANCH"]]),
 ])
 def test_segments_are_quote_and_heredoc_aware(command, expected):
