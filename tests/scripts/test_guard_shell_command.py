@@ -12,6 +12,7 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -19,6 +20,9 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[2]
 GUARD = REPO / "scripts" / "guard_shell_command.py"
+# Destructive words are built by concatenation so no test source line is itself
+# a command a shell guard would stop on.
+RMRF, HARD, NOV, FORCE = "rm " + "-rf", "git reset " + "--hard", "--no-" + "verify", "--for" + "ce"
 
 
 def _load():
@@ -176,3 +180,103 @@ def test_guard_is_actually_wired(mod):
     assert any("guard_shell_command.py" in c for c in entries), (
         "guard_shell_command.py is not registered as a PreToolUse Bash hook"
     )
+
+
+# --- 2026-09-23 card 2 (E1-E3): commands, not text -----------------------------
+# The acceptance suite (tests/test_harness_guards_acceptance.py) pins the card's
+# cases; these pin how the strict tokenizer reads the neighbouring spellings.
+
+@pytest.mark.parametrize(
+    "cmd",
+    [
+        # a flag after a command substitution stays in its command
+        f"git commit -m \"$(cat <<'EOF'\nfix: it's (F29)\nEOF\n)\" {NOV}",
+        f"git push origin \"$(git branch --show-current)\" {FORCE}",
+        # substitutions anywhere in a double-quoted word run
+        f"echo \"cleaning $({RMRF} build)\"",
+        f"echo \"x `{RMRF} build` y\"",
+        # runners whose arguments are a command
+        f"find . -name '*.pyc' -exec {RMRF} {{}} +",
+        f"ls | xargs -n1 {RMRF}",
+        f"eval '{RMRF} d'",
+        f"{{ {RMRF} d; }}",
+        f"sudo -u root {RMRF} d",
+        f"timeout -s KILL 5 {HARD}",
+        f"nice -n 5 {RMRF} d",
+        f"bash -ec '{HARD}'",
+        f"X=1 bash -c 'Y=2 {HARD}'",
+        f"cat <<< 'x'\n{RMRF} d",  # a here-string is not a heredoc
+        # abbreviations git 2.43 accepts for the guarded long options
+        "git clean --f", "git checkout --forc", "git restore --staged --w f",
+        "git switch --disc x", "git branch --d --forc x", "rm --r --f d",
+        # option values are not flags: -s takes "S", so this restores the work tree
+        "git restore -sS f",
+        "git checkout -fb x",
+    ],
+)
+def test_strict_reading_still_asks(mod, cmd):
+    """Spellings the shell or git would run as a destructive operation still ask."""
+    assert mod.classify(cmd)[0] == "ask", cmd
+
+
+@pytest.mark.parametrize(
+    "cmd",
+    [
+        f"git commit -m \"$(cat <<'EOF'\ndon't {RMRF} (ever\nEOF\n)\"",
+        f"gh pr create --body \"$(cat <<'EOF'\nNever `{RMRF}`; don't {NOV}.\nEOF\n)\"",
+        f"echo 'x `{RMRF} build` y'",
+        f"cat <<< '{RMRF} d'\necho ok",
+        f"# {RMRF}\necho ok",
+        f"git log --oneline | grep '{FORCE}'",
+        "command -v rm",
+        "git commit -mn",                 # -m with the message "n"
+        "git commit -uno -m x",           # -u with the mode "no"
+        "git commit -m x -- -n",          # after --, -n is a path
+        "git -c core.editor=vim commit -m x",
+        "git checkout -bfix",
+        "git switch -c fix",
+        "git restore --staged --no-worktree f",
+        "git push -o +x origin main",     # a push option, not a refspec
+        "git push --force-with-lease --force-if-includes origin x",
+        "rm -r -- -f",                    # after --, -f is a path
+    ],
+)
+def test_strict_reading_allows(mod, cmd):
+    """Data, lookups and option values never read as a guarded command (F29)."""
+    assert mod.classify(cmd)[0] == "allow", cmd
+
+
+@pytest.mark.parametrize(
+    "cmd",
+    [
+        "git commit -qn -m x",
+        "git --config-env=core.hooksPath=HP commit -m x",
+        "git -c core.hooksPath commit -m x",
+        "git commit --no-g -m x",
+        f"git rebase {NOV} main",
+    ],
+)
+def test_strict_reading_finds_bypasses(mod, cmd):
+    """Clusters, config options and abbreviations that skip hooks ask (E2)."""
+    permission, agent_msg, _ = mod.classify(cmd)
+    assert permission == "ask" and "standing path" in agent_msg, cmd
+
+
+@pytest.mark.parametrize(
+    "command,expected",
+    [
+        (f"cat > p.py <<'EOF'\nx = '{RMRF} /'\nEOF", None),
+        ("git commit -n -m x", "ask"),
+    ],
+)
+def test_hook_runs_as_a_script(command, expected):
+    """The §4 live smoke, run the way Claude Code runs the hook (script path, stdin)."""
+    result = subprocess.run(
+        [sys.executable, str(GUARD)], input=json.dumps({"tool_input": {"command": command}}),
+        capture_output=True, text=True, encoding="utf-8", cwd=REPO, check=False, timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    if expected is None:
+        assert result.stdout == ""
+    else:
+        assert json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"] == expected

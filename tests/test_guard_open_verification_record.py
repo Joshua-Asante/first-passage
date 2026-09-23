@@ -81,6 +81,55 @@ def test_main_emits_claude_code_pretooluse_shape(tmp_path, monkeypatch, capsys):
     assert 'permissionDecisionReason' in out and 'additionalContext' in out
 
 
+def docker_record(root, name, **fields):
+    folder = root / guard.DOCKER_RECORDS_DIR / name
+    folder.mkdir(parents=True)
+    (folder / 'record.json').write_text(json.dumps(fields), encoding='utf-8')
+    return folder
+
+
+def test_running_docker_record_denies_and_names_the_record(tmp_path):
+    """2026-09-23 card 2 (B1): Docker verification records lock the tree too."""
+    root = checkout(tmp_path)
+    docker_record(root, '20260920T175741Z-dkr', status='running',
+                  started_at=(NOW - timedelta(minutes=5)).isoformat())
+    permission, _, user = guard.decide(str(root / 'docs' / 'x.md'), now=NOW)
+    assert permission == 'deny' and '20260920T175741Z-dkr' in user
+
+
+@pytest.mark.parametrize('fields,locked', [
+    (dict(status='not_started', before={'fingerprint': 'f'}, finished_at=None), True),
+    (dict(status='not_started', before=None, finished_at=None), False),
+    (dict(status='not_started', before={'fingerprint': 'f'},
+          finished_at='2026-09-20T17:59:00+00:00'), False),
+    (dict(status='failed', before={'fingerprint': 'f'}, finished_at=None), False),
+])
+def test_measured_window_opens_at_begin(tmp_path, fields, locked):
+    """2026-09-23 card 2 (B2): `begin()` measured the tree, `execute()` has not run yet."""
+    root = checkout(tmp_path)
+    folder = root / guard.RECORDS_DIR / 'r'
+    folder.mkdir(parents=True)
+    data = dict(fields, started_at=(NOW - timedelta(minutes=1)).isoformat())
+    (folder / 'record.json').write_text(json.dumps(data), encoding='utf-8')
+    assert (guard.decide(str(root / 'docs' / 'x.md'), now=NOW)[0] == 'deny') is locked
+
+
+def test_non_object_record_json_fails_open(tmp_path):
+    root = checkout(tmp_path)
+    folder = root / guard.RECORDS_DIR / 'list'
+    folder.mkdir(parents=True)
+    (folder / 'record.json').write_text('["running"]', encoding='utf-8')
+    assert guard.decide(str(root / 'docs' / 'x.md'), now=NOW)[0] == 'allow'
+
+
+def test_targets_cover_edit_multiedit_and_notebook_payloads():
+    """2026-09-23 card 2 (B3): NotebookEdit carries its target at `notebook_path`."""
+    payload = dict(tool_input=dict(file_path='/a', notebook_path='/b.ipynb',
+                                   edits=[dict(file_path='/c'), dict(old_string='x')]))
+    assert guard._targets(payload) == ['/a', '/b.ipynb', '/c']  # pylint: disable=protected-access
+    assert guard._targets(dict(tool_input={})) == []  # pylint: disable=protected-access
+
+
 def test_main_emits_nothing_when_it_does_not_deny(tmp_path, monkeypatch, capsys):
     """2026-09-23: an allowed write produces no output, so the hook never
     approves anything on the operator's behalf (D15 of the guard hardening)."""
