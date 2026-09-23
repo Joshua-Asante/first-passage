@@ -78,8 +78,9 @@ def cases_refusal(args):
         return f'--cases cannot be validated: pytest expression parser unavailable ({exc})'
     try:
         Expression.compile(args.cases)
-    except SyntaxError as exc:
-        return f'--cases is not a valid pytest -k expression: {exc}'
+    except (SyntaxError, RecursionError, MemoryError) as exc:
+        # pytest's parser recurses per nesting level: too deep is as uncompilable.
+        return f'--cases is not a valid pytest -k expression: {type(exc).__name__}: {exc}'
     return None
 
 

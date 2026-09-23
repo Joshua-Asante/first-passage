@@ -179,8 +179,9 @@ def dispatch_redundancy_refusal(sha: str, runs: list[dict], *, mode: str) -> str
     if run.get("conclusion") == "success":
         return (f"S2 run {run.get('databaseId')} [{mode}] already passed on "
                 f"{sha[:12]} (same bytes, same mode): read its artifact "
-                f"(scripts/s2_run_evidence.py {run.get('databaseId')}) instead of "
-                f"re-running. Deliberate re-dispatch: {OVERRIDE} gh workflow run ….")
+                f"(scripts/s2_run_evidence.py {run.get('databaseId')}"
+                f"{' --expect-scope S2_DIAGNOSTIC_SUPERVISION' if mode == 's2' else ''}) "
+                f"instead of re-running. Deliberate re-dispatch: {OVERRIDE} gh workflow run ….")
     return (f"S2 run {run.get('databaseId')} [{mode}] already failed on {sha[:12]}, "
             f"and the newest definitive same-mode run decides: a re-dispatch on "
             f"unchanged bytes is a re-roll, not a fix. Root-cause it from the "

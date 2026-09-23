@@ -83,7 +83,15 @@ jobs:
           cases="$BOUNDARY_CASES"
           case "$mode" in s2|s3) ;; *) echo "unsupported mode: $mode (expected s2 or s3)" >&2; exit 2 ;; esac
           if [ -n "$cases" ]; then
-            if [ -z "${cases//[[:space:]]/}" ]; then
+            # The same whitespace test as the boundary wrapper (Python str.strip, so
+            # Unicode spaces such as NBSP count); the bash class is the fallback.
+            blank=0
+            if command -v python3 >/dev/null 2>&1; then
+              python3 -c 'import os, sys; sys.exit(0 if os.environ["BOUNDARY_CASES"].strip() else 1)' || blank=1
+            elif [ -z "${cases//[[:space:]]/}" ]; then
+              blank=1
+            fi
+            if [ "$blank" = 1 ]; then
               echo "cases is whitespace-only; leave it empty to run the full selection" >&2
               exit 2
             fi
@@ -127,7 +135,8 @@ jobs:
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
           args=(--"$mode")
           if [ -n "$cases" ]; then
-            args+=(--cases "$cases")
+            # `=` form: a valid -k expression may start with '-' (e.g. -downtime).
+            args+=("--cases=$cases")
           fi
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python \
             scripts/qualification_boundary_verification.py "${args[@]}" --manifest "$manifest"
