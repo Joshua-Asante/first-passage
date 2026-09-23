@@ -1,6 +1,6 @@
 # Subscription / venue-account ledger
 
-One row per `docs/pursuits/d11-d18` cost-carrying record. Canonical source for every $/mo
+One row per `docs/pursuits/d11-d19` cost-carrying record. Canonical source for every $/mo
 figure — the pursuit records themselves link here rather than restating the number (Rule 7,
 one canonical owner). Built per
 [`docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md`](../adr/2026-08-21-cfo-subscription-ledger-consolidation.md),
@@ -23,21 +23,23 @@ un-reconfirmed for >60 days should be treated as stale, not silently trusted.
 | Cursor Ultra | [d16](d16-cursor-subscription.md) | excluded | removed from recurring spend by operator; **surface retired outright 2026-09-15** ([worker-surface allocation](../adr/2026-07-14-cc-cursor-surface-allocation.md), Revision 2026-09-15); **fully terminated, no final or prorated charge** (operator, 2026-09-15); cancellation date **still not supplied** | 2026-09-10 (spend), 2026-09-15 (surface; terminated / no final charge) | removed from active recurring total; terminated |
 | Claude Max | [d17](d17-claude-max-subscription.md) | $100 | flat | 2026-09-10 | confirmed |
 | Codex | [d18](d18-codex-subscription.md) | $200 | monthly amount supplied; plan details unspecified | 2026-09-10 | operator-confirmed |
+| GLM Max 5x | [d19](d19-glm-subscription.md) | $80 | monthly amount and plan name supplied; billing date unspecified | 2026-09-23 | operator-confirmed |
 
-**Confirmed active recurring monthly total:** $420/mo (four confirmed active rows:
-TradingView, CrossTrade, Claude Max and Codex).
+**Confirmed active recurring monthly total:** $500/mo (five confirmed active rows:
+TradingView, CrossTrade, Claude Max, Codex and GLM Max 5x).
 Databento is retired and excluded; its effective cancellation date and final invoice
 were not supplied. Cursor is removed from recurring spend by operator instruction and the surface
 itself was retired on 2026-09-15; the operator confirmed on 2026-09-15 that the subscription
 is fully terminated and that no final or prorated charge landed, but the cancellation date
 itself was not to hand and remains open. Fly.io and Tradeify remain
-unverified, not zero. Do not read $420 as total spend or as settlement of outstanding
+unverified, not zero. Do not read $500 as total spend or as settlement of outstanding
 charges.
 
 **Change log**
 
 | Date | Change |
 |---|---|
+| 2026-09-23 | Operator reports GLM Max 5x at $80/month, replacing the retired Cursor subscription (d16, already excluded). Added as [d19](d19-glm-subscription.md). Active recurring total: $420 + $80 = $500. The report does not reconfirm rows d11–d18; that 2026-09-21 reconfirm remains owed (STATE Monthly trigger). |
 | 2026-09-15 | Operator settles two of the three outstanding Cursor items, asked directly: subscription **fully terminated**; **no final or prorated charge** landed after cancellation. The cancellation date was not to hand and **remains open** — 2026-09-10 stays a report date, not a cancellation date. Ledger effect: **none** ($420 unchanged; the row was already excluded). |
 | 2026-09-15 | Cursor retired as a worker surface repo-wide (operator instruction; [ADR revision](../adr/2026-07-14-cc-cursor-surface-allocation.md)). Ledger effect: **none** — the row was already excluded from the active recurring total on 2026-09-10. Cancellation date and final charges remain outstanding operator items; this row records the surface retirement, not a settlement. |
 | 2026-09-10 | Operator removes Cursor from recurring spend, revises Claude Max from $200 to $100/month, and adds Codex at $200/month. Active recurring total: $520 - $200 - $100 + $200 = $420. Claude remains active. Cursor cancellation date/final charges and Codex plan details not supplied. |
