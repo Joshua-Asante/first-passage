@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (inventory and verification; building a producer is explicitly out of scope)
 **Date:** 2026-09-22
-**Status:** DISPATCHED 2026-09-22 to one Claude Code executor session (branch `claude/t00-step1-producer-inventory`; its return lands in §7). Authorized by **D-T00, ratified 2026-09-22 for step 1 only** ([amendment Addendum 2026-09-22, row D-T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#addendum-2026-09-22--4-dispositions-ratified-2026-09-22--all-five-adopted-as-recommended-and-the-5-correction-applied)). Parent packet: [amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early). T00 runs in parallel with the spine and **gates nothing**, including T02/S3.
+**Status:** RETURNED 2026-09-22 (INSUFFICIENT); **ACCEPTED 2026-09-23** by the operator, with condition 4 ruled no ([§7.8](#78-operator-rulings-on-the-return-2026-09-23)). Originally DISPATCHED 2026-09-22 to one Claude Code executor session (branch `claude/t00-step1-producer-inventory`; its return lands in §7). Authorized by **D-T00, ratified 2026-09-22 for step 1 only** ([amendment Addendum 2026-09-22, row D-T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#addendum-2026-09-22--4-dispositions-ratified-2026-09-22--all-five-adopted-as-recommended-and-the-5-correction-applied)). Parent packet: [amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early). T00 runs in parallel with the spine and **gates nothing**, including T02/S3.
 **Executor:** one executor (Claude Code; reading, tracing and running existing tests). **Coordinator:** dispatches, and receives the return. **Operator:** Joshua answers the private-artifact question in §4 and rules condition 4 after the return; he alone ratifies any step 2.
 **Authority:** read the owners below; run existing tests and read-only probes; write §7 of this packet and nothing else in the repository. No new producer code, no screen, no pre-registration, no MC run. A `DONE` status supplies no permission for step 2.
 
@@ -267,3 +267,20 @@ def test_p2_orb_add_refused_only_when_protected():
 **Is T00's screen §4 falsifier evidence for the 2026-11-08 trigger?** If yes, its ceiling, tiers and dating follow the four-firm ADR §4 as frozen. If no, the falsifier needs its own dated re-MC before 2026-11-08, regardless of T00. Step 1 does not bear on this ruling. No step-2 recommendation is made: the table supports none until candidate 3′ meets P7 with real inputs.
 
 Not done, as scoped: no producer was built or patched; no screen, MC or re-MC was run; no pre-registration was drafted; no private artifact, account figure or Pine was committed; the seven-entry menu was not scored.
+
+### 7.8 Operator rulings on the return (2026-09-23)
+
+Recorded after the return merged ([#460](https://github.com/Joshua-Asante/first-passage/pull/460)); §7.1–§7.7 above are unchanged.
+
+| Item | Ruling (operator, in session, verbatim) | Consequence |
+|---|---|---|
+| Acceptance | "I accept the T00 return" | The return is accepted as filed: verdict INSUFFICIENT, missing set = candidate 3′ plus its P7 inputs (§7.5). |
+| Condition 4 | "A T00 screen does not count as falsifier evidence" | **No.** The four-firm §4 falsifier dated 2026-11-08 needs its own dated re-MC regardless of T00, per the ratified D-T00 wording. T00 no longer bears on that clock. |
+| Timing convention | "I want to ratify a timing convention to unblock the replay" | Intent only; **no convention is ratified by this record.** A convention would replace one P7 blocker, source-instant schedule evidence (§7.5 item 1). The other P7 items stand (§7.4, candidate 3′ row P7 (a) and (b)). |
+
+**Candidate 1, archive search (2026-09-23).** The operator granted access to `first-passage-archive`. Both of its relevant refs were searched:
+- the default branch (`73971f1`, last commit 2026-08-15, before the campaign opened on 2026-09-03);
+- `archive/preserve-2026-09-06` (`5d47b4d`, 1,542 files removed from this repo at `2d40dbeb`).
+
+Neither holds the joint replay, the 125-test synthetic replay, canonical ledgers, private overrides or the `account-feedback-composition-2026-09-08` packet. The one public digest for that packet, the approval receipt `bad72266716a31782960c49deed0e25c8c2dc8256300cd8bbc2423d7778d73aa` (campaign record §53), appears on neither ref. No other archive branch name dates from September 2026. This is consistent with M-41: the evidence lived in gitignored `.worktrees/*`, which git never carried. Candidate 1 remains **UNKNOWN — operator input owed** for local backups and `local_artifacts/` only; the archive route is closed. The verdict is unchanged either way, because a surviving copy would still need scoring against P1–P7 for the selected four.
+

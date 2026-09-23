@@ -114,17 +114,21 @@ def _targets(data: dict) -> list[str]:
 
 
 def main() -> int:
+    """Emit a decision only when a write must be denied.
+
+    A hook ``allow`` bypasses the operator's permission rules outright, so an
+    allowed (or unparsable) write produces no output and defers to the normal
+    permission flow; ``decide()`` still returns ``allow`` internally.
+    """
     try:
         data = json.load(sys.stdin)
     except Exception:
-        _emit("allow")
         return 0
     for target in _targets(data):
         decision = decide(target)
         if decision[0] != "allow":
             _emit(*decision)
             return 0
-    _emit("allow")
     return 0
 
 
