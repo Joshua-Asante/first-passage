@@ -15,14 +15,18 @@ import base64
 import json
 import shutil
 from contextlib import contextmanager
+from pathlib import PurePosixPath
 from types import SimpleNamespace
 
 import pytest
 
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
 from c1_rail.qualification.execution import campaign_supervisor as supervisor
+from c1_rail.qualification.execution import runtime
 
 BOOT_ID = 'boot0'
+LINUX_INTERPRETER = '/opt/ops/bin/python'
+LINUX_CODE_ROOT = '/opt/qualification'
 PAYLOAD_SLICE = 'fpq-camp-work.slice'
 UNIT = 'fpq-camp-work-g5.service'
 START_NS = 10**12
@@ -128,6 +132,11 @@ def run(tmp_path, monkeypatch, *, progression, exit_after, populated=1, remove_o
     monkeypatch.setattr(supervisor, 'observe_campaign_clock', kernel.clock)
     monkeypatch.setattr(supervisor.time, 'sleep', kernel.sleep)
     monkeypatch.setattr(supervisor, '_guardian_bus_call', lambda *a: None)
+    # g5_unit_spec requires the installed Linux runtime's absolute POSIX paths;
+    # pin them so the host's own interpreter and checkout (C:\... on Windows)
+    # never reach the unit spec.
+    monkeypatch.setattr(supervisor.sys, 'executable', LINUX_INTERPRETER)
+    monkeypatch.setattr(runtime, 'installed_code_root', lambda: PurePosixPath(LINUX_CODE_ROOT))
     reservation = base64.b64encode(encoded({'clock': json.loads(kernel.clock())})).decode()
     state = {'attempt_id': 'att1', 'deadline_boottime_ns': START_NS + WALL_NS,
              'profile': {'orchestration_cpu_ns': {'N1_G5': 10**9}}}
