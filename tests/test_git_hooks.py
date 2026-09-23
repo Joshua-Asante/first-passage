@@ -40,7 +40,8 @@ def hook_checkout(checkout):
     for name in ('install_hooks.sh', 'install_hooks.bat'):
         shutil.copy2(ROOT / 'scripts' / name, checkout / 'scripts' / name)
     shutil.copy2(ROOT / '.gitattributes', checkout / '.gitattributes')
-    for name in ('probe.py', 'roll_sessions.py', 'check_push_collision.py', 'check_pine_manifest.py'):
+    for name in ('probe.py', 'roll_sessions.py', 'check_push_collision.py', 'check_pine_manifest.py',
+                 'guard_s2_runs.py'):
         (checkout / 'scripts' / name).write_text(PROBE, encoding='utf-8')
     (checkout / 'scripts/gates.yml').write_text(
         'version: 1\ngates:\n  - id: probe\n    tier: always\n'
@@ -73,11 +74,15 @@ def test_hooks_select_validated_interpreter_and_checkout(hook_checkout, ops_env,
     result = run_hook(root, shell, hook, environment(root, ops_env))
     assert result.returncode == 0, result.stdout + result.stderr
     events = [json.loads(line) for line in (root / '.cache/hook-trace.jsonl').read_text().splitlines()]
-    assert len(events) == {'pre-commit': 1, 'pre-merge-commit': 2, 'pre-push': 1, 'post-merge': 4}[hook]
+    assert len(events) == {'pre-commit': 1, 'pre-merge-commit': 2, 'pre-push': 2, 'post-merge': 4}[hook]
     assert all(Path(event['prefix']).samefile(ops_env) for event in events)
     assert all(Path(event['cwd']).samefile(root) for event in events)
     if hook == 'pre-merge-commit':
         assert [event['args'][0] for event in events] == ['--check-order', '--check-append-only']
+    if hook == 'pre-push':
+        # Collision check, then the S2 run guard reading git's ref lines.
+        assert [event['script'] for event in events] == ['check_push_collision.py', 'guard_s2_runs.py']
+        assert events[1]['args'] == ['pre-push']
     if hook == 'post-merge':
         assert events[0]['args'] == ['--check-pin-provenance', '--base', 'ORIG_HEAD']
         assert '--dry-run' in events[2]['args'] and '--dry-run' not in events[3]['args']

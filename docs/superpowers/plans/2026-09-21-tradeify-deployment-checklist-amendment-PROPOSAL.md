@@ -125,6 +125,8 @@ Each row: recommended disposition · grounds · exact wording to adopt on ratifi
 
 **Grounds.** Step 1 is an inventory with an early INSUFFICIENT return, and its answer is genuinely open: the only in-repo replay artifact is the TB-S2 emulator, scoped as "per-leg TV-faithful replay broker … **not** the synchronized multi-leg replay" (`dispatch-1:44`); TB-I2, the engine that would be synchronized, is **BLOCKED** and never built (`dispatch-1:53, :110`); its study dir is absent. The "joint replay" and "canonical ledgers" T00 names are real but private artifacts of the seven-strategy campaign (`docs/adr/2026-09-05-tradeify-select-striker-expression-readmission.md:103`; `docs/methodology/lessons/methodology_lessons.md:1505`), built for the seven-entry menu and unverified for the selected four. That gap is what step 1 measures.
 
+*Correction, 2026-09-22 (T00 step-1 return; prior sentence preserved above):* "the only in-repo replay artifact is the TB-S2 emulator" and "never built" are stale. TB-I2's engine was built, relocated from `lab/` to `ops/c1_rail/qualification/` ([Phase 3 tooling plan](2026-09-15-phase3-qualification-tooling.md) line 5), so the `lab/analysis/c1/tradeify_book_replay_2026-09/` study dir is absent only by relocation. Scored in the [T00 step-1 return](../../briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#7-executor-return) §7.4, that package meets P1–P6 and fails P7, so the step-1 verdict is INSUFFICIENT. This corrects the grounds only; the ratified *Wording to adopt* and the operator ruling below are unchanged.
+
 **Wording to adopt.** "D-T00 TICKED for step 1 only. Step 1's producer test uses `simulate_path`'s definition of `intraday_low` — a per-day minimum-equity *excursion* from the day's opening equity, entries `<= 0`, unscaled (`core/mc/simulation.py:325–345`) — as a named acceptance criterion; a producer emitting absolute lows fails it. Step 1 states, per expression of the selected four, what the producer reproduces of integer sizing / ORB base-add / capacity / takeover. Step 2's pre-registration cites `2026-08-26-prop-survivor-scoring-prereg-v2.md` and either adopts it or states why the selected book falls outside it; no second pre-registration for the same falsifier. Condition 4 — the operator rules, before step 2, whether T00's screen is §4 falsifier evidence: if yes, its ceiling, tiers and dating follow the four-firm ADR §4 as frozen; if no, the falsifier needs its own dated re-MC before 2026-11-08 regardless of T00."
 
 **Operator ruling:** ADOPTED AS RECOMMENDED — operator, 2026-09-22, in session, verbatim: "Adopt all five as recommended." The *Wording to adopt* above is in force with the meaning this row defines.
@@ -188,8 +190,10 @@ grep -c "^\*\*Operator ruling:\*\* _(pending)_" docs/superpowers/plans/2026-09-2
 grep -c "^- \[x\] \*\*D-.*RULED 2026-09-22" docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md
 # The dual-executor record D-sequence cites; expect execution-slices :636 (acceptance) and :567 (continuation-2 return)
 grep -rn -i "dual-executor" docs/methodology/lessons/ docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md
-# Expect "No such file" until TB-I2 exists; a T00 step-1 return claiming an in-repo synchronized producer must change this
+# TB-I2's specified lab/ footprint: expect "No such file" (the engine was relocated, not abandoned; corrected 2026-09-22 per the T00 step-1 return)
 ls lab/analysis/c1/tradeify_book_replay_2026-09/ 2>&1
+# The relocated synchronized replay T00 step 1 scored (P1–P6 MET, P7 NOT MET); expect the BookReplay class and the runner's simulate_path call
+grep -n "^class BookReplay" ops/c1_rail/qualification/replay.py; grep -n "intraday_low=low" ops/c1_rail/qualification/runner.py
 # The intraday_low definition D-T00 binds to
 sed -n '325p;330,334p' core/mc/simulation.py
 ```
