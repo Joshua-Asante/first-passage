@@ -10,11 +10,13 @@ name: Qualification S2 supervision
 #
 # A dispatch with `cases` set is a labelled DIAGNOSTIC run (record scope
 # DIAGNOSTIC_SUBSET, refused by scripts/s2_run_evidence.py); the run-name says so
-# in `gh run list`, which scripts/guard_s2_runs.py reads to exempt it.
+# in `gh run list`, and it names the boundary mode ([s2] or [s3], matching
+# BOUNDARY_MODE's default below), which scripts/guard_s2_runs.py reads to exempt
+# diagnostics and to tell S2-only coverage from S3 coverage.
 run-name: >-
   ${{ inputs.cases != '' && inputs.cases != null
-      && format('S2 DIAGNOSTIC ({0})', inputs.cases)
-      || format('Qualification S2 supervision ({0})', github.ref_name) }}
+      && format('S2 DIAGNOSTIC [{0}] ({1})', inputs.mode || 's3', inputs.cases)
+      || format('Qualification S2 supervision [{0}] ({1})', inputs.mode || 's3', github.ref_name) }}
 on:
   workflow_dispatch:
     inputs:

@@ -12,7 +12,7 @@ OTHER = "b" * 40
 
 def run(**fields):
     base = {"databaseId": 1, "headSha": SHA, "status": "completed", "conclusion": "success",
-            "event": "pull_request", "displayTitle": "Qualification S2 supervision (x)"}
+            "event": "pull_request", "displayTitle": "Qualification S2 supervision [s3] (x)"}
     return {**base, **fields}
 
 
@@ -40,7 +40,8 @@ def test_push_allowed_when_no_pull_request_run_would_be_cancelled(runs):
     (run(conclusion="cancelled"), False),
     (run(conclusion="skipped"), False),
     (run(conclusion="failure", headSha=OTHER), False),          # different bytes
-    (run(conclusion="failure", displayTitle="S2 DIAGNOSTIC (deadline)"), False),
+    (run(conclusion="failure", displayTitle="S2 DIAGNOSTIC [s3] (deadline)"), False),
+    (run(conclusion="success", displayTitle="Qualification S2 supervision (x)"), False),  # no mode recorded
 ])
 def test_full_dispatch_refused_only_on_same_sha_live_or_definitive(prior, refused):
     assert (guard.dispatch_refusal(SHA, [prior], diagnostic=False) is not None) is refused
@@ -53,6 +54,33 @@ def test_diagnostic_dispatch_is_never_refused():
 def test_failed_run_refusal_points_at_root_cause_and_diagnostic_mode():
     reason = guard.dispatch_refusal(SHA, [run(conclusion="failure", databaseId=9)], diagnostic=False)
     assert "finding, not a re-roll" in reason and "cases=" in reason
+
+
+# S2 coverage is a strict subset of S3 coverage (S3 adds the four N1 nodes).
+@pytest.mark.parametrize("prior_mode,status,conclusion,requested,refused", [
+    ("s2", "completed", "success", "s3", False),   # an s2 pass never substitutes for s3
+    ("s2", "in_progress", None, "s3", False),      # nor does an s2 run in flight
+    ("s2", "completed", "success", "s2", True),
+    ("s3", "completed", "success", "s2", True),    # s3 already covers every s2 node
+    ("s3", "completed", "success", "s3", True),
+    ("s3", "in_progress", None, "s2", True),
+    ("s2", "completed", "failure", "s3", True),    # s3 re-runs every failed s2 node: a re-roll
+    ("s2", "completed", "failure", "s2", True),
+    ("s3", "completed", "failure", "s3", True),
+    ("s3", "completed", "failure", "s2", False),   # s2 isolates whether the failure is in N1
+])
+def test_dispatch_coverage_compares_requested_mode_with_prior_mode(prior_mode, status, conclusion, requested, refused):
+    prior = run(status=status, conclusion=conclusion,
+                displayTitle=f"Qualification S2 supervision [{prior_mode}] (feat)")
+    reason = guard.dispatch_refusal(SHA, [prior], diagnostic=False, mode=requested)
+    assert (reason is not None) is refused
+
+
+def test_s2_pass_does_not_block_s3_even_alongside_other_runs():
+    runs = [run(displayTitle="Qualification S2 supervision [s2] (feat)"),
+            run(conclusion="failure", displayTitle="S2 DIAGNOSTIC [s3] (n1)"),
+            run(conclusion="success", headSha=OTHER, displayTitle="Qualification S2 supervision [s3] (feat)")]
+    assert guard.dispatch_refusal(SHA, runs, diagnostic=False, mode="s3") is None
 
 
 # --- parsing ----------------------------------------------------------------
@@ -74,10 +102,13 @@ def test_push_destinations(command, expected):
 
 
 @pytest.mark.parametrize("command,expected", [
-    ("gh workflow run qualification-s2-supervision.yml --ref feat", ("feat", False)),
-    ("gh workflow run qualification-s2-supervision --ref=feat", ("feat", False)),
-    ("gh workflow run qualification-s2-supervision.yml -r feat -f cases='deadline and not oom'", ("feat", True)),
-    ("gh workflow run qualification-s2-supervision.yml --ref feat -f cases=", ("feat", False)),
+    ("gh workflow run qualification-s2-supervision.yml --ref feat", ("feat", False, "s3")),
+    ("gh workflow run qualification-s2-supervision --ref=feat", ("feat", False, "s3")),
+    ("gh workflow run qualification-s2-supervision.yml -r feat -f cases='deadline and not oom'", ("feat", True, "s3")),
+    ("gh workflow run qualification-s2-supervision.yml --ref feat -f cases=", ("feat", False, "s3")),
+    ("gh workflow run qualification-s2-supervision.yml --ref feat -f mode=s2", ("feat", False, "s2")),
+    ("gh workflow run qualification-s2-supervision.yml --field=mode=s2 --ref feat", ("feat", False, "s2")),
+    ("gh workflow run qualification-s2-supervision.yml -f mode=s2 -f cases=deadline", ("", True, "s2")),
     ("gh workflow run other.yml --ref feat", None),
     ("gh run list", None),
 ])
@@ -144,3 +175,45 @@ def test_pre_push_refuses_and_honours_override(live_pr_run, monkeypatch, capsys)
 def test_pre_push_ignores_branch_deletion_and_tags(live_pr_run):
     lines = f"(delete) {'0' * 40} refs/heads/feat {OTHER}\nrefs/tags/v1 {SHA} refs/tags/v1 {'0' * 40}\n"
     assert guard.pre_push(io.StringIO(lines)) == 0
+
+
+# Without --ref, gh dispatches the repository's default branch, not the local checkout's branch.
+@pytest.fixture
+def default_branch_main(monkeypatch):
+    calls = []
+    passed_on_main = [run(event="workflow_dispatch", displayTitle="Qualification S2 supervision [s3] (main)")]
+    monkeypatch.setattr(guard, "_default_branch", lambda: "main")
+    monkeypatch.setattr(guard, "_current_branch", lambda: "feat")
+    monkeypatch.setattr(guard, "_runs", lambda branch: calls.append(("runs", branch)) or (passed_on_main if branch == "main" else []))
+    monkeypatch.setattr(guard, "_remote_sha", lambda ref: calls.append(("sha", ref)) or SHA)
+    return calls
+
+
+def test_dispatch_without_ref_checks_the_default_branch(default_branch_main):
+    decision = hook("gh workflow run qualification-s2-supervision.yml")
+    assert decision["permissionDecision"] == "deny"
+    assert ("runs", "main") in default_branch_main and ("sha", "main") in default_branch_main
+    assert ("runs", "feat") not in default_branch_main
+
+
+def test_dispatch_without_ref_is_not_blocked_by_the_local_branchs_runs(monkeypatch):
+    monkeypatch.setattr(guard, "_default_branch", lambda: "main")
+    monkeypatch.setattr(guard, "_current_branch", lambda: "feat")
+    monkeypatch.setattr(guard, "_runs", lambda branch: [run()] if branch == "feat" else [])
+    monkeypatch.setattr(guard, "_remote_sha", lambda ref: SHA)
+    assert hook("gh workflow run qualification-s2-supervision.yml")["permissionDecision"] == "allow"
+
+
+def test_dispatch_without_ref_fails_open_when_default_branch_unknown(monkeypatch):
+    monkeypatch.setattr(guard, "_default_branch", lambda: "")
+    monkeypatch.setattr(guard, "_current_branch", lambda: "feat")
+    monkeypatch.setattr(guard, "_runs", lambda branch: [run()])
+    monkeypatch.setattr(guard, "_remote_sha", lambda ref: SHA)
+    assert hook("gh workflow run qualification-s2-supervision.yml")["permissionDecision"] == "allow"
+
+
+def test_hook_passes_requested_mode_through(monkeypatch):
+    monkeypatch.setattr(guard, "_runs", lambda branch: [run(displayTitle="Qualification S2 supervision [s2] (feat)")])
+    monkeypatch.setattr(guard, "_remote_sha", lambda ref: SHA)
+    assert hook("gh workflow run qualification-s2-supervision.yml --ref feat")["permissionDecision"] == "allow"
+    assert hook("gh workflow run qualification-s2-supervision.yml --ref feat -f mode=s2")["permissionDecision"] == "deny"

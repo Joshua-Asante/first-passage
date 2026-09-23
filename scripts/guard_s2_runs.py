@@ -12,10 +12,16 @@ Refusals:
     in progress. Dispatched runs (own concurrency group) are not cancelled by a
     push and are not counted.
   * **dispatch** — a full (non-`cases`) `gh workflow run qualification-s2-supervision`
-    on a SHA that already has an S2 run in flight, or a completed run that
-    passed (you already have the evidence) or failed (a failure on unchanged
-    code is a finding, not a re-roll). Cancelled/skipped/timed-out runs do not
-    count. `cases` diagnostic dispatches are never refused.
+    that adds no coverage on the dispatched SHA. Coverage is the boundary mode
+    in the run-name (`[s2]` = the S2 nodes; `[s3]` = S2 plus the N1 nodes, so
+    s3 ⊇ s2). A prior run in flight or passed refuses the request only if its
+    mode covers the requested one (an s2 pass never substitutes for s3); a
+    prior failure refuses it only if the request re-runs every failed-run node
+    (an s2 failure refuses s2 and s3; an s3 failure refuses s3 only — an s2
+    dispatch can isolate it). A run whose title names no mode is never treated
+    as covering anything. Cancelled/skipped/timed-out runs do not count. `cases`
+    diagnostic dispatches are never refused. Without `--ref`, `gh` dispatches the
+    repository's default branch, so that is the branch checked.
 
 Override: put `FP_S2_GUARD=off` in the command (Claude hook) or the environment
 (git hook) — for a deliberate cancel or a re-dispatch whose reason you can state.
@@ -44,11 +50,20 @@ IN_FLIGHT = {"queued", "in_progress", "waiting", "requested", "pending"}
 DEFINITIVE = {"success", "failure"}
 DIAGNOSTIC_TITLE = "S2 DIAGNOSTIC"
 OVERRIDE = "FP_S2_GUARD=off"
+DEFAULT_MODE = "s3"  # the workflow's `mode` default; pull_request runs use it too
+COVERAGE = {"s2": frozenset({"s2"}), "s3": frozenset({"s2", "s3"})}  # nodes-sets, s3 ⊇ s2
+_TITLE_MODE = re.compile(r"\[(s2|s3)\]")
 _SEGMENT = re.compile(r"&&|\|\||;|\||\n")
 
 
 def _is_diagnostic(run: dict) -> bool:
     return str(run.get("displayTitle", "")).startswith(DIAGNOSTIC_TITLE)
+
+
+def _run_mode(run: dict) -> str | None:
+    """The boundary mode a run's title records, or None when it names none."""
+    match = _TITLE_MODE.search(str(run.get("displayTitle", "")))
+    return match.group(1) if match else None
 
 
 def push_refusal(branch: str, runs: list[dict]) -> str | None:
@@ -63,25 +78,35 @@ def push_refusal(branch: str, runs: list[dict]) -> str | None:
             f"Deliberate cancel: prefix the command with {OVERRIDE}.")
 
 
-def dispatch_refusal(sha: str, runs: list[dict], *, diagnostic: bool) -> str | None:
-    """Reason to refuse a full S2 dispatch on `sha`, else None."""
-    if diagnostic or not sha:
+def dispatch_refusal(sha: str, runs: list[dict], *, diagnostic: bool, mode: str = DEFAULT_MODE) -> str | None:
+    """Reason to refuse a full `mode` dispatch on `sha`, else None."""
+    if diagnostic or not sha or mode not in COVERAGE:
         return None
-    same = [r for r in runs if r.get("headSha") == sha and not _is_diagnostic(r)]
-    live = [r for r in same if r.get("status") in IN_FLIGHT]
+    wanted = COVERAGE[mode]
+    same = [(r, COVERAGE[m]) for r in runs if r.get("headSha") == sha and not _is_diagnostic(r)
+            and (m := _run_mode(r)) is not None]
+    # In flight or passed: redundant only if the prior run already covers every requested node.
+    live = [r for r, had in same if r.get("status") in IN_FLIGHT and had >= wanted]
     if live:
-        return (f"S2 run {live[0].get('databaseId')} is already in flight on {sha[:12]}; a second "
-                f"full run on the same bytes adds nothing. Wait for it and read its artifact.")
-    done = [r for r in same if r.get("status") == "completed" and r.get("conclusion") in DEFINITIVE]
-    if not done:
+        return (f"S2 run {live[0].get('databaseId')} [{_run_mode(live[0])}] is already in flight on "
+                f"{sha[:12]} and covers [{mode}]; a second run on the same bytes adds nothing. "
+                f"Wait for it and read its artifact.")
+    done = [(r, had) for r, had in same if r.get("status") == "completed" and r.get("conclusion") in DEFINITIVE]
+    passed = [r for r, had in done if r.get("conclusion") == "success" and had >= wanted]
+    if passed:
+        run = passed[0]
+        return (f"S2 run {run.get('databaseId')} [{_run_mode(run)}] already passed on {sha[:12]} and "
+                f"covers [{mode}]; read its artifact (scripts/s2_run_evidence.py {run.get('databaseId')}) "
+                f"instead of re-running.")
+    # Failed: a re-roll only if the request re-runs every node of the failed run.
+    failed = [r for r, had in done if r.get("conclusion") == "failure" and had <= wanted]
+    if not failed:
         return None
-    run = done[0]
-    if run.get("conclusion") == "success":
-        return (f"S2 run {run.get('databaseId')} already passed on {sha[:12]}; read its artifact "
-                f"(scripts/s2_run_evidence.py {run.get('databaseId')}) instead of re-running.")
-    return (f"S2 run {run.get('databaseId')} already failed on {sha[:12]}. A failure on unchanged "
-            f"code is a finding, not a re-roll: root-cause it from the artifact (s2-linux-run §3), or "
-            f"iterate on one case with -f cases='<expr>'. Justified re-dispatch: prefix {OVERRIDE}.")
+    run = failed[0]
+    return (f"S2 run {run.get('databaseId')} [{_run_mode(run)}] already failed on {sha[:12]}, and "
+            f"[{mode}] re-runs all of its nodes. A failure on unchanged code is a finding, not a "
+            f"re-roll: root-cause it from the artifact (s2-linux-run §3), or iterate on one case with "
+            f"-f cases='<expr>'. Justified re-dispatch: prefix {OVERRIDE}.")
 
 
 # --- command parsing --------------------------------------------------------
@@ -129,25 +154,27 @@ def _git_push_branches(tokens: list[str]) -> list[str] | None:
     return branches
 
 
-def _gh_dispatch(tokens: list[str]) -> tuple[str, bool] | None:
-    """(ref, diagnostic) for `gh workflow run <S2 workflow> ...`, else None."""
+def _gh_dispatch(tokens: list[str]) -> tuple[str, bool, str] | None:
+    """(ref, diagnostic, mode) for `gh workflow run <S2 workflow> ...`, else None.
+
+    `ref` is "" when no --ref is given: gh then dispatches the default branch."""
     if len(tokens) < 4 or os.path.basename(tokens[0]) != "gh" or tokens[1:3] != ["workflow", "run"]:
         return None
     if tokens[3] not in (WORKFLOW, WORKFLOW.removesuffix(".yml"), "Qualification S2 supervision"):
         return None
-    ref, diagnostic, args = "", False, tokens[4:]
+    ref, fields, args = "", {}, tokens[4:]
     for i, arg in enumerate(args):
         value = args[i + 1] if i + 1 < len(args) else ""
         if arg in ("--ref", "-r"):
             ref = value
         elif arg.startswith("--ref="):
             ref = arg.split("=", 1)[1]
-        elif arg in ("-f", "-F", "--field", "--raw-field"):
-            if value.startswith("cases=") and value.split("=", 1)[1].strip():
-                diagnostic = True
-        elif re.match(r"(--field|--raw-field)=cases=\S", arg):
-            diagnostic = True
-    return ref, diagnostic
+        elif arg in ("-f", "-F", "--field", "--raw-field") and "=" in value:
+            key, _, field = value.partition("=")
+            fields[key] = field
+        elif (m := re.match(r"--(?:raw-)?field=([^=]+)=(.*)", arg)):
+            fields[m.group(1)] = m.group(2)
+    return ref, bool(fields.get("cases", "").strip()), fields.get("mode", DEFAULT_MODE)
 
 
 # --- gh / git access (fail open) --------------------------------------------
@@ -174,6 +201,15 @@ def _current_branch() -> str:
     return (out or "").strip()
 
 
+def _default_branch() -> str:
+    """The branch `gh workflow run` dispatches when no --ref is given."""
+    out = _run(["gh", "repo", "view", "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name"])
+    if out and out.strip():
+        return out.strip()
+    out = _run(["git", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"])
+    return (out or "").strip().removeprefix("origin/")
+
+
 def _remote_sha(ref: str) -> str:
     if re.fullmatch(r"[0-9a-f]{40}", ref):
         return ref
@@ -196,12 +232,12 @@ def refusal_for_command(command: str) -> str | None:
                     return reason
         dispatch = _gh_dispatch(tokens)
         if dispatch is not None:
-            ref, diagnostic = dispatch
-            ref = ref or _current_branch()
+            ref, diagnostic, mode = dispatch
+            ref = ref or _default_branch()  # never the local branch: gh dispatches the default one
             if diagnostic or not ref:
                 continue
             runs = _runs(ref)
-            reason = dispatch_refusal(_remote_sha(ref), runs, diagnostic=False) if runs else None
+            reason = dispatch_refusal(_remote_sha(ref), runs, diagnostic=False, mode=mode) if runs else None
             if reason:
                 return reason
     return None
