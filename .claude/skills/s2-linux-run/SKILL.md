@@ -45,7 +45,9 @@ A failure on unchanged code is a **finding, not flakiness**. Before any second d
 1. Identify the failing work's attempt: `boundary/linux-<attempt>-budget.json` and the case's own facts file.
 2. Pull its chain from `boundary/journal.sqlite` (tables `full_campaign_budgets`, `full_campaign_objects` roles `supervision_event_*`) — transitions, PROCESS/RESUMED/PAYLOAD_EXIT events, observation, recoveries, dispatches — and line it up against `journal.log` (systemd unit start/stop, containerd shim connect/disconnect), `kernel.log` (OOM), `systemd-units.log`.
 3. Compare timing against the last green run's same case (shim-connect → first PROCESS → RESUMED). Host speed differences are how the 2026-09-20 pre-exec resume race surfaced (59–77 ms vs 88–122 ms).
-4. State the root cause in one sentence with file:line, fix it, then dispatch once. If the evidence says test-only (an over-narrow predicate, a race-tolerant assertion), say so and fix the test — never relax a load-bearing assertion (`charge >= limits.cpu_ns`, zero skips, all nodes required).
+4. Reproduce it locally before touching Linux again: a fake-kernel/fake-store unit test that fails on the unfixed code is minutes, a full run is 30 (the #461 `BUDGET_UNCERTAIN` race, 1 run in 4 on identical code, reproduced deterministically this way).
+5. State the root cause in one sentence with file:line, fix it, then dispatch once. If the evidence says test-only (an over-narrow predicate, a race-tolerant assertion), say so and fix the test — never relax a load-bearing assertion (`charge >= limits.cpu_ns`, zero skips, all nodes required).
+For a case that flaked, the protocol that got S3 green: a `cases=` diagnostic subset of that case twice on the final bytes, then one full acceptance dispatch — never serial full re-rolls.
 Known-benign classes so far: `warm_service` `Slice==''` (unit GC within the same second — read unit facts before waiting for COMPLETED); the OOM/overrun cases legitimately end IN_DOUBT (guardian stop) or BUDGET_* (settle/timer) — both are accepted terminal sets.
 
 ## 4. Who may claim what
