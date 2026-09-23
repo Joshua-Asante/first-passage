@@ -229,3 +229,121 @@ def test_rerun_of_a_job_resolves_its_run(monkeypatch, flag):
     fake.views["101"] = fake.runs["feat"][0]
     assert decide(f"gh run rerun {flag}")
     assert decide("gh run rerun --job 9999") is None  # unknown job: fail open
+
+
+# --- review round 3 (f3fbc77): heredocs in substitutions, directories, inputs ----
+
+APOSTROPHE_COMMIT = "git commit -m \"$(cat <<'EOF'\nDon't push yet (really)\nEOF\n)\""
+
+
+def test_heredoc_commit_idiom_does_not_swallow_the_push(sh):  # pylint: disable=redefined-outer-name
+    live_pr(sh)
+    assert decide(f"{APOSTROPHE_COMMIT} && git push origin feat")
+
+
+def test_heredoc_commit_idiom_does_not_swallow_the_dispatch(sh):  # pylint: disable=redefined-outer-name
+    live_full(sh)
+    assert decide(f"{APOSTROPHE_COMMIT} && gh workflow run {WORKFLOW_FILE} --ref feat")
+
+
+@pytest.mark.parametrize("prefix", ['x=$(echo "a\\")b"); ', "grep x <<< \"$v\"\n", "cat <<\\EOF\nbody\nEOF\n"])
+def test_quoting_edge_cases_keep_the_following_command(sh, prefix):  # pylint: disable=redefined-outer-name
+    live_pr(sh)
+    assert decide(f"{prefix}git push origin feat"), prefix
+
+
+@pytest.mark.parametrize("target", ['"$(git rev-parse --show-toplevel)"', '"$REPO"', "`pwd`"])
+def test_unknowable_cd_and_dash_c_targets_keep_the_current_directory(sh, target):  # pylint: disable=redefined-outer-name
+    live_pr(sh)
+    assert decide(f"cd {target} && git push origin feat")
+    assert decide(f"git -C {target} push origin feat")
+
+
+def test_tilde_directory_is_expanded(monkeypatch):
+    monkeypatch.setenv("HOME", "/home/me")
+    assert guard._join_dir("/repo", "~/wt") == "/home/me/wt"  # pylint: disable=protected-access
+
+
+def test_out_of_range_ansi_c_escape_does_not_crash(sh):  # pylint: disable=redefined-outer-name
+    live_pr(sh)
+    assert decide("echo $'\\U00110000'; git push origin feat")
+
+
+def test_file_inputs_are_regular_files_only_and_bounded(sh, tmp_path):  # pylint: disable=redefined-outer-name
+    big = tmp_path / "big.txt"
+    big.write_text(" " * 70000 + "deadline", encoding="utf-8")
+    sh.current[str(tmp_path).replace("\\", "/")] = "feat"
+    live_full(sh)
+    assert decide(f"{DISPATCH} -F cases=@big.txt", cwd=str(tmp_path)) is None  # too big: unknown
+    assert decide(f"{DISPATCH} -F cases=@/dev/stdin", cwd=str(tmp_path)) is None  # not ours to read
+    assert decide(f"{DISPATCH} -F cases=@.", cwd=str(tmp_path)) is None  # a directory
+
+
+def test_rerun_job_ignores_the_positional_run_id(monkeypatch):
+    fake = JobShell({"5555": 101})
+    fake.tips = {"feat": X, "main": Y}
+    monkeypatch.setattr(guard, "_run", fake)
+    fake.runs["feat"] = [dispatch_run(conclusion="failure", rid=101)]
+    fake.views["101"] = fake.runs["feat"][0]
+    assert decide("gh run rerun 999 --job 5555")
+
+
+@pytest.mark.parametrize("repo", ["git@github.com:Joshua-Asante/first-passage.git",
+                                  "ssh://git@github.com/Joshua-Asante/first-passage",
+                                  "ssh://git@github.com:22/Joshua-Asante/first-passage.git"])
+def test_ssh_and_scp_repo_forms_build_a_valid_api_path(sh, repo):  # pylint: disable=redefined-outer-name
+    sh.runs["feat"] = [dispatch_run(mode="s3", conclusion="success")]
+    assert decide(f"gh -R {repo} workflow run {WORKFLOW_FILE} --ref feat")
+    api = [cmd for cmd, _ in sh.calls if "api" in cmd[1:4]]
+    assert api and all(f"repos/{OWNER}/commits/feat" in cmd and "--hostname" not in cmd for cmd in api)
+
+
+def test_env_wrapper_gh_repo_is_carried(sh):  # pylint: disable=redefined-outer-name
+    live_full(sh)
+    assert decide(f"env GH_REPO={OWNER} gh workflow run {WORKFLOW_FILE} --ref feat")
+    assert set(gh_repos(sh)) == {OWNER}
+
+
+@pytest.mark.parametrize("flag,refused", [("--json=false", True), ("--json=true", False), ("--json", False)])
+def test_json_flag_is_a_pflag_bool(sh, flag, refused):  # pylint: disable=redefined-outer-name
+    live_full(sh)
+    assert (decide(f"{DISPATCH} {flag}") is not None) is refused
+
+
+def test_double_dash_ends_the_flags(sh):  # pylint: disable=redefined-outer-name
+    sh.runs["feat"] = [dispatch_run(mode="s3", conclusion="success")]
+    assert decide(f"{DISPATCH} -- -f mode=s2")  # gh ignores words after --: s3 dispatched
+    sh.runs["feat"] = []
+    sh.runs["main"] = [dispatch_run("main", sha=Y, mode="s3", conclusion="success")]
+    assert decide(f"gh workflow run -- {WORKFLOW_FILE} --ref feat")  # default branch, not feat
+
+
+@pytest.mark.parametrize("command", ["sudo -u me git push origin feat", "time -p git push origin feat",
+                                     "sudo -- git push origin feat", "nice -n 5 git push origin feat"])
+def test_wrapper_options_are_skipped(sh, command):  # pylint: disable=redefined-outer-name
+    live_pr(sh)
+    assert decide(command), command
+
+
+def test_empty_quoted_words_are_kept(sh):  # pylint: disable=redefined-outer-name
+    live_full(sh)
+    assert decide(f"gh -R '' workflow run {WORKFLOW_FILE} --ref feat")
+
+
+def test_partial_substitutions_are_unknowable_not_the_current_branch(sh):  # pylint: disable=redefined-outer-name
+    live_pr(sh)
+    assert decide('git push origin "HEAD:refs/heads/$(git branch --show-current)"')
+    assert decide('git push origin "$(git branch --show-current)-backup"') is None
+
+
+def test_update_branch_records_its_push_for_a_later_dispatch(sh):  # pylint: disable=redefined-outer-name
+    sh.pr_heads["462"] = "feat"
+    sh.runs["feat"] = [dispatch_run(mode="s3", conclusion="success")]
+    assert decide(f"gh pr update-branch 462 && gh workflow run {WORKFLOW_FILE} --ref feat") is None
+
+
+def test_no_cwd_uses_the_process_directory(sh, monkeypatch):  # pylint: disable=redefined-outer-name
+    monkeypatch.chdir("/")
+    sh.current["/"] = "feat"
+    live_pr(sh)
+    assert guard.refusal_for_command("git push origin HEAD") is not None

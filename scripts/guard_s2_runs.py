@@ -52,6 +52,7 @@ import os
 import posixpath
 import re
 import subprocess
+import stat
 import sys
 
 WORKFLOW_FILE = "qualification-s2-supervision.yml"
@@ -68,7 +69,7 @@ SKIP_CI_MARKERS = ("[skip ci]", "[ci skip]", "[no ci]", "[skip actions]",
 # message unknowable at PreToolUse time, voiding the skip-CI exemption (D3).
 TIP_MOVERS = frozenset({"commit", "pull", "merge", "rebase", "cherry-pick",
                         "revert", "am", "reset"})
-WRAPPERS = frozenset({"command", "builtin", "exec", "nohup", "time", "sudo", "!",
+WRAPPERS = frozenset({"command", "builtin", "exec", "nohup", "nice", "time", "sudo", "!",
                       "if", "then", "elif", "else", "while", "until", "do",
                       "done", "fi"})
 SHELLS = frozenset({"bash", "sh", "zsh", "dash", "ksh"})
@@ -225,17 +226,44 @@ def _has_skip_ci(message: str) -> bool:
 # --- tokenizer (D14) ----------------------------------------------------------
 
 def _matching_paren(text: str, start: int) -> int:
-    """Index of the ')' matching the '$(' whose body starts at `start`."""
+    """Index of the ')' matching the '$(' whose body starts at `start`.
+
+    Shell-aware, so a quote, `(` or `)` inside a heredoc body, a comment or an
+    escaped character does not unbalance the scan (a heredoc in `$(cat <<'EOF'
+    … EOF)` is the standard commit-message idiom).
+    """
     depth, quote, i = 1, "", start
+    pending: list[str] = []  # heredoc delimiters whose bodies start at the next newline
     while i < len(text):
         ch = text[i]
         if quote:
+            if ch == "\\" and quote == '"':
+                i += 2
+                continue
             if ch == quote:
                 quote = ""
-        elif ch in "'\"":
-            quote = ch
-        elif ch == "\\":
             i += 1
+            continue
+        if ch == "\\":
+            i += 2
+            continue
+        if ch in "'\"":
+            quote = ch
+        elif ch == "#" and (i == start or text[i - 1] in " \t\n;|&("):
+            newline = text.find("\n", i)
+            i = len(text) if newline < 0 else newline
+            continue
+        elif text.startswith("<<", i):
+            i, delimiter = _consume_redirection(text, i)
+            if delimiter:
+                pending.append(delimiter)
+            continue
+        elif ch == "\n" and pending:
+            i += 1
+            for delimiter in pending:
+                i = _heredoc_end(text, i, delimiter)
+            pending.clear()
+            continue
         elif ch == "(":
             depth += 1
         elif ch == ")":
@@ -246,25 +274,43 @@ def _matching_paren(text: str, start: int) -> int:
     return len(text)
 
 
+def _skip_word(text: str, i: int) -> int:
+    """Index after the shell word at text[i] (quotes and escapes honoured)."""
+    quote = ""
+    while i < len(text):
+        ch = text[i]
+        if quote:
+            if ch == "\\" and quote == '"':
+                i += 2
+                continue
+            if ch == quote:
+                quote = ""
+        elif ch == "\\":
+            i += 1
+        elif ch in "'\"":
+            quote = ch
+        elif ch in " \t\n;|&()<>":
+            return i
+        i += 1
+    return i
+
+
 def _consume_redirection(text: str, i: int) -> tuple[int, str]:
     """Skip the redirection starting at text[i]; a heredoc returns its delimiter."""
-    if text[i:i + 2] == "<<":
+    if text[i:i + 2] == "<<" and text[i + 2:i + 3] != "<":
         i += 2 + (1 if text[i + 2:i + 3] == "-" else 0)
         while i < len(text) and text[i] in " \t":
             i += 1
-        word = ""
-        while i < len(text) and text[i] not in " \t\n;|&()":
-            word += text[i]
-            i += 1
-        return i, word.strip("'\"")
-    i += 1
+        end = _skip_word(text, i)
+        # Quoting or escaping any part of the delimiter only disables expansion.
+        word = text[i:end].replace("'", "").replace('"', "").replace("\\", "")
+        return end, word
+    i += 3 if text[i:i + 3] == "<<<" else 1  # a here-string's word is data
     while i < len(text) and text[i] in "<>&":
         i += 1
     while i < len(text) and text[i] in " \t":
         i += 1
-    while i < len(text) and text[i] not in " \t\n;|()&":
-        i += 1
-    return i, ""
+    return _skip_word(text, i), ""
 
 
 def _heredoc_end(text: str, i: int, delimiter: str) -> int:
@@ -301,7 +347,7 @@ def _ansi_c(text: str, i: int, buf: list[str]) -> int:
         width = {"x": 2, "u": 4, "U": 8}.get(esc)
         if width:
             digits = re.match(r"[0-9a-fA-F]{1,%d}" % width, text[i + 2:])
-            if digits:
+            if digits and int(digits.group(0), 16) <= 0x10FFFF:
                 buf.append(chr(int(digits.group(0), 16)))
                 i += 2 + len(digits.group(0))
                 continue
@@ -337,10 +383,13 @@ def _segments(command: str) -> list[list[str]]:
     buf: list[str] = []
     subs: list[list[str]] = []  # substitution bodies, emitted before their command
 
+    quoted_word = [False]  # the current word had quotes, so it exists even if empty
+
     def flush_token() -> None:
-        if buf:
+        if buf or quoted_word[0]:
             tokens.append("".join(buf))
             buf.clear()
+        quoted_word[0] = False
 
     def flush_segment() -> None:
         flush_token()
@@ -366,6 +415,7 @@ def _segments(command: str) -> list[list[str]]:
 
     def quoted(i: int) -> int:
         """Scan a quoted region into the token buffer; returns the next index."""
+        quoted_word[0] = True
         quote = text[i]
         i += 1
         while i < len(text):
@@ -399,10 +449,9 @@ def _segments(command: str) -> list[list[str]]:
             start = i
         else:
             return None
-        nonlocal pending_heredoc
         end, delimiter = _consume_redirection(text, start)
         if delimiter:
-            pending_heredoc = delimiter
+            pending_heredocs.append(delimiter)
         return end
 
     def separator_step(i: int) -> int | None:
@@ -417,7 +466,7 @@ def _segments(command: str) -> list[list[str]]:
         return i + 1
 
     i = 0
-    pending_heredoc = ""
+    pending_heredocs: list[str] = []
     while i < len(text):
         ch = text[i]
         if ch in " \t":
@@ -427,9 +476,10 @@ def _segments(command: str) -> list[list[str]]:
         if ch in "\n;":
             flush_token()
             i += 1
-            if ch == "\n" and pending_heredoc:
-                i = _heredoc_end(text, i, pending_heredoc)
-                pending_heredoc = ""
+            if ch == "\n" and pending_heredocs:
+                for delimiter in pending_heredocs:
+                    i = _heredoc_end(text, i, delimiter)
+                pending_heredocs.clear()
             flush_segment()
             continue
         if ch == "#" and not buf:
@@ -437,6 +487,7 @@ def _segments(command: str) -> list[list[str]]:
             i = len(text) if newline < 0 else newline
             continue
         if ch == "$" and text[i + 1:i + 2] == "'":
+            quoted_word[0] = True
             i = _ansi_c(text, i + 2, buf)
             continue
         if ch == "$" and text[i + 1:i + 2] == '"':
@@ -488,13 +539,18 @@ def _override_on_segment(tokens: list[str]) -> bool:
 
 
 def _leading_gh_repo(tokens: list[str]) -> str | None:
-    """GH_REPO set by the segment's own leading assignments, if any."""
-    value = None
-    for token in tokens:
-        if not _is_assignment(token):
-            break
-        if token.startswith("GH_REPO="):
-            value = token.split("=", 1)[1] or None
+    """GH_REPO set for the segment by its leading assignments or an `env` prefix."""
+    value, i = None, 0
+    while i < len(tokens) and _is_assignment(tokens[i]):
+        if tokens[i].startswith("GH_REPO="):
+            value = tokens[i].split("=", 1)[1] or None
+        i += 1
+    if i < len(tokens) and os.path.basename(tokens[i]).removesuffix(".exe") == "env":
+        for token in tokens[i + 1:]:
+            if token.startswith("GH_REPO="):
+                value = token.split("=", 1)[1] or None
+            elif not (_is_assignment(token) or token.startswith("-")):
+                break
     return value
 
 
@@ -509,6 +565,23 @@ def _after_env(tokens: list[str]) -> list[str]:
     rest = tokens[1:]
     while rest and (_is_assignment(rest[0]) or rest[0].startswith("-")):
         rest = rest[2:] if rest[0] in ("-u", "--unset") and len(rest) > 1 else rest[1:]
+    return rest
+
+
+_WRAPPER_VALUE_LETTERS = {"sudo": "ughpCDrtTU", "time": "fo", "nice": "n", "exec": "a"}
+
+
+def _after_options(tokens: list[str], value_letters: str) -> list[str]:
+    """The words after a wrapper and its options (`sudo -u me`, `time -p`)."""
+    rest = tokens[1:]
+    while rest and rest[0].startswith("-") and rest[0] != "-":
+        option = rest[0]
+        if option == "--":
+            rest = rest[1:]
+            break
+        takes_value = (not option.startswith("--") and option[-1] in value_letters) \
+            or option in ("--user", "--group", "--host", "--prompt", "--chdir")
+        rest = rest[2:] if takes_value and len(rest) > 1 else rest[1:]
     return rest
 
 
@@ -539,7 +612,7 @@ def _expand(tokens: list[str]) -> list[list[str]]:
             work = _after_timeout(work)
             continue
         if base in WRAPPERS:
-            work = work[1:]
+            work = _after_options(work, _WRAPPER_VALUE_LETTERS.get(base, ""))
             continue
         break
     if work:
@@ -548,9 +621,16 @@ def _expand(tokens: list[str]) -> list[list[str]]:
 
 
 def _join_dir(base: str, target: str) -> str:
-    """Resolve a `cd`/`-C` target against the hook's directory."""
-    if not target:
+    """Resolve a `cd`/`-C` target against the hook's directory.
+
+    `~` is expanded; a target built from a substitution or variable cannot be
+    known here, so the directory stays as it was (usually the same checkout)
+    rather than becoming a path that does not exist (which would fail open).
+    """
+    if not target or "$" in target or "`" in target:
         return base
+    if target.startswith("~"):
+        target = os.path.expanduser(target)
     if target.startswith("/") or target.startswith("\\\\") \
             or re.match(r"^[A-Za-z]:[\\/]", target):
         return posixpath.normpath(target.replace("\\", "/"))
@@ -617,6 +697,13 @@ def _push_specs(args: list[str]) -> tuple[str, list[tuple[str, str]]]:
     return "specs", specs
 
 
+def _whole_substitution(word: str) -> bool:
+    """Whether `word` is exactly one `$(…)` or backquote substitution."""
+    if word.startswith("`"):
+        return len(word) > 1 and word.endswith("`") and "`" not in word[1:-1]
+    return word.startswith("$(") and _matching_paren(word, 2) == len(word) - 1
+
+
 def _resolve_specs(specs: list[tuple[str, str | None]], dir_now: str) -> list[tuple[str, str | None]]:
     """Map push specs to concrete (branch, tip-source); unknown ones are skipped.
 
@@ -627,13 +714,13 @@ def _resolve_specs(specs: list[tuple[str, str | None]], dir_now: str) -> list[tu
     resolved: list[tuple[str, str | None]] = []
     current, have_current = "", False
     for destination, source in specs:
-        refers_to_current = destination in ("", "HEAD") \
-            or str(destination).startswith(("$(", "`"))
+        destination = str(destination).removeprefix("refs/heads/")
+        refers_to_current = destination in ("", "HEAD") or _whole_substitution(destination)
         if refers_to_current and not have_current:
             current, have_current = _current_branch(dir_now), True
-        branch = current if refers_to_current else str(destination)
-        if not branch or branch.startswith("$"):
-            continue
+        branch = current if refers_to_current else destination
+        if not branch or "$" in branch or "`" in branch:
+            continue  # built from a variable or a partial substitution: unknowable
         branch = branch.removeprefix("refs/heads/")
         if source in ("", "HEAD"):
             if not have_current:
@@ -654,6 +741,7 @@ def _is_workflow(selector: str) -> bool:
 # these values, so a leaf's flags may stand before the group or leaf word (F30).
 _GH_VALUE_FLAGS = frozenset({"-R", "--repo", "-r", "--ref", "-f", "-F", "--field",
                              "--raw-field", "-j", "--job"})
+_PFLAG_TRUE = frozenset({"1", "t", "T", "true", "TRUE", "True"})
 UNKNOWN = object()  # an input the guard cannot read (`-F key=@-`, an unreadable file; D10)
 
 
@@ -699,6 +787,8 @@ def _flag_values(rest: list[str], short: str, long: str) -> list[tuple[int, str]
     found, i = [], 0
     while i < len(rest):
         arg = rest[i]
+        if arg == "--":
+            break
         if arg in (short, long) and i + 1 < len(rest):
             found.append((i, rest[i + 1]))
             i += 2
@@ -758,6 +848,8 @@ def _dispatch_fields(rest: list[str]) -> dict:
     i = 0
     while i < len(rest):
         arg = rest[i]
+        if arg == "--":
+            break
         following = rest[i + 1] if i + 1 < len(rest) else ""
         if arg in ("-f", "-F", "--field", "--raw-field"):
             if "=" in following:
@@ -793,7 +885,9 @@ def _parse_dispatch(tokens: list[str]) -> dict | None:
     selector = next(iter(_positionals(rest)), None)
     if selector is None or not _is_workflow(selector):
         return None
-    json_inputs = any(arg == "--json" or arg.startswith("--json=") for arg in rest)
+    flags = rest[:rest.index("--")] if "--" in rest else rest
+    json_inputs = any(arg == "--json" or arg.split("=", 1)[1] in _PFLAG_TRUE
+                      for arg in flags if arg == "--json" or arg.startswith("--json="))
     return {"ref": refs[-1][1] if refs else "", "fields": _dispatch_fields(rest),
             "json": json_inputs, "repo": _repo_of(rest)}
 
@@ -815,8 +909,8 @@ def _parse_update_branch(tokens: list[str]) -> tuple[str | None, str | None] | N
     if command is None or command[:2] != ("pr", "update-branch"):
         return None
     rest = command[2]
-    number = next((t for t in _positionals(rest) if t.isdigit()), None)
-    return number, _repo_of(rest)
+    selector = next(iter(_positionals(rest)), None)  # number, URL or branch
+    return selector, _repo_of(rest)
 
 
 # --- gh / git access (fail open) ----------------------------------------------
@@ -903,7 +997,10 @@ def _default_branch(repo: str | None, cwd: str | None) -> str:
 
 def _api_repo(repo: str) -> tuple[list[str], str]:
     """(`--hostname` args, OWNER/REPO) for a `-R` value: [HOST/]OWNER/REPO or a URL."""
-    text = re.sub(r"^[a-z]+://", "", repo.strip()).removesuffix(".git").strip("/")
+    text = re.sub(r"^[a-z+]+://", "", repo.strip())
+    text = re.sub(r"^[^@/]+@", "", text)  # ssh user (git@host:owner/repo)
+    text = re.sub(r"^([^/:]+):(\d+/)?", r"\1/", text)  # scp host:owner/repo, host:port/
+    text = text.removesuffix(".git").strip("/")
     parts = [part for part in text.split("/") if part]
     host = parts[-3] if len(parts) >= 3 else ""
     owner_repo = "/".join(parts[-2:])
@@ -972,9 +1069,10 @@ def _push_reason(specs: list[tuple[str, str | None]], repo: str | None,
 
 def _resolve_ref(ref: str, repo: str | None, dir_now: str) -> str:
     """The branch a --ref token names; no --ref means the default branch (D7)."""
-    if ref.startswith("$(") or ref.startswith("`"):
+    ref = ref.removeprefix("refs/heads/")
+    if _whole_substitution(ref):
         return _current_branch(dir_now).removeprefix("refs/heads/")
-    if ref.startswith("$"):
+    if "$" in ref or "`" in ref:
         return ""
     if ref:
         return ref.removeprefix("refs/heads/")
@@ -988,11 +1086,17 @@ def _input_value(value, dir_now: str):
     if str(value) in ("", "-"):
         return UNKNOWN  # stdin (or nothing): unknowable before the command runs
     path = _join_dir(dir_now or ".", str(value))
+    limit = 1 << 16
     try:
+        if not stat.S_ISREG(os.stat(path).st_mode):
+            return UNKNOWN  # a FIFO, /dev/stdin or a directory: gh's read, not ours
         with open(path, "rb") as handle:
-            return handle.read(1 << 16).decode("utf-8", errors="replace")
-    except OSError:
+            data = handle.read(limit + 1)
+    except (OSError, ValueError):
         return UNKNOWN
+    if len(data) > limit:
+        return UNKNOWN
+    return data.decode("utf-8", errors="replace")
 
 
 def _dispatch_reason(parsed: dict, dir_now: str, pushed: list[str]) -> str | None:
@@ -1079,13 +1183,18 @@ def _gh_segment(tokens: list[str], state: dict, guarded: bool,
     if rerun is not None:
         run_id, repo, job = rerun
         repo = repo or default_repo
-        if not run_id and job:
+        if job:  # gh reruns the job's own run and ignores any run-id argument
             run_id = _job_run_id(repo, job, state["dir"])
         return _rerun_reason(run_id, repo, state["dir"]) if guarded else None
     update = _parse_update_branch(tokens)
     if update is not None:
-        return _update_branch_reason(update[0], update[1] or default_repo,
-                                     state["dir"]) if guarded else None
+        repo = update[1] or default_repo
+        head = _pr_head_branch(repo, update[0], state["dir"])
+        if head:
+            state["pushed"].append(head)
+        if not guarded or not head:
+            return None
+        return _push_reason([(head, None)], repo, state["dir"], trust_skip_ci=False)
     return None
 
 
@@ -1115,7 +1224,7 @@ def _eval_segment(tokens: list[str], state: dict, self_override: bool,
 
 def refusal_for_command(command: str, cwd: str | None = None) -> str | None:
     """Reason to refuse `command` run from `cwd`, or None when it may run."""
-    state = {"dir": (cwd or "").replace("\\", "/"), "pushed": [],
+    state = {"dir": (cwd or os.getcwd()).replace("\\", "/"), "pushed": [],
              "mover": False, "export_override": False,
              "gh_repo": os.environ.get("GH_REPO") or None}
     for raw in _segments(command):
