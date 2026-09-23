@@ -20,7 +20,8 @@ import json
 from ..contract import canonical_json_bytes as encoded, parse_canonical_json
 from .campaign_budget import integer, limits as parse_limits, validate_work_id
 from .campaign_result import (REFUSED_BUDGET_STATES, SEAL_ELIGIBLE_STATE, SEAL_PHASE,
-                              SEALED_PASS, ResultStore, parse_campaign_result)
+                              SEALED_PASS, UNIT_STOP_GRACE_NS, ResultStore,
+                              parse_campaign_result, unit_authority, unit_exited)
 from .protocol import digest, fields, identity, sha256
 
 SEAL_INTENT_SCHEMA = 'qualification_campaign_seal_intent/v1'
@@ -520,13 +521,20 @@ def run_seal_unit(context, campaigns, runtime, state, work, enrollment, manifest
                                    permit['token'], supervisor.observe_campaign_clock)
     group = supervisor._scope_path(runtime.parent, enrollment['scopes']['payload_slice']) / unit
     seen = set()
+    committed = False
     while True:
         current = parse_canonical_json(seals.result_state_bytes(state['attempt_id']),
                                        label='current seal authority')
-        supervisor._assert_authority(current)
-        if not group.exists() or supervisor._kernel_pairs(
-                supervisor._read_counter(group / 'cgroup.events')).get('populated') == 0:
+        if not committed:
+            committed = unit_authority(current, SEAL_PHASE)
+        if unit_exited(supervisor, group):
             break
+        if committed:
+            if (supervisor.clock(supervisor.observe_campaign_clock())['boottime_ns']
+                    >= deadline + UNIT_STOP_GRACE_NS):
+                break
+            time.sleep(.2)
+            continue
         for pid_text in supervisor._payload_processes(group):
             if pid_text in seen:
                 continue

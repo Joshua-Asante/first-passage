@@ -83,6 +83,37 @@ SEALED_PASS = 'SEALED_PASS'
 # land, the commit states themselves after the enum seam.
 COMMIT_PREDECESSOR_STATES = F3_PREDECESSOR_STATES + ('N2_READY',)
 SEAL_COMMIT_STATES = (SEALED_PASS,)
+# Twice the stop timeout g5_unit_spec gives both units (TimeoutStopUSec, 1 s):
+# how long past its own deadline a committed unit is awaited before the loop
+# observes what it sees (#461's bound).
+UNIT_STOP_GRACE_NS = 2 * 1_000_000 * 1000
+
+
+def unit_authority(current, phase):
+    """The RESULT/SEAL guardian loop's authority check; True once committed.
+
+    S3's ``_assert_authority`` admits only PROVISIONAL/BOUND, but this work
+    runs from the statistical state its commit rides (COMMIT_PREDECESSOR_STATES;
+    SEAL from the committed PASS outcome). The work's own commit state ends
+    identity supervision, not the wait for the unit's exit: the commit can land
+    while the driver still returns, and a populated slice has no final CPU
+    sample (#461). Any other state, or pending recovery/dispatch, stops
+    supervision as before.
+    """
+    from .campaign_budget import recovery_pending, dispatch_pending
+    commit_states = SEAL_COMMIT_STATES if phase == SEAL_PHASE else RESULT_OUTCOME_STATES
+    if current['state'] in commit_states and current['validity'] == 'VALID':
+        return True
+    if recovery_pending(current):
+        raise ValueError('campaign recovery pending')
+    if dispatch_pending(current):
+        raise ValueError('campaign dispatch pending')
+    live = ('PROVISIONAL', 'BOUND') + COMMIT_PREDECESSOR_STATES
+    if phase == SEAL_PHASE:
+        live += (SEAL_ELIGIBLE_STATE,)
+    if current['state'] not in live or current['validity'] != 'VALID':
+        raise ValueError('campaign is terminal or invalidated')
+    return False
 # The S7 eligibility this family exposes: only a committed PASS outcome.
 SEAL_ELIGIBLE_STATE = 'RESULT_COMMITTED_PASS'
 
@@ -1239,6 +1270,17 @@ class ResultStore:
 # N1 G5 unit is (the seam maps manifest role 'result_g5' to this function).
 
 
+def unit_exited(supervisor, group):
+    """True once the unit's cgroup is empty or gone; systemd may remove a
+    stopped transient unit's cgroup between the existence check and the read,
+    and that removal is itself the exit (#461's _unit_cgroup_exited)."""
+    try:
+        return supervisor._kernel_pairs(
+            supervisor._read_counter(group / 'cgroup.events')).get('populated') == 0
+    except FileNotFoundError:
+        return True
+
+
 def run_result_g5(context, campaigns, runtime, state, work, enrollment, manifest):
     """Supervise the metered result unit under the work's payload slice.
 
@@ -1272,13 +1314,20 @@ def run_result_g5(context, campaigns, runtime, state, work, enrollment, manifest
                                    permit['token'], supervisor.observe_campaign_clock)
     group = supervisor._scope_path(runtime.parent, enrollment['scopes']['payload_slice']) / unit
     seen = set()
+    committed = False
     while True:
         current = parse_canonical_json(results.result_state_bytes(state['attempt_id']),
                                        label='current result authority')
-        supervisor._assert_authority(current)
-        if not group.exists() or supervisor._kernel_pairs(
-                supervisor._read_counter(group / 'cgroup.events')).get('populated') == 0:
+        if not committed:
+            committed = unit_authority(current, RESULT_PHASE)
+        if unit_exited(supervisor, group):
             break
+        if committed:
+            if (supervisor.clock(supervisor.observe_campaign_clock())['boottime_ns']
+                    >= deadline + UNIT_STOP_GRACE_NS):
+                break
+            time.sleep(.2)
+            continue
         for pid_text in supervisor._payload_processes(group):
             if pid_text in seen:
                 continue
