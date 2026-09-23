@@ -5,12 +5,17 @@ and frozen by SHA-256 in that card: the worker makes these pass without editing 
 file. Every gh/git call is faked at the one seam the card requires,
 ``guard._run(cmd: list[str], cwd: str | None = None) -> str | None``, and the fake
 answers only the flags real gh/git would honour (requested --json fields, --limit,
---branch, --head), so a call that drops a flag gets the answer real gh would give.
+--branch, --workflow, --event, --commit, --status, --head, --state), so a call that drops
+a flag gets the answer real gh would give. Its --jq supports dotted paths on objects
+only: read lists with --json and parse them. Directory arguments are compared as POSIX
+paths with any drive letter dropped, so the suite behaves the same on Windows.
 The finding numbers (F1..F28) refer to the card's §3 table.
 """
 import io
 import json
+import ntpath
 import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -31,6 +36,7 @@ REPO = "/repo"
 WORKFLOW_NAME = "Qualification S2 supervision"
 WORKFLOW_FILE = "qualification-s2-supervision.yml"
 WORKFLOW_ID = "362153971"
+OTHER_WORKFLOW_ID = 111111111
 OVERRIDE = "FP_S2_GUARD=off"
 
 
@@ -47,6 +53,11 @@ def _opt(cmd, *names):
             if len(name) == 2 and arg.startswith(name) and len(arg) > 2 and not arg.startswith("--"):
                 return arg[2:].removeprefix("=")
     return None
+
+
+def _posix(path):
+    """A directory as the fake keys it: POSIX separators, no drive letter (Windows-safe)."""
+    return posixpath.normpath(ntpath.splitdrive(str(path))[1].replace("\\", "/"))
 
 
 def _jq(value, expr):
@@ -107,6 +118,10 @@ class FakeShell:
             workflow = _opt(cmd, "--workflow", "-w")
             limit = int(_opt(cmd, "--limit", "-L") or 20)
             runs = [r for r in self.runs.get(branch, [])] if branch else [r for v in self.runs.values() for r in v]
+            event, commit, status = _opt(cmd, "--event", "-e"), _opt(cmd, "--commit", "-c"), _opt(cmd, "--status", "-s")
+            runs = [r for r in runs if (event is None or r["event"] == event)
+                    and (commit is None or r["headSha"] == commit)
+                    and (status is None or status in (r["status"], r["conclusion"]))]
             if workflow not in (WORKFLOW_FILE, WORKFLOW_NAME, WORKFLOW_ID):
                 runs = runs + [decoy_run(branch or "main")]
             runs = sorted(runs, key=lambda r: r["createdAt"], reverse=True)[:limit]
@@ -120,8 +135,10 @@ class FakeShell:
                 return None
             head = _opt(cmd, "--head", "-H")
             state = _opt(cmd, "--state", "-s") or "open"
-            numbers = self.open_prs.get(head, []) if state == "open" else []
-            return _emit(cmd, [{"number": n} for n in numbers])
+            prs = [{"number": n, "headRefName": b, "state": "OPEN"}
+                   for b, numbers in self.open_prs.items() for n in numbers
+                   if head is None or b == head]
+            return _emit(cmd, prs if state in ("open", "all") else [])
         if {"pr", "view"} <= words:
             number = next((c for c in cmd[3:] if c.isdigit()), None)
             head = self.pr_heads.get(number)
@@ -133,11 +150,18 @@ class FakeShell:
                                "nameWithOwner": "Joshua-Asante/first-passage"})
         if "api" in words:
             path = next((c for c in cmd[2:] if c.startswith("repos/")), "")
-            match = re.search(r"/(?:git/ref/heads|git/refs/heads|commits|branches)/(.+)$", path)
-            sha = self.tips.get(match.group(1)) if match else None
+            match = re.search(r"/(git/refs?/heads|commits|branches)/(.+)$", path)
+            sha = self.tips.get(match.group(2)) if match else None
             if sha is None:
                 return None
-            return _emit(cmd, {"sha": sha, "object": {"sha": sha}, "commit": {"sha": sha}})
+            kind = match.group(1)
+            if kind == "commits":        # real shapes differ per endpoint
+                payload = {"sha": sha, "commit": {"message": ""}}
+            elif kind == "branches":
+                payload = {"name": match.group(2), "commit": {"sha": sha}}
+            else:
+                payload = {"ref": "refs/heads/" + match.group(2), "object": {"sha": sha, "type": "commit"}}
+            return _emit(cmd, payload) if _opt(cmd, "--jq", "-q") else json.dumps(payload)  # gh api prints JSON
         return None
 
     def git(self, cmd, cwd):
@@ -146,18 +170,19 @@ class FakeShell:
         while args and args[0].startswith("-"):
             if args[0] in ("-C", "-c", "--git-dir", "--work-tree") and len(args) > 1:
                 if args[0] == "-C":
-                    where = os.path.join(where or REPO, args[1])
+                    where = posixpath.join(_posix(where or REPO), _posix(args[1]))
                 args = args[2:]
             else:
                 args = args[1:]
-        here = os.path.normpath(where or REPO)
+        here = _posix(where or REPO)
         if args[:3] == ["rev-parse", "--abbrev-ref", "HEAD"] or args[:2] == ["branch", "--show-current"] \
                 or args[:3] == ["symbolic-ref", "--short", "HEAD"]:
             branch = self.current.get(here)
             return None if branch is None else branch + "\n"
-        if args[:3] == ["symbolic-ref", "--short", "refs/remotes/origin/HEAD"] \
-                or args[:2] == ["symbolic-ref", "refs/remotes/origin/HEAD"]:
+        if args[:3] == ["symbolic-ref", "--short", "refs/remotes/origin/HEAD"]:
             return None if self.symbolic_ref is None else self.symbolic_ref + "\n"
+        if args[:2] == ["symbolic-ref", "refs/remotes/origin/HEAD"]:     # long form
+            return None if self.symbolic_ref is None else "refs/remotes/" + self.symbolic_ref + "\n"
         if args[:1] == ["ls-remote"]:
             out = []
             for ref in args[1:]:
@@ -180,14 +205,16 @@ def decoy_run(branch):
     """A failed run of another workflow: only visible to a gh call that drops --workflow."""
     return {"databaseId": 999, "headSha": X, "status": "completed", "conclusion": "failure",
             "event": "workflow_dispatch", "displayTitle": f"{WORKFLOW_NAME} [s3] ({branch})",
-            "workflowName": "Other", "headBranch": branch, "createdAt": "2026-09-23T09:59:00Z"}
+            "workflowName": "Other", "name": "Other", "workflowDatabaseId": OTHER_WORKFLOW_ID,
+            "headBranch": branch, "createdAt": "2026-09-23T09:59:00Z"}
 
 
 def pr_run(number, *, status="in_progress", conclusion=None, sha=X, mode="s3", rid=11,
            created="2026-09-23T01:00:00Z", branch="feat", title=None):
     return {"databaseId": rid, "headSha": sha, "status": status, "conclusion": conclusion,
             "event": "pull_request", "displayTitle": title or f"{WORKFLOW_NAME} [{mode}] ({number}/merge)",
-            "workflowName": WORKFLOW_NAME, "headBranch": branch, "createdAt": created}
+            "workflowName": WORKFLOW_NAME, "name": WORKFLOW_NAME, "workflowDatabaseId": int(WORKFLOW_ID),
+            "headBranch": branch, "createdAt": created}
 
 
 def dispatch_run(branch="feat", *, mode="s3", status="completed", conclusion="success", sha=X,
@@ -197,7 +224,8 @@ def dispatch_run(branch="feat", *, mode="s3", status="completed", conclusion="su
                  else f"{WORKFLOW_NAME} [{mode}] ({branch})")
     return {"databaseId": rid, "headSha": sha, "status": status, "conclusion": conclusion,
             "event": "workflow_dispatch", "displayTitle": title, "workflowName": WORKFLOW_NAME,
-            "headBranch": branch, "createdAt": created}
+            "name": WORKFLOW_NAME, "workflowDatabaseId": int(WORKFLOW_ID), "headBranch": branch,
+            "createdAt": created}
 
 
 @pytest.fixture
@@ -253,6 +281,16 @@ def test_f24_hook_denies_in_the_pretooluse_shape(sh, capsys):
     assert block["hookEventName"] == "PreToolUse"
     assert block["permissionDecision"] == "deny"
     assert "cancel" in block["permissionDecisionReason"]
+
+
+def test_f15_hook_resolves_the_branch_in_the_payloads_cwd(sh, capsys):
+    live_pr(sh, "feat")
+    sh.current[REPO] = "main"
+    sh.current["/wt/feat"] = "feat"
+    push = {"tool_name": "Bash", "tool_input": {"command": "git push -u origin HEAD"}}
+    out = hook({**push, "cwd": "/wt/feat"}, capsys)
+    assert json.loads(out)["hookSpecificOutput"]["permissionDecision"] == "deny"
+    assert hook({**push, "cwd": REPO}, capsys).strip() == ""
 
 
 @pytest.mark.parametrize("command", ["ls -la", "git status", "python -m pytest -q"])
@@ -350,6 +388,15 @@ def test_f21_skip_ci_is_not_trusted_after_a_commit_in_the_same_command(sh):
     assert decide('git commit -m "real change" && git push origin feat')
 
 
+@pytest.mark.parametrize("mover", ["git pull --rebase", "git merge origin/main", "git rebase main",
+                                   "git cherry-pick abc123", "git revert --no-edit HEAD",
+                                   "git commit --amend -m x", "git am < fix.patch"])
+def test_f21_skip_ci_is_not_trusted_after_any_tip_moving_command(sh, mover):
+    live_pr(sh)
+    sh.messages["feat"] = "docs [skip ci]"
+    assert decide(f"{mover} && git push origin feat"), mover
+
+
 # --- pushes: parsing (F7, F8, F14, F15, F16, F17, F18, F19, F27) --------------
 
 @pytest.mark.parametrize("command", [
@@ -375,6 +422,10 @@ def test_f21_skip_ci_is_not_trusted_after_a_commit_in_the_same_command(sh):
     "git push origin wip feat",
     f"gh workflow run {WORKFLOW_FILE} --ref other -f cases=x && git push origin feat",
     "out=$(git push origin feat 2>&1)",
+    "sudo git push origin feat",
+    "nohup git push origin feat",
+    "time git push origin feat",
+    "! git push origin feat",
 ])
 def test_pushes_that_update_a_live_branch_are_refused(sh, command):
     live_pr(sh)
@@ -530,6 +581,11 @@ def test_f1_dispatch_after_a_push_in_the_same_command_skips_the_stale_sha(sh):
     assert decide(f"git push origin feat && {DISPATCH}")
 
 
+def test_f1_a_push_to_another_branch_leaves_the_dispatchs_sha_known(sh):
+    sh.runs["feat"] = [dispatch_run(conclusion="failure")]
+    assert "re-roll" in decide(f"git push origin wip && {DISPATCH}")
+
+
 # --- dispatch: which branch and which selector (F9, F13, F26) ----------------
 
 def test_f26_no_ref_uses_the_default_branch_from_gh_then_origin_head(sh):
@@ -576,6 +632,8 @@ def test_f9_repo_flag_is_passed_to_every_gh_query(sh):
     for call in gh_calls:
         if "api" in call[1:3]:   # gh api takes no -R; the repository must be explicit in the path
             assert any(a.startswith("repos/Joshua-Asante/first-passage/") for a in call), call
+        elif call[1:3] == ["repo", "view"]:   # gh repo view takes the repository positionally
+            assert "Joshua-Asante/first-passage" in call, call
         else:
             assert _opt(call, "-R", "--repo") == "Joshua-Asante/first-passage", call
     assert not any(c[:1] == ["git"] and "ls-remote" in c for c, _ in sh.calls), "-R names the repo, not origin"
@@ -614,7 +672,8 @@ def test_f13_json_inputs_are_unknown_so_the_check_fails_open(sh):
     (dispatch_run(conclusion="success", rid=101), True),
     (dispatch_run(conclusion="cancelled", rid=101), False),
     (dispatch_run(conclusion="failure", rid=101, cases="deadline"), False),
-    ({**dispatch_run(conclusion="failure", rid=101), "workflowName": "Other"}, False),
+    ({**dispatch_run(conclusion="failure", rid=101), "workflowName": "Other", "name": "Other",
+      "workflowDatabaseId": OTHER_WORKFLOW_ID}, False),
 ])
 def test_f10_rerun_of_a_definitive_full_run_is_a_re_roll(sh, view, refused):
     sh.views["101"] = view
@@ -679,6 +738,31 @@ def test_f20_mcp_workflow_dispatch_and_rerun_are_guarded(sh, capsys):
             "tool_input": {**OWNER, "method": "run_workflow", "workflow_id": WORKFLOW_FILE,
                            "ref": "feat", "inputs": {"mode": "s3", "cases": "deadline"}}}
     assert hook(diag, capsys).strip() == ""
+
+
+def test_f20_mcp_rerun_failed_jobs_is_guarded(sh, capsys):
+    sh.runs["feat"] = [dispatch_run(conclusion="failure", rid=101)]
+    sh.views["101"] = sh.runs["feat"][0]
+    payload = {"tool_name": MCP + "actions_run_trigger", "cwd": REPO,
+               "tool_input": {**OWNER, "method": "rerun_failed_jobs", "run_id": 101}}
+    assert json.loads(hook(payload, capsys))["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_f20_mcp_owner_and_repo_name_the_repository_queried(sh, capsys):
+    sh.runs["feat"] = [dispatch_run(conclusion="failure")]
+    payload = {"tool_name": MCP + "actions_run_trigger", "cwd": REPO,
+               "tool_input": {**OWNER, "method": "run_workflow", "workflow_id": WORKFLOW_FILE,
+                              "ref": "feat", "inputs": {"mode": "s3"}}}
+    assert json.loads(hook(payload, capsys))["hookSpecificOutput"]["permissionDecision"] == "deny"
+    gh_calls = [c for c, _ in sh.calls if os.path.basename(c[0]).removesuffix(".exe") == "gh"]
+    assert gh_calls
+    for call in gh_calls:
+        if "api" in call[1:3]:
+            assert any(a.startswith("repos/Joshua-Asante/first-passage/") for a in call), call
+        elif call[1:3] == ["repo", "view"]:
+            assert "Joshua-Asante/first-passage" in call, call
+        else:
+            assert _opt(call, "-R", "--repo") == "Joshua-Asante/first-passage", call
 
 
 def test_f20_unrelated_mcp_tools_get_no_decision(sh, capsys):
