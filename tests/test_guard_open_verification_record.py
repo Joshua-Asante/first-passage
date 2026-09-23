@@ -82,6 +82,7 @@ def test_main_emits_claude_code_pretooluse_shape(tmp_path, monkeypatch, capsys):
 
 
 def docker_record(root, name, **fields):
+    """Write a Docker verification record (`.cache/fp-docker-verification/<name>`)."""
     folder = root / guard.DOCKER_RECORDS_DIR / name
     folder.mkdir(parents=True)
     (folder / 'record.json').write_text(json.dumps(fields), encoding='utf-8')
@@ -115,6 +116,7 @@ def test_measured_window_opens_at_begin(tmp_path, fields, locked):
 
 
 def test_non_object_record_json_fails_open(tmp_path):
+    """A record.json that parses but is not an object is skipped, never a crash."""
     root = checkout(tmp_path)
     folder = root / guard.RECORDS_DIR / 'list'
     folder.mkdir(parents=True)
@@ -122,12 +124,37 @@ def test_non_object_record_json_fails_open(tmp_path):
     assert guard.decide(str(root / 'docs' / 'x.md'), now=NOW)[0] == 'allow'
 
 
-def test_targets_cover_edit_multiedit_and_notebook_payloads():
-    """2026-09-23 card 2 (B3): NotebookEdit carries its target at `notebook_path`."""
-    payload = dict(tool_input=dict(file_path='/a', notebook_path='/b.ipynb',
-                                   edits=[dict(file_path='/c'), dict(old_string='x')]))
-    assert guard._targets(payload) == ['/a', '/b.ipynb', '/c']  # pylint: disable=protected-access
-    assert guard._targets(dict(tool_input={})) == []  # pylint: disable=protected-access
+def target_payload(field, doc, other):
+    """The `tool_input` a Write/Edit, MultiEdit or NotebookEdit call carries for `doc`."""
+    return {
+        'file_path': {'file_path': doc},
+        'notebook_path': {'notebook_path': doc},
+        'edits': {'edits': [{'old_string': 'x'}, {'file_path': doc}]},
+        'notebook_path_beside_file_path': {'file_path': other, 'notebook_path': doc},
+        'no_target': {},
+        'edit_without_target': {'edits': [{'old_string': 'x'}]},
+    }[field]
+
+
+@pytest.mark.parametrize('field,denied', [
+    ('file_path', True), ('notebook_path', True), ('edits', True),
+    ('notebook_path_beside_file_path', True), ('no_target', False), ('edit_without_target', False),
+])
+def test_main_reads_every_target_field(tmp_path, monkeypatch, capsys, field, denied):
+    """2026-09-23 card 2 (B3): `main()` checks Write/Edit `file_path`, MultiEdit
+    `edits[].file_path` and NotebookEdit `notebook_path`; a payload without a
+    target emits nothing."""
+    root = checkout(tmp_path)
+    record(root, 'r', 'running', datetime.now(timezone.utc) - timedelta(minutes=1))
+    tool_input = target_payload(field, str(root / 'docs' / 'n.ipynb'), str(tmp_path / 'draft.md'))
+    payload = json.dumps({'tool_input': tool_input})
+    monkeypatch.setattr('sys.stdin', __import__('io').StringIO(payload))
+    assert guard.main() == 0
+    out = capsys.readouterr().out
+    if denied:
+        assert json.loads(out)['hookSpecificOutput']['permissionDecision'] == 'deny'
+    else:
+        assert out.strip() == ''
 
 
 def test_main_emits_nothing_when_it_does_not_deny(tmp_path, monkeypatch, capsys):

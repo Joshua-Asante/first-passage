@@ -22,18 +22,29 @@ One scanner, two modes:
         in a heredoc commit message no longer unbalances it);
       - ``<<<`` is a here-string, not a heredoc; redirection targets and heredoc
         delimiters are read as quoted words; several heredocs on a line are
-        skipped in order;
-      - an unterminated quote, ``$(`` or backquote raises `ShellSyntaxError`;
+        skipped in order; inside ``(( … ))`` and ``$(( … ))`` arithmetic,
+        ``<<``, ``<`` and ``>`` are operators, never a heredoc or redirection;
+      - inside double quotes a backslash escapes only ``$``, a backquote,
+        ``"``, ``\\`` and newline, as in bash, so a quoted Windows path such as
+        ``"C:\\Program Files\\Git\\cmd\\git.exe"`` keeps its backslashes;
+      - an unterminated quote, ``$(`` or backquote, and a heredoc whose
+        delimiter line never comes, raise `ShellSyntaxError`;
+      - `program` splits on backslashes too and casefolds (``GIT.EXE``);
       - `expand` strips leading assignments at every level, reads the options of
         ``sudo``, ``env``, ``timeout``, ``nice``, ``xargs``, ``command``,
-        ``exec`` and ``time``, drops ``{``/``}``, re-parses ``eval`` arguments and
+        ``exec`` and ``time`` getopt-style (``sudo -Eu root``, ``timeout -vk 5``),
+        splits ``env -S '…'`` into the command it runs, drops ``{``/``}`` and
+        ``function name``, re-parses ``eval`` arguments and
         ``find -exec``/``-execdir``/``-ok``/``-okdir`` commands, and finds the
-        script of ``bash -ec '…'`` (any short cluster holding ``c``).
+        script of ``bash``/``sh`` the way bash reads its options: ``c`` in any
+        ``-``/``+`` group, each ``o``/``O`` in a group taking one word
+        (``bash -euo pipefail -c '…'``), and ``-`` or ``--`` ending options.
 """
 from __future__ import annotations
 
 import os
 import re
+import shlex
 
 WRAPPERS = frozenset({"command", "builtin", "exec", "nohup", "time", "sudo", "!",
                       "if", "then", "elif", "else", "while", "until", "do",
@@ -43,23 +54,29 @@ SHELLS = frozenset({"bash", "sh", "zsh", "dash", "ksh"})
 _ASSIGNMENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=")
 _WORD_END = " \t\n;|&()<>"
 
-# strict-mode wrapper options that take the next word as their value
-_SUDO_VALUES = frozenset({"-u", "-g", "-h", "-p", "-C", "-D", "-r", "-t", "-T", "-U",
-                          "--user", "--group", "--host", "--prompt", "--close-from",
-                          "--chdir", "--role", "--type", "--command-timeout",
-                          "--other-user"})
-_ENV_VALUES = frozenset({"-u", "--unset", "-C", "--chdir", "-S", "--split-string"})
-_TIMEOUT_VALUES = frozenset({"-s", "--signal", "-k", "--kill-after"})
-_NICE_VALUES = frozenset({"-n", "--adjustment"})
-_XARGS_VALUES = frozenset({"-a", "-d", "-E", "-I", "-L", "-n", "-P", "-s", "--arg-file",
-                           "--delimiter", "--max-args", "--max-procs", "--max-chars",
-                           "--process-slot-var"})
-_TIME_VALUES = frozenset({"-f", "-o", "--format", "--output"})
-_EXEC_VALUES = frozenset({"-a"})
-_SHELL_VALUES = frozenset({"-o", "+o", "-O", "+O", "--rcfile", "--init-file"})
+# Strict-mode wrapper options that take a value: (short letters, long options).
+# Short groups are read getopt-style: the first value letter takes the rest of
+# the group, or the next word when it ends the group (`sudo -Eu root`, `-uroot`).
+_SUDO_OPTS = ("aCcDghpRrTtUu", frozenset({
+    "--auth-type", "--close-from", "--login-class", "--chdir", "--group", "--host",
+    "--prompt", "--chroot", "--role", "--type", "--command-timeout", "--other-user",
+    "--user"}))
+_ENV_OPTS = ("CSu", frozenset({"--chdir", "--split-string", "--unset"}))
+_TIMEOUT_OPTS = ("ks", frozenset({"--kill-after", "--signal"}))
+_NICE_OPTS = ("n", frozenset({"--adjustment"}))
+_XARGS_OPTS = ("adEILnPs", frozenset({
+    "--arg-file", "--delimiter", "--max-args", "--max-procs", "--max-chars",
+    "--process-slot-var"}))
+_TIME_OPTS = ("fo", frozenset({"--format", "--output"}))
+_EXEC_OPTS = ("a", frozenset())
+# bash/sh long options that take a value; each o/O in a short group (-o, -euo,
+# +O) takes one following word as well
+_SHELL_LONG_VALUES = frozenset({"--rcfile", "--init-file"})
 _FIND_EXEC = frozenset({"-exec", "-execdir", "-ok", "-okdir"})
-_STRICT_WRAPPERS = {"sudo": _SUDO_VALUES, "nice": _NICE_VALUES, "xargs": _XARGS_VALUES,
-                    "time": _TIME_VALUES, "exec": _EXEC_VALUES, "command": frozenset()}
+_STRICT_WRAPPERS = {"sudo": _SUDO_OPTS, "nice": _NICE_OPTS, "xargs": _XARGS_OPTS,
+                    "time": _TIME_OPTS, "exec": _EXEC_OPTS, "command": ("", frozenset())}
+# inside double quotes a backslash escapes only these; before anything else it stays
+_DQUOTE_ESCAPES = '$`"\\\n'
 
 
 class ShellSyntaxError(ValueError):
@@ -150,6 +167,7 @@ def _strict_close(text: str, start: int) -> int:
     match. Raises `ShellSyntaxError` when the substitution never closes.
     """
     depth, i, pending = 1, start, []
+    arithmetic = text[start:start + 1] == "("  # $(( … )): `<<` is a shift there
     while i < len(text):
         ch = text[i]
         if ch in "'\"":
@@ -168,7 +186,7 @@ def _strict_close(text: str, start: int) -> int:
         if text.startswith("<<<", i):
             i += 3
             continue
-        if text.startswith("<<", i):
+        if text.startswith("<<", i) and not arithmetic:
             i, delimiter = _consume_redirection(text, i, strict=True)
             if delimiter:
                 pending.append(delimiter)
@@ -176,7 +194,7 @@ def _strict_close(text: str, start: int) -> int:
         if ch == "\n" and pending:
             i += 1
             for delimiter in pending:
-                i = _heredoc_end(text, i, delimiter)
+                i = _heredoc_end(text, i, delimiter, strict=True)
             pending.clear()
             continue
         if ch == "(":
@@ -215,16 +233,57 @@ def _consume_redirection(text: str, i: int, *, strict: bool = False) -> tuple[in
     return i, ""
 
 
-def _heredoc_end(text: str, i: int, delimiter: str) -> int:
-    """Index after the heredoc body that starts at text[i] (just past a newline)."""
+def _heredoc_end(text: str, i: int, delimiter: str, *, strict: bool = False) -> int:
+    """Index after the heredoc body that starts at text[i] (just past a newline).
+
+    Strict mode raises `ShellSyntaxError` when no line ends the body: the rest
+    of the command would otherwise be read as data, and a `<<` that was not a
+    heredoc at all (a shift in `$[ … ]`) would hide every later command.
+    """
     while i <= len(text):
         eol = text.find("\n", i)
         if eol < 0:
+            if strict and text[i:].strip() != delimiter:
+                raise ShellSyntaxError(f"here-document {delimiter!r} never ends")
             return len(text)
         if text[i:eol].strip() == delimiter:
             return eol + 1
         i = eol + 1
     return i
+
+
+def _arithmetic_end(text: str, i: int) -> int:
+    """Index just past the `))` closing the `((` arithmetic command at text[i], or -1.
+
+    -1 when the region cannot be read; the ordinary scan then decides (and
+    raises on its own if the command is unreadable).
+    """
+    depth = 0
+    try:
+        while i < len(text):
+            ch = text[i]
+            if ch in "'\"":
+                i = _quote_end(text, i)
+                continue
+            if ch == "\\":
+                i += 2
+                continue
+            if ch == "$" and text[i + 1:i + 2] == "(":
+                i = _strict_close(text, i + 2) + 1
+                continue
+            if ch == "`":
+                i = _backquote_close(text, i + 1) + 1
+                continue
+            if ch == "(":
+                depth += 1
+            elif ch == ")":
+                depth -= 1
+                if depth == 0:
+                    return i + 1
+            i += 1
+    except ShellSyntaxError:
+        pass
+    return -1
 
 
 # --- the tokenizer ------------------------------------------------------------
@@ -246,6 +305,7 @@ def segments(command: str, *, strict: bool = False) -> list[list[str]]:
     buf: list[str] = []
     deferred: list[list[str]] = []   # strict: substitution bodies, after their segment
     heredocs: list[str] = []         # delimiters whose bodies start at the next newline
+    arithmetic_end = -1              # strict: end of the `(( … ))` command being read
 
     def flush_token() -> None:
         if buf:
@@ -292,7 +352,10 @@ def segments(command: str, *, strict: bool = False) -> list[list[str]]:
             if strict and quote == '"' and ch == "`":
                 i = substitution(i, i + 1, _backquote_close(text, i + 1))
                 continue
-            if quote == '"' and ch == "\\" and i + 1 < len(text):
+            if quote == '"' and ch == "\\" and strict and text[i + 1:i + 2] not in _DQUOTE_ESCAPES:
+                buf.append(ch)  # "C:\Program Files\Git\cmd\git.exe" keeps its backslashes
+                i += 1
+            elif quote == '"' and ch == "\\" and i + 1 < len(text):
                 buf.append(text[i + 1])
                 i += 2
             else:
@@ -305,6 +368,9 @@ def segments(command: str, *, strict: bool = False) -> list[list[str]]:
     def redirection_step(i: int) -> int | None:
         """Consume a redirection at text[i] (or `&>`), or None if there is none."""
         ch = text[i]
+        if i < arithmetic_end and ch in "<>":
+            flush_token()  # a comparison or shift inside (( … )), never a heredoc
+            return i + 1
         if ch == "&":
             if text[i + 1:i + 2] != ">":
                 return None
@@ -349,10 +415,12 @@ def segments(command: str, *, strict: bool = False) -> list[list[str]]:
             i += 1
             if ch == "\n" and heredocs:
                 for delimiter in heredocs:
-                    i = _heredoc_end(text, i, delimiter)
+                    i = _heredoc_end(text, i, delimiter, strict=strict)
                 heredocs.clear()
             flush_segment()
             continue
+        if strict and not buf and i >= arithmetic_end and text.startswith("((", i):
+            arithmetic_end = _arithmetic_end(text, i)  # its words still split as usual
         if ch == "#" and not buf:
             newline = text.find("\n", i)
             i = len(text) if newline < 0 else newline
@@ -404,9 +472,13 @@ def strip_assignments(tokens: list[str]) -> list[str]:
 
 
 def program(word: str, *, strict: bool = False) -> str:
-    """The program a command word names: its basename without `.exe`."""
+    """The program a command word names: its basename without `.exe`.
+
+    Strict mode also splits on backslashes and casefolds, because Windows paths
+    and file names are case-insensitive (`GIT.EXE`, `C:\\...\\rm.exe`).
+    """
     if strict:
-        word = word.replace("\\", "/").rsplit("/", 1)[-1]
+        word = word.replace("\\", "/").rsplit("/", 1)[-1].casefold()
     return os.path.basename(word).removesuffix(".exe")
 
 
@@ -417,28 +489,79 @@ def _shell_script(tokens: list[str], *, strict: bool = False) -> str | None:
             if token == "-c" or re.fullmatch(r"-[a-zA-Z]*c", token):
                 return tokens[i + 1] if i + 1 < len(tokens) else None
         return None
+    # bash reads every letter of a `-`/`+` group: `c` (either sign) means the first
+    # operand is the script, and each `o`/`O` takes one following word as its
+    # value (`-euo pipefail`, `-oO pipefail extglob`); `-` alone ends options
     has_c, rest = False, iter(tokens[1:])
     for token in rest:
-        if token in _SHELL_VALUES:
-            next(rest, None)
-        elif token == "--":
+        if token in ("--", "-"):
             token = next(rest, None)
             return token if has_c else None
+        if token in _SHELL_LONG_VALUES:
+            next(rest, None)
+        elif token.startswith("--"):
+            continue
         elif token[:1] in "-+" and len(token) > 1:
-            has_c |= token[0] == "-" and token[1] != "-" and "c" in token[1:]
+            has_c |= "c" in token[1:]
+            for _ in range(sum(letter in "oO" for letter in token[1:])):
+                next(rest, None)
         else:
             return token if has_c else None
     return None
 
 
-def _after_options(tokens: list[str], values: frozenset) -> list[str]:
-    """Drop the wrapper word and its options (the named ones consume a value)."""
+def _takes_next(word: str, spec: tuple[str, frozenset]) -> bool:
+    """Whether the option word `word` takes the next word as its value (getopt-style).
+
+    `spec` is (short letters, long options) that take a value. In a short group
+    the first value letter takes the rest of the group, or the next word when
+    it ends the group: `-Eu root` and `-u root` take `root`, `-uroot` does not.
+    """
+    letters, longs = spec
+    if word.startswith("--"):
+        return word in longs
+    for pos, letter in enumerate(word[1:], 1):
+        if letter in letters:
+            return pos == len(word) - 1
+    return False
+
+
+def _after_options(tokens: list[str], spec: tuple[str, frozenset]) -> list[str]:
+    """Drop the wrapper word and its options (those in `spec` consume a value)."""
     rest = tokens[1:]
     while rest and rest[0].startswith("-") and rest[0] != "-":
         if rest[0] == "--":
             return rest[1:]
-        rest = rest[2:] if rest[0] in values else rest[1:]
+        rest = rest[2:] if _takes_next(rest[0], spec) else rest[1:]
     return rest
+
+
+def _env_split_string(rest: list[str]) -> tuple[list[str], int] | None:
+    """(words, words used) when rest[0] is `env -S`/`--split-string`, else None.
+
+    `env -S 'git reset …'` splits its value into the words it then runs, so the
+    split words go back in front of the remaining arguments.
+    """
+    word, value = rest[0], None
+    if word.startswith("--"):
+        name, equals, joined = word.partition("=")
+        if name != "--split-string":
+            return None
+        value = joined if equals else None
+    else:
+        letter = next((c for c in word[1:] if c in _ENV_OPTS[0]), "")
+        if letter != "S":
+            return None
+        value = word[word.index("S") + 1:] or None
+    used = 1
+    if value is None:
+        if len(rest) < 2:
+            return [], 1
+        value, used = rest[1], 2
+    try:
+        return shlex.split(value), used
+    except ValueError as error:
+        raise ShellSyntaxError(f"env -S: {error}") from error
 
 
 def _after_env(tokens: list[str], *, strict: bool = False) -> list[str]:
@@ -448,7 +571,12 @@ def _after_env(tokens: list[str], *, strict: bool = False) -> list[str]:
         while rest and (is_assignment(rest[0]) or rest[0].startswith("-")):
             if rest[0] == "--":
                 return strip_assignments(rest[1:])
-            rest = rest[2:] if rest[0] in _ENV_VALUES else rest[1:]
+            split = _env_split_string(rest) if not is_assignment(rest[0]) else None
+            if split is not None:
+                words, used = split
+                rest = words + rest[used:]
+            else:
+                rest = rest[2:] if _takes_next(rest[0], _ENV_OPTS) else rest[1:]
         return rest
     rest = tokens[1:]
     while rest and (is_assignment(rest[0]) or rest[0].startswith("-")):
@@ -459,7 +587,7 @@ def _after_env(tokens: list[str], *, strict: bool = False) -> list[str]:
 def _after_timeout(tokens: list[str], *, strict: bool = False) -> list[str]:
     """What `timeout` runs: its words after options and the duration."""
     if strict:
-        rest = _after_options(tokens, _TIMEOUT_VALUES)
+        rest = _after_options(tokens, _TIMEOUT_OPTS)
         return rest[1:]
     rest = tokens[1:]
     while rest and rest[0].startswith("-"):
@@ -511,6 +639,9 @@ def expand(tokens: list[str], *, strict: bool = False) -> list[list[str]]:
             continue
         if strict and base in ("{", "}"):
             work = work[1:]
+            continue
+        if strict and base == "function":
+            work = work[2:]  # `function name { body; }`: the body follows the name
             continue
         if strict and base == "eval":
             for segment in segments(" ".join(work[1:]), strict=True):

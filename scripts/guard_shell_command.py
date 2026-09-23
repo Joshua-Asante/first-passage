@@ -41,7 +41,8 @@ raw-string regexes below, so unparsable destructive text still asks.
 What asks (git global options such as ``-C``, ``-c``, ``--no-pager``,
 ``--git-dir=``, ``--work-tree=`` are skipped to find the subcommand; option
 clusters are read the way git reads them, so a letter inside an option's value
-— ``-mn`` is the message "n" — is not a flag):
+— ``-mn`` is the message "n" — is not a flag, and neither is the word after a
+long option that takes one — ``--message '-n …'`` is a message):
 
   * bypass, for ``commit``/``merge``/``push``/``am``/``rebase``/``cherry-pick``/
     ``revert``: a long option that is a prefix of ``--no-verify`` or
@@ -148,8 +149,23 @@ JOINED_VALUES = {
     "commit": "uS", "merge": "S", "rebase": "S", "cherry-pick": "S", "revert": "S",
     "am": "SCp",
 }
-# Long options whose value may be the next word (only where an operand matters).
-LONG_VALUES = {"push": frozenset({"--repo", "--receive-pack", "--exec", "--push-option"})}
+# Long options whose value may be the next word, so that word is data, never a
+# flag or an operand (`commit --message '-n …'`; per `git <sub> -h`, git 2.43).
+_PICK_VALUES = frozenset({"--cleanup", "--mainline", "--strategy", "--strategy-option"})
+LONG_VALUES = {
+    "push": frozenset({"--repo", "--receive-pack", "--exec", "--push-option"}),
+    "commit": frozenset({"--message", "--file", "--author", "--date", "--template",
+                         "--reuse-message", "--reedit-message", "--squash", "--fixup",
+                         "--trailer", "--cleanup", "--pathspec-from-file"}),
+    "merge": frozenset({"--message", "--file", "--strategy", "--strategy-option",
+                        "--cleanup", "--into-name"}),
+    "rebase": frozenset({"--onto", "--whitespace", "--exec", "--strategy",
+                         "--strategy-option"}),
+    "cherry-pick": _PICK_VALUES,
+    "revert": _PICK_VALUES,
+    "am": frozenset({"--quoted-cr", "--whitespace", "--directory", "--exclude",
+                     "--include", "--patch-format"}),
+}
 
 _SHORT, _LONG, _END, _OPERAND = "short", "long", "end", "operand"
 

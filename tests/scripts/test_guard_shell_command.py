@@ -280,3 +280,124 @@ def test_hook_runs_as_a_script(command, expected):
         assert result.stdout == ""
     else:
         assert json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"] == expected
+
+
+# --- 2026-09-23 card 2, judge round 1: spellings the first strict read missed --
+BYPASS, NCOMMIT = f"git commit {NOV} -m x", "git commit -" + "n -m x"
+WIN_GIT = '"C:\\Program Files\\Git\\cmd\\git.exe"'
+WIN_RM = '"C:\\Program Files\\Git\\usr\\bin\\rm.exe"'
+
+
+@pytest.mark.parametrize("shell", [
+    "bash -euo pipefail -c", "sh -eo pipefail -c", "bash -euxo pipefail -c",
+    "bash -eO extglob -c", "bash --noprofile --norc -eo pipefail -c",
+    "bash -oe pipefail -c", "bash -oO pipefail extglob -c", "bash -co pipefail",
+    "bash +euo pipefail -c", "bash +c", "sh +c", "bash -c -", "bash -c --",
+])
+@pytest.mark.parametrize("inner,message", [
+    (BYPASS, "standing path"), (NCOMMIT, "standing path"),
+    (HARD, "git status"), (f"{RMRF} d", "git status"),
+])
+def test_shell_option_groups_do_not_hide_the_script(mod, shell, inner, message):
+    """Round 1 P1: bash reads every letter of a `-`/`+` group — `c` makes the
+    first operand the script, each `o`/`O` takes one word (`-euo pipefail`) —
+    so the script is re-parsed and its bypass or destructive command asks."""
+    permission, agent_msg, _ = mod.classify(f"{shell} '{inner}'")
+    assert permission == "ask" and message in agent_msg, shell
+
+
+@pytest.mark.parametrize("cmd", [
+    "bash -euo pipefail -c 'echo ok'", "bash -o pipefail script.sh", "bash -eo pipefail",
+])
+def test_shell_option_values_are_not_scripts(mod, cmd):
+    """Round 1 P1 neighbours: an option's value is not the script."""
+    assert mod.classify(cmd)[0] == "allow", cmd
+
+
+@pytest.mark.parametrize("cmd,message", [
+    (f"{WIN_GIT} commit {NOV} -m x", "standing path"),
+    (f"{WIN_GIT} reset --" + "hard", "git status"),
+    (f"{WIN_RM} -" + "rf d", "git status"),
+    ("GIT.EXE reset --" + "hard", "git status"),
+    (f"Git.Exe commit {NOV} -m x", "standing path"),
+])
+def test_windows_program_paths_are_recognised(mod, cmd, message):
+    """Round 1 P2: inside double quotes a backslash escapes only $ ` " \\ and
+    newline, so a quoted Windows path keeps its backslashes; `.EXE` casefolds."""
+    permission, agent_msg, _ = mod.classify(cmd)
+    assert permission == "ask" and message in agent_msg, cmd
+
+
+def test_double_quote_escapes_still_escape(mod):
+    """Round 1 P2 neighbour: `\\"` inside double quotes is still a quote, not an end."""
+    assert mod.classify(f'echo "a \\" {HARD} \\" b"')[0] == "allow"
+    assert mod.classify(f'{WIN_GIT} status')[0] == "allow"
+
+
+@pytest.mark.parametrize("wrapper", [
+    "sudo -Eu root", "sudo -Hu root", "sudo -iu root", "sudo -Ec cls", "sudo --user root",
+    "env -iu HOME", "env -uHOME", "timeout -vk 5 10", "timeout --kill-after 5 10",
+    "time -pf %e", "exec -la name", "nice -n 5", "xargs -0n 1", "command -p", "nohup",
+])
+@pytest.mark.parametrize("inner", [HARD, BYPASS])
+def test_wrapper_option_groups_keep_their_command(mod, wrapper, inner):
+    """Round 1 P3: E1's wrappers read option groups getopt-style — the first
+    value letter takes the rest of the group or, ending it, the next word."""
+    assert mod.classify(f"{wrapper} {inner}")[0] == "ask", wrapper
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    (f"env -S '{HARD}'", "ask"),
+    (f"env -iS'{BYPASS}'", "ask"),
+    (f"env --split-string='{RMRF} d'", "ask"),
+    (f"env --split-string '{RMRF} d'", "ask"),
+    ("env -S 'echo ok'", "allow"),
+    ("sudo -uE ls", "allow"),          # -u takes "E"; ls is the command
+])
+def test_env_split_string_runs_its_value(mod, cmd, expected):
+    """Round 1 P3: `env -S '…'` splits its value into the command it runs."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    (f"function f {{ {RMRF} d; }}; f", "ask"),
+    (f"function f {{ {BYPASS}; }}; f", "ask"),
+    (f"function f\n{{ {HARD}; }}", "ask"),
+    ("function f { echo ok; }; f", "allow"),
+])
+def test_function_keyword_body_is_in_command_position(mod, cmd, expected):
+    """Round 1 P3: `function name { body; }` — the body's first word is a command."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    (f"(( x = 1 << 2 ))\n{HARD}", "ask"),
+    (f"(( x <<= 1 ))\n{BYPASS}", "ask"),
+    (f"for (( i = 1; i << 2; i++ )); do echo; done\n{HARD}", "ask"),
+    (f"x=$(( 1 << 2 ))\n{HARD}", "ask"),
+    (f"echo $[ 1 << 2 ]\n{HARD}", "ask"),              # unreadable: raw-string fallback
+    (f"cat <<EOF\nno delimiter line\n{HARD}", "ask"),   # unreadable: raw-string fallback
+    ("(( x = 1 << 2 ))\necho ok", "allow"),
+    (f"cat <<EOF\n{HARD}\nEOF", "allow"),
+    (f"cat <<EOF\n{HARD}\nEOF\necho ok", "allow"),
+    (f"cat <<-EOF\n\t{HARD}\n\tEOF", "allow"),
+])
+def test_arithmetic_shift_is_not_a_heredoc(mod, cmd, expected):
+    """Round 1 P3: `<<` inside (( … )) is a shift, so the next line is a command;
+    a heredoc whose delimiter never comes falls back to the raw-string reading."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    ("git commit --message '-n is dry run'", "allow"),
+    (f"git commit --message '{NOV} is banned'", "allow"),
+    ("git commit --file -n", "allow"),
+    ("git commit --author '-n <a@b>' -m x", "allow"),
+    (f"git merge --message '{NOV}' topic", "allow"),
+    ("git commit --message x -" + "n", "ask"),
+    ("git commit --message=-x -" + "n", "ask"),
+    (f"git merge --strategy ours {NOV} topic", "ask"),
+])
+def test_long_option_values_are_data(mod, cmd, expected):
+    """Round 1 P3: the word after `--message`/`--file`/… is the option's value."""
+    assert mod.classify(cmd)[0] == expected, cmd
