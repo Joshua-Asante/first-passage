@@ -20,6 +20,8 @@ The S2 workflow provisions one fresh `ubuntu-24.04` host, runs every registered 
 4. Do not push again to a branch with a run in flight: the per-ref `cancel-in-progress` concurrency kills it. On a PR branch every push refires the workflow (the path filter applies to the PR's whole change set), so batch docs commits until the run you need has finished.
 5. Never dispatch the same SHA twice. If a second dispatch happens by accident the first is cancelled; cite the survivor.
 
+Steps 4–5 are enforced by `scripts/guard_s2_runs.py` (Claude PreToolUse Bash hook + git pre-push): a push while a PR run is in flight, and a full dispatch on a SHA that already has a live, passed or failed run, are refused. Override only with a reason you can state: `FP_S2_GUARD=off`.
+
 ## 2. Reading the artifact (the only acceptance-grade read)
 
 ```bash

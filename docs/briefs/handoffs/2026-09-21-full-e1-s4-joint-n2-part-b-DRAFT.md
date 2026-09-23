@@ -51,6 +51,39 @@
 
 **S4-D4 — Continuation policy under a versioned FULL_E1 policy identity.** `required_output_roles` accepts `(stages == order[:4], ('PARTIAL','NONE'))` only under the FULL_E1 policy/schema identity introduced here (the policy fingerprint changes, so the installed fixture/manifest producers and every earlier-stage consumer are re-pinned in the same change); N1_ONLY retains its rejection. *Alternative rejected:* accepting the joint prefix under the existing policy identity (would silently change what already-admitted N1_ONLY attempts mean).
 
+## 0.6. Pre-mortem (coordinator addendum, 2026-09-22 — added after dispatch; binds from the C2 GO)
+
+Brief-authoring check 11. S4 was frozen and dispatched before the check existed, so this is **not** a change to §0.5 or §1–§6. The coordinator attaches the stop rules below to the C2 GO (§5), which is within its authority. The rest is the coordinator's own plan. Every figure is S3's measured record, read from the workflow-run list for `claude/s3-n1-genuine-capture` (all 70 runs of `qualification-s2-supervision.yml`, 2026-09-21 13:49 → 2026-09-22 21:50Z).
+
+**Loop cost, measured on S3.**
+
+| | Count | Wall time |
+|---|---|---|
+| Full 19-node runs | 23 | 26–35 min each (median ≈ 29.5), ≈ 11.3 h hosted |
+| Short runs (`cases` subsets, or setup/early failures) | 42 | under 10 min each, ≈ 2.4 h |
+| Cancelled | 5 | 4 pull_request runs killed by pushes (≈ 78 min), 1 same-SHA re-dispatch |
+
+Two stretches dominate:
+- **10 failing full runs in one stretch** (35662302299 → 35721249253, 09-21 22:22 → 09-22 11:24, with subset runs in between; ≈ 5 h of full runs), each exposing one new layer, with no coordinator checkpoint between them.
+- **About 8 h and 8 more full runs after the first green acceptance-grade run** (35736618719), spent on B1–B3 and the P1/P2 review findings. B2 (the Linux file's skip guard) and B3 (Pylint 7.97) were caught only by the PR's own required checks, which had not been run before the acceptance-grade run.
+
+**Forecast for S4 (an estimate).** The suite grows from 19 to about 23–25 nodes, and one case runs the joint batch at N2 + PART_B depth, so a full run is estimated at 32–40 min until the first one is measured. At S3's rate (23 full runs) that is 15–25 full runs, or 8–16 h hosted. The rules below target the two S3 stretches, not the total.
+
+**Stop rules, attached to the C2 GO:**
+1. **No full run until every new N2 case has passed in a `cases` subset run** on the same head, and the PR-check preconditions pass locally: the `--test-only` required set re-derived and printed, the Linux file skipping without its env var, and whole-repo Pylint ≥ 8.00. This is lessons 4, 8 and 9 turned into an entry condition.
+2. **Three red full runs in a row (subset runs between them do not reset the count) stop the loop.** The executor returns the three run IDs, and the root cause from each artifact, as a `CHECKPOINT`. The coordinator rules before a fourth full run.
+3. The run-hygiene rules (never push while a PR run is in flight; never re-dispatch a full run on a SHA that already has one) are enforced by `scripts/guard_s2_runs.py` where installed, and remain lessons 6 and 9 where not.
+
+**Decisions the executor will hit.** None is settled by §0.5. The coordinator rules all four in one batch **with C2**, not mid-loop:
+1. **Selector and scope.** §2 lets the executor choose between extending `S3_CASES` and adding a `--s4` selector ("report which"). On `main`, the workflow `mode` input offers only `s2|s3`. `acceptance_scope` has no S4 value, and `s2_run_evidence.py` accepts only `S2_DIAGNOSTIC_SUPERVISION`/`S3_N1_CAPTURE`. The choice fixes the workflow input, the scope name, the reader's allowlist and the acceptance bar's node count together. *Recommendation:* `--s4` ⊇ `--s3`, with scope `S4_JOINT_N2` added to the reader and `mode` gaining `s4`. S3's accepted scope then keeps its meaning.
+2. **Genuine Linux N2 FAIL.** §4 lets the FAIL path stand on the Windows asymmetric cases if the fixture cannot produce an N1-pass / N2-fail source. Rule now whether that is acceptable, so the executor does not spend full runs searching for such a source.
+3. **`validate_recoveries`' `/v5` literal.** `campaign_budget.validate_recoveries` still pins `qualification_campaign_budget_snapshot/v5` (C1 reading 4: "S4 will revisit if N2 changes the ordering"), and S4 moves the snapshot to `/v7`. Rule whether S4 extends it, or shows that the N2 ordering leaves it unreachable.
+4. **The `_settlement_terminal` seam.** S4 extends `CampaignStore`'s progression states (§0 Store row). T05 integration item (i) unifies them with `ResultStore`'s. Confirm that the unification stays T05's, so there is one writer per surface.
+
+**What would make this moot.** T00 step 1 (`docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md`, PR #458) can return INSUFFICIENT: no faithful producer to screen the selected book. It gates nothing, but it bears on whether S5, T05 integration and S8 are worth building in their current order. It is a Claude Code reading task and does not compete with GLM's S4 surface, so **dispatch it now**, in parallel. T08 step 1 (the R3 unknown-request go/no-go) is the same kind of cheap early answer for the broker path.
+
+**Measure (the §7 return fills these in, one line in the ledger entry):** wall time from dispatch to return; full runs and subset runs, each with its purpose; consecutive-red streaks; `CHECKPOINT`s and their cause; the first full run's measured wall time against the 32–40 min estimate above.
+
 ## 1. Interfaces (produce together)
 - `derive_checkpoint_plan(campaign_plan_bytes, 'N2', predecessor_receipt_bytes) -> bytes` — the canonical `n2` sub-document bound to the committed N1 checkpoint receipt digest; refuses a missing/stale/foreign predecessor.
 - `compute.run_n2_compute(contract, source, budget)` beside `run_n1_compute`, built from `stage_request(contract, 'n2', budget.remaining_wall_seconds())`, `_ReplayProvider`, `_run_stage`, `initial_state`: depths `(('FULL', N2.exact_depth), ('H1', PART_B.exact_depth), ('H2', PART_B.exact_depth))`; FULL's outcomes feed both the failure and speed calculations; H1/H2 exclusively feed Part B; no extra pilot, no extra speed sample, no standalone Part B job, no partial-batch decision.

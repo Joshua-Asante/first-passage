@@ -4,6 +4,10 @@
 
 A packet in this directory is a record of an assignment, its context and its provenance at the date in its filename. Committing a packet does not dispatch it, and an older packet's ownership statements do not override later ownership decisions. To find the current assignment for a workstream, start from [the deployment checklist](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md) and its [amendment](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md), then the newest packet that names the workstream.
 
+## Pre-mortem (every multi-loop packet)
+
+Before dispatch, the coordinator adds a pre-mortem section covering loop cost and full-run budget, the decisions the executor will hit (ruled on in one batch before freeze), what would make the work moot, and the measurements the return fills in. The rule is brief-authoring check 11; its first application is the S4 packet's §0.6.
+
 ## Status of the September 12–19 packets
 
 The eleven packets PR #444 committed on 2026-09-20 from previously untracked files, plus the E1 coordinator handoff, which was already tracked and which #444 only amended with its publication addendum.
