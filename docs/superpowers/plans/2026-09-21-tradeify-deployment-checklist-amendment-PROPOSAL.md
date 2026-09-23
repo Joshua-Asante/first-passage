@@ -131,6 +131,8 @@ Each row: recommended disposition · grounds · exact wording to adopt on ratifi
 
 **Operator ruling:** ADOPTED AS RECOMMENDED — operator, 2026-09-22, in session, verbatim: "Adopt all five as recommended." The *Wording to adopt* above is in force with the meaning this row defines.
 
+**Condition 4 ruling:** NO — operator, 2026-09-23, in session, verbatim: "A T00 screen does not count as falsifier evidence." Under the wording above, the falsifier needs its own dated re-MC before 2026-11-08 regardless of T00; D-T00 no longer bears on the 11-08 clock. The operator accepted the step-1 return the same day ([return §7.8](../../briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23)).
+
 #### D-feed — **TICK AS A GATE, not a provider.**
 
 **Grounds.** The operator's own 2026-09-11 deferral (`s2b ADR:48`) sets the rule: *"provider-specific implementation, signup, subscription and credential staging wait until the fixed book clears every source-independent gate and the operator returns for the funding decision."* None has cleared. A′, the shortlisted route, is a personal live Tradovate account whose daemon-volume credential is a **live, order-capable brokerage login** — "the worst secret-at-rest profile of any option" (`:216`; Codex #344 confirmed order-capability unless vendor-scoped) — with a $1,000 parked deposit and KYC (`:201`), against the rail's **$700 all-in** ceiling to first live fill (`rail GO ADR:58`). No 11-08 dependency (§1). T14 provider-neutral preparation is already permitted and running.
