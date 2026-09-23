@@ -28,14 +28,19 @@ tables, not their scanning; a fix to one scanner does not reach the other.
         backslashes, and several heredocs on a line are skipped in order;
       - ``$'…'`` is decoded with bash's ANSI-C escapes (``\\c`` stops at the
         closing quote, as in bash) and ``$"…"`` is read as ``"…"``; an empty
-        quoted word is kept as a token, so ``$''#x`` is the word ``#x``;
-      - `expand` skips the options of ``sudo``, ``nice``, ``time``, ``exec``,
+        quoted word is kept as a token, and ``#`` starts a comment only before
+        a word has begun (a quoted empty word has), so ``$''#x``, ``''#x`` and
+        ``""#x`` are each the word ``#x``;
+      - `expand` skips the options of ``sudo``, ``time``, ``exec``,
         ``command`` and ``nohup`` getopt-style with the tables strict mode uses
-        (``sudo -u me``, ``time -p``, ``nice -n 5``, ``sudo --``). ``env`` and
-        ``timeout`` keep card 1's readers: only ``env -u``/``--unset`` takes a
-        value, and ``timeout`` drops every dash word and then the duration, so
-        ``timeout -k 5 60 cmd`` and ``env -C dir cmd`` hide ``cmd`` (strict mode
-        reads both).
+        (``sudo -u me``, ``time -p``, ``nice -n 5``, ``sudo --``), and ``env``
+        and ``timeout`` read theirs from the shared ``_ENV_OPTS``/
+        ``_TIMEOUT_OPTS`` tables: ``env -C dir cmd``, ``env -u NAME cmd``,
+        ``timeout -k 5 60 cmd`` and ``timeout -s KILL 60 cmd`` all keep ``cmd``
+        visible, and the one duration word after ``timeout``'s options is
+        dropped. Default mode never splits ``env -S '…'`` — splitting can
+        raise, and default mode must not — so it skips the option and its
+        value whole (strict mode splits the value into the words it runs).
   * **strict** (``strict=True``) — the shell guard's reading, which must not
     lose a word that follows a command substitution and must know when it could
     not read the command at all (E1 falls back to the raw-string regexes then):
@@ -741,7 +746,7 @@ def _default_segments(command: str) -> list[list[str]]:
                 pending_heredocs.clear()
             flush_segment()
             continue
-        if ch == "#" and not buf:
+        if ch == "#" and not (buf or quoted_word[0]):
             newline = text.find("\n", i)
             i = len(text) if newline < 0 else newline
             continue
@@ -1088,33 +1093,29 @@ def _env_split_string(rest: list[str]) -> tuple[list[str], int] | None:
 
 
 def _after_env(tokens: list[str], *, strict: bool = False) -> list[str]:
-    """What `env` runs: its words after assignments and options."""
-    if strict:
-        rest = tokens[1:]
-        while rest and (is_assignment(rest[0]) or rest[0].startswith("-")):
-            if rest[0] == "--":
-                return strip_assignments(rest[1:])
-            split = _env_split_string(rest) if not is_assignment(rest[0]) else None
+    """What `env` runs: its words after assignments and options.
+
+    Both modes read `env`'s options with the shared `_ENV_OPTS` table; strict
+    mode splits an ``env -S '…'`` value into the words it runs, while default
+    mode — which must never raise — skips the option and its value whole.
+    """
+    rest = tokens[1:]
+    while rest and (is_assignment(rest[0]) or rest[0].startswith("-")):
+        if rest[0] == "--":
+            return strip_assignments(rest[1:])
+        if strict and not is_assignment(rest[0]):
+            split = _env_split_string(rest)
             if split is not None:
                 words, used = split
                 rest = words + rest[used:]
-            else:
-                rest = rest[2:] if _takes_next(rest[0], _ENV_OPTS) else rest[1:]
-        return rest
-    rest = tokens[1:]
-    while rest and (is_assignment(rest[0]) or rest[0].startswith("-")):
-        rest = rest[2:] if rest[0] in ("-u", "--unset") and len(rest) > 1 else rest[1:]
+                continue
+        rest = rest[2:] if _takes_next(rest[0], _ENV_OPTS) else rest[1:]
     return rest
 
 
 def _after_timeout(tokens: list[str], *, strict: bool = False) -> list[str]:
     """What `timeout` runs: its words after options and the duration."""
-    if strict:
-        rest = _after_options(tokens, _TIMEOUT_OPTS)
-        return rest[1:]
-    rest = tokens[1:]
-    while rest and rest[0].startswith("-"):
-        rest = rest[1:]
+    rest = _after_options(tokens, _TIMEOUT_OPTS)
     return rest[1:] if rest else rest
 
 
