@@ -7,6 +7,14 @@ name: Qualification S2 supervision
 # and it is not a required merge check. The suite runs alone with one worker;
 # its last case deliberately exhausts the common memory group, so every run gets
 # its own VM and nothing here is reused.
+#
+# A dispatch with `cases` set is a labelled DIAGNOSTIC run (record scope
+# DIAGNOSTIC_SUBSET, refused by scripts/s2_run_evidence.py); the run-name says so
+# in `gh run list`, which scripts/guard_s2_runs.py reads to exempt it.
+run-name: >-
+  ${{ inputs.cases != '' && inputs.cases != null
+      && format('S2 DIAGNOSTIC ({0})', inputs.cases)
+      || format('Qualification S2 supervision ({0})', github.ref_name) }}
 on:
   workflow_dispatch:
     inputs:
@@ -36,7 +44,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: qualification-s2-${{ github.ref }}
+  # A diagnostic dispatch never cancels a full run on the same ref, or vice versa.
+  group: qualification-s2-${{ github.ref }}-${{ inputs.cases != '' && inputs.cases != null && 'diagnostic' || 'full' }}
   cancel-in-progress: true
 
 jobs:
@@ -68,11 +77,17 @@ jobs:
             echo "docker_cgroup_version=$(sudo /usr/bin/docker --host unix:///var/run/docker.sock info --format '{{.CgroupVersion}}')"
           } | tee "$RUNNER_TEMP/qualification-evidence/s2-host-facts.txt"
       - name: Doctor and targeted boundary run
+        env:
+          # Inputs reach the script through the environment, never interpolated
+          # into it: `cases` is free text and this step runs as root.
+          BOUNDARY_MODE: ${{ inputs.mode || 's3' }}
+          BOUNDARY_CASES: ${{ inputs.cases || '' }}
         run: |
           manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
           host_root="$(dirname "$manifest")"
-          mode="${{ inputs.mode || 's3' }}"
-          cases="${{ inputs.cases || '' }}"
+          mode="$BOUNDARY_MODE"
+          cases="$BOUNDARY_CASES"
+          case "$mode" in s2|s3) ;; *) echo "unsupported mode: $mode" >&2; exit 2 ;; esac
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
           args=(--"$mode")
           if [ -n "$cases" ]; then
