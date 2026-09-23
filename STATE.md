@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-22
+**Last curated:** 2026-09-23
 
 Current priorities, dormant cross-session work, and outstanding obligations.
 Read the queue first, then the linked executable plan; campaign records own
@@ -43,6 +43,7 @@ Newest 15 consequences; decision rationale remains with the owner. Older index:
 [archive](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md).
 Retracted verdicts leave this index; their correction stands with its owner.
 
+- **2026-09-23** — T00 step-1 return accepted (INSUFFICIENT). Condition 4 ruled **no**: a T00 screen is not four-firm §4 falsifier evidence, so the 2026-11-08 falsifier needs its own dated re-MC regardless of T00. The path-position bracket timing convention for the qualification replay was ratified the same day ([schedule-evidence addendum](docs/briefs/phase3-preparation/2026-09-15/schedule-execution-evidence.md#addendum-2026-09-23--path-position-bracket-convention-ratified-2026-09-23)); it replaces one P7 blocker only and authorizes no build. No step 2, screen, MC, provider or spend is granted. [T00 rulings](docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23)
 - **2026-09-22** — Deployment-checklist amendment (2026-09-21) §4 ratified: all five decisions adopted as recommended — T00 step 1 authorized (not dispatched); D-feed as a gate on the T00 verdict and the T10 F1 packet; D-broker conditional on T08 R3; D-codex as the review hybrid; D-sequence with a versioned T02 freeze. No provider, access, spend, deployment or arming granted. [Addendum](docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#addendum-2026-09-22--4-dispositions-ratified-2026-09-22--all-five-adopted-as-recommended-and-the-5-correction-applied)
 - **2026-09-21** — S2 accepted as the enforced work boundary (admission and supervised test work on a real Linux host); five enforcement gaps and two external-review P2 findings closed, #436 merged. No statistical dispatch, installed-release activation or S3 work is authorized by it. [Ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s2-budgeted-admission-and-real-linux-work-supervision-2026-09-21)
 - **2026-09-19** — S2-R2b accepted as the funded-scheduler integration only (closed private route, materialized-intent launch, release v4, owned timer; restart ownership ruled auto-recover). S2 overall remains INCOMPLETE / NOT ACCEPTED; R3/R4 untouched. [Ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s2-r2b-funded-scheduler-integration-2026-09-19)
@@ -57,7 +58,6 @@ Retracted verdicts leave this index; their correction stands with its owner.
 - **2026-09-03** — Select configuration campaign promoted to queue #1; cultivation remains off-queue. [Campaign record](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
 - **2026-09-02** — Portable-edge objective and bounded cultivation campaign approved; no candidate/capital authority. [ADR](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md)
 - **2026-09-01** — MOC-wake strategy and source-liveness pursuits closed; no candidate opened. [Closure](docs/notes/2026-09-01-next-vet-intake-decision.md)
-- **2026-09-01** — F1 reversed: a Tradeify discharge counts toward the four-firm program again. [Addendum](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4)
 
 ## Dormant cross-session threads
 
@@ -85,7 +85,12 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   preservation trade was placed during 09-14→09-18 and reported that the
   account remains active. That week is recorded as missed, not covered;
   active status is operator-reported and not independently verified.
-  Week 09-21→09-25 is open; the next deadline is 09-25.
+  Week 09-21→09-25 is operator-attested: on 2026-09-23, the operator reported
+  placing the trade and shared an order-screen capture in session (a filled
+  MYM market round trip; the capture shows no date and is not committed). This
+  is the operator's attestation; the private compliance record was not
+  independently verified. The 09-21→09-25 obligation is covered; the next
+  bucket is 09-28→10-02 (deadline 10-02), advanced once 09-25 passes.
 - **Earlier record still owed:** week 08-31→09-04 was operator-attested on
   09-04 and restated on 09-05; the exact trade day remains unresolved between
   09-02/09-03, and its private ledger row remains unverified.
@@ -168,7 +173,9 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
 - **GSUB-1 PARK expiries:** b1 Aegis→6J, b3 ORB-MNQ, b6 Q-NAS-ECR convert to SUBTRACT
   absent explicit renewal. [Pursuit records](docs/pursuits/). b5's renewed date is below.
 - **Prop-portfolio §4 primary falsifier:** still undischarged; absent the required
-  qualifying clearance, demote to research-only. [Four-firm owner](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md)
+  qualifying clearance, demote to research-only. T00 cannot discharge it: on
+  2026-09-23 the operator ruled a T00 screen is not §4 falsifier evidence
+  ([D-T00 condition 4](docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23)), so discharge needs its own dated re-MC. [Four-firm owner](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md)
   · [withdrawal](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md).
 - **Mechanism boundaries:** check clauses 2-A/2-C; 2-B discharged under the
   [channel-retirement decision](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md).

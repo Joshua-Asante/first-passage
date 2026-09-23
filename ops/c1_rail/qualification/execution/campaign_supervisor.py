@@ -1639,6 +1639,14 @@ def _guardian_signal_unit(unit, signal_name):
         raise ValueError('unit signal failed: ' + result.stderr.decode('utf-8', 'replace')[-300:])
 
 
+# The qg5 unit's stop timeout, and how long past its RuntimeMaxUSec the
+# supervisor still waits for it to leave its cgroup before settling: the
+# kill runs inside TimeoutStopUSec, and one more period covers the kernel
+# emptying the cgroup after the last process is reaped.
+G5_UNIT_STOP_TIMEOUT_USEC = 1_000_000
+G5_UNIT_STOP_GRACE_NS = 2 * G5_UNIT_STOP_TIMEOUT_USEC * 1000
+
+
 def g5_unit_spec(
     enrollment,
     *,
@@ -1688,7 +1696,7 @@ def g5_unit_spec(
             'KillMode': 'control-group',
             'KillSignal': 9,
             'SendSIGKILL': True,
-            'TimeoutStopUSec': 1_000_000,
+            'TimeoutStopUSec': G5_UNIT_STOP_TIMEOUT_USEC,
             'RuntimeMaxUSec': max(1, remaining_wall_ns // 1000),
             'LimitCPU': cpu_seconds,
             'LimitCPUSoft': cpu_seconds,
@@ -2268,6 +2276,16 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
     docker.call('DELETE', '/containers/' + container + '?v=1')
 
 
+def _unit_cgroup_exited(group):
+    """True once the unit's cgroup is empty or gone. systemd removes a stopped
+    transient unit's cgroup, so the directory can vanish between the
+    existence check and the read; that removal is itself the exit."""
+    try:
+        return _kernel_pairs(_read_counter(group / 'cgroup.events')).get('populated') == 0
+    except FileNotFoundError:
+        return True
+
+
 def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
     """The metered qg5 unit (D2): start under the payload slice, supervise its
     identities, and settle. The assessment itself is the unit's own work over
@@ -2307,19 +2325,33 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
     group = _scope_path(runtime.parent, enrollment['scopes']['payload_slice']) / unit
     seen = {}
     resumed = 0
+    committed = False
     while True:
         current = parse_canonical_json(
             campaigns.budget_snapshot(state['attempt_id']), label='current g5 authority'
         )
         if current['state'] in ('N2_READY', 'N1_FAILED'):
-            # The assessment commit's own terminal outcome: the supervised end.
+            # The assessment commit's own terminal outcome ends supervision of
+            # the unit's identities, but not the wait for its exit: the commit
+            # lands while the driver is still returning, and an observation of
+            # a populated slice carries no final CPU sample, which settlement
+            # must record as BUDGET_UNCERTAIN (a live payload is never sampled).
+            committed = True
+        else:
+            _assert_authority(current)
+        if _unit_cgroup_exited(group):
             break
-        _assert_authority(current)
-        if (
-            not group.exists()
-            or _kernel_pairs(_read_counter(group / 'cgroup.events')).get('populated') == 0
-        ):
-            break
+        if committed:
+            # RuntimeMaxUSec (the remaining wall at launch) plus the stop
+            # timeout bounds the unit's life; past that bound the observation
+            # reports what it sees, a still-live unit, and settles uncertain.
+            if (
+                clock(observe_campaign_clock())['boottime_ns']
+                >= deadline + G5_UNIT_STOP_GRACE_NS
+            ):
+                break
+            time.sleep(0.2)
+            continue
         init_image = None
         for pid_text in _payload_processes(group):
             observed_identity = _process_identity(pid_text)

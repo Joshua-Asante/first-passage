@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Fifteenth roll, 2026-09-23** (one entry, pushed off by the T00 step-1 rulings):
+
+- **2026-09-01** — F1 reversed: a Tradeify discharge counts toward the four-firm program again. [Addendum](../../../../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4)
+
 **Fourteenth roll, 2026-09-10** (one entry, pushed off by the accepted Tradeify configuration closure):
 
 - **2026-08-24** — M1 item 5 licensed to a test strategy; Stage 1 no longer waits on queue #1. [M1 addendum](../../../../../docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)

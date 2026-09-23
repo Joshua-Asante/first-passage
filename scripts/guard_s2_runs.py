@@ -52,14 +52,17 @@ import os
 import posixpath
 import re
 import subprocess
+import stat
 import sys
 
 try:  # imported as `scripts.guard_s2_runs` (tests, repo root on sys.path)
+    from scripts._shell_tokens import matching_paren as _matching_paren
     from scripts._shell_tokens import expand as _expand
     from scripts._shell_tokens import is_assignment as _is_assignment
     from scripts._shell_tokens import segments as _segments
     from scripts._shell_tokens import strip_assignments as _strip_assignments
 except ImportError:  # run as `python scripts/guard_s2_runs.py`: scripts/ is sys.path[0]
+    from _shell_tokens import matching_paren as _matching_paren
     from _shell_tokens import expand as _expand
     from _shell_tokens import is_assignment as _is_assignment
     from _shell_tokens import segments as _segments
@@ -242,10 +245,33 @@ def _override_on_segment(tokens: list[str]) -> bool:
     return False
 
 
+def _leading_gh_repo(tokens: list[str]) -> str | None:
+    """GH_REPO set for the segment by its leading assignments or an `env` prefix."""
+    value, i = None, 0
+    while i < len(tokens) and _is_assignment(tokens[i]):
+        if tokens[i].startswith("GH_REPO="):
+            value = tokens[i].split("=", 1)[1] or None
+        i += 1
+    if i < len(tokens) and os.path.basename(tokens[i]).removesuffix(".exe") == "env":
+        for token in tokens[i + 1:]:
+            if token.startswith("GH_REPO="):
+                value = token.split("=", 1)[1] or None
+            elif not (_is_assignment(token) or token.startswith("-")):
+                break
+    return value
+
+
 def _join_dir(base: str, target: str) -> str:
-    """Resolve a `cd`/`-C` target against the hook's directory."""
-    if not target:
+    """Resolve a `cd`/`-C` target against the hook's directory.
+
+    `~` is expanded; a target built from a substitution or variable cannot be
+    known here, so the directory stays as it was (usually the same checkout)
+    rather than becoming a path that does not exist (which would fail open).
+    """
+    if not target or "$" in target or "`" in target:
         return base
+    if target.startswith("~"):
+        target = os.path.expanduser(target)
     if target.startswith("/") or target.startswith("\\\\") \
             or re.match(r"^[A-Za-z]:[\\/]", target):
         return posixpath.normpath(target.replace("\\", "/"))
@@ -312,6 +338,13 @@ def _push_specs(args: list[str]) -> tuple[str, list[tuple[str, str]]]:
     return "specs", specs
 
 
+def _whole_substitution(word: str) -> bool:
+    """Whether `word` is exactly one `$(…)` or backquote substitution."""
+    if word.startswith("`"):
+        return len(word) > 1 and word.endswith("`") and "`" not in word[1:-1]
+    return word.startswith("$(") and _matching_paren(word, 2) == len(word) - 1
+
+
 def _resolve_specs(specs: list[tuple[str, str | None]], dir_now: str) -> list[tuple[str, str | None]]:
     """Map push specs to concrete (branch, tip-source); unknown ones are skipped.
 
@@ -322,13 +355,13 @@ def _resolve_specs(specs: list[tuple[str, str | None]], dir_now: str) -> list[tu
     resolved: list[tuple[str, str | None]] = []
     current, have_current = "", False
     for destination, source in specs:
-        refers_to_current = destination in ("", "HEAD") \
-            or str(destination).startswith(("$(", "`"))
+        destination = str(destination).removeprefix("refs/heads/")
+        refers_to_current = destination in ("", "HEAD") or _whole_substitution(destination)
         if refers_to_current and not have_current:
             current, have_current = _current_branch(dir_now), True
-        branch = current if refers_to_current else str(destination)
-        if not branch or branch.startswith("$"):
-            continue
+        branch = current if refers_to_current else destination
+        if not branch or "$" in branch or "`" in branch:
+            continue  # built from a variable or a partial substitution: unknowable
         branch = branch.removeprefix("refs/heads/")
         if source in ("", "HEAD"):
             if not have_current:
@@ -345,105 +378,180 @@ def _is_workflow(selector: str) -> bool:
         or selector.endswith(f"/{WORKFLOW_FILE}")
 
 
-def _repo_flag(tokens: list[str]) -> str | None:
-    args = tokens[1:]
-    for i, arg in enumerate(args):
-        if arg in ("-R", "--repo") and i + 1 < len(args):
-            return args[i + 1]
-        if arg.startswith("--repo="):
-            return arg.split("=", 1)[1]
-    return None
+# gh flags that take a value when spaced (`-R x`); cobra's command lookup skips
+# these values, so a leaf's flags may stand before the group or leaf word (F30).
+_GH_VALUE_FLAGS = frozenset({"-R", "--repo", "-r", "--ref", "-f", "-F", "--field",
+                             "--raw-field", "-j", "--job"})
+_PFLAG_TRUE = frozenset({"1", "t", "T", "true", "TRUE", "True"})
+UNKNOWN = object()  # an input the guard cannot read (`-F key=@-`, an unreadable file; D10)
 
 
-_FIELD_FLAG = re.compile(r"--(raw-)?field=([^=]+)=(.*)")
-_JOINED_FIELD = re.compile(r"-([fF])([^=]+)=(.*)")
-_JOINED_FIELD_EQ = re.compile(r"-([fF])=(.+)")
+class _FileInput(str):
+    """A typed `-F key=@path` value: gh sends the file's bytes, read at dispatch time."""
+
+
+def _gh_command(tokens: list[str]) -> tuple[str, str, list[str]] | None:
+    """(group, leaf, rest) for a gh segment, the way cobra finds the command.
+
+    Flags (and a spaced flag's value) are not command words wherever they stand;
+    the first two words are the group and the leaf, and everything else keeps
+    its original order for the leaf's parser. A help request is no command.
+    """
+    words, rest, i = [], [], 1
+    while i < len(tokens):
+        token = tokens[i]
+        if token == "--":
+            rest.extend(tokens[i:])
+            break
+        if token in ("-h", "--help"):
+            return None
+        if token.startswith("-") and len(token) > 1:
+            rest.append(token)
+            if token in _GH_VALUE_FLAGS and i + 1 < len(tokens):
+                rest.append(tokens[i + 1])
+                i += 1
+        elif len(words) < 2:
+            words.append(token)
+        else:
+            rest.append(token)
+        i += 1
+    if len(words) < 2:
+        return None
+    return words[0], words[1], rest
+
+
+def _flag_values(rest: list[str], short: str, long: str) -> list[tuple[int, str]]:
+    """(index, value) for every pflag spelling of one flag, in order.
+
+    Spellings: `-X v`, `-Xv`, `-X=v`, `--long v`, `--long=v`.
+    """
+    found, i = [], 0
+    while i < len(rest):
+        arg = rest[i]
+        if arg == "--":
+            break
+        if arg in (short, long) and i + 1 < len(rest):
+            found.append((i, rest[i + 1]))
+            i += 2
+            continue
+        if arg.startswith(long + "="):
+            found.append((i, arg.split("=", 1)[1]))
+        elif arg.startswith(short) and len(arg) > len(short) and not arg.startswith("--"):
+            found.append((i, arg[len(short):].removeprefix("=")))
+        i += 1
+    return found
+
+
+def _repo_of(rest: list[str]) -> str | None:
+    """The repository gh uses: the last `-R/--repo` in any spelling (pflag)."""
+    values = _flag_values(rest, "-R", "--repo")
+    return values[-1][1] if values else None
+
+
+def _positionals(rest: list[str]) -> list[str]:
+    """Non-flag words of `rest`, skipping every spaced flag value."""
+    out, i = [], 0
+    while i < len(rest):
+        arg = rest[i]
+        if arg == "--":
+            out.extend(rest[i + 1:])
+            break
+        if arg.startswith("-") and len(arg) > 1:
+            i += 2 if arg in _GH_VALUE_FLAGS else 1
+            continue
+        out.append(arg)
+        i += 1
+    return out
+
+
+_FIELD_FLAG = re.compile(r"--(raw-)?field=([^=]+)=(.*)", re.DOTALL)
+_JOINED_FIELD = re.compile(r"-([fF])([^=]+)=(.*)", re.DOTALL)
+_JOINED_FIELD_EQ = re.compile(r"-([fF])=(.+)", re.DOTALL)
 _TYPED_FIELD_FLAGS = ("-F", "--field")
-_JOINED_REF = re.compile(r"-r(.+)")
+
+
+def _dispatch_fields(rest: list[str]) -> dict:
+    """Workflow inputs as gh sends them: typed `-F/--field` over raw `-f/--raw-field`.
+
+    gh applies typed fields after raw ones, so a typed value wins for its key
+    whatever the argument order (F31); within one kind the last one wins. A
+    typed value starting with `@` is read from a file by gh (`@-` is stdin);
+    it is kept as a _FileInput and resolved against the segment's directory.
+    """
+    raw, typed = {}, {}
+
+    def put(kind: str, key: str, value: str) -> None:
+        if kind == "typed":
+            typed[key] = _FileInput(value[1:]) if value.startswith("@") else value
+        else:
+            raw[key] = value
+
+    i = 0
+    while i < len(rest):
+        arg = rest[i]
+        if arg == "--":
+            break
+        following = rest[i + 1] if i + 1 < len(rest) else ""
+        if arg in ("-f", "-F", "--field", "--raw-field"):
+            if "=" in following:
+                key, _, value = following.partition("=")
+                put("typed" if arg in _TYPED_FIELD_FLAGS else "raw", key, value)
+            i += 2
+            continue
+        if match := _FIELD_FLAG.fullmatch(arg):
+            put("raw" if match.group(1) else "typed", match.group(2), match.group(3))
+        elif match := _JOINED_FIELD.fullmatch(arg):
+            put("typed" if match.group(1) == "F" else "raw", match.group(2), match.group(3))
+        elif match := _JOINED_FIELD_EQ.fullmatch(arg):
+            if "=" in match.group(2):
+                key, _, value = match.group(2).partition("=")
+                put("typed" if match.group(1) == "F" else "raw", key, value)
+        i += 1
+    return {**raw, **typed}
 
 
 def _parse_dispatch(tokens: list[str]) -> dict | None:
     """The dispatch a `gh workflow run` segment describes, or None for others.
 
     Reads flags as pflag does (`-rX`, `-r=X`, `-fK=V`, `-f=K=V`, `--field=K=V`,
-    `--raw-field=K=V`, `-F K=V`), accepts the workflow selector anywhere after
-    `run`, and keeps a `--json` dispatch unknown (its inputs cannot be read).
-    gh applies typed `-F/--field` values after raw `-f/--raw-field` ones, so a
-    typed field wins for its key whatever the argument order (F31).
+    `--raw-field=K=V`, `-F K=V`), finds the command the way cobra does (flags
+    may stand before `workflow` or `run`), accepts the workflow selector
+    anywhere, and keeps a `--json` dispatch unknown (its inputs cannot be read).
     """
-    if len(tokens) < 3 or tokens[1] != "workflow":
+    command = _gh_command(tokens)
+    if command is None or command[:2] != ("workflow", "run"):
         return None
-    i, repo = 2, None
-    while i < len(tokens) and tokens[i] != "run":
-        if tokens[i] in ("-R", "--repo") and i + 1 < len(tokens):
-            repo = tokens[i + 1]
-            i += 2
-        elif tokens[i].startswith("--repo="):
-            repo = tokens[i].split("=", 1)[1]
-            i += 1
-        elif tokens[i].startswith("-"):
-            i += 1
-        else:
-            return None
-    if i >= len(tokens) or tokens[i] != "run":
-        return None
-    tail = tokens[i + 1:]
-    ref, selector, json_inputs = "", None, False
-    raw, typed = {}, {}
-    idx = 0
-    while idx < len(tail):
-        arg = tail[idx]
-        following = tail[idx + 1] if idx + 1 < len(tail) else ""
-        if arg == "--json" or arg.startswith("--json="):
-            json_inputs = True
-        elif arg in ("-r", "--ref"):
-            ref = following
-            idx += 1
-        elif arg in ("-R", "--repo"):
-            repo = following
-            idx += 1
-        elif arg.startswith("--ref="):
-            ref = arg.split("=", 1)[1]
-        elif arg.startswith("--repo="):
-            repo = arg.split("=", 1)[1]
-        elif arg in ("-f", "-F", "--field", "--raw-field"):
-            if "=" in following:
-                key, _, value = following.partition("=")
-                (typed if arg in _TYPED_FIELD_FLAGS else raw)[key] = value
-            idx += 1
-        elif match := _FIELD_FLAG.fullmatch(arg):
-            (raw if match.group(1) else typed)[match.group(2)] = match.group(3)
-        elif match := _JOINED_FIELD.fullmatch(arg):
-            (typed if match.group(1) == "F" else raw)[match.group(2)] = match.group(3)
-        elif match := _JOINED_FIELD_EQ.fullmatch(arg):
-            if "=" in match.group(2):
-                key, _, value = match.group(2).partition("=")
-                (typed if match.group(1) == "F" else raw)[key] = value
-        elif match := _JOINED_REF.fullmatch(arg):
-            ref = match.group(1).removeprefix("=")
-        elif arg.startswith("-"):
-            pass
-        elif selector is None:
-            selector = arg
-        idx += 1
+    rest = command[2]
+    refs = _flag_values(rest, "-r", "--ref")
+    selector = next(iter(_positionals(rest)), None)
     if selector is None or not _is_workflow(selector):
         return None
-    return {"ref": ref, "fields": {**raw, **typed}, "json": json_inputs, "repo": repo}
+    flags = rest[:rest.index("--")] if "--" in rest else rest
+    json_inputs = any(arg == "--json" or arg.split("=", 1)[1] in _PFLAG_TRUE
+                      for arg in flags if arg == "--json" or arg.startswith("--json="))
+    return {"ref": refs[-1][1] if refs else "", "fields": _dispatch_fields(rest),
+            "json": json_inputs, "repo": _repo_of(rest)}
 
 
-def _parse_rerun(tokens: list[str]) -> tuple[str | None, str | None] | None:
-    if len(tokens) < 4 or tokens[1] != "run" or tokens[2] != "rerun":
+def _parse_rerun(tokens: list[str]) -> tuple[str | None, str | None, str | None] | None:
+    """(run id, repo, job id) for `gh run rerun [<run-id>] [--job <job-id>]`."""
+    command = _gh_command(tokens)
+    if command is None or command[:2] != ("run", "rerun"):
         return None
-    run_id = next((t for t in tokens[3:] if t.isdigit()), None)
-    return run_id, _repo_flag(tokens)
+    rest = command[2]
+    run_id = next((t for t in _positionals(rest) if t.isdigit()), None)
+    jobs = _flag_values(rest, "-j", "--job")
+    job = jobs[-1][1] if jobs and jobs[-1][1].isdigit() else None
+    return run_id, _repo_of(rest), job
 
 
 def _parse_update_branch(tokens: list[str]) -> tuple[str | None, str | None] | None:
-    if len(tokens) < 3 or tokens[1] != "pr" or "update-branch" not in tokens[2:]:
+    command = _gh_command(tokens)
+    if command is None or command[:2] != ("pr", "update-branch"):
         return None
-    rest = tokens[tokens.index("update-branch") + 1:]
-    number = next((t for t in rest if t.isdigit()), None)
-    return number, _repo_flag(tokens)
+    rest = command[2]
+    selector = next(iter(_positionals(rest)), None)  # number, URL or branch
+    return selector, _repo_of(rest)
 
 
 # --- gh / git access (fail open) ----------------------------------------------
@@ -528,16 +636,38 @@ def _default_branch(repo: str | None, cwd: str | None) -> str:
     return (out or "").strip().removeprefix("origin/")
 
 
+def _api_repo(repo: str) -> tuple[list[str], str]:
+    """(`--hostname` args, OWNER/REPO) for a `-R` value: [HOST/]OWNER/REPO or a URL."""
+    text = re.sub(r"^[a-z+]+://", "", repo.strip())
+    text = re.sub(r"^[^@/]+@", "", text)  # ssh user (git@host:owner/repo)
+    text = re.sub(r"^([^/:]+):(\d+/)?", r"\1/", text)  # scp host:owner/repo, host:port/
+    text = text.removesuffix(".git").strip("/")
+    parts = [part for part in text.split("/") if part]
+    host = parts[-3] if len(parts) >= 3 else ""
+    owner_repo = "/".join(parts[-2:])
+    return (["--hostname", host] if host and host != "github.com" else []), owner_repo
+
+
 def _remote_sha(repo: str | None, ref: str, cwd: str | None) -> str:
     if re.fullmatch(r"[0-9a-f]{40}", ref):
         return ref
     ref = ref.removeprefix("refs/heads/")
     if repo:
-        out = _run(["gh", "api", f"repos/{repo}/commits/{ref}", "--jq", ".sha"],
+        host, owner_repo = _api_repo(repo)
+        out = _run(["gh", "api", *host, f"repos/{owner_repo}/commits/{ref}", "--jq", ".sha"],
                    cwd=cwd)
         return out.strip() if out and out.strip() else ""
     out = _run(["git", "ls-remote", "origin", f"refs/heads/{ref}"], cwd=cwd)
     return out.split()[0] if out and out.split() else ""
+
+
+def _job_run_id(repo: str | None, job: str, cwd: str | None) -> str | None:
+    """The run a `gh run rerun --job <id>` belongs to (D11), or None if unknown."""
+    host, owner_repo = _api_repo(repo) if repo else ([], "{owner}/{repo}")
+    out = _run(["gh", "api", *host, f"repos/{owner_repo}/actions/jobs/{job}",
+                "--jq", ".run_id"], cwd=cwd)
+    value = (out or "").strip()
+    return value if value.isdigit() else None
 
 
 def _current_branch(cwd: str | None) -> str:
@@ -580,19 +710,44 @@ def _push_reason(specs: list[tuple[str, str | None]], repo: str | None,
 
 def _resolve_ref(ref: str, repo: str | None, dir_now: str) -> str:
     """The branch a --ref token names; no --ref means the default branch (D7)."""
-    if ref.startswith("$(") or ref.startswith("`"):
+    ref = ref.removeprefix("refs/heads/")
+    if _whole_substitution(ref):
         return _current_branch(dir_now).removeprefix("refs/heads/")
-    if ref.startswith("$"):
+    if "$" in ref or "`" in ref:
         return ""
     if ref:
         return ref.removeprefix("refs/heads/")
     return _default_branch(repo, dir_now)
 
 
+def _input_value(value, dir_now: str):
+    """A field value as gh sends it: a `@path` typed field reads the file (F31)."""
+    if not isinstance(value, _FileInput):
+        return value
+    if str(value) in ("", "-"):
+        return UNKNOWN  # stdin (or nothing): unknowable before the command runs
+    path = _join_dir(dir_now or ".", str(value))
+    limit = 1 << 16
+    try:
+        if not stat.S_ISREG(os.stat(path).st_mode):
+            return UNKNOWN  # a FIFO, /dev/stdin or a directory: gh's read, not ours
+        with open(path, "rb") as handle:
+            data = handle.read(limit + 1)
+    except (OSError, ValueError):
+        return UNKNOWN
+    if len(data) > limit:
+        return UNKNOWN
+    return data.decode("utf-8", errors="replace")
+
+
 def _dispatch_reason(parsed: dict, dir_now: str, pushed: list[str]) -> str | None:
     """Refusal for one parsed `gh workflow run` segment, or None to allow it."""
-    mode = str(parsed["fields"].get("mode") or DEFAULT_MODE)
-    cases = str(parsed["fields"].get("cases") or "")
+    mode_value = _input_value(parsed["fields"].get("mode"), dir_now)
+    cases_value = _input_value(parsed["fields"].get("cases"), dir_now)
+    if cases_value is UNKNOWN:
+        return None  # gh reads it from a file: the concurrency group is unknowable (D10)
+    mode = mode_value if mode_value is UNKNOWN else str(mode_value or DEFAULT_MODE)
+    cases = str(cases_value or "")
     if cases and not cases.strip():
         # The workflow's concurrency group treats any non-empty `cases` as
         # diagnostic, so this would cancel a live diagnostic run (F32).
@@ -605,14 +760,14 @@ def _dispatch_reason(parsed: dict, dir_now: str, pushed: list[str]) -> str | Non
     ref = "" if parsed["json"] else _resolve_ref(parsed["ref"], parsed["repo"],
                                                  dir_now)
     runs = None
-    if not parsed["json"] and mode in ("s2", "s3") and ref:
+    if not parsed["json"] and (mode is UNKNOWN or mode in ("s2", "s3")) and ref:
         runs = _gh_runs(parsed["repo"], branch=ref, event="workflow_dispatch",
                         cwd=dir_now)
     if diagnostic and mode == "s2":
         reason = S2_CASES_NOTE
     elif runs is not None:
         reason = dispatch_cancel_refusal(ref, runs, diagnostic=diagnostic)
-        if reason is None and not diagnostic and ref not in pushed:
+        if reason is None and not diagnostic and mode is not UNKNOWN and ref not in pushed:
             sha = _remote_sha(parsed["repo"], ref, dir_now)
             reason = dispatch_redundancy_refusal(sha, runs, mode=mode) if sha else None
     return reason
@@ -657,38 +812,35 @@ def _git_segment(tokens: list[str], state: dict, guarded: bool) -> str | None:
     return _push_reason(resolved, None, dir_now, trust_skip_ci=not state["mover"])
 
 
-def _hoist_repo_flag(tokens: list[str]) -> list[str]:
-    """Move gh's inherited `-R/--repo` from before the subcommand to the end (F30).
-
-    `gh -R owner/repo workflow run …` is valid; every parser below looks for the
-    subcommand at `tokens[1]` and reads `-R` anywhere after it.
-    """
-    head, rest, moved = tokens[:1], tokens[1:], []
-    while rest and rest[0].startswith("-"):
-        if rest[0] in ("-R", "--repo") and len(rest) > 1:
-            moved, rest = [*moved, "-R", rest[1]], rest[2:]
-        elif rest[0].startswith("--repo="):
-            moved, rest = [*moved, "-R", rest[0].split("=", 1)[1]], rest[1:]
-        else:
-            break
-    return [*head, *rest, *moved]
-
-
-def _gh_segment(tokens: list[str], state: dict, guarded: bool) -> str | None:
-    tokens = _hoist_repo_flag(tokens)
+def _gh_segment(tokens: list[str], state: dict, guarded: bool,
+                gh_repo: str | None = None) -> str | None:
+    """Refusal for one gh segment; `gh_repo` is GH_REPO in effect for it (F30/D8)."""
+    default_repo = gh_repo or state.get("gh_repo")
     dispatch = _parse_dispatch(tokens)
     if dispatch is not None:
+        dispatch["repo"] = dispatch["repo"] or default_repo
         return _dispatch_reason(dispatch, state["dir"], state["pushed"]) if guarded else None
     rerun = _parse_rerun(tokens)
     if rerun is not None:
-        return _rerun_reason(rerun[0], rerun[1], state["dir"]) if guarded else None
+        run_id, repo, job = rerun
+        repo = repo or default_repo
+        if job:  # gh reruns the job's own run and ignores any run-id argument
+            run_id = _job_run_id(repo, job, state["dir"])
+        return _rerun_reason(run_id, repo, state["dir"]) if guarded else None
     update = _parse_update_branch(tokens)
     if update is not None:
-        return _update_branch_reason(update[0], update[1], state["dir"]) if guarded else None
+        repo = update[1] or default_repo
+        head = _pr_head_branch(repo, update[0], state["dir"])
+        if head:
+            state["pushed"].append(head)
+        if not guarded or not head:
+            return None
+        return _push_reason([(head, None)], repo, state["dir"], trust_skip_ci=False)
     return None
 
 
-def _eval_segment(tokens: list[str], state: dict, self_override: bool) -> str | None:
+def _eval_segment(tokens: list[str], state: dict, self_override: bool,
+                  gh_repo: str | None = None) -> str | None:
     head = os.path.basename(tokens[0]).removesuffix(".exe")
     if head == "cd":
         state["dir"] = _join_dir(state["dir"], tokens[1] if len(tokens) > 1 else "")
@@ -696,24 +848,32 @@ def _eval_segment(tokens: list[str], state: dict, self_override: bool) -> str | 
     if head == "export":
         if OVERRIDE in tokens[1:]:
             state["export_override"] = True
+        for token in tokens[1:]:
+            if token.startswith("GH_REPO="):
+                state["gh_repo"] = token.split("=", 1)[1] or None
+        return None
+    if head == "unset" and "GH_REPO" in tokens[1:]:
+        state["gh_repo"] = None
         return None
     guarded = not (self_override or state["export_override"])
     if head == "git":
         return _git_segment(tokens, state, guarded)
     if head == "gh":
-        return _gh_segment(tokens, state, guarded)
+        return _gh_segment(tokens, state, guarded, gh_repo)
     return None
 
 
 def refusal_for_command(command: str, cwd: str | None = None) -> str | None:
     """Reason to refuse `command` run from `cwd`, or None when it may run."""
-    state = {"dir": (cwd or "").replace("\\", "/"), "pushed": [],
-             "mover": False, "export_override": False}
+    state = {"dir": (cwd or os.getcwd()).replace("\\", "/"), "pushed": [],
+             "mover": False, "export_override": False,
+             "gh_repo": os.environ.get("GH_REPO") or None}
     for raw in _segments(command):
         self_override = _override_on_segment(raw)
+        gh_repo = _leading_gh_repo(raw)
         for tokens in _expand(_strip_assignments(raw)):
             if tokens:
-                reason = _eval_segment(tokens, state, self_override)
+                reason = _eval_segment(tokens, state, self_override, gh_repo)
                 if reason:
                     return reason
     return None
