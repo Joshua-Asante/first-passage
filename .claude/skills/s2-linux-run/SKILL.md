@@ -52,5 +52,6 @@ Known-benign classes so far: `warm_service` `Slice==''` (unit GC within the same
 - Coordinator: acceptance needs the integrated PR run on the final head, artifact-read, plus independent review — never a branch run alone.
 - Windows/mock/`simulated_control_timer` results are never Linux evidence.
 
-## 5. Faster loops still open (S3-era tooling, not for a worker to improvise)
-Shard the suite across two fresh hosts (OOM case last on its shard); cache the provisioned venv/worker image; a labelled `workflow_dispatch` `-k` diagnostic mode (invariants fail by design, so it can never pass as acceptance); move Windows line 3 to a hosted runner once the source-bound recorder runs there.
+## 5. Diagnostic subset runs, and faster loops still open
+Iterating on one failing case: `gh workflow run qualification-s2-supervision.yml --ref <branch> -f mode=s3 -f cases='<pytest -k expr>'` (`cases` is accepted in `s3` mode only). The run is titled `S2 DIAGNOSTIC (…)`, its record is `acceptance_scope=DIAGNOSTIC_SUBSET`, and `s2_run_evidence.py` refuses it (`ok: false`) whatever its outcome — read the printed `junit` totals for the selected cases. It runs in its own concurrency group, so it does not cancel a full run on the same ref. Acceptance still needs a full run on the final head.
+Still open (S3-era tooling, not for a worker to improvise): shard the suite across two fresh hosts (OOM case last on its shard); cache the provisioned venv/worker image; move Windows line 3 to a hosted runner once the source-bound recorder runs there.
