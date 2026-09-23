@@ -94,12 +94,18 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   recurring schedule; record coverage only when it is
   attested; `daily-repo-truth-sync` reads this board's dated obligations.
 
-### Monthly — recurring (rolling; next deadline **2026-09-21**)
+### Monthly — recurring (rolling; next deadline **2026-10-21**)
 
 - **Subscription reconfirm:** recheck [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md)
   rows d11–d18, record confirmation even when unchanged, and resolve Fly.io/Tradeify
   unknowns if evidence becomes available. Roll monthly on the 21st; the operator
   confirms the figures. [Owner ADR](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md).
+- **Coverage record:** the 2026-09-21 reconfirm is **not attested** as of 2026-09-22 —
+  recorded as missed, not confirmed. The operator's confirmation of rows d11–d18
+  (unchanged or updated) remains owed and is recorded here when given; no figure is
+  asserted by this roll. The schedule advanced on 2026-09-22 so the currency gate
+  reflects the next obligation rather than a stale one (the Weekly row's convention:
+  preserve missed records when advancing; record coverage only when attested).
 
 ### No fixed date / gated
 
