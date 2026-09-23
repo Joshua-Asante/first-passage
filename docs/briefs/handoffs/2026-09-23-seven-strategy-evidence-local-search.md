@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (read-only search and hash comparison on the operator's Windows machine)
 **Date:** 2026-09-23
-**Status:** RETURNED 2026-09-23 — `DONE_WITH_CONCERNS`, evidence **INCOMPLETE** (AMBIGUOUS); the identity-only inputs (Step 2.1 row 5) survive locally. The split-verdict ruling is the operator's (§7.6). Drafted 2026-09-23 at the operator's direction ("Draft a handoff for a local session to find a copy").
+**Status:** RETURNED 2026-09-23 — `DONE_WITH_CONCERNS`, evidence **INCOMPLETE** (AMBIGUOUS); the identity-only inputs (Step 2.1 row 5) survive locally. **Ruled 2026-09-23** (operator: "accept the recommended reading and merge 474"): INCOMPLETE for the evidence; the row-5 inputs are recorded as surviving and neither falsify H nor reopen candidate 1 (§7.6). Drafted 2026-09-23 at the operator's direction ("Draft a handoff for a local session to find a copy").
 **Executor:** one local Claude Code session with read access to the operator's drives. **Operator:** owns the machine, approves each search root outside the checkout (§0.5), and receives the return.
 **Authority:** read, list and hash files; write §7 of this packet and nothing else. Moving, copying, deleting, uploading or committing any private byte is forbidden (§5).
 
@@ -104,7 +104,9 @@ A read-only Python walker hashed every file ≤ 2 GB (SHA-256, 1 MiB chunks; `.g
 2. Say whether to open §7.4 roots 1–2, the only places the 09-08 evidence could still sit unseen.
 3. Consider preserving the 14 row-5 files: they are the only surviving local copies of the campaign's inputs outside the gitignored checkout paths.
 
-### 7.6 Coordinator reaction (2026-09-23; recommendations, no ruling)
+### 7.6 Coordinator reaction (2026-09-23) and operator ruling
+**Operator ruling (2026-09-23, verbatim):** "accept the recommended reading and merge 474". This adopts the first bullet below. The remaining bullets are recommended operator actions, not yet taken: the shadow-copy listing, closing root 2, and copying the inputs.
+
 - **The split is a drafting defect in this packet, not an executor error.** Step 2.1 listed row 5 as "identity only", but §4 falsified H on *any* Step 2.1 digest. The executor applied the letter and flagged it correctly. §1 is the governing purpose: only the evidence would reopen candidate 1. **Recommended ruling:** read the verdict as **INCOMPLETE (AMBIGUOUS)** for the evidence, and record the row-5 inputs as *surviving inputs*, which neither falsify H nor reopen candidate 1.
 - **§7.4 root 1 (shadow copies): worth one elevated, read-only `vssadmin list shadows`.** It is a listing, not a restore. If it shows no shadow copy created on or after 2026-09-08, root 1 closes empty. **§7.4 root 2 (Codex sandbox dirs): recommend closing without opening.** They predate the 09-08 packet, the readable siblings held only synthetic-fixture pytest output, and opening them needs an ACL change. If root 1 closes empty and root 2 is closed by ruling, the evidence verdict becomes **NONE**, and candidate 1 is **UNREACHABLE** in the T00 sense (§7.8 of the T00 return), with the public digests proving what existed.
 - **Preserving the row-5 inputs: agree, but copy, don't move.** A move within the same disk adds no durability. Copying into the existing private-backup root keeps the Downloads originals and adds a second location; the digests above pin both. Pine bodies and vendor CSVs stay out of git either way (public-clone posture).
