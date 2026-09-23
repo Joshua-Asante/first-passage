@@ -841,3 +841,27 @@ def test_joint_continuation_prefix_requires_the_versioned_policy():
     legacy.pop('joint_continuation')
     with pytest.raises(ValueError, match='POLICY_SCHEMA_MISMATCH'):
         parse_policy(encoded(legacy))
+
+
+def test_n2_work_start_claim_is_live_from_n2_ready(tmp_path, monkeypatch):
+    """The launch's START_CLIENT control claim (campaign_supervisor._control)
+    for a reserved N2 work runs from N2_READY, the progression state S4 opens;
+    it must see the campaign as live exactly as the reservation and launch gate
+    do, not as a terminal budget. The Linux joint cases refused here ('terminal
+    campaign budget') once the N1 G5 settlement wait let them reach the launch."""
+    instance = committed_n1(tmp_path, monkeypatch)
+    materialized(instance, schedule_document(instance, role='n2_worker', work='n2work'))
+    assert snap(instance)['state'] == 'N2_READY'
+    store(instance).claim_supervision_control(
+        instance.attempt, 'n2work', 'START_CLIENT', supervisor.observe_campaign_clock()
+    )
+
+
+def test_n1_work_start_claim_stays_refused_from_n2_ready(tmp_path, monkeypatch):
+    """The progression allowance is phase-scoped: a phase outside the state's
+    PROGRESSION_PHASES still meets the terminal-budget refusal."""
+    instance = committed_n1(tmp_path, monkeypatch)
+    with pytest.raises(ValueError, match='terminal campaign budget'):
+        store(instance).claim_supervision_control(
+            instance.attempt, 'g5work', 'START_CLIENT', supervisor.observe_campaign_clock()
+        )

@@ -1128,7 +1128,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
         spent = False
         with self.store.transaction() as connection:
             state = self._budget(connection, attempt)
-            self._work(state, work_id)
+            work = self._work(state, work_id)
             if state['profile']['schema'] not in (
                 'qualification_campaign_budget_profile/v2',
                 'qualification_campaign_budget_profile/v3',
@@ -1164,7 +1164,17 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 if slot != 'RECOVERY_OWNER':
                     if recovery_owner_token is not None:
                         raise ValueError('only recovery has an owner token')
-                    self._check_budget(state, state['authority_revision'])
+                    # S4: a committed progression state (N2_READY) is live for
+                    # exactly its next checkpoint's phases, as at reservation
+                    # and in launch_gate; the launch's START_CLIENT claim agrees.
+                    self._check_budget(
+                        state,
+                        state['authority_revision'],
+                        progression_checkpoint=(
+                            state['state'] in CHECKPOINT_PROGRESSION_STATES
+                            and work['phase'] in PROGRESSION_PHASES.get(state['state'], ())
+                        ),
+                    )
                 else:
                     # Omission deliberately creates an uncompletable claim.
                     # Production supplies an ephemeral, never persisted token.
