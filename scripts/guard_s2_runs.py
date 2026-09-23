@@ -55,6 +55,19 @@ import subprocess
 import stat
 import sys
 
+try:  # imported as `scripts.guard_s2_runs` (tests, repo root on sys.path)
+    from scripts._shell_tokens import matching_paren as _matching_paren
+    from scripts._shell_tokens import expand as _expand
+    from scripts._shell_tokens import is_assignment as _is_assignment
+    from scripts._shell_tokens import segments as _segments
+    from scripts._shell_tokens import strip_assignments as _strip_assignments
+except ImportError:  # run as `python scripts/guard_s2_runs.py`: scripts/ is sys.path[0]
+    from _shell_tokens import matching_paren as _matching_paren
+    from _shell_tokens import expand as _expand
+    from _shell_tokens import is_assignment as _is_assignment
+    from _shell_tokens import segments as _segments
+    from _shell_tokens import strip_assignments as _strip_assignments
+
 WORKFLOW_FILE = "qualification-s2-supervision.yml"
 WORKFLOW_NAME = "Qualification S2 supervision"
 WORKFLOW_ID = "362153971"
@@ -69,10 +82,6 @@ SKIP_CI_MARKERS = ("[skip ci]", "[ci skip]", "[no ci]", "[skip actions]",
 # message unknowable at PreToolUse time, voiding the skip-CI exemption (D3).
 TIP_MOVERS = frozenset({"commit", "pull", "merge", "rebase", "cherry-pick",
                         "revert", "am", "reset"})
-WRAPPERS = frozenset({"command", "builtin", "exec", "nohup", "nice", "time", "sudo", "!",
-                      "if", "then", "elif", "else", "while", "until", "do",
-                      "done", "fi"})
-SHELLS = frozenset({"bash", "sh", "zsh", "dash", "ksh"})
 MCP_PUSH_TOOLS = frozenset({"push_files", "create_or_update_file", "delete_file"})
 MCP_TOOLS = MCP_PUSH_TOOLS | {"update_pull_request_branch", "actions_run_trigger"}
 RUN_FIELDS = ("databaseId,headSha,status,conclusion,event,displayTitle,headBranch,"
@@ -85,7 +94,6 @@ S2_CASES_NOTE = ("the workflow accepts `cases` only with mode s3 (an s2 selectio
 
 _TITLE_MODE = re.compile(r"\[(s2|s3)\]")
 _TITLE_PR = re.compile(r"\((\d+)/merge\)")
-_ASSIGNMENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=")
 
 
 # --- run-dict helpers ---------------------------------------------------------
@@ -224,310 +232,9 @@ def _has_skip_ci(message: str) -> bool:
     return any(marker in folded for marker in SKIP_CI_MARKERS)
 
 
-# --- tokenizer (D14) ----------------------------------------------------------
-
-def _matching_paren(text: str, start: int) -> int:
-    """Index of the ')' matching the '$(' whose body starts at `start`.
-
-    Shell-aware, so a quote, `(` or `)` inside a heredoc body, a comment or an
-    escaped character does not unbalance the scan (a heredoc in `$(cat <<'EOF'
-    … EOF)` is the standard commit-message idiom).
-    """
-    depth, quote, i = 1, "", start
-    pending: list[str] = []  # heredoc delimiters whose bodies start at the next newline
-    while i < len(text):
-        ch = text[i]
-        if quote:
-            if ch == "\\" and quote == '"':
-                i += 2
-                continue
-            if ch == quote:
-                quote = ""
-            i += 1
-            continue
-        if ch == "\\":
-            i += 2
-            continue
-        if ch in "'\"":
-            quote = ch
-        elif ch == "#" and (i == start or text[i - 1] in " \t\n;|&("):
-            newline = text.find("\n", i)
-            i = len(text) if newline < 0 else newline
-            continue
-        elif text.startswith("<<", i):
-            i, delimiter = _consume_redirection(text, i)
-            if delimiter:
-                pending.append(delimiter)
-            continue
-        elif ch == "\n" and pending:
-            i += 1
-            for delimiter in pending:
-                i = _heredoc_end(text, i, delimiter)
-            pending.clear()
-            continue
-        elif ch == "(":
-            depth += 1
-        elif ch == ")":
-            depth -= 1
-            if depth == 0:
-                return i
-        i += 1
-    return len(text)
-
-
-def _skip_word(text: str, i: int) -> int:
-    """Index after the shell word at text[i] (quotes and escapes honoured)."""
-    quote = ""
-    while i < len(text):
-        ch = text[i]
-        if quote:
-            if ch == "\\" and quote == '"':
-                i += 2
-                continue
-            if ch == quote:
-                quote = ""
-        elif ch == "\\":
-            i += 1
-        elif ch in "'\"":
-            quote = ch
-        elif ch in " \t\n;|&()<>":
-            return i
-        i += 1
-    return i
-
-
-def _consume_redirection(text: str, i: int) -> tuple[int, str]:
-    """Skip the redirection starting at text[i]; a heredoc returns its delimiter."""
-    if text[i:i + 2] == "<<" and text[i + 2:i + 3] != "<":
-        i += 2 + (1 if text[i + 2:i + 3] == "-" else 0)
-        while i < len(text) and text[i] in " \t":
-            i += 1
-        end = _skip_word(text, i)
-        # Quoting or escaping any part of the delimiter only disables expansion.
-        word = text[i:end].replace("'", "").replace('"', "").replace("\\", "")
-        return end, word
-    i += 3 if text[i:i + 3] == "<<<" else 1  # a here-string's word is data
-    while i < len(text) and text[i] in "<>&":
-        i += 1
-    while i < len(text) and text[i] in " \t":
-        i += 1
-    return _skip_word(text, i), ""
-
-
-def _heredoc_end(text: str, i: int, delimiter: str) -> int:
-    """Index after the heredoc body that starts at text[i] (just past a newline)."""
-    while i <= len(text):
-        eol = text.find("\n", i)
-        if eol < 0:
-            return len(text)
-        if text[i:eol].strip() == delimiter:
-            return eol + 1
-        i = eol + 1
-    return i
-
-
-_ANSI_SIMPLE = {"a": "\a", "b": "\b", "e": "\x1b", "E": "\x1b", "f": "\f", "n": "\n",
-                "r": "\r", "t": "\t", "v": "\v", "\\": "\\", "'": "'", '"': '"', "?": "?"}
-
-
-def _ansi_c(text: str, i: int, buf: list[str]) -> int:
-    """Decode a bash `$'…'` body starting at text[i] into buf; returns the next index."""
-    while i < len(text):
-        ch = text[i]
-        if ch == "'":
-            return i + 1
-        if ch != "\\" or i + 1 >= len(text):
-            buf.append(ch)
-            i += 1
-            continue
-        esc = text[i + 1]
-        if esc in _ANSI_SIMPLE:
-            buf.append(_ANSI_SIMPLE[esc])
-            i += 2
-            continue
-        width = {"x": 2, "u": 4, "U": 8}.get(esc)
-        if width:
-            digits = re.match(r"[0-9a-fA-F]{1,%d}" % width, text[i + 2:])
-            if digits and int(digits.group(0), 16) <= 0x10FFFF:
-                buf.append(chr(int(digits.group(0), 16)))
-                i += 2 + len(digits.group(0))
-                continue
-        octal = re.match(r"[0-7]{1,3}", text[i + 1:])
-        if octal:
-            buf.append(chr(int(octal.group(0), 8) & 0xFF))
-            i += 1 + len(octal.group(0))
-            continue
-        if esc == "c" and i + 2 < len(text):
-            buf.append(chr(ord(text[i + 2]) & 0x1F))
-            i += 3
-            continue
-        buf.append("\\" + esc)
-        i += 2
-    return i
-
-
-def _segments(command: str) -> list[list[str]]:
-    """Split `command` into shell segments of tokens, quote- and heredoc-aware.
-
-    Backslash-newline continuations are joined; newline, `;`, `&&`, `||`, `|`,
-    `&`, `(` and `)` separate segments; redirections and heredoc bodies are
-    dropped. A `$(…)` (or backquote) command substitution stays part of the
-    word it appears in — callers resolve such a token as "the current branch"
-    when it names a push destination or a `--ref` — and its body is emitted as
-    segments of its own just before the enclosing command, because the shell
-    runs it first. The rest of the enclosing command is kept (a substitution
-    never ends it). `$'…'` (ANSI-C) and `$"…"` (locale) quoting are decoded.
-    """
-    text = command.replace("\\\r\n", "").replace("\\\n", "")
-    segments: list[list[str]] = []
-    tokens: list[str] = []
-    buf: list[str] = []
-    subs: list[list[str]] = []  # substitution bodies, emitted before their command
-
-    quoted_word = [False]  # the current word had quotes, so it exists even if empty
-
-    def flush_token() -> None:
-        if buf or quoted_word[0]:
-            tokens.append("".join(buf))
-            buf.clear()
-        quoted_word[0] = False
-
-    def flush_segment() -> None:
-        flush_token()
-        if subs:
-            segments.extend(subs)
-            subs.clear()
-        if tokens:
-            segments.append(list(tokens))
-            tokens.clear()
-
-    def substitution(i: int) -> int:
-        """Keep the `$(…)`/backquote source at text[i] in the word; queue its body."""
-        if text[i] == "`":
-            close = text.find("`", i + 1)
-            close = len(text) - 1 if close < 0 else close
-            body = text[i + 1:close]
-        else:
-            close = _matching_paren(text, i + 2)
-            body = text[i + 2:close]
-        buf.append(text[i:close + 1])
-        subs.extend(_segments(body))
-        return close + 1
-
-    def quoted(i: int) -> int:
-        """Scan a quoted region into the token buffer; returns the next index."""
-        quoted_word[0] = True
-        quote = text[i]
-        i += 1
-        while i < len(text):
-            ch = text[i]
-            if ch == quote:
-                return i + 1
-            if quote == '"' and ((ch == "$" and text[i + 1:i + 2] == "(") or ch == "`"):
-                i = substitution(i)
-                continue
-            if quote == '"' and ch == "\\" and i + 1 < len(text):
-                buf.append(text[i + 1])
-                i += 2
-            else:
-                buf.append(ch)
-                i += 1
-        return i
-
-    def redirection_step(i: int) -> int | None:
-        """Consume a redirection at text[i] (or `&>`), or None if there is none."""
-        ch = text[i]
-        if ch == "&":
-            if text[i + 1:i + 2] != ">":
-                return None
-            flush_token()
-            start = i + 1
-        elif ch in "<>":
-            if buf and "".join(buf).isdigit():
-                buf.clear()  # an fd prefix such as the 2 in 2>&1
-            else:
-                flush_token()
-            start = i
-        else:
-            return None
-        end, delimiter = _consume_redirection(text, start)
-        if delimiter:
-            pending_heredocs.append(delimiter)
-        return end
-
-    def separator_step(i: int) -> int | None:
-        """Consume a command separator at text[i], or None if there is none."""
-        ch = text[i]
-        if ch not in "\n;|&()":
-            return None
-        if ch in "|&" and text[i + 1:i + 2] == ch:
-            i += 1  # && or ||
-        flush_token()
-        flush_segment()
-        return i + 1
-
-    i = 0
-    pending_heredocs: list[str] = []
-    while i < len(text):
-        ch = text[i]
-        if ch in " \t":
-            flush_token()
-            i += 1
-            continue
-        if ch in "\n;":
-            flush_token()
-            i += 1
-            if ch == "\n" and pending_heredocs:
-                for delimiter in pending_heredocs:
-                    i = _heredoc_end(text, i, delimiter)
-                pending_heredocs.clear()
-            flush_segment()
-            continue
-        if ch == "#" and not buf:
-            newline = text.find("\n", i)
-            i = len(text) if newline < 0 else newline
-            continue
-        if ch == "$" and text[i + 1:i + 2] == "'":
-            quoted_word[0] = True
-            i = _ansi_c(text, i + 2, buf)
-            continue
-        if ch == "$" and text[i + 1:i + 2] == '"':
-            i = quoted(i + 1)
-            continue
-        if (ch == "$" and text[i + 1:i + 2] == "(") or ch == "`":
-            i = substitution(i)
-            continue
-        if ch in "'\"":
-            i = quoted(i)
-            continue
-        step = redirection_step(i)
-        if step is None:
-            step = separator_step(i)
-        if step is not None:
-            i = step
-            continue
-        if ch == "\\":
-            buf.append(text[i + 1:i + 2])
-            i += 2
-        else:
-            buf.append(ch)
-            i += 1
-    flush_segment()
-    return segments
-
-
 # --- command-word parsing -----------------------------------------------------
-
-def _is_assignment(token: str) -> bool:
-    return bool(_ASSIGNMENT.match(token))
-
-
-def _strip_assignments(tokens: list[str]) -> list[str]:
-    i = 0
-    while i < len(tokens) and _is_assignment(tokens[i]):
-        i += 1
-    return tokens[i:]
-
+# The tokenizer (D14) and wrapper expansion live in scripts/_shell_tokens.py,
+# shared with guard_shell_command.py; this module uses their default mode.
 
 def _override_on_segment(tokens: list[str]) -> bool:
     """Whether the segment carries the override as one of its leading assignments."""
@@ -553,72 +260,6 @@ def _leading_gh_repo(tokens: list[str]) -> str | None:
             elif not (_is_assignment(token) or token.startswith("-")):
                 break
     return value
-
-
-def _shell_script(tokens: list[str]) -> str | None:
-    for i, token in enumerate(tokens[1:], 1):
-        if token == "-c" or re.fullmatch(r"-[a-zA-Z]*c", token):
-            return tokens[i + 1] if i + 1 < len(tokens) else None
-    return None
-
-
-def _after_env(tokens: list[str]) -> list[str]:
-    rest = tokens[1:]
-    while rest and (_is_assignment(rest[0]) or rest[0].startswith("-")):
-        rest = rest[2:] if rest[0] in ("-u", "--unset") and len(rest) > 1 else rest[1:]
-    return rest
-
-
-_WRAPPER_VALUE_LETTERS = {"sudo": "ughpCDrtTU", "time": "fo", "nice": "n", "exec": "a"}
-
-
-def _after_options(tokens: list[str], value_letters: str) -> list[str]:
-    """The words after a wrapper and its options (`sudo -u me`, `time -p`)."""
-    rest = tokens[1:]
-    while rest and rest[0].startswith("-") and rest[0] != "-":
-        option = rest[0]
-        if option == "--":
-            rest = rest[1:]
-            break
-        takes_value = (not option.startswith("--") and option[-1] in value_letters) \
-            or option in ("--user", "--group", "--host", "--prompt", "--chdir")
-        rest = rest[2:] if takes_value and len(rest) > 1 else rest[1:]
-    return rest
-
-
-def _after_timeout(tokens: list[str]) -> list[str]:
-    rest = tokens[1:]
-    while rest and rest[0].startswith("-"):
-        rest = rest[1:]
-    return rest[1:] if rest else rest
-
-
-def _expand(tokens: list[str]) -> list[list[str]]:
-    """Strip wrapper words (env/timeout/sudo/if/…) and re-parse `bash -c '…'`."""
-    out: list[list[str]] = []
-    work = list(tokens)
-    while work:
-        base = os.path.basename(work[0]).removesuffix(".exe")
-        if base in SHELLS:
-            script = _shell_script(work)
-            if script is None:
-                break
-            for segment in _segments(script):
-                out.extend(_expand(segment))
-            return out
-        if base == "env":
-            work = _after_env(work)
-            continue
-        if base == "timeout":
-            work = _after_timeout(work)
-            continue
-        if base in WRAPPERS:
-            work = _after_options(work, _WRAPPER_VALUE_LETTERS.get(base, ""))
-            continue
-        break
-    if work:
-        out.append(work)
-    return out
 
 
 def _join_dir(base: str, target: str) -> str:

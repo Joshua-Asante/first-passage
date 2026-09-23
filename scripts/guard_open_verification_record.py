@@ -5,22 +5,40 @@ after the command it wraps and voids the record (`source_stable=false`) if any
 tracked or untracked byte changed. On 2026-09-20 two 50-minute Windows
 verification sequences were voided because a session wrote a docs draft into
 the worktree while a record was open. A Write/Edit into the measured tree while
-a record is `running` can never be right, so refuse it at the harness instead of
+a record is open can never be right, so refuse it at the harness instead of
 discovering it 50 minutes later.
 
 Wiring (`.claude/settings.json`):
 
-    {"matcher": "Edit|Write|MultiEdit",
+    {"matcher": "Edit|Write|MultiEdit|NotebookEdit",
      "hooks": [{"type": "command",
                 "command": "python \\"$CLAUDE_PROJECT_DIR/scripts/guard_open_verification_record.py\\""}]}
+
+The targets are `tool_input.file_path`, each `tool_input.edits[].file_path`
+(MultiEdit) and `tool_input.notebook_path` (NotebookEdit).
 
 Contract: Claude Code PreToolUse — read the tool payload on stdin, write a
 `hookSpecificOutput.permissionDecision` JSON on stdout (see
 `scripts/guard_shell_command.py` for the shape). Fail-open on any parse error
-or if no record can be located. A record counts as open only while its
-`record.json` says `status == "running"` AND it was started less than
-`STALE_AFTER_SECONDS` ago — a recorder that died without closing its record must
-not lock the tree forever. `decide()` is the pure function the tests pin.
+or if no record can be located. `decide()` is the pure function the tests pin.
+
+Which records lock the tree (`_open_records`, card
+`docs/briefs/handoffs/2026-09-23-harness-guards-hardening.md` E5): every
+`record.json` under the checkout's `.cache/fp-verification/*/` (`scripts/fp.py`)
+and `.cache/fp-docker-verification/*/` (`scripts/docker_verification.py`) that
+was started less than `STALE_AFTER_SECONDS` ago — a recorder that died without
+closing its record must not lock the tree forever — and either
+
+  * has `status == "running"` (its command is executing), or
+  * has `status == "not_started"` with a `before` snapshot and no
+    `finished_at`: `RunRecord.begin()` has measured the tree, and the launcher
+    is still doing work (environment checks, a `docker build` of up to 900 s)
+    before `execute()` marks it running — a write now voids the record just
+    the same.
+
+Out of scope: records written outside the checkout, such as the ones
+`scripts/qualification_boundary_verification.py` writes on Linux CI; this hook
+only looks under the measured checkout's own `.cache/`.
 """
 from __future__ import annotations
 
@@ -30,6 +48,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 RECORDS_DIR = ".cache/fp-verification"
+DOCKER_RECORDS_DIR = ".cache/fp-docker-verification"
 STALE_AFTER_SECONDS = 4 * 3600  # longest legitimate sequence seen: ~3 h (line 3 + check)
 EXEMPT_PARTS = {".cache", ".git"}
 
@@ -42,27 +61,37 @@ def _measured_root(path: Path) -> Path | None:
     return None
 
 
+def _is_open(data: dict) -> bool:
+    """Whether a record's fields say its measured window is open (E5)."""
+    status = data.get("status")
+    if status == "running":
+        return True
+    return (status == "not_started" and data.get("before") is not None
+            and data.get("finished_at") is None)
+
+
 def _open_records(root: Path, now: datetime) -> list[Path]:
     found = []
-    records = root / RECORDS_DIR
-    if not records.is_dir():
-        return found
-    for record in records.glob("*/record.json"):
-        try:
-            data = json.loads(record.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
+    for folder in (RECORDS_DIR, DOCKER_RECORDS_DIR):
+        records = root / folder
+        if not records.is_dir():
             continue
-        if data.get("status") != "running":
-            continue
-        try:
-            started = datetime.fromisoformat(str(data.get("started_at")))
-        except (TypeError, ValueError):
-            continue
-        if started.tzinfo is None:
-            started = started.replace(tzinfo=timezone.utc)
-        if now - started > timedelta(seconds=STALE_AFTER_SECONDS):
-            continue  # abandoned recorder; do not lock the tree
-        found.append(record)
+        for record in sorted(records.glob("*/record.json")):
+            try:
+                data = json.loads(record.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            if not isinstance(data, dict) or not _is_open(data):
+                continue
+            try:
+                started = datetime.fromisoformat(str(data.get("started_at")))
+            except (TypeError, ValueError):
+                continue
+            if started.tzinfo is None:
+                started = started.replace(tzinfo=timezone.utc)
+            if now - started > timedelta(seconds=STALE_AFTER_SECONDS):
+                continue  # abandoned recorder; do not lock the tree
+            found.append(record)
     return found
 
 
@@ -106,10 +135,15 @@ def _emit(permission: str, agent_msg: str = "", user_msg: str = "") -> None:
 
 
 def _targets(data: dict) -> list[str]:
-    tool_input = data.get("tool_input") or {}
-    targets = [str(tool_input.get("file_path", ""))]
-    for edit in tool_input.get("edits", []) or []:
-        targets.append(str(edit.get("file_path", "")))
+    """Every path a write payload names; malformed parts are skipped, not fatal."""
+    tool_input = data.get("tool_input") if isinstance(data, dict) else None
+    if not isinstance(tool_input, dict):
+        return []
+    targets = [str(tool_input.get("file_path", "")), str(tool_input.get("notebook_path", ""))]
+    edits = tool_input.get("edits")
+    for edit in edits if isinstance(edits, list) else []:
+        if isinstance(edit, dict):
+            targets.append(str(edit.get("file_path", "")))
     return [t for t in targets if t]
 
 
