@@ -100,7 +100,7 @@ obtain the closure verdict. A delegation notice is not the closure check.
 
 ## Additional checks for CC handoff briefs (patterns 7–10)
 
-The six checks above apply to inquire / full ADR / handoff per the matrix. The four below apply when the brief is a Claude Code handoff (i.e., it spawns a fresh execution session). They were extracted from `obra/superpowers:subagent-driven-development` after evaluation against this skill's existing structure; the patterns they encode are spawn-specific failure modes that the six general checks did not catch.
+The six checks above apply to inquire / full ADR / handoff per the matrix. The checks below (7–10, and the pre-mortem, 11) apply when the brief is a Claude Code handoff (i.e., it spawns a fresh execution session). They were extracted from `obra/superpowers:subagent-driven-development` after evaluation against this skill's existing structure; the patterns they encode are spawn-specific failure modes that the six general checks did not catch.
 
 **7. Clarifying questions surfaced before §2 execution.** The handoff template includes a §0.5 block where the spawn must list ambiguities and ask before running the plan. The check at brief authoring time: does §0.5 instruct the spawn to halt on ambiguity, or does it implicitly assume the §1/§2 statements are complete? Implicit-completeness handoffs fail this check — the spawn will guess rather than ask, and a guess that misreads the task wastes the entire session. Anchor: any CC session that ran the wrong analysis because the brief was ambiguous and the spawn defaulted instead of asking.
 
@@ -118,11 +118,13 @@ The two passes catch different failure modes. Quality review with no spec-compli
 
 **10. Final consolidated read after multi-step work.** When a CC handoff executed >1 step (i.e., §2 had multiple Step 2.x blocks), the parent-session review includes a final read across ALL changes together, not just the per-step verifications. Per-step gates catch local correctness; they do not catch integration issues — two correct steps producing an inconsistent combined state. The DJ30 / Aegis / Guardian inter-strategy interactions are the canonical area where this matters: each strategy's lock decision is sound in isolation, the portfolio-MC view is what reveals inter-strategy interaction effects.
 
+**11. Pre-mortem before dispatch (coordinator-authored).** A handoff that will run more than one verification loop carries a short pre-mortem section, written by the coordinator before freeze and replacing free-form context rather than adding to it. It has four lines. **Loop cost:** the slowest verification step × expected rounds, with a full-run budget whose overrun triggers a checkpoint instead of another run. **Decisions the executor will hit:** listed and ruled on in one operator batch before freeze. **What would make this moot:** the cheapest upstream evidence that could cancel or redirect the work, dispatched no later than the packet. **Measure:** wall time, runs and rounds, filled in at return. The check at authoring time: is each line concrete (a number, a named decision, a named packet)? A pre-mortem that says "risks: TBD" fails. Anchor: S2 (2026-09-19/21), roughly 20 × 25 min hosted runs and four mid-packet ruling stops, all knowable before dispatch. First application: the S4 packet §0.6 (`docs/briefs/handoffs/2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md`), written from S3's measured run record.
+
 ---
 
 ## Convergence notes
 
-The six general checks plus patterns 7–10 are the union of two independently-derived disciplines:
+The six general checks plus patterns 7–10 (and the pre-mortem, 11) are the union of two independently-derived disciplines:
 - §0–§6 came from the 04-17 dd_protection cycle and the live-execution audit lessons.
 - §7–§10 came from `obra/superpowers:subagent-driven-development`.
 
