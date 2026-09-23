@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (inventory and verification; building a producer is explicitly out of scope)
 **Date:** 2026-09-22
-**Status:** READY TO DISPATCH, not yet dispatched. Authorized by **D-T00, ratified 2026-09-22 for step 1 only** ([amendment Addendum 2026-09-22, row D-T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#addendum-2026-09-22--4-dispositions-ratified-2026-09-22--all-five-adopted-as-recommended-and-the-5-correction-applied)). Parent packet: [amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early). T00 runs in parallel with the spine and **gates nothing**, including T02/S3.
+**Status:** DISPATCHED 2026-09-22 to one Claude Code executor session (branch `claude/t00-step1-producer-inventory`; its return lands in §7). Authorized by **D-T00, ratified 2026-09-22 for step 1 only** ([amendment Addendum 2026-09-22, row D-T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#addendum-2026-09-22--4-dispositions-ratified-2026-09-22--all-five-adopted-as-recommended-and-the-5-correction-applied)). Parent packet: [amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early). T00 runs in parallel with the spine and **gates nothing**, including T02/S3.
 **Executor:** one executor (Claude Code; reading, tracing and running existing tests). **Coordinator:** dispatches, and receives the return. **Operator:** Joshua answers the private-artifact question in §4 and rules condition 4 after the return; he alone ratifies any step 2.
 **Authority:** read the owners below; run existing tests and read-only probes; write §7 of this packet and nothing else in the repository. No new producer code, no screen, no pre-registration, no MC run. A `DONE` status supplies no permission for step 2.
 
@@ -161,7 +161,7 @@ The emulator's gap is not P5 alone; P1–P4 and P6 are also missing from it. The
 
 **Owed to the coordinator:**
 1. Acceptance of this return. The §3.3 hold was lifted by the operator's instruction rather than a coordinator ruling.
-2. *Resolved on operator instruction ("fix the three stale statements too", 2026-09-22):* the D-T00 grounds carry a dated correction note (prior sentence preserved); the amendment §5 audit hook now distinguishes TB-I2's absent `lab/` footprint from the relocated `ops/c1_rail/qualification/` replay; and the handoffs README lists T00 as returned. Still stale and not in that instruction: this packet's own header **Status** line ("READY TO DISPATCH, not yet dispatched").
+2. *Resolved on operator instruction ("fix the three stale statements too", 2026-09-22):* the D-T00 grounds carry a dated correction note (prior sentence preserved); the amendment §5 audit hook now distinguishes TB-I2's absent `lab/` footprint from the relocated `ops/c1_rail/qualification/` replay; and the handoffs README lists T00 as returned. This packet's header **Status** line, flagged as stale in an earlier revision of this item, was updated on `main` by #458 to "DISPATCHED 2026-09-22 … its return lands in §7" and arrived here by merge; it no longer contradicts this return.
 
 ### 7.6 Probe sources (synthetic; no screen, no MC)
 
