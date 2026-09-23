@@ -79,3 +79,13 @@ def test_main_emits_claude_code_pretooluse_shape(tmp_path, monkeypatch, capsys):
     out = json.loads(capsys.readouterr().out)['hookSpecificOutput']
     assert out['hookEventName'] == 'PreToolUse' and out['permissionDecision'] == 'deny'
     assert 'permissionDecisionReason' in out and 'additionalContext' in out
+
+
+def test_main_emits_nothing_when_it_does_not_deny(tmp_path, monkeypatch, capsys):
+    """2026-09-23: an allowed write produces no output, so the hook never
+    approves anything on the operator's behalf (D15 of the guard hardening)."""
+    root = checkout(tmp_path)
+    payload = json.dumps(dict(tool_input=dict(file_path=str(root / 'docs' / 'y.md'))))
+    monkeypatch.setattr('sys.stdin', __import__('io').StringIO(payload))
+    assert guard.main() == 0
+    assert capsys.readouterr().out.strip() == ''
