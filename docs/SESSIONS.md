@@ -45,6 +45,17 @@ historical number by merge commit or branch name, never by number alone. Owner:
 ---
 
 
+## 2026-09-22a — `file_lock` on Windows: the lock file needs no writer, and the acquire now waits instead of giving up
+
+- **Focus:** operator-direct: make the Windows bootstrap in `core/lib/file_lock.py::exclusive_file_lock` race-free (the load-timing flake that #451 worked around in the test by pre-warming the lock), then make the Windows acquire wait the way POSIX `flock` does.
+- **Shipped:** [first-passage#453](https://github.com/Joshua-Asante/first-passage/pull/453) (`c8d3590`) then [first-passage#456](https://github.com/Joshua-Asante/first-passage/pull/456) (`bd54d43`). The one-byte lock-file payload is deleted: Windows byte-range locks may cover a region past end-of-file, so byte 0 of a zero-length file is a valid lock object, and concurrent `open("a+b")` calls do not conflict — nothing writes to the lock file any more. The acquire polls `LK_NBLCK` with 0.5 → 20 ms backoff and no time limit; only `EACCES` (probed as the contention code) is retried. The POSIX branch is byte-identical. `tests/core/test_file_lock.py` holds seven tests, each checked to fail against the implementation it guards.
+- **Judgment:** (1) #453's fix — a `mkstemp` + `os.rename` publish — carried a race of its own: while one process's rename lands on the lock path, a sibling's `open()` hits a sharing violation reported as `PermissionError`. A stress harness measured it at 4 of 2,250 child processes (0.18%); the 30/30 pytest loop that certified #453 had exercised about 270 children, roughly a 40% chance of seeing it. #456 therefore deletes the write rather than re-sequencing it. #453 was merged before the defect surfaced, so #456 is a separate follow-up and its description retracts #453's approach. (2) Dropping `LK_LOCK`'s ten-attempt, roughly ten-second give-up was operator-ruled; an 11 s hold test pins the new behaviour, at the cost of 11 s of wall clock per run.
+- **Evidence:** Windows, `./fp.ps1 pytest -q -p no:cacheprovider`: 30/30 loop runs green with `tests/ops/qualification/execution/test_files.py` (22 passed per run); the harness that exposed #453's race ran 200 rounds / 1,800 children under 6-thread CPU load with 0 child failures, 0 lost updates and 0 non-empty lock files. `make check` exit 0 on `bd54d43`.
+- **Open / next:** #451's lock pre-warm in `tests/ops/qualification/execution/test_files.py` no longer does anything; the session that owns that file can remove it. Post-merge hygiene removed 15 clean worktrees whose work was merged (93 → 78; their branches are kept); 13 merged worktrees holding gitignored evidence and 10 with post-merge commits were left for operator review.
+
+---
+
+
 ## 2026-09-20b — `CLAUDE.md` retired; `AGENTS.md` is the single instruction file for every harness
 
 - **Focus:** operator-direct: consolidate the two instruction files. Premise check first: the files were disjoint, not duplicated — `AGENTS.md` (Codex launcher/verification rules) was invisible to Claude Code, which reads only `CLAUDE.md` when one exists, and `CLAUDE.md` was invisible to Codex. Claude Code CLI updated 2.1.263 → 2.1.278 (native `AGENTS.md` reading needs ≥ 2.1.277).
@@ -63,6 +74,42 @@ historical number by merge commit or branch name, never by number alone. Owner:
 - **Judgment:** (1) legacy v3 manifests (records with `uid` only) are retired on the producer-determined owner **and group** — grounded in that producer's `chown(uid, uid)` — but their mode was umask-dependent and is neither synthesized nor checked; chosen over blanket rejection (would strand the host-wide identity reservation) and over a consent flag, and carried into the PR, both closure comments and the README as an explicit limitation, not full drift protection. (2) The root:root/0700/empty intermediate is accepted for all five trees, still only in `provisioning`/`setup_failed`, because that is the sole interruptible state the new creation order can leave. (3) A `workflow_dispatch`-only file never on `main` has no workflow ID (dispatch 404s): registered with a branch-scoped `push` trigger for one run and reverted, rather than merging a workflow-only PR ahead of A/B. (4) `/opt/…` as the nondefault client was refused on the runner image (`chmod -R 777 /opt`) — treated as the protected-path contract working and relocated, not worked around.
 - **Evidence:** Windows 235 passed / 2 skipped + `check` exit 0 at `2ff3b5e`; fresh ubuntu-24.04 hosts — boundary cycle 464/464 on seven hosts (default client six, nondefault one), `--host-only` 55/55 on six hosts with real chown/chmod drift, mkdir-kill under umask 022/077 and repair; every `environment.json` `ready` with image `{id}` only. Adversarial reviews of A and B: no blocker/major code findings.
 - **Open / next:** kept separate and unaddressed — invoke-before-validate on `build_worker` and cleanup → `campaign_host`; README:266's "allowlist" wording versus the wholesale evidence export; `probe_access`'s literal `/usr/bin/python3`; S2 dispatch flake 35489413703 (pre-existing S2/systemd, one host). Nothing here establishes qualification acceptance or shared/reused-host support. Lesson recorded: a commit body that quotes `[skip ci]` is itself skipped.
+
+---
+
+
+## 2026-09-19a — S1 accepted (local semantics); B0 retains the protected service; R2b accepted as funded-scheduler integration only
+
+*Retrospectively recorded 2026-09-20 from the committed ledger and PR records; judgments attributed to their owners.*
+
+- **Focus:** three decisions on the Protected Full E1 slices, all recorded in the [execution-slices ledger](superpowers/plans/2026-09-18-full-e1-execution-slices.md#progress-ledger-and-present-disposition).
+- **Judgment:** (1) **S1 — coordinator ACCEPT for local persisted semantics only** after the two review findings were repaired by the coordinator under the operator's direct assignment (already-settled recovery observes fresh boot/time/resource facts without replacing the immutable charge; fixed-intent signing recovery uses a linked, separately charged retry reservation); independent code review ACCEPT at the final hashes; [first-passage#428](https://github.com/Joshua-Asante/first-passage/pull/428) (`97d0319`). Excludes OS enforcement, stage execution, G5/results/seals and Linux acceptance. (2) **B0 — retain the protected service; the operator-launched batch is not adopted** ([first-passage#430](https://github.com/Joshua-Asante/first-passage/pull/430), [decision](superpowers/plans/2026-09-19-attended-batch-qualification.md#b0-decision--2026-09-19)): compared read-only against `main@97d0319` and the #429 S2 candidate, the batch saved no demonstrable work; the narrowing kept (single-lifetime posture, operator-local client, no batch entrypoint) shaped the R2b dispatch. (3) **R2b — ACCEPTED as the funded scheduler integration only** (operator ruling; [first-passage#433](https://github.com/Joshua-Asante/first-passage/pull/433)): closed service-identity private route funded before construction, `launch_prepared_campaign_work`, release `qualification_execution_release/v4`, owned deadline timer; a same-day operator ruling made funded work interrupted by a service restart auto-recovered. The 9/9 Linux S2 evidence came from stacked [first-passage#434](https://github.com/Joshua-Asante/first-passage/pull/434), whose six pre-existing host-side fixes were also accepted; that evidence accepts nothing beyond those fixes.
+- **Evidence:** ledger entries "S1 coordinator recovery repair closure", "Coordinator acceptance — S2-R2b funded scheduler integration" and "Coordinator acceptance — S2 host-side fixes (PR #434)", each with `fp.ps1` record IDs; S2 CI run 35460338493.
+- **Open / next:** S2 overall INCOMPLETE / NOT ACCEPTED; R3 (post-admission VOID accounting) and R4 (pre-bootstrap absolute deadline) untouched at this point; full-campaign economics unresolved. No S3 dispatch, production authority or deployment.
+
+---
+
+
+## 2026-09-18a — Qualification build-versus-buy: retain the implementation for the N1_ONLY slice
+
+*Retrospectively recorded 2026-09-20 from the committed memo and PR record.*
+
+- **Focus:** scoped review of replacing the qualification execution infrastructure with managed services (conditional Batch/Fargate and Temporal assessments), [first-passage#426](https://github.com/Joshua-Asante/first-passage/pull/426) (`1c2472d`).
+- **Judgment:** the coordinator's recommendation is to **retain the current implementation for completion and six-month maintenance of the protected synthetic N1_ONLY slice**; no replacement experiment is justified by the reviewed evidence. A recommendation only: it granted no migration, implementation or experiment authority, and full-campaign economics remained unresolved. Reopening conditions and the responsibility trace are recorded in the [decision memo](notes/research/2026-09-18-qualification-build-versus-buy.md) and [research record](notes/research/2026-09-18-qualification-build-versus-buy-research.md).
+- **Evidence:** commit-pinned source links, work-package estimates and break-even thresholds in the memo; documentation-only PR, no runtime tests or qualification jobs run.
+- **Open / next:** historical N1 engineering acceptance stays HELD; the memo's reopening conditions are the wake triggers.
+
+---
+
+
+## 2026-09-17a — Capability assessment CAP-20260916 executed; bounded platform-protection incident contract proposed
+
+*Retrospectively recorded 2026-09-20 from the committed records; the proposed exception did not become effective.*
+
+- **Focus:** (1) the bounded self-service capability assessment executed against accepted PR 411 and recorded in [CAP-20260916](briefs/phase4-preparation/2026-09-16/capability-decision.md) — [first-passage#414](https://github.com/Joshua-Asante/first-passage/pull/414) (`63ea701`); (2) the [incident-contract ADR](adr/2026-09-17-bounded-platform-protection-incident-contract.md) published `Proposed` — [first-passage#416](https://github.com/Joshua-Asante/first-passage/pull/416) (`630c677`).
+- **Judgment:** (1) Disposition **BLOCKED FOR LIVE RELEASE**: G0 closed; R1 qualified as a local engineering property only; S1–S5, R2–R5 and the whole-route N1 UNPROVEN, each with a named next owner (operator-supplied inception, close-equity and external-actor inventory; coordinator-sourced report mapping, order/fill exports and terminal protocol). Read-only deployment inspection found listener `dry_run=true`, daemon `emit_enabled=false` and no account-owner/settlement state on either app. (2) The blanket incident fence was pushing the design toward custom trailing infrastructure before platform qualification; the ADR **selects an investigative direction** — fence new strategy commands while a specifically qualified pre-existing platform protection continues within its authorized envelope — as candidate text behind an explicit effectiveness gate. Accepted halt/resume and rail contracts continue to govern; exception-dependent capabilities remain `AMENDMENT_REQUIRED`; ordinary ATM plus a thin bridge is to be reassessed under §7.
+- **Evidence:** settlement/account-owner suites 316 passed and protection/takeover suites 119 passed on base `7c31770` (#414); brief checker exit 0 and ADR graph A1–A8 pass (#416). Private capture batch `CAP-20260916/execution-20260917` holds host/config digests; no account identifiers published.
+- **Open / next:** §7 bounded design work (exact ATM candidate, gap/economics table); propagation to governing contracts only on acceptance. No runtime authority or capability verdict changed.
 
 ---
 

@@ -12,6 +12,8 @@
 | `c1_rail_arm.py` | Arm / disarm CLI + M1 interlock |
 | `c1_rail_telemetry.py` | Event ledger / notifiers |
 | `crosstrade_payload.py` | CrossTrade payload |
+| `book_*.py`, `account_close_*.py`, `settlement_signing.py` | Track B fixed-book owner, protection, halt, settlement, takeover (offline until deployment GO) |
+| `qualification/`, `qualification_cli.py` | Offline fixed-book qualification; `execution/` is the separately installed protected service (see [PIPELINES §P5](../../PIPELINES.md#p5--live-execution-rail-c1--built--currently-disarmed)) |
 
 Paired daemon: [`../c1_signal_daemon/`](../c1_signal_daemon/).
 Skill: `.claude/skills/c1-rail/`.

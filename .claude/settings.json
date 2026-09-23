@@ -24,6 +24,10 @@
           {
             "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guard_shell_command.py\""
+          },
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guard_s2_runs.py\" claude-hook"
           }
         ]
       },
@@ -33,6 +37,15 @@
           {
             "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guard_open_verification_record.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__github__(push_files|create_or_update_file|delete_file|update_pull_request_branch|actions_run_trigger)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guard_s2_runs.py\" claude-hook"
           }
         ]
       }

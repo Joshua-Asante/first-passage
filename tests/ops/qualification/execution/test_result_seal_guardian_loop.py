@@ -252,6 +252,8 @@ def test_a_committed_unit_that_never_exits_is_observed_at_the_bound(tmp_path, mo
     assert observed == [1]
     assert kernel.now >= START_NS + WALL_NS + campaign_result.UNIT_STOP_GRACE_NS
     assert kernel.now < START_NS + WALL_NS + campaign_result.UNIT_STOP_GRACE_NS + 10**9
+    # The bound is #461's: the same grace the N1 G5 loop waits.
+    assert campaign_result.UNIT_STOP_GRACE_NS == supervisor.G5_UNIT_STOP_GRACE_NS
 
 
 @pytest.mark.parametrize('phase,start', [('RESULT', 'BUDGET_UNCERTAIN'), ('SEAL', 'ABORTED')])

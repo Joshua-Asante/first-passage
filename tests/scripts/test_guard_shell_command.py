@@ -108,11 +108,15 @@ def test_command_extraction_accepts_both_payload_shapes(mod, payload, expected):
 
 
 def test_malformed_stdin_fails_open(mod, monkeypatch, capsys):
-    """Fail-open is the contract: a parse error must never block a command."""
+    """Fail-open is the contract: a parse error must never block a command.
+
+    2026-09-23: fail-open no longer means emitting `allow` — a hook `allow`
+    bypasses the operator's permission rules — so unparsable input now
+    produces no output at all and defers to the normal permission flow.
+    """
     monkeypatch.setattr(sys, "stdin", io.StringIO("{not json"))
     assert mod.main() == 0
-    out = json.loads(capsys.readouterr().out)
-    assert out["hookSpecificOutput"]["permissionDecision"] == "allow"
+    assert capsys.readouterr().out.strip() == ""
 
 
 def test_end_to_end_ask_via_stdin(mod, monkeypatch, capsys):
@@ -134,10 +138,11 @@ def test_emits_claude_not_cursor_decision_shape(mod, monkeypatch, capsys):
     `{"permission", "agentMessage", "userMessage"}` shape over verbatim. Claude
     Code reads `hookSpecificOutput.permissionDecision`, so that draft would have
     been a silent no-op once wired. Adversarial review caught it before wiring;
-    this test is what stops it coming back.
+    this test is what stops it coming back. It exercises a command that asks
+    (`rm -rf`), because a benign command now produces no output at all (D15).
     """
     monkeypatch.setattr(
-        sys, "stdin", io.StringIO(json.dumps({"tool_input": {"command": "git status"}}))
+        sys, "stdin", io.StringIO(json.dumps({"tool_input": {"command": "rm -rf /tmp/x"}}))
     )
     assert mod.main() == 0
     out = json.loads(capsys.readouterr().out)

@@ -1272,12 +1272,9 @@ class ResultStore:
 def unit_exited(supervisor, group):
     """True once the unit's cgroup is empty or gone; systemd may remove a
     stopped transient unit's cgroup between the existence check and the read,
-    and that removal is itself the exit (#461's _unit_cgroup_exited)."""
-    try:
-        return supervisor._kernel_pairs(
-            supervisor._read_counter(group / 'cgroup.events')).get('populated') == 0
-    except FileNotFoundError:
-        return True
+    and that removal is itself the exit. One definition: #461's
+    ``campaign_supervisor._unit_cgroup_exited``, which the N1 G5 loop uses."""
+    return supervisor._unit_cgroup_exited(group)
 
 
 def supervise_unit_to_exit(supervisor, store, state, work, group, *, phase, uid, deadline,

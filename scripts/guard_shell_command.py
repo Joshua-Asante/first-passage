@@ -42,9 +42,11 @@ Output contract: Claude Code's PreToolUse shape
 `_emit`. Stdin carries the command at `tool_input.command`.
 
 Contract (unchanged from the original): read a JSON payload on stdin, write a
-decision JSON on stdout. Fail-open — any parse error yields ``allow``, so an
-unrelated or malformed command is never blocked. `classify()` is the pure
-function; it is what the tests pin, independent of any harness wiring.
+decision JSON on stdout. Fail-open — an unrelated or malformed command is
+never blocked (2026-09-23: benign input now emits *nothing* rather than
+``allow``, because a hook ``allow`` silently overrides the operator's
+permission settings). `classify()` is the pure function; it is what the tests
+pin, independent of any harness wiring.
 """
 from __future__ import annotations
 
@@ -146,12 +148,19 @@ def _emit(permission: str, agent_msg: str = "", user_msg: str = "") -> None:
 
 
 def main() -> int:
+    """Emit a decision only when the command must be confirmed or blocked.
+
+    A hook ``allow`` bypasses the operator's permission rules outright, so
+    benign or unparsable input produces no output at all and defers to the
+    normal permission flow; ``classify()`` still returns ``allow`` internally.
+    """
     try:
         data = json.load(sys.stdin)
     except Exception:
-        _emit("allow")
         return 0
-    _emit(*classify(command_of(data)))
+    permission, agent_msg, user_msg = classify(command_of(data))
+    if permission != "allow":
+        _emit(permission, agent_msg, user_msg)
     return 0
 
 

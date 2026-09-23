@@ -91,8 +91,17 @@ def test_archive_retry_reestablishes_directory_durability(tmp_path, monkeypatch)
 
 
 def test_concurrent_archive_publishers_keep_one_immutable_object(tmp_path):
+    module = files()
+    # Windows bootstraps a fresh lock file by appending one byte before
+    # byte-range locking it; the CRT append is seek-then-write, so a herd of
+    # publishers on an empty lock file can append into the byte a sibling
+    # just locked (PermissionError). Publish the bootstrap byte first; the
+    # publishers themselves then only lock and unlock, never write it.
+    with module.exclusive_file_lock(tmp_path.parent / (tmp_path.name + '.publication')):
+        pass
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=4) as pool:
-        digests = list(pool.map(lambda _: files().archive_bytes(tmp_path, b'original'), range(8)))
+        digests = list(pool.map(lambda _: module.archive_bytes(tmp_path, b'original'), range(8)))
     assert len(set(digests)) == 1
-    assert files().read_regular(tmp_path, digests[0], limit=8) == b'original'
+    assert module.read_regular(tmp_path, digests[0], limit=8) == b'original'
+    assert sorted(path.name for path in tmp_path.iterdir()) == [digests[0]]
