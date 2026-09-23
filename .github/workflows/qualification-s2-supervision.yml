@@ -41,6 +41,18 @@ on:
       - 'tests/ops/qualification/invariant_manifest.json'
       - 'requirements-ops.lock'
       - '.github/workflows/qualification-s2-supervision.yml'
+      # Imported or locked by the run outside the trees above: the collection
+      # plugin, the host lock's extra requirements, the launcher, the pytest
+      # configuration, and the qualification package's c1_rail/core imports.
+      - 'scripts/pytest_qualification_collection.py'
+      - 'tools/local_verification/requirements-extra.txt'
+      - 'scripts/fp.py'
+      - 'pyproject.toml'
+      - 'tests/conftest.py'
+      - 'core/lib/file_lock.py'
+      - 'ops/c1_rail/book_policy.py'
+      - 'ops/c1_rail/book_schedule.py'
+      - 'ops/c1_rail/policy_fingerprint.py'
 
 permissions:
   contents: read
@@ -59,6 +71,36 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Validate inputs
+        # Refuse inputs the run cannot honour in seconds, before the 6-8 minute
+        # provisioning step. Inputs reach the script through env only, never
+        # interpolated into it; the boundary wrapper re-checks `cases` itself.
+        env:
+          BOUNDARY_MODE: ${{ inputs.mode || 's3' }}
+          BOUNDARY_CASES: ${{ inputs.cases || '' }}
+        run: |
+          mode="$BOUNDARY_MODE"
+          cases="$BOUNDARY_CASES"
+          case "$mode" in s2|s3) ;; *) echo "unsupported mode: $mode (expected s2 or s3)" >&2; exit 2 ;; esac
+          if [ -n "$cases" ]; then
+            # The same whitespace test as the boundary wrapper (Python str.strip, so
+            # Unicode spaces such as NBSP count); the bash class is the fallback.
+            blank=0
+            if command -v python3 >/dev/null 2>&1; then
+              python3 -c 'import os, sys; sys.exit(0 if os.environ["BOUNDARY_CASES"].strip() else 1)' || blank=1
+            elif [ -z "${cases//[[:space:]]/}" ]; then
+              blank=1
+            fi
+            if [ "$blank" = 1 ]; then
+              echo "cases is whitespace-only; leave it empty to run the full selection" >&2
+              exit 2
+            fi
+            if [ "$mode" != "s3" ]; then
+              echo "cases is a diagnostic subset for mode s3 only (mode: $mode)" >&2
+              exit 2
+            fi
+          fi
+          echo "inputs accepted: mode=$mode"
       - name: Provision protected TEST_ONLY host
         run: |
           sudo /bin/bash tools/qualification_verification/provision.sh \
@@ -93,7 +135,8 @@ jobs:
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
           args=(--"$mode")
           if [ -n "$cases" ]; then
-            args+=(--cases "$cases")
+            # `=` form: a valid -k expression may start with '-' (e.g. -downtime).
+            args+=("--cases=$cases")
           fi
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python \
             scripts/qualification_boundary_verification.py "${args[@]}" --manifest "$manifest"

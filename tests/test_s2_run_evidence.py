@@ -16,6 +16,8 @@ def artifact(tmp_path, scope):
         'status': 'completed', 'exit_code': 0, 'verification_exit_code': 0,
         'source_stable': True, 'capture_complete': True, 'cleanup': {'ok': True},
         'metadata': metadata,
+        # The measured commit (G3): a bare artifact read requires it, unbound to a run.
+        'before': {'commit': 'ab' * 20},
     }))
     # Every other fact green, as a forged or hand-edited record would be.
     (record_dir / 'invariants.json').write_text(json.dumps({'passed': True, 'required_nodeids': ['n'] * 15}))
@@ -25,7 +27,8 @@ def artifact(tmp_path, scope):
 
 @pytest.mark.parametrize('scope', ['S2_DIAGNOSTIC_SUPERVISION', 'S3_N1_CAPTURE'])
 def test_full_selection_scopes_are_evidence(tmp_path, scope):
-    ok, facts = evidence.evaluate(artifact(tmp_path, scope))
+    # G1: each full-selection scope is evidence only when it is the scope asked for.
+    ok, facts = evidence.evaluate(artifact(tmp_path, scope), expect_scope=scope)
     assert ok and facts['acceptance_scope'] == scope
 
 
