@@ -61,20 +61,36 @@ long option that takes one — ``--message '-n …'`` is a message):
   * bypass, for ``commit``/``merge``/``pull``/``push``/``am``/``rebase``/
     ``cherry-pick``/``revert``: a long option that is a prefix of
     ``--no-verify`` or ``--no-gpg-sign`` at least 6 characters long; ``-n`` in
-    a ``commit`` short cluster (``-n`` is ``--dry-run`` for push and
-    ``--no-stat`` for merge and pull); a ``-c``/``--config-env`` global option
-    setting ``core.hooksPath`` (any case). ``pull`` is beyond E2's list: it
+    a ``commit`` or ``am`` short cluster (``-n`` is ``--no-verify`` for ``am``
+    in git 2.43; it is ``--dry-run`` for push and ``--no-stat`` for merge and
+    pull); config that disables signing or redirects hooks —
+    ``core.hooksPath`` at any value, and ``commit.gpgSign``/``tag.gpgSign``
+    set false, matched case-insensitively — whether it comes from a
+    ``-c``/``--config-env`` global option or from the segment's leading
+    ``GIT_CONFIG_COUNT``/``GIT_CONFIG_KEY_<n>``/``GIT_CONFIG_VALUE_<n>`` or
+    ``GIT_CONFIG_PARAMETERS`` environment assignments (a ``--config-env``
+    ``NAME:VAR`` names the key but reads the value from the environment, so
+    naming one of these keys asks). ``pull`` is beyond E2's list: it
     merges, so ``git pull --no-verify`` skips the pre-merge-commit hook;
+  * an alias judged as what it runs: ``git -c alias.<name>=<value> <name> …``
+    reads the value as the subcommand plus its arguments; a value starting
+    with ``!`` is a shell command, re-parsed with the strict reader. A dashed
+    ``git-<sub>`` program, with or without a path, is judged as ``git <sub>``;
   * destructive: ``reset`` with a prefix of ``--hard`` (``--h`` already resets
-    hard in git 2.43; the card's E3 said at least 4 characters);
-    ``clean -f``/``--force`` (``-n`` alone is a dry run); ``checkout`` with
-    ``--`` or ``-f``/``--force``; ``restore`` unless it only touches the index
-    (``--staged``/``-S`` without ``--worktree``/``-W``); ``switch -f``/
-    ``--force``/``--discard-changes``; ``push -f``/``--force`` or a ``+refspec``;
-    ``branch -D`` or delete plus force across arguments; ``rm`` (any path to
-    the binary) with recursive plus force across arguments. Other long options
-    match their unambiguous abbreviations too (git 2.43 accepts ``clean --f``,
-    ``checkout --forc``, ``restore --w``, ``switch --disc``).
+    hard in git 2.43; the card's E3 said at least 4 characters) or of
+    ``--merge`` (``--me``; ``--keep`` keeps the work tree and never asks);
+    ``clean -f``/``--force`` or ``-i``/``--interactive``, and any non-dry-run
+    ``clean`` once ``clean.requireForce`` is set false (``-n`` alone is a dry
+    run); ``checkout`` with ``--`` or ``-f``/``--force``; ``restore`` unless
+    it only touches the index (``--staged``/``-S`` without
+    ``--worktree``/``-W``); ``switch -f``/``--force``/``--discard-changes``;
+    ``push -f``/``--force``, ``--mirror`` or a ``+refspec`` — including a
+    ``+`` on the ``remote.<name>.push`` refspec configured for the remote
+    being pushed to; ``branch -D`` or delete plus force across arguments;
+    ``rm`` (any path to the binary) with recursive plus force across
+    arguments. Other long options match their unambiguous abbreviations too
+    (git 2.43 accepts ``clean --f``, ``checkout --forc``, ``restore --w``,
+    ``switch --disc``).
 
 This is a **warn-class** gate: it returns ``ask``, never ``deny``. It keeps the
 operator in control and never blocks outright, matching the "unless Joshua
@@ -112,9 +128,11 @@ import re
 import sys
 
 try:  # imported as `scripts.guard_shell_command` (tests, repo root on sys.path)
-    from scripts._shell_tokens import SHELLS, ShellSyntaxError, Word, expand, program, segments
+    from scripts._shell_tokens import (SHELLS, ShellSyntaxError, Word, expand, is_assignment,
+                                       program, segments)
 except ImportError:  # run as `python scripts/guard_shell_command.py`: scripts/ is sys.path[0]
-    from _shell_tokens import SHELLS, ShellSyntaxError, Word, expand, program, segments
+    from _shell_tokens import (SHELLS, ShellSyntaxError, Word, expand, is_assignment,
+                               program, segments)
 
 # The raw-string reading: main's guard before card 2. It asks on any match left
 # after proven data is blanked (`_residual`), and on the whole command when the
@@ -157,6 +175,16 @@ DESTRUCTIVE_USER_MSG = "Potentially destructive git/fs command. Confirm to proce
 HOOKED = frozenset({"commit", "merge", "pull", "push", "am", "rebase", "cherry-pick",
                     "revert"})
 BYPASS_OPTIONS = ("--no-verify", "--no-gpg-sign")
+# git config keys that disable signing or redirect hooks when set on a HOOKED
+# subcommand (card 4): `core.hooksPath` at any value, and commit.gpgSign /
+# tag.gpgSign set false. Keys match case-insensitively; the settings reach git
+# through `-c`/`--config-env` or leading GIT_CONFIG_* environment assignments.
+HOOK_PATH_KEY = "core.hookspath"
+SIGN_OFF_KEYS = frozenset({"commit.gpgsign", "tag.gpgsign"})
+# the values git's config parser reads as a false boolean
+GIT_FALSE = frozenset({"", "false", "no", "off", "0"})
+# git resolves an alias chain at most this deep here (item 5)
+ALIAS_LIMIT = 5
 # git global options that take the next word as their value
 GIT_GLOBAL_VALUES = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace",
                                "--config-env", "--super-prefix", "--attr-source",
@@ -294,19 +322,47 @@ def _git_parts(words: list[str]) -> tuple[list[str], str | None, list[str]]:
 
 # --- the two classes -----------------------------------------------------------
 
-def _bypasses(words: list[str]) -> bool:
-    """Whether this command runs git with its hooks or signing skipped (E2)."""
+def _config_bypasses(configs: list[str]) -> bool:
+    """Whether a git config setting disables signing or redirects hooks (item 4).
+
+    `core.hooksPath` set to anything redirects the hooks; `commit.gpgSign` /
+    `tag.gpgSign` set to a value git reads as false skip signing. Keys match
+    case-insensitively. `--config-env NAME:VAR` names the key but reads the
+    value from `VAR`, which this guard cannot see, so naming one of these keys
+    asks (fail toward asking).
+    """
+    for config in configs:
+        name, has_value, value = config.partition("=")
+        name = name.strip()
+        from_env = ":" in name  # `--config-env NAME:VAR` collected with its VAR
+        key = (name.partition(":")[0] if from_env else name).casefold()
+        if key == HOOK_PATH_KEY:
+            return True
+        if key in SIGN_OFF_KEYS and (from_env
+                                     or (has_value and value.strip().casefold() in GIT_FALSE)):
+            return True
+    return False
+
+
+def _bypasses(words: list[str], configs: tuple[str, ...] = ()) -> bool:
+    """Whether this command runs git with its hooks or signing skipped (E2).
+
+    `configs` adds settings gathered outside the command's own words — the
+    leading `GIT_CONFIG_*` environment assignments of its segment (item 4).
+    """
     if program(words[0], strict=True) != "git":
         return False
-    configs, sub, args = _git_parts(words)
+    found, sub, args = _git_parts(words)
     if sub not in HOOKED:
         return False
-    if any(c.split("=", 1)[0].strip().casefold() == "core.hookspath" for c in configs):
+    if _config_bypasses([*found, *configs]):
         return True
     for kind, word in _options(args, sub):
         if kind == _LONG and any(_abbrev(word, name, 6) for name in BYPASS_OPTIONS):
             return True
-        if kind == _SHORT and word == "n" and sub == "commit":
+        # `-n` is --no-verify for commit and for am (git 2.43); for push it is
+        # --dry-run and for merge/pull --no-stat
+        if kind == _SHORT and word == "n" and sub in ("commit", "am"):
             return True
     return False
 
@@ -330,13 +386,52 @@ def _restore_discards(opts: list[tuple[str, str]]) -> bool:
     return not staged or worktree
 
 
-def _git_destroys(sub: str, opts: list[tuple[str, str]]) -> bool:
-    """Whether `git <sub>` with these options discards work (E3)."""
+def _config_is_false(configs: tuple[str, ...] | list[str], key: str) -> bool:
+    """Whether `key` is set to a value git reads as false among `configs`."""
+    for config in configs:
+        name, has_value, value = config.partition("=")
+        if has_value and name.strip().casefold() == key \
+                and value.strip().casefold() in GIT_FALSE:
+            return True
+    return False
+
+
+def _config_push_forces(configs: tuple[str, ...] | list[str],
+                        operands: list[str]) -> bool:
+    """Whether a `remote.<name>.push` refspec forces this push (item 6).
+
+    git uses `remote.<name>.push` when pushing to `name`, and a leading `+` on
+    its refspec is a force push. With no remote operand the push goes to the
+    current branch's remote, which the guard cannot read, so a configured `+`
+    asks there too (fail toward asking).
+    """
+    for config in configs:
+        name, has_value, value = config.partition("=")
+        parts = name.strip().casefold().split(".")
+        if not has_value or len(parts) != 3 or parts[0] != "remote" or parts[2] != "push":
+            continue
+        if parts[1] and value.startswith("+") and (
+                not operands or parts[1] in (word.casefold() for word in operands)):
+            return True
+    return False
+
+
+def _git_destroys(sub: str, opts: list[tuple[str, str]],
+                  configs: tuple[str, ...] = ()) -> bool:
+    """Whether `git <sub>` with these options discards work (E3, item 6)."""
     if sub == "reset":
-        # `--h` is already a hard reset in git 2.43: no other reset option starts with h
-        return any(kind == _LONG and _abbrev(word, "--hard", 3) for kind, word in opts)
+        # `--h` is already a hard reset in git 2.43: no other reset option starts
+        # with h; `--me` reaches --merge the same way (--m stays ambiguous with
+        # --mixed); --keep keeps the work tree, so it never asks
+        return any(kind == _LONG and (_abbrev(word, "--hard", 3) or _abbrev(word, "--merge", 4))
+                   for kind, word in opts)
     if sub == "clean":
-        return _has(opts, "f", ("--force",))
+        # without requireForce=false git refuses to clean unforced; with it set
+        # false every non-dry-run clean discards, so `-d` or paths are not needed
+        if _has(opts, "f", ("--force",)) or _has(opts, "i", ("--interactive",)):
+            return True
+        return not _has(opts, "n", ("--dry-run",)) \
+            and _config_is_false(configs, "clean.requireforce")
     if sub == "checkout":
         return any(kind == _END for kind, _ in opts) or _has(opts, "f", ("--force",))
     if sub == "restore":
@@ -344,15 +439,18 @@ def _git_destroys(sub: str, opts: list[tuple[str, str]]) -> bool:
     if sub == "switch":
         return _has(opts, "f", ("--force", "--discard-changes"))
     if sub == "push":
+        operands = [word for kind, word in opts if kind == _OPERAND]
         return _has(opts, "f", ("--force",)) \
-            or any(kind == _OPERAND and word.startswith("+") for kind, word in opts)
+            or any(kind == _LONG and _abbrev(word, "--mirror") for kind, word in opts) \
+            or any(word.startswith("+") for word in operands) \
+            or _config_push_forces(configs, operands)
     if sub == "branch":
         return _has(opts, "D") or (_has(opts, "d", ("--delete",))
                                    and _has(opts, "f", ("--force",)))
     return False
 
 
-def _destroys(words: list[str]) -> bool:
+def _destroys(words: list[str], configs: tuple[str, ...] = ()) -> bool:
     """Whether this command is a destructive git or rm operation (E3)."""
     name = program(words[0], strict=True)
     if name == "rm":
@@ -360,18 +458,129 @@ def _destroys(words: list[str]) -> bool:
         return _has(opts, "rR", ("--recursive",)) and _has(opts, "f", ("--force",))
     if name != "git":
         return False
-    _, sub, args = _git_parts(words)
-    return sub is not None and _git_destroys(sub, _options(args, sub))
+    found, sub, args = _git_parts(words)
+    return sub is not None and _git_destroys(sub, _options(args, sub), (*found, *configs))
+
+
+def _alias_target(configs: list[str], sub: str) -> tuple[bool, str] | None:
+    """(is a shell command, its text) for the `alias.<sub>` setting among
+    `configs`, or None when none defines it.
+
+    A value starting with `!` is a shell command git runs through the shell;
+    any other value is the subcommand plus its arguments.
+    """
+    wanted = f"alias.{sub}".casefold()
+    for config in configs:
+        name, has_value, value = config.partition("=")
+        if not has_value or name.strip().casefold() != wanted:
+            continue
+        value = value.strip()
+        if value.startswith("!"):
+            return True, value[1:]
+        if value:
+            return False, value
+    return None
+
+
+def _judged(words: list[str], depth: int = 0) -> list[list[str]]:
+    """The command words to judge: a dashed `git-<sub>` program, with or without
+    a path, is `git <sub>` (item 7), and `git -c alias.<name>=… <name> …` is
+    judged as what the alias runs (item 5).
+
+    A `!` alias value is re-parsed with strict `segments`/`expand`; any other
+    value takes the alias name's place as the subcommand and its arguments
+    (the alias's own `-c` definition stays in front of it, as the command's
+    other global options do). Unreadable input raises, and `classify` then
+    falls back to the raw-string reading whole — fail toward asking.
+    """
+    name = program(words[0], strict=True)
+    if name.startswith("git-") and len(name) > 4:
+        return _judged(["git", name[4:], *words[1:]], depth)
+    if name != "git" or depth >= ALIAS_LIMIT:
+        return [words]
+    found, sub, args = _git_parts(words)
+    if sub is None:
+        return [words]
+    alias = _alias_target(found, sub)
+    if alias is None:
+        return [words]
+    is_shell, value = alias
+    if not is_shell:
+        lines = segments(value, strict=True)
+        if not lines:
+            return [words]
+        # words[:i] keeps the global options (and the alias definition); args
+        # are contiguous after words[i], so i = len(words) - len(args) - 1
+        head = words[:len(words) - len(args) - 1]
+        out = _judged([*head, *lines[0], *args], depth + 1)
+        for extra in lines[1:]:
+            out.extend(_judged(extra, depth + 1))
+        return out
+    out: list[list[str]] = []
+    for segment in segments(value, strict=True):
+        for inner in expand(segment, strict=True):
+            if inner:
+                out.extend(_judged(inner, depth + 1))
+    return out
+
+
+def _env_configs(assignments: list[str]) -> list[str]:
+    """The git config settings one segment's leading `GIT_CONFIG_*` assignments
+    name: `GIT_CONFIG_COUNT` with `GIT_CONFIG_KEY_<n>`/`GIT_CONFIG_VALUE_<n>`
+    pairs, and `GIT_CONFIG_PARAMETERS` (git quotes each `key=value` entry)."""
+    env = {}
+    for word in assignments:
+        env_name, _, value = word.partition("=")
+        env[env_name] = value
+    configs = []
+    count = env.get("GIT_CONFIG_COUNT", "")
+    if count.isdigit():
+        for i in range(int(count)):
+            key = env.get(f"GIT_CONFIG_KEY_{i}")
+            if key is not None:
+                configs.append(f"{key}={env.get(f'GIT_CONFIG_VALUE_{i}', '')}")
+    parameters = env.get("GIT_CONFIG_PARAMETERS", "")
+    if parameters:
+        configs += [quoted or bare for quoted, bare
+                    in re.findall(r"'([^']*)'|([^'\s]+)", parameters)]
+    return configs
+
+
+def _env_git_configs(cmd: str) -> list[tuple[list[str], list[list[str]]]]:
+    """(config settings, the commands they prefix) for each segment whose
+    leading `GIT_CONFIG_*` assignments name git config settings.
+
+    Those assignments reach the git command of their segment as `-c` settings
+    do (item 4), so the commands are judged with them.
+    """
+    pairs = []
+    for segment in segments(cmd, strict=True):
+        i = 0
+        while i < len(segment) and is_assignment(segment[i]):
+            i += 1
+        if i == 0:
+            continue
+        configs = _env_configs(segment[:i])
+        if not configs:
+            continue
+        commands = [judged for words in expand(segment[i:], strict=True) if words
+                    for judged in _judged(words)]
+        if commands:
+            pairs.append((configs, commands))
+    return pairs
 
 
 def _commands(cmd: str, bodies: list | None = None) -> list[list[str]]:
-    """Every command the shell would run for `cmd`, wrappers stripped (strict read).
+    """Every command the shell would run for `cmd`, wrappers stripped and git
+    aliases and dashed `git-<sub>` programs resolved (strict read).
 
     With `bodies`, words carry their source spans and heredoc bodies are collected.
     """
     found: list[list[str]] = []
     for segment in segments(cmd, strict=True, bodies=bodies):
-        found.extend(words for words in expand(segment, strict=True) if words)
+        for words in expand(segment, strict=True):
+            if words:
+                found.extend(_judged(words))
     return found
 
 
@@ -491,11 +700,16 @@ def classify(cmd: str) -> tuple[str, str, str]:
     bodies: list = []
     try:
         commands = _commands(cmd, bodies)
+        env_pairs = _env_git_configs(cmd)
     except (ShellSyntaxError, IndexError, RecursionError):
         return _classify_text(cmd)
-    if any(_bypasses(words) for words in commands):
+    if any(_bypasses(words) for words in commands) \
+            or any(_bypasses(words, tuple(configs))
+                   for configs, group in env_pairs for words in group):
         return "ask", NO_VERIFY_AGENT_MSG, NO_VERIFY_USER_MSG
-    if any(_destroys(words) for words in commands):
+    if any(_destroys(words) for words in commands) \
+            or any(_destroys(words, tuple(configs))
+                   for configs, group in env_pairs for words in group):
         return "ask", DESTRUCTIVE_AGENT_MSG, DESTRUCTIVE_USER_MSG
     if any(_runs_unread_text(words) for words in commands):
         return _classify_text(cmd)

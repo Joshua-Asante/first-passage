@@ -688,3 +688,113 @@ def test_a_substitution_inside_a_data_word_is_still_code(mod, inner):
     """Blanking a data word keeps its substitutions: bash runs them."""
     assert mod.classify(f'echo "$({inner})"')[0] == "ask"
     assert mod.classify(f'git commit -m "$({inner})"')[0] == "ask"
+
+
+# --- card 4 (2026-09-23): am -n, config bypass, aliases, E3 additions, git-<sub> ----
+MIRROR = "--mir" + "ror"
+ALIAS_RM = 'git -c "alias.x=!rm ' + '-r -' + 'f d" x'  # the -c literal, built by concatenation
+
+
+@pytest.mark.parametrize("cmd", [
+    "git am -n x.patch",
+    f"git am {NOV} x.patch",
+])
+def test_am_no_verify_asks(mod, cmd):
+    """Card 4 item 3: `git am -n` is `--no-verify` in git 2.43 (it bypasses the
+    pre-applypatch and applypatch-msg hooks), like commit's `-n`."""
+    permission, agent_msg, _ = mod.classify(cmd)
+    assert permission == "ask" and "standing path" in agent_msg, cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    "git -c commit.gpgSign=false commit -m x",
+    "git -c COMMIT.GPGSIGN=false commit -m x",
+    "git -c tag.gpgSign=false commit -m x",
+    "git --config-env core.hooksPath:HP commit -m x",
+    "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/x git commit -m x",
+    "GIT_CONFIG_COUNT=2 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_KEY_1=commit.gpgSign "
+    "GIT_CONFIG_VALUE_0=/x GIT_CONFIG_VALUE_1=false git push origin main",
+    'GIT_CONFIG_PARAMETERS="\'core.hooksPath=/x\'" git commit -m x',
+])
+def test_config_that_disables_signing_or_redirects_hooks_asks(mod, cmd):
+    """Card 4 item 4: for the HOOKED subcommands, `core.hooksPath` at any value
+    and `commit.gpgSign`/`tag.gpgSign` set false are a bypass — from a
+    `-c`/`--config-env` global option or leading GIT_CONFIG_* assignments."""
+    permission, agent_msg, _ = mod.classify(cmd)
+    assert permission == "ask" and "standing path" in agent_msg, cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    "git -c commit.gpgSign=true commit -m x",   # enabling signing is not a bypass
+    "git -c tag.gpgSign=true commit -m x",
+    "git -c core.editor=vim commit -m x",
+    "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=user.name GIT_CONFIG_VALUE_0=x git commit -m y",
+])
+def test_benign_config_settings_stay_allowed(mod, cmd):
+    """Card 4 item 4's allowed neighbours: signing enabled, unrelated keys."""
+    assert mod.classify(cmd)[0] == "allow", cmd
+
+
+@pytest.mark.parametrize("cmd,message", [
+    ("git -c alias.ci='commit -n' ci -m x", NV),
+    ("git -c alias.r='reset --h' r", DE),
+    (ALIAS_RM, DE),
+    ("git -c alias.b='!git commit " + NOV + " -m x' b", NV),
+])
+def test_aliases_are_judged_as_what_they_run(mod, cmd, message):
+    """Card 4 item 5: `git -c alias.<name>=<value> <name> …` is judged as the
+    value's subcommand and arguments; a value starting with `!` is a shell
+    command, re-parsed with the strict reader."""
+    permission, agent_msg, _ = mod.classify(cmd)
+    assert permission == "ask" and message in agent_msg, cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    "git -c alias.st='status' st",
+    "git -c alias.cm='commit -m' cm 'a message'",
+    'git -c "alias.x=!echo ok" x',
+])
+def test_benign_aliases_stay_allowed(mod, cmd):
+    """Card 4 item 5's allowed neighbours: an alias to an asking-free command."""
+    assert mod.classify(cmd)[0] == "allow", cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    ("git reset --merge", "ask"),
+    ("git reset --me", "ask"),
+    ("git reset --merge HEAD", "ask"),
+    ("git reset --keep HEAD~1", "allow"),
+    ("git reset --m", "allow"),               # still ambiguous with --mixed
+    ("git clean -i", "ask"),
+    ("git clean --interactive -d", "ask"),
+    ("git clean -id", "ask"),
+    ("git clean -n", "allow"),
+    ("git -c clean.requireForce=false clean -d", "ask"),
+    ("git -c clean.requireForce=false clean", "ask"),
+    ("git -c clean.requireForce=false clean -n", "allow"),
+    ("git -c clean.requireForce=true clean -n", "allow"),
+    (f"git push {MIRROR} origin", "ask"),
+    ("git push --mirror", "ask"),
+    ("git -c remote.origin.push=+refs/heads/main:refs/heads/main push origin", "ask"),
+    ("git -c remote.origin.push=+refs/heads/main:refs/heads/main push", "ask"),
+    ("git -c remote.other.push=+refs/heads/main:refs/heads/main push origin", "allow"),
+    ("git -c remote.origin.push=refs/heads/main:refs/heads/main push origin", "allow"),
+])
+def test_e3_additions(mod, cmd, expected):
+    """Card 4 item 6: reset --merge (4-character prefix), interactive clean,
+    clean with requireForce set false and no dry run, `push --mirror`, and a
+    configured `remote.<name>.push` refspec with a leading `+` for the remote
+    being pushed to."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    ("/usr/lib/git-core/git-reset " + "--hard", "ask"),
+    ("git-clean -fd", "ask"),
+    ('"C:\\Program Files\\Git\\mingw64\\libexec\\git-core\\git-reset.exe" ' + "--h", "ask"),
+    ("/usr/lib/git-core/git-status", "allow"),
+])
+def test_dashed_git_programs_are_judged_as_their_subcommand(mod, cmd, expected):
+    """Card 4 item 7: a program named `git-<sub>`, with or without a path, is
+    judged as `git <sub>`."""
+    assert mod.classify(cmd)[0] == expected, cmd
