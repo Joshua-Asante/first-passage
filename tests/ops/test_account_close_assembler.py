@@ -166,6 +166,25 @@ def test_overlapping_windows_dedupe_by_id_and_revisions_refuse():
         build(cash, files, bal1, bal2)
 
 
+def test_export_row_and_window_order_do_not_change_the_collected_ledger():
+    """Rows exported out of order, and windows supplied out of order, collect to the same ordered ledger."""
+    cash, files, bal1, bal2 = synthetic()
+    rows_a, report_a = parse_cash_windows(cash, report_tz=CT)
+
+    def reversed_rows(win):        # header stays first, data rows reversed, line endings untouched
+        lines = win.data.decode().splitlines(keepends=True)
+        return "".join(lines[:1] + lines[1:][::-1]).encode()
+
+    cash_b = [replace(f, data=reversed_rows(f)) for f in reversed(cash)]
+    rows_b, report_b = parse_cash_windows(cash_b, report_tz=CT)
+    assert rows_b == rows_a
+    assert report_b["windows"] == report_a["windows"]
+    assert report_b["distinct"] == report_a["distinct"] and report_b["raw_rows"] == report_a["raw_rows"]
+    assert report_b["revisions"] == []
+    assert rows_a == sorted(rows_a, key=lambda r: (r.ts_utc, int(r.transaction_id)))
+    assert max(w["rows"] for w in report_a["windows"]) >= 2        # the reversal is not vacuous
+
+
 def test_unattested_query_completion_refuses(tmp_path):
     """A cash window without the operator-typed completion attestation cannot claim coverage."""
     cash, files, bal1, bal2 = synthetic()

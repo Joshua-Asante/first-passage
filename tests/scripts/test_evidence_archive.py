@@ -40,6 +40,7 @@ def sha(data: bytes) -> str:
 
 PRIVATE = b"private evidence bytes\n"
 LOST = sha(b"bytes nobody kept\n")
+CRLF = b"a,b\r\nc,d\r\n"
 
 
 @pytest.fixture
@@ -156,3 +157,69 @@ def test_registry_digests_are_well_formed_and_unique():
     assert pins, "the registry is read"
     digests = [p.digest for p in pins]
     assert len(digests) == len(set(digests))
+
+
+def commit_crlf_under_autocrlf(public, tmp_path, *, attributes: bool):
+    """Pin CRLF bytes in the public repo, put them into the archive, then commit
+    with a hostile core.autocrlf=true. Returns (archive, digest, committed blob)."""
+    digest = sha(CRLF)
+    (public / "data" / "b.csv").write_bytes(CRLF)
+    sums = public / "data" / "SHA256SUMS"
+    sums.write_text(sums.read_text(encoding="utf-8") + f"{digest} *b.csv\n", encoding="utf-8")
+    git(public, "add", "data")
+    git(public, "commit", "-q", "-m", "pin b.csv")
+    archive = make_clone(tmp_path, "first-passage-archive")
+    ea.put([public / "data" / "b.csv"], archive, public, out=io.StringIO())
+    if not attributes:
+        (archive / "evidence" / ".gitattributes").unlink()
+    git(archive, "-c", "core.autocrlf=true", "add", "evidence")
+    git(archive, "commit", "-q", "-m", "evidence")
+    git(archive, "push", "-q")
+    blob = subprocess.run(["git", "cat-file", "blob", f"HEAD:{ea.blob_path(digest)}"],
+                          cwd=archive, capture_output=True, check=True).stdout
+    return archive, digest, blob
+
+
+def test_put_writes_evidence_gitattributes(public, tmp_path):
+    archive = make_clone(tmp_path, "first-passage-archive")
+    ea.put([public / "data" / "a.csv"], archive, public, out=io.StringIO())
+    assert (archive / "evidence" / ".gitattributes").read_bytes() == b"* -text\n"
+
+
+def test_put_refuses_conflicting_gitattributes(public, tmp_path):
+    archive = make_clone(tmp_path, "first-passage-archive")
+    attributes = archive / "evidence" / ".gitattributes"
+    attributes.parent.mkdir(parents=True)
+    attributes.write_bytes(b"* text\n")
+    assert ea.put([public / "data" / "a.csv"], archive, public, out=io.StringIO()) == 2
+    assert not (archive / ea.blob_path(sha(PRIVATE))).exists()
+
+
+def test_put_prints_autocrlf_safe_commands(public, tmp_path):
+    archive = make_clone(tmp_path, "first-passage-archive")
+    out = io.StringIO()
+    ea.put([public / "data" / "a.csv"], archive, public, out=out)
+    assert "-c core.autocrlf=false add evidence" in out.getvalue()
+    assert "-c core.autocrlf=false commit" in out.getvalue()
+
+
+def test_crlf_bytes_survive_commit_under_autocrlf(public, tmp_path):
+    archive, digest, blob = commit_crlf_under_autocrlf(public, tmp_path, attributes=True)
+    assert sha(blob) == digest
+    assert run_audit(public, archive, verify=True)[0]["CORRUPT"] == 0
+
+
+def test_control_without_attributes_autocrlf_corrupts(public, tmp_path):
+    _, digest, blob = commit_crlf_under_autocrlf(public, tmp_path, attributes=False)
+    if sha(blob) == digest:
+        pytest.skip("git did not convert CRLF to LF on checkin here; the control cannot bite")
+    assert sha(blob) != digest
+
+
+def test_verify_hashes_committed_blob_not_working_tree(public, tmp_path):
+    archive, digest, blob = commit_crlf_under_autocrlf(public, tmp_path, attributes=False)
+    if sha(blob) == digest:
+        pytest.skip("git did not convert CRLF to LF on checkin here; the control cannot bite")
+    (archive / ea.blob_path(digest)).write_bytes(CRLF)
+    assert run_audit(public, archive, verify=True)[0]["CORRUPT"] >= 1
+    assert run_audit(public, archive, verify=False)[0]["ARCHIVED"] >= 1

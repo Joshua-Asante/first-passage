@@ -1,0 +1,200 @@
+"""T10 step 4 — representative signed TEST_ONLY composition measurement.
+
+Synthetic fixture only (tests/ops/qualification/composition_fixture.py): invented
+ports, invented calendar/panels, TEST_ONLY keys generated per run. Not decision
+bearing, not a qualification attempt, no private input read.
+
+Usage: python measure_composition.py --depth N [--depth M ...] --repeats R --out FILE
+Run from the checkout root.
+"""
+import argparse
+import gc
+import hashlib
+import json
+import platform
+import sys
+import tempfile
+import time
+from pathlib import Path
+
+ROOT = Path.cwd()
+for p in ('core', 'lab', 'ops', 'ops/c1_rail', 'ops/c1_signal_daemon', '.', 'tests/ops/qualification', 'tests/ops'):
+    sys.path.insert(0, str(ROOT / p))
+
+from c1_rail.qualification import production, production_source  # noqa: E402
+
+TIMERS = {}
+STACK = []  # exclusive (self) time: a nested wrapped call is charged to its own bucket only
+
+
+def _wrap(owner, name, bucket):
+    original = owner.__dict__[name]
+    raw = original.__func__ if isinstance(original, classmethod) else original
+
+    def timed(*args, **kwargs):
+        frame = [0.0, 0.0]  # child wall, child cpu
+        STACK.append(frame)
+        w0, c0 = time.perf_counter(), time.process_time()
+        try:
+            return raw(*args, **kwargs)
+        finally:
+            w, c = time.perf_counter() - w0, time.process_time() - c0
+            STACK.pop()
+            if STACK:
+                STACK[-1][0] += w; STACK[-1][1] += c
+            row = TIMERS.setdefault(bucket, {'calls': 0, 'wall': 0.0, 'cpu': 0.0, 'inclusive_wall': 0.0})
+            row['calls'] += 1
+            row['wall'] += w - frame[0]
+            row['cpu'] += c - frame[1]
+            row['inclusive_wall'] += w
+    timed.__wrapped__ = raw
+    if isinstance(owner.__dict__.get(name), classmethod):
+        setattr(owner, name, classmethod(timed))
+    else:
+        setattr(owner, name, timed)
+
+
+PS = production_source.ProductionSource
+WRAPPED = {'replay': 'runtime.path_replay', 'proof': 'proof.part_a_panel_proof',
+           'verify_for': 'proof.source_reverify', '_build_composition': 'proof.source_build'}
+ORIGINALS = {name: PS.__dict__[name] for name in WRAPPED}
+
+
+def instrument():
+    for name, bucket in WRAPPED.items():
+        _wrap(PS, name, bucket)
+
+
+def restore():
+    # The frozen adjudicator verifies loaded executables against retained source;
+    # timing wrappers must be gone before it runs (it refuses them, correctly).
+    for name, original in ORIGINALS.items():
+        setattr(PS, name, original)
+
+
+def _span(fn):
+    gc.collect()
+    w0, c0 = time.perf_counter(), time.process_time()
+    value = fn()
+    return value, time.perf_counter() - w0, time.process_time() - c0
+
+
+def one_run(depth):
+    from composition_fixture import build_verified_composition
+    from composition_result_fixture import retained_result_envelope
+    from test_composition_route import _preflight
+    from test_contract import NOW
+    from c1_rail.qualification.orchestration import _run_composition_e1
+    from c1_rail.qualification.runtime_inventory import collect_runtime_inventory
+    from c1_rail.qualification.result_adjudication import frozen_adjudicator
+    from c1_rail.qualification.seal import validate_result_envelope
+
+    TIMERS.clear()
+    instrument()
+    with tempfile.TemporaryDirectory(prefix='t10-step4-') as tmp:
+        tmp = Path(tmp)
+        inputs = tmp / 'TEST_ONLY-inputs'
+        # Small depths need a permissive alpha to pass N1/N2 (as the budget tests do);
+        # pass/fail is irrelevant to cost but a failed N1 would stop before N2/Part A.
+        alpha = '0.95' if depth < 20 else '0.05'
+        setup, sw, sc = _span(lambda: build_verified_composition(inputs, confirmation_depth=depth, decision_alpha=alpha))
+        setup_timers = json.loads(json.dumps(TIMERS)); TIMERS.clear()
+        (preflight, store, approval), pw, pc = _span(lambda: _preflight(setup, tmp))
+        execution, ew, ec = _span(lambda: _run_composition_e1(
+            setup.contract, source=setup.source, store=store, preflight=preflight,
+            exact_depth_approval_bytes=approval, trusted_keys=setup.trusted_keys, now=lambda: NOW))
+        run_timers = json.loads(json.dumps(TIMERS)); TIMERS.clear()
+        restore()
+
+        def adjudicate():
+            inventory = collect_runtime_inventory(setup.contract, loaded_modules=setup.current_loaded_modules(),
+                retained_source_bytes=setup.retained_source_bytes, artifact_root=inputs)
+            adjudicator = frozen_adjudicator(setup.contract, retained_source_bytes=setup.retained_source_bytes,
+                                             runtime_inventory=inventory)
+            raw, runtime = retained_result_envelope(setup.contract, execution, store, preflight)
+            result = validate_result_envelope(setup.contract, raw,
+                path_outcomes=execution.path_outcomes, path_inventory_bytes=execution.path_inventory_bytes,
+                attempt_store=store, runtime_load_trace_bytes=runtime, preflight_receipt=preflight,
+                exact_depth_approval_bytes=approval, exact_depth_trusted_keys=setup.trusted_keys,
+                approval_now=NOW, stage_input_sha256=dict(execution.stage_input_sha256),
+                adjudicator=adjudicator, trust_domain=setup.domain)
+            return result, len(raw), len(execution.path_inventory_bytes)
+        (result, envelope_bytes, inventory_bytes), aw, ac = _span(adjudicate)
+        adj_timers = json.loads(json.dumps(TIMERS)); TIMERS.clear()
+        journal_bytes = store.path.stat().st_size
+
+    paths = {stage: {pop: len(rows) for pop, rows in pops.items()}
+             for stage, pops in execution.path_outcomes.items()}
+    n_paths = sum(sum(v.values()) for v in paths.values())
+    replay = run_timers.get('runtime.path_replay', {'calls': 0, 'wall': 0.0, 'cpu': 0.0, 'inclusive_wall': 0.0})
+    proof_w = sum(v['wall'] for k, v in run_timers.items() if k.startswith('proof.'))
+    proof_c = sum(v['cpu'] for k, v in run_timers.items() if k.startswith('proof.'))
+    return {
+        'confirmation_depth': depth, 'decision_alpha': alpha,
+        'horizon_sessions': setup.contract.replay.horizon_sessions,
+        'synthetic': execution.synthetic, 'passed': execution.passed,
+        'path_counts': paths, 'paths_total': n_paths,
+        'result_sha256': result.result_sha256,
+        'phases': {
+            'setup_fixture_domain_contract_source': {'wall': sw, 'cpu': sc, 'components': setup_timers},
+            'controller_preflight_journal_open': {'wall': pw, 'cpu': pc},
+            'e1_run': {'wall': ew, 'cpu': ec, 'components': run_timers,
+                       'runtime_wall': replay['wall'], 'runtime_cpu': replay['cpu'],
+                       'proof_wall': proof_w, 'proof_cpu': proof_c,
+                       'controller_residual_wall': ew - replay['wall'] - proof_w,
+                       'controller_residual_cpu': ec - replay['cpu'] - proof_c},
+            'adjudication_runtime_capture_envelope': {'wall': aw, 'cpu': ac, 'components': adj_timers},
+        },
+        'bytes': {'result_envelope': envelope_bytes, 'path_inventory': inventory_bytes, 'journal_sqlite': journal_bytes},
+        'process_peak_memory_bytes': production._peak_memory_bytes(),
+    }
+
+
+def source_hashes():
+    names = sorted(str(p.relative_to(ROOT)).replace('\\', '/') for p in
+                   list((ROOT / 'ops/c1_rail/qualification').rglob('*.py')) +
+                   [ROOT / f for f in ('ops/c1_signal_daemon/tv_broker_emulator.py', 'ops/c1_signal_daemon/book_adapters.py',
+                                       'ops/c1_signal_daemon/book_protocol.py', 'ops/c1_signal_daemon/pine_ta.py',
+                                       'ops/c1_rail/book_policy.py', 'ops/c1_rail/book_account_owner.py',
+                                       'ops/c1_rail/book_capacity.py', 'core/lifecycle.py', 'core/firm_rules.py',
+                                       'scripts/certification_power.py', 'requirements-ops.lock',
+                                       'tests/ops/qualification/composition_fixture.py',
+                                       'tests/ops/qualification/composition_result_fixture.py',
+                                       'tests/ops/qualification/runtime_fixture.py')])
+    return {n: hashlib.sha256((ROOT / n).read_bytes()).hexdigest() for n in names}
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--depth', type=int, action='append', required=True)
+    ap.add_argument('--repeats', type=int, default=3)
+    ap.add_argument('--out', required=True)
+    a = ap.parse_args()
+    out = Path(a.out)
+    if out.exists():
+        raise SystemExit('refusing to overwrite ' + str(out))
+    rows = []
+    for depth in a.depth:
+        for r in range(1, a.repeats + 1):
+            row = one_run(depth); row['repeat'] = r; rows.append(row)
+            e = row['phases']['e1_run']
+            print(f"depth={depth} rep={r} paths={row['paths_total']} run_wall={e['wall']:.3f}s "
+                  f"runtime={e['runtime_wall']:.3f} proof={e['proof_wall']:.3f} ctrl={e['controller_residual_wall']:.3f} "
+                  f"setup={row['phases']['setup_fixture_domain_contract_source']['wall']:.3f} "
+                  f"adj={row['phases']['adjudication_runtime_capture_envelope']['wall']:.3f} passed={row['passed']}",
+                  flush=True)
+    report = {'schema': 't10-step4-signed-test-only-composition-measurement/v1',
+              'artifact_class': 'TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING',
+              'decision_bearing': False, 'processes': 1,
+              'recorded_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+              'runtime': {'python': platform.python_version(), 'implementation': platform.python_implementation(),
+                          'platform': platform.platform(),
+                          'executable_sha256': hashlib.sha256(Path(sys.executable).read_bytes()).hexdigest()},
+              'harness_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+              'source_sha256': source_hashes(), 'rows': rows}
+    out.write_text(json.dumps(report, indent=2, sort_keys=True), encoding='utf-8')
+    print('wrote', out)
+
+
+if __name__ == '__main__':
+    main()
