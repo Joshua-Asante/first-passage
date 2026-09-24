@@ -3,11 +3,11 @@
 **Type:** coordinator handoff (session boundary; the successor coordinator continues the Full E1 roadmap and the deployment-checklist workstreams)
 **From:** the coordinating work of 2026-09-23/24 (Claude sessions), assessed and packaged by a cloud session on 2026-09-24. **To:** the next coordinator session. **Operator:** Joshua.
 **Authority:** this handoff routes work; it grants nothing. Rulings, acceptance and merges stay with the coordinator and operator as the [execution-slices plan](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md) assigns them. It supersedes the [2026-09-22 coordinator handoff](2026-09-22-full-e1-coordinator-handoff.md) as the latest specifically assigned coordinator handoff; that file's §3 acceptance bar and §4 toolkit still apply and are not repeated here.
-**Verified at:** `origin/main@f8bba2e` (PR #487 merged). PR and branch heads below were read from GitHub on 2026-09-24 ~21:15Z. This session is a cloud checkout: it cannot see the Windows worktrees, the `.cache/fp-verification` records or the private evidence roots. Every workspace and record ID below is quoted from a committed record, not re-observed.
+**Verified at:** `origin/main@d1d6423` (PRs #489 and #483 merged). The remaining PR and branch heads below were refreshed from GitHub on 2026-09-24 after those merges. The original authoring session was a cloud checkout and could not see the Windows worktrees, the `.cache/fp-verification` records or the private evidence roots. Every workspace and record ID below is quoted from a committed record unless this handoff says it was re-observed.
 
 ## 0. Read first (in this order)
 1. **This file**, §1–§3.
-2. **PR #483** (branch `claude/s4-c2-ruling`, unmerged): the C2 ruling. It is the S4 repair contract (R1–R5), the operator's M13 ceiling and the Linux discipline. Until #483 merges, the ruling exists only on that branch.
+2. **The merged #483 C2 ruling** in the [execution-slices ledger](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-checkpoint-c2--s4-changes-required-06-decisions-and-the-n2-ceiling-ruled-2026-09-24): the S4 repair contract (R1–R5), the operator's M13 ceiling and the Linux discipline.
 3. [S4 packet](2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md): §0 anchors, §0.6 pre-mortem, and the S4-D1..D4 rulings.
 4. [T10 step-4 note](../../notes/2026-09-24-t10-step4-representative-measurement.md) §2 and §4: the per-path `verify_for` cost finding (§2.2 below).
 5. [T08 packet](2026-09-21-tradeify-t08-broker-protection-feasibility.md) §7 on PR #482, and §7.8 on PR #488: R3 = NONE and the operator's item-1 ruling.
@@ -25,17 +25,18 @@
 | #478, #481, #484 | M-41: every pinned private file is archived to `first-passage-archive` (`scripts/evidence_archive.py`, gate in `gates.yml`). The archive is line-ending safe and verifies committed blobs. `/local_artifacts/` is now ignored. | Closes recovery-return follow-up §7.7 item 4. Private evidence loss, the failure behind T00's recovery hunt, now has a mechanical guard. |
 | #485 | T10 phase 1 landed on `main` (source reconciliation, rulings R1/R2/R5), plus the operator's **F10 confirmation**: Step 3 suffices for the corrected Striker port | Closes F10 hold item (i). `claude/t10-source-freeze` is now fully merged. |
 | #487 | T10 step 4, first pass: a signed TEST_ONLY composition split by cost component | Finding in §2.2. |
+| #480 | T07 settlement pass: blocked; S1–S4 UNPROVEN and S5 has no accepted chain | Its settlement addendum is now on `main` and must be preserved when #482 is resolved. |
+| #489 | `.gitattributes` forces `.claude/workflows/**` to LF | Merged at `ee8427f`; a fresh Windows checkout reports `w/lf` and zero CR bytes for all three scripts. Named Claude Workflow-tool invocation remains an environment-specific follow-up. |
+| #483 | S4 C2 ruled **CHANGES REQUIRED** | The repair contract, R1–R5 order and M13 ceiling are now on `main`; S4 itself is not accepted. |
 
-**Opened and unmerged (six PRs; all docs except #486 and #489).** The recommended order is in §3.
+**Open at this correction checkpoint (four PRs including this handoff; all docs except #486).** The conditional order is in §3.
 
-| PR | Head | Content | Mergeability against `main@f8bba2e` |
+| PR | Head | Content | Required disposition |
 |---|---|---|---|
-| [#483](https://github.com/Joshua-Asante/first-passage/pull/483) | `claude/s4-c2-ruling@5a46cb3` | S4 C2 ruled **CHANGES REQUIRED**. Root cause of the red joint-N2 nodes: the n2work guardian's liveness gate admits only `PROVISIONAL`/`BOUND`, but N2 launches from `N2_READY`. 23 confirmed findings, repair order R1–R5, and the M13 ceiling (TEST_ONLY `/v6`: N2 360 s CPU / 900 s wall) | Clean. 15 behind. Its ledger append conflicts textually with this handoff's ledger append (both at EOF); merge #483 first. |
-| [#482](https://github.com/Joshua-Asante/first-passage/pull/482) | `claude/t08-r3-return@84b316c` | T08 step 1: **R3 = NONE** (no terminal fence for an unknown request on CrossTrade → Tradovate). The hard early return applies, T09 cannot be specified, and **D-broker is void**. #479 was closed in its favour. | Clean. Conflicts with #480 on the CAP record. |
-| [#488](https://github.com/Joshua-Asante/first-passage/pull/488) | `claude/t08-ruling-item1@d95a72a`, **stacked on #482** | The operator's ruling "approve item 1": hold live release, send one narrow vendor question (draft ready for the operator to send), scope a bounded-exposure amendment (Q1 load-bearing: one unknown request blocks automation on the account permanently under today's contracts) | Clean against `main`. Conflicts with #486 on `STATE.md` (both roll the keep-15 index) and with #480 on the CAP record. Retarget to `main` after #482 merges. |
-| [#486](https://github.com/Joshua-Asante/first-passage/pull/486) | `claude/bracket-timing-convention-build-43a332@cb45968` | **Code.** Builds the ratified path-position bracket convention (`bracket.py`, one `replay.py` hook) under the operator's 09-24 build GO. Records T00 P7(a) as **MET** on the primary checkout, provided `FP_PORT_ROOT` points at the Step 3 corrected-ports root. | Clean. `mergeable_state: behind` (15). CI shows only the CodeRabbit status on the head, so re-run the checks after updating from `main`. The PR asks the reviewer to check **four readings the build fixed where the addendum is silent**; that review is owed before merge. |
-| [#480](https://github.com/Joshua-Asante/first-passage/pull/480) | `claude/tradeify-t07-settlement-handoff-bd45f5@9a67af3` | T07 settlement pass: **blocked**. S1–S4 UNPROVEN, S5 = no accepted chain. The S2 timestamp resolution is split into three separately evidenced facts and **left for a coordinator decision**. There is no operator-facing assemble → sign → submit entry point; this is recorded as a gap. | Clean. Conflicts with #482/#488 on the CAP record; merge `main` in after they land. |
-| [#489](https://github.com/Joshua-Asante/first-passage/pull/489) | `claude/workflows-eol-lf@b3d6574` | `.gitattributes`: `.claude/workflows/** eol=lf`, so Workflow scripts can run by name on Windows | Clean, independent. After merge, run `git checkout -- .claude/workflows` in the primary checkout. By-name invocation is not yet confirmed. |
+| [#490](https://github.com/Joshua-Asante/first-passage/pull/490) | this handoff, corrected after `main@d1d6423` | Routes the next coordinator session without imposing a Claude-only successor and records the refreshed queue. | Merge first after its fresh required check passes; preserve this ledger entry after #483's complete ruling entry. |
+| [#482](https://github.com/Joshua-Asante/first-passage/pull/482) | `claude/t08-r3-return@84b316c` | T08 step 1: **R3 = NONE** (no terminal fence for an unknown request on CrossTrade → Tradovate). The hard early return applies, T09 cannot be specified, and **D-broker is void**. #479 was closed in its favour. | Resolve the conflict with merged #480 by preserving #480's settlement addendum alongside T08's findings, then verify the resulting head and merge. |
+| [#488](https://github.com/Joshua-Asante/first-passage/pull/488) | `claude/t08-ruling-item1@d95a72a`, **stacked on #482** | The operator's item-1 ruling, plus a proposed incident-ADR addendum, a recorded Q1=B ruling and an N1-map outcome. | After #482, retarget to `main`, reconcile its expanded scope and description, and rerun checks. Preserve the amendment's **Proposed—not accepted** status. |
+| [#486](https://github.com/Joshua-Asante/first-passage/pull/486) | `claude/bracket-timing-convention-build-43a332@cb45968` | **Code.** Builds the path-position bracket convention, but lets a gap-triggered R2 order fill at the open before cancellation even though the ratified R2 rule cancels before anything on the path executes. | **Hold.** Preserve cancellation-first unless an explicit convention amendment is chosen; add a gap-open regression, complete the interpretation review, update from `main`, and obtain fresh verification. The prior unit tests passed, but Linux supervision failed with 19 setup errors because shared cgroup memory limits remained `max`; that is failed verification, not evidence of a bracket-code defect. |
 
 **Judgment.**
 - The day's throughput was high and mostly well-evidenced. Every code PR cites a launcher record, and the docs PRs cite their checks.
@@ -45,7 +46,7 @@
   - T10's step-4 extrapolation makes source re-verification, not replay, the likely budget-dominant qualification cost.
 - Neither negative result is a failure of the work, but both change what "deployment" can mean. They need operator attention before more spine engineering is sequenced around them.
 - Housekeeping debt:
-  - Six open PRs with three pairwise conflicts.
+  - Four open PRs at this checkpoint, with #482 conflicted against merged #480, #488 still stacked on #482, and #486 held for correction.
   - No `SESSIONS.md` entry since 09-22 (the ledger and packets hold the record, which the charter allows).
   - `STATE.md` last curated 09-23, with two index entries pending in #486/#488.
 
@@ -62,7 +63,7 @@
 | T06 (S8) | Not started. |
 
 **Actions, in order:**
-1. **Merge #483** (the ruling must be on `main` before repairs land against it), then finish **R2 → R3 → R4** on `claude/s4-c2-repair`. The single writer lands each on `claude/s4-joint-n2`. #483 flags two process hazards:
+1. With #483's ruling now on `main`, finish **R2 → R3 → R4** on `claude/s4-c2-repair`. The single writer lands each on `claude/s4-joint-n2`. The ruling flags two process hazards:
    - The R1 patch was applied by script because GLM hit its 60-iteration cap.
    - A 187/187 record was voided as source-unstable because a concurrent edit landed during the run.
 
@@ -85,13 +86,13 @@
 - **Four-firm §4 falsifier (2026-11-08):** it needs its own dated re-MC; T00 cannot discharge it (operator ruling 09-23).
 - Rail: disarmed, `emit_enabled=false`, no deployed book, production feed deferred (O-4). Nothing above changes that.
 
-## 3. Recommended merge order (operator merges)
-1. **#489**: independent.
-2. **#483**: docs; unblocks the S4 repair.
-3. **This handoff's PR**, after #483: merge `main` in and keep both ledger appends in date order.
-4. **#482**, then retarget **#488** to `main` and merge it.
-5. **#486**, after the reader review of the four readings: merge `main` in, resolve `STATE.md` by keeping both index entries under keep-15 (roll the oldest to the archive once), and let CI run on the result.
-6. **#480**: merge `main` in and resolve the CAP record as append-only (both addenda kept, in date order).
+## 3. Conditional merge order (operator-approved)
+1. **#490**: merge after this correction, preserving #483's complete ruling entry followed by this handoff entry.
+2. **#482**: resolve the #480 conflict append-only, verify the refreshed head, then merge.
+3. **#488**: only after #482; retarget to `main`, reconcile its expanded scope and stale description, rerun checks, and keep the incident-ADR amendment **Proposed—not accepted**.
+4. **#486: HOLD.** Correct the cancellation-order conflict (or obtain an explicit convention amendment), add the gap-open regression, complete the remaining interpretation review, update from `main`, and obtain fresh verification before reconsidering merge.
+
+#480, #483 and #489 are already merged and are not pending queue items.
 
 ## 4. Workspaces (from committed records; not re-observed)
 
