@@ -798,3 +798,100 @@ def test_dashed_git_programs_are_judged_as_their_subcommand(mod, cmd, expected):
     """Card 4 item 7: a program named `git-<sub>`, with or without a path, is
     judged as `git <sub>`."""
     assert mod.classify(cmd)[0] == expected, cmd
+
+
+# --- card 5 (2026-09-23): env aliases, pre-failure lines, checkout restore, gh text
+UNREAD = 'echo "oops'  # an unterminated quote on the failing line
+
+
+@pytest.mark.parametrize("cmd,message", [
+    ("GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.ci GIT_CONFIG_VALUE_0='commit -n' "
+     "git ci -m x", NV),
+    ('GIT_CONFIG_PARAMETERS="\'alias.ci=commit -n\'" git ci -m x', NV),
+    ("GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.r GIT_CONFIG_VALUE_0='reset --h' "
+     "git r", DE),
+])
+def test_environment_defined_aliases_are_judged_as_what_they_run(mod, cmd, message):
+    """Card 5 item 1: an alias defined by leading GIT_CONFIG_COUNT/KEY_<n>/
+    VALUE_<n> assignments or GIT_CONFIG_PARAMETERS resolves with the same rules
+    as a `-c` alias."""
+    permission, agent_msg, _ = mod.classify(cmd)
+    assert permission == "ask" and message in agent_msg, cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.st GIT_CONFIG_VALUE_0=status git st",
+    'GIT_CONFIG_PARAMETERS="\'alias.st=status\'" git st',
+])
+def test_benign_environment_defined_aliases_stay_allowed(mod, cmd):
+    """Card 5 item 1's allowed neighbours: an env-defined alias to a benign
+    command."""
+    assert mod.classify(cmd)[0] == "allow", cmd
+
+
+@pytest.mark.parametrize("cmd,message", [
+    (f"git commit -n -m x\n{UNREAD}", NV),
+    (f"git reset --har\n{UNREAD}", DE),
+    (f"git -C . reset {'--h'}ard\necho 'oops", DE),
+])
+def test_complete_lines_before_a_syntax_error_still_ask(mod, cmd, message):
+    """Card 5 item 2: bash runs every complete line before the one it cannot
+    parse, so that line is judged the normal way; the whole command keeps its
+    raw-string reading. The cuts honour quotes: the failure is on the last line."""
+    permission, agent_msg, _ = mod.classify(cmd)
+    assert permission == "ask" and message in agent_msg, cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    (f'echo "unterminated; {RMRF} d', "ask"),   # frozen: no complete line before it
+    ("echo ok\necho 'unterminated", "allow"),   # a benign complete line, nothing to ask
+    (f"cat <<'EOF'\nnothing here\nEOF\necho 'unterminated", "allow"),
+    (f"cat <<'EOF'\nmsg\nEOF\n{RMRF} d\necho 'oops", "ask"),  # the cut skips the heredoc
+])
+def test_unreadable_commands_with_or_without_asking_lines(mod, cmd, expected):
+    """Card 5 item 2 neighbours: a failing first line leaves the raw-string
+    reading to decide (the frozen case), a benign complete prefix asks nothing,
+    and the line cuts never split a heredoc body — the command after it is
+    still judged. The whole command keeps its unblanked raw reading."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    ("git checkout .", "ask"),
+    ("git checkout HEAD f.txt", "ask"),
+    ("git checkout main -- src", "ask"),          # already through `--`, kept
+    ("git checkout --pathspec-from-file=list.txt", "ask"),
+    ("git checkout --pathspec-from-file list.txt", "ask"),
+    ("git checkout feature/x", "allow"),
+    ("git checkout -b fix origin/main", "allow"),
+])
+def test_checkout_restoring_files_asks(mod, cmd, expected):
+    """Card 5 item 3: without -b/-B/--orphan/--detach, checkout restores files —
+    and discards their work-tree changes — when its only operand is `.`, it has
+    two or more operands, or the paths come from --pathspec-from-file. A single
+    other operand is a branch switch.
+
+    `git checkout --detach HEAD~1` also asks: main's raw
+    `git\\s+checkout\\s+--` regex matches `--detach`, and the standing rule
+    keeps main's raw reading (the card listed it as allowed; see the return
+    report — it asks on f21de98 too)."""
+    assert mod.classify(cmd)[0] == expected, cmd
+
+
+GH_TITLE_BODY = "gh pr create --title t --body 'never use " + NOV + " '"
+GH_COMMENT = f'gh issue comment 5 -b "avoid {HARD} "'
+GH_SUBSTITUTION = 'gh pr create --body "$(stdbuf -oL ' + HARD + ' )"'
+
+
+@pytest.mark.parametrize("cmd,expected", [
+    (GH_TITLE_BODY, "allow"),
+    (GH_COMMENT, "allow"),
+    ("gh release create v1 -t t --notes 'never " + NOV + " '", "allow"),
+    ("gh pr merge 5 --subject 'avoid " + NOV + " '", "allow"),
+    (GH_SUBSTITUTION, "ask"),
+])
+def test_gh_text_arguments_are_data(mod, cmd, expected):
+    """Card 5 item 4: the --title/-t, --body/-b, --notes/-n, --message/-m and
+    --subject values of pr/issue/release create/edit/comment/review/merge are
+    data (F29); a $(…) inside one stays code and still asks."""
+    assert mod.classify(cmd)[0] == expected, cmd

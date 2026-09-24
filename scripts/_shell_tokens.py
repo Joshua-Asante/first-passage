@@ -11,6 +11,8 @@ and `_skip_word`) and `segments(strict=True)` runs `_strict_segments` (card 2's
 loop, with `_strict_close`, `_heredoc_word`, `_redirection_operator_end` and
 `_strict_heredoc_end`). They share the ANSI-C decoder and the wrapper option
 tables, not their scanning; a fix to one scanner does not reach the other.
+`line_cuts` is a third, smaller reader over the same quoting rules: the
+newlines that end complete lines, for a caller judging what bash already ran.
 
   * **default** (``strict=False``) — card 1's reading for `guard_s2_runs.py`, as
     of its #470 review round 3 (`guard_s2_runs.py` imports `segments`,
@@ -448,6 +450,57 @@ def _ansi_word(text: str, i: int) -> tuple[str, int]:
     except ShellSyntaxError:
         return _ansi_c(text[i + 1:]), len(text)
     return _ansi_c(text[i + 1:end - 1]), end
+
+
+def line_cuts(text: str) -> list[int]:
+    """Indices just past each newline of `text` that ends a complete line.
+
+    A line is complete when no quote is open and no heredoc body is pending at
+    its newline — quotes, escapes, comments and heredoc bodies are read the way
+    `_default_segments` reads them — so bash has a command it can run before
+    reading on (the shell guard judges those lines when a later one fails to
+    parse). A cut that lands inside a construct spanning it, such as an open
+    ``$(…)``, is not detected here: the caller's strict reader raises on the
+    cut prefix, which is what discards such a cut.
+    """
+    cuts: list[int] = []
+    quote = ""
+    pending: list[str] = []  # heredoc delimiters whose bodies start at the next newline
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if quote:
+            if ch == "\\" and quote == '"':
+                i += 2
+            else:
+                if ch == quote:
+                    quote = ""
+                i += 1
+        elif ch in "'\"":
+            quote = ch
+            i += 1
+        elif ch == "\\":
+            i += 2
+        elif ch == "#" and (i == 0 or text[i - 1] in " \t\n;|&("):
+            newline = text.find("\n", i)
+            i = len(text) if newline < 0 else newline
+        elif text.startswith("<<", i) and not text.startswith("<<<", i):
+            end, delimiter = _consume_redirection(text, i)
+            if delimiter:
+                pending.append(delimiter)
+            i = end
+        elif ch == "\n" and pending:
+            i += 1
+            for delimiter in pending:
+                i = _heredoc_end(text, i, delimiter)
+            pending.clear()
+            cuts.append(i)
+        elif ch == "\n":
+            cuts.append(i + 1)
+            i += 1
+        else:
+            i += 1
+    return cuts
 
 
 # --- strict heredocs and redirections -------------------------------------------
