@@ -100,11 +100,11 @@ The 2026-08-04 de-scope should move **exactly one thing**. Under this axis it do
 ```
 BEFORE   Striker NAS100          BOOK    LOCKED · AUTHORIZED · MECHANISM @ 1.00×
          …@Tradeify_Select_100K  EDITION ACTIVE   (cap_alloc 11, MNQ1!, 16:45 ET flat)
-         …#TDFYSL1006…           DEPLOY  WIRED    (leg_id nas100_mnq, dry_run=true)
+         …#<ACCOUNT_ID>…           DEPLOY  WIRED    (leg_id nas100_mnq, dry_run=true)
 
 AFTER    Striker NAS100          BOOK    LOCKED · AUTHORIZED · MECHANISM @ 1.00×   ← UNCHANGED
          …@Tradeify_Select_100K  EDITION WITHDRAWN — venue de-scoped 2026-08-04    ← the only move
-         …#TDFYSL1006…           DEPLOY  RETIRED (rail retained, disarmed, F2)     ← follows the edition
+         …#<ACCOUNT_ID>…           DEPLOY  RETIRED (rail retained, disarmed, F2)     ← follows the edition
 ```
 
 **One state transition, at one level, and "venue-fit is not decay" becomes a structural property rather than a sentence someone must remember to write.**

@@ -94,7 +94,7 @@ def _config(**overrides):
     # dry_run=False + a live armed_until == a correctly-armed rail, which is
     # what these tests are about. Arming expiry is exercised deliberately in
     # the arming-window section below, never incidentally here.
-    cfg = dict(account="TDFYSL100642026", secret_key="test-secret",
+    cfg = dict(account="TDFYSL000000000000", secret_key="test-secret",
                webhook_id="abc123", webhook_secret="xyz789",
                destination="tradovate", dry_run=False,
                armed_until=_armed_until())

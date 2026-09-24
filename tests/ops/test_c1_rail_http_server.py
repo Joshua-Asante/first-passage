@@ -55,7 +55,7 @@ def _base_cfg(tmp_path: Path, **overrides) -> dict:
         "constants_path": str(tmp_path / "c1_sizing_constants.json"),
         "equity_path": str(equity),
         "path_token": TOKEN,
-        "account": "TDFYSL100642026",
+        "account": "TDFYSL000000000000",
         "secret_key": "test-secret",
         "webhook_id": "abc",
         "webhook_secret": "xyz",
@@ -346,7 +346,7 @@ def test_parse_crosstrade_account_equity_nested_dotted_path():
     # Live CrossTrade Tradovate shape (B6 verify 2026-07-19): net-liq is nested
     # under data.balance.netLiq — a dotted equity_field must navigate into it.
     payload = {"success": True, "data": {
-        "accountId": "58", "name": "TDFYSL1",
+        "accountId": "58", "name": "TDFYSL000000000000",
         "balance": {"netLiq": 100_000.0, "netLiqSOD": 100_000.0, "cashUSD": 99_000.0}}}
     assert parse_crosstrade_account_equity(payload, "balance.netLiq") == 100_000.0
 

@@ -35,7 +35,7 @@ def test_entry_payload_default_has_no_destination_clause():
 def test_entry_payload_tradovate_destination_included():
     text = build_crosstrade_payload(
         leg="entry", action="buy", symbol="MYM1!", qty=9, order_id="dj30_mym-entry-1",
-        account="TDFYSL100642026", secret_key="test-secret",
+        account="TDFYSL000000000000", secret_key="test-secret",
         sl=44000.0, tp=44500.0, destination="tradovate",
     )
     assert "destination=tradovate;" in text
@@ -46,7 +46,7 @@ def test_entry_payload_tradovate_destination_included():
 def test_add_payload_tradovate_no_flatten_first():
     text = build_crosstrade_payload(
         leg="add", action="buy", symbol="MYM1!", qty=67, order_id="dj30_mym-add-1",
-        account="TDFYSL100642026", secret_key="test-secret", destination="tradovate",
+        account="TDFYSL000000000000", secret_key="test-secret", destination="tradovate",
     )
     assert "destination=tradovate;" in text
     assert "flatten_first" not in text  # only entry sets flatten_first
@@ -58,7 +58,7 @@ def test_exit_close_payload_omits_quantity_when_size_unknown():
     which means "flatten whatever's actually open," not "close zero"."""
     text = build_crosstrade_payload(
         leg="exit", action="close", symbol="MYM1!", qty=0, order_id="dj30_mym-exit-1",
-        account="TDFYSL100642026", secret_key="test-secret", destination="tradovate",
+        account="TDFYSL000000000000", secret_key="test-secret", destination="tradovate",
     )
     assert "command=closeposition;" in text
     assert "destination=tradovate;" in text
@@ -68,7 +68,7 @@ def test_exit_close_payload_omits_quantity_when_size_unknown():
 def test_exit_close_payload_includes_quantity_when_known():
     text = build_crosstrade_payload(
         leg="exit", action="close", symbol="MYM1!", qty=76, order_id="dj30_mym-exit-1",
-        account="TDFYSL100642026", secret_key="test-secret", destination="tradovate",
+        account="TDFYSL000000000000", secret_key="test-secret", destination="tradovate",
     )
     assert "quantity=76;" in text
 
