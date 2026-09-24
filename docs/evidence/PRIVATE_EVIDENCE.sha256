@@ -44,3 +44,18 @@ a3151f86123487ccacbb40c70562d47ad5446edbe685aa287512f9c1c61d5e6c  feasibility-sc
 # The recovery's private per-file index.
 bf9803484e9b6e83dfce0781f7ee83a09b50c547c7883b9dc7e554f26b0d9a5d  recovery-2026-09-24/transcripts/candidates-classified.json
 a8a2f887b9ebb8eaa3ea8160792d2784830224d1a8a049c78b64df0a22068906  recovery-2026-09-24/transcripts/candidates-untracked.json
+#
+# 2026-09-24 — T08 step 1 R3 source pass (capture CAP-20260916/t08-r3-20260924;
+# docs/briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md §7.3).
+# Public vendor pages retained as original bytes; the manifest hashes all 54 captured files.
+a56a09cdf02dc378ed2d3ae5eab5cc69650d287373757ac0aa350648cde3fc3c  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260924-t08-r3/manifest.json
+02cc37b357d65d75abdd7df5972234ed4099f9317ca032d162c9cda8dcc8d49c  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260924-t08-r3/pages/api_tradovate_overview.html
+e98e35f5b7f248ba7adfbf807ca4fa000cc1e3bf7556031147ab08f421b0cea1  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260924-t08-r3/pages/tradovate_webhooks.html
+1f5f19dde4d05a311bf61442d7db77ec70e746285f227ce00210d6da3d119881  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260924-t08-r3/pages/api_tradovate_get-fill-history.html
+8b849fbdbf7857f04abf6dc12450a493c67bb12a349e45fd8045305252a7fa52  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260924-t08-r3/pages/api_webhook-trading.html
+e639f615eb8243a6089044a977651c2b2f5bd6e644b09838e55335780a1c210c  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260924-t08-r3/pages/api_orders_get-order-lifecycle.html
+2888339b623e275cec8a0b726384f9e9f2107b012d2f43cd110c3944f4cf7455  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260924-t08-r3/pages/webhooks_advanced-options_delay-timer.html
+8da36fdb18f1c2e7f8c895003aaf9bed31299077d84d95e1fe0f87c8505580ce  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260924-t08-r3/pages/webhooks_advanced-options_kill-switch.html
+6ccd3e79b3d53d0eeff9b9e229d25e3d1bed1a00097880974e25397dd00d3aa9  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260924-t08-r3/tradovate/api_rest-api-endpoints_orders_command-item.html
+dc42f6b5e5679720a5477352f82a4b36f4550221d9d16dfd8de25828059629d5  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260924-t08-r3/tradovate/api_rest-api-endpoints_orders_command-list.html
+eccb01bb332c27adfd03e0842b5a1c1ef94220a2fcc9a4757e4060e24e3ab12e  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260924-t08-r3/tradovate/api_rest-api-endpoints_orders_order-list.html

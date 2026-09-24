@@ -504,3 +504,13 @@ consumer binding, account/environment, route/config, enabled actors, report
 semantics/coverage, corrections, history retention, symbol/contract rollover or
 port primitive declarations. Preserve prior evidence and refusals. G0 closure
 alone qualifies no S/R/N row and grants no production permission.
+
+## Addendum 2026-09-24 — R3 source pass (T08 step 1)
+
+Append-only. This addendum supersedes the R3 row of the current disposition table above. All other rows are unchanged.
+
+| Row | Verdict | Evidence / remaining gap | Next disposition / owner |
+|---|---|---|---|
+| R3 | **UNSUPPORTED on the documented surfaces** | CrossTrade and Tradovate sources document a positive, in-session client-id match only. They document no terminal or no-future-effect fence. Order lists and lifecycle reads reset at the ~5 PM ET session close. Durable fill history has no client id and no completeness guarantee. Webhook processing is asynchronous, with `delay=` up to 300 s and undocumented pacing. The Tradovate `command` entity has no lookup by client id and no terminal guarantee for an absent request. | Operator chooses: contract amendment (recommended), vendor guarantee (support contact not authorized) or route change. [T08 §7.2](../../handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#72-decision-owed-to-the-operator-not-taken-here) |
+
+The full evidence table and page hashes are in [T08 §7.1 and §7.3](../../handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#71-step-1-return--2026-09-24-claude-code-documentary-pass-no-account-access); the private capture batch is `CAP-20260916/t08-r3-20260924`. This is a bounded finding about the documented surfaces. It does not show that the account or route is otherwise incapable, and it qualifies no row. R5, R2/R4 and N1 were not examined, because the R3 return is a hard early stop. D-broker is void under its ratified condition. No order, account access, support contact or drill occurred.
