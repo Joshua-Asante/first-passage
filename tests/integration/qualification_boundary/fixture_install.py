@@ -56,14 +56,16 @@ def install(root,manifest,image,*,diagnostic=False,dispatch=False,joint=False):
         execution_credential=str(root/'keys/qexec/credential.json'))
     profile=json.loads((CODE/'deploy/qualification/test-profile.json').read_bytes())
     if diagnostic:
-        # S2 acceptance runs the funded private route, so the diagnostic host
-        # installs the execution-capable revision (profile/v4, release/v4); S3
-        # installs the dispatch revision (profile/v5, release/v5, N1 only).
+        # --s2 acceptance runs the funded private route, so the diagnostic host
+        # installs the execution-capable revision (profile/v4, release/v4);
+        # --s3 installs the dispatch revision (profile/v5, release/v5, N1 only)
+        # and --s4 (FP_QUALIFICATION_S4=1) the joint dispatch v6 one.
         from c1_rail.qualification.execution.profile import (dispatch_diagnostic_execution_profile,
             funded_diagnostic_execution_profile, joint_dispatch_diagnostic_execution_profile)
         from tools.qualification_verification import campaign_host
-        # S4 installs the joint dispatch revision (profile/v6, release/v6,
-        # checkpoints N1+N2); S3 keeps profile/v5; S2 keeps profile/v4.
+        # --s4 (FP_QUALIFICATION_S4=1) installs the joint dispatch revision
+        # (profile/v6, release/v6, checkpoints N1+N2); --s3 installs v5, so it
+        # keeps profile/v5, and --s2 keeps profile/v4.
         profile = (joint_dispatch_diagnostic_execution_profile(encoded(profile)) if joint
                    else dispatch_diagnostic_execution_profile(encoded(profile)) if dispatch
                    else funded_diagnostic_execution_profile(encoded(profile)))

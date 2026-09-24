@@ -1,9 +1,9 @@
 """S3 genuine N1 capture and committed G5 decision on the canonical host.
 
-Requires FP_QUALIFICATION_S3=1 (the dispatch/v5 installation) on top of the S2
-environment. One deterministic synthetic PASS and one FAIL through actual
-compute, capture, reconstruction and store; recovery, VOID ordering and payload
-identity are asserted from the durable journal.
+Runs on the dispatch/v5 installation under --s3 and on the joint v6 installation
+under --s4, on top of the S2 environment. One deterministic synthetic PASS and
+one FAIL through actual compute, capture, reconstruction and store; recovery,
+VOID ordering and payload identity are asserted from the durable journal.
 """
 
 import base64

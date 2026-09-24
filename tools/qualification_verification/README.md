@@ -159,7 +159,12 @@ cleanup, and uploads the `qualification-s2-supervision` artifact. The default
 mode is s3, which runs the files named by `S3_CASES` in
 `scripts/qualification_boundary_verification.py` (record scope `S3_N1_CAPTURE`);
 `-f mode=s2` runs the subset named by `S2_CASES` (scope
-`S2_DIAGNOSTIC_SUPERVISION`). The required nodes are the registered nodes of
+`S2_DIAGNOSTIC_SUPERVISION`), and the wrapper's `--s4` runs the strictly
+larger joint set named by `S4_CASES` (scope `S4_JOINT_N2`) on the joint
+dispatch/v6 installation. `--s3` keeps its accepted S3 meaning on the
+dispatch/v5 installation, so the two selections are separate runs of one
+wrapper, never one combined mode; the workflow's `mode` input names
+`s2`/`s3`. The required nodes are the registered nodes of
 `tests/ops/qualification/invariant_manifest.json` inside the selected files,
 recorded as `invariants.json`'s `required_nodeids`. A run is about
 25 minutes: 6-8 minutes of provisioning plus three cases that are about 300 s
@@ -203,8 +208,8 @@ Order of operations for an executor (the two clocks are independent; the
    `record.json` (completed, exit 0/0, `source_stable`, `capture_complete`,
    cleanup ok, the expected scope, a measured `before.commit`), `invariants.json`
    (`passed`, and a non-empty `required_nodeids`: the selection's required
-   nodes, currently 15 for s2 and 19 for s3) and `junit.xml` (at least that many
-   tests, no failures, errors or skips) all hold. The expected scope is
+   nodes, currently 15 for s2, 19 for s3 and 22 for s4) and `junit.xml` (at
+   least that many tests, no failures, errors or skips) all hold. The expected
    `S3_N1_CAPTURE` unless `--expect-scope S2_DIAGNOSTIC_SUPERVISION` asks for an
    s2-mode run. A dispatch run must have measured its head (`tested_commit`
    equals `headSha`); a pull-request run tested `refs/pull/N/merge`, which the
