@@ -284,3 +284,8 @@ workspace_outputs/
 
 # Local agent prompts, tool streams and request receipts can contain private context.
 .agent-handoffs/
+
+# Repo-root private scratch (recovery transcripts, capture logs, account-side evidence). Sessions
+# already wrote here as if it were ignored; it was not until 2026-09-24. Ignoring is not archiving:
+# a pinned file still goes to first-passage-archive per M-41.
+/local_artifacts/
