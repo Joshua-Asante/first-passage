@@ -522,7 +522,7 @@ so nothing was retained there.
 | Row | Proposed verdict | Evidence reference | Exact remaining gap / owner |
 |---|---|---|---|
 | S1 | UNPROVEN | No new original bytes. The operator deferred the export session. The retained 09-15 cash windows and the balance CSV are still the only originals (hashes in the T07 return). | Joshua exports the bounded inception-to-capture Cash History windows, with overlaps, plus Account Balance History through the working manual download path, plus lifecycle inception evidence. |
-| S2 | UNPROVEN | S2 source pass: 82-row manifest, SHA-256 `b7ee66f1…41a1`. Retained Cash History bytes carry a zone-less `MM/DD/YYYY HH:MM:SS` `Timestamp` and no metadata header, so the export cannot source its own offset. | See the S2 findings below. The missing fact is the offset that the trader Reports module applies to Cash History `Timestamp` and to its date bounds, and whether the Cash History `Date` column is the trade date. Coordinator decides whether the same-ID comparison below is an admissible source. |
+| S2 | UNPROVEN | S2 source pass: 82-row manifest, SHA-256 `b7ee66f1…41a1`. Retained Cash History bytes carry a zone-less `MM/DD/YYYY HH:MM:SS` `Timestamp` and no metadata header, so the export cannot source its own offset. | See the S2 findings below. The missing fact is the offset that the trader Reports module applies to Cash History `Timestamp` and to its date bounds, and whether the Cash History `Date` column is the trade date. Coordinator decides whether the observations below are admissible sources. |
 | S3 | UNPROVEN | No predecessor chain exists (S5), so no historical close-equity record is owed for a predecessor. The initial origin is B7, whose E1/E2/E3 evidence is not yet collected. | Joshua supplies the fresh B7 E1 dashboard, E2 flat/no-working-order evidence and E3 history when release is ready. Every later close needs venue equity at the effective close, or balance plus same-boundary flatness. |
 | S4 | UNPROVEN (synthetic consumer traces complete) | Traces (c)–(e) map to existing tests, plus three new synthetic tests. 325 settlement-suite tests passed; record `.cache/fp-verification/20260924T163613Z-4fee32191553/record.json`. | Traces (a)–(b) need original bytes (S1–S3). No operator-facing entry point exists to assemble → request challenge → sign → submit → read status. The owner exposes only in-process methods (`issue_settlement_challenge`, `submit_settlement`), so there is no procedure a signing session could follow. Owner of that entry point: coordinator (T09 or separate tooling scope; not implemented here). |
 | S5 | Predecessor state: **no accepted chain** (operator-attested, with bounded search). Row stays UNPROVEN for consumer qualification. | Operator answer on 2026-09-24 to the S5 question: "None exists". Local search record `s5/` (scan `4671612a…8f65`, output `33c7f5ba…a95c`). Fly re-inspection was approved but blocked by missing `flyctl` authentication (`s5/*.inventory.txt`). The 09-17 host inspection above remains the host evidence. | Origin path is the existing initial-B7 procedure. The fresh Fly name inventory runs once the operator authenticates `flyctl`. |
@@ -544,8 +544,10 @@ acceptance locations.
   date, and `Total Amount` is the end-of-session balance (partner reports page and
   Tradovate trader "Account Reports" article). This is sourced.
 - Session boundaries in Tradovate pages are 5:00 PM–4:00 PM CT, with 4 PM CT as the EOD
-  risk evaluation. Tradeify's account day is 18:00–17:00 ET. The two are not the same
-  boundary. The contract's explicit account-session mapping stays required.
+  risk evaluation. That is the same boundary as Tradeify's 18:00–17:00 ET account day,
+  because Central and Eastern time are one hour apart and change DST on the same dates.
+  This agreement does not source the report timezone, and it does not map holidays or
+  half-days. The contract's explicit account-session mapping stays required.
 - Timezone: the admin reporting API takes a caller-supplied numeric offset. The trader
   app's time-zone preference is documented only for the notification ticker. No
   primary page states the offset of trader CSV exports or of their date filter.
@@ -560,14 +562,27 @@ acceptance locations.
   offsetting new entry. `CancelledPairedTrade` and `AutomaticReconciliation` appear in
   the enumeration undefined.
 
-**Candidate S2 resolution (not executed; coordinator decision).** Compare one transaction
-ID in a fresh original Cash History export against the same ID in an entitled API
-`cashBalanceLog` read, which carries a UTC `timestamp` and a `tradeDate`. From original
-bytes on both sides, that gives the export's offset and its `Date` semantics for the
-observed DST regime only. The CST regime from November 1 needs its own observation.
-API entitlement for this account is unverified, and the read is an account-side act
-for Joshua. Without it, or a vendor statement, no package can carry a sourced report
-timezone, and none is signed.
+**Candidate S2 resolution (not executed; coordinator decision).** These are three separate
+facts, and each needs its own evidence. One matched row cannot establish all three.
+
+1. *`Timestamp` offset.* Match a transaction ID in a fresh original Cash History export
+   against the same ID in an entitled API `cashBalanceLog` read, which carries a UTC
+   `timestamp`. From original bytes on both sides, that gives the export's offset for
+   the observed DST regime only. The CST regime from November 1 needs its own
+   observation.
+2. *`Date` meaning.* An ordinary daytime transaction has the same calendar date and
+   trading-session date, so it passes under either reading and establishes nothing.
+   This fact needs an authoritative definition, or a discriminating row: one timestamped
+   after the session rollover (after 17:00 CT / 18:00 ET) or across a weekend or holiday
+   boundary, compared against the API `tradeDate`. If the account has no such row, the
+   fact stays unsourced.
+3. *Query-bound semantics.* Which clock the date filter uses, and whether its end bound
+   is inclusive, are not shown by any matched row. They need a vendor statement or a
+   bounded query whose edge rows discriminate.
+
+API entitlement for this account is unverified, and each read is an account-side act
+for Joshua. Until all three facts are sourced, no package can carry a sourced report
+timezone and date mapping, and none is signed.
 
 **Operator effort and latency.** Not measured: the procedure could not be run end to
 end without S1–S3 originals and an operator entry point.
