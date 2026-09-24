@@ -44,3 +44,16 @@ a3151f86123487ccacbb40c70562d47ad5446edbe685aa287512f9c1c61d5e6c  feasibility-sc
 # The recovery's private per-file index.
 bf9803484e9b6e83dfce0781f7ee83a09b50c547c7883b9dc7e554f26b0d9a5d  recovery-2026-09-24/transcripts/candidates-classified.json
 a8a2f887b9ebb8eaa3ea8160792d2784830224d1a8a049c78b64df0a22068906  recovery-2026-09-24/transcripts/candidates-untracked.json
+
+# 2026-09-24 — full-E1 recovery packets pinned by the 2026-09-19 handoffs
+# (docs/briefs/handoffs/2026-09-19-full-e1-*.md). Local-only under recovery/; archived to
+# first-passage-archive from checkpoint 272028e, whose working-tree copies were lost on a branch switch.
+3bfcf1155fa50fa80a2dd40440645ce356cd3954c6dde3b3086bdd09ba16d56e  recovery/full-e1-20260919/full-e1-task1ab-recovered.zip
+54c9947e7ba5c56b4f57ae6b92a00cf51dfc25e8b0a88b351ee7a022d44631d2  recovery/full-e1-20260919/manifest.json
+55ce847ccebad22adb0efabdcccfe6d691376d3bc240d36c4516072af9f68ff2  recovery/full-e1-s1-20260919/full-e1-s1-review.zip
+a6129041940bcb8749c5a0a9a7d72e11ca1323b45f9331faf3d44ff498917c91  recovery/full-e1-s2-20260919/source.zip
+8631c315093f20fcc412dad950873eca250ebe03a915632d1303ec9b37ed7ec9  recovery/full-e1-s2-20260919/manifest.json
+a18d6d376e07fb737967c87f4081e120bc9d77dc1a7672c8f0c20461aa8c1d62  recovery/full-e1-s2-r1-20260919/source.zip
+5de150f268f879f73eb1105309d9eb24337f9900ab8df8fe015cd26a175d9c09  recovery/full-e1-s2-r1-20260919/manifest.json
+736a68541a6adcf5ea9f3625fa47a1beda59435297ea0821a20be0ac2f639e2f  recovery/full-e1-s2-r1-20260919/SHA256SUMS
+a49c7cd74f8670c18aae12f58691b59750c54a0ea9faf6f18031e786e37b9fab  recovery/full-e1-r2b-predispatch-20260919/test_campaign_scheduler.py

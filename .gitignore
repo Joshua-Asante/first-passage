@@ -289,3 +289,14 @@ workspace_outputs/
 # already wrote here as if it were ignored; it was not until 2026-09-24. Ignoring is not archiving:
 # a pinned file still goes to first-passage-archive per M-41.
 /local_artifacts/
+
+# Repo-root local-only roots. scripts/check_boundaries.py already defines recovery/ as the untracked
+# evidence-packet root; tmp/ and tmp-* are session scratch. A blanket add committed all of them on
+# 2026-09-24 (local checkpoint 272028e, 94 MB, never pushed). Pinned files still go to first-passage-archive (M-41).
+/recovery/
+/tmp/
+/tmp-*/
+/tmp-*.md
+/tmp-*.py
+# ZCode editor config generated from this file; machine-local.
+/.zcodeignore
