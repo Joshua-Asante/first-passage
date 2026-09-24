@@ -379,6 +379,36 @@ git grep -c -E "first-passage(-archive)?#[0-9]+" -- 'docs/*.md' 'STATE.md' | awk
 
 ---
 
+## Addendum 2026-09-24 — residual identifier prefixes scrubbed; historical exposure accepted
+
+**Does not amend §2 / §4 / §5.** Records what the 2026-09-24 hygiene pass found, how it was
+disposed, and the operator's ruling on the exposure that remains in public git history.
+
+**Finding (verified 2026-09-24 by redacted comparison against the private archive):** the Phase-1
+scrub dispositioned the venue-binding ADR's identity-table example and
+`tests/ops/test_c1_rail_arm.py`, but missed seven other tracked sites carrying prefixes of the
+same live incumbent Tradeify account identifier — its first 15 of 18 characters at six ops-test
+sites (`tests/ops/test_crosstrade_payload.py` ×4, `tests/ops/test_c1_rail_http_server.py`,
+`tests/ops/test_c1_rail_listener.py`), a 7-character prefix in a fake Tradovate payload `name`
+field, and the 10-character prefix at two diagram lines of that ADR's §2.3. No test asserts the
+identifier's value, length, or format; after the scrub below, the §10 account-ID sweep (prefix
+values drawn from the private archive) returns zero tracked hits at the PR head.
+
+**Disposition:** [PR #491](https://github.com/Joshua-Asante/first-passage/pull/491) replaces them
+with the repo's synthetic 18-character placeholder (`TDFYSL000000000000`, already the convention
+in `test_account_close_assembler.py` / `test_book_settlement.py`) and `<ACCOUNT_ID>` in the ADR
+diagram, matching §6's original scrub style. Affected tests 80/80 green via the ops launcher
+(record `.cache/fp-verification/20260924T215222Z-e353fe4f68bf/record.json` — status completed,
+exit 0, source stable).
+
+**Operator ruling (2026-09-24): the historical exposure is accepted.** The prefixes have been
+retrievable from this repo's public history since the initial public release commit `027a729`
+(2026-08-14) and remain so after PR #491 merges. No public-history rewrite (`git filter-repo` +
+force-push of `main` — the move class §5 ruled out for the pre-transplant repo, declined here
+likewise) and no account rotation. The residual-exposure question this finding raised is closed.
+
+---
+
 ## Change history
 
 | Date | Change | By |
@@ -386,3 +416,4 @@ git grep -c -E "first-passage(-archive)?#[0-9]+" -- 'docs/*.md' 'STATE.md' | awk
 | 2026-08-14 | Initial authoring | Joshua + claude.ai |
 | 2026-08-22 | **Operator Accept.** Status `Proposed` → `Accepted`. Phase 1 remediation and the fresh-repo transplant already executed; this public clone is that seed. Status field lagged the executed work. | Joshua (Accept) + Cursor (record) |
 | 2026-09-11 | **Addendum — PR-number era convention.** Numbers restarted at #1 with the §2 transplant; citation rule (`first-passage-archive#N` / `first-passage#N`), no retro-edits, reader-intercept in the `docs/SESSIONS.md` living header. Does not amend §2 / §4 / §5. | Joshua (request) + Claude Code (record) |
+| 2026-09-24 | **Addendum — residual identifier prefixes; historical exposure accepted.** PR #491 scrubs seven missed 15/7/10-character prefixes of the account identifier (synthetic placeholder / `<ACCOUNT_ID>`); operator accepts that public history since `027a729` keeps carrying them — no rewrite, no rotation. Does not amend §2 / §4 / §5. | Joshua (ruling) + ZCode (record) |
