@@ -79,9 +79,13 @@ def test_s4_genuine_joint_pass_reaches_part_a_ready(real_boundary):
         attempt,
         lambda s: (n2_family(s) or {}).get('state') == 'ATTESTED'
         and work(s, 'n2work')['state'] == 'COMPLETED',
+        seconds=1080,
     )
     dispatch(boundary, attempt, 'n2g5', 'n2_g5')
-    state = wait(boundary, attempt, lambda s: s['state'] in ('PART_A_READY', 'N2_FAILED'))
+    state = wait(
+        boundary, attempt, lambda s: s['state'] in ('PART_A_READY', 'N2_FAILED'),
+        seconds=1080,
+    )
     assert state['state'] == 'PART_A_READY'
     family = n2_family(state)
     assert family['state'] == 'COMMITTED' and family['decision'] == 'CONTINUE'
@@ -158,6 +162,7 @@ def test_s4_n2_g5_unit_death_and_exact_receipt_retry(real_boundary):
         attempt,
         lambda s: (n2_family(s) or {}).get('state') == 'ATTESTED'
         and work(s, 'n2work')['state'] == 'COMPLETED',
+        seconds=1080,
     )
     dispatch_frozen = boundary.schedule(
         {

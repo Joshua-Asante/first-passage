@@ -115,3 +115,29 @@ def test_v5_profile_with_the_joint_set_is_still_refused():
     doc.update(schema='qualification_execution_profile/v5', protocol_version=5)
     with pytest.raises(ValueError):
         module.parse_profile(canonical_json_bytes(doc))
+
+
+def test_joint_v6_budget_profile_widens_only_the_n2_compute_phase():
+    """S4-R5b: the operator-ruled N2 ceiling (360 s CPU / 900 s wall) lives in
+    the TEST_ONLY v6 diagnostic budget profile alone; v5 and every other phase
+    keep the shared 120 s / 300 s diagnostic ceiling and controller charge."""
+    import importlib
+
+    module = importlib.import_module('c1_rail.qualification.execution.profile')
+    v6 = module.joint_dispatch_diagnostic_execution_profile(canonical_json_bytes(document()))
+    v5 = dispatch_profile_document()
+    memory = v6['memory_bytes']
+    assert v5['memory_bytes'] == memory
+    joint = module.diagnostic_budget_profile(canonical_json_bytes(v6))
+    dispatched = module.diagnostic_budget_profile(canonical_json_bytes(v5))
+    shared = dict(cpu_ns=120_000_000_000, wall_ns=300_000_000_000, memory_bytes=memory)
+    assert joint['phases']['N2'] == dict(
+        cpu_ns=360_000_000_000, wall_ns=900_000_000_000, memory_bytes=memory
+    )
+    for phase, limits in joint['phases'].items():
+        if phase != 'N2':
+            assert limits == shared, phase
+    for phase, limits in dispatched['phases'].items():
+        assert limits == shared, phase
+    assert joint['orchestration_cpu_ns'] == dispatched['orchestration_cpu_ns']
+    assert set(joint['orchestration_cpu_ns'].values()) == {20_000_000_000}

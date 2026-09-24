@@ -207,6 +207,8 @@ def parse_campaign_budget_profile(raw: bytes) -> dict:
 # Installed operational ceilings, never statistical thresholds. Shared variants
 # are defined once; the resolved bytes are signed in the release, not this name.
 _DIAGNOSTIC_PHASE = MappingProxyType(dict(cpu_ns=120_000_000_000, wall_ns=300_000_000_000))
+# S4 C2 operator ruling 2026-09-24: the joint N2 batch's compute ceiling in the TEST_ONLY v6 profile only (measured Windows N2 CPU 211 s vs 13 s for N1).
+_JOINT_N2_DIAGNOSTIC_PHASE = MappingProxyType(dict(cpu_ns=360_000_000_000, wall_ns=900_000_000_000))
 _DIAGNOSTIC_CONTROLLER_CPU_NS = 20_000_000_000
 
 
@@ -231,6 +233,13 @@ def diagnostic_budget_profile(profile_bytes):
         },
         orchestration_cpu_ns={phase: _DIAGNOSTIC_CONTROLLER_CPU_NS for phase in PHASES},
     )
+    # S4-R5b: the joint installation alone widens the N2 compute phase (the
+    # ruling above); every other phase, profile version and statistic is the
+    # shared diagnostic ceiling, and the controller charge stays 20 s.
+    if profile.values['schema'] == 'qualification_execution_profile/v6':
+        result['phases']['N2'] = dict(
+            _JOINT_N2_DIAGNOSTIC_PHASE, memory_bytes=profile.memory_bytes
+        )
     if profile.values['schema'] in (
         'qualification_execution_profile/v4',
         'qualification_execution_profile/v5',
