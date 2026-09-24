@@ -28,6 +28,8 @@ by missing inputs, rather than by PR 411's former open status.
 
 ### Current capability disposition
 
+> ⚠ **R3 SUPERSEDED 2026-09-24** — see [Addendum 2026-09-24](#addendum-2026-09-24--t08-step-1-r3-return-no-documented-fence) (R3 stays UNPROVEN, now with a documentary NONE). All other rows are current.
+
 This table is authoritative for the execution update. The original table later
 in this record preserves the earlier assessment. All source/coverage/entitlement
 fields not established below remain explicitly unknown as recorded there.
@@ -507,7 +509,8 @@ alone qualifies no S/R/N row and grants no production permission.
 
 ## Addendum 2026-09-24 — T08 step 1 (R3) return: no documented fence
 
-Append-only; nothing above is edited. Source: the
+Append-only. The only edit above is a one-line reader intercept on the current
+table (operational Rule 14). Source: the
 [T08 return, §7](../../handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#7-executor-return).
 
 **R3 — UNPROVEN, now with a documentary NONE.** A refute-first primary-source
@@ -522,11 +525,16 @@ every unknown request: **preserve and block, no resend, no reservation release.*
 The positive in-session correlation recipe recorded above remains a correlation
 aid, not a fence.
 
-**Superseded observations.** The three CrossTrade pages retained on September 17
-(SHA-256 `dd7f839a…`, `ebba0572…`, `a0000d0d…`) have since changed bytes
-(`f84d10c1…`, `adaa513e…`, `21a8e8c7…`); the vendor rebuilt its docs on
-2026-09-21. The September 17 statements about them are preserved as observed.
-Any reliance on them now needs a re-read against the current bytes.
+**September 17 pages re-read.** The three CrossTrade pages retained on
+September 17 (SHA-256 `dd7f839a…`, `ebba0572…`, `a0000d0d…`) have new bytes
+(`f84d10c1…`, `adaa513e…`, `21a8e8c7…`) because the vendor rebuilt its docs on
+2026-09-21, and bytes change with every site build. Compared as text:
+- the API overview and cancel/replace are unchanged;
+- the internals page dropped its "Trailing protective stops" section, while
+  its CrossTrade-managed triggered-trail wording remains.
+
+The September 17 statements, including the L2(g) and L2(c) incompatibilities,
+therefore still stand (T08 §7.4).
 
 **Also recorded.** Tradovate's support article states that prop-firm and
 evaluation accounts are not eligible for native API access
@@ -538,3 +546,8 @@ amendment, Addendum 2026-09-22), the conditional grant is void. T09 stays
 unspecifiable until the operator decides among contract or route options, which
 are listed in the T08 return §7.6. No row here is qualified or released by this
 addendum.
+
+**One next disposition / owner.** The operator decides among the T08 §7.6
+options. The review recommends (T08 §7.7): hold live release, authorize one
+narrow vendor question on bounding deferred work, and scope an ADR-level
+bounded-exposure amendment in parallel.
