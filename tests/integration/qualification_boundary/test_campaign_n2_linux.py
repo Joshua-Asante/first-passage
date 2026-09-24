@@ -55,6 +55,10 @@ def committed_n1(boundary, *, idle=False):
     )
     dispatch(boundary, attempt, 'g5work', 'n1_g5')
     wait(boundary, attempt, lambda s: s['state'] == 'N2_READY')
+    # #461: N2_READY commits while the qg5 unit is still returning; the N1 G5
+    # work settles (leaves SIGNED) only once its cgroup empties, and until then
+    # the service refuses the next signing work ('signing authority serialized').
+    committing_g5_completed(boundary, attempt, 'N2_READY')
     return attempt
 
 
@@ -76,7 +80,7 @@ def test_s4_genuine_joint_pass_reaches_part_a_ready(real_boundary):
     family = n2_family(state)
     assert family['state'] == 'COMMITTED' and family['decision'] == 'CONTINUE'
     assert stage_decisions(boundary, attempt) == {'N2': 'PASS', 'PART_B': 'PASS'}
-    committing_g5_completed(boundary, attempt, 'PART_A_READY')
+    committing_g5_completed(boundary, attempt, 'PART_A_READY', work_id='n2g5')
     state = budget(boundary, attempt)
     finished = {w['work_id'] for w in completed_works(state)}
     assert finished >= {'admission', 'n1work', 'g5work', 'n2work'}

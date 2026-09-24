@@ -180,3 +180,15 @@ def test_required_nodes_match_the_selected_file_set(tmp_path, monkeypatch, mode)
     assert seen['required'] == expected and expected
     if mode == '--test-only':
         assert not any(node.startswith(s3) for node in seen['required'])
+
+
+def test_cases_refuses_when_the_expression_parser_is_unavailable(monkeypatch, capsys):
+    """G5: without pytest's -k parser the subset cannot be validated, so it is refused early."""
+    import sys
+    module = runner()
+    monkeypatch.setattr(module.platform, 'system', lambda: 'Linux')
+    monkeypatch.setattr(module.os, 'geteuid', lambda: 0, raising=False)
+    monkeypatch.setitem(sys.modules, '_pytest.mark.expression', None)
+    assert module.main(['--s3', '--cases', 'downtime']) == 2
+    err = capsys.readouterr().err
+    assert '--cases' in err and '--manifest' not in err

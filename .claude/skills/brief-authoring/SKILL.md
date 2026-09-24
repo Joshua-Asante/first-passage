@@ -84,7 +84,7 @@ obtain the closure verdict. A delegation notice is not the closure check.
 
 `M` = mechanical. `J` = judgment. `—` = not owed. Apply the [checker ownership](#checker-ownership) and type-specific contract above; `NOT CHECKED` is not a pass.
 
-| Type | 1 §0 | 2 H | 3 forbidden | 4 gate | 5 Q-shape | 6 hooks | amend-first | 7–10 spawn | Iterate |
+| Type | 1 §0 | 2 H | 3 forbidden | 4 gate | 5 Q-shape | 6 hooks | amend-first | 7–14 spawn | Iterate |
 |---|---|---|---|---|---|---|---|---|---|
 | Inquire / full ADR | M | M+J | J | M+J | J (inquire only) | M | J | — | — |
 | Concise ADR | source grounding where relevant (J) | only if meaningful (J) | scope constraints (J) | approval/effectivity (J) | — | affected checks (J) | J | — | — |
@@ -98,9 +98,9 @@ obtain the closure verdict. A delegation notice is not the closure check.
 
 ---
 
-## Additional checks for CC handoff briefs (patterns 7–10)
+## Additional checks for CC handoff briefs (patterns 7–14)
 
-The six checks above apply to inquire / full ADR / handoff per the matrix. The four below apply when the brief is a Claude Code handoff (i.e., it spawns a fresh execution session). They were extracted from `obra/superpowers:subagent-driven-development` after evaluation against this skill's existing structure; the patterns they encode are spawn-specific failure modes that the six general checks did not catch.
+The six checks above apply to inquire / full ADR / handoff per the matrix. The checks below (7–10, the pre-mortem 11, and the S2/S3 retrospective checks 12–14) apply when the brief is a Claude Code handoff (i.e., it spawns a fresh execution session). They were extracted from `obra/superpowers:subagent-driven-development` after evaluation against this skill's existing structure; the patterns they encode are spawn-specific failure modes that the six general checks did not catch.
 
 **7. Clarifying questions surfaced before §2 execution.** The handoff template includes a §0.5 block where the spawn must list ambiguities and ask before running the plan. The check at brief authoring time: does §0.5 instruct the spawn to halt on ambiguity, or does it implicitly assume the §1/§2 statements are complete? Implicit-completeness handoffs fail this check — the spawn will guess rather than ask, and a guess that misreads the task wastes the entire session. Anchor: any CC session that ran the wrong analysis because the brief was ambiguous and the spawn defaulted instead of asking.
 
@@ -118,17 +118,26 @@ The two passes catch different failure modes. Quality review with no spec-compli
 
 **10. Final consolidated read after multi-step work.** When a CC handoff executed >1 step (i.e., §2 had multiple Step 2.x blocks), the parent-session review includes a final read across ALL changes together, not just the per-step verifications. Per-step gates catch local correctness; they do not catch integration issues — two correct steps producing an inconsistent combined state. The DJ30 / Aegis / Guardian inter-strategy interactions are the canonical area where this matters: each strategy's lock decision is sound in isolation, the portfolio-MC view is what reveals inter-strategy interaction effects.
 
+**11. Pre-mortem before dispatch (coordinator-authored).** A handoff that will run more than one verification loop carries a short pre-mortem section, written by the coordinator before freeze and replacing free-form context rather than adding to it. It has four lines. **Loop cost:** the slowest verification step × expected rounds, with a full-run budget whose overrun triggers a checkpoint instead of another run. **Decisions the executor will hit:** listed and ruled on in one operator batch before freeze. **What would make this moot:** the cheapest upstream evidence that could cancel or redirect the work, dispatched no later than the packet. **Measure:** wall time, runs and rounds, filled in at return. **Evidence binding:** which head and which run types count as acceptance evidence, and what invalidates them (a push after the green run, a diagnostic subset), declared at GO rather than ruled after a failure. The check at authoring time: is each line concrete (a number, a named decision, a named packet, a named run type)? A pre-mortem that says "risks: TBD" fails. Anchor: S2 (2026-09-19/21), roughly 20 × 25 min hosted runs and four mid-packet ruling stops, all knowable before dispatch. First application: the S4 packet §0.6 (`docs/briefs/handoffs/2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md`), written from S3's measured run record.
+
+**12. Local preconditions before the first full run (executor-side).** The packet requires, before any full hosted run: (a) a shape-contract test for every new docker, systemd or workflow integration point, asserting the exact argument shapes (`Env` as `K=V` strings, unit properties, runtime paths) and passing on Windows and Linux alike; (b) the PR's own local gates (pylint threshold, collection and skip behaviour, `fp.py check`) green; (c) a local deterministic stress test for any new lock, queue or concurrent publisher. A defect in the harness or in the PR's own checks is found locally for free, never by a 30-minute run. The check at authoring time: does the packet name these as preconditions of the first dispatch, not as acceptance-time items? Anchors: `2a00902` (a dict `Env` refused every probe create and failed a 9/15 run); S3's pylint 7.97, collection and skip blockers found after the first green run (about 8 h); the #451/#453/#456 lock races found at hosted scale; the #461 fixture that passed on Linux and failed on Windows.
+
+**13. Independent review at the interface freeze, not after evidence.** The external or refute-first review runs at the design-freeze checkpoint (C1), before the expensive evidence, and every state-machine or terminal-transition rule it touches is encoded as a local invariant test. A late fix that changes a state machine reopens the evidence. The check at authoring time: does the packet schedule the review at freeze and name the invariant tests owed? Anchors: S2-G5's two P2s from external review of `14a0e28` (fixed in `3db58c8`, Linux evidence reopened); S3's Codex P1 at `ec41c10`, whose fix `a8a983e` made settlement authoritative and thereby exposed a latent timing race that failed about 1 run in 4 (#461).
+
+**14. Working-tree and claim discipline (executor-side).** The packet carries four rules. Never blanket-restore (`git checkout --`) a tree holding intentional uncommitted edits: commit or stash first. After any scripted or bulk edit, `ast.parse`/compile every touched file, and verify with `set -o pipefail` so a piped check cannot swallow a failure. Before committing, every claim in the message must appear in `git diff --cached`. At a checkpoint, push the in-flight head (with GO) or attach the patch, so the coordinator adopts it rather than re-deriving it. Separately, a mechanism explanation is labelled a hypothesis until it is minimally reproduced, and a failure outside the change surface returns a `CHECKPOINT` instead of being chased. Anchors: the S3 corruption restore (`5eb1f3a` shipped without the skip guard its message claimed; `b61cb67` re-applied it; `15badeb` added the import a piped grep had hidden); `aaf9646` half-landed a fix; unpushed `6086b9f` re-implemented as `ec41c10`; the retracted "Go runtime dies on SIGUSR1" claim (`84109e8`).
+
 ---
 
 ## Convergence notes
 
-The six general checks plus patterns 7–10 are the union of two independently-derived disciplines:
+The six general checks plus patterns 7–10 (and checks 11–14) are the union of three independently-derived disciplines:
 - §0–§6 came from the 04-17 dd_protection cycle and the live-execution audit lessons.
 - §7–§10 came from `obra/superpowers:subagent-driven-development`.
+- §11–§14 came from the measured S2/S3 execution record (2026-09-19/22; #459 and the S2/S3 retrospective).
 
-The two stacks overlap in spirit (both treat the brief as a structural artifact, both are skeptical of ceremony), but they catch different failure classes. The general checks catch authoring-side failures (ceremonial sections, solution-baked questions, vague gates). The CC additions catch spawn-side failures (ambiguity defaulting, conflated status returns, scope-creep in the diff, integration drift across steps). Both are load-bearing.
+The stacks overlap in spirit (both treat the brief as a structural artifact, both are skeptical of ceremony), but they catch different failure classes. The general checks catch authoring-side failures (ceremonial sections, solution-baked questions, vague gates). The CC additions catch spawn-side failures (ambiguity defaulting, conflated status returns, scope-creep in the diff, integration drift across steps). Both are load-bearing.
 
-If a CC handoff brief passes its applicable 1–6 checks but fails 7–10, the spawn will produce work the parent can't trust even if the brief looks well-formed. If it passes 7–10 but fails its applicable 1–6 checks, the brief itself is malformed and the spawn is being asked the wrong thing. The two layers compose; they do not substitute.
+If a CC handoff brief passes its applicable 1–6 checks but fails 7–14, the spawn will produce work the parent can't trust even if the brief looks well-formed. If it passes 7–14 but fails its applicable 1–6 checks, the brief itself is malformed and the spawn is being asked the wrong thing. The two layers compose; they do not substitute.
 
 ---
 

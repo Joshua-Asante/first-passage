@@ -152,7 +152,7 @@ def _boundary_fault():
     contract_doc['replay']['budget'].update(maximum_wall_seconds=180, maximum_cpu_seconds=120,
                                            maximum_memory_bytes=memory_limit*9//10)
     if release_doc['schema'] in ('qualification_execution_release/v3', 'qualification_execution_release/v4',
-                                 'qualification_execution_release/v5'):
+                                 'qualification_execution_release/v5', 'qualification_execution_release/v6'):
         contract_doc['replay']['budget'].update(maximum_wall_seconds=10000, maximum_cpu_seconds=10000, maximum_memory_bytes=memory_limit)
     if budget:
         contract_doc['replay']['budget'].update(budget)

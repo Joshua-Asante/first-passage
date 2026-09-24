@@ -1,8 +1,11 @@
 #!/bin/sh
-# Pre-push gate. Single check:
+# Pre-push gate. Two checks:
 #   1. Governance-surface push collision (AGENTS.md / STATE.md / docs/SESSIONS.md /
 #      docs/adr/** / docs/briefs/pre-registration/** changed on BOTH sides since the
 #      merge-base with origin/main).
+#   2. S2 run in flight: refuse a push to a branch whose pull_request S2 supervision
+#      run is queued/in progress — the push would cancel it (scripts/guard_s2_runs.py).
+#      Fails open without gh. Override: FP_S2_GUARD=off git push
 #
 # Why pre-push and not pre-commit: the collision condition is defined against the
 # remote, so it is only knowable after a fetch — and a fetch on every commit would
@@ -17,5 +20,8 @@
 ROOT="$(git rev-parse --show-toplevel)" || exit 1
 cd "$ROOT" || exit 1
 
+# git passes the pushed refs on stdin; keep them for the S2 guard.
+refs="$(cat)"
 python -I scripts/fp.py python scripts/check_push_collision.py || exit 1
+printf '%s\n' "$refs" | python -I scripts/fp.py python scripts/guard_s2_runs.py pre-push || exit 1
 exit 0
