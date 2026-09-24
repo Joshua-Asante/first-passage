@@ -196,3 +196,14 @@ What reopens this disposition, and nothing less: a registry re-pin of the Strike
 Open items after the rulings, for the record: corrected-port parity — this disposition (operator to confirm at F1); emulator-moved revalidation — F11, with the changed engine's own acceptance; panel-derived session-index producer run — phase 2 / step 4 scope (R2), F18 waits on it; the eight missing producer facts — five need the operator's primary checkout (live port bytes, private evidence root); F20's three facts — T07's, off F1's table (R5).
 
 **Coordinator on the disposition (2026-09-21):** accepted. Hold item (i) closes as "Step 3 suffices within its exact domain" — the corrected-ports generation was what Step 3 replayed and the ledger re-checked, PR #356's Striker row was never that port's evidence, and a fresh run today would bind to the moved emulator (F11's surface). The operator confirms this at F1 as part of F10; the three reopeners stand as written.
+
+## Operator confirmation — F10 hold item (i), 2026-09-24
+
+**Operator (2026-09-24, verbatim):** "Confirm the open F10 item: that the existing parity check (Step 3) is enough for the corrected Striker port." Hold item (i) is **closed**: the accepted Step 3 contract is the corrected Striker port's parity evidence within its exact accepted domain. F1 carries this as part of F10. The three reopeners above still apply.
+
+Checked before recording (read-only, primary checkout, 2026-09-24; paths and hashes only):
+
+- **No reopener has fired.** No commit since `1da555d` touches `ops/c1_signal_daemon/book_adapters.py` or `tv_broker_emulator.py`. The Striker pin is still `efd479b6…`, and `c81aa59c…` is still refused before execution.
+- **The evidence the disposition cites still exists, byte for byte.** The private root `…/op1/2026-09-14-seven/` holds the Step 3 contract `acfa7920…`, index `95ac6dcb…` and independent acceptance `ebcb2efb…`. That acceptance says `decision = ACCEPTED`, binds the contract and index by hash and was dated 2026-09-15. The same root holds the Step 6 accepted-run `8ddf727b…`, admission contract `4f027af5…` and independent review `dd9c5e72…`. The contract names `efd479b6…` five times and `c81aa59c…` zero times.
+- **The corrected port bytes survive** at `step3-coverage/corrected-ports/dj30_mym_p250.py` = `efd479b6…`. The other three corrected-ports files match their registry pins (`11763740…`, `e6a03d04…`, `b1f4e573…`).
+- **This partly closes missing producer fact 2, and adds one fact.** The default port root `ops/c1_signal_daemon/ports/` on the primary checkout holds Aegis, Vanguard and ORB at their pins. Its Striker file is the **preserved original `c81aa59c…`**, and `effective_inputs.json` is the historical `66406dee…`. With the default root, `load_port("dj30_mym_p250")` therefore refuses by design. Any run of the corrected book must set `FP_PORT_ROOT` to the corrected-ports directory. This records a fact and changes nothing.
