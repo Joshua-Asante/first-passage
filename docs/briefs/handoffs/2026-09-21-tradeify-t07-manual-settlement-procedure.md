@@ -38,4 +38,25 @@ S5 answer; original exports via the working download path; the predecessor close
 Any agent action on the account or platform; account identifiers/P&L in any repo, task or chat text; mocks in place of real bytes for S1–S4; amending the settlement contract; a "provisional" chain; inferring an offset from a UI display; implementing a producer (T09's scope).
 
 ## 7. Executor return
-_Pending._ Per CAP row: disposition + evidence reference; the procedure and its measured time; blocked facts with the exact missing producer; hashes of every retained original; repository test IDs and records.
+**Returned 2026-09-24. Outcome: blocked on the producer and on the operator.** No CAP row reaches QUALIFIED. Each row's disposition and evidence reference is in the [CAP addendum 2026-09-24](../phase4-preparation/2026-09-16/capability-decision.md#addendum-2026-09-24--t07-settlement-pass-s1s5). The pass stopped where §4 requires: the report offset is unsourced.
+
+- **S5 (done first).** Predecessor state: **no accepted chain**. Evidence: the operator's answer "None exists" (2026-09-24) and a read-only scan of 153 local SQLite stores. The only `SettlementStore`-shaped database is the 09-15 rehearsal store, already ruled non-production and unchanged. A fresh Fly name inventory was approved, but `flyctl` has no auth token, so it did not run; the 09-17 host inspection stands. The origin path is initial B7. No reset occurred.
+- **S2.** UNPROVEN. The retained Cash History exports have a zone-less `Timestamp` and no metadata, and no primary page states the trader-export offset or its date-bound semantics. Sourced: Account Balance History `Trade Date` is the session date. Partial: the cost-type enumeration. Unsourced: limits and corrections. Missing producer: a source that gives the Cash History offset and `Date` semantics. The candidate is a same-transaction-ID comparison against an entitled `cashBalanceLog` read, which the coordinator must decide on.
+- **S1/S3.** UNPROVEN. The operator deferred the export session, so no new original bytes exist. With no chain, S3's first obligation becomes B7 E1/E2/E3 rather than a predecessor close record.
+- **S4.** Synthetic traces are complete; actual traces are blocked.
+  - (c) Correction refusal: `test_book_settlement.py::test_revision_of_an_accepted_record_invalidates_dependents_and_halts`, `::test_late_added_historical_transaction_is_refused`, `test_account_close_calculation.py::test_source_history_correction_cannot_hide_behind_unchanged_inventory_claims`, `::test_retained_source_deletion_requires_halt_even_with_stale_claimed_counts`.
+  - (d) Restore: `::test_restart_begins_restore_pending_voids_open_challenges_and_keeps_the_chain`, plus **new** `::test_crash_before_commit_accepts_nothing_and_a_restart_needs_a_fresh_challenge` and **new** `::test_lost_receipt_after_commit_is_read_only_and_a_fresh_resubmission_refuses`.
+  - (e) Missing, duplicate and out-of-order: `::test_defective_packages_are_refused_by_name_without_state_advance` (coverage_gap, duplicate_transaction_id), `::test_duplicate_and_out_of_order_closes_refuse_and_demand_a_halt`, `test_account_close_assembler.py::test_overlapping_windows_dedupe_by_id_and_revisions_refuse`, plus **new** `::test_export_row_and_window_order_do_not_change_the_collected_ledger`.
+  - Record `.cache/fp-verification/20260924T163613Z-4fee32191553/record.json`: `.\fp.ps1 --workers 2 python -m pytest` over the five settlement modules, ops-env Python 3.13.2, 62 locked packages, **325 passed**, completed, exit 0, source stable. Tested state: HEAD `31502c6` plus the uncommitted working-tree changes. The full gate suite was not run.
+  - (a)/(b) and the signing session need S1–S3 originals.
+  - Missing tool: no operator-facing entry point exists for assemble → challenge → sign → submit → status. The owner exposes only in-process methods. This is outside T07's authority and was not implemented.
+- **Procedure.** Not recordable or timeable yet. It needs an owned entry point and a sourced report offset. What is fixed today:
+  - Joshua exports each report manually after the account session closes (Tradeify 17:00 ET).
+  - The run uses the assembler library, then `signing_envelope`, then the owner.
+  - Expected refusals are the named `Refusal` codes in `book_settlement.py`.
+- **Retained originals (private root `…/private_overrides/op1/t07-settlement-2026-09-24/`).**
+  - S2 manifest `b7ee66f120cbb28b9531a81aaed72ce1cee67a5883d57f85a2013724ae9f41a1` (82 URLs, 60 new page captures, the rest reused from T08 at their original paths).
+  - S2 capture log `275804d3e8a7c4600b08258d05357ece6407278e4acd38a303065a7e7a6fa877`.
+  - S5 scan `4671612a0fcb25d2c3d7042933aba2a5e9f22e055c0a682e34c9bf34c3888f65`, scan output `33c7f5baad15edc4a1edfc0286f535a7ff79090a4dbfecb1387693f938dba95c`.
+  - Fly payload `2c57219ef1dc74e87c87f876148ad83a598c8c0f2708526b671ad6d118339037`.
+  - Inspected but pre-existing: Cash History windows `7eb70257…61a6`, `a3a8797c…14ab`, `510a086b…21c5`, `43388a17…6e4e`, `880682fb…5393`, `46716321…15de`, probe `a18cd70b…39b4` (E02), and balance `175fd26f…afced` (E01). Their shapes were read, not their values.

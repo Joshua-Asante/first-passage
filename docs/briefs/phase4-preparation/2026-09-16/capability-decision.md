@@ -504,3 +504,70 @@ consumer binding, account/environment, route/config, enabled actors, report
 semantics/coverage, corrections, history retention, symbol/contract rollover or
 port primitive declarations. Preserve prior evidence and refusals. G0 closure
 alone qualifies no S/R/N row and grants no production permission.
+
+## Addendum 2026-09-24 — T07 settlement pass (S1–S5)
+
+Executed under the [T07 handoff](../../handoffs/2026-09-21-tradeify-t07-manual-settlement-procedure.md)
+from branch `claude/tradeify-t07-settlement-handoff-bd45f5` at `31502c6` (up to date
+with `origin/main`). This section is append-only. It changes no row above. It proposes
+the dispositions below for coordinator acceptance and grants no production permission.
+No account, platform, broker, host-state or signing action occurred. No chain was
+booted, reset or accepted.
+
+Private root for this pass (gitignored by the phase-1 lab `.gitignore`, verified with
+`git check-ignore`): `…/inputs/private_overrides/op1/t07-settlement-2026-09-24/`
+(`s2/`, `s5/`). The repository-root `local_artifacts/` is **not** gitignored on `main`,
+so nothing was retained there.
+
+| Row | Proposed verdict | Evidence reference | Exact remaining gap / owner |
+|---|---|---|---|
+| S1 | UNPROVEN | No new original bytes. The operator deferred the export session. The retained 09-15 cash windows and the balance CSV are still the only originals (hashes in the T07 return). | Joshua exports the bounded inception-to-capture Cash History windows, with overlaps, plus Account Balance History through the working manual download path, plus lifecycle inception evidence. |
+| S2 | UNPROVEN | S2 source pass: 82-row manifest, SHA-256 `b7ee66f1…41a1`. Retained Cash History bytes carry a zone-less `MM/DD/YYYY HH:MM:SS` `Timestamp` and no metadata header, so the export cannot source its own offset. | See the S2 findings below. The missing fact is the offset that the trader Reports module applies to Cash History `Timestamp` and to its date bounds, and whether the Cash History `Date` column is the trade date. Coordinator decides whether the same-ID comparison below is an admissible source. |
+| S3 | UNPROVEN | No predecessor chain exists (S5), so no historical close-equity record is owed for a predecessor. The initial origin is B7, whose E1/E2/E3 evidence is not yet collected. | Joshua supplies the fresh B7 E1 dashboard, E2 flat/no-working-order evidence and E3 history when release is ready. Every later close needs venue equity at the effective close, or balance plus same-boundary flatness. |
+| S4 | UNPROVEN (synthetic consumer traces complete) | Traces (c)–(e) map to existing tests, plus three new synthetic tests. 325 settlement-suite tests passed; record `.cache/fp-verification/20260924T163613Z-4fee32191553/record.json`. | Traces (a)–(b) need original bytes (S1–S3). No operator-facing entry point exists to assemble → request challenge → sign → submit → read status. The owner exposes only in-process methods (`issue_settlement_challenge`, `submit_settlement`), so there is no procedure a signing session could follow. Owner of that entry point: coordinator (T09 or separate tooling scope; not implemented here). |
+| S5 | Predecessor state: **no accepted chain** (operator-attested, with bounded search). Row stays UNPROVEN for consumer qualification. | Operator answer on 2026-09-24 to the S5 question: "None exists". Local search record `s5/` (scan `4671612a…8f65`, output `33c7f5ba…a95c`). Fly re-inspection was approved but blocked by missing `flyctl` authentication (`s5/*.inventory.txt`). The 09-17 host inspection above remains the host evidence. | Origin path is the existing initial-B7 procedure. The fresh Fly name inventory runs once the operator authenticates `flyctl`. |
+
+**S5 search.** A read-only `sqlite3` `mode=ro` schema scan covered 153 `.db`/`.sqlite`/`.sqlite3`
+files under the primary checkout (all worktrees included) and the operator's Downloads,
+Documents and Desktop folders. Exactly one store has the `SettlementStore` schema:
+`producer-qualification-2026-09-15/qualification-output/qualification-store.sqlite`,
+SHA-256 `77a03f874149ce618be4fb31c20bc226aef68360b0a7a971682440c32274b83e`, mtime
+2026-09-15, `quick_check=ok`, two chain rows labelled `B7`/`ACCOUNT_CLOSE`. That is the
+rehearsal store the [feasibility decision](../../../notes/2026-09-16-tradeify-production-feasibility-decision.md)
+already ruled not a production chain, and it is unchanged since. The filename matches
+found (`b7-ict-line.md`, test fixtures, qualification boundary objects) are not
+acceptance locations.
+
+**S2 findings.** "Primary" below means Tradovate/Tradeify-owned pages; hashes are in the private manifest.
+
+- Account Balance History `Trade Date` is the trading-session date, not the calendar
+  date, and `Total Amount` is the end-of-session balance (partner reports page and
+  Tradovate trader "Account Reports" article). This is sourced.
+- Session boundaries in Tradovate pages are 5:00 PM–4:00 PM CT, with 4 PM CT as the EOD
+  risk evaluation. Tradeify's account day is 18:00–17:00 ET. The two are not the same
+  boundary. The contract's explicit account-session mapping stays required.
+- Timezone: the admin reporting API takes a caller-supplied numeric offset. The trader
+  app's time-zone preference is documented only for the notification ticker. No
+  primary page states the offset of trader CSV exports or of their date filter.
+  Forum posts are secondary and are not adopted.
+- Query limits, inclusive/exclusive bounds and retention: unsourced for trader reports.
+  The operator's "inclusive" statement (E05) remains operator provenance only.
+- Cost/adjustment classes: the API `cashChangeType` enumeration separates the cost
+  types (Commission, ExchangeFee, ClearingFee, NfaFee, …) from TradePaired and from
+  FundTransaction/ManualAdjustment/Courtesy/etc. That the trader CSV uses these exact
+  values is unsourced. The verifier's own classification remains the check.
+- Corrections: unsourced. The admin cash-adjustment page says there is no undo, only an
+  offsetting new entry. `CancelledPairedTrade` and `AutomaticReconciliation` appear in
+  the enumeration undefined.
+
+**Candidate S2 resolution (not executed; coordinator decision).** Compare one transaction
+ID in a fresh original Cash History export against the same ID in an entitled API
+`cashBalanceLog` read, which carries a UTC `timestamp` and a `tradeDate`. From original
+bytes on both sides, that gives the export's offset and its `Date` semantics for the
+observed DST regime only. The CST regime from November 1 needs its own observation.
+API entitlement for this account is unverified, and the read is an account-side act
+for Joshua. Without it, or a vendor statement, no package can carry a sourced report
+timezone, and none is signed.
+
+**Operator effort and latency.** Not measured: the procedure could not be run end to
+end without S1–S3 originals and an operator entry point.
