@@ -1,0 +1,68 @@
+{
+  "schema": "t10-step4-verify-scaling/v1",
+  "artifact_class": "TEST_ONLY_SYNTHETIC_NOT_DECISION_BEARING",
+  "fixture_sha256": "727166d55b7a3f26e437ae577017eb36067d0dbe77f7ac8fb5157d7c55a9cf23",
+  "harness_sha256": "f3182a1ddbc0e7adebcfdfcc07988e0f384d9df780d34f0ab66605ecc6d02052",
+  "rows": [
+    {
+      "label": "8mo x4",
+      "sessions": 174,
+      "panel_bars_all_legs": 0,
+      "panel_bytes": 0,
+      "build_verified_composition_s": 20.219,
+      "verify_for_s": [
+        1.162,
+        1.3,
+        1.193
+      ]
+    },
+    {
+      "label": "16mo x4",
+      "sessions": 350,
+      "panel_bars_all_legs": 0,
+      "panel_bytes": 0,
+      "build_verified_composition_s": 19.112,
+      "verify_for_s": [
+        2.535,
+        2.519,
+        2.59
+      ]
+    },
+    {
+      "label": "32mo x4",
+      "sessions": 695,
+      "panel_bars_all_legs": 0,
+      "panel_bytes": 0,
+      "build_verified_composition_s": 24.931,
+      "verify_for_s": [
+        4.66,
+        4.66,
+        5.242
+      ]
+    },
+    {
+      "label": "8mo x16",
+      "sessions": 174,
+      "panel_bars_all_legs": 0,
+      "panel_bytes": 0,
+      "build_verified_composition_s": 21.629,
+      "verify_for_s": [
+        3.068,
+        2.982,
+        3.011
+      ]
+    },
+    {
+      "label": "8mo x29",
+      "sessions": 174,
+      "panel_bars_all_legs": 0,
+      "panel_bytes": 0,
+      "build_verified_composition_s": 24.929,
+      "verify_for_s": [
+        5.145,
+        5.144,
+        5.037
+      ]
+    }
+  ]
+}
