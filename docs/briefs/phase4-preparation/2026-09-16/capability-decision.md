@@ -504,3 +504,37 @@ consumer binding, account/environment, route/config, enabled actors, report
 semantics/coverage, corrections, history retention, symbol/contract rollover or
 port primitive declarations. Preserve prior evidence and refusals. G0 closure
 alone qualifies no S/R/N row and grants no production permission.
+
+## Addendum 2026-09-24 — T08 step 1 (R3) return: no documented fence
+
+Append-only; nothing above is edited. Source: the
+[T08 return, §7](../../handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#7-executor-return).
+
+**R3 — UNPROVEN, now with a documentary NONE.** A refute-first primary-source
+search covered CrossTrade and Tradovate documentation, the public API specs,
+vendor staff posts and support articles: 1,802 retained files, evidence-index
+SHA-256 `974ea080aaa3dc0a3d421dea7a1dcd15af2786922b2ca8d239513a40edba065a`.
+It tested 24 candidate protocols, and none survived. No source documents a
+terminal / no-future-effect fence for an original request whose outcome is
+unknown on the CrossTrade-webhook → Tradovate route, across the session reset,
+with all-actor scope. The standing R3 consumer outcome therefore applies to
+every unknown request: **preserve and block, no resend, no reservation release.**
+The positive in-session correlation recipe recorded above remains a correlation
+aid, not a fence.
+
+**Superseded observations.** The three CrossTrade pages retained on September 17
+(SHA-256 `dd7f839a…`, `ebba0572…`, `a0000d0d…`) have since changed bytes
+(`f84d10c1…`, `adaa513e…`, `21a8e8c7…`); the vendor rebuilt its docs on
+2026-09-21. The September 17 statements about them are preserved as observed.
+Any reliance on them now needs a re-read against the current bytes.
+
+**Also recorded.** Tradovate's support article states that prop-firm and
+evaluation accounts are not eligible for native API access
+(`F4__tvsf_Tradovate-API-Access__record.json` `4a91db885f44d8ce`). No
+native-Tradovate read route is available for the incumbent eval.
+
+**Consequence.** Under the ratified D-broker wording (deployment-checklist
+amendment, Addendum 2026-09-22), the conditional grant is void. T09 stays
+unspecifiable until the operator decides among contract or route options, which
+are listed in the T08 return §7.6. No row here is qualified or released by this
+addendum.
