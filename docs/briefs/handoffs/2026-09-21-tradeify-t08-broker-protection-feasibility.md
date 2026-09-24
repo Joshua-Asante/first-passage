@@ -160,3 +160,5 @@ Recorded after the return; §7.1–§7.7 are unchanged.
 3. **Scope the ADR-level amendment in parallel (option a).** The scope is in [the bounded-exposure scope note](../../superpowers/specs/2026-09-24-bounded-exposure-unknown-request-amendment-scope.md). Scoping grants no contract change: the governing owners (halt/resume §3–§4, rail E3, CAP R3, the closure-plan outcome table) stay in force until an amendment is accepted and propagated.
 
 This ruling grants no broker access, route change, drill, order action, arm or spend.
+
+**Follow-up ruling (2026-09-24, in session, verbatim):** "I accept B. You can proceed as scoped." The scope's Q1 is ruled **B** (a permanent worst-case reservation replaces the account block for narrowed-shape unknowns). The scope's §5 steps 2–4 are authorized; acceptance stays with the operator.
