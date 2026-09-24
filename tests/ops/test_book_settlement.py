@@ -379,6 +379,57 @@ def test_restart_begins_restore_pending_voids_open_challenges_and_keeps_the_chai
         store.status()
 
 
+def test_crash_before_commit_accepts_nothing_and_a_restart_needs_a_fresh_challenge(tmp_path, monkeypatch):
+    """A crash inside the acceptance transaction commits nothing; the restored owner accepts the same close once under a fresh challenge."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    env = challenge(store, pkg, target=S15, now=NOW14)
+
+    def crash(*args, **kwargs):
+        raise RuntimeError("simulated crash")
+
+    monkeypatch.setattr(SettlementStore, "_append_chain", crash)
+    with pytest.raises(RuntimeError, match="simulated crash"):
+        submit(store, operator, env, pkg, files, NOW14)
+    monkeypatch.undo()
+    with sqlite3.connect((tmp_path / "settlement.sqlite").as_uri() + "?mode=ro", uri=True) as db:
+        assert db.execute("SELECT COUNT(*) FROM receipts").fetchone()[0] == 1     # the B7 seat only
+        assert db.execute("SELECT COUNT(*) FROM chain").fetchone()[0] == 1
+    restored = boot(tmp_path, operator, now=NOW14 + timedelta(minutes=1))
+    assert restored.status()["restore_pending"] is True and restored.status()["rows"] == 1
+    restored.reconcile_restore(NOW14 + timedelta(minutes=2))
+    assert submit(restored, operator, env, pkg, files, NOW14 + timedelta(minutes=2)) == \
+        Refusal("challenge_consumed")
+    fresh = challenge(restored, pkg, target=S15, now=NOW14 + timedelta(minutes=3))
+    receipt = submit(restored, operator, fresh, pkg, files, NOW14 + timedelta(minutes=3))
+    assert isinstance(receipt, Receipt) and receipt.session_id == S14
+    assert restored.status()["rows"] == 2
+
+
+def test_lost_receipt_after_commit_is_read_only_and_a_fresh_resubmission_refuses(tmp_path):
+    """Acceptance and its receipt commit together; after a crash that loses the reply, status shows the accepted head and resubmission halts as a duplicate."""
+    operator = Operator()
+    store, head = seated(tmp_path, operator)
+    pkg, files = package(head, S14, NOW14)
+    lost = submit(store, operator, challenge(store, pkg, target=S15, now=NOW14), pkg, files, NOW14)
+    assert isinstance(lost, Receipt)      # the reply is discarded; only its package digest is reused below
+    restored = boot(tmp_path, operator, now=NOW14 + timedelta(minutes=1))
+    restored.reconcile_restore(NOW14 + timedelta(minutes=2))
+    status = restored.status()
+    assert status["rows"] == 2 and status["head"]["session_id"] == S14
+    assert status["head"]["package_sha256"] == lost.package_sha256
+    with sqlite3.connect((tmp_path / "settlement.sqlite").as_uri() + "?mode=ro", uri=True) as db:
+        assert db.execute("SELECT COUNT(*) FROM receipts WHERE package_sha256=?",
+                          (lost.package_sha256,)).fetchone()[0] == 1
+    halts = []
+    env = challenge(restored, pkg, target=S15, now=NOW14 + timedelta(minutes=3))
+    assert submit(restored, operator, env, pkg, files, NOW14 + timedelta(minutes=3),
+                  on_halt=lambda i, r: halts.append((i, r))) == Refusal("duplicate_settlement", halt_required=True)
+    assert halts == [("settlement:duplicate:" + S14, "protection")]
+    assert restored.status()["rows"] == 2
+
+
 def test_tampered_chain_row_is_detected_on_boot(tmp_path):
     """Editing an accepted equity in the database breaks the hash chain; the owner refuses to boot."""
     operator = Operator()
