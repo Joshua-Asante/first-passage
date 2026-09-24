@@ -339,6 +339,28 @@ not commissioned here. Neither brief checker is in the gate manifest.
 The separate unresolved 26-letter session-label ceiling remains with the
 [SESSIONS header](../docs/SESSIONS.md) and [`roll_sessions.py`](roll_sessions.py).
 
+## Private evidence archive
+
+A public record may pin a private file's SHA-256 (vendor CSVs, Pine source,
+private receipts); the pin proves which bytes were used but keeps no copy
+([M-41](../docs/methodology/lessons/methodology_lessons.md#m-41--private-artifacts-inside-a-worktree-die-with-the-worktree)).
+[`evidence_archive.py`](evidence_archive.py) keeps the second copy in the private
+`first-passage-archive` repository, content-addressed under `evidence/sha256/`.
+
+- `python scripts/evidence_archive.py put <file>...` copies and verifies each file
+  into a local clone of the archive, then prints the commit/push commands; the
+  copy is safe only once pushed. `--pinned` archives every pinned file present in
+  this checkout. It refuses a clone whose `origin` is not the archive.
+- `python scripts/evidence_archive.py audit` (the `evidence-archive` audit gate)
+  reports each pinned digest as ARCHIVED, UNPUSHED or MISSING; `--verify` re-hashes.
+  Without an archive clone it prints UNVERIFIED and exits 0.
+
+Pins are read from tracked `*SHA256SUMS` / `*MANIFEST.sha256` files and from
+[`docs/evidence/PRIVATE_EVIDENCE.sha256`](../docs/evidence/PRIVATE_EVIDENCE.sha256),
+where a record pinning any other private file registers it in the same commit.
+The archive clone is `--archive`, `$FP_EVIDENCE_ARCHIVE`, or a
+`first-passage-archive` directory beside this checkout.
+
 ## Closure enforcement
 
 `check_closure_disposition.py` enforces the accepted closure standard as

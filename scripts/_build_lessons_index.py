@@ -492,7 +492,7 @@ FULL = [
     dict(id="M-41", cls="M", status="CANDIDATE",
          status_note="2026-09-20 migration from the Claude-memory store into methodology_lessons.md (light format); memory twin named in memory_twin",
          title='Private artifacts inside a worktree die with the worktree',
-         one_line_lesson="Private outputs go under the primary checkout's ignored roots (local_artifacts/, inputs/private_overrides/), never under .worktrees/* or .claude/worktrees/*; worktree sessions use absolute paths; list private contents before any worktree removal and stop if non-empty.",
+         one_line_lesson="A digest is not a copy: every private file a public record pins is registered (docs/evidence/PRIVATE_EVIDENCE.sha256 or a tracked manifest) and archived to first-passage-archive with scripts/evidence_archive.py put, pushed, in the same step. Private outputs still go under the primary checkout's ignored roots, never .worktrees/* or .claude/worktrees/*; before any worktree removal, scripts/repo_hygiene.py lists its ignored entries and removal stops if any remain unarchived.",
          cost_if_repeated="Third firing 2026-09-10: the Tradeify seven-strategy campaign's whole private evidence base (specs, approval receipt, 125-test replay, canonical ledgers) destroyed with two worktrees; digests only survive. Prior: NAS100 MNQ Pine (2026-07-03), ORB D5 pin (2026-07-31).",
          trigger_globs=['.claude/worktrees/**', '.worktrees/**', '**/local_artifacts/**'],
          trigger_keywords=['worktree remove', 'gitignored', 'private artifact', 'local_artifacts', 'repo hygiene'],
