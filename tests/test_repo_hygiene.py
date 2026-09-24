@@ -83,3 +83,20 @@ def test_build_report_without_git_raises(tmp_path, monkeypatch):
 
     with pytest.raises(FileNotFoundError):
         rh.build_report()
+
+
+@needs_git
+def test_private_entries_lists_ignored_files_but_not_regenerable_caches(tmp_path):
+    """M-41: `git worktree remove` deletes ignored files without asking, so the
+    scout names every ignored entry a fresh setup would not regenerate."""
+    _seed_repo(tmp_path)
+    (tmp_path / ".gitignore").write_text("*.csv\n*.pine\n__pycache__/\n.venv/\n", encoding="utf-8")
+    (tmp_path / "evidence.csv").write_text("x\n", encoding="utf-8")
+    (tmp_path / "book").mkdir()
+    (tmp_path / "book" / "edge.pine").write_text("x\n", encoding="utf-8")
+    (tmp_path / "__pycache__").mkdir()
+    (tmp_path / "__pycache__" / "m.pyc").write_bytes(b"x")
+    (tmp_path / ".venv").mkdir()
+    (tmp_path / ".venv" / "pyvenv.cfg").write_text("x\n", encoding="utf-8")
+    # git collapses a directory holding only ignored files into one entry
+    assert rh._private_entries(str(tmp_path)) == ["book/", "evidence.csv"]
