@@ -3,6 +3,8 @@
 
 Surfaces what multi-hour hygiene sessions kept rediscovering:
   - linked worktrees + orphan dirs under .claude/worktrees/
+  - ignored, non-regenerable files inside each linked worktree (the ones
+    `git worktree remove` deletes without asking — M-41)
   - local branches whose PR already merged (incl. squash — git branch --merged misses these)
   - local main lag vs origin/main
   - optional remote topic-branch leftovers
@@ -27,6 +29,12 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 WORKTREE_PARENT = REPO_ROOT / ".claude" / "worktrees"
+# Ignored entries a fresh setup regenerates; anything else ignored inside a linked
+# worktree may be the only copy of private evidence (M-41).
+REGENERABLE = {
+    ".venv", "venv", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache",
+    "node_modules", ".tox", ".coverage", "htmlcov",
+}
 
 
 @dataclass
@@ -36,6 +44,7 @@ class WorktreeRow:
     head: str
     is_primary: bool
     notes: str = ""
+    private: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -113,6 +122,39 @@ def _parse_worktrees() -> list[WorktreeRow]:
             )
         )
     return rows
+
+
+def _private_entries(path: str) -> list[str]:
+    """Ignored, non-regenerable entries in a worktree. `git worktree remove` refuses
+    untracked files but deletes ignored ones without asking."""
+    proc = _run(["git", "status", "--porcelain=v1", "--ignored", "-z"], cwd=Path(path))
+    if proc.returncode != 0:
+        return []
+    entries = []
+    for item in (proc.stdout or "").split("\0"):
+        if not item.startswith("!! "):
+            continue
+        rel = item[3:]
+        parts = [p for p in rel.rstrip("/").split("/") if p]
+        if any(p in REGENERABLE or p.endswith((".egg-info", ".pyc")) for p in parts):
+            continue
+        entries.append(rel)
+    return sorted(entries)
+
+
+def _private_warnings(worktrees: list[WorktreeRow]) -> list[str]:
+    """Fill each linked worktree's ignored entries; one warning per worktree holding any."""
+    warnings = []
+    for wt in worktrees:
+        wt.private = [] if wt.is_primary else _private_entries(wt.path)
+        if wt.private:
+            warnings.append(
+                f"Linked worktree {wt.path} holds {len(wt.private)} ignored "
+                f"entr{'y' if len(wt.private) == 1 else 'ies'} that `git worktree remove` "
+                "deletes without asking — archive (`scripts/evidence_archive.py put`) or "
+                "move them first (M-41)."
+            )
+    return warnings
 
 
 def _orphan_dirs(registered: list[WorktreeRow]) -> list[str]:
@@ -211,6 +253,7 @@ def build_report() -> HygieneReport:
                 f"{report.main_behind} (check if topic already merged)"
             )
 
+    report.warnings.extend(_private_warnings(report.worktrees))
     report.orphan_worktree_dirs = _orphan_dirs(report.worktrees)
 
     try:
@@ -259,6 +302,10 @@ def _print_human(report: HygieneReport) -> None:
         tag = "PRIMARY" if wt.is_primary else "linked"
         extra = f"  [{wt.notes}]" if wt.notes else ""
         print(f"  [{tag}] {wt.branch} @ {wt.head}  ->  {wt.path}{extra}")
+        for entry in wt.private[:10]:
+            print(f"      ignored: {entry}")
+        if len(wt.private) > 10:
+            print(f"      ... and {len(wt.private) - 10} more (--json lists all)")
     if report.orphan_worktree_dirs:
         print("Orphan dirs under .claude/worktrees/:")
         for p in report.orphan_worktree_dirs:

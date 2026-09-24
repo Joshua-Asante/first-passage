@@ -261,6 +261,9 @@ def test_unknowable_cd_and_dash_c_targets_keep_the_current_directory(sh, target)
 
 def test_tilde_directory_is_expanded(monkeypatch):
     monkeypatch.setenv("HOME", "/home/me")
+    # Windows expanduser reads USERPROFILE (never the monkeypatched HOME), so
+    # both name the same directory and the test holds on either system.
+    monkeypatch.setenv("USERPROFILE", "/home/me")
     assert guard._join_dir("/repo", "~/wt") == "/home/me/wt"  # pylint: disable=protected-access
 
 

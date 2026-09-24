@@ -90,11 +90,12 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_91 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_93 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
 | `scripts/_build_lessons_index.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/_shell_tokens.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/agent_handoff.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/archive_lab_analysis.py` | governance | `lab-catalog` (path-conditional) | — |
 | `scripts/archive_strategy.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
@@ -139,6 +140,7 @@ _91 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/diff_econ_calendar.py` | lab | — | manual/local only, not in gates.yml |
 | `scripts/docker_verification.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/event_study_read.py` | lab | — | manual/local only, not in gates.yml |
+| `scripts/evidence_archive.py` | governance | `evidence-archive` (audit) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/evidence_store/__init__.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/evidence_store/__main__.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/evidence_store/audit.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |

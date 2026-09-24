@@ -78,6 +78,7 @@ EXPECTED_AUDIT = {
     "notice-grade-k-correction",
     "spec-provenance",
     "rule2-trip-log-liveness",
+    "evidence-archive",
 }
 
 
