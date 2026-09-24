@@ -54,6 +54,24 @@ class Instrument:
             raise ValueError("commission_per_side must be finite and nonnegative")
 
 
+def accepted_path(bar):
+    """The emulator's OHLC path: open, the extreme nearer the open, far extreme, close."""
+    return ([bar.open, bar.high, bar.low, bar.close] if bar.high-bar.open <= bar.open-bar.low
+            else [bar.open, bar.low, bar.high, bar.close])
+
+
+def path_turns(values):
+    """Turning points of a price path; repeats and monotone interiors drop out."""
+    result = []
+    for value in values:
+        if result and value == result[-1]:
+            continue
+        while len(result) >= 2 and (result[-1]-result[-2])*(value-result[-1]) >= 0:
+            result.pop()
+        result.append(value)
+    return result
+
+
 def lifetime_adverse_mark(bar, side, entry_price, qty, pointvalue, timing, trigger=None):
     """Position contribution under RC-6, independently of its same-bar exit.
 
@@ -259,19 +277,7 @@ class BookReplay:
         if splitter is None:
             raise ReplayNeedsContext("intrabar schedule requires split OHLC lifetime evidence")
         left, right = {}, {}
-        def vertices(b):
-            return ([b.open, b.high, b.low, b.close] if b.high-b.open <= b.open-b.low
-                    else [b.open, b.low, b.high, b.close])
-
-        def turns(values):
-            result = []
-            for value in values:
-                if result and value == result[-1]:
-                    continue
-                while len(result) >= 2 and (result[-1]-result[-2])*(value-result[-1]) >= 0:
-                    result.pop()
-                result.append(value)
-            return result
+        vertices, turns = accepted_path, path_turns
         for k, original in bars.items():
             if original.ts != pb.source_bar_time:
                 interval_splitter = getattr(self.schedule_quotes, "split_interval", None)
@@ -512,6 +518,11 @@ class BookReplay:
                         # _split remains a pure all-supplied-bars validator for
                         # source-evidence consumers. Inert legs need no price
                         # evidence; retain their original bar for completion.
+                        # A placement convention chooses its split from each
+                        # exposed leg's signed position before the instant.
+                        observe = getattr(self.schedule_quotes, "observe_exposure", None)
+                        if observe is not None:
+                            observe(session, instant, {k: self.brokers[k].position() for k in exposed})
                         prefix, suffix = self._split(session, pb, exposed, instant)
                         segment_bars = {**segment_bars, **suffix}
                         low = min(low, self._process_segment(prefix) - opening)

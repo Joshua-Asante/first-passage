@@ -49,3 +49,18 @@ Everything the accepted path reaches before the chosen vertex executes in that r
 **Implementation boundary (for a later, separately authorized build).** Each run supplies its vertex splits through the existing `schedule_quotes` provider (`split_bar` / `split_interval`), with `prefix.close` equal to the chosen vertex's price. `_split` validates them unchanged. Provenance records R1 or R2 for every path. Previous-close pricing, next-bar flatten, re-ordered extremes and single-path interpolation remain excluded.
 
 **Operator ratification:** RATIFIED — operator, 2026-09-23, in session, verbatim: "ratify the convention and merge 469". Revision 2 is in force as the accepted convention for schedule instants inside an M15 source bar. It authorizes no build; implementation needs its own GO (T00 step 2 remains unratified).
+
+**Build GO — operator, 2026-09-24, in session, verbatim:** "Approve the build for the bracket timing convention ratified, so T00 can finish its last requirement (P7). Production-feed work stays blocked until T00 returns something other than INSUFFICIENT and T10 has assembled the F1 packet." It authorizes the implementation only: not T00 step 2, a G1 real-bar replay, F1, a production feed or spend.
+
+**Implementation (2026-09-24).** [`bracket.py`](../../../../ops/c1_rail/qualification/bracket.py) is an engine-layer capability, tested in [`test_bracket.py`](../../../../tests/ops/qualification/test_bracket.py):
+- `accepted_path` is now module-level in `replay.py`, and `_split` uses it with unchanged behaviour. `vertex_split` and `placement` implement the two-run table on it. Every vertex split of 5,005 bars, including the tie and flat-open/flat-close cases, passes `_split` unchanged.
+- `BracketScheduleQuotes(run)` supplies the splits through `split_bar` / `split_interval`. The one engine change: before splitting, the replay passes each exposed leg's signed position to the provider (`observe_exposure`). Every placement is recorded with its run, rule, vertex and price.
+- `run_bracket` replays a path on two fresh engines, one per run, and evaluates each with `evaluate_replay`. `BracketVerdict` takes PASS, FAILURE or UNRESOLVED only when the runs agree; otherwise the path is UNDETERMINED. No hybrid is formed, and each run keeps its own `sessions_to_pass`.
+
+**Readings the build fixed where the addendum is silent** (open to operator correction):
+1. A leg's state is read before the instant's prefix runs, because the split is chosen from it. A pending-only leg whose order fills on the R1 prefix holds a position from then on.
+2. At the R2 open vertex, the one-price prefix still runs. A stop the open gaps through fills at the open before the cancellation. The addendum's "cancelled at the open price" holds for every order the open does not trigger.
+3. A grid-boundary instant is priced at the open of the leg's bar starting there, else the close of its bar ending there. A cutoff cancel and the deadline check consume no fill price. A flatten lands on the grid only when the own-flat deadline sits five minutes past a bar boundary.
+4. Volume stays whole on the prefix; it carries no price.
+
+**Not built (outside this GO).** No G1 artifact role or `ProductionSource` path consumes the convention. `ProductionSource` still requires reviewed `schedule_execution_evidence` bytes and still declares `SCHEDULE_INTRABAR_CAPABILITY_MISSING`. No stage runner, adjudication or seal counts UNDETERMINED. How UNDETERMINED paths enter the frozen pass-rate gates is an F1 definition, not engine work.

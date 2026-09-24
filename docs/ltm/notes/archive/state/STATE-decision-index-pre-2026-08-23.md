@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Sixteenth roll, 2026-09-24** (one entry, pushed off by the bracket-convention build GO):
+
+- **2026-09-01** — MOC-wake strategy and source-liveness pursuits closed; no candidate opened. [Closure](../../../../../docs/notes/2026-09-01-next-vet-intake-decision.md)
+
 **Fifteenth roll, 2026-09-23** (one entry, pushed off by the T00 step-1 rulings):
 
 - **2026-09-01** — F1 reversed: a Tradeify discharge counts toward the four-firm program again. [Addendum](../../../../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4)
