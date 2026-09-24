@@ -44,12 +44,17 @@ raw-string regexes below still run over the command with only **proven data**
 blanked: a comment; a heredoc body whose delimiter is quoted, or unquoted with
 no ``$(``, backquote or ``<(``; a literal redirection target or here-string
 word; a quoted argument of ``echo``/``printf``/``grep``/``rg``; a git
-commit/merge/tag message or log ``--grep`` pattern; a ``python -c`` string. A
+commit/merge/tag message or log ``--grep`` pattern; the text value of a gh
+``--title``/``-t``, ``--body``/``-b``, ``--notes``/``-n``, ``--message``/``-m``
+or ``--subject`` option (pr/issue/release create/edit/comment/review/merge); a
+``python -c`` string. A
 ``$(…)`` inside such data is code and stays visible. Nothing is blanked when
 the command runs text the guard cannot read (a shell with no ``-c`` script,
 ``source``/``.``/``eval``, a command word built from ``$…``), and a command
 the tokenizer cannot read at all (an unterminated quote or substitution, a
-``case`` inside ``$(…)``) gets the raw regexes whole. The guard therefore asks
+``case`` inside ``$(…)``) gets the raw regexes whole — after each complete line before the failing one
+is still read the normal way (bash runs those lines first; the cuts honour
+quotes and heredocs). The guard therefore asks
 wherever main's guard asked, except on that data (F29).
 
 What asks (git global options such as ``-C``, ``-c``, ``--no-pager``,
@@ -74,14 +79,20 @@ long option that takes one — ``--message '-n …'`` is a message):
     merges, so ``git pull --no-verify`` skips the pre-merge-commit hook;
   * an alias judged as what it runs: ``git -c alias.<name>=<value> <name> …``
     reads the value as the subcommand plus its arguments; a value starting
-    with ``!`` is a shell command, re-parsed with the strict reader. A dashed
+    with ``!`` is a shell command, re-parsed with the strict reader. The
+    definition may come from a ``-c``/``--config-env`` option or from the
+    segment's leading ``GIT_CONFIG_*`` environment assignments. A dashed
     ``git-<sub>`` program, with or without a path, is judged as ``git <sub>``;
   * destructive: ``reset`` with a prefix of ``--hard`` (``--h`` already resets
     hard in git 2.43; the card's E3 said at least 4 characters) or of
     ``--merge`` (``--me``; ``--keep`` keeps the work tree and never asks);
     ``clean -f``/``--force`` or ``-i``/``--interactive``, and any non-dry-run
     ``clean`` once ``clean.requireForce`` is set false (``-n`` alone is a dry
-    run); ``checkout`` with ``--`` or ``-f``/``--force``; ``restore`` unless
+    run); ``checkout`` with ``--``, ``-f``/``--force``, or restoring files —
+    its only operand ``.``, two or more operands (a tree-ish and paths), or
+    ``--pathspec-from-file`` — unless it creates or moves with
+    ``-b``/``-B``/``--orphan``/``--detach`` (a single other operand is a
+    branch switch); ``restore`` unless
     it only touches the index (``--staged``/``-S`` without
     ``--worktree``/``-W``); ``switch -f``/``--force``/``--discard-changes``;
     ``push -f``/``--force``, ``--mirror`` or a ``+refspec`` — including a
@@ -129,10 +140,10 @@ import sys
 
 try:  # imported as `scripts.guard_shell_command` (tests, repo root on sys.path)
     from scripts._shell_tokens import (SHELLS, ShellSyntaxError, Word, expand, is_assignment,
-                                       program, segments)
+                                       line_cuts, program, segments)
 except ImportError:  # run as `python scripts/guard_shell_command.py`: scripts/ is sys.path[0]
     from _shell_tokens import (SHELLS, ShellSyntaxError, Word, expand, is_assignment,
-                               program, segments)
+                               line_cuts, program, segments)
 
 # The raw-string reading: main's guard before card 2. It asks on any match left
 # after proven data is blanked (`_residual`), and on the whole command when the
@@ -191,6 +202,12 @@ GIT_GLOBAL_VALUES = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namesp
                                "--shallow-file"})
 # Programs whose quoted arguments are only printed or matched (E1's examples).
 DATA_PROGRAMS = frozenset({"echo", "printf", "grep", "egrep", "fgrep", "rg"})
+# gh options whose value is only text, on pr/issue/release create/edit/comment/
+# review/merge (card 5): their values are data, like a git message. A $(…)
+# inside such a value stays code (`_residual` restores substitution spans).
+GH_TEXT_VALUES = frozenset({"--title", "-t", "--body", "-b", "--notes", "-n",
+                            "--message", "-m", "--subject"})
+GH_TEXT_ATTACHED = ("--title=", "--body=", "--notes=", "--message=", "--subject=")
 # git subcommands whose -m/--message value is a message, and those whose --grep
 # value is a pattern.
 MESSAGE_SUBS = frozenset({"commit", "merge", "tag"})
@@ -416,6 +433,24 @@ def _config_push_forces(configs: tuple[str, ...] | list[str],
     return False
 
 
+def _checkout_restores(opts: list[tuple[str, str]]) -> bool:
+    """Whether `git checkout` with these options restores files (card 5 item 3).
+
+    Without ``-b``/``-B``/``--orphan``/``--detach`` (which create or move to a
+    branch), checkout discards work-tree changes when its only operand is `.`,
+    when it has two or more operands (a tree-ish followed by paths), or when
+    the paths come from ``--pathspec-from-file``. A single operand other than
+    `.` names a branch and only switches to it.
+    """
+    operands = [word for kind, word in opts if kind == _OPERAND]
+    if _has(opts, "bB", ("--orphan", "--detach")):
+        return False
+    if any(kind == _LONG and word.startswith("--pathspec-from-file")
+           for kind, word in opts):
+        return True
+    return operands == ["."] or len(operands) >= 2
+
+
 def _git_destroys(sub: str, opts: list[tuple[str, str]],
                   configs: tuple[str, ...] = ()) -> bool:
     """Whether `git <sub>` with these options discards work (E3, item 6)."""
@@ -433,7 +468,8 @@ def _git_destroys(sub: str, opts: list[tuple[str, str]],
         return not _has(opts, "n", ("--dry-run",)) \
             and _config_is_false(configs, "clean.requireforce")
     if sub == "checkout":
-        return any(kind == _END for kind, _ in opts) or _has(opts, "f", ("--force",))
+        return any(kind == _END for kind, _ in opts) \
+            or _has(opts, "f", ("--force",)) or _checkout_restores(opts)
     if sub == "restore":
         return _restore_discards(opts)
     if sub == "switch":
@@ -482,12 +518,16 @@ def _alias_target(configs: list[str], sub: str) -> tuple[bool, str] | None:
     return None
 
 
-def _judged(words: list[str], depth: int = 0) -> list[list[str]]:
+def _judged(words: list[str], configs: tuple[str, ...] = (),
+            depth: int = 0) -> list[list[str]]:
     """The command words to judge: a dashed `git-<sub>` program, with or without
-    a path, is `git <sub>` (item 7), and `git -c alias.<name>=… <name> …` is
-    judged as what the alias runs (item 5).
+    a path, is `git <sub>` (card 4 item 7), and `git -c alias.<name>=… <name> …`
+    is judged as what the alias runs (card 4 item 5, card 5 item 1).
 
-    A `!` alias value is re-parsed with strict `segments`/`expand`; any other
+    `configs` adds alias definitions gathered outside the command's own words —
+    the leading `GIT_CONFIG_*` environment assignments of its segment. A `!`
+    alias value is re-parsed with strict `segments`/`expand` (a fresh process:
+    the surrounding `-c` settings and assignments do not reach it); any other
     value takes the alias name's place as the subcommand and its arguments
     (the alias's own `-c` definition stays in front of it, as the command's
     other global options do). Unreadable input raises, and `classify` then
@@ -495,13 +535,13 @@ def _judged(words: list[str], depth: int = 0) -> list[list[str]]:
     """
     name = program(words[0], strict=True)
     if name.startswith("git-") and len(name) > 4:
-        return _judged(["git", name[4:], *words[1:]], depth)
+        return _judged(["git", name[4:], *words[1:]], configs, depth)
     if name != "git" or depth >= ALIAS_LIMIT:
         return [words]
     found, sub, args = _git_parts(words)
     if sub is None:
         return [words]
-    alias = _alias_target(found, sub)
+    alias = _alias_target([*found, *configs], sub)
     if alias is None:
         return [words]
     is_shell, value = alias
@@ -512,15 +552,15 @@ def _judged(words: list[str], depth: int = 0) -> list[list[str]]:
         # words[:i] keeps the global options (and the alias definition); args
         # are contiguous after words[i], so i = len(words) - len(args) - 1
         head = words[:len(words) - len(args) - 1]
-        out = _judged([*head, *lines[0], *args], depth + 1)
+        out = _judged([*head, *lines[0], *args], configs, depth + 1)
         for extra in lines[1:]:
-            out.extend(_judged(extra, depth + 1))
+            out.extend(_judged(extra, (), depth + 1))
         return out
     out: list[list[str]] = []
     for segment in segments(value, strict=True):
         for inner in expand(segment, strict=True):
             if inner:
-                out.extend(_judged(inner, depth + 1))
+                out.extend(_judged(inner, (), depth + 1))
     return out
 
 
@@ -551,7 +591,9 @@ def _env_git_configs(cmd: str) -> list[tuple[list[str], list[list[str]]]]:
     leading `GIT_CONFIG_*` assignments name git config settings.
 
     Those assignments reach the git command of their segment as `-c` settings
-    do (item 4), so the commands are judged with them.
+    do (card 4 item 4), so the commands are judged with them — an alias the
+    assignments define is resolved with the same rules as a `-c` alias
+    (card 5 item 1).
     """
     pairs = []
     for segment in segments(cmd, strict=True):
@@ -564,7 +606,7 @@ def _env_git_configs(cmd: str) -> list[tuple[list[str], list[list[str]]]]:
         if not configs:
             continue
         commands = [judged for words in expand(segment[i:], strict=True) if words
-                    for judged in _judged(words)]
+                    for judged in _judged(words, tuple(configs))]
         if commands:
             pairs.append((configs, commands))
     return pairs
@@ -643,7 +685,7 @@ def _data_spans(commands: list[list[str]], bodies: list) -> list[tuple[int, int]
 
     Dropped text that `_dropped_is_data` accepts; a quoted argument of an
     echo/printf/grep/rg; a git commit/merge/tag message or log --grep pattern;
-    a `python -c` string.
+    a gh --title/--body/… text value; a `python -c` string.
     """
     spans = [(start, end) for start, end, literal, text, kind in bodies
              if _dropped_is_data(literal, text, kind)]
@@ -654,12 +696,25 @@ def _data_spans(commands: list[list[str]], bodies: list) -> list[tuple[int, int]
     return spans
 
 
+def _gh_data(words: list[str], index: int) -> bool:
+    """Whether words[index] is the text of a gh --title/--body/… option (item 4).
+
+    The value is data whether it follows the option (`--body '…'`) or is
+    attached to it (`--body=…`); a ``$(…)`` inside it still runs, and
+    `_residual` keeps substitution spans visible as code.
+    """
+    word, prev = words[index], words[index - 1] if index else ""
+    return prev in GH_TEXT_VALUES or word.startswith(GH_TEXT_ATTACHED)
+
+
 def _is_data_word(name: str, words: list[str], index: int) -> bool:
     """Whether words[index] of a `name` command is only printed, matched or run as Python."""
     if name in DATA_PROGRAMS:
         return words[index].quoted
     if name == "git":
         return _git_data(words, index)
+    if name == "gh":
+        return _gh_data(words, index)
     return name.startswith("python") and bool(re.fullmatch(r"-[A-Za-z]*c", words[index - 1]))
 
 
@@ -687,6 +742,28 @@ def _classify_text(cmd: str) -> tuple[str, str, str]:
     return "allow", "", ""
 
 
+def _asks_before_failure(cmd: str) -> tuple[str, str, str] | None:
+    """The ask one of the complete lines before the failing one produces, or None.
+
+    bash runs every complete line before the one it cannot parse (card 5
+    item 2), so when the strict reader raises, each line up to the failure is
+    still read the normal way. `line_cuts` finds where a complete line ends
+    (never inside an open quote or heredoc); a cut that lands inside a
+    construct spanning it produces a prefix the strict reader rejects, and
+    such a prefix is skipped. The whole command keeps its raw-string reading.
+    """
+    for cut in line_cuts(cmd):
+        prefix = cmd[:cut]
+        try:
+            _commands(prefix)
+        except (ShellSyntaxError, IndexError, RecursionError):
+            continue
+        verdict = classify(prefix)
+        if verdict[0] == "ask":
+            return verdict
+    return None
+
+
 def classify(cmd: str) -> tuple[str, str, str]:
     """Return (permission, agent_message, user_message) for one command.
 
@@ -702,6 +779,9 @@ def classify(cmd: str) -> tuple[str, str, str]:
         commands = _commands(cmd, bodies)
         env_pairs = _env_git_configs(cmd)
     except (ShellSyntaxError, IndexError, RecursionError):
+        asked = _asks_before_failure(cmd)
+        if asked is not None:
+            return asked
         return _classify_text(cmd)
     if any(_bypasses(words) for words in commands) \
             or any(_bypasses(words, tuple(configs))
