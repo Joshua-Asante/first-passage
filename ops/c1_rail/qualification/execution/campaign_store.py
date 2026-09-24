@@ -126,25 +126,54 @@ CHECKPOINT_TABLES = ('full_campaign_checkpoint_captures', 'full_campaign_checkpo
                      'full_campaign_checkpoint_intents')
 
 
+# The explicit column copy per table (v8 -> v9). v8 staged rows carried no
+# checkpoint column; only N1 custody existed at v8, so each becomes an N1 row.
+_WIDENING_COPIES = {
+    'full_campaign_checkpoint_captures': (
+        'attempt_id,checkpoint,work_id,result_bytes,payload_bytes,attestation_bytes',
+        'attempt_id,checkpoint,work_id,result_bytes,payload_bytes,attestation_bytes',
+    ),
+    'full_campaign_checkpoint_staged': (
+        'attempt_id,checkpoint,role,sha256,body',
+        "attempt_id,'N1',role,sha256,body",
+    ),
+    'full_campaign_checkpoint_intents': (
+        'attempt_id,checkpoint,work_id,snapshot_bytes,intent_bytes,candidate_bytes,'
+        'cutoff_bytes,receipt_bytes',
+        'attempt_id,checkpoint,work_id,snapshot_bytes,intent_bytes,candidate_bytes,'
+        'cutoff_bytes,receipt_bytes',
+    ),
+}
+
+
 def widen_checkpoint_layout(connection):
     """The S4-D1 widening (8 -> 9): rebuild the three checkpoint tables on the
-    composite key, copying rows; N1 bytes are immutable."""
+    composite key, copying rows; N1 bytes are immutable.
+
+    Runs inside the caller's transaction and only from S3's exact v8 layout:
+    the whole sqlite_master is first checked against the frozen v8 reference
+    (CHECKPOINT_SCHEMA_V8), so an inexact journal is refused before any table is
+    touched. Each old table is renamed aside, its replacement is created from
+    CHECKPOINT_SCHEMA's own statement text (sqlite_master then stores the same
+    unquoted shape the fresh-v9 layout walk derives), the rows are copied with
+    explicit columns -- never re-derived -- and the old table is dropped."""
+    from .store import ExecutionStore
+
+    ExecutionStore.validate_layout(connection, 8)
+    statements = {
+        part.strip().split()[5]: part
+        for part in CHECKPOINT_SCHEMA.split(';')
+        if part.strip()
+    }
     for table in CHECKPOINT_TABLES:
-        widened = CHECKPOINT_SCHEMA.split(
-            'CREATE TABLE IF NOT EXISTS ' + table + ' '
-        )[1].split(');')[0]
-        connection.execute('CREATE TABLE ' + table + '_v9 (' + widened + ')')
-        if table == 'full_campaign_checkpoint_staged':
-            connection.execute(
-                'INSERT INTO '
-                + table
-                + '_v9 SELECT attempt_id,\'N1\',role,sha256,body FROM '
-                + table
-            )
-        else:
-            connection.execute('INSERT INTO ' + table + '_v9 SELECT * FROM ' + table)
-        connection.execute('DROP TABLE ' + table)
-        connection.execute('ALTER TABLE ' + table + '_v9 RENAME TO ' + table)
+        target, source = _WIDENING_COPIES[table]
+        connection.execute('ALTER TABLE ' + table + ' RENAME TO ' + table + '_v8')
+        connection.execute(statements[table])
+        connection.execute(
+            'INSERT INTO ' + table + ' (' + target + ') SELECT ' + source
+            + ' FROM ' + table + '_v8'
+        )
+        connection.execute('DROP TABLE ' + table + '_v8')
     connection.execute('PRAGMA user_version=9')
 # Which phases a committed CONTINUE still admits: the next checkpoint's compute,
 # capture and G5 phases only (spec 2.6; the F3 advance names index the rows).
@@ -176,6 +205,30 @@ CREATE TABLE IF NOT EXISTS full_campaign_checkpoint_intents (
  candidate_bytes BLOB NOT NULL CHECK(length(candidate_bytes)<=262144),
  cutoff_bytes BLOB, receipt_bytes BLOB,
  PRIMARY KEY(attempt_id,checkpoint));
+'''
+
+# S3's exact v8 checkpoint layout (a8a983e), frozen: the 8 -> 9 widening
+# validates its predecessor against this; never edit.
+CHECKPOINT_SCHEMA_V8 = '''
+CREATE TABLE IF NOT EXISTS full_campaign_checkpoint_captures (
+ attempt_id TEXT PRIMARY KEY REFERENCES full_campaigns(attempt_id),
+ checkpoint TEXT NOT NULL CHECK(checkpoint='N1'),
+ work_id TEXT NOT NULL,
+ result_bytes BLOB NOT NULL CHECK(length(result_bytes)<=262144),
+ payload_bytes BLOB NOT NULL CHECK(length(payload_bytes)<=268435456),
+ attestation_bytes BLOB);
+CREATE TABLE IF NOT EXISTS full_campaign_checkpoint_staged (
+ attempt_id TEXT NOT NULL REFERENCES full_campaigns(attempt_id),
+ role TEXT NOT NULL, sha256 TEXT NOT NULL, body BLOB NOT NULL CHECK(length(body)<=268435456),
+ PRIMARY KEY(attempt_id,role,sha256));
+CREATE TABLE IF NOT EXISTS full_campaign_checkpoint_intents (
+ attempt_id TEXT PRIMARY KEY REFERENCES full_campaigns(attempt_id),
+ checkpoint TEXT NOT NULL CHECK(checkpoint='N1'),
+ work_id TEXT NOT NULL,
+ snapshot_bytes BLOB NOT NULL CHECK(length(snapshot_bytes)<=262144),
+ intent_bytes BLOB NOT NULL CHECK(length(intent_bytes)<=262144),
+ candidate_bytes BLOB NOT NULL CHECK(length(candidate_bytes)<=262144),
+ cutoff_bytes BLOB, receipt_bytes BLOB);
 '''
 
 from ..evidence import (

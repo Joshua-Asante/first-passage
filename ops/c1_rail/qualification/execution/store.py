@@ -17,7 +17,8 @@ from ..journal_snapshot import encode_assessment_snapshot
 from ..evidence import parse_proposed_artifact, InspectedEvidence, compare_n1_evidence
 from ..policy import N1_ARTIFACT_ROLES
 from .files import archive_bytes, read_regular
-from .campaign_store import CampaignStore, SCHEMA as CAMPAIGN_SCHEMA, BUDGET_SCHEMA, CHECKPOINT_SCHEMA
+from .campaign_store import (CampaignStore, SCHEMA as CAMPAIGN_SCHEMA, BUDGET_SCHEMA,
+                             CHECKPOINT_SCHEMA, CHECKPOINT_SCHEMA_V8)
 from .campaign_funding import SCHEMA as FUNDING_SCHEMA
 from .protocol import ExecutionRecord, ValidatedEvidence, digest, fields, identity, parse_request, sha256
 
@@ -137,12 +138,17 @@ class ExecutionStore:
 
     @staticmethod
     def validate_layout(connection, version):
-        """Recheck exact predecessor inside lazy migration's write lock."""
+        """Recheck exact predecessor inside lazy migration's write lock.
+
+        v8 is S3's frozen checkpoint layout (CHECKPOINT_SCHEMA_V8, the 8 -> 9
+        widening's predecessor); v9 is the widened one."""
         reference = sqlite3.connect(':memory:')
         try:
             reference.executescript(_SCHEMA + (CAMPAIGN_SCHEMA if version >= 5 else '') +
-                                    (BUDGET_SCHEMA if version >= 6 else '') + (FUNDING_SCHEMA if version in (7, 8) else '') +
-                                    (CHECKPOINT_SCHEMA if version == 8 else ''))
+                                    (BUDGET_SCHEMA if version >= 6 else '') +
+                                    (FUNDING_SCHEMA if version in (7, 8, 9) else '') +
+                                    (CHECKPOINT_SCHEMA_V8 if version == 8 else
+                                     CHECKPOINT_SCHEMA if version == 9 else ''))
             query = 'SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name'
             if [tuple(row) for row in connection.execute(query)] != reference.execute(query).fetchall():
                 raise ValueError('unsupported journal schema layout; no migration')
