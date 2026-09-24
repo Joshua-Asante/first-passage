@@ -25,16 +25,20 @@ HEAD = "abcdef0123456789abcdef0123456789abcdef01"
 MERGE = "1111111111111111111111111111111111111111"
 
 
-def write_artifact(dest, *, scope="S3_N1_CAPTURE", required=19, tests=19, tested=HEAD):
+def write_artifact(dest, *, scope="S4_JOINT_N2", required=19, tests=19, tested=HEAD):
     record_dir = Path(dest) / "record0"
-    record_dir.mkdir(parents=True)
+    record_dir.mkdir(parents=True, exist_ok=True)
     record = {"status": "completed", "exit_code": 0, "verification_exit_code": 0,
               "source_stable": True, "capture_complete": True, "cleanup": {"ok": True},
               "metadata": {"acceptance_scope": scope},
               "before": None if tested is None else {"commit": tested, "fingerprint": "f"}}
     (record_dir / "record.json").write_text(json.dumps(record), encoding="utf-8")
+    # Required nodes are the selection's own files (a scope that can never be
+    # acceptance evidence has no file set, so it borrows the default's).
+    files = evidence.SCOPE_FILES.get(scope, evidence.SCOPE_FILES[evidence.DEFAULT_SCOPE])
+    nodeids = [f"{files[i % len(files)]}::test_{i}" for i in range(required)]
     (record_dir / "invariants.json").write_text(
-        json.dumps({"passed": True, "required_nodeids": [f"n{i}" for i in range(required)]}), encoding="utf-8")
+        json.dumps({"passed": True, "required_nodeids": nodeids}), encoding="utf-8")
     (record_dir / "junit.xml").write_text(
         f'<testsuites><testsuite tests="{tests}" failures="0" errors="0" skipped="0"/></testsuites>',
         encoding="utf-8")
@@ -72,7 +76,7 @@ def test_g1_an_s2_mode_run_is_not_acceptance_by_default(gh, capsys):
     gh["artifact"] = {"scope": "S2_DIAGNOSTIC_SUPERVISION", "required": 15, "tests": 15}
     code, out = read(gh, capsys)
     assert code != 0 and out["ok"] is False
-    assert "S3_N1_CAPTURE" in json.dumps(out)
+    assert "S4_JOINT_N2" in json.dumps(out)
 
 
 def test_g1_an_s2_mode_run_is_readable_when_asked_for_explicitly(gh, capsys):
@@ -81,8 +85,18 @@ def test_g1_an_s2_mode_run_is_readable_when_asked_for_explicitly(gh, capsys):
     assert code == 0 and out["ok"] is True
 
 
-def test_g1_an_s3_run_is_acceptance_by_default(gh, capsys):
+def test_g1_an_s4_run_is_acceptance_by_default(gh, capsys):
     code, out = read(gh, capsys)
+    assert code == 0 and out["ok"] is True
+
+
+def test_g1_an_s3_run_is_readable_only_when_asked_for_explicitly(gh, capsys):
+    gh["artifact"] = {"scope": "S3_N1_CAPTURE"}
+    code, out = read(gh, capsys)
+    assert code != 0 and out["ok"] is False
+    assert "S4_JOINT_N2" in json.dumps(out)
+    gh["dest"] = gh["dest"].with_name(gh["dest"].name + "x")
+    code, out = read(gh, capsys, "--expect-scope", "S3_N1_CAPTURE")
     assert code == 0 and out["ok"] is True
 
 
@@ -95,10 +109,13 @@ def test_g1_diagnostic_and_test_only_scopes_are_never_acceptance(gh, capsys, sco
         gh["dest"] = gh["dest"].with_name(gh["dest"].name + "x")
 
 
-def test_g1_evaluate_defaults_to_the_s3_scope(tmp_path):
+def test_g1_evaluate_defaults_to_the_s4_scope(tmp_path):
     write_artifact(tmp_path, scope="S2_DIAGNOSTIC_SUPERVISION", required=15, tests=15)
     assert evidence.evaluate(tmp_path)[0] is False
     assert evidence.evaluate(tmp_path, expect_scope="S2_DIAGNOSTIC_SUPERVISION")[0] is True
+    write_artifact(tmp_path, scope="S3_N1_CAPTURE", required=19, tests=19)
+    assert evidence.evaluate(tmp_path)[0] is False
+    assert evidence.evaluate(tmp_path, expect_scope="S3_N1_CAPTURE")[0] is True
 
 
 # --- G2: the node set is non-empty and every required node ran ----------------------
@@ -221,7 +238,9 @@ def test_g6_inputs_are_validated_before_the_host_is_provisioned():
 
 @pytest.mark.parametrize("mode,cases,ok", [
     ("s3", "", True), ("s2", "", True), ("s3", "downtime or deadline", True),
-    ("s3", "   ", False), ("s3", "\t", False), ("s2", "downtime", False), ("s4", "", False),
+    ("s3", "   ", False), ("s3", "\t", False), ("s2", "downtime", False),
+    # C2 ruling 1 (2026-09-24): s4 is a runnable mode (the new default) and takes subsets.
+    ("s4", "", True), ("s4", "downtime or deadline", True), ("s5", "", False),
 ])
 def test_g6_the_validation_step_accepts_exactly_the_runnable_inputs(tmp_path, shell, mode, cases, ok):
     step = next(s for s in _steps() if s.get("name") == "Validate inputs")

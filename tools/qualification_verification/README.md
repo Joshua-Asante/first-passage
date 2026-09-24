@@ -156,20 +156,23 @@ in either disposable Linux job.
 `.github/workflows/qualification-s2-supervision.yml` provisions one fresh
 `ubuntu-24.04` host, runs one boundary selection, enforces the invariants and
 cleanup, and uploads the `qualification-s2-supervision` artifact. The default
-mode is s3, which runs the files named by `S3_CASES` in
-`scripts/qualification_boundary_verification.py` (record scope `S3_N1_CAPTURE`);
-`-f mode=s2` runs the subset named by `S2_CASES` (scope
-`S2_DIAGNOSTIC_SUPERVISION`), and the wrapper's `--s4` runs the strictly
-larger joint set named by `S4_CASES` (scope `S4_JOINT_N2`) on the joint
-dispatch/v6 installation. `--s3` keeps its accepted S3 meaning on the
-dispatch/v5 installation, so the two selections are separate runs of one
-wrapper, never one combined mode; the workflow's `mode` input names
-`s2`/`s3`. The required nodes are the registered nodes of
+mode is s4, which runs the strictly larger joint set named by `S4_CASES` in
+`scripts/qualification_boundary_verification.py` (record scope `S4_JOINT_N2`)
+on the joint dispatch/v6 installation; s3 and s2 stay selectable with
+`-f mode=` (`-f mode=s3` runs the files named by `S3_CASES`, scope
+`S3_N1_CAPTURE`, on the dispatch/v5 installation, and `-f mode=s2` the subset
+named by `S2_CASES`, scope `S2_DIAGNOSTIC_SUPERVISION`). `--s3` keeps its
+accepted S3 meaning on the dispatch/v5 installation, so the selections are
+separate runs of one wrapper, never one combined mode. The required nodes are
+the registered nodes of
 `tests/ops/qualification/invariant_manifest.json` inside the selected files,
-recorded as `invariants.json`'s `required_nodeids`. A run is about
-25 minutes: 6-8 minutes of provisioning plus three cases that are about 300 s
+recorded as `invariants.json`'s `required_nodeids`. An s3 run is about
+25-35 minutes: 6-8 minutes of provisioning plus three cases that are about 300 s
 each by design (service downtime, deadline-before-bootstrap, two descendants to
-the wall). **A green check mark is not evidence; the artifact is.**
+the wall). An s4 run adds the three joint N2 cases; two of them compute the
+genuine N2 batch under the metered v6 N2 ceiling, several minutes each, so
+expect roughly 45-55 minutes (an estimate until the first full s4 run is
+measured). **A green check mark is not evidence; the artifact is.**
 
 Order of operations for an executor (the two clocks are independent; the
 `s2-linux-run` project skill carries the same procedure for agents):
@@ -210,8 +213,9 @@ Order of operations for an executor (the two clocks are independent; the
    (`passed`, and a non-empty `required_nodeids`: the selection's required
    nodes, currently 15 for s2, 19 for s3 and 22 for s4) and `junit.xml` (at
    least that many tests, no failures, errors or skips) all hold. The expected
-   `S3_N1_CAPTURE` unless `--expect-scope S2_DIAGNOSTIC_SUPERVISION` asks for an
-   s2-mode run. A dispatch run must have measured its head (`tested_commit`
+   scope is `S4_JOINT_N2` unless `--expect-scope S3_N1_CAPTURE` or
+   `--expect-scope S2_DIAGNOSTIC_SUPERVISION` asks for an s3- or s2-mode run,
+   and the required nodes must cover exactly that scope's file set. A dispatch run must have measured its head (`tested_commit`
    equals `headSha`); a pull-request run tested `refs/pull/N/merge`, which the
    reader prints as `tested_commit_kind: pull_request_merge`. Cite the run ID,
    head SHA, record ID and counts.
