@@ -16,7 +16,7 @@ from ..contract import canonical_json_bytes as encoded, parse_canonical_json
 from .campaign_budget import clock, integer
 from .protocol import fields, identity, sha256
 
-from .campaign_funding import WORK_ROLES, PROBES, WORK_PHASES
+from .campaign_funding import WORK_ROLES, PROBES, WORK_PHASES, DISPATCH_ROLES
 from .campaign_probe import READINESS_TOKEN
 
 
@@ -240,7 +240,7 @@ def guardian_task_bound(manifest):
     """Probe guardians stay single-task (S2); a dispatch-work guardian spawns
     its own campaign_control children for the io mounts and the g5 unit (D2),
     bounded by the installed control_calls allowance."""
-    return 1 + CAMPAIGN_CONTROL_TASKS if manifest['role'] in ('n1_worker', 'n1_g5') else 1
+    return 1 + CAMPAIGN_CONTROL_TASKS if manifest['role'] in DISPATCH_ROLES else 1
 
 
 CAMPAIGN_CONTROL_TASKS = 2
@@ -1275,14 +1275,26 @@ def _transition(campaigns, attempt, work_id, target, data):
     )
 
 
-def _assert_authority(state):
+def _live(state, phase=None):
+    from .campaign_store import CHECKPOINT_PROGRESSION_STATES, PROGRESSION_PHASES
+
+    return state['validity'] == 'VALID' and (
+        state['state'] in ('PROVISIONAL', 'BOUND')
+        or (
+            state['state'] in CHECKPOINT_PROGRESSION_STATES
+            and phase in PROGRESSION_PHASES.get(state['state'], ())
+        )
+    )
+
+
+def _assert_authority(state, phase=None):
     from .campaign_budget import recovery_pending, dispatch_pending
 
     if recovery_pending(state):
         raise ValueError('campaign recovery pending')
     if dispatch_pending(state):
         raise ValueError('campaign dispatch pending')
-    if state['state'] not in ('PROVISIONAL', 'BOUND') or state['validity'] != 'VALID':
+    if not _live(state, phase):
         raise ValueError('campaign is terminal or invalidated')
 
 
@@ -1298,11 +1310,8 @@ def _await_dispatch_ack(campaigns, attempt, work_id, deadline):
         state = parse_canonical_json(
             campaigns.budget_snapshot(attempt), label='dispatch acknowledgement'
         )
-        if (
-            recovery_pending(state)
-            or state['validity'] != 'VALID'
-            or state['state'] not in ('PROVISIONAL', 'BOUND')
-        ):
+        phase = next((w['phase'] for w in state['works'] if w['work_id'] == work_id), None)
+        if recovery_pending(state) or not _live(state, phase):
             raise ValueError('guardian authority revoked while awaiting dispatch acknowledgement')
         row = next(
             (
@@ -1322,7 +1331,7 @@ def _await_dispatch_ack(campaigns, attempt, work_id, deadline):
         ):
             raise ValueError('original guardian dispatch deadline expired')
         if row['acknowledged_clock'] is not None:
-            _assert_authority(state)
+            _assert_authority(state, phase)
             return state
         time.sleep(min(0.01, (deadline - current['boottime_ns']) / 10**9))
 
@@ -1394,7 +1403,7 @@ def guardian_main():
         campaigns, args.attempt, args.work, 'DEADLINE', {'deadline_boottime_ns': deadline}
     )
     state = _await_dispatch_ack(campaigns, args.attempt, args.work, deadline)
-    _assert_authority(state)
+    _assert_authority(state, work['phase'])
     if (
         state['profile']
         != parse_canonical_json(context.release, label='release')['campaign_budget_profile']
@@ -1445,7 +1454,7 @@ def guardian_main():
         if DockerControl().call('GET', '/info')['CgroupDriver'] != 'systemd':
             raise ValueError('installed Docker cgroup driver differs')
         state = _transition(campaigns, args.attempt, args.work, 'RUNNING', {})
-        _assert_authority(state)
+        _assert_authority(state, work['phase'])
         if manifest['role'] == 'admission':
             from .admission import verify_retained_bundle
             from .plan import derive_campaign_plan_from_context
@@ -1655,9 +1664,6 @@ def _guardian_signal_unit(unit, signal_name):
 # emptying the cgroup after the last process is reaped.
 G5_UNIT_STOP_TIMEOUT_USEC = 1_000_000
 G5_UNIT_STOP_GRACE_NS = 2 * G5_UNIT_STOP_TIMEOUT_USEC * 1000
-# The states an assessment commit produces while its qg5 unit may still be
-# running: S3's N1 outcomes and S4's joint N2 outcomes.
-G5_COMMIT_STATES = ('N2_READY', 'N1_FAILED', 'PART_A_READY', 'N2_FAILED')
 
 
 def g5_unit_spec(
@@ -2313,7 +2319,7 @@ def _run_n1_worker(
     state = parse_canonical_json(
         campaigns.settle_work(state['attempt_id'], work['work_id'], observed), label='settlement'
     )
-    if state['state'] == 'BOUND' and state['validity'] == 'VALID':
+    if _live(state, work['phase']):
         _transition(campaigns, state['attempt_id'], work['work_id'], 'COMPLETED', {})
     docker.call('DELETE', '/containers/' + container + '?v=1')
 
@@ -2375,7 +2381,9 @@ def _run_n1_g5(
         current = parse_canonical_json(
             campaigns.budget_snapshot(state['attempt_id']), label='current g5 authority'
         )
-        if current['state'] in G5_COMMIT_STATES:
+        from .campaign_store import CHECKPOINT_ADVANCES
+
+        if current['state'] in CHECKPOINT_ADVANCES[checkpoint]:
             # The assessment commit's own terminal outcome ends supervision of
             # the unit's identities, but not the wait for its exit: the commit
             # lands while the driver is still returning, and an observation of
@@ -2383,7 +2391,7 @@ def _run_n1_g5(
             # must record as BUDGET_UNCERTAIN (a live payload is never sampled).
             committed = True
         else:
-            _assert_authority(current)
+            _assert_authority(current, work['phase'])
         if _unit_cgroup_exited(group):
             break
         if committed:
@@ -2496,7 +2504,7 @@ def _run_n1_g5(
         in ('BOUND', 'N2_READY', 'N1_FAILED', 'PART_A_READY', 'N2_FAILED')
     ):
         _transition(campaigns, state['attempt_id'], work['work_id'], 'COMPLETED', {})
-    if parent is not None and state['state'] == 'BOUND' and state['validity'] == 'VALID':
+    if parent is not None and _live(state, work['phase']):
         # The redelivered retry settled: finalize the interrupted signing with
         # the persisted candidate through the service's own commit path (the
         # caller-finalizes-after-retry order the store's serialization rule
@@ -2516,7 +2524,7 @@ def _run_n1_g5(
                 'schema': 'qualification_campaign_request/v2',
                 'operation': 'COMMIT_CHECKPOINT_ASSESSMENT',
                 'attempt_id': state['attempt_id'],
-                'checkpoint': 'N1',
+                'checkpoint': checkpoint,
                 'work_id': parent,
                 'candidate_bytes_b64': _b64.b64encode(candidate).decode('ascii'),
                 'artifacts': [
@@ -2542,6 +2550,8 @@ def probe_container_body(context, enrollment, manifest):
         'probe_seal': config['seal_probe_uid'],
         'n1_worker': context.profile.worker_uid,
         'n1_g5': config['g5_uid'],
+        'n2_worker': context.profile.worker_uid,
+        'n2_g5': config['g5_uid'],
     }[role]
     from .profile import CAMPAIGN_RESOURCE_SCOPE
 

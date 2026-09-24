@@ -7,6 +7,7 @@ live in tests/integration/qualification_boundary/test_campaign_n2_linux.py.
 
 import base64
 import json
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
@@ -29,6 +30,7 @@ from c1_rail.qualification.checkpoint_plan import derive_checkpoint_plan
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
 from c1_rail.qualification.execution import campaign_supervisor as supervisor
 from c1_rail.qualification.execution import g5 as g5_module
+from c1_rail.qualification.execution.campaign_funding import DISPATCH_ROLES
 from c1_rail.qualification.execution.campaign_store import CampaignStore
 from c1_rail.qualification.execution.compute import stage_request
 from c1_rail.qualification.execution.evidence import encode_worker_result
@@ -865,3 +867,467 @@ def test_n1_work_start_claim_stays_refused_from_n2_ready(tmp_path, monkeypatch):
         store(instance).claim_supervision_control(
             instance.attempt, 'g5work', 'START_CLIENT', supervisor.observe_campaign_clock()
         )
+
+
+# ---- The N2 guardian fix regressions (S4-R1b) ---------------------------------
+#
+# Ported from the HEAD-vs-patched scratch pair in .cache/n2fix-reference to run
+# once against the real supervisor: the N2 guardians' dispatch-ack wait and
+# authority check treat N2_READY as live for their own phases, the n2 dispatch
+# roles get the campaign-control task bound, the N2 worker container runs as the
+# worker uid, the N2 compute work completes after its settlement, the N2 g5 unit
+# is supervised/resumed, and the signing-retry finalize reaches the N2 commit --
+# with the N1 g5 commit detection unchanged.
+
+WORKER_UID = 65532
+
+
+def _supervision_context():
+    """The supervisor's own context surface for a container-body derivation."""
+    return SimpleNamespace(
+        config={'g5_uid': G5, 'seal_probe_uid': OPERATOR},
+        profile=SimpleNamespace(
+            worker_uid=WORKER_UID,
+            pids_limit=64,
+            memory_bytes=256000000,
+            scratch_bytes=10000000,
+        ),
+        release=encoded({'worker_image_digest': 'sha256:' + '0' * 64}),
+    )
+
+
+def _enrollment(work_id='n2work'):
+    """A real enrolled scope family over the installed host/attempt identity."""
+    return {
+        'schema': 'qualification_campaign_supervision/v1',
+        'host_run_id': 'host1',
+        'attempt_id': 'a1',
+        'work_id': work_id,
+        'manifest_bytes_b64': '',
+        'scopes': supervisor.work_enrollment('host1', 'a1', work_id),
+    }
+
+
+def test_n2_guardian_dispatch_ack_and_authority_are_live_from_n2_ready(
+    tmp_path, monkeypatch
+):
+    """The N2 guardian's own wait and authority check against the real journal:
+    a dispatched N2 work acknowledges and returns live from N2_READY, phase
+    scoped -- a foreign phase and a phase-less check still refuse."""
+    instance = committed_n1(tmp_path, monkeypatch)
+    materialized(instance, schedule_document(instance, role='n2_worker', work='n2work'))
+    campaigns = store(instance)
+    with campaigns.launch_gate(
+        instance.attempt, 'n2work', supervisor.observe_campaign_clock, role='guardian'
+    ) as permit:
+        pass
+    campaigns.acknowledge_dispatch(
+        instance.attempt, 'n2work', 'guardian', permit['token'], supervisor.observe_campaign_clock
+    )
+    state = supervisor._await_dispatch_ack(campaigns, instance.attempt, 'n2work', 10**18)
+    assert state['state'] == 'N2_READY'
+    supervisor._assert_authority(state, 'N2')
+    with pytest.raises(ValueError, match='campaign is terminal or invalidated'):
+        supervisor._assert_authority(state, 'N1_G5')
+    with pytest.raises(ValueError, match='campaign is terminal or invalidated'):
+        supervisor._assert_authority(state)
+
+
+def test_n2_dispatch_roles_get_the_campaign_control_task_bound():
+    """Every dispatch-work guardian spawns its own campaign_control children, n2
+    included; harmless probes and the admission stay single-task."""
+    roles = ('n1_worker', 'n1_g5', 'n2_worker', 'n2_g5', 'probe_worker', 'admission')
+    bound = {role: supervisor.guardian_task_bound({'role': role}) for role in roles}
+    control = 1 + supervisor.CAMPAIGN_CONTROL_TASKS
+    assert bound == {
+        'n1_worker': control,
+        'n1_g5': control,
+        'n2_worker': control,
+        'n2_g5': control,
+        'probe_worker': 1,
+        'admission': 1,
+    }
+    assert {'n2_worker', 'n2_g5'} <= set(DISPATCH_ROLES)
+
+
+def test_n2_worker_container_body_has_the_worker_uid():
+    """The joint worker's container body carries the worker uid entry (the probe
+    body's fixed role map) and the N2 checkpoint argument."""
+    manifest = {'work_id': 'n2work', 'role': 'n2_worker', 'probe': 'noop'}
+    body = supervisor.worker_container_body(
+        _supervision_context(), _enrollment(), manifest, checkpoint='N2'
+    )
+    assert body['User'] == str(WORKER_UID) + ':' + str(WORKER_UID)
+    assert body['Cmd'][-2:] == ['--checkpoint', 'N2']
+    assert body['Labels']['fp.s2.role'] == 'n2_worker'
+
+
+class _WorkerCampaigns:
+    """The store surface ``_run_n1_worker`` uses, over a frozen progression."""
+
+    def __init__(self, progression):
+        self.progression = progression
+        self.transitions = []
+        self.events = []
+
+    def state(self):
+        return {
+            'attempt_id': 'a1',
+            'state': self.progression,
+            'validity': 'VALID',
+            'authority_revision': 3,
+            'profile': {'orchestration_cpu_ns': {'N2': 20 * 10**9}},
+            'works': [
+                {
+                    'work_id': 'n2work',
+                    'phase': 'N2',
+                    'state': 'RUNNING',
+                    'limits': {
+                        'cpu_ns': 120 * 10**9,
+                        'wall_ns': 300 * 10**9,
+                        'memory_bytes': 256000000,
+                    },
+                }
+            ],
+        }
+
+    def budget_snapshot(self, attempt):
+        return encoded(self.state())
+
+    def _work(self, state, work_id):
+        return next(work for work in state['works'] if work['work_id'] == work_id)
+
+    @contextmanager
+    def launch_gate(self, *args, **kwargs):
+        yield {'token': b'x' * 32}
+
+    def acknowledge_dispatch(self, *args, **kwargs):
+        pass
+
+    def retain_supervision_event(self, raw):
+        self.events.append(json.loads(raw)['kind'])
+
+    def row(self, attempt):
+        return {'request_bytes': encoded({'bundle_sha256': 'b' * 64}), 'campaign_id': 'c1'}
+
+    def retain_checkpoint_capture(self, *args, **kwargs):
+        pass
+
+    def retain_checkpoint_attestation(self, *args, **kwargs):
+        pass
+
+    def settle_work(self, attempt, work_id, observed):
+        return encoded(self.state())
+
+    def record_work_transition(self, attempt, work_id, raw, expected_revision):
+        self.transitions.append(json.loads(raw)['state'])
+        return encoded(self.state())
+
+
+class _WorkerDocker:
+    """One fixed container: created, inspected, seen running once, then exit 0."""
+
+    def __init__(self, body):
+        self.body = body
+        self.polls = 0
+
+    def call(self, method, path, body=None, raw=False):
+        if path == '/info':
+            return {'CgroupDriver': 'systemd'}
+        if path.startswith('/containers/create'):
+            return {'Id': 'c' * 64}
+        if path.endswith('/json'):
+            self.polls += 1
+            running = self.polls == 2
+            return {
+                'Image': self.body['Image'],
+                'Config': {key: self.body[key] for key in ('User', 'Entrypoint', 'Cmd')},
+                'HostConfig': {
+                    'CgroupParent': self.body['HostConfig']['CgroupParent'],
+                    'Binds': self.body['HostConfig']['Binds'],
+                },
+                'State': {
+                    'Running': running,
+                    'Pid': 4242 if running else 0,
+                    'ExitCode': 0,
+                    'OOMKilled': False,
+                    'StartedAt': '2026-09-23T00:00:01Z',
+                    'FinishedAt': '2026-09-23T00:00:02Z',
+                },
+            }
+        return {}
+
+
+@pytest.mark.parametrize(
+    'progression,completed',
+    [('N2_READY', ['COMPLETED']), ('BUDGET_EXHAUSTED', [])],
+    ids=['N2_READY', 'BUDGET_EXHAUSTED'],
+)
+def test_n2_compute_work_completes_in_n2_ready_after_settlement(
+    tmp_path, monkeypatch, progression, completed
+):
+    """The joint compute work's COMPLETED gate follows its settlement: live for
+    its own N2 phase in N2_READY (the state the N1 commit produced), refused
+    once the campaign budget is terminal."""
+    from c1_rail.qualification.execution import files, protocol, signing
+
+    enrollment = _enrollment()
+    payload_slice = enrollment['scopes']['payload_slice']
+    body = {
+        'Image': 'img',
+        'User': str(WORKER_UID) + ':' + str(WORKER_UID),
+        'Entrypoint': ['e'],
+        'Cmd': ['c'],
+        'HostConfig': {'CgroupParent': payload_slice, 'Binds': ['a:/input:ro']},
+    }
+    docker = _WorkerDocker(body)
+    clock_bytes = encoded(
+        {
+            'schema': 'qualification_campaign_clock/v1',
+            'boot_id': 'b',
+            'boottime_ns': 10**12,
+            'utc': '2026-09-23T00:00:00Z',
+        }
+    )
+    monkeypatch.setattr(supervisor, 'observe_campaign_clock', lambda: clock_bytes)
+    monkeypatch.setattr(supervisor, 'DockerControl', lambda: docker)
+    monkeypatch.setattr(supervisor, '_worker_input_files', lambda *a, **k: ([], b'plan'))
+    monkeypatch.setattr(supervisor, '_guardian_bus_call', lambda *a, **k: None)
+    monkeypatch.setattr(supervisor, '_write_worker_input', lambda *a, **k: 0)
+    monkeypatch.setattr(supervisor, 'worker_container_body', lambda *a, **k: body)
+    monkeypatch.setattr(
+        supervisor, '_process_cgroup', lambda pid='self': '/' + payload_slice + '/c'
+    )
+    monkeypatch.setattr(supervisor, '_payload_processes', lambda group: ['4242'])
+    monkeypatch.setattr(
+        supervisor,
+        '_process_identity',
+        lambda pid: (99, WORKER_UID, '/' + payload_slice + '/c', 'python3', '/x'),
+    )
+    monkeypatch.setattr(supervisor, '_pre_exec_init', lambda comm: False)
+    monkeypatch.setattr(supervisor, '_interpreter_image', lambda *a: False)
+    monkeypatch.setattr(
+        supervisor,
+        '_read_counter',
+        lambda path: (b'usage_usec 0\n' if path.name == 'cpu.stat' else b'oom 0\noom_kill 0\n'),
+    )
+    monkeypatch.setattr(supervisor.time, 'sleep', lambda seconds: None)
+    monkeypatch.setattr(files, 'read_regular', lambda *a, **k: b'frame')
+    monkeypatch.setattr(protocol, 'decode_frame', lambda raw, limit: b'payload')
+    result = encoded(
+        {
+            'payload_sha256': 'p' * 64,
+            'payload_byte_length': 7,
+            'plan_sha256': 'q' * 64,
+            'worker_image_digest': 'img',
+            'runtime_manifest_sha256': 'r' * 64,
+            'container_id': 'c' * 64,
+        }
+    )
+    monkeypatch.setattr(
+        supervisor,
+        '_capture_result_document',
+        lambda *a, **k: (result, SimpleNamespace(document={'observations': {}})),
+    )
+    monkeypatch.setattr(signing, 'sign_checkpoint_attestation', lambda *a, **k: b'attestation')
+    verified = SimpleNamespace(profile=SimpleNamespace(sha256='s' * 64))
+    context = SimpleNamespace(
+        profile=SimpleNamespace(output_byte_limit=10**7, worker_uid=WORKER_UID),
+        config={'execution_credential': 'cred', 'service_uid': SERVICE_UID},
+        release=encoded({'service_id': 'svc'}),
+        keys=lambda: {},
+        _context=lambda digest, at: verified,
+    )
+    runtime = SimpleNamespace(
+        parent=tmp_path / (payload_slice[:-6].split('-')[0] + '.slice'),
+        observation=lambda *a: b'{}',
+    )
+    campaigns = _WorkerCampaigns(progression)
+    state = campaigns.state()
+    supervisor._run_n1_worker(
+        context,
+        campaigns,
+        runtime,
+        state,
+        state['works'][0],
+        enrollment,
+        {'work_id': 'n2work', 'role': 'n2_worker'},
+        checkpoint='N2',
+    )
+    assert 'PROCESS' in campaigns.events and 'PAYLOAD_EXIT' in campaigns.events
+    assert campaigns.transitions == completed
+
+
+def _run_g5_work(tmp_path, monkeypatch, *, progression, parent=None, procs='', checkpoint='N2'):
+    """Drive ``_run_n1_g5`` over the g5 settlement kernel and store fakes.
+
+    ``parent`` names a signing retry's parent work, so the persisted candidate
+    exists and the caller-finalizes-after-retry tail runs.
+    """
+    from pathlib import PurePosixPath
+
+    from c1_rail.qualification.execution import runtime as runtime_module
+    from test_g5_settlement_wait import (
+        LINUX_CODE_ROOT,
+        LINUX_INTERPRETER,
+        PAYLOAD_SLICE,
+        START_NS,
+        WALL_NS,
+        Kernel,
+    )
+
+    phase = checkpoint + '_G5'
+    parent_path = tmp_path / 'fpq.slice'
+    kernel = Kernel(parent_path, exit_after=3)
+    (kernel.group / 'cgroup.procs').write_text(procs)
+    events, signals, commits, transitions = [], [], [], []
+    candidate = encoded(
+        {'artifacts': [{'role': 'n2_result', 'sha256': 'a' * 64, 'byte_length': 1}]}
+    )
+
+    class Campaigns:
+        def state(self):
+            return {
+                'attempt_id': 'att1',
+                'state': progression,
+                'validity': 'VALID',
+                'authority_revision': 7,
+                'works': [],
+            }
+
+        def budget_snapshot(self, attempt_id):
+            return encoded(self.state())
+
+        @contextmanager
+        def launch_gate(self, *args, **kwargs):
+            yield {'token': 'tok'}
+
+        def acknowledge_dispatch(self, *args):
+            pass
+
+        def _work(self, state, work_id):
+            return {
+                'work_id': work_id,
+                'phase': phase,
+                'state': 'RUNNING' if parent else 'SIGNED',
+            }
+
+        def _retry_parent(self, work):
+            return parent
+
+        def settle_work(self, attempt_id, work_id, observed):
+            return encoded(self.state())
+
+        def record_work_transition(self, attempt_id, work_id, raw, expected_revision):
+            transitions.append(json.loads(raw)['state'])
+            return encoded(self.state())
+
+        def retain_supervision_event(self, raw):
+            events.append(json.loads(raw)['kind'])
+
+    class IntentStore:
+        @contextmanager
+        def transaction(self):
+            yield SimpleNamespace(
+                execute=lambda *a: SimpleNamespace(
+                    fetchone=lambda: (candidate,) if parent else None
+                )
+            )
+
+    class Runtime:
+        def __init__(self):
+            self.parent = parent_path
+
+        def observation(self, state, work, enrollment):
+            return b'{}'
+
+    monkeypatch.setattr(supervisor, 'observe_campaign_clock', kernel.clock)
+    monkeypatch.setattr(supervisor.time, 'sleep', kernel.sleep)
+    monkeypatch.setattr(supervisor, '_guardian_bus_call', lambda *a: None)
+    monkeypatch.setattr(supervisor.sys, 'executable', LINUX_INTERPRETER)
+    monkeypatch.setattr(
+        runtime_module, 'installed_code_root', lambda: PurePosixPath(LINUX_CODE_ROOT)
+    )
+    monkeypatch.setattr(
+        supervisor,
+        '_process_identity',
+        lambda pid: (
+            99,
+            G5,
+            '/fpq.slice/' + PAYLOAD_SLICE + '/unit',
+            supervisor.READINESS_TOKEN,
+            LINUX_INTERPRETER,
+        ),
+    )
+    monkeypatch.setattr(supervisor, '_interpreter_image', lambda *a: True)
+    monkeypatch.setattr(supervisor, '_signal_state', lambda pid: (1, 512, 512))
+    monkeypatch.setattr(
+        supervisor, '_guardian_signal_unit', lambda unit, name: signals.append(name)
+    )
+    reservation = base64.b64encode(encoded({'clock': json.loads(kernel.clock())})).decode()
+    state = {
+        'attempt_id': 'att1',
+        'deadline_boottime_ns': START_NS + WALL_NS,
+        'profile': {'orchestration_cpu_ns': {phase: 10**9}},
+    }
+    work = {
+        'work_id': 'n2g5retry' if parent else 'n2g5',
+        'phase': phase,
+        'reservation_bytes_b64': reservation,
+        'limits': {'cpu_ns': 30 * 10**9, 'wall_ns': WALL_NS},
+    }
+    enrollment = {
+        'scopes': {'payload_slice': PAYLOAD_SLICE, 'guardian_unit': 'fpq-guardian.service'}
+    }
+    context = SimpleNamespace(
+        config={'g5_uid': G5},
+        store=IntentStore(),
+        _commit_checkpoint=lambda campaigns, attempt, request: commits.append(request),
+    )
+    supervisor._run_n1_g5(
+        context,
+        Campaigns(),
+        Runtime(),
+        state,
+        work,
+        enrollment,
+        manifest={},
+        checkpoint=checkpoint,
+    )
+    return events, signals, commits, transitions
+
+
+def test_n2_g5_unit_is_supervised_and_resumed_from_n2_ready(tmp_path, monkeypatch):
+    """The N2 g5 unit is supervised from N2_READY: its identity is retained
+    (PROCESS) and the readiness handshake sends the resume signal (SIGUSR1)."""
+    events, signals, _, _ = _run_g5_work(
+        tmp_path, monkeypatch, progression='N2_READY', procs='4242'
+    )
+    assert 'PROCESS' in events and 'RESUMED' in events
+    assert signals[:1] == ['SIGUSR1']
+
+
+def test_n2_signing_retry_finalizes_the_n2_commit(tmp_path, monkeypatch):
+    """The redelivered N2 signing retry settles, completes, and finalizes the
+    interrupted signing from N2_READY through the service's own commit path:
+    the N2 checkpoint and its parent work, never the N1 pair."""
+    _, _, commits, transitions = _run_g5_work(
+        tmp_path, monkeypatch, progression='N2_READY', parent='n2g5'
+    )
+    assert transitions == ['COMPLETED']
+    assert len(commits) == 1
+    assert commits[0]['checkpoint'] == 'N2' and commits[0]['work_id'] == 'n2g5'
+
+
+@pytest.mark.parametrize('progression,supervised', [('N2_READY', False), ('BOUND', True)])
+def test_n1_g5_commit_detection_unchanged_by_the_n2_fix(
+    tmp_path, monkeypatch, progression, supervised
+):
+    """Guard: an N1 g5 in N2_READY is still its own commit's progression (its
+    unit is no longer supervised), and from BOUND it is still supervised and
+    resumed."""
+    events, signals, _, _ = _run_g5_work(
+        tmp_path, monkeypatch, progression=progression, procs='4242', checkpoint='N1'
+    )
+    assert ('PROCESS' in events) is supervised
+    assert bool(signals) is supervised

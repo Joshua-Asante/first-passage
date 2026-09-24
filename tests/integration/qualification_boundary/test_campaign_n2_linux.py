@@ -8,7 +8,6 @@ import sqlite3
 import pytest
 
 from test_campaign_n1_linux import (
-    _kill_guardian,
     admit,
     budget,
     committing_g5_completed,
@@ -68,6 +67,13 @@ def test_s4_genuine_joint_pass_reaches_part_a_ready(real_boundary):
     boundary = real_boundary
     attempt = committed_n1(boundary)
     dispatch(boundary, attempt, 'n2work', 'n2_worker')
+    state = wait(
+        boundary,
+        attempt,
+        lambda s: work(s, 'n2work')['state'] != 'START_INTENT',
+        seconds=90,
+    )
+    assert work(state, 'n2work')['state'] == 'RUNNING'
     wait(
         boundary,
         attempt,
@@ -95,15 +101,43 @@ def test_s4_guardian_death_mid_n2_is_in_doubt_with_no_capture(real_boundary):
     boundary = real_boundary
     attempt = committed_n1(boundary)
     dispatch(boundary, attempt, 'n2work', 'n2_worker')
-    running = wait(boundary, attempt, lambda s: work(s, 'n2work')['state'] == 'RUNNING')
-    _kill_guardian(boundary, running)
+    state = wait(
+        boundary,
+        attempt,
+        lambda s: work(s, 'n2work')['state'] == 'RUNNING'
+        and payload_identity_events(boundary, attempt, 'n2work'),
+        seconds=120,
+    )
+    assert state['state'] == 'N2_READY'
+    assert work(state, 'n2work')['state'] == 'RUNNING'
+    _kill_work_guardian(boundary, attempt, 'n2work')
     boundary.restart()
     state = wait(boundary, attempt, lambda s: work(s, 'n2work')['state'] == 'IN_DOUBT')
+    assert work(state, 'n2work')['state'] == 'IN_DOUBT'
     assert n2_family(state) is None
     assert (state.get('checkpoints') or {}).get('N1', {}).get('state') == 'COMMITTED'
     boundary.restart()
     state = wait(boundary, attempt, lambda s: work(s, 'n2work')['state'] == 'IN_DOUBT')
+    assert work(state, 'n2work')['state'] == 'IN_DOUBT'
     assert n2_family(state) is None
+
+
+def _kill_work_guardian(boundary, attempt, work_id):
+    import subprocess
+    from tools.qualification_verification.container_ownership import campaign_scopes
+
+    unit = campaign_scopes(boundary.manifest['run_id'], attempt, work_id)['guardian_unit']
+    subprocess.run(
+        [
+            '/usr/bin/systemctl',
+            '--system',
+            '--no-ask-password',
+            'kill',
+            '--signal=KILL',
+            unit,
+        ],
+        check=True,
+    )
 
 
 def test_s4_n2_g5_unit_death_and_exact_receipt_retry(real_boundary):
@@ -112,13 +146,20 @@ def test_s4_n2_g5_unit_death_and_exact_receipt_retry(real_boundary):
     boundary = real_boundary
     attempt = committed_n1(boundary)
     dispatch(boundary, attempt, 'n2work', 'n2_worker')
+    state = wait(
+        boundary,
+        attempt,
+        lambda s: work(s, 'n2work')['state'] != 'START_INTENT',
+        seconds=90,
+    )
+    assert work(state, 'n2work')['state'] == 'RUNNING'
     wait(
         boundary,
         attempt,
         lambda s: (n2_family(s) or {}).get('state') == 'ATTESTED'
         and work(s, 'n2work')['state'] == 'COMPLETED',
     )
-    boundary.schedule(
+    dispatch_frozen = boundary.schedule(
         {
             'schema': 'qualification_campaign_schedule_request/v1',
             'attempt_id': attempt,
@@ -129,6 +170,7 @@ def test_s4_n2_g5_unit_death_and_exact_receipt_retry(real_boundary):
             'fault': 'hold_after_intent',
         }
     )
+    assert dispatch_frozen['ok'], dispatch_frozen
     connection = sqlite3.connect(
         (boundary.root / 'data/journal.sqlite').as_uri() + '?mode=ro', uri=True
     )
@@ -158,7 +200,7 @@ def test_s4_n2_g5_unit_death_and_exact_receipt_retry(real_boundary):
     ] + '-g5.service'
     subprocess.run(
         ['systemctl', '--system', 'kill', '--signal=KILL', unit],
-        check=True,
+        check=False,
         capture_output=True,
         timeout=10,
     )
@@ -166,7 +208,7 @@ def test_s4_n2_g5_unit_death_and_exact_receipt_retry(real_boundary):
         boundary, attempt, lambda s: work(s, 'n2g5')['observation_bytes_b64'] is not None
     )
     assert work(state, 'n2g5')['state'] == 'SIGNING_INTENT'
-    boundary.schedule(
+    retry = boundary.schedule(
         {
             'schema': 'qualification_campaign_schedule_request/v1',
             'attempt_id': attempt,
@@ -177,6 +219,7 @@ def test_s4_n2_g5_unit_death_and_exact_receipt_retry(real_boundary):
             'fault': None,
         }
     )
+    assert retry['ok'], retry
     state = wait(boundary, attempt, lambda s: s['state'] in ('PART_A_READY', 'N2_FAILED'))
     assert state['state'] == 'PART_A_READY'
     connection = sqlite3.connect(
