@@ -38,7 +38,7 @@ Read: primary vs `origin/main` lag, linked worktrees and their `ignored:` entrie
 | Local branch, PR merged, not checked out | Candidate for `git branch -d` after confirm |
 | Local branch, "keep" previously requested | Leave; re-confirm with new evidence before deleting |
 | Linked worktree, branch merged + clean **and no `ignored:` lines in the scout** | Candidate for `git worktree remove` then `git branch -d` |
-| Linked worktree with `ignored:` lines | **Not a candidate yet.** `git status` calls it clean, but `git worktree remove` deletes ignored files without asking (M-41). Archive each private file (`python scripts/evidence_archive.py put <file>`, then push the archive) or move it to the primary checkout's `local_artifacts/`; re-scout |
+| Linked worktree with `ignored:` lines | **Not a candidate yet.** `git status` calls it clean, but `git worktree remove` deletes ignored files without asking (M-41). Archive each private file (`python scripts/evidence_archive.py put <file>`, then push the archive); re-scout. Do not move it to a root `local_artifacts/` or `inputs/private_overrides/` — neither is gitignored at the repo root |
 | Orphan dir under `.claude/worktrees/` | Close any editor/agent handles → remove dir; `git worktree prune` |
 | Primary on spent topic, behind `origin/main` | Checkout/ff `main` first; then prune |
 

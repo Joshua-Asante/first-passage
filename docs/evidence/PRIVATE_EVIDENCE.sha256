@@ -33,3 +33,14 @@ af26899ca94bb0e9ee26d09e0176b6b94bba2f5da252399ce4d899fe7e3bad15  Downloads/Vang
 178a2a8e1c78e45a5142749f92284c09d286907a7e096883e1133297cb8a806d  Downloads/strategies/striker_dj30_v4.5_mnq_qtxg1_prototype.pine
 f1e35c4ee1c9735c3ebbed99648a42034d9b3f57b53960f9e41f6e6c09b25f9c  Downloads/strategies/Striker_NAS100_MYM_QTXG1_CME_MINI_MNQ1!_2026-09-02_304f8.csv
 19264da29a3d9a30200600689e1950931f1abfb648e9071a232ee83fdec2756c  Downloads/strategies/striker_nas100_v1_mym_qtxg1_prototype.pine
+#
+# 2026-09-24 — seven-strategy evidence recovery return
+# (docs/briefs/handoffs/2026-09-24-seven-strategy-evidence-recovery.md §7).
+# RECOVERED: the Aegis 6J1 Pine input-override map, rebuilt from a Codex transcript.
+460f40fa079c00a97711d743aa0a5acee62f1c8f2cc33972b8a92b7948e42d08  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/inputs/private_overrides/aegis_6j1.json
+# LOST: feasibility-screen outputs (docs/notes/2026-09-10-tradeify-protection-selection.md).
+5d0b0d4d5dab84faf9beb930cfc6bbe12a06ed886b45337e761885ab58d324e5  feasibility-screen/screen-config.json
+a3151f86123487ccacbb40c70562d47ad5446edbe685aa287512f9c1c61d5e6c  feasibility-screen/results.json
+# The recovery's private per-file index.
+bf9803484e9b6e83dfce0781f7ee83a09b50c547c7883b9dc7e554f26b0d9a5d  recovery-2026-09-24/transcripts/candidates-classified.json
+a8a2f887b9ebb8eaa3ea8160792d2784830224d1a8a049c78b64df0a22068906  recovery-2026-09-24/transcripts/candidates-untracked.json
