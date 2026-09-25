@@ -51,18 +51,24 @@ def _realize_common_slice(scope, memory_bytes):
     memory.oom.group is not pinned here: the manager rewrites it on every
     realization (1 only for OOMPolicy=kill service/scope units), so a slice
     cannot carry it; the guardian unit's OOMPolicy=kill provides group kill.
+    The manager creates the directory before it writes the limits, so the
+    attributes are polled to the same deadline.
     """
     group = CGROUP_ROOT / scope
     deadline = time.monotonic() + SLICE_REALIZE_SECONDS
-    while not (group / 'memory.max').exists():
+    while True:
+        if not (group / 'memory.max').exists():
+            if time.monotonic() >= deadline:
+                raise ValueError('common memory slice was not realized: ' + str(group))
+            time.sleep(0.05)
+            continue
+        observed = {name: (group / name).read_text().strip() for name in ('memory.max', 'memory.swap.max')}
+        expected = {'memory.max': str(memory_bytes), 'memory.swap.max': '0'}
+        if observed == expected:
+            return observed
         if time.monotonic() >= deadline:
-            raise ValueError('common memory slice was not realized: ' + str(group))
+            raise ValueError('common memory slice attributes differ: ' + json.dumps(observed, sort_keys=True))
         time.sleep(0.05)
-    observed = {name: (group / name).read_text().strip() for name in ('memory.max', 'memory.swap.max')}
-    expected = {'memory.max': str(memory_bytes), 'memory.swap.max': '0'}
-    if observed != expected:
-        raise ValueError('common memory slice attributes differ: ' + json.dumps(observed, sort_keys=True))
-    return observed
 
 
 def install(root, manifest, profile_bytes):
