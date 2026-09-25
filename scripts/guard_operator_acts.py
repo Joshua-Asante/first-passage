@@ -22,6 +22,10 @@ refused outright (``deny``): no approval unlocks it for an agent.
   * ``pr.auto_merge``— deny: the GitHub MCP ``enable_pr_auto_merge`` tool;
                        ``gh pr merge --auto``; an ``enablePullRequestAutoMerge`` mutation.
                        Merge authority is the operator's with no automated exception.
+  * ``main.direct_push`` — deny: ``git push`` with ``main`` as a destination (``main``,
+                       ``HEAD:main``, ``+x:refs/heads/main``, ``--delete main``). ``main``
+                       takes PRs only. A push with no refspec is not judged (the current
+                       branch is not visible to the hook; branch protection covers it).
   * ``rail.deploy``  — ask: ``fly deploy`` / ``flyctl deploy``.
   * ``rail.arm``     — ask: ``c1_rail_arm.py --arm`` (as a script or ``-m`` module),
                        including inside ``fly ssh console -C '…'``. ``--disarm`` and
@@ -81,6 +85,11 @@ MESSAGES = {
                     "proceed.",
                     "A rail deploy is an operator act. Do not proceed unless the operator "
                     "confirms this prompt."),
+    "main.direct_push": ("Pushing to main is forbidden (main.direct_push): main takes PRs "
+                         "only.",
+                         "`main` requires a PR and the required status; a direct push "
+                         "bypasses both. Push a `glm/`, `codex/` or `claude/` branch and "
+                         "open a PR."),
     "rail.arm": ("Arming the c1 rail is an operator act (rail.arm): M1 RESOLVED and a GO "
                  "for this armed session. Confirm to proceed.",
                  "Arming requires M1 RESOLVED and a per-session operator GO. Do not proceed "
@@ -96,6 +105,12 @@ _FALLBACK = (
     (re.compile(r"c1_rail_arm\S*\s.*--arm\b"), ASK, "rail.arm"),
 )
 _GH_GLOBAL_VALUES = frozenset({"-R", "--repo", "--hostname"})
+_GIT_GLOBAL_VALUES = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace",
+                                "--config-env", "--exec-path"})
+_GIT_PUSH_VALUES = frozenset({"-o", "--push-option", "--receive-pack", "--exec",
+                              "--repo", "--recurse-submodules", "--signed",
+                              "--force-with-lease", "--force-if-includes"})
+_MAIN = frozenset({"main", "refs/heads/main"})
 _FLY_COMMAND_OPTS = frozenset({"-C", "--command"})
 _PYTHONS = re.compile(r"(python(\d+(\.\d+)?)?|py|pypy3?)")
 
@@ -160,6 +175,24 @@ def _judge_fly(args: list[str]) -> tuple[str, str] | None:
     return None
 
 
+def _judge_git(args: list[str]) -> tuple[str, str] | None:
+    """`git push` whose destination is `main` — by refspec, bare branch or `--delete`.
+
+    A push with no refspec pushes the current branch, which this guard cannot see;
+    that case stays with branch protection.
+    """
+    words = _positional(args, _GIT_GLOBAL_VALUES)
+    if words[:1] != ["push"]:
+        return None
+    push_args = args[args.index("push") + 1:]
+    refspecs = _positional(push_args, _GIT_PUSH_VALUES)[1:]  # after the remote
+    for spec in refspecs:
+        dst = spec.split(":", 1)[1] if ":" in spec else spec
+        if dst.lstrip("+") in _MAIN:
+            return DENY, "main.direct_push"
+    return None
+
+
 def _judge_python(args: list[str]) -> tuple[str, str] | None:
     arms = "--arm" in args
     target = any(a.replace("\\", "/").endswith("c1_rail_arm.py") for a in args) or any(
@@ -186,6 +219,8 @@ def _judge_segment(tokens: list[str]) -> tuple[str, str] | None:
             found = _judge_gh(args)
         elif base in ("fly", "flyctl"):
             found = _judge_fly(args)
+        elif base == "git":
+            found = _judge_git(args)
         elif _PYTHONS.fullmatch(base):
             found = _judge_python(args)
         elif base.endswith("c1_rail_arm.py"):

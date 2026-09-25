@@ -255,12 +255,12 @@ retirement of the skill that stated them:
 class. The registry [`scripts/seat_authority.yml`](../../scripts/seat_authority.yml) is the one
 canonical list of capability names, their class and which seat a card may grant them to.
 
-| Class | Meaning | Examples | Who may do it |
+| Class (registry name) | Meaning | Examples | Who may do it |
 |---|---|---|---|
-| **low** | Read-only or isolated | read the repo, local tests, edits in the card's own worktree, lab research inside its campaign contract | any seat the card grants it to |
-| **medium** | Reversible change to shared development state | push a `glm/`/`codex/`/`claude/` branch, open a PR, dispatch the S2 workflow, a cloud dispatch (with task-routing's GO), governance drafting (coordinator only, routing test 1) | the highest class a card may grant an agent seat |
-| **operator act** | Irreversible, external, financial or ratifying | merge, ratify, spend, deploy the rail, arm the rail | the operator, through an act they already perform — never delegated by a card |
-| **forbidden** | Un-grantable to every seat; no approval unlocks it for an agent | place a trade, auto-merge, TV login automation, edit a locked parameter, edit the frozen protection constants, commit private data | nobody among the agents; the frozen protection constants keep their own governed route (pre-registration → re-MC → both-halves gate → admitting ADR, ratified by the operator) |
+| **low** (`low`) | Read-only or isolated | read the repo, local tests, edits in the card's own worktree, lab research inside its campaign contract | any seat the card grants it to |
+| **medium** (`medium`) | Reversible change to shared development state | push a `glm/`/`codex/`/`claude/` branch, open a PR, dispatch the S2 workflow, a cloud dispatch (with task-routing's GO), governance drafting (coordinator only, routing test 1) | the highest class a card may grant an agent seat |
+| **operator act** (`high`) | Irreversible, external, financial or ratifying | merge, ratify, spend, deploy the rail, arm the rail | the operator, through an act they already perform — never delegated by a card |
+| **forbidden** (`forbidden:` map) | Un-grantable to every seat; no approval unlocks it for an agent | place a trade, auto-merge, a direct push to `main`, TV login automation, edit a locked parameter, edit the frozen protection constants, commit private data | nobody among the agents; the frozen protection constants keep their own governed route (pre-registration → re-MC → both-halves gate → admitting ADR, ratified by the operator) |
 
 Rules:
 
@@ -289,7 +289,8 @@ Rules:
 |---|---|---|
 | card grants | `check_handoff_authority.py` (`handoff-authority` gate): parents must be inside the repository, are checked recursively, and a cycle is refused | enforced for cards with a block |
 | merge | the operator merges on GitHub; [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges (MCP tool, `gh pr merge`, `gh api` merge) and only when the call pins the head SHA; an unpinned merge is refused; a deny anywhere in one command wins over an ask | Claude Code harness enforced; Codex / Z Code harnesses rely on the operator not giving them a merge-capable credential (operator-held) |
-| auto-merge | the same hook denies; CI holds no write credential (2026-08-29 addendum #1 bar) | enforced |
+| auto-merge | the same hook denies; CI holds no write credential (2026-08-29 addendum #1 bar) | Claude Code harness enforced and CI credential-free; the repository's own "allow auto-merge" setting and the Codex / Z Code harnesses are operator-held |
+| push to `main` | GitHub ruleset (PR + `skills (3.12)` required); the hook denies a `git push` whose destination is `main` | ruleset enforced for non-bypass credentials (bypass list not verified from an agent session); Claude Code harness enforced for named destinations; a bare `git push` from a `main` checkout is the ruleset's alone |
 | rail deploy | Fly credential on the operator's machine; the hook asks on `fly deploy` | operator-held + Claude Code harness |
 | rail arm | `c1_rail_arm.py` interlock (`validate(require_resolved=True)`); the hook asks on `--arm` (never on `--disarm` / `--status`) | enforced |
 | trade | CrossTrade / Tradovate credentials never present in an agent environment; no hook can see it | operator-held |
@@ -298,8 +299,10 @@ Rules:
 
 <a id="operator-decision-packets"></a>
 **Operator decision packets (2026-09-25).** Anything that needs the operator arrives as one
-packet, on the PR or in `STATE.md`'s operator queue (≤5 live items; overflow is a prioritisation
-defect of the executive and coordinator seats, not the operator's backlog). A packet carries:
+packet, on the PR or behind `STATE.md`'s operator queue in the order that file's own rule sets
+(packets queue behind the numbered items and do not become items; the queue stays ≤5 live
+items, and overflow is a prioritisation defect of the executive and coordinator seats, not the
+operator's backlog). A packet carries:
 the question; the options, each with its consequence; the recommendation; the evidence one link
 away (diff, the `.cache/fp-verification` record, reviewer dissent); what is unresolved or
 dissented; what was deliberately not done (M-36); and what happens without a decision. For a

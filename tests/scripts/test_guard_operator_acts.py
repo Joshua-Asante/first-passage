@@ -123,6 +123,32 @@ def test_data_and_risk_reducing_exits_are_silent(command):
     assert g.classify_command(command) is None
 
 
+@pytest.mark.parametrize("command", [
+    "git push origin main",
+    "git push origin HEAD:main",
+    "git push -u origin +feature:refs/heads/main",
+    "git push origin --delete main",
+    "git -C /repo push origin main",
+    "git push origin claude/x main",
+])
+def test_push_to_main_denied(command):
+    # Fails if a direct push to main, a merge-equivalent that bypasses the PR and the
+    # required status, gets through (Fable review of #503, finding A).
+    assert g.classify_command(command) == ("deny", "main.direct_push")
+
+
+@pytest.mark.parametrize("command", [
+    "git push -u origin claude/bold-shannon-cc2xmr",
+    "git push origin HEAD:refs/heads/claude/x",
+    "git push origin main:claude/backup",
+    "git fetch origin main",
+    "git push",
+])
+def test_other_pushes_are_silent(command):
+    # Fails if a branch push, or a push whose destination is not main, prompts.
+    assert g.classify_command(command) is None
+
+
 def test_unreadable_command_fails_closed():
     # Fails if an unterminated quote hides a merge from the guard (unreadable text cannot
     # prove a pin, so it is refused as unpinned).

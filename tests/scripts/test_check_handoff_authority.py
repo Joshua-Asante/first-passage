@@ -67,6 +67,14 @@ def test_forbidden_capability_is_ungrantable(tmp_path, cap):
     assert any(e.startswith("A2") for e in _errs(_card(tmp_path, body), tmp_path))
 
 
+def test_hook_denials_are_registered_forbidden():
+    # Fails if the hook denies an act the registry does not list as forbidden (the
+    # registry is the one canonical list; the hook must not carry its own).
+    import scripts.guard_operator_acts as hook
+    denied = {cap for _, dec, cap in hook._FALLBACK if dec == "deny"} | {"main.direct_push"}
+    assert denied - {"pr.merge_unpinned"} <= REG.forbidden
+
+
 def test_trade_submit_is_in_the_forbidden_set():
     # Fails if the registry ever demotes trade placement to an approvable class.
     assert "trade.submit" in REG.forbidden

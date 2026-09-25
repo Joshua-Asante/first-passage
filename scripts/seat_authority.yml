@@ -63,6 +63,9 @@ forbidden:
   private_data.commit:
     rule: "Do not commit account identifiers/P&L, vendor-licensed CSVs, Pine source or locked ports."
     owner: AGENTS.md#public-clone-posture
+  main.direct_push:
+    rule: "`main` requires a PR and the `skills (3.12)` status; a push to main bypasses both."
+    owner: AGENTS.md#gate-composition-authority
 
 # The capabilities a card may grant to each seat. High-risk capabilities appear nowhere
 # here: the operator seat is never the subject of a card.
