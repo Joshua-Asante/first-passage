@@ -196,7 +196,7 @@ def test_unset_gh_repo_and_explicit_flag_precedence(sh, monkeypatch):  # pylint:
     (f"ghe.example.com/{OWNER}", "ghe.example.com"),
 ])
 def test_host_prefixed_repo_builds_a_valid_api_path(sh, repo, host):  # pylint: disable=redefined-outer-name
-    sh.runs["feat"] = [dispatch_run(mode="s3", conclusion="success")]
+    sh.runs["feat"] = [dispatch_run(conclusion="success")]
     assert decide(f"gh -R {repo} workflow run {WORKFLOW_FILE} --ref feat")
     api = [cmd for cmd, _ in sh.calls if "api" in cmd[1:4]]
     assert api and all(f"repos/{OWNER}/commits/feat" in cmd for cmd in api)
@@ -295,7 +295,7 @@ def test_rerun_job_ignores_the_positional_run_id(monkeypatch):
                                   "ssh://git@github.com/Joshua-Asante/first-passage",
                                   "ssh://git@github.com:22/Joshua-Asante/first-passage.git"])
 def test_ssh_and_scp_repo_forms_build_a_valid_api_path(sh, repo):  # pylint: disable=redefined-outer-name
-    sh.runs["feat"] = [dispatch_run(mode="s3", conclusion="success")]
+    sh.runs["feat"] = [dispatch_run(conclusion="success")]
     assert decide(f"gh -R {repo} workflow run {WORKFLOW_FILE} --ref feat")
     api = [cmd for cmd, _ in sh.calls if "api" in cmd[1:4]]
     assert api and all(f"repos/{OWNER}/commits/feat" in cmd and "--hostname" not in cmd for cmd in api)
@@ -314,10 +314,10 @@ def test_json_flag_is_a_pflag_bool(sh, flag, refused):  # pylint: disable=redefi
 
 
 def test_double_dash_ends_the_flags(sh):  # pylint: disable=redefined-outer-name
-    sh.runs["feat"] = [dispatch_run(mode="s3", conclusion="success")]
-    assert decide(f"{DISPATCH} -- -f mode=s2")  # gh ignores words after --: s3 dispatched
+    sh.runs["feat"] = [dispatch_run(conclusion="success")]
+    assert decide(f"{DISPATCH} -- -f mode=s2")  # gh ignores words after --: s4 dispatched
     sh.runs["feat"] = []
-    sh.runs["main"] = [dispatch_run("main", sha=Y, mode="s3", conclusion="success")]
+    sh.runs["main"] = [dispatch_run("main", sha=Y, conclusion="success")]
     assert decide(f"gh workflow run -- {WORKFLOW_FILE} --ref feat")  # default branch, not feat
 
 

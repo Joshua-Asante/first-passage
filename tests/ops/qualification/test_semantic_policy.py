@@ -98,6 +98,7 @@ def test_closed_policy_rejects_changed_requirements(field, value):
     (('LEGALITY','N1'), 'COMPLETE','FAIL', ('attempt_journal','legality_result','n1_result','path_inventory','runtime_load_trace')),
     (('LEGALITY','N1'), 'PARTIAL','NONE', ('attempt_journal','legality_result','n1_result','path_inventory','runtime_load_trace')),
     (('LEGALITY','N1','N2','PART_B'), 'COMPLETE','FAIL', ('attempt_journal','legality_result','n1_result','n2_result','part_b_result','path_inventory','runtime_load_trace')),
+    (('LEGALITY','N1','N2','PART_B'), 'PARTIAL','NONE', ('attempt_journal','legality_result','n1_result','n2_result','part_b_result','path_inventory','runtime_load_trace')),
     (('LEGALITY','N1','N2','PART_B','PART_A'), 'COMPLETE','PASS', ('attempt_journal','legality_result','n1_result','n2_result','part_a_result','part_b_result','path_inventory','runtime_load_trace')),
     (('LEGALITY','N1','N2','PART_B','PART_A'), 'COMPLETE','FAIL', ('attempt_journal','legality_result','n1_result','n2_result','part_a_result','part_b_result','path_inventory','runtime_load_trace')),
 ])
@@ -110,10 +111,33 @@ def test_exact_prefix_role_vectors(stages, completion, verdict, roles):
 @pytest.mark.parametrize('stages,completion,verdict', [
     (('LEGALITY','N1'), 'COMPLETE','PASS'), (('LEGALITY',),'COMPLETE','FAIL'),
     (('LEGALITY','N1','N2'),'COMPLETE','FAIL'),
-    (('LEGALITY','N1','N2','PART_B'), 'PARTIAL','NONE'),
-    (('N1','LEGALITY'),'COMPLETE','FAIL')])
+    (('LEGALITY','N1','N2','PART_B','PART_A'), 'PARTIAL','NONE'),
+    (('N1','LEGALITY'),'COMPLETE','FAIL')],
+    ids=['n1-pass-incomplete', 'legality-only', 'missing-part-b', 'full-prefix-incomplete', 'reordered'])
 def test_unsupported_prefix_decision(stages, completion, verdict):
     from c1_rail.qualification.policy import required_output_roles
     _, policy, _ = semantic_case()
     with pytest.raises(ValueError, match='UNSUPPORTED_STAGE_ASSESSMENT'):
         required_output_roles(policy, stages=stages, completion=completion, verdict=verdict)
+
+
+def test_joint_continuation_is_the_versioned_policy_identity():
+    """S4-D4: the joint PARTIAL/NONE prefix is legal only under the versioned
+    FULL_E1 identity (policy_id /v2 with joint_continuation); the pre-S4
+    document no longer parses as installed policy at all."""
+    import hashlib
+    from pathlib import Path
+    from c1_rail import book_policy, policy_fingerprint
+    import firm_rules
+    from c1_rail.qualification.policy import parse_policy
+    from c1_rail.qualification.policy_sources import build_qualification_policy
+
+    _, policy, _ = semantic_case()
+    document = json.loads(policy.canonical_bytes)
+    assert document['policy_id'] == 'tradeify-e1-pristine/v2'
+    assert document['joint_continuation'] is True
+    legacy = dict(document, policy_id='tradeify-e1-pristine/v1')
+    legacy.pop('joint_continuation')
+    with pytest.raises(ValueError, match='POLICY_SCHEMA_MISMATCH'):
+        parse_policy(json.dumps(legacy, separators=(',', ':')).encode())
+    assert build_qualification_policy() == policy.canonical_bytes
