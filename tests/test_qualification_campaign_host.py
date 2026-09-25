@@ -7,6 +7,7 @@ not define; the manager rejects the whole call. These tests are diagnostic
 """
 import json
 import subprocess
+import threading
 
 import pytest
 
@@ -90,6 +91,28 @@ def test_divergent_slice_attributes_are_refused(tmp_path, monkeypatch):
     _, root = _fake_host(monkeypatch, tmp_path, _realizing_manager(tmp_path, calls, memory_max='max'))
     with pytest.raises(ValueError, match='attributes differ'):
         campaign_host.install(root, {'run_id': ROOT_ID}, json.dumps({'memory_bytes': 256000000}).encode())
+
+
+def test_slice_limits_written_after_the_directory_appears_are_awaited(tmp_path, monkeypatch):
+    timers = []
+    def run(command):
+        scope = command[command.index('ssa(sv)a(sa(sv))') + 1]
+        group = tmp_path / 'cgroup' / scope
+        group.mkdir()  # kernel defaults, until the manager writes the limits
+        (group / 'memory.max').write_text('max\n')
+        (group / 'memory.swap.max').write_text('max\n')
+        def write_limits():
+            (group / 'memory.max').write_text('256000000\n')
+            (group / 'memory.swap.max').write_text('0\n')
+        timers.append(threading.Timer(0.05, write_limits))
+        timers[-1].start()
+        return 'o "/org/freedesktop/systemd1/job/3"'
+    _, root = _fake_host(monkeypatch, tmp_path, run)
+    enrollment = campaign_host.install(root, {'run_id': ROOT_ID}, json.dumps({'memory_bytes': 256000000}).encode())
+    assert campaign_host._realize_common_slice(enrollment['scope'], 256000000) == {
+        'memory.max': '256000000', 'memory.swap.max': '0'}
+    for timer in timers:
+        timer.join()
 
 
 def test_foreign_run_identity_is_refused_before_any_side_effect(tmp_path, monkeypatch):
