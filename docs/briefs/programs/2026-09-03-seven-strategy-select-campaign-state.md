@@ -3946,6 +3946,11 @@ Vanguard and Aegis keep their declared expressions, which ruling 1 attests alrea
 
 **Board write:** STATE decision index, 2026-09-25 row → this section. Propagation pointers: T08 §7.8 follow-up (2026-09-25); scope note Q3 outcome; addendum §A4 dated correction; vendor note status SENT; venue-edition ledger two `CANDIDATE` rows.
 
+**§59 follow-up (2026-09-25).**
+- Step 1: the [pre-registration draft](../pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md) is committed with Status DRAFT. Its OWED fields (ORB-2..4, STR-2..6, the §6 replay-modelling choice and the §5 digests) are the operator's. It freezes only on the operator's "freeze".
+- The operator authorized the remaining T08 drills and the T07 account reads ([session plan](../../notes/2026-09-25-t08-drills-t07-reads-operator-session.md); Joshua performs every action).
+- The incident ADR addendum was revised as §A8 (Proposed): rules 9–10 and open question Q5. Its step-4 reviews are owed.
+
 ## §60 — Agent read access to the accepted book's Pine and runtime ports (2026-09-25)
 
 **Operator direction, 2026-09-25, in session (verbatim):** "i also want agents to be able to read the pine locally, from all 4 strategies". Asked two scoping questions, the operator chose **"Pine + ports"** (lift §59's no-read clause for the four Pine files and their pinned runtime ports) and **"Main checkout only"** (one canonical private copy in the primary checkout; no copies in worktrees).
