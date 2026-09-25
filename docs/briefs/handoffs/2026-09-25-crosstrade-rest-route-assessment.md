@@ -235,6 +235,13 @@ Drills still owed. Each is unqualified and needs its own written authorization a
 
 Account inventory for copier and Account Manager configuration (CAP R5) is also owed from the operator.
 
+*Numbering note (added at merge, 2026-09-25):* the [operator session plan](../../notes/2026-09-25-t08-drills-t07-reads-operator-session.md), authorized the same day, numbers its own drills differently.
+
+- This return's D1–D3 correspond to the plan's D1–D3.
+- This return's D6 is the plan's D4.
+- The plan's D5 is recorded as moot.
+- This return's **D4** (same-session reconciliation recipe) and **D5** (prior-session lifecycle read) are REST reads. They are not in the plan, and the plan's field names follow the webhook form. They stay unauthorized until they are added to a session plan.
+
 **Private-port access.** §59 forbids any agent reading a private port under that ruling. This packet's §1 directed reading the accepted ports' branches. To stay inside both, the executor reused the route note's recorded findings and hashed the Striker port without reading its body. The coordinator should reconcile the two instructions before any follow-up that depends on port behavior.
 
 ### 6.10 Next action (one), prerequisites and blockers
