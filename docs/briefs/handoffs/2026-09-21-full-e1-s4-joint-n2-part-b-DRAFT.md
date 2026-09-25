@@ -166,3 +166,36 @@ deployment, activation or arm is included.
   malformed captures and predecessor cases close that finding by inspection and
   the passing R4 cases above. Cross-vendor review and frozen-head verification
   remain pending. S4 is not accepted.
+
+### Cross-vendor review and related-case repair, 2026-09-25
+
+Repair commit `1468e5d` was merged with `origin/main@7d78970` at `cbf3f9f`
+before freezing Linux bytes; this includes the accepted common-slice limit race
+fix. Claude Code's OAuth was renewed by the operator. Read-only cross-vendor
+review session `e636df7f-c4cd-4a6e-918f-8490f103bae6` found two medium issues
+and two low issues. Coordinator dispositions:
+
+| Boundary | Disposition |
+| --- | --- |
+| Committed G5 settlement/recovery watchdogs | Fixed clock/resource terminal handling and delayed completion. Red record `20260925T183201Z-10899d8e6ef6`: 14 failed, 1 passed (including the three missing progression reservations). |
+| Direct N2-ready reservation | Recompute phase eligibility after watchdogs, create the reservation, retain signing serialization and linked-retry non-authority semantics. |
+| Joint store custody | Bind candidate and cutoff to the durable N1 receipt, decisions and thresholds at T2 and on reopen. Red cutoff/completion record `20260925T183705Z-e14c5b6c814b`; corrected predecessor fixture reproduces missing refusal in `20260925T183919Z-7e92875b398b`. |
+| N1_ONLY policy | Reviewer withdrew the finding after reading C2 ruling 5. Registered QPOL test now pins the actual joint-prefix refusal and the N1 assessment error cause; global v2 repinning remains as ruled. |
+| Recovery cleanup after a clean observation | Related-case review found a later bad cleanup clock could be overwritten before completion. Fixed only for unfinished SIGNED checkpoint G5 work; historical completed work retains its prior behavior. Two expected failures in `20260925T185321Z-57916cd91b23`; the linked N2 signing retry passed. |
+
+Combined watchdog/custody/N1-evidence/recovery selection: **166 passed**, zero
+skips, completed 0/0 and source stable in
+`.cache/fp-verification/20260925T184414Z-cce0c170351f/record.json`.
+After the final cleanup fix, four cleanup variants plus the linked-retry case:
+**5 passed**, zero skips, completed 0/0 and source stable in
+`.cache/fp-verification/20260925T185450Z-c584e0333ba5/record.json`.
+Interpreter remains launcher-selected Python 3.13.2. The earlier combined run
+`20260925T184128Z-dd452f3224a4` was interrupted when diff inspection caught a
+custody call inserted in intent staging instead of T2; it is not passing evidence.
+The zero-selected `20260925T183856Z-569b6b77b007` is likewise not evidence.
+
+Claude's two focused followups closed findings 1, 2 and 4, withdrew finding 3
+against the explicit C2 ruling, and closed the later recovery-cleanup fix.
+Review was source-only; test results and Linux acceptance remain coordinator
+responsibilities. Final frozen Windows selections, Linux subsets and two full
+Linux runs remain pending. S4 is not accepted.

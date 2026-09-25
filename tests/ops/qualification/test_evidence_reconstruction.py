@@ -325,8 +325,22 @@ def test_n1_only_rejects_joint_continuation(captured_case):
     doc.update(completion='PARTIAL', verdict='NONE', terminal_reason=None)
     doc['checkpoint_assessment'] = {'checkpoint': 'N2', 'decision': 'CONTINUE'}
     changed = InspectedEvidence(encode(doc), result.output_bytes_by_role)
-    with pytest.raises(ValueError, match='EVIDENCE_SEMANTIC_MISMATCH'):
+    with pytest.raises(ValueError, match='EVIDENCE_SEMANTIC_MISMATCH') as refused:
         compare_n1_evidence(changed, expected=changed)
+    assert str(refused.value.__cause__) == 'invalid N1 assessment'
+
+    # The N1_ONLY proposed-result gate also rejects the actual joint prefix,
+    # before reconstruction can use it as an N1 result.
+    from c1_rail.qualification.execution.g5 import validate_result_envelope_v2
+    doc['stage_results'] = [{'stage': stage} for stage in ('LEGALITY', 'N1', 'N2', 'PART_B')]
+    with pytest.raises(ValueError, match='UNSUPPORTED_ATTESTED_CHECKPOINT_SET'):
+        validate_result_envelope_v2(
+            None, encode(doc), attestations={'N1': captured_case['execution_attestation_bytes']},
+            artifacts={}, output_bytes_by_role=result.output_bytes_by_role,
+            expected_attempt_id=doc['attempt_id'], current_keys={},
+            expected_revision=doc['journal_revision'],
+            journal_snapshot_bytes=captured_case['journal_snapshot_bytes'],
+        )
 
 
 @pytest.mark.parametrize(

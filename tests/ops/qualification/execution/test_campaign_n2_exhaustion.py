@@ -8,7 +8,7 @@ import json
 
 import pytest
 from test_campaign_n1 import clock, schedule_document, settle, snap, store, transition
-from test_campaign_n2 import committed_n1, run_work
+from test_campaign_n2 import committed_n1, committed_n2, run_work
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
 from c1_rail.qualification.execution import campaign_supervisor as supervisor
 from c1_rail.qualification.execution.campaign_store import CampaignStore
@@ -57,6 +57,115 @@ def refuse_fresh_n2_draw(instance, work='n2late'):
             ),
             expected_revision=state['authority_revision'],
         )
+
+
+@pytest.mark.parametrize('recovery', [False, True], ids=['settle', 'recover-settled'])
+@pytest.mark.parametrize('fault,terminal', [
+    ('oom', 'BUDGET_EXHAUSTED'),
+    ('memory', 'BUDGET_EXHAUSTED'),
+    ('deadline', 'BUDGET_EXHAUSTED'),
+    ('clock-regression', 'BUDGET_UNCERTAIN'),
+    ('boot-change', 'BUDGET_UNCERTAIN'),
+    ('termination-unknown', 'BUDGET_UNCERTAIN'),
+])
+def test_committed_n2_watchdogs_end_authority(tmp_path, monkeypatch, recovery, fault, terminal):
+    instance = committed_n2(tmp_path, monkeypatch)[0]
+    receipt = store(instance).checkpoint_receipt(instance.attempt, 'N2')
+    if recovery:
+        settle(instance, 'n2g5')
+    state = snap(instance)
+    observation = json.loads(trusted_observation(instance, 'n2g5'))
+    if fault == 'oom':
+        observation['oom_events'] = 1
+    elif fault == 'memory':
+        observation['memory_peak_bytes'] = state['budget']['maximum_memory_bytes'] + 1
+    elif fault == 'deadline':
+        observation['clock']['boottime_ns'] = state['deadline_boottime_ns']
+    elif fault == 'clock-regression':
+        observation['clock']['boottime_ns'] = 0
+    elif fault == 'boot-change':
+        observation['clock']['boot_id'] = 'otherboot'
+    else:
+        observation['termination_known'] = False
+    action = store(instance).recover_work if recovery else store(instance).settle_work
+    action(instance.attempt, 'n2g5', encoded(observation))
+    assert snap(instance)['state'] == terminal
+    assert store(instance).checkpoint_receipt(instance.attempt, 'N2') == receipt
+    with pytest.raises(ValueError, match='terminal campaign budget'):
+        transition(instance, 'n2g5', 'COMPLETED')
+
+
+@pytest.mark.parametrize('phase', ['N2', 'N2_CAPTURE', 'N2_G5'])
+def test_n2_ready_direct_reservation_creates_work(tmp_path, monkeypatch, phase):
+    instance = committed_n1(tmp_path, monkeypatch)
+    state = snap(instance)
+    reservation = encoded({
+        'limits': state['profile']['phases'][phase],
+        'clock': json.loads(supervisor.observe_campaign_clock()),
+        'input_sha256': '0' * 64,
+    })
+    result = json.loads(store(instance).reserve_work(
+        instance.attempt, 'nextwork', phase, reservation,
+        expected_revision=state['authority_revision'],
+    ))
+    work = next(w for w in result['works'] if w['work_id'] == 'nextwork')
+    assert work['state'] == 'RESERVED' and work['phase'] == phase
+    assert result['reserved_cpu_ns'] == state['reserved_cpu_ns'] + work['limits']['cpu_ns']
+    assert result['authority_revision'] == state['authority_revision'] + 1
+
+
+def test_committed_n2_completion_after_deadline_ends_authority(tmp_path, monkeypatch):
+    instance = committed_n2(tmp_path, monkeypatch)[0]
+    settle(instance, 'n2g5')
+    instance.clocks['t'] = snap(instance)['deadline_boottime_ns']
+    transition(instance, 'n2g5', 'COMPLETED')
+    state = snap(instance)
+    assert state['state'] == 'BUDGET_EXHAUSTED'
+    assert next(w for w in state['works'] if w['work_id'] == 'n2g5')['state'] == 'SIGNED'
+
+
+@pytest.mark.parametrize('fault', ['clock-regression', 'boot-change'])
+@pytest.mark.parametrize('completed', [False, True], ids=['unfinished', 'historical'])
+def test_committed_n2_recovery_cleanup_clock_ends_authority(
+    tmp_path, monkeypatch, fault, completed,
+):
+    instance = committed_n2(tmp_path, monkeypatch)[0]
+    campaigns = store(instance)
+    token = b'R' * 32
+    receipt = campaigns.checkpoint_receipt(instance.attempt, 'N2')
+    if completed:
+        settle(instance, 'n2g5')
+        transition(instance, 'n2g5', 'COMPLETED')
+    campaigns.claim_supervision_control(
+        instance.attempt, 'n2g5', 'RECOVERY_OWNER', supervisor.observe_campaign_clock(),
+        recovery_owner_token=token,
+    )
+    campaigns.recover_work(
+        instance.attempt, 'n2g5', trusted_observation(instance, 'n2g5'),
+        recovery_owner_token=token,
+    )
+    before = snap(instance)
+    assert before['state'] == 'PART_A_READY'
+    assert next(w for w in before['works'] if w['work_id'] == 'n2g5')['state'] == (
+        'COMPLETED' if completed else 'SIGNED'
+    )
+    bad_clock = dict(before['last_clock'])
+    if fault == 'clock-regression':
+        bad_clock['boottime_ns'] -= 1
+    else:
+        bad_clock['boot_id'] = 'otherboot'
+    cleanup = encoded({
+        'schema': 'qualification_campaign_supervision_event/v2',
+        'attempt_id': instance.attempt, 'work_id': 'n2g5', 'kind': 'CLEANUP',
+        'clock': bad_clock, 'data': {'status': 'ABSENT'},
+    })
+    campaigns.retain_supervision_event(cleanup)
+    supervisor._complete_recovery(campaigns, instance.attempt, 'n2g5', cleanup, token)
+    assert snap(instance)['state'] == ('PART_A_READY' if completed else 'BUDGET_UNCERTAIN')
+    assert campaigns.checkpoint_receipt(instance.attempt, 'N2') == receipt
+    if not completed:
+        with pytest.raises(ValueError, match='terminal campaign budget'):
+            transition(instance, 'n2g5', 'COMPLETED')
 
 
 def test_n2_work_wall_overrun_from_n2_ready_ends_authority(tmp_path, monkeypatch):

@@ -461,6 +461,22 @@ class CheckpointStoreMixin:
             ).fetchone()
             return None if row is None or row[0] is None else bytes(row[0])
 
+    def _joint_checkpoint_custody(self, attempt_id, candidate, cutoff):
+        """Bind joint commit facts to durable N1 custody, including on reopen."""
+        predecessor = self.checkpoint_receipt(attempt_id, 'N1')
+        if predecessor is None:
+            raise ValueError('committed N1 predecessor required')
+        receipt = parse_canonical_json(predecessor, label='N1 predecessor receipt')
+        if (
+            candidate['predecessor']['receipt_sha256'] != sha256(predecessor)
+            or candidate['predecessor']['assessment_sha256'] != receipt['assessment_sha256']
+            or cutoff['predecessor_receipt_sha256'] != sha256(predecessor)
+            or cutoff['stage_decisions'] != candidate['stage_decisions']
+            or cutoff['stage_thresholds'] != candidate['cutoff']['stage_thresholds']
+            or cutoff['decision'] != candidate['decision']
+        ):
+            raise ValueError('joint checkpoint custody binding differs')
+
     def checkpoint_members(self, attempt_id, checkpoint='N1'):
         """The served member inventory: family bytes plus retained inputs, by digest."""
         with self.store.transaction() as connection:
@@ -698,11 +714,13 @@ class CheckpointStoreMixin:
             ):
                 raise ValueError('checkpoint intent projection differs')
             parse_campaign_checkpoint_snapshot(bytes(row[3]))
-            parse_checkpoint_assessment(bytes(row[5]), attempt_id=attempt)
+            candidate = parse_checkpoint_assessment(bytes(row[5]), attempt_id=attempt)
             if row[7] is not None:
                 if row[6] is None:
                     raise ValueError('committed checkpoint cutoff absent')
-                parse_checkpoint_cutoff(bytes(row[6]), attempt_id=attempt)
+                cutoff = parse_checkpoint_cutoff(bytes(row[6]), attempt_id=attempt)
+                if row[1] == 'N2':
+                    self._joint_checkpoint_custody(attempt, candidate, cutoff)
                 receipt = parse_canonical_json(bytes(row[7]), label='receipt')
                 advance = CHECKPOINT_ADVANCES[receipt['checkpoint']] if (
                     receipt['checkpoint'] in CHECKPOINT_ADVANCES
@@ -713,6 +731,12 @@ class CheckpointStoreMixin:
                     or receipt['checkpoint'] != row[1]
                     or receipt['assessment_sha256'] != sha256(bytes(row[5]))
                     or receipt['cutoff_sha256'] != sha256(bytes(row[6]))
+                    or cutoff['assessment_sha256'] != sha256(bytes(row[5]))
+                    or (row[1] == 'N2' and (
+                        receipt['stage_decisions'] != candidate['stage_decisions']
+                        or receipt['predecessor_receipt_sha256']
+                        != candidate['predecessor']['receipt_sha256']
+                    ))
                     or advance is None
                     or receipt['campaign_state'] not in advance
                     or (receipt['campaign_state'] == advance[0]) != (receipt['decision'] == 'CONTINUE')
@@ -899,6 +923,8 @@ class CheckpointStoreMixin:
                 raise ValueError('committed N1 predecessor required')
             if family['state'] != 'ASSESSING':
                 raise ValueError('checkpoint family assessment state differs')
+            if checkpoint == 'N2':
+                self._joint_checkpoint_custody(attempt_id, candidate, cutoff)
             intent = parse_canonical_json(bytes(row[2]), label='persisted intent')
             from ..journal_snapshot import parse_campaign_checkpoint_snapshot as _parse_snapshot
 
@@ -1487,7 +1513,12 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             ):
                 raise ValueError('owned cleanup absence differs')
             before = state['state']
-            self._observe_clock(state, doc['clock'])
+            work = self._work(state, work_id)
+            self._observe_clock(
+                state, doc['clock'], settlement=(
+                    work['state'] == 'SIGNED' and work['phase'] in ('N1_G5', 'N2_G5')
+                ),
+            )
             row['completion_bytes_b64'] = self._b64(completion_bytes)
             return self._save_budget(
                 connection, state, 'RECOVERY_COMPLETE', authority=state['state'] != before
@@ -2585,19 +2616,20 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
         if state['state'] in ('PROVISIONAL', 'BOUND', *CHECKPOINT_PROGRESSION_STATES):
             state['state'] = reason
 
-    def _observe_clock(self, state, value):
+    def _observe_clock(self, state, value, *, settlement=False):
         from .campaign_budget import clock
 
         observed = clock(encoded(value))
+        terminal = self._settlement_terminal if settlement else self._terminal
         if (
             observed['boottime_ns'] is None
             or state['last_clock']['boottime_ns'] is None
             or observed['boot_id'] != state['start_clock']['boot_id']
             or observed['boottime_ns'] < state['last_clock']['boottime_ns']
         ):
-            self._terminal(state, 'BUDGET_UNCERTAIN')
+            terminal(state, 'BUDGET_UNCERTAIN')
         elif observed['boottime_ns'] >= state['deadline_boottime_ns']:
-            self._terminal(state, 'BUDGET_EXHAUSTED')
+            terminal(state, 'BUDGET_EXHAUSTED')
         state['last_clock'] = observed
 
     def begin_admission(self, request_bytes, profile_bytes, clock_bytes) -> bytes:
@@ -2875,7 +2907,10 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             # projection refuses it (terminal, no reservation, never a raise).
             if specification['limits']['cpu_ns'] > self._remaining_after_charges(connection, state):
                 self._terminal(state, 'BUDGET_EXHAUSTED')
-            if state['state'] == 'BOUND':
+            reservation_live = state['state'] == 'BOUND' or (
+                phase in PROGRESSION_PHASES.get(state['state'], ())
+            )
+            if reservation_live:
                 if any(
                     w['state'] in ('SIGNING_INTENT', 'SIGNED') and w['work_id'] != retry_of
                     for w in state['works']
@@ -2904,7 +2939,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 connection,
                 state,
                 'RESERVE_WORK',
-                authority=retry_of is None or state['state'] != 'BOUND',
+                authority=retry_of is None or not reservation_live,
             )
 
     def _observation(self, state, work, raw):
@@ -2928,17 +2963,19 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
         return doc
 
     def _observe_resources(self, state, doc):
+        # Both callers settle or recover already-started work, including the
+        # G5 work whose checkpoint commit advanced the campaign before settling.
         if doc.get('termination_known') is False:
-            self._terminal(state, 'BUDGET_UNCERTAIN')
+            self._settlement_terminal(state, 'BUDGET_UNCERTAIN')
         if doc['memory_peak_bytes'] is None or doc['oom_events'] is None:
-            self._terminal(state, 'BUDGET_UNCERTAIN')
+            self._settlement_terminal(state, 'BUDGET_UNCERTAIN')
         if doc['memory_peak_bytes'] is not None:
             if doc['memory_peak_bytes'] < state['memory_peak_bytes']:
-                self._terminal(state, 'BUDGET_UNCERTAIN')
+                self._settlement_terminal(state, 'BUDGET_UNCERTAIN')
             state['memory_peak_bytes'] = max(state['memory_peak_bytes'], doc['memory_peak_bytes'])
         if doc['oom_events'] is not None:
             if doc['oom_events'] < state['oom_events']:
-                self._terminal(state, 'BUDGET_UNCERTAIN')
+                self._settlement_terminal(state, 'BUDGET_UNCERTAIN')
             state['oom_events'] = max(state['oom_events'], doc['oom_events'])
         memory_cap = (
             state['budget']['maximum_memory_bytes']
@@ -2946,7 +2983,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             else state['profile']['phases']['ADMISSION']['memory_bytes']
         )
         if state['memory_peak_bytes'] > memory_cap or state['oom_events'] > 0:
-            self._terminal(state, 'BUDGET_EXHAUSTED')
+            self._settlement_terminal(state, 'BUDGET_EXHAUSTED')
 
     def settle_work(self, attempt_id, work_id, observations_bytes) -> bytes:
         with self.store.transaction() as connection:
@@ -2958,7 +2995,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                     raise ValueError('settlement observation conflict')
                 return self._negative_budget_response(connection, state)
             previous_state = state['state']
-            self._observe_clock(state, doc['clock'])
+            self._observe_clock(state, doc['clock'], settlement=True)
             intent = next(
                 parse_canonical_json(self._raw(t), label='start')
                 for t in work['transitions']
@@ -3042,7 +3079,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 for w in state['works']
             ):
                 raise ValueError('authority-changing work is serialized during signing')
-            self._observe_clock(state, doc['clock'])
+            self._observe_clock(state, doc['clock'], settlement=completing_checkpoint)
             starts = [
                 parse_canonical_json(self._raw(t), label='start') for t in work['transitions']
             ]
@@ -3151,7 +3188,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             before = encoded(state)
             old_state = state['state']
             if work['state'] == 'RESERVED':
-                self._observe_clock(state, clock(observations_bytes))
+                self._observe_clock(state, clock(observations_bytes), settlement=True)
             elif work['observation_bytes_b64'] is None:
                 self.settle_work(attempt_id, work_id, observations_bytes)
                 state = self._budget(connection, attempt_id)
@@ -3160,13 +3197,13 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 old_state = state['state']
             else:
                 doc = self._observation(state, work, observations_bytes)
-                self._observe_clock(state, doc['clock'])
+                self._observe_clock(state, doc['clock'], settlement=True)
                 self._observe_resources(state, doc)
                 saved = parse_canonical_json(
                     self._raw(work['observation_bytes_b64']), label='settlement'
                 )
                 if doc['cpu_ns'] is not None and doc['cpu_ns'] != saved['cpu_ns']:
-                    self._terminal(state, 'BUDGET_UNCERTAIN')
+                    self._settlement_terminal(state, 'BUDGET_UNCERTAIN')
             changed_work = work['state'] in ('START_INTENT', 'RUNNING')
             if changed_work:
                 if self._retry_parent(work) is not None:

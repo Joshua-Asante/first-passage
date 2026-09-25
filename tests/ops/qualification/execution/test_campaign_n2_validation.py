@@ -2,17 +2,20 @@
 
 import base64
 import copy
+from datetime import datetime, timezone
 import json
 
 import pytest
-from test_campaign_n1 import campaign, settle, store, transition
+from test_campaign_n1 import campaign, settle, snap, store, transition
 from test_campaign_n2 import (
     G5, _committed_assessment, attestation_document, capture_checkpoint,
     committed_n1, committed_receipt, keys_map, n1_plan, n2_plan,
     result_document, run_work, sign_candidate, worker_payload,
+    cutoff_document, persist_intent,
 )
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
 from c1_rail.qualification.execution import g5
+from c1_rail.qualification.execution import campaign_supervisor as supervisor
 from c1_rail.qualification.execution.protocol import sha256
 
 
@@ -63,6 +66,60 @@ def joint_capture(tmp_path, monkeypatch, *, full_fail=False, halves_fail=False):
         },
     }
     return instance, args
+
+
+@pytest.mark.parametrize('mutation', ['predecessor', 'cutoff-predecessor', 'decisions', 'thresholds'])
+def test_store_binds_joint_commit_to_predecessor_and_cutoff(tmp_path, monkeypatch, mutation):
+    instance, args = joint_capture(tmp_path, monkeypatch, full_fail=True)
+    evidence = g5.validate_campaign_checkpoint(instance.verified, **args)
+    if mutation == 'predecessor':
+        assessment = json.loads(evidence.assessment_bytes)
+        assessment['predecessor']['receipt_sha256'] = 'a' * 64
+        evidence.assessment_bytes = encoded(assessment)
+    candidate = sign_candidate(instance, evidence)
+    persist_intent(instance, 'n2g5', 'N2', candidate)
+    cutoff = json.loads(cutoff_document(instance, 'N2', candidate))
+    if mutation == 'cutoff-predecessor':
+        cutoff['predecessor_receipt_sha256'] = 'a' * 64
+    elif mutation == 'decisions':
+        cutoff['stage_decisions'] = {'N2': 'PASS', 'PART_B': 'FAIL'}
+    elif mutation == 'thresholds':
+        cutoff['stage_thresholds']['N2'] = 99
+    with pytest.raises(ValueError, match='joint checkpoint custody binding differs'):
+        store(instance).commit_checkpoint_assessment(
+            instance.attempt, 'n2g5', candidate, encoded(cutoff), checkpoint='N2',
+            now=datetime(2026, 9, 22, tzinfo=timezone.utc),
+            clock_bytes=supervisor.observe_campaign_clock(),
+        )
+    assert store(instance).checkpoint_receipt(instance.attempt, 'N2') is None
+
+
+def test_direct_n2_g5_retry_reservation_is_non_authority(tmp_path, monkeypatch):
+    instance, args = joint_capture(tmp_path, monkeypatch)
+    candidate = sign_candidate(instance, g5.validate_campaign_checkpoint(instance.verified, **args))
+    persist_intent(instance, 'n2g5', 'N2', candidate)
+    settle(instance, 'n2g5')
+    before = snap(instance)
+    reservation = encoded({
+        'limits': before['profile']['phases']['N2_G5'],
+        'clock': json.loads(supervisor.observe_campaign_clock()),
+        'input_sha256': sha256(candidate), 'signing_retry_of': 'n2g5',
+    })
+    after = json.loads(store(instance).reserve_work(
+        instance.attempt, 'n2retry', 'N2_G5', reservation,
+        expected_revision=before['authority_revision'],
+    ))
+    retry = next(w for w in after['works'] if w['work_id'] == 'n2retry')
+    assert retry['state'] == 'RESERVED' and after['state'] == 'N2_READY'
+    assert after['authority_revision'] == before['authority_revision']
+    assert after['reserved_cpu_ns'] == before['reserved_cpu_ns'] + retry['limits']['cpu_ns']
+    with instance.store.transaction() as connection:
+        raw = connection.execute(
+            'SELECT body FROM full_campaign_budget_events WHERE attempt_id=? AND sha256=?',
+            (instance.attempt, after['event_head']),
+        ).fetchone()[0]
+    event = json.loads(bytes(raw))
+    assert event['kind'] == 'RESERVE_WORK' and event['authority'] is False
 
 
 @pytest.mark.parametrize('full_fail,halves_fail,expected', [
