@@ -1241,7 +1241,9 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                     self._validate_recovery_token(token)
                     state['schema'] = (
                         (
-                            'qualification_campaign_budget_snapshot/v6'
+                            ('qualification_campaign_budget_snapshot/v7'
+                             if 'N2' in state['checkpoints']
+                             else 'qualification_campaign_budget_snapshot/v6')
                             if 'checkpoints' in state
                             else 'qualification_campaign_budget_snapshot/v5'
                         )
@@ -1331,7 +1333,9 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             if not refused:
                 state['schema'] = (
                     (
-                        'qualification_campaign_budget_snapshot/v6'
+                        ('qualification_campaign_budget_snapshot/v7'
+                         if 'N2' in state['checkpoints']
+                         else 'qualification_campaign_budget_snapshot/v6')
                         if 'checkpoints' in state
                         else 'qualification_campaign_budget_snapshot/v5'
                     )
@@ -2430,7 +2434,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 "UPDATE full_campaigns SET validity='VOID',void_request=?,void_receipt=? WHERE attempt_id=?",
                 (request_bytes, receipt, request['attempt_id']),
             )
-            if connection.execute('PRAGMA user_version').fetchone()[0] in (6, 7, 8):
+            if connection.execute('PRAGMA user_version').fetchone()[0] in (6, 7, 8, 9):
                 exists = connection.execute(
                     'SELECT 1 FROM full_campaign_budgets WHERE attempt_id=?',
                     (request['attempt_id'],),
@@ -2566,7 +2570,11 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
 
     @staticmethod
     def _terminal(state, reason):
-        if state['state'] in ('PROVISIONAL', 'BOUND'):
+        # A watchdog (clock, deadline, resource, work wall, recovery charge) ends
+        # authority from every state that still admits work: PROVISIONAL/BOUND
+        # and a committed CONTINUE's progression (N2_READY admits the N2 phases;
+        # C2 M11). Committed outcomes that admit no work are left to settlement.
+        if state['state'] in ('PROVISIONAL', 'BOUND', *PROGRESSION_PHASES):
             state['state'] = reason
 
     @staticmethod
@@ -3221,6 +3229,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
             ] not in (
                 7,
                 8,
+                9,
             ):
                 raise ValueError('funding profile requires database v7')
             owner = self.row(row['attempt_id'])
@@ -3389,10 +3398,12 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
 
     def integrity(self, connection):
         version = connection.execute('PRAGMA user_version').fetchone()[0]
-        if version in (6, 7, 8):
+        # S4 moves every checkpointed journal to v9 (S4-D1); every walk that ran
+        # at v8 runs at v9 too, or custody corruption would go unseen (C2 D1-02).
+        if version in (6, 7, 8, 9):
             self._budget_integrity(connection)
             self._funding_integrity(connection)
-        if version == 8:
+        if version in (8, 9):
             self._checkpoint_integrity(connection)
         for row in connection.execute('SELECT * FROM full_campaigns'):
             if connection.execute(

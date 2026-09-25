@@ -490,6 +490,8 @@ class ExecutionService:
         if operation in campaign_protocol.CHECKPOINT_OPERATIONS:
             if not self.dispatch_eligible:
                 raise ValueError('installed N1 dispatch release required')
+            if request['checkpoint'] not in release['dispatch_checkpoints']:
+                raise ValueError('installed N2 dispatch release required')
             if operation == 'CHECKPOINT_SNAPSHOT':
                 return campaigns.checkpoint_snapshot(attempt, request['checkpoint'])
             if operation == 'FETCH_CHECKPOINT_MEMBER':

@@ -116,3 +116,53 @@ A separate PART_B execution or verdict; a second assessment for one batch; retun
 
 ## 7. Executor return
 _Pending._
+
+### 2026-09-25 coordinator continuation
+
+**Selected outcome:** repair C2 R2–R4 and qualify S4 against the existing C2
+Linux bar; the overall roadmap remains S4 → S5 → T05 integration → S8.
+**Prerequisites:** S1–S3 accepted; repair HEAD `36e1d45`, including R1/R5
+and R2a. Inherited uncommitted R2b/R2c edits and tests are preserved.
+**Ownership:** the operator-directed Codex session continues as inline executor
+and coordinating integration owner; independent review remains required.
+**Verification:** recorded targeted regression tests, frozen-head Windows
+selections/gates, diagnostic Linux subsets then two acceptance-grade runs on
+identical source and independent review per C2. No acceptance from unit tests alone.
+**Checkpoint:** record each repaired boundary and its actual evidence here,
+then evaluate the full S4 return before selecting S5.
+**Return boundary:** accept or return S4 with specific unresolved findings;
+S5 begins only after S4 prerequisites are satisfied. No production qualification,
+deployment, activation or arm is included.
+
+- Inherited R2b/R2c: 7 passed, stable source, completed 0/0 in
+  `.cache/fp-verification/20260925T155901Z-5cd48d361477/record.json`.
+- R3: v6 rejects N2, v7 requires N2, and launch/recovery retain v7.
+  Three expected failures in `20260925T160141Z-da9bfd223314`; recovery test
+  corrected from an invalid slot name and reproduced the downgrade in
+  `20260925T160301Z-a195ad8329fa`. After repair, R2/R3 selection 11 passed,
+  completed 0/0, source stable in
+  `.cache/fp-verification/20260925T164342Z-bf1096b529f7/record.json`.
+  All runs use the operations launcher, Python 3.13.2 in primary `tmp/ops-env`.
+  Pytest cache writes emitted a permissions warning; recorded test capture completed.
+- R4 now checks the installed release's dispatch checkpoint set at all four
+  checkpoint operations; joint reconstruction closes population/record shape and
+  preserves disabled (`None`) caps. Service-path PASS and both asymmetric FAIL
+  cases, malformed/rebound batches, predecessor custody and stable QPOL node IDs
+  are covered. Development record `20260925T173411Z-408417d0279c` passed 75/76;
+  its sole failure exposed an invalid eager-migration fixture with opaque custody
+  markers. That fixture now starts with a real funded N1 receipt and downgrades
+  only the checkpoint tables to exact v8 DDL before reopening at v9.
+- The corrected migration/integrity/snapshot/exhaustion selection passed 15/15,
+  zero skips, completed 0/0 and source stable:
+  `.cache/fp-verification/20260925T175605Z-435352265efe/record.json`.
+  Repository check completed 0/0, source stable in
+  `.cache/fp-verification/20260925T175653Z-c49a4eb34da1/record.json`
+  (three expected evidence-store skips; absent-private-input/advisory warnings).
+  The Linux file skipped its three tests on Windows as required, record
+  `20260925T175707Z-607ebbc93734`; this is not Linux evidence.
+- Preflight: whole-repository Pylint 8.08/10, exit zero; required selector sets
+  printed (test-only 466, S2 15, S3 19, S4 22). Same-vendor independent review
+  found missing discriminating refusal coverage; added coherently rebound
+  malformed captures and predecessor cases close that finding by inspection and
+  the passing R4 cases above. Cross-vendor review and frozen-head verification
+  remain pending. S4 is not accepted.

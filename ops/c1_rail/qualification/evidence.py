@@ -1203,6 +1203,38 @@ def _joint_plan_vector(contract, policy):
     return depths, seeds, thresholds
 
 
+def _joint_batch_shape(worker, depths):
+    """Consume exactly the ordered joint batch before splitting its two stages."""
+    populations = worker['populations']
+    if type(populations) is not list or len(populations) != len(depths):
+        raise ValueError('complete ordered joint populations required')
+    expected_stages = []
+    for row, expected in zip(populations, depths):
+        _fields(row, {'population', 'stage', 'outcomes'}, label='joint population')
+        if (row['population'] != expected['population']
+                or row['stage'] != expected['statistics_stage']
+                or type(row['outcomes']) is not list
+                or len(row['outcomes']) != expected['depth']):
+            raise ValueError('joint population stage/order/depth differs')
+        expected_stages.extend([expected['statistics_stage']] * expected['depth'])
+    inventory = _fields(worker['path_inventory'],
+                        {'schema', 'trust_domain_sha256', 'records'}, label='joint inventory')
+    records = inventory['records']
+    if (inventory['schema'] != 'qualification_path_inventory/v1'
+            or type(records) is not list or len(records) != len(expected_stages)
+            or any(type(row) is not dict or row.get('stage') != stage
+                   for row, stage in zip(records, expected_stages))):
+        raise ValueError('joint path inventory shape/order differs')
+
+
+def _joint_thresholds(value):
+    """Unset failure caps stay unset across the assessment and cutoff parsers."""
+    _fields(value, {'N2', 'PART_B'}, label='joint thresholds')
+    for cap in value.values():
+        if cap is not None:
+            _positive_int(cap, label='threshold cap', allow_zero=True)
+
+
 def build_joint_checkpoint_evidence(
     *,
     contract,
@@ -1408,6 +1440,8 @@ def build_joint_checkpoint_evidence(
     ):
         raise ValueError('EVIDENCE_SNAPSHOT_MEMBERSHIP_MISMATCH')
 
+    _joint_batch_shape(worker, depths)
+
     def section(index):
         row = worker['populations'][index]
         return {'population': row['population'], 'outcomes': row['outcomes']}
@@ -1501,8 +1535,7 @@ def build_joint_checkpoint_evidence(
         verdict=verdict,
     )
     caps = {
-        row['stage']: 0 if row['max_failures_per_population'] is None
-        else row['max_failures_per_population']
+        row['stage']: row['max_failures_per_population']
         for row in thresholds
     }
     assessment = {
@@ -1661,8 +1694,7 @@ def _inspect_checkpoint_assessment(value):
         cutoff = _fields(doc['cutoff'], {'checkpoint', 'stage_thresholds'}, label='cutoff')
         if cutoff['checkpoint'] != 'N2' or type(cutoff['stage_thresholds']) is not dict:
             raise ValueError('invalid joint cutoff')
-        for cap in cutoff['stage_thresholds'].values():
-            _positive_int(cap, label='threshold cap', allow_zero=True)
+        _joint_thresholds(cutoff['stage_thresholds'])
     else:
         failed = doc['n1_decision'] == 'FAIL'
         if (
@@ -1840,8 +1872,7 @@ def parse_checkpoint_assessment(raw, *, attempt_id):
         cutoff = fields(doc['cutoff'], {'checkpoint', 'stage_thresholds'})
         if cutoff['checkpoint'] != 'N2' or type(cutoff['stage_thresholds']) is not dict:
             raise ValueError('joint cutoff binding required')
-        for value in cutoff['stage_thresholds'].values():
-            integer(value)
+        _joint_thresholds(cutoff['stage_thresholds'])
     else:
         if type(doc['stages']) is not list or len(doc['stages']) != 2:
             raise ValueError('LEGALITY and N1 stage results required')
@@ -1925,8 +1956,7 @@ def parse_checkpoint_cutoff(raw, *, attempt_id):
             raise ValueError('checkpoint cutoff decision differs')
         if type(doc['stage_thresholds']) is not dict:
             raise ValueError('joint cutoff thresholds required')
-        for value in doc['stage_thresholds'].values():
-            integer(value)
+        _joint_thresholds(doc['stage_thresholds'])
         digest(doc['predecessor_receipt_sha256'])
     else:
         digest(doc['n2_bound_to'])

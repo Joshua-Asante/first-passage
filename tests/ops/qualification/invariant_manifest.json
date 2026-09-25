@@ -48,11 +48,12 @@
       "tests/ops/qualification/test_semantic_policy.py::test_stage_and_workload_substitution[panels]",
       "tests/ops/qualification/test_semantic_policy.py::test_stage_and_workload_substitution[population]",
       "tests/ops/qualification/test_semantic_policy.py::test_stage_and_workload_substitution[remove_part_b]",
-      "tests/ops/qualification/test_semantic_policy.py::test_unsupported_prefix_decision[stages0-COMPLETE-PASS]",
-      "tests/ops/qualification/test_semantic_policy.py::test_unsupported_prefix_decision[stages1-COMPLETE-FAIL]",
-      "tests/ops/qualification/test_semantic_policy.py::test_unsupported_prefix_decision[stages2-COMPLETE-FAIL]",
-      "tests/ops/qualification/test_semantic_policy.py::test_unsupported_prefix_decision[stages3-PARTIAL-NONE]",
-      "tests/ops/qualification/test_semantic_policy.py::test_unsupported_prefix_decision[stages4-COMPLETE-FAIL]",
+      "tests/ops/qualification/test_evidence_reconstruction.py::test_n1_only_rejects_joint_continuation",
+      "tests/ops/qualification/test_semantic_policy.py::test_unsupported_prefix_decision[n1-pass-incomplete]",
+      "tests/ops/qualification/test_semantic_policy.py::test_unsupported_prefix_decision[legality-only]",
+      "tests/ops/qualification/test_semantic_policy.py::test_unsupported_prefix_decision[missing-part-b]",
+      "tests/ops/qualification/test_semantic_policy.py::test_unsupported_prefix_decision[full-prefix-incomplete]",
+      "tests/ops/qualification/test_semantic_policy.py::test_unsupported_prefix_decision[reordered]",
       "tests/ops/qualification/test_semantic_policy.py::test_valid_product_and_installed_owner_bytes"
     ],
     "evidence_kind": "executed pytest JUnit; real protected Linux process/UID/container evidence where integration nodes are named"

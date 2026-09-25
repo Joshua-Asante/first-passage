@@ -316,6 +316,19 @@ def test_reconstruction_retains_exact_adjudicated_artifacts(captured_case):
     assert len(doc['outputs']) == 5
 
 
+def test_n1_only_rejects_joint_continuation(captured_case):
+    from c1_rail.qualification.evidence import (
+        build_n1_evidence, compare_n1_evidence, InspectedEvidence,
+    )
+    result = build_n1_evidence(**captured_case)
+    doc = json.loads(result.envelope_bytes)
+    doc.update(completion='PARTIAL', verdict='NONE', terminal_reason=None)
+    doc['checkpoint_assessment'] = {'checkpoint': 'N2', 'decision': 'CONTINUE'}
+    changed = InspectedEvidence(encode(doc), result.output_bytes_by_role)
+    with pytest.raises(ValueError, match='EVIDENCE_SEMANTIC_MISMATCH'):
+        compare_n1_evidence(changed, expected=changed)
+
+
 @pytest.mark.parametrize(
     'role',
     ['n1_result', 'legality_result', 'attempt_journal', 'runtime_load_trace', 'path_inventory'],

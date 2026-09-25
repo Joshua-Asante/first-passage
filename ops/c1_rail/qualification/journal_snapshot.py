@@ -249,6 +249,10 @@ def parse_campaign_budget_snapshot(raw: bytes) -> dict:
         raise ValueError('campaign budget snapshot schema required')
     if dispatched:
         _checkpoint_projection(doc['checkpoints'])
+        if ('N2' in doc['checkpoints']) != (
+            doc['schema'] == 'qualification_campaign_budget_snapshot/v7'
+        ):
+            raise ValueError('checkpoint contents differ from snapshot version')
     if doc['state'] not in CAMPAIGN_BUDGET_STATES or doc['validity'] not in ('VALID', 'VOID'):
         raise ValueError('campaign budget state differs')
     _identity(doc['attempt_id'])

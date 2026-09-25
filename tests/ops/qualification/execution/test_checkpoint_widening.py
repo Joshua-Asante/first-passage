@@ -171,13 +171,35 @@ def _assert_widened(path, reference):
     assert not [row for row in layout if row[1].endswith('_v8')]
 
 
-def test_a_real_s3_v8_journal_widens_to_v9_exactly(tmp_path):
+def test_a_real_s3_v8_journal_widens_to_v9_exactly(tmp_path, monkeypatch):
     """Reopen widens eagerly, so the exact-layout walk that follows sees v9 only."""
-    journal = _v8_journal(tmp_path / 'journal.sqlite')
+    from test_campaign_n1 import g5_claimed, persisted_intent, commit, store
 
+    instance = g5_claimed(tmp_path, monkeypatch)
+    commit(instance, persisted_intent(instance))
+    journal = instance.store.path
+    # Build the frozen predecessor layout around actual funded N1 custody.
+    # Opaque marker bytes suffice for the low-level copying test below, but
+    # cannot establish successful reopen through the restored integrity walk.
+    connection = sqlite3.connect(journal)
+    original = {table: connection.execute('SELECT * FROM ' + table).fetchall()
+                for table in CHECKPOINT_TABLES}
+    connection.executescript(''.join('DROP TABLE ' + table + ';' for table in CHECKPOINT_TABLES)
+                             + CHECKPOINT_SCHEMA_V8)
+    for table, rows in original.items():
+        for row in rows:
+            values = row[:1] + row[2:] if table == STAGED else row
+            connection.execute('INSERT INTO ' + table + ' VALUES('
+                               + ','.join('?' for _ in values) + ')', values)
+    connection.execute('PRAGMA user_version=8')
+    connection.commit()
+    connection.close()
+    before = store(instance).checkpoint_receipt(instance.attempt, 'N1')
     ExecutionStore(journal)  # the widening lands eagerly on reopen
-
-    _assert_widened(journal, _reference_layout(tmp_path / 'reference.sqlite'))
+    version, rows, layout = _journal_state(journal)
+    assert version == 9 and rows == original
+    assert layout == _reference_layout(tmp_path / 'reference.sqlite')
+    assert store(instance).checkpoint_receipt(instance.attempt, 'N1') == before
 
 
 def test_the_lazy_path_widens_the_same_way(tmp_path):

@@ -112,7 +112,8 @@ def test_exact_prefix_role_vectors(stages, completion, verdict, roles):
     (('LEGALITY','N1'), 'COMPLETE','PASS'), (('LEGALITY',),'COMPLETE','FAIL'),
     (('LEGALITY','N1','N2'),'COMPLETE','FAIL'),
     (('LEGALITY','N1','N2','PART_B','PART_A'), 'PARTIAL','NONE'),
-    (('N1','LEGALITY'),'COMPLETE','FAIL')])
+    (('N1','LEGALITY'),'COMPLETE','FAIL')],
+    ids=['n1-pass-incomplete', 'legality-only', 'missing-part-b', 'full-prefix-incomplete', 'reordered'])
 def test_unsupported_prefix_decision(stages, completion, verdict):
     from c1_rail.qualification.policy import required_output_roles
     _, policy, _ = semantic_case()
