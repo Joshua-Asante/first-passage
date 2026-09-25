@@ -50,6 +50,13 @@ a source and record read only. No test suite, harness, Linux run or probe was ex
   +5,142/−570 against main, with its S4 packet §7 continuation entries dated 2026-09-25), and
   `claude/t05-result-seal@6cf2732` (`campaign_result.py` 1,385, `campaign_seal.py` 553,
   `g5_result.py` 195, `seal_service.py` 169).
+- **Unanchored inputs.** The operator's critique, the Claude assessment and the Codex counter-review
+  (§1) were conversation inputs. None of them is committed to this repository or linked from it, so an
+  owner cannot check this note's paraphrase against them. Every attribution to them below (§1, §5.1, K2,
+  K7, N2) is the author's summary, not a quotation and not evidence. Each requirement taken from them is
+  restated as this note's own proposal and stands only on the source anchors above. Recording the original
+  inputs in an owned artifact is an open operator decision: they are the operator's conversation, and this
+  repository is public.
 
 ---
 
@@ -58,7 +65,8 @@ a source and record read only. No test suite, harness, Linux run or probe was ex
 On 2026-09-25 the operator made an architectural critique. It argued that qualification is built as a security
 boundary against an untrusted requesting agent, which is stronger than "run an honest
 evaluation, review the evidence, deploy the approved version". It challenged ten
-mechanisms. A Claude assessment and a Codex counter-review agreed on the direction. Codex
+mechanisms. A Claude assessment and a Codex counter-review agreed on the direction (paraphrased here;
+the inputs are unanchored, see §0). Codex
 added two requirements: the replacement boundary must be defined as *actions that stay
 impossible for a fallible agent*, and each retained component must be justified by
 future cost, not by the fact that it was accepted. Both reviews asked for this table before
@@ -132,17 +140,27 @@ stronger than the decision needs. No discipline check was bypassed.
 
 ---
 
-## §5 — Repair plan
+## §5 — Proposed repair plan (operator/owner decisions; nothing here is adopted)
 
-### Immediate
+### Immediate: proposed decision points
 
-- [ ] Operator/owner decision: adopt the boundary list in §5.1 as the baseline, or reject it. Every row
-  in §5.2 depends on it.
-- [ ] Decide rows N1 and N2 **before S5 freezes**. S5 freezes on S4's merge, and it extends the same phase
-  sets and reservations to `PART_A`/`PART_A_CAPTURE` (S5 packet line 12).
-- [ ] Close gap K3 (the seed root can be previewed) before F1, whatever the other dispositions.
-- [ ] Run the T10 `verify_for` confirming probe (handoff §5 item 5) before deciding row N4.
-- [ ] Decide row E3 before TB-I3 / TB-D2 is packetized. It is not built yet, so a change costs nothing.
+Nothing in this section is adopted or routed. Each item names a decision, who holds it, and the point after
+which it stops being cheap.
+
+- **Open operator decision: the §5.1 boundary list.** Adopt it as the baseline or reject it. Every row in
+  §5.2 depends on it.
+- **Open operator decisions: N1 (resource accounting) and N2 (interruption recovery), before S5 freezes.**
+  S5 freezes on S4's merge, and it extends the same phase sets and reservations to `PART_A`/`PART_A_CAPTURE`
+  (S5 packet line 12). After that freeze, narrowing either row for `PART_A` means reworking S5's extension.
+  This note does not gate S5 by itself. It is not linked from `STATE.md`, the execution-slices plan or the S5
+  packet, so a session following the STATE → owning-plan path will not see it. Whether to route N1 and N2
+  there, and whether to hold S5's freeze for them, is part of the operator's decision.
+- **Proposed: close gap K3 (the seed root can be previewed) before F1**, whatever the other dispositions. The
+  decision holders are the F1 contract's statistical owners (Track B umbrella and campaign record).
+- **Proposed: run the T10 `verify_for` confirming probe before row N4 is decided.** Whether the probe runs next
+  is already an open operator item (handoff §5 item 5).
+- **Open owner decision: row E3, before TB-I3 / TB-D2 is packetized.** Neither is built yet, so a change
+  costs no rework. It still needs an ADR revision to §2b and §3 (row E3).
 
 ### 5.1 Proposed boundary: actions that must stay impossible for the requesting agent
 
@@ -217,13 +235,19 @@ give the replacement as "none proposed" and explain why.
   (`freeze-candidate.md:56-60`). Anyone with the source and the code can compute n1/n2 outcomes
   outside the service, or try several roots, before dispatch. The service's once-only controls cannot
   see a preview.
-- *Cheaper fix:* an operator-generated salt, committed by hash in F1 and revealed only at dispatch,
-  so that the root cannot be known until after the commitment.
+- *Cheaper fix:* a salt committed by hash in F1 and revealed only at dispatch, so that the root cannot be
+  known until after the commitment. The salt must come from a CSPRNG (for example 32 bytes from
+  `secrets.token_bytes`, 256 bits), never an operator-chosen or memorable string. It has one canonical
+  encoding (64 lowercase hex characters), and both the commitment and the reveal validate that format and
+  refuse anything else. A short or guessable salt would let anyone holding the source, the code and the
+  published F1 hash brute-force it, recover every seed and preview outcomes before dispatch, which is the gap
+  this row closes.
 - *Residual:* a preview is still possible *after* reveal, which is harmless because the plan is then
   committed.
 - *Consumers:* `seed_identity`, `domain_seed`, the F1 contract, and the G5 re-derivation.
 - *Verification:* a test showing that a contract with the salt still in commitment state cannot derive seeds;
-  the committed hash matches the revealed salt at dispatch.
+  the committed hash matches the revealed salt at dispatch; a salt that is not in the canonical 32-byte form
+  is refused at both commitment and reveal.
 - *Cost:* small, touching the RNG recipe version and the F1 schema.
 - *Timing:* not live today, because the production source is deferred (O-4) and n3 depends on snapshot S. It must be
   closed before F1.
@@ -315,8 +339,8 @@ give the replacement as "none proposed" and explain why.
 - *Consumers:* `recover_service`, `recover_campaign_work`, the IN_DOUBT paths, and the R2b ruling.
 - *Verification:* a bitwise-reproducibility test per stage on the pinned runtime; an interrupted-then-re-executed
   case whose retained prefix matches; an altered-prefix case that ends as an incident.
-- *Cost:* moderate. It depends on K3, since re-execution is only safe when the root was not previewable, and it must be ruled
-  before F1.
+- *Cost:* moderate. It depends on K3, since re-execution is only safe when the root was not previewable. It needs an
+  operator ruling before S5 freezes (see Immediate), and in any case before F1.
 
 **N3 — Publication, VOID and signing recovery.**
 - *Prevents:* partial output treated as complete, cancelled results staying usable, and a retry publishing a
@@ -365,13 +389,23 @@ give the replacement as "none proposed" and explain why.
   Linux evidence and its S8 lifecycle cases, but costs an amendment to the slices plan's S7.
 
 **E2 — Custom artifact transport.**
-- *Prevents:* truncated or substituted artifacts, and unauthorized reads.
-- *Cheaper:* read-only files with a manifest of content hashes, published atomically.
-- *Residual:* none for a local, attended release.
+- *Prevents:* truncated or substituted artifacts, and unauthorized reads. Today `campaign_protocol.permitted()`
+  gives the `client` role only `FETCH_PLAN_CHUNK`, and gives the checkpoint operations (member reads of the
+  capture family and retained inputs, and private staging) to the `g5` role only (`campaign_protocol.py:15-28,90-95`;
+  spec §3 `FETCH`, "per artifact privacy").
+- *Cheaper:* read-only files with a manifest of content hashes, published atomically, **plus an owner and mode
+  (or ACL) per artifact class that reproduces today's role split**: plan chunks readable by `qclient`;
+  checkpoint members, retained inputs and private staged artifacts readable only by `qg5`, never
+  world-readable; staging writable only by `qg5`. Read-only files alone protect integrity, not confidentiality.
+- *Residual:* a mis-set mode or ACL exposes a private class to `qclient`; the negative read test below exists
+  to catch that. Otherwise none for a local, attended release.
 - *Consumers:* `FETCH_PLAN_CHUNK` and the checkpoint chunk operations.
-- *Verification:* a truncated file and a substituted file are both refused by manifest hash.
+- *Verification:* a truncated file and a substituted file are both refused by manifest hash; and a negative test
+  that `qclient` cannot read a checkpoint member, a retained input or a staged artifact, the file-transport
+  counterpart of the `permitted()` role check.
 - *Cost:* the code is accepted and small. B0 already narrowed transport to the local socket. The saving is limited to
-  not adding chunk operations for Part A and the result. **Low priority.**
+  not adding chunk operations for Part A and the result, and the replacement adds per-class ownership to host
+  provisioning. **Low priority.**
 
 **E3 — Approval-driven image rebuild.**
 - *Prevents:* activating without approval, and gating on a mutable file.
@@ -400,12 +434,12 @@ cross-vendor dispositions on 2026-09-25 (§0, §2 item 6). By row, the R-items f
 What remains for S4 is Linux evidence and acceptance on the frozen head. Finishing S4 is therefore cheap relative to
 the rows above. **The decisions that bite are upstream of S5's freeze** (N1, N2) and of T05 integration (N3, E1).
 
-### Structural
+### Structural: proposed, on adoption only
 
-- [ ] If §5.1 is adopted: record it where the threat model lives (spec §3) as the boundary set that each
-  retained mechanism must cite. This is an owner amendment, not this note.
-- [ ] Add a "what would a cheaper *contract* permit?" line to brief-authoring check 11 (pre-mortem). Do this only if
-  the operator wants it; standing instructions are not edited here.
+- **Proposed, if §5.1 is adopted:** record it where the threat model lives (spec §3) as the boundary set that each
+  retained mechanism must cite. That is an owner amendment, not this note.
+- **Proposed, only if the operator wants it:** a "what would a cheaper *contract* permit?" line in brief-authoring
+  check 11 (pre-mortem). Standing instructions are not edited here.
 
 ---
 
@@ -454,8 +488,16 @@ grep -n "verify_for" ops/c1_rail/qualification/*.py ops/c1_rail/qualification/ex
 # E3: the GO carrier chosen (expect a signature check, not a layer-equality reseal, if E3 is adopted)
 grep -rn "DEPLOYMENT_GO\|layer" ops/c1_rail/*.py
 
-# Disposition follow-through: each row ID should appear in its owner once decided
-grep -rn "AUDIT-2026-09-25-qualification-assurance-contract-delta" docs/superpowers docs/adr docs/briefs
+# Disposition follow-through: each decided row needs its own owner citation, written as the qualified tag
+# AUDIT-2026-09-25-qualification-assurance-contract-delta#<row> ("boundary" = the §5.1 list). One generic
+# backlink does not count, and bare "N1"/"N2" also name stages, so only the qualified tag is searched.
+# Prints UNROUTED for each row no owner cites and exits non-zero; today every row prints (nothing is routed).
+missing=0
+for row in boundary K3 N1 N2 N3 N4 N5 E1 E2 E3; do
+  grep -rqwF "AUDIT-2026-09-25-qualification-assurance-contract-delta#$row" docs/superpowers docs/adr docs/briefs \
+    || { echo "UNROUTED: $row"; missing=1; }
+done
+test "$missing" -eq 0
 ```
 
 Re-run at S5 freeze and at TB-I3 packetization, the two points where the dispositions stop being cheap.
@@ -464,15 +506,21 @@ Re-run at S5 freeze and at TB-I3 packetization, the two points where the disposi
 
 ## §11 — Closure
 
-- **Status:** `Open`. It waits on the operator's decision on §5.1 and the owners' rulings on rows N1–N5 and E1–E3.
+- **Status:** `Open`. Open operator decisions: the §5.1 boundary list; N1 (accounting) and N2 (recovery),
+  both before S5 freezes (§5 Immediate); whether to record the §0 unanchored inputs. Open owner rulings:
+  K3 closure before F1, and rows N3–N5 and E1–E3.
+- **Routing:** none. Publication is not adoption. This note is not linked from `STATE.md` or from any owner, so it
+  gates nothing until the operator routes a row; an owner that takes a row cites it by the §10 tag.
 - **Immediate repair completed:** —
 - **Structural repair completed:** —
 - **Lessons graduated to standing rule:** none
 - **Follow-up audits triggered:** a programme audit of the qualification engineering layer (optional, §7).
 
 **Limits.** This is a source and record read, with no execution. Costs are qualitative or line counts, not hours. S4
-branch state is as recorded in its packet §7 on `claude/s4-c2-repair@8f18c57`, not re-run. This note has not been
-independently reviewed; the PR-level Codex review is that step (M-47).
+branch state is as recorded in its packet §7 on `claude/s4-c2-repair@8f18c57`, not re-run. The PR-level Codex
+review (M-47) of `a81bdf8` returned five findings. This revision answers them in the text: K3 salt entropy, E2
+read isolation, the §10 per-row hook, §0 input provenance, and the §5/§11 routing status. The revision itself has
+not been re-reviewed.
 
 ---
 
