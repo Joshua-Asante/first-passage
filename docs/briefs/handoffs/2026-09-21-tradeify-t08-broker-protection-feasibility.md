@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (source-backed capability decision; adapter code is explicitly out of scope)
 **Date:** 2026-09-21
-**Status:** RETURNED 2026-09-24 at the step-1 hard early return: **R3 = NONE** (no documented terminal / no-future-effect fence for the route), §7. Steps R5, R2/R4, the N1 map and the verdict were not executed, per §2 and §4. Under the ratified D-broker wording the conditional grant is void (§7.6). Operator decision owed; recommendation in §7.7. Originally: dispatchable now under existing authority, independent of T01–T06 and of PR #448. Parent packet: [deployment checklist §T08](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md). T09 (the real adapter) is gated on this packet's verdict and on operator decision **D-broker**.
+**Status:** RETURNED 2026-09-24 at the step-1 hard early return (follow-up rulings 2026-09-25 in §7.8): **R3 = NONE** (no documented terminal / no-future-effect fence for the route), §7. Steps R5, R2/R4, the N1 map and the verdict were not executed, per §2 and §4. Under the ratified D-broker wording the conditional grant is void (§7.6). Operator decision owed; recommendation in §7.7. Originally: dispatchable now under existing authority, independent of T01–T06 and of PR #448. Parent packet: [deployment checklist §T08](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md). T09 (the real adapter) is gated on this packet's verdict and on operator decision **D-broker**.
 **Executor:** one capability executor (Claude Code; this is reading, tracing and deciding, not building). **Operator:** Joshua supplies the enabled external-actor and outstanding-request inventory (R5) and the platform entitlement facts; **no agent places, amends or cancels an order, and no drill runs without its own written authorization.** **Coordinator:** owns the CAP R2–R5/N1 rows and the incident-contract reconciliation.
 **Authority:** read every owner below; write the return section, a dated append-only addendum to the CAP record, and (if the verdict is "amendment required") a proposal document. No adapter code, no route configuration change, no ADR status change. A `DONE` status supplies no permission.
 
@@ -162,6 +162,8 @@ Recorded after the return; §7.1–§7.7 are unchanged.
 This ruling grants no broker access, route change, drill, order action, arm or spend.
 
 **Follow-up ruling (2026-09-24, in session, verbatim):** "I accept B. You can proceed as scoped." The scope's Q1 is ruled **B** (a permanent worst-case reservation replaces the account block for narrowed-shape unknowns). The scope's §5 steps 2–4 are authorized; acceptance stays with the operator.
+
+**Follow-up rulings (2026-09-25, in session; owner: [campaign record §59](../programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25)):** (1) Vanguard MGC and Aegis 6J fit the narrowed shape — operator-attested ("yes and yes"; private ports unread by any agent). (2) The vendor question above was **sent** on 2026-09-25 by the operator; no reply is recorded. (3) The operator adopted **route-native expressions** for ORB MNQ (fixed-stop OSO bracket, no trailing) and Striker MYM (entry carrying its stop in the same OSO; one-contract requests) as a pre-registered K=1 requalification, not a search. R3 stays NONE; D-broker stays void; live release stays held; no drill, access or spend is granted. The N1 rows that remain after §59 are the K items and the §A1 admission precondition.
 
 ### 7.9 Operator-supplied support reply — 2026-09-25
 
