@@ -130,6 +130,11 @@ def test_data_and_risk_reducing_exits_are_silent(command):
     "git push origin --delete main",
     "git -C /repo push origin main",
     "git push origin claude/x main",
+    "git push --force-with-lease origin main",
+    "git push --force-if-includes --force-with-lease origin main",
+    "git push --signed origin main",
+    "git push --repo=origin main",
+    "git push --repo origin main",
 ])
 def test_push_to_main_denied(command):
     # Fails if a direct push to main, a merge-equivalent that bypasses the PR and the
@@ -141,6 +146,8 @@ def test_push_to_main_denied(command):
     "git push -u origin claude/bold-shannon-cc2xmr",
     "git push origin HEAD:refs/heads/claude/x",
     "git push origin main:claude/backup",
+    "git push --force-with-lease origin claude/x",
+    "git push --repo=origin claude/x",
     "git fetch origin main",
     "git push",
 ])

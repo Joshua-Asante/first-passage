@@ -107,9 +107,10 @@ _FALLBACK = (
 _GH_GLOBAL_VALUES = frozenset({"-R", "--repo", "--hostname"})
 _GIT_GLOBAL_VALUES = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace",
                                 "--config-env", "--exec-path"})
+# Push options that take their value as the next word. `--signed` and
+# `--force-with-lease` take one only after `=`, and `--force-if-includes` none.
 _GIT_PUSH_VALUES = frozenset({"-o", "--push-option", "--receive-pack", "--exec",
-                              "--repo", "--recurse-submodules", "--signed",
-                              "--force-with-lease", "--force-if-includes"})
+                              "--repo", "--recurse-submodules"})
 _MAIN = frozenset({"main", "refs/heads/main"})
 _FLY_COMMAND_OPTS = frozenset({"-C", "--command"})
 _PYTHONS = re.compile(r"(python(\d+(\.\d+)?)?|py|pypy3?)")
@@ -185,7 +186,10 @@ def _judge_git(args: list[str]) -> tuple[str, str] | None:
     if words[:1] != ["push"]:
         return None
     push_args = args[args.index("push") + 1:]
-    refspecs = _positional(push_args, _GIT_PUSH_VALUES)[1:]  # after the remote
+    words = _positional(push_args, _GIT_PUSH_VALUES)
+    # `--repo` names the remote, so every positional word is then a refspec.
+    has_repo = any(a == "--repo" or a.startswith("--repo=") for a in push_args)
+    refspecs = words if has_repo else words[1:]  # after the remote
     for spec in refspecs:
         dst = spec.split(":", 1)[1] if ":" in spec else spec
         if dst.lstrip("+") in _MAIN:
