@@ -87,6 +87,7 @@ class BracketScheduleQuotes:
         self.run = run
         self._exposure = None
         self._prices = {}
+        self._empty_prefixes = set()
         self.placements = []
 
     def observe_exposure(self, session, instant, positions):
@@ -109,9 +110,15 @@ class BracketScheduleQuotes:
         rule, vertex = placement(self.run, position, accepted_path(original))
         prefix, suffix = vertex_split(original, vertex, instant)
         self._prices[key] = prefix.close
+        if rule == 'cancel':
+            self._empty_prefixes.add(key)
         self.placements.append(Placement(session.occurrence, session.source.source_session_date, leg,
                                          instant, self.run, position, rule, vertex, prefix.close))
         return prefix, suffix
+
+    def prefix_is_empty(self, session, instant, leg):
+        """R2 pending-only cancellation precedes even the opening price event."""
+        return (session.occurrence, leg, instant) in self._empty_prefixes
 
     def __call__(self, session, instant, leg):
         placed = self._prices.get((session.occurrence, leg, instant))

@@ -169,3 +169,75 @@ def test_run_bracket_refuses_a_replay_not_wired_to_its_placements():
         return engine({'orb_mnq_v7': first_entry})[0]
     with pytest.raises(ValueError, match='placements'):
         run_bracket(build, (flatten_session((100, 110, 90, 105)),), initial_state=STATE)
+
+@pytest.mark.parametrize('side,leg,open_price,trigger', [
+    (Side.BUY, 'orb_mnq_v7', 110, 105),
+    (Side.SELL, 'aegis_6j', 90, 95),
+])
+@pytest.mark.parametrize('order_type', ['stop', 'market'])
+def test_r2_pending_only_cutoff_cancels_before_gap_open(side, leg, open_price, trigger, order_type):
+    from c1_rail.qualification.replay import Instrument
+    from c1_rail.book_policy import BOOK_LEGS
+    session = path_session(start_hour=20, prices=[(100, 100, 100, 100),
+        (open_price, 115, 85, 100), (100, 100, 100, 100), (100, 100, 100, 100)])
+    cutoff = session.source.bars[1].source_bar_time + timedelta(minutes=5)
+    session = replace(session, source=replace(session.source, schedule=SessionSchedule(
+        cutoff, cutoff + timedelta(minutes=10), cutoff + timedelta(minutes=15))))
+    def resting(adapter, bar):
+        return [OrderIntent('pending', adapter.leg_id, 'entry', side, 1,
+                            order_type, trigger if order_type == 'stop' else None)] if len(adapter.bars) == 1 else []
+    instruments = {s.leg_id: Instrument(1, 1, 2, 0) for s in BOOK_LEGS}
+    results = {}
+    for run in ('R1', 'R2'):
+        quotes = BracketScheduleQuotes(run)
+        replay, adapters = engine({leg: resting}, quotes=quotes, instruments=instruments)
+        record = replay.run((session,)).sessions[0]
+        results[run] = record
+        assert record.end_edge.is_flat
+        assert all(len(a.bars) == 4 for a in adapters.values())
+        if run == 'R2':
+            assert any(e.event == 'cancel' and e.order_id == 'pending' for e in adapters[leg].feedback)
+            assert not any(e.fill for e in adapters[leg].feedback)
+    assert results['R1'].fills == 2
+    assert results['R2'].fills == 0
+    assert results['R2'].pnl == 0
+    assert results['R2'].intraday_low == 0
+
+
+def test_r2_pending_only_leg_cancels_while_another_leg_keeps_its_prefix():
+    session = path_session(start_hour=20, prices=[(100, 100, 100, 100),
+        (110, 115, 85, 100), (100, 100, 100, 100), (100, 100, 100, 100)])
+    cutoff = session.source.bars[1].source_bar_time + timedelta(minutes=5)
+    session = replace(session, source=replace(session.source, schedule=SessionSchedule(
+        cutoff, cutoff + timedelta(minutes=10), cutoff + timedelta(minutes=15))))
+    def resting(adapter, bar):
+        return [OrderIntent('pending', adapter.leg_id, 'entry', Side.BUY, 1, 'stop', 105)] if len(adapter.bars) == 1 else []
+    quotes = BracketScheduleQuotes('R2')
+    replay, adapters = engine({'orb_mnq_v7': resting, 'vanguard_mgc': first_entry}, quotes=quotes)
+    result = replay.run((session,))
+    assert not any(e.fill for e in adapters['orb_mnq_v7'].feedback)
+    assert result.sessions[0].end_edge.is_flat
+    assert result.sessions[0].fills == 2  # the held Vanguard entry and scheduled flatten
+    assert sorted((p.leg_id, p.rule) for p in quotes.placements if p.instant == cutoff) == [
+        ('orb_mnq_v7', 'cancel'), ('vanguard_mgc', 'favourable')]
+
+
+def test_r2_held_position_with_pending_add_keeps_prefix_fill():
+    session = path_session(start_hour=20, prices=[(100, 100, 100, 100),
+        (100, 100, 100, 100), (110, 115, 85, 100), (100, 100, 100, 100)])
+    cutoff = session.source.bars[2].source_bar_time + timedelta(minutes=5)
+    session = replace(session, source=replace(session.source, schedule=SessionSchedule(
+        cutoff, cutoff + timedelta(minutes=10), cutoff + timedelta(minutes=15))))
+    def emit(adapter, bar):
+        if len(adapter.bars) == 1:
+            return entry(adapter, bar)
+        if len(adapter.bars) == 2:
+            return [OrderIntent('add', adapter.leg_id, 'add', Side.BUY, 1, 'stop', 105)]
+        return []
+    quotes = BracketScheduleQuotes('R2')
+    replay, adapters = engine({'orb_mnq_v7': emit}, quotes=quotes)
+    result = replay.run((session,))
+    adds = [e.fill for e in adapters['orb_mnq_v7'].feedback if e.fill and e.fill.kind == 'add']
+    assert len(adds) == 1 and adds[0].price == 110
+    assert next(p for p in quotes.placements if p.instant == cutoff).rule == 'favourable'
+    assert result.sessions[0].end_edge.is_flat

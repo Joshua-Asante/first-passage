@@ -525,6 +525,16 @@ class BookReplay:
                             observe(session, instant, {k: self.brokers[k].position() for k in exposed})
                         prefix, suffix = self._split(session, pb, exposed, instant)
                         segment_bars = {**segment_bars, **suffix}
+                        # An R2 pending-only placement has no price event before
+                        # cancellation, even when the open crosses a stop. Keep
+                        # the full suffix for consumption after the schedule.
+                        empty_prefix = getattr(self.schedule_quotes, "prefix_is_empty", None)
+                        for k, bar in list(prefix.items()):
+                            if empty_prefix is not None and empty_prefix(session, instant, k):
+                                if (self.brokers[k].position()
+                                        or not bar.open == bar.high == bar.low == bar.close):
+                                    raise ReplayNeedsContext("empty prefix requires a flat leg and one price")
+                                del prefix[k]
                         low = min(low, self._process_segment(prefix) - opening)
                         self._session_low = low
                     self._path_time = pb.path_time + (instant - pb.source_bar_time)
