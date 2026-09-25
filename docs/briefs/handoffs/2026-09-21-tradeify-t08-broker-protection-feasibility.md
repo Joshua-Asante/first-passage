@@ -162,3 +162,22 @@ Recorded after the return; §7.1–§7.7 are unchanged.
 This ruling grants no broker access, route change, drill, order action, arm or spend.
 
 **Follow-up ruling (2026-09-24, in session, verbatim):** "I accept B. You can proceed as scoped." The scope's Q1 is ruled **B** (a permanent worst-case reservation replaces the account block for narrowed-shape unknowns). The scope's §5 steps 2–4 are authorized; acceptance stays with the operator.
+
+### 7.9 Operator-supplied support reply — 2026-09-25
+
+Joshua supplied a written reply attributed to Kate, CrossTrade Support. Retained a transcription at `local_artifacts/t08-vendor-question-2026-09/2026-09-25-support-reply-transcription.txt`, SHA-256 `0871c82ef8075d3ec0c6f6dd00caecce26432eed13dcc708921f6f489185c27f`. This hashes the transcription, **not original email bytes**; original email/ticket retention under §7.8 remains owed. The displayed header supplies a time but no date/timezone; September 25 is the receipt-in-task date. No vendor contact or account access was performed.
+
+**What the supplied reply says, limited to the narrowed request shape:**
+
+- No guaranteed maximum time exists after which the request can no longer act. Client disconnect does not stop processing, and the Tradovate path does not discard requests by age.
+- No durable webhook queue/replay, restart recovery or other queue/timer applies to that shape.
+- Bracket coverage repair can continue while the entry is working, without a fixed time bound. Its actions are cancellation of the unfilled remainder or replacement stop placement; support states that it never opens or adds to a position.
+- Support recommends CrossTrade's Tradovate REST placement endpoint, says the operator's Pro plan includes it, and describes returned entry/bracket IDs or classified errors. Entitlement is vendor-reported, not account-verified. Support advises caller-supplied `clOrdId` and reconciliation before another placement, not time-based resend.
+
+**Correction to the earlier rationale:** §7.3 row 5 and §7.5's assertion that durable recovery applies regardless of narrowed fields must not be carried forward for this narrowed webhook shape. The supplied reply contradicts that premise. Unbounded protective repair is also not evidence of unbounded exposure-increasing replay. The negative time-bound answer still leaves no time-based clearance, because initial processing may continue after disconnect and no upper bound is supplied. Preserve broader-route findings only within their original request-shape scope.
+
+**REST assessment:** this is CrossTrade-mediated REST, not the native Tradovate API access excluded by §7.4. That exclusion does not itself rule out this route, so §7.7's reason for dismissing a route change is too broad. The current [placement documentation](https://crosstrade.io/docs/api/orders/post-place-order) confirms server-side routing to linked Tradovate accounts, ordinary placement correlation, and subsequent status/lifecycle reads. It also warns of late rejection and says REST placements have no Alert History row. The linked API overview could not be retrieved in this check; its exact error taxonomy and negative reconciliation guarantees were not freshly verified.
+
+Separate three cases in any REST assessment: (1) received successful placement with broker IDs, then track actual working/fill/protection outcomes; (2) received documented no-send error, accepted only within its precise guarantee; (3) no response or possibly-sent error, retain the unknown attempt and reconcile. A useful received error does not resolve a lost response. `clOrdId` is not established as a duplicate-rejection key, and absence of a matching order is not established as proof that no order can appear later.
+
+**Disposition:** option A's vendor-time-bound premise is unavailable on this supplied answer; R3 is not promoted. The proposed option B amendment is not accepted by this reply. CrossTrade REST becomes a concrete candidate for a bounded documentary route comparison, including remaining unknown-request cases and ordinary protection semantics. It can coexist with TradingView ingress: Pine publishes market inputs to our owner, while our owner uses REST outbound. It does not by itself resolve trailing, partial-fill coverage, amendment behavior or Striker's initial bracket timing. No route change, implementation, drill, credential access or live-release authority is inferred.
