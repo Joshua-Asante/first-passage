@@ -124,3 +124,74 @@ def test_final_observation_serialization_overrun_cannot_return_result(tmp_path,m
     monkeypatch.setattr(worker,'encode_frame',late_overrun)
     with pytest.raises(NeedsContext,match='budget'):
         worker.run_worker(tmp_path,execution_id='worker-fixture')
+
+
+# ---- S4: the joint N2 worker path (one batch, staged plan + receipt) ---------
+
+
+def joint_stage_input(root, case):
+    from c1_rail.qualification.checkpoint_plan import derive_checkpoint_plan
+    from c1_rail.qualification.execution.plan import derive_campaign_plan_from_context
+
+    context = stage_input(root, case)
+    receipt = encoded(
+        {
+            'schema': 'qualification_campaign_checkpoint_receipt/v1',
+            'attempt_id': context.attempt_id,
+            'checkpoint': 'N1',
+            'work_id': 'g5work',
+            'campaign_id': 'c1',
+            'assessment_sha256': '0' * 64,
+            'cutoff_sha256': '1' * 64,
+            'decision': 'CONTINUE',
+            'campaign_state': 'N2_READY',
+            'signing_at_utc': '2026-09-22T00:00:00Z',
+            'committed_at_utc': '2026-09-22T00:00:01Z',
+            'intent_sha256': '2' * 64,
+        }
+    )
+    (root / 'predecessor-receipt.json').write_bytes(receipt)
+    plan = derive_checkpoint_plan(
+        derive_campaign_plan_from_context(context), 'N2', receipt
+    )
+    (root / 'plan.json').write_bytes(plan)
+    return context, plan
+
+
+def test_worker_runs_the_joint_batch_with_staged_stage_tags(tmp_path, monkeypatch):
+    import json
+
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    monkeypatch.setattr(worker, 'utc_now', lambda: NOW)
+    case = build_bundle(tmp_path / 'bundle', capability='FULL_E1', joint=True)
+    context, plan = joint_stage_input(tmp_path, case)
+    raw = worker.run_worker(
+        tmp_path, execution_id='n2work', checkpoint='N2'
+    )
+    doc = json.loads(decode_frame(raw, limit=context.profile.output_byte_limit))
+    assert [row['population'] for row in doc['populations']] == ['FULL', 'H1', 'H2']
+    assert [row.get('stage') for row in doc['populations']] == ['N2', 'PART_B', 'PART_B']
+    counts = {row['population']: len(row['outcomes']) for row in doc['populations']}
+    spec = context.contract.stage_specs
+    assert counts == {
+        'FULL': spec['N2'].exact_depth,
+        'H1': spec['PART_B'].exact_depth,
+        'H2': spec['PART_B'].exact_depth,
+    }
+    records = doc['path_inventory']['records']
+    assert {row['stage'] for row in records} == {'N2', 'PART_B'}
+    assert len(records) == sum(counts.values())
+    assert 'verdict' not in doc
+
+
+def test_worker_refuses_a_tampered_predecessor_receipt(tmp_path, monkeypatch):
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    monkeypatch.setattr(worker, 'utc_now', lambda: NOW)
+    case = build_bundle(tmp_path / 'bundle', capability='FULL_E1', joint=True)
+    joint_stage_input(tmp_path, case)
+    tampered = json.loads((tmp_path / 'predecessor-receipt.json').read_bytes())
+    tampered['decision'] = 'FAILURE'
+    tampered['campaign_state'] = 'N1_FAILED'
+    (tmp_path / 'predecessor-receipt.json').write_bytes(encoded(tampered))
+    with pytest.raises(ValueError, match='committed predecessor decision differs'):
+        worker.run_worker(tmp_path, execution_id='n2work', checkpoint='N2')

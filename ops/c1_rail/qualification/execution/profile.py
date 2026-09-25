@@ -100,6 +100,18 @@ _DISPATCH_FIXED = MappingProxyType(
     )
 )
 
+# S4-D3: the joint dispatch successor -- the only profile whose installation
+# admits the N2 dispatch roles (dispatch_checkpoints exactly ['N1','N2']).
+_JOINT_DISPATCH_FIXED = MappingProxyType(
+    dict(
+        _DISPATCH_FIXED,
+        schema='qualification_execution_profile/v6',
+        protocol_version=6,
+        supported_checkpoints=['N1', 'N2'],
+        dispatch_checkpoints=['N1', 'N2'],
+    )
+)
+
 
 def parse_profile(raw: bytes) -> ExecutionProfile:
     doc = parse_canonical_json(raw, label='execution profile')
@@ -123,6 +135,8 @@ def parse_profile(raw: bytes) -> ExecutionProfile:
         )
     if doc.get('schema') == 'qualification_execution_profile/v5':
         fixed = dict(_DISPATCH_FIXED)
+    if doc.get('schema') == 'qualification_execution_profile/v6':
+        fixed = dict(_JOINT_DISPATCH_FIXED)
     fields(doc, (*fixed, *_LIMITS))
     for name, value in fixed.items():
         if type(doc[name]) is not type(value) or doc[name] != value:
@@ -193,6 +207,8 @@ def parse_campaign_budget_profile(raw: bytes) -> dict:
 # Installed operational ceilings, never statistical thresholds. Shared variants
 # are defined once; the resolved bytes are signed in the release, not this name.
 _DIAGNOSTIC_PHASE = MappingProxyType(dict(cpu_ns=120_000_000_000, wall_ns=300_000_000_000))
+# S4 C2 operator ruling 2026-09-24: the joint N2 batch's compute ceiling in the TEST_ONLY v6 profile only (measured Windows N2 CPU 211 s vs 13 s for N1).
+_JOINT_N2_DIAGNOSTIC_PHASE = MappingProxyType(dict(cpu_ns=360_000_000_000, wall_ns=900_000_000_000))
 _DIAGNOSTIC_CONTROLLER_CPU_NS = 20_000_000_000
 
 
@@ -205,6 +221,7 @@ def diagnostic_budget_profile(profile_bytes):
         'qualification_execution_profile/v3',
         'qualification_execution_profile/v4',
         'qualification_execution_profile/v5',
+        'qualification_execution_profile/v6',
     ):
         raise ValueError('fresh diagnostic execution profile required')
     result = dict(
@@ -216,9 +233,17 @@ def diagnostic_budget_profile(profile_bytes):
         },
         orchestration_cpu_ns={phase: _DIAGNOSTIC_CONTROLLER_CPU_NS for phase in PHASES},
     )
+    # S4-R5b: the joint installation alone widens the N2 compute phase (the
+    # ruling above); every other phase, profile version and statistic is the
+    # shared diagnostic ceiling, and the controller charge stays 20 s.
+    if profile.values['schema'] == 'qualification_execution_profile/v6':
+        result['phases']['N2'] = dict(
+            _JOINT_N2_DIAGNOSTIC_PHASE, memory_bytes=profile.memory_bytes
+        )
     if profile.values['schema'] in (
         'qualification_execution_profile/v4',
         'qualification_execution_profile/v5',
+        'qualification_execution_profile/v6',
     ):
         result.update(
             schema='qualification_campaign_budget_profile/v3',
@@ -264,6 +289,22 @@ def dispatch_diagnostic_execution_profile(base_bytes):
         supported_checkpoints=['N1'],
         dispatch_enabled=True,
         dispatch_checkpoints=['N1'],
+    )
+    parse_profile(encoded(result))
+    return result
+
+
+def joint_dispatch_diagnostic_execution_profile(base_bytes):
+    """The S4 joint dispatch successor (D3): diagnostic v6 dispatching N1 and N2."""
+    from ..contract import canonical_json_bytes as encoded
+
+    result = diagnostic_execution_profile(base_bytes)
+    result.update(
+        schema='qualification_execution_profile/v6',
+        protocol_version=6,
+        supported_checkpoints=['N1', 'N2'],
+        dispatch_enabled=True,
+        dispatch_checkpoints=['N1', 'N2'],
     )
     parse_profile(encoded(result))
     return result

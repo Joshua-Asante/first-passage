@@ -1,0 +1,219 @@
+"""staged-debris gate -- banned local-only roots and oversize staged blobs."""
+from __future__ import annotations
+
+import importlib.util
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+REPO = Path(__file__).resolve().parents[1]
+SCRIPT = REPO / "scripts" / "check_staged_debris.py"
+_SPEC = importlib.util.spec_from_file_location("check_staged_debris", SCRIPT)
+csd = importlib.util.module_from_spec(_SPEC)
+sys.modules[_SPEC.name] = csd
+_SPEC.loader.exec_module(csd)
+
+
+def test_path_finding_bans_exactly_the_local_only_roots():
+    banned = [
+        "recovery/pkt/evidence.md",   # local-only evidence-packet root
+        "tmp/session.log",            # main-checkout scratch root
+        "tmp",                        # bare root stem; guard is stem-based
+        "tmp-pr409-listener/f.py",    # root tmp-* directory (2026-09-24 incident)
+        "tmp-phase2-.md",             # root tmp-* file (2026-09-24 incident)
+        # Case variants: on a case-insensitive checkout (Windows,
+        # core.ignorecase=true) these name the same on-disk root.
+        "Recovery/pkt/evidence.md",
+        "TMP/session.log",
+        "Tmp-phase2-.md",
+    ]
+    for path in banned:
+        assert csd.path_finding(path), path
+    allowed = [
+        "docs/x.md",                  # normal tree
+        "tmp_screenshots/s.png",      # different name (underscore): ignore rule, not this gate
+        ".zcodeignore",               # ignored by .gitignore; not in this gate's banned set
+        "sub/tmp/x",                  # nested tmp dir: not the root-anchored incident class
+        "sub/recovery/x",             # nested recovery dir: same
+        "tmpp/x",                     # prefix collision guard
+    ]
+    for path in allowed:
+        assert csd.path_finding(path) is None, path
+
+
+def test_size_finding_threshold_and_allowlist():
+    assert csd.size_finding("docs/big.bin", csd.MAX_STAGED_FILE_BYTES) is None
+    assert csd.size_finding("docs/big.bin", csd.MAX_STAGED_FILE_BYTES + 1)
+    assert csd.size_finding("docs/big.bin", None) is None
+    # Research-results corpus and its archived form: the one legitimate
+    # >1 MB shape (largest tracked file: lab/analysis/.../results.json, 988,529 B).
+    assert csd.size_finding("lab/analysis/big.json", 5_000_000) is None
+    assert csd.size_finding("lab/archive/big.json", 5_000_000) is None
+    assert csd.size_finding("lab/other/big.json", 5_000_000)  # not allowlisted
+    assert csd.size_finding("core/big.json", 5_000_000)
+
+
+def test_staged_paths_parses_name_status_z(monkeypatch):
+    stream = (
+        b"A\0a.py\0M\0m.py\0T\0t.py\0"
+        b"R100\0old.py\0renamed.py\0C75\0src.py\0copy.py\0"
+    )
+    monkeypatch.setattr(csd, "_git", lambda root, *args: stream)
+    # Rename/copy are judged on their destination side only.
+    assert csd.staged_paths(Path(".")) == [
+        "a.py", "m.py", "t.py", "renamed.py", "copy.py",
+    ]
+
+
+def test_staged_paths_returns_none_when_head_unborn(monkeypatch):
+    def boom(root, *args):
+        raise subprocess.CalledProcessError(128, "git")
+    monkeypatch.setattr(csd, "_git", boom)
+    assert csd.staged_paths(Path(".")) is None
+
+
+def test_tree_entries_parses_ls_tree_z(monkeypatch):
+    stream = (
+        b"100644 blob 1111111111111111111111111111111111111111 1234\tdocs/a.md\0"
+        b"160000 commit 2222222222222222222222222222222222222222 -\tvendored\0"
+        b"100644 blob 3333333333333333333333333333333333333333\0"  # no size column: skipped
+    )
+    monkeypatch.setattr(csd, "_git", lambda root, *args: stream)
+    assert csd.tree_entries(Path(".")) == [
+        ("docs/a.md", 1234),
+        ("vendored", None),  # gitlink: no blob size to judge
+    ]
+
+
+def _git(root: Path, *args: str) -> None:
+    subprocess.run(
+        ["git", *args], cwd=root, check=True, capture_output=True, text=True
+    )
+
+
+def _write(root: Path, relpath: str, data: str | bytes) -> None:
+    target = root / relpath
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if isinstance(data, bytes):
+        target.write_bytes(data)
+    else:
+        target.write_text(data, encoding="utf-8")
+
+
+def _run_gate(root: Path) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(SCRIPT), "--root", str(root)],
+        capture_output=True,
+        text=True,
+    )
+
+
+@pytest.fixture()
+def repo(tmp_path: Path) -> Path:
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "config", "user.email", "gate@example.invalid")
+    _git(tmp_path, "config", "user.name", "Gate Test")
+    (tmp_path / "README.md").write_text("seed\n", encoding="utf-8")
+    _git(tmp_path, "add", "README.md")
+    _git(tmp_path, "commit", "-q", "-m", "seed")
+    return tmp_path
+
+
+def test_rejects_banned_roots_when_staged(repo: Path):
+    _write(repo, "recovery/pkt.md", "evidence\n")
+    _write(repo, "tmp/session.log", "scratch\n")
+    _write(repo, "tmp-phase2-.md", "debris\n")
+    _git(repo, "add", "-A")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    for path in ("recovery/pkt.md", "tmp/session.log", "tmp-phase2-.md"):
+        assert path in result.stdout, result.stdout
+
+
+def test_clean_small_stage_passes(repo: Path):
+    (repo / "docs.md").write_text("fine\n", encoding="utf-8")
+    _git(repo, "add", "docs.md")
+    result = _run_gate(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "staged vs HEAD" in result.stdout
+
+
+def test_rejects_oversize_outside_allowlist(repo: Path):
+    (repo / "big.bin").write_bytes(b"x" * (csd.MAX_STAGED_FILE_BYTES + 1))
+    _git(repo, "add", "big.bin")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "big.bin" in result.stdout
+    assert "single-file limit" in result.stdout
+
+
+def test_allows_oversize_research_results(repo: Path):
+    _write(repo, "lab/analysis/results.json", b"x" * (csd.MAX_STAGED_FILE_BYTES + 2_000_000))
+    _git(repo, "add", "-A")
+    result = _run_gate(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_head_tree_mode_catches_committed_debris(repo: Path):
+    _write(repo, "recovery/pkt.md", "evidence\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "blanket add")
+    # Nothing staged now: the gate falls back to the HEAD tree, which is what
+    # CI's `--tier check` sees on a branch that already committed debris.
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "recovery/pkt.md" in result.stdout
+    assert "HEAD tree" in result.stdout
+
+
+def test_deletion_only_cleanup_of_committed_debris_passes(repo: Path):
+    """Un-indexing committed debris is a cleanup, never a finding."""
+    # Codex P1 on PR #493: a stage holding only deletions must be judged as a
+    # staged change, not mistaken for "nothing staged" and routed to the HEAD
+    # tree -- which still holds the very files being removed.
+    _write(repo, "recovery/pkt.md", "evidence\n")
+    _write(repo, "tmp-phase2-.md", "debris\n")
+    _write(repo, "big.bin", b"x" * (csd.MAX_STAGED_FILE_BYTES + 1))
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "blanket add")
+    _git(repo, "rm", "-q", "-r", "--cached", "recovery", "tmp-phase2-.md", "big.bin")
+    result = _run_gate(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "staged vs HEAD" in result.stdout
+
+
+def test_git_mv_out_of_banned_root_passes(repo: Path):
+    """A rename away from a banned root is judged on its clean destination."""
+    _write(repo, "recovery/a.md", "evidence worth keeping\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "blanket add")
+    _git(repo, "mv", "recovery/a.md", "a.md")
+    result = _run_gate(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_git_mv_into_banned_root_blocks(repo: Path):
+    """A rename into a banned root is judged on its banned destination."""
+    _write(repo, "docs/a.md", "doc\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "doc")
+    (repo / "recovery").mkdir()
+    _git(repo, "mv", "docs/a.md", "recovery/a.md")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "recovery/a.md" in result.stdout
+
+
+def test_modifying_tracked_oversize_file_blocks(repo: Path):
+    """Re-staging an already-tracked oversize blob is still a finding."""
+    _write(repo, "big.bin", b"x" * (csd.MAX_STAGED_FILE_BYTES + 1))
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "pre-existing large file")
+    _write(repo, "big.bin", b"y" * (csd.MAX_STAGED_FILE_BYTES + 1))
+    _git(repo, "add", "big.bin")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "big.bin" in result.stdout
+    assert "single-file limit" in result.stdout
