@@ -41,6 +41,11 @@ EXPECTED_ALWAYS = {
     # subsections). always, not path-conditional on STATE.md: a stale date
     # must fail the next unrelated commit when the daily digest is skipped.
     "state-currency",
+    # 2026-09-24: blanket-add rejection for local-only roots (recovery/, tmp/,
+    # root tmp-*) and oversize blobs. always for the same reason as
+    # state-currency: the violating change is by construction an "unrelated"
+    # blanket add that no staged_regex selects.
+    "staged-debris",
     # Structural half of M1 artifact validation (unreadable JSON, missing/
     # invalid fields, bad status, secrets_present != false, secret-shaped
     # content) — split from m1-tree-skew (audit-tier) so a corrupted or
