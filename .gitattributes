@@ -104,3 +104,7 @@ ops/calendars/evidence/*.json text eol=lf
 
 # Qualification host inputs are byte-hashed across platforms.
 tools/qualification_verification/* text eol=lf
+
+# Workflow scripts: the Workflow tool's permission handler rejects \r as a hidden
+# control character, so a CRLF checkout (core.autocrlf=true) cannot be run by name.
+.claude/workflows/** text eol=lf

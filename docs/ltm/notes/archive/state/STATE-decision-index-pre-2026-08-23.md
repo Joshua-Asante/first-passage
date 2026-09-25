@@ -2,7 +2,9 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
-**Sixteenth roll, 2026-09-24** (one entry, pushed off by the bracket-convention build GO):
+**Sixteenth roll, 2026-09-24** (two entries, pushed off by the T08 R3 ruling and the bracket-convention build GO):
+
+- **2026-09-02** — Portable-edge objective and bounded cultivation campaign approved; no candidate/capital authority. [ADR](../../../../../docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md)
 
 - **2026-09-01** — MOC-wake strategy and source-liveness pursuits closed; no candidate opened. [Closure](../../../../../docs/notes/2026-09-01-next-vet-intake-decision.md)
 
