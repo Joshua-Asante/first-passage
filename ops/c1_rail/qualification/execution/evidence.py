@@ -26,10 +26,28 @@ def outcome_record(row):
     )
 
 
+def _plan_stages(plan):
+    """The per-population statistics stage: N1 plans pin N1; the joint N2 plan
+    carries each population's statistics_stage (FULL->N2, H1/H2->PART_B)."""
+    depths = plan.get('depths') if type(plan) is dict else None
+    if type(depths) is not list:
+        raise ValueError('plan depths required')
+    stages = []
+    for row in depths:
+        if type(row) is not dict or row.get('population') not in ('FULL', 'H1', 'H2'):
+            raise ValueError('plan population differs')
+        stage = row.get('statistics_stage') if plan.get('checkpoint') == 'N2' else 'N1'
+        if stage not in ('N1', 'N2', 'PART_B'):
+            raise ValueError('plan statistics stage differs')
+        stages.append(stage)
+    return tuple(stages)
+
+
 def path_inventory(plan, populations):
+    stages = _plan_stages(plan)
     seeds = iter(plan['seed_inputs'])
     records = []
-    for population in populations:
+    for population, stage in zip(populations, stages):
         for index, row in enumerate(population['outcomes']):
             seed = next(seeds, None)
             if seed is None or (seed['population'], seed['path_index']) != (
@@ -39,7 +57,7 @@ def path_inventory(plan, populations):
                 raise ValueError('worker depth/order differs from plan')
             records.append(
                 dict(
-                    stage='N1',
+                    stage=stage,
                     population=population['population'],
                     path_index=index,
                     panel_id=None,
@@ -58,12 +76,23 @@ def path_inventory(plan, populations):
 
 def encode_worker_result(context, execution_id, plan_bytes, run, observations, *, admitted):
     admitted.source.verify_for(context.contract)
-    if run.stage != 'n1' or run.synthetic is not context.domain.permits_synthetic:
+    plan = json.loads(plan_bytes)
+    stages = _plan_stages(plan)
+    if run.stage not in ('n1', 'n2') or run.synthetic is not context.domain.permits_synthetic:
         raise ValueError('worker computation domain differs')
+    if (plan.get('checkpoint') == 'N2') != (run.stage == 'n2'):
+        raise ValueError('worker stage differs from plan checkpoint')
     populations = [
-        dict(population=name, outcomes=[outcome_record(row) for row in rows])
-        for name, rows in run.populations
+        dict(
+            population=name,
+            stage=stage if plan.get('checkpoint') == 'N2' else None,
+            outcomes=[outcome_record(row) for row in rows],
+        )
+        for (name, rows), stage in zip(run.populations, stages)
     ]
+    if plan.get('checkpoint') != 'N2':
+        for population in populations:
+            population.pop('stage')
     return encoded(
         dict(
             schema='qualification_worker_result/v1',
@@ -76,7 +105,7 @@ def encode_worker_result(context, execution_id, plan_bytes, run, observations, *
                 dict(role=role, sha256=digest)
                 for role, _, digest in sorted(admitted.source.prepared.load_trace)
             ],
-            path_inventory=path_inventory(json.loads(plan_bytes), populations),
+            path_inventory=path_inventory(plan, populations),
             observations=observations,
         )
     )
@@ -148,14 +177,18 @@ def parse_worker_result(raw, *, context, execution_id, plan_bytes, campaign_limi
     if encoded(doc['legality']) != expected_legality:
         raise ValueError('worker legality differs')
     plan = json.loads(plan_bytes)
-    if type(doc['populations']) is not list or len(doc['populations']) != 3:
+    joint = plan.get('checkpoint') == 'N2'
+    stages = _plan_stages(plan)
+    if type(doc['populations']) is not list or len(doc['populations']) != len(stages):
         raise ValueError('complete ordered worker populations required')
     populations = []
-    for population, expected in zip(doc['populations'], plan['depths']):
-        fields(population, {'population', 'outcomes'})
+    for population, expected, stage in zip(doc['populations'], plan['depths'], stages):
+        keys = {'population', 'outcomes'} | ({'stage'} if joint else set())
+        fields(population, keys)
         rows = population['outcomes']
         if (
             population['population'] != expected['population']
+            or (joint and population.get('stage') != stage)
             or type(rows) is not list
             or len(rows) != expected['depth']
         ):

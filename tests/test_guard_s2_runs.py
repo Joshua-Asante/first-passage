@@ -21,9 +21,10 @@ SHA = "a" * 40
 OTHER = "b" * 40
 
 
-def run(**fields):
+def run(mode="s3", **fields):
     base = {"databaseId": 1, "headSha": SHA, "status": "completed", "conclusion": "success",
-            "event": "workflow_dispatch", "displayTitle": "Qualification S2 supervision [s3] (feat)"}
+            "event": "workflow_dispatch",
+            "displayTitle": f"Qualification S2 supervision [{mode}] (feat)"}
     return {**base, **fields}
 
 
@@ -130,6 +131,23 @@ def test_failure_refusal_points_at_root_cause_and_a_runnable_diagnostic():
     assert "re-roll" in reason
     assert "-f mode=s3 -f cases=" in reason
     assert f"{guard.OVERRIDE} gh workflow run" in reason
+
+
+def test_a_titles_s4_tag_parses_as_mode_s4():
+    assert guard._run_mode(run(mode="s4")) == "s4"
+    assert guard._run_mode(run(mode="s3")) == "s3"
+    assert guard._run_mode(run(mode="s2")) == "s2"
+
+
+def test_the_workflows_default_mode_is_s4():
+    assert guard.DEFAULT_MODE == "s4"
+
+
+def test_an_s4_run_decides_s4_coverage_and_an_s3_run_does_not():
+    # s4 installs the joint v6 bytes and s3 the v5 ones, so neither covers the other.
+    assert guard.dispatch_redundancy_refusal(SHA, [run(mode="s4")], mode="s4")
+    assert guard.dispatch_redundancy_refusal(SHA, [run(mode="s3")], mode="s4") is None
+    assert guard.dispatch_redundancy_refusal(SHA, [run(mode="s4")], mode="s3") is None
 
 
 # --- pure decisions: reruns (D11) ----------------------------------------------
@@ -313,7 +331,7 @@ def test_dispatch_without_ref_checks_the_default_branch(monkeypatch):
 
     def runs(repo, *, branch, event, cwd=None):
         seen.append(branch)
-        return [run()] if branch == "main" else []
+        return [run(mode=guard.DEFAULT_MODE)] if branch == "main" else []
 
     monkeypatch.setattr(guard, "_default_branch", lambda repo, cwd=None: "main")
     monkeypatch.setattr(guard, "_gh_runs", runs)
@@ -336,3 +354,15 @@ def test_dispatch_without_ref_is_not_blocked_by_the_local_branchs_runs(monkeypat
 def test_dispatch_without_ref_fails_open_when_default_branch_unknown(monkeypatch):
     monkeypatch.setattr(guard, "_default_branch", lambda repo, cwd=None: "")
     assert hook("gh workflow run qualification-s2-supervision.yml") == ""
+
+
+# --- S4: `cases` is a diagnostic subset for s3 and s4 -------------------------
+
+def test_cases_is_a_diagnostic_subset_for_s3_and_s4_not_s2(monkeypatch):
+    monkeypatch.setattr(guard, "_gh_runs", lambda repo, *, branch, event, cwd=None: [])
+    monkeypatch.setattr(guard, "_remote_sha", lambda repo, ref, cwd=None: SHA)
+    command = ("gh workflow run qualification-s2-supervision.yml --ref feat "
+               "-f mode=%s -f cases=deadline")
+    assert guard.refusal_for_command(command % "s4") is None
+    assert guard.refusal_for_command(command % "s3") is None
+    assert guard.S2_CASES_NOTE in guard.refusal_for_command(command % "s2")

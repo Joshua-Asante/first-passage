@@ -10,21 +10,21 @@ name: Qualification S2 supervision
 #
 # A dispatch with `cases` set is a labelled DIAGNOSTIC run (record scope
 # DIAGNOSTIC_SUBSET, refused by scripts/s2_run_evidence.py); the run-name says so
-# in `gh run list`, and it names the boundary mode ([s2] or [s3], matching
+# in `gh run list`, and it names the boundary mode ([s2], [s3] or [s4], matching
 # BOUNDARY_MODE's default below), which scripts/guard_s2_runs.py reads to exempt
-# diagnostics and to tell S2-only coverage from S3 coverage.
+# diagnostics and to tell S2, S3 and S4 coverage apart.
 run-name: >-
   ${{ inputs.cases != '' && inputs.cases != null
-      && format('S2 DIAGNOSTIC [{0}] ({1})', inputs.mode || 's3', inputs.cases)
-      || format('Qualification S2 supervision [{0}] ({1})', inputs.mode || 's3', github.ref_name) }}
+      && format('S2 DIAGNOSTIC [{0}] ({1})', inputs.mode || 's4', inputs.cases)
+      || format('Qualification S2 supervision [{0}] ({1})', inputs.mode || 's4', github.ref_name) }}
 on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Boundary selection: s2 (the fifteen S2 nodes) or s3 (S2 plus the four N1 nodes; the acceptance-grade set)'
+        description: 's2 (the fifteen S2 nodes), s3 (S2 plus the four N1 nodes on the dispatch/v5 installation) or s4 (S3 plus the three joint N2 nodes on the joint v6 installation; the acceptance-grade set)'
         type: choice
-        options: [s2, s3]
-        default: s3
+        options: [s2, s3, s4]
+        default: s4
       cases:
         description: 'Diagnostic subset only: a pytest -k expression over the selected files. Empty runs the full selection. A non-empty value marks the record DIAGNOSTIC_SUBSET, which can never be acceptance evidence.'
         type: string
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-24.04
     # Nine admissions plus the 305 s downtime case and bounded waits; well under
     # this ceiling on a hosted runner, but never a fast check.
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Validate inputs
@@ -76,12 +76,12 @@ jobs:
         # provisioning step. Inputs reach the script through env only, never
         # interpolated into it; the boundary wrapper re-checks `cases` itself.
         env:
-          BOUNDARY_MODE: ${{ inputs.mode || 's3' }}
+          BOUNDARY_MODE: ${{ inputs.mode || 's4' }}
           BOUNDARY_CASES: ${{ inputs.cases || '' }}
         run: |
           mode="$BOUNDARY_MODE"
           cases="$BOUNDARY_CASES"
-          case "$mode" in s2|s3) ;; *) echo "unsupported mode: $mode (expected s2 or s3)" >&2; exit 2 ;; esac
+          case "$mode" in s2|s3|s4) ;; *) echo "unsupported mode: $mode (expected s2, s3 or s4)" >&2; exit 2 ;; esac
           if [ -n "$cases" ]; then
             # The same whitespace test as the boundary wrapper (Python str.strip, so
             # Unicode spaces such as NBSP count); the bash class is the fallback.
@@ -95,8 +95,8 @@ jobs:
               echo "cases is whitespace-only; leave it empty to run the full selection" >&2
               exit 2
             fi
-            if [ "$mode" != "s3" ]; then
-              echo "cases is a diagnostic subset for mode s3 only (mode: $mode)" >&2
+            if [ "$mode" != "s3" ] && [ "$mode" != "s4" ]; then
+              echo "cases is a diagnostic subset for mode s3 or s4 only (mode: $mode)" >&2
               exit 2
             fi
           fi
@@ -124,14 +124,14 @@ jobs:
         env:
           # Inputs reach the script through the environment, never interpolated
           # into it: `cases` is free text and this step runs as root.
-          BOUNDARY_MODE: ${{ inputs.mode || 's3' }}
+          BOUNDARY_MODE: ${{ inputs.mode || 's4' }}
           BOUNDARY_CASES: ${{ inputs.cases || '' }}
         run: |
           manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
           host_root="$(dirname "$manifest")"
           mode="$BOUNDARY_MODE"
           cases="$BOUNDARY_CASES"
-          case "$mode" in s2|s3) ;; *) echo "unsupported mode: $mode" >&2; exit 2 ;; esac
+          case "$mode" in s2|s3|s4) ;; *) echo "unsupported mode: $mode (expected s2, s3 or s4)" >&2; exit 2 ;; esac
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
           args=(--"$mode")
           if [ -n "$cases" ]; then
