@@ -1,6 +1,6 @@
 # T08 vendor question: draft for the operator to send (2026-09-24)
 
-**Status:** DRAFT. Authorized by the operator's 2026-09-24 ruling ([T08 §7.8](../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24), part 2). **Joshua sends it; no agent contacts a vendor.** Remove nothing that makes the question narrower; add no account identifier, account size, P&L or strategy detail.
+**Status:** SENT 2026-09-25 (operator report, in session; no reply recorded — record the reply's SHA-256 in T08 §7 when it arrives; owner of the ruling: [campaign record §59](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25)). Text below is as authorized. Authorized by the operator's 2026-09-24 ruling ([T08 §7.8](../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24), part 2). **Joshua sends it; no agent contacts a vendor.** Remove nothing that makes the question narrower; add no account identifier, account size, P&L or strategy detail.
 
 **Recipient:** CrossTrade support. The blocker being tested is CrossTrade's deferred work (T08 §7.3 row 5), so the bound, if one exists, has to come from CrossTrade. Tradovate is not asked: its side matters only if CrossTrade gives a bound, and §7.4 already records that evaluation accounts have no native API access.
 
