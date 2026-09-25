@@ -724,3 +724,64 @@ Superseded but green (kept as history, not binding): 35736618719 on `7405620` (r
 **Executor disclosures recorded (from its checkpoint return):** (1) the corruption-restore — a first-draft AST `dict()`→literal converter spliced six files mid-expression; detected immediately by `ast.parse`; all thirteen touched files restored with `git checkout --` to `7405620`; the restore also silently reverted the uncommitted skip guard, so `5eb1f3a`'s message claimed an edit its tree lacked; no corrupt bytes were ever committed. (2) `aaf9646`'s message described a derivation its diff lacked (its patch script crashed after the first edit); caught in review; the executor's unpushed repair `6086b9f` was superseded by `ec41c10`, and its "478" count was wrong (483 − 19 = 464, matching CI). (3) One push while a run was in flight (`aaf9646` cancelled the `15badeb` PR run) — a discipline breach, the run's head superseded anyway. (4) `black -S -l 100` reformatted whole changed files, including pre-existing S2 code in them; behaviour-neutral, verified by the unchanged S2 Linux nodes. (5) The TEST_ONLY `hold_after_intent` fault input on the schedule request exists only to open the T1/T2 window for the E06/E07 scene. Lessons (5)–(7) of the S4 packet's carried list come from these.
 
 **Preconditions carried to S4** are in the S4 packet §0 (anchors pinned at `a8a983e`; ten binding lessons; S4 dispatched 2026-09-22 off `a8a983e` in parallel, acceptance-grade Linux only after this merge and a rebase). **Not accepted by this entry:** anything beyond N1 — no N2/Part A, no result or seal authority, no activation; the full-campaign acceptance remains S8/T06's.
+
+### Coordinator checkpoint C2 — S4 CHANGES REQUIRED; §0.6 decisions and the N2 ceiling ruled, 2026-09-24
+
+**State found.** The S4 executor (GLM) pushed its build `a0a03cc` on 2026-09-22 and never returned C2: packet §7 still reads "_Pending._" No S4 session remained live. Companion PR #467 was operator-directed ("port the settlement fix where applicable"; "Implement the 467 and 468 fixes directly"). It merged into `claude/s4-joint-n2` at `80283b1`, where it peeled three S4 defects: `e82ac1e` (v6 setup refusal), `882d46e` (the test did not wait for #461's qg5 settlement) and `1db0017` (the START_CLIENT claim was terminal from `N2_READY`). The fourth layer was left untraced, because that session's egress policy blocked the run artifact. Four consecutive red full runs had tripped the packet's stop rule 2: 35882539669, 35919170318, 35922694962 and 35927503612.
+
+**Root cause, traced from artifact 35927503612.** The tested merge tree `874ecf6` is byte-identical to `80283b1` (tree `5891467d`). Three failing nodes, and the same trace in each:
+- the n2work guardian died on its first poll in `_await_dispatch_ack` (`campaign_supervisor.py:1301-1306`). Its liveness gate admits only `PROVISIONAL`/`BOUND`, and every N2 work launches from `N2_READY`;
+- `journal.log` holds the `:1306` traceback for guardian pids 4893, 5309 and 5683, and each unit exits with status 1;
+- the raise comes before guardian_main's `try`, so no FAILURE or IN_DOUBT was written, and each test's 330 s wait expired.
+
+This is the guardian-side twin of the store gates that S4 and `1db0017` already made phase-scoped. It survived refute-first verification on three lenses: evidence consistency, code reachability, and an alternative-cause search. **Six more N1-only sites sit behind it, and each would have been one more blind Linux run:**
+- `_assert_authority` at `:1325`, `:1397`, `:1448` and `:2386`;
+- `guardian_task_bound` gives `n2_worker`/`n2_g5` `pids.max = 1`;
+- the uid map has no `n2_worker`/`n2_g5` entry (KeyError);
+- the compute `COMPLETED` gate is `BOUND`-only;
+- `G5_COMMIT_STATES` contains `N2_READY`, so an N2 G5 is "committed" at launch and never resumed;
+- the signing-retry finalize is `BOUND`-only and hard-codes `'checkpoint': 'N1'`.
+
+**C2 audit.** The build was reviewed against the frozen packet on five lenses: D1 custody, D2 joint batch, D3 release, D4 policy, and forbidden items/seams. That produced 26 BLOCKING/MAJOR findings. Each was re-verified by two independent refuters, and 23 were confirmed. Beyond the stall layers, the confirmed defects are:
+- **the 8→9 custody widening fails on every existing S3 v8 journal.** `widen_checkpoint_layout` builds `CREATE TABLE …_v9 ((…`, a SQL syntax error, and a single-paren fix would still fail the exact-layout walk because the renamed table's SQL is quoted. There is no exact v8 predecessor check before the rebuild, and the frozen S3 v8 literal no longer exists. No test covers any of this; fresh journals take the 7→9 path, which is why CI passed;
+- **at v9 the startup integrity walk silently skips** the budget, funding and checkpoint walks (`CampaignStore.integrity` gates them on 6/7/8 and 8). This relaxes an S2/S3 assertion (§6);
+- **VOID at v9 no longer records the authority-bearing budget VOID event** (`void()` gate `(6, 7, 8)`);
+- **the `/v6` snapshot's S3 closed key set was relaxed in place.** It now accepts N2 entries, and `launch_gate` / `claim_supervision_control` rewrite a `/v7` snapshot back to `/v6` while the N2 entry is present (§6, S4-D2);
+- **a v5 installation admits `checkpoint='N2'`** on the checkpoint operations; STAGE persists an N2 row;
+- **the joint FAIL/PASS commit path is untested through the service** (`committed_n2` bypasses `service._commit_checkpoint`);
+- **§3 refusals are not exercised through the reconstruction**, and the G5 builder does not close the batch shape (population count, stage labels, record consumption; missing halves raise IndexError);
+- **E08's N2 half covers only a post-commit overrun.** There is no N2 compute or capture exhaustion case and no restart with the N2 reservation open. `CampaignStore._terminal` still acts only from `PROVISIONAL`/`BOUND`, so budget watchdogs do nothing for N2 phases in `N2_READY`;
+- advisory: unset failure caps are recorded as `0` in the joint cutoff; a reused manifest node ID (`test_unsupported_prefix_decision[stages3-PARTIAL-NONE]`) changed meaning; stale scope text.
+
+**Operator ruling — the N2 phase ceiling (M13), 2026-09-24.** Measured on Windows, `run_n2_compute` takes 211.39 s CPU, against 13.36 s for N1 (record `20260924T034139Z-59ce3c4b7643`), roughly 137 s on Linux by scaling. Every phase gets 120 s CPU / 300 s wall with a 20 s orchestration charge, so the payload has about 100 s. The genuine-pass and g5-death cases would therefore be SIGKILLed at the absolute deadline, again silently. The packet's Authority bars ceiling changes, so the question went to the operator. The operator selected "Raise N2 in /v6 only (Recommended)":
+- **in the TEST_ONLY `/v6` diagnostic profile only, the N2 compute phase gets 360 s CPU / 900 s wall;**
+- v5, every other phase, every statistic and every depth are unchanged;
+- the Linux test waits are lengthened to match;
+- the real N2 CPU is measured on the first run and recorded.
+
+**Coordinator rulings on the §0.6 decisions:**
+1. **Selector and scope.** Adopt the recommendation. `--s4` is a superset of `--s3`, with scope `S4_JOINT_N2`, and the workflow `mode` gains `s4`. `--s3` goes back to installing v5, so `S3_N1_CAPTURE` keeps meaning what C1 accepted: 19 nodes on `/v5`. `s2_run_evidence.py` accepts `S4_JOINT_N2` and binds each scope to its exact required node set, so a 19-node S3 record and a 22-node S4 record can no longer read identically. The stale restatements are corrected: the workflow `mode` text, the README count, the `fixture_install` comment and the N1 Linux docstring.
+2. **Genuine Linux N2 FAIL.** Not required. The FAIL commit path stands on the Windows asymmetric cases, provided they run through the service's `COMMIT_CHECKPOINT_ASSESSMENT` path, and §7 discloses this.
+3. **`validate_recoveries`' `/v5` literal.** Left unchanged: it is unreachable in N2, because dispatches are non-empty from the N1 launch onward. §7 records the reasoning.
+4. **The `_settlement_terminal` seam.** The `ResultStore` unification stays with T05. S4 fixes `CampaignStore`'s own N1-only `_terminal` liveness in its own file, with E08 N2 tests.
+5. **S4-D4 reading.** The single global `/v2` policy identity, with every consumer re-pinned, is accepted as the reading of D4. This holds on condition that N1_ONLY's rejection of the joint prefix is asserted by a registered QPOL-01 test and the reused node ID is given explicit, stable IDs.
+
+**Repair order.** Single writer; every step lands on `claude/s4-joint-n2` through the coordinator's repair branch `claude/s4-c2-repair`.
+- **R1**: the N2 guardian launch path, M1 plus the six latent sites, with six Windows regression tests and the Linux test hardening (the RUNNING gate, a work-scoped guardian kill, `reply['ok']`).
+- **R2**: custody at v9 — an exact-DDL widening with a v8 predecessor check against a frozen S3 v8 literal, integrity at v9, VOID at v9, the `_terminal` liveness and the E08 N2 cases.
+- **R3**: snapshot closure — `/v6` holds `{N1}` only, `/v7` requires N2, and the writers choose `/v7` whenever N2 is present.
+- **R4**: the release binding for checkpoint ops, thresholds carried as `None`, shape closure in the G5 builder, service-path N2 commit tests, §3 refusal tests, and the QPOL-01/test-ID fixes.
+- **R5**: the selector and scope, plus the M13 ceiling.
+
+**Linux discipline.** Stop rule 1 comes first, then subset runs. Subset A is the guardian-death case, which needs R1 only. Subset C is every S4 case, after R5. Then one full run on the identical final head, read with `--expect-head`. Acceptance needs two clean runs and a cross-vendor review under D-codex (b).
+
+**Coordinator process disclosures:**
+- The R1 production patch is the diagnosis workflow's 14 exact textual replacements, each anchored once. The coordinator applied them by script: GLM hit its 60-iteration cap on a dry run of the same patch. GLM ported the regression tests and hardened the Linux file.
+- The patch was first applied in the executor worktree `mfo-s4-wt`. It was then moved to the coordinator-owned `.claude/worktrees/s4-c2-repair`, and `mfo-s4-wt` was restored to its clean `80283b1` state.
+- The existing execution suites passed 187/187 on the patched supervisor. That record is **source-unstable**, because a concurrent edit landed during the run, so it is not evidence. The evidence comes from the committed repair head.
+
+**Not accepted by this entry:** S4 itself. There is no Linux evidence yet, and no N2/Part A authority, activation or statistical dispatch.
+
+### Coordinator handoff — end of 2026-09-24 (campaign ownership passes to the next coordinator session)
+
+Recorded under STATE's handoff obligation (campaign record §58): the coordinating role passes to **the next coordinator session that opens [the 2026-09-24 coordinator handoff](../../briefs/handoffs/2026-09-24-full-e1-coordinator-handoff.md)**; until one does, the role rests with the operator. State at `main@d1d6423`: S1–S3 accepted; **S4 CHANGES REQUIRED** at C2 with the ruling merged and R1/R5 recorded on `claude/s4-c2-repair`, while **R2–R4 remain outstanding**; no acceptance-grade Linux evidence on the repair head; S5 unfrozen; T05 build frozen. External: T08 R3 = NONE (D-broker void; operator ruled item 1 — hold live release, vendor question, amendment scope); T10 step 4 finds per-path source re-verification the likely budget-dominant term (extrapolated, to be confirmed by a synthetic probe); T07 blocked on three S2 source facts; T00 INSUFFICIENT on P7(b). At this correction checkpoint #480, #483 and #489 are merged; the open queue is this handoff (#490), conflicted #482, stacked #488 and held #486. The handoff §3 records the conditional sequence. This entry accepts nothing and grants nothing.
