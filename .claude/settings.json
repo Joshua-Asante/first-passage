@@ -54,6 +54,15 @@
         ]
       },
       {
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guard_operator_acts.py\""
+          }
+        ]
+      },
+      {
         "matcher": "mcp__github__(merge_pull_request|enable_pr_auto_merge)",
         "hooks": [
           {

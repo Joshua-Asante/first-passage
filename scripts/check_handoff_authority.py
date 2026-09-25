@@ -25,8 +25,10 @@ HARD checks (exit 1), each the property the ADR states:
   A3  no capability is an operator act (risk ``high``) — a card never delegates one;
   A4  every capability's risk <= the card's ``max_risk`` <= the seat's ``max_risk``;
   A5  every capability is grantable to the seat;
-  A6  a worker card names its acceptance tests (handoff contract item 5);
-  A7  when ``parent`` is given it is a repository-relative path to an existing file inside
+  A6  a worker card names its acceptance tests (handoff contract item 5), and no
+      ``acceptance`` entry is empty;
+  A7  a worker card names its ``parent`` (item 7: a card only narrows its parent); the
+      parent is a repository-relative path to an existing file inside
       the repository; the parent is itself checked, recursively up the chain, and a chain
       that revisits a card is refused; and when the parent carries a block: capabilities ⊆
       parent's, ``max_risk`` <= parent's, and every parent constraint is restated (a child
@@ -84,6 +86,9 @@ def load_registry(path: Path = REGISTRY) -> Registry:
         unknown = grant - caps.keys()
         if unknown:
             raise ValueError(f"registry: seat {seat!r} grants unknown {sorted(unknown)}")
+        if spec["max_risk"] not in order:
+            raise ValueError(f"registry: seat {seat!r} has unknown max_risk "
+                             f"{spec['max_risk']!r}")
         seats[seat] = (spec["max_risk"], grant)
     return Registry(order, caps, forbidden, seats)
 
@@ -174,8 +179,13 @@ def check_card(path: Path, reg: Registry, *, root: Path = REPO_ROOT,
             errors.append(f"A5 {cap!r} is not grantable to seat {seat!r}")
     if seat == "worker" and not acceptance:
         errors.append("A6 a worker card names its acceptance tests before the worker starts")
+    if any(not name.strip() for name in acceptance):
+        errors.append("A6 an `acceptance` entry is empty; name each test")
 
     parent = data.get("parent")
+    if parent is None and seat == "worker":
+        errors.append("A7 a worker card names its `parent` card (handoff contract item 7); "
+                      "without one nothing bounds the grant but the seat")
     if parent is not None:
         if not isinstance(parent, str):
             errors.append("A7 `parent` must be a repo-relative path")

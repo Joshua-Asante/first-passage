@@ -49,8 +49,40 @@ def _errs(path: Path, root: Path) -> list[str]:
 
 
 def test_clean_worker_card_passes(tmp_path):
-    # Fails if a well-formed worker card is rejected (the checker over-blocks).
-    assert _errs(_card(tmp_path, WORKER_OK), tmp_path) == []
+    # Fails if a well-formed worker card, naming its parent, is rejected (over-blocks).
+    _card(tmp_path, "seat: coordinator\nmax_risk: medium\n"
+          "capabilities: [repository.read, tests.run, worktree.write, branch.push, pr.open]\n"
+          "constraints: [no_main_write]\n", name="umbrella.md")
+    body = "parent: umbrella.md\n" + WORKER_OK
+    assert _errs(_card(tmp_path, body), tmp_path) == []
+
+
+def test_worker_card_must_name_its_parent(tmp_path):
+    # Fails if a worker block that omits `parent` skips A7 and keeps the whole seat
+    # grant (item 7 requires the block to name its parent; Codex #503 threads Dr5 / TGh).
+    assert any(e.startswith("A7") and "parent" in e
+               for e in _errs(_card(tmp_path, WORKER_OK), tmp_path))
+
+
+@pytest.mark.parametrize("names", ['[""]', '["  "]', '[tests/x.py::test_y, ""]'])
+def test_acceptance_names_must_be_nonempty(tmp_path, names):
+    # Fails if `acceptance: [""]` stands in for named tests (Codex #503 thread TGw).
+    body = WORKER_OK.replace("[tests/scripts/test_x.py::test_y]", names)
+    assert any(e.startswith("A6") for e in _errs(_card(tmp_path, body), tmp_path))
+
+
+def test_registry_rejects_unknown_seat_ceiling(tmp_path):
+    # Fails if a mistyped seat `max_risk` loads silently and crashes the first card for
+    # that seat instead of failing the registry gate (Codex #503 thread DsN).
+    text = (REPO / "scripts" / "seat_authority.yml").read_text(encoding="utf-8")
+    bad = tmp_path / "seat_authority.yml"
+    bad.write_text(text.replace("  executive:\n    max_risk: medium",
+                                "  executive:\n    max_risk: meduim")
+                   .replace("  executive:\r\n    max_risk: medium",
+                            "  executive:\r\n    max_risk: meduim"), encoding="utf-8")
+    assert "meduim" in bad.read_text(encoding="utf-8")
+    with pytest.raises(ValueError, match="executive"):
+        cha.load_registry(bad)
 
 
 def test_card_without_block_is_not_checked(tmp_path):
@@ -68,11 +100,17 @@ def test_forbidden_capability_is_ungrantable(tmp_path, cap):
 
 
 def test_hook_denials_are_registered_forbidden():
-    # Fails if the hook denies an act the registry does not list as forbidden (the
-    # registry is the one canonical list; the hook must not carry its own).
+    # Fails if the hook denies an act the registry does not list as forbidden, or asks
+    # on one the registry does not class as an operator act (the registry is the one
+    # canonical list; the hook must not carry its own). Derived from the hook's own
+    # decision table, which every hit it emits is looked up in.
     import scripts.guard_operator_acts as hook
-    denied = {cap for _, dec, cap in hook._FALLBACK if dec == "deny"} | {"main.direct_push"}
+    assert set(hook.MESSAGES) == set(hook.DECISION)
+    denied = {cap for cap, dec in hook.DECISION.items() if dec == "deny"}
+    asked = {cap for cap, dec in hook.DECISION.items() if dec == "ask"}
     assert denied - {"pr.merge_unpinned"} <= REG.forbidden
+    assert all(REG.capabilities.get(cap) == "high" for cap in asked)
+    assert {cap for _, cap in hook._FALLBACK} <= set(hook.DECISION)
 
 
 def test_trade_submit_is_in_the_forbidden_set():

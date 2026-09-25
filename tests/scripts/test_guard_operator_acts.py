@@ -181,10 +181,237 @@ def test_hook_contract():
 
 
 def test_settings_wire_the_hook():
-    # Fails if the hook is not registered for both the Bash and the MCP merge tools.
+    # Fails if the hook is not registered for the Bash and PowerShell tools and the MCP
+    # merge tools (a Windows session reaches `gh` through either shell tool).
     settings = json.loads((REPO / ".claude" / "settings.json").read_text())
     wired = [(e["matcher"], h["command"]) for e in settings["hooks"]["PreToolUse"]
              for h in e["hooks"]]
     ours = [m for m, c in wired if "guard_operator_acts.py" in c]
     assert "Bash" in ours
+    assert "PowerShell" in ours
     assert any("merge_pull_request" in m and "enable_pr_auto_merge" in m for m in ours)
+
+
+# --- 2026-09-25 babysit repairs (Codex reviews of #503 at e75b653 and 7cfd367) ---
+
+OLD = "fedcba9876543210fedcba9876543210fedcba98"
+
+
+def _reason(command: str, tool: str = "Bash") -> dict:
+    out = _run(json.dumps({"tool_name": tool, "tool_input": {"command": command}}))
+    return json.loads(out)["hookSpecificOutput"] if out else {}
+
+
+@pytest.mark.parametrize("command", [
+    "git push origin --all",
+    "git push --all origin",
+    "git push origin --branches",
+    "git push --mirror origin",
+    "git push --mirr origin",
+    "git push origin --al",
+    "git push origin :",
+    "git push origin +:",
+    "git push origin 'refs/heads/*:refs/heads/*'",
+    "git push origin 'refs/heads/*'",
+    "git push origin '+refs/heads/m*:refs/heads/m*'",
+])
+def test_bulk_push_that_covers_main_denied(command):
+    # Fails if a bulk push (`--all`/`--branches`/`--mirror`, git's abbreviations of them,
+    # the matching refspec `:` or a glob destination covering main) reaches main
+    # unjudged (Codex #503 threads Drv / TGb).
+    assert g.classify_command(command) == ("deny", "main.direct_push")
+
+
+@pytest.mark.parametrize("command", [
+    "git push origin --tags",
+    "git push --atomic origin claude/x",
+    "git push origin 'refs/heads/claude/*:refs/heads/claude/*'",
+])
+def test_bulk_forms_that_miss_main_are_silent(command):
+    # Fails if the bulk-push rule over-reaches to pushes that cannot touch main.
+    assert g.classify_command(command) is None
+
+
+def test_unreadable_push_to_main_fails_closed():
+    # Fails if a command the strict scanner cannot read hides a push to main
+    # (Codex #503 thread TGc; `bash -n` accepts this command).
+    command = 'echo "$(case x in x) echo ok;; esac)" && git push origin main'
+    assert g.classify_command(command) == ("deny", "main.direct_push")
+    assert g.classify_command(command.replace("origin main", "origin claude/x")) is None
+
+
+def test_prompt_names_the_sha_the_merge_pins():
+    # Fails if the operator is shown a SHA other than the one GitHub will enforce
+    # (Codex #503 threads Dr1 / TGt).
+    block = _reason(f"git show {OLD} && {MERGE} 501 {PIN}")
+    assert block["permissionDecision"] == "ask"
+    assert SHA in block["permissionDecisionReason"]
+    assert OLD not in block["permissionDecisionReason"]
+
+
+def test_prompt_names_every_act_and_sha_in_one_call():
+    # Fails if one approval covers an operator act the prompt does not name.
+    two = _reason(f"{MERGE} 501 {PIN} && {MERGE} 502 --match-head-commit {OLD}")
+    assert SHA in two["permissionDecisionReason"] and OLD in two["permissionDecisionReason"]
+    mixed = _reason(f"{DEPLOY} -a c1-rail && {MERGE} 501 {PIN}")
+    assert "rail.deploy" in mixed["permissionDecisionReason"]
+    assert "pr.merge" in mixed["permissionDecisionReason"]
+    assert SHA in mixed["permissionDecisionReason"]
+
+
+@pytest.mark.parametrize("command,expected", [
+    (f"{MERGE} 501 {PIN} --match-head-commit ''", ("deny", "pr.merge_unpinned")),
+    (f"{MERGE} 501 --match-head-commit abc {PIN}", ("ask", "pr.merge")),
+])
+def test_repeated_pin_uses_the_last_value(command, expected):
+    # Fails if the guard reads a different `--match-head-commit` than gh does (pflag:
+    # last wins), so an empty final pin would merge unpinned behind an approved SHA.
+    assert g.classify_command(command) == expected
+
+
+@pytest.mark.parametrize("command,expected", [
+    (f"{MERGE} 501 --disable-auto", None),
+    (f"{MERGE} 501 --disable-auto=true", None),
+    (f"{MERGE} 501 --disable-auto=false --squash", ("deny", "pr.merge_unpinned")),
+    (f"{MERGE} 501 --disable-auto --auto", ("deny", "pr.auto_merge")),
+])
+def test_disabling_auto_merge_is_silent(command, expected):
+    # Fails if the risk-reducing `--disable-auto` (gh returns before merging) is refused
+    # as a merge, or a false-valued one hides a real merge (Codex #503 thread DsI).
+    assert g.classify_command(command) == expected
+
+
+@pytest.mark.parametrize("command", [
+    "gh api graphql --input payload.json",
+    "gh api graphql -F query=@payload.graphql",
+    "gh api graphql --field=query=@payload.graphql",
+    "gh api -X PUT repos/o/r/pulls/501/" + f"merge --input body.json -f sha={SHA}",
+])
+def test_opaque_request_bodies_are_refused(command):
+    # Fails if a body the guard cannot read (a file) can carry a merge or auto-merge
+    # past it (Codex #503 thread TGi).
+    assert g.classify_command(command) == ("deny", "pr.merge_unpinned")
+
+
+@pytest.mark.parametrize("command", [
+    "gh api graphql -f query='query { viewer { login } }'",
+    "gh api graphql -F owner=o -f query='query($owner: String!) { user(login: $owner) { id } }'",
+    "gh api repos/o/r/pulls/501",
+])
+def test_readable_non_merge_api_calls_are_silent(command):
+    # Fails if ordinary API reads are refused along with opaque bodies.
+    assert g.classify_command(command) is None
+
+
+GQL_MERGE = "PullRequest"  # concatenated below so no source line is itself a mutation
+
+
+@pytest.mark.parametrize("query,fields", [
+    (f'# expectedHeadOid: "{SHA}"\nmutation {{ merge{GQL_MERGE}(input: {{pullRequestId: "x"}}) {{ x }} }}', ""),
+    (f'mutation {{ merge{GQL_MERGE}(input: {{pullRequestId: "x", commitHeadline: "expectedHeadOid: {SHA}"}}) {{ x }} }}', ""),
+    (f'mutation {{ merge{GQL_MERGE}(input: {{pullRequestId: "x"}}) {{ x }} }}', f" -F expectedHeadOid={SHA}"),
+    (f'mutation {{ a: merge{GQL_MERGE}(input: {{pullRequestId: "x", expectedHeadOid: "{SHA}"}}) {{ x }} '
+     f'b: merge{GQL_MERGE}(input: {{pullRequestId: "y"}}) {{ x }} }}', ""),
+])
+def test_graphql_pin_must_be_structurally_active(query, fields):
+    # Fails if a pin in a comment, inside a string, in an unused variable, or on only one
+    # of two merges is accepted (Codex #503 thread TGo).
+    command = f"gh api graphql -f query='{query}'{fields}"
+    assert g.classify_command(command) == ("deny", "pr.merge_unpinned")
+
+
+@pytest.mark.parametrize("query,fields", [
+    (f'mutation($oid: GitObjectID!) {{ merge{GQL_MERGE}(input: {{pullRequestId: "x", '
+     f'expectedHeadOid: $oid}}) {{ x }} }}', f" -f oid={SHA}"),
+    (f'mutation($in: Merge{GQL_MERGE}Input!) {{ merge{GQL_MERGE}(input: $in) {{ x }} }}',
+     f" -F 'in[pullRequestId]=x' -F 'in[expectedHeadOid]={SHA}'"),
+])
+def test_graphql_pin_through_variables_asks(query, fields):
+    # Fails if a merge pinned through a GraphQL variable is refused as unpinned.
+    command = f"gh api graphql -f query='{query}'{fields}"
+    assert g.classify_command(command) == ("ask", "pr.merge")
+
+
+@pytest.mark.parametrize("command,expected", [
+    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -H sha={SHA}", ("deny", "pr.merge_unpinned")),
+    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge --raw-field=sha={SHA}", ("ask", "pr.merge")),
+    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -F sha={SHA}", ("ask", "pr.merge")),
+    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -f=sha={SHA}", ("ask", "pr.merge")),
+])
+def test_rest_pin_must_be_a_request_field(command, expected):
+    # Fails if a `sha=` that is not a request field (a header) is taken as the pin.
+    assert g.classify_command(command) == expected
+
+
+@pytest.mark.parametrize("command", [
+    "pwsh -File ./fp.ps1 python ops/c1_rail/c1_rail_arm.py --" + "arm",
+    "./fp.ps1 python ops/c1_rail/c1_rail_arm.py --" + "arm",
+    "powershell -NoProfile -ExecutionPolicy Bypass -File fp.ps1 python -m ops.c1_rail.c1_rail_arm --" + "arm",
+    "python ops/c1_rail/c1_rail_arm.py --" + "ar",
+    "python -I scripts/fp.py python ops/c1_rail/c1_rail_arm.py --" + "arm",
+])
+def test_launcher_and_abbreviated_arm_ask(command):
+    # Fails if the repository's own launcher (`fp.ps1`, via pwsh or directly) or
+    # argparse's `--ar` abbreviation arms the rail without an operator prompt
+    # (Codex #503 thread TG-; `--ar` found in the babysit re-check).
+    assert g.classify_command(command) == ("ask", "rail.arm")
+
+
+@pytest.mark.parametrize("command", [
+    "./fp.ps1 python ops/c1_rail/c1_rail_arm.py --disarm",
+    "python ops/c1_rail/c1_rail_arm.py --dis",
+    "./fp.ps1 test",
+    "pwsh -File ./fp.ps1 doctor",
+    "pwsh -NoProfile -Command 'git status'",
+])
+def test_launcher_exits_and_checks_are_silent(command):
+    # Fails if the launcher's ordinary commands or a disarm through it prompt.
+    assert g.classify_command(command) is None
+
+
+def _encoded(command: str) -> str:
+    import base64
+    return base64.b64encode(command.encode("utf-16-le")).decode()
+
+
+@pytest.mark.parametrize("command,expected", [
+    (f"pwsh -NoProfile -Command '{MERGE} 501 --auto'", ("deny", "pr.auto_merge")),
+    ("powershell -c git push origin main", ("deny", "main.direct_push")),
+    (f"pwsh -EncodedCommand {_encoded(MERGE + ' 501 --auto')}", ("deny", "pr.auto_merge")),
+])
+def test_powershell_wrappers_are_read(command, expected):
+    # Fails if wrapping a forbidden act in a PowerShell command line hides it.
+    assert g.classify_command(command) == expected
+
+
+def test_powershell_tool_calls_are_judged():
+    # Fails if the Claude Code PowerShell tool reaches `gh`/`git` without the guard.
+    call = {"tool_name": "PowerShell", "tool_input": {"command": f"{MERGE} 501 --auto"}}
+    assert g.classify(call) == ("deny", "pr.auto_merge")
+    pinned = {"tool_name": "PowerShell", "tool_input": {"command": f"{MERGE} 501 {PIN}"}}
+    assert g.classify(pinned) == ("ask", "pr.merge")
+
+
+@pytest.mark.parametrize("command,expected", [
+    ("Set-Location C:\\repo; .\\fp.ps1 python ops\\c1_rail\\c1_rail_arm.py --" + "arm",
+     ("ask", "rail.arm")),
+    ("C:\\tools\\gh.exe pr " + "merge 501 --auto", ("deny", "pr.auto_merge")),
+    ("Set-Location C:\\repo; .\\fp.ps1 python -m pytest tests\\scripts", None),
+])
+def test_powershell_backslash_paths_are_read_as_paths(command, expected):
+    # Fails if a PowerShell path (`.\fp.ps1`, `C:\tools\gh.exe`) loses its separators to
+    # POSIX backslash escaping and hides the program it runs.
+    assert g.classify({"tool_name": "PowerShell", "tool_input": {"command": command}}) == expected
+
+
+@pytest.mark.parametrize("flag", ["--acknowledge-m1-unresolved 'attended test'",
+                                  "--ack 'attended test'"])
+def test_m1_override_prompt_does_not_claim_resolved(flag):
+    # Fails if an arm that bypasses an unresolved M1 is put to the operator under a prompt
+    # that says M1 is RESOLVED (Codex #503 thread Dr-; whether to refuse it outright
+    # is an operator decision, so it still asks).
+    command = f"{ARM} --hours 4 {flag}"
+    assert g.classify_command(command) == ("ask", "rail.arm")
+    reason = _reason(command)["permissionDecisionReason"]
+    assert "UNRESOLVED" in reason and "acknowledge-m1-unresolved" in reason
+    assert "M1 RESOLVED and a GO" not in reason
