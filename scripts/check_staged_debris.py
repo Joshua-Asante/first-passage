@@ -15,9 +15,15 @@ ignored root is still not an archive).
 Same rules in every mode:
 
 * banned staged paths -- ``recovery/...``, ``tmp/...``, and any root-level
-  ``tmp-*`` path, mirroring the root-anchored .gitignore rules exactly (do
-  not widen to nested paths; the incident class is root debris, and nested
-  ``tmp``-named dirs under tracked trees are not this gate's business);
+  ``tmp-*`` path. Root-anchored like the .gitignore rules (do not widen to
+  nested paths; the incident class is root debris, and nested ``tmp``-named
+  dirs under tracked trees are not this gate's business), but not a
+  one-for-one mirror: ``recovery/`` and ``tmp/`` match their ignore rules,
+  the ``tmp-*`` ban covers the whole root ``tmp-*`` namespace (a superset of
+  the ignored ``/tmp-*/``, ``/tmp-*.md``, ``/tmp-*.py`` shapes), and
+  ``.zcodeignore`` is ignored but not banned. Root names compare
+  case-insensitively: on a case-insensitive checkout (Windows,
+  core.ignorecase=true) ``Recovery/`` or ``TMP/`` is the same on-disk root;
 * oversize staged blobs -- a single file over MAX_STAGED_FILE_BYTES outside
   the allowlisted roots. The allowlist is data-derived, not aspirational:
   the largest tracked file is lab/analysis/mym_breakout_entry_2026_09/
@@ -28,9 +34,16 @@ Same rules in every mode:
 
 Modes, in order: staged changes -> inspect the index diff vs HEAD (the
 pre-commit contract; deletes and rename-away sources are never findings, a
-cleanup must not be blocked). Nothing staged -> inspect the HEAD tree, so CI
-(``--tier check``) and ``make check`` also reject a branch that already
-committed debris. Unborn HEAD -> inspect the whole index (first commit).
+cleanup must not be blocked -- a deletion-only stage is still a staged
+change, never mistaken for "nothing staged"). Nothing staged -> inspect the
+HEAD tree, so CI (``--tier check``) and ``make check`` also reject a branch
+that already committed debris. Unborn HEAD -> inspect the whole index (first
+commit).
+
+Known scope limit of the staged mode: it judges only the staged delta, so
+debris already in HEAD (e.g. committed with ``--no-verify``) is not
+re-reported by a later unrelated commit. The backstop is the nothing-staged
+HEAD-tree mode that CI's clean checkout runs.
 """
 from __future__ import annotations
 
@@ -41,7 +54,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# Root-anchored, mirroring the .gitignore rules one-for-one.
+# Root-anchored like the .gitignore rules; compared lower-cased (see docstring).
 BANNED_ROOT_DIRS = ("recovery", "tmp")
 BANNED_ROOT_STEM_PREFIX = "tmp-"
 
@@ -57,9 +70,10 @@ MAX_REPORTED_FINDINGS = 20
 def path_finding(path: str) -> str | None:
     """Ban reason for a repo-rooted staged path, or None if allowed."""
     stem = path.split("/", 1)[0]
-    if stem in BANNED_ROOT_DIRS:
+    folded = stem.lower()  # case-insensitive checkouts share one on-disk root
+    if folded in BANNED_ROOT_DIRS:
         return f"local-only root '{stem}/' (untracked by definition; .gitignore)"
-    if stem.startswith(BANNED_ROOT_STEM_PREFIX):
+    if folded.startswith(BANNED_ROOT_STEM_PREFIX):
         return "root-level 'tmp-*' debris path (.gitignore)"
     return None
 
@@ -115,6 +129,20 @@ def staged_paths(root: Path) -> list[str] | None:
         else:
             i += 1
     return paths
+
+
+def anything_staged(root: Path) -> bool:
+    """True when the index differs from HEAD at all -- deletions included.
+
+    staged_paths() drops deletes by design, so its empty result cannot tell a
+    clean index from a deletion-only cleanup stage.
+    """
+    result = subprocess.run(  # rc 1 is an answer here, not a failure
+        ["git", "diff", "--cached", "--quiet", "--no-ext-diff"], cwd=root, check=False
+    )
+    if result.returncode not in (0, 1):
+        raise subprocess.CalledProcessError(result.returncode, result.args)
+    return result.returncode == 1
 
 
 def index_sizes(root: Path, paths: list[str]) -> dict[str, int]:
@@ -175,8 +203,10 @@ def collect_findings(root: Path) -> tuple[list[str], str]:
         ]
         mode = f"index, {len(paths)} path(s) (unborn HEAD)"
         sizes = index_sizes(root, paths)
-    elif paths:
+    elif paths or anything_staged(root):
         mode = f"staged vs HEAD, {len(paths)} path(s)"
+        if not paths:
+            mode += " (deletion-only stage)"
         sizes = index_sizes(root, paths)
     else:
         entries = tree_entries(root)

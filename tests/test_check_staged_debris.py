@@ -23,6 +23,11 @@ def test_path_finding_bans_exactly_the_local_only_roots():
         "tmp",                        # bare root stem; guard is stem-based
         "tmp-pr409-listener/f.py",    # root tmp-* directory (2026-09-24 incident)
         "tmp-phase2-.md",             # root tmp-* file (2026-09-24 incident)
+        # Case variants: on a case-insensitive checkout (Windows,
+        # core.ignorecase=true) these name the same on-disk root.
+        "Recovery/pkt/evidence.md",
+        "TMP/session.log",
+        "Tmp-phase2-.md",
     ]
     for path in banned:
         assert csd.path_finding(path), path
@@ -161,3 +166,54 @@ def test_head_tree_mode_catches_committed_debris(repo: Path):
     assert result.returncode == 1
     assert "recovery/pkt.md" in result.stdout
     assert "HEAD tree" in result.stdout
+
+
+def test_deletion_only_cleanup_of_committed_debris_passes(repo: Path):
+    """Un-indexing committed debris is a cleanup, never a finding."""
+    # Codex P1 on PR #493: a stage holding only deletions must be judged as a
+    # staged change, not mistaken for "nothing staged" and routed to the HEAD
+    # tree -- which still holds the very files being removed.
+    _write(repo, "recovery/pkt.md", "evidence\n")
+    _write(repo, "tmp-phase2-.md", "debris\n")
+    _write(repo, "big.bin", b"x" * (csd.MAX_STAGED_FILE_BYTES + 1))
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "blanket add")
+    _git(repo, "rm", "-q", "-r", "--cached", "recovery", "tmp-phase2-.md", "big.bin")
+    result = _run_gate(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "staged vs HEAD" in result.stdout
+
+
+def test_git_mv_out_of_banned_root_passes(repo: Path):
+    """A rename away from a banned root is judged on its clean destination."""
+    _write(repo, "recovery/a.md", "evidence worth keeping\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "blanket add")
+    _git(repo, "mv", "recovery/a.md", "a.md")
+    result = _run_gate(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_git_mv_into_banned_root_blocks(repo: Path):
+    """A rename into a banned root is judged on its banned destination."""
+    _write(repo, "docs/a.md", "doc\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "doc")
+    (repo / "recovery").mkdir()
+    _git(repo, "mv", "docs/a.md", "recovery/a.md")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "recovery/a.md" in result.stdout
+
+
+def test_modifying_tracked_oversize_file_blocks(repo: Path):
+    """Re-staging an already-tracked oversize blob is still a finding."""
+    _write(repo, "big.bin", b"x" * (csd.MAX_STAGED_FILE_BYTES + 1))
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "pre-existing large file")
+    _write(repo, "big.bin", b"y" * (csd.MAX_STAGED_FILE_BYTES + 1))
+    _git(repo, "add", "big.bin")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "big.bin" in result.stdout
+    assert "single-file limit" in result.stdout
