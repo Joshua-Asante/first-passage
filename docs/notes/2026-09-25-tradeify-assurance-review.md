@@ -37,7 +37,7 @@ count. The local session started at 1c5c082.
 
 ## Mechanism comparison: proposals, not dispositions
 
-| Mechanism | Failure prevented | Cheaper candidate and its limit | Provisional direction / owner |
+| Mechanism | Failure prevented | Cheaper candidate and its limit | Proposed direction (not adopted) / owner |
 |---|---|---|---|
 | Protected service and isolated worker | Fabricated completion, mutable inputs or substituted outputs | Operator-triggered protected runner, pinned inputs and externally retained capture; insufficient if the agent can alter the runner, outputs or attempt history | Keep the execution boundary; compare service cost with batch. Execution boundary design |
 | Separate execution, G5 and seal principals/keys | Computation grants itself acceptance or release authority | Protected capture, independent verifier and operator-controlled final approval; extra principals may matter when genuinely separate authorities consume evidence | Preserve verification; justify incremental seal-service benefit. [Full E1 contract](../superpowers/specs/2026-09-17-protected-full-e1-campaign.md), S6-S7 ledger |
