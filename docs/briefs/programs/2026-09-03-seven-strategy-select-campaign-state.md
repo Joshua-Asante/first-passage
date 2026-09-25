@@ -3943,3 +3943,8 @@ Vanguard and Aegis keep their declared expressions, which ruling 1 attests alrea
 **Not granted by this section:** deployment, arming, activation, statistical dispatch, T09 specification, production feed, or any operator GO beyond the three rulings above. Live release stays held under T08 §7.8 part 1.
 
 **Board write:** STATE decision index, 2026-09-25 row → this section. Propagation pointers: T08 §7.8 follow-up (2026-09-25); scope note Q3 outcome; addendum §A4 dated correction; vendor note status SENT; venue-edition ledger two `CANDIDATE` rows.
+
+**§59 follow-up (2026-09-25).**
+- Step 1: the [pre-registration draft](../pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md) is committed with Status DRAFT. Its OWED fields (ORB-2..4, STR-2..6, the §6 replay-modelling choice and the §5 digests) are the operator's. It freezes only on the operator's "freeze".
+- The operator authorized the remaining T08 drills and the T07 account reads ([session plan](../../notes/2026-09-25-t08-drills-t07-reads-operator-session.md); Joshua performs every action).
+- The incident ADR addendum was revised as §A8 (Proposed): rules 9–10 and open question Q5. Its step-4 reviews are owed.

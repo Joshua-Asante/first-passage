@@ -10,7 +10,7 @@
 **Proposes to amend:** The incident authority interpretation in the halt/resume contract and Phase 5 plan. Retains the no-same-session strategy-reactivation design restriction; no effective contract changes yet.
 **Layer:** execution.
 
-> **Addendum 2026-09-24 (Proposed):** §2's "Unknown entry, add, cancel, close or modification" row is proposed to change for narrowed-shape requests: a permanent worst-case reservation instead of an account block. See [the addendum](#addendum-2026-09-24--bounded-exposure-reservation-for-unknown-requests-proposed). Not effective until accepted and propagated.
+> **Addendum 2026-09-24 (Proposed):** §2's "Unknown entry, add, cancel, close or modification" row is proposed to change for narrowed-shape requests: a permanent worst-case reservation instead of an account block. See [the addendum](#addendum-2026-09-24--bounded-exposure-reservation-for-unknown-requests-proposed) (revised 2026-09-25, §A8). Not effective until accepted and propagated.
 
 ## §0 — Rule 0 reads and verification anchors
 
@@ -244,9 +244,25 @@ On acceptance, each owner receives a dated addendum carrying the text below. No 
 
 Releasing a reservation on flatness, elapsed time (except option A's retained vendor bound), empty reads, restart or acknowledgment; feeding held reservations into `dd_protection`; resending; admitting a non-narrowed shape under the reservation; treating an observed later fill as correlated to an unknown request; writing the §A3 figures anywhere but their owner.
 
+### A8 — Revision 2026-09-25 (Proposed): the whole book in the narrowed shape
+
+**Why.** On 2026-09-25 the operator attested that Vanguard and Aegis fit §A1 and adopted route-native editions for ORB and Striker ([campaign record §59](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25); [pre-registration draft](../briefs/pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md)). Once the editions are frozen and requalified, **every** exposure-creating request of the book is in the narrowed shape. The reservation then governs the normal path of all four legs, not an edge case, and multi-contract intents become several one-contract requests. §A1–§A7 stand. This section adds two rules and records facts; it stays Proposed under the same gate.
+
+**Rule 9 (proposed): split intents are admitted whole or not at all.** A multi-contract intent (Striker up to its maximum setting, Aegis up to its captured size, Vanguard base plus adds) is admitted only if rule 4 admits the **sum** of its one-contract worst cases on top of every held reservation, checked before the first request is sent. Otherwise the whole intent is refused. Admission never sends a partial intent. After sending, confirmed fills are the leg's position; a refused request is not re-sent; an unknown one holds its own reservation (rule 1). This matches pre-registration STR-4.
+
+**Rule 10 (proposed): one unresolved request per symbol.** The next one-contract request of a split, or any new exposure-creating request on that symbol, is sent only after the previous one on that symbol is acknowledged or refused. One transport failure can therefore create at most **one** held reservation per symbol, not N. *Tradeoff, stated rather than hidden:* a split of N now takes N sequential acknowledgement round trips, so later contracts can fill at worse prices. The pre-registration's §6 replay-modelling choice must price that latency before freeze. Without rule 10, a single failed 30-contract Striker split could hold 30 reservations and reach rule 8 exhaustion in one event.
+
+**Facts recorded.**
+- *Exit-side partial fills (T08 residual row):* moot by construction. Under the one-contract rule an exit is for one contract and cannot partially fill.
+- *§A1 admission-precondition trace:* the planned source is drill D1 of the [2026-09-25 operator session plan](../notes/2026-09-25-t08-drills-t07-reads-operator-session.md), authorized in principle by the operator on 2026-09-25 and performed by Joshua. Until that trace is retained and recorded in CAP, this addendum still grants nothing (§A1).
+- *Scope-note §5 progress:* step 2 (N1 map) and step 3 (text and §A5 propagation diffs) were done on 2026-09-24 and are revised here. **Step 4 is owed:** a separate-session refute-first review under D-codex (a), then a cross-vendor review before acceptance. Step 5 (acceptance) is the operator's.
+
+**Open question for the operator (not adopted).** *Q5, correlation by exclusivity.* If the R5 inventory shows the account exclusive to this runtime (no copiers, managers, other platforms or manual sessions) and rule 10 holds, then an effect observed on a symbol could be attributed to the single unknown request on it. That would let such an effect **release** the reservation, amending rule 6 and §A7. It would recover room lost to transport failures. The risk is that one unrecorded actor makes the attribution wrong. Recommendation: decide only after the D1–D4 traces and the R5 inventory exist.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-09-17 UTC | Record operator-directed incident amendment and conditional ATM/thin-bridge assessment | Joshua + Codex |
 | 2026-09-24 UTC | Addendum (Proposed): bounded-exposure reservation for unknown narrowed-shape requests, after T08 R3 = NONE and the operator's Q1 = B ruling | Joshua (rulings) + Claude (text) |
+| 2026-09-25 UTC | §A4 dated correction and §A8 revision (Proposed): whole book in the narrowed shape; rules 9–10; exit-side partials moot; open question Q5. Still Proposed; the step-4 reviews are owed | Joshua (rulings) + Claude (text) |
