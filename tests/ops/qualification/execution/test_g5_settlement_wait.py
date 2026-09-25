@@ -116,7 +116,8 @@ class Store:
         yield SimpleNamespace(execute=lambda *a: SimpleNamespace(fetchone=lambda: None))
 
 
-def run(tmp_path, monkeypatch, *, progression, exit_after, populated=1, remove_on_exit=False):
+def run(tmp_path, monkeypatch, *, progression, exit_after, populated=1, remove_on_exit=False,
+        checkpoint='N1'):
     parent = tmp_path / 'fpq.slice'
     kernel = Kernel(parent, exit_after, populated, remove_on_exit)
     observed_populated = []
@@ -146,7 +147,8 @@ def run(tmp_path, monkeypatch, *, progression, exit_after, populated=1, remove_o
                              'guardian_unit': 'fpq-guardian.service'}}
     context = SimpleNamespace(config={'g5_uid': 1234}, store=Store())
     campaigns = Campaigns(progression)
-    supervisor._run_n1_g5(context, campaigns, Runtime(), state, work, enrollment, manifest={})
+    supervisor._run_n1_g5(context, campaigns, Runtime(), state, work, enrollment, manifest={},
+                          checkpoint=checkpoint)
     return kernel, campaigns, observed_populated
 
 
@@ -155,6 +157,19 @@ def test_commit_before_unit_exit_settles_only_after_the_cgroup_empties(
         tmp_path, monkeypatch, progression):
     kernel, campaigns, observed = run(tmp_path, monkeypatch, progression=progression,
                                       exit_after=3)
+    assert observed == [0], 'the settlement observation sampled a still-populated g5 unit'
+    assert len(campaigns.settled) == 1
+    assert campaigns.transitions == ['COMPLETED']
+    assert kernel.sleeps == 3
+
+
+@pytest.mark.parametrize('progression', ['PART_A_READY', 'N2_FAILED'])
+def test_joint_n2_commit_before_unit_exit_settles_only_after_the_cgroup_empties(
+        tmp_path, monkeypatch, progression):
+    # S4 drives the joint N2 assessment through the same qg5 loop; its commit
+    # lands in PART_A_READY/N2_FAILED while the driver is still returning.
+    kernel, campaigns, observed = run(tmp_path, monkeypatch, progression=progression,
+                                      exit_after=3, checkpoint='N2')
     assert observed == [0], 'the settlement observation sampled a still-populated g5 unit'
     assert len(campaigns.settled) == 1
     assert campaigns.transitions == ['COMPLETED']

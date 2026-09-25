@@ -135,3 +135,63 @@ def test_v4_with_dispatch_enabled_is_still_refused(tmp_path):
     with_checkpoints = dict(document, dispatch_checkpoints=['N1'])
     with pytest.raises(ValueError):
         parse_release(encoded(with_checkpoints))
+
+
+# ---- S4 v6 joint vectors (D3; beside the v5 pins, never replacing them) ------
+
+
+def joint_release(tmp_path, **changes):
+    import json
+    from bundle_fixture import build_bundle
+    case = build_bundle(tmp_path / 'staged', capability='FULL_E1', joint=True)
+    document = json.loads(case['release'])
+    document.update(changes)
+    return encoded(document)
+
+
+def test_joint_release_pairs_v6_profile_with_the_closed_n1_n2_set(tmp_path):
+    from c1_rail.qualification.execution.release_schema import (
+        JOINT_DISPATCH_DIAGNOSTIC_RELEASE,
+        parse_release,
+    )
+
+    release = parse_release(joint_release(tmp_path))
+    assert (
+        release['schema']
+        == JOINT_DISPATCH_DIAGNOSTIC_RELEASE
+        == 'qualification_execution_release/v6'
+    )
+    assert release['profile']['schema'] == 'qualification_execution_profile/v6'
+    assert release['dispatch_enabled'] is True
+    assert release['dispatch_checkpoints'] == ['N1', 'N2']
+    assert release['campaign_budget_profile']['schema'] == (
+        'qualification_campaign_budget_profile/v3'
+    )
+    assert release['production_execution'] is False
+    from c1_rail.qualification.execution.service import (
+        dispatch_eligibility,
+        joint_dispatch_eligibility,
+        schedule_eligibility,
+    )
+    from c1_rail.qualification.execution.profile import parse_profile
+
+    profile = parse_profile(encoded(release['profile']))
+    assert joint_dispatch_eligibility(release, profile)
+    assert dispatch_eligibility(release, profile)
+    assert schedule_eligibility(release, profile)
+    # The v5 pins beside it keep their closed N1-only set.
+    v5 = parse_release(dispatch_release(tmp_path))
+    assert v5['dispatch_checkpoints'] == ['N1']
+    v5_profile = parse_profile(encoded(v5['profile']))
+    assert dispatch_eligibility(v5, v5_profile)
+    assert not joint_dispatch_eligibility(v5, v5_profile)
+
+
+@pytest.mark.parametrize('field,value', [
+    ('dispatch_checkpoints', ['N1']), ('dispatch_checkpoints', ['N1', 'N2', 'PART_A']),
+    ('dispatch_checkpoints', []), ('dispatch_enabled', False)])
+def test_joint_release_refuses_open_dispatch_facts(tmp_path, field, value):
+    from c1_rail.qualification.execution.release_schema import parse_release
+
+    with pytest.raises(ValueError):
+        parse_release(joint_release(tmp_path, **{field: value}))
