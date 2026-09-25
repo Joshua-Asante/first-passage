@@ -21,10 +21,11 @@ open-PR refinement below, which keeps refusing when `gh pr list` fails):
     own concurrency group and only blocks diagnostics), or when the newest
     definitive same-mode `workflow_dispatch` run on the dispatched SHA already
     decided it: `success` → read the artifact, `failure` → root-cause it, do
-    not re-roll. `[s2]` and `[s3]` are incomparable (an s3 run installs the v5
-    dispatch profile, an s2 run the v4 funded one — neither covers the other);
-    `pull_request` runs tested the merge ref and never count as the head's
-    bytes; `cases` is accepted in `s3` only, so an s2 diagnostic is refused.
+    not re-roll. `[s2]`, `[s3]` and `[s4]` are mutually incomparable (an s4 run
+    installs the joint v6 dispatch profile, an s3 run the v5 one and an s2 run
+    the v4 funded one — none covers another); `pull_request` runs tested the
+    merge ref and never count as the head's bytes; `cases` is accepted in `s3`
+    and `s4` only, so an s2 diagnostic is refused.
   * **rerun** — `gh run rerun` of a definitive full run of this workflow, or of
     a run whose concurrency group is live (same ref and kind, or, for
     `pull_request` runs, the same PR).
@@ -75,7 +76,7 @@ IN_FLIGHT = frozenset({"queued", "in_progress", "waiting", "requested", "pending
 DEFINITIVE = frozenset({"success", "failure"})
 DIAGNOSTIC_TITLE = "S2 DIAGNOSTIC"
 OVERRIDE = "FP_S2_GUARD=off"
-DEFAULT_MODE = "s3"  # the workflow's `mode` input default
+DEFAULT_MODE = "s4"  # the workflow's `mode` input default
 SKIP_CI_MARKERS = ("[skip ci]", "[ci skip]", "[no ci]", "[skip actions]",
                    "[actions skip]", "skip-checks: true")
 # git subcommands whose earlier presence in the same command makes the tip's
@@ -88,11 +89,11 @@ RUN_FIELDS = ("databaseId,headSha,status,conclusion,event,displayTitle,headBranc
               "createdAt,workflowName,workflowDatabaseId")
 VIEW_FIELDS = ("databaseId,status,conclusion,event,displayTitle,headBranch,headSha,"
                "workflowName,workflowDatabaseId")
-S2_CASES_NOTE = ("the workflow accepts `cases` only with mode s3 (an s2 selection has "
-                 "nothing to subset), so this dispatch would fail at setup; re-run it "
-                 "as `-f mode=s3 -f cases='<expr>'` or a full s3 dispatch.")
+S2_CASES_NOTE = ("the workflow accepts `cases` only with mode s3 or s4 (an s2 selection "
+                 "has nothing to subset), so this dispatch would fail at setup; re-run it "
+                 "as `-f mode=s4 -f cases='<expr>'` or a full s4 dispatch.")
 
-_TITLE_MODE = re.compile(r"\[(s2|s3)\]")
+_TITLE_MODE = re.compile(r"\[(s2|s3|s4)\]")
 _TITLE_PR = re.compile(r"\((\d+)/merge\)")
 
 
@@ -761,7 +762,7 @@ def _dispatch_reason(parsed: dict, dir_now: str, pushed: list[str]) -> str | Non
     ref = "" if parsed["json"] else _resolve_ref(parsed["ref"], parsed["repo"],
                                                  dir_now)
     runs = None
-    if not parsed["json"] and (mode is UNKNOWN or mode in ("s2", "s3")) and ref:
+    if not parsed["json"] and (mode is UNKNOWN or mode in ("s2", "s3", "s4")) and ref:
         runs = _gh_runs(parsed["repo"], branch=ref, event="workflow_dispatch",
                         cwd=dir_now)
     if diagnostic and mode == "s2":

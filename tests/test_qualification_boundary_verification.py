@@ -76,8 +76,8 @@ def test_host_cleanup_runs_after_ownership_lock_is_released(tmp_path, monkeypatc
                 selection='tests/integration/qualification_host' if mode=='--host-only' else 'tests/integration/qualification_boundary'
                 assert selection in command
                 if mode=='--test-only':
-                    # The whole S3 file set (S2 files included) stays out of N1_ONLY.
-                    assert all('--ignore='+case in command for case in module.S3_CASES)
+                    # The whole S4 file set (S3 and S2 files included) stays out of N1_ONLY.
+                    assert all('--ignore='+case in command for case in module.S4_CASES)
             if mode=='--test-only':
                 assert self.data['metadata']['qualification_acceptance']=='coordinator_review_required'
             self.data['test_summary'] = {
@@ -124,10 +124,10 @@ def test_cleanup_must_be_explicitly_successful(counts):
         runner().require_cleanup(counts)
 
 
-@pytest.mark.parametrize('mode',['--test-only','--s2','--s3'])
+@pytest.mark.parametrize('mode',['--test-only','--s2','--s3','--s4'])
 def test_required_nodes_match_the_selected_file_set(tmp_path, monkeypatch, mode):
-    """--test-only must never require a node of the S3 file set: those nodes skip
-    there by design (no FP_QUALIFICATION_S3) and are ignored by the selection, so
+    """--test-only must never require a node of the S4 file set: those nodes skip
+    there by design (no FP_QUALIFICATION_S4) and are ignored by the selection, so
     requiring them fails the required boundary jobs (PR #455, aaf9646)."""
     module = runner()
     manifest_path = tmp_path / 'run' / 'ownership.json'
@@ -174,21 +174,85 @@ def test_required_nodes_match_the_selected_file_set(tmp_path, monkeypatch, mode)
     registered = module._manifest(module.INVARIANT_MANIFEST.read_bytes())
     s2 = tuple(case + '::' for case in module.S2_CASES)
     s3 = tuple(case + '::' for case in module.S3_CASES)
-    expected = {'--test-only': {node for node in registered if not node.startswith(s3)},
+    s4 = tuple(case + '::' for case in module.S4_CASES)
+    n2 = 'tests/integration/qualification_boundary/test_campaign_n2_linux.py::'
+    expected = {'--test-only': {node for node in registered if not node.startswith(s4)},
                 '--s2': {node for node in registered if node.startswith(s2)},
-                '--s3': {node for node in registered if node.startswith(s3)}}[mode]
+                '--s3': {node for node in registered if node.startswith(s3)},
+                '--s4': {node for node in registered if node.startswith(s4)}}[mode]
     assert seen['required'] == expected and expected
     if mode == '--test-only':
-        assert not any(node.startswith(s3) for node in seen['required'])
+        assert not any(node.startswith(s4) for node in seen['required'])
+    if mode == '--s3':
+        # --s3 keeps S3's accepted meaning on the v5 installation: no N2 node.
+        assert not any(node.startswith(n2) for node in seen['required'])
+    if mode == '--s4':
+        # --s4 is strictly larger: at least one N2 node, and every S3 node too.
+        assert any(node.startswith(n2) for node in seen['required'])
+        assert all(node in seen['required'] for node in registered if node.startswith(s3))
 
 
-def test_cases_refuses_when_the_expression_parser_is_unavailable(monkeypatch, capsys):
+@pytest.mark.parametrize('mode',['--s3','--s4'])
+def test_cases_refuses_when_the_expression_parser_is_unavailable(monkeypatch, capsys, mode):
     """G5: without pytest's -k parser the subset cannot be validated, so it is refused early."""
     import sys
     module = runner()
     monkeypatch.setattr(module.platform, 'system', lambda: 'Linux')
     monkeypatch.setattr(module.os, 'geteuid', lambda: 0, raising=False)
     monkeypatch.setitem(sys.modules, '_pytest.mark.expression', None)
-    assert module.main(['--s3', '--cases', 'downtime']) == 2
+    assert module.main([mode, '--cases', 'downtime']) == 2
     err = capsys.readouterr().err
     assert '--cases' in err and '--manifest' not in err
+
+
+@pytest.mark.parametrize('mode,joint',[('--s3',False),('--s4',True)])
+def test_the_executed_environment_selects_the_joint_installation_only_for_s4(
+        tmp_path, monkeypatch, mode, joint):
+    """--s3 must keep the v5 installation; only --s4 hands pytest the joint v6 one."""
+    module = runner()
+    manifest_path = tmp_path / 'run' / 'ownership.json'
+    manifest_path.parent.mkdir()
+    manifest_path.write_text(json.dumps({'host_config_sha256': 'configured', 'source': {'commit': 'candidate'}}))
+    seen = {}
+
+    class Record:
+        def __init__(self, *_args):
+            self.data = {'before': {'commit': 'candidate'}, 'metadata': {}}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def begin(self):
+            pass
+
+        def execute(self, _command, **kwargs):
+            seen['env'] = kwargs.get('env')
+            self.data['test_summary'] = {'collected': 1, 'passed': 1, 'failed': 0, 'errors': 0, 'skipped': 0}
+            self.data['verification_exit_code'] = 0
+
+    @contextmanager
+    def lock(_root):
+        yield
+
+    monkeypatch.setattr(module.platform, 'system', lambda: 'Linux')
+    monkeypatch.setattr(module.os, 'geteuid', lambda: 0, raising=False)
+    monkeypatch.setattr(module, 'protected', lambda path: path)
+    monkeypatch.setattr(module, 'RunRecord', Record)
+    monkeypatch.setattr(module, 'require_invariants', lambda *args, **kwargs: {'passed': True})
+    monkeypatch.setattr(module, 'ownership_lock', lock)
+    monkeypatch.setattr(module, 'cleanup', lambda path: {'ok': True})
+    monkeypatch.setattr(module, 'create_process_group', lambda root: root / 'group')
+    monkeypatch.setattr(module, 'owned_command', lambda group, command, interpreter: command)
+    # An inherited S4 variable must not survive a --s3 run: it selects the v6
+    # installation, so the wrapper pops it rather than trusting the caller.
+    monkeypatch.setenv('FP_QUALIFICATION_S4', '1')
+
+    assert module.main([mode, '--manifest', str(manifest_path)]) == 0
+    assert seen['env']['FP_QUALIFICATION_S2'] == '1' and seen['env']['FP_QUALIFICATION_S3'] == '1'
+    if joint:
+        assert seen['env']['FP_QUALIFICATION_S4'] == '1'
+    else:
+        assert 'FP_QUALIFICATION_S4' not in seen['env']
