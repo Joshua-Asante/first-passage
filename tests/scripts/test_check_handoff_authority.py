@@ -64,6 +64,18 @@ def test_worker_card_must_name_its_parent(tmp_path):
                for e in _errs(_card(tmp_path, WORKER_OK), tmp_path))
 
 
+def test_blockless_parent_bounds_only_the_seat(tmp_path):
+    # Fails if a worker whose parent carries no authority block (a historical umbrella;
+    # the ADR does not retrofit them) is refused, or if naming such a parent lifts the
+    # seat checks. A block-less parent narrows nothing beyond the seat (verifier round on
+    # fd126c3; requiring every parent to carry a block would be a new rule).
+    (tmp_path / "umbrella.md").write_text("# Historical umbrella\n", encoding="utf-8")
+    assert _errs(_card(tmp_path, "parent: umbrella.md\n" + WORKER_OK), tmp_path) == []
+    wide = ("parent: umbrella.md\n" + WORKER_OK).replace("pr.open]", "pr.open, pr.review]")
+    assert any(e.startswith("A5")
+               for e in _errs(_card(tmp_path, wide, name="wide.md"), tmp_path))
+
+
 @pytest.mark.parametrize("names", ['[""]', '["  "]', '[tests/x.py::test_y, ""]'])
 def test_acceptance_names_must_be_nonempty(tmp_path, names):
     # Fails if `acceptance: [""]` stands in for named tests (Codex #503 thread TGw).

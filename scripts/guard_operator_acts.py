@@ -24,9 +24,12 @@ operator act in the call, because one answer approves all of them.
                        An unpinned merge is denied with the pinned form to use
                        (``pr.merge_unpinned``), and so is a ``gh api`` call whose body the
                        hook cannot read (``--input``, or a ``-F`` field read from a file): it
-                       cannot prove the call is not a merge or an auto-merge.
-                       ``gh pr merge --disable-auto`` is silent: gh disables auto-merge and
-                       returns before merging.
+                       cannot prove the call is not a merge or an auto-merge. That refuses
+                       a read-only ``gh api graphql --input q.json`` too. A merge call with a
+                       flag the hook does not know is refused the same way: it cannot tell
+                       which word is the pin. ``gh pr merge --disable-auto`` and ``--help``
+                       are silent: gh disables auto-merge (or prints help) and returns
+                       before merging.
   * ``pr.auto_merge``— deny: the GitHub MCP ``enable_pr_auto_merge`` tool;
                        ``gh pr merge --auto``; an ``enablePullRequestAutoMerge`` mutation.
                        Merge authority is the operator's with no automated exception.
@@ -40,7 +43,8 @@ operator act in the call, because one answer approves all of them.
   * ``rail.deploy``  — ask: ``fly deploy`` / ``flyctl deploy``.
   * ``rail.arm``     — ask: ``c1_rail_arm.py --arm`` (or argparse's ``--ar``), as a script
                        or ``-m`` module, through the ``fp.ps1`` launcher or ``pwsh``, and
-                       inside ``fly ssh console -C '…'``. An arm that passes
+                       inside ``fly ssh console -C '…'`` (``-sC '…'`` and ``-C'…'`` too).
+                       An arm that passes
                        ``--acknowledge-m1-unresolved`` still asks, under a prompt that says
                        M1 is not resolved. ``--disarm`` and ``--status`` never ask:
                        disarming is a risk-reducing exit and must never wait on a prompt.
@@ -56,10 +60,24 @@ trading credentials never being present in an agent environment.
 `scripts/_shell_tokens.py` in strict mode, judging words in command position (wrappers,
 ``bash -c`` scripts and ``$(…)`` bodies are expanded by that module; ``pwsh`` /
 ``powershell`` command lines and the ``fp.ps1`` launcher are unwrapped here; in PowerShell
-text a backslash is read as a path separator, not an escape), so a commit message or grep
-pattern that mentions ``gh pr merge`` does not prompt. A command the
-tokenizer cannot read falls back to raw regexes, toward refusing: unreadable text cannot
-prove a pin.
+text a backslash is read as a path separator and a backtick escape is resolved), so a
+commit message or grep pattern that mentions ``gh pr merge`` does not prompt. Each
+program's arguments are read the way that program reads them: ``gh`` and ``fly`` as
+cobra/pflag do (flags before the subcommand name, shorthand clusters such as ``-iX POST``,
+and a value flag taking the next word even when it starts with ``-``), ``git`` global
+options and ``pwsh`` parameters by their documented names and aliases. A flag whose arity
+the hook does not know is read both ways and every reading is judged; a ``gh`` call with
+more than ``_MAX_READINGS`` readings is refused. A command the tokenizer cannot read falls
+back to raw regexes, toward refusing: unreadable text cannot prove a pin.
+
+**Not read.** Values the shell computes at run time: variables and expressions
+(``$b='main'; git push origin $b``), ``Invoke-Expression``, ``Start-Process``, ``pwsh
+-Command -`` (stdin). Configuration that changes what a command does: user-defined ``gh``
+/ ``git`` aliases, ``git -c alias.x=push``, ``push.default`` / ``remote.<r>.push`` /
+``remote.<r>.mirror``. Other routes to the same effect: GitHub API writes to ``main``
+other than a merge, and remote execution on the rail other than ``fly ssh console -C``
+(for example ``fly machine exec``). The ruleset on ``main`` and the arming interlock are
+the boundaries for these.
 
 Contract: JSON on stdin (``tool_name``, ``tool_input``); on a match, Claude Code's
 PreToolUse decision JSON on stdout; on anything else, nothing (a hook ``allow`` would
@@ -70,6 +88,7 @@ from __future__ import annotations
 import base64
 import binascii
 import fnmatch
+import functools
 import json
 import re
 import sys
@@ -130,6 +149,7 @@ MESSAGES = {
 
 # Details that change a hit's message; its capability and decision stay the same.
 OPAQUE = "opaque"
+UNREAD = "unread"
 M1_UNRESOLVED = "m1-unresolved"
 _DETAIL_MESSAGES = {
     ("pr.merge_unpinned", OPAQUE): (
@@ -138,6 +158,12 @@ _DETAIL_MESSAGES = {
         "`gh api --input` and `-F name=@file` hide the request from the guard, so it "
         "cannot prove the call is not a merge or an auto-merge. Put the query and fields "
         "inline (`-f query='…'`); a merge must still pin the head SHA."),
+    ("pr.merge_unpinned", UNREAD): (
+        "Refused: this gh call has a flag the guard does not know, or one missing its "
+        "value, so it cannot read the request or the pin (pr.merge / pr.auto_merge).",
+        "The guard reads `gh` flags as gh v2.92.0 does; with an unknown flag it cannot tell "
+        "an option's value from a flag, so it cannot prove the call is not an unpinned "
+        "merge. Re-issue it with the documented flags only; a merge must pin the head SHA."),
     ("rail.arm", M1_UNRESOLVED): (
         "Arming the c1 rail with M1 UNRESOLVED (rail.arm, --acknowledge-m1-unresolved): "
         "this overrides the M1 RESOLVED interlock and writes an arming_deviation record. "
@@ -159,39 +185,79 @@ class Hit(NamedTuple):
         return DECISION[self.cap]
 
 
+_MERGE_PATH = re.compile(r"pulls/+[^/\s]+/+merge\b", re.IGNORECASE)
 _FALLBACK = (
     (re.compile(r"\bgh\b.*\bpr\s+merge\b.*--auto\b"), "pr.auto_merge"),
     (re.compile(r"enablePullRequestAutoMerge"), "pr.auto_merge"),
     (re.compile(r"\bgh\b.*\bpr\s+merge\b"), "pr.merge_unpinned"),
-    (re.compile(r"pulls/[^/\s]+/merge\b|mergePullRequest"), "pr.merge_unpinned"),
-    (re.compile(r"\bgit\b[^;&|\n]*\bpush\b[^;&|\n]*(?:[\s:+'\"](?:refs/heads/)?main"
+    (re.compile(_MERGE_PATH.pattern + r"|mergePullRequest", re.IGNORECASE),
+     "pr.merge_unpinned"),
+    (re.compile(r"\bgit\b[^;&|\n]*\bpush\b[^;&|\n]*(?:[\s:+'\"](?:(?:refs/)?heads/)?main"
                 r"(?![\w./:-])|\s--(?:all?|b[a-z]*|m[a-z]*)(?![\w-])|\s\+?:(?=[\s'\"]|$))"),
      "main.direct_push"),
     (re.compile(r"\b(fly|flyctl)\b.*\bdeploy\b"), "rail.deploy"),
     (re.compile(r"c1_rail_arm\S*\s.*--arm?\b"), "rail.arm"),
 )
-_GH_GLOBAL_VALUES = frozenset({"-R", "--repo", "--hostname"})
-# `gh` options that take their value as the next word (global, `pr merge` and `api`).
-_GH_VALUES = _GH_GLOBAL_VALUES | frozenset({
-    "-f", "--raw-field", "-F", "--field", "-H", "--header", "-X", "--method", "--input",
-    "-q", "--jq", "-t", "--template", "--cache", "-p", "--preview"})
-_GH_FIELDS = {"-f": False, "--raw-field": False, "-F": True, "--field": True}  # typed?
+
+# Flag tables: long name -> (shorthand, takes a value), as `--help` lists them. gh
+# v2.92.0 (`gh api --help`, `gh pr merge --help`, inherited flags included); fly
+# v0.4.102 global flags plus the app/config flags its commands share.
+_GH_API_FLAGS = {
+    "cache": ("", True), "field": ("F", True), "header": ("H", True),
+    "hostname": ("", True), "include": ("i", False), "input": ("", True),
+    "jq": ("q", True), "method": ("X", True), "paginate": ("", False),
+    "preview": ("p", True), "raw-field": ("f", True), "silent": ("", False),
+    "slurp": ("", False), "template": ("t", True), "verbose": ("", False),
+    "help": ("h", False)}
+_GH_MERGE_FLAGS = {
+    "admin": ("", False), "author-email": ("A", True), "auto": ("", False),
+    "body": ("b", True), "body-file": ("F", True), "delete-branch": ("d", False),
+    "disable-auto": ("", False), "match-head-commit": ("", True), "merge": ("m", False),
+    "rebase": ("r", False), "squash": ("s", False), "subject": ("t", True),
+    "repo": ("R", True), "help": ("h", False)}
+_FLY_FLAGS = {
+    "access-token": ("t", True), "app": ("a", True), "config": ("c", True),
+    "debug": ("", False), "verbose": ("", False), "help": ("h", False)}
 _GH_TRUE = frozenset({"1", "t", "T", "TRUE", "true", "True"})  # pflag's true spellings
-_GRAPHQL_ENDPOINT = re.compile(r"(^|/)graphql/?(\?|$)")
-_MERGE_PATH = re.compile(r"pulls/[^/\s]+/merge\b")
+_GRAPHQL_ENDPOINT = re.compile(r"(^|/)graphql/?(\?|$)", re.IGNORECASE)
 _GIT_GLOBAL_VALUES = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace",
-                                "--config-env", "--exec-path"})
+                                "--config-env", "--exec-path", "--attr-source",
+                                "--super-prefix"})
+_GIT_GLOBAL_BOOLS = frozenset({"-p", "-P", "--paginate", "--no-pager", "--bare",
+                               "--no-replace-objects", "--literal-pathspecs",
+                               "--glob-pathspecs", "--noglob-pathspecs",
+                               "--icase-pathspecs", "--no-optional-locks", "--no-advice",
+                               "-v", "--version", "-h", "--help"})
 # Push options that take their value as the next word. `--signed` and
 # `--force-with-lease` take one only after `=`, and `--force-if-includes` none.
 _GIT_PUSH_VALUES = frozenset({"-o", "--push-option", "--receive-pack", "--exec",
                               "--repo", "--recurse-submodules"})
 _GIT_BULK_PUSH = ("all", "branches", "mirror")  # git accepts any unambiguous prefix
 _MAIN = frozenset({"main", "heads/main", "refs/heads/main"})
-_FLY_COMMAND_OPTS = frozenset({"-C", "--command"})
 _PYTHONS = re.compile(r"(python(\d+(\.\d+)?)?|py|pypy3?)")
-_PS_VALUE_PARAMS = ("configurationfile", "configurationname", "custompipename",
-                    "encodedarguments", "executionpolicy", "inputformat", "outputformat",
-                    "settingsfile", "windowstyle", "workingdirectory")
+
+# pwsh 7.6 and Windows PowerShell 5.1 command-line parameters (`pwsh -?`, `powershell
+# -?`), with each alias that is not a prefix of its name: what the parameter does with
+# the words after it. A typed name may be any prefix; every parameter it could name is
+# taken, and one that names none (pwsh then fails) is read as a switch and as taking a value.
+_PS_PARAMS = {
+    "command": "command", "commandwithargs": "command", "cwa": "command",
+    "file": "file", "encodedcommand": "encoded", "ec": "encoded",
+    "configurationfile": "value", "configurationname": "value", "custompipename": "value",
+    "encodedarguments": "value", "ea": "value", "executionpolicy": "value", "ep": "value",
+    "inputformat": "value", "if": "value", "outputformat": "value", "of": "value",
+    "psconsolefile": "value", "settingsfile": "value", "version": "value",
+    "windowstyle": "value", "workingdirectory": "value", "wd": "value",
+    "help": "switch", "?": "switch", "interactive": "switch", "login": "switch",
+    "mta": "switch", "sta": "switch", "noexit": "switch", "nologo": "switch",
+    "noninteractive": "switch", "noprofile": "switch", "noprofileloadtime": "switch",
+    "namedpipeservermode": "switch", "servermode": "switch", "socketservermode": "switch",
+    "sshservermode": "switch"}
+# A PowerShell backtick escape: `` `u{…} ``, a line break (continuation), or one character.
+_PS_ESCAPE = re.compile(r"`(u\{[0-9A-Fa-f]{1,6}\}|\r\n|[\s\S])")
+_PS_CONTROL = {"n": "\n", "r": "\n", "t": "\t", "0": " ", "a": " ", "b": " ", "e": " ",
+               "f": " ", "v": " "}
+_PS_PLAIN = re.compile(r"[\w.,:=@+%/-]")  # characters with no meaning to the POSIX reader
 
 # GraphQL lexical grammar, enough to tell arguments from comments and strings.
 _GQL_TOKEN = re.compile(
@@ -218,30 +284,96 @@ def _positional(args: list[str], takes_value: frozenset[str]) -> list[str]:
     return out
 
 
-def _option_values(args: list[str], name: str) -> list[str]:
-    """Every value given to `name` (``name v`` or ``name=v``), in order."""
-    out, i = [], 0
-    while i < len(args):
-        if args[i] == name:
-            if i + 1 < len(args):
-                out.append(args[i + 1])
-            i += 2
+def _spellings(tables: tuple[dict, ...], takes_value: bool) -> frozenset[str]:
+    """The ``--name`` / ``-x`` spellings of the flags in `tables` that do (or do not)
+    take a value."""
+    return frozenset(spelling for table in tables for name, (short, value) in table.items()
+                     if value == takes_value
+                     for spelling in (f"--{name}", f"-{short}" if short else "") if spelling)
+
+
+def _command_paths(args: list[str], values: frozenset[str], bools: frozenset[str],
+                   depth: int) -> list[tuple[int, ...]]:
+    """Every way a cobra program could pick its first `depth` command words from `args`,
+    as their indices. While it looks for subcommands cobra skips a flag's value: a
+    ``-x`` or ``--name`` written without ``=`` takes the next word unless it is a boolean.
+    A flag the guard knows is read that way; any other is read both ways."""
+    paths, seen, todo = set(), set(), [(0, ())]
+    while todo:
+        state = todo.pop()
+        if state in seen:
             continue
-        if args[i].startswith(name + "="):
-            out.append(args[i].split("=", 1)[1])
-        i += 1
-    return out
+        seen.add(state)
+        i, picked = state
+        if len(picked) == depth or i >= len(args) or args[i] == "--":
+            paths.add(picked)
+            continue
+        arg = args[i]
+        if arg and not arg.startswith("-"):
+            todo.append((i + 1, picked + (i,)))
+            continue
+        takes = "=" not in arg and (arg.startswith("--") or len(arg) == 2)
+        if takes and arg not in bools:
+            todo.append((i + 2, picked))
+        if not takes or arg not in values:
+            todo.append((i + 1, picked))
+    return sorted(paths)
 
 
-def _bool_flag(args: list[str], name: str) -> bool:
-    """A gh (pflag) boolean flag's value: the last occurrence wins."""
-    value = False
-    for arg in args:
-        if arg == name:
-            value = True
-        elif arg.startswith(name + "="):
-            value = arg.split("=", 1)[1] in _GH_TRUE
-    return value
+def _without(args: list[str], indices: tuple[int, ...]) -> list[str]:
+    return [arg for i, arg in enumerate(args) if i not in indices]
+
+
+class _Parsed(NamedTuple):
+    options: list[tuple[str, str]]  # (long name, value) in command-line order
+    words: list[str]                # positional arguments
+    unread: bool                    # a flag the table does not know, or one missing its value
+
+
+def _pflag(args: list[str], table: dict) -> _Parsed:
+    """`args` read as pflag (gh, fly) reads them against `table`. A value flag takes the
+    rest of its shorthand cluster (``-XPOST``, ``-f=k=v``) or else the next word, even
+    one that starts with ``-``; a boolean takes none; ``--`` ends the flags."""
+    shorts = {short: name for name, (short, _) in table.items() if short}
+    options: list[tuple[str, str]] = []
+    words: list[str] = []
+    unread, i = False, 0
+    while i < len(args):
+        arg, i = args[i], i + 1
+        if arg == "--":
+            words += args[i:]
+            break
+        if len(arg) < 2 or arg[0] != "-":
+            words.append(arg)
+        elif arg[1] == "-":
+            name, eq, value = arg[2:].partition("=")
+            spec = table.get(name)
+            if spec is None or (not eq and spec[1] and i >= len(args)):
+                unread = True
+            elif eq:
+                options.append((name, value))
+            elif spec[1]:
+                options.append((name, args[i]))
+                i += 1
+            else:
+                options.append((name, "true"))
+        else:
+            rest = arg[1:]
+            while rest:
+                name, rest = shorts.get(rest[0]), rest[1:]
+                if name is None or (table[name][1] and not rest and i >= len(args)):
+                    unread = True
+                    break
+                if len(rest) > 1 and rest[0] == "=":
+                    value, rest = rest[1:], ""
+                elif not table[name][1]:
+                    value = "true"
+                elif rest:
+                    value, rest = rest, ""
+                else:
+                    value, i = args[i], i + 1
+                options.append((name, value))
+    return _Parsed(options, words, unread)
 
 
 def _merge_hit(sha: object) -> Hit:
@@ -251,43 +383,31 @@ def _merge_hit(sha: object) -> Hit:
 
 
 def _judge_pr_merge(args: list[str]) -> list[Hit]:
-    if any(a == "--auto" or a.startswith("--auto=") for a in args):
+    parsed = _pflag(args, _GH_MERGE_FLAGS)
+    if any(name == "auto" for name, _ in parsed.options) or (
+            parsed.unread and any(a == "--auto" or a.startswith("--auto=") for a in args)):
         return [Hit("pr.auto_merge")]
-    flags = args[:args.index("--")] if "--" in args else args
-    if _bool_flag(flags, "--disable-auto"):
-        return []  # gh disables auto-merge and returns before merging
-    pins = _option_values(flags, "--match-head-commit")
-    return [_merge_hit(pins[-1] if pins else None)]
+    if parsed.unread:
+        return [Hit("pr.merge_unpinned", UNREAD)]
+    value = dict(parsed.options)  # pflag: the last occurrence wins
+    if value.get("help") in _GH_TRUE or value.get("disable-auto") in _GH_TRUE:
+        return []  # gh prints help, or disables auto-merge and returns before merging
+    return [_merge_hit(value.get("match-head-commit"))]
 
 
-def _api_fields(args: list[str]) -> tuple[dict[str, str], bool]:
+def _api_fields(parsed: _Parsed) -> tuple[dict[str, str], bool]:
     """The request fields of a ``gh api`` call (last value wins), and whether any part
     of the request is read from a file the guard cannot see."""
     fields: dict[str, str] = {}
-    opaque, i = False, 0
-    while i < len(args):
-        arg, pair, typed = args[i], None, False
-        if arg in _GH_FIELDS:
-            typed = _GH_FIELDS[arg]
-            pair = args[i + 1] if i + 1 < len(args) else None
-            i += 1
-        elif arg.startswith(("--raw-field=", "--field=")):
-            flag, pair = arg.split("=", 1)
-            typed = flag == "--field"
-        elif len(arg) > 2 and arg[:2] in ("-f", "-F"):  # `-fk=v` or pflag's `-f=k=v`
-            typed, pair = arg[1] == "F", arg[3:] if arg[2] == "=" else arg[2:]
-        elif arg == "--input" or arg.startswith("--input="):
+    opaque = parsed.unread  # an unknown flag: which words are fields is not known either
+    for name, value in parsed.options:
+        if name == "input":
             opaque = True
-            if arg == "--input":
-                i += 1
-        elif arg in _GH_VALUES:
-            i += 1  # another option's value (a header is not a request field)
-        if pair is not None and "=" in pair:
-            key, value = pair.split("=", 1)
-            if typed and value.startswith("@"):
-                opaque = True  # `-F name=@file` reads the value from a file
-            fields[key] = value
-        i += 1
+        elif name in ("raw-field", "field"):
+            key, eq, field = value.partition("=")
+            if eq:
+                opaque |= name == "field" and field.startswith("@")  # `-F k=@file`
+                fields[key] = field
     return fields, opaque
 
 
@@ -347,14 +467,21 @@ def _graphql_pins(query: str, fields: dict[str, str]) -> list[str | None]:
     return pins
 
 
-def _judge_api(args: list[str], endpoint: str) -> list[Hit]:
-    fields, opaque = _api_fields(args)
+def _judge_api(args: list[str]) -> list[Hit]:
+    """`args` are the ``gh api`` arguments without the ``api`` word."""
+    parsed = _pflag(args, _GH_API_FLAGS)
     text = " ".join(args)
     if "enablePullRequestAutoMerge" in text:
         return [Hit("pr.auto_merge")]
-    if _GRAPHQL_ENDPOINT.search(endpoint) or "mergePullRequest" in text:
+    if not parsed.unread and dict(parsed.options).get("help") in _GH_TRUE:
+        return []  # gh prints help and sends nothing
+    fields, opaque = _api_fields(parsed)
+    detail = UNREAD if parsed.unread else OPAQUE
+    # With an unknown flag the endpoint is not known either: any word may be it.
+    endpoints = args if parsed.unread else parsed.words[:1]
+    if any(_GRAPHQL_ENDPOINT.search(e) for e in endpoints) or "mergePullRequest" in text:
         if opaque or "query" not in fields:
-            return [Hit("pr.merge_unpinned", OPAQUE)]
+            return [Hit("pr.merge_unpinned", detail)]
         if "mergePullRequest" not in text:
             return []
         pins = _graphql_pins(fields["query"], fields)
@@ -362,30 +489,60 @@ def _judge_api(args: list[str], endpoint: str) -> list[Hit]:
             return [Hit("pr.merge", p) for p in pins]
         return [Hit("pr.merge_unpinned")]
     if _MERGE_PATH.search(text):
-        return [Hit("pr.merge_unpinned", OPAQUE) if opaque else _merge_hit(fields.get("sha"))]
+        return [Hit("pr.merge_unpinned", detail) if opaque else _merge_hit(fields.get("sha"))]
     return []
+
+
+_GH_VALUE_FLAGS = _spellings((_GH_API_FLAGS, _GH_MERGE_FLAGS), True)
+_GH_BOOL_FLAGS = _spellings((_GH_API_FLAGS, _GH_MERGE_FLAGS), False) | {"--version"}
+_FLY_VALUE_FLAGS = _spellings((_FLY_FLAGS,), True)
+_FLY_BOOL_FLAGS = _spellings((_FLY_FLAGS,), False)
+
+
+_MAX_READINGS = 64  # more readings than this of one gh call: refused as unread
 
 
 def _judge_gh(args: list[str]) -> list[Hit]:
-    words = _positional(args, _GH_VALUES)
-    if words[:2] == ["pr", "merge"]:
-        return _judge_pr_merge(args)
-    if words[:1] == ["api"]:
-        return _judge_api(args, words[1] if len(words) > 1 else "")
-    return []
+    """`gh pr merge` and `gh api`, under every reading of the command path (cobra takes a
+    subcommand's flags before its name too: ``gh -b x pr merge 1``)."""
+    paths = [path for path in _command_paths(args, _GH_VALUE_FLAGS, _GH_BOOL_FLAGS, 2)
+             if path and (args[path[0]] == "api" or [args[i] for i in path] == ["pr", "merge"])]
+    if len(paths) > _MAX_READINGS:
+        return [Hit("pr.merge_unpinned", UNREAD)]
+    hits: list[Hit] = []
+    for path in paths:
+        if args[path[0]] == "api":
+            hits += _judge_api(_without(args, path[:1]))
+        else:
+            hits += _judge_pr_merge(_without(args, path))
+        if any(hit.decision == DENY for hit in hits):
+            break  # a deny wins over every other reading
+    return hits
+
+
+def _fly_commands(args: list[str]) -> list[str]:
+    """Every value ``fly ssh console`` could run: ``--command v``, ``--command=v``, or a
+    ``-C`` in a shorthand cluster, read both as taking the rest of the cluster and as
+    taking the next word."""
+    out = []
+    for i, arg in enumerate(args):
+        after = args[i + 1] if i + 1 < len(args) else ""
+        if arg == "--command":
+            out.append(after)
+        elif arg.startswith("--command="):
+            out.append(arg.split("=", 1)[1])
+        elif arg.startswith("-") and not arg.startswith("--") and "C" in arg:
+            rest = arg[arg.index("C") + 1:]
+            out += [rest[1:] if rest.startswith("=") else rest, after]
+    return [command for command in out if command]
 
 
 def _judge_fly(args: list[str]) -> list[Hit]:
     hits: list[Hit] = []
-    for i, arg in enumerate(args):
-        value = None
-        if arg in _FLY_COMMAND_OPTS and i + 1 < len(args):
-            value = args[i + 1]
-        elif arg.startswith("--command="):
-            value = arg.split("=", 1)[1]
-        if value is not None:
-            hits += _command_hits(value)
-    if "deploy" in _positional(args, frozenset({"-a", "--app", "-c", "--config"}))[:1]:
+    for command in _fly_commands(args):
+        hits += _command_hits(command)
+    paths = _command_paths(args, _FLY_VALUE_FLAGS, _FLY_BOOL_FLAGS, 1)
+    if any([args[i] for i in path] == ["deploy"] for path in paths):
         hits.append(Hit("rail.deploy"))
     return hits
 
@@ -411,19 +568,23 @@ def _judge_git(args: list[str]) -> list[Hit]:
     bulk option, the matching refspec or a glob.
 
     A push with no refspec pushes the current branch, which this guard cannot see;
-    that case stays with branch protection.
+    that case stays with branch protection. A global option the guard does not list is
+    read both as taking the next word and as not taking it.
     """
-    words = _positional(args, _GIT_GLOBAL_VALUES)
-    if words[:1] != ["push"]:
-        return []
-    push_args = args[args.index("push") + 1:]
+    for path in _command_paths(args, _GIT_GLOBAL_VALUES, _GIT_GLOBAL_BOOLS, 1):
+        if path and args[path[0]] == "push" and _push_covers_main(args[path[0] + 1:]):
+            return [Hit("main.direct_push")]
+    return []
+
+
+def _push_covers_main(push_args: list[str]) -> bool:
     if any(_bulk_push(a) for a in push_args):
-        return [Hit("main.direct_push")]
+        return True
     words = _positional(push_args, _GIT_PUSH_VALUES)
     # `--repo` names the remote, so every positional word is then a refspec.
     has_repo = any(a == "--repo" or a.startswith("--repo=") for a in push_args)
     refspecs = words if has_repo else words[1:]  # after the remote
-    return [Hit("main.direct_push")] if any(_covers_main(s) for s in refspecs) else []
+    return any(_covers_main(s) for s in refspecs)
 
 
 def _abbrev(arg: str, option: str, shortest: int) -> bool:
@@ -457,26 +618,40 @@ def _decode_powershell(value: str) -> str:
         return ""
 
 
+def _ps_kinds(arg: str) -> set[str]:
+    """What a pwsh parameter could do: every `_PS_PARAMS` entry the typed name is a
+    prefix of (case-insensitive). A name that matches none is read both as a switch and
+    as taking a value."""
+    name = arg.lstrip("-/").casefold()
+    return {kind for param, kind in _PS_PARAMS.items() if param.startswith(name)} or {
+        "switch", "value"}
+
+
 def _judge_powershell(args: list[str]) -> list[Hit]:
-    """What `pwsh` / `powershell` would run: -Command text, a -File script and its
-    arguments, or an -EncodedCommand (parameter names are case-insensitive prefixes)."""
-    i = 0
-    while i < len(args):
-        arg = args[i]
-        is_param = arg.startswith("-") or (arg.startswith("/") and "/" not in arg[1:])
-        if not is_param:
-            # A bare first argument is a -File for pwsh and a -Command for Windows
-            # PowerShell; judge it both ways.
-            return _words_hits(args[i:]) + _powershell_hits(" ".join(args[i:]))
-        name, rest = arg.lstrip("-/").split(":", 1)[0].casefold(), args[i + 1:]
-        if name and "command".startswith(name):
-            return _powershell_hits(" ".join(rest))
-        if name and "file".startswith(name):
-            return _words_hits(rest)
-        if name == "ec" or (name and "encodedcommand".startswith(name)):
-            return _powershell_hits(_decode_powershell(rest[0])) if rest else []
-        i += 2 if name and any(p.startswith(name) for p in _PS_VALUE_PARAMS) else 1
-    return []
+    """What `pwsh` / `powershell` would run: -Command / -CommandWithArgs text, a -File
+    script and its arguments, an -EncodedCommand, or a bare first argument (a -File for
+    pwsh, a -Command for Windows PowerShell; judged both ways). Every reading of an
+    ambiguous parameter is followed, so a parameter's value is not taken for the script."""
+    hits: list[Hit] = []
+    reach = {0}
+    for i, arg in enumerate(args):
+        if i not in reach:
+            continue
+        if not (arg.startswith("-") or (arg.startswith("/") and "/" not in arg[1:])):
+            hits += _words_hits(args[i:]) + _powershell_hits(" ".join(args[i:]))
+            continue
+        kinds, rest = _ps_kinds(arg), args[i + 1:]
+        if "command" in kinds:
+            hits += _powershell_hits(" ".join(rest))
+        if "file" in kinds:
+            hits += _words_hits(rest)
+        if "encoded" in kinds and rest:
+            hits += _powershell_hits(_decode_powershell(rest[0]))
+        if "switch" in kinds:
+            reach.add(i + 1)
+        if "value" in kinds:
+            reach.add(i + 2)
+    return hits
 
 
 def _words_hits(words: list[str]) -> list[Hit]:
@@ -512,21 +687,45 @@ def _fallback_hits(command: str) -> list[Hit]:
 
 def _command_hits(command: str) -> list[Hit]:
     """Every act in a shell command, in order."""
+    return list(_command_hits_cached(command))
+
+
+@functools.lru_cache(maxsize=4096)
+def _command_hits_cached(command: str) -> tuple[Hit, ...]:
+    # Cached by text: following every reading of nested `pwsh -c` parameters judges the
+    # same suffix text many times, which would otherwise grow exponentially.
     try:
         hits: list[Hit] = []
         for tokens in segments(command, strict=True):
             for words in expand([str(t) for t in tokens], strict=True):
                 hits += _words_hits([str(w) for w in words])
-        return hits
+        return tuple(dict.fromkeys(hits))
     except Exception:  # unreadable (or unjudgeable): raw patterns, toward refusing
-        return _fallback_hits(command)
+        return tuple(_fallback_hits(command))
+
+
+def _ps_escape(match: re.Match) -> str:
+    esc = match.group(1)
+    if esc.startswith("u{") and len(esc) > 2:
+        code = int(esc[2:-1], 16)
+        esc = chr(code) if code <= 0x10FFFF else " "
+    elif esc in ("\r\n", "\n", "\r"):
+        return " "  # a backtick at a line end continues the line
+    elif esc in _PS_CONTROL:
+        return _PS_CONTROL[esc]
+    if esc in ("\n", "\r"):
+        return "\n"
+    return esc if _PS_PLAIN.fullmatch(esc) else "\\" + esc
 
 
 def _powershell_hits(command: str) -> list[Hit]:
-    r"""`_command_hits` for PowerShell text, where a backslash is a path separator and
-    not an escape (`.\fp.ps1`, `C:\tools\gh.exe`): read it as `/` so the program
-    it names survives the POSIX reading."""
-    return _command_hits(command.replace("\\", "/"))
+    r"""`_command_hits` for PowerShell text. A backslash is a path separator there, not an
+    escape (`.\fp.ps1`, `C:\tools\gh.exe`), so it is read as `/`. The backtick is the
+    escape: `` `m `` is `m`, `` `u{6d} `` is `m`, `` `n `` / `` `r `` a newline (toward
+    splitting: a newline separates statements once the text reaches a nested
+    `pwsh -c`), `` `t `` and the other control escapes a blank, and an escaped shell
+    character (`` `" ``, `` `$ ``, `` `  ``) a POSIX-escaped literal."""
+    return _command_hits(_PS_ESCAPE.sub(_ps_escape, command.replace("\\", "/")))
 
 
 def _verdict(hits: list[Hit]) -> Hit | None:

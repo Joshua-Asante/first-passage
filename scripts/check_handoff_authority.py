@@ -33,7 +33,9 @@ HARD checks (exit 1), each the property the ADR states:
       that revisits a card is refused; and when the parent carries a block: capabilities ⊆
       parent's, ``max_risk`` <= parent's, and every parent constraint is restated (a child
       may add constraints; it may not drop one silently). A parent with no block (a
-      historical umbrella) bounds nothing beyond the child's own seat checks.
+      historical umbrella, or any other file) bounds nothing beyond the child's own seat
+      checks: naming it records where the card came from, and narrows nothing. Requiring
+      every parent to carry a block would be a new rule, which the ADR does not state.
 
 Files without a block are not checked: the block is required of new worker cards by the
 ADR and verified at the coordinator's pre-dispatch read, and historical cards are not
@@ -184,8 +186,8 @@ def check_card(path: Path, reg: Registry, *, root: Path = REPO_ROOT,
 
     parent = data.get("parent")
     if parent is None and seat == "worker":
-        errors.append("A7 a worker card names its `parent` card (handoff contract item 7); "
-                      "without one nothing bounds the grant but the seat")
+        errors.append("A7 a worker card names its `parent` card (handoff contract item 7: "
+                      "a card only narrows its parent)")
     if parent is not None:
         if not isinstance(parent, str):
             errors.append("A7 `parent` must be a repo-relative path")

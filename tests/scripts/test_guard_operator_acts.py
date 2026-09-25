@@ -415,3 +415,173 @@ def test_m1_override_prompt_does_not_claim_resolved(flag):
     reason = _reason(command)["permissionDecisionReason"]
     assert "UNRESOLVED" in reason and "acknowledge-m1-unresolved" in reason
     assert "M1 RESOLVED and a GO" not in reason
+
+
+# --- 2026-09-25 verifier round on fd126c3: argv is read the way gh (cobra/pflag) and pwsh
+# read it, and a flag whose arity the guard cannot know is read both ways. ---
+
+LAUNCH_ARM = "-File ./fp.ps1 python ops/c1_rail/c1_rail_arm.py --" + "arm"
+UNPINNED_Q = "mutation { merge" + GQL_MERGE + '(input: {pullRequestId: "x"}) { x } }'
+PINNED_Q = ("mutation { merge" + GQL_MERGE
+            + f'(input: {{pullRequestId: "x", expectedHeadOid: "{SHA}"}}) {{ x }} }}')
+
+
+@pytest.mark.parametrize("command,expected", [
+    (f"pwsh -ep Bypass {LAUNCH_ARM}", ("ask", "rail.arm")),
+    (f"pwsh -wd . {LAUNCH_ARM}", ("ask", "rail.arm")),
+    (f"pwsh -of Text {LAUNCH_ARM}", ("ask", "rail.arm")),
+    (f"pwsh -if Text {LAUNCH_ARM}", ("ask", "rail.arm")),
+    (f"pwsh -ea x {LAUNCH_ARM}", ("ask", "rail.arm")),
+    (f"pwsh -ep Bypass -c '{MERGE} 1'", ("deny", "pr.merge_unpinned")),
+    (f"pwsh -i -ec {_encoded(MERGE + ' 1 --auto')}", ("deny", "pr.auto_merge")),
+    (f"pwsh -NewParam x -c '{MERGE} 1'", ("deny", "pr.merge_unpinned")),
+    (f"powershell -Version 5.1 -c '{MERGE} 1'", ("deny", "pr.merge_unpinned")),
+    (f"pwsh -cwa '{MERGE} 1 --auto'", ("deny", "pr.auto_merge")),
+])
+def test_powershell_parameters_are_read_as_pwsh_reads_them(command, expected):
+    # Fails if a pwsh alias that is not a prefix of its name (`-ep`, `-wd`, `-of`, `-if`,
+    # `-ea`), a switch, an unknown parameter or `-CommandWithArgs` makes the guard read a
+    # parameter value as the script and skip the act (verifier round on fd126c3).
+    assert g.classify_command(command) == expected
+
+
+def test_powershell_tool_launcher_with_execution_policy_asks():
+    # Fails if the common Windows idiom `-ep Bypass` hides an arm from the PowerShell tool.
+    command = "pwsh -ep Bypass -File .\\fp.ps1 python ops\\c1_rail\\c1_rail_arm.py --" + "arm"
+    assert g.classify({"tool_name": "PowerShell", "tool_input": {"command": command}}) == (
+        "ask", "rail.arm")
+
+
+@pytest.mark.parametrize("command", [
+    "pwsh -ep Bypass -File ./fp.ps1 test",
+    "pwsh -NoProfile -ep Bypass -c 'git status'",
+    "pwsh -i -wd . -c 'gh pr view 501'",
+])
+def test_powershell_parameter_reading_stays_silent_on_checks(command):
+    # Fails if reading pwsh parameters both ways makes an ordinary check prompt.
+    assert g.classify_command(command) is None
+
+
+@pytest.mark.parametrize("command", [
+    "gh api -iX POST graphql --input p.json",
+    "gh api -iq . graphql --input p.json",
+    "gh api -iX POST graphql -F query=@q.graphql",
+    "gh api -XPOST graphql --input p.json",
+    "gh -X POST api graphql --input p.json",
+])
+def test_clustered_short_options_are_read_as_pflag_reads_them(command):
+    # Fails if a value shorthand inside a cluster (`-iX POST`) is taken as the endpoint and
+    # an unreadable GraphQL body goes through silently (verifier round on fd126c3).
+    assert g.classify_command(command) == ("deny", "pr.merge_unpinned")
+
+
+@pytest.mark.parametrize("spoof", ["-iq", "-ip", "--preview", "-t", "--jq", "-H"])
+def test_a_pin_inside_another_options_value_is_not_a_pin(spoof):
+    # Fails if a pinned query that gh reads as the value of another option (jq, preview,
+    # template, header) makes the guard ask and show a SHA while gh sends the unpinned one.
+    command = f"gh api graphql -f query='{UNPINNED_Q}' {spoof} '-fquery={PINNED_Q}'"
+    assert g.classify_command(command) == ("deny", "pr.merge_unpinned")
+
+
+@pytest.mark.parametrize("command,expected", [
+    (f"{MERGE} 501 -b --disable-auto --squash", ("deny", "pr.merge_unpinned")),
+    (f"{MERGE} 501 -sb --disable-auto", ("deny", "pr.merge_unpinned")),
+    (f"{MERGE} 501 --subject --disable-auto", ("deny", "pr.merge_unpinned")),
+    (f"{MERGE} 501 -t --match-head-commit={SHA}", ("deny", "pr.merge_unpinned")),
+    (f"{MERGE} 501 -b --auto", ("deny", "pr.merge_unpinned")),
+    (f"{MERGE} 501 --no-such-flag {PIN}", ("deny", "pr.merge_unpinned")),
+    (f"{MERGE} 501 -sd {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 -s -t 'Title' -b 'Body' {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --help", None),
+])
+def test_merge_options_are_read_as_pflag_reads_them(command, expected):
+    # Fails if a word gh reads as another option's value (`-b --disable-auto`, `-t
+    # --match-head-commit=…`) is taken as the flag it spells, so a merge runs silently or
+    # under a pin gh never sends; or if an unknown flag lets the guard trust its reading.
+    assert g.classify_command(command) == expected
+
+
+@pytest.mark.parametrize("command,expected", [
+    ("gh -b x pr " + "merge 501", ("deny", "pr.merge_unpinned")),
+    ("gh -A a@b pr " + "merge 501 --auto", ("deny", "pr.auto_merge")),
+    ("gh --subject s pr " + "merge 501 --auto", ("deny", "pr.auto_merge")),
+    (f"gh --match-head-commit {SHA} pr " + "merge 501", ("ask", "pr.merge")),
+    ("gh --no-such-flag v pr " + "merge 501", ("deny", "pr.merge_unpinned")),
+    ("gh -R o/r pr view 501", None),
+])
+def test_flags_before_the_command_path_are_read_as_cobra_reads_them(command, expected):
+    # Fails if a merge flag written before `pr merge` (cobra accepts it there) hides the
+    # merge, including a forbidden auto-merge (found in the fd126c3 re-check).
+    assert g.classify_command(command) == expected
+
+
+@pytest.mark.parametrize("command,expected", [
+    ("fly -t tok " + "deploy", ("ask", "rail.deploy")),
+    ("fly --access-token tok " + "deploy", ("ask", "rail.deploy")),
+    ("fly --no-such-flag v " + "deploy", ("ask", "rail.deploy")),
+    (f"fly ssh console -a c1-rail -sC '{ARM}'", ("ask", "rail.arm")),
+    (f"fly ssh console -a c1-rail -C'{ARM}'", ("ask", "rail.arm")),
+    ("fly -t tok status -a c1-rail", None),
+    ("fly ssh console -a c1-rail -sC 'python ops/c1_rail/c1_rail_arm.py --disarm'", None),
+])
+def test_fly_flags_are_read_as_cobra_reads_them(command, expected):
+    # Fails if a global flag's value (`-t <token>`) or a shorthand cluster (`-sC '…'`)
+    # hides a deploy or an arm (found in the fd126c3 re-check).
+    assert g.classify_command(command) == expected
+
+
+@pytest.mark.parametrize("command,expected", [
+    ("git --attr-source HEAD push origin main", ("deny", "main.direct_push")),
+    ("git --no-such-option v push origin main", ("deny", "main.direct_push")),
+    ("git --attr-source HEAD push origin claude/x", None),
+])
+def test_git_global_options_are_read_both_ways(command, expected):
+    # Fails if a git global option the guard does not list (`--attr-source <tree>`, which
+    # git 2.50 accepts) hides the `push` subcommand (found in the fd126c3 re-check).
+    assert g.classify_command(command) == expected
+
+
+def test_unreadable_push_to_heads_main_fails_closed():
+    # Fails if the fallback misses a `heads/main` destination that the strict reading
+    # denies (verifier round on fd126c3).
+    command = 'echo "$(case x in x) echo ok;; esac)" && git push origin HEAD:heads/main'
+    assert g.classify_command(command) == ("deny", "main.direct_push")
+
+
+@pytest.mark.parametrize("command,expected", [
+    ("gh pr `" + "merge 1", ("deny", "pr.merge_unpinned")),
+    ("git push origin `main", ("deny", "main.direct_push")),
+    ("g`h pr " + "merge 501 `-`-auto", ("deny", "pr.auto_merge")),
+    ("gh pr m`u{65}rge 501", ("deny", "pr.merge_unpinned")),
+    ('pwsh -c "echo x`ngh pr ' + 'merge 1"', ("deny", "pr.merge_unpinned")),
+    ("gh pr " + f"merge 501 `\n  {PIN}", ("ask", "pr.merge")),
+    ('git commit -m "say `"gh pr ' + 'merge`" later"', None),
+    ("Write-Output a`tb", None),
+])
+def test_powershell_backtick_escapes_are_resolved(command, expected):
+    # Fails if a PowerShell backtick escape (`` `m `` is `m`, `` `n `` a newline,
+    # `` `u{65} `` an `e`, a backtick at a line end continues the line) hides an act, or if
+    # an escaped quote inside a message turns data into a command (verifier round on fd126c3).
+    assert g.classify({"tool_name": "PowerShell", "tool_input": {"command": command}}) == expected
+
+
+@pytest.mark.parametrize("command,expected", [
+    ("gh api -X PUT repos/o/r/pulls//1/" + "merge", ("deny", "pr.merge_unpinned")),
+    ("gh api -X PUT repos/o/r/pulls/1//" + f"merge -f sha={SHA}", ("ask", "pr.merge")),
+])
+def test_merge_path_with_repeated_slashes_is_a_merge(command, expected):
+    # Fails if a doubled slash takes a REST merge path out of the guard's reading.
+    assert g.classify_command(command) == expected
+
+
+@pytest.mark.parametrize("command,expected", [
+    ("pwsh -c " * 40 + f"'{MERGE} 1'", ("deny", "pr.merge_unpinned")),
+    ("gh " + "-x w " * 120 + "pr " + "merge 1", ("deny", "pr.merge_unpinned")),
+])
+def test_reading_every_way_stays_bounded(command, expected):
+    # Fails if following every reading of ambiguous parameters grows exponentially, so a
+    # constructed command stalls the hook instead of being judged (or refused).
+    import time
+    start = time.perf_counter()
+    assert g.classify_command(command) == expected
+    assert time.perf_counter() - start < 5
