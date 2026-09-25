@@ -1,9 +1,9 @@
 """S3 genuine N1 capture and committed G5 decision on the canonical host.
 
-Requires FP_QUALIFICATION_S3=1 (the dispatch/v5 installation) on top of the S2
-environment. One deterministic synthetic PASS and one FAIL through actual
-compute, capture, reconstruction and store; recovery, VOID ordering and payload
-identity are asserted from the durable journal.
+Runs on the dispatch/v5 installation under --s3 and on the joint v6 installation
+under --s4, on top of the S2 environment. One deterministic synthetic PASS and
+one FAIL through actual compute, capture, reconstruction and store; recovery,
+VOID ordering and payload identity are asserted from the durable journal.
 """
 
 import base64
@@ -107,14 +107,14 @@ def payload_identity_events(boundary, attempt, work_id):
     return payload_process_events(boundary, attempt, work_id)
 
 
-def committing_g5_completed(boundary, attempt, progression, seconds=120):
+def committing_g5_completed(boundary, attempt, progression, seconds=120, work_id='g5work'):
     """The G5 work that committed the checkpoint settles after T2 and completes
     in the progression state its commit produced (PR #455 review, Codex P2);
     a resource-terminal state here would mean the settlement ended authority."""
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
         state = budget(boundary, attempt)
-        row = work(state, 'g5work')
+        row = work(state, work_id)
         if row['state'] == 'COMPLETED':
             assert state['state'] == progression, state
             assert row['observation_bytes_b64'] is not None and row['charge_cpu_ns'] <= row['limits']['cpu_ns'], row
