@@ -5,12 +5,35 @@ Rule owner: `docs/adr/2026-07-14-cc-cursor-surface-allocation.md` §Decision, "A
 classes and the authority block" (2026-09-25 revision). Capability ids in the messages
 are the ones registered in `scripts/seat_authority.yml`.
 
+**Best effort, not the enforcement boundary** (operator ruling 2026-09-25: "keep the hook
+best-effort, ruleset as enforcement"). This hook reads the common ways a Claude Code
+session writes an operator act and puts the call in front of the operator (``ask``) or
+refuses it (``deny``). It reads command text, so a determined or unusual form gets past
+it (see *Not read* below). What enforces is server-side or in the rail itself, verified
+read-only on 2026-09-25:
+
+  * GitHub ruleset 21071355 ``main-protection`` (active on ``refs/heads/main``, empty
+    bypass list, ``current_user_can_bypass: never``): a pull request is required, the
+    ``skills (3.12)`` status is required and strict, and non-fast-forward updates and
+    deletion are blocked. It stops a direct or forced push to ``main`` from any
+    credential. It does **not** stop a credential with write access from merging a PR
+    whose status is green: the merge prompt below is best effort, and an agent without a
+    merge-capable credential is the real limit.
+  * The repository setting ``allow_auto_merge: false``: GitHub refuses to enable
+    auto-merge on any PR, whoever asks.
+  * The arming interlock in `ops/c1_rail/c1_rail_arm.py`
+    (``validate_c1_monitoring_acceptance.validate(require_resolved=True)``): it refuses to
+    arm unless the M1 artifact validates as RESOLVED, or ``--acknowledge-m1-unresolved``
+    is given against a structurally valid unresolved artifact (which writes an
+    ``arming_deviation`` record). It does not check for an operator GO.
+  * ``fly deploy`` has **no** server-side enforcement: only where the Fly credential is
+    held, and this hook's prompt.
+
 Operator acts (risk ``high``) are performed by the operator through an act they already
-perform. When an agent session reaches for one, this PreToolUse hook puts the call in
-front of the operator (``ask``): the harness prompt is an authenticated operator
-interaction, which a model's "the operator approved this" is not. A forbidden act is
-refused outright (``deny``): no approval unlocks it for an agent. One prompt names every
-operator act in the call, because one answer approves all of them.
+perform. When the hook recognises one, it asks: the harness prompt is an operator
+interaction, which a model's "the operator approved this" is not. A forbidden act it
+recognises is refused (``deny``). One prompt names every operator act it found in the
+call, because one answer approves all of them.
 
   * ``pr.merge``     — ask, **only when pinned to a full 40-hex head SHA**: the GitHub MCP
                        ``merge_pull_request`` tool with ``expectedHeadSha``; ``gh pr merge
@@ -33,14 +56,16 @@ operator act in the call, because one answer approves all of them.
   * ``pr.auto_merge``— deny: the GitHub MCP ``enable_pr_auto_merge`` tool;
                        ``gh pr merge --auto``; an ``enablePullRequestAutoMerge`` mutation.
                        Merge authority is the operator's with no automated exception.
+                       Server-side, ``allow_auto_merge: false`` refuses it for every form.
   * ``main.direct_push`` — deny: ``git push`` with ``main`` as a destination (``main``,
                        ``HEAD:main``, ``+x:refs/heads/main``, ``--delete main``), a bulk push
                        that includes it (``--all`` / ``--branches`` / ``--mirror`` or git's
                        abbreviations of them), the matching refspec ``:``, or a glob
                        destination that covers ``main``. ``main`` takes PRs only. A push with
                        no refspec is not judged (the current branch is not visible to the
-                       hook; branch protection covers it).
-  * ``rail.deploy``  — ask: ``fly deploy`` / ``flyctl deploy``.
+                       hook). Server-side, the ruleset refuses every push to ``main``.
+  * ``rail.deploy``  — ask: ``fly deploy`` / ``flyctl deploy`` (any Fly app, not only the
+                       rail's). Nothing server-side backs this prompt.
   * ``rail.arm``     — ask: ``c1_rail_arm.py --arm`` (or argparse's ``--ar``), as a script
                        or ``-m`` module, through the ``fp.ps1`` launcher or ``pwsh``, and
                        inside ``fly ssh console -C '…'`` (``-sC '…'`` and ``-C'…'`` too).
@@ -49,35 +74,43 @@ operator act in the call, because one answer approves all of them.
                        M1 is not resolved. ``--disarm`` and ``--status`` never ask:
                        disarming is a risk-reducing exit and must never wait on a prompt.
 
-**Scope — what this hook is not.** It is one enforcement point among the ones the ADR
-names, for the Claude Code harness only. Credentials held off agent environments,
-GitHub branch protection and the arming interlock in `ops/c1_rail/c1_rail_arm.py`
-stay the boundaries; this hook adds a prompt where an agent session holds a credential
-that could otherwise act. It cannot see ``trade.submit``: that is enforced by the
-trading credentials never being present in an agent environment.
+**Scope — what this hook is not.** It covers the Claude Code harness only (Codex and
+Z Code sessions are not hooked). It adds a prompt where an agent session holds a
+credential that could otherwise act; it does not replace the ruleset, the repository
+setting, the arming interlock or keeping credentials off agent environments. It cannot
+see ``trade.submit``: that is enforced by the trading credentials never being present in
+an agent environment.
 
 **Reading commands.** Bash and PowerShell tool commands are read with
 `scripts/_shell_tokens.py` in strict mode, judging words in command position (wrappers,
 ``bash -c`` scripts and ``$(…)`` bodies are expanded by that module; ``pwsh`` /
 ``powershell`` command lines and the ``fp.ps1`` launcher are unwrapped here; in PowerShell
 text a backslash is read as a path separator and a backtick escape is resolved), so a
-commit message or grep pattern that mentions ``gh pr merge`` does not prompt. Each
-program's arguments are read the way that program reads them: ``gh`` and ``fly`` as
-cobra/pflag do (flags before the subcommand name, shorthand clusters such as ``-iX POST``,
-and a value flag taking the next word even when it starts with ``-``), ``git`` global
-options and ``pwsh`` parameters by their documented names and aliases. A flag whose arity
-the hook does not know is read both ways and every reading is judged; a ``gh`` call with
-more than ``_MAX_READINGS`` readings is refused. A command the tokenizer cannot read falls
-back to raw regexes, toward refusing: unreadable text cannot prove a pin.
+commit message or grep pattern that mentions ``gh pr merge`` does not prompt. ``gh``
+flags are read as pflag reads them (shorthand clusters such as ``-iX POST``, a value
+flag taking the next word even when it starts with ``-``); flags before the subcommand
+name are read as cobra reads them while it looks for the subcommand (only ``-h`` /
+``--help`` / ``--version`` are booleans there) and also the looser way this hook read
+them before. ``fly`` and ``git`` global flags the hook does not list are read both as
+taking the next word and as not. A command the tokenizer cannot read falls back to raw
+regexes, toward refusing: unreadable text cannot prove a pin.
 
-**Not read.** Values the shell computes at run time: variables and expressions
-(``$b='main'; git push origin $b``), ``Invoke-Expression``, ``Start-Process``, ``pwsh
--Command -`` (stdin). Configuration that changes what a command does: user-defined ``gh``
-/ ``git`` aliases, ``git -c alias.x=push``, ``push.default`` / ``remote.<r>.push`` /
-``remote.<r>.mirror``. Other routes to the same effect: GitHub API writes to ``main``
-other than a merge, and remote execution on the rail other than ``fly ssh console -C``
-(for example ``fly machine exec``). The ruleset on ``main`` and the arming interlock are
-the boundaries for these.
+**Not read (residual classes, left to the server-side boundaries above).**
+
+  * Values the shell computes at run time: shell or PowerShell variables and
+    expressions (``$b='main'; git push origin $b``), ``Invoke-Expression``,
+    ``Start-Process``, ``pwsh -Command -`` (stdin), and encodings other than
+    ``-EncodedCommand``.
+  * PowerShell structure beyond a plain pipeline: script blocks (``1..1 |
+    ForEach-Object { … }``, ``try { … } catch {}``) and dot-sourcing
+    (``. gh pr merge …``).
+  * Configuration that changes what a command does: user-defined ``gh`` / ``git``
+    aliases, ``git -c alias.x=push``, ``push.default`` / ``remote.<r>.push`` /
+    ``remote.<r>.mirror``, and gh or git flags this hook's tables do not list.
+  * Other routes to the same effect: GitHub API writes to ``main`` other than a merge
+    (a ``git/refs`` update, for example), other clients or scripts that call GitHub, and
+    remote execution on the rail other than ``fly ssh console -C`` (``fly machine exec``,
+    for example).
 
 Contract: JSON on stdin (``tool_name``, ``tool_input``); on a match, Claude Code's
 PreToolUse decision JSON on stdout; on anything else, nothing (a hook ``allow`` would
@@ -493,30 +526,74 @@ def _judge_api(args: list[str]) -> list[Hit]:
     return []
 
 
-_GH_VALUE_FLAGS = _spellings((_GH_API_FLAGS, _GH_MERGE_FLAGS), True)
-_GH_BOOL_FLAGS = _spellings((_GH_API_FLAGS, _GH_MERGE_FLAGS), False) | {"--version"}
 _FLY_VALUE_FLAGS = _spellings((_FLY_FLAGS,), True)
 _FLY_BOOL_FLAGS = _spellings((_FLY_FLAGS,), False)
 
+# The boolean flags gh's root and `pr` commands define. While cobra looks for the
+# subcommand, every other flag written without `=` takes the next word.
+_GH_ROOT_BOOLS = frozenset({"-h", "--help", "--version"})
+_GH_PR_BOOLS = frozenset({"-h", "--help"})
+_GH_LOOSE_VALUES = frozenset({"-R", "--repo", "--hostname"})
 
-_MAX_READINGS = 64  # more readings than this of one gh call: refused as unread
+
+def _cobra_strip(args: list[str], indices: list[int], bools: frozenset[str]) -> list[int]:
+    """cobra's `stripFlags` over ``args[i] for i in indices``: the indices left as command
+    words. ``--name`` or a two-character ``-x`` written without ``=`` takes the next word
+    unless it is in `bools`; followed by only one word, cobra stops there."""
+    out, k = [], 0
+    while k < len(indices):
+        arg = args[indices[k]]
+        k += 1
+        if arg == "--":
+            break
+        if arg.startswith("-") and "=" not in arg and (arg.startswith("--") or len(arg) == 2) \
+                and arg not in bools:
+            if len(indices) - k <= 1:
+                break
+            k += 1
+        elif arg and not arg.startswith("-"):
+            out.append(indices[k - 1])
+    return out
+
+
+def _gh_paths(args: list[str]) -> list[tuple[int, ...]]:
+    """The indices of ``api`` or ``pr merge`` in a gh command line under two readings:
+    cobra's (how gh finds its subcommand) and a loose one that takes every flag except
+    ``-R`` / ``--repo`` / ``--hostname`` as a boolean (the reading this hook used before
+    the cobra one; kept so that no form it caught is lost)."""
+    paths: list[tuple[int, ...]] = []
+    everything = list(range(len(args)))
+    root = _cobra_strip(args, everything, _GH_ROOT_BOOLS)
+    if root and args[root[0]] == "api":
+        paths.append((root[0],))
+    elif root and args[root[0]] == "pr":
+        sub = _cobra_strip(args, [i for i in everything if i != root[0]], _GH_PR_BOOLS)
+        if sub and args[sub[0]] == "merge":
+            paths.append((root[0], sub[0]))
+    loose, skip = [], False
+    for i, arg in enumerate(args):
+        if skip:
+            skip = False
+        elif arg in _GH_LOOSE_VALUES:
+            skip = True
+        elif not arg.startswith("-"):
+            loose.append(i)
+    if loose[:1] and args[loose[0]] == "api":
+        paths.append((loose[0],))
+    elif [args[i] for i in loose[:2]] == ["pr", "merge"]:
+        paths.append(tuple(loose[:2]))
+    return list(dict.fromkeys(paths))
 
 
 def _judge_gh(args: list[str]) -> list[Hit]:
-    """`gh pr merge` and `gh api`, under every reading of the command path (cobra takes a
-    subcommand's flags before its name too: ``gh -b x pr merge 1``)."""
-    paths = [path for path in _command_paths(args, _GH_VALUE_FLAGS, _GH_BOOL_FLAGS, 2)
-             if path and (args[path[0]] == "api" or [args[i] for i in path] == ["pr", "merge"])]
-    if len(paths) > _MAX_READINGS:
-        return [Hit("pr.merge_unpinned", UNREAD)]
+    """`gh pr merge` and `gh api` (cobra takes a subcommand's flags before its name too:
+    ``gh -b x pr merge 1``)."""
     hits: list[Hit] = []
-    for path in paths:
-        if args[path[0]] == "api":
-            hits += _judge_api(_without(args, path[:1]))
+    for path in _gh_paths(args):
+        if len(path) == 1:
+            hits += _judge_api(_without(args, path))
         else:
             hits += _judge_pr_merge(_without(args, path))
-        if any(hit.decision == DENY for hit in hits):
-            break  # a deny wins over every other reading
     return hits
 
 

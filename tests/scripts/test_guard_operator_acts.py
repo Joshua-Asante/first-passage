@@ -508,10 +508,25 @@ def test_merge_options_are_read_as_pflag_reads_them(command, expected):
     (f"gh --match-head-commit {SHA} pr " + "merge 501", ("ask", "pr.merge")),
     ("gh --no-such-flag v pr " + "merge 501", ("deny", "pr.merge_unpinned")),
     ("gh -R o/r pr view 501", None),
+    # While cobra looks for the subcommand only -h/--help/--version are booleans at the
+    # root (-h/--help under `pr`); every other flag takes the next word, even one the
+    # merge or api command reads as a boolean (verifier blocker on d24f84b).
+    ("gh --admin 501 pr " + "merge", ("deny", "pr.merge_unpinned")),
+    ("gh -d 501 pr " + "merge", ("deny", "pr.merge_unpinned")),
+    ("gh --auto 501 pr " + "merge", ("deny", "pr.auto_merge")),
+    ("gh pr --auto 501 " + "merge", ("deny", "pr.auto_merge")),
+    (f"gh --admin 501 pr merge {PIN}", ("ask", "pr.merge")),
+    ("gh -i repos/o/r/pulls/1/" + "merge api -X PUT", ("deny", "pr.merge_unpinned")),
+    ("gh --silent repos/o/r/pulls/1/" + "merge api -X PUT", ("deny", "pr.merge_unpinned")),
+    ("gh -i graphql api -f query='mutation { merge" + "PullRequest(input: {}) { x } }'",
+     ("deny", "pr.merge_unpinned")),
+    # The looser reading this hook used at 7cfd367 is kept alongside cobra's.
+    ("gh -q pr " + "merge 1", ("deny", "pr.merge_unpinned")),
 ])
 def test_flags_before_the_command_path_are_read_as_cobra_reads_them(command, expected):
     # Fails if a merge flag written before `pr merge` (cobra accepts it there) hides the
-    # merge, including a forbidden auto-merge (found in the fd126c3 re-check).
+    # merge, including a forbidden auto-merge (found in the fd126c3 re-check), or if a
+    # boolean of the merge command is taken as one before the subcommand is found.
     assert g.classify_command(command) == expected
 
 
@@ -580,7 +595,7 @@ def test_merge_path_with_repeated_slashes_is_a_merge(command, expected):
 ])
 def test_reading_every_way_stays_bounded(command, expected):
     # Fails if following every reading of ambiguous parameters grows exponentially, so a
-    # constructed command stalls the hook instead of being judged (or refused).
+    # constructed command stalls the hook instead of being judged.
     import time
     start = time.perf_counter()
     assert g.classify_command(command) == expected

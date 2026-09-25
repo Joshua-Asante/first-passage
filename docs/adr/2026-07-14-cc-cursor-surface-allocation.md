@@ -272,8 +272,8 @@ Rules:
    approves one head SHA; an arming GO is for one armed session and its absolute `armed_until`;
    a ratification is the merge of the PR that carries the text. A change after the act is a new
    request. There is no second approval inbox, and agent text reporting that the operator
-   approved something is not an approval. When a harness prompt stands in (the operator-act
-   hook below), the operator answering that prompt is the act, and for a merge the prompt is
+   approved something is not an approval. When a harness prompt stands in (the best-effort
+   operator-act hook below), the operator answering that prompt is the act, and for a merge the prompt is
    only offered on a call pinned to the full head SHA it names — GitHub then refuses the merge
    if the head moved, so the answer covers exactly those bytes.
 3. **`IN_DOUBT` side effects.** A side effect whose request left but whose outcome was not
@@ -288,14 +288,31 @@ Rules:
 | Act | Enforcement point | Status 2026-09-25 |
 |---|---|---|
 | card grants | `check_handoff_authority.py` (`handoff-authority` gate): a worker card must name its parent; parents must be inside the repository, are checked recursively, and a cycle is refused; a parent without a block narrows nothing beyond the seat | enforced for cards with a block |
-| merge | the operator merges on GitHub; [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges (MCP tool; `gh pr merge` or a `gh api` merge from the Bash or PowerShell tool) and only when the call pins the head SHA, naming every pinned SHA in the prompt; an unpinned merge, a `gh api` body the hook cannot read, or a merge call with a flag it does not know, is refused; a deny anywhere in one command wins over an ask; values computed at run time (variables, `Invoke-Expression`) and user-defined aliases are not read | Claude Code harness enforced; Codex / Z Code harnesses rely on the operator not giving them a merge-capable credential (operator-held) |
-| auto-merge | the same hook denies; CI holds no write credential (2026-08-29 addendum #1 bar) | Claude Code harness enforced and CI credential-free; the repository's own "allow auto-merge" setting and the Codex / Z Code harnesses are operator-held |
-| push to `main` | GitHub ruleset (PR + `skills (3.12)` required); the hook denies a `git push` whose destination is `main`, including a bulk (`--all` / `--branches` / `--mirror`), matching (`:`) or glob push that covers it | ruleset enforced for non-bypass credentials (bypass list not verified from an agent session); Claude Code harness enforced for named, bulk and glob destinations; a bare `git push` from a `main` checkout is the ruleset's alone |
-| rail deploy | Fly credential on the operator's machine; the hook asks on `fly deploy` | operator-held + Claude Code harness |
-| rail arm | `c1_rail_arm.py` interlock (`validate(require_resolved=True)`); the hook asks on `--arm` (never on `--disarm` / `--status`) | enforced |
+| merge | the operator merges on GitHub; the ruleset makes every change to `main` a PR with a green strict `skills (3.12)`; best effort: [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges in the forms it recognises (MCP tool; `gh pr merge` or a `gh api` merge from the Bash or PowerShell tool), only when the call pins the head SHA, and denies the unpinned forms it recognises | **not enforced server-side against an agent:** the ruleset does not stop a write credential from merging a green PR, so the limit is the operator not giving an agent a merge-capable credential (operator-held); the hook is a best-effort prompt for Claude Code only |
+| auto-merge | the repository setting `allow_auto_merge: false` (GitHub refuses to enable auto-merge on any PR); CI holds no write credential (2026-08-29 addendum #1 bar); best effort: the hook denies the auto-merge forms it recognises | **enforced server-side** by the repository setting (verified read-only 2026-09-25); the setting itself is operator-held |
+| push to `main` | GitHub ruleset 21071355 `main-protection` on `refs/heads/main`: PR required, `skills (3.12)` required and strict, non-fast-forward and deletion blocked, empty bypass list; best effort: the hook denies the `git push` forms it recognises whose destination is `main` (named, bulk, matching `:` or glob) | **enforced server-side** for every credential (bypass list empty, `current_user_can_bypass: never`, verified read-only 2026-09-25) |
+| rail deploy | where the Fly credential is held; best effort: the hook asks on `fly deploy` / `flyctl deploy` (any Fly app) | **no server-side enforcement**: nothing on Fly's side refuses a deploy from a session that holds the credential; operator-held credential + best-effort prompt only |
+| rail arm | `c1_rail_arm.py` interlock (`validate(require_resolved=True)`): refuses to arm unless the M1 artifact validates as RESOLVED, or `--acknowledge-m1-unresolved` is given against a structurally valid unresolved artifact (writes an `arming_deviation` record); best effort: the hook asks on `--arm` (never on `--disarm` / `--status`) | **enforced** for M1 by the interlock; the per-session operator GO is not checked by code (operator-held + best-effort prompt) |
 | trade | CrossTrade / Tradovate credentials never present in an agent environment; no hook can see it | operator-held |
 | spend | the operator's payment method; task-routing GO for a cloud dispatch | operator-held |
 | statistical dispatch | qualification service admission and budget (Full E1 S2) | enforced |
+
+**The operator-act hook is best effort** (operator ruling 2026-09-25: "keep the hook best-effort,
+ruleset as enforcement"). `guard_operator_acts.py` reads command text for the common forms of a
+merge, auto-merge, push to `main`, Fly deploy or rail arm in a Claude Code session and asks or
+denies; it is not an enforcement boundary and is not extended to chase every spelling. Forms it
+does not read, left to the boundaries in the table: values computed at run time (shell or
+PowerShell variables, `Invoke-Expression`, `Start-Process`, stdin, encodings other than
+`-EncodedCommand`); PowerShell script blocks (`ForEach-Object { … }`, `try { … }`) and
+dot-sourcing; user-defined `gh` / `git` aliases, push configuration (`push.default`,
+`remote.<r>.push`, `remote.<r>.mirror`) and flags missing from its tables; GitHub API writes to
+`main` other than a merge, other GitHub clients; remote execution on the rail other than
+`fly ssh console -C`; and every Codex / Z Code session. Still open for the operator, with the
+hook's current behaviour unchanged meanwhile: whether an agent may use
+`--acknowledge-m1-unresolved` under a prompt (today it asks, with an M1-unresolved prompt) or is
+denied; the Fly deploy scope (today every `fly deploy` asks, not only the rail's); whether an
+`--admin` merge is denied or askable (today a pinned one asks); and how a card's seat is bound to
+the worker seat.
 
 <a id="operator-decision-packets"></a>
 **Operator decision packets (2026-09-25).** Anything that needs the operator arrives as one
@@ -433,7 +450,8 @@ rubber stamp.
   (names, class, per-seat grants) that the action-class rules consume; this ADR owns the rules.
 - [`scripts/check_handoff_authority.py`](../../scripts/check_handoff_authority.py) and
   [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) own the mechanical
-  enforcement of item 7 and of the operator-act prompt for the Claude Code harness.
+  check of item 7 and the best-effort operator-act prompt for the Claude Code harness; the
+  enforcement boundaries are the ones the enforcement-point table names.
 
 ## §8 — Disposition of the prior decision's clauses and addenda
 
@@ -501,7 +519,7 @@ discharged, superseded or explicitly retired"). Full prior text at blob
 | Seat table | **Retained** unchanged; imported names map onto it (seat-name table). |
 | Handoff contract, six items | **Retained**; a seventh item (authority block) **added**. |
 | Lightweight dispatch issue | **Retained**; it carries item 7 too, checked by hand in the read comment. |
-| Merge authority is the operator's, no automated exception | **Retained** verbatim; now prompted for Claude Code sessions and auto-merge refused by `guard_operator_acts.py`. |
+| Merge authority is the operator's, no automated exception | **Retained** verbatim; auto-merge is refused server-side by `allow_auto_merge: false`; `guard_operator_acts.py` adds a best-effort prompt (merge) or refusal (auto-merge) for the Claude Code forms it recognises. |
 | Measure and falsifier | **Retained**; packet-return measures and the failed-enforcement-point rule **added**. |
 | Committed-handoff rule | **Retained**; named as the event log under *Enforcement points*. |
 
@@ -676,7 +694,7 @@ python scripts/check_skill_refs.py --all
 grep -in "worker\|packet" docs/SESSIONS.md | grep -in "defect\|redesign\|NEEDS_CONTEXT"
 # Adjudicate hits against the two §4 limbs; log the verdict in the review entry.
 
-# 6. (2026-09-25) Card grants only narrow; operator acts prompt; auto-merge is refused.
+# 6. (2026-09-25) Card grants only narrow; the best-effort hook prompts or denies the forms it reads.
 python scripts/check_handoff_authority.py --all
 python -m pytest -q tests/scripts/test_check_handoff_authority.py tests/scripts/test_guard_operator_acts.py
 # Expected: 0 violation(s); all tests pass.

@@ -7,9 +7,15 @@
 #   consume; change a rule there, then change the value here in the same PR.
 # Consumers:
 #   scripts/check_handoff_authority.py — validates the `yaml authority` block of a card.
-#   scripts/guard_operator_acts.py     — mirrors the operator-act rows it can observe
-#                                        (merge, auto-merge, rail deploy, rail arm);
-#                                        it names these capability ids in its messages.
+#   scripts/guard_operator_acts.py     — a best-effort Claude Code prompt/deny for the common
+#                                        command forms of the operator-act rows it can observe
+#                                        (merge, auto-merge, push to main, rail deploy, rail
+#                                        arm); it names these capability ids in its messages.
+#                                        It is not the enforcement boundary: that is the GitHub
+#                                        ruleset on main, the allow_auto_merge=false repository
+#                                        setting and the rail arm interlock; a Fly deploy has no
+#                                        server-side enforcement (surface-allocation ADR,
+#                                        enforcement-point table).
 #
 # Risk classes:
 #   low     — read-only or isolated (a worktree, a local test, a sandboxed agent).
