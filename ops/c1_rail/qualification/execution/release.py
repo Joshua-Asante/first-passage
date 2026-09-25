@@ -61,7 +61,7 @@ def install_release(manifest_bytes, approval_bytes, *, instance_config):
     keys = load_keys(read_regular(root, 'keys.json', limit=1024 * 1024), authority_class=config['authority_class'])
     release = verify_release(manifest_bytes, approval_bytes, keys, now=datetime.now(timezone.utc),
                              installation_authority=config['authority_class'])
-    if (release.document['schema'] in ('qualification_execution_release/v3', 'qualification_execution_release/v4', 'qualification_execution_release/v5')) != (config['schema'] == 'qualification_execution_instance/v2'):
+    if (release.document['schema'] in ('qualification_execution_release/v3', 'qualification_execution_release/v4', 'qualification_execution_release/v5', 'qualification_execution_release/v6')) != (config['schema'] == 'qualification_execution_instance/v2'):
         raise ValueError('diagnostic instance/release versions must agree')
     if release.profile.worker_uid in (0, config['service_uid'], config['g5_uid'], config.get('seal_probe_uid')):
         raise ValueError('worker identity must be separate from host authorities')

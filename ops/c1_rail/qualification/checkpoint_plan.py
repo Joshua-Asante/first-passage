@@ -85,10 +85,12 @@ def derive_checkpoint_plan(campaign_plan_bytes, checkpoint, predecessor_receipt_
     """Canonical bytes of one checkpoint's plan, sliced from the retained campaign plan.
 
     Pure and closed: `campaign_plan_bytes` must be the retained canonical campaign
-    plan; the returned bytes are the canonical `n1` sub-document exactly as the
-    campaign plan embeds it (byte-identical to ``derive_n1_plan`` for N1). A
-    predecessor receipt is refused for N1 (there is no earlier checkpoint) and
-    required-but-unsupported for any later checkpoint until its slice lands.
+    plan; for N1 the returned bytes are the canonical `n1` sub-document exactly as
+    the campaign plan embeds it (byte-identical to ``derive_n1_plan``), with no
+    predecessor. For N2 the returned bytes are the canonical joint sub-plan bound
+    to the committed N1 checkpoint receipt's digest -- a missing, foreign, stale
+    or non-continuing predecessor refuses; that the receipt is the *committed*
+    one is a custody fact the store boundary checks, not this pure slice.
     """
     if type(campaign_plan_bytes) is not bytes or len(campaign_plan_bytes) > _CAMPAIGN_MAX_BYTES:
         raise ValueError('bounded retained campaign plan required')
@@ -101,6 +103,49 @@ def derive_checkpoint_plan(campaign_plan_bytes, checkpoint, predecessor_receipt_
         raw = canonical_json_bytes(doc['n1'])
         if parse_canonical_json(raw, label='N1 sub-plan').get('checkpoint') != 'N1':
             raise ValueError('campaign plan N1 sub-document differs')
+        return raw
+    if checkpoint == 'N2':
+        if type(predecessor_receipt_bytes) is not bytes or not predecessor_receipt_bytes:
+            raise ValueError('committed predecessor receipt required')
+        receipt = parse_canonical_json(predecessor_receipt_bytes, label='predecessor receipt')
+        if (
+            type(receipt) is not dict
+            or receipt.get('schema') != 'qualification_campaign_checkpoint_receipt/v1'
+            or receipt.get('checkpoint') != 'N1'
+            or receipt.get('attempt_id') != doc.get('attempt_id')
+        ):
+            raise ValueError('predecessor receipt binding differs')
+        if receipt.get('decision') != 'CONTINUE' or receipt.get('campaign_state') != 'N2_READY':
+            raise ValueError('committed predecessor decision differs')
+        n1 = doc['n1']
+        raw = canonical_json_bytes(
+            dict(
+                schema='qualification_checkpoint_plan/v3',
+                checkpoint='N2',
+                attempt_id=doc['attempt_id'],
+                contract_sha256=doc['contract_sha256'],
+                trust_domain_sha256=doc['trust_domain_sha256'],
+                policy_sha256=doc['policy_sha256'],
+                execution_release_sha256=doc['execution_release_sha256'],
+                exact_depth_approval_sha256=doc['exact_depth_approval_sha256'],
+                depths=doc['n2']['depths'],
+                seed_inputs=doc['n2']['seed_inputs'],
+                thresholds=doc['cutoff']['thresholds'],
+                horizon_sessions=n1['horizon_sessions'],
+                initial_state_sha256=n1['initial_state_sha256'],
+                replay_sha256=doc['replay_sha256'],
+                budget=doc['budget'],
+                mechanics_version=n1['mechanics_version'],
+                source_proofs=n1['source_proofs'],
+                predecessor={
+                    'checkpoint': 'N1',
+                    'receipt_sha256': hashlib.sha256(predecessor_receipt_bytes).hexdigest(),
+                },
+            )
+        )
+        sliced = parse_canonical_json(raw, label='N2 sub-plan')
+        if sliced['checkpoint'] != 'N2' or type(sliced['depths']) is not list:
+            raise ValueError('campaign plan N2 sub-document differs')
         return raw
     raise ValueError('unsupported checkpoint selection')
 

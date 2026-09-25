@@ -16,7 +16,7 @@ from ..contract import canonical_json_bytes as encoded, parse_canonical_json
 from .campaign_budget import clock, integer
 from .protocol import fields, identity, sha256
 
-from .campaign_funding import WORK_ROLES, PROBES, WORK_PHASES
+from .campaign_funding import WORK_ROLES, PROBES, WORK_PHASES, DISPATCH_ROLES
 from .campaign_probe import READINESS_TOKEN
 
 
@@ -240,7 +240,7 @@ def guardian_task_bound(manifest):
     """Probe guardians stay single-task (S2); a dispatch-work guardian spawns
     its own campaign_control children for the io mounts and the g5 unit (D2),
     bounded by the installed control_calls allowance."""
-    return 1 + CAMPAIGN_CONTROL_TASKS if manifest['role'] in ('n1_worker', 'n1_g5') else 1
+    return 1 + CAMPAIGN_CONTROL_TASKS if manifest['role'] in DISPATCH_ROLES else 1
 
 
 CAMPAIGN_CONTROL_TASKS = 2
@@ -1275,14 +1275,26 @@ def _transition(campaigns, attempt, work_id, target, data):
     )
 
 
-def _assert_authority(state):
+def _live(state, phase=None):
+    from .campaign_store import CHECKPOINT_PROGRESSION_STATES, PROGRESSION_PHASES
+
+    return state['validity'] == 'VALID' and (
+        state['state'] in ('PROVISIONAL', 'BOUND')
+        or (
+            state['state'] in CHECKPOINT_PROGRESSION_STATES
+            and phase in PROGRESSION_PHASES.get(state['state'], ())
+        )
+    )
+
+
+def _assert_authority(state, phase=None):
     from .campaign_budget import recovery_pending, dispatch_pending
 
     if recovery_pending(state):
         raise ValueError('campaign recovery pending')
     if dispatch_pending(state):
         raise ValueError('campaign dispatch pending')
-    if state['state'] not in ('PROVISIONAL', 'BOUND') or state['validity'] != 'VALID':
+    if not _live(state, phase):
         raise ValueError('campaign is terminal or invalidated')
 
 
@@ -1298,11 +1310,8 @@ def _await_dispatch_ack(campaigns, attempt, work_id, deadline):
         state = parse_canonical_json(
             campaigns.budget_snapshot(attempt), label='dispatch acknowledgement'
         )
-        if (
-            recovery_pending(state)
-            or state['validity'] != 'VALID'
-            or state['state'] not in ('PROVISIONAL', 'BOUND')
-        ):
+        phase = next((w['phase'] for w in state['works'] if w['work_id'] == work_id), None)
+        if recovery_pending(state) or not _live(state, phase):
             raise ValueError('guardian authority revoked while awaiting dispatch acknowledgement')
         row = next(
             (
@@ -1322,7 +1331,7 @@ def _await_dispatch_ack(campaigns, attempt, work_id, deadline):
         ):
             raise ValueError('original guardian dispatch deadline expired')
         if row['acknowledged_clock'] is not None:
-            _assert_authority(state)
+            _assert_authority(state, phase)
             return state
         time.sleep(min(0.01, (deadline - current['boottime_ns']) / 10**9))
 
@@ -1356,6 +1365,7 @@ def guardian_main():
         'qualification_execution_profile/v3',
         'qualification_execution_profile/v4',
         'qualification_execution_profile/v5',
+        'qualification_execution_profile/v6',
     ):
         raise ValueError('diagnostic guardian requires fresh installed revision')
     campaigns = CampaignStore(context.store)
@@ -1393,7 +1403,7 @@ def guardian_main():
         campaigns, args.attempt, args.work, 'DEADLINE', {'deadline_boottime_ns': deadline}
     )
     state = _await_dispatch_ack(campaigns, args.attempt, args.work, deadline)
-    _assert_authority(state)
+    _assert_authority(state, work['phase'])
     if (
         state['profile']
         != parse_canonical_json(context.release, label='release')['campaign_budget_profile']
@@ -1444,7 +1454,7 @@ def guardian_main():
         if DockerControl().call('GET', '/info')['CgroupDriver'] != 'systemd':
             raise ValueError('installed Docker cgroup driver differs')
         state = _transition(campaigns, args.attempt, args.work, 'RUNNING', {})
-        _assert_authority(state)
+        _assert_authority(state, work['phase'])
         if manifest['role'] == 'admission':
             from .admission import verify_retained_bundle
             from .plan import derive_campaign_plan_from_context
@@ -1507,8 +1517,17 @@ def guardian_main():
         elif manifest['role'] == 'n1_worker':
             _verify_payload_quota(runtime, enrollment, state, work, deadline)
             _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifest)
+        elif manifest['role'] == 'n2_worker':
+            _verify_payload_quota(runtime, enrollment, state, work, deadline)
+            _run_n1_worker(
+                context, campaigns, runtime, state, work, enrollment, manifest, checkpoint='N2'
+            )
         elif manifest['role'] == 'n1_g5':
             _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest)
+        elif manifest['role'] == 'n2_g5':
+            _run_n1_g5(
+                context, campaigns, runtime, state, work, enrollment, manifest, checkpoint='N2'
+            )
         else:
             _verify_payload_quota(runtime, enrollment, state, work, deadline)
             _run_probe(context, campaigns, runtime, state, work, enrollment, manifest)
@@ -1658,6 +1677,7 @@ def g5_unit_spec(
     orchestration_cpu_ns,
     remaining_wall_ns,
     cpu_ns,
+    checkpoint='N1',
 ):
     """D2: the metered qg5 transient unit under the work's payload slice.
 
@@ -1718,28 +1738,36 @@ def g5_unit_spec(
                 attempt_id,
                 '--campaign-work',
                 work_id,
+                *(
+                    ['--checkpoint', checkpoint]
+                    if checkpoint != 'N1'
+                    else []
+                ),
             ],
         }
     }
 
 
-def worker_container_body(context, enrollment, manifest):
+def worker_container_body(context, enrollment, manifest, *, checkpoint='N1'):
     """D3: the probe's fixed container body extended with the work's io binds."""
     body = probe_container_body(context, enrollment, manifest)
     io = checkpoint_io_paths(enrollment)
+    command = [
+        '--execution-id',
+        manifest['work_id'],
+        '--input',
+        '/input',
+        '--output',
+        '/output',
+        '--campaign-limits',
+        'campaign-limits.json',
+    ]
+    if checkpoint == 'N2':
+        command += ['--checkpoint', 'N2']
     return dict(
         body,
         Entrypoint=['/opt/ops/bin/python', '-I', '/opt/qualification/bootstrap.py', 'worker'],
-        Cmd=[
-            '--execution-id',
-            manifest['work_id'],
-            '--input',
-            '/input',
-            '--output',
-            '/output',
-            '--campaign-limits',
-            'campaign-limits.json',
-        ],
+        Cmd=command,
         # Unlike the harmless probes, the real worker's refusal text is the only
         # way to attribute a non-zero exit; bounded json logging, never streamed
         # as capture (the output mount is the capture path).
@@ -1751,14 +1779,15 @@ def worker_container_body(context, enrollment, manifest):
     )
 
 
-def _worker_input_files(context, campaigns, state, work):
-    """The work's staged input manifest: plan, limits, installation, bundle."""
+def _worker_input_files(context, campaigns, state, work, *, checkpoint='N1'):
+    """The work's staged input manifest: plan, limits, installation, bundle.
+    The joint N2 work additionally stages the committed N1 receipt the plan and
+    the worker both bind as predecessor."""
     from .files import read_regular
     from .protocol import decode_base64
-    from ..checkpoint_plan import derive_checkpoint_plan
 
     attempt = state['attempt_id']
-    plan_bytes = derive_checkpoint_plan(campaigns.retained_object(attempt, 'plan'), 'N1', None)
+    plan_bytes = campaigns._checkpoint_plan(attempt, checkpoint)
     objects = campaigns.objects(attempt)
     release = read_regular(
         Path(context.config['installation_root']), 'release.json', limit=16 * 1024 * 1024
@@ -1778,7 +1807,7 @@ def _worker_input_files(context, campaigns, state, work):
             'schema': 'qualification_campaign_work_limits/v1',
             'attempt_id': attempt,
             'work_id': work['work_id'],
-            'phase': 'N1',
+            'phase': work['phase'],
             'limits': {
                 'cpu_ns': work['limits']['cpu_ns']
                 - state['profile']['orchestration_cpu_ns'][work['phase']],
@@ -1796,6 +1825,10 @@ def _worker_input_files(context, campaigns, state, work):
         ('installation', 'keys.json', keys),
         ('bundle', 'index.json', objects['bundle_index']),
     ]
+    if checkpoint == 'N2':
+        files.append(
+            ('', 'predecessor-receipt.json', campaigns.checkpoint_receipt(attempt, 'N1'))
+        )
     # Every retained bundle member lands at the path its own index declares, so
     # the worker's verify_bundle reads exactly the admitted original layout.
     index = parse_canonical_json(objects['bundle_index'], label='bundle index')
@@ -1840,6 +1873,8 @@ def _capture_result_document(
     started_at,
     finished_at,
     authorized,
+    *,
+    checkpoint='N1',
 ):
     import base64
     from .store import instant
@@ -1865,7 +1900,7 @@ def _capture_result_document(
         {
             'schema': 'qualification_campaign_checkpoint_result/v1',
             'attempt_id': state['attempt_id'],
-            'checkpoint': 'N1',
+            'checkpoint': checkpoint,
             'work_id': manifest['work_id'],
             'campaign_id': campaigns.row(state['attempt_id'])['campaign_id'],
             'plan_sha256': sha256(plan_bytes),
@@ -1911,10 +1946,13 @@ def _capture_result_document(
     return result, captured
 
 
-def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifest):
-    """The genuine N1 compute work: container with identity + handshake, capture
-    from the bounded output mount, byte-for-byte archive, attestation, CAPTURED,
-    settlement -- the probe's supervision loop with the real worker payload."""
+def _run_n1_worker(
+    context, campaigns, runtime, state, work, enrollment, manifest, *, checkpoint='N1'
+):
+    """The genuine checkpoint compute work (S3 N1; S4 the joint N2 batch): container
+    with identity + handshake, capture from the bounded output mount, byte-for-byte
+    archive, attestation, CAPTURED, settlement -- the probe's supervision loop with
+    the real worker payload."""
     import base64
     from .protocol import digest
 
@@ -1922,7 +1960,9 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
     if docker.call('GET', '/info')['CgroupDriver'] != 'systemd':
         raise ValueError('installed Docker cgroup driver differs; no automatic switch')
     io = checkpoint_io_paths(enrollment)
-    files, plan_bytes = _worker_input_files(context, campaigns, state, work)
+    files, plan_bytes = _worker_input_files(
+        context, campaigns, state, work, checkpoint=checkpoint
+    )
     staged_bytes = sum(len(raw) for _, _, raw in files)
     output_bound = context.profile.output_byte_limit
     # The manager creates the mountpoints; only then may the guardian stage
@@ -1949,7 +1989,7 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
     )
     _write_worker_input(enrollment, files)
     name = 'fpqs2-' + sha256(encoded(enrollment))
-    body = worker_container_body(context, enrollment, manifest)
+    body = worker_container_body(context, enrollment, manifest, checkpoint=checkpoint)
     container = digest(docker.call('POST', '/containers/create?name=' + name, body)['Id'])
     _retain_event(
         campaigns,
@@ -2185,6 +2225,7 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
         started_at,
         finished_at,
         authorized,
+        checkpoint=checkpoint,
     )
     capture_transition = encoded(
         {
@@ -2197,7 +2238,12 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
         }
     )
     campaigns.retain_checkpoint_capture(
-        state['attempt_id'], work['work_id'], result, payload_bytes, capture_transition
+        state['attempt_id'],
+        work['work_id'],
+        result,
+        payload_bytes,
+        capture_transition,
+        checkpoint=checkpoint,
     )
     # The attestation signs exactly the archived capture, with the service's
     # enrolled execution credential; the store verifies custody on retain.
@@ -2211,7 +2257,7 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
         'schema': 'qualification_campaign_checkpoint_attestation_payload/v1',
         'scope': 'ATTEST_CAMPAIGN_CHECKPOINT',
         'attempt_id': state['attempt_id'],
-        'checkpoint': 'N1',
+        'checkpoint': checkpoint,
         'work_id': manifest['work_id'],
         'result_sha256': sha256(result),
         'payload_sha256': parsed_result['payload_sha256'],
@@ -2262,7 +2308,9 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
         ):
             raise ValueError('checkpoint attestation capture binding differs')
 
-    campaigns.retain_checkpoint_attestation(state['attempt_id'], attestation, verify=_verify)
+    campaigns.retain_checkpoint_attestation(
+        state['attempt_id'], attestation, verify=_verify, checkpoint=checkpoint
+    )
     state = parse_canonical_json(
         campaigns.budget_snapshot(state['attempt_id']), label='attested state'
     )
@@ -2271,7 +2319,7 @@ def _run_n1_worker(context, campaigns, runtime, state, work, enrollment, manifes
     state = parse_canonical_json(
         campaigns.settle_work(state['attempt_id'], work['work_id'], observed), label='settlement'
     )
-    if state['state'] == 'BOUND' and state['validity'] == 'VALID':
+    if _live(state, work['phase']):
         _transition(campaigns, state['attempt_id'], work['work_id'], 'COMPLETED', {})
     docker.call('DELETE', '/containers/' + container + '?v=1')
 
@@ -2286,7 +2334,9 @@ def _unit_cgroup_exited(group):
         return True
 
 
-def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
+def _run_n1_g5(
+    context, campaigns, runtime, state, work, enrollment, manifest, *, checkpoint='N1'
+):
     """The metered qg5 unit (D2): start under the payload slice, supervise its
     identities, and settle. The assessment itself is the unit's own work over
     the service socket; credit follows the persisted candidate, never the
@@ -2313,6 +2363,7 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
         orchestration_cpu_ns=state['profile']['orchestration_cpu_ns'][work['phase']],
         remaining_wall_ns=remaining_wall_ns,
         cpu_ns=work['limits']['cpu_ns'],
+        checkpoint=checkpoint,
     )
     unit = enrollment['scopes']['payload_slice'][:-6] + '-g5.service'
     with campaigns.launch_gate(
@@ -2330,7 +2381,9 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
         current = parse_canonical_json(
             campaigns.budget_snapshot(state['attempt_id']), label='current g5 authority'
         )
-        if current['state'] in ('N2_READY', 'N1_FAILED'):
+        from .campaign_store import CHECKPOINT_ADVANCES
+
+        if current['state'] in CHECKPOINT_ADVANCES[checkpoint]:
             # The assessment commit's own terminal outcome ends supervision of
             # the unit's identities, but not the wait for its exit: the commit
             # lands while the driver is still returning, and an observation of
@@ -2338,7 +2391,7 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
             # must record as BUDGET_UNCERTAIN (a live payload is never sampled).
             committed = True
         else:
-            _assert_authority(current)
+            _assert_authority(current, work['phase'])
         if _unit_cgroup_exited(group):
             break
         if committed:
@@ -2421,8 +2474,9 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
     with context.store.transaction() as connection:
         intent_held = (
             connection.execute(
-                'SELECT 1 FROM full_campaign_checkpoint_intents WHERE attempt_id=?',
-                (state['attempt_id'],),
+                'SELECT 1 FROM full_campaign_checkpoint_intents '
+                'WHERE attempt_id=? AND checkpoint=?',
+                (state['attempt_id'], checkpoint),
             ).fetchone()
             is not None
         )
@@ -2446,10 +2500,11 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
     elif (
         work['state'] == 'SIGNED'
         and state['validity'] == 'VALID'
-        and state['state'] in ('BOUND', 'N2_READY', 'N1_FAILED')
+        and state['state']
+        in ('BOUND', 'N2_READY', 'N1_FAILED', 'PART_A_READY', 'N2_FAILED')
     ):
         _transition(campaigns, state['attempt_id'], work['work_id'], 'COMPLETED', {})
-    if parent is not None and state['state'] == 'BOUND' and state['validity'] == 'VALID':
+    if parent is not None and _live(state, work['phase']):
         # The redelivered retry settled: finalize the interrupted signing with
         # the persisted candidate through the service's own commit path (the
         # caller-finalizes-after-retry order the store's serialization rule
@@ -2457,8 +2512,8 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
         with context.store.transaction() as connection:
             row = connection.execute(
                 'SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
-                'WHERE attempt_id=?',
-                (state['attempt_id'],),
+                'WHERE attempt_id=? AND checkpoint=?',
+                (state['attempt_id'], checkpoint),
             ).fetchone()
         if row is not None:
             import base64 as _b64
@@ -2469,7 +2524,7 @@ def _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest):
                 'schema': 'qualification_campaign_request/v2',
                 'operation': 'COMMIT_CHECKPOINT_ASSESSMENT',
                 'attempt_id': state['attempt_id'],
-                'checkpoint': 'N1',
+                'checkpoint': checkpoint,
                 'work_id': parent,
                 'candidate_bytes_b64': _b64.b64encode(candidate).decode('ascii'),
                 'artifacts': [
@@ -2495,6 +2550,8 @@ def probe_container_body(context, enrollment, manifest):
         'probe_seal': config['seal_probe_uid'],
         'n1_worker': context.profile.worker_uid,
         'n1_g5': config['g5_uid'],
+        'n2_worker': context.profile.worker_uid,
+        'n2_g5': config['g5_uid'],
     }[role]
     from .profile import CAMPAIGN_RESOURCE_SCOPE
 

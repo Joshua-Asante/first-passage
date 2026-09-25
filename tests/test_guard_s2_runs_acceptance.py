@@ -217,7 +217,7 @@ def pr_run(number, *, status="in_progress", conclusion=None, sha=X, mode="s3", r
             "headBranch": branch, "createdAt": created}
 
 
-def dispatch_run(branch="feat", *, mode="s3", status="completed", conclusion="success", sha=X,
+def dispatch_run(branch="feat", *, mode="s4", status="completed", conclusion="success", sha=X,
                  rid=21, created="2026-09-23T02:00:00Z", cases=None, title=None):
     if title is None:
         title = (f"S2 DIAGNOSTIC [{mode}] ({cases})" if cases
@@ -617,7 +617,7 @@ def test_f26_no_ref_never_uses_the_local_branch(sh):
     f"gh.exe workflow run {WORKFLOW_FILE} --ref feat",
     f"gh workflow run -R Joshua-Asante/first-passage {WORKFLOW_FILE} --ref feat",
     f"gh workflow --repo Joshua-Asante/first-passage run {WORKFLOW_FILE} --ref feat",
-    f"gh workflow run {WORKFLOW_FILE} \\\n  --ref feat \\\n  -f mode=s3",
+    f"gh workflow run {WORKFLOW_FILE} \\\n  --ref feat \\\n  -f mode=s4",
 ])
 def test_f9_every_selector_spelling_is_recognised(sh, command):
     sh.runs["feat"] = [dispatch_run()]
@@ -677,6 +677,22 @@ def test_f32_whitespace_only_cases_is_refused(sh, value):
 def test_other_workflows_are_ignored(sh):
     sh.runs["feat"] = [dispatch_run()]
     assert decide("gh workflow run tests.yml --ref feat") is None
+
+
+# --- S4: the workflow's default mode (C2 repair R5a-2) ------------------------
+
+def test_s4_is_the_default_mode_and_only_same_mode_runs_cover_it(sh):
+    sh.runs["feat"] = [dispatch_run(mode="s4", conclusion="success")]
+    assert "passed" in decide(DISPATCH)          # no -f mode: the workflow dispatches s4
+    sh.runs["feat"] = [dispatch_run(mode="s3", conclusion="success")]
+    assert decide(DISPATCH) is None              # an s3 run is not s4 coverage
+
+
+def test_cases_is_a_diagnostic_subset_for_s3_and_s4(sh):
+    sh.runs["feat"] = [dispatch_run(mode="s4", conclusion="failure")]
+    assert decide(f"{DISPATCH} -f mode=s4 -f cases=deadline") is None
+    assert decide(f"{DISPATCH} -f mode=s3 -f cases=deadline") is None
+    assert "s3" in decide(f"{DISPATCH} -f mode=s2 -f cases=deadline")
 
 
 @pytest.mark.parametrize("command", [
@@ -764,7 +780,7 @@ def test_f20_mcp_workflow_dispatch_and_rerun_are_guarded(sh, capsys):
     sh.views["101"] = sh.runs["feat"][0]
     run = {"tool_name": MCP + "actions_run_trigger", "cwd": REPO,
            "tool_input": {**OWNER, "method": "run_workflow", "workflow_id": WORKFLOW_FILE,
-                          "ref": "feat", "inputs": {"mode": "s3"}}}
+                          "ref": "feat", "inputs": {"mode": "s4"}}}
     assert json.loads(hook(run, capsys))["hookSpecificOutput"]["permissionDecision"] == "deny"
     rerun = {"tool_name": MCP + "actions_run_trigger", "cwd": REPO,
              "tool_input": {**OWNER, "method": "rerun_workflow_run", "run_id": 101}}
@@ -787,7 +803,7 @@ def test_f20_mcp_owner_and_repo_name_the_repository_queried(sh, capsys):
     sh.runs["feat"] = [dispatch_run(conclusion="failure")]
     payload = {"tool_name": MCP + "actions_run_trigger", "cwd": REPO,
                "tool_input": {**OWNER, "method": "run_workflow", "workflow_id": WORKFLOW_FILE,
-                              "ref": "feat", "inputs": {"mode": "s3"}}}
+                              "ref": "feat", "inputs": {"mode": "s4"}}}
     assert json.loads(hook(payload, capsys))["hookSpecificOutput"]["permissionDecision"] == "deny"
     gh_calls = [c for c, _ in sh.calls if os.path.basename(c[0]).removesuffix(".exe") == "gh"]
     assert gh_calls

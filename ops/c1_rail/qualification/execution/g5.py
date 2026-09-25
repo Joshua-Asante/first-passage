@@ -403,6 +403,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--attempt-id', required=True)
     parser.add_argument('--campaign-work')
+    parser.add_argument('--checkpoint', choices=['N1', 'N2'], default='N1')
     args = parser.parse_args()
     config = load_instance(installed_code_root() / 'qualification-installation/g5.json')
     release = read_regular(
@@ -417,7 +418,10 @@ def main():
             raise SystemExit('supervisor resume signal absent')
         sys.stdout.buffer.write(
             accept_campaign_checkpoint(
-                Path(config['socket_path']), attempt_id=args.attempt_id, work_id=args.campaign_work
+                Path(config['socket_path']),
+                attempt_id=args.attempt_id,
+                work_id=args.campaign_work,
+                checkpoint=args.checkpoint,
             )
         )
         sys.stdout.buffer.flush()
@@ -498,12 +502,14 @@ def validate_campaign_checkpoint(
     """
     from ..evidence import build_checkpoint_evidence
 
-    if checkpoint != 'N1':
+    if checkpoint not in ('N1', 'N2'):
         raise ValueError('installed checkpoint required')
     verified = verify_checkpoint_attestation(
         attestation_bytes, context=context, current_keys=current_keys
     )
     payload = verified['payload']
+    if payload['checkpoint'] != checkpoint:
+        raise ValueError('checkpoint attestation binding differs')
     result_bytes = artifacts['result']
     worker_result_bytes = artifacts['worker_result']
     if (
@@ -517,6 +523,16 @@ def validate_campaign_checkpoint(
         plan_bytes
     ):
         raise ValueError('checkpoint result binding differs')
+    predecessor = (
+        {
+            'predecessor_receipt_bytes': artifacts['predecessor_receipt'],
+            'predecessor_assessment_bytes': artifacts['predecessor_assessment'],
+            'predecessor_plan_bytes': artifacts['predecessor_plan'],
+            'predecessor_payload_bytes': artifacts['predecessor_payload'],
+        }
+        if checkpoint == 'N2'
+        else {}
+    )
     inspected = build_checkpoint_evidence(
         contract=context.contract,
         policy=context.policy,
@@ -525,6 +541,8 @@ def validate_campaign_checkpoint(
         checkpoint_attestation_bytes=attestation_bytes,
         checkpoint_snapshot_bytes=snapshot_bytes,
         installed_release_bytes=context.installed_release,
+        checkpoint=checkpoint,
+        **predecessor,
     )
     from ..evidence import compare_checkpoint_evidence
 
@@ -565,9 +583,9 @@ def sign_campaign_checkpoint(evidence, *, context, credential_reference, current
     return encoded(core), verify_checkpoint_assessment
 
 
-def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id):
+def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id, checkpoint='N1'):
     """The metered qg5 unit's assessment run: fetch actual members, reconstruct,
-    sign, stage and commit -- the N1_ONLY accept_n1 shape over the S3 ops."""
+    sign, stage and commit -- the N1_ONLY accept_n1 shape over the S3/S4 ops."""
     import base64
     import os
     from pathlib import Path
@@ -599,7 +617,7 @@ def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id):
             dict(schema='qualification_campaign_request/v2', attempt_id=attempt_id, **values),
         )
 
-    snapshot = call('CHECKPOINT_SNAPSHOT', checkpoint='N1')
+    snapshot = call('CHECKPOINT_SNAPSHOT', checkpoint=checkpoint)
     parsed_snapshot = parse_canonical_json(snapshot, label='checkpoint snapshot')
 
     def fetch(digest_value):
@@ -617,7 +635,7 @@ def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id):
             chunk_doc = parse_canonical_json(
                 call(
                     'FETCH_CHECKPOINT_MEMBER',
-                    checkpoint='N1',
+                    checkpoint=checkpoint,
                     object_sha256=digest_value,
                     offset=len(result),
                     length=length,
@@ -643,6 +661,13 @@ def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id):
         'worker_result': fetch(members['payload']),
         'attestation': fetch(members['attestation']),
     }
+    if checkpoint == 'N2':
+        artifacts.update(
+            predecessor_receipt=fetch(members['predecessor_receipt']),
+            predecessor_assessment=fetch(members['predecessor_assessment']),
+            predecessor_plan=fetch(members['predecessor_plan']),
+            predecessor_payload=fetch(members['predecessor_payload']),
+        )
     plan_bytes = fetch(members['plan'])
     with tempfile.TemporaryDirectory(dir=config['scratch_root']) as directory:
         root = Path(directory)
@@ -678,7 +703,7 @@ def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id):
             return encoded({'intent_candidate_sha256': sha256(candidate), 'redelivered': True})
         evidence = validate_campaign_checkpoint(
             context,
-            checkpoint='N1',
+            checkpoint=checkpoint,
             plan_bytes=plan_bytes,
             attestation_bytes=artifacts['attestation'],
             artifacts=artifacts,
@@ -697,7 +722,7 @@ def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id):
             staged = parse_canonical_json(
                 call(
                     'STAGE_CHECKPOINT_ARTIFACT',
-                    checkpoint='N1',
+                    checkpoint=checkpoint,
                     role=role,
                     bytes_b64=base64.b64encode(raw).decode('ascii'),
                 ),
@@ -706,7 +731,7 @@ def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id):
             if staged != {'artifact_sha256': sha256(raw)}:
                 raise ValueError('staged checkpoint artifact identity differs')
         proposed = {
-            'checkpoint': 'N1',
+            'checkpoint': checkpoint,
             'candidate_bytes_b64': base64.b64encode(candidate_bytes).decode('ascii'),
             'artifacts': [
                 {'role': role, 'sha256': sha256(raw)}
