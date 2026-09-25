@@ -6,7 +6,16 @@
 **Retain-until:** none
 **Format:** concise — converted from the original full format by the 2026-09-15 revision, which consolidated §0–§10 and six addenda into Decision / Grounds / Current owner plus the §8 disposition table. Prior full-format text at the blob pinned below.
 **Decision date:** 2026-07-14
-**Revision:** 2026-09-20 — three-seat delegation (executive / coordinator / worker) with a Fable
+**Revision:** 2026-09-25 — action classes (low / medium / operator act / forbidden) with a
+machine-read authority block on cards (handoff contract item 7), approval bound to the exact
+object and by acts the operator already performs, the `IN_DOUBT` rule for side effects, the
+operator decision-packet format, the enforcement-point table, and the seat-name mapping for
+imported organisation proposals. Operator-directed in-session 2026-09-25 ("proceed with your
+recommended sequence in full", after a review of three external drafts); ratification pending
+operator merge of the PR that carries it. Prior (2026-09-20) effective text, in full and unedited,
+at blob `cbe2a5886e3b6588b68294ac801f88acde3637b5`
+(`git show cbe2a5886e3b6588b68294ac801f88acde3637b5`), commit `d7af57013b88e11099f5a4b69fdcef7e751597a7`.
+**Prior revision (2026-09-20):** three-seat delegation (executive / coordinator / worker) with a Fable
 escalation lane, the committed-handoff rule, acceptance tests named in the card, and the
 quality-then-attention priority. Operator-directed in-session 2026-09-20 (items 1, 2, 4, 5, 6 of the
 delegation review); ratification pending operator merge of the PR that carries it. Prior (2026-09-15)
@@ -28,9 +37,9 @@ retires with the Cursor lane; the surviving general rule is restated in §2 belo
 [`cc_handoff` template](../../.claude/skills/brief-authoring/references/cc_handoff.md) (producer-side contract)
 **Layer:** infrastructure
 
-> ⚠ **REVISED 2026-09-20 — three seats, one escalation lane, committed handoffs.** The body below
-> is the effective decision text as revised on 2026-09-20 (on top of the 2026-09-15 rescoping that
-> retired Cursor). The clause-by-clause record of what each revision kept, restated or retired is
+> ⚠ **REVISED 2026-09-25 — action classes, authority blocks, decision packets** (on top of the
+> 2026-09-20 three seats, one escalation lane and committed handoffs, and the 2026-09-15 rescoping
+> that retired Cursor). The body below is the effective decision text. The clause-by-clause record of what each revision kept, restated or retired is
 > §8. Each revision's pre-revision text is pinned at a blob in the header.
 
 ---
@@ -106,7 +115,7 @@ about which vendor runs the session, so all four survive the retirement unchange
    brief (rule of thumb: < ~1 focused hour, or fewer than ~3 files touched), it stays on
    whichever surface is already open. Above threshold and spec-frozen → dispatch to a worker.
 
-**Handoff contract (all six required for worker eligibility):**
+**Handoff contract (all seven required for worker eligibility):**
 
 - A handoff brief under `docs/briefs/**` passing `check_brief.py`.
 - §0 Phase-0 reads with a **read-report-before-code** requirement and a `NEEDS_CONTEXT` bounce
@@ -129,6 +138,13 @@ about which vendor runs the session, so all four survive the retirement unchange
   (two bounces means the spec was not freezable and the packet was mis-routed). The coordinator
   owns that return and performs the restart on the escalation lane (trigger 1 below) rather than
   re-dispatching a third time; see *Ownership and precedence* there.
+- **Authority block (added 2026-09-25):** one fenced block whose info string is `yaml authority`, naming the
+  `seat`, the `parent` card, `max_risk`, the granted `capabilities`, the `constraints` (every
+  parent constraint restated) and the `acceptance` test names from item 5. Capability names come
+  from [`scripts/seat_authority.yml`](../../scripts/seat_authority.yml);
+  [`scripts/check_handoff_authority.py`](../../scripts/check_handoff_authority.py) enforces the
+  rules under *Action classes* below. Required of every worker card authored after this revision
+  is ratified; historical cards are not retrofitted and the checker skips a card with no block.
 
 **Scoped exception — the lightweight dispatch issue** (2026-08-29 addendum #2, retained in shape
 by §8; scoped 2026-09-16 after post-merge review; re-scoped 2026-09-20 to the six-item contract).
@@ -137,7 +153,9 @@ For a small, precedented fix, a complete GitHub-issue body stands in place of it
 requirement with the `NEEDS_CONTEXT` bounce, the §5 forbidden moves naming the nearby locked
 surfaces, the test-0 vendor-bytes/secret declaration with its confirmed-present check, **the
 acceptance tests named before the worker starts — each with the property it must violate to
-fail — exactly as item 5 requires of a brief**, and the four-state return contract.
+fail — exactly as item 5 requires of a brief**, and the four-state return contract. Since
+2026-09-25 it also carries item 7's authority block; the checker does not run on an issue, so the
+coordinator's read comment records that the block passes the same rules by hand.
 `check_brief.py` does not run on an issue; its place is taken by the coordinator's own
 pre-dispatch read of the issue body against
 [`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md), recorded in the issue.
@@ -232,15 +250,89 @@ retirement of the skill that stated them:
   skill on 2026-09-15 and carried here verbatim in substance when that skill was deleted the same
   day; nothing of #402 is lost.
 
+<a id="action-classes-and-the-authority-block"></a>
+**Action classes and the authority block (2026-09-25).** Every consequential act falls in one
+class. The registry [`scripts/seat_authority.yml`](../../scripts/seat_authority.yml) is the one
+canonical list of capability names, their class and which seat a card may grant them to.
+
+| Class | Meaning | Examples | Who may do it |
+|---|---|---|---|
+| **low** | Read-only or isolated | read the repo, local tests, edits in the card's own worktree, lab research inside its campaign contract | any seat the card grants it to |
+| **medium** | Reversible change to shared development state | push a `glm/`/`codex/`/`claude/` branch, open a PR, dispatch the S2 workflow, a cloud dispatch (with task-routing's GO), governance drafting (coordinator only, routing test 1) | the highest class a card may grant an agent seat |
+| **operator act** | Irreversible, external, financial or ratifying | merge, ratify, spend, deploy the rail, arm the rail | the operator, through an act they already perform — never delegated by a card |
+| **forbidden** | Un-grantable to every seat; no approval unlocks it for an agent | place a trade, auto-merge, TV login automation, edit a locked parameter, edit the frozen protection constants, commit private data | nobody among the agents; the frozen protection constants keep their own governed route (pre-registration → re-MC → both-halves gate → admitting ADR, ratified by the operator) |
+
+Rules:
+
+1. **A card only narrows.** No card grants an operator act or a forbidden capability; a card's
+   capabilities are within its seat's grant and its `max_risk`, and within its parent card's
+   capabilities, risk and constraints. A child may add constraints; it never drops one silently —
+   a needed relaxation is an escalation, not an edit.
+2. **Approval is an act the operator already performs, bound to the exact object.** A merge
+   approves one head SHA; an arming GO is for one armed session and its absolute `armed_until`;
+   a ratification is the merge of the PR that carries the text. A change after the act is a new
+   request. There is no second approval inbox, and agent text reporting that the operator
+   approved something is not an approval. When a harness prompt stands in (the operator-act
+   hook below), the operator answering that prompt is the act.
+3. **`IN_DOUBT` side effects.** A side effect whose request left but whose outcome was not
+   observed is recorded as in doubt, reconciled against the external system, and never retried
+   automatically. A local idempotency key proves nothing about an external effect — `order_id`
+   idempotency is disproven at the venue. This is the qualification service's START_INTENT /
+   IN_DOUBT rule stated for every seat.
+4. **Enforcement points, not a new service.** The runtime is the set of points below plus git
+   as the event log (committed-handoff rule). An orchestrator service is built only if a
+   recorded failure shows these points are insufficient.
+
+| Act | Enforcement point | Status 2026-09-25 |
+|---|---|---|
+| card grants | `check_handoff_authority.py` (`handoff-authority` gate) | enforced for cards with a block |
+| merge | the operator merges on GitHub; [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges (MCP tool, `gh pr merge`, `gh api` merge) | Claude Code harness enforced; Codex / Z Code harnesses rely on the operator not giving them a merge-capable credential (operator-held) |
+| auto-merge | the same hook denies; CI holds no write credential (2026-08-29 addendum #1 bar) | enforced |
+| rail deploy | Fly credential on the operator's machine; the hook asks on `fly deploy` | operator-held + Claude Code harness |
+| rail arm | `c1_rail_arm.py` interlock (`validate(require_resolved=True)`); the hook asks on `--arm` (never on `--disarm` / `--status`) | enforced |
+| trade | CrossTrade / Tradovate credentials never present in an agent environment; no hook can see it | operator-held |
+| spend | the operator's payment method; task-routing GO for a cloud dispatch | operator-held |
+| statistical dispatch | qualification service admission and budget (Full E1 S2) | enforced |
+
+<a id="operator-decision-packets"></a>
+**Operator decision packets (2026-09-25).** Anything that needs the operator arrives as one
+packet, on the PR or in `STATE.md`'s operator queue (≤5 live items; overflow is a prioritisation
+defect of the executive and coordinator seats, not the operator's backlog). A packet carries:
+the question; the options, each with its consequence; the recommendation; the evidence one link
+away (diff, the `.cache/fp-verification` record, reviewer dissent); what is unresolved or
+dissented; what was deliberately not done (M-36); and what happens without a decision. For a
+reversible (medium) item the packet names the default the coordinator will take and when — silence
+is consent only there. For an operator act there is no default: without the act nothing happens.
+A green `DONE` return is not a packet; it goes to the coordinator and the executive, and reaches
+the operator as a merge.
+
+**Seat names across imported proposals (2026-09-25).** Organisation proposals written outside the
+repo use other names; they are translated at the boundary and never adopted as a second chart.
+
+| Imported name | Seat here |
+|---|---|
+| Executive / Principal (human) | **Operator** |
+| Chief of Staff | **Executive** (Codex "Astra") — may author the mandate (goal, constraints, milestone, success criteria), never cards, so its PR review against its goal stays independent |
+| COO | **Coordinator** (Opus); Fable stays the escalation lane and never takes this seat |
+| Execution teams | **Workers** |
+| Review / verification | reviewer ≠ planner signatures plus deterministic gates |
+
 **Measure and falsifier for the three-seat model.** The existing §4 limbs stand (judgment-defect
 worker PRs; overhead exceeding value). Added: the model is measured on **operator-minutes per
 accepted change** and **defects found after merge**, never on cards closed. If, over a rolling
 8-week window, the Fable lane fires on more than a third of cards, the cards are not being
 frozen and the coordinator seat — not the lane — is the defect to fix; if it never fires while
-post-merge defects recur, the two-failure rule is not being applied.
+post-merge defects recur, the two-failure rule is not being applied. Added 2026-09-25, logged by
+the coordinator in the campaign record and read at the quarterly check: packets the operator
+returns as *not mine* (over-escalation) and packets returned as *under-evidenced*. If either
+exceeds a third of packets over a rolling 8 weeks, the escalation line or the packet format is
+the defect to fix. Any operator act that happened without the operator's act — a merge, arm or
+deploy by an agent without the operator — is a failed enforcement point: fix it at the cheapest
+layer (test → hook → credential) before other work on that surface.
 
 **Effective:** the 2026-07-14 decision on acceptance; the 2026-09-15 rescoping on the
-operator's same-day in-session ratification; the 2026-09-20 revision on operator merge of its PR.
+operator's same-day in-session ratification; the 2026-09-20 and 2026-09-25 revisions each on
+operator merge of the PR that carries it.
 **Scope:** task routing between the coordinator and worker surfaces on this repo. Other external
 surfaces (web advisors, claude.ai) keep their existing gates; this ADR does not re-govern them.
 
@@ -298,6 +390,22 @@ with a dated revision and immutable prior version" — and explicitly retired th
 corpus growth that policy revision exists to stop, and would have created a second owner for
 rules Rule 7 assigns to one.
 
+**For the 2026-09-25 revision.** On 2026-09-25 the operator asked for a review of three external
+drafts — an "Orchestrator Runtime Contract v1", a "Typed Delegation and Evidence Protocol" ADR and a
+"Hierarchical Agent Organization" ADR (operator uploads to the session; not committed) — for how
+they would change the time the operator spends managing agent teams, then directed the review's
+recommended sequence "in full". The review kept the drafts' central boundary (models propose;
+deterministic code authorises and records), their escalation format (options, consequences,
+recommendation, evidence) and their ask that authority only narrow. It did not adopt: a second
+seat chart whose "Executive" means the human (this ADR's executive is Astra); Fable as COO (Fable
+is a lane); `trade.submit` as an approvable high-risk act (here no agent may place a trade); five
+runtime schema levels (STATE, the umbrella, the plan and the card already carry them, and git
+already records them); a new orchestrator service (the enforcement points above already exist);
+and two new ADRs (they would be second owners of this record's seat table — Rule 7). Operator
+attention is the binding resource (`STATE.md`), so approvals were designed as fewer, larger acts
+bound to evidence rather than a per-action approval queue, which would turn the operator into a
+rubber stamp.
+
 ## Current owner
 
 - **This ADR** owns the seat table, the routing test, the handoff contract (including the
@@ -316,6 +424,11 @@ rules Rule 7 assigns to one.
   artifacts removed by the retirement sweep.
 - `docs/SESSIONS.md` and the programme audits own the dated failure evidence behind the
   orchestration rules; this ADR states the rules, not the incident log.
+- [`scripts/seat_authority.yml`](../../scripts/seat_authority.yml) owns the capability registry
+  (names, class, per-seat grants) that the action-class rules consume; this ADR owns the rules.
+- [`scripts/check_handoff_authority.py`](../../scripts/check_handoff_authority.py) and
+  [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) own the mechanical
+  enforcement of item 7 and of the operator-act prompt for the Claude Code harness.
 
 ## §8 — Disposition of the prior decision's clauses and addenda
 
@@ -375,6 +488,17 @@ discharged, superseded or explicitly retired"). Full prior text at blob
 | Orchestration rules (disjoint footprints, dispatch-moment Phase-0, review round part of the freeze, pointer SHA) | **Retained** verbatim; the committed-handoff rule generalises the single-writer rule to every seat boundary. |
 | Addendum 2026-08-29 #1 (Codex native review, retained) | **Retained and re-seated** — it is now the executive's independent signature under reviewer ≠ planner. |
 | `AGENTS.md` §Continuous improvement, "after two failed corrections… restart with a cleaner prompt" (external rule, not this ADR's) | **Bound, not changed** — the restart is where the Fable lane's trigger 1 fires. |
+
+### 2026-09-25 revision — disposition of the 2026-09-20 clauses it touches
+
+| 2026-09-20 clause | Disposition |
+|---|---|
+| Seat table | **Retained** unchanged; imported names map onto it (seat-name table). |
+| Handoff contract, six items | **Retained**; a seventh item (authority block) **added**. |
+| Lightweight dispatch issue | **Retained**; it carries item 7 too, checked by hand in the read comment. |
+| Merge authority is the operator's, no automated exception | **Retained** verbatim; now prompted for Claude Code sessions and auto-merge refused by `guard_operator_acts.py`. |
+| Measure and falsifier | **Retained**; packet-return measures and the failed-enforcement-point rule **added**. |
+| Committed-handoff rule | **Retained**; named as the event log under *Enforcement points*. |
 
 ### Deliberately retained (not over-swept)
 
@@ -546,6 +670,11 @@ python scripts/check_skill_refs.py --all
 # 5. Falsifier limb-1 evidence sweep (at each quarterly check).
 grep -in "worker\|packet" docs/SESSIONS.md | grep -in "defect\|redesign\|NEEDS_CONTEXT"
 # Adjudicate hits against the two §4 limbs; log the verdict in the review entry.
+
+# 6. (2026-09-25) Card grants only narrow; operator acts prompt; auto-merge is refused.
+python scripts/check_handoff_authority.py --all
+python -m pytest -q tests/scripts/test_check_handoff_authority.py tests/scripts/test_guard_operator_acts.py
+# Expected: 0 violation(s); all tests pass.
 ```
 
 ## Verification
@@ -574,3 +703,4 @@ Mechanical form checks do not establish semantic equivalence or ratification.
 | 2026-08-29 | Second addendum RATIFIED — proactive dispatch; lightweight issue format | Joshua |
 | 2026-09-04 | Addendum RATIFIED — `notify-cursor.yml` auto-ping disabled | Joshua |
 | 2026-09-15 | **Revision RATIFIED** — Cursor retired as a worker surface; decision rescoped to Claude Code + Codex; six addenda consolidated into the §8 disposition table; `2026-08-14-cc-cursor-autonomous-loop.md` superseded in full. Prior text at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`. §4 falsifier restated; two 2026-08-29 revert triggers restored and one false retention claim corrected after adversarial review. | Joshua (in-session ratification) + Claude Code |
+| 2026-09-25 | Revision proposed — action classes, authority block (item 7), approval bound to its object, `IN_DOUBT`, decision packets, enforcement-point table, seat-name mapping. Prior text at blob `cbe2a5886e3b6588b68294ac801f88acde3637b5`. Ratifies on operator merge. | Joshua (direction) + Claude Code |

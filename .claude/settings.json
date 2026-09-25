@@ -28,6 +28,10 @@
           {
             "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guard_s2_runs.py\" claude-hook"
+          },
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guard_operator_acts.py\""
           }
         ]
       },
@@ -46,6 +50,15 @@
           {
             "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guard_s2_runs.py\" claude-hook"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__github__(merge_pull_request|enable_pr_auto_merge)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guard_operator_acts.py\""
           }
         ]
       }
