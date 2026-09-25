@@ -158,3 +158,33 @@ def test_cli_scans_repo_clean():
     out = subprocess.run([sys.executable, str(CHECKER), "--all"], cwd=REPO,
                          capture_output=True, text=True)
     assert out.returncode == 0, out.stdout + out.stderr
+
+
+def test_parent_outside_repository_is_rejected(tmp_path):
+    # Fails if a child can cite a parent outside the repository, whose grant is never
+    # checked (Astra finding 3, PR #503 at 72c435c).
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _card(tmp_path, "seat: coordinator\nmax_risk: high\ncapabilities: [pr.merge]\n",
+          name="outside.md")
+    body = "parent: ../outside.md\n" + WORKER_OK
+    assert any("outside the repository" in e for e in _errs(_card(repo, body), repo))
+
+
+def test_parent_violations_propagate(tmp_path):
+    # Fails if a child passes while its in-repo parent grants an operator act.
+    _card(tmp_path, "seat: coordinator\nmax_risk: medium\n"
+          "capabilities: [repository.read, tests.run, worktree.write, branch.push, pr.open,"
+          " pr.merge]\nconstraints: [no_main_write]\n", name="bad_parent.md")
+    body = "parent: bad_parent.md\n" + WORKER_OK
+    errs = _errs(_card(tmp_path, body), tmp_path)
+    assert any(e.startswith("A7 parent bad_parent.md: A3") for e in errs)
+
+
+def test_mutual_parents_are_rejected(tmp_path):
+    # Fails if two cards naming each other as parents both pass
+    # (Astra finding 3, PR #503 at 72c435c).
+    a = _card(tmp_path, "parent: b.md\n" + WORKER_OK, name="a.md")
+    b = _card(tmp_path, "parent: a.md\n" + WORKER_OK, name="b.md")
+    assert any("loops" in e for e in _errs(a, tmp_path))
+    assert any("loops" in e for e in _errs(b, tmp_path))

@@ -23,19 +23,46 @@ from scripts import guard_operator_acts as g  # noqa: E402
 MERGE = "gh pr " + "merge"
 DEPLOY = "fly " + "deploy"
 ARM = "python ops/c1_rail/c1_rail_arm.py --" + "arm"
+SHA = "0123456789abcdef0123456789abcdef01234567"
+PIN = f"--match-head-commit {SHA}"
+
+
+@pytest.mark.parametrize("command", [
+    f"{MERGE} 501 --squash {PIN}",
+    f"{MERGE} --repo Joshua-Asante/first-passage 501 --match-head-commit={SHA}",
+    f"gh -R Joshua-Asante/first-passage pr merge 501 {PIN}",
+    f"cd /repo && {MERGE} 501 {PIN}",
+    f"bash -c '{MERGE} 501 {PIN}'",
+    "gh api -X PUT repos/o/r/pulls/501/" + f"merge -f sha={SHA}",
+    "gh api graphql -f query='mutation { merge" + f"PullRequest(input: {{expectedHeadOid: \"{SHA}\"}}) {{ x }} }}'",
+])
+def test_pinned_merge_asks(command):
+    # Fails if a merge pinned to a head SHA runs without an operator prompt.
+    assert g.classify_command(command) == ("ask", "pr.merge")
 
 
 @pytest.mark.parametrize("command", [
     f"{MERGE} 501 --squash",
-    f"{MERGE} --repo Joshua-Asante/first-passage 501",
-    f"gh -R Joshua-Asante/first-passage pr merge 501",
-    f"cd /repo && {MERGE} 501",
+    f"{MERGE} 501 --match-head-commit abc123",
     f"bash -c '{MERGE} 501'",
     "gh api -X PUT repos/o/r/pulls/501/" + "merge",
+    "gh api graphql -f query='mutation { merge" + "PullRequest(input: {}) { x } }'",
 ])
-def test_merge_asks(command):
-    # Fails if an agent can merge by shell without an operator prompt.
-    assert g.classify_command(command) == ("ask", "pr.merge")
+def test_unpinned_merge_denied(command):
+    # Fails if an approval could merge bytes other than the head the operator saw
+    # (Astra finding 2, PR #503 at 72c435c).
+    assert g.classify_command(command) == ("deny", "pr.merge_unpinned")
+
+
+@pytest.mark.parametrize("command", [
+    f"bash -c '{MERGE} 501 {PIN}; {MERGE} 502 --auto'",
+    f"{MERGE} 501 {PIN} && {MERGE} 502 --auto",
+    f"sh -c '{DEPLOY}; {MERGE} 502 --auto'",
+])
+def test_deny_wins_over_ask_in_one_command(command):
+    # Fails if a promptable act earlier in a command launders a forbidden one after it
+    # (Astra finding 1, PR #503 at 72c435c).
+    assert g.classify_command(command) == ("deny", "pr.auto_merge")
 
 
 @pytest.mark.parametrize("command", [
@@ -49,7 +76,12 @@ def test_auto_merge_denied(command):
 
 def test_mcp_tools():
     # Fails if the GitHub MCP merge path bypasses the operator, or auto-merge is askable.
-    assert g.classify({"tool_name": "mcp__github__merge_pull_request"}) == ("ask", "pr.merge")
+    merge = "mcp__github__merge_pull_request"
+    assert g.classify({"tool_name": merge, "tool_input": {"expectedHeadSha": SHA}}) == (
+        "ask", "pr.merge")
+    assert g.classify({"tool_name": merge, "tool_input": {}}) == ("deny", "pr.merge_unpinned")
+    assert g.classify({"tool_name": merge, "tool_input": {"expectedHeadSha": "abc"}}) == (
+        "deny", "pr.merge_unpinned")
     assert g.classify({"tool_name": "mcp__github__enable_pr_auto_merge"}) == (
         "deny", "pr.auto_merge")
     assert g.classify({"tool_name": "mcp__github__pull_request_read"}) is None
@@ -91,9 +123,10 @@ def test_data_and_risk_reducing_exits_are_silent(command):
     assert g.classify_command(command) is None
 
 
-def test_unreadable_command_falls_back_to_asking():
-    # Fails if an unterminated quote hides a merge from the guard.
-    assert g.classify_command(f"{MERGE} 501 'unterminated") == ("ask", "pr.merge")
+def test_unreadable_command_fails_closed():
+    # Fails if an unterminated quote hides a merge from the guard (unreadable text cannot
+    # prove a pin, so it is refused as unpinned).
+    assert g.classify_command(f"{MERGE} 501 'unterminated")[0] == "deny"
 
 
 def _run(payload) -> str:
@@ -105,10 +138,11 @@ def test_hook_contract():
     # Fails if the hook emits a non-PreToolUse shape, or emits anything (an allow) on
     # benign input, or blocks on malformed input.
     out = json.loads(_run(json.dumps({"tool_name": "mcp__github__merge_pull_request",
-                                      "tool_input": {}})))
+                                      "tool_input": {"expectedHeadSha": SHA}})))
     block = out["hookSpecificOutput"]
     assert block["hookEventName"] == "PreToolUse"
     assert block["permissionDecision"] == "ask"
+    assert SHA in block["permissionDecisionReason"]  # the operator sees what they approve
     assert _run(json.dumps({"tool_name": "Bash", "tool_input": {"command": "ls"}})) == ""
     assert _run("not json") == ""
 

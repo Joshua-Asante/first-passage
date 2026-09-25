@@ -273,7 +273,9 @@ Rules:
    a ratification is the merge of the PR that carries the text. A change after the act is a new
    request. There is no second approval inbox, and agent text reporting that the operator
    approved something is not an approval. When a harness prompt stands in (the operator-act
-   hook below), the operator answering that prompt is the act.
+   hook below), the operator answering that prompt is the act, and for a merge the prompt is
+   only offered on a call pinned to the full head SHA it names — GitHub then refuses the merge
+   if the head moved, so the answer covers exactly those bytes.
 3. **`IN_DOUBT` side effects.** A side effect whose request left but whose outcome was not
    observed is recorded as in doubt, reconciled against the external system, and never retried
    automatically. A local idempotency key proves nothing about an external effect — `order_id`
@@ -285,8 +287,8 @@ Rules:
 
 | Act | Enforcement point | Status 2026-09-25 |
 |---|---|---|
-| card grants | `check_handoff_authority.py` (`handoff-authority` gate) | enforced for cards with a block |
-| merge | the operator merges on GitHub; [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges (MCP tool, `gh pr merge`, `gh api` merge) | Claude Code harness enforced; Codex / Z Code harnesses rely on the operator not giving them a merge-capable credential (operator-held) |
+| card grants | `check_handoff_authority.py` (`handoff-authority` gate): parents must be inside the repository, are checked recursively, and a cycle is refused | enforced for cards with a block |
+| merge | the operator merges on GitHub; [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges (MCP tool, `gh pr merge`, `gh api` merge) and only when the call pins the head SHA; an unpinned merge is refused; a deny anywhere in one command wins over an ask | Claude Code harness enforced; Codex / Z Code harnesses rely on the operator not giving them a merge-capable credential (operator-held) |
 | auto-merge | the same hook denies; CI holds no write credential (2026-08-29 addendum #1 bar) | enforced |
 | rail deploy | Fly credential on the operator's machine; the hook asks on `fly deploy` | operator-held + Claude Code harness |
 | rail arm | `c1_rail_arm.py` interlock (`validate(require_resolved=True)`); the hook asks on `--arm` (never on `--disarm` / `--status`) | enforced |

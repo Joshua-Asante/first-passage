@@ -26,9 +26,12 @@ HARD checks (exit 1), each the property the ADR states:
   A4  every capability's risk <= the card's ``max_risk`` <= the seat's ``max_risk``;
   A5  every capability is grantable to the seat;
   A6  a worker card names its acceptance tests (handoff contract item 5);
-  A7  when ``parent`` is given the file exists, and when the parent carries a block:
-      capabilities ⊆ parent's, ``max_risk`` <= parent's, and every parent constraint is
-      restated (a child may add constraints; it may not drop one silently).
+  A7  when ``parent`` is given it is a repository-relative path to an existing file inside
+      the repository; the parent is itself checked, recursively up the chain, and a chain
+      that revisits a card is refused; and when the parent carries a block: capabilities ⊆
+      parent's, ``max_risk`` <= parent's, and every parent constraint is restated (a child
+      may add constraints; it may not drop one silently). A parent with no block (a
+      historical umbrella) bounds nothing beyond the child's own seat checks.
 
 Files without a block are not checked: the block is required of new worker cards by the
 ADR and verified at the coordinator's pre-dispatch read, and historical cards are not
@@ -177,13 +180,22 @@ def check_card(path: Path, reg: Registry, *, root: Path = REPO_ROOT,
         if not isinstance(parent, str):
             errors.append("A7 `parent` must be a repo-relative path")
             return errors
-        ppath = (root / parent).resolve()
+        root_r = root.resolve()
+        ppath = (root_r / parent).resolve()
+        if Path(parent).is_absolute() or not ppath.is_relative_to(root_r):
+            errors.append(f"A7 parent {parent!r} is outside the repository")
+            return errors
         if not ppath.is_file():
             errors.append(f"A7 parent {parent!r} does not exist")
             return errors
-        if ppath in _seen or ppath == path.resolve():
+        seen = _seen | {path.resolve()}
+        if ppath in seen:
             errors.append(f"A7 parent chain loops at {parent!r}")
             return errors
+        # The parent's own grant must hold too, all the way up: a child is only as
+        # narrow as the chain it narrows from.
+        errors.extend(f"A7 parent {parent}: {e}"
+                      for e in check_card(ppath, reg, root=root, _seen=seen))
         pblocks = extract_blocks(ppath.read_text(encoding="utf-8"))
         if len(pblocks) == 1:
             pdata, perr = parse_block(pblocks[0])

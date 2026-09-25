@@ -11,9 +11,14 @@ front of the operator (``ask``): the harness prompt is an authenticated operator
 interaction, which a model's "the operator approved this" is not. A forbidden act is
 refused outright (``deny``): no approval unlocks it for an agent.
 
-  * ``pr.merge``     — ask: the GitHub MCP ``merge_pull_request`` tool; ``gh pr merge``;
-                       a ``gh api`` call on a ``pulls/<n>/merge`` path or a
-                       ``mergePullRequest`` GraphQL mutation.
+  * ``pr.merge``     — ask, **only when pinned to a full 40-hex head SHA**: the GitHub MCP
+                       ``merge_pull_request`` tool with ``expectedHeadSha``; ``gh pr merge
+                       --match-head-commit <sha>``; a ``gh api`` call on a
+                       ``pulls/<n>/merge`` path with a ``sha`` field, or a
+                       ``mergePullRequest`` mutation with ``expectedHeadOid``. GitHub refuses
+                       the merge if the head moved, so the operator's answer approves exactly
+                       the bytes named in the prompt. An unpinned merge is denied with the
+                       pinned form to use (``pr.merge_unpinned``).
   * ``pr.auto_merge``— deny: the GitHub MCP ``enable_pr_auto_merge`` tool;
                        ``gh pr merge --auto``; an ``enablePullRequestAutoMerge`` mutation.
                        Merge authority is the operator's with no automated exception.
@@ -53,12 +58,17 @@ except ImportError:  # run as `python scripts/guard_operator_acts.py`
 
 ASK, DENY = "ask", "deny"
 
-MCP_ACTS = {
-    "mcp__github__merge_pull_request": (ASK, "pr.merge"),
-    "mcp__github__enable_pr_auto_merge": (DENY, "pr.auto_merge"),
-}
+MCP_MERGE = "mcp__github__merge_pull_request"
+MCP_AUTO_MERGE = "mcp__github__enable_pr_auto_merge"
+_SHA = re.compile(r"[0-9a-fA-F]{40}")
 
 MESSAGES = {
+    "pr.merge_unpinned": ("Merge refused: not pinned to a head SHA (pr.merge). Re-issue it "
+                          "pinned so the approval covers exact bytes.",
+                          "An operator approval must bind to the exact head. Re-issue the "
+                          "merge pinned to the full 40-hex head SHA the operator reviewed: MCP "
+                          "`expectedHeadSha`, `gh pr merge --match-head-commit <sha>`, a REST "
+                          "`sha` field, or GraphQL `expectedHeadOid`."),
     "pr.merge": ("Merging is an operator act (pr.merge). Confirm only if you, the operator, "
                  "are merging this PR now.",
                  "Merge authority is the operator's (surface-allocation ADR). Do not merge "
@@ -80,8 +90,8 @@ MESSAGES = {
 _FALLBACK = (
     (re.compile(r"\bgh\b.*\bpr\s+merge\b.*--auto\b"), DENY, "pr.auto_merge"),
     (re.compile(r"enablePullRequestAutoMerge"), DENY, "pr.auto_merge"),
-    (re.compile(r"\bgh\b.*\bpr\s+merge\b"), ASK, "pr.merge"),
-    (re.compile(r"pulls/[^/\s]+/merge\b|mergePullRequest"), ASK, "pr.merge"),
+    (re.compile(r"\bgh\b.*\bpr\s+merge\b"), DENY, "pr.merge_unpinned"),
+    (re.compile(r"pulls/[^/\s]+/merge\b|mergePullRequest"), DENY, "pr.merge_unpinned"),
     (re.compile(r"\b(fly|flyctl)\b.*\bdeploy\b"), ASK, "rail.deploy"),
     (re.compile(r"c1_rail_arm\S*\s.*--arm\b"), ASK, "rail.arm"),
 )
@@ -103,18 +113,34 @@ def _positional(args: list[str], takes_value: frozenset[str]) -> list[str]:
     return out
 
 
+def _option_value(args: list[str], name: str) -> str | None:
+    for i, arg in enumerate(args):
+        if arg == name and i + 1 < len(args):
+            return args[i + 1]
+        if arg.startswith(name + "="):
+            return arg.split("=", 1)[1]
+    return None
+
+
+def _pinned(ok: bool) -> tuple[str, str]:
+    return (ASK, "pr.merge") if ok else (DENY, "pr.merge_unpinned")
+
+
 def _judge_gh(args: list[str]) -> tuple[str, str] | None:
     words = _positional(args, _GH_GLOBAL_VALUES)
     if words[:2] == ["pr", "merge"]:
         if any(a == "--auto" or a.startswith("--auto=") for a in args):
             return DENY, "pr.auto_merge"
-        return ASK, "pr.merge"
+        sha = _option_value(args, "--match-head-commit")
+        return _pinned(bool(sha and _SHA.fullmatch(sha)))
     if words[:1] == ["api"]:
         text = " ".join(args)
         if "enablePullRequestAutoMerge" in text:
             return DENY, "pr.auto_merge"
-        if re.search(r"pulls/[^/\s]+/merge\b", text) or "mergePullRequest" in text:
-            return ASK, "pr.merge"
+        if "mergePullRequest" in text:
+            return _pinned(bool(re.search(r"expectedHeadOid\W+[0-9a-fA-F]{40}\b", text)))
+        if re.search(r"pulls/[^/\s]+/merge\b", text):
+            return _pinned(any(re.fullmatch(r"sha=[0-9a-fA-F]{40}", a) for a in args))
     return None
 
 
@@ -142,7 +168,16 @@ def _judge_python(args: list[str]) -> tuple[str, str] | None:
     return (ASK, "rail.arm") if arms and target else None
 
 
+def _worst(found: list[tuple[str, str]]) -> tuple[str, str] | None:
+    """A deny anywhere wins over any ask: one wrapper cannot launder a forbidden act."""
+    for item in found:
+        if item[0] == DENY:
+            return item
+    return found[0] if found else None
+
+
 def _judge_segment(tokens: list[str]) -> tuple[str, str] | None:
+    hits: list[tuple[str, str]] = []
     for words in expand(tokens, strict=True):
         if not words:
             continue
@@ -158,8 +193,8 @@ def _judge_segment(tokens: list[str]) -> tuple[str, str] | None:
         else:
             found = None
         if found:
-            return found
-    return None
+            hits.append(found)
+    return _worst(hits)
 
 
 def classify_command(command: str) -> tuple[str, str] | None:
@@ -171,24 +206,33 @@ def classify_command(command: str) -> tuple[str, str] | None:
             if pattern.search(command):
                 return decision, cap
         return None
-    worst = None
-    for tokens in parsed:
-        found = _judge_segment([str(t) for t in tokens])
-        if found and (worst is None or found[0] == DENY):
-            worst = found
-    return worst
+    hits = [f for f in (_judge_segment([str(t) for t in tokens]) for tokens in parsed) if f]
+    return _worst(hits)
 
 
 def classify(payload: dict) -> tuple[str, str] | None:
     """(decision, capability) for a PreToolUse payload, or None."""
     name = payload.get("tool_name") or ""
-    if name in MCP_ACTS:
-        return MCP_ACTS[name]
+    tool_input = payload.get("tool_input") or {}
+    if name == MCP_AUTO_MERGE:
+        return DENY, "pr.auto_merge"
+    if name == MCP_MERGE:
+        sha = tool_input.get("expectedHeadSha")
+        return _pinned(isinstance(sha, str) and bool(_SHA.fullmatch(sha)))
     if name == "Bash":
-        command = (payload.get("tool_input") or {}).get("command")
+        command = tool_input.get("command")
         if isinstance(command, str):
             return classify_command(command)
     return None
+
+
+def _pinned_sha(payload: dict) -> str | None:
+    """The head SHA a merge call pins, shown in the operator's prompt."""
+    tool_input = payload.get("tool_input") or {}
+    if payload.get("tool_name") == MCP_MERGE:
+        return tool_input.get("expectedHeadSha")
+    match = _SHA.search(str(tool_input.get("command", "")))
+    return match.group(0) if match else None
 
 
 def main() -> int:
@@ -200,6 +244,9 @@ def main() -> int:
     if found:
         decision, cap = found
         user_msg, agent_msg = MESSAGES[cap]
+        sha = _pinned_sha(payload) if (decision, cap) == (ASK, "pr.merge") else None
+        if sha:
+            user_msg += f" Head SHA being approved: {sha}."
         sys.stdout.write(json.dumps({"hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": decision,
