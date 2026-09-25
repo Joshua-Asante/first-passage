@@ -492,13 +492,14 @@ FULL = [
     dict(id="M-41", cls="M", status="CANDIDATE",
          status_note="2026-09-20 migration from the Claude-memory store into methodology_lessons.md (light format); memory twin named in memory_twin",
          title='Private artifacts inside a worktree die with the worktree',
-         one_line_lesson="A digest is not a copy: every private file a public record pins is registered (docs/evidence/PRIVATE_EVIDENCE.sha256 or a tracked manifest) and archived to first-passage-archive with scripts/evidence_archive.py put, pushed, in the same step. Private outputs still go under the primary checkout's ignored roots, never .worktrees/* or .claude/worktrees/*; before any worktree removal, scripts/repo_hygiene.py lists its ignored entries and removal stops if any remain unarchived. Committing untracked evidence is not preservation (lossy under core.autocrlf=true; a later branch switch deletes the originals) — preserve via evidence_archive.py put, then -c core.autocrlf=false for any evidence-carrying commit, and extract via git cat-file, never git archive or checkout.",
-         cost_if_repeated="Fourth firing 2026-09-24: checkpoint commit 272028e blanket-tracked 1,025 untracked recovery/ files; core.autocrlf=true made 252/606 pins mismatch as committed and the switch to main deleted the originals (all 606 later reconstructed, verified and archived; PR #492). Third firing 2026-09-10: the Tradeify seven-strategy campaign's whole private evidence base (specs, approval receipt, 125-test replay, canonical ledgers) destroyed with two worktrees; digests only survive. Prior: NAS100 MNQ Pine (2026-07-03), ORB D5 pin (2026-07-31).",
+         one_line_lesson="A digest is not a copy: every private file a public record pins is registered (docs/evidence/PRIVATE_EVIDENCE.sha256 or a tracked manifest) and archived to first-passage-archive with scripts/evidence_archive.py put, pushed, in the same step. Private outputs still go under the primary checkout's ignored roots, never .worktrees/* or .claude/worktrees/*; before any worktree removal, scripts/repo_hygiene.py lists its ignored entries and removal stops if any remain unarchived. Committing untracked evidence is not preservation (lossy under core.autocrlf=true; a later branch switch deletes the originals) — preserve via evidence_archive.py put; stage any evidence bytes that must be committed with git -c core.autocrlf=false add (the conversion happens at staging, so an override on commit alone is too late); verify with evidence_archive.py audit --verify; extract via git cat-file blob, never git archive or checkout.",
+         cost_if_repeated="Fourth firing 2026-09-24: checkpoint commit 272028e blanket-tracked 1,025 untracked recovery/ files; core.autocrlf=true made 252/606 SHA256SUMS pins mismatch as committed and the switch to main deleted the originals (all 606 later restored, verified against their pins and archived; their registration is in PR #492, open at the time of writing). Third firing 2026-09-10: the Tradeify seven-strategy campaign's whole private evidence base (specs, approval receipt, 125-test replay, canonical ledgers) destroyed with two worktrees; digests only survive. Prior: NAS100 MNQ Pine (2026-07-03), ORB D5 pin (2026-07-31).",
          trigger_globs=['.claude/worktrees/**', '.worktrees/**', '**/local_artifacts/**', 'recovery/**'],
          trigger_keywords=['worktree remove', 'gitignored', 'private artifact', 'local_artifacts', 'repo hygiene', 'checkpoint commit', 'autocrlf', 'branch switch'],
          full_ref=lambda: resolve_anchor(METH, "M-41"),
          siblings=[],
-         memory_twin='lesson_private_artifacts_in_worktrees_die_with_the_worktree'),
+         memory_twin='lesson_private_artifacts_in_worktrees_die_with_the_worktree',
+         last_verified_date="2026-09-24"),
     dict(id="M-42", cls="M", status="CANDIDATE",
          status_note="2026-09-20 migration from the Claude-memory store into methodology_lessons.md (light format); memory twin named in memory_twin",
          title='A green check_brief.py is form-only: adversarially review every decision artifact before ratification',
@@ -665,7 +666,9 @@ def build_full_entry(d: dict) -> dict:
         "siblings": d.get("siblings", []),
         "memory_twin": d.get("memory_twin"),
         "content_verified": True,
-        "last_verified_date": TODAY,
+        # A lesson re-verified after the batch date carries its own date, so a
+        # regeneration does not revert it to TODAY.
+        "last_verified_date": d.get("last_verified_date", TODAY),
     }
 
 

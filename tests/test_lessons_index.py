@@ -9,6 +9,7 @@ that every full entry's full_ref anchor actually resolves in the cited file.
 """
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 from pathlib import Path
@@ -126,3 +127,27 @@ def test_at_least_the_expected_full_entry_count():
     truncation of the generator's FULL list, not against adding more entries."""
     full = [e for e in _load_entries() if e["content_verified"]]
     assert len(full) >= 30, f"expected >=30 full entries, found {len(full)}"
+
+
+def _load_generator():
+    spec = importlib.util.spec_from_file_location(
+        "_build_lessons_index", REPO_ROOT / "scripts" / "_build_lessons_index.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_full_entries_match_their_generator_source():
+    """LESSONS_INDEX.md: re-run the generator and diff, never hand-patch a row
+    out of sync with it. A row advanced by hand (for example one lesson's
+    last_verified_date) is reverted by the next regeneration unless the
+    generator's source dict carries the same value."""
+    generator = _load_generator()
+    rows = {e["id"]: e for e in _load_entries()}
+    for source in generator.FULL:
+        built = generator.build_full_entry(source)
+        row = rows.get(built["id"])
+        assert row is not None, f"{built['id']}: generator entry has no row in the index"
+        drift = {k: (built[k], row.get(k)) for k in built if built[k] != row.get(k)}
+        assert not drift, f"{built['id']}: index row differs from its generator entry (generator, index): {drift}"
