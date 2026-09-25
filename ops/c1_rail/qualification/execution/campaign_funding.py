@@ -30,14 +30,19 @@ WORK_PHASES = {
     'probe_result': 'RESULT',
     'probe_seal': 'SEAL',
     # S3 dispatch roles (D2/D4): the genuine N1 compute work and the metered G5
-    # assessment work. Admitted only under the /v5 dispatch release (the service's
-    # startup-fixed gate) and only after the admission work completed.
+    # assessment work. Admitted only under the /v5-or-v6 dispatch release (the
+    # service's startup-fixed gate) and only after the admission work completed.
     'n1_worker': 'N1',
     'n1_g5': 'N1_G5',
+    # S4 dispatch roles (D2): the joint N2/Part B batch and its metered G5 work.
+    # Admitted only under the /v6 joint dispatch release.
+    'n2_worker': 'N2',
+    'n2_g5': 'N2_G5',
 }
 WORK_ROLES = tuple(WORK_PHASES)
 PROBES = ('noop', 'cpu', 'descendants', 'memory', 'wall', 'intent', 'controller_cpu')
-DISPATCH_ROLES = ('n1_worker', 'n1_g5')
+DISPATCH_ROLES = ('n1_worker', 'n1_g5', 'n2_worker', 'n2_g5')
+JOINT_DISPATCH_ROLES = ('n2_worker', 'n2_g5')
 PHASE_BY_ROLE = {role: phase for role, phase in WORK_PHASES.items() if role != 'admission'}
 
 
@@ -76,7 +81,7 @@ def parse_request(raw):
     # Refused for every role but the g5 dispatch work; absent means absent.
     if doc['fault'] not in (None, 'hold_after_intent'):
         raise ValueError('installed diagnostic fault required')
-    if doc['fault'] is not None and doc['role'] != 'n1_g5':
+    if doc['fault'] is not None and doc['role'] not in ('n1_g5', 'n2_g5'):
         raise ValueError('diagnostic fault requires the g5 dispatch role')
     return doc
 
@@ -127,6 +132,8 @@ def _decode(raw, limit):
             'ABORTED',
             'N2_READY',
             'N1_FAILED',
+            'PART_A_READY',
+            'N2_FAILED',
         ) or doc['validity'] not in ('VALID', 'VOID'):
             raise ValueError('funding state differs')
         profile = parse_campaign_budget_profile(encoded(doc['profile']))
@@ -302,7 +309,7 @@ class FundingStoreMixin:
 
     def _funding(self, c, attempt):
         identity(attempt)
-        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8):
+        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8, 9):
             return None
         row = c.execute(
             'SELECT substr(body,1,8193) FROM full_campaign_funding WHERE attempt_id=?', (attempt,)
@@ -460,7 +467,7 @@ class FundingStoreMixin:
     def _validate_funding_predecessor(self, c, state):
         if state['profile']['schema'] != PROFILE:
             return
-        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8):
+        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8, 9):
             raise ValueError('funding profile requires database v7')
         attempt = state['attempt_id']
         previous = self._funding(c, attempt)
@@ -563,7 +570,7 @@ class FundingStoreMixin:
         observed = clock(clock_bytes)
         attempt, work = request['attempt_id'], request['work_id']
         with self.store.transaction() as c:
-            if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8):
+            if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8, 9):
                 raise ValueError('fresh funding enrollment required')
             existing = self._bootstrap(c, attempt, work)
             if existing is not None:
@@ -576,8 +583,16 @@ class FundingStoreMixin:
             # A queued operator cancellation bars this new-work grant outright,
             # before or after the receipt (coordinator ruling 2026-09-19).
             self._cancellation_barrier(c, attempt, admitted_only=False)
+            # The one continuation S4 admits beside BOUND: a committed N1
+            # CONTINUE (N2_READY) still funds exactly the next checkpoint's own
+            # roles; every other progression state refuses new work.
+            from .campaign_store import PROGRESSION_PHASES
+
+            progression = doc['state'] in PROGRESSION_PHASES and request['role'] in (
+                role for role, phase in WORK_PHASES.items() if phase in PROGRESSION_PHASES[doc['state']]
+            )
             if (
-                doc['state'] != 'BOUND'
+                (doc['state'] != 'BOUND' and not progression)
                 or doc['validity'] != 'VALID'
                 or doc['terminal_overlay'] is not None
             ):
@@ -821,7 +836,7 @@ class FundingStoreMixin:
             return encoded(state)
 
     def _funding_integrity(self, c, *, attempt_id=None):
-        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8):
+        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8, 9):
             return
         attempts = (
             [(attempt_id,)]
@@ -907,8 +922,14 @@ class FundingStoreMixin:
                 from .campaign_budget import recovery_pending
 
                 claimed_clock = intent['clock']
+                from .campaign_store import PROGRESSION_PHASES
+
                 if (
-                    claimed['state'] != 'BOUND'
+                    (
+                        claimed['state'] != 'BOUND'
+                        and intent['phase']
+                        not in PROGRESSION_PHASES.get(claimed['state'], ())
+                    )
                     or claimed['validity'] != 'VALID'
                     or recovery_pending(claimed)
                     or dispatch_pending(claimed)

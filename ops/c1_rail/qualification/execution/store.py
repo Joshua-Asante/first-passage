@@ -17,7 +17,8 @@ from ..journal_snapshot import encode_assessment_snapshot
 from ..evidence import parse_proposed_artifact, InspectedEvidence, compare_n1_evidence
 from ..policy import N1_ARTIFACT_ROLES
 from .files import archive_bytes, read_regular
-from .campaign_store import CampaignStore, SCHEMA as CAMPAIGN_SCHEMA, BUDGET_SCHEMA, CHECKPOINT_SCHEMA
+from .campaign_store import (CampaignStore, SCHEMA as CAMPAIGN_SCHEMA, BUDGET_SCHEMA,
+                             CHECKPOINT_SCHEMA, CHECKPOINT_SCHEMA_V8)
 from .campaign_funding import SCHEMA as FUNDING_SCHEMA
 from .protocol import ExecutionRecord, ValidatedEvidence, digest, fields, identity, parse_request, sha256
 
@@ -98,7 +99,7 @@ class ExecutionStore:
         connection = self._connect()
         try:
             version = connection.execute('PRAGMA user_version').fetchone()[0]
-            if version not in (0, 4, 5, 6, 7, 8):
+            if version not in (0, 4, 5, 6, 7, 8, 9):
                 raise ValueError('unsupported journal schema; no in-flight migration')
             if version == 0:
                 if connection.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchone():
@@ -111,10 +112,16 @@ class ExecutionStore:
         with self.transaction() as connection:
             # Derive the expected layout from the one schema owner. An empty
             # prototype with the same version number is not a valid journal.
+            # The S4-D1 widening lands eagerly here (8 -> 9) so the layout walk
+            # below sees exactly one checkpoint shape.
+            from .campaign_store import widen_checkpoint_layout
+
+            if connection.execute('PRAGMA user_version').fetchone()[0] == 8:
+                widen_checkpoint_layout(connection)
             reference = sqlite3.connect(':memory:')
             try:
                 version = connection.execute('PRAGMA user_version').fetchone()[0]
-                reference.executescript(_SCHEMA + (CAMPAIGN_SCHEMA if version >= 5 else '') + (BUDGET_SCHEMA if version >= 6 else '') + (FUNDING_SCHEMA if version in (7, 8) else '') + (CHECKPOINT_SCHEMA if version == 8 else ''))
+                reference.executescript(_SCHEMA + (CAMPAIGN_SCHEMA if version >= 5 else '') + (BUDGET_SCHEMA if version >= 6 else '') + (FUNDING_SCHEMA if version in (7, 8, 9) else '') + (CHECKPOINT_SCHEMA if version >= 8 else ''))
                 query = 'SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name'
                 expected = reference.execute(query).fetchall()
                 actual = [tuple(row) for row in connection.execute(query)]
@@ -131,12 +138,17 @@ class ExecutionStore:
 
     @staticmethod
     def validate_layout(connection, version):
-        """Recheck exact predecessor inside lazy migration's write lock."""
+        """Recheck exact predecessor inside lazy migration's write lock.
+
+        v8 is S3's frozen checkpoint layout (CHECKPOINT_SCHEMA_V8, the 8 -> 9
+        widening's predecessor); v9 is the widened one."""
         reference = sqlite3.connect(':memory:')
         try:
             reference.executescript(_SCHEMA + (CAMPAIGN_SCHEMA if version >= 5 else '') +
-                                    (BUDGET_SCHEMA if version >= 6 else '') + (FUNDING_SCHEMA if version in (7, 8) else '') +
-                                    (CHECKPOINT_SCHEMA if version == 8 else ''))
+                                    (BUDGET_SCHEMA if version >= 6 else '') +
+                                    (FUNDING_SCHEMA if version in (7, 8, 9) else '') +
+                                    (CHECKPOINT_SCHEMA_V8 if version == 8 else
+                                     CHECKPOINT_SCHEMA if version == 9 else ''))
             query = 'SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name'
             if [tuple(row) for row in connection.execute(query)] != reference.execute(query).fetchall():
                 raise ValueError('unsupported journal schema layout; no migration')

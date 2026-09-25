@@ -883,15 +883,37 @@ def build_checkpoint_evidence(
     checkpoint_attestation_bytes,
     checkpoint_snapshot_bytes,
     installed_release_bytes,
+    checkpoint='N1',
+    predecessor_receipt_bytes=None,
+    predecessor_assessment_bytes=None,
+    predecessor_plan_bytes=None,
+    predecessor_payload_bytes=None,
 ) -> InspectedEvidence:
     """Check the FULL_E1 checkpoint family's captured-byte relationships (D1).
 
-    Mirrors ``build_n1_evidence`` for the campaign family: release /v5, the
-    campaign checkpoint attestation and the campaign checkpoint snapshot are the
-    only accepted shapes, and the canonical assessment core below is the signed
-    candidate's exact unsigned content. Custody (signatures, current keys) is
-    authenticated separately by the G5 driver and the service commit.
+    Mirrors ``build_n1_evidence`` for the campaign family: the installed
+    dispatch release, the campaign checkpoint attestation and the campaign
+    checkpoint snapshot are the only accepted shapes, and the canonical
+    assessment core below is the signed candidate's exact unsigned content.
+    Custody (signatures, current keys) is authenticated separately by the G5
+    driver and the service commit. S4 (D2): ``checkpoint='N2'`` builds the
+    joint LEGALITY/N1/N2/PART_B assessment from one captured batch and the
+    committed N1 predecessor family.
     """
+    if checkpoint == 'N2':
+        return build_joint_checkpoint_evidence(
+            contract=contract,
+            policy=policy,
+            worker_result_bytes=worker_result_bytes,
+            plan_bytes=plan_bytes,
+            checkpoint_attestation_bytes=checkpoint_attestation_bytes,
+            checkpoint_snapshot_bytes=checkpoint_snapshot_bytes,
+            installed_release_bytes=installed_release_bytes,
+            predecessor_receipt_bytes=predecessor_receipt_bytes,
+            predecessor_assessment_bytes=predecessor_assessment_bytes,
+            predecessor_plan_bytes=predecessor_plan_bytes,
+            predecessor_payload_bytes=predecessor_payload_bytes,
+        )
     from .journal_snapshot import parse_campaign_checkpoint_snapshot
 
     resolved = _document(policy)
@@ -920,11 +942,15 @@ def build_checkpoint_evidence(
         type(release) is not dict
         or type(plan) is not dict
         or type(payload) is not dict
-        or release.get('schema') != 'qualification_execution_release/v5'
+        or release.get('schema')
+        not in (
+            'qualification_execution_release/v5',
+            'qualification_execution_release/v6',
+        )
         or release.get('capability') != 'FULL_E1'
         or release.get('production_execution') is not False
         or release.get('dispatch_enabled') is not True
-        or release.get('dispatch_checkpoints') != ['N1']
+        or release.get('dispatch_checkpoints') not in (['N1'], ['N1', 'N2'])
         or release.get('qualification_policy_sha256') != policy.sha256
         or release.get('source_owner_sha256') != resolved['source_owner_sha256']
         or plan.get('schema') != 'qualification_checkpoint_plan/v2'
@@ -1140,10 +1166,445 @@ def build_checkpoint_evidence(
     return InspectedEvidence(canonical_json_bytes(assessment), MappingProxyType(outputs))
 
 
+def _joint_plan_vector(contract, policy):
+    """The canonical /v3 joint-plan depths, seeds and thresholds, re-derived."""
+    from .seed_identity import seed_input
+
+    resolved = _document(policy)
+    depths, seeds, thresholds = [], [], []
+    for stage in resolved['checkpoint_groups']['N2']:
+        spec = contract.stage_specs[stage]
+        thresholds.append(
+            {
+                'stage': stage,
+                'exact_depth': spec.exact_depth,
+                'max_failures_per_population': spec.max_failures_per_population,
+            }
+        )
+        for population in resolved['stage_populations'][stage]:
+            (depth,) = spec.population_counts[population]
+            depths.append(
+                {'population': population, 'depth': depth, 'statistics_stage': stage}
+            )
+            seeds.extend(
+                parse_canonical_json(
+                    seed_input(
+                        contract,
+                        stage='n2',
+                        population=population,
+                        panel_index=None,
+                        path_index=index,
+                        synthetic=contract.trust_domain.permits_synthetic,
+                    ).canonical_bytes,
+                    label='seed',
+                )
+                for index in range(depth)
+            )
+    return depths, seeds, thresholds
+
+
+def _joint_batch_shape(worker, depths):
+    """Consume exactly the ordered joint batch before splitting its two stages."""
+    populations = worker['populations']
+    if type(populations) is not list or len(populations) != len(depths):
+        raise ValueError('complete ordered joint populations required')
+    expected_stages = []
+    for row, expected in zip(populations, depths):
+        _fields(row, {'population', 'stage', 'outcomes'}, label='joint population')
+        if (row['population'] != expected['population']
+                or row['stage'] != expected['statistics_stage']
+                or type(row['outcomes']) is not list
+                or len(row['outcomes']) != expected['depth']):
+            raise ValueError('joint population stage/order/depth differs')
+        expected_stages.extend([expected['statistics_stage']] * expected['depth'])
+    inventory = _fields(worker['path_inventory'],
+                        {'schema', 'trust_domain_sha256', 'records'}, label='joint inventory')
+    records = inventory['records']
+    if (inventory['schema'] != 'qualification_path_inventory/v1'
+            or type(records) is not list or len(records) != len(expected_stages)
+            or any(type(row) is not dict or row.get('stage') != stage
+                   for row, stage in zip(records, expected_stages))):
+        raise ValueError('joint path inventory shape/order differs')
+
+
+def _joint_thresholds(value):
+    """Unset failure caps stay unset across the assessment and cutoff parsers."""
+    _fields(value, {'N2', 'PART_B'}, label='joint thresholds')
+    for cap in value.values():
+        if cap is not None:
+            _positive_int(cap, label='threshold cap', allow_zero=True)
+
+
+def build_joint_checkpoint_evidence(
+    *,
+    contract,
+    policy,
+    worker_result_bytes,
+    plan_bytes,
+    checkpoint_attestation_bytes,
+    checkpoint_snapshot_bytes,
+    installed_release_bytes,
+    predecessor_receipt_bytes,
+    predecessor_assessment_bytes,
+    predecessor_plan_bytes,
+    predecessor_payload_bytes,
+) -> InspectedEvidence:
+    """S4-D2: one captured joint batch, one assessment with both stage decisions.
+
+    LEGALITY is rebuilt from the batch's own admission; the N1 row and its
+    n1_result artifact are the committed N1 assessment's row, rebuilt from the
+    retained N1 custody bytes and cross-checked byte-for-byte; N2 and PART_B are
+    rebuilt from this batch through the unchanged frozen adjudication. Never
+    trusts a worker verdict; never re-draws.
+    """
+    from .journal_snapshot import parse_campaign_checkpoint_snapshot
+
+    resolved = _document(policy)
+    release = parse_release(installed_release_bytes)
+    plan = parse_canonical_json(plan_bytes, label='N2 plan')
+    worker = _fields(
+        parse_canonical_json(worker_result_bytes, label='worker result'),
+        {
+            'schema',
+            'execution_id',
+            'plan_sha256',
+            'source_admission',
+            'legality',
+            'populations',
+            'path_inventory',
+            'runtime_load_manifest',
+            'observations',
+        },
+        label='worker result',
+    )
+    snapshot = parse_campaign_checkpoint_snapshot(checkpoint_snapshot_bytes)
+    attempt_id = snapshot['attempt_id']
+    attestation = parse_checkpoint_attestation(checkpoint_attestation_bytes, attempt_id=attempt_id)
+    payload = attestation['payload']
+    if (
+        type(release) is not dict
+        or type(plan) is not dict
+        or type(payload) is not dict
+        or release.get('schema') != 'qualification_execution_release/v6'
+        or release.get('capability') != 'FULL_E1'
+        or release.get('production_execution') is not False
+        or release.get('dispatch_enabled') is not True
+        or release.get('dispatch_checkpoints') != ['N1', 'N2']
+        or release.get('qualification_policy_sha256') != policy.sha256
+        or release.get('source_owner_sha256') != resolved['source_owner_sha256']
+        or plan.get('schema') != 'qualification_checkpoint_plan/v3'
+        or plan.get('checkpoint') != 'N2'
+        or worker['schema'] != 'qualification_worker_result/v1'
+        or payload['work_id'] != worker['execution_id']
+        or snapshot['checkpoint'] != 'N2'
+    ):
+        raise ValueError('EVIDENCE_SCHEMA_MISMATCH')
+    for name, expected in {
+        'contract_sha256': contract.contract_sha256,
+        'trust_domain_sha256': contract.trust_domain_sha256,
+        'execution_release_sha256': _hash(installed_release_bytes),
+    }.items():
+        if plan.get(name) != expected:
+            raise ValueError('EVIDENCE_CONTEXT_MISMATCH')
+    original = parse_canonical_json(contract.canonical_bytes, label='contract')
+    depths, seeds, thresholds = _joint_plan_vector(contract, policy)
+    if (
+        plan.get('policy_sha256') != policy.sha256
+        or plan.get('attempt_id') != attempt_id
+        or plan.get('depths') != depths
+        or plan.get('seed_inputs') != seeds
+        or plan.get('thresholds') != thresholds
+        or plan.get('horizon_sessions') != contract.replay.horizon_sessions
+        or plan.get('initial_state_sha256')
+        != _hash(canonical_json_bytes(original['initial_state']))
+        or plan.get('replay_sha256') != _hash(canonical_json_bytes(original['replay']))
+        or plan.get('budget') != original['replay']['budget']
+        or plan.get('mechanics_version') != 'tb-s2-rng-v2'
+        or worker['plan_sha256'] != _hash(plan_bytes)
+        or payload['plan_sha256'] != _hash(plan_bytes)
+    ):
+        raise ValueError('EVIDENCE_PLAN_MISMATCH')
+    receipt = parse_canonical_json(predecessor_receipt_bytes, label='predecessor receipt')
+    if (
+        type(receipt) is not dict
+        or receipt.get('schema') != CHECKPOINT_RECEIPT_SCHEMA
+        or receipt.get('checkpoint') != 'N1'
+        or receipt.get('attempt_id') != attempt_id
+        or receipt.get('decision') != 'CONTINUE'
+        or receipt.get('campaign_state') != 'N2_READY'
+        or plan.get('predecessor') != {
+            'checkpoint': 'N1',
+            'receipt_sha256': _hash(predecessor_receipt_bytes),
+        }
+        or snapshot['predecessor'] != {
+            'checkpoint': 'N1',
+            'assessment_sha256': _hash(predecessor_assessment_bytes),
+            'receipt_sha256': _hash(predecessor_receipt_bytes),
+        }
+    ):
+        raise ValueError('predecessor receipt binding differs')
+    predecessor = parse_checkpoint_assessment(
+        predecessor_assessment_bytes, attempt_id=attempt_id
+    )
+    if predecessor['decision'] != 'CONTINUE' or predecessor['checkpoint'] != 'N1':
+        raise ValueError('committed predecessor decision differs')
+    predecessor_plan = parse_canonical_json(predecessor_plan_bytes, label='N1 plan')
+    predecessor_payload = parse_canonical_json(predecessor_payload_bytes, label='N1 payload')
+    if (
+        type(predecessor_plan) is not dict
+        or predecessor_plan.get('schema') != 'qualification_checkpoint_plan/v2'
+        or predecessor_plan.get('checkpoint') != 'N1'
+        or type(predecessor_payload) is not dict
+        or type(predecessor_payload.get('populations')) is not list
+    ):
+        raise ValueError('committed predecessor custody differs')
+    admission_bytes = canonical_json_bytes(worker['source_admission'])
+    admission = parse_source_admission(
+        admission_bytes,
+        contract_sha256=contract.contract_sha256,
+        domain_sha256=contract.trust_domain_sha256,
+        policy=policy,
+    )
+    expected_roles = [
+        {'role': item.role, 'sha256': item.sha256}
+        for item in sorted(contract.artifacts, key=lambda item: item.role)
+    ]
+    if (
+        admission['retained_roles'] != expected_roles
+        or admission['effective_settings_sha256'] != contract.effective_settings_sha256
+        or admission['population_sha256']
+        != {
+            pop: _hash(canonical_json_bytes(list(contract.populations[pop])))
+            for pop in ('FULL', 'H1', 'H2')
+        }
+    ):
+        raise ValueError('EVIDENCE_SOURCE_ADMISSION_MISMATCH')
+    geometry = geometry_role(contract.trust_domain.runtime_code_roles)
+    geometry_digest = next(item.sha256 for item in contract.artifacts if item.role == geometry)
+    legality = {
+        'schema': 'qualification_legality_result/v1',
+        'contract_sha256': contract.contract_sha256,
+        'trust_domain_sha256': contract.trust_domain_sha256,
+        'policy_sha256': policy.sha256,
+        'geometry_source_sha256': geometry_digest,
+        'source_admission_sha256': _hash(admission_bytes),
+        'check_id': 'PRE_ADMISSION_REGISTRY_EMPTY',
+        'status': 'PASS',
+    }
+    if canonical_json_bytes(worker['legality']) != canonical_json_bytes(legality):
+        raise ValueError('EVIDENCE_LEGALITY_MISMATCH')
+    for name in ('service_id', 'profile_sha256', 'worker_image_digest'):
+        if payload.get(name) != release.get(name):
+            raise ValueError('EVIDENCE_RUNTIME_MISMATCH')
+    worker_runtime = _hash(canonical_json_bytes(release['runtime_manifests']['worker']))
+    if payload.get('runtime_manifest_sha256') != worker_runtime or worker[
+        'runtime_load_manifest'
+    ] != [
+        {'role': role, 'sha256': digest}
+        for role, digest in sorted(contract.runtime_load_sha256.items())
+    ]:
+        raise ValueError('EVIDENCE_RUNTIME_MISMATCH')
+    observations = _fields(
+        worker['observations'],
+        {'worker_compute_wall_ns', 'worker_cpu_ns', 'worker_peak_memory_bytes'},
+        label='worker observations',
+    )
+    for name, value in observations.items():
+        if (
+            type(value) is not int
+            or value < 0
+            or payload.get('observations', {}).get(name) != value
+        ):
+            raise ValueError('EVIDENCE_OBSERVATIONS_MISMATCH')
+    if (
+        payload['observations'].get('exit_code') != 0
+        or payload['observations'].get('oom_killed') is not False
+    ):
+        raise ValueError('EVIDENCE_ABNORMAL_EXIT')
+    if _instant(payload['completed_utc'], label='completed') < _instant(
+        payload['started_utc'], label='started'
+    ):
+        raise ValueError('EVIDENCE_TIME_MISMATCH')
+    for name, expected in {
+        'attempt_id': attempt_id,
+        'contract_sha256': contract.contract_sha256,
+        'trust_domain_sha256': contract.trust_domain_sha256,
+        'policy_sha256': policy.sha256,
+    }.items():
+        if snapshot[name] != expected:
+            raise ValueError('EVIDENCE_SNAPSHOT_MISMATCH')
+    if (
+        snapshot['capture']['payload_sha256'] != _hash(worker_result_bytes)
+        or snapshot['capture']['result_sha256'] != payload['result_sha256']
+        or snapshot['capture']['attestation_sha256'] != _hash(checkpoint_attestation_bytes)
+    ):
+        raise ValueError('EVIDENCE_SNAPSHOT_MEMBERSHIP_MISMATCH')
+
+    _joint_batch_shape(worker, depths)
+
+    def section(index):
+        row = worker['populations'][index]
+        return {'population': row['population'], 'outcomes': row['outcomes']}
+
+    def inventory(stage):
+        return canonical_json_bytes(
+            dict(
+                schema='qualification_path_inventory/v1',
+                trust_domain_sha256=worker['path_inventory']['trust_domain_sha256'],
+                records=[
+                    record
+                    for record in worker['path_inventory']['records']
+                    if record['stage'] == stage
+                ],
+            )
+        )
+
+    prior = {'N1': canonical_json_bytes(predecessor_payload['populations'])}
+    n1_bytes = build_stage_artifact(
+        contract=contract,
+        policy=policy,
+        stage='N1',
+        input_plan_sha256=_hash(predecessor_plan_bytes),
+        outcome_bytes=prior['N1'],
+        path_inventory_bytes=canonical_json_bytes(predecessor_payload['path_inventory']),
+        prior_stage_outcomes={},
+    )
+    committed_row = predecessor['stages'][1]
+    n1_stage = parse_canonical_json(n1_bytes, label='N1 result')
+    if (
+        n1_stage['decision'] != committed_row['status']
+        or n1_stage['population_counts'] != committed_row['population_counts']
+        or _hash(n1_bytes) != committed_row['output_sha256']
+        or _hash(predecessor_plan_bytes) != committed_row['input_sha256']
+    ):
+        raise ValueError('committed N1 evidence differs')
+    n2_outcomes = canonical_json_bytes([section(0)])
+    n2_bytes = build_stage_artifact(
+        contract=contract,
+        policy=policy,
+        stage='N2',
+        input_plan_sha256=_hash(plan_bytes),
+        outcome_bytes=n2_outcomes,
+        path_inventory_bytes=inventory('N2'),
+        prior_stage_outcomes=dict(prior),
+    )
+    part_b_outcomes = canonical_json_bytes([section(1), section(2)])
+    part_b_bytes = build_stage_artifact(
+        contract=contract,
+        policy=policy,
+        stage='PART_B',
+        input_plan_sha256=_hash(plan_bytes),
+        outcome_bytes=part_b_outcomes,
+        path_inventory_bytes=inventory('PART_B'),
+        prior_stage_outcomes={**prior, 'N2': n2_outcomes},
+    )
+    n2_stage = parse_canonical_json(n2_bytes, label='N2 result')
+    part_b_stage = parse_canonical_json(part_b_bytes, label='PART_B result')
+    decisions = {
+        'N2': n2_stage['decision'],
+        'PART_B': part_b_stage['decision'],
+    }
+    failed = any(item == 'FAIL' for item in decisions.values())
+    runtime_bytes = canonical_json_bytes(
+        {
+            'schema': 'qualification_runtime_trace/v2',
+            'execution_release_sha256': _hash(installed_release_bytes),
+            'profile_sha256': release['profile_sha256'],
+            'worker_image_digest': release['worker_image_digest'],
+            'runtime_manifest_sha256': worker_runtime,
+            'execution_id': worker['execution_id'],
+            'execution_attestation_sha256': _hash(checkpoint_attestation_bytes),
+            'worker_load_manifest': worker['runtime_load_manifest'],
+        }
+    )
+    outputs = {
+        'attempt_journal': checkpoint_snapshot_bytes,
+        'legality_result': canonical_json_bytes(legality),
+        'n1_result': n1_bytes,
+        'n2_result': n2_bytes,
+        'part_b_result': part_b_bytes,
+        'path_inventory': canonical_json_bytes(worker['path_inventory']),
+        'runtime_load_trace': runtime_bytes,
+    }
+    completion, verdict = ('COMPLETE', 'FAIL') if failed else ('PARTIAL', 'NONE')
+    validate_output_roles(
+        policy,
+        list(outputs),
+        stages=('LEGALITY', 'N1', 'N2', 'PART_B'),
+        completion=completion,
+        verdict=verdict,
+    )
+    caps = {
+        row['stage']: row['max_failures_per_population']
+        for row in thresholds
+    }
+    assessment = {
+        'schema': CHECKPOINT_ASSESSMENT_SCHEMA,
+        'attempt_id': attempt_id,
+        'checkpoint': 'N2',
+        'work_id': worker['execution_id'],
+        'binding': {
+            'contract_sha256': contract.contract_sha256,
+            'trust_domain_sha256': contract.trust_domain_sha256,
+            'policy_sha256': policy.sha256,
+            'execution_release_sha256': _hash(installed_release_bytes),
+        },
+        'snapshot': {
+            'campaign_revision': snapshot['campaign_revision'],
+            'authority_head': snapshot['authority_head'],
+            'snapshot_sha256': _hash(checkpoint_snapshot_bytes),
+        },
+        'capture': {
+            'result_sha256': payload['result_sha256'],
+            'payload_sha256': payload['payload_sha256'],
+            'attestation_sha256': _hash(checkpoint_attestation_bytes),
+        },
+        'stages': [
+            {
+                'stage': 'LEGALITY',
+                'status': 'PASS',
+                'input_sha256': _hash(admission_bytes),
+                'output_sha256': _hash(outputs['legality_result']),
+                'population_counts': {},
+            },
+            committed_row,
+            {
+                'stage': 'N2',
+                'status': decisions['N2'],
+                'input_sha256': _hash(plan_bytes),
+                'output_sha256': _hash(n2_bytes),
+                'population_counts': n2_stage['population_counts'],
+            },
+            {
+                'stage': 'PART_B',
+                'status': decisions['PART_B'],
+                'input_sha256': _hash(plan_bytes),
+                'output_sha256': _hash(part_b_bytes),
+                'population_counts': part_b_stage['population_counts'],
+            },
+        ],
+        'decision': 'FAILURE' if failed else 'CONTINUE',
+        'stage_decisions': decisions,
+        'cutoff': {'checkpoint': 'N2', 'stage_thresholds': caps},
+        'predecessor': {
+            'checkpoint': 'N1',
+            'assessment_sha256': _hash(predecessor_assessment_bytes),
+            'receipt_sha256': _hash(predecessor_receipt_bytes),
+        },
+        'artifacts': [
+            {'role': role, 'sha256': _hash(raw), 'byte_length': len(raw)}
+            for role, raw in sorted(outputs.items())
+        ],
+    }
+    return InspectedEvidence(canonical_json_bytes(assessment), MappingProxyType(outputs))
+
+
 def _inspect_checkpoint_assessment(value):
     """Closed-shape check of one proposed/expected assessment core (no signature)."""
+    parsed = parse_canonical_json(value.envelope_bytes, label='checkpoint assessment')
+    joint = type(parsed) is dict and parsed.get('checkpoint') == 'N2'
     doc = _fields(
-        parse_canonical_json(value.envelope_bytes, label='checkpoint assessment'),
+        parsed,
         {
             'schema',
             'attempt_id',
@@ -1158,12 +1619,14 @@ def _inspect_checkpoint_assessment(value):
             'cutoff',
             'n2_thresholds',
             'artifacts',
-        },
+        }
+        - ({'n1_decision', 'n2_thresholds'} if joint else set())
+        | ({'stage_decisions', 'predecessor'} if joint else set()),
         label='checkpoint assessment',
     )
     if (
         doc['schema'] != 'qualification_campaign_checkpoint_assessment/v1'
-        or doc['checkpoint'] != 'N1'
+        or doc['checkpoint'] not in ('N1', 'N2')
         or type(doc['attempt_id']) is not str
         or not doc['attempt_id']
         or type(doc['work_id']) is not str
@@ -1190,10 +1653,10 @@ def _inspect_checkpoint_assessment(value):
         for key in group:
             if key != 'campaign_revision':
                 _sha256(group[key], label=key)
-    if type(doc['stages']) is not list or [row.get('stage') for row in doc['stages']] != [
-        'LEGALITY',
-        'N1',
-    ]:
+    expected_stages = ['LEGALITY', 'N1', 'N2', 'PART_B'] if joint else ['LEGALITY', 'N1']
+    if type(doc['stages']) is not list or [row.get('stage') for row in doc['stages']] != (
+        expected_stages
+    ):
         raise ValueError('invalid assessment stages')
     for row in doc['stages']:
         _fields(
@@ -1207,29 +1670,55 @@ def _inspect_checkpoint_assessment(value):
         _sha256(row['output_sha256'], label='stage output')
         if type(row['population_counts']) is not dict:
             raise ValueError('invalid population counts')
-    failed = doc['n1_decision'] == 'FAIL'
-    if (
-        doc['n1_decision'] not in ('PASS', 'FAIL')
-        or doc['decision'] not in ('CONTINUE', 'FAILURE')
-        or (doc['decision'] == 'FAILURE') != failed
-        or doc['stages'][1]['status'] != doc['n1_decision']
-        or doc['stages'][0]['status'] != 'PASS'
-    ):
-        raise ValueError('invalid assessment decision')
-    cutoff = _fields(doc['cutoff'], {'checkpoint', 'n1_cutoffs'}, label='cutoff')
-    if cutoff['checkpoint'] != 'N1' or type(cutoff['n1_cutoffs']) is not dict:
-        raise ValueError('invalid N1 cutoff')
-    thresholds = _fields(doc['n2_thresholds'], {'bound_to', 'stages'}, label='N2 thresholds')
-    _sha256(thresholds['bound_to'], label='threshold binding')
-    if type(thresholds['stages']) is not list:
-        raise ValueError('invalid N2 thresholds')
-    for row in thresholds['stages']:
-        _fields(row, {'stage', 'exact_depth', 'max_failures_per_population'}, label='threshold')
-        _positive_int(row['exact_depth'], label='depth')
-        if row['max_failures_per_population'] is not None:
-            _positive_int(
-                row['max_failures_per_population'], label='threshold cap', allow_zero=True
-            )
+    if joint:
+        decisions = _stage_decisions(doc['stage_decisions'])
+        if (
+            doc['decision'] not in ('CONTINUE', 'FAILURE')
+            or (doc['decision'] == 'CONTINUE')
+            != all(item == 'PASS' for item in decisions.values())
+            or doc['stages'][0]['status'] != 'PASS'
+            or doc['stages'][1]['status'] != 'PASS'
+            or doc['stages'][2]['status'] != decisions['N2']
+            or doc['stages'][3]['status'] != decisions['PART_B']
+        ):
+            raise ValueError('invalid assessment decision')
+        predecessor = _fields(
+            doc['predecessor'],
+            {'checkpoint', 'assessment_sha256', 'receipt_sha256'},
+            label='joint predecessor',
+        )
+        if predecessor['checkpoint'] != 'N1':
+            raise ValueError('invalid joint predecessor')
+        _sha256(predecessor['assessment_sha256'], label='predecessor assessment')
+        _sha256(predecessor['receipt_sha256'], label='predecessor receipt')
+        cutoff = _fields(doc['cutoff'], {'checkpoint', 'stage_thresholds'}, label='cutoff')
+        if cutoff['checkpoint'] != 'N2' or type(cutoff['stage_thresholds']) is not dict:
+            raise ValueError('invalid joint cutoff')
+        _joint_thresholds(cutoff['stage_thresholds'])
+    else:
+        failed = doc['n1_decision'] == 'FAIL'
+        if (
+            doc['n1_decision'] not in ('PASS', 'FAIL')
+            or doc['decision'] not in ('CONTINUE', 'FAILURE')
+            or (doc['decision'] == 'FAILURE') != failed
+            or doc['stages'][1]['status'] != doc['n1_decision']
+            or doc['stages'][0]['status'] != 'PASS'
+        ):
+            raise ValueError('invalid assessment decision')
+        cutoff = _fields(doc['cutoff'], {'checkpoint', 'n1_cutoffs'}, label='cutoff')
+        if cutoff['checkpoint'] != 'N1' or type(cutoff['n1_cutoffs']) is not dict:
+            raise ValueError('invalid N1 cutoff')
+        thresholds = _fields(doc['n2_thresholds'], {'bound_to', 'stages'}, label='N2 thresholds')
+        _sha256(thresholds['bound_to'], label='threshold binding')
+        if type(thresholds['stages']) is not list:
+            raise ValueError('invalid N2 thresholds')
+        for row in thresholds['stages']:
+            _fields(row, {'stage', 'exact_depth', 'max_failures_per_population'}, label='threshold')
+            _positive_int(row['exact_depth'], label='depth')
+            if row['max_failures_per_population'] is not None:
+                _positive_int(
+                    row['max_failures_per_population'], label='threshold cap', allow_zero=True
+                )
     if type(doc['artifacts']) is not list:
         raise ValueError('invalid artifact inventory')
     for row in doc['artifacts']:
@@ -1282,7 +1771,10 @@ def _stage_row(stage):
     from .execution.protocol import fields
 
     fields(stage, {'stage', 'status', 'input_sha256', 'output_sha256', 'population_counts'})
-    if stage['stage'] not in ('LEGALITY', 'N1') or stage['status'] not in ('PASS', 'FAIL'):
+    if stage['stage'] not in ('LEGALITY', 'N1', 'N2', 'PART_B') or stage['status'] not in (
+        'PASS',
+        'FAIL',
+    ):
         raise ValueError('checkpoint assessment stage differs')
     if type(stage['population_counts']) is not dict or any(
         type(value) is not int or value < 0 for value in stage['population_counts'].values()
@@ -1291,11 +1783,23 @@ def _stage_row(stage):
     return stage
 
 
+def _stage_decisions(value):
+    if (
+        type(value) is not dict
+        or set(value) != {'N2', 'PART_B'}
+        or any(item not in ('PASS', 'FAIL') for item in value.values())
+    ):
+        raise ValueError('joint stage decisions differ')
+    return value
+
+
 def parse_checkpoint_assessment(raw, *, attempt_id):
     from .execution.protocol import fields, identity, digest
 
+    parsed = parse_canonical_json(raw, label='checkpoint assessment')
+    joint = type(parsed) is dict and parsed.get('checkpoint') == 'N2'
     doc = fields(
-        parse_canonical_json(raw, label='checkpoint assessment'),
+        parsed,
         {
             'schema',
             'attempt_id',
@@ -1311,12 +1815,14 @@ def parse_checkpoint_assessment(raw, *, attempt_id):
             'n2_thresholds',
             'artifacts',
             'signature',
-        },
+        }
+        - ({'n1_decision', 'n2_thresholds'} if joint else set())
+        | ({'stage_decisions', 'predecessor'} if joint else set()),
     )
     if (
         doc['schema'] != CHECKPOINT_ASSESSMENT_SCHEMA
         or doc['attempt_id'] != attempt_id
-        or doc['checkpoint'] != 'N1'
+        or doc['checkpoint'] not in ('N1', 'N2')
     ):
         raise ValueError('checkpoint assessment binding differs')
     identity(doc['work_id'])
@@ -1333,26 +1839,64 @@ def parse_checkpoint_assessment(raw, *, attempt_id):
         for name, value in group.items():
             if name != 'campaign_revision' and value is not None:
                 digest(value)
-    if type(doc['stages']) is not list or len(doc['stages']) != 2:
-        raise ValueError('LEGALITY and N1 stage results required')
-    [_stage_row(stage) for stage in doc['stages']]
-    if [stage['stage'] for stage in doc['stages']] != ['LEGALITY', 'N1']:
-        raise ValueError('checkpoint assessment stage order differs')
-    if doc['decision'] not in ('CONTINUE', 'FAILURE') or doc['n1_decision'] not in ('PASS', 'FAIL'):
-        raise ValueError('checkpoint assessment decision differs')
-    if (doc['decision'] == 'FAILURE') != (doc['n1_decision'] == 'FAIL'):
-        raise ValueError('checkpoint assessment decision consistency differs')
-    cutoff = fields(doc['cutoff'], {'checkpoint', 'n1_cutoffs'})
-    if cutoff['checkpoint'] != 'N1' or type(cutoff['n1_cutoffs']) is not dict:
-        raise ValueError('N1 cutoff binding required')
-    for value in cutoff['n1_cutoffs'].values():
-        from .execution.campaign_budget import integer
+    if joint:
+        if type(doc['stages']) is not list or len(doc['stages']) != 4:
+            raise ValueError('LEGALITY/N1/N2/PART_B stage results required')
+        [_stage_row(stage) for stage in doc['stages']]
+        if [stage['stage'] for stage in doc['stages']] != [
+            'LEGALITY',
+            'N1',
+            'N2',
+            'PART_B',
+        ]:
+            raise ValueError('checkpoint assessment stage order differs')
+        decisions = _stage_decisions(doc['stage_decisions'])
+        if doc['decision'] not in ('CONTINUE', 'FAILURE') or (
+            doc['decision'] == 'CONTINUE'
+        ) != all(item == 'PASS' for item in decisions.values()):
+            raise ValueError('checkpoint assessment decision differs')
+        if (
+            doc['stages'][0]['status'] != 'PASS'
+            or doc['stages'][1]['status'] != 'PASS'
+            or doc['stages'][2]['status'] != decisions['N2']
+            or doc['stages'][3]['status'] != decisions['PART_B']
+        ):
+            raise ValueError('checkpoint assessment stage decisions differ')
+        predecessor = fields(
+            doc['predecessor'], {'checkpoint', 'assessment_sha256', 'receipt_sha256'}
+        )
+        if predecessor['checkpoint'] != 'N1':
+            raise ValueError('joint predecessor binding required')
+        digest(predecessor['assessment_sha256'])
+        digest(predecessor['receipt_sha256'])
+        cutoff = fields(doc['cutoff'], {'checkpoint', 'stage_thresholds'})
+        if cutoff['checkpoint'] != 'N2' or type(cutoff['stage_thresholds']) is not dict:
+            raise ValueError('joint cutoff binding required')
+        _joint_thresholds(cutoff['stage_thresholds'])
+    else:
+        if type(doc['stages']) is not list or len(doc['stages']) != 2:
+            raise ValueError('LEGALITY and N1 stage results required')
+        [_stage_row(stage) for stage in doc['stages']]
+        if [stage['stage'] for stage in doc['stages']] != ['LEGALITY', 'N1']:
+            raise ValueError('checkpoint assessment stage order differs')
+        if doc['decision'] not in ('CONTINUE', 'FAILURE') or doc['n1_decision'] not in (
+            'PASS',
+            'FAIL',
+        ):
+            raise ValueError('checkpoint assessment decision differs')
+        if (doc['decision'] == 'FAILURE') != (doc['n1_decision'] == 'FAIL'):
+            raise ValueError('checkpoint assessment decision consistency differs')
+        cutoff = fields(doc['cutoff'], {'checkpoint', 'n1_cutoffs'})
+        if cutoff['checkpoint'] != 'N1' or type(cutoff['n1_cutoffs']) is not dict:
+            raise ValueError('N1 cutoff binding required')
+        for value in cutoff['n1_cutoffs'].values():
+            from .execution.campaign_budget import integer as _integer
 
-        integer(value)
-    thresholds = fields(doc['n2_thresholds'], {'bound_to', 'stages'})
-    digest(thresholds['bound_to'])
-    if type(thresholds['stages']) is not list:
-        raise ValueError('distinct N2 threshold binding required')
+            _integer(value)
+        thresholds = fields(doc['n2_thresholds'], {'bound_to', 'stages'})
+        digest(thresholds['bound_to'])
+        if type(thresholds['stages']) is not list:
+            raise ValueError('distinct N2 threshold binding required')
     if type(doc['artifacts']) is not list:
         raise ValueError('staged artifact inventory required')
     for row in doc['artifacts']:
@@ -1374,8 +1918,10 @@ def parse_checkpoint_cutoff(raw, *, attempt_id):
     from .execution.protocol import fields, digest, identity
     from .execution.campaign_budget import integer, utc
 
+    parsed = parse_canonical_json(raw, label='checkpoint cutoff receipt')
+    joint = type(parsed) is dict and parsed.get('checkpoint') == 'N2'
     doc = fields(
-        parse_canonical_json(raw, label='checkpoint cutoff receipt'),
+        parsed,
         {
             'schema',
             'attempt_id',
@@ -1386,27 +1932,44 @@ def parse_checkpoint_cutoff(raw, *, attempt_id):
             'n2_thresholds',
             'n2_bound_to',
             'created_utc',
-        },
+        }
+        - ({'n1_cutoffs', 'n2_thresholds', 'n2_bound_to'} if joint else set())
+        | (
+            {'stage_decisions', 'stage_thresholds', 'predecessor_receipt_sha256'}
+            if joint
+            else set()
+        ),
     )
     if (
         doc['schema'] != CHECKPOINT_CUTOFF_SCHEMA
         or doc['attempt_id'] != attempt_id
-        or doc['checkpoint'] != 'N1'
+        or doc['checkpoint'] not in ('N1', 'N2')
         or doc['decision'] not in ('CONTINUE', 'FAILURE')
     ):
         raise ValueError('checkpoint cutoff binding differs')
     digest(doc['assessment_sha256'])
-    digest(doc['n2_bound_to'])
-    for value in doc['n1_cutoffs'].values():
-        integer(value)
-    for row in doc['n2_thresholds']:
-        fields(row, {'stage', 'exact_depth', 'max_failures_per_population'})
-        identity(row['stage'])
-        integer(row['exact_depth'], positive=True)
-        # A workload may leave an N2/PART_B failure cap unset (None); the
-        # binding still pins the stage and its exact depth.
-        if row['max_failures_per_population'] is not None:
-            integer(row['max_failures_per_population'])
+    if joint:
+        decisions = _stage_decisions(doc['stage_decisions'])
+        if (doc['decision'] == 'CONTINUE') != all(
+            item == 'PASS' for item in decisions.values()
+        ):
+            raise ValueError('checkpoint cutoff decision differs')
+        if type(doc['stage_thresholds']) is not dict:
+            raise ValueError('joint cutoff thresholds required')
+        _joint_thresholds(doc['stage_thresholds'])
+        digest(doc['predecessor_receipt_sha256'])
+    else:
+        digest(doc['n2_bound_to'])
+        for value in doc['n1_cutoffs'].values():
+            integer(value)
+        for row in doc['n2_thresholds']:
+            fields(row, {'stage', 'exact_depth', 'max_failures_per_population'})
+            identity(row['stage'])
+            integer(row['exact_depth'], positive=True)
+            # A workload may leave an N2/PART_B failure cap unset (None); the
+            # binding still pins the stage and its exact depth.
+            if row['max_failures_per_population'] is not None:
+                integer(row['max_failures_per_population'])
     utc(doc['created_utc'])
     return doc
 
@@ -1455,7 +2018,7 @@ def parse_checkpoint_attestation(raw, *, attempt_id):
         payload['schema'] != 'qualification_campaign_checkpoint_attestation_payload/v1'
         or payload['scope'] != 'ATTEST_CAMPAIGN_CHECKPOINT'
         or payload['attempt_id'] != attempt_id
-        or payload['checkpoint'] != 'N1'
+        or payload['checkpoint'] not in ('N1', 'N2')
     ):
         raise ValueError('checkpoint attestation binding differs')
     import re
@@ -1527,7 +2090,7 @@ def parse_checkpoint_result(raw, *, attempt_id):
     if (
         doc['schema'] != CHECKPOINT_RESULT_SCHEMA
         or doc['attempt_id'] != attempt_id
-        or doc['checkpoint'] != 'N1'
+        or doc['checkpoint'] not in ('N1', 'N2')
     ):
         raise ValueError('checkpoint result binding differs')
     import re

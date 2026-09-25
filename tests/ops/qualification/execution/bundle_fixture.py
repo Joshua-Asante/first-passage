@@ -18,7 +18,7 @@ from c1_rail.qualification.policy_sources import build_qualification_policy
 
 def build_bundle(root, *, idle=False, geometry_bytes=None, workload=None,
                  attempt_id=None, root_rng_namespace=None, capability='N1_ONLY', diagnostic=False, funded=False,
-                 dispatch=False):
+                 dispatch=False, joint=False):
     policy_raw = build_qualification_policy()
     fixture = build_artifacts(root, idle=idle).with_runtime_artifacts(root)
     if geometry_bytes is not None:
@@ -35,12 +35,14 @@ def build_bundle(root, *, idle=False, geometry_bytes=None, workload=None,
     if capability == 'FULL_E1':
         profile.update(schema='qualification_execution_profile/v2', protocol_version=2,
             capability='FULL_E1', supported_checkpoints=[], dispatch_enabled=False)
-    if diagnostic or funded or dispatch:
+    if diagnostic or funded or dispatch or joint:
         from c1_rail.qualification.execution.profile import (diagnostic_execution_profile,
-            dispatch_diagnostic_execution_profile, funded_diagnostic_execution_profile)
+            dispatch_diagnostic_execution_profile, funded_diagnostic_execution_profile,
+            joint_dispatch_diagnostic_execution_profile)
         if capability != 'FULL_E1':
             raise ValueError('diagnostic requires FULL_E1 fixture')
-        profile = (dispatch_diagnostic_execution_profile if dispatch
+        profile = (joint_dispatch_diagnostic_execution_profile if joint
+                   else dispatch_diagnostic_execution_profile if dispatch
                    else funded_diagnostic_execution_profile if funded
                    else diagnostic_execution_profile)(encoded(profile))
     ordinary = {row.role: dict(module=row.name, path=row.path, sha256=digest(row.source_bytes))
@@ -65,13 +67,15 @@ def build_bundle(root, *, idle=False, geometry_bytes=None, workload=None,
     if capability == 'FULL_E1':
         release_doc.update(schema='qualification_execution_release/v2', capability='FULL_E1',
             dispatch_enabled=False)
-    if diagnostic or funded or dispatch:
+    if diagnostic or funded or dispatch or joint:
         from c1_rail.qualification.execution.profile import diagnostic_budget_profile
-        revision = 'v5' if dispatch else 'v4' if funded else 'v3'
+        revision = 'v6' if joint else 'v5' if dispatch else 'v4' if funded else 'v3'
         release_doc.update(schema='qualification_execution_release/' + revision,
-            dispatch_enabled=revision == 'v5',
+            dispatch_enabled=revision in ('v5', 'v6'),
             campaign_budget_profile=diagnostic_budget_profile(encoded(profile)))
-        if dispatch:
+        if joint:
+            release_doc.update(dispatch_checkpoints=['N1', 'N2'])
+        elif dispatch:
             release_doc.update(dispatch_checkpoints=['N1'])
     release = encoded(release_doc)
     fixture = replace(fixture, payloads=dict(fixture.payloads, execution_release=release,qualification_policy=policy_raw),

@@ -425,3 +425,55 @@ def test_v6_budget_snapshot_vector_beside_v5():
 
 
 V5_PINNED_BYTES = canonical_json_bytes(v5_snapshot())
+
+
+def test_v7_budget_snapshot_vector_beside_v6():
+    import json
+    from c1_rail.qualification.journal_snapshot import (
+        encode_campaign_budget_snapshot,
+        parse_campaign_budget_snapshot,
+    )
+
+    doc = v5_snapshot()
+    doc['schema'] = 'qualification_campaign_budget_snapshot/v7'
+    doc['checkpoints'] = {
+        'N1': {
+            'state': 'COMMITTED',
+            'work_id': 'n1work',
+            'payload_sha256': '1' * 64,
+            'result_sha256': '2' * 64,
+            'attestation_sha256': '3' * 64,
+            'assessment_sha256': '4' * 64,
+            'receipt_sha256': '5' * 64,
+            'decision': 'CONTINUE',
+        },
+        'N2': {
+            'state': 'COMMITTED',
+            'work_id': 'n2work',
+            'payload_sha256': '6' * 64,
+            'result_sha256': '7' * 64,
+            'attestation_sha256': '8' * 64,
+            'assessment_sha256': '9' * 64,
+            'receipt_sha256': 'a' * 64,
+            'decision': 'FAILURE',
+            'stage_decisions': {'N2': 'PASS', 'PART_B': 'FAIL'},
+        },
+    }
+    raw = encode_campaign_budget_snapshot(doc)
+    parsed = parse_campaign_budget_snapshot(raw)
+    assert parsed['schema'] == 'qualification_campaign_budget_snapshot/v7'
+    assert parsed['checkpoints']['N2']['stage_decisions'] == {'N2': 'PASS', 'PART_B': 'FAIL'}
+    for mutation in (
+        {'stage_decisions': {'N2': 'MAYBE', 'PART_B': 'FAIL'}},
+        {'stage_decisions': {'N2': 'PASS'}},
+        {'decision': 'CONTINUE'},
+    ):
+        broken = json.loads(json.dumps(doc))
+        broken['checkpoints']['N2'].update(mutation)
+        with pytest.raises(ValueError):
+            parse_campaign_budget_snapshot(canonical_json_bytes(broken))
+    uncommitted = json.loads(json.dumps(doc))
+    uncommitted['checkpoints']['N2']['state'] = 'ATTESTED'
+    uncommitted['checkpoints']['N2'].pop('decision')
+    with pytest.raises(ValueError):
+        parse_campaign_budget_snapshot(canonical_json_bytes(uncommitted))

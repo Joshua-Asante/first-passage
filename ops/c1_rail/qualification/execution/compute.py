@@ -1,4 +1,4 @@
-"""N1 replay only. No journal, signing or launch authority is imported here."""
+"""Checkpoint replay only. No journal, signing or launch authority is imported here."""
 from mc.simulation import EvaluationState
 
 from ..provider import _ReplayProvider
@@ -21,8 +21,7 @@ def stage_request(contract, stage, budget_seconds):
         contract.replay.horizon_sessions, contract.replay.root_rng_namespace, budget_seconds)
 
 
-def run_n1_compute(contract, source, budget):
-    """Retain source proofs, original probe, sampling and final aggregation checks."""
+def _run_checkpoint_compute(stage, contract, source, budget):
     from ..production_source import ProductionSource
     if type(source) is not ProductionSource:
         raise TypeError('factory-built source required')
@@ -39,7 +38,18 @@ def run_n1_compute(contract, source, budget):
         provider = _ReplayProvider(source.sessions, source.adjacent,
             block_sessions=contract.replay.inner_block_sessions,
             path_start_date=source.path_start_date, replay=replay)
-        return _run_stage(stage_request(contract, 'n1', budget.remaining_wall_seconds()), provider,
+        return _run_stage(stage_request(contract, stage, budget.remaining_wall_seconds()), provider,
             initial_state=initial_state(contract), synthetic=contract.trust_domain.permits_synthetic)
     finally:
         budget.check_and_measure()
+
+
+def run_n1_compute(contract, source, budget):
+    """Retain source proofs, original probe, sampling and final aggregation checks."""
+    return _run_checkpoint_compute('n1', contract, source, budget)
+
+
+def run_n2_compute(contract, source, budget):
+    """The joint batch beside run_n1_compute: FULL at the frozen N2 depth and
+    H1/H2 at the frozen PART_B depth in one stage run -- one probe, one sample."""
+    return _run_checkpoint_compute('n2', contract, source, budget)

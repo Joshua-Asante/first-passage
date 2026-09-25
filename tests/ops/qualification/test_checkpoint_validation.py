@@ -203,10 +203,45 @@ def test_checkpoint_plan_is_the_retained_n1_subdocument(tmp_path):
     assert sliced == direct
     with pytest.raises(ValueError, match='no predecessor receipt'):
         derive_checkpoint_plan(plan, 'N1', b'receipt')
-    with pytest.raises(ValueError, match='unsupported checkpoint selection'):
+    with pytest.raises(ValueError, match='committed predecessor receipt required'):
         derive_checkpoint_plan(plan, 'N2', None)
+    with pytest.raises(ValueError, match='unsupported checkpoint selection'):
+        derive_checkpoint_plan(plan, 'PART_A', None)
     with pytest.raises(ValueError, match='retained canonical campaign plan'):
         derive_checkpoint_plan(encoded({'schema': 'other'}), 'N1', None)
+    receipt = encoded(
+        {
+            'schema': 'qualification_campaign_checkpoint_receipt/v1',
+            'attempt_id': context.attempt_id,
+            'checkpoint': 'N1',
+            'work_id': 'g5work',
+            'campaign_id': 'c1',
+            'assessment_sha256': '0' * 64,
+            'cutoff_sha256': '1' * 64,
+            'decision': 'CONTINUE',
+            'campaign_state': 'N2_READY',
+            'signing_at_utc': '2026-09-22T00:00:00Z',
+            'committed_at_utc': '2026-09-22T00:00:01Z',
+            'intent_sha256': '2' * 64,
+        }
+    )
+    joint = json.loads(derive_checkpoint_plan(plan, 'N2', receipt))
+    campaign = json.loads(plan)
+    assert joint['schema'] == 'qualification_checkpoint_plan/v3'
+    assert joint['checkpoint'] == 'N2' and joint['predecessor']['checkpoint'] == 'N1'
+    import hashlib as _hashlib
+
+    assert joint['predecessor']['receipt_sha256'] == _hashlib.sha256(receipt).hexdigest()
+    assert joint['depths'] == campaign['n2']['depths']
+    assert joint['seed_inputs'] == campaign['n2']['seed_inputs']
+    with pytest.raises(ValueError, match='committed predecessor decision differs'):
+        derive_checkpoint_plan(
+            plan, 'N2', encoded(dict(json.loads(receipt), decision='FAILURE'))
+        )
+    with pytest.raises(ValueError, match='predecessor receipt binding differs'):
+        derive_checkpoint_plan(
+            plan, 'N2', encoded(dict(json.loads(receipt), attempt_id='other'))
+        )
 
 
 def test_checkpoint_operations_are_g5_only_with_closed_fields():
@@ -217,9 +252,19 @@ def test_checkpoint_operations_are_g5_only_with_closed_fields():
         assert protocol.permitted('g5', operation)
         assert not protocol.permitted('client', operation)
         assert not protocol.permitted('operator', operation)
-    base = {'schema': 'qualification_campaign_request/v2', 'attempt_id': 'a1', 'checkpoint': 'N2'}
+    base = {'schema': 'qualification_campaign_request/v2', 'attempt_id': 'a1', 'checkpoint': 'PART_A'}
     with pytest.raises(ValueError, match='installed checkpoint required'):
         protocol.parse_campaign_request(encoded(dict(base, operation='CHECKPOINT_SNAPSHOT')))
+    accepted = protocol.parse_campaign_request(
+        encoded(
+            dict(
+                base,
+                checkpoint='N2',
+                operation='CHECKPOINT_SNAPSHOT',
+            )
+        )
+    )
+    assert accepted['checkpoint'] == 'N2'
     bad = dict(
         base,
         checkpoint='N1',
@@ -306,7 +351,7 @@ def test_checkpoint_snapshot_parser_refuses_open_shapes():
 
     doc = json.loads(raw)
     for mutation, pattern in (
-        ({'checkpoint': 'N2'}, 'schema required'),
+        ({'checkpoint': 'PART_A'}, 'schema required'),
         ({'campaign_state': 'N3_READY'}, 'state differs'),
         ({'validity': 'MAYBE'}, 'state differs'),
         ({'members': doc['members'][:4]}, 'incomplete'),

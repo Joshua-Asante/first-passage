@@ -9,7 +9,10 @@ cite for a run and exits non-zero unless every one of them holds:
                   metadata.acceptance_scope equal to --expect-scope, and a
                   measured before.commit (the host's `git rev-parse HEAD`)
   invariants.json passed=true, and required_nodeids (the selection's required
-                  nodes) is a non-empty list
+                  nodes) is a non-empty list bound to the expected scope's exact
+                  file set: every nodeid starts with '<file>::' for a file of
+                  that set, and every file of the set contributes at least one
+                  nodeid
   junit.xml       tests >= len(required_nodeids), failures=0, errors=0, skipped=0
   the run         for a workflow_dispatch (any event but pull_request) run, the
                   measured commit equals the run's headSha
@@ -17,12 +20,17 @@ cite for a run and exits non-zero unless every one of them holds:
 Usage (from any checkout with `gh` authenticated):
 
     python scripts/s2_run_evidence.py <run-id> [--dest DIR] [--expect-head SHA]
-        [--expect-scope {S3_N1_CAPTURE,S2_DIAGNOSTIC_SUPERVISION}]
+        [--expect-scope {S4_JOINT_N2,S3_N1_CAPTURE,S2_DIAGNOSTIC_SUPERVISION}]
 
 `--expect-scope` names the one scope that can read ok. The default is
-S3_N1_CAPTURE, the workflow's default `s3` mode and its acceptance-grade set; an
-`s2`-mode run (S2_DIAGNOSTIC_SUPERVISION) reads ok only when asked for
-explicitly. DIAGNOSTIC_SUBSET (a `cases` run) and N1_ONLY_TEST_ONLY are never ok.
+S4_JOINT_N2, the workflow's new default `s4` mode and its acceptance-grade joint
+set; S3_N1_CAPTURE (an `s3` run) and S2_DIAGNOSTIC_SUPERVISION (an `s2` run)
+read ok only when asked for explicitly. Each scope is also bound to its exact
+file set (S4_JOINT_N2 -> S4_CASES, S3_N1_CAPTURE -> S3_CASES,
+S2_DIAGNOSTIC_SUPERVISION -> S2_CASES, the tuples the selector defines), so a
+required-node list that misses a file of that set, or carries a node from any
+other file, is refused. DIAGNOSTIC_SUBSET (a `cases` run) and N1_ONLY_TEST_ONLY
+are never ok.
 
 `--expect-head` refuses a run whose head is not the bytes you are claiming for:
 7 to 40 hexadecimal characters, compared case-insensitively as a prefix of the
@@ -50,12 +58,27 @@ import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+# `python scripts/s2_run_evidence.py` puts only scripts/ on sys.path, and the
+# selector that owns each scope's file set lives one level up.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from scripts.qualification_boundary_verification import S2_CASES, S3_CASES, S4_CASES
+
 ARTIFACT = "qualification-s2-supervision"
 # The only scopes whose green can be read as boundary evidence, default first.
 # A diagnostic subset (the workflow's `cases` input) records DIAGNOSTIC_SUBSET
 # and --test-only records N1_ONLY_TEST_ONLY; neither can ever be requested.
-ACCEPTANCE_SCOPES = ("S3_N1_CAPTURE", "S2_DIAGNOSTIC_SUPERVISION")
+ACCEPTANCE_SCOPES = ("S4_JOINT_N2", "S3_N1_CAPTURE", "S2_DIAGNOSTIC_SUPERVISION")
 DEFAULT_SCOPE = ACCEPTANCE_SCOPES[0]
+# Each acceptance scope reads ok only for its own file set (C2 ruling 1): the
+# selector's tuples, imported rather than duplicated, so the reader cannot drift
+# from the selection it is asked to accept.
+SCOPE_FILES = {
+    "S4_JOINT_N2": S4_CASES,
+    "S3_N1_CAPTURE": S3_CASES,
+    "S2_DIAGNOSTIC_SUPERVISION": S2_CASES,
+}
 RUN_FIELDS = "headSha,headBranch,event,conclusion,status,createdAt"
 HEAD_PREFIX = re.compile(r"[0-9a-fA-F]{7,40}")
 # `git rev-parse HEAD`: a full SHA-1 or SHA-256 object name.
@@ -126,6 +149,29 @@ def _bind_commit(facts: dict, head: dict | None) -> list[str]:
     return []
 
 
+def _file_set_refusals(scope: str, required: list[str]) -> list[str]:
+    """Why `required` is not exactly the scope's file set (empty when it is).
+
+    Every required nodeid must start with '<file>::' for a file of the scope's
+    set, and every file of that set must contribute at least one nodeid, so a
+    19-node S3 record cannot read as S4 (the N2 file is missing) and a 22-node
+    S4 record cannot read as S3 (the N2 file is foreign).
+    """
+    files = SCOPE_FILES[scope]
+    prefixes = tuple(path + "::" for path in files)
+    refusals = [f"required nodes do not match the {scope} file set: missing {path}"
+                for path, prefix in zip(files, prefixes)
+                if not any(node.startswith(prefix) for node in required)]
+    foreign = []
+    for node in required:
+        path = node.split("::", 1)[0]
+        if not node.startswith(prefixes) and path not in foreign:
+            foreign.append(path)
+    refusals += [f"required nodes do not match the {scope} file set: foreign {path}"
+                 for path in foreign]
+    return refusals
+
+
 def evaluate(dest: Path, *, expect_scope: str = DEFAULT_SCOPE,
              head: dict | None = None) -> tuple[bool, dict]:
     """Read one downloaded artifact; return (ok, facts).
@@ -187,6 +233,8 @@ def evaluate(dest: Path, *, expect_scope: str = DEFAULT_SCOPE,
                             f"{facts['required_nodes']} required nodes")
         refusals += [f"junit {key}={junit[key]}"
                      for key in ("failures", "errors", "skipped") if junit[key] != 0]
+    if valid_required and required:
+        refusals += _file_set_refusals(expect_scope, required)
     refusals += _bind_commit(facts, head)
     facts["refusals"] = refusals
     return not refusals, facts
@@ -201,7 +249,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="refuse unless the run's headSha starts with this "
                              "7-40 hex prefix (any case)")
     parser.add_argument("--expect-scope", choices=ACCEPTANCE_SCOPES, default=DEFAULT_SCOPE,
-                        help="the only record scope that reads ok (default: %(default)s)")
+                        help="the only record scope that reads ok, and the file set its "
+                             "required nodes must cover exactly (default: %(default)s)")
     args = parser.parse_args(argv)
     head = run_head(args.run_id)
     head_sha = head.get("headSha") if isinstance(head.get("headSha"), str) else ""
