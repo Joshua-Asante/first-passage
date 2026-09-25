@@ -390,9 +390,10 @@ give the replacement as "none proposed" and explain why.
 
 **E2 — Custom artifact transport.**
 - *Prevents:* truncated or substituted artifacts, and unauthorized reads. Today `campaign_protocol.permitted()`
-  gives the `client` role only `FETCH_PLAN_CHUNK`, and gives the checkpoint operations (member reads of the
-  capture family and retained inputs, and private staging) to the `g5` role only (`campaign_protocol.py:15-28,90-95`;
-  spec §3 `FETCH`, "per artifact privacy").
+  gives the `client` role only `FETCH_PLAN_CHUNK` among artifact reads (its other operations are `SUBMIT_E1` and
+  `STATUS`), and gives the checkpoint operations (member reads of the capture family and retained inputs, and
+  private staging) to the `g5` role only (`campaign_protocol.py:15-28,90-95`; spec §6 `FETCH`, "per artifact
+  privacy").
 - *Cheaper:* read-only files with a manifest of content hashes, published atomically, **plus an owner and mode
   (or ACL) per artifact class that reproduces today's role split**: plan chunks readable by `qclient`;
   checkpoint members, retained inputs and private staged artifacts readable only by `qg5`, never
@@ -491,9 +492,12 @@ grep -rn "DEPLOYMENT_GO\|layer" ops/c1_rail/*.py
 # Disposition follow-through: each decided row needs its own owner citation, written as the qualified tag
 # AUDIT-2026-09-25-qualification-assurance-contract-delta#<row> ("boundary" = the §5.1 list). One generic
 # backlink does not count, and bare "N1"/"N2" also name stages, so only the qualified tag is searched.
-# Prints UNROUTED for each row no owner cites and exits non-zero; today every row prints (nothing is routed).
+# Covers the boundary and every §5.2 row with a proposed disposition, the Keep rows included (each retained
+# mechanism cites the boundary from its owner if §5.1 is adopted, §5 Structural). X1/X2 are excluded: this
+# note proposes nothing for them. Prints UNROUTED for each row no owner cites and exits non-zero; today every
+# row prints (nothing is routed).
 missing=0
-for row in boundary K3 N1 N2 N3 N4 N5 E1 E2 E3; do
+for row in boundary K1 K2 K3 K4 K5 K6 K7 K8 N1 N2 N3 N4 N5 E1 E2 E3; do
   grep -rqwF "AUDIT-2026-09-25-qualification-assurance-contract-delta#$row" docs/superpowers docs/adr docs/briefs \
     || { echo "UNROUTED: $row"; missing=1; }
 done
@@ -508,7 +512,8 @@ Re-run at S5 freeze and at TB-I3 packetization, the two points where the disposi
 
 - **Status:** `Open`. Open operator decisions: the §5.1 boundary list; N1 (accounting) and N2 (recovery),
   both before S5 freezes (§5 Immediate); whether to record the §0 unanchored inputs. Open owner rulings:
-  K3 closure before F1, and rows N3–N5 and E1–E3.
+  K3 closure before F1; rows N3–N5 and E1–E3; and the Keep rows K1, K2 and K4–K8, each of which cites the
+  boundary from its owner if §5.1 is adopted (§5 Structural).
 - **Routing:** none. Publication is not adoption. This note is not linked from `STATE.md` or from any owner, so it
   gates nothing until the operator routes a row; an owner that takes a row cites it by the §10 tag.
 - **Immediate repair completed:** —
@@ -519,8 +524,9 @@ Re-run at S5 freeze and at TB-I3 packetization, the two points where the disposi
 **Limits.** This is a source and record read, with no execution. Costs are qualitative or line counts, not hours. S4
 branch state is as recorded in its packet §7 on `claude/s4-c2-repair@8f18c57`, not re-run. The PR-level Codex
 review (M-47) of `a81bdf8` returned five findings. This revision answers them in the text: K3 salt entropy, E2
-read isolation, the §10 per-row hook, §0 input provenance, and the §5/§11 routing status. The revision itself has
-not been re-reviewed.
+read isolation, the §10 per-row hook, §0 input provenance, and the §5/§11 routing status. The Codex re-review of
+`4100b3f` returned one finding: the §10 hook omitted the Keep rows. The hook now lists them, and two E2 citation
+slips (spec section, `client` operations) are corrected. This later revision has not been re-reviewed.
 
 ---
 
