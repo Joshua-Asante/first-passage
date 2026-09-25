@@ -44,6 +44,41 @@ a3151f86123487ccacbb40c70562d47ad5446edbe685aa287512f9c1c61d5e6c  feasibility-sc
 # The recovery's private per-file index.
 bf9803484e9b6e83dfce0781f7ee83a09b50c547c7883b9dc7e554f26b0d9a5d  recovery-2026-09-24/transcripts/candidates-classified.json
 a8a2f887b9ebb8eaa3ea8160792d2784830224d1a8a049c78b64df0a22068906  recovery-2026-09-24/transcripts/candidates-untracked.json
+#
+# 2026-09-24 — T08 step 1 R3 return (PR #482; docs/briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md §7).
+# Evidence root local_artifacts/t08-r3-2026-09-24/ (1,802 files, all archived): its index, then every digest §7 cites.
+974ea080aaa3dc0a3d421dea7a1dcd15af2786922b2ca8d239513a40edba065a  local_artifacts/t08-r3-2026-09-24/EVIDENCE_INDEX.sha256
+adaa513e8eb096a82158ce5b7db1e7a3bb0d69e88bb82042c778297d8bc27a43  local_artifacts/t08-r3-2026-09-24/pages/F3__ct_docs_tradovate_webhooks.html
+f84d10c1aa95904a6fb6296e3305999b8c57ca992676a7e2dae5b687efcf3e75  local_artifacts/t08-r3-2026-09-24/pages/L2__api_tradovate_overview.html
+a4e4271b900e32387f0b4e21065cb145fd4702664b8e3b645921791e67707adb  local_artifacts/t08-r3-2026-09-24/pages/L3__api_tradovate_main_chunk.js
+88cbc69010e131f5b22ea7989f91453b391741ca34db858f93223477cd696e87  local_artifacts/t08-r3-2026-09-24/pages/L2__api_orders_get-order-lifecycle.html
+176375eb83477b49455d9bf9efacc1ca430e84ed47799c5d565c76a82ce6b9b4  local_artifacts/t08-r3-2026-09-24/pages/L2__api_orders_get-order.html
+816ee11fa8bef55d2605211ac5609820fac9a7346149a0796fc36ab44bf17713  local_artifacts/t08-r3-2026-09-24/pages/L2__app_v1_api_openapi.json
+d6af1d9c9620895e202000bba33e7e5762650133075b02f28b911d9da4111aef  local_artifacts/t08-r3-2026-09-24/pages/L1__api-webhook-trading.html
+f94ef16bd256832948db00c0f3daa783e2af309206aaabf9c411a17b859ed9ac  local_artifacts/t08-r3-2026-09-24/pages/L5__tv_zd_219454917_order_statuses.json
+411c7e629aac4c7df53f726b0af500078d38d60b7b2f938ec8b688b69e880ef8  local_artifacts/t08-r3-2026-09-24/pages/L1__adv-delay-timer.html
+6b1ab99338b3949bc50206c8d3706ec1cf516fb5d67c4f134f02c38946481d25  local_artifacts/t08-r3-2026-09-24/pages/L1__adv-tradovate-atm.html
+7d328ba342e2c82499d306f057ebd0a5134e39084ab967c2869c5e03e3c02f10  local_artifacts/t08-r3-2026-09-24/pages/L1__changelog-xt-versions.html
+8191f9cf8ef8ba86d49aa03bb4feeec70401cee430aa2ed1f088f0bdcd3abb8f  local_artifacts/t08-r3-2026-09-24/F1__MANIFEST.tsv
+229669bc9760daa6b25fa90380bc8c30964d53fbbc7e6f3600e3aa35004c4ff3  local_artifacts/t08-r3-2026-09-24/pages/L2__api_orders_get-all-orders.html
+7124c348a48add68dd4f5e404ffb34750fc970332e43d976e1d75f4ff9404abb  local_artifacts/t08-r3-2026-09-24/pages/L3__community_t6194.json
+1142e6b7f340adacfaf4ac485de099fb03fc78df7ff51f19866592ca6c9f1c1f  local_artifacts/t08-r3-2026-09-24/pages/L1__ct_tradovate_order_types_exits.html
+31f5791742ebfcb3ca011fbd3740adbfdfe58331068b1da0466e4e872626c6b6  local_artifacts/t08-r3-2026-09-24/pages/L1__adv-kill-switch.html
+e0ebea5046fa7060e3d6805faca698eef567e7d0e9e694c3b6f59987c8a14db5  local_artifacts/t08-r3-2026-09-24/pages/F3__ct_docs_tradovate_account-manager.html
+4e7cda3ca1d8fe2a7861e43ca52d0fe70584230468c0cc271808adb97d5fa76e  local_artifacts/t08-r3-2026-09-24/pages/L5__tv_prop_manual_lockout.html
+4a91db885f44d8cebd044ae6552b8c5b7553bc679cf3ee4853fa4dccb69143f0  local_artifacts/t08-r3-2026-09-24/pages/F4__tvsf_Tradovate-API-Access__record.json
+dbc5eaaa70ac4c6b5c14959a037060d2eb9ed76497b14b4bf2ec47f0c355682a  local_artifacts/t08-r3-2026-09-24/pages/L3__community_t2380_how-do-i-access-the-api.json
+21a8e8c7ca328095d0962968f2b13e24e8b293495d9e1dd1448c4c8c665b3247  local_artifacts/t08-r3-2026-09-24/pages/L1__cmd-cancel-replace.html
+# CAP-20260916 09-17 provider pages (pinned in capability-decision.md since 2026-09-17; re-cited by the addendum).
+dd7f839a7ddb2cd70579e5df09ef1f8585772907dd032fd573122ec6ae7e093d  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260917-execution/provider-api-overview.html
+ebba0572199fefe4904c557612f3597cc4cebfd9dc467bc939608f69236c1502  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260917-execution/provider-tradovate-internals.html
+a0000d0d7f47ab62db0e3c27b81ced73a9bec6002fbbfa6e5b133d864d82365c  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260917-execution/provider-cancel-replace.html
+# Corroborating capture CAP-20260916/t08-r3-20260924 (closed PR #479); manifest hashes its 54 files, all archived.
+a56a09cdf02dc378ed2d3ae5eab5cc69650d287373757ac0aa350648cde3fc3c  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/capability-assessment/20260924-t08-r3/manifest.json
+
+# T08 N1 map (2026-09-24, cited by the incident ADR Addendum 2026-09-24 §A4); all 12 files of the directory archived.
+359e98f5466e5facb5ddc1d4d2ac2ae6200822123eb8c89d3b410da670f34315  local_artifacts/t08-r3-2026-09-24/n1-map-2026-09-24/N1_MAP.md
+9eca5f343b7310e5a424765c26b71ae16d6ac2e50f525a03af58e5368f092508  local_artifacts/t08-r3-2026-09-24/n1-map-2026-09-24/INDEX.sha256
 
 # 2026-09-24 — full-E1 recovery packets pinned by the 2026-09-19 handoffs
 # (docs/briefs/handoffs/2026-09-19-full-e1-*.md). Local-only under recovery/; archived to

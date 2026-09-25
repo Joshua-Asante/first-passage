@@ -60,3 +60,5 @@ Any agent action on the account or platform; account identifiers/P&L in any repo
   - S5 scan `4671612a0fcb25d2c3d7042933aba2a5e9f22e055c0a682e34c9bf34c3888f65`, scan output `33c7f5baad15edc4a1edfc0286f535a7ff79090a4dbfecb1387693f938dba95c`.
   - Fly payload `2c57219ef1dc74e87c87f876148ad83a598c8c0f2708526b671ad6d118339037`.
   - Inspected but pre-existing: Cash History windows `7eb70257…61a6`, `a3a8797c…14ab`, `510a086b…21c5`, `43388a17…6e4e`, `880682fb…5393`, `46716321…15de`, probe `a18cd70b…39b4` (E02), and balance `175fd26f…afced` (E01). Their shapes were read, not their values.
+
+**Account-read authorization (2026-09-25, in session, verbatim):** "I authorize the account-side reads." This covers R1–R3 of the [operator session plan](../../notes/2026-09-25-t08-drills-t07-reads-operator-session.md), performed by Joshua per §5 above. R1 covers `Date` meaning and R2 covers query bounds, both from a post-rollover transaction. R3 covers the `Timestamp` offset from a zone-explicit source instant, repeated after 2026-11-01 for the second DST regime. The coordinator rules on R3 source (b) admissibility. No agent account access.
