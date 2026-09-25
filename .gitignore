@@ -289,3 +289,18 @@ workspace_outputs/
 # already wrote here as if it were ignored; it was not until 2026-09-24. Ignoring is not archiving:
 # a pinned file still goes to first-passage-archive per M-41.
 /local_artifacts/
+
+# More root-anchored local-only roots, same class as /local_artifacts/ above (2026-09-24).
+# recovery/ is the untracked, local-only evidence-packet root by definition
+# (scripts/check_boundaries.py exempts it; docs/ltm/README.md retrieval guidance);
+# tmp/ is main-checkout session scratch; root tmp-* files and .zcodeignore are
+# editor/session debris. A 2026-09-24 blanket add in the main checkout staged
+# ~1,115 files / ~94 MB of these precisely because nothing ignored them — M-41:
+# local-only means ignored AND never blanket-added. The staged-debris gate
+# (scripts/gates.yml) is the enforcing half; these rules are the visibility half.
+/recovery/
+/tmp/
+/tmp-*/
+/tmp-*.md
+/tmp-*.py
+/.zcodeignore
