@@ -199,3 +199,22 @@ against the explicit C2 ruling, and closed the later recovery-cleanup fix.
 Review was source-only; test results and Linux acceptance remain coordinator
 responsibilities. Final frozen Windows selections, Linux subsets and two full
 Linux runs remain pending. S4 is not accepted.
+
+### Coordinator acceptance read — Claude Code, 2026-09-25
+
+Read against the [2026-09-22 handoff §3 bar](2026-09-22-full-e1-coordinator-handoff.md#3-acceptance-bar-for-s4-the-s3-lessons-made-checkable) after the [Claude Code continuation transfer](2026-09-25-full-e1-claude-continuation.md). Every fact below was re-read from its record, not from the transfer text.
+
+| Run | Event / tested commit | Record | Record SHA256 | Result |
+| --- | --- | --- | --- | --- |
+| 36180568493 | `workflow_dispatch`, head `8f18c57` | `5afc482b85f64da3afe4f07dd3d37d58` | `9cc8c44aedec42cee4118a6ccb41f1f6f97bff2bc8a13404cb4e5784a9920366` | reader `ok`; 22/22 required, 0 skip; stable, complete, cleanup ok; 2716.9 s |
+| 36181780676 | `pull_request`, merge `fa4f5a6` = `main@d92d828` + `8f18c57` | `feab184ba5e14a0cb799dd57c9b45ef2` | `0a4c752764367d8dd53f98ca75dcc9bb0ed22ef284cf196a4f02e63d24f3204c` | reader `ok`; 22/22 required, 0 skip; stable, complete, cleanup ok; 2729.8 s |
+
+Both carry `qualification_execution_release/v6`, profile SHA256 `5b6828e24c7a23bf1f337f5651dd1d24dc33135236ca3908b63d916ff0f0f2fa` and policy SHA256 `2125102252bcbb4319a32fdae542aac18994466b1ca29fee3840749b878e5fac`, identical to diagnostic C. The `release.json` bytes differ per host install (worker image digests `775e780e…` and `65b0c63c…`), as expected. The required nodes include `test_s4_genuine_joint_pass_reaches_part_a_ready` (asserts `PART_A_READY` and the committing `n2g5` work `COMPLETED`), `test_s4_guardian_death_mid_n2_is_in_doubt_with_no_capture` and `test_s4_n2_g5_unit_death_and_exact_receipt_retry`.
+
+- **Merge-candidate identity.** The local main merge `9422078` has tree `a9c150d2…`, identical to the PR merge commit `fa4f5a6` that run 36181780676 tested. `git diff 8f18c57 <this branch> -- . ':!docs/**' ':!STATE.md'` is empty; only documentation follows the tested bytes.
+- **Windows lines 1–3 and `check`** on `8f18c57`, records re-read: 803/0/0 skips, 80 passed + 1 host-symlink skip, 1703 passed + 1 Linux-only skip, and `check` completed 0/0. All are stable and complete, with before = after = `8f18c57`.
+- **PR checks** on `8f18c57`: both `Qualification execution boundary` jobs, `skills (3.12)`, Semgrep, image, daemon/listener and format passed. Pylint is 8.09/10 per the run 36181780718 log. `pytest (3.11)` (run 36181780658) and `qualification-windows` (run 36181780558) passed; every PR check on `8f18c57` is green.
+- **Independent review.** Cross-vendor session `e636df7f…` closed findings 1, 2 and 4 and the recovery-cleanup fix, and withdrew finding 3 under C2 ruling 5. The reviewer explicitly left ruling 5's "explicit, stable IDs" half unchecked. The coordinator closed it: `test_unsupported_prefix_decision` moved from positional IDs (`stages0-COMPLETE-PASS…` at `e50aa38`) to explicit `ids=[…]`, which QPOL-01 registers by name, together with `test_n1_only_rejects_joint_continuation`.
+- **Disclosed scope** (unchanged): genuine Linux N2 FAIL is not required under ruling 2; `validate_recoveries` retains its v5 literal under ruling 3; result/seal settlement unification is T05's seam.
+
+**Verdict: S4 ACCEPTED (coordinator C2 close)**, subject to one condition: the PR's merge-candidate S2 run on the pushed documentation head must read `ok` with `--expect-scope S4_JOINT_N2`. That read is recorded on PR #501. If it fails, this acceptance is void and S4 returns to diagnosis. This accepts nothing beyond S4. Merge remains the operator's; S5, T05 integration and S8 are not accepted, and there is no N2/Part A production authority, activation, arm or trade.
