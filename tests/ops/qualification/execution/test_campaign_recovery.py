@@ -646,3 +646,39 @@ def test_queued_cancellation_bars_new_reservation_but_settlement_and_negative_fa
     with pytest.raises(ValueError, match='VOID'):
         reserve(store, t=14)
     ExecutionStore(store.store.path)
+
+
+def test_recovery_mid_n2_work_ends_authority_from_the_progression(tmp_path, monkeypatch):
+    """A3 inherited: a restart observing an interrupted N2 work settles it and
+    ends authority from N2_READY; the committed N1 receipt survives as history."""
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    from test_campaign_n1 import snap
+    from test_campaign_n2 import committed_n1, run_work
+
+    instance = committed_n1(tmp_path, monkeypatch)
+    run_work(instance, 'n2work', 'n2_worker')
+    reopened = CampaignStore(ExecutionStore(instance.store.path))
+    scopes = supervisor.work_enrollment('host1', instance.attempt, 'n2work')
+    profile = snap(instance)['profile']
+    observation = encoded(
+        {
+            'schema': 'qualification_campaign_observation/v2',
+            'attempt_id': instance.attempt,
+            'work_id': 'n2work',
+            'clock': json.loads(supervisor.observe_campaign_clock()),
+            'campaign_scope_id': scopes['campaign_slice'],
+            'work_scope_id': scopes['payload_slice'],
+            'cpu_ns': 20,
+            'memory_peak_bytes': 50,
+            'oom_events': 0,
+            'termination_known': True,
+            'orchestration_charge_cpu_ns': profile['orchestration_cpu_ns']['N2'],
+        }
+    )
+    reopened.recover_work(instance.attempt, 'n2work', observation)
+    state = json.loads(reopened.budget_snapshot(instance.attempt))
+    assert state['state'] == 'IN_DOUBT'
+    assert next(w for w in state['works'] if w['work_id'] == 'n2work')['state'] == 'IN_DOUBT'
+    checkpoints = state.get('checkpoints') or {}
+    assert checkpoints.get('N1', {}).get('state') == 'COMMITTED'
+    assert 'N2' not in checkpoints
