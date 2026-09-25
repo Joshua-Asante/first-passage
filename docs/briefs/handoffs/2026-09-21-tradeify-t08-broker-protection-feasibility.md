@@ -147,3 +147,18 @@ There is no clock pressure. The 2026-11-08 four-firm falsifier is discharged by 
    It must name the owners it amends: halt/resume §3 and §4, rail E3, the CAP R3 disposition and the closure-plan outcome table. Any interval it relies on must come from item 2, and must cover documented deferred work (24-hour managed-ATM jobs, GTC bracket exits).
 
 Option c (route change) is not recommended. Every route ends at Tradovate, and §7.4 rules out native API access for the eval.
+
+### 7.8 Operator ruling on the return (2026-09-24)
+Recorded after the return; §7.1–§7.7 are unchanged.
+
+| Item | Ruling (operator, in session, verbatim) | Consequence |
+|---|---|---|
+| §7.7 recommendation | "approve item 1" (item 1 of the coordinator's 2026-09-24 decision list = this section's three-part recommendation) | All three parts adopted, as set out below. Option c (route change) was not adopted. |
+
+1. **Hold live release (option d).** CAP R3 stays blocked, T09 stays unspecifiable and D-broker stays void, as §7.6 says. The hold ends when part 2 or part 3 settles. Engineering (S4–S8), T07, T10 and the provider-neutral T14 work continue; none of them needs the route.
+2. **One narrow vendor question (option b) is authorized.** Joshua sends it from his own support account; no agent contacts a vendor. The draft text is in [the vendor-question note](../../notes/2026-09-24-t08-vendor-question-draft.md). The answer is evidence only when it is written, retained as original bytes under the private root, and hashed; a chat reply that is not retained, or a verbal answer, does not count. One question, one follow-up at most. It must not carry account identifiers.
+3. **Scope the ADR-level amendment in parallel (option a).** The scope is in [the bounded-exposure scope note](../../superpowers/specs/2026-09-24-bounded-exposure-unknown-request-amendment-scope.md). Scoping grants no contract change: the governing owners (halt/resume §3–§4, rail E3, CAP R3, the closure-plan outcome table) stay in force until an amendment is accepted and propagated.
+
+This ruling grants no broker access, route change, drill, order action, arm or spend.
+
+**Follow-up ruling (2026-09-24, in session, verbatim):** "I accept B. You can proceed as scoped." The scope's Q1 is ruled **B** (a permanent worst-case reservation replaces the account block for narrowed-shape unknowns). The scope's §5 steps 2–4 are authorized; acceptance stays with the operator.
