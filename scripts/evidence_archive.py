@@ -11,6 +11,12 @@ The durable copy lives in the private ``first-passage-archive`` repository,
 content-addressed as ``evidence/sha256/<aa>/<digest>`` with one
 ``evidence/INDEX.tsv`` row per archived file.
 
+``put`` writes ``evidence/.gitattributes`` (``* -text``) into the clone so git
+never rewrites the archived bytes' line endings, and the commits it prints must
+run with ``-c core.autocrlf=false``; otherwise a global ``core.autocrlf=true``
+would convert CRLF to LF and the committed blob would no longer hash to its own
+content address.
+
   put <file>...   copy files into a local clone of the archive (verified), then
                   print the commit/push commands; ``--pinned`` archives every
                   pinned file present in this checkout.
@@ -45,6 +51,8 @@ REGISTRY = Path("docs/evidence/PRIVATE_EVIDENCE.sha256")
 ARCHIVE_NAME = "first-passage-archive"
 EVIDENCE_DIR = "evidence/sha256"
 INDEX = "evidence/INDEX.tsv"
+ATTRIBUTES = "evidence/.gitattributes"
+ATTRIBUTES_TEXT = "* -text\n"
 # GitHub rejects pushes carrying a file over 100 MB.
 MAX_BYTES = 95 * 1024 * 1024
 _LINE = re.compile(r"^([0-9a-fA-F]{64})\s+\*?(.+?)\s*$")
@@ -122,22 +130,51 @@ def is_archive_clone(archive: Path) -> bool:
     if not (archive / ".git").exists():
         return False
     url = _git(archive, "remote", "get-url", "origin").stdout.strip()
-    return url.rstrip("/").removesuffix(".git").lower().endswith("/" + ARCHIVE_NAME)
+    # Windows clones record local origin paths with backslashes; normalize first.
+    url = url.replace("\\", "/").rstrip("/").removesuffix(".git").lower()
+    return url.endswith("/" + ARCHIVE_NAME)
+
+
+def ensure_attributes(archive: Path) -> bool:
+    """Pin the evidence tree to ``* -text`` so git never converts line endings;
+    False when a conflicting .gitattributes is already there."""
+    attributes = archive / ATTRIBUTES
+    if attributes.exists():
+        return attributes.read_bytes() == ATTRIBUTES_TEXT.encode("utf-8")
+    attributes.parent.mkdir(parents=True, exist_ok=True)
+    attributes.write_bytes(ATTRIBUTES_TEXT.encode("utf-8"))
+    return True
+
+
+def _remote_ref(archive: Path) -> str | None:
+    """The clone's upstream branch, else origin/HEAD, else None."""
+    ref = _git(archive, "rev-parse", "--abbrev-ref", "--symbolic-full-name",
+               "@{upstream}").stdout.strip()
+    if not ref and _git(archive, "rev-parse", "--verify", "-q", "origin/HEAD").returncode == 0:
+        ref = "origin/HEAD"
+    return ref or None
 
 
 def _remote_blobs(archive: Path) -> set[str] | None:
     """Digests committed on the archive's remote-tracking branch, or None when
     the clone has no upstream to compare against."""
-    ref = _git(archive, "rev-parse", "--abbrev-ref", "--symbolic-full-name",
-               "@{upstream}").stdout.strip()
-    if not ref and _git(archive, "rev-parse", "--verify", "-q", "origin/HEAD").returncode == 0:
-        ref = "origin/HEAD"
-    if not ref:
+    ref = _remote_ref(archive)
+    if ref is None:
         return None
     listed = _git(archive, "ls-tree", "-r", "--name-only", ref, "--", EVIDENCE_DIR)
     if listed.returncode != 0:
         return None
     return {Path(line).name for line in listed.stdout.splitlines() if line}
+
+
+def _committed_sha256(archive: Path, ref: str, path: str) -> str | None:
+    """SHA-256 of the blob as committed at ref — bytes straight from git, so no
+    working-tree line-ending filter applies — or None when git cannot read it."""
+    blob = subprocess.run(["git", "cat-file", "blob", f"{ref}:{path}"], cwd=str(archive),
+                          check=False, capture_output=True)
+    if blob.returncode != 0:
+        return None
+    return hashlib.sha256(blob.stdout).hexdigest()
 
 
 def audit(root: Path, archive: Path, *, verify: bool = False, out=None) -> dict[str, int]:
@@ -149,6 +186,7 @@ def audit(root: Path, archive: Path, *, verify: bool = False, out=None) -> dict[
         print(f"UNVERIFIED — no {ARCHIVE_NAME} clone at {archive}; pass --archive or set "
               f"FP_EVIDENCE_ARCHIVE. {len(pins)} pinned digests unchecked.", file=out)
         return counts
+    ref = _remote_ref(archive)
     remote = _remote_blobs(archive)
     if remote is None:
         print(f"note: {archive} has no upstream branch; ARCHIVED cannot be told from UNPUSHED.",
@@ -158,12 +196,15 @@ def audit(root: Path, archive: Path, *, verify: bool = False, out=None) -> dict[
         local = archive / blob_path(pin.digest)
         if pin.digest in remote:
             state = "ARCHIVED"
+            if verify and (ref is None
+                           or _committed_sha256(archive, ref, blob_path(pin.digest)) != pin.digest):
+                state = "CORRUPT"
         elif local.is_file():
             state = "UNPUSHED"
+            if verify and sha256_file(local) != pin.digest:
+                state = "CORRUPT"
         else:
             state = "MISSING"
-        if verify and local.is_file() and sha256_file(local) != pin.digest:
-            state = "CORRUPT"
         counts[state] += 1
         if state != "ARCHIVED":
             present = (" (bytes present here: run put --pinned)"
@@ -179,6 +220,10 @@ def put(files: list[Path], archive: Path, root: Path, *, out=None) -> int:
     out = out or sys.stdout
     if not is_archive_clone(archive):
         print(f"refused: {archive} is not a clone whose origin is {ARCHIVE_NAME}", file=sys.stderr)
+        return 2
+    if not ensure_attributes(archive):
+        print(f"refused: {archive}/{ATTRIBUTES} exists with other content; "
+              f"it must be exactly \"* -text\"", file=sys.stderr)
         return 2
     index = archive / INDEX
     index.parent.mkdir(parents=True, exist_ok=True)
@@ -213,8 +258,9 @@ def put(files: list[Path], archive: Path, root: Path, *, out=None) -> int:
         print(f"archived {digest[:12]}  {source}", file=out)
     if added:
         print("\nNot safe until pushed:\n"
-              f"  git -C \"{archive}\" add evidence\n"
-              f"  git -C \"{archive}\" commit -m \"evidence: archive {added} file(s)\"\n"
+              f"  git -C \"{archive}\" -c core.autocrlf=false add evidence\n"
+              f"  git -C \"{archive}\" -c core.autocrlf=false commit "
+              f"-m \"evidence: archive {added} file(s)\"\n"
               f"  git -C \"{archive}\" push", file=out)
     return 0
 
@@ -230,7 +276,9 @@ def main(argv: list[str] | None = None) -> int:
     put_cmd.add_argument("--pinned", action="store_true",
                          help="also archive every pinned file present in this checkout")
     audit_cmd = sub.add_parser("audit", help="report each pinned digest's archive state")
-    audit_cmd.add_argument("--verify", action="store_true", help="re-hash archived bytes")
+    audit_cmd.add_argument("--verify", action="store_true",
+                           help="re-hash archived bytes (committed blobs on the remote-tracking "
+                                "ref; working-tree copies for unpushed files)")
     args = parser.parse_args(argv)
     archive = resolve_archive(args.archive)
     if args.command == "audit":

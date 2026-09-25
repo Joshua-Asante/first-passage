@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-23
+**Last curated:** 2026-09-25
 
 Current priorities, dormant cross-session work, and outstanding obligations.
 Read the queue first, then the linked executable plan; campaign records own
@@ -43,6 +43,9 @@ Newest 15 consequences; decision rationale remains with the owner. Older index:
 [archive](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md).
 Retracted verdicts leave this index; their correction stands with its owner.
 
+- **2026-09-25** — Three rulings on the route: Vanguard/Aegis attested to fit the narrowed shape; the T08 vendor question sent (no reply yet); **route-native editions adopted for ORB MNQ (fixed-stop bracket, no trailing) and Striker MYM (entry carrying its stop; one-contract requests)** as a pre-registered K=1 requalification — D-B4 (a) amended to that extent only. Pre-registration owed from the port owner; requalification through the owed production E1. R3 stays NONE, D-broker void, live release held; no drill, access, spend or GO. [Campaign record §59](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25)
+- **2026-09-24** — Build GO for the ratified path-position bracket convention, so T00 can finish P7. Production-feed work stays blocked until T00 returns other than INSUFFICIENT and T10 has assembled the F1 packet. Built at the engine layer only; no G1 artifact role, production source, stage-runner, F1, T00 step 2 or spend is granted. [Build GO and implementation](docs/briefs/phase3-preparation/2026-09-15/schedule-execution-evidence.md#addendum-2026-09-23--path-position-bracket-convention-ratified-2026-09-23)
+- **2026-09-24** — T08 R3 = NONE (no documented unknown-request fence; D-broker void; T09 unspecifiable). Operator adopted the T08 §7.7 recommendation: **hold live release**; one narrow CrossTrade question authorized (operator-sent, written answer retained as evidence); the ADR-level bounded-exposure amendment scoped in parallel. No contract change, broker access, route change, drill or spend. [T08 §7.8](docs/briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24) · [scope](docs/superpowers/specs/2026-09-24-bounded-exposure-unknown-request-amendment-scope.md)
 - **2026-09-23** — T00 step-1 return accepted (INSUFFICIENT). Condition 4 ruled **no**: a T00 screen is not four-firm §4 falsifier evidence, so the 2026-11-08 falsifier needs its own dated re-MC regardless of T00. The path-position bracket timing convention for the qualification replay was ratified the same day ([schedule-evidence addendum](docs/briefs/phase3-preparation/2026-09-15/schedule-execution-evidence.md#addendum-2026-09-23--path-position-bracket-convention-ratified-2026-09-23)); it replaces one P7 blocker only and authorizes no build. No step 2, screen, MC, provider or spend is granted. [T00 rulings](docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23)
 - **2026-09-22** — Deployment-checklist amendment (2026-09-21) §4 ratified: all five decisions adopted as recommended — T00 step 1 authorized (not dispatched); D-feed as a gate on the T00 verdict and the T10 F1 packet; D-broker conditional on T08 R3; D-codex as the review hybrid; D-sequence with a versioned T02 freeze. No provider, access, spend, deployment or arming granted. [Addendum](docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#addendum-2026-09-22--4-dispositions-ratified-2026-09-22--all-five-adopted-as-recommended-and-the-5-correction-applied)
 - **2026-09-21** — S2 accepted as the enforced work boundary (admission and supervised test work on a real Linux host); five enforcement gaps and two external-review P2 findings closed, #436 merged. No statistical dispatch, installed-release activation or S3 work is authorized by it. [Ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s2-budgeted-admission-and-real-linux-work-supervision-2026-09-21)
@@ -55,9 +58,6 @@ Retracted verdicts leave this index; their correction stands with its owner.
 - **2026-09-10** — Operator accepted the selected Tradeify configuration as satisfying queue item 1; configuration-selection work closed and removed from the live queue. Deployment remains separate. [Acceptance](docs/notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure)
 - **2026-09-06** — Root docs narrowed to current routing; STATE owns priorities, campaign plans executable steps, SESSIONS history. [Charter](docs/adr/2026-07-16-root-doc-charter-dedup.md#decision)
 - **2026-09-03** — Off-queue VOLREGIME translation closed at T0, PRE-CONTRACT DROP; no contract. [Ruling](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
-- **2026-09-03** — Select configuration campaign promoted to queue #1; cultivation remains off-queue. [Campaign record](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
-- **2026-09-02** — Portable-edge objective and bounded cultivation campaign approved; no candidate/capital authority. [ADR](docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md)
-- **2026-09-01** — MOC-wake strategy and source-liveness pursuits closed; no candidate opened. [Closure](docs/notes/2026-09-01-next-vet-intake-decision.md)
 
 ## Dormant cross-session threads
 

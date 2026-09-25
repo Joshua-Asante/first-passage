@@ -92,6 +92,36 @@ def test_divergent_slice_attributes_are_refused(tmp_path, monkeypatch):
         campaign_host.install(root, {'run_id': ROOT_ID}, json.dumps({'memory_bytes': 256000000}).encode())
 
 
+def test_slice_limits_written_after_the_directory_appears_are_awaited(tmp_path, monkeypatch):
+    clock = [0.0]
+    polls = []
+    group = None
+
+    def run(command):
+        nonlocal group
+        scope = command[command.index('ssa(sv)a(sa(sv))') + 1]
+        group = tmp_path / 'cgroup' / scope
+        group.mkdir()
+        (group / 'memory.max').write_text('max\n')
+        (group / 'memory.swap.max').write_text('max\n')
+        return 'o "/org/freedesktop/systemd1/job/3"'
+
+    def advance(seconds):
+        polls.append(seconds)
+        clock[0] += seconds
+        # Only a retry can publish the manager's limits. The old one-shot
+        # implementation necessarily sees max/max and fails before this call.
+        (group / 'memory.max').write_text('256000000\n')
+        (group / 'memory.swap.max').write_text('0\n')
+
+    _, root = _fake_host(monkeypatch, tmp_path, run)
+    monkeypatch.setattr(campaign_host.time, 'monotonic', lambda: clock[0])
+    monkeypatch.setattr(campaign_host.time, 'sleep', advance)
+    enrollment = campaign_host.install(root, {'run_id': ROOT_ID}, json.dumps({'memory_bytes': 256000000}).encode())
+    assert polls == [0.05]
+    assert campaign_host._realize_common_slice(enrollment['scope'], 256000000) == {
+        'memory.max': '256000000', 'memory.swap.max': '0'}
+
 def test_foreign_run_identity_is_refused_before_any_side_effect(tmp_path, monkeypatch):
     calls = []
     saved, root = _fake_host(monkeypatch, tmp_path, _realizing_manager(tmp_path, calls))

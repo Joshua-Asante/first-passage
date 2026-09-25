@@ -10,6 +10,8 @@
 **Proposes to amend:** The incident authority interpretation in the halt/resume contract and Phase 5 plan. Retains the no-same-session strategy-reactivation design restriction; no effective contract changes yet.
 **Layer:** execution.
 
+> **Addendum 2026-09-24 (Proposed):** §2's "Unknown entry, add, cancel, close or modification" row is proposed to change for narrowed-shape requests: a permanent worst-case reservation instead of an account block. See [the addendum](#addendum-2026-09-24--bounded-exposure-reservation-for-unknown-requests-proposed). Not effective until accepted and propagated.
+
 ## §0 — Rule 0 reads and verification anchors
 
 Read before authoring:
@@ -143,8 +145,108 @@ git rev-parse HEAD:.claude/skills/brief-authoring/scripts/check_brief.py
 
 These checks validate document structure and source references, not ATM capability or runtime behavior. No runtime or complete gate-suite pass is claimed.
 
+## Addendum 2026-09-24 — bounded-exposure reservation for unknown requests (Proposed)
+
+**Status:** `Proposed`, like the ADR it amends, and under the same §2 effectiveness gate. Nothing below is effective until the operator accepts it and it is propagated to the owners in §A5. Until then every dependent behavior is AMENDMENT_REQUIRED, and the current rule governs: an unresolved entry or add refuses every new risk-add (`book_account_owner.py:1608`, `unknown_order`).
+**Origin:** T08 R3 = NONE ([T08 §7](../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#7-executor-return)): no documented fence exists for an unknown request on the CrossTrade → Tradovate route. Operator rulings 2026-09-24: "approve item 1" (hold live release; vendor question; scope this amendment) and "I accept B. You can proceed as scoped" ([scope](../superpowers/specs/2026-09-24-bounded-exposure-unknown-request-amendment-scope.md), Q1 = B).
+**Rewrites:** §2's row "Unknown entry, add, cancel, close or modification", for the narrowed shape only (§A1). Every other §2 row, §4 and §5 stay as written.
+
+### A0 — Rule 0 reads
+
+| Source | Anchor | What it establishes |
+|---|---|---|
+| `ops/c1_rail/book_account_owner.py` | `_ordinary_unknown_orders_db` :768–798; admission :1606–1622 | Today's account fence: any entry/add attempt that is `UNKNOWN`, or not resolved by an accepted terminal, refuses every risk-add. Capacity is reserved before dispatch (`Reserve`). |
+| `ops/c1_rail/book_policy.py` | `CapacityLedger` :570–; `BOOK_LEGS` :179–196 | Reservations count against the account micro cap until released; four legs; this addendum changes no constant, allocation or sizing law. |
+| `core/dd_protection.py` | `DD_TRIGGER`/`DD_SCALE` (frozen, import-guarded) | This addendum does **not** feed held reservations into the protection rule's equity input (§A2 rule 4). |
+| [Halt/resume contract](../spec/2026-09-14-tb-s3-halt-resume-contract.md) | §3 ¶2, §4 ¶1–2 | "no unresolved requests"; "unresolved owner cannot be overridden"; a different protocol needs "a concrete separately reviewed amendment" (this one). |
+| [Rail extension spec](../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md) | E3 row; §2 S1–S5; R-B3 L2(a)–(g) | "Each unresolved request owns an account block"; the order-shape contract. |
+| [CAP-20260916](../briefs/phase4-preparation/2026-09-16/capability-decision.md) | R3 row; N1 table; Addendum 2026-09-24 | R3 NONE; N1 rows UNPROVEN. |
+| [Closure plan](../superpowers/plans/2026-09-16-self-service-capability-closure.md) | Step 2 outcome table | Row "Not found, timeout…": preserve and block. |
+
+### A1 — Scope: the narrowed shape
+
+The reservation replaces the account block only for an **exposure-creating request of the narrowed shape**: a single market or stop entry (or add) for **exactly one contract**, carrying its own native stop in the same request (CrossTrade `place` with `stop_loss` → one Tradovate `placeoso`), sent without `delay=`, ATM fields, trailing fields, `cancel_after` or copier/multi-account fan-out, from the runtime's own client. Every other request shape keeps today's rule unchanged.
+
+**Why one contract.** The N1 map (§A4) found the bracket created with the entry in one broker call, but Tradovate activates the stop on the entry's **first fill** and sizes it to that fill. Quantity filled later is covered only by CrossTrade's after-the-fact repair. A one-contract request fills in one print, so its stop covers the whole fill. For more than one contract, quantity × stop distance is not a bound the broker enforces. A multi-contract intent can still be sent as that many one-contract requests; each one is its own narrowed-shape request with its own reservation.
+
+**Admission precondition (hard):** the narrowed shape is admissible only while CAP records (i) the entry-and-bracket single-call creation and (ii) first-fill activation for a one-contract request, each with a retained source. Without both, an unknown entry's worst case is unbounded and this addendum grants nothing.
+
+**Residual inside the bound (accepted by this rule, not hidden):** there is always a broker-side interval between a fill and its stop reaching Working, and a stop leg can reach a rejected or ended state while the position stays open. Rule 3's gap allowance must cover the activation interval. A stop that fails to activate is an unexplained, unprotected position, which rule 6 routes to attended intervention. In that state the exposure is bounded by the attended response, not by the reservation. §A6 makes that a falsifier to measure, not an assumption.
+
+### A2 — The rule
+
+1. **An unknown narrowed-shape request holds a reservation, not an account block.** Its original attempt, identity and contracts stay owned exactly as today (no resend, no speculative cancel or repair, no release on absence, flatness, elapsed time, empty reads, restart or operator acknowledgment).
+2. **The reservation is permanent until evidence.** It is released only by (a) a uniquely correlated outcome under the closure plan's first two rows, or (b) option A: a written, retained vendor bound on all deferred work for this shape, plus a margin, elapsed with no effect observed in the window. Nothing else releases it, across sessions, restarts and account days.
+3. **Worst-case charge.** Each held reservation carries a worst-case loss: its quantity × (distance from the intended entry to its attached stop + the gap allowance) × point value, computed from the request's own retained fields. For a stop entry, the entry level is the stop-entry price; for a market entry, the reference price in the intent plus the gap allowance.
+4. **Admission check (new, account-level).** A new risk-add is admitted only if the sum of all held worst cases plus the new request's own worst case stays within the account's room to the venue drawdown floor, less the reserve margin. This is an admission gate in the account owner. It is **not** an input to `dd_protection` and never alters the protection rule's equity, trigger or scale. With no held reservations the check is the existing admission unchanged, so the qualified normal path is unaffected. (To verify at implementation: a replay with no unknowns produces byte-identical admission decisions.)
+5. **Micro-cap accounting.** A held reservation keeps its contracts in `reserved` for its leg's symbol, as today.
+6. **Unexplained later effects are incidents.** Any position, working order or fill that no owned operation explains, on any symbol, triggers the §2 protection/state-failure row (immediate attended intervention). An observed effect never releases a held reservation, because no fill can be uniquely correlated to an unknown request (T08 §7.3 blockers 1–2). It becomes an additional identified exposure alongside the reservation, which may double-count. Double-counting is deliberate.
+7. **Unknown non-entry requests** (amend, cancel, close, attach, flatten): the §2 row "Protection identity, quantity, ownership … uncertain/failed" applies. That means immediate attended intervention, with no autonomous protection claimed. New risk-adds on the affected leg stay refused until attended reconciliation establishes its position and working orders from fresh evidence. An unknown cancel of a resting entry leaves that entry's reservation held under rule 2, as S4 already requires.
+8. **Exhaustion.** When the held worst cases leave no room for any leg's minimum request, automated risk-adds stop by arithmetic. No waiver, reset or operator acknowledgment restores room; only rule 2's evidence does.
+
+### A3 — Figures
+
+The gap allowance, the reserve margin and the definition of "room to the venue drawdown floor" (intraday-enforced trailing, per `lesson_tradeify_trail_enforced_intraday`) are load-bearing numbers. They are bound from [load_bearing_numbers.md](../load_bearing_numbers.md) at candidate binding (checklist T16), not written here. Until bound, rule 4 is AMENDMENT_REQUIRED.
+
+### A4 — Fit with the book (scope Q3)
+
+**Source.** A documentary N1(a)–(g) map, 2026-09-24. Read-only; no login or order action. Retained privately at `local_artifacts/t08-r3-2026-09-24/n1-map-2026-09-24/` (`N1_MAP.md` SHA-256 `359e98f5466e5fac…`, directory index `9eca5f343b7310e5…`; 11 content files incl. 7 new public Tradovate help-centre captures with URL, time and hash). 43 of 45 quotes re-verify byte-for-byte against the retained pages; the 2 misses are JSON `–` escape artifacts on a status-definition page, not load-bearing. The decisive facts (single-call OSO creation, first-fill activation and sizing, the activation interval, the plain-Stop bracket) sit on the CrossTrade internals page CAP already cites (`adaa513e8eb096a8`) and on `1142e6b7f340adac`. No vendor text is reproduced here. The map is documentation only: it qualifies nothing, and every row stays UNPROVEN in CAP until traced.
+
+**Per-primitive result on this route** (S = documented supported, K = unknown until a drill, U = documented unsupported):
+
+| Primitive | Result | Note |
+|---|---|---|
+| Market entry; resting stop entry, L2(a); bracket at entry, L2(b) | S (creation only) | Acceptance is not rest or fill. |
+| Atomic native modify, L2(c) | K | Whether the old stop survives a rejected modify is unread. |
+| Full close, L2(d) | K | A liquidate is documented as a request, not a guarantee. |
+| Partial/scoped close, L2(d) partial | U | Leaves working orders in place; a reversed position is possible (inference). |
+| Residual cover on partial entry fills, L2(e) | U | First-fill sizing; later quantity covered only by CrossTrade repair. |
+| First attach to an open fill, L2(f) | U | Only a cancel-then-place composite exists. |
+| Native activated trailing, OCO-linked, L2(g) | U | The bracket stop is a plain Stop; the only activated trail is CrossTrade-managed (CAP 09-17 finding re-confirmed). |
+| Close-time crossed-level exit preserving FIFO ownership | U/K | — |
+| Cancel's effect on suspended bracket legs; exit-side partial fills | K | Unread. |
+
+**Per-leg fit (facts for the operator; the addendum makes no strategy change):**
+
+| Leg | Fits with every exposure-creating request in the narrowed shape? | What falls outside |
+|---|---|---|
+| ORB MNQ | **No**, on L2(g) alone | Its bracket carries trailing parameters. Otherwise it fits: entries and adds are one contract. |
+| Striker MYM | **No** | It enters bare and attaches later (L2(f) U). Multi-contract entries. Close-time exits U/K. |
+| Vanguard MGC | **Undetermined** | Protection cases aren't public (private port). Quantities up to 2 need per-contract requests. |
+| Aegis 6J | **Undetermined; no for full cover as one request** | Protection cases aren't public. 3–8 contracts need per-contract requests. The breakeven move is an L2(c) modify (K). The takeover is a non-entry composite. |
+
+**Consequence (stated, not decided).** The largest blockers are **not caused by this addendum**. L2(e), L2(f) and L2(g) are unsupported on this route for normal-path trading whatever posture governs unknowns, and CAP recorded L2(g) as unsupported on 2026-09-17. What this addendum adds is the one-contract request rule. As publicly declared, no leg is shown to trade on this route with every exposure-creating request in the narrowed shape. The rail spec (S2, D-B4) forbids a substitute expression without requalification. Whether to requalify changed expressions (for example a fixed-stop ORB bracket, or a Striker entry carrying its stop), or to reject the route, is an **operator decision outside this addendum**. It is recorded as the scope's Q3 outcome.
+
+*Correction, 2026-09-25 (operator rulings; prior text preserved above):* the per-leg table is superseded as follows. **Vanguard MGC** and **Aegis 6J**: fit — operator-attested ("yes and yes" to a fixed stop in the same order and one-contract expressibility); private ports unread by any agent; L2(c) and the takeover composite stay K. **ORB MNQ** and **Striker MYM**: the operator adopted route-native editions (ORB fixed-stop OSO bracket without trailing; Striker entry carrying its stop, one-contract requests) for pre-registered K=1 requalification. Owner: [campaign record §59](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25). This corrects §A4's fit facts only; §A1–§A3 and the addendum's Proposed status are unchanged, and the §A1 admission precondition still needs a retained trace.
+
+### A5 — Propagation on acceptance (not applied)
+
+On acceptance, each owner receives a dated addendum carrying the text below. No owner text is edited before acceptance.
+
+| Owner | Place | Replacement or addition |
+|---|---|---|
+| Halt/resume contract | §3 ¶2 | Add: "An unknown narrowed-shape request held under the bounded-exposure reservation (incident ADR Addendum 2026-09-24, §A2) does not prevent recovery completion; it remains held and charged. Every other exclusion in this paragraph stands." |
+| same | §4 ¶1–2 | Add: "A reservation-held unknown is not an 'unresolved owner' for resume, provided §A2 rule 4 admits. This addendum is the separately reviewed amendment §4 names." |
+| Rail extension spec | E3 row | Add: "For a narrowed-shape exposure-creating request (incident ADR Addendum 2026-09-24 §A1), the unresolved request owns a permanent worst-case reservation instead of an account block. All other shapes keep the block." Acceptance case: two narrowed-shape unknowns; a third request is admitted iff §A2 rule 4 holds; an unknown non-entry request still blocks its leg. |
+| CAP-20260916 | R3 row | Dated addendum: "R3 remains NONE as a fence finding. Under incident ADR Addendum 2026-09-24 the consumer outcome for narrowed-shape unknowns is a held reservation; admissibility depends on the OSO-atomicity row." |
+| Closure plan | Step 2 outcome table | New row beside "Not found, timeout…": "Narrowed-shape exposure-creating request, outcome unknown → hold a permanent worst-case reservation (incident ADR Addendum 2026-09-24 §A2); no resend, no release without evidence." |
+| Account owner code (T09/TB-I3 scope, after acceptance) | `_ordinary_unknown_orders_db` / admission | Split narrowed-shape unknowns out of the refusal into the §A2 rule 4 check; keep every other unknown refusing. |
+
+### A6 — Falsifiers
+
+- If CAP cannot record the attached stop as atomic with the entry, the narrowed shape is inadmissible and this addendum grants nothing (§A1).
+- If any documented vendor mechanism can turn a narrowed-shape request into a larger or unprotected exposure (quantity growth, stop removal, reversal), the worst-case charge is not a bound. Reject the addendum for that shape.
+- If the no-unknowns replay's admission decisions differ from today's (§A2 rule 4), the check is not inert on the normal path. Fix it before acceptance; never accept it as an economic change.
+- If a one-contract request can fill in more than one print, or its stop can activate for less than the filled quantity, the one-contract premise fails. Reject the addendum.
+- If attended detection plus response to a failed stop activation (§A1 residual) cannot be demonstrated within the room rule 4 leaves, the reservation is not a bound in that state. Measure it at T13 (attended operations) before any live use; never assume it.
+
+### A7 — Forbidden under this addendum
+
+Releasing a reservation on flatness, elapsed time (except option A's retained vendor bound), empty reads, restart or acknowledgment; feeding held reservations into `dd_protection`; resending; admitting a non-narrowed shape under the reservation; treating an observed later fill as correlated to an unknown request; writing the §A3 figures anywhere but their owner.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-09-17 UTC | Record operator-directed incident amendment and conditional ATM/thin-bridge assessment | Joshua + Codex |
+| 2026-09-24 UTC | Addendum (Proposed): bounded-exposure reservation for unknown narrowed-shape requests, after T08 R3 = NONE and the operator's Q1 = B ruling | Joshua (rulings) + Claude (text) |
