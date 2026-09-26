@@ -3940,6 +3940,8 @@ Vanguard and Aegis keep their declared expressions, which ruling 1 attests alrea
 
 **Forbidden under this ruling.** Editing any locked Pine or `core/strategies` artifact; treating the editions as qualified, selected or deployable; screening more than the one pre-registered expression per leg; re-opening the 09-10 protection/capacity selection; any drill, order action, adapter code, broker access, provider work or spend; inferring D-broker back to life (it stays void under T08 R3 = NONE until an amendment is accepted).
 
+*Amended 2026-09-25 by [§60](#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25):* the clause "reading a private port by any agent" is lifted for the four accepted Pine sources and their accepted runtime ports, read in place in the primary checkout under §60's rules. Every other item in this paragraph stands. The operator-attestation labels recorded above stay accurate as history: those ports were unread when the ruling was made.
+
 **Not granted by this section:** deployment, arming, activation, statistical dispatch, T09 specification, production feed, or any operator GO beyond the three rulings above. Live release stays held under T08 §7.8 part 1.
 
 **Board write:** STATE decision index, 2026-09-25 row → this section. Propagation pointers: T08 §7.8 follow-up (2026-09-25); scope note Q3 outcome; addendum §A4 dated correction; vendor note status SENT; venue-edition ledger two `CANDIDATE` rows.
@@ -3965,3 +3967,22 @@ locked parameters, public-source restrictions or operational authority. It grant
 no source modification, private-strategy execution, contract acceptance or route
 qualification. Vanguard's technical finding and all other outstanding
 qualifications remain for subsequent work; this entry resolves access only.
+
+## §60 — Agent read access to the accepted book's Pine and runtime ports (2026-09-25)
+
+**Operator direction, 2026-09-25, in session (verbatim):** "i also want agents to be able to read the pine locally, from all 4 strategies". Asked two scoping questions, the operator chose **"Pine + ports"** (lift §59's no-read clause for the four Pine files and their pinned runtime ports) and **"Main checkout only"** (one canonical private copy in the primary checkout; no copies in worktrees).
+
+**Why this matters now.** Several open questions turn on private source behavior, and until now only the operator could read it. For example, whether Vanguard's accepted bracket sets trailing parameters (the conflict recorded in §6.7 of the REST route assessment return, [first-passage#499](https://github.com/Joshua-Asante/first-passage/pull/499)) can be settled by an agent reading the source.
+
+**Decision.** Any agent working for the operator may **read** the eight files listed in [`core/strategies/BOOK_SOURCES.sha256`](../../../core/strategies/BOOK_SOURCES.sha256), in place in the operator's primary checkout. The four Pine sources were byte-copied from the operator's Downloads drops into the gitignored `core/strategies/book/`. The four accepted runtime ports are read where they already live; Striker's accepted body is the corrected generation, not the default port. Every pin matches `ops/c1_rail/book_policy.py` and `ops/c1_signal_daemon/book_adapters.py`, verified with `sha256sum` on 2026-09-25.
+
+**Rules that stay in force (unchanged by this section):**
+
+1. **Read in place.** Never copy these files into a worktree, clone, sandbox or scratch directory, and never pass a directory containing them as `glm_agent` `workdir`. Never send their contents to Z.ai, GLM or any other external service. Worktree agents read them by the primary checkout's absolute path.
+2. **Never commit or reproduce.** Public-clone posture (AGENTS.md) is unchanged: no Pine source, port body or parameter value enters a tracked file, PR, issue or artifact. Findings are stated as behavior ("the bracket sets trailing parameters"), not as code or values.
+3. **Never edit.** Locked parameters stay immutable. The locked-Pine hook still applies. Neither port generation is overwritten.
+4. **Reading is not authority.** It grants no drill, order action, adapter change, requalification result, deployment or GO. A reading that contradicts a prior attestation or ruling is reported to the coordinator. Operator-attested facts recorded before this date (for example §59 Ruling 1) are not silently rewritten.
+
+**Not changed:** §59's other prohibitions; the venue-edition pre-registration owner (still the operator for the §59 editions, although agents may now read the source to help draft it); the private status of every other Pine and port in the repository.
+
+**Board write:** STATE decision index, 2026-09-25 row → this section. Pointers: §59 forbidden-list amendment above; AGENTS.md public-clone posture; `core/strategies/BOOK_SOURCES.sha256`.

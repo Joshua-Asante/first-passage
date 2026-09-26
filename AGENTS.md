@@ -192,6 +192,12 @@ or place trades. Existing task authority, integrity checks and public-clone
 restrictions still apply. This operator direction supersedes earlier campaign or
 handoff wording reserving these reads to the operator.
 
+Handling rules from [campaign §60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)
+apply to every such read. The accepted book's four Pine sources and runtime ports are pinned in
+`core/strategies/BOOK_SOURCES.sha256`. Read them in place in the operator's primary checkout; worktree
+agents use that checkout's absolute path. Never copy them into a worktree, commit or quote their bodies
+or values, edit them, or pass them to `glm_agent` or any external service.
+
 ### Vendor-data integrity gate
 
 [Manifest integrity ADR](docs/adr/2026-05-10-manifest-integrity-gate.md) owns the
