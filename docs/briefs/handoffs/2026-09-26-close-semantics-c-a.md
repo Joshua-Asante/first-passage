@@ -72,18 +72,21 @@ Account access, credentials, order actions, drills, vendor contact, spend, contr
 The coordinator relocates the directory to the primary checkout.
 
 **Findings.**
-- **M questions.** All nine drill-plan M questions are `OPEN`, and none is `CONFLICTING`. §1.1a elements (a)–(e) are all `OPEN`.
-- **No no-reversal mechanism is documented.** The residual-risk statement (§3 of the note) therefore covers every element.
+- **M questions.** All nine drill-plan M questions are `OPEN`, and none is `CONFLICTING`. The supplementary scope question S is `CONFLICTING` (fix pass). §1.1a elements (a)–(e) are all `OPEN`.
+- **No no-reversal mechanism is documented.** The residual-risk statement (§3 of the note) therefore covers every element. It includes rows for a close on a flat position (M8) and for cross-leg cancellation scope (S).
 - **Documented facts:**
-  - A full close is one Tradovate `liquidateposition` request. It is quantity-less, cancels the contract's working orders and closes the position.
+  - For the **webhook** `closeposition`, a full close is one Tradovate `liquidateposition` request. For the REST close this is an **inference** (note F1; D-2).
+  - The request is quantity-less, cancels orders and closes the position.
   - Tradovate calls it "not a guarantee".
   - Bracket children are not tied to the position.
   - Several other actors can liquidate the same symbol.
-- **Contradictions.** There is no trace, so there is no trace contradiction. There is one documentary inconsistency, D-1: CrossTrade's generic command text says a close cancels "account-level" orders, while its Tradovate rows and Tradovate's own text say the cancellation is contract-scoped. The note resolves it to contract scope and reports it. It does not stop C-a.
+- **Contradictions.** There is no trace, so there is no trace contradiction. There are two documentary inconsistencies, and neither stops C-a:
+  - **D-1:** CrossTrade's documents disagree on scope. Its generic command text says "account-level", and the Tradovate note's "full parity" opening carries that over. Its Tradovate notes and Tradovate's own text say contract. S is classed `CONFLICTING`. The first return's precedence settlement via CR03 is withdrawn, because CR03 covers the destinations page only.
+  - **D-2:** the REST page labels a partial-close example `liquidate_position`, while the webhook table sends a partial close as a `placeorder`.
 
 **Routed to the coordinator (nothing edited outside the permitted outputs):**
 1. Under packet §1.1 and drill plan CR-3, (a)–(c) remain `OPEN` after M. X-3 can therefore be authorized only as part of the operator's decision on the residual-risk statement.
-2. Packet §1.1's C-a row says liquidation cancels "the OCO children". The sources say it cancels all of the contract's working orders, and Tradovate adds "not a guarantee" (note §4.4).
+2. Packet §1.1's C-a row says liquidation cancels "the OCO children". The sources say it cancels at least all of the contract's working orders, and on one CrossTrade reading account-level orders (S, `CONFLICTING`). Tradovate adds "not a guarantee" (note §4.4).
 3. **Candidates for the GC-7 actor inventory** (drill plan §0.1):
    - the Tradovate platform's timed exit-and-cancel function (CS22);
    - firm-side Tradovate automatic liquidation (CT12, CT13).
@@ -92,4 +95,21 @@ The coordinator relocates the directory to the primary checkout.
 4. **X-3 read additions** (not adopted): read the lifecycle of the liquidation order and of both children, and record whether their command and report rows carry timestamps (note §5).
 5. **Draft vendor question** (note §6) for the operator's decision. It is not sent.
 
-**Not done:** account access; vendor contact; drills or order actions; spend; contract or owner edits; private strategy sources; `.env`; GLM or other external model services.
+6. **Evidence index at relocation.** The fix pass cited `ct_webhooks_commands_close-position.html.txt` lines 19, 20, 48 and 50, and `ct_api_positions_post-close-position.html.txt` lines 125, 140, 151, 168 and 180. It also cited R25 `…destinations.raw.txt:63` and R24 `F2__corpus__api_rest-api-endpoints_orders_place-oso.md:47` (`6e263dc983e2eba7…`). All of these are cited directly and are not in `QUOTE_INDEX.txt`. The index's "(generic, NT8-oriented text)" annotations on CS18 and CS19 are inference labels. The evidence directory was not edited in the fix pass.
+7. **§1.1 first failure condition.** It is pending, not met on this evidence. Public documentation does not establish the mechanism, and the vendor question is unsent (note §3, "Choices"). This return owns no route-stop determination.
+
+**Fix pass (2026-09-26, coordinator review findings; refute-first).** Every finding was verified against the retained captures, and all eight were applied:
+1. S was reclassed `CONFLICTING` with both sides cited. CR03's scope is stated and CR03 no longer settles D-1. The NT8 reading is labelled as an inference. A residual row covers cross-leg scope. CS19 is carried into M8.
+2. M8 was added to (c). A flat-position residual row was added, and the CS07 reading is labelled as an inference.
+3. F1's REST step was restated as an inference and D-2 was added. Vendor item 9 was added.
+4. The OCO sibling cancel is now sourced to Tradovate's `placeOSO` note (OSO:47). CT03 is marked as a transfer from the platform ATM context.
+5. The "Choices" field now lists the four packet options, the CR-4/CC-2 constraint, and the pending status of §1.1's first failure condition.
+6. Same as item 1; it is applied through the S row, the M8 row and the scope row.
+7. Same as item 2.
+8. The (d) bound now quotes R-POSTURE's scope (one attended session, then explicit review before extension) as context only, not as an acceptance.
+
+Two refinements were made on verification:
+- CrossTrade's sequencing disclaimers (CS13; destinations :63) compare the NT8 and Tradovate destinations, not REST with webhooks. The note says so, rather than treating them as a disclaimer of the REST path.
+- M8 stays `OPEN` rather than `CONFLICTING`, because no source says that orders **are** cancelled when the position is flat. CS19 is recorded there as the evidence from the disputed side of S.
+
+**Not done:** account access; vendor contact; drills or order actions; spend; contract or owner edits; private strategy sources; `.env`; GLM or other external model services; edits to the evidence directory.
