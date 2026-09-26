@@ -148,3 +148,15 @@ C2 needs figures, C1, C3 and C4 need evidence, and C5 is a ruling. None can be d
 - **Q3.** Under B, should a held unknown's reservation that blocks a full-size Aegis intent (80 of 80) be accepted as a capacity consequence, or excluded from takeover arithmetic? The current code refuses the intent or leaves the takeover unable to complete.
 - **Q4.** H and ε are the operator's to set. Without them, BE-1 cannot be evaluated.
 - **Q5.** For add eligibility, does a split with an unknown child count as a "closed" submission sequence (UB-4)?
+
+---
+
+## Coordinator review (2026-09-26): ACCEPTED AS INPUT
+
+Reviewer: the coordinating session. Artifact: `8350157`. The comparison meets its card: both postures under the same six scenarios, symbolic figures, break-even conditions instead of a failure rate, burden compared, and D19 kept separate. The open questions were checked against source:
+
+- **Q1 — confirmed; contract conflict for gate B.** Halt/resume §2 halts on any "uncertain transport/order outcome". §A5 amends only §3 ¶2 and §4. As written, B gives *resume after an attended return to flat*, not continuous admission, while §A10 rule 4′ reads as continuous admission. The operator must choose: amend §2 as well (B continuous), or accept B as resume-after-flat. That choice changes BE-5 and B's burden.
+- **Q2 — confirmed as a code/spec divergence; a gate-C/T09 item before the ORB freeze.** The spec's S1 one-bar cut makes an order UNKNOWN when there is **no order-level evidence** for a bar (the kernel refreshes `last_evidence_at`). The production fence (`book_account_owner.py:787-797`) counts any accepted entry or add with **no accepted terminal** one bar after preparation. Rail S2/RC-9 cancels a resting entry older than one bar unless it is re-issued, and the allocation map (C08) found the ORB port cancels only at session end. The resting-entry lifecycle, the fence semantics and ORB behavior must be reconciled and traced. Under B, this also decides when exceptional mode begins (rule 4′ is defined by this fence).
+- **Q3 — takeover condition confirmed; capacity arithmetic plausible, not traced.** `book_capacity.py:277-278` requires displaced legs to hold neither confirmed nor reserved capacity. Whether a held reservation blocks a full-size Aegis entry is recorded as a stated consequence to accept or reject under B.
+- **Q4 (H, ε) and Q5 (a split with an unknown child counting as "closed") go to the operator decision list.**
+
