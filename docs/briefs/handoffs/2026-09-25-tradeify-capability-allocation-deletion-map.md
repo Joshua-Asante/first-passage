@@ -96,6 +96,28 @@ For this documentary assessment, inspect the final diff and relative links, reco
 
 No edits to `STATE.md`, `AGENTS.md`, governing contracts, policy constants, Pine/private ports, lifecycle state, code, deployment configuration or the roadmap. No deletion, migration, alert creation, account/credential access, order action, vendor communication, spend, statistical dispatch, deployment or arm. No assumption that simplification waives qualification. Further implementation and operational evidence require their own accepted boundary and authority.
 
+## 5a. Dispatch refresh (2026-09-26)
+
+**Dispatch.** Operator direction 2026-09-26, in session: "Allocation map first", as the first step toward the integrated B–D decision packet. **Coordinator:** the coordinating Claude Code session (Opus 5.5), which accepts or corrects the return. **Executor:** one assessor subagent of that session, run in its own git worktree on branch `claude/tradeify-allocation-map`. **Dispatch revision:** the commit that adds this section. It is recorded in §6 at return, and the executor verifies that its checkout's `HEAD` descends from it. The committed-handoff rule is met by this commit ([Gate A A13](2026-09-25-crosstrade-rest-route-assessment.md#611-gate-a-factual-disposition)). §0–§5 stay the scope record. This section supersedes only the prerequisites listed below, and where they conflict, this section governs.
+
+**Refreshed prerequisites (supersede §0 "Prerequisites" and the Vanguard item in §3 D):**
+
+1. **Baseline:** `main` `24e3843`, plus the unmerged gate-B branch at `7fe2891` ([PR #515](https://github.com/Joshua-Asante/first-passage/pull/515)), which this branch is stacked on.
+2. **The REST assessment is accepted with changes at Gate A** ([§6.11](2026-09-25-crosstrade-rest-route-assessment.md#611-gate-a-factual-disposition), accepted text at `5037ba4`). Cite accepted findings A1–A14 by ID, with their classes and limitations, and do not re-derive them. In particular:
+   - **A3:** no REST no-send guarantee. The future outcome classifier distinguishes a local pre-dispatch refusal, a remote refusal after dispatch, and a positive lookup.
+   - **A4:** L2(c), L2(d), cancellation of suspended children and the takeover composite are unverified (K).
+   - **A5:** L2(e), L2(f), L2(g) and scoped close are contradicted by the route (U). ORB/Striker have an adopted direction but are not discharged.
+   - **A7:** late-reject detection needs a poll.
+   - **A8:** CrossTrade coverage repair is a third-party actor.
+   - **A10:** account-configuration actors are unverified.
+   - Use the **drill map by behavior and interface**. The REST reads D4 and D5 are not authorized.
+3. **Vanguard:** runtime `TRAILING ACTIVE` is accepted (A6), and the operator has ruled the **fixed-stop edition** ([campaign §59 Ruling 4](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-4--vanguard-mgc-fixed-stop-edition-on-this-route-2026-09-26); [pre-registration](../pre-registration/2026-09-26-tradeify-vanguard-fixed-stop-edition-prereg.md), DRAFT). The §3 D Vanguard-trailing item is **resolved**: do not re-read to establish it. Treat three legs as route-native **candidate** editions (ORB, Striker, Vanguard). Aegis keeps its declared expression, attested to fit, with L2(c) and the takeover still K. Edition rules still marked OWED are open behavior decisions for §3 D, not facts.
+4. **Unknown-request posture:** the current preserve-and-block rule governs (`book_account_owner.py:1608`). Option B is **Proposed**. Its POLICY rows UB-1, UB-3, UB-8 and UB-9 were **ruled 2026-09-26 as direction** ([incident ADR §A9.1](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md)); the other rows are recommendations. Map both postures and label every B-dependent allocation `PROVISIONAL-B`. In particular, map UB-10 (one obligation record per child, extending the attempt journal) and UB-1's account-wide loss model as candidate controller responsibilities, each with its own vendor comparison.
+5. **Feed back into B.** Any allocation that forces or offers a behavior change goes into §3 D as a gate-B item (question, affected rows, current rule, proposed change, requalification owed). It is not adopted.
+6. **Unchanged:** the private-source rules (§60; Phase-0 paragraph), the §3 single-artifact rule (result at `docs/notes/2026-09-25-tradeify-capability-allocation-deletion-map.md`, plus this handoff's §6 return only), and every §5 exclusion. No external model or service receives private sources. No GLM.
+
+**Checkpoint delivery:** the §0 checkpoint is recorded inside the result artifact, as §0 requires, and in the §6 return. The executor continues independent work without waiting.
+
 ## 6. Executor return
 
 Not dispatched. On return, record named executor/coordinator, dispatch revision, result path, inspected sources, checkpoint, three verdicts, unresolved decisions/evidence, verification performed and four-state completion status (`DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`). The coordinator records acceptance or required corrections before any successor work. Cross-seat transfer must satisfy the committed-handoff rule. This draft is committed but names no executor and pins no dispatch revision, so it is not an execution order.
