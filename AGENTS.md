@@ -39,7 +39,7 @@ and [lab/ARCHIVED.json](lab/ARCHIVED.json).
 - Disarm **before** absolute `armed_until` expiry; lapse-while-armed previously caused a host crash-loop.
 - Live spend requires M1 `RESOLVED` **and** separate operator GO. Every armed session needs its own GO.
 - **No agent may place a trade.** Weekly account-preservation trades are operator-placed; deadline in [STATE](STATE.md#scheduled-forward-triggers).
-- The arming interlock calls `validate_c1_monitoring_acceptance.validate(require_resolved=True)` in `ops/c1_rail/c1_rail_arm.py`; a forged or status-only artifact fails closed.
+- The arming interlock in `ops/c1_rail/c1_rail_arm.py` calls `validate_c1_monitoring_acceptance.validate(require_resolved=True)`, which checks the artifact's structure and `RESOLVED` status and `operator_signoff` for presence only, not a signature: a status-only file fails, a complete forged `RESOLVED` file passes. It gates only the arm helper; the rail host's boot gate (`c1_rail_http_server.load_config`) does not check M1, so editing the `/data` config bypasses it. The host-side activation gate is owed at TB-I3 ([admission](docs/adr/2026-09-12-tradeify-book-protection-instance-admission.md)). `--acknowledge-m1-unresolved` overrides a structurally valid unresolved artifact (operator-ratified discretion; writes an `arming_deviation` record); agents may invoke it only through the operator-act prompt ([ruling 2026-09-26](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-26)).
 
 **Account:** used, not pristine; canned-payload and weekly token trades have filled, but no strategy-signal fill has occurred. `order_id` idempotency is **DISPROVEN**; every payload gets a fresh tag. Private account figures stay private.
 
