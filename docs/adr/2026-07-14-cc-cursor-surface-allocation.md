@@ -130,7 +130,9 @@ about which vendor runs the session, so all four survive the retirement unchange
   already do). Tests the worker writes are additional evidence, never the acceptance basis — a
   worker that writes both the feature and its only tests can encode the defect into green.
   For contract-driven code the card carries the invariant table (M-38); for anything with orders,
-  positions or shutdown semantics it carries the state model (M-39).
+  positions or shutdown semantics it carries the state model (M-39). Since 2026-09-26 the checker
+  requires named acceptance tests on any card whose authority block grants `worktree.write` or
+  `research.run`, whatever seat it declares ([Addendum 2026-09-26b](#addendum-2026-09-26b)).
 - **Return contract:** a worker branch (`glm/*`, `codex/*` or `claude/*`), a PR with tests green, and a
   four-state status — `DONE` / `DONE_WITH_CONCERNS` / `NEEDS_CONTEXT` / `BLOCKED`. **No commit
   or merge without the operator.** `DONE_WITH_CONCERNS` is adjudicated by the coordinator before
@@ -145,6 +147,9 @@ about which vendor runs the session, so all four survive the retirement unchange
   [`scripts/check_handoff_authority.py`](../../scripts/check_handoff_authority.py) enforces the
   rules under *Action classes* below. Required of every worker card authored after this revision
   is ratified; historical cards are not retrofitted and the checker skips a card with no block.
+  The checker binds the grants to the seat the card **declares**; it never binds that seat to the
+  agent that executes the card. That binding is the coordinator's pre-dispatch read plus the
+  executive review, on every route ([Addendum 2026-09-26b](#addendum-2026-09-26b)).
 
 **Scoped exception — the lightweight dispatch issue** (2026-08-29 addendum #2, retained in shape
 by §8; scoped 2026-09-16 after post-merge review; re-scoped 2026-09-20 to the six-item contract).
@@ -287,11 +292,11 @@ Rules:
 
 | Act | Enforcement point | Status 2026-09-25 |
 |---|---|---|
-| card grants | `check_handoff_authority.py` (`handoff-authority` gate): a worker card must name its parent; parents must be inside the repository, are checked recursively, and a cycle is refused; a parent without a block narrows nothing beyond the seat | enforced for cards with a block |
-| merge | the operator merges on GitHub; the ruleset makes every change to `main` a PR with a green strict `skills (3.12)`; best effort: [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges in the forms it recognises (MCP tool; `gh pr merge` or a `gh api` merge from the Bash or PowerShell tool), only when the call pins the head SHA, and denies the unpinned forms it recognises | **not enforced server-side against an agent:** the ruleset does not stop a write credential from merging a green PR, so the limit is the operator not giving an agent a merge-capable credential (operator-held); the hook is a best-effort prompt for Claude Code only |
+| card grants | `check_handoff_authority.py` (`handoff-authority` gate): binds a card's grants to the seat the card **declares** and never binds that seat to the executor; a worker card must name its parent; parents must be inside the repository, are checked recursively, and a cycle is refused; a parent without a block narrows nothing beyond the seat; any card granting `worktree.write` or `research.run` names its acceptance tests whatever its seat ([2026-09-26b](#addendum-2026-09-26b)) | enforced for cards with a block; seat-to-executor binding is the coordinator's pre-dispatch read plus the executive review (human, not code) |
+| merge | the operator merges on GitHub; the ruleset makes every change to `main` a PR with a green strict `skills (3.12)`; best effort: [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges in the forms it recognises (MCP tool; `gh pr merge` or a `gh api` merge from the Bash or PowerShell tool), only when the call pins the head SHA, and denies the unpinned forms it recognises | **not enforced server-side against an agent:** the ruleset does not stop a write credential from merging a green PR, so the limit is the operator not giving an agent a merge-capable credential (operator-held); the hook is a best-effort prompt for Claude Code only. **That limit does not hold for GLM workers today:** they run as the operator's user with the operator's `gh` credential; isolation ruled 2026-09-26, host change **OWED** ([2026-09-26b](#addendum-2026-09-26b)) |
 | auto-merge | the repository setting `allow_auto_merge: false` (GitHub refuses to enable auto-merge on any PR); CI holds no write credential (2026-08-29 addendum #1 bar); best effort: the hook denies the auto-merge forms it recognises | **enforced server-side** by the repository setting (verified read-only 2026-09-25); the setting itself is operator-held |
 | push to `main` | GitHub ruleset 21071355 `main-protection` on `refs/heads/main`: PR required, `skills (3.12)` required and strict, non-fast-forward and deletion blocked, empty bypass list; best effort: the hook denies the `git push` forms it recognises whose destination is `main` (named, bulk, matching `:` or glob) | **enforced server-side** for every credential (bypass list empty, `current_user_can_bypass: never`, verified read-only 2026-09-25) |
-| rail deploy | where the Fly credential is held; best effort: the hook asks on `fly deploy` / `flyctl deploy` (any Fly app) | **no server-side enforcement**: nothing on Fly's side refuses a deploy from a session that holds the credential; operator-held credential + best-effort prompt only |
+| rail deploy | where the Fly credential is held; best effort: the hook asks on `fly deploy` / `flyctl deploy` whose target is a live execution-path app (`c1-rail`, `c1-signal-daemon`) or cannot be determined, naming the app, and is silent for other apps ([scoped 2026-09-26](#addendum-2026-09-26)) | **no server-side enforcement**: nothing on Fly's side refuses a deploy from a session that holds the credential; operator-held credential + best-effort prompt only |
 | rail arm | `c1_rail_arm.py` interlock (`validate(require_resolved=True)`): refuses to arm unless the M1 artifact validates as RESOLVED, or `--acknowledge-m1-unresolved` is given against a structurally valid unresolved artifact (writes an `arming_deviation` record); best effort: the hook asks on `--arm` (never on `--disarm` / `--status`) | **enforced** for M1 by the interlock; the per-session operator GO is not checked by code (operator-held + best-effort prompt) |
 | trade | CrossTrade / Tradovate credentials never present in an agent environment; no hook can see it | operator-held |
 | spend | the operator's payment method; task-routing GO for a cloud dispatch | operator-held |
@@ -313,6 +318,7 @@ hook's current behaviour unchanged meanwhile: whether an agent may use
 denied; the Fly deploy scope (today every `fly deploy` asks, not only the rail's); whether an
 `--admin` merge is denied or askable (today a pinned one asks); and how a card's seat is bound to
 the worker seat.
+**Operator rulings 2026-09-26 on these four:** [Addendum 2026-09-26](#addendum-2026-09-26); the seat-binding question was ruled later that day in [Addendum 2026-09-26b](#addendum-2026-09-26b).
 
 <a id="operator-decision-packets"></a>
 **Operator decision packets (2026-09-25).** Anything that needs the operator arrives as one
@@ -700,6 +706,57 @@ python -m pytest -q tests/scripts/test_check_handoff_authority.py tests/scripts/
 # Expected: 0 violation(s); all tests pass.
 ```
 
+<a id="addendum-2026-09-26b"></a>
+## Addendum 2026-09-26b — operator rulings: seat binding and GLM credential isolation
+
+**Source.** Operator rulings of 2026-09-26, each chosen in the babysit session from analysed
+options. The text above is not rewritten; it gains one sentence each in handoff-contract items 5
+and 7, and a correction to the card-grants and merge rows of the enforcement-point table, all
+pointing here. Ratifies on operator merge of the PR that carries it.
+
+**A. Seat binding — "human read + one gate".**
+
+- *What the code does* (read on `main` at `7211fa1`): `check_handoff_authority.py` checks a
+  card's grants against the seat the card **declares** (A4, A5) and nothing binds that seat to
+  the agent that executes the card. Before this addendum a worker card declared as
+  `seat: coordinator` took the coordinator's grant and skipped A6 and A7.
+- *Rule of record:* the binding of a card to its executor is the coordinator's pre-dispatch read
+  plus the executive review, on every route — GLM / Z Code, Codex, subagents, the Claude
+  launcher and the lightweight dispatch issue.
+- *One mechanical gate, fail-closed:* rule A6 (named, non-empty acceptance tests) applies to
+  **any** card whose authority block grants `worktree.write` or `research.run`, whatever seat it
+  declares. The list is `acceptance_required_for` in
+  [`scripts/seat_authority.yml`](../../scripts/seat_authority.yml); a registry without it, or
+  naming an unregistered capability, does not load and the checker exits 2. A7 (a named parent)
+  stays worker-only.
+- *Deliberately not built:* path conventions, launcher checks and dispatch ledgers. They are
+  deferred until a mislabelled card is recorded; if one is, the preferred next step is a
+  return-side check on `glm/*` and `codex/*` PRs.
+- This rules the last question the operator-act paragraph above leaves open ("how a card's seat
+  is bound to the worker seat"), and supersedes any record of it as still under consideration.
+
+**C. GLM credentials — "isolate GLM".**
+
+- *Decision:* GLM workers must run without the operator's merge-capable `gh` credential and
+  without the operator's Fly configuration — a separate OS user or a sandbox with no keyring
+  and no `~/.fly` — because `glm_agent`'s `run_bash` is an unrestricted shell running as the
+  operator's user.
+- *Status: **OWED**, operator action.* The host-level change is the operator's to make; this
+  repository changes no host configuration. Until it is done, **GLM workers hold merge- and
+  deploy-capable credentials**: the merge row's limit (no merge-capable credential in an agent's
+  hands) and the rail-deploy row's (where the Fly credential is held) do not hold for a GLM
+  worker, and the best-effort hook reads Claude Code tool calls, not commands run inside
+  `glm_agent`.
+- *Discharge:* a dated line here recording the isolation as verified from the GLM worker's own
+  user (no `gh` authentication, no `~/.fly`).
+
+**Verification.** `tests/scripts/test_check_handoff_authority.py` (2026-09-26 section: a
+coordinator, escalation or worker card granting `worktree.write` or `research.run` without named
+tests is refused; an empty list is refused; a non-writing non-worker card is not; the registry
+list is pinned, required and validated), run test-first through the launcher, and
+`python scripts/check_handoff_authority.py --all` (0 violations; no committed card carried a
+block on 2026-09-26).
+
 ## Verification
 
 ```bash
@@ -710,6 +767,30 @@ git show 0bcd6699fd683a18b9493e25bb053797dcf4fafe   # prior decision text, unedi
 ```
 
 Mechanical form checks do not establish semantic equivalence or ratification.
+
+<a id="addendum-2026-09-26"></a>
+## Addendum 2026-09-26 — operator rulings on the operator-act hook's open questions
+
+**Source.** The operator, in the 2026-09-26 babysit session, answering the four questions the
+2026-09-25 revision left open (§Decision, the paragraph "The operator-act hook is best effort")
+plus one wording correction. Quotes are the operator's words. The ratified
+text above is not rewritten; the open-questions paragraph gains a pointer here and the
+rail-deploy row of the enforcement-point table is updated to the ruled scope.
+
+| Question | Ruling (verbatim) | Effect |
+|---|---|---|
+| May an agent use `--acknowledge-m1-unresolved`? | "agents can use the arming override" | **Permitted.** An agent may invoke `c1_rail_arm.py --arm --acknowledge-m1-unresolved '<reason>'`; the hook **asks** (never denies) on it, as on every `--arm`, under a prompt that says M1 is unresolved, that the helper accepts the override only against a structurally valid unresolved artifact, and that it writes an `arming_deviation` record. Unchanged: the override remains the operator-ratified discretion of the [monitoring ADR's Addendum 2026-07-31b](2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-07-31b--the-two-knowing-deviations-past-the-m1-gate-recorded-and-the-gates-trigger-is-proposed-to-move-from-send-to-arm) (cited by `plan_arm` and recorded in each deviation event); every armed session needs its own operator GO, and answering the prompt is that act (§Decision rule 2); no agent places a trade. The hook is best effort (ruling 2026-09-25), so this is a **permission, not an enforcement claim**. |
+| Fly deploy scope | "deploy prompt shouldn't fire more than it needs to" | `rail.deploy` asks only when the target app is on the live execution path — `c1-rail` (listener) and `c1-signal-daemon`, the `app` names in `deploy/c1_rail/fly.toml` and `deploy/c1_signal_daemon/fly.toml` — and names the app in the prompt. It is silent for other apps and for invocations that deploy nothing (`--help`). If the target cannot be determined (no `-a`/`--app`, no readable `--config`/`-c` fly.toml, no fly.toml in the effective working directory, `FLY_APP` set, or a directory the hook cannot see), it **asks** (fail closed). Codex review of #511 at `b9d71f2`: a fly.toml is trusted only when nothing the call runs before the deploy, beside it (pipeline, background job) or in a loop with it may have changed the environment or files it reads; a variable assignment, a file-writing redirection, a prefix or wrapper on the deploy, or any program off a short read-only list (`cat`, `echo`, `ls`, `grep`, directory changes …) leaves only `-a` to name the target, so `sed -i … fly.toml && fly deploy` and `export FLY_APP=…; fly deploy` ask. A directory change unanchors only the deploys that run after it (every deploy, when the call has a loop or defines a function, whose body runs where it is called). A relative `--config` beside a working-directory argument is read against both directories (`fly deploy --help` does not say which flyctl uses) and names an app only when both agree, so the READMEs' `fly deploy . --config deploy/…/fly.toml` names its app. Capability id stays `rail.deploy`; no registry change. |
+| `gh pr merge --admin` | "askable admin merges" | **Record only.** A pinned `--admin` merge stays askable (the hook's current behaviour); an unpinned one stays denied as `pr.merge_unpinned`. |
+| How a card's seat is bound to the worker seat | "Let's consider how a card is bound to the worker seat" | **Not decided — under consideration.** No mechanism is adopted; `check_handoff_authority.py` behaviour is unchanged. The question stays open for the operator. *Superseded the same day: ruled in [Addendum 2026-09-26b](#addendum-2026-09-26b) (human-read binding plus A6 on cards granting `worktree.write` or `research.run`).* |
+| Activation-gap wording (AGENTS.md, Live-execution posture) | "correct the wording in the activation gap" | The bullet that read "a forged or status-only artifact fails closed" is corrected to what the code does, verified on `main` at `7211fa1`: `validate_c1_monitoring_acceptance.validate(require_resolved=True)` checks structure and `RESOLVED` status, and `operator_signoff` only for a non-empty `operator` field (no signature), so a complete forged `RESOLVED` file passes; a status-only file fails. The interlock gates only the arm helper: the rail host's boot gate (`c1_rail_http_server.load_config`) checks `events_log_path` and `armed_until`, not M1, so arming by editing the `/data` config bypasses it. The host-side activation gate is owed at TB-I3 ([book-protection instance admission](2026-09-12-tradeify-book-protection-instance-admission.md)). The bullet also states the override and this addendum's agent permission. The rail-arm row's "enforced for M1 by the interlock" above is read with these limits. |
+
+**Verification.** `tests/scripts/test_guard_operator_acts.py` (2026-09-26 section: live-path
+deploys ask and name the app, other apps and other-app configs are silent, an undeterminable
+target asks, a moved or wrapped directory fails closed, a deploy after a possible file or
+environment change asks while one before a later `cd` or write does not, a deploy in a function called after a
+`cd` asks, a backquote substitution is read rather than dropping the command to raw patterns, the M1-override arm
+asks and never denies; `LIVE_FLY_APPS` pinned to the two fly.toml files), run test-first through the launcher.
 
 ---
 
@@ -727,3 +808,5 @@ Mechanical form checks do not establish semantic equivalence or ratification.
 | 2026-09-04 | Addendum RATIFIED — `notify-cursor.yml` auto-ping disabled | Joshua |
 | 2026-09-15 | **Revision RATIFIED** — Cursor retired as a worker surface; decision rescoped to Claude Code + Codex; six addenda consolidated into the §8 disposition table; `2026-08-14-cc-cursor-autonomous-loop.md` superseded in full. Prior text at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`. §4 falsifier restated; two 2026-08-29 revert triggers restored and one false retention claim corrected after adversarial review. | Joshua (in-session ratification) + Claude Code |
 | 2026-09-25 | Revision proposed — action classes, authority block (item 7), approval bound to its object, `IN_DOUBT`, decision packets, enforcement-point table, seat-name mapping. Prior text at blob `cbe2a5886e3b6588b68294ac801f88acde3637b5`. Ratifies on operator merge. | Joshua (direction) + Claude Code |
+| 2026-09-26 | Addendum — operator rulings on the four open hook questions (M1 override permitted through the prompt; deploy prompt scoped to live-path apps; `--admin` merges stay askable; card-to-seat binding under consideration) and the AGENTS.md activation-gap wording correction. Rail-deploy enforcement row updated to the ruled scope; open-questions paragraph gains a pointer. | Joshua (rulings) + Claude Code |
+| 2026-09-26 | Addendum 2026-09-26b — operator rulings: seat binding (human-read binding of seat to executor; A6 named acceptance tests on any card granting `worktree.write` or `research.run`), staged-debris 2 MB allowlist ceiling and force-added-ignored check, GLM credential isolation recorded as an owed operator host action. Card-grants and merge enforcement rows corrected; Addendum 2026-09-26's seat-binding row gains a supersession pointer. | Joshua (rulings) + Claude Code |
