@@ -293,4 +293,8 @@ This clears the vendor-quote reason for holding acceptance. Accepting the return
 
 The dispatch-without-commit breach (§6.1) and the §1-versus-§59 private-port conflict (§6.9) also stay open for the coordinator.
 
-**T09 remains blocked** until three things hold: this return is accepted; the named decisions are accepted (Vanguard determination; option B or another amendment); and the route is ruled viable for bounded design. The proposed corrections above are **not applied** by this entry.
+**T09 remains blocked** until the four conditions of the [checklist addendum](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-26--route-feasibility-is-the-first-deployment-decision) hold:
+1. this return is accepted;
+2. the named decisions are accepted (the Vanguard determination; option B or another amendment);
+3. the route is ruled viable for bounded design;
+4. the TradingView/CrossTrade capability allocation and deletion map is accepted. This return is evidence for that map. The proposed corrections above are **not applied** by this entry.
