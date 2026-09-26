@@ -75,7 +75,7 @@ If the pre-registration rules an override-only realization for ORB (trailing rem
 
 ## 3. ORB MNQ edition: steps
 
-- [ ] **Remove trailing (ORB-1).** No bracket carries trailing fields on the base or on adds. Entry stays a resting stop entry, one contract per base or add, with its fixed stop in the same request.
+- [ ] **Remove trailing (ORB-1).** No bracket carries trailing fields on the base or on adds. Entry stays a resting stop entry. As with STR-3, splitting a base or add into one-contract requests happens at the rail after admission, not in the port, so the ORB port still emits one intent per base or add or add, with its fixed stop in the same request.
 - [ ] **Fixed stop at entry (ORB-2):** the level as ruled.
 - [ ] **Exit that replaces the trail (ORB-3):** use only the existing exit the pre-registration names. Add no new exit logic. If the ruled exit doesn't cover a case you find in the source, stop and return.
 - [ ] **Post-entry stop changes (ORB-4):** as ruled. If the answer is "none", confirm that no path amends the stop after entry.
@@ -86,8 +86,8 @@ If the pre-registration rules an override-only realization for ORB (trailing rem
 
 - [ ] **Entry carries its stop (STR-1).** The market entry carries its protective stop in the same request. There is no bare entry and no later `ATTACH`, and the delayed-attach path is removed.
 - [ ] **Stop level at entry (STR-2):** as ruled. If the ruling is "the level the declared port would issue, computed on the entry bar", show where that value is available on the entry bar. If it isn't available there, stop and return; do not substitute.
-- [ ] **One-contract split (STR-3):** N one-contract requests, each carrying its own stop, with the ruled maximum N and any cap.
-- [ ] **Split outcomes (STR-4):** confirmed fills alone establish position. Keep accepted-but-unfilled, conclusively rejected and unknown requests distinct, with their required reservations; acknowledgement alone is not a fill. Do not resend an unresolved request on absence of a fill.
+- [ ] **One-contract split (STR-3):** the port keeps emitting **one** intent per signal, which the rail admits and sizes once (`BookLegExecution.admit`, `ops/c1_signal_daemon/book_bundle_execution.py:142-182`, which refuses a second entry on a non-empty leg). The split into one-contract requests is a post-admission rail dependency (T09 / TB-I3, incident ADR §A8 rules 9–10), **not port work**. Do not make the port emit N requests. Record the ruled maximum N and any cap as the admitted-quantity bound; the port applies no split logic.
+- [ ] **Split outcomes (STR-4):** rail-side. The port's `on_execution` handling of partial and refused outcomes stays as declared unless STR-4 rules a port-visible change. Record any such change; do not add per-request tracking to the port.
 - [ ] **Close-time crossed-level exits (STR-5):** as ruled.
 - [ ] **Post-entry stop changes (STR-6):** as ruled. The declared Striker amends every bar (breakeven, tightening, ratchet), and any amend that remains depends on L2(c).
 - [ ] Every signal condition, pyramid and add-eligibility rule not changed by an STR item stays byte-identical.

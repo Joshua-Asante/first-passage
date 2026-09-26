@@ -65,7 +65,7 @@ Before writing anything, confirm with `git check-ignore -v` that every output pa
   - **VAN-2:** the stop level at entry, as ruled.
   - **VAN-3:** the existing exit named. No new exit logic.
   - **VAN-4:** amend behaviour after entry, as ruled.
-  - **VAN-5:** the split, as ruled.
+  - **VAN-5:** the port keeps emitting **one** intent per signal, which the rail admits and sizes once (`BookLegExecution.admit`, `ops/c1_signal_daemon/book_bundle_execution.py:142-182`, which refuses a second entry on a non-empty leg). The split into one-contract requests is a post-admission rail dependency (T09 / TB-I3, incident ADR §A8 rules 9–10), **not port work**. Do not make the port emit N requests. The ruled maximum is the admitted-quantity bound, and the port applies no split logic.
   - **VAN-6:** partial-acknowledgement and counter behaviour, as ruled.
   - **VAN-7:** breakeven and grace stay inactive.
 

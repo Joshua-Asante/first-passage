@@ -51,6 +51,7 @@ A multi-contract intent is sent as that many one-contract requests, each with it
 | ORB-3 | **What replaces the trail as an exit.** The declared trail closed some trades. State which existing exit now closes them: the fixed stop, an existing target, the scheduled flatten, or another existing rule. No new exit rule is invented here; if none of the existing exits applies, say so, and the edition is a different strategy that needs a fresh decision (§7). | **OWED (operator)** |
 | ORB-4 | **Stop modification after entry.** Does the edition ever amend the fixed stop (per-bar re-issue, breakeven)? If yes, that needs L2(c) native modify, which is K on this route (drill D2). If no, write "none". | **OWED (operator)** |
 | ORB-5 | Adds: each add is one contract with its own stop; adds remain off under protection (inherited). | Fixed by §59 |
+| ORB-6 | **Exit split.** As STR-7, for any multi-contract ORB close (base plus adds, scheduled flatten). | **OWED (operator)** |
 
 ## §4 — Striker MYM edition
 
@@ -62,6 +63,7 @@ A multi-contract intent is sent as that many one-contract requests, each with it
 | STR-4 | **Partial acknowledgement of a split.** Position quantity is established only by confirmed fills, never acknowledgements. Track accepted-but-unfilled requests as working orders with required reservations, conclusively rejected requests under the accepted release rule, and unknown requests with held reservations under the incident ADR. Confirm the edition consumes fill events and does **not** re-send an unresolved request merely because no fill is observed. | **OWED (operator; fill-based position semantics required by book_protocol.py)** |
 | STR-5 | **Close-time crossed-level exits (S3 (d)).** State how they are realized: a market exit of the scope (as declared), unchanged. | **OWED (operator)** |
 | STR-6 | **Stop modification after entry.** Per-bar re-issue of the stop needs L2(c) (drill D2). State whether the edition modifies the stop after entry. | **OWED (operator)** |
+| STR-7 | **Exit split.** A multi-contract close (including close-time crossed-level exits, STR-5, and scheduled flatten) must become one-contract closes under the one-contract rule. State how the rail generates them after admission (not the port), their order and resolution, and the replay treatment. | **OWED (operator)** |
 
 ## §5 — Identity binding (fills at freeze)
 
@@ -105,8 +107,9 @@ The public repository receives identities and behavior shapes only, never privat
 ```bash
 # Status must read FROZEN before any edition replay or E1 run exists
 grep -n '^\*\*Status:\*\*' docs/briefs/pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md
-# No OWED field may remain at freeze; expect no output
-grep -n 'OWED' docs/briefs/pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md
+# No unresolved status may remain at freeze; expect no output.
+# The pattern matches status cells and the replay-choice marker only, not explanatory prose.
+grep -nE '\| \*\*OW[E]D|\(OW[E]D,|— OW[E]D \(' docs/briefs/pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md
 # Both edition ids present in the venue-edition ledger as CANDIDATE
 grep -n 'orb_mnq_fixed_stop_oso\|striker_dj30_mym_entry_with_stop' ops/venue_editions/Tradeify_Select_100K.md
 # No edition Pine or port bodies committed; expect no output
