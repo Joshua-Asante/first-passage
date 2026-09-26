@@ -430,10 +430,13 @@ gates:
   # debris branch. Oversize half is data-derived: the largest tracked file is
   # lab/analysis/mym_breakout_entry_2026_09/results.json (988,529 B); 1 MB cap
   # elsewhere, 2 MB ceiling under lab/analysis/ and lab/archive/ (2026-09-26
-  # ruling: blocks multi-year vendor bar panels, not one-year slices or split
-  # files). Also rejects force-added ignored files (`git check-ignore
-  # --no-index`) among staged adds/copies/renames, paths tracked in HEAD exempt;
-  # in HEAD-tree mode, tracked paths under those two roots.
+  # ruling: files over 2 MB are rejected, which blocks multi-year vendor bar
+  # panels and the larger one-year slices; smaller slices and split files
+  # pass). Also rejects force-added ignored files: judged paths (staged
+  # changes; every HEAD path in HEAD-tree mode) matched against the committed
+  # .gitignore rules only (index or HEAD blobs in a mirror repo -- no working-
+  # tree edits, info/exclude or core.excludesFile), with only the two files in
+  # TRACKED_IGNORED_GRANDFATHERED exempt.
   - id: staged-debris
     tier: always
     cmd:
