@@ -103,10 +103,10 @@ The public repository receives identities and behavior shapes only, never source
 - **No new screen is bought.** The edition requalifies through the production E1 already owed for the book (deployment checklist T10 → T15), under the criteria frozen by the existing owners (Track B umbrella and the full-E1 specification). This file adds no statistic, threshold, depth or seed.
 - **Replay modelling of the split — OWED (operator and coordinator).** Before freeze, state how the qualification replay prices N sequential one-contract requests:
   - (a) all N at the same fill as today's single order (optimistic);
-  - (b) the latency class the rail spec already uses (I8);
+  - (b) a concrete replay algorithm stated here in full: the per-request price and fill rule for request k of N, any delay model, and its frozen inputs. The rail spec's I8 classifies live latency deviation but defines no replay pricing, so naming I8 alone does not satisfy this;
   - (c) another rule stated now.
 
-  *§3a note:* the sibling file's §6 choice is also still OWED, so the two can be decided together. Under the proposed ADR §A8 rule 10, one-contract requests go out sequentially, so (a) would be optimistic by construction, and (b) is the source-consistent option.
+  *§3a note:* the sibling file's §6 choice is also still OWED, so the two can be decided together. Under the proposed ADR §A8 rule 10, one-contract requests go out sequentially, so (a) would be optimistic by construction, and a stated sequential rule under (b) is the source-consistent option.
 
   It cannot be tuned afterwards.
 - **Verdict:**

@@ -25,6 +25,7 @@ This is step 3 of the pre-registration's §8 freeze procedure. The edition imple
 | G2 | Pre-registration VAN-2 to VAN-6, the §4 effective-inputs row and the §6 replay choice are answered in words. No `OWED` remains in §3 or §4, apart from the pin rows this packet fills. | The pre-registration file at a named commit |
 | G2a | Realization and identity-binding scheme are specified (reused pins fixed; new output digests supplied by this packet) under pre-registration §4, including compatibility of the port-embedded Pine identity with the registry. Any required identity-contract change is separately reviewed before dispatch. | Pre-registration at G2 commit; separate identity review if needed |
 | G3 | Operator explicitly authorizes an agent to **create** new private edition files under the paths in §2. §60 grants read access only. | Dispatch message or campaign record |
+| G3b | The TradingView/CrossTrade capability allocation and deletion map is accepted (checklist T09 gate (d)), and it keeps Vanguard's runtime port as the controller boundary. If the accepted allocation delegates this behavior, this packet is withdrawn, not run. | Checklist addendum T09 gate table; allocation map disposition |
 | G4 | The pre-registration is **not frozen**, and no replay or E1 output exists for the edition | Pre-registration Status line; campaign record |
 
 Record the pre-registration commit the executor builds against. If the pre-registration changes after that commit, stop and return; do not reconcile the two.

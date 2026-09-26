@@ -29,7 +29,7 @@ Exactly two new venue-edition expressions, one per leg, each K = 1:
 | ORB MNQ | `orb_mnq_fixed_stop_oso@Tradeify_Select_100K` | The declared ORB expression whose bracket carries trailing parameters |
 | Striker MYM | `striker_dj30_mym_entry_with_stop@Tradeify_Select_100K` | The declared Striker MYM expression that enters bare and attaches protection a bar later |
 
-Vanguard MGC and Aegis 6J keep their declared expressions (operator-attested to fit the narrowed shape, §59 ruling 1).
+Aegis 6J keeps its declared expression (operator-attested to fit the narrowed shape, §59 ruling 1). **Vanguard MGC is qualified:** the [trailing determination](../handoffs/2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return) returned `TRAILING ACTIVE`, so its §59 ruling 1 fit attestation is not current evidence, and it depends on L2(g). Vanguard is handled by its own [edition pre-registration](2026-09-26-tradeify-vanguard-fixed-stop-edition-prereg.md) or by the operator rejecting the leg on this route. This file's freeze inventory must carry that pending decision; it must not treat Vanguard as fitting.
 
 **Unchanged for the whole book (inherited, not re-selected):** legs and allocations; the 1% combined-peak trigger, 40% scale, ORB base unreduced and ORB adds off under protection; 80-micro shared capacity; Aegis-priority takeover ordering; every signal/entry condition of both legs. Only the **order expression** (how protection rides with exposure, and how quantity is split into requests) changes.
 
@@ -82,7 +82,7 @@ The public repository receives identities and behavior shapes only, never privat
 ## §6 — How the editions requalify, and what counts as a result
 
 - **No new screen is bought.** The editions requalify through the production E1 that was already owed for the book (deployment checklist T10 → T15), under the criteria frozen by their existing owners ([Track B umbrella](../handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) and the full-E1 specification). This file adds no statistic, threshold, depth or seed.
-- **Replay modelling of the split (OWED, operator + coordinator).** Before freeze, state how the qualification replay prices N sequential one-contract requests. Options: (a) all N at the same fill as today's single order (optimistic); (b) the latency class the rail spec already uses (I8); (c) another rule stated now. The choice must be written here before any run; it cannot be tuned after.
+- **Replay modelling of the split (OWED, operator + coordinator).** Before freeze, state how the qualification replay prices N sequential one-contract requests. Options: (a) all N at the same fill as today's single order (optimistic); (b) a concrete replay algorithm stated here in full: the per-request price and fill rule for request k of N, any delay model, and its frozen inputs. The rail spec's I8 classifies live latency deviation but defines no replay pricing, so naming I8 alone does not satisfy this; (c) another rule stated now. The choice must be written here before any run; it cannot be tuned after.
 - **Verdict per leg.** PASS: the leg's route-native edition is qualified as part of the book's E1 result. NO-GO: the route is rejected for that leg; **no second expression is tried** under this pre-registration. What happens to the book then (drop the leg, or requalify the book without it) is a new operator decision, not decided here.
 
 ## §7 — Forbidden moves

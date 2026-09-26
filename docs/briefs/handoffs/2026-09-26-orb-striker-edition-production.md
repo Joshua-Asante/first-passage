@@ -27,6 +27,7 @@ This is step 2 of that pre-registration's §8 freeze procedure. The editions imp
 | G1 | Pre-registration items answered in words: ORB-2 to ORB-4, STR-2 to STR-6 and the §6 replay-modelling choice. No `OWED` remains in §3 or §4; the §5 pin rows are exempt, because this packet fills them. | The pre-registration at a named commit |
 | G1a | Realization and identity-binding scheme under pre-registration §5 are explicit: reused pins fixed; new output digests supplied by this packet; embedded Pine identity compatible with proposed registration. | G1 commit; separately reviewed identity contract if needed |
 | G2 | The operator explicitly authorizes an agent to **create** new private edition files under the paths in §2. §60 grants read access only. | Dispatch message or campaign record |
+| G2b | The TradingView/CrossTrade capability allocation and deletion map is accepted (checklist T09 gate (d)), and it keeps these legs' runtime ports as the controller boundary. If the accepted allocation delegates the behavior these ports implement, this packet is withdrawn, not run. | Checklist addendum T09 gate table; allocation map disposition |
 | G3 | The pre-registration is **not frozen**, and no replay or E1 output exists for either edition | Pre-registration Status line; campaign record |
 
 Record the pre-registration commit you build against. If the pre-registration changes after that commit, stop and return; do not reconcile.
