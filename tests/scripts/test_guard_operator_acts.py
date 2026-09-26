@@ -827,3 +827,40 @@ def test_python_cluster_value_is_not_a_module(command):
     # `m`) is read as `-m`. `ops.c1_rail.c1_rail_arm` is then a script path that does
     # not end in `.py`, so nothing arms.
     assert g.classify_command(command) is None
+
+
+# --- 2026-09-25 verifier follow-up on the 4109815694 repair (`--` taken as a value) ---
+
+@pytest.mark.parametrize("command", [
+    DEPLOY + " -ha -- --help=false",
+    DEPLOY + " -hc -- -h=false",
+    DEPLOY + " -ac1 -he -- --help=false",
+    DEPLOY + " -h -a -- --help=false",
+    DEPLOY + " --help --app -- -h=false",
+    DEPLOY + " -h -x -- --help=false",
+    DEPLOY + " -a -a -- -h",
+    DEPLOY + " -a -ha -- --help",
+])
+def test_fly_double_dash_taken_as_a_value_does_not_end_the_flags(command):
+    # Fails if `--` always ends the help scan. pflag lets a value flag with no value in
+    # its own word (`-ha`, `--app`) take the next word even when it is `--`, so the
+    # `--help=false` after it is a flag: help is off and fly deploys. An unknown flag
+    # (`-x`, `-he`) may do the same, so the word after its `--` may turn help off.
+    # And a `--` that a value flag's value already filled (`-a -a --`) does end them.
+    assert g.classify_command(command) == ("ask", "rail.deploy")
+
+
+@pytest.mark.parametrize("command", [
+    DEPLOY + " -h -- --help=false",
+    DEPLOY + " -h -x -- app",
+    DEPLOY + " -a -- --help",
+    DEPLOY + " --image=x --help",
+    DEPLOY + " -e=x -h",
+    DEPLOY + " -xe=v -h",
+])
+def test_fly_help_is_still_read_around_double_dash_and_attached_values(command):
+    # Fails if a `--` that ends the flags stops being read as the end (`-h -- ...`), if
+    # a `--` that `-a` takes as its app name hides the `--help` after it, or if a flag
+    # the guard does not know that carries its value after `=` (`--image=x`, `-e=x`) is
+    # read as taking the next word: pflag never lets a word with `=` take another.
+    assert g.classify_command(command) is None

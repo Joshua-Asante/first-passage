@@ -626,25 +626,46 @@ def _judge_fly(args: list[str]) -> list[Hit]:
     return hits
 
 
+def _fly_readings(arg: str, help_on: bool) -> set[tuple[bool, bool]]:
+    """What the flag word ``arg`` can do, read by `_pflag`: each ``(help, takes the next
+    word)`` pair it may leave. A value flag with no value in its own word (``-a``,
+    ``-ha``, ``--app``) takes the next word, even ``--``. A flag the guard does not know
+    is read both ways, and whatever follows it in a shorthand cluster may turn help off
+    but never on; a word with ``=`` never takes another (pflag reads ``--name=v`` and a
+    shorthand's ``=v`` as the value, and every flag before them in a cluster either
+    takes the rest of the word or none of it)."""
+    parsed = _pflag([arg, ""], _FLY_FLAGS)  # "" stands in for a next word it may take
+    for name, value in parsed.options:
+        if name == "help":
+            help_on = value in _GH_TRUE
+    if not parsed.unread:
+        return {(help_on, _pflag([arg], _FLY_FLAGS).unread)}
+    if not arg.startswith("--"):  # the rest of the cluster after the unknown shorthand
+        bools = {short for short, takes in _FLY_FLAGS.values() if short and not takes}
+        help_on = help_on and "h" not in arg[1:].lstrip("".join(bools))[1:]
+    return {(help_on, False), (help_on, "=" not in arg)}
+
+
 def _fly_help(args: list[str]) -> bool:
-    """Whether cobra prints help and runs nothing: the last help setting before ``--`` is
-    true. Each word is read by `_pflag`, so a help flag counts alone (``-h``,
-    ``--help=<v>``), in a shorthand cluster (``-hac1-rail``) and after a flag that carries
-    its value in its own word (``-ac1-rail --help``). A word the previous word may take
-    as its value (``-a -h``; a flag the guard does not know is read both ways) may turn
-    help off but never on."""
-    help_on, prev = False, ""
+    """Whether cobra prints help and runs nothing: pflag leaves help true. The words are
+    read in order as pflag reads them, following every reading of a flag the guard does
+    not know, so help counts alone (``-h``, ``--help=<v>``), in a shorthand cluster
+    (``-hac1-rail``) and after a value in its own word (``-ac1-rail --help``); a word a
+    value flag takes (``-a -h``) sets nothing, and ``--`` ends the flags only where no
+    value flag takes it (``-ha -- --help=false`` deploys). Help counts only when every
+    reading leaves it true."""
+    states = {(False, False, False)}  # (help, next word is a value, flags ended)
     for arg in args:
-        if arg == "--":
-            break
-        settings = [value for name, value in _pflag([arg], _FLY_FLAGS).options
-                    if name == "help"]
-        if settings:
-            on = settings[-1] in _GH_TRUE
-            maybe_value = _pflag([prev], _FLY_FLAGS).unread  # `prev` may want a word
-            help_on = (help_on and on) if maybe_value else on
-        prev = arg
-    return help_on
+        after: set[tuple[bool, bool, bool]] = set()
+        for help_on, value_next, ended in states:
+            if ended or value_next or len(arg) < 2 or arg[0] != "-":
+                after.add((help_on, False, ended))
+            elif arg == "--":
+                after.add((help_on, False, True))
+            else:
+                after |= {(on, takes, False) for on, takes in _fly_readings(arg, help_on)}
+        states = after
+    return all(help_on for help_on, _, _ in states)
 
 
 def _bulk_push(arg: str) -> bool:
