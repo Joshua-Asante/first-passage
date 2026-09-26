@@ -89,8 +89,7 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   placing the trade and shared an order-screen capture in session (a filled
   MYM market round trip; the capture shows no date and is not committed). This
   is the operator's attestation; the private compliance record was not
-  independently verified. The 09-21→09-25 obligation is covered (the operator
-  reconfirmed placement on 2026-09-26); the next
+  independently verified. The 09-21→09-25 obligation is covered; the next
   bucket is 09-28→10-02 (deadline 10-02), advanced on 2026-09-26.
 - **Earlier record still owed:** week 08-31→09-04 was operator-attested on
   09-04 and restated on 09-05; the exact trade day remains unresolved between
