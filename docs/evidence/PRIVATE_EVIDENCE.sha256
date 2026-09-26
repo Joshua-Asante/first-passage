@@ -79,3 +79,16 @@ a56a09cdf02dc378ed2d3ae5eab5cc69650d287373757ac0aa350648cde3fc3c  lab/analysis/c
 # T08 N1 map (2026-09-24, cited by the incident ADR Addendum 2026-09-24 §A4); all 12 files of the directory archived.
 359e98f5466e5facb5ddc1d4d2ac2ae6200822123eb8c89d3b410da670f34315  local_artifacts/t08-r3-2026-09-24/n1-map-2026-09-24/N1_MAP.md
 9eca5f343b7310e5a424765c26b71ae16d6ac2e50f525a03af58e5368f092508  local_artifacts/t08-r3-2026-09-24/n1-map-2026-09-24/INDEX.sha256
+
+# 2026-09-24 — full-E1 recovery packets pinned by the 2026-09-19 handoffs
+# (docs/briefs/handoffs/2026-09-19-full-e1-*.md). Local-only under recovery/; archived to
+# first-passage-archive from checkpoint 272028e, whose working-tree copies were lost on a branch switch.
+3bfcf1155fa50fa80a2dd40440645ce356cd3954c6dde3b3086bdd09ba16d56e  recovery/full-e1-20260919/full-e1-task1ab-recovered.zip
+54c9947e7ba5c56b4f57ae6b92a00cf51dfc25e8b0a88b351ee7a022d44631d2  recovery/full-e1-20260919/manifest.json
+55ce847ccebad22adb0efabdcccfe6d691376d3bc240d36c4516072af9f68ff2  recovery/full-e1-s1-20260919/full-e1-s1-review.zip
+a6129041940bcb8749c5a0a9a7d72e11ca1323b45f9331faf3d44ff498917c91  recovery/full-e1-s2-20260919/source.zip
+8631c315093f20fcc412dad950873eca250ebe03a915632d1303ec9b37ed7ec9  recovery/full-e1-s2-20260919/manifest.json
+a18d6d376e07fb737967c87f4081e120bc9d77dc1a7672c8f0c20461aa8c1d62  recovery/full-e1-s2-r1-20260919/source.zip
+5de150f268f879f73eb1105309d9eb24337f9900ab8df8fe015cd26a175d9c09  recovery/full-e1-s2-r1-20260919/manifest.json
+736a68541a6adcf5ea9f3625fa47a1beda59435297ea0821a20be0ac2f639e2f  recovery/full-e1-s2-r1-20260919/SHA256SUMS
+a49c7cd74f8670c18aae12f58691b59750c54a0ea9faf6f18031e786e37b9fab  recovery/full-e1-r2b-predispatch-20260919/test_campaign_scheduler.py
