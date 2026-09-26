@@ -29,7 +29,7 @@ This file exists **only for option A**. If the operator chooses B, close this dr
 | `core/strategies/BOOK_SOURCES.sha256`, `ops/c1_signal_daemon/book_adapters.py:51-55` | Current Vanguard pins: Pine `af26899c…`, port `e6a03d04…`. The edition gets new pins; neither current file is edited. |
 | `AGENTS.md` "Public-clone posture" | No Pine source, parameter value or port code appears here. Rules are stated as shapes only. |
 
-The drafting session **did not read** the Vanguard Pine or port; they are not in the cloud clone. Behavioural statements come from the determination return or the public owners above, or are marked OWED.
+The drafting session **did not read** the Vanguard Pine or port; they are not in the cloud clone. Behavioural statements come from the determination return or the public owners above, or are marked OWED. **§3a** adds a later source mapping from a local §60 read, done after drafting.
 
 ## §1 — What is pre-registered
 
@@ -62,13 +62,29 @@ A multi-contract intent is sent as that many one-contract requests, each carryin
 | VAN-6 | **Partial acknowledgement of a split.** Track each of N one-contract requests separately: confirmed fills establish position quantity; accepted-but-unfilled requests remain working orders with their required reservations; conclusively rejected requests follow the accepted release rule; unknown requests retain reservations under the incident ADR. An acknowledgement alone never increments position. Confirm that the edition consumes confirmed fill events and does **not** re-send an unresolved request merely because no fill is observed. For example, two accepted requests with one fill mean one confirmed contract and one working request, not two contracts. The [route note](../../notes/2026-09-25-tradingview-signal-route-evaluation.md) (line 207) records that the add counter advances when an add is proposed, not when it fills; state whether that stays as declared. | **OWED (operator; fill-based position semantics required by book_protocol.py; counter decision remains owed)** |
 | VAN-7 | Breakeven and grace stay inactive, as in the accepted binding. The edition does not enable them. | Fixed (determination §5) |
 
+## §3a — Source mapping of the OWED rules (local §60 read, 2026-09-26)
+
+A local session read the pinned Vanguard port (`e6a03d04…`) and Pine (`af26899c…`) in place under campaign §60, together with public rail code. It maps what the source already constrains for each OWED rule. **Nothing here answers a rule:** each OWED row still needs the operator's words at freeze. Findings are stated as behaviour; no parameter values appear. Port lines are cited `port:N`, Pine lines `.pine:N`, both from the pinned bodies.
+
+| Rule | What the source constrains | Suggested answer (operator decides) |
+|---|---|---|
+| VAN-2 | The fixed stop and the target are price levels set once, at the signal bar (`port:244`). With grace inactive, the declared stop is the level sent from entry. Adds carry the same stop and target levels (`port:269`). | "The declared fixed stop, unchanged, sent with each request." |
+| VAN-3 | Besides the trail, four exits already exist: the fixed stop, the target limit, a stale exit after the maximum hold (`port:276`, `.pine:508`) and the end-of-day flat (`port:278`, `.pine:512`). The drawdown close (`port:231`, `.pine:383`) is display-only in the pinned backtest mode. The Pine header records that historically the realised exits were the stop and the EOD flat, with the trail capturing gains early; the target's contribution is not isolated (`.pine:30-35`, `:167`). | Existing exits cover every case, so no new rule is needed. Removing the trail is a real behaviour change, and E1 measures its effect. |
+| VAN-4 | The port sends a bracket amend on every managed bar (`port:274`). With trailing, breakeven and grace all off, the stop and target never change after entry. The rail compares each amend with the broker-observed bracket (`ops/c1_rail/book_protection_owner.py:594-603`, `book_protection.py:132`): an unchanged bracket becomes `noop` and sends **no broker command** (`unchanged_protection`). The only cost is the protection read that precedes the comparison. | **"None"**: amends continue but never modify at the broker, so L2(c) / drill D2 is not a dependency of this edition. |
+| VAN-5 | The base size is risk-sized from equity and capped by the port's max-contracts input (`port:162-166`). Each add is derived from the base, is at least one contract, and is limited to the declared number of adds (`port:168-173`). Under protection mode the injected quantity rule can give zero, which means no entry. The port emits one intent per entry or add: **no code in `ops/c1_rail` or the daemon splits a multi-contract intent into one-contract requests today**. The incident ADR's proposed §A8 rules 9–10 place splitting at admission (whole-or-nothing, one unresolved request per symbol). | Confirm the cap as declared. Record the split as a shared rail dependency (see below), not a port change. |
+| VAN-6 | Position is the sum of confirmed fills (`port:124-147`), and the port never re-sends. The add counter advances when an add is proposed, not when it fills (`port:271`), which matches the route note. | "Confirm: position comes only from confirmed fill events; nothing is re-sent; counters as declared." |
+
+**Rail dependencies this edition shares with the ORB/Striker editions (not port work):**
+- **Entry and add split.** Nothing yet turns an N-contract intent into N one-contract requests. The owner is T09 / TB-I3 scope under incident ADR §A8 rules 9–10.
+- **Exit split.** The port's close is one market exit for the whole position (`port:183-185`, `qty=None`). Incident ADR §A8 assumes an exit is for one contract under the one-contract rule, so a multi-contract close also needs splitting at the rail. Neither pre-registration records this yet.
+
 ## §4 — Identity binding (filled at freeze)
 
 | Artifact | Binding | Status |
 |---|---|---|
 | Vanguard edition Pine (private) | SHA-256 recorded in `core/strategies/BOOK_SOURCES.sha256` (or `PORT_MANIFEST.sha256`, per the §59 owner's convention) and here | **OWED** |
 | Vanguard edition Python port (private) | SHA-256 pin added beside the existing pins in `ops/c1_signal_daemon/book_adapters.py`, as a separate reviewed change | **OWED** |
-| Effective inputs for the edition | Either the existing binding (`66406dee…` source bytes, `9d4d4e1d…` runtime digest) or a successor digest. If trailing is removed by an input override rather than a code change, name that input here as a shape, with no value. | **OWED (operator)** |
+| Effective inputs for the edition | Either the existing binding (`66406dee…` source bytes, `9d4d4e1d…` runtime digest) or a successor digest. If trailing is removed by an input override rather than a code change, name that input here as a shape, with no value. *§3a:* trailing is a single on/off input in both the port and the Pine, and VAN-4 needs no code change, so an **input-only** edition is possible: a successor effective-inputs file with the trail input off, the port code unchanged, and the port-pin row above becoming "unchanged". The effective-inputs file holds all four legs, so a successor changes the **book-wide** runtime digest. | **OWED (operator)** |
 | This file at freeze | Commit SHA recorded in campaign record §59 | At freeze |
 
 The realization and identity-binding scheme must be specified before file production; reused pins are fixed then, while new output digests are supplied by production before freeze. The final tuple includes: Pine SHA-256, port SHA-256, embedded PINE_SHA256, registry leg identity, and effective-input source/runtime digests. The existing loader requires the embedded Pine identity to equal the registry Pine identity. Reusing unchanged port bytes with a newly changed Pine therefore does not work under the current loader. Override-only is admissible only with unchanged compatible Pine/port identities and explicitly bound effective settings, or after a separately reviewed identity-contract change. If new Pine bytes are required under the current loader, use a new port identity with matching embedded Pine identity; do not weaken the loader check. No such identity-contract change is authorized here. The production handoff must stop if this tuple is unresolved.
@@ -88,6 +104,8 @@ The public repository receives identities and behavior shapes only, never source
   - (a) all N at the same fill as today's single order (optimistic);
   - (b) the latency class the rail spec already uses (I8);
   - (c) another rule stated now.
+
+  *§3a note:* the sibling file's §6 choice is also still OWED, so the two can be decided together. Under the proposed ADR §A8 rule 10, one-contract requests go out sequentially, so (a) would be optimistic by construction, and (b) is the source-consistent option.
 
   It cannot be tuned afterwards.
 - **Verdict:**
