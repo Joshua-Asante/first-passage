@@ -163,7 +163,7 @@ def main(argv: list[str] | None = None) -> int:
         print(
             "state-currency: FAIL — "
             + "; ".join(found)
-            + " — for deadline rolls run: python scripts/state_roll.py",
+            + " — for deadline rolls run: python -I scripts/fp.py python scripts/state_roll.py",
             file=sys.stderr,
         )
         return 1

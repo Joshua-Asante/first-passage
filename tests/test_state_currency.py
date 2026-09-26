@@ -201,4 +201,4 @@ def test_stale_weekly_fail_names_state_roll(tmp_path: Path) -> None:
         capture_output=True,
     )
     assert proc.returncode == 1
-    assert b"for deadline rolls run: python scripts/state_roll.py" in proc.stderr
+    assert b"for deadline rolls run: python -I scripts/fp.py python scripts/state_roll.py" in proc.stderr

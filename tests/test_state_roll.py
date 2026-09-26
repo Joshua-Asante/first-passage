@@ -8,6 +8,8 @@ import sys
 from datetime import date, timedelta
 from pathlib import Path
 
+import pytest
+
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "state_roll.py"
 ARROW = "→"
@@ -209,13 +211,21 @@ def test_monthly_rolls_across_year_end(tmp_path: Path) -> None:
     assert "### Monthly — recurring (rolling; next deadline **2027-01-21**)" in _read(state)
 
 
-def test_monthly_day_31_clamps_to_month_length(tmp_path: Path) -> None:
-    assert mod.next_monthly(date(2026, 10, 31), date(2026, 11, 1)).isoformat() == "2026-11-30"
-    assert mod.next_monthly(date(2027, 1, 31), date(2027, 2, 1)).isoformat() == "2027-02-28"
+def test_monthly_day_above_28_fails_closed(tmp_path: Path) -> None:
+    # A clamped deadline cannot carry the intended cadence day across short
+    # months, so the roller refuses rather than drift (Jan 31 -> Feb 28 -> Mar 28).
+    with pytest.raises(mod.StateRollError):
+        mod.next_monthly(date(2027, 1, 31), date(2027, 2, 1))
     state, archive = _pair(tmp_path, _state(weekly="2026-12-04", monthly="2026-10-31"))
+    before = _read(state)
     result = _run(state, archive, "2026-11-01")
-    assert result.returncode == 0, result.stderr
-    assert _out(result) == "monthly: 2026-10-31 -> 2026-11-30\n"
+    assert result.returncode == 2
+    assert b"roll the Monthly heading by hand" in result.stderr
+    assert _read(state) == before
+
+
+def test_monthly_day_28_still_rolls() -> None:
+    assert mod.next_monthly(date(2027, 1, 28), date(2027, 2, 1)).isoformat() == "2027-02-28"
 
 
 def test_monthly_deadline_today_is_not_past(tmp_path: Path) -> None:
@@ -493,3 +503,39 @@ def test_next_day_roll_goes_above_previous_automated_block(tmp_path: Path) -> No
     earlier_header = archived.index(ROLLED_HEADER)
     ordinal_header = archived.index("**Seventeenth roll, 2026-09-25**")
     assert later_header < earlier_header < ordinal_header
+
+
+@pytest.mark.parametrize("failing", ["state", "archive"])
+def test_failed_write_loses_nothing_and_retry_archives_once(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failing: str
+) -> None:
+    rows = _rows(17)
+    state, archive = _pair(tmp_path, _state(rows=rows))
+    state_before, archive_before = _read(state), _read(archive)
+    today = date.fromisoformat(TODAY)
+    new_state, new_archive, _ = mod.plan(state_before, lambda: archive_before, today)
+
+    real_replace = mod._replace
+
+    target = state if failing == "state" else archive
+
+    def failing_replace(path: Path, text: str) -> None:
+        if path == target:
+            raise mod.StateRollError(f"simulated {failing} write failure")
+        real_replace(path, text)
+
+    monkeypatch.setattr(mod, "_replace", failing_replace)
+    with pytest.raises(mod.StateRollError):
+        mod.commit(state, new_state, archive, new_archive)
+    # Nothing is lost: STATE keeps its overflow rows and the archive is restored.
+    assert _read(state) == state_before
+    assert _read(archive) == archive_before
+
+    monkeypatch.setattr(mod, "_replace", real_replace)
+    retry = _run(state, archive, TODAY)
+    assert retry.returncode == 0, retry.stderr
+    archived = _read(archive)
+    assert archived.count(ROLLED_HEADER) == 1
+    for i in (15, 16):
+        assert archived.count(f"— decision {i} ") == 1
+    assert not list(tmp_path.glob("*.state_roll.tmp"))

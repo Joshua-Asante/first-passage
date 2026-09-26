@@ -21,7 +21,6 @@ Exit 0 nothing to roll (or applied cleanly); 1 with --check when a roll is due;
 from __future__ import annotations
 
 import argparse
-import calendar
 import os
 import re
 import sys
@@ -108,15 +107,24 @@ def first_friday(from_date: date) -> date:
     return from_date + timedelta(days=(4 - from_date.weekday()) % 7)
 
 
+# Days 29-31 do not exist in every month. After a clamp, the heading no longer
+# records the intended cadence day, so rolling again would drift (Jan 31 ->
+# Feb 28 -> Mar 28). Fail closed and leave those cadences to a hand roll.
+MAX_MONTHLY_DAY = 28
+
+
 def next_monthly(old_deadline: date, today: date) -> date:
-    """First date >= today on old_deadline's day-of-month (last day if absent)."""
+    """First date >= today on old_deadline's day-of-month."""
     wanted_day = old_deadline.day
+    if wanted_day > MAX_MONTHLY_DAY:
+        raise StateRollError(
+            f"monthly cadence day {wanted_day} exceeds {MAX_MONTHLY_DAY}; the "
+            "heading cannot carry the intended day across short months, so "
+            "roll the Monthly heading by hand"
+        )
     year, month = today.year, today.month
     for _ in range(24):
-        try:
-            candidate = date(year, month, wanted_day)
-        except ValueError:
-            candidate = date(year, month, calendar.monthrange(year, month)[1])
+        candidate = date(year, month, wanted_day)
         if candidate >= today:
             return candidate
         year, month = (year + 1, 1) if month == 12 else (year, month + 1)
@@ -264,6 +272,43 @@ def archive_overflow(text: str, rows: list[str], today: date) -> tuple[str, str]
     return text[:at] + addition + text[at:], f"index: archived {len(rows)} row(s)"
 
 
+def _replace(path: Path, text: str) -> None:
+    """Write text to a sibling temp file, then atomically replace path."""
+    tmp = path.with_name(path.name + ".state_roll.tmp")
+    try:
+        write_text(tmp, text)
+        os.replace(tmp, path)
+    except OSError as exc:
+        raise StateRollError(f"cannot write {path}: {exc}") from exc
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
+def commit(
+    state_path: Path,
+    new_state: str,
+    archive_path: Path,
+    new_archive: str | None,
+) -> None:
+    """Write the archive before STATE; restore the archive if STATE fails.
+
+    Overflow rows leave STATE only after they are safely in the archive. If the
+    STATE write then fails, the archive is put back, so a retry sees the same
+    overflow and archives it exactly once.
+    """
+    if new_archive is None:
+        _replace(state_path, new_state)
+        return
+    old_archive = read_text(archive_path)
+    _replace(archive_path, new_archive)
+    try:
+        _replace(state_path, new_state)
+    except StateRollError:
+        _replace(archive_path, old_archive)
+        raise
+
+
 def plan(
     state_text: str,
     archive_loader: Callable[[], str],
@@ -317,9 +362,7 @@ def main(argv: list[str] | None = None) -> int:
         print("state-roll: nothing to roll")
         return 0
     try:
-        write_text(args.state, new_state)
-        if new_archive is not None:
-            write_text(args.archive, new_archive)
+        commit(args.state, new_state, args.archive, new_archive)
     except StateRollError as exc:
         print(f"state-roll: FAIL - {exc}", file=sys.stderr)
         return 2
