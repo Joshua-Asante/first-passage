@@ -46,8 +46,10 @@ require an explicit user request; this workflow does not grant self-edit authori
 
 Do not weaken success criteria, omit required checks, expand permissions or reinterpret
 an operational GO to make work cheaper. Preserve the selected handoff and its return
-boundary. After two failed corrections of the same issue, use the existing escalation
-rule in AGENTS.md; relabeling the next attempt as an optimization does not reset it.
+boundary. Repeated failed corrections follow the escalation rule in
+[AGENTS.md](../../../AGENTS.md#continuous-improvement) and the lane its
+[surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md)
+names; relabeling the next attempt as an optimization does not reset its count.
 
 ## Verify and return to the task
 
@@ -83,7 +85,28 @@ Follow-up: <only a concrete reuse/revisit trigger and owner, when useful>
 ```
 
 Link later experiments and campaigns to this entry rather than copying its conclusion.
-Append contrary results and reversals without erasing the earlier evidence; on reuse,
-read the current disposition. Application in one campaign does not establish benefit
-in another. Keep private evidence private, using permitted references in public files.
+Record contrary results and reversals by the owner's mutability class under
+[operational rules §14](../../../docs/operational_rules.md#14-corrections-land-where-the-error-is-read-not-where-it-is-convenient-to-write):
+correct a living owner (open plan, same-session record) in place at the entry, including
+its Disposition; for frozen evidence leave the body unedited, add an addendum and put a
+reader intercept upstream of the impeached claim. On reuse, read the current
+disposition. Application in one campaign does not establish benefit in another.
+Keep private evidence private, using permitted references in public files.
 No new registry, ADR or permanent rule is required to capture an ordinary improvement.
+
+## Why this skill exists
+
+The operator requested this workflow on 2026-09-26 (PR #507) after approving its
+behavior in chat. That request authorized this skill and the AGENTS.md Continuous
+improvement routing only; it is not standing permission to edit instructions. The
+prior section fired only after a correction or failure and did not say when an
+in-scope improvement may simply be implemented. A registry, telemetry, automatic
+policy editor, new hook and historical backfill were deliberately left out. The
+source is repository-local and reached through AGENTS.md; publishing it to user-level
+skill directories is a separate explicit release under [scripts/README.md](../../../scripts/README.md#skill-lifecycle).
+
+Authoring validation was packaging and reference checks plus author-derived contract
+walkthroughs (plan ordering, reproduced defect, uncertain optimization, frozen-handoff
+conflict, protected authority, trivial edit, duplicate learning, repeated failed
+correction). These are contract checks, not evidence of agent reliability or measured
+savings; retain observed outcomes at their owner as described above.
