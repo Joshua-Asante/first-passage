@@ -24,7 +24,7 @@ Verify every file against these pins before reading it for the determination. Th
 | Historical `effective_inputs.json` (source bytes) | `66406dee955fa69f237fde60eacdd24259a08d5320352d98e59889acaa18158d` | `EFFECTIVE_INPUTS_SHA256` |
 | Runtime effective values (canonical digest, derived) | `9d4d4e1d622a3fb0ae37b7b20f8bdf960244f9e66b5d88ded79db4de6089dade` | `RUNTIME_EFFECTIVE_INPUTS_SHA256` |
 
-Expected locations are `ops/c1_signal_daemon/ports/vanguard_mgc.py` and `ops/c1_signal_daemon/ports/effective_inputs.json` in the operator checkout. See [T10 source reconciliation](../../notes/2026-09-21-t10-phase1-source-reconciliation.md) line 162. The corrected-ports tree under `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/inputs/private_overrides/op1/2026-09-14-seven/step3-coverage/corrected-ports/` also holds a copy. If any file hashes to something else, do not use it; report the mismatch.
+Read the Pine source and runtime port at the paths `core/strategies/BOOK_SOURCES.sha256` pins: `core/strategies/book/Vanguard_Gold_MGC_v0.4_venue_bound.pine` and `ops/c1_signal_daemon/ports/vanguard_mgc.py`. `effective_inputs.json` sits beside the port (see [T10 source reconciliation](../../notes/2026-09-21-t10-phase1-source-reconciliation.md) line 162). Read all of these **in place in the operator's primary checkout**, as [campaign §60](../programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25) requires. A worktree session uses that checkout's absolute path. If any file hashes to something else, do not use it; report the mismatch.
 
 The runtime digest is computed over canonical effective values after derivation, not over file bytes. Recompute it with the registry's own loader or digest function, invoked through the launcher, and never by hand. If you can't reproduce it without importing or executing a private port, record `not reproduced` and rely on the historical source-byte pin.
 
@@ -41,7 +41,7 @@ The runtime digest is computed over canonical effective values after derivation,
 ## 3. Evidence rules
 
 - Cite `file:line` and the pinned hash for each claim. Do not copy source bodies, parameter values or tables into tracked files. A tracked statement may say an input is enabled or disabled, but must not give a numeric distance.
-- Put any scratch notes or extracts under an ignored path (confirm with `git check-ignore`) and list only their hashes in §5.
+- Do not copy the private files or extracts of them anywhere: no scratch directory, worktree or external service (§60). Record only `file:line` citations and hashes.
 - "The input exists in source" is not evidence that the branch is active (route note line 202).
 
 ## 4. Decision the return feeds
