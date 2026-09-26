@@ -28,3 +28,34 @@ This is a proposal only. Cite existing measurements; **run no new measurement**,
 ## Output
 
 `docs/notes/2026-09-26-s5-part-a-measurement-proposal.md`, plus an executor-return section appended to this card.
+
+## Executor return (2026-09-26)
+
+**Status: DONE_WITH_CONCERNS.** The proposal is at [`docs/notes/2026-09-26-s5-part-a-measurement-proposal.md`](../../notes/2026-09-26-s5-part-a-measurement-proposal.md). The executor worked in worktree `s5-measurement`, branch `claude/s5-measurement-proposal`. `HEAD` descends from the dispatch revision `62c956f`. Under `ops/`, `tests/`, `tools/`, `deploy/`, `scripts/` and `.github/`, that head does not differ from `main@8e9e084`. No measurement, Linux dispatch, qualification service, artifact download, code, profile, budget or owner change was made. The executor ran only read-only `grep`/`git` checks and parsed an existing JSON record. Nothing here approves a rule or releases S5.
+
+**Delivered:** items 1–6 and the RC table.
+- **Items 1–6:** workload (§1), reference runtime (§2), capture method with exact commands and record format (§3), margin rules PA-1..PA-5 with PROPOSED parameters, sensitivity and triggers (§4), feasibility and D2 falsifier (§5), application procedure (§6).
+- **RC table:** RC-1..RC-6 (§7). RC-1 is partly met (the ledger entry is on PR #517, not yet on `main`); RC-2 to RC-6 are unmet. **No S5 release proposal is supported.**
+- **Operator decisions:** five are listed in §8.
+
+**Concerns returned to the coordinator.** They are findings and change no owner record.
+1. **The TEST_ONLY workload (2, 4, 2) can never expand.** The expansion test is pinned to `|p5 − 0.95| ≤ 0.01` (`contract.py:761-773`), and with 2 paths per panel no panel rate is within 0.01 of 0.95. The smallest depth that can expand is 17. Every existing composition run confirms this: none expanded. Maximum expansion therefore needs a forced-expansion harness, and the S5 packet's Linux "prescribed expansion" case is impossible on this fixture: the arithmetic boundary test must stand alone. This belongs in the RC-6 re-anchoring.
+2. **`/v7` needs three edits in `diagnostic_budget_profile`** (corrected in the fix round below). `/v7` is refused outright until it is added to the accept tuple (`profile.py:219-226`). It must also be added to the funded branch (`:243-252`), or it gets an unfunded `/v2` budget profile. Its N2 value must be added at `:239`, or N2 falls back to the shared 120 s: the silent-SIGKILL class that checkpoint C2 found. The N2 value needs operator decision 3: extend the M13 ruling, or apply the rule on a §3-conformant N2 measurement (Stage 1b-N2). Stage 0 cannot supply it.
+3. **`/v7` loses the TEST_ONLY cap** (`fixture_producer.py:154-156` covers release v3–v6 only). A `v7` release would fail Σ-feasibility at binding.
+4. **No host factor is evidenced.** The "~137 s on Linux by scaling" figure (plan line 756) has no recorded basis, and its measurement record was not found locally. The S4 Linux run artifacts could calibrate it, but their retention ends about **2026-10-09** (Stage 0; needs approval).
+5. **The engine's pilot predicate needs a ceiling term.** The engine refuses Part A when its throttled prediction of maximum expansion exceeds the remaining wall (`part_a.py:184-186`), even when no expansion will happen. The PART_A ceiling must cover that prediction (PA-2b).
+
+**Unverified:** see proposal §9. Neither the Linux CPU of any stage nor the systemd accounting fields for an exited unit were read. The §1 CPU estimate is arithmetic from Windows per-call costs. The guardian's CPU while archiving two artifacts is unknown.
+
+**Verification:** `./fp.ps1 check` ran on the final working tree immediately before the commit; the committed bytes are identical to it. The coordinator's return message carries the record path and result, the commit SHA and `git diff --stat`.
+
+**Fix round (2026-09-26).** A fixer checked nine review findings against the sources and applied all nine to the proposal. It edited only the proposal and this section, and ran no measurement.
+- **Cold start (§3.2, §3.4):** timed repeat 1 of each arm is now made cold (bytecode caches removed, page cache dropped) and is included in the maximum. The instrumented repeat runs last. The arm order alternates between the two jobs.
+- **Like-for-like CPU (§3.1, §4):** CPU is split at the harness boundaries. The 10.4–12.4 s of fixture setup is excluded from Ĉ. The N2 FULL baseline derivation and the real S5-D1 artifacts are an explicit uncovered term, D̂, measured by a new Stage 1c at C3. A ceiling is provisional until then. PA-5 now compares like with like.
+- **Windows accounting (§3.1):** `process_time`, a job object and `PeakWorkingSetSize`. Windows figures are marked not comparable to Linux.
+- **`/v7` pitfall (§0):** restated with all three `profile.py` locations; see concern 2.
+- **Reference runtime (§2):** Stage 1b measures the host venv, not the worker image. The host-to-container factor is unmeasured.
+- **Owner citations (§1):** full-E1 spec lines 117–125, and the freeze candidate (not frozen) for depth 200 and horizon 500.
+- **Estimate inputs (§0, §1, §5):** `verify_for` CPU is 1.02–1.16 s per call across all nine rows and rises with depth. Panel proofs cover the whole 174-session source. The production claim that per-call cost does not depend on content is withdrawn.
+- **Stage 0 (§3.4, §4, §8):** calibration only. It cannot set the `/v7` N2 ceiling. That needs Stage 1b-N2 or an operator ruling extending M13.
+- **D2 falsifier, correcting this return:** the TEST_ONLY setup does not rule out the D2 fallback. The falsifier stays **open** until a valid Stage 1b record exists. It is triggered if Stage 1b is not approved or cannot run before release, unless the operator sets the ceiling by ruling (§5).
