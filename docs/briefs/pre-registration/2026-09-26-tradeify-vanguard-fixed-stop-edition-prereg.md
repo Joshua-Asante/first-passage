@@ -59,7 +59,7 @@ A multi-contract intent is sent as that many one-contract requests, each carryin
 | VAN-3 | **What replaces the trail as an exit.** The declared trail closed some trades. Name the existing exit that now closes them: the fixed stop, the existing target, the timed or scheduled exit, or another existing rule. **No new exit rule is invented here.** If no existing exit covers the case, say so; the edition is then a different strategy needing a fresh decision (§7). | **OWED (operator)** |
 | VAN-4 | **Stop and target modification after entry.** The declared port re-issues its bracket on every managed bar. Once trailing is removed, does the edition still amend the fixed stop or target after entry? If yes, it depends on L2(c) native modify, which is K on this route (drill D2) and must be listed as an open route dependency. If no, write "none". | **OWED (operator)** |
 | VAN-5 | **One-contract split and adds.** State the maximum contracts per Vanguard signal and per add on this account, including any cap. Each contract is its own request with its own stop. | **OWED (operator)** |
-| VAN-6 | **Partial acknowledgement of a split.** If k of N requests are acknowledged and the rest are refused or unknown, the leg holds k contracts, plus held reservations for the unknowns under the incident ADR. Confirm the edition treats the confirmed k as its position and does **not** re-send the rest. The [route note](../../notes/2026-09-25-tradingview-signal-route-evaluation.md) (line 207) records that the add counter advances when an add is proposed, not when it fills; state whether that stays as declared. | **OWED (operator; recommended: confirm, counters as declared)** |
+| VAN-6 | **Partial acknowledgement of a split.** Track each of N one-contract requests separately: confirmed fills establish position quantity; accepted-but-unfilled requests remain working orders with their required reservations; conclusively rejected requests follow the accepted release rule; unknown requests retain reservations under the incident ADR. An acknowledgement alone never increments position. Confirm that the edition consumes confirmed fill events and does **not** re-send an unresolved request merely because no fill is observed. For example, two accepted requests with one fill mean one confirmed contract and one working request, not two contracts. The [route note](../../notes/2026-09-25-tradingview-signal-route-evaluation.md) (line 207) records that the add counter advances when an add is proposed, not when it fills; state whether that stays as declared. | **OWED (operator; fill-based position semantics required by book_protocol.py; counter decision remains owed)** |
 | VAN-7 | Breakeven and grace stay inactive, as in the accepted binding. The edition does not enable them. | Fixed (determination §5) |
 
 ## §4 — Identity binding (filled at freeze)
@@ -71,7 +71,9 @@ A multi-contract intent is sent as that many one-contract requests, each carryin
 | Effective inputs for the edition | Either the existing binding (`66406dee…` source bytes, `9d4d4e1d…` runtime digest) or a successor digest. If trailing is removed by an input override rather than a code change, name that input here as a shape, with no value. | **OWED (operator)** |
 | This file at freeze | Commit SHA recorded in campaign record §59 | At freeze |
 
-The public repository receives digests only. The current Vanguard Pine and port (`af26899c…`, `e6a03d04…`) are not edited.
+The realization and identity-binding scheme must be specified before file production; reused pins are fixed then, while new output digests are supplied by production before freeze. The final tuple includes: Pine SHA-256, port SHA-256, embedded PINE_SHA256, registry leg identity, and effective-input source/runtime digests. The existing loader requires the embedded Pine identity to equal the registry Pine identity. Reusing unchanged port bytes with a newly changed Pine therefore does not work under the current loader. Override-only is admissible only with unchanged compatible Pine/port identities and explicitly bound effective settings, or after a separately reviewed identity-contract change. If new Pine bytes are required under the current loader, use a new port identity with matching embedded Pine identity; do not weaken the loader check. No such identity-contract change is authorized here. The production handoff must stop if this tuple is unresolved.
+
+The public repository receives identities and behavior shapes only, never source bodies or private parameter values. The current Vanguard Pine and port (`af26899c…`, `e6a03d04…`) are not edited.
 
 ## §5 — Relationship to the ORB/Striker file
 
@@ -98,7 +100,7 @@ The public repository receives digests only. The current Vanguard Pine and port 
 - Substituting a CrossTrade-managed trail for the declared trail. It is vendor-driven, not fill-anchored, and not native L2(g) (REST assessment §6.7 (4)).
 - Changing any signal, setup or entry condition, allocation, protection cell, capacity rule, takeover order or WATCH-tier rule.
 - Inventing a new exit to replace the trail (VAN-3). If no existing exit covers a case, stop and return to the operator.
-- Editing the locked Vanguard Pine, the current port, or `core/strategies` artifacts in place. The edition is new private files with new pins.
+- Editing the locked Vanguard Pine, the current port, or `core/strategies` artifacts in place. The edition uses new private files and pins where the ruled realization changes bytes; an override-only realization reuses the explicitly compatible source identities and binds new effective settings.
 - Publishing Pine source, parameter values or port code in this or any public file.
 - Amending this file after any replay or E1 output on the edition exists. Close it and open a fresh one instead.
 - Treating the edition as qualified, selected or deployable before the E1 verdict.
@@ -107,7 +109,7 @@ The public repository receives digests only. The current Vanguard Pine and port 
 
 1. The operator rules option A (edition) over option B (reject). Without that ruling, nothing below proceeds.
 2. The operator answers VAN-2 to VAN-6, the §4 effective-inputs row and the §6 replay choice, in words and without parameter values.
-3. The private edition Pine and port are produced by the operator, or by a separately authorized session on the primary checkout under §60, and their SHA-256s are supplied.
+3. The operator, or a separately authorized session in the primary checkout, produces the files required by the ruled realization and supplies the complete source/effective-input identity tuple. §60 alone grants reads, not file creation. An override-only realization explicitly records reused compatible Pine/port pins.
 4. Claude fills §3–§6, runs the §10 hooks, and the operator reviews the full text.
 5. The operator says "freeze". The Status line becomes `FROZEN <date>`, and the commit SHA goes into campaign record §59.
 

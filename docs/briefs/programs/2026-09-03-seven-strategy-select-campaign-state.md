@@ -3913,6 +3913,8 @@ Operator direction 2026-09-25, given in-session against the T08 return and the [
 
 ### Ruling 1 — Vanguard MGC and Aegis 6J fit the narrowed shape (operator-attested)
 
+**Current qualification (2026-09-26):** the [Vanguard source determination](../handoffs/2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return) returned TRAILING ACTIVE; coordinator acceptance is pending. The historical Vanguard attestation below is not current evidence of narrowed-shape fit. If accepted, this finding requires an operator edition-versus-rejection decision. Aegis is unaffected by this Vanguard finding.
+
 Asked whether, for each private leg, (i) every exposure-creating request carries a fixed stop in the same order and (ii) the leg's quantity is expressible as one-contract requests, the operator answered **"yes and yes"** for both. Consequence: addendum §A4's per-leg rows for Vanguard and Aegis move from *Undetermined* to *fits (operator-attested; private port unread by any agent)*. This is an attestation about the port's protection cases, not route evidence: L2(c) for Aegis's breakeven modify and the takeover composite remain K in the per-primitive table, and every CAP row stays UNPROVEN until traced. Verification may include an agent read of the private ports and effective settings against §A1 under the source-access ruling below. Any resulting expression or contract decision remains with the operator.
 
 ### Ruling 2 — the T08 vendor question has been sent
@@ -3928,7 +3930,7 @@ The operator reports sending the [authorized question](../../notes/2026-09-24-t0
 | ORB MNQ | Stop entry with a bracket carrying trailing parameters (`trail_activation_ticks` / `trail_offset_ticks`) → needs L2(g) U | Stop entry with a **fixed-stop OSO bracket** in the same request; **no trailing parameters**. The fixed stop is the bracket's existing fixed component. |
 | Striker MYM | Bare market entry, first protection attached a bar later (`ATTACH`, L2(f) U); multi-contract entries | Market entry **carrying its stop in the same OSO request**; a multi-contract intent is sent as that many **one-contract requests**, each with its own stop (§A1's one-contract rule). |
 
-Vanguard and Aegis keep their declared expressions, which ruling 1 attests already fit; their multi-contract intents are likewise sent as one-contract requests.
+Subject to the Vanguard qualification at Ruling 1 above, Vanguard and Aegis keep their declared expressions, which ruling 1 historically attested already fit; their multi-contract intents are likewise sent as one-contract requests.
 
 **What this is and is not.** It is a venue-driven *expression* change of the kind the venue-editions axis exists for (precedent: the MYM/MNQ editions of Striker), motivated by route capability, not by performance. It is **one pre-registered change, K = 1, not a search**: no alternative stop levels, trail replacements, or entry timings are screened; the route-native edition either requalifies or the route is rejected for that leg. D-B4 (a) is amended to that extent only — "exactly the accepted four-strategy book" now reads on the route-native editions once they are pre-registered; it still forbids a fifth leg, an on/off search, a runner-up or a replacement path. The 2026-09-10 acceptance (K=1 confirmation of the selected configuration) is **not** re-opened as a selection; the editions inherit its policy cells unchanged and must requalify under them.
 

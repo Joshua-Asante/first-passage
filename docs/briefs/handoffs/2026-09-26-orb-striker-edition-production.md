@@ -25,6 +25,7 @@ This is step 2 of that pre-registration's §8 freeze procedure. The editions imp
 |---|---|---|
 | G0 | Campaign §59 ruling 3 adopted both editions (already satisfied, 2026-09-25). Confirm it has not been withdrawn since. | Campaign record §59 |
 | G1 | Pre-registration items answered in words: ORB-2 to ORB-4, STR-2 to STR-6 and the §6 replay-modelling choice. No `OWED` remains in §3 or §4; the §5 pin rows are exempt, because this packet fills them. | The pre-registration at a named commit |
+| G1a | Realization and identity-binding scheme under pre-registration §5 are explicit: reused pins fixed; new output digests supplied by this packet; embedded Pine identity compatible with proposed registration. | G1 commit; separately reviewed identity contract if needed |
 | G2 | The operator explicitly authorizes an agent to **create** new private edition files under the paths in §2. §60 grants read access only. | Dispatch message or campaign record |
 | G3 | The pre-registration is **not frozen**, and no replay or E1 output exists for either edition | Pre-registration Status line; campaign record |
 
@@ -65,7 +66,7 @@ Any file whose hash does not match stops that leg.
 
 Before writing, confirm with `git check-ignore -v` that every output path is ignored. If any path is not ignored, stop: a tracked private file would be published.
 
-If the pre-registration rules an override-only realization for ORB (trailing removed by an effective-input change, with no code change), follow the R1 pattern in the Vanguard handoff §3 instead of creating a new ORB port.
+If the pre-registration rules an override-only realization for ORB (trailing removed by an effective-input change, with no code change), follow the R1 pattern and identity-compatibility gate in the Vanguard handoff §3: retain both compatible Pine and port identities and produce the successor effective settings. A changed Pine with the unchanged port fails the current loader. If that combination is required, stop for an operator-ruled code edition or separately reviewed identity contract.
 
 **Handling.**
 - Never modify, rename or overwrite the accepted Pine, ports or effective inputs.
@@ -86,25 +87,25 @@ If the pre-registration rules an override-only realization for ORB (trailing rem
 - [ ] **Entry carries its stop (STR-1).** The market entry carries its protective stop in the same request. There is no bare entry and no later `ATTACH`, and the delayed-attach path is removed.
 - [ ] **Stop level at entry (STR-2):** as ruled. If the ruling is "the level the declared port would issue, computed on the entry bar", show where that value is available on the entry bar. If it isn't available there, stop and return; do not substitute.
 - [ ] **One-contract split (STR-3):** N one-contract requests, each carrying its own stop, with the ruled maximum N and any cap.
-- [ ] **Partial acknowledgement (STR-4):** the confirmed k is the position, and the rest are not re-sent, as ruled.
+- [ ] **Split outcomes (STR-4):** confirmed fills alone establish position. Keep accepted-but-unfilled, conclusively rejected and unknown requests distinct, with their required reservations; acknowledgement alone is not a fill. Do not resend an unresolved request on absence of a fill.
 - [ ] **Close-time crossed-level exits (STR-5):** as ruled.
 - [ ] **Post-entry stop changes (STR-6):** as ruled. The declared Striker amends every bar (breakeven, tightening, ratchet), and any amend that remains depends on L2(c).
 - [ ] Every signal condition, pyramid and add-eligibility rule not changed by an STR item stays byte-identical.
 
 ## 5. Static verification (both legs, no execution)
 
-1. Produce a line diff of each new file against its original. Classify every hunk by the ORB or STR rule it implements; any unclassified hunk fails.
-2. **ORB:** show that no path in the new port can build a `Bracket` with non-null `trail_activation_ticks` or `trail_offset_ticks`. Show that no `strategy.exit` in the new Pine passes `trail_points`, `trail_price` or `trail_offset` reachable under the effective inputs.
+1. Produce a line diff of each new file against its original. Classify every hunk by the ORB/STR rule or accepted identity binding it implements; any unclassified hunk fails. Inspect in place without retained private-source extracts.
+2. **ORB:** under the pinned effective settings, show that every reachable bracket construction emits null trailing fields and every reachable Pine exit has no active trailing arguments, including entry/add/amend paths. Retained unreachable trailing code is permitted in an override-only realization. Different or missing settings invalidate the proof.
 3. **Striker:** show that no path emits an entry without a stop in the same intent, and that no `ATTACH` or delayed-protection path remains.
 4. **Both:** list every remaining post-entry amend path by `file:line`. These are the leg's L2(c) dependencies; record them even when the ruling keeps them.
 5. A `py_compile` syntax check of the new ports runs **only if** the G2 authorization permits it. Otherwise skip it and say so.
-6. SHA-256 each new file.
+6. Verify the proposed identity tuple without importing private ports: embedded Pine identity, proposed registry Pine/port pins and leg identity, and effective-input source/runtime digests. New Pine bytes require matching embedded identity in a new port under the current loader. Hash every new file and any successor effective settings; registration remains a separate change.
 
 ## 6. Forbidden
 
 - Running, importing or backtesting any edition or original, in Python or TradingView.
-- Any change not traceable to an answered ORB or STR rule. That includes cleanup, refactors, renames inside a file, and comment edits that change behavior.
-- Adding a CrossTrade-managed trail, a new exit, a new filter or any parameter change. Changing opening-range, signal, pyramid or allocation logic.
+- Any change not traceable to an answered ORB/STR rule or accepted identity binding. That includes cleanup, refactors, renames inside a file, and comment edits that change behavior.
+- Adding a CrossTrade-managed trail, a new exit, a new filter or any parameter change beyond the explicitly ruled edition settings. Changing opening-range, signal, pyramid or allocation logic.
 - Basing Striker on the rejected original port, or overwriting either Striker generation.
 - Editing the accepted files, the pre-registration or any governance document. Freezing the pre-registration. Treating either edition as qualified.
 
@@ -121,7 +122,7 @@ If the pre-registration rules an override-only realization for ORB (trailing rem
 | Field | ORB MNQ | Striker MYM |
 |---|---|---|
 | Executor / dispatch revision | | |
-| Gates G0–G3 (evidence link each) | | |
+| Gates G0–G3, including G1a (evidence link each) | | |
 | Pre-registration commit built against | | |
 | Checkout revision, tree state, `doctor` result | | |
 | Input hashes (match/mismatch) | | |
@@ -129,7 +130,8 @@ If the pre-registration rules an override-only realization for ORB (trailing rem
 | `git check-ignore` result per output path | | |
 | New file paths and SHA-256 | | |
 | Hunk classification (rule → `file:line`) | | |
-| Protection proof (no trail / no bare entry, `file:line`) | | |
+| Identity tuple and loader compatibility (static evidence) | | |
+| Protection proof under pinned effective settings (no trail / no bare entry, file:line) | | |
 | Remaining post-entry amend paths (L2(c)) | | |
 | Syntax check (run / skipped and why) | | |
 | Deviations or stops | | |

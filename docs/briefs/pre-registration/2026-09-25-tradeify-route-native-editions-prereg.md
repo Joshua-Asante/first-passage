@@ -59,7 +59,7 @@ A multi-contract intent is sent as that many one-contract requests, each with it
 | STR-1 | Entry: market entry carrying its fixed protective stop in the same request; no bare entry and no later `ATTACH`. | Fixed by §59 |
 | STR-2 | **Stop level at entry.** The declared port issues its first stop a bar after entry. State the rule for the level sent with the entry: (a) the level the declared port would issue, computed on the entry bar (say whether that is computable there), or (b) another rule you specify. This is the decision most likely to change results. | **OWED (operator)** |
 | STR-3 | **One-contract split.** A signal for N contracts is sent as N one-contract requests. State the maximum N per signal on this account (the selection records a 30-max-contract setting) and whether any cap below that applies. | **OWED (operator)** |
-| STR-4 | **Partial acknowledgement of a split.** If k of N requests are acknowledged and the rest are refused or unknown, the leg holds k contracts (plus held reservations for unknowns under the incident ADR). Confirm the edition treats the confirmed k as its position and does **not** re-send the rest. | **OWED (operator; recommended: confirm)** |
+| STR-4 | **Partial acknowledgement of a split.** Position quantity is established only by confirmed fills, never acknowledgements. Track accepted-but-unfilled requests as working orders with required reservations, conclusively rejected requests under the accepted release rule, and unknown requests with held reservations under the incident ADR. Confirm the edition consumes fill events and does **not** re-send an unresolved request merely because no fill is observed. | **OWED (operator; fill-based position semantics required by book_protocol.py)** |
 | STR-5 | **Close-time crossed-level exits (S3 (d)).** State how they are realized: a market exit of the scope (as declared), unchanged. | **OWED (operator)** |
 | STR-6 | **Stop modification after entry.** Per-bar re-issue of the stop needs L2(c) (drill D2). State whether the edition modifies the stop after entry. | **OWED (operator)** |
 
@@ -70,9 +70,12 @@ A multi-contract intent is sent as that many one-contract requests, each with it
 | ORB edition Pine (private) | SHA-256 recorded in `core/strategies/PORT_MANIFEST.sha256` and here | **OWED** |
 | Striker edition Pine (private) | SHA-256 recorded in `core/strategies/PORT_MANIFEST.sha256` and here | **OWED** |
 | ORB and Striker edition Python ports (private) | SHA-256 pins added beside the existing pins in `ops/c1_signal_daemon/book_adapters.py` (a separate, reviewed change) | **OWED** |
+| Effective inputs for each edition | Explicit source/runtime digests and Pine/port setting binding; reused or successor as ruled | **OWED (operator)** |
 | This file at freeze | Commit SHA recorded in campaign record §59 | At freeze |
 
-The public repository receives digests only. The Pine and the ports stay in the private roots (AGENTS.md "Public-clone posture").
+Before file production, specify each realization and its identity-binding scheme; fix reused pins and leave only new output digests for production before freeze. The current loader requires the port-embedded PINE_SHA256 to match the registry Pine identity. A changed Pine needs a matching new port identity under that contract. An ORB override-only realization may retain compatible Pine/port identities only with explicit effective settings bound for both; otherwise return to the operator for a code edition or separately reviewed identity contract. Do not weaken the loader checks.
+
+The public repository receives identities and behavior shapes only, never private source or parameter values. The Pine and the ports stay in the private roots (AGENTS.md "Public-clone posture").
 
 ## §6 — How the editions requalify, and what counts as a result
 
@@ -85,7 +88,7 @@ The public repository receives digests only. The Pine and the ports stay in the 
 - Screening more than one expression per leg (alternative stop levels, trail substitutes, entry timings).
 - Changing any signal or entry condition, allocation, protection cell, capacity rule or takeover order.
 - Inventing a new exit to replace the trail (ORB-3). If no existing exit covers the case, stop and return to the operator.
-- Editing locked Pine or `core/strategies` artifacts in place. The editions are new private files with new pins.
+- Editing locked Pine or `core/strategies` artifacts in place. The editions use new private files with new pins where bytes change; an explicitly ruled ORB override-only realization retains compatible source identities and binds new effective settings.
 - Publishing Pine source, parameter values or port code in this or any public file.
 - Amending this file after any replay or E1 output on either edition exists (Known Trap #12: close it and open a fresh one instead).
 - Treating the editions as qualified, selected or deployable before the E1 verdict.

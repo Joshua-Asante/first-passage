@@ -1,6 +1,6 @@
 # Vanguard MGC trailing determination: bounded local handoff
 
-**Status:** DRAFT for a local session on the operator's machine. This work cannot run in a cloud clone, because the private port, the Pine source and `effective_inputs.json` are gitignored and exist only locally. Commit this packet before dispatch and record the dispatch revision in §5.
+**Status:** RETURNED — coordinator acceptance pending (§5). The source inspection has completed; the original bounded instructions below remain its scope record. Source verification, if needed for acceptance, follows §60 in the primary checkout. This return does not approve an edition or qualify the route.
 
 **Selected outcome:** One source-bound answer to a single question. **Does Vanguard MGC's accepted effective binding make its bracket set trailing parameters?** The answer is `TRAILING ACTIVE`, `TRAILING INACTIVE` or `UNDETERMINED` with the exact missing input. This is the first-named next action of the [REST assessment §6.10](2026-09-25-crosstrade-rest-route-assessment.md#610-next-action-one-prerequisites-and-blockers), and it resolves or confirms [§6.7 (1)](2026-09-25-crosstrade-rest-route-assessment.md#67-corrections-to-prior-reasoning).
 

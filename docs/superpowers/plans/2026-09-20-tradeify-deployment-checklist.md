@@ -322,17 +322,25 @@ of lost responses.
    - **Ambiguous requests:** how does the route handle a request whose outcome is unknown?
 
    Better responses or a same-session lookup do not answer the second question.
-2. **T09 stays behind that result.** No adapter, REST producer, endpoint or
-   fallback implementation starts until four things hold:
-   - (a) the coordinator has accepted the assessment return;
-   - (b) the operator has accepted any contract or expression decision the return names (as returned: the Vanguard trailing determination, and Proposed option B or another unknown-request amendment);
-   - (c) the route is ruled viable for bounded design;
-   - (d) the coordinator has accepted the TradingView/CrossTrade capability allocation and deletion map, and the operator has accepted any resulting behavior or contract changes. Finalize T09's scope against that map before implementation.
+2. **T09 stays behind that result.** No adapter, REST producer, endpoint or fallback implementation starts until all four rows of the [gate acceptance record](#t09-gate-acceptance-record) are accepted against named revisions. Finalize T09 scope against the accepted allocation before implementation.
 
    **Allocation objective (operator direction):** let TradingView and CrossTrade own the capabilities they can reliably provide for the exact route; our shared controller fills evidenced gaps. The map must justify retained local responsibilities and identify components that can be removed, reduced or avoided, separating preserved portfolio behavior from simplifications requiring a decision. It consumes the REST assessment as evidence rather than repeating it. Existing account-owner machinery is a reuse candidate, not a required final boundary. The dated allocation handoff must be committed and refreshed against the current route-native edition decisions and completed REST return before dispatch.
 
    Adjacent work may continue only where it is independent of both route choice and capability allocation. This applies to the engineering spine, T07, T10 and provider-neutral T14; those packet labels are not blanket exemptions. Defer work whose value depends on retaining a component under evaluation. Offline qualification obligations remain unless separately changed by their owner.
 3. **Freeze stays behind it too.** Do not freeze E1 while route, incident or capability-allocation changes are unknown. The freeze inventory must reflect the accepted allocation, resulting behavior decisions and required requalification.
+
+### T09 gate acceptance record
+
+This table owns the gate definitions; STATE and the REST disposition link here. Each acceptance must name the artifact revision, reviewer, date and any residual conditions. **All four gates remain pending.** A returned finding, a draft pre-registration or a passing documentation check is not an acceptance.
+
+| Gate / owner | Evidence and completion condition | Acceptance record | Work unlocked |
+|---|---|---|---|
+| A — factual assessment / coordinator | Review the REST return, retained vendor evidence and Vanguard source return. Record the disposition of each material finding, correction and the dispatch-process breach. Keep session-scoped positive recovery distinct from unestablished cross-session recovery and absent negative closure. | REST coordinator disposition, with a linked disposition on the Vanguard return; exact evidence revisions. Pending. | Use accepted findings for the operator decision and allocation/design analysis; no behavior change or T09 implementation. |
+| B — behavior and contract decisions / operator | Following factual disposition, choose Vanguard edition or rejection and record the resulting book consequence. Accept the required expression contracts and unknown-request policy (Proposed B or another amendment), including decision-bearing OWED rules; link required pre-registration/requalification obligations. Allocation-induced changes also require operator acceptance before D closes. | Campaign §59 decision/addendum and the owning incident amendment; named revisions, not draft existence. Pending. | Plan against the approved behavior and recovery contract; no route qualification, replay or live GO. |
+| C — viable for bounded design / coordinator, within B's operator authority | Produce a per-leg requirement-to-route map for the chosen expressions and recovery contract. No required unsupported primitive may remain without an accepted expression/contract resolution. Every unproven primitive must have a named validation method, owner, failure consequence and explicit hold on dependent rehearsal/qualification. State the exact interface assumptions and bounded T09 deliverable. If a required capability cannot be supplied or tested, return BLOCKED. | T08/REST coordinator disposition linking the feasibility map and residual validation obligations. Pending. | Technical viability for the bounded design only; all four gates are still needed for T09 dispatch. |
+| D — capability allocation and T09 scope / coordinator; operator for resulting behavior changes | Accept the TradingView/CrossTrade/local responsibility and deletion map. Every retained local responsibility has an evidenced gap; every removed/reduced responsibility has a qualified replacement or stays retained pending proof. Record any new B decisions and revisit C if allocation changes its assumptions. Commit a bounded T09 handoff with exact interfaces, verification and return boundary. | Accepted allocation map plus T09 handoff revisions, linked here when available. Pending. | With A–C accepted, dispatch only the bounded T09 work. Deletion, account actions, drills, requalification and release still require their own authority and evidence. |
+
+Acceptance of evidence (A) is separate from acceptance of changed behavior (B). C permits bounded design with explicitly held validation dependencies; it is not a whole-route PASS. E1 freeze still requires the accepted allocation and complete behavior inventory, and execution/release retain their existing qualification gates.
 
 No drill, account access, vendor contact, spend, contract change or GO is granted by this addendum.
 
