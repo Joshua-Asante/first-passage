@@ -328,6 +328,84 @@ script existence checks remain. This does not reopen retired skill migrations.
 
 ## Validation maintenance
 
+### STATE currency
+
+[`state_roll.py`](state_roll.py) applies what [`check_state_currency.py`](check_state_currency.py)
+only reports: a past Weekly/Monthly recurring deadline advances (next Friday / same
+day-of-month) and decision-index rows past 15 move into the
+[archive](../docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md)
+under a date-keyed `**Roll YYYY-MM-DD**` header, with relative links rebased.
+It moves dates only: covered or missed weeks, reconfirm results and `Last curated`
+stay operator-recorded. Output depends only on the input bytes and the date, so
+concurrent sessions make identical edits that merge cleanly. Run it instead of
+hand-editing a stale deadline; `--check` reports without writing. A rerun after
+an interrupted write is safe: rows already in the archive are not added again.
+
+It fails closed (exit 2, nothing written, `--check` included) on anything it
+cannot roll unambiguously, and that refusal withholds **every** change of the
+invocation, including a due Weekly roll or keep-15 archive:
+
+- a past Monthly deadline dated the 28th–31st whose heading has no
+  `cadence day NN` anchor. A month-end clamp (Jan 31 → Feb 28) leaves a date
+  that no longer records the intended day, so the roller will not guess it.
+  Month-end procedure: add the intended day once, e.g.
+  `### Monthly — recurring (rolling; next deadline **2027-01-31**, cadence day 31)`,
+  and rerun. The roller then clamps each short month (Feb 28, or Feb 29 in a
+  leap year; Apr 30) and returns to the anchored day (Mar 31). Do not hand-clamp
+  the date without the anchor;
+- a `cadence day` that is not exactly one lower-case `cadence day NN` with NN in
+  1–31, or that disagrees with the heading's deadline (checked on every run, due
+  or not);
+- a recurring heading without exactly one `next deadline **YYYY-MM-DD**` field
+  (a second deadline, bolded or not, would never be rolled), or a Weekly
+  `bucket` that is not exactly one lower-case `bucket MM-DD→MM-DD` naming real
+  month-days and exactly the Monday–Friday week of its deadline;
+- anything read as unique that is not exactly one: a Weekly/Monthly heading
+  (including a case, dash or Unicode-spacing variant — NBSP, zero-width,
+  fullwidth — or a copy outside the forward section), a
+  `Scheduled forward triggers` or `Executed operator decisions` section
+  (including look-alike headings at any level);
+- a decision index out of newest-first date order, a dated bullet not in
+  `- **YYYY-MM-DD** — ` form (`* **date**`, unbolded or indented included), two
+  rows fused on one line, or an overflow row followed (after any blank lines)
+  by anything other than another index row or the section end, such as an
+  indented continuation line;
+- an archive that breaks its shape (checked on every run, rows due or not):
+  roll headers are read by date key (case, Unicode spacing and suffix aside) and
+  must be newest first with strictly decreasing dates (adjacent hand-written
+  ordinal headers may share a date); an automated `**Roll YYYY-MM-DD**` header
+  may share its date with no other header; below the first header every
+  non-blank line must be a header or one whole index row (a line holding two
+  headers or two rows is refused); no row may appear twice;
+- mixed line endings (CRLF with LF, or a lone CR) in STATE or the archive;
+- a row roll that cannot be placed: `--today` older than the archive's newest
+  header, or a hand-written header already dated today (archive those rows by
+  hand under it, or rerun on a later day);
+- a lock file `STATE.md.state_roll.lock` beside STATE. A writing run creates it
+  exclusively and removes it on exit; one that exists means another run is
+  writing or one died holding it. It is never taken over: once no run is
+  active, delete it by hand and rerun. `--check` takes no lock.
+
+The module docstring of `state_roll.py` states the invariants (I1 row
+conservation, I2 archive shape, I3 line endings, I4 one writer, I5 exactly-one
+parsing, I6 Unicode-normalised look-alikes). One validator checks I1–I3 and I5
+on the pair before planning and on the composed result before writing; if the
+result fails, nothing is written. The archive is written before STATE, each
+through its own temp file, an atomic replace and an fsync of its directory
+(POSIX; skipped on Windows, which exposes no directory fsync, so durability
+there is best effort), so a crash between the two leaves the overflow rows in
+both files, a state the rerun accepts and resolves by dropping them from STATE
+only.
+
+`check_state_currency.py` reads the forward section, the recurring headings and
+the decision index through `state_roll.py`'s parser, so every heading, section
+and index defect above also fails the gate (exit 1) on every run; it also fails
+on a duplicate or look-alike `Last curated` or a dated subsection heading its
+strict `### YYYY-MM-DD` reader cannot see, and treats a dated subsection as
+discharged only when no `DISCHARGED` in its heading is negated. It names the
+roller only for past deadlines it can roll; a deadline beyond the horizon and
+the other failures are corrected by hand.
+
 ### Brief checker ownership
 
 The [brief-authoring skill](../.claude/skills/brief-authoring/SKILL.md#checker-ownership)

@@ -5,41 +5,73 @@ Owns the mechanical limb of docs/operational_rules.md Rule 7 STATE currency
 (rolling dates and Last curated must not go stale when the
 daily-repo-truth-sync digest is skipped). Reads only STATE.md.
 
-Exit 0 if all three invariants hold. Exit 1 on a missing field, a stale
-date, or an unreadable file.
+The forward-trigger section, the Weekly/Monthly recurring headings and the
+decision index are read through state_roll.py's own parser (loaded from this
+directory), so any heading the roller would refuse — a second deadline field,
+a malformed bucket or one outside its deadline's Monday-Friday week, a cadence
+anchor out of range, duplicated, in another case or disagreeing with its
+deadline, a look-alike heading or section — and any index it would refuse
+(out of newest-first order, fused rows, an overflow row with a continuation
+line) fails this gate too, on every run and not only when a roll falls due. Every element read
+as unique must occur exactly once; a look-alike fails closed. Look-alikes are
+detected on state_roll.lookalike_key (the roller's invariant I6: NFKC,
+zero-width characters dropped, every Unicode whitespace run folded, casefolded),
+so NBSP, ideographic spaces or fullwidth letters cannot hide a second copy. A
+dated subsection heading the strict `### YYYY-MM-DD` reader cannot see (another
+level, Unicode spacing, non-ASCII digits) fails closed instead of escaping the
+staleness check.
+
+Exit 0 if all three invariants hold. Exit 1 on a missing, duplicate or
+unreadable field, a stale date, or an unreadable file.
 
 Clock is America/New_York. Tests inject STATE_CURRENCY_TODAY=YYYY-MM-DD.
 """
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import re
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from types import ModuleType
 from zoneinfo import ZoneInfo
 
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_STATE = REPO / "STATE.md"
 ET = ZoneInfo("America/New_York")
 
-LAST_CURATED_RE = re.compile(r"^\*\*Last curated:\*\* (\d{4}-\d{2}-\d{2})", re.M)
-DECISION_SECTION_RE = re.compile(
-    r"^## Executed operator decisions\b.*?(?=^## |\Z)",
-    re.M | re.S,
-)
-BULLET_DATE_RE = re.compile(r"^- \*\*(\d{4}-\d{2}-\d{2})\*\*", re.M)
-FORWARD_SECTION_RE = re.compile(
-    r"^## Scheduled forward triggers\b.*?(?=^## |\Z)",
-    re.M | re.S,
-)
-RECURRING_HEADING_RE = re.compile(
-    r"^### (Weekly|Monthly) — recurring\b.*$",
-    re.M,
-)
-DEADLINE_RE = re.compile(r"next deadline \*\*(\d{4}-\d{2}-\d{2})\*\*")
-DATED_HEADING_RE = re.compile(r"^### (\d{4}-\d{2}-\d{2})\b(.*)$", re.M)
+
+def _load_roller() -> ModuleType:
+    """state_roll.py by path: works under `python -I` (no script dir on sys.path)."""
+    path = Path(__file__).resolve().parent / "state_roll.py"
+    spec = importlib.util.spec_from_file_location("_state_roll_contract", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+ROLLER = _load_roller()
+# One contract, the roller's (tests pin these; do not re-declare copies).
+RECURRING_HEADING_RE = ROLLER.RECURRING_HEADING_RE
+DEADLINE_RE = ROLLER.DEADLINE_RE
+FORWARD_SECTION_RE = ROLLER.FORWARD_SECTION_RE
+DECISION_SECTION_RE = ROLLER.DECISION_SECTION_RE
+CADENCE_DAY_RE = ROLLER.CADENCE_DAY_RE
+MAX_UNANCHORED_MONTHLY_DAY = ROLLER.MAX_UNANCHORED_MONTHLY_DAY
+
+# I6: the one look-alike normalisation, shared with the roller.
+lookalike_key = ROLLER.lookalike_key
+
+LAST_CURATED_RE = re.compile(r"^\*\*Last curated:\*\* ([0-9]{4}-[0-9]{2}-[0-9]{2})", re.M)
+# Look-alikes are matched against lookalike_key(line) (lower case, single
+# spaces, stripped): any variant of the bold field at a line start.
+LAST_CURATED_LOOSE_RE = re.compile(r"\*\* ?last[ _-]*curated\b")
+DATED_HEADING_RE = re.compile(r"^### ([0-9]{4}-[0-9]{2}-[0-9]{2})\b(.*)$", re.M)
+DATED_HEADING_LOOSE_RE = re.compile(r"#{1,6} ?\d{4}-\d{2}-\d{2}\b")
 # Whole-token DISCHARGED only. UNDISCHARGED is one token and does not match;
 # NOT/NEVER/NON/UN immediately before DISCHARGED is a negation, not a discharge.
 DISCHARGED_TOKEN_RE = re.compile(r"[A-Z]+")
@@ -50,6 +82,19 @@ HORIZON_BY_KIND = {
     "Weekly": WEEKLY_HORIZON_DAYS,
     "Monthly": MONTHLY_HORIZON_DAYS,
 }
+# Remediation is per problem: state_roll.py only advances PAST recurring
+# deadlines, so only that failure names it. A future deadline beyond the
+# horizon, Last curated and past dated subsections are corrected by hand.
+ROLL_HINT = "for deadline rolls run: python -I scripts/fp.py python scripts/state_roll.py"
+MANUAL_HINT = (
+    "correct the heading by hand (the roller only advances past deadlines)"
+)
+# A Monthly deadline on day 28 or later may be a month-end clamp, so the
+# roller needs a `cadence day NN` anchor in the heading before it will roll it.
+MONTH_END_HINT = (
+    "Monthly days 28-31 roll only with a 'cadence day NN' anchor in the "
+    "heading; add it, then run the roller (see scripts/README.md, STATE currency)"
+)
 
 
 def today_et() -> date:
@@ -60,48 +105,60 @@ def today_et() -> date:
 
 
 def last_curated(text: str) -> date:
-    match = LAST_CURATED_RE.search(text)
-    if match is None:
-        raise ValueError("STATE.md has no Last curated field")
+    match = ROLLER.single_match(
+        LAST_CURATED_RE, text, "Last curated field", LAST_CURATED_LOOSE_RE
+    )
     return date.fromisoformat(match.group(1))
 
 
 def newest_decision_index_date(text: str) -> date:
-    section = DECISION_SECTION_RE.search(text)
-    if section is None:
-        raise ValueError("STATE.md has no Executed operator decisions section")
-    dates = [date.fromisoformat(m.group(1)) for m in BULLET_DATE_RE.finditer(section.group(0))]
-    if not dates:
+    """Newest index date, read through the roller's full index validation."""
+    rows = ROLLER.index_rows(text)
+    if not rows:
         raise ValueError("decision index has no dated bullets")
-    return max(dates)
+    return max(date.fromisoformat(row.group(1)) for row in rows)
 
 
-def recurring_deadlines(forward_text: str) -> list[tuple[str, date]]:
-    found: dict[str, date] = {}
-    for match in RECURRING_HEADING_RE.finditer(forward_text):
-        kind = match.group(1)
-        heading = match.group(0)
-        deadline = DEADLINE_RE.search(heading)
-        if deadline is None:
-            raise ValueError(f"{kind} recurring heading has no next deadline **YYYY-MM-DD**")
-        if kind in found:
-            raise ValueError(f"duplicate {kind} recurring heading")
-        found[kind] = date.fromisoformat(deadline.group(1))
-    missing = [k for k in ("Weekly", "Monthly") if k not in found]
-    if missing:
-        raise ValueError("missing recurring heading: " + ", ".join(missing))
-    return [(k, found[k]) for k in ("Weekly", "Monthly")]
+def recurring_headings(text: str) -> list[tuple[str, date, str, int | None]]:
+    """(kind, next deadline, heading line, cadence anchor) for Weekly then Monthly.
+
+    Read by state_roll.recurring_fields, the roller's own validator."""
+    _, fields = ROLLER.recurring_fields(text)
+    return [
+        (kind, field.deadline_date, field.heading.group(0), field.anchor)
+        for kind, field in fields.items()
+    ]
+
+
+def recurring_deadlines(text: str) -> list[tuple[str, date]]:
+    return [(kind, deadline) for kind, deadline, _, _ in recurring_headings(text)]
+
+
+def roller_needs_anchor(kind: str, deadline: date, anchor: int | None) -> bool:
+    """True when state_roll.py would refuse this past deadline for want of an anchor."""
+    return kind == "Monthly" and deadline.day > MAX_UNANCHORED_MONTHLY_DAY and anchor is None
 
 
 def heading_is_discharged(heading: str) -> bool:
+    """True when DISCHARGED appears and no occurrence of it is negated.
+
+    Every occurrence is read, not the first: `DISCHARGED; NOT DISCHARGED`
+    records something still owed, so it is not discharged."""
     tokens = DISCHARGED_TOKEN_RE.findall(heading.upper())
-    try:
-        idx = tokens.index("DISCHARGED")
-    except ValueError:
+    positions = [i for i, token in enumerate(tokens) if token == "DISCHARGED"]
+    if not positions:
         return False
-    if idx > 0 and tokens[idx - 1] in DISCHARGED_NEGATION:
-        return False
-    return True
+    return all(i == 0 or tokens[i - 1] not in DISCHARGED_NEGATION for i in positions)
+
+
+def unreadable_dated_headings(forward_text: str) -> list[str]:
+    """Dated-heading look-alikes the strict `### YYYY-MM-DD` reader misses."""
+    strict = {match.start() for match in DATED_HEADING_RE.finditer(forward_text)}
+    return [
+        line.strip()
+        for at, line, _ in ROLLER.lookalike_lines(forward_text, DATED_HEADING_LOOSE_RE)
+        if at not in strict
+    ]
 
 
 def past_dated_headings(forward_text: str, today: date) -> list[str]:
@@ -124,15 +181,15 @@ def problems(text: str, today: date) -> list[str]:
             f"Last curated {curated.isoformat()} is behind newest "
             f"decision-index date {newest.isoformat()}"
         )
-    forward = FORWARD_SECTION_RE.search(text)
-    if forward is None:
-        raise ValueError("STATE.md has no Scheduled forward triggers section")
-    body = forward.group(0)
-    for kind, deadline in recurring_deadlines(body):
+    body = ROLLER.forward_section(text).group(0)
+    for kind, deadline, _, anchor in recurring_headings(text):
         if deadline < today:
+            hint = ROLL_HINT
+            if roller_needs_anchor(kind, deadline, anchor):
+                hint = MONTH_END_HINT
             out.append(
                 f"{kind} next deadline {deadline.isoformat()} is in the past "
-                f"(today {today.isoformat()} ET)"
+                f"(today {today.isoformat()} ET) — {hint}"
             )
             continue
         horizon = HORIZON_BY_KIND[kind]
@@ -141,8 +198,13 @@ def problems(text: str, today: date) -> list[str]:
             out.append(
                 f"{kind} next deadline {deadline.isoformat()} is beyond the "
                 f"{horizon}-day next-occurrence horizon "
-                f"(today {today.isoformat()} ET)"
+                f"(today {today.isoformat()} ET) — {MANUAL_HINT}"
             )
+    for heading in unreadable_dated_headings(body):
+        out.append(
+            "dated subsection heading is not '### YYYY-MM-DD ...' and would "
+            f"escape the staleness check: {heading[:80]}"
+        )
     for heading in past_dated_headings(body, today):
         out.append(f"past dated subsection is not DISCHARGED: {heading}")
     return out

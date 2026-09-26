@@ -5,7 +5,7 @@ import importlib.util
 import os
 import subprocess
 import sys
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
@@ -22,6 +22,13 @@ _SPEC.loader.exec_module(mod)
 def _write(path: Path, text: str) -> Path:
     path.write_text(text, encoding="utf-8")
     return path
+
+
+def _week_bucket(deadline: str) -> str:
+    """The Monday-Friday week of the Weekly deadline (the roller's bucket)."""
+    day = date.fromisoformat(deadline)
+    monday = day - timedelta(days=day.weekday())
+    return f"{monday:%m-%d}→{monday + timedelta(days=4):%m-%d}"
 
 
 def _state(
@@ -45,7 +52,8 @@ def _state(
         "## Dormant cross-session threads\n\n"
         "none.\n\n"
         "## Scheduled forward triggers\n\n"
-        f"### Weekly — recurring (rolling; next deadline **{weekly}**, bucket x)\n\n"
+        f"### Weekly — recurring (rolling; next deadline **{weekly}**, "
+        f"bucket {_week_bucket(weekly)})\n\n"
         "- **Venue idle-clock.**\n\n"
         f"### Monthly — recurring (rolling; next deadline **{monthly}**)\n\n"
         "- **Ledger reconfirm.**\n\n"
@@ -117,13 +125,47 @@ def test_parser_does_not_read_lab_or_adr() -> None:
     assert "STATE.md" in src
 
 
-def test_newest_index_date_is_max_not_first() -> None:
+def test_newest_index_date_is_the_first_row_of_an_ordered_index() -> None:
     text = _state(newest_decision="2026-08-20")
-    text = text.replace(
+    assert mod.newest_decision_index_date(text) == date(2026, 8, 20)
+
+
+def test_out_of_order_index_fails_the_gate(tmp_path: Path) -> None:
+    # Codex 4111495537: the gate runs the roller's full index validation
+    # (state_roll.index_rows), so an index the roller refuses to roll fails
+    # here too instead of passing on its newest date.
+    text = _state(newest_decision="2026-08-20").replace(
         "- **2026-08-20** — newest.\n- **2026-08-01** — older.",
         "- **2026-08-01** — first.\n- **2026-08-20** — later.",
     )
-    assert mod.newest_decision_index_date(text) == date(2026, 8, 20)
+    with pytest.raises(ValueError, match="order"):
+        mod.newest_decision_index_date(text)
+    state = _write(tmp_path / "STATE.md", text)
+    assert _run(state, "2026-09-03") == 1
+
+
+def test_gate_reads_the_index_through_the_roller_validator(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    real = mod.ROLLER.index_rows
+
+    def spy(text: str):  # type: ignore[no-untyped-def]
+        calls.append(text)
+        return real(text)
+
+    monkeypatch.setattr(mod.ROLLER, "index_rows", spy)
+    text = _state()
+    mod.newest_decision_index_date(text)
+    assert calls == [text]
+
+
+def test_bucket_outside_the_deadline_week_fails_the_gate(tmp_path: Path) -> None:
+    # Codex 4111495548: the bucket is validated by the roller's shared reader.
+    text = _state().replace("bucket 08-31→09-04", "bucket 99-99→99-99")
+    assert text != _state()
+    state = _write(tmp_path / "STATE.md", text)
+    assert _run(state, "2026-09-03") == 1
 
 
 def test_today_et_reads_env(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -181,3 +223,250 @@ def test_heading_is_discharged_requires_affirmative_token() -> None:
     assert mod.heading_is_discharged("### 2026-08-24 — NOT DISCHARGED") is False
     assert mod.heading_is_discharged("### 2026-08-24 — UNDISCHARGED") is False
     assert mod.heading_is_discharged("### 2026-08-24 (Monday)") is False
+
+
+def test_stale_weekly_fail_names_state_roll(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state(
+            curated="2026-08-28",
+            newest_decision="2026-08-28",
+            weekly="2026-08-28",
+        ),
+    )
+    env = os.environ.copy()
+    env["STATE_CURRENCY_TODAY"] = "2026-09-03"
+    proc = subprocess.run(
+        [sys.executable, str(SCRIPT), "--state", str(state)],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+    )
+    assert proc.returncode == 1
+    assert b"for deadline rolls run: python -I scripts/fp.py python scripts/state_roll.py" in proc.stderr
+
+
+def _fail_text(state: Path, today: str) -> bytes:
+    env = os.environ.copy()
+    env["STATE_CURRENCY_TODAY"] = today
+    proc = subprocess.run(
+        [sys.executable, str(SCRIPT), "--state", str(state)],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+    )
+    assert proc.returncode == 1
+    return proc.stderr
+
+
+def test_beyond_horizon_fail_asks_for_manual_correction(tmp_path: Path) -> None:
+    # Codex 4110271939: state_roll.py only rolls PAST deadlines, so a future
+    # (beyond-horizon) deadline must not be pointed at it.
+    state = _write(tmp_path / "STATE.md", _state(weekly="2027-09-04"))
+    stderr = _fail_text(state, "2026-09-03")
+    assert b"state_roll.py" not in stderr
+    assert b"correct the heading by hand" in stderr
+
+
+def test_last_curated_only_fail_does_not_name_state_roll(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state(curated="2026-08-31", newest_decision="2026-09-03"),
+    )
+    assert b"state_roll.py" not in _fail_text(state, "2026-09-03")
+
+
+def test_past_dated_subsection_fail_does_not_name_state_roll(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state(extra_headings="\n### 2026-08-24 (Monday)\n\n- **this session.**\n"),
+    )
+    assert b"state_roll.py" not in _fail_text(state, "2026-09-03")
+
+
+@pytest.mark.parametrize("monthly", ["2026-08-31", "2026-08-28"])
+def test_past_unanchored_month_end_monthly_fail_asks_for_anchor(
+    tmp_path: Path, monthly: str
+) -> None:
+    # state_roll.py refuses unanchored Monthly days 28-31 (a hand-clamped
+    # month end reads back as the 28th-30th), so the hint must not send the
+    # operator straight to it; it names the anchor that makes it rollable.
+    state = _write(tmp_path / "STATE.md", _state(monthly=monthly))
+    stderr = _fail_text(state, "2026-09-03")
+    assert b"for deadline rolls run" not in stderr
+    assert b"cadence day NN" in stderr
+
+
+def test_past_anchored_month_end_monthly_fail_names_state_roll(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state(monthly="2026-08-31").replace(
+            "next deadline **2026-08-31**)", "next deadline **2026-08-31**, cadence day 31)"
+        ),
+    )
+    assert b"for deadline rolls run" in _fail_text(state, "2026-09-03")
+
+
+# --- Codex 4110350211: duplicate singleton sections -------------------------
+
+
+def test_duplicate_forward_section_exits_one(tmp_path: Path) -> None:
+    # A second section's stale deadline would otherwise go unchecked.
+    state = _write(
+        tmp_path / "STATE.md",
+        _state()
+        + (
+            "\n## Scheduled forward triggers (continued)\n\n"
+            "### Monthly — recurring (rolling; next deadline **2026-08-21**)\n"
+        ),
+    )
+    assert b"Scheduled forward triggers" in _fail_text(state, "2026-09-03")
+
+
+def test_duplicate_decision_section_exits_one(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state()
+        + (
+            "\n## Executed operator decisions — decision index (newer)\n\n"
+            "- **2026-09-09** — newer than Last curated.\n"
+        ),
+    )
+    assert b"Executed operator decisions" in _fail_text(state, "2026-09-03")
+
+
+def test_duplicate_last_curated_exits_one(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state().replace(
+            "**Last curated:** 2026-09-03\n",
+            "**Last curated:** 2026-09-03\n\n**Last curated:** 2026-08-01\n",
+        ),
+    )
+    assert b"Last curated" in _fail_text(state, "2026-09-03")
+
+
+# --- Codex 4110941070 / 4110941072 + uniqueness class sweep -----------------
+
+
+def _monthly_heading(state: str, suffix: str, monthly: str = "2026-09-21") -> str:
+    heading = f"next deadline **{monthly}**)"
+    assert heading in state
+    return state.replace(heading, f"next deadline **{monthly}**{suffix})")
+
+
+def test_second_deadline_field_exits_one(tmp_path: Path) -> None:
+    # 4110941070: the gate read only the first field, so a stale second one
+    # passed while the roller rolled only the first.
+    state = _write(
+        tmp_path / "STATE.md",
+        _monthly_heading(_state(), ", next deadline **2026-08-21**"),
+    )
+    assert b"next deadline" in _fail_text(state, "2026-09-03")
+
+
+@pytest.mark.parametrize(
+    "suffix",
+    [
+        ", cadence day 20",  # disagrees with the deadline (the 21st)
+        ", cadence day 32",
+        ", cadence day 0",
+        ", cadence day x",
+        ", cadence day 21, cadence day 21",
+        ", Cadence Day 21",  # case near-miss: the roller would not read it
+        ", cadence-day 21",
+    ],
+)
+def test_anchor_the_roller_refuses_fails_the_gate_even_when_not_due(
+    tmp_path: Path, suffix: str
+) -> None:
+    # 4110941072: a regex match of the anchor is not enough; the gate applies
+    # the roller's own validation on every run.
+    state = _write(tmp_path / "STATE.md", _monthly_heading(_state(), suffix))
+    assert b"cadence day" in _fail_text(state, "2026-09-03").lower()
+
+
+def test_valid_anchor_passes(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md", _monthly_heading(_state(), ", cadence day 21")
+    )
+    assert _run(state, "2026-09-03") == 0
+
+
+def test_last_curated_near_miss_exits_one(tmp_path: Path) -> None:
+    # A case variant would otherwise be ignored while the first copy passes.
+    state = _write(
+        tmp_path / "STATE.md",
+        _state().replace(
+            "**Last curated:** 2026-09-03\n",
+            "**Last curated:** 2026-09-03\n\n**Last Curated:** 2026-08-01\n",
+        ),
+    )
+    assert b"Last curated" in _fail_text(state, "2026-09-03")
+
+
+def test_near_miss_index_bullet_exits_one(tmp_path: Path) -> None:
+    # A newer decision written as '* **date**' was invisible to the newest-date
+    # read, so a stale Last curated passed.
+    state = _write(
+        tmp_path / "STATE.md",
+        _state().replace(
+            "- **2026-08-01** — older.", "- **2026-08-01** — older.\n* **2026-09-09** — newer."
+        ),
+    )
+    _fail_text(state, "2026-09-03")
+
+
+def test_discharged_requires_no_negated_discharged_token() -> None:
+    # First-match reading let a later NOT DISCHARGED pass as discharged.
+    assert mod.heading_is_discharged("### 2026-08-24 — DISCHARGED; NOT DISCHARGED") is False
+    assert mod.heading_is_discharged("### 2026-08-24 — NOT DISCHARGED; DISCHARGED") is False
+    assert mod.heading_is_discharged("### 2026-08-24 — DISCHARGED (DISCHARGED)") is True
+
+
+def test_partly_negated_discharged_heading_exits_one(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state(
+            extra_headings="\n### 2026-08-24 — DISCHARGED (part); NOT DISCHARGED (rest)\n"
+        ),
+    )
+    _fail_text(state, "2026-09-03")
+
+
+# --- Round 4 (Codex 4111057296): Unicode look-alikes are normalised (I6) -----
+
+
+@pytest.mark.parametrize(
+    "variant",
+    [
+        "**Last curated:** 2026-08-01",
+        "**Last Curated:** 2026-08-01",
+        "**Last​curated:** 2026-08-01",
+        "**Ｌａｓｔ curated:** 2026-08-01",
+    ],
+)
+def test_last_curated_unicode_near_miss_exits_one(tmp_path: Path, variant: str) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state().replace(
+            "**Last curated:** 2026-09-03\n",
+            "**Last curated:** 2026-09-03\n\n" + variant + "\n",
+        ),
+    )
+    assert b"Last curated" in _fail_text(state, "2026-09-03")
+
+
+@pytest.mark.parametrize(
+    "heading",
+    [
+        "### 2026-08-24 — owed",
+        "#### 2026-08-24 — owed",
+        "### ２０２６-08-24 — owed",
+    ],
+)
+def test_unreadable_dated_subsection_exits_one(tmp_path: Path, heading: str) -> None:
+    # A dated subsection the strict reader cannot see would never be checked
+    # for staleness; a look-alike of one fails closed instead.
+    state = _write(tmp_path / "STATE.md", _state(extra_headings="\n" + heading + "\n"))
+    assert b"dated subsection" in _fail_text(state, "2026-09-03")
