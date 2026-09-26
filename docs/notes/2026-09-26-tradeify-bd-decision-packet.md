@@ -8,7 +8,7 @@
 |---|---|---|
 | 1 | Gate C: decisive capabilities, validation and failure consequences | Drafted below |
 | 2 | Gate B: remaining behavior decisions | Drafted below |
-| 3 | Revised option-B rules, with unresolved assumptions | Pending (UB-8 return) |
+| 3 | Unknown-request posture and option-B rules, with unresolved assumptions | Drafted below |
 | 4 | Allocation and component reductions (gate D) | Pending |
 | 5 | T09 handoff (held until B–D acceptance) | Pending |
 | 6 | Decisions required from the operator | Pending |
@@ -88,3 +88,31 @@ Each row is the operator's to rule, in words and without parameter values, in it
 **Authorizations needed (operator authority, not behavior):**
 - **A-1.** A revised operator session plan covering: REST-form D1–D3 and D6; the REST reads D4/D5 (D12); and the new GC-1 race observation. Each is bound to exact operations and account scope. The reads are separate from order-producing drills.
 - **P-1.** Evidence of account entitlement (CrossTrade Pro REST) and of venue permission for CrossTrade-mediated automated orders on this eval. A firm-level "automation-friendly" classification is insufficient.
+
+---
+
+## 3. Unknown-request posture and option-B rules
+
+**Input:** the [UB-8 comparison](2026-09-26-ub8-availability-comparison.md) (accepted as input; its coordinator review records the source checks on Q1–Q3).
+
+**Recommended first-release posture: preserve-and-block** (the current rule, `book_account_owner.py:1608`). **Option B stays Proposed** for a later release; §A10's acceptance condition already provides for this. Reasons:
+- **B's continuity, as the texts stand, is limited.** An unknown still triggers the halt/resume §2 halt and the §3 return to flat, so B buys *resume after an attended return to flat*, not uninterrupted trading (UB-8 Q1; BE-5).
+- **None of the conditions under which B pays can be shown today.** B pays only in a band: when the expected number of unresolved requests over the first-release horizon, λH, is above the operator's tolerance ε but below the number of held reservations the room can absorb, n\*. That band is empty if the room absorbs fewer than one reservation (n\* < 1), or if D5 makes unresolved requests recoverable (BE-1 to BE-4). λ is unmeasured, and the room figures (UB-2 and UB-6) are unbound.
+- **B's build is the largest discretionary item** (allocation rows C06b, C15b, B16). Deferring it cuts T09 scope without touching any accepted behavior.
+
+**What preserve-and-block still requires for the first release** (these are not optional):
+
+| Item | Why | Owner |
+|---|---|---|
+| **Reconcile the fence semantics with the spec** (UB-8 Q2). Production counts an accepted entry or add with no accepted terminal after one bar. Spec S1 counts the absence of order-level evidence. Rail S2/RC-9 cancels a resting entry older than one bar unless it is re-issued, while the ORB port cancels only at session end (map C08) | As read, a resting ORB stop entry could block risk-adds on every leg after one bar. ORB's resting-entry lifecycle (GC-4) and this fence must be settled and traced before the ORB freeze | Coordinator (trace); operator if ORB behavior changes |
+| **Bound how long a block lasts**, using D4/D5 (A-1) | BE-4: if a prior-session lookup can locate the order, the block lasts until then rather than for the rest of the account | Operator (reads) |
+| **An attended recovery procedure for an unresolved request** (halt/resume §3) | The only exit from the block | T13 |
+| **H and ε** (UB-8 Q4) | Without them the operator cannot judge whether a block-ends-automation risk is tolerable | Operator |
+
+**If the operator still wants B for the first release, rule these first** (each is added to the incident ADR's open list; none is adopted):
+1. **B-B1: continuous or resume-after-flat?** Amend the halt/resume §2 row for narrowed-shape unknowns too, which gives continuous admission and changes a live-risk contract, or accept B as resume-after-flat. Rule 4′'s wording must match the choice.
+2. **B-B2: exceptional-mode trigger.** Rule 4′ defines the mode by the account fence, so the Q2 reconciliation decides when the mode begins.
+3. **B-B3: Aegis under a held reservation.** Accept or reject that any held reservation may block a full-size Aegis entry, and that a takeover cannot complete while a displaced leg holds a reservation (`book_capacity.py:277-278`).
+4. **B-B4: split with an unknown child** (UB-8 Q5). Does it count as "closed" for add eligibility? UB-4's rule implies not, because an unknown child keeps the sequence open.
+
+**Effect on the incident ADR (proposed; not applied here):** record the first-release posture as preserve-and-block under the §A10 acceptance condition. Add B-B1 to B-B4 to §A10's OPEN list. Rule 4′'s "exceptional mode" stays defined by the fence as reconciled under Q2.
