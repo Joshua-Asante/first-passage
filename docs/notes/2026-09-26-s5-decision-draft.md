@@ -296,3 +296,29 @@ grep -n "no replacement draws\|_settlement_terminal(state, 'IN_DOUBT')\|_settlem
 # Delta N1 hook (4 / 32 at main@24e3843)
 grep -c -E "PROVISIONAL|BOUND|N2_READY|PART_A_READY" ops/c1_rail/qualification/execution/campaign_supervisor.py ops/c1_rail/qualification/execution/campaign_store.py
 ```
+
+---
+
+## Coordinator review (2026-09-26): ACCEPTED AS INPUT; S5 stays held
+
+Reviewer: the coordinating session. Artifact: `dbb38b8`. Citations spot-checked at `main@24e3843`, under `ops/c1_rail/qualification/execution/`:
+- `campaign_protocol.py:90-95`: the client may `FETCH_PLAN_CHUNK`;
+- `checkpoint_plan.py:222-233` → `seed_identity.py:35-40`: plan chunks carry `seed`;
+- `campaign_supervisor.py:177-194`: the docstring states that the rate quota × `RuntimeMaxUSec` bounds cumulative payload CPU, because cgroup v2 has no cumulative cap;
+- `worker.py:137-149`: one fsynced frame is written at the end.
+
+**Where this draft departs from earlier proposals** (surfaced for the operator; not adopted):
+
+| Topic | Earlier proposal | This draft | Coordinator note |
+|---|---|---|---|
+| N1 accounting | Audit: narrow to campaign scope (the mixed model); executive review: approve simplification in principle | Keep the accepted **per-phase** model for S5. Reject the mixed and uniform models for now. Add four narrowings (explicit invariant, exhausted-campaign rule, no per-phase CPU in acceptance, measured TEST_ONLY ceilings) | Evidence-backed: the cumulative bound already exists, and uniform needs S2–S4 Linux re-runs. The operator chooses between "simplify now" and "narrow in place". Both keep the exhausted-campaign rule |
+| K3 seed custody | Audit: salt committed by hash in F1, revealed at dispatch | The service generates the salt at admission, after the F1 digest is bound. F1 carries the custody rule, not a hash. Seeds are withheld from the client until the campaign ends | Addresses the creator-preview gap the executive review named. It needs a **code change**: the client plan view must carry digests only (new finding), before F1 |
+| N2 recovery | Bounded same-sample re-execution before S5 | Adopt the policy (R1–R10) now; build it as its own slice after S5 and before S8; S5 freezes with terminal IN_DOUBT | A scheduling choice for the operator. Because a single end frame makes the zero-record case the norm, the reproducibility demonstration carries the rule |
+
+**Open items routed:**
+- **Q1** (a FAIL on an exhausted campaign) → the statistical owner.
+- **Q2** (the "original deadline" is the campaign's) → consistent with the executive review's "retain the original resource envelope and deadline"; confirm at the ruling.
+- **Q3/Q4** (host `cpu.stat` retention; PART_A CPU at maximum expansion; timing fields in the prefix comparison) → S5 C3.
+- **Q5** (seven operational facts) → an attended operator host read before any boundary counts as enforced.
+- **Q6** (landing place) → rulings are recorded in the S5 hold ledger entry of the execution-slices plan, with dated amendments to each named owner. Umbrella §0.8 row O-10 only if the operator prefers.
+
