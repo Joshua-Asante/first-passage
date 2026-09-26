@@ -187,7 +187,7 @@ resolved identity at qualification and activation.
 
 ### T09 — Actual broker adapter and reconciliation (750k–1M)
 **Selected outcome:** Real observations and transport reach the durable account owner under the accepted route contract.
-**Prerequisites:** T08 viable route; approved drill environment and exact interfaces. T07 settlement producer available for combined rehearsal.
+**Prerequisites:** T08 viable route, decided under the [2026-09-26 route-feasibility-first addendum](#addendum-2026-09-26--route-feasibility-is-the-first-deployment-decision) (accepted REST assessment and any contract acceptance it requires); approved drill environment and exact interfaces. T07 settlement producer available for combined rehearsal.
 **Ownership:** Broker integration executor; coordinator accepts combined CAP consumer evidence.
 - [ ] Replace the synthetic-only transport gap with the qualified adapter, preserving intent-before-send and unresolved reservations.
 - [ ] Ingest real request/order/fill/protection identities, history coverage and terminal outcomes.
@@ -295,7 +295,7 @@ resolved identity at qualification and activation.
 
 - Engineering spine: **T01 -> T02 -> T03 -> T04 -> T05 -> T06**.
 - Start **T07, T08 and T10** alongside that spine. Reuse ongoing owners rather than dispatch duplicate work.
-- **T09 follows T08**; operations preparation T13 follows the incident decision and finalizes with T07/T09.
+- **Route feasibility first** (2026-09-26 addendum): T08 plus the REST assessment decide the route before any route-dependent work. **T09 follows the accepted T08/REST result and any contract acceptance it requires**; operations preparation T13 follows the incident decision and finalizes with T07/T09.
 - **T11 follows T06**; T12 can prepare against stable interfaces earlier but needs integrated acceptance and a timing answer before F1.
 - T14 starts with provider-neutral work only; standing source-independent/funding gates control provider-specific execution.
 - **T15** is the join for production qualification: engineering, actual-source readiness and pre-freeze feasibility/behavior inventory must agree.
@@ -304,6 +304,33 @@ resolved identity at qualification and activation.
 Do not serialize all external work behind E1. Do not freeze E1 while required
 route/incident changes are still unknown. Do not require paid-feed final binding
 before its governing funding checkpoint merely because a task number is lower.
+
+## Addendum 2026-09-26 — route feasibility is the first deployment decision
+
+**Operator direction (2026-09-26).** The first deployment decision is route
+feasibility; route-dependent work waits on it. T08's current verdict blocks the route as
+contracted (R3 = NONE; [T08 §7.8](../../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24)).
+The 09-25 support reply corrects the earlier durable-replay premise and makes
+CrossTrade-mediated REST worth assessing. It does not establish safe resolution
+of lost responses.
+
+1. **Decision owner.** The bounded
+   [CrossTrade REST route assessment](../../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md)
+   returns two separate answers, which stay separate in every consumer:
+   - **Portfolio execution:** can the route execute the unchanged accepted portfolio?
+   - **Ambiguous requests:** how does the route handle a request whose outcome is unknown?
+
+   Better responses or a same-session lookup do not answer the second question.
+2. **T09 stays behind that result.** No adapter, REST producer, endpoint or
+   fallback implementation starts until three things hold:
+   - (a) the coordinator has accepted the assessment return;
+   - (b) the operator has accepted any contract or expression decision the return names (as returned: the Vanguard trailing determination, and Proposed option B or another unknown-request amendment);
+   - (c) the route is ruled viable for bounded design.
+
+   Adjacent work that does not presuppose the route may continue: engineering spine, T07, T10, and provider-neutral T14.
+3. **Freeze stays behind it too.** This restates the existing rule: do not freeze E1 while route or incident changes are unknown.
+
+No drill, account access, vendor contact, spend, contract change or GO is granted by this addendum.
 
 ## Verification of this planning artifact
 

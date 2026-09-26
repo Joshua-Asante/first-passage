@@ -264,4 +264,24 @@ Account inventory for copier and Account Manager configuration (CAP R5) is also 
 - CAP R3 row: POSITIVE RECONCILIATION ONLY on REST, with the session-reset limit.
 - Route note §"Two unresolved execution choices": the vendor trailing-doc contradiction (§6.7 (4)).
 
-**Coordinator disposition:** pending.
+**Coordinator disposition (2026-09-26): review recorded, acceptance still pending.**
+
+The operator directed on 2026-09-26 that route feasibility is the first deployment decision ([checklist addendum](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-26--route-feasibility-is-the-first-deployment-decision)). The return answers the two questions separately:
+
+1. **Can the route execute the unchanged portfolio?** Not as the portfolio stands. Verdict: `REQUIRES NAMED CONTRACT/EXPRESSION DECISION`.
+   - Per §6.5, REST uses the same Tradovate primitives as webhooks and changes no L2 verdict.
+   - The decision it names first is Vanguard MGC's trailing (§6.7 (1)), an operator read of the private port.
+   - L2(c)/(d) stay K pending drills D1–D6.
+2. **How are ambiguous requests handled?** By positive reconciliation only, within the same session. Verdict: `POSITIVE RECONCILIATION ONLY`.
+   - The mechanism is `clOrdId` → lifecycle → children → fills.
+   - Nothing documented proves a missing order cannot appear later, so no fence exists.
+   - An attempt not found before the daily reset stays unknown permanently.
+   - Under current rules that blocks risk-adds. Running the book depends on accepting Proposed option B or another amendment.
+
+This review checked the return's internal consistency and its code citations against the checkout. It did **not** re-verify the vendor quotes (Q01–Q30), for two reasons:
+- the ignored evidence directory is not in the cloud clone where this review ran;
+- that environment's network policy refused `crosstrade.io`.
+
+Acceptance therefore needs a Q-index spot-check on the machine that holds `local_artifacts/t08-rest-route-assessment-2026-09-25/`. At minimum, check Q06/Q07/Q08, Q16 and Q22. The dispatch-without-commit breach (§6.1) and the §1-versus-§59 private-port conflict (§6.9) also stay open for the coordinator.
+
+**T09 remains blocked** until three things hold: this return is accepted; the named decisions are accepted (Vanguard determination; option B or another amendment); and the route is ruled viable for bounded design. The proposed corrections above are **not applied** by this entry.
