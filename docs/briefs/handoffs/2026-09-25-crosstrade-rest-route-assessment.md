@@ -282,6 +282,15 @@ This review checked the return's internal consistency and its code citations aga
 - the ignored evidence directory is not in the cloud clone where this review ran;
 - that environment's network policy refused `crosstrade.io`.
 
-Acceptance therefore needs a Q-index spot-check on the machine that holds `local_artifacts/t08-rest-route-assessment-2026-09-25/`. At minimum, check Q06/Q07/Q08, Q16 and Q22. The dispatch-without-commit breach (§6.1) and the §1-versus-§59 private-port conflict (§6.9) also stay open for the coordinator.
+Acceptance therefore needs a Q-index spot-check on the machine that holds `local_artifacts/t08-rest-route-assessment-2026-09-25/`. At minimum, check Q06/Q07/Q08, Q16 and Q22. **Spot-check done (2026-09-26, operator, [PR #506 comment](https://github.com/Joshua-Asante/first-passage/pull/506#issuecomment-5842412951)).** The check ran on the machine that holds the evidence directory. Result:
+- Q06, Q07, Q08, Q16 and Q22 are each found at their cited lines. Q22 also carries the ~5:00 PM ET session reset.
+- All 35 captured pages match their `MANIFEST.tsv` SHA-256.
+- The three `.raw.txt` source files regenerate byte-identically from the hashed HTML.
+- 5 of the 227 `EVIDENCE_INDEX.sha256` entries are notes rather than file paths. They cannot pass a plain `sha256sum -c`, but they are not broken evidence.
+- The live pages were not re-fetched.
+
+This clears the vendor-quote reason for holding acceptance. Accepting the return remains the operator's decision.
+
+The dispatch-without-commit breach (§6.1) and the §1-versus-§59 private-port conflict (§6.9) also stay open for the coordinator.
 
 **T09 remains blocked** until three things hold: this return is accepted; the named decisions are accepted (Vanguard determination; option B or another amendment); and the route is ruled viable for bounded design. The proposed corrections above are **not applied** by this entry.
