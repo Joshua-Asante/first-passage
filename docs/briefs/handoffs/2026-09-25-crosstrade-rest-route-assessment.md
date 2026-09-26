@@ -294,3 +294,56 @@ This clears the vendor-quote reason for holding acceptance. Factual acceptance o
 The dispatch-without-commit breach (§6.1) stays open for the coordinator. The operator has resolved the private-port access restriction (§6.9); this changes read authority prospectively and does not retroactively accept the earlier execution or settle the technical qualifications.
 
 **T09 remains blocked** under the canonical [T09 gate table](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record): assessment evidence acceptance, operator behavior/contract decisions, bounded-design viability, and capability allocation/scope acceptance. This return supplies evidence; it does not satisfy any gate by itself. External propagation targets listed above remain owed.
+
+### 6.11 Gate A factual disposition (DRAFT)
+
+**Status:** DRAFT, 2026-09-26. Operator-directed; drafted by the coordinating session (Claude Code, Opus 5.5). Not yet an acceptance. The [gate row A](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record) stays Pending until the recording line below is completed.
+**Evidence revisions:** this return and the [Vanguard return](2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return) at `668650d` (#506 merge); code at `main` `ebef5a2`; vendor captures `local_artifacts/t08-rest-route-assessment-2026-09-25/` (`MANIFEST.tsv` `d069ae7e…`), spot-checked by the operator (#506 comment above); private sources read in place at primary-checkout `1c5c082`.
+**Scope:** facts only. This disposition accepts or rejects findings. It changes no behavior, contract, expression or policy, and it chooses nothing that belongs to gate B. It does not propagate into campaign §59, incident ADR §A4 or CAP; those stay owed after acceptance (§6.10 list).
+
+**Classes used.** Each finding carries one class, because each class leads to a different next step:
+
+| Class | Meaning | Next step |
+|---|---|---|
+| **Contradicted** | The route documents that a required behavior is unsupported | Change the expression or reject the route (gate B) |
+| **Conflicting** | Vendor documents disagree | Preserve the uncertainty; decisive evidence only if a leg depends on it |
+| **Not demonstrated** | Plausible, but no trace exists | A bounded validation, with its dependents held (gate C) |
+| **Evidence/process defect** | A defect in how evidence was made or kept | Repair or disclose; unrelated findings stand |
+| **Established** | Documented or source-verified to the stated scope | Use for B–D |
+
+**Finding-by-finding disposition.**
+
+| # | Finding (return §) | Disposition | Class | Retained limitation / consequence |
+|---|---|---|---|---|
+| A1 | Unknown-request verdict `POSITIVE RECONCILIATION ONLY` (§6.9) | **Accept** | Established (positive, same-session); Not demonstrated (cross-session, D5) | A located and correlated order resolves facts about **that order** only. Absence proves nothing about later effect: no processing bound, session-scoped lists, history without `clOrdId`, no stream replay, vendor and copier actors. The current preserve-and-block rule (`book_account_owner.py:1608`) governs. Operating through an unknown is a gate-B choice. |
+| A2 | Portfolio-route verdict `REQUIRES NAMED CONTRACT/EXPRESSION DECISION` (§6.9) | **Accept** | — | Drivers: Vanguard trailing (A6), the unknown-request posture (A1), and L2(c)/(d) (A4). Accepting it decides none of them. |
+| A3 | No HTTP status is documented as a no-send guarantee; pre-dispatch refusals are hedged "normally" and sourced from the webhook page via the REST "same controls" line (§6.3) | **Accept the finding. Do not accept** Q16 + Q01 as sufficient for an owner `rejected` transition. | Not demonstrated | The return left this to the coordinator (§6.3, §6.6). Because `rejected` stops fencing (`book_account_owner.py:791-792`), it asserts no future effect, and a hedged sentence from a different page does not meet that bar. Until a gate-C validation or a vendor statement scoped to REST exists, every REST refusal maps to `unknown` except those resolved by lookup. Gate C must price this, since a refused but malformed request would then block like a lost one. |
+| A4 | REST changes no L2 verdict. L2(a)/(b) creation S; L2(c) modify K; L2(d) full close K; cancel of Suspended GTC children K; takeover composite K (§6.5) | **Accept** | Not demonstrated (K rows) | Each K row needs its own trace on the selected route before any dependent qualification: see the drill map below. Creation-only S is not rest, fill or activation. |
+| A5 | L2(e) residual cover, L2(f) delayed attach, L2(g) native trailing, scoped close: U (§6.5; incident ADR §A4) | **Accept** | Contradicted | Already resolved for ORB and Striker by the §59 route-native editions; still open for Vanguard (A6). A scoped-close requirement stays U for every leg that uses one. |
+| A6 | Vanguard `TRAILING ACTIVE` ([return §5](2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return)); §6.7 (1) | **Accept** for the runtime binding (`9d4d4e1d…`). Caveat 1 was discharged by a §60 spot-read, not by reliance. | Contradicted (Vanguard depends on L2(g), U) | §59's Vanguard fit attestation is superseded for trailing. **Residual:** qualification loads a separate effective-settings successor (Vanguard return, Gate A caveat work). The verdict transfers to the frozen successor only if that successor's Vanguard row leaves trailing on. Re-check at freeze. Edition versus rejection is the operator's (gate B). |
+| A7 | Late-reject visibility is worse on REST: there is no Alert History row, so the owner must poll (§6.5, Q09) | **Accept** | Established | This is a design obligation for gate C and T09, not a verdict change. |
+| A8 | Coverage repair still applies to REST bracket placements. It is a third-party actor that can place an OCO pair we didn't send (§6.7 (5)) | **Accept** | Established (existence); Not demonstrated (REST-scoped "protective actions only") | It should be inert for one-contract entries. Any later effect it causes is still an unexplained effect under the current rules. |
+| A9 | Vendor pages disagree on triggered-trail handoff, Q12 vs Q13 (§6.7 (4)) | **Accept** | Conflicting | Not decision-bearing while no leg uses the CrossTrade-managed trail: L2(g) is U either way. Obtain decisive evidence only if an expression starts depending on it. |
+| A10 | Hidden account configuration (copier leader/follower, Account Manager auto-close, flatten, Block Signals, Closing Only) can add actors (§6.2) | **Accept** | Not demonstrated (absence) | The CAP R5 inventory is owed from the operator. No request-level narrowing removes these actors. |
+| A11 | Corrections §6.7 (2), (3) and (6): the overview was retrievable; support's error claim is one-directional; capabilities don't change with the sender | **Accept** | Established | Propagation to T08 §7.9 and the route note stays owed (§6.10). |
+| A12 | Original support email bytes outstanding; only a hashed transcription exists (§6.8) | **Accept as an open defect** | Evidence/process defect | No finding here depends on the transcription for a *positive* capability. Support is cited only where it withholds a guarantee (no time bound, no durable replay), which is the conservative direction. T08 §7.8 part 2 stays open. |
+| A13 | Dispatch without a committed packet (§6.1) | **Disclosed; does not void the findings** | Evidence/process defect | Why the findings stand: every conclusion is bound to retained, hashed vendor captures (verified by the operator's spot-check); the packet's pre-§6 bytes were hashed at execution (`0b465c4f…`); the packet and its two dependencies were committed with the return (#506); and the executor's actions stayed inside the packet's return boundary (§6.1 "Not done"). What is lost: an independent guarantee that the executed instructions equal a reviewed, committed version. The committed-handoff rule is owned by the [surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md). This is a single occurrence, so no new rule is proposed here. |
+| A14 | Private-port access (§6.9): the earlier executor reused recorded findings and did not read the Striker body | **Accept as historical scope** | — | §60 governs reads prospectively. The Vanguard verdict (A6) rests on a direct read, not on the earlier scope. |
+
+**Drill map by behavior and interface, not by label.** This return and the [operator session plan](../../notes/2026-09-25-t08-drills-t07-reads-operator-session.md) number drills differently and partly use different request forms. Authorization and evidence bind to the row, never to a "D*n*" label alone:
+
+| Behavior to establish | This return | Session plan | Interface in the plan | Authorized? | Gate-A status |
+|---|---|---|---|---|---|
+| §A1: one-contract entry and bracket created in one call; the stop activates on the first fill at quantity 1 | D1 | D1 | Webhook-form fields | In principle, 2026-09-25 (operator performs) | Not demonstrated |
+| L2(c): the old stop survives a rejected modify | D2 | D2 | Webhook form | Same | Not demonstrated |
+| L2(d): a full close leaves no working protective order | D3 | D3 | Webhook form | Same | Not demonstrated |
+| Cancelling a resting stop entry ends its Suspended children | D6 | D4 | Webhook form | Same | Not demonstrated |
+| Same-session REST reconciliation recipe on a known order | D4 | — | REST | **No** | Not demonstrated |
+| Prior-session lifecycle read by id | D5 | — | REST | **No** | Not demonstrated |
+| Exit-side partial fills | — | D5 (moot) | — | — | Moot only under a one-contract exit rule, which is a gate-B choice. It is not settled by this disposition. |
+
+**Interface rule.** A trace counts only for the interface it exercised. A webhook-form D1–D4 trace qualifies the webhook form. If T09 selects REST, each behavior needs a REST-form trace, or an accepted argument that both forms reach the same Tradovate call with the same observations. §6.5 argues this for creation, but it has not been accepted as a substitute for a trace.
+
+**What this unlocks** (gate row A): the accepted findings may be used for the operator's gate-B decisions and for the gate-C/D analysis. Nothing else: no behavior change, T09 implementation, drill, access, spend or GO.
+
+**Recording line:** _pending._ On acceptance, replace with: accepted / accepted with changes / rejected, the date, the accepting seat, and any change to A1–A14. Then update gate row A and STATE's 2026-09-26 line.
