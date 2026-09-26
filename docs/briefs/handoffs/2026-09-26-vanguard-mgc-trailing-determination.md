@@ -52,19 +52,21 @@ The runtime digest is computed over canonical effective values after derivation,
 
 ## 5. Executor return
 
-**Status:** not dispatched.
+**Status:** returned 2026-09-25 (local session, operator machine).
 
 | Field | Value |
 |---|---|
-| Executor / dispatch revision | |
-| Checkout revision and tree state | |
-| Hash results (4 rows, match/mismatch) | |
-| Runtime digest reproduced? | |
-| Port evidence (`file:line`) | |
-| Effective-binding evidence | |
-| Pine cross-check (`file:line`, agree/disagree) | |
-| Breakeven / grace (one line each) | |
-| **Verdict** | |
-| Propagation targets (not applied) | |
+| Executor / dispatch revision | Claude Code (Opus), local; packet read at `6875616` |
+| Checkout revision and tree state | Primary checkout `1c5c082`; `.\fp.ps1 doctor` passed (ops-env, Python 3.13.2, 62 locked packages matched). Tree dirty: 1 modified and 4 untracked tracked-path docs (T08 handoff, REST assessment, CAP deletion map, assurance review, route note); none is a pinned file. |
+| Hash results (4 rows, match/mismatch) | Pine `af26899c…` **match**. Port `e6a03d04…` **match** (runtime path and the corrected-ports copy). `effective_inputs.json` `66406dee…` **match** (both locations). Runtime digest: see next row. |
+| Runtime digest reproduced? | **Yes**, `9d4d4e1d…`. Recomputed through `.\fp.ps1 python` with the registry's own derivation (`book_adapters.py:150-167`: ORB `qty` from `c1_rail.book_policy.leg`, canonical JSON). No private port was imported or executed. |
+| Port evidence (`file:line`) | `vanguard_mgc.py:175-181`: `_bracket` sets `trail_activation_ticks`/`trail_offset_ticks` from the arm/distance multipliers × entry stop distance whenever `use_trail` is true, else `None`. Called on entry (`:253`), scale-in (`:269`) and every managed-bar amend (`:274`). `VanguardParams` default `use_trail` is **true** (`:69`); both trail multipliers default to positive values (`:70-71`), so both fields are non-null and positive. |
+| Effective-binding evidence | The pinned file's `vanguard_mgc.adapter` object is **empty** (zero overrides). The loader passes it as `build(mode=mode, **row["adapter"])` (`book_adapters.py:175`), and `build` constructs `VanguardParams(**overrides)` (`vanguard_mgc.py:291-292`). The effective binding is therefore the port source defaults: trailing **enabled**. This is loader fallback, not an explicit effective value. |
+| Pine cross-check (`file:line`, agree/disagree) | **Agree.** `useTrail` defaults to true (`.pine:235`), with positive arm/distance inputs (`:237-238`). Every `strategy.exit` carries `trail_points`/`trail_offset` gated on `useTrail`: entry, including the grace branch (`:452-461`), and per-bar management (`:499-503`). The port reproduces the same expression. |
+| Breakeven / grace (one line each) | **Breakeven: inactive.** Port `use_breakeven` defaults to false (`:66`); Pine `useBreakeven` defaults to false (`.pine:228`); no override. **Grace: inactive.** Port `min_bars_before_stop` defaults to non-positive (`:60`), so `stop_activated` is set on entry (`:245`) and the grace level at `:177` is never used. Pine agrees (`.pine:169-171`, `:497`). |
+| **Verdict** | **`TRAILING ACTIVE`.** Under the accepted effective binding, every Vanguard bracket (entry, scale-in and each amend) carries triggered-trail parameters. The route note line 243 claim is **confirmed**. |
+| Propagation targets (not applied) | Campaign §59 Ruling 3 (the Vanguard "fits the narrowed shape" attestation fails, because Vanguard depends on L2(g)); incident ADR §A4; CAP R3 row; REST assessment §6.7 (1) (confirmed, not corrected). The operator decision is §4 `TRAILING ACTIVE`: a route-native fixed-stop Vanguard edition (§59 K = 1 pattern) or rejecting the leg on this route. |
+
+No scratch extracts were written, and no source bodies or numeric parameter values appear above.
 
 **Coordinator disposition:** pending.
