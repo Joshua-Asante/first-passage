@@ -345,14 +345,24 @@ It fails closed (exit 2, nothing written, `--check` included) on anything it
 cannot roll unambiguously, and that refusal withholds **every** change of the
 invocation, including a due Weekly roll or keep-15 archive:
 
-- a Monthly deadline dated the 29th–31st (the heading cannot carry that day
-  through short months). Month-end procedure: edit the Monthly heading's
-  `next deadline **YYYY-MM-DD**` to the cadence owner's next date by hand, then
-  rerun `state_roll.py` for the remaining rolls;
-- a duplicate Weekly/Monthly heading, or a Weekly `bucket` not in
-  `MM-DD→MM-DD` form;
+- a past Monthly deadline dated the 28th–31st whose heading has no
+  `cadence day NN` anchor. A month-end clamp (Jan 31 → Feb 28) leaves a date
+  that no longer records the intended day, so the roller will not guess it.
+  Month-end procedure: add the intended day once, e.g.
+  `### Monthly — recurring (rolling; next deadline **2027-01-31**, cadence day 31)`,
+  and rerun. The roller then clamps each short month (Feb 28, or Feb 29 in a
+  leap year; Apr 30) and returns to the anchored day (Mar 31). Do not hand-clamp
+  the date without the anchor;
+- a `cadence day` that is not exactly one `cadence day NN` with NN in 1–31, or
+  that disagrees with the heading's deadline (checked on every run, due or not);
+- a duplicate Weekly/Monthly heading, a Weekly `bucket` not in `MM-DD→MM-DD`
+  form, or more than one `Scheduled forward triggers` or
+  `Executed operator decisions` section (`check_state_currency.py` also fails on
+  duplicate sections or a duplicate `Last curated`);
 - a decision index out of newest-first date order, a dated bullet not in
-  `- **YYYY-MM-DD** — ` form, or an overflow row with a continuation line.
+  `- **YYYY-MM-DD** — ` form, or an overflow row followed (after any blank
+  lines) by anything other than another index row or the section end, such as
+  an indented continuation line.
 
 `check_state_currency.py` names the roller only for past deadlines it can roll;
 a deadline beyond the horizon and the other failures are corrected by hand.

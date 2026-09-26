@@ -57,11 +57,14 @@ ROLL_HINT = "for deadline rolls run: python -I scripts/fp.py python scripts/stat
 MANUAL_HINT = (
     "correct the heading by hand (the roller only advances past deadlines)"
 )
-# Mirrors state_roll.MAX_MONTHLY_DAY: days 29-31 are refused by the roller.
-MAX_ROLLABLE_MONTHLY_DAY = 28
+# Mirrors state_roll.py (a test pins them equal): a Monthly deadline on day 28
+# or later may be a month-end clamp, so the roller needs a `cadence day NN`
+# anchor in the heading before it will roll it.
+MAX_UNANCHORED_MONTHLY_DAY = 27
+CADENCE_DAY_RE = re.compile(r"\bcadence day (\d{1,2})\b")
 MONTH_END_HINT = (
-    "Monthly days 29-31 are not auto-rolled; roll the heading by hand "
-    "(see scripts/README.md, STATE currency)"
+    "Monthly days 28-31 roll only with a 'cadence day NN' anchor in the "
+    "heading; add it, then run the roller (see scripts/README.md, STATE currency)"
 )
 
 
@@ -72,25 +75,32 @@ def today_et() -> date:
     return datetime.now(ET).date()
 
 
+def _single(pattern: re.Pattern[str], text: str, name: str) -> re.Match[str]:
+    """The one match of pattern; a duplicate would leave all but the first unchecked."""
+    found = list(pattern.finditer(text))
+    if not found:
+        raise ValueError(f"STATE.md has no {name}")
+    if len(found) > 1:
+        raise ValueError(f"STATE.md has {len(found)} {name} copies; keep exactly one")
+    return found[0]
+
+
 def last_curated(text: str) -> date:
-    match = LAST_CURATED_RE.search(text)
-    if match is None:
-        raise ValueError("STATE.md has no Last curated field")
+    match = _single(LAST_CURATED_RE, text, "Last curated field")
     return date.fromisoformat(match.group(1))
 
 
 def newest_decision_index_date(text: str) -> date:
-    section = DECISION_SECTION_RE.search(text)
-    if section is None:
-        raise ValueError("STATE.md has no Executed operator decisions section")
+    section = _single(DECISION_SECTION_RE, text, "Executed operator decisions section")
     dates = [date.fromisoformat(m.group(1)) for m in BULLET_DATE_RE.finditer(section.group(0))]
     if not dates:
         raise ValueError("decision index has no dated bullets")
     return max(dates)
 
 
-def recurring_deadlines(forward_text: str) -> list[tuple[str, date]]:
-    found: dict[str, date] = {}
+def recurring_headings(forward_text: str) -> list[tuple[str, date, str]]:
+    """(kind, next deadline, heading line) for Weekly then Monthly."""
+    found: dict[str, tuple[date, str]] = {}
     for match in RECURRING_HEADING_RE.finditer(forward_text):
         kind = match.group(1)
         heading = match.group(0)
@@ -99,11 +109,24 @@ def recurring_deadlines(forward_text: str) -> list[tuple[str, date]]:
             raise ValueError(f"{kind} recurring heading has no next deadline **YYYY-MM-DD**")
         if kind in found:
             raise ValueError(f"duplicate {kind} recurring heading")
-        found[kind] = date.fromisoformat(deadline.group(1))
+        found[kind] = (date.fromisoformat(deadline.group(1)), heading)
     missing = [k for k in ("Weekly", "Monthly") if k not in found]
     if missing:
         raise ValueError("missing recurring heading: " + ", ".join(missing))
-    return [(k, found[k]) for k in ("Weekly", "Monthly")]
+    return [(k, *found[k]) for k in ("Weekly", "Monthly")]
+
+
+def recurring_deadlines(forward_text: str) -> list[tuple[str, date]]:
+    return [(kind, deadline) for kind, deadline, _ in recurring_headings(forward_text)]
+
+
+def roller_needs_anchor(kind: str, deadline: date, heading: str) -> bool:
+    """True when state_roll.py would refuse this past deadline for want of an anchor."""
+    return (
+        kind == "Monthly"
+        and deadline.day > MAX_UNANCHORED_MONTHLY_DAY
+        and CADENCE_DAY_RE.search(heading) is None
+    )
 
 
 def heading_is_discharged(heading: str) -> bool:
@@ -137,14 +160,12 @@ def problems(text: str, today: date) -> list[str]:
             f"Last curated {curated.isoformat()} is behind newest "
             f"decision-index date {newest.isoformat()}"
         )
-    forward = FORWARD_SECTION_RE.search(text)
-    if forward is None:
-        raise ValueError("STATE.md has no Scheduled forward triggers section")
+    forward = _single(FORWARD_SECTION_RE, text, "Scheduled forward triggers section")
     body = forward.group(0)
-    for kind, deadline in recurring_deadlines(body):
+    for kind, deadline, heading in recurring_headings(body):
         if deadline < today:
             hint = ROLL_HINT
-            if kind == "Monthly" and deadline.day > MAX_ROLLABLE_MONTHLY_DAY:
+            if roller_needs_anchor(kind, deadline, heading):
                 hint = MONTH_END_HINT
             out.append(
                 f"{kind} next deadline {deadline.isoformat()} is in the past "

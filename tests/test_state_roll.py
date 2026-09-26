@@ -118,7 +118,9 @@ def _pair(tmp_path: Path, state: str, archive: str | None = None) -> tuple[Path,
 
 
 def _read(path: Path) -> str:
-    return path.read_text(encoding="utf-8", newline="")
+    # Path.read_text(newline=) exists only from Python 3.13; CI runs 3.11.
+    with path.open(encoding="utf-8", newline="") as handle:
+        return handle.read()
 
 
 def _out(result: subprocess.CompletedProcess) -> str:
@@ -217,7 +219,7 @@ def test_monthly_rolls_across_year_end(tmp_path: Path) -> None:
     assert "### Monthly — recurring (rolling; next deadline **2027-01-21**)" in _read(state)
 
 
-def test_monthly_day_above_28_fails_closed(tmp_path: Path) -> None:
+def test_unanchored_monthly_day_above_27_fails_closed(tmp_path: Path) -> None:
     # A clamped deadline cannot carry the intended cadence day across short
     # months, so the roller refuses rather than drift (Jan 31 -> Feb 28 -> Mar 28).
     with pytest.raises(mod.StateRollError):
@@ -226,12 +228,107 @@ def test_monthly_day_above_28_fails_closed(tmp_path: Path) -> None:
     before = _read(state)
     result = _run(state, archive, "2026-11-01")
     assert result.returncode == 2
-    assert b"roll the Monthly heading by hand" in result.stderr
+    assert b"cadence day NN" in result.stderr
     assert _read(state) == before
 
 
-def test_monthly_day_28_still_rolls() -> None:
-    assert mod.next_monthly(date(2027, 1, 28), date(2027, 2, 1)).isoformat() == "2027-02-28"
+def test_monthly_day_27_still_rolls() -> None:
+    assert mod.next_monthly(date(2027, 1, 27), date(2027, 2, 1)).isoformat() == "2027-02-27"
+
+
+# --- Codex 4110350208: month-end cadence anchor -------------------------------
+
+MONTHLY_ANCHORED = (
+    "### Monthly — recurring (rolling; next deadline **{deadline}**, cadence day {day})"
+)
+
+
+def _monthly_state(deadline: str, day: str | None, weekly: str) -> str:
+    heading = (
+        MONTHLY_ANCHORED.format(deadline=deadline, day=day)
+        if day is not None
+        else f"### Monthly — recurring (rolling; next deadline **{deadline}**)"
+    )
+    return _state(weekly=weekly, monthly="2026-10-21").replace(
+        "### Monthly — recurring (rolling; next deadline **2026-10-21**)", heading
+    )
+
+
+def test_hand_clamped_month_end_without_anchor_fails_closed(tmp_path: Path) -> None:
+    # The Codex scenario: Jan 31 hand-clamped to Feb 28 reads back as day 28;
+    # rolling it would silently move the cadence to the 28th. Refuse instead.
+    original = _monthly_state("2027-02-28", None, weekly="2027-03-05")
+    state, archive = _pair(tmp_path, original)
+    for extra in ((), ("--check",)):
+        result = _run(state, archive, "2027-03-01", *extra)
+        assert result.returncode == 2
+        assert b"cadence day NN" in result.stderr
+        assert _read(state) == original
+
+
+def test_anchored_month_end_keeps_cadence_through_short_months(tmp_path: Path) -> None:
+    original = _monthly_state("2027-01-31", "31", weekly="2027-03-05")
+    state, archive = _pair(tmp_path, original)
+    result = _run(state, archive, "2027-02-01")
+    assert result.returncode == 0, result.stderr
+    assert _out(result) == "monthly: 2027-01-31 -> 2027-02-28\n"
+    assert _read(state) == _monthly_state("2027-02-28", "31", weekly="2027-03-05")
+    result = _run(state, archive, "2027-03-01")
+    assert result.returncode == 0, result.stderr
+    assert _out(result) == "monthly: 2027-02-28 -> 2027-03-31\n"
+    assert _read(state) == _monthly_state("2027-03-31", "31", weekly="2027-03-05")
+
+
+@pytest.mark.parametrize(
+    ("old", "day", "today", "new"),
+    [
+        ("2028-01-31", 31, "2028-02-01", "2028-02-29"),  # leap February
+        ("2027-01-30", 30, "2027-02-01", "2027-02-28"),
+        ("2027-02-28", 30, "2027-03-01", "2027-03-30"),
+        ("2027-03-31", 31, "2027-04-01", "2027-04-30"),
+        ("2027-04-30", 31, "2027-05-01", "2027-05-31"),
+        ("2027-02-28", 28, "2027-03-01", "2027-03-28"),
+        ("2027-12-31", 31, "2028-01-01", "2028-01-31"),
+    ],
+)
+def test_next_monthly_with_anchor_clamps_only_the_month(
+    old: str, day: int, today: str, new: str
+) -> None:
+    assert (
+        mod.next_monthly(date.fromisoformat(old), date.fromisoformat(today), day)
+        == date.fromisoformat(new)
+    )
+
+
+@pytest.mark.parametrize(
+    ("deadline", "day"),
+    [
+        ("2027-03-15", "31"),  # anchor disagrees with the deadline
+        ("2027-03-30", "31"),  # March has a 31st
+        ("2027-02-28", "27"),
+        ("2027-01-31", "32"),
+        ("2027-01-31", "0"),
+        ("2027-01-31", "x"),
+        ("2027-01-31", "31, cadence day 31"),  # duplicate anchor
+    ],
+)
+def test_bad_cadence_anchor_fails_closed(tmp_path: Path, deadline: str, day: str) -> None:
+    original = _monthly_state(deadline, day, weekly="2027-06-04")
+    state, archive = _pair(tmp_path, original)
+    result = _run(state, archive, "2027-06-01")
+    assert result.returncode == 2
+    assert b"cadence day" in result.stderr
+    assert _read(state) == original
+
+
+def test_anchor_is_validated_even_when_nothing_is_due(tmp_path: Path) -> None:
+    # A heading the roller cannot read is reported on every run, not only on
+    # the day a roll falls due.
+    original = _monthly_state("2027-03-15", "31", weekly="2027-03-05")
+    state, archive = _pair(tmp_path, original)
+    result = _run(state, archive, "2027-03-01")
+    assert result.returncode == 2
+    assert _read(state) == original
 
 
 def test_monthly_deadline_today_is_not_past(tmp_path: Path) -> None:
@@ -620,7 +717,7 @@ def test_monthly_day_above_28_blocks_the_whole_invocation(tmp_path: Path) -> Non
     for extra in ((), ("--check",)):
         result = _run(state, archive, "2026-11-01", *extra)
         assert result.returncode == 2
-        assert b"roll the Monthly heading by hand" in result.stderr
+        assert b"cadence day NN" in result.stderr
         assert b"rerun" in result.stderr
         assert _state_bytes(state, archive) == before
 
@@ -724,7 +821,10 @@ def test_heading_regexes_match_the_currency_checker() -> None:
     spec.loader.exec_module(checker)
     assert mod.RECURRING_HEADING_RE.pattern == checker.RECURRING_HEADING_RE.pattern
     assert mod.DEADLINE_RE.pattern == checker.DEADLINE_RE.pattern
-    assert mod.MAX_MONTHLY_DAY == checker.MAX_ROLLABLE_MONTHLY_DAY
+    assert mod.MAX_UNANCHORED_MONTHLY_DAY == checker.MAX_UNANCHORED_MONTHLY_DAY
+    assert mod.CADENCE_DAY_RE.pattern == checker.CADENCE_DAY_RE.pattern
+    assert mod.FORWARD_SECTION_RE.pattern == checker.FORWARD_SECTION_RE.pattern
+    assert mod.DECISION_SECTION_RE.pattern == checker.DECISION_SECTION_RE.pattern
 
 
 def test_index_out_of_date_order_fails_closed(tmp_path: Path) -> None:
@@ -772,4 +872,88 @@ def test_overflow_row_with_continuation_line_fails_closed(tmp_path: Path) -> Non
     result = _run(state, archive, TODAY)
     assert result.returncode == 2
     assert b"continuation" in result.stderr
+    assert _state_bytes(state, archive) == before
+
+
+# --- Codex 4110350204: continuation after a blank line ----------------------
+
+
+@pytest.mark.parametrize("position", [15, 16])
+def test_overflow_continuation_after_blank_line_fails_closed(
+    tmp_path: Path, position: int
+) -> None:
+    # A one-line lookahead sees only the blank line; the indented continuation
+    # would be orphaned in STATE while its row moves to the archive.
+    rows = _rows(17)
+    rows[position] = rows[position] + "\n\n  continuation of the same decision"
+    broken = _state(rows=rows)
+    state, archive = _pair(tmp_path, broken)
+    before = _state_bytes(state, archive)
+    for extra in ((), ("--check",)):
+        result = _run(state, archive, TODAY, *extra)
+        assert result.returncode == 2
+        assert b"continuation" in result.stderr
+        assert _state_bytes(state, archive) == before
+
+
+def test_overflow_followed_by_blank_lines_then_prose_fails_closed(tmp_path: Path) -> None:
+    # Whatever follows the blank lines is not a row and not the section end:
+    # the roller cannot tell whether it belongs to the moved record.
+    rows = _rows(17)
+    rows[16] = rows[16] + "\n\n\nloose paragraph"
+    broken = _state(rows=rows)
+    state, archive = _pair(tmp_path, broken)
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 2
+    assert _read(state) == broken
+
+
+@pytest.mark.parametrize("newline", ["\n", "\r\n"])
+def test_blank_separated_overflow_rows_archive_cleanly(
+    tmp_path: Path, newline: str
+) -> None:
+    rows = [row + "\n" for row in _rows(17)]
+    original = _state(rows=rows, weekly=ROLLED_WEEKLY).replace("\n", newline)
+    state, archive = _pair(tmp_path, original)
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 0, result.stderr
+    assert _out(result) == "index: archived 2 row(s)\n"
+    # The moved rows take their separating blank lines with them.
+    assert _read(state) == _state(rows=rows[:15], weekly=ROLLED_WEEKLY).replace(
+        "\n", newline
+    )
+    archived = _read(archive)
+    for row in _rows(17)[15:]:
+        assert row.split(" [record]")[0] in archived
+
+
+# --- Codex 4110350211: duplicate sections -----------------------------------
+
+
+def test_duplicate_forward_section_fails_closed(tmp_path: Path) -> None:
+    # Only the first section would be rolled while the second keeps a stale
+    # deadline; refuse instead of reporting a clean roll.
+    broken = _state() + (
+        "\n## Scheduled forward triggers (continued)\n\n"
+        "### Monthly — recurring (rolling; next deadline **2026-08-21**)\n"
+    )
+    state, archive = _pair(tmp_path, broken)
+    for extra in ((), ("--check",)):
+        result = _run(state, archive, TODAY, *extra)
+        assert result.returncode == 2
+        assert b"Scheduled forward triggers" in result.stderr
+        assert _read(state) == broken
+
+
+def test_duplicate_decision_section_fails_closed(tmp_path: Path) -> None:
+    broken = _state(rows=_rows(17), weekly=ROLLED_WEEKLY) + (
+        "\n## Executed operator decisions — decision index (older)\n\n"
+        + "\n".join(_rows(3, newest=date(2026, 8, 1)))
+        + "\n"
+    )
+    state, archive = _pair(tmp_path, broken)
+    before = _state_bytes(state, archive)
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 2
+    assert b"Executed operator decisions" in result.stderr
     assert _state_bytes(state, archive) == before

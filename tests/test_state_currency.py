@@ -242,10 +242,63 @@ def test_past_dated_subsection_fail_does_not_name_state_roll(tmp_path: Path) -> 
     assert b"state_roll.py" not in _fail_text(state, "2026-09-03")
 
 
-def test_past_month_end_monthly_fail_asks_for_hand_roll(tmp_path: Path) -> None:
-    # state_roll.py refuses Monthly days 29-31, so the hint must not send the
-    # operator to it.
-    state = _write(tmp_path / "STATE.md", _state(monthly="2026-08-31"))
+@pytest.mark.parametrize("monthly", ["2026-08-31", "2026-08-28"])
+def test_past_unanchored_month_end_monthly_fail_asks_for_anchor(
+    tmp_path: Path, monthly: str
+) -> None:
+    # state_roll.py refuses unanchored Monthly days 28-31 (a hand-clamped
+    # month end reads back as the 28th-30th), so the hint must not send the
+    # operator straight to it; it names the anchor that makes it rollable.
+    state = _write(tmp_path / "STATE.md", _state(monthly=monthly))
     stderr = _fail_text(state, "2026-09-03")
-    assert b"state_roll.py" not in stderr
-    assert b"Monthly days 29-31 are not auto-rolled" in stderr
+    assert b"for deadline rolls run" not in stderr
+    assert b"cadence day NN" in stderr
+
+
+def test_past_anchored_month_end_monthly_fail_names_state_roll(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state(monthly="2026-08-31").replace(
+            "next deadline **2026-08-31**)", "next deadline **2026-08-31**, cadence day 31)"
+        ),
+    )
+    assert b"for deadline rolls run" in _fail_text(state, "2026-09-03")
+
+
+# --- Codex 4110350211: duplicate singleton sections -------------------------
+
+
+def test_duplicate_forward_section_exits_one(tmp_path: Path) -> None:
+    # A second section's stale deadline would otherwise go unchecked.
+    state = _write(
+        tmp_path / "STATE.md",
+        _state()
+        + (
+            "\n## Scheduled forward triggers (continued)\n\n"
+            "### Monthly — recurring (rolling; next deadline **2026-08-21**)\n"
+        ),
+    )
+    assert b"Scheduled forward triggers" in _fail_text(state, "2026-09-03")
+
+
+def test_duplicate_decision_section_exits_one(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state()
+        + (
+            "\n## Executed operator decisions — decision index (newer)\n\n"
+            "- **2026-09-09** — newer than Last curated.\n"
+        ),
+    )
+    assert b"Executed operator decisions" in _fail_text(state, "2026-09-03")
+
+
+def test_duplicate_last_curated_exits_one(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state().replace(
+            "**Last curated:** 2026-09-03\n",
+            "**Last curated:** 2026-09-03\n\n**Last curated:** 2026-08-01\n",
+        ),
+    )
+    assert b"Last curated" in _fail_text(state, "2026-09-03")

@@ -13,8 +13,10 @@ without being archived again.
 
 Byte preservation: files are read and written with newline translation off and
 UTF-8, and only the deadline date (plus a Weekly `bucket MM-DD→MM-DD`) inside
-the Weekly/Monthly heading lines and whole overflow index rows are touched. Coverage text, `**Last curated:**`, the queue and every other
-section stay exactly as authored.
+the Weekly/Monthly heading lines and whole overflow index rows (with the blank
+lines directly above each) are touched. Coverage text, `**Last curated:**`, the
+queue and every other section stay exactly as authored. A Monthly cadence on
+day 28-31 rolls only with a `cadence day NN` anchor in its heading.
 
 Clock is America/New_York. Tests inject --today or STATE_CURRENCY_TODAY.
 
@@ -26,6 +28,7 @@ planned change of that invocation is withheld.
 from __future__ import annotations
 
 import argparse
+import calendar
 import os
 import posixpath
 import re
@@ -118,36 +121,92 @@ def first_friday(from_date: date) -> date:
     return from_date + timedelta(days=(4 - from_date.weekday()) % 7)
 
 
-# Days 29-31 do not exist in every month. After a clamp, the heading no longer
-# records the intended cadence day, so rolling again would drift (Jan 31 ->
-# Feb 28 -> Mar 28). Fail closed and leave those cadences to a hand roll.
-MAX_MONTHLY_DAY = 28
+# Days 29-31 do not exist in every month, and a month-end clamp (Jan 31 ->
+# Feb 28, Mar 31 -> Apr 30) leaves a deadline on the 28th-30th that no longer
+# records the intended day. Rolling it from the date alone would drift (Jan 31
+# -> Feb 28 -> Mar 28). So a Monthly deadline on day 28 or later rolls only
+# when the heading carries an explicit `cadence day NN` anchor; without one the
+# roller fails closed. A test pins these to check_state_currency.py's copies.
+MAX_UNANCHORED_MONTHLY_DAY = 27
+CADENCE_DAY_WORD_RE = re.compile(r"\bcadence day\b")
+CADENCE_DAY_RE = re.compile(r"\bcadence day (\d{1,2})\b")
+ANCHOR_HINT = (
+    "add 'cadence day NN' (the intended day of month, 1-31) to the Monthly "
+    "heading, then rerun (this invocation applied nothing; see "
+    "scripts/README.md, STATE currency)"
+)
 
 
-def next_monthly(old_deadline: date, today: date) -> date:
-    """First date >= today on old_deadline's day-of-month."""
-    wanted_day = old_deadline.day
-    if wanted_day > MAX_MONTHLY_DAY:
-        raise StateRollError(
-            f"monthly cadence day {wanted_day} exceeds {MAX_MONTHLY_DAY}; the "
-            "heading cannot carry the intended day across short months, so "
-            "roll the Monthly heading by hand, then rerun (this invocation "
-            "applied nothing)"
-        )
+def _month_day(year: int, month: int, day: int) -> date:
+    """date(year, month, day), clamped to the month's last day."""
+    return date(year, month, min(day, calendar.monthrange(year, month)[1]))
+
+
+def next_monthly(old_deadline: date, today: date, anchor: int | None = None) -> date:
+    """First date >= today on the cadence day (clamped to short months).
+
+    Without an anchor the cadence day is old_deadline's day, which is only
+    trusted up to MAX_UNANCHORED_MONTHLY_DAY."""
+    if anchor is None:
+        if old_deadline.day > MAX_UNANCHORED_MONTHLY_DAY:
+            raise StateRollError(
+                f"Monthly deadline {old_deadline.isoformat()} is on day "
+                f"{old_deadline.day}, which may be a month-end clamp of a later "
+                f"cadence day; {ANCHOR_HINT}"
+            )
+        anchor = old_deadline.day
     year, month = today.year, today.month
     for _ in range(24):
-        candidate = date(year, month, wanted_day)
+        candidate = _month_day(year, month, anchor)
         if candidate >= today:
             return candidate
         year, month = (year + 1, 1) if month == 12 else (year, month + 1)
     raise StateRollError("no monthly deadline found within 24 months")
 
 
+def _cadence_anchor(body: str, heading: re.Match[str], deadline: date) -> int | None:
+    """The heading's `cadence day NN`, validated against its deadline."""
+    words = list(CADENCE_DAY_WORD_RE.finditer(body, heading.start(), heading.end()))
+    if not words:
+        return None
+    anchor = CADENCE_DAY_RE.search(body, heading.start(), heading.end())
+    if len(words) > 1 or anchor is None or not 1 <= int(anchor.group(1)) <= 31:
+        raise StateRollError(
+            "Monthly heading has a cadence day the roller cannot read; it "
+            "expects exactly one 'cadence day NN' with NN in 1-31"
+        )
+    day = int(anchor.group(1))
+    expected = _month_day(deadline.year, deadline.month, day)
+    if deadline != expected:
+        raise StateRollError(
+            f"Monthly deadline {deadline.isoformat()} disagrees with its "
+            f"'cadence day {day}' (expected {expected.isoformat()}); correct "
+            "the heading by hand"
+        )
+    return day
+
+
+def _single_section(pattern: re.Pattern[str], text: str, name: str) -> re.Match[str]:
+    """The one section `pattern` matches; zero or several fail closed.
+
+    With a duplicate, only the first would be rolled while the gate reads the
+    same first match and passes, so a second copy would go stale silently."""
+    found = list(pattern.finditer(text))
+    if not found:
+        raise StateRollError(f"STATE.md has no {name} section")
+    if len(found) > 1:
+        raise StateRollError(
+            f"STATE.md has {len(found)} {name} sections; merge them by hand"
+        )
+    return found[0]
+
+
 def _forward_section(text: str) -> re.Match[str]:
-    section = FORWARD_SECTION_RE.search(text)
-    if section is None:
-        raise StateRollError("STATE.md has no Scheduled forward triggers section")
-    return section
+    return _single_section(FORWARD_SECTION_RE, text, "Scheduled forward triggers")
+
+
+def _decision_section(text: str) -> re.Match[str]:
+    return _single_section(DECISION_SECTION_RE, text, "Executed operator decisions")
 
 
 def _splice(text: str, section: re.Match[str], new_body: str) -> str:
@@ -219,9 +278,11 @@ def roll_monthly(text: str, today: date) -> tuple[str, str | None]:
     heading = _recurring_heading(body, "Monthly")
     deadline = _deadline(body, heading, "Monthly")
     old_deadline = date.fromisoformat(deadline.group(1))
+    # Validated on every run, so a bad anchor surfaces before a roll is due.
+    anchor = _cadence_anchor(body, heading, old_deadline)
     if old_deadline >= today:
         return text, None
-    new_deadline = next_monthly(old_deadline, today)
+    new_deadline = next_monthly(old_deadline, today, anchor)
     new_text = _apply_edits(text, section, [(deadline.span(1), new_deadline.isoformat())])
     return new_text, f"monthly: {old_deadline.isoformat()} -> {new_deadline.isoformat()}"
 
@@ -279,10 +340,7 @@ def index_rows(text: str) -> list[re.Match[str]]:
     their authored order), and a moved row is one whole line. Anything else
     fails closed instead of archiving the wrong rows or half a record.
     """
-    section = DECISION_SECTION_RE.search(text)
-    if section is None:
-        raise StateRollError("STATE.md has no Executed operator decisions section")
-    body = section.group(0)
+    body = _decision_section(text).group(0)
     rows = list(INDEX_ROW_RE.finditer(body))
     row_starts = {match.start() for match in rows}
     for bullet in DATED_BULLET_RE.finditer(body):
@@ -298,17 +356,44 @@ def index_rows(text: str) -> list[re.Match[str]]:
                 f"{older.group(1)}; restore newest-first order by hand"
             )
     for match in rows[KEEP_ROWS:]:
-        line_end = LINE_END_RE.match(body, match.end())
-        if line_end is None:
-            continue
-        nxt = body.find("\n", line_end.end())
-        following = body[line_end.end() : len(body) if nxt < 0 else nxt].rstrip("\r")
-        if following.strip() and INDEX_ROW_RE.match(following) is None:
+        # Skip blank lines: after them the next line must be another index row
+        # or the section end. Anything else (an indented continuation, loose
+        # prose, a sub-heading) may belong to this record, so refuse rather
+        # than move the row and orphan the rest in STATE.
+        following = _next_nonblank_line(body, match.end())
+        if following is not None and INDEX_ROW_RE.match(following) is None:
             raise StateRollError(
                 f"overflow row {match.group(1)} is followed by a continuation "
-                "line; archive multi-line rows by hand"
+                "line (blank lines skipped) before the next row or section end; "
+                "archive multi-line rows by hand"
             )
     return rows
+
+
+def _next_nonblank_line(body: str, pos: int) -> str | None:
+    """The first non-blank line after the line ending at pos, or None at the end."""
+    line_end = LINE_END_RE.match(body, pos)
+    if line_end is None:
+        return None
+    pos = line_end.end()
+    while pos < len(body):
+        nxt = body.find("\n", pos)
+        end = len(body) if nxt < 0 else nxt + 1
+        line = body[pos:end].rstrip("\r\n")
+        if line.strip():
+            return line
+        pos = end
+    return None
+
+
+def _blank_run_start(body: str, pos: int, floor: int) -> int:
+    """Start of the blank lines directly above the line starting at pos (>= floor)."""
+    while pos > floor:
+        prev_start = body.rfind("\n", 0, pos - 1) + 1
+        if prev_start < floor or body[prev_start:pos].strip():
+            break
+        pos = prev_start
+    return pos
 
 
 def overflow_rows(text: str) -> list[str]:
@@ -317,15 +402,17 @@ def overflow_rows(text: str) -> list[str]:
 
 
 def drop_overflow_rows(text: str) -> str:
-    """Remove index rows KEEP_ROWS+ from STATE, leaving rows 1..KEEP_ROWS alone."""
-    section = DECISION_SECTION_RE.search(text)
-    if section is None:
-        raise StateRollError("STATE.md has no Executed operator decisions section")
+    """Remove index rows KEEP_ROWS+ from STATE, leaving rows 1..KEEP_ROWS alone.
+
+    Each moved row takes the blank lines directly above it, so a
+    blank-separated index keeps one separator after row KEEP_ROWS instead of
+    accumulating a run of blank lines."""
+    section = _decision_section(text)
     body = section.group(0)
     pieces: list[str] = []
     last = 0
     for match in index_rows(text)[KEEP_ROWS:]:
-        pieces.append(body[last : match.start()])
+        pieces.append(body[last : _blank_run_start(body, match.start(), last)])
         end = match.end()
         line_end = LINE_END_RE.match(body, end)
         if line_end is not None:
