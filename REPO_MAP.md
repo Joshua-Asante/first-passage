@@ -90,7 +90,7 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_95 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_97 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
@@ -114,6 +114,7 @@ _95 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_durable_store_pragmas.py` | governance | `durable-store-pragmas` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_falsifier_reachability.py` | governance | `falsifier-reachability-census` (audit) | --stats (report-only); layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_governance_prose_control_chars.py` | governance | `governance-prose-control-chars` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/check_handoff_authority.py` | governance | `handoff-authority` (path-conditional) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_instrument_ledger_coverage.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_instrument_rejection_coverage.py` | governance | `instrument-rejection-coverage` (audit) | WARN, --exit-zero; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/check_lab_path_relocation.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
@@ -154,6 +155,7 @@ _95 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/gate_fire_log.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/gate_manifest.py` | governance | — | gate runner (reads gates.yml); not itself a gated id; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/guard_open_verification_record.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/guard_operator_acts.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/guard_s2_runs.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/guard_shell_command.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/import_skill_from_cache.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
