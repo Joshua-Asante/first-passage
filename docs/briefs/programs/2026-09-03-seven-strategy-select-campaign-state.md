@@ -3953,6 +3953,20 @@ Subject to the Vanguard qualification at Ruling 1 above, Vanguard and Aegis keep
 - The operator authorized the remaining T08 drills and the T07 account reads ([session plan](../../notes/2026-09-25-t08-drills-t07-reads-operator-session.md); Joshua performs every action).
 - The incident ADR addendum was revised as §A8 (Proposed): rules 9–10 and open question Q5. Its step-4 reviews are owed.
 
+### Ruling 4 — Vanguard MGC: fixed-stop edition on this route (2026-09-26)
+
+**Operator ruling, 2026-09-26, in session.** Asked to choose between (A) a route-native fixed-stop Vanguard edition, (B) rejecting the leg on this route, and deferring, the operator chose **"Fixed-stop edition"**. This follows Gate A's acceptance of runtime `TRAILING ACTIVE` ([REST §6.11](../handoffs/2026-09-25-crosstrade-rest-route-assessment.md#611-gate-a-factual-disposition) row A6), which superseded Ruling 1's Vanguard attestation for trailing.
+
+**Decision.** Vanguard joins ORB and Striker under the Ruling 3 pattern: one pre-registered route-native expression, K = 1, requalified through production E1. Owner: the [Vanguard pre-registration](../pre-registration/2026-09-26-tradeify-vanguard-fixed-stop-edition-prereg.md), whose §8 step 1 this ruling discharges. The book stays the fixed four legs.
+
+**Conditions (from the 2026-09-26 executive review, adopted with the ruling):**
+- The pre-registration must give a complete account of which existing exits remain once trailing is removed, and how removing trailing changes execution (holding periods, overlap, capacity).
+- No alternative-expression search, no automatic three-leg fallback, and no claim of unchanged economics.
+- Production of the edition files stays behind checklist gate D ([production handoff](../handoffs/2026-09-26-vanguard-fixed-stop-edition-production.md)); qualification remains mandatory.
+- The Gate A A6 successor-binding check applies at freeze.
+
+**Not granted:** freeze, file production, replay, E1 dispatch, deployment or GO. **Board write:** STATE decision index 2026-09-26 row; venue-edition ledger `CANDIDATE` row.
+
 ## §60 — Agent read access to the accepted book's Pine and runtime ports (2026-09-25)
 
 **Operator direction, 2026-09-25, in session (verbatim):** "i also want agents to be able to read the pine locally, from all 4 strategies". Asked two scoping questions, the operator chose **"Pine + ports"** (lift §59's no-read clause for the four Pine files and their pinned runtime ports) and **"Main checkout only"** (one canonical private copy in the primary checkout; no copies in worktrees).

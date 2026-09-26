@@ -2,13 +2,13 @@
 
 **Status:** `DRAFT — NOT FROZEN.` Fields marked **OWED (operator)** must be answered before freeze. Nothing here binds a replay, E1 run or verdict until the Status line reads `FROZEN <date>` and the freeze commit's SHA is recorded in [campaign record §59](../programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25). No replay, E1 dispatch or screen may run on this edition before then.
 
-**Precondition — operator decision not yet made:** the [Vanguard trailing determination](../handoffs/2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return) returned `TRAILING ACTIVE`, which leaves two options:
+**Precondition — decided 2026-09-26: option A** ([campaign §59 Ruling 4](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-4--vanguard-mgc-fixed-stop-edition-on-this-route-2026-09-26)). *Original text:* the [Vanguard trailing determination](../handoffs/2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return) returned `TRAILING ACTIVE`, which leaves two options:
 - (A) a route-native fixed-stop Vanguard edition under the §59 K = 1 pattern;
 - (B) rejecting the Vanguard leg on this route.
 
 This file exists **only for option A**. If the operator chooses B, close this draft unfrozen with a one-line note and open nothing else.
 
-**Owner:** campaign record §59, extended to Vanguard by the operator's option-A ruling (still owed). It follows the ruling 3 step 1 pattern: written before any replay or E1 run on the edition, and not changed afterwards.
+**Owner:** campaign record §59, extended to Vanguard by the operator's option-A ruling ([§59 Ruling 4](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-4--vanguard-mgc-fixed-stop-edition-on-this-route-2026-09-26), 2026-09-26). It follows the ruling 3 step 1 pattern: written before any replay or E1 run on the edition, and not changed afterwards.
 **Loop of record:** STRATEGIC. The expression change is forced by the route's capability; K = 1, not a search.
 **Authored:** 2026-09-26, Claude Code (drafting, cloud session). The operator owns every OWED rule and the freeze.
 
@@ -127,7 +127,7 @@ The public repository receives identities and behavior shapes only, never source
 
 ## §8 — Freeze procedure
 
-1. The operator rules option A (edition) over option B (reject). Without that ruling, nothing below proceeds.
+1. The operator rules option A (edition) over option B (reject). Without that ruling, nothing below proceeds. **Done 2026-09-26** (§59 Ruling 4).
 2. The operator answers VAN-2 to VAN-6 and VAN-8, the §4 effective-inputs row and the §6 replay choice, in words and without parameter values. The §6 sequential-exit replay model is specified by the pre-registration owner and accepted by the operator.
 3. Once the capability allocation is accepted (checklist T09 gate D; operator ruling 2026-09-26, [production handoff](../handoffs/2026-09-26-vanguard-fixed-stop-edition-production.md) G3b), the operator, or a separately authorized session in the primary checkout, produces the files required by the ruled realization and supplies the complete source/effective-input identity tuple. §60 alone grants reads, not file creation. An override-only realization explicitly records reused compatible Pine/port pins.
 4. Claude fills §3–§6, runs the §10 hooks, and the operator reviews the full text.
