@@ -186,9 +186,10 @@ resolved identity at qualification and activation.
 **Return boundary:** Implementation-ready capability contract or exact route/behavior decision; no whole-route PASS from documentation alone.
 
 ### T09 — Actual broker adapter and reconciliation (750k–1M)
-**Selected outcome:** Real observations and transport reach the durable account owner under the accepted route contract.
-**Prerequisites:** T08 viable route, decided under the [2026-09-26 route-feasibility-first addendum](#addendum-2026-09-26--route-feasibility-is-the-first-deployment-decision) (accepted REST assessment and any contract acceptance it requires); approved drill environment and exact interfaces. T07 settlement producer available for combined rehearsal.
+**Selected outcome:** Real observations and transport reach the controller boundary selected by the accepted capability allocation and route contract. The existing durable account owner is reusable machinery, not a predetermined architecture.
+**Prerequisites:** T08 viable route, decided under the [2026-09-26 route-feasibility-first addendum](#addendum-2026-09-26--route-feasibility-is-the-first-deployment-decision) (accepted REST assessment and any contract acceptance it requires); coordinator-accepted TradingView/CrossTrade capability allocation and deletion map, with resulting operator-owned behavior/contract decisions accepted, before finalizing or implementing T09; approved drill environment and exact interfaces. T07 settlement producer available for combined rehearsal.
 **Ownership:** Broker integration executor; coordinator accepts combined CAP consumer evidence.
+The steps below are the current implementation baseline; the coordinator must rescope them to the accepted allocation before dispatch, retaining required behavior without duplicating qualified vendor capabilities.
 - [ ] Replace the synthetic-only transport gap with the qualified adapter, preserving intent-before-send and unresolved reservations.
 - [ ] Ingest real request/order/fill/protection identities, history coverage and terminal outcomes.
 - [ ] Prove ordinary four-leg lifecycle, partial fills, cancellation races, restart and manual intervention through owner consumers.
@@ -295,7 +296,7 @@ resolved identity at qualification and activation.
 
 - Engineering spine: **T01 -> T02 -> T03 -> T04 -> T05 -> T06**.
 - Start **T07, T08 and T10** alongside that spine. Reuse ongoing owners rather than dispatch duplicate work.
-- **Route feasibility first** (2026-09-26 addendum): T08 plus the REST assessment decide the route before any route-dependent work. **T09 follows the accepted T08/REST result and any contract acceptance it requires**; operations preparation T13 follows the incident decision and finalizes with T07/T09.
+- **Route feasibility first** (2026-09-26 addendum): T08 plus the REST assessment decide the route before any route-dependent work. **T09 follows the accepted T08/REST result, capability allocation/deletion map and any resulting contract or expression acceptance**; operations preparation T13 follows the incident decision and finalizes with T07/T09.
 - **T11 follows T06**; T12 can prepare against stable interfaces earlier but needs integrated acceptance and a timing answer before F1.
 - T14 starts with provider-neutral work only; standing source-independent/funding gates control provider-specific execution.
 - **T15** is the join for production qualification: engineering, actual-source readiness and pre-freeze feasibility/behavior inventory must agree.
@@ -322,13 +323,16 @@ of lost responses.
 
    Better responses or a same-session lookup do not answer the second question.
 2. **T09 stays behind that result.** No adapter, REST producer, endpoint or
-   fallback implementation starts until three things hold:
+   fallback implementation starts until four things hold:
    - (a) the coordinator has accepted the assessment return;
    - (b) the operator has accepted any contract or expression decision the return names (as returned: the Vanguard trailing determination, and Proposed option B or another unknown-request amendment);
-   - (c) the route is ruled viable for bounded design.
+   - (c) the route is ruled viable for bounded design;
+   - (d) the coordinator has accepted the TradingView/CrossTrade capability allocation and deletion map, and the operator has accepted any resulting behavior or contract changes. Finalize T09's scope against that map before implementation.
 
-   Adjacent work that does not presuppose the route may continue: engineering spine, T07, T10, and provider-neutral T14.
-3. **Freeze stays behind it too.** This restates the existing rule: do not freeze E1 while route or incident changes are unknown.
+   **Allocation objective (operator direction):** let TradingView and CrossTrade own the capabilities they can reliably provide for the exact route; our shared controller fills evidenced gaps. The map must justify retained local responsibilities and identify components that can be removed, reduced or avoided, separating preserved portfolio behavior from simplifications requiring a decision. It consumes the REST assessment as evidence rather than repeating it. Existing account-owner machinery is a reuse candidate, not a required final boundary. The dated allocation handoff must be committed and refreshed against the current route-native edition decisions and completed REST return before dispatch.
+
+   Adjacent work may continue only where it is independent of both route choice and capability allocation. This applies to the engineering spine, T07, T10 and provider-neutral T14; those packet labels are not blanket exemptions. Defer work whose value depends on retaining a component under evaluation. Offline qualification obligations remain unless separately changed by their owner.
+3. **Freeze stays behind it too.** Do not freeze E1 while route, incident or capability-allocation changes are unknown. The freeze inventory must reflect the accepted allocation, resulting behavior decisions and required requalification.
 
 No drill, account access, vendor contact, spend, contract change or GO is granted by this addendum.
 
