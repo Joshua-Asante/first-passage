@@ -773,19 +773,21 @@ def _bulk_in_effect(push_args: list[str]) -> bool:
     """Whether a bulk option is still set once git has read every option, last wins per
     bit: ``--all`` / ``--branches`` (one bit; git 2.46+ aliases them) and ``--mirror``,
     each cleared by a later ``--no-<name>`` in any abbreviation git accepts as unique
-    among `_GIT_PUSH_LONG`. A bulk-looking word counts wherever it stands (fail closed);
-    a negation counts only in option position — not as a value option's value, not after
-    ``--``, not with ``=`` and not when ambiguous (``--no-a``: git refuses the push)."""
+    among `_GIT_PUSH_LONG`. Both count only in option position — not as a value option's
+    value (``-o --all`` sends the push option ``--all``; ``--repo --all`` names a
+    repository) and not after ``--`` (a refspec, judged as one). A bulk word in option
+    position counts in any prefix, even an ambiguous one or one with ``=`` (fail closed:
+    git refuses those); a negation does not count with ``=`` or when ambiguous
+    (``--no-a``: git refuses the push)."""
     bits = {"all": False, "mirror": False}
     skip, options = False, True
     for arg in push_args:
         value, skip = skip, False
-        if _bulk_push(arg):
-            bits[_bulk_bit(arg[2:].split("=", 1)[0])] = True
-            continue
         if value or not options:
             continue
-        if arg == "--":
+        if _bulk_push(arg):
+            bits[_bulk_bit(arg[2:].split("=", 1)[0])] = True
+        elif arg == "--":
             options = False
         elif _push_takes_next(arg):
             skip = True  # `-o x`, `-vo x`, `--push-opt x`; `-ox` carries its own value

@@ -864,3 +864,40 @@ def test_fly_help_is_still_read_around_double_dash_and_attached_values(command):
     # the guard does not know that carries its value after `=` (`--image=x`, `-e=x`) is
     # read as taking the next word: pflag never lets a word with `=` take another.
     assert g.classify_command(command) is None
+
+
+# --- 2026-09-26 babysit repair (verifier on eb565d1: bulk word in value position) ---
+
+@pytest.mark.parametrize("command", [
+    "git push -o --all origin feature",
+    "git push --push-option --all origin feature",
+    "git push -vo --mirror origin feature",
+    "git push --repo --all origin feature",
+    "git push origin feature -o --all",
+    "git push --push-opt --branches origin feature",
+    "git push origin feature -- --all",
+])
+def test_bulk_word_as_an_option_value_is_not_a_bulk_push(command):
+    # Fails if a bulk-looking word that git reads as a value option's value (`-o --all`
+    # sends the push option `--all`; `--repo --all` names a repository) or as a word after
+    # `--` is still read as a bulk push, so a push of `feature` is refused as
+    # main.direct_push.
+    assert g.classify_command(command) is None
+
+
+@pytest.mark.parametrize("command", [
+    "git push --all origin",
+    "git push --all -o x origin",
+    "git push -o x --all origin",
+    "git push -ox --all origin",
+    "git push --push-option=x --mirror origin",
+    "git push -o --all origin main",
+    "git push --repo --all origin main",
+    "git push origin main -- --all",
+    "git push --all origin main",
+])
+def test_bulk_push_in_option_position_is_still_denied(command):
+    # Fails if a bulk option in option position — before or after a value option whose
+    # value is already given — stops being refused, or if a push that names main as a
+    # refspec is silenced because a bulk-looking word beside it is a value.
+    assert g.classify_command(command) == ("deny", "main.direct_push")
