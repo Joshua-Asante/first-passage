@@ -56,3 +56,40 @@ This is **not** a trace, qualification, amendment acceptance or residual-risk ac
 ## Forbidden
 
 Account access, credentials, order actions, drills, vendor contact, spend, contract or owner edits, private strategy sources, `.env`, GLM or external model services. No claim that anything is qualified, accepted or authorized.
+
+## Executor return (2026-09-26)
+
+**Status:** RETURNED for coordinator acceptance. Documentary determination only; it accepts, authorizes, qualifies or releases nothing. **Dispatch revision:** `62c956f538dfa53f31eaec5951efc3ffa1dce53b`; the worktree `HEAD` was verified to descend from it before work began. **Executor:** assessor subagent (Claude Code, Opus 5.5), worktree `.claude/worktrees/close-semantics`, branch `claude/close-semantics-c-a`.
+
+**Output:** [`docs/notes/2026-09-26-close-semantics-c-a.md`](../../notes/2026-09-26-close-semantics-c-a.md), with sections 1–7 as specified.
+
+**Evidence:** `local_artifacts/close-semantics-2026-09-26/` in this worktree (gitignored). It contains:
+- nine public captures made on 2026-09-26;
+- `MANIFEST.tsv`, SHA-256 `74721db0f4223329c97a9e4ede2f03e0173fa20236f6b800b48617ae024d1d29`;
+- `QUOTE_INDEX.txt` with IDs CS01–CS24, CR01–CR08 and CT01–CT14;
+- `SHA256SUMS`.
+
+The coordinator relocates the directory to the primary checkout.
+
+**Findings.**
+- **M questions.** All nine drill-plan M questions are `OPEN`, and none is `CONFLICTING`. §1.1a elements (a)–(e) are all `OPEN`.
+- **No no-reversal mechanism is documented.** The residual-risk statement (§3 of the note) therefore covers every element.
+- **Documented facts:**
+  - A full close is one Tradovate `liquidateposition` request. It is quantity-less, cancels the contract's working orders and closes the position.
+  - Tradovate calls it "not a guarantee".
+  - Bracket children are not tied to the position.
+  - Several other actors can liquidate the same symbol.
+- **Contradictions.** There is no trace, so there is no trace contradiction. There is one documentary inconsistency, D-1: CrossTrade's generic command text says a close cancels "account-level" orders, while its Tradovate rows and Tradovate's own text say the cancellation is contract-scoped. The note resolves it to contract scope and reports it. It does not stop C-a.
+
+**Routed to the coordinator (nothing edited outside the permitted outputs):**
+1. Under packet §1.1 and drill plan CR-3, (a)–(c) remain `OPEN` after M. X-3 can therefore be authorized only as part of the operator's decision on the residual-risk statement.
+2. Packet §1.1's C-a row says liquidation cancels "the OCO children". The sources say it cancels all of the contract's working orders, and Tradovate adds "not a guarantee" (note §4.4).
+3. **Candidates for the GC-7 actor inventory** (drill plan §0.1):
+   - the Tradovate platform's timed exit-and-cancel function (CS22);
+   - firm-side Tradovate automatic liquidation (CT12, CT13).
+
+   For the attended recovery flatten, Tradovate and CrossTrade document that a plain exit order leaves brackets working (CS09, CT02). The flatten must therefore also cancel working orders, which the drill plan's §2.0 recovery step already requires.
+4. **X-3 read additions** (not adopted): read the lifecycle of the liquidation order and of both children, and record whether their command and report rows carry timestamps (note §5).
+5. **Draft vendor question** (note §6) for the operator's decision. It is not sent.
+
+**Not done:** account access; vendor contact; drills or order actions; spend; contract or owner edits; private strategy sources; `.env`; GLM or other external model services.
