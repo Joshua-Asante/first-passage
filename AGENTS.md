@@ -150,11 +150,16 @@ an opportunity appears. Read that repository source directly if the harness does
 not list the skill. No opportunity means no extra reflection artifact or task.
 
 Implement and verify a local, reversible improvement when its mechanism is supported
-by evidence and it fits the current task and role without changing the intended
+by evidence and it fits the current task and seat without changing the intended
 outcome or acceptance criteria. Existing authorization carries forward; do not ask
-again merely because the action is an improvement. This includes repairing an
-agent-owned execution sequence before it fails. A frozen worker handoff remains
-frozen: return contradictions or scope changes to its coordinator.
+again merely because the action is an improvement. That authorization is bounded by
+the seat's grants in [`scripts/seat_authority.yml`](scripts/seat_authority.yml) and any
+authority block on the current card, under the surface-allocation ADR's
+[action classes](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#action-classes-and-the-authority-block);
+an improvement is never an operator act or a forbidden capability. This includes
+repairing an agent-owned execution sequence before it fails. A frozen worker card
+remains frozen: a worker returns contradictions, scope changes and reusable
+improvement evidence to its coordinator rather than writing owner records itself.
 
 1. Establish the observable or anticipated failure/waste from source evidence,
    not a general preference or self-reported confidence.
@@ -162,8 +167,11 @@ frozen: return contradictions or scope changes to its coordinator.
    adding protection. Reuse the owning improvement record where one exists.
 3. Choose at most one durable intervention at the cheapest reliable layer:
    source fix or test → hook → skill → AGENTS.md → ADR/lesson, as appropriate.
+   Registering or changing a harness hook in `.claude/settings.json` is a
+   standing-configuration change under item 6: propose it; do not wire it unasked.
 4. State the expected behavior change, verify it against the original mechanism,
-   and retain evidence with the existing task/plan/PR/campaign owner.
+   and retain evidence with the existing task/plan/PR/campaign owner (a worker
+   through its return to the coordinator).
 5. Promote one-off feedback into standing guidance only when high-severity or
    independently recurring. Routine fixes need no new rule or separate record.
 6. Do not edit standing instructions unless the user requests it. Improvements
@@ -177,7 +185,8 @@ learned, and restart with a cleaner prompt and explicit verification criteria �
 on the escalation lane the surface-allocation ADR names, not as a third retry.
 
 Where each layer lives here: tests = `tests/` · hooks = [`scripts/gates.yml`](scripts/gates.yml) +
-`scripts/githooks/` + `.claude/hookify.*.local.md` · skills = `.claude/skills/` · this file ·
+`scripts/githooks/` + `.claude/hookify.*.local.md` + harness hooks in [`.claude/settings.json`](.claude/settings.json) ·
+skills = `.claude/skills/` · this file ·
 ADR/lesson = [`docs/adr/`](docs/adr/) + [`docs/methodology/lessons/`](docs/methodology/lessons/)
 (indexed in `docs/methodology/LESSONS_INDEX.jsonl`).
 

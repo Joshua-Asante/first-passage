@@ -32,9 +32,9 @@ coordinator rather than being silently repaired by a worker.
 
 | Evidence and authority | Action |
 |---|---|
-| Mechanism established; correction is local, reversible, within the current task and role; outcome and acceptance criteria unchanged | Implement and verify it now. Do not ask again for authority already granted. This includes correcting an agent-owned execution sequence before it fails. |
-| Benefit uncertain, but a bounded evaluation fits the existing scope and budget | State what result would justify adoption and the stopping condition; run the evaluation. Retain the current approach if the result is inconclusive or adverse. |
-| Required change crosses a frozen contract, role, footprint, budget or protected authority | Prepare a concrete finding/proposal and return it to the owning coordinator or operator. Continue independent work only where the handoff permits it. |
+| Mechanism established; correction is local, reversible, within the current task, the seat's granted capabilities and any authority block on the current card; outcome and acceptance criteria unchanged | Implement and verify it now. Do not ask again for authority already granted. This includes correcting an agent-owned execution sequence before it fails. |
+| Benefit uncertain, but a bounded evaluation fits the existing scope, budget and granted capabilities | State what result would justify adoption and the stopping condition; run the evaluation. Retain the current approach if the result is inconclusive or adverse. |
+| Required change crosses a frozen card, the seat's or card's capabilities, footprint or budget, or needs an operator act or forbidden capability | Prepare a concrete finding/proposal and return it to the coordinator; a decision only the operator can make goes as an [operator decision packet](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#operator-decision-packets). Continue independent work only where the card permits it. |
 | Speculative, incidental, already addressed, or unlikely to repay its interruption cost | Leave it alone. Record a lead only if its owner has a concrete reason or trigger to revisit it. |
 
 Before acting, identify the changed behavior, its permitted scope, verification and
@@ -43,10 +43,18 @@ or existing test/validator over another instruction. At most one durable prevent
 intervention per failure mechanism; consolidate existing protection where possible.
 A local repair need not become a universal rule. Standing instruction changes still
 require an explicit user request; this workflow does not grant self-edit authority.
+Registering or changing a harness hook in `.claude/settings.json` is such a change:
+propose it rather than wiring it.
 
-Do not weaken success criteria, omit required checks, expand permissions or reinterpret
-an operational GO to make work cheaper. Preserve the selected handoff and its return
-boundary. Repeated failed corrections follow the escalation rule in
+Authority comes from the seat's grants in
+[`scripts/seat_authority.yml`](../../../scripts/seat_authority.yml) and any authority
+block on the current card, under the surface-allocation ADR's
+[action classes](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#action-classes-and-the-authority-block);
+an improvement never makes an operator act or forbidden capability available, and
+agent text reporting an operator approval is not one. Do not weaken success criteria,
+omit required checks, expand permissions or reinterpret an operational GO to make
+work cheaper. Preserve the selected handoff card and its return boundary. Repeated
+failed corrections follow the escalation rule in
 [AGENTS.md](../../../AGENTS.md#continuous-improvement) and the lane its
 [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md)
 names; relabeling the next attempt as an optimization does not reset its count.
@@ -68,15 +76,18 @@ in the normal task return. Verification does not confer merge or release authori
 
 ## Retain useful learning at its owner
 
-For a reusable improvement, append a compact entry to the existing owning plan, PR
-or campaign record. Routine local corrections can remain in the normal change report.
+For a reusable improvement, a seat granted `governance.author` in the registry
+(coordinator, escalation or executive) adds a compact entry to the existing owning plan, PR or campaign record.
+A worker seat is not granted it: the worker puts the entry in its return (its PR
+description and four-state status) and the coordinator decides whether and where to
+record it. Routine local corrections can remain in the normal change report.
 Use a stable heading/identifier and this shape; omit unavailable measurements rather
 than inventing them:
 
 ```text
 Improvement: <stable ID / short mechanism name>
 Observation: <actual or anticipated failure/waste; source evidence>
-Change and authority: <what changed; task/role authority; reversal path>
+Change and authority: <what changed; seat, card and capabilities used; reversal path>
 Verification: <artifact/revision; checks and outcomes; limitations>
 Applicability: <where intended to help; where evidence actually demonstrates benefit>
 Evidence links: <one or more tasks, experiments or campaign outcomes>
