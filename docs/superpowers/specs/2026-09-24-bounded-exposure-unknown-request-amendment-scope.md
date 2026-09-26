@@ -14,6 +14,8 @@ The accepted contracts treat an unknown request (sent, no response, outcome unkn
 
 All four assume that some fence can eventually resolve the request. T08 found none on this route (R3 = NONE). **As written, one timed-out request blocks automated trading on the account permanently.** Manual trading still works: the weekly preservation trade is unaffected. The only other exits are an account end or a new account.
 
+*Pointer 2026-09-26 (paragraph above preserved):* by operator ruling ([incident ADR §A11](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a11--operator-ruling-first-release-posture-2026-09-26) item 4), the unconditional "manual trading still works … unaffected" wording is replaced: manual intervention remains available **subject to fencing, outcome evidence and reconciliation**. How operator-placed preservation trades on the book's own symbols are treated stays OPEN (route drill-plan draft, [PR #518](https://github.com/Joshua-Asante/first-passage/pull/518)). The same ruling adopts preserve-and-block for the first release, for one attended session, then explicit review before extending; the operator accepts that one unresolved request may suspend automation indefinitely, and no acknowledgment, reset or elapsed time resolves that obligation. Option B's implementation is deferred; B is retained as Proposed.
+
 Halt/resume §4 already anticipates this: "a different evidence/route protocol requires a concrete separately reviewed amendment, never an operator waiver checkbox." This note scopes that amendment.
 
 ## 2. The questions the operator has to rule
