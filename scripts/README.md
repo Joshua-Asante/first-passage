@@ -358,23 +358,25 @@ invocation, including a due Weekly roll or keep-15 archive:
   or not);
 - a recurring heading without exactly one `next deadline **YYYY-MM-DD**` field
   (a second deadline, bolded or not, would never be rolled), or a Weekly
-  `bucket` that is not exactly one lower-case `bucket MM-DD→MM-DD`;
+  `bucket` that is not exactly one lower-case `bucket MM-DD→MM-DD` naming real
+  month-days and exactly the Monday–Friday week of its deadline;
 - anything read as unique that is not exactly one: a Weekly/Monthly heading
   (including a case, dash or Unicode-spacing variant — NBSP, zero-width,
   fullwidth — or a copy outside the forward section), a
   `Scheduled forward triggers` or `Executed operator decisions` section
   (including look-alike headings at any level);
 - a decision index out of newest-first date order, a dated bullet not in
-  `- **YYYY-MM-DD** — ` form (`* **date**`, unbolded or indented included), or
-  an overflow row followed (after any blank lines) by anything other than
-  another index row or the section end, such as an indented continuation line;
+  `- **YYYY-MM-DD** — ` form (`* **date**`, unbolded or indented included), two
+  rows fused on one line, or an overflow row followed (after any blank lines)
+  by anything other than another index row or the section end, such as an
+  indented continuation line;
 - an archive that breaks its shape (checked on every run, rows due or not):
   roll headers are read by date key (case, Unicode spacing and suffix aside) and
   must be newest first with strictly decreasing dates (adjacent hand-written
   ordinal headers may share a date); an automated `**Roll YYYY-MM-DD**` header
   may share its date with no other header; below the first header every
-  non-blank line must be a header or one whole index row; no row may appear
-  twice;
+  non-blank line must be a header or one whole index row (a line holding two
+  headers or two rows is refused); no row may appear twice;
 - mixed line endings (CRLF with LF, or a lone CR) in STATE or the archive;
 - a row roll that cannot be placed: `--today` older than the archive's newest
   header, or a hand-written header already dated today (archive those rows by
@@ -389,9 +391,11 @@ conservation, I2 archive shape, I3 line endings, I4 one writer, I5 exactly-one
 parsing, I6 Unicode-normalised look-alikes). One validator checks I1–I3 and I5
 on the pair before planning and on the composed result before writing; if the
 result fails, nothing is written. The archive is written before STATE, each
-through its own temp file and an atomic replace, so a crash between the two
-leaves the overflow rows in both files, a state the rerun accepts and resolves
-by dropping them from STATE only.
+through its own temp file, an atomic replace and an fsync of its directory
+(POSIX; skipped on Windows, which exposes no directory fsync, so durability
+there is best effort), so a crash between the two leaves the overflow rows in
+both files, a state the rerun accepts and resolves by dropping them from STATE
+only.
 
 `check_state_currency.py` reads the forward section, the recurring headings and
 the decision index through `state_roll.py`'s parser, so every heading, section

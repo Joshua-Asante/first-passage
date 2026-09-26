@@ -8,9 +8,11 @@ daily-repo-truth-sync digest is skipped). Reads only STATE.md.
 The forward-trigger section, the Weekly/Monthly recurring headings and the
 decision index are read through state_roll.py's own parser (loaded from this
 directory), so any heading the roller would refuse — a second deadline field,
-a malformed bucket, a cadence anchor out of range, duplicated, in another case
-or disagreeing with its deadline, a look-alike heading or section — fails this
-gate too, on every run and not only when a roll falls due. Every element read
+a malformed bucket or one outside its deadline's Monday-Friday week, a cadence
+anchor out of range, duplicated, in another case or disagreeing with its
+deadline, a look-alike heading or section — and any index it would refuse
+(out of newest-first order, fused rows, an overflow row with a continuation
+line) fails this gate too, on every run and not only when a roll falls due. Every element read
 as unique must occur exactly once; a look-alike fails closed. Look-alikes are
 detected on state_roll.lookalike_key (the roller's invariant I6: NFKC,
 zero-width characters dropped, every Unicode whitespace run folded, casefolded),
@@ -110,7 +112,8 @@ def last_curated(text: str) -> date:
 
 
 def newest_decision_index_date(text: str) -> date:
-    rows = ROLLER.decision_index_rows(text)
+    """Newest index date, read through the roller's full index validation."""
+    rows = ROLLER.index_rows(text)
     if not rows:
         raise ValueError("decision index has no dated bullets")
     return max(date.fromisoformat(row.group(1)) for row in rows)

@@ -5,7 +5,7 @@ import importlib.util
 import os
 import subprocess
 import sys
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
@@ -22,6 +22,13 @@ _SPEC.loader.exec_module(mod)
 def _write(path: Path, text: str) -> Path:
     path.write_text(text, encoding="utf-8")
     return path
+
+
+def _week_bucket(deadline: str) -> str:
+    """The Monday-Friday week of the Weekly deadline (the roller's bucket)."""
+    day = date.fromisoformat(deadline)
+    monday = day - timedelta(days=day.weekday())
+    return f"{monday:%m-%d}→{monday + timedelta(days=4):%m-%d}"
 
 
 def _state(
@@ -45,7 +52,8 @@ def _state(
         "## Dormant cross-session threads\n\n"
         "none.\n\n"
         "## Scheduled forward triggers\n\n"
-        f"### Weekly — recurring (rolling; next deadline **{weekly}**, bucket 08-31→09-04)\n\n"
+        f"### Weekly — recurring (rolling; next deadline **{weekly}**, "
+        f"bucket {_week_bucket(weekly)})\n\n"
         "- **Venue idle-clock.**\n\n"
         f"### Monthly — recurring (rolling; next deadline **{monthly}**)\n\n"
         "- **Ledger reconfirm.**\n\n"
@@ -117,13 +125,47 @@ def test_parser_does_not_read_lab_or_adr() -> None:
     assert "STATE.md" in src
 
 
-def test_newest_index_date_is_max_not_first() -> None:
+def test_newest_index_date_is_the_first_row_of_an_ordered_index() -> None:
     text = _state(newest_decision="2026-08-20")
-    text = text.replace(
+    assert mod.newest_decision_index_date(text) == date(2026, 8, 20)
+
+
+def test_out_of_order_index_fails_the_gate(tmp_path: Path) -> None:
+    # Codex 4111495537: the gate runs the roller's full index validation
+    # (state_roll.index_rows), so an index the roller refuses to roll fails
+    # here too instead of passing on its newest date.
+    text = _state(newest_decision="2026-08-20").replace(
         "- **2026-08-20** — newest.\n- **2026-08-01** — older.",
         "- **2026-08-01** — first.\n- **2026-08-20** — later.",
     )
-    assert mod.newest_decision_index_date(text) == date(2026, 8, 20)
+    with pytest.raises(ValueError, match="order"):
+        mod.newest_decision_index_date(text)
+    state = _write(tmp_path / "STATE.md", text)
+    assert _run(state, "2026-09-03") == 1
+
+
+def test_gate_reads_the_index_through_the_roller_validator(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    real = mod.ROLLER.index_rows
+
+    def spy(text: str):  # type: ignore[no-untyped-def]
+        calls.append(text)
+        return real(text)
+
+    monkeypatch.setattr(mod.ROLLER, "index_rows", spy)
+    text = _state()
+    mod.newest_decision_index_date(text)
+    assert calls == [text]
+
+
+def test_bucket_outside_the_deadline_week_fails_the_gate(tmp_path: Path) -> None:
+    # Codex 4111495548: the bucket is validated by the roller's shared reader.
+    text = _state().replace("bucket 08-31→09-04", "bucket 99-99→99-99")
+    assert text != _state()
+    state = _write(tmp_path / "STATE.md", text)
+    assert _run(state, "2026-09-03") == 1
 
 
 def test_today_et_reads_env(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -38,14 +38,23 @@ def _rows(n: int, newest: date = date(2026, 9, 25)) -> list[str]:
     ]
 
 
+def _week_bucket(deadline: str) -> str:
+    """The Monday-Friday bucket of the deadline's week (round 5, 4111495548)."""
+    monday = date.fromisoformat(deadline) - timedelta(
+        days=date.fromisoformat(deadline).weekday()
+    )
+    return f"{monday:%m-%d}{ARROW}{monday + timedelta(days=4):%m-%d}"
+
+
 def _state(
     *,
     weekly: str = "2026-09-25",
     monthly: str = "2026-10-21",
     rows: list[str] | None = None,
-    bucket: str = "09-21→09-25",
+    bucket: str | None = None,
 ) -> str:
     rows = _rows(2) if rows is None else rows
+    bucket = _week_bucket(weekly) if bucket is None else bucket
     return "\n".join(
         [
             "# STATE — First Passage",
@@ -208,7 +217,9 @@ def test_monthly_past_rolls_to_next_month_same_day(tmp_path: Path) -> None:
     assert _out(result) == "monthly: 2026-10-21 -> 2026-11-21\n"
     rolled = _read(state)
     assert "### Monthly — recurring (rolling; next deadline **2026-11-21**)" in rolled
-    assert WEEKLY_HEADING.format(deadline="2026-11-06", bucket="09-21→09-25") in rolled
+    assert WEEKLY_HEADING.format(deadline="2026-11-06", bucket=_week_bucket("2026-11-06")) in (
+        rolled
+    )
 
 
 def test_monthly_rolls_across_year_end(tmp_path: Path) -> None:
@@ -1045,6 +1056,20 @@ DEFECTS = {
     "index-fullwidth-digit-bullet": _state(
         rows=_rows(2) + ["- **２０２６-09-01** — fullwidth digits"]
     ),
+    # Round 5 (Codex on c07cd66). 4111495537: the gate runs the roller's full
+    # index validation (newest-first order, overflow continuation lines).
+    "index-out-of-date-order": _state(rows=list(reversed(_rows(2)))),
+    "index-overflow-continuation": _state(
+        rows=_rows(16) + ["  continuation of the sixteenth row", *_rows(17)[16:]]
+    ),
+    # 4111495542: two rows fused on one line by a lost line break.
+    "index-fused-rows": _state(rows=[_rows(2)[0] + " " + _rows(2)[1]]),
+    "index-fused-rows-no-space": _state(rows=[_rows(2)[0] + _rows(2)[1]]),
+    # 4111495548: the bucket is real month-days and the deadline's Mon-Fri week.
+    "bucket-impossible-dates": _state(bucket="99-99→99-99"),
+    "bucket-impossible-day": _state(bucket="09-21→09-31"),
+    "bucket-wrong-week": _state(bucket="09-14→09-18"),
+    "bucket-not-monday-to-friday": _state(bucket="09-22→09-25"),
 }
 
 
@@ -1707,6 +1732,23 @@ I2_DEFECTS = {
     ),
     "mixed-line-endings": VALID_LEGACY_ARCHIVE.replace("\n", "\r\n", 1),
     "lone-cr": VALID_LEGACY_ARCHIVE.replace("\n", "\r", 1),
+    # Round 5, 4111495542: two rows fused on one line.
+    "rows-fused": _archive_lines(
+        "**Roll 2026-09-03**", "", "- **2026-08-24** — a - **2026-08-23** — b",
+    ),
+    # Round 5, 4111495545: two roll headers fused on one line.
+    "automated-headers-fused": _archive_lines(
+        "**Roll 2026-09-03** (x) **Roll 2026-09-02** (y)", "", "- **2026-08-24** — a",
+    ),
+    "ordinal-headers-fused": _archive_lines(
+        "**Thirteenth roll, 2026-09-03** (one entry):**Twelfth roll, 2026-09-02** "
+        "(one entry):",
+        "",
+        "- **2026-08-24** — a",
+    ),
+    "headers-fused-case-variant": _archive_lines(
+        "**Roll 2026-09-03** (x) **ROLL 2026-09-02**", "", "- **2026-08-24** — a",
+    ),
 }
 
 
@@ -1773,3 +1815,146 @@ def test_post_state_breaking_an_invariant_writes_nothing(
     assert "state-roll: FAIL" in capsys.readouterr().err
     assert _state_bytes(state, archive) == before
     assert not mod.lock_path(state).exists()
+
+
+# --- Round 5 (Codex on c07cd66) ----------------------------------------------
+
+
+def test_fused_rows_are_refused_not_read_as_one() -> None:
+    # 4111495542: with the newline lost, the second row would ride inside the
+    # first and keep-15 would count (and move) both as one record.
+    with pytest.raises(mod.StateRollError, match="two index rows"):
+        mod.decision_index_rows(DEFECTS["index-fused-rows"])
+    with pytest.raises(mod.StateRollError, match="two index rows"):
+        mod.parse_archive(I2_DEFECTS["rows-fused"])
+
+
+def test_fused_headers_are_refused_not_read_as_one() -> None:
+    # 4111495545: a second header on the first header's line is a block the
+    # date-order and same-date checks would never see.
+    for name in ("automated-headers-fused", "ordinal-headers-fused"):
+        with pytest.raises(mod.StateRollError, match="two roll headers"):
+            mod.parse_archive(I2_DEFECTS[name])
+
+
+def test_row_mentioning_a_bold_date_is_not_a_fused_row() -> None:
+    row = "- **2026-09-24** — supersedes **2026-09-01** (see - 2026-09-01 note)"
+    assert len(mod.decision_index_rows(_state(rows=[row]))) == 1
+
+
+@pytest.mark.parametrize(
+    ("deadline", "bucket"),
+    [
+        ("2026-09-25", "09-21→09-25"),
+        ("2027-01-01", "12-28→01-01"),  # the week spans the year end
+        ("2028-03-03", "02-28→03-03"),  # leap-year February
+    ],
+)
+def test_bucket_is_the_monday_to_friday_week_of_the_deadline(
+    deadline: str, bucket: str
+) -> None:
+    fields = mod.recurring_fields(_state(weekly=deadline, bucket=bucket))[1]
+    assert fields["Weekly"].bucket is not None
+    assert mod.week_bucket(date.fromisoformat(deadline)) == (
+        date.fromisoformat(deadline) - timedelta(days=4),
+        date.fromisoformat(deadline),
+    )
+
+
+def test_bucket_error_names_the_expected_week(tmp_path: Path) -> None:
+    result = _roller_check(DEFECTS["bucket-wrong-week"], tmp_path)
+    assert result.returncode == 2
+    # ASCII arrow: stderr is not UTF-8 on every Windows console.
+    assert b"expected 09-21->09-25" in result.stderr
+
+
+def test_real_state_bucket_matches_its_deadline() -> None:
+    fields = mod.recurring_fields(_read(REPO / "STATE.md"))[1]
+    weekly = fields["Weekly"]
+    assert weekly.bucket is not None
+    monday, friday = mod.week_bucket(weekly.deadline_date)
+    assert weekly.bucket.groups() == (f"{monday:%m-%d}", f"{friday:%m-%d}")
+
+
+def _record_commit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fail_dir: Path | None = None
+):  # type: ignore[no-untyped-def]
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)))
+    state_before, archive_before = _read(state), _read(archive)
+    planned = mod.plan(
+        state_before, archive_before, date.fromisoformat(TODAY), state.parent, archive.parent
+    )
+    assert planned.archive is not None
+    events: list[tuple[str, Path]] = []
+    real_replace = os.replace
+
+    def replace(src: str, dst: str) -> None:
+        real_replace(src, dst)
+        events.append(("replace", Path(dst)))
+
+    def fsync_dir(directory: Path) -> None:
+        events.append(("fsync-dir", Path(directory)))
+        if fail_dir is not None and Path(directory) == fail_dir:
+            raise OSError("simulated directory fsync failure")
+
+    monkeypatch.setattr(mod.os, "replace", replace)
+    monkeypatch.setattr(mod, "_fsync_dir", fsync_dir)
+    return state, archive, state_before, archive_before, planned, events
+
+
+def test_commit_makes_the_archive_rename_durable_before_touching_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # 4111495540: an fsynced temp file does not make the rename durable on
+    # POSIX; the directory is fsynced after each replace, archive first.
+    state, archive, state_before, archive_before, planned, events = _record_commit(
+        tmp_path, monkeypatch
+    )
+    mod.commit(state, archive, state_before, archive_before, planned.state, planned.archive)
+    assert events == [
+        ("replace", archive),
+        ("fsync-dir", archive.parent),
+        ("replace", state),
+        ("fsync-dir", state.parent),
+    ]
+
+
+def test_failed_archive_directory_fsync_leaves_state_untouched(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state, archive, state_before, archive_before, planned, events = _record_commit(
+        tmp_path, monkeypatch, fail_dir=tmp_path / ARCHIVE_SUBDIR
+    )
+    with pytest.raises(mod.StateRollError, match="durable"):
+        mod.commit(
+            state, archive, state_before, archive_before, planned.state, planned.archive
+        )
+    assert ("replace", state) not in events
+    assert _read(state) == state_before
+    # The pair is the residue state a rerun resolves.
+    mod.validate(_read(state), _read(archive), state.parent, archive.parent)
+
+
+def test_failed_state_directory_fsync_does_not_restore_the_archive(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # STATE was replaced (rows gone from it); restoring the archive now would
+    # lose those rows (I1). The post-state is kept and reported.
+    state, archive, state_before, archive_before, planned, _ = _record_commit(
+        tmp_path, monkeypatch, fail_dir=tmp_path
+    )
+    with pytest.raises(mod.StateRollError, match="archive was kept"):
+        mod.commit(
+            state, archive, state_before, archive_before, planned.state, planned.archive
+        )
+    assert _read(state) == planned.state
+    assert _read(archive) == planned.archive
+
+
+def test_fsync_dir_runs_on_posix_and_is_skipped_elsewhere(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    synced: list[int] = []
+    monkeypatch.setattr(mod.os, "fsync", synced.append)
+    mod._fsync_dir(tmp_path)
+    assert len(synced) == (1 if os.name == "posix" else 0)

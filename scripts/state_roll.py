@@ -37,7 +37,8 @@ I2  Archive shape. A roll header is a line `**Roll YYYY-MM-DD**...`
     pairs); an automated header shares its date with no other header. Below
     the first header every non-blank line is a header or one whole index row
     (`- **YYYY-MM-DD** — ...`), so each header is followed by whole rows; no
-    row sits above the first header and no row shares a header's line.
+    row sits above the first header, no row shares a header's line, and no
+    line holds two headers or two rows (a lost line break fuses them).
 I3  Line endings. Each file uses one line-ending style: all CRLF or all LF (a
     lone CR is a third style and refused). Inserted text uses the file's own
     ending, and a missing final line ending is added before inserting.
@@ -48,10 +49,12 @@ I4  One mutator. A writing run creates an exclusive lock file next to STATE
     active). `--check` writes nothing and takes no lock.
 I5  Exactly one. Every element read as one thing (each section, each
     recurring heading, its deadline field, the Weekly bucket, the Monthly
-    cadence anchor) occurs exactly once, and a look-alike of it fails closed
-    instead of being skipped. The currency gate reads the forward triggers,
-    the recurring headings and the index through this module, so it fails on
-    any heading the roller would refuse.
+    cadence anchor, each decision-index row) occurs exactly once, and a
+    look-alike of it fails closed instead of being skipped. A Weekly bucket
+    is two real month-days naming the Monday-Friday week of its deadline. The
+    currency gate reads the forward triggers, the recurring headings and the
+    index through this module (`recurring_fields`, `index_rows`), so it fails
+    on any heading or index the roller would refuse.
 I6  Normalised look-alikes. Every near-miss detector, in this script and in
     `check_state_currency.py`, tests `lookalike_key(line)`: NFKC, format
     (zero-width) characters dropped, every run of Unicode whitespace folded to
@@ -65,13 +68,17 @@ nothing written.
 Commit order and recovery (under the lock). Both files are re-read and must
 still hold the bytes the plan was made from. Each write goes to its own
 `tempfile.mkstemp` file in the target directory, is flushed and fsynced, and
-replaces the target atomically. The archive is written first, then STATE, so a
-row leaves STATE only once it is durably archived:
+replaces the target atomically; the target's directory is then fsynced so the
+rename itself survives power loss (POSIX; Windows exposes no directory fsync,
+so there this step is skipped and durability is best effort). The archive is
+written and its directory synced first, then STATE, so a row leaves STATE only
+once it is durably archived:
 
-- the archive write fails: nothing changed;
+- the archive write fails: STATE is untouched (the archive holds its old bytes,
+  or, when only its directory sync failed, the new ones: the residue state);
 - the STATE write fails: the archive is restored to its old bytes, but only if
-  it still holds exactly the bytes this run wrote (else it is left alone and
-  the error says so);
+  STATE still holds its old bytes and the archive still holds exactly the bytes
+  this run wrote (else it is left alone and the error says so);
 - the process dies between the writes: the pair is the residue state, which
   `validate()` accepts, and the rerun (after the stale lock is removed) drops
   the residue rows from STATE without archiving them again.
@@ -165,6 +172,9 @@ ARCHIVE_HEADER_KEY_RE = re.compile(
     r"(?P<date>\d{4}-\d{2}-\d{2}):?\*\*(?P<suffix>.*)"
 )
 ROW_ON_HEADER_LINE_RE = re.compile(r"\*\*\d{4}-\d{2}-\d{2}\*\*")
+# A second row start inside a row's line (searched from key offset 1): two
+# rows fused by a lost line break, in STATE or the archive.
+FUSED_ROW_RE = re.compile(r"- ?\*\*\d{4}-\d{2}-\d{2}\*\* ?—")
 
 LINE_END_RE = re.compile(r"\r?\n")
 BLANK_LINE_RE = re.compile(r"[ \t]*\r?\n")
@@ -428,6 +438,31 @@ def _bucket(body: str, heading: re.Match[str]) -> re.Match[str] | None:
     )
 
 
+def week_bucket(deadline: date) -> tuple[date, date]:
+    """The Monday and Friday of the deadline's week: the Weekly bucket's ends."""
+    monday = deadline - timedelta(days=deadline.weekday())
+    return monday, monday + timedelta(days=4)
+
+
+def _check_bucket(bucket: re.Match[str], deadline: date) -> None:
+    """The bucket names real month-days and exactly its deadline's week."""
+    for month_day in bucket.groups():
+        try:
+            date(2000, int(month_day[:2]), int(month_day[3:]))  # leap year
+        except ValueError:
+            raise StateRollError(
+                f"Weekly bucket {month_day} is not a real month-day"
+            ) from None
+    monday, friday = week_bucket(deadline)
+    expected = (f"{monday:%m-%d}", f"{friday:%m-%d}")
+    if bucket.groups() != expected:
+        raise StateRollError(
+            f"Weekly bucket {'->'.join(bucket.groups())} is not the Monday-Friday "
+            f"week of its deadline {deadline.isoformat()} (expected "
+            f"{'->'.join(expected)}); correct the heading by hand"
+        )
+
+
 def _iso_date(raw: str, what: str) -> date:
     try:
         return date.fromisoformat(raw)
@@ -460,6 +495,8 @@ def recurring_fields(text: str) -> tuple[re.Match[str], dict[str, Recurring]]:
         deadline = _deadline(body, heading, kind)
         deadline_date = _iso_date(deadline.group(1), f"{kind} next deadline")
         bucket = _bucket(body, heading) if kind == "Weekly" else None
+        if bucket is not None:
+            _check_bucket(bucket, deadline_date)
         anchor = (
             _cadence_anchor(body, heading, deadline_date) if kind == "Monthly" else None
         )
@@ -486,9 +523,9 @@ def roll_weekly(text: str, today: date) -> tuple[str, str | None]:
     new_deadline = first_friday(today)
     edits = [(weekly.deadline.span(1), new_deadline.isoformat())]
     if weekly.bucket is not None:
-        monday = new_deadline - timedelta(days=new_deadline.weekday())
+        monday, friday = week_bucket(new_deadline)
         edits.append((weekly.bucket.span(1), f"{monday:%m-%d}"))
-        edits.append((weekly.bucket.span(2), f"{new_deadline:%m-%d}"))
+        edits.append((weekly.bucket.span(2), f"{friday:%m-%d}"))
     new_text = _apply_edits(text, section, edits)
     return new_text, f"weekly: {old_deadline.isoformat()} -> {new_deadline.isoformat()}"
 
@@ -561,13 +598,22 @@ def rewrite_links(
 # --- STATE: decision index ---------------------------------------------------
 
 
-def decision_index_rows(text: str) -> list[re.Match[str]]:
-    """Every dated bullet of the one decision index, each a readable row.
+def _refuse_fused_row(line: str, where: str) -> None:
+    """A row line holding a second row start is two rows missing a line break."""
+    if FUSED_ROW_RE.search(lookalike_key(line), 1):
+        raise StateRollError(
+            f"{where} line holds two index rows (a lost line break): "
+            f"{line.strip()[:80]!r}; split it by hand"
+        )
 
-    Shared with the currency gate (its newest-date read): a dated bullet in
-    any other shape (`* **date**`, unbolded, indented, another separator,
-    Unicode spacing, non-ASCII digits) is invisible to keep-15 and to the
-    newest-date read, so it fails closed."""
+
+def decision_index_rows(text: str) -> list[re.Match[str]]:
+    """Every dated bullet of the one decision index, each one readable row.
+
+    A dated bullet in any other shape (`* **date**`, unbolded, indented,
+    another separator, Unicode spacing, non-ASCII digits) is invisible to
+    keep-15 and to the gate's newest-date read, and two rows fused on one
+    line would be counted as one, so both fail closed."""
     body = decision_section(text).group(0)
     rows = list(INDEX_ROW_RE.finditer(body))
     row_starts = {match.start() for match in rows}
@@ -579,6 +625,7 @@ def decision_index_rows(text: str) -> list[re.Match[str]]:
             )
     for row in rows:
         _iso_date(row.group(1), "decision-index date")
+        _refuse_fused_row(row.group(0), "decision-index")
     return rows
 
 
@@ -588,7 +635,8 @@ def index_rows(text: str) -> list[re.Match[str]]:
     Keep-15 moves rows by position, so it is only correct when every dated
     bullet is a readable row, the rows are newest first (same-day rows keep
     their authored order), and a moved row is one whole line. Anything else
-    fails closed instead of archiving the wrong rows or half a record.
+    fails closed instead of archiving the wrong rows or half a record. The
+    currency gate reads the index through this same validation.
     """
     body = decision_section(text).group(0)
     rows = decision_index_rows(text)
@@ -707,6 +755,11 @@ def parse_archive(text: str) -> Archive:
                     "'**Roll YYYY-MM-DD**' nor '**<Ordinal> roll, YYYY-MM-DD**': "
                     f"{line.strip()[:80]!r}"
                 )
+            if ARCHIVE_HEADER_KEY_RE.search(header.group("suffix")):
+                raise StateRollError(
+                    "archive line holds two roll headers (a lost line break): "
+                    f"{line.strip()[:80]!r}; split it by hand"
+                )
             if ROW_ON_HEADER_LINE_RE.search(header.group("suffix")):
                 raise StateRollError(
                     "archive roll header shares its line with an index row: "
@@ -728,6 +781,7 @@ def parse_archive(text: str) -> Archive:
                     f"archive has an index row above its first roll header: {line[:80]!r}"
                 )
             _iso_date(row.group(1), "archive row date")
+            _refuse_fused_row(line, "archive")
             rows.append(line)
         elif DATED_BULLET_LOOSE_RE.match(key):
             raise StateRollError(
@@ -1004,8 +1058,24 @@ def _release_lock(lock: Path, token: str) -> None:
     )
 
 
+def _fsync_dir(directory: Path) -> None:
+    """Make a completed rename in directory durable.
+
+    POSIX needs the directory itself fsynced; an fsynced file is not enough.
+    Windows exposes no directory fsync through os (a directory cannot be
+    opened there), so this is skipped: durability there is best effort."""
+    if os.name != "posix":
+        return
+    fd = os.open(directory, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
 def _replace(path: Path, text: str) -> None:
-    """Write text to a unique temp file beside path, fsync, then replace path."""
+    """Write text to a unique temp file beside path, fsync, replace path, then
+    fsync path's directory so the rename is durable (see _fsync_dir)."""
     try:
         mode = stat.S_IMODE(os.stat(path).st_mode)
     except OSError:
@@ -1028,6 +1098,13 @@ def _replace(path: Path, text: str) -> None:
     finally:
         if tmp_name is not None and os.path.exists(tmp_name):
             os.unlink(tmp_name)
+    try:
+        _fsync_dir(path.parent)
+    except OSError as exc:
+        raise StateRollError(
+            f"wrote {path} but could not make the rename durable (directory "
+            f"fsync: {exc})"
+        ) from exc
 
 
 def commit(
@@ -1041,8 +1118,11 @@ def commit(
     """Write the planned pair: archive first, then STATE (see module docstring).
 
     The caller holds the lock. Both files must still hold the bytes the plan
-    was made from; a restore after a failed STATE write happens only while the
-    archive still holds exactly the bytes this run wrote."""
+    was made from; a restore after a failed STATE write happens only while
+    STATE still holds its old bytes (it may have been replaced when only its
+    directory sync failed, and restoring the archive then would lose the
+    moved rows) and the archive still holds exactly the bytes this run
+    wrote."""
     if read_text(state_path) != state_before or read_text(archive_path) != archive_before:
         raise StateRollError(
             "STATE.md or the archive changed on disk after planning; nothing "
@@ -1055,9 +1135,23 @@ def commit(
     try:
         _replace(state_path, new_state)
     except StateRollError as exc:
-        if new_archive is not None:
-            _restore_archive(archive_path, new_archive, archive_before, exc)
+        if new_archive is None:
+            raise
+        if not _holds(state_path, state_before):
+            raise StateRollError(
+                f"{exc}; STATE.md no longer holds its old bytes, so the archive "
+                "was kept (it holds every moved row): check both files by hand"
+            ) from exc
+        _restore_archive(archive_path, new_archive, archive_before, exc)
         raise
+
+
+def _holds(path: Path, text: str) -> bool:
+    """True only when path is readable and holds exactly text."""
+    try:
+        return read_text(path) == text
+    except StateRollError:
+        return False
 
 
 def _restore_archive(
