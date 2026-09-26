@@ -22,7 +22,7 @@ only routes to them. The September 20 audit below is retained as the dated basel
 | T02 / S3 | **ACCEPTED** 2026-09-22 at `a8a983e` (genuine protected N1 capture, committed independent G5 decision); #455 merged — [acceptance](2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s3-genuine-protected-n1-capture-and-committed-independent-g5-decision-2026-09-22) | None | Done | None |
 | T03 / S4 | **ACCEPTED** 2026-09-25 at C2 close, after the 2026-09-24 CHANGES REQUIRED and R1–R5 repairs; condition read `ok` (run 36188223563); #501 merged at `228447c` — [C2 close](2026-09-18-full-e1-execution-slices.md#coordinator-checkpoint-c2-close--s4-accepted-2026-09-25-claude-code) · [condition read](https://github.com/Joshua-Asante/first-passage/pull/501#issuecomment-5840025679) | None | Done | None |
 | T04 / S5 | Not accepted; packet drafted, D1–D3 ruled — [packet](../../briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md) | **Freeze HELD by operator** (2026-09-25) pending the contract-delta decisions — [ruling](https://github.com/Joshua-Asante/first-passage/pull/501#issuecomment-5840609727) · [decisions](../../notes/audits/2026-09-25-qualification-assurance-contract-delta.md#5--proposed-repair-plan-operatorowner-decisions-nothing-here-is-adopted) | Operator (rulings); then campaign coordinator (freeze, dispatch) | Operator: §5.1 boundary list, N1 resource accounting, N2 interruption recovery; then freeze S5 at the merged head |
-| T05 / S6–S7 | S6 accepted as an interface; S6+S7 **accepted as a build** at `35c8c08`; acceptance proper not granted — [build entry](2026-09-18-full-e1-execution-slices.md#t05-s7-return--build-complete-s6--s7-at-35c8c08-accepted-as-a-build-acceptance-proper-waits-on-t04-2026-09-21) | Waits on T04/S5 acceptance and integration | Campaign coordinator | Integrate after S5 acceptance |
+| T05 / S6–S7 | S6 accepted as an interface; S6+S7 **accepted as a build** (`35c8c08`, then the settlement-rule follow-up `c3cea75`); build **frozen at `claude/t05-result-seal@6cf2732`** (`c3cea75` + #468 settlement wait + `main` through 09-23); acceptance proper not granted — [build entry](2026-09-18-full-e1-execution-slices.md#t05-s7-return--build-complete-s6--s7-at-35c8c08-accepted-as-a-build-acceptance-proper-waits-on-t04-2026-09-21) · [follow-up](2026-09-18-full-e1-execution-slices.md#t05-follow-up--the-s3-settlement-rule-applied-to-the-result-and-seal-commits-accepted-into-the-build-2026-09-22) · [frozen head](../../briefs/handoffs/2026-09-24-full-e1-coordinator-handoff.md) | Waits on T04/S5 acceptance | Campaign coordinator | Integrate the frozen head `6cf2732` after S5 acceptance |
 | T06 / S8 | Not started | T01–T05 integrated at one identity | Campaign coordinator | Dispatch after T05 integration |
 
 External packets as of the [2026-09-24 handoff entry](2026-09-18-full-e1-execution-slices.md#coordinator-handoff--end-of-2026-09-24-campaign-ownership-passes-to-the-next-coordinator-session):
@@ -129,23 +129,25 @@ resolved identity at qualification and activation.
 **Return boundary:** S2 accepted as the enforced work boundary **and** G3 merged with a fifteen-green integrated run; G4 items landed or named as T02 preconditions; #436 merged. No N1 dispatch, no S3 packet, no claim of full E1. If G3 cannot reach fifteen-green inside the envelope, return `DONE_WITH_CONCERNS` with the boundary acceptance held back — do not merge #436 on a head that would kill real S3 workers.
 
 ### T02 — Protected N1 capture and independent decision / S3 (750k–1M)
+**Status (2026-09-26):** accepted — see the S3 row in [Current state](#current-state--september-26-2026-refreshed-from-the-acceptance-ledger).
 **Selected outcome:** Genuine N1 -> retained capture -> metered G5 -> committed CONTINUE or statistical failure.
 **Prerequisites:** T01; resolve S3 Q1-Q12 in the current preparation/dispatch packet.
 **Ownership:** S3 executor integrates worker, capture custody, snapshot/schema and G5; coordinator accepts.
-- [ ] Bind release/profile, phase budget, capture storage and G5 launch/accounting topology.
-- [ ] Reuse the corrected readiness handshake; preserve N1_ONLY historical contracts.
-- [ ] Commit one N1 decision under current revision/validity; PASS reaches N2_READY only.
+- [x] Bind release/profile, phase budget, capture storage and G5 launch/accounting topology.
+- [x] Reuse the corrected readiness handshake; preserve N1_ONLY historical contracts.
+- [x] Commit one N1 decision under current revision/validity; PASS reaches N2_READY only.
 **Verification:** Real reduced TEST_ONLY PASS/FAIL; fabrication, source/seed mutation, budget, crash and VOID tests; Linux trace.
 **Checkpoint:** Return interface conflicts before dependent code; review capture-to-G5 evidence together.
 **Return boundary:** Accepted S3; no N2, Part A, full result or seal.
 
 ### T03 — Joint N2/Part B / S4 (500k–750k)
+**Status (2026-09-26):** accepted — see the S4 row in [Current state](#current-state--september-26-2026-refreshed-from-the-acceptance-ledger).
 **Selected outcome:** One joint batch produces both required decisions without extra sampling.
 **Prerequisites:** T02 accepted capture/assessment interfaces.
 **Ownership:** S4 executor; coordinator accepts.
-- [ ] Extend canonical checkpoint plans and actual compute/capture for FULL and halves.
-- [ ] Independently adjudicate both components; advance only on both PASS.
-- [ ] Preserve exact depths, streams, evidence membership and one lifetime allowance.
+- [x] Extend canonical checkpoint plans and actual compute/capture for FULL and halves.
+- [x] Independently adjudicate both components; advance only on both PASS.
+- [x] Preserve exact depths, streams, evidence membership and one lifetime allowance.
 **Verification:** Genuine joint PASS/failure combinations, exact counts/seeds, duplicate dispatch and crash/VOID cases.
 **Checkpoint:** Present one complete source-to-decision trace.
 **Return boundary:** Accepted PART_A_READY or prescribed failure; no Part A execution.
