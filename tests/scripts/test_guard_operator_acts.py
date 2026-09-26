@@ -662,3 +662,71 @@ def test_explicit_false_auto_is_judged_as_a_merge(command, expected):
     # auto-merge instead of being judged as the pinned or unpinned merge it is, or if
     # any value that is not a false spelling stops being refused (Codex #503, 4109427036).
     assert g.classify_command(command) == expected
+
+
+# --- 2026-09-25 babysit repairs (Codex review of #503 at a80f819, 4109578933 / 4109578936) ---
+
+@pytest.mark.parametrize("command", [
+    "git push --all --no-all origin feature",
+    "git push --branches --no-branches origin claude/x",
+    "git push --all --no-branches origin claude/x",
+    "git push --branches --no-al origin claude/x",
+    "git push --al --no-all origin claude/x",
+    "git push --mirror --no-mirror origin claude/x",
+    "git push --mirr --no-m origin claude/x",
+    "git push --all --mirror --no-mirror --no-all origin claude/x",
+])
+def test_negated_bulk_push_is_silent(command):
+    # Fails if a bulk option that a later `--no-…` form clears (git's last-wins; `--branches`
+    # is git's alias of `--all`, so either negation clears either) is still refused as
+    # main.direct_push (Codex #503, 4109578933; checked against git 2.50 on a local remote).
+    assert g.classify_command(command) is None
+
+
+@pytest.mark.parametrize("command", [
+    "git push --no-all --all origin",
+    "git push --no-mirror --mirror origin",
+    "git push --all --no-mirror origin claude/x",
+    "git push --mirror --no-all origin claude/x",
+    "git push --all --no-all origin main",
+    "git push --all --no-a origin claude/x",
+    "git push --all --no-all=x origin claude/x",
+    "git push --all -o --no-all origin claude/x",
+    "git push --all --push-option --no-all origin claude/x",
+    "git push --all origin claude/x -- --no-all",
+])
+def test_bulk_push_not_cleared_is_still_denied(command):
+    # Fails if a negation that git does not apply to the bulk option — an earlier one, one
+    # for the other bulk bit, an ambiguous abbreviation, one carrying a value, another
+    # option's value, or a word after `--` — silences a push that reaches main.
+    assert g.classify_command(command) == ("deny", "main.direct_push")
+
+
+@pytest.mark.parametrize("command", [
+    DEPLOY + " --help",
+    DEPLOY + " -h",
+    "fly -h " + "deploy",
+    "fly --help " + "deploy",
+    "flyctl " + "deploy -a c1-rail --help",
+    DEPLOY + " --help=true",
+    DEPLOY + " --help=false -h",
+])
+def test_fly_deploy_help_is_silent(command):
+    # Fails if `fly deploy --help` / `-h` (cobra prints help and deploys nothing) asks as
+    # rail.deploy (Codex #503, 4109578936).
+    assert g.classify_command(command) is None
+
+
+@pytest.mark.parametrize("command", [
+    DEPLOY,
+    DEPLOY + " -a c1-rail",
+    DEPLOY + " -a -h",
+    DEPLOY + " --image -h",
+    DEPLOY + " --help=false",
+    DEPLOY + " -h --help=false",
+    DEPLOY + " -- -h",
+])
+def test_fly_deploy_that_is_not_help_still_asks(command):
+    # Fails if a `-h` that is another flag's value, a help flag turned off later, or a word
+    # after `--` silences a real deploy.
+    assert g.classify_command(command) == ("ask", "rail.deploy")

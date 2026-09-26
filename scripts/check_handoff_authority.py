@@ -37,11 +37,16 @@ HARD checks (exit 1), each the property the ADR states:
       checks: naming it records where the card came from, and narrows nothing. Requiring
       every parent to carry a block would be a new rule, which the ADR does not state.
 
-A block is a CommonMark fence: its opening and closing fences may be indented by up to
-three spaces (four is an indented code block, not a fence), and a fence line with text
-after it does not close the block. Files without a block are not checked: the block is required of new worker cards by the
-ADR and verified at the coordinator's pre-dispatch read, and historical cards are not
-retrofitted. ``--all`` scans ``docs/briefs/**/*.md``.
+A block is a top-level CommonMark fence: its opening and closing fences may be indented
+by up to three spaces (four is an indented code block, not a fence), and a fence line with
+text after it does not close the block. A line that would open an authority fence once any
+container markers are stripped (blockquote ``>``, list markers ``-`` ``*`` ``+`` ``1.``
+``1)``, nested, or an indent of four or more) but that the top-level reader does not take
+is refused (A1): the block must be a top-level fence, and the checker does not parse
+CommonMark containers to find one. Files with no authority-looking fence anywhere are not
+checked: the block is required of new worker cards by the ADR and verified at the
+coordinator's pre-dispatch read, and historical cards are not retrofitted. ``--all``
+scans ``docs/briefs/**/*.md``.
 
 Exit codes: 0 clean · 1 a HARD violation · 2 usage / unreadable registry.
 """
@@ -65,6 +70,10 @@ SCAN_ROOT = Path("docs") / "briefs"
 _FENCE_OPEN = re.compile(r"^(?P<indent> {0,3})(?P<fence>`{3,}|~{3,})"
                          r"[ \t]*yaml[ \t]+authority[ \t]*$")
 _FENCE_CLOSE = re.compile(r"^ {0,3}(?P<fence>`{3,}|~{3,})[ \t]*$")
+# Anything that could be meant as an authority fence: the same fence behind any run of
+# whitespace, blockquote markers and list markers, with any text after `authority`.
+_FENCE_LOOSE = re.compile(r"^(?:[ \t]|>|[-*+](?=[ \t])|\d{1,9}[.)](?=[ \t]))*"
+                          r"(?:`{3,}|~{3,})[ \t]*yaml[ \t]+authority\b", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -103,11 +112,26 @@ def load_registry(path: Path = REGISTRY) -> Registry:
 
 
 def extract_blocks(text: str) -> list[str]:
-    """Bodies of every ``yaml authority`` fence in `text`, read as CommonMark reads a
-    fenced code block: the opening fence indented by up to three spaces, each body line
-    stripped of up to that many leading spaces, and the block running to its closing
+    """Bodies of every top-level ``yaml authority`` fence in `text`, read as CommonMark
+    reads a fenced code block: the opening fence indented by up to three spaces, each body
+    line stripped of up to that many leading spaces, and the block running to its closing
     fence (or to the end of the text when it has none)."""
+    return _read_blocks(text)[0]
+
+
+def stray_fences(text: str) -> list[int]:
+    """1-based numbers of every authority-looking line (`_FENCE_LOOSE`) that the top-level
+    reader did not take as an opening fence: one inside a blockquote or list item, one
+    indented four or more, or one whose info string carries more than ``yaml authority``."""
+    taken = set(_read_blocks(text)[1])
+    return [n + 1 for n, line in enumerate(text.splitlines())
+            if n not in taken and _FENCE_LOOSE.match(line)]
+
+
+def _read_blocks(text: str) -> tuple[list[str], list[int]]:
+    """The top-level authority blocks and the 0-based indices of their opening lines."""
     blocks: list[str] = []
+    openers: list[int] = []
     lines = text.splitlines()
     i = 0
     while i < len(lines):
@@ -116,6 +140,7 @@ def extract_blocks(text: str) -> list[str]:
             i += 1
             continue
         fence, indent = m.group("fence"), len(m.group("indent"))
+        openers.append(i)
         body: list[str] = []
         i += 1
         while i < len(lines):
@@ -128,7 +153,7 @@ def extract_blocks(text: str) -> list[str]:
             i += 1
         blocks.append("\n".join(body))
         i += 1
-    return blocks
+    return blocks, openers
 
 
 def _as_list(value, field: str, errors: list[str]) -> list[str]:
@@ -153,7 +178,12 @@ def parse_block(body: str) -> tuple[dict | None, list[str]]:
 def check_card(path: Path, reg: Registry, *, root: Path = REPO_ROOT,
                _seen: frozenset[Path] = frozenset()) -> list[str]:
     """HARD violations for the card at `path` (empty when clean or not opted in)."""
-    blocks = extract_blocks(path.read_text(encoding="utf-8"))
+    text = path.read_text(encoding="utf-8")
+    stray = stray_fences(text)
+    if stray:
+        return [f"A1 authority block must be a top-level fence (found inside a container "
+                f"at line {n})" for n in stray]
+    blocks = extract_blocks(text)
     if not blocks:
         return []
     if len(blocks) > 1:
@@ -265,7 +295,8 @@ def main(argv: list[str] | None = None) -> int:
         if not path.is_file():
             print(f"ERROR: {path} not found", file=sys.stderr)
             return 2
-        if extract_blocks(path.read_text(encoding="utf-8")):
+        text = path.read_text(encoding="utf-8")
+        if extract_blocks(text) or stray_fences(text):
             checked += 1
         for err in check_card(path, reg):
             failed += 1

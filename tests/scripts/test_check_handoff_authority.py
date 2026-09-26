@@ -275,13 +275,15 @@ def test_fence_indented_up_to_three_spaces_is_checked(tmp_path, pad):
     assert len(cha.extract_blocks(clean.read_text(encoding="utf-8"))) == 1
 
 
-def test_fence_indented_four_spaces_is_an_indented_code_block(tmp_path):
+def test_fence_indented_four_spaces_is_not_a_block_and_fails_closed(tmp_path):
     # Fails if a four-space-indented fence (CommonMark: an indented code block, not a
-    # fence) is taken for an authority block.
+    # fence) is taken for an authority block, or if it is let through as no block at all
+    # instead of being refused (Codex #503, 4109578926: fail closed).
     path = tmp_path / "card.md"
     path.write_text(_indented(DELEGATES_ARM, "    "), encoding="utf-8")
     assert cha.extract_blocks(path.read_text(encoding="utf-8")) == []
-    assert _errs(path, tmp_path) == []
+    assert _errs(path, tmp_path) == [
+        "A1 authority block must be a top-level fence (found inside a container at line 3)"]
 
 
 @pytest.mark.parametrize("close", ["", " ", "   "])
@@ -304,3 +306,51 @@ def test_fence_line_with_an_info_string_does_not_close(tmp_path):
     assert cha.extract_blocks(path.read_text(encoding="utf-8")) == [
         f"seat: worker\n{FENCE}text\ncapabilities: [rail.arm]"]
     assert any(e.startswith("A1") for e in _errs(path, tmp_path))
+
+
+# --- 2026-09-25 babysit repairs (Codex review of #503 at a80f819, comment 4109578926) ---
+
+CONTAINED = "A1 authority block must be a top-level fence (found inside a container at line"
+
+
+def _contained(prefix: str, fence: str = FENCE, cont: str | None = None) -> str:
+    """A card whose authority fence sits behind a container `prefix` (continuation lines
+    behind `cont`, default the same prefix)."""
+    rest = prefix if cont is None else cont
+    lines = "".join(f"{rest}{line}\n" for line in DELEGATES_ARM.splitlines())
+    return f"# Card\n\n{prefix}{fence}yaml authority\n{lines}{rest}{fence}\n"
+
+
+@pytest.mark.parametrize("prefix,cont", [
+    ("> ", None), (">", None), ("- ", "  "), ("* ", "  "), ("+ ", "  "), ("1. ", "   "),
+    ("1) ", "   "), ("> - ", ">   "), ("- > ", "  > "), ("  - ", "    "), ("> > ", None),
+    ("    ", None), ("\t", None), ("      ", None),
+])
+def test_authority_fence_inside_a_container_is_refused(tmp_path, prefix, cont):
+    # Fails if an authority fence inside a blockquote or list item (or indented 4+ spaces)
+    # is read as no block, so a card delegating an operator act gets the historical
+    # exemption (Codex #503, 4109578926).
+    for fence in (FENCE, "~~~"):
+        path = tmp_path / "card.md"
+        path.write_text(_contained(prefix, fence, cont), encoding="utf-8")
+        errs = _errs(path, tmp_path)
+        assert errs == [f"{CONTAINED} 3)"], (prefix, fence, errs)
+
+
+def test_contained_authority_fence_beside_a_top_level_block_is_refused(tmp_path):
+    # Fails if a second, contained authority fence hides behind a clean top-level block.
+    (tmp_path / "umbrella.md").write_text("# Umbrella\n", encoding="utf-8")
+    path = tmp_path / "card.md"
+    path.write_text(f"# Card\n\n{FENCE}yaml authority\nparent: umbrella.md\n{WORKER_OK}"
+                    f"{FENCE}\n\n> {FENCE}yaml authority\n> seat: worker\n> {FENCE}\n",
+                    encoding="utf-8")
+    assert f"{CONTAINED} 12)" in _errs(path, tmp_path)
+
+
+def test_card_without_an_authority_looking_fence_stays_exempt(tmp_path):
+    # Fails if the container rule over-reaches to cards whose fences are not authority
+    # fences (a quoted yaml fence, an authority fence named in prose).
+    path = tmp_path / "card.md"
+    path.write_text(f"# Card\n\n> {FENCE}yaml\n> seat: worker\n> {FENCE}\n\n"
+                    f"Write a `{FENCE}yaml authority` block.\n- {FENCE}text\n", encoding="utf-8")
+    assert _errs(path, tmp_path) == []

@@ -272,6 +272,13 @@ _GIT_PUSH_VALUES = frozenset({"-o", "--push-option", "--receive-pack", "--exec",
                               "--repo", "--recurse-submodules"})
 _GIT_PUSH_SHORT_BOOLS = frozenset("vqnfud46")  # `git push -h`: the short booleans
 _GIT_BULK_PUSH = ("all", "branches", "mirror")  # git accepts any unambiguous prefix
+# Every `git push` long option (`git push -h`, git 2.50): what a `--no-<prefix>` must be
+# unique among before git reads it as the negation of one.
+_GIT_PUSH_LONG = ("all", "atomic", "branches", "delete", "dry-run", "exec", "follow-tags",
+                  "force", "force-if-includes", "force-with-lease", "ipv4", "ipv6",
+                  "mirror", "no-verify", "porcelain", "progress", "prune", "push-option",
+                  "quiet", "receive-pack", "recurse-submodules", "repo", "set-upstream",
+                  "signed", "tags", "thin", "verbose", "verify")
 _MAIN = frozenset({"main", "heads/main", "refs/heads/main"})
 _PYTHONS = re.compile(r"(python(\d+(\.\d+)?)?|py|pypy3?)")
 
@@ -627,9 +634,28 @@ def _judge_fly(args: list[str]) -> list[Hit]:
     for command in _fly_commands(args):
         hits += _command_hits(command)
     paths = _command_paths(args, _FLY_VALUE_FLAGS, _FLY_BOOL_FLAGS, 1)
-    if any([args[i] for i in path] == ["deploy"] for path in paths):
+    if any([args[i] for i in path] == ["deploy"] for path in paths) and not _fly_help(args):
         hits.append(Hit("rail.deploy"))
     return hits
+
+
+def _fly_help(args: list[str]) -> bool:
+    """Whether cobra prints help and runs nothing: the last of ``-h`` / ``--help`` (true)
+    and ``--help=<v>`` / ``-h=<v>`` (pflag's spellings) before ``--`` is true. A help word
+    right after a flag that may take the next word as its value (one the guard does not
+    know as a boolean, written without ``=``) may be that value (``-a -h``), so it does
+    not count; nor does anything after ``--``."""
+    help_on, prev = False, ""
+    for arg in args:
+        if arg == "--":
+            break
+        maybe_value = prev.startswith("-") and len(prev) > 1 and "=" not in prev \
+            and prev not in _FLY_BOOL_FLAGS
+        name, eq, value = arg.partition("=")
+        if not maybe_value and name in ("-h", "--help"):
+            help_on = not eq or value in _GH_TRUE
+        prev = arg
+    return help_on
 
 
 def _bulk_push(arg: str) -> bool:
@@ -703,8 +729,44 @@ def _push_dry_run(push_args: list[str]) -> bool:
     return dry
 
 
+def _bulk_bit(name: str) -> str:
+    return "mirror" if "mirror".startswith(name) else "all"  # `--branches` aliases `--all`
+
+
+def _bulk_in_effect(push_args: list[str]) -> bool:
+    """Whether a bulk option is still set once git has read every option, last wins per
+    bit: ``--all`` / ``--branches`` (one bit; git 2.46+ aliases them) and ``--mirror``,
+    each cleared by a later ``--no-<name>`` in any abbreviation git accepts as unique
+    among `_GIT_PUSH_LONG`. A bulk-looking word counts wherever it stands (fail closed);
+    a negation counts only in option position — not as a value option's value, not after
+    ``--``, not with ``=`` and not when ambiguous (``--no-a``: git refuses the push)."""
+    bits = {"all": False, "mirror": False}
+    skip, options = False, True
+    for arg in push_args:
+        value, skip = skip, False
+        if _bulk_push(arg):
+            bits[_bulk_bit(arg[2:].split("=", 1)[0])] = True
+            continue
+        if value or not options:
+            continue
+        if arg == "--":
+            options = False
+        elif arg in _GIT_PUSH_VALUES or (arg.startswith("--") and "=" not in arg and any(
+                o.startswith(arg) for o in _GIT_PUSH_VALUES if o.startswith("--"))):
+            skip = True
+        elif not arg.startswith("--") and arg.startswith("-") and "o" in arg:
+            skip = True  # `-o` in a short cluster may take the next word: read it so
+        elif arg.startswith("--no-") and "=" not in arg:
+            rest = arg[5:]
+            named = [o for o in _GIT_PUSH_LONG if o == rest] or [
+                o for o in _GIT_PUSH_LONG if o.startswith(rest)]
+            if rest and len(named) == 1 and named[0] in _GIT_BULK_PUSH:
+                bits[_bulk_bit(named[0])] = False
+    return any(bits.values())
+
+
 def _push_covers_main(push_args: list[str]) -> bool:
-    if any(_bulk_push(a) for a in push_args):
+    if _bulk_in_effect(push_args):
         return True
     words = _positional(push_args, _GIT_PUSH_VALUES)
     # `--repo` names the remote, so every positional word is then a refspec.
