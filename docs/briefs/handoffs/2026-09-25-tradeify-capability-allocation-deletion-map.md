@@ -121,3 +121,18 @@ No edits to `STATE.md`, `AGENTS.md`, governing contracts, policy constants, Pine
 ## 6. Executor return
 
 Not dispatched. On return, record named executor/coordinator, dispatch revision, result path, inspected sources, checkpoint, three verdicts, unresolved decisions/evidence, verification performed and four-state completion status (`DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`). The coordinator records acceptance or required corrections before any successor work. Cross-seat transfer must satisfy the committed-handoff rule. This draft is committed but names no executor and pins no dispatch revision, so it is not an execution order.
+
+**Return (2026-09-26): `DONE_WITH_CONCERNS`.** Coordinator acceptance is owed.
+
+| Item | Value |
+|---|---|
+| Executor / coordinator | Assessor subagent (Claude Code, Opus 5.5) on branch `claude/tradeify-allocation-map` / the coordinating Claude Code session |
+| Dispatch revision | `d5effe5fbeb9df84de39dbcf1933a1ee91e303e3`, verified as the executor's starting `HEAD` |
+| Result | [`docs/notes/2026-09-25-tradeify-capability-allocation-deletion-map.md`](../../notes/2026-09-25-tradeify-capability-allocation-deletion-map.md), sections §0 and A–E |
+| Inspected sources | All Phase-0 reads (result §0 read report), plus the S2b terms ruling and the qualification trust domain. All eight `BOOK_SOURCES.sha256` pins were rechecked in place: all OK. The ORB, corrected-Striker and Aegis ports were read in place, action and exit branches only. Vanguard was not re-read (§5a item 3). Effective-input files were not read, because they are outside §60. Code hashes are in result §E. |
+| Checkpoint | Recorded in result §0. **Provisional boundary:** one durable owner, the completed-bar barrier, the ports, policy, capacity, takeover, schedule, settlement, unknown accounting and a thin REST adapter. Tradovate owns the 1-lot OSO fixed stop/target and between-bar execution. **Reductions:** AVOID BUILDING for TV ingress/publisher, the trail manager and feed, and residual cover; REDUCE the ATTACH and live-trailing paths after freeze. **Conflicts:** C18 snapshot contract; C11b close-time exit is emulator-only; T08 §7.8's "moot" exit-partial line is stale after UB-5. |
+| Verdicts | Technical allocation **CONDITIONAL MINIMAL BOUNDARY IDENTIFIED**. Permission readiness **UNRESOLVED**. Deletion readiness **NONE ESTABLISHED**. |
+| Unresolved decisions / evidence | Result §D items D01–D18. Gate-B behavior items: D04, D05, D06, D07, D10, D11 and D13; D08 becomes one only if the L2(c) trace fails. Contract: D09. Evidence: the drill-map K rows, D4/D5 authorization, R5, the feed (O-4) and T13 channels. |
+| Verification | Source reads and `sha256sum` only; no runtime claims. Diff limited to this section and the result file. `fp.ps1 check` record: see the executor's final report. |
+| Concerns | (1) The C18 protection-snapshot contract cannot be met by any documented REST read. (2) The Striker close-time crossed-level exit has no live realization (name search only). (3) The ORB adds binding (D17) is unconfirmed, because the effective inputs could not be read under §60. (4) The harness blocked writes to this worktree until the executor switched into it with `EnterWorktree`. |
+| Next action | Coordinator gate-D review, then the integrated gate-B/C decision packet (result §E). |
