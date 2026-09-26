@@ -7,7 +7,7 @@
 | § | Content | State |
 |---|---|---|
 | 1 | Gate C: decisive capabilities, validation and failure consequences | Drafted below |
-| 2 | Gate B: remaining behavior decisions | Pending |
+| 2 | Gate B: remaining behavior decisions | Drafted below |
 | 3 | Revised option-B rules, with unresolved assumptions | Pending (UB-8 return) |
 | 4 | Allocation and component reductions (gate D) | Pending |
 | 5 | T09 handoff (held until B–D acceptance) | Pending |
@@ -63,3 +63,28 @@ The crossed-level exit (S3(d)) is realized as the same whole-leg liquidation whe
 | GC-8 | Late-reject detection by polling (A7) | All | `DOCUMENTED` (no Alert History) | T09 design, then trace · coordinator | A rejected child or bracket is detected within the protection deadline | This is design work, not a route stop. The protection deadline (halt/resume §2) bounds it |
 
 **Priority order.** GC-1 first (it decides whether any exit exists), then GC-2a, GC-7, GC-3, GC-2b, GC-4 and GC-5, with GC-6 and GC-8 in parallel. D1–D3 and D6 are authorized in principle in webhook form only. **REST-form traces for GC-1, GC-2a, GC-2b, GC-3 and GC-4, and the D4/D5 reads, need a revised operator session plan.** The race observation in GC-1 is new and needs its own written authorization.
+
+---
+
+## 2. Gate B — remaining behavior decisions
+
+Each row is the operator's to rule, in words and without parameter values, in its owner. "Recommendation" is the coordinator's. The source-grounded suggestions come from the allocation map §D; private reads were in place only. Nothing is adopted here.
+
+| ID | Decision (owner) | Recommendation | Depends on | Blocks |
+|---|---|---|---|---|
+| B-1 | **Close realization (D19).** Which GC-1 option to pursue, and whether to accept the §1.1a L2(e) interpretation for whole-scope broker liquidation (rail spec R-B3; incident ADR UB-5) | Pursue **C-a**, and accept §1.1a subject to the D3 plus race evidence. Keep C-b as the fallback expression change. Reject C-c | GC-1 traces; GC-7 | Every exit; T09 |
+| B-2 | **Exit-split rows** ORB-6, STR-7, VAN-8 (pre-registrations) | Rewrite them to follow B-1. Under C-a, a whole-leg exit is **one broker liquidation**, not N one-contract closes. The "must become one-contract closes" premise is withdrawn with UB-5 | B-1 | Edition freeze |
+| B-3 | **Striker initial stop, STR-2** (D04) | Option (a). The source shows the port computes the stop level on the signal bar, so it is computable at entry. The first attached level can differ from the declared one-bar-later stop, so treat this as a qualified behavior change in E1 | — | Striker freeze |
+| B-4 | **ORB fixed-stop rules**, ORB-2/3/4 | ORB-2: the existing fixed-stop component, unchanged. ORB-3: the trail's former exits now close through the existing fixed stop, target, max hold (when enabled) or EOD flat; the pre-registration must account for the changed holding periods, overlap and capacity. ORB-4: **none**, since the per-bar re-issue becomes a noop once trail and breakeven are off. The breakeven-off fact rests on the recorded effective binding; confirm it in the owner | — | ORB freeze |
+| B-5 | **Vanguard fixed-stop rules**, VAN-2/3/4 | As B-4, per the pre-registration §3a findings. VAN-3 needs the full account of remaining exits that §59 Ruling 4 requires | — | Vanguard freeze |
+| B-6 | **Split size and partial acknowledgement**: STR-3/4, VAN-5/6 | Adopt the UB-4 first-release rule. Reserve the whole intent; send sequentially after a defined acknowledgment; on refusal, unknown, cutoff, takeover or flatten, abandon the unsent remainder; never retry or top up; a base supports adds only after its sequence closes and the approved rule holds. The VAN-6 counter wording states whether the add counter advances at proposal (as declared) | — | Freezes; replay |
+| B-7 | **Striker close-time crossed-level exit**, STR-5 (D07) | As declared **when every lot is crossed**, realized as the B-1 whole-leg close. If lots can have different levels, a partly crossed case is a scoped close (U), so either the edition confirms a shared level or a behavior change is ruled | B-1; source check | Striker freeze |
+| B-8 | **Striker per-bar stop modify**, STR-6, and Aegis breakeven/re-pin | Keep them as declared, dependent on GC-2b. If GC-2b fails, a fixed-stop edition for the affected leg (operator expression change) | GC-2b, GC-3 | Striker and Aegis |
+| B-9 | **Split sequencing and replay pricing** (D10; §A8 rule 10; each pre-registration's §6) | Sequential one-contract entry requests, with a stated per-request delay and price rule in the replay. Exits follow B-1 | B-1 | Freezes; E1 |
+| B-10 | **Option B for the first release** (D11; incident ADR UB-8 and §A10 acceptance condition) | Pending the UB-8 comparison (§3) | UB-8 | §3 rules; T09 scope |
+| B-11 | **Takeover under the route** (GC-5) | Keep as declared, realized as the B-1 close of the displaced leg followed by admission. If GC-5 fails, a takeover behavior change | B-1; GC-5 | Aegis |
+| B-12 | **Account actors and backstop** (D13; GC-7) | Inventory first. No vendor scheduled flatten as a backstop until qualified, since it would be a second close owner | — | C-a; UB-7 |
+
+**Authorizations needed (operator authority, not behavior):**
+- **A-1.** A revised operator session plan covering: REST-form D1–D3 and D6; the REST reads D4/D5 (D12); and the new GC-1 race observation. Each is bound to exact operations and account scope. The reads are separate from order-producing drills.
+- **P-1.** Evidence of account entitlement (CrossTrade Pro REST) and of venue permission for CrossTrade-mediated automated orders on this eval. A firm-level "automation-friendly" classification is insufficient.
