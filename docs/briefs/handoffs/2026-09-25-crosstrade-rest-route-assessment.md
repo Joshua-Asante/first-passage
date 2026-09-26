@@ -1,6 +1,6 @@
 # CrossTrade REST route assessment — bounded handoff
 
-**Status:** DRAFT for coordinator dispatch. Joshua requested this handoff on 2026-09-25; assessment execution is not started by drafting it. Commit this packet and its local evidence-note dependencies before a cross-seat dispatch, then name the executor and dispatch revision. No route adoption is implied.
+**Status:** RETURNED — coordinator acceptance pending. The original dispatch instructions and the execution record remain below; §6.1 records the committed-handoff breach. The 2026-09-26 reconciliation incorporates the separate Vanguard return as evidence awaiting acceptance, not route adoption.
 
 > Execute with `superpowers:executing-plans`. This is a documentary capability assessment, not an adapter implementation. The deployment checklist remains the roadmap; the coordinator retains combined acceptance.
 
@@ -148,7 +148,7 @@ Vendor text is cited by quote ID (Q-nn → `QUOTE_INDEX.txt`) and paraphrased. I
 
   We do not adopt resend-on-absence, consistent with CAP 09-17 (`capability-decision.md:107-115`).
 - **Pending original processing vs identified terminal order.** An identified order with a terminal `ordStatus` resolves *that order*. It does not close the request if work is still possible elsewhere: sibling children, CrossTrade coverage repair on a watched bracket (Q15), or copier fan-out (Q11).
-- **Session boundary (new, load-bearing).** An ambiguous placement not positively found before the daily reset **can never be enumerated again**. The candidate lists are current-session only (Q22), and history rows lack `clOrdId`. A later durable-history fill with an `orderId` the owner never learned is an unexplained effect (incident ADR §A2 rule 6). So "resolve within the session" is a hard deadline for positive recovery. After it, the attempt stays unknown permanently: account block under current rules, permanent reservation under Proposed B.
+- **Session boundary (reconciled 2026-09-26).** The documented candidate lists are session-scoped (Q22), and history rows lack clOrdId. This limits the documented correlation recipe; it does not prove that every unresolved request becomes unknowable forever. **Cross-session recovery is not established; preserve the unknown state until qualifying evidence resolves it.** A later fill whose orderId cannot be attributed remains an unexplained effect under incident ADR §A2 rule 6. Retain any learned identities and evidence; D5 must test prior-session lifecycle access separately. Session reset is neither a no-future-effect fence nor permission to release reservations or resend. Current blocking rules continue while the request is unresolved; any Proposed-B treatment requires separate acceptance.
 - **Unknown cancel, change or close.**
   - `change` is Tradovate modify. A version can exist for a command Tradovate later rejects, so resolution is by command report (Q21). Whether the old stop survives a rejected or unknown modify is **undocumented** (L2(c) stays K).
   - `cancelreplace` is guarded and non-atomic but owner-fenced, and returns `reconciliation_required` on ambiguity (Q28).
@@ -159,19 +159,19 @@ Vendor text is cited by quote ID (Q-nn → `QUOTE_INDEX.txt`) and paraphrased. I
 
 Legs are listed **as currently ruled**: §59 route-native editions for ORB and Striker, and declared expressions for Vanguard and Aegis. S = documented supported (creation only), K = unknown until a drill, U = documented unsupported. REST uses the same Tradovate calls as the webhook path, so **REST changes no L2 verdict**. It changes observability only.
 
-| Primitive | ORB MNQ (route-native, fixed-stop OSO) | Striker MYM (route-native, entry carries stop, 1-lot requests) | Vanguard MGC (declared; attested fit) | Aegis 6J (declared; attested fit) | REST vs webhook |
+| Primitive | ORB MNQ (route-native, fixed-stop OSO) | Striker MYM (route-native, entry carries stop, 1-lot requests) | Vanguard MGC (declared; trailing-active return pending acceptance) | Aegis 6J (declared; attested fit) | REST vs webhook |
 |---|---|---|---|---|---|
 | Entry/add creation with stop in same call, L2(a)/(b) | S (resting stop entry + OSO) | S (market + OSO) | S | S | Same primitive; REST returns child ids synchronously (Q02) |
 | Partial entry fill, coverage repair, L2(e) | Removed by 1-lot requests | Removed by 1-lot requests (N requests per signal) | Removed by 1-lot requests (≤2) | Removed by 1-lot requests (3–8) | Same; the vendor repair actor still watches each bracket (Q15) |
 | Delayed ATTACH, L2(f) | n/a | Removed by the §59 edition | n/a | n/a | Same (U) |
-| Modify of fixed stop/target, L2(c) | Pre-registration owed (the trail's replacement exits) | **Used every bar**: breakeven, tightening, ratchet, once per 1-lot child | Unknown (private) | **Used**: breakeven and target re-pin, on up to 8 children | Same K; REST adds a command-report read (Q21) |
-| Triggered trail with per-fill anchor, L2(g) | Removed by the §59 edition | n/a | **Conflict, see §6.7 (1)** | Not indicated | Same U. The vendor layer is CrossTrade-managed and its own pages disagree on handoff (Q12 vs Q13). |
+| Modify of fixed stop/target, L2(c) | Pre-registration owed (the trail's replacement exits) | **Used every bar**: breakeven, tightening, ratchet, once per 1-lot child | Per-bar bracket reissue reported in source return; edition modify behavior still owed | **Used**: breakeven and target re-pin, on up to 8 children | Same K; REST adds a command-report read (Q21) |
+| Triggered trail with per-fill anchor, L2(g) | Removed by the §59 edition | n/a | **TRAILING ACTIVE returned; acceptance pending, see §6.7 (1)** | Not indicated | Same U. The vendor layer is CrossTrade-managed and its own pages disagree on handoff (Q12 vs Q13). |
 | Full close / scheduled flatten, L2(d) | K | K (incl. DD/daily-halt closes) | K | K (incl. timed exit) | Same K |
 | Scoped close of a lot subset | U | U/K (close-time crossed-level exits) | U | U | Same |
 | Cancel of a pending entry and its Suspended GTC children | K (session/expiry cancel of the resting entry; child fate undocumented) | n/a | n/a | n/a | Same K |
 | Takeover composite | — | — | — | K | Same |
 | Late-reject detection | Must poll status (no Alert History) | same | same | same | **Worse on REST** (Q09): the owner must schedule its own post-placement read |
-| Unknown-request recovery | Positive, same session only | same | same | same | **Better on REST**: documented recipe and ids. Negative closure is absent on both. |
+| Unknown-request recovery | Positive within session documented; cross-session unestablished | same | same | same | **Better on REST**: documented recipe and ids. Negative closure is absent on both. |
 
 REST's gains (Q02, Q06, Q20) are synchronous ids, a documented error taxonomy, and a `clOrdId`-to-lifecycle lookup. **Unchanged**: first-fill activation, CrossTrade repair, L2(c)/(d)/(g), session-scoped reads, and actors from hidden account configuration.
 
@@ -184,15 +184,15 @@ Every trace starts from the existing owner's retained attempt: operation reserve
 | Success with ids, then late reject | The response proves acceptance only. **Working** needs a status or lifecycle read showing `Working`. The children show `Suspended` until the first fill, then `Working` (Q14, Q20). **Filled** needs a fill by `orderId`. **Protection coverage** needs the stop child `Working` with quantity equal to the filled quantity, read after the fill. A late reject shows as a `Rejected` status; if the stop child is the one rejected while filled, the position is unprotected (§A1 residual). The owner must poll: there is no Alert History row (Q09). |
 | Received definitive no-send | Only the pre-trading-call refusals (validation, lock, kill switch, CrossTrade rate_limit) come close. Q16 is hedged ("normally") and sits on the webhook page, applied to REST via Q01. Scope is that single received request. If the coordinator accepts it, it suffices for a local `rejected` and release of that attempt's reservation. It resolves nothing about any other attempt. `tradovate_rejected` is **not** in this class: it was dispatched, so resolve it by lookup. |
 | Broker accepted, response lost | The same-session recipe can positively find the entry by `clOrdId`, then the children by link fields, then the fills. Still unknown after that: any repair-placed OCO pair (not correlated to our id), copier fan-out if configured, and effects after the session reset. |
-| No response, no matching order | **Preserve unknown.** No documented protocol proves no future effect (§6.4). Elapsed time, flatness, an empty list or the reset do not clear it. After the reset it can no longer be enumerated. |
+| No response, no matching order | **Preserve unknown.** No documented protocol proves no future effect (§6.4). Elapsed time, flatness, an empty list or the reset do not clear it. The documented recipe is session-scoped; whether the request can be found after the reset is unestablished (D5). |
 | Partial fill, repair, close | Removed for entries by one-contract requests. Exit-side partial fills on a 1-lot stop or target are impossible. A full close via liquidate cancels the OCO children, but that is not verified (K). A scoped close leaves the other lots' children in place, which is correct for per-lot protection but must not over-close (U). No double close: the owner's `close_unreconciled` refusal (`:1610-1612`) and close reservations hold. |
 | Unknown cancel, amend or close | Both states stay owned. The old stop's survival on a rejected or unknown modify is **not proven** (Q21 shows versions can precede rejection). Completion ordering needs a command report read after prepare (spec evidence-currency rule). |
-| Session reset or restart | Survives: the local attempt journal, CrossTrade's 7-day `orderId` map (Q05), durable fill history keyed by `executionId`/`orderId` (periodic, completeness unverified; Q23, Q24), and GTC children. Lost: order and fill enumeration and `clOrdId` search (Q22). Delayed effects stay attributable only if their `orderId` was learned before the reset. Whether a lifecycle read by id works for a prior-session order is undocumented, which makes drill D5. |
+| Session reset or restart | Survives: the local attempt journal, CrossTrade's 7-day `orderId` map (Q05), durable fill history keyed by `executionId`/`orderId` (periodic, completeness unverified; Q23, Q24), and GTC children. The documented session-scoped enumeration and `clOrdId` search (Q22) do not cover prior sessions. Attribution of delayed effects is established when their `orderId` was learned before the reset. Otherwise it is unestablished, not impossible: whether a lifecycle read by id works for a prior-session order is undocumented, which is drill D5. Until then, unresolved attempts stay held. |
 | Triggered trail activates and reverses between Pine alerts | REST transport supplies no intrabar owner. The only activated trail on this route is CrossTrade-managed, driven by CrossTrade's own pricing, not fill-anchored per our K2 semantics, and not native L2(g) (Q12, Q13). This matters only if Vanguard's trail is live (§6.7 (1)). For ORB it was removed by §59. |
 
 ### 6.7 Corrections to prior reasoning
 
-1. **§59 Ruling 3's premise vs the route note (unresolved contradiction).** §59 holds that, after the ORB and Striker editions, "no leg depends on" L2(e)/(f)/(g), with Vanguard attested to fit §A1. The 09-25 route note's between-alert map (its §"Dependency map", Vanguard rows) records, from a private-port read, that Vanguard's **current effective binding enables triggered trailing**. The Ruling 1 attestation covered only "a fixed stop in the same order" and one-contract expressibility. It did not cover trailing fields. §A1 excludes "trailing fields", and L2(g) is required "by every port whose bracket sets trailing parameters" (rail spec R-B3). If the note is right, Vanguard is outside the narrowed shape and depends on a U primitive. This executor did not read the private port, so it cannot settle the question.
+1. **§59 Ruling 3's premise vs the source return (acceptance pending).** §59 holds that, after the ORB and Striker editions, "no leg depends on" L2(e)/(f)/(g), with Vanguard attested to fit §A1. The 09-25 route note's between-alert map (its §"Dependency map", Vanguard rows) records, from a private-port read, that Vanguard's **current effective binding enables triggered trailing**. The Ruling 1 attestation covered only "a fixed stop in the same order" and one-contract expressibility. It did not cover trailing fields. §A1 excludes "trailing fields", and L2(g) is required "by every port whose bracket sets trailing parameters" (rail spec R-B3). The returned source finding places Vanguard outside the narrowed shape and dependent on a U primitive, subject to coordinator acceptance. The original executor did not read the private port. The subsequent [source determination](2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return) returns TRAILING ACTIVE, with pinned source/effective-binding evidence; coordinator acceptance remains pending. Treat the earlier attestation as qualified by this returned finding, not as current proof of fit.
 2. **T08 §7.9 said the API overview "could not be retrieved".** It was retrieved on 2026-09-25 (HTTP 200). It had also been retained on 09-24 (T08 `L4__crosstrade_api_tradovate_overview.html`) and on 09-17 (CAP `dd7f839a…`). Its error taxonomy was therefore available. The 09-25 retrieval failure was transient, not a capability finding.
 3. **Support's "error that tells you whether it could still have reached Tradovate".** Only one direction is documented; see the §6.3 finding. Do not propagate it as a no-send guarantee.
 4. **Vendor documentation contradicts itself on triggered trails.** The API overview says the trail is handed to a native trailing stop after conversion (Q12). Destinations says no handoff happens and the stop stays an ordinary stop that CrossTrade tightens (Q13). L2(g) is U either way. Cite neither as the vendor's settled behavior.
@@ -202,9 +202,9 @@ Every trace starts from the existing owner's retained attempt: operation reserve
 ### 6.8 Checkpoint (after step 2)
 
 - **Genuine no-future-effect guarantee: none.** No documented protocol covers lost responses, pending work, identity uniqueness, retention and later effects together.
-- **Cases still unknown:** client timeout or disconnect; 500; 502 (both); 503; broker_rate_limited; and any positive search that fails before the reset. After the reset, every unresolved attempt stays unknown permanently.
+- **Cases still unknown:** client timeout or disconnect; 500; 502 (both); 503; broker_rate_limited; and any positive search that fails before the reset. Cross-session recovery is not established; after reset, preserve unresolved attempts until qualifying evidence resolves them.
 - **Original email:** **still outstanding.** No original bytes were supplied. The transcription hash matches §2 and does not discharge T08 §7.8 part 2.
-- **Documentation retrieval: not blocked.** The protection map was continued as the packet directs. No early return was taken: an ordinary-path incompatibility exists only conditionally (Vanguard, §6.7 (1)), and that condition is unresolved.
+- **Documentation retrieval: not blocked.** The protection map was continued as the packet directs. No early return was taken: the original Vanguard uncertainty now has a TRAILING ACTIVE source return (§6.7 (1)), awaiting coordinator acceptance and an operator expression decision.
 
 ### 6.9 Verdicts
 
@@ -218,8 +218,8 @@ Every trace starts from the existing owner's retained attempt: operation reserve
 
 **Portfolio-route verdict: REQUIRES NAMED CONTRACT/EXPRESSION DECISION.** The drivers, in order:
 
-1. **Vanguard trailing** (§6.7 (1)). An operator determination is owed. If the trail is live, Vanguard needs a §59-style route-native edition decision or rejection on this route.
-2. **Unknown-request posture.** Under the **current** preserve-and-block rule (`book_account_owner.py:1608`), any lost response that is not positively found blocks every new risk-add, and past the session reset that block is permanent. Running the book depends on accepting **Proposed option B** or another amendment. REST makes B *cheaper to live with*, because most ambiguities should resolve positively within the session, but it does not substitute for B's acceptance.
+1. **Vanguard trailing** (§6.7 (1)). The [source determination](2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return) returned TRAILING ACTIVE; coordinator acceptance is pending. After accepting that source finding, the operator must decide on a §59-style route-native edition or rejection on this route. Draft edition documents do not constitute that decision.
+2. **Unknown-request posture.** Under the **current** preserve-and-block rule (`book_account_owner.py:1608`), an unresolved lost response blocks new risk-adds until qualifying evidence resolves it. Reset does not itself resolve the request. Operating through such unresolved requests requires acceptance of **Proposed option B** or another amendment. REST offers a positive correlation path; this assessment establishes neither its recovery rate nor a recovery-time bound.
 3. **L2(c) and L2(d) remain K** for Striker's per-bar amendments, Aegis's breakeven and re-pin, and every leg's close and flatten.
 
 The unchanged *declared* book is already incompatible (§A4), so that verdict is superseded by §59 rather than re-derived here.
@@ -242,26 +242,55 @@ Account inventory for copier and Account Manager configuration (CAP R5) is also 
 - The plan's D5 is recorded as moot.
 - This return's **D4** (same-session reconciliation recipe) and **D5** (prior-session lifecycle read) are REST reads. They are not in the plan, and the plan's field names follow the webhook form. They stay unauthorized until they are added to a session plan.
 
-**Private-port access.** §59 forbids any agent reading a private port under that ruling. This packet's §1 directed reading the accepted ports' branches. To stay inside both, the executor reused the route note's recorded findings and hashed the Striker port without reading its body. The coordinator should reconcile the two instructions before any follow-up that depends on port behavior.
+**Private-port access — resolved under §60.** [Campaign §60](../programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25) governs the accepted book source reads in place in the primary checkout; its scope and handling rules remain unchanged. The earlier executor reused recorded findings and hashed Striker without reading its body under the former restriction; that remains its historical evidence scope. The subsequent Vanguard determination is linked above; this reconciliation does not independently repeat or accept that inspection.
 
 ### 6.10 Next action (one), prerequisites and blockers
 
-**Next action:** get an **operator determination on Vanguard MGC's trailing**: does the accepted effective binding's bracket set trailing parameters? If it does, choose a route-native fixed-stop edition for Vanguard under the §59 K = 1 pattern, or reject the Vanguard leg on this route. It comes first because it is cheap (one operator read of a private port, which §59 reserves to the operator) and it decides whether the portfolio can fit §A1 at all. Option B's reservation applies only to narrowed-shape requests.
+**Next action:** coordinator review and disposition of the [Vanguard TRAILING ACTIVE return](2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return), including its pinned effective-binding evidence. If accepted, submit the edition-versus-rejection choice to the operator; do not repeat the completed read as the next task.
 
-- **Prerequisites:** operator access to the private Vanguard port and the effective-input file. The ruling is recorded by the §59 owner (campaign record). No agent reads the port.
+- **Prerequisites:** the returned evidence and §60-compliant source access if verification is needed. Record factual acceptance separately from operator approval of an expression change. Both acceptances remain pending.
 - **Remaining blockers after that:**
   1. operator acceptance or rejection of Proposed option B, including §A3 figures bound at T16;
   2. D1–D6 authorizations and retained traces;
   3. §59 pre-registration of the ORB and Striker editions (port owner) and requalification through production E1;
   4. CAP R5 actor inventory;
   5. the original support email bytes;
-  6. T09, whose REST producer mapping must implement a same-session reconciliation deadline and a post-placement status poll.
+  6. T09, whose REST producer mapping must implement session-boundary evidence retention and a post-placement status poll, with cross-session recovery explicitly qualified before use.
 
-**Proposed corrections and propagation targets (not applied):**
+**Correction propagation status (2026-09-26):**
 
 - T08 §7.9: the "overview could not be retrieved" sentence (§6.7 (2)), and the qualifier on support's error claim (§6.3 finding).
-- Campaign §59 Ruling 3 and incident ADR §A4 correction: the Vanguard trailing caveat (§6.7 (1)).
-- CAP R3 row: POSITIVE RECONCILIATION ONLY on REST, with the session-reset limit.
+- Campaign §59 now carries a visible qualification pointing to the returned finding; incident ADR §A4 propagation remains owed after coordinator disposition.
+- CAP R3 row: POSITIVE RECONCILIATION ONLY on REST; session-scoped recipe, cross-session recovery unestablished.
 - Route note §"Two unresolved execution choices": the vendor trailing-doc contradiction (§6.7 (4)).
 
-**Coordinator disposition:** pending.
+**Coordinator disposition (2026-09-26): review recorded, acceptance still pending.**
+
+The operator directed on 2026-09-26 that route feasibility is the first deployment decision ([checklist addendum](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-26--route-feasibility-is-the-first-deployment-decision)). The return answers the two questions separately:
+
+1. **Can the route execute the unchanged portfolio?** Not as the portfolio stands. Verdict: `REQUIRES NAMED CONTRACT/EXPRESSION DECISION`.
+   - Per §6.5, REST uses the same Tradovate primitives as webhooks and changes no L2 verdict.
+   - Vanguard now has a TRAILING ACTIVE source return awaiting coordinator acceptance; the resulting edition-versus-rejection decision remains operator-owned.
+   - L2(c)/(d) stay K pending drills D1–D6.
+2. **How are ambiguous requests handled?** By positive reconciliation; the documented recipe is session-scoped and cross-session recovery remains unestablished. Verdict: `POSITIVE RECONCILIATION ONLY`.
+   - The mechanism is `clOrdId` → lifecycle → children → fills.
+   - Nothing documented proves a missing order cannot appear later, so no fence exists.
+   - Cross-session recovery is not established. Reset alone neither resolves an unknown request nor proves it can never be resolved.
+   - Under current rules that blocks risk-adds. Running the book depends on accepting Proposed option B or another amendment.
+
+This review checked the return's internal consistency and its code citations against the checkout. It did **not** re-verify the vendor quotes (Q01–Q30), for two reasons:
+- the ignored evidence directory is not in the cloud clone where this review ran;
+- that environment's network policy refused `crosstrade.io`.
+
+Acceptance therefore needs a Q-index spot-check on the machine that holds `local_artifacts/t08-rest-route-assessment-2026-09-25/`. At minimum, check Q06/Q07/Q08, Q16 and Q22. **Spot-check done (2026-09-26, operator, [PR #506 comment](https://github.com/Joshua-Asante/first-passage/pull/506#issuecomment-5842412951)).** The check ran on the machine that holds the evidence directory. Result:
+- Q06, Q07, Q08, Q16 and Q22 are each found at their cited lines. Q22 also carries the ~5:00 PM ET session reset.
+- All 35 captured pages match their `MANIFEST.tsv` SHA-256.
+- The three `.raw.txt` source files regenerate byte-identically from the hashed HTML.
+- 5 of the 227 `EVIDENCE_INDEX.sha256` entries are notes rather than file paths. They cannot pass a plain `sha256sum -c`, but they are not broken evidence.
+- The live pages were not re-fetched.
+
+This clears the vendor-quote reason for holding acceptance. Factual acceptance of the return remains with the coordinator; behavior and contract decisions remain with the operator.
+
+The dispatch-without-commit breach (§6.1) stays open for the coordinator. The operator has resolved the private-port access restriction (§6.9); this changes read authority prospectively and does not retroactively accept the earlier execution or settle the technical qualifications.
+
+**T09 remains blocked** under the canonical [T09 gate table](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record): assessment evidence acceptance, operator behavior/contract decisions, bounded-design viability, and capability allocation/scope acceptance. This return supplies evidence; it does not satisfy any gate by itself. External propagation targets listed above remain owed.
