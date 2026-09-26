@@ -11,7 +11,13 @@ directory), so any heading the roller would refuse — a second deadline field,
 a malformed bucket, a cadence anchor out of range, duplicated, in another case
 or disagreeing with its deadline, a look-alike heading or section — fails this
 gate too, on every run and not only when a roll falls due. Every element read
-as unique must occur exactly once; a case/spacing look-alike fails closed.
+as unique must occur exactly once; a look-alike fails closed. Look-alikes are
+detected on state_roll.lookalike_key (the roller's invariant I6: NFKC,
+zero-width characters dropped, every Unicode whitespace run folded, casefolded),
+so NBSP, ideographic spaces or fullwidth letters cannot hide a second copy. A
+dated subsection heading the strict `### YYYY-MM-DD` reader cannot see (another
+level, Unicode spacing, non-ASCII digits) fails closed instead of escaping the
+staleness check.
 
 Exit 0 if all three invariants hold. Exit 1 on a missing, duplicate or
 unreadable field, a stale date, or an unreadable file.
@@ -55,10 +61,15 @@ DECISION_SECTION_RE = ROLLER.DECISION_SECTION_RE
 CADENCE_DAY_RE = ROLLER.CADENCE_DAY_RE
 MAX_UNANCHORED_MONTHLY_DAY = ROLLER.MAX_UNANCHORED_MONTHLY_DAY
 
-LAST_CURATED_RE = re.compile(r"^\*\*Last curated:\*\* (\d{4}-\d{2}-\d{2})", re.M)
-# Any case/spacing variant of the bold field at a line start.
-LAST_CURATED_LOOSE_RE = re.compile(r"^\*\*[ \t]*last[ \t_-]*curated\b", re.M | re.I)
-DATED_HEADING_RE = re.compile(r"^### (\d{4}-\d{2}-\d{2})\b(.*)$", re.M)
+# I6: the one look-alike normalisation, shared with the roller.
+lookalike_key = ROLLER.lookalike_key
+
+LAST_CURATED_RE = re.compile(r"^\*\*Last curated:\*\* ([0-9]{4}-[0-9]{2}-[0-9]{2})", re.M)
+# Look-alikes are matched against lookalike_key(line) (lower case, single
+# spaces, stripped): any variant of the bold field at a line start.
+LAST_CURATED_LOOSE_RE = re.compile(r"\*\* ?last[ _-]*curated\b")
+DATED_HEADING_RE = re.compile(r"^### ([0-9]{4}-[0-9]{2}-[0-9]{2})\b(.*)$", re.M)
+DATED_HEADING_LOOSE_RE = re.compile(r"#{1,6} ?\d{4}-\d{2}-\d{2}\b")
 # Whole-token DISCHARGED only. UNDISCHARGED is one token and does not match;
 # NOT/NEVER/NON/UN immediately before DISCHARGED is a negation, not a discharge.
 DISCHARGED_TOKEN_RE = re.compile(r"[A-Z]+")
@@ -137,6 +148,16 @@ def heading_is_discharged(heading: str) -> bool:
     return all(i == 0 or tokens[i - 1] not in DISCHARGED_NEGATION for i in positions)
 
 
+def unreadable_dated_headings(forward_text: str) -> list[str]:
+    """Dated-heading look-alikes the strict `### YYYY-MM-DD` reader misses."""
+    strict = {match.start() for match in DATED_HEADING_RE.finditer(forward_text)}
+    return [
+        line.strip()
+        for at, line, _ in ROLLER.lookalike_lines(forward_text, DATED_HEADING_LOOSE_RE)
+        if at not in strict
+    ]
+
+
 def past_dated_headings(forward_text: str, today: date) -> list[str]:
     stale: list[str] = []
     for match in DATED_HEADING_RE.finditer(forward_text):
@@ -176,6 +197,11 @@ def problems(text: str, today: date) -> list[str]:
                 f"{horizon}-day next-occurrence horizon "
                 f"(today {today.isoformat()} ET) — {MANUAL_HINT}"
             )
+    for heading in unreadable_dated_headings(body):
+        out.append(
+            "dated subsection heading is not '### YYYY-MM-DD ...' and would "
+            f"escape the staleness check: {heading[:80]}"
+        )
     for heading in past_dated_headings(body, today):
         out.append(f"past dated subsection is not DISCHARGED: {heading}")
     return out

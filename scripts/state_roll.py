@@ -4,35 +4,85 @@
 Applies the mechanical limb of docs/operational_rules.md Rule 7 STATE currency
 that `check_state_currency.py` only reports: rolls the Weekly/Monthly recurring
 deadlines forward and moves decision-index overflow rows into the archive. The
-output is a pure function of (input bytes, today, the archive's position
-relative to STATE) — no timestamps, no randomness, no environment-dependent
-ordering — so concurrent sessions produce byte-identical edits and a second run
-on already-rolled files changes nothing. A retry after an interrupted run is
-safe: an overflow row already present in the archive is dropped from STATE
-without being archived again.
+output is a pure function of (input bytes, today) — no timestamps, no
+randomness, no environment-dependent ordering — so independent sessions produce
+byte-identical edits and a second run on already-rolled files changes nothing.
 
-Byte preservation: files are read and written with newline translation off and
-UTF-8, and only the deadline date (plus a Weekly `bucket MM-DD→MM-DD`) inside
-the Weekly/Monthly heading lines and whole overflow index rows (with the blank
-lines directly above each) are touched. Coverage text, `**Last curated:**`, the
-queue and every other section stay exactly as authored. A Monthly cadence on
-day 28-31 rolls only with a `cadence day NN` anchor in its heading.
+Only the deadline date (plus a Weekly `bucket MM-DD→MM-DD`) inside the
+Weekly/Monthly heading lines and whole overflow index rows (with the blank
+lines directly above each) change in STATE; coverage text, `**Last curated:**`,
+the queue and every other section stay exactly as authored. A Monthly cadence
+on day 28-31 rolls only with a `cadence day NN` anchor in its heading.
 
-Uniqueness: every element the roller reads as one thing (each section, each
-recurring heading, its deadline field, the Weekly bucket, the Monthly cadence
-anchor, today's archive header) must occur exactly once, and a case or spacing
-look-alike of it (`### weekly - recurring`, `Next Deadline`, `Cadence Day 31`,
-a `* **YYYY-MM-DD**` bullet) fails closed instead of being skipped. The
-currency gate (`check_state_currency.py`) reads the forward triggers, the
-recurring headings and the index through this module, so it fails on any
-heading the roller would refuse.
+Invariants
+----------
+The roller reads STATE.md and the decision-index archive and writes them only
+as a pair. A row's identity is its archive form: a STATE row with its relative
+links rebased as the archive stores them.
+
+I1  Row conservation. No decision row is lost or duplicated across STATE +
+    archive. Each file holds each row at most once. After a run STATE has only
+    lost rows, the archive has only gained rows, the union of rows is
+    unchanged, and no row is in both files. From a clean pre-state that is
+    exact conservation of the row multiset; the one duplicate a pre-state may
+    hold is the residue of an interrupted run (an overflow row archived by a
+    run that died before its STATE write), and the retry removes it from STATE
+    only, never re-archiving it.
+I2  Archive shape. A roll header is a line `**Roll YYYY-MM-DD**...`
+    (automated) or `**<Ordinal> roll, YYYY-MM-DD**...` (hand-written), read by
+    its date key: case, Unicode spacing and the text after the date do not
+    change which header it is. Headers are newest first with strictly
+    decreasing dates, except that adjacent hand-written ordinal headers may
+    share a date (the ordinal tells them apart; the legacy history has such
+    pairs); an automated header shares its date with no other header. Below
+    the first header every non-blank line is a header or one whole index row
+    (`- **YYYY-MM-DD** — ...`), so each header is followed by whole rows; no
+    row sits above the first header and no row shares a header's line.
+I3  Line endings. Each file uses one line-ending style: all CRLF or all LF (a
+    lone CR is a third style and refused). Inserted text uses the file's own
+    ending, and a missing final line ending is added before inserting.
+I4  One mutator. A writing run creates an exclusive lock file next to STATE
+    with O_CREAT|O_EXCL and holds it for the whole read-plan-commit sequence.
+    A lock that already exists is never stolen: the run fails closed and names
+    it (a run that died leaves its lock; delete it by hand once no run is
+    active). `--check` writes nothing and takes no lock.
+I5  Exactly one. Every element read as one thing (each section, each
+    recurring heading, its deadline field, the Weekly bucket, the Monthly
+    cadence anchor) occurs exactly once, and a look-alike of it fails closed
+    instead of being skipped. The currency gate reads the forward triggers,
+    the recurring headings and the index through this module, so it fails on
+    any heading the roller would refuse.
+I6  Normalised look-alikes. Every near-miss detector, in this script and in
+    `check_state_currency.py`, tests `lookalike_key(line)`: NFKC, format
+    (zero-width) characters dropped, every run of Unicode whitespace folded to
+    one space, casefolded. Strict readers match ASCII digits only.
+
+`validate()` is the one checker of I1 (given the pre-state), I2, I3 and I5. It
+runs on the parsed pre-state before any plan is made and on the composed
+post-state before anything is written; a failure either time exits 2 with
+nothing written.
+
+Commit order and recovery (under the lock). Both files are re-read and must
+still hold the bytes the plan was made from. Each write goes to its own
+`tempfile.mkstemp` file in the target directory, is flushed and fsynced, and
+replaces the target atomically. The archive is written first, then STATE, so a
+row leaves STATE only once it is durably archived:
+
+- the archive write fails: nothing changed;
+- the STATE write fails: the archive is restored to its old bytes, but only if
+  it still holds exactly the bytes this run wrote (else it is left alone and
+  the error says so);
+- the process dies between the writes: the pair is the residue state, which
+  `validate()` accepts, and the rerun (after the stale lock is removed) drops
+  the residue rows from STATE without archiving them again.
 
 Clock is America/New_York. Tests inject --today or STATE_CURRENCY_TODAY.
 
 Exit 0 nothing to roll (or applied cleanly); 1 with --check when a roll is due;
-2 on a missing/duplicate section or heading, a heading or index the roller
-cannot read unambiguously, or an unreadable file. Exit 2 applies nothing: every
-planned change of that invocation is withheld.
+2 when any invariant fails on the pre- or post-state, the lock is held, a file
+is unreadable or changed during the run, or a roll cannot be placed
+unambiguously. Exit 2 applies nothing: every planned change of that invocation
+is withheld.
 """
 from __future__ import annotations
 
@@ -41,10 +91,18 @@ import calendar
 import os
 import posixpath
 import re
+import secrets
+import stat
 import sys
+import tempfile
+import time
+import unicodedata
+from collections import Counter
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Callable, NamedTuple
+from typing import NamedTuple
 from zoneinfo import ZoneInfo
 
 REPO = Path(__file__).resolve().parent.parent
@@ -56,6 +114,10 @@ ET = ZoneInfo("America/New_York")
 
 ARROW = "→"  # U+2192, the Weekly bucket separator
 KEEP_ROWS = 15
+LOCK_SUFFIX = ".state_roll.lock"
+TEMP_SUFFIX = ".state_roll.tmp"
+
+# --- strict readers (ASCII digits only) -------------------------------------
 
 DECISION_SECTION_RE = re.compile(
     r"^## Executed operator decisions\b.*?(?=^## |\Z)",
@@ -65,46 +127,45 @@ FORWARD_SECTION_RE = re.compile(
     r"^## Scheduled forward triggers\b.*?(?=^## |\Z)",
     re.M | re.S,
 )
-# The heading contract is check_state_currency.py's, byte for byte (a test pins
-# the two patterns equal): any `### Weekly|Monthly — recurring` heading carrying
-# `next deadline **YYYY-MM-DD**`. Only the date span (and a Weekly bucket span)
-# is rewritten; every other byte of the heading stays as authored.
+# The heading contract is check_state_currency.py's (it imports these): any
+# `### Weekly|Monthly — recurring` heading carrying `next deadline
+# **YYYY-MM-DD**`. Only the date span (and a Weekly bucket span) is rewritten.
 RECURRING_HEADING_RE = re.compile(
     r"^### (Weekly|Monthly) — recurring\b.*$",
     re.M,
 )
-DEADLINE_RE = re.compile(r"next deadline \*\*(\d{4}-\d{2}-\d{2})\*\*")
-BUCKET_RE = re.compile(r"\bbucket (\d{2}-\d{2})" + ARROW + r"(\d{2}-\d{2})\b")
+DEADLINE_RE = re.compile(r"next deadline \*\*([0-9]{4}-[0-9]{2}-[0-9]{2})\*\*")
+BUCKET_RE = re.compile(r"\bbucket ([0-9]{2}-[0-9]{2})" + ARROW + r"([0-9]{2}-[0-9]{2})\b")
 # Trailing \r is deliberately outside the match so a moved row keeps STATE's
 # line ending out of the archived text.
 INDEX_ROW_RE = re.compile(
-    r"^- \*\*(\d{4}-\d{2}-\d{2})\*\* — [^\r\n]*(?=\r?$)", re.M
+    r"^- \*\*([0-9]{4}-[0-9]{2}-[0-9]{2})\*\* — [^\r\n]*(?=\r?$)", re.M
 )
-# Look-alikes: case/spacing-insensitive forms of each element read as unique.
-# The strict pattern must match exactly once and every look-alike must be that
-# same match; anything else fails closed (see single_match and _one_field).
-FORWARD_SECTION_LOOSE_RE = re.compile(
-    r"^#{1,6}[ \t]*scheduled[ \t_-]*forward[ \t_-]*triggers\b", re.M | re.I
-)
-DECISION_SECTION_LOOSE_RE = re.compile(
-    r"^#{1,6}[ \t]*executed[ \t_-]*operator[ \t_-]*decisions\b", re.M | re.I
-)
-RECURRING_HEADING_LOOSE_RE = re.compile(
-    r"^#{1,6}[ \t]*(weekly|monthly)\b[^\r\n]*?\brecurring\b", re.M | re.I
-)
-DEADLINE_WORD_RE = re.compile(r"\bnext[\s_-]*deadline\b", re.I)
-BUCKET_WORD_RE = re.compile(r"\bbucket\b", re.I)
+CADENCE_DAY_RE = re.compile(r"\bcadence day ([0-9]{1,2})\b")
+
+# --- look-alike detectors (I6: matched against lookalike_key(line)) ---------
+#
+# Keys are NFKC, casefolded, whitespace-folded and stripped, so these patterns
+# are lower case with single spaces and are anchored with re.match.
+FORWARD_SECTION_LOOSE_RE = re.compile(r"#{1,6} ?scheduled[ _-]*forward[ _-]*triggers\b")
+DECISION_SECTION_LOOSE_RE = re.compile(r"#{1,6} ?executed[ _-]*operator[ _-]*decisions\b")
+RECURRING_HEADING_LOOSE_RE = re.compile(r"#{1,6} ?(weekly|monthly)\b.*?\brecurring\b")
+DEADLINE_WORD_RE = re.compile(r"\bnext[ _-]*deadline\b")
+BUCKET_WORD_RE = re.compile(r"\bbucket\b")
+CADENCE_DAY_WORD_RE = re.compile(r"\bcadence[ _-]*day\b")
 # Any dated bullet, bolded or not, `-`/`*`/`+`, indented or not. Every such
 # line must be an INDEX_ROW_RE row, or keep-15 and the gate's newest-date read
 # would miss it.
-DATED_BULLET_LOOSE_RE = re.compile(
-    r"^[ \t]*[-*+][ \t]*\**[ \t]*\d{4}-\d{2}-\d{2}", re.M
+DATED_BULLET_LOOSE_RE = re.compile(r"[-*+][ *]*\d{4}-\d{2}-\d{2}")
+# Archive roll headers (I2). Anything bold that opens with a `roll` word is a
+# header candidate and must read as one of the two header forms.
+ARCHIVE_HEADER_LOOSE_RE = re.compile(r"\*\*[^*]*\broll")
+ARCHIVE_HEADER_KEY_RE = re.compile(
+    r"\*\*(?:(?P<auto>roll)|(?P<ordinal>[^\W\d_]+(?:[ -][^\W\d_]+)*) roll,) "
+    r"(?P<date>\d{4}-\d{2}-\d{2}):?\*\*(?P<suffix>.*)"
 )
-# Matches both the hand-written ordinal headers ("**Seventeenth roll, 2026-09-25**")
-# and this script's own date-keyed headers ("**Roll 2026-09-26**").
-ARCHIVE_ROLL_HEADER_RE = re.compile(
-    r"^\*\*(?:.*[Rr]oll, |Roll )(\d{4}-\d{2}-\d{2})\*\*", re.M
-)
+ROW_ON_HEADER_LINE_RE = re.compile(r"\*\*\d{4}-\d{2}-\d{2}\*\*")
+
 LINE_END_RE = re.compile(r"\r?\n")
 BLANK_LINE_RE = re.compile(r"[ \t]*\r?\n")
 LINK_TARGET_RE = re.compile(r"\]\(([^)]+)\)")
@@ -137,12 +198,36 @@ def read_text(path: Path) -> str:
         raise StateRollError(f"cannot read {path}: {exc}") from exc
 
 
-def write_text(path: Path, text: str) -> None:
-    try:
-        with open(path, "w", encoding="utf-8", newline="") as handle:
-            handle.write(text)
-    except OSError as exc:
-        raise StateRollError(f"cannot write {path}: {exc}") from exc
+# --- I6: look-alike normalisation (shared with check_state_currency.py) -----
+
+
+def lookalike_key(line: str) -> str:
+    """The comparison form of one line for near-miss detection.
+
+    NFKC (fullwidth and compatibility forms), format characters such as
+    zero-width spaces dropped, every run of Unicode whitespace (NBSP, en/em
+    and ideographic spaces, tabs, a trailing CR) folded to one space, then
+    stripped and casefolded."""
+    text = unicodedata.normalize("NFKC", line)
+    text = "".join(ch for ch in text if unicodedata.category(ch) != "Cf")
+    return " ".join(text.split()).casefold()
+
+
+def lookalike_lines(
+    text: str, pattern: re.Pattern[str]
+) -> list[tuple[int, str, re.Match[str]]]:
+    """(line start offset, line, key match) for each line whose key matches."""
+    found: list[tuple[int, str, re.Match[str]]] = []
+    pos = 0
+    for line in text.split("\n"):
+        match = pattern.match(lookalike_key(line))
+        if match is not None:
+            found.append((pos, line.rstrip("\r"), match))
+        pos += len(line) + 1
+    return found
+
+
+# --- STATE: recurring deadlines ---------------------------------------------
 
 
 def first_friday(from_date: date) -> date:
@@ -154,10 +239,8 @@ def first_friday(from_date: date) -> date:
 # records the intended day. Rolling it from the date alone would drift (Jan 31
 # -> Feb 28 -> Mar 28). So a Monthly deadline on day 28 or later rolls only
 # when the heading carries an explicit `cadence day NN` anchor; without one the
-# roller fails closed. A test pins these to check_state_currency.py's copies.
+# roller fails closed.
 MAX_UNANCHORED_MONTHLY_DAY = 27
-CADENCE_DAY_WORD_RE = re.compile(r"\bcadence[\s_-]*day\b", re.I)
-CADENCE_DAY_RE = re.compile(r"\bcadence day (\d{1,2})\b")
 ANCHOR_HINT = (
     "add 'cadence day NN' (the intended day of month, 1-31) to the Monthly "
     "heading, then rerun (this invocation applied nothing; see "
@@ -201,14 +284,14 @@ def _one_field(
 ) -> re.Match[str] | None:
     """The heading's single field_re match, or None when no look-alike appears.
 
-    Exactly one look-alike (word_re, case/spacing-insensitive) and exactly one
-    strict field at the same offset; a second copy, a case variant or an
+    Exactly one look-alike (word_re on the heading's key) and exactly one
+    strict field; a second copy, a case or Unicode-spacing variant or an
     unreadable value raises `problem` instead of reading only the first."""
-    words = list(word_re.finditer(body, heading.start(), heading.end()))
-    if not words:
-        return None
+    words = word_re.findall(lookalike_key(heading.group(0)))
     fields = list(field_re.finditer(body, heading.start(), heading.end()))
-    if len(words) != 1 or len(fields) != 1 or fields[0].start() != words[0].start():
+    if not words and not fields:
+        return None
+    if len(words) != 1 or len(fields) != 1:
         raise StateRollError(problem)
     return fields[0]
 
@@ -250,8 +333,9 @@ def single_match(
     """The one match of pattern in text; zero, several, or a look-alike fail.
 
     With a duplicate, only the first would be read (and rolled) while a second
-    copy went stale silently. `loose` finds case/spacing variants: each must be
-    the strict match itself, or the variant is a copy nobody reads."""
+    copy went stale silently. `loose` is tested against each line's
+    lookalike_key: every hit must be the strict match's own line, or the
+    variant is a copy nobody reads."""
     found = list(pattern.finditer(text))
     if not found:
         raise StateRollError(f"STATE.md has no {name}")
@@ -260,12 +344,11 @@ def single_match(
             f"STATE.md has {len(found)} copies of the {name}; keep exactly one"
         )
     if loose is not None:
-        for alike in loose.finditer(text):
-            if alike.start() != found[0].start():
+        for at, line, _ in lookalike_lines(text, loose):
+            if at != found[0].start():
                 raise StateRollError(
                     f"STATE.md has a look-alike of the {name} "
-                    f"({alike.group(0).strip()[:60]!r}); keep exactly one, "
-                    "spelled exactly"
+                    f"({line.strip()[:60]!r}); keep exactly one, spelled exactly"
                 )
     return found[0]
 
@@ -295,8 +378,9 @@ def _splice(text: str, section: re.Match[str], new_body: str) -> str:
 def _recurring_heading(text: str, section: re.Match[str], kind: str) -> re.Match[str]:
     """The one strict `### {kind} — recurring` heading, offsets in the section.
 
-    A look-alike anywhere in STATE (another case or dash, or a copy outside
-    the forward section) is a second heading neither script would read."""
+    A look-alike anywhere in STATE (another case, dash or Unicode spacing, or
+    a copy outside the forward section) is a second heading neither script
+    would read."""
     body = section.group(0)
     found = [m for m in RECURRING_HEADING_RE.finditer(body) if m.group(1) == kind]
     if not found:
@@ -307,11 +391,11 @@ def _recurring_heading(text: str, section: re.Match[str], kind: str) -> re.Match
     if len(found) > 1:
         raise StateRollError(f"duplicate {kind} recurring heading")
     at = section.start() + found[0].start()
-    for alike in RECURRING_HEADING_LOOSE_RE.finditer(text):
-        if alike.group(1).lower() == kind.lower() and alike.start() != at:
+    for offset, line, match in lookalike_lines(text, RECURRING_HEADING_LOOSE_RE):
+        if match.group(1) == kind.lower() and offset != at:
             raise StateRollError(
                 f"duplicate {kind} recurring heading: look-alike "
-                f"{alike.group(0).strip()[:60]!r}; keep exactly one, spelled "
+                f"{line.strip()[:60]!r}; keep exactly one, spelled "
                 "exactly, under Scheduled forward triggers"
             )
     return found[0]
@@ -426,6 +510,9 @@ def roll_monthly(text: str, today: date) -> tuple[str, str | None]:
     return new_text, f"monthly: {old_deadline.isoformat()} -> {new_deadline.isoformat()}"
 
 
+# --- links -------------------------------------------------------------------
+
+
 def _rebase_target(target: str, from_dir: Path, to_dir: Path) -> str:
     """Recompute one filesystem-relative link destination for the archive."""
     if target.startswith("<"):
@@ -471,19 +558,21 @@ def rewrite_links(
     return LINK_TARGET_RE.sub(_rebase, row)
 
 
+# --- STATE: decision index ---------------------------------------------------
+
+
 def decision_index_rows(text: str) -> list[re.Match[str]]:
     """Every dated bullet of the one decision index, each a readable row.
 
     Shared with the currency gate (its newest-date read): a dated bullet in
-    any other shape (`* **date**`, unbolded, indented, another separator) is
-    invisible to keep-15 and to the newest-date read, so it fails closed."""
+    any other shape (`* **date**`, unbolded, indented, another separator,
+    Unicode spacing, non-ASCII digits) is invisible to keep-15 and to the
+    newest-date read, so it fails closed."""
     body = decision_section(text).group(0)
     rows = list(INDEX_ROW_RE.finditer(body))
     row_starts = {match.start() for match in rows}
-    for bullet in DATED_BULLET_LOOSE_RE.finditer(body):
-        if bullet.start() not in row_starts:
-            line_end = body.find("\n", bullet.start())
-            line = body[bullet.start() : None if line_end < 0 else line_end]
+    for at, line, _ in lookalike_lines(body, DATED_BULLET_LOOSE_RE):
+        if at not in row_starts:
             raise StateRollError(
                 "decision-index bullet is not a '- **YYYY-MM-DD** — ' row: "
                 + line.strip()[:80]
@@ -550,11 +639,6 @@ def _blank_run_start(body: str, pos: int, floor: int) -> int:
     return pos
 
 
-def overflow_rows(text: str) -> list[str]:
-    """Index rows beyond KEEP_ROWS, in document order (newest first)."""
-    return [match.group(0) for match in index_rows(text)[KEEP_ROWS:]]
-
-
 def drop_overflow_rows(text: str) -> str:
     """Remove index rows KEEP_ROWS+ from STATE, leaving rows 1..KEEP_ROWS alone.
 
@@ -576,167 +660,429 @@ def drop_overflow_rows(text: str) -> str:
     return _splice(text, section, "".join(pieces))
 
 
-def line_ending(text: str) -> str:
-    """The file's one line ending; a mix has no single answer, so it fails."""
+# --- I3: line endings --------------------------------------------------------
+
+
+def line_ending(text: str, name: str = "archive") -> str:
+    """The file's one line ending; a mix (or a lone CR) fails closed."""
     crlf = text.count("\r\n")
-    if crlf and crlf != text.count("\n"):
+    if text.count("\r") != crlf or (crlf and crlf != text.count("\n")):
         raise StateRollError(
-            "archive mixes CRLF and LF line endings; normalise it by hand"
+            f"{name} mixes line endings (CRLF, LF or lone CR); normalise it by hand"
         )
     return "\r\n" if crlf else "\n"
 
 
-def _archive_headers(
-    text: str, header: str
-) -> tuple[list[re.Match[str]], re.Match[str] | None]:
-    """(roll headers newest first, today's automated header or None).
+# --- I2: the archive ---------------------------------------------------------
 
-    Rows go above the first header, so the headers must be in newest-first
-    date order; today's header must be unique and, when present, the first
-    header (else a second copy of it would be written on top)."""
-    headers = list(ARCHIVE_ROLL_HEADER_RE.finditer(text))
-    for newer, older in zip(headers, headers[1:]):
-        if _iso_date(newer.group(1), "archive roll") < _iso_date(
-            older.group(1), "archive roll"
-        ):
-            raise StateRollError(
-                f"archive roll headers out of date order: {newer.group(1)} sits "
-                f"above {older.group(1)}; restore newest-first order by hand"
+
+class ArchiveHeader(NamedTuple):
+    offset: int  # line start in the archive text
+    line: str
+    day: date
+    automated: bool
+
+
+class Archive(NamedTuple):
+    text: str
+    newline: str
+    headers: tuple[ArchiveHeader, ...]  # document order, newest first
+    rows: tuple[str, ...]  # whole index rows, document order
+
+
+def parse_archive(text: str) -> Archive:
+    """The archive, validated against I2, I3 and I5; any defect fails closed."""
+    newline = line_ending(text, "archive")
+    headers: list[ArchiveHeader] = []
+    rows: list[str] = []
+    pos = 0
+    for raw in text.split("\n"):
+        line = raw.rstrip("\r")
+        key = lookalike_key(line)
+        if ARCHIVE_HEADER_LOOSE_RE.match(key):
+            header = ARCHIVE_HEADER_KEY_RE.fullmatch(key)
+            if header is None:
+                raise StateRollError(
+                    "archive line looks like a roll header but is neither "
+                    "'**Roll YYYY-MM-DD**' nor '**<Ordinal> roll, YYYY-MM-DD**': "
+                    f"{line.strip()[:80]!r}"
+                )
+            if ROW_ON_HEADER_LINE_RE.search(header.group("suffix")):
+                raise StateRollError(
+                    "archive roll header shares its line with an index row: "
+                    f"{line.strip()[:80]!r}; put the row on its own line by hand"
+                )
+            headers.append(
+                ArchiveHeader(
+                    pos,
+                    line,
+                    _iso_date(header.group("date"), "archive roll header date"),
+                    header.group("auto") is not None,
+                )
             )
-    mine = list(re.finditer("^" + re.escape(header) + r"\r?$", text, re.M))
-    if len(mine) > 1:
-        raise StateRollError(
-            f"archive has {len(mine)} copies of today's roll header; merge them by hand"
-        )
-    if mine and mine[0].start() != headers[0].start():
-        raise StateRollError(
-            "archive has today's roll header below another roll header; move "
-            "today's block to the top by hand"
-        )
-    return headers, (mine[0] if mine else None)
+        elif not key:
+            pass
+        elif (row := INDEX_ROW_RE.fullmatch(line)) is not None:
+            if not headers:
+                raise StateRollError(
+                    f"archive has an index row above its first roll header: {line[:80]!r}"
+                )
+            _iso_date(row.group(1), "archive row date")
+            rows.append(line)
+        elif DATED_BULLET_LOOSE_RE.match(key):
+            raise StateRollError(
+                f"archive bullet is not a whole '- **YYYY-MM-DD** — ' row: {line.strip()[:80]!r}"
+            )
+        elif headers:
+            raise StateRollError(
+                "archive line below the first roll header is neither a roll "
+                f"header nor a whole index row: {line.strip()[:80]!r}"
+            )
+        pos += len(raw) + 1
+    for newer, older in zip(headers, headers[1:]):
+        if newer.day < older.day:
+            raise StateRollError(
+                f"archive roll headers out of date order: {newer.day} sits "
+                f"above {older.day}; restore newest-first order by hand"
+            )
+        if newer.day == older.day and (newer.automated or older.automated):
+            raise StateRollError(
+                f"archive has two roll headers for {newer.day}, one of them "
+                "automated; merge them by hand"
+            )
+    _require_unique(rows, "archive")
+    return Archive(text, newline, tuple(headers), tuple(rows))
 
 
-def _top_of_today_block(text: str, header: re.Match[str]) -> int:
-    """Offset just past the header line and its blank separator line."""
-    end = header.end()
-    line_end = LINE_END_RE.match(text, end)
-    if line_end is None:
-        return end
-    end = line_end.end()
-    blank = BLANK_LINE_RE.match(text, end)
-    return blank.end() if blank is not None else end
+def _require_unique(rows: list[str] | tuple[str, ...], where: str) -> None:
+    repeated = [row for row, count in Counter(rows).items() if count > 1]
+    if repeated:
+        raise StateRollError(
+            f"{where} holds the same decision row more than once (I1): "
+            f"{repeated[0][:80]!r}; remove the extra copy by hand"
+        )
+
+
+# --- the one validator -------------------------------------------------------
+
+
+class Snapshot(NamedTuple):
+    """A validated STATE + archive pair."""
+
+    state_rows: tuple[str, ...]  # STATE's index rows, in archive form
+    archive: Archive
+
+
+def validate(
+    state_text: str,
+    archive_text: str,
+    from_dir: Path = REPO,
+    to_dir: Path = DEFAULT_ARCHIVE.parent,
+    before: Snapshot | None = None,
+) -> Snapshot:
+    """Check I2, I3 and I5 on the pair, and I1 against `before` when given.
+
+    The same function gates the pre-state (refuse to plan on a corrupt pair)
+    and the composed post-state (refuse to write one)."""
+    line_ending(state_text, "STATE.md")
+    recurring_fields(state_text)
+    state_rows = tuple(
+        rewrite_links(row.group(0), from_dir, to_dir) for row in index_rows(state_text)
+    )
+    _require_unique(state_rows, "STATE.md decision index")
+    snapshot = Snapshot(state_rows, parse_archive(archive_text))
+    if before is not None:
+        _check_conservation(before, snapshot)
+    return snapshot
+
+
+def _check_conservation(before: Snapshot, after: Snapshot) -> None:
+    """I1 across a run (each file already holds each row at most once)."""
+    state_before, archive_before = set(before.state_rows), set(before.archive.rows)
+    state_after, archive_after = set(after.state_rows), set(after.archive.rows)
+    union_before = state_before | archive_before
+    union_after = state_after | archive_after
+    problems = [
+        (state_after - state_before, "STATE.md gained"),
+        (archive_before - archive_after, "the archive lost"),
+        (union_before - union_after, "both files lost"),
+        (union_after - union_before, "the roll invented"),
+        (state_after & archive_after, "both files hold"),
+    ]
+    for rows, what in problems:
+        if rows:
+            first = sorted(rows)[0]
+            raise StateRollError(
+                f"post-roll pair breaks row conservation (I1): {what} "
+                f"{len(rows)} row(s), e.g. {first[:80]!r}; nothing written"
+            )
+
+
+# --- archive insertion -------------------------------------------------------
 
 
 def archive_overflow(
-    text: str,
-    rows: list[str],
-    today: date,
-    from_dir: Path = REPO,
-    to_dir: Path = DEFAULT_ARCHIVE.parent,
+    archive: Archive, rows: list[str], today: date
 ) -> tuple[str, str]:
-    """Insert overflow rows above the archive's newest roll header.
+    """Archive text with `rows` (archive form, newest first) in today's block.
 
-    A row whose rebased text is already a whole line of the archive was
-    archived by an earlier run that stopped before its STATE write; it is not
-    inserted again (STATE still drops it). The retry therefore converges on
-    the same archive whether it runs the same day or later.
-    """
-    header = (
-        f"**Roll {today.isoformat()}** "
-        "(automated keep-15 roll; `scripts/state_roll.py`):"
-    )
-    newline = line_ending(text)
-    headers, mine = _archive_headers(text, header)
-    present = set(LINE_END_RE.split(text))
-    rebased = [rewrite_links(row, from_dir, to_dir) for row in rows]
-    pending = [row for row in rebased if row not in present]
-    already = len(rebased) - len(pending)
+    A row already in the archive is the residue of an interrupted run and is
+    not inserted again (STATE still drops it). The block for `today` is the
+    newest header when its date key is today and it is automated; otherwise a
+    new `**Roll today**` header goes above the newest header. The archive is
+    newest first, so a `today` older than the newest header, or a hand-written
+    header dated today, is refused rather than written out of order or into a
+    hand-counted block."""
+    present = set(archive.rows)
+    pending = [row for row in rows if row not in present]
+    already = len(rows) - len(pending)
     message = f"index: archived {len(pending)} row(s)"
     if already:
         message += f", {already} already in the archive"
     if not pending:
-        return text, message
-    block = "".join(row + newline + newline for row in pending)
-    if mine is not None:
-        at = _top_of_today_block(text, mine)
-        return text[:at] + block + text[at:], message
-    if not headers:
+        return archive.text, message
+    if not archive.headers:
         raise StateRollError(
             "archive has no '**... roll, YYYY-MM-DD**' header to insert before"
         )
+    newest = archive.headers[0]
+    if today < newest.day:
+        raise StateRollError(
+            f"today {today.isoformat()} is older than the archive's newest roll "
+            f"header ({newest.day.isoformat()}); the archive is newest first, so "
+            "rerun with the real date (--today / STATE_CURRENCY_TODAY)"
+        )
+    if today == newest.day and not newest.automated:
+        raise StateRollError(
+            f"the archive's newest roll header is hand-written and dated today "
+            f"({newest.line.strip()[:60]!r}); the roller adds neither a second "
+            "header for that date nor rows to a hand-written block. Archive "
+            "the overflow rows under it by hand, or rerun on a later day"
+        )
+    newline = archive.newline
+    text = archive.text
+    if text and not text.endswith("\n"):
+        text += newline  # I3: a missing final line ending would fuse lines
+    block = "".join(row + newline + newline for row in pending)
+    if today == newest.day:
+        at = text.index("\n", newest.offset) + 1
+        blank = BLANK_LINE_RE.match(text, at)
+        if blank is not None:
+            return text[: blank.end()] + block + text[blank.end() :], message
+        return text[:at] + newline + block + text[at:], message
+    header = (
+        f"**Roll {today.isoformat()}** "
+        "(automated keep-15 roll; `scripts/state_roll.py`):"
+    )
     addition = header + newline + newline + block
-    at = headers[0].start()
-    return text[:at] + addition + text[at:], message
+    return text[: newest.offset] + addition + text[newest.offset :], message
 
 
-def _replace(path: Path, text: str) -> None:
-    """Write text to a sibling temp file, then atomically replace path."""
-    tmp = path.with_name(path.name + ".state_roll.tmp")
-    try:
-        write_text(tmp, text)
-        os.replace(tmp, path)
-    except OSError as exc:
-        raise StateRollError(f"cannot write {path}: {exc}") from exc
-    finally:
-        if tmp.exists():
-            tmp.unlink()
+# --- plan --------------------------------------------------------------------
 
 
-def commit(
-    state_path: Path,
-    new_state: str,
-    archive_path: Path,
-    new_archive: str | None,
-) -> None:
-    """Write the archive before STATE; restore the archive if STATE fails.
-
-    Overflow rows leave STATE only after they are safely in the archive. If the
-    STATE write then fails, the archive is put back, so a retry sees the same
-    overflow and archives it exactly once. If the process dies between the two
-    writes (no restore runs), the retry finds those rows already in the archive
-    and only drops them from STATE (see archive_overflow).
-    """
-    if new_archive is None:
-        _replace(state_path, new_state)
-        return
-    old_archive = read_text(archive_path)
-    _replace(archive_path, new_archive)
-    try:
-        _replace(state_path, new_state)
-    except StateRollError:
-        _replace(archive_path, old_archive)
-        raise
+class Plan(NamedTuple):
+    state: str
+    archive: str | None  # None when the archive is unchanged
+    messages: list[str]
 
 
 def plan(
     state_text: str,
-    archive_loader: Callable[[], str],
+    archive_text: str,
     today: date,
     from_dir: Path = REPO,
     to_dir: Path = DEFAULT_ARCHIVE.parent,
-) -> tuple[str, str | None, list[str]]:
-    """Return (new state text, new archive text or None, change messages).
-
-    Every check runs before anything is returned, so a failure anywhere
-    withholds the whole plan (no partial roll)."""
-    new_state: str = state_text
+) -> Plan:
+    """The post-state, validated; every check runs before anything is returned,
+    so a failure anywhere withholds the whole plan (no partial roll)."""
+    before = validate(state_text, archive_text, from_dir, to_dir)
+    new_state = state_text
     messages: list[str] = []
     for roller in (roll_weekly, roll_monthly):
         new_state, message = roller(new_state, today)
         if message is not None:
             messages.append(message)
-    rows = overflow_rows(state_text)
-    new_archive: str | None = None
-    if rows:
+    new_archive = archive_text
+    overflow = list(before.state_rows[KEEP_ROWS:])
+    if overflow:
         new_state = drop_overflow_rows(new_state)
-        old_archive = archive_loader()
-        new_archive, message = archive_overflow(
-            old_archive, rows, today, from_dir, to_dir
-        )
-        if new_archive == old_archive:
-            new_archive = None
+        new_archive, message = archive_overflow(before.archive, overflow, today)
         messages.append(message)
-    return new_state, new_archive, messages
+    validate(new_state, new_archive, from_dir, to_dir, before)
+    return Plan(new_state, None if new_archive == archive_text else new_archive, messages)
+
+
+# --- I4: lock and commit -----------------------------------------------------
+
+
+def lock_path(state_path: Path) -> Path:
+    return state_path.with_name(state_path.name + LOCK_SUFFIX)
+
+
+@contextmanager
+def roll_lock(state_path: Path) -> Iterator[Path]:
+    """Hold the exclusive roller lock next to STATE; never steal one.
+
+    The lock records a per-run token; release removes it only while it still
+    holds that token, so a run never deletes another run's lock."""
+    lock = lock_path(state_path)
+    token = f"state_roll pid {os.getpid()} token {secrets.token_hex(8)}\n"
+    flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY | getattr(os, "O_BINARY", 0)
+    try:
+        fd = os.open(lock, flags, 0o644)
+    except FileExistsError:
+        raise StateRollError(
+            f"lock file {lock} exists: another "
+            "state_roll run is writing, or one died holding the lock. Nothing "
+            "was written. If no state_roll run is active, delete the lock file "
+            "by hand and rerun; the roller validates both files before planning"
+        ) from None
+    except OSError as exc:
+        raise StateRollError(f"cannot create lock file {lock}: {exc}") from exc
+    try:
+        os.write(fd, token.encode("utf-8"))
+    except OSError as exc:
+        os.close(fd)
+        os.unlink(lock)
+        raise StateRollError(f"cannot write lock file {lock}: {exc}") from exc
+    os.close(fd)
+    released = False
+    try:
+        yield lock
+    except Exception as exc:
+        released = True
+        try:
+            _release_lock(lock, token)
+        except StateRollError as release_exc:
+            raise StateRollError(f"{exc}; {release_exc}") from exc
+        raise
+    finally:
+        if not released:
+            _release_lock(lock, token)
+
+
+# Only the owner opens the lock file (a refused run names it without reading
+# it): on Windows any open handle makes the owner's unlink fail with a sharing
+# violation. Other processes (indexers, antivirus) can still hold it briefly,
+# so the owner retries for a bounded time and then fails loudly.
+LOCK_RELEASE_ATTEMPTS = 50
+LOCK_RELEASE_PAUSE_SECONDS = 0.1
+
+
+def _release_lock(lock: Path, token: str) -> None:
+    """Remove the lock if it still holds this run's token; never fail silently."""
+    try:
+        with open(lock, encoding="utf-8", newline="") as handle:
+            held = handle.read()
+    except FileNotFoundError:
+        return
+    except OSError as exc:
+        raise StateRollError(
+            f"cannot read lock file {lock} to release it ({exc}); the run "
+            "itself finished, delete the lock by hand once no state_roll run "
+            "is active"
+        ) from exc
+    if held != token:
+        return  # not this run's lock: leave it to its owner
+    problem: OSError | None = None
+    for _ in range(LOCK_RELEASE_ATTEMPTS):
+        try:
+            os.unlink(lock)
+            return
+        except FileNotFoundError:
+            return
+        except PermissionError as exc:  # Windows sharing violation: retry
+            problem = exc
+            time.sleep(LOCK_RELEASE_PAUSE_SECONDS)
+        except OSError as exc:
+            problem = exc
+            break
+    raise StateRollError(
+        f"cannot remove lock file {lock} ({problem}); the run itself finished, "
+        "delete the lock by hand once no state_roll run is active"
+    )
+
+
+def _replace(path: Path, text: str) -> None:
+    """Write text to a unique temp file beside path, fsync, then replace path."""
+    try:
+        mode = stat.S_IMODE(os.stat(path).st_mode)
+    except OSError:
+        mode = None
+    tmp_name: str | None = None
+    try:
+        fd, tmp_name = tempfile.mkstemp(
+            dir=path.parent, prefix=f".{path.name}.", suffix=TEMP_SUFFIX
+        )
+        with os.fdopen(fd, "w", encoding="utf-8", newline="") as handle:
+            handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
+        if mode is not None:
+            os.chmod(tmp_name, mode)
+        os.replace(tmp_name, path)
+        tmp_name = None
+    except OSError as exc:
+        raise StateRollError(f"cannot write {path}: {exc}") from exc
+    finally:
+        if tmp_name is not None and os.path.exists(tmp_name):
+            os.unlink(tmp_name)
+
+
+def commit(
+    state_path: Path,
+    archive_path: Path,
+    state_before: str,
+    archive_before: str,
+    new_state: str,
+    new_archive: str | None,
+) -> None:
+    """Write the planned pair: archive first, then STATE (see module docstring).
+
+    The caller holds the lock. Both files must still hold the bytes the plan
+    was made from; a restore after a failed STATE write happens only while the
+    archive still holds exactly the bytes this run wrote."""
+    if read_text(state_path) != state_before or read_text(archive_path) != archive_before:
+        raise StateRollError(
+            "STATE.md or the archive changed on disk after planning; nothing "
+            "written, rerun"
+        )
+    if new_archive is not None:
+        _replace(archive_path, new_archive)
+    if new_state == state_before:
+        return
+    try:
+        _replace(state_path, new_state)
+    except StateRollError as exc:
+        if new_archive is not None:
+            _restore_archive(archive_path, new_archive, archive_before, exc)
+        raise
+
+
+def _restore_archive(
+    archive_path: Path, written: str, original: str, cause: StateRollError
+) -> None:
+    try:
+        current = read_text(archive_path)
+    except StateRollError:
+        current = None
+    if current != written:
+        raise StateRollError(
+            f"{cause}; the archive changed during the commit, so it was not "
+            "restored: STATE.md still lists its rows, check both files by hand"
+        ) from cause
+    try:
+        _replace(archive_path, original)
+    except StateRollError as again:
+        raise StateRollError(
+            f"{cause}; restoring the archive also failed ({again}): the archive "
+            "holds the overflow rows and STATE.md still lists them, the residue "
+            "state a rerun resolves"
+        ) from cause
+
+
+# --- CLI ---------------------------------------------------------------------
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -756,32 +1102,39 @@ def main(argv: list[str] | None = None) -> int:
         help="report pending rolls without writing; exit 1 if any are due",
     )
     args = parser.parse_args(argv)
-    loader: Callable[[], str] = lambda: read_text(args.archive)
+    from_dir = args.state.resolve().parent
+    to_dir = args.archive.resolve().parent
     try:
-        state_text = read_text(args.state)
-        new_state, new_archive, messages = plan(
-            state_text,
-            loader,
-            today_et(args.today),
-            args.state.resolve().parent,
-            args.archive.resolve().parent,
-        )
+        today = today_et(args.today)
+        if args.check:
+            result = plan(
+                read_text(args.state), read_text(args.archive), today, from_dir, to_dir
+            )
+        else:
+            with roll_lock(args.state):
+                state_text = read_text(args.state)
+                archive_text = read_text(args.archive)
+                result = plan(state_text, archive_text, today, from_dir, to_dir)
+                if result.messages:
+                    commit(
+                        args.state,
+                        args.archive,
+                        state_text,
+                        archive_text,
+                        result.state,
+                        result.archive,
+                    )
     except (StateRollError, OSError, ValueError) as exc:
         print(f"state-roll: FAIL - {exc}", file=sys.stderr)
         return 2
     if args.check:
-        for message in messages:
+        for message in result.messages:
             print(message)
-        return 1 if messages else 0
-    if not messages:
+        return 1 if result.messages else 0
+    if not result.messages:
         print("state-roll: nothing to roll")
         return 0
-    try:
-        commit(args.state, new_state, args.archive, new_archive)
-    except StateRollError as exc:
-        print(f"state-roll: FAIL - {exc}", file=sys.stderr)
-        return 2
-    for message in messages:
+    for message in result.messages:
         print(message)
     return 0
 

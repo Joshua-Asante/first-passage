@@ -390,3 +390,41 @@ def test_partly_negated_discharged_heading_exits_one(tmp_path: Path) -> None:
         ),
     )
     _fail_text(state, "2026-09-03")
+
+
+# --- Round 4 (Codex 4111057296): Unicode look-alikes are normalised (I6) -----
+
+
+@pytest.mark.parametrize(
+    "variant",
+    [
+        "**Last curated:** 2026-08-01",
+        "**Last Curated:** 2026-08-01",
+        "**Last​curated:** 2026-08-01",
+        "**Ｌａｓｔ curated:** 2026-08-01",
+    ],
+)
+def test_last_curated_unicode_near_miss_exits_one(tmp_path: Path, variant: str) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state().replace(
+            "**Last curated:** 2026-09-03\n",
+            "**Last curated:** 2026-09-03\n\n" + variant + "\n",
+        ),
+    )
+    assert b"Last curated" in _fail_text(state, "2026-09-03")
+
+
+@pytest.mark.parametrize(
+    "heading",
+    [
+        "### 2026-08-24 — owed",
+        "#### 2026-08-24 — owed",
+        "### ２０２６-08-24 — owed",
+    ],
+)
+def test_unreadable_dated_subsection_exits_one(tmp_path: Path, heading: str) -> None:
+    # A dated subsection the strict reader cannot see would never be checked
+    # for staleness; a look-alike of one fails closed instead.
+    state = _write(tmp_path / "STATE.md", _state(extra_headings="\n" + heading + "\n"))
+    assert b"dated subsection" in _fail_text(state, "2026-09-03")

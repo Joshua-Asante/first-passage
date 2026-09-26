@@ -617,7 +617,9 @@ def test_failed_write_loses_nothing_and_retry_archives_once(
     state, archive = _pair(tmp_path, _state(rows=rows))
     state_before, archive_before = _read(state), _read(archive)
     today = date.fromisoformat(TODAY)
-    new_state, new_archive, _ = mod.plan(state_before, lambda: archive_before, today)
+    new_state, new_archive, _ = mod.plan(
+        state_before, archive_before, today, state.parent, archive.parent
+    )
 
     real_replace = mod._replace
 
@@ -630,7 +632,7 @@ def test_failed_write_loses_nothing_and_retry_archives_once(
 
     monkeypatch.setattr(mod, "_replace", failing_replace)
     with pytest.raises(mod.StateRollError):
-        mod.commit(state, new_state, archive, new_archive)
+        mod.commit(state, archive, state_before, archive_before, new_state, new_archive)
     # Nothing is lost: STATE keeps its overflow rows and the archive is restored.
     assert _read(state) == state_before
     assert _read(archive) == archive_before
@@ -643,6 +645,7 @@ def test_failed_write_loses_nothing_and_retry_archives_once(
     for i in (15, 16):
         assert archived.count(f"— decision {i} ") == 1
     assert not list(tmp_path.rglob("*.state_roll.tmp"))
+    assert not mod.lock_path(state).exists()
 
 
 # --- Codex review on 861b363 ------------------------------------------------
@@ -661,7 +664,7 @@ def test_retry_after_archive_written_but_state_not_does_not_duplicate(
     rows = _rows(17)
     state, archive = _pair(tmp_path, _state(rows=rows))
     _, new_archive, _ = mod.plan(
-        _read(state), lambda: _read(archive), date.fromisoformat(TODAY)
+        _read(state), _read(archive), date.fromisoformat(TODAY), state.parent, archive.parent
     )
     assert new_archive is not None
     archive.write_text(new_archive, encoding="utf-8", newline="")  # STATE write "lost"
@@ -685,7 +688,7 @@ def test_retry_after_partial_archive_adds_only_new_rows(tmp_path: Path) -> None:
     rows = _rows(17)
     state, archive = _pair(tmp_path, _state(rows=rows))
     _, new_archive, _ = mod.plan(
-        _read(state), lambda: _read(archive), date.fromisoformat(TODAY)
+        _read(state), _read(archive), date.fromisoformat(TODAY), state.parent, archive.parent
     )
     assert new_archive is not None
     archive.write_text(new_archive, encoding="utf-8", newline="")
@@ -1020,6 +1023,28 @@ DEFECTS = {
     "index-bad-separator": _state(
         rows=[_rows(2)[0], _rows(2)[1].replace(" — ", " - ", 1)]
     ),
+    # 4111057296 (I6): Unicode spacing, zero-width and compatibility forms are
+    # normalised before the look-alike test (NFKC + every Unicode whitespace).
+    "forward-section-nbsp-near-miss": _state()
+    + "\n## Scheduled forward triggers (old)\n",
+    "decision-section-ideographic-space-near-miss": _state().replace(
+        "## Dormant cross-session threads",
+        "##　Executed operator decisions (older)\n\n"
+        "## Dormant cross-session threads",
+    ),
+    "weekly-heading-nbsp-near-miss": _state()
+    + "\n### Weekly — recurring (rolling; next deadline **2026-09-18**)\n",
+    "monthly-heading-zero-width-near-miss": _state()
+    + "\n### Mon​thly — recurring (rolling; next deadline **2026-08-21**)\n",
+    "weekly-heading-fullwidth-near-miss": _state()
+    + "\n### Ｗｅｅｋｌｙ — recurring (rolling; next deadline **2026-09-18**)\n",
+    "deadline-nbsp-second-field": _weekly("; next deadline **2026-10-02**"),
+    "bucket-nbsp-near-miss": _state().replace("bucket 09-21", "bucket 09-21"),
+    "anchor-en-space-near-miss": _monthly(", cadence day 21"),
+    "index-nbsp-bullet": _state(rows=_rows(2) + ["- **2026-09-01** — nbsp bullet"]),
+    "index-fullwidth-digit-bullet": _state(
+        rows=_rows(2) + ["- **２０２６-09-01** — fullwidth digits"]
+    ),
 }
 
 
@@ -1128,3 +1153,623 @@ def test_archive_defect_fails_closed(tmp_path: Path, name: str) -> None:
         result = _run(state, archive, TODAY, *extra)
         assert result.returncode == 2, (name, result.stdout, result.stderr)
         assert _state_bytes(state, archive) == before
+
+
+@pytest.mark.parametrize("name", sorted(ARCHIVE_DEFECTS))
+def test_archive_defect_blocks_even_a_weekly_only_roll(tmp_path: Path, name: str) -> None:
+    # The pre-state is validated whole before any plan: a corrupt archive
+    # withholds a due Weekly roll even when no row needs archiving.
+    state, archive = _pair(tmp_path, _state(), ARCHIVE_DEFECTS[name])
+    before = _state_bytes(state, archive)
+    for extra in ((), ("--check",)):
+        result = _run(state, archive, TODAY, *extra)
+        assert result.returncode == 2, (name, result.stdout, result.stderr)
+        assert _state_bytes(state, archive) == before
+
+
+# --- Round 4 (Codex on bfcc8fb): rebuilt from invariants I1-I6 ---------------
+#
+# One test per finding, then one per invariant. The invariants are written in
+# the state_roll.py module docstring; validate() is the single checker.
+
+
+def _archive_lines(*lines: str) -> str:
+    return "\n".join(["# archive", "", "intro.", "", *lines, ""])
+
+
+# I6 / 4111057296 -------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("raw", "key"),
+    [
+        ("## Scheduled  forward\ttriggers", "## scheduled forward triggers"),
+        ("###　Weekly — recurring", "### weekly — recurring"),
+        ("**Roll 2026-09-26**  \r", "**roll 2026-09-26**"),
+        ("Next​Deadline", "nextdeadline"),
+        ("ｎｅｘｔ deadline", "next deadline"),
+        ("  - **２０２６-09-01**", "- **2026-09-01**"),
+        ("", ""),
+    ],
+)
+def test_lookalike_key_normalises_unicode(raw: str, key: str) -> None:
+    assert mod.lookalike_key(raw) == key
+
+
+def test_both_scripts_share_the_lookalike_helper() -> None:
+    spec = importlib.util.spec_from_file_location("check_state_currency", CHECKER_SCRIPT)
+    checker = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(checker)
+    assert checker.lookalike_key.__module__ == checker.ROLLER.__name__
+    assert checker.lookalike_key("**Last Curated:**") == "**last curated:**"
+
+
+# 4111057285: --today older than the newest archive header --------------------
+
+
+@pytest.mark.parametrize(
+    ("archive_text", "today"),
+    [
+        (_archive(), "2026-09-20"),  # newest header: Seventeenth roll, 2026-09-25
+        (
+            _archive_with(
+                "**Roll 2026-09-27** (automated keep-15 roll; `scripts/state_roll.py`):"
+                "\n\n- **2026-09-04** — later block\n\n"
+            ),
+            TODAY,
+        ),
+    ],
+)
+def test_today_older_than_newest_archive_header_refuses(
+    tmp_path: Path, archive_text: str, today: str
+) -> None:
+    state, archive = _pair(tmp_path, _state(rows=_rows(17), weekly="2026-10-02"), archive_text)
+    before = _state_bytes(state, archive)
+    for extra in ((), ("--check",)):
+        result = _run(state, archive, today, *extra)
+        assert result.returncode == 2, (result.stdout, result.stderr)
+        assert b"older than" in result.stderr
+        assert _state_bytes(state, archive) == before
+
+
+# 4111057294: today's header recognised by its date key ------------------------
+
+
+@pytest.mark.parametrize(
+    "variant",
+    [
+        ROLLED_HEADER + "  ",  # trailing spaces
+        "**Roll 2026-09-26** (edited suffix):",
+        "**Roll 2026-09-26** (automated keep-15 roll; `scripts/state_roll.py`):",
+        "**roll 2026-09-26**",
+    ],
+)
+def test_today_header_is_recognised_by_date_key(tmp_path: Path, variant: str) -> None:
+    rows = _rows(17)
+    archive_text = _archive_with(variant + "\n\n- **2026-09-04** — earlier today\n\n")
+    state, archive = _pair(tmp_path, _state(rows=rows), archive_text)
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 0, result.stderr
+    archived = _read(archive)
+    parsed = mod.parse_archive(archived)
+    assert [h.day.isoformat() for h in parsed.headers].count(TODAY) == 1
+    assert archived.count(variant + "\n") == 1  # the header line is untouched
+    block = archived.split(variant + "\n", 1)[1].split("**Seventeenth roll")[0]
+    assert block == (
+        "\n"
+        + "".join(mod.rewrite_links(row) + "\n\n" for row in rows[15:])
+        + "- **2026-09-04** — earlier today\n\n"
+    )
+
+
+def test_hand_written_header_for_today_is_not_extended(tmp_path: Path) -> None:
+    # Date key identity: the roller neither writes a second header for a date
+    # that has one nor adds rows under a hand-written (counted) block.
+    archive_text = _archive_with(
+        "**Eighteenth roll, 2026-09-26** (one entry):\n\n- **2026-09-04** — by hand\n\n"
+    )
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)), archive_text)
+    before = _state_bytes(state, archive)
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 2
+    assert b"hand-written" in result.stderr
+    assert _state_bytes(state, archive) == before
+
+
+# 4111057290: missing final newline --------------------------------------------
+
+
+@pytest.mark.parametrize("newline", ["\n", "\r\n"])
+def test_today_header_as_final_line_without_newline(tmp_path: Path, newline: str) -> None:
+    rows = _rows(17)
+    head = _archive_lines().replace("\n", newline)
+    state, archive = _pair(
+        tmp_path, _state(rows=rows).replace("\n", newline), head + ROLLED_HEADER
+    )
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 0, result.stderr
+    expected = head + (
+        ROLLED_HEADER
+        + "\n\n"
+        + "".join(mod.rewrite_links(row) + "\n\n" for row in rows[15:])
+    ).replace("\n", newline)
+    assert _read(archive) == expected
+    mod.parse_archive(_read(archive))
+
+
+def test_last_row_without_final_newline_keeps_whole_rows(tmp_path: Path) -> None:
+    rows = _rows(17)
+    original = _archive().rstrip("\n")
+    state, archive = _pair(tmp_path, _state(rows=rows), original)
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 0, result.stderr
+    archived = _read(archive)
+    assert archived.endswith("- **2026-09-02** — older archived row\n")
+    assert len(mod.parse_archive(archived).rows) == 5
+
+
+# 4111057288 / I4: one mutator, unique temp files, guarded rollback -----------
+
+
+def test_second_invocation_while_lock_held_fails_closed(tmp_path: Path) -> None:
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)))
+    before = _state_bytes(state, archive)
+    with mod.roll_lock(state) as lock:
+        held = lock.read_bytes()
+        result = _run(state, archive, TODAY)
+        assert result.returncode == 2
+        assert b"lock" in result.stderr
+        assert _state_bytes(state, archive) == before
+        assert lock.read_bytes() == held  # never stolen
+    assert not lock.exists()
+    assert _run(state, archive, TODAY).returncode == 0
+
+
+def test_stale_lock_is_never_stolen(tmp_path: Path) -> None:
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)))
+    lock = mod.lock_path(state)
+    lock.write_bytes(b"pid 1 (dead)\n")
+    before = _state_bytes(state, archive)
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 2
+    assert str(lock.name).encode() in result.stderr
+    assert b"delete" in result.stderr
+    assert lock.read_bytes() == b"pid 1 (dead)\n"
+    assert _state_bytes(state, archive) == before
+
+
+def test_lock_is_released_after_a_refusal(tmp_path: Path) -> None:
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)), ARCHIVE_DEFECTS["mixed-line-endings"])
+    assert _run(state, archive, TODAY).returncode == 2
+    assert not mod.lock_path(state).exists()
+
+
+def _flaky_unlink(
+    monkeypatch: pytest.MonkeyPatch, lock: Path, failures: int
+) -> list[str]:
+    # Windows: while any other handle is open on the lock, unlink raises a
+    # sharing violation (PermissionError). The first run of the parallel test
+    # hit this when refused runs read the lock to name its holder.
+    real_unlink = os.unlink
+    calls: list[str] = []
+
+    def unlink(path, *args, **kwargs):  # type: ignore[no-untyped-def]
+        if Path(path) == lock and len(calls) < failures:
+            calls.append(str(path))
+            raise PermissionError(13, "sharing violation (simulated)", str(path))
+        return real_unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(mod.os, "unlink", unlink)
+    monkeypatch.setattr(mod.time, "sleep", lambda _seconds: None)
+    return calls
+
+
+def test_lock_release_retries_a_transient_sharing_violation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state = tmp_path / "STATE.md"
+    state.write_bytes(b"x")
+    lock = mod.lock_path(state)
+    calls = _flaky_unlink(monkeypatch, lock, failures=3)
+    with mod.roll_lock(state):
+        pass
+    assert len(calls) == 3
+    assert not lock.exists()
+
+
+def test_lock_that_cannot_be_released_fails_loudly(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state = tmp_path / "STATE.md"
+    state.write_bytes(b"x")
+    lock = mod.lock_path(state)
+    _flaky_unlink(monkeypatch, lock, failures=10**6)
+    with pytest.raises(mod.StateRollError, match="delete the lock by hand"):
+        with mod.roll_lock(state):
+            pass
+    assert lock.exists()
+    # A body error and a release error are both reported.
+    monkeypatch.undo()
+    lock.unlink()
+    _flaky_unlink(monkeypatch, lock, failures=10**6)
+    with pytest.raises(mod.StateRollError, match="body failed.*delete the lock by hand"):
+        with mod.roll_lock(state):
+            raise mod.StateRollError("body failed")
+    monkeypatch.undo()
+    lock.unlink()
+
+
+def test_refused_run_does_not_open_the_lock(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Only the owner may open the lock file (see _flaky_unlink).
+    state = tmp_path / "STATE.md"
+    state.write_bytes(b"x")
+    lock = mod.lock_path(state)
+    with mod.roll_lock(state):
+        real_open = open
+        opened: list[str] = []
+
+        def spy(file, *args, **kwargs):  # type: ignore[no-untyped-def]
+            opened.append(str(file))
+            return real_open(file, *args, **kwargs)
+
+        monkeypatch.setattr("builtins.open", spy)
+        with pytest.raises(mod.StateRollError, match="exists"):
+            with mod.roll_lock(state):
+                pass
+        monkeypatch.undo()
+        assert str(lock) not in opened
+    assert not lock.exists()
+
+
+def test_check_reads_without_the_lock(tmp_path: Path) -> None:
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)))
+    with mod.roll_lock(state):
+        result = _run(state, archive, TODAY, "--check")
+    assert result.returncode == 1, result.stderr
+
+
+def test_foreign_file_at_the_old_fixed_temp_path_is_untouched(tmp_path: Path) -> None:
+    # The old fixed `<name>.state_roll.tmp` was shared by every run; each write
+    # now gets its own mkstemp file in the target directory.
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)))
+    foreign = [p.with_name(p.name + ".state_roll.tmp") for p in (state, archive)]
+    for path in foreign:
+        path.write_bytes(b"another writer's bytes")
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 0, result.stderr
+    for path in foreign:
+        assert path.read_bytes() == b"another writer's bytes"
+    assert len(list(tmp_path.rglob("*.state_roll.tmp"))) == 2
+
+
+def test_rollback_never_overwrites_an_archive_changed_by_someone_else(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)))
+    state_before, archive_before = _read(state), _read(archive)
+    planned = mod.plan(
+        state_before, archive_before, date.fromisoformat(TODAY), state.parent, archive.parent
+    )
+    assert planned.archive is not None
+    foreign = planned.archive + "foreign edit\n"
+    real_replace = mod._replace
+
+    def replace(path: Path, text: str) -> None:
+        if path == state:
+            archive.write_text(foreign, encoding="utf-8", newline="")
+            raise mod.StateRollError("simulated STATE write failure")
+        real_replace(path, text)
+
+    monkeypatch.setattr(mod, "_replace", replace)
+    with pytest.raises(mod.StateRollError, match="not restored"):
+        mod.commit(
+            state, archive, state_before, archive_before, planned.state, planned.archive
+        )
+    assert _read(archive) == foreign
+    assert _read(state) == state_before
+
+
+def test_commit_refuses_files_changed_after_planning(tmp_path: Path) -> None:
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)))
+    state_before, archive_before = _read(state), _read(archive)
+    planned = mod.plan(
+        state_before, archive_before, date.fromisoformat(TODAY), state.parent, archive.parent
+    )
+    edited = state_before.replace("none.", "edited meanwhile.")
+    state.write_text(edited, encoding="utf-8", newline="")
+    with pytest.raises(mod.StateRollError, match="changed"):
+        mod.commit(
+            state, archive, state_before, archive_before, planned.state, planned.archive
+        )
+    assert _read(state) == edited
+    assert _read(archive) == archive_before
+
+
+CRASH_DRIVER = """
+import importlib.util, os, sys
+spec = importlib.util.spec_from_file_location("state_roll", sys.argv[1])
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+real_replace = mod._replace
+state = os.path.abspath(sys.argv[2])
+
+def crash(path, text):
+    if os.path.abspath(path) == state:
+        os._exit(9)  # the process dies after the archive write, before STATE
+    real_replace(path, text)
+
+mod._replace = crash
+sys.exit(mod.main(["--state", sys.argv[2], "--archive", sys.argv[3], "--today", sys.argv[4]]))
+"""
+
+
+def _row_union(state_text: str, archive_text: str, state: Path, archive: Path) -> set[str]:
+    snap = mod.validate(state_text, archive_text, state.parent, archive.parent)
+    return set(snap.state_rows) | set(snap.archive.rows)
+
+
+def test_crash_between_writes_recovers_without_loss_or_duplication(tmp_path: Path) -> None:
+    rows = _rows(17)
+    state, archive = _pair(tmp_path, _state(rows=rows))
+    state_before, archive_before = _read(state), _read(archive)
+    union_before = _row_union(state_before, archive_before, state, archive)
+    driver = tmp_path / "crash_driver.py"
+    driver.write_text(CRASH_DRIVER, encoding="utf-8")
+    env = os.environ.copy()
+    env.pop("STATE_CURRENCY_TODAY", None)
+    crashed = subprocess.run(
+        [sys.executable, str(driver), str(SCRIPT), str(state), str(archive), TODAY],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+    )
+    assert crashed.returncode == 9, crashed.stderr
+    assert _read(state) == state_before
+    assert _read(archive) != archive_before
+    # The crashed pair is a state the validator accepts (residue rows in both).
+    assert _row_union(_read(state), _read(archive), state, archive) == union_before
+
+    lock = mod.lock_path(state)
+    assert lock.exists()  # a dead run's lock is never stolen
+    blocked_bytes = _state_bytes(state, archive)
+    blocked = _run(state, archive, TODAY)
+    assert blocked.returncode == 2
+    assert b"lock" in blocked.stderr
+    assert _state_bytes(state, archive) == blocked_bytes
+
+    lock.unlink()  # the operator clears it by hand after checking no run is live
+    retry = _run(state, archive, TODAY)
+    assert retry.returncode == 0, retry.stderr
+    final_state, final_archive = _read(state), _read(archive)
+    snap = mod.validate(final_state, final_archive, state.parent, archive.parent)
+    assert set(snap.state_rows) | set(snap.archive.rows) == union_before
+    assert not set(snap.state_rows) & set(snap.archive.rows)
+    for i in (15, 16):
+        assert final_archive.count(f"— decision {i} ") == 1
+    third = _run(state, archive, TODAY)
+    assert third.returncode == 0, third.stderr
+    assert _out(third) == "state-roll: nothing to roll\n"
+
+
+def test_parallel_runs_lose_and_duplicate_nothing(tmp_path: Path) -> None:
+    # Race-sized: many contenders at once. Each either rolls, finds nothing to
+    # roll, or is refused by the lock; the final pair always validates.
+    rows = _rows(20)
+    state, archive = _pair(tmp_path, _state(rows=rows))
+    union_before = _row_union(_read(state), _read(archive), state, archive)
+    env = os.environ.copy()
+    env.pop("STATE_CURRENCY_TODAY", None)
+    command = [
+        sys.executable, str(SCRIPT), "--state", str(state), "--archive", str(archive),
+        "--today", TODAY,
+    ]
+    procs = [
+        subprocess.Popen(command, cwd=REPO, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        for _ in range(8)
+    ]
+    results = []
+    for proc in procs:
+        out, err = proc.communicate(timeout=120)
+        results.append((proc.returncode, out, err))
+    for code, _, err in results:
+        assert code in (0, 2), err
+        if code == 2:
+            # Refused by the held lock, not failing for another reason whose
+            # message merely names the lock path.
+            assert b"exists: another state_roll run" in err, err
+    assert any(code == 0 for code, _, _ in results)
+    if not all(code == 0 for code, _, _ in results):
+        assert _run(state, archive, TODAY).returncode == 0  # a refused run retries cleanly
+    snap = mod.validate(_read(state), _read(archive), state.parent, archive.parent)
+    assert set(snap.state_rows) | set(snap.archive.rows) == union_before
+    assert not set(snap.state_rows) & set(snap.archive.rows)
+    assert len(snap.state_rows) == 15
+    assert not mod.lock_path(state).exists()
+
+
+# I1-I3 / I5: the one validator, on the pre-state and the composed post-state --
+
+
+def test_validator_accepts_the_real_state_and_archive() -> None:
+    # The legacy archive has same-date ordinal headers and a `**First roll,
+    # 2026-08-23:**` header; both are valid under I2.
+    snap = mod.validate(
+        _read(REPO / "STATE.md"), _read(mod.DEFAULT_ARCHIVE), REPO, mod.DEFAULT_ARCHIVE.parent
+    )
+    assert snap.archive.headers
+    assert not set(snap.state_rows) & set(snap.archive.rows)
+
+
+def test_validator_i1_row_conservation() -> None:
+    state_text, archive_text = _state(rows=_rows(17)), _archive()
+    before = mod.validate(state_text, archive_text)
+    planned = mod.plan(state_text, archive_text, date.fromisoformat(TODAY))
+    assert planned.archive is not None
+    mod.validate(planned.state, planned.archive, before=before)
+    extra = _archive_with("").replace(
+        "- **2026-09-02** — older archived row", "- **2026-09-02** — older archived row\n\n"
+        "- **2026-09-01** — invented"
+    )
+    cases = {
+        "lost": (planned.state, archive_text),
+        "in-both": (state_text, planned.archive),
+        "invented": (state_text, extra),
+        "state-gained": (_state(rows=_rows(18)), archive_text),
+    }
+    for name, (state_after, archive_after) in cases.items():
+        with pytest.raises(mod.StateRollError, match="I1"):
+            mod.validate(state_after, archive_after, before=before)
+            pytest.fail(name)
+
+
+def test_validator_accepts_interrupted_run_residue() -> None:
+    # Residue (overflow rows in both files) is the one duplicate the roller
+    # removes, and only from STATE.
+    state_text, archive_text = _state(rows=_rows(17)), _archive()
+    planned = mod.plan(state_text, archive_text, date.fromisoformat(TODAY))
+    assert planned.archive is not None
+    residue = mod.validate(state_text, planned.archive)
+    retried = mod.plan(state_text, planned.archive, date.fromisoformat(TODAY))
+    assert retried.archive is None
+    mod.validate(retried.state, planned.archive, before=residue)
+
+
+VALID_LEGACY_ARCHIVE = _archive_lines(
+    "**Thirteenth roll, 2026-09-03** (one entry):",
+    "",
+    "- **2026-08-24** — a",
+    "",
+    "**Twelfth roll, 2026-09-03** (one entry):",
+    "",
+    "- **2026-08-23** — b",
+    "",
+    "**First roll, 2026-08-23:**",
+    "",
+    "- **2026-08-01** — c",
+    "- **2026-07-01** — d",
+)
+
+
+def test_parse_archive_reads_legacy_headers() -> None:
+    parsed = mod.parse_archive(VALID_LEGACY_ARCHIVE)
+    assert [(h.day.isoformat(), h.automated) for h in parsed.headers] == [
+        ("2026-09-03", False),
+        ("2026-09-03", False),
+        ("2026-08-23", False),
+    ]
+    assert len(parsed.rows) == 4
+
+
+I2_DEFECTS = {
+    "automated-shares-date-with-ordinal": _archive_lines(
+        "**Roll 2026-09-03** (automated):", "", "- **2026-08-25** — x", "",
+        "**Thirteenth roll, 2026-09-03** (one entry):", "", "- **2026-08-24** — a",
+    ),
+    "automated-below-same-date-ordinal": _archive_lines(
+        "**Thirteenth roll, 2026-09-03** (one entry):", "", "- **2026-08-24** — a", "",
+        "**Roll 2026-09-03** (automated):", "", "- **2026-08-23** — x",
+    ),
+    "two-automated-same-date": _archive_lines(
+        "**Roll 2026-09-03**", "", "- **2026-08-24** — a", "",
+        "**Roll 2026-09-03** (again)", "", "- **2026-08-23** — b",
+    ),
+    "out-of-order": _archive_lines(
+        "**Roll 2026-09-01**", "", "- **2026-08-24** — a", "",
+        "**Roll 2026-09-03**", "", "- **2026-08-23** — b",
+    ),
+    "row-above-first-header": _archive_lines(
+        "- **2026-08-25** — stray", "", "**Roll 2026-09-03**", "", "- **2026-08-24** — a",
+    ),
+    "prose-inside-a-block": _archive_lines(
+        "**Roll 2026-09-03**", "", "- **2026-08-24** — a", "", "loose paragraph",
+    ),
+    "continuation-line": _archive_lines(
+        "**Roll 2026-09-03**", "", "- **2026-08-24** — a", "  continued",
+    ),
+    "header-fused-with-row": _archive_lines(
+        "**Roll 2026-09-03** (x):- **2026-08-25** — fused", "", "- **2026-08-24** — a",
+    ),
+    "unreadable-header-lookalike": _archive_lines(
+        "**Nineteenth roll 2026-09-03**", "", "- **2026-08-24** — a",
+    ),
+    "invalid-header-date": _archive_lines("**Roll 2026-02-30**", "", "- **2026-01-24** — a"),
+    "duplicate-row": _archive_lines(
+        "**Roll 2026-09-03**", "", "- **2026-08-24** — a", "", "- **2026-08-24** — a",
+    ),
+    "lookalike-row": _archive_lines(
+        "**Roll 2026-09-03**", "", "- **2026-08-24** — a", "", "* **2026-08-23** — star",
+    ),
+    "nbsp-lookalike-row": _archive_lines(
+        "**Roll 2026-09-03**", "", "- **2026-08-23** — nbsp",
+    ),
+    "mixed-line-endings": VALID_LEGACY_ARCHIVE.replace("\n", "\r\n", 1),
+    "lone-cr": VALID_LEGACY_ARCHIVE.replace("\n", "\r", 1),
+}
+
+
+@pytest.mark.parametrize("name", sorted(I2_DEFECTS))
+def test_parse_archive_refuses_i2_i3_i5_defects(name: str) -> None:
+    with pytest.raises(mod.StateRollError):
+        mod.parse_archive(I2_DEFECTS[name])
+
+
+@pytest.mark.parametrize("defect", ["mixed", "lone-cr"])
+def test_state_line_ending_defect_fails_closed(tmp_path: Path, defect: str) -> None:
+    text = _state(rows=_rows(17))
+    broken = (
+        text.replace("\n", "\r\n", 1) if defect == "mixed" else text.replace("\n", "\r", 1)
+    )
+    state, archive = _pair(tmp_path, broken)
+    before = _state_bytes(state, archive)
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 2
+    assert b"line ending" in result.stderr
+    assert _state_bytes(state, archive) == before
+
+
+def _drop_one(real):  # type: ignore[no-untyped-def]
+    return lambda archive, rows, today: real(archive, rows[:1], today)
+
+
+def _dup_one(real):  # type: ignore[no-untyped-def]
+    return lambda archive, rows, today: real(archive, rows + rows[:1], today)
+
+
+def _misorder(real):  # type: ignore[no-untyped-def]
+    def compose(archive, rows, today):  # type: ignore[no-untyped-def]
+        text, message = real(archive, rows, today)
+        start = text.index(ROLLED_HEADER)
+        end = text.index("**Seventeenth roll")
+        return text[:start] + text[end:] + text[start:end], message
+
+    return compose
+
+
+def _mixed(real):  # type: ignore[no-untyped-def]
+    def compose(archive, rows, today):  # type: ignore[no-untyped-def]
+        text, message = real(archive, rows, today)
+        return text.replace("\n", "\r\n", 1), message
+
+    return compose
+
+
+@pytest.mark.parametrize("mutation", [_drop_one, _dup_one, _misorder, _mixed])
+def test_post_state_breaking_an_invariant_writes_nothing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    mutation,  # type: ignore[no-untyped-def]
+) -> None:
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)))
+    before = _state_bytes(state, archive)
+    monkeypatch.setattr(mod, "archive_overflow", mutation(mod.archive_overflow))
+    code = mod.main(
+        ["--state", str(state), "--archive", str(archive), "--today", TODAY]
+    )
+    assert code == 2
+    assert "state-roll: FAIL" in capsys.readouterr().err
+    assert _state_bytes(state, archive) == before
+    assert not mod.lock_path(state).exists()
