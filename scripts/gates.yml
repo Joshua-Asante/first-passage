@@ -233,6 +233,19 @@ gates:
       - python
       - scripts/check_closure_disposition.py
 
+  # A card's `yaml authority` block may only narrow: registered, non-forbidden,
+  # never an operator act, within its seat and its parent (surface-allocation ADR,
+  # 2026-09-25 revision; registry scripts/seat_authority.yml). Cards without a
+  # block are not checked, so the scan is clean on historical briefs.
+  - id: handoff-authority
+    tier: path-conditional
+    when:
+      staged_regex: '^(docs/briefs/|scripts/seat_authority[.]yml$|scripts/check_handoff_authority[.]py$)'
+    cmd:
+      - python
+      - scripts/check_handoff_authority.py
+      - --all
+
   # D4 enforcement instrument (docs/adr/2026-08-09-rejection-register-topology-
   # and-bar-wiring.md, dispatched as a separate packet at ratification): does
   # every terminal-negative closure naming one instrument have a DEAD row in
