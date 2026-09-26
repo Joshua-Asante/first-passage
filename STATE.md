@@ -71,7 +71,7 @@ second queue here. Registry backfill debt is enumerated by
 Owners retain canonical criteria; rows below are pointers. Delete discharged
 rows rather than retaining completion narratives. A gated row does not grant GO.
 
-### Weekly — recurring (rolling; next deadline **2026-09-25**, bucket 09-21→09-25)
+### Weekly — recurring (rolling; next deadline **2026-10-02**, bucket 09-28→10-02)
 
 - **Operator-placed account-preservation trade:** at least one per Mon–Fri week.
   No agent places it; the rail stays disarmed. A missed venue week risks account
@@ -89,8 +89,9 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   placing the trade and shared an order-screen capture in session (a filled
   MYM market round trip; the capture shows no date and is not committed). This
   is the operator's attestation; the private compliance record was not
-  independently verified. The 09-21→09-25 obligation is covered; the next
-  bucket is 09-28→10-02 (deadline 10-02), advanced once 09-25 passes.
+  independently verified. The 09-21→09-25 obligation is covered (the operator
+  reconfirmed placement on 2026-09-26); the schedule advanced on 09-26 to
+  bucket 09-28→10-02 (deadline 10-02).
 - **Earlier record still owed:** week 08-31→09-04 was operator-attested on
   09-04 and restated on 09-05; the exact trade day remains unresolved between
   09-02/09-03, and its private ledger row remains unverified.
