@@ -1097,12 +1097,56 @@ def test_directory_change_after_the_deploy_is_silent(command, tmp_path):
 @pytest.mark.parametrize("command", [
     DEPLOY + " -a some-other-app; cd elsewhere; " + DEPLOY,
     "for d in a b; do " + DEPLOY + "; cd $d; done",
+    "function f {\n " + DEPLOY + "\n}\ncd elsewhere\nf",
+    "function f\n{\n " + DEPLOY + "\n}\ncd elsewhere\nf",
+    "function f() {\n " + DEPLOY + "\n}\ncd elsewhere; f",
+    "f() {\n " + DEPLOY + "\n}\ncd elsewhere; f",
 ])
 def test_deploy_after_a_directory_change_still_asks(command, tmp_path):
-    # Fails if the order rule lets a deploy that runs after a cd (later in the call, or
-    # on a later pass of a loop) read the hook's directory.
+    # Fails if the order rule lets a deploy that runs after a cd (later in the call, on
+    # a later pass of a loop, or in a function called after it) read the hook's directory.
     _other_app_dir(tmp_path)
     assert g.classify_command(command, cwd=str(tmp_path)) == ("ask", "rail.deploy")
+
+
+@pytest.mark.parametrize("command", [
+    "function f {\n " + DEPLOY + "\n}\ncd elsewhere\nf",
+    "function f\n{\n " + DEPLOY + "\n}\ncd elsewhere\nf",
+    "function Deploy-It {\n  " + DEPLOY + " --remote-only\n}\nPush-Location elsewhere\n"
+    "Deploy-It\nPop-Location",
+    "filter F {\n " + DEPLOY + "\n}\nSet-Location elsewhere\nF",
+])
+def test_powershell_function_called_after_a_directory_change_asks(command, tmp_path):
+    # Fails if a deploy written inside a PowerShell function reads the hook's directory
+    # although the function is called after a directory change (its body runs there).
+    _other_app_dir(tmp_path)
+    payload = {"tool_name": "PowerShell", "cwd": str(tmp_path),
+               "tool_input": {"command": command}}
+    assert g.classify(payload) == ("ask", "rail.deploy")
+
+
+@pytest.mark.parametrize("command,expected", [
+    ('echo `date`; git push origin ma""in', ("deny", "main.direct_push")),
+    ("echo `date`; g''it push origin main", ("deny", "main.direct_push")),
+    ("echo `date`; gh pr me''rge 5", ("deny", "pr.merge_unpinned")),
+    ("echo `date`; " + ARM.replace("--arm", "--a''rm"), ("ask", "rail.arm")),
+    ("echo `date`; f''ly deploy -a c1-rail", ("ask", "rail.deploy")),
+    ("echo `date`; git commit -m 'mention " + DEPLOY + " and git push origin main'",
+     None),
+    ("grep -n `echo fly` deploy.md", None),
+    ("echo `date` && " + DEPLOY + " --help", None),
+    ("echo `date` && " + DEPLOY + " -a some-other-app", None),
+    ("echo `echo \\`date\\`` && " + DEPLOY + " -a some-other-app", None),
+    ("echo `sed -i s/x/y/ fly.toml` && " + DEPLOY, ("ask", "rail.deploy")),
+    ("echo `echo x > fly.toml` && " + DEPLOY, ("ask", "rail.deploy")),
+    ("echo `" + DEPLOY + "`", ("ask", "rail.deploy")),
+])
+def test_backquotes_are_read_not_dropped_to_raw_patterns(command, expected, tmp_path):
+    # Fails if a backquote substitution (whose re-parsed words carry no source span)
+    # drops the whole command to the raw-pattern fallback: quote-split acts would be
+    # missed and mentions in data would decide.
+    _other_app_dir(tmp_path)
+    assert g.classify_command(command, cwd=str(tmp_path)) == expected
 
 
 @pytest.mark.parametrize("toml,app", [(RAIL_TOML, "c1-rail"),
@@ -1158,6 +1202,8 @@ def test_relative_config_beside_a_working_directory(tmp_path):
     "while true; do {deploy}; sed -i s/x/y/ fly.toml; done",
     "bash -c 'sed -i s/x/y/ {toml}; {deploy}'",
     "fly ssh console -a c1-rail -C '{deploy}'",
+    "rg --pre ./x.sh app . ; {deploy}",
+    "cat x | Select-Object @{{e={{sed -i s/x/y/ fly.toml}}}}; {deploy}",
 ])
 @pytest.mark.parametrize("config", ["", " --config {toml}"])
 def test_deploy_after_a_possible_file_write_asks(template, config, tmp_path):

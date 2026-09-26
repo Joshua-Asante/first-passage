@@ -84,7 +84,9 @@ call, because one answer approves all of them.
                        ``FLY_APP`` in the hook's environment; a flag missing from the
                        ``fly deploy`` table or a value that is not an app name; more than one
                        argument; or a relative path after a directory change that runs
-                       before it (``cd``, ``Set-Location``, ``pushd`` ...; any in a loop).
+                       before it (``cd``, ``Set-Location``, ``pushd`` ...; any in a loop,
+                       and any in a call that defines a function: its body runs where it
+                       is called).
                        **Only ``-a`` names the target** (fail closed on the rest) when the
                        deploy runs under a prefix assignment or a wrapper (``env``,
                        ``timeout``, ``bash -c`` ...), ``pwsh``, the launcher or ``fly ssh``
@@ -92,9 +94,10 @@ call, because one answer approves all of them.
                        it (a pipeline, a background job) or in a loop with it may have
                        changed its environment or files: a file-writing redirection (``>``,
                        ``>>``, ``&>``, ``>|``; not ``2>&1`` or a null device), a variable
-                       assignment, or any program off a short read-only list
-                       (`_READ_ONLY`: ``cat``, ``echo``, ``ls``, ``grep`` ... and directory
-                       changes). So ``sed -i ... fly.toml && fly deploy``, ``export
+                       assignment, a backquote body (re-read without source positions), or
+                       any program off a short read-only list (`_READ_ONLY`: ``cat``,
+                       ``echo``, ``ls``, ``grep`` ... and directory changes; none that can
+                       run another program, and none with a ``{`` argument). So ``sed -i ... fly.toml && fly deploy``, ``export
                        FLY_APP=...; fly deploy`` and ``git pull && fly deploy`` ask; ``fly
                        deploy && git checkout -- fly.toml`` does not. An explicit
                        ``--config`` beside ``-a`` counts as a target too. Nothing
@@ -140,8 +143,11 @@ regexes, toward refusing: unreadable text cannot prove a pin.
     ``Start-Process``, ``pwsh -Command -`` (stdin), and encodings other than
     ``-EncodedCommand``.
   * PowerShell structure beyond a plain pipeline: script blocks (``1..1 |
-    ForEach-Object { … }``, ``try { … } catch {}``) and dot-sourcing
-    (``. gh pr merge …``).
+    ForEach-Object { … }``, ``try { … } catch {}``, ``$s = { … }; & $s``) and
+    dot-sourcing (``. gh pr merge …``).
+  * Commands run from text or through programs the tokenizer does not unwrap: ``trap
+    '…' EXIT`` bodies, a ``$(…)`` inside an unquoted heredoc body, and wrappers outside
+    its table (``doas``, ``stdbuf``, ``chronic``, ``watch``, ``script -c``).
   * Configuration that changes what a command does: user-defined ``gh`` / ``git``
     aliases, ``git -c alias.x=push``, ``push.default`` / ``remote.<r>.push`` /
     ``remote.<r>.mirror``, and gh or git flags this hook's tables do not list.
@@ -173,9 +179,9 @@ except ImportError:  # Python < 3.11: `_toml_app` falls back to a regex
     tomllib = None
 
 try:  # imported as `scripts.guard_operator_acts` (tests, repo root on sys.path)
-    from scripts._shell_tokens import expand, is_assignment, program, segments
+    from scripts._shell_tokens import Word, expand, is_assignment, program, segments
 except ImportError:  # run as `python scripts/guard_operator_acts.py`
-    from _shell_tokens import expand, is_assignment, program, segments
+    from _shell_tokens import Word, expand, is_assignment, program, segments
 
 ASK, DENY = "ask", "deny"
 
@@ -262,14 +268,18 @@ _CD_PROGRAMS = frozenset({"cd", "chdir", "pushd", "popd", "set-location", "sl",
 # leave the fly.toml it loads trusted. Any other program, a variable assignment or a
 # file-writing redirection may have changed it (Codex thread 4111045506), so the deploy's
 # target is then read from -a only. Kept short on purpose: an omission asks, never hides.
+# No program here may run another (ripgrep's --pre does, so rg is left out), and a segment
+# with a `{` in any argument (a PowerShell scriptblock or calculated property) is not quiet.
 _READ_ONLY = _CD_PROGRAMS | frozenset({
     "cat", "echo", "printf", "ls", "dir", "pwd", "true", "false", "test", "[", "head",
-    "tail", "grep", "rg", "wc", "which", "sleep", "get-content", "get-childitem",
+    "tail", "grep", "wc", "which", "sleep", "get-content", "get-childitem",
     "get-location", "select-string", "select-object", "test-path", "write-output",
     "write-host", "out-null"})
-# A segment starting with one of these repeats: nothing in the call runs strictly after a
-# deploy inside it.
-_LOOP_WORDS = frozenset({"for", "while", "until", "select", "do", "done", "foreach"})
+# A segment starting with one of these repeats, or defines a function whose body runs
+# wherever it is later called (a word ending in `()` does too): nothing in the call runs
+# strictly after a deploy inside it.
+_LOOP_WORDS = frozenset({"for", "while", "until", "select", "do", "done", "foreach",
+                         "function", "filter", "workflow", "configuration"})
 _NULL_DEVICES = frozenset({"/dev/null", "$null", "nul"})
 
 
@@ -1170,8 +1180,11 @@ class _Part(NamedTuple):
 
 def _quiet(plain: list[str], runs: list[list[str]]) -> bool:
     """Whether a segment leaves files and environment alone: one read-only program,
-    behind nothing but wrapper options (a ``bash -c`` / ``eval`` script is not), or no
-    program and no variable assignment (``}``, ``done``)."""
+    behind nothing but wrapper options (a ``bash -c`` / ``eval`` script is not), with no
+    ``{`` in an argument (a scriptblock may run code), or no program and no variable
+    assignment (``}``, ``done``)."""
+    if any("{" in word for word in plain[1:]):
+        return False
     if not runs:
         return not any(is_assignment(word) for word in plain)
     words = runs[0]
@@ -1228,7 +1241,8 @@ def _command_hits_cached(command: str) -> tuple[Hit, ...]:
             if not tokens:
                 continue
             plain = [str(t) for t in tokens]
-            loop |= program(plain[0], strict=True) in _LOOP_WORDS
+            loop |= (program(plain[0], strict=True) in _LOOP_WORDS
+                     or "()" in "".join(plain[:2]))  # `name() {` defines a function
             runs = [[str(w) for w in words] for words in expand(plain, strict=True)]
             hits: list[Hit] = []
             for words in runs:
@@ -1236,8 +1250,16 @@ def _command_hits_cached(command: str) -> tuple[Hit, ...]:
                 hits += found if words == plain else _unsettle(found)  # prefixed, wrapped
             moves = any(words and program(words[0], strict=True) in _CD_PROGRAMS
                         for words in runs)
-            parts.append(_Part(tokens[0].start, tokens[-1].end, hits, moves,
-                               _quiet(plain, runs)))
+            # A backquote body is re-parsed from an un-escaped copy, so its words carry
+            # no source span (and its redirections are not listed). Such a segment is
+            # placed at 0: it counts as running before any deploy, and as not quiet; a
+            # deploy inside one is unsettled (fail closed, never an unreadable command).
+            spanned = all(isinstance(t, Word) for t in tokens)
+            if spanned:
+                parts.append(_Part(tokens[0].start, tokens[-1].end, hits, moves,
+                                   _quiet(plain, runs)))
+            else:
+                parts.append(_Part(0, 0, _unsettle(hits), moves, False))
         writes = [start for start, _, _, text, kind in bodies
                   if kind == "target" and _writes(command, start, text)]
         out: list[Hit] = []
