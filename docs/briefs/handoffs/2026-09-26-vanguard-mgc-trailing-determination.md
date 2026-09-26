@@ -69,4 +69,27 @@ The runtime digest is computed over canonical effective values after derivation,
 
 No scratch extracts were written, and no source bodies or numeric parameter values appear above.
 
-**Coordinator disposition:** pending.
+**Coordinator disposition (DRAFT, 2026-09-26; not yet recorded as accepted):** recommend **ACCEPT WITH CAVEATS**. Verdict `TRAILING ACTIVE`.
+
+*Checked from the public clone (cloud review):*
+- **Loader path.** `load_book_adapters` (`ops/c1_signal_daemon/book_adapters.py:146-179`) does four things in order. It verifies the source bytes against `EFFECTIVE_INPUTS_SHA256`. It derives runtime values by changing **only** ORB's `qty` (`:159-161`). It verifies the derived bytes against `RUNTIME_EFFECTIVE_INPUTS_SHA256`. It then calls `module.build(mode=mode, **row["adapter"])` (`:175`).
+- **Empty adapter means port defaults.** Vanguard's runtime row is therefore its source row, and an empty `adapter` object means `build` receives no overrides. The return's "loader fallback to port defaults" reading matches the code.
+- **Trail fields must be set by the port.** `Bracket`'s trail fields default to `None` (`ops/c1_signal_daemon/book_protocol.py:71-72`), so trailing exists only if the port sets them. That is consistent with the return's `_bracket` citation.
+- **Digest reproduction.** Reproducing `9d4d4e1d…` binds the inspected effective values to the registry's accepted identity. It was done through the launcher's derivation, without importing the port.
+- **Pins.** The input pins cited in the return match `core/strategies/BOOK_SOURCES.sha256` (Vanguard Pine `af26899c…`, port `e6a03d04…`) and `book_adapters.py:51-55`.
+- **Public-clone posture.** The return contains `file:line` references and shapes only. No source bodies or values.
+
+*Not checked here (caveats):*
+1. The private `file:line` citations in the port (`:60`, `:66`, `:69-71`, `:175-181`, `:245`, `:253`, `:269`, `:274`, `:291-292`) and in the Pine (`:169-171`, `:228`, `:235-238`, `:452-461`, `:497-503`) were not re-read. The cloud clone has no private sources. **Acceptance condition:** one §60-compliant spot-read in the primary checkout of `_bracket` and its three call sites, plus the `use_trail` default. Alternatively, the coordinator records that it relies on the executor's hashes and citations.
+2. **Accepted binding assumed to be the runtime loader.** The verdict holds for the binding that the runtime loader (and the registry's accepted identity) uses. It assumes the qualification path (Phase 1 accepted run, E1) binds through the same loader and inputs. That is consistent with `RUNTIME_EFFECTIVE_INPUTS_SHA256` being the accepted identity, but it was not traced through `ops/c1_rail/qualification/` in this review.
+3. **Trailing is enabled by default, not by an explicit input.** The effective file never states it. This is correct as a finding. It also means a future non-empty Vanguard override could change the answer, so any successor effective-inputs digest reopens it.
+4. **Breakeven and grace inactive.** Accepted on the same basis. It confirms the route note and does not change any §59 premise.
+
+*Effect if accepted:*
+- Campaign §59 Ruling 1's Vanguard attestation ("fits the narrowed shape") is **superseded for trailing**. Vanguard depends on L2(g), which is U on this route.
+- REST assessment §6.7 (1) is **confirmed** (not corrected).
+- The first driver of the portfolio-route verdict stands.
+- **Next decision is the operator's:** the fixed-stop edition ([pre-registration](../pre-registration/2026-09-26-tradeify-vanguard-fixed-stop-edition-prereg.md)) or rejecting the leg on this route.
+- **Propagation still owed, not applied by this draft:** campaign §59 (record the acceptance and supersession), incident ADR §A4, the CAP R3 row, and the STATE index row when the operator decides.
+
+*Recording:* the coordinator replaces "(DRAFT …)" with an accepted/rejected line, the date, and whether caveat 1 was discharged by a spot-read or by reliance.
