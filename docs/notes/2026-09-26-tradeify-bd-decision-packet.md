@@ -1,6 +1,6 @@
 # Tradeify route: integrated B–D decision packet
 
-**Status:** DRAFT, in progress (2026-09-26). Coordinator-authored. It accepts no gate, changes no contract or behavior, and grants no drill, access, spend or GO. Gates B–D stay pending until the operator rules and the coordinator records integrated acceptance on the [T09 gate table](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record).
+**Status:** DRAFT for operator review (2026-09-26). Coordinator-authored. It accepts no gate, changes no contract or behavior, and grants no drill, access, spend or GO. Gates B–D stay pending until the operator rules and the coordinator records integrated acceptance on the [T09 gate table](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record).
 **Inputs:** Gate A ([REST §6.11](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#611-gate-a-factual-disposition)); the [allocation map](2026-09-25-tradeify-capability-allocation-deletion-map.md) (read its coordinator-corrected section first); incident ADR [§A9–§A10](../adr/2026-09-17-bounded-platform-protection-incident-contract.md); the rail spec's [R-B3 / L-2](../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md); campaign §59 Rulings 3–4; the three edition pre-registrations. Parallel drafts: [dispatch card](../briefs/handoffs/2026-09-26-bd-packet-parallel-drafts.md) (UB-8 comparison; S5 decision draft).
 **Route assumed:** the ruled Python signal host → our account owner → CrossTrade-mediated Tradovate REST. TradingView's exclusion is the standing 2026-09-11 ruling. Account entitlement and venue permission remain evidence owed (§4, P-1).
 
@@ -11,7 +11,7 @@
 | 3 | Unknown-request posture and option-B rules, with unresolved assumptions | Drafted below |
 | 4 | Allocation and component reductions (gate D) | Drafted below |
 | 5 | T09 handoff (held until B–D acceptance) | Drafted below |
-| 6 | Decisions required from the operator | Pending |
+| 6 | Decisions required from the operator | Drafted below |
 
 ---
 
@@ -168,3 +168,41 @@ The draft below fixes scope and boundaries only.
 **Verification:** fault-injected consumer cases for every GC failure consequence (the route stops or refuses, as §1 states); retained REST-form traces for each delegated capability; `.\fp.ps1 test-ops` and `check` records. No live manufactured lost response or unmanaged exposure (checklist T09).
 
 **Return boundary:** the adapter and reconciliation evidence, disarmed. It must not arm or activate, and it must not change anything outside the scope table.
+
+---
+
+## 6. Decisions required from the operator
+
+Grouped by what each one unblocks. Where a coordinator recommendation exists, it is in the cited section.
+
+**First: these decide whether the route can exit at all.**
+
+| # | Decision | Recommendation | § |
+|---|---|---|---|
+| 1 | Close realization, and the L2(e) interpretation for whole-scope liquidation | Pursue C-a and accept §1.1a subject to evidence; keep C-b as the fallback | B-1, §1.1 |
+| 2 | Authorize a revised operator session plan: REST-form D1–D3 and D6, the REST reads D4/D5, and the new GC-1 race observation | Authorize, bound to exact operations and account scope | A-1 |
+| 3 | Complete the account actor inventory (exclusivity) | Inventory, and enable no vendor backstop | B-12, GC-7 |
+| 4 | Supply entitlement and venue-permission evidence | Required before any live use | P-1 |
+
+**Second: unknown-request posture.**
+
+| # | Decision | Recommendation | § |
+|---|---|---|---|
+| 5 | First-release posture | Preserve-and-block; B stays Proposed | §3 |
+| 6 | Set H (first-release horizon) and ε (tolerance for a block that ends automation) | Operator's values | §3 |
+| 7 | *Only if B is wanted for the first release:* B-B1 to B-B4 | — | §3 |
+
+**Third: edition rules, frozen with the pre-registrations.**
+
+| # | Decision | § |
+|---|---|---|
+| 8 | ORB-2/3/4 and Vanguard VAN-2/3/4 (fixed stop; the exits that replace the trail; no amend) | B-4, B-5 |
+| 9 | Striker initial stop, STR-2 (option (a), a qualified behavior change) | B-3 |
+| 10 | Split size and partial acknowledgement: STR-3/4, VAN-5/6, and the VAN-6 counter wording | B-6 |
+| 11 | Exit-split rows follow the close choice (ORB-6, STR-7, VAN-8) | B-2 |
+| 12 | Striker crossed-level exit, STR-5 (whole-leg as declared; partial-lot case) | B-7 |
+| 13 | Split sequencing and replay pricing | B-9 |
+
+**Only if a capability fails:** a fixed-stop Striker or Aegis (GC-2b/GC-3); an Aegis takeover change (GC-5); an ORB resting-entry end-of-life change (GC-4 and the §3 fence item).
+
+**Not requested here:** freeze, T09 dispatch, drills beyond decision 2, deployment, arming or spend. **S5** is decided separately through its own decision draft and remains held.
