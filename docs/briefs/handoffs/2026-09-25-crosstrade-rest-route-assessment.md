@@ -218,7 +218,7 @@ Every trace starts from the existing owner's retained attempt: operation reserve
 
 **Portfolio-route verdict: REQUIRES NAMED CONTRACT/EXPRESSION DECISION.** The drivers, in order:
 
-1. **Vanguard trailing** (§6.7 (1)). An operator determination is owed. If the trail is live, Vanguard needs a §59-style route-native edition decision or rejection on this route.
+1. **Vanguard trailing** (§6.7 (1)). A source determination is owed; agents may perform the read under the 2026-09-26 access ruling below. If the trail is live, the operator decides on a §59-style route-native edition or rejection on this route.
 2. **Unknown-request posture.** Under the **current** preserve-and-block rule (`book_account_owner.py:1608`), any lost response that is not positively found blocks every new risk-add, and past the session reset that block is permanent. Running the book depends on accepting **Proposed option B** or another amendment. REST makes B *cheaper to live with*, because most ambiguities should resolve positively within the session, but it does not substitute for B's acceptance.
 3. **L2(c) and L2(d) remain K** for Striker's per-bar amendments, Aegis's breakeven and re-pin, and every leg's close and flatten.
 
@@ -242,13 +242,13 @@ Account inventory for copier and Account Manager configuration (CAP R5) is also 
 - The plan's D5 is recorded as moot.
 - This return's **D4** (same-session reconciliation recipe) and **D5** (prior-session lifecycle read) are REST reads. They are not in the plan, and the plan's field names follow the webhook form. They stay unauthorized until they are added to a session plan.
 
-**Private-port access.** §59 forbids any agent reading a private port under that ruling. This packet's §1 directed reading the accepted ports' branches. To stay inside both, the executor reused the route note's recorded findings and hashed the Striker port without reading its body. The coordinator should reconcile the two instructions before any follow-up that depends on port behavior.
+**Private-port access — resolved 2026-09-26.** The operator now permits agent reads of private ports and Pine strategies; [campaign §59 source-access ruling](../programs/2026-09-03-seven-strategy-select-campaign-state.md#source-access-ruling--2026-09-26) points to the standing AGENTS.md permission. The earlier executor reused recorded findings and hashed Striker without reading its body under the former restriction; that remains its historical evidence scope. Source inspection is now permitted, but no new technical determination is made here.
 
 ### 6.10 Next action (one), prerequisites and blockers
 
-**Next action:** get an **operator determination on Vanguard MGC's trailing**: does the accepted effective binding's bracket set trailing parameters? If it does, choose a route-native fixed-stop edition for Vanguard under the §59 K = 1 pattern, or reject the Vanguard leg on this route. It comes first because it is cheap (one operator read of a private port, which §59 reserves to the operator) and it decides whether the portfolio can fit §A1 at all. Option B's reservation applies only to narrowed-shape requests.
+**Next action:** establish **whether Vanguard MGC's accepted binding uses trailing**, using authorized source inspection: does the accepted effective binding's bracket set trailing parameters? If it does, choose a route-native fixed-stop edition for Vanguard under the §59 K = 1 pattern, or reject the Vanguard leg on this route. It comes first because it is cheap (a read of the pinned private port and effective settings, now permitted for agents) and it decides whether the portfolio can fit §A1 at all. Option B's reservation applies only to narrowed-shape requests.
 
-- **Prerequisites:** operator access to the private Vanguard port and the effective-input file. The ruling is recorded by the §59 owner (campaign record). No agent reads the port.
+- **Prerequisites:** access to the pinned private Vanguard port and effective-input file. An agent may establish the source facts; the operator retains any resulting expression or contract decision, recorded by the §59 owner. This access update does not perform that assessment.
 - **Remaining blockers after that:**
   1. operator acceptance or rejection of Proposed option B, including §A3 figures bound at T16;
   2. D1–D6 authorizations and retained traces;
@@ -270,7 +270,7 @@ The operator directed on 2026-09-26 that route feasibility is the first deployme
 
 1. **Can the route execute the unchanged portfolio?** Not as the portfolio stands. Verdict: `REQUIRES NAMED CONTRACT/EXPRESSION DECISION`.
    - Per §6.5, REST uses the same Tradovate primitives as webhooks and changes no L2 verdict.
-   - The decision it names first is Vanguard MGC's trailing (§6.7 (1)), an operator read of the private port.
+   - The decision it names first is Vanguard MGC's trailing (§6.7 (1)), a source determination that agents may now establish under the source-access ruling (§6.9).
    - L2(c)/(d) stay K pending drills D1–D6.
 2. **How are ambiguous requests handled?** By positive reconciliation only, within the same session. Verdict: `POSITIVE RECONCILIATION ONLY`.
    - The mechanism is `clOrdId` → lifecycle → children → fills.
@@ -291,7 +291,7 @@ Acceptance therefore needs a Q-index spot-check on the machine that holds `local
 
 This clears the vendor-quote reason for holding acceptance. Accepting the return remains the operator's decision.
 
-The dispatch-without-commit breach (§6.1) and the §1-versus-§59 private-port conflict (§6.9) also stay open for the coordinator.
+The dispatch-without-commit breach (§6.1) stays open for the coordinator. The operator has resolved the private-port access restriction (§6.9); this changes read authority prospectively and does not retroactively accept the earlier execution or settle the technical qualifications.
 
 **T09 remains blocked** until the four conditions of the [checklist addendum](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-26--route-feasibility-is-the-first-deployment-decision) hold:
 1. this return is accepted;

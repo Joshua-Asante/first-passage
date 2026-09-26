@@ -3913,7 +3913,7 @@ Operator direction 2026-09-25, given in-session against the T08 return and the [
 
 ### Ruling 1 — Vanguard MGC and Aegis 6J fit the narrowed shape (operator-attested)
 
-Asked whether, for each private leg, (i) every exposure-creating request carries a fixed stop in the same order and (ii) the leg's quantity is expressible as one-contract requests, the operator answered **"yes and yes"** for both. Consequence: addendum §A4's per-leg rows for Vanguard and Aegis move from *Undetermined* to *fits (operator-attested; private port unread by any agent)*. This is an attestation about the port's protection cases, not route evidence: L2(c) for Aegis's breakeven modify and the takeover composite remain K in the per-primitive table, and every CAP row stays UNPROVEN until traced. Verification of the attestation, if ever needed, is an operator read of the private ports against §A1's shape, not an agent task.
+Asked whether, for each private leg, (i) every exposure-creating request carries a fixed stop in the same order and (ii) the leg's quantity is expressible as one-contract requests, the operator answered **"yes and yes"** for both. Consequence: addendum §A4's per-leg rows for Vanguard and Aegis move from *Undetermined* to *fits (operator-attested; private port unread by any agent)*. This is an attestation about the port's protection cases, not route evidence: L2(c) for Aegis's breakeven modify and the takeover composite remain K in the per-primitive table, and every CAP row stays UNPROVEN until traced. Verification may include an agent read of the private ports and effective settings against §A1 under the source-access ruling below. Any resulting expression or contract decision remains with the operator.
 
 ### Ruling 2 — the T08 vendor question has been sent
 
@@ -3933,12 +3933,12 @@ Vanguard and Aegis keep their declared expressions, which ruling 1 attests alrea
 **What this is and is not.** It is a venue-driven *expression* change of the kind the venue-editions axis exists for (precedent: the MYM/MNQ editions of Striker), motivated by route capability, not by performance. It is **one pre-registered change, K = 1, not a search**: no alternative stop levels, trail replacements, or entry timings are screened; the route-native edition either requalifies or the route is rejected for that leg. D-B4 (a) is amended to that extent only — "exactly the accepted four-strategy book" now reads on the route-native editions once they are pre-registered; it still forbids a fifth leg, an on/off search, a runner-up or a replacement path. The 2026-09-10 acceptance (K=1 confirmation of the selected configuration) is **not** re-opened as a selection; the editions inherit its policy cells unchanged and must requalify under them.
 
 **Requalification is mandatory before anything counts** (rail spec I8 / D-B4: a substitute expression is a different strategy until requalified). Concretely:
-1. **Pre-register the two editions** (owner: the port owner, i.e. the operator, since the exact stop level Striker would carry at entry and ORB's exit set without the trail live in Pine the recording session cannot read). The pre-registration states, per edition: the entry request shape; the stop level rule at entry (Striker: the level the declared port would have attached, if computable on the entry bar, else the rule the operator specifies); every remaining exit (ORB: what closes a trade the trail used to close); the one-contract decomposition and any latency/rate consequence of sending up to `qty_normal` requests per signal; and the venue-edition rows. It is written before any replay or E1 run on the editions and is not changed after.
+1. **Pre-register the two editions** (owner: the operator; agents may inspect the private Pine and ports to supply source-grounded findings under the source-access ruling below). The pre-registration states, per edition: the entry request shape; the stop level rule at entry (Striker: the level the declared port would have attached, if computable on the entry bar, else the rule the operator specifies); every remaining exit (ORB: what closes a trade the trail used to close); the one-contract decomposition and any latency/rate consequence of sending up to `qty_normal` requests per signal; and the venue-edition rows. It is written before any replay or E1 run on the editions and is not changed after.
 2. **Record the editions in the venue-edition ledger** as `CANDIDATE`, unscreened, no live `leg_id`, funded barred — the 2026-09-05 row form.
 3. **Requalify through the same machinery the declared book was going to use**: the qualification replay / production E1 (checklist T10 → T15) runs on the pre-registered editions. No separate screen is bought for the change; the production E1 that was already owed is the requalification. T00 stays INSUFFICIENT and is unaffected.
 4. **Route consequence.** With every exposure-creating request in the narrowed shape, T08's remaining N1 rows reduce to the K items (L2(c) old-stop survival on a rejected modify, L2(d) full close, cancel effects on suspended legs, exit-side partial fills) plus the §A1 admission precondition (single-call OSO creation and first-fill activation, both documented S but needing a retained trace). Those are read-only drills and each needs its own written authorization; none is granted here. The bounded-exposure amendment continues as scoped, now covering only the residual "timeout and no observed effect" class.
 
-**Forbidden under this ruling.** Editing any locked Pine or `core/strategies` artifact; treating the editions as qualified, selected or deployable; screening more than the one pre-registered expression per leg; re-opening the 09-10 protection/capacity selection; any drill, order action, adapter code, broker access, provider work or spend; reading a private port by any agent; inferring D-broker back to life (it stays void under T08 R3 = NONE until an amendment is accepted).
+**Forbidden under this ruling.** Editing any locked Pine or `core/strategies` artifact; treating the editions as qualified, selected or deployable; screening more than the one pre-registered expression per leg; re-opening the 09-10 protection/capacity selection; any drill, order action, adapter code, broker access, provider work or spend; inferring D-broker back to life (it stays void under T08 R3 = NONE until an amendment is accepted).
 
 **Not granted by this section:** deployment, arming, activation, statistical dispatch, T09 specification, production feed, or any operator GO beyond the three rulings above. Live release stays held under T08 §7.8 part 1.
 
@@ -3948,3 +3948,20 @@ Vanguard and Aegis keep their declared expressions, which ruling 1 attests alrea
 - Step 1: the [pre-registration draft](../pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md) is committed with Status DRAFT. Its OWED fields (ORB-2..4, STR-2..6, the §6 replay-modelling choice and the §5 digests) are the operator's. It freezes only on the operator's "freeze".
 - The operator authorized the remaining T08 drills and the T07 account reads ([session plan](../../notes/2026-09-25-t08-drills-t07-reads-operator-session.md); Joshua performs every action).
 - The incident ADR addendum was revised as §A8 (Proposed): rules 9–10 and open question Q5. Its step-4 reviews are owed.
+
+### Source-access ruling — 2026-09-26
+
+The operator directed: "I want to allow agents to read private ports" and "I want
+agents to be able to read pine strategies", with the other qualifications to be
+handled afterwards. [AGENTS.md — Private strategy source access](../../../AGENTS.md#private-strategy-source-access)
+is the standing permission. This replaces §59's operator-only read restriction
+and the corresponding restriction in the REST assessment; agents may inspect
+available private ports, Pine source and effective settings and verify identities.
+Historical statements about what an earlier session did or did not read remain
+historical evidence, not access restrictions.
+
+The permission does not change the accepted book, the route-native editions,
+locked parameters, public-source restrictions or operational authority. It grants
+no source modification, private-strategy execution, contract acceptance or route
+qualification. Vanguard's technical finding and all other outstanding
+qualifications remain for subsequent work; this entry resolves access only.

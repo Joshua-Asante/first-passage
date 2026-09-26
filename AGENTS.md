@@ -178,6 +178,20 @@ executable Python ports of locked strategy logic. Private sources are pinned by
 Vendor-dependent tests skip when inputs are absent. `core/data/bar_data/` is
 retained but frozen: usable panels, no regenerable producer.
 
+### Private strategy source access
+
+Agents may read and inspect private Python strategy ports and Pine strategy
+source for an authorized task, including comparing source and effective settings
+and checking pinned identities. Private or locked status does not require an
+operator-only read or separate permission to inspect available source. Read from
+approved private locations; missing files remain an availability issue.
+
+This is read access, not permission to modify locked artifacts, execute or import
+private strategies, change parameters, publish source or private parameter tables,
+or place trades. Existing task authority, integrity checks and public-clone
+restrictions still apply. This operator direction supersedes earlier campaign or
+handoff wording reserving these reads to the operator.
+
 ### Vendor-data integrity gate
 
 [Manifest integrity ADR](docs/adr/2026-05-10-manifest-integrity-gate.md) owns the
