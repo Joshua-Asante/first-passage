@@ -33,7 +33,7 @@ These are historical observations at recorded revisions, not claims about today'
 
 Directory: `recovery/jev-retrieval-pilot-20260919/`.
 
-[Full report](../../../recovery/jev-retrieval-pilot-20260919/RESULTS.md).
+Full report: `recovery/jev-retrieval-pilot-20260919/RESULTS.md` (local-only, not in this repo; archived in the private first-passage-archive, SHA-256 `c13c1c598a0708535e2996416079d63077a3e7de5697e217c8fb879e22b67ef8`).
 
 - 24 short sanitized/adapted workflow passages; 10 answerable queries and 2 unanswerable queries.
 - Same BM25 top-12 shortlist for both arms. Jev assigned per-passage relevance scores. Three queries also reversed candidate order.
@@ -50,7 +50,7 @@ Four offline evaluation tests passed. No actual downstream reader or frontier-ag
 
 Directory: `recovery/jev-paired-retrieval-20260919/`.
 
-[Full report](../../../recovery/jev-paired-retrieval-20260919/RESULTS.md), [protocol](../../../recovery/jev-paired-retrieval-20260919/PROTOCOL.md), [results JSON](../../../recovery/jev-paired-retrieval-20260919/results.json).
+Full report `recovery/jev-paired-retrieval-20260919/RESULTS.md` (SHA-256 `4a5909001eb43f4c83c4530df362c31d00f191af82c738807b9fa5cd0000f2bc`), protocol `recovery/jev-paired-retrieval-20260919/PROTOCOL.md` (SHA-256 `320717d62747d5bcfd18bc76307067e7046319dda75d94aff8eed5e67b5488c3`), results JSON `recovery/jev-paired-retrieval-20260919/results.json` (SHA-256 `fdbc2d3af2d2a692e6d509bb7df4e1704ea489a966904c95173d6355e83d8ade`). These packet files are local-only, not in this repo; each is archived in the private first-passage-archive under its SHA-256.
 
 64 excerpts split from six existing development-workflow documents, with personal path prefixes and long hashes redacted and selected implementation-detail sections removed. Eight author-selected retrospective tasks, each with two factual subquestions. This was more realistic than pilot 1 but still not a prospective/random sample of live user queries.
 
