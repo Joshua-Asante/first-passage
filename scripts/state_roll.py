@@ -18,6 +18,15 @@ lines directly above each) are touched. Coverage text, `**Last curated:**`, the
 queue and every other section stay exactly as authored. A Monthly cadence on
 day 28-31 rolls only with a `cadence day NN` anchor in its heading.
 
+Uniqueness: every element the roller reads as one thing (each section, each
+recurring heading, its deadline field, the Weekly bucket, the Monthly cadence
+anchor, today's archive header) must occur exactly once, and a case or spacing
+look-alike of it (`### weekly - recurring`, `Next Deadline`, `Cadence Day 31`,
+a `* **YYYY-MM-DD**` bullet) fails closed instead of being skipped. The
+currency gate (`check_state_currency.py`) reads the forward triggers, the
+recurring headings and the index through this module, so it fails on any
+heading the roller would refuse.
+
 Clock is America/New_York. Tests inject --today or STATE_CURRENCY_TODAY.
 
 Exit 0 nothing to roll (or applied cleanly); 1 with --check when a roll is due;
@@ -35,7 +44,7 @@ import re
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Callable
+from typing import Callable, NamedTuple
 from zoneinfo import ZoneInfo
 
 REPO = Path(__file__).resolve().parent.parent
@@ -65,20 +74,36 @@ RECURRING_HEADING_RE = re.compile(
     re.M,
 )
 DEADLINE_RE = re.compile(r"next deadline \*\*(\d{4}-\d{2}-\d{2})\*\*")
-BUCKET_WORD_RE = re.compile(r"\bbucket\b")
 BUCKET_RE = re.compile(r"\bbucket (\d{2}-\d{2})" + ARROW + r"(\d{2}-\d{2})\b")
 # Trailing \r is deliberately outside the match so a moved row keeps STATE's
 # line ending out of the archived text.
 INDEX_ROW_RE = re.compile(
     r"^- \*\*(\d{4}-\d{2}-\d{2})\*\* — [^\r\n]*(?=\r?$)", re.M
 )
-# Any dated bullet, as check_state_currency.py counts them. Every such line must
-# also be an INDEX_ROW_RE row, or keep-15 would miscount.
-DATED_BULLET_RE = re.compile(r"^- \*\*\d{4}-\d{2}-\d{2}\*\*[^\r\n]*", re.M)
+# Look-alikes: case/spacing-insensitive forms of each element read as unique.
+# The strict pattern must match exactly once and every look-alike must be that
+# same match; anything else fails closed (see single_match and _one_field).
+FORWARD_SECTION_LOOSE_RE = re.compile(
+    r"^#{1,6}[ \t]*scheduled[ \t_-]*forward[ \t_-]*triggers\b", re.M | re.I
+)
+DECISION_SECTION_LOOSE_RE = re.compile(
+    r"^#{1,6}[ \t]*executed[ \t_-]*operator[ \t_-]*decisions\b", re.M | re.I
+)
+RECURRING_HEADING_LOOSE_RE = re.compile(
+    r"^#{1,6}[ \t]*(weekly|monthly)\b[^\r\n]*?\brecurring\b", re.M | re.I
+)
+DEADLINE_WORD_RE = re.compile(r"\bnext[\s_-]*deadline\b", re.I)
+BUCKET_WORD_RE = re.compile(r"\bbucket\b", re.I)
+# Any dated bullet, bolded or not, `-`/`*`/`+`, indented or not. Every such
+# line must be an INDEX_ROW_RE row, or keep-15 and the gate's newest-date read
+# would miss it.
+DATED_BULLET_LOOSE_RE = re.compile(
+    r"^[ \t]*[-*+][ \t]*\**[ \t]*\d{4}-\d{2}-\d{2}", re.M
+)
 # Matches both the hand-written ordinal headers ("**Seventeenth roll, 2026-09-25**")
 # and this script's own date-keyed headers ("**Roll 2026-09-26**").
 ARCHIVE_ROLL_HEADER_RE = re.compile(
-    r"^\*\*(?:.*[Rr]oll, |Roll )\d{4}-\d{2}-\d{2}\*\*", re.M
+    r"^\*\*(?:.*[Rr]oll, |Roll )(\d{4}-\d{2}-\d{2})\*\*", re.M
 )
 LINE_END_RE = re.compile(r"\r?\n")
 BLANK_LINE_RE = re.compile(r"[ \t]*\r?\n")
@@ -88,8 +113,11 @@ URL_SCHEME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 PATH_SUFFIX_RE = re.compile(r"([^#?]*)(.*)", re.S)
 
 
-class StateRollError(Exception):
-    """A missing section/heading or otherwise unusable input."""
+class StateRollError(ValueError):
+    """A missing section/heading or otherwise unusable input.
+
+    A ValueError, so the currency gate's ValueError handling reports the
+    roller's refusals as gate failures."""
 
 
 def today_et(override: date | None = None) -> date:
@@ -128,7 +156,7 @@ def first_friday(from_date: date) -> date:
 # when the heading carries an explicit `cadence day NN` anchor; without one the
 # roller fails closed. A test pins these to check_state_currency.py's copies.
 MAX_UNANCHORED_MONTHLY_DAY = 27
-CADENCE_DAY_WORD_RE = re.compile(r"\bcadence day\b")
+CADENCE_DAY_WORD_RE = re.compile(r"\bcadence[\s_-]*day\b", re.I)
 CADENCE_DAY_RE = re.compile(r"\bcadence day (\d{1,2})\b")
 ANCHOR_HINT = (
     "add 'cadence day NN' (the intended day of month, 1-31) to the Monthly "
@@ -164,18 +192,45 @@ def next_monthly(old_deadline: date, today: date, anchor: int | None = None) -> 
     raise StateRollError("no monthly deadline found within 24 months")
 
 
-def _cadence_anchor(body: str, heading: re.Match[str], deadline: date) -> int | None:
-    """The heading's `cadence day NN`, validated against its deadline."""
-    words = list(CADENCE_DAY_WORD_RE.finditer(body, heading.start(), heading.end()))
+def _one_field(
+    body: str,
+    heading: re.Match[str],
+    word_re: re.Pattern[str],
+    field_re: re.Pattern[str],
+    problem: str,
+) -> re.Match[str] | None:
+    """The heading's single field_re match, or None when no look-alike appears.
+
+    Exactly one look-alike (word_re, case/spacing-insensitive) and exactly one
+    strict field at the same offset; a second copy, a case variant or an
+    unreadable value raises `problem` instead of reading only the first."""
+    words = list(word_re.finditer(body, heading.start(), heading.end()))
     if not words:
         return None
-    anchor = CADENCE_DAY_RE.search(body, heading.start(), heading.end())
-    if len(words) > 1 or anchor is None or not 1 <= int(anchor.group(1)) <= 31:
-        raise StateRollError(
-            "Monthly heading has a cadence day the roller cannot read; it "
-            "expects exactly one 'cadence day NN' with NN in 1-31"
-        )
+    fields = list(field_re.finditer(body, heading.start(), heading.end()))
+    if len(words) != 1 or len(fields) != 1 or fields[0].start() != words[0].start():
+        raise StateRollError(problem)
+    return fields[0]
+
+
+def _cadence_anchor(body: str, heading: re.Match[str], deadline: date) -> int | None:
+    """The heading's `cadence day NN`, validated against its deadline."""
+    anchor = _one_field(
+        body,
+        heading,
+        CADENCE_DAY_WORD_RE,
+        CADENCE_DAY_RE,
+        "Monthly heading has a cadence day the roller cannot read; it expects "
+        "exactly one 'cadence day NN' (lower case) with NN in 1-31",
+    )
+    if anchor is None:
+        return None
     day = int(anchor.group(1))
+    if not 1 <= day <= 31:
+        raise StateRollError(
+            f"Monthly heading has 'cadence day {day}'; the roller expects "
+            "exactly one 'cadence day NN' with NN in 1-31"
+        )
     expected = _month_day(deadline.year, deadline.month, day)
     if deadline != expected:
         raise StateRollError(
@@ -186,52 +241,146 @@ def _cadence_anchor(body: str, heading: re.Match[str], deadline: date) -> int | 
     return day
 
 
-def _single_section(pattern: re.Pattern[str], text: str, name: str) -> re.Match[str]:
-    """The one section `pattern` matches; zero or several fail closed.
+def single_match(
+    pattern: re.Pattern[str],
+    text: str,
+    name: str,
+    loose: re.Pattern[str] | None = None,
+) -> re.Match[str]:
+    """The one match of pattern in text; zero, several, or a look-alike fail.
 
-    With a duplicate, only the first would be rolled while the gate reads the
-    same first match and passes, so a second copy would go stale silently."""
+    With a duplicate, only the first would be read (and rolled) while a second
+    copy went stale silently. `loose` finds case/spacing variants: each must be
+    the strict match itself, or the variant is a copy nobody reads."""
     found = list(pattern.finditer(text))
     if not found:
-        raise StateRollError(f"STATE.md has no {name} section")
+        raise StateRollError(f"STATE.md has no {name}")
     if len(found) > 1:
         raise StateRollError(
-            f"STATE.md has {len(found)} {name} sections; merge them by hand"
+            f"STATE.md has {len(found)} copies of the {name}; keep exactly one"
         )
+    if loose is not None:
+        for alike in loose.finditer(text):
+            if alike.start() != found[0].start():
+                raise StateRollError(
+                    f"STATE.md has a look-alike of the {name} "
+                    f"({alike.group(0).strip()[:60]!r}); keep exactly one, "
+                    "spelled exactly"
+                )
     return found[0]
 
 
-def _forward_section(text: str) -> re.Match[str]:
-    return _single_section(FORWARD_SECTION_RE, text, "Scheduled forward triggers")
+def forward_section(text: str) -> re.Match[str]:
+    return single_match(
+        FORWARD_SECTION_RE,
+        text,
+        "Scheduled forward triggers section",
+        FORWARD_SECTION_LOOSE_RE,
+    )
 
 
-def _decision_section(text: str) -> re.Match[str]:
-    return _single_section(DECISION_SECTION_RE, text, "Executed operator decisions")
+def decision_section(text: str) -> re.Match[str]:
+    return single_match(
+        DECISION_SECTION_RE,
+        text,
+        "Executed operator decisions section",
+        DECISION_SECTION_LOOSE_RE,
+    )
 
 
 def _splice(text: str, section: re.Match[str], new_body: str) -> str:
     return text[: section.start()] + new_body + text[section.end() :]
 
 
-def _recurring_heading(body: str, kind: str) -> re.Match[str]:
+def _recurring_heading(text: str, section: re.Match[str], kind: str) -> re.Match[str]:
+    """The one strict `### {kind} — recurring` heading, offsets in the section.
+
+    A look-alike anywhere in STATE (another case or dash, or a copy outside
+    the forward section) is a second heading neither script would read."""
+    body = section.group(0)
     found = [m for m in RECURRING_HEADING_RE.finditer(body) if m.group(1) == kind]
     if not found:
         raise StateRollError(
             f"no {kind} recurring heading of the form '### {kind} - recurring "
-            "... next deadline **YYYY-MM-DD** ...'"
+            "... next deadline **YYYY-MM-DD** ...' under Scheduled forward triggers"
         )
     if len(found) > 1:
         raise StateRollError(f"duplicate {kind} recurring heading")
+    at = section.start() + found[0].start()
+    for alike in RECURRING_HEADING_LOOSE_RE.finditer(text):
+        if alike.group(1).lower() == kind.lower() and alike.start() != at:
+            raise StateRollError(
+                f"duplicate {kind} recurring heading: look-alike "
+                f"{alike.group(0).strip()[:60]!r}; keep exactly one, spelled "
+                "exactly, under Scheduled forward triggers"
+            )
     return found[0]
 
 
 def _deadline(body: str, heading: re.Match[str], kind: str) -> re.Match[str]:
-    match = DEADLINE_RE.search(body, heading.start(), heading.end())
+    match = _one_field(
+        body,
+        heading,
+        DEADLINE_WORD_RE,
+        DEADLINE_RE,
+        f"{kind} recurring heading must carry exactly one next deadline "
+        "field, spelled 'next deadline **YYYY-MM-DD**'",
+    )
     if match is None:
         raise StateRollError(
             f"{kind} recurring heading has no next deadline **YYYY-MM-DD**"
         )
     return match
+
+
+def _bucket(body: str, heading: re.Match[str]) -> re.Match[str] | None:
+    return _one_field(
+        body,
+        heading,
+        BUCKET_WORD_RE,
+        BUCKET_RE,
+        "Weekly heading has a bucket the roller cannot read; it expects "
+        "exactly one 'bucket MM-DD->MM-DD' (lower case) with a U+2192 arrow",
+    )
+
+
+def _iso_date(raw: str, what: str) -> date:
+    try:
+        return date.fromisoformat(raw)
+    except ValueError as exc:
+        raise StateRollError(f"{what} {raw} is not a valid date: {exc}") from exc
+
+
+class Recurring(NamedTuple):
+    """One validated recurring heading; match offsets are in the section body."""
+
+    kind: str
+    heading: re.Match[str]
+    deadline: re.Match[str]
+    deadline_date: date
+    bucket: re.Match[str] | None
+    anchor: int | None
+
+
+def recurring_fields(text: str) -> tuple[re.Match[str], dict[str, Recurring]]:
+    """(forward section, {"Weekly": ..., "Monthly": ...}) validated as one unit.
+
+    This is the single reader of the recurring headings: the roller rolls from
+    it and the currency gate checks from it, so a heading the roller refuses
+    (duplicate field, bad bucket, bad or disagreeing anchor) fails both."""
+    section = forward_section(text)
+    body = section.group(0)
+    fields: dict[str, Recurring] = {}
+    for kind in ("Weekly", "Monthly"):
+        heading = _recurring_heading(text, section, kind)
+        deadline = _deadline(body, heading, kind)
+        deadline_date = _iso_date(deadline.group(1), f"{kind} next deadline")
+        bucket = _bucket(body, heading) if kind == "Weekly" else None
+        anchor = (
+            _cadence_anchor(body, heading, deadline_date) if kind == "Monthly" else None
+        )
+        fields[kind] = Recurring(kind, heading, deadline, deadline_date, bucket, anchor)
+    return section, fields
 
 
 def _apply_edits(
@@ -245,45 +394,35 @@ def _apply_edits(
 
 def roll_weekly(text: str, today: date) -> tuple[str, str | None]:
     """Advance the Weekly deadline (and its bucket) when it is in the past."""
-    section = _forward_section(text)
-    body = section.group(0)
-    heading = _recurring_heading(body, "Weekly")
-    deadline = _deadline(body, heading, "Weekly")
-    bucket: re.Match[str] | None = None
-    words = list(BUCKET_WORD_RE.finditer(body, heading.start(), heading.end()))
-    if words:
-        bucket = BUCKET_RE.search(body, heading.start(), heading.end())
-        if len(words) > 1 or bucket is None:
-            raise StateRollError(
-                "Weekly heading has a bucket the roller cannot read; it expects "
-                "exactly one 'bucket MM-DD->MM-DD' with a U+2192 arrow"
-            )
-    old_deadline = date.fromisoformat(deadline.group(1))
+    section, fields = recurring_fields(text)
+    weekly = fields["Weekly"]
+    old_deadline = weekly.deadline_date
     if old_deadline >= today:
         return text, None
     new_deadline = first_friday(today)
-    edits = [(deadline.span(1), new_deadline.isoformat())]
-    if bucket is not None:
+    edits = [(weekly.deadline.span(1), new_deadline.isoformat())]
+    if weekly.bucket is not None:
         monday = new_deadline - timedelta(days=new_deadline.weekday())
-        edits.append((bucket.span(1), f"{monday:%m-%d}"))
-        edits.append((bucket.span(2), f"{new_deadline:%m-%d}"))
+        edits.append((weekly.bucket.span(1), f"{monday:%m-%d}"))
+        edits.append((weekly.bucket.span(2), f"{new_deadline:%m-%d}"))
     new_text = _apply_edits(text, section, edits)
     return new_text, f"weekly: {old_deadline.isoformat()} -> {new_deadline.isoformat()}"
 
 
 def roll_monthly(text: str, today: date) -> tuple[str, str | None]:
-    """Advance the Monthly deadline when it is in the past."""
-    section = _forward_section(text)
-    body = section.group(0)
-    heading = _recurring_heading(body, "Monthly")
-    deadline = _deadline(body, heading, "Monthly")
-    old_deadline = date.fromisoformat(deadline.group(1))
-    # Validated on every run, so a bad anchor surfaces before a roll is due.
-    anchor = _cadence_anchor(body, heading, old_deadline)
+    """Advance the Monthly deadline when it is in the past.
+
+    The anchor is validated on every run (recurring_fields), so a bad anchor
+    surfaces before a roll is due."""
+    section, fields = recurring_fields(text)
+    monthly = fields["Monthly"]
+    old_deadline = monthly.deadline_date
     if old_deadline >= today:
         return text, None
-    new_deadline = next_monthly(old_deadline, today, anchor)
-    new_text = _apply_edits(text, section, [(deadline.span(1), new_deadline.isoformat())])
+    new_deadline = next_monthly(old_deadline, today, monthly.anchor)
+    new_text = _apply_edits(
+        text, section, [(monthly.deadline.span(1), new_deadline.isoformat())]
+    )
     return new_text, f"monthly: {old_deadline.isoformat()} -> {new_deadline.isoformat()}"
 
 
@@ -332,6 +471,28 @@ def rewrite_links(
     return LINK_TARGET_RE.sub(_rebase, row)
 
 
+def decision_index_rows(text: str) -> list[re.Match[str]]:
+    """Every dated bullet of the one decision index, each a readable row.
+
+    Shared with the currency gate (its newest-date read): a dated bullet in
+    any other shape (`* **date**`, unbolded, indented, another separator) is
+    invisible to keep-15 and to the newest-date read, so it fails closed."""
+    body = decision_section(text).group(0)
+    rows = list(INDEX_ROW_RE.finditer(body))
+    row_starts = {match.start() for match in rows}
+    for bullet in DATED_BULLET_LOOSE_RE.finditer(body):
+        if bullet.start() not in row_starts:
+            line_end = body.find("\n", bullet.start())
+            line = body[bullet.start() : None if line_end < 0 else line_end]
+            raise StateRollError(
+                "decision-index bullet is not a '- **YYYY-MM-DD** — ' row: "
+                + line.strip()[:80]
+            )
+    for row in rows:
+        _iso_date(row.group(1), "decision-index date")
+    return rows
+
+
 def index_rows(text: str) -> list[re.Match[str]]:
     """Index rows in document order, validated for a positional keep-15.
 
@@ -340,15 +501,8 @@ def index_rows(text: str) -> list[re.Match[str]]:
     their authored order), and a moved row is one whole line. Anything else
     fails closed instead of archiving the wrong rows or half a record.
     """
-    body = _decision_section(text).group(0)
-    rows = list(INDEX_ROW_RE.finditer(body))
-    row_starts = {match.start() for match in rows}
-    for bullet in DATED_BULLET_RE.finditer(body):
-        if bullet.start() not in row_starts:
-            raise StateRollError(
-                "decision-index bullet is not a '- **YYYY-MM-DD** — ' row: "
-                + bullet.group(0).strip()[:80]
-            )
+    body = decision_section(text).group(0)
+    rows = decision_index_rows(text)
     for newer, older in zip(rows, rows[1:]):
         if date.fromisoformat(newer.group(1)) < date.fromisoformat(older.group(1)):
             raise StateRollError(
@@ -407,7 +561,7 @@ def drop_overflow_rows(text: str) -> str:
     Each moved row takes the blank lines directly above it, so a
     blank-separated index keeps one separator after row KEEP_ROWS instead of
     accumulating a run of blank lines."""
-    section = _decision_section(text)
+    section = decision_section(text)
     body = section.group(0)
     pieces: list[str] = []
     last = 0
@@ -423,8 +577,43 @@ def drop_overflow_rows(text: str) -> str:
 
 
 def line_ending(text: str) -> str:
-    match = LINE_END_RE.search(text)
-    return match.group(0) if match is not None else "\n"
+    """The file's one line ending; a mix has no single answer, so it fails."""
+    crlf = text.count("\r\n")
+    if crlf and crlf != text.count("\n"):
+        raise StateRollError(
+            "archive mixes CRLF and LF line endings; normalise it by hand"
+        )
+    return "\r\n" if crlf else "\n"
+
+
+def _archive_headers(
+    text: str, header: str
+) -> tuple[list[re.Match[str]], re.Match[str] | None]:
+    """(roll headers newest first, today's automated header or None).
+
+    Rows go above the first header, so the headers must be in newest-first
+    date order; today's header must be unique and, when present, the first
+    header (else a second copy of it would be written on top)."""
+    headers = list(ARCHIVE_ROLL_HEADER_RE.finditer(text))
+    for newer, older in zip(headers, headers[1:]):
+        if _iso_date(newer.group(1), "archive roll") < _iso_date(
+            older.group(1), "archive roll"
+        ):
+            raise StateRollError(
+                f"archive roll headers out of date order: {newer.group(1)} sits "
+                f"above {older.group(1)}; restore newest-first order by hand"
+            )
+    mine = list(re.finditer("^" + re.escape(header) + r"\r?$", text, re.M))
+    if len(mine) > 1:
+        raise StateRollError(
+            f"archive has {len(mine)} copies of today's roll header; merge them by hand"
+        )
+    if mine and mine[0].start() != headers[0].start():
+        raise StateRollError(
+            "archive has today's roll header below another roll header; move "
+            "today's block to the top by hand"
+        )
+    return headers, (mine[0] if mine else None)
 
 
 def _top_of_today_block(text: str, header: re.Match[str]) -> int:
@@ -457,6 +646,7 @@ def archive_overflow(
         "(automated keep-15 roll; `scripts/state_roll.py`):"
     )
     newline = line_ending(text)
+    headers, mine = _archive_headers(text, header)
     present = set(LINE_END_RE.split(text))
     rebased = [rewrite_links(row, from_dir, to_dir) for row in rows]
     pending = [row for row in rebased if row not in present]
@@ -467,17 +657,15 @@ def archive_overflow(
     if not pending:
         return text, message
     block = "".join(row + newline + newline for row in pending)
-    newest = ARCHIVE_ROLL_HEADER_RE.search(text)
-    mine = re.search("^" + re.escape(header) + r"\r?$", text, re.M)
-    if mine is not None and (newest is None or mine.start() <= newest.start()):
+    if mine is not None:
         at = _top_of_today_block(text, mine)
         return text[:at] + block + text[at:], message
-    if newest is None:
+    if not headers:
         raise StateRollError(
             "archive has no '**... roll, YYYY-MM-DD**' header to insert before"
         )
     addition = header + newline + newline + block
-    at = newest.start()
+    at = headers[0].start()
     return text[:at] + addition + text[at:], message
 
 

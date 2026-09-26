@@ -45,7 +45,7 @@ def _state(
         "## Dormant cross-session threads\n\n"
         "none.\n\n"
         "## Scheduled forward triggers\n\n"
-        f"### Weekly — recurring (rolling; next deadline **{weekly}**, bucket x)\n\n"
+        f"### Weekly — recurring (rolling; next deadline **{weekly}**, bucket 08-31→09-04)\n\n"
         "- **Venue idle-clock.**\n\n"
         f"### Monthly — recurring (rolling; next deadline **{monthly}**)\n\n"
         "- **Ledger reconfirm.**\n\n"
@@ -302,3 +302,91 @@ def test_duplicate_last_curated_exits_one(tmp_path: Path) -> None:
         ),
     )
     assert b"Last curated" in _fail_text(state, "2026-09-03")
+
+
+# --- Codex 4110941070 / 4110941072 + uniqueness class sweep -----------------
+
+
+def _monthly_heading(state: str, suffix: str, monthly: str = "2026-09-21") -> str:
+    heading = f"next deadline **{monthly}**)"
+    assert heading in state
+    return state.replace(heading, f"next deadline **{monthly}**{suffix})")
+
+
+def test_second_deadline_field_exits_one(tmp_path: Path) -> None:
+    # 4110941070: the gate read only the first field, so a stale second one
+    # passed while the roller rolled only the first.
+    state = _write(
+        tmp_path / "STATE.md",
+        _monthly_heading(_state(), ", next deadline **2026-08-21**"),
+    )
+    assert b"next deadline" in _fail_text(state, "2026-09-03")
+
+
+@pytest.mark.parametrize(
+    "suffix",
+    [
+        ", cadence day 20",  # disagrees with the deadline (the 21st)
+        ", cadence day 32",
+        ", cadence day 0",
+        ", cadence day x",
+        ", cadence day 21, cadence day 21",
+        ", Cadence Day 21",  # case near-miss: the roller would not read it
+        ", cadence-day 21",
+    ],
+)
+def test_anchor_the_roller_refuses_fails_the_gate_even_when_not_due(
+    tmp_path: Path, suffix: str
+) -> None:
+    # 4110941072: a regex match of the anchor is not enough; the gate applies
+    # the roller's own validation on every run.
+    state = _write(tmp_path / "STATE.md", _monthly_heading(_state(), suffix))
+    assert b"cadence day" in _fail_text(state, "2026-09-03").lower()
+
+
+def test_valid_anchor_passes(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md", _monthly_heading(_state(), ", cadence day 21")
+    )
+    assert _run(state, "2026-09-03") == 0
+
+
+def test_last_curated_near_miss_exits_one(tmp_path: Path) -> None:
+    # A case variant would otherwise be ignored while the first copy passes.
+    state = _write(
+        tmp_path / "STATE.md",
+        _state().replace(
+            "**Last curated:** 2026-09-03\n",
+            "**Last curated:** 2026-09-03\n\n**Last Curated:** 2026-08-01\n",
+        ),
+    )
+    assert b"Last curated" in _fail_text(state, "2026-09-03")
+
+
+def test_near_miss_index_bullet_exits_one(tmp_path: Path) -> None:
+    # A newer decision written as '* **date**' was invisible to the newest-date
+    # read, so a stale Last curated passed.
+    state = _write(
+        tmp_path / "STATE.md",
+        _state().replace(
+            "- **2026-08-01** — older.", "- **2026-08-01** — older.\n* **2026-09-09** — newer."
+        ),
+    )
+    _fail_text(state, "2026-09-03")
+
+
+def test_discharged_requires_no_negated_discharged_token() -> None:
+    # First-match reading let a later NOT DISCHARGED pass as discharged.
+    assert mod.heading_is_discharged("### 2026-08-24 — DISCHARGED; NOT DISCHARGED") is False
+    assert mod.heading_is_discharged("### 2026-08-24 — NOT DISCHARGED; DISCHARGED") is False
+    assert mod.heading_is_discharged("### 2026-08-24 — DISCHARGED (DISCHARGED)") is True
+
+
+def test_partly_negated_discharged_heading_exits_one(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state(
+            extra_headings="\n### 2026-08-24 — DISCHARGED (part); NOT DISCHARGED (rest)\n"
+        ),
+    )
+    _fail_text(state, "2026-09-03")

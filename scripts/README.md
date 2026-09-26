@@ -353,19 +353,31 @@ invocation, including a due Weekly roll or keep-15 archive:
   and rerun. The roller then clamps each short month (Feb 28, or Feb 29 in a
   leap year; Apr 30) and returns to the anchored day (Mar 31). Do not hand-clamp
   the date without the anchor;
-- a `cadence day` that is not exactly one `cadence day NN` with NN in 1–31, or
-  that disagrees with the heading's deadline (checked on every run, due or not);
-- a duplicate Weekly/Monthly heading, a Weekly `bucket` not in `MM-DD→MM-DD`
-  form, or more than one `Scheduled forward triggers` or
-  `Executed operator decisions` section (`check_state_currency.py` also fails on
-  duplicate sections or a duplicate `Last curated`);
+- a `cadence day` that is not exactly one lower-case `cadence day NN` with NN in
+  1–31, or that disagrees with the heading's deadline (checked on every run, due
+  or not);
+- a recurring heading without exactly one `next deadline **YYYY-MM-DD**` field
+  (a second deadline, bolded or not, would never be rolled), or a Weekly
+  `bucket` that is not exactly one lower-case `bucket MM-DD→MM-DD`;
+- anything read as unique that is not exactly one: a Weekly/Monthly heading
+  (including a case or dash variant, or a copy outside the forward section), a
+  `Scheduled forward triggers` or `Executed operator decisions` section
+  (including look-alike headings at any level);
 - a decision index out of newest-first date order, a dated bullet not in
-  `- **YYYY-MM-DD** — ` form, or an overflow row followed (after any blank
-  lines) by anything other than another index row or the section end, such as
-  an indented continuation line.
+  `- **YYYY-MM-DD** — ` form (`* **date**`, unbolded or indented included), or
+  an overflow row followed (after any blank lines) by anything other than
+  another index row or the section end, such as an indented continuation line;
+- when rows are archived: archive roll headers out of newest-first date order,
+  today's `**Roll YYYY-MM-DD**` header present twice or below another header, or
+  mixed CRLF/LF line endings in the archive.
 
-`check_state_currency.py` names the roller only for past deadlines it can roll;
-a deadline beyond the horizon and the other failures are corrected by hand.
+`check_state_currency.py` reads the forward section, the recurring headings and
+the decision index through `state_roll.py`'s parser, so every heading, section
+and index defect above also fails the gate (exit 1) on every run; it also fails
+on a duplicate or look-alike `Last curated`, and treats a dated subsection as
+discharged only when no `DISCHARGED` in its heading is negated. It names the
+roller only for past deadlines it can roll; a deadline beyond the horizon and
+the other failures are corrected by hand.
 
 ### Brief checker ownership
 

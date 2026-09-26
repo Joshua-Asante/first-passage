@@ -957,3 +957,174 @@ def test_duplicate_decision_section_fails_closed(tmp_path: Path) -> None:
     assert result.returncode == 2
     assert b"Executed operator decisions" in result.stderr
     assert _state_bytes(state, archive) == before
+
+
+# --- Codex 4110941070 / 4110941072 + uniqueness class sweep -----------------
+#
+# Every STATE element the roller assumes is unique (sections, recurring
+# headings, the deadline field, bucket, cadence anchor, dated index bullets)
+# must be exactly one, and a case/spacing near-miss of it fails closed rather
+# than being silently ignored. The currency gate shares the roller's parser,
+# so a heading the roller refuses also fails the gate (parity pinned below).
+
+CHECKER_SCRIPT = REPO / "scripts" / "check_state_currency.py"
+BASE_WEEKLY = WEEKLY_HEADING.format(deadline="2026-09-25", bucket="09-21→09-25")
+BASE_MONTHLY = "### Monthly — recurring (rolling; next deadline **2026-10-21**)"
+# Nothing is due on PARITY_TODAY for the base _state(): both scripts pass it.
+PARITY_TODAY = "2026-09-25"
+
+
+def _weekly(suffix: str) -> str:
+    return _state().replace(BASE_WEEKLY, BASE_WEEKLY[:-1] + suffix + ")")
+
+
+def _monthly(suffix: str) -> str:
+    return _state().replace(BASE_MONTHLY, BASE_MONTHLY[:-1] + suffix + ")")
+
+
+DEFECTS = {
+    # 4110941070: a second deadline field (the roller rolled only the first).
+    "weekly-two-deadlines": _weekly("; next deadline **2026-10-02**"),
+    "weekly-near-miss-second-deadline": _weekly("; Next Deadline **2026-10-02**"),
+    "weekly-unbolded-second-deadline": _weekly("; next deadline 2026-10-02"),
+    "monthly-two-deadlines": _monthly(", next deadline **2026-11-21**"),
+    "invalid-deadline-date": _state().replace(
+        "next deadline **2026-09-25**", "next deadline **2026-09-31**"
+    ),
+    # Bucket: exactly one, canonical spelling.
+    "bucket-case-near-miss": _state().replace("bucket 09-21", "Bucket 09-21"),
+    "bucket-malformed": _state().replace("09-21→09-25", "09-21-09-25"),
+    "bucket-duplicate": _weekly("; bucket 09-21→09-25"),
+    # 4110941072: the anchor as the roller validates it.
+    "anchor-case-near-miss": _monthly(", Cadence Day 21"),
+    "anchor-hyphen-near-miss": _monthly(", cadence-day 21"),
+    "anchor-out-of-range": _monthly(", cadence day 32"),
+    "anchor-zero": _monthly(", cadence day 0"),
+    "anchor-non-numeric": _monthly(", cadence day x"),
+    "anchor-disagrees-with-deadline": _monthly(", cadence day 20"),
+    "anchor-duplicate": _monthly(", cadence day 21, cadence day 21"),
+    # Recurring headings: exactly one per kind anywhere in STATE.
+    "weekly-heading-case-near-miss": _state()
+    + "\n### weekly — recurring (rolling; next deadline **2026-09-18**)\n",
+    "weekly-heading-outside-forward-section": _state().replace(
+        "none.", "none.\n\n### Weekly — recurring (rolling; next deadline **2026-09-18**)"
+    ),
+    # Section markers: exactly one, near-misses included.
+    "forward-section-near-miss": _state() + "\n### Scheduled forward triggers (old)\n",
+    "decision-section-near-miss": _state().replace(
+        "## Dormant cross-session threads",
+        "## executed operator decisions (older)\n\n## Dormant cross-session threads",
+    ),
+    # Index rows: every dated bullet is a readable row.
+    "index-near-miss-bullet": _state(rows=_rows(2) + ["* **2026-09-01** — star bullet"]),
+    "index-bad-separator": _state(
+        rows=[_rows(2)[0], _rows(2)[1].replace(" — ", " - ", 1)]
+    ),
+}
+
+
+def _roller_check(state_text: str, tmp_path: Path) -> subprocess.CompletedProcess:
+    state, archive = _pair(tmp_path, state_text)
+    return _run(state, archive, PARITY_TODAY, "--check")
+
+
+def _gate(state_text: str, tmp_path: Path) -> subprocess.CompletedProcess:
+    state = tmp_path / "GATE_STATE.md"
+    state.write_text(state_text, encoding="utf-8", newline="")
+    env = os.environ.copy()
+    env["STATE_CURRENCY_TODAY"] = PARITY_TODAY
+    return subprocess.run(
+        [sys.executable, str(CHECKER_SCRIPT), "--state", str(state)],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+    )
+
+
+def test_parity_baseline_passes_both(tmp_path: Path) -> None:
+    roller = _roller_check(_state(), tmp_path)
+    assert roller.returncode == 0, roller.stderr
+    gate = _gate(_state(), tmp_path)
+    assert gate.returncode == 0, gate.stderr
+
+
+@pytest.mark.parametrize("name", sorted(DEFECTS))
+def test_uniqueness_defect_fails_closed_in_roller(tmp_path: Path, name: str) -> None:
+    broken = DEFECTS[name]
+    assert broken != _state(), name  # the transform actually changed the text
+    state, archive = _pair(tmp_path, broken)
+    before = _state_bytes(state, archive)
+    # TODAY has a due Weekly roll; the defect withholds it and everything else.
+    for extra in ((), ("--check",)):
+        result = _run(state, archive, TODAY, *extra)
+        assert result.returncode == 2, (name, result.stdout, result.stderr)
+        assert result.stderr.startswith(b"state-roll: FAIL")
+        assert _state_bytes(state, archive) == before
+
+
+@pytest.mark.parametrize("name", sorted(DEFECTS))
+def test_gate_fails_where_roller_refuses(tmp_path: Path, name: str) -> None:
+    # 4110941072: a heading the roller refuses must not pass the gate. Both
+    # run on a day with nothing due, so only the defect can fail them.
+    roller = _roller_check(DEFECTS[name], tmp_path)
+    assert roller.returncode == 2, (name, roller.stdout, roller.stderr)
+    gate = _gate(DEFECTS[name], tmp_path)
+    assert gate.returncode == 1, (name, gate.stdout, gate.stderr)
+    assert b"state-currency: FAIL" in gate.stderr
+
+
+def test_two_deadline_fields_names_the_field(tmp_path: Path) -> None:
+    result = _roller_check(DEFECTS["weekly-two-deadlines"], tmp_path)
+    assert b"next deadline" in result.stderr
+
+
+def test_currency_gate_uses_the_roller_parser() -> None:
+    spec = importlib.util.spec_from_file_location("check_state_currency", CHECKER_SCRIPT)
+    checker = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(checker)
+    assert Path(checker.ROLLER.__file__).resolve() == SCRIPT.resolve()
+    fields = checker.ROLLER.recurring_fields(_state())[1]
+    assert [kind for kind, *_ in checker.recurring_headings(_state())] == list(fields)
+
+
+# --- archive side: today's header, header order, line endings ---------------
+
+
+def _archive_with(before_seventeenth: str) -> str:
+    return _archive().replace(
+        "**Seventeenth roll, 2026-09-25**",
+        before_seventeenth + "**Seventeenth roll, 2026-09-25**",
+        1,
+    )
+
+
+ARCHIVE_DEFECTS = {
+    # Today's automated header twice: which block is "today's" is ambiguous.
+    "duplicate-today-header": _archive_with(
+        ROLLED_HEADER + "\n\n- **2026-09-04** — x\n\n"
+        + ROLLED_HEADER + "\n\n- **2026-09-04** — y\n\n"
+    ),
+    # Today's header exists below another header: inserting a new copy on top
+    # would write a duplicate header.
+    "today-header-not-newest": _archive_with(
+        "**Eighteenth roll, 2026-09-26** (one entry):\n\n- **2026-09-04** — hand\n\n"
+        + ROLLED_HEADER + "\n\n- **2026-09-04** — auto\n\n"
+    ),
+    # The first header is taken as the newest; out-of-order headers break that.
+    "headers-out-of-date-order": _archive().replace(
+        "Sixteenth roll, 2026-09-24", "Sixteenth roll, 2026-09-27"
+    ),
+    # One line ending is chosen for the inserted block; mixed input is ambiguous.
+    "mixed-line-endings": _archive().replace("\n", "\r\n", 1),
+}
+
+
+@pytest.mark.parametrize("name", sorted(ARCHIVE_DEFECTS))
+def test_archive_defect_fails_closed(tmp_path: Path, name: str) -> None:
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)), ARCHIVE_DEFECTS[name])
+    before = _state_bytes(state, archive)
+    for extra in ((), ("--check",)):
+        result = _run(state, archive, TODAY, *extra)
+        assert result.returncode == 2, (name, result.stdout, result.stderr)
+        assert _state_bytes(state, archive) == before
