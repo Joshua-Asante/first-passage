@@ -12,7 +12,11 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import sys
+import types
 from pathlib import Path
+
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 INDEX_PATH = REPO_ROOT / "docs" / "methodology" / "LESSONS_INDEX.jsonl"
@@ -142,12 +146,70 @@ def test_full_entries_match_their_generator_source():
     """LESSONS_INDEX.md: re-run the generator and diff, never hand-patch a row
     out of sync with it. A row advanced by hand (for example one lesson's
     last_verified_date) is reverted by the next regeneration unless the
-    generator's source dict carries the same value."""
+    generator's source dict carries the same value.
+
+    Bidirectional over the full-entry population: every generator.FULL entry
+    needs an identical index row, and every checked-in content_verified row
+    needs a generator entry -- ids and fields compared both ways, so a
+    hand-added full row or a JSONL-only field fails too. Stub rows are out of
+    scope here."""
     generator = _load_generator()
-    rows = {e["id"]: e for e in _load_entries()}
+    built = {}
     for source in generator.FULL:
-        built = generator.build_full_entry(source)
-        row = rows.get(built["id"])
-        assert row is not None, f"{built['id']}: generator entry has no row in the index"
-        drift = {k: (built[k], row.get(k)) for k in built if built[k] != row.get(k)}
-        assert not drift, f"{built['id']}: index row differs from its generator entry (generator, index): {drift}"
+        entry = generator.build_full_entry(source)
+        built[entry["id"]] = entry
+    rows = {e["id"]: e for e in _load_entries() if e["content_verified"]}
+    problems = [f"{i}: generator entry has no row in the index" for i in sorted(built.keys() - rows.keys())]
+    problems += [f"{i}: content_verified row has no generator entry" for i in sorted(rows.keys() - built.keys())]
+    absent = "<absent>"
+    for i in sorted(built.keys() & rows.keys()):
+        gen, row = built[i], rows[i]
+        drift = {
+            k: (gen.get(k, absent), row.get(k, absent))
+            for k in sorted(gen.keys() | row.keys())
+            if (k in gen) != (k in row) or gen.get(k) != row.get(k)
+        }
+        if drift:
+            problems.append(f"{i}: index row differs from its generator entry (generator, index): {drift}")
+    assert not problems, "\n".join(problems)
+
+
+# --- Adversarial cases for the drift guard: each doctors one side of the
+# comparison in memory and requires the guard to fail. A guard that only walks
+# generator.FULL passes all but the last silently.
+
+_THIS_MODULE = sys.modules[__name__]
+
+
+def test_drift_guard_fails_when_generator_lacks_a_checked_in_full_row(monkeypatch):
+    real = _load_generator()
+    doctored = types.SimpleNamespace(FULL=real.FULL[1:], build_full_entry=real.build_full_entry)
+    monkeypatch.setattr(_THIS_MODULE, "_load_generator", lambda: doctored)
+    with pytest.raises(AssertionError, match="no generator entry"):
+        test_full_entries_match_their_generator_source()
+
+
+def test_drift_guard_fails_on_a_jsonl_only_field(monkeypatch):
+    real_entries = _load_entries()
+    target = next(e for e in real_entries if e["content_verified"])
+    doctored = [dict(e, hand_added="x") if e is target else e for e in real_entries]
+    monkeypatch.setattr(_THIS_MODULE, "_load_entries", lambda: doctored)
+    with pytest.raises(AssertionError, match="hand_added"):
+        test_full_entries_match_their_generator_source()
+
+
+def test_drift_guard_fails_on_a_generator_only_field(monkeypatch):
+    real_entries = _load_entries()
+    target = next(e for e in real_entries if e["content_verified"])
+    doctored = [{k: v for k, v in e.items() if k != "memory_twin"} if e is target else e for e in real_entries]
+    monkeypatch.setattr(_THIS_MODULE, "_load_entries", lambda: doctored)
+    with pytest.raises(AssertionError, match="memory_twin"):
+        test_full_entries_match_their_generator_source()
+
+
+def test_drift_guard_fails_when_a_generator_entry_has_no_row(monkeypatch):
+    real_entries = _load_entries()
+    target = next(e for e in real_entries if e["content_verified"])
+    monkeypatch.setattr(_THIS_MODULE, "_load_entries", lambda: [e for e in real_entries if e is not target])
+    with pytest.raises(AssertionError, match="no row in the index"):
+        test_full_entries_match_their_generator_source()
