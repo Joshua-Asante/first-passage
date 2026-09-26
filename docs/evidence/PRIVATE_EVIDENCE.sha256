@@ -92,3 +92,13 @@ a18d6d376e07fb737967c87f4081e120bc9d77dc1a7672c8f0c20461aa8c1d62  recovery/full-
 5de150f268f879f73eb1105309d9eb24337f9900ab8df8fe015cd26a175d9c09  recovery/full-e1-s2-r1-20260919/manifest.json
 736a68541a6adcf5ea9f3625fa47a1beda59435297ea0821a20be0ac2f639e2f  recovery/full-e1-s2-r1-20260919/SHA256SUMS
 a49c7cd74f8670c18aae12f58691b59750c54a0ea9faf6f18031e786e37b9fab  recovery/full-e1-r2b-predispatch-20260919/test_campaign_scheduler.py
+
+# Recovery packets whose dead links #495 replaced with digest pins (2026-09-25); archived in first-passage-archive.
+c13c1c598a0708535e2996416079d63077a3e7de5697e217c8fb879e22b67ef8  recovery/jev-retrieval-pilot-20260919/RESULTS.md
+4a5909001eb43f4c83c4530df362c31d00f191af82c738807b9fa5cd0000f2bc  recovery/jev-paired-retrieval-20260919/RESULTS.md
+320717d62747d5bcfd18bc76307067e7046319dda75d94aff8eed5e67b5488c3  recovery/jev-paired-retrieval-20260919/PROTOCOL.md
+fdbc2d3af2d2a692e6d509bb7df4e1704ea489a966904c95173d6355e83d8ade  recovery/jev-paired-retrieval-20260919/results.json
+14ca2223f920b885f67a48133b736e324702215b44fec822c4de444559ade79a  recovery/full-e1-s1-coordinator-review/README.md
+8f71afce256fdd6e30b709345468825f560d9b120d882b92419a5cc0fb592e71  recovery/full-e1-s2-r1-20260919/final-results.json
+c10c1d13b5870f45e8a00e89a14be851bf654358c3b728142198f6082bbcdba4  recovery/pr428-review-20260919/README.md
+50bb068cc6b1fa7399ba6dd351ab61af6985c45c8e4e489f42eb9679c70be411  recovery/full-e1-20260919/README.md

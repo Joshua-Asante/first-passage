@@ -28,7 +28,7 @@
 
 Accepted merge: `1e4928360b95812b04725dc1e8da97709d670ff4` (PR425; PR415 was not separately merged).
 
-Current authoritative workspace: `C:/Users/joshu/.codex/worktrees/full-e1-recovery/multi_firm_operations`. It is detached at that merge **with exactly recovered accepted Task 1a/1b source changes**. The original worktree is no longer present. The checksummed recovery snapshot and fresh verification records are indexed in [the recovery packet](C:/Users/joshu/multi_firm_operations/recovery/full-e1-20260919/README.md). Checking out the merge alone loses those changes. Do not start a future agent on that bare merge and describe it as the accepted successor.
+Current authoritative workspace: `C:/Users/joshu/.codex/worktrees/full-e1-recovery/multi_firm_operations`. It is detached at that merge **with exactly recovered accepted Task 1a/1b source changes**. The original worktree is no longer present. The checksummed recovery snapshot and fresh verification records are indexed in the recovery packet `recovery/full-e1-20260919/README.md` (local-only, not in this repo; archived in the private first-passage-archive, SHA-256 `50bb068cc6b1fa7399ba6dd351ab61af6985c45c8e4e489f42eb9679c70be411`). Checking out the merge alone loses those changes. Do not start a future agent on that bare merge and describe it as the accepted successor.
 
 Already accepted; do not rebuild:
 
