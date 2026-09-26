@@ -3950,8 +3950,37 @@ Subject to the Vanguard qualification at Ruling 1 above, Vanguard and Aegis keep
 
 **§59 follow-up (2026-09-25).**
 - Step 1: the [pre-registration draft](../pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md) is committed with Status DRAFT. Its OWED fields (ORB-2..4, STR-2..6, the §6 replay-modelling choice and the §5 digests) are the operator's. It freezes only on the operator's "freeze".
-- The operator authorized the remaining T08 drills and the T07 account reads ([session plan](../../notes/2026-09-25-t08-drills-t07-reads-operator-session.md); Joshua performs every action).
+- The operator authorized the remaining T08 drills and the T07 account reads ([session plan](../../notes/2026-09-25-t08-drills-t07-reads-operator-session.md); Joshua performs every action). *[Qualified 2026-09-26 by the operator's written ruling ([incident ADR §A11.1](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a111--operator-ruling-close-direction-2026-09-26) item 6): the webhook-form drills D1–D4 are not treated as cleared for execution; each returns as an individual decision. R-1/R-2 in that ruling are the drill-plan draft's REST reads, not the session plan's T07 reads R1–R3. As planned (session plan §4), the T07 reads R1–R3 examine D1's fill, so they cannot proceed while D1 is uncleared; their authorization status is not changed by this marker.]*
 - The incident ADR addendum was revised as §A8 (Proposed): rules 9–10 and open question Q5. Its step-4 reviews are owed.
+
+### Ruling 4 — Vanguard MGC: fixed-stop edition on this route (2026-09-26)
+
+**Operator ruling, 2026-09-26, in session.** Asked to choose between (A) a route-native fixed-stop Vanguard edition, (B) rejecting the leg on this route, and deferring, the operator chose **"Fixed-stop edition"**. This follows Gate A's acceptance of runtime `TRAILING ACTIVE` ([REST §6.11](../handoffs/2026-09-25-crosstrade-rest-route-assessment.md#611-gate-a-factual-disposition) row A6), which superseded Ruling 1's Vanguard attestation for trailing.
+
+**Decision.** Vanguard joins ORB and Striker under the Ruling 3 pattern: one pre-registered route-native expression, K = 1, requalified through production E1. Owner: the [Vanguard pre-registration](../pre-registration/2026-09-26-tradeify-vanguard-fixed-stop-edition-prereg.md), whose §8 step 1 this ruling discharges. The book stays the fixed four legs.
+
+**Conditions (from the 2026-09-26 executive review, adopted with the ruling):**
+- The pre-registration must give a complete account of which existing exits remain once trailing is removed, and how removing trailing changes execution (holding periods, overlap, capacity).
+- No alternative-expression search, no automatic three-leg fallback, and no claim of unchanged economics.
+- Production of the edition files stays behind checklist gate D ([production handoff](../handoffs/2026-09-26-vanguard-fixed-stop-edition-production.md)); qualification remains mandatory.
+- The Gate A A6 successor-binding check applies at freeze.
+
+**Not granted:** freeze, file production, replay, E1 dispatch, deployment or GO. **Board write:** STATE decision index 2026-09-26 row; venue-edition ledger `CANDIDATE` row.
+
+### Ruling 5 — edition directions (2026-09-26)
+
+**Operator ruling 2026-09-26.** Source: operator ruling and coordination, 2026-09-26, relayed in session, together with the operator's structured-question answers the same day (for this item, "Adopt conditionally", on the edition directions recommended in the B–D decision packet, draft, [PR #518](https://github.com/Joshua-Asante/first-passage/pull/518)). The operator approved the recommended overall ruling in writing; its text governs and supersedes the earlier shorthand recording of that answer. It **approves preparation** of the editions under the constraints below. Nothing is frozen, and each pre-registration row keeps its final wording OWED until freeze. Owners of the rows: the [ORB/Striker pre-registration](../pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md) and the [Vanguard pre-registration](../pre-registration/2026-09-26-tradeify-vanguard-fixed-stop-edition-prereg.md), which carry dated markers beside each affected row.
+
+- **ORB MNQ and Vanguard MGC** (ORB-2/3, VAN-2/3): the existing fixed-stop component and explicitly specified remaining exits. Ruling 4's condition (a complete account of the remaining exits for Vanguard) still applies, and the rows' own rule that no new exit rule is invented is unchanged.
+- **Striker MYM initial stop** (STR-2): the signal-bar-computable level, as a pre-registered behavior change requiring qualification.
+- **Splits** (STR-3/4, VAN-5/6): whole-intent capacity reservation, sequential submission, and abandonment of the unsent remainder on an exceptional outcome. The maximum contracts per signal and any cap, VAN-6's counter wording and base eligibility for adds are not ruled.
+- **Subset exits:** never widen a subset exit into whole-leg liquidation. This binds Striker's close-time crossed-level exit (STR-5), whose realization stays OWED; whether that condition can apply to a subset of lots is not yet established.
+- **Failed modify capability** (bears on ORB-4, STR-6, VAN-4): returns with alternatives; no automatic replacement edition.
+- **ORB resting-entry lifecycle:** resolve the one-bar versus session-end cancellation from source and replay before requesting the lifecycle ruling, and keep that decision separate from the four-state account-fence correctness trace (the resting-order fence repair in the B–D decision packet §3). The lifecycle ruling itself is not made.
+
+**Not ruled here.** Two items in the earlier shorthand recording are not in the written ruling and are not recorded as ruled: verifying that the successor settings make the intended amendments no-ops (packet decision 8; for ORB it stays the packet's recommendation, while for Vanguard the successor-binding check at freeze is already a standing Gate A A6 requirement, [REST §6.11](../handoffs/2026-09-25-crosstrade-rest-route-assessment.md#611-gate-a-factual-disposition), not a new ruling), and "no retry or top-up of unknown children" (UB-4's recommendation, incident ADR §A9.1). Both stay recommendations; the no-resend text in STR-4 and VAN-6 is unchanged. Packet decision 11 (a recommendation, not ruled) would have the exit-split rows (ORB-6, STR-7, VAN-8) follow the accepted close realization; none is accepted. The operator's separate close ruling of 2026-09-26 ([incident ADR §A11.1](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a111--operator-ruling-close-direction-2026-09-26)) pursues C-a (whole-leg broker liquidation) as the first candidate to investigate, investigation only, and accepts neither the close-contract amendment nor an unspecified residual risk; the pre-registration markers say so.
+
+**Not granted:** freeze, replay, E1 dispatch, file production, deployment or GO; no gate B, C or D acceptance. **Board write:** STATE decision index 2026-09-26 row; dated markers in both pre-registrations.
 
 ## §60 — Agent read access to the accepted book's Pine and runtime ports (2026-09-25)
 
