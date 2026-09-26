@@ -33,21 +33,21 @@ Line numbers come from the return. If a line has moved but the same construct ex
 
 | # | File | Cited | Claim to confirm |
 |---|---|---|---|
-| P1 | port | `:175-181` | `_bracket` sets both trailing fields to non-null values from trail multipliers × entry stop distance whenever `use_trail` is true, and leaves them `None` otherwise |
-| P2 | port | `:253`, `:269`, `:274` | `_bracket` is called for the entry, the scale-in and the managed-bar amend. List any **other** bracket construction path that bypasses `_bracket`. |
-| P3 | port | `:69-71` | `use_trail` defaults to true, and both trail multipliers default to positive values |
-| P4 | port | `:291-292` | `build` constructs the params object from its keyword overrides only, with no other source of `use_trail` |
-| P5 | port | `:66`, `:60`, `:245`, `:177` | Breakeven defaults off. The grace threshold defaults non-positive, so the stop is active at entry and the grace level is unused. |
-| G1 | Pine | `:235`, `:237-238` | `useTrail` defaults to true, with positive arm and distance inputs |
-| G2 | Pine | `:452-461`, `:499-503` | Every `strategy.exit` on the entry, grace and management paths passes trail arguments gated on `useTrail` |
-| G3 | Pine | `:228`, `:169-171`, `:497` | Breakeven defaults off, and grace is inactive, as the port has it |
+| P1 | port | `:175-181` | The bracket construction sets both trailing fields when the trailing switch is enabled, and leaves them unset otherwise |
+| P2 | port | `:253`, `:269`, `:274` | That construction is used for entry, scale-in and the managed-bar amend. List any **other** bracket construction path that bypasses it. |
+| P3 | port | `:69-71` | The default binding enables the trailing switch, with non-zero trailing distances |
+| P4 | port | `:291-292` | `build` takes its parameters only from its keyword overrides, with no other source for the trailing switch |
+| P5 | port | `:66`, `:60`, `:245`, `:177` | Breakeven is inactive by default. The default activates the stop at entry, so the grace level is unused. |
+| G1 | Pine | `:235`, `:237-238` | The default binding enables trailing, with non-zero distances |
+| G2 | Pine | `:452-461`, `:499-503` | Every exit on the entry, grace and management paths carries trailing arguments gated on that switch |
+| G3 | Pine | `:228`, `:169-171`, `:497` | Breakeven is inactive by default, and grace is inactive, matching the port |
 
-**Discrepancy rule:** a row is `DISCREPANT` if the construct contradicts the claim. Examples: a default differs; a bracket path doesn't go through `_bracket`; the trailing fields are set under a different condition. Only the rows go into the return, not a new verdict. If P1–P4 or G1–G2 are discrepant, note that `TRAILING ACTIVE` may not hold and stop; the coordinator reopens the determination.
+**Discrepancy rule:** a row is `DISCREPANT` if the construct contradicts the claim. Examples: a default differs; a bracket path bypasses the cited construction; the trailing fields are set under a different condition. Only the rows go into the return, not a new verdict. If P1–P4 or G1–G2 are discrepant, note that `TRAILING ACTIVE` may not hold and stop; the coordinator reopens the determination.
 
 ## 3. Handling (§60)
 
 - Read the files in place. No scratch copies, extracts, worktrees or external services.
-- No source text or numeric values in §4. Use `file:line` and short descriptions of behavior only, such as "defaults true" or "positive".
+- No source text, identifiers, default values or formulas in §4 (§60). Use `file:line` and behavior-level verdicts only, such as "confirmed: trailing enabled by default".
 
 ## 4. Executor return
 
