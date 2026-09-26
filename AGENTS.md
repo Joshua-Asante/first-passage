@@ -143,19 +143,34 @@ a new execution feed also requires the [feed-equivalence pre-flight](docs/spec/f
 
 ## Continuous improvement
 
-When a correction, failed verification, or avoidable rework reveals a reusable
-failure mode:
+During authorized work, actively notice concrete plan flaws, preventable mistakes,
+recurring failures and evidenced waste. At planning, correction and completion
+moments, use [agent-improvement](.claude/skills/agent-improvement/SKILL.md) when such
+an opportunity appears. Read that repository source directly if the harness does
+not list the skill. No opportunity means no extra reflection artifact or task.
 
-1. Record the observable failure and evidence, not a general preference.
-2. Search existing tests, hooks, skills, lessons, and history before proposing
-   a new rule.
-3. Propose at most one durable improvement at the cheapest reliable layer:
-   test → hook → skill → AGENTS.md → ADR/lesson, as appropriate.
-4. State the behavior expected to change and how that change will be verified.
-5. Promote one-off feedback only when high-severity or independently recurring.
-6. Do not edit standing instructions unless the user requests it.
+Implement and verify a local, reversible improvement when its mechanism is supported
+by evidence and it fits the current task and role without changing the intended
+outcome or acceptance criteria. Existing authorization carries forward; do not ask
+again merely because the action is an improvement. This includes repairing an
+agent-owned execution sequence before it fails. A frozen worker handoff remains
+frozen: return contradictions or scope changes to its coordinator.
+
+1. Establish the observable or anticipated failure/waste from source evidence,
+   not a general preference or self-reported confidence.
+2. Search existing tests, hooks, skills, lessons and relevant history before
+   adding protection. Reuse the owning improvement record where one exists.
+3. Choose at most one durable intervention at the cheapest reliable layer:
+   source fix or test → hook → skill → AGENTS.md → ADR/lesson, as appropriate.
+4. State the expected behavior change, verify it against the original mechanism,
+   and retain evidence with the existing task/plan/PR/campaign owner.
+5. Promote one-off feedback into standing guidance only when high-severity or
+   independently recurring. Routine fixes need no new rule or separate record.
+6. Do not edit standing instructions unless the user requests it. Improvements
+   confer no new scope, budget, permissions, acceptance changes or operational GO.
 7. Replace or consolidate superseded wording; improvement is not measured by
-   instruction count.
+   instruction count. Link evidence from later campaigns to the same improvement;
+   intended applicability is not demonstrated transfer.
 
 After two failed corrections of the same issue, stop, summarize what was
 learned, and restart with a cleaner prompt and explicit verification criteria —
@@ -165,7 +180,6 @@ Where each layer lives here: tests = `tests/` · hooks = [`scripts/gates.yml`](s
 `scripts/githooks/` + `.claude/hookify.*.local.md` · skills = `.claude/skills/` · this file ·
 ADR/lesson = [`docs/adr/`](docs/adr/) + [`docs/methodology/lessons/`](docs/methodology/lessons/)
 (indexed in `docs/methodology/LESSONS_INDEX.jsonl`).
-
 
 ## Public-clone posture
 
