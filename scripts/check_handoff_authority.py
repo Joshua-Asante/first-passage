@@ -26,7 +26,11 @@ HARD checks (exit 1), each the property the ADR states:
   A4  every capability's risk <= the card's ``max_risk`` <= the seat's ``max_risk``;
   A5  every capability is grantable to the seat;
   A6  a worker card names its acceptance tests (handoff contract item 5), and no
-      ``acceptance`` entry is empty;
+      ``acceptance`` entry is empty; and ANY card, whatever its declared seat, that grants
+      a capability in the registry's ``acceptance_required_for`` (``worktree.write``,
+      ``research.run``) names them too (operator ruling 2026-09-26: this checker binds a
+      card's grants to the seat the card declares and never binds that seat to the
+      executor, so the declared seat cannot be what exempts a card that writes);
   A7  a worker card names its ``parent`` (item 7: a card only narrows its parent); the
       parent is a repository-relative path to an existing file inside
       the repository; the parent is itself checked, recursively up the chain, and a chain
@@ -47,6 +51,10 @@ CommonMark containers to find one. Files with no authority-looking fence anywher
 checked: the block is required of new worker cards by the ADR and verified at the
 coordinator's pre-dispatch read, and historical cards are not retrofitted. ``--all``
 scans ``docs/briefs/**/*.md``.
+
+What no check here does: bind the declared ``seat`` to the agent that executes the card.
+That binding is the coordinator's pre-dispatch read plus the executive review, on every
+route (ADR Addendum 2026-09-26b).
 
 Exit codes: 0 clean · 1 a HARD violation · 2 usage / unreadable registry.
 """
@@ -82,6 +90,7 @@ class Registry:
     capabilities: dict[str, str]          # capability -> risk
     forbidden: frozenset[str]
     seats: dict[str, tuple[str, frozenset[str]]]  # seat -> (max_risk, grantable)
+    acceptance_required: frozenset[str]   # grants that need named acceptance on any seat
 
     def rank(self, risk: str) -> int:
         return self.risk_order.index(risk)
@@ -108,7 +117,13 @@ def load_registry(path: Path = REGISTRY) -> Registry:
             raise ValueError(f"registry: seat {seat!r} has unknown max_risk "
                              f"{spec['max_risk']!r}")
         seats[seat] = (spec["max_risk"], grant)
-    return Registry(order, caps, forbidden, seats)
+    # Required, no default: a registry that lost the list must not load with the gate off.
+    gated = frozenset(data["acceptance_required_for"])
+    unknown = gated - caps.keys()
+    if unknown or not gated:
+        raise ValueError(f"registry: acceptance_required_for names unknown or no "
+                         f"capabilities: {sorted(unknown)}")
+    return Registry(order, caps, forbidden, seats, gated)
 
 
 def extract_blocks(text: str) -> list[str]:
@@ -231,7 +246,13 @@ def check_card(path: Path, reg: Registry, *, root: Path = REPO_ROOT,
             errors.append(f"A4 {cap!r} is {risk!r}, above the card's max_risk {max_risk!r}")
         if cap not in grantable:
             errors.append(f"A5 {cap!r} is not grantable to seat {seat!r}")
-    if seat == "worker" and not acceptance:
+    # A6 is seat-blind for write-shaped grants: the declared seat is not bound to the
+    # executor, so a worker card mislabelled with another seat must not escape it.
+    gated = sorted(set(caps) & reg.acceptance_required)
+    if not acceptance and gated:
+        errors.append(f"A6 a card granting {gated} names its acceptance tests before any "
+                      f"work starts, whatever its declared seat ({seat!r})")
+    elif seat == "worker" and not acceptance:
         errors.append("A6 a worker card names its acceptance tests before the worker starts")
     if any(not name.strip() for name in acceptance):
         errors.append("A6 an `acceptance` entry is empty; name each test")

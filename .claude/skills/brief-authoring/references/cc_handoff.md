@@ -146,7 +146,11 @@ Per SKILL.md Discipline Check #3: list moves the author genuinely considered or 
 The machine-read grant for this card (surface-allocation ADR, 2026-09-25 revision). Names come
 from `scripts/seat_authority.yml`; `scripts/check_handoff_authority.py` refuses a forbidden or
 operator-act capability, anything above the seat's ceiling, and anything the `parent` card did not
-grant. Restate every parent constraint; add, never drop. `acceptance` repeats the §6.0 test names.
+grant. Restate every parent constraint; add, never drop. `acceptance` repeats the §6.0 test names;
+it is required on every worker card **and on any card, whatever its declared `seat`, that grants
+`worktree.write` or `research.run`** (ADR Addendum 2026-09-26b). The checker binds the grants to the
+seat the card declares, never that seat to the executor: the coordinator's pre-dispatch read and the
+executive review check that the declared seat is the one that will run the card.
 
 ```yaml authority
 seat: worker

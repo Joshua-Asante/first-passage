@@ -1,7 +1,8 @@
-"""staged-debris gate -- banned local-only roots and oversize staged blobs."""
+"""staged-debris gate -- banned local-only roots, force-added ignored files and oversize blobs."""
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -48,11 +49,18 @@ def test_size_finding_threshold_and_allowlist():
     assert csd.size_finding("docs/big.bin", csd.MAX_STAGED_FILE_BYTES + 1)
     assert csd.size_finding("docs/big.bin", None) is None
     # Research-results corpus and its archived form: the one legitimate
-    # >1 MB shape (largest tracked file: lab/analysis/.../results.json, 988,529 B).
-    assert csd.size_finding("lab/analysis/big.json", 5_000_000) is None
-    assert csd.size_finding("lab/archive/big.json", 5_000_000) is None
-    assert csd.size_finding("lab/other/big.json", 5_000_000)  # not allowlisted
-    assert csd.size_finding("core/big.json", 5_000_000)
+    # >1 MB shape (largest tracked file: lab/analysis/.../results.json, 988,529 B),
+    # capped at ALLOWLISTED_MAX_STAGED_FILE_BYTES since the 2026-09-26 ruling.
+    cap = csd.ALLOWLISTED_MAX_STAGED_FILE_BYTES
+    assert cap == 2_000_000
+    for root in ("lab/analysis/", "lab/archive/"):
+        assert csd.size_finding(root + "big.json", cap) is None
+        assert csd.size_finding(root + "big.json", cap + 1)
+        assert csd.size_finding(root + "big.json", 5_000_000)  # a multi-year bar panel
+    assert csd.size_finding("lab/other/big.json", 1_500_000)  # not allowlisted
+    assert csd.size_finding("core/big.json", 1_500_000)
+    # Case-sensitive prefix: a case variant is not allowlisted and gets the 1 MB cap.
+    assert "single-file limit" in csd.size_finding("Lab/Analysis/big.json", 1_500_000)
 
 
 def test_staged_paths_parses_name_status_z(monkeypatch):
@@ -102,11 +110,12 @@ def _write(root: Path, relpath: str, data: str | bytes) -> None:
         target.write_text(data, encoding="utf-8")
 
 
-def _run_gate(root: Path) -> subprocess.CompletedProcess:
+def _run_gate(root: Path, env: dict | None = None) -> subprocess.CompletedProcess:
     return subprocess.run(
         [sys.executable, str(SCRIPT), "--root", str(root)],
         capture_output=True,
         text=True,
+        env=env,
     )
 
 
@@ -149,11 +158,255 @@ def test_rejects_oversize_outside_allowlist(repo: Path):
     assert "single-file limit" in result.stdout
 
 
-def test_allows_oversize_research_results(repo: Path):
-    _write(repo, "lab/analysis/results.json", b"x" * (csd.MAX_STAGED_FILE_BYTES + 2_000_000))
+def test_allows_research_results_up_to_the_allowlisted_ceiling(repo: Path):
+    _write(repo, "lab/analysis/results.json", b"x" * 2_000_000)
     _git(repo, "add", "-A")
     result = _run_gate(repo)
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_rejects_research_results_over_the_allowlisted_ceiling(repo: Path):
+    """2026-09-26 ruling: allowlisted roots are capped at 2,000,000 B, not unbounded."""
+    _write(repo, "lab/analysis/results.json", b"x" * 2_000_001)
+    _git(repo, "add", "-A")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert (
+        "lab/analysis/results.json: 2000001 B exceeds the 2000000 B ceiling for "
+        "allowlisted roots" in result.stdout
+    ), result.stdout
+    # A size finding is not told it sits in a local-only root (the footer bug).
+    assert "local-only" not in result.stdout, result.stdout
+    assert "1 oversize blob(s)" in result.stdout, result.stdout
+
+
+def test_case_variant_of_allowlisted_root_gets_the_tighter_cap(repo: Path):
+    _write(repo, "Lab/Analysis/results.json", b"x" * (csd.MAX_STAGED_FILE_BYTES + 1))
+    _git(repo, "add", "-A")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "single-file limit" in result.stdout, result.stdout
+
+
+def test_banned_root_footer_still_names_local_only_roots(repo: Path):
+    _write(repo, "recovery/pkt.md", "evidence\n")
+    _git(repo, "add", "-A")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "local-only" in result.stdout
+    assert "oversize" not in result.stdout
+
+
+def _ignore(repo: Path, rules: str) -> None:
+    _write(repo, ".gitignore", rules)
+    _git(repo, "add", ".gitignore")
+    _git(repo, "commit", "-q", "-m", "ignore rules")
+
+
+def test_rejects_force_added_ignored_file(repo: Path):
+    """`git add -f` past an ignore rule is a finding (2026-09-26 ruling B)."""
+    _ignore(repo, "lab/analysis/**/inputs/*.csv\n")
+    _write(repo, "lab/analysis/study/inputs/bars.csv", "t,o,h,l,c\n")
+    _git(repo, "add", "-f", "lab/analysis/study/inputs/bars.csv")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert (
+        "lab/analysis/study/inputs/bars.csv: force-added ignored file" in result.stdout
+    ), result.stdout
+    assert "1 force-added ignored file(s)" in result.stdout, result.stdout
+    assert "local-only" not in result.stdout, result.stdout
+
+
+def test_force_add_check_covers_renames_into_ignored_paths(repo: Path):
+    _ignore(repo, "*.csv\n")
+    _write(repo, "data.txt", "a,b\n" * 50)
+    _git(repo, "add", "data.txt")
+    _git(repo, "commit", "-q", "-m", "data")
+    _git(repo, "mv", "data.txt", "data.csv")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "data.csv: force-added ignored file" in result.stdout, result.stdout
+
+
+GRANDFATHERED = "tests/fixtures/c1_image_validation/lifecycle_state.json"
+
+
+def test_grandfathered_constant_names_exactly_the_two_known_files():
+    """Codex P1 4111056549: the tracked-despite-ignore exemption is a named,
+    closed list, not a HEAD-membership test."""
+    assert csd.TRACKED_IGNORED_GRANDFATHERED == frozenset(
+        {
+            "lab/pine/mnq_mym_mechanism_diagnostic_v0_1.pine",
+            "tests/fixtures/c1_image_validation/lifecycle_state.json",
+        }
+    )
+
+
+def test_grandfathered_tracked_ignored_file_is_not_flagged(repo: Path):
+    """A grandfathered file tracked despite an ignore rule is never flagged."""
+    _write(repo, GRANDFATHERED, "{}\n")
+    _git(repo, "add", GRANDFATHERED)
+    _git(repo, "commit", "-q", "-m", "fixture tracked before the rule")
+    _ignore(repo, "lifecycle_state.json\n")
+    # Nothing staged: HEAD-tree mode.
+    result = _run_gate(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "HEAD tree" in result.stdout
+    # Modifying and re-staging it: still not flagged.
+    _write(repo, GRANDFATHERED, '{"k": 1}\n')
+    _git(repo, "add", GRANDFATHERED)
+    result = _run_gate(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "staged vs HEAD" in result.stdout
+
+
+def test_head_tree_mode_flags_committed_ignored_file_anywhere(repo: Path):
+    """Codex P1 4111056549: CI checks ALL HEAD paths, not just lab/analysis/ and
+    lab/archive/ -- a committed .env or vendor CSV elsewhere fails."""
+    _ignore(repo, ".env\n*.csv\n")
+    _write(repo, ".env", "TOKEN=x\n")
+    _write(repo, "core/data/bars.csv", "t,o,h,l,c\n")
+    _git(repo, "add", "-f", ".env", "core/data/bars.csv")
+    _git(repo, "commit", "-q", "--no-verify", "-m", "force add")
+    result = _run_gate(repo)
+    assert result.returncode == 1, result.stdout
+    assert "HEAD tree" in result.stdout
+    assert ".env: force-added ignored file" in result.stdout, result.stdout
+    assert "core/data/bars.csv: force-added ignored file" in result.stdout, result.stdout
+
+
+def test_head_tree_mode_flags_non_grandfathered_tracked_then_ignored_file(repo: Path):
+    """Tracked before the rule is no exemption unless grandfathered by name."""
+    _write(repo, "lifecycle_state.json", "{}\n")
+    _git(repo, "add", "lifecycle_state.json")
+    _git(repo, "commit", "-q", "-m", "tracked before the rule")
+    _ignore(repo, "lifecycle_state.json\n")
+    result = _run_gate(repo)
+    assert result.returncode == 1, result.stdout
+    assert "lifecycle_state.json: force-added ignored file" in result.stdout
+
+
+def test_staged_modify_of_non_grandfathered_tracked_ignored_file_blocks(repo: Path):
+    _write(repo, "lifecycle_state.json", "{}\n")
+    _git(repo, "add", "lifecycle_state.json")
+    _git(repo, "commit", "-q", "-m", "tracked before the rule")
+    _ignore(repo, "lifecycle_state.json\n")
+    _write(repo, "lifecycle_state.json", '{"k": 1}\n')
+    _git(repo, "add", "lifecycle_state.json")
+    result = _run_gate(repo)
+    assert result.returncode == 1, result.stdout
+    assert "staged vs HEAD" in result.stdout
+    assert "lifecycle_state.json: force-added ignored file" in result.stdout
+
+
+def test_staged_gitignore_rule_that_ignores_a_tracked_file_blocks(repo: Path):
+    """Staging a rule that newly ignores an already-tracked file is judged at
+    commit time, not first in CI."""
+    _write(repo, "data/bars.csv", "t,o,h,l,c\n")
+    _git(repo, "add", "data/bars.csv")
+    _git(repo, "commit", "-q", "-m", "data")
+    _write(repo, ".gitignore", "*.csv\n")
+    _git(repo, "add", ".gitignore")
+    result = _run_gate(repo)
+    assert result.returncode == 1, result.stdout
+    assert "data/bars.csv: force-added ignored file" in result.stdout
+
+
+def test_unstaged_gitignore_edit_cannot_hide_a_staged_force_add(repo: Path):
+    """Codex P2 4111056555: rules come from the index, not the working tree."""
+    _ignore(repo, "*.csv\n")
+    _write(repo, "bars.csv", "t,o,h,l,c\n")
+    _git(repo, "add", "-f", "bars.csv")
+    _write(repo, ".gitignore", "# rule removed in the working tree only\n")
+    result = _run_gate(repo)
+    assert result.returncode == 1, result.stdout
+    assert "bars.csv: force-added ignored file" in result.stdout
+
+
+def test_unstaged_nested_gitignore_deletion_cannot_hide_a_force_add(repo: Path):
+    _write(repo, "lab/x/.gitignore", "*.csv\n")
+    _git(repo, "add", "lab/x/.gitignore")
+    _git(repo, "commit", "-q", "-m", "nested rule")
+    _write(repo, "lab/x/bars.csv", "t,o,h,l,c\n")
+    _git(repo, "add", "-f", "lab/x/bars.csv")
+    (repo / "lab/x/.gitignore").unlink()
+    result = _run_gate(repo)
+    assert result.returncode == 1, result.stdout
+    assert "lab/x/bars.csv: force-added ignored file" in result.stdout
+
+
+def test_unstaged_gitignore_rule_does_not_flag_a_normal_add(repo: Path):
+    """The converse: a working-tree-only rule is not a committed rule."""
+    _write(repo, "notes.txt", "fine\n")
+    _git(repo, "add", "notes.txt")
+    _write(repo, ".gitignore", "*.txt\n")  # unstaged
+    result = _run_gate(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_head_tree_mode_uses_committed_rules_not_working_tree(repo: Path):
+    _ignore(repo, "*.csv\n")
+    _write(repo, "bars.csv", "t,o,h,l,c\n")
+    _git(repo, "add", "-f", "bars.csv")
+    _git(repo, "commit", "-q", "--no-verify", "-m", "force add")
+    _write(repo, ".gitignore", "# rule removed in the working tree only\n")
+    # .gitignore is modified but unstaged: nothing staged -> HEAD-tree mode.
+    result = _run_gate(repo)
+    assert result.returncode == 1, result.stdout
+    assert "HEAD tree" in result.stdout
+    assert "bars.csv: force-added ignored file" in result.stdout
+
+
+@pytest.mark.parametrize("scope", ["info-exclude", "local-config", "global-config"])
+def test_personal_ignore_rules_are_not_repository_rules(
+    repo: Path, tmp_path_factory, scope: str
+):
+    """Codex P2 4111056558: .git/info/exclude and a local or global
+    core.excludesFile never make a file a finding -- only repository-owned
+    .gitignore rules count, so the verdict does not depend on the clone."""
+    home = tmp_path_factory.mktemp("home")
+    excludes = home / "excludes"
+    excludes.write_text("personal.txt\n", encoding="utf-8")
+    global_config = home / "gitconfig"
+    global_config.write_text("", encoding="utf-8")
+    if scope == "info-exclude":
+        info = repo / ".git" / "info"
+        info.mkdir(exist_ok=True)
+        (info / "exclude").write_text("personal.txt\n", encoding="utf-8")
+    elif scope == "local-config":
+        _git(repo, "config", "core.excludesFile", excludes.as_posix())
+    else:
+        global_config.write_text(
+            f"[core]\n\texcludesFile = {excludes.as_posix()}\n", encoding="utf-8"
+        )
+    env = {**os.environ, "GIT_CONFIG_GLOBAL": str(global_config)}
+    _write(repo, "personal.txt", "x\n")
+    # Sanity: git itself treats the file as ignored under this personal rule.
+    probe = subprocess.run(
+        ["git", "check-ignore", "-q", "personal.txt"], cwd=repo, env=env, check=False
+    )
+    assert probe.returncode == 0, scope
+    _git(repo, "add", "-f", "personal.txt")
+    # Staged mode.
+    result = _run_gate(repo, env=env)
+    assert result.returncode == 0, result.stdout + result.stderr
+    # HEAD-tree mode.
+    _git(repo, "commit", "-q", "--no-verify", "-m", "personally ignored file")
+    result = _run_gate(repo, env=env)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "HEAD tree" in result.stdout
+
+
+def test_head_tree_mode_flags_committed_force_add_under_allowlisted_root(repo: Path):
+    """CI's clean checkout catches a force-added vendor file in lab/analysis/."""
+    _ignore(repo, "lab/analysis/**/inputs/*.csv\n")
+    _write(repo, "lab/analysis/study/inputs/bars.csv", "t,o,h,l,c\n")
+    _git(repo, "add", "-f", "lab/analysis/study/inputs/bars.csv")
+    _git(repo, "commit", "-q", "--no-verify", "-m", "force add")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "HEAD tree" in result.stdout
+    assert "lab/analysis/study/inputs/bars.csv: force-added ignored file" in result.stdout
 
 
 def test_head_tree_mode_catches_committed_debris(repo: Path):

@@ -73,6 +73,13 @@ forbidden:
     rule: "`main` requires a PR and the `skills (3.12)` status; a push to main bypasses both."
     owner: AGENTS.md#gate-composition-authority
 
+# Write-shaped grants that need named acceptance tests on ANY card, whatever seat the card
+# declares (operator ruling 2026-09-26, surface-allocation ADR Addendum 2026-09-26b): the
+# checker binds a card's grants to its declared seat and never binds that seat to the
+# executor, so a worker card mislabelled `coordinator` must not escape rule A6. Required
+# key: a registry without it fails to load (the gate fails closed).
+acceptance_required_for: [worktree.write, research.run]
+
 # The capabilities a card may grant to each seat. High-risk capabilities appear nowhere
 # here: the operator seat is never the subject of a card.
 seats:
