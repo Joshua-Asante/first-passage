@@ -1,0 +1,28 @@
+# Accepted four-strategy book — private read surface (primary checkout only)
+#
+# Owner: campaign record §60 (docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md).
+# Agents may READ these files in place, in the operator's primary checkout. Nothing here is
+# tracked except this manifest: `**/*.pine` and the port directories are gitignored.
+#
+# Rules (§60): read in place; never copy into a worktree, commit, quote bodies or parameter
+# values into tracked files, edit, or send to glm_agent / Z.ai / any external service.
+#
+# Pins match ops/c1_rail/book_policy.py and ops/c1_signal_daemon/book_adapters.py.
+# Striker's accepted port is the corrected generation (efd479b6...); the default
+# ops/c1_signal_daemon/ports/dj30_mym_p250.py is the preserved original (c81aa59c...)
+# and is NOT the accepted body. Never overwrite either generation.
+#
+# Verify from the primary checkout root:  sha256sum -c core/strategies/BOOK_SOURCES.sha256
+# (absent in worktrees, clones and CI by design).
+
+# Pine — byte copies of the operator's pinned sources
+db78ecba95ae78aca14501a5eaccfda2a42164d83cac12321cb7f293a9adca7c  core/strategies/book/aegis_6J1_venue_bound.pine
+712cf395396568ce22ae43f1f15b085eaba23acf1b85502abb92129f277fffd7  core/strategies/book/striker_dj30_v4.5_mym_pyramid_250_cap100k.pine
+af26899ca94bb0e9ee26d09e0176b6b94bba2f5da252399ce4d899fe7e3bad15  core/strategies/book/Vanguard_Gold_MGC_v0.4_venue_bound.pine
+176c4f70c67d58053c4d3b8170d0a9be3733bc6b76b1e2f928bd7a877be052a3  core/strategies/book/orb_mnq_7_reconstruction_venue_bound.pine
+
+# Accepted runtime ports — read where they already live
+11763740bc3fdcc8b9e94cb0b465823aec202cd8333379c46878185db5e9e84f  ops/c1_signal_daemon/ports/aegis_6j.py
+efd479b6b4c7eeaa7d8df3f40f36593f87d96b9d5f512dc79c4dd9b0520211f4  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/inputs/private_overrides/op1/2026-09-14-seven/step3-coverage/corrected-ports/dj30_mym_p250.py
+e6a03d04c65a19e7fde71103560a229630c3663f445676f06622feec4e9157a3  ops/c1_signal_daemon/ports/vanguard_mgc.py
+b1f4e573009e62b976013e08e7ef2784497d840f490f04e3878fdaef553f317d  ops/c1_signal_daemon/ports/orb_mnq_v7.py
