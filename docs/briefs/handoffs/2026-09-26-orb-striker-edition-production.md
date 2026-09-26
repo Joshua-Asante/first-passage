@@ -24,10 +24,10 @@ This is step 2 of that pre-registration's §8 freeze procedure. The editions imp
 | Gate | Condition | Where it is recorded |
 |---|---|---|
 | G0 | Campaign §59 ruling 3 adopted both editions (already satisfied, 2026-09-25). Confirm it has not been withdrawn since. | Campaign record §59 |
-| G1 | Pre-registration items answered in words: ORB-2 to ORB-4, STR-2 to STR-6 and the §6 replay-modelling choice. No `OWED` remains in §3 or §4; the §5 pin rows are exempt, because this packet fills them. | The pre-registration at a named commit |
+| G1 | Pre-registration items answered in words: ORB-2 to ORB-4, STR-2 to STR-6, the §6 replay-modelling choice and the §6 sequential-exit replay model. No `OWED` remains in §3, §4 or §6; the §5 pin rows are exempt, because this packet fills them. | The pre-registration at a named commit |
 | G1a | Realization and identity-binding scheme under pre-registration §5 are explicit: reused pins fixed; new output digests supplied by this packet; embedded Pine identity compatible with proposed registration. | G1 commit; separately reviewed identity contract if needed |
 | G2 | The operator explicitly authorizes an agent to **create** new private edition files under the paths in §2. §60 grants read access only. | Dispatch message or campaign record |
-| G2b | The TradingView/CrossTrade capability allocation and deletion map is accepted (checklist T09 gate (d)), and it keeps these legs' runtime ports as the controller boundary. If the accepted allocation delegates the behavior these ports implement, this packet is withdrawn, not run. | Checklist addendum T09 gate table; allocation map disposition |
+| G2b | **Allocation gate (operator ruling 2026-09-26: "Yes, gate on allocation").** Producing these edition files waits until the TradingView/CrossTrade [capability allocation and deletion map](2026-09-25-tradeify-capability-allocation-deletion-map.md) is **ACCEPTED** under gate D of the checklist's [T09 gate acceptance record](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record), and the accepted map keeps these legs' runtime ports as the controller boundary. A committed or merged map is not acceptance. If the accepted allocation delegates the behavior these ports implement, this packet is withdrawn, not run. | Checklist T09 gate D acceptance record (named revision); allocation map disposition |
 | G3 | The pre-registration is **not frozen**, and no replay or E1 output exists for either edition | Pre-registration Status line; campaign record |
 
 Record the pre-registration commit you build against. If the pre-registration changes after that commit, stop and return; do not reconcile.
@@ -123,7 +123,7 @@ If the pre-registration rules an override-only realization for ORB (trailing rem
 | Field | ORB MNQ | Striker MYM |
 |---|---|---|
 | Executor / dispatch revision | | |
-| Gates G0–G3, including G1a (evidence link each) | | |
+| Gates G0–G3, including G1a and G2b (evidence link each) | | |
 | Pre-registration commit built against | | |
 | Checkout revision, tree state, `doctor` result | | |
 | Input hashes (match/mismatch) | | |

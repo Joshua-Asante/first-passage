@@ -109,6 +109,7 @@ The public repository receives identities and behavior shapes only, never source
   *§3a note:* the sibling file's §6 choice is also still OWED, so the two can be decided together. Under the proposed ADR §A8 rule 10, one-contract requests go out sequentially, so (a) would be optimistic by construction, and a stated sequential rule under (b) is the source-consistent option.
 
   It cannot be tuned afterwards.
+- **Replay model for N sequential exit requests — OWED (pre-registration owner, then operator acceptance).** Operator ruling 2026-09-26: "Mark OWED; block freeze". Under option (b), the replay must also price the one-contract closes of VAN-8, where a multi-contract close becomes N sequential one-contract exit requests. The pre-registration owner states here the exact replay algorithm and its frozen inputs: the per-request delay, and the price and fill rule for exit request k of N. The operator then accepts it. Reusing the entry-split algorithm is allowed only if this item states how it applies to exits. Naming I8, or "same as §6" alone, does not satisfy this. This file cannot freeze while this item is OWED.
 - **Verdict:**
   - PASS: the Vanguard route-native edition is qualified as part of the book's E1 result.
   - NO-GO: the route is rejected for Vanguard. **No second expression is tried** under this pre-registration, and what happens to the book then is a new operator decision.
@@ -127,8 +128,8 @@ The public repository receives identities and behavior shapes only, never source
 ## §8 — Freeze procedure
 
 1. The operator rules option A (edition) over option B (reject). Without that ruling, nothing below proceeds.
-2. The operator answers VAN-2 to VAN-6, the §4 effective-inputs row and the §6 replay choice, in words and without parameter values.
-3. The operator, or a separately authorized session in the primary checkout, produces the files required by the ruled realization and supplies the complete source/effective-input identity tuple. §60 alone grants reads, not file creation. An override-only realization explicitly records reused compatible Pine/port pins.
+2. The operator answers VAN-2 to VAN-6 and VAN-8, the §4 effective-inputs row and the §6 replay choice, in words and without parameter values. The §6 sequential-exit replay model is specified by the pre-registration owner and accepted by the operator.
+3. Once the capability allocation is accepted (checklist T09 gate D; operator ruling 2026-09-26, [production handoff](../handoffs/2026-09-26-vanguard-fixed-stop-edition-production.md) G3b), the operator, or a separately authorized session in the primary checkout, produces the files required by the ruled realization and supplies the complete source/effective-input identity tuple. §60 alone grants reads, not file creation. An override-only realization explicitly records reused compatible Pine/port pins.
 4. Claude fills §3–§6, runs the §10 hooks, and the operator reviews the full text.
 5. The operator says "freeze". The Status line becomes `FROZEN <date>`, and the commit SHA goes into campaign record §59.
 

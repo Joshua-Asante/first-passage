@@ -22,10 +22,10 @@ This is step 3 of the pre-registration's §8 freeze procedure. The edition imple
 | Gate | Condition | Where it is recorded |
 |---|---|---|
 | G1 | Operator ruled **option A** (fixed-stop edition), not B (reject the leg) | Campaign record §59, or a dated operator ruling linked from it |
-| G2 | Pre-registration VAN-2 to VAN-6, the §4 effective-inputs row and the §6 replay choice are answered in words. No `OWED` remains in §3 or §4, apart from the pin rows this packet fills. | The pre-registration file at a named commit |
+| G2 | Pre-registration VAN-2 to VAN-6, the §4 effective-inputs row, the §6 replay choice and the §6 sequential-exit replay model are answered in words. No `OWED` remains in §3, §4 or §6, apart from the pin rows this packet fills. | The pre-registration file at a named commit |
 | G2a | Realization and identity-binding scheme are specified (reused pins fixed; new output digests supplied by this packet) under pre-registration §4, including compatibility of the port-embedded Pine identity with the registry. Any required identity-contract change is separately reviewed before dispatch. | Pre-registration at G2 commit; separate identity review if needed |
 | G3 | Operator explicitly authorizes an agent to **create** new private edition files under the paths in §2. §60 grants read access only. | Dispatch message or campaign record |
-| G3b | The TradingView/CrossTrade capability allocation and deletion map is accepted (checklist T09 gate (d)), and it keeps Vanguard's runtime port as the controller boundary. If the accepted allocation delegates this behavior, this packet is withdrawn, not run. | Checklist addendum T09 gate table; allocation map disposition |
+| G3b | **Allocation gate (operator ruling 2026-09-26: "Yes, gate on allocation").** Producing the edition files waits until the TradingView/CrossTrade [capability allocation and deletion map](2026-09-25-tradeify-capability-allocation-deletion-map.md) is **ACCEPTED** under gate D of the checklist's [T09 gate acceptance record](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record), and the accepted map keeps Vanguard's runtime port as the controller boundary. A committed or merged map is not acceptance. If the accepted allocation delegates this behavior, this packet is withdrawn, not run. | Checklist T09 gate D acceptance record (named revision); allocation map disposition |
 | G4 | The pre-registration is **not frozen**, and no replay or E1 output exists for the edition | Pre-registration Status line; campaign record |
 
 Record the pre-registration commit the executor builds against. If the pre-registration changes after that commit, stop and return; do not reconcile the two.
@@ -101,7 +101,7 @@ Before writing anything, confirm with `git check-ignore -v` that every output pa
 | Field | Value |
 |---|---|
 | Executor / dispatch revision | |
-| Gates G1–G4, including G2a (evidence link each) | |
+| Gates G1–G4, including G2a and G3b (evidence link each) | |
 | Pre-registration commit built against | |
 | Checkout revision, tree state, `doctor` result | |
 | Input hashes (3 rows, match/mismatch) | |

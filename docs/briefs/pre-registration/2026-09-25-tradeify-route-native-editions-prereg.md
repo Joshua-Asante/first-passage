@@ -83,6 +83,7 @@ The public repository receives identities and behavior shapes only, never privat
 
 - **No new screen is bought.** The editions requalify through the production E1 that was already owed for the book (deployment checklist T10 → T15), under the criteria frozen by their existing owners ([Track B umbrella](../handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) and the full-E1 specification). This file adds no statistic, threshold, depth or seed.
 - **Replay modelling of the split (OWED, operator + coordinator).** Before freeze, state how the qualification replay prices N sequential one-contract requests. Options: (a) all N at the same fill as today's single order (optimistic); (b) a concrete replay algorithm stated here in full: the per-request price and fill rule for request k of N, any delay model, and its frozen inputs. The rail spec's I8 classifies live latency deviation but defines no replay pricing, so naming I8 alone does not satisfy this; (c) another rule stated now. The choice must be written here before any run; it cannot be tuned after.
+- **Replay model for N sequential exit requests (OWED, pre-registration owner, then operator acceptance).** Operator ruling 2026-09-26: "Mark OWED; block freeze". Under option (b), the replay must also price the one-contract closes of STR-7 and ORB-6, where a multi-contract close becomes N sequential one-contract exit requests. The pre-registration owner states here the exact replay algorithm and its frozen inputs: the per-request delay, and the price and fill rule for exit request k of N. The operator then accepts it. Reusing the entry-split algorithm is allowed only if this item states how it applies to exits. Naming I8 alone does not satisfy this. This file cannot freeze while this item is OWED.
 - **Verdict per leg.** PASS: the leg's route-native edition is qualified as part of the book's E1 result. NO-GO: the route is rejected for that leg; **no second expression is tried** under this pre-registration. What happens to the book then (drop the leg, or requalify the book without it) is a new operator decision, not decided here.
 
 ## §7 — Forbidden moves
@@ -97,8 +98,8 @@ The public repository receives identities and behavior shapes only, never privat
 
 ## §8 — Freeze procedure
 
-1. The operator answers ORB-2..ORB-4, STR-2..STR-6 and the §6 replay-modelling choice, in words (no parameter values).
-2. The private edition Pine and ports are produced (operator, or a separately authorized session on the primary checkout) and their SHA-256s supplied.
+1. The operator answers ORB-2..ORB-4, ORB-6, STR-2..STR-7 and the §6 replay-modelling choice, in words (no parameter values). The §6 sequential-exit replay model is specified by the pre-registration owner and accepted by the operator.
+2. Once the capability allocation is accepted (checklist T09 gate D; operator ruling 2026-09-26, [production handoff](../handoffs/2026-09-26-orb-striker-edition-production.md) G2b), the private edition Pine and ports are produced (operator, or a separately authorized session on the primary checkout) and their SHA-256s supplied.
 3. Claude fills §3–§6, runs the §10 hooks, and the operator reviews the full text.
 4. The operator says "freeze". The Status line becomes `FROZEN <date>`, and the commit SHA goes into campaign record §59.
 

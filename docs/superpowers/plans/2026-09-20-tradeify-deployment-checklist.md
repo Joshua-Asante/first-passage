@@ -334,7 +334,7 @@ before its governing funding checkpoint merely because a task number is lower.
 
 ## Addendum 2026-09-26 — route feasibility is the first deployment decision
 
-**Operator direction (2026-09-26).** The first deployment decision is route
+**Operator direction (2026-09-26).** The operator confirmed on 2026-09-26, verbatim: "confirm route-first, the T09 gates and the allocation objective" ([PR #506 comment](https://github.com/Joshua-Asante/first-passage/pull/506#issuecomment-5845088628)). The first deployment decision is route
 feasibility; route-dependent work waits on it. T08's current verdict blocks the route as
 contracted (R3 = NONE; [T08 §7.8](../../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24)).
 The 09-25 support reply corrects the earlier durable-replay premise and makes
@@ -350,9 +350,9 @@ of lost responses.
    Better responses or a same-session lookup do not answer the second question.
 2. **T09 stays behind that result.** No adapter, REST producer, endpoint or fallback implementation starts until all four rows of the [gate acceptance record](#t09-gate-acceptance-record) are accepted against named revisions. Finalize T09 scope against the accepted allocation before implementation.
 
-   **Allocation objective (operator direction):** let TradingView and CrossTrade own the capabilities they can reliably provide for the exact route; our shared controller fills evidenced gaps. The map must justify retained local responsibilities and identify components that can be removed, reduced or avoided, separating preserved portfolio behavior from simplifications requiring a decision. It consumes the REST assessment as evidence rather than repeating it. Existing account-owner machinery is a reuse candidate, not a required final boundary. The dated allocation handoff must be committed and refreshed against the current route-native edition decisions and completed REST return before dispatch.
+   **Allocation objective (operator direction, confirmed 2026-09-26; [PR #506 comment](https://github.com/Joshua-Asante/first-passage/pull/506#issuecomment-5845088628)):** let TradingView and CrossTrade own the capabilities they can reliably provide for the exact route; our shared controller fills evidenced gaps. The map must justify retained local responsibilities and identify components that can be removed, reduced or avoided, separating preserved portfolio behavior from simplifications requiring a decision. It consumes the REST assessment as evidence rather than repeating it. Existing account-owner machinery is a reuse candidate, not a required final boundary. The dated allocation handoff must be committed and refreshed against the current route-native edition decisions and completed REST return before dispatch.
 
-   Adjacent work may continue only where it is independent of both route choice and capability allocation. This applies to the engineering spine, T07, T10 and provider-neutral T14; those packet labels are not blanket exemptions. Defer work whose value depends on retaining a component under evaluation. Offline qualification obligations remain unless separately changed by their owner.
+   Adjacent work may continue only where it is independent of both route choice and capability allocation. This applies to the engineering spine, T07, T10 and provider-neutral T14; those packet labels are not blanket exemptions. Defer work whose value depends on retaining a component under evaluation. Offline qualification obligations remain unless separately changed by their owner. Producing the private route-native edition files (ORB/Striker and Vanguard production handoffs, gates G2b and G3b) is not adjacent work: by operator ruling 2026-09-26 it waits until gate D accepts the allocation map.
 3. **Freeze stays behind it too.** Do not freeze E1 while route, incident or capability-allocation changes are unknown. The freeze inventory must reflect the accepted allocation, resulting behavior decisions and required requalification.
 
 ### T09 gate acceptance record
