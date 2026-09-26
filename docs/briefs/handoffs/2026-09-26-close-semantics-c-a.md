@@ -113,3 +113,17 @@ Two refinements were made on verification:
 - M8 stays `OPEN` rather than `CONFLICTING`, because no source says that orders **are** cancelled when the position is flat. CS19 is recorded there as the evidence from the disputed side of S.
 
 **Not done:** account access; vendor contact; drills or order actions; spend; contract or owner edits; private strategy sources; `.env`; GLM or other external model services; edits to the evidence directory.
+
+**Coordinator review (2026-09-26): ACCEPTED AS INPUT.** Reviewer: the coordinating session. Artifacts: `908798c` and the fix round `4600fd4`. Two refute-first reviews ran, and all eight findings were applied after verification (scope question S reclassified CONFLICTING; M8 added under element (c); the REST-close-to-liquidate mapping labelled as inference). This is **not** acceptance of any close-contract amendment or residual risk, and it authorizes no trace (operator ruling 2026-09-26, §2).
+
+**Result:**
+- All drill-plan M questions and §1.1a elements (a)–(e) remain OPEN or CONFLICTING. No reversal-prevention mechanism is documented. No trace exists, so nothing has triggered the ruling's "contradicting trace stops C-a".
+- Under packet §1.1 and drill-plan CR-3, X-3 can be considered only as part of the operator's decision on the residual-risk statement.
+
+**Routed to the operator:**
+1. The draft vendor question (note §6), to send if he chooses; nothing was sent.
+2. Actor-inventory candidates: the Tradovate platform timed exit and firm-side auto-liquidation.
+3. A packet §1.1 wording correction: liquidation is documented as cancelling the contract's working orders, not only "the OCO children". The documents also conflict on account-level scope.
+4. The X-3 read addition: the lifecycle of the liquidation order and of both children.
+
+**Evidence custody:** the public captures sit in the close-semantics worktree's gitignored `local_artifacts/close-semantics-2026-09-26/` (`MANIFEST.tsv` SHA-256 `74721db0…1d29`). That worktree is kept until the captures are relocated to the primary checkout.

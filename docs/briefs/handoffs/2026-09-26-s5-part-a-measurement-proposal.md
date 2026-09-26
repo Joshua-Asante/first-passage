@@ -59,3 +59,21 @@ This is a proposal only. Cite existing measurements; **run no new measurement**,
 - **Estimate inputs (§0, §1, §5):** `verify_for` CPU is 1.02–1.16 s per call across all nine rows and rises with depth. Panel proofs cover the whole 174-session source. The production claim that per-call cost does not depend on content is withdrawn.
 - **Stage 0 (§3.4, §4, §8):** calibration only. It cannot set the `/v7` N2 ceiling. That needs Stage 1b-N2 or an operator ruling extending M13.
 - **D2 falsifier, correcting this return:** the TEST_ONLY setup does not rule out the D2 fallback. The falsifier stays **open** until a valid Stage 1b record exists. It is triggered if Stage 1b is not approved or cannot run before release, unless the operator sets the ceiling by ruling (§5).
+
+**Coordinator review (2026-09-26): ACCEPTED AS INPUT; nothing approved; S5 stays HELD.** Reviewer: the coordinating session. Artifacts: `0a4cde5` and the fix round `32c4d40`. Refute-first reviews found nine issues (three major), all applied after verification: cold-start handling, setup CPU separated from workload CPU, and Windows capture. The coordinator spot-checked:
+- `profile.py:239`: N2's 360 s ceiling applies only to `/v6`;
+- `fixture_producer.py:154-156`: the test-cap raise is limited to releases v3–v6;
+- `part_a.py:184-186`: the predicted-budget refusal.
+
+**For operator decision (note §8):**
+1. The PROPOSED margin rule.
+2. Its scope.
+3. The `/v7` N2 ceiling.
+4. Two measurement steps that each need approval: downloading the S4 Linux run logs, which GitHub deletes around 2026-10-09 — time-sensitive; and a new Linux measurement job, which is both a CI change and a Linux dispatch.
+5. Whether budget arithmetic before release counts as RC-3 feasibility evidence.
+
+**RC status:** RC-1 is partly met (the ruling entry is on PR #517); RC-2 through RC-6 are unmet. **No S5 release proposal is supported.**
+
+**New defects to route (not fixed here):**
+- The test workload can never expand, so the "prescribed expansion" case is impossible on the current fixture.
+- A `/v7` profile would silently lose N2's ceiling and the test budget cap.

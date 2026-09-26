@@ -95,3 +95,15 @@ Write only the two result notes, plus an executor-return section appended to thi
 - **T09:** the never-dispatched attempt journal (`book_account_owner.py:1682-1684` leaves a never-sent request `UNKNOWN`).
 
 **Fix pass (2026-09-26, coordinator review findings; executor-return section only):** six minor findings applied to both notes. State-(i) Spec cells now read OPEN with the conflicting rows named, and the reading is labeled a proposal. The takeover (i) non-displaced verdict is split at the first bar. AC-3 is no longer cited as support for a multi-bar lifecycle. The §6.1 kernel claim is narrowed to the no-timeout precondition. Line citations were corrected at `62c956f`: `test_pr409_review4.py`, `trust_domain.py:142`, and runtime dependencies `:158-164`. No code change and no new test. The fix commit message records the `.\fp.ps1 check` record path and result.
+
+**Coordinator review (2026-09-26): ACCEPTED AS INPUT.** Reviewer: the coordinating session. Artifacts: `8fc0c63` and the fix round `6f76e1c`. Refute-first reviews found no separation or authority defects and six citation defects, all fixed. The coordinator spot-checked `replay.py:507-509` (the one-bar cancel), `book_account_owner.py:791-797` (accepted-without-terminal is fenced after one bar) and `book_takeover_owner.py:621` (takeover refuses on any unresolved attempt).
+
+**Deliverable 1:** the Pine, port, emulator and export parity keep the entry until the session ends. The qualification replay (RC-9) and rail S2 cancel it after one bar. It lists five conflicts and three candidate lifecycles, with no recommendation. It goes to the operator for the lifecycle ruling.
+
+**Deliverable 2:**
+- A known working order with fresh evidence is fenced like a stale one. That is a defect under the proposed spec reading, and the spec's reading of this state is itself OPEN.
+- Takeover over-blocks on non-displaced legs.
+- An unknown dispatch is fenced but raises no halt; that gap is already in the packet (CC-3).
+- The repair is specified as behavior. It changes the E1 freeze inventory, so it should land before the freeze. It is needed under every lifecycle.
+
+The spec clarification is for the rail-spec owner and is not applied.
