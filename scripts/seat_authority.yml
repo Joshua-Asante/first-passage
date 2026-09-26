@@ -1,0 +1,94 @@
+# Seat authority registry — the one canonical source for capability names, their risk
+# class and which seat may be granted them in a card.
+#
+# Owner of the rules this file encodes:
+#   docs/adr/2026-07-14-cc-cursor-surface-allocation.md §Decision, "Action classes and
+#   the authority block" (2026-09-25 revision). This file is the configuration those rules
+#   consume; change a rule there, then change the value here in the same PR.
+# Consumers:
+#   scripts/check_handoff_authority.py — validates the `yaml authority` block of a card.
+#   scripts/guard_operator_acts.py     — a best-effort Claude Code prompt/deny for the common
+#                                        command forms of the operator-act rows it can observe
+#                                        (merge, auto-merge, push to main, rail deploy, rail
+#                                        arm); it names these capability ids in its messages.
+#                                        It is not the enforcement boundary: that is the GitHub
+#                                        ruleset on main, the allow_auto_merge=false repository
+#                                        setting and the rail arm interlock; a Fly deploy has no
+#                                        server-side enforcement (surface-allocation ADR,
+#                                        enforcement-point table).
+#
+# Risk classes:
+#   low     — read-only or isolated (a worktree, a local test, a sandboxed agent).
+#   medium  — reversible change to shared development state (a pushed branch, a PR, a
+#             CI run, a cloud dispatch). The highest class any agent seat may be granted.
+#   high    — an operator act. Never grantable in a card: the operator performs it through
+#             an act they already perform (GitHub merge, arming GO, ratification, spend).
+#   forbidden (the `forbidden:` map, not a level) — un-grantable to any seat, and no
+#             approval unlocks it for an agent. Some have a separate governed route for the
+#             operator (named in `route`); none has an agent route.
+version: 1
+
+risk_order: [low, medium, high]
+
+capabilities:
+  repository.read:      {risk: low}
+  tests.run:            {risk: low}
+  worktree.write:       {risk: low}      # edits inside the card's own worktree/branch
+  research.run:         {risk: low}      # lab/ research inside its approved campaign contract
+  branch.push:          {risk: medium}   # glm/*, codex/*, claude/* branches only; never main
+  pr.open:              {risk: medium}
+  pr.review:            {risk: medium}   # review comments; not an approval to merge
+  ci.dispatch:          {risk: medium}   # e.g. the S2 Linux workflow (s2-linux-run skill)
+  cloud.dispatch:       {risk: medium}   # needs task-routing's environment GO
+  handoff.dispatch:     {risk: medium}   # opening a worker session against a frozen card
+  governance.author:    {risk: medium}   # drafting ADRs/briefs/STATE/campaign records (routing test 1)
+  core_anchor.edit:     {risk: medium}   # edits to routing test 1's core/ anchor paths
+  pr.merge:             {risk: high}     # operator act — GitHub merge
+  governance.ratify:    {risk: high}     # operator act — ratifying an ADR/prereg/closure
+  spend:                {risk: high}     # operator act — any paid service or subscription
+  rail.deploy:          {risk: high}     # operator act — fly deploy of c1-rail
+  rail.arm:             {risk: high}     # operator act — M1 RESOLVED + a GO per armed session
+
+forbidden:
+  trade.submit:
+    rule: "No agent may place a trade."
+    owner: AGENTS.md#live-execution-posture
+  pr.auto_merge:
+    rule: "Merge authority is the operator's, with no automated exception."
+    owner: docs/adr/2026-07-14-cc-cursor-surface-allocation.md
+  tv.login_automation:
+    rule: "TV login automation prohibited."
+    owner: docs/adr/2026-08-07-loop-s2-signal-host-fork.md
+  locked_parameter.edit:
+    rule: "Locked parameters are immutable."
+    owner: AGENTS.md#strategy-authorization-lifecycle
+  protection_constant.edit:
+    rule: "DD_TRIGGER / DD_SCALE are frozen."
+    owner: AGENTS.md#protection
+    route: "pre-registration -> re-MC -> both-halves regime gate -> admitting ADR (operator ratifies)"
+  private_data.commit:
+    rule: "Do not commit account identifiers/P&L, vendor-licensed CSVs, Pine source or locked ports."
+    owner: AGENTS.md#public-clone-posture
+  main.direct_push:
+    rule: "`main` requires a PR and the `skills (3.12)` status; a push to main bypasses both."
+    owner: AGENTS.md#gate-composition-authority
+
+# The capabilities a card may grant to each seat. High-risk capabilities appear nowhere
+# here: the operator seat is never the subject of a card.
+seats:
+  executive:
+    max_risk: medium
+    grantable: [repository.read, tests.run, pr.review, governance.author]
+  coordinator:
+    max_risk: medium
+    grantable: [repository.read, tests.run, worktree.write, research.run, branch.push,
+                pr.open, pr.review, ci.dispatch, cloud.dispatch, handoff.dispatch,
+                governance.author, core_anchor.edit]
+  escalation:
+    max_risk: medium
+    grantable: [repository.read, tests.run, worktree.write, branch.push, pr.open, pr.review,
+                governance.author, core_anchor.edit]
+  worker:
+    max_risk: medium
+    grantable: [repository.read, tests.run, worktree.write, research.run, branch.push,
+                pr.open, ci.dispatch]

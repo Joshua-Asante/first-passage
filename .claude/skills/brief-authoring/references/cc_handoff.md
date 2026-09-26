@@ -141,6 +141,22 @@ Per SKILL.md Discipline Check #3: list moves the author genuinely considered or 
 - **Re-deriving §0 facts.** If a §0 anchor seems inconsistent with what CC reads on disk, do NOT proceed with the inconsistent number. Return `NEEDS_CONTEXT` with the discrepancy surfaced.
 - **[Task-specific forbidden move]** — [reason].
 
+### §5.1 — Authority block (required for a new worker card)
+
+The machine-read grant for this card (surface-allocation ADR, 2026-09-25 revision). Names come
+from `scripts/seat_authority.yml`; `scripts/check_handoff_authority.py` refuses a forbidden or
+operator-act capability, anything above the seat's ceiling, and anything the `parent` card did not
+grant. Restate every parent constraint; add, never drop. `acceptance` repeats the §6.0 test names.
+
+```yaml authority
+seat: worker
+parent: docs/briefs/handoffs/<umbrella-or-parent-card>.md
+max_risk: medium
+capabilities: [repository.read, tests.run, worktree.write, branch.push, pr.open]
+constraints: [no_main_write, reserved_files_untouched]
+acceptance: [tests/<path>::test_<name>]
+```
+
 ---
 
 ## §6 — Gate + status return taxonomy
@@ -238,6 +254,10 @@ diff <(grep -A5 "thresholds" docs/briefs/pre-registration/Q-X-verdict-preregistr
 # Mechanical discipline check on this handoff brief
 $ python scripts/check_brief.py <this-file>.md --type cc_handoff
 # Expected: RESULT: well-formed  (applicable 1–6 + spawn extras this subset models)
+
+# The card's authority block narrows its parent and grants no operator act
+$ python scripts/check_handoff_authority.py <this-file>.md
+# Expected: 1 card(s) with an authority block, 0 violation(s)
 
 # Confirm CC's closure report uses the four-state taxonomy
 $ grep -E "^Status: (DONE|DONE_WITH_CONCERNS|NEEDS_CONTEXT|BLOCKED)" <cc-return-path>
