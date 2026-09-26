@@ -159,7 +159,8 @@ authority block on the current card, under the surface-allocation ADR's
 an improvement is never an operator act or a forbidden capability. This includes
 repairing an agent-owned execution sequence before it fails. A frozen worker card
 remains frozen: a worker returns contradictions, scope changes and reusable
-improvement evidence to its coordinator rather than writing owner records itself.
+improvement evidence to its coordinator rather than writing owner records itself;
+other seats route a change beyond their scope by seat under that ADR, as the skill sets out.
 
 1. Establish the observable or anticipated failure/waste from source evidence,
    not a general preference or self-reported confidence.
@@ -168,10 +169,15 @@ improvement evidence to its coordinator rather than writing owner records itself
 3. Choose at most one durable intervention at the cheapest reliable layer:
    source fix or test → hook → skill → AGENTS.md → ADR/lesson, as appropriate.
    Registering or changing a harness hook in `.claude/settings.json` is a
-   standing-configuration change under item 6: propose it; do not wire it unasked.
+   standing-configuration change under item 6: unasked, propose it rather than
+   wiring it; when the user requests it, implement it within the seat's grants
+   and any authority block on the current card.
 4. State the expected behavior change, verify it against the original mechanism,
-   and retain evidence with the existing task/plan/PR/campaign owner (a worker
-   through its return to the coordinator).
+   and retain evidence with the existing task/plan/PR/campaign owner. Write into an
+   owner record only when the current card's authority block grants
+   `governance.author` (with no card, only where the direct operator instruction
+   puts that owner in scope); otherwise route the evidence through the task return
+   (a worker's to its coordinator).
 5. Promote one-off feedback into standing guidance only when high-severity or
    independently recurring. Routine fixes need no new rule or separate record.
 6. Do not edit standing instructions unless the user requests it. Improvements

@@ -34,7 +34,7 @@ coordinator rather than being silently repaired by a worker.
 |---|---|
 | Mechanism established; correction is local, reversible, within the current task, the seat's granted capabilities and any authority block on the current card; outcome and acceptance criteria unchanged | Implement and verify it now. Do not ask again for authority already granted. This includes correcting an agent-owned execution sequence before it fails. |
 | Benefit uncertain, but a bounded evaluation fits the existing scope, budget and granted capabilities | State what result would justify adoption and the stopping condition; run the evaluation. Retain the current approach if the result is inconclusive or adverse. |
-| Required change crosses a frozen card, the seat's or card's capabilities, footprint or budget, or needs an operator act or forbidden capability | Prepare a concrete finding/proposal and return it to the coordinator; a decision only the operator can make goes as an [operator decision packet](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#operator-decision-packets). Continue independent work only where the card permits it. |
+| Required change crosses a frozen card, the seat's or card's capabilities, footprint or budget, or needs an operator act or forbidden capability | Prepare a concrete finding/proposal and route it by seat under the surface-allocation ADR's [seat and committed-handoff rules](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#decision): a worker returns it to its coordinator; the coordinator raises it to the executive on its PR or in the owning campaign record, or takes it to the escalation lane when one of that section's named triggers applies; work on the escalation lane returns to the coordinator; the executive takes it to the owning record's owner. A decision only the operator can make, from any seat, goes as an [operator decision packet](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#operator-decision-packets). Continue independent work only where the card permits it. |
 | Speculative, incidental, already addressed, or unlikely to repay its interruption cost | Leave it alone. Record a lead only if its owner has a concrete reason or trigger to revisit it. |
 
 Before acting, identify the changed behavior, its permitted scope, verification and
@@ -44,7 +44,8 @@ intervention per failure mechanism; consolidate existing protection where possib
 A local repair need not become a universal rule. Standing instruction changes still
 require an explicit user request; this workflow does not grant self-edit authority.
 Registering or changing a harness hook in `.claude/settings.json` is such a change:
-propose it rather than wiring it.
+do not wire one unasked; propose it. When the user explicitly requests it, implement
+it within the seat's granted capabilities and any authority block on the current card.
 
 Authority comes from the seat's grants in
 [`scripts/seat_authority.yml`](../../../scripts/seat_authority.yml) and any authority
@@ -76,11 +77,16 @@ in the normal task return. Verification does not confer merge or release authori
 
 ## Retain useful learning at its owner
 
-For a reusable improvement, a seat granted `governance.author` in the registry
-(coordinator, escalation or executive) adds a compact entry to the existing owning plan, PR or campaign record.
-A worker seat is not granted it: the worker puts the entry in its return (its PR
-description and four-state status) and the coordinator decides whether and where to
-record it. Routine local corrections can remain in the normal change report.
+For a reusable improvement, add a compact entry to the existing owning plan, PR or
+campaign record only when the current card's authority block grants `governance.author`.
+The registry sets the most a card may grant a seat (never this, to a worker); a card
+may narrow it, so the seat alone is not the grant. With no card, the direct operator
+instruction governs the current task ([AGENTS.md](../../../AGENTS.md#purpose)): write
+the entry only to an owner that instruction puts in scope. Otherwise route the entry
+instead of editing the owner: a worker puts it in its return (its PR description and
+four-state status); another seat routes it as the action table above sets out. The
+receiving owner decides whether and where to record it. Routine local corrections can
+remain in the normal change report.
 Use a stable heading/identifier and this shape; omit unavailable measurements rather
 than inventing them:
 
