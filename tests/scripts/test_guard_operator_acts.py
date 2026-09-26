@@ -834,7 +834,7 @@ def test_python_cluster_value_is_not_a_module(command):
 @pytest.mark.parametrize("command", [
     DEPLOY + " -ha -- --help=false",
     DEPLOY + " -hc -- -h=false",
-    DEPLOY + " -ac1 -he -- --help=false",
+    DEPLOY + " -ac1-rail -he -- --help=false",  # a live-path app (2026-09-26 scoping)
     DEPLOY + " -h -a -- --help=false",
     DEPLOY + " --help --app -- -h=false",
     DEPLOY + " -h -x -- --help=false",
@@ -901,3 +901,144 @@ def test_bulk_push_in_option_position_is_still_denied(command):
     # value is already given — stops being refused, or if a push that names main as a
     # refspec is silenced because a bulk-looking word beside it is a value.
     assert g.classify_command(command) == ("deny", "main.direct_push")
+
+
+# --- 2026-09-26 operator rulings (surface-allocation ADR, Addendum 2026-09-26) ---
+# "deploy prompt shouldn't fire more than it needs to": rail.deploy asks only for a Fly
+# deploy whose target app is on the live execution path, names that app, and asks when the
+# target cannot be determined. "agents can use the arming override": the M1-override arm
+# asks, never denies, under wording that says what the override does.
+
+RAIL_TOML = "deploy/c1_rail/fly.toml"
+DAEMON_TOML = "deploy/c1_signal_daemon/fly.toml"
+
+
+def _fly_app(path: Path) -> str:
+    import tomllib
+    return tomllib.loads(path.read_text(encoding="utf-8"))["app"]
+
+
+def _other_app_dir(tmp_path: Path) -> Path:
+    (tmp_path / "fly.toml").write_text('app = "some-other-app"\n', encoding="utf-8")
+    return tmp_path
+
+
+def _deploy_reason(command: str, cwd: Path) -> dict:
+    out = _run(json.dumps({"tool_name": "Bash", "tool_input": {"command": command},
+                           "cwd": str(cwd)}))
+    return json.loads(out)["hookSpecificOutput"] if out else {}
+
+
+def test_live_fly_apps_match_the_deploy_configs():
+    # Fails if the hook's live-path app list drifts from the app names the repository's
+    # own deploy configs deploy (the listener and the signal daemon).
+    assert g.LIVE_FLY_APPS == frozenset({_fly_app(REPO / RAIL_TOML),
+                                         _fly_app(REPO / DAEMON_TOML)})
+    assert g.LIVE_FLY_APPS == frozenset({"c1-rail", "c1-signal-daemon"})
+
+
+@pytest.mark.parametrize("command,app", [
+    (f"{DEPLOY} -a c1-rail", "c1-rail"),
+    (f"{DEPLOY} --app=c1-signal-daemon --image x", "c1-signal-daemon"),
+    (f"{DEPLOY} --config {RAIL_TOML}", "c1-rail"),
+    (f"{DEPLOY} -c {DAEMON_TOML}", "c1-signal-daemon"),
+    (f"{DEPLOY} --config deploy/c1_signal_daemon", "c1-signal-daemon"),
+    (f"{DEPLOY} deploy/c1_rail", "c1-rail"),
+])
+def test_live_path_deploy_asks_and_names_the_app(command, app):
+    # Fails if a deploy of the listener or the signal daemon runs without an operator
+    # prompt, or if the prompt does not name the app being deployed.
+    assert g.classify_command(command, cwd=str(REPO)) == ("ask", "rail.deploy")
+    block = _deploy_reason(command, REPO)
+    assert block["permissionDecision"] == "ask"
+    assert app in block["permissionDecisionReason"]
+
+
+@pytest.mark.parametrize("command", [
+    f"{DEPLOY} -a some-other-app",
+    f"{DEPLOY} --app some-other-app --image x",
+    "flyctl -a some-other-app " + "deploy",
+])
+def test_deploy_of_another_app_is_silent(command):
+    # Fails if a deploy of an app off the live execution path prompts (the operator
+    # ruling: the deploy prompt should not fire more than it needs to).
+    assert g.classify_command(command, cwd=str(REPO)) is None
+
+
+def test_config_naming_another_app_is_silent(tmp_path):
+    # Fails if a --config (absolute or relative) or a working-directory fly.toml whose
+    # app is off the live path prompts.
+    other = _other_app_dir(tmp_path)
+    toml = (other / "fly.toml").as_posix()
+    assert g.classify_command(f"{DEPLOY} --config {toml}", cwd=str(REPO)) is None
+    assert g.classify_command(f"{DEPLOY} -c fly.toml", cwd=str(other)) is None
+    assert g.classify_command(DEPLOY, cwd=str(other)) is None
+    assert g.classify_command(f"{DEPLOY} 2>&1 | tail -5", cwd=str(other)) is None
+    assert _deploy_reason(DEPLOY, other) == {}  # the hook reads the payload's cwd
+
+
+@pytest.mark.parametrize("command", [
+    DEPLOY,
+    f"{DEPLOY} --image registry.fly.io/x:1",
+    f"{DEPLOY} --config missing/fly.toml",
+    f"{DEPLOY} -a -h",
+    f"{DEPLOY} -a",
+    f"{DEPLOY} one two",
+    f"{DEPLOY} 'unterminated",
+])
+def test_deploy_with_no_determinable_target_asks(command, tmp_path):
+    # Fails if a deploy whose target app the guard cannot determine (no -a/--app, no
+    # readable fly.toml, a value that is not an app name, an unreadable command) goes
+    # through silently: it fails closed.
+    assert g.classify_command(command, cwd=str(tmp_path)) == ("ask", "rail.deploy")
+
+
+def test_undeterminable_deploy_prompt_says_so(tmp_path):
+    # Fails if the operator is shown an app name the guard did not determine.
+    block = _deploy_reason(DEPLOY, tmp_path)
+    assert block["permissionDecision"] == "ask"
+    assert "cannot determine" in block["permissionDecisionReason"]
+
+
+@pytest.mark.parametrize("command", [
+    "cd elsewhere && " + DEPLOY,
+    "Set-Location elsewhere; " + DEPLOY,
+    "bash -c 'cd elsewhere; " + DEPLOY + "'",
+    "env -C elsewhere " + DEPLOY,
+    "pwsh -wd elsewhere -c '" + DEPLOY + "'",
+    "./fp.ps1 " + DEPLOY,
+    "FLY_APP=c1-rail " + DEPLOY,
+    f"{DEPLOY} -a some-other-app --config {RAIL_TOML}",
+])
+def test_deploy_whose_directory_or_app_may_differ_asks(command, tmp_path):
+    # Fails if the guard resolves a relative fly.toml against a directory the command
+    # may have left (cd, env -C, pwsh -wd, the launcher), ignores FLY_APP, or lets an
+    # -a flag hide a live-path --config: each fails closed. The hook's own directory
+    # holds a fly.toml for another app, so only the fail-closed reading asks.
+    other = _other_app_dir(tmp_path)
+    cwd = str(REPO) if RAIL_TOML in command else str(other)
+    assert g.classify_command(command, cwd=cwd) == ("ask", "rail.deploy")
+
+
+def test_deploy_after_cd_with_an_explicit_other_app_is_silent(tmp_path):
+    # Fails if a directory change makes an explicit off-path -a prompt.
+    assert g.classify_command("cd elsewhere && " + DEPLOY + " -a some-other-app",
+                              cwd=str(tmp_path)) is None
+
+
+@pytest.mark.parametrize("flag", ["--acknowledge-m1-unresolved 'attended test'",
+                                  "--ack 'attended test'"])
+@pytest.mark.parametrize("wrap", ["{}", "fly ssh console -a c1-rail -C \"{}\"",
+                                  "./fp.ps1 {}", "{} 'unterminated"])
+def test_m1_override_arm_asks_and_never_denies(flag, wrap):
+    # Fails if an agent's M1-override arm is refused (operator ruling 2026-09-26: agents
+    # may use it, through the prompt) or is put to the operator without saying that it
+    # needs a structurally valid unresolved artifact and writes an arming_deviation record.
+    command = wrap.format(f"{ARM} --hours 4 {flag}")
+    assert g.classify_command(command) == ("ask", "rail.arm")
+    block = _reason(command)
+    assert block["permissionDecision"] == "ask"
+    reason = block["permissionDecisionReason"]
+    assert "UNRESOLVED" in reason and "arming_deviation" in reason
+    assert "structurally valid" in reason
+    assert "2026-09-26" in block["additionalContext"]

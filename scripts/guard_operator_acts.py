@@ -68,15 +68,34 @@ call, because one answer approves all of them.
                        hook), nor is a dry run (``--dry-run`` / ``-n`` in effect after the
                        last ``--no-dry-run``): it updates nothing. Server-side, the ruleset
                        refuses every push to ``main``.
-  * ``rail.deploy``  — ask: ``fly deploy`` / ``flyctl deploy`` (any Fly app, not only the
-                       rail's). Nothing server-side backs this prompt.
+  * ``rail.deploy``  — ask, **only for a live execution-path app** (operator ruling
+                       2026-09-26): ``fly deploy`` / ``flyctl deploy`` whose target is
+                       ``c1-rail`` (listener) or ``c1-signal-daemon`` (`LIVE_FLY_APPS`,
+                       pinned by a test to ``deploy/*/fly.toml``); the prompt names the app.
+                       The target is read as flyctl picks it: ``-a`` / ``--app``, else
+                       ``FLY_APP``, else the ``app`` of the fly.toml it loads (``--config``,
+                       a file or a directory, or ``fly.toml`` in the WORKING_DIRECTORY
+                       argument or the tool call's ``cwd``). A deploy of any other app is
+                       silent, and so is ``--help``. When the target cannot be determined it
+                       asks (fail closed): no ``-a`` and no readable fly.toml naming an app;
+                       ``FLY_APP`` set (its value is not read); a flag missing from the
+                       ``fly deploy`` table or a value that is not an app name; more than one
+                       argument; or a relative path after a ``cd`` or under a wrapper,
+                       ``pwsh``, the launcher or ``fly ssh``, whose directory the hook cannot
+                       see. An explicit ``--config`` beside ``-a`` counts as a target too.
+                       Nothing server-side backs this prompt.
   * ``rail.arm``     — ask: ``c1_rail_arm.py --arm`` (or argparse's ``--ar``), as a script
                        or ``-m`` module, through the ``fp.ps1`` launcher or ``pwsh``, and
                        inside ``fly ssh console -C '…'`` (``-sC '…'`` and ``-C'…'`` too).
-                       An arm that passes
-                       ``--acknowledge-m1-unresolved`` still asks, under a prompt that says
-                       M1 is not resolved. ``--disarm`` and ``--status`` never ask:
+                       An arm that passes ``--acknowledge-m1-unresolved`` asks, never
+                       denies (operator ruling 2026-09-26: agents may use the override, only
+                       through this prompt), under a prompt that says M1 is not resolved,
+                       that the helper accepts it only against a structurally valid
+                       unresolved artifact and that it writes an ``arming_deviation`` record.
+                       ``--disarm`` and ``--status`` never ask:
                        disarming is a risk-reducing exit and must never wait on a prompt.
+  * ``gh pr merge --admin`` stays askable when pinned (operator ruling 2026-09-26: record
+    only, no change).
 
 **Scope — what this hook is not.** It covers the Claude Code harness only (Codex and
 Z Code sessions are not hooked). It adds a prompt where an agent session holds a
@@ -127,9 +146,16 @@ import binascii
 import fnmatch
 import functools
 import json
+import os
 import re
 import sys
+from pathlib import Path
 from typing import NamedTuple
+
+try:
+    import tomllib
+except ImportError:  # Python < 3.11: `_toml_app` falls back to a regex
+    tomllib = None
 
 try:  # imported as `scripts.guard_operator_acts` (tests, repo root on sys.path)
     from scripts._shell_tokens import expand, program, segments
@@ -169,10 +195,6 @@ MESSAGES = {
     "pr.auto_merge": ("Auto-merge is forbidden to agents (pr.auto_merge).",
                       "Auto-merge is retired: merge authority is the operator's with no "
                       "automated exception. Report the PR as ready instead."),
-    "rail.deploy": ("Deploying the c1 rail is an operator act (rail.deploy). Confirm to "
-                    "proceed.",
-                    "A rail deploy is an operator act. Do not proceed unless the operator "
-                    "confirms this prompt."),
     "main.direct_push": ("Pushing to main is forbidden (main.direct_push): main takes PRs "
                          "only.",
                          "`main` requires a PR and the required status; a direct push "
@@ -203,12 +225,34 @@ _DETAIL_MESSAGES = {
         "merge. Re-issue it with the documented flags only; a merge must pin the head SHA."),
     ("rail.arm", M1_UNRESOLVED): (
         "Arming the c1 rail with M1 UNRESOLVED (rail.arm, --acknowledge-m1-unresolved): "
-        "this overrides the M1 RESOLVED interlock and writes an arming_deviation record. "
-        "Confirm only if you, the operator, are taking that deviation for this armed "
-        "session now.",
-        "This arm overrides an unresolved M1 (AGENTS.md: dry_run=false requires M1 "
-        "RESOLVED). Do not proceed unless the operator confirms this prompt."),
+        "the arm helper accepts this only against a structurally valid unresolved M1 "
+        "artifact, and it writes an arming_deviation record (operator-ratified discretion, "
+        "ADR 2026-07-22 Addendum 2026-07-31b). Confirming is the GO for this armed session; "
+        "confirm only if you, the operator, are taking that deviation now.",
+        "Operator ruling 2026-09-26: an agent may pass --acknowledge-m1-unresolved, but only "
+        "through this operator-act prompt; the operator's answer is the GO for this armed "
+        "session, and no agent places a trade. Do not proceed unless the operator confirms "
+        "this prompt."),
 }
+
+# The Fly apps on the live execution path (operator ruling 2026-09-26): the listener and the
+# signal daemon, as `deploy/c1_rail/fly.toml` and `deploy/c1_signal_daemon/fly.toml` name
+# them (a test pins the two against those files). A deploy of any other app is silent.
+LIVE_FLY_APPS = frozenset({"c1-rail", "c1-signal-daemon"})
+UNKNOWN_APP = "?"  # a deploy whose target app the guard cannot determine
+_APP_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
+_CD_PROGRAMS = frozenset({"cd", "chdir", "pushd", "popd", "set-location", "sl",
+                          "push-location", "pop-location"})
+
+
+class _Deploy(NamedTuple):
+    """One reading of a ``fly deploy`` command line: what decides its target app."""
+
+    app: str | None       # -a / --app (last value)
+    config: str | None    # -c / --config (last value)
+    workdir: str | None   # the WORKING_DIRECTORY argument
+    readable: bool        # every flag known and valued, at most one argument
+    anchored: bool = True  # relative paths resolve against the hook's cwd
 
 
 class Hit(NamedTuple):
@@ -216,6 +260,7 @@ class Hit(NamedTuple):
 
     cap: str
     detail: str | None = None  # the pinned head SHA for pr.merge; a message detail otherwise
+    readings: tuple[_Deploy, ...] = ()  # rail.deploy: the command's readings, unresolved
 
     @property
     def decision(self) -> str:
@@ -255,6 +300,26 @@ _GH_MERGE_FLAGS = {
 _FLY_FLAGS = {
     "access-token": ("t", True), "app": ("a", True), "config": ("c", True),
     "debug": ("", False), "verbose": ("", False), "help": ("h", False)}
+# `fly deploy --help`, fly v0.4.102: the command's own flags on top of `_FLY_FLAGS`. Only
+# the deploy-target reading uses it; a flag missing from it makes the target unreadable.
+# (`--depot` takes a value only after `=`, so it is a boolean for the next word.)
+_FLY_DEPLOY_FLAGS = {
+    **_FLY_FLAGS,
+    **{name: ("", True) for name in (
+        "build-arg", "build-context-warn-size", "build-secret", "build-target",
+        "buildpacks-docker-host", "buildpacks-volume", "compression", "compression-level",
+        "deploy-retries", "depot-scope", "dockerfile", "exclude-machines", "exclude-regions",
+        "file-literal", "file-local", "file-secret", "host-dedication-id", "ignorefile",
+        "image-label", "label", "lease-timeout", "max-concurrent", "max-unavailable",
+        "only-machines", "primary-region", "process-groups", "regions",
+        "release-command-timeout", "strategy", "vm-cpu-kind", "vm-cpus", "vm-memory",
+        "vm-size", "volume-initial-size", "wait-timeout")},
+    **{name: ("", False) for name in (
+        "build-only", "buildkit", "depot", "detach", "dns-checks", "flycast", "ha",
+        "https-failover", "http-failover", "local-only", "nixpacks", "no-cache",
+        "no-public-ips", "now", "push", "recreate-builder", "remote-only",
+        "skip-release-command", "smoke-checks", "update-only", "wg", "auto-confirm")},
+    "env": ("e", True), "image": ("i", True), "signal": ("s", True), "yes": ("y", False)}
 _GH_TRUE = frozenset({"1", "t", "T", "TRUE", "true", "True"})  # pflag's true spellings
 _GH_FALSE = frozenset({"0", "f", "F", "FALSE", "false", "False"})  # and its false ones
 _GRAPHQL_ENDPOINT = re.compile(r"(^|/)graphql/?(\?|$)", re.IGNORECASE)
@@ -619,11 +684,134 @@ def _fly_commands(args: list[str]) -> list[str]:
 def _judge_fly(args: list[str]) -> list[Hit]:
     hits: list[Hit] = []
     for command in _fly_commands(args):
-        hits += _command_hits(command)
-    paths = _command_paths(args, _FLY_VALUE_FLAGS, _FLY_BOOL_FLAGS, 1)
-    if any([args[i] for i in path] == ["deploy"] for path in paths) and not _fly_help(args):
-        hits.append(Hit("rail.deploy"))
+        hits += _unanchor(_command_hits(command))  # runs on the remote machine
+    paths = [path for path in _command_paths(args, _FLY_VALUE_FLAGS, _FLY_BOOL_FLAGS, 1)
+             if [args[i] for i in path] == ["deploy"]]
+    if paths and not _fly_help(args):
+        readings = tuple(dict.fromkeys(_deploy_reading(_without(args, p)) for p in paths))
+        hits.append(Hit("rail.deploy", readings=readings))
     return hits
+
+
+def _deploy_reading(args: list[str]) -> _Deploy:
+    """What decides a ``fly deploy``'s target app, read as pflag reads `args` (the command
+    line without the ``deploy`` word; cobra takes flags on either side of it)."""
+    parsed = _pflag(args, _FLY_DEPLOY_FLAGS)
+    value = dict(parsed.options)  # pflag: the last occurrence wins
+    return _Deploy(value.get("app") or None, value.get("config") or None,
+                   parsed.words[0] if parsed.words else None,
+                   not parsed.unread and len(parsed.words) <= 1)
+
+
+def _unanchor(hits: list[Hit]) -> list[Hit]:
+    """`hits` with every deploy reading marked as run from a directory the hook cannot
+    see (after a ``cd``, under a wrapper, the launcher, ``pwsh`` or on a remote machine)."""
+    return [hit._replace(readings=tuple(r._replace(anchored=False) for r in hit.readings))
+            if hit.cap == "rail.deploy" else hit for hit in hits]
+
+
+def _toml_app(path: Path) -> str:
+    """The ``app`` a fly.toml names, or `UNKNOWN_APP` when it cannot be read."""
+    try:
+        text = path.read_text(encoding="utf-8")
+        if tomllib is not None:
+            app = tomllib.loads(text).get("app")
+        else:
+            match = re.search(r"""(?m)^\s*app\s*=\s*["']([^"'\n]*)["']""", text)
+            app = match.group(1) if match else None
+    except (OSError, ValueError, UnicodeDecodeError):
+        return UNKNOWN_APP
+    return app if isinstance(app, str) and _APP_NAME.fullmatch(app) else UNKNOWN_APP
+
+
+def _config_app(reading: _Deploy, cwd: str | None) -> str:
+    """The app the fly.toml a deploy loads names: ``--config`` (a file or a directory), or
+    ``fly.toml`` in the WORKING_DIRECTORY argument or else the current directory. A
+    relative path whose base the hook cannot see, or a relative ``--config`` beside a
+    WORKING_DIRECTORY argument, is `UNKNOWN_APP`."""
+    base = Path(cwd) if cwd and reading.anchored else None
+    if reading.config:
+        path = Path(reading.config)
+        if not path.is_absolute():
+            if base is None or reading.workdir:
+                return UNKNOWN_APP
+            path = base / path
+    else:
+        path = Path(reading.workdir or ".")
+        if not path.is_absolute():
+            if base is None:
+                return UNKNOWN_APP
+            path = base / path
+    try:
+        return _toml_app(path / "fly.toml" if path.is_dir() else path)
+    except (OSError, ValueError):
+        return UNKNOWN_APP
+
+
+def _deploy_targets(reading: _Deploy, cwd: str | None, fly_app_env: bool) -> set[str]:
+    """The apps one reading may deploy. flyctl takes ``-a`` over ``FLY_APP`` over the
+    config's ``app``; an explicit ``--config`` beside ``-a`` counts too (toward asking)."""
+    if not reading.readable:
+        return {UNKNOWN_APP}
+    targets = set()
+    if reading.app:
+        targets.add(reading.app if _APP_NAME.fullmatch(reading.app) else UNKNOWN_APP)
+        if not reading.config:
+            return targets
+    elif fly_app_env:
+        return {UNKNOWN_APP}  # FLY_APP names the app; its value is not visible here
+    targets.add(_config_app(reading, cwd))
+    return targets
+
+
+def _resolve_deploys(hits: list[Hit], command: str, cwd: str | None) -> list[Hit]:
+    """Each deploy scoped to the live execution path (operator ruling 2026-09-26): a deploy
+    that can only reach apps off it is dropped; one that may reach a live-path app, or
+    whose target cannot be determined, asks with the app names (or `UNKNOWN_APP`) as its
+    detail."""
+    fly_app_env = bool(os.environ.get("FLY_APP")) or "FLY_APP" in command
+    out = []
+    for hit in hits:
+        if hit.cap != "rail.deploy":
+            out.append(hit)
+            continue
+        targets = set().union(*(_deploy_targets(r, cwd, fly_app_env)
+                                for r in hit.readings)) if hit.readings else {UNKNOWN_APP}
+        live = sorted(t for t in targets if t.casefold() in LIVE_FLY_APPS)
+        if live or UNKNOWN_APP in targets:
+            other = len(targets) > len(live) + (UNKNOWN_APP in targets)
+            detail = ",".join(live + ([UNKNOWN_APP] if UNKNOWN_APP in targets else [])
+                              + ([_OTHER_APPS] if other else []))
+            out.append(Hit("rail.deploy", detail))
+    return list(dict.fromkeys(out))
+
+
+_OTHER_APPS = "+"  # a deploy detail marker: some reading targets an app off the live path
+
+
+def _deploy_message(detail: str) -> tuple[str, str]:
+    parts = detail.split(",")
+    names = [n for n in parts if n not in (UNKNOWN_APP, _OTHER_APPS)]
+    apps = " and ".join(names)
+    if names and UNKNOWN_APP in parts:
+        what = (f"This Fly deploy may target {apps} (live execution path); the guard "
+                f"cannot determine every app it may target")
+    elif names and _OTHER_APPS in parts:
+        what = f"This Fly deploy may target {apps}, on the live execution path"
+    elif names:
+        what = f"This Fly deploy targets {apps}, on the live execution path"
+    else:
+        what = ("The guard cannot determine this Fly deploy's target app from -a/--app, "
+                "--config or a readable fly.toml, so it is treated as a live-path deploy")
+    return (f"{what} (rail.deploy). Confirm only if you, the operator, are deploying it "
+            f"now.",
+            "Deploying a live execution-path app (the c1-rail listener or the "
+            "c1-signal-daemon) is an operator act. Do not proceed unless the operator "
+            "confirms this prompt; name the target with -a/--app or --config.")
+
+
+# The table entry is the undeterminable-target prompt; `_message` names the resolved apps.
+MESSAGES["rail.deploy"] = _deploy_message(UNKNOWN_APP)
 
 
 def _fly_readings(arg: str, help_on: bool) -> set[tuple[bool, bool]]:
@@ -897,10 +1085,10 @@ def _words_hits(words: list[str]) -> list[Hit]:
         return _judge_fly(args)
     if base == "git":
         return _judge_git(args)
-    if base in ("pwsh", "powershell"):
-        return _judge_powershell(args)
+    if base in ("pwsh", "powershell"):  # `-WorkingDirectory` may move it
+        return _unanchor(_judge_powershell(args))
     if base == "fp.ps1":  # the project launcher runs `<command> <args>` (AGENTS.md)
-        return _words_hits(args)
+        return _unanchor(_words_hits(args))  # from its own checkout root
     if _PYTHONS.fullmatch(base):
         return _judge_python(args)
     if base.endswith("c1_rail_arm.py"):
@@ -928,10 +1116,15 @@ def _command_hits_cached(command: str) -> tuple[Hit, ...]:
     # same suffix text many times, which would otherwise grow exponentially.
     try:
         hits: list[Hit] = []
+        moved = False  # a `cd` anywhere: the directory a deploy runs from is not known
         for tokens in segments(command, strict=True):
-            for words in expand([str(t) for t in tokens], strict=True):
-                hits += _words_hits([str(w) for w in words])
-        return tuple(dict.fromkeys(hits))
+            plain = [str(t) for t in tokens]
+            for words in expand(plain, strict=True):
+                words = [str(w) for w in words]
+                moved |= bool(words) and program(words[0], strict=True) in _CD_PROGRAMS
+                found = _words_hits(words)
+                hits += found if words == plain else _unanchor(found)  # unwrapped
+        return tuple(dict.fromkeys(_unanchor(hits) if moved else hits))
     except Exception:  # unreadable (or unjudgeable): raw patterns, toward refusing
         return tuple(_fallback_hits(command))
 
@@ -978,13 +1171,17 @@ def _payload_hits(payload: dict) -> list[Hit]:
     if name in SHELL_TOOLS:
         command = tool_input.get("command")
         if isinstance(command, str):
-            return _powershell_hits(command) if name == "PowerShell" else _command_hits(command)
+            hits = _powershell_hits(command) if name == "PowerShell" else _command_hits(command)
+            cwd = payload.get("cwd")
+            return _resolve_deploys(hits, command, cwd if isinstance(cwd, str) else os.getcwd())
     return []
 
 
-def classify_command(command: str) -> tuple[str, str] | None:
-    """(decision, capability) for a shell command, or None when it is not an operator act."""
-    hit = _verdict(_command_hits(command))
+def classify_command(command: str, cwd: str | None = None) -> tuple[str, str] | None:
+    """(decision, capability) for a shell command run from `cwd` (default: this process's
+    directory), or None when it is not an operator act."""
+    hits = _resolve_deploys(_command_hits(command), command, cwd or os.getcwd())
+    hit = _verdict(hits)
     return (hit.decision, hit.cap) if hit else None
 
 
@@ -995,6 +1192,8 @@ def classify(payload: dict) -> tuple[str, str] | None:
 
 
 def _message(hit: Hit) -> tuple[str, str]:
+    if hit.cap == "rail.deploy":
+        return _deploy_message(hit.detail or UNKNOWN_APP)
     return _DETAIL_MESSAGES.get((hit.cap, hit.detail), MESSAGES[hit.cap])
 
 
