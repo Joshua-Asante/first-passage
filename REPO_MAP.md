@@ -90,7 +90,7 @@ Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
 `--check` exits 1 on drift; it is **not** wired into `gates.yml`.
 
 <!-- BEGIN generated: scripts-table -->
-_94 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_95 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
@@ -181,6 +181,7 @@ _94 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/s2_run_evidence.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/seal_account_snapshot.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/session_divergence_hook.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
+| `scripts/state_roll.py` | governance | — | manual/local only, not in gates.yml; layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/sync_liveness_indexes.py` | governance | `sync-liveness` (audit) | layer fallback (not in SCRIPTS_LAYER) |
 | `scripts/sync_pine_to_worktree.py` | governance | — | manual/local only, not in gates.yml |
 | `scripts/sync_skills.py` | governance | — | manual/local only, not in gates.yml |

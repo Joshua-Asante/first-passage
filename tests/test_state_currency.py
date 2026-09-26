@@ -181,3 +181,24 @@ def test_heading_is_discharged_requires_affirmative_token() -> None:
     assert mod.heading_is_discharged("### 2026-08-24 — NOT DISCHARGED") is False
     assert mod.heading_is_discharged("### 2026-08-24 — UNDISCHARGED") is False
     assert mod.heading_is_discharged("### 2026-08-24 (Monday)") is False
+
+
+def test_stale_weekly_fail_names_state_roll(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state(
+            curated="2026-08-28",
+            newest_decision="2026-08-28",
+            weekly="2026-08-28",
+        ),
+    )
+    env = os.environ.copy()
+    env["STATE_CURRENCY_TODAY"] = "2026-09-03"
+    proc = subprocess.run(
+        [sys.executable, str(SCRIPT), "--state", str(state)],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+    )
+    assert proc.returncode == 1
+    assert b"for deadline rolls run: python scripts/state_roll.py" in proc.stderr

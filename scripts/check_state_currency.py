@@ -160,7 +160,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"state-currency: FAIL — {exc}", file=sys.stderr)
         return 1
     if found:
-        print("state-currency: FAIL — " + "; ".join(found), file=sys.stderr)
+        print(
+            "state-currency: FAIL — "
+            + "; ".join(found)
+            + " — for deadline rolls run: python scripts/state_roll.py",
+            file=sys.stderr,
+        )
         return 1
     print(
         f"state-currency: OK — Last curated and forward-trigger dates "

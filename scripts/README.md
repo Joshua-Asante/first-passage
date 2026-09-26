@@ -328,6 +328,18 @@ script existence checks remain. This does not reopen retired skill migrations.
 
 ## Validation maintenance
 
+### STATE currency
+
+[`state_roll.py`](state_roll.py) applies what [`check_state_currency.py`](check_state_currency.py)
+only reports: a past Weekly/Monthly recurring deadline advances (next Friday / same
+day-of-month) and decision-index rows past 15 move into the
+[archive](../docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md)
+under a date-keyed `**Roll YYYY-MM-DD**` header, with relative links rebased.
+It moves dates only: covered or missed weeks, reconfirm results and `Last curated`
+stay operator-recorded. Output depends only on the input bytes and the date, so
+concurrent sessions make identical edits that merge cleanly. Run it instead of
+hand-editing a stale deadline; `--check` reports without writing.
+
 ### Brief checker ownership
 
 The [brief-authoring skill](../.claude/skills/brief-authoring/SKILL.md#checker-ownership)
