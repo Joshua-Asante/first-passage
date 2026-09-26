@@ -600,3 +600,65 @@ def test_reading_every_way_stays_bounded(command, expected):
     start = time.perf_counter()
     assert g.classify_command(command) == expected
     assert time.perf_counter() - start < 5
+
+
+# --- 2026-09-25 babysit repairs (Codex review of #503 at a230f8b) ---
+
+@pytest.mark.parametrize("command", [
+    "git push --dry-run origin main",
+    "git push -n origin main",
+    "git push origin main --dry-run",
+    "git push --dry origin main",
+    "git push --dr origin HEAD:main",
+    "git push -nu origin main",
+    "git push -vn --force origin main",
+    "git push --no-dry-run --dry-run origin main",
+    "git push -n --mirror origin",
+    "git push -n origin --delete main",
+    "git -C /repo push -n origin main",
+])
+def test_dry_run_push_to_main_is_silent(command):
+    # Fails if a push git only simulates (`--dry-run` / `-n` effective last, git's
+    # abbreviations and short clusters included) is refused as main.direct_push
+    # (Codex #503, 4109427044).
+    assert g.classify_command(command) is None
+
+
+@pytest.mark.parametrize("command", [
+    "git push --dry-run --no-dry-run origin main",
+    "git push -n --no-dry origin main",
+    "git push --no-dry-run origin main",
+    "git push -o -n origin main",
+    "git push --push-option -n origin main",
+    "git push -on origin main",
+    "git push --dry-run=yes origin main",
+    "git push --d origin main",
+    "git push origin main -- -n",
+])
+def test_push_that_is_not_a_dry_run_is_still_judged(command):
+    # Fails if a dry-run reading silences a real push: a later `--no-dry-run`, a `-n`
+    # that is another option's value, an ambiguous abbreviation, or a word after `--`.
+    assert g.classify_command(command) == ("deny", "main.direct_push")
+
+
+@pytest.mark.parametrize("command,expected", [
+    (f"{MERGE} 501 --auto=false {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto=0 {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto=f {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto=F {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto=FALSE {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto=False {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto --auto=false {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto=false --squash", ("deny", "pr.merge_unpinned")),
+    ("gh --auto=false pr " + f"merge 501 {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto {PIN}", ("deny", "pr.auto_merge")),
+    (f"{MERGE} 501 --auto=true {PIN}", ("deny", "pr.auto_merge")),
+    (f"{MERGE} 501 --auto=1 {PIN}", ("deny", "pr.auto_merge")),
+    (f"{MERGE} 501 --auto=false --auto {PIN}", ("deny", "pr.auto_merge")),
+    (f"{MERGE} 501 --auto=yes {PIN}", ("deny", "pr.auto_merge")),
+])
+def test_explicit_false_auto_is_judged_as_a_merge(command, expected):
+    # Fails if `--auto=false` (pflag's false spellings, last value wins) is refused as
+    # auto-merge instead of being judged as the pinned or unpinned merge it is, or if
+    # any value that is not a false spelling stops being refused (Codex #503, 4109427036).
+    assert g.classify_command(command) == expected

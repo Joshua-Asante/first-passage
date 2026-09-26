@@ -54,7 +54,9 @@ call, because one answer approves all of them.
                        are silent: gh disables auto-merge (or prints help) and returns
                        before merging.
   * ``pr.auto_merge``— deny: the GitHub MCP ``enable_pr_auto_merge`` tool;
-                       ``gh pr merge --auto``; an ``enablePullRequestAutoMerge`` mutation.
+                       ``gh pr merge --auto`` (unless its last value is one of pflag's
+                       false spellings, which leaves a merge, judged as ``pr.merge``); an
+                       ``enablePullRequestAutoMerge`` mutation.
                        Merge authority is the operator's with no automated exception.
                        Server-side, ``allow_auto_merge: false`` refuses it for every form.
   * ``main.direct_push`` — deny: ``git push`` with ``main`` as a destination (``main``,
@@ -63,7 +65,9 @@ call, because one answer approves all of them.
                        abbreviations of them), the matching refspec ``:``, or a glob
                        destination that covers ``main``. ``main`` takes PRs only. A push with
                        no refspec is not judged (the current branch is not visible to the
-                       hook). Server-side, the ruleset refuses every push to ``main``.
+                       hook), nor is a dry run (``--dry-run`` / ``-n`` in effect after the
+                       last ``--no-dry-run``): it updates nothing. Server-side, the ruleset
+                       refuses every push to ``main``.
   * ``rail.deploy``  — ask: ``fly deploy`` / ``flyctl deploy`` (any Fly app, not only the
                        rail's). Nothing server-side backs this prompt.
   * ``rail.arm``     — ask: ``c1_rail_arm.py --arm`` (or argparse's ``--ar``), as a script
@@ -252,6 +256,7 @@ _FLY_FLAGS = {
     "access-token": ("t", True), "app": ("a", True), "config": ("c", True),
     "debug": ("", False), "verbose": ("", False), "help": ("h", False)}
 _GH_TRUE = frozenset({"1", "t", "T", "TRUE", "true", "True"})  # pflag's true spellings
+_GH_FALSE = frozenset({"0", "f", "F", "FALSE", "false", "False"})  # and its false ones
 _GRAPHQL_ENDPOINT = re.compile(r"(^|/)graphql/?(\?|$)", re.IGNORECASE)
 _GIT_GLOBAL_VALUES = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace",
                                 "--config-env", "--exec-path", "--attr-source",
@@ -265,6 +270,7 @@ _GIT_GLOBAL_BOOLS = frozenset({"-p", "-P", "--paginate", "--no-pager", "--bare",
 # `--force-with-lease` take one only after `=`, and `--force-if-includes` none.
 _GIT_PUSH_VALUES = frozenset({"-o", "--push-option", "--receive-pack", "--exec",
                               "--repo", "--recurse-submodules"})
+_GIT_PUSH_SHORT_BOOLS = frozenset("vqnfud46")  # `git push -h`: the short booleans
 _GIT_BULK_PUSH = ("all", "branches", "mirror")  # git accepts any unambiguous prefix
 _MAIN = frozenset({"main", "heads/main", "refs/heads/main"})
 _PYTHONS = re.compile(r"(python(\d+(\.\d+)?)?|py|pypy3?)")
@@ -417,12 +423,14 @@ def _merge_hit(sha: object) -> Hit:
 
 def _judge_pr_merge(args: list[str]) -> list[Hit]:
     parsed = _pflag(args, _GH_MERGE_FLAGS)
-    if any(name == "auto" for name, _ in parsed.options) or (
+    value = dict(parsed.options)  # pflag: the last occurrence wins
+    # An `--auto` whose last value is not one of pflag's false spellings is auto-merge
+    # (a value gh cannot parse is refused the same way); an explicit false is a merge.
+    if ("auto" in value and value["auto"] not in _GH_FALSE) or (
             parsed.unread and any(a == "--auto" or a.startswith("--auto=") for a in args)):
         return [Hit("pr.auto_merge")]
     if parsed.unread:
         return [Hit("pr.merge_unpinned", UNREAD)]
-    value = dict(parsed.options)  # pflag: the last occurrence wins
     if value.get("help") in _GH_TRUE or value.get("disable-auto") in _GH_TRUE:
         return []  # gh prints help, or disables auto-merge and returns before merging
     return [_merge_hit(value.get("match-head-commit"))]
@@ -645,13 +653,54 @@ def _judge_git(args: list[str]) -> list[Hit]:
     bulk option, the matching refspec or a glob.
 
     A push with no refspec pushes the current branch, which this guard cannot see;
-    that case stays with branch protection. A global option the guard does not list is
+    that case stays with branch protection; so does a dry run, which updates nothing
+    (`_push_dry_run`). A global option the guard does not list is
     read both as taking the next word and as not taking it.
     """
     for path in _command_paths(args, _GIT_GLOBAL_VALUES, _GIT_GLOBAL_BOOLS, 1):
-        if path and args[path[0]] == "push" and _push_covers_main(args[path[0] + 1:]):
+        if not path or args[path[0]] != "push":
+            continue
+        push_args = args[path[0] + 1:]
+        if not _push_dry_run(push_args) and _push_covers_main(push_args):
             return [Hit("main.direct_push")]
     return []
+
+
+def _push_dry_run(push_args: list[str]) -> bool:
+    """Whether git only simulates this push (it updates nothing): the last of
+    ``--dry-run`` / ``-n`` (alone or in a short cluster) and ``--no-dry-run`` wins, each
+    long form in any abbreviation git accepts. The value of a value option is skipped
+    (``-o -n`` pushes), as is anything after ``--``. A word the guard cannot place — an
+    ambiguous abbreviation, ``--dry-run=x``, an unknown short option — reads as not a dry
+    run, so the push is judged."""
+    dry, skip = False, False
+    for arg in push_args:
+        if skip:
+            skip = False
+        elif arg == "--":
+            break
+        elif arg.startswith("--"):
+            name, eq, _ = arg[2:].partition("=")
+            if not name:
+                continue
+            if not eq and any(o[2:].startswith(name) for o in _GIT_PUSH_VALUES
+                              if o.startswith("--")):
+                skip = True  # a value option (or an abbreviation of one) takes the next word
+            elif "dry-run".startswith(name) or (
+                    name.startswith("no-") and "no-dry-run".startswith(name)):
+                # `--d` is ambiguous (`--delete`), and `--no-d` too (`--no-delete`).
+                dry = not eq and len(name) >= 2 and not name.startswith("no-")
+        elif arg.startswith("-") and len(arg) > 1:
+            for j, char in enumerate(arg[1:], start=1):
+                if char == "n":
+                    dry = True
+                elif char == "o":  # `-o <value>`: the rest of the cluster, or the next word
+                    skip = j == len(arg) - 1
+                    break
+                elif char not in _GIT_PUSH_SHORT_BOOLS:
+                    dry = False
+                    break
+    return dry
 
 
 def _push_covers_main(push_args: list[str]) -> bool:

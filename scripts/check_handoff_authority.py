@@ -37,7 +37,9 @@ HARD checks (exit 1), each the property the ADR states:
       checks: naming it records where the card came from, and narrows nothing. Requiring
       every parent to carry a block would be a new rule, which the ADR does not state.
 
-Files without a block are not checked: the block is required of new worker cards by the
+A block is a CommonMark fence: its opening and closing fences may be indented by up to
+three spaces (four is an indented code block, not a fence), and a fence line with text
+after it does not close the block. Files without a block are not checked: the block is required of new worker cards by the
 ADR and verified at the coordinator's pre-dispatch read, and historical cards are not
 retrofitted. ``--all`` scans ``docs/briefs/**/*.md``.
 
@@ -57,7 +59,12 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 REGISTRY = REPO_ROOT / "scripts" / "seat_authority.yml"
 SCAN_ROOT = Path("docs") / "briefs"
 
-_FENCE_OPEN = re.compile(r"^(?P<fence>`{3,}|~{3,})[ \t]*yaml[ \t]+authority[ \t]*$")
+# CommonMark fenced code blocks: a fence may be indented by up to three spaces (four is an
+# indented code block); a closing fence is the opening character, at least as long as
+# the opening fence, with nothing after it but spaces or tabs.
+_FENCE_OPEN = re.compile(r"^(?P<indent> {0,3})(?P<fence>`{3,}|~{3,})"
+                         r"[ \t]*yaml[ \t]+authority[ \t]*$")
+_FENCE_CLOSE = re.compile(r"^ {0,3}(?P<fence>`{3,}|~{3,})[ \t]*$")
 
 
 @dataclass(frozen=True)
@@ -96,7 +103,10 @@ def load_registry(path: Path = REGISTRY) -> Registry:
 
 
 def extract_blocks(text: str) -> list[str]:
-    """Bodies of every ``yaml authority`` fence in `text`."""
+    """Bodies of every ``yaml authority`` fence in `text`, read as CommonMark reads a
+    fenced code block: the opening fence indented by up to three spaces, each body line
+    stripped of up to that many leading spaces, and the block running to its closing
+    fence (or to the end of the text when it has none)."""
     blocks: list[str] = []
     lines = text.splitlines()
     i = 0
@@ -105,11 +115,16 @@ def extract_blocks(text: str) -> list[str]:
         if not m:
             i += 1
             continue
-        fence = m.group("fence")
+        fence, indent = m.group("fence"), len(m.group("indent"))
         body: list[str] = []
         i += 1
-        while i < len(lines) and not lines[i].startswith(fence):
-            body.append(lines[i])
+        while i < len(lines):
+            close = _FENCE_CLOSE.match(lines[i])
+            if close and close.group("fence")[0] == fence[0] \
+                    and len(close.group("fence")) >= len(fence):
+                break
+            line = lines[i]
+            body.append(line[min(indent, len(line) - len(line.lstrip(" "))):])
             i += 1
         blocks.append("\n".join(body))
         i += 1

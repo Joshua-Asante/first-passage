@@ -246,3 +246,61 @@ def test_mutual_parents_are_rejected(tmp_path):
     b = _card(tmp_path, "parent: a.md\n" + WORKER_OK, name="b.md")
     assert any("loops" in e for e in _errs(a, tmp_path))
     assert any("loops" in e for e in _errs(b, tmp_path))
+
+
+# --- 2026-09-25 babysit repairs (Codex review of #503 at a230f8b, comment 4109427040) ---
+
+FENCE = "`" * 3
+DELEGATES_ARM = WORKER_OK.replace("pr.open]", "pr.open, rail.arm]")
+
+
+def _indented(body: str, pad: str, close: str | None = None) -> str:
+    """A card whose fence (and body) is indented by `pad`; the closing fence by `close`."""
+    lines = "".join(f"{pad}{line}\n" for line in body.splitlines())
+    closer = pad if close is None else close
+    return f"# Card\n\n{pad}{FENCE}yaml authority\n{lines}{closer}{FENCE}\n"
+
+
+@pytest.mark.parametrize("pad", [" ", "  ", "   "])
+def test_fence_indented_up_to_three_spaces_is_checked(tmp_path, pad):
+    # Fails if a CommonMark fence indented by 1-3 spaces is read as no block, so a card
+    # that delegates an operator act is skipped as historical (Codex #503, 4109427040).
+    (tmp_path / "umbrella.md").write_text("# Umbrella\n", encoding="utf-8")
+    path = tmp_path / "card.md"
+    path.write_text(_indented("parent: umbrella.md\n" + DELEGATES_ARM, pad), encoding="utf-8")
+    assert any(e.startswith("A3") for e in _errs(path, tmp_path))
+    clean = tmp_path / "clean.md"
+    clean.write_text(_indented("parent: umbrella.md\n" + WORKER_OK, pad), encoding="utf-8")
+    assert _errs(clean, tmp_path) == []
+    assert len(cha.extract_blocks(clean.read_text(encoding="utf-8"))) == 1
+
+
+def test_fence_indented_four_spaces_is_an_indented_code_block(tmp_path):
+    # Fails if a four-space-indented fence (CommonMark: an indented code block, not a
+    # fence) is taken for an authority block.
+    path = tmp_path / "card.md"
+    path.write_text(_indented(DELEGATES_ARM, "    "), encoding="utf-8")
+    assert cha.extract_blocks(path.read_text(encoding="utf-8")) == []
+    assert _errs(path, tmp_path) == []
+
+
+@pytest.mark.parametrize("close", ["", " ", "   "])
+def test_closing_fence_may_be_indented_up_to_three_spaces(tmp_path, close):
+    # Fails if an indented closing fence is not read as the close, so the fence line
+    # lands in the YAML and a clean card is refused.
+    (tmp_path / "umbrella.md").write_text("# Umbrella\n", encoding="utf-8")
+    path = tmp_path / "card.md"
+    path.write_text(_indented("parent: umbrella.md\n" + WORKER_OK, "", close=close),
+                    encoding="utf-8")
+    assert _errs(path, tmp_path) == []
+
+
+def test_fence_line_with_an_info_string_does_not_close(tmp_path):
+    # Fails if a fence line carrying an info string is read as the close (CommonMark: a
+    # closing fence has nothing after it), so the rest of the block goes unchecked.
+    path = tmp_path / "card.md"
+    path.write_text(f"{FENCE}yaml authority\nseat: worker\n{FENCE}text\n"
+                    f"capabilities: [rail.arm]\n{FENCE}\n", encoding="utf-8")
+    assert cha.extract_blocks(path.read_text(encoding="utf-8")) == [
+        f"seat: worker\n{FENCE}text\ncapabilities: [rail.arm]"]
+    assert any(e.startswith("A1") for e in _errs(path, tmp_path))
