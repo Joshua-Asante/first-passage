@@ -77,7 +77,7 @@ A local session read the pinned Vanguard port (`e6a03d04…`) and Pine (`af26899
 
 **Rail dependencies this edition shares with the ORB/Striker editions (not port work):**
 - **Entry and add split.** Nothing yet turns an N-contract intent into N one-contract requests. The owner is T09 / TB-I3 scope under incident ADR §A8 rules 9–10.
-- **Exit split.** The port's close is one market exit for the whole position (`port:183-185`, `qty=None`). Incident ADR §A8 assumes an exit is for one contract under the one-contract rule, so a multi-contract close also needs splitting at the rail. Recorded as freeze item VAN-8 here and STR-7 / ORB-6 in the sibling.
+- **Exit split.** The port's close is one market exit for the whole position (`port:183-185`). Incident ADR §A8 assumes an exit is for one contract under the one-contract rule, so a multi-contract close also needs splitting at the rail. Recorded as freeze item VAN-8 here and STR-7 / ORB-6 in the sibling.
 
 ## §4 — Identity binding (filled at freeze)
 
