@@ -59,7 +59,7 @@ The [September 17 structural assessment](2026-09-17-pr415-structural-assessment.
 
 ### 2. S1: green tests followed by new counterexamples
 
-The original [S1 coordinator review](../../../recovery/full-e1-s1-coordinator-review/README.md) reused 137 passing tests and still returned two substantive findings. The retained counterexample records show two failed recovery cases and one failed interface case, all capture-complete and source-stable. Those JSON fields were read directly during this research; tests were not rerun.
+The original S1 coordinator review, `recovery/full-e1-s1-coordinator-review/README.md` (local-only, not in this repo; archived in the private first-passage-archive, SHA-256 `14ca2223f920b885f67a48133b736e324702215b44fec822c4de444559ade79a`), reused 137 passing tests and still returned two substantive findings. The retained counterexample records show two failed recovery cases and one failed interface case, all capture-complete and source-stable. Those JSON fields were read directly during this research; tests were not rerun.
 
 **Potential benefit:** Rank the handoff clauses, prior findings and source references needed for review. Flag that a return claims more than the attached test descriptions explicitly demonstrate.
 
@@ -69,7 +69,7 @@ The original [S1 coordinator review](../../../recovery/full-e1-s1-coordinator-re
 
 The [S2-R1 coordinator disposition](../../briefs/handoffs/2026-09-19-full-e1-s2-r1-review.md) reports verification of 254 packet entries and 2,076 source files. It accepts only the bounded local repair and explicitly withholds overall S2 acceptance.
 
-The retained [final-results.json](../../../recovery/full-e1-s2-r1-20260919/final-results.json) has three records: 272 tests passed, 41 tests passed, and a failed standard check. Recorder durations are approximately 215.81, 71.36 and 62.48 seconds; they are not the pytest durations quoted in the return narrative. The first two records are source-stable and capture-complete, as is the failed check. These records overlap in time, so adding durations would misstate elapsed workflow time.
+The retained `recovery/full-e1-s2-r1-20260919/final-results.json` (local-only, not in this repo; archived in the private first-passage-archive, SHA-256 `8f71afce256fdd6e30b709345468825f560d9b120d882b92419a5cc0fb592e71`) has three records: 272 tests passed, 41 tests passed, and a failed standard check. Recorder durations are approximately 215.81, 71.36 and 62.48 seconds; they are not the pytest durations quoted in the return narrative. The first two records are source-stable and capture-complete, as is the failed check. These records overlap in time, so adding durations would misstate elapsed workflow time.
 
 **Deterministic work:** Parse counts, exit status and identity; compare hashes; show which source files changed; retain the failed gate. Jev contributes nothing to exact comparisons.
 
@@ -79,7 +79,7 @@ The retained [final-results.json](../../../recovery/full-e1-s2-r1-20260919/final
 
 ### 4. PR 428 and the deadline failure: history matters
 
-The [PR 428 repair packet](../../../recovery/pr428-review-20260919/README.md) records an initially failing deadline gate and a later successful check after an operator-supplied update. The earlier S2-R1 evidence still truthfully records its own failed check.
+The PR 428 repair packet, `recovery/pr428-review-20260919/README.md` (local-only, not in this repo; archived in the private first-passage-archive, SHA-256 `c10c1d13b5870f45e8a00e89a14be851bf654358c3b728142198f6082bbcdba4`), records an initially failing deadline gate and a later successful check after an operator-supplied update. The earlier S2-R1 evidence still truthfully records its own failed check.
 
 **Benefit:** A deterministic timeline keyed by run and revision prevents stale-result confusion. Jev can help match a new narrative failure to an existing incident, but only after code establishes identity and chronology. It must not rewrite an old result or close a new failure merely because a similar one was previously resolved.
 
