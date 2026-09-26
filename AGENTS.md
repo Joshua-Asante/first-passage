@@ -178,6 +178,13 @@ executable Python ports of locked strategy logic. Private sources are pinned by
 Vendor-dependent tests skip when inputs are absent. `core/data/bar_data/` is
 retained but frozen: usable panels, no regenerable producer.
 
+**Private read surface.** Agents may read the accepted book's four Pine sources and
+accepted runtime ports listed in `core/strategies/BOOK_SOURCES.sha256`, in place in
+the operator's primary checkout. Worktree agents read them by that checkout's
+absolute path. Never copy them into a worktree, commit or quote their bodies or
+values, edit them, or pass them to `glm_agent` or any external service
+([campaign §60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)).
+
 ### Vendor-data integrity gate
 
 [Manifest integrity ADR](docs/adr/2026-05-10-manifest-integrity-gate.md) owns the
