@@ -4,6 +4,32 @@
 **Packet:** [allocation handoff](../briefs/handoffs/2026-09-25-tradeify-capability-allocation-deletion-map.md) §0–§5 as amended by §5a (dispatch refresh 2026-09-26, which governs on conflict).
 **Executor:** assessor subagent (Claude Code, Opus 5.5) of the coordinating session, worktree branch `claude/tradeify-allocation-map`. **Coordinator:** the coordinating Claude Code session. **Dispatch revision:** `d5effe5fbeb9df84de39dbcf1933a1ee91e303e3` (HEAD at start; verified). **Retrieval/inspection date:** 2026-09-26.
 
+## Coordinator-corrected recommendation and decision list (2026-09-26) — read this first
+
+**Status:** coordinator review, with the operator's executive corrections of 2026-09-26. Where this section conflicts with the assessor's text below, **this section governs**. The assessor's return is preserved unchanged as the historical record. Review record: [handoff §6](../briefs/handoffs/2026-09-25-tradeify-capability-allocation-deletion-map.md#6-executor-return). This is **not** gate-D acceptance.
+
+**Corrected recommendation.**
+- **Route.** The recommended route stays the ruled Python signal host → our account owner → CrossTrade-mediated Tradovate REST.
+- **TradingView.** Its exclusion from any live role is the **standing project ruling** (2026-09-11), not a fresh legal conclusion. Reopening permission would be a separate investigation (D01).
+- **Permission gap on the chosen route.** It still needs evidence of account entitlement (CrossTrade Pro REST is only vendor-reported, Q01) and of venue permission for CrossTrade-mediated automated orders on this eval. A firm's general "automation-friendly" classification is insufficient on its own.
+
+**Vendor savings are conditional.** Read the §C boundary and rows C09–C11 with these limits:
+- Tradovate *creates* the one-contract bracket with the entry (`DOCUMENTED`). Protection is **not in force until its stop is Working**, after the first-fill activation interval (`UNVERIFIED` until D1; incident ADR §A1 residual).
+- Removing multi-contract entry coverage repair does **not** remove partial completion **across a split or a multi-order close**. A split can stop midway (UB-4), and sequential closes can leave an intent partly closed (UB-5).
+
+**Corrected decision list.** It supersedes the matching §D rows; rows not listed stand as written.
+
+| # | Correction |
+|---|---|
+| D09 → **GC-3** (gate C, not a contract change for now) | A poller-assigned per-stream sequence (`_apply_protection_snapshot_db`, stream-order check) orders **our observations only**. It does not show that several reads describe **one coherent broker state**, or that their underlying broker data **postdates** amend preparation. Gate C must establish both separately. If they can't be established, amend admission is unimplementable on this route, and the fallback is a contract change or an operator-owned expression change (Striker ratchet, Aegis re-pin). |
+| **D19 (new; first-order blocker)** | The rail spec's `CLOSE(scope)` and S5 require **verified L2(d) and L2(e)**, and forbid a cancel-plus-market fallback. L2(e) is contradicted on this route (Gate A A5). One-contract entries do **not** automatically satisfy that contract, and they don't remove races between a close and a protective fill. Resolve early: define a route-native close and protection cleanup, or amend or interpret the close contract, then qualify it. **Until resolved, no close route is viable**, whatever option B's value. UB-8 cannot substitute for this. |
+| D17 | **Resolved** by the owner record ([protection selection](2026-09-10-tradeify-protection-selection.md), mode table): ORB adds are normal in NORMAL mode and off under protection. |
+| All K primitives | Each carries a failure consequence in the gate-C matrix: stop activation at quantity 1 (D1), rejected-modify survival (D2), full close (D3), cancel of Suspended children (D6), and the takeover composite. For each, the matrix states whether **the route stops** or **an operator-owned expression change is needed**. |
+
+**Corrected next action:** the integrated B–D packet. It contains D19 and the gate-C decisive capabilities (close and protection cleanup; stop activation and rejected modify; evidence freshness and coherence; REST reconciliation and actor inventory), the UB-8 bounded comparison run in parallel, the remaining gate-B decisions, the revised option-B rules and a T09 handoff held until B–D acceptance.
+
+---
+
 **Operator objective (checklist addendum 2026-09-26):** TradingView and CrossTrade own what they can reliably do on the exact route; our controller fills only evidenced gaps.
 
 **Headline.** On the ruled route (Python signal host → our account owner → CrossTrade-mediated Tradovate REST), the controller cannot shrink to a thin relay. The reason is not prior build effort. The vendors own no portfolio-level function: no admission, capacity, priority, fill-confirmed strategy state, unknown-request accounting, settlement or schedule owner. TradingView has **no permitted live role**: the standing 2026-09-11 ruling holds its Terms of Use §3 applicable to machine use of alerts. What the vendors do own after the three route-native editions is substantial. Tradovate holds the per-contract fixed stop/target from entry, and brokers every execution between bars. No leg then needs an intrabar trailing owner, a continuous protection feed, an ATTACH path or partial-fill coverage repair. Those are the real reductions, and they are **AVOID BUILDING** rows, not deletions.
