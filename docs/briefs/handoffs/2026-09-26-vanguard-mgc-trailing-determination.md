@@ -1,6 +1,6 @@
 # Vanguard MGC trailing determination: bounded local handoff
 
-**Status:** RETURNED — coordinator acceptance pending (§5). The source inspection has completed; the original bounded instructions below remain its scope record. Source verification, if needed for acceptance, follows §60 in the primary checkout. This return does not approve an edition or qualify the route.
+**Status:** RETURNED; **accepted with changes 2026-09-26** under the [Gate A disposition](2026-09-25-crosstrade-rest-route-assessment.md#611-gate-a-factual-disposition) (row A6; §5). The source inspection has completed; the original bounded instructions below remain its scope record. Source verification, if needed for acceptance, follows §60 in the primary checkout. This return does not approve an edition or qualify the route.
 
 **Selected outcome:** One source-bound answer to a single question. **Does Vanguard MGC's accepted effective binding make its bracket set trailing parameters?** The answer is `TRAILING ACTIVE`, `TRAILING INACTIVE` or `UNDETERMINED` with the exact missing input. This is the first-named next action of the [REST assessment §6.10](2026-09-25-crosstrade-rest-route-assessment.md#610-next-action-one-prerequisites-and-blockers), and it resolves or confirms [§6.7 (1)](2026-09-25-crosstrade-rest-route-assessment.md#67-corrections-to-prior-reasoning).
 
@@ -69,7 +69,7 @@ The runtime digest is computed over canonical effective values after derivation,
 
 No scratch extracts were written, and no source bodies or numeric parameter values appear above.
 
-**Coordinator disposition (DRAFT, 2026-09-26; not yet recorded as accepted):** recommend **ACCEPT WITH CAVEATS**. Verdict `TRAILING ACTIVE`.
+**Coordinator disposition (2026-09-26): ACCEPTED WITH CHANGES** at Gate A (row A6). Runtime `TRAILING ACTIVE` is accepted. Caveat 1 was discharged by a spot-read. Caveat 2 is replaced by the mandatory successor-binding check below. *Draft text follows as reviewed:* recommend **ACCEPT WITH CAVEATS**. Verdict `TRAILING ACTIVE`.
 
 *Checked from the public clone (cloud review):*
 - **Loader path.** `load_book_adapters` (`ops/c1_signal_daemon/book_adapters.py:146-179`) does four things in order. It verifies the source bytes against `EFFECTIVE_INPUTS_SHA256`. It derives runtime values by changing **only** ORB's `qty` (`:159-161`). It verifies the derived bytes against `RUNTIME_EFFECTIVE_INPUTS_SHA256`. It then calls `module.build(mode=mode, **row["adapter"])` (`:175`).
@@ -93,3 +93,9 @@ No scratch extracts were written, and no source bodies or numeric parameter valu
 - **Propagation still owed, not applied by this draft:** campaign §59 (record the acceptance and supersession), incident ADR §A4, the CAP R3 row, and the STATE index row when the operator decides.
 
 *Recording:* the coordinator replaces "(DRAFT …)" with an accepted/rejected line, the date, and whether caveat 1 was discharged by a spot-read or by reliance.
+
+**Gate A caveat work (2026-09-26, coordinating session; accepted with changes as part of the [Gate A disposition](2026-09-25-crosstrade-rest-route-assessment.md#611-gate-a-factual-disposition), at `5037ba4`):**
+
+- **Caveat 1: discharged by spot-read, not by reliance.** A §60 read in place in the primary checkout (HEAD `1c5c082`), nothing copied, quoted or executed. The port hashes to `e6a03d04…`, the Pine to `af26899c…`, and `effective_inputs.json` to `66406dee…`, all matching the pins. Its Vanguard `adapter` object is empty. The port's trailing switch defaults on with non-zero distances. Its bracket builder sets both trail fields when the switch is on, and that builder feeds the entry, the scale-in and the per-bar amend. `build` constructs parameters from overrides only. The Pine's trailing input defaults on. Each cited location matches the executor's citation.
+- **Caveat 2: refined; the qualification binding is not the runtime binding.** `load_qualification_adapters` (`ops/c1_signal_daemon/book_adapters.py:246-257`) reads a separate `effective_settings_successor` artifact bound by the frozen contract's `effective_settings_sha256`. `_qualification_snapshots` (`:205-243`) **refuses** the historical `EFFECTIVE_INPUTS_SHA256`, and requires ORB `qty` = 1. `build(**row['adapter'])` has the same semantics (`:310`). So the verdict binds the runtime identity (`9d4d4e1d…`). For qualification, what counts is the resolved effective behavior of the frozen successor's Vanguard settings, defaults and overrides together. An unset trail input leaves trailing on, and so does an explicit enabling override. No successor exists yet. **Mandatory condition:** the freeze record must show that the qualification settings implement the operator's approved edition-versus-rejection decision, and that the eventual deployment binding matches them ([pre-registration](../pre-registration/2026-09-26-tradeify-vanguard-fixed-stop-edition-prereg.md) effective-inputs row, owner). The pre-registration already names a successor file as the input-only realization path.
+- **Caveats 3 and 4:** accepted as written. Any successor effective-inputs digest reopens the verdict.
