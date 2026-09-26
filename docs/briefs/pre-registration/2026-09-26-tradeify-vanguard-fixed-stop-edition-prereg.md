@@ -143,5 +143,5 @@ grep -nE '\| \*\*OW[E]D|\(OW[E]D,|— OW[E]D \(' docs/briefs/pre-registration/20
 # Edition id present in the venue-edition ledger as CANDIDATE
 grep -n 'vanguard_mgc_fixed_stop_oso' ops/venue_editions/Tradeify_Select_100K.md
 # No edition Pine or port bodies committed; expect no output
-git ls-files 'ops/c1_signal_daemon/ports/*.py' '*vanguard*fixed*stop*' | grep -v '\.md$'
+git ls-files 'ops/c1_signal_daemon/ports/*.py' ':(icase)*vanguard*fixed*stop*' | grep -v '\.md$'
 ```

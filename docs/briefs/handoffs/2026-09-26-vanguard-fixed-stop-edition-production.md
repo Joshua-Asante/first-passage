@@ -13,7 +13,7 @@ This is step 3 of the pre-registration's §8 freeze procedure. The edition imple
 - One local executor, named at dispatch.
 - The operator authorizes file creation (§0 G3), answers every rule and freezes the pre-registration.
 - The coordinator accepts the return.
-- Pin registration in `book_adapters.py`, `BOOK_SOURCES.sha256` or the ledger is a **separate reviewed change**, not this packet.
+- Pin registration in `book_adapters.py`, `ops/c1_rail/book_policy.py`, `BOOK_SOURCES.sha256` or the ledger is a **separate reviewed change**, not this packet.
 
 **Return boundary:** new private files plus §6 only. No replay, E1, screen, backtest, TradingView run, account access, alert, drill or spend. No edits to any existing Pine, port, manifest, registry, pre-registration or campaign record.
 
@@ -89,7 +89,7 @@ Before writing anything, confirm with `git check-ignore -v` that every output pa
 
 ## 5. Owed follow-ups (not this packet)
 
-1. A reviewed change adding the edition pins beside the existing ones (`book_adapters.py`, and `BOOK_SOURCES.sha256` or `PORT_MANIFEST.sha256` per convention). For any successor effective inputs, it also adds the source and runtime digests.
+1. A reviewed change adding the edition pins beside the existing ones (`book_adapters.py` and `ops/c1_rail/book_policy.py`, which must carry the same Pine pin as the port's embedded identity (`tests/ops/test_book_adapters_parity.py:69`), and `BOOK_SOURCES.sha256` or `PORT_MANIFEST.sha256` per convention). For any successor effective inputs, it also adds the source and runtime digests.
 2. Filling the pre-registration §4 pin rows with this return's hashes, then the operator freeze (pre-registration §8 steps 4–5).
 3. Adding a venue-edition ledger row `vanguard_mgc_fixed_stop_oso` as `CANDIDATE`.
 4. Requalification through the book's production E1 (pre-registration §6).
