@@ -75,15 +75,30 @@ call, because one answer approves all of them.
                        The target is read as flyctl picks it: ``-a`` / ``--app``, else
                        ``FLY_APP``, else the ``app`` of the fly.toml it loads (``--config``,
                        a file or a directory, or ``fly.toml`` in the WORKING_DIRECTORY
-                       argument or the tool call's ``cwd``). A deploy of any other app is
+                       argument or the tool call's ``cwd``). A relative ``--config`` beside
+                       a WORKING_DIRECTORY argument is read against both directories
+                       (``fly deploy --help``, v0.4.102, does not say which flyctl uses) and
+                       names an app only when both agree. A deploy of any other app is
                        silent, and so is ``--help``. When the target cannot be determined it
                        asks (fail closed): no ``-a`` and no readable fly.toml naming an app;
-                       ``FLY_APP`` set (its value is not read); a flag missing from the
+                       ``FLY_APP`` in the hook's environment; a flag missing from the
                        ``fly deploy`` table or a value that is not an app name; more than one
-                       argument; or a relative path after a ``cd`` or under a wrapper,
-                       ``pwsh``, the launcher or ``fly ssh``, whose directory the hook cannot
-                       see. An explicit ``--config`` beside ``-a`` counts as a target too.
-                       Nothing server-side backs this prompt.
+                       argument; or a relative path after a directory change that runs
+                       before it (``cd``, ``Set-Location``, ``pushd`` ...; any in a loop).
+                       **Only ``-a`` names the target** (fail closed on the rest) when the
+                       deploy runs under a prefix assignment or a wrapper (``env``,
+                       ``timeout``, ``bash -c`` ...), ``pwsh``, the launcher or ``fly ssh``
+                       (a remote machine), or when anything the call runs before it, beside
+                       it (a pipeline, a background job) or in a loop with it may have
+                       changed its environment or files: a file-writing redirection (``>``,
+                       ``>>``, ``&>``, ``>|``; not ``2>&1`` or a null device), a variable
+                       assignment, or any program off a short read-only list
+                       (`_READ_ONLY`: ``cat``, ``echo``, ``ls``, ``grep`` ... and directory
+                       changes). So ``sed -i ... fly.toml && fly deploy``, ``export
+                       FLY_APP=...; fly deploy`` and ``git pull && fly deploy`` ask; ``fly
+                       deploy && git checkout -- fly.toml`` does not. An explicit
+                       ``--config`` beside ``-a`` counts as a target too. Nothing
+                       server-side backs this prompt.
   * ``rail.arm``     — ask: ``c1_rail_arm.py --arm`` (or argparse's ``--ar``), as a script
                        or ``-m`` module, through the ``fp.ps1`` launcher or ``pwsh``, and
                        inside ``fly ssh console -C '…'`` (``-sC '…'`` and ``-C'…'`` too).
@@ -158,9 +173,9 @@ except ImportError:  # Python < 3.11: `_toml_app` falls back to a regex
     tomllib = None
 
 try:  # imported as `scripts.guard_operator_acts` (tests, repo root on sys.path)
-    from scripts._shell_tokens import expand, program, segments
+    from scripts._shell_tokens import expand, is_assignment, program, segments
 except ImportError:  # run as `python scripts/guard_operator_acts.py`
-    from _shell_tokens import expand, program, segments
+    from _shell_tokens import expand, is_assignment, program, segments
 
 ASK, DENY = "ask", "deny"
 
@@ -243,6 +258,19 @@ UNKNOWN_APP = "?"  # a deploy whose target app the guard cannot determine
 _APP_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 _CD_PROGRAMS = frozenset({"cd", "chdir", "pushd", "popd", "set-location", "sl",
                           "push-location", "pop-location"})
+# Programs that write no file and set nothing a later deploy reads: before a deploy they
+# leave the fly.toml it loads trusted. Any other program, a variable assignment or a
+# file-writing redirection may have changed it (Codex thread 4111045506), so the deploy's
+# target is then read from -a only. Kept short on purpose: an omission asks, never hides.
+_READ_ONLY = _CD_PROGRAMS | frozenset({
+    "cat", "echo", "printf", "ls", "dir", "pwd", "true", "false", "test", "[", "head",
+    "tail", "grep", "rg", "wc", "which", "sleep", "get-content", "get-childitem",
+    "get-location", "select-string", "select-object", "test-path", "write-output",
+    "write-host", "out-null"})
+# A segment starting with one of these repeats: nothing in the call runs strictly after a
+# deploy inside it.
+_LOOP_WORDS = frozenset({"for", "while", "until", "select", "do", "done", "foreach"})
+_NULL_DEVICES = frozenset({"/dev/null", "$null", "nul"})
 
 
 class _Deploy(NamedTuple):
@@ -253,6 +281,7 @@ class _Deploy(NamedTuple):
     workdir: str | None   # the WORKING_DIRECTORY argument
     readable: bool        # every flag known and valued, at most one argument
     anchored: bool = True  # relative paths resolve against the hook's cwd
+    settled: bool = True   # its environment and files are as the hook reads them
 
 
 class Hit(NamedTuple):
@@ -684,7 +713,7 @@ def _fly_commands(args: list[str]) -> list[str]:
 def _judge_fly(args: list[str]) -> list[Hit]:
     hits: list[Hit] = []
     for command in _fly_commands(args):
-        hits += _unanchor(_command_hits(command))  # runs on the remote machine
+        hits += _unsettle(_command_hits(command))  # runs on the remote machine
     paths = [path for path in _command_paths(args, _FLY_VALUE_FLAGS, _FLY_BOOL_FLAGS, 1)
              if [args[i] for i in path] == ["deploy"]]
     if paths and not _fly_help(args):
@@ -703,11 +732,20 @@ def _deploy_reading(args: list[str]) -> _Deploy:
                    not parsed.unread and len(parsed.words) <= 1)
 
 
-def _unanchor(hits: list[Hit]) -> list[Hit]:
+def _unanchor(hits: list[Hit], settled: bool = True) -> list[Hit]:
     """`hits` with every deploy reading marked as run from a directory the hook cannot
-    see (after a ``cd``, under a wrapper, the launcher, ``pwsh`` or on a remote machine)."""
-    return [hit._replace(readings=tuple(r._replace(anchored=False) for r in hit.readings))
-            if hit.cap == "rail.deploy" else hit for hit in hits]
+    see (after a ``cd``); with ``settled=False``, also with an environment and files the
+    hook cannot see (`_unsettle`)."""
+    return [hit._replace(readings=tuple(
+        r._replace(anchored=False, settled=r.settled and settled) for r in hit.readings))
+        if hit.cap == "rail.deploy" else hit for hit in hits]
+
+
+def _unsettle(hits: list[Hit]) -> list[Hit]:
+    """`hits` with every deploy reading marked as run where only ``-a`` names its target:
+    under a prefix assignment or a wrapper, the launcher, ``pwsh`` or on a remote machine,
+    or after something that may have changed its environment or files."""
+    return _unanchor(hits, settled=False)
 
 
 def _toml_app(path: Path) -> str:
@@ -724,28 +762,42 @@ def _toml_app(path: Path) -> str:
     return app if isinstance(app, str) and _APP_NAME.fullmatch(app) else UNKNOWN_APP
 
 
-def _config_app(reading: _Deploy, cwd: str | None) -> str:
-    """The app the fly.toml a deploy loads names: ``--config`` (a file or a directory), or
-    ``fly.toml`` in the WORKING_DIRECTORY argument or else the current directory. A
-    relative path whose base the hook cannot see, or a relative ``--config`` beside a
-    WORKING_DIRECTORY argument, is `UNKNOWN_APP`."""
-    base = Path(cwd) if cwd and reading.anchored else None
-    if reading.config:
-        path = Path(reading.config)
-        if not path.is_absolute():
-            if base is None or reading.workdir:
-                return UNKNOWN_APP
-            path = base / path
-    else:
-        path = Path(reading.workdir or ".")
-        if not path.is_absolute():
-            if base is None:
-                return UNKNOWN_APP
-            path = base / path
+def _under(base: Path | None, path: str) -> Path | None:
+    """`path` resolved against `base`; None when it is relative and `base` is unknown."""
+    resolved = Path(path)
+    if resolved.is_absolute():
+        return resolved
+    return None if base is None else base / resolved
+
+
+def _file_app(path: Path | None) -> str:
+    """The app of the fly.toml at `path` (a file, or a directory holding one)."""
+    if path is None:
+        return UNKNOWN_APP
     try:
         return _toml_app(path / "fly.toml" if path.is_dir() else path)
     except (OSError, ValueError):
         return UNKNOWN_APP
+
+
+def _config_app(reading: _Deploy, cwd: str | None) -> str:
+    """The app the fly.toml a deploy loads names: ``--config`` (a file or a directory), or
+    ``fly.toml`` in the WORKING_DIRECTORY argument or else the current directory. A
+    relative ``--config`` beside a WORKING_DIRECTORY argument is read against both the
+    current and the working directory, since ``fly deploy --help`` (v0.4.102) does not
+    say which flyctl uses; an app is named only when both readings agree. A relative path
+    whose base the hook cannot see, or any file the call may have changed first, is
+    `UNKNOWN_APP`."""
+    if not reading.settled:
+        return UNKNOWN_APP
+    base = Path(cwd) if cwd and reading.anchored else None
+    workdir = _under(base, reading.workdir) if reading.workdir else base
+    if reading.config:
+        paths = {_under(base, reading.config), _under(workdir, reading.config)}
+    else:
+        paths = {workdir}
+    apps = {_file_app(path) for path in paths}
+    return apps.pop() if len(apps) == 1 else UNKNOWN_APP
 
 
 def _deploy_targets(reading: _Deploy, cwd: str | None, fly_app_env: bool) -> set[str]:
@@ -758,18 +810,19 @@ def _deploy_targets(reading: _Deploy, cwd: str | None, fly_app_env: bool) -> set
         targets.add(reading.app if _APP_NAME.fullmatch(reading.app) else UNKNOWN_APP)
         if not reading.config:
             return targets
-    elif fly_app_env:
-        return {UNKNOWN_APP}  # FLY_APP names the app; its value is not visible here
+    elif fly_app_env or not reading.settled:
+        return {UNKNOWN_APP}  # FLY_APP names the app, and the call may have set it
     targets.add(_config_app(reading, cwd))
     return targets
 
 
-def _resolve_deploys(hits: list[Hit], command: str, cwd: str | None) -> list[Hit]:
+def _resolve_deploys(hits: list[Hit], cwd: str | None) -> list[Hit]:
     """Each deploy scoped to the live execution path (operator ruling 2026-09-26): a deploy
     that can only reach apps off it is dropped; one that may reach a live-path app, or
     whose target cannot be determined, asks with the app names (or `UNKNOWN_APP`) as its
-    detail."""
-    fly_app_env = bool(os.environ.get("FLY_APP")) or "FLY_APP" in command
+    detail. A FLY_APP the call itself may set is read in `_command_hits` (a prefix, a
+    wrapper or an earlier segment unsettles the deploy); this reads the hook's own."""
+    fly_app_env = bool(os.environ.get("FLY_APP"))
     out = []
     for hit in hits:
         if hit.cap != "rail.deploy":
@@ -1086,9 +1139,9 @@ def _words_hits(words: list[str]) -> list[Hit]:
     if base == "git":
         return _judge_git(args)
     if base in ("pwsh", "powershell"):  # `-WorkingDirectory` may move it
-        return _unanchor(_judge_powershell(args))
+        return _unsettle(_judge_powershell(args))
     if base == "fp.ps1":  # the project launcher runs `<command> <args>` (AGENTS.md)
-        return _unanchor(_words_hits(args))  # from its own checkout root
+        return _unsettle(_words_hits(args))  # from its own checkout root
     if _PYTHONS.fullmatch(base):
         return _judge_python(args)
     if base.endswith("c1_rail_arm.py"):
@@ -1105,6 +1158,59 @@ def _fallback_hits(command: str) -> list[Hit]:
     return hits
 
 
+class _Part(NamedTuple):
+    """One segment of a command: its source span, its acts, and what it may change."""
+
+    start: int
+    end: int
+    hits: list[Hit]
+    moves: bool  # changes the directory
+    quiet: bool  # writes no file and sets nothing (`_READ_ONLY`)
+
+
+def _quiet(plain: list[str], runs: list[list[str]]) -> bool:
+    """Whether a segment leaves files and environment alone: one read-only program,
+    behind nothing but wrapper options (a ``bash -c`` / ``eval`` script is not), or no
+    program and no variable assignment (``}``, ``done``)."""
+    if not runs:
+        return not any(is_assignment(word) for word in plain)
+    words = runs[0]
+    return (len(runs) == 1 and program(words[0], strict=True) in _READ_ONLY
+            and plain[len(plain) - len(words):] == words)
+
+
+def _writes(command: str, start: int, text: str) -> bool:
+    """Whether the redirection whose target starts at `start` may write a file: not an
+    input (``<``, ``<<<``), a descriptor duplication (``2>&1``, ``>&-``) or a null device.
+    An fd-prefixed redirection carries its operator in `text` (``2>&1``)."""
+    lead = re.match(r"\d*([<>&|]+)", text)
+    if lead:
+        op, target = lead.group(1), text[lead.end():]
+    else:
+        op = re.search(r"[<>&|]*$", command[:start].rstrip()).group()
+        target = text
+    target = target.strip()
+    if op in ("<", "<<<") or target.casefold() in _NULL_DEVICES:
+        return False
+    return not (op.endswith("&") and re.fullmatch(r"\d*-?", target))
+
+
+def _runs_after(command: str, end: int, start: int, bodies: list) -> bool:
+    """Whether what starts at `start` runs strictly after the command ending at `end`: a
+    ``;``, newline, ``&&`` or ``||`` between them and no ``|`` or ``&`` (a pipeline or a
+    background job runs beside it). Dropped text between them (redirection targets,
+    heredoc bodies, comments) is blanked first; anything that starts before `end` (an
+    earlier segment, a ``$(...)`` in the command's own words) runs before it."""
+    if start < end:
+        return False
+    gap = list(command[end:start])
+    for body_start, body_end, *_ in bodies:
+        for i in range(max(body_start, end), min(body_end, start)):
+            gap[i - end] = " "
+    text = re.sub(r"[<>]&|&>", " ", "".join(gap)).replace("&&", ";").replace("||", ";")
+    return (";" in text or "\n" in text) and "|" not in text and "&" not in text
+
+
 def _command_hits(command: str) -> list[Hit]:
     """Every act in a shell command, in order."""
     return list(_command_hits_cached(command))
@@ -1115,16 +1221,39 @@ def _command_hits_cached(command: str) -> tuple[Hit, ...]:
     # Cached by text: following every reading of nested `pwsh -c` parameters judges the
     # same suffix text many times, which would otherwise grow exponentially.
     try:
-        hits: list[Hit] = []
-        moved = False  # a `cd` anywhere: the directory a deploy runs from is not known
-        for tokens in segments(command, strict=True):
+        bodies: list = []
+        parts: list[_Part] = []
+        loop = False
+        for tokens in segments(command, strict=True, bodies=bodies):
+            if not tokens:
+                continue
             plain = [str(t) for t in tokens]
-            for words in expand(plain, strict=True):
-                words = [str(w) for w in words]
-                moved |= bool(words) and program(words[0], strict=True) in _CD_PROGRAMS
+            loop |= program(plain[0], strict=True) in _LOOP_WORDS
+            runs = [[str(w) for w in words] for words in expand(plain, strict=True)]
+            hits: list[Hit] = []
+            for words in runs:
                 found = _words_hits(words)
-                hits += found if words == plain else _unanchor(found)  # unwrapped
-        return tuple(dict.fromkeys(_unanchor(hits) if moved else hits))
+                hits += found if words == plain else _unsettle(found)  # prefixed, wrapped
+            moves = any(words and program(words[0], strict=True) in _CD_PROGRAMS
+                        for words in runs)
+            parts.append(_Part(tokens[0].start, tokens[-1].end, hits, moves,
+                               _quiet(plain, runs)))
+        writes = [start for start, _, _, text, kind in bodies
+                  if kind == "target" and _writes(command, start, text)]
+        out: list[Hit] = []
+        for k, part in enumerate(parts):
+            hits = part.hits
+            if any(hit.cap == "rail.deploy" for hit in hits):
+                def before(start: int, end: int = part.end) -> bool:
+                    """Runs before or beside this deploy (anything, in a loop)."""
+                    return loop or not _runs_after(command, end, start, bodies)
+                earlier = [p for j, p in enumerate(parts) if j != k and before(p.start)]
+                if any(not p.quiet for p in earlier) or any(before(w) for w in writes):
+                    hits = _unsettle(hits)
+                elif any(p.moves for p in earlier):
+                    hits = _unanchor(hits)
+            out += hits
+        return tuple(dict.fromkeys(out))
     except Exception:  # unreadable (or unjudgeable): raw patterns, toward refusing
         return tuple(_fallback_hits(command))
 
@@ -1173,14 +1302,14 @@ def _payload_hits(payload: dict) -> list[Hit]:
         if isinstance(command, str):
             hits = _powershell_hits(command) if name == "PowerShell" else _command_hits(command)
             cwd = payload.get("cwd")
-            return _resolve_deploys(hits, command, cwd if isinstance(cwd, str) else os.getcwd())
+            return _resolve_deploys(hits, cwd if isinstance(cwd, str) else os.getcwd())
     return []
 
 
 def classify_command(command: str, cwd: str | None = None) -> tuple[str, str] | None:
     """(decision, capability) for a shell command run from `cwd` (default: this process's
     directory), or None when it is not an operator act."""
-    hits = _resolve_deploys(_command_hits(command), command, cwd or os.getcwd())
+    hits = _resolve_deploys(_command_hits(command), cwd or os.getcwd())
     hit = _verdict(hits)
     return (hit.decision, hit.cap) if hit else None
 

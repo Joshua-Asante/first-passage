@@ -1042,3 +1042,149 @@ def test_m1_override_arm_asks_and_never_denies(flag, wrap):
     assert "UNRESOLVED" in reason and "arming_deviation" in reason
     assert "structurally valid" in reason
     assert "2026-09-26" in block["additionalContext"]
+
+
+# --- Codex review of #511 at b9d71f2 (threads 4111045500, 4111045502, 4111045505,
+# 4111045506). A deploy's target is read from a fly.toml only when nothing the call runs
+# before (or beside) the deploy can have changed its directory, its environment or the
+# files it reads; otherwise only -a/--app names it, and without one it asks.
+
+def _other_toml(tmp_path: Path) -> str:
+    return (_other_app_dir(tmp_path) / "fly.toml").as_posix()
+
+
+@pytest.mark.parametrize("template", [
+    "env FLY_A\"\"PP=c1-rail {deploy}",
+    "FLY_A''PP=c1-rail {deploy}",
+    "export FLY_A\"\"PP=c1-rail; {deploy}",
+    "export FLY_APP=c1-rail && {deploy}",
+    "FLY_APP=c1-rail; {deploy}",
+    "FLY_APP=\"$X\" {deploy}",
+    "env -u X FLY_APP=$(cat f) {deploy}",
+    "set -a; . ./vars; {deploy}",
+    "source vars && {deploy}",
+])
+@pytest.mark.parametrize("config", ["", " --config {toml}"])
+def test_fly_app_the_call_may_set_asks(template, config, tmp_path):
+    # Fails if an environment change the call makes before its deploy (a FLY_APP prefix,
+    # export or wrapper assignment in any quoting, a sourced file) lets an off-path
+    # fly.toml decide the target: FLY_APP overrides the config's app (thread 4111045500).
+    toml = _other_toml(tmp_path)
+    command = template.format(deploy=DEPLOY + config.format(toml=toml))
+    assert g.classify_command(command, cwd=str(tmp_path)) == ("ask", "rail.deploy")
+
+
+def test_powershell_fly_app_assignment_asks(tmp_path):
+    # Fails if a PowerShell `$env:FLY_APP` assignment (backtick-split) before the deploy
+    # is missed and the off-path fly.toml decides the target.
+    _other_app_dir(tmp_path)
+    payload = {"tool_name": "PowerShell", "cwd": str(tmp_path),
+               "tool_input": {"command": "$env:FLY_A`PP='c1-rail'; " + DEPLOY}}
+    assert g.classify(payload) == ("ask", "rail.deploy")
+
+
+@pytest.mark.parametrize("command", [
+    DEPLOY + " && cd elsewhere",
+    DEPLOY + "; Set-Location elsewhere",
+    DEPLOY + " -c fly.toml; popd",
+])
+def test_directory_change_after_the_deploy_is_silent(command, tmp_path):
+    # Fails if a cd that runs after the deploy unanchors it (thread 4111045502).
+    _other_app_dir(tmp_path)
+    assert g.classify_command(command, cwd=str(tmp_path)) is None
+
+
+@pytest.mark.parametrize("command", [
+    DEPLOY + " -a some-other-app; cd elsewhere; " + DEPLOY,
+    "for d in a b; do " + DEPLOY + "; cd $d; done",
+])
+def test_deploy_after_a_directory_change_still_asks(command, tmp_path):
+    # Fails if the order rule lets a deploy that runs after a cd (later in the call, or
+    # on a later pass of a loop) read the hook's directory.
+    _other_app_dir(tmp_path)
+    assert g.classify_command(command, cwd=str(tmp_path)) == ("ask", "rail.deploy")
+
+
+@pytest.mark.parametrize("toml,app", [(RAIL_TOML, "c1-rail"),
+                                      (DAEMON_TOML, "c1-signal-daemon")])
+def test_documented_deploy_command_names_the_app(toml, app):
+    # Fails if the deploy command the README documents (`fly deploy . --config
+    # deploy/…/fly.toml` from the repo root) is put to the operator as an undeterminable
+    # target instead of naming the app (thread 4111045505).
+    folder = toml.rsplit("/", 1)[0]
+    command = f"{DEPLOY} . --config {toml} --dockerfile {folder}/Dockerfile"
+    assert g.classify_command(command, cwd=str(REPO)) == ("ask", "rail.deploy")
+    reason = _deploy_reason(command, REPO)["permissionDecisionReason"]
+    assert app in reason and "cannot determine" not in reason
+
+
+def test_relative_config_beside_a_working_directory(tmp_path):
+    # Fails if a relative --config beside a WORKING_DIRECTORY argument is read one way
+    # only: flyctl's rule is not documented (`fly deploy --help`), so the guard reads it
+    # against both the current and the working directory and names an app only when
+    # both agree; otherwise it asks.
+    _other_app_dir(tmp_path)
+    sub = tmp_path / "sub"
+    sub.mkdir()
+    assert g.classify_command(f"{DEPLOY} . --config fly.toml", cwd=str(tmp_path)) is None
+    (sub / "fly.toml").write_text('app = "c1-rail"\n', encoding="utf-8")
+    assert g.classify_command(f"{DEPLOY} sub --config fly.toml",
+                              cwd=str(tmp_path)) == ("ask", "rail.deploy")
+    (sub / "fly.toml").write_text('app = "a-third-app"\n', encoding="utf-8")
+    assert g.classify_command(f"{DEPLOY} sub --config fly.toml",
+                              cwd=str(tmp_path)) == ("ask", "rail.deploy")
+
+
+@pytest.mark.parametrize("template", [
+    "sed -i s/x/y/ fly.toml && {deploy}",
+    "sed -i s/x/y/ {toml} && {deploy}",
+    "cat x > fly.toml; {deploy}",
+    "echo x >> {toml}; {deploy}",
+    "echo x | tee fly.toml; {deploy}",
+    "cp a fly.toml && {deploy}",
+    "mv a {toml} && {deploy}",
+    "rm {toml} && {deploy}",
+    "git checkout -- fly.toml && {deploy}",
+    "git restore {toml}; {deploy}",
+    "python -c 'print(1)' && {deploy}",
+    "node -e 1; {deploy}",
+    "some-unknown-tool && {deploy}",
+    "echo $(sed -i s/x/y/ fly.toml); {deploy}",
+    "cat <<EOF > fly.toml\napp = 'c1-rail'\nEOF\n{deploy}",
+    "{deploy} > fly.toml",
+    "{deploy} | tee {toml}",
+    "{deploy} & sed -i s/x/y/ fly.toml",
+    "{deploy} --image $(sed -i s/x/y/ fly.toml)",
+    "while true; do {deploy}; sed -i s/x/y/ fly.toml; done",
+    "bash -c 'sed -i s/x/y/ {toml}; {deploy}'",
+    "fly ssh console -a c1-rail -C '{deploy}'",
+])
+@pytest.mark.parametrize("config", ["", " --config {toml}"])
+def test_deploy_after_a_possible_file_write_asks(template, config, tmp_path):
+    # Fails if a segment that may write files before (or beside) the deploy — a
+    # redirection, tee, sed -i, cp/mv/rm, git checkout/restore, an interpreter, any
+    # program off the read-only list — leaves the fly.toml it reads trusted, or a deploy
+    # on a remote machine is resolved against a local file (thread 4111045506).
+    toml = _other_toml(tmp_path)
+    command = template.format(deploy=DEPLOY + config.format(toml=toml), toml=toml)
+    assert g.classify_command(command, cwd=str(tmp_path)) == ("ask", "rail.deploy")
+
+
+@pytest.mark.parametrize("template", [
+    "ls && {deploy}",
+    "cat fly.toml; {deploy}",
+    "grep app {toml} && {deploy}",
+    "echo hi && {deploy} 2>&1 | tail -5",
+    "{deploy} 2>&1 | Select-Object -Last 5",
+    "{deploy} 2>/dev/null",
+    "{deploy} && sed -i s/x/y/ fly.toml",
+    "{deploy}; git checkout -- fly.toml",
+])
+@pytest.mark.parametrize("config", ["", " --config {toml}"])
+def test_read_only_or_later_segments_keep_the_target(template, config, tmp_path):
+    # Fails if a read-only program before the deploy, or a write that runs only after it,
+    # makes an off-path deploy prompt (the deploy prompt should not fire more than it
+    # needs to).
+    toml = _other_toml(tmp_path)
+    command = template.format(deploy=DEPLOY + config.format(toml=toml), toml=toml)
+    assert g.classify_command(command, cwd=str(tmp_path)) is None
