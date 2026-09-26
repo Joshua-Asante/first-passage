@@ -1,6 +1,6 @@
 # CrossTrade REST route assessment — bounded handoff
 
-**Status:** RETURNED — coordinator acceptance pending. The original dispatch instructions and the execution record remain below; §6.1 records the committed-handoff breach. The 2026-09-26 reconciliation incorporates the separate Vanguard return as evidence awaiting acceptance, not route adoption.
+**Status:** RETURNED; **Gate A accepted with changes 2026-09-26 ([§6.11](#611-gate-a-factual-disposition))**. The original dispatch instructions and the execution record remain below; §6.1 records the committed-handoff breach. The 2026-09-26 reconciliation incorporates the separate Vanguard return as evidence awaiting acceptance, not route adoption.
 
 > Execute with `superpowers:executing-plans`. This is a documentary capability assessment, not an adapter implementation. The deployment checklist remains the roadmap; the coordinator retains combined acceptance.
 
@@ -295,9 +295,9 @@ The dispatch-without-commit breach (§6.1) stays open for the coordinator. The o
 
 **T09 remains blocked** under the canonical [T09 gate table](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record): assessment evidence acceptance, operator behavior/contract decisions, bounded-design viability, and capability allocation/scope acceptance. This return supplies evidence; it does not satisfy any gate by itself. External propagation targets listed above remain owed.
 
-### 6.11 Gate A factual disposition (DRAFT)
+### 6.11 Gate A factual disposition
 
-**Status:** DRAFT, 2026-09-26. Operator-directed; drafted by the coordinating session (Claude Code, Opus 5.5). Not yet an acceptance. The [gate row A](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record) stays Pending until the recording line below is completed.
+**Status:** ACCEPTED WITH CHANGES, 2026-09-26: operator ruling on the draft at `bbaec94`, with the corrections applied at `5037ba4` (see the recording line). Drafted and recorded by the coordinating session (Claude Code, Opus 5.5). [Gate row A](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record).
 **Evidence revisions:** this return and the [Vanguard return](2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return) at `668650d` (#506 merge); code at `main` `ebef5a2`; vendor captures `local_artifacts/t08-rest-route-assessment-2026-09-25/` (`MANIFEST.tsv` `d069ae7e…`), spot-checked by the operator (#506 comment above); private sources read in place at primary-checkout `1c5c082`.
 **Scope:** facts only. This disposition accepts or rejects findings. It changes no behavior, contract, expression or policy, and it chooses nothing that belongs to gate B. It does not propagate into campaign §59, incident ADR §A4 or CAP; those stay owed after acceptance (§6.10 list).
 
@@ -346,4 +346,9 @@ The dispatch-without-commit breach (§6.1) stays open for the coordinator. The o
 
 **What this unlocks** (gate row A): the accepted findings may be used for the operator's gate-B decisions and for the gate-C/D analysis. Nothing else: no behavior change, T09 implementation, drill, access, spend or GO.
 
-**Recording line:** _pending._ On acceptance, replace with: accepted / accepted with changes / rejected, the date, the accepting seat, and any change to A1–A14. Then update gate row A and STATE's 2026-09-26 line.
+**Recording line:** **Accepted with changes**, 2026-09-26. The operator (executive review of #514 at `bbaec94`) ruled acceptance of the gate A factual assessment. The coordinating session recorded it. The accepted text is this section and the linked Vanguard disposition at `5037ba4`. Changes from the draft:
+- **A3:** the evidence limitation is accepted, and its consequence is restated as a constraint on the future outcome classifier, not a mapping.
+- **A5:** the adopted ORB/Striker direction is not a discharge.
+- **A6:** the criterion is resolved effective behavior, with a mandatory freeze-record check against the approved edition and the deployment binding.
+
+A1, A2, A4 and A7–A14, including A13's process disposition, are accepted as drafted, with their stated limitations. Gates B–D and all operational authority remain pending.
