@@ -7,8 +7,8 @@
 ## Answer in brief
 
 1. **The production fence cannot tell a working order from a stale one.** Its only resolving input is an accepted terminal (fill, cancel or reject). The owner has no way to learn that an entry or add is still working. So once one bar has passed since the order was prepared, it treats a **known working order with fresh evidence (i)** exactly like an order whose **evidence has gone stale (ii)**. Both refuse every leg's risk-adds and loosening amends (`:793-797`, `:1608`, `book_protection_owner.py:492`).
-2. **The spec's own wording is ambiguous for (i), but every other row points one way.** The §1 `pending` row, read literally, agrees with the code. The S1 cut, the `W` freshness row, E3, AC-3, AC-5, AC-8, the §5 cutoff rule and the incident ADR's UB-7 direction all read an order that fresh order-level evidence shows working as **not unknown** (§2). Under that reading the code has a defect in state (i) for admission, loosening amends and takeover.
-3. **Takeover over-blocks further.** It has a second, stricter check (`book_takeover_owner.py:621`) that treats any entry or add not yet terminal, on any leg, as "not quiescent" from the moment it is sent. S10 requires quiescence only of the displaced legs.
+2. **The spec is ambiguous for (i), so the spec behavior is OPEN.** Read literally, the §1 `pending` row (`:27`) and the consistency matrix (`:78`) agree with the code. The S1 cut, the `W` freshness row, E3, AC-5, AC-8, the §5 cutoff rule and the incident ADR's UB-7 direction read an order that fresh order-level evidence shows working as **not unknown** (§2). §2 and §6.1 propose a clarification that adopts the second reading. It is a proposal: the rail-spec owner has not adopted it. Only under that proposed reading does the code have a defect in state (i) for admission, loosening amends and takeover after the order's first bar.
+3. **Takeover over-blocks further.** It has a second, stricter check (`book_takeover_owner.py:621`) that treats any entry or add not yet terminal, on any leg, as "not quiescent" from the moment it is sent. S10 requires quiescence only of the displaced legs. During the order's first bar this is a defect under either reading: the order is not yet `UNKNOWN` even under the literal `pending` row (`:27`), and S10 (`:72`) and K1 (`:112`) require quiescence of displaced scope only (§3.6).
 4. **Genuinely unknown outcomes (iii) are fenced correctly, but not halted.** They are counted at once and cleared only by an accepted, postdating terminal. That is the conservative reading and is consistent with Gate A A1. Rev9 also requires a halt into INTERVENTION for an "uncertain transport/order outcome". The owner raises that halt for protection and takeover-child unknowns, but not for ordinary entries, adds, closes or cancels. This gap is already recorded (packet CC-3: the risk-add fence "is the part implemented today").
 5. **Terminal orders (iv) resolve correctly.** One caveat: the transport-`REJECTED` shortcut (`:791-792`) is safe for the synthetic seam only. Gate A A3 constrains it for any real route.
 6. **Close, cancel, recovery, the resume gate and capacity do not read the fence.** Their behavior is correct in all four states, or fail-closed where not built, with one spec ambiguity. A close is refused while its own leg holds any unresolved entry or add (`:1296-1301`), whatever that order's state.
@@ -30,7 +30,7 @@ The fence scans **entries and adds only** (`:787-789`). Close orders are gated s
 - **A never-sent request is classified as unknown.** With no transport configured, the attempt is journaled `UNKNOWN` and the method returns `production_route_unavailable` without sending (`:1682-1684`). The request is demonstrably unsent (Gate A A3 (i)) but is classified (iii). This fails closed and is reachable only without a route, but T09 must not inherit it (§6.7).
 - **The boundary differs from the kernel.** The code counts an accepted order at exactly one bar after preparation (`now < prepared + BAR_PERIOD` is false at equality). The test reference kernel times out strictly after one bar (`tests/ops/tb_s3_kernel/kernel.py:1326`). The spec says "within one bar" and "older than one bar". Minor; §6.3 asks for it to be pinned.
 
-## 2. Settling the spec reading of state (i)
+## 2. The spec reading of state (i): OPEN
 
 **The spec text is ambiguous.** Rows that support the literal reading, under which (i) becomes unknown after one bar:
 - §1 `pending` row (rail spec `:27`): "`UNKNOWN` after the one-bar outcome timeout or a crash between send and outcome". It lists resolution only by a terminal event, or by a postdating `W` absence plus a consistent `P`. A `W` showing the order working is not listed, and the state list has no "working" value.
@@ -42,13 +42,14 @@ Rows that support reading (i) as **not unknown**:
 - **S2** (`:56`): the entry "rests" while "`W[MNQ]` gains the order on evidence", and the reservation is held "while it rests". Resting is treated as a normal state.
 - **E3** (`:111`): "Completion hands responsibility to observed working orders, gross lots or quarantine before releasing the request owner". An observed working order discharges the request.
 - **AC-5** (`:94`): the unknown case is qualified: "accepted, **no evidence** for one bar".
-- **AC-3, AC-8, §5**: AC-3 (`:92`) has a resting add live until the next session open. AC-8 (`:97`) has an ORB entry filling at the cutoff. Halt/resume §5 (`:67`) cancels "resting risk-add orders" at the cutoff. Each assumes orders that rest for many bars under RUNNING without an incident.
+- **AC-8, §5**: AC-8 (`:97`) has an ORB entry filling at the cutoff. Halt/resume §5 (`:67`) cancels "resting risk-add orders" at the cutoff. Each assumes orders that rest for many bars under RUNNING without an incident.
+- **AC-3 is not counted.** AC-3 (`:92`) has a resting add live until the next session open, but S1 (`:54`) lists the ORB add as a market add. That is a separate AC-3 inconsistency for the rail-spec owner (§6.7), not support for either reading.
 - **Incident ADR UB-7 direction** (`docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md:302`, EVIDENCE-PENDING): "a correlated working entry becomes a known working-order reservation".
 - **The test reference kernel** implements this reading, though it is an unaccepted reference (rail spec `:103`). It refreshes `last_evidence_at` on each order-level read that mentions the order (`kernel.py:562-563`), times out only from the last evidence (`:1319-1329`), and returns an unknown order to `accepted` when `W` shows it working (`:577-578`, `:1095-1112`).
 
-**Settled reading (proposed clarification; the rail-spec owner must adopt it; not applied here).** A request whose latest qualifying order-level evidence (§4) is at most one bar old and shows it working or partially filled is a **known working order**, not `UNKNOWN`. It keeps its reservation. It is subject to cancellation at the cutoff and on mode or takeover transitions. It counts as a working order for recovery and deadline checks. It does **not** create an `unknown_order` block. The one-bar outcome timeout runs from the latest such evidence, not from the send.
+**Proposed reading (a proposed clarification; not adopted; the rail-spec owner decides; not applied here).** A request whose latest qualifying order-level evidence (§4) is at most one bar old and shows it working or partially filled is a **known working order**, not `UNKNOWN`. It keeps its reservation. It is subject to cancellation at the cutoff and on mode or takeover transitions. It counts as a working order for recovery and deadline checks. It does **not** create an `unknown_order` block. The one-bar outcome timeout runs from the latest such evidence, not from the send.
 
-**Verdict for (i):** *spec-ambiguous on its face; the code is a defect under the settled reading.* The `pending` row needs a sentence to remove the ambiguity (§6.1).
+**Verdict for (i):** *spec-ambiguous; the spec behavior is OPEN until the rail-spec owner rules. The code is a defect only under the proposed reading.* The `pending` row needs a sentence to remove the ambiguity (§6.1, proposed). One finding does not depend on the reading: takeover's refusal during the order's first bar (§3.6).
 
 ## 3. Four-state × consumer matrix
 
@@ -58,10 +59,10 @@ Consumers 3.1 to 3.5 are the ones the card names. Consumers 3.6 to 3.8 were foun
 
 | State | Code today | Spec | Verdict | Tests |
 |---|---|---|---|---|
-| (i) | Not counted for one bar (`:793`). From then on every leg's risk-add is refused `unknown_order` (`:1608-1609`) until the order is terminal | Settled reading (§2): no block; admission proceeds, with the reservation counted in capacity | **Spec-ambiguous; defect under the settled reading** | Production: none (there is no working-evidence input). `test_pr409_review4.py:51-66` (`accepted-901`) and `:69-88` pin refusal for an accepted order **with no evidence**. Kernel reference only: `tests/ops/tb_s3_cases/primitives/test_tb_s3_kernel_review.py:56-66` |
-| (ii) | As (i): refused from one bar after preparation; cleared only by a terminal | `W` older than one bar → `UNKNOWN` (`:26`); S1 cut → `unknown_order` (`:54`); refuse (`:78`) | **Correct.** The clock starts at preparation, never later than the spec's. Clearing when fresh working evidence returns is spec-ambiguous (E3 `:111` yes; `pending` row `:27` silent) and impossible in code | `test_pr409_review4.py:51-66`, `:69-88`, `:127-140`; `test_book_feedback_journal.py:42-55` (`accepted`). Clearing by fresh evidence: kernel only (`test_tb_s3_kernel_review.py:40-53`) |
-| (iii) | Refused at once (`:793`, `:1608`) until an accepted, postdating terminal (`:795`). No halt | Rail: `UNKNOWN`, reservation held, account-wide `unknown_order` (`:27`, `:54`). Rev9: "uncertain transport/order outcome" → durable halt into INTERVENTION (halt/resume `:26`; rev9 replaces the incident portions, rail spec `:3`). Resolution by a terminal; the absence path (`:27`, AC-5) does not apply on this route, because absence proves nothing (Gate A A1) | **Classification correct. Consequence incomplete:** no halt is a defect against rev9 §2, already recorded as not implemented (packet CC-3) | `test_pr409_review4.py:51-66` (`unknown-1`), `:91-101`; `test_book_feedback_journal.py:42-69`. Halt on an ordinary unknown: none |
-| (iv) | Resolved (`:795`); a transport-`REJECTED` attempt is skipped (`:791-792`) | Resolved by the terminal event (`:27`), strictly postdating (`:41`). Gate A A3: only a local pre-dispatch refusal is demonstrably unsent; a remote refusal keeps its uncertainty without request-specific closure | **Correct** for fill and cancel terminals. The `REJECTED` skip is correct for the synthetic seam; for a real route it is constrained by A3 and owed to the T09 outcome classifier | `test_book_close_reconciliation.py:24-37`; `test_book_feedback_journal.py:42-69`; `test_pr409_review4.py:51-88`, `:127-140`; `REJECTED`: `test_pr409_review2.py:236-252` |
+| (i) | Not counted for one bar (`:793`). From then on every leg's risk-add is refused `unknown_order` (`:1608-1609`) until the order is terminal | **OPEN.** `pending` row (`:27`) and consistency matrix (`:78`): `UNKNOWN` after the one-bar timeout → refuse account-wide `unknown_order`. S1 cut (`:54`), `W` row (`:26`) and E3 (`:111`): fresh working evidence → not unknown, no block. Both readings admit during the first bar, as the code does | **Spec-ambiguous.** Defect only under the proposed reading (§2, §6.1) | Production: none (there is no working-evidence input). `test_pr409_review4.py:52-67` (`accepted-901`) and `:70-88` pin refusal for an accepted order **with no evidence**. Kernel reference only: `tests/ops/tb_s3_cases/primitives/test_tb_s3_kernel_review.py:56-66` |
+| (ii) | As (i): refused from one bar after preparation; cleared only by a terminal | `W` older than one bar → `UNKNOWN` (`:26`); S1 cut → `unknown_order` (`:54`); refuse (`:78`) | **Correct.** The clock starts at preparation, never later than the spec's. Clearing when fresh working evidence returns is spec-ambiguous (E3 `:111` yes; `pending` row `:27` silent) and impossible in code | `test_pr409_review4.py:52-67`, `:70-88`, `tests/ops/test_pr409_review4.py:113-126`; `test_book_feedback_journal.py:42-55` (`accepted`). Clearing by fresh evidence: kernel only (`test_tb_s3_kernel_review.py:40-53`) |
+| (iii) | Refused at once (`:793`, `:1608`) until an accepted, postdating terminal (`:795`). No halt | Rail: `UNKNOWN`, reservation held, account-wide `unknown_order` (`:27`, `:54`). Rev9: "uncertain transport/order outcome" → durable halt into INTERVENTION (halt/resume `:26`; rev9 replaces the incident portions, rail spec `:3`). Resolution by a terminal; the absence path (`:27`, AC-5) does not apply on this route, because absence proves nothing (Gate A A1) | **Classification correct. Consequence incomplete:** no halt is a defect against rev9 §2, already recorded as not implemented (packet CC-3) | `test_pr409_review4.py:52-67` (`unknown-1`), `:91-101`; `test_book_feedback_journal.py:42-69`. Halt on an ordinary unknown: none |
+| (iv) | Resolved (`:795`); a transport-`REJECTED` attempt is skipped (`:791-792`) | Resolved by the terminal event (`:27`), strictly postdating (`:41`). Gate A A3: only a local pre-dispatch refusal is demonstrably unsent; a remote refusal keeps its uncertainty without request-specific closure | **Correct** for fill and cancel terminals. The `REJECTED` skip is correct for the synthetic seam; for a real route it is constrained by A3 and owed to the T09 outcome classifier | `test_book_close_reconciliation.py:24-37`; `test_book_feedback_journal.py:42-69`; `test_pr409_review4.py:52-88`, `tests/ops/test_pr409_review4.py:113-126`; `REJECTED`: `test_pr409_review2.py:235-253` |
 
 ### 3.2 Protection amend and attach (rail S3 `:58`; AMEND/ATTACH `:47-48`; action classes `:39`; consistency matrix `:80`)
 
@@ -69,7 +70,7 @@ Tightening amends and first attaches are never gated by the fence. They are chec
 
 | State | Code today | Spec | Verdict | Tests |
 |---|---|---|---|---|
-| (i) | Tightening and attach proceed. Loosening is refused after one bar (`:492`) | Tightening and attach are risk-reducing and admitted under blocks (`:39`, I1 `:50`). Loosening is refused only under a block; under the settled reading there is none | Tightening and attach **correct**. Loosening **spec-ambiguous; defect under the settled reading** | None for fence states. `test_book_protection_evidence.py:143-182` covers binding, window, intervention and capacity gaps. Kernel: `test_tb_s3_kernel_findings.py:244-255` (an EOD block, not `unknown_order`) |
+| (i) | Tightening and attach proceed. Loosening is refused after one bar (`:492`) | Tightening and attach are risk-reducing and admitted under blocks (`:39`, I1 `:50`). Loosening is refused only under a block. Whether (i) after one bar is a block is **OPEN**: `pending` row (`:27`) and matrix (`:78`) say `UNKNOWN`, a block; S1 cut (`:54`), `W` row (`:26`) and E3 (`:111`) say not unknown, no block | Tightening and attach **correct**. Loosening **spec-ambiguous; defect only under the proposed reading** (§2, §6.1) | None for fence states. `test_book_protection_evidence.py:143-182` covers binding, window, intervention and capacity gaps. Kernel: `test_tb_s3_kernel_findings.py:244-255` (an EOD block, not `unknown_order`) |
 | (ii) | Loosening refused; tightening and attach proceed | Same | **Correct** | None |
 | (iii) | Loosening refused at once (`:492`, `:493-494`). Tightening and attach are still sent, because no halt is raised | Rail: as the code. Rev9: the halt puts the account in INTERVENTION, which permits no runtime mutation, including tightening (halt/resume `:16`, `:41`) | Loosening **correct**. Tightening and attach follow from the missing halt (the same defect as 3.1 (iii)) | None |
 | (iv) | Not refused | Not refused | **Correct** | Covered indirectly by the amend tests |
@@ -95,7 +96,7 @@ The owner has no incident-recovery completion check. INTERVENTION stops runtime 
 |---|---|---|---|---|
 | (i) | Counted (operation `attempted`, reservation held) → deadline breach | At D "any exposure, working order or unconfirmed state is a deadline breach" (`:67`); recovery needs "no working orders" (`:43`) | **Correct** | `test_book_account_owner.py:296-308` |
 | (ii) | Counted → breach | Same | **Correct** | as (i) |
-| (iii) | Counted → breach | Same; also "no unresolved requests" (`:43`) | **Correct** | `test_book_account_owner.py:200-213`; `test_pr409_review4.py:103-111` |
+| (iii) | Counted → breach | Same; also "no unresolved requests" (`:43`) | **Correct** | `test_book_account_owner.py:200-213`; `test_pr409_review4.py:104-111` |
 | (iv) | Not counted (operation `terminal`, `:2047`; reservation released) | Recovery is complete only on fresh coherent E1–E3/K1 evidence (`:43`) | **Correct as far as it goes.** The owner decides from its own accounting, not from a fresh coherent acquisition; that producer is T09 (not built) | Indirect only |
 
 ### 3.5 Resume gate (halt/resume §4 `:57-59`)
@@ -114,7 +115,7 @@ Revalidation refuses when the fence is non-empty (`book_takeover_owner.py:558-55
 | State | Code today | Spec | Verdict | Tests |
 |---|---|---|---|---|
 | (i), displaced leg | The plan cancels it; the takeover completes only after a terminal | "cancel every displaced resting or partially filled entry/add, counting a cancel only when evidence shows the order terminal" (`:72`) | **Correct** | `test_book_account_owner.py:359`; `test_book_capacity.py:110` |
-| (i), non-displaced leg | Refused **from the send onward**, not after one bar (`:621`, operation `attempted`); after one bar also by the fence (`:558`) | "Under RUNNING with valid authorization and `blocks = ∅`" plus "fresh displaced-scope quiescence" (`:72`). Under the settled reading a known working order on another leg is neither a block nor in scope | **Defect under the settled reading.** It is also inconsistent with ordinary admission, which allows (i) for its first bar | None |
+| (i), non-displaced leg | Refused **from the send onward**, not after one bar (`:621`, operation `attempted`); after one bar also by the fence (`:558`) | S10 (`:72`): "Under RUNNING with valid authorization and `blocks = ∅`" plus "fresh displaced-scope quiescence"; K1 (`:112`): quiescence "in scope". **Within one bar of preparation:** no block under either reading, because the order is `accepted`, not `UNKNOWN`, even under the literal `pending` row (`:27`), and it is outside displaced scope. **After one bar: OPEN**: `:27` and `:78` (`UNKNOWN`, an account-wide block) against `:54`, `:26` and `:111` (not unknown, no block) | **Within one bar: defect under either reading** (S10 `:72`, K1 `:112`, `pending` row `:27`). It is also inconsistent with ordinary admission, which admits other legs during the order's first bar. The same first-bar refusal applies to an accepted order not yet evidenced. **After one bar: spec-ambiguous;** defect only under the proposed reading (§2, §6.1) | None |
 | (ii) | Refused | Refused (a block) | **Correct** | None specific |
 | (iii) | Refused; an unknown **takeover child** halts (`book_takeover_owner.py:539-541`) | Refused; rev9 halt | **Correct** | None specific for an ordinary unknown during takeover |
 | (iv) | Not refused | Not refused | **Correct** | as displaced above |
@@ -125,7 +126,7 @@ The reservation is the requested quantity minus credited fills while the operati
 
 | State | Code today | Spec | Verdict | Tests |
 |---|---|---|---|---|
-| (i)–(iii) | Held | Held "while it rests" (`:56`) and while the outcome is unknown (`:54`); "never elapsed time" (`:28`) | **Correct** | `test_pr409_review4.py:51-66` (held exposure); `test_book_capacity.py` |
+| (i)–(iii) | Held | Held "while it rests" (`:56`) and while the outcome is unknown (`:54`); "never elapsed time" (`:28`) | **Correct** | `test_pr409_review4.py:52-67` (held exposure); `test_book_capacity.py` |
 | (iv) | Remainder released; fills converted | Released by confirmed terminal evidence. The never-dispatched proof path (`:28`) is not implemented; Gate A A1 limits it on this route | **Correct** | `test_book_capacity.py`; `test_pr409_review2.py:236-252` |
 
 ### 3.8 Close orders themselves in the four states (packet row (e)), found by the trace
@@ -160,13 +161,13 @@ Loosening amends are refused only when a close's attempt is `UNKNOWN` (`book_pro
 | Capacity | Covered | Covered | Covered | Covered |
 | Close orders (3.8) | Admission covered (`test_book_close_reconciliation.py:62-77`); loosening **none** | same | same | Covered |
 
-The owner's tests pin today's classification of an accepted order with no evidence (`test_pr409_review4.py:51-88`). Those tests stay valid as state-(ii) tests under the repair below.
+The owner's tests pin today's classification of an accepted order with no evidence (`test_pr409_review4.py:52-88`). Those tests stay valid as state-(ii) tests under the repair below.
 
 ## 6. Proposed repair specification (behavior, not code)
 
 ### 6.1 Spec clarification (owner: the rail spec; proposed, not applied)
 
-Add to the §1 `pending` row: an `accepted` or `partial` order that fresh, qualifying order-level evidence (§4) shows working is a **known working order**. The one-bar outcome timeout runs from the latest such evidence. A known working order holds its reservation and is not `UNKNOWN`. Add an acceptance case: a resting entry evidenced on every bar for several bars leaves other legs' risk-adds admitted. The kernel already has it: `test_tb_s3_kernel_review.py:56-66`.
+Add to the §1 `pending` row: an `accepted` or `partial` order that fresh, qualifying order-level evidence (§4) shows working is a **known working order**. The one-bar outcome timeout runs from the latest such evidence. A known working order holds its reservation and is not `UNKNOWN`. Add an acceptance case: a resting entry evidenced on every bar for several bars leaves other legs' risk-adds admitted. The kernel covers only the precondition: an entry evidenced every bar stays `accepted` and raises no `unknown_order` block (`test_tb_s3_kernel_review.py:56-66`). That test never admits another leg's risk-add, so the admission is untested even in the kernel.
 
 ### 6.2 Classification (the account owner)
 
@@ -188,7 +189,7 @@ For each entry or add request:
 
 1. A resting entry evidenced on every bar for more than one bar: other legs' risk-adds, loosening amends and a non-displaced takeover are admitted, and the reservation is held.
 2. Evidence stops: fenced from the moment the last qualifying acquisition is more than one bar old. Fresh working evidence returns the order to (i); a terminal resolves it.
-3. An accepted order never evidenced: fenced after one bar. The existing tests `test_pr409_review4.py:51-88` stay as the pin.
+3. An accepted order never evidenced: fenced after one bar. The existing tests `test_pr409_review4.py:52-88` stay as the pin.
 4. Evidence that must **not** refresh (i):
    - a position-only read;
    - an incomplete or unfenced acquisition;
@@ -198,7 +199,7 @@ For each entry or add request:
    - an order listed under another identity or on another symbol, or with a remainder inconsistent with credited fills (these quarantine or halt, as E2 and E3 require).
 5. A partial fill whose remainder is still working, evidenced fresh: (i). Kernel analogue: `test_tb_s3_kernel_review_followups.py:44-58`.
 6. An unknown dispatch (iii): fenced at once. Working evidence for a different order, a position-only read, or an equal-time terminal does not clear it. It is cleared only by an accepted, postdating terminal.
-7. Two unresolved requests: resolving one does not unblock (E3; the existing `test_pr409_review4.py:69-88` as analogue).
+7. Two unresolved requests: resolving one does not unblock (E3; the existing `test_pr409_review4.py:70-88` as analogue).
 8. Takeover: a non-displaced known working order does not block. A non-displaced stale order blocks. A displaced order must reach a terminal state.
 9. Restart: evidence taken before the restart never makes an order (i) after it (S9 `:70`); the owner boots HALTED.
 10. Cutoff with an order in (i): the cancel is sent. At D with any order in (i), (ii) or (iii): a breach (existing behavior, re-pinned).
@@ -207,15 +208,16 @@ For each entry or add request:
 
 ### 6.5 Effect on the E1 freeze inventory
 
-The production qualification closure binds `c1_rail.book_account_owner` as the `listener_account_owner` role (`ops/c1_rail/qualification/trust_domain.py:146`). It lists `book_protection_owner`, `book_takeover_owner`, `book_takeover`, `book_capacity`, `book_migration` and `book_migration_schema` as runtime dependencies (`:158-163`). The repair touches at least the account owner, the protection owner's loosening gate and the takeover owner's two checks. A new evidence ingress would likely also touch the evidence data classes, and if persisted, the schema and migration. **Each is an E1 freeze-inventory change** (allocation map `:131`, row B11 `:145`: "Any change re-enters the freeze inventory"). The packet requires the repair to be resolved before the ORB freeze. It should land before the inventory is frozen, not after, or the freeze would be re-entered.
+The production qualification closure binds `c1_rail.book_account_owner` as the `listener_account_owner` role (`ops/c1_rail/qualification/trust_domain.py:146`). It lists `book_protection_owner`, `book_takeover_owner`, `book_takeover`, `book_capacity`, `book_migration` and `book_migration_schema` as runtime dependencies (`:158-164`). The repair touches at least the account owner, the protection owner's loosening gate and the takeover owner's two checks. A new evidence ingress would likely also touch the evidence data classes, and if persisted, the schema and migration. **Each is an E1 freeze-inventory change** (allocation map `:131`, row B11 `:145`: "Any change re-enters the freeze inventory"). The packet requires the repair to be resolved before the ORB freeze. It should land before the inventory is frozen, not after, or the freeze would be re-entered.
 
 ### 6.6 Dependence on the ORB lifecycle ruling (stated; not resolved)
 
 - **The repair is required under every lifecycle.** State (i) occurs without ORB's long-resting entry:
   - an order still working at the first barrier after placement: the code fences at exactly one bar, before a one-bar cancel's terminal can arrive;
   - a partially filled remainder;
-  - a resting add, as in AC-3;
   - a market order whose terminal arrives late.
+
+  AC-3's resting add is not listed, because S1 (`:54`) lists the ORB add as a market add (§2, §6.7).
 - **What the lifecycle ruling changes:**
   - **How long (i) must be sustained by evidence:** up to the span from range completion to the cutoff under a session-end lifecycle, and at most about one bar under a one-bar lifecycle.
   - **The required refresh cadence,** and so the producer's polling load (Gate A A7).
@@ -229,6 +231,7 @@ The production qualification closure binds `c1_rail.book_account_owner` as the `
 - **The T09 outcome classifier** under Gate A A3, including the `REJECTED` shortcut and the never-dispatched journal (§6.2).
 - **Same-leg close refusal** while an entry or add is unresolved (§3.3). This is a spec ambiguity between S5 and the consistency matrix on one side, and K1, S10 and §5 on the other. Owner: the rail spec.
 - **Whether an accepted, unresolved close must block cross-leg loosening amends** (§3.8). Owner: the rail spec, CLOSE bullet.
+- **AC-3 versus S1:** AC-3 (`:92`) has a resting ORB add live until the next session open, while S1 (`:54`) lists the ORB add as a market add. Owner: the rail spec.
 
 ## 7. Method, verification and limits
 
@@ -244,3 +247,4 @@ The production qualification closure binds `c1_rail.book_account_owner` as the `
   - No probe or new test was written: the card allows running existing tests only. The state-(i) defect is therefore shown by code reading and by the absence of any working-evidence input, not by a failing test.
   - No private port or Pine was read for this deliverable.
 - **Kernel status:** the kernel is an unaccepted development reference (rail spec `:103`). Its behavior is cited as evidence, not authority.
+- **Fix pass (2026-09-26, coordinator review findings):** the state-(i) Spec cells now read OPEN with the conflicting rows named; the reading in §2 and §6.1 is labeled a proposal; the takeover (i) non-displaced verdict is split at the first bar; AC-3 is removed as support and recorded as an inconsistency (§6.7); the §6.1 kernel claim is narrowed; test and trust-domain line citations were corrected at `62c956f`. No new test was run for the fix pass.
