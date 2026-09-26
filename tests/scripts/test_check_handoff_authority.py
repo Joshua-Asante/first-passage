@@ -37,6 +37,10 @@ constraints: [no_main_write]
 acceptance: [tests/scripts/test_x.py::test_y]
 """
 
+# A parent card that grants worktree.write names its acceptance tests too (2026-09-26 rule:
+# A6 binds every card that grants worktree.write or research.run, whatever its seat).
+UMBRELLA_ACCEPTANCE = "acceptance: [tests/scripts/test_umbrella.py::test_all]\n"
+
 
 def _card(tmp_path: Path, body: str, name: str = "card.md", prose: str = "# Card\n") -> Path:
     path = tmp_path / name
@@ -52,7 +56,7 @@ def test_clean_worker_card_passes(tmp_path):
     # Fails if a well-formed worker card, naming its parent, is rejected (over-blocks).
     _card(tmp_path, "seat: coordinator\nmax_risk: medium\n"
           "capabilities: [repository.read, tests.run, worktree.write, branch.push, pr.open]\n"
-          "constraints: [no_main_write]\n", name="umbrella.md")
+          "constraints: [no_main_write]\n" + UMBRELLA_ACCEPTANCE, name="umbrella.md")
     body = "parent: umbrella.md\n" + WORKER_OK
     assert _errs(_card(tmp_path, body), tmp_path) == []
 
@@ -171,7 +175,8 @@ def test_worker_card_needs_named_acceptance_tests(tmp_path):
 def _parent(tmp_path: Path) -> None:
     _card(tmp_path, "seat: coordinator\nmax_risk: medium\n"
           "capabilities: [repository.read, tests.run, worktree.write, branch.push, pr.open]\n"
-          "constraints: [no_main_write, reserved_files_untouched]\n", name="umbrella.md")
+          "constraints: [no_main_write, reserved_files_untouched]\n" + UMBRELLA_ACCEPTANCE,
+          name="umbrella.md")
 
 
 def test_child_within_parent_passes(tmp_path):
@@ -398,3 +403,76 @@ def test_one_malformed_card_does_not_abort_the_scan(tmp_path, capsys):
     assert f"HARD {binary}:" in out and f"HARD {listy}:" in out
     assert f"HARD {good}:" not in out
     assert "violation(s)" in out
+
+
+# --- 2026-09-26 operator ruling A ("human read + one gate") ---
+# The checker binds a card's grants to the seat the card DECLARES; nothing binds that seat
+# to the executor. So the one mechanical gate is seat-blind: any card whose block grants a
+# write-shaped capability (registry `acceptance_required_for`) names its acceptance tests.
+
+@pytest.mark.parametrize("seat,cap", [
+    ("coordinator", "worktree.write"), ("coordinator", "research.run"),
+    ("escalation", "worktree.write"), ("worker", "research.run"),
+])
+def test_write_grant_needs_acceptance_whatever_the_declared_seat(tmp_path, seat, cap):
+    # Fails if a card can escape A6 by declaring a non-worker seat while granting a
+    # write-shaped capability -- the mislabel the 2026-09-26 ruling closes.
+    body = f"seat: {seat}\nmax_risk: medium\ncapabilities: [repository.read, {cap}]\n"
+    if seat == "worker":
+        (tmp_path / "umbrella.md").write_text("# Historical umbrella\n", encoding="utf-8")
+        body = "parent: umbrella.md\n" + body
+    errs = _errs(_card(tmp_path, body), tmp_path)
+    assert any(e.startswith("A6") and cap in e for e in errs), errs
+
+
+@pytest.mark.parametrize("acceptance", ["acceptance: []\n", 'acceptance: [""]\n'])
+def test_write_grant_with_empty_acceptance_is_refused(tmp_path, acceptance):
+    # Fails if an explicitly empty acceptance list satisfies the write-grant gate.
+    body = ("seat: coordinator\nmax_risk: medium\n"
+            "capabilities: [repository.read, worktree.write]\n" + acceptance)
+    assert any(e.startswith("A6") for e in _errs(_card(tmp_path, body), tmp_path))
+
+
+def test_write_grant_with_named_acceptance_passes(tmp_path):
+    # Fails if the seat-blind gate over-blocks a non-worker card that names its tests.
+    body = ("seat: coordinator\nmax_risk: medium\n"
+            "capabilities: [repository.read, worktree.write, research.run]\n"
+            "acceptance: [tests/scripts/test_x.py::test_y]\n")
+    assert _errs(_card(tmp_path, body), tmp_path) == []
+
+
+@pytest.mark.parametrize("body", [
+    COORD_OK,
+    "seat: executive\nmax_risk: medium\ncapabilities: [repository.read, governance.author]\n",
+    "seat: escalation\nmax_risk: medium\ncapabilities: [repository.read, pr.review]\n",
+])
+def test_non_write_non_worker_card_needs_no_acceptance(tmp_path, body):
+    # Fails if the gate widens past write-shaped grants to every non-worker card.
+    assert _errs(_card(tmp_path, body), tmp_path) == []
+
+
+def test_registry_pins_the_write_shaped_capabilities():
+    # Fails if a registry edit drops worktree.write or research.run from the gate.
+    assert REG.acceptance_required == frozenset({"worktree.write", "research.run"})
+
+
+def test_registry_without_the_gate_list_fails_closed(tmp_path):
+    # Fails if a registry that lost `acceptance_required_for` loads with the gate off.
+    lines = (REPO / "scripts" / "seat_authority.yml").read_text(encoding="utf-8").splitlines()
+    kept = [line for line in lines if not line.startswith("acceptance_required_for")]
+    assert len(kept) == len(lines) - 1
+    bad = tmp_path / "seat_authority.yml"
+    bad.write_text("\n".join(kept) + "\n", encoding="utf-8")
+    with pytest.raises(KeyError, match="acceptance_required_for"):
+        cha.load_registry(bad)
+
+
+def test_registry_rejects_an_unknown_gated_capability(tmp_path):
+    # Fails if a misspelt gated capability loads and silently gates nothing.
+    text = (REPO / "scripts" / "seat_authority.yml").read_text(encoding="utf-8")
+    bad = tmp_path / "seat_authority.yml"
+    bad.write_text(text.replace("acceptance_required_for: [worktree.write,",
+                                "acceptance_required_for: [worktree.wirte,"), encoding="utf-8")
+    assert "worktree.wirte" in bad.read_text(encoding="utf-8")
+    with pytest.raises(ValueError, match="acceptance_required_for"):
+        cha.load_registry(bad)

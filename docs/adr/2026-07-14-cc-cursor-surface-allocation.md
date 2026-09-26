@@ -130,7 +130,9 @@ about which vendor runs the session, so all four survive the retirement unchange
   already do). Tests the worker writes are additional evidence, never the acceptance basis — a
   worker that writes both the feature and its only tests can encode the defect into green.
   For contract-driven code the card carries the invariant table (M-38); for anything with orders,
-  positions or shutdown semantics it carries the state model (M-39).
+  positions or shutdown semantics it carries the state model (M-39). Since 2026-09-26 the checker
+  requires named acceptance tests on any card whose authority block grants `worktree.write` or
+  `research.run`, whatever seat it declares ([Addendum 2026-09-26b](#addendum-2026-09-26b)).
 - **Return contract:** a worker branch (`glm/*`, `codex/*` or `claude/*`), a PR with tests green, and a
   four-state status — `DONE` / `DONE_WITH_CONCERNS` / `NEEDS_CONTEXT` / `BLOCKED`. **No commit
   or merge without the operator.** `DONE_WITH_CONCERNS` is adjudicated by the coordinator before
@@ -145,6 +147,9 @@ about which vendor runs the session, so all four survive the retirement unchange
   [`scripts/check_handoff_authority.py`](../../scripts/check_handoff_authority.py) enforces the
   rules under *Action classes* below. Required of every worker card authored after this revision
   is ratified; historical cards are not retrofitted and the checker skips a card with no block.
+  The checker binds the grants to the seat the card **declares**; it never binds that seat to the
+  agent that executes the card. That binding is the coordinator's pre-dispatch read plus the
+  executive review, on every route ([Addendum 2026-09-26b](#addendum-2026-09-26b)).
 
 **Scoped exception — the lightweight dispatch issue** (2026-08-29 addendum #2, retained in shape
 by §8; scoped 2026-09-16 after post-merge review; re-scoped 2026-09-20 to the six-item contract).
@@ -287,8 +292,8 @@ Rules:
 
 | Act | Enforcement point | Status 2026-09-25 |
 |---|---|---|
-| card grants | `check_handoff_authority.py` (`handoff-authority` gate): a worker card must name its parent; parents must be inside the repository, are checked recursively, and a cycle is refused; a parent without a block narrows nothing beyond the seat | enforced for cards with a block |
-| merge | the operator merges on GitHub; the ruleset makes every change to `main` a PR with a green strict `skills (3.12)`; best effort: [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges in the forms it recognises (MCP tool; `gh pr merge` or a `gh api` merge from the Bash or PowerShell tool), only when the call pins the head SHA, and denies the unpinned forms it recognises | **not enforced server-side against an agent:** the ruleset does not stop a write credential from merging a green PR, so the limit is the operator not giving an agent a merge-capable credential (operator-held); the hook is a best-effort prompt for Claude Code only |
+| card grants | `check_handoff_authority.py` (`handoff-authority` gate): binds a card's grants to the seat the card **declares** and never binds that seat to the executor; a worker card must name its parent; parents must be inside the repository, are checked recursively, and a cycle is refused; a parent without a block narrows nothing beyond the seat; any card granting `worktree.write` or `research.run` names its acceptance tests whatever its seat ([2026-09-26b](#addendum-2026-09-26b)) | enforced for cards with a block; seat-to-executor binding is the coordinator's pre-dispatch read plus the executive review (human, not code) |
+| merge | the operator merges on GitHub; the ruleset makes every change to `main` a PR with a green strict `skills (3.12)`; best effort: [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges in the forms it recognises (MCP tool; `gh pr merge` or a `gh api` merge from the Bash or PowerShell tool), only when the call pins the head SHA, and denies the unpinned forms it recognises | **not enforced server-side against an agent:** the ruleset does not stop a write credential from merging a green PR, so the limit is the operator not giving an agent a merge-capable credential (operator-held); the hook is a best-effort prompt for Claude Code only. **That limit does not hold for GLM workers today:** they run as the operator's user with the operator's `gh` credential; isolation ruled 2026-09-26, host change **OWED** ([2026-09-26b](#addendum-2026-09-26b)) |
 | auto-merge | the repository setting `allow_auto_merge: false` (GitHub refuses to enable auto-merge on any PR); CI holds no write credential (2026-08-29 addendum #1 bar); best effort: the hook denies the auto-merge forms it recognises | **enforced server-side** by the repository setting (verified read-only 2026-09-25); the setting itself is operator-held |
 | push to `main` | GitHub ruleset 21071355 `main-protection` on `refs/heads/main`: PR required, `skills (3.12)` required and strict, non-fast-forward and deletion blocked, empty bypass list; best effort: the hook denies the `git push` forms it recognises whose destination is `main` (named, bulk, matching `:` or glob) | **enforced server-side** for every credential (bypass list empty, `current_user_can_bypass: never`, verified read-only 2026-09-25) |
 | rail deploy | where the Fly credential is held; best effort: the hook asks on `fly deploy` / `flyctl deploy` (any Fly app) | **no server-side enforcement**: nothing on Fly's side refuses a deploy from a session that holds the credential; operator-held credential + best-effort prompt only |
@@ -699,6 +704,57 @@ python scripts/check_handoff_authority.py --all
 python -m pytest -q tests/scripts/test_check_handoff_authority.py tests/scripts/test_guard_operator_acts.py
 # Expected: 0 violation(s); all tests pass.
 ```
+
+<a id="addendum-2026-09-26b"></a>
+## Addendum 2026-09-26b — operator rulings: seat binding and GLM credential isolation
+
+**Source.** Operator rulings of 2026-09-26, each chosen in the babysit session from analysed
+options. The text above is not rewritten; it gains one sentence each in handoff-contract items 5
+and 7, and a correction to the card-grants and merge rows of the enforcement-point table, all
+pointing here. Ratifies on operator merge of the PR that carries it.
+
+**A. Seat binding — "human read + one gate".**
+
+- *What the code does* (read on `main` at `7211fa1`): `check_handoff_authority.py` checks a
+  card's grants against the seat the card **declares** (A4, A5) and nothing binds that seat to
+  the agent that executes the card. Before this addendum a worker card declared as
+  `seat: coordinator` took the coordinator's grant and skipped A6 and A7.
+- *Rule of record:* the binding of a card to its executor is the coordinator's pre-dispatch read
+  plus the executive review, on every route — GLM / Z Code, Codex, subagents, the Claude
+  launcher and the lightweight dispatch issue.
+- *One mechanical gate, fail-closed:* rule A6 (named, non-empty acceptance tests) applies to
+  **any** card whose authority block grants `worktree.write` or `research.run`, whatever seat it
+  declares. The list is `acceptance_required_for` in
+  [`scripts/seat_authority.yml`](../../scripts/seat_authority.yml); a registry without it, or
+  naming an unregistered capability, does not load and the checker exits 2. A7 (a named parent)
+  stays worker-only.
+- *Deliberately not built:* path conventions, launcher checks and dispatch ledgers. They are
+  deferred until a mislabelled card is recorded; if one is, the preferred next step is a
+  return-side check on `glm/*` and `codex/*` PRs.
+- This rules the last question the operator-act paragraph above leaves open ("how a card's seat
+  is bound to the worker seat"), and supersedes any record of it as still under consideration.
+
+**C. GLM credentials — "isolate GLM".**
+
+- *Decision:* GLM workers must run without the operator's merge-capable `gh` credential and
+  without the operator's Fly configuration — a separate OS user or a sandbox with no keyring
+  and no `~/.fly` — because `glm_agent`'s `run_bash` is an unrestricted shell running as the
+  operator's user.
+- *Status: **OWED**, operator action.* The host-level change is the operator's to make; this
+  repository changes no host configuration. Until it is done, **GLM workers hold merge- and
+  deploy-capable credentials**: the merge row's limit (no merge-capable credential in an agent's
+  hands) and the rail-deploy row's (where the Fly credential is held) do not hold for a GLM
+  worker, and the best-effort hook reads Claude Code tool calls, not commands run inside
+  `glm_agent`.
+- *Discharge:* a dated line here recording the isolation as verified from the GLM worker's own
+  user (no `gh` authentication, no `~/.fly`).
+
+**Verification.** `tests/scripts/test_check_handoff_authority.py` (2026-09-26 section: a
+coordinator, escalation or worker card granting `worktree.write` or `research.run` without named
+tests is refused; an empty list is refused; a non-writing non-worker card is not; the registry
+list is pinned, required and validated), run test-first through the launcher, and
+`python scripts/check_handoff_authority.py --all` (0 violations; no committed card carried a
+block on 2026-09-26).
 
 ## Verification
 

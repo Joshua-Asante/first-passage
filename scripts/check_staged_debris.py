@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""check_staged_debris.py -- reject staged local-only debris and oversized blobs.
+"""check_staged_debris.py -- reject staged debris, force-added ignored files and oversized blobs.
 
 Gate id ``staged-debris`` (tier ``always``, scripts/gates.yml). A 2026-09-24
 blanket ``git add`` in the main checkout staged ~1,115 files / ~94 MB of
@@ -24,13 +24,32 @@ Same rules in every mode:
   ``.zcodeignore`` is ignored but not banned. Root names compare
   case-insensitively: on a case-insensitive checkout (Windows,
   core.ignorecase=true) ``Recovery/`` or ``TMP/`` is the same on-disk root;
+* force-added ignored files (operator ruling 2026-09-26) -- a staged add,
+  copy or rename-in whose path .gitignore would ignore
+  (``git check-ignore --no-index``), i.e. one that only ``git add -f`` or a
+  pre-rule stage could put in the index. A path already tracked in HEAD is
+  exempt, so a file tracked despite an ignore rule is not newly flagged (two
+  on main at 2026-09-26: lab/pine/mnq_mym_mechanism_diagnostic_v0_1.pine and
+  tests/fixtures/c1_image_validation/lifecycle_state.json, both outside the
+  allowlisted roots). In HEAD-tree mode every path is in HEAD, so there the
+  check is scoped to the allowlisted roots instead (none tracked-but-ignored
+  on main at 2026-09-26) -- the backstop for a force-added vendor CSV under
+  lab/analysis/**/inputs/;
 * oversize staged blobs -- a single file over MAX_STAGED_FILE_BYTES outside
-  the allowlisted roots. The allowlist is data-derived, not aspirational:
+  the allowlisted roots, or over ALLOWLISTED_MAX_STAGED_FILE_BYTES (2 MB)
+  inside them. The allowlist is data-derived, not aspirational:
   the largest tracked file is lab/analysis/mym_breakout_entry_2026_09/
   results.json (988,529 B), so the research-results corpus plus its archived
-  form is the one legitimate ~>1 MB shape in this repo today. Anything else
-  large is the blanket-add signature; extend the allowlist via review when a
-  shape proves legitimate, never via an env override.
+  form is the one legitimate ~>1 MB shape in this repo today. The 2 MB
+  ceiling (~2x that blob) blocks a whole multi-year vendor bar panel
+  (6.4-11.6 MB) but not a one-year slice (~1.4-2.7 MB) or a file split into
+  parts. Anything else large is the blanket-add signature; extend the
+  allowlist via review when a shape proves legitimate, never via an env
+  override. The allowlist prefix match is case-sensitive: a case variant
+  gets the 1 MB cap.
+
+Each finding kind prints its own remedy line; a size or force-add finding is
+never told it is in a local-only root.
 
 Modes, in order: staged changes -> inspect the index diff vs HEAD (the
 pre-commit contract; deletes and rename-away sources are never findings, a
@@ -59,12 +78,28 @@ BANNED_ROOT_DIRS = ("recovery", "tmp")
 BANNED_ROOT_STEM_PREFIX = "tmp-"
 
 MAX_STAGED_FILE_BYTES = 1_000_000  # "~1 MB"; largest tracked file today: 988,529 B
+# Prefix match is case-SENSITIVE on purpose: a case variant ("Lab/Analysis/...") is
+# not an allowlisted root and falls to the tighter MAX_STAGED_FILE_BYTES cap.
 LARGE_FILE_ALLOWLIST_PREFIXES = (
     "lab/analysis/",  # research-results corpus (988 KB results.json precedent)
     "lab/archive/",   # archived form of the same corpus (archive_lab_analysis.py moves)
 )
+# Ceiling for the allowlisted roots (operator ruling 2026-09-26). ~2x the largest
+# legitimate blob (lab/analysis/mym_breakout_entry_2026_09/results.json, 988,529 B).
+# It blocks a whole multi-year vendor bar panel (the 6.4-11.6 MB shape). It does NOT
+# block a one-year slice (~1.4-2.7 MB; the smaller ones pass) or a file split into
+# parts under the ceiling -- the force-added-ignored-file check below and review are
+# the controls for those, not this number.
+ALLOWLISTED_MAX_STAGED_FILE_BYTES = 2_000_000
 
 MAX_REPORTED_FINDINGS = 20
+
+# Finding kinds; each gets its own remedy line in the rejection footer.
+ROOT, IGNORED, SIZE = "root", "ignored", "size"
+FORCE_ADDED_IGNORED = (
+    "force-added ignored file (.gitignore excludes this path; an ignore rule does not "
+    "stop `git add -f`)"
+)
 
 
 def path_finding(path: str) -> str | None:
@@ -83,7 +118,13 @@ def size_finding(path: str, size: int | None) -> str | None:
     if size is None or size <= MAX_STAGED_FILE_BYTES:
         return None
     if path.startswith(LARGE_FILE_ALLOWLIST_PREFIXES):
-        return None
+        if size <= ALLOWLISTED_MAX_STAGED_FILE_BYTES:
+            return None
+        return (
+            f"{size} B exceeds the {ALLOWLISTED_MAX_STAGED_FILE_BYTES} B ceiling for "
+            f"allowlisted roots ({', '.join(LARGE_FILE_ALLOWLIST_PREFIXES)}); vendor bar "
+            "panels and other bulk data stay out of git"
+        )
     return (
         f"{size} B exceeds the {MAX_STAGED_FILE_BYTES} B single-file limit and is "
         f"not under an allowlisted root ({', '.join(LARGE_FILE_ALLOWLIST_PREFIXES)}); "
@@ -99,8 +140,9 @@ def _decode(data: bytes) -> str:
     return data.decode("utf-8", "surrogateescape")
 
 
-def staged_paths(root: Path) -> list[str] | None:
-    """New-side paths of staged adds/copies/modifies/typechanges/renames-in.
+def staged_entries(root: Path) -> list[tuple[str, str]] | None:
+    """(status letter, new-side path) of staged adds/copies/modifies/typechanges/
+    renames-in.
 
     None means git could not diff against HEAD (unborn branch); the caller
     falls back to the whole index. Rename-away sources and deletes are not
@@ -113,7 +155,7 @@ def staged_paths(root: Path) -> list[str] | None:
     except subprocess.CalledProcessError:
         return None
     tokens = out.split(b"\0")
-    paths: list[str] = []
+    entries: list[tuple[str, str]] = []
     i = 0
     while i < len(tokens):
         status = tokens[i][:1].decode("ascii", "replace")
@@ -121,14 +163,46 @@ def staged_paths(root: Path) -> list[str] | None:
             i += 1
             continue
         if status in ("R", "C") and i + 2 < len(tokens):
-            paths.append(_decode(tokens[i + 2]))  # judge the destination side
+            entries.append((status, _decode(tokens[i + 2])))  # the destination side
             i += 3
         elif i + 1 < len(tokens):
-            paths.append(_decode(tokens[i + 1]))
+            entries.append((status, _decode(tokens[i + 1])))
             i += 2
         else:
             i += 1
-    return paths
+    return entries
+
+
+def staged_paths(root: Path) -> list[str] | None:
+    """New-side paths of staged_entries(); None on an unborn HEAD."""
+    entries = staged_entries(root)
+    return None if entries is None else [path for _, path in entries]
+
+
+def ignored_paths(root: Path, paths: list[str]) -> set[str]:
+    """The subset of `paths` that .gitignore rules would ignore, index or not.
+
+    ``--no-index`` is what makes this see force-added files: without it,
+    check-ignore never reports a path that is in the index.
+    """
+    if not paths:
+        return set()
+    result = subprocess.run(
+        ["git", "check-ignore", "--no-index", "--stdin", "-z"],
+        cwd=root,
+        input=b"\0".join(p.encode("utf-8", "surrogateescape") for p in paths) + b"\0",
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode not in (0, 1):  # 1 = none ignored; anything else is a failure
+        raise subprocess.CalledProcessError(result.returncode, result.args)
+    return {_decode(p) for p in result.stdout.split(b"\0") if p}
+
+
+def head_paths(root: Path) -> set[str]:
+    """Every path tracked in HEAD."""
+    out = _git(root, "ls-tree", "-r", "--name-only", "-z", "HEAD")
+    return {_decode(p) for p in out.split(b"\0") if p}
 
 
 def anything_staged(root: Path) -> bool:
@@ -193,34 +267,80 @@ def tree_entries(root: Path) -> list[tuple[str, int | None]]:
     return entries
 
 
-def collect_findings(root: Path) -> tuple[list[str], str]:
-    """Return (findings, mode description) for the staged or HEAD-tree state."""
-    findings: list[str] = []
-    paths = staged_paths(root)
-    if paths is None:
+def _judge(
+    path: str, size: int | None, ignored: set[str]
+) -> tuple[str, str] | None:
+    """(kind, finding line) for one path, or None. One finding per path, in
+    remedy order: a banned root, then a force-add, then size."""
+    reason = path_finding(path)
+    if reason:
+        return ROOT, f"{path}: {reason}"
+    if path in ignored:
+        return IGNORED, f"{path}: {FORCE_ADDED_IGNORED}"
+    reason = size_finding(path, size)
+    if reason:
+        return SIZE, f"{path}: {reason}"
+    return None
+
+
+def collect_findings(root: Path) -> tuple[list[tuple[str, str]], str]:
+    """Return ([(kind, finding line)], mode description) for the staged or
+    HEAD-tree state."""
+    entries = staged_entries(root)
+    if entries is None:
         paths = [
             _decode(p) for p in _git(root, "ls-files", "-z").split(b"\0") if p
         ]
         mode = f"index, {len(paths)} path(s) (unborn HEAD)"
         sizes = index_sizes(root, paths)
-    elif paths or anything_staged(root):
+        ignored = ignored_paths(root, paths)  # first commit: every path is an add
+    elif entries or anything_staged(root):
+        paths = [path for _, path in entries]
         mode = f"staged vs HEAD, {len(paths)} path(s)"
         if not paths:
             mode += " (deletion-only stage)"
         sizes = index_sizes(root, paths)
+        # Force-add check: adds, copies and renames-in only. A path already
+        # tracked in HEAD is exempt, so a file tracked despite an ignore rule
+        # (two on main at 2026-09-26) is not newly flagged when modified.
+        added = [path for status, path in entries if status in ("A", "C", "R")]
+        ignored = ignored_paths(root, added)
+        if ignored:
+            ignored -= head_paths(root)
     else:
-        entries = tree_entries(root)
-        mode = f"HEAD tree, {len(entries)} path(s) (nothing staged)"
-        for path, size in entries:
-            reason = path_finding(path) or size_finding(path, size)
-            if reason:
-                findings.append(f"{path}: {reason}")
+        tree = tree_entries(root)
+        mode = f"HEAD tree, {len(tree)} path(s) (nothing staged)"
+        # Every path is in HEAD here, so a HEAD exemption would disable the
+        # check; it is scoped to the allowlisted roots instead, where main held
+        # no tracked-but-ignored file at 2026-09-26 (the two that exist lie
+        # outside them). This is the CI backstop for a force-added vendor file
+        # committed under lab/analysis/ or lab/archive/.
+        ignored = ignored_paths(
+            root,
+            [path for path, _ in tree if path.startswith(LARGE_FILE_ALLOWLIST_PREFIXES)],
+        )
+        findings = [f for f in (_judge(p, s, ignored) for p, s in tree) if f]
         return findings, mode
-    for path in paths:
-        reason = path_finding(path) or size_finding(path, sizes.get(path))
-        if reason:
-            findings.append(f"{path}: {reason}")
+    findings = [f for f in (_judge(p, sizes.get(p), ignored) for p in paths) if f]
     return findings, mode
+
+
+REMEDY = {
+    ROOT: (
+        "{n} local-only root path(s): these roots are local-only (see .gitignore "
+        "and M-41); unstage them (git rm --cached) instead of committing."
+    ),
+    IGNORED: (
+        "{n} force-added ignored file(s): .gitignore excludes these paths; unstage "
+        "them (git rm --cached). If a file belongs in git, change .gitignore through "
+        "review rather than `git add -f`."
+    ),
+    SIZE: (
+        "{n} oversize blob(s): keep bulk data out of git (local gitignored path or "
+        "first-passage-archive, M-41) and unstage it. If a file is legitimate, change "
+        "the allowlist or ceiling in scripts/check_staged_debris.py through review."
+    ),
+}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -241,18 +361,22 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: git failed ({' '.join(exc.cmd)}; rc={exc.returncode})")
         return 1
     if not findings:
-        print(f"OK: no local-only debris or oversize blobs ({mode})")
+        print(
+            "OK: no local-only debris, force-added ignored files or oversize blobs "
+            f"({mode})"
+        )
         return 0
     shown = findings[:MAX_REPORTED_FINDINGS]
-    for line in shown:
+    for _, line in shown:
         print(f"REJECTED: {line}")
     hidden = len(findings) - len(shown)
     if hidden > 0:
         print(f"... and {hidden} more finding(s)")
-    print(
-        f"ERROR: {len(findings)} staged-path finding(s) ({mode}). These roots are "
-        "local-only (see .gitignore and M-41); unstage them instead of committing."
-    )
+    for kind in (ROOT, IGNORED, SIZE):  # each kind gets its own, accurate remedy
+        count = sum(1 for k, _ in findings if k == kind)
+        if count:
+            print(REMEDY[kind].format(n=count))
+    print(f"ERROR: {len(findings)} finding(s) ({mode}).")
     return 1
 
 

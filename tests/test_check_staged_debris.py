@@ -48,11 +48,18 @@ def test_size_finding_threshold_and_allowlist():
     assert csd.size_finding("docs/big.bin", csd.MAX_STAGED_FILE_BYTES + 1)
     assert csd.size_finding("docs/big.bin", None) is None
     # Research-results corpus and its archived form: the one legitimate
-    # >1 MB shape (largest tracked file: lab/analysis/.../results.json, 988,529 B).
-    assert csd.size_finding("lab/analysis/big.json", 5_000_000) is None
-    assert csd.size_finding("lab/archive/big.json", 5_000_000) is None
-    assert csd.size_finding("lab/other/big.json", 5_000_000)  # not allowlisted
-    assert csd.size_finding("core/big.json", 5_000_000)
+    # >1 MB shape (largest tracked file: lab/analysis/.../results.json, 988,529 B),
+    # capped at ALLOWLISTED_MAX_STAGED_FILE_BYTES since the 2026-09-26 ruling.
+    cap = csd.ALLOWLISTED_MAX_STAGED_FILE_BYTES
+    assert cap == 2_000_000
+    for root in ("lab/analysis/", "lab/archive/"):
+        assert csd.size_finding(root + "big.json", cap) is None
+        assert csd.size_finding(root + "big.json", cap + 1)
+        assert csd.size_finding(root + "big.json", 5_000_000)  # a multi-year bar panel
+    assert csd.size_finding("lab/other/big.json", 1_500_000)  # not allowlisted
+    assert csd.size_finding("core/big.json", 1_500_000)
+    # Case-sensitive prefix: a case variant is not allowlisted and gets the 1 MB cap.
+    assert "single-file limit" in csd.size_finding("Lab/Analysis/big.json", 1_500_000)
 
 
 def test_staged_paths_parses_name_status_z(monkeypatch):
@@ -149,11 +156,103 @@ def test_rejects_oversize_outside_allowlist(repo: Path):
     assert "single-file limit" in result.stdout
 
 
-def test_allows_oversize_research_results(repo: Path):
-    _write(repo, "lab/analysis/results.json", b"x" * (csd.MAX_STAGED_FILE_BYTES + 2_000_000))
+def test_allows_research_results_up_to_the_allowlisted_ceiling(repo: Path):
+    _write(repo, "lab/analysis/results.json", b"x" * 2_000_000)
     _git(repo, "add", "-A")
     result = _run_gate(repo)
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_rejects_research_results_over_the_allowlisted_ceiling(repo: Path):
+    """2026-09-26 ruling: allowlisted roots are capped at 2,000,000 B, not unbounded."""
+    _write(repo, "lab/analysis/results.json", b"x" * 2_000_001)
+    _git(repo, "add", "-A")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert (
+        "lab/analysis/results.json: 2000001 B exceeds the 2000000 B ceiling for "
+        "allowlisted roots" in result.stdout
+    ), result.stdout
+    # A size finding is not told it sits in a local-only root (the footer bug).
+    assert "local-only" not in result.stdout, result.stdout
+    assert "1 oversize blob(s)" in result.stdout, result.stdout
+
+
+def test_case_variant_of_allowlisted_root_gets_the_tighter_cap(repo: Path):
+    _write(repo, "Lab/Analysis/results.json", b"x" * (csd.MAX_STAGED_FILE_BYTES + 1))
+    _git(repo, "add", "-A")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "single-file limit" in result.stdout, result.stdout
+
+
+def test_banned_root_footer_still_names_local_only_roots(repo: Path):
+    _write(repo, "recovery/pkt.md", "evidence\n")
+    _git(repo, "add", "-A")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "local-only" in result.stdout
+    assert "oversize" not in result.stdout
+
+
+def _ignore(repo: Path, rules: str) -> None:
+    _write(repo, ".gitignore", rules)
+    _git(repo, "add", ".gitignore")
+    _git(repo, "commit", "-q", "-m", "ignore rules")
+
+
+def test_rejects_force_added_ignored_file(repo: Path):
+    """`git add -f` past an ignore rule is a finding (2026-09-26 ruling B)."""
+    _ignore(repo, "lab/analysis/**/inputs/*.csv\n")
+    _write(repo, "lab/analysis/study/inputs/bars.csv", "t,o,h,l,c\n")
+    _git(repo, "add", "-f", "lab/analysis/study/inputs/bars.csv")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert (
+        "lab/analysis/study/inputs/bars.csv: force-added ignored file" in result.stdout
+    ), result.stdout
+    assert "1 force-added ignored file(s)" in result.stdout, result.stdout
+    assert "local-only" not in result.stdout, result.stdout
+
+
+def test_force_add_check_covers_renames_into_ignored_paths(repo: Path):
+    _ignore(repo, "*.csv\n")
+    _write(repo, "data.txt", "a,b\n" * 50)
+    _git(repo, "add", "data.txt")
+    _git(repo, "commit", "-q", "-m", "data")
+    _git(repo, "mv", "data.txt", "data.csv")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "data.csv: force-added ignored file" in result.stdout, result.stdout
+
+
+def test_already_tracked_ignored_file_is_not_flagged(repo: Path):
+    """A file tracked in HEAD despite an ignore rule is not newly flagged."""
+    _write(repo, "lifecycle_state.json", "{}\n")
+    _git(repo, "add", "lifecycle_state.json")
+    _git(repo, "commit", "-q", "-m", "fixture tracked before the rule")
+    _ignore(repo, "lifecycle_state.json\n")
+    # Nothing staged: HEAD-tree mode (the tracked file is outside the allowlisted roots).
+    result = _run_gate(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    # Modifying and re-staging it is not an add: still not flagged.
+    _write(repo, "lifecycle_state.json", '{"k": 1}\n')
+    _git(repo, "add", "lifecycle_state.json")
+    result = _run_gate(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "staged vs HEAD" in result.stdout
+
+
+def test_head_tree_mode_flags_committed_force_add_under_allowlisted_root(repo: Path):
+    """CI's clean checkout catches a force-added vendor file in lab/analysis/."""
+    _ignore(repo, "lab/analysis/**/inputs/*.csv\n")
+    _write(repo, "lab/analysis/study/inputs/bars.csv", "t,o,h,l,c\n")
+    _git(repo, "add", "-f", "lab/analysis/study/inputs/bars.csv")
+    _git(repo, "commit", "-q", "--no-verify", "-m", "force add")
+    result = _run_gate(repo)
+    assert result.returncode == 1
+    assert "HEAD tree" in result.stdout
+    assert "lab/analysis/study/inputs/bars.csv: force-added ignored file" in result.stdout
 
 
 def test_head_tree_mode_catches_committed_debris(repo: Path):
