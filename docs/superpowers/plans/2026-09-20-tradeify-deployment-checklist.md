@@ -212,9 +212,10 @@ resolved identity at qualification and activation.
 **Return boundary:** Implementation-ready capability contract or exact route/behavior decision; no whole-route PASS from documentation alone.
 
 ### T09 — Actual broker adapter and reconciliation (750k–1M)
-**Selected outcome:** Real observations and transport reach the durable account owner under the accepted route contract.
-**Prerequisites:** T08 viable route; approved drill environment and exact interfaces. T07 settlement producer available for combined rehearsal.
+**Selected outcome:** Real observations and transport reach the controller boundary selected by the accepted capability allocation and route contract. The existing durable account owner is reusable machinery, not a predetermined architecture.
+**Prerequisites:** T08 viable route, decided under the [2026-09-26 route-feasibility-first addendum](#addendum-2026-09-26--route-feasibility-is-the-first-deployment-decision) (accepted REST assessment and any contract acceptance it requires); coordinator-accepted [TradingView/CrossTrade capability allocation and deletion map](../../briefs/handoffs/2026-09-25-tradeify-capability-allocation-deletion-map.md), with resulting operator-owned behavior/contract decisions accepted, before finalizing or implementing T09; approved drill environment and exact interfaces. T07 settlement producer available for combined rehearsal.
 **Ownership:** Broker integration executor; coordinator accepts combined CAP consumer evidence.
+The steps below are the current implementation baseline; the coordinator must rescope them to the accepted allocation before dispatch, retaining required behavior without duplicating qualified vendor capabilities.
 - [ ] Replace the synthetic-only transport gap with the qualified adapter, preserving intent-before-send and unresolved reservations.
 - [ ] Ingest real request/order/fill/protection identities, history coverage and terminal outcomes.
 - [ ] Prove ordinary four-leg lifecycle, partial fills, cancellation races, restart and manual intervention through owner consumers.
@@ -321,7 +322,7 @@ resolved identity at qualification and activation.
 
 - Engineering spine: **T01 -> T02 -> T03 -> T04 -> T05 -> T06**.
 - Start **T07, T08 and T10** alongside that spine. Reuse ongoing owners rather than dispatch duplicate work.
-- **T09 follows T08**; operations preparation T13 follows the incident decision and finalizes with T07/T09.
+- **Route feasibility first** (2026-09-26 addendum): T08 plus the REST assessment decide the route before any route-dependent work. **T09 follows the accepted T08/REST result, [capability allocation/deletion map](../../briefs/handoffs/2026-09-25-tradeify-capability-allocation-deletion-map.md) and any resulting contract or expression acceptance**; operations preparation T13 follows the incident decision and finalizes with T07/T09.
 - **T11 follows T06**; T12 can prepare against stable interfaces earlier but needs integrated acceptance and a timing answer before F1.
 - T14 starts with provider-neutral work only; standing source-independent/funding gates control provider-specific execution.
 - **T15** is the join for production qualification: engineering, actual-source readiness and pre-freeze feasibility/behavior inventory must agree.
@@ -330,6 +331,44 @@ resolved identity at qualification and activation.
 Do not serialize all external work behind E1. Do not freeze E1 while required
 route/incident changes are still unknown. Do not require paid-feed final binding
 before its governing funding checkpoint merely because a task number is lower.
+
+## Addendum 2026-09-26 — route feasibility is the first deployment decision
+
+**Operator direction (2026-09-26).** The operator confirmed on 2026-09-26, verbatim: "confirm route-first, the T09 gates and the allocation objective" ([PR #506 comment](https://github.com/Joshua-Asante/first-passage/pull/506#issuecomment-5845088628)). The first deployment decision is route
+feasibility; route-dependent work waits on it. T08's current verdict blocks the route as
+contracted (R3 = NONE; [T08 §7.8](../../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24)).
+The 09-25 support reply corrects the earlier durable-replay premise and makes
+CrossTrade-mediated REST worth assessing. It does not establish safe resolution
+of lost responses.
+
+1. **Decision owner.** The bounded
+   [CrossTrade REST route assessment](../../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md)
+   returns two separate answers, which stay separate in every consumer:
+   - **Portfolio execution:** can the route execute the unchanged accepted portfolio?
+   - **Ambiguous requests:** how does the route handle a request whose outcome is unknown?
+
+   Better responses or a same-session lookup do not answer the second question.
+2. **T09 stays behind that result.** No adapter, REST producer, endpoint or fallback implementation starts until all four rows of the [gate acceptance record](#t09-gate-acceptance-record) are accepted against named revisions. Finalize T09 scope against the accepted allocation before implementation.
+
+   **Allocation objective (operator direction, confirmed 2026-09-26; [PR #506 comment](https://github.com/Joshua-Asante/first-passage/pull/506#issuecomment-5845088628)):** let TradingView and CrossTrade own the capabilities they can reliably provide for the exact route; our shared controller fills evidenced gaps. The map must justify retained local responsibilities and identify components that can be removed, reduced or avoided, separating preserved portfolio behavior from simplifications requiring a decision. It consumes the REST assessment as evidence rather than repeating it. Existing account-owner machinery is a reuse candidate, not a required final boundary. The dated allocation handoff must be committed and refreshed against the current route-native edition decisions and completed REST return before dispatch.
+
+   Adjacent work may continue only where it is independent of both route choice and capability allocation. This applies to the engineering spine, T07, T10 and provider-neutral T14; those packet labels are not blanket exemptions. Defer work whose value depends on retaining a component under evaluation. Offline qualification obligations remain unless separately changed by their owner. Producing the private route-native edition files (ORB/Striker and Vanguard production handoffs, gates G2b and G3b) is not adjacent work: by operator ruling 2026-09-26 it waits until gate D accepts the allocation map.
+3. **Freeze stays behind it too.** Do not freeze E1 while route, incident or capability-allocation changes are unknown. The freeze inventory must reflect the accepted allocation, resulting behavior decisions and required requalification.
+
+### T09 gate acceptance record
+
+This table owns the gate definitions; STATE and the REST disposition link here. Each acceptance must name the artifact revision, reviewer, date and any residual conditions. **All four gates remain pending.** A returned finding, a draft pre-registration or a passing documentation check is not an acceptance.
+
+| Gate / owner | Evidence and completion condition | Acceptance record | Work unlocked |
+|---|---|---|---|
+| A — factual assessment / coordinator | Review the REST return, retained vendor evidence and Vanguard source return. Record the disposition of each material finding, correction and the dispatch-process breach. Keep session-scoped positive recovery distinct from unestablished cross-session recovery and absent negative closure. | REST coordinator disposition, with a linked disposition on the Vanguard return; exact evidence revisions. Pending. | Use accepted findings for the operator decision and allocation/design analysis; no behavior change or T09 implementation. |
+| B — behavior and contract decisions / operator | Following factual disposition, choose Vanguard edition or rejection and record the resulting book consequence. Accept the required expression contracts and unknown-request policy (Proposed B or another amendment), including decision-bearing OWED rules; link required pre-registration/requalification obligations. Allocation-induced changes also require operator acceptance before D closes. | Campaign §59 decision/addendum and the owning incident amendment; named revisions, not draft existence. Pending. | Plan against the approved behavior and recovery contract; no route qualification, replay or live GO. |
+| C — viable for bounded design / coordinator, within B's operator authority | Produce a per-leg requirement-to-route map for the chosen expressions and recovery contract. No required unsupported primitive may remain without an accepted expression/contract resolution. Every unproven primitive must have a named validation method, owner, failure consequence and explicit hold on dependent rehearsal/qualification. State the exact interface assumptions and bounded T09 deliverable. If a required capability cannot be supplied or tested, return BLOCKED. | T08/REST coordinator disposition linking the feasibility map and residual validation obligations. Pending. | Technical viability for the bounded design only; all four gates are still needed for T09 dispatch. |
+| D — capability allocation and T09 scope / coordinator; operator for resulting behavior changes | Accept the TradingView/CrossTrade/local [responsibility and deletion map](../../briefs/handoffs/2026-09-25-tradeify-capability-allocation-deletion-map.md). Every retained local responsibility has an evidenced gap; every removed/reduced responsibility has a qualified replacement or stays retained pending proof. Record any new B decisions and revisit C if allocation changes its assumptions. Commit a bounded T09 handoff with exact interfaces, verification and return boundary. | Accepted allocation map plus T09 handoff revisions, linked here when available. Pending. | With A–C accepted, dispatch only the bounded T09 work. Deletion, account actions, drills, requalification and release still require their own authority and evidence. |
+
+Acceptance of evidence (A) is separate from acceptance of changed behavior (B). C permits bounded design with explicitly held validation dependencies; it is not a whole-route PASS. E1 freeze still requires the accepted allocation and complete behavior inventory, and execution/release retain their existing qualification gates.
+
+No drill, account access, vendor contact, spend, contract change or GO is granted by this addendum.
 
 ## Verification of this planning artifact
 
