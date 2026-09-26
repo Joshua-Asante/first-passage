@@ -9,8 +9,8 @@
 | 1 | Gate C: decisive capabilities, validation and failure consequences | Drafted below |
 | 2 | Gate B: remaining behavior decisions | Drafted below |
 | 3 | Unknown-request posture and option-B rules, with unresolved assumptions | Drafted below |
-| 4 | Allocation and component reductions (gate D) | Pending |
-| 5 | T09 handoff (held until B–D acceptance) | Pending |
+| 4 | Allocation and component reductions (gate D) | Drafted below |
+| 5 | T09 handoff (held until B–D acceptance) | Drafted below |
 | 6 | Decisions required from the operator | Pending |
 
 ---
@@ -116,3 +116,55 @@ Each row is the operator's to rule, in words and without parameter values, in it
 4. **B-B4: split with an unknown child** (UB-8 Q5). Does it count as "closed" for add eligibility? UB-4's rule implies not, because an unknown child keeps the sequence open.
 
 **Effect on the incident ADR (proposed; not applied here):** record the first-release posture as preserve-and-block under the §A10 acceptance condition. Add B-B1 to B-B4 to §A10's OPEN list. Rule 4′'s "exceptional mode" stays defined by the fence as reconciled under Q2.
+
+---
+
+## 4. Allocation and component reductions (gate D)
+
+**Source:** the [allocation map](2026-09-25-tradeify-capability-allocation-deletion-map.md), as corrected. Recommended boundary: **one durable account owner** plus the barrier, the private ports and the watchdogs, and a thin CrossTrade REST adapter. The vendors own execution only. That is:
+- **Tradovate:** matching, the resting stop entry, one-contract OSO creation and first-fill activation, and fixed stop/target execution between bars;
+- **CrossTrade:** transport and ids;
+- **TradingView:** research and export only, under the standing ruling.
+
+| Disposition | Items | Condition |
+|---|---|---|
+| **Avoid building** | TradingView webhook ingress and alert manifest (B01); Pine market-input publisher (B02); intrabar trail manager and protection feed (B03); automatic incident dispatch (B04); partial-fill residual cover (B07); **option-B machinery (B16), under the §3 recommendation** | The standing TradingView ruling; the edition freezes; the §3 posture |
+| **Reduce after freeze** | ATTACH path (B05); live use of trailing fields, via a live-sender guard (B06) | The Striker, ORB and Vanguard editions freeze and requalify. Code stays in place for replay parity, and the E1 inventory rebinds if code changes |
+| **Retain** | Ports, emulator, parity and bundles (B08); feed (B09, funding deferred); runtime and loop (B10); account-owner core (B11); protection amend path (B12, dependent on GC-2b/GC-3); settlement (B19); legacy M1 path, guarded (B17) | — |
+| **Introduce (required by the route)** | One-contract split and sequencing (B13); close realization per B-1 (GC-1 C-a); Striker crossed-level exit (B14); REST producer with post-placement poll and same-session recipe (B15); **fence reconciliation (§3)** | T09 scope (§5) |
+| **Delete** | **None established.** No removal candidate has met its conditions | — |
+
+**Conditional savings** (the corrected note's rule): vendor protection counts only once the stop is **Working** (GC-2a). Splits and multi-order closes can still complete partly (UB-4; GC-1). Moving work to a vendor adds local reconciliation: the late-reject poll (GC-8) and the coverage-repair actor (A8).
+
+**Freeze impact:** the qualification trust domain binds the account owner, protection owner, capacity, takeover, protocol, feed and the ports. Every T09 change to those modules changes the E1 freeze inventory (allocation map §B).
+
+---
+
+## 5. T09 handoff — HELD until B–D acceptance
+
+**Status: HELD. Not dispatchable.** It becomes dispatchable only when:
+- gates B, C (for the bounded design) and D are accepted on the T09 gate table;
+- B-1 (the close realization) is ruled;
+- the edition rules it depends on are frozen or explicitly held;
+- it is re-committed as its own handoff under the committed-handoff rule.
+
+The draft below fixes scope and boundaries only.
+
+**Selected outcome:** a disarmed CrossTrade REST adapter and reconciliation path behind the existing account owner. It realizes the recommended boundary (§4) under **preserve-and-block** (§3), with every route-dependent step held behind its gate-C trace.
+
+| In scope | Interface / evidence | Held behind |
+|---|---|---|
+| REST producer: `orders/place` (one-contract OSO with a per-attempt `clOrdId`), `change`, `cancel`, `close`; lifecycle, status and fill reads mapped to `BrokerFact` and `ProtectionSnapshot` | Gate A A1, A3 (i)–(iii), A7; REST-form traces only (interface rule) | GC-2a, GC-2b, GC-3 |
+| Outcome classifier: local pre-dispatch refusal, remote refusal after dispatch, positive lookup (facts it establishes only) | Gate A A3 | — (design); traces for the evidence |
+| Post-placement status poll within the protection deadline | GC-8 | — |
+| One-contract split, per-symbol sequencing, whole-intent capacity reservation, abandon-remainder rule | B-6, B-9; UB-4 | Edition freezes |
+| Whole-leg close via broker liquidation on the exclusively owned symbol; close completion on postdating coherent evidence | B-1 (C-a); §1.1a interpretation accepted | GC-1 traces, GC-3, GC-7 |
+| Striker close-time crossed-level exit as a whole-leg close | B-7 | GC-1; STR-5 |
+| Fence reconciliation (§3): resting-entry lifecycle versus the one-bar cut | §3 row 1 | Trace; ORB freeze |
+| Live-sender guard refusing trailing fields and ATTACH on edition legs | B06, B05 | Edition freezes |
+
+**Out of scope:** option B (B16); TradingView paths; any deletion; the feed provider (T14); settlement changes (T07); notifications (T13); drills, account access, arming, activation and spend.
+
+**Verification:** fault-injected consumer cases for every GC failure consequence (the route stops or refuses, as §1 states); retained REST-form traces for each delegated capability; `.\fp.ps1 test-ops` and `check` records. No live manufactured lost response or unmanaged exposure (checklist T09).
+
+**Return boundary:** the adapter and reconciliation evidence, disarmed. It must not arm or activate, and it must not change anything outside the scope table.
