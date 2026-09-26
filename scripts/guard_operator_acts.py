@@ -317,19 +317,6 @@ _GQL_TOKEN = re.compile(
 _OPEN, _CLOSE = frozenset("([{"), frozenset(")]}")
 
 
-def _positional(args: list[str], takes_value: frozenset[str]) -> list[str]:
-    """`args` without options (and the values of the options in `takes_value`)."""
-    out, skip = [], False
-    for arg in args:
-        if skip:
-            skip = False
-        elif arg in takes_value:
-            skip = True
-        elif not arg.startswith("-"):
-            out.append(arg)
-    return out
-
-
 def _spellings(tables: tuple[dict, ...], takes_value: bool) -> frozenset[str]:
     """The ``--name`` / ``-x`` spellings of the flags in `tables` that do (or do not)
     take a value."""
@@ -640,20 +627,22 @@ def _judge_fly(args: list[str]) -> list[Hit]:
 
 
 def _fly_help(args: list[str]) -> bool:
-    """Whether cobra prints help and runs nothing: the last of ``-h`` / ``--help`` (true)
-    and ``--help=<v>`` / ``-h=<v>`` (pflag's spellings) before ``--`` is true. A help word
-    right after a flag that may take the next word as its value (one the guard does not
-    know as a boolean, written without ``=``) may be that value (``-a -h``), so it does
-    not count; nor does anything after ``--``."""
+    """Whether cobra prints help and runs nothing: the last help setting before ``--`` is
+    true. Each word is read by `_pflag`, so a help flag counts alone (``-h``,
+    ``--help=<v>``), in a shorthand cluster (``-hac1-rail``) and after a flag that carries
+    its value in its own word (``-ac1-rail --help``). A word the previous word may take
+    as its value (``-a -h``; a flag the guard does not know is read both ways) may turn
+    help off but never on."""
     help_on, prev = False, ""
     for arg in args:
         if arg == "--":
             break
-        maybe_value = prev.startswith("-") and len(prev) > 1 and "=" not in prev \
-            and prev not in _FLY_BOOL_FLAGS
-        name, eq, value = arg.partition("=")
-        if not maybe_value and name in ("-h", "--help"):
-            help_on = not eq or value in _GH_TRUE
+        settings = [value for name, value in _pflag([arg], _FLY_FLAGS).options
+                    if name == "help"]
+        if settings:
+            on = settings[-1] in _GH_TRUE
+            maybe_value = _pflag([prev], _FLY_FLAGS).unread  # `prev` may want a word
+            help_on = (help_on and on) if maybe_value else on
         prev = arg
     return help_on
 
@@ -707,26 +696,52 @@ def _push_dry_run(push_args: list[str]) -> bool:
             break
         elif arg.startswith("--"):
             name, eq, _ = arg[2:].partition("=")
-            if not name:
-                continue
-            if not eq and any(o[2:].startswith(name) for o in _GIT_PUSH_VALUES
-                              if o.startswith("--")):
-                skip = True  # a value option (or an abbreviation of one) takes the next word
-            elif "dry-run".startswith(name) or (
-                    name.startswith("no-") and "no-dry-run".startswith(name)):
+            if _push_takes_next(arg):
+                skip = True  # a value option (or an abbreviation of one)
+            elif name and ("dry-run".startswith(name) or (
+                    name.startswith("no-") and "no-dry-run".startswith(name))):
                 # `--d` is ambiguous (`--delete`), and `--no-d` too (`--no-delete`).
                 dry = not eq and len(name) >= 2 and not name.startswith("no-")
         elif arg.startswith("-") and len(arg) > 1:
-            for j, char in enumerate(arg[1:], start=1):
+            for char in arg[1:]:
                 if char == "n":
                     dry = True
-                elif char == "o":  # `-o <value>`: the rest of the cluster, or the next word
-                    skip = j == len(arg) - 1
+                elif char == "o":  # `-o`: its value is the rest of the cluster
                     break
                 elif char not in _GIT_PUSH_SHORT_BOOLS:
                     dry = False
                     break
+            skip = _push_takes_next(arg)  # `-no x`: a dry run whose `-o` takes `x`
     return dry
+
+
+def _push_takes_next(arg: str) -> bool:
+    """Whether git reads the word after this ``git push`` option word as its value: a
+    long value option (or an abbreviation of one) written without ``=``, or a short
+    cluster whose first ``o`` is its last character (``-o x``, ``-vo x``). In ``-ox`` the
+    value is the rest of the word, so the next word is read on its own."""
+    if arg.startswith("--"):
+        name = arg[2:]
+        return bool(name) and "=" not in name and any(
+            o[2:].startswith(name) for o in _GIT_PUSH_VALUES if o.startswith("--"))
+    return arg.startswith("-") and len(arg) > 1 and arg.find("o", 1) == len(arg) - 1
+
+
+def _push_positional(push_args: list[str]) -> list[str]:
+    """The repository and refspec words of a ``git push``: every word that is neither an
+    option nor an option's value (`_push_takes_next`), and every word after ``--``."""
+    out, skip = [], False
+    for i, arg in enumerate(push_args):
+        if skip:
+            skip = False
+        elif arg == "--":
+            out += push_args[i + 1:]
+            break
+        elif arg.startswith("-") and len(arg) > 1:
+            skip = _push_takes_next(arg)
+        else:
+            out.append(arg)
+    return out
 
 
 def _bulk_bit(name: str) -> str:
@@ -751,11 +766,8 @@ def _bulk_in_effect(push_args: list[str]) -> bool:
             continue
         if arg == "--":
             options = False
-        elif arg in _GIT_PUSH_VALUES or (arg.startswith("--") and "=" not in arg and any(
-                o.startswith(arg) for o in _GIT_PUSH_VALUES if o.startswith("--"))):
-            skip = True
-        elif not arg.startswith("--") and arg.startswith("-") and "o" in arg:
-            skip = True  # `-o` in a short cluster may take the next word: read it so
+        elif _push_takes_next(arg):
+            skip = True  # `-o x`, `-vo x`, `--push-opt x`; `-ox` carries its own value
         elif arg.startswith("--no-") and "=" not in arg:
             rest = arg[5:]
             named = [o for o in _GIT_PUSH_LONG if o == rest] or [
@@ -768,11 +780,11 @@ def _bulk_in_effect(push_args: list[str]) -> bool:
 def _push_covers_main(push_args: list[str]) -> bool:
     if _bulk_in_effect(push_args):
         return True
-    words = _positional(push_args, _GIT_PUSH_VALUES)
-    # `--repo` names the remote, so every positional word is then a refspec.
-    has_repo = any(a == "--repo" or a.startswith("--repo=") for a in push_args)
-    refspecs = words if has_repo else words[1:]  # after the remote
-    return any(_covers_main(s) for s in refspecs)
+    # The first positional word is the repository, whatever `--repo` says: git reads
+    # `--repo` only when no repository word is given (`repo = argv[0]` in
+    # builtin/push.c; git 2.50: `git push -n --repo=origin main` looks for a repository
+    # called `main`). Every later word is a refspec.
+    return any(_covers_main(s) for s in _push_positional(push_args)[1:])
 
 
 def _abbrev(arg: str, option: str, shortest: int) -> bool:
@@ -790,9 +802,18 @@ def _judge_arm(args: list[str]) -> list[Hit]:
 
 def _judge_python(args: list[str]) -> list[Hit]:
     def module(i: int) -> str:
-        if args[i] == "-m" and i + 1 < len(args):
-            return args[i + 1]
-        return args[i][2:] if args[i].startswith("-m") else ""
+        """The module a ``-m`` in the short cluster ``args[i]`` names: python reads a
+        cluster left to right, and the first option that takes a value (``-c``, ``-m``,
+        ``-W``, ``-X``) takes the rest of the word, or else the next word (``-Im mod``)."""
+        arg = args[i]
+        if not arg.startswith("-") or arg.startswith("--"):
+            return ""
+        for k, char in enumerate(arg[1:], start=2):
+            if char == "m":
+                return arg[k:] or (args[i + 1] if i + 1 < len(args) else "")
+            if char in "cWX":
+                return ""  # its value is the rest of the word, or the next word
+        return ""
 
     target = any(a.replace("\\", "/").casefold().endswith("c1_rail_arm.py") for a in args) \
         or any(module(i).casefold().endswith("c1_rail_arm") for i in range(len(args)))

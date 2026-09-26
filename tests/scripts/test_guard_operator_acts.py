@@ -133,8 +133,8 @@ def test_data_and_risk_reducing_exits_are_silent(command):
     "git push --force-with-lease origin main",
     "git push --force-if-includes --force-with-lease origin main",
     "git push --signed origin main",
-    "git push --repo=origin main",
-    "git push --repo origin main",
+    "git push --repo=origin origin main",
+    "git push --repo origin origin main",
 ])
 def test_push_to_main_denied(command):
     # Fails if a direct push to main, a merge-equivalent that bypasses the PR and the
@@ -730,3 +730,100 @@ def test_fly_deploy_that_is_not_help_still_asks(command):
     # Fails if a `-h` that is another flag's value, a help flag turned off later, or a word
     # after `--` silences a real deploy.
     assert g.classify_command(command) == ("ask", "rail.deploy")
+
+
+# --- 2026-09-25 babysit repairs (Codex review of #503 at 8bb2e32, 4109815693 / 4109815694) ---
+
+@pytest.mark.parametrize("command", [
+    "git push --all -ox --no-all origin feature",
+    "git push --all -vox --no-all origin claude/x",
+    "git push --mirror -o=x --no-mirror origin claude/x",
+    "git push --all --push-option=x --no-all origin claude/x",
+])
+def test_negation_after_an_attached_push_option_value_is_read(command):
+    # Fails if `-ox` (the value `x` attached to `-o`) is read as taking the next word, so
+    # the `--no-all` after it is skipped and the push refused (Codex #503, 4109815693;
+    # git 2.50 on a local remote pushes only `feature`). Only a final `o` in a short
+    # cluster takes the next word.
+    assert g.classify_command(command) is None
+
+
+@pytest.mark.parametrize("command", [
+    "git push --all -vo --no-all origin claude/x",
+    "git push --all -o --no-all origin claude/x",
+    "git push -ox origin main",
+    "git push -vo x origin main",
+    "git push --push-opt x origin main",
+    "git push --rec check origin HEAD:main",
+])
+def test_push_option_values_do_not_hide_main(command):
+    # Fails if a push-option value (a final `o` taking the next word, or a long value
+    # option in an abbreviation git accepts) silences a push that reaches main.
+    assert g.classify_command(command) == ("deny", "main.direct_push")
+
+
+@pytest.mark.parametrize("command", [
+    "git push -vo x main",
+    "git push --push-opt x main",
+    "git push --rec check main",
+    "git push --repo=origin main",
+    "git push --repo origin main",
+])
+def test_push_repository_word_is_not_a_refspec(command):
+    # Fails if a value option's value is taken for the repository, so the repository
+    # word (a remote named `main`) is refused as a refspec; or if `--repo` is read as
+    # turning the repository word into a refspec: git reads the first positional as the
+    # repository whatever `--repo` says (git 2.50: `git push -n --repo=origin main` looks
+    # for a repository called `main`). Same class as 4109815693.
+    assert g.classify_command(command) is None
+
+
+@pytest.mark.parametrize("command", [
+    DEPLOY + " -ac1-rail --help",
+    DEPLOY + " -ac1-rail -h",
+    DEPLOY + " -tTOKEN --help",
+    DEPLOY + " -cfly.toml -h",
+    "fly -ac1-rail " + "deploy --help",
+    DEPLOY + " -hac1-rail",
+])
+def test_fly_help_after_an_attached_flag_value_is_silent(command):
+    # Fails if `-ac1-rail` (pflag: `-a` takes `c1-rail` from its own word) is read as
+    # still taking the next word, so the `--help` after it is ignored and a deploy that
+    # prints help asks as rail.deploy (Codex #503, 4109815694).
+    assert g.classify_command(command) is None
+
+
+@pytest.mark.parametrize("command", [
+    DEPLOY + " -a -h",
+    DEPLOY + " -xa -h",
+    DEPLOY + " -xy -h",
+    DEPLOY + " -h -x --help=false",
+    DEPLOY + " -h --image --help=false",
+])
+def test_fly_help_that_may_be_a_value_still_asks(command):
+    # Fails if a `-h` that a cluster's final value flag (known, or unknown and so read
+    # both ways) takes as its value silences a real deploy, or if a `--help=false` that
+    # an unknown flag may take as its value is ignored (read one way, it turns help off).
+    assert g.classify_command(command) == ("ask", "rail.deploy")
+
+
+@pytest.mark.parametrize("command", [
+    "python -Im ops.c1_rail.c1_rail_arm --" + "arm",
+    "python -Imops.c1_rail.c1_rail_arm --" + "arm",
+    "python -I -m ops.c1_rail.c1_rail_arm --" + "arm",
+])
+def test_python_module_in_a_short_cluster_is_read(command):
+    # Fails if `-m` inside a python short cluster (`-Im mod`: python takes the rest of
+    # the word, or else the next word) hides the arm module. Same class as 4109815694.
+    assert g.classify_command(command) == ("ask", "rail.arm")
+
+
+@pytest.mark.parametrize("command", [
+    "python -Wm ops.c1_rail.c1_rail_arm --" + "arm",
+    "python -Xm ops.c1_rail.c1_rail_arm --" + "arm",
+])
+def test_python_cluster_value_is_not_a_module(command):
+    # Fails if an `m` that is another option's attached value (`-Wm`: the warning filter
+    # `m`) is read as `-m`. `ops.c1_rail.c1_rail_arm` is then a script path that does
+    # not end in `.py`, so nothing arms.
+    assert g.classify_command(command) is None

@@ -354,3 +354,47 @@ def test_card_without_an_authority_looking_fence_stays_exempt(tmp_path):
     path.write_text(f"# Card\n\n> {FENCE}yaml\n> seat: worker\n> {FENCE}\n\n"
                     f"Write a `{FENCE}yaml authority` block.\n- {FENCE}text\n", encoding="utf-8")
     assert _errs(path, tmp_path) == []
+
+
+# --- 2026-09-25 babysit repairs (Codex review of #503 at 8bb2e32, comment 4109815695) ---
+
+COORD_OK = "seat: coordinator\nmax_risk: medium\ncapabilities: [repository.read]\n"
+
+
+@pytest.mark.parametrize("field,value", [
+    ("seat", "[worker]"), ("seat", "{worker: 1}"), ("seat", "1"), ("seat", "true"),
+    ("max_risk", "[medium]"), ("max_risk", "{medium: 1}"), ("max_risk", "2"),
+])
+def test_scalar_fields_of_the_wrong_type_are_a1_violations(tmp_path, field, value):
+    # Fails if `seat: [worker]` (an unhashable list) raises TypeError in the registry
+    # lookup instead of being reported, or if any non-string `seat` / `max_risk` is
+    # accepted or crashes (Codex #503, 4109815695).
+    lines = [line for line in COORD_OK.splitlines() if not line.startswith(field + ":")]
+    body = "\n".join([f"{field}: {value}", *lines]) + "\n"
+    errs = _errs(_card(tmp_path, body), tmp_path)
+    assert any(e.startswith("A1") and f"`{field}`" in e for e in errs), errs
+
+
+def test_parent_with_a_malformed_seat_is_reported_not_raised(tmp_path):
+    # Fails if a parent card whose `seat` is a list crashes the child's check.
+    _card(tmp_path, COORD_OK.replace("seat: coordinator", "seat: [coordinator]"),
+          name="umbrella.md")
+    errs = _errs(_card(tmp_path, "parent: umbrella.md\n" + WORKER_OK), tmp_path)
+    assert any(e.startswith("A7 parent umbrella.md: A1") for e in errs), errs
+
+
+def test_one_malformed_card_does_not_abort_the_scan(tmp_path, capsys):
+    # Fails if an exception while checking one card (a list-valued seat, a card that is
+    # not UTF-8) aborts the whole scan instead of being reported as that card's
+    # violation while the other cards are still checked (Codex #503, 4109815695).
+    listy = _card(tmp_path, COORD_OK.replace("seat: coordinator", "seat: [worker]"),
+                  name="listy.md")
+    binary = tmp_path / "binary.md"
+    binary.write_bytes(b"# Card\n\n```yaml authority\nseat: \xff\xfe\n```\n")
+    good = _card(tmp_path, COORD_OK, name="good.md")
+    rc = cha.main([str(binary), str(listy), str(good)])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert f"HARD {binary}:" in out and f"HARD {listy}:" in out
+    assert f"HARD {good}:" not in out
+    assert "violation(s)" in out

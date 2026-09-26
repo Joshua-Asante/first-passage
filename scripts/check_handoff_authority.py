@@ -197,6 +197,13 @@ def check_card(path: Path, reg: Registry, *, root: Path = REPO_ROOT,
     caps = _as_list(data.get("capabilities"), "capabilities", errors)
     constraints = _as_list(data.get("constraints"), "constraints", errors)
     acceptance = _as_list(data.get("acceptance"), "acceptance", errors)
+    # Registry names are strings; anything else (`seat: [worker]`, a number) is refused
+    # before it reaches a lookup that could raise on it.
+    wrong = [f"A1 `{field}` must be a string naming a registry entry, not {value!r}"
+             for field, value in (("seat", seat), ("max_risk", max_risk))
+             if not isinstance(value, str)]
+    if wrong:
+        return errors + wrong
     if seat not in reg.seats:
         errors.append(f"A1 unknown seat {seat!r}; registry seats: {sorted(reg.seats)}")
         return errors
@@ -295,10 +302,17 @@ def main(argv: list[str] | None = None) -> int:
         if not path.is_file():
             print(f"ERROR: {path} not found", file=sys.stderr)
             return 2
-        text = path.read_text(encoding="utf-8")
-        if extract_blocks(text) or stray_fences(text):
+        # One card that cannot be read or checked is that card's violation (fail closed);
+        # the scan goes on to the others.
+        try:
+            text = path.read_text(encoding="utf-8")
+            if extract_blocks(text) or stray_fences(text):
+                checked += 1
+            errors = check_card(path, reg)
+        except Exception as exc:  # pylint: disable=broad-exception-caught
             checked += 1
-        for err in check_card(path, reg):
+            errors = [f"A1 card could not be checked: {type(exc).__name__}: {exc}"]
+        for err in errors:
             failed += 1
             print(f"HARD {path}: {err}")
     print(f"check_handoff_authority: {checked} card(s) with an authority block, "
