@@ -2,6 +2,12 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Seventeenth roll, 2026-09-25** (two entries: one pushed off by the §59 route rulings but not archived in that commit, and one pushed off by the §60 read-access ruling):
+
+- **2026-09-03** — Off-queue VOLREGIME translation closed at T0, PRE-CONTRACT DROP; no contract. [Ruling](../../../../../docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)
+
+- **2026-09-03** — Select configuration campaign promoted to queue #1; cultivation remains off-queue. [Campaign record](../../../../../docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)
+
 **Sixteenth roll, 2026-09-24** (two entries, pushed off by the T08 R3 ruling and the bracket-convention build GO):
 
 - **2026-09-02** — Portable-edge objective and bounded cultivation campaign approved; no candidate/capital authority. [ADR](../../../../../docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md)
