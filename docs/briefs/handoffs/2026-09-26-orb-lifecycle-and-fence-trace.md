@@ -58,3 +58,38 @@ You may run existing tests (`.\fp.ps1 python -m pytest <paths>`) to confirm curr
 ## Output rules
 
 Write only the two result notes, plus an executor-return section appended to this card. No edits to code, contracts, pre-registrations or owners. No order or account action, no `.env`, no GLM or external service.
+
+## Executor return (2026-09-26)
+
+**Status:** DONE_WITH_CONCERNS. The concerns are listed under "Unverified and not measured". **Executor:** assessor subagent (Claude Code, Opus 5.5), worktree `.claude/worktrees/orb-fence-trace`, branch `claude/orb-fence-trace`. HEAD was `62c956f538dfa53f31eaec5951efc3ffa1dce53b` (the dispatch revision) before the result commit. **Nothing here accepts, authorizes, qualifies or releases anything.**
+
+**Files written:** [`docs/notes/2026-09-26-orb-lifecycle-evidence.md`](../../notes/2026-09-26-orb-lifecycle-evidence.md) (Deliverable 1), [`docs/notes/2026-09-26-account-fence-four-state-trace.md`](../../notes/2026-09-26-account-fence-four-state-trace.md) (Deliverable 2) and this section. No other file was changed.
+
+**Deliverable 1 — ORB lifecycle (recommends no lifecycle):**
+- **Strategy sources and parity basis: rest until session end.** The accepted Pine and port place one buy-stop entry per day, when the range completes. Neither cancels it by age or places it again; only the session-end bar cancels it. Both SHA-256 digests matched `BOOK_SOURCES.sha256`; the files were read in place and nothing was copied or quoted. The emulator and parity harness have no age-based cancel, and the 681-of-681 ORB export parity rests on that lifecycle.
+- **Qualification replay and its specs: one bar.** The replay cancels any resting entry one bar after admission (`replay.py:507-509`, RC-9). The port never re-issues, so qualification gives ORB's entry exactly one bar to fill.
+- **Rail contract: conflicted.** S2 adopts the one-bar cancel, while AC-3, AC-8, S4 and the §5 cutoff assume long-resting entries. No live-path code cancels by age.
+- **Candidates and questions.** Three candidate lifecycles (L1 rest until session end, L2 one bar, L3 one bar re-issued) are compared on strategy behavior, replay and export parity, reservation time and the ORB pre-registration. §4 of the note lists the questions the ruling must answer.
+
+**Deliverable 2 — four-state fence trace:**
+- **(i) and (ii) are indistinguishable to the fence.** Its only resolving input is an accepted terminal; the owner has no working-order evidence input for entries. So a known working order with fresh evidence is fenced like a stale one after one bar, for admission, loosening amends and takeover.
+- **The spec reading of (i) is settled by a proposed clarification.** The spec text is ambiguous, but every row except the literal `pending` row reads (i) as not unknown. The clarification is proposed in §2 and §6.1 of the note, for the rail-spec owner.
+- **Takeover also over-blocks** on any non-terminal order anywhere, from the send onward (`book_takeover_owner.py:621`).
+- **(iii) is fenced correctly, but the rev9 halt for ordinary unknowns is not implemented** (already recorded, packet CC-3).
+- **(iv) resolves correctly,** apart from the transport-`REJECTED` shortcut, which Gate A A3 constrains for a real route.
+- **The rest is correct or fail-closed.** Close, cancel, recovery, the resume gate and capacity do not read the fence and are correct or fail-closed, with two spec ambiguities: same-leg close refusal, and loosening during an accepted, unresolved close.
+- **The producer of fresh order-level evidence is T09, which is not built.**
+- **Repair.** A behavior-level repair specification is given, with its fault cases and tests. It changes the E1 freeze inventory, so it should land before the freeze. It is required under every lifecycle; its dependence on the lifecycle ruling is stated and not resolved.
+
+**Verification:**
+- **Existing tests only, no code change:** 139 passed (record `.cache/fp-verification/20260926T232158Z-591119cf168f/record.json`) and 170 passed (record `.cache/fp-verification/20260926T232629Z-44105170d04d/record.json`), both at `62c956f`, `status: completed`, exit 0, `source_stable: true`.
+- **Gates:** `.\fp.ps1 check` was run on the final tree before the result commit. Its record path and result are in the commit message and the coordinator return.
+
+**Unverified and not measured:**
+- **The state-(i) defect is shown by code reading, not by a failing test.** The card allows running existing tests only, and no production test supplies working evidence.
+- **The size of the one-bar behavior change was not measured.** It is the number of ORB entries that fill later than the first bar after placement, and measuring it needs an authorized run of the private port.
+- **Broker day-order expiry on the route is unverified** (C08).
+
+**Return for the coordinator (not written into any owner record):**
+- **Spec owners:** the proposed rail-spec `pending` clarification; the RC-4/RC-9, S2 and AC-3/AC-8 inconsistencies; RC-9's `bar_time` versus the replay's `path_time` duplicate key.
+- **T09:** the never-dispatched attempt journal (`book_account_owner.py:1682-1684` leaves a never-sent request `UNKNOWN`).
