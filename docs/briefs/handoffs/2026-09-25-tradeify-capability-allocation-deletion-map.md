@@ -136,3 +136,27 @@ Not dispatched. On return, record named executor/coordinator, dispatch revision,
 | Verification | Source reads and `sha256sum` only; no runtime claims. Diff limited to this section and the result file. `fp.ps1 check` record: see the executor's final report. |
 | Concerns | (1) The C18 protection-snapshot contract cannot be met by any documented REST read. (2) The Striker close-time crossed-level exit has no live realization (name search only). (3) The ORB adds binding (D17) is unconfirmed, because the effective inputs could not be read under §60. (4) The harness blocked writes to this worktree until the executor switched into it with `EnterWorktree`. |
 | Next action | Coordinator gate-D review, then the integrated gate-B/C decision packet (result §E). |
+
+**Coordinator review (2026-09-26): ACCEPTED AS INPUT, WITH CORRECTIONS. Not gate-D acceptance.** Reviewer: the coordinating session. Artifact: result note and this return at `dce09d4`. The result is fit as the allocation input to the integrated B–D packet. Gate D still needs the operator's resulting behavior decisions and the coordinator's integrated acceptance. The five review criteria from the operator's 2026-09-26 direction:
+
+| Criterion | Result |
+|---|---|
+| 1. Concrete responsibility assignments | **Met.** Every C-row names decision, execution and recovery owners. The §C boundary names what stays local and why. |
+| 2. Justified reductions | **Met.** Every B-row names its replacement and remaining consumers. New local work moved in by vendor use is visible: the C14 post-placement poll, the A8 coverage-repair actor, and B13–B15 as introduced burden. |
+| 3. Option-B dependencies explicit | **Met.** C06b, C15b and B16 are labelled PROVISIONAL-B, and C15 carries the current posture. §A10 (rule text written after dispatch, on #515) is consistent with these rows. |
+| 4. Edition consistency | **Met.** Remaining exits (C10a–d, C11, C11b), split execution (C09, B13, D10) and actual versus simulated state (C03, C04, trace row 2) are covered for all three candidates. |
+| 5. Testable capability gaps | **Partly met.** Correction R4. |
+
+**Corrections (source-checked by the coordinator at `dce09d4`):**
+
+- **R1 — D09/C18 overstated; downgrade to a gate-C design question.** `sequence` is checked per stream for monotonic order (`book_protection_owner.py`, `_apply_protection_snapshot_db`: `stream-order` fault), so our own poller can assign it. `complete` is a flag that gates the position-completeness check, not a precondition for every snapshot. Amend admission needs row-level evidence postdating `prepared` (`:583-587`), which the rail spec states as order-level `P`/`W` evidence strictly after `prepared_at` (evidence-currency rule). The open question is therefore whether post-preparation per-order lifecycle/status reads, sequenced by our poller, meet evidence currency without account-wide causal order (CAP R4). A contract change is needed only if they cannot.
+- **R2 — new item D19 (contract; GB/GC): the rail spec's `CLOSE` requires verified L2(e).** The spec's `CLOSE(scope)` text and S5 require "verified `L2(d)` and `L2(e)`". L2(e) is contradicted on this route (Gate A A5). With one-contract lots the residual-cover property may hold by construction, but the contract does not say so, and it forbids a cancel-plus-market fallback. Before any close is admissible, one of two things is needed: an explicit contract interpretation or amendment stating when one-contract lots satisfy L2(e), or a route-native close definition. This feeds UB-5 and D06. The map did not flag it.
+- **R3 — D17 resolved.** The owner record ([protection selection](../../notes/2026-09-10-tradeify-protection-selection.md), mode table) sets ORB adds as normal in NORMAL mode and off under protection. The route note's "adds-off" refers to protection mode. Split and capacity inputs follow that record.
+- **R4 — the gate-C matrix must add a failure consequence for each K primitive:**
+  - **Stop activation at quantity 1 (D1).** If it fails, the one-contract premise fails, the narrowed shape is inadmissible, and the route is blocked for every leg.
+  - **Full close (D3).** If it fails, the spec forbids the cancel-plus-market fallback, so the result is `BLOCKED — capability-problem` unless a qualified alternative is accepted.
+  - **Cancel of Suspended children (D6).** If it fails, the ORB resting entry needs an attended session-end procedure or an edition change.
+  - **Takeover composite.** If it fails, an Aegis takeover behavior decision is needed.
+  - D2 already carries its consequence (D08).
+- **R5 — operator-level finding, surfaced rather than buried.** Under the 2026-09-11 Terms ruling, TradingView has **no live role** on the recommended path. The operator's objective ("let TradingView and CrossTrade do what they can") is therefore met for CrossTrade and Tradovate only. Any TradingView live role is D01, the operator's call, and needs written permission and an S2 amendment.
+- **R6 — stale restatement routed, not edited.** T08 §7.8's "exit-side partial fills moot" line is qualified by UB-5 and by the Gate A drill map. Propagation joins the owed list.
