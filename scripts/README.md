@@ -338,7 +338,24 @@ under a date-keyed `**Roll YYYY-MM-DD**` header, with relative links rebased.
 It moves dates only: covered or missed weeks, reconfirm results and `Last curated`
 stay operator-recorded. Output depends only on the input bytes and the date, so
 concurrent sessions make identical edits that merge cleanly. Run it instead of
-hand-editing a stale deadline; `--check` reports without writing.
+hand-editing a stale deadline; `--check` reports without writing. A rerun after
+an interrupted write is safe: rows already in the archive are not added again.
+
+It fails closed (exit 2, nothing written, `--check` included) on anything it
+cannot roll unambiguously, and that refusal withholds **every** change of the
+invocation, including a due Weekly roll or keep-15 archive:
+
+- a Monthly deadline dated the 29th–31st (the heading cannot carry that day
+  through short months). Month-end procedure: edit the Monthly heading's
+  `next deadline **YYYY-MM-DD**` to the cadence owner's next date by hand, then
+  rerun `state_roll.py` for the remaining rolls;
+- a duplicate Weekly/Monthly heading, or a Weekly `bucket` not in
+  `MM-DD→MM-DD` form;
+- a decision index out of newest-first date order, a dated bullet not in
+  `- **YYYY-MM-DD** — ` form, or an overflow row with a continuation line.
+
+`check_state_currency.py` names the roller only for past deadlines it can roll;
+a deadline beyond the horizon and the other failures are corrected by hand.
 
 ### Brief checker ownership
 

@@ -4,24 +4,30 @@
 Applies the mechanical limb of docs/operational_rules.md Rule 7 STATE currency
 that `check_state_currency.py` only reports: rolls the Weekly/Monthly recurring
 deadlines forward and moves decision-index overflow rows into the archive. The
-output is a pure function of (input bytes, today) — no timestamps, no
-randomness, no environment-dependent ordering — so concurrent sessions produce
-byte-identical edits and a second run on already-rolled files changes nothing.
+output is a pure function of (input bytes, today, the archive's position
+relative to STATE) — no timestamps, no randomness, no environment-dependent
+ordering — so concurrent sessions produce byte-identical edits and a second run
+on already-rolled files changes nothing. A retry after an interrupted run is
+safe: an overflow row already present in the archive is dropped from STATE
+without being archived again.
 
 Byte preservation: files are read and written with newline translation off and
-UTF-8, and only the Weekly/Monthly heading lines and whole overflow index rows
-are touched. Coverage text, `**Last curated:**`, the queue and every other
+UTF-8, and only the deadline date (plus a Weekly `bucket MM-DD→MM-DD`) inside
+the Weekly/Monthly heading lines and whole overflow index rows are touched. Coverage text, `**Last curated:**`, the queue and every other
 section stay exactly as authored.
 
 Clock is America/New_York. Tests inject --today or STATE_CURRENCY_TODAY.
 
 Exit 0 nothing to roll (or applied cleanly); 1 with --check when a roll is due;
-2 on a missing section/heading or an unreadable file.
+2 on a missing/duplicate section or heading, a heading or index the roller
+cannot read unambiguously, or an unreadable file. Exit 2 applies nothing: every
+planned change of that invocation is withheld.
 """
 from __future__ import annotations
 
 import argparse
 import os
+import posixpath
 import re
 import sys
 from datetime import date, datetime, timedelta
@@ -38,8 +44,6 @@ ET = ZoneInfo("America/New_York")
 
 ARROW = "→"  # U+2192, the Weekly bucket separator
 KEEP_ROWS = 15
-ARCHIVE_LINK_PREFIX = "../../../../../"
-EXTERNAL_LINK_PREFIXES = ("http://", "https://", "mailto:", "#", "/", "../")
 
 DECISION_SECTION_RE = re.compile(
     r"^## Executed operator decisions\b.*?(?=^## |\Z)",
@@ -49,21 +53,25 @@ FORWARD_SECTION_RE = re.compile(
     r"^## Scheduled forward triggers\b.*?(?=^## |\Z)",
     re.M | re.S,
 )
-WEEKLY_HEADING_RE = re.compile(
-    r"^### Weekly — recurring \(rolling; next deadline "
-    r"\*\*(\d{4}-\d{2}-\d{2})\*\*, bucket \d{2}-\d{2}"
-    + ARROW
-    + r"\d{2}-\d{2}\)([^\r\n]*)(?=\r?$)",
+# The heading contract is check_state_currency.py's, byte for byte (a test pins
+# the two patterns equal): any `### Weekly|Monthly — recurring` heading carrying
+# `next deadline **YYYY-MM-DD**`. Only the date span (and a Weekly bucket span)
+# is rewritten; every other byte of the heading stays as authored.
+RECURRING_HEADING_RE = re.compile(
+    r"^### (Weekly|Monthly) — recurring\b.*$",
     re.M,
 )
-MONTHLY_HEADING_RE = re.compile(
-    r"^### Monthly — recurring \(rolling; next deadline "
-    r"\*\*(\d{4}-\d{2}-\d{2})\*\*\)([^\r\n]*)(?=\r?$)",
-    re.M,
-)
+DEADLINE_RE = re.compile(r"next deadline \*\*(\d{4}-\d{2}-\d{2})\*\*")
+BUCKET_WORD_RE = re.compile(r"\bbucket\b")
+BUCKET_RE = re.compile(r"\bbucket (\d{2}-\d{2})" + ARROW + r"(\d{2}-\d{2})\b")
 # Trailing \r is deliberately outside the match so a moved row keeps STATE's
 # line ending out of the archived text.
-INDEX_ROW_RE = re.compile(r"^- \*\*\d{4}-\d{2}-\d{2}\*\* — [^\r\n]*(?=\r?$)", re.M)
+INDEX_ROW_RE = re.compile(
+    r"^- \*\*(\d{4}-\d{2}-\d{2})\*\* — [^\r\n]*(?=\r?$)", re.M
+)
+# Any dated bullet, as check_state_currency.py counts them. Every such line must
+# also be an INDEX_ROW_RE row, or keep-15 would miscount.
+DATED_BULLET_RE = re.compile(r"^- \*\*\d{4}-\d{2}-\d{2}\*\*[^\r\n]*", re.M)
 # Matches both the hand-written ordinal headers ("**Seventeenth roll, 2026-09-25**")
 # and this script's own date-keyed headers ("**Roll 2026-09-26**").
 ARCHIVE_ROLL_HEADER_RE = re.compile(
@@ -72,6 +80,9 @@ ARCHIVE_ROLL_HEADER_RE = re.compile(
 LINE_END_RE = re.compile(r"\r?\n")
 BLANK_LINE_RE = re.compile(r"[ \t]*\r?\n")
 LINK_TARGET_RE = re.compile(r"\]\(([^)]+)\)")
+LINK_DEST_RE = re.compile(r"(\S+)(.*)", re.S)
+URL_SCHEME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
+PATH_SUFFIX_RE = re.compile(r"([^#?]*)(.*)", re.S)
 
 
 class StateRollError(Exception):
@@ -120,7 +131,8 @@ def next_monthly(old_deadline: date, today: date) -> date:
         raise StateRollError(
             f"monthly cadence day {wanted_day} exceeds {MAX_MONTHLY_DAY}; the "
             "heading cannot carry the intended day across short months, so "
-            "roll the Monthly heading by hand"
+            "roll the Monthly heading by hand, then rerun (this invocation "
+            "applied nothing)"
         )
     year, month = today.year, today.month
     for _ in range(24):
@@ -142,72 +154,161 @@ def _splice(text: str, section: re.Match[str], new_body: str) -> str:
     return text[: section.start()] + new_body + text[section.end() :]
 
 
-def roll_weekly(text: str, today: date) -> tuple[str, str | None]:
-    """Rewrite the Weekly heading line when its deadline is in the past."""
-    section = _forward_section(text)
-    body = section.group(0)
-    match = WEEKLY_HEADING_RE.search(body)
+def _recurring_heading(body: str, kind: str) -> re.Match[str]:
+    found = [m for m in RECURRING_HEADING_RE.finditer(body) if m.group(1) == kind]
+    if not found:
+        raise StateRollError(
+            f"no {kind} recurring heading of the form '### {kind} - recurring "
+            "... next deadline **YYYY-MM-DD** ...'"
+        )
+    if len(found) > 1:
+        raise StateRollError(f"duplicate {kind} recurring heading")
+    return found[0]
+
+
+def _deadline(body: str, heading: re.Match[str], kind: str) -> re.Match[str]:
+    match = DEADLINE_RE.search(body, heading.start(), heading.end())
     if match is None:
         raise StateRollError(
-            "no Weekly recurring heading of the form '### Weekly - recurring "
-            "(rolling; next deadline **YYYY-MM-DD**, bucket MM-DD->MM-DD "
-            "with a U+2192 arrow)'"
+            f"{kind} recurring heading has no next deadline **YYYY-MM-DD**"
         )
-    old_deadline = date.fromisoformat(match.group(1))
+    return match
+
+
+def _apply_edits(
+    text: str, section: re.Match[str], edits: list[tuple[tuple[int, int], str]]
+) -> str:
+    body = section.group(0)
+    for (start, end), value in sorted(edits, reverse=True):
+        body = body[:start] + value + body[end:]
+    return _splice(text, section, body)
+
+
+def roll_weekly(text: str, today: date) -> tuple[str, str | None]:
+    """Advance the Weekly deadline (and its bucket) when it is in the past."""
+    section = _forward_section(text)
+    body = section.group(0)
+    heading = _recurring_heading(body, "Weekly")
+    deadline = _deadline(body, heading, "Weekly")
+    bucket: re.Match[str] | None = None
+    words = list(BUCKET_WORD_RE.finditer(body, heading.start(), heading.end()))
+    if words:
+        bucket = BUCKET_RE.search(body, heading.start(), heading.end())
+        if len(words) > 1 or bucket is None:
+            raise StateRollError(
+                "Weekly heading has a bucket the roller cannot read; it expects "
+                "exactly one 'bucket MM-DD->MM-DD' with a U+2192 arrow"
+            )
+    old_deadline = date.fromisoformat(deadline.group(1))
     if old_deadline >= today:
         return text, None
     new_deadline = first_friday(today)
-    monday = new_deadline - timedelta(days=new_deadline.weekday())
-    bucket = f"{monday:%m-%d}{ARROW}{new_deadline:%m-%d}"
-    heading = (
-        "### Weekly — recurring (rolling; next deadline "
-        f"**{new_deadline.isoformat()}**, bucket {bucket}){match.group(2)}"
-    )
-    start, end = match.span()
-    new_text = _splice(text, section, body[:start] + heading + body[end:])
+    edits = [(deadline.span(1), new_deadline.isoformat())]
+    if bucket is not None:
+        monday = new_deadline - timedelta(days=new_deadline.weekday())
+        edits.append((bucket.span(1), f"{monday:%m-%d}"))
+        edits.append((bucket.span(2), f"{new_deadline:%m-%d}"))
+    new_text = _apply_edits(text, section, edits)
     return new_text, f"weekly: {old_deadline.isoformat()} -> {new_deadline.isoformat()}"
 
 
 def roll_monthly(text: str, today: date) -> tuple[str, str | None]:
-    """Rewrite the Monthly heading line when its deadline is in the past."""
+    """Advance the Monthly deadline when it is in the past."""
     section = _forward_section(text)
     body = section.group(0)
-    match = MONTHLY_HEADING_RE.search(body)
-    if match is None:
-        raise StateRollError(
-            "no Monthly recurring heading of the form '### Monthly - recurring "
-            "(rolling; next deadline **YYYY-MM-DD**)'"
-        )
-    old_deadline = date.fromisoformat(match.group(1))
+    heading = _recurring_heading(body, "Monthly")
+    deadline = _deadline(body, heading, "Monthly")
+    old_deadline = date.fromisoformat(deadline.group(1))
     if old_deadline >= today:
         return text, None
     new_deadline = next_monthly(old_deadline, today)
-    heading = (
-        "### Monthly — recurring (rolling; next deadline "
-        f"**{new_deadline.isoformat()}**){match.group(2)}"
-    )
-    start, end = match.span()
-    new_text = _splice(text, section, body[:start] + heading + body[end:])
+    new_text = _apply_edits(text, section, [(deadline.span(1), new_deadline.isoformat())])
     return new_text, f"monthly: {old_deadline.isoformat()} -> {new_deadline.isoformat()}"
 
 
-def rewrite_links(row: str) -> str:
-    """Rebase relative markdown link targets onto the archive directory."""
+def _rebase_target(target: str, from_dir: Path, to_dir: Path) -> str:
+    """Recompute one filesystem-relative link destination for the archive."""
+    if target.startswith("<"):
+        raise StateRollError(
+            f"angle-bracket link destination {target!r} cannot be rebased safely"
+        )
+    dest_match = LINK_DEST_RE.match(target)
+    if dest_match is None:
+        return target
+    dest, rest = dest_match.groups()
+    if dest.startswith(("#", "?", "/")) or URL_SCHEME_RE.match(dest):
+        return target
+    path_match = PATH_SUFFIX_RE.match(dest)
+    assert path_match is not None  # the pattern matches any string
+    path, suffix = path_match.groups()
+    if not path:
+        return target
+    # Archive convention: climb from the archive to STATE's directory, then
+    # follow STATE's own (normalised) path — `../../../../../docs/x.md`, not
+    # the shortest equivalent. Leading `..` segments survive normpath.
+    try:
+        climb = os.path.relpath(from_dir, to_dir).replace(os.sep, "/")
+    except ValueError as exc:
+        raise StateRollError(f"cannot rebase link {dest!r}: {exc}") from exc
+    rebased = posixpath.normpath(posixpath.join(climb, posixpath.normpath(path)))
+    if path.endswith("/") and not rebased.endswith("/"):
+        rebased += "/"
+    return rebased + suffix + rest
+
+
+def rewrite_links(
+    row: str,
+    from_dir: Path = REPO,
+    to_dir: Path = DEFAULT_ARCHIVE.parent,
+) -> str:
+    """Rebase every filesystem-relative link target from STATE's directory to
+    the archive's. URL schemes, root-absolute paths and pure `#`/`?` targets
+    are left alone."""
 
     def _rebase(match: re.Match[str]) -> str:
-        target = match.group(1)
-        if target.startswith(EXTERNAL_LINK_PREFIXES):
-            return match.group(0)
-        return "](" + ARCHIVE_LINK_PREFIX + target + ")"
+        return "](" + _rebase_target(match.group(1), from_dir, to_dir) + ")"
 
     return LINK_TARGET_RE.sub(_rebase, row)
 
 
 def index_rows(text: str) -> list[re.Match[str]]:
+    """Index rows in document order, validated for a positional keep-15.
+
+    Keep-15 moves rows by position, so it is only correct when every dated
+    bullet is a readable row, the rows are newest first (same-day rows keep
+    their authored order), and a moved row is one whole line. Anything else
+    fails closed instead of archiving the wrong rows or half a record.
+    """
     section = DECISION_SECTION_RE.search(text)
     if section is None:
         raise StateRollError("STATE.md has no Executed operator decisions section")
-    return list(INDEX_ROW_RE.finditer(section.group(0)))
+    body = section.group(0)
+    rows = list(INDEX_ROW_RE.finditer(body))
+    row_starts = {match.start() for match in rows}
+    for bullet in DATED_BULLET_RE.finditer(body):
+        if bullet.start() not in row_starts:
+            raise StateRollError(
+                "decision-index bullet is not a '- **YYYY-MM-DD** — ' row: "
+                + bullet.group(0).strip()[:80]
+            )
+    for newer, older in zip(rows, rows[1:]):
+        if date.fromisoformat(newer.group(1)) < date.fromisoformat(older.group(1)):
+            raise StateRollError(
+                f"decision index out of date order: {newer.group(1)} sits above "
+                f"{older.group(1)}; restore newest-first order by hand"
+            )
+    for match in rows[KEEP_ROWS:]:
+        line_end = LINE_END_RE.match(body, match.end())
+        if line_end is None:
+            continue
+        nxt = body.find("\n", line_end.end())
+        following = body[line_end.end() : len(body) if nxt < 0 else nxt].rstrip("\r")
+        if following.strip() and INDEX_ROW_RE.match(following) is None:
+            raise StateRollError(
+                f"overflow row {match.group(1)} is followed by a continuation "
+                "line; archive multi-line rows by hand"
+            )
+    return rows
 
 
 def overflow_rows(text: str) -> list[str]:
@@ -250,26 +351,47 @@ def _top_of_today_block(text: str, header: re.Match[str]) -> int:
     return blank.end() if blank is not None else end
 
 
-def archive_overflow(text: str, rows: list[str], today: date) -> tuple[str, str]:
-    """Insert overflow rows above the archive's newest roll header."""
+def archive_overflow(
+    text: str,
+    rows: list[str],
+    today: date,
+    from_dir: Path = REPO,
+    to_dir: Path = DEFAULT_ARCHIVE.parent,
+) -> tuple[str, str]:
+    """Insert overflow rows above the archive's newest roll header.
+
+    A row whose rebased text is already a whole line of the archive was
+    archived by an earlier run that stopped before its STATE write; it is not
+    inserted again (STATE still drops it). The retry therefore converges on
+    the same archive whether it runs the same day or later.
+    """
     header = (
         f"**Roll {today.isoformat()}** "
         "(automated keep-15 roll; `scripts/state_roll.py`):"
     )
     newline = line_ending(text)
-    block = "".join(rewrite_links(row) + newline + newline for row in rows)
+    present = set(LINE_END_RE.split(text))
+    rebased = [rewrite_links(row, from_dir, to_dir) for row in rows]
+    pending = [row for row in rebased if row not in present]
+    already = len(rebased) - len(pending)
+    message = f"index: archived {len(pending)} row(s)"
+    if already:
+        message += f", {already} already in the archive"
+    if not pending:
+        return text, message
+    block = "".join(row + newline + newline for row in pending)
     newest = ARCHIVE_ROLL_HEADER_RE.search(text)
     mine = re.search("^" + re.escape(header) + r"\r?$", text, re.M)
     if mine is not None and (newest is None or mine.start() <= newest.start()):
         at = _top_of_today_block(text, mine)
-        return text[:at] + block + text[at:], f"index: archived {len(rows)} row(s)"
+        return text[:at] + block + text[at:], message
     if newest is None:
         raise StateRollError(
             "archive has no '**... roll, YYYY-MM-DD**' header to insert before"
         )
     addition = header + newline + newline + block
     at = newest.start()
-    return text[:at] + addition + text[at:], f"index: archived {len(rows)} row(s)"
+    return text[:at] + addition + text[at:], message
 
 
 def _replace(path: Path, text: str) -> None:
@@ -295,7 +417,9 @@ def commit(
 
     Overflow rows leave STATE only after they are safely in the archive. If the
     STATE write then fails, the archive is put back, so a retry sees the same
-    overflow and archives it exactly once.
+    overflow and archives it exactly once. If the process dies between the two
+    writes (no restore runs), the retry finds those rows already in the archive
+    and only drops them from STATE (see archive_overflow).
     """
     if new_archive is None:
         _replace(state_path, new_state)
@@ -313,8 +437,13 @@ def plan(
     state_text: str,
     archive_loader: Callable[[], str],
     today: date,
+    from_dir: Path = REPO,
+    to_dir: Path = DEFAULT_ARCHIVE.parent,
 ) -> tuple[str, str | None, list[str]]:
-    """Return (new state text, new archive text or None, change messages)."""
+    """Return (new state text, new archive text or None, change messages).
+
+    Every check runs before anything is returned, so a failure anywhere
+    withholds the whole plan (no partial roll)."""
     new_state: str = state_text
     messages: list[str] = []
     for roller in (roll_weekly, roll_monthly):
@@ -325,7 +454,12 @@ def plan(
     new_archive: str | None = None
     if rows:
         new_state = drop_overflow_rows(new_state)
-        new_archive, message = archive_overflow(archive_loader(), rows, today)
+        old_archive = archive_loader()
+        new_archive, message = archive_overflow(
+            old_archive, rows, today, from_dir, to_dir
+        )
+        if new_archive == old_archive:
+            new_archive = None
         messages.append(message)
     return new_state, new_archive, messages
 
@@ -350,7 +484,13 @@ def main(argv: list[str] | None = None) -> int:
     loader: Callable[[], str] = lambda: read_text(args.archive)
     try:
         state_text = read_text(args.state)
-        new_state, new_archive, messages = plan(state_text, loader, today_et(args.today))
+        new_state, new_archive, messages = plan(
+            state_text,
+            loader,
+            today_et(args.today),
+            args.state.resolve().parent,
+            args.archive.resolve().parent,
+        )
     except (StateRollError, OSError, ValueError) as exc:
         print(f"state-roll: FAIL - {exc}", file=sys.stderr)
         return 2

@@ -50,6 +50,19 @@ HORIZON_BY_KIND = {
     "Weekly": WEEKLY_HORIZON_DAYS,
     "Monthly": MONTHLY_HORIZON_DAYS,
 }
+# Remediation is per problem: state_roll.py only advances PAST recurring
+# deadlines, so only that failure names it. A future deadline beyond the
+# horizon, Last curated and past dated subsections are corrected by hand.
+ROLL_HINT = "for deadline rolls run: python -I scripts/fp.py python scripts/state_roll.py"
+MANUAL_HINT = (
+    "correct the heading by hand (the roller only advances past deadlines)"
+)
+# Mirrors state_roll.MAX_MONTHLY_DAY: days 29-31 are refused by the roller.
+MAX_ROLLABLE_MONTHLY_DAY = 28
+MONTH_END_HINT = (
+    "Monthly days 29-31 are not auto-rolled; roll the heading by hand "
+    "(see scripts/README.md, STATE currency)"
+)
 
 
 def today_et() -> date:
@@ -130,9 +143,12 @@ def problems(text: str, today: date) -> list[str]:
     body = forward.group(0)
     for kind, deadline in recurring_deadlines(body):
         if deadline < today:
+            hint = ROLL_HINT
+            if kind == "Monthly" and deadline.day > MAX_ROLLABLE_MONTHLY_DAY:
+                hint = MONTH_END_HINT
             out.append(
                 f"{kind} next deadline {deadline.isoformat()} is in the past "
-                f"(today {today.isoformat()} ET)"
+                f"(today {today.isoformat()} ET) — {hint}"
             )
             continue
         horizon = HORIZON_BY_KIND[kind]
@@ -141,7 +157,7 @@ def problems(text: str, today: date) -> list[str]:
             out.append(
                 f"{kind} next deadline {deadline.isoformat()} is beyond the "
                 f"{horizon}-day next-occurrence horizon "
-                f"(today {today.isoformat()} ET)"
+                f"(today {today.isoformat()} ET) — {MANUAL_HINT}"
             )
     for heading in past_dated_headings(body, today):
         out.append(f"past dated subsection is not DISCHARGED: {heading}")
@@ -160,12 +176,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"state-currency: FAIL — {exc}", file=sys.stderr)
         return 1
     if found:
-        print(
-            "state-currency: FAIL — "
-            + "; ".join(found)
-            + " — for deadline rolls run: python -I scripts/fp.py python scripts/state_roll.py",
-            file=sys.stderr,
-        )
+        print("state-currency: FAIL — " + "; ".join(found), file=sys.stderr)
         return 1
     print(
         f"state-currency: OK — Last curated and forward-trigger dates "

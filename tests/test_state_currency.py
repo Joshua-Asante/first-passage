@@ -202,3 +202,50 @@ def test_stale_weekly_fail_names_state_roll(tmp_path: Path) -> None:
     )
     assert proc.returncode == 1
     assert b"for deadline rolls run: python -I scripts/fp.py python scripts/state_roll.py" in proc.stderr
+
+
+def _fail_text(state: Path, today: str) -> bytes:
+    env = os.environ.copy()
+    env["STATE_CURRENCY_TODAY"] = today
+    proc = subprocess.run(
+        [sys.executable, str(SCRIPT), "--state", str(state)],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+    )
+    assert proc.returncode == 1
+    return proc.stderr
+
+
+def test_beyond_horizon_fail_asks_for_manual_correction(tmp_path: Path) -> None:
+    # Codex 4110271939: state_roll.py only rolls PAST deadlines, so a future
+    # (beyond-horizon) deadline must not be pointed at it.
+    state = _write(tmp_path / "STATE.md", _state(weekly="2027-09-04"))
+    stderr = _fail_text(state, "2026-09-03")
+    assert b"state_roll.py" not in stderr
+    assert b"correct the heading by hand" in stderr
+
+
+def test_last_curated_only_fail_does_not_name_state_roll(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state(curated="2026-08-31", newest_decision="2026-09-03"),
+    )
+    assert b"state_roll.py" not in _fail_text(state, "2026-09-03")
+
+
+def test_past_dated_subsection_fail_does_not_name_state_roll(tmp_path: Path) -> None:
+    state = _write(
+        tmp_path / "STATE.md",
+        _state(extra_headings="\n### 2026-08-24 (Monday)\n\n- **this session.**\n"),
+    )
+    assert b"state_roll.py" not in _fail_text(state, "2026-09-03")
+
+
+def test_past_month_end_monthly_fail_asks_for_hand_roll(tmp_path: Path) -> None:
+    # state_roll.py refuses Monthly days 29-31, so the hint must not send the
+    # operator to it.
+    state = _write(tmp_path / "STATE.md", _state(monthly="2026-08-31"))
+    stderr = _fail_text(state, "2026-09-03")
+    assert b"state_roll.py" not in stderr
+    assert b"Monthly days 29-31 are not auto-rolled" in stderr
