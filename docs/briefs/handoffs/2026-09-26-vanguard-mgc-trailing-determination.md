@@ -9,7 +9,7 @@
 - The [09-25 route note](../../notes/2026-09-25-tradingview-signal-route-evaluation.md) (line 243) records from a private read that "current effective defaults enable trailing".
 - If trailing is active, Vanguard depends on a primitive the route does not support, and the operator must decide between a route-native fixed-stop edition and rejecting the leg.
 
-**Authority:** read-only source inspection under [AGENTS.md §Private strategy source access](../../../AGENTS.md#private-strategy-source-access). No modification, execution or import of private strategies. No parameter change, edition design, account access, drill or spend. Contract and expression decisions stay with the operator. The coordinator accepts the return.
+**Authority:** read-only source inspection under [campaign §60](../programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25) (AGENTS.md §Public-clone posture, private read surface). No modification, execution or import of private strategies. No parameter change, edition design, account access, drill or spend. Contract and expression decisions stay with the operator. The coordinator accepts the return.
 
 **Return boundary:** fill in §5 and stop. Do not edit §59, the incident ADR, the REST assessment or the checklist; list the propagation targets instead.
 
