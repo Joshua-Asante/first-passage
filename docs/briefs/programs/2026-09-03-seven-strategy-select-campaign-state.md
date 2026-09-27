@@ -4009,6 +4009,10 @@ The repair is authorized as a bounded synthetic repair. The real evidence produc
 
 **Not granted:** freeze, edition file production (gate D), replay or E1 dispatch, a count run of the private port, gate B–D acceptance, T09 dispatch, deployment or GO. **Board write:** STATE decision index, 2026-09-27 row.
 
+**Operator answers, 2026-09-27 (same day, in session, by structured answer to the coordinator's questions on the H3 return).**
+- **Stale boundary confirmed.** "Treat evidence as stale at one bar" means evidence whose age at evaluation is **one bar period or more** is stale; the boundary is inclusive. The operator chose "Yes, ≥ one bar". H4 pins it in a test.
+- **Rail-spec change control (H3 Q4).** The rail spec's Boundary line ("no … fail-closed change without the §5 addendum") is met by adding a **dated §5 addendum entry** citing this ruling. The operator chose "Add §5 addendum entry". H3 applies it.
+
 ## §60 — Agent read access to the accepted book's Pine and runtime ports (2026-09-25)
 
 **Operator direction, 2026-09-25, in session (verbatim):** "i also want agents to be able to read the pine locally, from all 4 strategies". Asked two scoping questions, the operator chose **"Pine + ports"** (lift §59's no-read clause for the four Pine files and their pinned runtime ports) and **"Main checkout only"** (one canonical private copy in the primary checkout; no copies in worktrees).

@@ -44,9 +44,9 @@ If #519 merges before dispatch, the same paths on `main` are used, once they are
 |---|---|---|---|
 | H1 | S5 and resource limits | Step (a) **RETURNED and ACCEPTED 2026-09-27** ([r2 CP-1a packet](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md)); step (b) READY ON CP-1a; step (c) READY (drafting) | CP-1a; then RC-3a for CP-1b |
 | H2 | Broker route commissioning | **RETURNED and ACCEPTED 2026-09-27**: [packet](../../notes/2026-09-27-route-commissioning-session-packet.md). Owed before any CP-3: the §3.7 request-body step (primary checkout) and the M2 dispatch (X-2) | CP-2 now; then CP-3 per row |
-| H3 | ORB lifecycle and fence: disposition, owner text for Ruling 6, H4 card | READY | H4 |
-| H4 | Fence classification: synthetic repair plus ORB L1 replay correction | READY ON coordinator acceptance of H3's owner text and card (authorized by Ruling 6) | Synthetic half of the fence obligation; the replay correction before freeze; CP-5 input |
-| H5 | Attended operations | Step (a) READY (applies §A11.2); step (b) READY ON (a) accepted | T13 construction |
+| H3 | ORB lifecycle and fence: disposition, owner text for Ruling 6, H4 card | **RETURNED and ACCEPTED 2026-09-27** ([disposition](../../notes/2026-09-27-orb-fence-ruling6-disposition.md)); operator answers applied (§5 addendum entry; inclusive stale boundary) | H4 |
+| H4 | Fence classification: synthetic repair plus ORB L1 replay correction | **READY** ([dispatch card](2026-09-27-h4-fence-classification-orb-l1-repair.md), accepted 2026-09-27; authorized by Ruling 6) | Synthetic half of the fence obligation; the replay correction before freeze; CP-5 input |
+| H5 | Attended operations | Step (a) **RETURNED and ACCEPTED 2026-09-27** (halt/resume amendment, with the O-6/O-7 clarifications applied); step (b) **READY** ([dispatch card](2026-09-27-h5b-attended-incident-rehearsal.md)) | T13 construction |
 | H6 | Settlement evidence | Collection READY ON CP-2; rehearsal harness READY | CAP S1/S2 toward QUALIFIED |
 | H7 | Production qualification host | **RETURNED and ACCEPTED 2026-09-27** ([note](../../notes/2026-09-27-host-obligations-assignment.md)); RC-5 recorded in the ledger; RC-4 slice pending the operator (CP-1a item 5); host cost owed before CP-8 | RC-4/RC-5 assignment (S5 build entry); later CP-8 |
 | H8 | Feed (provider-neutral) | Step (a) **RETURNED and ACCEPTED 2026-09-27** ([note](../../notes/2026-09-27-feed-provider-neutral-preparation.md); [draft spec](../../spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md)); step (b) READY (operator machine) | CP-7 inputs; the F1 feed section; the empty-interval rule before CP-6 |
@@ -299,7 +299,7 @@ In each case return to the coordinator.
 
 **Work:**
 - **(a)** A dated amendment to the [halt/resume contract](../../spec/2026-09-14-tb-s3-halt-resume-contract.md) §4 applying §A11.2 to those two contexts, following that contract's amendment convention. Also a pointer in the [Phase 5 plan](../../superpowers/plans/2026-09-16-phase5-attended-operations.md) stating that its proposed restriction is now ruled for these contexts. Then a step (b) dispatch card with its `yaml authority` block.
-- **(b)** After (a) is accepted: a synthetic incident script (lost response, stale evidence, missed alert, restart during halt, ambiguous protection). It is exercised against the existing owners with a notification channel the operator names. Measure delivery and 60 s escalation, and show that no automation restart path exists within the session after an incident. A correctly handled refusal must not end the session.
+- **(b)** After (a) is accepted: a synthetic incident script (lost response, stale evidence, missed alert, restart during halt, ambiguous protection). Show that no automation restart path exists within the session after an incident, including a deliberate operator stop (O-6), and that a correctly handled refusal does not end the session. *Amended at acceptance 2026-09-27 (cross-handoff critic X-06):* real delivery and 60 s escalation are measured in T13 (Phase 5 WP2). The exception is if the operator runs the delivery leg on an existing, no-spend channel at dispatch.
 
 **Limits:**
 - No rail deploy or arm, and no account traffic.
