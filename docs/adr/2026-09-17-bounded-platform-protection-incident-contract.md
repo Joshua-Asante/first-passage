@@ -375,6 +375,33 @@ The floor definition, allowance formula, inputs, stale-data behavior and calibra
 
 **What this ruling does not do.** It adopts no close-contract amendment and changes no rail-spec text. It accepts no close guarantee or residual risk, and grants no gate B, C or D acceptance, order-producing drill, T09 dispatch, deployment, arming or spend.
 
+#### A11.2 — Operator ruling: no same-session restart of automation after an incident (2026-09-27)
+
+**Operator ruling 2026-09-27, in session.** The operator adopted this ruling by structured answer ("No same-session restart") to the text relayed the same day; the relayed text governs: "For commissioning and the first attended release, no same-session restart of automation after an incident; recovery and evidence collection continue, followed by review." Its detail, verbatim:
+- "during commissioning and the first attended release, an incident ends automated trading for that session. Continue operator recovery and evidence collection; review before another session."
+- "This applies to incidents—not ordinary, correctly handled signal or capacity refusals."
+
+**Relation to existing text.** This is a **new** ruling. Halt/resume rev9 §4 permits conditional same-session resumption with operator approval ([contract](../spec/2026-09-14-tb-s3-halt-resume-contract.md) §4). For commissioning and the first attended release, this ruling narrows that permission to none. §A11 items 1, 2 and 4 are unchanged: one attended session, then explicit review before extension; no acknowledgment, reset or elapsed time resolves an unresolved request; manual intervention is subject to fencing, outcome evidence and reconciliation. The Phase 5 plan's "no same-account-session reactivation" was PROPOSED; for these two contexts this ruling now decides the question. Its scope for later releases is not ruled. The halt/resume owner text is amended by [handoff H5](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md) step (a).
+
+**Not granted:** any session, drill, arm, deployment or GO. The addendum stays Proposed.
+
+**Operator clarifications, 2026-09-27 (same day, in session, by structured answer to the coordinator's questions on the H5 step (a) return).**
+- **A deliberate operator stop (O-6).** A deliberate operator stop with no fault is an incident for this ruling. It ends automated trading for that session, and review follows before another session. The operator chose "Yes, it ends the session".
+- **Scope of "commissioning" (O-7).** The ruling covers the first attended release and **any commissioning session in which automation is armed**. None is defined today. The operator chose "Cover any armed commissioning". Operator-run commissioning sessions with automation disarmed follow the commissioning packet's own stop rule.
+
+#### A11.3 — Operator ruling: preservation-trade evidence as the target of authorized reads (2026-09-27)
+
+**Operator ruling 2026-09-27, in session.** The operator adopted this ruling by structured answer ("Preservation-trade reads") to the text relayed the same day; the relayed text governs: "Approve reuse of preservation-trade evidence for the authorized reads where its scope and timing qualify, after entitlement and target confirmation. No additional trade is authorized." Its detail, verbatim:
+- "an already completed operator-placed preservation trade may be the R-2 and settlement-read target where it meets the required evidence conditions. R-1 must observe a trade in the same session; use a preservation trade you place anyway."
+- "Entitlement and transaction identity still need confirmation. This authorizes no new trade, purchase or account reset."
+
+**Scope.**
+- The ruling changes the **target** of reads already authorized: R-1/R-2 (§A11.1 item 4) and T07 R1–R3 (2026-09-25). It adds no read.
+- The drill plan's ruling block carries the same record. §A11.1's "single owner OPEN" rule applies, so the two texts must agree.
+- It does not settle how preservation trades on the book's own symbols are treated in operation (drill plan open question 9; §A11 item 4).
+
+**Not granted:** a new trade, purchase, new access, account reset or order mutation; no agent account access.
+
 ## Change history
 
 | Date | Change | By |
@@ -388,3 +415,6 @@ The floor definition, allowance formula, inputs, stale-data behavior and calibra
 | 2026-09-26 UTC | §A10 (Proposed): contract text for the ruled POLICY rows: rules 4′, 4a–4c, 9′, 11, 12 and the UB-8 acceptance condition; allocation-dependent and unruled details marked OPEN; reader intercepts at rules 4 and 9 | Claude (text) under the operator's ruling |
 | 2026-09-26 UTC | §A11: operator ruling on the first-release posture, recorded from the operator's written ruling (which supersedes the shorthand recording of the structured answers): preserve-and-block for one attended session, then explicit review before extending; possible indefinite suspension accepted, and no acknowledgment, reset or elapsed time resolves the obligation; B's implementation deferred, B retained as Proposed; §A10 first-release branch recorded (no UB-8 finding by the ruling; the packet's recommended determination noted as basis, not ruling); manual intervention subject to fencing, outcome evidence and reconciliation; preservation trades OPEN. Dated pointers at the top-of-file callout, under §A10's status (allocation map returned) and under its acceptance condition. Addendum still Proposed; §A10 not made effective | Joshua (ruling) + Claude (text) |
 | 2026-09-26 UTC | §A11.1: operator ruling on close, reads and drills (written ruling governs): C-a is the first candidate to investigate, investigation only; neither the close-contract amendment nor an unspecified residual risk accepted; a contradicting trace stops C-a; C-b needs its own expression decision and qualification; R-1/R-2 only, operator-performed, after the existing REST entitlement is confirmed; no purchase, new access, route change or order mutation; normal-case drill decisions prepared individually, race drill deferred, no automatic fallback to the live evaluation environment; webhook-form D1–D4 of 2026-09-25 not treated as cleared, each an individual decision. Dated pointers at rule 9′ (§59 Ruling 5 split constraint) and at §A8's D1 fact | Joshua (ruling) + Claude (text) |
+| 2026-09-27 UTC | §A11.2: operator ruling: for commissioning and the first attended release, an incident ends automated trading for that session; no same-session restart; recovery and evidence collection continue; review before another session; incidents only, not correctly handled refusals. New ruling narrowing rev9 §4 for those contexts; halt/resume owner text via handoff H5 | Joshua (ruling) + Claude (text) |
+| 2026-09-27 UTC | §A11.3: operator ruling: a completed operator-placed preservation trade may be the R-2 and settlement-read target where it qualifies; R-1 observes a same-session trade placed anyway; entitlement and transaction identity to be confirmed; no additional trade, purchase or reset. Mirrored in the drill plan's ruling block | Joshua (ruling) + Claude (text) |
+| 2026-09-27 UTC | §A11.2 clarifications (operator, same day): a deliberate operator stop with no fault is an incident for §A11.2 (O-6); the ruling covers the first attended release and any commissioning session in which automation is armed, none defined today (O-7). Applied to the halt/resume amendment by handoff H5 step (a) | Joshua (ruling) + Claude (text) |
