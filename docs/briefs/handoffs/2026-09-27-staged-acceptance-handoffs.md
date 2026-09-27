@@ -442,7 +442,7 @@ In each case return to the coordinator.
 **Evidence retained:** the proposal note and the owner-text diffs, pending acceptance.
 
 **Decision unlocked:**
-- The RC-4/RC-5 assignment, which is a build-entry condition for S5 (ledger 2026-09-27). The implementation and the attestations stay before F1.
+- The RC-4/RC-5 assignment, which is a build-entry condition for S5 (ledger 2026-09-27). The implementation and the attestations stay before F1. *[Corrected 2026-09-27: the implementation stays before F1; the attestations fall due at the RC-5 gates: OF-7 before F1 admission, the full OF-1..OF-7 set at CP-8 (ledger RC-5 entry).]*
 - Later, **CP-8**: provisioning and admission.
 
 **Grants at dispatch (coordinator):** `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `make check` clean.
