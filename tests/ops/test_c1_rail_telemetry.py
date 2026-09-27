@@ -420,6 +420,66 @@ def test_file_ack_notifier_reack_is_idempotent_and_conflicting_reuse_refused(tmp
         notifier.acknowledge(other)
     assert other_path.read_text(encoding="utf-8") == ""
 
+
+def test_file_ack_notifier_writes_longest_accepted_alert_id(tmp_path):
+    """Regression: an accepted 255-byte ack name overflowed in its temp file."""
+    notifier = FileAckNotifier(tmp_path / "alerts.jsonl", tmp_path / "acks")
+    longest = "a" * (255 - len(ACK_SUFFIX))
+    assert len(ack_filename(longest).encode("utf-8")) == 255
+    ack_path = notifier.acknowledge(longest)
+    assert json.loads(ack_path.read_text(encoding="utf-8"))["alert_id"] == longest
+    assert notifier.is_acknowledged(longest)
+    assert [p.name for p in notifier.ack_dir.iterdir()] == [ack_path.name]
+
+    with pytest.raises(ValueError, match="too long"):
+        ack_filename(longest + "a")
+    with pytest.raises(ValueError, match="too long"):
+        notifier.acknowledge(longest + "a")
+
+
+def test_file_ack_notifier_first_ack_survives_concurrent_writer(tmp_path, monkeypatch):
+    """Regression: two acks that both saw the file absent both wrote it, and
+    the later one replaced the first acknowledgment."""
+    notifier = FileAckNotifier(tmp_path / "alerts.jsonl", tmp_path / "acks")
+    alert_id = "SYNTHETIC-REHEARSAL:stale-fact:exec-stale"
+    ack_path = notifier.ack_dir / ack_filename(alert_id)
+    second_checked = threading.Event()
+    first_done = threading.Event()
+    real_is_file = Path.is_file
+    held = []
+
+    def is_file(self):
+        result = real_is_file(self)
+        # Hold the second writer after its first existence check (file
+        # absent) until the first writer's acknowledgment is on disk.
+        if (self == ack_path and threading.current_thread().name == "second"
+                and not held):
+            held.append(result)
+            second_checked.set()
+            assert first_done.wait(10)
+        return result
+
+    monkeypatch.setattr(Path, "is_file", is_file)
+    results: dict[str, object] = {}
+
+    def run(operator: str) -> None:
+        try:
+            results[operator] = notifier.acknowledge(alert_id, operator=operator)
+        except BaseException as exc:  # surfaced by the assertions below
+            results[operator] = exc
+
+    second = threading.Thread(target=run, args=("second",), name="second")
+    second.start()
+    assert second_checked.wait(10)
+    run("first")
+    first_done.set()
+    second.join(10)
+
+    assert held == [False]
+    assert results == {"first": ack_path, "second": ack_path}
+    assert json.loads(ack_path.read_text(encoding="utf-8"))["operator"] == "first"
+    assert [p.name for p in notifier.ack_dir.iterdir()] == [ack_path.name]
+
 # ── 8. assert_no_secrets ─────────────────────────────────────────────────────
 
 def test_assert_no_secrets_rejects_secret_shaped_string_values():
