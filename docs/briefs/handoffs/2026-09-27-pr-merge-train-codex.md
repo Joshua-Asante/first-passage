@@ -55,15 +55,25 @@ Read these, then report in your session before any update or merge. If anything 
 ## 0.5. Frozen design decisions (constraints, not options)
 
 - **D1. The head is re-read, never carried.** Every step that acts on a head (update, merge) uses the `headRefOid` read in the same pass. An update moves the head, so after any successful update the session returns to §3 step 1. It never uses a SHA read before the update.
-- **D2. Codex coverage.** The latest completed Codex review must be on the PR's last **non-merge** commit or later. That review is either the "Codex Review Summary" comment's commit or a "Didn't find any major issues" comment's reviewed commit. A head that differs from the reviewed commit only by merges of `main` passes.
+- **D2. Codex coverage.** The latest completed Codex review must be on the PR's last **non-merge** commit or later. A head that differs from the reviewed commit only by merges of `main` passes. The evidence comes from the PR's **top-level** comments, not the review threads:
+  - the "Codex Review Summary" comment's **Completed** row commit, or
+  - a "Didn't find any major issues" comment's `Reviewed commit`.
+
+  §3 step 4 fetches both, together with the last non-merge commit.
 - **D3. Human reviews block.** A `reviewDecision` of `CHANGES_REQUESTED`, or any human (non-bot) entry in `latestReviews` whose `state` is `CHANGES_REQUESTED`, blocks the PR (§3 step 4).
 - **D4. Default merge authority: per-head operator approval.** When a PR passes §3 steps 3–5, the session presents to the operator the PR number, its full 40-hex head SHA, the green check list and the Codex coverage. It merges with `--match-head-commit <that SHA>` only when the operator approves **that SHA**. Any head change voids the approval, and the session re-presents.
 - **D5. Alternative merge authority.** This applies only if the operator records, in a durable place the coordinator can cite, a merge authority that covers the heads this train produces. The session then cites that record in its report and merges under it. Without such a record, D4 applies. An agent's report that the operator approved something is not an approval.
 - **D6. Order.** #523 merges before #527, and #531 merges last. Otherwise the first PR to go clean merges first.
+- **D7. Everything is fresh at merge.** `--match-head-commit` checks only the head SHA, not checks or reviews. So immediately before merging, **after** any wait for CI or for operator approval, the session re-fetches the head, the checks, the human reviews, the Codex threads and the Codex coverage (§3 steps 1, 3 and 4). It merges only if all still pass on the same head.
 
 ## 1. Outcome and return boundary
 
-**Outcome:** each in-scope PR ends either merged by merge commit under D4 or D5, or blocked with its blocker named. The return is the §6 table, reported to the operator in the session.
+**Outcome:** each in-scope PR ends in one of three states:
+- `MERGED`, by merge commit under D4 or D5;
+- `READY_AWAITING_APPROVAL`: it passes every §3 check at a named head, but the operator has not approved that head;
+- `BLOCKED`, with its blocker named.
+
+The return is the §6 table, reported to the operator in the session.
 
 | PR | Branch | Notes |
 |---|---|---|
@@ -104,12 +114,19 @@ Repository: `Joshua-Asante/first-passage`. `main` requires a PR, the `skills (3.
              nodes{ isResolved comments(first:1){ nodes{ author{login} body } } } } } } }'
      ```
      While `hasNextPage` is true, repeat with `-f after=<endCursor>`.
-   - **Codex coverage (D2).**
+   - **Codex coverage (D2).** Fetch the last non-merge commit and the top-level comments:
+     ```
+     gh api repos/Joshua-Asante/first-passage/pulls/<N>/commits --paginate \
+       --jq '[.[] | select(.parents | length == 1)] | last | .sha'
+     gh api repos/Joshua-Asante/first-passage/issues/<N>/comments --paginate \
+       --jq '.[] | select(.user.login == "chatgpt-codex-connector[bot]") | {updated_at, body}'
+     ```
+     Take the newest "Didn't find any major issues" comment's `Reviewed commit`, or the summary comment's **Completed** row commit. The last non-merge commit must be that commit or one of its ancestors: `gh api repos/Joshua-Asante/first-passage/compare/<last-non-merge>...<reviewed>` returns `status` `identical` or `ahead`. A summary row still **Running** is not coverage.
 5. **Order (D6).**
-6. **Re-read, present, merge.**
-   - Re-read `headRefOid`. If it differs from the head checked in steps 3–4, go back to step 1.
-   - Under D4: present the PR, its full head SHA, the checks and the coverage to the operator, and wait for approval of that SHA.
-   - Then run `gh pr merge <N> --merge --match-head-commit <that SHA>`. Never squash or rebase: cited SHAs must stay reachable. Never enable auto-merge.
+6. **Present, re-check, merge (D4, D7).**
+   - Under D4: present the PR, its full head SHA, the checks and the coverage to the operator, and wait for approval of that SHA. If there is no approval, record the PR as `READY_AWAITING_APPROVAL` and move on.
+   - After approval, and immediately before merging, repeat steps 1, 3 and 4 on the current head. If the head differs from the approved SHA, the approval is void: go back to step 1. If any check or review no longer passes, the PR is blocked.
+   - Then run `gh pr merge <N> --merge --match-head-commit <approved SHA>`. Never squash or rebase: cited SHAs must stay reachable. Never enable auto-merge.
 7. After each merge, go back to step 1 for every remaining PR. You may update every remaining ready PR at once (step 2) so their CI runs in parallel.
 
 ## 4. Verification (falsifier-first)
@@ -117,7 +134,7 @@ Repository: `Joshua-Asante/first-passage`. `main` requires a PR, the `skills (3.
 **H:** the train merges exactly the in-scope PRs whose approved head was green, Codex-covered and free of blocking reviews, in the §0.5 D6 order, and nothing else. **Reject if** any item below is falsified; **accept if** all hold for every merge in the §6 table.
 - **Head binding.** For each merge, the merged head equals the head the operator approved (D4) or that the cited record covers (D5), and equals the head whose checks and reviews were read. *Falsified by* any merge of a head read before an update, or a merge without approval of that exact SHA.
 - **Green.** Every check run on the merged head completed as `pass` or `skipping`. *Falsified by* a merge with a pending, failed or cancelled check.
-- **Reviews.** At merge: no unresolved Codex P1/P2 thread on any page; Codex coverage per D2; no human `CHANGES_REQUESTED`. *Falsified by* any of these present at merge time.
+- **Reviews.** Read after the last wait (D7): no unresolved Codex P1/P2 thread on any page; Codex coverage per D2; no human `CHANGES_REQUESTED`. *Falsified by* any of these present at merge time, or by review state read only before a CI or approval wait.
 - **Scope.** Only §1 PRs were updated or merged, and only by base-branch merge commits. *Falsified by* any other push, edit, comment or merge.
 
 ## 5. Forbidden
@@ -142,8 +159,10 @@ Report to the operator in the session, in this shape:
 | PR | Final state | Merge SHA | Head merged | Approval (D4 SHA or D5 record) | Blocker (if any) |
 |---|---|---|---|---|---|
 
+Final state is `MERGED`, `READY_AWAITING_APPROVAL` or `BLOCKED`. For a PR that is `READY_AWAITING_APPROVAL`, the "Head merged" column gives the full head SHA that passed §3 and is awaiting approval.
+
 - `DONE`: every in-scope PR is merged and §4 holds (RESOLVED).
-- `DONE_WITH_CONCERNS`: §4 holds for every merge, and some PRs are blocked, each named.
+- `DONE_WITH_CONCERNS`: §4 holds for every merge, and some PRs are `READY_AWAITING_APPROVAL` or `BLOCKED`, each named with its head or blocker. The no-approval path ends here.
 - `NEEDS_CONTEXT`: Phase 0 found a mismatch, or an instruction conflicts with this card.
 - `BLOCKED`: nothing can advance; name the blocker. If §4 was violated, the result is FALSIFIED and must be reported first.
 
@@ -157,16 +176,26 @@ Report to the operator in the session, in this shape:
 | Standing instruction treated as merge approval for future heads | D4 per-head approval (ADR rule 2), with D5 for a recorded alternative |
 | GraphQL selected fields on a connection | Step 4 query uses `reviewThreads(first:100){ nodes … pageInfo … }` with pagination |
 
+Second revision (Codex review of `315dfd04`):
+
+| Finding | Change |
+|---|---|
+| Review state read before the CI and approval waits | D7; step 6 re-runs steps 1, 3 and 4 after approval, immediately before merging |
+| No state for a ready but unapproved PR | `READY_AWAITING_APPROVAL` in §1 and §6; `DONE_WITH_CONCERNS` covers it |
+| Codex coverage evidence never fetched | D2 names the top-level comments; step 4 fetches them, the last non-merge commit, and the compare |
+| Audit hooks bypassed the launcher | §10 runs them through `scripts/fp.py` (or `.\fp.ps1`) |
+| `git show` on a merge commit that exists only on the server | §10 reads the parents through the GitHub API |
+
 ## 10. Launch and audit hooks (operator, local Codex session)
 
 Point the session at this card on branch `claude/pr-merge-train-codex-card`. Tell it to run Phase 0 first and report, and to follow §3 exactly. It merges only under §0.5 D4 or D5.
 
 Audit hooks, runnable at any time by the operator or the coordinator:
 ```bash
-# card structure and authority block
-python3 scripts/check_brief.py docs/briefs/handoffs/2026-09-27-pr-merge-train-codex.md
-python3 scripts/check_handoff_authority.py docs/briefs/handoffs/2026-09-27-pr-merge-train-codex.md
-# per merged PR: merge method and merged head (compare with the operator-approved SHA in §6)
+# card structure and authority block, through the operations launcher (AGENTS.md; on Windows use .\fp.ps1 python ...)
+python -I scripts/fp.py python scripts/check_brief.py docs/briefs/handoffs/2026-09-27-pr-merge-train-codex.md
+python -I scripts/fp.py python scripts/check_handoff_authority.py docs/briefs/handoffs/2026-09-27-pr-merge-train-codex.md
+# per merged PR: merged head and merge commit (compare the head with the operator-approved SHA in §6)
 gh pr view <N> -R Joshua-Asante/first-passage --json mergeCommit,headRefOid,mergedAt
-git show --no-patch --format='%H %P' <mergeCommit>   # two parents means a merge commit
+gh api repos/Joshua-Asante/first-passage/commits/<mergeCommit> --jq '.parents | length'   # 2 means a merge commit
 ```
