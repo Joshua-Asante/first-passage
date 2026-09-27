@@ -290,3 +290,45 @@ No finding was rejected. The Status line is unchanged: PREPARED, not dispatched.
 - **Q4:** resolved by the §5 addendum entry. It is no longer a dispatch precondition.
 
 **The return must still separate** what is verified synthetically from what is owed: the real producer, route integration and the ordinary-unknown halt (T09/TB-I3). A synthetic result never marks the fence obligation resolved.
+
+---
+
+## Coordinator acceptance of the return (2026-09-27)
+
+**ACCEPTED: checkpoints (F) and (R), synthetic scope.** The return is [PR #522](https://github.com/Joshua-Asante/first-passage/pull/522), head `9e18d85` on `claude/h4-fence-classification`, cut from `origin/main` `5ad04cf`. Worker status: `DONE_WITH_CONCERNS`. The operator merges.
+
+**Coordinator re-verification (clean detached worktree, launcher with the scratchpad operations environment, Python 3.11):**
+- **Scope.** The diff holds only §1 files: `book_account_owner.py`, `book_takeover_owner.py`, `qualification/replay.py`, the new `test_book_fence_classification.py` and `test_replay.py`. `book_protection_owner.py` is unchanged, and its `:492` loosening-amend check calls the reclassified `_ordinary_unknown_orders_db`. `_unresolved_attempt_rows` is not narrowed.
+- **Results at `18b8b608`:**
+  - the new and changed nodes: 116 passed;
+  - the §6 related owner suites plus `tb_s3_cases/`: 725 passed, 6 skipped;
+  - each record completed, exit 0, source stable.
+- **Results at `9e18d85`:** the new and changed nodes, 116 passed.
+- **`tests/ops/qualification/`:** the failing set is identical on H4 and on unmodified `origin/main` in this environment (29 failing or erroring nodes by the same listing). The cause is the absent `cryptography` package. PR #522's GitHub checks completed with no failure on `18b8b608`, including the Linux qualification jobs that do exercise the signing-gated modules. On `9e18d85`, a comments-only change, 9 of 10 checks had passed at 15:04 UTC: the Qualification S2 supervision, both Qualification execution boundary jobs, `pytest (3.11)`, `build (3.11)`, `daemon`, `listener`, `skills (3.12)` and semgrep. `qualification-windows` was still running. It is not a required merge check (AGENTS.md, *Gate composition authority*).
+- **Cross-PR interaction.** H5b's rehearsal module ([PR #521](https://github.com/Joshua-Asante/first-passage/pull/521) at `32e0863`) run against H4's code: 14 passed, 1 xfailed. The S1 CC-3 pin still XFAILs, so H4 does not change the ordinary-unknown behavior.
+- Neither PR conflicts with `origin/main` after #519.
+
+**Review round.** One fix, in `9e18d85`, comments only. After #519 merged its own §59 Ruling 6 (L1, 2026-09-26), the ruling this card implements became Ruling 7 on PR #520. The six code and test citations now read "Ruling 7(b)" and "Rulings 6 and 7(a)". The PR title and body were updated to match. No logic changed.
+
+**What the return establishes (synthetic / replay engineering only):**
+- The owner classifies entry and add requests into states (i)–(iv) as Ruling 7(b) words it, with the one-bar stale boundary inclusive (case 11).
+- Only (ii) and (iii) fence admission, loosening amends and the takeover.
+- Takeover quiescence ignores an unrelated leg's unfenced entry or add.
+- Refreshed evidence never restores permission after an incident halt (case 9).
+- The qualification replay no longer cancels ORB's base entry after one bar, and it matches the emulator on the parity fixtures. The one-bar cancel still applies to every other resting entry or add (the Q3 default).
+
+**Still owed, not resolved here:**
+- the real order-level evidence producer (T09), including a durable acquisition cursor;
+- route integration;
+- the ordinary-unknown halt (CC-3; T09/TB-I3);
+- the T09 outcome classifier;
+- the E2/E3 quarantine or halt that case 4 found unimplemented.
+
+The fence obligation is **not** resolved until those are accepted. Also still open: Q1 and Q2, positive lookup (held), and the same-leg question for the takeover's own leg.
+
+**For the integrated L1 change:**
+- Coordinator acceptance of (R) is not the operator acceptance that §59 Ruling 6's Return requires. The integrated change still returns to the operator before edition freeze.
+- The rail AC-3 market-add correction that Ruling 6 authorizes for preparation is still owed with it (Ruling 7, *Relation to Ruling 6*).
+- The replay change alters the `replay_kernel` freeze-inventory module (`trust_domain.py:142`). Any later S2/S4 Linux refresh is a coordinator dispatch decision.
+
+**Not granted:** a merge, T09 dispatch, route or account traffic, a drill, freeze, E1 dispatch, deployment, arm or GO.
