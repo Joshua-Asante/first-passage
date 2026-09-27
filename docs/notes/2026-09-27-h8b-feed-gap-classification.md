@@ -40,7 +40,7 @@ Private artifacts (uncommitted; each script asserts every input digest before it
 | `trace_omitted_slot.py` (synthetic trace, §5) | `5ac0fdee9a6951750d0b5d5b21f18ac0c9d5a99248e6ac8dce60e763f2862669` |
 | `MANIFEST.json` (hashes, sizes, invocations, interpreters) | `8d27f698f53e656b52d7d8a891d28c9a8db788448d4101a83d5281610e7b51d2` |
 
-**Retention: OWED.** The artifacts are in session scratch space. The intended durable location is a sibling of `step3-coverage/` in the operator's private directory. The session's worktree-isolation hook refuses writes to the primary checkout, so moving them is the operator's act. They are not durable until that is done.
+**Retention: DONE 2026-09-27.** The operator copied the artifacts to the ignored private directory `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/inputs/private_overrides/op1/2026-09-14-seven/h8b-gap-classification/`, a sibling of `step3-coverage/`. Every file was then checked against `MANIFEST.json` for hash and size. The session's worktree-isolation hook refuses writes to the primary checkout, so the copy was the operator's act.
 
 ## 3. Classification rules (read at `875ecf2`, not inferred)
 
@@ -162,7 +162,6 @@ This is synthetic evidence about consumer behavior. It says nothing about live a
 - **Holiday classification.** It uses the D19 calendar, which is secondary provenance accepted for date membership only. All 170 holiday residual intervals land on its 65 non-`NORMAL` dates, and none land on its 20 `NORMAL`-listed dates. No primary exchange source was read.
 - **Live-provider behavior.** The panels are one charting platform's continuous series. They say nothing about how a live provider behaves (Q8 in note §5).
 - **The 6J boundary.** The 6J panel starts 23 hours later than the others. That remains the Step 3 boundary obligation; it is not a gap.
-- **Private-artifact retention** (§2): OWED.
 
 ## 8. Verification and revision
 
@@ -174,7 +173,7 @@ This is synthetic evidence about consumer behavior. It says nothing about live a
 - `.\fp.ps1 check`: see the PR.
 
 **Revision, 2026-09-27 (operator review):**
-- Retention is recorded as OWED, with full hashes and a manifest.
+- Full hashes and a manifest were added. Retention was completed by the operator's copy, verified against the manifest (§2).
 - The denominator is reconciled exactly, and "about 1 in 990" is replaced by one observed affected session.
 - "No quiet slots" is narrowed to what was observed. The cause of the omission is stated as unknown.
 - The halt claim is restated with its conditions, backed by a synthetic trace. `feed-silence` fires first under the loop, which corrects the earlier `barrier-expired` claim.
