@@ -369,6 +369,8 @@ These directions do not release the hold. The coordinator may propose release on
 
 **The immediate S5 blocker is corrected owner text and a defensible Part A resource envelope.**
 
+*Operator direction 2026-09-27 (owner: the [execution-slices ledger entry](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-direction--s5-build-entry-separated-from-checkpoint-c3-acceptance-2026-09-27)):* these conditions now divide into build entry, Checkpoint C3/acceptance and before-F1 stages. RC-3 splits into RC-3a, a measurement of the existing engine that sets a provisional ceiling at build entry, and RC-3b, the adapter-specific measurement at C3. RC-4/RC-5 are proposed as F1-entry conditions. Where this table differs, the ledger entry governs.
+
 The coordinator may propose releasing the S5 hold only when all of these hold. The proposal goes to the operator; only an operator ruling, recorded as a new entry under the [S5 hold ledger entry](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--s5-freeze-held-2026-09-25), releases the hold.
 
 | # | Condition | Evidence the proposal cites |
