@@ -105,7 +105,7 @@ c10c1d13b5870f45e8a00e89a14be851bf654358c3b728142198f6082bbcdba4  recovery/pr428
 
 # H1(b) #526 coordinator verification records (2026-09-27), pinned by the H1 row of
 # docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md. They lived in the coordinating cloud
-# session's worktree at 27df508f; archived in first-passage-archive (41eab925), with the package of both directories.
+# session's worktree at 27df508f; archived in first-passage-archive (41eab925, merged at 0a38b0f3), with the package of both directories.
 3148c330b5f8c81ba08f28dec0d8b60382a5028be924b5fd91ae44063414da7f  .cache/fp-verification/20260927T180621Z-71bad46c8b99/record.json
 c36bb4c4a09dbf4c1f6be6d2fec05e3ba75bf2a0f87f681be7c4168ee55aca79  .cache/fp-verification/20260927T180630Z-2534fb8215cf/record.json
 45cd25db6031e259b11bc272c8ad9bb98fbc1e3741507f8ec0f5138057950823  h1b-526-verification-evidence-2026-09-27.tar.gz
