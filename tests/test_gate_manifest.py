@@ -297,6 +297,7 @@ def test_sessions_queue_bind_reaches_each_additional_consumed_file(
         "docs/briefs/programs/2026-10-01-card-with-authority-block.md",
         "scripts/check_brief.py",
         "scripts/check_handoff_brief_form.py",
+        "scripts/handoff_brief_form_grandfathered.txt",
         "scripts/check_handoff_authority.py",
         ".claude/skills/brief-authoring/scripts/brief_checks.py",
     ],

@@ -120,8 +120,8 @@ about which vendor runs the session, so all four survive the retirement unchange
 - A handoff brief under `docs/briefs/**` passing `check_brief.py`. Four 2026-09-27 files that were
   dispatched, or used for dispatch, without passing it are exempted by a dated ruling as recorded
   deviations, not restructured after the build. Since that ruling the `handoff-brief-form` gate
-  enforces this item on cards dated 2026-09-27 or later and on any card with an authority block
-  ([Addendum 2026-09-27](#addendum-2026-09-27)).
+  enforces this item on every card under `docs/briefs/handoffs/` except the listed historical
+  ones, and on any card with an authority block ([Addendum 2026-09-27](#addendum-2026-09-27)).
 - §0 Phase-0 reads with a **read-report-before-code** requirement and a `NEEDS_CONTEXT` bounce
   on any contradiction; the worker runs the [`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md)
   checklist as that Phase 0.
@@ -297,7 +297,7 @@ Rules:
 | Act | Enforcement point | Status 2026-09-25 |
 |---|---|---|
 | card grants | `check_handoff_authority.py` (`handoff-authority` gate): binds a card's grants to the seat the card **declares** and never binds that seat to the executor; a worker card must name its parent; parents must be inside the repository, are checked recursively, and a cycle is refused; a parent without a block narrows nothing beyond the seat; any card granting `worktree.write` or `research.run` names its acceptance tests whatever its seat ([2026-09-26b](#addendum-2026-09-26b)) | enforced for cards with a block; seat-to-executor binding is the coordinator's pre-dispatch read plus the executive review (human, not code) |
-| card form (item 1) | `check_handoff_brief_form.py` (`handoff-brief-form` gate, pre-commit when a brief, the checker or its engine is staged; required CI `skills (3.12)` via `--tier check`): runs `check_brief.py` unchanged on every card under `docs/briefs/handoffs/` dated 2026-09-27 or later or undated, and on any `docs/briefs/**` card with an authority block; the four files of the [2026-09-27 ruling](#addendum-2026-09-27) are exempt by name | enforced from 2026-09-27 for cards in scope; earlier cards are not retrofitted (item 7's precedent), so item 1 binds them only through the coordinator's pre-dispatch read |
+| card form (item 1) | `check_handoff_brief_form.py` (`handoff-brief-form` gate, pre-commit when a brief, the checker or its engine is staged; required CI `skills (3.12)` via `--tier check`): requires `check_brief.py`'s `RESULT: well-formed` on every card under `docs/briefs/handoffs/` except the 74 historical cards listed in `scripts/handoff_brief_form_grandfathered.txt`, and on any `docs/briefs/**` card with an authority block; a card whose staged and unstaged copies differ fails; the four files of the [2026-09-27 ruling](#addendum-2026-09-27) are exempt by name | enforced from 2026-09-27 for cards in scope; earlier cards are not retrofitted (item 7's precedent), so item 1 binds them only through the coordinator's pre-dispatch read |
 | merge | the operator merges on GitHub; the ruleset makes every change to `main` a PR with a green strict `skills (3.12)`; best effort: [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges in the forms it recognises (MCP tool; `gh pr merge` or a `gh api` merge from the Bash or PowerShell tool), only when the call pins the head SHA, and denies the unpinned forms it recognises | **not enforced server-side against an agent:** the ruleset does not stop a write credential from merging a green PR, so the limit is the operator not giving an agent a merge-capable credential (operator-held); the hook is a best-effort prompt for Claude Code only. **That limit does not hold for GLM workers today:** they run as the operator's user with the operator's `gh` credential; isolation ruled 2026-09-26, host change **OWED** ([2026-09-26b](#addendum-2026-09-26b)) |
 | auto-merge | the repository setting `allow_auto_merge: false` (GitHub refuses to enable auto-merge on any PR); CI holds no write credential (2026-08-29 addendum #1 bar); best effort: the hook denies the auto-merge forms it recognises | **enforced server-side** by the repository setting (verified read-only 2026-09-25); the setting itself is operator-held |
 | push to `main` | GitHub ruleset 21071355 `main-protection` on `refs/heads/main`: PR required, `skills (3.12)` required and strict, non-fast-forward and deletion blocked, empty bypass list; best effort: the hook denies the `git push` forms it recognises whose destination is `main` (named, bulk, matching `:` or glob) | **enforced server-side** for every credential (bypass list empty, `current_user_can_bypass: never`, verified read-only 2026-09-25) |
@@ -842,19 +842,27 @@ and changes no grant: the three worker cards' authority blocks are untouched and
 *Enforcement.* A `check` gate, `handoff-brief-form`
 ([`scripts/check_handoff_brief_form.py`](../../scripts/check_handoff_brief_form.py), wired in
 [`scripts/gates.yml`](../../scripts/gates.yml)), runs `check_brief.py` on every card in scope, with
-that script's own type inference and verdict; it adds scope, not rules. It runs at pre-commit
-whenever a brief, the checker, its engine or the block reader is staged, and in the required
+that script's own type inference. Only `RESULT: well-formed` passes: the zero-exit `NOT CHECKED`
+and `DELEGATED` outcomes validate nothing, so they fail. It adds scope, not rules. It runs at
+pre-commit whenever a brief, the checker, its engine, the block reader or the historical list is
+staged, and in the required
 `skills (3.12)` check on every PR. A card is committed before it is dispatched (committed-handoff
 rule), so a malformed card now fails before dispatch. The scope:
-- every card directly under `docs/briefs/handoffs/` whose name is dated 2026-09-27 or later or
-  carries no date (`README.md` excepted);
+- every card directly under `docs/briefs/handoffs/` (`README.md` excepted) except the historical
+  cards: the 74 files dated before 2026-09-27 that were on `main` at `38e62ee`, listed by name in
+  [`scripts/handoff_brief_form_grandfathered.txt`](../../scripts/handoff_brief_form_grandfathered.txt).
+  Because the list is by name, a new card with a backdated name is still checked;
 - any `docs/briefs/**` card carrying a `yaml authority` block, read with
   `check_handoff_authority.py`'s block reader;
 - minus the four files exempted above, named in the script and pinned to this table by
   `tests/scripts/test_check_handoff_brief_form.py`. An exemption naming a missing file fails
   the gate, so a renamed exempt card loses its exemption.
 
-Earlier cards are **not retrofitted**, following item 7's precedent ("historical cards are not
+In a git checkout, a card with both staged and unstaged changes fails, because pre-commit reads
+the working copy while the commit records the staged one. These last three rules came from the
+Codex review of #532 at `35e91ac`.
+
+The historical cards are **not retrofitted**, following item 7's precedent ("historical cards are not
 retrofitted"). The gate does not check them, and this is not an exemption: item 1 still binds any
 of them that is dispatched, through the coordinator's pre-dispatch read. Run against `ed3e476`,
 before the M2 restructure, the gate exits 1 and names only the M2 card; on this change it exits 0.

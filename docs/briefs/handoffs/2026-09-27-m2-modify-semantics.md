@@ -6,7 +6,7 @@
 
 **Precedent.** This card follows the M step for C-a ([close-semantics handoff](2026-09-26-close-semantics-c-a.md); [return](../../notes/2026-09-26-close-semantics-c-a.md), with its 2026-09-27 addendum). The method, evidence rules and output shape are the same, applied to modify instead of close.
 
-**Form.** Restructured 2026-09-27, before dispatch, into the numbered handoff sections that `scripts/check_brief.py` checks ([surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md#decision), handoff contract item 1; [ruling 2026-09-27](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-27)). Scope, grants and acceptance are unchanged. Every earlier section's text moves verbatim under a numbered heading: Inputs into §0, Routing to §0.5 and Output into §6. Only section references change (§Routing is now §0.5; §Dispatch record is now §9). The lead of §0, §4, the status lines of §6 and §10 are new, and each restates a requirement this card or the ADR already makes. The earlier text is at `git show ed3e476:docs/briefs/handoffs/2026-09-27-m2-modify-semantics.md`. The premise check (§9) compares the card at the dispatch revision with this text, so the frozen SHA must be a commit that carries this restructure.
+**Form.** Restructured 2026-09-27, before dispatch, into the numbered handoff sections that `scripts/check_brief.py` checks ([surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md#decision), handoff contract item 1; [ruling 2026-09-27](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-27)). Scope, grants and acceptance are unchanged. Every earlier section's text moves verbatim under a numbered heading: Inputs into §0, Routing to §0.5 and Output into §6. Only section references change (§Routing is now §0.5; §Dispatch record is now §9). The lead of §0, §4, the status lines of §6, §10 and the last §9 line are new, and each restates a requirement this card or the ADR already makes. The earlier text is at `git show ed3e476:docs/briefs/handoffs/2026-09-27-m2-modify-semantics.md`. The premise check (§9) compares the card at the dispatch revision with this text, so the frozen SHA must be a commit that carries this restructure.
 
 ## 0. Phase 0: read first, then report before any research
 
@@ -151,6 +151,7 @@ If Q1 is not `DOCUMENTED`, the GC-2b consequence (Striker and Aegis: OPERATOR DE
   Any failure is a stop.
 - **Sequencing (operator guidance on PR #520, 2026-09-27):** land this card through the operator's merge of #520, then dispatch locally with the frozen SHA. M2 is not a prerequisite for CP-1a. It supports X-2's preparation and does not authorize X-2's execution; X-2's other prerequisites remain.
 - **2026-09-27:** carded on the operator's instruction "dispatch the M2". Execution needs a local session in the primary checkout (§0.5). The coordinating cloud session cannot run it. **Owed:** the operator merges #520, then starts a local session in the primary checkout on the frozen revision. Until then M2 is **not executing**.
+- **2026-09-27 (restructure, PR #532):** #520 has merged, but it carries the pre-restructure text. **Owed now, superseding the line above:** the operator merges #532, then starts a local session in the primary checkout on a frozen revision that descends from #532's merge commit. A revision without the restructure fails the premise check (the card at the dispatch revision must match this text).
 
 ## 10. Audit hooks (runnable)
 
@@ -164,9 +165,17 @@ git merge-base --is-ancestor <dispatch-sha> HEAD && echo "HEAD descends from the
 git diff --exit-code <dispatch-sha> HEAD -- docs/briefs/handoffs/2026-09-27-m2-modify-semantics.md
 # The drill plan's §2.2 at the dispatch revision; compare its Questions row with §2 of this card.
 git show <dispatch-sha>:docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md | sed -n '/^### 2\.2 /,/^### 2\.3 /p'
-# Close-research captures: SHA256SUMS.all's own SHA-256 is recorded as 8dd20292daa98f0fee17f3c0e0c9f2585696eee7303791dc61bf8a883b70dbe6.
-(cd "<primary>/local_artifacts/crosstrade-close-research-2026-09-27" && sha256sum SHA256SUMS.all && sha256sum -c --quiet SHA256SUMS.all)
-# REST-assessment captures: MANIFEST.tsv's SHA-256 is recorded with the prefix d069ae7e; then run
-# sha256sum -c on whichever index in the directory is in sha256sum format (the premise check's "or the equivalent").
-(cd "<primary>/local_artifacts/t08-rest-route-assessment-2026-09-25" && sha256sum MANIFEST.tsv && ls)
+# Close-research captures: pin the index to its recorded digest, then verify every capture against it.
+(cd "<primary>/local_artifacts/crosstrade-close-research-2026-09-27" \
+  && echo "8dd20292daa98f0fee17f3c0e0c9f2585696eee7303791dc61bf8a883b70dbe6  SHA256SUMS.all" | sha256sum -c - \
+  && sha256sum -c --quiet SHA256SUMS.all)
+# REST-assessment captures: only digest prefixes are recorded (REST assessment, Evidence directory row):
+# MANIFEST.tsv d069ae7e, EVIDENCE_INDEX.sha256 c0fd2c95. Compare both; a mismatch is a stop.
+(cd "<primary>/local_artifacts/t08-rest-route-assessment-2026-09-25" \
+  && test "$(sha256sum MANIFEST.tsv | cut -c1-8)" = d069ae7e \
+  && test "$(sha256sum EVIDENCE_INDEX.sha256 | cut -c1-8)" = c0fd2c95 && echo "REST indexes pinned")
+# Then verify the captures against the pinned index. The operator's 2026-09-26 spot-check recorded
+# that 5 of its 227 entries are notes, not file paths, and cannot pass a plain sha256sum -c. Those
+# 5 are the only failures allowed; any other failed or missing entry is a stop.
+(cd "<primary>/local_artifacts/t08-rest-route-assessment-2026-09-25" && sha256sum -c --quiet EVIDENCE_INDEX.sha256)
 ```

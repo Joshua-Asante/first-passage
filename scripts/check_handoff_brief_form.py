@@ -7,19 +7,26 @@ contract item 1 ("A handoff brief under `docs/briefs/**` passing `check_brief.py
 readied MALFORMED; Addendum 2026-09-27 records the finding, the operator's exemption of four
 files, and this gate.
 
-A card is in scope when any of these holds:
+A card is in scope when either holds:
 
-  * it sits directly under `docs/briefs/handoffs/` and its name starts with a date on or
-    after CUTOFF, or carries no date prefix at all (`README.md` excepted);
+  * it sits directly under `docs/briefs/handoffs/` (`README.md` excepted) and is not a
+    historical card named in GRANDFATHERED_FILE;
   * it is any `docs/briefs/**/*.md` carrying a `yaml authority` block (a worker card under
     item 7), read with `check_handoff_authority.py`'s own block reader.
 
-Cards dated before CUTOFF are not retrofitted, following item 7's precedent ("historical
-cards are not retrofitted"). The gate does not check them; item 1 still binds any of them
-that is dispatched. The files in EXEMPT are the ruling's four, exempt by name only.
+The historical cards are the files dated before CUTOFF that were on `main` when this gate
+landed. They are listed by name, so a new card given an earlier date is still checked. They
+are not retrofitted, following item 7's precedent ("historical cards are not retrofitted");
+item 1 still binds any of them that is dispatched. The files in EXEMPT are the ruling's four,
+exempt by name only.
 
-An in-scope card passes exactly when `python scripts/check_brief.py <card>` exits 0, with
-the same type inference and verdict: this script adds scope, never rules.
+An in-scope card passes only when `python scripts/check_brief.py <card>` prints
+`RESULT: well-formed`. That script's type inference is used unchanged, but its zero-exit
+`NOT CHECKED` and `DELEGATED` outcomes (light-tier, unmodeled or closure types) do not pass:
+they validate nothing. This script adds scope, never rules.
+
+In a git checkout, a card with both staged and unstaged changes fails: pre-commit would
+check the working-tree copy while the commit records the staged one.
 
 Exit codes: 0 clean · 1 a card fails, or an exemption names no file.
 """
@@ -30,6 +37,7 @@ import contextlib
 import importlib.util
 import io
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import NamedTuple
@@ -38,8 +46,10 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SCAN_ROOT = Path("docs") / "briefs"
 HANDOFFS = SCAN_ROOT / "handoffs"
 
-# The ruling that added this gate; cards dated earlier are not retrofitted.
+# The ruling that added this gate; historical cards dated earlier are not retrofitted.
 CUTOFF = "2026-09-27"
+GRANDFATHERED_FILE = REPO_ROOT / "scripts" / "handoff_brief_form_grandfathered.txt"
+_WELL_FORMED = "RESULT: well-formed"
 
 # Exempt by the operator's dated ruling (ADR Addendum 2026-09-27, its *Ruling* table), as
 # recorded deviations: dispatched or used for dispatch without passing item 1.
@@ -83,14 +93,36 @@ def _has_authority_block(text: str) -> bool:
     return bool(authority.extract_blocks(text) or authority.stray_fences(text))
 
 
-def in_scope(rel: Path, text: str) -> bool:
+def load_grandfathered(path: Path = GRANDFATHERED_FILE) -> frozenset[str]:
+    """Names of the historical cards; every one must be dated before CUTOFF."""
+    names = frozenset(line.strip() for line in path.read_text(encoding="utf-8").splitlines()
+                      if line.strip() and not line.lstrip().startswith("#"))
+    for name in names:
+        dated = _DATE_PREFIX.match(name)
+        if dated is None or dated.group(1) >= CUTOFF:
+            raise ValueError(f"{path.name}: {name!r} is not a card dated before {CUTOFF}")
+    return names
+
+
+def in_scope(rel: Path, text: str, grandfathered: frozenset[str]) -> bool:
     """Whether the card at repository-relative `rel` is subject to this gate."""
     if _has_authority_block(text):
         return True
     if rel.parent != HANDOFFS or rel.name == "README.md":
         return False
-    dated = _DATE_PREFIX.match(rel.name)
-    return dated is None or dated.group(1) >= CUTOFF
+    return rel.name not in grandfathered
+
+
+def _partially_staged(root: Path) -> set[str]:
+    """Paths under the scan root with both staged and unstaged changes (empty outside git)."""
+    def names(*args: str) -> set[str] | None:
+        proc = subprocess.run(["git", "-C", str(root), "diff", "--name-only", *args, "--",
+                               SCAN_ROOT.as_posix()], capture_output=True, text=True, check=False)
+        return set(proc.stdout.split()) if proc.returncode == 0 else None
+    staged, unstaged = names("--cached"), names()
+    if staged is None or unstaged is None:
+        return set()
+    return staged & unstaged
 
 
 def _check_brief_verdict(path: Path) -> tuple[int, str]:
@@ -101,10 +133,14 @@ def _check_brief_verdict(path: Path) -> tuple[int, str]:
     return code, out.getvalue()
 
 
-def scan(root: Path = REPO_ROOT, exempt: frozenset[str] = EXEMPT) -> Result:
+def scan(root: Path = REPO_ROOT, exempt: frozenset[str] = EXEMPT,
+         grandfathered: frozenset[str] | None = None) -> Result:
     """Check every in-scope card under `root`; an exemption naming no file is a failure."""
+    if grandfathered is None:
+        grandfathered = load_grandfathered()
     failures: list[Failure] = []
     checked = exempted = 0
+    partial = _partially_staged(root)
     for rel_str in sorted(exempt):
         if not (root / rel_str).is_file():
             failures.append(Failure(rel_str, "exempt path not found: remove it from EXEMPT "
@@ -113,14 +149,18 @@ def scan(root: Path = REPO_ROOT, exempt: frozenset[str] = EXEMPT) -> Result:
         rel = path.relative_to(root)
         rel_str = rel.as_posix()
         text = path.read_text(encoding="utf-8", errors="replace")
-        if not in_scope(rel, text):
+        if not in_scope(rel, text, grandfathered):
             continue
         if rel_str in exempt:
             exempted += 1
             continue
         checked += 1
+        if rel_str in partial:
+            failures.append(Failure(rel_str, "staged and unstaged changes differ: stage the "
+                                             "whole card, or stash the rest, then re-run"))
+            continue
         code, report = _check_brief_verdict(path)
-        if code != 0:
+        if code != 0 or _WELL_FORMED not in report:
             failures.append(Failure(rel_str, report))
     return Result(failures, checked, exempted)
 

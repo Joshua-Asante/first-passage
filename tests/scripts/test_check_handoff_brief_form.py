@@ -68,8 +68,8 @@ def _tree(tmp_path: Path, files: dict[str, str]) -> Path:
     return tmp_path
 
 
-def _run(root: Path, exempt=frozenset()):
-    return gate.scan(root, exempt=exempt)
+def _run(root: Path, exempt=frozenset(), grandfathered=frozenset()):
+    return gate.scan(root, exempt=exempt, grandfathered=grandfathered)
 
 
 def test_well_formed_card_on_or_after_cutoff_passes(tmp_path):
@@ -92,12 +92,55 @@ def test_malformed_card_on_or_after_cutoff_fails(tmp_path, name):
     assert "RESULT: MALFORMED" in result.failures[0].report
 
 
-def test_malformed_card_before_cutoff_is_not_checked(tmp_path):
-    """Violated if the gate retrofits a card dated before the cutoff (item 7's precedent)."""
+def test_grandfathered_historical_card_is_not_checked(tmp_path):
+    """Violated if the gate retrofits a historical card on the grandfathered list
+    (item 7's precedent)."""
     root = _tree(tmp_path, {"docs/briefs/handoffs/2026-09-26-example.md": MALFORMED})
-    result = _run(root)
+    result = _run(root, grandfathered=frozenset({"2026-09-26-example.md"}))
     assert result.failures == []
     assert result.checked == 0
+
+
+def test_new_card_with_a_backdated_name_is_checked(tmp_path):
+    """Violated if a new card escapes the gate by carrying a pre-cutoff date in its name
+    (Codex P2 on #532): only listed historical cards are grandfathered."""
+    rel = "docs/briefs/handoffs/2026-09-26-new.md"
+    root = _tree(tmp_path, {rel: MALFORMED})
+    result = _run(root, grandfathered=frozenset({"2026-09-26-other.md"}))
+    assert [f.path for f in result.failures] == [rel]
+
+
+def test_not_checked_outcome_fails(tmp_path):
+    """Violated if a card that check_brief.py reports NOT CHECKED (exit 0) passes the gate
+    (Codex P1 on #532): only RESULT: well-formed passes."""
+    rel = "docs/briefs/handoffs/2026-09-28-example.md"
+    root = _tree(tmp_path, {rel: MALFORMED.replace("**Status:**", "**Tier:** light\n**Status:**")})
+    result = _run(root)
+    assert [f.path for f in result.failures] == [rel]
+    assert "NOT CHECKED" in result.failures[0].report
+
+
+def test_partially_staged_card_fails(tmp_path):
+    """Violated if a card whose staged copy differs from its working copy passes: the
+    commit records the staged bytes, not the ones checked (Codex P2 on #532)."""
+    rel = "docs/briefs/handoffs/2026-09-28-example.md"
+    root = _tree(tmp_path, {rel: MALFORMED})
+    subprocess.run(["git", "init", "-q", str(root)], check=True)
+    subprocess.run(["git", "-C", str(root), "add", rel], check=True)
+    (root / rel).write_text(WELL_FORMED.read_text(encoding="utf-8"), encoding="utf-8")
+    result = _run(root)
+    assert [f.path for f in result.failures] == [rel]
+    assert "staged and unstaged" in result.failures[0].report
+    subprocess.run(["git", "-C", str(root), "add", rel], check=True)
+    assert _run(root).failures == []
+
+
+def test_grandfathered_list_holds_only_historical_cards():
+    """Violated if the list names a card dated on or after the cutoff, or grows past the
+    74 historical cards on main when the gate landed."""
+    names = gate.load_grandfathered()
+    assert 0 < len(names) <= 74
+    assert all(name < gate.CUTOFF for name in names)
 
 
 def test_undated_card_is_checked_but_readme_is_not(tmp_path):
