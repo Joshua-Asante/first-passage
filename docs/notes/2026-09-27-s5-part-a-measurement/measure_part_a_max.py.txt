@@ -172,15 +172,19 @@ def _swap_total_kb():
 
 
 def _stats(values):
-    values = [v for v in values if v is not None]
-    if not values:
+    """max, median, min and spread (r2 §6.2), plus how many values were absent."""
+    present = [v for v in values if v is not None]
+    if not present:
         return None
-    return {'n': len(values), 'max': max(values), 'median': statistics.median(values), 'min': min(values)}
+    return {'n': len(present), 'missing': len(values) - len(present), 'max': max(present),
+            'median': statistics.median(present), 'min': min(present), 'spread': _spread(values)}
 
 
 def _spread(values):
-    values = [v for v in values if v is not None]
-    if len(values) < 2 or min(values) <= 0:
+    """max / min, or None when it cannot be shown: fewer than two values, a
+    non-positive value, or any absent value (never a spread over a subset)."""
+    values = list(values)
+    if len(values) < 2 or any(v is None for v in values) or min(values) <= 0:
         return None
     return max(values) / min(values)
 
@@ -704,6 +708,7 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
     wall = dict(row.get('wall') or {'outer': None, 'setup_excluded': None, 'workload': None})
     mem = dict(row.get('memory') or {})
     exit_code, result, timed_out, unit_cpu = row.get('exit_status'), None, False, None
+    poll_bound = None
     systemd_peak = systemd_swap_peak = None
     if unit_values is not None:
         unit_cpu = _unit_number(unit_values, 'CPUUsageNSec')
@@ -714,6 +719,7 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
         result = unit_values.get('Result')
         # Fail closed: only an explicit HarnessPollTimeout=no shows the poll did not time out.
         timed_out = unit_values.get('HarnessPollTimeout') != 'no' or result == 'timeout'
+        poll_bound = _int_or_none(unit_values.get('HarnessPollBoundS'))
         if unit_values.get('HarnessNotStarted'):
             # The workflow's loop deadline passed before this repeat started (I-6: no row).
             result = 'not-started: ' + unit_values['HarnessNotStarted']
@@ -722,6 +728,7 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
         if start and end and end > start:
             wall['outer'] = (end - start) / 1e6
     if launcher_unit is not None:
+        poll_bound = 'launcher'   # the bundle's timeout_s is checked for the whole bundle
         unit_cpu = launcher_unit.get('job_cpu_s')
         exit_code = launcher_unit.get('exit_code')
         timed_out = launcher_unit.get('timed_out') is not False   # unknown counts as timed out
@@ -778,7 +785,7 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
         'initial_prefix_sha256': row.get('initial_prefix_sha256'), 'final_sha256': row.get('final_sha256'),
         'fsync_count': row.get('fsync_count'), 'assertions': row.get('assertions'),
         'exit_code': exit_code, 'row_exit_status': row.get('exit_status'), 'result': result,
-        'timed_out': timed_out, 'completed': completed, 'unit_present': unit_values is not None
+        'timed_out': timed_out, 'completed': completed, 'poll_bound_s': poll_bound, 'unit_present': unit_values is not None
         or launcher_unit is not None, 'row_flags': {k: row.get(k) for k in (
             'stage', 'arm', 'repeat', 'cold', 'instrumented', 'dry_run')} if row else None,
         'row_present': bool(row), 'error': row.get('error') if row else (row_error or 'repeat row missing'),
@@ -860,6 +867,12 @@ def _arm_summary(reps):
                             'warm': _stats([r['wall']['workload'] for r in warm])},
         'warm_spread': _spread(warm_cpu),
         'warm_spread_in_process': _spread([r['cpu']['workload'] for r in warm]),
+        # r2 §6.2: the spread is reported with and without the cold repeat.
+        'spread_all': _spread(cpu),
+        'spread_all_in_process': _spread([r['cpu']['workload'] for r in timed]),
+        'memory_bytes': {'all': _stats([r['memory']['memory_bytes'] for r in timed]),
+                         'warm': _stats([r['memory']['memory_bytes'] for r in warm])},
+        'cpu_inputs_complete': bool(timed) and None not in cpu,
         'cold_over_warm_median': (cold_cpu / warm_median) if cold_cpu and warm_median else None,
         'memory_max_bytes_complete_only': max([r['memory']['memory_bytes'] for r in timed
                                                if r['memory']['complete']], default=None),
@@ -884,12 +897,21 @@ def _ceiling_inputs_missing(rep):
                                      ('predicted_seconds (P)', rep['predicted_seconds'])) if value is None]
 
 
-def _ceiling_inputs(summary, estimates):
-    """r2 §9 PA-1/PA-2 need Ĉ, Ŵ and P̂ (PA-3's M̂ is gated by memory_feasibility).
-    Returns why the forced-arm inputs are incomplete; empty when complete."""
+def _ceiling_inputs(summaries, estimates):
+    """What the rule needs and cannot show (empty when complete): r2 §9 PA-1/PA-2
+    need Ĉ, Ŵ and P̂ from every valid timed forced repeat (PA-3's M̂ is gated by
+    memory_feasibility), and PA-4 (r2 §6.2) needs each arm's warm spread, which
+    needs the CPU input of every completed timed repeat of BOTH arms."""
+    forced = summaries.get('forced') or {}
     reasons = ['%s is absent' % key for key in ('C_hat_s', 'W_hat_s', 'P_hat_s') if estimates.get(key) is None]
-    if not (summary or {}).get('ceiling_inputs_complete'):
-        reasons.extend((summary or {}).get('ceiling_inputs_missing') or ['no valid timed forced repeat'])
+    if not forced.get('ceiling_inputs_complete'):
+        reasons.extend(forced.get('ceiling_inputs_missing') or ['no valid timed forced repeat'])
+    for arm in ARMS:
+        summary = summaries.get(arm) or {}
+        if not summary.get('cpu_inputs_complete'):
+            reasons.append('arm %s: a completed timed repeat has no CPU input' % arm)
+        if summary.get('warm_spread') is None:
+            reasons.append('arm %s: the warm CPU spread cannot be computed (PA-4)' % arm)
     return reasons
 
 
@@ -980,6 +1002,12 @@ def _job_record(path, args, current=None):
     by_arm = {arm: [rep for rep in repeats if rep['arm'] == arm] for arm in arm_order}
 
     reasons = []
+    # r2 §5.1 code identity, taken before the verdict and part of it (ordering).
+    if current is None:
+        current = _current_identity(path)
+    if not (current.get('code_identity') or {}).get('worker_runtime'):
+        reasons.append(('I-7', 'summarize-time observe_runtime identity absent (%s); the source set is partial' % (
+            (current.get('code_identity') or {}).get('worker_runtime_error') or 'no worker_runtime')))
     # r2 §6.2, §12.2 and PA-4: an acceptance record has both arms and, in measure
     # mode, exactly DEFAULT_TIMED_REPEATS timed repeats per arm (H-SHAPE otherwise).
     if len(arm_order) != len(ARMS) or set(arm_order) != set(ARMS):
@@ -991,6 +1019,8 @@ def _job_record(path, args, current=None):
     if launcher_bundle is not None and launcher_bundle.get('timeout_s') != REPEAT_TIMEOUT_S:
         reasons.append(('H-SHAPE', 'launcher per-repeat timeout %s s; the bound is %d s' % (
             launcher_bundle.get('timeout_s'), REPEAT_TIMEOUT_S)))
+    if launcher_bundle is not None and list(arm_order) != list(ARMS):
+        reasons.append(('H-SHAPE', 'bundle arm order %s; r2 §12.2 runs --arms forced,prescribed' % list(arm_order)))
     if duplicate_entries:
         reasons.append(('H-SHAPE', 'the bundle repeats an (arm, repeat) entry'))
     if stage == '1b' and mode == 'measure' and args.job in ('a', 'b'):
@@ -1002,14 +1032,16 @@ def _job_record(path, args, current=None):
         reasons.append(('H-SHAPE', 'job %r is not a or b (r2 §6.2 two-job alternation)' % args.job))
     if launcher_bundle is not None:
         # r2 §5.1, §12.2: a Windows summary describes the code the launcher ran.
-        if current is None:
-            current = _current_identity(path)
         for mismatch in _identity_mismatches(launcher_bundle.get('executed_identity'), current):
             reasons.append(('I-7', 'Windows bundle: ' + mismatch))
     if stage == '1c':
         reasons.append(('I-8', 'Stage 1c: SR/P preconditions and the --stage 1c path are established at C3 '
                                '(r2 §7.7, §12.4); this harness has no 1c path'))
     if stage == '1b':
+        attempt = _int_or_none(args.run_attempt)
+        if attempt is None or not 1 <= attempt <= MAX_RUN_ATTEMPT:
+            reasons.append(('I-7', 'run attempt %r is absent or outside 1..%d (r2 §12.7)' % (
+                args.run_attempt, MAX_RUN_ATTEMPT)))
         if not probe or not probe.get('ok'):
             reasons.append(('I-1', 'accounting probe failed or missing: %s' % (
                 '; '.join((probe or {}).get('reasons') or ['probe.json absent']))))
@@ -1025,6 +1057,9 @@ def _job_record(path, args, current=None):
             if rep['row_present'] or rep['unit_present']:
                 reasons.append(('H-SHAPE', '%s: a repeat outside the fixed shape is present' % key))
             continue
+        if rep['unit_present'] and rep['poll_bound_s'] not in ('launcher', REPEAT_TIMEOUT_S):
+            reasons.append(('H-SHAPE', '%s: per-repeat poll bound %s s; the bound is %d s' % (
+                key, rep['poll_bound_s'], REPEAT_TIMEOUT_S)))
         flags = rep['row_flags']
         if flags is not None:
             want = {'stage': stage, 'arm': rep['arm'], 'repeat': rep['repeat'], 'dry_run': mode == 'dry-run',
@@ -1100,8 +1135,8 @@ def _job_record(path, args, current=None):
                 else:
                     reasons.append(('note', 'arm %s warm CPU spread %.3f > %.2f (Stage 1a: informational)' % (
                         arm, spread, SPREAD_LIMIT)))
-    if stage == '1a':
-        for rep in repeats:
+    for rep in repeats:
+        if (rep['arm'], rep['repeat']) in expected:
             missing = _required_fields_missing(rep, stage)
             if missing and rep['completed']:
                 reasons.append(('H-FIELDS', '%s-%d: fields not populated: %s' % (
@@ -1140,7 +1175,7 @@ def _job_record(path, args, current=None):
     else:
         memory_feasibility = 'FAILED' if M_M * estimates['M_hat_bytes'] > PA3_REFERENCE_BYTES else 'VERIFIED'
     screen, pa3 = _screens(estimates)
-    ceiling_missing = _ceiling_inputs(summaries.get('forced'), estimates) if mode == 'measure' else []
+    ceiling_missing = _ceiling_inputs(summaries, estimates) if mode == 'measure' else []
     if stage == '1b' and ceiling_missing:
         reasons.append(('INCOMPLETE', 'ceiling inputs incomplete, rule not applicable (r2 §6.2, §9): '
                                       + '; '.join(ceiling_missing)))
@@ -1183,7 +1218,9 @@ def _job_record(path, args, current=None):
         'schema': SCHEMA, 'scope': 'job', 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
         'recorded_utc': _now(), 'measured_commit': measured, 'tree_clean': tree_clean,
         'dispatched_head': args.dispatched_head, 'start_head': start_head,
-        'harness_sha256': _sha256_file(HARNESS), 'source_sha256': None, 'stage': stage, 'mode': mode,
+        'harness_sha256': _sha256_file(HARNESS), 'source_sha256': current['source_sha256'],
+        'code_identity': current['code_identity'],
+        'executed_identity': (launcher_bundle or {}).get('executed_identity'), 'stage': stage, 'mode': mode,
         'runtime': runtime, 'probe': probe,
         'forcing': {'seam': 'harness_request', 'within_pp': FORCED_WITHIN_PP, 'label': FORCING_LABEL,
                     'prescribed_within_pp': (workload.get('prescribed') or {}).get('within_pp'),
@@ -1277,10 +1314,6 @@ def summarize(args):
         locations.append(path if path.is_dir() else path.parent)
     if len(records) == 1:
         record = records[0]
-        record['source_sha256'] = current['source_sha256']
-        record['code_identity'] = current['code_identity']
-        if Path(inputs[0]).is_file():
-            record['executed_identity'] = _read_json(inputs[0]).get('executed_identity')
         destination = Path(args.record) if args.record else (
             inputs[0] / 'record.json' if inputs[0].is_dir() else inputs[0].with_suffix('.record.json'))
     else:
@@ -1399,6 +1432,10 @@ def _combined(records, locations=None):
     reasons = []
     if len(stages) != 1 or len(modes) != 1:
         reasons.append(('I-7', 'records mix stages %s or modes %s' % (sorted(stages), sorted(modes))))
+    for record in records:
+        if not (record.get('code_identity') or {}).get('worker_runtime'):
+            reasons.append(('I-7', 'job %s record has no observe_runtime identity' % (
+                (record.get('runtime') or {}).get('job'))))
     # Both jobs must have measured the same code (I-7, r2 §12.7).
     for key in ('measured_commit', 'dispatched_head', 'harness_sha256', 'source_sha256'):
         values = [json.dumps(r.get(key), sort_keys=True) for r in records]
@@ -1435,7 +1472,7 @@ def _combined(records, locations=None):
     else:
         memory_feasibility = 'FAILED' if M_M * estimates['M_hat_bytes'] > PA3_REFERENCE_BYTES else 'VERIFIED'
     screen, pa3 = _screens(estimates)
-    ceiling_missing = _ceiling_inputs(summaries.get('forced'), estimates) if mode == 'measure' else []
+    ceiling_missing = _ceiling_inputs(summaries, estimates) if mode == 'measure' else []
     if stage == '1b' and ceiling_missing:
         reasons.append(('INCOMPLETE', 'combined ceiling inputs incomplete, rule not applicable (r2 §6.2, §9): '
                                       + '; '.join(ceiling_missing)))
