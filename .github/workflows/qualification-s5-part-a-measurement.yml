@@ -1,0 +1,259 @@
+name: Qualification S5 Part A measurement (TEST_ONLY, dispatch only)
+
+# The bounded S5 Part A measurement dispatch of
+# docs/notes/2026-09-27-s5-part-a-measurement-proposal-r2.md §12.3 (Stage 1b; the
+# `1c` input exists for Stage 1c at C3, and the harness refuses it until its C3
+# path lands, r2 §12.4). Authority: CP-1a ruling 2026-09-27, decision (2)
+# (commit baa09ffd, ledger docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md).
+#
+# Dispatch only: no push, pull_request or schedule trigger, so landing this file
+# runs nothing. Every dispatch, re-run and artifact download stays within the
+# r2 §12.7 caps: per stage at most one re-dispatch of a failed dry run and one
+# `gh run rerun --failed` of the measure dispatch. TEST_ONLY synthetic only; no
+# secret, qualification service, vendor, account or trading-service contact.
+# Output class TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING.
+run-name: S5 Part A measurement [stage ${{ inputs.stage }}, ${{ inputs.mode }}, ${{ inputs.runtime }}] (${{ github.ref_name }})
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'Measurement stage: 1b (reference measurement of the existing engine) or 1c (at C3 only; refused until the harness has its --stage 1c path)'
+        type: choice
+        options: ['1b', '1c']
+        default: '1b'
+      mode:
+        description: 'dry-run (one job, one untimed repeat per arm; always first) or measure (two jobs, 5 timed + 1 instrumented repeats per arm)'
+        type: choice
+        options: [dry-run, measure]
+        default: dry-run
+      runtime:
+        description: 'host_venv (default; see the harness README image-first finding) or worker_image (refused: the worker build context cannot carry the harness and fixtures)'
+        type: choice
+        options: [host_venv, worker_image]
+        default: host_venv
+      note_dir:
+        description: 'Harness directory, docs/notes/YYYY-MM-DD-s5-part-a-measurement'
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s5-part-a-measurement-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    name: S5 Part A measurement (job ${{ matrix.job }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        job: ${{ fromJSON(inputs.mode == 'dry-run' && '["a"]' || '["a","b"]') }}
+    env:
+      # Inputs reach scripts through env only, never interpolated into them.
+      STAGE: ${{ inputs.stage }}
+      MODE: ${{ inputs.mode }}
+      RUNTIME: ${{ inputs.runtime }}
+      NOTE_DIR: ${{ inputs.note_dir }}
+      JOB: ${{ matrix.job }}
+      # r2 §6.2: job a runs forced first, job b prescribed first.
+      ARM_ORDER: ${{ matrix.job == 'a' && 'forced prescribed' || 'prescribed forced' }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate inputs
+        id: validate
+        # Refuse what the run cannot honour before the 6-8 minute provisioning step.
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/s5-part-a-measurement"
+          if ! printf '%s' "$NOTE_DIR" | grep -Eqx 'docs/notes/[0-9]{4}-[0-9]{2}-[0-9]{2}-s5-part-a-measurement'; then
+            echo "note_dir must match docs/notes/YYYY-MM-DD-s5-part-a-measurement" >&2; exit 2
+          fi
+          test -f "$NOTE_DIR/measure_part_a_max.py.txt" || { echo "harness missing in $NOTE_DIR" >&2; exit 2; }
+          case "$MODE" in dry-run|measure) ;; *) echo "unsupported mode: $MODE" >&2; exit 2 ;; esac
+          case "$STAGE" in 1b|1c) ;; *) echo "unsupported stage: $STAGE" >&2; exit 2 ;; esac
+          if [ "$RUNTIME" != host_venv ]; then
+            echo "runtime $RUNTIME refused: the worker image build context carries only the worker import closure" >&2
+            echo "(ops/c1_rail/qualification/execution/image.py:17-37), not the harness or its fixtures;" >&2
+            echo "see $NOTE_DIR/README.md, image-first finding. Stage 1b runs on host_venv (CP-1a decision (2)(d))." >&2
+            exit 2
+          fi
+          # Stage 1c exists only once its C3 harness path lands (r2 §12.4); I-8 until then.
+          python3 -I "$NOTE_DIR/measure_part_a_max.py.txt" --check-stage "$STAGE"
+          if [ -n "$(git status --porcelain)" ]; then echo "checkout is not clean (I-7)" >&2; exit 4; fi
+          mkdir -p "$OUT"
+          git rev-parse HEAD > "$OUT/git-head.txt"
+          if [ "$STAGE" = 1c ]; then git rev-parse HEAD^ > "$OUT/git-parent.txt"; fi
+          echo "inputs accepted: stage=$STAGE mode=$MODE runtime=$RUNTIME job=$JOB arm_order=$ARM_ORDER head=$(cat "$OUT/git-head.txt")"
+
+      - name: Swap off and record host facts
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/s5-part-a-measurement"
+          sudo swapoff -a
+          {
+            echo "kernel=$(uname -r)"
+            echo "systemd_version=$(systemctl --version | head -1)"
+            echo "cgroup_fs=$(stat -fc %T /sys/fs/cgroup)"
+            echo "cgroup_controllers=$(cat /sys/fs/cgroup/cgroup.controllers)"
+            echo "cpu_model=$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ *//')"
+            echo "nproc=$(nproc)"
+            echo "swap_total=$(grep SwapTotal /proc/meminfo | tr -s ' ')"
+            echo "swapon_show=$(swapon --show --noheadings | tr '\n' ';')"
+          } | tee "$OUT/host-facts.txt"
+
+      - name: Provision protected TEST_ONLY host
+        # Exactly as qualification-s2-supervision.yml:104-107.
+        run: |
+          sudo /bin/bash tools/qualification_verification/provision.sh \
+            --manifest-output "$RUNNER_TEMP/qualification-manifest"
+
+      - name: Doctor
+        # As qualification-s2-supervision.yml:130-135.
+        run: |
+          set -euo pipefail
+          manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+          host_root="$(dirname "$manifest")"
+          sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
+
+      - name: Accounting probe (before any timed repeat; I-1)
+        id: probe
+        # r2 §8.4 and §12.3 step 6: a transient unit whose script spawns a child that
+        # allocates and touches 64 MiB and exits, then reads its own cgroup. Passes only
+        # if in-unit memory.peak >= 67,108,864, SwapTotal = 0 and CPUUsageNSec is set.
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/s5-part-a-measurement"
+          manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+          host_root="$(dirname "$manifest")"
+          PROBE="$(cat <<'PY'
+          import json, os, subprocess, sys
+          size = 64 << 20
+          # No dollar or percent sign: systemd-run expands environment variables in arguments.
+          child = 'b = bytearray(' + str(size) + ')\nb[::4096] = bytes([1]) * (len(b) // 4096)\n'
+          rc = subprocess.run([sys.executable, '-I', '-c', child]).returncode
+          path = next(l[3:].strip() for l in open('/proc/self/cgroup') if l.startswith('0::'))
+          base = '/sys/fs/cgroup' + path
+          def read(name):
+              try:
+                  return open(os.path.join(base, name)).read().strip()
+              except OSError:
+                  return None
+          swap = next(int(l.split()[1]) for l in open('/proc/meminfo') if l.startswith('SwapTotal:'))
+          out = {'child_exit': rc, 'child_touched_bytes': size, 'cgroup_path': path,
+                 'memory_peak': read('memory.peak'), 'memory_swap_max': read('memory.swap.max'),
+                 'cpu_stat': read('cpu.stat'), 'swap_total_kb': swap}
+          with open(sys.argv[1], 'w') as handle:
+              json.dump(out, handle, indent=2, sort_keys=True)
+          PY
+          )"
+          unit=fp-s5pa-probe
+          sudo systemd-run --unit="$unit" --working-directory="$GITHUB_WORKSPACE" \
+            -p MemoryAccounting=yes -p CPUAccounting=yes -p MemorySwapMax=0 -p RemainAfterExit=yes \
+            "$host_root/env/bin/python" -I -c "$PROBE" "$OUT/probe-in-unit.json"
+          deadline=$((SECONDS + 300))
+          until [ "$(systemctl show -p SubState --value "$unit")" = exited ] || \
+                [ "$(systemctl show -p ActiveState --value "$unit")" = failed ] || \
+                [ "$SECONDS" -ge "$deadline" ]; do sleep 1; done
+          systemctl show -p MemoryPeak -p MemorySwapPeak -p CPUUsageNSec -p ControlGroup \
+            -p ExecMainStatus -p Result "$unit" > "$OUT/probe.unit"
+          sudo systemctl stop "$unit"; sudo systemctl reset-failed "$unit" 2>/dev/null || true
+          sudo "$host_root/env/bin/python" -I "$NOTE_DIR/measure_part_a_max.py.txt" --probe-verdict "$OUT"
+
+      - name: Measurement loop
+        id: loop
+        # r2 §12.3 step 7. dry-run: one untimed repeat per arm (instrumented, labelled
+        # dry_run). measure: per arm r=1 cold (bytecode purged, page cache dropped;
+        # timed and included), r=2..5 warm, r=0 instrumented (last, excluded).
+        # A failed or timed-out repeat is retained and the loop continues (I-6).
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/s5-part-a-measurement"
+          manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+          host_root="$(dirname "$manifest")"
+          PY="$host_root/env/bin/python"; H="$NOTE_DIR/measure_part_a_max.py.txt"
+          if [ "$MODE" = dry-run ]; then repeats="1"; extra="--dry-run"; else repeats="1 2 3 4 5 0"; extra=""; fi
+          for arm in $ARM_ORDER; do
+            for r in $repeats; do
+              if [ "$MODE" = measure ] && [ "$r" = 1 ]; then
+                find "$GITHUB_WORKSPACE" -name __pycache__ -type d -prune -exec sudo rm -rf {} +
+                sync; echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
+              fi
+              unit="fp-s5pa-$STAGE-$arm-$r"
+              sudo systemd-run --unit="$unit" --working-directory="$GITHUB_WORKSPACE" \
+                -p CPUAccounting=yes -p MemoryAccounting=yes -p MemorySwapMax=0 -p RemainAfterExit=yes \
+                -E OPENBLAS_NUM_THREADS=1 -E OMP_NUM_THREADS=1 -E MKL_NUM_THREADS=1 -E NUMEXPR_NUM_THREADS=1 \
+                "$PY" -I scripts/fp.py --env "$host_root/env" python "$H" \
+                  --repeat-mode --stage "$STAGE" --arm "$arm" --repeat "$r" --unit "$unit" $extra \
+                  --out "$OUT/$arm-$r.json"
+              deadline=$((SECONDS + 1800)); timed_out=no
+              until [ "$(systemctl show -p SubState --value "$unit")" = exited ] || \
+                    [ "$(systemctl show -p ActiveState --value "$unit")" = failed ]; do
+                if [ "$SECONDS" -ge "$deadline" ]; then timed_out=yes; break; fi
+                sleep 1
+              done
+              systemctl show -p CPUUsageNSec -p MemoryPeak -p MemorySwapPeak -p ExecMainStatus -p ControlGroup \
+                -p ExecMainStartTimestampMonotonic -p ExecMainExitTimestampMonotonic -p Result \
+                "$unit" > "$OUT/$arm-$r.unit"
+              echo "HarnessPollTimeout=$timed_out" >> "$OUT/$arm-$r.unit"
+              sudo systemctl stop "$unit"; sudo systemctl reset-failed "$unit" 2>/dev/null || true
+              echo "repeat $arm-$r: $(grep -E '^(ExecMainStatus|Result|CPUUsageNSec|MemoryPeak)=' "$OUT/$arm-$r.unit" | tr '\n' ' ')"
+            done
+          done
+
+      - name: Summarize (exit 0 valid, 3 re-runnable validity failure, 4 invalid)
+        if: ${{ !cancelled() && steps.probe.outcome != 'skipped' }}
+        run: |
+          set -uo pipefail
+          OUT="$RUNNER_TEMP/s5-part-a-measurement"
+          manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+          host_root="$(dirname "$manifest")"
+          sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python \
+            "$NOTE_DIR/measure_part_a_max.py.txt" --summarize "$OUT" --stage "$STAGE" --mode "$MODE" \
+            --job "$JOB" --run-id "$GITHUB_RUN_ID" --run-attempt "$GITHUB_RUN_ATTEMPT" \
+            --runner "$RUNNER_NAME" --dispatched-head "$GITHUB_SHA" --runtime-kind "$RUNTIME" \
+            --arm-order "$ARM_ORDER" | tee "$OUT/summarize.log"
+          status=${PIPESTATUS[0]}
+          { echo '### S5 Part A measurement, job '"$JOB"; echo '```'; cat "$OUT/summarize.log"; echo '```'; } \
+            >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - name: Owned cleanup and journal export
+        if: always()
+        # As qualification-s2-supervision.yml:143-171, plus this workflow's own units.
+        run: |
+          OUT="$RUNNER_TEMP/s5-part-a-measurement"
+          mkdir -p "$OUT"
+          for unit in $(systemctl list-units --all --plain --no-legend 'fp-s5pa-*' | awk '{print $1}'); do
+            sudo systemctl stop "$unit" || true; sudo systemctl reset-failed "$unit" 2>/dev/null || true
+          done
+          cleanup_status=0
+          if test -f "$RUNNER_TEMP/qualification-manifest"; then
+            manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
+            set +e
+            sudo /usr/bin/python3 -I tools/qualification_verification/cleanup.py --manifest "$manifest"
+            cleanup_status=$?
+            set -e
+          else
+            echo 'Setup failed before ownership reservation; no host resources to retire.'
+          fi
+          sudo journalctl -b -o short-iso --no-pager > "$OUT/journal.log" 2>&1 || true
+          sudo chown -R "$(id -u):$(id -g)" "$OUT"
+          exit "$cleanup_status"
+
+      - name: Upload this job's measurement evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          # run_attempt keeps a failed attempt's evidence beside its --failed re-run.
+          name: s5-part-a-measurement-${{ inputs.stage }}-${{ inputs.mode }}-${{ matrix.job }}-attempt${{ github.run_attempt }}
+          path: ${{ runner.temp }}/s5-part-a-measurement/
+          if-no-files-found: warn
+          retention-days: 14
