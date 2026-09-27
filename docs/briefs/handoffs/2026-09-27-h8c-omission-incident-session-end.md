@@ -175,3 +175,37 @@ The operator merges. The coordinator keeps acceptance.
   - This is outside H8(c)'s scope and routed separately. The worker reports it as pre-existing and must not treat it as caused by or fixed in this card. Every other regression node must pass.
 
 **Not granted:** a production code change, a rail deploy or arm, account traffic, an order, CI dispatch, a merge, deployment, GO or later-release policy.
+
+## Executor return (2026-09-27)
+
+**Status: DONE_WITH_CONCERNS.** All 11 acceptance nodes pass. The firm recovery/evidence condition is met. The concerns are two disclosed failures that predate this change, both outside the worker's write scope (below). Branch `claude/h8c-omission-incident-tests`: test commit `19bf582`, on the coordinator's `e1635d8` over the dispatch revision `08196100`. Evidence: [H8(c) evidence note](../../notes/2026-09-27-h8c-omission-incident-evidence.md), whose §0 lists the owner anchors relied on. Every §0 path exists at the dispatch revision.
+
+| Node | Result | Incidents (reason; generation at insert) |
+|---|---|---|
+| `test_single_leg_omission_under_loop_records_feed_silence_then_barrier_expired` | PASS (1 or 6 slots × 15 s or 29 s) | `feed-silence:<session>:b1` (feed; 1), then `barrier-expired:b2` (barrier; 2), in the first step strictly after b2 + 15 m 30 s |
+| `test_omission_reaching_runtime_before_expiry_records_bar_sequence` | PASS (1 or 6 slots) | `bar-sequence:b3` (barrier; 1) |
+| `test_all_legs_silent_uncaptured_early_close_records_feed_silence` | PASS | `feed-silence:<session>:b1` (feed; 1) only; no SCHEDULED_EXIT through the cutoff |
+| `test_late_bar_invalid_bar_time_regression_ends_session` | PASS | `invalid-bar-time:b0` (barrier; 1) at a 60 s cadence |
+| `test_recovered_bars_after_omission_halt_dispatch_nothing` | PASS | Omission rows, plus `bar-sequence:b3` (barrier; 3) from direct delivery; no dispatch |
+| `test_repeated_bootstrap_activation_refused_after_omission_halt` | PASS | Refused `fresh bootstrap entitlement required`; bootstrap `ineligible`, `incident:feed-silence:<session>:b1` |
+| `test_reopened_journal_after_omission_halt_stays_halted` | PASS | Reboot to generation 4, rows retained, original invalidation kept, same refusal |
+| `test_repeated_incident_id_preserves_identity_and_generation` | PASS | One row, original `at` and generation; a different `at` raises `conflicting incident identity` |
+| `test_distinct_detectors_neither_restore_authority_nor_drop_obligations` | PASS (`takeover`, `partial_fill`) | Two rows; HALT events appended per row; retained obligations unchanged |
+| `test_recovery_and_evidence_entry_points_remain_available_after_omission_halt` | PASS | No new row; every evidence item recorded |
+| `test_scheduled_cutoff_without_omission_records_no_incident` | PASS | None; HALTED, SCHEDULED_EXIT, 2 |
+
+**Verification records** (`.cache/fp-verification/<id>/record.json`, bound to `19bf582` with a clean tree):
+- New module alone: `20260927T185850Z-5dcd2ca62d82`, status completed, exit 0, source stable; 16 passed.
+- Card §4 pytest command: `20260927T185936Z-c4b5bf30ce8d`, status **failed**, exit 1, source stable; 50 passed, 3 skipped, 1 xfailed, 1 failed (the pre-existing Windows node).
+- Regression modules with that node deselected: `20260927T190027Z-5ed618528491`, status completed, exit 0, source stable; 34 passed, 3 skipped, 1 xfailed.
+- `.\fp.ps1 check`: `20260927T190057Z-835ecc659d3e`, status **failed**, exit 1, source stable.
+
+**Disclosed failures (pre-existing; not caused or fixed here):**
+- `test_attended_incident_rehearsal.py::test_missed_acknowledgment_never_changes_halt_or_permission` fails on Windows (`:` in the `FileAckNotifier` ack filename, `OSError: [Errno 22]`), as §9 records.
+- `.\fp.ps1 check` stops at `governance-prose-control-chars`: a form-feed at §9 line 171, column 7 (`` `.\fp.ps1 doctor` `` became `.` + U+000C + `p.ps1`), from commit `e1635d8`. The worker may not edit §9. **For the coordinator:** a one-character fix restores the gate. A diagnostic run of every other `check` gate, continuing past failures, exits 0 for all 28.
+
+**Observations:**
+- Direct runtime delivery after an omission halt adds a `bar-sequence` row, but nothing is dispatched.
+- Under INTERVENTION, a repeated `check_source_silence` report is suppressed by the authority guard. Deduplication by id was shown through `halt()`.
+- The settlement precondition is asserted by calling the existing private `_validate_settlement_binding`. That call writes nothing when the binding validates.
+- The bootstrap refusal is evidence about the current offline owner only. A later-session re-arming design remains outstanding for TB-I3 and the resume decision.
