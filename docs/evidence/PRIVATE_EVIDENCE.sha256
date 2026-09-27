@@ -126,3 +126,17 @@ ae57234b4497aa0500e454541dc6b46decdd349e9628a8aa7fd633ba0e16ce5d  .cache/fp-veri
 1e225d328e651ee08755a2d7794ba888680f3b92aa01bcfcaeeaf8b41d97fb1d  h1b-526-r8-verification-evidence-2026-09-27.tar.gz
 # actionlint 1.7.7 output for the #526 workflow at 11e15c6b (exit 0); archived in first-passage-archive (b74d6399, first-passage-archive#840).
 757cf2935d8fdf8be19f272e19b6b927964d4032c147a7f26136908e5bdfd7b3  actionlint-11e15c6b.txt
+# H1(b) #526 at the Codex-clean head 6010cb50 (r2 §12.9 plus Codex rounds 9-10; 138 tests): worker records
+# (module pytest, --workers 2, check, before-state vs 73526d6d), the coordinator's clean-worktree re-check
+# (module pytest, --workers 2, check), both actionlint 1.7.7 outputs, and the manifest package;
+# archived in first-passage-archive (71da82ed, first-passage-archive#841).
+e9ee334422ca7cd1eb012756739626a1c2f463a813f962960b7606a5e1aa53c8  .cache/fp-verification/20260927T214137Z-9c24aba62eb3/record.json
+6c4f553512545ec41c824a128eab149d68a2683ea4715acf70fb64d1ba032924  .cache/fp-verification/20260927T214151Z-78763d819e43/record.json
+1c9cf820ce6592a44d3882200ab008af93d32c77ea50440df79be1dd4e1b6b36  .cache/fp-verification/20260927T214207Z-405611e2efd9/record.json
+2b8f73d4eb5ecb988ea56d04666136ca313d6de15811277877ea815b272a4372  .cache/fp-verification/20260927T214033Z-75e0e9d5280f/record.json
+83f7d8bf8efb2816380674f920ad17e69f71b92b2cfd1a3aa57bbabc1659abec  .cache/fp-verification/20260927T215236Z-6635ade5a6a1/record.json
+1687bf3bc590947de7e3c3e39c29643af78ff75f4ec2510fcc181ae61f7485a2  .cache/fp-verification/20260927T215249Z-98f5326b3eb8/record.json
+d256f1211b0b6bfffb16a7b0a0cf01c26989f944a4278cda9471e1a9a0e07107  .cache/fp-verification/20260927T215304Z-3259777d365c/record.json
+1f82405e59a63fc629aae879822aa1e64b7532500bd0c33a8ed6a29baf35fcb3  actionlint-6010cb50-coord.txt
+b1975dee7a0f1da4075365e8f5b8d1eaff2247d2426d0907ef711f132de6db3c  actionlint-6010cb50-worker.txt
+e17e69af7ee93dbc4d75ab83cbf2cd54b8a637119374973e7fe6962a9c826995  h1b-526-r10-verification-evidence-2026-09-27.tar.gz

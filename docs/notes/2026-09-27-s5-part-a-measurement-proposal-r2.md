@@ -11,7 +11,13 @@
   - all six §14.1 decisions, adopted as recommended;
   - the rule parameters recorded there;
   - the bounded measurement dispatch of §12 (decision (2)): Stage 1a, the optional Stage 0, and the Stage 1b probe, dry run and measure run, within the §12.7 caps.
-- **Sequenced by the operator's 2026-09-27 harness ruling (§12.9).** No measurement is executed until the revised H1(b) harness PR is returned with retained verification evidence and merged by the operator. The ruling itself dispatches no measurement.
+- **Sequenced by the operator's 2026-09-27 harness ruling (§12.9).** No measurement is executed until all of the following hold:
+  - the revised H1(b) harness PR is returned with its verification evidence;
+  - that evidence is archived on `first-passage-archive`'s `main`;
+  - a post-merge `scripts/evidence_archive.py audit --verify` shows its pins ARCHIVED, and the result is recorded on the H1 row;
+  - the operator has merged the harness PR.
+
+  The ruling itself dispatches no measurement. *[Corrected 2026-09-27 (Codex review of 5177ed2d): the archive-merge and audit gate is stated here as well as in the H1 row.]*
 - **Still not granted:**
   - an S5 release, freeze, dispatch or execution (S5 stays **HELD** until CP-1b);
   - any ceiling, profile, release-literal or budget change, except through the §13 procedure after a valid Stage 1b record;
@@ -579,7 +585,17 @@ gh run download <run_id> -R Joshua-Asante/first-passage -D <scratch>/s5-1b-attem
 gh run rerun <run_id> -R Joshua-Asante/first-passage --failed
 gh run watch <run_id> -R Joshua-Asante/first-passage --exit-status; echo "watch exit $?"   # waits for attempt 2
 gh run download <run_id> -R Joshua-Asante/first-passage -D <scratch>/s5-1b-attempt2      # the re-run jobs' evidence
+# combine: exactly one job a record and one job b record from this run, through the operations launcher,
+# from a checkout at the measured revision (the harness refuses otherwise):
+python -I scripts/fp.py python docs/notes/<date>-s5-part-a-measurement/measure_part_a_max.py.txt \
+  --summarize <job-a record.json> <job-b record.json> --record <scratch>/s5-1b-combined.json
 ```
+
+*[Corrected 2026-09-27 (Codex review of 5177ed2d): the combine step.]*
+- **Invocation.** The harness README's `--summarize <a>/record.json <b>/record.json --record <combined>.json` runs through the operations launcher, from a checkout at the measured revision.
+- **Which record per job.** For each job (a and b), use the record from the **highest run attempt in which that job ran**: attempt 2 for a job that the `--failed` re-run repeated, attempt 1 for a job that passed on attempt 1 and was not re-run. The artifact name carries the run attempt, so both attempts' artifacts stay distinct in the two download directories.
+- **What is never combined.** A failed attempt-1 record of a job that attempt 2 repeated is not combined; it stays retained as evidence.
+- **Refusals.** The harness refuses, and writes nothing, for records with different run ids, an attempt outside 1–2, or a cleanup receipt that does not match its record's run, attempt and job.
 
 *[Corrected 2026-09-27 (Codex review of 54471fab): each dispatch and the one permitted `--failed` re-run is now watched to completion with `gh run watch` before `gh run download`, because `download` only retrieves artifacts that already exist. Each download goes to its own directory whether the run passed or failed. Attempt 1's evidence and the re-run's are both retained, and the combine step reads the attempt-1/attempt-2 mixture (§12.9).]*
 
