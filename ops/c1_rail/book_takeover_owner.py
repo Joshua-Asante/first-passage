@@ -618,6 +618,27 @@ class TakeoverOwnerMixin:
             return decision.halt_reason
         if decision.qty_out != plan['quantity'] or decision.qty_out <= 0:
             return 'takeover_quantity_changed'
-        if used_micro(capacity) > ACCOUNT_MICRO_CAP or self._unresolved_attempt_rows(db):
+        if used_micro(capacity) > ACCOUNT_MICRO_CAP or self._takeover_quiescence_blockers_db(db, plan, now=now):
             return 'takeover_account_not_quiescent'
         return None
+
+    def _takeover_quiescence_blockers_db(self, db, plan, *, now):
+        """Unresolved attempts that refuse admission of a revalidated takeover.
+
+        S10/K1 require quiescence of displaced scope; §59 Ruling 6(b) keeps an
+        unrelated leg's known working order from blocking. So an entry/add on a
+        leg that is neither displaced nor the takeover's own leg is excluded
+        unless it is fenced (stale (ii) or unknown (iii)). Every other row the
+        shared helper reports, including closes, cancels and protection
+        operations, still counts, exactly as before.
+        """
+        fenced = set(self._ordinary_unknown_orders_db(db, now=now))
+        unrelated = {row.leg_id for row in BOOK_LEGS} - set(plan['displaced']) - {plan['action']['leg_id']}
+        blockers = []
+        for attempt_id, operation_id in self._unresolved_attempt_rows(db):
+            leg_id, kind = db.execute('SELECT leg_id,kind FROM operations WHERE operation_id=?',
+                                      (operation_id,)).fetchone()
+            if kind in ('entry', 'add') and leg_id in unrelated and operation_id not in fenced:
+                continue
+            blockers.append(attempt_id)
+        return tuple(blockers)
