@@ -1,16 +1,30 @@
 # Staged acceptance handoff set — bounded next steps toward deployment (2026-09-27)
 
-**Status:** PREPARED 2026-09-27 under the operator direction recorded in the [deployment-checklist addendum 2026-09-27](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step). None is dispatched by this file.
+**Status:** PREPARED 2026-09-27 under the operator direction recorded in the [deployment-checklist addendum 2026-09-27](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step). None is dispatched by this file. **Revised the same day** after the operator's review of `9448373`:
+- H1, H3 and H4 now continue [#519](https://github.com/Joshua-Asante/first-passage/pull/519)'s returns instead of redoing them.
+- H1 separates proposal correction from measurement execution.
+- H4 waits on an accepted classification contract.
+- H5 returns a policy choice.
+- H9 keeps its full-S5 dependency, with two checkpoints.
+
+**Pinned inputs from #519.** The returns are unmerged and are read at the PR head `8c15f1853e64f14f50995e3f1c55a620a0f674b7`, for example `git show 8c15f18:<path>`:
+- `docs/notes/2026-09-26-s5-part-a-measurement-proposal.md` and its card `docs/briefs/handoffs/2026-09-26-s5-part-a-measurement-proposal.md` (fix round and coordinator review);
+- `docs/notes/2026-09-26-orb-lifecycle-evidence.md` and `docs/notes/2026-09-26-account-fence-four-state-trace.md`, with the card `docs/briefs/handoffs/2026-09-26-orb-lifecycle-and-fence-trace.md`;
+- `docs/notes/2026-09-26-close-semantics-c-a.md` and its card.
+
+If #519 merges before dispatch, the same paths on `main` are used, once they are confirmed byte-identical.
 
 **Ownership:**
-- The campaign coordinator dispatches each card under the committed-handoff rule. At dispatch the coordinator copies the card into its own file with its `yaml authority` block, at most the grants listed on the card, and runs the pre-dispatch read ([surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md#decision), *Action classes and the authority block*). This set carries no authority block because a file holds only one.
-- The addendum owns sequencing and the checkpoints CP-1..CP-9. Each card's named owners keep their outcomes.
+- The campaign coordinator dispatches each card under the committed-handoff rule. At dispatch the coordinator copies the card into its own file with its `yaml authority` block and runs the pre-dispatch read ([surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md#decision), *Action classes and the authority block*). This set carries no authority block because a file holds only one.
+- **A card never grants what its dispatcher lacks.** Capabilities listed under "Grants at dispatch" narrow the dispatching seat's own grants. Any CI-configuration change, Linux dispatch, artifact download, account action or spend also needs the operator approval named on the card; the card only records that approval.
+- The addendum owns sequencing and the checkpoints CP-1a..CP-9. Each card's named owners keep their outcomes.
 
 **Common rules:**
 - Read `AGENTS.md` first.
 - No agent places, amends or cancels an order. No merge, spend, arm, deploy, vendor contact or account access by an agent.
 - No private source, account figure, P&L or credential is committed, quoted or sent to an external service. The book's Pine and runtime ports are read only in place in the operator's primary checkout ([§60](../programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)).
-- Commissioning results are labelled `COMMISSIONING_OBSERVATION` and never enter qualification (addendum §2).
+- Commissioning results are labelled `COMMISSIONING_OBSERVATION` and state their scope. After review they may support capability acceptance for that scope. They are never production E1/n3 results, portfolio admission or whole-route acceptance (addendum §2).
+- A synthetic result never marks an obligation that needs a real producer as resolved.
 - A finding that changes behavior returns to its owner decision before the freeze (addendum §5).
 
 **Dispatch states:**
@@ -20,64 +34,92 @@
 
 | Card | Workstream | State | Unlocks |
 |---|---|---|---|
-| H1 | S5 and resource limits | READY | CP-1 |
-| H2 | Broker route commissioning | READY | CP-2, then CP-3 |
-| H3 | ORB lifecycle and fence trace | READY (operator machine) | CP-4; H4 fence half |
-| H4 | ORB lifecycle and fence implementation | READY ON H3 acceptance (fence half) / CP-4 (lifecycle half) | CP-5 evidence; the fence repair before the ORB freeze |
-| H5 | Attended operations | Step (a) READY; step (b) READY ON acceptance of (a) | T13 construction |
-| H6 | Settlement evidence | READY ON CP-2 (collection); rehearsal harness READY | CAP S1/S2 toward QUALIFIED |
-| H7 | Production qualification host | READY | CP-1 (RC-4/RC-5 confirmation), later CP-8 |
+| H1 | S5 and resource limits | Step (a) READY; step (b) READY ON CP-1a | CP-1a; then RC-3a for CP-1b |
+| H2 | Broker route commissioning | READY (packet only) | CP-2; then CP-3 per row |
+| H3 | ORB lifecycle and fence: disposition and decisions | READY | CP-4 |
+| H4 | Fence classification: synthetic repair | READY ON CP-4 (classification contract accepted) | Synthetic half of the fence obligation; CP-5 input |
+| H5 | Attended operations | Step (a) READY; step (b) READY ON the (a) ruling | T13 construction |
+| H6 | Settlement evidence | Collection READY ON CP-2; rehearsal harness READY | CAP S1/S2 toward QUALIFIED |
+| H7 | Production qualification host | READY | RC-4/RC-5 assignment (S5 build entry); later CP-8 |
 | H8 | Feed (provider-neutral) | READY | CP-7 inputs; the F1 feed section |
-| H9 | Result/seal and recovery | READY ON S5 Checkpoint C3 accepted | T06/S8 |
+| H9 | Result/seal and recovery | Preparation READY ON S5 C3 accepted; R1 ON S5 acceptance; R2 ON D3 text and R1 | T06/S8 |
 | H10 | Final launch | LATER | CP-9 |
 
 ---
 
-## H1 — S5 Part A measurement proposal (existing workload)
+## H1 — S5 measurement: correct the #519 proposal, return a measurement dispatch
 
-**Uncertainty resolved:** the CPU, wall time and peak memory of PART_A at the S5 fixture's **maximum expansion** on the **existing** engine. This settles whether a per-phase TEST_ONLY ceiling exists that passes Σ-feasibility at binding for `/v7`. If none does, that is S5 draft §2.3's falsifier for the per-phase model.
+**Continues:** the #519 S5 Part A measurement proposal at `8c15f18`, which carries its coordinator review ("ACCEPTED AS INPUT; nothing approved; S5 stays HELD"). It is not redone.
+
+**Uncertainty resolved:** (a) whether the proposal, corrected for the 2026-09-27 split, is ready for the operator's approval as a rule plus a concrete measurement dispatch. (b) After approval: the measured CPU, wall time and memory of PART_A at forced maximum expansion on the existing engine, and the provisional ceiling that follows.
 
 **Prerequisites and existing authorization:**
-- Operator ruling 2026-09-26 §6: "S5 measurement preparation is a separate bounded handoff" ([ledger](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--s5-directions-adopted-hold-kept-2026-09-26)).
-- The build-entry and C3 split ([ledger 2026-09-27](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-direction--s5-build-entry-separated-from-checkpoint-c3-acceptance-2026-09-27)).
-- Prior evidence to reuse: the [T10 step-4 measurement](../../notes/2026-09-24-t10-step4-representative-measurement.md) and its harnesses, the 2026-09-16 `benchmark_part_a` record, and the S4 C2 precedent (a Windows N2 measurement → the `/v6` N2 ceiling, `profile.py` `_JOINT_N2_DIAGNOSTIC_PHASE`).
+- Step (a): operator ruling 2026-09-26 §6, which authorizes *preparing* the proposal only.
+- Step (b): **CP-1a approval of the dispatch returned by (a)**. Preparation authority does not authorize any measurement, CI-configuration change, Linux dispatch or artifact download.
 
-**Work:**
-1. **Workload.** The S5 fixture's frozen budget binding (`part_a_initial_paths` / `part_a_expanded_paths`, 4 / 8 per the [S5 packet](2026-09-21-full-e1-s5-part-a-DRAFT.md) §0), on the signed TEST_ONLY composition fixture, through `part_a._run_part_a` with expansion forced. If expansion cannot be forced economically, measure the initial and appended panels separately and compose them, and disclose that the result is composed.
-2. **Reference runtime.** Propose one option and justify it:
-   - (a) the `ubuntu-24.04` runner class used by the qualification workflows. This needs a measurement job and `ci.dispatch`, granted only by the dispatch card.
-   - (b) a recorded Linux x86-64 host with the launcher's interpreter, backed by the Windows launcher for continuity with T10/C2.
-   - Recommended: (b) for build entry, because C3 re-measures on the runner (RC-3b).
-3. **Capture.** At least three sequential repeats on an otherwise idle process. Record:
-   - CPU user+system (children included);
-   - wall time;
-   - peak RSS;
-   - interpreter hash, tree SHA and CPU model;
-   - output digests, compared with the recorded digests where the shape matches.
-4. **Proposed rule.** Give the form and the numbers: ceiling = max repeat × *k*, for CPU, wall and memory separately, with the controller charge unchanged. Justify *k* against the observed spread and the S4 precedent (measured 211 s CPU → 360 s ceiling). State how the coordinator applies the rule at C3.
-5. **Feasibility.** Σ phase ceilings against the `/v7` TEST_ONLY cap, shown by a test or a computation on the fixture. No campaign is run.
+**Step (a) work: amend the #519 proposal; write a corrected revision, not a new analysis.**
+- **Carry forward unchanged, as findings:**
+  - the (2, 4, 2) fixture cannot expand, so maximum expansion needs the forced arm (§0.1);
+  - no existing measurement covers maximum expansion;
+  - `verify_for` dominates;
+  - the engine's pilot predicate needs the PA-2b term;
+  - no host factor is evidenced;
+  - the three `/v7` `diagnostic_budget_profile` pitfalls and the fixture-cap tuple.
+- **Keep every review correction:**
+  - the cold repeat is included;
+  - setup CPU is excluded from Ĉ;
+  - D̂ stays uncovered until Stage 1c;
+  - Windows figures validate the harness only;
+  - host venv versus worker image is disclosed;
+  - Stage 0 is calibration only;
+  - the D2 falsifier stays open until a valid Stage 1b record.
+- **Preserve the requirements:**
+  - maximum expansion (forced arm, 4 panels);
+  - the reference runtime (the `ubuntu-24.04` qualification runner class, identity recorded per run);
+  - aggregate memory: PA-3 is a check against the one shared campaign footprint, never a per-phase value;
+  - measurement validity: PA-4 (digests identical, prefix byte-identical to the prescribed arm, spread ≤ 1.30 with one re-run).
+- **Update for 2026-09-27:**
+  - RC-1 is met on `main` (#517 merged at `5ad04cf`).
+  - The RC table is restated on the build-entry, C3 and before-F1 split ([ledger](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-direction--s5-build-entry-separated-from-checkpoint-c3-acceptance-2026-09-27)).
+  - Pre-build feasibility is §5's arithmetic on the proposed `/v7` values; the executed `bind_budget` check moves to C3 (RC-3b).
+  - RC-4/RC-5 are assigned via H7 and do not wait on F1.
+- **Return a concrete measurement dispatch, as one approval packet.** For each step it gives the exact commands, the files created, the grants it needs, its limits, stop conditions and outputs:
+  - Stage 0: download the S4 run artifacts, calibration only. It must run before the logs expire around **2026-10-09**.
+  - Stage 1a: Windows harness validation.
+  - Stage 1b: a new `workflow_dispatch` measurement workflow file, which is a CI-configuration change, and its two-job Linux run.
+  - Stage 1b-N2, only if the rule is phase-generic.
+  - Stage 1c at C3.
+  - The host-venv or worker-image choice.
+
+  Also give the total expected runner time and the re-run limit (one per failed validity check).
+- **Operator decisions for CP-1a:** #519 proposal §8 decisions 1–5, restated with this card's corrections.
+
+**Step (b) work (after CP-1a only):** execute exactly the approved steps. Then apply the approved rule per #519 proposal §6 as a **provisional** TEST_ONLY ceiling, recorded in a ledger entry. Nothing outside the approval.
 
 **Limits:**
-- Harnesses are kept as `.py.txt` beside the note, following the T10 step-4 convention.
-- No edit under `ops/` or `tests/`, and no profile, ceiling or release-literal change.
-- No S2/S3/S4 Linux run.
-- Envelope: 250k tokens; split at the halfway review if the forced-expansion question is still open.
+- Step (a) is documentary: no measurement or dispatch, and no edit under `ops/`, `tests/`, `tools/` or `.github/`.
+- Step (b): only the approved workflow file and harness files; no profile, ceiling or release-literal edit (those land with the S5 build).
+- No production value, ever.
 
-**Stop conditions:**
-- Output digests differ from the recorded ones on a matching shape: stop and report, because that is an engine change.
-- Maximum expansion cannot be produced or composed defensibly: return what was measured, with the gap.
-- Σ-feasibility fails at every *k* ≥ 1: return at once (§2.3 falsifier).
+**Stop conditions (b):**
+- a PA-4 validity failure twice;
+- digests differ between repeats;
+- Σ arithmetic fails at every admissible value.
 
-**Recovery:** measurements are side-effect-free. A failed repeat is retained and re-run, never dropped.
+Each of these returns at once; the last is the D2 falsifier.
+
+**Recovery:** measurements are side-effect-free. A failed repeat is retained, never dropped.
 
 **Evidence retained:**
-- `docs/notes/<date>-s5-part-a-measurement.md`, with raw data and harness hashes in its folder;
-- the launcher `record.json` paths;
+- (a) the corrected proposal revision and the dispatch packet;
+- (b) `docs/notes/<date>-s5-part-a-measurement/` in #519 proposal §3.5 schema, with run IDs and records;
 - class `TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING`.
 
-**Decision unlocked:** **CP-1.** The operator approves the measurement-and-margin rule and the provisional PART_A ceiling, and releases the S5 hold for the build.
+**Decision unlocked:** (a) → **CP-1a**. (b) → RC-3a, and with the other build-entry conditions, **CP-1b** (hold release for the build).
 
-**Grants at dispatch (worker):** `repository.read`, `tests.run`, `worktree.write`, `branch.push`, `pr.open`. Acceptance: the note's feasibility computation plus `tests/ops/qualification/test_part_a.py` passing unchanged on the measured tree.
+**Grants at dispatch:**
+- (a) coordinator: `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `make check` clean.
+- (b) worker: `repository.read`, `tests.run`, `worktree.write`, `branch.push`, `pr.open`, plus `ci.dispatch` only for the CP-1a-approved workflow. Acceptance: the approved harness's validity checks and `tests/ops/qualification/test_part_a.py` passing unchanged.
 
 ## H2 — Route commissioning session packet (operator-run, automation disarmed)
 
@@ -93,15 +135,21 @@
 - Gate A accepted (REST §6.11).
 - The [drill plan](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md) owns the rows. This packet sequences them and does not become a second owner.
 - [Incident ADR §A11.1](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a111--operator-ruling-close-direction-2026-09-26) authorizes R-1/R-2 only, once entitlement is confirmed. It requires each order-producing row to be prepared individually with its environment, actions, exposure limits and abort/recovery. The race drill X-5 is deferred. There is no automatic fallback to the live eval.
+- **Consumed, not redone:** the #519 close-semantics return. M questions and §1.1a (a)–(e) are all OPEN or CONFLICTING. It also supplies the draft vendor question (note §6), two actor-inventory candidates (the platform timed exit and firm-side auto-liquidation), a packet §1.1 wording correction, and the X-3 read addition.
 
 **Work:** write `docs/notes/<date>-route-commissioning-session-packet.md`.
-- **Stage 0 (read-only, CP-2):**
+- **Stage 0 (read-only; before it: CP-2):**
   - host confirmation that the rail is disarmed (`dry_run=true`, `emit_enabled=false`);
-  - the §0.1 actor inventory as a checklist, with every Account Manager function disabled (CR-12);
+  - the §0.1 actor inventory as a checklist, with every Account Manager function disabled (CR-12) and #519's two candidates added;
   - the entitlement record;
-  - the known-order confirmation, proposing the weekly preservation trade as the known order and as the settlement target (addendum §1.3);
-  - R-1 in the same session and R-2 after a reset.
-- **Stage 1 (order-producing, CP-3):** X-1, then X-4, then X-2 (after M2), then X-3 (after M, or folded into the residual-risk decision per CR-3). Each row gets:
+  - the known-order confirmation;
+  - R-2 and the T07 reads on a completed preservation trade where it meets their evidence requirements;
+  - R-1 only in the same session as a preservation trade the operator places anyway (addendum §1.3).
+- **Stage 1 (order-producing; before each row: its own CP-3 written authorization):**
+  - X-1, X-4 and X-2 (the last after M2).
+  - X-3 only as part of the operator's residual-risk decision (CR-3), because #519 left M OPEN/CONFLICTING. It includes #519's X-3 read addition.
+
+  Each row gets:
   - its environment;
   - exact actions;
   - one micro contract per request and in total, with the stop in the same request;
@@ -109,9 +157,9 @@
   - its stop conditions;
   - the drill plan's five-step recovery;
   - its evidence entries.
-- **Session rule:** stop after the first unexpected result, return the traces, and review before any further row.
-- **Operator-sent text:** the M and M2 vendor questions and the one permitted T08 follow-up, drafted for the operator to send. Vendor contact is the operator's.
-- **CP-2 fact list:** entitlement, sim/demo availability, the known-order definition, whether drill costs count against the $700 ceiling, and preservation-trade treatment (drill plan q9, OPEN).
+- **Session rule:** one row at a time; its traces return and are reviewed before the next row is authorized.
+- **Operator-sent text:** #519's vendor-question draft, and the one permitted T08 follow-up. Vendor contact is the operator's.
+- **CP-2 fact list:** entitlement, sim/demo availability, the known-order definition and read target, whether drill costs count against the $700 ceiling, and preservation-trade treatment (drill plan q9, OPEN).
 
 **Limits:**
 - Documentary only: no account access, vendor contact, order or figure.
@@ -128,117 +176,122 @@
 
 **Evidence retained:**
 - the packet itself;
-- after a session: original bytes under the drill plan's private manifest (hashes only in the repo), plus one outcome line per step, recorded against CAP R2–R5 / T08 §7 behavior rows as `COMMISSIONING_OBSERVATION`.
+- after a session: original bytes under the drill plan's private manifest (hashes only in the repo), plus one outcome line per step, recorded against CAP R2–R5 / T08 §7 behavior rows as `COMMISSIONING_OBSERVATION` with scope.
 
-**Decision unlocked:** **CP-2** (route facts) and then **CP-3** (row-by-row written authorization). Traces feed CP-5.
+**Decision unlocked:** **CP-2**, then **CP-3** row by row. Reviewed traces support capability acceptance for their scope and feed CP-5.
 
 **Grants at dispatch (coordinator):** `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `python scripts/check_handoff_authority.py --all` and `make check` clean on the branch.
 
-## H3 — ORB resting-entry lifecycle resolution and four-state fence trace
+## H3 — ORB lifecycle and fence: disposition of #519's trace, decisions, bounded repair card
 
-**Uncertainty resolved:**
-- Does the accepted ORB cancel a resting entry after one bar or at session end, in source and in its accepted replay (§59 Ruling 5; B–D packet B-13)?
-- How does the rail spec classify a known working order with fresh evidence (state (i))?
-- How does each consumer classify states (i)–(iv) (B–D packet fence row and four-state table)?
+**Continues:** the #519 ORB lifecycle evidence and four-state trace at `8c15f18`, each "ACCEPTED AS INPUT". No new source read or trace.
 
-**Prerequisites and existing authorization:**
-- Ruling 5 approves preparation and fixes the resolution order: source and replay first, the lifecycle ruling separate from the fence trace.
-- The B–D packet assigns the source/replay resolution and the trace to the coordinator.
-- §60 read access, in place on the operator's primary checkout. A cloud session cannot read the port.
+**Uncertainty resolved:** which lifecycle and which state classification the operator and the rail-spec owner adopt, so that the repair can be bounded.
+
+**Prerequisites and existing authorization:** §59 Ruling 5 (resolution order); the B–D packet (the coordinator owns source and replay resolution, and the trace).
 
 **Work:**
-- Trace, source to consumer: `book_account_owner.py` `_ordinary_unknown_orders_db` and its consumers (admission `:1608`, takeover, protection re-arm, close operations, capacity release), plus every other consumer found.
-- Read the rail spec's §1 `pending`/`W` rows, S1, S2/RC-9 and E3.
-- Read the declared ORB's cancel behavior and the qualification replay's cutoff cancel (`replay.py`).
-- Return:
-  - the four-state table, confirmed or corrected;
-  - a proposed spec clarification;
-  - a lifecycle proposal with its alternatives and their consequence for the fence, the edition pre-registration and requalification.
+1. **Coordinator disposition.** For each lifecycle-note conflict C1–C5 and each trace defect and ambiguity, record: accepted, corrected (with reason) or routed (with owner). Keep the lifecycle and the fence separate.
+2. **Decision packet for CP-4, in two separate parts:**
+   - **(i) Lifecycle B-13:** L1/L2/L3 and the lifecycle note's §4 questions, including whether to authorize the count run in question 6. That run needs its own authorization because it runs the private port.
+   - **(ii) The state-classification contract:**
+     - the proposed rail-spec clarification (trace §6.1, for the rail-spec owner);
+     - the owner classification (trace §6.2);
+     - the one-bar boundary, strict or inclusive (§6.3);
+     - an explicit statement that positive-lookup (iii)→(i) stays OPEN (UB-7).
+3. **A bounded H4 dispatch card,** drafted after CP-4. Its scope is trace §6.2–§6.4 against the synthetic seam. It lists what stays owed: the real evidence producer, route integration and the rev9 ordinary-unknown halt (packet CC-3; T09/TB-I3). It also lists the replay change, if L1 is ruled, as a separate freeze-inventory item.
 
 **Limits:**
-- Read-only. No edition replay (the pre-registration forbids one before freeze).
-- Pine or port bodies and values are neither quoted nor committed; describe behavior only.
 - No code change.
+- No private source read unless the count run is authorized.
+- No lifecycle choice made to relieve the fence.
 
-**Stop conditions:**
-- Source and replay disagree: return both, with no choice made.
-- Neither behavior may be chosen to make the fence stop blocking (B–D packet).
+**Stop conditions:** a disposition that would change a returned finding. Record it with its reason and return it; no silent edit.
 
-**Recovery:** not applicable (read-only).
+**Recovery:** not applicable.
 
-**Evidence retained:** the return note with file:line anchors in public code, and behavior-level descriptions of the private sources.
+**Evidence retained:** the disposition note and the CP-4 packet, citing `8c15f18` line anchors.
 
-**Decision unlocked:**
-- **CP-4**, the operator's B-13 ruling.
-- The coordinator's acceptance of the trace, which makes H4's fence half dispatchable.
+**Decision unlocked:** **CP-4** (the lifecycle ruling and the classification contract), which makes H4 dispatchable.
 
 **Grants at dispatch (coordinator):** `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `make check` clean.
 
-## H4 — ORB lifecycle and fence: implementation in replay and synthetic consumer tests
+## H4 — Fence classification: synthetic repair (after CP-4)
 
-**Uncertainty resolved:** whether the owner and replay behave as ruled across every request state, before any real route is involved.
+**Uncertainty resolved:** whether the owner and its consumers classify and act on states (i)–(iv) as the accepted contract says, before any real producer exists.
 
 **Prerequisites and existing authorization:**
-- The fence half needs H3's trace accepted. Its behavior is fixed for the first release by §A11 item 1, so it does not wait on gate D (addendum §1.2(b)).
-- The lifecycle half needs CP-4.
+- **CP-4 acceptance of the state-classification contract.** §A11 fixes the response to an unresolved request, not this classification, so it is not a substitute.
+- For the lifecycle-dependent cases (trace §6.6): the B-13 ruling.
 
 **Work:**
-- Tests first, then the change in `book_account_owner.py` and each traced consumer. Cases:
-  - fresh-working, stale, unknown and terminal requests;
-  - reservation held and released;
-  - the incident halt path (TB-I3 scope boundary respected);
-  - cutoff, flatten and deadline;
-  - takeover revalidation.
-- The pinned behavior at `tests/ops/test_book_feedback_journal.py:41-55` changes only as the trace and ruling require, and is listed explicitly.
-- If the ruled lifecycle differs from the qualification replay's cancel behavior, the replay change is a **CHECKPOINT** before any edit. It changes qualification behavior, so it enters the edition pre-registration and requalification (addendum §5).
+- Tests first: trace §6.4 cases 1–12, against the `SyntheticBroker` seam with synthetic evidence acquisitions.
+- Then the change in `book_account_owner.py` and each traced consumer:
+  - admission;
+  - loosening amends (`book_protection_owner.py`);
+  - takeover fence and quiescence (`book_takeover_owner.py`);
+  - the unchanged consumers, re-pinned.
+- The pinned behavior at `tests/ops/test_book_feedback_journal.py:41-55` changes only as the contract requires, and is listed explicitly.
+- A qualification replay change, if L1 is ruled, is a separate **CHECKPOINT** before any edit. It is a freeze-inventory change and enters the edition pre-registration and requalification.
+
+**The return must separate:**
+- **(1) Verified synthetically:** classification and consumer behavior, per case, with node IDs.
+- **(2) Still owed:** production of real order-level evidence (the producer), route integration, and the rev9 halt for ordinary unknowns (T09/TB-I3). It must also state that **the fence obligation is not resolved** until (2) is accepted.
 
 **Limits:**
-- `SyntheticBroker` seam only; no production transport (T09).
+- No production transport (T09).
 - No `lab↔ops` import, locked parameter or DD constant.
 - Branch and PR; the operator merges.
 
 **Stop conditions:**
-- A consumer the trace missed.
-- A needed change outside the owner and its consumers.
-- Any replay edit.
+- a consumer the trace missed;
+- a needed change outside the owner and its consumers;
+- any replay edit.
 
 In each case return to the coordinator.
 
 **Recovery:** a branch revert. No shared state is touched.
 
-**Evidence retained:** the test node IDs per case, the launcher `record.json`, and `make check`.
+**Evidence retained:** the node IDs per case, the launcher `record.json`, and `make check`.
 
-**Decision unlocked:**
-- The fence repair is recorded as resolved before the ORB freeze.
-- The results are input to **CP-5** (gates B–D).
+**Decision unlocked:** the synthetic half of the fence obligation is accepted before the freeze inventory is fixed; it is input to **CP-5**. The remaining half is named in T09's scope.
 
-**Grants at dispatch (worker):** `repository.read`, `tests.run`, `worktree.write`, `branch.push`, `pr.open`. Acceptance: the new owner-consumer test nodes named in the dispatch card.
+**Grants at dispatch (worker):** `repository.read`, `tests.run`, `worktree.write`, `branch.push`, `pr.open`. Acceptance: the trace §6.4 node set named in the dispatch card.
 
-## H5 — Attended operations: owner reconciliation, then synthetic incident rehearsal
+## H5 — Attended operations: resumption policy choice, then synthetic incident rehearsal
 
 **Uncertainty resolved:**
-- (a) Which resumption rule governs: halt/resume rev9 allows same-session resumption; §A11 and the [Phase 5 plan](../../superpowers/plans/2026-09-16-phase5-attended-operations.md) do not.
-- (b) Do alerts, escalation, heartbeat, fencing, manual intervention, restart and resume behave as specified with synthetic incidents?
+- (a) Which resumption rule governs after an incident.
+- (b) Whether alerts, escalation, heartbeat, fencing, manual intervention, restart and resume behave as ruled, tested with synthetic incidents.
 
-**Prerequisites and existing authorization:** §A11 items 1, 2 and 4 are ruled. The Phase 5 plan is PROPOSED. Step (b) waits for the operator's acceptance of (a).
+**What is already ruled (and what is not):**
+- §A11 item 1: one attended session, then explicit review before extension.
+- §A11 item 2: no acknowledgment, reset or elapsed time resolves an unresolved request.
+- §A11 item 4: manual intervention is subject to fencing, outcome evidence and reconciliation, and resumption needs a new operator resume (halt/resume §4).
+- Rev9 §4 **permits** conditional same-session resumption with operator approval.
+- The [Phase 5 plan](../../superpowers/plans/2026-09-16-phase5-attended-operations.md)'s "no same-account-session reactivation" is **PROPOSED**. **No ruling currently prohibits same-session resumption.**
 
 **Work:**
-- (a) Proposed owner text for the halt/resume contract §2–§4, consistent with §A11: no same-session reactivation after an incident; acknowledgment never equals permission to resume; manual intervention is subject to fencing, outcome evidence and reconciliation.
-- (b) A synthetic incident script (lost response, stale evidence, missed alert, restart during halt, ambiguous protection). It is exercised against the existing owners with a notification channel the operator names. Measure delivery and 60 s escalation.
+- **(a) A policy-choice packet** for a new operator ruling, with its consequence for T13 and for the halt/resume owner text. The options:
+  - rev9 as written;
+  - the recommended **no same-session restart of automation after any commissioning or first-release incident, followed by review**;
+  - a narrower variant.
+- **(b) After the (a) ruling:** a synthetic incident script (lost response, stale evidence, missed alert, restart during halt, ambiguous protection). It is exercised against the existing owners with a notification channel the operator names. Measure delivery and 60 s escalation. Resume is tested exactly as ruled.
 
 **Limits:**
 - No rail deploy or arm, and no account traffic.
 - A notification channel that needs spend or a new account returns to the operator before use.
+- (a) changes no owner text until ruled.
 
-**Stop conditions:** any path that resumes without a fresh operator authorization. Stop and return; it is a defect.
+**Stop conditions:** any path that resumes other than as ruled. Stop and return; it is a defect.
 
 **Recovery:** rehearsal state lives in disposable stores and is discarded after its evidence is retained.
 
-**Evidence retained:** delivery and escalation timing traces, restart and restore traces, and the refused automatic-resume case.
+**Evidence retained:** (a) the packet and, once ruled, the dated ruling record. (b) Delivery and escalation timing traces, restart and restore traces, and the resume cases.
 
 **Decision unlocked:**
-- T13 construction on accepted text.
-- Commissioning traces from H2 folded into the T13 procedure before any session that could produce an unresolved request.
+- (a) → a new ruling, applied to the halt/resume owner text.
+- (b) → T13 construction on accepted text, with commissioning traces from H2 folded in before any session that could produce an unresolved request.
 
 **Grants at dispatch:**
 - (a) coordinator: `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`.
@@ -255,7 +308,7 @@ In each case return to the coordinator.
 
 **Prerequisites and existing authorization:**
 - The 2026-09-25 account-side read authorization (T07).
-- CP-2 retargets the reads from the D1 transaction to the preservation-trade transaction (addendum §1.3).
+- CP-2 confirms the target: an operator-placed preservation trade, where it meets the reads' evidence requirements, in place of the D1 transaction (addendum §1.3). A completed trade serves the report reads; it cannot supply a new same-session observation.
 - The rehearsal harness may be prepared before CP-2.
 
 **Work:**
@@ -312,7 +365,7 @@ In each case return to the coordinator.
 **Evidence retained:** the proposal note and the owner-text diffs, pending acceptance.
 
 **Decision unlocked:**
-- At **CP-1**: confirmation that RC-4/RC-5 are F1-entry conditions, with the assignment made.
+- The RC-4/RC-5 assignment, which is a build-entry condition for S5 (ledger 2026-09-27). The implementation and the attestations stay before F1.
 - Later, **CP-8**: provisioning and admission.
 
 **Grants at dispatch (coordinator):** `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `make check` clean.
@@ -342,21 +395,24 @@ In each case return to the coordinator.
 
 **Grants at dispatch (coordinator):** `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `make check` clean.
 
-## H9 — Result/seal integration and bounded same-sample recovery
+## H9 — Result/seal integration and bounded same-sample recovery (two checkpoints)
 
-**Uncertainty resolved:** whether S1–S5 and the frozen T05 build hold as one integrated identity under interruption and exhaustion.
+**Uncertainty resolved:** whether S1–S5 and the frozen T05 build hold as one integrated identity under interruption and exhaustion. Two checkpoints, returned separately. The coordinator keeps combined acceptance.
 
 **Prerequisites and existing authorization:**
-- S5 Checkpoint C3 accepted (the PART_A field sets, the `/v8` snapshot and the capture contract are stable).
-- The D3 owner text (S5 draft §3.4) accepted.
-- The existing T05 build acceptance.
+- **Integration preparation:** S5 Checkpoint C3 accepted (the PART_A field sets, the `/v8` snapshot and the capture contract are stable), and the existing T05 build acceptance.
+- **Checkpoint R1, integration acceptance:** full S5 acceptance. This is the existing dependency ("Integrate the frozen head `6cf2732` after S5 acceptance"); it is not replaced.
+- **Checkpoint R2, recovery-slice acceptance:** the D3 owner text (S5 draft §3.4) accepted, and R1 accepted.
 
 **Work:**
-- Integrate `claude/t05-result-seal@6cf2732` on the S5 head:
+- **Preparation**, from S5 C3: a branch integrating `claude/t05-result-seal@6cf2732` onto the S5 head, with the interface diff:
   - unify `_settlement_terminal`;
   - take main's `031d79a` roll, "never a fresh one";
-  - create the real seal principal and its host-provisioning change (seam row 11).
-- Then the D3 slice (R1–R10). The recovery retains every failed attempt and never renews the allowance or deadline. It allocates no attempt ID, salt, seed or plan, and makes no public reveal while recovery remains possible.
+  - seam row 11: the real seal principal and its host-provisioning change.
+
+  No acceptance-grade run until S5 is accepted.
+- **R1:** re-base the prepared integration on the accepted S5 head and run the acceptance-grade Linux result/seal node set. Return it on its own.
+- **R2:** the D3 slice (R1–R10). The recovery retains every failed attempt and never renews the allowance or deadline. It allocates no attempt ID, salt, seed or plan, and makes no public reveal while recovery remains possible. Return it on its own.
 
 **Limits:**
 - No production authority, no route-enabling release literal before T06, and no accepted formula or tolerance change.
@@ -364,19 +420,20 @@ In each case return to the coordinator.
 
 **Stop conditions:**
 - An integration conflict that changes an accepted interface.
+- An S5 change after C3 that invalidates the prepared branch.
 - Any path that redraws or renews allowance.
 
-In either case return to the coordinator.
+In each case return to the coordinator.
 
 **Recovery:** branch-level only. Retained attempts are never deleted.
 
 **Evidence retained:**
-- Linux qseal and result-G5 cases, exhaustion and interruption cases, and receipt-history cases (a receipt is history, not authority);
-- Windows lines and `check`.
+- R1: Linux qseal and result-G5 cases, and exhaustion and receipt-history cases (a receipt is history, not authority), plus Windows lines and `check`.
+- R2: interruption and retry cases, retained-attempt history, and the no-renewal assertions.
 
-**Decision unlocked:** T06/S8 dispatch on one identity.
+**Decision unlocked:** R1 and R2, each accepted separately, then the coordinator's combined acceptance and T06/S8 dispatch on one identity.
 
-**Grants at dispatch (worker):** `repository.read`, `tests.run`, `worktree.write`, `branch.push`, `pr.open`, `ci.dispatch`. Acceptance: the integrated result/seal Linux node set named at dispatch.
+**Grants at dispatch (worker):** `repository.read`, `tests.run`, `worktree.write`, `branch.push`, `pr.open`. The coordinator holds `ci.dispatch` for the Linux runs under its own grants. Acceptance: the R1 and R2 node sets named at each dispatch.
 
 ## H10 — Final launch: exact-candidate rehearsal and one attended session (LATER)
 
