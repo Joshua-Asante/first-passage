@@ -69,6 +69,10 @@ jobs:
       JOB_TIMEOUT_MIN: 120
       POST_LOOP_RESERVE_MIN: 15
     steps:
+      - name: Start the job clock
+        # First step, before checkout, so the loop deadline counts every step's time.
+        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 2
@@ -79,7 +83,6 @@ jobs:
         # Refuse what the run cannot honour before the 6-8 minute provisioning step.
         run: |
           set -euo pipefail
-          echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
           OUT="$RUNNER_TEMP/s5-part-a-measurement"
           if ! printf '%s' "$NOTE_DIR" | grep -Eqx 'docs/notes/[0-9]{4}-[0-9]{2}-[0-9]{2}-s5-part-a-measurement'; then
             echo "note_dir must match docs/notes/YYYY-MM-DD-s5-part-a-measurement" >&2; exit 2
