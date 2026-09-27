@@ -970,7 +970,7 @@ The #519 merge inserted the 2026-09-26 ruling entry (LED:817-838) and the direct
 | 756, 757 | 756, 757 | Unchanged |
 
 Other statements this section corrects, each marked inline with a dated note:
-- §0 said RC-5 would be recorded when H7 is accepted. It is now recorded (LED:877, :909). The RC-4 slice is still pending the operator (decision (5)).
+- §0 said RC-5 would be recorded when H7 is accepted. It is now recorded (LED:877, :909). The RC-4 slice is still pending the operator (decision (5)). *[Corrected 2026-09-27: the operator accepted the RC-4 slice at CP-1a decision (5) the same day, which meets the RC-4/RC-5 build-entry assignment ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)).]*
 - §15's derived-text discrepancy is resolved: the addendum's CP-1a row no longer lists Stage 1b-N2 (CKL:488).
 - The Stage 0 deadline wording in §0, §12.1, §15 and the coordinator acceptance now takes the conditional form of §16.4.
 

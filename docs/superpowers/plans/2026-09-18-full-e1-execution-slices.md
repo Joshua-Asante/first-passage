@@ -906,7 +906,7 @@ Any failed condition refuses admission. The refusal is recorded and is not a con
 
 **Not granted:** S5 release, dispatch or execution; owner text applied; host provisioning or spend; credential or key creation; F1, CP-6 or CP-8 decisions; production, arm, deployment or live authority. The hold stays **HELD**.
 
-**Recorded state (2026-09-27).** RC-5 is **assigned** (coordinator act). The RC-4 slice is **proposed, pending the operator at CP-1a item 5**, so the RC-4/RC-5 build-entry condition is not yet met. Host spend and sizing stay owed before CP-8 (checklist T11's measured envelope; the $700-ceiling scope is the single CP-2 question F-4 of the commissioning packet).
+**Recorded state (2026-09-27).** RC-5 is **assigned** (coordinator act). The RC-4 slice is **proposed, pending the operator at CP-1a item 5**, so the RC-4/RC-5 build-entry condition is not yet met. Host spend and sizing stay owed before CP-8 (checklist T11's measured envelope; the $700-ceiling scope is the single CP-2 question F-4 of the commissioning packet). *[Corrected 2026-09-27: the operator accepted the RC-4 slice at CP-1a decision (5) the same day; the coordinator confirmation there records the RC-4/RC-5 assignment at build entry as met (see the CP-1a ruling entry below).]*
 
 ### Coordinator entry — CP-1a packet reconciled with #519's merged corrections, 2026-09-27
 
