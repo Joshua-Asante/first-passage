@@ -306,3 +306,36 @@ Re-run after the fixes: `python3 scripts/check_handoff_authority.py --all` gave 
 - **§7 known path: the coordinator intends choice (B), to be recorded in §10 at dispatch.** S1 is pinned `xfail(strict=True)`, with the reason naming CC-3 and §A11.2, and the other cases continue. This is a **recorded variance** from the parent H5 stop condition. Under it, (b)'s acceptance is partial, CC-3 stays an open defect (TB-I3/T09), and the S1 XFAIL is not acceptance of §A11.2 behavior. The reason for (B): the defect is already established by code reading, and stopping at its first reproduction would leave S2–S6 unrehearsed.
 - **Parent scope (cross-handoff critic X-06).** Step (b) establishes owner-level incident-versus-refusal behavior, restart-during-halt behavior, the structural absence of other activation paths, and local notifier behavior, all synthetically. **Real delivery and 60 s escalation are measured in T13 (Phase 5 WP2).** The exception is if the operator runs the delivery leg on an existing, no-spend channel at dispatch, as this card allows. The parent H5 card and the addendum's §3 H5 row are amended to match.
 - **O-6 and O-7:** decided by the operator on 2026-09-27 (incident ADR §A11.2, clarifications). S6 is updated.
+
+---
+
+## Coordinator acceptance of the return (2026-09-27)
+
+**ACCEPTED, PARTIAL under the §7 (B) variance.** The return is [PR #521](https://github.com/Joshua-Asante/first-passage/pull/521), head `32e0863` on `claude/h5b-incident-rehearsal`, cut from `origin/main` `5ad04cf`. Worker status: `DONE_WITH_CONCERNS`. The operator merges.
+
+**Coordinator re-verification (clean detached worktree at `32e0863`, launcher with the scratchpad operations environment, Python 3.11):**
+- The diff holds exactly the two §1 files: the new test module and the new evidence note. There is no production code, no existing-test edit and no fixture module.
+- The test node names match the amended `acceptance` list exactly: 15 nodes.
+- `pytest tests/ops/test_attended_incident_rehearsal.py tests/ops/test_four_leg_runtime.py -q`: 35 passed, 3 skipped, 1 xfailed; record completed, exit 0, source stable.
+- `check`: completed, exit 0, source stable.
+- The worker's disclosed `test-ops` failure (`test_qualification_isolation.py::test_qualification_suite_in_clean_process`, `ModuleNotFoundError: cryptography`) reproduces on unmodified `origin/main` in the same environment. It is environmental and not this PR's. The complete `test-ops` suite is not claimed to pass.
+
+**Review round.**
+- **One finding, fixed in `ae9fe50`.** The first revision's S7 incomplete-barrier node sent a direct owner request stamped with the incomplete bar's time and asserted it was accepted. That is evidence against §2 `:30` ("No risk-add dispatch from that bar"). The node now drives the four-leg runtime: three of four legs deliver, nothing is evaluated or dispatched, and there is no halt and no incident. The fourth leg then completes the bar before expiry, and that bar's entry is admitted.
+- **The observation on the owner, confirmed by coordinator reading.** The owner's direct `dispatch` does not check barrier completeness. The `:30` gate is the runtime's (`book_runtime.py:390`). The only `ops/` caller of `handle_book_action` is the runtime (`book_runtime.py:412`, `:418`, `:456`), and `handle_book_action` documents itself as the offline Phase-2 boundary with no production route. No TB-I3 item is raised.
+
+**What the return establishes (synthetic / replay engineering only):**
+- S2 and S4–S6 end automation for the session: a stale fact, feed silence, a restart during a halt, ambiguous protection and an operator stop.
+- The S7 refusals refuse only the request.
+- No RUNNING/NORMAL write site exists other than `book_bootstrap.py:_activate_bootstrap`.
+- The local notifier cannot change the halt, generation or permission.
+
+**What stays open:**
+- **CC-3 (TB-I3/T09):** the S1 XFAIL(strict) is not acceptance of §A11.2 behavior. A repair turns it into an XPASS, which fails the suite.
+- **Incident → notification emission, 60 s escalation, failure routing and the external heartbeat:** ABSENT.
+- **Real delivery:** OWED to T13 / Phase 5 WP2.
+- **Restore from backup:** Phase 5 WP3.
+- **O-1 to O-5:** with their §4.1 owners.
+- **The late-bar ruling:** it covers late bars only. A future bar, a bar outside the session and a wrong-bar intent are not classified.
+
+**Unlocks:** T13 construction (parent card H5), with H2's commissioning traces folded in before any session that could produce an unresolved request. **Not granted:** a merge, a session, a drill, an arm, a deployment, GO, account traffic, or any later-release policy.
