@@ -199,10 +199,11 @@ The operator merges. The coordinator keeps acceptance.
 - Card §4 pytest command: `20260927T185936Z-c4b5bf30ce8d`, status **failed**, exit 1, source stable; 50 passed, 3 skipped, 1 xfailed, 1 failed (the pre-existing Windows node).
 - Regression modules with that node deselected: `20260927T190027Z-5ed618528491`, status completed, exit 0, source stable; 34 passed, 3 skipped, 1 xfailed.
 - `.\fp.ps1 check`: `20260927T190057Z-835ecc659d3e`, status **failed**, exit 1, source stable.
+- *[Coordinator, 2026-09-27]* `check` on the corrected tree `768f9b3d` (Linux, `python3 -I scripts/fp.py --env <ops-env> check`, clean tree): `20260927T192510Z-75cc3db591e2` (record.json SHA-256 `8c90ac952a1ae90639b405f5e96e6687c660c772975d0a33068a234711333464`), status completed, exit 0, source stable. It supersedes the failed record, which binds the earlier tree.
 
 **Disclosed failures (pre-existing; not caused or fixed here):**
 - `test_attended_incident_rehearsal.py::test_missed_acknowledgment_never_changes_halt_or_permission` fails on Windows (`:` in the `FileAckNotifier` ack filename, `OSError: [Errno 22]`), as §9 records.
-- `.\fp.ps1 check` stops at `governance-prose-control-chars`: a form-feed at §9 line 171, column 7 (`` `.\fp.ps1 doctor` `` became `.` + U+000C + `p.ps1`), from commit `e1635d8`. The worker may not edit §9. **For the coordinator:** a one-character fix restores the gate. A diagnostic run of every other `check` gate, continuing past failures, exits 0 for all 28.
+- `.\fp.ps1 check` stops at `governance-prose-control-chars`: a form-feed at §9 line 171, column 7 (`` `.\fp.ps1 doctor` `` became `.` + U+000C + `p.ps1`), from commit `e1635d8`. The worker may not edit §9. **For the coordinator:** a one-character fix restores the gate. *[Resolved 2026-09-27 in `768f9b3d`; the gate passes on the corrected tree.]* A diagnostic run of every other `check` gate, continuing past failures, exits 0 for all 28.
 
 **Observations:**
 - Direct runtime delivery after an omission halt adds a `bar-sequence` row, but nothing is dispatched.
