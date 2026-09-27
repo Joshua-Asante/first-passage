@@ -709,6 +709,9 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
         exit_code = _int_or_none(unit_values.get('ExecMainStatus'))
         result = unit_values.get('Result')
         timed_out = unit_values.get('HarnessPollTimeout') == 'yes' or result == 'timeout'
+        if unit_values.get('HarnessNotStarted'):
+            # The workflow's loop deadline passed before this repeat started (I-6: no row).
+            result = 'not-started: ' + unit_values['HarnessNotStarted']
         start, end = (_unit_number(unit_values, 'ExecMainStartTimestampMonotonic'),
                       _unit_number(unit_values, 'ExecMainExitTimestampMonotonic'))
         if start and end and end > start:
@@ -1162,6 +1165,9 @@ def _identity_mismatches(executed, current):
     if not executed:
         return ['executed identity absent from the bundle (bundle predates the binding or was edited)']
     found = []
+    if executed.get('tree_clean_tracked') is not True:
+        found.append('execution-time tracked tree not clean (tree_clean_tracked=%s; r2 §5.1 requires the measured '
+                     'commit on a clean tree)' % executed.get('tree_clean_tracked'))
     for key in ('measured_commit', 'harness_sha256', 'code_identity'):
         if executed.get(key) != current.get(key):
             found.append('%s executed %s, at summarize %s' % (key, executed.get(key), current.get(key)))
@@ -1193,14 +1199,16 @@ def _code_identity():
 
 def summarize(args):
     inputs = [Path(p) for p in args.summarize]
-    records = []
+    records, locations = [], []
     current = _current_identity(inputs[0]) if len(inputs) == 1 else None
     for path in inputs:
         candidate = path / 'record.json' if path.is_dir() else path
         if len(inputs) > 1 and candidate.name == 'record.json' and candidate.is_file():
             records.append(_read_json(candidate))   # combined mode reuses each job's runner-side record
+            locations.append(candidate.parent)
             continue
         records.append(_job_record(path, args, current))
+        locations.append(path if path.is_dir() else path.parent)
     if len(records) == 1:
         record = records[0]
         record['source_sha256'] = current['source_sha256']
@@ -1210,7 +1218,7 @@ def summarize(args):
         destination = Path(args.record) if args.record else (
             inputs[0] / 'record.json' if inputs[0].is_dir() else inputs[0].with_suffix('.record.json'))
     else:
-        record = _combined(records)
+        record = _combined(records, locations)
         destination = Path(args.record) if args.record else None
         if destination is None:
             raise SystemExit('--record PATH is required when combining several jobs')
@@ -1262,9 +1270,52 @@ def _combine_inputs_refusal(records):
     return None
 
 
-def _combined(records):
+def _cleanup_receipt_refusal(records, locations):
+    """Each job's artifact must carry the workflow's cleanup receipt, for the same
+    run, attempt and job, with cleanup_exit 0 (the owned cleanup of r2 §12.3 step 9)."""
+    for record, location in zip(records, locations or [None] * len(records)):
+        runtime = record.get('runtime') or {}
+        receipt_path = None if location is None else Path(location) / 'cleanup-receipt.json'
+        try:
+            receipt = _read_json(receipt_path) if receipt_path is not None else None
+        except (OSError, ValueError) as exc:
+            return 'refused: job %s cleanup receipt unreadable: %s' % (runtime.get('job'), type(exc).__name__)
+        if not isinstance(receipt, dict):
+            return 'refused: job %s has no cleanup receipt (cleanup-receipt.json) beside its record' % (
+                runtime.get('job'))
+        bound = all(str(receipt.get(key)) == str(runtime.get(key)) for key in ('run_id', 'run_attempt', 'job'))
+        if not bound:
+            return 'refused: job %s cleanup receipt is for run %s attempt %s job %s, not this record' % (
+                runtime.get('job'), receipt.get('run_id'), receipt.get('run_attempt'), receipt.get('job'))
+        if receipt.get('cleanup_exit') != 0:
+            return 'refused: job %s owned cleanup did not succeed (cleanup_exit %s)' % (
+                runtime.get('job'), receipt.get('cleanup_exit'))
+    return None
+
+
+def _combine_tool_refusal(records):
+    """The combining harness must be the code that produced the records: the same
+    HEAD, harness SHA-256 and recorded source SHA-256s (r2 §5.1). Keys on which the
+    records disagree are left to the cross-job I-7 check."""
+    for key, now in (('measured_commit', _git('rev-parse', 'HEAD')), ('harness_sha256', _sha256_file(HARNESS))):
+        values = {r.get(key) for r in records}
+        if len(values) == 1 and values != {now}:
+            return ('refused: the records carry %s %s but this combine runs %s; combine from the recorded revision'
+                    % (key, next(iter(values)), now))
+    sources = [json.dumps(r.get('source_sha256'), sort_keys=True) for r in records]
+    if len(set(sources)) == 1:
+        for name, sha in sorted((records[0].get('source_sha256') or {}).items()):
+            now = _sha256_file(ROOT / name) if (ROOT / name).is_file() else None
+            if now != sha:
+                return ('refused: source %s is %s here but %s in the records; combine from the recorded revision'
+                        % (name, now, sha))
+    return None
+
+
+def _combined(records, locations=None):
     """Ĉ, Ŵ, M̂, P̂ are maxima over all valid timed repeats of both jobs (r2 §6.2)."""
-    refusal = _combine_inputs_refusal(records)
+    refusal = (_combine_inputs_refusal(records) or _combine_tool_refusal(records)
+               or _cleanup_receipt_refusal(records, locations))
     if refusal:
         raise SystemExit(refusal)
     stages = {r['stage'] for r in records}

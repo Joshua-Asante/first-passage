@@ -61,6 +61,13 @@ jobs:
       JOB: ${{ matrix.job }}
       # r2 §6.2: job a runs forced first, job b prescribed first.
       ARM_ORDER: ${{ matrix.job == 'a' && 'forced prescribed' || 'prescribed forced' }}
+      # The measurement loop stops starting or waiting on repeats at
+      # JOB_START_EPOCH + (JOB_TIMEOUT_MIN - POST_LOOP_RESERVE_MIN) min, so that a
+      # hung repeat can never let the job timeout (r2 §12.3: 120 min) pre-empt
+      # summarize, cleanup and upload: a timed-out or unstarted repeat is then
+      # still recorded as I-6 (r2 §12.7). JOB_TIMEOUT_MIN must equal timeout-minutes.
+      JOB_TIMEOUT_MIN: 120
+      POST_LOOP_RESERVE_MIN: 15
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -72,6 +79,7 @@ jobs:
         # Refuse what the run cannot honour before the 6-8 minute provisioning step.
         run: |
           set -euo pipefail
+          echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
           OUT="$RUNNER_TEMP/s5-part-a-measurement"
           if ! printf '%s' "$NOTE_DIR" | grep -Eqx 'docs/notes/[0-9]{4}-[0-9]{2}-[0-9]{2}-s5-part-a-measurement'; then
             echo "note_dir must match docs/notes/YYYY-MM-DD-s5-part-a-measurement" >&2; exit 2
@@ -180,8 +188,15 @@ jobs:
           host_root="$(dirname "$manifest")"
           PY="$host_root/env/bin/python"; H="$NOTE_DIR/measure_part_a_max.py.txt"
           if [ "$MODE" = dry-run ]; then repeats="1"; extra="--dry-run"; else repeats="1 2 3 4 5 0"; extra=""; fi
+          loop_deadline=$((JOB_START_EPOCH + (JOB_TIMEOUT_MIN - POST_LOOP_RESERVE_MIN) * 60))
           for arm in $ARM_ORDER; do
             for r in $repeats; do
+              if [ "$(date +%s)" -ge "$loop_deadline" ]; then
+                # Not started: retained as a missing row, so the summarizer records I-6.
+                printf 'HarnessNotStarted=loop-deadline\nHarnessPollTimeout=no\n' > "$OUT/$arm-$r.unit"
+                echo "repeat $arm-$r: not started, loop deadline reached (I-6)"
+                continue
+              fi
               if [ "$MODE" = measure ] && [ "$r" = 1 ]; then
                 find "$GITHUB_WORKSPACE" -name __pycache__ -type d -prune -exec sudo rm -rf {} +
                 sync; echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
@@ -193,10 +208,11 @@ jobs:
                 "$PY" -I scripts/fp.py --env "$host_root/env" python "$H" \
                   --repeat-mode --stage "$STAGE" --arm "$arm" --repeat "$r" --unit "$unit" $extra \
                   --out "$OUT/$arm-$r.json"
-              deadline=$((SECONDS + 1800)); timed_out=no
+              deadline=$(($(date +%s) + 1800)); timed_out=no
+              if [ "$deadline" -gt "$loop_deadline" ]; then deadline=$loop_deadline; fi
               until [ "$(systemctl show -p SubState --value "$unit")" = exited ] || \
                     [ "$(systemctl show -p ActiveState --value "$unit")" = failed ]; do
-                if [ "$SECONDS" -ge "$deadline" ]; then timed_out=yes; break; fi
+                if [ "$(date +%s)" -ge "$deadline" ]; then timed_out=yes; break; fi
                 sleep 1
               done
               systemctl show -p CPUUsageNSec -p MemoryPeak -p MemorySwapPeak -p ExecMainStatus -p ControlGroup \
@@ -244,6 +260,10 @@ jobs:
           else
             echo 'Setup failed before ownership reservation; no host resources to retire.'
           fi
+          # Cleanup receipt, bound to this run, attempt and job: combining refuses a job
+          # record without a receipt showing cleanup_exit 0 in the same artifact.
+          printf '{"schema": "s5-part-a-max-expansion-measurement/v2#cleanup-receipt", "cleanup_exit": %d, "run_id": "%s", "run_attempt": "%s", "job": "%s"}\n' \
+            "$cleanup_status" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$JOB" | sudo tee "$OUT/cleanup-receipt.json"
           sudo journalctl -b -o short-iso --no-pager > "$OUT/journal.log" 2>&1 || true
           sudo chown -R "$(id -u):$(id -g)" "$OUT"
           exit "$cleanup_status"

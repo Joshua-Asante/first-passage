@@ -56,7 +56,8 @@ Carrying the harness in the image would need a change under `ops/` (the closure 
 - **`--launcher`** (Windows only, Stage 1a) spawns each repeat with `CREATE_SUSPENDED`, assigns it to a fresh job object, then resumes it. It reads `TotalUserTime + TotalKernelTime`, the outer wall and the exit code. It purges the checkout's `__pycache__` before each arm's repeat 1 and does not drop the page cache (r1 §3.2). The order per arm is repeats 1..N, then instrumented repeat 0.
 - **`--summarize PATH`** takes a Linux job directory or a Windows bundle. It writes `record.json` (for a bundle, `<bundle>.record.json`) in schema `s5-part-a-max-expansion-measurement/v2`. It exits 0 (valid), 3 (validity failure, re-runnable) or 4 (invalid, no re-run).
   - Given several per-job `record.json` inputs and `--record`, it writes a combined record. Ĉ, Ŵ, M̂ and P̂ are then maxima over both jobs (r2 §6.2), and the between-job median ratio is recorded as host variance. It refuses, writing nothing, unless the inputs are exactly one job `a` and one job `b` per-job record with one common run id. Records that differ in, or lack, `measured_commit`, `dispatched_head`, `harness_sha256` or `source_sha256` are I-7.
-  - For a Windows bundle it compares the identity `--launcher` recorded after its last repeat (`executed_identity`: commit, harness SHA-256, source SHA-256s and `observe_runtime`) with the identity at summarize time. A missing identity or any mismatch is I-7.
+  - Combining also refuses in two more cases. The first is when the combining checkout is not the code that measured: its HEAD, harness SHA-256 or recorded source SHA-256s differ from what both records carry. Run the combine from the recorded revision. The second is when a job's artifact lacks `cleanup-receipt.json` for the same run, attempt and job with `cleanup_exit` 0, which the workflow's owned-cleanup step writes (r2 §12.3 step 9).
+  - For a Windows bundle it compares the identity `--launcher` recorded after its last repeat (`executed_identity`: commit, harness SHA-256, source SHA-256s and `observe_runtime`) with the identity at summarize time. A missing identity, any mismatch, or an execution-time tracked tree that was not clean (`tree_clean_tracked` false or absent; r2 §5.1 "measured commit, clean tree") is I-7.
   - A record whose shape is not the fixed one (both arms; 5 timed repeats per arm in measure mode; r2 §6.2, §12.2) is `H-SHAPE`. `--launcher` still runs another shape for debugging, but it says so, and the bundle can never yield an acceptance record.
   - `rule_applicable` also needs Ĉ, Ŵ and P̂ from every valid timed forced repeat (r2 §6.2, §9). If one is missing, for example when the unit's exit timestamp is unset, the record carries an `INCOMPLETE` reason and `ceiling_inputs_complete = false`, and the rule is not applicable.
 - **Workflow helpers** use the standard library only:
@@ -106,7 +107,7 @@ The artifact name carries the run attempt, so a re-run never replaces the failed
 | I-3 | A timed (or dry-run) repeat has no complete aggregate memory reading | 3 | `MEMORY_EVIDENCE_MISSING`; memory `UNVERIFIED`, `rule_applicable = false` |
 | I-4 | Digests differ within an arm, or the forced prefix differs from the prescribed result | 4 | `INVALID_MEASUREMENT`; bears on D3 R7 only after diagnosis (§16 C8) |
 | I-5 | Panel-count or `expanded` assertion failed | 4 | `INVALID_MEASUREMENT` |
-| I-6 | A repeat exited non-zero, timed out (30 min poll bound), OOMed, or left no row | 3 | `INVALID_MEASUREMENT` |
+| I-6 | A repeat exited non-zero, timed out (30 min poll bound, capped by the loop deadline), OOMed, left no row, or was not started before the loop deadline | 3 | `INVALID_MEASUREMENT` |
 | I-7 | Measured head differs from the dispatched head, or the tree is dirty (Stage 1b) | 4 | `INVALID_MEASUREMENT` |
 | I-8 | Stage 1c requested before its C3 path exists | 4 (workflow: refused at input validation) | `BLOCKED` |
 | H-FIELDS | Stage 1a: a successful repeat left a required field empty | 4 | `INVALID_MEASUREMENT` (harness defect) |
@@ -135,6 +136,8 @@ Both are **screens, not the r2 §13 application**. The coordinator computes X an
   - the stop class `MEMORY_EVIDENCE_MISSING` (§16 C8).
 - **Call-count mismatch** against the r2 §4 expectation (forced 14 replays, 5 proofs, 15 `verify_for`; prescribed 8, 3, 9) is reported as a note, not a stop.
 - **Workflow.** The workflow adds a per-repeat poll bound (30 min) so that a hang is an I-6 timeout, `persist-credentials: false`, and the run attempt in the artifact name. It also has a `runtime` input, whose `worker_image` value is refused (image-first finding).
+- **Loop deadline.** r2 fixes `timeout-minutes: 120` (§12.3) and budgets a measure job at 31 min (§12.6). It sets no per-repeat or loop bound. The workflow stops starting repeats, and stops waiting on a hung one, at the job start plus 120 − 15 = 105 min. A repeat not started by then gets a `HarnessNotStarted=loop-deadline` unit file and is summarized as I-6. The 15 min `POST_LOOP_RESERVE_MIN` for summarize, owned cleanup, journal export and upload is a harness choice: r2 §12.6 budgets only 2 min for cleanup and upload, and does not budget summarize. It does not change any r2 budget, because a normal job ends well inside it.
+- **Cleanup receipt.** r2 names no class for a failed owned cleanup. The job fails at that step, so it counts as a failed job under the §12.7 re-run cap, and combining refuses its record. That refusal is a harness choice.
 
 ## Not run
 
