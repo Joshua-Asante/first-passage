@@ -566,16 +566,22 @@ done
 ```bash
 gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref <measure-branch> \
   -f stage=1b -f mode=dry-run -f note_dir=docs/notes/<date>-s5-part-a-measurement
-gh run watch <run_id> -R Joshua-Asante/first-passage --exit-status
-gh run download <run_id> -R Joshua-Asante/first-passage -D <scratch>/s5-1b-dry
-# only if the dry run fails a re-runnable check (I-1 or I-6), once per stage: re-dispatch the same dry run
+gh run watch <run_id> -R Joshua-Asante/first-passage --exit-status; echo "watch exit $?"   # waits for completion
+gh run download <run_id> -R Joshua-Asante/first-passage -D <scratch>/s5-1b-dry           # always, pass or fail
+# only if the dry run fails a re-runnable check (I-1 or I-6), once per stage: re-dispatch the same dry run,
+# then watch and download it the same way into <scratch>/s5-1b-dry-2
 # after a clean dry run:
 gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref <measure-branch> \
   -f stage=1b -f mode=measure -f note_dir=docs/notes/<date>-s5-part-a-measurement
-gh run download <run_id> -R Joshua-Asante/first-passage -D <scratch>/s5-1b
+gh run watch <run_id> -R Joshua-Asante/first-passage --exit-status; echo "watch exit $?"   # waits for completion
+gh run download <run_id> -R Joshua-Asante/first-passage -D <scratch>/s5-1b-attempt1      # always, pass or fail
 # only if a job exits 3 (a re-runnable validity failure), once per stage; it re-runs every failed job (up to both):
 gh run rerun <run_id> -R Joshua-Asante/first-passage --failed
+gh run watch <run_id> -R Joshua-Asante/first-passage --exit-status; echo "watch exit $?"   # waits for attempt 2
+gh run download <run_id> -R Joshua-Asante/first-passage -D <scratch>/s5-1b-attempt2      # the re-run jobs' evidence
 ```
+
+*[Corrected 2026-09-27 (Codex review of 54471fab): each dispatch and the one permitted `--failed` re-run is now watched to completion with `gh run watch` before `gh run download`, because `download` only retrieves artifacts that already exist. Each download goes to its own directory whether the run passed or failed. Attempt 1's evidence and the re-run's are both retained, and the combine step reads the attempt-1/attempt-2 mixture (§12.9).]*
 
 **Files created by step (b):**
 - the workflow YAML above;
