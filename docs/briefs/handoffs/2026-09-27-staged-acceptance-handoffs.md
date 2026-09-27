@@ -49,7 +49,7 @@ If #519 merges before dispatch, the same paths on `main` are used, once they are
 | H5 | Attended operations | Step (a) **RETURNED and ACCEPTED 2026-09-27** (halt/resume amendment, with the O-6/O-7 clarifications applied); step (b) **RETURNED and ACCEPTED (PARTIAL, §7 (B)) 2026-09-27** ([PR #521](https://github.com/Joshua-Asante/first-passage/pull/521) at `32e0863`; [card](2026-09-27-h5b-attended-incident-rehearsal.md), *Coordinator acceptance of the return*; CC-3 stays open); the stale-individual-signal node was removed by a recorded variance (§10), and the operator ruled the classification the same day (a late bar is a source incident; halt/resume §4.1) | T13 construction |
 | H6 | Settlement evidence | Collection READY ON CP-2; rehearsal harness READY | CAP S1/S2 toward QUALIFIED |
 | H7 | Production qualification host | **RETURNED and ACCEPTED 2026-09-27** ([note](../../notes/2026-09-27-host-obligations-assignment.md)); RC-5 recorded in the ledger; RC-4 slice pending the operator (CP-1a item 5); host cost owed before CP-8 | RC-4/RC-5 assignment (S5 build entry); later CP-8 |
-| H8 | Feed (provider-neutral) | Step (a) **RETURNED and ACCEPTED 2026-09-27** ([note](../../notes/2026-09-27-feed-provider-neutral-preparation.md); [draft spec](../../spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md)); step (b) READY (operator machine) | CP-7 inputs; the F1 feed section; the empty-interval rule before CP-6 |
+| H8 | Feed (provider-neutral) | Step (a) **RETURNED and ACCEPTED 2026-09-27** ([note](../../notes/2026-09-27-feed-provider-neutral-preparation.md); [draft spec](../../spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md)); step (b) **RETURNED and ACCEPTED 2026-09-27** as documentary classification ([PR #524](https://github.com/Joshua-Asante/first-passage/pull/524) at `a1a3c3e`; [note](../../notes/2026-09-27-h8b-feed-gap-classification.md), *Coordinator acceptance*; Q-1 PROPOSED in spec §4.3, Q-2 parked, Q-3/Q-4 ruled into halt/resume §4.1); step (c) PREPARED, READY ON this card's merge and #521 ([card](2026-09-27-h8c-omission-incident-session-end.md)) | CP-7 inputs; the F1 feed section; the empty-interval rule before CP-6; verification of the omitted-slot ruling |
 | H9 | Result/seal and recovery | Preparation READY ON S5 C3 accepted; R1 ON S5 acceptance; R2 ON D3 text and R1 | T06/S8 |
 | H10 | Final launch | LATER | CP-9 |
 
@@ -422,6 +422,19 @@ In each case return to the coordinator.
 - **Returns to:** the operator, for the spec §4.3 empty-interval rule. If an omitted in-session slot would halt the book, it also goes to TB-I3 and to the halt/resume owner (the §A11.2 incident question).
 - **When:** before CP-6.
 - **Grants (coordinator, on the operator's machine):** `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `make check` clean.
+
+**Step (b) acceptance (2026-09-27).** Step (b) is ACCEPTED as a documentary classification. The return is [PR #524](https://github.com/Joshua-Asante/first-passage/pull/524), merged at `a1a3c3e`. The acceptance establishes the classification result: one observed affected permitted session in the reconciled common window, and 170 of the 171 residual gaps on holiday account days. It does not settle the cause of the omission, give a rate, or qualify a live feed ([note](../../notes/2026-09-27-h8b-feed-gap-classification.md#coordinator-acceptance-2026-09-27)). Carried forward:
+- **Q-1:** PROPOSED text in the draft equivalence spec §4.3. The operator adopts it at freeze, before CP-6.
+- **Q-2:** parked until an exchange record or an independent source can corroborate the event.
+- **Q-3 and Q-4:** ruled by the operator on 2026-09-27, in session. The ruling is recorded in the [halt/resume contract §4.1](../../spec/2026-09-14-tb-s3-halt-resume-contract.md#41-amendment-2026-09-27-incident-versus-correctly-handled-refusal), *Qualifications*.
+- **Outstanding:** a later-session re-arming design, for TB-I3 and the resume decision. No handoff builds it now.
+
+**Step (c), added at the acceptance of step (b) (2026-09-27).** [Worker card H8(c)](2026-09-27-h8c-omission-incident-session-end.md) verifies the omitted-slot ruling against the existing owners, synthetically. It covers three things:
+- the three omission detectors, and the late-bar regression kept separate;
+- recovered bars, repeated activation and a reopened journal, through real entry points only;
+- duplicate ids kept distinct from separate detector records.
+
+The card changes no production code and invents no resume interface. It is READY ON its own merge and on #521's. The coordinator keeps acceptance of its results.
 
 ## H9 — Result/seal integration and bounded same-sample recovery (two checkpoints)
 
