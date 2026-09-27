@@ -96,6 +96,67 @@ For this documentary assessment, inspect the final diff and relative links, reco
 
 No edits to `STATE.md`, `AGENTS.md`, governing contracts, policy constants, Pine/private ports, lifecycle state, code, deployment configuration or the roadmap. No deletion, migration, alert creation, account/credential access, order action, vendor communication, spend, statistical dispatch, deployment or arm. No assumption that simplification waives qualification. Further implementation and operational evidence require their own accepted boundary and authority.
 
+## 5a. Dispatch refresh (2026-09-26)
+
+**Dispatch.** Operator direction 2026-09-26, in session: "Allocation map first", as the first step toward the integrated B–D decision packet. **Coordinator:** the coordinating Claude Code session (Opus 5.5), which accepts or corrects the return. **Executor:** one assessor subagent of that session, run in its own git worktree on branch `claude/tradeify-allocation-map`. **Dispatch revision:** the commit that adds this section. It is recorded in §6 at return, and the executor verifies that its checkout's `HEAD` descends from it. The committed-handoff rule is met by this commit ([Gate A A13](2026-09-25-crosstrade-rest-route-assessment.md#611-gate-a-factual-disposition)). §0–§5 stay the scope record. This section supersedes only the prerequisites listed below, and where they conflict, this section governs.
+
+**Refreshed prerequisites (supersede §0 "Prerequisites" and the Vanguard item in §3 D):**
+
+1. **Baseline:** `main` `24e3843`, plus the unmerged gate-B branch at `7fe2891` ([PR #515](https://github.com/Joshua-Asante/first-passage/pull/515)), which this branch is stacked on.
+2. **The REST assessment is accepted with changes at Gate A** ([§6.11](2026-09-25-crosstrade-rest-route-assessment.md#611-gate-a-factual-disposition), accepted text at `5037ba4`). Cite accepted findings A1–A14 by ID, with their classes and limitations, and do not re-derive them. In particular:
+   - **A3:** no REST no-send guarantee. The future outcome classifier distinguishes a local pre-dispatch refusal, a remote refusal after dispatch, and a positive lookup.
+   - **A4:** L2(c), L2(d), cancellation of suspended children and the takeover composite are unverified (K).
+   - **A5:** L2(e), L2(f), L2(g) and scoped close are contradicted by the route (U). ORB/Striker have an adopted direction but are not discharged.
+   - **A7:** late-reject detection needs a poll.
+   - **A8:** CrossTrade coverage repair is a third-party actor.
+   - **A10:** account-configuration actors are unverified.
+   - Use the **drill map by behavior and interface**. The REST reads D4 and D5 are not authorized.
+3. **Vanguard:** runtime `TRAILING ACTIVE` is accepted (A6), and the operator has ruled the **fixed-stop edition** ([campaign §59 Ruling 4](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-4--vanguard-mgc-fixed-stop-edition-on-this-route-2026-09-26); [pre-registration](../pre-registration/2026-09-26-tradeify-vanguard-fixed-stop-edition-prereg.md), DRAFT). The §3 D Vanguard-trailing item is **resolved**: do not re-read to establish it. Treat three legs as route-native **candidate** editions (ORB, Striker, Vanguard). Aegis keeps its declared expression, attested to fit, with L2(c) and the takeover still K. Edition rules still marked OWED are open behavior decisions for §3 D, not facts.
+4. **Unknown-request posture:** the current preserve-and-block rule governs (`book_account_owner.py:1608`). Option B is **Proposed**. Its POLICY rows UB-1, UB-3, UB-8 and UB-9 were **ruled 2026-09-26 as direction** ([incident ADR §A9.1](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md)); the other rows are recommendations. Map both postures and label every B-dependent allocation `PROVISIONAL-B`. In particular, map UB-10 (one obligation record per child, extending the attempt journal) and UB-1's account-wide loss model as candidate controller responsibilities, each with its own vendor comparison.
+5. **Feed back into B.** Any allocation that forces or offers a behavior change goes into §3 D as a gate-B item (question, affected rows, current rule, proposed change, requalification owed). It is not adopted.
+6. **Unchanged:** the private-source rules (§60; Phase-0 paragraph), the §3 single-artifact rule (result at `docs/notes/2026-09-25-tradeify-capability-allocation-deletion-map.md`, plus this handoff's §6 return only), and every §5 exclusion. No external model or service receives private sources. No GLM.
+
+**Checkpoint delivery:** the §0 checkpoint is recorded inside the result artifact, as §0 requires, and in the §6 return. The executor continues independent work without waiting.
+
 ## 6. Executor return
 
 Not dispatched. On return, record named executor/coordinator, dispatch revision, result path, inspected sources, checkpoint, three verdicts, unresolved decisions/evidence, verification performed and four-state completion status (`DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`). The coordinator records acceptance or required corrections before any successor work. Cross-seat transfer must satisfy the committed-handoff rule. This draft is committed but names no executor and pins no dispatch revision, so it is not an execution order.
+
+**Return (2026-09-26): `DONE_WITH_CONCERNS`.** Coordinator acceptance is owed.
+
+| Item | Value |
+|---|---|
+| Executor / coordinator | Assessor subagent (Claude Code, Opus 5.5) on branch `claude/tradeify-allocation-map` / the coordinating Claude Code session |
+| Dispatch revision | `d5effe5fbeb9df84de39dbcf1933a1ee91e303e3`, verified as the executor's starting `HEAD` |
+| Result | [`docs/notes/2026-09-25-tradeify-capability-allocation-deletion-map.md`](../../notes/2026-09-25-tradeify-capability-allocation-deletion-map.md), sections §0 and A–E |
+| Inspected sources | All Phase-0 reads (result §0 read report), plus the S2b terms ruling and the qualification trust domain. All eight `BOOK_SOURCES.sha256` pins were rechecked in place: all OK. The ORB, corrected-Striker and Aegis ports were read in place, action and exit branches only. Vanguard was not re-read (§5a item 3). Effective-input files were not read, because they are outside §60. Code hashes are in result §E. |
+| Checkpoint | Recorded in result §0. **Provisional boundary:** one durable owner, the completed-bar barrier, the ports, policy, capacity, takeover, schedule, settlement, unknown accounting and a thin REST adapter. Tradovate owns the 1-lot OSO fixed stop/target and between-bar execution. **Reductions:** AVOID BUILDING for TV ingress/publisher, the trail manager and feed, and residual cover; REDUCE the ATTACH and live-trailing paths after freeze. **Conflicts:** C18 snapshot contract; C11b close-time exit is emulator-only; T08 §7.8's "moot" exit-partial line is stale after UB-5. |
+| Verdicts | Technical allocation **CONDITIONAL MINIMAL BOUNDARY IDENTIFIED**. Permission readiness **UNRESOLVED**. Deletion readiness **NONE ESTABLISHED**. |
+| Unresolved decisions / evidence | Result §D items D01–D18. Gate-B behavior items: D04, D05, D06, D07, D10, D11 and D13; D08 becomes one only if the L2(c) trace fails. Contract: D09. Evidence: the drill-map K rows, D4/D5 authorization, R5, the feed (O-4) and T13 channels. |
+| Verification | Source reads and `sha256sum` only; no runtime claims. Diff limited to this section and the result file. `fp.ps1 check` record: see the executor's final report. |
+| Concerns | (1) The C18 protection-snapshot contract cannot be met by any documented REST read. (2) The Striker close-time crossed-level exit has no live realization (name search only). (3) The ORB adds binding (D17) is unconfirmed, because the effective inputs could not be read under §60. (4) The harness blocked writes to this worktree until the executor switched into it with `EnterWorktree`. |
+| Next action | Coordinator gate-D review, then the integrated gate-B/C decision packet (result §E). |
+
+**Coordinator review (2026-09-26): ACCEPTED AS INPUT, WITH CORRECTIONS. Not gate-D acceptance.** Reviewer: the coordinating session. Artifact: result note and this return at `dce09d4`. The result is fit as the allocation input to the integrated B–D packet. Gate D still needs the operator's resulting behavior decisions and the coordinator's integrated acceptance. The five review criteria from the operator's 2026-09-26 direction:
+
+| Criterion | Result |
+|---|---|
+| 1. Concrete responsibility assignments | **Met.** Every C-row names decision, execution and recovery owners. The §C boundary names what stays local and why. |
+| 2. Justified reductions | **Met.** Every B-row names its replacement and remaining consumers. New local work moved in by vendor use is visible: the C14 post-placement poll, the A8 coverage-repair actor, and B13–B15 as introduced burden. |
+| 3. Option-B dependencies explicit | **Met.** C06b, C15b and B16 are labelled PROVISIONAL-B, and C15 carries the current posture. §A10 (rule text written after dispatch, on #515) is consistent with these rows. |
+| 4. Edition consistency | **Met.** Remaining exits (C10a–d, C11, C11b), split execution (C09, B13, D10) and actual versus simulated state (C03, C04, trace row 2) are covered for all three candidates. |
+| 5. Testable capability gaps | **Partly met.** Correction R4. |
+
+**Corrections (source-checked by the coordinator at `dce09d4`):**
+
+- **R1 — D09/C18 overstated; downgrade to a gate-C design question.** `sequence` is checked per stream for monotonic order (`book_protection_owner.py`, `_apply_protection_snapshot_db`: `stream-order` fault), so our own poller can assign it. `complete` is a flag that gates the position-completeness check, not a precondition for every snapshot. Amend admission needs row-level evidence postdating `prepared` (`:583-587`), which the rail spec states as order-level `P`/`W` evidence strictly after `prepared_at` (evidence-currency rule). The open question is therefore whether post-preparation per-order lifecycle/status reads, sequenced by our poller, meet evidence currency without account-wide causal order (CAP R4). A contract change is needed only if they cannot.
+- **R2 — new item D19 (contract; GB/GC): the rail spec's `CLOSE` requires verified L2(e).** The spec's `CLOSE(scope)` text and S5 require "verified `L2(d)` and `L2(e)`". L2(e) is contradicted on this route (Gate A A5). With one-contract lots the residual-cover property may hold by construction, but the contract does not say so, and it forbids a cancel-plus-market fallback. Before any close is admissible, one of two things is needed: an explicit contract interpretation or amendment stating when one-contract lots satisfy L2(e), or a route-native close definition. This feeds UB-5 and D06. The map did not flag it.
+- **R3 — D17 resolved.** The owner record ([protection selection](../../notes/2026-09-10-tradeify-protection-selection.md), mode table) sets ORB adds as normal in NORMAL mode and off under protection. The route note's "adds-off" refers to protection mode. Split and capacity inputs follow that record.
+- **R4 — the gate-C matrix must add a failure consequence for each K primitive:**
+  - **Stop activation at quantity 1 (D1).** If it fails, the one-contract premise fails, the narrowed shape is inadmissible, and the route is blocked for every leg.
+  - **Full close (D3).** If it fails, the spec forbids the cancel-plus-market fallback, so the result is `BLOCKED — capability-problem` unless a qualified alternative is accepted.
+  - **Cancel of Suspended children (D6).** If it fails, the ORB resting entry needs an attended session-end procedure or an edition change.
+  - **Takeover composite.** If it fails, an Aegis takeover behavior decision is needed.
+  - D2 already carries its consequence (D08).
+- **R5 — operator-level finding, surfaced rather than buried.** Under the 2026-09-11 Terms ruling, TradingView has **no live role** on the recommended path. The operator's objective ("let TradingView and CrossTrade do what they can") is therefore met for CrossTrade and Tradovate only. Any TradingView live role is D01, the operator's call, and needs written permission and an S2 amendment.
+- **R6 — stale restatement routed, not edited.** T08 §7.8's "exit-side partial fills moot" line is qualified by UB-5 and by the Gate A drill map. Propagation joins the owed list.
