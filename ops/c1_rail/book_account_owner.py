@@ -228,6 +228,58 @@ class SyntheticBroker:
 
 
 @dataclass(frozen=True)
+class SyntheticOrderRead:
+    """Owner-issued, per-boot fence for one synthetic order-level acquisition.
+
+    ``attempt_mark`` is the attempt-journal high-water mark when the read was
+    prepared: a request attempted after it cannot be evidenced by the answer.
+    """
+    read_id: str
+    boot_id: str
+    order_symbol: str
+    prepared_at: datetime
+    attempt_mark: int
+
+
+@dataclass(frozen=True)
+class SyntheticWorkingOrder:
+    """One working entry/add row, correlated to its request and attempt."""
+    operation_id: str
+    attempt_id: str
+    leg_id: str
+    order_symbol: str
+    kind: str
+    remaining: int
+
+
+@dataclass(frozen=True)
+class SyntheticOrderEvidence:
+    """Labelled synthetic order-level acquisition for fence classification only.
+
+    Offline test seam beside ``SyntheticBroker``. It is not, and never stands
+    in for, the real order-level evidence producer (T09): it carries no
+    transport, no route integration and no durable acquisition cursor.
+    """
+    read_id: str
+    order_symbol: str
+    as_of: datetime
+    complete: bool
+    position_only: bool
+    working_orders: tuple[SyntheticWorkingOrder, ...] = ()
+
+    synthetic = True
+
+
+# Fence classification of an attempted entry/add (§59 Ruling 7(b)).
+KNOWN_WORKING = "known_working"      # (i) fresh qualifying evidence shows it working
+ACCEPTED_PENDING = "accepted"        # accepted; within its first bar, not yet evidenced
+STALE = "stale"                      # (ii) no fresh qualifying evidence after one bar
+UNKNOWN_DISPATCH = "unknown"         # (iii) unknown dispatch outcome
+TERMINAL = "terminal"                # (iv) accepted postdating terminal, or transport-rejected
+FENCED_STATES = (STALE, UNKNOWN_DISPATCH)
+
+
+@dataclass(frozen=True)
 class DispatchResult:
     operation_id: str
     quantity: int
@@ -313,6 +365,11 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
         self._thread = threading.RLock()
         self._settlement_local = threading.local()
         self._actor_boot_id = None
+        # Synthetic order-level evidence is per boot and never persisted: a
+        # restart forgets every read and acquisition, so none survives it.
+        self._synthetic_order_reads = {}
+        self._synthetic_order_evidence = {}
+        self._synthetic_order_high_water = {}
 
     @classmethod
     def boot(cls, path, account, *, binding, synthetic_broker=None, crash_at=None):
@@ -766,14 +823,31 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             "ORDER BY a.rowid"))
 
     def _ordinary_unknown_orders_db(self, db, *, now):
-        """Derive the account fence from durable attempts, never transport receipts alone."""
+        """Derive the account fence from durable attempts, never transport receipts alone.
+
+        Only stale (ii) and unknown-dispatch (iii) entry/add requests fence the
+        account (§59 Ruling 7(b)). A known working request (i) keeps its
+        reservation and is still counted by recovery, deadline and cutoff.
+        """
+        return tuple(identity for identity, state in
+                     self._request_classification_db(db, now=now).items()
+                     if state in FENCED_STATES)
+
+    def request_classification(self, *, now):
+        """Pure read: the fence state of every attempted entry/add request."""
+        _time(now)
+        with self._transaction() as db:
+            self._state(db)
+            return self._request_classification_db(db, now=now)
+
+    def _request_classification_db(self, db, *, now):
         from c1_signal_daemon.book_protocol import BAR_PERIOD
-        unresolved = []
+        capacity = self._capacity(db)
         # Feedback is optional: a filled terminal emits no adapter event. Only
         # terminals accepted by the capacity reducer can resolve an attempt;
         # rejected/stale raw broker facts must not clear the account fence.
         terminals = {op.request.operation_id: asdict(op.terminal)
-                     for op in self._capacity(db).operations if op.terminal is not None}
+                     for op in capacity.operations if op.terminal is not None}
         accepted = []
         for raw, at, terminal_raw in db.execute(
                 "SELECT b.body,c.as_of,c.body FROM broker_facts b JOIN capacity_events c "
@@ -784,18 +858,126 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                     and terminal == dict(operation_id=fact['operation_id'],
                                          status=fact['status'], cumulative_filled=fact['cumulative_filled'])):
                 accepted.append((fact['operation_id'], datetime.fromisoformat(at)))
-        for identity, outcome, created in db.execute(
-                "SELECT o.operation_id,a.state,o.created_at FROM operations o "
+        states = {}
+        for identity, outcome, created, attempt_id, attempt_mark in db.execute(
+                "SELECT o.operation_id,a.state,o.created_at,a.attempt_id,a.rowid FROM operations o "
                 "JOIN attempts a USING(operation_id) WHERE o.kind IN ('entry','add')"):
             prepared = datetime.fromisoformat(created)
-            if outcome == 'REJECTED':
-                continue
-            if outcome != 'UNKNOWN' and now < prepared + BAR_PERIOD:
-                continue
-            resolved = any(operation_id == identity and at > prepared for operation_id, at in accepted)
-            if not resolved:
-                unresolved.append(identity)
-        return tuple(unresolved)
+            if outcome == 'REJECTED' or any(
+                    operation_id == identity and at > prepared for operation_id, at in accepted):
+                states[identity] = TERMINAL
+            elif outcome == 'UNKNOWN':
+                # Blocks at once; only an accepted, postdating terminal resolves
+                # it. Positive-lookup resolution stays separately held.
+                states[identity] = UNKNOWN_DISPATCH
+            elif self._known_working_db(db, capacity, identity, attempt_id, attempt_mark,
+                                        prepared, now=now):
+                states[identity] = KNOWN_WORKING
+            elif now < prepared + BAR_PERIOD:
+                states[identity] = ACCEPTED_PENDING
+            else:
+                states[identity] = STALE
+        return states
+
+    def _known_working_db(self, db, capacity, identity, attempt_id, attempt_mark, prepared, *, now):
+        """State (i): the latest qualifying acquisition for the request's symbol
+        is younger than one bar, postdates every dispatch touching the request
+        in causal order and timestamp, and shows it working under its own
+        identity with the remainder its credited fills leave."""
+        from c1_signal_daemon.book_protocol import BAR_PERIOD
+        leg_id, symbol, kind, quantity = db.execute(
+            "SELECT leg_id,order_symbol,kind,quantity FROM operations WHERE operation_id=?",
+            (identity,)).fetchone()
+        held = self._synthetic_order_evidence.get(symbol)
+        if held is None:
+            return False
+        evidence, read = held
+        # Stale at one bar: an age of one bar period or more (inclusive).
+        if not timedelta(0) <= now - evidence.as_of < BAR_PERIOD:
+            return False
+        touching = [(attempt_mark, prepared)]
+        for body, created, mark in db.execute(
+                "SELECT o.body,o.created_at,a.rowid FROM operations o "
+                "JOIN attempts a USING(operation_id) WHERE o.kind='cancel'"):
+            if json.loads(body).get('order_id') == identity:
+                touching.append((mark, datetime.fromisoformat(created)))
+        if any(mark > read.attempt_mark or evidence.as_of <= at for mark, at in touching):
+            return False
+        operation = next((o for o in capacity.operations if o.request.operation_id == identity), None)
+        if operation is None or operation.status != 'active' or operation.terminal is not None:
+            return False
+        remaining = quantity - sum(f.quantity for f in capacity.fills if f.operation_id == identity)
+        rows = [row for row in evidence.working_orders if row.operation_id == identity]
+        return (remaining > 0 and rows == [SyntheticWorkingOrder(
+            identity, attempt_id, leg_id, symbol, kind, remaining)])
+
+    def _require_synthetic_order_seam(self):
+        if not (isinstance(self.synthetic_broker, SyntheticBroker) and self.synthetic_broker.synthetic):
+            raise AccountOwnerError("synthetic order evidence requires the SyntheticBroker test seam")
+
+    def prepare_synthetic_order_read(self, order_symbol, *, now):
+        """Issue a per-boot read fence for one symbol (synthetic seam only)."""
+        _time(now)
+        if order_symbol not in {row.order_symbol for row in BOOK_LEGS}:
+            raise AccountOwnerError("unknown order symbol")
+        self._require_synthetic_order_seam()
+        with self.serializer.acquire(), self._thread, self._transaction() as db:
+            state = self._state(db)
+            mark = db.execute("SELECT COALESCE(MAX(rowid), 0) FROM attempts").fetchone()[0]
+            read = SyntheticOrderRead(str(uuid4()), state["boot_id"], order_symbol, now, mark)
+            self._synthetic_order_reads[read.read_id] = read
+        return read
+
+    def observe_synthetic_order_evidence(self, evidence, *, now):
+        """Classify one synthetic acquisition; returns its disposition.
+
+        Evidence changes fence classification only. It never writes durable
+        state, never changes permission or authority, and never resumes a
+        halted account. A non-qualifying acquisition is ignored, not halted:
+        E2/E3 quarantine and attended resolution belong to the real producer.
+        """
+        if not isinstance(evidence, SyntheticOrderEvidence):
+            raise AccountOwnerError("typed synthetic order evidence required")
+        _time(now)
+        self._require_synthetic_order_seam()
+        with self.serializer.acquire(), self._thread, self._transaction() as db:
+            state = self._state(db)
+            return self._accept_synthetic_order_evidence(evidence, state, now)
+
+    def _accept_synthetic_order_evidence(self, evidence, state, now):
+        read = (self._synthetic_order_reads.pop(evidence.read_id, None)
+                if isinstance(evidence.read_id, str) else None)
+        if read is None or read.boot_id != state["boot_id"]:
+            return "unfenced"
+        symbol = read.order_symbol
+        if evidence.order_symbol != symbol:
+            return "foreign_symbol"
+        rows = evidence.working_orders
+        if (not isinstance(evidence.as_of, datetime) or evidence.as_of.utcoffset() is None
+                or type(evidence.complete) is not bool or type(evidence.position_only) is not bool
+                or type(rows) is not tuple
+                or not all(isinstance(row, SyntheticWorkingOrder)
+                           and all(type(value) is str and value for value in (
+                               row.operation_id, row.attempt_id, row.leg_id, row.order_symbol, row.kind))
+                           and type(row.remaining) is int and row.remaining > 0 for row in rows)
+                or len({row.operation_id for row in rows}) != len(rows)):
+            return "malformed"
+        if not read.prepared_at < evidence.as_of <= now:
+            return "not_postdating_read"
+        if now - evidence.as_of > MAX_FACT_AGE:
+            return "observed_late"
+        # E1: replayed or reordered delivery cannot regress accepted facts. Any
+        # read, including a position-only one, moves the symbol's high water.
+        newest = self._synthetic_order_high_water.get(symbol)
+        if newest is not None and evidence.as_of <= newest:
+            return "reordered"
+        self._synthetic_order_high_water[symbol] = evidence.as_of
+        if evidence.position_only:
+            return "position_only"
+        if not evidence.complete:
+            return "incomplete"
+        self._synthetic_order_evidence[symbol] = (evidence, read)
+        return "qualified"
 
     def status(self):
         """Pure validated read."""
