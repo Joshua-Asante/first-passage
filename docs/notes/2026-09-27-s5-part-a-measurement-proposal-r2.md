@@ -589,7 +589,7 @@ gh run rerun <run_id> -R Joshua-Asante/first-passage --failed
 
 - **When:** at S5 packet Checkpoint C3, before any acceptance-grade run relies on the ceiling.
 - **Preconditions:** SR-1..SR-6 built and P-1..P-7 passing, with node IDs in the C3 return (§7). Otherwise **BLOCKED** (§7.7).
-- **Grants:** `ci.dispatch` of the same workflow and download of its artifacts. If approved at CP-1a, the dispatch is executed at C3. The approval is **conditional**: the harness gains its `--stage 1c` path only at C3, so the operator would otherwise approve code that does not yet exist. Before the Stage 1c dispatch the coordinator reads the harness diff (the `--stage 1c` path against the Stage 1b harness) and records that read. Without that record the dispatch is not made.
+- **Grants:** `ci.dispatch` of the same workflow and download of its artifacts. If approved at CP-1a, the dispatch is executed at C3. *[Corrected 2026-09-27: approved at CP-1a (decision (2)), so it executes at C3 under the conditions that follow.]* The approval is **conditional**: the harness gains its `--stage 1c` path only at C3, so the operator would otherwise approve code that does not yet exist. Before the Stage 1c dispatch the coordinator reads the harness diff (the `--stage 1c` path against the Stage 1b harness) and records that read. Without that record the dispatch is not made.
 - **Where the harness lives:** the S5 packet's §2 file list (packet line 35) does not include `docs/notes/…`, and its executor is the single writer for those files. The harness therefore stays **off** the S5 branch. It is committed on a separate measurement branch based on the S5 head (`<S5 head>` plus the harness commit only), and Stage 1c is dispatched with `--ref` on that branch. The record's `dispatched_head` is the measurement-branch head. For `stage=1c`, step 2 of the workflow also records `git rev-parse HEAD^`, and the coordinator checks that it equals the S5 head reported at C3. A mismatch is treated as I-7.
 - **Repeat body.** Steps 3–6 of §6.3 are replaced by:
   - setup (excluded): the composition fixture and SR-5's staged N2 capture bytes copied into a repeat-local input directory;
@@ -757,6 +757,8 @@ This section is the contract text for those rulings. The dispatch amendment is i
 
 ### 14.1 Refreshed decision list (2026-09-27)
 
+*[Ruled 2026-09-27 ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)): all six decisions below were adopted as recommended. Their "Unlocks" now hold, and conditional wording such as "if approved" reads as approved. Current authority is stated at the top of this note. (Corrected 2026-09-27, Codex review of 3e462a8d.)]*
+
 > **RULED 2026-09-27.** The operator adopted all six decisions as recommended, by structured answer in session. The [ledger entry](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27) owns the ruling and governs. It also records the one item the D2 recommendation leaves to the operator (item (v)). The hold stays **HELD** until CP-1b.
 
 **Already decided; not asked again:**
@@ -778,7 +780,7 @@ This section is the contract text for those rulings. The dispatch amendment is i
 4. CP-1b: the operator's hold-release entry for the build.
 5. The S5 build.
 
-The adapter measurement (Stage 1c), the executed `bind_budget` check on the built `/v7` and Stage 2/PA-5 stay at C3 (RC-3b). Each step needs the one before it. **Acceptance of this packet is not approval to execute it.**
+The adapter measurement (Stage 1c), the executed `bind_budget` check on the built `/v7` and Stage 2/PA-5 stay at C3 (RC-3b). Each step needs the one before it. **Acceptance of this packet is not approval to execute it.** *[Corrected 2026-09-27: that held before the ruling. CP-1a decision (2) has since approved the bounded measurements of step 2. §12.9 sequences their execution after the revised H1(b) harness PR is returned with retained evidence and merged. See "Current authority" at the top.]*
 
 **For decision at CP-1a: six decisions, presented together.** Each lists what it folds in, the recommendation, what an approval unlocks, and what stays unauthorized.
 
@@ -1191,7 +1193,7 @@ Two review passes returned findings with overlapping IDs. They are labelled **A-
 
 **Timing (critic X-14).** ~~Stage 0 must run before the S4 run artifacts expire, about **2026-10-08 to 2026-10-09**; the creation date is UNVERIFIED.~~ **CP-1a can be split:** item 2(a) (Stage 0, calibration only~~, a read-only artifact download~~) can be approved on its own now. The rest of CP-1a can wait for this packet's review. ~~Latest useful date for Stage 0 approval: **2026-10-07**.~~ *[Corrected 2026-09-27, §16.4: the download is done, and Stage 0 is now a local read of the preserved copies. The expiry no longer binds only if the preserved set covers Stage 0's inputs, and that coverage is verified locally, owed.]*
 
-**Not granted:** unchanged from the Status line. No measurement, download, CI change or dispatch runs until the operator approves it at CP-1a.
+**Not granted:** unchanged from the Status line. No measurement, download, CI change or dispatch runs until the operator approves it at CP-1a. *[Corrected 2026-09-27: the operator ruled CP-1a the same day. See "Current authority" at the top.]*
 
 ## Coordinator review of §16 (2026-09-27)
 

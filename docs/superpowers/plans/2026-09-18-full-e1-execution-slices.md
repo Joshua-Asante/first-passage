@@ -931,7 +931,7 @@ Any failed condition refuses admission. The refusal is recorded and is not a con
 
 What is already ruled is not reopened. Stage 0 is optional calibration. The 2026-10-09 expiry binds only if the preserved S4 set does not cover Stage 0's inputs, and that coverage is verified locally, owed. M2 is not a CP-1a prerequisite.
 
-**Not changed.** No rule is applied, no measurement approved, no ceiling set. The hold stays **HELD**. Accepting the packet is not approval to execute it.
+**Not changed.** No rule is applied, no measurement approved, no ceiling set. The hold stays **HELD**. Accepting the packet is not approval to execute it. *[Superseded 2026-09-27 by the next entry: the operator ruled CP-1a the same day and approved the bounded measurements (decision (2)). The hold stays.]*
 
 ### Operator ruling — CP-1a decisions (1)–(6) adopted as recommended, hold kept, 2026-09-27
 
