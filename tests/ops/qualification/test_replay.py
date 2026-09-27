@@ -212,7 +212,7 @@ def test_split_must_reaggregate_original_ohlc():
 
 
 def resting_orb_entry(price, *, cancel_at=None):
-    """ORB's base stop entry, placed once on the first bar (§59 Ruling 6(a), L1).
+    """ORB's base stop entry, placed once on the first bar (§59 Rulings 6 and 7(a), L1).
 
     ``cancel_at`` stands in for the port's own session-end cancel. Each
     adapter bar records the replay's view of the entry before it evaluates.

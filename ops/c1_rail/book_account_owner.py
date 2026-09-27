@@ -270,7 +270,7 @@ class SyntheticOrderEvidence:
     synthetic = True
 
 
-# Fence classification of an attempted entry/add (§59 Ruling 6(b)).
+# Fence classification of an attempted entry/add (§59 Ruling 7(b)).
 KNOWN_WORKING = "known_working"      # (i) fresh qualifying evidence shows it working
 ACCEPTED_PENDING = "accepted"        # accepted; within its first bar, not yet evidenced
 STALE = "stale"                      # (ii) no fresh qualifying evidence after one bar
@@ -826,7 +826,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
         """Derive the account fence from durable attempts, never transport receipts alone.
 
         Only stale (ii) and unknown-dispatch (iii) entry/add requests fence the
-        account (§59 Ruling 6(b)). A known working request (i) keeps its
+        account (§59 Ruling 7(b)). A known working request (i) keeps its
         reservation and is still counted by recovery, deadline and cutoff.
         """
         return tuple(identity for identity, state in

@@ -24,7 +24,7 @@ from c1_signal_daemon.feed import Bar
 from c1_signal_daemon.tv_broker_emulator import TVBrokerEmulator
 
 
-#: Legs whose base entry follows lifecycle L1 (§59 Ruling 6(a)): placed once,
+#: Legs whose base entry follows lifecycle L1 (§59 Rulings 6 and 7(a)): placed once,
 #: it rests until it fills or an applicable cancellation ends it (the port's
 #: own cancel, the RC-8 cutoff, a takeover or incident handling). RC-9's
 #: one-bar cancel keeps applying to every other resting entry or add.

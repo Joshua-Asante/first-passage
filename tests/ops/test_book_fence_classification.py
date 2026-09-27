@@ -1,4 +1,4 @@
-"""Account-fence classification on the synthetic seam (§59 Ruling 6(b); H4 checkpoint F).
+"""Account-fence classification on the synthetic seam (§59 Ruling 7(b); H4 checkpoint F).
 
 States: (i) known working on fresh, qualifying order-level evidence; (ii) stale;
 (iii) unknown dispatch; (iv) terminal. Evidence is stale when its age at

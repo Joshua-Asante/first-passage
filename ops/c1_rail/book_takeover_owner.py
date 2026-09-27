@@ -625,7 +625,7 @@ class TakeoverOwnerMixin:
     def _takeover_quiescence_blockers_db(self, db, plan, *, now):
         """Unresolved attempts that refuse admission of a revalidated takeover.
 
-        S10/K1 require quiescence of displaced scope; §59 Ruling 6(b) keeps an
+        S10/K1 require quiescence of displaced scope; §59 Ruling 7(b) keeps an
         unrelated leg's known working order from blocking. So an entry/add on a
         leg that is neither displaced nor the takeover's own leg is excluded
         unless it is fenced (stale (ii) or unknown (iii)). Every other row the
