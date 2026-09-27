@@ -51,7 +51,10 @@ from c1_rail_telemetry import FileAckNotifier
 from c1_signal_daemon.book_protocol import BAR_PERIOD, Bracket, BracketAmend, Cancel, Mode, Side
 from book_bootstrap_fixtures import BootstrapBroker, activate_fresh
 from book_protection_fixtures import ProtectionScenario
+from c1_signal_daemon.book_adapters import synthetic_adapter_registry
+from c1_signal_daemon.book_runtime import FourLegRuntime
 from test_book_account_owner import NOW, SESSION, binding, intent
+from test_four_leg_runtime import Adapter, entry, bars as runtime_bars, owner as runtime_owner
 
 
 REPO = Path(__file__).resolve().parents[2]
@@ -510,18 +513,38 @@ def test_duplicate_signal_refusal_leaves_session_running(tmp_path):
 
 
 def test_incomplete_barrier_before_expiry_leaves_session_running(tmp_path):
-    account, broker = _rehearsal_owner(tmp_path, [BrokerResult("accepted")])
-    for leg_id in LEGS[:3]:  # orb_mnq_v7 has not arrived: the barrier is incomplete
-        account.record_partial_bar(leg_id, NOW, {"close": 100, "leg": leg_id}, acquired_at=NOW)
+    """Halt/resume §2 `:30`, rehearsed where the barrier is enforced: the four-leg runtime.
+
+    The owner's direct ``dispatch`` does not check barrier completeness; the runtime is the
+    only production caller that brings a bar's actions to the owner (evidence note §1).
+    """
+    account = runtime_owner(tmp_path, [BrokerResult("accepted")])
+    signal = entry("orb_mnq_v7", 1)  # stamped with the bar under test (bar_time == NOW)
+    runtime = FourLegRuntime(account, synthetic_adapter_registry({
+        leg_id: Adapter(leg_id, [signal] if leg_id == "orb_mnq_v7" else ()) for leg_id in LEGS}))
+    bar = runtime_bars()
+
+    # Three of four legs arrive (orb_mnq_v7, whose adapter holds the signal, is last).
+    for leg_id in LEGS[:3]:
+        assert runtime.on_completed_bar(leg_id, bar[leg_id], now=NOW) is None
+    # Before expiry nothing is dispatched from that bar: no adapter evaluated it, no action
+    # batch was prepared, and no broker command was sent.
+    assert all(runtime.adapters[leg_id].bars == [] for leg_id in LEGS)
     assert len(account.retained_partial_bars) == 3
     assert account.retained_barriers == ()
+    assert account.synthetic_broker.commands == []
+    # No halt and no incident: the session keeps running.
     _assert_request_level(account)
 
-    # Halt/resume §2 `:30`: expiry is bar_period + 30 s after the expected boundary. Before it,
-    # nothing halts, and the next valid request is admitted.
-    before_expiry = NOW + BAR_PERIOD + timedelta(seconds=29)
-    admitted = _dispatch(account, intent("next"), "next", before_expiry)
-    assert admitted.transport_state == "accepted"
+    # The fourth leg arrives before the `bar_period + 30 s` expiry and completes the bar. The
+    # next valid request the contract allows -- that bar's signal, once complete -- is admitted.
+    completed_at = NOW + timedelta(seconds=10)
+    results = runtime.on_completed_bar("orb_mnq_v7", bar["orb_mnq_v7"], now=completed_at)
+    assert [(row.operation_id, row.transport_state) for row in results] == [
+        ("entry:orb_mnq_v7", "accepted")]
+    assert [(command.leg_id, command.kind) for command in account.synthetic_broker.commands] == [
+        ("orb_mnq_v7", "entry")]
+    assert account.retained_partial_bars == ()
+    assert [(row["bar_time"], row["completed"]) for row in account.retained_barriers] == [
+        (NOW.isoformat(), True)]
     _assert_request_level(account)
-    assert len(account.retained_partial_bars) == 3
-    assert len(broker.commands) == 1
