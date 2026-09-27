@@ -8,11 +8,13 @@ from __future__ import annotations
 
 import json
 import threading
+import urllib.parse
 from pathlib import Path
 
 import pytest
 
 from c1_rail_telemetry import (
+    ACK_SUFFIX,
     SCHEMA_VERSION,
     BrokerEvidence,
     EventLedger,
@@ -21,6 +23,7 @@ from c1_rail_telemetry import (
     TelemetryError,
     TransportOutcome,
     _cli_reconcile,
+    ack_filename,
     append_broker_evidence,
     assert_no_secrets,
     format_arming_deviation,
@@ -357,6 +360,65 @@ def test_file_ack_notifier_notify_and_acknowledge(tmp_path):
     assert ack_path.is_file()
     assert notifier.is_acknowledged(alert_id)
 
+
+
+# Ids containing every character Windows forbids in a filename, plus case,
+# escape and device-name look-alikes that must not collide with each other.
+_UNSAFE_ALERT_IDS = [
+    "SYNTHETIC-REHEARSAL:stale-fact:exec-stale",
+    'x<y>z:"a"/b\\c|d?e*f',
+    "A:b", "a:b", "a%3Ab", "a%3ab",
+    "con", "CON", "%63on", "nul",
+    "trailing.", "trailing ", ".", "..",
+    "caf\u00e9-\u00c9",
+]
+
+
+def test_file_ack_notifier_accepts_windows_unsafe_alert_ids(tmp_path):
+    """Regression: ':' in an alert id raised OSError on Windows (Errno 22)."""
+    notifier = FileAckNotifier(tmp_path / "alerts.jsonl", tmp_path / "acks")
+    for alert_id in _UNSAFE_ALERT_IDS:
+        notifier.notify("CRITICAL", "synthetic", event_id=alert_id)
+        assert not notifier.is_acknowledged(alert_id)
+        ack_path = notifier.acknowledge(alert_id, operator="test-operator")
+        assert ack_path.parent == notifier.ack_dir
+        assert ack_path.name == ack_filename(alert_id)
+        assert not set(ack_path.name) & set('<>:"/\\|?*')
+        assert urllib.parse.unquote(ack_path.name[:-len(ACK_SUFFIX)]) == alert_id
+        assert json.loads(ack_path.read_text(encoding="utf-8"))["alert_id"] == alert_id
+        assert notifier.is_acknowledged(alert_id)
+
+    # Collision-free, including on case-insensitive filesystems (NTFS, APFS).
+    names = [ack_filename(i) for i in _UNSAFE_ALERT_IDS]
+    assert len({n.casefold() for n in names}) == len(_UNSAFE_ALERT_IDS)
+    assert len(list(notifier.ack_dir.iterdir())) == len(_UNSAFE_ALERT_IDS)
+    assert ack_filename("con").casefold() != "con.ack.json"
+
+
+def test_ack_filename_keeps_uuid_event_ids_unchanged():
+    alert_id = new_event_id()
+    assert ack_filename(alert_id) == f"{alert_id}.ack.json"
+    with pytest.raises(ValueError):
+        ack_filename("")
+
+
+def test_file_ack_notifier_reack_is_idempotent_and_conflicting_reuse_refused(tmp_path):
+    notifier = FileAckNotifier(tmp_path / "alerts.jsonl", tmp_path / "acks")
+    alert_id = "SYNTHETIC-REHEARSAL:stale-fact:exec-stale"
+    ack_path = notifier.acknowledge(alert_id, operator="first")
+    first = ack_path.read_bytes()
+    assert notifier.acknowledge(alert_id, operator="second") == ack_path
+    assert ack_path.read_bytes() == first
+
+    other = "alert-other"
+    other_path = notifier.ack_dir / ack_filename(other)
+    other_path.write_text(json.dumps({"alert_id": "not-" + other}), encoding="utf-8")
+    with pytest.raises(ValueError, match="different alert_id"):
+        notifier.acknowledge(other)
+    other_path.write_text("", encoding="utf-8")
+    with pytest.raises(ValueError, match="not a readable ack record"):
+        notifier.acknowledge(other)
+    assert other_path.read_text(encoding="utf-8") == ""
 
 # ── 8. assert_no_secrets ─────────────────────────────────────────────────────
 
