@@ -19,6 +19,7 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import stat
 import subprocess
 import sys
@@ -52,6 +53,15 @@ PREFIX = 'p' * 64
 FINAL = {'forced': 'f' * 64, 'prescribed': PREFIX}
 
 
+COUNTS = {'forced': {'replay': 14, 'proof': 5, 'verify_for': 15},
+          'prescribed': {'replay': 8, 'proof': 3, 'verify_for': 9}}      # r2 §4
+WORKLOAD = {'initial_panels': 2, 'expanded_panels': 4, 'paths_per_panel': 2, 'horizon_sessions': 5,
+            'inner_block_sessions': 5, 'outer_months': 6, 'budget_seconds': 3600.0, 'full_pass_rate_input': 1.0,
+            'idle': False, 'fixture': 'tests/ops/qualification/composition_fixture.py'}   # r2 §4, §6.3
+THREADS = {name: '1' for name in ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS',
+                                  'NUMEXPR_NUM_THREADS')}
+
+
 def _row(arm, repeat, *, stage='1b', dry_run=False, unit=None):
     panels, expanded = PANELS[arm]
     instrumented = repeat == 0 or dry_run
@@ -63,25 +73,30 @@ def _row(arm, repeat, *, stage='1b', dry_run=False, unit=None):
         'wall': {'outer': None, 'setup_excluded': 11.0, 'workload': None,
                  'boundaries': {'admission': 1.0, 'verify': 1.0, 'part_a': 21.0, 'serialize': 0.1}},
         'panels': panels, 'expanded': expanded, 'probe_seconds': 1.0, 'predicted_seconds': 30.0,
-        'elapsed_seconds': 21.0, 'counts': {'replay': 1, 'proof': 1, 'verify_for': 1} if instrumented else None,
+        'elapsed_seconds': 21.0, 'counts': dict(COUNTS[arm]) if instrumented else None,
         'initial_prefix_sha256': PREFIX, 'final_sha256': FINAL[arm], 'fsync_count': None,
         'assertions': {'expected_panels': panels, 'expected_expanded': expanded, 'ok': True},
-        'workload': {'arm': arm, 'within_pp': 1.0 if arm == 'forced' else 0.01,
-                     'expected': {'replays': 1, 'proofs': 1, 'verify_for': 1}},
+        # `expected` is what a real row derives from its own request (the real fixture gives the r2
+        # literals); the harness records it but judges counts against its fixed table only.
+        'workload': {'arm': arm, 'within_pp': 1.0 if arm == 'forced' else 0.01, **WORKLOAD,
+                     'expected': {'panels': panels, 'expanded': expanded, 'replays': COUNTS[arm]['replay'],
+                                  'proofs': COUNTS[arm]['proof'], 'verify_for': COUNTS[arm]['verify_for']}},
         'memory': {'lower_bound_bytes': 100_000_000, 'lower_bound_method': 'lower_bound_ru_maxrss',
                    'swap_total_kb': 0, 'cgroup_path': '/system.slice/%s.service' % unit,
                    'cgroup_path_matches_unit': True, 'in_unit_peak_bytes': 120_000_000, 'swap_max': '0',
                    'swap_peak_bytes': 0, 'oom_events': 0, 'cgroup_cpu_usage_usec': 1},
         'environment': {'python': '3.11', 'implementation': 'CPython', 'executable': None,
-                        'thread_env': {}, 'loaded_fixture_files': []},
+                        'thread_env': dict(THREADS), 'loaded_fixture_files': []},
         'exit_status': 0,
     }
 
 
-def _unit_text(*, exit_ts=True):
+def _unit_text(*, exit_ts=True, cold=False):
     lines = ['CPUUsageNSec=34000000000', 'MemoryPeak=121000000', 'MemorySwapPeak=0', 'ExecMainStatus=0',
              'ControlGroup=/system.slice/x.service', 'ExecMainStartTimestampMonotonic=1000000',
              'Result=success', 'HarnessPollTimeout=no', 'HarnessPollBoundS=1800']
+    if cold:
+        lines.append('HarnessColdPrep=done')
     lines.append('ExecMainExitTimestampMonotonic=%d' % (35_000_000 if exit_ts else 0))
     return '\n'.join(lines) + '\n'
 
@@ -92,7 +107,7 @@ def _linux_job(directory, *, arm_order=ARM_ORDER, exit_ts=True):
         for repeat in (1, 2, 3, 4, 5, 0):
             unit = 'fp-s5pa-1b-%s-%d' % (arm, repeat)
             (directory / ('%s-%d.json' % (arm, repeat))).write_text(json.dumps(_row(arm, repeat, unit=unit)))
-            (directory / ('%s-%d.unit' % (arm, repeat))).write_text(_unit_text(exit_ts=exit_ts))
+            (directory / ('%s-%d.unit' % (arm, repeat))).write_text(_unit_text(exit_ts=exit_ts, cold=repeat == 1))
     (directory / 'probe.json').write_text(json.dumps({'ok': True, 'swap_total_kb': 0, 'reasons': []}))
     (directory / 'git-head.txt').write_text(HEAD + '\n')
     return directory
@@ -214,7 +229,7 @@ def test_readme_combine_command_uses_the_operations_launcher():
 def _launcher_unit(repeat):
     return {'pid': 1, 'exit_code': 0, 'timed_out': False, 'outer_wall_s': 35.0, 'job_cpu_s': 34.0,
             'job_processes': 1, 'job_peak_process_commit_bytes': 1, 'job_peak_commit_bytes': 1,
-            'pycache_dirs_purged': 3 if repeat == 1 else None}
+            'pycache_dirs_purged': 3 if repeat == 1 else None, 'purge_failed_dirs': [] if repeat == 1 else None}
 
 
 def _bundle(h, path, *, arms=ARM_ORDER, repeats=5, identity='current'):
@@ -1153,7 +1168,7 @@ def _fake_job(**overrides):
     return unit
 
 
-def _run_launcher(h, tmp_path, monkeypatch, fail):
+def _run_launcher(h, tmp_path, monkeypatch, fail, purge=lambda: (0, [])):
     """launcher() in-process with os.name pinned to 'nt' and the job-object call stubbed:
     `fail(arm, repeat)` returns an exception to raise, or None to succeed."""
     import types
@@ -1168,7 +1183,7 @@ def _run_launcher(h, tmp_path, monkeypatch, fail):
         return _fake_job()
     monkeypatch.setattr(h, 'os', types.SimpleNamespace(name='nt', environ=dict(os.environ)))
     monkeypatch.setattr(h, '_run_in_job', run_in_job)
-    monkeypatch.setattr(h, '_purge_pycache', lambda: 0)
+    monkeypatch.setattr(h, '_purge_pycache', purge)
     out = tmp_path / 'windows.json'
     code = h.main(['--launcher', '--stage', '1a', '--arms', 'forced,prescribed', '--repeats', '5',
                    '--out', str(out)])
@@ -1215,7 +1230,9 @@ def test_cli_dry_run_without_runner_accounting_is_i1(tmp_path, drop):
     directory = _dry_job(tmp_path / 'dry')
     _edit_unit(directory, 'forced-1.unit', drop=(drop,))
     code, record, done = _cli_job(tmp_path, directory, mode='dry-run')
-    assert any(r.startswith('I-1: forced-1') and 'runner' in r for r in record['verdict']['reasons'])
+    named = 'CPUUsageNSec' if drop == 'CPUUsageNSec' else 'ExecMainExitTimestampMonotonic'
+    assert any(r.startswith('I-1: ') and named in r and 'unset on dry-run repeat forced-1' in r
+               for r in record['verdict']['reasons'])
     assert record['verdict']['rule_applicable'] is False
     assert code == 3, done.stdout + done.stderr
 
@@ -1378,3 +1395,226 @@ def test_cli_failed_probe_with_complete_memory_is_never_rule_applicable(tmp_path
     assert record['verdict']['rule_applicable'] is False
     assert record['verdict']['stop_class'] == 'MEMORY_EVIDENCE_MISSING'
     assert code == 3, done.stdout + done.stderr
+
+
+# =================================================================== review of 73526d6d
+# 4117030870 (cold purge must succeed), 4117030878 (probe unit must complete),
+# 4117030873 (fixed workload oracles), and the precondition / oracle sweep.
+
+# ---- 4117030870: a failed cold purge is observable and the cold repeat does not validate
+
+def test_purge_reports_directories_it_could_not_remove(h, tmp_path, monkeypatch):
+    for name in ('ops/a/__pycache__', 'core/b/__pycache__', 'tests/c/__pycache__'):
+        (tmp_path / name).mkdir(parents=True)
+    monkeypatch.setattr(h, 'ROOT', tmp_path)
+    real = shutil.rmtree
+
+    def rmtree(path, *args, **kwargs):   # the core/ directory is locked and survives
+        if 'core' not in Path(path).parts:
+            real(path)
+    monkeypatch.setattr(h.shutil, 'rmtree', rmtree)
+    removed, failed = h._purge_pycache()
+    assert removed == 2 and failed == ['core/b/__pycache__']
+
+
+def test_launcher_cold_repeat_with_a_failed_purge_is_i6(h, tmp_path, monkeypatch):
+    code, out = _run_launcher(h, tmp_path, monkeypatch, lambda arm, r: None,
+                              purge=lambda: (2, ['ops/x/__pycache__']))
+    bundle = json.loads(out.read_text())
+    cold = next(e for e in bundle['entries'] if (e['arm'], e['repeat']) == ('forced', 1))
+    assert cold['unit']['purge_failed_dirs'] == ['ops/x/__pycache__']
+    code, record = _summarize_bundle(h, out)
+    reasons = record['verdict']['reasons']
+    assert any(r.startswith('I-6: forced-1') and 'cold precondition' in r for r in reasons)
+    assert any(r.startswith('I-6: prescribed-1') and 'cold precondition' in r for r in reasons)
+    assert record['verdict']['validity_ok'] is False and code == 3
+
+
+@pytest.mark.parametrize('unit_change', [{'purge_error': 'PermissionError: x'}, {'purge_failed_dirs': None},
+                                         {'pycache_dirs_purged': None}])
+def test_cli_bundle_cold_repeat_without_purge_evidence_is_i6(h, tmp_path, unit_change):
+    path = _bundle(h, tmp_path / 'windows.json')
+    bundle = json.loads(path.read_text())
+    entry = next(e for e in bundle['entries'] if (e['arm'], e['repeat']) == ('prescribed', 1))
+    entry['unit'].update(unit_change)
+    bundle['executed_identity'] = h._executed_identity([e['row'] for e in bundle['entries']])
+    path.write_text(json.dumps(bundle))
+    code, done = _cli(tmp_path, '--summarize', path, '--stage', '1a')
+    record = json.loads(path.with_suffix('.record.json').read_text())
+    assert any(r.startswith('I-6: prescribed-1') and 'cold precondition' in r for r in record['verdict']['reasons'])
+    assert code == 3, done.stdout + done.stderr
+
+
+def test_cli_linux_cold_repeat_without_cold_prep_marker_is_i6(tmp_path):
+    directory = _linux_job(tmp_path / 'a')
+    _edit_unit(directory, 'forced-1.unit', drop=('HarnessColdPrep',))
+    code, record, done = _cli_job(tmp_path, directory)
+    assert any(r.startswith('I-6: forced-1') and 'cold precondition' in r for r in record['verdict']['reasons'])
+    assert record['verdict']['rule_applicable'] is False
+    assert code == 3
+
+
+@pytest.mark.skipif(os.name == 'nt', reason='runs the workflow bash step with POSIX stubs')
+def test_loop_stops_when_the_cold_purge_leaves_bytecode_behind(tmp_path):
+    job = _workflow()['jobs']['measure']
+    step = next(s for s in job['steps'] if s.get('name') == 'Measurement loop')
+    sim = tmp_path / 'sim'
+    (sim / 'bin').mkdir(parents=True)
+    stubs = dict(LOOP_STUBS)
+    stubs['rm'] = 'exit 0\n'          # the purge silently removes nothing
+    for name, body in stubs.items():
+        stub = sim / 'bin' / name
+        stub.write_text('#!/bin/bash\n' + body)
+        stub.chmod(stub.stat().st_mode | stat.S_IEXEC)
+    (sim / 'clock').write_text('1000000')
+    runner_temp = sim / 'rt'
+    out = runner_temp / 's5-part-a-measurement'
+    out.mkdir(parents=True)
+    (sim / 'host').mkdir()
+    (runner_temp / 'qualification-manifest').write_text(str(sim / 'host' / 'manifest'))
+    (sim / 'ws' / 'ops' / '__pycache__').mkdir(parents=True)
+    env = {'PATH': '%s:/usr/bin:/bin' % (sim / 'bin'), 'SIM': str(sim), 'RUNNER_TEMP': str(runner_temp),
+           'GITHUB_WORKSPACE': str(sim / 'ws'), 'STAGE': '1b', 'MODE': 'measure', 'NOTE_DIR': 'x',
+           'ARM_ORDER': 'forced prescribed', 'JOB_START_EPOCH': '1000000'}
+    env.update({k: str(v) for k, v in job['env'].items() if '${{' not in str(v)})
+    env['JOB_TIMEOUT_MIN'] = str(_timeout_min(job)[1])
+    done = subprocess.run(['bash', '--noprofile', '--norc', '-eo', 'pipefail', '-c', step['run']],
+                          env=env, capture_output=True, text=True, timeout=60)
+    assert done.returncode != 0 and 'cold purge left __pycache__ behind' in done.stderr
+    assert not (sim / 'started.log').exists()             # no unit ran as a false cold repeat
+
+
+@pytest.mark.skipif(os.name == 'nt', reason='runs the workflow bash step with POSIX stubs')
+def test_loop_records_the_cold_prep_on_repeat_1_only(tmp_path):
+    job = _workflow()['jobs']['measure']
+    step = next(s for s in job['steps'] if s.get('name') == 'Measurement loop')
+    sim = tmp_path / 'sim'
+    (sim / 'bin').mkdir(parents=True)
+    for name, body in LOOP_STUBS.items():
+        stub = sim / 'bin' / name
+        stub.write_text('#!/bin/bash\n' + body)
+        stub.chmod(stub.stat().st_mode | stat.S_IEXEC)
+    (sim / 'clock').write_text('1000000')
+    runner_temp = sim / 'rt'
+    out = runner_temp / 's5-part-a-measurement'
+    out.mkdir(parents=True)
+    (sim / 'host').mkdir()
+    (runner_temp / 'qualification-manifest').write_text(str(sim / 'host' / 'manifest'))
+    (sim / 'ws' / 'ops' / '__pycache__').mkdir(parents=True)
+    env = {'PATH': '%s:/usr/bin:/bin' % (sim / 'bin'), 'SIM': str(sim), 'RUNNER_TEMP': str(runner_temp),
+           'GITHUB_WORKSPACE': str(sim / 'ws'), 'STAGE': '1b', 'MODE': 'measure', 'NOTE_DIR': 'x',
+           'ARM_ORDER': 'forced prescribed', 'JOB_START_EPOCH': '1000000'}
+    env.update({k: str(v) for k, v in job['env'].items() if '${{' not in str(v)})
+    env['JOB_TIMEOUT_MIN'] = str(_timeout_min(job)[1])
+    done = subprocess.run(['bash', '--noprofile', '--norc', '-eo', 'pipefail', '-c', step['run']],
+                          env=env, capture_output=True, text=True, timeout=60)
+    assert done.returncode == 0, done.stderr
+    assert not (sim / 'ws' / 'ops' / '__pycache__').exists()
+    units = {p.stem: p.read_text() for p in out.glob('*.unit')}
+    assert 'HarnessColdPrep=done' in units['forced-1'] and 'HarnessColdPrep=done' in units['prescribed-1']
+    assert not any('HarnessColdPrep' in text for name, text in units.items() if not name.endswith('-1'))
+
+
+# ---- 4117030878: the probe unit must have exited 0 with Result=success
+
+def _probe_dir(tmp_path, unit_text):
+    directory = tmp_path / 'probe'
+    directory.mkdir()
+    (directory / 'probe-in-unit.json').write_text(json.dumps({
+        'child_exit': 0, 'child_touched_bytes': 64 << 20, 'cgroup_path': '/system.slice/fp-s5pa-probe.service',
+        'memory_peak': str(70_000_000), 'memory_swap_max': '0', 'cpu_stat': 'usage_usec 1', 'swap_total_kb': 0}))
+    (directory / 'probe.unit').write_text(unit_text)
+    return directory
+
+
+@pytest.mark.parametrize('unit_text, ok', [
+    ('CPUUsageNSec=5\nMemoryPeak=70000000\nExecMainStatus=0\nResult=success\n', True),
+    ('CPUUsageNSec=5\nMemoryPeak=70000000\nExecMainStatus=9\nResult=signal\n', False),
+    ('CPUUsageNSec=5\nMemoryPeak=70000000\nExecMainStatus=0\nResult=timeout\n', False),
+    ('CPUUsageNSec=5\nMemoryPeak=70000000\nResult=success\n', False),
+    ('CPUUsageNSec=5\nMemoryPeak=70000000\nExecMainStatus=0\n', False),
+])
+def test_cli_probe_requires_a_completed_probe_unit(tmp_path, unit_text, ok):
+    directory = _probe_dir(tmp_path, unit_text)
+    code, done = _cli(tmp_path, '--probe-verdict', directory)
+    probe = json.loads((directory / 'probe.json').read_text())
+    assert probe['ok'] is ok and code == (0 if ok else 3), done.stdout
+    if not ok:
+        assert any('probe unit did not complete' in r for r in probe['reasons'])
+
+
+# ---- 4117030873: counts and workload against the fixed r2 §4 values, never derived
+
+def _drift_to_depth_3(directory, arm, repeats=(1, 2, 3, 4, 5, 0)):
+    panels = 4 if arm == 'forced' else 2
+    for r in repeats:
+        path = directory / ('%s-%d.json' % (arm, r))
+        row = json.loads(path.read_text())
+        replays = 2 + panels * (1 + 3)
+        row['workload'].update(paths_per_panel=3, expected={'panels': panels, 'expanded': arm == 'forced',
+                                                             'replays': replays, 'proofs': 1 + panels,
+                                                             'verify_for': replays + 1})
+        if r == 0:   # counts that agree with the drifted request's own derivation
+            row['counts'] = {'replay': replays, 'proof': 1 + panels, 'verify_for': replays + 1}
+        path.write_text(json.dumps(row))
+
+
+def test_cli_drifted_fixture_depth_fails_counts_and_shape(tmp_path):
+    directory = _linux_job(tmp_path / 'a')
+    _drift_to_depth_3(directory, 'forced')
+    code, record, done = _cli_job(tmp_path, directory)
+    reasons = record['verdict']['reasons']
+    assert any(r.startswith('H-COUNTS: forced-0') for r in reasons)
+    assert any(r.startswith('H-SHAPE: forced-2') and 'paths_per_panel=3' in r for r in reasons)
+    assert code == 4, done.stdout
+
+
+@pytest.mark.parametrize('field, value', [('horizon_sessions', 6), ('expanded_panels', 5), ('outer_months', 5),
+                                          ('within_pp', 0.02), ('budget_seconds', 60.0)])
+def test_cli_workload_off_the_fixed_r2_values_is_h_shape(tmp_path, field, value):
+    directory = _linux_job(tmp_path / 'a')
+    path = directory / 'prescribed-3.json'
+    row = json.loads(path.read_text())
+    row['workload'][field] = value
+    path.write_text(json.dumps(row))
+    code, record, done = _cli_job(tmp_path, directory)
+    assert any(r.startswith('H-SHAPE: prescribed-3') and field in r for r in record['verdict']['reasons'])
+    assert code == 4
+
+
+def test_counts_oracle_is_the_r2_literal_table(h):
+    assert h.EXPECTED_COUNTS == {'forced': {'replays': 14, 'proofs': 5, 'verify_for': 15},
+                                 'prescribed': {'replays': 8, 'proofs': 3, 'verify_for': 9}}
+
+
+# ---- sweep: other preconditions and oracles
+
+def test_pinned_fixture_hashes_match_this_revision(h):
+    for name, pinned in h.PINNED_FIXTURE_SHA256.items():
+        assert h._sha256_file(ROOT / name) == pinned, name
+
+
+def test_changed_fixture_is_h_shape(h, tmp_path, monkeypatch):
+    monkeypatch.setitem(h.PINNED_FIXTURE_SHA256, 'tests/ops/qualification/composition_fixture.py', '0' * 64)
+    code, record = _summarize_job(h, _linux_job(tmp_path / 'a'))
+    assert any(r.startswith('H-SHAPE') and 'composition_fixture.py' in r for r in record['verdict']['reasons'])
+    assert code == 4
+
+
+def test_cli_thread_environment_not_pinned_is_h_shape(tmp_path):
+    directory = _linux_job(tmp_path / 'a')
+    path = directory / 'forced-4.json'
+    row = json.loads(path.read_text())
+    row['environment']['thread_env']['OMP_NUM_THREADS'] = None
+    path.write_text(json.dumps(row))
+    code, record, done = _cli_job(tmp_path, directory)
+    assert any(r.startswith('H-SHAPE: forced-4') and 'thread environment' in r for r in record['verdict']['reasons'])
+    assert code == 4
+
+
+def test_cli_repeat_run_in_another_unit_is_h_shape(tmp_path):
+    directory = _linux_job(tmp_path / 'a')
+    _edit_row(directory, 'forced-4.json', unit='fp-s5pa-1b-forced-3')
+    code, record, done = _cli_job(tmp_path, directory)
+    assert any(r.startswith('H-SHAPE: forced-4') and 'unit' in r for r in record['verdict']['reasons'])
+    assert code == 4

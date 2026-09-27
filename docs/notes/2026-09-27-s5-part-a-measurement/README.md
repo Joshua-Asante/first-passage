@@ -75,7 +75,7 @@ Carrying the harness in the image would need a change under `ops/` (the closure 
   - **Legacy bundles (r2 §12.9 (2)).** A Windows bundle without `timeout_s` or without `executed_identity` comes from a launcher older than this revision. Its verdict is `stop_class = LEGACY_UNACCEPTED`, `validity_ok = false`, `rule_applicable = false`, exit 4, with no re-run. The bundle stays readable and is never modified, deleted or upgraded; `--summarize` writes only `<bundle>.record.json` beside it. Stage 1a acceptance needs a bundle from the current launcher.
   - **Never rule-applicable (r2 §12.9 (4)).** Stage 1a and dry-run records always carry `rule_applicable = false`, whatever their exit code; an exit 0 there means only that their own requirements were met. Stage 1a does not need complete aggregate memory, and the incomplete-evidence gate applies to neither. `rerun_eligible` is null outside Stage 1b measure records.
   - **Dry-run requirements (reading of r2 §12.9 (4) and §12.7).** A dry run exists to show that the runner yields the measurement's inputs, so a completed dry-run repeat must carry them.
-    - A missing runner accounting value (the unit's `CPUUsageNSec`, or its monotonic timestamps, which give `wall.outer` and so the workload wall) is I-1, exit 3, within the single dry-run re-dispatch.
+    - A missing runner accounting value (the unit's `CPUUsageNSec`, or its monotonic timestamps, which give `wall.outer` and so the workload wall) is I-1, exit 3, within the single dry-run re-dispatch. The reason names the exact value, for example `I-1: CPUUsageNSec unset on dry-run repeat forced-1`. The stop class keeps the §16 C8 label `MEMORY_EVIDENCE_MISSING`, which already covers an empty `CPUUsageNSec` in the probe; the reason text shows that no memory reading is missing.
     - A missing harness-emitted field is H-FIELDS, exit 4.
     - Only Stage 1b measure records move the ceiling-input fields out of H-FIELDS, into the incomplete-evidence gate.
     - A dry run is still never rule-applicable.
@@ -126,12 +126,12 @@ The artifact name carries the run attempt, so a re-run never replaces the failed
 | I-3 | A timed (or dry-run) repeat has no complete aggregate memory reading | 3 | `MEMORY_EVIDENCE_MISSING`; memory `UNVERIFIED`, `rule_applicable = false` |
 | I-4 | Digests differ within an arm, or the forced prefix differs from the prescribed result | 4 | `INVALID_MEASUREMENT`; bears on D3 R7 only after diagnosis (§16 C8) |
 | I-5 | Panel-count or `expanded` assertion failed | 4 | `INVALID_MEASUREMENT` |
-| I-6 | A repeat exited non-zero, timed out (30 min poll bound, capped by the loop deadline), OOMed, left no row, or was not started before the loop deadline | 3 | `INVALID_MEASUREMENT` |
+| I-6 | A repeat exited non-zero, timed out (30 min poll bound, capped by the loop deadline), OOMed, left no row, or was not started before the loop deadline; or a measure-mode cold repeat (repeat 1) whose purge is not shown to have succeeded | 3 | `INVALID_MEASUREMENT` |
 | I-7 | Measured head differs from the dispatched head, or the tree is dirty (Stage 1b). A missing dispatched head, start head (`git-head.txt`) or summarize-time head also counts | 4 | `INVALID_MEASUREMENT` |
 | I-8 | Stage 1c requested before its C3 path exists | 4 (workflow: refused at input validation) | `BLOCKED` |
 | H-FIELDS | A completed repeat left a required field empty. For Stage 1b measure records the ceiling-input fields are judged by INCOMPLETE instead; in a dry run the runner accounting values are I-1 | 4 | `INVALID_MEASUREMENT` (harness defect) |
 | H-SHAPE | The record is not both arms with 5 timed repeats per arm (measure mode; r2 §6.2, §12.2) | 4 | `INVALID_MEASUREMENT` (not an acceptance shape) |
-| H-COUNTS | A completed instrumented repeat's call counts differ from the r2 §4 workload, or are absent | 4 | `INVALID_MEASUREMENT` (harness defect: not the specified workload) |
+| H-COUNTS | A completed instrumented repeat's call counts differ from the r2 §4 literals (forced 14 replays, 5 proofs, 15 `verify_for`; prescribed 8, 3, 9), or are absent | 4 | `INVALID_MEASUREMENT` (harness defect: not the specified workload) |
 | INCOMPLETE | Stage 1b measure, per job or combined: a completed timed repeat of either arm lacks an input to Ĉ, Ŵ, P̂ or a warm spread (r2 §12.9 (3)) | 3 | `INCOMPLETE_EVIDENCE`; `validity_ok = false`, `rule_applicable = false`, `rerun_eligible` only on attempt 1 |
 | LEGACY | Stage 1a bundle without `timeout_s` or `executed_identity` (r2 §12.9 (2)) | 4 | `LEGACY_UNACCEPTED`; the bundle is retained unmodified |
 
@@ -167,6 +167,23 @@ Both are **screens, not the r2 §13 application**. The coordinator computes X an
 - **Call-count mismatch** against the r2 §4 expectation (forced 14 replays, 5 proofs, 15 `verify_for`; prescribed 8, 3, 9), or a completed instrumented repeat without counts, is `H-COUNTS`. That is a harness defect, not a note: the measured workload is not the specified one, so neither Stage 1a validation nor a Stage 1b ceiling can rest on it. The remaining notes are informational by r2: the probe-failed-first note (with I-1), the D3 R7 note (with I-4) and the Stage 1a warm spread (I-2 is a Stage 1b check, §12.7).
 - **Workflow.** The workflow adds a per-repeat poll bound (30 min) so that a hang is an I-6 timeout, `persist-credentials: false`, and the run attempt in the artifact name. It also has a `runtime` input, whose `worker_image` value is refused (image-first finding).
 - **Loop deadline.** r2 fixes `timeout-minutes: 120` (§12.3), which the workflow sets once, as the single-valued matrix key `timeout_min` that both `timeout-minutes` and `JOB_TIMEOUT_MIN` read, and budgets a measure job at 31 min (§12.6). It sets no per-repeat or loop bound. The workflow stops starting repeats, and stops waiting on a hung one, at the job start plus 120 − 15 = 105 min. A repeat not started by then gets a `HarnessNotStarted=loop-deadline` unit file and is summarized as I-6. The 15 min `POST_LOOP_RESERVE_MIN` for summarize, owned cleanup, journal export and upload is a harness choice: r2 §12.6 budgets only 2 min for cleanup and upload, and does not budget summarize. It does not change any r2 budget, because a normal job ends well inside it.
+- **Preconditions and fixed oracles.** Every precondition r2 sets for a repeat or a stage is checked and fails visibly. Every oracle is a fixed r2 value or a pinned hash, never derived from the input being checked:
+  - **Cold repeat (r2 §6.2).**
+    - On Windows, `--launcher` records per repeat the directories it purged and any `__pycache__` still present afterwards (`purge_failed_dirs`), or the purge error.
+    - In the workflow, a purge or page-cache drop that fails, or leaves bytecode behind, stops the loop. A successful one is recorded as `HarnessColdPrep=done` in repeat 1's unit file.
+    - A measure-mode repeat 1 without that evidence is **I-6**: the repeat's precondition was not established, which is a failed repeat and re-runnable.
+    - I read I-6 over H-SHAPE here because the record's shape is correct and a host lock can cause the failure.
+  - **Probe completion (r2 §8.4).** The probe unit must show `ExecMainStatus=0` and `Result=success`; otherwise it is I-1.
+  - **Call counts (r2 §4).** Compared with the literal table (forced 14/5/15, prescribed 8/3/9), never with the counts the request implies. The row's `workload.expected` is recorded for reference only.
+  - **Workload dimensions (r2 §4, §6.2, §6.3).** Each completed repeat's workload must equal the fixed values, else H-SHAPE:
+    - initial 2 and expanded 4 panels;
+    - 2 paths per panel;
+    - horizon 5, inner block 5 and outer months 6;
+    - `within_pp` 1.0 forced and 0.01 prescribed;
+    - budget 3600 s, full pass rate 1.0, not idle, the composition fixture.
+  - **Fixture identity.** r2 names no literal for sessions, bars per session or legs, which come from the fixture's own source. So `composition_fixture.py` and `runtime_fixture.py` are pinned by SHA-256; they are the same at r2's base `875ecf29` and at this revision. A different fixture is H-SHAPE: a workload change and a re-measurement trigger (r2 §9).
+  - **Unit and threads (r2 §5.1, §12.3).** A Stage 1b repeat must have run in its own `fp-s5pa-<stage>-<arm>-<r>` unit, and every repeat's thread environment must be pinned to 1. Otherwise it is H-SHAPE.
+  - Already in place: swap off (the probe and each repeat's memory), the in-unit cgroup path, and the per-repeat and launcher timeout bounds.
 - **Retained failures, never a traceback.** Every unreadable artifact or failing call ends in a retained record or a clear refusal:
   - An unreadable, truncated or non-object `probe.json` is I-1.
   - An unreadable or malformed Windows bundle is summarized as I-6 for every repeat, and the bundle is left as it is.

@@ -209,9 +209,16 @@ jobs:
                 echo "repeat $arm-$r: not started, loop deadline reached (I-6)"
                 continue
               fi
+              cold=''
               if [ "$MODE" = measure ] && [ "$r" = 1 ]; then
+                # r2 §6.2 cold repeat: a failed purge or drop aborts the loop (the rest are I-6);
+                # success is recorded in the unit file and the summarizer requires it.
                 find "$GITHUB_WORKSPACE" -name __pycache__ -type d -prune -exec sudo rm -rf {} +
                 sync; echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
+                if [ -n "$(find "$GITHUB_WORKSPACE" -name __pycache__ -type d -print -quit)" ]; then
+                  echo "cold purge left __pycache__ behind" >&2; exit 1
+                fi
+                cold='HarnessColdPrep=done'
               fi
               unit="fp-s5pa-$STAGE-$arm-$r"
               # A unit that cannot be started is retained as a failed repeat (I-6), and the loop
@@ -240,6 +247,7 @@ jobs:
                 "$unit" > "$OUT/$arm-$r.unit" || echo 'HarnessShowFailed=yes' > "$OUT/$arm-$r.unit"
               printf 'HarnessPollTimeout=%s\nHarnessPollBoundS=%s\n' "$timed_out" "$REPEAT_POLL_BOUND_S" \
                 >> "$OUT/$arm-$r.unit"
+              if [ -n "$cold" ]; then echo "$cold" >> "$OUT/$arm-$r.unit"; fi
               sudo systemctl stop "$unit"; sudo systemctl reset-failed "$unit" 2>/dev/null || true
               echo "repeat $arm-$r: $(grep -E '^(ExecMainStatus|Result|CPUUsageNSec|MemoryPeak)=' "$OUT/$arm-$r.unit" | tr '\n' ' ')"
             done

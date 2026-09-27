@@ -62,6 +62,26 @@ CONFIRMATION_DEPTH = 60         # r2 §6.3 step 2
 DECISION_ALPHA = '0.05'         # r2 §6.3 step 2
 EXPECTED_PANELS = {'forced': 4, 'prescribed': 2}      # r2 §6.3 step 7
 EXPECTED_EXPANDED = {'forced': True, 'prescribed': False}
+# r2 §4 table: replays at maximum expansion 14 and with no expansion 8, verify_for 15 and 9;
+# proofs are the pilot proof plus one per panel (5 and 3). Literals, never derived from the request.
+EXPECTED_COUNTS = {'forced': {'replays': 14, 'proofs': 5, 'verify_for': 15},
+                   'prescribed': {'replays': 8, 'proofs': 3, 'verify_for': 9}}
+# r2 §4 table (TEST_ONLY S5 workload): 2 -> 4 panels, 2 paths per panel, horizon / inner
+# block / outer months 5 / 5 / 6; r2 §6.2 prescribed keeps the frozen 0.01; r2 §6.3 step 4.
+EXPECTED_WORKLOAD = {'initial_panels': 2, 'expanded_panels': 4, 'paths_per_panel': 2, 'horizon_sessions': 5,
+                     'inner_block_sessions': 5, 'outer_months': 6, 'budget_seconds': 3600.0,
+                     'full_pass_rate_input': 1.0, 'idle': False,
+                     'fixture': 'tests/ops/qualification/composition_fixture.py'}
+EXPECTED_WITHIN_PP = {'forced': 1.0, 'prescribed': 0.01}
+# r2 names no literal for sessions, bars per session or legs: they are fixed by the fixture's
+# own source, so the fixture is pinned by SHA-256 (identical at r2's base 875ecf29 and at this
+# harness revision). A changed fixture is a workload change, a re-measurement trigger (r2 §9).
+PINNED_FIXTURE_SHA256 = {
+    'tests/ops/qualification/composition_fixture.py':
+        '727166d55b7a3f26e437ae577017eb36067d0dbe77f7ac8fb5157d7c55a9cf23',
+    'tests/ops/qualification/runtime_fixture.py':
+        'cca04e61d2f259026f76b026c023c74e06cd25dc9360f4826524a7518186e5db',
+}
 FORCING_LABEL = 'TEST_ONLY_MEASUREMENT_FORCED_EXPANSION'  # r2 §7.3 label; seam=harness_request at 1b
 RECIPE = "build_verified_composition(tmp, confirmation_depth=60, decision_alpha='0.05', idle=False)"
 DISPATCH_STAGES = ('1b',)       # Linux dispatch stages implemented here; 1c is added at C3 (r2 §12.4)
@@ -286,6 +306,8 @@ def _workload(contract, source, request, arm):
         'frozen_expansion_tolerance': float(contract.replay.part_a.expansion_tolerance),
         'floor': request.floor, 'percentile': request.percentile, 'percentile_method': request.percentile_method,
         'budget_seconds': request.budget_seconds, 'full_pass_rate_input': 1.0, 'n2_capture_sha256': None,
+        # Recorded as the request implies them; the H-COUNTS check compares against
+        # EXPECTED_COUNTS (the r2 §4 literals), never against these.
         'expected': {'panels': EXPECTED_PANELS[arm], 'expanded': EXPECTED_EXPANDED[arm],
                      'replays': replays, 'proofs': 1 + panels, 'verify_for': replays + 1},
     }
@@ -478,16 +500,22 @@ def repeat_mode(args):
 
 # ------------------------------------------------------------ Windows launcher
 
+def _pycache_dirs():
+    return [path for top in ('ops', 'core', 'lab', 'tests', 'scripts')
+            for path in sorted((ROOT / top).rglob('__pycache__')) if path.is_dir()]
+
+
 def _purge_pycache():
-    # The cold repeat (r2 §6.2): purge the checkout's own bytecode. On Windows the
-    # page cache is not dropped; repeat 1 is only as cold as the host allows.
-    removed = 0
-    for top in ('ops', 'core', 'lab', 'tests', 'scripts'):
-        for path in sorted((ROOT / top).rglob('__pycache__')):
-            if path.is_dir():
-                shutil.rmtree(path, ignore_errors=True)
-                removed += 1
-    return removed
+    """The cold repeat (r2 §6.2): purge the checkout's own bytecode. On Windows the page
+    cache is not dropped; repeat 1 is only as cold as the host allows. Returns the number
+    of directories removed and the ones still present afterwards (a failed purge)."""
+    failed = []
+    found = _pycache_dirs()
+    for path in found:
+        shutil.rmtree(path, onerror=lambda func, name, exc: None)
+    remaining = [p.relative_to(ROOT).as_posix() for p in _pycache_dirs()]
+    failed.extend(remaining)
+    return len(found) - len(remaining), failed
 
 
 def _run_in_job(command, *, env, timeout_s):
@@ -622,10 +650,12 @@ def _launch_repeat(arm, repeat, rows, env, timeout_s):
     """One launcher repeat. Never raises: a failure is recorded in the entry and the
     summarizer reads it as a failed repeat (I-6), since it is not an explicit success."""
     unit = {'pid': None, 'exit_code': None, 'timed_out': None, 'outer_wall_s': None, 'job_cpu_s': None}
-    try:
-        unit['pycache_dirs_purged'] = _purge_pycache() if repeat == 1 else None
-    except OSError as exc:
-        unit['pycache_dirs_purged'], unit['purge_error'] = None, '%s: %s' % (type(exc).__name__, exc)
+    unit['pycache_dirs_purged'] = None
+    if repeat == 1:
+        try:
+            unit['pycache_dirs_purged'], unit['purge_failed_dirs'] = _purge_pycache()
+        except OSError as exc:
+            unit['purge_error'] = '%s: %s' % (type(exc).__name__, exc)
     row_path = rows / ('%s-%d.json' % (arm, repeat))
     command = [sys.executable, str(HARNESS), '--repeat-mode', '--stage', '1a', '--arm', arm,
                '--repeat', str(repeat), '--out', str(row_path)]
@@ -677,6 +707,10 @@ def probe_verdict(directory):
         reasons.append('memory.swap.max is not 0')
     if cpu is None:
         reasons.append('CPUUsageNSec not populated')
+    probe['exec_main_status'], probe['result'] = unit.get('ExecMainStatus'), unit.get('Result')
+    if _int_or_none(unit.get('ExecMainStatus')) != 0 or unit.get('Result') != 'success':
+        reasons.append('probe unit did not complete: ExecMainStatus=%s Result=%s (both must be 0 and success)' % (
+            unit.get('ExecMainStatus'), unit.get('Result')))
     probe['swap_off'] = swap_total == 0 and probe['swap_max'] in (None, '0')
     probe['ok'] = not reasons
     probe['reasons'] = reasons
@@ -798,6 +832,17 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
         method = mem.get('lower_bound_method') or (
             'lower_bound_windows_working_set' if stage == '1a' else 'lower_bound_ru_maxrss')
     oom = mem.get('oom_events')
+    if launcher_unit is not None:
+        failed = launcher_unit.get('purge_failed_dirs')
+        cold_prep = {'ok': (isinstance(launcher_unit.get('pycache_dirs_purged'), int) and failed == []
+                            and not launcher_unit.get('purge_error')),
+                     'detail': launcher_unit.get('purge_error') or ('still present: %s' % failed if failed
+                                                                    else None)}
+    elif unit_values is not None:
+        cold_prep = {'ok': unit_values.get('HarnessColdPrep') == 'done',
+                     'detail': 'HarnessColdPrep=%s' % unit_values.get('HarnessColdPrep')}
+    else:
+        cold_prep = None
     # A completed repeat: its row, the process exit status in the row and in the system
     # manager's (or job object's) view, and a success result, all present and clean.
     completed = (bool(row) and exit_code == 0 and row.get('exit_status') == 0 and result == 'success'
@@ -826,7 +871,9 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
         'initial_prefix_sha256': row.get('initial_prefix_sha256'), 'final_sha256': row.get('final_sha256'),
         'fsync_count': row.get('fsync_count'), 'assertions': row.get('assertions'),
         'exit_code': exit_code, 'row_exit_status': row.get('exit_status'), 'result': result,
-        'timed_out': timed_out, 'completed': completed, 'poll_bound_s': poll_bound, 'unit_present': unit_values is not None
+        'timed_out': timed_out, 'completed': completed, 'poll_bound_s': poll_bound, 'cold_prep': cold_prep,
+        'row_unit': row.get('unit'), 'thread_env': (row.get('environment') or {}).get('thread_env')
+        if isinstance(row.get('environment'), dict) else None, 'unit_present': unit_values is not None
         or launcher_unit is not None, 'row_flags': {k: row.get(k) for k in (
             'stage', 'arm', 'repeat', 'cold', 'instrumented', 'dry_run')} if row else None,
         'row_present': bool(row), 'error': row.get('error') if row else (row_error or 'repeat row missing'),
@@ -886,6 +933,9 @@ CEILING_INPUT_FIELDS = frozenset({'cpu.start', 'cpu.admission', 'cpu.setup_exclu
 # In a Stage 1b dry run these are the runner's accounting values (systemd CPUUsageNSec and
 # the unit's monotonic timestamps); r2 §12.7 classes their absence as I-1 (r2 §12.9 (4)).
 RUNNER_ACCOUNTING_FIELDS = frozenset({'unit_cpu_s', 'wall.outer'})
+RUNNER_FIELD_SOURCE = {'unit_cpu_s': 'CPUUsageNSec',
+                       'wall.outer': 'ExecMainStartTimestampMonotonic/ExecMainExitTimestampMonotonic',
+                       'wall.workload': 'ExecMainStartTimestampMonotonic/ExecMainExitTimestampMonotonic'}
 
 
 def _required_fields_missing(rep, stage, mode='measure'):
@@ -1111,6 +1161,10 @@ def _job_record(path, args, current=None):
     # r2 §5.1 code identity, taken before the verdict and part of it (ordering).
     if current is None:
         current = _current_identity(path)
+    for name, pinned in PINNED_FIXTURE_SHA256.items():
+        if (current.get('source_sha256') or {}).get(name) != pinned:
+            reasons.append(('H-SHAPE', 'fixture %s is %s, not the pinned %s: a different workload (r2 §4, §9)' % (
+                name, (current.get('source_sha256') or {}).get(name), pinned)))
     if not (current.get('code_identity') or {}).get('worker_runtime'):
         reasons.append(('I-7', 'summarize-time observe_runtime identity absent (%s); the source set is partial' % (
             (current.get('code_identity') or {}).get('worker_runtime_error') or 'no worker_runtime')))
@@ -1173,6 +1227,26 @@ def _job_record(path, args, current=None):
         if rep['unit_present'] and rep['poll_bound_s'] not in ('launcher', REPEAT_TIMEOUT_S):
             reasons.append(('H-SHAPE', '%s: per-repeat poll bound %s s; the bound is %d s' % (
                 key, rep['poll_bound_s'], REPEAT_TIMEOUT_S)))
+        # Cold precondition (r2 §6.2): measure-mode repeat 1 must show its purge succeeded.
+        if mode == 'measure' and rep['repeat'] == 1 and rep['unit_present'] and rep['completed']:
+            cold = rep.get('cold_prep') or {}
+            if not cold.get('ok'):
+                reasons.append(('I-6', '%s: cold precondition not established (%s); the repeat cannot count as '
+                                       'cold (r2 §6.2)' % (key, cold.get('detail') or 'no record of the purge')))
+        # The repeat ran in its own unit, with the thread environment pinned to 1 (r2 §5.1, §12.3).
+        if rep['completed'] and rep['row_present']:
+            if stage == '1b' and rep.get('row_unit') != 'fp-s5pa-%s-%s-%d' % (stage, rep['arm'], rep['repeat']):
+                reasons.append(('H-SHAPE', '%s: ran in unit %r, not its own fp-s5pa unit' % (key, rep.get('row_unit'))))
+            threads = rep.get('thread_env') or {}
+            if sorted(threads) != sorted(THREAD_ENV) or any(threads[k] != '1' for k in threads):
+                reasons.append(('H-SHAPE', '%s: thread environment %s is not pinned to 1 (r2 §5.1)' % (key, threads)))
+            workload = rep['workload'] or {}
+            wrong = sorted(k for k, v in EXPECTED_WORKLOAD.items() if workload.get(k) != v)
+            if workload.get('within_pp') != EXPECTED_WITHIN_PP[rep['arm']]:
+                wrong.append('within_pp')
+            if wrong:
+                reasons.append(('H-SHAPE', '%s: workload %s differ from the fixed r2 §4 workload' % (key, ', '.join(
+                    '%s=%r' % (k, workload.get(k)) for k in wrong))))
         flags = rep['row_flags']
         if flags is not None:
             want = {'stage': stage, 'arm': rep['arm'], 'repeat': rep['repeat'], 'dry_run': mode == 'dry-run',
@@ -1259,8 +1333,9 @@ def _job_record(path, args, current=None):
                           or (m == 'wall.workload' and 'wall.outer' in missing)]
                 missing = [m for m in missing if m not in runner]
             if runner:
-                reasons.append(('I-1', '%s-%d: the runner did not yield %s in the dry run (r2 §12.7, §12.9 (4))' % (
-                    rep['arm'], rep['repeat'], ', '.join(runner))))
+                named = sorted({RUNNER_FIELD_SOURCE[m] for m in runner})
+                reasons.append(('I-1', '%s unset on dry-run repeat %s-%d (the runner did not yield it; '
+                                       'r2 §12.7, §12.9 (4))' % (' and '.join(named), rep['arm'], rep['repeat'])))
             if missing:
                 reasons.append(('H-FIELDS', '%s-%d: fields not populated: %s' % (
                     rep['arm'], rep['repeat'], ', '.join(missing))))
@@ -1272,15 +1347,14 @@ def _job_record(path, args, current=None):
             continue
         if not rep['completed']:
             continue   # already I-6
-        want = (rep['workload'] or {}).get('expected')
+        want = EXPECTED_COUNTS[rep['arm']]   # the r2 §4 literals, never the request's own derivation
         got = rep['counts']
-        if not got or not want:
-            reasons.append(('H-COUNTS', '%s-%d: instrumented repeat has no call counts or no expected workload' % (
-                rep['arm'], rep['repeat'])))
+        if not isinstance(got, dict):
+            reasons.append(('H-COUNTS', '%s-%d: instrumented repeat has no call counts' % (rep['arm'], rep['repeat'])))
         elif (got.get('replay'), got.get('proof'), got.get('verify_for')) != (
-                want.get('replays'), want.get('proofs'), want.get('verify_for')):
-            reasons.append(('H-COUNTS', '%s-%d call counts %s differ from the r2 §4 expectation %s' % (
-                rep['arm'], rep['repeat'], got, {k: want.get(k) for k in ('replays', 'proofs', 'verify_for')})))
+                want['replays'], want['proofs'], want['verify_for']):
+            reasons.append(('H-COUNTS', '%s-%d call counts %s differ from the r2 §4 workload %s' % (
+                rep['arm'], rep['repeat'], got, want)))
 
     forced = summaries.get('forced') or {}
     estimates = {
