@@ -642,7 +642,7 @@ Both caps are CANDIDATES under PA-4 (CP-1a item 1). §12.6 budgets exactly these
 | **D2 ACCOUNTING-DESIGN FALSIFIER** (the owner's Σ limb) | From a **valid** record with complete memory, Σ is infeasible at every admissible value (§10.3) | — | Returned as the D2 falsifier: revisit the uniform model (S5 draft §2.3). Not a measurement failure |
 | **PA-3 failure** | A valid, complete record has `m_m × M̂ > 256,000,000` (with the P4 tuple extended; §8.1) | — | An operator ruling (§9). Neither invalid nor D2 |
 
-An INVALID MEASUREMENT does not fire the Σ limb and does not clear D2. If no valid Stage 1b record exists at the release point, for any reason (invalid measurement, non-approval or non-execution), the owner's measurement limb engages unless the operator sets the ceiling by ruling (§10.3; reconciliation is CP-1a item 4). *[2026-09-27, §16 C7–C8: I-1 and I-3 are relabelled memory evidence missing, not invalid, with the same effects; I-4 bears on R7 only after diagnosis; the release-point reading is §14.1 decision (4).]*
+An INVALID MEASUREMENT does not fire the Σ limb and does not clear D2. If no valid Stage 1b record exists at the release point, for any reason (invalid measurement, non-approval or non-execution), the owner's measurement limb engages unless the operator sets the ceiling by ruling (§10.3; reconciliation is CP-1a item 4). *[2026-09-27, §16 C7–C8: I-1 and I-3 are relabelled memory evidence missing, not invalid, with the same effects; I-4 bears on R7 only after diagnosis; the release-point reading is §14.1 decision (4).]* *[Operator ruling 2026-09-27, §12.9: missing Stage 1b ceiling inputs give an explicit `INCOMPLETE_EVIDENCE` verdict with exit 3, within the single `--failed` re-run above and granting no additional attempt; a missing completion field is I-6; legacy Stage 1a bundles are retained as `LEGACY_UNACCEPTED`; Stage 1a and dry runs are never rule-applicable.]*
 
 ### 12.8 Record schema `s5-part-a-max-expansion-measurement/v2`
 
@@ -676,6 +676,43 @@ verdict{validity_ok, memory_feasibility = VERIFIED | FAILED | UNVERIFIED, rule_a
         stop_class = none | INVALID_MEASUREMENT | BLOCKED | D2_ACCOUNTING_FALSIFIER | PA3_FAILURE,
         reasons[]}
 ```
+
+*[Operator ruling 2026-09-27, §12.9 (5): `stop_class` gains `INCOMPLETE_EVIDENCE` and `LEGACY_UNACCEPTED`, `verdict` gains `rerun_eligible`, and `summary` carries the all-repeat and warm distributions per arm.]*
+
+### 12.9 Operator ruling 2026-09-27: completion fields, legacy bundles and incomplete Stage 1b evidence
+
+**Ruling.** On 2026-09-27 the operator ruled in session, after reviewing the H1(b) harness returned on [#526](https://github.com/Joshua-Asante/first-passage/pull/526):
+- "Adopt all three recommendations. Require explicit completion fields; retain legacy bundles without granting current acceptance. Make incomplete Stage 1b measurement evidence fail with exit 3, eligible only within the existing per-stage retry cap. Preserve Stage 1a and dry-run semantics. Amend the dispatch narrowly to commit and run the regression suite. Update the owning contract, README and tests consistently. Return the revised PR with retained verification evidence before measurement execution. S5 remains HELD."
+- It then made this more precise: "For Stage 1b measurement, missing required ceiling inputs on either arm must produce an explicit incomplete-evidence verdict, rule_applicable=false, and exit 3. This failure is eligible only within the existing single failed-job rerun allowance per stage. It grants no additional attempt. Record generation, cleanup and artifact upload must still run. Preserve the intended exceptions: Windows Stage 1a does not require complete aggregate-memory evidence, and dry runs are judged against their own requirements. Neither becomes rule-applicable merely because it exits zero. Amend the dispatch narrowly to commit the regression tests, now 75, and add coverage for these exit semantics through the real summarizer. Passing scratchpad tests alone is insufficient for final acceptance. Update the owner contract and README consistently, then return the revised PR and retained verification evidence. No measurement dispatch; S5 remains HELD."
+
+This section is the contract text for those rulings. The dispatch amendment is in the [H1 dispatch record](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h1-steps-b-and-c-dispatch-record-frozen-2026-09-27). Where this section and §12.2, §12.3, §12.7 or §12.8 differ, this section governs.
+
+1. **Explicit completion fields.** A repeat counts as completed only when its completion is recorded affirmatively:
+   - Linux: the unit's `Result=success` and `HarnessPollTimeout=no`, and both the row's `exit_status` and the unit's `ExecMainStatus` are 0;
+   - Windows: the launcher's `timed_out` is explicitly false and the job object's exit code is 0.
+
+   An absent, empty or unrecognised completion field is I-6 (a failed repeat), never success. This applies at every stage and in dry runs.
+2. **Legacy bundles.** A Windows Stage 1a bundle written by a launcher older than this ruling's harness revision is retained unmodified and stays readable by `--summarize`. Such a bundle is identified by the absence of its recorded per-repeat bound (`timeout_s`) or its `executed_identity`. It never grants current acceptance: its verdict is `stop_class = LEGACY_UNACCEPTED`, `validity_ok = false`, `rule_applicable = false`, exit 4, and it is not re-run. Stage 1a acceptance needs a bundle from the current launcher. A fresh Stage 1a run is a new §12.2 run, not a validity-check re-run. Legacy bundles are never deleted, overwritten or upgraded.
+3. **Incomplete Stage 1b evidence: an explicit verdict with exit 3.** A Stage 1b measure record, per job or combined, is incomplete when a required ceiling input is missing on either arm. The required inputs are any input to Ĉ, Ŵ or P̂, or to either arm's warm spread, on a completed timed repeat.
+   - The verdict is explicit: `stop_class = INCOMPLETE_EVIDENCE`, with reason `INCOMPLETE` naming each missing input, plus `validity_ok = false`, `rule_applicable = false` and exit 3.
+   - It is re-run-eligible **only within the existing single failed-job re-run allowance per stage** (§12.7, one `gh run rerun --failed`). It shares that allowance and grants no additional attempt. `verdict.rerun_eligible` is true only when every failing job is on run attempt 1. On attempt 2 the same failure stops the stage.
+   - An exit 3 never short-circuits the job. Record generation, the owned cleanup (§12.3 step 9) and the artifact upload still run, and the evidence is retained.
+   - Memory incompleteness keeps its own I-3 / §8.3 treatment, unchanged. When both apply, both reasons are recorded.
+4. **The intended exceptions are preserved.**
+   - Windows Stage 1a validates the harness and sets no value. It does not require complete aggregate-memory evidence (`memory.complete = false` by design, §12.2), and the gate of (3) does not apply to it. Its exit codes are unchanged except for (2).
+   - A dry run is untimed and is judged against its own requirements (§12.3 step 7). The gate of (3) does not apply to it, and its exits and its single re-dispatch cap (§12.7) are unchanged.
+   - **Neither is ever rule-applicable.** Stage 1a and dry-run records always carry `rule_applicable = false`, whatever their exit code; an exit 0 there means only that their own requirements were met.
+5. **Schema (§12.8) additions:**
+   - `verdict.stop_class` gains `INCOMPLETE_EVIDENCE` and `LEGACY_UNACCEPTED`;
+   - `verdict` gains `rerun_eligible` (Stage 1b measure records);
+   - `reasons[]` may carry `INCOMPLETE` (Stage 1b measure only).
+
+   The `summary` block carries each arm's all-repeat and warm distributions (max, median, minimum, spread) for CPU input, workload wall and complete memory, as §6.2 already requires.
+6. **Coordinator readings recorded with this ruling:**
+   - a job record whose `runtime.run_attempt` is outside 1–2 is I-7 (provenance), since §12.7 names no code for it;
+   - a Windows bundle's arm order is the §12.2 command's `--arms forced,prescribed`, and any other order is a harness-shape failure.
+
+**Unchanged:** the caps and classes of §12.7 other than (3); PA-3, PA-4 and D2; §13's preconditions. S5 stays **HELD**. This ruling authorizes no measurement, engine run, dispatch, re-run or artifact download.
 
 ## 13. TEST_ONLY application procedure (after CP-1a only)
 
