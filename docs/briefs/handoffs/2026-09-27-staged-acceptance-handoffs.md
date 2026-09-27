@@ -43,7 +43,7 @@ If #519 merges before dispatch, the same paths on `main` are used, once they are
 | Card | Workstream | State | Unlocks |
 |---|---|---|---|
 | H1 | S5 and resource limits | Step (a) READY; step (b) READY ON CP-1a | CP-1a; then RC-3a for CP-1b |
-| H2 | Broker route commissioning | READY (packet only) | CP-2; then CP-3 per row |
+| H2 | Broker route commissioning | **RETURNED and ACCEPTED 2026-09-27**: [packet](../../notes/2026-09-27-route-commissioning-session-packet.md). Owed before any CP-3: the §3.7 request-body step (primary checkout) and the M2 dispatch (X-2) | CP-2 now; then CP-3 per row |
 | H3 | ORB lifecycle and fence: disposition, owner text for Ruling 6, H4 card | READY | H4 |
 | H4 | Fence classification: synthetic repair plus ORB L1 replay correction | READY ON coordinator acceptance of H3's owner text and card (authorized by Ruling 6) | Synthetic half of the fence obligation; the replay correction before freeze; CP-5 input |
 | H5 | Attended operations | Step (a) READY (applies §A11.2); step (b) READY ON (a) accepted | T13 construction |
