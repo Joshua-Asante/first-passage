@@ -8,7 +8,8 @@ is *Synthetic / replay engineering*. A pass here resolves no obligation that nee
 producer (card §4).
 
 What the cases show:
-- after each scripted incident (S1-S6), no path restarts automation in the same session;
+- after the S2-S6 scripted incidents, no path restarts automation in the same session;
+- S1's terminal-recovery case remains strict XFAIL under CC-3; acceptance is partial;
 - a correctly handled refusal (S7) refuses only that request, and the session keeps running;
 - the local notifier (``FileAckNotifier``) cannot change the halt, generation or permission.
 
