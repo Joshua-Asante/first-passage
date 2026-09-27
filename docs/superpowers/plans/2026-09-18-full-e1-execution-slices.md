@@ -813,3 +813,26 @@ Operator decisions, 2026-09-26. Source: "operator ruling and coordination, 2026-
 - **Owner text.** After the stack (#515–#518) lands, the coordinator applies these decisions to their canonical owners and reconciles dependent wording. This entry applies none of the draft's proposed owner amendments (draft §1.5, §2.5, §3.4); RC-2 requires them accepted by the operator and applied.
 
 **Not granted:** no S5 release, freeze, dispatch or execution; no approved numerical measurement-and-margin rule; no statistical dispatch; no Gate B, C or D acceptance; no production, activation or live authority. The ruling does not independently add merge authorization. Its closing boundary: "Gate A stays accepted. B–D acceptance, S5 release, order-producing drills, production qualification, deployment and arming remain subject to their recorded gates."
+
+### Operator ruling — Part A measurement rule conditionally approved, S5 held, 2026-09-26
+
+Operator decision, 2026-09-26, given in session by Joshua through a structured question. He selected "Conditional Part A-only approval", whose text was Astra's recommendation; it is recorded here as his decision. It rules, conditionally, on the measurement-and-margin rule returned by the [S5 Part A measurement proposal](../../notes/2026-09-26-s5-part-a-measurement-proposal.md) (§4 and §8, as corrected in PR #519; card: [S5 Part A handoff](../../briefs/handoffs/2026-09-26-s5-part-a-measurement-proposal.md)). This entry owns the ruling; the proposal and its card carry dated pointers.
+- **Conditionally approved: the proposed numerical defaults, for PART_A TEST_ONLY measurement only.** CPU multiplier 2.0 (m_c, PA-1); wall multiplier 3.0 (m_w, PA-2) with the proposed 30-second launch allowance (L); memory multiplier 1.5 (m_m, PA-3a/PA-3b); warm-repeat spread threshold 1.30 (§3.2, PA-4); service/harness discrepancy threshold 1.25 (PA-5); the retained shared floors (120 s CPU, 300 s wall) and upward rounding. **Not** for other phases and **not** for production.
+- **Applicability.** The rule becomes applicable only after the identified measurement defects are corrected and reviewed, including:
+  - a concrete way to exercise maximum expansion through the built adapter, including the baseline derivation and real artifact writing;
+  - aggregate memory evidence: a lower bound cannot establish memory feasibility;
+  - separation of missing permission, invalid measurements and genuine evidence against the accounting design;
+  - measurement in the worker image where practicable, with any runtime mismatch explicit and requiring validation.
+
+  The pilot-budget formula needs validation under the service's throttling. *(Recording consequence, not ruling text: until the rule is applicable, the proposal's §6 application procedure does not start and no ceiling is applied under it.)*
+- **Authorized:** preservation of the existing S4 evidence (done 2026-09-26: primary checkout `local_artifacts/s4-linux-run-logs-2026-09-25/`, 222 files in `SHA256SUMS`, whose SHA-256 is `e2c14228…189a7`; recorded in the card's coordinator correction); and preparation of the corrected harness/workflow. Its exact dispatch scope is returned for approval; no dispatch is authorized by this entry.
+- **Not closed, not authorized.** No provisional ceiling closes RC-3. No S5 execution and no production budget is authorized.
+- **N2 kept separate.** The coordinator returns an explicit `/v7` N2 disposition: no silent revert or carry-forward.
+- **Staged gate amendment.** The coordinator returns an explicit staged gate amendment separating permission to build S5 from acceptance of its completed adapter. C3 adapter measurements cannot count as completed pre-build evidence.
+- **Hold kept.** S5 stays **HELD**.
+
+**Bearing on the proposal's §8 decisions (recording cross-reference, not ruling text).** Decision 1: the listed defaults are conditionally approved within the scope above; the pilot-budget formula (PA-1's `1.5 × P̂` term, PA-2b) is not among the listed defaults and needs validation. Decision 2: PART_A only; the phase-generic form is not approved. Decision 3: not decided; it returns as the N2 disposition. Decision 4: Stage 0 preservation is done; preparation of the corrected harness/workflow is authorized and its dispatch scope returns for approval; the worker-image condition above applies. Decisions 5–7 are not decided as posed; "no provisional ceiling closes RC-3" and the applicability conditions (aggregate memory evidence; separation of outcomes) bear on them.
+
+**Returns owed by the coordinator:** (1) the corrected harness/workflow and its exact dispatch scope, for approval; (2) the explicit `/v7` N2 disposition; (3) the explicit staged gate amendment (build permission separate from completed-adapter acceptance).
+
+**Not granted:** no S5 release, freeze, dispatch or execution; no ceiling set or applied; no production budget or cap; no measurement dispatch; no RC closed by this entry; no Gate B, C or D acceptance; no production, activation or live authority.
