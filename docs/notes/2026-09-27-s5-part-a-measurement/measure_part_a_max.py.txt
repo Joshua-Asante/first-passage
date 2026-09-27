@@ -68,6 +68,8 @@ DISPATCH_STAGES = ('1b',)       # Linux dispatch stages implemented here; 1c is 
 EXIT_VALID, EXIT_RERUN, EXIT_INVALID = 0, 3, 4
 EXIT_REPEAT_ERROR, EXIT_ASSERTION = 1, 5
 DEFAULT_TIMED_REPEATS = 5       # r2 §6.2 and §12.2: the fixed timed-repeat count per arm (H-SHAPE otherwise)
+REPEAT_TIMEOUT_S = 1800.0       # the 30 min per-repeat poll bound (README; the workflow's and --launcher's)
+MAX_RUN_ATTEMPT = 2             # r2 §12.7: one `gh run rerun --failed`, so attempts 1 and 2 only
 THREAD_ENV = ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS', 'NUMEXPR_NUM_THREADS')
 SYS_PATHS = ('core', 'lab', 'ops', 'ops/c1_rail', 'ops/c1_signal_daemon', '.', 'tests/ops/qualification', 'tests/ops')
 
@@ -576,14 +578,16 @@ def launcher(args):
                 print('arm=%s repeat=%d exit=%s outer_wall=%.2fs job_cpu=%s panels=%s' % (
                     arm, repeat, unit['exit_code'], unit['outer_wall_s'], unit['job_cpu_s'],
                     row and row.get('panels')), flush=True)
-    shape_ok = sorted(arms) == sorted(ARMS) and args.repeats == DEFAULT_TIMED_REPEATS
+    shape_ok = (sorted(arms) == sorted(ARMS) and args.repeats == DEFAULT_TIMED_REPEATS
+                and args.timeout_s == REPEAT_TIMEOUT_S)
     if not shape_ok:
         print('NOTE: arms %s x %d timed repeats is not the fixed Stage 1a shape (both arms x %d, r2 §12.2); '
               '--summarize marks this bundle H-SHAPE (debug only, never an acceptance record)' % (
                   arms, args.repeats, DEFAULT_TIMED_REPEATS), flush=True)
     bundle = {'schema': BUNDLE_SCHEMA, 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
               'stage': '1a', 'mode': 'measure', 'platform_accounting': 'windows_process_time_job_object',
-              'arm_order': arms, 'timed_repeats': args.repeats, 'fixed_shape': shape_ok, 'recorded_utc': _now(),
+              'arm_order': arms, 'timed_repeats': args.repeats, 'timeout_s': args.timeout_s,
+              'fixed_shape': shape_ok, 'recorded_utc': _now(),
               'harness_sha256': _sha256_file(HARNESS),
               'executed_identity': _executed_identity([entry['row'] for entry in entries]), 'entries': entries}
     _write_json(out, bundle, exclusive=True)
@@ -708,7 +712,8 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
         systemd_swap_peak = _unit_number(unit_values, 'MemorySwapPeak')
         exit_code = _int_or_none(unit_values.get('ExecMainStatus'))
         result = unit_values.get('Result')
-        timed_out = unit_values.get('HarnessPollTimeout') == 'yes' or result == 'timeout'
+        # Fail closed: only an explicit HarnessPollTimeout=no shows the poll did not time out.
+        timed_out = unit_values.get('HarnessPollTimeout') != 'no' or result == 'timeout'
         if unit_values.get('HarnessNotStarted'):
             # The workflow's loop deadline passed before this repeat started (I-6: no row).
             result = 'not-started: ' + unit_values['HarnessNotStarted']
@@ -719,7 +724,7 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
     if launcher_unit is not None:
         unit_cpu = launcher_unit.get('job_cpu_s')
         exit_code = launcher_unit.get('exit_code')
-        timed_out = bool(launcher_unit.get('timed_out'))
+        timed_out = launcher_unit.get('timed_out') is not False   # unknown counts as timed out
         wall['outer'] = launcher_unit.get('outer_wall_s')
         result = 'timeout' if timed_out else ('success' if exit_code == 0 else 'exit-code')
     if wall.get('outer') is not None and wall.get('setup_excluded') is not None:
@@ -727,8 +732,10 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
     unit_workload = (unit_cpu - cpu['setup_excluded']
                      if unit_cpu is not None and cpu.get('setup_excluded') is not None else None)
     # r2 §6.1: the ceiling's CPU input is the larger of C_w and CPUUsageNSec - setup_excluded.
-    candidates = [v for v in (cpu.get('workload'), unit_workload) if v is not None]
-    cpu_input = max(candidates) if candidates else None
+    # Both are required: without the unit (or job-object) reading, the launcher and
+    # environment-check overhead is uncharged, so there is no fallback to C_w alone.
+    both = (cpu.get('workload'), unit_workload)
+    cpu_input = max(both) if None not in both else None
 
     in_unit = mem.get('in_unit_peak_bytes') if mem.get('cgroup_path_matches_unit') else None
     swap_max = mem.get('swap_max')
@@ -743,6 +750,10 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
         method = mem.get('lower_bound_method') or (
             'lower_bound_windows_working_set' if stage == '1a' else 'lower_bound_ru_maxrss')
     oom = mem.get('oom_events')
+    # A completed repeat: its row, the process exit status in the row and in the system
+    # manager's (or job object's) view, and a success result, all present and clean.
+    completed = (bool(row) and exit_code == 0 and row.get('exit_status') == 0 and result == 'success'
+                 and not timed_out and not (oom or 0) > 0)
     return {
         'arm': arm, 'repeat': repeat, 'unit': row.get('unit'),
         'cold': bool(row.get('cold', repeat == 1)), 'instrumented': bool(row.get('instrumented', repeat == 0)),
@@ -766,7 +777,10 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
         'elapsed_seconds': row.get('elapsed_seconds'), 'counts': row.get('counts'),
         'initial_prefix_sha256': row.get('initial_prefix_sha256'), 'final_sha256': row.get('final_sha256'),
         'fsync_count': row.get('fsync_count'), 'assertions': row.get('assertions'),
-        'exit_code': exit_code, 'result': result, 'timed_out': timed_out,
+        'exit_code': exit_code, 'row_exit_status': row.get('exit_status'), 'result': result,
+        'timed_out': timed_out, 'completed': completed, 'unit_present': unit_values is not None
+        or launcher_unit is not None, 'row_flags': {k: row.get(k) for k in (
+            'stage', 'arm', 'repeat', 'cold', 'instrumented', 'dry_run')} if row else None,
         'row_present': bool(row), 'error': row.get('error') if row else (row_error or 'repeat row missing'),
         'workload': row.get('workload'), 'environment': row.get('environment'),
     }
@@ -829,7 +843,7 @@ def _required_fields_missing(rep, stage):
 
 
 def _arm_summary(reps):
-    timed = [r for r in reps if not r['instrumented'] and not r['dry_run'] and r['exit_code'] == 0]
+    timed = [r for r in reps if not r['instrumented'] and not r['dry_run'] and r.get('completed')]
     warm = [r for r in timed if r['repeat'] >= 2]
     cold = [r for r in timed if r['cold']]
     cpu = [r['cpu_input_s'] for r in timed]
@@ -941,12 +955,14 @@ def _job_record(path, args, current=None):
         if launcher_bundle.get('schema') != BUNDLE_SCHEMA:
             raise SystemExit('not a launcher bundle: ' + str(path))
         rows = {(e['arm'], e['repeat']): e.get('row') for e in launcher_bundle['entries']}
+        duplicate_entries = len(rows) != len(launcher_bundle['entries'])
         units, probe, facts, start_head, row_errors = {}, None, {}, None, {}
         launch_units = {(e['arm'], e['repeat']): e.get('unit') for e in launcher_bundle['entries']}
         arm_order = launcher_bundle['arm_order']
         timed = launcher_bundle['timed_repeats']
     else:
         rows, units, probe, facts, start_head, row_errors = _load_directory(path)
+        duplicate_entries = False
         launch_units = {}
         arm_order = (args.arm_order.split() if args.arm_order
                      else [a for a in ARMS if any(k[0] == a for k in rows)] or list(ARMS))
@@ -972,6 +988,18 @@ def _job_record(path, args, current=None):
     if mode == 'measure' and timed != DEFAULT_TIMED_REPEATS:
         reasons.append(('H-SHAPE', '%s timed repeats per arm; the fixed shape is %d (r2 §6.2, §12.2)' % (
             timed, DEFAULT_TIMED_REPEATS)))
+    if launcher_bundle is not None and launcher_bundle.get('timeout_s') != REPEAT_TIMEOUT_S:
+        reasons.append(('H-SHAPE', 'launcher per-repeat timeout %s s; the bound is %d s' % (
+            launcher_bundle.get('timeout_s'), REPEAT_TIMEOUT_S)))
+    if duplicate_entries:
+        reasons.append(('H-SHAPE', 'the bundle repeats an (arm, repeat) entry'))
+    if stage == '1b' and mode == 'measure' and args.job in ('a', 'b'):
+        want_order = ['forced', 'prescribed'] if args.job == 'a' else ['prescribed', 'forced']
+        if list(arm_order) != want_order:   # r2 §6.2: job a forced first, job b prescribed first
+            reasons.append(('H-SHAPE', 'job %s arm order %s; r2 §6.2 alternation is %s' % (
+                args.job, list(arm_order), want_order)))
+    elif stage == '1b' and mode == 'measure':
+        reasons.append(('H-SHAPE', 'job %r is not a or b (r2 §6.2 two-job alternation)' % args.job))
     if launcher_bundle is not None:
         # r2 §5.1, §12.2: a Windows summary describes the code the launcher ran.
         if current is None:
@@ -994,17 +1022,37 @@ def _job_record(path, args, current=None):
     for rep in repeats:
         key = '%s-%d' % (rep['arm'], rep['repeat'])
         if (rep['arm'], rep['repeat']) not in expected:
+            if rep['row_present'] or rep['unit_present']:
+                reasons.append(('H-SHAPE', '%s: a repeat outside the fixed shape is present' % key))
             continue
-        failed_assertion = rep['assertions'] is not None and not rep['assertions'].get('ok')
+        flags = rep['row_flags']
+        if flags is not None:
+            want = {'stage': stage, 'arm': rep['arm'], 'repeat': rep['repeat'], 'dry_run': mode == 'dry-run',
+                    'instrumented': rep['repeat'] == 0 or mode == 'dry-run',
+                    'cold': rep['repeat'] == 1 and mode != 'dry-run'}
+            wrong = sorted(k for k in want if flags.get(k) != want[k])
+            if wrong:
+                reasons.append(('H-SHAPE', '%s: row %s do not match the repeat it is filed as' % (
+                    key, ', '.join('%s=%s' % (k, flags.get(k)) for k in wrong))))
+        # I-5 is judged from panels and expanded themselves for every repeat that reached
+        # the assertion (exit 0 or 5 in the row), so absent values fail closed.
+        reached = rep['row_present'] and rep['row_exit_status'] in (0, EXIT_ASSERTION)
+        failed_assertion = reached and not (rep['panels'] == EXPECTED_PANELS.get(rep['arm'])
+                                            and rep['expanded'] is EXPECTED_EXPANDED.get(rep['arm'])
+                                            and (rep['assertions'] or {}).get('ok') is True)
         if failed_assertion:
-            reasons.append(('I-5', '%s: panels=%s expanded=%s, expected %s/%s' % (
-                key, rep['panels'], rep['expanded'], EXPECTED_PANELS.get(rep['arm']),
+            reasons.append(('I-5', '%s: panels=%s expanded=%s assertions=%s, expected %s/%s' % (
+                key, rep['panels'], rep['expanded'], rep['assertions'], EXPECTED_PANELS.get(rep['arm']),
                 EXPECTED_EXPANDED.get(rep['arm']))))
         oom = (rep['memory'].get('oom_events') or 0) > 0 or rep['result'] == 'oom-kill'
-        if (not rep['row_present'] or rep['timed_out'] or oom
-                or (rep['exit_code'] != 0 and not (failed_assertion and rep['exit_code'] == EXIT_ASSERTION))):
-            reasons.append(('I-6', '%s: exit=%s result=%s timed_out=%s oom=%s error=%s' % (
-                key, rep['exit_code'], rep['result'], rep['timed_out'], oom, rep['error'])))
+        assertion_exit = (failed_assertion and rep['exit_code'] == EXIT_ASSERTION
+                          and rep['row_exit_status'] == EXIT_ASSERTION and not rep['timed_out'] and not oom)
+        if not rep['completed'] and not assertion_exit:
+            reasons.append(('I-6', '%s: exit=%s row_exit=%s result=%s timed_out=%s oom=%s error=%s' % (
+                key, rep['exit_code'], rep['row_exit_status'], rep['result'], rep['timed_out'], oom,
+                rep['error'])))
+        if rep['completed'] and not (rep['initial_prefix_sha256'] and rep['final_sha256']):
+            reasons.append(('I-4', '%s: artifact digest absent, so digest identity cannot be shown' % key))
     # I-4: digest identity within each arm, and the forced prefix against the prescribed result.
     summaries = {arm: _arm_summary(reps) for arm, reps in by_arm.items()}
     for arm, summary in summaries.items():
@@ -1025,18 +1073,20 @@ def _job_record(path, args, current=None):
     measured = _git('rev-parse', 'HEAD')
     status = _git('status', '--porcelain')
     tree_clean = None if status is None else status == ''
-    if stage == '1b' and args.dispatched_head:
-        heads = {h for h in (measured, start_head) if h}
-        if heads != {args.dispatched_head} or tree_clean is not True:
+    if stage == '1b':
+        # Fail closed: the dispatched head, the head at loop start and the head at
+        # summarize must all be present and equal, on a clean tree (r2 §5.1, §12.7 I-7).
+        if (not args.dispatched_head or start_head != args.dispatched_head
+                or measured != args.dispatched_head or tree_clean is not True):
             reasons.append(('I-7', 'dispatched %s, at start %s, at summarize %s, tree_clean %s' % (
                 args.dispatched_head, start_head, measured, tree_clean)))
     # Memory completeness is judged on the repeats that ran to completion; a failed
     # repeat is already I-6 and is retained as it is.
     timed_reps = [r for r in repeats if not r['instrumented'] and not r['dry_run']
-                  and (r['arm'], r['repeat']) in expected and r['row_present'] and r['exit_code'] == 0]
+                  and (r['arm'], r['repeat']) in expected and r['completed']]
     memory_complete = bool(timed_reps) and all(r['memory']['complete'] for r in timed_reps)
     if mode == 'dry-run':
-        dry = [r for r in repeats if r['dry_run'] and r['row_present'] and r['exit_code'] == 0]
+        dry = [r for r in repeats if r['dry_run'] and r['completed']]
         memory_complete = bool(dry) and all(r['memory']['complete'] for r in dry)
     if stage == '1b' and not memory_complete and expected:
         reasons.append(('I-3', 'a %s repeat lacks a complete aggregate memory reading (swap off plus in-unit '
@@ -1053,7 +1103,7 @@ def _job_record(path, args, current=None):
     if stage == '1a':
         for rep in repeats:
             missing = _required_fields_missing(rep, stage)
-            if missing and rep['exit_code'] == 0:
+            if missing and rep['completed']:
                 reasons.append(('H-FIELDS', '%s-%d: fields not populated: %s' % (
                     rep['arm'], rep['repeat'], ', '.join(missing))))
     # H-COUNTS: the instrumented repeat's call counts (r2 §6.1) must equal the r2 §4
@@ -1062,7 +1112,7 @@ def _job_record(path, args, current=None):
     for rep in repeats:
         if (rep['arm'], rep['repeat']) not in expected or not rep['instrumented']:
             continue
-        if not rep['row_present'] or rep['exit_code'] != 0:
+        if not rep['completed']:
             continue   # already I-6
         want = (rep['workload'] or {}).get('expected')
         got = rep['counts']
@@ -1085,7 +1135,7 @@ def _job_record(path, args, current=None):
     }
     if stage == '1a' or mode == 'dry-run':
         memory_feasibility = 'UNVERIFIED'
-    elif not memory_complete:
+    elif not memory_complete or estimates['M_hat_bytes'] is None:
         memory_feasibility = 'UNVERIFIED'
     else:
         memory_feasibility = 'FAILED' if M_M * estimates['M_hat_bytes'] > PA3_REFERENCE_BYTES else 'VERIFIED'
@@ -1178,6 +1228,9 @@ def _identity_mismatches(executed, current):
     if not executed:
         return ['executed identity absent from the bundle (bundle predates the binding or was edited)']
     found = []
+    if not (executed.get('code_identity') or {}).get('worker_runtime'):
+        found.append('execution-time observe_runtime identity absent (%s)' % (
+            (executed.get('code_identity') or {}).get('worker_runtime_error') or 'no worker_runtime'))
     if executed.get('tree_clean_tracked') is not True:
         found.append('execution-time tracked tree not clean (tree_clean_tracked=%s; r2 §5.1 requires the measured '
                      'commit on a clean tree)' % executed.get('tree_clean_tracked'))
@@ -1280,6 +1333,16 @@ def _combine_inputs_refusal(records):
     run_ids = {(r.get('runtime') or {}).get('run_id') for r in records}
     if len(run_ids) != 1 or None in run_ids:
         return 'refused: the job records are not from one run (run ids %s)' % sorted(map(str, run_ids))
+    for r in records:
+        runtime = r.get('runtime') or {}
+        attempt = _int_or_none(runtime.get('run_attempt'))
+        if attempt is None or not 1 <= attempt <= MAX_RUN_ATTEMPT:
+            return ('refused: job %s run attempt %r is outside 1..%d (r2 §12.7 allows one `--failed` re-run)'
+                    % (runtime.get('job'), runtime.get('run_attempt'), MAX_RUN_ATTEMPT))
+        want_order = ['forced', 'prescribed'] if runtime.get('job') == 'a' else ['prescribed', 'forced']
+        if list(runtime.get('arm_order') or []) != want_order:
+            return 'refused: job %s arm order %s is not the r2 §6.2 alternation %s' % (
+                runtime.get('job'), runtime.get('arm_order'), want_order)
     return None
 
 
@@ -1367,7 +1430,7 @@ def _combined(records, locations=None):
         'P_hat_s': forced.get('predicted_seconds_max'),
         'provisional': 'D̂ uncovered until Stage 1c (r2 §4, §9 PA-1)',
     }
-    if stage == '1a' or mode == 'dry-run' or not memory_complete:
+    if stage == '1a' or mode == 'dry-run' or not memory_complete or estimates['M_hat_bytes'] is None:
         memory_feasibility = 'UNVERIFIED'
     else:
         memory_feasibility = 'FAILED' if M_M * estimates['M_hat_bytes'] > PA3_REFERENCE_BYTES else 'VERIFIED'
@@ -1418,7 +1481,7 @@ def build_parser():
     parser.add_argument('--out', help='--repeat-mode: row path; --launcher: bundle path (never overwritten)')
     parser.add_argument('--arms', default='forced,prescribed', help='--launcher: arm order')
     parser.add_argument('--repeats', type=int, default=DEFAULT_TIMED_REPEATS, help='timed repeats per arm')
-    parser.add_argument('--timeout-s', type=float, default=1800.0, help='--launcher: per-repeat timeout')
+    parser.add_argument('--timeout-s', type=float, default=REPEAT_TIMEOUT_S, help='--launcher: per-repeat timeout')
     parser.add_argument('--mode', choices=('dry-run', 'measure'), help='--summarize: override the inferred mode')
     parser.add_argument('--job', help='--summarize: matrix job (a or b)')
     parser.add_argument('--run-id', help='--summarize: GitHub run id')

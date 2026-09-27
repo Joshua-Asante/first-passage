@@ -93,7 +93,7 @@ python -I scripts/fp.py python docs/notes/2026-09-27-s5-part-a-measurement/measu
 
 **Caps (r2 §12.7):**
 - at most one re-dispatch of a failed dry run (I-1 or I-6);
-- at most one `gh run rerun <id> --failed` of the measure dispatch (up to both jobs);
+- at most one `gh run rerun <id> --failed` of the measure dispatch (up to both jobs). Combining enforces this: it refuses a job record whose run attempt is outside 1–2, and it accepts the attempt-1/attempt-2 mixture a `--failed` re-run produces. The dry-run re-dispatch cap spans separate runs, so no single record can show it; the coordinator keeps that count;
 - any failure after that stops the stage.
 
 The artifact name carries the run attempt, so a re-run never replaces the failed attempt's evidence.
@@ -108,7 +108,7 @@ The artifact name carries the run attempt, so a re-run never replaces the failed
 | I-4 | Digests differ within an arm, or the forced prefix differs from the prescribed result | 4 | `INVALID_MEASUREMENT`; bears on D3 R7 only after diagnosis (§16 C8) |
 | I-5 | Panel-count or `expanded` assertion failed | 4 | `INVALID_MEASUREMENT` |
 | I-6 | A repeat exited non-zero, timed out (30 min poll bound, capped by the loop deadline), OOMed, left no row, or was not started before the loop deadline | 3 | `INVALID_MEASUREMENT` |
-| I-7 | Measured head differs from the dispatched head, or the tree is dirty (Stage 1b) | 4 | `INVALID_MEASUREMENT` |
+| I-7 | Measured head differs from the dispatched head, or the tree is dirty (Stage 1b). A missing dispatched head, start head (`git-head.txt`) or summarize-time head also counts | 4 | `INVALID_MEASUREMENT` |
 | I-8 | Stage 1c requested before its C3 path exists | 4 (workflow: refused at input validation) | `BLOCKED` |
 | H-FIELDS | Stage 1a: a successful repeat left a required field empty | 4 | `INVALID_MEASUREMENT` (harness defect) |
 | H-SHAPE | The record is not both arms with 5 timed repeats per arm (measure mode; r2 §6.2, §12.2) | 4 | `INVALID_MEASUREMENT` (not an acceptance shape) |
@@ -125,6 +125,12 @@ Both are **screens, not the r2 §13 application**. The coordinator computes X an
 
 - **Admission wrapper timing.** r2 §6.1 says the wrapper is "removed before step 2". It is removed as soon as the fixture setup returns, before `verify_for`, as r1 §3.1/§3.3 state ("removed immediately after").
 - **Wall `start`.** It cannot be read in process. The workload wall is `outer − setup_excluded` (r1 §3.1), where `outer` comes from the unit's `ExecMainStart/ExitTimestampMonotonic` (Linux) or the launcher's clock (Windows). Per-boundary `perf_counter` spans are kept under `wall.boundaries`.
+- **Fail closed.** Every input the verdict or ceiling uses must be present and in range. When one is absent, `[not set]`, null or out of range, the record is incomplete or invalid; the harness never falls back to another value:
+  - **CPU input.** Ĉ's per-repeat input needs both `C_w` and the unit's `CPUUsageNSec` (on Windows, the job object's CPU). If either is missing, the repeat has no CPU input and the ceiling is `INCOMPLETE`.
+  - **Completed repeat.** A repeat counts as completed only if all of these hold: its row is present; the row's exit status and the unit's `ExecMainStatus` are both 0; the unit's `Result` is `success`; `HarnessPollTimeout=no` is explicit (on Windows, `timed_out` is explicitly false); and no OOM was seen. Anything else is I-6, and a missing `.unit` file counts. Only completed repeats enter the statistics and the memory, field, count and digest checks.
+  - **Panels and digests.** A completed repeat without panel, `expanded` or assertion evidence is I-5. One without both artifact digests is I-4.
+  - **Record shape.** These are `H-SHAPE`: a row whose stage, arm, repeat, cold, instrumented or dry-run flag does not match the repeat it is filed as; a repeat outside the fixed shape; a job whose arm order breaks the r2 §6.2 alternation (combining refuses it too); a Windows bundle with duplicate entries or a per-repeat timeout other than 1800 s.
+  - **Windows identity.** A Windows execution identity without `observe_runtime` is I-7.
 - **Spread basis.** The warm spread uses the ceiling CPU input, the larger of `C_w` and `CPUUsageNSec − setup_excluded` (r2 §6.1). It is applied per arm, and a job fails if either arm exceeds the limit. The in-process spread is also recorded.
 - **Where code identity is taken.** Git, the harness hash, the source hashes and `observe_runtime` are taken at summarize time, outside the measured unit, so they add nothing to the unit's CPU or memory. `start_head` is recorded by the workflow before the loop. On Windows, `--launcher` also takes them after its last repeat, and `--summarize` requires the two to match (I-7).
 - **Missing ceiling inputs.** r2 names no stop class or exit code for a valid timed repeat that lacks Ĉ, Ŵ or P̂. The harness adds no stop class and no re-run authority. It records the `INCOMPLETE` reason and `rule_applicable = false`, so the r2 §13 precondition cannot be met. Whether this should instead stop the stage is left to the coordinator.
