@@ -42,7 +42,7 @@
 | `ops/c1_rail/book_account_owner.py` `:847–:866` | Feed silence inside session coverage halts (`feed-silence`); startup cannot erase earlier missing history |
 | `ops/c1_rail/book_policy.py` `:132`, `:172–:197` | Book legs and symbols `6J`, `MYM`, `MGC`, `MNQ`; `order_symbol` is "provisional continuous-contract notation" (`6J1!`, `MYM1!`, `MGC1!`, `MNQ1!`) |
 | `ops/c1_rail/c1_sizing_host_reference.py` `:124–:133` | "absent broker symbols are intentional. TB-V1 supplies verified deployed bindings later" |
-| [Campaign record §59 Ruling 6](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-6--orb-resting-entry-lifecycle-l1-and-the-account-fence-classification-contract-2026-09-27) (`:3997`) | ORB L1: "The halt/resume §5 cutoff overlay applies unchanged" |
+| [Campaign record §59 Ruling 7](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27) (`:3997`) | ORB L1: "The halt/resume §5 cutoff overlay applies unchanged" |
 | Campaign record `:191` (D13) | Continuous `1!` basis accepted with a stated seam limitation; `CONTINUOUS_CONTRACT_ROLL_UNRESOLVED` remains a recorded limitation |
 | [Track A plan §3.2 (A9)](../superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md#32-a9--production-feed-verification-record-and-funding-checkpoint-added-2026-09-11) `:171–:217`, `:236` | Entitlements CME (6J, MNQ), CBOT (MYM), COMEX (MGC); six vendor questions; readiness checkpoint; A9-PREP: "freeze the provider-neutral `BarSource` contract, four-symbol mapping requirements and mocked … test contract" |
 
@@ -58,7 +58,7 @@
 | `docs/notes/2026-09-26-close-semantics-c-a.md` | Hits concern cancellation rollback on liquidation (`:23`, `:126`, `:139`, `:161`, `:217`); no market-data finding |
 | `docs/briefs/handoffs/2026-09-26-close-semantics-c-a.md` | No hit |
 
-Two consequences are carried. The ORB entry reads volume (`orb-lifecycle-evidence.md:22`), so the volume metric M4 cannot default to descriptive (§6). And through Ruling 6 (campaign record `:3997`), the ORB L1 lifecycle leaves the §5 cutoff overlay unchanged, so this spec keeps the session and schedule inputs as they are.
+Two consequences are carried. The ORB entry reads volume (`orb-lifecycle-evidence.md:22`), so the volume metric M4 cannot default to descriptive (§6). And through Ruling 7 (campaign record `:3997`), the ORB L1 lifecycle leaves the §5 cutoff overlay unchanged, so this spec keeps the session and schedule inputs as they are.
 
 ## §1 — Purpose and what the test decides
 

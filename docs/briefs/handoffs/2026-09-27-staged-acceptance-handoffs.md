@@ -8,7 +8,7 @@
 - H9 keeps its full-S5 dependency, with two checkpoints.
 
 **Operator rulings of 2026-09-27 applied here:**
-- ORB L1 and the fence classification contract ([§59 Ruling 6](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-6--orb-resting-entry-lifecycle-l1-and-the-account-fence-classification-contract-2026-09-27));
+- ORB L1 and the fence classification contract ([§59 Ruling 7](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27));
 - no same-session restart after an incident ([incident ADR §A11.2](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a112--operator-ruling-no-same-session-restart-of-automation-after-an-incident-2026-09-27));
 - the S5 staged gates with Part A-only rule scope, hold kept ([ledger](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--s5-staged-gates-approved-part-a-only-rule-scope-hold-kept-2026-09-27));
 - preservation-trade read targets ([incident ADR §A11.3](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a113--operator-ruling-preservation-trade-evidence-as-the-target-of-authorized-reads-2026-09-27)).
@@ -44,8 +44,8 @@ If #519 merges before dispatch, the same paths on `main` are used, once they are
 |---|---|---|---|
 | H1 | S5 and resource limits | Step (a) **RETURNED and ACCEPTED 2026-09-27** ([r2 CP-1a packet](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md)); step (b) READY ON CP-1a; step (c) READY (drafting) | CP-1a; then RC-3a for CP-1b |
 | H2 | Broker route commissioning | **RETURNED and ACCEPTED 2026-09-27**: [packet](../../notes/2026-09-27-route-commissioning-session-packet.md). Owed before any CP-3: the §3.7 request-body step (primary checkout) and the M2 dispatch (X-2) | CP-2 now; then CP-3 per row |
-| H3 | ORB lifecycle and fence: disposition, owner text for Ruling 6, H4 card | **RETURNED and ACCEPTED 2026-09-27** ([disposition](../../notes/2026-09-27-orb-fence-ruling6-disposition.md)); operator answers applied (§5 addendum entry; inclusive stale boundary) | H4 |
-| H4 | Fence classification: synthetic repair plus ORB L1 replay correction | **DISPATCHED 2026-09-27** ([dispatch card](2026-09-27-h4-fence-classification-orb-l1-repair.md) §10; branch `claude/h4-fence-classification`; authorized by Ruling 6) | Synthetic half of the fence obligation; the replay correction before freeze; CP-5 input |
+| H3 | ORB lifecycle and fence: disposition, owner text for Ruling 7, H4 card | **RETURNED and ACCEPTED 2026-09-27** ([disposition](../../notes/2026-09-27-orb-fence-ruling6-disposition.md)); operator answers applied (§5 addendum entry; inclusive stale boundary) | H4 |
+| H4 | Fence classification: synthetic repair plus ORB L1 replay correction | **DISPATCHED 2026-09-27** ([dispatch card](2026-09-27-h4-fence-classification-orb-l1-repair.md) §10; branch `claude/h4-fence-classification`; authorized by Ruling 7) | Synthetic half of the fence obligation; the replay correction before freeze; CP-5 input |
 | H5 | Attended operations | Step (a) **RETURNED and ACCEPTED 2026-09-27** (halt/resume amendment, with the O-6/O-7 clarifications applied); step (b) **RETURNED and ACCEPTED (PARTIAL, §7 (B)) 2026-09-27** ([PR #521](https://github.com/Joshua-Asante/first-passage/pull/521) at `32e0863`; [card](2026-09-27-h5b-attended-incident-rehearsal.md), *Coordinator acceptance of the return*; CC-3 stays open); the stale-individual-signal node was removed by a recorded variance (§10), and the operator ruled the classification the same day (a late bar is a source incident; halt/resume §4.1) | T13 construction |
 | H6 | Settlement evidence | Collection READY ON CP-2; rehearsal harness READY | CAP S1/S2 toward QUALIFIED |
 | H7 | Production qualification host | **RETURNED and ACCEPTED 2026-09-27** ([note](../../notes/2026-09-27-host-obligations-assignment.md)); RC-5 recorded in the ledger; RC-4 slice pending the operator (CP-1a item 5); host cost owed before CP-8 | RC-4/RC-5 assignment (S5 build entry); later CP-8 |
@@ -201,21 +201,21 @@ Drafting may start now. Owner documents are amended only after the operator acce
 
 **Grants at dispatch (coordinator):** `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `python scripts/check_handoff_authority.py --all` and `make check` clean on the branch.
 
-## H3 — ORB lifecycle and fence: disposition, owner text for Ruling 6, H4 card
+## H3 — ORB lifecycle and fence: disposition, owner text for Ruling 7, H4 card
 
-**Continues:** the #519 ORB lifecycle evidence and four-state trace at `8c15f18`, each "ACCEPTED AS INPUT". No new source read or trace. The decisions are made ([§59 Ruling 6](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-6--orb-resting-entry-lifecycle-l1-and-the-account-fence-classification-contract-2026-09-27): L1 with the earlier operational cutoff, and the fresh-evidence classification contract).
+**Continues:** the #519 ORB lifecycle evidence and four-state trace at `8c15f18`, each "ACCEPTED AS INPUT". No new source read or trace. The decisions are made ([§59 Ruling 7](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27): L1 with the earlier operational cutoff, and the fresh-evidence classification contract).
 
-**Uncertainty resolved:** the exact owner text that implements Ruling 6, and a bounded, verifiable repair card.
+**Uncertainty resolved:** the exact owner text that implements Ruling 7, and a bounded, verifiable repair card.
 
-**Prerequisites and existing authorization:** Ruling 6, which authorizes "the bounded synthetic repair and corresponding specification/replay corrections, retaining real-producer and route acceptance obligations".
+**Prerequisites and existing authorization:** Ruling 7, which authorizes "the bounded synthetic repair and corresponding specification/replay corrections, retaining real-producer and route acceptance obligations".
 
 **Work:**
-1. **Coordinator disposition.** For each lifecycle-note conflict C1–C5 and each trace defect and ambiguity, record whether it is resolved by Ruling 6 or still open, with the owner.
+1. **Coordinator disposition.** For each lifecycle-note conflict C1–C5 and each trace defect and ambiguity, record whether it is resolved by Ruling 7 or still open, with the owner.
 2. **Owner text, applied as dated amendments under each owner's own convention:**
-   - **Rail spec:** the §1 `pending` clarification (trace §6.1) worded to Ruling 6(b). S2's one-bar sentence per L1. S4's "stale resting entries" and AC-8 aligned to L1. The halt/resume §5 cutoff overlay is unchanged.
+   - **Rail spec:** the §1 `pending` clarification (trace §6.1) worded to Ruling 7(b). S2's one-bar sentence per L1. S4's "stale resting entries" and AC-8 aligned to L1. The halt/resume §5 cutoff overlay is unchanged.
    - **Replay spec:** RC-9 amended so the one-bar cancel does not end ORB's base entry. RC-4's parity basis is kept.
    - **Edition pre-registration:** ORB-1 states the L1 lifecycle in words (it is DRAFT, with a dated marker).
-   - Where #519's §6.2 text and Ruling 6(b)'s "stale at one bar" differ at the boundary, **the ruling's words govern**. The divergence is recorded, and the boundary is pinned as the ruling states it.
+   - Where #519's §6.2 text and Ruling 7(b)'s "stale at one bar" differ at the boundary, **the ruling's words govern**. The divergence is recorded, and the boundary is pinned as the ruling states it.
 3. **H4 dispatch card,** in its own file with its `yaml authority` block:
    - **Scope:** trace §6.2–§6.4 against the synthetic seam, plus the qualification replay correction (`replay.py:507-509` and its pinned test), as separate checkpoints.
    - **Owed items:** the real evidence producer, route integration and the ordinary-unknown halt (packet CC-3; T09/TB-I3).
@@ -224,11 +224,11 @@ Drafting may start now. Owner documents are amended only after the operator acce
 **Limits:**
 - No code change.
 - No private source read.
-- No wording beyond what Ruling 6 decides. Any extra choice (for example strict versus inclusive, if the ruling's words leave it open) is returned, not made.
+- No wording beyond what Ruling 7 decides. Any extra choice (for example strict versus inclusive, if the ruling's words leave it open) is returned, not made.
 
 **Stop conditions:**
 - An owner's change-control forbids the amendment form.
-- Ruling 6 does not decide a point the text needs.
+- Ruling 7 does not decide a point the text needs.
 
 In either case return with the question.
 
@@ -243,13 +243,13 @@ In either case return with the question.
 ## H4 — Fence classification: synthetic repair plus the ORB L1 replay correction
 
 **Uncertainty resolved:**
-- Whether the owner and its consumers classify and act on states (i)–(iv) as Ruling 6(b) says, before any real producer exists.
+- Whether the owner and its consumers classify and act on states (i)–(iv) as Ruling 7(b) says, before any real producer exists.
 - Whether the qualification replay keeps ORB's base entry working per L1.
 
-**Prerequisites and existing authorization:** Ruling 6, which authorizes the bounded synthetic repair and the replay correction. H3's owner text and this card's final form must be accepted by the coordinator before dispatch.
+**Prerequisites and existing authorization:** Ruling 7, which authorizes the bounded synthetic repair and the replay correction. H3's owner text and this card's final form must be accepted by the coordinator before dispatch.
 
 **Work, in two checkpoints returned separately:**
-- **(F) Fence**, tests first. Cover trace §6.4 cases 1–12 as Ruling 6(b) words them:
+- **(F) Fence**, tests first. Cover trace §6.4 cases 1–12 as Ruling 7(b) words them:
   - stale at one bar, pinned;
   - a positive lookup does not resolve state (iii);
   - terminal evidence resolves only the request it covers;

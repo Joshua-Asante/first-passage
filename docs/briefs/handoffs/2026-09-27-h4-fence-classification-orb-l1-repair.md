@@ -1,6 +1,6 @@
 # H4 — Fence classification (synthetic repair) and the ORB L1 qualification-replay correction — worker card
 
-**Status:** PREPARED 2026-09-27 by [handoff H3](2026-09-27-staged-acceptance-handoffs.md#h3--orb-lifecycle-and-fence-disposition-owner-text-for-ruling-6-h4-card). **Not dispatched.** It becomes dispatchable only after the coordinator accepts:
+**Status:** PREPARED 2026-09-27 by [handoff H3](2026-09-27-staged-acceptance-handoffs.md#h3--orb-lifecycle-and-fence-disposition-owner-text-for-ruling-7-h4-card). **Not dispatched.** It becomes dispatchable only after the coordinator accepts:
 - H3's owner text (the dated 2026-09-27 amendments to the rail spec, the replay spec and the edition pre-registration);
 - H3's [disposition note](../../notes/2026-09-27-orb-fence-ruling6-disposition.md);
 - this card, including its answer to disposition Q3.
@@ -9,7 +9,7 @@ At dispatch the coordinator records the dispatch revision in §10 and runs the p
 
 **Parent:** [staged acceptance handoff set, card H4](2026-09-27-staged-acceptance-handoffs.md#h4--fence-classification-synthetic-repair-plus-the-orb-l1-replay-correction). The parent file carries no authority block, so it bounds nothing beyond this card's own seat checks.
 
-**Authority:** [campaign §59 Ruling 6](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-6--orb-resting-entry-lifecycle-l1-and-the-account-fence-classification-contract-2026-09-27), in the relayed words: "Authorize the bounded synthetic repair and corresponding specification/replay corrections, retaining real-producer and route acceptance obligations." This card grants nothing its dispatcher lacks.
+**Authority:** [campaign §59 Ruling 7](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27), in the relayed words: "Authorize the bounded synthetic repair and corresponding specification/replay corrections, retaining real-producer and route acceptance obligations." This card grants nothing its dispatcher lacks.
 
 ```yaml authority
 seat: worker
@@ -65,11 +65,11 @@ acceptance:
 
 ## 0. Read first (report before any code; otherwise `NEEDS_CONTEXT`)
 
-1. `AGENTS.md`. Then [Ruling 6](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-6--orb-resting-entry-lifecycle-l1-and-the-account-fence-classification-contract-2026-09-27) verbatim, and the [H3 disposition note](../../notes/2026-09-27-orb-fence-ruling6-disposition.md) §1–§5.
+1. `AGENTS.md`. Then [Ruling 7](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27) verbatim, and the [H3 disposition note](../../notes/2026-09-27-orb-fence-ruling6-disposition.md) §1–§5.
 2. The owner text as amended 2026-09-27:
    - [rail spec](../../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md): the header callout, the §1 `pending` row marker, S2, S4 and AC-8;
    - [replay spec](../../spec/2026-09-12-tradeify-synchronized-replay-spec.md): the header callout and RC-9.
-3. The #519 fence trace at its pinned head: `git show 8c15f18:docs/notes/2026-09-26-account-fence-four-state-trace.md`, §3 (matrix), §4 (producers) and §6.2–§6.4 (repair). Where §6.2's "at most one bar old" differs from Ruling 6(b), **the ruling governs**: evidence is stale when its age at evaluation is one bar period or more (disposition §3).
+3. The #519 fence trace at its pinned head: `git show 8c15f18:docs/notes/2026-09-26-account-fence-four-state-trace.md`, §3 (matrix), §4 (producers) and §6.2–§6.4 (repair). Where §6.2's "at most one bar old" differs from Ruling 7(b), **the ruling governs**: evidence is stale when its age at evaluation is one bar period or more (disposition §3).
 4. The code, at the dispatch revision:
    - the fence `ops/c1_rail/book_account_owner.py:768-798`;
    - admission `:1605-1612`;
@@ -89,7 +89,7 @@ acceptance:
 ## 1. Scope
 
 **In scope:**
-- **(F)** The account owner's classification of entry and add requests into states (i)–(iv), per Ruling 6(b) and trace §6.2 as the ruling words it, on the `SyntheticBroker` seam with **synthetic** evidence acquisitions.
+- **(F)** The account owner's classification of entry and add requests into states (i)–(iv), per Ruling 7(b) and trace §6.2 as the ruling words it, on the `SyntheticBroker` seam with **synthetic** evidence acquisitions.
 - **(F)** The traced consumers, per trace §6.3:
   - admission (`book_account_owner.py:1608`);
   - loosening amends (`book_protection_owner.py:492`);
@@ -104,7 +104,7 @@ acceptance:
 - `ops/c1_rail/qualification/replay.py`;
 - new `tests/ops/test_book_fence_classification.py`;
 - `tests/ops/qualification/test_replay.py`;
-- any existing test whose pinned behavior Ruling 6 changes, listed explicitly in the return.
+- any existing test whose pinned behavior Ruling 7 changes, listed explicitly in the return.
 
 **A change needed anywhere else is a stop (§7).** That includes `book_takeover.py` (`AccountInventory`), `book_synthetic_protection.py`, `book_capacity.py`, `book_migration.py` / `book_migration_schema.py`, the emulator and `c1_signal_daemon/*`.
 
@@ -130,7 +130,7 @@ A known working order still blocks recovery and deadline completion, and is stil
 
 ## 2. Checkpoint (F): fence classification, tests first
 
-Write the tests first and show that they fail on the unmodified tree, where the ruling changes behavior. Then change the owner and consumers. Each case follows the Ruling 6(b) wording and trace §6.4:
+Write the tests first and show that they fail on the unmodified tree, where the ruling changes behavior. Then change the owner and consumers. Each case follows the Ruling 7(b) wording and trace §6.4:
 
 | Case | Ruling words | Test node(s) | Required behavior |
 |---|---|---|---|
@@ -212,7 +212,7 @@ Run through the launcher of your own checkout, and report the command, interpret
 - an emulator-parity break in (R);
 - the repair would change `test_book_feedback_journal.py:42-55`, or any pin the ruling does not require changing;
 - the ORB-base-entry exemption cannot be expressed inside `replay.py` (disposition Q3);
-- a test needs a rule Ruling 6 does not decide (Q1, Q2, positive lookup, same-leg "unrelated" admission, same-leg close refusal, loosening during an unresolved close);
+- a test needs a rule Ruling 7 does not decide (Q1, Q2, positive lookup, same-leg "unrelated" admission, same-leg close refusal, loosening during an unresolved close);
 - an anchor mismatch at the §0 read.
 
 ## 8. Forbidden moves
@@ -279,13 +279,13 @@ No finding was rejected. The Status line is unchanged: PREPARED, not dispatched.
 
 ## Coordinator acceptance (2026-09-27)
 
-**ACCEPTED as the H4 dispatch card. Status: READY.** It is dispatchable under §59 Ruling 6's authorization once this commit is on the branch. Before dispatch:
+**ACCEPTED as the H4 dispatch card. Status: READY.** It is dispatchable under §59 Ruling 7's authorization once this commit is on the branch. Before dispatch:
 - the coordinator records the dispatch revision, executor and Q3 answer in §10;
 - the pre-dispatch read runs.
 
 **Coordinator dispositions:**
 - **Q3:** the default is accepted. Only ORB's base entry is exempt.
-- **One-bar boundary:** operator-confirmed inclusive (§59 Ruling 6, operator answers). Case 11 pins "age ≥ one bar period is stale".
+- **One-bar boundary:** operator-confirmed inclusive (§59 Ruling 7, operator answers). Case 11 pins "age ≥ one bar period is stale".
 - **Narrowed stop (cross-handoff critic X-17): an accepted, recorded variance.** The parent H4 card's stop "a consumer the trace missed" is narrowed here to "a consumer, not listed in §1, whose behavior the change would alter". The trace-missed consumers now listed as unchanged are `book_account_owner.py:757`, `:810` and `book_takeover_owner.py:55`, `:547`. Any other consumer the change would alter still stops the work.
 - **Q4:** resolved by the §5 addendum entry. It is no longer a dispatch precondition.
 

@@ -406,7 +406,7 @@ sed -n 54,158p docs/superpowers/specs/2026-09-17-qualification-execution-boundar
 sed -n 65,127p docs/superpowers/specs/2026-09-17-protected-full-e1-campaign.md
 grep -n "^#\|T10\|T11" docs/adr/2026-09-12-tradeify-book-protection-instance-admission.md
 grep -n "O-10\|O-9\|§0.8" docs/briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md   # no O-10
-# incident ADR §A11.2/§A11.3 and campaign-record Ruling 6 headers read at their owners
+# incident ADR §A11.2/§A11.3 and campaign-record Ruling 7 headers read at their owners
 grep -n "'client':\|'g5':\|'operator':" ops/c1_rail/qualification/execution/campaign_protocol.py
 sed -n 25,45p ops/c1_rail/qualification/seed_identity.py; sed -n 218,236p ops/c1_rail/qualification/checkpoint_plan.py
 sed -n 2405,2436p ops/c1_rail/qualification/execution/campaign_store.py; sed -n 60,95p ops/c1_rail/qualification/execution/client.py

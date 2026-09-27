@@ -326,7 +326,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 | Pass | For this symbol, environment and date: a cancel of a resting stop entry before any fill ended its Suspended children, with no fill and nothing left `Working` or `Suspended` | REST §6.11 drill map row "Cancelling a resting stop entry ends its Suspended children" (line 340), REST interface; packet GC-4; CAP N1-a/N1-cancel (proposed; CAP lines 402, 409); CAP R2 (proposed, packet reading, as X-1) |
 | Fail | **OPERATOR DECISION for ORB**, with the alternatives at line 276. Not route-wide. A finding that changes ORB's intended behavior goes to its owner before CP-6 (addendum §5) | Same |
 
-**Does NOT establish:** the expiry variant (it needs its own authorization; line 278). ORB's lifecycle was ruled L1 on 2026-09-27 (§59 Ruling 6); X-4 observes the broker's cancel behavior only (line 277).
+**Does NOT establish:** the expiry variant (it needs its own authorization; line 278). ORB's lifecycle was ruled L1 on 2026-09-27 (§59 Ruling 7); X-4 observes the broker's cancel behavior only (line 277).
 
 ### 4.3 X-2: rejected modify leaves the old stop working (drill plan §2.2, lines 229–249)
 
@@ -588,7 +588,7 @@ Dispositions:
 **Post-publication corrections (2026-09-27, from the cross-handoff critic).** They govern over the packet text above.
 - **X-07, entitlement for T07.** §A11.3's words are "after entitlement and target confirmation" for "the authorized reads", with no restriction to REST. The session-plan row this packet relied on carried a coordinator parenthetical, "(for the REST reads)", which is not in the ruling; it has been corrected. **New CP-2 item F-3a:** does the entitlement condition apply to the T07 report exports, or only to the REST reads? **Until it is answered, T07 R1–R3 are gated on F-1 as well.** This supersedes §2 intro's "**not** on REST entitlement", §2.5's matching condition, and §2.4.
 - **X-13, one scope question for the $700 ceiling.** F-4 becomes the single consolidated question for the rail GO ADR's owner: which spend classes count against the $700 ceiling? That covers drill commissions and slippage (here), production-host spend (H7) and feed deposits and fees (H8). Asked once at CP-2 and cited by all three.
-- **X-12, broker day-order expiry.** Under ORB's L1 lifecycle (§59 Ruling 6(a)) the base entry rests for hours, so the route's default time-in-force matters. The coordinator assigns it here:
+- **X-12, broker day-order expiry.** Under ORB's L1 lifecycle (§59 Ruling 7(a)) the base entry rests for hours, so the route's default time-in-force matters. The coordinator assigns it here:
   - the §3.7 documentary step also names the `orders/place` time-in-force field and its default, from the same retained vendor captures;
   - X-4's step 4 read records the resting entry's time-in-force.
 

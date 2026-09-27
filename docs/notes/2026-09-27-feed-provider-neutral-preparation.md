@@ -203,7 +203,7 @@ Commands actually run in this session (read-only, on a working tree shared with 
   - `ops/calendars/README.md`;
   - `book_policy.py`, `c1_sizing_host_reference.py`, `feed.py`, `book_protocol.py`, `book_validation.py`, `book_runtime.py`, `book_evaluate_loop.py`, `book_account_owner.py`, `daemon.py`, `evaluate_loop.py`, `book_session_calendar.py`.
 - `git show 521d8f2:<path> | grep -n` for the three concurrently edited specs (rail, replay, halt/resume).
-- `git show 8c15f18:<path> | grep -n -i "feed\|provider\|roll\|DST\|market data"` over the #519 notes and cards (first pass). This reported no market-data finding, which was wrong: see the review round and spec §0. Campaign §59 Ruling 6 read at `:3985–:4010`.
+- `git show 8c15f18:<path> | grep -n -i "feed\|provider\|roll\|DST\|market data"` over the #519 notes and cards (first pass). This reported no market-data finding, which was wrong: see the review round and spec §0. Campaign §59 Ruling 7 read at `:3985–:4010`.
 - `grep -rn -i "back-adjust"` across `docs ops core lab` (the 6J conflict above).
 - `python3 scripts/check_md_relative_links.py --strict --glob <file>` on both H8 files → 23 and 13 targets, 0 unresolved. A local heading-slug check of every `#anchor` in both files → 0 unresolved.
 - `python3 scripts/check_handoff_authority.py --all` → 2 cards with an authority block, 0 violations.
