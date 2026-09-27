@@ -112,6 +112,7 @@ The artifact name carries the run attempt, so a re-run never replaces the failed
 | I-8 | Stage 1c requested before its C3 path exists | 4 (workflow: refused at input validation) | `BLOCKED` |
 | H-FIELDS | Stage 1a: a successful repeat left a required field empty | 4 | `INVALID_MEASUREMENT` (harness defect) |
 | H-SHAPE | The record is not both arms with 5 timed repeats per arm (measure mode; r2 §6.2, §12.2) | 4 | `INVALID_MEASUREMENT` (not an acceptance shape) |
+| H-COUNTS | A completed instrumented repeat's call counts differ from the r2 §4 workload, or are absent | 4 | `INVALID_MEASUREMENT` (harness defect: not the specified workload) |
 | INCOMPLETE | Stage 1b measure: a valid timed forced repeat lacks Ĉ, Ŵ or P̂ | unchanged | none added; `rule_applicable = false` (see ambiguities) |
 
 From a valid record with complete memory:
@@ -134,9 +135,9 @@ Both are **screens, not the r2 §13 application**. The coordinator computes X an
   - `scope = job | combined`;
   - `verdict.sigma_screen` and `verdict.pa3a_screen`;
   - the stop class `MEMORY_EVIDENCE_MISSING` (§16 C8).
-- **Call-count mismatch** against the r2 §4 expectation (forced 14 replays, 5 proofs, 15 `verify_for`; prescribed 8, 3, 9) is reported as a note, not a stop.
+- **Call-count mismatch** against the r2 §4 expectation (forced 14 replays, 5 proofs, 15 `verify_for`; prescribed 8, 3, 9), or a completed instrumented repeat without counts, is `H-COUNTS`. That is a harness defect, not a note: the measured workload is not the specified one, so neither Stage 1a validation nor a Stage 1b ceiling can rest on it. The remaining notes are informational by r2: the probe-failed-first note (with I-1), the D3 R7 note (with I-4) and the Stage 1a warm spread (I-2 is a Stage 1b check, §12.7).
 - **Workflow.** The workflow adds a per-repeat poll bound (30 min) so that a hang is an I-6 timeout, `persist-credentials: false`, and the run attempt in the artifact name. It also has a `runtime` input, whose `worker_image` value is refused (image-first finding).
-- **Loop deadline.** r2 fixes `timeout-minutes: 120` (§12.3) and budgets a measure job at 31 min (§12.6). It sets no per-repeat or loop bound. The workflow stops starting repeats, and stops waiting on a hung one, at the job start plus 120 − 15 = 105 min. A repeat not started by then gets a `HarnessNotStarted=loop-deadline` unit file and is summarized as I-6. The 15 min `POST_LOOP_RESERVE_MIN` for summarize, owned cleanup, journal export and upload is a harness choice: r2 §12.6 budgets only 2 min for cleanup and upload, and does not budget summarize. It does not change any r2 budget, because a normal job ends well inside it.
+- **Loop deadline.** r2 fixes `timeout-minutes: 120` (§12.3), which the workflow sets once, as the single-valued matrix key `timeout_min` that both `timeout-minutes` and `JOB_TIMEOUT_MIN` read, and budgets a measure job at 31 min (§12.6). It sets no per-repeat or loop bound. The workflow stops starting repeats, and stops waiting on a hung one, at the job start plus 120 − 15 = 105 min. A repeat not started by then gets a `HarnessNotStarted=loop-deadline` unit file and is summarized as I-6. The 15 min `POST_LOOP_RESERVE_MIN` for summarize, owned cleanup, journal export and upload is a harness choice: r2 §12.6 budgets only 2 min for cleanup and upload, and does not budget summarize. It does not change any r2 budget, because a normal job ends well inside it.
 - **Cleanup receipt.** r2 names no class for a failed owned cleanup. The job fails at that step, so it counts as a failed job under the §12.7 re-run cap, and combining refuses its record. That refusal is a harness choice.
 
 ## Not run

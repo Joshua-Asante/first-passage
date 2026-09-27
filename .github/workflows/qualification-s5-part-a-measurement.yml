@@ -47,11 +47,16 @@ jobs:
   measure:
     name: S5 Part A measurement (job ${{ matrix.job }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    # The one source of the job timeout (r2 §12.3: 120 min) is the single-valued
+    # matrix key timeout_min: timeout-minutes cannot read env (its contexts are github,
+    # inputs, matrix, needs, strategy and vars), and JOB_TIMEOUT_MIN below reads the
+    # same key. One value, so it adds no job combination.
+    timeout-minutes: ${{ matrix.timeout_min }}
     strategy:
       fail-fast: false
       matrix:
         job: ${{ fromJSON(inputs.mode == 'dry-run' && '["a"]' || '["a","b"]') }}
+        timeout_min: [120]
     env:
       # Inputs reach scripts through env only, never interpolated into them.
       STAGE: ${{ inputs.stage }}
@@ -65,8 +70,8 @@ jobs:
       # JOB_START_EPOCH + (JOB_TIMEOUT_MIN - POST_LOOP_RESERVE_MIN) min, so that a
       # hung repeat can never let the job timeout (r2 §12.3: 120 min) pre-empt
       # summarize, cleanup and upload: a timed-out or unstarted repeat is then
-      # still recorded as I-6 (r2 §12.7). JOB_TIMEOUT_MIN must equal timeout-minutes.
-      JOB_TIMEOUT_MIN: 120
+      # still recorded as I-6 (r2 §12.7). JOB_TIMEOUT_MIN is timeout-minutes' own source.
+      JOB_TIMEOUT_MIN: ${{ matrix.timeout_min }}
       POST_LOOP_RESERVE_MIN: 15
     steps:
       - name: Start the job clock

@@ -906,14 +906,17 @@ def _screens(estimates):
 # H-SHAPE (a harness code, like H-FIELDS): the record's shape is not the fixed one
 # of r2 §6.2 and §12.2 (both arms; 5 timed repeats per arm in measure mode), so it
 # can never be an acceptance record. It is fixed and re-run locally (no re-run count).
-BLOCKING_CODES = frozenset({'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'I-8', 'H-FIELDS', 'H-SHAPE'})
+# H-COUNTS: an instrumented repeat's call counts differ from the r2 §4 workload, or
+# are absent: the measured workload is not the specified one (a harness defect).
+HARNESS_CODES = frozenset({'H-FIELDS', 'H-SHAPE', 'H-COUNTS'})
+BLOCKING_CODES = frozenset({'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'I-8'}) | HARNESS_CODES
 
 
 def _classify(reasons, *, rule_applicable, memory_feasibility, screen):
     codes = {code for code, _ in reasons}
-    no_rerun = codes & {'I-4', 'I-5', 'I-7', 'I-8', 'H-FIELDS', 'H-SHAPE'}
+    no_rerun = codes & ({'I-4', 'I-5', 'I-7', 'I-8'} | HARNESS_CODES)
     rerun = codes & {'I-1', 'I-2', 'I-3', 'I-6'}
-    invalid = codes & {'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'H-FIELDS', 'H-SHAPE'}
+    invalid = codes & ({'I-2', 'I-4', 'I-5', 'I-6', 'I-7'} | HARNESS_CODES)
     if 'I-8' in codes:
         stop = 'BLOCKED'
     elif invalid:
@@ -1053,13 +1056,23 @@ def _job_record(path, args, current=None):
             if missing and rep['exit_code'] == 0:
                 reasons.append(('H-FIELDS', '%s-%d: fields not populated: %s' % (
                     rep['arm'], rep['repeat'], ', '.join(missing))))
+    # H-COUNTS: the instrumented repeat's call counts (r2 §6.1) must equal the r2 §4
+    # workload (forced 14 replays, 5 proofs, 15 verify_for; prescribed 8, 3, 9 at
+    # this fixture). A completed instrumented repeat without counts cannot show it.
     for rep in repeats:
-        if rep['instrumented'] and rep['counts'] and rep['workload']:
-            want = rep['workload']['expected']
-            got = rep['counts']
-            if (got['replay'], got['proof'], got['verify_for']) != (want['replays'], want['proofs'], want['verify_for']):
-                reasons.append(('note', '%s-%d call counts %s differ from the r2 §4 expectation %s' % (
-                    rep['arm'], rep['repeat'], got, {k: want[k] for k in ('replays', 'proofs', 'verify_for')})))
+        if (rep['arm'], rep['repeat']) not in expected or not rep['instrumented']:
+            continue
+        if not rep['row_present'] or rep['exit_code'] != 0:
+            continue   # already I-6
+        want = (rep['workload'] or {}).get('expected')
+        got = rep['counts']
+        if not got or not want:
+            reasons.append(('H-COUNTS', '%s-%d: instrumented repeat has no call counts or no expected workload' % (
+                rep['arm'], rep['repeat'])))
+        elif (got.get('replay'), got.get('proof'), got.get('verify_for')) != (
+                want.get('replays'), want.get('proofs'), want.get('verify_for')):
+            reasons.append(('H-COUNTS', '%s-%d call counts %s differ from the r2 §4 expectation %s' % (
+                rep['arm'], rep['repeat'], got, {k: want.get(k) for k in ('replays', 'proofs', 'verify_for')})))
 
     forced = summaries.get('forced') or {}
     estimates = {
