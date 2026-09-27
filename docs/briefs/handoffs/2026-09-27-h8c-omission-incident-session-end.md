@@ -168,7 +168,7 @@ The operator merges. The coordinator keeps acceptance.
   - This card is byte-identical to the reviewed `00f6db1`.
   - Every §0 owner path and test module exists: `boot` `:318`, `check_source_silence` `:847`, `expire_partial_barrier` `:916`, `activate_synthetic` `:1099` and `halt` `:1112` in `book_account_owner.py`; `_activate_bootstrap` `book_bootstrap.py:106`; `handle_book_fact` `c1_rail_listener.py:125`.
   - `tests/ops/test_feed_omission_session_end.py` does not exist yet.
-  - `.p.ps1 doctor` is OK (ops-env Python 3.13.2).
+  - `.\fp.ps1 doctor` is OK (ops-env Python 3.13.2).
 - **Pre-existing regression-base failure (disclose; do not fix).** At the dispatch revision, on Windows, `pytest tests/ops/test_attended_incident_rehearsal.py tests/ops/test_four_leg_runtime.py` gave 34 passed, 3 skipped, 1 xfailed and **1 failed**. The launcher record was `status: failed`.
   - The failing node is `test_attended_incident_rehearsal.py::test_missed_acknowledgment_never_changes_halt_or_permission`.
   - `FileAckNotifier.acknowledge` (`c1_rail_telemetry.py:220`) writes a filename that contains `:`, which Windows rejects (`OSError: [Errno 22]`). The node passes on Linux CI.
