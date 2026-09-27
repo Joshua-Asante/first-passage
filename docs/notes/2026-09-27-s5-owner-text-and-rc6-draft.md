@@ -1,6 +1,6 @@
 # S5 owner text for build entry and Checkpoint C3: the §3.4(d) text, the RC-6 re-anchor and the RC-2 set
 
-**Status:** DRAFT, returned for operator acceptance; no owner document is amended. Every PROPOSED text below is a candidate for the operator's acceptance. Owner documents change only after that acceptance, by a separate application commit. S5 stays **HELD**: nothing here releases the hold (CP-1b), freezes or dispatches S5, sets a ceiling or changes an approved value.
+**Status:** DRAFT — revised to carry the operator's rulings; acceptance of the full text remains the operator's; no owner document is amended. First returned at `f95a39be`, then revised the same day to carry the operator's answers to its open questions and drafter's additions (block below). Every PROPOSED text below is a candidate for the operator's acceptance. Owner documents change only after that acceptance, by a separate application commit. S5 stays **HELD**: nothing here releases the hold (CP-1b), freezes or dispatches S5, sets a ceiling or changes an approved value.
 
 **Card:** [handoff H1](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h1--s5-measurement-correct-the-519-proposal-return-a-measurement-dispatch), step (c) ("Step (c), added at the acceptance of step (a)"; owner assigned for the cross-handoff critic's finding X-02).
 
@@ -17,13 +17,26 @@
 
 **Not granted:** no owner-document edit; no S5 release, freeze, dispatch or execution; no measurement, CI change, dispatch or download; no ceiling, profile or release-literal change; no decision on anything the rulings leave open; no production, activation or live authority.
 
+### Operator rulings on the open questions and drafter's additions (2026-09-27)
+
+**Source:** commit `19547132` (`195471327cc92836b541a43582d835604da85ffd`), ledger entry "Operator ruling — H1(c) draft: open questions and drafter's additions, 2026-09-27", at `19547132:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md:1006-1022`, on PR #523 (not yet on `main`). The operator chose the recommended option each time. One line per answer, quoted from that entry:
+- **OQ-1:** "**Kept open until it arises.**" It is still open (§5).
+- **OQ-2:** "**The D-2 bridging note.**" It is folded into §1.1 and §1.2.
+- **OQ-3:** "**One clarifying line** in the packet's new §1a". "The five owner sentences stay unchanged. The CP-1a exception does not widen beyond the packet's four sites." The line is drafted in §2.5.
+- **OQ-4:** "**Approved, on the S4 precedent.**" It covers the workflow `mode` addition and the evidence-reader extension. "The change lands through the operator's merge. Any dispatch of it needs its own grant at C3." It is folded into §2.6.
+- **OQ-5:** "**Not used.**" The umbrella O-10 row is not drafted.
+- **OQ-6:** "**Q2 confirmed:** R4's "original deadline" is the campaign's". "**Q1, Q7 and Q9 stay open to C3.** Q1 and Q7 are decided with the statistical owner." Q2 is folded into §3.6; the rest are open (§5).
+- **D-1..D-10:** "All ten accepted". Each is folded into its PROPOSED text, with a short trace of its D-ID.
+
+The entry's effect, quoted: "**Acceptance of the revised draft's full text remains the operator's.** It is not implied by these answers. No owner document is amended until that acceptance, and then only by a separate application commit: build-entry texts before CP-1b, RC-2 texts at C3."
+
 ---
 
 ## 0. How to read this note
 
 Each passage gives:
 - **Current** — the owner text at `875ecf29`, quoted exactly as a blockquote, with file and line;
-- **PROPOSED** — the replacement or insertion and its exact anchor string. Text taken from the S5 draft or r2 is marked with its source. Anything beyond that source is marked **drafter's addition D-n** and listed in §6, where each can be accepted or struck on its own;
+- **PROPOSED** — the replacement or insertion and its exact anchor string. Text taken from the S5 draft or r2 is marked with its source. Text that goes beyond that source carries a trace **[D-n]**: the drafter's additions D-1..D-10, which the operator accepted on 2026-09-27 (`19547132`) and which are now part of the PROPOSED text, not options. §6 lists them;
 - **Required by** — the ruling or finding;
 - **Gate** — **build entry** (the §3.4(d) text or RC-6) or **C3** (RC-2).
 
@@ -61,13 +74,13 @@ The S5 draft's own text of §3.4(d):
 
 > 6. **Signing recovery is durable.** Fixed payload, key, signing time and intent identity precede signing. Recover exact signed candidate/receipt on retry. Missing capture never licenses another draw; missing deterministic G5 validation may be repeated only under the original remaining budget. VOID/expiry/revocation bar new authority while exact historical receipts remain inspectable with current validity.
 
-**PROPOSED** (S5 draft §3.4(d), verbatim). After "Missing capture never licenses another draw;" insert:
+**PROPOSED** (S5 draft §3.4(d), with the accepted D-1 and D-2). After "Missing capture never licenses another draw;" insert:
 
-> a spec §2.6 bounded same-sample re-execution is not a draw;
+> a spec §2.6 bounded same-sample re-execution is not a draw (AUDIT-2026-09-25-qualification-assurance-contract-delta#N2); *[Applied `<acceptance date>` at S5 build entry. The full-E1 spec §2.6 rule cited here is RC-2 owner text, applied at Checkpoint C3; until then its source is the operator's D3 direction (ledger, 2026-09-26) and S5 draft §3.3. This note is removed when the §2.6 text lands at C3.]*
 
-The resulting sentence reads: "Missing capture never licenses another draw; a spec §2.6 bounded same-sample re-execution is not a draw; missing deterministic G5 validation may be repeated only under the original remaining budget."
+The resulting sentence, without the bracketed note, reads: "Missing capture never licenses another draw; a spec §2.6 bounded same-sample re-execution is not a draw (AUDIT-2026-09-25-qualification-assurance-contract-delta#N2); missing deterministic G5 validation may be repeated only under the original remaining budget."
 
-Also **D-1** (qualified tag) and **D-2** (bridging note), §1.3.
+Traces: **[D-1]** the qualified tag; S5 draft RC-2 requires each amendment to cite it (`875ecf29:docs/notes/2026-09-26-s5-decision-draft.md:383`), and the §3.4(d) text did not. **[D-2]** the bridging note (OQ-2, RULED; §1.3).
 
 ### 1.2 Slices plan, S5 Behavior
 
@@ -75,18 +88,15 @@ Also **D-1** (qualified tag) and **D-2** (bridging note), §1.3.
 
 > **Behavior:** Worker and G5 independently derive the same N2 FULL pass rate from captured outcomes. Preserve the disjoint Part A pilot addresses, outer panel seeds, path addresses and source occurrence order, including legitimate duplicate occurrences. Retain the exact original prefix before extending indices `[initial_panels, expanded_panels)`; the final prefix must be byte-identical. Conditional expansion uses inclusive tolerance equality. Apply the final floor and FULL sanity comparison after required expansion. A crash during panels without complete durable capture is IN_DOUBT: no panel resume, replacement pilot or checkpoint rerun.
 
-**PROPOSED** (S5 draft §3.4(d), verbatim). After "…no panel resume, replacement pilot or checkpoint rerun." append:
+**PROPOSED** (S5 draft §3.4(d), with the accepted D-2). After "…no panel resume, replacement pilot or checkpoint rerun." append:
 
-> S5 builds this terminal subset; the §2.6 re-execution is a later slice after S5 and before S8, and S5-D1's retained initial prefix is the retained complete record that full-E1 spec §2.6's comparison schema compares.
+> S5 builds this terminal subset; the §2.6 re-execution is a later slice after S5 and before S8, and S5-D1's retained initial prefix is the retained complete record that full-E1 spec §2.6's comparison schema compares. *[Applied `<acceptance date>` at S5 build entry. The full-E1 spec §2.6 rule cited here is RC-2 owner text, applied at Checkpoint C3; until then its source is the operator's D3 direction (ledger, 2026-09-26) and S5 draft §3.3. This note is removed when the §2.6 text lands at C3.]*
 
-### 1.3 Build-entry consistency: the §2.6 text lands later
+Trace: **[D-2]**.
 
-Both insertions cite a full-E1 spec §2.6 rule ("bounded same-sample re-execution", "comparison schema") that is itself RC-2 text, applied only at C3 (§3.6). Applied verbatim at build entry, the plan would cite a spec rule that does not yet exist between build entry and C3. The split came after the S5 draft was written: the draft had one release point, and the 2026-09-27 direction put §3.4(d) at build entry and RC-2 at C3.
+### 1.3 Build-entry consistency: the §2.6 text lands later (OQ-2, RULED)
 
-- **D-1 (qualified tag).** Append `(AUDIT-2026-09-25-qualification-assurance-contract-delta#N2)` after the contract-decision-6 insertion. S5 draft RC-2 requires each amendment to cite the qualified tag (`875ecf29:docs/notes/2026-09-26-s5-decision-draft.md:383`); the §3.4(d) text does not.
-- **D-2 (bridging note).** Append to each of the two insertions: *"[Applied `<acceptance date>` at S5 build entry. The full-E1 spec §2.6 rule cited here is RC-2 owner text, applied at Checkpoint C3; until then its source is the operator's D3 direction (ledger, 2026-09-26) and S5 draft §3.3.]"*
-
-Whether D-2 is wanted is **OQ-2** (§5).
+Both insertions cite a full-E1 spec §2.6 rule ("bounded same-sample re-execution", "comparison schema") that is itself RC-2 text, applied only at C3 (§3.6). The split came after the S5 draft was written: the draft had one release point, and the 2026-09-27 direction put §3.4(d) at build entry and RC-2 at C3. The operator ruled for the bridging note: "The two §3.4(d) insertions are applied at build entry, each with a dated note. Until C3, the spec §2.6 rule's source is the operator's D3 direction (this ledger, 2026-09-26) and S5 draft §3.3. The notes are removed when the §2.6 text lands at C3." (`19547132:…full-e1-execution-slices.md:1013`).
 
 ---
 
@@ -104,7 +114,9 @@ Whether D-2 is wanted is **OQ-2** (§5).
 - P-3, P-4 and P-5 as hard, non-waivable C3 preconditions, and a missing SR or failing P at C3 as a C3 nonconformance returned to the S5 executor (§2.5, §2.9);
 - the named worker-side residual, carried by PA-5 (§2.5);
 - the SR-8 export extension with the PART_A result's `probe_seconds` and `predicted_seconds` (§2.5);
-- the `/v7` N2 value (§2.1, §2.4).
+- the `/v7` N2 value (§2.1, §2.4);
+- the OQ-3 clarifying line on the SR-7 exception's scope (§2.5);
+- the OQ-4 file scope: selector, evidence reader and workflow `mode` (§2.6).
 
 **Re-verification rule.** Every anchor in §2.2 is at `875ecf29`. At the release head the applier re-runs the §2.2 commands (listed under "Verification of this note") and corrects any moved line before applying; a changed meaning returns to the coordinator.
 
@@ -250,13 +262,21 @@ Folded into §0.1's table (`parse_campaign_checkpoint_snapshot`, `journal_snapsh
 >
 > **Named worker-side residual, carried by PA-5** (r2 §7.6 and §16 C4). In the current worker shape these stay outside the SR-3 callable: the result encode, validate and frame (`execution/worker.py:73-94`); `main`'s frame write and fsync (`:143-150`); and the bundle verification and plan derivation that `run_worker` performs before the SR-3 body. Stage 1c does not measure them. The Stage 2 service figure includes them at the prescribed size, so PA-5's k carries them. Stage 1c ends the provisional status with this residual named (CP-1a decision (2)(e)).
 >
+> **Scope of the SR-7 exception** (operator ruling on OQ-3, 2026-09-27): the five RC-2 owner sentences on thresholds and tolerances (execution-slices plan, Global constraints and S5; full-E1 spec §2.4, two sentences, and §5) govern route and contract values; the TEST_ONLY Stage 1c override is never one of these (P-3, P-4), and a forced result can never pass (P-5), so those five sentences stay unchanged and the SR-7 exception does not widen beyond this packet's four sites.
+>
 > **The Stage 1c harness is not this packet's file.** It sits on the coordinator's measurement branch based on the S5 head (r2 §12.4), and the executor writes none of it.
 
 **Required by:**
 - CP-1a (6), whose approved items are "the r2 §7 seam, with S5 build requirements **SR-1..SR-9** (SR-9 as adopted, r2 §16 C2);", "proof obligations **P-1..P-7**;" and "the SR-7 exception at the packet's four tolerance sites (lines 8, 35, 49 and 61)." (`baa09ffd:…:981-983`), and "**P-3, P-4 and P-5 are hard, non-waivable C3 preconditions.** After the RC-6 fold-in, a missing SR or a failing P at C3 is a C3 nonconformance returned to the S5 executor." (`:985`);
 - CP-1a (1): "It is validated at C3 from Stage 2, through SR-8's export extended with the PART_A result's `probe_seconds` and `predicted_seconds`" (`baa09ffd:…:950`); recommendation (1)(b)(i) in r2 §14.1;
 - CP-1a (2)(e): "Stage 1c ends the provisional status with the worker-side residual (r2 §16 C4) named and carried by PA-5" (`baa09ffd:…:964`);
-- the coordinator's adoption of C2 (SR-9) and C3 (ledger, `875ecf29:…full-e1-execution-slices.md:916-917`).
+- the coordinator's adoption of C2 (SR-9) and C3 (ledger, `875ecf29:…full-e1-execution-slices.md:916-917`);
+- the OQ-3 ruling: "**One clarifying line** in the packet's new §1a: the five RC-2 owner sentences (slices plan `:17`, `:238`; full-E1 spec `:121`, `:123`, `:200` at `875ecf29`) govern route and contract values. The TEST_ONLY Stage 1c override is never one of these (P-3, P-4), and a forced result can never pass (P-5). The five owner sentences stay unchanged. The CP-1a exception does not widen beyond the packet's four sites." (`19547132:…full-e1-execution-slices.md:1014`). The "Scope of the SR-7 exception" line above is that line. The five sentences it refers to, quoted at `875ecf29`, are:
+  - slices plan `:17`: "All depths, thresholds, namespaces and budgets come from the frozen contract, not copied constants.";
+  - slices plan `:238`: "never relax a tolerance or let worker/G5 disagree";
+  - full-E1 spec `:121`: "All depths, thresholds, namespaces and budgets come from the frozen contract, not copied constants.";
+  - full-E1 spec `:123`: "do not silently change a threshold";
+  - full-E1 spec `:200`: "adjust expansion thresholds to make synthetic acceptance pass".
 
 The seam paragraph restates r2 §7.3 without change. The worker-side residual list joins r2 §7.6's residual (bundle verification and plan derivation) and C4's named items.
 
@@ -270,7 +290,13 @@ The seam paragraph restates r2 §7.3 without change. The worker-side residual li
 
 > **Forbidden:** T05's modules and tests; `qualification/seal.py`; accepted formulas and tolerances (one scoped exception, SR-7: the §1a SR-1 measurement override only, never a route value, a contract value or a statistic); any S2/S3/S4 Linux assertion; the coordinator's Stage 1c harness (§1a).
 
-**D-5 (file scope for the S5 acceptance scope and the SR-8 read).** Before "; new Linux file", insert: "`scripts/qualification_boundary_verification.py` (the S5 selector and case set, under S4's placement rule) and `scripts/s2_run_evidence.py` (the S5 acceptance scope and the SR-8 export read); `.github/workflows/qualification-s2-supervision.yml` (an S5 value for its `mode` input) only under the operator's CI-configuration approval". Reason: SR-8 says the fields "are read by `scripts/s2_run_evidence.py`", but that script reads JUnit totals and file-set scope only (`scripts/s2_run_evidence.py:72`, `ACCEPTANCE_SCOPES = ("S4_JOINT_N2", "S3_N1_CAPTURE", "S2_DIAGNOSTIC_SUPERVISION")`), and the workflow's `mode` offers only `s2|s3|s4` (`.github/workflows/qualification-s2-supervision.yml:26`). r2 §12.5 already marks "the S5 scope S5 registers" as UNVERIFIED because S5 adds it. None of these files is in the §2 list. S4 met the same gap as its C2 decision 1, "Selector and scope" (`875ecf29:docs/briefs/handoffs/2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md:78`). The workflow part is **OQ-4**.
+**PROPOSED** (file scope, with the accepted D-5, whose workflow part the OQ-4 ruling approves). In line 35, before "; new Linux file", insert:
+
+> ; `scripts/qualification_boundary_verification.py` (the S5 selector and case set, under S4's placement rule) and `scripts/s2_run_evidence.py` (the S5 acceptance scope, and the reader for the SR-8 export fields); `.github/workflows/qualification-s2-supervision.yml`, only to add an S5 value to its `mode` input (approved by the operator on the S4 precedent, 2026-09-27: the change lands through the operator's merge, and any dispatch of it needs its own grant at C3)
+
+Trace: **[D-5]**. Why the file scope was needed: SR-8 says the fields "are read by `scripts/s2_run_evidence.py`", but that script reads JUnit totals and file-set scope only (`scripts/s2_run_evidence.py:72`, `ACCEPTANCE_SCOPES = ("S4_JOINT_N2", "S3_N1_CAPTURE", "S2_DIAGNOSTIC_SUPERVISION")`). The workflow's `mode` offers only `s2|s3|s4` (`.github/workflows/qualification-s2-supervision.yml:26`). r2 §12.5 marks "the S5 scope S5 registers" as UNVERIFIED because S5 adds it, and none of these files was in the §2 list. S4 met the same gap as its C2 decision 1, "Selector and scope" (`875ecf29:docs/briefs/handoffs/2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md:78`).
+
+**Required by:** the OQ-4 ruling, "**Approved, on the S4 precedent.** Within the S5 build, the executor may add an S5 value to the `mode` input of `.github/workflows/qualification-s2-supervision.yml` and extend the evidence reader so that SR-8's fields have a reader. The change lands through the operator's merge. Any dispatch of it needs its own grant at C3." (`19547132:…full-e1-execution-slices.md:1015`).
 
 ### 2.7 §3 Behavior: SR-9 placement, terminal IN_DOUBT, tolerance site 3 of 4
 
@@ -299,13 +325,13 @@ The seam paragraph restates r2 §7.3 without change. The worker-side residual li
 > - Linux: subset iteration first, then acceptance-grade: the full S4 file set **plus** the Part A file. Required: genuine Part A without expansion → `FULL_PASS_READY`; with prescribed expansion (if a synthetic source can produce it economically; otherwise the arithmetic boundary test stands separately and is **not** called a full-route witness — disclose); a genuine below-floor or above-FULL failure → `PART_A_FAILED`; crash during expansion → IN_DOUBT with the initial prefix retained; g5 death + exact retry. Actual synthetic market/session sources for the Linux campaigns.
 > - Return: heads, record IDs with counts, run IDs with record hashes, the `/v7` release/profile digests, the initial/final prefix identities per Linux campaign, the parity results, and the reduced TEST_ONLY depths stated distinctly.
 
-**PROPOSED** replacement of line 54:
+**PROPOSED** replacement of line 54 (with the accepted D-6):
 
-> - Linux: subset iteration first, then acceptance-grade: the full S4 file set **plus** the Part A file. Required: genuine Part A without expansion → `FULL_PASS_READY`; prescribed expansion cannot occur on the (2, 4, 2) fixture (§0.1 F1), so the required-expansion case stands on the arithmetic boundary test, which is **not** called a full-route witness (disclose); a genuine below-floor or above-FULL failure → `PART_A_FAILED`; crash during expansion → IN_DOUBT with the initial prefix retained; g5 death + exact retry. Actual synthetic market/session sources for the Linux campaigns. Maximum expansion through this build is exercised only by the coordinator's Stage 1c measurement (§1a), a TEST_ONLY measurement and never a route witness (P-5).
+> - Linux: subset iteration first, then acceptance-grade: the full S4 file set **plus** the Part A file. Required: genuine Part A without expansion → `FULL_PASS_READY`; prescribed expansion cannot occur on the (2, 4, 2) fixture (§0.1 F1), so the required-expansion case stands on the arithmetic boundary test, which is **not** called a full-route witness (disclose); a genuine below-floor or above-FULL failure → `PART_A_FAILED`; crash after the initial-prefix artifact is fsynced and before the final artifact → IN_DOUBT with the initial prefix retained (on this fixture no appended panel exists; the during-expansion interruption stands on the pure boundary test); g5 death + exact retry. Actual synthetic market/session sources for the Linux campaigns. Maximum expansion through this build is exercised only by the coordinator's Stage 1c measurement (§1a), a TEST_ONLY measurement and never a route witness (P-5).
 
 **PROPOSED.** In line 55, before its final full stop, append: "; the §1a conformance table (SR-1..SR-9, P-1..P-7 node IDs) and the SR-8 export fields, `probe_seconds` and `predicted_seconds` included".
 
-**D-6 (the Linux crash case on a non-expanding fixture).** Line 54's "crash during expansion" has no Linux instance on this fixture either, because no genuine campaign expands (F1). The S5-D1 window that does exist is between the fsync of the initial-prefix artifact and the final artifact. Optional wording: replace "crash during expansion → IN_DOUBT with the initial prefix retained" with "crash after the initial-prefix artifact is fsynced and before the final artifact → IN_DOUBT with the initial prefix retained (on this fixture no appended panel exists; the during-expansion interruption stands on the pure boundary test)". This is the drafter's reading of F1's consequence; #519 and r2 name only the prescribed-expansion case.
+Trace: **[D-6]**, the crash case. Line 54's "crash during expansion" has no Linux instance on this fixture either, because no genuine campaign expands (F1). The S5-D1 window that does exist is between the fsync of the initial-prefix artifact and the final artifact. This was the drafter's reading of F1's consequence; #519 and r2 named only the prescribed-expansion case.
 
 ### 2.9 §5 Checkpoint C3
 
@@ -363,14 +389,19 @@ The D1–D3 directions are ruled in the operator's words. The rest of the draft'
 > A remote managed execution service could implement the same protocol later but
 > adds infrastructure not needed for the first Linux boundary test.
 
-**PROPOSED** (S5 draft §1.5(a), verbatim; the draft's insertion point is after line 86 and before line 88):
+**Source:** S5 draft §1.5(a) (`875ecf29:docs/notes/2026-09-26-s5-decision-draft.md:133-134`):
 
 > > "### 3.1 Boundary set (AUDIT-2026-09-25-qualification-assurance-contract-delta#boundary)
 > > The requesting agent must be unable to: (B-1) alter installed execution, adjudication or worker code for an admitted release; (B-2) replace or edit captured evidence or the journal; (B-3) produce a counted attempt nobody sees, choose which attempt counts, or learn seed values before reveal; (B-4) grant itself activation authority; (B-5) present fixture or TEST_ONLY output as production evidence. Each retained mechanism cites the row it enforces. These rows rest on credentials and host permissions, not process roles: `qexec` is root-equivalent through Docker, and any agent-reachable administrator, `sudo`, Docker-socket, `qexec`, `qg5`, `qseal`, signing or deploy credential defeats them. These operational facts are production acceptance obligations: (OF-1) no account or environment in which an agent session runs, the operator's workstation account included, can use administrator, `sudo`, `docker`-group or Docker-socket access on the production qualification host; (OF-2) no agent can authenticate as `qexec`, `qg5`, `qseal` or the administrator, and no polkit rule grants `manage-units` to an agent-reachable UID; (OF-3) execution, result, seal and operator-VOID private keys are unreadable by agent-reachable UIDs and absent from every worktree, every CI secret visible to an agent-editable workflow and every store an agent can reach; (OF-4) key-enrollment and trust-domain inputs are writable only by the operator; (OF-5) no agent holds rail-host deploy credentials, write access to the rail `/data` volume, or broker credentials; (OF-6) if E3 is adopted, the operator GO signing key is off-host and never loaded where an agent runs; (OF-7) before public reveal, the seed salt is readable only by the trusted administrator, `qexec`, the worker's read-only input and `qg5`'s private adjudication access. Each is verified by attended host read at provisioning, before any production-authority release, and after any access change; OF-5 also before any arm and at each session GO, OF-6 at TB-I3, and OF-7 also before F1 admission. Until a row's facts are verified and recorded, the row is reported as enforcement not established; that is not a finding that the row is breached. The disposable CI harness is evidence of mechanism, never of this boundary."
 
-**D-3 (placement).** Insert the new `### 3.1` at the **end** of §3, after line 99 and before "## 4.", not between lines 86 and 88. Reason: at the draft's point, the heading would pull the rest of §3 (lines 88-99, the installation paragraph and the rejected alternative) under "3.1 Boundary set". The text is unchanged either way.
+**PROPOSED** (S5 draft §1.5(a), with the accepted D-3 and D-4). Insert as a new subsection at the **end** of §3, after line 99 and before "## 4. Configuration, release and authority binding":
 
-**D-4 (assignment pointer).** Append to the §3.1 text: "The owner, gate, record location and re-verification triggers of each attended read are the execution-slices ledger's RC-5 assignment entry (2026-09-27)." Reason: the RC-5 entry names this section as the OF definitions' owner ("The OF definitions' owner is boundary spec §3.1 once RC-2 applies S5 draft §1.5(a)", ledger `:893`), and the two records should point at each other.
+> ### 3.1 Boundary set (AUDIT-2026-09-25-qualification-assurance-contract-delta#boundary)
+> The requesting agent must be unable to: (B-1) alter installed execution, adjudication or worker code for an admitted release; (B-2) replace or edit captured evidence or the journal; (B-3) produce a counted attempt nobody sees, choose which attempt counts, or learn seed values before reveal; (B-4) grant itself activation authority; (B-5) present fixture or TEST_ONLY output as production evidence. Each retained mechanism cites the row it enforces. These rows rest on credentials and host permissions, not process roles: `qexec` is root-equivalent through Docker, and any agent-reachable administrator, `sudo`, Docker-socket, `qexec`, `qg5`, `qseal`, signing or deploy credential defeats them. These operational facts are production acceptance obligations: (OF-1) no account or environment in which an agent session runs, the operator's workstation account included, can use administrator, `sudo`, `docker`-group or Docker-socket access on the production qualification host; (OF-2) no agent can authenticate as `qexec`, `qg5`, `qseal` or the administrator, and no polkit rule grants `manage-units` to an agent-reachable UID; (OF-3) execution, result, seal and operator-VOID private keys are unreadable by agent-reachable UIDs and absent from every worktree, every CI secret visible to an agent-editable workflow and every store an agent can reach; (OF-4) key-enrollment and trust-domain inputs are writable only by the operator; (OF-5) no agent holds rail-host deploy credentials, write access to the rail `/data` volume, or broker credentials; (OF-6) if E3 is adopted, the operator GO signing key is off-host and never loaded where an agent runs; (OF-7) before public reveal, the seed salt is readable only by the trusted administrator, `qexec`, the worker's read-only input and `qg5`'s private adjudication access. Each is verified by attended host read at provisioning, before any production-authority release, and after any access change; OF-5 also before any arm and at each session GO, OF-6 at TB-I3, and OF-7 also before F1 admission. Until a row's facts are verified and recorded, the row is reported as enforcement not established; that is not a finding that the row is breached. The disposable CI harness is evidence of mechanism, never of this boundary. The owner, gate, record location and re-verification triggers of each attended read are the execution-slices ledger's RC-5 assignment entry (2026-09-27).
+
+Traces:
+- **[D-3]** the placement. The draft put the subsection between lines 86 and 88, which would pull the rest of §3 (lines 88-99, the installation paragraph and the rejected alternative) under "3.1 Boundary set".
+- **[D-4]** the last sentence, the RC-5 pointer. The RC-5 entry names this section as the OF definitions' owner: "The OF definitions' owner is boundary spec §3.1 once RC-2 applies S5 draft §1.5(a)" (ledger `:893`).
 
 **Consistency with the RC-5 assignment (checked, no change needed).** The §1.5(a) gate sentence ("Each is verified by attended host read at provisioning, before any production-authority release, and after any access change; OF-5 also before any arm and at each session GO, OF-6 at TB-I3, and OF-7 also before F1 admission") matches the stricter Q12 reading the coordinator recorded (ledger `:881`). S5 draft §6 Q12 is therefore resolved by the RC-5 entry, not by this text.
 
@@ -380,11 +411,15 @@ The D1–D3 directions are ruled in the operator's words. The rest of the draft'
 
 > FULL_E1 defines versioned authenticated plan-chunk retrieval with a canonical configured maximum of 1 MiB raw bytes per response, within the resolved RPC frame limit after base64/JSON encoding. Requests bind attempt, object digest, offset and length. Validate exact integer types (reject bool), nonnegative offset below object length, and positive length no greater than the chunk limit. The last chunk clips at EOF. Responses bind digest, offset, total length, actual chunk length and canonical base64 bytes. Every fetch verifies attempt/object membership and role access; arbitrary digest access is forbidden. Clients verify ordered offsets, total length and the reassembled SHA256. Identical reads recover identical bytes after restart. Read-only historical access after VOID does not authorize any new execution or publication.
 
-**PROPOSED** (S5 draft §1.5(d), verbatim). After "Clients verify ordered offsets, total length and the reassembled SHA256." insert:
+**Source:** S5 draft §1.5(d) (`875ecf29:docs/notes/2026-09-26-s5-decision-draft.md:146`):
 
 > > "For production-class campaigns (`tb-s2-rng-v3`), the plan object served to the client is a client view: the canonical plan with each seed value replaced by its digest. The admission receipt binds the client view's own digest and byte length beside the canonical plan's, and the client verifies the reassembled client view against them. Before the campaign is irrevocably closed to further computation and recovery, no chunk served to the client carries a seed value or the salt (AUDIT-2026-09-25-qualification-assurance-contract-delta#K3). `qexec` retains the canonical plan, and G5 reads it through its checkpoint access."
 
-**D-7 (receipt field names).** In that text, after "binds the client view's own digest and byte length", insert "(`client_view_sha256`, `client_view_byte_length`)". Reason: the RC-4 F1 admission check, condition 3, names those fields (ledger `:900`), and the RC-4 entry says the slice "depends on the full-E1 spec §2.2a amendment of S5 draft §1.5(d), applied under RC-2 at Checkpoint C3" (`:895`).
+**PROPOSED** (S5 draft §1.5(d), with the accepted D-7). After "Clients verify ordered offsets, total length and the reassembled SHA256." insert:
+
+> For production-class campaigns (`tb-s2-rng-v3`), the plan object served to the client is a client view: the canonical plan with each seed value replaced by its digest. The admission receipt binds the client view's own digest and byte length (`client_view_sha256`, `client_view_byte_length`) beside the canonical plan's, and the client verifies the reassembled client view against them. Before the campaign is irrevocably closed to further computation and recovery, no chunk served to the client carries a seed value or the salt (AUDIT-2026-09-25-qualification-assurance-contract-delta#K3). `qexec` retains the canonical plan, and G5 reads it through its checkpoint access.
+
+Trace: **[D-7]** the receipt field names. The RC-4 F1 admission check, condition 3, names those fields (ledger `:900`). The RC-4 entry says the slice "depends on the full-E1 spec §2.2a amendment of S5 draft §1.5(d), applied under RC-2 at Checkpoint C3" (`:895`).
 
 ### 3.3 Full-E1 spec §2.4, first paragraph: K3 seed custody
 
@@ -392,11 +427,15 @@ The D1–D3 directions are ruled in the operator's words. The rest of the draft'
 
 > Reuse `runner._run_stage`, provider/replay/source admission, `regime.domain_seed`, seed identities, and pure `adjudicate_replay_outcomes`/`adjudicate_panel_inventory`. Extract store-free adapters where necessary; do not call `run_production_e1`, `_execute_e1` or construct `ProductionExecutor` for protected work.
 
-**PROPOSED** (S5 draft §1.5(c), verbatim, placed at the end of this paragraph; the draft anchors it after the paragraph's first sentence, "Reuse `runner._run_stage`, … `adjudicate_panel_inventory`.", and either placement leaves the meaning unchanged):
+**Source:** S5 draft §1.5(c) (`875ecf29:docs/notes/2026-09-26-s5-decision-draft.md:142`):
 
 > > "Production-class campaigns use the salted recipe `tb-s2-rng-v3`, which is `tb-s2-rng-v2` with the service-generated attempt salt added (AUDIT-2026-09-25-qualification-assurance-contract-delta#K3). The F1 freeze carries `root_rng_namespace`, the recipe and this custody rule, and no salt or salt hash. The salt and the consumed attempt are durably bound before any preview-capable work. An identical re-submission or a recovery reuses them and never generates new ones; an admission interrupted after that binding leaves the attempt closed IN_DOUBT (§2.6). The worker receives the salt in its read-only input, where it receives `root_rng_namespace` today, and derives its own seeds. G5 re-derives plans and seeds for each checkpoint it adjudicates from the salt it reads through its authorized private access, after checking the salt against the admission commitment. The client plan view carries seed digests, not seed values (§2.2a), and the salt is disclosed to the client only after the campaign is irrevocably closed to further computation and recovery. TEST_ONLY synthetic campaigns may keep `v2`."
 
-**D-8 (the admission-crash consequence in full).** In that text, replace "an admission interrupted after that binding leaves the attempt closed IN_DOUBT (§2.6)" with: "an admission interrupted after that binding and before the ADMISSION work's capture consumes and closes the attempt: recovery makes the running ADMISSION work IN_DOUBT and the campaign terminal, the attempt identity, salt and commitment are retained, admission does not continue (a second ADMISSION reservation is refused, and ADMISSION is never re-execution-eligible), and no other salt or attempt is generated (operator ruling 2026-09-26; §2.6)". Reason: S5 draft §1.4's drafting note, "The proposed owner texts §1.5(b) and (c) state this consequence in short form; the RC-2 review should check that the applied text states it in full" (`875ecf29:docs/notes/2026-09-26-s5-decision-draft.md:125`). The ruling's words: "Joshua explicitly accepts that an admission crash after salt binding but before capture consumes and closes the attempt, preserving its identity and salt without continuing admission or generating another" (ledger `:808`).
+**PROPOSED** (S5 draft §1.5(c), with the accepted D-8). Place it at the end of this paragraph. The draft anchors it after the paragraph's first sentence, "Reuse `runner._run_stage`, … `adjudicate_panel_inventory`."; either placement leaves the meaning unchanged.
+
+> Production-class campaigns use the salted recipe `tb-s2-rng-v3`, which is `tb-s2-rng-v2` with the service-generated attempt salt added (AUDIT-2026-09-25-qualification-assurance-contract-delta#K3). The F1 freeze carries `root_rng_namespace`, the recipe and this custody rule, and no salt or salt hash. The salt and the consumed attempt are durably bound before any preview-capable work. An identical re-submission or a recovery reuses them and never generates new ones; an admission interrupted after that binding and before the ADMISSION work's capture consumes and closes the attempt: recovery makes the running ADMISSION work IN_DOUBT and the campaign terminal, the attempt identity, salt and commitment are retained, admission does not continue (a second ADMISSION reservation is refused, and ADMISSION is never re-execution-eligible), and no other salt or attempt is generated (operator ruling 2026-09-26; §2.6). The worker receives the salt in its read-only input, where it receives `root_rng_namespace` today, and derives its own seeds. G5 re-derives plans and seeds for each checkpoint it adjudicates from the salt it reads through its authorized private access, after checking the salt against the admission commitment. The client plan view carries seed digests, not seed values (§2.2a), and the salt is disclosed to the client only after the campaign is irrevocably closed to further computation and recovery. TEST_ONLY synthetic campaigns may keep `v2`.
+
+Trace: **[D-8]** states the admission-crash consequence in full, in place of the draft's short form "an admission interrupted after that binding leaves the attempt closed IN_DOUBT (§2.6)". It follows S5 draft §1.4's drafting note: "The proposed owner texts §1.5(b) and (c) state this consequence in short form; the RC-2 review should check that the applied text states it in full" (`875ecf29:docs/notes/2026-09-26-s5-decision-draft.md:125`). The ruling's words: "Joshua explicitly accepts that an admission crash after salt binding but before capture consumes and closes the attempt, preserving its identity and salt without continuing admission or generating another" (ledger `:808`).
 
 **Unchanged by CP-1a (5).** The accepted slice "K3/RC-4 — service salt and client plan view" moves K3's build out of TB-F1 (`baa09ffd:…:978`). §1.5(c) names no build slice or gate, so it needs no change for that.
 
@@ -406,11 +445,11 @@ The D1–D3 directions are ruled in the operator's words. The rest of the draft'
 
 > Part A remains one dispatched compute operation using the existing append loop. This release does not promise partial-panel resume: interruption before a complete durable capture makes that operation IN_DOUBT. This preserves no-redraw behavior without redesigning the statistical engine.
 
-**PROPOSED** (S5 draft §3.4(c), verbatim). After "…makes that operation IN_DOUBT." insert:
+**PROPOSED** (S5 draft §3.4(c), with the accepted D-1). After "…makes that operation IN_DOUBT." insert:
 
-> §2.6's bounded re-execution reruns the whole checkpoint from its first panel under the same plan; it never resumes panels.
+> §2.6's bounded re-execution reruns the whole checkpoint from its first panel under the same plan; it never resumes panels (AUDIT-2026-09-25-qualification-assurance-contract-delta#N2).
 
-Plus **D-1**: `(AUDIT-2026-09-25-qualification-assurance-contract-delta#N2)`.
+Trace: **[D-1]** the qualified tag.
 
 ### 3.5 Full-E1 spec §2.5, last paragraph: exhaustion and retained receipts
 
@@ -418,11 +457,15 @@ Plus **D-1**: `(AUDIT-2026-09-25-qualification-assurance-contract-delta#N2)`.
 
 > The profile defines phase reservation ceilings including verification/finalization, once in a canonical versioned configuration. Admission validates that a feasible route fits the frozen cap; inability to reserve a later phase aborts without draws. Reservations allocate the original allowance and never increase it. Check remaining budget before and immediately at dispatch, assessment commit, full-result commit and seal publication. Deadline reached means no new authority even if computation already passed. Diagnostic cleanup and read-only historical receipt retrieval may continue on separately bounded host resources; they cannot compute, authenticate or sign replacement qualification evidence.
 
-**PROPOSED** (S5 draft §2.5(b), verbatim). After "Deadline reached means no new authority even if computation already passed." insert:
+**Source:** S5 draft §2.5(b) (`875ecf29:docs/notes/2026-09-26-s5-decision-draft.md:255`):
 
 > > "A stage assessment committed before exhaustion remains evidence and is never revoked. Exhaustion ends all further work, and no result or seal is committed after it. A result or seal receipt committed before a later exhaustion is retained as history and cannot be sealed or used for activation; a settlement overrun of the committing work ends authority from the state its commit produced. A committed statistical FAIL is never recast as incomplete. A retained receipt is history: every consumer that grants new action (reservation, dispatch, result commit, seal, activation) checks the campaign's current authority and validity at use and refuses after exhaustion, revocation or VOID. Statistical accounting records committed evidence, a statistical FAIL included, whatever the later authority state; recording it grants no authority."
 
-Plus **D-1**: `(AUDIT-2026-09-25-qualification-assurance-contract-delta#N1)`. S5 draft §6 Q1 (whether a committed FAIL on an exhausted campaign counts as FALSIFIED under ADR §4) stays with the statistical owner; this text records the FAIL and grants nothing, and does not answer Q1.
+**PROPOSED** (S5 draft §2.5(b), with the accepted D-1). After "Deadline reached means no new authority even if computation already passed." insert:
+
+> A stage assessment committed before exhaustion remains evidence and is never revoked. Exhaustion ends all further work, and no result or seal is committed after it. A result or seal receipt committed before a later exhaustion is retained as history and cannot be sealed or used for activation; a settlement overrun of the committing work ends authority from the state its commit produced. A committed statistical FAIL is never recast as incomplete. A retained receipt is history: every consumer that grants new action (reservation, dispatch, result commit, seal, activation) checks the campaign's current authority and validity at use and refuses after exhaustion, revocation or VOID. Statistical accounting records committed evidence, a statistical FAIL included, whatever the later authority state; recording it grants no authority (AUDIT-2026-09-25-qualification-assurance-contract-delta#N1).
+
+Trace: **[D-1]** the qualified tag. S5 draft §6 Q1 (whether a committed FAIL on an exhausted campaign counts as FALSIFIED under ADR §4) stays open to C3 and is decided with the statistical owner (ruling 2026-09-27). This text records the FAIL and grants nothing; it does not answer Q1.
 
 ### 3.6 Full-E1 spec §2.6: bounded same-sample re-execution
 
@@ -434,7 +477,7 @@ Plus **D-1**: `(AUDIT-2026-09-25-qualification-assurance-contract-delta#N1)`. S5
 >
 > A merely readable spool file is not a complete durable capture. Recovery requires the accepted N1 capture finalization protocol and content membership; absence of required facts leaves uncertainty. Cleanup failure cannot undo IN_DOUBT or make historical APIs unavailable. No new attempt ID may be allocated automatically to evade exhausted budget or uncertain dispatch; a separately authorized new campaign is outside retry semantics.
 
-**PROPOSED** (S5 draft §3.4(a), verbatim):
+**PROPOSED** (S5 draft §3.4(a): the two table cells verbatim; the paragraph with the accepted D-9):
 - Row "START_INTENT or RUNNING, no complete durable capture" (line 147): replace its recovery cell with the text at S5 draft line 318:
 
 > > "Persist IN_DOUBT before cleanup; stop owned worker. Never relaunch, except one bounded same-sample re-execution under the rule below."
@@ -443,13 +486,17 @@ Plus **D-1**: `(AUDIT-2026-09-25-qualification-assurance-contract-delta#N1)`. S5
 
 > > "VOID, terminal abort, IN_DOUBT (except a work that is re-execution-eligible under the bounded same-sample rule below) or BUDGET_UNCERTAIN"
 
-- After the paragraph ending "…outside retry semantics." (line 155), add the paragraph at S5 draft line 326:
+- After the paragraph ending "…outside retry semantics." (line 155), add this paragraph (S5 draft line 326, with the accepted D-9):
+
+> **Bounded same-sample re-execution (AUDIT-2026-09-25-qualification-assurance-contract-delta#N2).** A compute checkpoint (N1, N2 or PART_A) left IN_DOUBT by process interruption on the same boot, with no finalized capture, may be re-executed once, and at most twice per campaign. The service may do so only after the original worker is terminated, its absence is proven and its IN_DOUBT state is durable. The re-execution uses byte-identical sample, source, runtime and configuration identities and the same installed phase limits, under the campaign's original deadline and allowance, charged on top of the interrupted work's charge. The interrupted work, and any failed re-execution, stay in history. Retained complete records must match the re-execution on the fields named by the checkpoint's predeclared comparison schema, which also lists the excluded runtime-observation fields. With none retained, re-execution requires recorded reproducibility evidence meeting the standard set for the campaign's authority class; otherwise the work stays IN_DOUBT. A mismatch is a terminal reproducibility incident, never a result. Captured work, committed assessments (a statistical FAIL included), overruns, BUDGET_UNCERTAIN and VOID are never eligible. No re-execution allocates an attempt, salt, seed or plan, and the salt is not disclosed to the client while a re-execution remains possible. This rule is built by the separate recovery slice after S5 and before S8 (operator ruling 2026-09-26, D3). Until that slice is accepted, no release performs a re-execution and every IN_DOUBT stays terminal.
+
+Source of the paragraph (S5 draft §3.4(a), `875ecf29:docs/notes/2026-09-26-s5-decision-draft.md:326`):
 
 > > "**Bounded same-sample re-execution (AUDIT-2026-09-25-qualification-assurance-contract-delta#N2).** A compute checkpoint (N1, N2 or PART_A) left IN_DOUBT by process interruption on the same boot, with no finalized capture, may be re-executed once, and at most twice per campaign. The service may do so only after the original worker is terminated, its absence is proven and its IN_DOUBT state is durable. The re-execution uses byte-identical sample, source, runtime and configuration identities and the same installed phase limits, under the campaign's original deadline and allowance, charged on top of the interrupted work's charge. The interrupted work, and any failed re-execution, stay in history. Retained complete records must match the re-execution on the fields named by the checkpoint's predeclared comparison schema, which also lists the excluded runtime-observation fields. With none retained, re-execution requires recorded reproducibility evidence meeting the standard set for the campaign's authority class; otherwise the work stays IN_DOUBT. A mismatch is a terminal reproducibility incident, never a result. Captured work, committed assessments (a statistical FAIL included), overruns, BUDGET_UNCERTAIN and VOID are never eligible. No re-execution allocates an attempt, salt, seed or plan, and the salt is not disclosed to the client while a re-execution remains possible."
 
-**D-9 (sequencing clause).** Append to the new paragraph: "This rule is built by the separate recovery slice after S5 and before S8 (operator ruling 2026-09-26, D3). Until that slice is accepted, no release performs a re-execution and every IN_DOUBT stays terminal." Reason: applied at C3, the paragraph would be normative spec text while the S5 build under acceptance implements only terminal IN_DOUBT (§1.2). S5 draft §3.1 states that "That change must not ride inside S5"; the spec should say so where the rule is written.
+Trace: **[D-9]** the last two sentences, the sequencing clause. Applied at C3, the paragraph becomes normative spec text while the S5 build under acceptance implements only terminal IN_DOUBT (§1.2). S5 draft §3.1 says: "That change must not ride inside S5".
 
-Open items this text relies on and does not answer (S5 draft §6): Q2 (R4's "original deadline" read as the campaign's; the paragraph says "under the campaign's original deadline"); Q7 (R7's production evidence standard, "the standard set for the campaign's authority class"); Q9 (when a never-retried, retry-eligible IN_DOUBT counts as closed for reveal). See §5.
+**S5 draft §6 Q2, RULED.** "**Q2 confirmed:** R4's "original deadline" is the campaign's, as the draft's §3.6 paragraph assumes." (`19547132:…full-e1-execution-slices.md:1017`). The paragraph's "under the campaign's original deadline" therefore stands without condition. Still open to C3, and not answered by this text: Q7 (R7's production evidence standard, "the standard set for the campaign's authority class"), decided with the statistical owner; and Q9 (when a never-retried, retry-eligible IN_DOUBT counts as closed for reveal). See §5.
 
 ### 3.7 Full-E1 spec §5: forbidden moves
 
@@ -457,11 +504,11 @@ Open items this text relies on and does not answer (S5 draft §6): Q2 (R4's "ori
 
 > - Turn interrupted execution into statistical FAIL, redraw under the same attempt, reset an allowance, or allocate a fresh attempt automatically.
 
-**PROPOSED** (S5 draft §3.4(b), verbatim). After "redraw under the same attempt" insert:
+**PROPOSED** (S5 draft §3.4(b), with the accepted D-1). After "redraw under the same attempt" insert " (a §2.6 bounded same-sample re-execution is not a redraw)", and append the tag at the end of the bullet. The resulting bullet:
 
-> (a §2.6 bounded same-sample re-execution is not a redraw)
+> - Turn interrupted execution into statistical FAIL, redraw under the same attempt (a §2.6 bounded same-sample re-execution is not a redraw), reset an allowance, or allocate a fresh attempt automatically (AUDIT-2026-09-25-qualification-assurance-contract-delta#N2).
 
-Plus **D-1**: `(AUDIT-2026-09-25-qualification-assurance-contract-delta#N2)` at the end of the bullet.
+Trace: **[D-1]** the qualified tag.
 
 ### 3.8 Slices plan, contract decision 3: per-work bound and the rule's scope
 
@@ -469,17 +516,21 @@ Plus **D-1**: `(AUDIT-2026-09-25-qualification-assurance-contract-delta#N2)` at 
 
 > 3. **Reservations cover the rest of the route.** Canonical installed configuration names admission, checkpoint/source proof/probe, capture/attestation, each G5 assessment, aggregate validation/commit and sealing/finalization ceilings. Validate feasibility against the frozen cap, including prescribed maximum expansion. Actual CPU counters settle reservations once; unknown usage consumes its full reservation. Remaining wall time includes queues and downtime. Memory is an enforced shared concurrent footprint, not independent full-size allowances per process.
 
-**PROPOSED** (S5 draft §2.5(a), verbatim). After "…not independent full-size allowances per process." append:
+**Source:** S5 draft §2.5(a) (`875ecf29:docs/notes/2026-09-26-s5-decision-draft.md:251`):
 
 > > "In this design the cumulative bound is per work and kernel-enforced: payload quota × guardian `RuntimeMaxUSec` plus the guardian's `LimitCPU` never exceeds that work's reservation, and settled charges plus open reservations never exceed the frozen cap (AUDIT-2026-09-25-qualification-assurance-contract-delta#N1). A campaign-level rate quota is not a substitute. Every phase, PART_A, RESULT and SEAL included, reserves its installed phase ceiling; PART_A's is measured at maximum expansion. No per-phase CPU figure enters a statistical decision. The operator fixes a measurement-and-margin rule (the measurement standard and the margin) by ruling. The coordinator may set TEST_ONLY diagnostic ceilings only by applying that rule (a cited measurement, the rule's margin, a ledger entry); anything outside it needs an operator ruling. Production ceilings and caps are frozen with F1 by their owners and are never set under that rule."
 
-**D-10 (the approved rule's scope and the `/v7` N2 value).** Append: "The approved rule's scope is PART_A only, TEST_ONLY (operator rulings 2026-09-26 and 2026-09-27; CP-1a 2026-09-27). Every other TEST_ONLY diagnostic phase ceiling comes from an operator ruling: `/v7`'s N2 compute phase takes 360 s CPU / 900 s wall, the M13 values extended by CP-1a decision (3) to the `/v7` TEST_ONLY diagnostic profile only." Reason: §2.5(a) was drafted before any rule existed ("The operator fixes a measurement-and-margin rule … by ruling"). Since then the rule's scope was ruled PART_A-only (ledger `:869`), and N2's `/v7` value came from a separate ruling, CP-1a (3). This is the one owner text in the RC-2 set where the `/v7` N2 value is needed, because contract decision 3 is where TEST_ONLY ceilings are said to come only from the rule or a ruling.
+**PROPOSED** (S5 draft §2.5(a), with the accepted D-10). After "…not independent full-size allowances per process." append:
+
+> In this design the cumulative bound is per work and kernel-enforced: payload quota × guardian `RuntimeMaxUSec` plus the guardian's `LimitCPU` never exceeds that work's reservation, and settled charges plus open reservations never exceed the frozen cap (AUDIT-2026-09-25-qualification-assurance-contract-delta#N1). A campaign-level rate quota is not a substitute. Every phase, PART_A, RESULT and SEAL included, reserves its installed phase ceiling; PART_A's is measured at maximum expansion. No per-phase CPU figure enters a statistical decision. The operator fixes a measurement-and-margin rule (the measurement standard and the margin) by ruling. The coordinator may set TEST_ONLY diagnostic ceilings only by applying that rule (a cited measurement, the rule's margin, a ledger entry); anything outside it needs an operator ruling. Production ceilings and caps are frozen with F1 by their owners and are never set under that rule. The approved rule's scope is PART_A only, TEST_ONLY (operator rulings 2026-09-26 and 2026-09-27; CP-1a 2026-09-27). Every other TEST_ONLY diagnostic phase ceiling comes from an operator ruling: `/v7`'s N2 compute phase takes 360 s CPU / 900 s wall, the M13 values extended by CP-1a decision (3) to the `/v7` TEST_ONLY diagnostic profile only.
+
+Trace: **[D-10]** the last two sentences. §2.5(a) was drafted before any rule existed. Since then the rule's scope was ruled PART_A only (ledger `:869`), and N2's `/v7` value came from a separate ruling, CP-1a (3). This is the one RC-2 owner text that needs the `/v7` N2 value, because contract decision 3 is where TEST_ONLY ceilings are said to come only from the rule or a ruling.
 
 ### 3.9 Slices plan, contract decision 6 and the S5 text
 
-Applied at build entry as the §3.4(d) text (§1.1, §1.2). RC-2 needs no further text for them; at C3 the check is that they are present. If the operator accepts D-2's bridging note, the C3 application removes it, because the spec §2.6 text then exists (§3.6).
+Applied at build entry as the §3.4(d) text (§1.1, §1.2). RC-2 needs no further text for them; at C3 the check is that they are present. The C3 application removes the two D-2 bridging notes, because the spec §2.6 text then exists (§3.6; OQ-2 ruling: "The notes are removed when the §2.6 text lands at C3.").
 
-**OQ-3 (§5)** asks whether SR-7's scoped exception should also reach the tolerance and threshold sentences in these RC-2 owners. Optional wording is given there.
+**The five tolerance and threshold sentences stay unchanged** (OQ-3, RULED): slices plan `:17` and `:238`, and full-E1 spec `:121`, `:123` and `:200`. The clarifying line lives in the packet's §1a (§2.5).
 
 ### 3.10 S5 draft §2.3: the D2 falsifier read with the three-way split
 
@@ -526,67 +577,68 @@ grep -n "$T#N1" docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md   
 
 ## 4. Checklist: every item mapped to its proposed text
 
-| # | Item (task) | Proposed text | Gate |
+| # | Item | Proposed text | Gate |
 |---|---|---|---|
-| 1 | §3.4(d) text: S5 draft §4 and its consistency correction | §1 (what it is), §1.1 contract decision 6, §1.2 S5 Behavior, §1.3 D-1/D-2 | Build entry |
-| 2 | RC-6 re-anchor at a candidate release head, re-verified at the actual one | §2 header, §2.1 (re-anchor line), §2.2 re-verification rule | Build entry |
-| 2a | #519's findings, including that (2, 4, 2) cannot expand | §2.2 new §0.1 F1–F5; §2.8 line 54 | Build entry |
+| 1 | §3.4(d) text: S5 draft §4 and its consistency correction | §1 (what it is); §1.1 contract decision 6 with D-1 and D-2; §1.2 S5 Behavior with D-2; §1.3 (OQ-2, RULED) | Build entry |
+| 2 | RC-6 re-anchor at a candidate release head, re-verified at the actual one | §2 header; §2.1 (re-anchor line); §2 re-verification rule | Build entry |
+| 2a | #519's findings, including that (2, 4, 2) cannot expand | §2.2 new §0.1 F1–F5; §2.8 line 54, with D-6 | Build entry |
 | 2b | The three `/v7` profile pitfalls | §2.2 new §0.1 P1–P3 (and P4, the fixture cap); §2.4 | Build entry |
 | 2c | SR-1..SR-9 (SR-9 via r2 §16 C2) and P-1..P-7 | §2.5 new §1a | Build entry |
 | 2d | SR-7 exception at lines 8, 35, 49 and 61 | §2.1 (line 8), §2.6 (line 35), §2.7 (line 49), §2.10 (line 61) | Build entry |
+| 2d′ | OQ-3 ruling: one clarifying line (the five RC-2 owner sentences unchanged; no widening) | §2.5 new §1a, "Scope of the SR-7 exception"; §3.9 | Build entry |
 | 2e | P-3/P-4/P-5 hard, non-waivable C3 preconditions | §2.5 (§1a "At Checkpoint C3"), §2.9 (line 58) | Build entry text; binds at C3 |
 | 2f | Missing SR or failing P at C3 = C3 nonconformance to the S5 executor (r2 §16 C3) | §2.5 (§1a), §2.9 | Build entry text; binds at C3 |
 | 2g | Worker-side residual (`worker.py:73-94`, `:143-150`), carried by PA-5 | §2.5 (§1a "Named worker-side residual") | Build entry text; binds at C3 |
 | 2h | SR-8 extended with `probe_seconds` and `predicted_seconds` (CP-1a (1)) | §2.5 (§1a SR-8 row), §2.8 (line 55) | Build entry text; binds at C3 |
-| 3a | Boundary spec §3.1 | §3.1 (with D-3, D-4) | C3 |
-| 3b | Full-E1 spec §2.2a | §3.2 (with D-7) | C3 |
-| 3c | Full-E1 spec §2.4 | §3.3 (first paragraph, with D-8), §3.4 (last paragraph) | C3 |
-| 3d | Full-E1 spec §2.5 | §3.5 | C3 |
-| 3e | Full-E1 spec §2.6 (two rows and the new paragraph) | §3.6 (with D-9) | C3 |
-| 3f | Full-E1 spec §5 | §3.7 | C3 |
-| 3g | Slices plan contract decision 3 | §3.8 (with D-10) | C3 |
-| 3h | Slices plan contract decision 6 and the S5 text | §1.1, §1.2 (applied at build entry); §3.9 | Build entry, checked at C3 |
-| 3i | CP-1a D2 reading (three-way split) as proposed S5 draft §2.3 wording | §3.10 | C3 |
+| 2i | OQ-4 ruling: S5 file scope (selector, evidence reader, workflow `mode`), with dispatch needing its own grant at C3 | §2.6, with D-5 | Build entry |
+| 3a | Boundary spec §3.1 | §3.1, with D-3 and D-4 | C3 |
+| 3b | Full-E1 spec §2.2a | §3.2, with D-7 | C3 |
+| 3c | Full-E1 spec §2.4 | §3.3 (first paragraph, with D-8); §3.4 (last paragraph, with D-1) | C3 |
+| 3d | Full-E1 spec §2.5 | §3.5, with D-1 | C3 |
+| 3e | Full-E1 spec §2.6 (two rows and the new paragraph) | §3.6, with D-9; Q2 RULED | C3 |
+| 3f | Full-E1 spec §5 | §3.7, with D-1 | C3 |
+| 3g | Slices plan contract decision 3 | §3.8, with D-10 | C3 |
+| 3h | Slices plan contract decision 6 and the S5 text | §1.1, §1.2 (applied at build entry); §3.9 (bridging notes removed at C3) | Build entry, checked at C3 |
+| 3i | CP-1a D2 reading (three-way split) as proposed S5 draft §2.3 wording | §3.10 (OQ-1 open) | C3 |
 | 3j | `/v7` N2 value (360 s CPU / 900 s wall, TEST_ONLY diagnostic profile only) where an owner text needs it | §2.1 (line 8), §2.4 (packet §0.5), §3.8 (D-10) | Build entry (packet); C3 (plan) |
-| — | Umbrella §0.8 O-10 (optional landing place in S5 draft RC-2) | Not drafted; **OQ-5** | C3, if chosen |
+| — | Umbrella §0.8 O-10 | Not used (OQ-5, RULED) | — |
+| — | Rulings of 2026-09-27 on OQ-1..OQ-6 and D-1..D-10 | Header block; §5; §6 | — |
 
 ---
 
-## 5. Open questions only the operator can answer (not decided here)
+## 5. Open questions: what stays open after the rulings of 2026-09-27
 
-- **OQ-1 — CP-1a decision (4)(v).** Whether a PART_A ceiling set by ruling, without a measurement, answers the falsifier's measurement limb. CP-1a leaves it "for the operator, when it arises" (`baa09ffd:…:976`). §3.10 only notes it.
-- **OQ-2 — the §3.4(d) text before the spec §2.6 text exists.** Applied at build entry, the two insertions cite a spec §2.6 rule that lands only at C3 (§1.3). Options: (a) apply them verbatim and accept the forward reference until C3; (b) apply them with D-2's bridging note, removed at C3; (c) apply the §2.6 paragraph (§3.6) at build entry as well. Option (c) moves one RC-2 text from C3 to build entry, which the 2026-09-27 direction does not provide for.
-- **OQ-3 — SR-7's reach beyond the packet.** CP-1a (6) approves the exception "at the packet's four tolerance sites". Four sentences in RC-2 owners carry the same kind of wording, and the seam's request-level `within_pp = 1.0` could be read against them:
-  - slices plan Global constraints, "All depths, thresholds, namespaces and budgets come from the frozen contract, not copied constants." (`875ecf29:…full-e1-execution-slices.md:17`);
-  - slices plan S5, "never relax a tolerance or let worker/G5 disagree" (`:238`);
-  - full-E1 spec §2.4, "All depths, thresholds, namespaces and budgets come from the frozen contract, not copied constants." (`875ecf29:docs/superpowers/specs/2026-09-17-protected-full-e1-campaign.md:121`) and "do not silently change a threshold" (`:123`);
-  - full-E1 spec §5, "adjust expansion thresholds to make synthetic acceptance pass" (`:200`).
+**Still open** (not decided here):
+- **OQ-1 — CP-1a decision (4)(v).** Whether a PART_A ceiling set by ruling, without a measurement, answers the falsifier's measurement limb. Ruling: "**Kept open until it arises.** It matters only if no valid Stage 1b record exists. The three-way D2 split already keeps the hold whenever a run is missing." (`19547132:…:1012`). §3.10 only notes it.
+- **OQ-6, Q1:** whether a committed FAIL on an exhausted campaign counts under ADR §4 (§3.5). It is open to C3 and decided with the statistical owner.
+- **OQ-6, Q7:** R7's production evidence standard (§3.6). It is open to C3 and decided with the statistical owner.
+- **OQ-6, Q9:** when a retry-eligible IN_DOUBT that is never retried counts as closed, and so when the salt is revealed (§3.6). It is open to C3.
 
-  Either (a) they are read as binding route and contract values, which the seam never is (P-3, P-4) and which a forced result can never pass (P-5), so no text is needed; or (b) each gets the same scoped exception. Optional wording for (b), appended to each: "(Scoped exception: the TEST_ONLY Stage 1c measurement override of the S5 packet §1a, SR-1/SR-7, never a route value, a contract value or a statistic; operator CP-1a decision (6), 2026-09-27.)"
-- **OQ-4 — the CI-configuration part of S5's file scope.** Whether the S5 executor may add an S5 value to the `mode` input of `.github/workflows/qualification-s2-supervision.yml`, a CI-configuration change, as S4 did for `s4` (§2.6, D-5). The script edits are a coordinator scope matter; the workflow edit needs the operator's approval under the handoff set's common rules.
-- **OQ-5 — the optional umbrella O-10.** S5 draft RC-2 includes "umbrella §0.8 O-10 if the operator chooses that optional landing place". If chosen, its drafted gate cell "**TB-F1**" (`875ecf29:docs/notes/2026-09-26-s5-decision-draft.md:138`) conflicts with CP-1a (5), which moves K3 out of TB-F1 into the K3/RC-4 slice. The row would need that cell changed. Not drafted here.
-- **OQ-6 — S5 draft §6 items the RC-2 texts rely on without answering.**
-  - Q2: confirm R4's "original deadline" is the campaign's (§3.6's paragraph assumes it);
-  - Q7: R7's production evidence standard, "owed by the operator with the statistical owner";
-  - Q9: when a retry-eligible IN_DOUBT that is never retried counts as closed, and so when the salt is revealed;
-  - Q1: whether a committed FAIL on an exhausted campaign counts under ADR §4 (statistical owner; §3.5).
+**RULED** (`19547132:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md:1012-1018`):
+- **OQ-2 — RULED:** the D-2 bridging note (§1.1, §1.2, §1.3).
+- **OQ-3 — RULED:** one clarifying line in the packet's §1a. The five RC-2 owner sentences stay unchanged, and the exception does not widen (§2.5, §3.9). The earlier option (b), to append a scoped exception at each of the five owner sentences, is dropped.
+- **OQ-4 — RULED:** approved on the S4 precedent, covering the workflow `mode` addition and the evidence-reader extension within the S5 build. It lands through the operator's merge, and any dispatch of it needs its own grant at C3 (§2.6).
+- **OQ-5 — RULED:** umbrella O-10 is not used.
+- **OQ-6, Q2 — RULED:** R4's "original deadline" is the campaign's (§3.6).
 
-## 6. Drafter's additions, each accepted or struck on its own
+## 6. Drafter's additions: all accepted (2026-09-27), folded into the PROPOSED texts
 
-| ID | Where | What | Why |
+"All ten accepted" (`19547132:…:1018`). Each is now part of its PROPOSED text; the trace marks where.
+
+| ID | Where folded | What | Why it was proposed |
 |---|---|---|---|
-| D-1 | §1.1, §3.4, §3.5, §3.7 | Append the qualified tag (`#N2`, `#N1`) where the S5 draft's text has none | S5 draft RC-2: "Each cites the qualified tag" |
-| D-2 | §1.3 | Bridging note on the build-entry §3.4(d) insertions | Forward reference to C3 text (OQ-2) |
-| D-3 | §3.1 | Place boundary spec §3.1 at the end of §3 | The draft's point would re-parent §3's last two paragraphs |
+| D-1 | §1.1, §3.4, §3.5, §3.7 | The qualified tag (`#N2`, `#N1`) where the S5 draft's text had none | S5 draft RC-2: "Each cites the qualified tag" |
+| D-2 | §1.1, §1.2 | Dated bridging note on the build-entry §3.4(d) insertions, removed at C3 | Forward reference to C3 text (OQ-2) |
+| D-3 | §3.1 | Boundary spec §3.1 placed at the end of §3 | The draft's point would re-parent §3's last two paragraphs |
 | D-4 | §3.1 | Pointer from §3.1 to the ledger's RC-5 entry | The RC-5 entry points here |
-| D-5 | §2.6 | S5 file scope: selector, evidence reader, workflow `mode` (the last under OQ-4) | SR-8 needs a reader that does not exist; S4 precedent |
+| D-5 | §2.6 | S5 file scope: selector, evidence reader, workflow `mode` (the last approved by OQ-4) | SR-8 needed a reader that does not exist; S4 precedent |
 | D-6 | §2.8 | Linux crash case reworded for a non-expanding fixture | Consequence of F1 |
 | D-7 | §3.2 | Receipt field names in §2.2a | Matches the RC-4 admission check, condition 3 |
 | D-8 | §3.3 | Admission-crash consequence stated in full | S5 draft §1.4 drafting note |
 | D-9 | §3.6 | Sequencing clause in the spec §2.6 paragraph | D3 is a separate slice after S5 |
 | D-10 | §3.8 | Rule scope and `/v7` N2 value in contract decision 3 | Rulings of 2026-09-26/27 and CP-1a (3) |
 
-Everything else marked PROPOSED is S5 draft or r2 text as the rulings adopted it, or a restatement of a ruling.
+Everything else marked PROPOSED is S5 draft or r2 text as the rulings adopted it, or a restatement of a ruling. Accepting the answers above does not accept the full text: "**Acceptance of the revised draft's full text remains the operator's.** It is not implied by these answers." (`19547132:…:1020`).
 
 ---
 
@@ -601,6 +653,7 @@ git diff --stat 228447c HEAD -- ops/c1_rail/qualification                # empty
 git diff origin/main baa09ffd                                             # the CP-1a ruling (PR #523): ledger, r2 §14.1 banner, STATE, H1 row, CP-1a row
 git show 61a2ca41:docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md | sed -n 143,197p   # the frozen dispatch record
 git show baa09ffd:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md | sed -n 936,1004p
+git show 19547132:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md | sed -n 1006,1022p   # the ruling on this draft's OQ/D items (revision round)
 sed -n 1,160p docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md
 sed -n 785,935p docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md
 cat -n docs/briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md
@@ -625,13 +678,13 @@ for row in boundary K3 N1 N2; do grep -rlwF "AUDIT-2026-09-25-qualification-assu
 sed -n 17p docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md; sed -n 238p docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md
 ```
 
-Every blockquote under **Current** was inserted by a scratch script (not committed) from the worktree files, and each quoted run of lines was then compared line for line with its source (81 quoted lines, 0 mismatches). `git diff --quiet 875ecf29 -- docs/` confirmed those files identical to `875ecf29` before the note was written. The ruled and ledger phrases quoted inline (39 strings: CP-1a items from `git show baa09ffd:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`, the dispatch record from `git show 61a2ca41:docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md`, and the `main` ledger, S5 draft, r1 and r2) were each checked as exact substrings of their source: 0 not found. The link check (`bad 0`) and the gate run are recorded in the PR.
+Every blockquote under **Current** was inserted by a scratch script (not committed) from the worktree files, and each quoted run of lines was then compared line for line with its source (81 quoted lines, 0 mismatches). `git diff --quiet 875ecf29 -- docs/` confirmed those files identical to `875ecf29` before the note was written. The ruled and ledger phrases quoted inline (48 strings: CP-1a items from `git show baa09ffd:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`, the answers to this draft's questions from `git show 19547132:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`, the dispatch record from `git show 61a2ca41:docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md`, and the `main` ledger, S5 draft, r1 and r2) were each checked as exact substrings of their source: 0 not found. The link check (`bad 0`) and the gate run are recorded in the PR.
 
 ## Limitations
 
 - **Candidate head only.** Every anchor is at `875ecf29`. The release head is not known until CP-1b, and the §2 re-verification rule applies there.
-- **The CP-1a ruling is not on `main`.** It is cited at `baa09ffd` (PR #523). If that PR changes before it merges, the citations here need re-checking.
+- **The rulings are not on `main`.** The CP-1a ruling is cited at `baa09ffd`, and the ruling on this draft's questions at `19547132`, both on PR #523. If that PR changes before it merges, the citations here need re-checking.
 - **No code, test, measurement or host was run or read beyond the cited lines.** The SR/P set states requirements for code that does not exist; names other than `measurement_override` and `PartAMeasurementOverride` are not fixed until the S5 build (r2 §15).
 - **SR-1..SR-7 and P-1..P-7 are quoted verbatim from r2.** Their cross-references are r2's section numbers and the packet's pre-re-anchor lines, as §1a's lead-in says. They are not renumbered.
-- **The drafter's additions D-1..D-10 are this note's own proposals.** None is required by a ruling in so many words. Each is separable.
-- **Not covered:** umbrella §0.8 O-10 (OQ-5); the checklist addendum's S8/T06 sequencing record for the RC-4 slice, which CP-1a (5) assigns to the addendum; the H1 step (b) harness directory, which another worker owns.
+- **D-1..D-10 were this note's own proposals.** The operator accepted all ten on 2026-09-27 (`19547132`). They are folded in, and each keeps its D-ID trace. The operator's acceptance of the full revised text is still owed.
+- **Not covered:** umbrella §0.8 O-10 (not used, OQ-5 RULED); the checklist addendum's S8/T06 sequencing record for the RC-4 slice, which CP-1a (5) assigns to the addendum; the H1 step (b) harness directory, which another worker owns.
