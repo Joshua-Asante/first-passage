@@ -124,3 +124,5 @@ bd502c79a4c72fe78face4bb0bb9d654261d2723cbc77eccd5f7b3d5e369081e  .cache/fp-veri
 721f3686a80c1e252c08cf98b30902ec6993f43b6583a6455dec873e15e6e0a8  .cache/fp-verification/20260927T210956Z-99b581cb9a21/record.json
 ae57234b4497aa0500e454541dc6b46decdd349e9628a8aa7fd633ba0e16ce5d  .cache/fp-verification/20260927T211010Z-4757d619e6c3/record.json
 1e225d328e651ee08755a2d7794ba888680f3b92aa01bcfcaeeaf8b41d97fb1d  h1b-526-r8-verification-evidence-2026-09-27.tar.gz
+# actionlint 1.7.7 output for the #526 workflow at 11e15c6b (exit 0); archived in first-passage-archive (b74d6399, first-passage-archive#840).
+757cf2935d8fdf8be19f272e19b6b927964d4032c147a7f26136908e5bdfd7b3  actionlint-11e15c6b.txt

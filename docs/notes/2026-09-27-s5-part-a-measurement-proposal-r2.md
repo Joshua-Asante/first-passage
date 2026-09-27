@@ -677,7 +677,7 @@ verdict{validity_ok, memory_feasibility = VERIFIED | FAILED | UNVERIFIED, rule_a
         reasons[]}
 ```
 
-*[Operator ruling 2026-09-27, §12.9 (5): `stop_class` gains `INCOMPLETE_EVIDENCE` and `LEGACY_UNACCEPTED`, `verdict` gains `rerun_eligible`, and `summary` carries the all-repeat and warm distributions per arm.]*
+*[Operator ruling 2026-09-27, §12.9 (5): `repeats[]` gains the completion fields (`row_exit_status`, `result`, `timed_out`, `poll_bound_s`, `unit_present`, `completed`), `stop_class` gains `INCOMPLETE_EVIDENCE` and `LEGACY_UNACCEPTED`, `verdict` gains `rerun_eligible`, and `summary` carries the all-repeat and warm distributions per arm.]*
 
 ### 12.9 Operator ruling 2026-09-27: completion fields, legacy bundles and incomplete Stage 1b evidence
 
@@ -706,6 +706,14 @@ This section is the contract text for those rulings. The dispatch amendment is i
    - `verdict.stop_class` gains `INCOMPLETE_EVIDENCE` and `LEGACY_UNACCEPTED`;
    - `verdict` gains `rerun_eligible` (Stage 1b measure records);
    - `reasons[]` may carry `INCOMPLETE` (Stage 1b measure only).
+   - *[Post-acceptance correction 2026-09-27 (Codex review of 158a7d75): the completion fields that (1) is judged on are part of the schema.]* Each `repeats[]` entry carries:
+     - `row_exit_status`, the row's `exit_status`;
+     - `exit_code`: Linux `ExecMainStatus`, Windows the job object's exit code;
+     - `result`: Linux the unit's `Result`, Windows the derived `success` / `exit-code` / `timeout`;
+     - `timed_out`: true unless Linux `HarnessPollTimeout=no` or Windows `timed_out` is explicitly false;
+     - `poll_bound_s`, `unit_present`, and `completed` (the conjunction of (1)).
+
+     The raw inputs are retained artifacts beside the record: the Linux per-repeat unit property files and the Windows bundle entries. The schema id stays `/v2` because the fields are additive. A consumer judges completion from these fields and never from `exit_code` alone.
 
    The `summary` block carries each arm's all-repeat and warm distributions (max, median, minimum, spread) for CPU input, workload wall and complete memory, as §6.2 already requires.
 6. **Coordinator readings recorded with this ruling:**
