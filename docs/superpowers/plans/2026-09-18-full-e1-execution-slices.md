@@ -850,7 +850,7 @@ The sequencing record is the [deployment-checklist addendum 2026-09-27](2026-09-
 |---|---|---|
 | **Build entry** (releases the hold for the TEST_ONLY build only) | **RC-1**: D1–D3 ruled. **The §3.4(d) text** applied (S5 draft §4, consistency correction). **RC-4/RC-5 assignment**: the seed-view owner and slice, with the F1 admission-check text, and an owner, gate and record location for each of OF-1..OF-7, resolving S5 draft §6 Q12. **RC-6**: the packet re-anchored at the release head, including #519's findings that the (2, 4, 2) fixture cannot expand and the three `/v7` profile pitfalls. **RC-3a**:<br>– an operator-approved measurement-and-margin rule;<br>– a valid (PA-4) record from an operator-approved forced-expansion measurement of the **existing** `_run_part_a` on the reference runtime (#519 Stage 1b);<br>– the rule applied as a **provisional** PART_A TEST_ONLY ceiling, with D̂ uncovered;<br>– Σ-feasibility shown as **arithmetic on the proposed `/v7` values** (#519 proposal §5).<br>Then an operator hold-release entry here | **RC-1 met** on `main` (#517 merged at `5ad04cf`). The others are open. The measurement dispatch is prepared under [handoff H1](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h1--s5-measurement-correct-the-519-proposal-return-a-measurement-dispatch) and executed only after the operator approves it |
 | **Checkpoint C3 and S5 acceptance** | The S5 packet's C3 items. **RC-3b**:<br>– the adapter-specific measurement (#519 Stage 1c), which covers D̂ and ends the provisional status;<br>– the **executed** `bind_budget` Σ-feasibility check on the built `/v7` profile;<br>– the Stage 2 service-route consistency check (PA-5).<br>Inside the approved rule the coordinator re-applies with an entry here; outside it, an operator ruling. The full RC-2 owner-text set accepted and applied | Open |
-| **Before F1** (expanding authority) | The RC-4 seed-view change landed, with its F1 admission check; OF-1..OF-7 attested by attended reads; K3 built | Open |
+| **Before F1** (expanding authority) | The RC-4 seed-view change landed, with its F1 admission check; OF-1..OF-7 attested by attended reads; K3 built. *[Corrected 2026-09-27: the OF attestations fall due at the gates the RC-5 entry below assigns; before F1 that is OF-7 (G-F1), and the full set is read at CP-8.]* | Open |
 
 **Relation to the 2026-09-26 conditional ruling (recorded 2026-09-27, when #519's records reached this branch).** The [2026-09-26 entry](#operator-ruling--part-a-measurement-rule-conditionally-approved-s5-held-2026-09-26) asked the coordinator for three returns. This direction and the 2026-09-27 ruling below are its return (3), the staged gate amendment. The CP-1a packet ([H1 r2](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md)) carries returns (1), the corrected harness/workflow and its dispatch scope, and (2), the `/v7` N2 disposition. Its two H1 acceptance conditions restate that entry's first two applicability conditions. The 2026-09-26 entry's other conditions still apply to the packet: separation of outcomes, the worker image where practicable, and validation of the pilot-budget formula. The 2026-09-26 entry conditionally approved the numerical defaults for PART_A TEST_ONLY, applicable only after the defects are corrected and reviewed. The 2026-09-27 ruling keeps them as candidates until the packet is ready. The two readings agree: no default applies before CP-1a. That entry also records the S4 run logs preserved on 2026-09-26 in the primary checkout. Whether that set covers Stage 0's inputs, which would lift the 2026-10-09 expiry from Stage 0, is for the coordinator to confirm at CP-1a.
 
@@ -902,11 +902,11 @@ An unverified OF is reported as "enforcement not established". The OF definition
 
 Any failed condition refuses admission. The refusal is recorded and is not a consumed attempt.
 
-**Status.** The 2026-09-26 entry above required RC-4's owner record to hold "a named owner and slice, the §2.2a client-view amendment applied, the F1 admission check". The 2026-09-27 direction divides that by stage: build entry needs "the seed-view owner and slice, with the F1 admission-check text", and the full RC-2 owner-text set, §2.2a included, is applied at Checkpoint C3. On that reading, and **once the operator has accepted the RC-4 slice**, this entry meets the RC-4/RC-5 **assignment** at build entry; the coordinator confirms that status on recording. The implementation (the RC-4 change landed, K3 built) and the attestations (OF-1..OF-7) remain before F1, as the 2026-09-27 direction's "Before F1" row states.
+**Status.** The 2026-09-26 entry above required RC-4's owner record to hold "a named owner and slice, the §2.2a client-view amendment applied, the F1 admission check". The 2026-09-27 direction divides that by stage: build entry needs "the seed-view owner and slice, with the F1 admission-check text", and the full RC-2 owner-text set, §2.2a included, is applied at Checkpoint C3. On that reading, and **once the operator has accepted the RC-4 slice**, this entry meets the RC-4/RC-5 **assignment** at build entry; the coordinator confirms that status on recording. The implementation (the RC-4 change landed, K3 built) and the attestations (OF-1..OF-7) remain before F1, as the 2026-09-27 direction's "Before F1" row states. *[Corrected 2026-09-27: the attestations fall due at the gates this entry assigns under RC-5, with OF-7 before F1 admission and the full set at CP-8.]*
 
 **Not granted:** S5 release, dispatch or execution; owner text applied; host provisioning or spend; credential or key creation; F1, CP-6 or CP-8 decisions; production, arm, deployment or live authority. The hold stays **HELD**.
 
-**Recorded state (2026-09-27).** RC-5 is **assigned** (coordinator act). The RC-4 slice is **proposed, pending the operator at CP-1a item 5**, so the RC-4/RC-5 build-entry condition is not yet met. Host spend and sizing stay owed before CP-8 (checklist T11's measured envelope; the $700-ceiling scope is the single CP-2 question F-4 of the commissioning packet).
+**Recorded state (2026-09-27).** RC-5 is **assigned** (coordinator act). The RC-4 slice is **proposed, pending the operator at CP-1a item 5**, so the RC-4/RC-5 build-entry condition is not yet met. Host spend and sizing stay owed before CP-8 (checklist T11's measured envelope; the $700-ceiling scope is the single CP-2 question F-4 of the commissioning packet). *[Corrected 2026-09-27: the operator accepted the RC-4 slice at CP-1a decision (5) the same day; the coordinator confirmation there records the RC-4/RC-5 assignment at build entry as met (see the CP-1a ruling entry below).]*
 
 ### Coordinator entry — CP-1a packet reconciled with #519's merged corrections, 2026-09-27
 
@@ -931,4 +931,107 @@ Any failed condition refuses admission. The refusal is recorded and is not a con
 
 What is already ruled is not reopened. Stage 0 is optional calibration. The 2026-10-09 expiry binds only if the preserved S4 set does not cover Stage 0's inputs, and that coverage is verified locally, owed. M2 is not a CP-1a prerequisite.
 
-**Not changed.** No rule is applied, no measurement approved, no ceiling set. The hold stays **HELD**. Accepting the packet is not approval to execute it.
+**Not changed.** No rule is applied, no measurement approved, no ceiling set. The hold stays **HELD**. Accepting the packet is not approval to execute it. *[Superseded 2026-09-27 by the next entry: the operator ruled CP-1a the same day and approved the bounded measurements (decision (2)). The hold stays.]*
+
+### Operator ruling — CP-1a decisions (1)–(6) adopted as recommended, hold kept, 2026-09-27
+
+**Source.** In session on 2026-09-27, the operator answered the six CP-1a decisions of [H1 r2 §14.1](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md#141-refreshed-decision-list-2026-09-27) by structured answer, choosing the recommended option each time:
+- (1) "Confirm as recommended";
+- (2) "All stages, image-first";
+- (3) "Extend M13 values";
+- (4) "Three-way split";
+- (5) "K3/RC-4 slice";
+- (6) "§7 seam + SR-9, hard proofs".
+
+The recommendation texts in §14.1 and the option texts relayed in session govern.
+
+**(1) Measurement parameters.**
+- The 2026-09-26 applicability conditions are **confirmed met for the provisional build-entry application**, with the §16 resolutions adopted in the [coordinator entry above](#coordinator-entry--cp-1a-packet-reconciled-with-519s-merged-corrections-2026-09-27). Condition 4 (the worker image) is handled through (2). Condition 5 (the pilot-budget validation) is staged to C3.
+- **The pilot-budget term** (PA-1's `1.5 × P̂`, with PA-2b) is kept in the provisional application. It is validated at C3 from Stage 2, through SR-8's export extended with the PART_A result's `probe_seconds` and `predicted_seconds`. It becomes final only when that check is recorded.
+- **Memory:** PA-3a applies at build entry and PA-3b at C3. PA-3b's composition `m_m × (P₂ + max(0, M̂ − M̂ₚ))` is accepted as a provisional C3 check, with its additive assumption named UNVERIFIED in the application entry.
+- **PA-4's re-run caps** (r2 §12.7) and the §9 re-measurement triggers, including the 0.8 thresholds, are **approved as written**.
+- The numeric defaults stay as conditionally approved on 2026-09-26: PART_A TEST_ONLY only.
+
+**(2) Measurement dispatch and runtime, approved as a bounded dispatch (r2 §12).** The coordinator executes within it, under H1 step (b), without asking again:
+- **(a) Stage 0:** the local read of the preserved S4 artifacts in the operator's primary checkout, optional calibration only, with its public-clone review. The coverage check (r2 §16.4) runs first.
+- **(b) Stage 1a:** Windows harness validation on the Windows host.
+- **(c) Stage 1b:**
+  - the dispatch-only measurement workflow file, a CI-configuration change, landed on `main` by the operator's merge if GitHub requires that;
+  - `ci.dispatch` for that workflow only;
+  - download of that workflow's own artifacts;
+  - all within the §12.7 caps.
+- **(d) Runtime: image-first.** Step (b) first records whether the worker build context can carry the harness and fixtures. If it can, Stage 1b runs in the worker image. If it cannot, it runs on `host_venv`, the finding is recorded, and PA-5 at C3 validates the mismatch.
+- **(e) Stage 1c at C3:** approved, conditional on the (6) set and on the coordinator's recorded read of the `--stage 1c` harness diff. Stage 1c ends the provisional status with the worker-side residual (r2 §16 C4) named and carried by PA-5.
+- **(f) Stage 2:** no new authority. It needs the SR-8 export.
+- **Planning bound** (arithmetic, r2 §12.6): 368 runner-minutes worst case, or 628 with the SR-5 contingency.
+
+**(3) `/v7` N2.** The M13 values, **360 s CPU / 900 s wall**, are extended from `/v6` to the **`/v7` TEST_ONLY diagnostic profile only**. The extension is explicit, so it is not the silent carry-forward the 2026-09-26 ruling excluded. Stage 0 may inform N2 but cannot set it. No N2 production value follows, and the margin rule does not apply to N2.
+
+**(4) D2 timing: the three-way split** (r2 §16 C7):
+- (i) A Σ failure from a valid record is the D2 ACCOUNTING-DESIGN FALSIFIER stop (r2 §10.3).
+- (ii) Missing permission, or a run not executed, never engages the falsifier. It keeps the hold, because CP-1b needs RC-3a.
+- (iii) An invalid measurement is investigated and re-measured only under a fresh approval.
+  - *Operator-confirmed interpretation, 2026-09-27, reconciling (iii) with (1) and (2):* the §12.7 re-runs (one re-dispatch of a failed dry run and one `--failed` re-run per stage, for the classes marked "Once") are part of the approved dispatch, so the coordinator runs them without asking again. (iii) governs a **stopped** stage: a failure after that re-run, or a class with no re-run (I-4, I-5, I-7). The stop is diagnosed, and any new measurement dispatch needs a fresh operator approval. The operator accepted this interpretation in the Codex session by directing “handle these recommended steps directly” after review of PR #523. The approved retry caps and immediate-stop classes are unchanged; this confirmation does not release the S5 hold.
+- (iv) The accounting-design question also returns if a diagnosis traces an invalid run to the workload itself.
+
+This supersedes r2 §10.3's release-point reading and the §12.7 sentence that has the measurement limb engage when no valid record exists at the release point. **Still for the operator, when it arises:** whether a PART_A ceiling set by ruling, without a measurement, answers the measurement limb (recommendation item (v)). No S5 draft §2.3 owner text changes here; that is RC-2, at C3.
+
+**(5) RC-4 slice accepted:** "K3/RC-4 — service salt and client plan view". It is dispatched after S5 acceptance and lands before S8/T06, which moves K3 out of TB-F1. The F1 admission check in the [RC-5/RC-4 coordinator entry](#coordinator-assignment--rc-5-host-checks-recorded-and-rc-4-seed-view-slice-pending-the-operator-2026-09-27) applies as written. **Coordinator confirmation:** with the slice accepted, the **RC-4/RC-5 assignment at build entry is met**. The implementation (the RC-4 change landed, K3 built) remains before F1 (CP-6). The OF attestations fall due at the gates the [RC-5 entry](#coordinator-assignment--rc-5-host-checks-recorded-and-rc-4-seed-view-slice-pending-the-operator-2026-09-27) assigns: OF-7 before F1 admission (F1 admission check, condition 4); the full OF-1..OF-7 set at production-host provisioning (CP-8) and before any production-authority release; OF-5 before any arm and at each session GO; OF-6 at TB-I3. The checklist addendum records the S8/T06 sequencing.
+
+**(6) Stage 1c seam approved:**
+- the r2 §7 seam, with S5 build requirements **SR-1..SR-9** (SR-9 as adopted, r2 §16 C2);
+- proof obligations **P-1..P-7**;
+- the SR-7 exception at the packet's four tolerance sites (lines 8, 35, 49 and 61).
+
+**P-3, P-4 and P-5 are hard, non-waivable C3 preconditions.** After the RC-6 fold-in, a missing SR or a failing P at C3 is a C3 nonconformance returned to the S5 executor. #519's Stage 1c-prep is not adopted. H1 step (c) carries the approved set into the RC-6 re-anchor draft, which goes to the operator for acceptance.
+
+**Status after this ruling.**
+- CP-1a is **RULED**.
+- **Next:** H1 step (b) executes the approved measurements. *[2026-09-27: execution follows the harness merge, not step (b) itself, and waits for the sequencing gate in [r2 "Current authority"](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md) (§12.9).]* RC-3a evidence (a valid Stage 1b record, the rule applied as a provisional PART_A TEST_ONLY ceiling, the §10 arithmetic) and an updated build-entry table then go to **CP-1b**.
+- RC-1 is met. RC-4/RC-5 are met for build entry.
+- RC-3a, the §3.4(d) text and the RC-6 re-anchor remain open.
+
+**Not granted:**
+- the hold release (CP-1b);
+- S5 build, freeze, dispatch or execution;
+- any measurement beyond (2), and any other workflow, dispatch, re-run or download;
+- a ceiling without a valid record;
+- any value for other phases or for production;
+- closing RC-3b;
+- any S5 packet or owner-text edit before the operator accepts the RC-6 text;
+- statistical dispatch;
+- production, activation or live authority.
+
+The hold stays **HELD**.
+
+### Operator ruling — H1(c) draft: open questions and drafter's additions, 2026-09-27
+
+**Source.** In session on 2026-09-27, the operator answered the open questions OQ-1..OQ-6 and the drafter's additions D-1..D-10 of the H1(c) draft, choosing the recommended option each time. The draft is the [S5 owner-text and RC-6 draft](https://github.com/Joshua-Asante/first-passage/pull/525), `docs/notes/2026-09-27-s5-owner-text-and-rc6-draft.md` at `f95a39be`, returned under the [H1 dispatch record](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h1-steps-b-and-c-dispatch-record-frozen-2026-09-27). The answers were given by structured answer; the recommendation texts relayed in session govern.
+
+| Item | Ruling |
+|---|---|
+| **OQ-1** (CP-1a (4)(v)) | **Kept open until it arises.** It matters only if no valid Stage 1b record exists. The three-way D2 split already keeps the hold whenever a run is missing. |
+| **OQ-2** (the §3.4(d) forward reference) | **The D-2 bridging note.** The two §3.4(d) insertions are applied at build entry, each with a dated note. Until C3, the spec §2.6 rule's source is the operator's D3 direction (this ledger, 2026-09-26) and S5 draft §3.3. The notes are removed when the §2.6 text lands at C3. |
+| **OQ-3** (SR-7's reach) | **One clarifying line** in the packet's new §1a: the five RC-2 owner sentences (slices plan `:17`, `:238`; full-E1 spec `:121`, `:123`, `:200` at `875ecf29`) govern route and contract values. The TEST_ONLY Stage 1c override is never one of these (P-3, P-4), and a forced result can never pass (P-5). The five owner sentences stay unchanged. The CP-1a exception does not widen beyond the packet's four sites. |
+| **OQ-4** (the CI-configuration part of the S5 file scope) | **Approved, on the S4 precedent.** Within the S5 build, the executor may add an S5 value to the `mode` input of `.github/workflows/qualification-s2-supervision.yml` and extend the evidence reader so that SR-8's fields have a reader. The change lands through the operator's merge. Any dispatch of it needs its own grant at C3. |
+| **OQ-5** (umbrella O-10) | **Not used.** The ledger's RC-4/RC-5 entries and the checklist already carry the assignment and the sequencing. |
+| **OQ-6** (S5 draft §6) | **Q2 confirmed:** R4's "original deadline" is the campaign's, as the draft's §3.6 paragraph assumes. **Q1, Q7 and Q9 stay open to C3.** Q1 and Q7 are decided with the statistical owner. |
+| **D-1..D-10** | **All ten accepted:** D-1 qualified tags; D-2 bridging note; D-3 boundary §3.1 placed at the end of §3; D-4 RC-5 pointer; D-5 S5 file scope, whose workflow part is approved by OQ-4; D-6 crash-case rewording; D-7 receipt field names; D-8 admission-crash consequence stated in full; D-9 sequencing clause in spec §2.6; D-10 rule scope and the `/v7` N2 value in contract decision 3. |
+
+**Effect.** The H1(c) draft is revised to carry these answers, including the OQ-3 clarifying line, and is returned as revised. **Acceptance of the revised draft's full text remains the operator's.** It is not implied by these answers. No owner document is amended until that acceptance, and then only by a separate application commit: build-entry texts before CP-1b, RC-2 texts at C3.
+
+**Not granted:** S5 release, build, freeze, dispatch or execution; any owner-text application; any workflow dispatch; closing RC-2, RC-3 or RC-6; anything outside the draft's scope. The hold stays **HELD**.
+
+### Operator acceptance — H1(c) full text accepted; build-entry sections to be applied, 2026-09-27
+
+**Source.** In session on 2026-09-27, the operator wrote: "I accept #525's full text at 011ce9e4; apply the build-entry sections". The accepted text is `docs/notes/2026-09-27-s5-owner-text-and-rc6-draft.md` at `011ce9e47859e702765b4e64e6e7d47cc2b759a6` ([#525](https://github.com/Joshua-Asante/first-passage/pull/525)). It carries the rulings of the entry above and the operator's three review corrections made before acceptance.
+
+**Effect.**
+- **Build-entry sections, applied now** by one application commit, against the **pinned application head** `origin/main` `875ecf29`, which is the draft's anchor head (no drift):
+  - the draft's §1: the §3.4(d) text in slices-plan contract decision 6 and in S5 Behavior, with D-1 and the D-2 bridging notes;
+  - the draft's §2: the RC-6 re-anchor of the S5 packet `docs/briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md`, with the §0.1 findings and pitfalls, §0.5 N2, the §1a seam (SR-1..SR-9, P-1..P-7, the OQ-3 line), the SR-7 exception at the four tolerance sites, the D-5 run-tooling scope, and the explicit C3 order.
+- **CP-1b** names the resulting reviewed revision. If that revision differs from the application head in any file an anchor covers, the affected anchors are re-checked before CP-1b.
+- **RC-2 sections (the draft's §3)** are **not applied now**. They are applied at C3 against their own pinned head.
+- **Still open:** OQ-1, and Q1, Q7 and Q9 at C3.
+
+**Not granted:** the hold release (CP-1b); S5 build, freeze, dispatch or execution; any RC-2 application before C3; any workflow dispatch; any measurement outside the CP-1a dispatch. RC-6 is met only when the application is merged and reviewed, and CP-1b records it. The hold stays **HELD**.
