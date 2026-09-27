@@ -117,7 +117,9 @@ about which vendor runs the session, so all four survive the retirement unchange
 
 **Handoff contract (all seven required for worker eligibility):**
 
-- A handoff brief under `docs/briefs/**` passing `check_brief.py`.
+- A handoff brief under `docs/briefs/**` passing `check_brief.py`. Four 2026-09-27 files that were
+  dispatched, or used for dispatch, without passing it are exempted by a dated ruling as recorded
+  deviations, not restructured after the build ([Addendum 2026-09-27](#addendum-2026-09-27)).
 - §0 Phase-0 reads with a **read-report-before-code** requirement and a `NEEDS_CONTEXT` bounce
   on any contradiction; the worker runs the [`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md)
   checklist as that Phase 0.
@@ -792,6 +794,59 @@ environment change asks while one before a later `cd` or write does not, a deplo
 `cd` asks, a backquote substitution is read rather than dropping the command to raw patterns, the M1-override arm
 asks and never denies; `LIVE_FLY_APPS` pinned to the two fly.toml files), run test-first through the launcher.
 
+<a id="addendum-2026-09-27"></a>
+## Addendum 2026-09-27 — operator ruling: cards dispatched without passing handoff-contract item 1
+
+**Source.** Operator ruling of 2026-09-27. In the session, the operator chose "Exempt by dated
+ruling" from three analysed options; the other two were restructuring all five files, and
+exempting the returned cards while restructuring the set file. The text above is not rewritten;
+handoff-contract item 1 gains one sentence pointing here. Ratifies on operator merge of the PR
+that carries it.
+
+**Finding.** On 2026-09-27, `python3 scripts/check_brief.py <card>` reported `RESULT: MALFORMED`
+for every new card under `docs/briefs/handoffs/`. The typical HARD violations were a missing §0,
+§0.5 or §10; no §4 `H:` or falsifier; no §5 list; and an incomplete §6 status taxonomy. The
+merge-train card was restructured on its own PR ([#531](https://github.com/Joshua-Asante/first-passage/pull/531)). The mechanism: nothing runs item 1
+before a dispatch. `check_brief.py` is not in the `check` gate list (`scripts/gates.yml`), no
+git hook or CI workflow runs it (the pre-ratification panel runs it only when invoked on a
+document), and it is not a step of the
+[`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md) Phase-0 checklist. The authority
+block (item 7) is checked by `check_handoff_authority.py`; the brief's form is not.
+
+**Ruling.**
+
+| File under `docs/briefs/handoffs/` | State at the ruling | Disposition |
+|---|---|---|
+| `2026-09-27-h4-fence-classification-orb-l1-repair.md` | Dispatched; returned `DONE_WITH_CONCERNS` on [PR #522](https://github.com/Joshua-Asante/first-passage/pull/522) (open at the ruling); coordinator acceptance of the return recorded on the card | **Exempt.** Dispatched without passing item 1: a recorded deviation, not compliance. |
+| `2026-09-27-h5b-attended-incident-rehearsal.md` | Dispatched; returned `DONE_WITH_CONCERNS` on [PR #521](https://github.com/Joshua-Asante/first-passage/pull/521) (merged); accepted partial under its §7 (B) variance | **Exempt**, as above. |
+| `2026-09-27-h8c-omission-incident-session-end.md` | Dispatched; returned `DONE_WITH_CONCERNS` on [PR #530](https://github.com/Joshua-Asante/first-passage/pull/530) (merged) | **Exempt**, as above. |
+| `2026-09-27-staged-acceptance-handoffs.md` | A set file carrying no authority block; several of its steps have run and returned (its state table) | **Exempt as a set file.** It is not dispatched as a card. Under its own *Ownership* rule, each step it still shows as READY, READY ON or LATER is copied into its own card file at dispatch. That card must pass `check_brief.py` at the coordinator's pre-dispatch read, and this exemption does not reach it. |
+| `2026-09-27-m2-modify-semantics.md` | Carded, not dispatched | **Not exempt.** Restructured before dispatch into the numbered sections, with no change of scope, grants or acceptance; it passes `check_brief.py`. |
+
+*Why exemption, not restructure.* Restructuring a card after its build to make the record
+compliant is the retained §5 forbidden move "retro-fitting a brief after the build" (§8 table),
+which the prior text (blob `0bcd6699…`) names as self-attestation. The exemption leaves each exempt file's text,
+authority block and acceptance record byte-identical.
+
+*Scope.* The exemption covers the four files above and nothing else. It does not amend item 1,
+and it does not reach a later card, including one copied out of the set file. It grants nothing
+and changes no grant: the three worker cards' authority blocks are untouched and still pass
+`check_handoff_authority.py`.
+
+*Not built.* No enforcement point for item 1 is added here. A `check` gate, a hook or a
+`handoff-verify` step would be a standing-configuration change for the operator to direct.
+
+**Verification.**
+
+```bash
+python scripts/check_brief.py docs/briefs/handoffs/2026-09-27-m2-modify-semantics.md   # RESULT: well-formed
+python scripts/check_handoff_authority.py --all                                         # 0 violation(s)
+git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/2026-09-27-h4-fence-classification-orb-l1-repair.md \
+  docs/briefs/handoffs/2026-09-27-h5b-attended-incident-rehearsal.md \
+  docs/briefs/handoffs/2026-09-27-h8c-omission-incident-session-end.md \
+  docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md                         # empty: the ruling left them unchanged
+```
+
 ---
 
 ## Change history
@@ -810,3 +865,4 @@ asks and never denies; `LIVE_FLY_APPS` pinned to the two fly.toml files), run te
 | 2026-09-25 | Revision proposed — action classes, authority block (item 7), approval bound to its object, `IN_DOUBT`, decision packets, enforcement-point table, seat-name mapping. Prior text at blob `cbe2a5886e3b6588b68294ac801f88acde3637b5`. Ratifies on operator merge. | Joshua (direction) + Claude Code |
 | 2026-09-26 | Addendum — operator rulings on the four open hook questions (M1 override permitted through the prompt; deploy prompt scoped to live-path apps; `--admin` merges stay askable; card-to-seat binding under consideration) and the AGENTS.md activation-gap wording correction. Rail-deploy enforcement row updated to the ruled scope; open-questions paragraph gains a pointer. | Joshua (rulings) + Claude Code |
 | 2026-09-26 | Addendum 2026-09-26b — operator rulings: seat binding (human-read binding of seat to executor; A6 named acceptance tests on any card granting `worktree.write` or `research.run`), staged-debris 2 MB allowlist ceiling and force-added-ignored check, GLM credential isolation recorded as an owed operator host action. Card-grants and merge enforcement rows corrected; Addendum 2026-09-26's seat-binding row gains a supersession pointer. | Joshua (rulings) + Claude Code |
+| 2026-09-27 | Addendum 2026-09-27 — operator ruling on handoff-contract item 1: the H4, H5b and H8c cards (dispatched and returned without passing `check_brief.py`) are exempted as recorded deviations, not retro-fitted; the staged-acceptance set is exempted as a set file whose copied-out cards must pass; the undispatched M2 card is restructured instead. Item 1 gains a pointer. No enforcement point added. | Joshua (ruling) + Claude Code |
