@@ -250,7 +250,7 @@ Folded into §0.1's table (`parse_campaign_checkpoint_snapshot`, `journal_snapsh
 >
 > The coordinator's Stage 1c measurement must reach maximum expansion through this build's own Part A worker body (r2 §7, §12.4). This section is how. It is TEST_ONLY and exists for that measurement only.
 >
-> **The seam** (r2 §7.3). The parameter is the Part A request's `within_pp`, read at one decision point only (`part_a.py:208`). The forced value is exactly `1.0`. It is injected only as the keyword-only `measurement_override=None` of the built adapter (or its accepted successor), whose value is an instance of the frozen type `PartAMeasurementOverride(within_pp=1.0)` with the fixed label `TEST_ONLY_MEASUREMENT_FORCED_EXPANSION`. The adapter first builds the request from the frozen contract exactly as in the route. Only if an override is present and the gate passes does it apply `dataclasses.replace(request, within_pp=override.within_pp)`; `SyntheticPartARequest.__post_init__` re-validates. The gate, applied before any source verification, compute or file write: `contract.trust_domain.authority_class == 'TEST_ONLY'`, `contract.trust_domain.permits_synthetic is True`, and the contract's `evidence_class = TEST_ONLY`. The gate admits the signed TEST_ONLY route too, so the exclusion of every signed route rests on P-3, P-4 and P-5.
+> **The seam** (r2 §7.3). The parameter is the Part A request's `within_pp`, read at one decision point only (`part_a.py:208`). The forced value is exactly `1.0`. It is injected only as the keyword-only `measurement_override=None` of the built adapter (or its accepted successor), whose value is an instance of the frozen type `PartAMeasurementOverride(within_pp=1.0)` with the fixed label `TEST_ONLY_MEASUREMENT_FORCED_EXPANSION`. The adapter first builds the request from the frozen contract exactly as in the route. Only if an override is present and the gate passes does it apply `dataclasses.replace(request, within_pp=override.within_pp)`; `SyntheticPartARequest.__post_init__` re-validates. The gate, applied before any source verification, compute or file write: `contract.trust_domain.authority_class == 'TEST_ONLY'` and `contract.trust_domain.permits_synthetic is True`. *[Post-acceptance correction 2026-09-27 (Codex review, finding 2): the accepted text also required "the contract's `evidence_class = TEST_ONLY`". The validated contract does not retain `evidence_class` (`ValidatedFrozenContract`, `ops/c1_rail/qualification/contract.py:196-213`). The validator reads it only while issuing the contract, and refuses a contract whose `evidence_class` is not `TEST_ONLY` under a TEST_ONLY trust domain (`contract.py:848-853`); every issued contract carries that validated domain (`:906-907`, `:940`). The two retained predicates therefore imply it, so it is dropped; the gate's meaning is unchanged.]* The gate admits the signed TEST_ONLY route too, so the exclusion of every signed route rests on P-3, P-4 and P-5.
 >
 > **S5 build requirements.** SR-1..SR-7 are r2 §7.4 verbatim (section numbers in the rows are r2's; "packet" means this packet at its pre-re-anchor line numbers). SR-8 carries the CP-1a extension, and SR-9 is r2 §16 C2 as adopted.
 >
@@ -298,7 +298,7 @@ Folded into §0.1's table (`parse_campaign_checkpoint_snapshot`, `journal_snapsh
   - full-E1 spec `:123`: "do not silently change a threshold";
   - full-E1 spec `:200`: "adjust expansion thresholds to make synthetic acceptance pass".
 
-The seam paragraph restates r2 §7.3 without change. The worker-side residual list joins r2 §7.6's residual (bundle verification and plan derivation) and C4's named items.
+The seam paragraph restates r2 §7.3 without change *[Post-acceptance correction 2026-09-27 (Codex review, finding 2): except that its gate no longer lists r2's third predicate, the contract's `evidence_class`, which the validated contract does not retain and the two retained predicates imply]*. The worker-side residual list joins r2 §7.6's residual (bundle verification and plan derivation) and C4's named items.
 
 ### 2.6 §2 Files: tolerance site 2 of 4, and file scope
 
@@ -319,13 +319,14 @@ The seam paragraph restates r2 §7.3 without change. The worker-side residual li
 >   - the diagnostic-subset check, so that `cases` is admitted for `s5` as it is for `s3` and `s4`.
 >
 >   The input default stays `s4`, so a dispatch that names no mode keeps its meaning. The run-name template needs no change, because it already formats the chosen mode as `[<mode>]`.
-> - `scripts/guard_s2_runs.py`: the run-title mode pattern, the mode set that selects the cancel and redundant-dispatch lookups, the incomparability docstring and the `cases` note. An `[s5]` run then gets the same cancel and re-roll protection, and is incomparable with `[s2]`, `[s3]` and `[s4]`. `DEFAULT_MODE` stays `s4`, matching the workflow default.
+> - `scripts/guard_s2_runs.py`: the run-title mode pattern, the mode set that selects the cancel and redundant-dispatch lookups, the incomparability docstring and the `cases` note. An `[s5]` run then gets the same cancel and re-roll protection, and is incomparable with `[s2]`, `[s3]` and `[s4]`. `DEFAULT_MODE` stays `s4`, matching the workflow default. *[Post-acceptance correction 2026-09-27 (Codex review, finding 4): the scope also covers `dispatch_redundancy_refusal`'s two remediation messages for an `[s5]` run. The success message names the S5 acceptance scope through `--expect-scope`; today it adds `--expect-scope` only for `s2` (`scripts/guard_s2_runs.py:193`), so an S5 reader command would default to `S4_JOINT_N2`. The failure message names `-f mode=s5 -f cases='<expr>'`; today it always names `-f mode=s3 -f cases='<expr>'` (`:199`), whose file set has no Part A case. The `s2`, `s3` and `s4` messages are unchanged.]*
 > - `scripts/qualification_boundary_verification.py`: an `--s5` selector and its case set under S4's placement rule (the Part A Linux file before the S2 OOM case); acceptance scope; and the `cases` refusals, which admit `--s5` beside `--s3`/`--s4`.
 > - `scripts/s2_run_evidence.py`: the S5 acceptance scope, and the reader for the SR-8 export fields.
 > - **Focused regression tests:**
 >   - the workflow validators, in `tests/test_s2_evidence_tooling_acceptance.py` (its `test_g6_…` table), where the row `("s5", "", False)` flips deliberately to accepted and `s5` gains a subset row;
->   - the guard, in `tests/test_guard_s2_runs.py` and `tests/test_s2_evidence_tooling_followups.py`, covering `[s5]` title parsing, cancel and redundancy refusal of an `s5` dispatch, and `s5` incomparable with each other mode;
+>   - the guard, in `tests/test_guard_s2_runs.py` and `tests/test_s2_evidence_tooling_followups.py`, covering `[s5]` title parsing, cancel and redundancy refusal of an `s5` dispatch, and `s5` incomparable with each other mode, and the S5-specific remediation text of both redundancy messages *[Post-acceptance correction 2026-09-27 (Codex review, finding 4): this last clause is added]*;
 >   - the selector, in `tests/test_qualification_boundary_verification.py`.
+>   - the evidence reader, in `tests/test_s2_run_evidence.py`: its pins of the exact scope tuple and the scope-to-file-set mapping change deliberately to add the S5 scope and its file set, with the three existing scopes and `DEFAULT_SCOPE` (`S4_JOINT_N2`) unchanged; and SR-8 field-validation cases for the PART_A export fields, `probe_seconds` and `predicted_seconds` included. *[Post-acceptance correction 2026-09-27 (Codex review, finding 1): the accepted list omitted this file. Adding the S5 scope to `ACCEPTANCE_SCOPES` and `SCOPE_FILES` (`scripts/s2_run_evidence.py:72`, `:77-81`) fails its exact-equality assertions on the scope tuple (`tests/test_s2_run_evidence.py:40-41`) and on the mapping against the test's own three-scope copy (`:10-11`, `:48`).]*
 >
 > **Existing S2–S4 behaviour is preserved and pinned by these tests.** Every current `s2`/`s3`/`s4` row keeps its result: `s2` never takes `cases`, and `s3`/`s4` validation, subsets, titles, scopes and guard refusals are unchanged. The change lands through the operator's merge, and any dispatch of it needs its own grant at C3.
 
@@ -674,6 +675,28 @@ grep -n "bounded same-sample re-execution is not a draw" docs/superpowers/plans/
 grep -n "$T#N1" docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md          # contract decision 3
 ```
 
+*[Post-acceptance correction 2026-09-27 (Codex review, finding 3): the block above prints counts and matches but asserts nothing. It never checks the S5 draft §2.3 reading (§3.10) or the S5 Behavior insertion (§1.2), and never confirms that both D-2 bridging notes were removed (§3.9). Its slices-plan greps also match the progress ledger, which is in the same file. The C3 check therefore also runs the assertions below. Each exits non-zero on failure, and the slices-plan checks read only the plan text before its "## Progress ledger and present disposition" heading.]*
+
+```bash
+T=AUDIT-2026-09-25-qualification-assurance-contract-delta
+B=docs/superpowers/specs/2026-09-17-qualification-execution-boundary-design.md
+S=docs/superpowers/specs/2026-09-17-protected-full-e1-campaign.md
+P=docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md
+D=docs/notes/2026-09-26-s5-decision-draft.md
+fail() { echo "C3 owner check FAILED: $*" >&2; exit 1; }
+plan() { sed '/^## Progress ledger and present disposition$/,$d' "$P"; }   # the plan without its ledger
+grep -qF "### 3.1 Boundary set ($T#boundary)" "$B" || fail "boundary spec §3.1 (§3.1)"
+[ "$(grep -cF "$T#K3" "$S")" -ge 2 ] || fail "full-E1 spec §2.2a and §2.4, K3 (§3.2, §3.3)"
+[ "$(grep -cF "$T#N1" "$S")" -ge 1 ] || fail "full-E1 spec §2.5, N1 (§3.5)"
+[ "$(grep -cF "$T#N2" "$S")" -ge 3 ] || fail "full-E1 spec §2.4 last, §2.6 and §5, N2 (§3.4, §3.6, §3.7)"
+plan | grep -F "3. **Reservations cover the rest of the route.**" | grep -qF "$T#N1" || fail "contract decision 3 (§3.8)"
+plan | grep -F "6. **Signing recovery is durable.**" | grep -qF "bounded same-sample re-execution is not a draw ($T#N2)" || fail "contract decision 6 (§1.1)"
+plan | grep -F "**Behavior:** Worker and G5 independently derive" | grep -qF "S5 builds this terminal subset; the §2.6 re-execution is a later slice after S5 and before S8" || fail "S5 Behavior (§1.2)"
+[ "$(plan | grep -cF "This note is removed when the §2.6 text lands at C3.")" -eq 0 ] || fail "a D-2 bridging note remains (§3.9)"
+grep -A2 -F "**Falsifier:** revisit the uniform model" "$D" | grep -qF "**Reading (operator, CP-1a decision (4), 2026-09-27: the three-way split).**" || fail "S5 draft §2.3 reading (§3.10)"
+echo "C3 direct-owner checks passed"
+```
+
 ---
 
 ## 4. Checklist: every item mapped to its proposed text
@@ -795,3 +818,18 @@ Every blockquote under **Current** was inserted by a scratch script (not committ
 - **SR-1..SR-7 and P-1..P-7 are quoted verbatim from r2.** Their cross-references are r2's section numbers and the packet's pre-re-anchor lines, as §1a's lead-in says. They are not renumbered.
 - **D-1..D-10 were this note's own proposals.** The operator accepted all ten on 2026-09-27 (`19547132`). They are folded in, and each keeps its D-ID trace. The operator's acceptance of the full revised text is still owed.
 - **Not covered:** umbrella §0.8 O-10 (not used, OQ-5 RULED); the checklist addendum's S8/T06 sequencing record for the RC-4 slice, which CP-1a (5) assigns to the addendum; the H1 step (b) harness directory, which another worker owns.
+
+## Post-acceptance corrections (Codex review, 2026-09-27)
+
+The operator accepted this note's full text at `011ce9e4`. A Codex review of PR #525 then found four defects, each verified against the code at `origin/main` `08196100`. The corrections are marked inline where they occur. No other accepted text is changed.
+
+The operator's acceptance at `011ce9e4` covers the text before these corrections; these corrections await the operator's acceptance.
+
+| # | Where | Change | Code evidence |
+|---|---|---|---|
+| 1 | §2.6, focused regression tests (packet run-tooling scope) | Adds `tests/test_s2_run_evidence.py`: its scope pins change deliberately to add the S5 scope and file set, and it gains SR-8 field-validation cases | `scripts/s2_run_evidence.py:72` (`ACCEPTANCE_SCOPES`) and `:77-81` (`SCOPE_FILES`); `tests/test_s2_run_evidence.py:40-41` asserts the exact three-scope tuple, and `:48` asserts the mapping equals the test's own three-scope copy (`:10-11`). Adding an S5 scope fails both, and the accepted list omitted the file |
+| 2 | §2.5, packet §1a "The seam"; and the line after "Required by" | Drops the gate's third predicate, the contract's `evidence_class = TEST_ONLY`; the remaining two predicates imply it | `ValidatedFrozenContract` has no `evidence_class` field (`ops/c1_rail/qualification/contract.py:196-213`). The validator reads `authority.evidence_class` only while issuing, and requires `TEST_ONLY` exactly when the trust domain's `authority_class` is `TEST_ONLY` (`:848-853`). Every issued contract carries its validated domain (`:906-907`, `:940`) |
+| 3 | §3.11, RC-2 evidence at C3 | Adds explicit assertions for each named owner, the S5 Behavior insertion, the S5 draft §2.3 reading and zero remaining D-2 bridging notes. The slices-plan checks exclude the ledger in the same file | The accepted block has no check on `docs/notes/2026-09-26-s5-decision-draft.md`, no check on the S5 Behavior text, and none on the bridging notes. Its slices-plan greps also match ledger entries: `#K3` already appears there at `:897`. The added block fails at the current tree and on the #527 plan (bridging notes remain). It passes on a simulated C3-applied tree |
+| 4 | §2.6, `scripts/guard_s2_runs.py` bullet and the guard test bullet (packet run-tooling scope) | Adds `dispatch_redundancy_refusal`'s two remediation messages for an `[s5]` run, and their tests | `scripts/guard_s2_runs.py:193` adds `--expect-scope` only for `s2`, so an `[s5]` success message would print a reader command defaulting to `S4_JOINT_N2`. `:199` always prints `-f mode=s3 -f cases='<expr>'`, and the s3 file set has no Part A case |
+
+Corrections 1, 2 and 4 are in build-entry text (§2.5, §2.6) that PR #527 applied to the S5 packet. The same corrected wording, with the same markers, is applied there. Correction 3 is C3 text, and #527 did not apply it.
