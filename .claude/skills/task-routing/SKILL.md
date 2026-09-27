@@ -12,10 +12,14 @@ Decide `environment: local` vs `cloud` **before** launching a Task / cloud-capab
 
 ## Procedure
 
-1. **Honor explicit override.** If the user already said local or cloud for this work, use that. Skip the ask.
+1. **Honor explicit override.** If the user already said local or cloud for this work, use that (including a standing preference below). Skip the ask.
 2. **Run the local-only checklist.** Any hit → `local`. State which item hit.
 3. **No hits → cloud-eligible.** Do **not** launch yet. Ask for GO with a one-line reason.
 4. **Unclear → `local`.** Safe default.
+
+## Standing preferences
+
+- **Cloud review (operator, 2026-09-27).** Read-only review and adversarial-verification work is cloud-eligible without a per-task GO when it reviews a pushed, pinned revision; fixes and anything touching uncommitted state stay local. This standing GO satisfies step 3 for such reviews only; the local-only checklist still applies, and the reviewer returns findings without writing to the reviewed branch.
 
 ## Local-only checklist
 
