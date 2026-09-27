@@ -4,7 +4,12 @@
 
 **Card:** [handoff H1](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h1--s5-measurement-correct-the-519-proposal-return-a-measurement-dispatch), step (c) ("Step (c), added at the acceptance of step (a)"; owner assigned for the cross-handoff critic's finding X-02).
 
-**Anchor head.** Every current-text quotation is at `origin/main` = `875ecf297ddda6e12af12e4e69f117deca8008c3` (`875ecf29`), written `875ecf29:<path>:<line>`. This head is the **candidate** release head for the RC-6 re-anchor. Each anchor is re-verified at the actual release head, the head named in the operator's hold-release entry (CP-1b), before any text is applied. `ops/c1_rail/qualification/` is byte-identical between the S4 merge head `228447c` and `875ecf29` (`git diff --stat 228447c 875ecf29 -- ops/c1_rail/qualification` is empty), and nothing under `ops/`, `tests/`, `tools/`, `deploy/`, `scripts/` or `.github/` changed between r2's source head `521d8f2` and `875ecf29`.
+**Anchor head.** Every current-text quotation is at `origin/main` = `875ecf297ddda6e12af12e4e69f117deca8008c3` (`875ecf29`), written `875ecf29:<path>:<line>`. This head is the drafting candidate. **Application order** (operator review correction 3):
+- Build-entry texts (§1 and §2) are verified and applied before CP-1b, against a **pinned application head**, `<application head>`, which the application commit records. The applier re-verifies every anchor at that head first.
+- CP-1b then names the resulting reviewed revision, `<release head>`. If that revision differs from `<application head>` in any file an anchor covers, the affected anchors are re-checked before CP-1b.
+- The RC-2 texts (§3) follow the same pattern at C3, against their own pinned head, recorded in their application commit.
+
+`ops/c1_rail/qualification/` is byte-identical between the S4 merge head `228447c` and `875ecf29` (`git diff --stat 228447c 875ecf29 -- ops/c1_rail/qualification` is empty), and nothing under `ops/`, `tests/`, `tools/`, `deploy/`, `scripts/` or `.github/` changed between r2's source head `521d8f2` and `875ecf29`.
 
 **Ruling commit and dispatch record.**
 - **Ruling:** commit `baa09ffd` (`baa09ffd574d88fb4fd6983451067de479a90973`), the ledger entry "Operator ruling — CP-1a decisions (1)–(6) adopted as recommended, hold kept, 2026-09-27", at `baa09ffd:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md:936-1004` ([blob at `baa09ffd`](https://github.com/Joshua-Asante/first-passage/blob/baa09ffd574d88fb4fd6983451067de479a90973/docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#L936)). It is on PR [#523](https://github.com/Joshua-Asante/first-passage/pull/523), not yet on `main`. Every ruled item carried here is quoted from that commit's text (`git show baa09ffd:…`). Short form below: **CP-1a (n)**, cited as `baa09ffd:…:<line>`.
@@ -30,6 +35,18 @@
 
 The entry's effect, quoted: "**Acceptance of the revised draft's full text remains the operator's.** It is not implied by these answers. No owner document is amended until that acceptance, and then only by a separate application commit: build-entry texts before CP-1b, RC-2 texts at C3."
 
+
+### Operator review corrections (2026-09-27, before full-text acceptance)
+
+The operator reviewed this draft at `b7c52fe8` and asked for three P2 corrections, relayed by the coordinator. They refine execution and scope; **the substantive rulings above are unchanged**, and no ruling is reopened.
+1. **S5 run-tooling scope.** The OQ-4 file scope now covers every consumer of the boundary mode, with S2–S4 behaviour preserved and pinned by focused tests (§2.6):
+   - the workflow's `mode` option (`.github/workflows/qualification-s2-supervision.yml:26`);
+   - both validators (`:84`, `:134`);
+   - the subset check (`:98-99`);
+   - the guard's title and mode handling (`scripts/guard_s2_runs.py:24-28`, `:96`, `:765`).
+2. **C3 order.** The order is now explicit: review (interfaces, P-1..P-7, Stage 1c, executed `bind_budget`, RC-2 text) → separate C3 dispatch grant → acceptance-grade run → Stage 2/PA-5 from that run, then close. Stage 2/PA-5 evidence is never required before its producing run is authorized (§2.9, §2.5, §4).
+3. **Application order.** Build-entry text is verified and applied against a pinned `<application head>` before CP-1b. CP-1b names the resulting reviewed revision, and affected anchors are re-checked if it differs. The RC-2 texts do the same at C3 (header "Anchor head", §2, §2.1, §2.2, Limitations).
+
 ---
 
 ## 0. How to read this note
@@ -40,7 +57,10 @@ Each passage gives:
 - **Required by** — the ruling or finding;
 - **Gate** — **build entry** (the §3.4(d) text or RC-6) or **C3** (RC-2).
 
-Placeholders: `<release head>` is the head the CP-1b entry names; `<acceptance date>` is the date the operator accepts the text.
+Placeholders:
+- `<application head>`: the pinned head against which the build-entry texts are verified and applied, recorded in the application commit;
+- `<release head>`: the reviewed revision the CP-1b hold-release entry names;
+- `<acceptance date>`: the date the operator accepts the text.
 
 | Item | Owner | Gate | Section |
 |---|---|---|---|
@@ -116,9 +136,9 @@ Both insertions cite a full-E1 spec §2.6 rule ("bounded same-sample re-executio
 - the SR-8 export extension with the PART_A result's `probe_seconds` and `predicted_seconds` (§2.5);
 - the `/v7` N2 value (§2.1, §2.4);
 - the OQ-3 clarifying line on the SR-7 exception's scope (§2.5);
-- the OQ-4 file scope: selector, evidence reader and workflow `mode` (§2.6).
+- the OQ-4 S5 run-tooling scope: workflow `mode` option, validators and subset check; guard; selector; evidence reader; regression tests (§2.6).
 
-**Re-verification rule.** Every anchor in §2.2 is at `875ecf29`. At the release head the applier re-runs the §2.2 commands (listed under "Verification of this note") and corrects any moved line before applying; a changed meaning returns to the coordinator.
+**Re-verification rule.** Every anchor in §2.2 is at `875ecf29`. Before applying, the applier pins `<application head>` and re-runs the §2.2 commands there (they are listed under "Verification of this note"). It corrects any moved line and records the head in the application commit; a changed meaning returns to the coordinator. The re-anchored packet is applied before CP-1b. CP-1b names the resulting reviewed revision, `<release head>`. If that revision differs from `<application head>` in any file an anchor covers, the affected anchors are re-checked before CP-1b.
 
 ### 2.1 Packet header: lines 4, 5 and 8
 
@@ -129,7 +149,7 @@ Both insertions cite a full-E1 spec §2.6 rule ("bounded same-sample re-executio
 
 **PROPOSED.** Line 4 is kept as history. Insert after it:
 
-> **Re-anchored (RC-6), `<acceptance date>`:** the §0 anchors are re-read at `<release head>` (drafted at the candidate `875ecf29`; S4 merged at `228447c`, and `ops/c1_rail/qualification/` is unchanged between the two). The execution-slices plan carries the §3.4(d) text, so S5 builds terminal IN_DOUBT only (§3). Folded in: #519's findings and the three `/v7` profile pitfalls (§0.1); the `/v7` N2 value (§0.5); the Stage 1c measurement seam with SR-1..SR-9 and P-1..P-7 (§1a); and the SR-7 exception at the four tolerance sites (lines 8, 35, 49 and 61 of the pre-re-anchor packet). Source: the operator's CP-1a ruling (execution-slices ledger, 2026-09-27). This line neither freezes nor dispatches the packet. That follows only the operator's hold-release entry (CP-1b), and the anchors are re-verified at the head that entry names.
+> **Re-anchored (RC-6), `<acceptance date>`:** the §0 anchors are re-read at `<application head>`, the pinned head this re-anchor was applied against (drafted at the candidate `875ecf29`; S4 merged at `228447c`, and `ops/c1_rail/qualification/` is unchanged between the two). The execution-slices plan carries the §3.4(d) text, so S5 builds terminal IN_DOUBT only (§3). Folded in: #519's findings and the three `/v7` profile pitfalls (§0.1); the `/v7` N2 value (§0.5); the Stage 1c measurement seam with SR-1..SR-9 and P-1..P-7 (§1a); and the SR-7 exception at the four tolerance sites (lines 8, 35, 49 and 61 of the pre-re-anchor packet). Source: the operator's CP-1a ruling (execution-slices ledger, 2026-09-27). This line neither freezes nor dispatches the packet. That follows only the operator's hold-release entry (CP-1b), which names the reviewed revision. If that revision differs from `<application head>` in any file an anchor covers, the affected anchors are re-checked before CP-1b.
 
 In line 5, replace "Predecessor: **S4 accepted and merged** (joint N2/Part B green on Linux, `PART_A_READY` reached, the coordinator's acceptance entry in the ledger). Branch `claude/s5-part-a` off the S4 merge head;" with:
 
@@ -161,7 +181,7 @@ In line 5, replace "Predecessor: **S4 accepted and merged** (joint N2/Part B gre
 
 > ## 0.1 Re-anchor at the release head (RC-6)
 >
-> Anchors below are at `875ecf29` and are re-verified at `<release head>`. Paths are under `ops/c1_rail/qualification/` unless stated.
+> Anchors below were drafted at `875ecf29` and are verified at `<application head>` (re-checked before CP-1b where the reviewed revision differs in a covered file). Paths are under `ops/c1_rail/qualification/` unless stated.
 >
 > | §0 read | Anchor |
 > |---|---|
@@ -222,7 +242,7 @@ Folded into §0.1's table (`parse_campaign_checkpoint_snapshot`, `journal_snapsh
 
 > - **Checkpoint C3** (before the first acceptance-grade Linux run): the PART_A field sets, the `/v8` snapshot diff, the two-artifact capture contract and its crash semantics, the baseline-transport contract, the float-vs-Decimal parity results on the supported frozen boundary configurations, and the E-case ownership for E04/E05 and the PART_A halves of E06/E08/E09.
 
-**PROPOSED.** In line 32, before its final full stop, append: "; and the §1a conformance table (SR-1..SR-9 met, with the node IDs of P-1..P-7)".
+**PROPOSED.** In line 32, before its final full stop, append: "; and the §1a conformance table (SR-1..SR-9 met, with the node IDs of P-1..P-7). This list is step 1 of the C3 order in §5; Stage 2/PA-5 is evaluated only after the acceptance-grade run (§5, step 4)".
 
 **PROPOSED** new section after line 32, before "## 2. Files":
 
@@ -243,7 +263,7 @@ Folded into §0.1's table (`parse_campaign_checkpoint_snapshot`, `journal_snapsh
 > | SR-5 | A producer of **genuine staged N2 capture bytes** for the TEST_ONLY composition, generated by S4's own N2 compute and capture code, not a hand-written vector, and bound to the contract the harness uses. The adapter's own "mismatched N2 FULL baseline" tests (packet §3) need the same input |
 > | SR-6 | The worker's own `PhaseBudgetGuard` (`worker.py:156-200`) is constructable with measurement limits (`cpu_ns = wall_ns = 3600 s`, `memory_bytes` above the runner's memory). The per-replay budget checks then run production code, and the pilot predicate cannot abort. The limits are inputs, not a seam |
 > | SR-7 | The RC-6 re-anchored packet states an explicit, scoped exception at each of its four tolerance sites: the Authority line "no tolerance relaxed" (packet line 8), §2 Forbidden "accepted formulas and tolerances" (line 35), §3 "never a relaxed tolerance" (line 49) and §6 Forbidden "a relaxed tolerance" (line 61). The exception covers the SR-1 measurement override only; it is never a route value, a contract value or a statistic |
-> | SR-8 | (Stage 2, carried from r1 `:216`.) S5's run evidence exports the PART_A settled observation fields: `cpu_ns`, `memory_peak_bytes`, `oom_events`, the boottime from reservation to `CAPTURED`, and the payload/guardian CPU split where available, **and the PART_A result's `probe_seconds` and `predicted_seconds`** (CP-1a decision (1), 2026-09-27: the pilot-budget term is validated at C3 from Stage 2 through this export, and becomes final only when that check is recorded). They are read by `scripts/s2_run_evidence.py <run> --expect-head <sha>` |
+> | SR-8 | (Stage 2, carried from r1 `:216`.) S5's run evidence exports the PART_A settled observation fields: `cpu_ns`, `memory_peak_bytes`, `oom_events`, the boottime from reservation to `CAPTURED`, and the payload/guardian CPU split where available, **and the PART_A result's `probe_seconds` and `predicted_seconds`** (CP-1a decision (1), 2026-09-27: the pilot-budget term is validated at C3 from Stage 2 through this export, and becomes final only when that check is recorded; Stage 2 is evaluated after the acceptance-grade run, §5 step 4). They are read by `scripts/s2_run_evidence.py <run> --expect-head <sha>` |
 > | SR-9 | The packet's rejection of an omitted or unnecessary expansion (§3) runs in G5 reconstruction (the route P-5 relies on) or after the SR-3 callable returns, never inside it. A refusal of the forced Stage 1c run is classified by its cause: a conforming build refused under a packet rule is **BLOCKED**; a non-conforming build (the rejection, or a re-derivation of the expansion decision from the contract, inside the SR-3 callable) is a **C3 nonconformance** returned to the S5 executor; a refusal traced to neither is **INVALID** and investigated (r2 §16 C2; #519 proposal round 2, F1a) |
 >
 > **Proof obligations** (S5 tests; node IDs named at C3). P-1..P-7 are r2 §7.5 verbatim:
@@ -258,9 +278,9 @@ Folded into §0.1's table (`parse_campaign_checkpoint_snapshot`, `journal_snapsh
 > | P-6 | **Faithful.** With the override, the initial-prefix artifact is byte-identical to the one produced without it, on the same fixture |
 > | P-7 | **Same code.** Stage 1c's entry point is the SR-3 callable object that `run_worker` uses (identity asserted in the harness record) |
 >
-> **At Checkpoint C3.** **P-3, P-4 and P-5 are hard, non-waivable C3 preconditions:** nothing else proves that no signed route reaches the seam. A missing SR or a failing P at C3 is a **C3 nonconformance returned to the S5 executor** under this packet. Stage 1c does not run until it is fixed, and the PART_A ceiling stays provisional meanwhile (r2 §16 C3).
+> **At Checkpoint C3.** **P-3, P-4 and P-5 are hard, non-waivable C3 preconditions:** nothing else proves that no signed route reaches the seam. A missing SR or a failing P at C3 is a **C3 nonconformance returned to the S5 executor** under this packet. Stage 1c does not run until it is fixed, and the PART_A ceiling stays provisional meanwhile (r2 §16 C3). These are checked in step 1 of the C3 order (§5), before any acceptance-grade run.
 >
-> **Named worker-side residual, carried by PA-5** (r2 §7.6 and §16 C4). In the current worker shape these stay outside the SR-3 callable: the result encode, validate and frame (`execution/worker.py:73-94`); `main`'s frame write and fsync (`:143-150`); and the bundle verification and plan derivation that `run_worker` performs before the SR-3 body. Stage 1c does not measure them. The Stage 2 service figure includes them at the prescribed size, so PA-5's k carries them. Stage 1c ends the provisional status with this residual named (CP-1a decision (2)(e)).
+> **Named worker-side residual, carried by PA-5** (r2 §7.6 and §16 C4). In the current worker shape these stay outside the SR-3 callable: the result encode, validate and frame (`execution/worker.py:73-94`); `main`'s frame write and fsync (`:143-150`); and the bundle verification and plan derivation that `run_worker` performs before the SR-3 body. Stage 1c does not measure them. The Stage 2 service figure includes them at the prescribed size, so PA-5's k carries them. That figure comes from the acceptance-grade run and is evaluated after it (§5, step 4). Stage 1c ends the provisional status with this residual named (CP-1a decision (2)(e)).
 >
 > **Scope of the SR-7 exception** (operator ruling on OQ-3, 2026-09-27): the five RC-2 owner sentences on thresholds and tolerances (execution-slices plan, Global constraints and S5; full-E1 spec §2.4, two sentences, and §5) govern route and contract values; the TEST_ONLY Stage 1c override is never one of these (P-3, P-4), and a forced result can never pass (P-5), so those five sentences stay unchanged and the SR-7 exception does not widen beyond this packet's four sites.
 >
@@ -290,11 +310,75 @@ The seam paragraph restates r2 §7.3 without change. The worker-side residual li
 
 > **Forbidden:** T05's modules and tests; `qualification/seal.py`; accepted formulas and tolerances (one scoped exception, SR-7: the §1a SR-1 measurement override only, never a route value, a contract value or a statistic); any S2/S3/S4 Linux assertion; the coordinator's Stage 1c harness (§1a).
 
-**PROPOSED** (file scope, with the accepted D-5, whose workflow part the OQ-4 ruling approves). In line 35, before "; new Linux file", insert:
+**PROPOSED** (S5 run-tooling scope, with the accepted D-5; the OQ-4 ruling approves its workflow and evidence-reader parts; corrected for operator review correction 1). In line 35, before "; new Linux file", insert "; the S5 run tooling bounded below". After line 35, insert:
 
-> ; `scripts/qualification_boundary_verification.py` (the S5 selector and case set, under S4's placement rule) and `scripts/s2_run_evidence.py` (the S5 acceptance scope, and the reader for the SR-8 export fields); `.github/workflows/qualification-s2-supervision.yml`, only to add an S5 value to its `mode` input (approved by the operator on the S4 precedent, 2026-09-27: the change lands through the operator's merge, and any dispatch of it needs its own grant at C3)
+> **S5 run tooling (bounded; approved on the S4 precedent, 2026-09-27).** The executor may change exactly these consumers of the boundary mode, and only to add an S5 mode (`s5`, the S4 file set plus the Part A file, on the `/v7` installation) beside the existing ones:
+> - `.github/workflows/qualification-s2-supervision.yml`:
+>   - the `mode` input's `options` and its description;
+>   - both shell validators, in "Validate inputs" and in the boundary-run step, which today accept only `s2|s3|s4`;
+>   - the diagnostic-subset check, so that `cases` is admitted for `s5` as it is for `s3` and `s4`.
+>
+>   The input default stays `s4`, so a dispatch that names no mode keeps its meaning. The run-name template needs no change, because it already formats the chosen mode as `[<mode>]`.
+> - `scripts/guard_s2_runs.py`: the run-title mode pattern, the mode set that selects the cancel and redundant-dispatch lookups, the incomparability docstring and the `cases` note. An `[s5]` run then gets the same cancel and re-roll protection, and is incomparable with `[s2]`, `[s3]` and `[s4]`. `DEFAULT_MODE` stays `s4`, matching the workflow default.
+> - `scripts/qualification_boundary_verification.py`: an `--s5` selector and its case set under S4's placement rule (the Part A Linux file before the S2 OOM case); acceptance scope; and the `cases` refusals, which admit `--s5` beside `--s3`/`--s4`.
+> - `scripts/s2_run_evidence.py`: the S5 acceptance scope, and the reader for the SR-8 export fields.
+> - **Focused regression tests:**
+>   - the workflow validators, in `tests/test_s2_evidence_tooling_acceptance.py` (its `test_g6_…` table), where the row `("s5", "", False)` flips deliberately to accepted and `s5` gains a subset row;
+>   - the guard, in `tests/test_guard_s2_runs.py` and `tests/test_s2_evidence_tooling_followups.py`, covering `[s5]` title parsing, cancel and redundancy refusal of an `s5` dispatch, and `s5` incomparable with each other mode;
+>   - the selector, in `tests/test_qualification_boundary_verification.py`.
+>
+> **Existing S2–S4 behaviour is preserved and pinned by these tests.** Every current `s2`/`s3`/`s4` row keeps its result: `s2` never takes `cases`, and `s3`/`s4` validation, subsets, titles, scopes and guard refusals are unchanged. The change lands through the operator's merge, and any dispatch of it needs its own grant at C3.
 
-Trace: **[D-5]**. Why the file scope was needed: SR-8 says the fields "are read by `scripts/s2_run_evidence.py`", but that script reads JUnit totals and file-set scope only (`scripts/s2_run_evidence.py:72`, `ACCEPTANCE_SCOPES = ("S4_JOINT_N2", "S3_N1_CAPTURE", "S2_DIAGNOSTIC_SUPERVISION")`). The workflow's `mode` offers only `s2|s3|s4` (`.github/workflows/qualification-s2-supervision.yml:26`). r2 §12.5 marks "the S5 scope S5 registers" as UNVERIFIED because S5 adds it, and none of these files was in the §2 list. S4 met the same gap as its C2 decision 1, "Selector and scope" (`875ecf29:docs/briefs/handoffs/2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md:78`).
+**Current** consumers at `875ecf29`: the `mode` input (`.github/workflows/qualification-s2-supervision.yml:24-27`):
+
+>         description: 's2 (the fifteen S2 nodes), s3 (S2 plus the four N1 nodes on the dispatch/v5 installation) or s4 (S3 plus the three joint N2 nodes on the joint v6 installation; the acceptance-grade set)'
+>         type: choice
+>         options: [s2, s3, s4]
+>         default: s4
+
+The two validators (`:84`, `:134`), which are identical lines:
+
+>           case "$mode" in s2|s3|s4) ;; *) echo "unsupported mode: $mode (expected s2, s3 or s4)" >&2; exit 2 ;; esac
+
+The diagnostic-subset check (`:98-99`):
+
+>             if [ "$mode" != "s3" ] && [ "$mode" != "s4" ]; then
+>               echo "cases is a diagnostic subset for mode s3 or s4 only (mode: $mode)" >&2
+
+The guard's mode recognition: the docstring (`scripts/guard_s2_runs.py:24-28`), the `cases` note and title pattern (`:92-96`), and the lookup gate (`:765`):
+
+>     not re-roll. `[s2]`, `[s3]` and `[s4]` are mutually incomparable (an s4 run
+>     installs the joint v6 dispatch profile, an s3 run the v5 one and an s2 run
+>     the v4 funded one — none covers another); `pull_request` runs tested the
+>     merge ref and never count as the head's bytes; `cases` is accepted in `s3`
+>     and `s4` only, so an s2 diagnostic is refused.
+>
+> S2_CASES_NOTE = ("the workflow accepts `cases` only with mode s3 or s4 (an s2 selection "
+>                  "has nothing to subset), so this dispatch would fail at setup; re-run it "
+>                  "as `-f mode=s4 -f cases='<expr>'` or a full s4 dispatch.")
+>
+> _TITLE_MODE = re.compile(r"\[(s2|s3|s4)\]")
+>
+>     if not parsed["json"] and (mode is UNKNOWN or mode in ("s2", "s3", "s4")) and ref:
+
+At `:765`, a mode outside `("s2", "s3", "s4")` leaves `runs` unset, so neither the cancel nor the redundant-dispatch refusal is evaluated. An `s5` dispatch would pass the guard unchecked. The selector's `cases` refusal (`scripts/qualification_boundary_verification.py:80-81`) and the workflow-validator test row that refuses `s5` today (`tests/test_s2_evidence_tooling_acceptance.py:243`):
+
+>     if not (args.s3 or args.s4):
+>         return '--cases is a diagnostic-subset selector for --s3/--s4 iteration only'
+>
+>     ("s3", "   ", False), ("s3", "\t", False), ("s2", "downtime", False),
+>     # C2 ruling 1 (2026-09-24): s4 is a runnable mode (the new default) and takes subsets.
+>     ("s4", "", True), ("s4", "downtime or deadline", True), ("s5", "", False),
+
+**The subset rule mirrors S4's.** S4's C2 ruling 1 made `s4` "a runnable mode … and takes subsets" (the test comment at `:242`), and the S4 packet iterated Linux with `cases` subset runs. So `s5` admits a `cases` subset on the same terms: the record is marked `DIAGNOSTIC_SUBSET` and is never acceptance evidence. No new rule is introduced. The input default is not moved to `s5`: S4 moved it by its own C2 ruling, and keeping `s4` preserves the meaning of every existing dispatch that names no mode.
+
+Trace: **[D-5]**, corrected. Why the scope is needed:
+- SR-8 says the fields "are read by `scripts/s2_run_evidence.py`", but that script reads only JUnit totals and file-set scope (`scripts/s2_run_evidence.py:72`, `ACCEPTANCE_SCOPES = ("S4_JOINT_N2", "S3_N1_CAPTURE", "S2_DIAGNOSTIC_SUPERVISION")`);
+- r2 §12.5 marks "the S5 scope S5 registers" as UNVERIFIED because S5 adds it;
+- none of these files was in the §2 list;
+- S4 met the same gap in its C2 decision 1, "Selector and scope" (`875ecf29:docs/briefs/handoffs/2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md:78`).
+
+The first revision allowed the workflow edit "only to add an S5 value to its `mode` input". That missed the validators, the subset check and the guard (operator review correction 1).
 
 **Required by:** the OQ-4 ruling, "**Approved, on the S4 precedent.** Within the S5 build, the executor may add an S5 value to the `mode` input of `.github/workflows/qualification-s2-supervision.yml` and extend the evidence reader so that SR-8's fields have a reader. The change lands through the operator's merge. Any dispatch of it needs its own grant at C3." (`19547132:…full-e1-execution-slices.md:1015`).
 
@@ -341,9 +425,26 @@ Trace: **[D-6]**, the crash case. Line 54's "crash during expansion" has no Linu
 
 **PROPOSED** replacement of line 58:
 
-> Push and return: head + `git diff --stat <release head>...HEAD`; the line-1 record; the §1 freeze as a table; the §1a conformance table, with the P-1..P-7 node IDs; the fixture ledger; fail-on-base; the parity results; anything S5-D1–D3 did not anticipate. **P-3, P-4 and P-5 are hard, non-waivable C3 preconditions; a missing SR or a failing P is a C3 nonconformance returned to the executor (§1a).** The coordinator's C3 also takes RC-3b: Stage 1c through the SR-3 callable, only after the coordinator's recorded read of the `--stage 1c` harness diff; the executed `bind_budget` Σ-feasibility check on the built `/v7`; and Stage 2/PA-5 from the SR-8 export, with the named worker-side residual. The full RC-2 owner-text set is applied at C3 (execution-slices ledger, direction of 2026-09-27). Wait for GO.
+> Push and return: head + `git diff --stat <release head>...HEAD`; the line-1 record; the §1 freeze as a table; the §1a conformance table, with the P-1..P-7 node IDs; the fixture ledger; fail-on-base; the parity results; anything S5-D1–D3 did not anticipate. Wait for GO.
+>
+> **C3 order.** Each step needs the one before it:
+> 1. **Review, before any acceptance-grade run.**
+>    - The interfaces and the §1a conformance table with the P-1..P-7 node IDs. **P-3, P-4 and P-5 are hard, non-waivable C3 preconditions; a missing SR or a failing P is a C3 nonconformance returned to the executor (§1a).**
+>    - The Stage 1c measurement through the SR-3 callable, run only after the coordinator's recorded read of the `--stage 1c` harness diff.
+>    - The executed `bind_budget` Σ-feasibility check on the built `/v7`.
+>    - The required RC-2 owner text, accepted and applied (execution-slices ledger, direction of 2026-09-27).
+> 2. **The separate C3 dispatch grant** for the acceptance-grade Linux run.
+> 3. **The acceptance-grade campaign run.**
+> 4. **Evaluate Stage 2/PA-5 from that run, then close acceptance.** This uses the SR-8 export: PA-5 with the named worker-side residual, PA-3b, and the pilot-budget check on `probe_seconds` and `predicted_seconds`.
+>
+> Stage 2/PA-5 evidence is never required before its producing run is authorized.
 
-**Required by:** CP-1a (6) (`baa09ffd:…:985`); CP-1a (2)(e) and (f) (`:964-965`); the ledger direction's C3 row (`875ecf29:…full-e1-execution-slices.md:852`). `<S4 merge head>` becomes `<release head>` because the branch now starts there (§2.1).
+**Required by:** CP-1a (6) (`baa09ffd:…:985`); CP-1a (2)(e) and (f) (`:964-965`); the ledger direction's C3 row (`875ecf29:…full-e1-execution-slices.md:852`); operator review correction 2 (2026-09-27), the explicit before-run/after-run order. Why the order matters:
+- the packet's C3 comes "before the first acceptance-grade Linux run" (line 32);
+- r2 §12.5 takes Stage 2's PART_A observation "from the acceptance-grade run the S5 C3 route already dispatches";
+- so Stage 2/PA-5 can only be evaluated after that run, and C3 closes acceptance only then.
+
+`<S4 merge head>` becomes `<release head>` because the branch now starts there (§2.1).
 
 ### 2.10 §6 Forbidden: tolerance site 4 of 4
 
@@ -580,17 +681,18 @@ grep -n "$T#N1" docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md   
 | # | Item | Proposed text | Gate |
 |---|---|---|---|
 | 1 | §3.4(d) text: S5 draft §4 and its consistency correction | §1 (what it is); §1.1 contract decision 6 with D-1 and D-2; §1.2 S5 Behavior with D-2; §1.3 (OQ-2, RULED) | Build entry |
-| 2 | RC-6 re-anchor at a candidate release head, re-verified at the actual one | §2 header; §2.1 (re-anchor line); §2 re-verification rule | Build entry |
+| 2 | RC-6 re-anchor, drafted at a candidate head, verified and applied at a pinned `<application head>` before CP-1b, and re-checked where CP-1b's revision differs (review correction 3) | Header "Anchor head"; §2 re-verification rule; §2.1 (re-anchor line); §2.2 (§0.1 lead); Limitations | Build entry |
 | 2a | #519's findings, including that (2, 4, 2) cannot expand | §2.2 new §0.1 F1–F5; §2.8 line 54, with D-6 | Build entry |
 | 2b | The three `/v7` profile pitfalls | §2.2 new §0.1 P1–P3 (and P4, the fixture cap); §2.4 | Build entry |
 | 2c | SR-1..SR-9 (SR-9 via r2 §16 C2) and P-1..P-7 | §2.5 new §1a | Build entry |
 | 2d | SR-7 exception at lines 8, 35, 49 and 61 | §2.1 (line 8), §2.6 (line 35), §2.7 (line 49), §2.10 (line 61) | Build entry |
 | 2d′ | OQ-3 ruling: one clarifying line (the five RC-2 owner sentences unchanged; no widening) | §2.5 new §1a, "Scope of the SR-7 exception"; §3.9 | Build entry |
-| 2e | P-3/P-4/P-5 hard, non-waivable C3 preconditions | §2.5 (§1a "At Checkpoint C3"), §2.9 (line 58) | Build entry text; binds at C3 |
+| 2e′ | C3 order: review (interfaces, P-1..P-7, Stage 1c through the SR-3 callable, executed `bind_budget`, RC-2 text) → separate C3 dispatch grant → acceptance-grade run → Stage 2/PA-5 from that run, then close; Stage 2/PA-5 never required before its producing run is authorized (review correction 2) | §2.9 (line 58, "C3 order"); §2.5 (line-32 append, §1a "At Checkpoint C3", residual paragraph, SR-8 row) | Build entry text; binds at C3 |
+| 2e | P-3/P-4/P-5 hard, non-waivable C3 preconditions | §2.5 (§1a "At Checkpoint C3"), §2.9 (line 58, step 1) | Build entry text; binds at C3 |
 | 2f | Missing SR or failing P at C3 = C3 nonconformance to the S5 executor (r2 §16 C3) | §2.5 (§1a), §2.9 | Build entry text; binds at C3 |
 | 2g | Worker-side residual (`worker.py:73-94`, `:143-150`), carried by PA-5 | §2.5 (§1a "Named worker-side residual") | Build entry text; binds at C3 |
 | 2h | SR-8 extended with `probe_seconds` and `predicted_seconds` (CP-1a (1)) | §2.5 (§1a SR-8 row), §2.8 (line 55) | Build entry text; binds at C3 |
-| 2i | OQ-4 ruling: S5 file scope (selector, evidence reader, workflow `mode`), with dispatch needing its own grant at C3 | §2.6, with D-5 | Build entry |
+| 2i | OQ-4 ruling, corrected by review correction 1: S5 run-tooling scope covers the workflow `mode` option, both validators and the subset check, the guard's title/mode handling, the selector, the evidence reader and focused regression tests; S2–S4 behaviour preserved and pinned; lands through the operator's merge; dispatch needs its own grant at C3 | §2.6, with D-5 | Build entry |
 | 3a | Boundary spec §3.1 | §3.1, with D-3 and D-4 | C3 |
 | 3b | Full-E1 spec §2.2a | §3.2, with D-7 | C3 |
 | 3c | Full-E1 spec §2.4 | §3.3 (first paragraph, with D-8); §3.4 (last paragraph, with D-1) | C3 |
@@ -617,7 +719,7 @@ grep -n "$T#N1" docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md   
 **RULED** (`19547132:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md:1012-1018`):
 - **OQ-2 — RULED:** the D-2 bridging note (§1.1, §1.2, §1.3).
 - **OQ-3 — RULED:** one clarifying line in the packet's §1a. The five RC-2 owner sentences stay unchanged, and the exception does not widen (§2.5, §3.9). The earlier option (b), to append a scoped exception at each of the five owner sentences, is dropped.
-- **OQ-4 — RULED:** approved on the S4 precedent, covering the workflow `mode` addition and the evidence-reader extension within the S5 build. It lands through the operator's merge, and any dispatch of it needs its own grant at C3 (§2.6).
+- **OQ-4 — RULED:** approved on the S4 precedent, covering the workflow `mode` addition and the evidence-reader extension within the S5 build. It lands through the operator's merge, and any dispatch of it needs its own grant at C3. Its bounded scope was completed by review correction 1: validators, subset check, guard and tests (§2.6).
 - **OQ-5 — RULED:** umbrella O-10 is not used.
 - **OQ-6, Q2 — RULED:** R4's "original deadline" is the campaign's (§3.6).
 
@@ -631,7 +733,7 @@ grep -n "$T#N1" docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md   
 | D-2 | §1.1, §1.2 | Dated bridging note on the build-entry §3.4(d) insertions, removed at C3 | Forward reference to C3 text (OQ-2) |
 | D-3 | §3.1 | Boundary spec §3.1 placed at the end of §3 | The draft's point would re-parent §3's last two paragraphs |
 | D-4 | §3.1 | Pointer from §3.1 to the ledger's RC-5 entry | The RC-5 entry points here |
-| D-5 | §2.6 | S5 file scope: selector, evidence reader, workflow `mode` (the last approved by OQ-4) | SR-8 needed a reader that does not exist; S4 precedent |
+| D-5 | §2.6 | S5 run-tooling scope: workflow `mode` option, validators and subset check; guard; selector; evidence reader; regression tests (workflow and reader approved by OQ-4; scope completed by review correction 1) | SR-8 needed a reader that does not exist; every mode consumer must accept `s5`; S4 precedent |
 | D-6 | §2.8 | Linux crash case reworded for a non-expanding fixture | Consequence of F1 |
 | D-7 | §3.2 | Receipt field names in §2.2a | Matches the RC-4 admission check, condition 3 |
 | D-8 | §3.3 | Admission-crash consequence stated in full | S5 draft §1.4 drafting note |
@@ -676,13 +778,18 @@ grep -n "S4_CASES\s*=" scripts/qualification_boundary_verification.py; grep -n "
 grep -n "probe_seconds\|predicted" ops/c1_rail/qualification/part_a.py
 for row in boundary K3 N1 N2; do grep -rlwF "AUDIT-2026-09-25-qualification-assurance-contract-delta#$row" docs/superpowers docs/adr docs/briefs || echo "UNROUTED: $row"; done   # UNROUTED: boundary, N1, N2; K3 found in the ledger
 sed -n 17p docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md; sed -n 238p docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md
+# review round 2 (S5 run-tooling consumers)
+grep -n "" .github/workflows/qualification-s2-supervision.yml | sed -n '18,19p;24,27p;84p;98,99p;134,136p'
+grep -n "" scripts/guard_s2_runs.py | sed -n '24,28p;79p;92,96p;765p'
+grep -n "" scripts/qualification_boundary_verification.py | sed -n '80,81p;160,161p'
+sed -n 239,244p tests/test_s2_evidence_tooling_acceptance.py; sed -n 239,244p tests/test_guard_s2_runs.py
 ```
 
-Every blockquote under **Current** was inserted by a scratch script (not committed) from the worktree files, and each quoted run of lines was then compared line for line with its source (81 quoted lines, 0 mismatches). `git diff --quiet 875ecf29 -- docs/` confirmed those files identical to `875ecf29` before the note was written. The ruled and ledger phrases quoted inline (48 strings: CP-1a items from `git show baa09ffd:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`, the answers to this draft's questions from `git show 19547132:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`, the dispatch record from `git show 61a2ca41:docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md`, and the `main` ledger, S5 draft, r1 and r2) were each checked as exact substrings of their source: 0 not found. The link check (`bad 0`) and the gate run are recorded in the PR.
+Every blockquote under **Current** was inserted by a scratch script (not committed) from the worktree files, and each quoted run of lines was then compared line for line with its source (104 quoted lines, 0 mismatches). `git diff --stat 875ecf29 -- docs/ .github/ scripts/ tests/` lists only this note, which confirms the quoted files are identical to `875ecf29`: the workflow, the guard, the selector and the test file quoted in §2.6 included. The ruled and ledger phrases quoted inline (53 strings: CP-1a items from `git show baa09ffd:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`, the answers to this draft's questions from `git show 19547132:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`, the dispatch record from `git show 61a2ca41:docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md`, and the `main` ledger, S5 draft, r1, r2, S5 packet and `tests/test_s2_evidence_tooling_acceptance.py`) were each checked as exact substrings of their source: 0 not found. The link check (`bad 0`) and the gate run are recorded in the PR.
 
 ## Limitations
 
-- **Candidate head only.** Every anchor is at `875ecf29`. The release head is not known until CP-1b, and the §2 re-verification rule applies there.
+- **Candidate head only.** Every anchor is at `875ecf29`. The build-entry texts are verified and applied against a pinned `<application head>` before CP-1b. CP-1b names the resulting reviewed revision, and any anchor in a file that changed between the two is re-checked before CP-1b (§2 re-verification rule). The RC-2 texts are handled the same way at C3, against their own pinned head.
 - **The rulings are not on `main`.** The CP-1a ruling is cited at `baa09ffd`, and the ruling on this draft's questions at `19547132`, both on PR #523. If that PR changes before it merges, the citations here need re-checking.
 - **No code, test, measurement or host was run or read beyond the cited lines.** The SR/P set states requirements for code that does not exist; names other than `measurement_override` and `PartAMeasurementOverride` are not fixed until the S5 build (r2 §15).
 - **SR-1..SR-7 and P-1..P-7 are quoted verbatim from r2.** Their cross-references are r2's section numbers and the packet's pre-re-anchor lines, as §1a's lead-in says. They are not renumbered.
