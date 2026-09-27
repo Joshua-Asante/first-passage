@@ -236,7 +236,13 @@ Folded into §0.1's table (`parse_campaign_checkpoint_snapshot`, `journal_snapsh
 
 **PROPOSED** replacement of line 27:
 
-> - `compute.run_part_a_compute(contract, source, budget, *, n2_full_outcomes, measurement_override=None)` — adapts the existing `_run_part_a` loop and its request/provider/proof inputs; preserves the disjoint pilot addresses, outer panel seeds, path addresses and source-occurrence order including legitimate duplicates; returns the initial-prefix document and the final document as separate byte strings from one computation. `measurement_override` is the §1a TEST_ONLY measurement seam (SR-1, SR-2); the route never passes it (P-3).
+> - `compute.run_part_a_compute(contract, source, budget, *, n2_full_outcomes, measurement_override=None)` — adapts the existing `_run_part_a` loop and its request/provider/proof inputs; preserves the disjoint pilot addresses, outer panel seeds, path addresses and source-occurrence order including legitimate duplicates; returns the initial-prefix document and the final document as separate byte strings from one computation. `measurement_override` is the §1a TEST_ONLY measurement seam (SR-1, SR-2); the route never passes it (P-3). *[Post-acceptance correction 2026-09-27 (Codex review, finding 5): the rest of this item is added.]* The interface also exposes prefix custody before the expansion decision (S5-D1, SR-4). The executor chooses one of two forms and reports it in the §1 freeze:
+>   - a keyword-only pre-decision custody hook, which the adapter calls with the canonical initial-prefix bytes; or
+>   - a split protocol: one call returns those bytes, and a second call continues the same computation, never a replay.
+>
+>   Either form guarantees this order: the SR-3 callable's S5-D1 writer (SR-4) has written and fsynced the initial-prefix artifact before the adapter evaluates the expansion decision and before it samples any panel at index `initial_panels` or above. A custody failure, or a second call that never comes, ends the operation with no expansion and no final artifact. The initial-prefix bytes the adapter returns are the bytes it gave to custody. Any `part_a.py` line this needs is a store-free integration seam under §2, with every line reported. It changes no seed, sample, decision input or prefix byte. SR-1's "No `part_a.py` change is needed" concerns the override and is unchanged. A focused test pins the order.
+
+*[Post-acceptance correction 2026-09-27 (Codex review, finding 5): the accepted replacement of line 27 gave the adapter no writer, callback or output-directory argument, and returned both byte strings only after the whole computation. `_run_part_a` builds the initial panels (`ops/c1_rail/qualification/part_a.py:206`), takes the expansion decision internally (`:207-211`) and returns only after it (`:212-215`). So the SR-3 callable could not fsync the initial-prefix artifact before the decision, as S5-D1 (packet line 20: "*before* deciding expansion") and SR-4 ("prefix written and fsynced before the expansion decision") require. Without that, a crash during expansion would leave no durable prefix. SR-3, SR-4 and S5-D1 are unchanged; the interface now lets the route meet them.]*
 
 **Current** (`875ecf29:docs/briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md:32`):
 
@@ -320,15 +326,16 @@ The seam paragraph restates r2 §7.3 without change *[Post-acceptance correction
 >
 >   The input default stays `s4`, so a dispatch that names no mode keeps its meaning. The run-name template needs no change, because it already formats the chosen mode as `[<mode>]`.
 > - `scripts/guard_s2_runs.py`: the run-title mode pattern, the mode set that selects the cancel and redundant-dispatch lookups, the incomparability docstring and the `cases` note. An `[s5]` run then gets the same cancel and re-roll protection, and is incomparable with `[s2]`, `[s3]` and `[s4]`. `DEFAULT_MODE` stays `s4`, matching the workflow default. *[Post-acceptance correction 2026-09-27 (Codex review, finding 4): the scope also covers `dispatch_redundancy_refusal`'s two remediation messages for an `[s5]` run. The success message names the S5 acceptance scope through `--expect-scope`; today it adds `--expect-scope` only for `s2` (`scripts/guard_s2_runs.py:193`), so an S5 reader command would default to `S4_JOINT_N2`. The failure message names `-f mode=s5 -f cases='<expr>'`; today it always names `-f mode=s3 -f cases='<expr>'` (`:199`), whose file set has no Part A case. The `s2`, `s3` and `s4` messages are unchanged.]*
-> - `scripts/qualification_boundary_verification.py`: an `--s5` selector and its case set under S4's placement rule (the Part A Linux file before the S2 OOM case); acceptance scope; and the `cases` refusals, which admit `--s5` beside `--s3`/`--s4`.
+> - `scripts/qualification_boundary_verification.py`: an `--s5` selector and its case set under S4's placement rule (the Part A Linux file before the S2 OOM case); acceptance scope; and the `cases` refusals, which admit `--s5` beside `--s3`/`--s4`; and the N1-only (`--test-only`) selection, whose required-node filter and `--ignore` list use the S5 file set in place of `S4_CASES`, so N1_ONLY neither requires nor collects a Part A node. *[Post-acceptance correction 2026-09-27 (Codex review, finding 7): this last clause is added. `--test-only` collects the whole `tests/integration/qualification_boundary` directory, ignores only `S4_CASES`, and requires every registered node outside `S4_CASES` (`scripts/qualification_boundary_verification.py:145-151`, `:180-182`). Once the Part A nodes are registered (correction 6), N1_ONLY would therefore collect the Part A file without the `/v7` installation and require its nodes, and the manifest validator refuses a required node that is skipped.]*
 > - `scripts/s2_run_evidence.py`: the S5 acceptance scope, and the reader for the SR-8 export fields.
+> - `tests/ops/qualification/invariant_manifest.json`: the Part A Linux file's nodes, registered under an existing invariant ID, as S4 registered the N2 file's three nodes under `QEXEC-01`. The closed ID set (`scripts/check_qualification_invariants.py:18-19`) is unchanged. The manifest-validation tests (`tests/test_qualification_invariant_manifest.py`) change only if the registration requires it. *[Post-acceptance correction 2026-09-27 (Codex review, finding 6): the accepted list omitted this file. The selector derives each mode's required nodes only from this manifest (`scripts/qualification_boundary_verification.py:18`, `:137-141`). The evidence reader refuses a scope unless every file in its set contributes a required node (`scripts/s2_run_evidence.py:152-164`). An unregistered Part A file would therefore fail every full S5 read as "missing". The S4 packet named the same step: "registered in the manifest and in `S3_CASES`" (`docs/briefs/handoffs/2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md:96`; applied in `a0a03cc1`).]*
 > - **Focused regression tests:**
 >   - the workflow validators, in `tests/test_s2_evidence_tooling_acceptance.py` (its `test_g6_…` table), where the row `("s5", "", False)` flips deliberately to accepted and `s5` gains a subset row;
 >   - the guard, in `tests/test_guard_s2_runs.py` and `tests/test_s2_evidence_tooling_followups.py`, covering `[s5]` title parsing, cancel and redundancy refusal of an `s5` dispatch, and `s5` incomparable with each other mode, and the S5-specific remediation text of both redundancy messages *[Post-acceptance correction 2026-09-27 (Codex review, finding 4): this last clause is added]*;
->   - the selector, in `tests/test_qualification_boundary_verification.py`.
+>   - the selector, in `tests/test_qualification_boundary_verification.py`, including its N1-only `--ignore` and required-node assertions (`:78-80`, `:179-185`), which change deliberately from `S4_CASES` to the S5 file set *[Post-acceptance correction 2026-09-27 (Codex review, finding 7): this last clause is added]*;
 >   - the evidence reader, in `tests/test_s2_run_evidence.py`: its pins of the exact scope tuple and the scope-to-file-set mapping change deliberately to add the S5 scope and its file set, with the three existing scopes and `DEFAULT_SCOPE` (`S4_JOINT_N2`) unchanged; and SR-8 field-validation cases for the PART_A export fields, `probe_seconds` and `predicted_seconds` included. *[Post-acceptance correction 2026-09-27 (Codex review, finding 1): the accepted list omitted this file. Adding the S5 scope to `ACCEPTANCE_SCOPES` and `SCOPE_FILES` (`scripts/s2_run_evidence.py:72`, `:77-81`) fails its exact-equality assertions on the scope tuple (`tests/test_s2_run_evidence.py:40-41`) and on the mapping against the test's own three-scope copy (`:10-11`, `:48`).]*
 >
-> **Existing S2–S4 behaviour is preserved and pinned by these tests.** Every current `s2`/`s3`/`s4` row keeps its result: `s2` never takes `cases`, and `s3`/`s4` validation, subsets, titles, scopes and guard refusals are unchanged. The change lands through the operator's merge, and any dispatch of it needs its own grant at C3.
+> **Existing S2–S4 behaviour is preserved and pinned by these tests.** Every current `s2`/`s3`/`s4` row keeps its result: `s2` never takes `cases`, and `s3`/`s4` validation, subsets, titles, scopes and guard refusals are unchanged. `--test-only` keeps its N1_ONLY meaning: it still excludes every S2–S4 file, and now excludes the Part A file too *[Post-acceptance correction 2026-09-27 (Codex review, finding 7): this sentence is added]*. The change lands through the operator's merge, and any dispatch of it needs its own grant at C3.
 
 **Current** consumers at `875ecf29`: the `mode` input (`.github/workflows/qualification-s2-supervision.yml:24-27`):
 
@@ -677,6 +684,8 @@ grep -n "$T#N1" docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md   
 
 *[Post-acceptance correction 2026-09-27 (Codex review, finding 3): the block above prints counts and matches but asserts nothing. It never checks the S5 draft §2.3 reading (§3.10) or the S5 Behavior insertion (§1.2), and never confirms that both D-2 bridging notes were removed (§3.9). Its slices-plan greps also match the progress ledger, which is in the same file. The C3 check therefore also runs the assertions below. Each exits non-zero on failure, and the slices-plan checks read only the plan text before its "## Progress ledger and present disposition" heading.]*
 
+*[Post-acceptance correction 2026-09-27 (Codex review, finding 8): correction 3's block checked the boundary spec and the full-E1 spec only by a heading and by global tag counts. An empty §3.1 subsection, two `#K3` tags in one passage, or three `#N2` tags outside the named passages would have passed it. The block below replaces it. Each check reads one named passage, found in one of three ways: the one line holding that passage's existing anchor sentence; the subsection under its heading, up to and including the next heading; or the first paragraph after a named sentence. It then requires distinctive text of the PROPOSED passage there, with the qualified tag. An anchor that matches no line, or more than one, fails. Whitespace runs are collapsed first, so a hard-wrapped application of the boundary spec's subsection still matches.]*
+
 ```bash
 T=AUDIT-2026-09-25-qualification-assurance-contract-delta
 B=docs/superpowers/specs/2026-09-17-qualification-execution-boundary-design.md
@@ -685,15 +694,68 @@ P=docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md
 D=docs/notes/2026-09-26-s5-decision-draft.md
 fail() { echo "C3 owner check FAILED: $*" >&2; exit 1; }
 plan() { sed '/^## Progress ledger and present disposition$/,$d' "$P"; }   # the plan without its ledger
-grep -qF "### 3.1 Boundary set ($T#boundary)" "$B" || fail "boundary spec §3.1 (§3.1)"
-[ "$(grep -cF "$T#K3" "$S")" -ge 2 ] || fail "full-E1 spec §2.2a and §2.4, K3 (§3.2, §3.3)"
-[ "$(grep -cF "$T#N1" "$S")" -ge 1 ] || fail "full-E1 spec §2.5, N1 (§3.5)"
-[ "$(grep -cF "$T#N2" "$S")" -ge 3 ] || fail "full-E1 spec §2.4 last, §2.6 and §5, N2 (§3.4, §3.6, §3.7)"
-plan | grep -F "3. **Reservations cover the rest of the route.**" | grep -qF "$T#N1" || fail "contract decision 3 (§3.8)"
-plan | grep -F "6. **Signing recovery is durable.**" | grep -qF "bounded same-sample re-execution is not a draw ($T#N2)" || fail "contract decision 6 (§1.1)"
-plan | grep -F "**Behavior:** Worker and G5 independently derive" | grep -qF "S5 builds this terminal subset; the §2.6 re-execution is a later slice after S5 and before S8" || fail "S5 Behavior (§1.2)"
+one() { awk -v a="$1" 'index($0,a){n++;l=$0} END{if(n==1)print l}'; }     # the one line holding $1, else nothing
+sect() { awk -v h="$1" '!on&&index($0,h)==1{on=1;print;next} on{print;if(/^#/)exit}'; }   # from a line starting $1 to the next heading
+after() { awk -v a="$1" 'f&&NF{print;exit} index($0,a){f=1}'; }            # the first non-blank line after the line holding $1
+need() {   # need LABEL PASSAGE TEXT...: every TEXT occurs in PASSAGE
+  w=$1; t=$(printf '%s' "$2" | tr -s ' \n' '  '); shift 2
+  [ -n "$t" ] || fail "$w: anchor not found, or not unique"
+  for x in "$@"; do case $t in *"$x"*) ;; *) fail "$w: missing \"$x\"" ;; esac; done
+}
+need "boundary spec §3.1 (§3.1)" "$(sect "### 3.1 Boundary set ($T#boundary)" < "$B")" \
+  '(B-1) alter installed execution, adjudication or worker code for an admitted release' \
+  '(B-5) present fixture or TEST_ONLY output as production evidence' \
+  '(OF-1) no account or environment in which an agent session runs' \
+  '(OF-7) before public reveal, the seed salt is readable only by the trusted administrator' \
+  'Until a row'"'"'s facts are verified and recorded, the row is reported as enforcement not established' \
+  'the execution-slices ledger'"'"'s RC-5 assignment entry (2026-09-27).' \
+  '## 4. Configuration, release and authority binding'
+grep -B2 -F "### 3.1 Boundary set ($T#boundary)" "$B" | grep -qF 'adds infrastructure not needed for the first Linux boundary test.' \
+  || fail "boundary spec §3.1 placement at the end of §3, D-3 (§3.1)"
+need "full-E1 spec §2.2a, K3 (§3.2)" "$(one 'FULL_E1 defines versioned authenticated plan-chunk retrieval' < "$S")" \
+  'Clients verify ordered offsets, total length and the reassembled SHA256. For production-class campaigns (`tb-s2-rng-v3`), the plan object served to the client is a client view' \
+  '(`client_view_sha256`, `client_view_byte_length`)' \
+  "no chunk served to the client carries a seed value or the salt ($T#K3)."
+need "full-E1 spec §2.4 first paragraph, K3 (§3.3)" "$(one 'Reuse `runner._run_stage`, provider/replay/source admission' < "$S")" \
+  'Production-class campaigns use the salted recipe `tb-s2-rng-v3`' \
+  "with the service-generated attempt salt added ($T#K3)." \
+  'a second ADMISSION reservation is refused, and ADMISSION is never re-execution-eligible' \
+  'TEST_ONLY synthetic campaigns may keep `v2`.'
+need "full-E1 spec §2.4 last paragraph, N2 (§3.4)" "$(one 'Part A remains one dispatched compute operation using the existing append loop.' < "$S")" \
+  "makes that operation IN_DOUBT. §2.6's bounded re-execution reruns the whole checkpoint from its first panel under the same plan; it never resumes panels ($T#N2)."
+need "full-E1 spec §2.5, N1 (§3.5)" "$(one 'The profile defines phase reservation ceilings including verification/finalization' < "$S")" \
+  'Deadline reached means no new authority even if computation already passed. A stage assessment committed before exhaustion remains evidence and is never revoked.' \
+  'A committed statistical FAIL is never recast as incomplete.' \
+  "recording it grants no authority ($T#N1)."
+need "full-E1 spec §2.6 START_INTENT row (§3.6)" "$(one '| START_INTENT or RUNNING, no complete durable capture |' < "$S")" \
+  '| Persist IN_DOUBT before cleanup; stop owned worker. Never relaunch, except one bounded same-sample re-execution under the rule below. |'
+need "full-E1 spec §2.6 VOID row (§3.6)" "$(one '| VOID, terminal abort, IN_DOUBT (except a work that is re-execution-eligible under the bounded same-sample rule below) or BUDGET_UNCERTAIN |' < "$S")" \
+  '| Historical inspection and owned cleanup only; no continuation or sealing |'
+need "full-E1 spec §2.6 paragraph, N2 (§3.6)" "$(after 'a separately authorized new campaign is outside retry semantics.' < "$S")" \
+  "**Bounded same-sample re-execution ($T#N2).** A compute checkpoint (N1, N2 or PART_A) left IN_DOUBT by process interruption on the same boot" \
+  'predeclared comparison schema, which also lists the excluded runtime-observation fields' \
+  'Until that slice is accepted, no release performs a re-execution and every IN_DOUBT stays terminal.'
+need "full-E1 spec §5, N2 (§3.7)" "$(one '- Turn interrupted execution into statistical FAIL' < "$S")" \
+  "redraw under the same attempt (a §2.6 bounded same-sample re-execution is not a redraw), reset an allowance, or allocate a fresh attempt automatically ($T#N2)."
+need "contract decision 3, N1 (§3.8)" "$(plan | one '3. **Reservations cover the rest of the route.**')" \
+  'not independent full-size allowances per process. In this design the cumulative bound is per work and kernel-enforced' \
+  "settled charges plus open reservations never exceed the frozen cap ($T#N1)." \
+  'The approved rule'"'"'s scope is PART_A only, TEST_ONLY' \
+  'N2 compute phase takes 360 s CPU / 900 s wall, the M13 values extended by CP-1a decision (3) to the `/v7` TEST_ONLY diagnostic profile only.'
+need "contract decision 6, N2 (§1.1)" "$(plan | one '6. **Signing recovery is durable.**')" \
+  "Missing capture never licenses another draw; a spec §2.6 bounded same-sample re-execution is not a draw ($T#N2); missing deterministic G5 validation"
+need "S5 Behavior (§1.2)" "$(plan | one '**Behavior:** Worker and G5 independently derive')" \
+  "no panel resume, replacement pilot or checkpoint rerun. S5 builds this terminal subset; the §2.6 re-execution is a later slice after S5 and before S8, and S5-D1's retained initial prefix is the retained complete record that full-E1 spec §2.6's comparison schema compares."
 [ "$(plan | grep -cF "This note is removed when the §2.6 text lands at C3.")" -eq 0 ] || fail "a D-2 bridging note remains (§3.9)"
-grep -A2 -F "**Falsifier:** revisit the uniform model" "$D" | grep -qF "**Reading (operator, CP-1a decision (4), 2026-09-27: the three-way split).**" || fail "S5 draft §2.3 reading (§3.10)"
+need "S5 draft §2.3 reading (§3.10)" "$(sect '**Falsifier:** revisit the uniform model' < "$D")" \
+  "revisit the uniform model if PART_A's maximum-expansion CPU cannot be bounded ahead of time" \
+  '**Reading (operator, CP-1a decision (4), 2026-09-27: the three-way split).**' \
+  '(i) **A Σ failure from a valid record is the D2 ACCOUNTING-DESIGN FALSIFIER stop.**' \
+  '(ii) **Missing permission, or a run not executed, never engages the falsifier.**' \
+  '(iii) **An invalid measurement is investigated**' \
+  '(iv) The accounting-design question also returns if a diagnosis traces an invalid run to the workload itself.' \
+  "This reading supersedes r2 §10.3's release-point reading." \
+  '### 2.4 Exhausted campaign with a valid stage result'
 echo "C3 direct-owner checks passed"
 ```
 
@@ -821,7 +883,7 @@ Every blockquote under **Current** was inserted by a scratch script (not committ
 
 ## Post-acceptance corrections (Codex review, 2026-09-27)
 
-The operator accepted this note's full text at `011ce9e4`. A Codex review of PR #525 then found four defects, each verified against the code at `origin/main` `08196100`. The corrections are marked inline where they occur. No other accepted text is changed.
+The operator accepted this note's full text at `011ce9e4`. A Codex review of PR #525 then found four defects (corrections 1–4, at `9b161f29`). A second round on `9b161f29` found four more (corrections 5–8). Each was verified against the code at `origin/main` `08196100`. The corrections are marked inline where they occur. No other accepted text is changed.
 
 The operator's acceptance at `011ce9e4` covers the text before these corrections; these corrections await the operator's acceptance.
 
@@ -831,5 +893,9 @@ The operator's acceptance at `011ce9e4` covers the text before these corrections
 | 2 | §2.5, packet §1a "The seam"; and the line after "Required by" | Drops the gate's third predicate, the contract's `evidence_class = TEST_ONLY`; the remaining two predicates imply it | `ValidatedFrozenContract` has no `evidence_class` field (`ops/c1_rail/qualification/contract.py:196-213`). The validator reads `authority.evidence_class` only while issuing, and requires `TEST_ONLY` exactly when the trust domain's `authority_class` is `TEST_ONLY` (`:848-853`). Every issued contract carries its validated domain (`:906-907`, `:940`) |
 | 3 | §3.11, RC-2 evidence at C3 | Adds explicit assertions for each named owner, the S5 Behavior insertion, the S5 draft §2.3 reading and zero remaining D-2 bridging notes. The slices-plan checks exclude the ledger in the same file | The accepted block has no check on `docs/notes/2026-09-26-s5-decision-draft.md`, no check on the S5 Behavior text, and none on the bridging notes. Its slices-plan greps also match ledger entries: `#K3` already appears there at `:897`. The added block fails at the current tree and on the #527 plan (bridging notes remain). It passes on a simulated C3-applied tree |
 | 4 | §2.6, `scripts/guard_s2_runs.py` bullet and the guard test bullet (packet run-tooling scope) | Adds `dispatch_redundancy_refusal`'s two remediation messages for an `[s5]` run, and their tests | `scripts/guard_s2_runs.py:193` adds `--expect-scope` only for `s2`, so an `[s5]` success message would print a reader command defaulting to `S4_JOINT_N2`. `:199` always prints `-f mode=s3 -f cases='<expr>'`, and the s3 file set has no Part A case |
+| 5 | §2.5, the replacement of packet line 27 (`run_part_a_compute`) | Requires pre-decision prefix custody: a keyword-only custody hook or a split two-call protocol (the executor chooses and reports). The initial-prefix artifact is written and fsynced by the SR-4 writer before the expansion decision is evaluated and before any panel at index `initial_panels` or above is sampled. A custody failure ends the operation with no expansion. Any `part_a.py` line is a reported store-free seam. SR-3, SR-4 and S5-D1 are unchanged | `_run_part_a` builds the initial panels (`ops/c1_rail/qualification/part_a.py:206`), decides expansion internally (`:207-211`) and returns only after it (`:212-215`). The accepted interface had no hook, writer or directory argument, so S5-D1 (packet line 20) and SR-4 could not be met |
+| 6 | §2.6, S5 run tooling (packet run-tooling scope) | Adds `tests/ops/qualification/invariant_manifest.json`: the Part A Linux nodes are registered under an existing invariant ID, and the ID set is unchanged. The manifest-validation tests change only if needed | The selector derives required nodes only from the manifest (`scripts/qualification_boundary_verification.py:18`, `:137-141`). The reader refuses a scope in which any file contributes no required node (`scripts/s2_run_evidence.py:152-164`). The ID set is closed (`scripts/check_qualification_invariants.py:18-19`). S4 precedent: its packet `:96`; `a0a03cc1` (QEXEC-01) |
+| 7 | §2.6, the selector bullet, the selector-test bullet and the S2–S4 preservation paragraph (packet run-tooling scope) | The N1-only (`--test-only`) required-node filter and `--ignore` list use the S5 file set in place of `S4_CASES`, and their regression assertions change with them. N1_ONLY keeps its meaning | `--test-only` selects the whole boundary directory, ignores only `S4_CASES` and requires every registered node outside it (`scripts/qualification_boundary_verification.py:145-151`, `:180-182`). Its assertions pin `S4_CASES` (`tests/test_qualification_boundary_verification.py:78-80`, `:179-185`) |
+| 8 | §3.11, RC-2 evidence at C3 | Replaces correction 3's block. Each named passage is read on its own (anchor line, subsection or following paragraph), and its distinctive PROPOSED text, qualified tag included, is required there. Heading-only and global tag-count checks are gone | Correction 3's block would pass an empty §3.1 subsection, or tags placed outside the named passages. The new block fails on the current tree (`boundary spec §3.1 (§3.1): anchor not found, or not unique`). It also fails on #527's plan, where the D-2 notes remain. It passes on a simulated C3-applied tree built from this note's PROPOSED texts, with §3.1 hard-wrapped and also unwrapped. It fails on seven mutants: an empty §3.1; §2.2a text absent with the K3 tag duplicated in §2.4; the §2.6 paragraph absent with three N2 tags elsewhere; the §2.4 N2 sentence detached; a D-2 note left; the §2.3 item (iii) altered; and contract decision 3 carrying the tag only |
 
-Corrections 1, 2 and 4 are in build-entry text (§2.5, §2.6) that PR #527 applied to the S5 packet. The same corrected wording, with the same markers, is applied there. Correction 3 is C3 text, and #527 did not apply it.
+Corrections 1, 2 and 4 are in build-entry text (§2.5, §2.6) that PR #527 applied to the S5 packet. The same corrected wording, with the same markers, is applied there. Corrections 5, 6 and 7 are also build-entry text in the packet that #527 applied; #527 is not changed by the commit that adds them, and mirroring them there is owed. Corrections 3 and 8 are C3 text, and #527 did not apply them.
