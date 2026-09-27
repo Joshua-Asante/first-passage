@@ -585,4 +585,9 @@ Dispositions:
 
 **Ready for the operator now: CP-2.** The facts F-1 to F-5 and F-6 (§1); each read's target identity (§2.4); the F-3 decision on X-1's order; and the optional stricter Stage 0 reading. Once F-1 and F-3 are recorded, this week's required preservation trade (due 2026-10-02) can also serve as the R-1 target in its own session. No additional trade is authorized.
 
+**Post-publication corrections (2026-09-27, from the cross-handoff critic).** They govern over the packet text above.
+- **X-07, entitlement for T07.** §A11.3's words are "after entitlement and target confirmation" for "the authorized reads", with no restriction to REST. The session-plan row this packet relied on carried a coordinator parenthetical, "(for the REST reads)", which is not in the ruling; it has been corrected. **New CP-2 item F-3a:** does the entitlement condition apply to the T07 report exports, or only to the REST reads? **Until it is answered, T07 R1–R3 are gated on F-1 as well.** This supersedes §2 intro's "**not** on REST entitlement", §2.5's matching condition, and §2.4.
+- **X-13, one scope question for the $700 ceiling.** F-4 becomes the single consolidated question for the rail GO ADR's owner: which spend classes count against the $700 ceiling? That covers drill commissions and slippage (here), production-host spend (H7) and feed deposits and fees (H8). Asked once at CP-2 and cited by all three.
+- **X-08, verification.** The coordinator's acceptance commit (`74788a0`) ran the full gate suite in a clean worktree at that commit, with no other drafts present: `status: completed`, exit 0, `source_stable: true`. The same run also covered `check_handoff_authority.py --all`. The fix-round rows H2-SRC-5 and H2-R4 are superseded by the acceptance edit that pinned the halt/resume anchors to `521d8f2`.
+
 **Not granted:** the packet's own list (§7) stands. Acceptance authorizes no read, row, trade, vendor contact or spend.

@@ -42,7 +42,7 @@ If #519 merges before dispatch, the same paths on `main` are used, once they are
 
 | Card | Workstream | State | Unlocks |
 |---|---|---|---|
-| H1 | S5 and resource limits | Step (a) READY; step (b) READY ON CP-1a | CP-1a; then RC-3a for CP-1b |
+| H1 | S5 and resource limits | Step (a) **RETURNED and ACCEPTED 2026-09-27** ([r2 CP-1a packet](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md)); step (b) READY ON CP-1a; step (c) READY (drafting) | CP-1a; then RC-3a for CP-1b |
 | H2 | Broker route commissioning | **RETURNED and ACCEPTED 2026-09-27**: [packet](../../notes/2026-09-27-route-commissioning-session-packet.md). Owed before any CP-3: the §3.7 request-body step (primary checkout) and the M2 dispatch (X-2) | CP-2 now; then CP-3 per row |
 | H3 | ORB lifecycle and fence: disposition, owner text for Ruling 6, H4 card | READY | H4 |
 | H4 | Fence classification: synthetic repair plus ORB L1 replay correction | READY ON coordinator acceptance of H3's owner text and card (authorized by Ruling 6) | Synthetic half of the fence obligation; the replay correction before freeze; CP-5 input |
@@ -129,8 +129,15 @@ Each of these returns at once; the last is the D2 falsifier.
 
 **Decision unlocked:** (a) → **CP-1a**. (b) → RC-3a, and with the other build-entry conditions, **CP-1b** (hold release for the build).
 
+**Step (c), added at the acceptance of step (a) (2026-09-27; owner assigned for the cross-handoff critic's finding X-02):** draft, for the operator's acceptance, the S5 owner text that build entry and C3 need:
+- the §3.4(d) text (S5 draft §4 and the consistency correction), a build-entry condition;
+- the RC-6 re-anchor of the S5 packet at the release head, carrying #519's findings, the three `/v7` pitfalls and the SR/P set approved at CP-1a (with the SR-7 exception only if approved);
+- the RC-2 owner-text set (boundary spec §3.1; full-E1 spec §2.2a, §2.4, §2.5, §2.6 and §5; slices plan contract decisions 3 and 6 and the S5 text), a C3 condition.
+
+Drafting may start now. Owner documents are amended only after the operator accepts the text. The RC-6 re-anchor waits for CP-1a's SR/P decision.
+
 **Grants at dispatch:**
-- (a) coordinator: `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `make check` clean.
+- (a) and (c) coordinator: `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `make check` clean.
 - (b) worker: `repository.read`, `tests.run`, `worktree.write`, `branch.push`, `pr.open`, plus `ci.dispatch` only for the CP-1a-approved workflow. Acceptance: the approved harness's validity checks and `tests/ops/qualification/test_part_a.py` passing unchanged.
 
 ## H2 — Route commissioning session packet (operator-run, automation disarmed)
