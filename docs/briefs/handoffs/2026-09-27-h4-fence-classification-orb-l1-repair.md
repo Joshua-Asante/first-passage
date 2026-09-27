@@ -234,7 +234,14 @@ Run through the launcher of your own checkout, and report the command, interpret
 
 ## 10. Dispatch record
 
-*Blank until dispatch:* dispatch revision; executor; coordinator acceptance of H3 owner text (commit); Q3 answer.
+**Dispatched 2026-09-27 on the operator's instruction "dispatch H4 and H5b".**
+- **Dispatch revision:** the commit that adds this record, on `claude/clever-wozniak-bx0u95` (PR #520). Read this card there with `git show <revision>:<path>`.
+- **Executor:** a Claude Code worker subagent in its own git worktree.
+- **Branch:** `claude/h4-fence-classification`, cut from `origin/main` (`5ad04cf`). The owner text it implements is on PR #520 and is read at the dispatch revision; the PR carries code and tests only.
+- **Coordinator acceptance of H3's owner text:** `54d6710`.
+- **Q3 answer:** the default. Only ORB's base entry is exempt; RC-9's one-bar cancel stays for every other resting entry or add.
+- **Linux qualification evidence:** the PR's own path-filtered checks, including "Qualification execution boundary", run automatically. Any further S2/S4 workflow dispatch is the coordinator's.
+- **Pre-dispatch read:** `check_handoff_authority.py --all` clean at `54d6710` (2 cards, 0 violations). §0 anchor re-verification is the worker's first act.
 
 **Not granted:**
 - freeze, edition file production, replay or E1 dispatch;

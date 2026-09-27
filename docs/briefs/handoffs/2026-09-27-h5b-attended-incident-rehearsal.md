@@ -237,11 +237,14 @@ Run through your own checkout's launcher. Report the command, interpreter, revis
 
 ## 10. Dispatch record
 
-*Blank until dispatch:*
-- the dispatch revision and executor;
-- the coordinator's acceptance of step (a) (commit);
-- the §7 known-path choice, (A) or (B); if (B), the variance from the parent H5 stop condition, stated;
-- the §3 real-delivery leg: "OWED" (default) or "operator-run", with the operator's approval; never an agent send.
+**Dispatched 2026-09-27 on the operator's instruction "dispatch H4 and H5b".**
+- **Dispatch revision:** the commit that adds this record, on `claude/clever-wozniak-bx0u95` (PR #520). Read this card there with `git show <revision>:<path>`.
+- **Executor:** a Claude Code worker subagent in its own git worktree.
+- **Branch:** `claude/h5b-incident-rehearsal`, cut from `origin/main` (`5ad04cf`). The halt/resume amendment it rehearses is on PR #520 and is read at the dispatch revision.
+- **Coordinator acceptance of step (a):** `54d6710`.
+- **§7 known path: (B).** S1 (`test_lost_entry_response_terminal_does_not_restart_automation_in_session`) is pinned `pytest.mark.xfail(strict=True)`, with a reason naming CC-3 and §A11.2, and the other cases continue. **Variance from the parent H5 stop condition** ("Stop and return; it is a defect"): the defect is already established by code reading; the S1 XFAIL is not acceptance of §A11.2 behavior; (b)'s acceptance is partial; CC-3 stays an open defect (TB-I3/T09).
+- **§3 real-delivery leg: OWED** (default) to T13 / Phase 5 WP2. No operator-run leg was requested, and there is never an agent send.
+- **Pre-dispatch read:** `check_handoff_authority.py --all` clean at `54d6710`. §0 anchor re-verification is the worker's first act.
 
 **Not granted:**
 - a rail deploy or arm, account traffic, an order or a session;
