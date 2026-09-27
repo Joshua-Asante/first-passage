@@ -830,7 +830,21 @@ def _expected_keys(arm_order, mode, timed):
     return [(arm, r) for arm in arm_order for r in [*range(1, timed + 1), 0]]
 
 
+# r2 §12.9 (3): at Stage 1b every input to Ĉ, Ŵ, P̂ or a warm spread is judged by the
+# INCOMPLETE_EVIDENCE gate (exit 3), not as a harness field defect (H-FIELDS, exit 4).
+CEILING_INPUT_FIELDS = frozenset({'cpu.start', 'cpu.admission', 'cpu.setup_excluded', 'cpu.verify', 'cpu.part_a',
+                                  'cpu.serialize', 'cpu.workload', 'cpu.process_total', 'wall.outer',
+                                  'wall.setup_excluded', 'wall.workload', 'unit_cpu_s', 'predicted_seconds'})
+
+
 def _required_fields_missing(rep, stage):
+    missing = _all_required_fields_missing(rep)
+    if stage == '1b':
+        missing = [name for name in missing if name not in CEILING_INPUT_FIELDS]
+    return missing
+
+
+def _all_required_fields_missing(rep):
     missing = []
     for key in ('start', 'admission', 'setup_excluded', 'verify', 'part_a', 'serialize', 'workload', 'process_total'):
         if rep['cpu'].get(key) is None:
@@ -945,18 +959,26 @@ def _screens(estimates):
 # H-COUNTS: an instrumented repeat's call counts differ from the r2 §4 workload, or
 # are absent: the measured workload is not the specified one (a harness defect).
 HARNESS_CODES = frozenset({'H-FIELDS', 'H-SHAPE', 'H-COUNTS'})
-BLOCKING_CODES = frozenset({'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'I-8'}) | HARNESS_CODES
+# r2 §12.9 (2): LEGACY marks a Windows bundle from a launcher older than this
+# revision (no timeout_s or no executed_identity): LEGACY_UNACCEPTED, exit 4.
+# r2 §12.9 (3): INCOMPLETE marks a Stage 1b measure record missing a required
+# ceiling input on either arm: INCOMPLETE_EVIDENCE, validity_ok false, exit 3.
+BLOCKING_CODES = frozenset({'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'I-8', 'LEGACY', 'INCOMPLETE'}) | HARNESS_CODES
 
 
 def _classify(reasons, *, rule_applicable, memory_feasibility, screen):
     codes = {code for code, _ in reasons}
-    no_rerun = codes & ({'I-4', 'I-5', 'I-7', 'I-8'} | HARNESS_CODES)
-    rerun = codes & {'I-1', 'I-2', 'I-3', 'I-6'}
+    no_rerun = codes & ({'I-4', 'I-5', 'I-7', 'I-8', 'LEGACY'} | HARNESS_CODES)
+    rerun = codes & {'I-1', 'I-2', 'I-3', 'I-6', 'INCOMPLETE'}
     invalid = codes & ({'I-2', 'I-4', 'I-5', 'I-6', 'I-7'} | HARNESS_CODES)
     if 'I-8' in codes:
         stop = 'BLOCKED'
+    elif 'LEGACY' in codes:
+        stop = 'LEGACY_UNACCEPTED'          # r2 §12.9 (2): never current acceptance
     elif invalid:
         stop = 'INVALID_MEASUREMENT'
+    elif 'INCOMPLETE' in codes:
+        stop = 'INCOMPLETE_EVIDENCE'        # r2 §12.9 (3); an I-3 alongside keeps its own reason
     elif codes & {'I-1', 'I-3'}:
         stop = 'MEMORY_EVIDENCE_MISSING'   # r2 §16 C8 relabel of I-1 and I-3
     elif rule_applicable and screen.get('sigma_infeasible'):
@@ -966,7 +988,16 @@ def _classify(reasons, *, rule_applicable, memory_feasibility, screen):
     else:
         stop = 'none'
     exit_code = EXIT_INVALID if no_rerun else EXIT_RERUN if rerun else EXIT_VALID
-    return stop, not invalid, exit_code
+    return stop, not (invalid or codes & {'LEGACY', 'INCOMPLETE'}), exit_code
+
+
+def _rerun_eligible(stage, mode, exit_code, attempts):
+    """r2 §12.9 (3): for a Stage 1b measure record, true only for an exit-3 failure
+    when every failing job is on run attempt 1. It shares the single `--failed`
+    re-run of r2 §12.7 and grants no additional attempt. None outside 1b measure."""
+    if stage != '1b' or mode != 'measure':
+        return None
+    return exit_code == EXIT_RERUN and bool(attempts) and all(_int_or_none(a) == 1 for a in attempts)
 
 
 def _job_record(path, args, current=None):
@@ -1016,7 +1047,14 @@ def _job_record(path, args, current=None):
     if mode == 'measure' and timed != DEFAULT_TIMED_REPEATS:
         reasons.append(('H-SHAPE', '%s timed repeats per arm; the fixed shape is %d (r2 §6.2, §12.2)' % (
             timed, DEFAULT_TIMED_REPEATS)))
-    if launcher_bundle is not None and launcher_bundle.get('timeout_s') != REPEAT_TIMEOUT_S:
+    legacy = launcher_bundle is not None and (
+        'timeout_s' not in launcher_bundle or not launcher_bundle.get('executed_identity'))
+    if legacy:
+        reasons.append(('LEGACY', 'bundle from a launcher older than this harness revision (no %s): retained '
+                                  'unmodified, never current acceptance (r2 §12.9 (2)); Stage 1a needs a bundle '
+                                  'from the current launcher' % ' or '.join(
+                                      k for k in ('timeout_s', 'executed_identity') if not launcher_bundle.get(k))))
+    elif launcher_bundle is not None and launcher_bundle.get('timeout_s') != REPEAT_TIMEOUT_S:
         reasons.append(('H-SHAPE', 'launcher per-repeat timeout %s s; the bound is %d s' % (
             launcher_bundle.get('timeout_s'), REPEAT_TIMEOUT_S)))
     if launcher_bundle is not None and list(arm_order) != list(ARMS):
@@ -1030,7 +1068,7 @@ def _job_record(path, args, current=None):
                 args.job, list(arm_order), want_order)))
     elif stage == '1b' and mode == 'measure':
         reasons.append(('H-SHAPE', 'job %r is not a or b (r2 §6.2 two-job alternation)' % args.job))
-    if launcher_bundle is not None:
+    if launcher_bundle is not None and not legacy:
         # r2 §5.1, §12.2: a Windows summary describes the code the launcher ran.
         for mismatch in _identity_mismatches(launcher_bundle.get('executed_identity'), current):
             reasons.append(('I-7', 'Windows bundle: ' + mismatch))
@@ -1184,6 +1222,7 @@ def _job_record(path, args, current=None):
                        and memory_feasibility in ('VERIFIED', 'FAILED'))
     stop, validity_ok, exit_code = _classify(reasons, rule_applicable=rule_applicable,
                                              memory_feasibility=memory_feasibility, screen=screen)
+    rerun_eligible = _rerun_eligible(stage, mode, exit_code, [args.run_attempt])
     env = next((r['environment'] for r in repeats if r.get('environment')), {}) or {}
     osr = _os_release()
     executable = env.get('executable')
@@ -1231,7 +1270,7 @@ def _job_record(path, args, current=None):
         'verdict': {'validity_ok': validity_ok, 'memory_feasibility': memory_feasibility,
                     'memory_scope': 'PA-3a payload unit (r2 §16 C6)', 'rule_applicable': rule_applicable,
                     'ceiling_inputs_complete': not ceiling_missing, 'stop_class': stop,
-                    'sigma_screen': screen, 'pa3a_screen': pa3,
+                    'rerun_eligible': rerun_eligible, 'sigma_screen': screen, 'pa3a_screen': pa3,
                     'reasons': ['%s: %s' % pair for pair in reasons], 'exit_code': exit_code},
     }
 
@@ -1481,6 +1520,11 @@ def _combined(records, locations=None):
                        and memory_feasibility in ('VERIFIED', 'FAILED'))
     stop, validity_ok, exit_code = _classify(reasons, rule_applicable=rule_applicable,
                                              memory_feasibility=memory_feasibility, screen=screen)
+    # r2 §12.9 (3): the failing jobs are those whose own record did not exit 0; if the
+    # failure shows only in the combination, both jobs count as failing.
+    failing = [r for r in records if (r.get('verdict') or {}).get('exit_code') != EXIT_VALID] or records
+    rerun_eligible = _rerun_eligible(stage, mode, exit_code,
+                                     [(r.get('runtime') or {}).get('run_attempt') for r in failing])
     return {
         'schema': SCHEMA, 'scope': 'combined', 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
         'recorded_utc': _now(), 'stage': stage, 'mode': mode,
@@ -1491,7 +1535,7 @@ def _combined(records, locations=None):
         'verdict': {'validity_ok': validity_ok, 'memory_feasibility': memory_feasibility,
                     'memory_scope': 'PA-3a payload unit (r2 §16 C6)', 'rule_applicable': rule_applicable,
                     'ceiling_inputs_complete': not ceiling_missing, 'stop_class': stop,
-                    'sigma_screen': screen, 'pa3a_screen': pa3,
+                    'rerun_eligible': rerun_eligible, 'sigma_screen': screen, 'pa3a_screen': pa3,
                     'reasons': ['%s: %s' % pair for pair in reasons], 'exit_code': exit_code},
     }
 

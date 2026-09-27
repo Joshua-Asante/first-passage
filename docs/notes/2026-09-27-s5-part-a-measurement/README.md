@@ -6,6 +6,7 @@
 - **Ruling:** the CP-1a ruling at commit `baa09ffd`, the ledger entry "Operator ruling — CP-1a decisions (1)–(6) adopted as recommended, hold kept, 2026-09-27". Read it with `git show baa09ffd:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`; it is on [#523](https://github.com/Joshua-Asante/first-passage/pull/523) and not yet on `main`. Decision (2) approves the bounded measurement dispatch of r2 §12. Decisions (1), (3), (4) and (6) set the parameters, the N2 value, the D2 split and the seam that this harness's stop screens use.
 - **Dispatch record:** commit `61a2ca41`, `docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md`, "H1 steps (b) and (c): dispatch record (frozen 2026-09-27)". Where it differs from the inline brief, it governs.
 - **Packet:** [r2](../2026-09-27-s5-part-a-measurement-proposal-r2.md) at `origin/main` `875ecf29`, including its §16 reconciliation. Where §16 or a dated correction amends earlier r2 text, the amendment governs.
+- **Operator ruling 2026-09-27 on the returned harness:** r2 §12.9 and the dispatch record's "Amendment 2026-09-27: step (b) re-opened narrowly by operator ruling", both at commit `79985508` on [#523](https://github.com/Joshua-Asante/first-passage/pull/523). Read them with `git show 79985508:<path>`. Where they differ from anything else here, they govern.
 
 ## Files
 
@@ -14,12 +15,19 @@
 | `measure_part_a_max.py.txt` | The harness (r2 §6.3). The `.py.txt` suffix keeps it out of the import-boundary gate; `python <path>` runs it |
 | `README.md` | This note |
 | `../../../.github/workflows/qualification-s5-part-a-measurement.yml` | The dispatch-only Stage 1b workflow (r2 §12.3) |
+| `../../../tests/test_s5_part_a_measurement_harness.py` | The regression module the amendment allows. It loads the harness from its `.py.txt` path and uses synthetic inputs only |
 
 r2 names no other support file. The accounting probe is the inline script r2 §12.3 step 6 prescribes, embedded in the workflow. The fixture is the existing `tests/ops/qualification/composition_fixture.py`, which the harness imports unchanged.
 
-## Preliminary checks only
+## Acceptance checks (amended 2026-09-27)
 
-Step (b)'s acceptance checks are **PRELIMINARY: they establish basic tooling behavior only**. They are the gate suite (`check`), the workflow tests, `py_compile`, `--help`, and a synthetic `--summarize` check on hand-written rows (not a measurement).
+The amendment replaces the earlier PRELIMINARY checks with these:
+- the committed regression module;
+- subprocess tests of the exit semantics through the real `--summarize` and combine entry points;
+- the workflow check, which shows record, cleanup and upload still run after an exit 3, and actionlint;
+- launcher records on the final head for the module (serial and `--workers 2`) and for `check`.
+
+These establish tooling behavior only. They are not a measurement.
 
 **Measurement readiness is established later, not by these checks:**
 - Windows **Stage 1a** on the operator's host (r2 §12.2);
@@ -59,7 +67,13 @@ Carrying the harness in the image would need a change under `ops/` (the closure 
   - Combining also refuses in two more cases. The first is when the combining checkout is not the code that measured: its HEAD, harness SHA-256 or recorded source SHA-256s differ from what both records carry. Run the combine from the recorded revision. The second is when a job's artifact lacks `cleanup-receipt.json` for the same run, attempt and job with `cleanup_exit` 0, which the workflow's owned-cleanup step writes (r2 §12.3 step 9).
   - For a Windows bundle it compares the identity `--launcher` recorded after its last repeat (`executed_identity`: commit, harness SHA-256, source SHA-256s and `observe_runtime`) with the identity at summarize time. A missing identity, any mismatch, or an execution-time tracked tree that was not clean (`tree_clean_tracked` false or absent; r2 §5.1 "measured commit, clean tree") is I-7.
   - A record whose shape is not the fixed one (both arms; 5 timed repeats per arm in measure mode; r2 §6.2, §12.2) is `H-SHAPE`. `--launcher` still runs another shape for debugging, but it says so, and the bundle can never yield an acceptance record.
-  - `rule_applicable` also needs Ĉ, Ŵ and P̂ from every valid timed forced repeat (r2 §6.2, §9). If one is missing, for example when the unit's exit timestamp is unset, the record carries an `INCOMPLETE` reason and `ceiling_inputs_complete = false`, and the rule is not applicable.
+  - **Incomplete Stage 1b evidence (r2 §12.9 (3)).** A Stage 1b measure record, per job or combined, is incomplete when a required ceiling input is missing on either arm. The required inputs are any input to Ĉ, Ŵ or P̂, or to either arm's warm spread, on a completed timed repeat, for example an unset exit timestamp or `CPUUsageNSec`. The verdict is then:
+    - `stop_class = INCOMPLETE_EVIDENCE`, with an `INCOMPLETE` reason naming each missing input;
+    - `validity_ok = false`, `rule_applicable = false`, exit 3.
+
+    `verdict.rerun_eligible` is true only when every failing job is on run attempt 1. The failure shares the single `--failed` re-run of §12.7 and grants no additional attempt, so on attempt 2 it stops the stage. An I-3 alongside keeps its own reason.
+  - **Legacy bundles (r2 §12.9 (2)).** A Windows bundle without `timeout_s` or without `executed_identity` comes from a launcher older than this revision. Its verdict is `stop_class = LEGACY_UNACCEPTED`, `validity_ok = false`, `rule_applicable = false`, exit 4, with no re-run. The bundle stays readable and is never modified, deleted or upgraded; `--summarize` writes only `<bundle>.record.json` beside it. Stage 1a acceptance needs a bundle from the current launcher.
+  - **Never rule-applicable (r2 §12.9 (4)).** Stage 1a and dry-run records always carry `rule_applicable = false`, whatever their exit code; an exit 0 there means only that their own requirements were met. Stage 1a does not need complete aggregate memory, and the incomplete-evidence gate applies to neither. `rerun_eligible` is null outside Stage 1b measure records.
 - **Workflow helpers** use the standard library only:
   - `--probe-verdict DIR` judges the accounting probe (r2 §8.4);
   - `--check-stage STAGE` refuses `1c` until its C3 path lands (r2 §12.4, I-8).
@@ -110,10 +124,11 @@ The artifact name carries the run attempt, so a re-run never replaces the failed
 | I-6 | A repeat exited non-zero, timed out (30 min poll bound, capped by the loop deadline), OOMed, left no row, or was not started before the loop deadline | 3 | `INVALID_MEASUREMENT` |
 | I-7 | Measured head differs from the dispatched head, or the tree is dirty (Stage 1b). A missing dispatched head, start head (`git-head.txt`) or summarize-time head also counts | 4 | `INVALID_MEASUREMENT` |
 | I-8 | Stage 1c requested before its C3 path exists | 4 (workflow: refused at input validation) | `BLOCKED` |
-| H-FIELDS | A completed repeat (any stage) left a required field empty | 4 | `INVALID_MEASUREMENT` (harness defect) |
+| H-FIELDS | A completed repeat left a required field empty. At Stage 1b the ceiling-input fields are judged by INCOMPLETE instead | 4 | `INVALID_MEASUREMENT` (harness defect) |
 | H-SHAPE | The record is not both arms with 5 timed repeats per arm (measure mode; r2 §6.2, §12.2) | 4 | `INVALID_MEASUREMENT` (not an acceptance shape) |
 | H-COUNTS | A completed instrumented repeat's call counts differ from the r2 §4 workload, or are absent | 4 | `INVALID_MEASUREMENT` (harness defect: not the specified workload) |
-| INCOMPLETE | Stage 1b measure: a valid timed forced repeat lacks Ĉ, Ŵ or P̂ | unchanged | none added; `rule_applicable = false` (see ambiguities) |
+| INCOMPLETE | Stage 1b measure, per job or combined: a completed timed repeat of either arm lacks an input to Ĉ, Ŵ, P̂ or a warm spread (r2 §12.9 (3)) | 3 | `INCOMPLETE_EVIDENCE`; `validity_ok = false`, `rule_applicable = false`, `rerun_eligible` only on attempt 1 |
+| LEGACY | Stage 1a bundle without `timeout_s` or `executed_identity` (r2 §12.9 (2)) | 4 | `LEGACY_UNACCEPTED`; the bundle is retained unmodified |
 
 From a valid record with complete memory:
 - **Σ screen.** If the r2 §10.2 Σ-only row fails, the stop class is `D2_ACCOUNTING_FALSIFIER` (ruling (4)(i)). The row uses N2 at 360 s / 900 s (ruling (3)) and the P4 tuple extended to `/v7`. It fails when `max(120, max(2Ĉ, 1.5P̂) + 20) > 8,440` or `max(300, 3(Ŵ + 30)) > 6,100`.
@@ -135,19 +150,26 @@ Both are **screens, not the r2 §13 application**. The coordinator computes X an
   - **CPU input on both arms.** The warm spread (PA-4) needs the CPU input of every completed timed repeat of both arms. A missing input, prescribed included, makes the record `INCOMPLETE`; a spread is never taken over a subset.
 - **Spread basis.** The warm spread uses the ceiling CPU input, the larger of `C_w` and `CPUUsageNSec − setup_excluded` (r2 §6.1). It is applied per arm, and a job fails if either arm exceeds the limit. The in-process spread is also recorded. Following r2 §6.2, the record also reports the cold-inclusive spread (`spread_all`, and its in-process twin). CPU, wall and memory each get a max, median, min and spread over all timed repeats and over the warm ones, with a count of absent values.
 - **Where code identity is taken.** Git, the harness hash, the source hashes and `observe_runtime` are taken at summarize time, outside the measured unit, so they add nothing to the unit's CPU or memory. `start_head` is recorded by the workflow before the loop. On Windows, `--launcher` also takes them after its last repeat, and `--summarize` requires the two to match (I-7).
-- **Missing ceiling inputs.** r2 names no stop class or exit code for a valid timed repeat that lacks Ĉ, Ŵ or P̂. The harness adds no stop class and no re-run authority. It records the `INCOMPLETE` reason and `rule_applicable = false`, so the r2 §13 precondition cannot be met. Whether this should instead stop the stage is left to the coordinator.
+- **Missing ceiling inputs.** Ruled on 2026-09-27 as r2 §12.9 (3): see "Incomplete Stage 1b evidence" above. When an `INCOMPLETE` and an I-3 apply together, both reasons are recorded and the stop class is `INCOMPLETE_EVIDENCE`. r2 §12.9 does not say which stop class wins when both apply; its (3) states the Stage 1b verdict explicitly, and the I-3 reason and `memory_feasibility = UNVERIFIED` are kept.
 - **Dry run.** Its one untimed repeat per arm is also instrumented, so call counts are checked early. The dry run never applies the rule.
 - **Schema additions.** The v2 fields are kept, with these additions:
   - repeat `arm`, `cpu_input_s`, `result`, `timed_out` and `error`;
   - `workload` keyed by arm;
   - `scope = job | combined`;
   - `verdict.sigma_screen` and `verdict.pa3a_screen`;
-  - the stop class `MEMORY_EVIDENCE_MISSING` (§16 C8).
+  - the stop class `MEMORY_EVIDENCE_MISSING` (§16 C8);
+  - under r2 §12.9 (5): the stop classes `INCOMPLETE_EVIDENCE` and `LEGACY_UNACCEPTED`, `verdict.rerun_eligible`, the `INCOMPLETE` and `LEGACY` reason codes, and each arm's all-repeat and warm distributions (max, median, minimum, spread, absent count) for CPU input, workload wall and complete memory.
 - **Call-count mismatch** against the r2 §4 expectation (forced 14 replays, 5 proofs, 15 `verify_for`; prescribed 8, 3, 9), or a completed instrumented repeat without counts, is `H-COUNTS`. That is a harness defect, not a note: the measured workload is not the specified one, so neither Stage 1a validation nor a Stage 1b ceiling can rest on it. The remaining notes are informational by r2: the probe-failed-first note (with I-1), the D3 R7 note (with I-4) and the Stage 1a warm spread (I-2 is a Stage 1b check, §12.7).
 - **Workflow.** The workflow adds a per-repeat poll bound (30 min) so that a hang is an I-6 timeout, `persist-credentials: false`, and the run attempt in the artifact name. It also has a `runtime` input, whose `worker_image` value is refused (image-first finding).
 - **Loop deadline.** r2 fixes `timeout-minutes: 120` (§12.3), which the workflow sets once, as the single-valued matrix key `timeout_min` that both `timeout-minutes` and `JOB_TIMEOUT_MIN` read, and budgets a measure job at 31 min (§12.6). It sets no per-repeat or loop bound. The workflow stops starting repeats, and stops waiting on a hung one, at the job start plus 120 − 15 = 105 min. A repeat not started by then gets a `HarnessNotStarted=loop-deadline` unit file and is summarized as I-6. The 15 min `POST_LOOP_RESERVE_MIN` for summarize, owned cleanup, journal export and upload is a harness choice: r2 §12.6 budgets only 2 min for cleanup and upload, and does not budget summarize. It does not change any r2 budget, because a normal job ends well inside it.
+- **Summarize step exit.** The runner's default shell is `bash -eo pipefail`, so the summarize step turns `-e` off. An exit 3 or 4 from the summarizer, whose record is already written, then still reaches the step summary before the step returns that status. Cleanup and upload are `if: always()` and run after it (r2 §12.9 (3)).
+- **Coordinator readings (r2 §12.9 (6)).** A run attempt outside 1–2 is I-7. A Windows bundle's arm order must be `forced,prescribed`.
 - **Cleanup receipt.** r2 names no class for a failed owned cleanup. The job fails at that step, so it counts as a failed job under the §12.7 re-run cap, and combining refuses its record. That refusal is a harness choice.
 
 ## Not run
 
-No measurement, engine workload, `_run_part_a` or `build_verified_composition` execution, Stage 0 read, Stage 1a, workflow dispatch, re-run, cancel or artifact download was made. The only harness invocations were `py_compile`, `--help`, `--check-stage`, and `--summarize` and `--probe-verdict` on hand-written synthetic inputs outside the repository (labelled "synthetic summarize check"). The accounting-probe script was compiled, not run.
+No measurement, engine workload, `_run_part_a` or `build_verified_composition` execution, Stage 0 read, Stage 1a, workflow dispatch, re-run, cancel or artifact download was made. The harness was invoked only in these ways:
+- `py_compile`, `--help` and `--check-stage`;
+- `--summarize`, combine and `--probe-verdict` on synthetic inputs, through the regression module.
+
+The workflow's own step scripts ran only against stubbed system commands in that module. The accounting-probe script was compiled, not run.

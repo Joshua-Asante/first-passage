@@ -240,6 +240,11 @@ jobs:
       - name: Summarize (exit 0 valid, 3 re-runnable validity failure, 4 invalid)
         if: ${{ !cancelled() && steps.probe.outcome != 'skipped' }}
         run: |
+          # The runner's default shell is `bash -eo pipefail`: turn -e off so an exit 3 or 4
+          # from the summarizer (the record is already written) still reaches the step
+          # summary below and is then returned as this step's status. Cleanup and upload
+          # are `if: always()` and run after it either way (r2 §12.9 (3)).
+          set +e
           set -uo pipefail
           OUT="$RUNNER_TEMP/s5-part-a-measurement"
           manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
