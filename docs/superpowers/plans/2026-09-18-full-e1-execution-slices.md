@@ -1002,3 +1002,21 @@ This supersedes r2 §10.3's release-point reading and the §12.7 sentence that h
 - production, activation or live authority.
 
 The hold stays **HELD**.
+
+### Operator ruling — H1(c) draft: open questions and drafter's additions, 2026-09-27
+
+**Source.** In session on 2026-09-27, the operator answered the open questions OQ-1..OQ-6 and the drafter's additions D-1..D-10 of the H1(c) draft, choosing the recommended option each time. The draft is the [S5 owner-text and RC-6 draft](https://github.com/Joshua-Asante/first-passage/pull/525), `docs/notes/2026-09-27-s5-owner-text-and-rc6-draft.md` at `f95a39be`, returned under the [H1 dispatch record](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h1-steps-b-and-c-dispatch-record-frozen-2026-09-27). The answers were given by structured answer; the recommendation texts relayed in session govern.
+
+| Item | Ruling |
+|---|---|
+| **OQ-1** (CP-1a (4)(v)) | **Kept open until it arises.** It matters only if no valid Stage 1b record exists. The three-way D2 split already keeps the hold whenever a run is missing. |
+| **OQ-2** (the §3.4(d) forward reference) | **The D-2 bridging note.** The two §3.4(d) insertions are applied at build entry, each with a dated note. Until C3, the spec §2.6 rule's source is the operator's D3 direction (this ledger, 2026-09-26) and S5 draft §3.3. The notes are removed when the §2.6 text lands at C3. |
+| **OQ-3** (SR-7's reach) | **One clarifying line** in the packet's new §1a: the five RC-2 owner sentences (slices plan `:17`, `:238`; full-E1 spec `:121`, `:123`, `:200` at `875ecf29`) govern route and contract values. The TEST_ONLY Stage 1c override is never one of these (P-3, P-4), and a forced result can never pass (P-5). The five owner sentences stay unchanged. The CP-1a exception does not widen beyond the packet's four sites. |
+| **OQ-4** (the CI-configuration part of the S5 file scope) | **Approved, on the S4 precedent.** Within the S5 build, the executor may add an S5 value to the `mode` input of `.github/workflows/qualification-s2-supervision.yml` and extend the evidence reader so that SR-8's fields have a reader. The change lands through the operator's merge. Any dispatch of it needs its own grant at C3. |
+| **OQ-5** (umbrella O-10) | **Not used.** The ledger's RC-4/RC-5 entries and the checklist already carry the assignment and the sequencing. |
+| **OQ-6** (S5 draft §6) | **Q2 confirmed:** R4's "original deadline" is the campaign's, as the draft's §3.6 paragraph assumes. **Q1, Q7 and Q9 stay open to C3.** Q1 and Q7 are decided with the statistical owner. |
+| **D-1..D-10** | **All ten accepted:** D-1 qualified tags; D-2 bridging note; D-3 boundary §3.1 placed at the end of §3; D-4 RC-5 pointer; D-5 S5 file scope, whose workflow part is approved by OQ-4; D-6 crash-case rewording; D-7 receipt field names; D-8 admission-crash consequence stated in full; D-9 sequencing clause in spec §2.6; D-10 rule scope and the `/v7` N2 value in contract decision 3. |
+
+**Effect.** The H1(c) draft is revised to carry these answers, including the OQ-3 clarifying line, and is returned as revised. **Acceptance of the revised draft's full text remains the operator's.** It is not implied by these answers. No owner document is amended until that acceptance, and then only by a separate application commit: build-entry texts before CP-1b, RC-2 texts at C3.
+
+**Not granted:** S5 release, build, freeze, dispatch or execution; any owner-text application; any workflow dispatch; closing RC-2, RC-3 or RC-6; anything outside the draft's scope. The hold stays **HELD**.
