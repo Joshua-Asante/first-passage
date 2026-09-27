@@ -250,16 +250,25 @@ jobs:
         run: |
           OUT="$RUNNER_TEMP/s5-part-a-measurement"
           mkdir -p "$OUT"
-          for unit in $(systemctl list-units --all --plain --no-legend 'fp-s5pa-*' | awk '{print $1}'); do
-            sudo systemctl stop "$unit" || true; sudo systemctl reset-failed "$unit" 2>/dev/null || true
-          done
+          # Every owned-cleanup failure (the unit listing, any unit stop, cleanup.py) is
+          # accumulated into cleanup_status, so the receipt and this step's exit say so;
+          # the loop still visits every unit. reset-failed is informational: it errors
+          # for a unit that stop already unloaded.
           cleanup_status=0
+          if ! units="$(systemctl list-units --all --plain --no-legend 'fp-s5pa-*')"; then
+            echo "listing fp-s5pa-* units failed" >&2; cleanup_status=1; units=''
+          fi
+          for unit in $(printf '%s\n' "$units" | awk '{print $1}'); do
+            if ! sudo systemctl stop "$unit"; then echo "stopping $unit failed" >&2; cleanup_status=1; fi
+            sudo systemctl reset-failed "$unit" 2>/dev/null || true
+          done
           if test -f "$RUNNER_TEMP/qualification-manifest"; then
             manifest="$(sudo cat "$RUNNER_TEMP/qualification-manifest")"
             set +e
             sudo /usr/bin/python3 -I tools/qualification_verification/cleanup.py --manifest "$manifest"
-            cleanup_status=$?
+            rc=$?
             set -e
+            if [ "$rc" -ne 0 ]; then cleanup_status=$rc; fi
           else
             echo 'Setup failed before ownership reservation; no host resources to retire.'
           fi
