@@ -432,7 +432,7 @@ The conditions are the ledger's ([direction table](../superpowers/plans/2026-09-
 | **C3 and acceptance** | "The S5 packet's C3 items" (line 829) | — | Open | — |
 | | "**RC-3b**: the adapter-specific measurement (#519 Stage 1c), which covers D̂ and ends the provisional status; the **executed** `bind_budget` Σ-feasibility check on the built `/v7` profile; the Stage 2 service-route consistency check (PA-5)" (line 829) | **PROPOSED (CP-1a item 2(e)):** Stage 1c through the forcing seam of §7 | Open | At C3, within the approved rule |
 | | "The full RC-2 owner-text set accepted and applied" (line 829) | — | Open | — |
-| **Before F1** | "The RC-4 seed-view change landed, with its F1 admission check; OF-1..OF-7 attested by attended reads; K3 built" (line 830) | — | Open | — |
+| **Before F1** | "The RC-4 seed-view change landed, with its F1 admission check; OF-1..OF-7 attested by attended reads; K3 built" (line 830) *[Corrected 2026-09-27: the quoted ledger row is itself corrected; before F1 only OF-7 is due, and the full OF-1..OF-7 set is read at CP-8, per the ledger's RC-5 entry.]* | — | Open | — |
 
 **No S5 release proposal is supported:** RC-3a, RC-4/RC-5 assignment, RC-6 and §3.4(d) are open.
 
