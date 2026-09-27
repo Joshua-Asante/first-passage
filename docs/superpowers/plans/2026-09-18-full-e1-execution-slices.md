@@ -1020,3 +1020,17 @@ The hold stays **HELD**.
 **Effect.** The H1(c) draft is revised to carry these answers, including the OQ-3 clarifying line, and is returned as revised. **Acceptance of the revised draft's full text remains the operator's.** It is not implied by these answers. No owner document is amended until that acceptance, and then only by a separate application commit: build-entry texts before CP-1b, RC-2 texts at C3.
 
 **Not granted:** S5 release, build, freeze, dispatch or execution; any owner-text application; any workflow dispatch; closing RC-2, RC-3 or RC-6; anything outside the draft's scope. The hold stays **HELD**.
+
+### Operator acceptance — H1(c) full text accepted; build-entry sections to be applied, 2026-09-27
+
+**Source.** In session on 2026-09-27, the operator wrote: "I accept #525's full text at 011ce9e4; apply the build-entry sections". The accepted text is `docs/notes/2026-09-27-s5-owner-text-and-rc6-draft.md` at `011ce9e47859e702765b4e64e6e7d47cc2b759a6` ([#525](https://github.com/Joshua-Asante/first-passage/pull/525)). It carries the rulings of the entry above and the operator's three review corrections made before acceptance.
+
+**Effect.**
+- **Build-entry sections, applied now** by one application commit, against the **pinned application head** `origin/main` `875ecf29`, which is the draft's anchor head (no drift):
+  - the draft's §1: the §3.4(d) text in slices-plan contract decision 6 and in S5 Behavior, with D-1 and the D-2 bridging notes;
+  - the draft's §2: the RC-6 re-anchor of the S5 packet `docs/briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md`, with the §0.1 findings and pitfalls, §0.5 N2, the §1a seam (SR-1..SR-9, P-1..P-7, the OQ-3 line), the SR-7 exception at the four tolerance sites, the D-5 run-tooling scope, and the explicit C3 order.
+- **CP-1b** names the resulting reviewed revision. If that revision differs from the application head in any file an anchor covers, the affected anchors are re-checked before CP-1b.
+- **RC-2 sections (the draft's §3)** are **not applied now**. They are applied at C3 against their own pinned head.
+- **Still open:** OQ-1, and Q1, Q7 and Q9 at C3.
+
+**Not granted:** the hold release (CP-1b); S5 build, freeze, dispatch or execution; any RC-2 application before C3; any workflow dispatch; any measurement outside the CP-1a dispatch. RC-6 is met only when the application is merged and reviewed, and CP-1b records it. The hold stays **HELD**.
