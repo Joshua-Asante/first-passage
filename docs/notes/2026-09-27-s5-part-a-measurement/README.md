@@ -55,7 +55,10 @@ Carrying the harness in the image would need a change under `ops/` (the closure 
   - **(9) Row.** One JSON row, never overwritten, even for a failed repeat. The exit code is 0, 5 (assertion) or 1 (error).
 - **`--launcher`** (Windows only, Stage 1a) spawns each repeat with `CREATE_SUSPENDED`, assigns it to a fresh job object, then resumes it. It reads `TotalUserTime + TotalKernelTime`, the outer wall and the exit code. It purges the checkout's `__pycache__` before each arm's repeat 1 and does not drop the page cache (r1 §3.2). The order per arm is repeats 1..N, then instrumented repeat 0.
 - **`--summarize PATH`** takes a Linux job directory or a Windows bundle. It writes `record.json` (for a bundle, `<bundle>.record.json`) in schema `s5-part-a-max-expansion-measurement/v2`. It exits 0 (valid), 3 (validity failure, re-runnable) or 4 (invalid, no re-run).
-  - Given several per-job `record.json` inputs and `--record`, it writes a combined record. Ĉ, Ŵ, M̂ and P̂ are then maxima over both jobs (r2 §6.2), and the between-job median ratio is recorded as host variance.
+  - Given several per-job `record.json` inputs and `--record`, it writes a combined record. Ĉ, Ŵ, M̂ and P̂ are then maxima over both jobs (r2 §6.2), and the between-job median ratio is recorded as host variance. It refuses, writing nothing, unless the inputs are exactly one job `a` and one job `b` per-job record with one common run id. Records that differ in, or lack, `measured_commit`, `dispatched_head`, `harness_sha256` or `source_sha256` are I-7.
+  - For a Windows bundle it compares the identity `--launcher` recorded after its last repeat (`executed_identity`: commit, harness SHA-256, source SHA-256s and `observe_runtime`) with the identity at summarize time. A missing identity or any mismatch is I-7.
+  - A record whose shape is not the fixed one (both arms; 5 timed repeats per arm in measure mode; r2 §6.2, §12.2) is `H-SHAPE`. `--launcher` still runs another shape for debugging, but it says so, and the bundle can never yield an acceptance record.
+  - `rule_applicable` also needs Ĉ, Ŵ and P̂ from every valid timed forced repeat (r2 §6.2, §9). If one is missing, for example when the unit's exit timestamp is unset, the record carries an `INCOMPLETE` reason and `ceiling_inputs_complete = false`, and the rule is not applicable.
 - **Workflow helpers** use the standard library only:
   - `--probe-verdict DIR` judges the accounting probe (r2 §8.4);
   - `--check-stage STAGE` refuses `1c` until its C3 path lands (r2 §12.4, I-8).
@@ -82,8 +85,9 @@ gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-p
 # after a clean dry run:
 gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref main \
   -f stage=1b -f mode=measure -f runtime=host_venv -f note_dir=docs/notes/2026-09-27-s5-part-a-measurement
-# combine the two downloaded job records:
-python docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt --summarize <a>/record.json <b>/record.json --record <combined>.json
+# combine the two downloaded job records (one job a, one job b, one run), through the operations launcher
+# (.\fp.ps1 python ... on Windows):
+python -I scripts/fp.py python docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt --summarize <a>/record.json <b>/record.json --record <combined>.json
 ```
 
 **Caps (r2 §12.7):**
@@ -106,6 +110,8 @@ The artifact name carries the run attempt, so a re-run never replaces the failed
 | I-7 | Measured head differs from the dispatched head, or the tree is dirty (Stage 1b) | 4 | `INVALID_MEASUREMENT` |
 | I-8 | Stage 1c requested before its C3 path exists | 4 (workflow: refused at input validation) | `BLOCKED` |
 | H-FIELDS | Stage 1a: a successful repeat left a required field empty | 4 | `INVALID_MEASUREMENT` (harness defect) |
+| H-SHAPE | The record is not both arms with 5 timed repeats per arm (measure mode; r2 §6.2, §12.2) | 4 | `INVALID_MEASUREMENT` (not an acceptance shape) |
+| INCOMPLETE | Stage 1b measure: a valid timed forced repeat lacks Ĉ, Ŵ or P̂ | unchanged | none added; `rule_applicable = false` (see ambiguities) |
 
 From a valid record with complete memory:
 - **Σ screen.** If the r2 §10.2 Σ-only row fails, the stop class is `D2_ACCOUNTING_FALSIFIER` (ruling (4)(i)). The row uses N2 at 360 s / 900 s (ruling (3)) and the P4 tuple extended to `/v7`. It fails when `max(120, max(2Ĉ, 1.5P̂) + 20) > 8,440` or `max(300, 3(Ŵ + 30)) > 6,100`.
@@ -118,7 +124,8 @@ Both are **screens, not the r2 §13 application**. The coordinator computes X an
 - **Admission wrapper timing.** r2 §6.1 says the wrapper is "removed before step 2". It is removed as soon as the fixture setup returns, before `verify_for`, as r1 §3.1/§3.3 state ("removed immediately after").
 - **Wall `start`.** It cannot be read in process. The workload wall is `outer − setup_excluded` (r1 §3.1), where `outer` comes from the unit's `ExecMainStart/ExitTimestampMonotonic` (Linux) or the launcher's clock (Windows). Per-boundary `perf_counter` spans are kept under `wall.boundaries`.
 - **Spread basis.** The warm spread uses the ceiling CPU input, the larger of `C_w` and `CPUUsageNSec − setup_excluded` (r2 §6.1). It is applied per arm, and a job fails if either arm exceeds the limit. The in-process spread is also recorded.
-- **Where code identity is taken.** Git, the harness hash, the source hashes and `observe_runtime` are taken at summarize time, outside the measured unit, so they add nothing to the unit's CPU or memory. `start_head` is recorded by the workflow before the loop.
+- **Where code identity is taken.** Git, the harness hash, the source hashes and `observe_runtime` are taken at summarize time, outside the measured unit, so they add nothing to the unit's CPU or memory. `start_head` is recorded by the workflow before the loop. On Windows, `--launcher` also takes them after its last repeat, and `--summarize` requires the two to match (I-7).
+- **Missing ceiling inputs.** r2 names no stop class or exit code for a valid timed repeat that lacks Ĉ, Ŵ or P̂. The harness adds no stop class and no re-run authority. It records the `INCOMPLETE` reason and `rule_applicable = false`, so the r2 §13 precondition cannot be met. Whether this should instead stop the stage is left to the coordinator.
 - **Dry run.** Its one untimed repeat per arm is also instrumented, so call counts are checked early. The dry run never applies the rule.
 - **Schema additions.** The v2 fields are kept, with these additions:
   - repeat `arm`, `cpu_input_s`, `result`, `timed_out` and `error`;

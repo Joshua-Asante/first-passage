@@ -67,7 +67,7 @@ RECIPE = "build_verified_composition(tmp, confirmation_depth=60, decision_alpha=
 DISPATCH_STAGES = ('1b',)       # Linux dispatch stages implemented here; 1c is added at C3 (r2 §12.4)
 EXIT_VALID, EXIT_RERUN, EXIT_INVALID = 0, 3, 4
 EXIT_REPEAT_ERROR, EXIT_ASSERTION = 1, 5
-DEFAULT_TIMED_REPEATS = 5       # r2 §6.2
+DEFAULT_TIMED_REPEATS = 5       # r2 §6.2 and §12.2: the fixed timed-repeat count per arm (H-SHAPE otherwise)
 THREAD_ENV = ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS', 'NUMEXPR_NUM_THREADS')
 SYS_PATHS = ('core', 'lab', 'ops', 'ops/c1_rail', 'ops/c1_signal_daemon', '.', 'tests/ops/qualification', 'tests/ops')
 
@@ -576,10 +576,16 @@ def launcher(args):
                 print('arm=%s repeat=%d exit=%s outer_wall=%.2fs job_cpu=%s panels=%s' % (
                     arm, repeat, unit['exit_code'], unit['outer_wall_s'], unit['job_cpu_s'],
                     row and row.get('panels')), flush=True)
+    shape_ok = sorted(arms) == sorted(ARMS) and args.repeats == DEFAULT_TIMED_REPEATS
+    if not shape_ok:
+        print('NOTE: arms %s x %d timed repeats is not the fixed Stage 1a shape (both arms x %d, r2 §12.2); '
+              '--summarize marks this bundle H-SHAPE (debug only, never an acceptance record)' % (
+                  arms, args.repeats, DEFAULT_TIMED_REPEATS), flush=True)
     bundle = {'schema': BUNDLE_SCHEMA, 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
               'stage': '1a', 'mode': 'measure', 'platform_accounting': 'windows_process_time_job_object',
-              'arm_order': arms, 'timed_repeats': args.repeats, 'recorded_utc': _now(),
-              'harness_sha256': _sha256_file(HARNESS), 'entries': entries}
+              'arm_order': arms, 'timed_repeats': args.repeats, 'fixed_shape': shape_ok, 'recorded_utc': _now(),
+              'harness_sha256': _sha256_file(HARNESS),
+              'executed_identity': _executed_identity([entry['row'] for entry in entries]), 'entries': entries}
     _write_json(out, bundle, exclusive=True)
     print('wrote', out)
     return 0
@@ -684,10 +690,12 @@ def _cpu_model():
     return platform.processor() or None
 
 
-def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage):
+def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error=None):
     """One schema repeat from the in-process row plus the system manager's
-    (Linux: systemctl show) or the job object's (Windows) view."""
+    (Linux: systemctl show) or the job object's (Windows) view. A row that
+    could not be parsed arrives as None with its parse error (I-6, r2 §12.7)."""
     row = row or {}
+    row_error = row_error or (launcher_unit or {}).get('row_error')
     cpu = dict(row.get('cpu') or {})
     wall = dict(row.get('wall') or {'outer': None, 'setup_excluded': None, 'workload': None})
     mem = dict(row.get('memory') or {})
@@ -756,26 +764,40 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage):
         'initial_prefix_sha256': row.get('initial_prefix_sha256'), 'final_sha256': row.get('final_sha256'),
         'fsync_count': row.get('fsync_count'), 'assertions': row.get('assertions'),
         'exit_code': exit_code, 'result': result, 'timed_out': timed_out,
-        'row_present': bool(row), 'error': row.get('error') if row else 'repeat row missing',
+        'row_present': bool(row), 'error': row.get('error') if row else (row_error or 'repeat row missing'),
         'workload': row.get('workload'), 'environment': row.get('environment'),
     }
 
 
+def _read_row(path):
+    """A repeat row, or (None, error) when it is truncated or unreadable: the
+    repeat is then retained as a missing row with the error (I-6, r2 §12.7)."""
+    try:
+        row = _read_json(path)
+    except (OSError, ValueError) as exc:
+        return None, 'unreadable row: %s: %s' % (type(exc).__name__, exc)
+    if not isinstance(row, dict):
+        return None, 'unreadable row: not a JSON object'
+    return row, None
+
+
 def _load_directory(directory):
-    rows, units = {}, {}
+    rows, units, row_errors = {}, {}, {}
     for path in sorted(directory.iterdir()):
         match = re.fullmatch(r'(forced|prescribed)-(\d+)\.(json|unit)', path.name)
         if not match:
             continue
         key = (match.group(1), int(match.group(2)))
         if match.group(3) == 'json':
-            rows[key] = _read_json(path)
+            rows[key], error = _read_row(path)
+            if error:
+                row_errors[key] = error
         else:
             units[key] = _parse_unit(path)
     probe = _read_json(directory / 'probe.json') if (directory / 'probe.json').is_file() else None
     facts = _host_facts_file(directory / 'host-facts.txt')
     start_head = (directory / 'git-head.txt').read_text().strip() if (directory / 'git-head.txt').is_file() else None
-    return rows, units, probe, facts, start_head
+    return rows, units, probe, facts, start_head, row_errors
 
 
 def _expected_keys(arm_order, mode, timed):
@@ -831,7 +853,27 @@ def _arm_summary(reps):
                                       if r['predicted_seconds'] is not None], default=None),
         'digests_identical': len(digests) <= 1 if digests else None,
         'digest_pairs': sorted([list(pair) for pair in digests]),
+        # r2 §6.2/§9: Ĉ, Ŵ and P̂ are maxima over ALL valid timed repeats; a repeat
+        # missing any of the three would make the maximum one over a subset.
+        'ceiling_inputs_missing': ['%s-%d: %s' % (r['arm'], r['repeat'], ', '.join(missing))
+                                   for r in timed for missing in [_ceiling_inputs_missing(r)] if missing],
+        'ceiling_inputs_complete': bool(timed) and not any(_ceiling_inputs_missing(r) for r in timed),
     }
+
+
+def _ceiling_inputs_missing(rep):
+    return [name for name, value in (('cpu_input_s (C)', rep['cpu_input_s']),
+                                     ('wall.workload (W)', rep['wall']['workload']),
+                                     ('predicted_seconds (P)', rep['predicted_seconds'])) if value is None]
+
+
+def _ceiling_inputs(summary, estimates):
+    """r2 §9 PA-1/PA-2 need Ĉ, Ŵ and P̂ (PA-3's M̂ is gated by memory_feasibility).
+    Returns why the forced-arm inputs are incomplete; empty when complete."""
+    reasons = ['%s is absent' % key for key in ('C_hat_s', 'W_hat_s', 'P_hat_s') if estimates.get(key) is None]
+    if not (summary or {}).get('ceiling_inputs_complete'):
+        reasons.extend((summary or {}).get('ceiling_inputs_missing') or ['no valid timed forced repeat'])
+    return reasons
 
 
 def _screens(estimates):
@@ -858,11 +900,17 @@ def _screens(estimates):
     return screen, pa3
 
 
+# H-SHAPE (a harness code, like H-FIELDS): the record's shape is not the fixed one
+# of r2 §6.2 and §12.2 (both arms; 5 timed repeats per arm in measure mode), so it
+# can never be an acceptance record. It is fixed and re-run locally (no re-run count).
+BLOCKING_CODES = frozenset({'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'I-8', 'H-FIELDS', 'H-SHAPE'})
+
+
 def _classify(reasons, *, rule_applicable, memory_feasibility, screen):
     codes = {code for code, _ in reasons}
-    no_rerun = codes & {'I-4', 'I-5', 'I-7', 'I-8', 'H-FIELDS'}
+    no_rerun = codes & {'I-4', 'I-5', 'I-7', 'I-8', 'H-FIELDS', 'H-SHAPE'}
     rerun = codes & {'I-1', 'I-2', 'I-3', 'I-6'}
-    invalid = codes & {'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'H-FIELDS'}
+    invalid = codes & {'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'H-FIELDS', 'H-SHAPE'}
     if 'I-8' in codes:
         stop = 'BLOCKED'
     elif invalid:
@@ -879,7 +927,7 @@ def _classify(reasons, *, rule_applicable, memory_feasibility, screen):
     return stop, not invalid, exit_code
 
 
-def _job_record(path, args):
+def _job_record(path, args, current=None):
     path = Path(path)
     launcher_bundle = None
     if path.is_file():
@@ -887,12 +935,12 @@ def _job_record(path, args):
         if launcher_bundle.get('schema') != BUNDLE_SCHEMA:
             raise SystemExit('not a launcher bundle: ' + str(path))
         rows = {(e['arm'], e['repeat']): e.get('row') for e in launcher_bundle['entries']}
-        units, probe, facts, start_head = {}, None, {}, None
+        units, probe, facts, start_head, row_errors = {}, None, {}, None, {}
         launch_units = {(e['arm'], e['repeat']): e.get('unit') for e in launcher_bundle['entries']}
         arm_order = launcher_bundle['arm_order']
         timed = launcher_bundle['timed_repeats']
     else:
-        rows, units, probe, facts, start_head = _load_directory(path)
+        rows, units, probe, facts, start_head, row_errors = _load_directory(path)
         launch_units = {}
         arm_order = (args.arm_order.split() if args.arm_order
                      else [a for a in ARMS if any(k[0] == a for k in rows)] or list(ARMS))
@@ -906,10 +954,24 @@ def _job_record(path, args):
                   | (set() if probe_failed_first else set(_expected_keys(arm_order, mode, timed))),
                   key=lambda k: (arm_order.index(k[0]) if k[0] in arm_order else 9, k[1] == 0, k[1]))
     repeats = [_merge_repeat(arm, r, rows.get((arm, r)), units.get((arm, r)) if not launcher_bundle else None,
-                             launch_units.get((arm, r)), stage) for arm, r in keys]
+                             launch_units.get((arm, r)), stage, row_errors.get((arm, r))) for arm, r in keys]
     by_arm = {arm: [rep for rep in repeats if rep['arm'] == arm] for arm in arm_order}
 
     reasons = []
+    # r2 §6.2, §12.2 and PA-4: an acceptance record has both arms and, in measure
+    # mode, exactly DEFAULT_TIMED_REPEATS timed repeats per arm (H-SHAPE otherwise).
+    if len(arm_order) != len(ARMS) or set(arm_order) != set(ARMS):
+        reasons.append(('H-SHAPE', 'arms %s; the fixed shape runs both %s (r2 §6.2, §12.2)' % (
+            list(arm_order), list(ARMS))))
+    if mode == 'measure' and timed != DEFAULT_TIMED_REPEATS:
+        reasons.append(('H-SHAPE', '%s timed repeats per arm; the fixed shape is %d (r2 §6.2, §12.2)' % (
+            timed, DEFAULT_TIMED_REPEATS)))
+    if launcher_bundle is not None:
+        # r2 §5.1, §12.2: a Windows summary describes the code the launcher ran.
+        if current is None:
+            current = _current_identity(path)
+        for mismatch in _identity_mismatches(launcher_bundle.get('executed_identity'), current):
+            reasons.append(('I-7', 'Windows bundle: ' + mismatch))
     if stage == '1c':
         reasons.append(('I-8', 'Stage 1c: SR/P preconditions and the --stage 1c path are established at C3 '
                                '(r2 §7.7, §12.4); this harness has no 1c path'))
@@ -1012,8 +1074,12 @@ def _job_record(path, args):
     else:
         memory_feasibility = 'FAILED' if M_M * estimates['M_hat_bytes'] > PA3_REFERENCE_BYTES else 'VERIFIED'
     screen, pa3 = _screens(estimates)
-    blocking = {code for code, _ in reasons} & {'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'I-8', 'H-FIELDS'}
-    rule_applicable = (stage == '1b' and mode == 'measure' and not blocking
+    ceiling_missing = _ceiling_inputs(summaries.get('forced'), estimates) if mode == 'measure' else []
+    if stage == '1b' and ceiling_missing:
+        reasons.append(('INCOMPLETE', 'ceiling inputs incomplete, rule not applicable (r2 §6.2, §9): '
+                                      + '; '.join(ceiling_missing)))
+    blocking = {code for code, _ in reasons} & BLOCKING_CODES
+    rule_applicable = (stage == '1b' and mode == 'measure' and not blocking and not ceiling_missing
                        and memory_feasibility in ('VERIFIED', 'FAILED'))
     stop, validity_ok, exit_code = _classify(reasons, rule_applicable=rule_applicable,
                                              memory_feasibility=memory_feasibility, screen=screen)
@@ -1061,9 +1127,49 @@ def _job_record(path, args):
                     'memory_complete_all_timed_repeats': memory_complete, 'estimates': estimates},
         'verdict': {'validity_ok': validity_ok, 'memory_feasibility': memory_feasibility,
                     'memory_scope': 'PA-3a payload unit (r2 §16 C6)', 'rule_applicable': rule_applicable,
-                    'stop_class': stop, 'sigma_screen': screen, 'pa3a_screen': pa3,
+                    'ceiling_inputs_complete': not ceiling_missing, 'stop_class': stop,
+                    'sigma_screen': screen, 'pa3a_screen': pa3,
                     'reasons': ['%s: %s' % pair for pair in reasons], 'exit_code': exit_code},
     }
+
+
+FIXED_SOURCE_FILES = ('tests/ops/qualification/composition_fixture.py',
+                      'tests/ops/qualification/runtime_fixture.py', 'tests/ops/qualification/test_contract.py',
+                      'tests/ops/qualification/test_trust_domain.py', 'requirements-ops.lock')
+
+
+def _source_identity(loaded_fixture_files):
+    """observe_runtime identity plus SHA-256 of the worker closure, the fixed
+    fixture files and the fixture files the repeats loaded (r2 §5.1, §12.8)."""
+    identity, files = _code_identity()
+    files |= set(FIXED_SOURCE_FILES) | set(loaded_fixture_files)
+    return identity, {name: _sha256_file(ROOT / name) for name in sorted(files) if (ROOT / name).is_file()}
+
+
+def _executed_identity(rows):
+    """Taken by --launcher after its last repeat, outside every measured process:
+    the code the Windows repeats ran. --summarize rejects any mismatch (I-7)."""
+    loaded = {name for row in rows
+              for name in ((row or {}).get('environment') or {}).get('loaded_fixture_files') or []}
+    identity, sources = _source_identity(loaded)
+    status = _git('status', '--porcelain', '--untracked-files=no')
+    return {'measured_commit': _git('rev-parse', 'HEAD'),
+            'tree_clean_tracked': None if status is None else status == '',
+            'harness_sha256': _sha256_file(HARNESS), 'source_sha256': sources, 'code_identity': identity}
+
+
+def _identity_mismatches(executed, current):
+    if not executed:
+        return ['executed identity absent from the bundle (bundle predates the binding or was edited)']
+    found = []
+    for key in ('measured_commit', 'harness_sha256', 'code_identity'):
+        if executed.get(key) != current.get(key):
+            found.append('%s executed %s, at summarize %s' % (key, executed.get(key), current.get(key)))
+    before, after = executed.get('source_sha256') or {}, current.get('source_sha256') or {}
+    for name in sorted(set(before) | set(after)):
+        if before.get(name) != after.get(name):
+            found.append('source %s executed %s, at summarize %s' % (name, before.get(name), after.get(name)))
+    return found
 
 
 def _code_identity():
@@ -1088,22 +1194,19 @@ def _code_identity():
 def summarize(args):
     inputs = [Path(p) for p in args.summarize]
     records = []
+    current = _current_identity(inputs[0]) if len(inputs) == 1 else None
     for path in inputs:
         candidate = path / 'record.json' if path.is_dir() else path
         if len(inputs) > 1 and candidate.name == 'record.json' and candidate.is_file():
             records.append(_read_json(candidate))   # combined mode reuses each job's runner-side record
             continue
-        records.append(_job_record(path, args))
+        records.append(_job_record(path, args, current))
     if len(records) == 1:
         record = records[0]
-        identity, files = _code_identity()
-        files |= {'tests/ops/qualification/composition_fixture.py', 'tests/ops/qualification/runtime_fixture.py',
-                  'tests/ops/qualification/test_contract.py', 'tests/ops/qualification/test_trust_domain.py',
-                  'requirements-ops.lock'}
-        files |= set(_loaded_fixture_files_of(inputs[0]))
-        record['source_sha256'] = {name: _sha256_file(ROOT / name) for name in sorted(files)
-                                   if (ROOT / name).is_file()}
-        record['code_identity'] = identity
+        record['source_sha256'] = current['source_sha256']
+        record['code_identity'] = current['code_identity']
+        if Path(inputs[0]).is_file():
+            record['executed_identity'] = _read_json(inputs[0]).get('executed_identity')
         destination = Path(args.record) if args.record else (
             inputs[0] / 'record.json' if inputs[0].is_dir() else inputs[0].with_suffix('.record.json'))
     else:
@@ -1123,6 +1226,13 @@ def summarize(args):
     return verdict['exit_code']
 
 
+def _current_identity(path):
+    """The summarize-time identity, in the shape of _executed_identity."""
+    identity, sources = _source_identity(_loaded_fixture_files_of(path))
+    return {'measured_commit': _git('rev-parse', 'HEAD'), 'harness_sha256': _sha256_file(HARNESS),
+            'source_sha256': sources, 'code_identity': identity}
+
+
 def _loaded_fixture_files_of(path):
     path = Path(path)
     names = set()
@@ -1130,20 +1240,43 @@ def _loaded_fixture_files_of(path):
         bundle = _read_json(path)
         rows = [e.get('row') for e in bundle.get('entries', [])]
     else:
-        rows = [_read_json(p) for p in path.glob('*-*.json') if re.fullmatch(r'(forced|prescribed)-\d+\.json', p.name)]
+        rows = [_read_row(p)[0] for p in path.glob('*-*.json')
+                if re.fullmatch(r'(forced|prescribed)-\d+\.json', p.name)]
     for row in rows:
         for name in ((row or {}).get('environment') or {}).get('loaded_fixture_files') or []:
             names.add(name)
     return names
 
 
+def _combine_inputs_refusal(records):
+    """r2 §6.2 and §12.3: the combined record is the two jobs (a, b) of one
+    dispatch. Anything else is refused before a record is written."""
+    if any(r.get('scope') != 'job' for r in records):
+        return 'refused: combine takes per-job records only (scope = job)'
+    jobs = sorted(str((r.get('runtime') or {}).get('job')) for r in records)
+    if jobs != ['a', 'b']:
+        return 'refused: combine needs exactly one job a and one job b record, got jobs %s' % jobs
+    run_ids = {(r.get('runtime') or {}).get('run_id') for r in records}
+    if len(run_ids) != 1 or None in run_ids:
+        return 'refused: the job records are not from one run (run ids %s)' % sorted(map(str, run_ids))
+    return None
+
+
 def _combined(records):
     """Ĉ, Ŵ, M̂, P̂ are maxima over all valid timed repeats of both jobs (r2 §6.2)."""
+    refusal = _combine_inputs_refusal(records)
+    if refusal:
+        raise SystemExit(refusal)
     stages = {r['stage'] for r in records}
     modes = {r['mode'] for r in records}
     reasons = []
     if len(stages) != 1 or len(modes) != 1:
         reasons.append(('I-7', 'records mix stages %s or modes %s' % (sorted(stages), sorted(modes))))
+    # Both jobs must have measured the same code (I-7, r2 §12.7).
+    for key in ('measured_commit', 'dispatched_head', 'harness_sha256', 'source_sha256'):
+        values = [json.dumps(r.get(key), sort_keys=True) for r in records]
+        if len(set(values)) != 1 or records[0].get(key) is None:
+            reasons.append(('I-7', 'job records differ in or lack %s' % key))
     stage, mode = sorted(stages)[0], sorted(modes)[0]
     for record in records:
         for text in record['verdict']['reasons']:
@@ -1175,8 +1308,12 @@ def _combined(records):
     else:
         memory_feasibility = 'FAILED' if M_M * estimates['M_hat_bytes'] > PA3_REFERENCE_BYTES else 'VERIFIED'
     screen, pa3 = _screens(estimates)
-    blocking = {c for c, _ in reasons} & {'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'I-8', 'H-FIELDS'}
-    rule_applicable = (stage == '1b' and mode == 'measure' and not blocking
+    ceiling_missing = _ceiling_inputs(summaries.get('forced'), estimates) if mode == 'measure' else []
+    if stage == '1b' and ceiling_missing:
+        reasons.append(('INCOMPLETE', 'combined ceiling inputs incomplete, rule not applicable (r2 §6.2, §9): '
+                                      + '; '.join(ceiling_missing)))
+    blocking = {c for c, _ in reasons} & BLOCKING_CODES
+    rule_applicable = (stage == '1b' and mode == 'measure' and not blocking and not ceiling_missing
                        and memory_feasibility in ('VERIFIED', 'FAILED'))
     stop, validity_ok, exit_code = _classify(reasons, rule_applicable=rule_applicable,
                                              memory_feasibility=memory_feasibility, screen=screen)
@@ -1189,7 +1326,8 @@ def _combined(records):
                                       'recorded_above_1_30': ratio is not None and ratio > SPREAD_LIMIT}},
         'verdict': {'validity_ok': validity_ok, 'memory_feasibility': memory_feasibility,
                     'memory_scope': 'PA-3a payload unit (r2 §16 C6)', 'rule_applicable': rule_applicable,
-                    'stop_class': stop, 'sigma_screen': screen, 'pa3a_screen': pa3,
+                    'ceiling_inputs_complete': not ceiling_missing, 'stop_class': stop,
+                    'sigma_screen': screen, 'pa3a_screen': pa3,
                     'reasons': ['%s: %s' % pair for pair in reasons], 'exit_code': exit_code},
     }
 
