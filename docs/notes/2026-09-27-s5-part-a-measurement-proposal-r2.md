@@ -1,10 +1,30 @@
 # S5 Part A measurement-and-margin proposal, revision r2 (PART_A only, TEST_ONLY), with the CP-1a measurement dispatch
 
-**Status:** PROPOSAL r2, returned for operator decision at **CP-1a**. Nothing here is approved. Every multiplier, allowance and threshold marked CANDIDATE is a candidate rule parameter, not a ceiling. S5 stays **HELD** ([ledger, 2026-09-27 ruling](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--s5-staged-gates-approved-part-a-only-rule-scope-hold-kept-2026-09-27)). *Reconciled 2026-09-27 (§16): after #519 merged, this packet was checked against #519's review corrections and the operator's 2026-09-26 conditional approval of the numerical defaults, and §14.1 is the refreshed CP-1a list.*
+**Status:** **CP-1a RULED 2026-09-27**: all six §14.1 decisions adopted as recommended ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)), which approves the bounded measurement dispatch (decision (2)) and the parameters recorded there. S5 itself stays **HELD** until CP-1b. *Earlier status, kept as history:* PROPOSAL r2, returned for operator decision at **CP-1a**. Nothing here is approved. Every multiplier, allowance and threshold marked CANDIDATE is a candidate rule parameter, not a ceiling. S5 stays **HELD** ([ledger, 2026-09-27 ruling](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--s5-staged-gates-approved-part-a-only-rule-scope-hold-kept-2026-09-27)). *Reconciled 2026-09-27 (§16): after #519 merged, this packet was checked against #519's review corrections and the operator's 2026-09-26 conditional approval of the numerical defaults, and §14.1 is the refreshed CP-1a list.*
 
 **Supersedes, for CP-1a purposes:** the #519 proposal r1, `8c15f18:docs/notes/2026-09-26-s5-part-a-measurement-proposal.md` ([pinned head](https://github.com/Joshua-Asante/first-passage/blob/8c15f1853e64f14f50995e3f1c55a620a0f674b7/docs/notes/2026-09-26-s5-part-a-measurement-proposal.md)). r1 also carries the fix round and the coordinator review "ACCEPTED AS INPUT; nothing approved; S5 stays HELD" (`8c15f18:docs/briefs/handoffs/2026-09-26-s5-part-a-measurement-proposal.md:52-79`). r1 stays the historical input. This r2 note is self-contained, and every change from r1 is listed in §1.
 
 **Card:** [handoff H1](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h1--s5-measurement-correct-the-519-proposal-return-a-measurement-dispatch), step (a) only. **Sequencing owner:** [deployment-checklist addendum 2026-09-27](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step) §0–§5 (CP-1a, §4).
+
+**Current authority (2026-09-27, after CP-1a).** *[Corrected 2026-09-27 (Codex review of 7d59bf95). The "Authority" and "Not granted" blocks below describe this packet at preparation, before CP-1a. They are kept as history and do not bound current work.]*
+- **Granted by the CP-1a ruling** ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)):
+  - all six §14.1 decisions, adopted as recommended;
+  - the rule parameters recorded there;
+  - the bounded measurement dispatch of §12 (decision (2)): Stage 1a, the optional Stage 0, and the Stage 1b probe, dry run and measure run, within the §12.7 caps.
+- **Sequenced by the operator's 2026-09-27 harness ruling (§12.9).** No measurement is executed until all of the following hold:
+  - the revised H1(b) harness PR is returned with its verification evidence;
+  - that evidence is archived on `first-passage-archive`'s `main`;
+  - a post-merge `scripts/evidence_archive.py audit --verify` shows its pins ARCHIVED, and the result is recorded on the H1 row;
+  - the operator has merged the harness PR.
+
+  The ruling itself dispatches no measurement. *[Corrected 2026-09-27 (Codex review of 5177ed2d): the archive-merge and audit gate is stated here as well as in the H1 row.]*
+- **Still not granted:**
+  - an S5 release, freeze, dispatch or execution (S5 stays **HELD** until CP-1b);
+  - any ceiling, profile, release-literal or budget change, except through the §13 procedure after a valid Stage 1b record;
+  - any production value, and any production, activation or live authority;
+  - any statistical dispatch.
+
+*Preparation-time authority, kept as history:*
 
 **Authority:**
 - Operator ruling 2026-09-26 §6 authorizes *preparing* the proposal only ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--s5-directions-adopted-hold-kept-2026-09-26)).
@@ -14,7 +34,7 @@
 
 **Sources read at `521d8f2`** (branch `claude/clever-wozniak-bx0u95`). Under `ops/`, `tests/`, `tools/`, `deploy/`, `scripts/` and `.github/`, `git diff --stat 8c15f18 HEAD` is empty. So every r1 code citation was re-checked against bytes identical to r1's, and each is re-verified in §2. **No measurement, Linux dispatch, workflow file, artifact download, qualification service or S5 work was run.** Every figure below is either cited or labelled as arithmetic. *[2026-09-27: slices-plan line numbers in this note are at `521d8f2`; §16.5 maps them to `4a94f9b1`.]*
 
-**Not granted:**
+**Not granted** *(at preparation; superseded by "Current authority" above)*:
 - no measurement execution, CI-configuration change, Linux dispatch or artifact download;
 - no approved numerical rule;
 - no ceiling, profile, release-literal or budget change;
@@ -267,6 +287,7 @@ No S5 adapter exists at `521d8f2` (`grep -rn run_part_a_compute ops/ tests/`: no
 | SR-6 | The worker's own `PhaseBudgetGuard` (`worker.py:156-200`) is constructable with measurement limits (`cpu_ns = wall_ns = 3600 s`, `memory_bytes` above the runner's memory). The per-replay budget checks then run production code, and the pilot predicate cannot abort. The limits are inputs, not a seam |
 | SR-7 | The RC-6 re-anchored packet states an explicit, scoped exception at each of its four tolerance sites: the Authority line "no tolerance relaxed" (packet line 8), §2 Forbidden "accepted formulas and tolerances" (line 35), §3 "never a relaxed tolerance" (line 49) and §6 Forbidden "a relaxed tolerance" (line 61). The exception covers the SR-1 measurement override only; it is never a route value, a contract value or a statistic |
 | SR-8 | (Stage 2, carried from r1 `:216`.) S5's run evidence exports the PART_A settled observation fields: `cpu_ns`, `memory_peak_bytes`, `oom_events`, the boottime from reservation to `CAPTURED`, and the payload/guardian CPU split where available. They are read by `scripts/s2_run_evidence.py <run> --expect-head <sha>` |
+| SR-9 | *(Adopted at CP-1a from §16 C2; added to this table 2026-09-27.)* The packet's omitted/unnecessary-expansion rejection runs in G5 reconstruction (the route P-5 relies on) or after the SR-3 callable returns, never inside it. A Stage 1c refusal is classified by cause, as R1M:276-279 does |
 
 ### 7.5 PROPOSED proof obligations (S5 tests, node IDs named at C3; for CP-1a approval, item 2(e))
 
@@ -293,7 +314,7 @@ Source admission and `start` are charged as in Stage 1b. Outside it, as setup: g
 
 ### 7.7 BLOCKED rule
 
-Stage 1c is **not** BLOCKED at this revision: the seam is specified. Production authority cannot reach it (the §7.3 gate and P-1). The signed TEST_ONLY route satisfies the gate, so its exclusion is proved only by P-3, P-4 and P-5 (§7.3). At C3, if the built adapter lacks any of SR-1..SR-6, or any of P-1..P-7 fails, Stage 1c returns **BLOCKED**, with this section as the proposed seam. A missing or failing P-3, P-4 or P-5 is always BLOCKED, never waived, because nothing else proves that no signed route can reach the seam. RC-3b then stays unmet and S5 acceptance cannot proceed. No stand-in substitutes for it. *[2026-09-27, §16 C2–C3: once CP-1a approves the SR/P set and RC-6 carries it, a missing SR or failing P is a C3 nonconformance returned to the S5 executor, and P-3, P-4 and P-5 stay non-waivable. SR-9 is proposed.]*
+Stage 1c is **not** BLOCKED at this revision: the seam is specified. Production authority cannot reach it (the §7.3 gate and P-1). The signed TEST_ONLY route satisfies the gate, so its exclusion is proved only by P-3, P-4 and P-5 (§7.3). At C3, if the built adapter lacks any of SR-1..SR-9 *[corrected 2026-09-27 from SR-1..SR-6: CP-1a approved the full set]*, or any of P-1..P-7 fails, Stage 1c returns **BLOCKED**, with this section as the proposed seam. A missing or failing P-3, P-4 or P-5 is always BLOCKED, never waived, because nothing else proves that no signed route can reach the seam. RC-3b then stays unmet and S5 acceptance cannot proceed. No stand-in substitutes for it. *[2026-09-27, §16 C2–C3: once CP-1a approves the SR/P set and RC-6 carries it, a missing SR or failing P is a C3 nonconformance returned to the S5 executor, and P-3, P-4 and P-5 stay non-waivable. SR-9 is proposed. *[Ruled 2026-09-27: CP-1a adopted SR-9 (§16 C2).]*]*
 
 ## 8. Acceptance condition 2: complete aggregate-memory evidence
 
@@ -319,7 +340,7 @@ Both reads include the setup and the file page cache charged to the cgroup, so t
 
 - **Every timed repeat complete:** M̂ = the maximum over them, and PA-3 is applied. The record states `memory_feasibility = VERIFIED` if `m_m × M̂ ≤ 256,000,000`, or `FAILED` otherwise (FAILED goes to an operator ruling, §9 PA-3).
 - **Any timed repeat with only the lower bound:** that job's record states `memory_feasibility = UNVERIFIED` and `rule_applicable = false`, and it is retained as it is. **The rule is not applied to that record**, CPU included, and the return says so. This follows the ruling: "A lower-bound memory fallback leaves memory feasibility unverified and cannot support the rule's application" (slices plan line 848). A lower bound never satisfies PA-3.
-- **One re-run (CANDIDATE, under PA-4).** The job may be re-run once on a fresh runner (§12.7). A complete re-run produces a new record; it does not upgrade the retained one. The re-run itself is a CP-1a candidate (item 1, PA-4), not something the ruling grants.
+- **One re-run (CANDIDATE, under PA-4).** The job may be re-run once on a fresh runner (§12.7). A complete re-run produces a new record; it does not upgrade the retained one. The re-run itself is a CP-1a candidate (item 1, PA-4), not something the ruling grants. *[Ruled 2026-09-27: CP-1a approved PA-4's re-run caps (§12.7) as written.]*
 - **Still UNVERIFIED after the allowed re-run:** memory cannot be shown complete on this runner class with this method. The rule cannot be applied, so RC-3a stays unmet, and build entry needs an operator ruling: for example, an alternative memory method or runner, or a ruled memory disposition. This is neither the D2 falsifier nor a PA-3 failure (§10.3).
 - **Stage 1a (Windows) is always `UNVERIFIED`** for memory. It sets nothing.
 
@@ -412,8 +433,8 @@ The owner text in full ([S5 decision draft](2026-09-26-s5-decision-draft.md) lin
 It has two limbs. r2 classifies them as follows. This follows the H1 card's stop classification (handoffs lines 116-121: "Σ arithmetic fails at every admissible value … the last is the D2 falsifier"), which names the stop class returned during step (b). The card does not amend the owner's definition, and neither does this note.
 
 - **Open** until a valid Stage 1b record exists (review correction, kept).
-- **Σ limb: the stop class D2 ACCOUNTING-DESIGN FALSIFIER.** It fires only if Σ is infeasible at every admissible value. That means: from a record with `validity.ok = true` and complete memory, the Σ-only row fails even at the least-headroom point the approved rule admits. At the candidates, that is Ĉ (or Ĉ₁c) > 4,210 s, or Ŵ + L > 2,033 s (arithmetic). At C3 the same test is the executed `bind_budget` on the built `/v7` (RC-3b).
-- **Measurement limb ("cannot be measured before S5 is released"): live.** An INVALID MEASUREMENT (PA-4 failed twice, digest or prefix mismatch), a Stage 1b that is not approved, or one that cannot run does not fire D2 when it happens: it says nothing about the accounting design, and a fresh approval can re-attempt the measurement. But if **no valid Stage 1b record exists at the release point**, this limb engages, unless the operator sets the PART_A ceiling by ruling (which would also amend the measurement requirement, as r1 `:329` noted for RC-3; under the split, RC-3a). r1 made three events immediate triggers: no valid measurement after two attempts, differing digests, and Stage 1b not approved or unable to run before release (`:326-329`). The fix round repeated the third (`8c15f18:docs/briefs/handoffs/2026-09-26-s5-part-a-measurement-proposal.md:61`). **r2 changes their timing, not their existence**: each engages the measurement limb at the release point if no valid record exists by then, rather than on the event itself. Under the 2026-09-27 split the release point is taken to be the hold-release entry (CP-1b). That mapping is r2's reading and is not ruled. Both points are returned as CP-1a item 4. *[2026-09-27, §16 C7: #519's merged correction reads this limb differently; §14.1 decision (4) puts both readings.]*
+- **Σ limb: the stop class D2 ACCOUNTING-DESIGN FALSIFIER.** It fires only if Σ is infeasible at every admissible value. That means: from a record with `validity.ok = true` and complete memory, the Σ-only row fails even at the least-headroom point the approved rule admits. At the candidates, that is Ĉ (or Ĉ₁c) > 4,210 s, P̂ > 5,613 s *[added 2026-09-27: the 1.5 × P̂ term of PA-1]*, or Ŵ + L > 2,033 s (arithmetic). At C3 the same test is the executed `bind_budget` on the built `/v7` (RC-3b).
+- **Measurement limb ("cannot be measured before S5 is released"): live.** An INVALID MEASUREMENT (PA-4 failed twice, digest or prefix mismatch), a Stage 1b that is not approved, or one that cannot run does not fire D2 when it happens: it says nothing about the accounting design, and a fresh approval can re-attempt the measurement. But if **no valid Stage 1b record exists at the release point**, this limb engages, unless the operator sets the PART_A ceiling by ruling (which would also amend the measurement requirement, as r1 `:329` noted for RC-3; under the split, RC-3a). r1 made three events immediate triggers: no valid measurement after two attempts, differing digests, and Stage 1b not approved or unable to run before release (`:326-329`). The fix round repeated the third (`8c15f18:docs/briefs/handoffs/2026-09-26-s5-part-a-measurement-proposal.md:61`). **r2 changes their timing, not their existence**: each engages the measurement limb at the release point if no valid record exists by then, rather than on the event itself. Under the 2026-09-27 split the release point is taken to be the hold-release entry (CP-1b). That mapping is r2's reading and is not ruled. Both points are returned as CP-1a item 4. *[2026-09-27, §16 C7: #519's merged correction reads this limb differently; §14.1 decision (4) puts both readings.]* *[Superseded 2026-09-27 by CP-1a decision (4) ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)): the release-point reading above is history. The three-way split governs: (i) a Σ failure from a valid record is the D2 ACCOUNTING-DESIGN FALSIFIER stop; (ii) missing permission, or a run not executed, never engages the falsifier and keeps the hold, because CP-1b needs RC-3a; (iii) an invalid measurement is investigated and re-measured only under a fresh approval, after the §12.7 re-runs; (iv) the accounting-design question returns if a diagnosis traces an invalid run to the workload itself. Whether a PART_A ceiling set by ruling answers the measurement limb is still for the operator when it arises.]*
 - **Memory UNVERIFIED after the allowed re-run** (§8.3) is neither limb: the falsifier concerns CPU. It leaves RC-3a unmet, and build entry needs an operator ruling (§8.3, §12.7).
 - **Production:** out of scope, flagged as in r1 `:330`. Per-call growth over 40,203 calls is not established.
 
@@ -426,13 +447,13 @@ The conditions are the ledger's ([direction table](../superpowers/plans/2026-09-
 | **Build entry** | **RC-1**: "D1–D3 ruled" (line 828) | — | **Met** | #517 merged at `5ad04cf` (`git merge-base --is-ancestor 5ad04cf HEAD`: yes) |
 | | "**The §3.4(d) text** applied (S5 draft §4, consistency correction)" (line 828) | — | Open | The proposed sentence ("a spec §2.6 bounded same-sample re-execution is not a draw") is absent from the slices plan (`grep`: no hit) |
 | | "**RC-4/RC-5 assignment**: the seed-view owner and slice, with the F1 admission-check text, and an owner, gate and record location for each of OF-1..OF-7, resolving S5 draft §6 Q12" (line 828) | — | Open | Handoff H7 is producing `docs/notes/2026-09-27-host-obligations-assignment.md` (forthcoming, status open); the coordinator records it in the ledger (line 843) |
-| | "**RC-6**: the packet re-anchored at the release head, including #519's findings that the (2, 4, 2) fixture cannot expand and the three `/v7` profile pitfalls" (line 828) | **PROPOSED (CP-1a item 2(e)):** the re-anchored packet also carries SR-1..SR-8 and P-1..P-7 (§7.4, §7.5), including the SR-7 exception at the packet's four tolerance sites | Open | After §3.4(d) |
+| | "**RC-6**: the packet re-anchored at the release head, including #519's findings that the (2, 4, 2) fixture cannot expand and the three `/v7` profile pitfalls" (line 828) | **PROPOSED (CP-1a item 2(e)):** the re-anchored packet also carries SR-1..SR-8 *[and SR-9 as adopted at CP-1a, §16 C2; corrected 2026-09-27]* and P-1..P-7 (§7.4, §7.5), including the SR-7 exception at the packet's four tolerance sites | Open | After §3.4(d) |
 | | "**RC-3a**: an operator-approved measurement-and-margin rule; a valid (PA-4) record from an operator-approved forced-expansion measurement of the **existing** `_run_part_a` on the reference runtime (#519 Stage 1b); the rule applied as a **provisional** PART_A TEST_ONLY ceiling, with D̂ uncovered; Σ-feasibility shown as **arithmetic on the proposed `/v7` values** (#519 proposal §5)" (line 828) | **Derived from the 2026-09-27 ruling's condition (2)** (line 848: a lower-bound fallback "cannot support the rule's application"): the record must have complete memory, or the rule cannot be applied. **Derived from the 2026-09-27 ruling** (line 845: the N2 ceiling "cannot come from the rule"): the §10 arithmetic needs a proposed `/v7` N2 value, and this note proposes that it come from the separate ruling (CP-1a item 3). A proposed value suffices for the arithmetic | Open | CP-1a, then Stage 1b, then the §13 application |
 | | "Then an operator hold-release entry here" (line 828) (**CP-1b**) | — | Open | After all of the above |
 | **C3 and acceptance** | "The S5 packet's C3 items" (line 829) | — | Open | — |
 | | "**RC-3b**: the adapter-specific measurement (#519 Stage 1c), which covers D̂ and ends the provisional status; the **executed** `bind_budget` Σ-feasibility check on the built `/v7` profile; the Stage 2 service-route consistency check (PA-5)" (line 829) | **PROPOSED (CP-1a item 2(e)):** Stage 1c through the forcing seam of §7 | Open | At C3, within the approved rule |
 | | "The full RC-2 owner-text set accepted and applied" (line 829) | — | Open | — |
-| **Before F1** | "The RC-4 seed-view change landed, with its F1 admission check; OF-1..OF-7 attested by attended reads; K3 built" (line 830) | — | Open | — |
+| **Before F1** | "The RC-4 seed-view change landed, with its F1 admission check; OF-1..OF-7 attested by attended reads; K3 built" (line 830) *[Corrected 2026-09-27: the quoted ledger row is itself corrected; before F1 only OF-7 is due, and the full OF-1..OF-7 set is read at CP-8, per the ledger's RC-5 entry.]* | — | Open | — |
 
 **No S5 release proposal is supported:** RC-3a, RC-4/RC-5 assignment, RC-6 and §3.4(d) are open.
 
@@ -480,10 +501,10 @@ cp "$S/SHA256SUMS" "$S/lines.txt" "$S/memory_peak.txt" "$D/"
 - **Commands:**
 ```powershell
 .\fp.ps1 doctor
-.\fp.ps1 python docs/notes/<date>-s5-part-a-measurement/measure_part_a_max.py.txt --launcher --stage 1a --arms forced,prescribed --repeats 5 --out docs/notes/<date>-s5-part-a-measurement/windows.json
-.\fp.ps1 python docs/notes/<date>-s5-part-a-measurement/measure_part_a_max.py.txt --summarize docs/notes/<date>-s5-part-a-measurement/windows.json --stage 1a
+.\fp.ps1 python docs/notes/<date>-s5-part-a-measurement/measure_part_a_max.py.txt --launcher --stage 1a --arms forced,prescribed --repeats 5 --out docs/notes/<date>-s5-part-a-measurement/windows-<utc>.json
+.\fp.ps1 python docs/notes/<date>-s5-part-a-measurement/measure_part_a_max.py.txt --summarize docs/notes/<date>-s5-part-a-measurement/windows-<utc>.json --stage 1a
 ```
-- **Files created:** the harness `.py.txt` and `windows.json` (`platform_accounting = windows_process_time_job_object`, `memory.complete = false`).
+- **Files created:** the harness `.py.txt` and `windows-<utc>.json` (`platform_accounting = windows_process_time_job_object`, `memory.complete = false`), plus its summary record. *[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50): the launcher refuses to overwrite an existing bundle and §12.9 (2) forbids removing one, so each run gets its own UTC-stamped path.]*
 - **Limits:** about 12 processes (planning ≤ 20 min, arithmetic from the §4 estimate).
 - **Stop:** a harness defect; fix and re-run locally. It is not a validity-check count.
 - **Output:** harness validation only: panel counts forced 4 / prescribed 2, digest identity, prefix identity, and all fields populated. It sets no value.
@@ -497,12 +518,13 @@ cp "$S/SHA256SUMS" "$S/lines.txt" "$S/memory_peak.txt" "$D/"
 
 **Dispatchability (UNVERIFIED):** GitHub's documentation states that a `workflow_dispatch` workflow must exist on the default branch to be triggered. The file would therefore land on `main` by operator merge before any dispatch. Being dispatch-only, landing it runs nothing.
 
-**Workflow file:** `.github/workflows/qualification-s5-part-a-measurement.yml`. It is **described, not created**; step (b) writes it after CP-1a.
+**Workflow file:** `.github/workflows/qualification-s5-part-a-measurement.yml`. It is **described, not created**; step (b) writes it after CP-1a. *[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50): step (b) created it on [#526](https://github.com/Joshua-Asante/first-passage/pull/526). The committed workflow governs wherever this description differs; the corrections below bring the description into line.]*
 - `name: Qualification S5 Part A measurement (TEST_ONLY, dispatch only)`.
 - `run-name: S5 Part A measurement [stage ${{ inputs.stage }}, ${{ inputs.mode }}] (${{ github.ref_name }})`.
 - **Triggers:** `on: workflow_dispatch` **only**. There are no `push`, `pull_request` or `schedule` triggers. Inputs:
   - `stage`: choice `1b | 1c`, default `1b`;
   - `mode`: choice `dry-run | measure`, default `dry-run`;
+  - `runtime`: choice `host_venv | worker_image`, default `host_venv`; the workflow refuses `worker_image` (the harness README's image-first finding) *[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50)]*;
   - `note_dir`: string, required.
 - **Settings:**
   - `permissions: contents: read`;
@@ -510,28 +532,36 @@ cp "$S/SHA256SUMS" "$S/lines.txt" "$S/memory_peak.txt" "$D/"
 - **Job `measure`:**
   - `runs-on: ubuntu-24.04` and `timeout-minutes: 120`;
   - `strategy: fail-fast: false`, with `matrix: job: ${{ fromJSON(inputs.mode == 'dry-run' && '["a"]' || '["a","b"]') }}`;
-  - `env`: `STAGE`, `MODE` and `NOTE_DIR` come from the inputs, through `env` only, never interpolated into scripts; `ARM_ORDER` is `forced prescribed` for job `a` and `prescribed forced` for job `b`; `OUT` is `$RUNNER_TEMP/s5-part-a-measurement`.
+  - `env`: `STAGE`, `MODE` and `NOTE_DIR` come from the inputs, through `env` only, never interpolated into scripts; `ARM_ORDER` is `forced prescribed` for job `a` and `prescribed forced` for job `b`; `OUT` is `$RUNNER_TEMP/s5-part-a-measurement`. *[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50): the job `env` carries `STAGE`, `MODE`, `RUNTIME`, `NOTE_DIR`, `JOB` (from the matrix), `ARM_ORDER` and `REPEAT_POLL_BOUND_S`. `OUT` and `host_root` are not in the job `env`: each step that needs them sets `OUT` itself and re-derives `host_root` from the manifest, because steps do not share shell variables. The `run-name` also carries `${{ inputs.runtime }}`.]*
 - **Steps:**
   1. `actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5`, the pin the S2 workflow uses.
   2. **Validate inputs.** `NOTE_DIR` must match `^docs/notes/[0-9]{4}-[0-9]{2}-[0-9]{2}-s5-part-a-measurement$` and contain `measure_part_a_max.py.txt`. Record `git rev-parse HEAD` (and, for `stage=1c`, `git rev-parse HEAD^`), and require an empty `git status --porcelain`. Checkout depth must be at least 2 for `HEAD^` (`fetch-depth: 2` on step 1).
   3. **Swap off and host facts:** `sudo swapoff -a`. Then write to `$OUT/host-facts.txt`: `uname -r`, `systemctl --version | head -1`, `stat -fc %T /sys/fs/cgroup`, `cat /sys/fs/cgroup/cgroup.controllers`, `grep -m1 'model name' /proc/cpuinfo`, `nproc`, `grep SwapTotal /proc/meminfo`, `swapon --show`.
   4. **Provision**, exactly as S2 (`qualification-s2-supervision.yml:104-107`): `sudo /bin/bash tools/qualification_verification/provision.sh --manifest-output "$RUNNER_TEMP/qualification-manifest"`.
   5. **Doctor**, as S2 (`:130-135`): derive `host_root` from the manifest, then run `sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor`.
-  6. **Accounting probe** (every job, before any timed repeat). A transient unit `fp-s5pa-probe` with `-p MemoryAccounting=yes -p CPUAccounting=yes -p MemorySwapMax=0 -p RemainAfterExit=yes` runs `$host_root/env/bin/python -I -c` with an inline script. The script spawns a child that allocates and touches 64 MiB and exits, then reads its own cgroup's `memory.peak`, `memory.swap.max` and `cpu.stat`. Then `systemctl show -p MemoryPeak -p MemorySwapPeak -p CPUUsageNSec -p ControlGroup fp-s5pa-probe`. Write `$OUT/probe.json`, and exit 3 unless in-unit `memory.peak` ≥ 67,108,864, `SwapTotal` = 0 and `CPUUsageNSec` is populated.
+  6. **Accounting probe** (every job, before any timed repeat). A transient unit `fp-s5pa-probe` with `-p MemoryAccounting=yes -p CPUAccounting=yes -p MemorySwapMax=0 -p RemainAfterExit=yes` runs `$host_root/env/bin/python -I -c` with an inline script. The script spawns a child that allocates and touches 64 MiB and exits, then reads its own cgroup's `memory.peak`, `memory.swap.max` and `cpu.stat`. Then `systemctl show -p MemoryPeak -p MemorySwapPeak -p CPUUsageNSec -p ControlGroup fp-s5pa-probe`. Write `$OUT/probe.json`, and exit 3 unless in-unit `memory.peak` ≥ 67,108,864, `SwapTotal` = 0 and `CPUUsageNSec` is populated. *[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50): the workflow writes `$OUT/probe-in-unit.json` and `$OUT/probe.unit`, and the harness's `--probe-verdict "$OUT"` gives the exit. Besides the three conditions above, it also fails on the unit's cgroup path, the child's exit, `memory.swap.max`, and the unit's `ExecMainStatus` and `Result`; each such failure is I-1.]*
   7. **Measurement loop.** In `dry-run` mode it runs one untimed repeat per arm, labelled `dry_run`. In `measure` mode it runs the loop below.
-  8. **Summarize:** `sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python "$NOTE_DIR/measure_part_a_max.py.txt" --summarize "$OUT" --stage "$STAGE" --job "${{ matrix.job }}" --run-id "$GITHUB_RUN_ID"`. It writes `$OUT/record.json` and exits 0, 3 or 4 (§6.3).
-  9. **Owned cleanup**, `if: always()`, as S2 (`:143-171`): `sudo /usr/bin/python3 -I tools/qualification_verification/cleanup.py --manifest "$manifest"`. The journal is exported to `$OUT/journal.log` and ownership fixed with `chown`.
-  10. **Upload**, `if: always()`, with `actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02`: `name: s5-part-a-measurement-${{ inputs.stage }}-${{ matrix.job }}`, `path: ${{ runner.temp }}/s5-part-a-measurement/`, `retention-days: 14`.
+  8. **Summarize:** `sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" python "$NOTE_DIR/measure_part_a_max.py.txt" --summarize "$OUT" --stage "$STAGE" --mode "$MODE" --job "$JOB" --run-id "$GITHUB_RUN_ID" --run-attempt "$GITHUB_RUN_ATTEMPT" --runner "$RUNNER_NAME" --dispatched-head "$GITHUB_SHA" --runtime-kind "$RUNTIME" --arm-order "$ARM_ORDER"`. It writes `$OUT/record.json` and exits 0, 3 or 4 (§6.3). It runs unless the job was cancelled or the probe step was skipped. *[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50): the command previously omitted `--mode`, `--run-attempt`, `--runner`, `--dispatched-head`, `--runtime-kind` and `--arm-order`, so as written every job would have recorded I-7 and job b H-SHAPE, and it interpolated `matrix.job` into the script against the env-only rule above.]*
+  9. **Owned cleanup**, `if: always()`, as S2 (`:143-171`): `sudo /usr/bin/python3 -I tools/qualification_verification/cleanup.py --manifest "$manifest"`. The journal is exported to `$OUT/journal.log` and ownership fixed with `chown`. *[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50): the step also stops every `fp-s5pa-*` unit and writes `$OUT/cleanup-receipt.json` (schema `s5-part-a-max-expansion-measurement/v2#cleanup-receipt`, fields `cleanup_exit`, `run_id`, `run_attempt`, `job`), and its exit is the accumulated cleanup status. Combining refuses a job record without a receipt showing `cleanup_exit` 0 for the same run, attempt and job.]*
+  10. **Upload**, `if: always()`, with `actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02`: `name: s5-part-a-measurement-${{ inputs.stage }}-${{ inputs.mode }}-${{ matrix.job }}-attempt${{ github.run_attempt }}`, `path: ${{ runner.temp }}/s5-part-a-measurement/`, `retention-days: 14`. *[Corrected 2026-09-27 (Codex review of 7f362372): the name carries the mode and the run attempt, as in the H1(b) workflow. A `--failed` re-run therefore uploads beside the failed attempt's artifact rather than colliding with it, and the combine step can pick each job's attempt by name.]*
 
 **Measurement loop (step 7, `measure` mode):**
 ```bash
 set -euo pipefail
+: "${REPEAT_POLL_BOUND_S:=1800}"   # the per-repeat poll bound; the workflow sets it once in the job env
+: "${STAGE:?}" "${NOTE_DIR:?}" "${ARM_ORDER:?}" "${RUNNER_TEMP:?}" "${GITHUB_WORKSPACE:?}"   # from the job env and the runner
+OUT="$RUNNER_TEMP/s5-part-a-measurement"                  # steps share no shell variables:
+host_root="$(dirname "$(sudo cat "$RUNNER_TEMP/qualification-manifest")")"   # re-derive, as step 5 does
 PY="$host_root/env/bin/python"; H="$NOTE_DIR/measure_part_a_max.py.txt"
 for arm in $ARM_ORDER; do
   for r in 1 2 3 4 5 0; do            # r=1 cold, timed, included; r=0 instrumented, last, excluded
+    cold_prep=""
     if [ "$r" = 1 ]; then
       find "$GITHUB_WORKSPACE" -name __pycache__ -type d -prune -exec sudo rm -rf {} +
       sync; echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
+      # stop if bytecode survived the purge; otherwise mark the cold precondition as done
+      [ -z "$(find "$GITHUB_WORKSPACE" -name __pycache__ -type d -print -quit)" ] || exit 1
+      cold_prep="HarnessColdPrep=done"
     fi
     unit="fp-s5pa-$STAGE-$arm-$r"
     sudo systemd-run --unit="$unit" --working-directory="$GITHUB_WORKSPACE" \
@@ -539,34 +569,61 @@ for arm in $ARM_ORDER; do
       -E OPENBLAS_NUM_THREADS=1 -E OMP_NUM_THREADS=1 -E MKL_NUM_THREADS=1 -E NUMEXPR_NUM_THREADS=1 \
       "$PY" -I scripts/fp.py --env "$host_root/env" python "$H" \
         --repeat-mode --stage "$STAGE" --arm "$arm" --repeat "$r" --unit "$unit" --out "$OUT/$arm-$r.json"
+    deadline=$(($(date +%s) + REPEAT_POLL_BOUND_S)); timed_out=no
     until [ "$(systemctl show -p SubState --value "$unit")" = exited ] || \
-          [ "$(systemctl show -p ActiveState --value "$unit")" = failed ]; do sleep 1; done
+          [ "$(systemctl show -p ActiveState --value "$unit")" = failed ]; do
+      [ "$(date +%s)" -lt "$deadline" ] || { timed_out=yes; break; }
+      sleep 1
+    done
     systemctl show -p CPUUsageNSec -p MemoryPeak -p MemorySwapPeak -p ExecMainStatus -p ControlGroup \
-      -p ExecMainStartTimestampMonotonic -p ExecMainExitTimestampMonotonic "$unit" > "$OUT/$arm-$r.unit"
+      -p ExecMainStartTimestampMonotonic -p ExecMainExitTimestampMonotonic -p Result "$unit" > "$OUT/$arm-$r.unit"
+    printf 'HarnessPollTimeout=%s\nHarnessPollBoundS=%s\n' "$timed_out" "$REPEAT_POLL_BOUND_S" >> "$OUT/$arm-$r.unit"
+    [ -z "$cold_prep" ] || echo "$cold_prep" >> "$OUT/$arm-$r.unit"
     sudo systemctl stop "$unit"; sudo systemctl reset-failed "$unit" 2>/dev/null || true
   done
 done
 ```
 
-**Dispatch commands (step (b), after CP-1a and after the workflow file is on `main`):**
+*[Corrected 2026-09-27 (Codex reviews of 6e313c10 and d73170e2): the sketch now defines the poll bound (default 1800 s) and names the variables earlier steps set, so it runs under `set -u`. *[Corrected again 2026-09-27 (Codex review of 95fe55f7): `OUT` and `host_root` are shell variables of other steps, not job `env`, so the sketch sets `OUT` and re-derives `host_root` from the manifest itself, as the workflow does in every step.]* It also carries what §12.9 (1) judges completion on. That is a bounded per-repeat poll, with the explicit `HarnessPollTimeout` and `HarnessPollBoundS` markers and the unit's `Result`, plus repeat 1's cold-preparation marker. Without these, every Linux repeat would read as I-6. The **executable** loop is the H1(b) workflow, `.github/workflows/qualification-s5-part-a-measurement.yml` (#526), which governs where this sketch differs. That workflow also keeps the loop running after a launch or read failure (`HarnessLaunchFailed`, `HarnessShowFailed`) and stops at the job's evidence-preserving deadline (`HarnessNotStarted`).]*
+
+**Dispatch commands (the CP-1a decision (2) execution, after the harness PR is merged and the §12.9 sequencing gate in "Current authority" holds; not a step (b) deliverable):** *[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50): relabelled from "step (b)", whose dispatch record excludes any dispatch; the ref is `main`, where the workflow and harness land, as in the harness README. `<measure-branch>` was undefined for Stage 1b.]*
 ```bash
-gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref <measure-branch> \
+gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref main \
   -f stage=1b -f mode=dry-run -f note_dir=docs/notes/<date>-s5-part-a-measurement
-gh run watch <run_id> -R Joshua-Asante/first-passage --exit-status
-gh run download <run_id> -R Joshua-Asante/first-passage -D <scratch>/s5-1b-dry
-# only if the dry run fails a re-runnable check (I-1 or I-6), once per stage: re-dispatch the same dry run
+gh run watch <run_id> -R Joshua-Asante/first-passage --exit-status; echo "watch exit $?"   # waits for completion
+gh run download <run_id> -R Joshua-Asante/first-passage -D <scratch>/s5-1b-dry           # always, pass or fail
+# only if the dry run fails a re-runnable check (I-1 or I-6), once per stage: re-dispatch the same dry run,
+# then watch and download it the same way into <scratch>/s5-1b-dry-2
 # after a clean dry run:
-gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref <measure-branch> \
+gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref main \
   -f stage=1b -f mode=measure -f note_dir=docs/notes/<date>-s5-part-a-measurement
-gh run download <run_id> -R Joshua-Asante/first-passage -D <scratch>/s5-1b
-# only if a job exits 3 (a re-runnable validity failure), once per stage; it re-runs every failed job (up to both):
+gh run watch <run_id> -R Joshua-Asante/first-passage --exit-status; echo "watch exit $?"   # waits for completion
+gh run download <run_id> -R Joshua-Asante/first-passage -D <scratch>/s5-1b-attempt1      # always, pass or fail
+# only if every failed job exits 3 (a re-runnable validity failure) and none exits 4 or fails before summarize,
+# once per stage; it re-runs every failed job (up to both):
 gh run rerun <run_id> -R Joshua-Asante/first-passage --failed
+gh run watch <run_id> -R Joshua-Asante/first-passage --exit-status; echo "watch exit $?"   # waits for attempt 2
+gh run download <run_id> -R Joshua-Asante/first-passage -D <scratch>/s5-1b-attempt2      # the re-run jobs' evidence
+# combine: exactly one job a record and one job b record from this run, through the operations launcher,
+# from a checkout at the measured revision (the harness refuses otherwise):
+python -I scripts/fp.py python docs/notes/<date>-s5-part-a-measurement/measure_part_a_max.py.txt \
+  --summarize <job-a record.json> <job-b record.json> \
+  --record docs/notes/<date>-s5-part-a-measurement/stage1b/<run_id>-combined.json
 ```
 
-**Files created by step (b):**
+*[Corrected 2026-09-27 (Codex review of 5177ed2d): the combine step.]*
+- **Invocation.** The harness README's `--summarize <a>/record.json <b>/record.json --record <combined>.json` runs through the operations launcher, from a checkout at the measured revision.
+- **Which record per job.** Each artifact is named `…-<job>-attempt<n>`. For each job (a and b), use the record from the **highest run attempt in which that job ran**: attempt 2 for a job that the `--failed` re-run repeated, attempt 1 for a job that passed on attempt 1 and was not re-run. The artifact name carries the run attempt, so both attempts' artifacts stay distinct in the two download directories.
+- **What is never combined.** A failed attempt-1 record of a job that attempt 2 repeated is not combined; it stays retained as evidence.
+- **Refusals.** The harness refuses, and writes nothing, for records with different run ids, an attempt outside 1–2, or a cleanup receipt that does not match its record's run, attempt and job.
+
+*[Corrected 2026-09-27 (Codex review of 54471fab): each dispatch and the one permitted `--failed` re-run is now watched to completion with `gh run watch` before `gh run download`, because `download` only retrieves artifacts that already exist. Each download goes to its own directory whether the run passed or failed. Attempt 1's evidence and the re-run's are both retained, and the combine step reads the attempt-1/attempt-2 mixture (§12.9).]*
+
+**Files created** (step (b): the workflow YAML, the harness and the README; the measurement execution: the `stage1b/` evidence) *[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50)]*:
 - the workflow YAML above;
 - `docs/notes/<date>-s5-part-a-measurement/measure_part_a_max.py.txt`;
-- `docs/notes/<date>-s5-part-a-measurement/stage1b/<run_id>-<job>/{record.json,probe.json,host-facts.txt,<arm>-<r>.json,<arm>-<r>.unit}`;
+- `docs/notes/<date>-s5-part-a-measurement/stage1b/<run_id>-<job>-attempt<n>/{record.json,probe-in-unit.json,probe.unit,host-facts.txt,<arm>-<r>.json,<arm>-<r>.unit,cleanup-receipt.json}`, one directory per job and attempt, failed attempts included;
+- `docs/notes/<date>-s5-part-a-measurement/stage1b/<run_id>-combined.json`, the combined record. §13 applies the rule to this record and cites its path and SHA-256. It is retained and archived with the per-job evidence. *[Corrected 2026-09-27 (Codex review of 7f362372): the combined record and per-attempt directories are retained files.]*
 - a short note `docs/notes/<date>-s5-part-a-measurement/README.md`.
 
 **Output:** Ĉ, Ŵ, M̂ and P̂ for the forced arm, the prescribed anchor, the validity and memory verdicts, and the stop class.
@@ -574,8 +631,8 @@ gh run rerun <run_id> -R Joshua-Asante/first-passage --failed
 ### 12.4 Stage 1c: at C3, through the built adapter
 
 - **When:** at S5 packet Checkpoint C3, before any acceptance-grade run relies on the ceiling.
-- **Preconditions:** SR-1..SR-6 built and P-1..P-7 passing, with node IDs in the C3 return (§7). Otherwise **BLOCKED** (§7.7).
-- **Grants:** `ci.dispatch` of the same workflow and download of its artifacts. If approved at CP-1a, the dispatch is executed at C3. The approval is **conditional**: the harness gains its `--stage 1c` path only at C3, so the operator would otherwise approve code that does not yet exist. Before the Stage 1c dispatch the coordinator reads the harness diff (the `--stage 1c` path against the Stage 1b harness) and records that read. Without that record the dispatch is not made.
+- **Preconditions:** SR-1..SR-9 built, with SR-7's approved packet exceptions applied at the four tolerance sites, SR-8's evidence export and SR-9's rejection placement, and P-1..P-7 passing, with node IDs in the C3 return (§7). Otherwise **BLOCKED** (§7.7). *[Corrected 2026-09-27 (Codex review of 7f362372): the precondition names the full SR set that CP-1a approved (ledger, SR-1..SR-9), not SR-1..SR-6.]*
+- **Grants:** `ci.dispatch` of the same workflow and download of its artifacts. If approved at CP-1a, the dispatch is executed at C3. *[Corrected 2026-09-27: approved at CP-1a (decision (2)), so it executes at C3 under the conditions that follow.]* The approval is **conditional**: the harness gains its `--stage 1c` path only at C3, so the operator would otherwise approve code that does not yet exist. Before the Stage 1c dispatch the coordinator reads the harness diff (the `--stage 1c` path against the Stage 1b harness) and records that read. Without that record the dispatch is not made.
 - **Where the harness lives:** the S5 packet's §2 file list (packet line 35) does not include `docs/notes/…`, and its executor is the single writer for those files. The harness therefore stays **off** the S5 branch. It is committed on a separate measurement branch based on the S5 head (`<S5 head>` plus the harness commit only), and Stage 1c is dispatched with `--ref` on that branch. The record's `dispatched_head` is the measurement-branch head. For `stage=1c`, step 2 of the workflow also records `git rev-parse HEAD^`, and the coordinator checks that it equals the S5 head reported at C3. A mismatch is treated as I-7.
 - **Repeat body.** Steps 3–6 of §6.3 are replaced by:
   - setup (excluded): the composition fixture and SR-5's staged N2 capture bytes copied into a repeat-local input directory;
@@ -585,7 +642,7 @@ gh run rerun <run_id> -R Joshua-Asante/first-passage --failed
   - assertions: forced `expanded` true with 4 panels, prescribed 2; the S5-D1 prefix assertion (`final[:len(initial)] == initial`, packet §3); the forced initial-prefix bytes equal to the prescribed ones; the object identity of P-7;
   - the in-unit memory read.
 - **Commands:** as §12.3, with `--ref <measurement branch on the S5 head> -f stage=1c`: a dry run (at most one re-dispatch of a failed dry run), then `measure`, then at most one `--failed` re-run (§12.7).
-- **Files created:** `docs/notes/<date>-s5-part-a-measurement/stage1c/<run_id>-<job>/…`, with the same layout plus `n2_capture_sha256` and the two artifact digests per repeat.
+- **Files created:** `docs/notes/<date>-s5-part-a-measurement/stage1c/<run_id>-<job>-attempt<n>/…` *[corrected 2026-09-27: attempt-qualified, as Stage 1b]*, with the same layout plus `n2_capture_sha256` and the two artifact digests per repeat.
 - **Output:** Ĉ₁c, Ŵ₁c, P̂₁c and M̂₁c. They cover D̂ and end the provisional status (§13 step 6). *[2026-09-27, §16 C4: except the named worker-side residual; §14.1 decision (2)(e).]*
 
 ### 12.5 Stage 2: service-route consistency at C3 (no new authority)
@@ -627,7 +684,13 @@ All figures are arithmetic:
 - at most **one `gh run rerun --failed`** of the measure dispatch. It re-runs every failed job (up to both), whatever failure classes caused it;
 - any failure after that re-run stops the stage.
 
-Both caps are CANDIDATES under PA-4 (CP-1a item 1). §12.6 budgets exactly these re-runs. Every stop returns to the coordinator at once. A failed or re-run job's evidence is retained.
+*[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50): where the lines above and the class table differ, the stricter reading governs, so no attempt is added.]*
+- **Exit 4 stops the stage.** If any job exits 4 (a class marked **No**, a harness code, or `LEGACY_UNACCEPTED`), the stage stops: no `--failed` re-run is run for that dispatch, since it would repeat a no-re-run class.
+- **Failures outside the summarizer stop the stage.** A job that fails before a record exists (provisioning or doctor, so the probe and summarize are skipped), or whose owned cleanup fails (the combine step refuses it), is not an exit 3. It stops the stage for diagnosis, and any new dispatch needs a fresh approval (CP-1a decision (4)(iii)).
+- **Dry-run exit 3 outside the cap stops.** A dry-run exit 3 for a class other than I-1 or I-6 (for example I-3, when a dry-run repeat lacks memory evidence) is not covered by the re-dispatch and stops the stage.
+- **Harness codes.** `H-FIELDS` (a required record field is missing or malformed), `H-SHAPE` (the arm or job shape is wrong) and `H-COUNTS` (repeat counts are wrong) are harness-contract failures: `INVALID_MEASUREMENT`, exit 4, no re-run.
+
+Both caps are CANDIDATES under PA-4 (CP-1a item 1). *[Ruled 2026-09-27: CP-1a approved both caps as written.]* §12.6 budgets exactly these re-runs. Every stop returns to the coordinator at once. A failed or re-run job's evidence is retained.
 
 | Class | Condition | Re-run? | Effect |
 |---|---|---|---|
@@ -642,7 +705,7 @@ Both caps are CANDIDATES under PA-4 (CP-1a item 1). §12.6 budgets exactly these
 | **D2 ACCOUNTING-DESIGN FALSIFIER** (the owner's Σ limb) | From a **valid** record with complete memory, Σ is infeasible at every admissible value (§10.3) | — | Returned as the D2 falsifier: revisit the uniform model (S5 draft §2.3). Not a measurement failure |
 | **PA-3 failure** | A valid, complete record has `m_m × M̂ > 256,000,000` (with the P4 tuple extended; §8.1) | — | An operator ruling (§9). Neither invalid nor D2 |
 
-An INVALID MEASUREMENT does not fire the Σ limb and does not clear D2. If no valid Stage 1b record exists at the release point, for any reason (invalid measurement, non-approval or non-execution), the owner's measurement limb engages unless the operator sets the ceiling by ruling (§10.3; reconciliation is CP-1a item 4). *[2026-09-27, §16 C7–C8: I-1 and I-3 are relabelled memory evidence missing, not invalid, with the same effects; I-4 bears on R7 only after diagnosis; the release-point reading is §14.1 decision (4).]*
+An INVALID MEASUREMENT does not fire the Σ limb and does not clear D2. ~~If no valid Stage 1b record exists at the release point, for any reason (invalid measurement, non-approval or non-execution), the owner's measurement limb engages unless the operator sets the ceiling by ruling (§10.3; reconciliation is CP-1a item 4).~~ *[Superseded 2026-09-27 by CP-1a decision (4) ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)): missing permission, or a run not executed, never engages the falsifier and keeps the hold; an invalid measurement is re-measured only under a fresh approval after the re-runs above; see §10.3's marker for the full split.]* *[2026-09-27, §16 C7–C8: I-1 and I-3 are relabelled memory evidence missing, not invalid, with the same effects; I-4 bears on R7 only after diagnosis; the release-point reading is §14.1 decision (4).]* *[Operator ruling 2026-09-27, §12.9: missing Stage 1b ceiling inputs give an explicit `INCOMPLETE_EVIDENCE` verdict with exit 3, within the single `--failed` re-run above and granting no additional attempt; a missing completion field is I-6; legacy Stage 1a bundles are retained as `LEGACY_UNACCEPTED`; Stage 1a and dry runs are never rule-applicable.]*
 
 ### 12.8 Record schema `s5-part-a-max-expansion-measurement/v2`
 
@@ -673,15 +736,63 @@ repeats[{repeat, cold, instrumented, dry_run,
 summary{per arm: workload cpu/wall max, median, min; warm spread; cold ÷ warm median; memory max (complete only);
         digests_identical; prefix_matches_prescribed; memory_complete_all_timed_repeats},
 verdict{validity_ok, memory_feasibility = VERIFIED | FAILED | UNVERIFIED, rule_applicable,
-        stop_class = none | INVALID_MEASUREMENT | BLOCKED | D2_ACCOUNTING_FALSIFIER | PA3_FAILURE,
+        stop_class = none | INVALID_MEASUREMENT | BLOCKED | D2_ACCOUNTING_FALSIFIER | PA3_FAILURE
+                     | MEMORY_EVIDENCE_MISSING | INCOMPLETE_EVIDENCE | LEGACY_UNACCEPTED,
         reasons[]}
 ```
+
+*[Operator ruling 2026-09-27, §12.9 (5): `repeats[]` gains the completion fields (`row_exit_status`, `result`, `timed_out`, `poll_bound_s`, `unit_present`, `completed`), `stop_class` gains `INCOMPLETE_EVIDENCE` and `LEGACY_UNACCEPTED`, `verdict` gains `rerun_eligible`, and `summary` carries the all-repeat and warm distributions per arm.]* *[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50): `stop_class` also carries `MEMORY_EVIDENCE_MISSING`, the §16 C8 relabel of I-1 and I-3, and each record carries `scope = job | combined`. When several classes apply, `stop_class` names the first of `BLOCKED`, `LEGACY_UNACCEPTED`, `INVALID_MEASUREMENT`, `INCOMPLETE_EVIDENCE`, `MEMORY_EVIDENCE_MISSING`, `D2_ACCOUNTING_FALSIFIER`, `PA3_FAILURE`; every reason is recorded. The exit follows the reasons, not the stop class: exit 4 if any no-re-run class applies, else exit 3 if any re-runnable class applies.]*
+
+### 12.9 Operator ruling 2026-09-27: completion fields, legacy bundles and incomplete Stage 1b evidence
+
+**Ruling.** On 2026-09-27 the operator ruled in session, after reviewing the H1(b) harness returned on [#526](https://github.com/Joshua-Asante/first-passage/pull/526):
+- "Adopt all three recommendations. Require explicit completion fields; retain legacy bundles without granting current acceptance. Make incomplete Stage 1b measurement evidence fail with exit 3, eligible only within the existing per-stage retry cap. Preserve Stage 1a and dry-run semantics. Amend the dispatch narrowly to commit and run the regression suite. Update the owning contract, README and tests consistently. Return the revised PR with retained verification evidence before measurement execution. S5 remains HELD."
+- It then made this more precise: "For Stage 1b measurement, missing required ceiling inputs on either arm must produce an explicit incomplete-evidence verdict, rule_applicable=false, and exit 3. This failure is eligible only within the existing single failed-job rerun allowance per stage. It grants no additional attempt. Record generation, cleanup and artifact upload must still run. Preserve the intended exceptions: Windows Stage 1a does not require complete aggregate-memory evidence, and dry runs are judged against their own requirements. Neither becomes rule-applicable merely because it exits zero. Amend the dispatch narrowly to commit the regression tests, now 75, and add coverage for these exit semantics through the real summarizer. Passing scratchpad tests alone is insufficient for final acceptance. Update the owner contract and README consistently, then return the revised PR and retained verification evidence. No measurement dispatch; S5 remains HELD."
+
+This section is the contract text for those rulings. The dispatch amendment is in the [H1 dispatch record](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h1-steps-b-and-c-dispatch-record-frozen-2026-09-27). Where this section and §12.2, §12.3, §12.7 or §12.8 differ, this section governs.
+
+1. **Explicit completion fields.** A repeat counts as completed only when its completion is recorded affirmatively:
+   - Linux: the unit's `Result=success` and `HarnessPollTimeout=no`, and both the row's `exit_status` and the unit's `ExecMainStatus` are 0;
+   - Windows: the launcher's `timed_out` is explicitly false and the job object's exit code is 0.
+
+   An absent, empty or unrecognised completion field is I-6 (a failed repeat), never success. This applies at every stage and in dry runs.
+2. **Legacy bundles.** A Windows Stage 1a bundle written by a launcher older than this ruling's harness revision is retained unmodified and stays readable by `--summarize`. Such a bundle is identified by the absence of its recorded per-repeat bound (`timeout_s`) or its `executed_identity`. It never grants current acceptance: its verdict is `stop_class = LEGACY_UNACCEPTED`, `validity_ok = false`, `rule_applicable = false`, exit 4, and it is not re-run. Stage 1a acceptance needs a bundle from the current launcher. A fresh Stage 1a run is a new §12.2 run, not a validity-check re-run. Legacy bundles are never deleted, overwritten or upgraded.
+3. **Incomplete Stage 1b evidence: an explicit verdict with exit 3.** A Stage 1b measure record, per job or combined, is incomplete when a required ceiling input is missing on either arm. The required inputs are any input to Ĉ, Ŵ or P̂, or to either arm's warm spread, on a completed timed repeat.
+   - The verdict is explicit: `stop_class = INCOMPLETE_EVIDENCE`, with reason `INCOMPLETE` naming each missing input, plus `validity_ok = false`, `rule_applicable = false` and exit 3.
+   - It is re-run-eligible **only within the existing single failed-job re-run allowance per stage** (§12.7, one `gh run rerun --failed`). It shares that allowance and grants no additional attempt. `verdict.rerun_eligible` is true only when every failing job is on run attempt 1. On attempt 2 the same failure stops the stage.
+   - An exit 3 never short-circuits the job. Record generation, the owned cleanup (§12.3 step 9) and the artifact upload still run, and the evidence is retained.
+   - Memory incompleteness keeps its own I-3 / §8.3 treatment, unchanged. When both apply, both reasons are recorded.
+   - *[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50): when an invalid class (for example I-6 on a warm repeat) co-occurs with a missing input, `stop_class` is `INVALID_MEASUREMENT` and the `INCOMPLETE` reason is still recorded; `rule_applicable` stays false, and the exit is 3 unless a no-re-run class also applies (§12.8 marker).]*
+4. **The intended exceptions are preserved.**
+   - Windows Stage 1a validates the harness and sets no value. It does not require complete aggregate-memory evidence (`memory.complete = false` by design, §12.2), and the gate of (3) does not apply to it. Its exit codes are unchanged except for (2).
+   - A dry run is untimed and is judged against its own requirements (§12.3 step 7). The gate of (3) does not apply to it, and its exits and its single re-dispatch cap (§12.7) are unchanged.
+   - **Neither is ever rule-applicable.** Stage 1a and dry-run records always carry `rule_applicable = false`, whatever their exit code; an exit 0 there means only that their own requirements were met.
+5. **Schema (§12.8) additions:**
+   - `verdict.stop_class` gains `INCOMPLETE_EVIDENCE` and `LEGACY_UNACCEPTED`;
+   - `verdict` gains `rerun_eligible` (Stage 1b measure records);
+   - `reasons[]` may carry `INCOMPLETE` (Stage 1b measure only).
+   - *[Post-acceptance correction 2026-09-27 (Codex review of 158a7d75): the completion fields that (1) is judged on are part of the schema.]* Each `repeats[]` entry carries:
+     - `row_exit_status`, the row's `exit_status`;
+     - `exit_code`: Linux `ExecMainStatus`, Windows the job object's exit code;
+     - `result`: Linux the unit's `Result`, Windows the derived `success` / `exit-code` / `timeout`;
+     - `timed_out`: true unless Linux `HarnessPollTimeout=no` or Windows `timed_out` is explicitly false;
+     - `poll_bound_s`, `unit_present`, and `completed` (the conjunction of (1)).
+
+     The raw inputs are retained artifacts beside the record: the Linux per-repeat unit property files and the Windows bundle entries. The schema id stays `/v2` because the fields are additive. A consumer judges completion from these fields and never from `exit_code` alone.
+
+   The `summary` block carries each arm's all-repeat and warm distributions (max, median, minimum, spread) for CPU input, workload wall and complete memory, as §6.2 already requires.
+6. **Coordinator readings recorded with this ruling:**
+   - a job record whose `runtime.run_attempt` is outside 1–2 is I-7 (provenance), since §12.7 names no code for it;
+   - a Windows bundle's arm order is the §12.2 command's `--arms forced,prescribed`, and any other order is a harness-shape failure.
+
+**Unchanged:** the caps and classes of §12.7 other than (3); PA-3, PA-4 and D2; §13's preconditions. S5 stays **HELD**. This ruling authorizes no measurement, engine run, dispatch, re-run or artifact download.
 
 ## 13. TEST_ONLY application procedure (after CP-1a only)
 
 1. **Preconditions:**
    - the CP-1a ruling recorded as a dated ledger entry;
    - a Stage 1b record with `verdict.validity_ok = true`, `rule_applicable = true` and `memory_feasibility` other than `UNVERIFIED`;
+     *[Corrected 2026-09-27 (pre-merge review against the H1(b) harness at 6010cb50): the record is the combined record (`scope = combined`, §12.3), never a per-job record. A record whose `stop_class` is `D2_ACCOUNTING_FALSIFIER` or `PA3_FAILURE` is returned to the operator under §12.7 first. This reads the existing precondition with §12.3; it does not change it.]*
    - a proposed `/v7` N2 value for the §10 arithmetic. A proposed value suffices for RC-3a's arithmetic (slices plan line 828). This note proposes that the value come from the separate operator ruling (CP-1a item 3), because the N2 ceiling "cannot come from the rule" (line 845). The ruled value is needed for the `profile.py:239` edit that lands with the S5 build (step 3).
 
    N2 is not set under this rule.
@@ -697,6 +808,10 @@ verdict{validity_ok, memory_feasibility = VERIFIED | FAILED | UNVERIFIED, rule_a
 **Revised 2026-09-27 (§16).** §14.1 is the refreshed list. It reflects #519's merged corrections and the operator's 2026-09-26 conditional ruling, which the earlier list did not see. The earlier list is kept unchanged in §14.2 and is **superseded**. Ledger citations in this section use §16's shorthand (`LED:NN` = `4a94f9b1:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md:NN`; `R1M:NN` = `4a94f9b1:docs/notes/2026-09-26-s5-part-a-measurement-proposal.md:NN`).
 
 ### 14.1 Refreshed decision list (2026-09-27)
+
+*[Ruled 2026-09-27 ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)): all six decisions below were adopted as recommended. Their "Unlocks" now hold, and conditional wording such as "if approved" reads as approved. Current authority is stated at the top of this note. (Corrected 2026-09-27, Codex review of 3e462a8d.)]*
+
+> **RULED 2026-09-27.** The operator adopted all six decisions as recommended, by structured answer in session. The [ledger entry](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27) owns the ruling and governs. It also records the one item the D2 recommendation leaves to the operator (item (v)). The hold stays **HELD** until CP-1b.
 
 **Already decided; not asked again:**
 
@@ -717,7 +832,7 @@ verdict{validity_ok, memory_feasibility = VERIFIED | FAILED | UNVERIFIED, rule_a
 4. CP-1b: the operator's hold-release entry for the build.
 5. The S5 build.
 
-The adapter measurement (Stage 1c), the executed `bind_budget` check on the built `/v7` and Stage 2/PA-5 stay at C3 (RC-3b). Each step needs the one before it. **Acceptance of this packet is not approval to execute it.**
+The adapter measurement (Stage 1c), the executed `bind_budget` check on the built `/v7` and Stage 2/PA-5 stay at C3 (RC-3b). Each step needs the one before it. **Acceptance of this packet is not approval to execute it.** *[Corrected 2026-09-27: that held before the ruling. CP-1a decision (2) has since approved the bounded measurements of step 2. §12.9 sequences their execution after the revised H1(b) harness PR is returned with retained evidence and merged. See "Current authority" at the top.]*
 
 **For decision at CP-1a: six decisions, presented together.** Each lists what it folds in, the recommendation, what an approval unlocks, and what stays unauthorized.
 
@@ -848,7 +963,7 @@ Verdicts: `SAME`; `R2 STRICTER`; `R1-MERGED STRICTER`; `CONFLICT`; `ONLY ONE SID
 |---|---|---|---|---|---|
 | C1 | **F1 forcing mechanism** (Stage 1c-prep) against **r2 §7 seam** | Stage 1c-prep: the S5 adapter builds its engine request only through one call-time module-level function in `execution/compute.py`. The Stage 1c harness replaces that function, in its own subprocess, with a wrapper returning `within_pp = 1.0`. No adapter parameter is added. It needs its own approval (R1M:8, :260-261, :268-274, :496) | A keyword-only `measurement_override` of a closed frozen type, gated on TEST_ONLY authority and absent from every signed document, with SR-1..SR-8 and P-1..P-7 (§7.3–§7.5). A harness monkeypatch is rejected as a stand-in with no refusal proof (§7.2) | `CONFLICT` | **r2's seam.** The operator's 2026-09-27 condition asks for a stated TEST_ONLY override, with proof that no production or signed route reaches it, and says a harness-level stand-in does not satisfy it (handoffs line 106). Stage 1c-prep is a harness substitution with no refusal proof. It is not put for approval. The seam and its exclusion proof are decision (6) |
 | C2 | **F1 round 2**: where the unnecessary-expansion rejection runs, and refusal by cause, against **r2 P-5 and SR-3** | The packet's "Reject omitted or unnecessary expansion" is pinned outside the adapter: in G5, or in worker-side validation after the adapter returns (R1M:262-266). A refusal of the forced run is Blocked, a C3 nonconformance or Invalid, by its cause (R1M:276-279) | P-5 relies on G5 refusing a forced result (§7.5). SR-3 puts the worker body, both S5-D1 writes included, in one callable (§7.4). Neither says where the rejection runs. If S5 placed it inside the SR-3 callable, the forced Stage 1c run would be refused there | `R1-MERGED STRICTER` | Add a PROPOSED **SR-9**: the packet's omitted/unnecessary-expansion rejection runs in G5 reconstruction (the route P-5 relies on) or after the SR-3 callable returns, never inside it. Classify a Stage 1c refusal by cause, as R1M:276-279 does. Part of decision (6) |
-| C3 | **r2 §7.7 BLOCKED rule** against **F1/F3a missing-seam timing** | Before Stage 1c-prep is approved, a build without the seam is Blocked. After approval and the RC-6 fold-in, it is a C3 nonconformance returned to the S5 executor, and the ceiling stays provisional (R1M:267, :433) | At C3, a missing SR-1..SR-6 or a failed P-1..P-7 returns BLOCKED; P-3, P-4 and P-5 are never waived (§7.7) | `R1-MERGED STRICTER` | After CP-1a approves the SR/P set and the RC-6 re-anchor carries it, a missing SR or failing P is a **C3 nonconformance** returned to the S5 executor under the packet. Stage 1c does not run until it is fixed. P-3, P-4 and P-5 stay non-waivable. BLOCKED stays for the case where the set was not approved. No new decision |
+| C3 | **r2 §7.7 BLOCKED rule** against **F1/F3a missing-seam timing** | Before Stage 1c-prep is approved, a build without the seam is Blocked. After approval and the RC-6 fold-in, it is a C3 nonconformance returned to the S5 executor, and the ceiling stays provisional (R1M:267, :433) | At C3, a missing SR-1..SR-6 or a failed P-1..P-7 returns BLOCKED; P-3, P-4 and P-5 are never waived (§7.7) *[corrected 2026-09-27: SR-1..SR-9 as approved at CP-1a]* | `R1-MERGED STRICTER` | After CP-1a approves the SR/P set and the RC-6 re-anchor carries it, a missing SR or failing P is a **C3 nonconformance** returned to the S5 executor under the packet. Stage 1c does not run until it is fixed. P-3, P-4 and P-5 stay non-waivable. BLOCKED stays for the case where the set was not approved. No new decision |
 | C4 | **F1a residual R̂** against **r2 SR-3/SR-4, §7.6, §12.4** | `run_part_a_compute` returns byte strings. The worker's encode, validate, frame, output write and fsync are outside Stage 1c, so R̂ is named uncovered. The application stays provisional until the operator rules on relying on it (R1M:16, :58, :283-288, :499) | SR-3/SR-4 put the staged-N2 parse, the derivation, the compute and both S5-D1 writes with fsync inside one callable and inside the boundary (§7.4, §7.6). Stage 1c then "cover[s] D̂ and end[s] the provisional status" (§12.4). The only named residual is bundle verification and plan derivation, carried by PA-5 (§7.6) | `CONFLICT` | Keep SR-3/SR-4: they bring the real artifact writing inside the boundary, as both rulings require (LED:822, :872); Stage 1c-prep left it outside. Also name what stays outside the SR-3 callable in the current worker shape: `encode_worker_result`, `parse_worker_result` and framing (`worker.py:73-94`), and `main`'s frame write and fsync (`worker.py:143-150`). PA-5 sees them at the prescribed size only. Whether Stage 1c ends the provisional status with that residual named is decision (2)(e) |
 | C5 | **F2 aggregate memory** against **r2 §8** | M̂ only from a whole-unit cgroup aggregate; otherwise memory is UNVERIFIED and PA-3 is not evaluated. "CPU and wall may still be applied from their own evidence" (R1M:146-155) | In-unit `memory.peak` plus systemd `MemoryPeak`, swap off, an accounting probe per job. A lower bound makes the record `rule_applicable = false`, CPU included (§8.2–§8.4) | `R2 STRICTER` | **r2.** The 2026-09-27 ruling says a lower-bound fallback "cannot support the rule's application" (LED:873). R1M:155 is superseded on that point |
 | C6 | **F2a PA-3a/PA-3b** against **r2 §8.1, §9 PA-3** | The unit aggregate covers the payload only. The shared `memory.max` is on the host-run parent, which also holds qexec, the launch clients and the guardian. PA-3a checks the payload; PA-3b checks Stage 2's parent peak at C3, with an unmeasured composition `m_m × (P₂ + max(0, M̂ − M̂ₚ))` for maximum expansion. RC-3 memory coverage is decision 7 (R1M:15, :157-163, :354-355, :502-506) | PA-3 compares the unit's M̂ with "the one shared campaign memory footprint" (§8.1, §9). The measured unit holds none of the non-payload processes | `R1-MERGED STRICTER` | **Adopt the split.** r2's `memory_feasibility = VERIFIED` means PA-3a, payload scope only. Shared-scope feasibility stays UNVERIFIED until PA-3b at C3. The 2026-09-26 ruling already names m_m for "PA-3a/PA-3b" (LED:820). Merged decision 7 is decision (1)(b)(ii) |
@@ -946,7 +1061,8 @@ P=local_artifacts/s4-linux-run-logs-2026-09-25          # operator's primary che
 sha256sum "$P/SHA256SUMS"                                # expect e2c142281d819e071d15f99a242358f93389a479dcc5e6b5c1f6a20d5db189a7
 ( cd "$P" && sha256sum -c --quiet SHA256SUMS && echo all-222-match )
 find "$P" \( -name journal.log -o -name systemd-units.log \) | sort   # coverage: both names under each run directory
-# only if coverage holds, and only after CP-1a approves Stage 0 (§14.1 decision (2)(a)):
+# only if coverage holds, and only after CP-1a approves Stage 0 (§14.1 decision (2)(a); approved 2026-09-27):
+S=<scratch>/s5-stage0; mkdir -p "$S"   # corrected 2026-09-27: S was defined only in §12.1
 grep -hE "Consumed .* CPU time|memory peak" $(find "$P" \( -name journal.log -o -name systemd-units.log \)) > "$S/lines.txt" || true
 grep -rhoE '"memory_peak_bytes": *[0-9]+' "$P" | sort | uniq -c > "$S/memory_peak.txt" || true
 ```
@@ -968,7 +1084,7 @@ The #519 merge inserted the 2026-09-26 ruling entry (LED:817-838) and the direct
 | 756, 757 | 756, 757 | Unchanged |
 
 Other statements this section corrects, each marked inline with a dated note:
-- §0 said RC-5 would be recorded when H7 is accepted. It is now recorded (LED:877, :909). The RC-4 slice is still pending the operator (decision (5)).
+- §0 said RC-5 would be recorded when H7 is accepted. It is now recorded (LED:877, :909). The RC-4 slice is still pending the operator (decision (5)). *[Corrected 2026-09-27: the operator accepted the RC-4 slice at CP-1a decision (5) the same day, which meets the RC-4/RC-5 build-entry assignment ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)).]*
 - §15's derived-text discrepancy is resolved: the addendum's CP-1a row no longer lists Stage 1b-N2 (CKL:488).
 - The Stage 0 deadline wording in §0, §12.1, §15 and the coordinator acceptance now takes the conditional form of §16.4.
 
@@ -1130,7 +1246,7 @@ Two review passes returned findings with overlapping IDs. They are labelled **A-
 
 **Timing (critic X-14).** ~~Stage 0 must run before the S4 run artifacts expire, about **2026-10-08 to 2026-10-09**; the creation date is UNVERIFIED.~~ **CP-1a can be split:** item 2(a) (Stage 0, calibration only~~, a read-only artifact download~~) can be approved on its own now. The rest of CP-1a can wait for this packet's review. ~~Latest useful date for Stage 0 approval: **2026-10-07**.~~ *[Corrected 2026-09-27, §16.4: the download is done, and Stage 0 is now a local read of the preserved copies. The expiry no longer binds only if the preserved set covers Stage 0's inputs, and that coverage is verified locally, owed.]*
 
-**Not granted:** unchanged from the Status line. No measurement, download, CI change or dispatch runs until the operator approves it at CP-1a.
+**Not granted:** unchanged from the Status line. No measurement, download, CI change or dispatch runs until the operator approves it at CP-1a. *[Corrected 2026-09-27: the operator ruled CP-1a the same day. See "Current authority" at the top.]*
 
 ## Coordinator review of §16 (2026-09-27)
 

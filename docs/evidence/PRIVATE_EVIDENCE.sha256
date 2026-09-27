@@ -102,3 +102,59 @@ fdbc2d3af2d2a692e6d509bb7df4e1704ea489a966904c95173d6355e83d8ade  recovery/jev-p
 8f71afce256fdd6e30b709345468825f560d9b120d882b92419a5cc0fb592e71  recovery/full-e1-s2-r1-20260919/final-results.json
 c10c1d13b5870f45e8a00e89a14be851bf654358c3b728142198f6082bbcdba4  recovery/pr428-review-20260919/README.md
 50bb068cc6b1fa7399ba6dd351ab61af6985c45c8e4e489f42eb9679c70be411  recovery/full-e1-20260919/README.md
+
+# H1(b) #526 coordinator verification records (2026-09-27), pinned by the H1 row of
+# docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md. They lived in the coordinating cloud
+# session's worktree at 27df508f; archived in first-passage-archive (41eab925, merged at 0a38b0f3), with the package of both directories.
+3148c330b5f8c81ba08f28dec0d8b60382a5028be924b5fd91ae44063414da7f  .cache/fp-verification/20260927T180621Z-71bad46c8b99/record.json
+c36bb4c4a09dbf4c1f6be6d2fec05e3ba75bf2a0f87f681be7c4168ee55aca79  .cache/fp-verification/20260927T180630Z-2534fb8215cf/record.json
+45cd25db6031e259b11bc272c8ad9bb98fbc1e3741507f8ec0f5138057950823  h1b-526-verification-evidence-2026-09-27.tar.gz
+# The conforming re-run of test_part_a.py with --workers 2 (AGENTS.md xdist rule) at 27df508f;
+# archived in first-passage-archive (821966f5, merged at 59e21fac).
+9c54f2d460d653789edb5cf35ba6cf282c39a691d11caae7486092c1ae3dd414  .cache/fp-verification/20260927T192748Z-83497246ddaf/record.json
+# H1(b) #526 revision at 11e15c6b (r2 §12.9 ruling; committed regression module, 94 tests):
+# worker records (module pytest, --workers 2, check, before-state vs b55958c8) and the coordinator's
+# clean-worktree re-check (module pytest, --workers 2, check), plus the package with MANIFEST.tsv;
+# archived in first-passage-archive (7e6b5232, first-passage-archive#840).
+60d81651b5094743bf490bcaa5f99404899cd8a81676d4bc32842cdb817f02b2  .cache/fp-verification/20260927T210656Z-4a982db0c005/record.json
+7ab40660620a647e0c7832a8d3b0e5362a8b0e67d2f019b3a0600f69564d2ca2  .cache/fp-verification/20260927T210705Z-b0a9ac2e2172/record.json
+2089180d3f57d33cd9cd39e3fce7e5f14fd481d271439099f1acf7e6d8eb56d5  .cache/fp-verification/20260927T210717Z-4107c50bf52a/record.json
+9a21b5c9930516eea1b4a797f26d865a19b80c35e58dcc20496a3cd096f03d33  .cache/fp-verification/20260927T210615Z-3237b4a67d52/record.json
+bd502c79a4c72fe78face4bb0bb9d654261d2723cbc77eccd5f7b3d5e369081e  .cache/fp-verification/20260927T210947Z-53e23ce81e78/record.json
+721f3686a80c1e252c08cf98b30902ec6993f43b6583a6455dec873e15e6e0a8  .cache/fp-verification/20260927T210956Z-99b581cb9a21/record.json
+ae57234b4497aa0500e454541dc6b46decdd349e9628a8aa7fd633ba0e16ce5d  .cache/fp-verification/20260927T211010Z-4757d619e6c3/record.json
+1e225d328e651ee08755a2d7794ba888680f3b92aa01bcfcaeeaf8b41d97fb1d  h1b-526-r8-verification-evidence-2026-09-27.tar.gz
+# actionlint 1.7.7 output for the #526 workflow at 11e15c6b (exit 0); archived in first-passage-archive (b74d6399, first-passage-archive#840).
+757cf2935d8fdf8be19f272e19b6b927964d4032c147a7f26136908e5bdfd7b3  actionlint-11e15c6b.txt
+# H1(b) #526 at the Codex-clean head 6010cb50 (r2 §12.9 plus Codex rounds 9-10; 138 tests): worker records
+# (module pytest, --workers 2, check, before-state vs 73526d6d), the coordinator's clean-worktree re-check
+# (module pytest, --workers 2, check), both actionlint 1.7.7 outputs, and the manifest package;
+# archived in first-passage-archive (71da82ed, first-passage-archive#841).
+e9ee334422ca7cd1eb012756739626a1c2f463a813f962960b7606a5e1aa53c8  .cache/fp-verification/20260927T214137Z-9c24aba62eb3/record.json
+6c4f553512545ec41c824a128eab149d68a2683ea4715acf70fb64d1ba032924  .cache/fp-verification/20260927T214151Z-78763d819e43/record.json
+1c9cf820ce6592a44d3882200ab008af93d32c77ea50440df79be1dd4e1b6b36  .cache/fp-verification/20260927T214207Z-405611e2efd9/record.json
+2b8f73d4eb5ecb988ea56d04666136ca313d6de15811277877ea815b272a4372  .cache/fp-verification/20260927T214033Z-75e0e9d5280f/record.json
+83f7d8bf8efb2816380674f920ad17e69f71b92b2cfd1a3aa57bbabc1659abec  .cache/fp-verification/20260927T215236Z-6635ade5a6a1/record.json
+1687bf3bc590947de7e3c3e39c29643af78ff75f4ec2510fcc181ae61f7485a2  .cache/fp-verification/20260927T215249Z-98f5326b3eb8/record.json
+d256f1211b0b6bfffb16a7b0a0cf01c26989f944a4278cda9471e1a9a0e07107  .cache/fp-verification/20260927T215304Z-3259777d365c/record.json
+1f82405e59a63fc629aae879822aa1e64b7532500bd0c33a8ed6a29baf35fcb3  actionlint-6010cb50-coord.txt
+b1975dee7a0f1da4075365e8f5b8d1eaff2247d2426d0907ef711f132de6db3c  actionlint-6010cb50-worker.txt
+e17e69af7ee93dbc4d75ab83cbf2cd54b8a637119374973e7fe6962a9c826995  h1b-526-r10-verification-evidence-2026-09-27.tar.gz
+# H1(b) #526 at 3b321768, the operator-approved update from main (parents 6010cb50 and ed3e476f; the four
+# harness files are byte-identical to 6010cb50): the coordinator's clean-worktree re-check (module pytest,
+# --workers 2, check), the actionlint 1.7.7 output, and the manifest package; archived in
+# first-passage-archive (2816a182, first-passage-archive#842). The 6010cb50 pins above are unchanged.
+5de0ed31d489fa4e8efb3721729c4f29cda5a065f2d50adf789f4fe954343714  .cache/fp-verification/20260927T222523Z-28d209052e97/record.json
+24d497c84efd67f505c8dcf92d5e0ffd23a961280d7c8b73e0855278f31db67c  .cache/fp-verification/20260927T222541Z-2b38f39c0270/record.json
+c53c65a8e417b6968d5777ed0e8d4d7b2bd4c5903acef782c7a1e53d872ad06e  .cache/fp-verification/20260927T222556Z-50f5f3823f83/record.json
+677344df7df26b9ae7cc7849573029e09dc583f4afe16e0ed4bd3c22b99cc67d  actionlint-3b321768-coord.txt
+1b135897d0f503ec6173fddb7bbcb8e3d0e8c7de52aecb983fb761dfe5a9b9c8  h1b-526-r11-verification-evidence-2026-09-27.tar.gz
+# H1(b) #526 at a6b43bdb, the second update from main under the same approval (parents 3b321768 and
+# 38e62eed, after #522 merged; harness files unchanged): the coordinator's clean-worktree re-check
+# (module pytest, --workers 2, check), the actionlint 1.7.7 output, and the manifest package; archived in
+# first-passage-archive (148d857e, first-passage-archive#842).
+8e3d5d3cf5ed891240601563fdc3b04dc8334a415ac696b4d07e4f148e60ea4c  .cache/fp-verification/20260927T223137Z-ed89b8bcc575/record.json
+850d2ae4304bec8b3c04a430a22588075a305f14f17a9225140cb7db538c181b  .cache/fp-verification/20260927T223149Z-a2022cd47ecf/record.json
+2a06f3b46094e43f7909ca9c48fdebe26dda2392cf77589ffec090934b886eee  .cache/fp-verification/20260927T223204Z-526df770fa53/record.json
+09b92ac2065b1fe010afc39be8ff9b7e64434d62d7f0be310245f22dc6d14bfb  actionlint-a6b43bdb-coord.txt
+6728d84ee39029a233ea751e7eeb7d1573c25a82e4a17d9f34420a8ab6236176  h1b-526-r12-verification-evidence-2026-09-27.tar.gz
