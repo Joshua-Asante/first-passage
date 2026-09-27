@@ -24,6 +24,17 @@ from c1_signal_daemon.feed import Bar
 from c1_signal_daemon.tv_broker_emulator import TVBrokerEmulator
 
 
+#: Legs whose base entry follows lifecycle L1 (§59 Rulings 6 and 7(a)): placed once,
+#: it rests until it fills or an applicable cancellation ends it (the port's
+#: own cancel, the RC-8 cutoff, a takeover or incident handling). RC-9's
+#: one-bar cancel keeps applying to every other resting entry or add.
+L1_BASE_ENTRY_LEGS = frozenset({"orb_mnq_v7"})
+
+
+def _one_bar_cancel_applies(leg_id, intent):
+    return not (leg_id in L1_BASE_ENTRY_LEGS and intent.kind == "entry")
+
+
 class ReplayNeedsContext(RuntimeError):
     """Missing evidence or unsupported semantics: no successful result exists."""
 
@@ -504,8 +515,8 @@ class BookReplay:
                 while next_schedule < len(schedule_events) and schedule_events[next_schedule][0] <= pb.source_bar_time:
                     self._schedule(session, *schedule_events[next_schedule])
                     next_schedule += 1
-                for (k, oid), (_, created) in list(self.orders.items()):
-                    if self._index - created > 1:
+                for (k, oid), (intent, created) in list(self.orders.items()):
+                    if self._index - created > 1 and _one_bar_cancel_applies(k, intent):
                         self._cancel_pending(k, Cancel(k, oid), bars[k])
                 segment_bars = bars
                 while (next_schedule < len(schedule_events)
