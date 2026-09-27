@@ -156,7 +156,7 @@ This is synthetic evidence about consumer behavior. It says nothing about live a
   - The operator's 2026-09-27 ruling classifies a **late** bar as a source incident ([halt/resume §4.1](../spec/2026-09-14-tb-s3-halt-resume-contract.md) `:97`) and leaves other cases unclassified.
   - The question is whether a halt from an **omitted** in-session slot is also an incident that ends the session under [incident ADR §A11.2](../adr/2026-09-17-bounded-platform-protection-incident-contract.md) `:378`. Under the loop, that halt is first recorded as `feed-silence`, followed by `barrier-expired` (§5). Either reason, or `bar-sequence`, should resolve to the same classification.
 - **Q-4: unrecorded early closes.** An early close or ad-hoc closure that no captured source recorded passes the loader as a regular permitted row (§6 item 3). The consumer then halts mid-session on missing input.
-- *Operator guidance on Q-3 and Q-4 (2026-09-27, recommendation):* loss of required input ends automation for that commissioning or first-release session. The owners record the interpretation and verify the behavior. For example, a pinned test would show that `feed-silence`, `barrier-expired` and `bar-sequence` caused by an omitted slot each end the session under §A11.2.
+- *[Ruled 2026-09-27 after this return: see Coordinator acceptance below.]* *Operator guidance on Q-3 and Q-4 (2026-09-27, recommendation at the time of this return):* loss of required input ends automation for that commissioning or first-release session. The owners record the interpretation and verify the behavior. For example, a pinned test would show that `feed-silence`, `barrier-expired` and `bar-sequence` caused by an omitted slot each end the session under §A11.2.
 
 **Carried, not answered here:**
 - **Holiday classification.** It uses the D19 calendar, which is secondary provenance accepted for date membership only. All 170 holiday residual intervals land on its 65 non-`NORMAL` dates, and none land on its 20 `NORMAL`-listed dates. No primary exchange source was read.
@@ -181,3 +181,33 @@ This is synthetic evidence about consumer behavior. It says nothing about live a
 - The operator's guidance on Q-1 to Q-4 is recorded as recommendations.
 
 **Not granted and not done:** no provider contact, spend, collection or emission change; no owner-text edit; no rule adopted.
+
+---
+
+## Coordinator acceptance (2026-09-27)
+
+**ACCEPTED as a documentary classification.** The return is [PR #524](https://github.com/Joshua-Asante/first-passage/pull/524), merged at `a1a3c3e` (heads `c39946e` → `6c2f956` → `6180e53`). Reviewer: the coordinating session, together with an operator-relayed review that checked the owner contracts and the retained private files against the published hashes.
+
+**What acceptance establishes:**
+- The classification result in §4, including the exactly reconciled denominator: one observed affected permitted session in the common window.
+- The consumer-effect conditions in §5, as synthetic evidence about consumer behavior.
+- Retention of the private artifacts (§2, verified against `MANIFEST.json`).
+
+**What it does not establish:**
+- **The cause of the omission (Q-2).** Q-2 is parked. It reopens only when an exchange record or an independent source can corroborate the event. It does not block the conservative rule. An exchange-halt explanation alone would not settle how a provider should encode the interval.
+- **Any per-session rate, or any forecast of live-feed reliability.**
+- **Any live feed's qualification.**
+
+**Questions carried forward:**
+- **Q-1:** PROPOSED wording is added to the draft equivalence spec §4.3 (absent is absent; no invented bars; provider zero-volume or flagged bars are not trade evidence). The operator adopts it at freeze, before CP-6. It is not in force.
+- **Q-2:** parked, as above.
+- **Q-3 and Q-4: RULED by the operator, 2026-09-27, in session,** by structured answer ("Rule it as stated"). An omitted required slot, including an uncaptured early close, is an incident that ends automation for the session (armed commissioning and first attended release), whichever detector reports it. Scheduled closures and valid refusals stay non-incidents. The ruling is recorded in the [halt/resume contract §4.1](../spec/2026-09-14-tb-s3-halt-resume-contract.md#41-amendment-2026-09-27-incident-versus-correctly-handled-refusal), *Qualifications*, with a header-callout pointer.
+- **Verification of the ruled behavior:** carded as [H8 step (c)](../briefs/handoffs/2026-09-27-h8c-omission-incident-session-end.md), a worker test card. It is not dispatched by this acceptance.
+
+**Implementation reading (coordinator, read at `875ecf2`; not executed).** The current owner already prevents restart after an incident:
+- The only write of `RUNNING`/`NORMAL` is `ops/c1_rail/book_bootstrap.py:174`, which is the offline one-use bootstrap.
+- Any incident invalidates that bootstrap (`book_account_owner.py:1876`), and so does any reboot (`:387–:389`). A later activation is refused (`book_bootstrap.py:134–:141`).
+- This is evidence about the current owner implementation only. It is **not** proof of a complete production re-arming policy.
+- No resume capability exists. Incidents are not keyed by session. The owner therefore also blocks re-arming in every later session, which is stricter than §A11.2 requires.
+- **A later-session re-arming design is an explicit outstanding obligation** for TB-I3 and the resume decision (halt/resume §4). No handoff builds it now.
+
