@@ -119,4 +119,14 @@ The scan covers permission transitions only. An admission-level restart, where p
 
 ## 7. Verification records
 
-Run through this checkout's launcher, `python3 -I scripts/fp.py --env <ops-env outside the tree>`, with interpreter Python 3.11.15. Each `record.json` is under this checkout's `.cache/fp-verification/`; they are listed in the PR and in the worker return.
+Run through this checkout's launcher, `python3 -I scripts/fp.py --env <ops-env outside the tree>`, with interpreter Python 3.11.15. The runs below were made on commit `fbfd925` with a clean tree; that commit holds both files, and this section is the only later change. Each `record.json` is under this checkout's `.cache/fp-verification/<id>/`, which is gitignored and local to the worker's checkout.
+
+| Command | Record ID | Result |
+|---|---|---|
+| `doctor` | (no record) | Environment valid; 62 locked packages matched. "Optional signing dependency: absent" (`cryptography`). |
+| `python -m pytest tests/ops/test_attended_incident_rehearsal.py -q` | `20260927T100900Z-6519da6c5820` | completed, exit 0, `source_stable` true: 14 passed, 1 xfailed |
+| `python -m pytest` on the six related suites (`test_book_halt.py`, `test_book_bootstrap_migration.py`, `test_book_account_owner.py`, `test_book_protection_evidence.py`, `test_c1_rail_telemetry.py`, `test_pr409_review4.py`), all unchanged | `20260927T100907Z-460256eb6f92` | completed, exit 0, `source_stable` true: 187 passed |
+| `test-ops` | `20260927T100925Z-cfd9197073ef` | **failed**, exit 1, `source_stable` true: 2585 passed, 36 skipped, 1 xfailed, **1 failed** |
+| `check` | `20260927T101047Z-4f0a7edcbc75` | completed, exit 0, `source_stable` true |
+
+**The `test-ops` failure comes from the environment, not from this change.** The failing test is `tests/ops/test_qualification_isolation.py::test_qualification_suite_in_clean_process`. Its clean child process cannot import `tests/ops/qualification/test_result_key_binding.py`, `test_review_repairs.py`, `test_seal.py` or `test_trust_domain.py`, because of `ModuleNotFoundError: No module named 'cryptography'`. That is the optional signing dependency `doctor` reports absent from this operations environment. None of those files is touched here. **The complete `test-ops` suite is therefore not claimed to pass.** The re-run records for the final tree are in the PR description and the worker return.
