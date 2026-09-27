@@ -162,7 +162,9 @@ python scripts/check_brief.py docs/briefs/handoffs/2026-09-27-m2-modify-semantic
 # §9 premise check, in the executor's worktree of the primary checkout (Git Bash).
 # <dispatch-sha> is the frozen SHA recorded in §9; <primary> is the primary checkout's absolute path.
 git merge-base --is-ancestor <dispatch-sha> HEAD && echo "HEAD descends from the dispatch revision"
-git diff --exit-code <dispatch-sha> HEAD -- docs/briefs/handoffs/2026-09-27-m2-modify-semantics.md
+# One-commit form: compares the dispatch revision with the working-tree bytes the executor reads,
+# so a staged or unstaged local edit to the card fails the check.
+git diff --exit-code <dispatch-sha> -- docs/briefs/handoffs/2026-09-27-m2-modify-semantics.md
 # The drill plan's §2.2 at the dispatch revision; compare its Questions row with §2 of this card.
 git show <dispatch-sha>:docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md | sed -n '/^### 2\.2 /,/^### 2\.3 /p'
 # Close-research captures: pin the index to its recorded digest, then verify every capture against it.
@@ -174,8 +176,14 @@ git show <dispatch-sha>:docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md
 (cd "<primary>/local_artifacts/t08-rest-route-assessment-2026-09-25" \
   && test "$(sha256sum MANIFEST.tsv | cut -c1-8)" = d069ae7e \
   && test "$(sha256sum EVIDENCE_INDEX.sha256 | cut -c1-8)" = c0fd2c95 && echo "REST indexes pinned")
-# Then verify the captures against the pinned index. The operator's 2026-09-26 spot-check recorded
-# that 5 of its 227 entries are notes, not file paths, and cannot pass a plain sha256sum -c. Those
-# 5 are the only failures allowed; any other failed or missing entry is a stop.
-(cd "<primary>/local_artifacts/t08-rest-route-assessment-2026-09-25" && sha256sum -c --quiet EVIDENCE_INDEX.sha256)
+# Then verify the captures against the pinned index. Its exit code cannot decide this: the operator's
+# 2026-09-26 spot-check recorded that 5 of its 227 entries are notes, not file paths, so a plain
+# `sha256sum -c` exits 1 on intact evidence. Count instead: the 222 file entries must verify and
+# none may mismatch. 222 = 227 - 5 is read from that spot-check; any other count is a stop.
+(cd "<primary>/local_artifacts/t08-rest-route-assessment-2026-09-25" || exit 1
+ out="$(sha256sum -c EVIDENCE_INDEX.sha256 2>/dev/null)"
+ ok=$(printf '%s\n' "$out" | grep -c ': OK$')
+ bad=$(printf '%s\n' "$out" | grep -c ': FAILED$')
+ echo "verified=$ok mismatched=$bad (expected 222 and 0)"
+ test "$ok" -eq 222 && test "$bad" -eq 0)
 ```

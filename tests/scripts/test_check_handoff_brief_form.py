@@ -188,8 +188,9 @@ def test_missing_exempt_path_fails_closed(tmp_path):
 
 
 def test_verdict_is_check_brief_cli_verdict(tmp_path):
-    """Violated if the gate's pass/fail differs from `python scripts/check_brief.py <card>`
-    for an in-scope card: the gate adds scope, never rules."""
+    """Violated if the gate's pass/fail differs from
+    `python scripts/check_brief.py --type handoff <card>` for an in-scope card: the gate
+    adds scope, never rules."""
     good = tmp_path / "docs/briefs/handoffs/2026-09-28-good.md"
     bad = tmp_path / "docs/briefs/handoffs/2026-09-28-bad.md"
     _tree(tmp_path, {
@@ -198,10 +199,55 @@ def test_verdict_is_check_brief_cli_verdict(tmp_path):
     })
     failing = {f.path for f in _run(tmp_path).failures}
     for card in (good, bad):
-        cli = subprocess.run([sys.executable, str(CHECK_BRIEF), str(card)],
+        cli = subprocess.run([sys.executable, str(CHECK_BRIEF), "--type", "handoff", str(card)],
                              capture_output=True, text=True, check=False)
         rel = card.relative_to(tmp_path).as_posix()
         assert (cli.returncode != 0) == (rel in failing)
+
+
+# Every numbered section `check_brief.py` requires of a generic brief, but no §0.5 and no
+# four-state return. Its filename carries neither "handoff" nor "spawn", so inference reads
+# it as `generic` and reports it well-formed.
+GENERIC_ONLY = """\
+# Example card
+
+## 0. Reads
+- `scripts/check_brief.py` at `afdac7d` 2026-09-27.
+
+## 1. Context
+Context.
+
+## 4. Verification
+**H:** it works. **Falsified by** it not working.
+
+## 5. Forbidden
+- account access.
+
+## 6. Gate
+Verdict RESOLVED or FALSIFIED.
+
+## 10. Audit hooks
+```bash
+true
+```
+"""
+
+
+@pytest.mark.parametrize("rel", [
+    "docs/briefs/handoffs/2026-09-28-example.md",
+    "docs/briefs/programs/2026-09-28-example.md",
+])
+def test_card_is_validated_as_a_handoff_not_by_inference(tmp_path, rel):
+    """Violated if an in-scope card lacking §0.5 and the four-state return passes because
+    content-based inference reads it as `generic` (Codex P1 on #532 at `afdac7d`)."""
+    text = GENERIC_ONLY if "/handoffs/" in rel else GENERIC_ONLY + AUTHORITY_BLOCK
+    root = _tree(tmp_path, {rel: text})
+    inferred = subprocess.run([sys.executable, str(CHECK_BRIEF), str(root / rel)],
+                              capture_output=True, text=True, check=False)
+    assert "RESULT: well-formed" in inferred.stdout, "precondition: inference passes it"
+    result = _run(root)
+    assert [f.path for f in result.failures] == [rel]
+    assert "§0.5" in result.failures[0].report
 
 
 def test_exempt_set_is_exactly_the_rulings_exempt_rows():

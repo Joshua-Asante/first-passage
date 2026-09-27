@@ -417,8 +417,9 @@ repo-side checker is run by one gate, `handoff-brief-form`
 ([`check_handoff_brief_form.py`](check_handoff_brief_form.py)). That gate enforces
 handoff-contract item 1 of the
 [surface-allocation ADR](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-27)
-on the cards its docstring scopes, with `check_brief.py`'s own inference and verdict
-unchanged. Other briefs are not gated.
+on the cards its docstring scopes. It runs `check_brief.py --type handoff`, because every
+card in scope is a handoff card, and accepts only its `RESULT: well-formed`. Other briefs
+are not gated.
 
 The separate unresolved 26-letter session-label ceiling remains with the
 [SESSIONS header](../docs/SESSIONS.md) and [`roll_sessions.py`](roll_sessions.py).

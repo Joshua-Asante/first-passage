@@ -841,9 +841,11 @@ and changes no grant: the three worker cards' authority blocks are untouched and
 
 *Enforcement.* A `check` gate, `handoff-brief-form`
 ([`scripts/check_handoff_brief_form.py`](../../scripts/check_handoff_brief_form.py), wired in
-[`scripts/gates.yml`](../../scripts/gates.yml)), runs `check_brief.py` on every card in scope, with
-that script's own type inference. Only `RESULT: well-formed` passes: the zero-exit `NOT CHECKED`
-and `DELEGATED` outcomes validate nothing, so they fail. It adds scope, not rules. It runs at
+[`scripts/gates.yml`](../../scripts/gates.yml)), runs `check_brief.py --type handoff` on every card in
+scope. The type is forced because every card in scope is a handoff card; inference from content
+would let a card that omits §0.5 and the four-state return pass as `generic`. Only
+`RESULT: well-formed` passes: the zero-exit `NOT CHECKED` outcome validates nothing, so it fails.
+The gate adds scope, not rules: the handoff contract is `check_brief.py`'s own. It runs at
 pre-commit whenever a brief, the checker, its engine, the block reader or the historical list is
 staged, and in the required
 `skills (3.12)` check on every PR. A card is committed before it is dispatched (committed-handoff
@@ -860,7 +862,7 @@ rule), so a malformed card now fails before dispatch. The scope:
 
 In a git checkout, a card with both staged and unstaged changes fails, because pre-commit reads
 the working copy while the commit records the staged one. These last three rules came from the
-Codex review of #532 at `35e91ac`.
+Codex review of #532 at `35e91ac`; the forced handoff type came from its review at `afdac7d`.
 
 The historical cards are **not retrofitted**, following item 7's precedent ("historical cards are not
 retrofitted"). The gate does not check them, and this is not an exemption: item 1 still binds any

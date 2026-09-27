@@ -20,10 +20,12 @@ are not retrofitted, following item 7's precedent ("historical cards are not ret
 item 1 still binds any of them that is dispatched. The files in EXEMPT are the ruling's four,
 exempt by name only.
 
-An in-scope card passes only when `python scripts/check_brief.py <card>` prints
-`RESULT: well-formed`. That script's type inference is used unchanged, but its zero-exit
-`NOT CHECKED` and `DELEGATED` outcomes (light-tier, unmodeled or closure types) do not pass:
-they validate nothing. This script adds scope, never rules.
+An in-scope card passes only when `python scripts/check_brief.py --type handoff <card>`
+prints `RESULT: well-formed`. The type is forced, not inferred: every card in scope is a
+handoff card by its directory or its authority block, and content-based inference would let a
+card that omits §0.5 and the four-state return pass as `generic`. The checker's zero-exit
+`NOT CHECKED` outcome (a light-tier header) does not pass either: it validates nothing. This
+script adds scope, never rules: the handoff contract is `check_brief.py`'s own.
 
 In a git checkout, a card with both staged and unstaged changes fails: pre-commit would
 check the working-tree copy while the commit records the staged one.
@@ -126,10 +128,11 @@ def _partially_staged(root: Path) -> set[str]:
 
 
 def _check_brief_verdict(path: Path) -> tuple[int, str]:
-    """Run check_brief.py's own CLI entry point on `path`; return its exit code and output."""
+    """Run check_brief.py's own CLI entry point on `path` as a handoff card; return its
+    exit code and output."""
     out = io.StringIO()
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
-        code = check_brief.main([str(path)])
+        code = check_brief.main(["--type", "handoff", str(path)])
     return code, out.getvalue()
 
 
