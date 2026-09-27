@@ -156,8 +156,11 @@ If Q1 is not `DOCUMENTED`, the GC-2b consequence (Striker and Aegis: OPERATOR DE
 ## 10. Audit hooks (runnable)
 
 ```bash
-# Card form (surface-allocation ADR, handoff contract item 1). Expected: RESULT: well-formed
-python scripts/check_brief.py docs/briefs/handoffs/2026-09-27-m2-modify-semantics.md
+# Card form (surface-allocation ADR, handoff contract item 1), through the checkout's launcher
+# (AGENTS.md, "Python environment and local checks"; `.\fp.ps1` is the PowerShell 7.3+ form).
+# Checked as a handoff card, as the handoff-brief-form gate does. Expected: RESULT: well-formed
+python -I scripts/fp.py doctor
+python -I scripts/fp.py python scripts/check_brief.py --type handoff docs/briefs/handoffs/2026-09-27-m2-modify-semantics.md
 
 # §9 premise check, in the executor's worktree of the primary checkout (Git Bash).
 # <dispatch-sha> is the frozen SHA recorded in §9; <primary> is the primary checkout's absolute path.

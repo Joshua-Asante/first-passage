@@ -248,7 +248,7 @@ gates:
 
   # Handoff-contract item 1 (surface-allocation ADR §Decision; Addendum 2026-09-27): a
   # handoff card passes `scripts/check_brief.py --type handoff` (the type is forced: every
-  # card in scope is a handoff card); only RESULT: well-formed passes. Scope: every card under
+  # card in scope is a handoff card); only RESULT: well-formed passes. Scope: every card anywhere under
   # docs/briefs/handoffs/ except the historical cards listed by name in
   # scripts/handoff_brief_form_grandfathered.txt (item 7's "historical cards are not
   # retrofitted"), plus any card with a `yaml authority` block. The ruling's four exempt

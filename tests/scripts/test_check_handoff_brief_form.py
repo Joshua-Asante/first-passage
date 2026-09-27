@@ -135,6 +135,56 @@ def test_partially_staged_card_fails(tmp_path):
     assert _run(root).failures == []
 
 
+def _git(root: Path, *args: str) -> None:
+    subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True)
+
+
+def test_nested_handoff_card_is_checked(tmp_path):
+    """Violated if a card nested under docs/briefs/handoffs/ escapes the gate: the
+    committed-handoff rule places cards anywhere under `docs/briefs/handoffs/**` (Codex P2
+    on #532 at `0efe06d`). A grandfathered basename grandfathers only the direct child."""
+    rel = "docs/briefs/handoffs/campaign/2026-09-26-task.md"
+    root = _tree(tmp_path, {rel: MALFORMED})
+    result = _run(root, grandfathered=frozenset({"2026-09-26-task.md"}))
+    assert [f.path for f in result.failures] == [rel]
+
+
+def test_partially_staged_card_fails_even_if_its_working_copy_is_out_of_scope(tmp_path):
+    """Violated if scope read from the working copy lets a partially staged card through:
+    the staged copy carries an authority block that the working copy no longer has
+    (Codex P2 on #532 at `0efe06d`)."""
+    rel = "docs/briefs/programs/2026-09-28-card.md"
+    root = _tree(tmp_path, {rel: MALFORMED + AUTHORITY_BLOCK})
+    _git(root, "init", "-q")
+    _git(root, "add", rel)
+    (root / rel).write_text(MALFORMED, encoding="utf-8")
+    result = _run(root)
+    assert [f.path for f in result.failures] == [rel]
+    assert "staged and unstaged" in result.failures[0].report
+
+
+def test_staged_card_deleted_from_the_working_tree_fails(tmp_path):
+    """Violated if a staged card escapes because the working tree no longer holds it."""
+    rel = "docs/briefs/handoffs/2026-09-28-example.md"
+    root = _tree(tmp_path, {rel: MALFORMED})
+    _git(root, "init", "-q")
+    _git(root, "add", rel)
+    (root / rel).unlink()
+    assert [f.path for f in _run(root).failures] == [rel]
+
+
+def test_partially_staged_card_with_a_space_in_its_path_fails(tmp_path):
+    """Violated if path splitting drops a partially staged card whose path has a space."""
+    rel = "docs/briefs/handoffs/2026-09-28-two words.md"
+    root = _tree(tmp_path, {rel: MALFORMED})
+    _git(root, "init", "-q")
+    _git(root, "add", rel)
+    (root / rel).write_text(WELL_FORMED.read_text(encoding="utf-8"), encoding="utf-8")
+    result = _run(root)
+    assert [f.path for f in result.failures] == [rel]
+    assert "staged and unstaged" in result.failures[0].report
+
+
 def test_grandfathered_list_holds_only_historical_cards():
     """Violated if the list names a card dated on or after the cutoff, or grows past the
     74 historical cards on main when the gate landed."""

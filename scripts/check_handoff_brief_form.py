@@ -9,8 +9,9 @@ files, and this gate.
 
 A card is in scope when either holds:
 
-  * it sits directly under `docs/briefs/handoffs/` (`README.md` excepted) and is not a
-    historical card named in GRANDFATHERED_FILE;
+  * it sits anywhere under `docs/briefs/handoffs/`, where the committed-handoff rule puts
+    cards (`docs/briefs/handoffs/**`), other than that directory's own `README.md` and the
+    historical direct children named in GRANDFATHERED_FILE;
   * it is any `docs/briefs/**/*.md` carrying a `yaml authority` block (a worker card under
     item 7), read with `check_handoff_authority.py`'s own block reader.
 
@@ -27,8 +28,9 @@ card that omits §0.5 and the four-state return pass as `generic`. The checker's
 `NOT CHECKED` outcome (a light-tier header) does not pass either: it validates nothing. This
 script adds scope, never rules: the handoff contract is `check_brief.py`'s own.
 
-In a git checkout, a card with both staged and unstaged changes fails: pre-commit would
-check the working-tree copy while the commit records the staged one.
+In a git checkout, a card with both staged and unstaged changes fails when either copy is
+in scope, including a staged card deleted from the working tree: pre-commit would check the
+working-tree copy while the commit records the staged one.
 
 Exit codes: 0 clean · 1 a card fails, or an exemption names no file.
 """
@@ -110,21 +112,34 @@ def in_scope(rel: Path, text: str, grandfathered: frozenset[str]) -> bool:
     """Whether the card at repository-relative `rel` is subject to this gate."""
     if _has_authority_block(text):
         return True
-    if rel.parent != HANDOFFS or rel.name == "README.md":
+    if not rel.is_relative_to(HANDOFFS) or rel == HANDOFFS / "README.md":
         return False
-    return rel.name not in grandfathered
+    return not (rel.parent == HANDOFFS and rel.name in grandfathered)
+
+
+def _git(root: Path, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True,
+                          encoding="utf-8", errors="replace", check=False)
 
 
 def _partially_staged(root: Path) -> set[str]:
-    """Paths under the scan root with both staged and unstaged changes (empty outside git)."""
+    """Markdown paths under the scan root with both staged and unstaged changes, read
+    NUL-separated so spaces and non-ASCII names survive (empty outside git)."""
     def names(*args: str) -> set[str] | None:
-        proc = subprocess.run(["git", "-C", str(root), "diff", "--name-only", *args, "--",
-                               SCAN_ROOT.as_posix()], capture_output=True, text=True, check=False)
-        return set(proc.stdout.split()) if proc.returncode == 0 else None
+        proc = _git(root, "diff", "--name-only", "-z", *args, "--", SCAN_ROOT.as_posix())
+        if proc.returncode != 0:
+            return None
+        return {name for name in proc.stdout.split("\0") if name.endswith(".md")}
     staged, unstaged = names("--cached"), names()
     if staged is None or unstaged is None:
         return set()
     return staged & unstaged
+
+
+def _staged_text(root: Path, rel_str: str) -> str:
+    """The index copy of `rel_str`, or an empty string when the index holds none."""
+    proc = _git(root, "show", f":{rel_str}")
+    return proc.stdout if proc.returncode == 0 else ""
 
 
 def _check_brief_verdict(path: Path) -> tuple[int, str]:
@@ -148,9 +163,22 @@ def scan(root: Path = REPO_ROOT, exempt: frozenset[str] = EXEMPT,
         if not (root / rel_str).is_file():
             failures.append(Failure(rel_str, "exempt path not found: remove it from EXEMPT "
                                              "and the ruling, or restore the file"))
+    # Partial staging is judged before scope, on both copies: the commit records the staged
+    # one, so scope read from the working copy alone could let it through.
+    for rel_str in sorted(partial):
+        work = root / rel_str
+        copies = [_staged_text(root, rel_str)]
+        if work.is_file():
+            copies.append(work.read_text(encoding="utf-8", errors="replace"))
+        if any(in_scope(Path(rel_str), text, grandfathered) for text in copies):
+            checked += 1
+            failures.append(Failure(rel_str, "staged and unstaged changes differ: stage the "
+                                             "whole card, or stash the rest, then re-run"))
     for path in sorted((root / SCAN_ROOT).rglob("*.md")):
         rel = path.relative_to(root)
         rel_str = rel.as_posix()
+        if rel_str in partial:
+            continue
         text = path.read_text(encoding="utf-8", errors="replace")
         if not in_scope(rel, text, grandfathered):
             continue
@@ -158,10 +186,6 @@ def scan(root: Path = REPO_ROOT, exempt: frozenset[str] = EXEMPT,
             exempted += 1
             continue
         checked += 1
-        if rel_str in partial:
-            failures.append(Failure(rel_str, "staged and unstaged changes differ: stage the "
-                                             "whole card, or stash the rest, then re-run"))
-            continue
         code, report = _check_brief_verdict(path)
         if code != 0 or _WELL_FORMED not in report:
             failures.append(Failure(rel_str, report))
