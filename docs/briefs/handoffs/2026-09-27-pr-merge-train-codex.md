@@ -10,6 +10,13 @@
 
 Otherwise it records the PR as `READY_AWAITING_APPROVAL` and moves on.
 
+**Operator ruling 2026-09-27: merge-speed process changes 1–3.** The operator ruled: "process changes 1, 2 and 3 are good, let's start them right away". The three changes are:
+1. code-free PRs block on unresolved Codex P1 threads only;
+2. CI results are reused across a conflict-free update from `main`;
+3. code-free PRs merge first and code PRs last.
+
+§0.5 D9–D11 are the card text for these. They change no test, skip nothing, leave the `main` ruleset (strict up-to-date plus `skills (3.12)`) unchanged, and grant no merge authority: D4 still governs every merge.
+
 ```yaml authority
 seat: worker
 parent: docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md
@@ -49,13 +56,16 @@ Read these, then report in your session before any update or merge. If anything 
 - The latest coordinator comment on PR #531 (`gh pr view 531 --comments`). It carries state only and never authority.
 - For each PR in §1: `gh pr view <N> --json headRefOid,mergeStateStatus,mergeable,state,reviewDecision,latestReviews`.
 
-**Private inputs: none.** This card reads no gitignored vendor-data path, no secret file, and no private Pine source or runtime port. It sends nothing to any external service beyond the GitHub calls in §3. `gh` uses the operator's local credential, which is used but never printed or copied.
+**Private inputs.**
+- **One credential:** the operator-held `gh` credential in the operator's local environment. Confirm it with `gh auth status`, which must show the operator's GitHub account with repository write access. It is used by the §3 calls, and is never printed, copied or passed to another tool. If it is absent or belongs to another account, return `NEEDS_CONTEXT`.
+- **No data inputs:** no gitignored vendor-data path, no secret file, and no private Pine source or runtime port.
+- **Nothing sent** to any service except the GitHub calls in §3.
 
 **Report:**
 - the card commit being executed (dispatch pin);
 - each PR's head SHA and state;
 - whether `gh` is authenticated as the operator;
-- the no-private-input declaration above, confirmed.
+- the private-input declaration above, confirmed (the `gh auth status` account).
 
 ## 0.5. Frozen design decisions (constraints, not options)
 
@@ -70,10 +80,25 @@ Read these, then report in your session before any update or merge. If anything 
 - **D5. (Removed 2026-09-27.)** No standing or alternative merge authority exists under this card. Under ADR rule 2, every merge needs the operator's approval of one exact head SHA that already exists (D4). An agent's report that the operator approved something is not an approval.
 - **D8. IN_DOUBT merge.** If `gh pr merge` errors, times out or loses its response, the outcome is **in doubt** (ADR rule 3). The session stops acting on that PR and reconciles with `gh pr view <N> --json state,mergedAt,mergeCommit,headRefOid`:
   - merged: record `MERGED` with the merge SHA;
-  - still open with the same head: record `BLOCKED` (`in-doubt merge, not merged`) and report it.
+  - still open with the same head: record `BLOCKED` (`in-doubt merge, not merged`) and report it;
+  - still open with a different head: record `BLOCKED` (`in-doubt merge; head moved to <sha>`). The approval is void;
+  - closed without merging: record `BLOCKED` (`closed by someone else`);
+  - the query itself fails, or the answer is ambiguous: the PR stays **IN_DOUBT**. Record it as `BLOCKED` (`IN_DOUBT: outcome not established`), report it to the operator at once, and keep the whole train paused.
 
   It **never retries automatically**. A retry is a new D4 approval of the then-current head. No other PR is updated or merged until the reconciliation is recorded.
-- **D6. Order.** #523 merges before #527, and #531 merges last. Otherwise the first PR to go clean merges first.
+- **D6. Order (ruling item 3).** Code-free PRs merge first, in this order: #523, then #527. The code PRs #522 and #529 merge after them, whichever goes clean first. #531 merges last. This way the slow code-PR CI reruns after as few merges as possible.
+- **D9. Code-free PRs block on P1 only (ruling item 1).**
+  - **Code-free PR:** one that changes no file under `ops/`, `core/`, `lab/`, `scripts/`, `tests/`, `tools/`, `deploy/` or `.github/`, and no `*.py`, `*.ps1`, `*.sh`, `*.yml` or `*.toml` file. Documentation and pin registries such as `docs/evidence/*.sha256` qualify. Check with `gh pr diff <N> --name-only`. In this train, #523, #527 and #531 are code-free; #522 and #529 are code PRs.
+  - On a code-free PR, only an unresolved Codex **P1** thread blocks. An unresolved Codex **P2** thread does not block. The coordinator tracks it as a follow-up.
+  - On a code PR, P1 and P2 both block, as before.
+  - Human `CHANGES_REQUESTED` (D3) and Codex coverage (D2) apply to both kinds.
+- **D10. CI reused across a conflict-free update from `main` (ruling item 2).** This applies to a code PR whose full CI passed at head `H0` and whose current head `H1` differs from `H0` only by a merge commit of `main`. Confirm that `gh api repos/Joshua-Asante/first-passage/commits/<H1> --jq '[.parents[].sha]'` returns exactly `[H0, <a commit on main>]`, and that the update did not report a conflict. For such a PR, "CI clean" at `H1` means all of the following:
+  - every check run on `H0` completed as `pass` or `skipping`;
+  - `skills (3.12)` completed as `pass` on `H1`;
+  - no check run on `H1` has failed or been cancelled. Checks still pending on `H1` do not block.
+
+  Record `H0` and the reuse in the §6 row. The backstop is `main`'s own post-merge CI (`tests.yml` runs on every push to `main`). A red run there is reported to the coordinator at once, and the train pauses until it is triaged. D10 never applies to a head with any non-merge commit after `H0`. Code-free PRs keep the full step 3 rule.
+- **D11. What the ruling does not change.** No test, check or gate is skipped, disabled, re-run or relaxed. The `main` ruleset is unchanged. D1–D4, D7 and D8 all still apply.
 - **D7. Everything is fresh at merge.** `--match-head-commit` checks only the head SHA, not checks or reviews. So immediately before merging, **after** any wait for CI or for operator approval, the session re-fetches the head, the checks, the human reviews, the Codex threads and the Codex coverage (§3 steps 1, 3 and 4). It merges only if all still pass on the same head.
 
 ## 1. Outcome and return boundary
@@ -109,12 +134,16 @@ Repository: `Joshua-Asante/first-passage`. `main` requires a PR, the `skills (3.
 2. **Behind `main`:** update the branch by merge commit, pinned to the head just read:
    `gh api -X PUT repos/Joshua-Asante/first-passage/pulls/<N>/update-branch -f expected_head_sha=<headRefOid>`.
    - On success the head has changed. **Go back to step 1** (D1).
-   - A 422 means the head moved; go back to step 1.
-   - A merge conflict is a blocker (§5 list).
-3. **CI:** `gh pr checks <N>`. Wait while anything is pending or queued. Clean means every check run on the current head completed as `pass` or `skipping`. `fail` or `cancelled` is a blocker; do not re-run it.
+   - On a 422, read the response `message` before doing anything else:
+     - if it reports that the expected head SHA did not match, the head moved: go back to step 1;
+     - if it reports a merge conflict, the PR is `BLOCKED` (`update conflict`);
+     - any other message makes the PR `BLOCKED` (`update refused: <message>`).
+
+     Never repeat the same PUT without re-reading the head first.
+3. **CI:** `gh pr checks <N>`. Wait while anything is pending or queued. Clean means every check run on the current head completed as `pass` or `skipping`, except where D10 applies to a code PR whose only change is a merge of `main`. `fail` or `cancelled` is a blocker; do not re-run it.
 4. **Reviews:**
    - **Human reviews (D3):** from step 1's `reviewDecision` and `latestReviews`.
-   - **Codex threads:** no unresolved thread whose first comment is from `chatgpt-codex-connector` and carries a P1 or P2 badge. Read every page of threads:
+   - **Codex threads:** a code PR must have no unresolved thread whose first comment is from `chatgpt-codex-connector` and carries a P1 or P2 badge. A code-free PR must have none with a P1 badge (D9). Read every page of threads:
      ```
      gh api graphql -f owner=Joshua-Asante -f repo=first-passage -F n=<N> -f query='
        query($owner:String!,$repo:String!,$n:Int!,$after:String){
@@ -126,10 +155,14 @@ Repository: `Joshua-Asante/first-passage`. `main` requires a PR, the `skills (3.
      While `hasNextPage` is true, repeat with `-f after=<endCursor>`.
    - **Codex coverage (D2).** Fetch the last non-merge commit and the top-level comments:
      ```
-     gh api repos/Joshua-Asante/first-passage/pulls/<N>/commits --paginate \
-       --jq '.[] | select(.parents | length == 1) | .sha' | tail -n 1     # PowerShell: | Select-Object -Last 1
-     gh api repos/Joshua-Asante/first-passage/issues/<N>/comments --paginate \
-       --jq '.[] | select(.user.login == "chatgpt-codex-connector[bot]") | {updated_at, body}'
+     # bash
+     gh api repos/Joshua-Asante/first-passage/pulls/<N>/commits --paginate --jq '.[] | select(.parents | length == 1) | .sha' | tail -n 1
+     gh api repos/Joshua-Asante/first-passage/issues/<N>/comments --paginate --jq '.[] | select(.user.login == "chatgpt-codex-connector[bot]") | {updated_at, body}'
+     ```
+     ```powershell
+     # PowerShell 7.3+ (the launcher's baseline, AGENTS.md): each command on one line, and embedded quotes pass through natively
+     gh api repos/Joshua-Asante/first-passage/pulls/<N>/commits --paginate --jq '.[] | select(.parents | length == 1) | .sha' | Select-Object -Last 1
+     gh api repos/Joshua-Asante/first-passage/issues/<N>/comments --paginate --jq '.[] | select(.user.login == "chatgpt-codex-connector[bot]") | {updated_at, body}'
      ```
      Take the newest "Didn't find any major issues" comment's `Reviewed commit`, or the summary comment's **Completed** row commit. The last non-merge commit must be that commit or one of its ancestors: `gh api repos/Joshua-Asante/first-passage/compare/<last-non-merge>...<reviewed>` returns `status` `identical` or `ahead`. A summary row still **Running** is not coverage.
 5. **Order (D6).**
@@ -166,7 +199,7 @@ Blockers, where the session leaves the PR alone and lists it in §6:
 
 Report to the operator in the session, in this shape:
 
-| PR | Final state | Merge SHA | Head merged | Approval (D4 SHA) | Blocker (if any) |
+| PR | Final state | Merge SHA | Head merged | Approval (D4 SHA) | D10 reuse (`H0`, or none) | Deferred P2s (D9) | Blocker (if any) |
 |---|---|---|---|---|---|
 
 Final state is `MERGED`, `READY_AWAITING_APPROVAL` or `BLOCKED`. For a PR that is `READY_AWAITING_APPROVAL`, the "Head merged" column gives the full head SHA that passed §3 and is awaiting approval.
@@ -206,6 +239,16 @@ Third revision (Codex review of `fbb1bd91`):
 | No private-input declaration in Phase 0 | §0 "Private inputs: none" and report item |
 | Paginated commit list gave one SHA per page | Step 4 emits every page's SHAs and takes the last line |
 | No handling of an in-doubt merge | D8: reconcile through `gh pr view`, no automatic retry, train paused until recorded |
+
+Fourth revision (operator ruling 2026-09-27 and Codex review of `7f96488e`):
+
+| Item | Change |
+|---|---|
+| Operator ruling, process changes 1–3 | D9 (code-free PRs block on P1 only), D10 (CI reused across a conflict-free update from `main`, with the post-merge `main` backstop), D6 order, D11 (nothing skipped; ruleset unchanged) |
+| The `gh` credential not declared as a private input | §0 names the operator-held credential and the `gh auth status` check |
+| D8 did not cover a moved head, a closed PR or a failed query | D8 classifies all of them; an unresolved outcome stays IN_DOUBT and the train stays paused |
+| 422 on `update-branch` retried blindly | Step 2 reads the message; only a head mismatch loops back to step 1 |
+| PowerShell form was not runnable | Step 4 gives one-line bash and PowerShell forms |
 
 ## 10. Launch and audit hooks (operator, local Codex session)
 
