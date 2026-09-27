@@ -127,3 +127,7 @@ Two refinements were made on verification:
 4. The X-3 read addition: the lifecycle of the liquidation order and of both children.
 
 **Evidence custody:** the public captures sit in the close-semantics worktree's gitignored `local_artifacts/close-semantics-2026-09-26/` (`MANIFEST.tsv` SHA-256 `74721db0…1d29`). That worktree is kept until the captures are relocated to the primary checkout.
+
+**Update 2026-09-26 (coordinator).**
+- **Vendor question:** finalized for the operator to send, under the operator ruling of 2026-09-26 given in session (R-VENDORQ): the nine questions kept, one request added as item 10. Final text, reply handling and reply retention: [vendor-question note](../../notes/2026-09-26-crosstrade-close-semantics-vendor-question.md). No agent has sent it or contacted the vendor.
+- **Evidence custody:** the captures were relocated on 2026-09-26 to the primary checkout's gitignored `local_artifacts/close-semantics-2026-09-26/`, verified by `SHA256SUMS` (`sha256sum -c`: 22 of 22 entries OK). `MANIFEST.tsv` SHA-256 is `74721db0…1d29`, matching the executor's record above. The retention condition in the paragraph above is met; removing the close-semantics worktree is not done here.

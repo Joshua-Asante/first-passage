@@ -224,6 +224,8 @@ The ruling defers X-5, and no drill is authorized. This section describes value 
 
 ## 6. Draft vendor question (for the operator to send; not sent)
 
+*Operator ruling 2026-09-26 (in session): finalized for the operator to send, keeping the nine questions below and adding one request as item 10. The final text, the reply-handling rules and where the reply is retained are in the [vendor-question note](2026-09-26-crosstrade-close-semantics-vendor-question.md). The draft below is kept as drafted.*
+
 **To:** CrossTrade support. The evaluation account has no native Tradovate API access (T08 §7.4), so CrossTrade is the party that makes the `liquidateposition` call. The question asks CrossTrade to name any answer that depends on Tradovate. **Constraints:** no account identifiers. Retain the written reply as original bytes (Gate A A12). Sending needs the operator's own decision; no agent contacts a vendor.
 
 > **Subject:** Full close (liquidate) behavior on a Tradovate account via the REST close endpoint

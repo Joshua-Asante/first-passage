@@ -1,5 +1,7 @@
 # ORB resting-entry lifecycle: source and replay evidence (2026-09-26)
 
+**Operator ruling 2026-09-26 (in session):** the operator ruled **L1** ([campaign §59 Ruling 6](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-6--orb-resting-entry-lifecycle-l1-2026-09-26)), which owns the ruling and the amendments it authorizes to be prepared. This note is unchanged below and remains the evidence as returned.
+
 **Status:** RETURNED for coordinator review. Deliverable 1 of the [ORB lifecycle and fence-trace card](../briefs/handoffs/2026-09-26-orb-lifecycle-and-fence-trace.md). It is evidence for the operator's lifecycle ruling (B–D packet [B-13](2026-09-26-tradeify-bd-decision-packet.md), decision 14). It recommends no lifecycle, changes no code, contract, pre-registration or owner record, and accepts, authorizes or qualifies nothing.
 **Executor:** assessor subagent (Claude Code, Opus 5.5), branch `claude/orb-fence-trace`. **Dispatch revision:** `62c956f538dfa53f31eaec5951efc3ffa1dce53b` (HEAD equals it; verified). Public line numbers are at that revision.
 **Separation:** this note does not use or assess the account fence. The fence is the card's Deliverable 2 ([four-state trace](2026-09-26-account-fence-four-state-trace.md)), and no statement here depends on it (operator ruling 2026-09-26, R-EDITIONS).

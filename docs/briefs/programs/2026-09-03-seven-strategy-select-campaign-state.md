@@ -3982,6 +3982,23 @@ Subject to the Vanguard qualification at Ruling 1 above, Vanguard and Aegis keep
 
 **Not granted:** freeze, replay, E1 dispatch, file production, deployment or GO; no gate B, C or D acceptance. **Board write:** STATE decision index 2026-09-26 row; dated markers in both pre-registrations.
 
+### Ruling 6 — ORB resting-entry lifecycle L1 (2026-09-26)
+
+**Operator ruling 2026-09-26 (in session).** Joshua ruled through a structured question. He selected "L1 as Astra recommends", whose text was Astra's recommendation; it is recorded here as his decision. It makes the lifecycle ruling that Ruling 5 left open (B–D packet B-13, decision 14). Evidence: the [ORB lifecycle evidence note](../../notes/2026-09-26-orb-lifecycle-evidence.md) (candidate lifecycles L1–L3, its §3; the questions for the ruling, its §4).
+
+**Decision.**
+- **L1 for ORB's base entry:** one placement, no age-based expiry and no periodic reissue.
+- **Retained:** the rail's earlier scheduled entry cutoff, which still cancels the order when it precedes the strategy's session-end cancellation; and the existing qualified takeover/cancellation behavior.
+- **Incident handling** still follows the attended halt contract. This ruling does not authorize automatic incident cancellation.
+- **Preparation authorized:** bounded amendments to ORB-1 (the [route-native editions pre-registration](../pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md)), replay-spec RC-9, rail-spec S2 and the qualification replay, with the affected tests and freeze identities updated; and correction of rail-spec AC-3's market-add description.
+- **Kept separate:** the account-fence repair (B–D packet §3, four-state trace).
+- **Return:** the integrated change and its verification are returned for acceptance before edition freeze.
+- No historical late-fill count is required (evidence note §4, question 6).
+
+**Recording notes (not ruling text).** The adopted lifecycle is L1. The amendments are authorized for preparation only: the current text and code of RC-9, rail S2, ORB-1, AC-3 and the qualification replay (its one-bar cancel at `replay.py:507-509`; the qualification `replay_kernel`) and its pinned test are unamended until the integrated change is accepted. The ruling does not name AC-8 or S4's "stale resting entries" wording (evidence note §4, question 5); no change to them is recorded as ruled.
+
+**Not granted:** edition freeze; acceptance of the prepared amendments; any replay or E1 run on the edition (running the affected tests and verifying the prepared change, which the Return above requires, is within the preparation grant and is not such a run); automatic incident cancellation; the account-fence repair (separate); any drill, order action, deployment, arming or GO; no gate B, C or D acceptance. **Board write:** STATE decision index 2026-09-26 row; dated markers on the pre-registration's ORB-1 row (including a status marker the pre-registration's §10 OWED hook matches), its §3 lifecycle line and its §8 step 1; B–D packet B-13 and decision 14, and dated markers on the packet's other surfaces that restated the lifecycle as OPEN (a note under its rulings table, the "Still OPEN" list, the section-state rows for §2 and §6, the §2 rulings note, the §3 lifecycle row and the §5 T09 lifecycle row); a pointer at the top of the evidence note.
+
 ## §60 — Agent read access to the accepted book's Pine and runtime ports (2026-09-25)
 
 **Operator direction, 2026-09-25, in session (verbatim):** "i also want agents to be able to read the pine locally, from all 4 strategies". Asked two scoping questions, the operator chose **"Pine + ports"** (lift §59's no-read clause for the four Pine files and their pinned runtime ports) and **"Main checkout only"** (one canonical private copy in the primary checkout; no copies in worktrees).
