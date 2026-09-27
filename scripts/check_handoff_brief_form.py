@@ -16,7 +16,8 @@ A card is in scope when either holds:
     item 7), read with `check_handoff_authority.py`'s own block reader.
 
 The historical cards are the files dated before CUTOFF that were on `main` when this gate
-landed. They are listed by name, so a new card given an earlier date is still checked. They
+landed. They are listed by name, so a new card given an earlier date is still checked, and every
+listed name must be a card at GRANDFATHER_BASE: the list can shrink but never gain a card. They
 are not retrofitted, following item 7's precedent ("historical cards are not retrofitted");
 item 1 still binds any of them that is dispatched. The files in EXEMPT are the ruling's four,
 exempt by name only.
@@ -32,7 +33,11 @@ In a git checkout, a card with both staged and unstaged changes fails when eithe
 in scope, including a staged card deleted from the working tree: pre-commit would check the
 working-tree copy while the commit records the staged one.
 
-Exit codes: 0 clean · 1 a card fails, or an exemption names no file.
+Both lists are pinned by this gate, not only by its tests. EXEMPT must equal the exempt rows
+of the ruling's table in the ADR, and a historical list that names a card absent from
+GRANDFATHER_BASE, or that cannot be read against it (a shallow clone), fails closed.
+
+Exit codes: 0 clean · 1 a card fails, a pin fails, or an exemption names no file.
 """
 from __future__ import annotations
 
@@ -53,6 +58,11 @@ HANDOFFS = SCAN_ROOT / "handoffs"
 # The ruling that added this gate; historical cards dated earlier are not retrofitted.
 CUTOFF = "2026-09-27"
 GRANDFATHERED_FILE = REPO_ROOT / "scripts" / "handoff_brief_form_grandfathered.txt"
+# `main` when the gate landed: every historical card on the list must be a file here.
+GRANDFATHER_BASE = "38e62eed4eeb5aeeb7013997fab9e0ccfdff68bd"
+RULING_ADR = REPO_ROOT / "docs" / "adr" / "2026-07-14-cc-cursor-surface-allocation.md"
+_RULING_ANCHOR = '<a id="addendum-2026-09-27"></a>'
+_EXEMPT_ROW = re.compile(r"^\| `([^`]+\.md)` \|.*\| \*\*Exempt\b[^|]*\|\s*$", re.MULTILINE)
 _WELL_FORMED = "RESULT: well-formed"
 
 # Exempt by the operator's dated ruling (ADR Addendum 2026-09-27, its *Ruling* table), as
@@ -97,15 +107,58 @@ def _has_authority_block(text: str) -> bool:
     return bool(authority.extract_blocks(text) or authority.stray_fences(text))
 
 
-def load_grandfathered(path: Path = GRANDFATHERED_FILE) -> frozenset[str]:
-    """Names of the historical cards; every one must be dated before CUTOFF."""
+def load_grandfathered(path: Path = GRANDFATHERED_FILE,
+                       base: str = GRANDFATHER_BASE) -> frozenset[str]:
+    """Names of the historical cards. Each must be dated before CUTOFF and be a card
+    directly under the handoffs directory at `base`; raises ValueError otherwise."""
     names = frozenset(line.strip() for line in path.read_text(encoding="utf-8").splitlines()
                       if line.strip() and not line.lstrip().startswith("#"))
     for name in names:
         dated = _DATE_PREFIX.match(name)
         if dated is None or dated.group(1) >= CUTOFF:
             raise ValueError(f"{path.name}: {name!r} is not a card dated before {CUTOFF}")
+    proc = _git(REPO_ROOT, "ls-tree", "--name-only", base, "--", f"{HANDOFFS.as_posix()}/")
+    if proc.returncode != 0:
+        raise ValueError(f"{path.name}: cannot read the pinned base {base[:7]} "
+                         "(a shallow clone?); fetch full history and re-run")
+    original = {Path(line).name for line in proc.stdout.splitlines() if line}
+    added = sorted(names - original)
+    if added:
+        raise ValueError(f"{path.name}: not a card on main at {base[:7]}, so it cannot be "
+                         f"grandfathered: {', '.join(added)}")
     return names
+
+
+def ruling_exemptions(adr: Path = RULING_ADR) -> frozenset[str]:
+    """The files the ADR's Addendum 2026-09-27 ruling table marks **Exempt**."""
+    text = adr.read_text(encoding="utf-8")
+    start = text.index(_RULING_ANCHOR)
+    heading = text.index("\n## ", start)
+    end = text.find("\n## ", heading + 1)
+    section = text[start:end if end != -1 else len(text)]
+    return frozenset(f"{HANDOFFS.as_posix()}/{name}" for name in _EXEMPT_ROW.findall(section))
+
+
+def config_failures(adr: Path = RULING_ADR,
+                    grandfathered_file: Path = GRANDFATHERED_FILE) -> list[Failure]:
+    """The gate's own pins: EXEMPT against the ruling, the historical list against its base."""
+    failures: list[Failure] = []
+    try:
+        ruled = ruling_exemptions(adr)
+    except (OSError, ValueError) as exc:
+        failures.append(Failure("scripts/check_handoff_brief_form.py",
+                                f"cannot read the ruling table: {exc}"))
+    else:
+        if ruled != EXEMPT:
+            failures.append(Failure(
+                "scripts/check_handoff_brief_form.py",
+                f"EXEMPT differs from the ruling's Exempt rows; only in EXEMPT: "
+                f"{sorted(EXEMPT - ruled)}, only in the ruling: {sorted(ruled - EXEMPT)}"))
+    try:
+        load_grandfathered(grandfathered_file)
+    except (OSError, ValueError) as exc:
+        failures.append(Failure(GRANDFATHERED_FILE.relative_to(REPO_ROOT).as_posix(), str(exc)))
+    return failures
 
 
 def in_scope(rel: Path, text: str, grandfathered: frozenset[str]) -> bool:
@@ -197,14 +250,15 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--root", type=Path, default=REPO_ROOT, help=argparse.SUPPRESS)
     args = ap.parse_args(argv)
-    result = scan(args.root)
-    for failure in result.failures:
+    pins = config_failures()
+    result = scan(args.root) if not pins else Result([], 0, 0)
+    for failure in pins + result.failures:
         print(f"HARD {failure.path}")
         for line in failure.report.rstrip().splitlines():
             print(f"    {line}")
     print(f"check_handoff_brief_form: {result.checked} card(s) in scope, "
-          f"{result.exempted} exempt by ruling, {len(result.failures)} failing")
-    return 1 if result.failures else 0
+          f"{result.exempted} exempt by ruling, {len(pins) + len(result.failures)} failing")
+    return 1 if pins or result.failures else 0
 
 
 if __name__ == "__main__":

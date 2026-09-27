@@ -8,7 +8,6 @@ files. Each test names the property it must violate to fail.
 from __future__ import annotations
 
 import importlib.util
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -303,13 +302,56 @@ def test_card_is_validated_as_a_handoff_not_by_inference(tmp_path, rel):
 def test_exempt_set_is_exactly_the_rulings_exempt_rows():
     """Violated if the script's exemptions drift from the operator's dated ruling
     (ADR Addendum 2026-09-27), in either direction."""
+    assert len(gate.ruling_exemptions()) == 4
+    assert gate.EXEMPT == gate.ruling_exemptions()
+    assert gate.config_failures() == []
+
+
+def test_an_exemption_the_ruling_does_not_grant_fails_the_gate(tmp_path):
+    """Violated if the ADR's ruling table and the script's EXEMPT can disagree while the
+    required gate still passes: the pin is enforced by the gate, not only by this suite."""
+    adr = tmp_path / "adr.md"
     text = ADR.read_text(encoding="utf-8")
-    start = text.index('<a id="addendum-2026-09-27"></a>')
-    end = text.index("\n## ", text.index("\n## ", start) + 1)
-    section = text[start:end]
-    rows = re.findall(r"^\| `([^`]+\.md)` \|.*\| \*\*Exempt\b[^|]*\|\s*$", section, re.M)
-    assert rows, "the ruling's table was not found"
-    assert gate.EXEMPT == frozenset(f"docs/briefs/handoffs/{name}" for name in rows)
+    row = "| `2026-09-27-m2-modify-semantics.md` | Carded, not dispatched | **Not exempt."
+    assert row in text
+    adr.write_text(text.replace(row, "| `2026-09-28-new.md` | x | **Exempt.** x |\n" + row),
+                   encoding="utf-8")
+    failures = gate.config_failures(adr=adr)
+    assert [f.path for f in failures] == ["scripts/check_handoff_brief_form.py"]
+    assert "EXEMPT" in failures[0].report
+
+
+def _list_file(tmp_path: Path, names) -> Path:
+    path = tmp_path / "grandfathered.txt"
+    path.write_text("# header\n" + "\n".join(names) + "\n", encoding="utf-8")
+    return path
+
+
+@pytest.mark.parametrize("change", ["added", "swapped"])
+def test_grandfathered_list_accepts_only_cards_on_the_pinned_base(tmp_path, change):
+    """Violated if a new backdated card can be added to, or swapped into, the historical
+    list: every entry must be a card on main at the pinned base commit (Codex P2 on #532
+    at `f061616`)."""
+    names = sorted(gate.load_grandfathered())
+    names = names + ["2026-09-26-new.md"] if change == "added" else \
+        names[1:] + ["2026-09-26-new.md"]
+    with pytest.raises(ValueError, match="2026-09-26-new.md"):
+        gate.load_grandfathered(_list_file(tmp_path, names))
+
+
+def test_grandfathered_list_allows_removals(tmp_path):
+    """Violated if pruning a historical card from the list is refused: the list only
+    shrinks."""
+    names = sorted(gate.load_grandfathered())[5:]
+    assert gate.load_grandfathered(_list_file(tmp_path, names)) == frozenset(names)
+
+
+def test_grandfathered_list_fails_closed_without_the_base_commit(tmp_path):
+    """Violated if the list is trusted when the pinned base commit cannot be read (for
+    example a shallow clone): the gate must fail rather than skip the pin."""
+    names = sorted(gate.load_grandfathered())
+    with pytest.raises(ValueError, match="cannot read"):
+        gate.load_grandfathered(_list_file(tmp_path, names), base="0" * 39 + "1")
 
 
 def test_repository_tree_is_clean():

@@ -854,18 +854,22 @@ rule), so a malformed card now fails before dispatch. The scope:
   (`docs/briefs/handoffs/**`), except that directory's own `README.md` and the historical cards:
   the 74 direct children dated before 2026-09-27 that were on `main` at `38e62ee`, listed by name in
   [`scripts/handoff_brief_form_grandfathered.txt`](../../scripts/handoff_brief_form_grandfathered.txt).
-  Because the list is by name, a new card with a backdated name is still checked;
+  Because the list is by name, a new card with a backdated name is still checked. The gate
+  pins the list: every name on it must be a card at `38e62ee`, so the list can shrink but never
+  gain a card, and a checkout that cannot read `38e62ee` (a shallow clone) fails closed;
 - any `docs/briefs/**` card carrying a `yaml authority` block, read with
   `check_handoff_authority.py`'s block reader;
-- minus the four files exempted above, named in the script and pinned to this table by
-  `tests/scripts/test_check_handoff_brief_form.py`. An exemption naming a missing file fails
-  the gate, so a renamed exempt card loses its exemption.
+- minus the four files exempted above, named in the script. The gate itself pins them to this
+  table's **Exempt** rows, so an exemption the ruling does not grant fails the required check,
+  and this ADR is in the gate's path trigger. An exemption naming a missing file fails the gate,
+  so a renamed exempt card loses its exemption.
 
 In a git checkout, a card with both staged and unstaged changes fails, because pre-commit reads
 the working copy while the commit records the staged one. That check runs before scope, on both
 copies, so a staged card whose working copy has left scope, or has been deleted, still fails. These
 rules came from the Codex reviews of #532: the name-based list, the verdict and partial staging at
-`35e91ac`; the forced handoff type at `afdac7d`; nested cards and the check order at `0efe06d`.
+`35e91ac`; the forced handoff type at `afdac7d`; nested cards and the check order at `0efe06d`;
+the pinned historical list at `f061616`.
 
 The historical cards are **not retrofitted**, following item 7's precedent ("historical cards are not
 retrofitted"). The gate does not check them, and this is not an exemption: item 1 still binds any

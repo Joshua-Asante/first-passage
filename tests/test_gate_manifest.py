@@ -298,6 +298,7 @@ def test_sessions_queue_bind_reaches_each_additional_consumed_file(
         "scripts/check_brief.py",
         "scripts/check_handoff_brief_form.py",
         "scripts/handoff_brief_form_grandfathered.txt",
+        "docs/adr/2026-07-14-cc-cursor-surface-allocation.md",
         "scripts/check_handoff_authority.py",
         ".claude/skills/brief-authoring/scripts/brief_checks.py",
     ],
