@@ -987,7 +987,7 @@ This supersedes r2 §10.3's release-point reading and the §12.7 sentence that h
 
 **Status after this ruling.**
 - CP-1a is **RULED**.
-- **Next:** H1 step (b) executes the approved measurements. RC-3a evidence (a valid Stage 1b record, the rule applied as a provisional PART_A TEST_ONLY ceiling, the §10 arithmetic) and an updated build-entry table then go to **CP-1b**.
+- **Next:** H1 step (b) executes the approved measurements. *[2026-09-27: execution follows the harness merge, not step (b) itself, and waits for the sequencing gate in [r2 "Current authority"](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md) (§12.9).]* RC-3a evidence (a valid Stage 1b record, the rule applied as a provisional PART_A TEST_ONLY ceiling, the §10 arithmetic) and an updated build-entry table then go to **CP-1b**.
 - RC-1 is met. RC-4/RC-5 are met for build entry.
 - RC-3a, the §3.4(d) text and the RC-6 re-anchor remain open.
 

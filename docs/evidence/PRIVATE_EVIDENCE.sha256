@@ -140,3 +140,21 @@ d256f1211b0b6bfffb16a7b0a0cf01c26989f944a4278cda9471e1a9a0e07107  .cache/fp-veri
 1f82405e59a63fc629aae879822aa1e64b7532500bd0c33a8ed6a29baf35fcb3  actionlint-6010cb50-coord.txt
 b1975dee7a0f1da4075365e8f5b8d1eaff2247d2426d0907ef711f132de6db3c  actionlint-6010cb50-worker.txt
 e17e69af7ee93dbc4d75ab83cbf2cd54b8a637119374973e7fe6962a9c826995  h1b-526-r10-verification-evidence-2026-09-27.tar.gz
+# H1(b) #526 at 3b321768, the operator-approved update from main (parents 6010cb50 and ed3e476f; the four
+# harness files are byte-identical to 6010cb50): the coordinator's clean-worktree re-check (module pytest,
+# --workers 2, check), the actionlint 1.7.7 output, and the manifest package; archived in
+# first-passage-archive (2816a182, first-passage-archive#842). The 6010cb50 pins above are unchanged.
+5de0ed31d489fa4e8efb3721729c4f29cda5a065f2d50adf789f4fe954343714  .cache/fp-verification/20260927T222523Z-28d209052e97/record.json
+24d497c84efd67f505c8dcf92d5e0ffd23a961280d7c8b73e0855278f31db67c  .cache/fp-verification/20260927T222541Z-2b38f39c0270/record.json
+c53c65a8e417b6968d5777ed0e8d4d7b2bd4c5903acef782c7a1e53d872ad06e  .cache/fp-verification/20260927T222556Z-50f5f3823f83/record.json
+677344df7df26b9ae7cc7849573029e09dc583f4afe16e0ed4bd3c22b99cc67d  actionlint-3b321768-coord.txt
+1b135897d0f503ec6173fddb7bbcb8e3d0e8c7de52aecb983fb761dfe5a9b9c8  h1b-526-r11-verification-evidence-2026-09-27.tar.gz
+# H1(b) #526 at a6b43bdb, the second update from main under the same approval (parents 3b321768 and
+# 38e62eed, after #522 merged; harness files unchanged): the coordinator's clean-worktree re-check
+# (module pytest, --workers 2, check), the actionlint 1.7.7 output, and the manifest package; archived in
+# first-passage-archive (148d857e, first-passage-archive#842).
+8e3d5d3cf5ed891240601563fdc3b04dc8334a415ac696b4d07e4f148e60ea4c  .cache/fp-verification/20260927T223137Z-ed89b8bcc575/record.json
+850d2ae4304bec8b3c04a430a22588075a305f14f17a9225140cb7db538c181b  .cache/fp-verification/20260927T223149Z-a2022cd47ecf/record.json
+2a06f3b46094e43f7909ca9c48fdebe26dda2392cf77589ffec090934b886eee  .cache/fp-verification/20260927T223204Z-526df770fa53/record.json
+09b92ac2065b1fe010afc39be8ff9b7e64434d62d7f0be310245f22dc6d14bfb  actionlint-a6b43bdb-coord.txt
+6728d84ee39029a233ea751e7eeb7d1573c25a82e4a17d9f34420a8ab6236176  h1b-526-r12-verification-evidence-2026-09-27.tar.gz
