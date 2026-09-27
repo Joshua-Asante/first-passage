@@ -66,6 +66,7 @@ EXPECTED_PATH_CONDITIONAL = {
     "supersession-placement",
     "closure-disposition",
     "handoff-authority",
+    "handoff-brief-form",
     "governance-prose-control-chars",
     "repo-map-layers",
     "lifecycle-consistency",
@@ -249,6 +250,7 @@ REACHABILITY_PROBES = {
     "supersession-placement": "lab/analysis/harvest/new_slug_2026-08/RESULTS.md",
     "closure-disposition": "docs/briefs/closures/Q-EXAMPLE-closure-falsified.md",
     "handoff-authority": "docs/briefs/handoffs/2026-09-25-example-card.md",
+    "handoff-brief-form": "docs/briefs/handoffs/2026-09-28-example-card.md",
     "governance-prose-control-chars": "docs/rejected_candidates.md",
     "repo-map-layers": "scripts/check_boundaries.py",
     "lifecycle-consistency": "core/lifecycle.py",
@@ -287,6 +289,30 @@ def test_sessions_queue_bind_reaches_each_additional_consumed_file(
     selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
 
     assert "sessions-queue-bind" in selected
+
+
+@pytest.mark.parametrize(
+    "staged_path",
+    [
+        "docs/briefs/programs/2026-10-01-card-with-authority-block.md",
+        "scripts/check_brief.py",
+        "scripts/check_handoff_brief_form.py",
+        "scripts/check_handoff_authority.py",
+        ".claude/skills/brief-authoring/scripts/brief_checks.py",
+    ],
+)
+def test_handoff_brief_form_reaches_each_path_that_can_fail_a_card(
+    monkeypatch, staged_path
+):
+    """A card anywhere under docs/briefs/ (an authority block puts it in scope), the
+    checker, its engine, the gate's scope script and the block reader it reuses can
+    each turn a card from passing to failing, so each must select the gate."""
+    data = gm.load_manifest(MANIFEST)
+    monkeypatch.setattr(gm, "staged_names", lambda: [staged_path])
+
+    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
+
+    assert "handoff-brief-form" in selected
 
 
 def test_sessions_queue_bind_does_not_run_for_unrelated_path(monkeypatch):
