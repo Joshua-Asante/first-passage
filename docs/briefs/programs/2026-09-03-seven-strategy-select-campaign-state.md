@@ -3999,6 +3999,44 @@ Subject to the Vanguard qualification at Ruling 1 above, Vanguard and Aegis keep
 
 **Not granted:** edition freeze; acceptance of the prepared amendments; any replay or E1 run on the edition (running the affected tests and verifying the prepared change, which the Return above requires, is within the preparation grant and is not such a run); automatic incident cancellation; the account-fence repair (separate); any drill, order action, deployment, arming or GO; no gate B, C or D acceptance. **Board write:** STATE decision index 2026-09-26 row; dated markers on the pre-registration's ORB-1 row (including a status marker the pre-registration's §10 OWED hook matches), its §3 lifecycle line and its §8 step 1; B–D packet B-13 and decision 14, and dated markers on the packet's other surfaces that restated the lifecycle as OPEN (a note under its rulings table, the "Still OPEN" list, the section-state rows for §2 and §6, the §2 rulings note, the §3 lifecycle row and the §5 T09 lifecycle row); a pointer at the top of the evidence note.
 
+### Ruling 7 — ORB lifecycle L1 reaffirmed and the account-fence classification contract (2026-09-27)
+
+**Operator ruling 2026-09-27, in session.** The operator adopted this ruling by structured answer ("ORB L1 + fence contract") to the text relayed the same day; the relayed text governs: "Adopt ORB L1 with the earlier operational cutoff. Adopt the fresh-evidence fence classification and one-bar stale boundary described above; refreshed evidence never resumes a halted account. Authorize the bounded synthetic repair and corresponding specification/replay corrections, retaining real-producer and route acceptance obligations." The evidence is the #519 returns, reviewed at their pinned head [`8c15f18`](https://github.com/Joshua-Asante/first-passage/tree/8c15f1853e64f14f50995e3f1c55a620a0f674b7): the ORB lifecycle evidence (L1/L2/L3) and the four-state fence trace. Ruling 5 fixed the resolution order and kept the two decisions separate; they are recorded here as two separate decisions.
+
+**Relation to Ruling 6 (recorded 2026-09-27, when #519's records reached this branch).** Ruling 6 first ruled L1 on 2026-09-26, in a separate session. This ruling was relayed without that record in view, and it was numbered Ruling 6 until then. Part (a) re-adopts L1 on the same terms: one placement, no age-based expiry and no periodic reissue, with the earlier cutoff retained. Where the two texts differ, both apply, and neither loosens the other:
+- **Acceptance before freeze.** Ruling 6 authorizes preparation and requires the integrated change to be returned for acceptance before freeze. Part (a) authorizes the correction "as a bounded change, with verification before freeze". The integrated change still returns for acceptance before freeze. H4's return is its replay part.
+- **Which rail-spec rows change.** Ruling 6 names rail AC-3's market-add description for correction and does not name AC-8 or S4. H3 aligned S2, S4 and AC-8 under (a)'s "corresponding specification correction", behind pending markers. The AC-3 correction that Ruling 6 authorizes for preparation is not yet prepared; it is owed with the integrated change.
+- **Incidents.** Ruling 6 keeps incident handling under the attended halt contract and authorizes no automatic incident cancellation. Nothing here changes that.
+
+Part (b) is new. Ruling 6 kept the account-fence repair separate, and (b) is that separate decision.
+
+**(a) ORB lifecycle: L1.** In the relayed words:
+- "place the base entry once and let it remain working until it fills or an applicable cancellation ends it. No one-bar expiry and no periodic reissue. The earlier operational cutoff still applies."
+- "Authorize the corresponding specification/replay correction as a bounded change, with verification before freeze. No historical late-fill count is needed before this decision."
+
+Consequences recorded from the lifecycle evidence, not added rules:
+- Replay-spec RC-9 and rail S2's one-bar sentence are amended so that the one-bar cancel does not end ORB's base entry.
+- The qualification replay's one-bar cancel (`replay.py:507-509`, pinned by `test_replay.py:214-223`) is corrected as a bounded change. That is an E1 freeze-inventory change.
+- ORB-1 of the [edition pre-registration](../pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md) states the lifecycle in words.
+- The halt/resume §5 cutoff overlay applies unchanged.
+
+**(b) Fence classification contract.** In the relayed words:
+- "A request positively identified as working or partially filled by fresh, qualifying order-level evidence is known working. Retain its capacity reservation; do not block unrelated admission solely because the order is old."
+- "Stale evidence blocks further admission. Treat evidence as stale at one bar, explicitly pinning that boundary in tests."
+- "A genuinely unknown dispatch blocks immediately. For this slice, retain the conservative terminal-resolution rule; positive-lookup resolution remains separately held."
+- "Terminal evidence resolves only the request it demonstrably covers."
+- "Refreshed evidence never automatically restores permission after an incident halt."
+
+The repair is authorized as a bounded synthetic repair. The real evidence producer, route integration and the ordinary-unknown halt (packet CC-3) remain required before the whole fence obligation is accepted.
+
+**Applied by:** [handoff H3](../handoffs/2026-09-27-staged-acceptance-handoffs.md), which puts the specification text into its owners and drafts the bounded repair card (H4) that includes the replay correction.
+
+**Not granted:** freeze, edition file production (gate D), replay or E1 dispatch, a count run of the private port, gate B–D acceptance, T09 dispatch, deployment or GO. **Board write:** STATE decision index, 2026-09-27 row.
+
+**Operator answers, 2026-09-27 (same day, in session, by structured answer to the coordinator's questions on the H3 return).**
+- **Stale boundary confirmed.** "Treat evidence as stale at one bar" means evidence whose age at evaluation is **one bar period or more** is stale; the boundary is inclusive. The operator chose "Yes, ≥ one bar". H4 pins it in a test.
+- **Rail-spec change control (H3 Q4).** The rail spec's Boundary line ("no … fail-closed change without the §5 addendum") is met by adding a **dated §5 addendum entry** citing this ruling. The operator chose "Add §5 addendum entry". H3 applies it.
+
 ## §60 — Agent read access to the accepted book's Pine and runtime ports (2026-09-25)
 
 **Operator direction, 2026-09-25, in session (verbatim):** "i also want agents to be able to read the pine locally, from all 4 strategies". Asked two scoping questions, the operator chose **"Pine + ports"** (lift §59's no-read clause for the four Pine files and their pinned runtime ports) and **"Main checkout only"** (one canonical private copy in the primary checkout; no copies in worktrees).

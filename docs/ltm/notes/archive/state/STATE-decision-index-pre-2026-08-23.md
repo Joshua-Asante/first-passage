@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Nineteenth roll, 2026-09-27** (one entry, pushed off by the staged-acceptance direction):
+
+- **2026-09-10** — Operator accepted the selected Tradeify configuration as satisfying queue item 1; configuration-selection work closed and removed from the live queue. Deployment remains separate. [Acceptance](../../../../../docs/notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure)
+
 **Eighteenth roll, 2026-09-26** (one entry, pushed off by the route-feasibility-first direction):
 
 - **2026-09-06** — Root docs narrowed to current routing; STATE owns priorities, campaign plans executable steps, SESSIONS history. [Charter](../../../../../docs/adr/2026-07-16-root-doc-charter-dedup.md#decision)

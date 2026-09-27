@@ -30,6 +30,7 @@ T07 blocked on three S2 source facts ([packet](../../briefs/handoffs/2026-09-21-
 T08 R3 = NONE, live release held pending the vendor question ([packet](../../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md));
 T10 step 4 budget term awaits a synthetic probe ([packet](../../briefs/handoffs/2026-09-21-tradeify-t10-source-and-freeze-packet.md));
 T00 INSUFFICIENT on P7(b) ([closure](../../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md)).
+**Sequencing from 2026-09-27:** the [staged-acceptance addendum](#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step) governs the order of next actions, the S5 build-entry/C3 split and the operator checkpoints; the rows above still own outcomes.
 Campaign ownership: the Claude Code coordinator under the [2026-09-25 transfer](2026-09-18-full-e1-execution-slices.md#coordinator-transfer--claude-code-continuation-2026-09-25). No production, activation, arm or trade authority follows from any row.
 
 ## Current-state audit — September 20, 2026
@@ -327,6 +328,7 @@ The steps below are the current implementation baseline; the coordinator must re
 - T14 starts with provider-neutral work only; standing source-independent/funding gates control provider-specific execution.
 - **T15** is the join for production qualification: engineering, actual-source readiness and pre-freeze feasibility/behavior inventory must agree.
 - **T16 -> T17** closes real binding, combined operational acceptance and actual launch.
+- **2026-09-27:** the next bounded action per workstream, its evidence classes and the operator checkpoints CP-1a..CP-9 are in the [staged-acceptance addendum](#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step); where it differs from the order above, it governs sequencing.
 
 Do not serialize all external work behind E1. Do not freeze E1 while required
 route/incident changes are still unknown. Do not require paid-feed final binding
@@ -369,6 +371,139 @@ This table owns the gate definitions; STATE and the REST disposition link here. 
 Acceptance of evidence (A) is separate from acceptance of changed behavior (B). C permits bounded design with explicitly held validation dependencies; it is not a whole-route PASS. E1 freeze still requires the accepted allocation and complete behavior inventory, and execution/release retain their existing qualification gates.
 
 No drill, account access, vendor contact, spend, contract change or GO is granted by this addendum.
+
+## Addendum 2026-09-27 — staged acceptance: evidence proportional to the next step
+
+**Operator direction (2026-09-27, in session).** "Adopt evidence proportional to the next step: establish enough to bound that step, execute it under explicit limits, and use the results to decide what follows. Unknowns should block the activity they affect, rather than every downstream preparation task." The direction "changes sequencing and evidence collection. It does not waive portfolio qualification or authorize trades." It authorizes this revision of the sequence and the preparation of the handoffs in the [staged acceptance handoff set](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md). It does not by itself authorize account actions, spending, S5 execution, production attempts or deployment. Those approvals are taken at the checkpoints in §4, each against a reviewable return, not through repeated requests about routine implementation.
+
+**Revised 2026-09-27 after the operator's review of `9448373`.** The corrections:
+- Consume the returns of [#519](https://github.com/Joshua-Asante/first-passage/pull/519) at its pinned head instead of redispatching their work.
+- Separate the authority to prepare a measurement proposal from the authority to execute measurements.
+- §A11 does not settle the fence classification, which becomes a contract decision.
+- "No same-session resume" becomes an explicit policy choice.
+- Commissioning evidence can support capability acceptance within its demonstrated scope.
+- CP-3 comes before each order-producing action.
+- S5's pre-build feasibility is arithmetic on proposed values.
+- RC-4/RC-5 assignment happens now.
+- Result/seal integration keeps its full-S5-acceptance dependency.
+
+The changed gates are in §0.
+
+This addendum governs **sequencing** where it differs from the packet order above. It changes no packet's selected outcome, verification standard, statistical criterion or authority. It also leaves unchanged the T09 gate record, campaign §59 and incident ADR §A11/§A11.1. Owners stay as the [routing rule](../../../STATE.md) names them:
+- the execution-slices ledger owns the S5 conditions;
+- the drill plan and the incident ADR own route drills;
+- CAP owns capability outcomes;
+- the handoff set owns the individual assignments.
+
+**Returns consumed, not redispatched** (#519, unmerged, reviewed at its pinned head [`8c15f18`](https://github.com/Joshua-Asante/first-passage/tree/8c15f1853e64f14f50995e3f1c55a620a0f674b7); each carries a coordinator review "ACCEPTED AS INPUT"):
+- the S5 Part A measurement proposal, together with its fix round and coordinator review;
+- the ORB lifecycle evidence;
+- the account-fence four-state trace;
+- the close-semantics C-a note.
+
+The handoffs H1–H4 in the handoff set continue from those returns.
+
+### 0. Changed gates
+
+| Gate | Existing authority (unchanged) | Proposed amendment (this addendum) | Decision still required |
+|---|---|---|---|
+| **S5 hold: what releases the build** | S5 HELD. RC-1 is now met on `main`: #517 merged at `5ad04cf`. Ruling 2026-09-26 §6 authorizes *preparing* a measurement proposal only | RC-3 splits. **RC-3a** is at build entry: an approved rule applied to a valid record from an approved forced-expansion measurement of the **existing** engine, giving a provisional PART_A ceiling, plus Σ-feasibility as **arithmetic on the proposed `/v7` values**. **RC-3b** is at Checkpoint C3: the adapter measurement (Stage 1c), the **executed** binding check on the built `/v7`, and the Stage 2/PA-5 consistency check. **RC-4/RC-5 assignment** is made now and stays a build-entry condition: RC-5 is assigned by the coordinator (H7), and the RC-4 slice is named by the operator (CP-1a). Only the seed-view implementation and the host attestations are staged before F1 | **RULED 2026-09-27:** the staged structure is approved, the rule's scope is PART_A only (TEST_ONLY), and arithmetic is the pre-build feasibility ([ledger](2026-09-18-full-e1-execution-slices.md#operator-ruling--s5-staged-gates-approved-part-a-only-rule-scope-hold-kept-2026-09-27)). **Still required:** **CP-1a** (the rule's parameters, and a separate `/v7` N2 ruling); **CP-1b** (hold release) |
+| **Measurement execution** | None. Preparation authority grants no CI-configuration change, Linux dispatch or artifact download | One approval of a concrete **measurement dispatch**, with its steps, limits and outputs. The coordinator then executes within it without asking again | **CP-1a**: approve the dispatch ([r2 §14.1](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md) decision (2), which folds in #519 decision 4), including host venv versus worker image. Stage 0 is optional calibration: the S4 logs are preserved, and the 2026-10-09 expiry binds only if the preserved set does not cover Stage 0's inputs, which is verified locally, owed (r2 §16.4). The dispatch must show adapter-level forced expansion at Stage 1c and complete aggregate-memory evidence (ruling 2026-09-27) |
+| **Fence repair** | B–D packet: a required correctness repair, resolved before the ORB freeze; coordinator trace; T09 repair. §A11 item 1 fixes the **response** to an unresolved request (preserve-and-block), not which requests are unresolved | Once the classification contract is accepted, a synthetic classification-and-consumer packet (H4) may precede T09. The evidence producer and route integration stay T09's. A synthetic return cannot mark the fence obligation resolved | **RULED 2026-09-27** ([§59 Ruling 7(b)](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27)): the fresh-evidence classification, stale at one bar and pinned in tests, and refreshed evidence never resumes a halted account. The synthetic repair is authorized; the real producer and route acceptance are retained. **Still required:** acceptance of the H4 return (synthetic half); T09 for the rest |
+| **ORB lifecycle** | Ruling 5 fixed the resolution order; the evidence has been returned (#519) | None | **RULED 2026-09-27** ([§59 Ruling 7(a)](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27)): L1 with the earlier operational cutoff; no count run is needed; the spec and replay correction is authorized as a bounded change, verified before freeze. **Still required:** acceptance of the corrections |
+| **Same-session resumption** | §A11 item 1: one attended session, then explicit review before extension. §A11 item 4: resumption needs a new operator resume after reconciliation, per rev9 §4, which **permits** conditional same-session resumption. The Phase 5 plan's stricter rule is PROPOSED only | Recommended: after any commissioning or first-release incident, no same-session restart of automation, then review | **RULED 2026-09-27** ([incident ADR §A11.2](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a112--operator-ruling-no-same-session-restart-of-automation-after-an-incident-2026-09-27)): for commissioning and the first attended release, an incident ends automated trading for that session; review before another. Owner text via H5 (a) |
+| **Read target** (T07 R1–R3; REST R-1/R-2) | T07 reads authorized 2026-09-25 against the D1 transaction. R-1/R-2 authorized 2026-09-26 once entitlement is confirmed. The known-order definition is OPEN | Use an operator-placed preservation trade where it meets the read's evidence requirements: a completed one for R-2 and the T07 reads; for R-1, only in the same session as a preservation trade the operator places anyway | **RULED 2026-09-27** ([incident ADR §A11.3](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a113--operator-ruling-preservation-trade-evidence-as-the-target-of-authorized-reads-2026-09-27)): reuse is approved where scope and timing qualify; no additional trade. **Still required (CP-2):** the entitlement record and confirmation of each transaction identity |
+| **Order-producing commissioning rows** | None authorized. Each is prepared individually (§A11.1 item 5) | None | **CP-3**, in writing, **before each** row |
+| **Result/seal integration** | T05's frozen head integrates after S5 acceptance | Integration *preparation* may start once S5 C3 is accepted. Integration **acceptance** still follows full S5 acceptance. Recovery (D3) has its own checkpoint | None new; the coordinator keeps combined acceptance |
+
+### 1. Circular prerequisites corrected
+
+**1.1 S5 measured an adapter it had not built yet (RC-3).** The S5 draft's RC-3 asked for a *measured* PART_A envelope "of the TEST_ONLY workload S5 will run" before the hold is released, and `/v7` does not exist before the build. The #519 proposal already finds three further facts:
+- the TEST_ONLY fixture (2, 4, 2) can never expand;
+- maximum expansion therefore needs a forced-expansion harness on the existing engine;
+- the N2 derivation and the real artifacts (D̂) are uncovered until C3.
+
+**Correction** (owner: the [execution-slices ledger](2026-09-18-full-e1-execution-slices.md#operator-direction--s5-build-entry-separated-from-checkpoint-c3-acceptance-2026-09-27)):
+- **Build entry** consumes a valid forced-expansion record of the existing `_run_part_a` on the reference runtime (#519 Stage 1b). The rule is applied to it as a **provisional** ceiling. Σ-feasibility is **proposed-value arithmetic** (#519 proposal §5).
+- **Checkpoint C3** consumes the adapter measurement (Stage 1c), the executed `bind_budget` check on the built `/v7`, and Stage 2/PA-5.
+
+The circular condition is removed, not renamed. Nothing at build entry requires the adapter, `/v7` or a service-route run. The precedent: S4's N2 ceiling was set at Checkpoint C2 from a measurement taken during the build.
+
+**1.2 The ORB freeze loop.** Freezing the edition pre-registration needs the edition files. Their production waits on gate D (G2b). Gate D needs a bounded T09 handoff, and T09 is held until "the edition rules …, including the ORB resting-entry lifecycle (B-13), are frozen or explicitly held" ([B–D packet §5](../../notes/2026-09-26-tradeify-bd-decision-packet.md)). Two moves break the loop:
+- **(a) Lifecycle evidence already exists** from pre-freeze sources: the declared ORB and its accepted replay, with no edition replay (#519 lifecycle note). The operator's B-13 ruling makes the lifecycle frozen for gate D's purposes.
+- **(b) The fence repair splits:**
+  - The **state-classification contract** (#519 trace §6.1–§6.2) is decided at CP-4. It becomes a synthetic implementation (H4) that can land before the freeze inventory is fixed.
+  - The **evidence producer and route integration** stay in T09, so gate D's T09 handoff names them as the remaining fence obligation.
+
+  §A11 is not the basis for (b): it fixes preserve-and-block as the *response* to an unresolved request, not the classification of an acknowledged, freshly evidenced working order.
+
+**1.3 The settlement reads wait on an order-producing drill.** T07 reads R1–R3 read the D1 transaction ([session plan §0 addendum](../../notes/2026-09-25-t08-drills-t07-reads-operator-session.md)), and D1 is not cleared for execution (§A11.1 item 6). **Correction, ruled 2026-09-27 ([incident ADR §A11.3](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a113--operator-ruling-preservation-trade-evidence-as-the-target-of-authorized-reads-2026-09-27)); the entitlement record and transaction identity are still confirmed at CP-2:**
+- where a preservation trade meets a read's evidence requirements, the reads target that trade;
+- a **completed** trade can serve R-2 (prior-session lookup) and the T07 report reads;
+- **R-1** (same-session) needs a same-session known order, so it runs only in the session in which the operator places a preservation trade anyway. One old trade cannot supply a new same-session observation.
+
+This adds no exposure beyond the trade the account already requires; that trade itself is not exposure-free. The correction does not settle drill-plan open question 9 (how preservation trades on the book's own symbols are treated in operation).
+
+**1.4 Stated, not circular.**
+- **Feed.** D-feed condition (b) needs the F1 packet, and the F1 packet must bind the feed. The packet therefore carries the provider-neutral feed contract and an explicit **later-binding rule** for the funded provider. That rule is accepted with the packet (T15 already requires explicit accepted later-binding rules).
+- **Attended operations.** Rev9 permits conditional same-session resumption with operator approval ([halt/resume §4](../../spec/2026-09-14-tb-s3-halt-resume-contract.md)). The Phase 5 plan proposes stricter text. The operator ruled on 2026-09-27 (§A11.2): no same-session restart of automation after an incident during commissioning and the first attended release. H5 step (a) applies it to the halt/resume owner text before T13 implementation.
+
+### 2. Evidence classes and what each may support
+
+| Class | Produced by | May support | Does not constitute |
+|---|---|---|---|
+| **Commissioning observation** | Operator-run route commissioning sessions, attended-operations rehearsals, settlement collection | After review, **capability acceptance for its demonstrated scope**: CAP rows and T08 §7 against the drill map's behavior rows (REST §6.11), on the interface and in the environment observed | Production E1/n3 results, portfolio admission, or whole-route acceptance |
+| **Synthetic / replay engineering** | TEST_ONLY campaigns, `SyntheticBroker` consumer tests, replay | Engineering acceptance of classification, consumer behavior and qualification machinery | Actual broker, feed or settlement evidence (common verification rule above), or a complete obligation that needs a real producer |
+| **Production qualification** | The single authorized production E1 and the sole final n3 under the protected service | Admission (D0/D1) and the launch decision | — |
+
+Commissioning records carry the label `COMMISSIONING_OBSERVATION` and state their scope (behavior, interface, environment, date).
+
+### 3. Staged acceptance by workstream
+
+Each requirement is classified as:
+- **[1]** required before the next bounded action;
+- **[2]** evidence that action collects;
+- **[3]** required before expanding authority or exposure.
+
+Handoff IDs refer to the [handoff set](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md). A class-[3] item never blocks a class-[1] step it does not affect.
+
+| Workstream (owners) | Next bounded action | [1] Before that action | [2] Collected by it | [3] Before expanding authority or exposure |
+|---|---|---|---|---|
+| **Broker route** (drill plan; T08; CAP R2–R5; incident ADR §A11.1) | **H2**: prepare one operator-run commissioning session packet, automation disarmed. Stage 0 is read-only. Stage 1 lists normal-case order rows, each individually specified | For the packet: Gate A accepted (in place); the drill plan, §A11.1 and the #519 close-semantics return as inputs. **Before stage 0:** entitlement confirmation, known-order confirmation (§1.3), actor inventory (§0.1, including the timed exit and firm-side auto-liquidation candidates from #519), host disarm confirmation. **Before each stage-1 row:** CP-3 written authorization for that row; its documentary prerequisites (for X-3, the residual-risk decision per CR-3, since #519 left M OPEN/CONFLICTING); P-1; the environment decision, with no automatic fallback to the live eval | Actual entry-with-stop, stop `Working` quantity, cancel of a resting entry with its children, rejected-change behavior, liquidation normal case, fresh reads for reconciliation. Also any `unknown` outcome and its read-first recovery | Review of each row's traces before the next row, a second session, a multi-contract design or X-5; capability acceptance of the observed scope; gates B–D (CP-5) before T09 |
+| **ORB lifecycle and fence** (§59 Rulings 3/5; B–D packet B-13 and fence row; #519 lifecycle and trace notes) | **H3**: disposition #519's two returns and apply the 2026-09-27 rulings (§59 Ruling 7) to the specification owners. Then **H4**: the bounded synthetic repair plus the replay correction | For H3: #519's returns at `8c15f18`, and Ruling 7 (both in place). **For H4:** H3's owner text and the H4 dispatch card (coordinator acceptance) | H3: the coordinator disposition, operator decision questions, and proposed rail-spec owner text. H4: synthetic verification of classification and consumer behavior (trace §6.4 cases), kept separate from the owed items: the real evidence producer and route integration | The real producer and route integration (T09) before the fence obligation counts as resolved. Any lifecycle change enters the edition pre-registration and requalification before freeze (§5). A replay change (L1) is an E1 freeze-inventory change |
+| **S5 and resource limits** (execution-slices ledger; S5 draft §5; #519 measurement proposal) | **H1**: correct #519's proposal and return a concrete measurement dispatch for approval. Then execute it within the approval | For H1: nothing further (ruling §6 preparation authority). **For executing the measurements:** CP-1a. **For the build:** RC-1 (met); the §3.4(d) text applied; RC-4/RC-5 assigned; RC-6 re-anchor, including #519's non-expansion finding and the `/v7` pitfalls; RC-3a; CP-1b | H1: the corrected proposal and the dispatch. Execution: valid Stage 1b records (Stage 0 calibration if approved). Build: the Stage 1c adapter record and the executed binding check at C3 | **S5 acceptance:** C3 items; RC-3b; the full RC-2 owner text. **Before F1:** the RC-4 seed-view change and its admission check, OF attestations, and K3. Production budgets remain separately governed |
+| **Result/seal and recovery** (T05 frozen head `6cf2732`; S5 draft §3) | **H9**: integration *preparation* once S5 C3 is accepted | S5 C3 accepted (field sets, `/v8` snapshot, capture contract) | A prepared integration branch and its interface diff | **Integration acceptance** after full S5 acceptance (checkpoint R1). **Recovery-slice acceptance** after the D3 owner text is accepted (checkpoint R2). Coordinator combined acceptance before T06/S8 |
+| **Production qualification host** (T11; OF-1..OF-7; contract-delta K3/K6/K8) | **H7**: assign RC-4/RC-5 now (resolving S5 draft §6 Q12), and write the host and credential specification | None beyond the 2026-09-26 direction to assign the attestations to their gates | An owner, gate and record location for each OF; the RC-4 owner and slice; a host bill of materials; a cost line if provisioning needs spend | Provisioning, including any spend, at CP-8. OF-1..OF-7 attested by attended reads, key custody recorded, K3 salt custody and installed identities verified before any production attempt is admitted |
+| **Settlement evidence** (T07; CAP S1–S5) | **H6**: bounded operator collection of report originals for the confirmed target, then a reconstruction rehearsal | CP-2 confirmation of the target (§1.3); the S2 source-fact questions listed in collection order | Actual report coverage, `Timestamp` offset, `Date` meaning after rollover, query-bound semantics; missing-data detection; the restoration and correction-refusal trace; the procedure's time | The S3/B7 predecessor choice (no silent reset); the operator-facing sign/submit entry point before a live close chain; T07 acceptance before T16 |
+| **Attended operations** (Phase 5 plan; halt/resume contract; T13) | **H5**: (a) apply §A11.2 to the halt/resume owner text (accepted 2026-09-27); (b) rehearse incident-versus-refusal behavior, fencing, intervention and restart with synthetic incidents | For (b): the (a) amendment accepted | Owner-level incident-versus-refusal behavior; restart without stale authority; no same-session restart after an incident (including a deliberate operator stop). Real delivery and 60 s escalation are T13's, unless the operator runs that leg at dispatch | Commissioning traces folded in; the attended recovery procedure for an unresolved request before any session that could produce one; T13 acceptance before T16 |
+| **Feed** (O-4; D-feed; T10/T14) | **H8**: provider-neutral preparation only | Standing permission (STATE source disposition) | Symbol, roll and session mapping; equivalence protocol (TB-I5 successor spec); gap, reconnect and correction handling; the later-binding rule text | The funding decision (CP-7) after T00 is non-INSUFFICIENT and T10 phase 2 is assembled. After funding: shadow collection with emission disabled; actual equivalence, gap, reconnect and correction evidence before trading use |
+| **Final launch** (T12, T15–T17; Phase 6 plan; §A11 item 1) | **H10**: rehearse the exact candidate, then authorize one attended session | T16 accepted candidate; T12 timing envelope | The timed rehearsal on the final candidate; fresh B7; the sole n3 | Qualification and admission (D0/D1), current account evidence, final n3, deployment GO and session authority (CP-9); explicit review of that session before any extension |
+
+### 4. Operator checkpoints — where approval is taken
+
+Each checkpoint takes the decision once, against a returned artifact. Between checkpoints the coordinator acts within the approvals already given, without re-asking. None of these lifts the standing prohibitions: no agent places a trade, no merge happens without the operator, and nothing is armed without M1 plus a session GO.
+
+| CP | Decision | Reviewed against | Unlocks |
+|---|---|---|---|
+| CP-1a | **Already decided, not asked again** (r2 §14.1): the staged structure and PART_A TEST_ONLY scope (ruled 2026-09-27); arithmetic as pre-build feasibility; the numeric defaults, **conditionally approved 2026-09-26**; N2 not under the rule; the RC-4/RC-5 assignment; S4 evidence preserved. **Six decisions, presented together, each with a recommendation and what it unlocks:**<br>– (1) the measurement parameters: confirm the 2026-09-26 applicability conditions are met, and decide what that approval left out (pilot-budget term and PA-2b, PA-3a/PA-3b, re-run caps, re-measurement triggers);<br>– (2) the bounded dispatch and runtime (Stage 0 optional and separable, with coverage of the preserved logs verified locally, owed; Stage 1a/1b; Stage 1c at C3; Stage 2; host venv or worker image);<br>– (3) the separate `/v7` N2 ruling;<br>– (4) D2 timing;<br>– (5) the RC-4 slice;<br>– (6) the Stage 1c seam and its signed-route exclusion.<br>Sequence: CP-1a → approved measurements → RC-3a evidence and updated build-entry table → CP-1b → S5 build; the adapter measurement and executed binding check stay at C3. Accepting the packet is not approval to execute it. *Revised 2026-09-27 after #519's merged corrections (r2 §16).* | [H1 r2 CP-1a packet](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md) §14.1, reconciled in §16 | The coordinator executes the approved measurements and applies the rule to TEST_ONLY ceilings with recorded evidence |
+| CP-1b | Release the S5 hold for the **build** | RC status table with RC-3a met | S5 build dispatch; C3 applies RC-3b within the approved rule |
+| CP-2 | Supply or confirm the route facts: entitlement, known-order definition, read target (§1.3), sim/demo availability, actor inventory, whether drill costs count against the $700 ceiling | H2 stage-0 section | Operator-performed R-1/R-2 and the H6 collection |
+| CP-3 | Authorize **each** order-producing commissioning row, in writing, with environment and exposure limits, before that row | H2 stage-1 row, after the prior row's traces | That row only; its traces return before the next |
+| CP-4 | Rule B-13 (the ORB lifecycle); accept the state-classification contract. **RULED 2026-09-27** (§59 Ruling 7): L1, and the fresh-evidence contract | #519 returns | H3 applies the owner text; H4 (synthetic repair plus replay correction); the ORB side of edition preparation |
+| CP-5 | Accept gates B–D using commissioning traces, H3/H4 and the allocation map | Gate record above | Bounded T09 dispatch (including the fence's producer and route integration); edition file production (G2b) |
+| CP-6 | Freeze / F1: feed later-binding rule, RC-4 change landed, K3, complete behavior inventory | T10 phase-2 packet; §5 check | Reservation of the production attempt (distinct dependent approvals retained) |
+| CP-7 | Feed funding (O-4) | D-feed conditions; H8 packet | Provider-specific adapter and shadow collection |
+| CP-8 | Production host provisioning (and any spend); admit the production attempt after OF attestation | H7 plus the attested reads | Production E1 once (T15) |
+| CP-9 | Deployment GO and authority for one attended session | T16 candidate; H10 rehearsal; fresh B7/n3 | One attended session; explicit review before extension (§A11 item 1) |
+
+### 5. Behavior-changing findings settle before the final freeze
+
+A commissioning, settlement, feed or rehearsal finding that would change intended behavior goes to its owner decision **before CP-6**, and no later. Examples: lifecycle, expression, exit, fence classification, recovery, cutoff or takeover. The owner decisions are gate B, B-13, the classification contract, the edition pre-registration and the incident contract. The result is one of:
+- a pre-registered change with its requalification (K=1 per §59); or
+- an explicit accepted later-binding rule; or
+- a hold that blocks freeze.
+
+A finding recorded after CP-6 that changes behavior voids the freeze inventory for the affected component; it is not absorbed as a binding. Findings that do not change behavior (latency, report timing, operator workload) are recorded against their behavior rows and inform limits only.
 
 ## Verification of this planning artifact
 
