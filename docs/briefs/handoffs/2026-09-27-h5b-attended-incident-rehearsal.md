@@ -48,7 +48,6 @@ acceptance:
   - tests/ops/test_attended_incident_rehearsal.py::test_capacity_refusal_leaves_session_running
   - tests/ops/test_attended_incident_rehearsal.py::test_zero_size_sizing_refusal_leaves_session_running
   - tests/ops/test_attended_incident_rehearsal.py::test_duplicate_signal_refusal_leaves_session_running
-  - tests/ops/test_attended_incident_rehearsal.py::test_stale_individual_signal_refusal_leaves_session_running
   - tests/ops/test_attended_incident_rehearsal.py::test_incomplete_barrier_before_expiry_leaves_session_running
 ```
 
@@ -245,6 +244,11 @@ Run through your own checkout's launcher. Report the command, interpreter, revis
 - **§7 known path: (B).** S1 (`test_lost_entry_response_terminal_does_not_restart_automation_in_session`) is pinned `pytest.mark.xfail(strict=True)`, with a reason naming CC-3 and §A11.2, and the other cases continue. **Variance from the parent H5 stop condition** ("Stop and return; it is a defect"): the defect is already established by code reading; the S1 XFAIL is not acceptance of §A11.2 behavior; (b)'s acceptance is partial; CC-3 stays an open defect (TB-I3/T09).
 - **§3 real-delivery leg: OWED** (default) to T13 / Phase 5 WP2. No operator-run leg was requested, and there is never an agent send.
 - **Pre-dispatch read:** `check_handoff_authority.py --all` clean at `54d6710`. §0 anchor re-verification is the worker's first act.
+
+**Variance 2026-09-27 (coordinator, on the worker's §7 return).** The worker stopped on the node `test_stale_individual_signal_refusal_leaves_session_running`. No owner refuses a stale individual signal as a single request: the account owner never checks a signal's bar time; a late completed bar halts the book into INTERVENTION (`book_runtime.py:350-353`, pinned by `test_four_leg_runtime.py::test_stale_or_future_completed_bar_halts_before_dispatch`); and a wrong-bar intent is recorded as an input incident and halts (`book_runtime.py:208-217`).
+- **Choice (i):** the node is removed from `acceptance`, and S7's stale-individual-signal sub-case is not rehearsed. The evidence note records the finding: "no owner implements the `:35` stale-individual-signal refusal; the nearest behavior halts." A strict xfail is not used, because there is no owner call to pin, and a stand-in is what §7 forbids.
+- **Open, not decided here:** whether a late completed bar is a "stale individual signal" (a `:35` refusal, so the halt is a defect) or a source/barrier incident (so the halt is correct and `:35` needs a narrower definition). This is a contract classification for the operator. Until it is ruled, the finding is not a defect claim. If the ruling makes it a refusal, the repair and its test belong to TB-I3.
+- The other 15 nodes and the §7 (B) choice for S1 are unchanged.
 
 **Not granted:**
 - a rail deploy or arm, account traffic, an order or a session;
