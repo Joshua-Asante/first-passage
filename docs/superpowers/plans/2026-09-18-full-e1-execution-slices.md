@@ -907,3 +907,28 @@ Any failed condition refuses admission. The refusal is recorded and is not a con
 **Not granted:** S5 release, dispatch or execution; owner text applied; host provisioning or spend; credential or key creation; F1, CP-6 or CP-8 decisions; production, arm, deployment or live authority. The hold stays **HELD**.
 
 **Recorded state (2026-09-27).** RC-5 is **assigned** (coordinator act). The RC-4 slice is **proposed, pending the operator at CP-1a item 5**, so the RC-4/RC-5 build-entry condition is not yet met. Host spend and sizing stay owed before CP-8 (checklist T11's measured envelope; the $700-ceiling scope is the single CP-2 question F-4 of the commissioning packet).
+
+### Coordinator entry — CP-1a packet reconciled with #519's merged corrections, 2026-09-27
+
+**Source.** The operator's instruction "prepare the CP-1a packet" (2026-09-27), and the operator's sequencing guidance on PR #520 the same day. #519 merged its own review corrections to r1, and the [2026-09-26 conditional ruling](#operator-ruling--part-a-measurement-rule-conditionally-approved-s5-held-2026-09-26) was given on them. The CP-1a packet ([H1 r2](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md)) predated both. Its [§16](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md#16-reconciliation-with-519s-merged-corrections-and-the-2026-09-26-conditional-ruling-2026-09-27) now crosswalks the two in 28 rows. Its [§14.1](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md#141-refreshed-decision-list-2026-09-27) is the refreshed decision list.
+
+**Documentary corrections adopted by the coordinator** (each stricter; none is an operator decision):
+- **C2:** the proposed SR-9, which keeps the packet's unnecessary-expansion rejection out of the SR-3 callable;
+- **C3:** after CP-1a and the RC-6 fold-in, a missing SR or a failing P at C3 is a C3 nonconformance;
+- **C6 and C25:** the PA-3a/PA-3b memory split, with PA-3b checked at Stage 2;
+- **C8:** missing memory evidence is relabelled as not invalid;
+- **C21:** PA-5 re-application without a valid forced Stage 1c arm stays provisional.
+
+**Coordinator reading superseded.** For D2 timing, the packet now recommends the three-way outcome split (C7): blocked, invalid, and bound not establishable. That recommendation follows the 2026-09-26 ruling's requirement to separate missing permission, invalid measurements and genuine evidence. It replaces the coordinator's earlier release-point reading (critic X-10). The operator decides at CP-1a decision (4); the alternative stays stated there.
+
+**CP-1a is six decisions**, presented together:
+1. the measurement parameters: confirm the 2026-09-26 applicability conditions, and decide what that approval left out;
+2. the bounded dispatch and runtime;
+3. the `/v7` N2 ruling;
+4. D2 timing;
+5. the RC-4 slice;
+6. the Stage 1c seam and its signed-route exclusion.
+
+What is already ruled is not reopened. Stage 0 is optional calibration. The 2026-10-09 expiry binds only if the preserved S4 set does not cover Stage 0's inputs, and that coverage is verified locally, owed. M2 is not a CP-1a prerequisite.
+
+**Not changed.** No rule is applied, no measurement approved, no ceiling set. The hold stays **HELD**. Accepting the packet is not approval to execute it.

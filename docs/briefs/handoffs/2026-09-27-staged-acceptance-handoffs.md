@@ -93,14 +93,14 @@ If #519 merges before dispatch, the same paths on `main` are used, once they are
   - RC-4/RC-5 are assigned via H7 and do not wait on F1.
   - **Rule scope: PART_A only, TEST_ONLY** (ruling 2026-09-27). Drop Stage 1b-N2 and the phase-generic option. `/v7`'s N2 ceiling is returned as a separate operator decision (for example, extending the M13 "/v6 only" ruling). The multipliers stay candidates.
 - **Return a concrete measurement dispatch, as one approval packet.** For each step it gives the exact commands, the files created, the grants it needs, its limits, stop conditions and outputs:
-  - Stage 0: download the S4 run artifacts, calibration only. It must run before the logs expire around **2026-10-09**.
+  - Stage 0: download the S4 run artifacts, calibration only. It must run before the logs expire around **2026-10-09**. *[2026-09-27: the download was done on 2026-09-26 (ledger, conditional ruling entry). The read step is optional calibration, and the expiry binds only if the preserved set does not cover its inputs ([r2 §16.4](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md#164-stage-0)).]*
   - Stage 1a: Windows harness validation.
   - Stage 1b: a new `workflow_dispatch` measurement workflow file, which is a CI-configuration change, and its two-job Linux run.
   - Stage 1c at C3.
   - The host-venv or worker-image choice.
 
   Also give the total expected runner time and the re-run limit (one per failed validity check).
-- **Operator decisions for CP-1a:** #519 proposal §8 decisions 1 and 4 (the rule's parameters, and the measurement steps including host venv versus worker image). Decision 2 (scope) and decision 5 (arithmetic as pre-build feasibility) were **ruled 2026-09-27**. Decision 3 (the `/v7` N2 ceiling) returns as a separate ruling, not under the rule.
+- **Operator decisions for CP-1a:** *[2026-09-27: superseded by the six decisions in [r2 §14.1](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md#141-refreshed-decision-list-2026-09-27), which fold in #519's decisions 1–7.]* #519 proposal §8 decisions 1 and 4 (the rule's parameters, and the measurement steps including host venv versus worker image). Decision 2 (scope) and decision 5 (arithmetic as pre-build feasibility) were **ruled 2026-09-27**. Decision 3 (the `/v7` N2 ceiling) returns as a separate ruling, not under the rule.
 
 **Acceptance conditions for the corrected proposal (operator, 2026-09-27).** Step (a) is not accepted unless both hold.
 1. **Stage 1c forces maximum expansion through the built adapter.** The dispatch specifies exactly how the Stage 1c run reaches `expanded_panels` through the S5 adapter's own Part A compute (`compute.run_part_a_compute` or its accepted successor). The run includes the **real N2 FULL baseline derivation from staged N2 capture bytes** and the **real S5-D1 two-artifact writing with its fsync**, all inside the measured workload boundary. Forcing uses a TEST_ONLY measurement override whose existence and scope are stated: which parameter, where it is injected, and proof that no production or signed route can reach it. A harness-level stand-in or a prescribed (non-expanding) arm does not satisfy this. If the adapter cannot be forced without a production-reachable seam, return BLOCKED with the proposed seam.
