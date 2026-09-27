@@ -890,7 +890,7 @@ def test_workflow_units_record_the_poll_bound():
     job = _workflow()['jobs']['measure']
     loop = next(s for s in job['steps'] if s.get('name') == 'Measurement loop')['run']
     assert int(job['env']['REPEAT_POLL_BOUND_S']) == 1800
-    assert loop.count('HarnessPollBoundS=') == 2          # the waited and the not-started unit files
+    assert loop.count('HarnessPollBoundS=') == 3          # the waited, not-started and launch-failed unit files
     assert '+ REPEAT_POLL_BOUND_S' in loop                 # the wait uses the same value
 
 
@@ -1121,3 +1121,260 @@ def test_summarize_step_keeps_the_record_and_step_summary_on_exit_3(tmp_path):
     assert (runner_temp / 's5-part-a-measurement' / 'record.json').is_file()
     assert 'INCOMPLETE_EVIDENCE' in (runner_temp / 's5-part-a-measurement' / 'summarize.log').read_text()
     assert 'exit=3' in summary.read_text()
+
+
+# =================================================================== review of 11e15c6b
+# 4116981570 (unreadable probe is I-1), 4116981563 (launcher keeps results when a job
+# fails to start), 4116981558 (dry-run fields stay gated), and the retained-failure sweep.
+
+def _no_traceback(done):
+    assert 'Traceback' not in done.stderr, done.stderr
+
+
+# ---- 4116981570: an unreadable probe.json is a retained failed probe (I-1, exit 3)
+
+@pytest.mark.parametrize('content', ['{"ok": tr', '[1, 2]', ''])
+def test_cli_unreadable_probe_is_i1_and_the_record_is_written(tmp_path, content):
+    directory = _linux_job(tmp_path / 'a')
+    (directory / 'probe.json').write_text(content)
+    code, record, done = _cli_job(tmp_path, directory)
+    _no_traceback(done)
+    assert any(r.startswith('I-1') and 'probe.json unreadable' in r for r in record['verdict']['reasons'])
+    assert record['verdict']['rule_applicable'] is False
+    assert code == 3
+
+
+# ---- 4116981563: the Windows launcher retains every repeat and always writes the bundle
+
+def _fake_job(**overrides):
+    unit = {'pid': 1, 'exit_code': 0, 'timed_out': False, 'outer_wall_s': 35.0, 'job_cpu_s': 34.0,
+            'job_processes': 1, 'job_peak_process_commit_bytes': 1, 'job_peak_commit_bytes': 1}
+    unit.update(overrides)
+    return unit
+
+
+def _run_launcher(h, tmp_path, monkeypatch, fail):
+    """launcher() in-process with os.name pinned to 'nt' and the job-object call stubbed:
+    `fail(arm, repeat)` returns an exception to raise, or None to succeed."""
+    import types
+
+    def run_in_job(command, *, env, timeout_s):
+        arm, repeat = command[command.index('--arm') + 1], int(command[command.index('--repeat') + 1])
+        exc = fail(arm, repeat)
+        if exc is not None:
+            raise exc
+        out = Path(command[command.index('--out') + 1])
+        out.write_text(json.dumps(_row(arm, repeat, stage='1a')))
+        return _fake_job()
+    monkeypatch.setattr(h, 'os', types.SimpleNamespace(name='nt', environ=dict(os.environ)))
+    monkeypatch.setattr(h, '_run_in_job', run_in_job)
+    monkeypatch.setattr(h, '_purge_pycache', lambda: 0)
+    out = tmp_path / 'windows.json'
+    code = h.main(['--launcher', '--stage', '1a', '--arms', 'forced,prescribed', '--repeats', '5',
+                   '--out', str(out)])
+    monkeypatch.setattr(h, 'os', os)   # the summarize that follows runs on the real platform
+    return code, out
+
+
+def test_launcher_retains_a_repeat_whose_job_creation_fails(h, tmp_path, monkeypatch):
+    code, out = _run_launcher(h, tmp_path, monkeypatch,
+                              lambda arm, r: OSError(5, 'AssignProcessToJobObject failed')
+                              if (arm, r) == ('forced', 3) else None)
+    assert code == 0 and out.is_file()
+    bundle = json.loads(out.read_text())
+    assert len(bundle['entries']) == 12
+    failed = next(e for e in bundle['entries'] if (e['arm'], e['repeat']) == ('forced', 3))
+    assert 'AssignProcessToJobObject' in failed['unit']['launch_error'] and failed['row'] is None
+    code, record = _summarize_bundle(h, out)
+    assert any(r.startswith('I-6: forced-3') and 'AssignProcessToJobObject' in r
+               for r in record['verdict']['reasons'])
+    assert code == 3
+
+
+class _SimulatedInterrupt(BaseException):
+    """Stands in for KeyboardInterrupt (the same BaseException path in the launcher)
+    without stopping the pytest session if a launcher fails to catch it."""
+
+
+def test_interrupted_launcher_still_writes_the_bundle(h, tmp_path, monkeypatch):
+    code, out = _run_launcher(h, tmp_path, monkeypatch,
+                              lambda arm, r: _SimulatedInterrupt() if (arm, r) == ('prescribed', 2) else None)
+    assert code == 130 and out.is_file()
+    bundle = json.loads(out.read_text())
+    assert bundle['interrupted'].startswith('_SimulatedInterrupt')
+    code, record = _summarize_bundle(h, out)
+    reasons = record['verdict']['reasons']
+    assert any('interrupted' in r for r in reasons) and any(r.startswith('I-6: prescribed-2') for r in reasons)
+    assert record['verdict']['validity_ok'] is False
+
+
+# ---- 4116981558: dry-run fields stay gated; runner accounting values are I-1
+
+@pytest.mark.parametrize('drop', ['CPUUsageNSec', 'ExecMainExitTimestampMonotonic'])
+def test_cli_dry_run_without_runner_accounting_is_i1(tmp_path, drop):
+    directory = _dry_job(tmp_path / 'dry')
+    _edit_unit(directory, 'forced-1.unit', drop=(drop,))
+    code, record, done = _cli_job(tmp_path, directory, mode='dry-run')
+    assert any(r.startswith('I-1: forced-1') and 'runner' in r for r in record['verdict']['reasons'])
+    assert record['verdict']['rule_applicable'] is False
+    assert code == 3, done.stdout + done.stderr
+
+
+def test_cli_dry_run_missing_a_harness_field_is_h_fields(tmp_path):
+    directory = _dry_job(tmp_path / 'dry')
+    _edit_row(directory, 'prescribed-1.json', predicted_seconds=None)
+    code, record, done = _cli_job(tmp_path, directory, mode='dry-run')
+    assert any(r.startswith('H-FIELDS: prescribed-1') and 'predicted_seconds' in r
+               for r in record['verdict']['reasons'])
+    assert record['verdict']['rule_applicable'] is False
+    assert code == 4, done.stdout + done.stderr
+
+
+def test_cli_stage_1b_measure_ceiling_fields_stay_incomplete_not_i1(tmp_path):
+    directory = _linux_job(tmp_path / 'a')
+    _edit_unit(directory, 'forced-2.unit', drop=('CPUUsageNSec',))
+    code, record, done = _cli_job(tmp_path, directory)
+    assert record['verdict']['stop_class'] == 'INCOMPLETE_EVIDENCE'
+    assert not any(r.startswith('I-1') for r in record['verdict']['reasons'])
+    assert code == 3
+
+
+# ---- sweep: every unreadable input ends in a retained record or a clear refusal
+
+@pytest.mark.parametrize('content', ['{"schema": "s5-part', '{"schema": "%s", "entries": 7}'])
+def test_cli_unreadable_or_malformed_bundle_is_retained_as_i6(tmp_path, content):
+    path = tmp_path / 'windows.json'
+    path.write_text(content.replace('%s', 's5-part-a-max-expansion-measurement/v2#windows-launcher-bundle'))
+    before = path.read_bytes()
+    code, done = _cli(tmp_path, '--summarize', path, '--stage', '1a')
+    _no_traceback(done)
+    record = json.loads(path.with_suffix('.record.json').read_text())
+    assert any(r.startswith('I-6') and 'bundle unreadable or malformed' in r for r in record['verdict']['reasons'])
+    assert record['verdict']['validity_ok'] is False and path.read_bytes() == before
+    assert code == 3
+
+
+def test_cli_non_bundle_file_is_refused_without_a_traceback(tmp_path):
+    path = tmp_path / 'not-a-bundle.json'
+    path.write_text(json.dumps({'schema': 'something-else'}))
+    code, done = _cli(tmp_path, '--summarize', path, '--stage', '1a')
+    _no_traceback(done)
+    assert code != 0 and 'not a launcher bundle' in done.stderr
+
+
+def test_cli_missing_input_is_refused_without_a_traceback(tmp_path):
+    code, done = _cli(tmp_path, '--summarize', tmp_path / 'absent', '--stage', '1b')
+    _no_traceback(done)
+    assert code != 0 and 'no such input' in done.stderr
+
+
+@pytest.mark.parametrize('content', ['', '\xff\xfe'])
+def test_cli_unreadable_start_head_is_i7(tmp_path, content):
+    directory = _linux_job(tmp_path / 'a')
+    (directory / 'git-head.txt').write_bytes(content.encode('latin-1'))
+    code, record, done = _cli_job(tmp_path, directory)
+    _no_traceback(done)
+    assert any(r.startswith('I-7') for r in record['verdict']['reasons'])
+    assert code == 4
+
+
+@pytest.mark.parametrize('damage', ['truncated', 'malformed'])
+def test_cli_combine_refuses_an_unreadable_job_record_without_a_traceback(tmp_path, damage):
+    code, _, _ = _cli_two_jobs(tmp_path)
+    assert code == 0
+    b = tmp_path / 'b' / 'record.json'
+    if damage == 'truncated':
+        b.write_text(b.read_text()[:200])
+    else:
+        record = json.loads(b.read_text())
+        del record['verdict']
+        b.write_text(json.dumps(record))
+    (tmp_path / 'combined.json').unlink()
+    code, done = _cli(tmp_path, '--summarize', tmp_path / 'a' / 'record.json', b, '--record',
+                      tmp_path / 'combined.json')
+    _no_traceback(done)
+    assert code != 0 and 'refused' in done.stderr
+    assert not (tmp_path / 'combined.json').exists()
+
+
+def test_cli_probe_verdict_with_malformed_in_unit_output_fails_closed(tmp_path):
+    directory = tmp_path / 'probe'
+    directory.mkdir()
+    (directory / 'probe-in-unit.json').write_text('[1]')
+    (directory / 'probe.unit').write_text('CPUUsageNSec=1\n')
+    code, done = _cli(tmp_path, '--probe-verdict', directory)
+    _no_traceback(done)
+    assert code == 3
+    assert json.loads((directory / 'probe.json').read_text())['ok'] is False
+
+
+LOOP_STUBS = {
+    'sudo': 'if [ "$1" = tee ]; then cat > /dev/null; exit 0; fi\nexec "$@"\n',
+    # systemd-run fails for the unit named in SIM_FAIL_RUN
+    'systemd-run': ('for a in "$@"; do case "$a" in --unit=*) u="${a#--unit=}" ;; esac; done\n'
+                    '[ "$u" = "${SIM_FAIL_RUN:-}" ] && exit 1\necho "$u" >> "$SIM/started.log"\n'),
+    # every started unit has exited; `show` of the unit in SIM_FAIL_SHOW fails
+    'systemctl': ('case "$1" in show)\n'
+                  '  for a in "$@"; do [ "$a" = --value ] && { echo exited; exit 0; }; done\n'
+                  '  for a in "$@"; do u="$a"; done\n'
+                  '  [ "$u" = "${SIM_FAIL_SHOW:-}" ] && exit 1\n'
+                  '  printf "CPUUsageNSec=1\\nExecMainStatus=0\\nResult=success\\n" ;; *) exit 0 ;; esac\n'),
+    'date': 'if [ "$1" = +%s ]; then cat "$SIM/clock"; else exec /bin/date "$@"; fi\n',
+    'sleep': 'exit 0\n',
+}
+
+
+@pytest.mark.skipif(os.name == 'nt', reason='runs the workflow bash step with POSIX stubs')
+def test_loop_retains_a_failed_unit_start_and_a_failed_show_and_continues(h, tmp_path):
+    job = _workflow()['jobs']['measure']
+    step = next(s for s in job['steps'] if s.get('name') == 'Measurement loop')
+    sim = tmp_path / 'sim'
+    (sim / 'bin').mkdir(parents=True)
+    for name, body in LOOP_STUBS.items():
+        stub = sim / 'bin' / name
+        stub.write_text('#!/bin/bash\n' + body)
+        stub.chmod(stub.stat().st_mode | stat.S_IEXEC)
+    (sim / 'clock').write_text('1000000')
+    runner_temp = sim / 'rt'
+    out = runner_temp / 's5-part-a-measurement'
+    out.mkdir(parents=True)
+    (sim / 'host').mkdir()
+    (runner_temp / 'qualification-manifest').write_text(str(sim / 'host' / 'manifest'))
+    (sim / 'ws').mkdir()
+    env = {'PATH': '%s:/usr/bin:/bin' % (sim / 'bin'), 'SIM': str(sim), 'RUNNER_TEMP': str(runner_temp),
+           'GITHUB_WORKSPACE': str(sim / 'ws'), 'STAGE': '1b', 'MODE': 'measure', 'NOTE_DIR': 'x',
+           'ARM_ORDER': 'forced prescribed', 'JOB_START_EPOCH': '1000000',
+           'SIM_FAIL_RUN': 'fp-s5pa-1b-forced-2', 'SIM_FAIL_SHOW': 'fp-s5pa-1b-forced-3'}
+    env.update({k: str(v) for k, v in job['env'].items() if '${{' not in str(v)})
+    env['JOB_TIMEOUT_MIN'] = str(_timeout_min(job)[1])
+    done = subprocess.run(['bash', '--noprofile', '--norc', '-eo', 'pipefail', '-c', step['run']],
+                          env=env, capture_output=True, text=True, timeout=60)
+    assert done.returncode == 0, done.stderr
+    units = {p.stem: p.read_text() for p in out.glob('*.unit')}
+    assert len(units) == 12                                            # the loop went on after both
+    assert 'HarnessLaunchFailed=systemd-run' in units['forced-2']
+    assert 'HarnessShowFailed=yes' in units['forced-3'] and 'Result=' not in units['forced-3']
+    started = (sim / 'started.log').read_text().split()
+    assert 'fp-s5pa-1b-forced-4' in started and 'fp-s5pa-1b-prescribed-0' in started
+    (out / 'probe.json').write_text(json.dumps({'ok': True, 'swap_total_kb': 0, 'reasons': []}))
+    (out / 'git-head.txt').write_text(HEAD + '\n')
+    code = h.main(['--summarize', str(out), '--stage', '1b', '--mode', 'measure', '--job', 'a', '--run-id', '42',
+                   '--arm-order', 'forced prescribed', '--dispatched-head', HEAD, '--run-attempt', '1'])
+    record = json.loads((out / 'record.json').read_text())
+    reasons = record['verdict']['reasons']
+    assert any(r.startswith('I-6: forced-2') and 'launch-failed' in r for r in reasons)
+    assert any(r.startswith('I-6: forced-3') for r in reasons)
+    assert code == 3
+
+
+def test_cli_failed_probe_with_complete_memory_is_never_rule_applicable(tmp_path):
+    # r2 §12.7 I-1: memory UNVERIFIED and the rule not applicable, even when every repeat's
+    # in-unit memory reading is complete.
+    directory = _linux_job(tmp_path / 'a')
+    (directory / 'probe.json').write_text(json.dumps({'ok': False, 'reasons': ['SwapTotal is not 0 kB']}))
+    code, record, done = _cli_job(tmp_path, directory)
+    assert record['summary']['memory_complete_all_timed_repeats'] is True
+    assert record['verdict']['memory_feasibility'] == 'UNVERIFIED'
+    assert record['verdict']['rule_applicable'] is False
+    assert record['verdict']['stop_class'] == 'MEMORY_EVIDENCE_MISSING'
+    assert code == 3, done.stdout + done.stderr

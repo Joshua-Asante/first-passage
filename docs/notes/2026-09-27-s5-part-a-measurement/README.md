@@ -74,6 +74,11 @@ Carrying the harness in the image would need a change under `ops/` (the closure 
     `verdict.rerun_eligible` is true only when every failing job is on run attempt 1. The failure shares the single `--failed` re-run of §12.7 and grants no additional attempt, so on attempt 2 it stops the stage. An I-3 alongside keeps its own reason.
   - **Legacy bundles (r2 §12.9 (2)).** A Windows bundle without `timeout_s` or without `executed_identity` comes from a launcher older than this revision. Its verdict is `stop_class = LEGACY_UNACCEPTED`, `validity_ok = false`, `rule_applicable = false`, exit 4, with no re-run. The bundle stays readable and is never modified, deleted or upgraded; `--summarize` writes only `<bundle>.record.json` beside it. Stage 1a acceptance needs a bundle from the current launcher.
   - **Never rule-applicable (r2 §12.9 (4)).** Stage 1a and dry-run records always carry `rule_applicable = false`, whatever their exit code; an exit 0 there means only that their own requirements were met. Stage 1a does not need complete aggregate memory, and the incomplete-evidence gate applies to neither. `rerun_eligible` is null outside Stage 1b measure records.
+  - **Dry-run requirements (reading of r2 §12.9 (4) and §12.7).** A dry run exists to show that the runner yields the measurement's inputs, so a completed dry-run repeat must carry them.
+    - A missing runner accounting value (the unit's `CPUUsageNSec`, or its monotonic timestamps, which give `wall.outer` and so the workload wall) is I-1, exit 3, within the single dry-run re-dispatch.
+    - A missing harness-emitted field is H-FIELDS, exit 4.
+    - Only Stage 1b measure records move the ceiling-input fields out of H-FIELDS, into the incomplete-evidence gate.
+    - A dry run is still never rule-applicable.
 - **Workflow helpers** use the standard library only:
   - `--probe-verdict DIR` judges the accounting probe (r2 §8.4);
   - `--check-stage STAGE` refuses `1c` until its C3 path lands (r2 §12.4, I-8).
@@ -116,7 +121,7 @@ The artifact name carries the run attempt, so a re-run never replaces the failed
 
 | Code | Condition | Exit | Stop class |
 |---|---|---|---|
-| I-1 | Accounting probe failed (memory.peak below 64 MiB or absent, swap on, `CPUUsageNSec` empty) | 3 | `MEMORY_EVIDENCE_MISSING` (§16 C8 relabel) |
+| I-1 | Accounting probe failed (memory.peak below 64 MiB or absent, swap on, `CPUUsageNSec` empty), `probe.json` missing, truncated or not an object, or a dry-run repeat without the runner's `CPUUsageNSec` or unit timestamps | 3 | `MEMORY_EVIDENCE_MISSING` (§16 C8 relabel); memory `UNVERIFIED`, `rule_applicable = false` |
 | I-2 | Warm CPU spread > 1.30 in an arm (Stage 1b; informational at 1a) | 3 | `INVALID_MEASUREMENT` |
 | I-3 | A timed (or dry-run) repeat has no complete aggregate memory reading | 3 | `MEMORY_EVIDENCE_MISSING`; memory `UNVERIFIED`, `rule_applicable = false` |
 | I-4 | Digests differ within an arm, or the forced prefix differs from the prescribed result | 4 | `INVALID_MEASUREMENT`; bears on D3 R7 only after diagnosis (§16 C8) |
@@ -124,7 +129,7 @@ The artifact name carries the run attempt, so a re-run never replaces the failed
 | I-6 | A repeat exited non-zero, timed out (30 min poll bound, capped by the loop deadline), OOMed, left no row, or was not started before the loop deadline | 3 | `INVALID_MEASUREMENT` |
 | I-7 | Measured head differs from the dispatched head, or the tree is dirty (Stage 1b). A missing dispatched head, start head (`git-head.txt`) or summarize-time head also counts | 4 | `INVALID_MEASUREMENT` |
 | I-8 | Stage 1c requested before its C3 path exists | 4 (workflow: refused at input validation) | `BLOCKED` |
-| H-FIELDS | A completed repeat left a required field empty. At Stage 1b the ceiling-input fields are judged by INCOMPLETE instead | 4 | `INVALID_MEASUREMENT` (harness defect) |
+| H-FIELDS | A completed repeat left a required field empty. For Stage 1b measure records the ceiling-input fields are judged by INCOMPLETE instead; in a dry run the runner accounting values are I-1 | 4 | `INVALID_MEASUREMENT` (harness defect) |
 | H-SHAPE | The record is not both arms with 5 timed repeats per arm (measure mode; r2 §6.2, §12.2) | 4 | `INVALID_MEASUREMENT` (not an acceptance shape) |
 | H-COUNTS | A completed instrumented repeat's call counts differ from the r2 §4 workload, or are absent | 4 | `INVALID_MEASUREMENT` (harness defect: not the specified workload) |
 | INCOMPLETE | Stage 1b measure, per job or combined: a completed timed repeat of either arm lacks an input to Ĉ, Ŵ, P̂ or a warm spread (r2 §12.9 (3)) | 3 | `INCOMPLETE_EVIDENCE`; `validity_ok = false`, `rule_applicable = false`, `rerun_eligible` only on attempt 1 |
@@ -162,6 +167,13 @@ Both are **screens, not the r2 §13 application**. The coordinator computes X an
 - **Call-count mismatch** against the r2 §4 expectation (forced 14 replays, 5 proofs, 15 `verify_for`; prescribed 8, 3, 9), or a completed instrumented repeat without counts, is `H-COUNTS`. That is a harness defect, not a note: the measured workload is not the specified one, so neither Stage 1a validation nor a Stage 1b ceiling can rest on it. The remaining notes are informational by r2: the probe-failed-first note (with I-1), the D3 R7 note (with I-4) and the Stage 1a warm spread (I-2 is a Stage 1b check, §12.7).
 - **Workflow.** The workflow adds a per-repeat poll bound (30 min) so that a hang is an I-6 timeout, `persist-credentials: false`, and the run attempt in the artifact name. It also has a `runtime` input, whose `worker_image` value is refused (image-first finding).
 - **Loop deadline.** r2 fixes `timeout-minutes: 120` (§12.3), which the workflow sets once, as the single-valued matrix key `timeout_min` that both `timeout-minutes` and `JOB_TIMEOUT_MIN` read, and budgets a measure job at 31 min (§12.6). It sets no per-repeat or loop bound. The workflow stops starting repeats, and stops waiting on a hung one, at the job start plus 120 − 15 = 105 min. A repeat not started by then gets a `HarnessNotStarted=loop-deadline` unit file and is summarized as I-6. The 15 min `POST_LOOP_RESERVE_MIN` for summarize, owned cleanup, journal export and upload is a harness choice: r2 §12.6 budgets only 2 min for cleanup and upload, and does not budget summarize. It does not change any r2 budget, because a normal job ends well inside it.
+- **Retained failures, never a traceback.** Every unreadable artifact or failing call ends in a retained record or a clear refusal:
+  - An unreadable, truncated or non-object `probe.json` is I-1.
+  - An unreadable or malformed Windows bundle is summarized as I-6 for every repeat, and the bundle is left as it is.
+  - An absent or unreadable `git-head.txt` is I-7. An unreadable `.unit` file counts as absent: I-6.
+  - `--launcher` keeps every repeat: a failure to create, assign or run a job, or an unreadable row, becomes a failed entry (I-6). The bundle is always written, including after an interrupt, when it records `interrupted` and the missing repeats are I-6.
+  - In the workflow, a unit that `systemd-run` cannot start gets a `HarnessLaunchFailed` unit file. A failed `systemctl show` leaves `HarnessShowFailed` with no `Result`. Both are I-6, and the loop goes on to the next repeat.
+  - Inputs that carry no evidence are refused with a message, never a traceback, and nothing is written: a missing input path, a readable file that is not a launcher bundle, and, when combining, an unreadable or malformed job record. The job's retained rows and units can be re-summarized.
 - **Summarize step exit.** The runner's default shell is `bash -eo pipefail`, so the summarize step turns `-e` off. An exit 3 or 4 from the summarizer, whose record is already written, then still reaches the step summary before the step returns that status. Cleanup and upload are `if: always()` and run after it (r2 §12.9 (3)).
 - **Coordinator readings (r2 §12.9 (6)).** A run attempt outside 1–2 is I-7. A Windows bundle's arm order must be `forced,prescribed`.
 - **Cleanup receipt.** r2 names no class for a failed owned cleanup. The job fails at that step, so it counts as a failed job under the §12.7 re-run cap, and combining refuses its record. That refusal is a harness choice.

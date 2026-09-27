@@ -122,6 +122,31 @@ def _read_json(path):
     return json.loads(Path(path).read_text(encoding='utf-8'))
 
 
+def _read_json_dict(path):
+    """(value, None) for a readable JSON object, else (None, 'why'). Never raises."""
+    try:
+        value = _read_json(path)
+    except (OSError, ValueError) as exc:
+        return None, '%s: %s' % (type(exc).__name__, exc)
+    if not isinstance(value, dict):
+        return None, 'not a JSON object'
+    return value, None
+
+
+def _read_text_or_none(path):
+    try:
+        return Path(path).read_text(encoding='utf-8', errors='replace')
+    except OSError:
+        return None
+
+
+def _sha256_or_error(path):
+    try:
+        return _sha256_file(path)
+    except OSError as exc:
+        return 'unreadable: %s' % type(exc).__name__
+
+
 def _canonical(value):
     return json.dumps(value, sort_keys=True, separators=(',', ':')).encode()
 
@@ -136,10 +161,11 @@ def _int_or_none(text):
 def _parse_unit(path):
     """`systemctl show -p ...` output: Key=Value lines. Absent file -> None."""
     path = Path(path)
-    if not path.is_file():
+    text = _read_text_or_none(path) if path.is_file() else None
+    if text is None:
         return None
     values = {}
-    for line in path.read_text(encoding='utf-8', errors='replace').splitlines():
+    for line in text.splitlines():
         key, sep, value = line.partition('=')
         if sep:
             values[key.strip()] = value.strip()
@@ -565,23 +591,16 @@ def launcher(args):
     env = dict(os.environ)
     env.update({name: '1' for name in THREAD_ENV})
     entries = []
-    with tempfile.TemporaryDirectory(prefix='s5-part-a-rows-') as rows:
-        for arm in arms:
-            for repeat in [*range(1, args.repeats + 1), 0]:   # 0 = instrumented, last, excluded
-                purged = _purge_pycache() if repeat == 1 else None
-                row_path = Path(rows) / ('%s-%d.json' % (arm, repeat))
-                command = [sys.executable, str(HARNESS), '--repeat-mode', '--stage', '1a', '--arm', arm,
-                           '--repeat', str(repeat), '--out', str(row_path)]
-                unit = _run_in_job(command, env=env, timeout_s=args.timeout_s)
-                unit['pycache_dirs_purged'] = purged
-                try:
-                    row = _read_json(row_path) if row_path.is_file() else None
-                except ValueError as exc:   # a truncated row is retained as a failed repeat (I-6)
-                    row, unit['row_error'] = None, 'unreadable row: %s' % exc
-                entries.append({'arm': arm, 'repeat': repeat, 'row': row, 'unit': unit})
-                print('arm=%s repeat=%d exit=%s outer_wall=%.2fs job_cpu=%s panels=%s' % (
-                    arm, repeat, unit['exit_code'], unit['outer_wall_s'], unit['job_cpu_s'],
-                    row and row.get('panels')), flush=True)
+    interrupted = None
+    # Every repeat leaves an entry and the bundle is always written: a failure to create,
+    # assign or run a repeat, or an unreadable row, is a retained failed entry (I-6).
+    with tempfile.TemporaryDirectory(prefix='s5-part-a-rows-', ignore_cleanup_errors=True) as rows:
+        try:
+            for arm in arms:
+                for repeat in [*range(1, args.repeats + 1), 0]:   # 0 = instrumented, last, excluded
+                    entries.append(_launch_repeat(arm, repeat, Path(rows), env, args.timeout_s))
+        except BaseException as exc:   # an interrupted launcher still writes what it has (I-6 for the rest)
+            interrupted = '%s: %s' % (type(exc).__name__, exc)
     shape_ok = (sorted(arms) == sorted(ARMS) and args.repeats == DEFAULT_TIMED_REPEATS
                 and args.timeout_s == REPEAT_TIMEOUT_S)
     if not shape_ok:
@@ -591,12 +610,36 @@ def launcher(args):
     bundle = {'schema': BUNDLE_SCHEMA, 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
               'stage': '1a', 'mode': 'measure', 'platform_accounting': 'windows_process_time_job_object',
               'arm_order': arms, 'timed_repeats': args.repeats, 'timeout_s': args.timeout_s,
-              'fixed_shape': shape_ok, 'recorded_utc': _now(),
+              'fixed_shape': shape_ok, 'interrupted': interrupted, 'recorded_utc': _now(),
               'harness_sha256': _sha256_file(HARNESS),
               'executed_identity': _executed_identity([entry['row'] for entry in entries]), 'entries': entries}
     _write_json(out, bundle, exclusive=True)
     print('wrote', out)
-    return 0
+    return 130 if interrupted else 0
+
+
+def _launch_repeat(arm, repeat, rows, env, timeout_s):
+    """One launcher repeat. Never raises: a failure is recorded in the entry and the
+    summarizer reads it as a failed repeat (I-6), since it is not an explicit success."""
+    unit = {'pid': None, 'exit_code': None, 'timed_out': None, 'outer_wall_s': None, 'job_cpu_s': None}
+    try:
+        unit['pycache_dirs_purged'] = _purge_pycache() if repeat == 1 else None
+    except OSError as exc:
+        unit['pycache_dirs_purged'], unit['purge_error'] = None, '%s: %s' % (type(exc).__name__, exc)
+    row_path = rows / ('%s-%d.json' % (arm, repeat))
+    command = [sys.executable, str(HARNESS), '--repeat-mode', '--stage', '1a', '--arm', arm,
+               '--repeat', str(repeat), '--out', str(row_path)]
+    try:
+        unit.update(_run_in_job(command, env=env, timeout_s=timeout_s))
+    except Exception as exc:
+        unit['launch_error'] = '%s: %s' % (type(exc).__name__, exc)
+    row, row_error = _read_row(row_path) if row_path.is_file() else (None, None)
+    if row_error:
+        unit['row_error'] = row_error
+    print('arm=%s repeat=%d exit=%s outer_wall=%s job_cpu=%s panels=%s%s' % (
+        arm, repeat, unit['exit_code'], unit['outer_wall_s'], unit['job_cpu_s'], row and row.get('panels'),
+        ' launch_error=' + unit['launch_error'] if unit.get('launch_error') else ''), flush=True)
+    return {'arm': arm, 'repeat': repeat, 'row': row, 'unit': unit}
 
 
 # ------------------------------------------------------------- probe verdict
@@ -606,11 +649,10 @@ def probe_verdict(directory):
     64 MiB child (>= 67,108,864), SwapTotal is 0 and CPUUsageNSec is populated."""
     directory = Path(directory)
     reasons = []
-    try:
-        inner = _read_json(directory / 'probe-in-unit.json')
-    except (OSError, ValueError) as exc:
+    inner, error = _read_json_dict(directory / 'probe-in-unit.json')
+    if inner is None:
         inner = {}
-        reasons.append('in-unit probe output missing: ' + type(exc).__name__)
+        reasons.append('in-unit probe output missing or unreadable: ' + error)
     unit = _parse_unit(directory / 'probe.unit') or {}
     path = inner.get('cgroup_path') or ''
     peak = _int_or_none(inner.get('memory_peak'))
@@ -668,8 +710,9 @@ def _git(*args):
 
 def _host_facts_file(path):
     facts = {}
-    if Path(path).is_file():
-        for line in Path(path).read_text(encoding='utf-8', errors='replace').splitlines():
+    text = _read_text_or_none(path) if Path(path).is_file() else None
+    if text is not None:
+        for line in text.splitlines():
             key, sep, value = line.partition('=')
             if sep:
                 facts[key.strip()] = value.strip()
@@ -678,23 +721,17 @@ def _host_facts_file(path):
 
 def _os_release():
     values = {}
-    try:
-        for line in Path('/etc/os-release').read_text().splitlines():
-            key, sep, value = line.partition('=')
-            if sep:
-                values[key] = value.strip().strip('"')
-    except OSError:
-        pass
+    for line in (_read_text_or_none('/etc/os-release') or '').splitlines():
+        key, sep, value = line.partition('=')
+        if sep:
+            values[key] = value.strip().strip('"')
     return values
 
 
 def _cpu_model():
-    try:
-        for line in Path('/proc/cpuinfo').read_text().splitlines():
-            if line.startswith('model name'):
-                return line.split(':', 1)[1].strip()
-    except OSError:
-        pass
+    for line in (_read_text_or_none('/proc/cpuinfo') or '').splitlines():
+        if line.startswith('model name'):
+            return line.split(':', 1)[1].strip()
     return platform.processor() or None
 
 
@@ -703,7 +740,8 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
     (Linux: systemctl show) or the job object's (Windows) view. A row that
     could not be parsed arrives as None with its parse error (I-6, r2 §12.7)."""
     row = row or {}
-    row_error = row_error or (launcher_unit or {}).get('row_error')
+    row_error = (row_error or (launcher_unit or {}).get('row_error')
+                 or (launcher_unit or {}).get('launch_error'))
     cpu = dict(row.get('cpu') or {})
     wall = dict(row.get('wall') or {'outer': None, 'setup_excluded': None, 'workload': None})
     mem = dict(row.get('memory') or {})
@@ -723,6 +761,9 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
         if unit_values.get('HarnessNotStarted'):
             # The workflow's loop deadline passed before this repeat started (I-6: no row).
             result = 'not-started: ' + unit_values['HarnessNotStarted']
+        if unit_values.get('HarnessLaunchFailed'):
+            # The workflow could not start this repeat's unit (I-6: no row, no success result).
+            result = 'launch-failed: ' + unit_values['HarnessLaunchFailed']
         start, end = (_unit_number(unit_values, 'ExecMainStartTimestampMonotonic'),
                       _unit_number(unit_values, 'ExecMainExitTimestampMonotonic'))
         if start and end and end > start:
@@ -818,9 +859,14 @@ def _load_directory(directory):
                 row_errors[key] = error
         else:
             units[key] = _parse_unit(path)
-    probe = _read_json(directory / 'probe.json') if (directory / 'probe.json').is_file() else None
+    probe = None
+    if (directory / 'probe.json').is_file():
+        probe, error = _read_json_dict(directory / 'probe.json')
+        if probe is None:   # retained as a failed probe: I-1 (r2 §12.7), never a traceback
+            probe = {'ok': False, 'reasons': ['probe.json unreadable: ' + error]}
     facts = _host_facts_file(directory / 'host-facts.txt')
-    start_head = (directory / 'git-head.txt').read_text().strip() if (directory / 'git-head.txt').is_file() else None
+    head_text = _read_text_or_none(directory / 'git-head.txt') if (directory / 'git-head.txt').is_file() else None
+    start_head = head_text.strip() or None if head_text is not None else None   # absent or unreadable: I-7
     return rows, units, probe, facts, start_head, row_errors
 
 
@@ -837,9 +883,14 @@ CEILING_INPUT_FIELDS = frozenset({'cpu.start', 'cpu.admission', 'cpu.setup_exclu
                                   'wall.setup_excluded', 'wall.workload', 'unit_cpu_s', 'predicted_seconds'})
 
 
-def _required_fields_missing(rep, stage):
+# In a Stage 1b dry run these are the runner's accounting values (systemd CPUUsageNSec and
+# the unit's monotonic timestamps); r2 §12.7 classes their absence as I-1 (r2 §12.9 (4)).
+RUNNER_ACCOUNTING_FIELDS = frozenset({'unit_cpu_s', 'wall.outer'})
+
+
+def _required_fields_missing(rep, stage, mode='measure'):
     missing = _all_required_fields_missing(rep)
-    if stage == '1b':
+    if stage == '1b' and mode == 'measure':
         missing = [name for name in missing if name not in CEILING_INPUT_FIELDS]
     return missing
 
@@ -963,7 +1014,8 @@ HARNESS_CODES = frozenset({'H-FIELDS', 'H-SHAPE', 'H-COUNTS'})
 # revision (no timeout_s or no executed_identity): LEGACY_UNACCEPTED, exit 4.
 # r2 §12.9 (3): INCOMPLETE marks a Stage 1b measure record missing a required
 # ceiling input on either arm: INCOMPLETE_EVIDENCE, validity_ok false, exit 3.
-BLOCKING_CODES = frozenset({'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'I-8', 'LEGACY', 'INCOMPLETE'}) | HARNESS_CODES
+# I-1 (probe failed) also blocks: r2 §12.7 makes memory UNVERIFIED and the rule not applicable.
+BLOCKING_CODES = frozenset({'I-1', 'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'I-8', 'LEGACY', 'INCOMPLETE'}) | HARNESS_CODES
 
 
 def _classify(reasons, *, rule_applicable, memory_feasibility, screen):
@@ -1000,13 +1052,32 @@ def _rerun_eligible(stage, mode, exit_code, attempts):
     return exit_code == EXIT_RERUN and bool(attempts) and all(_int_or_none(a) == 1 for a in attempts)
 
 
+def _read_bundle(path):
+    """(bundle, None), or a placeholder of the fixed shape and the reason when the
+    bundle is unreadable, truncated or malformed. Refuses only a readable JSON
+    object that is not a launcher bundle at all (an operator error, no evidence)."""
+    bundle, error = _read_json_dict(path)
+    if bundle is not None and bundle.get('schema') != BUNDLE_SCHEMA:
+        raise SystemExit('refused: not a launcher bundle: %s (schema %r)' % (path, bundle.get('schema')))
+    if bundle is not None:
+        entries = bundle.get('entries')
+        if (not isinstance(entries, list) or not isinstance(bundle.get('arm_order'), list)
+                or not isinstance(bundle.get('timed_repeats'), int)
+                or any(not isinstance(e, dict) or e.get('arm') not in ARMS or not isinstance(e.get('repeat'), int)
+                       for e in entries)):
+            bundle, error = None, 'entries, arm_order or timed_repeats malformed'
+    if bundle is None:
+        return {'schema': BUNDLE_SCHEMA, 'entries': [], 'arm_order': list(ARMS),
+                'timed_repeats': DEFAULT_TIMED_REPEATS, 'timeout_s': REPEAT_TIMEOUT_S}, error
+    return bundle, None
+
+
 def _job_record(path, args, current=None):
     path = Path(path)
     launcher_bundle = None
+    bundle_error = None
     if path.is_file():
-        launcher_bundle = _read_json(path)
-        if launcher_bundle.get('schema') != BUNDLE_SCHEMA:
-            raise SystemExit('not a launcher bundle: ' + str(path))
+        launcher_bundle, bundle_error = _read_bundle(path)
         rows = {(e['arm'], e['repeat']): e.get('row') for e in launcher_bundle['entries']}
         duplicate_entries = len(rows) != len(launcher_bundle['entries'])
         units, probe, facts, start_head, row_errors = {}, None, {}, None, {}
@@ -1033,6 +1104,10 @@ def _job_record(path, args, current=None):
     by_arm = {arm: [rep for rep in repeats if rep['arm'] == arm] for arm in arm_order}
 
     reasons = []
+    if bundle_error:
+        reasons.append(('I-6', 'launcher bundle unreadable or malformed, so no repeat can be shown (%s)' % bundle_error))
+    if (launcher_bundle or {}).get('interrupted'):
+        reasons.append(('I-6', 'the launcher was interrupted: %s' % launcher_bundle['interrupted']))
     # r2 §5.1 code identity, taken before the verdict and part of it (ordering).
     if current is None:
         current = _current_identity(path)
@@ -1047,7 +1122,7 @@ def _job_record(path, args, current=None):
     if mode == 'measure' and timed != DEFAULT_TIMED_REPEATS:
         reasons.append(('H-SHAPE', '%s timed repeats per arm; the fixed shape is %d (r2 §6.2, §12.2)' % (
             timed, DEFAULT_TIMED_REPEATS)))
-    legacy = launcher_bundle is not None and (
+    legacy = launcher_bundle is not None and not bundle_error and (
         'timeout_s' not in launcher_bundle or not launcher_bundle.get('executed_identity'))
     if legacy:
         reasons.append(('LEGACY', 'bundle from a launcher older than this harness revision (no %s): retained '
@@ -1068,7 +1143,7 @@ def _job_record(path, args, current=None):
                 args.job, list(arm_order), want_order)))
     elif stage == '1b' and mode == 'measure':
         reasons.append(('H-SHAPE', 'job %r is not a or b (r2 §6.2 two-job alternation)' % args.job))
-    if launcher_bundle is not None and not legacy:
+    if launcher_bundle is not None and not legacy and not bundle_error:
         # r2 §5.1, §12.2: a Windows summary describes the code the launcher ran.
         for mismatch in _identity_mismatches(launcher_bundle.get('executed_identity'), current):
             reasons.append(('I-7', 'Windows bundle: ' + mismatch))
@@ -1175,8 +1250,18 @@ def _job_record(path, args, current=None):
                         arm, spread, SPREAD_LIMIT)))
     for rep in repeats:
         if (rep['arm'], rep['repeat']) in expected:
-            missing = _required_fields_missing(rep, stage)
-            if missing and rep['completed']:
+            missing = _required_fields_missing(rep, stage, mode)
+            if not (missing and rep['completed']):
+                continue
+            runner = []
+            if stage == '1b' and mode == 'dry-run':
+                runner = [m for m in missing if m in RUNNER_ACCOUNTING_FIELDS
+                          or (m == 'wall.workload' and 'wall.outer' in missing)]
+                missing = [m for m in missing if m not in runner]
+            if runner:
+                reasons.append(('I-1', '%s-%d: the runner did not yield %s in the dry run (r2 §12.7, §12.9 (4))' % (
+                    rep['arm'], rep['repeat'], ', '.join(runner))))
+            if missing:
                 reasons.append(('H-FIELDS', '%s-%d: fields not populated: %s' % (
                     rep['arm'], rep['repeat'], ', '.join(missing))))
     # H-COUNTS: the instrumented repeat's call counts (r2 §6.1) must equal the r2 §4
@@ -1208,7 +1293,8 @@ def _job_record(path, args, current=None):
     }
     if stage == '1a' or mode == 'dry-run':
         memory_feasibility = 'UNVERIFIED'
-    elif not memory_complete or estimates['M_hat_bytes'] is None:
+    elif (not memory_complete or estimates['M_hat_bytes'] is None
+          or any(code == 'I-1' for code, _ in reasons)):   # r2 §12.7 I-1: memory UNVERIFIED
         memory_feasibility = 'UNVERIFIED'
     else:
         memory_feasibility = 'FAILED' if M_M * estimates['M_hat_bytes'] > PA3_REFERENCE_BYTES else 'VERIFIED'
@@ -1234,8 +1320,9 @@ def _job_record(path, args, current=None):
         'arch': platform.machine(), 'cpu_model': facts.get('cpu_model') or _cpu_model(),
         'logical_cpus': _int_or_none(facts.get('nproc')) or os.cpu_count(),
         'implementation': env.get('implementation'), 'python': env.get('python'),
-        'executable_sha256': _sha256_file(executable) if executable and Path(executable).is_file() else None,
-        'requirements_lock_sha256': _sha256_file(lock) if lock.is_file() else None,
+        'executable_sha256': (_sha256_or_error(executable) if isinstance(executable, str)
+                              and Path(executable).is_file() else None),
+        'requirements_lock_sha256': _sha256_or_error(lock) if lock.is_file() else None,
         'thread_env': env.get('thread_env'), 'image_digest': None,
         'platform_accounting': ('windows_process_time_job_object' if stage == '1a'
                                 else 'linux_getrusage_cgroup_v2'),
@@ -1285,7 +1372,7 @@ def _source_identity(loaded_fixture_files):
     fixture files and the fixture files the repeats loaded (r2 §5.1, §12.8)."""
     identity, files = _code_identity()
     files |= set(FIXED_SOURCE_FILES) | set(loaded_fixture_files)
-    return identity, {name: _sha256_file(ROOT / name) for name in sorted(files) if (ROOT / name).is_file()}
+    return identity, {name: _sha256_or_error(ROOT / name) for name in sorted(files) if (ROOT / name).is_file()}
 
 
 def _executed_identity(rows):
@@ -1342,11 +1429,18 @@ def _code_identity():
 def summarize(args):
     inputs = [Path(p) for p in args.summarize]
     records, locations = [], []
+    missing = [str(path) for path in inputs if not path.exists()]
+    if missing:
+        raise SystemExit('refused: no such input: %s' % ', '.join(missing))
     current = _current_identity(inputs[0]) if len(inputs) == 1 else None
     for path in inputs:
         candidate = path / 'record.json' if path.is_dir() else path
         if len(inputs) > 1 and candidate.name == 'record.json' and candidate.is_file():
-            records.append(_read_json(candidate))   # combined mode reuses each job's runner-side record
+            record, error = _read_json_dict(candidate)   # combined mode reuses each job's runner-side record
+            if record is None:
+                raise SystemExit('refused: job record %s is unreadable (%s); re-summarize that job directory, '
+                                 'whose rows and units are retained' % (candidate, error))
+            records.append(record)
             locations.append(candidate.parent)
             continue
         records.append(_job_record(path, args, current))
@@ -1383,20 +1477,30 @@ def _loaded_fixture_files_of(path):
     path = Path(path)
     names = set()
     if path.is_file():
-        bundle = _read_json(path)
-        rows = [e.get('row') for e in bundle.get('entries', [])]
+        bundle, _ = _read_json_dict(path)
+        entries = (bundle or {}).get('entries')
+        rows = [e.get('row') for e in entries if isinstance(e, dict)] if isinstance(entries, list) else []
     else:
         rows = [_read_row(p)[0] for p in path.glob('*-*.json')
                 if re.fullmatch(r'(forced|prescribed)-\d+\.json', p.name)]
     for row in rows:
-        for name in ((row or {}).get('environment') or {}).get('loaded_fixture_files') or []:
-            names.add(name)
+        if not isinstance(row, dict) or not isinstance(row.get('environment'), dict):
+            continue
+        for name in row['environment'].get('loaded_fixture_files') or []:
+            if isinstance(name, str):
+                names.add(name)
     return names
 
 
 def _combine_inputs_refusal(records):
     """r2 §6.2 and §12.3: the combined record is the two jobs (a, b) of one
     dispatch. Anything else is refused before a record is written."""
+    shape = {'runtime': dict, 'verdict': dict, 'summary': dict, 'repeats': list}
+    for r in records:
+        if not isinstance(r, dict) or any(not isinstance(r.get(k), t) for k, t in shape.items()):
+            return 'refused: a job record is malformed (needs runtime, verdict, summary and repeats)'
+        if any(not isinstance(rep, dict) or rep.get('arm') not in ARMS for rep in r['repeats']):
+            return 'refused: a job record carries a malformed repeat'
     if any(r.get('scope') != 'job' for r in records):
         return 'refused: combine takes per-job records only (scope = job)'
     jobs = sorted(str((r.get('runtime') or {}).get('job')) for r in records)
@@ -1506,7 +1610,8 @@ def _combined(records, locations=None):
         'P_hat_s': forced.get('predicted_seconds_max'),
         'provisional': 'D̂ uncovered until Stage 1c (r2 §4, §9 PA-1)',
     }
-    if stage == '1a' or mode == 'dry-run' or not memory_complete or estimates['M_hat_bytes'] is None:
+    if (stage == '1a' or mode == 'dry-run' or not memory_complete or estimates['M_hat_bytes'] is None
+            or any(code == 'I-1' for code, _ in reasons)):   # r2 §12.7 I-1: memory UNVERIFIED
         memory_feasibility = 'UNVERIFIED'
     else:
         memory_feasibility = 'FAILED' if M_M * estimates['M_hat_bytes'] > PA3_REFERENCE_BYTES else 'VERIFIED'

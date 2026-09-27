@@ -214,12 +214,19 @@ jobs:
                 sync; echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
               fi
               unit="fp-s5pa-$STAGE-$arm-$r"
-              sudo systemd-run --unit="$unit" --working-directory="$GITHUB_WORKSPACE" \
+              # A unit that cannot be started is retained as a failed repeat (I-6), and the loop
+              # goes on to the next one rather than losing every later repeat.
+              if ! sudo systemd-run --unit="$unit" --working-directory="$GITHUB_WORKSPACE" \
                 -p CPUAccounting=yes -p MemoryAccounting=yes -p MemorySwapMax=0 -p RemainAfterExit=yes \
                 -E OPENBLAS_NUM_THREADS=1 -E OMP_NUM_THREADS=1 -E MKL_NUM_THREADS=1 -E NUMEXPR_NUM_THREADS=1 \
                 "$PY" -I scripts/fp.py --env "$host_root/env" python "$H" \
                   --repeat-mode --stage "$STAGE" --arm "$arm" --repeat "$r" --unit "$unit" $extra \
-                  --out "$OUT/$arm-$r.json"
+                  --out "$OUT/$arm-$r.json"; then
+                printf 'HarnessLaunchFailed=systemd-run\nHarnessPollTimeout=no\nHarnessPollBoundS=%s\n' \
+                  "$REPEAT_POLL_BOUND_S" > "$OUT/$arm-$r.unit"
+                echo "repeat $arm-$r: systemd-run failed (I-6)"
+                continue
+              fi
               deadline=$(($(date +%s) + REPEAT_POLL_BOUND_S)); timed_out=no
               if [ "$deadline" -gt "$loop_deadline" ]; then deadline=$loop_deadline; fi
               until [ "$(systemctl show -p SubState --value "$unit")" = exited ] || \
@@ -227,9 +234,10 @@ jobs:
                 if [ "$(date +%s)" -ge "$deadline" ]; then timed_out=yes; break; fi
                 sleep 1
               done
+              # A failed read leaves no Result, so the summarizer records I-6 (never success).
               systemctl show -p CPUUsageNSec -p MemoryPeak -p MemorySwapPeak -p ExecMainStatus -p ControlGroup \
                 -p ExecMainStartTimestampMonotonic -p ExecMainExitTimestampMonotonic -p Result \
-                "$unit" > "$OUT/$arm-$r.unit"
+                "$unit" > "$OUT/$arm-$r.unit" || echo 'HarnessShowFailed=yes' > "$OUT/$arm-$r.unit"
               printf 'HarnessPollTimeout=%s\nHarnessPollBoundS=%s\n' "$timed_out" "$REPEAT_POLL_BOUND_S" \
                 >> "$OUT/$arm-$r.unit"
               sudo systemctl stop "$unit"; sudo systemctl reset-failed "$unit" 2>/dev/null || true
