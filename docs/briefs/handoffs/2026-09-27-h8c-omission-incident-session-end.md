@@ -158,4 +158,20 @@ The operator merges. The coordinator keeps acceptance.
 
 ## 9. Dispatch record
 
-*(Filled at dispatch: dispatch revision SHA, pre-dispatch read result, executor, date.)*
+**Dispatched 2026-09-27 on the operator's instruction "merge both as recommended, then dispatch H8(c) from the main revision".**
+- **Dispatch revision:** `origin/main` `08196100b5b0b4f0337c3f5585c39ab4e121da24`, the merge of #521. It already contains #528, merged at `c1d2532`. Both READY ON events hold.
+- **#521's final head:** `b4648f7`. Its last commit is an operator docstring qualification: S1 stays a strict XFAIL under CC-3, and acceptance is partial. The test logic is unchanged from the accepted `32e0863` and `c86e940`.
+- **Branch:** `claude/h8c-omission-incident-tests`, cut from the dispatch revision. It is checked out in the coordinating session's worktree (`.claude/worktrees/bracket-timing-convention-build-43a332`), because the session's worktree-isolation hook confines writes to that worktree. The coordinator makes no edits while the worker runs. This record is the branch's first commit, made by the coordinator.
+- **Executor:** a Claude Code worker subagent in that worktree. It is not routed to GLM: the work is incident-contract work, and the card forbids external sends.
+- **Pre-dispatch read (coordinator, at the dispatch revision):**
+  - `check_handoff_authority.py --all`: 3 cards, 0 violations.
+  - This card is byte-identical to the reviewed `00f6db1`.
+  - Every §0 owner path and test module exists: `boot` `:318`, `check_source_silence` `:847`, `expire_partial_barrier` `:916`, `activate_synthetic` `:1099` and `halt` `:1112` in `book_account_owner.py`; `_activate_bootstrap` `book_bootstrap.py:106`; `handle_book_fact` `c1_rail_listener.py:125`.
+  - `tests/ops/test_feed_omission_session_end.py` does not exist yet.
+  - `.p.ps1 doctor` is OK (ops-env Python 3.13.2).
+- **Pre-existing regression-base failure (disclose; do not fix).** At the dispatch revision, on Windows, `pytest tests/ops/test_attended_incident_rehearsal.py tests/ops/test_four_leg_runtime.py` gave 34 passed, 3 skipped, 1 xfailed and **1 failed**. The launcher record was `status: failed`.
+  - The failing node is `test_attended_incident_rehearsal.py::test_missed_acknowledgment_never_changes_halt_or_permission`.
+  - `FileAckNotifier.acknowledge` (`c1_rail_telemetry.py:220`) writes a filename that contains `:`, which Windows rejects (`OSError: [Errno 22]`). The node passes on Linux CI.
+  - This is outside H8(c)'s scope and routed separately. The worker reports it as pre-existing and must not treat it as caused by or fixed in this card. Every other regression node must pass.
+
+**Not granted:** a production code change, a rail deploy or arm, account traffic, an order, CI dispatch, a merge, deployment, GO or later-release policy.
