@@ -6,6 +6,20 @@
 
 **Card:** [handoff H1](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h1--s5-measurement-correct-the-519-proposal-return-a-measurement-dispatch), step (a) only. **Sequencing owner:** [deployment-checklist addendum 2026-09-27](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step) §0–§5 (CP-1a, §4).
 
+**Current authority (2026-09-27, after CP-1a).** *[Corrected 2026-09-27 (Codex review of 7d59bf95). The "Authority" and "Not granted" blocks below describe this packet at preparation, before CP-1a. They are kept as history and do not bound current work.]*
+- **Granted by the CP-1a ruling** ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)):
+  - all six §14.1 decisions, adopted as recommended;
+  - the rule parameters recorded there;
+  - the bounded measurement dispatch of §12 (decision (2)): Stage 1a, the optional Stage 0, and the Stage 1b probe, dry run and measure run, within the §12.7 caps.
+- **Sequenced by the operator's 2026-09-27 harness ruling (§12.9).** No measurement is executed until the revised H1(b) harness PR is returned with retained verification evidence and merged by the operator. The ruling itself dispatches no measurement.
+- **Still not granted:**
+  - an S5 release, freeze, dispatch or execution (S5 stays **HELD** until CP-1b);
+  - any ceiling, profile, release-literal or budget change, except through the §13 procedure after a valid Stage 1b record;
+  - any production value, and any production, activation or live authority;
+  - any statistical dispatch.
+
+*Preparation-time authority, kept as history:*
+
 **Authority:**
 - Operator ruling 2026-09-26 §6 authorizes *preparing* the proposal only ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--s5-directions-adopted-hold-kept-2026-09-26)).
 - The 2026-09-27 operator direction splits build entry from C3 ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-direction--s5-build-entry-separated-from-checkpoint-c3-acceptance-2026-09-27)).
@@ -14,7 +28,7 @@
 
 **Sources read at `521d8f2`** (branch `claude/clever-wozniak-bx0u95`). Under `ops/`, `tests/`, `tools/`, `deploy/`, `scripts/` and `.github/`, `git diff --stat 8c15f18 HEAD` is empty. So every r1 code citation was re-checked against bytes identical to r1's, and each is re-verified in §2. **No measurement, Linux dispatch, workflow file, artifact download, qualification service or S5 work was run.** Every figure below is either cited or labelled as arithmetic. *[2026-09-27: slices-plan line numbers in this note are at `521d8f2`; §16.5 maps them to `4a94f9b1`.]*
 
-**Not granted:**
+**Not granted** *(at preparation; superseded by "Current authority" above)*:
 - no measurement execution, CI-configuration change, Linux dispatch or artifact download;
 - no approved numerical rule;
 - no ceiling, profile, release-literal or budget change;
