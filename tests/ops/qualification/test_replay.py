@@ -211,16 +211,131 @@ def test_split_must_reaggregate_original_ohlc():
         replay.run((closing_session(),))
 
 
-def test_stale_resting_order_cancel_releases_capacity_even_when_flat():
+def resting_orb_entry(price, *, cancel_at=None):
+    """ORB's base stop entry, placed once on the first bar (§59 Ruling 6(a), L1).
+
+    ``cancel_at`` stands in for the port's own session-end cancel. Each
+    adapter bar records the replay's view of the entry before it evaluates.
+    """
+    seen = []
     def emit(a, b):
-        return [OrderIntent("rest", a.leg_id, "entry", Side.BUY, 1, "stop", 200)] if len(a.bars) == 1 else []
-    replay, adapters = engine({"orb_mnq_v7": emit})
-    result = replay.run((path_session(prices=[(100, 100, 100, 100)] * 4),))
+        replay = seen[0]
+        seen.append((len(a.bars), tuple(replay.brokers["orb_mnq_v7"].pending_order_ids()),
+                     replay.ledger.reserved.get("orb_mnq_v7", 0),
+                     tuple(e.event for e in a.feedback if e.event == "cancel")))
+        if len(a.bars) == 1:
+            return [OrderIntent("rest", a.leg_id, "entry", Side.BUY, 1, "stop", price)]
+        if len(a.bars) == cancel_at:
+            return [Cancel(a.leg_id, "rest")]
+        return []
+    return emit, seen
+
+
+def run_orb(emit, seen, prices, *, quote=100):
+    replay, adapters = engine({"orb_mnq_v7": emit}, quotes=lambda *args: quote)
+    seen.insert(0, replay)
+    result = replay.run((path_session(prices=prices),))
+    return replay, adapters["orb_mnq_v7"], result, seen[1:]
+
+
+def test_orb_base_entry_is_not_cancelled_one_bar_after_admission():
+    emit, seen = resting_orb_entry(200)
+    replay, adapter, result, views = run_orb(emit, seen, [(100, 100, 100, 100)] * 4)
+    # Bars 3 and 4 are past RC-9's one-bar age: the entry still rests,
+    # its reservation is held and no cancel feedback has been delivered.
+    for number in (3, 4):
+        assert views[number - 1] == (number, ("rest",), 1, ())
+    cancelled = [e for e in adapter.feedback if e.event == "cancel"]
+    assert len(cancelled) == 1 and cancelled[0].bar_time.minute == 0 and cancelled[0].bar_time.hour == 15
     assert result.sessions[0].fills == 0
     assert result.sessions[0].end_edge.is_flat
+
+
+def test_orb_base_entry_fills_on_crossing_after_first_bar():
+    emit, seen = resting_orb_entry(110)
+    prices = [(100, 100, 100, 100)] * 3 + [(100, 115, 95, 110)]
+    replay, adapter, result, views = run_orb(emit, seen, prices, quote=110)
+    fills = [e.fill for e in adapter.feedback if e.fill]
+    assert [(f.kind, f.price, f.bar_time.minute) for f in fills[:1]] == [("entry", 110, 45)]
+    assert views[2] == (3, ("rest",), 1, ())
+    assert not any(e.event == "cancel" for e in adapter.feedback)
+    assert result.sessions[0].end_edge.is_flat
+
+
+def test_orb_base_entry_ends_on_port_session_end_cancel_and_releases_capacity():
+    emit, seen = resting_orb_entry(200, cancel_at=4)
+    replay, adapter, result, views = run_orb(emit, seen, [(100, 100, 100, 100)] * 4)
+    assert views[3] == (4, ("rest",), 1, ())
+    cancelled = [e for e in adapter.feedback if e.event == "cancel"]
+    assert [(e.order_id, e.bar_time.minute) for e in cancelled] == [("rest", 45)]
+    assert views[4] == (5, (), 0, ("cancel",))
+    assert result.sessions[0].fills == 0
+    assert result.sessions[0].end_edge.is_flat
+
+
+def test_orb_base_entry_cancelled_at_scheduled_cutoff():
+    emit, seen = resting_orb_entry(200)
+    session = path_session(prices=[(100, 100, 100, 100)] * 4)
+    replay, adapters = engine({"orb_mnq_v7": emit})
+    seen.insert(0, replay)
+    result = replay.run((session,))
+    cutoff = session.source.schedule.cutoff
     cancelled = [e for e in adapters["orb_mnq_v7"].feedback if e.event == "cancel"]
+    assert [(e.order_id, e.bar_time) for e in cancelled] == [("rest", cutoff)]
+    assert any(e.kind == "scheduled_cutoff" and e.detail == cutoff.isoformat() for e in result.events)
+    assert replay.ledger.reserved.get("orb_mnq_v7", 0) == 0
+    assert result.sessions[0].end_edge.is_flat
+
+
+@pytest.mark.parametrize("leg_id,kind,created", [
+    ("vanguard_mgc", "entry", 1),
+    ("dj30_mym_p250", "entry", 1),
+    ("orb_mnq_v7", "add", 2),
+])
+def test_one_bar_cancel_still_applies_to_non_orb_base_resting_order(leg_id, kind, created):
+    def emit(a, b):
+        if kind == "add" and len(a.bars) == 1:
+            return entry(a, b)
+        if len(a.bars) == created:
+            return [OrderIntent("rest", a.leg_id, kind, Side.BUY, 1, "stop", 200)]
+        return []
+    replay, adapters = engine({leg_id: emit})
+    result = replay.run((path_session(prices=[(100, 100, 100, 100)] * 4),))
+    cancelled = [e for e in adapters[leg_id].feedback if e.event == "cancel" and e.order_id == "rest"]
     assert len(cancelled) == 1
-    assert cancelled[0].bar_time.minute == 30
+    assert cancelled[0].bar_time.minute == 15 * (created + 1)
+    assert not any(e.fill and e.fill.order_id == "rest" for e in adapters[leg_id].feedback)
+    assert result.sessions[0].end_edge.is_flat
+
+
+@pytest.mark.parametrize("prices,fill_minute", [
+    ([(100, 100, 100, 100)] * 3 + [(100, 115, 95, 110)], 45),
+    ([(100, 100, 100, 100), (100, 104, 99, 103), (103, 109, 101, 108), (108, 109, 104, 105)], None),
+])
+def test_orb_base_entry_lifecycle_matches_emulator_without_schedule_overlay(prices, fill_minute):
+    """Parity (RC-4): over bars with no schedule event inside the span, the
+    replay's ORB base entry fills or keeps resting exactly as the emulator's."""
+    from c1_signal_daemon.tv_broker_emulator import run_adapter
+    emit, seen = resting_orb_entry(110)
+    replay, adapter, result, views = run_orb(emit, seen, prices, quote=prices[-1][-1])
+    session = path_session(prices=prices)
+    span = [dict(pb.bars)["orb_mnq_v7"] for pb in session.bars
+            if pb.source_bar_time < session.source.schedule.cutoff]
+    assert len(span) == 4
+    mirror = Adapter("orb_mnq_v7", lambda a, b: (
+        [OrderIntent("rest", a.leg_id, "entry", Side.BUY, 1, "stop", 110)] if len(a.bars) == 1 else []))
+    emulator = run_adapter(mirror, span, TVBrokerEmulator("orb_mnq_v7", 1, 1, 0, 0, margin_pct=0))
+    emulated = [e.fill.bar_time for e in mirror.feedback if e.fill and e.fill.kind == "entry"]
+    replayed = [e.fill.bar_time for e in adapter.feedback if e.fill and e.fill.kind == "entry"]
+    assert replayed == emulated
+    assert [t.minute for t in replayed] == ([] if fill_minute is None else [fill_minute])
+    assert not any(e.event == "cancel" for e in mirror.feedback)
+    before_cutoff = [e for e in adapter.feedback
+                     if e.event == "cancel" and e.bar_time < session.source.schedule.cutoff]
+    assert before_cutoff == []
+    if fill_minute is None:
+        assert emulator.pending_order_ids() == ["rest"]
+        assert views[3] == (4, ("rest",), 1, ())
 
 
 def test_aegis_whole_leg_takeover_closes_striker_before_entry():
