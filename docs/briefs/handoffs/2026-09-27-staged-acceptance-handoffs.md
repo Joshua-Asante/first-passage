@@ -49,7 +49,7 @@ If #519 merges before dispatch, the same paths on `main` are used, once they are
 | H5 | Attended operations | Step (a) READY (applies §A11.2); step (b) READY ON (a) accepted | T13 construction |
 | H6 | Settlement evidence | Collection READY ON CP-2; rehearsal harness READY | CAP S1/S2 toward QUALIFIED |
 | H7 | Production qualification host | **RETURNED and ACCEPTED 2026-09-27** ([note](../../notes/2026-09-27-host-obligations-assignment.md)); RC-5 recorded in the ledger; RC-4 slice pending the operator (CP-1a item 5); host cost owed before CP-8 | RC-4/RC-5 assignment (S5 build entry); later CP-8 |
-| H8 | Feed (provider-neutral) | READY | CP-7 inputs; the F1 feed section |
+| H8 | Feed (provider-neutral) | Step (a) **RETURNED and ACCEPTED 2026-09-27** ([note](../../notes/2026-09-27-feed-provider-neutral-preparation.md); [draft spec](../../spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md)); step (b) READY (operator machine) | CP-7 inputs; the F1 feed section; the empty-interval rule before CP-6 |
 | H9 | Result/seal and recovery | Preparation READY ON S5 C3 accepted; R1 ON S5 acceptance; R2 ON D3 text and R1 | T06/S8 |
 | H10 | Final launch | LATER | CP-9 |
 
@@ -415,6 +415,13 @@ In each case return to the coordinator.
 **Decision unlocked:** inputs to **CP-7** (funding) and to the T10 phase-2 F1 packet.
 
 **Grants at dispatch (coordinator):** `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `make check` clean.
+
+**Step (b), added at the acceptance of step (a) (2026-09-27; owner assigned for the cross-handoff critic's finding X-05).**
+- **What:** classify the private gap queue (`calendar-gap-queue.json`, digest `509346d6…`; execution domain `:485–:502`) against the consumer's contiguity and four-leg barrier rules (`book_runtime.py:376–:391`). That includes the 171 residual regular-session gaps (`:689–:691`): are they no-trade quiet slots or missing input?
+- **Where:** documentary, run on the operator's machine, because the queue is private. No data is committed; only counts, classes and digests return.
+- **Returns to:** the operator, for the spec §4.3 empty-interval rule. If an omitted in-session slot would halt the book, it also goes to TB-I3 and to the halt/resume owner (the §A11.2 incident question).
+- **When:** before CP-6.
+- **Grants (coordinator, on the operator's machine):** `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `make check` clean.
 
 ## H9 — Result/seal integration and bounded same-sample recovery (two checkpoints)
 
