@@ -848,3 +848,37 @@ The sequencing record is the [deployment-checklist addendum 2026-09-27](2026-09-
   - (2) **complete aggregate-memory evidence**. A lower-bound memory fallback leaves memory feasibility unverified and cannot support the rule's application.
 
 **Not granted:** measurement execution, CI-configuration change, Linux dispatch or artifact download; an approved numerical rule; S5 release, freeze, dispatch or execution. The hold stays **HELD**.
+
+### Coordinator assignment — RC-5 host checks (recorded) and RC-4 seed view (slice pending the operator), 2026-09-27
+
+**Source.** The operator ruling of 2026-09-27 ("Assigning seed-view and host-check owners now, with implementation and attestations due at their specified later gates"), acting on the [H7 return](../../notes/2026-09-27-host-obligations-assignment.md). The RC-5 assignment and the resolution of S5 draft §6 Q12 are coordinator acts: the 2026-09-26 entry above leaves Q12 "open for the coordinator's owner-text and RC-5 work". The RC-4 **slice** is one "the operator names" (S5 draft `:363`); this entry records it as the coordinator's proposal until the operator names it at CP-1a (item 5 of the [H1 r2 packet](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md)), and the RC-4 assignment is not met until then.
+
+**RC-5 (OF-1..OF-7).** S5 draft §6 Q12 is resolved to the stricter reading, which only adds gates: every OF is verified by an operator-attended host read at production-host provisioning (CP-8), before any production-authority release (any `OPERATOR`-class release, instance, trust-domain or key enrollment, and before CP-8 admits the production attempt), and after any access change. In addition, OF-5 is read before any arm and at each session GO, OF-6 at TB-I3 (NOT_APPLICABLE unless E3 is adopted), and OF-7 before F1 admission. Verifier: the operator (attended). Recorder: the operator; the coordinator checks completeness and records each attestation here. Record: a private raw transcript held by the operator outside every checkout and archived in `first-passage-archive`, plus a public attestation `docs/notes/qualification_host/attestations/<date>-<gate>.json` (schema `qualification_host_of_attestation/v1`: booleans, octal modes, role names, enumerated codes, dates and hashes only, no free-text field), linked here by path and SHA-256. An attestation satisfies a gate only if no trigger for that OF occurred between the read and the gate. Re-verification triggers:
+
+| OF | Triggers (each also: host rebuild or reprovision) |
+|---|---|
+| OF-1 | account, group, sudoers or sudoers.d change; Docker install, upgrade or socket-permission change; new agent harness, agent OS account or cloud agent environment; change on an agent-hosting workstation account to SSH keys, SSH agent or forwarding, credential helpers or remote-access tooling |
+| OF-2 | change under `/etc/polkit-1/rules.d`; principal creation, deletion, UID or authentication change; polkit or systemd upgrade |
+| OF-3 | key generation, rotation, enrollment or revocation; new GitHub Actions secret (repository, environment or organization) or new workflow; new worktree root or agent environment |
+| OF-4 | enrollment, release install, trust-domain or instance-document change |
+| OF-5 | Fly membership or token change; broker credential issue or rotation; new agent environment or cloud environment secret; rail redeploy by a new path; each arm; each session GO |
+| OF-6 | E3 adoption; GO key generation, rotation or device change; new agent environment; TB-I3 |
+| OF-7 | release install; data or scratch tree binding change; qg5 route change; backup or snapshot configuration change |
+
+An unverified OF is reported as "enforcement not established". The OF definitions' owner is boundary spec §3.1 once RC-2 applies S5 draft §1.5(a). Contract questions CQ-1..CQ-3 are open.
+
+**RC-4 (client plan-view seed change).** Owner: the qualification coordinator, through this ledger. Slice (proposed; the operator names it): "K3/RC-4 — service salt and client plan view", covering the digests-only client view, the receipt's `client_view_sha256`/`client_view_byte_length`, `tb-s2-rng-v3` with service-generated salt, commitment and reveal, the S5 draft §1.6 tests and the service-side refusal of condition 1 below. It moves K3 out of TB-F1, where S5 draft §4 placed it. It is dispatched after S5 acceptance and lands before S8/T06 dispatch; its order against the D3 slice is set at dispatch. That S8/T06 precondition is sequencing, which the [checklist addendum 2026-09-27](2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step) governs; this entry does not change the addendum, which must record it separately once the operator accepts the slice. It depends on the full-E1 spec §2.2a amendment of S5 draft §1.5(d), applied under RC-2 at Checkpoint C3 and not by this entry.
+
+**F1 admission check (RC-4; AUDIT-2026-09-25-qualification-assurance-contract-delta#K3).** The production attempt is not admitted while the `client` role can fetch a seed value or the salt. Admission refuses unless every condition holds, and it evaluates them **before** the transaction that binds the F1 budget and generates the salt, so that a refusal generates no salt and consumes no attempt:
+1. The contract's RNG recipe is `tb-s2-rng-v3`, and the installed release's plan-view mode for the `client` role is `client_view_digests_only`. The service refuses a `tb-s2-rng-v3` admission on any release without that mode.
+2. The installed release digest equals the release named in F1, and that release was accepted with the negative client cases of S5 draft §1.6 passing on Linux on its bytes: no salt or seed value reaches `client` through `STATUS`, `FETCH_PLAN_CHUNK` or the receipt before closure.
+3. The admission receipt schema binds `client_view_sha256` and `client_view_byte_length` beside `plan_sha256` and `plan_byte_length`. The client verifies the reassembled client view against them.
+4. An OF-7 attestation at gate G-F1 is recorded for this host after the installed release was installed, with no OF-7 trigger since.
+
+Any failed condition refuses admission. The refusal is recorded and is not a consumed attempt.
+
+**Status.** The 2026-09-26 entry above required RC-4's owner record to hold "a named owner and slice, the §2.2a client-view amendment applied, the F1 admission check". The 2026-09-27 direction divides that by stage: build entry needs "the seed-view owner and slice, with the F1 admission-check text", and the full RC-2 owner-text set, §2.2a included, is applied at Checkpoint C3. On that reading, and **once the operator has accepted the RC-4 slice**, this entry meets the RC-4/RC-5 **assignment** at build entry; the coordinator confirms that status on recording. The implementation (the RC-4 change landed, K3 built) and the attestations (OF-1..OF-7) remain before F1, as the 2026-09-27 direction's "Before F1" row states.
+
+**Not granted:** S5 release, dispatch or execution; owner text applied; host provisioning or spend; credential or key creation; F1, CP-6 or CP-8 decisions; production, arm, deployment or live authority. The hold stays **HELD**.
+
+**Recorded state (2026-09-27).** RC-5 is **assigned** (coordinator act). The RC-4 slice is **proposed, pending the operator at CP-1a item 5**, so the RC-4/RC-5 build-entry condition is not yet met. Host spend and sizing stay owed before CP-8 (checklist T11's measured envelope; the $700-ceiling scope is the single CP-2 question F-4 of the commissioning packet).

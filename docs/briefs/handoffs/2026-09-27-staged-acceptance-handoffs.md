@@ -48,7 +48,7 @@ If #519 merges before dispatch, the same paths on `main` are used, once they are
 | H4 | Fence classification: synthetic repair plus ORB L1 replay correction | READY ON coordinator acceptance of H3's owner text and card (authorized by Ruling 6) | Synthetic half of the fence obligation; the replay correction before freeze; CP-5 input |
 | H5 | Attended operations | Step (a) READY (applies §A11.2); step (b) READY ON (a) accepted | T13 construction |
 | H6 | Settlement evidence | Collection READY ON CP-2; rehearsal harness READY | CAP S1/S2 toward QUALIFIED |
-| H7 | Production qualification host | READY | RC-4/RC-5 assignment (S5 build entry); later CP-8 |
+| H7 | Production qualification host | **RETURNED and ACCEPTED 2026-09-27** ([note](../../notes/2026-09-27-host-obligations-assignment.md)); RC-5 recorded in the ledger; RC-4 slice pending the operator (CP-1a item 5); host cost owed before CP-8 | RC-4/RC-5 assignment (S5 build entry); later CP-8 |
 | H8 | Feed (provider-neutral) | READY | CP-7 inputs; the F1 feed section |
 | H9 | Result/seal and recovery | Preparation READY ON S5 C3 accepted; R1 ON S5 acceptance; R2 ON D3 text and R1 | T06/S8 |
 | H10 | Final launch | LATER | CP-9 |
