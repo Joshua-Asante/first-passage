@@ -42,7 +42,7 @@ If #519 merges before dispatch, the same paths on `main` are used, once they are
 
 | Card | Workstream | State | Unlocks |
 |---|---|---|---|
-| H1 | S5 and resource limits | Step (a) **RETURNED and ACCEPTED 2026-09-27** ([r2 CP-1a packet](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md)); step (b) **AUTHORIZED 2026-09-27**, because CP-1a is RULED ([ledger](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)); its Stage 0 and Stage 1a run on the operator's machine; step (c) READY (drafting; carries the approved SR-1..SR-9/P-1..P-7 set) | RC-3a for CP-1b |
+| H1 | S5 and resource limits | Step (a) **RETURNED and ACCEPTED 2026-09-27** ([r2 CP-1a packet](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md)); step (b) **DISPATCHED 2026-09-27** ([dispatch record](#h1-steps-b-and-c-dispatch-record-frozen-2026-09-27); CP-1a RULED, [ledger](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)); its Stage 0 and Stage 1a run on the operator's machine; step (c) **DISPATCHED 2026-09-27** (draft for acceptance; same record) | RC-3a for CP-1b |
 | H2 | Broker route commissioning | **RETURNED and ACCEPTED 2026-09-27**: [packet](../../notes/2026-09-27-route-commissioning-session-packet.md). Owed before any CP-3: the §3.7 request-body step (primary checkout). The M2 dispatch (X-2) is carded 2026-09-27 ([M2 card](2026-09-27-m2-modify-semantics.md)); its execution needs a local session in the primary checkout | CP-2 now; then CP-3 per row |
 | H3 | ORB lifecycle and fence: disposition, owner text for Ruling 7, H4 card | **RETURNED and ACCEPTED 2026-09-27** ([disposition](../../notes/2026-09-27-orb-fence-ruling6-disposition.md)); operator answers applied (§5 addendum entry; inclusive stale boundary) | H4 |
 | H4 | Fence classification: synthetic repair plus ORB L1 replay correction | **RETURNED and ACCEPTED 2026-09-27**, synthetic scope ([PR #522](https://github.com/Joshua-Asante/first-passage/pull/522) at `9e18d85`; [card](2026-09-27-h4-fence-classification-orb-l1-repair.md), *Coordinator acceptance of the return*; the real producer, route integration and the CC-3 halt are still owed) | Synthetic half of the fence obligation; the replay correction before freeze; CP-5 input |
@@ -139,6 +139,62 @@ Drafting may start now. Owner documents are amended only after the operator acce
 **Grants at dispatch:**
 - (a) and (c) coordinator: `repository.read`, `worktree.write`, `governance.author`, `branch.push`, `pr.open`. Acceptance: `make check` clean.
 - (b) worker: `repository.read`, `tests.run`, `worktree.write`, `branch.push`, `pr.open`, plus `ci.dispatch` only for the CP-1a-approved workflow. Acceptance: the approved harness's validity checks and `tests/ops/qualification/test_part_a.py` passing unchanged.
+
+### H1 steps (b) and (c): dispatch record (frozen 2026-09-27)
+
+**Instruction.** On 2026-09-27 the operator directed, in session:
+- "Continue preparing the approved H1(b) harness and dispatch-only workflow; CP-1a already authorizes that work";
+- "Prepare the H1(c) owner-text and RC-6 draft alongside it, returning that draft for acceptance";
+- "Keep the ruling PR separate from implementation".
+
+Its follow-up direction: freeze each worker's instructions; treat H1(b)'s checks as preliminary; correct the H8(b) file ownership.
+
+**Frozen inputs** (both steps):
+- **Ruling:** the CP-1a ruling at commit `baa09ffd`, the ledger entry "Operator ruling — CP-1a decisions (1)–(6) adopted as recommended, hold kept, 2026-09-27". Each worker reads it as `git show baa09ffd:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md` while [#523](https://github.com/Joshua-Asante/first-passage/pull/523) is pending.
+- **Packet:** r2 at `origin/main` `875ecf29`, including its §16 reconciliation.
+- **Branch base:** `origin/main` `875ecf29`.
+- **This record:** the commit that adds it. Where the inline worker briefs and this record differ, this record governs.
+
+**Step (b): the harness and the dispatch-only workflow** (branch `claude/h1b-part-a-measurement-harness`; one PR).
+- **Allowed files:**
+  - the harness directory `docs/notes/2026-09-27-s5-part-a-measurement/`: `measure_part_a_max.py.txt`, the support files r2 names, and a `README.md`;
+  - one new dispatch-only workflow under `.github/workflows/`, triggered by `workflow_dispatch` only.
+
+  Nothing else. That excludes any profile, ceiling, release literal, anything under `ops/` or `core/`, and every owner or governance document.
+- **Acceptance checks, which are PRELIMINARY: they establish basic tooling behavior only.**
+  - `check` exit 0;
+  - any workflow inventory or lint tests pass;
+  - `py_compile` of the harness;
+  - `--help`;
+  - `--summarize` on synthetic rows;
+  - the diff limited to the allowed files.
+
+  **Measurement readiness is established later, not by these checks**:
+  - Windows **Stage 1a** on the operator's host (r2 §12.2);
+  - the approved Linux accounting **probe and dry run** (r2 §12.3), including the I-1/I-6 failure handling, unit and artifact cleanup, and the **image-first feasibility** that step (b) records first (CP-1a decision (2)(d)).
+
+  The static image-context inspection is an input to that feasibility, not proof of it.
+- **Return boundary:**
+  - one ready-for-review PR against `main`, with the status, the files, an r2 requirement map, the image-first finding and what was not run;
+  - no measurement, engine run, dispatch, re-run or artifact download;
+  - the operator merges.
+
+  The Stage 1a, Stage 0 and Stage 1b execution that follows stays under the CP-1a dispatch approval and its §12.7 caps.
+
+**Step (c): the owner-text and RC-6 draft** (branch `claude/h1c-s5-owner-text-draft`; one PR).
+- **Allowed file:** `docs/notes/2026-09-27-s5-owner-text-and-rc6-draft.md` only.
+- **Acceptance checks:**
+  - the link check reports `bad 0`;
+  - `check` exit 0;
+  - the diff is only that note.
+- **Return boundary:**
+  - a DRAFT returned for the operator's acceptance: the §3.4(d) text, the RC-6 re-anchor carrying the CP-1a SR-1..SR-9/P-1..P-7 set, and the RC-2 owner-text set;
+  - open questions stay listed, not decided;
+  - **no owner document is amended** until the operator accepts the text.
+
+**Exclusions, corrected 2026-09-27.** H8(b)'s deliverable is its classification note, `docs/notes/2026-09-27-h8b-feed-gap-classification.md` ([#524](https://github.com/Joshua-Asante/first-passage/pull/524)). Neither step touches it. The feed-preparation note and the feed-equivalence spec draft are **not assigned to the H8(b) worker**. They stay out of both steps because they are outside scope. Any edits to them are follow-up owner work, assigned separately. Status rows in this handoff set are coordinator-owned; neither worker edits them.
+
+**Unchanged:** S5 stays **HELD** until RC-3a and the remaining build-entry requirements support CP-1b.
 
 ## H2 — Route commissioning session packet (operator-run, automation disarmed)
 
