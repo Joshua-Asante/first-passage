@@ -1,6 +1,6 @@
 # M2 — rejected-modify semantics for L2(c): bounded handoff
 
-**Status:** DISPATCH-READY 2026-09-27. The coordinating session carded this on the operator's instruction "dispatch the M2". **It executes only in a local session in the operator's primary checkout** (§Routing). **Dispatch revision:** the commit that adds this card. The executor verifies that its `HEAD` descends from it. **Executor:** one documentary assessor in its own worktree of the primary checkout. **Coordinator:** accepts or corrects the return.
+**Status:** DISPATCH-READY 2026-09-27. The coordinating session carded this on the operator's instruction "dispatch the M2". **It executes only in a local session in the operator's primary checkout** (§Routing). **Dispatch revision:** the `origin/main` commit that carries this card after the operator merges PR #520, recorded as a frozen SHA in §Dispatch record at dispatch. The executor cuts its branch from that commit and verifies that `HEAD` descends from it. **Executor:** one documentary assessor in its own worktree of the primary checkout. **Coordinator:** accepts or corrects the return.
 
 **What M2 is.** The documentary vendor-semantics step for GC-2b, "Rejected modify keeps the old stop (L2(c))" ([B–D packet](../../notes/2026-09-26-tradeify-bd-decision-packet.md), GC-2b row; its validation method is "Vendor semantics (drill-plan M2 …), then D2"). The [drill-plan draft](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md) §2.2 defines M2 as "Documentary, like M (§2.5)", and states that its return "is a precondition of X-2". The same plan's authorization table puts M2 at "Documentary; vendor contact by the operator only. Not an account action; needs a coordinator dispatch". The [route commissioning packet](../../notes/2026-09-27-route-commissioning-session-packet.md) §4.3 holds X-2 at "READY ON M2's return".
 
@@ -70,7 +70,7 @@ Also record, for X-2's GC-3 line: whether the command report and the order's lif
   5. A draft vendor question for the operator to send, if any question stays `OPEN` or `CONFLICTING`. It is not sent.
   6. Limitations.
 - A short executor-return section appended to this card.
-- A `claude/*` branch cut from `origin/main`, with one PR holding only the note and this card's return section. The operator merges.
+- A `claude/*` branch cut from the frozen dispatch revision on `origin/main`, with one PR holding only the note and this card's return section. The operator merges.
 
 ## Stop conditions (return to the coordinator; do not work around)
 
@@ -102,4 +102,11 @@ If Q1 is not `DOCUMENTED`, the GC-2b consequence (Striker and Aegis: OPERATOR DE
 
 ## Dispatch record
 
-- **2026-09-27:** carded on the operator's instruction "dispatch the M2". Execution needs a local session in the primary checkout (§Routing). The coordinating cloud session cannot run it. **Owed:** the operator starts that session, or widens this cloud environment's network access to the two vendor hosts **and** supplies the retained captures. Until then M2 is **not executing**.
+- **Dispatch-time premise check (the executor's first act, reported before any research):**
+  - `HEAD` descends from the frozen dispatch revision, and the card there matches this text;
+  - both retained capture directories named in §Routing exist, and their `MANIFEST.tsv`, `SHA256SUMS` or `SHA256SUMS.all` verify with `sha256sum -c`, or the equivalent;
+  - the drill plan §2.2 M2 questions are unchanged at the dispatch revision.
+
+  Any failure is a stop.
+- **Sequencing (operator guidance on PR #520, 2026-09-27):** land this card through the operator's merge of #520, then dispatch locally with the frozen SHA. M2 is not a prerequisite for CP-1a. It supports X-2's preparation and does not authorize X-2's execution; X-2's other prerequisites remain.
+- **2026-09-27:** carded on the operator's instruction "dispatch the M2". Execution needs a local session in the primary checkout (§Routing). The coordinating cloud session cannot run it. **Owed:** the operator merges #520, then starts a local session in the primary checkout on the frozen revision. Until then M2 is **not executing**.
