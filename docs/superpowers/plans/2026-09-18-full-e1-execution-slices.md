@@ -830,3 +830,21 @@ The sequencing record is the [deployment-checklist addendum 2026-09-27](2026-09-
 | **Before F1** (expanding authority) | The RC-4 seed-view change landed, with its F1 admission check; OF-1..OF-7 attested by attended reads; K3 built | Open |
 
 **Not changed.** The hold stays **HELD** until an operator ruling recorded here releases it. No rule, measurement, CI-configuration change, Linux dispatch or artifact download is approved. No S5 dispatch, freeze or execution, statistical dispatch, production budget, production, activation or live authority follows from this entry. Production ceilings and caps remain frozen with F1 by their owners.
+
+### Operator ruling — S5 staged gates approved, Part A-only rule scope, hold kept, 2026-09-27
+
+**Source.** In session on 2026-09-27, the operator adopted this ruling by structured answer ("S5 staging, hold kept") to the text relayed the same day. The relayed text governs: "Approve the staged S5 build-entry/C3 structure, but retain the hold. Return the corrected Part A–only measurement rule and executable dispatch for CP-1a." Its detail, verbatim:
+- "Approve: Existing-engine measurement and proposed-value budget arithmetic for build entry. Adapter-specific measurement and the executed `/v7` binding check at C3. Assigning seed-view and host-check owners now, with implementation and attestations due at their specified later gates."
+- "Do not yet approve measurement execution or release S5. H1 must first return its corrected, executable dispatch, including forced expansion through the adapter and complete aggregate-memory evidence."
+- "For the margin rule, my recommendation remains Part A–only TEST_ONLY scope. Keep the proposed multipliers as candidates until that packet is ready; do not silently extend the rule to N2."
+
+**Effect.**
+- The staged structure in the [2026-09-27 direction entry](#operator-direction--s5-build-entry-separated-from-checkpoint-c3-acceptance-2026-09-27) is **approved**: build entry, Checkpoint C3/acceptance, and before F1.
+- The RC-4/RC-5 **assignment** may be made now. The coordinator records it here when [handoff H7](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md) returns.
+- The margin rule's scope is **PART_A only, TEST_ONLY**. The #519 proposal's multipliers remain candidates.
+- `/v7`'s N2 ceiling therefore cannot come from the rule. It needs a separate operator ruling (for example, extending the M13 "/v6 only" ruling), which is returned with the CP-1a packet.
+- H1's corrected dispatch must meet two acceptance conditions:
+  - (1) Stage 1c forces maximum expansion **through the built adapter**, with the real N2 baseline derivation and real artifact writing;
+  - (2) **complete aggregate-memory evidence**. A lower-bound memory fallback leaves memory feasibility unverified and cannot support the rule's application.
+
+**Not granted:** measurement execution, CI-configuration change, Linux dispatch or artifact download; an approved numerical rule; S5 release, freeze, dispatch or execution. The hold stays **HELD**.

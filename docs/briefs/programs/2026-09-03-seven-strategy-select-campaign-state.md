@@ -3982,6 +3982,33 @@ Subject to the Vanguard qualification at Ruling 1 above, Vanguard and Aegis keep
 
 **Not granted:** freeze, replay, E1 dispatch, file production, deployment or GO; no gate B, C or D acceptance. **Board write:** STATE decision index 2026-09-26 row; dated markers in both pre-registrations.
 
+### Ruling 6 — ORB resting-entry lifecycle L1 and the account-fence classification contract (2026-09-27)
+
+**Operator ruling 2026-09-27, in session.** The operator adopted this ruling by structured answer ("ORB L1 + fence contract") to the text relayed the same day; the relayed text governs: "Adopt ORB L1 with the earlier operational cutoff. Adopt the fresh-evidence fence classification and one-bar stale boundary described above; refreshed evidence never resumes a halted account. Authorize the bounded synthetic repair and corresponding specification/replay corrections, retaining real-producer and route acceptance obligations." The evidence is the #519 returns, reviewed at their pinned head [`8c15f18`](https://github.com/Joshua-Asante/first-passage/tree/8c15f1853e64f14f50995e3f1c55a620a0f674b7): the ORB lifecycle evidence (L1/L2/L3) and the four-state fence trace. Ruling 5 fixed the resolution order and kept the two decisions separate; they are recorded here as two separate decisions.
+
+**(a) ORB lifecycle: L1.** In the relayed words:
+- "place the base entry once and let it remain working until it fills or an applicable cancellation ends it. No one-bar expiry and no periodic reissue. The earlier operational cutoff still applies."
+- "Authorize the corresponding specification/replay correction as a bounded change, with verification before freeze. No historical late-fill count is needed before this decision."
+
+Consequences recorded from the lifecycle evidence, not added rules:
+- Replay-spec RC-9 and rail S2's one-bar sentence are amended so that the one-bar cancel does not end ORB's base entry.
+- The qualification replay's one-bar cancel (`replay.py:507-509`, pinned by `test_replay.py:214-223`) is corrected as a bounded change. That is an E1 freeze-inventory change.
+- ORB-1 of the [edition pre-registration](../pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md) states the lifecycle in words.
+- The halt/resume §5 cutoff overlay applies unchanged.
+
+**(b) Fence classification contract.** In the relayed words:
+- "A request positively identified as working or partially filled by fresh, qualifying order-level evidence is known working. Retain its capacity reservation; do not block unrelated admission solely because the order is old."
+- "Stale evidence blocks further admission. Treat evidence as stale at one bar, explicitly pinning that boundary in tests."
+- "A genuinely unknown dispatch blocks immediately. For this slice, retain the conservative terminal-resolution rule; positive-lookup resolution remains separately held."
+- "Terminal evidence resolves only the request it demonstrably covers."
+- "Refreshed evidence never automatically restores permission after an incident halt."
+
+The repair is authorized as a bounded synthetic repair. The real evidence producer, route integration and the ordinary-unknown halt (packet CC-3) remain required before the whole fence obligation is accepted.
+
+**Applied by:** [handoff H3](../handoffs/2026-09-27-staged-acceptance-handoffs.md), which puts the specification text into its owners and drafts the bounded repair card (H4) that includes the replay correction.
+
+**Not granted:** freeze, edition file production (gate D), replay or E1 dispatch, a count run of the private port, gate B–D acceptance, T09 dispatch, deployment or GO. **Board write:** STATE decision index, 2026-09-27 row.
+
 ## §60 — Agent read access to the accepted book's Pine and runtime ports (2026-09-25)
 
 **Operator direction, 2026-09-25, in session (verbatim):** "i also want agents to be able to read the pine locally, from all 4 strategies". Asked two scoping questions, the operator chose **"Pine + ports"** (lift §59's no-read clause for the four Pine files and their pinned runtime ports) and **"Main checkout only"** (one canonical private copy in the primary checkout; no copies in worktrees).
