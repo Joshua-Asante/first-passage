@@ -549,9 +549,13 @@ set -euo pipefail
 PY="$host_root/env/bin/python"; H="$NOTE_DIR/measure_part_a_max.py.txt"
 for arm in $ARM_ORDER; do
   for r in 1 2 3 4 5 0; do            # r=1 cold, timed, included; r=0 instrumented, last, excluded
+    cold_prep=""
     if [ "$r" = 1 ]; then
       find "$GITHUB_WORKSPACE" -name __pycache__ -type d -prune -exec sudo rm -rf {} +
       sync; echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
+      # stop if bytecode survived the purge; otherwise mark the cold precondition as done
+      [ -z "$(find "$GITHUB_WORKSPACE" -name __pycache__ -type d -print -quit)" ] || exit 1
+      cold_prep="HarnessColdPrep=done"
     fi
     unit="fp-s5pa-$STAGE-$arm-$r"
     sudo systemd-run --unit="$unit" --working-directory="$GITHUB_WORKSPACE" \
@@ -559,14 +563,22 @@ for arm in $ARM_ORDER; do
       -E OPENBLAS_NUM_THREADS=1 -E OMP_NUM_THREADS=1 -E MKL_NUM_THREADS=1 -E NUMEXPR_NUM_THREADS=1 \
       "$PY" -I scripts/fp.py --env "$host_root/env" python "$H" \
         --repeat-mode --stage "$STAGE" --arm "$arm" --repeat "$r" --unit "$unit" --out "$OUT/$arm-$r.json"
+    deadline=$(($(date +%s) + REPEAT_POLL_BOUND_S)); timed_out=no          # REPEAT_POLL_BOUND_S=1800
     until [ "$(systemctl show -p SubState --value "$unit")" = exited ] || \
-          [ "$(systemctl show -p ActiveState --value "$unit")" = failed ]; do sleep 1; done
+          [ "$(systemctl show -p ActiveState --value "$unit")" = failed ]; do
+      [ "$(date +%s)" -lt "$deadline" ] || { timed_out=yes; break; }
+      sleep 1
+    done
     systemctl show -p CPUUsageNSec -p MemoryPeak -p MemorySwapPeak -p ExecMainStatus -p ControlGroup \
-      -p ExecMainStartTimestampMonotonic -p ExecMainExitTimestampMonotonic "$unit" > "$OUT/$arm-$r.unit"
+      -p ExecMainStartTimestampMonotonic -p ExecMainExitTimestampMonotonic -p Result "$unit" > "$OUT/$arm-$r.unit"
+    printf 'HarnessPollTimeout=%s\nHarnessPollBoundS=%s\n' "$timed_out" "$REPEAT_POLL_BOUND_S" >> "$OUT/$arm-$r.unit"
+    [ -z "$cold_prep" ] || echo "$cold_prep" >> "$OUT/$arm-$r.unit"
     sudo systemctl stop "$unit"; sudo systemctl reset-failed "$unit" 2>/dev/null || true
   done
 done
 ```
+
+*[Corrected 2026-09-27 (Codex review of 6e313c10): the sketch now carries what §12.9 (1) judges completion on. That is a bounded per-repeat poll, with the explicit `HarnessPollTimeout` and `HarnessPollBoundS` markers and the unit's `Result`, plus repeat 1's cold-preparation marker. Without these, every Linux repeat would read as I-6. The **executable** loop is the H1(b) workflow, `.github/workflows/qualification-s5-part-a-measurement.yml` (#526), which governs where this sketch differs. That workflow also keeps the loop running after a launch or read failure (`HarnessLaunchFailed`, `HarnessShowFailed`) and stops at the job's evidence-preserving deadline (`HarnessNotStarted`).]*
 
 **Dispatch commands (step (b), after CP-1a and after the workflow file is on `main`):**
 ```bash
