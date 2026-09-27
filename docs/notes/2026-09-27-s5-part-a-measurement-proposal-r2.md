@@ -698,6 +698,8 @@ verdict{validity_ok, memory_feasibility = VERIFIED | FAILED | UNVERIFIED, rule_a
 
 ### 14.1 Refreshed decision list (2026-09-27)
 
+> **RULED 2026-09-27.** The operator adopted all six decisions as recommended, by structured answer in session. The [ledger entry](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27) owns the ruling and governs. It also records the one item the D2 recommendation leaves to the operator (item (v)). The hold stays **HELD** until CP-1b.
+
 **Already decided; not asked again:**
 
 | Item | Decided by |

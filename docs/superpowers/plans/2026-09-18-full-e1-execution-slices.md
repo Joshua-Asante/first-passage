@@ -932,3 +932,73 @@ Any failed condition refuses admission. The refusal is recorded and is not a con
 What is already ruled is not reopened. Stage 0 is optional calibration. The 2026-10-09 expiry binds only if the preserved S4 set does not cover Stage 0's inputs, and that coverage is verified locally, owed. M2 is not a CP-1a prerequisite.
 
 **Not changed.** No rule is applied, no measurement approved, no ceiling set. The hold stays **HELD**. Accepting the packet is not approval to execute it.
+
+### Operator ruling — CP-1a decisions (1)–(6) adopted as recommended, hold kept, 2026-09-27
+
+**Source.** In session on 2026-09-27, the operator answered the six CP-1a decisions of [H1 r2 §14.1](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md#141-refreshed-decision-list-2026-09-27) by structured answer, choosing the recommended option each time:
+- (1) "Confirm as recommended";
+- (2) "All stages, image-first";
+- (3) "Extend M13 values";
+- (4) "Three-way split";
+- (5) "K3/RC-4 slice";
+- (6) "§7 seam + SR-9, hard proofs".
+
+The recommendation texts in §14.1 and the option texts relayed in session govern.
+
+**(1) Measurement parameters.**
+- The 2026-09-26 applicability conditions are **confirmed met for the provisional build-entry application**, with the §16 resolutions adopted in the [coordinator entry above](#coordinator-entry--cp-1a-packet-reconciled-with-519s-merged-corrections-2026-09-27). Condition 4 (the worker image) is handled through (2). Condition 5 (the pilot-budget validation) is staged to C3.
+- **The pilot-budget term** (PA-1's `1.5 × P̂`, with PA-2b) is kept in the provisional application. It is validated at C3 from Stage 2, through SR-8's export extended with the PART_A result's `probe_seconds` and `predicted_seconds`. It becomes final only when that check is recorded.
+- **Memory:** PA-3a applies at build entry and PA-3b at C3. PA-3b's composition `m_m × (P₂ + max(0, M̂ − M̂ₚ))` is accepted as a provisional C3 check, with its additive assumption named UNVERIFIED in the application entry.
+- **PA-4's re-run caps** (r2 §12.7) and the §9 re-measurement triggers, including the 0.8 thresholds, are **approved as written**.
+- The numeric defaults stay as conditionally approved on 2026-09-26: PART_A TEST_ONLY only.
+
+**(2) Measurement dispatch and runtime, approved as a bounded dispatch (r2 §12).** The coordinator executes within it, under H1 step (b), without asking again:
+- **(a) Stage 0:** the local read of the preserved S4 artifacts in the operator's primary checkout, optional calibration only, with its public-clone review. The coverage check (r2 §16.4) runs first.
+- **(b) Stage 1a:** Windows harness validation on the Windows host.
+- **(c) Stage 1b:**
+  - the dispatch-only measurement workflow file, a CI-configuration change, landed on `main` by the operator's merge if GitHub requires that;
+  - `ci.dispatch` for that workflow only;
+  - download of that workflow's own artifacts;
+  - all within the §12.7 caps.
+- **(d) Runtime: image-first.** Step (b) first records whether the worker build context can carry the harness and fixtures. If it can, Stage 1b runs in the worker image. If it cannot, it runs on `host_venv`, the finding is recorded, and PA-5 at C3 validates the mismatch.
+- **(e) Stage 1c at C3:** approved, conditional on the (6) set and on the coordinator's recorded read of the `--stage 1c` harness diff. Stage 1c ends the provisional status with the worker-side residual (r2 §16 C4) named and carried by PA-5.
+- **(f) Stage 2:** no new authority. It needs the SR-8 export.
+- **Planning bound** (arithmetic, r2 §12.6): 368 runner-minutes worst case, or 628 with the SR-5 contingency.
+
+**(3) `/v7` N2.** The M13 values, **360 s CPU / 900 s wall**, are extended from `/v6` to the **`/v7` TEST_ONLY diagnostic profile only**. The extension is explicit, so it is not the silent carry-forward the 2026-09-26 ruling excluded. Stage 0 may inform N2 but cannot set it. No N2 production value follows, and the margin rule does not apply to N2.
+
+**(4) D2 timing: the three-way split** (r2 §16 C7):
+- (i) A Σ failure from a valid record is the D2 ACCOUNTING-DESIGN FALSIFIER stop (r2 §10.3).
+- (ii) Missing permission, or a run not executed, never engages the falsifier. It keeps the hold, because CP-1b needs RC-3a.
+- (iii) An invalid measurement is investigated and re-measured only under a fresh approval.
+- (iv) The accounting-design question also returns if a diagnosis traces an invalid run to the workload itself.
+
+This supersedes r2 §10.3's release-point reading and the §12.7 sentence that has the measurement limb engage when no valid record exists at the release point. **Still for the operator, when it arises:** whether a PART_A ceiling set by ruling, without a measurement, answers the measurement limb (recommendation item (v)). No S5 draft §2.3 owner text changes here; that is RC-2, at C3.
+
+**(5) RC-4 slice accepted:** "K3/RC-4 — service salt and client plan view". It is dispatched after S5 acceptance and lands before S8/T06, which moves K3 out of TB-F1. The F1 admission check in the [RC-5/RC-4 coordinator entry](#coordinator-assignment--rc-5-host-checks-recorded-and-rc-4-seed-view-slice-pending-the-operator-2026-09-27) applies as written. **Coordinator confirmation:** with the slice accepted, the **RC-4/RC-5 assignment at build entry is met**. The implementation (the RC-4 change landed, K3 built) and the OF-1..OF-7 attestations remain before F1. The checklist addendum records the S8/T06 sequencing.
+
+**(6) Stage 1c seam approved:**
+- the r2 §7 seam, with S5 build requirements **SR-1..SR-9** (SR-9 as adopted, r2 §16 C2);
+- proof obligations **P-1..P-7**;
+- the SR-7 exception at the packet's four tolerance sites (lines 8, 35, 49 and 61).
+
+**P-3, P-4 and P-5 are hard, non-waivable C3 preconditions.** After the RC-6 fold-in, a missing SR or a failing P at C3 is a C3 nonconformance returned to the S5 executor. #519's Stage 1c-prep is not adopted. H1 step (c) carries the approved set into the RC-6 re-anchor draft, which goes to the operator for acceptance.
+
+**Status after this ruling.**
+- CP-1a is **RULED**.
+- **Next:** H1 step (b) executes the approved measurements. RC-3a evidence (a valid Stage 1b record, the rule applied as a provisional PART_A TEST_ONLY ceiling, the §10 arithmetic) and an updated build-entry table then go to **CP-1b**.
+- RC-1 is met. RC-4/RC-5 are met for build entry.
+- RC-3a, the §3.4(d) text and the RC-6 re-anchor remain open.
+
+**Not granted:**
+- the hold release (CP-1b);
+- S5 build, freeze, dispatch or execution;
+- any measurement beyond (2), and any other workflow, dispatch, re-run or download;
+- a ceiling without a valid record;
+- any value for other phases or for production;
+- closing RC-3b;
+- any S5 packet or owner-text edit before the operator accepts the RC-6 text;
+- statistical dispatch;
+- production, activation or live authority.
+
+The hold stays **HELD**.
