@@ -23,7 +23,9 @@ import logging
 import os
 import re
 import sys
+import tempfile
 import threading
+import urllib.parse
 import uuid
 from dataclasses import asdict, dataclass, field, fields
 from datetime import datetime, timezone
@@ -173,6 +175,50 @@ class LoggingNotifier:
             log.info("%s | %s", message, payload)
 
 
+# Ack filenames are derived from alert ids, which are free text (the rehearsal
+# ids contain ":", invalid in Windows filenames). Only these characters are kept
+# literally; every other character, including uppercase letters, "." and "%", is
+# percent-encoded from its UTF-8 bytes. ``urllib.parse.unquote`` therefore
+# inverts the mapping, and distinct ids never share a filename even on a
+# case-insensitive filesystem. UUID4 event ids use only kept characters, so
+# their ack filenames are unchanged.
+_ACK_NAME_KEEP = frozenset("abcdefghijklmnopqrstuvwxyz0123456789-_")
+# Windows reserves these device names even with an extension ("con.ack.json").
+_WINDOWS_DEVICE_NAMES = frozenset(
+    {"con", "prn", "aux", "nul"}
+    | {f"com{i}" for i in range(10)}
+    | {f"lpt{i}" for i in range(10)}
+)
+ACK_SUFFIX = ".ack.json"
+# Longest filename component ext4 and NTFS accept (bytes; ack names are ASCII).
+_NAME_MAX = 255
+# ``acknowledge`` stages the record in a same-directory temp file named from
+# these, never from the alert id, so the ack name alone must fit ``_NAME_MAX``.
+_ACK_TMP_PREFIX = ".ack-"
+_ACK_TMP_SUFFIX = ".tmp"
+
+
+def ack_filename(alert_id: str) -> str:
+    """Filesystem-safe, collision-free ack filename for ``alert_id``.
+
+    ``urllib.parse.unquote(name[:-len(ACK_SUFFIX)]) == alert_id``; the ack
+    record also retains ``alert_id`` verbatim.
+    """
+    if not alert_id:
+        raise ValueError("alert_id must be non-empty")
+    stem = "".join(
+        ch if ch in _ACK_NAME_KEEP
+        else "".join(f"%{b:02X}" for b in ch.encode("utf-8"))
+        for ch in alert_id
+    )
+    if stem in _WINDOWS_DEVICE_NAMES:
+        stem = f"%{ord(stem[0]):02X}{stem[1:]}"
+    name = stem + ACK_SUFFIX
+    if len(name.encode("utf-8")) > _NAME_MAX:
+        raise ValueError(f"alert_id too long for an ack filename: {alert_id!r}")
+    return name
+
+
 class FileAckNotifier:
     """Deployable attended notifier: write alert JSONL; operator drops ack.
 
@@ -209,19 +255,55 @@ class FileAckNotifier:
         LoggingNotifier().notify(level, message, event_id=alert_id, details=details)
 
     def acknowledge(self, alert_id: str, *, operator: str = "operator") -> Path:
-        """Write an ack file for ``alert_id`` (operator / test harness)."""
-        ack_path = self.ack_dir / f"{alert_id}.ack.json"
-        record = {
-            "schema_version": SCHEMA_VERSION,
-            "alert_id": alert_id,
-            "acked_utc": utc_now_iso(),
-            "operator": operator,
-        }
-        atomic_write_text(ack_path, json.dumps(record, indent=2) + "\n")
+        """Write an ack file for ``alert_id`` (operator / test harness).
+
+        Re-acknowledging the same id returns the existing file unchanged, so
+        the first acknowledgment stands, including against a concurrent
+        acknowledgment. An existing file at this id's name that does not
+        record this id is refused, never overwritten.
+        """
+        ack_path = self.ack_dir / ack_filename(alert_id)
+        if not ack_path.is_file():
+            record = {
+                "schema_version": SCHEMA_VERSION,
+                "alert_id": alert_id,
+                "acked_utc": utc_now_iso(),
+                "operator": operator,
+            }
+            fd, tmp_name = tempfile.mkstemp(
+                dir=self.ack_dir, prefix=_ACK_TMP_PREFIX, suffix=_ACK_TMP_SUFFIX)
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as f:
+                    f.write(json.dumps(record, indent=2) + "\n")
+                    f.flush()
+                    os.fsync(f.fileno())
+                # A hard link never replaces an existing name (unlike
+                # os.replace) and publishes the complete, fsynced record: of
+                # concurrent first acknowledgments exactly one creates the ack
+                # file, and the rest fall through to the check below.
+                os.link(tmp_name, ack_path)
+                return ack_path
+            except FileExistsError:
+                pass
+            finally:
+                try:
+                    os.unlink(tmp_name)
+                except OSError:
+                    pass
+        try:
+            existing = json.loads(ack_path.read_text(encoding="utf-8"))
+        except ValueError as exc:
+            raise ValueError(
+                f"ack file {ack_path.name} is not a readable ack record; "
+                f"refusing to overwrite it for alert_id {alert_id!r}") from exc
+        if not isinstance(existing, dict) or existing.get("alert_id") != alert_id:
+            raise ValueError(
+                f"ack file {ack_path.name} records a different alert_id; "
+                f"refusing to reuse it for {alert_id!r}")
         return ack_path
 
     def is_acknowledged(self, alert_id: str) -> bool:
-        return (self.ack_dir / f"{alert_id}.ack.json").is_file()
+        return (self.ack_dir / ack_filename(alert_id)).is_file()
 
 
 @dataclass
