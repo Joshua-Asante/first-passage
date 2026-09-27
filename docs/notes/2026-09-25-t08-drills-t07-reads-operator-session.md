@@ -1,6 +1,6 @@
 # T08 drills and T07 account reads: one attended operator session (plan, 2026-09-25)
 
-**Status:** PLAN. Authorized in principle by the operator on 2026-09-25 (verbatim below). **Joshua performs every platform action; no agent places, amends or cancels an order or reads the account** (AGENTS.md live-execution posture; CAP-20260916 "Bounded collection and rehearsal procedure": "Joshua performs separately approved platform actions"; T07 §5–§6). Before the session, the operator confirms the **scope block** in §2 with one written "approve drill scope"; the CAP requires exact symbol, quantity and limits to be approved per test, and this block is that approval.
+**Status:** PLAN. Authorized in principle by the operator on 2026-09-25 (verbatim below). *Pointer 2026-09-26: see the §0 addendum; D1–D4 are not treated as cleared for execution and each returns as an individual decision.* **Joshua performs every platform action; no agent places, amends or cancels an order or reads the account** (AGENTS.md live-execution posture; CAP-20260916 "Bounded collection and rehearsal procedure": "Joshua performs separately approved platform actions"; T07 §5–§6). Before the session, the operator confirms the **scope block** in §2 with one written "approve drill scope"; the CAP requires exact symbol, quantity and limits to be approved per test, and this block is that approval.
 **Owners:** [T08](../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md) (drills, CAP R2–R5/N1), [T07](../briefs/handoffs/2026-09-21-tradeify-t07-manual-settlement-procedure.md) (reads, CAP S2), [incident ADR Addendum 2026-09-24](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#addendum-2026-09-24--bounded-exposure-reservation-for-unknown-requests-proposed) §A1 (admission precondition).
 
 ## §0 — Operator authorizations (2026-09-25, in session, verbatim)
@@ -11,6 +11,13 @@
 | T07 reads | "I authorize the account-side reads" | R1–R3 below, performed by Joshua; original bytes retained privately and hashed. No agent account access. |
 
 Neither grants broker access to an agent, arming, a route change, deployment, D-broker (still void under T08 R3 = NONE) or spend beyond the session's own commissions (§2).
+
+**§0 addendum (dated rows; the 2026-09-25 rows above are unchanged):**
+
+| Date | Ruling | Scope |
+|---|---|---|
+| 2026-09-26 | REST reads R-1 and R-2 only, authorized after existing entitlement is confirmed. Operator ruling and coordination, 2026-09-26, relayed in session, with the operator's structured-question answer the same day (R-CLOSE) | Scope and steps in the [drill-plan draft](2026-09-26-tradeify-route-drill-plan-draft.md#operator-ruling-2026-09-26-recorded): operator-performed R-1 and R-2 only, within the draft's exact read-only scope, after confirming existing CrossTrade REST entitlement (the drill plan proposes how the confirmation is recorded; that procedure is not part of the ruling). R-1 and R-2 are the drill-plan draft's REST reads, not this plan's T07 reads R1–R3. No purchase, new access, route change or order mutation is authorized |
+| 2026-09-26 | D1–D4 not treated as cleared for execution; each returns as an individual decision. Same source (R-CLOSE) | The ruling directs that normal-case drill decisions be prepared individually after their documentary prerequisites are met, with the exact environment, actions, exposure limits and abort/recovery procedure returned before execution approval is requested, and with no automatic fallback to the live evaluation environment; the deliberate protective-fill race drill is deferred. The 2026-09-25 in-principle authorization of D1–D4 above was not formally revoked, but it is superseded in practice by that requirement: D1–D4 are not treated as cleared for execution, and each returns as an individual decision naming its environment (the §2 scope block's incumbent-eval environment is not a default). No order-producing drill is authorized. The T07 reads R1–R3 read the D1 transaction, so they cannot run before D1 is individually decided; the ruling does not address them otherwise. The 2026-09-25 rows above are unchanged |
 
 ## §1 — Why one session covers both
 
