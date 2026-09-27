@@ -546,6 +546,8 @@ cp "$S/SHA256SUMS" "$S/lines.txt" "$S/memory_peak.txt" "$D/"
 **Measurement loop (step 7, `measure` mode):**
 ```bash
 set -euo pipefail
+: "${REPEAT_POLL_BOUND_S:=1800}"   # the per-repeat poll bound; the workflow sets it once in the job env
+: "${STAGE:?}" "${NOTE_DIR:?}" "${OUT:?}" "${ARM_ORDER:?}" "${host_root:?}" "${GITHUB_WORKSPACE:?}"   # set by earlier steps
 PY="$host_root/env/bin/python"; H="$NOTE_DIR/measure_part_a_max.py.txt"
 for arm in $ARM_ORDER; do
   for r in 1 2 3 4 5 0; do            # r=1 cold, timed, included; r=0 instrumented, last, excluded
@@ -563,7 +565,7 @@ for arm in $ARM_ORDER; do
       -E OPENBLAS_NUM_THREADS=1 -E OMP_NUM_THREADS=1 -E MKL_NUM_THREADS=1 -E NUMEXPR_NUM_THREADS=1 \
       "$PY" -I scripts/fp.py --env "$host_root/env" python "$H" \
         --repeat-mode --stage "$STAGE" --arm "$arm" --repeat "$r" --unit "$unit" --out "$OUT/$arm-$r.json"
-    deadline=$(($(date +%s) + REPEAT_POLL_BOUND_S)); timed_out=no          # REPEAT_POLL_BOUND_S=1800
+    deadline=$(($(date +%s) + REPEAT_POLL_BOUND_S)); timed_out=no
     until [ "$(systemctl show -p SubState --value "$unit")" = exited ] || \
           [ "$(systemctl show -p ActiveState --value "$unit")" = failed ]; do
       [ "$(date +%s)" -lt "$deadline" ] || { timed_out=yes; break; }
@@ -578,7 +580,7 @@ for arm in $ARM_ORDER; do
 done
 ```
 
-*[Corrected 2026-09-27 (Codex review of 6e313c10): the sketch now carries what §12.9 (1) judges completion on. That is a bounded per-repeat poll, with the explicit `HarnessPollTimeout` and `HarnessPollBoundS` markers and the unit's `Result`, plus repeat 1's cold-preparation marker. Without these, every Linux repeat would read as I-6. The **executable** loop is the H1(b) workflow, `.github/workflows/qualification-s5-part-a-measurement.yml` (#526), which governs where this sketch differs. That workflow also keeps the loop running after a launch or read failure (`HarnessLaunchFailed`, `HarnessShowFailed`) and stops at the job's evidence-preserving deadline (`HarnessNotStarted`).]*
+*[Corrected 2026-09-27 (Codex reviews of 6e313c10 and d73170e2): the sketch now defines the poll bound (default 1800 s) and names the variables earlier steps set, so it runs under `set -u`. It also carries what §12.9 (1) judges completion on. That is a bounded per-repeat poll, with the explicit `HarnessPollTimeout` and `HarnessPollBoundS` markers and the unit's `Result`, plus repeat 1's cold-preparation marker. Without these, every Linux repeat would read as I-6. The **executable** loop is the H1(b) workflow, `.github/workflows/qualification-s5-part-a-measurement.yml` (#526), which governs where this sketch differs. That workflow also keeps the loop running after a launch or read failure (`HarnessLaunchFailed`, `HarnessShowFailed`) and stops at the job's evidence-preserving deadline (`HarnessNotStarted`).]*
 
 **Dispatch commands (step (b), after CP-1a and after the workflow file is on `main`):**
 ```bash
