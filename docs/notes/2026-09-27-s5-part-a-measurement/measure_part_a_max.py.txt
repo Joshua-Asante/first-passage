@@ -1,0 +1,1777 @@
+"""S5 Part A forced maximum-expansion measurement harness (TEST_ONLY, synthetic).
+
+Specified by docs/notes/2026-09-27-s5-part-a-measurement-proposal-r2.md ("r2")
+§6.3, §6.1-§6.2, §8.2, §12.7 and §12.8, as reconciled by r2 §16, under the
+CP-1a ruling of 2026-09-27 (commit baa09ffd, decision (2)). Kept as .py.txt so
+the import-boundary gate never treats it as a module; `python <path>` runs it.
+
+Output class TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING. It uses
+only the synthetic composition fixture (tests/ops/qualification/
+composition_fixture.py) with TEST_ONLY keys generated per repeat. It never
+drives the E1 route, the retired executor class or any service; it calls the
+existing Part A engine function directly, as r2 §6.3 step 5 prescribes.
+
+Modes (exactly one):
+  --repeat-mode   one repeat in the current process (inside a systemd unit on
+                  Linux; a job-object child of --launcher on Windows);
+  --launcher      Windows only: fresh sys.executable repeats in job objects;
+  --summarize     summary, validity and stop class; writes record.json and
+                  exits 0 (valid), 3 (validity failure, re-runnable) or
+                  4 (invalid, no re-run).
+Workflow helpers (stdlib only, no repository import):
+  --probe-verdict DIR   judge the per-job accounting probe (r2 §8.4, §12.3
+                        step 6); writes DIR/probe.json; exits 0 or 3;
+  --check-stage STAGE   exit 0 if this harness implements the stage for a
+                        Linux dispatch, else 2 (Stage 1c is added at C3).
+
+The module level imports the standard library only. Repository modules are
+imported inside --repeat-mode (engine first, then the fixture) and, for the
+code-identity block only, inside --summarize.
+"""
+import argparse
+import dataclasses
+import hashlib
+import json
+import os
+import platform
+import re
+import shutil
+import statistics
+import subprocess
+import sys
+import tempfile
+import time
+from pathlib import Path
+
+try:
+    import resource
+except ImportError:  # Windows: CPython has no resource module
+    resource = None
+
+HARNESS = Path(__file__).resolve()
+ROOT = HARNESS.parents[3]
+SCHEMA = 's5-part-a-max-expansion-measurement/v2'
+ROW_SCHEMA = SCHEMA + '#repeat-row'
+BUNDLE_SCHEMA = SCHEMA + '#windows-launcher-bundle'
+PROBE_SCHEMA = SCHEMA + '#accounting-probe'
+ARTIFACT_CLASS = 'TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING'
+ARMS = ('forced', 'prescribed')
+FORCED_WITHIN_PP = 1.0          # r2 §6.3 step 4: the maximum SyntheticPartARequest admits (part_a.py:46-49)
+BUDGET_SECONDS = 3600.0         # r2 §6.3 step 4: the engine predicate never aborts the measurement
+CONFIRMATION_DEPTH = 60         # r2 §6.3 step 2
+DECISION_ALPHA = '0.05'         # r2 §6.3 step 2
+EXPECTED_PANELS = {'forced': 4, 'prescribed': 2}      # r2 §6.3 step 7
+EXPECTED_EXPANDED = {'forced': True, 'prescribed': False}
+# r2 §4 table: replays at maximum expansion 14 and with no expansion 8, verify_for 15 and 9;
+# proofs are the pilot proof plus one per panel (5 and 3). Literals, never derived from the request.
+EXPECTED_COUNTS = {'forced': {'replays': 14, 'proofs': 5, 'verify_for': 15},
+                   'prescribed': {'replays': 8, 'proofs': 3, 'verify_for': 9}}
+# r2 §4 table (TEST_ONLY S5 workload): 2 -> 4 panels, 2 paths per panel, horizon / inner
+# block / outer months 5 / 5 / 6; r2 §6.2 prescribed keeps the frozen 0.01; r2 §6.3 step 4.
+EXPECTED_WORKLOAD = {'initial_panels': 2, 'expanded_panels': 4, 'paths_per_panel': 2, 'horizon_sessions': 5,
+                     'inner_block_sessions': 5, 'outer_months': 6, 'budget_seconds': 3600.0,
+                     'full_pass_rate_input': 1.0, 'idle': False,
+                     'fixture': 'tests/ops/qualification/composition_fixture.py'}
+EXPECTED_WITHIN_PP = {'forced': 1.0, 'prescribed': 0.01}
+# r2 names no literal for sessions, bars per session or legs: they are fixed by the fixture's
+# own source, so the fixture is pinned by SHA-256 (identical at r2's base 875ecf29 and at this
+# harness revision). A changed fixture is a workload change, a re-measurement trigger (r2 §9).
+PINNED_FIXTURE_SHA256 = {
+    'tests/ops/qualification/composition_fixture.py':
+        '727166d55b7a3f26e437ae577017eb36067d0dbe77f7ac8fb5157d7c55a9cf23',
+    'tests/ops/qualification/runtime_fixture.py':
+        'cca04e61d2f259026f76b026c023c74e06cd25dc9360f4826524a7518186e5db',
+}
+FORCING_LABEL = 'TEST_ONLY_MEASUREMENT_FORCED_EXPANSION'  # r2 §7.3 label; seam=harness_request at 1b
+RECIPE = "build_verified_composition(tmp, confirmation_depth=60, decision_alpha='0.05', idle=False)"
+DISPATCH_STAGES = ('1b',)       # Linux dispatch stages implemented here; 1c is added at C3 (r2 §12.4)
+EXIT_VALID, EXIT_RERUN, EXIT_INVALID = 0, 3, 4
+EXIT_REPEAT_ERROR, EXIT_ASSERTION = 1, 5
+DEFAULT_TIMED_REPEATS = 5       # r2 §6.2 and §12.2: the fixed timed-repeat count per arm (H-SHAPE otherwise)
+REPEAT_TIMEOUT_S = 1800.0       # the 30 min per-repeat poll bound (README; the workflow's and --launcher's)
+MAX_RUN_ATTEMPT = 2             # r2 §12.7: one `gh run rerun --failed`, so attempts 1 and 2 only
+THREAD_ENV = ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS', 'NUMEXPR_NUM_THREADS')
+SYS_PATHS = ('core', 'lab', 'ops', 'ops/c1_rail', 'ops/c1_signal_daemon', '.', 'tests/ops/qualification', 'tests/ops')
+
+# Rule parameters, used only for the stop-class screens of r2 §10.3 and §9 PA-3
+# (ruled at CP-1a, baa09ffd decision (1); r2 §9 and §10.2). The §13 application
+# (X, Y, the ledger entry) is the coordinator's and is not performed here.
+M_C, P_TERM, O_S, CPU_FLOOR_S = 2.0, 1.5, 20.0, 120.0
+M_W, L_S, WALL_FLOOR_S = 3.0, 30.0, 300.0
+M_M, PA3_REFERENCE_BYTES = 1.5, 256_000_000    # valid only with the P4 tuple extended to /v7 (r2 §8.1)
+SPREAD_LIMIT = 1.30
+SIGMA_CPU_LIMIT_S, SIGMA_WALL_LIMIT_S = 8440.0, 6100.0   # r2 §10.2 Σ-only row, N2 360 s / 900 s (ruling (3))
+PROBE_MIN_PEAK_BYTES = 67_108_864              # r2 §8.4
+
+
+# --------------------------------------------------------------------- common
+
+def _now():
+    return time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+
+
+def _sha256_file(path):
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _cpu_clock():
+    """Linux: getrusage user+sys, RUSAGE_SELF + RUSAGE_CHILDREN (r2 §6.1).
+    Windows: time.process_time() (GetProcessTimes user+kernel)."""
+    if resource is None:
+        return time.process_time()
+    own = resource.getrusage(resource.RUSAGE_SELF)
+    kids = resource.getrusage(resource.RUSAGE_CHILDREN)
+    return own.ru_utime + own.ru_stime + kids.ru_utime + kids.ru_stime
+
+
+def _clocks():
+    return _cpu_clock(), time.perf_counter()
+
+
+def _write_json(path, value, *, exclusive):
+    data = json.dumps(value, indent=2, sort_keys=True) + '\n'
+    with open(path, 'x' if exclusive else 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write(data)
+
+
+def _read_json(path):
+    return json.loads(Path(path).read_text(encoding='utf-8'))
+
+
+def _read_json_dict(path):
+    """(value, None) for a readable JSON object, else (None, 'why'). Never raises."""
+    try:
+        value = _read_json(path)
+    except (OSError, ValueError) as exc:
+        return None, '%s: %s' % (type(exc).__name__, exc)
+    if not isinstance(value, dict):
+        return None, 'not a JSON object'
+    return value, None
+
+
+def _read_text_or_none(path):
+    try:
+        return Path(path).read_text(encoding='utf-8', errors='replace')
+    except OSError:
+        return None
+
+
+def _sha256_or_error(path):
+    try:
+        return _sha256_file(path)
+    except OSError as exc:
+        return 'unreadable: %s' % type(exc).__name__
+
+
+def _canonical(value):
+    return json.dumps(value, sort_keys=True, separators=(',', ':')).encode()
+
+
+def _int_or_none(text):
+    if text is None:
+        return None
+    text = str(text).strip()
+    return int(text) if re.fullmatch(r'\d+', text) else None
+
+
+def _parse_unit(path):
+    """`systemctl show -p ...` output: Key=Value lines. Absent file -> None."""
+    path = Path(path)
+    text = _read_text_or_none(path) if path.is_file() else None
+    if text is None:
+        return None
+    values = {}
+    for line in text.splitlines():
+        key, sep, value = line.partition('=')
+        if sep:
+            values[key.strip()] = value.strip()
+    return values
+
+
+def _unit_number(values, key):
+    # systemd prints "[not set]" or UINT64_MAX when accounting is absent.
+    number = _int_or_none((values or {}).get(key))
+    return None if number is None or number >= 2 ** 64 - 1 else number
+
+
+def _kernel_pairs(text):
+    pairs = {}
+    for line in (text or '').splitlines():
+        parts = line.split()
+        if len(parts) == 2 and re.fullmatch(r'\d+', parts[1]):
+            pairs[parts[0]] = int(parts[1])
+    return pairs
+
+
+def _swap_total_kb():
+    try:
+        for line in Path('/proc/meminfo').read_text().splitlines():
+            if line.startswith('SwapTotal:'):
+                return int(line.split()[1])
+    except (OSError, ValueError, IndexError):
+        pass
+    return None
+
+
+def _stats(values):
+    """max, median, min and spread (r2 §6.2), plus how many values were absent."""
+    present = [v for v in values if v is not None]
+    if not present:
+        return None
+    return {'n': len(present), 'missing': len(values) - len(present), 'max': max(present),
+            'median': statistics.median(present), 'min': min(present), 'spread': _spread(values)}
+
+
+def _spread(values):
+    """max / min, or None when it cannot be shown: fewer than two values, a
+    non-positive value, or any absent value (never a spread over a subset)."""
+    values = list(values)
+    if len(values) < 2 or any(v is None for v in values) or min(values) <= 0:
+        return None
+    return max(values) / min(values)
+
+
+# ------------------------------------------------------ in-unit memory (§8.2)
+
+def _read_own_cgroup(unit):
+    """r2 §8.2 (A): the harness's own cgroup v2 files, read as its last act.
+    Complete only if the cgroup path ends in the repeat's own unit name."""
+    result = {'cgroup_path': None, 'cgroup_path_matches_unit': False, 'in_unit_peak_bytes': None,
+              'swap_max': None, 'swap_peak_bytes': None, 'oom_events': None, 'memory_events': None,
+              'cgroup_cpu_usage_usec': None, 'read_error': None}
+    try:
+        lines = Path('/proc/self/cgroup').read_text().splitlines()
+    except OSError as exc:
+        result['read_error'] = 'no /proc/self/cgroup: ' + type(exc).__name__
+        return result
+    path = next((line[3:].strip() for line in lines if line.startswith('0::')), None)
+    if path is None:
+        result['read_error'] = 'no cgroup v2 entry'
+        return result
+    result['cgroup_path'] = path
+    result['cgroup_path_matches_unit'] = bool(unit) and path.rstrip('/').endswith('/' + unit + '.service')
+    base = Path('/sys/fs/cgroup') / path.lstrip('/')
+
+    def read(name):
+        try:
+            return (base / name).read_text().strip()
+        except OSError:
+            return None
+    result['in_unit_peak_bytes'] = _int_or_none(read('memory.peak'))
+    result['swap_max'] = read('memory.swap.max')
+    result['swap_peak_bytes'] = _int_or_none(read('memory.swap.peak'))
+    events = _kernel_pairs(read('memory.events'))
+    if events:
+        result['memory_events'] = events
+        # Same reduction as the service (campaign_supervisor.py:96).
+        result['oom_events'] = max(events.get('oom', 0), events.get('oom_kill', 0), events.get('oom_group_kill', 0))
+    result['cgroup_cpu_usage_usec'] = _kernel_pairs(read('cpu.stat')).get('usage_usec')
+    return result
+
+
+# ---------------------------------------------------------------- repeat mode
+
+def _setup_paths():
+    for part in SYS_PATHS:
+        path = str(ROOT / part)
+        if path not in sys.path:
+            sys.path.insert(0, path)
+
+
+def _panels_bytes(panels):
+    # Stand-in canonical serialization (r1 §3.3 step 5: sorted-key compact JSON of asdict).
+    return _canonical([dataclasses.asdict(panel) for panel in panels])
+
+
+def _workload(contract, source, request, arm):
+    sessions = source.sessions
+    legs = sorted({leg for session in sessions for bar in session.bars for leg, _ in bar.bars})
+    per_leg = [sum(1 for bar in session.bars for leg2, _ in bar.bars if leg2 == leg)
+               for session in sessions for leg in legs]
+    bars = (per_leg[0] if per_leg and min(per_leg) == max(per_leg)
+            else {'min': min(per_leg), 'max': max(per_leg)} if per_leg else None)
+    panels = request.max_panels if arm == 'forced' else request.initial_panels
+    replays = 2 + panels * (1 + request.depth)   # r2 §4: pilot proof+path, then 1 proof + depth paths per panel
+    return {
+        'fixture': 'tests/ops/qualification/composition_fixture.py', 'idle': False, 'recipe': RECIPE,
+        'sessions': len(sessions), 'bars_per_session_per_leg': bars, 'legs': legs,
+        'outer_months': request.outer_months, 'inner_block_sessions': request.inner_block_sessions,
+        'horizon_sessions': request.horizon_sessions, 'initial_panels': request.initial_panels,
+        'expanded_panels': request.max_panels, 'paths_per_panel': request.depth,
+        'root_rng_namespace': request.root_rng_namespace, 'arm': arm, 'within_pp': request.within_pp,
+        'frozen_expansion_tolerance': float(contract.replay.part_a.expansion_tolerance),
+        'floor': request.floor, 'percentile': request.percentile, 'percentile_method': request.percentile_method,
+        'budget_seconds': request.budget_seconds, 'full_pass_rate_input': 1.0, 'n2_capture_sha256': None,
+        # Recorded as the request implies them; the H-COUNTS check compares against
+        # EXPECTED_COUNTS (the r2 §4 literals), never against these.
+        'expected': {'panels': EXPECTED_PANELS[arm], 'expanded': EXPECTED_EXPANDED[arm],
+                     'replays': replays, 'proofs': 1 + panels, 'verify_for': replays + 1},
+    }
+
+
+def _count_wrappers(cls, counts):
+    originals = {name: cls.__dict__[name] for name in ('replay', 'proof', 'verify_for')}
+
+    def wrap(name, raw):
+        def counted(*args, **kwargs):
+            counts[name] += 1
+            return raw(*args, **kwargs)
+        counted.__wrapped__ = raw
+        return counted
+    for name, raw in originals.items():
+        setattr(cls, name, wrap(name, raw))
+
+    def restore():
+        for name, raw in originals.items():
+            setattr(cls, name, raw)
+    return restore
+
+
+def repeat_mode(args):
+    if args.stage not in ('1a', '1b'):
+        print('refused: --repeat-mode implements stages 1a and 1b; the --stage 1c path is added at C3 '
+              '(r2 §12.4) and is BLOCKED (I-8) until then', file=sys.stderr)
+        return 2
+    if args.stage == '1a' and os.name != 'nt':
+        print('refused: Stage 1a is the Windows harness validation (r2 §12.2)', file=sys.stderr)
+        return 2
+    if args.stage == '1b' and sys.platform != 'linux':
+        print('refused: Stage 1b is the Linux reference measurement (r2 §12.3)', file=sys.stderr)
+        return 2
+    out = Path(args.out)
+    if out.exists():
+        print('refused: will not overwrite ' + str(out), file=sys.stderr)
+        return 2
+    dry_run = bool(args.dry_run)
+    row = {
+        'row_schema': ROW_SCHEMA, 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
+        'stage': args.stage, 'arm': args.arm, 'repeat': args.repeat, 'unit': args.unit,
+        'cold': args.repeat == 1 and not dry_run, 'instrumented': args.repeat == 0 or dry_run, 'dry_run': dry_run,
+        'platform_accounting': 'windows_process_time_job_object' if os.name == 'nt' else 'linux_getrusage_cgroup_v2',
+        'cpu': dict.fromkeys(('start', 'admission', 'setup_excluded', 'verify', 'part_a', 'serialize', 'adapter',
+                              'workload', 'process_total')),
+        'wall': {'outer': None, 'setup_excluded': None, 'workload': None,
+                 'boundaries': dict.fromkeys(('admission', 'verify', 'part_a', 'serialize'))},
+        'panels': None, 'expanded': None, 'initial_p5': None, 'final_p5': None, 'passed': None,
+        'failure_reason': None, 'probe_seconds': None, 'predicted_seconds': None, 'elapsed_seconds': None,
+        'counts': None, 'initial_prefix_sha256': None, 'final_sha256': None, 'fsync_count': None,
+        'assertions': None, 'workload': None, 'memory': None, 'error': None,
+    }
+    status = EXIT_REPEAT_ERROR
+    tmp = None
+    restore_counts = None
+    try:
+        _setup_paths()
+        # Worker start: interpreter plus the engine imports, before any fixture import (r2 §6.1 `start`).
+        from c1_rail.qualification import part_a, production, production_source
+        from c1_rail.qualification.execution import compute
+        entry_cpu, entry_wall = _clocks()
+        row['cpu']['start'] = entry_cpu
+
+        # Setup (excluded) with the one admission call timed by a single wrapper,
+        # removed as soon as setup returns (r2 §6.1; measure_composition.py.txt:58-72).
+        source_cls = production_source.ProductionSource
+        original = source_cls.__dict__['_build_composition']
+        raw_build = original.__func__
+        admission = {'calls': 0, 'cpu': 0.0, 'wall': 0.0}
+
+        def timed_build(cls, *a, **k):
+            c0, w0 = _clocks()
+            try:
+                return raw_build(cls, *a, **k)
+            finally:
+                c1, w1 = _clocks()
+                admission['calls'] += 1
+                admission['cpu'] += c1 - c0
+                admission['wall'] += w1 - w0
+        tmp = tempfile.mkdtemp(prefix='s5-part-a-')
+        setattr(source_cls, '_build_composition', classmethod(timed_build))
+        try:
+            from composition_fixture import build_verified_composition
+            setup = build_verified_composition(Path(tmp) / 'TEST_ONLY-inputs',
+                                               confirmation_depth=CONFIRMATION_DEPTH, decision_alpha=DECISION_ALPHA)
+        finally:
+            setattr(source_cls, '_build_composition', original)
+        setup_cpu, setup_wall = _clocks()
+        if admission['calls'] != 1:
+            raise RuntimeError('expected exactly one source admission call, saw %d' % admission['calls'])
+        row['cpu']['admission'] = admission['cpu']
+        row['wall']['boundaries']['admission'] = admission['wall']
+        row['cpu']['setup_excluded'] = (setup_cpu - entry_cpu) - admission['cpu']
+        row['wall']['setup_excluded'] = (setup_wall - entry_wall) - admission['wall']
+        contract, source = setup.contract, setup.source
+
+        counts = {'replay': 0, 'proof': 0, 'verify_for': 0}
+        if row['instrumented']:
+            restore_counts = _count_wrappers(source_cls, counts)
+
+        # Step 3: the compute-start verify_for (the shape of compute.py:28).
+        c0, w0 = _clocks()
+        source.verify_for(contract)
+        c1, w1 = _clocks()
+        row['cpu']['verify'], row['wall']['boundaries']['verify'] = c1 - c0, w1 - w0
+
+        # Step 4: the request exactly as production._part_a_request builds it, except
+        # within_pp (the arm's tolerance) and budget_seconds (r2 §6.3 step 4).
+        request = production._part_a_request(contract, source.path_start_date, BUDGET_SECONDS)
+        if args.arm == 'forced':
+            request = dataclasses.replace(request, within_pp=FORCED_WITHIN_PP)
+        kwargs = dict(adjacent=source.adjacent, covered_until=source.covered_until,
+                      tail_covered=source.tail_covered, proof_provider=source.proof,
+                      replay_provider=source.replay, initial_state=compute.initial_state(contract),
+                      full_pass_rate=1.0, synthetic=True)
+        sessions = source.sessions
+
+        # Step 5: immediately around the engine call.
+        c0, w0 = _clocks()
+        result = part_a._run_part_a(request, sessions, **kwargs)
+        c1, w1 = _clocks()
+        row['cpu']['part_a'], row['wall']['boundaries']['part_a'] = c1 - c0, w1 - w0
+
+        # Step 6: stand-in serialization of the initial prefix and the final panels.
+        c0, w0 = _clocks()
+        prefix_bytes = _panels_bytes(result.panels[:request.initial_panels])
+        final_bytes = _panels_bytes(result.panels)
+        c1, w1 = _clocks()
+        row['cpu']['serialize'], row['wall']['boundaries']['serialize'] = c1 - c0, w1 - w0
+        cpu = row['cpu']
+        cpu['workload'] = cpu['start'] + cpu['admission'] + cpu['verify'] + cpu['part_a'] + cpu['serialize']
+        # ---- workload boundary closed ----
+        if restore_counts is not None:
+            restore_counts()
+            restore_counts = None
+            row['counts'] = dict(counts)
+
+        row.update(panels=len(result.panels), expanded=bool(result.expanded), initial_p5=result.initial_p5,
+                   final_p5=result.final_p5, passed=bool(result.passed), failure_reason=result.failure_reason,
+                   probe_seconds=result.probe_seconds, predicted_seconds=result.predicted_seconds,
+                   elapsed_seconds=result.elapsed_seconds,
+                   initial_prefix_sha256=hashlib.sha256(prefix_bytes).hexdigest(),
+                   final_sha256=hashlib.sha256(final_bytes).hexdigest())
+        # Step 7: panel-count and expansion assertions (I-5 when they fail).
+        row['assertions'] = {
+            'expected_panels': EXPECTED_PANELS[args.arm], 'expected_expanded': EXPECTED_EXPANDED[args.arm],
+            'ok': row['panels'] == EXPECTED_PANELS[args.arm] and row['expanded'] is EXPECTED_EXPANDED[args.arm]}
+        row['workload'] = _workload(contract, source, request, args.arm)
+        status = EXIT_VALID if row['assertions']['ok'] else EXIT_ASSERTION
+    except BaseException as exc:  # a failed repeat is retained, never dropped (r2 §12)
+        row['error'] = '%s: %s' % (type(exc).__name__, exc)
+        status = EXIT_REPEAT_ERROR
+        if isinstance(exc, KeyboardInterrupt):
+            status = 130
+    finally:
+        if restore_counts is not None:
+            restore_counts()
+        row['environment'] = {
+            'python': platform.python_version(), 'implementation': platform.python_implementation(),
+            'executable': sys.executable, 'pid': os.getpid(), 'root': str(ROOT),
+            'thread_env': {name: os.environ.get(name) for name in THREAD_ENV},
+            'loaded_fixture_files': sorted(
+                Path(module.__file__).resolve().relative_to(ROOT).as_posix()
+                for module in list(sys.modules.values())
+                if getattr(module, '__file__', None)
+                and Path(module.__file__).resolve().is_relative_to(ROOT / 'tests')),
+        }
+        # Step 8: the in-unit memory read is the last act after the boundary (r2 §8.2).
+        memory = {'lower_bound_bytes': None, 'lower_bound_method': None, 'swap_total_kb': _swap_total_kb()}
+        try:
+            from c1_rail.qualification import production as _production
+            memory['lower_bound_bytes'] = _production._peak_memory_bytes()
+            memory['lower_bound_method'] = ('lower_bound_windows_working_set' if os.name == 'nt'
+                                            else 'lower_bound_ru_maxrss')
+        except BaseException as exc:
+            memory['lower_bound_error'] = '%s: %s' % (type(exc).__name__, exc)
+        if sys.platform == 'linux':
+            memory.update(_read_own_cgroup(args.unit))
+        row['memory'] = memory
+        row['cpu']['process_total'] = _cpu_clock()
+        row['recorded_utc'] = _now()
+        row['exit_status'] = status
+        # Step 9: one JSON row.
+        _write_json(out, row, exclusive=True)
+        if tmp is not None:
+            shutil.rmtree(tmp, ignore_errors=True)
+    return status
+
+
+# ------------------------------------------------------------ Windows launcher
+
+def _pycache_dirs():
+    return [path for top in ('ops', 'core', 'lab', 'tests', 'scripts')
+            for path in sorted((ROOT / top).rglob('__pycache__')) if path.is_dir()]
+
+
+def _purge_pycache():
+    """The cold repeat (r2 §6.2): purge the checkout's own bytecode. On Windows the page
+    cache is not dropped; repeat 1 is only as cold as the host allows. Returns the number
+    of directories removed and the ones still present afterwards (a failed purge)."""
+    failed = []
+    found = _pycache_dirs()
+    for path in found:
+        shutil.rmtree(path, onerror=lambda func, name, exc: None)
+    remaining = [p.relative_to(ROOT).as_posix() for p in _pycache_dirs()]
+    failed.extend(remaining)
+    return len(found) - len(remaining), failed
+
+
+def _run_in_job(command, *, env, timeout_s):
+    """Start suspended, assign to a fresh job object, resume, wait. Returns the
+    job's whole-process accounting (TotalUserTime + TotalKernelTime)."""
+    import ctypes
+    import _winapi
+    from ctypes import wintypes
+
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.CreateJobObjectW.restype = wintypes.HANDLE
+    kernel.CreateJobObjectW.argtypes = [ctypes.c_void_p, wintypes.LPCWSTR]
+    kernel.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
+    kernel.ResumeThread.argtypes = [wintypes.HANDLE]
+    kernel.ResumeThread.restype = wintypes.DWORD
+    kernel.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
+    kernel.QueryInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p,
+                                                 wintypes.DWORD, ctypes.c_void_p]
+    kernel.SetInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD]
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+
+    class Accounting(ctypes.Structure):
+        _fields_ = [('TotalUserTime', ctypes.c_int64), ('TotalKernelTime', ctypes.c_int64),
+                    ('ThisPeriodTotalUserTime', ctypes.c_int64), ('ThisPeriodTotalKernelTime', ctypes.c_int64),
+                    ('TotalPageFaultCount', wintypes.DWORD), ('TotalProcesses', wintypes.DWORD),
+                    ('ActiveProcesses', wintypes.DWORD), ('TotalTerminatedProcesses', wintypes.DWORD)]
+
+    class BasicLimit(ctypes.Structure):
+        _fields_ = [('PerProcessUserTimeLimit', ctypes.c_int64), ('PerJobUserTimeLimit', ctypes.c_int64),
+                    ('LimitFlags', wintypes.DWORD), ('MinimumWorkingSetSize', ctypes.c_size_t),
+                    ('MaximumWorkingSetSize', ctypes.c_size_t), ('ActiveProcessLimit', wintypes.DWORD),
+                    ('Affinity', ctypes.c_size_t), ('PriorityClass', wintypes.DWORD),
+                    ('SchedulingClass', wintypes.DWORD)]
+
+    class IoCounters(ctypes.Structure):
+        _fields_ = [(name, ctypes.c_uint64) for name in ('ReadOperationCount', 'WriteOperationCount',
+                    'OtherOperationCount', 'ReadTransferCount', 'WriteTransferCount', 'OtherTransferCount')]
+
+    class ExtendedLimit(ctypes.Structure):
+        _fields_ = [('BasicLimitInformation', BasicLimit), ('IoInfo', IoCounters),
+                    ('ProcessMemoryLimit', ctypes.c_size_t), ('JobMemoryLimit', ctypes.c_size_t),
+                    ('PeakProcessMemoryUsed', ctypes.c_size_t), ('PeakJobMemoryUsed', ctypes.c_size_t)]
+
+    job = kernel.CreateJobObjectW(None, None)
+    if not job:
+        raise OSError(ctypes.get_last_error(), 'CreateJobObjectW failed')
+    limits = ExtendedLimit()
+    limits.BasicLimitInformation.LimitFlags = 0x2000  # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+    kernel.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits))
+    startup = subprocess.STARTUPINFO()
+    wall0 = time.perf_counter()
+    process, thread, pid, _tid = _winapi.CreateProcess(
+        None, subprocess.list2cmdline(command), None, None, False,
+        0x00000004,  # CREATE_SUSPENDED: no CPU is spent before the process joins the job
+        env, str(ROOT), startup)
+    timed_out = False
+    try:
+        if not kernel.AssignProcessToJobObject(job, int(process)):
+            _winapi.TerminateProcess(process, 1)
+            raise OSError(ctypes.get_last_error(), 'AssignProcessToJobObject failed')
+        kernel.ResumeThread(int(thread))
+        _winapi.CloseHandle(thread)
+        wait = _winapi.WaitForSingleObject(process, int(timeout_s * 1000))
+        if wait != 0:
+            timed_out = True
+            kernel.TerminateJobObject(job, 1)
+            _winapi.WaitForSingleObject(process, 60_000)
+        outer_wall = time.perf_counter() - wall0
+        exit_code = _winapi.GetExitCodeProcess(process)
+        accounting = Accounting()
+        ok = kernel.QueryInformationJobObject(job, 1, ctypes.byref(accounting), ctypes.sizeof(accounting), None)
+        extended = ExtendedLimit()
+        ok_ext = kernel.QueryInformationJobObject(job, 9, ctypes.byref(extended), ctypes.sizeof(extended), None)
+        return {
+            'pid': pid, 'exit_code': exit_code, 'timed_out': timed_out, 'outer_wall_s': outer_wall,
+            'job_cpu_s': (accounting.TotalUserTime + accounting.TotalKernelTime) / 1e7 if ok else None,
+            'job_processes': accounting.TotalProcesses if ok else None,
+            'job_peak_process_commit_bytes': extended.PeakProcessMemoryUsed if ok_ext else None,
+            'job_peak_commit_bytes': extended.PeakJobMemoryUsed if ok_ext else None,
+        }
+    finally:
+        _winapi.CloseHandle(process)
+        kernel.CloseHandle(job)
+
+
+def launcher(args):
+    if os.name != 'nt':
+        print('refused: --launcher is Windows only (r2 §6.3); Linux repeats run in systemd units', file=sys.stderr)
+        return 2
+    if args.stage != '1a':
+        print('refused: --launcher runs Stage 1a only (r2 §12.2)', file=sys.stderr)
+        return 2
+    out = Path(args.out)
+    if out.exists():
+        print('refused: will not overwrite ' + str(out), file=sys.stderr)
+        return 2
+    arms = [arm.strip() for arm in args.arms.split(',') if arm.strip()]
+    if not arms or any(arm not in ARMS for arm in arms) or len(set(arms)) != len(arms):
+        print('refused: --arms must list forced and/or prescribed once each', file=sys.stderr)
+        return 2
+    env = dict(os.environ)
+    env.update({name: '1' for name in THREAD_ENV})
+    entries = []
+    interrupted = None
+    # Every repeat leaves an entry and the bundle is always written: a failure to create,
+    # assign or run a repeat, or an unreadable row, is a retained failed entry (I-6).
+    with tempfile.TemporaryDirectory(prefix='s5-part-a-rows-', ignore_cleanup_errors=True) as rows:
+        try:
+            for arm in arms:
+                for repeat in [*range(1, args.repeats + 1), 0]:   # 0 = instrumented, last, excluded
+                    entries.append(_launch_repeat(arm, repeat, Path(rows), env, args.timeout_s))
+        except BaseException as exc:   # an interrupted launcher still writes what it has (I-6 for the rest)
+            interrupted = '%s: %s' % (type(exc).__name__, exc)
+    shape_ok = (sorted(arms) == sorted(ARMS) and args.repeats == DEFAULT_TIMED_REPEATS
+                and args.timeout_s == REPEAT_TIMEOUT_S)
+    if not shape_ok:
+        print('NOTE: arms %s x %d timed repeats is not the fixed Stage 1a shape (both arms x %d, r2 §12.2); '
+              '--summarize marks this bundle H-SHAPE (debug only, never an acceptance record)' % (
+                  arms, args.repeats, DEFAULT_TIMED_REPEATS), flush=True)
+    bundle = {'schema': BUNDLE_SCHEMA, 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
+              'stage': '1a', 'mode': 'measure', 'platform_accounting': 'windows_process_time_job_object',
+              'arm_order': arms, 'timed_repeats': args.repeats, 'timeout_s': args.timeout_s,
+              'fixed_shape': shape_ok, 'interrupted': interrupted, 'recorded_utc': _now(),
+              'harness_sha256': _sha256_file(HARNESS),
+              'executed_identity': _executed_identity([entry['row'] for entry in entries]), 'entries': entries}
+    _write_json(out, bundle, exclusive=True)
+    print('wrote', out)
+    return 130 if interrupted else 0
+
+
+def _launch_repeat(arm, repeat, rows, env, timeout_s):
+    """One launcher repeat. Never raises: a failure is recorded in the entry and the
+    summarizer reads it as a failed repeat (I-6), since it is not an explicit success."""
+    unit = {'pid': None, 'exit_code': None, 'timed_out': None, 'outer_wall_s': None, 'job_cpu_s': None}
+    unit['pycache_dirs_purged'] = None
+    if repeat == 1:
+        try:
+            unit['pycache_dirs_purged'], unit['purge_failed_dirs'] = _purge_pycache()
+        except OSError as exc:
+            unit['purge_error'] = '%s: %s' % (type(exc).__name__, exc)
+    row_path = rows / ('%s-%d.json' % (arm, repeat))
+    command = [sys.executable, str(HARNESS), '--repeat-mode', '--stage', '1a', '--arm', arm,
+               '--repeat', str(repeat), '--out', str(row_path)]
+    try:
+        unit.update(_run_in_job(command, env=env, timeout_s=timeout_s))
+    except Exception as exc:
+        unit['launch_error'] = '%s: %s' % (type(exc).__name__, exc)
+    row, row_error = _read_row(row_path) if row_path.is_file() else (None, None)
+    if row_error:
+        unit['row_error'] = row_error
+    print('arm=%s repeat=%d exit=%s outer_wall=%s job_cpu=%s panels=%s%s' % (
+        arm, repeat, unit['exit_code'], unit['outer_wall_s'], unit['job_cpu_s'], row and row.get('panels'),
+        ' launch_error=' + unit['launch_error'] if unit.get('launch_error') else ''), flush=True)
+    return {'arm': arm, 'repeat': repeat, 'row': row, 'unit': unit}
+
+
+# ------------------------------------------------------------- probe verdict
+
+def probe_verdict(directory):
+    """r2 §8.4 / §12.3 step 6: pass only if the in-unit memory.peak includes the
+    64 MiB child (>= 67,108,864), SwapTotal is 0 and CPUUsageNSec is populated."""
+    directory = Path(directory)
+    reasons = []
+    inner, error = _read_json_dict(directory / 'probe-in-unit.json')
+    if inner is None:
+        inner = {}
+        reasons.append('in-unit probe output missing or unreadable: ' + error)
+    unit = _parse_unit(directory / 'probe.unit') or {}
+    path = inner.get('cgroup_path') or ''
+    peak = _int_or_none(inner.get('memory_peak'))
+    swap_total = inner.get('swap_total_kb')
+    cpu = _unit_number(unit, 'CPUUsageNSec')
+    probe = {
+        'schema': PROBE_SCHEMA, 'unit': 'fp-s5pa-probe', 'cgroup_path': path or None,
+        'cgroup_path_matches_unit': path.rstrip('/').endswith('/fp-s5pa-probe.service'),
+        'in_unit_peak_bytes': peak, 'systemd_peak_bytes': _unit_number(unit, 'MemoryPeak'),
+        'cpu_usage_nsec': cpu, 'swap_total_kb': swap_total, 'swap_max': inner.get('memory_swap_max'),
+        'child_exit': inner.get('child_exit'), 'child_touched_bytes': inner.get('child_touched_bytes'),
+    }
+    if inner and not probe['cgroup_path_matches_unit']:
+        reasons.append('in-unit cgroup path does not end in fp-s5pa-probe.service')
+    if inner and probe['child_exit'] != 0:
+        reasons.append('probe child did not exit 0')
+    if peak is None or peak < PROBE_MIN_PEAK_BYTES:
+        reasons.append('in-unit memory.peak absent or below 67,108,864 bytes (descendant not included)')
+    if swap_total != 0:
+        reasons.append('SwapTotal is not 0 kB')
+    if probe['swap_max'] not in (None, '0'):
+        reasons.append('memory.swap.max is not 0')
+    if cpu is None:
+        reasons.append('CPUUsageNSec not populated')
+    probe['exec_main_status'], probe['result'] = unit.get('ExecMainStatus'), unit.get('Result')
+    if _int_or_none(unit.get('ExecMainStatus')) != 0 or unit.get('Result') != 'success':
+        reasons.append('probe unit did not complete: ExecMainStatus=%s Result=%s (both must be 0 and success)' % (
+            unit.get('ExecMainStatus'), unit.get('Result')))
+    probe['swap_off'] = swap_total == 0 and probe['swap_max'] in (None, '0')
+    probe['ok'] = not reasons
+    probe['reasons'] = reasons
+    _write_json(directory / 'probe.json', probe, exclusive=False)
+    print('probe ok' if probe['ok'] else 'probe FAILED (I-1): ' + '; '.join(reasons))
+    return EXIT_VALID if probe['ok'] else EXIT_RERUN
+
+
+def check_stage(stage):
+    if stage in DISPATCH_STAGES:
+        print('stage %s: implemented for Linux dispatch' % stage)
+        return 0
+    if stage == '1c':
+        print('stage 1c: BLOCKED (I-8). The --stage 1c repeat path is added at C3 on a measurement branch '
+              'based on the S5 head, after the coordinator records its read of that diff (r2 §12.4)')
+    else:
+        print('stage %s: not a Linux dispatch stage (Stage 1a runs on the Windows host, r2 §12.2)' % stage)
+    return 2
+
+
+# ------------------------------------------------------------------ summarize
+
+def _git(*args):
+    try:
+        done = subprocess.run(['git', '-c', 'safe.directory=' + str(ROOT), *args], cwd=ROOT,
+                              capture_output=True, text=True, timeout=60, check=False)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return done.stdout.strip() if done.returncode == 0 else None
+
+
+def _host_facts_file(path):
+    facts = {}
+    text = _read_text_or_none(path) if Path(path).is_file() else None
+    if text is not None:
+        for line in text.splitlines():
+            key, sep, value = line.partition('=')
+            if sep:
+                facts[key.strip()] = value.strip()
+    return facts
+
+
+def _os_release():
+    values = {}
+    for line in (_read_text_or_none('/etc/os-release') or '').splitlines():
+        key, sep, value = line.partition('=')
+        if sep:
+            values[key] = value.strip().strip('"')
+    return values
+
+
+def _cpu_model():
+    for line in (_read_text_or_none('/proc/cpuinfo') or '').splitlines():
+        if line.startswith('model name'):
+            return line.split(':', 1)[1].strip()
+    return platform.processor() or None
+
+
+def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error=None):
+    """One schema repeat from the in-process row plus the system manager's
+    (Linux: systemctl show) or the job object's (Windows) view. A row that
+    could not be parsed arrives as None with its parse error (I-6, r2 §12.7)."""
+    row = row or {}
+    row_error = (row_error or (launcher_unit or {}).get('row_error')
+                 or (launcher_unit or {}).get('launch_error'))
+    cpu = dict(row.get('cpu') or {})
+    wall = dict(row.get('wall') or {'outer': None, 'setup_excluded': None, 'workload': None})
+    mem = dict(row.get('memory') or {})
+    exit_code, result, timed_out, unit_cpu = row.get('exit_status'), None, False, None
+    poll_bound = None
+    systemd_peak = systemd_swap_peak = None
+    if unit_values is not None:
+        unit_cpu = _unit_number(unit_values, 'CPUUsageNSec')
+        unit_cpu = None if unit_cpu is None else unit_cpu / 1e9
+        systemd_peak = _unit_number(unit_values, 'MemoryPeak')
+        systemd_swap_peak = _unit_number(unit_values, 'MemorySwapPeak')
+        exit_code = _int_or_none(unit_values.get('ExecMainStatus'))
+        result = unit_values.get('Result')
+        # Fail closed: only an explicit HarnessPollTimeout=no shows the poll did not time out.
+        timed_out = unit_values.get('HarnessPollTimeout') != 'no' or result == 'timeout'
+        poll_bound = _int_or_none(unit_values.get('HarnessPollBoundS'))
+        if unit_values.get('HarnessNotStarted'):
+            # The workflow's loop deadline passed before this repeat started (I-6: no row).
+            result = 'not-started: ' + unit_values['HarnessNotStarted']
+        if unit_values.get('HarnessLaunchFailed'):
+            # The workflow could not start this repeat's unit (I-6: no row, no success result).
+            result = 'launch-failed: ' + unit_values['HarnessLaunchFailed']
+        start, end = (_unit_number(unit_values, 'ExecMainStartTimestampMonotonic'),
+                      _unit_number(unit_values, 'ExecMainExitTimestampMonotonic'))
+        if start and end and end > start:
+            wall['outer'] = (end - start) / 1e6
+    if launcher_unit is not None:
+        poll_bound = 'launcher'   # the bundle's timeout_s is checked for the whole bundle
+        unit_cpu = launcher_unit.get('job_cpu_s')
+        exit_code = launcher_unit.get('exit_code')
+        timed_out = launcher_unit.get('timed_out') is not False   # unknown counts as timed out
+        wall['outer'] = launcher_unit.get('outer_wall_s')
+        result = 'timeout' if timed_out else ('success' if exit_code == 0 else 'exit-code')
+    if wall.get('outer') is not None and wall.get('setup_excluded') is not None:
+        wall['workload'] = wall['outer'] - wall['setup_excluded']
+    unit_workload = (unit_cpu - cpu['setup_excluded']
+                     if unit_cpu is not None and cpu.get('setup_excluded') is not None else None)
+    # r2 §6.1: the ceiling's CPU input is the larger of C_w and CPUUsageNSec - setup_excluded.
+    # Both are required: without the unit (or job-object) reading, the launcher and
+    # environment-check overhead is uncharged, so there is no fallback to C_w alone.
+    both = (cpu.get('workload'), unit_workload)
+    cpu_input = max(both) if None not in both else None
+
+    in_unit = mem.get('in_unit_peak_bytes') if mem.get('cgroup_path_matches_unit') else None
+    swap_max = mem.get('swap_max')
+    swap_off = mem.get('swap_total_kb') == 0 and swap_max in (None, '0')
+    present = [(v, m) for v, m in ((in_unit, 'cgroup_in_unit'), (systemd_peak, 'systemd_memory_peak'))
+               if v is not None]
+    complete = stage != '1a' and bool(present) and swap_off
+    if complete:
+        memory_bytes, method = max(present, key=lambda item: item[0])
+    else:
+        memory_bytes = None
+        method = mem.get('lower_bound_method') or (
+            'lower_bound_windows_working_set' if stage == '1a' else 'lower_bound_ru_maxrss')
+    oom = mem.get('oom_events')
+    if launcher_unit is not None:
+        failed = launcher_unit.get('purge_failed_dirs')
+        cold_prep = {'ok': (isinstance(launcher_unit.get('pycache_dirs_purged'), int) and failed == []
+                            and not launcher_unit.get('purge_error')),
+                     'detail': launcher_unit.get('purge_error') or ('still present: %s' % failed if failed
+                                                                    else None)}
+    elif unit_values is not None:
+        cold_prep = {'ok': unit_values.get('HarnessColdPrep') == 'done',
+                     'detail': 'HarnessColdPrep=%s' % unit_values.get('HarnessColdPrep')}
+    else:
+        cold_prep = None
+    # A completed repeat: its row, the process exit status in the row and in the system
+    # manager's (or job object's) view, and a success result, all present and clean.
+    completed = (bool(row) and exit_code == 0 and row.get('exit_status') == 0 and result == 'success'
+                 and not timed_out and not (oom or 0) > 0)
+    return {
+        'arm': arm, 'repeat': repeat, 'unit': row.get('unit'),
+        'cold': bool(row.get('cold', repeat == 1)), 'instrumented': bool(row.get('instrumented', repeat == 0)),
+        'dry_run': bool(row.get('dry_run', False)),
+        'cpu': {key: cpu.get(key) for key in ('start', 'admission', 'setup_excluded', 'verify', 'part_a',
+                                                'serialize', 'adapter', 'workload', 'process_total')},
+        'unit_cpu_s': unit_cpu, 'unit_cpu_workload_s': unit_workload, 'cpu_input_s': cpu_input,
+        'wall': {'outer': wall.get('outer'), 'setup_excluded': wall.get('setup_excluded'),
+                 'workload': wall.get('workload'), 'boundaries': wall.get('boundaries')},
+        'memory': {'complete': complete, 'method': method, 'memory_bytes': memory_bytes,
+                   'in_unit_peak_bytes': mem.get('in_unit_peak_bytes'), 'systemd_peak_bytes': systemd_peak,
+                   'swap_max': swap_max, 'swap_peak_bytes': (mem['swap_peak_bytes'] if mem.get('swap_peak_bytes') is not None
+                                       else systemd_swap_peak),
+                   'swap_off': swap_off, 'cgroup_path': mem.get('cgroup_path'),
+                   'cgroup_path_matches_unit': mem.get('cgroup_path_matches_unit'), 'oom_events': oom,
+                   'lower_bound_bytes': mem.get('lower_bound_bytes'),
+                   'windows_job_peak_commit_bytes': (launcher_unit or {}).get('job_peak_commit_bytes')},
+        'cgroup_cpu_usage_usec': mem.get('cgroup_cpu_usage_usec'),
+        'panels': row.get('panels'), 'expanded': row.get('expanded'),
+        'probe_seconds': row.get('probe_seconds'), 'predicted_seconds': row.get('predicted_seconds'),
+        'elapsed_seconds': row.get('elapsed_seconds'), 'counts': row.get('counts'),
+        'initial_prefix_sha256': row.get('initial_prefix_sha256'), 'final_sha256': row.get('final_sha256'),
+        'fsync_count': row.get('fsync_count'), 'assertions': row.get('assertions'),
+        'exit_code': exit_code, 'row_exit_status': row.get('exit_status'), 'result': result,
+        'timed_out': timed_out, 'completed': completed, 'poll_bound_s': poll_bound, 'cold_prep': cold_prep,
+        'row_unit': row.get('unit'), 'thread_env': (row.get('environment') or {}).get('thread_env')
+        if isinstance(row.get('environment'), dict) else None, 'unit_present': unit_values is not None
+        or launcher_unit is not None, 'row_flags': {k: row.get(k) for k in (
+            'stage', 'arm', 'repeat', 'cold', 'instrumented', 'dry_run')} if row else None,
+        'row_present': bool(row), 'error': row.get('error') if row else (row_error or 'repeat row missing'),
+        'workload': row.get('workload'), 'environment': row.get('environment'),
+    }
+
+
+def _read_row(path):
+    """A repeat row, or (None, error) when it is truncated or unreadable: the
+    repeat is then retained as a missing row with the error (I-6, r2 §12.7)."""
+    try:
+        row = _read_json(path)
+    except (OSError, ValueError) as exc:
+        return None, 'unreadable row: %s: %s' % (type(exc).__name__, exc)
+    if not isinstance(row, dict):
+        return None, 'unreadable row: not a JSON object'
+    return row, None
+
+
+def _load_directory(directory):
+    rows, units, row_errors = {}, {}, {}
+    for path in sorted(directory.iterdir()):
+        match = re.fullmatch(r'(forced|prescribed)-(\d+)\.(json|unit)', path.name)
+        if not match:
+            continue
+        key = (match.group(1), int(match.group(2)))
+        if match.group(3) == 'json':
+            rows[key], error = _read_row(path)
+            if error:
+                row_errors[key] = error
+        else:
+            units[key] = _parse_unit(path)
+    probe = None
+    if (directory / 'probe.json').is_file():
+        probe, error = _read_json_dict(directory / 'probe.json')
+        if probe is None:   # retained as a failed probe: I-1 (r2 §12.7), never a traceback
+            probe = {'ok': False, 'reasons': ['probe.json unreadable: ' + error]}
+    facts = _host_facts_file(directory / 'host-facts.txt')
+    head_text = _read_text_or_none(directory / 'git-head.txt') if (directory / 'git-head.txt').is_file() else None
+    start_head = head_text.strip() or None if head_text is not None else None   # absent or unreadable: I-7
+    return rows, units, probe, facts, start_head, row_errors
+
+
+def _expected_keys(arm_order, mode, timed):
+    if mode == 'dry-run':
+        return [(arm, 1) for arm in arm_order]
+    return [(arm, r) for arm in arm_order for r in [*range(1, timed + 1), 0]]
+
+
+# r2 §12.9 (3): at Stage 1b every input to Ĉ, Ŵ, P̂ or a warm spread is judged by the
+# INCOMPLETE_EVIDENCE gate (exit 3), not as a harness field defect (H-FIELDS, exit 4).
+CEILING_INPUT_FIELDS = frozenset({'cpu.start', 'cpu.admission', 'cpu.setup_excluded', 'cpu.verify', 'cpu.part_a',
+                                  'cpu.serialize', 'cpu.workload', 'cpu.process_total', 'wall.outer',
+                                  'wall.setup_excluded', 'wall.workload', 'unit_cpu_s', 'predicted_seconds'})
+
+
+# In a Stage 1b dry run these are the runner's accounting values (systemd CPUUsageNSec and
+# the unit's monotonic timestamps); r2 §12.7 classes their absence as I-1 (r2 §12.9 (4)).
+RUNNER_ACCOUNTING_FIELDS = frozenset({'unit_cpu_s', 'wall.outer'})
+RUNNER_FIELD_SOURCE = {'unit_cpu_s': 'CPUUsageNSec',
+                       'wall.outer': 'ExecMainStartTimestampMonotonic/ExecMainExitTimestampMonotonic',
+                       'wall.workload': 'ExecMainStartTimestampMonotonic/ExecMainExitTimestampMonotonic'}
+
+
+def _required_fields_missing(rep, stage, mode='measure'):
+    missing = _all_required_fields_missing(rep)
+    if stage == '1b' and mode == 'measure':
+        missing = [name for name in missing if name not in CEILING_INPUT_FIELDS]
+    return missing
+
+
+def _all_required_fields_missing(rep):
+    missing = []
+    for key in ('start', 'admission', 'setup_excluded', 'verify', 'part_a', 'serialize', 'workload', 'process_total'):
+        if rep['cpu'].get(key) is None:
+            missing.append('cpu.' + key)
+    for key in ('outer', 'setup_excluded', 'workload'):
+        if rep['wall'].get(key) is None:
+            missing.append('wall.' + key)
+    for key in ('unit_cpu_s', 'panels', 'expanded', 'probe_seconds', 'predicted_seconds', 'elapsed_seconds',
+                'initial_prefix_sha256', 'final_sha256', 'exit_code'):
+        if rep.get(key) is None:
+            missing.append(key)
+    if rep['memory'].get('lower_bound_bytes') is None:
+        missing.append('memory.lower_bound_bytes')
+    if rep['instrumented'] and rep.get('counts') is None:
+        missing.append('counts')
+    return missing
+
+
+def _arm_summary(reps):
+    timed = [r for r in reps if not r['instrumented'] and not r['dry_run'] and r.get('completed')]
+    warm = [r for r in timed if r['repeat'] >= 2]
+    cold = [r for r in timed if r['cold']]
+    cpu = [r['cpu_input_s'] for r in timed]
+    warm_cpu = [r['cpu_input_s'] for r in warm]
+    warm_median = statistics.median(warm_cpu) if warm_cpu and None not in warm_cpu else None
+    cold_cpu = cold[0]['cpu_input_s'] if cold else None
+    digests = {(r['initial_prefix_sha256'], r['final_sha256']) for r in reps if r['final_sha256']}
+    return {
+        'timed_repeats_valid': len(timed),
+        'cpu_input_s': {'all': _stats(cpu), 'warm': _stats(warm_cpu)},
+        'cpu_workload_in_process_s': {'all': _stats([r['cpu']['workload'] for r in timed]),
+                                      'warm': _stats([r['cpu']['workload'] for r in warm])},
+        'wall_workload_s': {'all': _stats([r['wall']['workload'] for r in timed]),
+                            'warm': _stats([r['wall']['workload'] for r in warm])},
+        'warm_spread': _spread(warm_cpu),
+        'warm_spread_in_process': _spread([r['cpu']['workload'] for r in warm]),
+        # r2 §6.2: the spread is reported with and without the cold repeat.
+        'spread_all': _spread(cpu),
+        'spread_all_in_process': _spread([r['cpu']['workload'] for r in timed]),
+        'memory_bytes': {'all': _stats([r['memory']['memory_bytes'] for r in timed]),
+                         'warm': _stats([r['memory']['memory_bytes'] for r in warm])},
+        'cpu_inputs_complete': bool(timed) and None not in cpu,
+        'cold_over_warm_median': (cold_cpu / warm_median) if cold_cpu and warm_median else None,
+        'memory_max_bytes_complete_only': max([r['memory']['memory_bytes'] for r in timed
+                                               if r['memory']['complete']], default=None),
+        'memory_complete_all_timed_repeats': bool(timed) and all(r['memory']['complete'] for r in timed),
+        'lower_bound_max_bytes': max([r['memory']['lower_bound_bytes'] for r in timed
+                                      if r['memory']['lower_bound_bytes'] is not None], default=None),
+        'predicted_seconds_max': max([r['predicted_seconds'] for r in timed
+                                      if r['predicted_seconds'] is not None], default=None),
+        'digests_identical': len(digests) <= 1 if digests else None,
+        'digest_pairs': sorted([list(pair) for pair in digests]),
+        # r2 §6.2/§9: Ĉ, Ŵ and P̂ are maxima over ALL valid timed repeats; a repeat
+        # missing any of the three would make the maximum one over a subset.
+        'ceiling_inputs_missing': ['%s-%d: %s' % (r['arm'], r['repeat'], ', '.join(missing))
+                                   for r in timed for missing in [_ceiling_inputs_missing(r)] if missing],
+        'ceiling_inputs_complete': bool(timed) and not any(_ceiling_inputs_missing(r) for r in timed),
+    }
+
+
+def _ceiling_inputs_missing(rep):
+    return [name for name, value in (('cpu_input_s (C)', rep['cpu_input_s']),
+                                     ('wall.workload (W)', rep['wall']['workload']),
+                                     ('predicted_seconds (P)', rep['predicted_seconds'])) if value is None]
+
+
+def _ceiling_inputs(summaries, estimates):
+    """What the rule needs and cannot show (empty when complete): r2 §9 PA-1/PA-2
+    need Ĉ, Ŵ and P̂ from every valid timed forced repeat (PA-3's M̂ is gated by
+    memory_feasibility), and PA-4 (r2 §6.2) needs each arm's warm spread, which
+    needs the CPU input of every completed timed repeat of BOTH arms."""
+    forced = summaries.get('forced') or {}
+    reasons = ['%s is absent' % key for key in ('C_hat_s', 'W_hat_s', 'P_hat_s') if estimates.get(key) is None]
+    if not forced.get('ceiling_inputs_complete'):
+        reasons.extend(forced.get('ceiling_inputs_missing') or ['no valid timed forced repeat'])
+    for arm in ARMS:
+        summary = summaries.get(arm) or {}
+        if not summary.get('cpu_inputs_complete'):
+            reasons.append('arm %s: a completed timed repeat has no CPU input' % arm)
+        if summary.get('warm_spread') is None:
+            reasons.append('arm %s: the warm CPU spread cannot be computed (PA-4)' % arm)
+    return reasons
+
+
+def _screens(estimates):
+    """Stop-class screens only (r2 §10.3 Σ limb; §9 PA-3a). Not the §13 application."""
+    c_hat, w_hat, p_hat, m_hat = (estimates.get(k) for k in ('C_hat_s', 'W_hat_s', 'P_hat_s', 'M_hat_bytes'))
+    screen = {'basis': 'r2 §10.2 Σ-only row: cap 10,000 s CPU / 10,000 s wall with the P4 tuple extended to /v7; '
+                       'N2 360 s / 900 s (CP-1a ruling (3)); PA-1 m_c 2.0, 1.5 × P̂, O 20 s, 120 s floor; PA-2 '
+                       'm_w 3.0, L 30 s, 300 s floor; D̂ uncovered (provisional)',
+              'cpu_limit_s': SIGMA_CPU_LIMIT_S, 'wall_limit_s': SIGMA_WALL_LIMIT_S,
+              'cpu_value_s': None, 'wall_value_s': None, 'sigma_infeasible': None}
+    if c_hat is not None and p_hat is not None:
+        screen['cpu_value_s'] = max(CPU_FLOOR_S, max(M_C * c_hat, P_TERM * p_hat) + O_S)
+    if w_hat is not None:
+        screen['wall_value_s'] = max(WALL_FLOOR_S, M_W * (w_hat + L_S))
+    if screen['cpu_value_s'] is not None and screen['wall_value_s'] is not None:
+        screen['sigma_infeasible'] = (screen['cpu_value_s'] > SIGMA_CPU_LIMIT_S
+                                      or screen['wall_value_s'] > SIGMA_WALL_LIMIT_S)
+    pa3 = {'scope': 'PA-3a (payload unit only; shared scope is PA-3b at C3, r2 §16 C6)',
+           'reference_bytes': PA3_REFERENCE_BYTES,
+           'reference_note': 'equals the binding maximum_memory_bytes only with the P4 tuple extended to /v7 '
+                             '(r2 §8.1); unextended the binding is 230,400,000 and BUDGET_EXHAUSTED at binding',
+           'm_m': M_M, 'value_bytes': None if m_hat is None else M_M * m_hat,
+           'fails': None if m_hat is None else M_M * m_hat > PA3_REFERENCE_BYTES}
+    return screen, pa3
+
+
+# H-SHAPE (a harness code, like H-FIELDS): the record's shape is not the fixed one
+# of r2 §6.2 and §12.2 (both arms; 5 timed repeats per arm in measure mode), so it
+# can never be an acceptance record. It is fixed and re-run locally (no re-run count).
+# H-COUNTS: an instrumented repeat's call counts differ from the r2 §4 workload, or
+# are absent: the measured workload is not the specified one (a harness defect).
+HARNESS_CODES = frozenset({'H-FIELDS', 'H-SHAPE', 'H-COUNTS'})
+# r2 §12.9 (2): LEGACY marks a Windows bundle from a launcher older than this
+# revision (no timeout_s or no executed_identity): LEGACY_UNACCEPTED, exit 4.
+# r2 §12.9 (3): INCOMPLETE marks a Stage 1b measure record missing a required
+# ceiling input on either arm: INCOMPLETE_EVIDENCE, validity_ok false, exit 3.
+# I-1 (probe failed) also blocks: r2 §12.7 makes memory UNVERIFIED and the rule not applicable.
+BLOCKING_CODES = frozenset({'I-1', 'I-2', 'I-4', 'I-5', 'I-6', 'I-7', 'I-8', 'LEGACY', 'INCOMPLETE'}) | HARNESS_CODES
+
+
+def _classify(reasons, *, rule_applicable, memory_feasibility, screen):
+    codes = {code for code, _ in reasons}
+    no_rerun = codes & ({'I-4', 'I-5', 'I-7', 'I-8', 'LEGACY'} | HARNESS_CODES)
+    rerun = codes & {'I-1', 'I-2', 'I-3', 'I-6', 'INCOMPLETE'}
+    invalid = codes & ({'I-2', 'I-4', 'I-5', 'I-6', 'I-7'} | HARNESS_CODES)
+    if 'I-8' in codes:
+        stop = 'BLOCKED'
+    elif 'LEGACY' in codes:
+        stop = 'LEGACY_UNACCEPTED'          # r2 §12.9 (2): never current acceptance
+    elif invalid:
+        stop = 'INVALID_MEASUREMENT'
+    elif 'INCOMPLETE' in codes:
+        stop = 'INCOMPLETE_EVIDENCE'        # r2 §12.9 (3); an I-3 alongside keeps its own reason
+    elif codes & {'I-1', 'I-3'}:
+        stop = 'MEMORY_EVIDENCE_MISSING'   # r2 §16 C8 relabel of I-1 and I-3
+    elif rule_applicable and screen.get('sigma_infeasible'):
+        stop = 'D2_ACCOUNTING_FALSIFIER'
+    elif rule_applicable and memory_feasibility == 'FAILED':
+        stop = 'PA3_FAILURE'
+    else:
+        stop = 'none'
+    exit_code = EXIT_INVALID if no_rerun else EXIT_RERUN if rerun else EXIT_VALID
+    return stop, not (invalid or codes & {'LEGACY', 'INCOMPLETE'}), exit_code
+
+
+def _rerun_eligible(stage, mode, exit_code, attempts):
+    """r2 §12.9 (3): for a Stage 1b measure record, true only for an exit-3 failure
+    when every failing job is on run attempt 1. It shares the single `--failed`
+    re-run of r2 §12.7 and grants no additional attempt. None outside 1b measure."""
+    if stage != '1b' or mode != 'measure':
+        return None
+    return exit_code == EXIT_RERUN and bool(attempts) and all(_int_or_none(a) == 1 for a in attempts)
+
+
+def _read_bundle(path):
+    """(bundle, None), or a placeholder of the fixed shape and the reason when the
+    bundle is unreadable, truncated or malformed. Refuses only a readable JSON
+    object that is not a launcher bundle at all (an operator error, no evidence)."""
+    bundle, error = _read_json_dict(path)
+    if bundle is not None and bundle.get('schema') != BUNDLE_SCHEMA:
+        raise SystemExit('refused: not a launcher bundle: %s (schema %r)' % (path, bundle.get('schema')))
+    if bundle is not None:
+        entries = bundle.get('entries')
+        if (not isinstance(entries, list) or not isinstance(bundle.get('arm_order'), list)
+                or not isinstance(bundle.get('timed_repeats'), int)
+                or any(not isinstance(e, dict) or e.get('arm') not in ARMS or not isinstance(e.get('repeat'), int)
+                       for e in entries)):
+            bundle, error = None, 'entries, arm_order or timed_repeats malformed'
+    if bundle is None:
+        return {'schema': BUNDLE_SCHEMA, 'entries': [], 'arm_order': list(ARMS),
+                'timed_repeats': DEFAULT_TIMED_REPEATS, 'timeout_s': REPEAT_TIMEOUT_S}, error
+    return bundle, None
+
+
+def _job_record(path, args, current=None):
+    path = Path(path)
+    launcher_bundle = None
+    bundle_error = None
+    if path.is_file():
+        launcher_bundle, bundle_error = _read_bundle(path)
+        rows = {(e['arm'], e['repeat']): e.get('row') for e in launcher_bundle['entries']}
+        duplicate_entries = len(rows) != len(launcher_bundle['entries'])
+        units, probe, facts, start_head, row_errors = {}, None, {}, None, {}
+        launch_units = {(e['arm'], e['repeat']): e.get('unit') for e in launcher_bundle['entries']}
+        arm_order = launcher_bundle['arm_order']
+        timed = launcher_bundle['timed_repeats']
+    else:
+        rows, units, probe, facts, start_head, row_errors = _load_directory(path)
+        duplicate_entries = False
+        launch_units = {}
+        arm_order = (args.arm_order.split() if args.arm_order
+                     else [a for a in ARMS if any(k[0] == a for k in rows)] or list(ARMS))
+        timed = args.repeats
+    stage = args.stage or next((r.get('stage') for r in rows.values() if r), None) or (
+        '1a' if launcher_bundle else '1b')
+    mode = args.mode or ('dry-run' if rows and all((r or {}).get('dry_run') for r in rows.values())
+                         else 'measure')
+    probe_failed_first = stage == '1b' and not (rows or units) and not (probe or {}).get('ok')
+    keys = sorted(set(rows) | set(units) | set(launch_units)
+                  | (set() if probe_failed_first else set(_expected_keys(arm_order, mode, timed))),
+                  key=lambda k: (arm_order.index(k[0]) if k[0] in arm_order else 9, k[1] == 0, k[1]))
+    repeats = [_merge_repeat(arm, r, rows.get((arm, r)), units.get((arm, r)) if not launcher_bundle else None,
+                             launch_units.get((arm, r)), stage, row_errors.get((arm, r))) for arm, r in keys]
+    by_arm = {arm: [rep for rep in repeats if rep['arm'] == arm] for arm in arm_order}
+
+    reasons = []
+    if bundle_error:
+        reasons.append(('I-6', 'launcher bundle unreadable or malformed, so no repeat can be shown (%s)' % bundle_error))
+    if (launcher_bundle or {}).get('interrupted'):
+        reasons.append(('I-6', 'the launcher was interrupted: %s' % launcher_bundle['interrupted']))
+    # r2 §5.1 code identity, taken before the verdict and part of it (ordering).
+    if current is None:
+        current = _current_identity(path)
+    for name, pinned in PINNED_FIXTURE_SHA256.items():
+        if (current.get('source_sha256') or {}).get(name) != pinned:
+            reasons.append(('H-SHAPE', 'fixture %s is %s, not the pinned %s: a different workload (r2 §4, §9)' % (
+                name, (current.get('source_sha256') or {}).get(name), pinned)))
+    if not (current.get('code_identity') or {}).get('worker_runtime'):
+        reasons.append(('I-7', 'summarize-time observe_runtime identity absent (%s); the source set is partial' % (
+            (current.get('code_identity') or {}).get('worker_runtime_error') or 'no worker_runtime')))
+    # r2 §6.2, §12.2 and PA-4: an acceptance record has both arms and, in measure
+    # mode, exactly DEFAULT_TIMED_REPEATS timed repeats per arm (H-SHAPE otherwise).
+    if len(arm_order) != len(ARMS) or set(arm_order) != set(ARMS):
+        reasons.append(('H-SHAPE', 'arms %s; the fixed shape runs both %s (r2 §6.2, §12.2)' % (
+            list(arm_order), list(ARMS))))
+    if mode == 'measure' and timed != DEFAULT_TIMED_REPEATS:
+        reasons.append(('H-SHAPE', '%s timed repeats per arm; the fixed shape is %d (r2 §6.2, §12.2)' % (
+            timed, DEFAULT_TIMED_REPEATS)))
+    legacy = launcher_bundle is not None and not bundle_error and (
+        'timeout_s' not in launcher_bundle or not launcher_bundle.get('executed_identity'))
+    if legacy:
+        reasons.append(('LEGACY', 'bundle from a launcher older than this harness revision (no %s): retained '
+                                  'unmodified, never current acceptance (r2 §12.9 (2)); Stage 1a needs a bundle '
+                                  'from the current launcher' % ' or '.join(
+                                      k for k in ('timeout_s', 'executed_identity') if not launcher_bundle.get(k))))
+    elif launcher_bundle is not None and launcher_bundle.get('timeout_s') != REPEAT_TIMEOUT_S:
+        reasons.append(('H-SHAPE', 'launcher per-repeat timeout %s s; the bound is %d s' % (
+            launcher_bundle.get('timeout_s'), REPEAT_TIMEOUT_S)))
+    if launcher_bundle is not None and list(arm_order) != list(ARMS):
+        reasons.append(('H-SHAPE', 'bundle arm order %s; r2 §12.2 runs --arms forced,prescribed' % list(arm_order)))
+    if duplicate_entries:
+        reasons.append(('H-SHAPE', 'the bundle repeats an (arm, repeat) entry'))
+    if stage == '1b' and mode == 'measure' and args.job in ('a', 'b'):
+        want_order = ['forced', 'prescribed'] if args.job == 'a' else ['prescribed', 'forced']
+        if list(arm_order) != want_order:   # r2 §6.2: job a forced first, job b prescribed first
+            reasons.append(('H-SHAPE', 'job %s arm order %s; r2 §6.2 alternation is %s' % (
+                args.job, list(arm_order), want_order)))
+    elif stage == '1b' and mode == 'measure':
+        reasons.append(('H-SHAPE', 'job %r is not a or b (r2 §6.2 two-job alternation)' % args.job))
+    if launcher_bundle is not None and not legacy and not bundle_error:
+        # r2 §5.1, §12.2: a Windows summary describes the code the launcher ran.
+        for mismatch in _identity_mismatches(launcher_bundle.get('executed_identity'), current):
+            reasons.append(('I-7', 'Windows bundle: ' + mismatch))
+    if stage == '1c':
+        reasons.append(('I-8', 'Stage 1c: SR/P preconditions and the --stage 1c path are established at C3 '
+                               '(r2 §7.7, §12.4); this harness has no 1c path'))
+    if stage == '1b':
+        attempt = _int_or_none(args.run_attempt)
+        if attempt is None or not 1 <= attempt <= MAX_RUN_ATTEMPT:
+            reasons.append(('I-7', 'run attempt %r is absent or outside 1..%d (r2 §12.7)' % (
+                args.run_attempt, MAX_RUN_ATTEMPT)))
+        if not probe or not probe.get('ok'):
+            reasons.append(('I-1', 'accounting probe failed or missing: %s' % (
+                '; '.join((probe or {}).get('reasons') or ['probe.json absent']))))
+    expected = set(_expected_keys(arm_order, mode, timed))
+    loop_ran = bool(rows or units or launch_units)
+    if not loop_ran and any(code == 'I-1' for code, _ in reasons):
+        # The probe runs before any repeat; when it fails the loop never starts (r2 §12.3 step 6).
+        reasons.append(('note', 'no repeat ran: the accounting probe failed first'))
+        expected = set()
+    for rep in repeats:
+        key = '%s-%d' % (rep['arm'], rep['repeat'])
+        if (rep['arm'], rep['repeat']) not in expected:
+            if rep['row_present'] or rep['unit_present']:
+                reasons.append(('H-SHAPE', '%s: a repeat outside the fixed shape is present' % key))
+            continue
+        if rep['unit_present'] and rep['poll_bound_s'] not in ('launcher', REPEAT_TIMEOUT_S):
+            reasons.append(('H-SHAPE', '%s: per-repeat poll bound %s s; the bound is %d s' % (
+                key, rep['poll_bound_s'], REPEAT_TIMEOUT_S)))
+        # Cold precondition (r2 §6.2): measure-mode repeat 1 must show its purge succeeded.
+        if mode == 'measure' and rep['repeat'] == 1 and rep['unit_present'] and rep['completed']:
+            cold = rep.get('cold_prep') or {}
+            if not cold.get('ok'):
+                reasons.append(('I-6', '%s: cold precondition not established (%s); the repeat cannot count as '
+                                       'cold (r2 §6.2)' % (key, cold.get('detail') or 'no record of the purge')))
+        # The repeat ran in its own unit, with the thread environment pinned to 1 (r2 §5.1, §12.3).
+        if rep['completed'] and rep['row_present']:
+            if stage == '1b' and rep.get('row_unit') != 'fp-s5pa-%s-%s-%d' % (stage, rep['arm'], rep['repeat']):
+                reasons.append(('H-SHAPE', '%s: ran in unit %r, not its own fp-s5pa unit' % (key, rep.get('row_unit'))))
+            threads = rep.get('thread_env') or {}
+            if sorted(threads) != sorted(THREAD_ENV) or any(threads[k] != '1' for k in threads):
+                reasons.append(('H-SHAPE', '%s: thread environment %s is not pinned to 1 (r2 §5.1)' % (key, threads)))
+            workload = rep['workload'] or {}
+            wrong = sorted(k for k, v in EXPECTED_WORKLOAD.items() if workload.get(k) != v)
+            if workload.get('within_pp') != EXPECTED_WITHIN_PP[rep['arm']]:
+                wrong.append('within_pp')
+            if wrong:
+                reasons.append(('H-SHAPE', '%s: workload %s differ from the fixed r2 §4 workload' % (key, ', '.join(
+                    '%s=%r' % (k, workload.get(k)) for k in wrong))))
+        flags = rep['row_flags']
+        if flags is not None:
+            want = {'stage': stage, 'arm': rep['arm'], 'repeat': rep['repeat'], 'dry_run': mode == 'dry-run',
+                    'instrumented': rep['repeat'] == 0 or mode == 'dry-run',
+                    'cold': rep['repeat'] == 1 and mode != 'dry-run'}
+            wrong = sorted(k for k in want if flags.get(k) != want[k])
+            if wrong:
+                reasons.append(('H-SHAPE', '%s: row %s do not match the repeat it is filed as' % (
+                    key, ', '.join('%s=%s' % (k, flags.get(k)) for k in wrong))))
+        # I-5 is judged from panels and expanded themselves for every repeat that reached
+        # the assertion (exit 0 or 5 in the row), so absent values fail closed.
+        reached = rep['row_present'] and rep['row_exit_status'] in (0, EXIT_ASSERTION)
+        failed_assertion = reached and not (rep['panels'] == EXPECTED_PANELS.get(rep['arm'])
+                                            and rep['expanded'] is EXPECTED_EXPANDED.get(rep['arm'])
+                                            and (rep['assertions'] or {}).get('ok') is True)
+        if failed_assertion:
+            reasons.append(('I-5', '%s: panels=%s expanded=%s assertions=%s, expected %s/%s' % (
+                key, rep['panels'], rep['expanded'], rep['assertions'], EXPECTED_PANELS.get(rep['arm']),
+                EXPECTED_EXPANDED.get(rep['arm']))))
+        oom = (rep['memory'].get('oom_events') or 0) > 0 or rep['result'] == 'oom-kill'
+        assertion_exit = (failed_assertion and rep['exit_code'] == EXIT_ASSERTION
+                          and rep['row_exit_status'] == EXIT_ASSERTION and not rep['timed_out'] and not oom)
+        if not rep['completed'] and not assertion_exit:
+            reasons.append(('I-6', '%s: exit=%s row_exit=%s result=%s timed_out=%s oom=%s error=%s' % (
+                key, rep['exit_code'], rep['row_exit_status'], rep['result'], rep['timed_out'], oom,
+                rep['error'])))
+        if rep['completed'] and not (rep['initial_prefix_sha256'] and rep['final_sha256']):
+            reasons.append(('I-4', '%s: artifact digest absent, so digest identity cannot be shown' % key))
+    # I-4: digest identity within each arm, and the forced prefix against the prescribed result.
+    summaries = {arm: _arm_summary(reps) for arm, reps in by_arm.items()}
+    for arm, summary in summaries.items():
+        if summary['digests_identical'] is False:
+            reasons.append(('I-4', 'artifact digests differ between repeats of arm %s' % arm))
+    prefix_ok = None
+    if 'forced' in by_arm and 'prescribed' in by_arm:
+        forced_prefixes = {r['initial_prefix_sha256'] for r in by_arm['forced'] if r['initial_prefix_sha256']}
+        prescribed_finals = {r['final_sha256'] for r in by_arm['prescribed'] if r['final_sha256']}
+        if forced_prefixes and prescribed_finals:
+            prefix_ok = forced_prefixes == prescribed_finals and len(prescribed_finals) == 1
+            if not prefix_ok:
+                reasons.append(('I-4', 'forced initial prefix differs from the prescribed result'))
+    if any(code == 'I-4' for code, _ in reasons):
+        reasons.append(('note', 'I-4 bears on D3 R7 only after diagnosis excludes harness, host and '
+                                'instrumentation causes (r2 §16 C8)'))
+    # I-7: measured head against dispatched head, and the tree.
+    measured = _git('rev-parse', 'HEAD')
+    status = _git('status', '--porcelain')
+    tree_clean = None if status is None else status == ''
+    if stage == '1b':
+        # Fail closed: the dispatched head, the head at loop start and the head at
+        # summarize must all be present and equal, on a clean tree (r2 §5.1, §12.7 I-7).
+        if (not args.dispatched_head or start_head != args.dispatched_head
+                or measured != args.dispatched_head or tree_clean is not True):
+            reasons.append(('I-7', 'dispatched %s, at start %s, at summarize %s, tree_clean %s' % (
+                args.dispatched_head, start_head, measured, tree_clean)))
+    # Memory completeness is judged on the repeats that ran to completion; a failed
+    # repeat is already I-6 and is retained as it is.
+    timed_reps = [r for r in repeats if not r['instrumented'] and not r['dry_run']
+                  and (r['arm'], r['repeat']) in expected and r['completed']]
+    memory_complete = bool(timed_reps) and all(r['memory']['complete'] for r in timed_reps)
+    if mode == 'dry-run':
+        dry = [r for r in repeats if r['dry_run'] and r['completed']]
+        memory_complete = bool(dry) and all(r['memory']['complete'] for r in dry)
+    if stage == '1b' and not memory_complete and expected:
+        reasons.append(('I-3', 'a %s repeat lacks a complete aggregate memory reading (swap off plus in-unit '
+                               'memory.peak or systemd MemoryPeak)' % ('dry-run' if mode == 'dry-run' else 'timed')))
+    if mode == 'measure':
+        for arm, summary in summaries.items():
+            spread = summary['warm_spread']
+            if spread is not None and spread > SPREAD_LIMIT:
+                if stage == '1b':
+                    reasons.append(('I-2', 'arm %s warm CPU spread %.3f > %.2f' % (arm, spread, SPREAD_LIMIT)))
+                else:
+                    reasons.append(('note', 'arm %s warm CPU spread %.3f > %.2f (Stage 1a: informational)' % (
+                        arm, spread, SPREAD_LIMIT)))
+    for rep in repeats:
+        if (rep['arm'], rep['repeat']) in expected:
+            missing = _required_fields_missing(rep, stage, mode)
+            if not (missing and rep['completed']):
+                continue
+            runner = []
+            if stage == '1b' and mode == 'dry-run':
+                runner = [m for m in missing if m in RUNNER_ACCOUNTING_FIELDS
+                          or (m == 'wall.workload' and 'wall.outer' in missing)]
+                missing = [m for m in missing if m not in runner]
+            if runner:
+                named = sorted({RUNNER_FIELD_SOURCE[m] for m in runner})
+                reasons.append(('I-1', '%s unset on dry-run repeat %s-%d (the runner did not yield it; '
+                                       'r2 §12.7, §12.9 (4))' % (' and '.join(named), rep['arm'], rep['repeat'])))
+            if missing:
+                reasons.append(('H-FIELDS', '%s-%d: fields not populated: %s' % (
+                    rep['arm'], rep['repeat'], ', '.join(missing))))
+    # H-COUNTS: the instrumented repeat's call counts (r2 §6.1) must equal the r2 §4
+    # workload (forced 14 replays, 5 proofs, 15 verify_for; prescribed 8, 3, 9 at
+    # this fixture). A completed instrumented repeat without counts cannot show it.
+    for rep in repeats:
+        if (rep['arm'], rep['repeat']) not in expected or not rep['instrumented']:
+            continue
+        if not rep['completed']:
+            continue   # already I-6
+        want = EXPECTED_COUNTS[rep['arm']]   # the r2 §4 literals, never the request's own derivation
+        got = rep['counts']
+        if not isinstance(got, dict):
+            reasons.append(('H-COUNTS', '%s-%d: instrumented repeat has no call counts' % (rep['arm'], rep['repeat'])))
+        elif (got.get('replay'), got.get('proof'), got.get('verify_for')) != (
+                want['replays'], want['proofs'], want['verify_for']):
+            reasons.append(('H-COUNTS', '%s-%d call counts %s differ from the r2 §4 workload %s' % (
+                rep['arm'], rep['repeat'], got, want)))
+
+    forced = summaries.get('forced') or {}
+    estimates = {
+        'arm': 'forced',
+        'C_hat_s': ((forced.get('cpu_input_s') or {}).get('all') or {}).get('max'),
+        'W_hat_s': ((forced.get('wall_workload_s') or {}).get('all') or {}).get('max'),
+        'M_hat_bytes': forced.get('memory_max_bytes_complete_only') if memory_complete else None,
+        'P_hat_s': forced.get('predicted_seconds_max'),
+        'provisional': 'D̂ uncovered until Stage 1c (r2 §4, §9 PA-1)',
+    }
+    if stage == '1a' or mode == 'dry-run':
+        memory_feasibility = 'UNVERIFIED'
+    elif (not memory_complete or estimates['M_hat_bytes'] is None
+          or any(code == 'I-1' for code, _ in reasons)):   # r2 §12.7 I-1: memory UNVERIFIED
+        memory_feasibility = 'UNVERIFIED'
+    else:
+        memory_feasibility = 'FAILED' if M_M * estimates['M_hat_bytes'] > PA3_REFERENCE_BYTES else 'VERIFIED'
+    screen, pa3 = _screens(estimates)
+    ceiling_missing = _ceiling_inputs(summaries, estimates) if mode == 'measure' else []
+    if stage == '1b' and ceiling_missing:
+        reasons.append(('INCOMPLETE', 'ceiling inputs incomplete, rule not applicable (r2 §6.2, §9): '
+                                      + '; '.join(ceiling_missing)))
+    blocking = {code for code, _ in reasons} & BLOCKING_CODES
+    rule_applicable = (stage == '1b' and mode == 'measure' and not blocking and not ceiling_missing
+                       and memory_feasibility in ('VERIFIED', 'FAILED'))
+    stop, validity_ok, exit_code = _classify(reasons, rule_applicable=rule_applicable,
+                                             memory_feasibility=memory_feasibility, screen=screen)
+    rerun_eligible = _rerun_eligible(stage, mode, exit_code, [args.run_attempt])
+    env = next((r['environment'] for r in repeats if r.get('environment')), {}) or {}
+    osr = _os_release()
+    executable = env.get('executable')
+    lock = ROOT / 'requirements-ops.lock'
+    runtime = {
+        'runtime_kind': args.runtime_kind or ('host_venv' if stage != '1a' else 'windows_dev_host'),
+        'os_id': osr.get('ID') or platform.system().lower(), 'os_release': osr.get('VERSION_ID') or platform.release(),
+        'kernel': facts.get('kernel') or platform.release(), 'systemd_version': facts.get('systemd_version'),
+        'arch': platform.machine(), 'cpu_model': facts.get('cpu_model') or _cpu_model(),
+        'logical_cpus': _int_or_none(facts.get('nproc')) or os.cpu_count(),
+        'implementation': env.get('implementation'), 'python': env.get('python'),
+        'executable_sha256': (_sha256_or_error(executable) if isinstance(executable, str)
+                              and Path(executable).is_file() else None),
+        'requirements_lock_sha256': _sha256_or_error(lock) if lock.is_file() else None,
+        'thread_env': env.get('thread_env'), 'image_digest': None,
+        'platform_accounting': ('windows_process_time_job_object' if stage == '1a'
+                                else 'linux_getrusage_cgroup_v2'),
+        'runner': args.runner, 'run_id': args.run_id, 'run_attempt': args.run_attempt, 'job': args.job,
+        'arm_order': arm_order,
+        'swap_total_kb': (probe or {}).get('swap_total_kb') if probe else _swap_total_kb(),
+        'host_facts': facts or None,
+    }
+    for rep in repeats:
+        rep.pop('environment', None)
+    workload = {}
+    for arm in arm_order:
+        found = next((r['workload'] for r in by_arm.get(arm, []) if r.get('workload')), None)
+        if found:
+            workload[arm] = found
+    for rep in repeats:
+        rep.pop('workload', None)
+    return {
+        'schema': SCHEMA, 'scope': 'job', 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
+        'recorded_utc': _now(), 'measured_commit': measured, 'tree_clean': tree_clean,
+        'dispatched_head': args.dispatched_head, 'start_head': start_head,
+        'harness_sha256': _sha256_file(HARNESS), 'source_sha256': current['source_sha256'],
+        'code_identity': current['code_identity'],
+        'executed_identity': (launcher_bundle or {}).get('executed_identity'), 'stage': stage, 'mode': mode,
+        'runtime': runtime, 'probe': probe,
+        'forcing': {'seam': 'harness_request', 'within_pp': FORCED_WITHIN_PP, 'label': FORCING_LABEL,
+                    'prescribed_within_pp': (workload.get('prescribed') or {}).get('within_pp'),
+                    'adapter_callable_identity': None},
+        'workload': workload, 'repeats': repeats,
+        'summary': {'arms': summaries, 'prefix_matches_prescribed': prefix_ok,
+                    'memory_complete_all_timed_repeats': memory_complete, 'estimates': estimates},
+        'verdict': {'validity_ok': validity_ok, 'memory_feasibility': memory_feasibility,
+                    'memory_scope': 'PA-3a payload unit (r2 §16 C6)', 'rule_applicable': rule_applicable,
+                    'ceiling_inputs_complete': not ceiling_missing, 'stop_class': stop,
+                    'rerun_eligible': rerun_eligible, 'sigma_screen': screen, 'pa3a_screen': pa3,
+                    'reasons': ['%s: %s' % pair for pair in reasons], 'exit_code': exit_code},
+    }
+
+
+FIXED_SOURCE_FILES = ('tests/ops/qualification/composition_fixture.py',
+                      'tests/ops/qualification/runtime_fixture.py', 'tests/ops/qualification/test_contract.py',
+                      'tests/ops/qualification/test_trust_domain.py', 'requirements-ops.lock')
+
+
+def _source_identity(loaded_fixture_files):
+    """observe_runtime identity plus SHA-256 of the worker closure, the fixed
+    fixture files and the fixture files the repeats loaded (r2 §5.1, §12.8)."""
+    identity, files = _code_identity()
+    files |= set(FIXED_SOURCE_FILES) | set(loaded_fixture_files)
+    return identity, {name: _sha256_or_error(ROOT / name) for name in sorted(files) if (ROOT / name).is_file()}
+
+
+def _executed_identity(rows):
+    """Taken by --launcher after its last repeat, outside every measured process:
+    the code the Windows repeats ran. --summarize rejects any mismatch (I-7)."""
+    loaded = {name for row in rows
+              for name in ((row or {}).get('environment') or {}).get('loaded_fixture_files') or []}
+    identity, sources = _source_identity(loaded)
+    status = _git('status', '--porcelain', '--untracked-files=no')
+    return {'measured_commit': _git('rev-parse', 'HEAD'),
+            'tree_clean_tracked': None if status is None else status == '',
+            'harness_sha256': _sha256_file(HARNESS), 'source_sha256': sources, 'code_identity': identity}
+
+
+def _identity_mismatches(executed, current):
+    if not executed:
+        return ['executed identity absent from the bundle (bundle predates the binding or was edited)']
+    found = []
+    if not (executed.get('code_identity') or {}).get('worker_runtime'):
+        found.append('execution-time observe_runtime identity absent (%s)' % (
+            (executed.get('code_identity') or {}).get('worker_runtime_error') or 'no worker_runtime'))
+    if executed.get('tree_clean_tracked') is not True:
+        found.append('execution-time tracked tree not clean (tree_clean_tracked=%s; r2 §5.1 requires the measured '
+                     'commit on a clean tree)' % executed.get('tree_clean_tracked'))
+    for key in ('measured_commit', 'harness_sha256', 'code_identity'):
+        if executed.get(key) != current.get(key):
+            found.append('%s executed %s, at summarize %s' % (key, executed.get(key), current.get(key)))
+    before, after = executed.get('source_sha256') or {}, current.get('source_sha256') or {}
+    for name in sorted(set(before) | set(after)):
+        if before.get(name) != after.get(name):
+            found.append('source %s executed %s, at summarize %s' % (name, before.get(name), after.get(name)))
+    return found
+
+
+def _code_identity():
+    """r2 §5.1 code identity: observe_runtime(repo, 'worker') (runtime.py:75), read at summarize time,
+    outside every measured unit."""
+    files = set()
+    identity = {}
+    try:
+        _setup_paths()
+        from c1_rail.qualification.execution.runtime import observe_runtime
+        observed = observe_runtime(ROOT, 'worker')
+        identity['worker_runtime'] = {k: observed[k] for k in ('python_version', 'platform',
+                                                               'dependency_lock_sha256',
+                                                               'signing_configuration_sha256')}
+        for row in observed['sources'].values():
+            files.add(row['path'])
+    except Exception as exc:  # recorded, never silently dropped
+        identity['worker_runtime_error'] = '%s: %s' % (type(exc).__name__, exc)
+    return identity, files
+
+
+def summarize(args):
+    inputs = [Path(p) for p in args.summarize]
+    records, locations = [], []
+    missing = [str(path) for path in inputs if not path.exists()]
+    if missing:
+        raise SystemExit('refused: no such input: %s' % ', '.join(missing))
+    current = _current_identity(inputs[0]) if len(inputs) == 1 else None
+    for path in inputs:
+        candidate = path / 'record.json' if path.is_dir() else path
+        if len(inputs) > 1 and candidate.name == 'record.json' and candidate.is_file():
+            record, error = _read_json_dict(candidate)   # combined mode reuses each job's runner-side record
+            if record is None:
+                raise SystemExit('refused: job record %s is unreadable (%s); re-summarize that job directory, '
+                                 'whose rows and units are retained' % (candidate, error))
+            records.append(record)
+            locations.append(candidate.parent)
+            continue
+        records.append(_job_record(path, args, current))
+        locations.append(path if path.is_dir() else path.parent)
+    if len(records) == 1:
+        record = records[0]
+        destination = Path(args.record) if args.record else (
+            inputs[0] / 'record.json' if inputs[0].is_dir() else inputs[0].with_suffix('.record.json'))
+    else:
+        record = _combined(records, locations)
+        destination = Path(args.record) if args.record else None
+        if destination is None:
+            raise SystemExit('--record PATH is required when combining several jobs')
+    _write_json(destination, record, exclusive=False)
+    verdict = record['verdict']
+    line = ('S5 Part A measurement: stage=%s mode=%s validity_ok=%s memory=%s rule_applicable=%s stop_class=%s '
+            'exit=%s' % (record['stage'], record['mode'], verdict['validity_ok'], verdict['memory_feasibility'],
+                         verdict['rule_applicable'], verdict['stop_class'], verdict['exit_code']))
+    print(line)
+    for reason in verdict['reasons']:
+        print('  ' + reason)
+    print('wrote', destination)
+    return verdict['exit_code']
+
+
+def _current_identity(path):
+    """The summarize-time identity, in the shape of _executed_identity."""
+    identity, sources = _source_identity(_loaded_fixture_files_of(path))
+    return {'measured_commit': _git('rev-parse', 'HEAD'), 'harness_sha256': _sha256_file(HARNESS),
+            'source_sha256': sources, 'code_identity': identity}
+
+
+def _loaded_fixture_files_of(path):
+    path = Path(path)
+    names = set()
+    if path.is_file():
+        bundle, _ = _read_json_dict(path)
+        entries = (bundle or {}).get('entries')
+        rows = [e.get('row') for e in entries if isinstance(e, dict)] if isinstance(entries, list) else []
+    else:
+        rows = [_read_row(p)[0] for p in path.glob('*-*.json')
+                if re.fullmatch(r'(forced|prescribed)-\d+\.json', p.name)]
+    for row in rows:
+        if not isinstance(row, dict) or not isinstance(row.get('environment'), dict):
+            continue
+        for name in row['environment'].get('loaded_fixture_files') or []:
+            if isinstance(name, str):
+                names.add(name)
+    return names
+
+
+def _combine_inputs_refusal(records):
+    """r2 §6.2 and §12.3: the combined record is the two jobs (a, b) of one
+    dispatch. Anything else is refused before a record is written."""
+    shape = {'runtime': dict, 'verdict': dict, 'summary': dict, 'repeats': list}
+    for r in records:
+        if not isinstance(r, dict) or any(not isinstance(r.get(k), t) for k, t in shape.items()):
+            return 'refused: a job record is malformed (needs runtime, verdict, summary and repeats)'
+        if any(not isinstance(rep, dict) or rep.get('arm') not in ARMS for rep in r['repeats']):
+            return 'refused: a job record carries a malformed repeat'
+    if any(r.get('scope') != 'job' for r in records):
+        return 'refused: combine takes per-job records only (scope = job)'
+    jobs = sorted(str((r.get('runtime') or {}).get('job')) for r in records)
+    if jobs != ['a', 'b']:
+        return 'refused: combine needs exactly one job a and one job b record, got jobs %s' % jobs
+    run_ids = {(r.get('runtime') or {}).get('run_id') for r in records}
+    if len(run_ids) != 1 or None in run_ids:
+        return 'refused: the job records are not from one run (run ids %s)' % sorted(map(str, run_ids))
+    for r in records:
+        runtime = r.get('runtime') or {}
+        attempt = _int_or_none(runtime.get('run_attempt'))
+        if attempt is None or not 1 <= attempt <= MAX_RUN_ATTEMPT:
+            return ('refused: job %s run attempt %r is outside 1..%d (r2 §12.7 allows one `--failed` re-run)'
+                    % (runtime.get('job'), runtime.get('run_attempt'), MAX_RUN_ATTEMPT))
+        want_order = ['forced', 'prescribed'] if runtime.get('job') == 'a' else ['prescribed', 'forced']
+        if list(runtime.get('arm_order') or []) != want_order:
+            return 'refused: job %s arm order %s is not the r2 §6.2 alternation %s' % (
+                runtime.get('job'), runtime.get('arm_order'), want_order)
+    return None
+
+
+def _cleanup_receipt_refusal(records, locations):
+    """Each job's artifact must carry the workflow's cleanup receipt, for the same
+    run, attempt and job, with cleanup_exit 0 (the owned cleanup of r2 §12.3 step 9)."""
+    for record, location in zip(records, locations or [None] * len(records)):
+        runtime = record.get('runtime') or {}
+        receipt_path = None if location is None else Path(location) / 'cleanup-receipt.json'
+        try:
+            receipt = _read_json(receipt_path) if receipt_path is not None else None
+        except (OSError, ValueError) as exc:
+            return 'refused: job %s cleanup receipt unreadable: %s' % (runtime.get('job'), type(exc).__name__)
+        if not isinstance(receipt, dict):
+            return 'refused: job %s has no cleanup receipt (cleanup-receipt.json) beside its record' % (
+                runtime.get('job'))
+        bound = all(str(receipt.get(key)) == str(runtime.get(key)) for key in ('run_id', 'run_attempt', 'job'))
+        if not bound:
+            return 'refused: job %s cleanup receipt is for run %s attempt %s job %s, not this record' % (
+                runtime.get('job'), receipt.get('run_id'), receipt.get('run_attempt'), receipt.get('job'))
+        if receipt.get('cleanup_exit') != 0:
+            return 'refused: job %s owned cleanup did not succeed (cleanup_exit %s)' % (
+                runtime.get('job'), receipt.get('cleanup_exit'))
+    return None
+
+
+def _combine_tool_refusal(records):
+    """The combining harness must be the code that produced the records: the same
+    HEAD, harness SHA-256 and recorded source SHA-256s (r2 §5.1). Keys on which the
+    records disagree are left to the cross-job I-7 check."""
+    for key, now in (('measured_commit', _git('rev-parse', 'HEAD')), ('harness_sha256', _sha256_file(HARNESS))):
+        values = {r.get(key) for r in records}
+        if len(values) == 1 and values != {now}:
+            return ('refused: the records carry %s %s but this combine runs %s; combine from the recorded revision'
+                    % (key, next(iter(values)), now))
+    sources = [json.dumps(r.get('source_sha256'), sort_keys=True) for r in records]
+    if len(set(sources)) == 1:
+        for name, sha in sorted((records[0].get('source_sha256') or {}).items()):
+            now = _sha256_file(ROOT / name) if (ROOT / name).is_file() else None
+            if now != sha:
+                return ('refused: source %s is %s here but %s in the records; combine from the recorded revision'
+                        % (name, now, sha))
+    return None
+
+
+def _combined(records, locations=None):
+    """Ĉ, Ŵ, M̂, P̂ are maxima over all valid timed repeats of both jobs (r2 §6.2)."""
+    refusal = (_combine_inputs_refusal(records) or _combine_tool_refusal(records)
+               or _cleanup_receipt_refusal(records, locations))
+    if refusal:
+        raise SystemExit(refusal)
+    stages = {r['stage'] for r in records}
+    modes = {r['mode'] for r in records}
+    reasons = []
+    if len(stages) != 1 or len(modes) != 1:
+        reasons.append(('I-7', 'records mix stages %s or modes %s' % (sorted(stages), sorted(modes))))
+    for record in records:
+        if not (record.get('code_identity') or {}).get('worker_runtime'):
+            reasons.append(('I-7', 'job %s record has no observe_runtime identity' % (
+                (record.get('runtime') or {}).get('job'))))
+    # Both jobs must have measured the same code (I-7, r2 §12.7).
+    for key in ('measured_commit', 'dispatched_head', 'harness_sha256', 'source_sha256'):
+        values = [json.dumps(r.get(key), sort_keys=True) for r in records]
+        if len(set(values)) != 1 or records[0].get(key) is None:
+            reasons.append(('I-7', 'job records differ in or lack %s' % key))
+    stage, mode = sorted(stages)[0], sorted(modes)[0]
+    for record in records:
+        for text in record['verdict']['reasons']:
+            code, _, detail = text.partition(': ')
+            reasons.append((code, 'job %s: %s' % (record['runtime'].get('job'), detail)))
+    by_arm = {}
+    for record in records:
+        for rep in record['repeats']:
+            by_arm.setdefault(rep['arm'], []).append(rep)
+    summaries = {arm: _arm_summary(reps) for arm, reps in by_arm.items()}
+    for arm, summary in summaries.items():
+        if summary['digests_identical'] is False:
+            reasons.append(('I-4', 'artifact digests differ between jobs for arm %s' % arm))
+    medians = [((r['summary']['arms'].get('forced') or {}).get('cpu_input_s') or {}).get('all') for r in records]
+    medians = [m['median'] for m in medians if m]
+    ratio = (max(medians) / min(medians)) if len(medians) > 1 and min(medians) > 0 else None
+    memory_complete = all(r['summary']['memory_complete_all_timed_repeats'] for r in records)
+    forced = summaries.get('forced') or {}
+    estimates = {
+        'arm': 'forced',
+        'C_hat_s': ((forced.get('cpu_input_s') or {}).get('all') or {}).get('max'),
+        'W_hat_s': ((forced.get('wall_workload_s') or {}).get('all') or {}).get('max'),
+        'M_hat_bytes': forced.get('memory_max_bytes_complete_only') if memory_complete else None,
+        'P_hat_s': forced.get('predicted_seconds_max'),
+        'provisional': 'D̂ uncovered until Stage 1c (r2 §4, §9 PA-1)',
+    }
+    if (stage == '1a' or mode == 'dry-run' or not memory_complete or estimates['M_hat_bytes'] is None
+            or any(code == 'I-1' for code, _ in reasons)):   # r2 §12.7 I-1: memory UNVERIFIED
+        memory_feasibility = 'UNVERIFIED'
+    else:
+        memory_feasibility = 'FAILED' if M_M * estimates['M_hat_bytes'] > PA3_REFERENCE_BYTES else 'VERIFIED'
+    screen, pa3 = _screens(estimates)
+    ceiling_missing = _ceiling_inputs(summaries, estimates) if mode == 'measure' else []
+    if stage == '1b' and ceiling_missing:
+        reasons.append(('INCOMPLETE', 'combined ceiling inputs incomplete, rule not applicable (r2 §6.2, §9): '
+                                      + '; '.join(ceiling_missing)))
+    blocking = {c for c, _ in reasons} & BLOCKING_CODES
+    rule_applicable = (stage == '1b' and mode == 'measure' and not blocking and not ceiling_missing
+                       and memory_feasibility in ('VERIFIED', 'FAILED'))
+    stop, validity_ok, exit_code = _classify(reasons, rule_applicable=rule_applicable,
+                                             memory_feasibility=memory_feasibility, screen=screen)
+    # r2 §12.9 (3): the failing jobs are those whose own record did not exit 0; if the
+    # failure shows only in the combination, both jobs count as failing.
+    failing = [r for r in records if (r.get('verdict') or {}).get('exit_code') != EXIT_VALID] or records
+    rerun_eligible = _rerun_eligible(stage, mode, exit_code,
+                                     [(r.get('runtime') or {}).get('run_attempt') for r in failing])
+    return {
+        'schema': SCHEMA, 'scope': 'combined', 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
+        'recorded_utc': _now(), 'stage': stage, 'mode': mode,
+        'jobs': records,
+        'summary': {'arms': summaries, 'estimates': estimates, 'memory_complete_all_timed_repeats': memory_complete,
+                    'host_variance': {'forced_median_cpu_ratio_between_jobs': ratio,
+                                      'recorded_above_1_30': ratio is not None and ratio > SPREAD_LIMIT}},
+        'verdict': {'validity_ok': validity_ok, 'memory_feasibility': memory_feasibility,
+                    'memory_scope': 'PA-3a payload unit (r2 §16 C6)', 'rule_applicable': rule_applicable,
+                    'ceiling_inputs_complete': not ceiling_missing, 'stop_class': stop,
+                    'rerun_eligible': rerun_eligible, 'sigma_screen': screen, 'pa3a_screen': pa3,
+                    'reasons': ['%s: %s' % pair for pair in reasons], 'exit_code': exit_code},
+    }
+
+
+# ------------------------------------------------------------------------ CLI
+
+def build_parser():
+    parser = argparse.ArgumentParser(
+        prog='measure_part_a_max.py.txt',
+        description='S5 Part A forced maximum-expansion measurement (TEST_ONLY synthetic; r2 §6.3). '
+                    'Output class ' + ARTIFACT_CLASS + '.')
+    modes = parser.add_mutually_exclusive_group(required=True)
+    modes.add_argument('--repeat-mode', action='store_true', help='one repeat in this process (r2 §6.3 steps 1-9)')
+    modes.add_argument('--launcher', action='store_true', help='Windows only: fresh repeats in job objects')
+    modes.add_argument('--summarize', nargs='+', metavar='PATH',
+                       help='a Linux job directory, a Windows launcher bundle, or several job records to combine')
+    modes.add_argument('--probe-verdict', metavar='DIR', help='workflow helper: judge the accounting probe')
+    modes.add_argument('--check-stage', metavar='STAGE', help='workflow helper: exit 0 if STAGE is dispatchable')
+    parser.add_argument('--stage', choices=('1a', '1b', '1c'), help='measurement stage (r2 §12.2-§12.4)')
+    parser.add_argument('--arm', choices=ARMS, help='--repeat-mode: forced or prescribed')
+    parser.add_argument('--repeat', type=int, help='--repeat-mode: 1..N timed (1 is cold), 0 instrumented')
+    parser.add_argument('--unit', help='--repeat-mode (Linux): the systemd unit name the repeat runs in')
+    parser.add_argument('--dry-run', action='store_true', help='--repeat-mode: untimed dry-run repeat')
+    parser.add_argument('--out', help='--repeat-mode: row path; --launcher: bundle path (never overwritten)')
+    parser.add_argument('--arms', default='forced,prescribed', help='--launcher: arm order')
+    parser.add_argument('--repeats', type=int, default=DEFAULT_TIMED_REPEATS, help='timed repeats per arm')
+    parser.add_argument('--timeout-s', type=float, default=REPEAT_TIMEOUT_S, help='--launcher: per-repeat timeout')
+    parser.add_argument('--mode', choices=('dry-run', 'measure'), help='--summarize: override the inferred mode')
+    parser.add_argument('--job', help='--summarize: matrix job (a or b)')
+    parser.add_argument('--run-id', help='--summarize: GitHub run id')
+    parser.add_argument('--run-attempt', help='--summarize: GitHub run attempt')
+    parser.add_argument('--runner', help='--summarize: runner name')
+    parser.add_argument('--dispatched-head', help='--summarize: the dispatched commit (I-7)')
+    parser.add_argument('--runtime-kind', choices=('host_venv', 'worker_image'), help='--summarize: runtime')
+    parser.add_argument('--arm-order', help="--summarize: e.g. 'forced prescribed'")
+    parser.add_argument('--record', help='--summarize: record path (default: DIR/record.json or BUNDLE.record.json)')
+    return parser
+
+
+def main(argv=None):
+    args = build_parser().parse_args(argv)
+    if args.check_stage:
+        return check_stage(args.check_stage)
+    if args.probe_verdict:
+        return probe_verdict(args.probe_verdict)
+    if args.repeat_mode:
+        if args.stage is None or args.arm is None or args.repeat is None or not args.out:
+            print('--repeat-mode needs --stage, --arm, --repeat and --out', file=sys.stderr)
+            return 2
+        return repeat_mode(args)
+    if args.launcher:
+        if args.stage is None or not args.out or args.repeats < 2:
+            print('--launcher needs --stage 1a, --out and --repeats >= 2', file=sys.stderr)
+            return 2
+        return launcher(args)
+    return summarize(args)
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
