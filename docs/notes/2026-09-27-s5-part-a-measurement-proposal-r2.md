@@ -1215,6 +1215,10 @@ echo "all $n listed files match"                         # the record says 222
 # every file under the two run directories must be listed in the pinned SHA256SUMS (sha256sum -c
 # ignores unlisted files), so nothing read below can come from outside the pin
 mkdir -p "$S"
+# only regular files and directories may sit under the run directories: a symlink could point outside the pin
+# and a FIFO could block a read, so any other entry type stops the block
+( cd "$P" && find run-36180568493 run-36181780676 ! -type d ! -type f ) > "$S/irregular.txt"
+[ ! -s "$S/irregular.txt" ] || { echo "entries that are not regular files:"; cat "$S/irregular.txt"; exit 1; }
 ( cd "$P" && find run-36180568493 run-36181780676 -type f | sort ) > "$S/present.txt"
 cut -c67- "$P/SHA256SUMS" | sed -e 's#^\*##' -e 's#^\./##' | sort > "$S/listed.txt"   # "<sha>  <path>"
 comm -23 "$S/present.txt" "$S/listed.txt" > "$S/unlisted.txt"
@@ -1222,12 +1226,12 @@ comm -23 "$S/present.txt" "$S/listed.txt" > "$S/unlisted.txt"
 # coverage: exactly one journal.log per run directory. systemd-units.log is not read: it is the
 # `_COMM=systemd` subset of the same boot journal (qualification-s2-supervision.yml:161, :164).
 for run in 36180568493 36181780676; do
-  c=$(find "$P/run-$run" -name journal.log | grep -c . || true)
+  c=$(find "$P/run-$run" -type f -name journal.log | grep -c . || true)
   [ "$c" = 1 ] || { echo "run-$run: $c journal.log files, expected 1; stop"; exit 1; }
 done
 # only if coverage holds, and only after CP-1a approves Stage 0 (§14.1 decision (2)(a); approved 2026-09-27):
 for run in 36180568493 36181780676; do    # each line keeps its run; the journal line keeps its unit and time
-  { grep -E "Consumed .* CPU time|memory peak" "$(find "$P/run-$run" -name journal.log)" || true; } \
+  { grep -E "Consumed .* CPU time|memory peak" "$(find "$P/run-$run" -type f -name journal.log)" || true; } \
     | sed "s/^/run-$run: /"
 done > "$S/lines.txt"
 ( cd "$P" && { grep -roE '"memory_peak_bytes": *[0-9]+' run-36180568493 run-36181780676 || true; } | sort ) \
@@ -1247,7 +1251,7 @@ Only reviewed extracted lines and the hashes enter the repository; the raw logs 
 - *an empty `find` made `grep` read standard input;*
 - *the expected hash was compared only by eye, and a failed `sha256sum -c` did not stop the block.*
 
-*The block was exercised under `set -euo pipefail` on a synthetic tree of the recorded layout: a clean tree passes, and a wrong pin, a changed listed file or a missing `journal.log` each stop it.]* *[Corrected 2026-09-28 (Codex review of 83ce9f76): `sha256sum -c` checks only the files the manifest lists, so an added or substituted unlisted file could have supplied extracted lines. The block now stops if any file under the two run directories is missing from the pinned `SHA256SUMS`. A synthetic tree with one extra unlisted file stops it.]*
+*The block was exercised under `set -euo pipefail` on a synthetic tree of the recorded layout: a clean tree passes, and a wrong pin, a changed listed file or a missing `journal.log` each stop it.]* *[Corrected 2026-09-28 (Codex review of 83ce9f76): `sha256sum -c` checks only the files the manifest lists, so an added or substituted unlisted file could have supplied extracted lines. The block now stops if any file under the two run directories is missing from the pinned `SHA256SUMS`. A synthetic tree with one extra unlisted file stops it.]* *[Corrected 2026-09-28 (Codex review of 051fe28d): the inventory listed regular files only, while the journal lookup accepted a symlink, so a `journal.log` symlink could pass both checks and feed unpinned bytes to the read. A FIFO could also block it. Any entry under the run directories that is not a regular file or directory now stops the block, and the journal lookup takes regular files only. A synthetic tree with a `journal.log` symlink in place of the listed file stops it.]*
 
 ### 16.5 Citation drift and other stale statements in this note
 
