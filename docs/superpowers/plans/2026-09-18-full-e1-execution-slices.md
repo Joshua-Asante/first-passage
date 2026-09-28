@@ -1035,3 +1035,83 @@ The hold stays **HELD**.
 - **Still open:** OQ-1, and Q1, Q7 and Q9 at C3.
 
 **Not granted:** the hold release (CP-1b); S5 build, freeze, dispatch or execution; any RC-2 application before C3; any workflow dispatch; any measurement outside the CP-1a dispatch. RC-6 is met only when the application is merged and reviewed, and CP-1b records it. The hold stays **HELD**.
+
+### Coordinator transfer and execution dispatch — H1 step (b) measurement, 2026-09-28
+
+**Source.** Operator direction in session, 2026-09-28 (UTC). The operator relayed a draft "Post-H1 measurement execution — next-session handoff" and directed "Update to main and continue". Then, by structured answer:
+- to "Who holds the coordinator role for executing H1 step (b)?": "This session";
+- to "Must that ownership and dispatch record be merged to main before the first dispatch?": "Merge first";
+- to "How should merges to main be handled while a Stage 1b run is in flight?": "Hold merges".
+
+The relayed draft is not a committed record. This entry records what the operator adopted from it.
+
+**Transfer (scoped).** Under STATE's handoff obligation, the coordinator role for H1 step (b) execution passes to the Claude Code session "Post-H1 measurement execution handoff". That session runs on the operator's Windows host, in worktree `.claude/worktrees/bracket-timing-convention-build-43a332`, on branch `claude/post-h1-measurement-execution-96350a`.
+- **Scope:** the bounded r2 §12 measurement approved by CP-1a decision (2), the r2 §13 application and the CP-1b packet.
+- **Unchanged:** other coordinator work stays where it is. The operator decides CP-1b and keeps merges and operational GOs.
+
+**Starting state.** `origin/main` is at `6da1b2b2`.
+- Merged: #523 (`c918cad5`), #525 (`ed3e476f`), #526 (`0dcceb08`, head `77b916f7`) and #527 (`6380dcb4`).
+- The dispatch-only workflow is registered on the default branch (workflow ID 368645616) and has no runs.
+- The harness, workflow, regression module and both fixtures are byte-identical from `6010cb50` to `6da1b2b2`.
+
+**Preconditions before any measurement** (the Stage 0 read, Stage 1a or any dispatch):
+1. The r2 "Current authority" gate: #534's H1-row record of the #842/#843 post-merge audits is on `main`.
+2. This entry is on `main`.
+
+**Findings recorded before execution.**
+- **Line endings.** This host's system gitconfig sets `core.autocrlf=true`, so checkouts have CRLF bytes. The harness pins the LF SHA-256 of `composition_fixture.py` and `runtime_fixture.py` (`measure_part_a_max.py.txt:79-84`) and hashes working-tree bytes. So:
+  - a Stage 1a bundle from a CRLF checkout can only exit 4 (H-SHAPE);
+  - a combine from a CRLF checkout is refused.
+
+  Stage 1a and the combine therefore run from a clean detached LF checkout, made with `git -c core.autocrlf=false worktree add --detach <path> <sha>`. No code changes.
+- **Retention follow-up (#523): resolved.**
+  - Records `20260927T180621Z-71bad46c8b99` and `20260927T180630Z-2534fb8215cf` are archived byte for byte in first-passage-archive#837 (pins `docs/evidence/PRIVATE_EVIDENCE.sha256:109-111`).
+  - `scripts/evidence_archive.py audit --verify` against the archive's `main` at `b560ac2a` reports them ARCHIVED (166 pins: 78 ARCHIVED, 0 UNPUSHED, 88 MISSING, 0 CORRUPT).
+  - The originals were written in a cloud session and are not on this host. The archived copies are the durable copies.
+- **Stage 0 inputs.** The preserved set's `SHA256SUMS` hashes to `e2c14228…189a7`, as the 2026-09-26 entry records. The r2 §16.4 coverage check runs after the preconditions.
+- **Cleanup failure.** README `:196` counts a failed owned cleanup against the `--failed` re-run. r2 §12.7 (`:689`) stops the stage instead, and r2 governs.
+- **Runtime.** The workflow refuses `worker_image`. Stage 1b runs on `host_venv`, on the recorded static image-first finding (H1 row correction), and PA-5 at C3 validates the mismatch. The probe and dry run establish `host_venv` readiness only.
+- **CP-1b inputs (not measurement blockers).**
+  - #527's packet carries post-acceptance corrections 1, 2, 4–7 and 9–11, which await the operator's acceptance (owner-text draft `:905`).
+  - `ops/c1_rail/qualification/replay.py` changed after the application head `875ecf29` (#522), so its anchors are re-checked before CP-1b.
+
+**Execution dispatch.** This entry adds no authority beyond CP-1a decision (2), its confirmed re-run interpretation, and r2 §12.7 and §12.9.
+1. **Stage 0.**
+   - Run the r2 §16.4 coverage check in the primary checkout, read-only.
+   - If coverage holds: the §12.1 local read and public-clone review.
+   - Otherwise: record `UNAVAILABLE`. No download.
+2. **Stage 1a.** Run the README Stage 1a commands through the LF checkout's `fp.ps1`.
+3. **Stage 1b dry run.**
+   - Command: `gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref main -f stage=1b -f mode=dry-run -f runtime=host_venv -f note_dir=docs/notes/2026-09-27-s5-part-a-measurement`.
+   - Then `gh run watch`, and `gh run download` into scratch, pass or fail.
+   - At most one re-dispatch, and only for I-1 or I-6.
+4. **Stage 1b measure,** after a clean dry run.
+   - Command: the same, with `-f mode=measure`.
+   - At most one `gh run rerun --failed`, and only when every failed job exits 3 and is re-run eligible.
+5. **Combine** from the LF checkout at the dispatched SHA.
+6. **Application.** If the combined record is rule-applicable with `stop_class = none`, record the r2 §13 application entry here.
+
+Every r2 §12.7 and §12.9 stop returns at once. A further dispatch after a stopped stage needs a fresh operator approval. Before each dispatch the coordinator tells the operator the window has started. The operator holds merges to `main` until the run ends (r2 §12 common limit).
+
+**Output paths.**
+- **Public,** under `docs/notes/2026-09-27-s5-part-a-measurement/`:
+  - `windows-<utc>.json` and its `.record.json`;
+  - `stage0/{SHA256SUMS,lines.txt,memory_peak.txt}`, after the review;
+  - `stage1b/<run_id>-<job>-attempt<n>/`, with the r2 §12.3 file list, failed attempts included;
+  - `stage1b/<run_id>-combined.json`;
+  - a dated measurement section in the README (r2 `:627`).
+
+  Also public:
+  - pins in `docs/evidence/PRIVATE_EVIDENCE.sha256`;
+  - this ledger, the H1 row and the CP-1b packet.
+- **Private:** the complete downloaded artifacts (including `journal.log`) and the launcher records. They are archived in first-passage-archive by content address, through a `claude/*` branch PR that the operator merges.
+
+**Not granted:**
+- any other workflow, dispatch, re-run or download;
+- Stage 1c or Stage 2;
+- any profile, ceiling or release-literal edit;
+- the hold release;
+- S5 build, freeze, dispatch or execution;
+- production, activation or live authority.
+
+S5 stays **HELD**.
