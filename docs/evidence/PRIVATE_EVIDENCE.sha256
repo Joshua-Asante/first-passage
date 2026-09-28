@@ -306,3 +306,10 @@ d89babdf2a5a4a1f8fce35396192fd0e2e4a2ba9a42a58fd497343fc7b22efb1  local_artifact
 dae283f19483cd1ac482dc4a0cce6bd3d0b1dfe85f79de402c701f2c629ccb34  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/release.json
 ed89d4984bcf55a131f41373d3ffddb09b31ab2baa91aa49008efca0d83b0599  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/systemd-units.log
 32e509c98758ddb62de920b11a18ec73eba0b19ab79bd871c747a2bacf2d512a  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/worker-image.json
+
+# CP-1b (ledger: "Operator ruling — CP-1b: S5 hold released for the TEST_ONLY build, 2026-09-28"): the launcher check
+# records cited by #537 at its pushed heads 0a84674, fadfc29 and 1dae754 (the last is the final cited record);
+# archived in first-passage-archive#844 (merged at e3672489).
+d9afecf4cd98464ab7212b1d0892969730c6e1e45b981aa5f87ac64e07d6383a  .cache/fp-verification/20260928T013657Z-0f0b5ae0df6b/record.json
+38c4db6678929b9dbc70d6790c4039e96186f0a8a7ccc9f7d934b3caff0b1412  .cache/fp-verification/20260928T015253Z-8d29efff45e1/record.json
+26b21a0431da19d791a795357a5d8d042d57890768c34665b8b46d93993f3a82  .cache/fp-verification/20260928T144557Z-6db9391ec782/record.json
