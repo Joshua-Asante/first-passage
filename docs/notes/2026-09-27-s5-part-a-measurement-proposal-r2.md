@@ -610,20 +610,28 @@ snapshot() {
   grep -F "[stage 1b, $1," "$S/runs-$1.txt" | cut -d' ' -f1 > "$S/before-$1.txt" || true
 }
 # cap: the §12.7 dispatch caps, counted across invocations from the dry-run snapshot's listing of every Stage 1b
-# run: one measure dispatch per stage; one dry run, and one re-dispatch only when the earlier dry run's retained
-# record reads exit 3 with every reason I-1 or I-6. A missing or unreadable earlier record allows none. Checked
-# with `|| return 1` and `-e`: cap runs on the left of `||`, where set -e does not apply.
+# run: one measure dispatch per stage, and one dry run. An earlier dry run is read from what an earlier invocation
+# retained in $D: its cleanup receipt must be clean for that run, attempt 1 and job a, or the stage stops (§12.7).
+# Then a record reading exit 0 is resumed at step 2 (that invocation stopped before its measure dispatch), and
+# one reading exit 3 with every reason I-1 or I-6 allows the one re-dispatch; anything else, or a missing record,
+# allows neither. Prints "dispatch" or "resume <id>". Checked with `|| return 1` and `-e`: cap runs on the left
+# of `||`, where set -e does not apply.
 cap() {
-  local n prev
+  local n prev a
   n=$(grep -cF '[stage 1b, measure,' "$S/runs-dry-run.txt" || true)
   [ "$n" = 0 ] || { echo "a Stage 1b measure run already exists; the stage's measure dispatch is spent" >&2; return 1; }
   n=$(grep -c . "$S/before-dry-run.txt" || true)
-  [ "$n" = 0 ] && return 0
+  [ "$n" = 0 ] && { echo dispatch; return 0; }
   [ "$n" = 1 ] || { echo "$n Stage 1b dry runs already exist; the one re-dispatch is spent" >&2; return 1; }
-  prev=$(cat "$S/before-dry-run.txt") || return 1
+  prev=$(cat "$S/before-dry-run.txt") || return 1; a="$D/$prev-a-attempt1"
+  jq -e --arg id "$prev" '.cleanup_exit == 0 and (.run_id | tostring) == $id and (.run_attempt | tostring) == "1"
+        and .job == "a"' "$a/cleanup-receipt.json" > /dev/null \
+    || { echo "dry run $prev has no retained clean cleanup receipt; the stage stops (§12.7)" >&2; return 1; }
+  if jq -e '.verdict.exit_code == 0' "$a/record.json" > /dev/null; then echo "resume $prev"; return 0; fi
   jq -e '.verdict.exit_code == 3 and (.verdict.reasons | length > 0) and all(.verdict.reasons[]; test("^I-[16]:"))' \
-    "$D/$prev-a-attempt1/record.json" > /dev/null \
-    || { echo "dry run $prev has no retained exit-3 record whose every reason is I-1 or I-6; no re-dispatch" >&2; return 1; }
+    "$a/record.json" > /dev/null \
+    || { echo "dry run $prev has no retained exit-0 record, nor an exit-3 one whose every reason is I-1 or I-6" >&2; return 1; }
+  echo dispatch
 }
 # bind MODE: print the id of the one dispatch run of MODE, on any head, that the snapshot did not hold, or stop.
 # The run listing carries no dispatch identity, so a run someone else started in the same window could be taken
@@ -722,9 +730,12 @@ receipt_ok() {
     = "0 $1 $4 $3" ]
 }
 # halt MESSAGE: every stop returns to the coordinator (§12.7), keeping whatever this invocation downloaded
-RETAINED=""
+RETAINED=""; WT=""; COMBINED=""
 halt() {
   echo "$1; stop" >&2
+  # interrupted during the combine: remove its worktree, and a record it may have left half written (re-derivable)
+  [ -z "$WT" ] || { git worktree remove --force "$WT" 2>/dev/null || [ ! -e "$WT" ] || echo "remove the worktree $WT by hand" >&2; }
+  [ -z "$COMBINED" ] || rm -f "$COMBINED" || true
   [ ! -s "$S/bound.txt" ] || { echo "bound runs (mode id), which may still be live; watch them, never dispatch beside them:" >&2; cat "$S/bound.txt" >&2; }
   [ -n "$RETAINED" ] || retain || true; exit 1
 }
@@ -732,16 +743,21 @@ trap 'halt "interrupted"' INT TERM HUP                                 # an inte
 
 # 1. dry run (one job, a); H is the head the dry run actually ran on
 snapshot dry-run || halt "the dry-run snapshot failed"
-cap || halt "the §12.7 dispatch cap refuses this dispatch"
-gh workflow run "$WF" -R "$R" --ref main -f stage=1b -f mode=dry-run -f runtime=host_venv -f note_dir="$NOTE" \
-  || echo "the dry-run dispatch returned nonzero; reconciling against the snapshot" >&2   # it may still have been created
-DRY_ID=$(bind dry-run) || halt "the dry run was not bound (a dispatch that returned nonzero and bound nothing was not created)"
-H=$(run_head "$DRY_ID") || halt "the dry run's head could not be read"; echo "dry run $DRY_ID on $H"
-{ fetch "$DRY_ID" dry-run 1 a && verdicts "$DRY_ID" dry-run 1 a; } || halt "dry run $DRY_ID: evidence incomplete"
-receipt_ok "$DRY_ID" dry-run a 1 || halt "dry run $DRY_ID: cleanup receipt not clean"
-e=$(field "$DRY_ID" dry-run a 1 record.json .verdict.exit_code)
-[ "$e" = 0 ] || halt "dry run $DRY_ID exit=$e. Only I-1 or I-6 alone allows one re-dispatch per stage (§12.7); that
-  re-dispatch is a new invocation of this block, and this one's evidence is retained"
+next=$(cap) || halt "the §12.7 dispatch cap refuses this dispatch"
+if [ "$next" = dispatch ]; then
+  gh workflow run "$WF" -R "$R" --ref main -f stage=1b -f mode=dry-run -f runtime=host_venv -f note_dir="$NOTE" \
+    || echo "the dry-run dispatch returned nonzero; reconciling against the snapshot" >&2   # it may still have been created
+  DRY_ID=$(bind dry-run) || halt "the dry run was not bound (a dispatch that returned nonzero and bound nothing was not created)"
+  H=$(run_head "$DRY_ID") || halt "the dry run's head could not be read"; echo "dry run $DRY_ID on $H"
+  { fetch "$DRY_ID" dry-run 1 a && verdicts "$DRY_ID" dry-run 1 a; } || halt "dry run $DRY_ID: evidence incomplete"
+  receipt_ok "$DRY_ID" dry-run a 1 || halt "dry run $DRY_ID: cleanup receipt not clean"
+  e=$(field "$DRY_ID" dry-run a 1 record.json .verdict.exit_code)
+  [ "$e" = 0 ] || halt "dry run $DRY_ID exit=$e. Only I-1 or I-6 alone allows one re-dispatch per stage (§12.7); that
+    re-dispatch is a new invocation of this block, and this one's evidence is retained"
+else                                               # cap read the retained dry run as clean: resume at step 2
+  DRY_ID=${next#resume }
+  H=$(run_head "$DRY_ID") || halt "the dry run's head could not be read"; echo "resuming from retained dry run $DRY_ID on $H"
+fi
 
 # 2. measure, only after a clean dry run (exit=0), and only on the head that dry run validated. The operator's
 #    merge hold (ledger H1(b) execution entry) keeps main at H; the check below catches it moving anyway, and the
@@ -800,12 +816,13 @@ find "$D" -type f | sort
 # 5. combine: exactly one job a and one job b record from MEASURE_ID (per job, its highest attempt, ATT), from a
 #    checkout at the measured head H (the harness refuses any other HEAD):
 #    The measured checkout's doctor runs first (AGENTS.md), and the combine runs only if it passes.
-REPO=$(git rev-parse --show-toplevel); git -c core.autocrlf=false worktree add --detach "$S/wt" "$H"   # LF bytes
+REPO=$(git rev-parse --show-toplevel); WT="$S/wt"; COMBINED="$REPO/$D/$MEASURE_ID-combined.json"
+git -c core.autocrlf=false worktree add --detach "$WT" "$H" || halt "the combine worktree could not be created"   # LF bytes
 d=0; ( cd "$S/wt" && python -I scripts/fp.py doctor ) || d=$?
 c=0; [ "$d" != 0 ] || ( cd "$S/wt" && python -I scripts/fp.py python "$NOTE/measure_part_a_max.py.txt" \
     --summarize "$REPO/$D/$MEASURE_ID-a-attempt${ATT[a]}/record.json" "$REPO/$D/$MEASURE_ID-b-attempt${ATT[b]}/record.json" \
     --record "$REPO/$D/$MEASURE_ID-combined.json" ) || c=$?
-git worktree remove --force "$S/wt"                                     # removed whatever doctor or the combine returned
+COMBINED=""; git worktree remove --force "$S/wt"; WT=""                 # removed whatever doctor or the combine returned
 [ "$d" = 0 ] || halt "doctor failed in the measured checkout (exit $d); the combine did not run"
 [ "$c" = 0 ] || halt "the combine exited $c (§12.7: 3 or 4 is a verdict, anything else a harness failure)"
 # D2 and PA-3 are verdicts on a valid measurement, so the combine exits 0 with them: read the stop class
@@ -857,6 +874,13 @@ s=$(jq -r .verdict.stop_class "$D/$MEASURE_ID-combined.json") || halt "the combi
 - *the measured checkout's `doctor` now runs before the combine, and a failed doctor stops the stage without running it.*
 
 *Each fix was exercised against a fake `gh`: an earlier measure run, two earlier dry runs, an earlier I-6 dry run (re-dispatch allowed), an earlier exit-4 dry run, a combine writing `PA3_FAILURE` with exit 0, and a failing doctor.]*
+
+*[Corrected 2026-09-28 (Codex review of a8d74513 on #539). Three fixes:*
+- *`cap` allowed a dry-run re-dispatch from the earlier record alone. It now first requires that run's retained cleanup receipt to read exit 0 for that run, attempt 1 and job a; otherwise the stage stops, because an owned-cleanup failure needs a fresh approval (§12.7);*
+- *an invocation interrupted between a clean dry run and the measure dispatch left no way to use that dry run. `cap` now reads a retained exit-0 dry run with a clean receipt as `resume <id>`, and the invocation goes straight to step 2, where main must still be at that dry run's head;*
+- *an interrupt during the combine exited through `halt` without removing the worktree. `halt` now removes it, and deletes a combined record the interrupted combine may have left half written; the record is re-derivable from the retained job records.*
+
+*Each fix was exercised against a fake `gh`: an I-6 dry run with a dirty receipt (stops), a retained clean dry run (resumes, dispatches only the measure), and a TERM during the combine (worktree removed, no combined record).]*
 
 *[Status 2026-09-28: Stage 1b ran before this block merged. Dry run 36364714432 and measure run 36364854404 ran on `7675c088`, and their evidence and the CP-1b packet are in [#537](https://github.com/Joshua-Asante/first-passage/pull/537) (open). On that state `cap` refuses every Stage 1b dispatch. This block therefore governs only a re-measurement under a fresh approval (§12.7), which must say which earlier runs it sets aside, and it is the form §12.8 adapts for Stage 1c.]*
 
