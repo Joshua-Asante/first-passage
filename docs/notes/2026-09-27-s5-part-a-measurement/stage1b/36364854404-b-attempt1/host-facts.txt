@@ -1,0 +1,8 @@
+kernel=6.17.0-1022-azure
+systemd_version=systemd 255 (255.4-1ubuntu8.17)
+cgroup_fs=cgroup2fs
+cgroup_controllers=cpuset cpu io memory hugetlb pids rdma misc dmem
+cpu_model=AMD EPYC 9V74 80-Core Processor
+nproc=4
+swap_total=SwapTotal: 0 kB
+swapon_show=

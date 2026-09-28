@@ -1,0 +1,132 @@
+{
+  "arm": "prescribed",
+  "artifact_class": "TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING",
+  "assertions": {
+    "expected_expanded": false,
+    "expected_panels": 2,
+    "ok": true
+  },
+  "cold": false,
+  "counts": null,
+  "cpu": {
+    "adapter": null,
+    "admission": 0.9809789999999992,
+    "part_a": 4.734352000000001,
+    "process_total": 10.266361,
+    "serialize": 0.00027000000000043656,
+    "setup_excluded": 3.567117000000001,
+    "start": 0.37426400000000004,
+    "verify": 0.5224130000000002,
+    "workload": 6.612278000000002
+  },
+  "decision_bearing": false,
+  "dry_run": false,
+  "elapsed_seconds": 4.734717960000012,
+  "environment": {
+    "executable": "/var/lib/fp-qualification-tests/1d50ce1784464387b60d4408e407c6d6/env/bin/python",
+    "implementation": "CPython",
+    "loaded_fixture_files": [
+      "tests/ops/qualification/composition_fixture.py",
+      "tests/ops/qualification/runtime_fixture.py",
+      "tests/ops/qualification/test_contract.py",
+      "tests/ops/qualification/test_trust_domain.py"
+    ],
+    "pid": 3290,
+    "python": "3.12.3",
+    "root": "/home/runner/work/first-passage/first-passage",
+    "thread_env": {
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    }
+  },
+  "error": null,
+  "exit_status": 0,
+  "expanded": false,
+  "failure_reason": null,
+  "final_p5": 1.0,
+  "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+  "fsync_count": null,
+  "initial_p5": 1.0,
+  "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+  "instrumented": false,
+  "memory": {
+    "cgroup_cpu_usage_usec": 10418202,
+    "cgroup_path": "/system.slice/fp-s5pa-1b-prescribed-4.service",
+    "cgroup_path_matches_unit": true,
+    "in_unit_peak_bytes": 100646912,
+    "lower_bound_bytes": 120049664,
+    "lower_bound_method": "lower_bound_ru_maxrss",
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "oom_events": 0,
+    "read_error": null,
+    "swap_max": "0",
+    "swap_peak_bytes": 0,
+    "swap_total_kb": 0
+  },
+  "panels": 2,
+  "passed": true,
+  "platform_accounting": "linux_getrusage_cgroup_v2",
+  "predicted_seconds": 8.263337609000047,
+  "probe_seconds": 1.2192616009999995,
+  "recorded_utc": "2026-09-28T01:12:03Z",
+  "repeat": 4,
+  "row_schema": "s5-part-a-max-expansion-measurement/v2#repeat-row",
+  "stage": "1b",
+  "unit": "fp-s5pa-1b-prescribed-4",
+  "wall": {
+    "boundaries": {
+      "admission": 0.9810626989999776,
+      "part_a": 4.734757082999977,
+      "serialize": 0.0002707449999945766,
+      "verify": 0.522443442999986
+    },
+    "outer": null,
+    "setup_excluded": 3.567636066000034,
+    "workload": null
+  },
+  "workload": {
+    "arm": "prescribed",
+    "bars_per_session_per_leg": 4,
+    "budget_seconds": 3600.0,
+    "expanded_panels": 4,
+    "expected": {
+      "expanded": false,
+      "panels": 2,
+      "proofs": 3,
+      "replays": 8,
+      "verify_for": 9
+    },
+    "fixture": "tests/ops/qualification/composition_fixture.py",
+    "floor": 0.95,
+    "frozen_expansion_tolerance": 0.01,
+    "full_pass_rate_input": 1.0,
+    "horizon_sessions": 5,
+    "idle": false,
+    "initial_panels": 2,
+    "inner_block_sessions": 5,
+    "legs": [
+      "aegis_6j",
+      "dj30_mym_p250",
+      "orb_mnq_v7",
+      "vanguard_mgc"
+    ],
+    "n2_capture_sha256": null,
+    "outer_months": 6,
+    "paths_per_panel": 2,
+    "percentile": 0.05,
+    "percentile_method": "nearest_rank",
+    "recipe": "build_verified_composition(tmp, confirmation_depth=60, decision_alpha='0.05', idle=False)",
+    "root_rng_namespace": "TEST_ONLY/composition-fixture/v1",
+    "sessions": 174,
+    "within_pp": 0.01
+  }
+}
