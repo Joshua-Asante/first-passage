@@ -1244,3 +1244,57 @@ The complete downloaded artifacts, including the journals, are private. So are t
 - The four `/v7` preconditions land with the S5 build.
 
 **Not granted:** the hold release (the operator's, at CP-1b); S5 build, freeze or dispatch; Stage 1c or Stage 2; production, activation or live authority. S5 stays **HELD**.
+
+### Operator ruling — CP-1b: S5 hold released for the TEST_ONLY build, 2026-09-28
+
+**Source.** In session on 2026-09-28, the operator wrote: "I approve CP-1b for the S5 TEST_ONLY build, effective once the final cited verification record is retained and pinned, archive #844 is merged and its post-merge audit is recorded, and #537 is merged with passing checks. Record the actual #537 merge SHA as the accepted revision before dispatching the build. Include all four documented /v7 preconditions. Accept the memory result as provisional, with its narrow margin explicitly carried forward. RC-2, RC-3b and all listed C3 obligations remain open. This approval grants no production, activation or live authority."
+
+The operator then set the order: merge #844, merge #537 once CI passed, run the audit against this entry's pin registry, and merge this entry after review and checks.
+
+**Accepted revision (the release head).** `05f3788d9e4895308d6734e650a42875c59f669c` is the merge of [#537](https://github.com/Joshua-Asante/first-passage/pull/537) at 2026-09-28T16:27:11Z. Its PR head `6f1da0b3` is the operator's merge of `main` (#539, #540 and a `tests.yml` fetch-depth change) into the packet head `1dae754`.
+- The S5 packet's "release head named in the CP-1b hold-release entry" is this SHA.
+- Anchor re-check against it: between `7675c088` (the measured and re-checked revision) and `05f3788`, no anchored code changed, and neither did the S5 packet or the slices-plan anchor lines (`:17`, `:91`, `:233`, `:238`). The only other changes the packet could reach are #536's dated markers. In the S5 decision draft they are in place, at lines 374, 402 and 404. In the owner-text note they add two lines near the top. The packet cites neither document by line, and the acceptance entry above pins the note's blob.
+
+**Conditions, each met before this entry.**
+1. **The final cited verification record is retained and pinned.** #537's cited `check` records are:
+   - `20260928T013657Z-0f0b5ae0df6b` (head `0a84674`);
+   - `20260928T015253Z-8d29efff45e1` (head `fadfc29`);
+   - `20260928T144557Z-6db9391ec782` (head `1dae754`, the final cited record; SHA-256 `26b21a0431da19d791a795357a5d8d042d57890768c34665b8b46d93993f3a82`). It shows status completed, exit 0, `source_stable: true` and complete capture.
+
+   They are retained in first-passage-archive#844 and pinned in `docs/evidence/PRIVATE_EVIDENCE.sha256` by this entry's commit. The merged head's own checks are GitHub's (item 3).
+2. **Archive #844 is merged, and its post-merge audit is recorded.** [first-passage-archive#844](https://github.com/Joshua-Asante/first-passage-archive/pull/844) merged at `e3672489`. `scripts/evidence_archive.py audit --verify` ran from this entry's tree, whose registry includes the three pins above, against the archive's `main` at `e3672489`. It reports **177 pins: 89 ARCHIVED, 0 UNPUSHED, 88 MISSING, 0 CORRUPT**. Every pin the H1 step (b) execution added is ARCHIVED and re-hashes correctly: the package `9b00b8c1…ee29` and the five check records (`90ce9b52…`, `c7246306…`, `d9afecf4…`, `38c4db66…`, `26b21a04…`). The 88 MISSING predate this work.
+3. **#537 is merged with passing checks.** Every check on head `6f1da0b3` passed: `skills (3.12)`, `build (3.11)`, `pytest (3.11)`, both `Qualification execution boundary` jobs, CodeRabbit and semgrep. In addition, `.\fp.ps1 check` on `05f3788` itself (Windows ops env, CPython 3.13.2) gives status completed, exit 0, `source_stable: true` and complete capture (record `20260928T170538Z-6bf1970cc12d`, SHA-256 `c6baea9f2f0f8e411afc557cfb94a0f83de5afd7ceb90b22ec2e2b5598464625`, cited, not pinned).
+
+**Effect: the S5 hold is RELEASED for the TEST_ONLY build only, effective when this entry is on `main`.**
+- **Build preconditions.** All four `/v7` preconditions land with the S5 build:
+  1. add `/v7` to the P4 tuple at `tests/integration/qualification_boundary/fixture_producer.py:154-155`;
+  2. add `/v7` at `ops/c1_rail/qualification/execution/profile.py:219-226`;
+  3. add `/v7` at `profile.py:243-252`;
+  4. extend `profile.py:239` to `/v7` with 360 s CPU / 900 s wall (CP-1a (3)).
+
+  The PART_A diagnostic ceilings stay at the shared 120 s / 300 s. The application entry above triggers no PART_A constant.
+- **Memory: accepted as provisional, with the narrow margin carried forward.**
+  - PA-3a gives 1.5 × M̂ = 252,549,120 ≤ 256,000,000, a margin of 3,450,880 B (1.35%).
+  - Over every timed repeat of both arms it is 254,005,248, a margin of 0.78%.
+  - Both hold only against the P4-extended binding of 256,000,000. The unextended binding of 230,400,000 would fail, which is why precondition 1 matters.
+  - The margin is carried into C3: Stage 1c's M̂₁c and Stage 2's PA-3b are read against it. A figure that erodes it goes to an operator ruling (r2 §9 PA-3).
+- **Still open (C3 and later).**
+  - RC-2: the owner-text set, with corrections 3 and 8.
+  - RC-3b:
+    - Stage 1c through the built adapter, with SR-1..SR-9, P-1..P-7 and P-3/P-4/P-5 hard;
+    - the coordinator's recorded read of the `--stage 1c` harness diff;
+    - the executed `bind_budget` Σ check on the built `/v7`;
+    - Stage 2/PA-5 with the named worker-side residual;
+    - PA-3b, with its additive assumption UNVERIFIED;
+    - the pilot-budget term's validation through SR-8.
+  - OQ-1, Q1, Q7 and Q9.
+  - The RC-4 implementation and OF attestations at their assigned gates.
+- **Next.** The next coordinator issues the bounded S5 build handoff from this release head. This entry dispatches nothing.
+
+**Not granted:**
+- any production value, budget or cap;
+- production qualification, activation or live authority;
+- any arm, deployment or trade;
+- S5 acceptance or a C3 decision;
+- Stage 1c or Stage 2 execution without its C3 preconditions;
+- any change to a locked or frozen control.

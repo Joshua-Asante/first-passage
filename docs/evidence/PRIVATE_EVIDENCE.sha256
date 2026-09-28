@@ -175,3 +175,9 @@ f79c76236120b49a81f2fcb2ccca0ebaa8e499e7119e5661fa2b412e462796e0  .cache/fp-veri
 9b00b8c163f7514015256283a61998b60b1afa0fa5bd3dfc5c804ef573deee29  h1b-stage1b-measurement-evidence-2026-09-28.tar.gz
 90ce9b52eb7e45eb3b516a58cfb5ca23a1d1b63542deff2af11e06823644fc56  .cache/fp-verification/20260928T002434Z-18669aab5ba0/record.json
 c7246306e9cc8f1ae0a01074a62eb125e38423252e3952b6fa6bec2e5fadad64  .cache/fp-verification/20260928T012306Z-7f00a0069a0b/record.json
+# CP-1b (ledger: "Operator ruling — CP-1b: S5 hold released for the TEST_ONLY build, 2026-09-28"): the launcher check
+# records cited by #537 at its pushed heads 0a84674, fadfc29 and 1dae754 (the last is the final cited record);
+# archived in first-passage-archive#844 (merged at e3672489).
+d9afecf4cd98464ab7212b1d0892969730c6e1e45b981aa5f87ac64e07d6383a  .cache/fp-verification/20260928T013657Z-0f0b5ae0df6b/record.json
+38c4db6678929b9dbc70d6790c4039e96186f0a8a7ccc9f7d934b3caff0b1412  .cache/fp-verification/20260928T015253Z-8d29efff45e1/record.json
+26b21a0431da19d791a795357a5d8d042d57890768c34665b8b46d93993f3a82  .cache/fp-verification/20260928T144557Z-6db9391ec782/record.json
