@@ -102,6 +102,8 @@ Stage 1a validates the harness only. It checks panel counts, digest identity, pr
 
 **Stage 1b** (the coordinator, after this file is on `main`; within the r2 §12.7 caps):
 
+*[2026-09-28: do not dispatch from the lines below. They never bind a run id, download or retain the evidence, or read the re-run decision from the records (helper review of #523: C2, C3, C6, C7 and C10; r2 §12.3's marker). Stage 1b dispatches from r2 §12.3's tested replacement block, on branch `claude/r2-stage1b-dispatch-block` in #539, once it merges.]*
+
 ```bash
 gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref main \
   -f stage=1b -f mode=dry-run -f runtime=host_venv -f note_dir=docs/notes/2026-09-27-s5-part-a-measurement
