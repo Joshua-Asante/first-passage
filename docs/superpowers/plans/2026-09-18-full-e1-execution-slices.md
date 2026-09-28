@@ -1148,4 +1148,9 @@ S5 stays **HELD**.
    - `audit --verify` reports 395 pins: 307 ARCHIVED, 0 UNPUSHED, 88 MISSING (pre-existing), 0 CORRUPT. None of the 120 new digests is listed as non-ARCHIVED.
    - A restore from archived blobs alone (`git cat-file blob`, both databases decompressed) into a scratch directory passes `sha256sum -c` for all 222 files.
 
-**Owed after the operator merges first-passage-archive#845:** checks 3 and 4 against the archive's `origin/main`, recorded below.
+**Post-merge verification, 2026-09-28.** The operator directed the merge of first-passage-archive#845. It merged as `2ec6f6c9`, and `88b24580` is an ancestor of the archive's `main`. After `git fetch`, the clone's `main` tracks `origin/main` at `2ec6f6c9`.
+- **Check 3.** `audit --verify` reports 395 pins: 307 ARCHIVED, 0 UNPUSHED, 88 MISSING (pre-existing), 0 CORRUPT. None of the 120 new digests is listed as non-ARCHIVED. All 120 are present under `evidence/sha256/` on `origin/main`, and each committed blob (`git cat-file blob`) hashes to its address.
+- **Check 4.** A restore from `origin/main` blobs alone rebuilt 222 files into a scratch directory, 2 of them by decompression. The restored `SHA256SUMS` hashes to `e2c14228…189a7`, and `sha256sum -c` passes for all 222 files. The scratch copy was then deleted.
+- **Originals.** The path, size and mtime snapshot still matches the pre-packing snapshot.
+
+All five completion checks are met. The originals and the `.packed/` sibling stay in the primary checkout; nothing was deleted.
