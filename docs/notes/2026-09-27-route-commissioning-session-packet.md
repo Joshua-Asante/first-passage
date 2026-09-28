@@ -306,6 +306,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 - Symbol: **MNQ** front month, one contract (ORB's leg; line 270).
 - `stopLoss` and `takeProfit` both included.
 - Entry: a resting **buy stop** above the market at `<OP: resting-entry distance>`, chosen so it will not trigger during the row.
+- Levels *(added 2026-09-28; [C.2](#c2-the-tradovate-ordersplace-body-ct-pl-ct-ov) conversion)*: entry level E = R + `<OP: resting-entry distance>`, with R read from `<OP: quote source>`; `stopLoss` = E − the stop distance (≤ `<OP: max stop distance>`); `takeProfit` = E + `<OP: take-profit distance>`. R, its time, E and both bracket levels are recorded before the send. `<OP: resting-entry distance>` must exceed `<OP: cancel buffer>`, or the row-specific abort fires at once.
 - Cancel buffer: `<OP: cancel buffer>`.
 - Time and cost placeholders as §3.6.
 - Request body (§3.7): ☐ exact request body reviewed and recorded privately before send.
@@ -315,7 +316,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 **Actions, in order** (line 272):
 1. Read the starting state.
 2. Assign a fresh `clOrdId`.
-3. Record the local time. Send one REST `orders/place` for the resting buy stop entry with `stopLoss` and `takeProfit`. The REST return does not name the order-type fields, and none are specified here (drill plan line 272); the body is the one recorded under §3.7. *(2026-09-28: `"orderType": "stop"`, `stopPrice` at the computed resting-entry level, explicit `tif`; closure C.2–C.3.)*
+3. Record the local time. Send one REST `orders/place` for the resting buy stop entry with `stopLoss` and `takeProfit`. The REST return does not name the order-type fields, and none are specified here (drill plan line 272); the body is the one recorded under §3.7. *(2026-09-28: `"orderType": "stop"`, `stopPrice` = the entry level E, `stopLoss` and `takeProfit` anchored on E, explicit `tif`; closure C.2–C.3.)*
 4. Read: entry `Working`, children `Suspended`.
 5. Record the local time. Send one REST `cancel` of the parent.
 6. Read the lifecycle and status of the parent and both children, positions and fills.
@@ -323,7 +324,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 
 **Row-specific abort** (line 275):
 - If the market comes within `<OP: cancel buffer>` of the entry level, cancel at once.
-- If the entry fills anyway, handle it as X-1: confirm the stop is `Working` at quantity 1 (SC-2), then run recovery.
+- If the entry fills anyway, handle it as X-1: confirm the stop is `Working` at quantity 1 (SC-2), then run recovery. *(Added 2026-09-28:* if the realized stop distance, from the fill price to `stopLoss`, exceeds `<OP: max stop distance>`, recovery runs at once; C.2.)
 
 **Pass / fail:** lines 273–274.
 
@@ -620,7 +621,7 @@ Dispositions:
 
 ### C.1 Sources read (2026-09-28 UTC)
 
-Retrieved with `curl` over HTTPS; original bytes retained in this session's workspace only, under `.cache/tradeify-next-steps/vendor-docs/` (gitignored, and lost with the worktree). Nothing from these pages is private; the hashes below pin **what was read**, not a durable evidence store. If the operator wants durable originals, copy them to `local_artifacts/route-drills-2026-09/vendor-docs/` in the primary checkout and hash them into that `MANIFEST.tsv` with step id `P-3.7-docs`.
+Retrieved with `curl` over HTTPS on 2026-09-28. **Preserved 2026-09-28** in the operator's primary checkout under `local_artifacts/route-drills-2026-09/vendor-docs/` (gitignored). The folder holds the original bytes, a `SHA256SUMS`, and a `SOURCES.tsv` listing file, ref, URL, bytes, SHA-256 and capture UTC. Each file also has a row in `local_artifacts/route-drills-2026-09/MANIFEST.tsv` under step id `P-3.7-docs`. The copies were re-hashed against the session originals and match. The session copy under `.cache/tradeify-next-steps/vendor-docs/` dies with the worktree. A sixth capture, `https://crosstrade.io/docs/api/overview` (SHA-256 `8fd7368ba42ad4fc9e94fefc384a50f8d11ee6c2c3e995506ed671f6ef5c3156`), is preserved there too but cited nowhere in this section. Nothing from these pages is private; the hashes below pin **what was read**.
 
 | Ref | Page | SHA-256 of retrieved bytes |
 |---|---|---|
@@ -643,9 +644,14 @@ Required for every row here: `instrument` (string; continuous `MYM1!`, NT8 `MYM 
 | Row | Entry shape | Type field and its price field |
 |---|---|---|
 | **X-1**, and the opening entries of X-2 and X-3 | market entry, one contract, bracket attached | `"orderType": "market"`. No `limitPrice`, no `stopPrice` |
-| **X-4** | resting **buy stop** entry above the market, one contract, bracket attached | `"orderType": "stop"` with `"stopPrice"` = the level computed from `<OP: resting-entry distance>` (conversion below). `stopPrice` is "Required for stop orders" (CT-OV request-field table) |
+| **X-4** | resting **buy stop** entry above the market, one contract, bracket attached | `"orderType": "stop"` with `"stopPrice"` = the entry level E, fixed first from `<OP: resting-entry distance>`; the bracket is then anchored on E (conversion below). `stopPrice` is "Required for stop orders" (CT-OV request-field table) |
 
-**Bracket fields.** `takeProfit` and `stopLoss` are **absolute prices**, both optional, and setting either attaches one native Tradovate OSO; setting both OCO-links the two legs. `REST does not run webhook relative-price preprocessing` (CT-OV), so tick/point offsets that work on the webhook path are **not** available here: every level is an absolute price. **Distance-to-level conversion (binding for every row):** CP-3 fixes *distances* (§3.6), and the REST surface serves no quotes (CT-OV: bring your own market data), so the absolute level is computed immediately before each send as the `<OP: quote source>` reference price ± the fixed distance; the reference price, its time and the computed levels are recorded before the send. Bracket prices are fixed at submission and are not recalculated from the fill (CT-PL), so after a market entry's fill the row reads the realized stop distance, and **if it exceeds `<OP: max stop distance>`, recovery runs** (an SC-2-class exposure fault, not a pass). `<OP: quote source>` joins §3.6's placeholders. This confirms, at field level, REST §6.11 Q02 and the drill plan's "absolute `stopLoss`".
+**Bracket fields.** `takeProfit` and `stopLoss` are **absolute prices**, both optional, and setting either attaches one native Tradovate OSO; setting both OCO-links the two legs. `REST does not run webhook relative-price preprocessing` (CT-OV), so tick/point offsets that work on the webhook path are **not** available here: every level is an absolute price. **Distance-to-level conversion (binding for every row; corrected 2026-09-28 after the executive review of #540).** CP-3 fixes *distances* (§3.6), and the REST surface serves no quotes (CT-OV: bring your own market data). So the absolute levels are computed immediately before each send from a reference price R read from `<OP: quote source>`, and R, its time and every computed level are recorded before the send. What the bracket is anchored on depends on the entry type:
+- **Market entry** (X-1; the opening entries of X-2 and X-3). The bracket is anchored on R, the estimate of the fill: `stopLoss` sits the stop distance from R on the protective side, and `takeProfit` sits the take-profit distance from R on the target side.
+- **Resting buy-stop entry** (X-4). First fix the entry level E = R + `<OP: resting-entry distance>`, sent as `stopPrice`. Then anchor the bracket on **E, not R**: `stopLoss` = E − the stop distance and `takeProfit` = E + the take-profit distance. Anchoring on R would widen the intended entry-to-stop distance by the resting distance, and it would put the target below the entry whenever the take-profit distance is smaller than the resting distance.
+- **Price grid (a recording rule, not a vendor claim).** Every level is recorded on the contract's price increment. Rounding never makes the entry-to-stop distance exceed `<OP: max stop distance>`.
+
+Bracket prices are fixed at submission and are not recalculated from the fill (CT-PL). So after **any** entry fill (a market entry, or an X-4 entry that fills despite its buffer) the row reads the realized stop distance, from the fill price to `stopLoss`. **If it exceeds `<OP: max stop distance>`, recovery runs**; that is an SC-2-class exposure fault, not a pass. `<OP: quote source>` joins §3.6's placeholders. This confirms, at field level, REST §6.11 Q02 and the drill plan's "absolute `stopLoss`".
 
 **Do not send** (packet allow-list, extending drill plan §2.0's `atm*` / `cancel_after` / copier / multi-account bar; **applied to the drill-plan owner** in its §2.0 addendum 2026-09-28):
 
