@@ -25,21 +25,28 @@ acceptance:
   - tests/ops/qualification/execution/test_release.py
   - tests/ops/qualification/execution/test_worker.py
   - tests/ops/qualification/execution/test_campaign_n2.py
+  - tests/ops/qualification/execution/test_campaign_recovery.py
+  - tests/ops/qualification/test_journal_snapshot.py
   - tests/ops/qualification/test_part_a.py
+  - tests/ops/qualification/test_regime.py
+  - tests/ops/qualification/test_evidence_reconstruction.py
   - tests/ops/qualification/test_result_adjudication.py
   - tests/test_qualification_boundary_verification.py
   - tests/test_s2_run_evidence.py
+  - tests/test_s2_evidence_tooling_acceptance.py
+  - tests/test_guard_s2_runs.py
+  - tests/test_s2_evidence_tooling_followups.py
 ```
 
 ## 0. Phase 0: premise check, then Rule 0 reads, before any edit
 
-The executor's first act is the §9 premise check, reported before any edit. Any failure is a stop (§7), returned under §6. A contradiction between this card, the packet and what the executor reads is returned as `NEEDS_CONTEXT` ([surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md#decision), handoff contract item 2). The executor does not choose a reading itself.
+The first act is the §9 premise check, reported before any edit: the executor runs the repository items, and the coordinator runs the two `glm_agent` items (card text and workdir) before the first ticket. Any failure is a stop (§7), returned under §6. A contradiction between this card, the packet and what the executor reads is returned as `NEEDS_CONTEXT` ([surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md#decision), handoff contract item 2). The executor does not choose a reading itself.
 
 **Test 0 (secrets and private sources).** The build reads and writes only public repository code, tests and documentation. It reads no `.env`, credential, Pine source, runtime port, account figure or private evidence package. The workdir given to `glm_agent` is a worktree under `.claude/worktrees/`, never the primary checkout, which holds a `.env` (§0.5).
 
-**Inputs (read first, at the release head):**
+**Inputs (read first; at the release head unless stated):**
 - the S5 packet, in full. Its §0 and §0.1 are the Rule 0 reads, with the anchors re-taken at `875ecf29` and still valid at `05f3788` (CP-1b ruling, "Anchor re-check against it");
-- the CP-1b ruling entry: the four `/v7` preconditions, the provisional memory margin, and what stays open;
+- the CP-1b ruling entry: the four `/v7` preconditions, the provisional memory margin, and what stays open. It landed after `05f3788`, so a worktree cut from the release head does not contain it. It is read at the dispatch revision, and the coordinator quotes its "Build preconditions" and "Memory" items in each ticket;
 - the [coordinator's PART_A application entry](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-application-part_a-test_only-diagnostic-ceiling-under-the-approved-measurement-and-margin-rule-2026-09-28): X = 120 s and Y = 300 s equal the shared values, so **no `/v7`-gated PART_A constant** follows (packet §0.5, S5-D3 build notes);
 - the [S4 packet](2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md), for the line-1 selection, the placement rule and the precedent for tooling registration;
 - the [T05 packet §0.5 F3](2026-09-21-full-e1-t05-result-and-seal.md), for the only progression names S5 may write;
@@ -51,7 +58,7 @@ The executor's first act is the §9 premise check, reported before any edit. Any
 3. add `/v7` at `profile.py:243-252`;
 4. extend `profile.py:239` to `/v7` with 360 s CPU / 900 s wall.
 
-`fixture_producer.py` is not in the packet's §2 file list. It is named by the CP-1b ruling, which is the operator's, and it is the only file outside §2 this card admits. No other file outside §2 is admitted (§7).
+`fixture_producer.py` is an installed fixture under packet §2 (the S4 packet spells out "installed fixtures" as `fixture_producer.py`, `fixture_install.py`, `conftest.py` and the rest), and precondition 1 (packet §0.1 P4, §0.5 build notes; CP-1b ruling) requires its edit. No file outside packet §2 is admitted (§7).
 
 ## 0.5. Routing (task-routing checklist, re-applied at dispatch)
 
@@ -103,7 +110,7 @@ This section adds no requirement. It restates the packet's and the ruling's requ
 
 **H:** the build on `claude/s5-part-a`, cut from `05f3788`, meets packet §1–§3, the four `/v7` preconditions and the Windows part of packet §4, and it stops before any Linux run. **Reject if** any item below is falsified; **accept for C3 step 1 review if** all hold on the returned head.
 - **Premise first** (§0, §9). *Falsified by* an edit before the premise check was reported, or a premise failure that did not stop the work.
-- **Base** (§1). *Falsified by* a branch that does not descend from `05f3788`, or a `git diff --stat 05f3788...HEAD` showing a file outside packet §2 other than `fixture_producer.py`.
+- **Base** (§1). *Falsified by* a branch that does not descend from `05f3788`, or a `git diff --stat 05f3788...HEAD` showing a file outside packet §2 (installed fixtures, `fixture_producer.py` among them, are inside it).
 - **`/v7` preconditions** (§0). *Falsified by* a `/v7` release refused, unfunded, or bound to 120 s N2 CPU, or bound to the unextended fixture cap. Each is pinned by a test in `test_profile.py`, or in the Part A tests for the fixture cap.
 - **Seam exclusion** (packet §1a). *Falsified by* a missing SR, or a failing or missing test for any of P-1..P-7. P-3, P-4 and P-5 are hard.
 - **Prefix custody** (packet §0.5 S5-D1; §1, the correction for finding 5). *Falsified by* an expansion decision evaluated, or a panel at index `initial_panels` or above sampled, before the initial-prefix artifact is fsynced. The focused ordering test must pin this.
@@ -121,11 +128,11 @@ This section adds no requirement. It restates the packet's and the ruling's requ
 ## 5. Forbidden
 
 Everything in packet §6 and §2's forbidden list, plus these, which bound this card's grant:
-- **any Linux or CI dispatch**: `gh workflow run`, `-f mode=s5`, a subset iteration, or an artifact download. Packet §2 says "any dispatch of it needs its own grant at C3", and C3 step 2 is the operator's separate grant;
+- **any Linux or CI dispatch**: `gh workflow run`, `-f mode=s5`, a subset iteration, or an artifact download. Two separate grants govern these, and neither is in this card: the subset-iteration dispatch needs "its own grant at C3" (packet §2), and the acceptance-grade run needs the C3 step 2 dispatch grant (packet §5);
 - opening a PR, merging, or pushing to `main`;
 - the Stage 1c harness, the Stage 1c or Stage 2 measurement, and the `bind_budget` execution. These are the coordinator's, at C3 step 1 (packet §5);
 - any production value, budget or cap; any `/v7`-gated PART_A constant (§0); any change to a locked or frozen control;
-- files outside packet §2 other than `fixture_producer.py`;
+- files outside packet §2;
 - `.env`, credentials, private sources or private evidence in any `glm_agent` task or workdir;
 - `git stash` (use a WIP commit); a commit without `git diff --stat`;
 - claiming acceptance or a C3 decision.
@@ -133,15 +140,19 @@ Everything in packet §6 and §2's forbidden list, plus these, which bound this 
 ## 6. Output and return (status taxonomy)
 
 - Branch `claude/s5-part-a`, pushed, with no PR.
-- The packet's §7 "Executor return" section, filled in on that branch. It carries every item that packet §4's return line and §5's push-and-return list name:
+- The packet's §7 "Executor return" section, filled in on that branch. It carries every item that packet §5's push-and-return list names, every C3 item of packet §1 (line 70) that a Windows build can produce, and the Windows-producible items of packet §4's return line:
   - the head, and `git diff --stat 05f3788...HEAD`;
   - the line-1 record, and the line-2, line-3 and `check` records, each cited by its `record.json` path and SHA-256 with its actual counts and skips;
   - the §1 freeze as a table, including the custody form chosen;
   - the §1a conformance table, with the node IDs for P-1..P-7;
   - the fixture ledger, fail-on-base, the parity results, and the `/v7` release and profile digests;
+  - the PART_A field sets, the `/v8` snapshot diff, the two-artifact capture contract with its crash semantics, and the baseline-transport contract (packet §1, line 70);
+  - the E-case ownership for E04 and E05 and the PART_A halves of E06, E08 and E09 (packet §1, line 70);
   - the reduced TEST_ONLY depths, stated distinctly;
   - every closed-set site and `part_a.py` seam line;
   - anything S5-D1..D3 did not anticipate.
+
+  The Linux-only return items of packet §4 (run IDs with record hashes, the initial and final prefix identities per Linux campaign, and the SR-8 export fields) are deferred to the post-grant run. Their absence does not make this return incomplete.
 - For each GLM ticket, the coordinator's diff-read note: files touched, tests run, and keep or revert. Include the git checkpoint revert line when one is present.
 
 **Status.** The return states exactly one:
@@ -156,7 +167,7 @@ The coordinator either accepts the return for C3 step 1 review (verdict RESOLVED
 
 - The premise check fails (§9).
 - A numerical behavior discrepancy, or a float-versus-Decimal disagreement (packet Authority line; §3).
-- The build needs a file outside packet §2 other than `fixture_producer.py`, a `part_a.py` change that alters a seed, sample, decision input or prefix byte, or an accepted formula or tolerance change beyond SR-7.
+- The build needs a file outside packet §2, a `part_a.py` change that alters a seed, sample, decision input or prefix byte, or an accepted formula or tolerance change beyond SR-7.
 - An anchor in packet §0.1 does not match the code at `05f3788`.
 - Any step would need a Linux run, a CI dispatch, a PR, a merge or a production value.
 - Two failed corrections of the same issue (AGENTS.md), or one GLM ticket failing twice (§0.5).
@@ -169,13 +180,13 @@ A `DONE` return opens **C3 step 1** (packet §5), the coordinator's review. It h
 - the executed `bind_budget` Σ check on the built `/v7`;
 - the RC-2 owner text, accepted and applied.
 
-Then comes C3 step 2, the **operator's separate dispatch grant** for the acceptance-grade Linux run. Then the run, then Stage 2/PA-5, then S5 acceptance. T05 integration preparation may start once C3 is accepted. Integration acceptance still waits on full S5 acceptance (deployment checklist, S5 → T05 → S8 row).
+Linux runs follow packet §4's order, subset iteration first, and each needs its own operator grant: the subset-iteration dispatch (packet §2, "its own grant at C3"), then C3 step 2, the **separate dispatch grant** for the acceptance-grade Linux run (packet §5). Then the run, then Stage 2/PA-5, then S5 acceptance. T05 integration preparation may start once C3 is accepted. Integration acceptance still waits on full S5 acceptance (deployment checklist, S5 → T05 → S8 row).
 
 **Not granted:** the Stage 1c harness or measurement; any Linux or CI run; C3; S5 acceptance; any production value, budget or cap; production qualification, activation, arm, deployment or trade; any change to a locked or frozen control.
 
 ## 9. Dispatch record
 
-- **Dispatch-time premise check** (the executor's first act, reported before any edit):
+- **Dispatch-time premise check** (reported before any edit; the first three items are the executor's, the last two the coordinator's, run before the first `glm_agent` call):
   - `HEAD` of `claude/s5-part-a` is `05f3788` at branch creation, or descends from it;
   - the S5 packet at the dispatch revision is byte-identical to the packet at `05f3788` (SHA-256 of `git show 05f3788:docs/briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md` = `058c265e48a81adbde049cdb108858c6a093c2c58e872ee48000dcc05e9d68c9`);
   - no file under `ops/`, `core/`, `tests/`, `scripts/`, `tools/` or `.github/` differs between `05f3788` and the dispatch revision. If one does, the anchors the packet covers are re-checked first (packet line 5), and the executor returns `NEEDS_CONTEXT`;
@@ -184,6 +195,7 @@ Then comes C3 step 2, the **operator's separate dispatch grant** for the accepta
 
   Any failure is a stop.
 - **2026-09-28 (drafted):** carded on the operator's instruction "draft the S5 build handoff". At drafting, `origin/main` was `d86f6ff`. Against `05f3788` it changes no code (`git diff --stat 05f3788 d86f6ff` over the paths above is empty), and the packet is unchanged (same digest). **Owed:** coordinator review, then the operator's merge, then the dispatch with the frozen SHA recorded here.
+- **2026-09-28 (review folded):** one focused read-only reviewer on `6bf194d` returned 4 FIX and 3 NIT, no BLOCKER. All seven are folded, each checked against its source first: (FIX 1) `fixture_producer.py` is a §2 installed fixture (S4 packet line 96), so the "outside §2" carve-outs are removed; (FIX 2) the CP-1b ruling is absent at `05f3788` and is read at the dispatch revision; (FIX 3) §6 adds the packet §1 line-70 items and defers the Linux-only return items; (FIX 4) seven §2 test files join the acceptance list, with the journal-snapshot test at its actual path `tests/ops/qualification/test_journal_snapshot.py` (the reviewer's `execution/` path does not exist); (NIT 1) the subset-iteration grant is separated from the C3 step 2 grant, subset first; (NIT 2) `DISPATCH` replaces the `<dispatch-sha>` placeholder; (NIT 3) every §10 test prints a failure line, and the two `glm_agent` premise items are the coordinator's. The four CP-1b anchors were re-read on `d86f6ff` and hold, and `origin/main` was still `d86f6ff`.
 
 ## 10. Audit hooks (runnable)
 
@@ -192,15 +204,17 @@ Then comes C3 step 2, the **operator's separate dispatch grant** for the accepta
 python -I scripts/fp.py python scripts/check_brief.py --type handoff docs/briefs/handoffs/2026-09-28-s5-test-only-build-dispatch.md
 python -I scripts/fp.py python scripts/check_handoff_authority.py docs/briefs/handoffs/2026-09-28-s5-test-only-build-dispatch.md
 
-# §9 premise check (Git Bash). <dispatch-sha> is the frozen SHA recorded in §9.
+# §9 premise check (Git Bash). Set DISPATCH to the frozen SHA recorded in §9.
 REL=05f3788d9e4895308d6734e650a42875c59f669c
-git merge-base --is-ancestor "$REL" HEAD && echo "descends from the release head"
+DISPATCH=REPLACE_WITH_DISPATCH_SHA
+git merge-base --is-ancestor "$REL" HEAD && echo "descends from the release head" || echo "FAIL: not descended"
 test "$(git show "$REL":docs/briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md | sha256sum | cut -c1-64)" \
-  = 058c265e48a81adbde049cdb108858c6a093c2c58e872ee48000dcc05e9d68c9 && echo "packet pinned at the release head"
-git diff --quiet "$REL" <dispatch-sha> -- docs/briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md && echo "packet unchanged at dispatch"
-git diff --quiet "$REL" <dispatch-sha> -- ops core tests scripts tools .github && echo "no code drift since the release head"
-test ! -e .env && echo "no .env in the workdir"
+  = 058c265e48a81adbde049cdb108858c6a093c2c58e872ee48000dcc05e9d68c9 && echo "packet pinned at the release head" || echo "FAIL: packet digest"
+git diff --quiet "$REL" "$DISPATCH" -- docs/briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md && echo "packet unchanged at dispatch" || echo "FAIL: packet changed"
+git diff --quiet "$REL" "$DISPATCH" -- ops core tests scripts tools .github && echo "no code drift since the release head" || echo "FAIL: code drift; re-check anchors, NEEDS_CONTEXT"
+# Coordinator, in the glm_agent workdir, before the first ticket:
+test ! -e .env && echo "no .env in the workdir" || echo "FAIL: .env present"
 
-# Scope at return: only packet §2 files, plus fixture_producer.py.
+# Scope at return: only packet §2 files (installed fixtures included).
 git diff --stat "$REL"...HEAD
 ```

@@ -1343,7 +1343,9 @@ The operator then set the order: merge #844, merge #537 once CI passed, run the 
 The CP-1b ruling's "Next" line (the bounded S5 build handoff from the release head) is now drafted as [the S5 build dispatch card](../../briefs/handoffs/2026-09-28-s5-test-only-build-dispatch.md), for review and the operator's merge.
 - **What it does:** it freezes the S5 packet at the release head `05f3788` and dispatches it to the packet's named executor, GLM, through `glm_agent`. It adds no build requirement.
 - **Where the build stops:** at the packet's §5 push-and-return, before any Linux or CI run.
-- **Scope:** the packet's §2 files, plus `fixture_producer.py` for `/v7` precondition 1, as the ruling names.
+- **Scope:** the packet's §2 files only. `fixture_producer.py`, which `/v7` precondition 1 edits, is one of §2's installed fixtures.
 - **Drift check at drafting:** `origin/main` `d86f6ff` changes no code against `05f3788`, and the packet is byte-identical (SHA-256 `058c265e…d68c9`).
 
 **Not granted:** dispatch before the merge; Stage 1c; any Linux or CI run; C3; S5 acceptance; any production value. RC-2, RC-3b and every C3 obligation in the CP-1b ruling stay open.
+
+**Review folded, 2026-09-28.** One focused reviewer's four fixes and three minor findings on the draft (`6bf194d`) are folded into the card (its §9 records them). The corrections: `fixture_producer.py` is inside §2; the CP-1b ruling is read at the dispatch revision, not at the release head; the return names the `/v8` snapshot diff and the E-case ownership and defers the Linux-only items; the acceptance list carries every §2 test file; and the subset-iteration grant is separated from the C3 step 2 grant.
